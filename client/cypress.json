@@ -1,5 +1,5 @@
 {
-  "baseUrl": "http://localhost:5050",
+  "baseUrl": "http://dso-client:80",
   "testFiles": "**/*.{cy,e2e}.js",
   "pluginsFile": "cypress/plugins/index.js",
   "video": false,

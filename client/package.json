@@ -5,16 +5,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview --port 5050",
-    "test": "run-s test:unit test:ct-ci test:e2e-ci",
+    "preview": "vite preview --port 8080",
     "test:unit": "vitest --environment jsdom",
-    "test:ct": "cypress open-ct",
-    "test:ct:ci": "cypress run-ct",
-    "pretest:e2e": "npm run build",
-    "test:e2e": "start-server-and-test preview http://127.0.0.1:5050/ 'cypress open'",
-    "pretest:e2e:ci": "npm run build",
-    "test:e2e:ci": "start-server-and-test preview http://127.0.0.1:5050/ 'cypress run'",
-    "typecheck": "vue-tsc --noEmit -p tsconfig.vitest.json --composite false",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --ignore-path .gitignore",
     "format": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
   },
