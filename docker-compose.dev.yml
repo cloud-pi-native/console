@@ -1,0 +1,24 @@
+services:
+
+  #------------------------#
+  # Setup client container #
+  #------------------------#
+  dso-client:
+    build:
+      context: client
+      dockerfile: Dockerfile
+      target: dev
+    ports:
+      - 8080:8080
+    volumes:
+      - ./client:/app/
+      - /app/node_modules/
+    command: npm run dev
+    networks:
+      - dso-network
+      
+networks:
+  dso-network:
+    driver: bridge
+    # driver_opts:
+    # com.docker.network.driver.mtu: 1450
