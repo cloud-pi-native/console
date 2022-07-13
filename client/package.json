@@ -7,6 +7,9 @@
     "build": "vite build",
     "preview": "vite preview --port 8080",
     "test:unit": "vitest --environment jsdom",
+    "test:e2e-up": "docker-compose --file ../docker-compose.e2e.yml up --build",
+    "test:e2e-down": "docker-compose --file ../docker-compose.e2e.yml down --volumes",
+    "test:e2e": "npm run test:e2e-up; npm run test:e2e-down",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --ignore-path .gitignore",
     "format": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
   },
