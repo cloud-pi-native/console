@@ -9,6 +9,7 @@ COPY package*.json ./
 RUN npm ci
 
 COPY . ./
+RUN chown -R root /app/
 
 RUN npx browserslist@latest --update-db
 

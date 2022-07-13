@@ -6,16 +6,20 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
+
 COPY index.html vite.config.js vitest-setup.js ./
 COPY public ./public
 COPY src ./src
 
+RUN chown -R node /app/node_modules
+USER node
 CMD [ "npm", "run", "dev" ]
 
 
 # Build stage
 FROM dev as build
 
+USER root
 RUN npm run build
 
 
