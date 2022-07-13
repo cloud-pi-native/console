@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+
+  #------------------------#
+  # Setup client container #
+  #------------------------#
+  dso-client:
+    build:
+      dockerfile: ./client/Dockerfile
+      target: prod
+    ports:
+      - 80:80
+    logging:
+      driver: none
+    networks:
+      - dso-network
+
+  #-------------------------#
+  # Setup cypress container #
+  #-------------------------#
+  cypress:
+    build:
+      dockerfile: ./Dockerfile
+    depends_on:
+      - dso-client
+    volumes:
+      - ./e2e:/app
+      - /app/node_modules/
+    command: npm run cypress
+    networks:
+      - dso-network
+
+networks:
+  dso-network:
+    driver: bridge
+    # driver_opts:
+    # com.docker.network.driver.mtu: 1450
