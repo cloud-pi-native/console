@@ -8,6 +8,7 @@ services:
   #------------------------#
   dso-client:
     build:
+      context: client
       dockerfile: ./client/Dockerfile
       target: dev
     ports:

@@ -7,6 +7,7 @@ services:
   #------------------------#
   dso-client:
     build:
+      context: client
       dockerfile: ./client/Dockerfile
       target: prod
     ports:
@@ -21,6 +22,7 @@ services:
   #-------------------------#
   cypress:
     build:
+      context: e2e
       dockerfile: ./Dockerfile
     depends_on:
       - dso-client
