@@ -1,0 +1,29 @@
+
+version: '3.8'
+
+services:
+
+  #------------------------#
+  # Setup client container #
+  #------------------------#
+  sandbox-client:
+    build:
+      dockerfile: ./client/Dockerfile
+      target: dev
+    environment:
+      SERVER_HOST: sandbox-server
+      SERVER_PORT: ${SERVER_PORT:-4000}
+    ports:
+      - ${CLIENT_PORT:-8080}:${CLIENT_PORT:-8080}
+    volumes:
+      - ./client:/app/
+      - /app/node_modules/
+    command: npm run dev
+    networks:
+      - sandbox-network
+      
+networks:
+  sandbox-network:
+    driver: bridge
+    # driver_opts:
+    # com.docker.network.driver.mtu: 1450
