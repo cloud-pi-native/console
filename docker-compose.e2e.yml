@@ -8,7 +8,7 @@ services:
   dso-client:
     build:
       context: client
-      dockerfile: ./client/Dockerfile
+      dockerfile: Dockerfile
       target: prod
     ports:
       - 80:80
@@ -23,7 +23,7 @@ services:
   cypress:
     build:
       context: e2e
-      dockerfile: ./Dockerfile
+      dockerfile: Dockerfile
     depends_on:
       - dso-client
     volumes:

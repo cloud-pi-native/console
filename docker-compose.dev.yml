@@ -9,7 +9,7 @@ services:
   dso-client:
     build:
       context: client
-      dockerfile: ./client/Dockerfile
+      dockerfile: Dockerfile
       target: dev
     ports:
       - 8080:8080
