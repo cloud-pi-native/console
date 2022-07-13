@@ -1,0 +1,8 @@
+{
+  "name": "cypress",
+  "description": "dso-portal e2e",
+  "version": "0.0.0",
+  "scripts": {
+    "cypress": "cypress run"
+  }
+}
