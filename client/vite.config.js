@@ -6,7 +6,11 @@ import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(mode => ({
+  server: {
+    host: mode === 'production' ? '127.0.0.1' : '0.0.0.0',
+    port: 8080,
+  },
   plugins: [
     vue(),
     vueJsx(),
@@ -28,4 +32,5 @@ export default defineConfig({
       './vitest-setup.js',
     ],
   },
-})
+}
+))
