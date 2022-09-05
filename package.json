@@ -1,0 +1,10 @@
+{
+ "devDependencies":
+ {
+  "husky":"^7.0.0"
+ },
+ "scripts":{
+  "prepare":"husky install",
+  "test": "cd client && npm run test:unit"
+  }
+ }
