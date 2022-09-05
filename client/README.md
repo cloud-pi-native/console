@@ -4,23 +4,23 @@
 
 `npm i`
 
-## Launch app
+## Lancement de l'app
 
 `npm run dev`
 
-## Run unit tests
+## Lancement des tests unitaires
 
 `npm run test:unit`
 
-## Run e2e tests
+## Lancement des tests e2e et de composant
 
 `npm run test:e2e`
 
-## Format code
+## Formattage du code
 
-`npm run lint`
+`npm run format`
 
-## Credits
+## Crédits
 
 - [vue](https://github.com/vuejs/)
 - [vue-dsfr](https://github.com/dnum-mi/vue-dsfr)
