@@ -20,6 +20,8 @@
 
 `npm run format`
 
+`npm run format:css`
+
 ## Crédits
 
 - [vue](https://github.com/vuejs/)
