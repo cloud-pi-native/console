@@ -55,7 +55,7 @@ defineEmits(['close', 'updateServiceWorker'])
   border: 1px solid #aaa;
   z-index: 1;
   border-radius: 5px;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -2px rgb(0 0 0 / 10%);
 }
 
 .mb-2 {

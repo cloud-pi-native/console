@@ -1,0 +1,16 @@
+{
+ "devDependencies": {
+  "eslint": "^8.23.0",
+  "eslint-config-standard": "^17.0.0",
+  "eslint-plugin-import": "^2.26.0",
+  "eslint-plugin-n": "^15.2.5",
+  "eslint-plugin-promise": "^6.0.1",
+  "eslint-plugin-vue": "^9.4.0",
+  "husky": "^7.0.0"
+ },
+ "scripts": {
+  "prepare": "husky install",
+  "test": "cd client && npm run test:unit",
+  "format": "cd client && npm run format && npm run format:css"
+ }
+}
