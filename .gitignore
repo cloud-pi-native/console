@@ -1,4 +1,4 @@
-## code
+# code
 .vscode/*
 !.vscode/vue-dsfr.code-snippets
 !.vscode/settings.json
@@ -7,6 +7,5 @@
 !.vscode/extensions.json
 
 
-## modules
-node_modules/
-client/node_modules/
+# modules
+**/node_modules
