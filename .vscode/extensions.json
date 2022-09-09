@@ -15,8 +15,8 @@
     "dbaeumer.vscode-eslint",
 
     // Vue.js
-    "johnsoncodehk.volar",
-    "johnsoncodehk.vscode-typescript-vue-plugin",
+    "vue.volar",
+    "vue.vscode-typescript-vue-plugin",
 
     // Vitejs
     "antfu.vite",
