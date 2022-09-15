@@ -1,0 +1,24 @@
+version: '3'
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:19.0.2
+    # container_name: ${APP}_keycloak
+    # volumes:
+      #  - ${APP_DATA}/keycloak/import-realm.json:/opt/jboss/keycloak/import-realm.json
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      # - KEYCLOAK_IMPORT=/opt/jboss/keycloak/import-realm.json
+      # - PROXY_ADDRESS_FORWARDING=true
+    command: start-dev
+    # command: start
+    ports:
+      - 8090:8080
+    networks:
+      - dso-network
+      
+networks:
+  dso-network:
+    driver: bridge
+    # driver_opts:
+    # com.docker.network.driver.mtu: 1450
