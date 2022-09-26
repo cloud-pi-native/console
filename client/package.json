@@ -15,7 +15,7 @@
     "format:css": "stylelint --fix src/**/*.{css,vue}"
   },
   "dependencies": {
-    "@gouvminint/vue-dsfr": "^1.5.0",
+    "@gouvminint/vue-dsfr": "~1.4.0",
     "focus-trap": "^6.9.1",
     "focus-trap-vue": "^3.3.1",
     "oh-vue-icons": "1.0.0-rc3",
