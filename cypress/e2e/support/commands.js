@@ -102,15 +102,3 @@ Cypress.Commands.add('getSettled', (selector, opts = {}) => {
     })
   })
 })
-
-// mock de la geolocation (centré sur Lumière par défaut)
-// cf https://github.com/cypress-io/cypress/issues/2671#issuecomment-564796821
-
-Cypress.Commands.add('mockGeolocation', (latitude = 48.831792, longitude = 2.388606) => {
-  cy.window().then(($window) => {
-    cy.stub($window.navigator.geolocation, 'getCurrentPosition', (callback) => {
-      // eslint-disable-next-line node/no-callback-literal
-      return callback({ coords: { latitude, longitude } })
-    })
-  })
-})

@@ -4,7 +4,7 @@
 
 `npm i`
 
-## Lancement de l'app
+## Lancement de l\'app
 
 `npm run dev`
 
@@ -18,7 +18,7 @@
 
 ## Formattage du code
 
-`npm run format`
+`npm run format:js`
 
 `npm run format:css`
 

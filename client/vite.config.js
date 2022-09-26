@@ -28,9 +28,6 @@ export default defineConfig(mode => ({
     environment: 'jsdom',
     testTimeout: 2000,
     watch: false,
-    setupFiles: [
-      './vitest-setup.js',
-    ],
   },
 }
 ))

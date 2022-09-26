@@ -4,7 +4,7 @@ module.exports = {
     'standard',
   ],
   plugins: [
-    'vue',
+    'cypress',
     'import',
     'promise',
   ],
@@ -13,7 +13,7 @@ module.exports = {
     sourceType: 'module',
   },
   env: {
-    'vue/setup-compiler-macros': true,
+    'cypress/globals': true,
     browser: true,
     es2021: true,
   },
@@ -22,12 +22,4 @@ module.exports = {
     'vue/no-v-html': 0,
     'no-irregular-whitespace': 0,
   },
-  overrides: [
-    {
-      files: ['**/src/**/*.spec.{j,t}s?(x)'],
-      env: {
-        jest: true,
-      },
-    },
-  ],
 }

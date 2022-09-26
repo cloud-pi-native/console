@@ -6,12 +6,6 @@ module.exports = {
     'stylelint-config-html',
     'stylelint-config-recommended-vue',
   ],
-  overrides: [
-    {
-      files: ['**/*.vue'],
-      customSyntax: 'postcss-html',
-    }
-  ],
   rules: {
     'max-line-length': 160,
     'at-rule-no-unknown': [
