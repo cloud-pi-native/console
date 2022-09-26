@@ -11,6 +11,9 @@
  "scripts": {
   "prepare": "husky install",
   "test": "cd client && npm run test:unit",
-  "format": "cd client && npm run format && npm run format:css"
+  "format:client-js": "cd client && npm run format:js",
+  "format:client-css": "cd client && npm run format:css",
+  "format:cypress": "cd cypress && npm run format",
+  "format:server": "cd server && npm run server"
  }
 }

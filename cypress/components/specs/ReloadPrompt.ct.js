@@ -7,7 +7,7 @@ import { RiRefreshLine, RiSearchLine, RiCloseLine } from 'oh-vue-icons/icons/ri/
 
 import { DsfrButton } from '@gouvminint/vue-dsfr'
 
-import ReloadPrompt from './ReloadPrompt.vue'
+import ReloadPrompt from '../../../client/src/components/ReloadPrompt.vue'
 
 addIcons(RiRefreshLine, RiSearchLine, RiCloseLine)
 
