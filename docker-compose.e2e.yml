@@ -19,15 +19,14 @@ services:
   # Setup cypress container #
   #-------------------------#
   cypress:
-    build:
-      context: e2e
-      dockerfile: Dockerfile
+    image: cypress/included:10.8.0
     depends_on:
       - dso-client
+    working_dir: /app
     volumes:
-      - ./e2e:/app
-      - /app/node_modules/
-    command: npm run cypress
+      - ./cypress:/app
+    env_file:
+      - ./cypress/env/.env
     networks:
       - dso-network
 
