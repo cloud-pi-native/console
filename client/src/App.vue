@@ -1,6 +1,5 @@
 <script setup>
 import { ref } from 'vue'
-import { useRegisterSW } from 'virtual:pwa-register/vue'
 
 import ReloadPrompt from '@/components/ReloadPrompt.vue'
 
@@ -22,12 +21,6 @@ const quickLinks = [
   },
 ]
 const searchQuery = ref('')
-
-const {
-  offlineReady,
-  needRefresh,
-  updateServiceWorker,
-} = useRegisterSW()
 
 const close = async () => {
   offlineReady.value = false
