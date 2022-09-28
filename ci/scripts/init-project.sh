@@ -20,9 +20,9 @@ NPM_COMMAND=install
 
 # Declare script helper
 TEXT_HELPER="\nThis script aims to install package.json dependencies for the whole git project with automatic detection.
-Default installation method is 'npm install'.
+Default installation method is 'npm $NPM_COMMAND'.
 Following flags are available:
-  -c, --ci      Installs packages with the command 'npm ci' instead of 'npm install'.
+  -c, --ci      Install packages with the command 'npm ci' instead of 'npm install'.
                 This requires to have both 'package.json' & 'package-lock.json'.
   -h, --help    Print script help.\n\n"
 
