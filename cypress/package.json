@@ -1,13 +1,13 @@
 {
   "name": "cypress",
   "description": "dso-portal e2e",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "scripts": {
-    "cypress": "cypress run",
+    "lint": "eslint ./",
     "format": "eslint ./ --fix"
   },
   "devDependencies": {
-    "eslint": "^8.23.0",
+    "eslint": "^8.24.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.0.1",
