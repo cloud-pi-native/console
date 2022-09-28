@@ -3,25 +3,22 @@ FROM node:lts as dev
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm ci
-
-
-COPY index.html vite.config.js vitest-setup.js ./
-COPY public ./public
-COPY src ./src
-
-RUN chown -R node /app/node_modules
+RUN chown node:node /app
 USER node
-CMD [ "npm", "run", "dev" ]
 
+COPY --chown=node:node package*.json ./
+RUN npm i
+
+CMD [ "npm", "run", "dev" ]
 
 # Build stage
 FROM dev as build
 
-USER root
-RUN npm run build
+COPY --chown=node:node index.html vite.config.js ./
+COPY --chown=node:node public ./public
+COPY --chown=node:node src ./src
 
+RUN npm run build
 
 # Prod stage
 FROM nginx:stable as prod

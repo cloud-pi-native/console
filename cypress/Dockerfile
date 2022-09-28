@@ -1,14 +1,10 @@
-FROM cypress/included:10.3.0
+FROM cypress/included:10.8.0
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm ci
+RUN chown node:node /app
 
-COPY . ./
+COPY --chown=node:node package*.json ./
+RUN npm i
 
-RUN npx browserslist@latest --update-db
-
-USER node
-ENTRYPOINT []
-CMD [ "npm", "run", "cypress"]
+COPY --chown=node:node . ./
