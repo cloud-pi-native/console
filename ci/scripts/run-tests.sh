@@ -92,7 +92,7 @@ if [ "$RUN_UNIT_TESTS" = true ]; then
   i=$(($i + 1))
 
   cd $PROJECT_DIR
-  npm run test
+  npm run test:client
 fi
 
 if [ "$RUN_E2E_TESTS" = true ]; then
