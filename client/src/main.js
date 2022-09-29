@@ -10,9 +10,12 @@ import router from './router/index.js'
 import * as icons from './icons.js'
 
 import './main.css'
+import { initKeycloak } from './utils/oidc/initSso'
 
-createApp(App)
-  .use(createPinia())
-  .use(router)
-  .use(VueDsfr, { icons: Object.values(icons) })
-  .mount('#app')
+initKeycloak().then((resp) => {
+  createApp(App)
+    .use(createPinia())
+    .use(router)
+    .use(VueDsfr, { icons: Object.values(icons) })
+    .mount('#app')
+})
