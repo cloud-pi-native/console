@@ -25,5 +25,12 @@ export default defineConfig(mode => ({
     testTimeout: 2000,
     watch: false,
   },
+  proxy: {
+    '/realms': {
+      target: 'http://localhost:8090/',
+      changeOrigin: true,
+    },
+
+  },
 }
 ))
