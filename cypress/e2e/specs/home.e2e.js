@@ -2,8 +2,8 @@ describe('Home', () => {
   it('Title', () => {
     cy.visit('/')
       .get('.fr-header__service')
-      .should('contain', 'Service')
+      .should('contain', 'Portail Cloud PI Native')
       .get('.fr-header__service-tagline')
-      .should('contain', 'Description du service')
+      .should('not.exist')
   })
 })
