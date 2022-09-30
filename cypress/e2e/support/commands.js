@@ -1,8 +1,6 @@
-// import faker from 'faker/locale/fr'
-
-// function getRandomEmail () {
-//   return faker.name.firstName().replace(/ /g, '') + '.' + faker.name.lastName().replace(/ /g, '') + '@'
-// }
+Cypress.Commands.add('getByDataTestid', (dataTestid) => {
+  cy.get(`[data-testid="${dataTestid}"]`)
+})
 
 Cypress.Commands.add('deleteIndexedDB', () => {
   Cypress.on('window:before:load', win => {

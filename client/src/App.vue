@@ -1,50 +1,20 @@
 <script setup>
-import { ref } from 'vue'
+import SideMenu from './components/SideMenu.vue'
 
-import ReloadPrompt from '@/components/ReloadPrompt.vue'
-
-const serviceTitle = 'Service'
-const serviceDescription = 'Description du service'
-const logoText = ['Ministère', 'de l’intérieur']
-
-const quickLinks = [
-  {
-    label: 'Home',
-    path: '/',
-    icon: 'ri-home-4-line',
-    iconAttrs: { color: 'var(--red-marianne-425-625)' },
-  },
-  {
-    label: 'À propos',
-    path: '/a-propos',
-    class: 'fr-fi-user-line',
-  },
-]
-const searchQuery = ref('')
-
-const close = async () => {
-  offlineReady.value = false
-  needRefresh.value = false
-}
 </script>
 
 <template>
   <DsfrHeader
-    v-model="searchQuery"
-    :service-title="serviceTitle"
-    :service-description="serviceDescription"
-    :logo-text="logoText"
-    :quick-links="quickLinks"
-    show-search
+    service-title="Portail Cloud PI Native"
+    :logo-text="['Ministère', 'de l’intérieur']"
   />
-  <div class="fr-container">
-    <router-view />
-    <VIcon name="ri-flag-line" />
+  <div class="fr-container  fr-grid-row">
+    <div class="fr-col-12 fr-col-md-4">
+      <SideMenu />
+    </div>
+    <div class="fr-col-12 fr-col-md-8 fr-py-12v">
+      <router-view />
+      <VIcon name="ri-flag-line" />
+    </div>
   </div>
-  <ReloadPrompt
-    :offline-ready="offlineReady"
-    :need-refresh="needRefresh"
-    @close="close()"
-    @update-service-worker="updateServiceWorker()"
-  />
 </template>

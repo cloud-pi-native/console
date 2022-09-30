@@ -1,20 +1,40 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-import Home from '../views/AppHome.vue'
-import AboutUs from '../views/AboutUs.vue'
+import DsoHome from '../views/DsoHome.vue'
 
-const MAIN_TITLE = 'Gabarit de démarrage VueDsfr'
+const MAIN_TITLE = 'Portail Cloud PI Native'
 
 const routes = [
   {
     path: '/',
     name: 'Home',
-    component: Home,
+    component: DsoHome,
   },
   {
-    path: '/a-propos',
-    name: 'About',
-    component: AboutUs,
+    path: '/doc',
+    name: 'Doc',
+    // component: DsoDoc,
+  },
+  {
+    path: '/projects',
+    // component: DsoProjects,
+    children: [
+      {
+        path: '/dashboard',
+        name: 'Dashboard',
+        // component: DsoDashboard,
+      },
+      {
+        path: '/services',
+        name: 'Services',
+        // component: DsoServices,
+      },
+      {
+        path: '/team',
+        name: 'Team',
+        // component: DsoTeam,
+      },
+    ],
   },
 ]
 

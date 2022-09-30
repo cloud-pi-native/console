@@ -12,3 +12,6 @@
 
 # env
 .env
+
+# cypress
+cypress/**/screenshots
