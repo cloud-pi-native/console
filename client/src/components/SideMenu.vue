@@ -6,25 +6,38 @@ const route = useRoute()
 
 const routeName = computed(() => route.name)
 
-const isExpanded = ref(false)
+const isExpanded = ref({
+  menuPrincipal: true,
+  mesProjets: false,
+})
 
-function toggleExpand () {
-  isExpanded.value = !isExpanded.value
+function toggleExpand (key) {
+  isExpanded.value[key] = !isExpanded.value[key]
 }
 
 watch(routeName, () => {
-  isExpanded.value = false
+  isExpanded.value.menuPrincipal = false
+  isExpanded.value.mesProjets = false
+
+  Object.keys(isExpanded)
+    .forEach(key => {
+      isExpanded.value[key] = false
+    })
 })
 
 </script>
 
 <template>
+  <!-- TODO : voir https://discord.com/channels/690194719011242153/797040508508700692/1025424011133472838 -->
   <DsfrSideMenu
+    id="menuPrincipal"
     heading-title=""
     button-label="Menu"
-    @toggle-expand="toggleExpand"
+    @toggle-expand="toggleExpand('menuPrincipal')"
   >
-    <DsfrSideMenuList>
+    <DsfrSideMenuList
+      :expanded="isExpanded.menuPrincipal"
+    >
       <DsfrSideMenuListItem>
         <DsfrSideMenuLink
           :active="routeName === 'Accueil'"
@@ -35,16 +48,17 @@ watch(routeName, () => {
       </DsfrSideMenuListItem>
       <DsfrSideMenuListItem>
         <DsfrSideMenuButton
-          :expanded="isExpanded"
+          :active="false"
+          :expanded="isExpanded.mesProjets"
           button-label="Mes projets"
-          control-id="mes-projets"
-          @toggle-expand="toggleExpand(event)"
+          control-id="mesProjets"
+          @toggle-expand="toggleExpand('mesProjets')"
         >
-        Mes projets
+          Mes projets
         </DsfrSideMenuButton>
         <DsfrSideMenuList
-          id="mes-projets"
-          :expanded="isExpanded"
+          id="mesProjets"
+          :expanded="isExpanded.mesProjets"
           :collapsable="true"
         >
           <DsfrSideMenuListItem>
@@ -84,3 +98,14 @@ watch(routeName, () => {
     </DsfrSideMenuList>
   </DsfrSideMenu>
 </template>
+
+<!-- TODO : voir https://discord.com/channels/690194719011242153/797040508508700692/1025426773380431975 -->
+<style scoped>
+.fr-sidemenu__btn[aria-current="false"] {
+  color: var(--text-action-high-grey)
+}
+
+.fr-sidemenu__btn[aria-current="false"]::after {
+  display: none;
+}
+</style>
