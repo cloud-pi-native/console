@@ -25,5 +25,8 @@
     // CSS
     "csstools.postcss",
     "stylelint.vscode-stylelint",
+
+    // YAML
+    "redhat.vscode-yaml",
   ]
 }
