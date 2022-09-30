@@ -1,34 +1,40 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-import Home from '../views/AppHome.vue'
+import DsoHome from '../views/DsoHome.vue'
 
 const MAIN_TITLE = 'Portail Cloud PI Native'
 
 const routes = [
   {
     path: '/',
-    name: 'Accueil',
-    component: Home,
+    name: 'Home',
+    component: DsoHome,
   },
   {
-    path: '/documentation',
-    name: 'Documentation',
-    // component: Documentation,
+    path: '/doc',
+    name: 'Doc',
+    // component: DsoDoc,
   },
   {
-    path: '/tableau-de-bord',
-    name: 'Dashboard',
-    // component: Dashboard,
-  },
-  {
-    path: '/mes-services',
-    name: 'MesServices',
-    // component: MesServices,
-  },
-  {
-    path: '/gestion-droits',
-    name: 'GestionDroits',
-    // component: GestionDroits,
+    path: '/projects',
+    // component: DsoProjects,
+    children: [
+      {
+        path: '/dashboard',
+        name: 'Dashboard',
+        // component: DsoDashboard,
+      },
+      {
+        path: '/services',
+        name: 'Services',
+        // component: DsoServices,
+      },
+      {
+        path: '/team',
+        name: 'Team',
+        // component: DsoTeam,
+      },
+    ],
   },
 ]
 
