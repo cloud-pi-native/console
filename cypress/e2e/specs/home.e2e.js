@@ -1,5 +1,5 @@
-describe('Home', () => {
-  it('Title', () => {
+describe('Header', () => {
+  it('Should display application Header', () => {
     cy.visit('/')
       .get('.fr-header__service')
       .should('contain', 'Portail Cloud PI Native')
