@@ -3,7 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/AppHome.vue'
 import AboutUs from '../views/AboutUs.vue'
 
-const MAIN_TITLE = 'Gabarit de démarrage VueDsfr'
+const MAIN_TITLE = 'Portail Cloud PI Native'
 
 const routes = [
   {
