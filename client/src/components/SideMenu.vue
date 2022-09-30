@@ -7,8 +7,8 @@ const route = useRoute()
 const routeName = computed(() => route.name)
 
 const isExpanded = ref({
-  menuPrincipal: true,
-  mesProjets: false,
+  mainMenu: false,
+  projects: false,
 })
 
 function toggleExpand (key) {
@@ -16,10 +16,13 @@ function toggleExpand (key) {
 }
 
 watch(routeName, () => {
-  isExpanded.value.menuPrincipal = false
-  isExpanded.value.mesProjets = false
-
-  Object.keys(isExpanded)
+  Object.keys(isExpanded.value)
+    .filter(key => {
+      if (['Services', 'Dashboard', 'Team'].includes(routeName.value)) {
+        return key !== 'projects'
+      }
+      return true
+    })
     .forEach(key => {
       isExpanded.value[key] = false
     })
@@ -30,19 +33,19 @@ watch(routeName, () => {
 <template>
   <!-- TODO : voir https://discord.com/channels/690194719011242153/797040508508700692/1025424011133472838 -->
   <DsfrSideMenu
-    id="menuPrincipal"
-    data-testid="menuPrincipal"
+    id="mainMenu"
+    data-testid="mainMenu"
     heading-title=""
     button-label="Menu"
-    @toggle-expand="toggleExpand('menuPrincipal')"
+    @toggle-expand="toggleExpand('mainMenu')"
   >
     <DsfrSideMenuList
-      :expanded="isExpanded.menuPrincipal"
+      :expanded="isExpanded.mainMenu"
     >
       <DsfrSideMenuListItem>
         <DsfrSideMenuLink
-          data-testid="menuAccueil"
-          :active="routeName === 'Accueil'"
+          data-testid="menuHome"
+          :active="routeName === 'Home'"
           to="/"
         >
           Accueil
@@ -50,44 +53,43 @@ watch(routeName, () => {
       </DsfrSideMenuListItem>
       <DsfrSideMenuListItem>
         <DsfrSideMenuButton
-          data-testid="menuMesProjetsBtn"
-          :active="false"
-          :expanded="isExpanded.mesProjets"
+          data-testid="menuProjectsBtn"
+          :expanded="isExpanded.projects"
           button-label="Mes projets"
-          control-id="mesProjets"
-          @toggle-expand="toggleExpand('mesProjets')"
+          control-id="Projects"
+          @toggle-expand="toggleExpand('projects')"
         >
           Mes projets
         </DsfrSideMenuButton>
         <DsfrSideMenuList
-          id="mesProjets"
+          id="Projects"
           data-testid="menuMesProjetsList"
-          :expanded="isExpanded.mesProjets"
+          :expanded="isExpanded.projects"
           :collapsable="true"
         >
           <DsfrSideMenuListItem>
             <DsfrSideMenuLink
               data-testid="menuDashboard"
               :active="routeName === 'Dashboard'"
-              to="/tableau-de-bord"
+              to="/dashboard"
             >
               Tableau de bord
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
           <DsfrSideMenuListItem>
             <DsfrSideMenuLink
-              data-testid="menuMesServices"
-              :active="routeName === 'MesServices'"
-              to="/mes-services"
+              data-testid="menuServices"
+              :active="routeName === 'Services'"
+              to="/services"
             >
               Mes services
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
           <DsfrSideMenuListItem>
             <DsfrSideMenuLink
-              data-testid="menuGestionDroits"
-              :active="routeName === 'GestionDroits'"
-              to="/gestion-droits"
+              data-testid="menuTeam"
+              :active="routeName === 'Team'"
+              to="/team"
             >
               Gérer les droits
             </DsfrSideMenuLink>
@@ -96,9 +98,9 @@ watch(routeName, () => {
       </DsfrSideMenuListItem>
       <DsfrSideMenuListItem>
         <DsfrSideMenuLink
-          data-testid="menuDocumentation"
-          :active="routeName === 'Documentation'"
-          to="/documentation"
+          data-testid="menuDoc"
+          :active="routeName === 'Doc'"
+          to="/doc"
         >
           Documentation
         </DsfrSideMenuLink>
