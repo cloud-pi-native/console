@@ -5,6 +5,7 @@ const conf = {
   realm: 'TEST',
   clientId: 'TEST',
   onLoad: 'login-required',
+  redirectUri: 'http://localhost:8080/',
 }
 let keycloak
 export const getKeycloak = () => {
@@ -14,9 +15,9 @@ export const getKeycloak = () => {
 
 export async function initKeycloak () {
   try {
-    const { onLoad } = conf
+    const { onLoad, redirectUri } = conf
     const kc = getKeycloak()
-    const authenticated = await kc.init({ onLoad })
+    const authenticated = await kc.init({ onLoad, redirectUri })
     // alert(authenticated ? 'authenticated' : 'not authenticated')
     return authenticated
   } catch (error) {
