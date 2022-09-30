@@ -9,8 +9,8 @@
     "test:e2e": "docker compose -f ./docker-compose.e2e.yml up --exit-code-from cypress --attach cypress",
     "lint:client": "cd client && npm run lint",
     "lint:cypress": "cd cypress && npm run lint",
-    "format:client-js": "cd client && npm run format:js && npm run format:css",
-    "format:client-css": "cd client && npm run format:js && npm run format:css",
+    "format:client-js": "cd client && npm run format:js",
+    "format:client-css": "cd client && npm run format:css",
     "format:cypress": "cd cypress && npm run format"
   },
   "devDependencies": {
