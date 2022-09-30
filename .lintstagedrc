@@ -1,4 +1,5 @@
 {
-  "client/**/*.{js,vue,css}": "npm run format:client --",
+  "client/**/*.{js,vue}": "npm run format:client-js --",
+  "client/**/*.{vue,css}": "npm run format:client-css --",
   "cypress/**/*.{js,cjs}": "npm run format:cypress --"
 }
