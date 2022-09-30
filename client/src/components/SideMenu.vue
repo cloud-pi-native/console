@@ -31,6 +31,7 @@ watch(routeName, () => {
   <!-- TODO : voir https://discord.com/channels/690194719011242153/797040508508700692/1025424011133472838 -->
   <DsfrSideMenu
     id="menuPrincipal"
+    data-testid="menuPrincipal"
     heading-title=""
     button-label="Menu"
     @toggle-expand="toggleExpand('menuPrincipal')"
@@ -40,6 +41,7 @@ watch(routeName, () => {
     >
       <DsfrSideMenuListItem>
         <DsfrSideMenuLink
+          data-testid="menuAccueil"
           :active="routeName === 'Accueil'"
           to="/"
         >
@@ -48,6 +50,7 @@ watch(routeName, () => {
       </DsfrSideMenuListItem>
       <DsfrSideMenuListItem>
         <DsfrSideMenuButton
+          data-testid="menuMesProjetsBtn"
           :active="false"
           :expanded="isExpanded.mesProjets"
           button-label="Mes projets"
@@ -58,11 +61,13 @@ watch(routeName, () => {
         </DsfrSideMenuButton>
         <DsfrSideMenuList
           id="mesProjets"
+          data-testid="menuMesProjetsList"
           :expanded="isExpanded.mesProjets"
           :collapsable="true"
         >
           <DsfrSideMenuListItem>
             <DsfrSideMenuLink
+              data-testid="menuDashboard"
               :active="routeName === 'Dashboard'"
               to="/tableau-de-bord"
             >
@@ -71,6 +76,7 @@ watch(routeName, () => {
           </DsfrSideMenuListItem>
           <DsfrSideMenuListItem>
             <DsfrSideMenuLink
+              data-testid="menuMesServices"
               :active="routeName === 'MesServices'"
               to="/mes-services"
             >
@@ -79,6 +85,7 @@ watch(routeName, () => {
           </DsfrSideMenuListItem>
           <DsfrSideMenuListItem>
             <DsfrSideMenuLink
+              data-testid="menuGestionDroits"
               :active="routeName === 'GestionDroits'"
               to="/gestion-droits"
             >
@@ -89,6 +96,7 @@ watch(routeName, () => {
       </DsfrSideMenuListItem>
       <DsfrSideMenuListItem>
         <DsfrSideMenuLink
+          data-testid="menuDocumentation"
           :active="routeName === 'Documentation'"
           to="/documentation"
         >
