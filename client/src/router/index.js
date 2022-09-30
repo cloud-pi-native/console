@@ -1,20 +1,34 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 import Home from '../views/AppHome.vue'
-import AboutUs from '../views/AboutUs.vue'
 
 const MAIN_TITLE = 'Portail Cloud PI Native'
 
 const routes = [
   {
     path: '/',
-    name: 'Home',
+    name: 'Accueil',
     component: Home,
   },
   {
-    path: '/a-propos',
-    name: 'About',
-    component: AboutUs,
+    path: '/documentation',
+    name: 'Documentation',
+    // component: Documentation,
+  },
+  {
+    path: '/tableau-de-bord',
+    name: 'Dashboard',
+    // component: Dashboard,
+  },
+  {
+    path: '/mes-services',
+    name: 'MesServices',
+    // component: MesServices,
+  },
+  {
+    path: '/gestion-droits',
+    name: 'GestionDroits',
+    // component: GestionDroits,
   },
 ]
 
