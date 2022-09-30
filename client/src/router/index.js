@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-import DsoHome from '../views/DsoHome.vue'
+import DsoHome from '@/views/DsoHome.vue'
+import OrderProject from '@/views/OrderProject.vue'
 
 const MAIN_TITLE = 'Portail Cloud PI Native'
 
@@ -14,6 +15,11 @@ const routes = [
     path: '/doc',
     name: 'Doc',
     // component: DsoDoc,
+  },
+  {
+    path: '/order-project',
+    name: 'OrderProject',
+    component: OrderProject,
   },
   {
     path: '/projects',
