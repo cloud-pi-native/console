@@ -2,7 +2,6 @@ module.exports = {
   root: true,
   extends: [
     'standard',
-    'plugin:vue/vue3-recommended',
   ],
   plugins: [
     'vue',

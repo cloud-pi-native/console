@@ -1,24 +1,11 @@
 {
-  // Format
-  "editor.wordWrap": "on",
   "editor.codeActionsOnSave": {
-    "source.fixAll": true,
+    "source.fixAll": true
   },
-  "eslint.enable": true,
-  "eslint.validate": [
-    "vue",
-    "html",
-    "javascript"
-  ],
-  "eslint.format.enable": true,
     "editor.formatOnPaste": true,
     "editor.formatOnSave": true,
     "editor.formatOnType": true,
-    "editor.bracketPairColorization.enabled": true,
-    "editor.tabSize": 2,
-    // Emmet
   "emmet.includeLanguages": {
-    "vue-html": "html",
     "postcss": "css"
   },
   "npm-intellisense.importES6": true,
@@ -27,23 +14,28 @@
   "npm-intellisense.importDeclarationType": "const",
   "stylelint.enable": true,
   "stylelint.validate": [
-    "css"
+    "css",
+    "html",
+    "less",
+    "markdown",
+    "postcss",
+    "sass",
+    "scss",
+    "source.css.styled",
+    "source.markdown.math",
+    "sugarss",
+    "vue",
+    "vue-html",
+    "vue-postcss",
+    "xml",
+    "xsl"
   ],
   "css.validate": false,
   "scss.validate": false,
-  // JS
-  "javascript.preferences.importModuleSpecifierEnding": "js",
-  "javascript.preferences.quoteStyle": "single",
-  "[javascript]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-  },
   "[vue]": { "editor.defaultFormatter": "dbaeumer.vscode-eslint" },
   "[css]": { "editor.defaultFormatter": "stylelint.vscode-stylelint" },
   "[html]": { "editor.defaultFormatter": "dbaeumer.vscode-eslint" },
-  "[markdown]": {
-    "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
-  },
-  "yaml.completion": true,
+  "[json]": { "editor.defaultFormatter": "dbaeumer.vscode-eslint" },
   "conventionalCommits.scopes": [
   "projectInit"
   ],
