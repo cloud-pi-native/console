@@ -63,7 +63,7 @@ watch(routeName, () => {
         </DsfrSideMenuButton>
         <DsfrSideMenuList
           id="Projects"
-          data-testid="menuMesProjetsList"
+          data-testid="menuProjectsList"
           :expanded="isExpanded.projects"
           :collapsable="true"
         >

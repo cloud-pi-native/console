@@ -87,6 +87,7 @@ const orderProject = () => {
   >
     <DsfrInput
       v-model="project.email"
+      data-testid="emailInput"
       type="email"
       required="required"
       autocomplete="email"
@@ -98,6 +99,7 @@ const orderProject = () => {
     />
     <DsfrSelect
       v-model="project.orgName"
+      data-testid="orgNameSelect"
       required
       label="Nom de l'organisation"
       label-visible
@@ -105,6 +107,7 @@ const orderProject = () => {
     />
     <DsfrInput
       v-model="project.projectName"
+      data-testid="projectNameInput"
       type="text"
       required="required"
       :is-invalid="project.projectName ? !isProjectNameValid : false"
@@ -122,10 +125,12 @@ const orderProject = () => {
     <DsfrFieldset
       v-for="(repo, index) in project.repo"
       :key="`project-${index}`"
-      :legend="project.repo.length === 1 ? 'Dépôt git' : `Dépôt git ${index + 1}`"
+      :data-testid="`repoFieldset-${index}`"
+      :legend="project.repo.length === 1 ? 'Dépôt Git' : `Dépôt Git ${index + 1}`"
     >
       <DsfrInput
         v-model="repo.gitName"
+        :data-testid="`gitNameInput-${index}`"
         type="text"
         required="required"
         :is-invalid="repo.gitName ? !noSpace.test(repo.gitName) : false"
@@ -138,6 +143,7 @@ const orderProject = () => {
       />
       <DsfrInput
         v-model="repo.gitSourceName"
+        :data-testid="`gitSrcNameInput-${index}`"
         type="text"
         :required="repo.managerName || repo.gitToken || repo.isPrivate ? 'required': false"
         label="Nom du dépôt Git source"
@@ -149,6 +155,7 @@ const orderProject = () => {
       />
       <DsfrInput
         v-model="repo.managerName"
+        :data-testid="`managerNameInput-${index}`"
         type="text"
         :required="repo.gitSourceName ? 'required' : false"
         autocomplete="name"
@@ -161,6 +168,7 @@ const orderProject = () => {
       />
       <DsfrCheckbox
         v-model="repo.isPrivate"
+        :data-testid="`managerNameCbx-${index}`"
         label="Dépôt source privé"
         hint="Cochez la case si le dépôt Git source est privé"
         name="isGitSourcePrivate"
@@ -168,6 +176,7 @@ const orderProject = () => {
       />
       <DsfrInput
         v-model="repo.gitToken"
+        :data-testid="`gitTokenInput-${index}`"
         type="text"
         :required="repo.isPrivate ? 'required' : false"
         label="Token d'accès au Git source"
@@ -179,6 +188,7 @@ const orderProject = () => {
       />
       <DsfrButton
         label="Retirer le dépôt"
+        :data-testid="`delRepoBtn-${index}`"
         tertiary
         icon="ri-delete-bin-7-line"
         class="fr-mb-2w"
@@ -187,13 +197,15 @@ const orderProject = () => {
     </DsfrFieldset>
   </div>
   <DsfrButton
-    label="Déposer un projet git"
+    label="Déposer un projet Git"
+    data-testid="addRepoBtn"
     secondary
     icon="ri-upload-cloud-line"
     @click="addRepo()"
   />
   <DsfrButton
     label="Commander mon espace projet"
+    data-testid="orderProjectBtn"
     primary
     :disabled="!isFormValid"
     icon="ri-send-plane-line"
