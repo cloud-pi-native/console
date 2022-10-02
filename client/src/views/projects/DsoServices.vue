@@ -1,8 +1,9 @@
 <script setup>
 import { ref } from 'vue'
 
+// TODO : importer tous les logos possibles dans public
 // TODO : récupérer les services dynamiquement
-// TODO : importer tous les logos possibles
+// TODO : adapter l'objet tiles au projet selectionné (projectStore.storeSelectedProject)
 const tiles = ref([{
   title: 'Gitlab',
   imgSrc: 'logoGitlab',
