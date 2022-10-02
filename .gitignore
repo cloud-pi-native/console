@@ -15,3 +15,8 @@
 
 # cypress
 cypress/**/screenshots
+
+# act
+**/act/artifacts
+**/act/docker/registry/auth
+**/act/docker/registry/data
