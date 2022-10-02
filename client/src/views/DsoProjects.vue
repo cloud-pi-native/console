@@ -17,10 +17,9 @@ const goToOrderProject = () => {
 
 </script>
 
-<!-- TODO : style avec windi : flex items-center justify-between -->
 <template>
   <div
-    class=""
+    class="flex items-center justify-between"
   >
     <DsfrSelect
       label="Projet à visualiser"

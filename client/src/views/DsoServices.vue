@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 
 // TODO : récupérer les services dynamiquement
+// TODO : importer tous les logos possibles
 const tiles = ref([{
   title: 'Gitlab',
   imgSrc: 'logoGitlab',
