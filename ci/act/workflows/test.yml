@@ -1,0 +1,51 @@
+name: Test application
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+    branches:
+      - "**"
+      - "!main"
+
+env:
+  NODE_VERSION: "lts/*"
+
+jobs:
+  unit-tests:
+    name: Run unit test suite
+    if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checks-out repository
+        uses: actions/checkout@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "${{ env.NODE_VERSION }}"
+          check-latest: true
+      - name: Install dependencies
+        run: bash ./ci/scripts/init-project.sh -c -e ./cypress -e .
+      - name: Run unit tests
+        run: bash ./ci/scripts/run-tests.sh -u ./client
+        continue-on-error: true
+
+  e2e-tests:
+    name: Run e2e test suite
+    runs-on: ubuntu-latest
+    needs:
+      - unit-tests
+    steps:
+      - name: Checks-out repository
+        uses: actions/checkout@v3
+      - name: Run e2e tests
+        run: bash ./ci/scripts/run-tests.sh -e
+        continue-on-error: true
+      - name: Upload cypress artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: e2e-report
+          path: ./cypress/e2e/screenshots/

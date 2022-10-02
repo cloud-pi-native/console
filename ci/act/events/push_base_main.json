@@ -1,0 +1,10 @@
+{
+  "push": {
+    "head": {
+      "ref": "develop"
+    },
+    "base": {
+      "ref": "main"
+    }
+  }
+}
