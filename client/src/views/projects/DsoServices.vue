@@ -3,7 +3,7 @@ import { ref } from 'vue'
 
 // TODO : importer tous les logos possibles dans public
 // TODO : récupérer les services dynamiquement
-// TODO : adapter l'objet tiles au projet selectionné (projectStore.storeSelectedProject)
+// TODO : adapter l'objet tiles au projet selectionné (projectStore.selectedProject)
 const tiles = ref([{
   title: 'Gitlab',
   imgSrc: 'logoGitlab',
