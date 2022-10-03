@@ -1,11 +1,11 @@
-
-export const keycloakHost = process.env.KEYCLOAK_HOST || 'localhost'
-export const keycloakPort = process.env.KEYCLOAK_PORT || '8090'
+// TODO: A comprendre process.env créer une exception
+export const keycloakHost = import.meta.env?.KEYCLOAK_HOST || 'localhost'
+export const keycloakPort = import.meta.env?.KEYCLOAK_PORT || '8090'
 
 export const ssoConf = {
   url: `http://${keycloakHost}:${keycloakPort}`,
-  realm: process.env.KEYCLOAK_REALM || 'TEST',
-  clientId: process.env.KEYCLOAK_CLIENTID || 'TEST',
+  realm: import.meta.env?.KEYCLOAK_REALM || 'TEST',
+  clientId: import.meta.env?.KEYCLOAK_CLIENTID || 'TEST',
   onLoad: 'login-required',
-  redirectUri: process.env.BASE_URL || 'http://localhost:8080/',
+  redirectUri: import.meta.env?.BASE_FULL_URL || 'http://localhost:8080',
 }
