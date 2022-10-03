@@ -32,11 +32,13 @@ watch(selectedProject, () => {
   >
     <DsfrSelect
       v-model="selectedProject"
+      data-testid="projectSelector"
       label="Projet à visualiser"
       :options="projectList"
     />
     <DsfrButton
       label="Créer un nouveau projet"
+      data-testid="orderProjectLink"
       tertiary
       class="fr-mt-2v <md:mb-2"
       icon="ri-add-line"
