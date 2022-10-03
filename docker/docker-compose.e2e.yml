@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  cypress:
+    image: cypress/included:10.8.0
+    container_name: dso-console_cypress
+    depends_on:
+      - client
+    working_dir: /app
+    volumes:
+      - ../cypress:/app
+    env_file:
+      - ../cypress/env/.env
+    networks:
+      - dso-network
+
+networks:
+  dso-network:
+    name: dso-network
+    # driver_opts:
+    # com.docker.network.driver.mtu: 1450

@@ -1,22 +1,22 @@
-services:
+version: '3.8'
 
-  #------------------------#
-  # Setup client container #
-  #------------------------#
-  dso-client:
+services:
+  client:
     build:
       context: client
       dockerfile: Dockerfile
       target: dev
+    image: dso-console/client
+    container_name: dso-console_client
     ports:
       - 8080:8080
     volumes:
-      - ./client:/app/
+      - ../client:/app/
       - /app/node_modules/
     command: npm run dev
     networks:
       - dso-network
-      
+
 networks:
   dso-network:
     driver: bridge

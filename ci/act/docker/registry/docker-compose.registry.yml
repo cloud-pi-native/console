@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  registry:
+    image: registry:2
+    restart: always
+    ports:
+      - 6000:5000
+    environment:
+      REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /data
+      REGISTRY_AUTH: htpasswd
+      REGISTRY_AUTH_HTPASSWD_REALM: Registry Realm
+      REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
+    volumes:
+      - ./auth:/auth
+      - ./data:/data

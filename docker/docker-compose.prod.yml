@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  client:
+    build:
+      context: client
+      dockerfile: Dockerfile
+      target: prod
+    image: cloudpinative/console-client:${DOCKER_TAG}
+    ports:
+      - 8080:8080
+    networks:
+      - dso-network
+
+networks:
+  dso-network:
+    name: dso-network
+    # driver_opts:
+    # com.docker.network.driver.mtu: 1450
