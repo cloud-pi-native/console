@@ -12,11 +12,8 @@ export async function initKeycloak () {
     const { onLoad, redirectUri } = conf
     const kc = getKeycloak()
     const authenticated = await kc.init({ onLoad, redirectUri })
-    // alert(authenticated ? 'authenticated' : 'not authenticated')
-    kc.login()
     return authenticated
   } catch (error) {
-    // alert('failed to initialize')
     console.log(error)
     return false
   }

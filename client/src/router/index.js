@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 import DsoHome from '@/views/DsoHome.vue'
 import OrderProject from '@/views/OrderProject.vue'
+
+import Auth from '@/views/AuthComponent.vue'
 // import { useUserStore } from '@/stores/user-store.js'
 // import { initKeycloak } from '@/utils/oidc/initSso.js'
 import DsoProjects from '@/views/projects/DsoProjects.vue'
@@ -15,6 +17,11 @@ const MAIN_TITLE = 'Portail Cloud PI Native'
  * @type {import('vue-router').RouteRecord[]}
  */
 const routes = [
+  {
+    path: '/auth',
+    name: 'Auth',
+    component: Auth,
+  },
   {
     path: '/',
     name: 'Home',
