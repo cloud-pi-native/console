@@ -69,6 +69,7 @@ watch(selectedProject, () => {
 <template>
   <DsfrTiles
     :tiles="projectTiles"
+    data-testid="projectTiles"
     class="fr-mt-2v"
   />
 </template>

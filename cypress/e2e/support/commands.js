@@ -2,6 +2,12 @@ Cypress.Commands.add('getByDataTestid', (dataTestid) => {
   cy.get(`[data-testid="${dataTestid}"]`)
 })
 
+Cypress.Commands.add('selectProject', (index) => {
+  cy.getByDataTestid('projectSelector')
+    .find('select')
+    .select(index)
+})
+
 Cypress.Commands.add('deleteIndexedDB', () => {
   Cypress.on('window:before:load', win => {
     win.indexedDB.deleteDatabase('localforage')
