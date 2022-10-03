@@ -31,7 +31,6 @@ jobs:
         run: bash ./ci/scripts/init-project.sh -c -e ./cypress -e .
       - name: Run unit tests
         run: bash ./ci/scripts/run-tests.sh -u ./client
-        continue-on-error: true
 
   e2e-tests:
     name: Run e2e test suite
