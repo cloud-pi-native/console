@@ -2,6 +2,7 @@ import { fileURLToPath, URL } from 'url'
 
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import { keycloakHost, keycloakPort } from './src/utils/oidc/sso-config.js'
 
 // https://vitejs.dev/config/
 export default defineConfig(mode => ({
@@ -26,11 +27,11 @@ export default defineConfig(mode => ({
     watch: false,
   },
   proxy: {
-    '/realms': {
-      target: 'http://localhost:8090/',
+    '^/realms': {
+      target: `http://${keycloakHost}:${keycloakPort}`,
       changeOrigin: true,
+      ws: true,
     },
-
   },
 }
 ))

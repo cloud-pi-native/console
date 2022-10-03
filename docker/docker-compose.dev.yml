@@ -15,7 +15,6 @@ services:
     networks:
       - dso-network
 
-services:
   client:
     build:
       context: client
@@ -31,6 +30,13 @@ services:
     command: npm run dev
     networks:
       - dso-network
+    depends_on:
+      - keycloak
+    environment:
+      - KEYCLOAK_HOST=localhost
+      - KEYCLOAK_PORT=8090
+      - KEYCLOAK_REALM=TEST
+      - KEYCLOAK_CLIENTID=TEST
 
 networks:
   dso-network:
