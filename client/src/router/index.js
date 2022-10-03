@@ -2,14 +2,33 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 import DsoHome from '@/views/DsoHome.vue'
 import OrderProject from '@/views/OrderProject.vue'
+// import { useUserStore } from '@/stores/user-store.js'
+// import { initKeycloak } from '@/utils/oidc/initSso.js'
 
 const MAIN_TITLE = 'Portail Cloud PI Native'
 
+/**
+ * @type {import('vue-router').RouteRecord[]}
+ */
 const routes = [
   {
     path: '/',
     name: 'Home',
     component: DsoHome,
+    // TODO: Pas de redirection, à corriger
+    // beforeEnter: async (to, from, next) => {
+    //   // const userStore = useUserStore()
+    //   const resp = await initKeycloak()
+    //   // console.log(resp)
+
+    //   // console.log('beforeEnter')
+    //   // if (!userStore.loggedIn) {
+    //   if (!resp) {
+    //     console.log('beforeEnter false')
+    //     return next({ name: 'About' })
+    //   }
+    //   return next()
+    // },
   },
   {
     path: '/doc',

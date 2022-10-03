@@ -1,6 +1,20 @@
 version: '3.8'
-
 services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:19.0.2
+    # container_name: ${APP}_keycloak
+    volumes:
+      - ../sso/keycloak:/opt/keycloak/data/import
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    command: start-dev --import-realm
+    # command: start
+    ports:
+      - 8090:8080
+    networks:
+      - dso-network
+
   client:
     build:
       context: client
@@ -16,6 +30,13 @@ services:
     command: npm run dev
     networks:
       - dso-network
+    depends_on:
+      - keycloak
+    environment:
+      - KEYCLOAK_HOST=localhost
+      - KEYCLOAK_PORT=8090
+      - KEYCLOAK_REALM=TEST
+      - KEYCLOAK_CLIENTID=TEST
 
 networks:
   dso-network:
