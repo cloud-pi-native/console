@@ -13,13 +13,13 @@ const projectList = ref([{
 },
 ])
 
-const selectedProject = ref(projectStore.storeSelectedProject)
+const selectedProject = ref(projectStore.selectedProject)
 
 const goToOrderProject = () => {
   router.push('/order-project')
 }
 
-// TODO : récupérer le projectStore.storeSelectedProject dans chaque children (service, team, dashboard)
+// TODO : récupérer le projectStore.selectedProject dans chaque children (service, team, dashboard)
 watch(selectedProject, () => {
   projectStore.setSelectedProject(selectedProject.value)
 })
