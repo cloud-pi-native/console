@@ -47,4 +47,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: e2e-report
-          path: e2e/screenshots/
+          path: ./cypress/e2e/screenshots/
