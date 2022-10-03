@@ -8,19 +8,19 @@ const selectedProject = computed(() => projectStore.selectedProject)
 
 const allTiles = ref([{
   title: 'GitLab',
-  imgSrc: '/img/gitlab.png',
+  imgSrc: '/img/gitlab.svg',
   description: 'GitLab est un service d\'hébergement de code source et de pipeline CI/CD',
   to: 'https://gitlab.com/',
 },
 {
   title: 'Vault',
-  imgSrc: '/img/vault.png',
+  imgSrc: '/img/vault.svg',
   description: 'Vault s\'intègre profondément avec les identités de confiance pour automatiser l\'accès aux secrets, aux données et aux systèmes.',
   to: 'https://www.vaultproject.io/',
 },
 {
   title: 'SonarQube',
-  imgSrc: '/img/sonarqube.png',
+  imgSrc: '/img/sonarqube.svg',
   description: 'SonarQube permet à tous les développeurs d\'écrire un code plus propre et plus sûr.',
   to: 'https://www.sonarqube.org/',
 },
@@ -32,7 +32,7 @@ const allTiles = ref([{
 },
 {
   title: 'Quay',
-  imgSrc: '/img/quay.png',
+  imgSrc: '/img/quay.svg',
   description: 'Quay construit, analyse et distribue vos images de conteneurs.',
   to: 'https://quay.io/',
 },
