@@ -14,7 +14,7 @@ const allServices = ref([{
   to: 'https://gitlab.com/',
 },
 {
-  id: 'vaults',
+  id: 'vault',
   title: 'Vault',
   imgSrc: '/img/vault.svg',
   description: 'Vault s\'intègre profondément avec les identités de confiance pour automatiser l\'accès aux secrets, aux données et aux systèmes.',
@@ -32,7 +32,7 @@ const allServices = ref([{
   title: 'Nexus',
   imgSrc: '/img/nexus.png',
   description: 'Nexus permet de gérer les binaires et artefacts de build à travers la chaîne logistique logicielle.',
-  to: 'https://sonatype.com/products/nexus-repository',
+  to: 'https://sonatype.com/products/nexus-repository/',
 },
 {
   id: 'quay',
@@ -51,22 +51,36 @@ const allServices = ref([{
 
 const projectServices = ref([])
 
-// TODO : match project.services et allServices pour remplir projectServices
-const setProjectServices = (project) => {
-  if (!project.value) return
+// TODO : à partir de selectedProject, récupérer project.services, project.orgName, project.projectName (et + si nécessaire pour construire url de chaque service)
+
+const setProjectServices = () => {
+  if (!selectedProject.value) return
   allServices.value.forEach(service => {
+    // TODO : match selectedProject.value.services <=> allServices pour remplir projectServices
     // if (project.services.includes(service.id)) {
+    service.to = service.to.concat(...serviceUrlTail(service.id))
     projectServices.value.push(service)
     // }
   })
 }
 
+// TODO : construction de l'url de chaque service
+const serviceUrlTail = (serviceId) => {
+  // if (serviceId === 'argocd') return [selectedProject.value.orgName, '/', selectedProject.value.projectName]
+  // if (serviceId === 'gitlab') return [selectedProject.value.orgName, '/', selectedProject.value.projectName]
+  // if (serviceId === 'quay') return [selectedProject.value.orgName, '/', selectedProject.value.projectName]
+  // if (serviceId === 'nexus') return [selectedProject.value.orgName, '/', selectedProject.value.projectName]
+  // if (serviceId === 'sonarqube') return [selectedProject.value.orgName, '/', selectedProject.value.projectName]
+  // if (serviceId === 'vault') return [selectedProject.value.orgName, '/', selectedProject.value.projectName]
+  return ['']
+}
+
 onMounted(() => {
-  setProjectServices(selectedProject)
+  setProjectServices()
 })
 
 watch(selectedProject, () => {
-  setProjectServices(selectedProject)
+  setProjectServices()
 })
 
 </script>
