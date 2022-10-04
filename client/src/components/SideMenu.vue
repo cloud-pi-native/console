@@ -115,7 +115,7 @@ watch(routeName, () => {
   color: var(--text-action-high-grey)
 }
 
-.fr-sidemenu__btn[aria-current="false"]::after {
+.fr-sidemenu__btn[aria-current="false"]::before {
   display: none;
 }
 </style>
