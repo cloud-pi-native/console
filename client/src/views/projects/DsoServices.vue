@@ -32,7 +32,7 @@ const allTiles = ref([{
 },
 {
   title: 'Quay',
-  imgSrc: '/img/quay.svg',
+  imgSrc: '/img/quay.png',
   description: 'Quay construit, analyse et distribue vos images de conteneurs.',
   to: 'https://quay.io/',
 },
