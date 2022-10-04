@@ -1,4 +1,3 @@
-// TODO: A comprendre process.env créer une exception
 export const keycloakHost = import.meta.env?.KEYCLOAK_HOST || 'localhost'
 export const keycloakPort = import.meta.env?.KEYCLOAK_PORT || '8090'
 

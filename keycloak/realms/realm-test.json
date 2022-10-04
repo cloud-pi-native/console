@@ -374,7 +374,7 @@
   "users" : [ {
     "id" : "70eec74f-5bab-4952-900c-98457952ca2a",
     "createdTimestamp" : 1663259469450,
-    "username" : "testadmin",
+    "username" : "test",
     "enabled" : true,
     "totp" : false,
     "emailVerified" : true,
