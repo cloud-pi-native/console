@@ -18,7 +18,7 @@ DOCKER_VERSION="$(docker --version)"
 DOCKER_COMPOSE_VERSION="$(docker compose version)"
 
 # Default
-ENV_FILE="$PROJECT_DIR/cypress/env/.env"
+ENV_FILE="$PROJECT_DIR/env/.env"
 
 # Declare script helper
 TEXT_HELPER="\nThis script aims to run application tests.
@@ -62,9 +62,9 @@ if [ ! -f "$ENV_FILE" ]; then
 
   if [ -f "$ENV_FILE-example" ]; then
     cp $ENV_FILE-example $ENV_FILE
-    printf "\n${red}Optional.${no_color} Successful copying\n"
+    printf "... Successful copying\n"
   else
-    printf "\n${red}Optional.${no_color} Error while trying to copy, '$ENV_FILE-example' is missing too\n"
+    printf "... Error while trying to copy, '$ENV_FILE-example' is missing too\n"
     exit 1
   fi
 fi
@@ -111,9 +111,11 @@ if [ "$RUN_E2E_TESTS" ]; then
   cd "$PROJECT_DIR"
   export DOCKER_TAG=latest
 
+echo "ENV_FILE: $ENV_FILE"
   docker compose \
     --file "$PROJECT_DIR/docker/docker-compose.prod.yml" \
-    --file "$PROJECT_DIR/docker/docker-compose.e2e.yml" up \
+    --file "$PROJECT_DIR/docker/docker-compose.e2e.yml" \
+    --env-file "$ENV_FILE" up \
       --exit-code-from cypress \
       --attach cypress \
       --remove-orphans \
@@ -124,6 +126,7 @@ if [ "$RUN_E2E_TESTS" ]; then
 
   docker compose \
     --file "$PROJECT_DIR/docker/docker-compose.prod.yml" \
-    --file "$PROJECT_DIR/docker/docker-compose.e2e.yml" down \
+    --file "$PROJECT_DIR/docker/docker-compose.e2e.yml" \
+    --env-file "$ENV_FILE" down \
       --volumes
 fi
