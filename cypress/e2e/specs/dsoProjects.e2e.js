@@ -3,7 +3,7 @@ describe('Projects view', () => {
     cy.visit('/dashboard')
       .getByDataTestid('projectSelector')
       .find('select')
-      .select(0)
+      .select(1)
       .should('have.value', 'candilib-id')
       .getByDataTestid('orderProjectLink')
       .click()
