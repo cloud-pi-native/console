@@ -7,4 +7,5 @@ export {
   RiUploadCloudLine,
   RiSendPlaneLine,
   RiDeleteBin7Line,
+  RiAddLine,
 } from 'oh-vue-icons/icons/ri/index.js'

@@ -4,6 +4,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 
 import VueDsfr from '@gouvminint/vue-dsfr'
+import 'virtual:windi.css'
 
 import App from './App.vue'
 import router from './router/index.js'

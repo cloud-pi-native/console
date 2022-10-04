@@ -4,6 +4,10 @@ import DsoHome from '@/views/DsoHome.vue'
 import OrderProject from '@/views/OrderProject.vue'
 // import { useUserStore } from '@/stores/user-store.js'
 // import { initKeycloak } from '@/utils/oidc/initSso.js'
+import DsoProjects from '@/views/projects/DsoProjects.vue'
+import DsoDashboard from '@/views/projects/DsoDashboard.vue'
+import DsoServices from '@/views/projects/DsoServices.vue'
+import DsoTeam from '@/views/projects/DsoTeam.vue'
 
 const MAIN_TITLE = 'Portail Cloud PI Native'
 
@@ -42,22 +46,22 @@ const routes = [
   },
   {
     path: '/projects',
-    // component: DsoProjects,
+    component: DsoProjects,
     children: [
       {
         path: '/dashboard',
         name: 'Dashboard',
-        // component: DsoDashboard,
+        component: DsoDashboard,
       },
       {
         path: '/services',
         name: 'Services',
-        // component: DsoServices,
+        component: DsoServices,
       },
       {
         path: '/team',
         name: 'Team',
-        // component: DsoTeam,
+        component: DsoTeam,
       },
     ],
   },
