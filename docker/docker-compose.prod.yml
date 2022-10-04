@@ -6,9 +6,14 @@ services:
       context: client
       dockerfile: Dockerfile
       target: prod
-    image: cloudpinative/console-client:${DOCKER_TAG}
+    image: dso-console/client:${DOCKER_TAG}
     ports:
       - 8080:8080
+    environment:
+      - KEYCLOAK_HOST=${KEYCLOAK_HOST}
+      - KEYCLOAK_PORT=${KEYCLOAK_PORT}
+      - KEYCLOAK_REALM=${KEYCLOAK_REALM}
+      - KEYCLOAK_CLIENTID=${KEYCLOAK_CLIENTID}
     networks:
       - dso-network
 
