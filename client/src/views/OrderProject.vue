@@ -2,6 +2,20 @@
 import { computed, ref } from 'vue'
 import { noSpace, email } from '@/utils/regex.js'
 
+/**
+ * defines a project
+ *
+ * @typedef {Object} project
+ * @property {(string|undefined)} email
+ * @property {(string|undefined)} orgname
+ * @property {(string|undefined)} projectName
+ * @property {Object[]} [repo]
+ * @property {(string|undefined)} repo[].gitName
+ * @property {(string|undefined)} [repo[].gitSourceName]
+ * @property {(string|undefined)} [repo[].managerName]
+ * @property {(boolean|undefined)} [repo[].isPrivate]
+ * @property {(string|undefined)} [repo[].gitToken]
+ */
 const project = ref({
   email: undefined,
   orgName: undefined,
