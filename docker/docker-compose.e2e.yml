@@ -9,8 +9,9 @@ services:
     working_dir: /app
     volumes:
       - ../cypress:/app
-    env_file:
-      - ../cypress/env/.env
+    environment:
+      - CLIENT_HOST=${CLIENT_HOST}
+      - CLIENT_PORT=${CLIENT_PORT}
     networks:
       - dso-network
 
