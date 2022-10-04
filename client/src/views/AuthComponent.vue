@@ -1,5 +1,5 @@
 <script setup>
-import { initKeycloak } from '@/utils/oidc/init-sso.js'
+import { initKeycloak } from '@/utils/keycloak/init-sso.js'
 import { onMounted } from 'vue'
 
 onMounted(async () => {
