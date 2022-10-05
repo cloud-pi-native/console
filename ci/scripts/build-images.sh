@@ -81,12 +81,13 @@ cd "$PROJECT_DIR"
 export DOCKER_TAG=$DOCKER_TAG
 
 docker compose \
-  --file $COMPOSE_FILE \
+  --file "$COMPOSE_FILE" \
+  --env-file "$PROJECT_DIR/env/.env" \
   build \
     --pull
 
 if [ "$PUSH" == "true" ]; then
   docker compose \
-    --file $COMPOSE_FILE \
+    --file "$COMPOSE_FILE" \
     push
 fi

@@ -5,10 +5,10 @@
   "type": "module",
   "scripts": {
     "prepare": "husky install",
-    "dev:build": "./ci/scripts/build-images.sh -f ./docker/docker-compose.dev.yml -t latest",
+    "dev:build": "./ci/scripts/build-images.sh -f ./docker/docker-compose.dev.yml",
     "dev": "npm run dev:up; npm run dev:down",
-    "dev:up": "docker compose -f ./docker/docker-compose.dev.yml up",
-    "dev:down": "docker compose -f ./docker/docker-compose.dev.yml down -v",
+    "dev:up": "docker compose -f ./docker/docker-compose.dev.yml --env-file ./env/.env up",
+    "dev:down": "docker compose -f ./docker/docker-compose.dev.yml --env-file ./env/.env  down -v",
     "test:client": "./ci/scripts/run-tests.sh -u ./client",
     "test:e2e": "./ci/scripts/run-tests.sh -e",
     "test:e2e-build": "./ci/scripts/build-images.sh -f ./docker/docker-compose.prod.yml -t latest",
