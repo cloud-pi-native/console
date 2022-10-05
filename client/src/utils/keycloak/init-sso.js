@@ -1,9 +1,15 @@
 import Keycloak from 'keycloak-js'
 import { ssoConf as conf } from './sso-config.js'
 
+// WIP : il semblerait qu'au refresh d'une page, on perde la config keycloak
 let keycloak
 export const getKeycloak = () => {
-  if (!keycloak) keycloak = new Keycloak(conf)
+  console.log({ 3: keycloak })
+  if (!keycloak) {
+    keycloak = new Keycloak(conf)
+    // window.localStorage.setItem('keycloak', keycloak)
+    console.log({ 1: keycloak })
+  }
   return keycloak
 }
 

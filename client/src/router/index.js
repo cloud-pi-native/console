@@ -1,8 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
+import { getKeycloak } from '@/utils/keycloak/init-sso.js'
+// import { requestToken } from '@/api/api.js'
+
 import DsoHome from '@/views/DsoHome.vue'
 import OrderProject from '@/views/OrderProject.vue'
-import DsoAuth from '@/views/AuthComponent.vue'
+import AuthComponent from '@/views/AuthComponent.vue'
 import DsoProjects from '@/views/projects/DsoProjects.vue'
 import DsoDashboard from '@/views/projects/DsoDashboard.vue'
 import DsoServices from '@/views/projects/DsoServices.vue'
@@ -17,12 +20,19 @@ const routes = [
   {
     path: '/auth',
     name: 'Auth',
-    component: DsoAuth,
+    component: AuthComponent,
   },
   {
     path: '/',
     name: 'Home',
     component: DsoHome,
+    beforeEnter: (to, from) => {
+      const kc = getKeycloak()
+      console.log({ 2: kc })
+      // requestToken(kc.token)
+      // console.log(kc.token)
+      // window.localStorage.setItem(kc.token)
+    },
   },
   {
     path: '/doc',
