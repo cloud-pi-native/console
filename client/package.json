@@ -7,8 +7,6 @@
     "build": "vite build",
     "preview": "vite preview --port 8080",
     "test:unit": "vitest",
-    "test:e2e-build": "sh ../ci/scripts/build-images.sh -f ./docker/docker-compose.e2e.yml -t latest",
-    "test:e2e": "sh ../ci/scripts/run-tests.sh --e2e",
     "lint": "eslint ./src && stylelint ./src/**/*.{css,vue}",
     "format:js": "eslint ./src --fix",
     "format:css": "stylelint --fix ./src/**/*.{css,vue}"
