@@ -5,11 +5,7 @@ import { ssoConf as conf } from './sso-config.js'
 let keycloak
 export const getKeycloak = () => {
   console.log({ 3: keycloak })
-  if (!keycloak) {
-    keycloak = new Keycloak(conf)
-    // window.localStorage.setItem('keycloak', keycloak)
-    console.log({ 1: keycloak })
-  }
+  if (!keycloak) keycloak = new Keycloak(conf)
   return keycloak
 }
 
