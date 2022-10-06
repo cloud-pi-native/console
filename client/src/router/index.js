@@ -5,7 +5,7 @@ import { getKeycloak } from '@/utils/keycloak/init-sso.js'
 
 import DsoHome from '@/views/DsoHome.vue'
 import OrderProject from '@/views/OrderProject.vue'
-import AuthComponent from '@/views/AuthComponent.vue'
+import DsoAuth from '@/views/DsoAuth.vue'
 import DsoProjects from '@/views/projects/DsoProjects.vue'
 import DsoDashboard from '@/views/projects/DsoDashboard.vue'
 import DsoServices from '@/views/projects/DsoServices.vue'
@@ -20,7 +20,7 @@ const routes = [
   {
     path: '/auth',
     name: 'Auth',
-    component: AuthComponent,
+    component: DsoAuth,
   },
   {
     path: '/',
