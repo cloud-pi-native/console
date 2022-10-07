@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 import DsoHome from '@/views/DsoHome.vue'
 import OrderProject from '@/views/OrderProject.vue'
-import DsoAuth from '@/views/AuthComponent.vue'
+import DsoAuth from '@/views/DsoAuth.vue'
 import DsoProjects from '@/views/projects/DsoProjects.vue'
 import DsoDashboard from '@/views/projects/DsoDashboard.vue'
 import DsoServices from '@/views/projects/DsoServices.vue'
