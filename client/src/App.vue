@@ -12,7 +12,7 @@ import SideMenu from './components/SideMenu.vue'
     <div class="fr-col-12 fr-col-md-3">
       <SideMenu />
     </div>
-    <div class="fr-col-12 fr-col-md-9 fr-py-12v">
+    <div class="fr-col-12 fr-col-md-9 fr-py-6v">
       <router-view />
     </div>
   </div>
