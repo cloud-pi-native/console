@@ -9,9 +9,28 @@ services:
       - ../keycloak/realms:/opt/keycloak/data/import
       # - ../keycloak/data:/opt/keycloak/data/h2
     environment:
-      - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN:-admin}
-      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
     command: start-dev --import-realm
+    networks:
+      - dso-network
+
+  server:
+    build:
+      context: server
+      dockerfile: Dockerfile
+      target: dev
+    image: dso-console/server:dev
+    container_name: dso-console_server
+    depends_on:
+      - keycloak
+    ports:
+      - 4000:4000
+    volumes:
+      - ../server:/app/
+      - /app/node_modules/
+    environment:
+      NODE_ENV: development
     networks:
       - dso-network
 
@@ -23,17 +42,17 @@ services:
     image: dso-console/client:dev
     container_name: dso-console_client
     depends_on:
-      - keycloak
+      - server
     ports:
       - 8080:8080
     volumes:
       - ../client:/app/
       - /app/node_modules/
     environment:
-      - KEYCLOAK_HOST=${KEYCLOAK_HOST:-localhost}
-      - KEYCLOAK_PORT=${KEYCLOAK_PORT:-8090}
-      - KEYCLOAK_REALM=${KEYCLOAK_REALM:-TEST}
-      - KEYCLOAK_CLIENTID=${KEYCLOAK_CLIENTID:-TEST}
+      KEYCLOAK_HOST: ${KEYCLOAK_HOST:-localhost}
+      KEYCLOAK_PORT: ${KEYCLOAK_PORT:-8090}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-TEST}
+      KEYCLOAK_CLIENTID: ${KEYCLOAK_CLIENTID:-TEST}
     networks:
       - dso-network
 

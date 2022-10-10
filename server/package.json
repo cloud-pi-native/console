@@ -1,0 +1,15 @@
+{
+  "name": "server",
+  "description": "dso-portal server",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "nodemon --experimental-json-modules --inspect src/server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "helmet": "^6.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  }
+}
