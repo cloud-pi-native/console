@@ -4,6 +4,9 @@ import { useProjectStore } from '@/stores/project.js'
 
 const projectStore = useProjectStore()
 
+/**
+ * @returns {string}
+ */
 const selectedProject = computed(() => projectStore.selectedProject)
 
 const allServices = ref([{
@@ -64,6 +67,10 @@ const setProjectServices = () => {
   })
 }
 
+/**
+ * @param {string} serviceId
+ * @returns {(Array|string)}
+ */
 // TODO : construction de l'url de chaque service
 const serviceUrlTail = (serviceId) => {
   // if (serviceId === 'argocd') return [selectedProject.value.orgName, '/', selectedProject.value.projectName]
