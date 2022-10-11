@@ -1,112 +1,67 @@
+// TODO : créer utils et queries
 import { appLogger, getLogInfos } from '../utils/logger.js'
 import {
-  createItem,
-  getItems,
-  getItemById,
-  updateItem,
-  deleteItem,
+  createProject,
+  getProjects,
+  getProjectById,
 } from '../models/project-queries.js'
 import { send200, send201, send500 } from '../utils/response.js'
-import { ITEM_DELETE_SUCCESS_MESSAGE } from '../utils/messages.js'
 
-export const createItemController = async (req, res) => {
+export const createProjectController = async (req, res) => {
   const data = req.body
 
   try {
-    const item = await createItem(data)
+    const project = await createProject(data)
 
     appLogger.info({
-      ...getLogInfos({ itemId: item._id }),
-      description: 'Item successfully created',
+      ...getLogInfos({ projectId: project._id }),
+      description: 'Project successfully created',
     })
-    send201(res, { item })
+    send201(res, { project })
   } catch (error) {
     appLogger.error({
       ...getLogInfos(),
-      description: 'Cannot create item',
+      description: 'Cannot create project',
       error,
     })
     send500(res, error.message)
   }
 }
 
-export const getItemsController = async (req, res) => {
+export const getProjectsController = async (_req, res) => {
   try {
-    const items = await getItems()
+    const projects = await getProjects()
 
     appLogger.info({
       ...getLogInfos(),
-      description: 'Items successfully retrived',
+      description: 'Projects successfully retrived',
     })
-    send200(res, { items })
+    send200(res, { projects })
   } catch (error) {
     appLogger.error({
       ...getLogInfos(),
-      description: 'Cannot retrieve items',
+      description: 'Cannot retrieve projects',
       error,
     })
     send500(res, error.message)
   }
 }
 
-export const getItemController = async (req, res) => {
+export const getProjectController = async (req, res) => {
   const id = req.params.id
 
   try {
-    const item = await getItemById(id)
+    const project = await getProjectById(id)
 
     appLogger.info({
-      ...getLogInfos({ itemId: item._id }),
-      description: 'Item successfully retrived',
+      ...getLogInfos({ projectId: project._id }),
+      description: 'Project successfully retrived',
     })
-    send200(res, { item })
+    send200(res, { project })
   } catch (error) {
     appLogger.error({
-      ...getLogInfos({ itemId: id }),
-      description: 'Cannot retrieve item',
-      error,
-    })
-    send500(res, error.message)
-  }
-}
-
-export const updateItemController = async (req, res) => {
-  const id = req.params.id
-  const data = req.body
-
-  try {
-    const item = await updateItem(id, data)
-
-    appLogger.info({
-      ...getLogInfos({ itemId: item._id }),
-      description: 'Item successfully updated',
-    })
-    send200(res, { item })
-  } catch (error) {
-    appLogger.error({
-      ...getLogInfos({ item: data }),
-      description: 'Cannot update item',
-      error,
-    })
-    send500(res, error.message)
-  }
-}
-
-export const deleteItemController = async (req, res) => {
-  const id = req.params.id
-
-  try {
-    await deleteItem(id)
-
-    appLogger.info({
-      ...getLogInfos({ itemId: id }),
-      description: 'Item successfully deleted',
-    })
-    send200(res, ITEM_DELETE_SUCCESS_MESSAGE)
-  } catch (error) {
-    appLogger.error({
-      ...getLogInfos({ itemId: id }),
-      description: 'Cannot delete item',
+      ...getLogInfos({ projectId: id }),
+      description: 'Cannot retrieve project',
       error,
     })
     send500(res, error.message)
