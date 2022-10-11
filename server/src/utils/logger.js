@@ -1,6 +1,6 @@
 import winston from 'winston'
 import morgan from 'morgan'
-import { getJSDateFromUtcIso } from './date.js'
+import { getJSDateFromUtcIso } from './date.cjs'
 import kebabCase from 'lodash.kebabcase'
 import { isDev, isTest, isProd } from './env.js'
 
