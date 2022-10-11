@@ -26,3 +26,6 @@ cypress/**/screenshots
 
 # sonarqube
 **/.scannerwork
+
+# db
+db/**/data

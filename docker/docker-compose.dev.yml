@@ -11,7 +11,7 @@ services:
     # ports:
     #   - 5432:5432
     volumes: 
-      - ../db/data:/var/lib/postgresql/data
+      - ../db/postgres/data:/var/lib/postgresql/data
     networks:
       - dso-network
   keycloak:
@@ -38,10 +38,11 @@ services:
       - postgres
     volumes:
         - ../db/pgadmin/data:/var/lib/pgadmin
-    ports: 
+        - ../db/pgadmin/config:/config
+    ports:
       - 8081:80
     environment:
-      # PGADMIN_SERVER_JSON_FILE
+      PGADMIN_SERVER_JSON_FILE: /config/servers.json
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@dso.fr}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
     # command: sh -c chown 5050:5050 /var/lib/pgadmin
