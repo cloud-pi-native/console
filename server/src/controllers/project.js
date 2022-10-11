@@ -5,7 +5,7 @@ import {
   getProjects,
   getProjectById,
 } from '../models/project-queries.js'
-import { send200, send201, send500 } from '../utils/response.js'
+// import { send200, send201, send500 } from '../utils/response.js'
 
 export const createProjectController = async (req, res) => {
   const data = req.body
@@ -36,14 +36,14 @@ export const getProjectsController = async (_req, res) => {
       ...getLogInfos(),
       description: 'Projects successfully retrived',
     })
-    send200(res, { projects })
+    // send200(res, { projects })
   } catch (error) {
     appLogger.error({
       ...getLogInfos(),
       description: 'Cannot retrieve projects',
       error,
     })
-    send500(res, error.message)
+    // send500(res, error.message)
   }
 }
 
@@ -57,13 +57,13 @@ export const getProjectController = async (req, res) => {
       ...getLogInfos({ projectId: project._id }),
       description: 'Project successfully retrived',
     })
-    send200(res, { project })
+    // send200(res, { project })
   } catch (error) {
     appLogger.error({
       ...getLogInfos({ projectId: id }),
       description: 'Cannot retrieve project',
       error,
     })
-    send500(res, error.message)
+    // send500(res, error.message)
   }
 }
