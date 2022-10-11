@@ -2,8 +2,9 @@
   "name": "server",
   "description": "dso-portal server",
   "version": "1.0.0",
+  "type": "module",
   "scripts": {
-    "dev": "nodemon --experimental-json-modules --inspect src/server.js",
+    "dev": "nodemon --experimental-json-modules --inspect src/app.js",
     "test:unit": "vitest --globals --run"
   },
   "dependencies": {

@@ -1,16 +1,11 @@
-FROM node:lts as dev
+FROM node:lts-bullseye-slim as dev
 
 WORKDIR /app
 
-RUN apt-get update \
-  && apt-get install -y \
-  libcurl4
+RUN chown node:node /app
+USER node
 
-COPY package*.json ./
-
+COPY --chown=node:node package*.json ./
 RUN npm i
-
-COPY src ./src
-COPY dev-setup ./dev-setup
 
 CMD [ "npm", "run", "dev" ]

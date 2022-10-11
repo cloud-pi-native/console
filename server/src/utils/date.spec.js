@@ -1,6 +1,6 @@
 import {
   getJSDateFromUtcIso,
-} from './date.js'
+} from './date.cjs'
 
 describe('date-util', () => {
   it('Should return a native Date object', () => {
