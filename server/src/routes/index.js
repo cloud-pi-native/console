@@ -3,6 +3,8 @@ import projectsRouter from './project.js'
 
 const version = process.env.npm_package_version
 
+const version = process.env.npm_package_version
+
 const router = new express.Router()
 
 router.use('/projects', projectsRouter)
