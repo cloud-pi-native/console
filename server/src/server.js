@@ -5,10 +5,10 @@ import app from './app.js'
 import { techLogger } from './utils/logger.js'
 import { isDev, isTest, isProd } from './utils/env.js'
 
+const port = process.env.SERVER_PORT
+
 startServer()
 handleExit()
-
-const port = process.env.SERVER_PORT
 
 export async function startServer () {
   try {
@@ -21,7 +21,8 @@ export async function startServer () {
   techLogger.info('server connected to postgres, reading init-db.js')
 
   try {
-    const { initDb } = await import('../dev-setup/init-db.js')
+    // const { initDb } = await import('../dev-setup/init-db.js')
+    const initDb = false
     if (initDb) {
       techLogger.info('Starting init DB...')
       await initDb()
@@ -46,7 +47,6 @@ export async function startServer () {
     }
   }
 
-  console.log({port})
   createServer(app).listen(port, '0.0.0.0')
   techLogger.info(`server running at http://localhost:${port}`)
   techLogger.debug({ isDev, isTest, isProd })

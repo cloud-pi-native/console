@@ -8,8 +8,6 @@ services:
       POSTGRES_DB: ${POSTGRES_DATABASE:-dso-console-db}
       POSTGRES_USER: ${POSTGRES_USER:-admin}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
-    # ports:
-    #   - 5432:5432
     volumes: 
       - ../db/postgres/data:/var/lib/postgresql/data
     networks:
@@ -45,7 +43,6 @@ services:
       PGADMIN_SERVER_JSON_FILE: /config/servers.json
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@dso.fr}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
-    # command: sh -c chown 5050:5050 /var/lib/pgadmin
     networks:
       - dso-network
   server:
@@ -60,7 +57,7 @@ services:
       - keycloak
       - postgres
     ports:
-      - 4000:4000
+      - ${SERVER_PORT:-4000}:4000
     volumes:
       - ../server:/app/
       - /app/node_modules/

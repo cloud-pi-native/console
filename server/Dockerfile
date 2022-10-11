@@ -9,3 +9,7 @@ COPY --chown=node:node package*.json ./
 RUN npm i
 
 CMD [ "npm", "run", "dev" ]
+
+FROM dev as test
+
+CMD ["npm", "run", "test:unit"]
