@@ -1,5 +1,11 @@
 version: '3.8'
 services:
+  postgres:
+    image: postgres:14.5
+    environment:
+      POSTGRES_DB: ${POSTGRES_DATABASE:-dso-console-db}
+      POSTGRES_USER: ${POSTGRES_USER:-admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
   keycloak:
     image: quay.io/keycloak/keycloak:19.0.2
     container_name: dso-console_keycloak
@@ -14,7 +20,19 @@ services:
     command: start-dev --import-realm
     networks:
       - dso-network
-
+  
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: dso-console_pgadmin
+    depends_on:
+      - postgres
+    ports: 
+      - 8081:80
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@dso.fr}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+    networks:
+      - dso-network
   server:
     build:
       context: server
@@ -24,6 +42,7 @@ services:
     container_name: dso-console_server
     depends_on:
       - keycloak
+      - postgres
     ports:
       - 4000:4000
     volumes:
