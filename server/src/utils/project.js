@@ -1,14 +1,14 @@
-import express from 'express'
-import {
-  getProjectController,
-  getProjectsController,
-  createProjectController,
-} from '../controllers/project.js'
+export const allOrgNames = [
+  "dinum",
+  "ministere-interieur",
+  "ministere-justice",
+]
 
-const router = new express.Router()
-
-router.post('/', createProjectController)
-router.get('/', getProjectController)
-router.get('/:id', getProjectsController)
-
-export default router
+export const allServices = [
+  'argocd',
+  'gitlab',
+  'nexus',
+  'quay',
+  'sonarqube',
+  'vault',
+]

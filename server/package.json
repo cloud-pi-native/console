@@ -16,6 +16,7 @@
     "winston": "^3.8.2"
   },
   "devDependencies": {
+    "@faker-js/faker": "^7.5.0",
     "supertest": "^6.3.0",
     "nodemon": "^2.0.20",
     "vitest": "^0.24.1"
