@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
+import { getKeycloak, initKeycloak } from '@/utils/keycloak/init-sso.js'
+
 import DsoHome from '@/views/DsoHome.vue'
 import OrderProject from '@/views/OrderProject.vue'
 import DsoAuth from '@/views/DsoAuth.vue'
@@ -18,6 +20,11 @@ const routes = [
     path: '/auth',
     name: 'Auth',
     component: DsoAuth,
+    beforeEnter: async (to, from) => {
+      await initKeycloak()
+      const kc = getKeycloak()
+      console.log({ 2: kc, token: kc.token })
+    },
   },
   {
     path: '/',

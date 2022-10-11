@@ -9,9 +9,9 @@ export const getKeycloak = () => {
 
 export async function initKeycloak () {
   try {
-    const { onLoad, redirectUri } = conf
+    const { onLoad } = conf
     const kc = getKeycloak()
-    const authenticated = await kc.init({ onLoad, redirectUri })
+    const authenticated = await kc.init({ onLoad })
     return authenticated
   } catch (error) {
     console.log(error)
