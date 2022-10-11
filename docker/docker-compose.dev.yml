@@ -3,10 +3,17 @@ services:
   postgres:
     restart: always
     image: postgres:14.5
+    container_name: dso-console_postgres
     environment:
       POSTGRES_DB: ${POSTGRES_DATABASE:-dso-console-db}
       POSTGRES_USER: ${POSTGRES_USER:-admin}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
+    # ports:
+    #   - 5432:5432
+    volumes: 
+      - ../db/data:/var/lib/postgresql/data
+    networks:
+      - dso-network
   keycloak:
     restart: always
     image: quay.io/keycloak/keycloak:19.0.2
@@ -29,11 +36,15 @@ services:
     container_name: dso-console_pgadmin
     depends_on:
       - postgres
+    volumes:
+        - ../db/pgadmin/data:/var/lib/pgadmin
     ports: 
       - 8081:80
     environment:
+      # PGADMIN_SERVER_JSON_FILE
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@dso.fr}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+    # command: sh -c chown 5050:5050 /var/lib/pgadmin
     networks:
       - dso-network
   server:

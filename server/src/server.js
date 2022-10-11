@@ -18,7 +18,7 @@ export async function startServer () {
     throw error
   }
 
-  techLogger.info('server connected to mongodb, reading init-db.js')
+  techLogger.info('server connected to postgres, reading init-db.js')
 
   try {
     const { initDb } = await import('../dev-setup/init-db.js')
@@ -46,9 +46,10 @@ export async function startServer () {
     }
   }
 
+  console.log({port})
   createServer(app).listen(port, '0.0.0.0')
   techLogger.info(`server running at http://localhost:${port}`)
-  techLogger.debug({ isDev, isTest, isProd, isCI, isDebug })
+  techLogger.debug({ isDev, isTest, isProd })
 }
 
 export function handleExit () {
