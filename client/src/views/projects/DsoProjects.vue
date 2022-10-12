@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useProjectStore } from '@/stores/project.js'
 
@@ -7,6 +7,8 @@ const router = useRouter()
 const projectStore = useProjectStore()
 
 // TODO : récupérer dynamiquement la liste des projets
+const test = ref()
+
 const projectList = ref([{
   text: 'Candilib',
   value: 'candilib-id',
@@ -18,6 +20,12 @@ const selectedProject = ref(projectStore.selectedProject)
 const goToOrderProject = () => {
   router.push('/order-project')
 }
+
+onMounted(() => {
+  console.log('vue : get projects')
+  projectStore.getProjects()
+  test.value = projectStore.projects
+})
 
 // TODO : récupérer le projectStore.selectedProject dans chaque children (service, team, dashboard)
 watch(selectedProject, () => {

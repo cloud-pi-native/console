@@ -18,3 +18,10 @@ export const verifyToken = async (token) => {
   const response = await apiClient.get('/auth/verify-token', { token })
   return response.data
 }
+
+// Project
+export const getProjects = async () => {
+  console.log('api : get project')
+  const response = await apiClient.get('/projects')
+  return response.data
+}

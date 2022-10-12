@@ -1,22 +1,22 @@
-// TODO : open et close connexion to db
+import Pool from 'pg-pool'
 
-import Pool from 'pg'
-
-let pool
+export const pool = new Pool({
+    host: 'postgres',
+    port: 5432,
+    database: 'dso-console-db',
+    user: 'admin',
+    password: 'admin',
+  })
 
 export const getConnection = async () => {
-  pool = new Pool()
+  await pool.connect()
 }
 
-export const query = async (text, params, callback) => {
-  console.log('start query')
-  const res = await pool.query(text, params, callback)
-  console.log('end query, res: ', res)
+export const query = (text, params, callback) => {
+  const res = pool.query(text, params, callback)
   return res
 }
 
 export const closeConnections = async () => {
-  console.log('closing')
   await pool.end()
-  console.log('closed')
 }
