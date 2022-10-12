@@ -3,7 +3,7 @@ import {
   getProjectController,
   getProjectsController,
   createProjectController,
-} from '../controllers/project.js'
+} from '../controllers/projects.js'
 
 const router = new express.Router()
 
