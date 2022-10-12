@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "nodemon --experimental-json-modules --inspect src/server.js",
+    "dev": "nodemon --experimental-json-modules --inspect src/server.js  --watch src",
     "test:unit": "vitest --globals --run"
   },
   "dependencies": {
