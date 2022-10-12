@@ -47,5 +47,4 @@ export default defineConfig({
       exclude: ['**/*.spec.js'],
     },
   },
-},
-)
+})
