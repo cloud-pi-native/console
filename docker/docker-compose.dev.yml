@@ -35,7 +35,7 @@ services:
     depends_on:
       - postgres
     volumes:
-        - ../db/pgadmin/data:/var/lib/pgadmin
+        - pgadmin-data:/var/lib/pgadmin
         - ../db/pgadmin/config:/config
     ports:
       - 8081:80
@@ -95,3 +95,6 @@ networks:
     driver: bridge
     # driver_opts:
     # com.docker.network.driver.mtu: 1450
+
+volumes:
+  pgadmin-data:
