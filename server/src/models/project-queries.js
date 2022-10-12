@@ -1,15 +1,16 @@
-import { db } from '../connect.js'
+import { query } from '../connect.js'
 
-// TODO : utiliser JSONB
 export const createProject = async (data) => {
-  return db.query(`INSERT INTO projects VALUES (${data})`)
+  const res = query(`INSERT INTO projects VALUES (${data})`)
+  return res
 }
 
 export const getProjectById = async (id) => {
-  db.query(`select * from projects where project ->> 'id' = ${id} limit 1;`)
-  return db.query(`SELECT * FROM projects WHERE id = ${id}`)
+  db.query(`SELECT * FROM projects WHERE project ->> 'id' = ${id} LIMIT 1;`)
+  return res
 }
 
-export const getProjects = async () => {
-  return db.query('SELECT * FROM projects')
+export const getProjects = () => {
+  const res = query('SELECT * FROM projects')
+  return res
 }

@@ -87,6 +87,8 @@ services:
       KEYCLOAK_PORT: ${KEYCLOAK_PORT:-8090}
       KEYCLOAK_REALM: ${KEYCLOAK_REALM:-TEST}
       KEYCLOAK_CLIENTID: ${KEYCLOAK_CLIENTID:-TEST}
+      SERVER_HOST: ${SERVER_HOST:-server}
+      SERVER_PORT: ${SERVER_PORT:-4000}
     networks:
       - dso-network
 

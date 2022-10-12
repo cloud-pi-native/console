@@ -7,7 +7,7 @@
     "prepare": "husky install",
     "dev:build": "docker compose -f ./docker/docker-compose.dev.yml --env-file ./env/.env build --pull",
     "dev": "npm run dev:up; npm run dev:down",
-    "dev:up": "docker compose -f ./docker/docker-compose.dev.yml --env-file ./env/.env up",
+    "dev:up": "docker compose -f ./docker/docker-compose.dev.yml --env-file ./env/.env up --attach server --attach client",
     "dev:down": "docker compose -f ./docker/docker-compose.dev.yml --env-file ./env/.env  down -v",
     "test:client": "./ci/scripts/run-tests.sh -u ./client",
     "test:e2e": "./ci/scripts/run-tests.sh -e",
