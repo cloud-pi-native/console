@@ -28,4 +28,5 @@ cypress/**/screenshots
 **/.scannerwork
 
 # db
-db/**/data
+db/**/data/*
+!.gitkeep
