@@ -37,6 +37,10 @@ watch(projects, () => {
   setProjectList()
 })
 
+watch(projectStore.projects, () => {
+  setProjectList()
+})
+
 </script>
 
 <template>
