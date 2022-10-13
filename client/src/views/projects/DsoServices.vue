@@ -54,16 +54,14 @@ const allServices = ref([{
 
 const projectServices = ref([])
 
-// TODO : à partir de selectedProject, récupérer project.services, project.orgName, project.projectName (et + si nécessaire pour construire url de chaque service)
-
 const setProjectServices = () => {
+  projectServices.value = []
   if (!selectedProject.value) return
   allServices.value.forEach(service => {
-    // TODO : match selectedProject.value.services <=> allServices pour remplir projectServices
-    // if (project.services.includes(service.id)) {
-    service.to = service.to.concat(...serviceUrlTail(service.id))
-    projectServices.value.push(service)
-    // }
+    if (selectedProject.value.services.includes(service.id)) {
+      service.to = service.to.concat(...serviceUrlTail(service.id))
+      projectServices.value.push(service)
+    }
   })
 }
 
@@ -73,12 +71,12 @@ const setProjectServices = () => {
  */
 // TODO : construction de l'url de chaque service
 const serviceUrlTail = (serviceId) => {
-  // if (serviceId === 'argocd') return [selectedProject.value.orgName, '/', selectedProject.value.projectName]
-  // if (serviceId === 'gitlab') return [selectedProject.value.orgName, '/', selectedProject.value.projectName]
-  // if (serviceId === 'quay') return [selectedProject.value.orgName, '/', selectedProject.value.projectName]
-  // if (serviceId === 'nexus') return [selectedProject.value.orgName, '/', selectedProject.value.projectName]
-  // if (serviceId === 'sonarqube') return [selectedProject.value.orgName, '/', selectedProject.value.projectName]
-  // if (serviceId === 'vault') return [selectedProject.value.orgName, '/', selectedProject.value.projectName]
+  if (serviceId === 'argocd') return [selectedProject.value.orgName, '/', selectedProject.value.projectName]
+  if (serviceId === 'gitlab') return [selectedProject.value.orgName, '/', selectedProject.value.projectName]
+  if (serviceId === 'quay') return [selectedProject.value.orgName, '/', selectedProject.value.projectName]
+  if (serviceId === 'nexus') return [selectedProject.value.orgName, '/', selectedProject.value.projectName]
+  if (serviceId === 'sonarqube') return [selectedProject.value.orgName, '/', selectedProject.value.projectName]
+  if (serviceId === 'vault') return [selectedProject.value.orgName, '/', selectedProject.value.projectName]
   return ['']
 }
 

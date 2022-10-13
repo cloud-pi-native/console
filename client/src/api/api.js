@@ -21,7 +21,11 @@ export const verifyToken = async (token) => {
 
 // Project
 export const getProjects = async () => {
-  console.log('api : get project')
   const response = await apiClient.get('/projects')
+  return response.data
+}
+
+export const getProjectById = async (id) => {
+  const response = await apiClient.get(`/projects/${id}`)
   return response.data
 }

@@ -6,7 +6,7 @@ export const createProject = async (data) => {
 }
 
 export const getProjectById = async (id) => {
-  db.query(`SELECT * FROM projects WHERE project ->> 'id' = ${id} LIMIT 1;`)
+  const res = query(`SELECT * FROM projects WHERE project ->> 'id' = '${id}' LIMIT 1;`)
   return res
 }
 

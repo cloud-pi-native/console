@@ -27,8 +27,7 @@ export const createProjectController = async (req, res) => {
   }
 }
 
-export const getProjectsController = async (req, res) => {
-  console.log('controller : getProjects')
+export const getProjectsController = async (_req, res) => {
   try {
     const projects = await getProjects()
 
@@ -47,7 +46,7 @@ export const getProjectsController = async (req, res) => {
   }
 }
 
-export const getProjectController = async (req, res) => {
+export const getProjectByIdController = async (req, res) => {
   const id = req.params.id
 
   try {
