@@ -1,5 +1,6 @@
+// TODO : ajouter fixtures
 describe('Services view', () => {
-  it('Should display tiles according to selected project', () => {
+  it.skip('Should display tiles according to selected project', () => {
     cy.visit('/services')
       .getByDataTestid('projectTiles')
       .should('not.be.visible')

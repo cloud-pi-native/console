@@ -11,13 +11,14 @@ export const useProjectStore = defineStore('project', () => {
    */
   const setSelectedProject = async (id) => {
     const res = await api.getProjectById(id)
-    selectedProject.value = res.project.rows[0].project
+    selectedProject.value = res.project.rows[0]?.project
   }
 
   // TODO : getProjects of current user
   const getProjects = async () => {
     const res = await api.getProjects()
-    res.projects.rows.forEach(row => {
+    projects.value = []
+    res.projects.rows?.forEach(row => {
       projects.value.push(row.project)
     })
   }
