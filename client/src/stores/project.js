@@ -4,17 +4,22 @@ import api from '@/api/index.js'
 
 export const useProjectStore = defineStore('project', () => {
   const selectedProject = ref(undefined)
-  const projects = ref(undefined)
+  const projects = ref([])
 
   /**
    * @param {string} project
    */
-  const setSelectedProject = (project) => {
-    selectedProject.value = project
+  const setSelectedProject = async (id) => {
+    const res = await api.getProjectById(id)
+    selectedProject.value = res.project.rows[0].project
   }
+
+  // TODO : getProjects of current user
   const getProjects = async () => {
-    console.log('store : get project')
-    projects.value = await api.getProjects()
+    const res = await api.getProjects()
+    res.projects.rows.forEach(row => {
+      projects.value.push(row.project)
+    })
   }
 
   return {

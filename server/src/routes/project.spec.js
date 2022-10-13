@@ -58,7 +58,7 @@ describe('Project routes', () => {
     })
   })
 
-  describe('get("/:id", getProjectController)', () => {
+  describe('get("/:id", getProjectByIdController)', () => {
     it.skip('Should get a project by id', async () => {
       const randomProject = createRandomProject()
       const project = await createProject(randomProject)
