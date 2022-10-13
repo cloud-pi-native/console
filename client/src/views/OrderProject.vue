@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { noSpace, email } from '@/utils/regex.js'
+// import { apiClient } from '@/api/xhr-client.js'
 
 /**
  * Defines a project
@@ -107,7 +108,7 @@ const delRepo = (index) => {
 }
 
 const orderProject = () => {
-  // TODO
+  // TODO : apiClient.createProject(project.value)
   console.log(project.value)
 }
 

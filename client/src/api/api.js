@@ -29,3 +29,8 @@ export const getProjectById = async (id) => {
   const response = await apiClient.get(`/projects/${id}`)
   return response.data
 }
+
+export const createProject = async (data) => {
+  const response = await apiClient.get('/projects', data)
+  return response.data
+}

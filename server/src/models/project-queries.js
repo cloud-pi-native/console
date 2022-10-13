@@ -1,7 +1,9 @@
 import { query } from '../connect.js'
 
+// TODO : insert id: generatedId in data
+// TODO : si repo, créer repo dans la table repos puis project.repo.push(repo.id) ?
 export const createProject = async (data) => {
-  const res = query(`INSERT INTO projects VALUES (${data})`)
+  const res = query(`INSERT INTO public.projects(project) VALUES ('${data}');`)
   return res
 }
 
