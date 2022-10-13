@@ -1,18 +1,19 @@
 <script setup>
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, ref, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useProjectStore } from '@/stores/project.js'
-
 const router = useRouter()
 const projectStore = useProjectStore()
 
 const projectList = ref([])
-const selectedProject = ref(projectStore.selectedProject?.id)
+
+const projects = computed(() => projectStore.projects)
+const selectedProjectId = ref(projectStore.selectedProject?.id)
 
 const setProjectList = () => {
   projectList.value = []
-  if (!projectStore.projects.length) return
-  projectStore.projects.forEach(project => {
+  if (!projects.value.length) return
+  projects.value.forEach(project => {
     projectList.value.push({
       text: project.projectName,
       value: project.id,
@@ -28,11 +29,11 @@ onMounted(() => {
   projectStore.getProjects()
 })
 
-watch(selectedProject, () => {
-  projectStore.setSelectedProject(selectedProject.value)
+watch(selectedProjectId, () => {
+  projectStore.setSelectedProject(selectedProjectId.value)
 })
 
-watch(projectStore.projects, () => {
+watch(projects, () => {
   setProjectList()
 })
 
@@ -43,7 +44,7 @@ watch(projectStore.projects, () => {
     class="flex <md:flex-col-reverse items-center justify-between"
   >
     <DsfrSelect
-      v-model="selectedProject"
+      v-model="selectedProjectId"
       data-testid="projectSelector"
       label="Projet à visualiser"
       :options="projectList"
