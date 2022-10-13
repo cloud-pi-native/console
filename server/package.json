@@ -13,6 +13,7 @@
     "helmet": "^6.0.0",
     "lodash.kebabcase": "^4.1.1",
     "morgan": "^1.10.0",
+    "nanoid": "4.0.0",
     "pg": "8.8.0",
     "pg-pool": "3.5.2",
     "winston": "^3.8.2"

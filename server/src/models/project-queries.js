@@ -1,8 +1,9 @@
 import { query } from '../connect.js'
+import { nanoid } from 'nanoid'
 
-// TODO : insert id: generatedId in data
-// TODO : si repo, créer repo dans la table repos puis project.repo.push(repo.id) ?
 export const createProject = async (data) => {
+  data.id = nanoid()
+  data = JSON.stringify(data)
   const res = query(`INSERT INTO public.projects(project) VALUES ('${data}');`)
   return res
 }
