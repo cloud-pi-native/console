@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { noSpace, email } from '@/utils/regex.js'
-// import { apiClient } from '@/api/xhr-client.js'
+import api from '@/api/index.js'
 
 /**
  * Defines a project
@@ -107,10 +107,10 @@ const delRepo = (index) => {
   project.value.repo.splice(index, 1)
 }
 
-const orderProject = () => {
-  // TODO : apiClient.createProject(project.value)
-  console.log(project.value)
+const orderProject = async () => {
+  await api.createProject(project.value)
 }
+// TODO : gérer l'après requête create
 
 </script>
 
