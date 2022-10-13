@@ -2,6 +2,20 @@
 import { computed, ref } from 'vue'
 import { noSpace, email } from '@/utils/regex.js'
 
+/**
+ * Defines a project
+ *
+ * @typedef {Object} project
+ * @property {(string|undefined)} email
+ * @property {(string|undefined)} orgname
+ * @property {(string|undefined)} projectName
+ * @property {Object[]} [repo]
+ * @property {(string|undefined)} repo[].gitName
+ * @property {(string|undefined)} [repo[].gitSourceName]
+ * @property {(string|undefined)} [repo[].managerName]
+ * @property {(boolean|undefined)} [repo[].isPrivate]
+ * @property {(string|undefined)} [repo[].gitToken]
+ */
 const project = ref({
   email: undefined,
   orgName: undefined,
@@ -24,14 +38,23 @@ const orgOptions = ref([
   },
 ])
 
+/**
+ * @returns {boolean}
+ */
 const isEmailValid = computed(() => {
   return email.test(project.value.email)
 })
 
+/**
+ * @returns {boolean}
+ */
 const isProjectNameValid = computed(() => {
   return noSpace.test(project.value.projectName)
 })
 
+/**
+ * @returns {boolean}
+ */
 const isRepoValid = computed(() => {
   if (!project.value.repo.length) return true
   return project.value.repo.every(repo => {
@@ -52,6 +75,9 @@ const isRepoValid = computed(() => {
   })
 })
 
+/**
+ * @returns {boolean}
+ */
 const isFormValid = computed(() => {
   return isEmailValid.value &&
     project.value.orgName &&
@@ -64,10 +90,18 @@ const addRepo = () => {
   project.value.repo.push({})
 }
 
+/**
+ * @param {number} index
+ * @param {string} key
+ * @param {*} value
+ */
 const updateRepo = (index, key, value) => {
   project.value.repo[index][key] = value
 }
 
+/**
+ * @param {number} index
+ */
 const delRepo = (index) => {
   project.value.repo.splice(index, 1)
 }
