@@ -32,6 +32,6 @@ db/postgres/data/*
 !.gitkeep
 
 # turbo
-**/.turbo
+.turbo/
 
 text.txt
