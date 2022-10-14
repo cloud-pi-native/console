@@ -1,0 +1,4 @@
+
+> server@1.0.0 test /home/claire/Documents/labmi/dso-console/apps/server
+> vitest --globals --run
+

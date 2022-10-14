@@ -1,0 +1,7 @@
+
+> @dnum-mi/dso-console-shared@1.0.0 test /home/claire/Documents/labmi/dso-console/packages/shared
+> echo "Error: no test specified" && exit 1
+
+Error: no test specified
+ ELIFECYCLE  Test failed. See above for more details.
+ WARN   Local package.json exists, but node_modules missing, did you mean to install?
