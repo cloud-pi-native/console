@@ -9,7 +9,7 @@ vi.mock('http', () => ({ createServer: vi.fn(() => ({ listen: vi.fn() })) }))
 vi.mock('./app.js')
 vi.mock('./connect.js')
 vi.mock('./utils/logger.js')
-vi.mock('../dev-setup/init-db.js')
+// vi.mock('../dev-setup/init-db.js')
 
 describe('Server', () => {
   beforeEach(() => {
