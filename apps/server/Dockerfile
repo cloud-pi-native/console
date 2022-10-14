@@ -12,4 +12,4 @@ CMD [ "npm", "run", "dev" ]
 
 FROM dev as test
 
-CMD ["npm", "run", "test:unit"]
+CMD ["npm", "run", "test"]
