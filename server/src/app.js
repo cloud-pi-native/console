@@ -5,7 +5,7 @@ import routes from './routes/index.js'
 import { logHttp } from './utils/logger.js'
 import { isProd } from './utils/env.js'
 
-const apiPrefix = '/api/v1'
+export const apiPrefix = '/api/v1'
 
 const app = express()
 
