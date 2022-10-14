@@ -91,7 +91,7 @@ if [ "$UNIT_TESTS_DIRS" ]; then
 
     cd "$(readlink -f $d)"
     npm run test:unit
-    cd -
+    cd $PROJECT_DIR
   done
 fi
 
