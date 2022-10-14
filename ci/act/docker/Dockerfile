@@ -40,7 +40,8 @@ RUN apt-get update \
   libxtst6 \
   xauth \
   xvfb \
-  jq
+  jq \
+  gettext
 
 # Install docker
 RUN curl -fsSL https://get.docker.com -o get-docker.sh \
