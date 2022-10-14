@@ -74,7 +74,7 @@ array_contains () {
 
 
 # Install packages
-find "$PROJECT_DIR" -type f -name "package.json" ! -path "**/node_modules/*" \
+find "$PROJECT_DIR" -type f -name "package.json" ! -path "**/node_modules/*" ! -path "**/.scannerwork/*" \
   | awk '{ print substr( $0, 1, length($0)-13 ) }' \
   | while read d; do
     array_contains EXCLUDE "$(readlink -f $d)" && continue
