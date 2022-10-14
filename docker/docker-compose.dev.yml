@@ -48,7 +48,7 @@ services:
   server:
     restart: always
     build:
-      context: server
+      context: apps/server
       dockerfile: Dockerfile
       target: dev
     image: dso-console/server:dev
@@ -59,7 +59,7 @@ services:
     ports:
       - ${SERVER_PORT:-4000}:4000
     volumes:
-      - ../server:/app/
+      - ../apps/server:/app/
       - /app/node_modules/
     environment:
       SERVER_PORT: ${SERVER_PORT:-4000}
@@ -70,7 +70,7 @@ services:
   client:
     restart: always
     build:
-      context: client
+      context: apps/client
       dockerfile: Dockerfile
       target: dev
     image: dso-console/client:dev
@@ -80,7 +80,7 @@ services:
     ports:
       - 8080:8080
     volumes:
-      - ../client:/app/
+      - ../apps/client:/app/
       - /app/node_modules/
     environment:
       KEYCLOAK_HOST: ${KEYCLOAK_HOST:-localhost}

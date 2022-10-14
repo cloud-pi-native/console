@@ -8,7 +8,7 @@ services:
       - client
     working_dir: /app
     volumes:
-      - ../cypress:/app
+      - ../packages/cypress:/app
     environment:
       CLIENT_HOST: ${CLIENT_HOST}
       CLIENT_PORT: ${CLIENT_PORT}
