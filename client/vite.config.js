@@ -5,9 +5,9 @@ import vue from '@vitejs/plugin-vue'
 import { keycloakHost, keycloakPort } from './src/utils/keycloak/sso-config.js'
 
 // https://vitejs.dev/config/
-export default defineConfig(mode => ({
+export default defineConfig({
   server: {
-    host: mode === 'production' ? '127.0.0.1' : '0.0.0.0',
+    host: '0.0.0.0',
     port: 8080,
   },
   plugins: [
@@ -26,6 +26,11 @@ export default defineConfig(mode => ({
     environment: 'jsdom',
     testTimeout: 2000,
     watch: false,
+    coverage: {
+      provider: 'c8',
+      reporter: ['text', 'lcov'],
+      exclude: ['**/*.spec.js'],
+    },
   },
   proxy: {
     '^/realms': {
@@ -34,5 +39,4 @@ export default defineConfig(mode => ({
       ws: true,
     },
   },
-}
-))
+})
