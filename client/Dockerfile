@@ -1,5 +1,5 @@
 # Dev stage
-FROM node:lts as dev
+FROM node:lts-bullseye-slim as dev
 
 WORKDIR /app
 
