@@ -9,13 +9,16 @@ i=1
 # Get project directories
 PROJECT_DIR="$(git rev-parse --show-toplevel)"
 ACT_DIR="$PROJECT_DIR/ci/act"
+REGISTRY_DIR="$ACT_DIR/docker/registry"
 
 # Get Date
 NOW=$(date +'%Y-%m-%dT%H-%M-%SZ')
 
 # Default
 EVENT_FILE="$ACT_DIR/events/pr_base_main.json"
-WORKFLOW_FILE="$ACT_DIR/workflows/test.yml"
+
+# Secrets
+source $ACT_DIR/env/.env
 
 # Declare script helper
 TEXT_HELPER="\nThis script aims to run CI locally for tests.
@@ -104,6 +107,22 @@ act $EVENT_NAME \
   --graph
 
 
+printf "\n${red}${i}.${no_color} Create credentials for local registry\n\n"
+i=$(($i + 1))
+
+docker run \
+  --rm \
+  --entrypoint htpasswd \
+  httpd:2 -Bbn "$REGISTRY_USERNAME" "$REGISTRY_SECRET" \
+  > "$REGISTRY_DIR/auth/htpasswd"
+
+
+printf "\n${red}${i}.${no_color} Start local registry\n\n"
+i=$(($i + 1))
+
+docker compose -f ./ci/act/docker/registry/docker-compose.registry.yml up -d
+
+
 printf "\n${red}${i}.${no_color} Runs locally GitHubActions workflow\n\n"
 i=$(($i + 1))
 
@@ -116,9 +135,12 @@ act $EVENT_NAME \
   --artifact-server-path $ACT_DIR/artifacts \
   --env GITHUB_RUN_ID=$NOW \
   --rm \
-  --secret REGISTRY_USERNAME=admin \
-  --secret REGISTRY_PASSWORD=admin \
-  --bind
+  --bind \
+  --secret SONAR_HOST_URL=$SONAR_HOST_URL \
+  --secret SONAR_TOKEN=$SONAR_TOKEN \
+  --secret SONAR_PROJECT_KEY=$SONAR_PROJECT_KEY \
+  --secret REGISTRY_USERNAME=$REGISTRY_USERNAME \
+  --secret REGISTRY_SECRET=$REGISTRY_SECRET
   # --secret GITHUB_TOKEN=github-token
 
 
@@ -131,6 +153,13 @@ if [ -d "$ACT_DIR/artifacts/$NOW" ] && [ -n "$(find $ACT_DIR/artifacts/$NOW -typ
     gunzip "${f%.gz__}.gz"
   done
 fi
+
+
+printf "\n${red}${i}.${no_color} Stop local registry\n\n"
+i=$(($i + 1))
+
+docker compose -f ./ci/act/docker/registry/docker-compose.registry.yml down -v
+
 
 if [ -d "$PROJECT_DIR/workflow" ]; then
   printf "\n${red}${i}.${no_color} Remove files added by act\n\n"
