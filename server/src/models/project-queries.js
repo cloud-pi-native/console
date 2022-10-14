@@ -1,8 +1,10 @@
 import { query } from '../connect.js'
 import { nanoid } from 'nanoid'
+import { allServices } from '../utils/project.js'
 
 export const createProject = async (data) => {
   data.id = nanoid()
+  data.services = allServices
   data = JSON.stringify(data)
   const res = query(`INSERT INTO public.projects(project) VALUES ('${data}');`)
   return res
