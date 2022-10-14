@@ -111,7 +111,6 @@ if [ "$RUN_E2E_TESTS" ]; then
   cd "$PROJECT_DIR"
   export DOCKER_TAG=latest
 
-echo "ENV_FILE: $ENV_FILE"
   docker compose \
     --file "$PROJECT_DIR/docker/docker-compose.prod.yml" \
     --file "$PROJECT_DIR/docker/docker-compose.e2e.yml" \
