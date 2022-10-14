@@ -54,9 +54,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: unit-tests-coverage
-          path: |
-            ./client/coverage
-            ./server/coverage
+          path: ./coverage
       - name: Scan code
         run: |
           docker run \
@@ -70,7 +68,7 @@ jobs:
               -Dsonar.qualitygate.wait=true \
               -Dsonar.projectBaseDir=/usr/src/app \
               -Dsonar.sources=client,server \
-              -Dsonar.javascript.lcov.reportPaths=client/coverage/lcov.info,server/coverage/lcov.info \
+              -Dsonar.javascript.lcov.reportPaths=coverage/client/coverage/lcov.info,coverage/server/coverage/lcov.info \
               -Dsonar.coverage.exclusions=**/*.spec.js,**/*.vue,client/src/router/**,client/src/stores/**,client/src/assets/**,client/src/main.js,client/src/icons.js
 
   e2e-tests:
