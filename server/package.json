@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon --experimental-json-modules --inspect src/server.js  --watch src",
-    "test:unit": "vitest --globals run --coverage"
+    "test:unit": "vitest run --coverage"
   },
   "dependencies": {
     "date-fns": "^2.29.3",
