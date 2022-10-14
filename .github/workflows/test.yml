@@ -28,7 +28,8 @@ jobs:
           cache: "npm"
           cache-dependency-path: "**/package-lock.json"
       - name: Install dependencies
-        run: ./ci/scripts/init-project.sh -c -e ./cypress -e .
+        # run: ./ci/scripts/init-project.sh -c -e ./cypress -e .
+        run: pnpm install
       - name: Run unit tests
         run: ./ci/scripts/run-tests.sh -u ./client -u ./server
       - name: Upload vitest coverage artifacts
