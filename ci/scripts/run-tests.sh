@@ -90,7 +90,7 @@ if [ "$UNIT_TESTS_DIRS" ]; then
     i=$(($i + 1))
 
     cd "$(readlink -f $d)"
-    npm run test:unit
+    npm run test
     cd $PROJECT_DIR
   done
 fi

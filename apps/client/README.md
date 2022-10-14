@@ -10,7 +10,7 @@
 
 ## Lancement des tests unitaires
 
-`npm run test:unit`
+`npm run test`
 
 ## Lancement des tests e2e et de composant
 

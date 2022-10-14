@@ -24,7 +24,7 @@ export const useProjectStore = defineStore('project', () => {
   }
 
   const orderProject = async (project) => {
-    return await api.createProject(project)
+    return api.createProject(project)
   }
 
   return {
