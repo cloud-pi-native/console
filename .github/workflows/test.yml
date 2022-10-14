@@ -30,12 +30,15 @@ jobs:
       - name: Install dependencies
         run: ./ci/scripts/init-project.sh -c -e ./cypress -e .
       - name: Run unit tests
-        run: ./ci/scripts/run-tests.sh -u ./client
+        run: ./ci/scripts/run-tests.sh -u ./client -u ./server
       - name: Upload vitest coverage artifacts
         uses: actions/upload-artifact@v3
         with:
           name: unit-tests-coverage
-          path: ./client/coverage
+          path: |
+            ./client/coverage
+            ./server/coverage
+          retention-days: 1
 
   code-scan:
     name: Run code quality analysis
@@ -51,7 +54,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: unit-tests-coverage
-          path: ./client/coverage
+          path: ./coverage
       - name: Scan code
         run: |
           docker run \
@@ -64,9 +67,9 @@ jobs:
               -Dsonar.branch.name=${{ github.event.pull_request.head.ref }} \
               -Dsonar.qualitygate.wait=true \
               -Dsonar.projectBaseDir=/usr/src/app \
-              -Dsonar.sources=client \
-              -Dsonar.javascript.lcov.reportPaths=client/coverage/lcov.info \
-              -Dsonar.coverage.exclusions=**/*.spec.js,**/*.vue,client/src/router/**,client/src/stores/**,client/src/components/**,client/src/views/**,client/src/assets/**,client/src/main.js,client/src/icons.js
+              -Dsonar.sources=client,server \
+              -Dsonar.javascript.lcov.reportPaths=coverage/client/coverage/lcov.info,coverage/server/coverage/lcov.info \
+              -Dsonar.coverage.exclusions=**/*.spec.js,**/*.vue,client/src/router/**,client/src/stores/**,client/src/assets/**,client/src/main.js,client/src/icons.js
 
   e2e-tests:
     name: Run e2e test suite
@@ -84,3 +87,4 @@ jobs:
         with:
           name: e2e-report
           path: ./cypress/e2e/screenshots/
+          retention-days: 14

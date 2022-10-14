@@ -10,8 +10,9 @@ services:
     volumes:
       - ../cypress:/app
     environment:
-      - CLIENT_HOST=${CLIENT_HOST}
-      - CLIENT_PORT=${CLIENT_PORT}
+      CLIENT_HOST: ${CLIENT_HOST}
+      CLIENT_PORT: ${CLIENT_PORT}
+      NODE_ENV: test
     networks:
       - dso-network
 

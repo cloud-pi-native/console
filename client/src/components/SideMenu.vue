@@ -40,6 +40,7 @@ watch(routeName, () => {
     @toggle-expand="toggleExpand('mainMenu')"
   >
     <DsfrSideMenuList
+      id="menuList"
       :expanded="isExpanded.mainMenu"
     >
       <DsfrSideMenuListItem>
@@ -56,13 +57,13 @@ watch(routeName, () => {
           data-testid="menuProjectsBtn"
           :expanded="isExpanded.projects"
           button-label="Mes projets"
-          control-id="Projects"
+          control-id="projectsList"
           @toggle-expand="toggleExpand('projects')"
         >
           Mes projets
         </DsfrSideMenuButton>
         <DsfrSideMenuList
-          id="Projects"
+          id="projectsList"
           data-testid="menuProjectsList"
           :expanded="isExpanded.projects"
           :collapsable="true"

@@ -1,6 +1,9 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { noSpace, email } from '@/utils/regex.js'
+import { useProjectStore } from '@/stores/project.js'
+
+const projectStore = useProjectStore()
 
 /**
  * Defines a project
@@ -107,9 +110,9 @@ const delRepo = (index) => {
 }
 
 const orderProject = () => {
-  // TODO
-  console.log(project.value)
+  projectStore.orderProject(project.value)
 }
+// TODO : gérer l'après requête create
 
 </script>
 

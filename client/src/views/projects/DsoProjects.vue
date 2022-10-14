@@ -1,27 +1,40 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { onMounted, ref, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useProjectStore } from '@/stores/project.js'
-
 const router = useRouter()
 const projectStore = useProjectStore()
 
-// TODO : récupérer dynamiquement la liste des projets
-const projectList = ref([{
-  text: 'Candilib',
-  value: 'candilib-id',
-},
-])
+const projectList = ref([])
 
-const selectedProject = ref(projectStore.selectedProject)
+const projects = computed(() => projectStore.projects)
+const selectedProjectId = ref(projectStore.selectedProject?.id)
+
+const setProjectList = () => {
+  projectList.value = []
+  if (!projects.value.length) return
+  projects.value.forEach(project => {
+    projectList.value.push({
+      text: project.projectName,
+      value: project.id,
+    })
+  })
+}
 
 const goToOrderProject = () => {
   router.push('/order-project')
 }
 
-// TODO : récupérer le projectStore.selectedProject dans chaque children (service, team, dashboard)
-watch(selectedProject, () => {
-  projectStore.setSelectedProject(selectedProject.value)
+onMounted(() => {
+  projectStore.getProjects()
+})
+
+watch(selectedProjectId, () => {
+  projectStore.setSelectedProject(selectedProjectId.value)
+})
+
+watch(projects, () => {
+  setProjectList()
 })
 
 </script>
@@ -31,7 +44,7 @@ watch(selectedProject, () => {
     class="flex <md:flex-col-reverse items-center justify-between"
   >
     <DsfrSelect
-      v-model="selectedProject"
+      v-model="selectedProjectId"
       data-testid="projectSelector"
       label="Projet à visualiser"
       :options="projectList"
