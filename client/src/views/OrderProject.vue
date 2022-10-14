@@ -1,7 +1,9 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { noSpace, email } from '@/utils/regex.js'
-import api from '@/api/index.js'
+import { useProjectStore } from '@/stores/project.js'
+
+const projectStore = useProjectStore()
 
 /**
  * Defines a project
@@ -107,8 +109,8 @@ const delRepo = (index) => {
   project.value.repo.splice(index, 1)
 }
 
-const orderProject = async () => {
-  await api.createProject(project.value)
+const orderProject = () => {
+  projectStore.orderProject(project.value)
 }
 // TODO : gérer l'après requête create
 
