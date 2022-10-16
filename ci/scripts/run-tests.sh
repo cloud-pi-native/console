@@ -110,7 +110,6 @@ if [ "$RUN_E2E_TESTS" ]; then
   i=$(($i + 1))
 
   cd "$PROJECT_DIR"
-  export DOCKER_TAG=latest
 
   docker compose \
     --file "$PROJECT_DIR/docker/docker-compose.prod.yml" \
