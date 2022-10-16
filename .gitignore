@@ -8,13 +8,13 @@
 
 
 # modules
-**/node_modules
+node_modules
 
 # env
 .env
 
 # cypress
-cypress/**/screenshots
+screenshots
 
 # act
 **/act/artifacts
@@ -22,14 +22,14 @@ cypress/**/screenshots
 **/act/docker/registry/data
 
 # vitest
-**/coverage
+coverage
 
 # sonarqube
-**/.scannerwork
+.scannerwork
 
 # db
 db/postgres/data/*
 !.gitkeep
 
 # turbo
-.turbo/
+.turbo
