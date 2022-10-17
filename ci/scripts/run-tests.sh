@@ -118,7 +118,8 @@ if [ "$RUN_E2E_TESTS" ]; then
       --exit-code-from cypress \
       --attach cypress \
       --remove-orphans \
-      --pull always
+      --pull always \
+      --quiet-pull
   
   printf "\n${red}${i}.${no_color} Remove stopped containers\n"
   i=$(($i + 1))
