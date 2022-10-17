@@ -26,6 +26,8 @@ services:
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KEYCLOAK_GITHUB_CLIENTID: $KEYCLOAK_GITHUB_CLIENTID
+      KEYCLOAK_GITHUB_CLIENTSECRET: $KEYCLOAK_GITHUB_CLIENTSECRET
     command: start-dev --import-realm
     networks:
       - dso-network
