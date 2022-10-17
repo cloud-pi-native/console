@@ -25,19 +25,34 @@ jobs:
         with:
           node-version: "${{ env.NODE_VERSION }}"
           check-latest: true
-          cache: "npm"
-          cache-dependency-path: "**/package-lock.json"
+      - uses: pnpm/action-setup@v2.0.1
+        name: Install pnpm
+        id: pnpm-install
+        with:
+          version: 7
+          run_install: false
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_ENV
+      - uses: actions/cache@v3
+        name: Setup pnpm cache
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
       - name: Install dependencies
-        run: ./ci/scripts/init-project.sh -c -e ./cypress -e .
+        run: pnpm install --frozen-lockfile
       - name: Run unit tests
-        run: ./ci/scripts/run-tests.sh -u ./client -u ./server
+        run: pnpm run test
       - name: Upload vitest coverage artifacts
         uses: actions/upload-artifact@v3
         with:
           name: unit-tests-coverage
           path: |
-            ./client/coverage
-            ./server/coverage
+            ./apps/client/coverage
+            ./apps/server/coverage
           retention-days: 1
 
   code-scan:
@@ -61,15 +76,15 @@ jobs:
             --rm \
             -e SONAR_HOST_URL=${{ secrets.SONAR_HOST_URL }} \
             -e SONAR_LOGIN=${{ secrets.SONAR_TOKEN }} \
-            -v $PWD/:/usr/src/app \
+            -v $PWD/:/usr/src \
             sonarsource/sonar-scanner-cli sonar-scanner \
               -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }} \
               -Dsonar.branch.name=${{ github.event.pull_request.head.ref }} \
               -Dsonar.qualitygate.wait=true \
-              -Dsonar.projectBaseDir=/usr/src/app \
-              -Dsonar.sources=client,server \
+              -Dsonar.projectBaseDir=/usr/src \
+              -Dsonar.sources=apps/client,apps/server \
               -Dsonar.javascript.lcov.reportPaths=coverage/client/coverage/lcov.info,coverage/server/coverage/lcov.info \
-              -Dsonar.coverage.exclusions=**/*.spec.js,**/*.vue,client/src/router/**,client/src/stores/**,client/src/assets/**,client/src/main.js,client/src/icons.js
+              -Dsonar.coverage.exclusions=**/*.spec.js,**/*.vue,apps/client/src/router/**,apps/client/src/stores/**,**/assets/**,apps/client/src/main.js,apps/client/src/icons.js
 
   e2e-tests:
     name: Run e2e test suite

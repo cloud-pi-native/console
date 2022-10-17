@@ -8,10 +8,13 @@ services:
       POSTGRES_DB: ${POSTGRES_DATABASE:-dso-console-db}
       POSTGRES_USER: ${POSTGRES_USER:-admin}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
-    volumes: 
+    volumes:
+      # - postgres-data:/var/lib/postgresql/data
       - ../db/postgres/data:/var/lib/postgresql/data
+      - ../db/postgres/scripts:/docker-entrypoint-initdb.d
     networks:
       - dso-network
+
   keycloak:
     restart: always
     image: quay.io/keycloak/keycloak:19.0.2
@@ -20,14 +23,13 @@ services:
       - 8090:8080
     volumes:
       - ../keycloak/realms:/opt/keycloak/data/import
-      # - ../keycloak/data:/opt/keycloak/data/h2
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
     command: start-dev --import-realm
     networks:
       - dso-network
-  
+
   pgadmin:
     restart: always
     image: dpage/pgadmin4:latest
@@ -35,21 +37,25 @@ services:
     depends_on:
       - postgres
     volumes:
-        - pgadmin-data:/var/lib/pgadmin
-        - ../db/pgadmin/config:/config
+      # - pgadmin-data:/var/lib/pgadmin
+      - ../db/pgadmin/data:/var/lib/pgadmin
+      - ../db/pgadmin/config/servers.json:/pgadmin4/servers.json
+      - ../db/pgadmin/config/pgpass:/pgpass
     ports:
       - 8081:80
     environment:
-      PGADMIN_SERVER_JSON_FILE: /config/servers.json
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@dso.fr}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
     networks:
       - dso-network
+
   server:
     restart: always
     build:
-      context: server
-      dockerfile: Dockerfile
+      # context: apps/server
+      # dockerfile: Dockerfile
+      context: ..
+      dockerfile: apps/server/Dockerfile
       target: dev
     image: dso-console/server:dev
     container_name: dso-console_server
@@ -57,9 +63,9 @@ services:
       - keycloak
       - postgres
     ports:
-      - ${SERVER_PORT:-4000}:4000
+      - 4000:4000
     volumes:
-      - ../server:/app/
+      - ../apps/server:/app/
       - /app/node_modules/
     environment:
       SERVER_PORT: ${SERVER_PORT:-4000}
@@ -70,8 +76,10 @@ services:
   client:
     restart: always
     build:
-      context: client
-      dockerfile: Dockerfile
+      # context: apps/client
+      # dockerfile: Dockerfile
+      context: ..
+      dockerfile: apps/client/Dockerfile
       target: dev
     image: dso-console/client:dev
     container_name: dso-console_client
@@ -80,7 +88,7 @@ services:
     ports:
       - 8080:8080
     volumes:
-      - ../client:/app/
+      - ../apps/client:/app/
       - /app/node_modules/
     environment:
       KEYCLOAK_HOST: ${KEYCLOAK_HOST:-localhost}
@@ -98,5 +106,7 @@ networks:
     # driver_opts:
     # com.docker.network.driver.mtu: 1450
 
-volumes:
-  pgadmin-data:
+
+    # volumes:
+    #   pgadmin-data:
+    #   postgres-data:

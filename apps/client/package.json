@@ -6,10 +6,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview --port 8080",
-    "test:unit": "vitest run --coverage",
+    "test": "vitest run --coverage",
     "lint": "eslint ./src && stylelint ./src/**/*.{css,vue}",
-    "format:js": "eslint ./src --fix",
-    "format:css": "stylelint --fix ./src/**/*.{css,vue}"
+    "format": "eslint ./src --fix && stylelint --fix ./src/**/*.{css,vue}"
   },
   "dependencies": {
     "@gouvminint/vue-dsfr": "^1.6.0",
@@ -27,7 +26,7 @@
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.0",
     "eslint-plugin-vue": "^9.6.0",
-    "jsdom": "20.0.1",
+    "jsdom": "^20.0.1",
     "keycloak-js": "^19.0.3",
     "stylelint": "^14.13.0",
     "stylelint-config-html": "^1.1.0",

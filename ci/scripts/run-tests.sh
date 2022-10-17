@@ -90,7 +90,7 @@ if [ "$UNIT_TESTS_DIRS" ]; then
     i=$(($i + 1))
 
     cd "$(readlink -f $d)"
-    npm run test:unit
+    npm run test
     cd $PROJECT_DIR
   done
 fi
@@ -110,7 +110,6 @@ if [ "$RUN_E2E_TESTS" ]; then
   i=$(($i + 1))
 
   cd "$PROJECT_DIR"
-  export DOCKER_TAG=latest
 
   docker compose \
     --file "$PROJECT_DIR/docker/docker-compose.prod.yml" \
@@ -119,7 +118,8 @@ if [ "$RUN_E2E_TESTS" ]; then
       --exit-code-from cypress \
       --attach cypress \
       --remove-orphans \
-      --pull always
+      --pull always \
+      --quiet-pull
   
   printf "\n${red}${i}.${no_color} Remove stopped containers\n"
   i=$(($i + 1))
