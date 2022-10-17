@@ -1,4 +1,4 @@
-# Console Cloud PI Native - Client
+# Console Cloud PI Native - Serveur
 
 ## Installation
 
@@ -28,16 +28,10 @@ npm run lint
 npm run format
 ```
 
-## Build de l'app
+## Lancement de l'app en mode production
 
 ```sh
-npm run build
-```
-
-## Prévisualisation du code de production
-
-```sh
-npm run preview
+npm start
 ```
 
 ## Crédits
