@@ -11,6 +11,8 @@ services:
       POSTGRES_DB: ${POSTGRES_DATABASE}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ../db/postgres/scripts:/docker-entrypoint-initdb.d
     networks:
       - dso-network
 
