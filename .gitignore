@@ -29,6 +29,7 @@ coverage
 
 # db
 db/postgres/data/*
+db/pgadmin/data/*
 !.gitkeep
 
 # turbo
