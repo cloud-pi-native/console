@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon --experimental-json-modules --inspect src/server.js  --watch src",
+    "lint": "eslint ./src",
+    "format": "eslint ./src --fix",
     "start": "node --experimental-json-modules src/server.js",
     "test": "vitest run --coverage"
   },
@@ -23,11 +25,11 @@
     "eslint": "^8.25.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-promise": "^6.1.0",
     "eslint-plugin-n": "^15.3.0",
+    "eslint-plugin-promise": "^6.1.0",
+    "nodemon": "^2.0.20",
     "pino-pretty": "^9.1.1",
     "supertest": "^6.3.0",
-    "nodemon": "^2.0.20",
     "vitest": "^0.24.3"
   }
 }
