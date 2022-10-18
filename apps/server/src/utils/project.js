@@ -1,7 +1,7 @@
 export const allOrgNames = [
-  "dinum",
-  "ministere-interieur",
-  "ministere-justice",
+  'dinum',
+  'ministere-interieur',
+  'ministere-justice',
 ]
 
 export const allServices = [

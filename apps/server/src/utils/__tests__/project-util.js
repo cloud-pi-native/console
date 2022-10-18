@@ -3,7 +3,7 @@ import {
   getRandomProjectName,
   getRandomProjectOrgName,
   getRandomProjectRepo,
-  getRandomProjectServices
+  getRandomProjectServices,
 } from './random-util.js'
 
 export const createRandomProject = () => {
