@@ -1,4 +1,5 @@
 {
-  "**/client/**/*.{js,ts,vue,css}": "pnpm run format --filter client",
+  "**/client/**/*.{js,ts,vue}": "pnpm run format --filter client",
+  "**/client/**/*.{vue,css}": "pnpm run format:style --filter client",
   "**/cypress/**/*.{js,cjs,ts}": "pnpm run format --filter cypress"
 }

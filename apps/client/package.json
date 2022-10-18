@@ -8,7 +8,8 @@
     "preview": "vite preview --port 8080",
     "test": "vitest run --coverage",
     "lint": "eslint ./src && stylelint ./src/**/*.{css,vue}",
-    "format": "eslint ./src --fix && stylelint --fix ./src/**/*.{css,vue}"
+    "format": "eslint ./src --fix",
+    "format:style": "stylelint --fix"
   },
   "dependencies": {
     "@gouvminint/vue-dsfr": "^1.6.0",
