@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.9'
 services:
   postgres:
     restart: always
@@ -9,8 +9,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-admin}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
     volumes:
-      # - postgres-data:/var/lib/postgresql/data
-      - ../db/postgres/data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
+      # - ../db/postgres/data:/var/lib/postgresql/data
       - ../db/postgres/scripts:/docker-entrypoint-initdb.d
     networks:
       - dso-network
@@ -37,10 +37,8 @@ services:
     depends_on:
       - postgres
     volumes:
-      # - pgadmin-data:/var/lib/pgadmin
       - ../db/pgadmin/data:/var/lib/pgadmin
       - ../db/pgadmin/config/servers.json:/pgadmin4/servers.json
-      - ../db/pgadmin/config/pgpass:/pgpass
     ports:
       - 8081:80
     environment:
@@ -69,6 +67,11 @@ services:
       - /app/node_modules/
     environment:
       SERVER_PORT: ${SERVER_PORT:-4000}
+      DB_HOST: postgres
+      DB_PORT: ${DB_PORT:-5432}
+      DB_USER: ${DB_USER:-admin}
+      DB_PASS: ${DB_PASS:-admin}
+      DB_NAME: ${DB_NAME:-dso-console-db}
       NODE_ENV: development
     networks:
       - dso-network
@@ -107,6 +110,6 @@ networks:
     # com.docker.network.driver.mtu: 1450
 
 
-    # volumes:
-    #   pgadmin-data:
-    #   postgres-data:
+volumes:
+  # pgadmin-data:
+  postgres-data:
