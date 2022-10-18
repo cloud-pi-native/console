@@ -1,24 +1,12 @@
-import express from 'express'
-import helmet from 'helmet'
-
+import fastify from 'fastify'
+import helmet from '@fastify/helmet'
 import routes from './routes/index.js'
-import { logHttp } from './utils/logger.js'
-import { isProd } from './utils/env.js'
+import { loggerConf } from './utils/logger.js'
 
 export const apiPrefix = '/api/v1'
 
-const app = express()
-
-app.use((_req, res, next) => {
-  res.header('x-powered-by', 'SDIT')
-  next()
-})
-  .use(helmet())
-  .use(express.json())
-  .use(apiPrefix, routes)
-
-if (isProd) {
-  app.use(logHttp)
-}
+const app = fastify({ logger: loggerConf[process.env.NODE_ENV] ?? true })
+  .register(helmet)
+  .register(routes, { prefix: apiPrefix })
 
 export default app

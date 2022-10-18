@@ -1,4 +1,4 @@
-import { appLogger, getLogInfos } from '../utils/logger.js'
+import { getLogInfos } from '../utils/logger.js'
 import {
   createProject,
   getProjects,
@@ -12,13 +12,13 @@ export const createProjectController = async (req, res) => {
   try {
     const project = await createProject(data)
 
-    appLogger.info({
-      ...getLogInfos({ projectId: project._id }),
+    res.log.info({
+      ...getLogInfos({ projectId: project.id }),
       description: 'Project successfully created',
     })
-    send201(res, { project })
+    send201(res, project)
   } catch (error) {
-    appLogger.error({
+    res.log.error({
       ...getLogInfos(),
       description: 'Cannot create project',
       error,
@@ -31,13 +31,13 @@ export const getProjectsController = async (_req, res) => {
   try {
     const projects = await getProjects()
 
-    appLogger.info({
+    res.log.info({
       ...getLogInfos(),
       description: 'Projects successfully retrived',
     })
-    send200(res, { projects })
+    send200(res, projects)
   } catch (error) {
-    appLogger.error({
+    res.log.error({
       ...getLogInfos(),
       description: 'Cannot retrieve projects',
       error,
@@ -52,13 +52,13 @@ export const getProjectByIdController = async (req, res) => {
   try {
     const project = await getProjectById(id)
 
-    appLogger.info({
-      ...getLogInfos({ projectId: project._id }),
+    res.log.info({
+      ...getLogInfos({ projectId: project.id }),
       description: 'Project successfully retrived',
     })
-    send200(res, { project })
+    send200(res, project)
   } catch (error) {
-    appLogger.error({
+    res.log.error({
       ...getLogInfos({ projectId: id }),
       description: 'Cannot retrieve project',
       error,

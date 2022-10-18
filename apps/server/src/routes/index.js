@@ -1,14 +1,15 @@
-import express from 'express'
 import projectsRouter from './project.js'
+import { send200 } from '../utils/response.js'
 
 const version = process.env.npm_package_version
 
-const router = new express.Router()
+const getVersion = (_req, res) => {
+  send200(res, version)
+}
 
-router.use('/projects', projectsRouter)
-
-router.get('/version', (_req, res) => {
-  res.status(200).json(version)
-})
+const router = async (app, _opts) => {
+  await app.get('/version', getVersion)
+  await app.register(projectsRouter, { prefix: '/projects' })
+}
 
 export default router
