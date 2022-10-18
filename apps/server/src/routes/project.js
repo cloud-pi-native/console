@@ -2,7 +2,7 @@ import {
   getProjectByIdController,
   getProjectsController,
   createProjectController,
-} from '../controllers/projects.js'
+} from '../controllers/project.js'
 
 const router = async (app, _opt) => {
   await app.post('/', createProjectController)
