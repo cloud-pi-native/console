@@ -1,13 +1,11 @@
-import { createServer } from 'http'
+import app from './app.js'
 import { vi } from 'vitest'
 import { startServer, handleExit, exitGracefuly } from './server.js'
 import { getConnection, closeConnections } from './connect.js'
 // import { initDb } from '../dev-setup/init-db.js'
-import { techLogger } from './utils/logger.js'
 
-vi.mock('http', () => ({ createServer: vi.fn(() => ({ listen: vi.fn() })) }))
 vi.mock('./app.js')
-vi.mock('./connect.js')
+vi.mock('./connect.js', () => ({ getConnection: vi.fn(), closeConnections: vi.fn() }))
 vi.mock('./utils/logger.js')
 // vi.mock('../dev-setup/init-db.js')
 
@@ -29,7 +27,7 @@ describe('Server', () => {
 
     expect(getConnection.mock.calls).toHaveLength(1)
     // expect(initDb.mock.calls).toHaveLength(1)
-    expect(createServer.mock.calls).toHaveLength(1)
+    expect(app.listen.mock.calls).toHaveLength(1)
   })
 
   it('Should throw an error', async () => {
@@ -44,7 +42,7 @@ describe('Server', () => {
     }
 
     expect(getConnection.mock.calls).toHaveLength(1)
-    expect(createServer.mock.calls).toHaveLength(0)
+    expect(app.listen.mock.calls).toHaveLength(0)
     expect(response).toMatchObject(error)
   })
 
@@ -55,7 +53,7 @@ describe('Server', () => {
 
     expect(closeConnections.mock.calls).toHaveLength(1)
     expect(closeConnections.mock.calls[0]).toHaveLength(0)
-    expect(techLogger.error.mock.calls).toHaveLength(0)
+    expect(app.log.error.mock.calls).toHaveLength(2)
   })
 
   it('Should log an error', async () => {
@@ -65,7 +63,7 @@ describe('Server', () => {
 
     expect(closeConnections.mock.calls).toHaveLength(1)
     expect(closeConnections.mock.calls[0]).toHaveLength(0)
-    expect(techLogger.error.mock.calls).toHaveLength(1)
-    expect(techLogger.error.mock.calls[0][0]).toBeInstanceOf(Error)
+    expect(app.log.error.mock.calls).toHaveLength(3)
+    expect(app.log.error.mock.calls[0][0]).toBeInstanceOf(Error)
   })
 })
