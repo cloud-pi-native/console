@@ -1,6 +1,6 @@
 # TODO : Ajouter server, db et keycloak
 
-version: '3.8'
+version: '3.9'
 
 services:
   postgres:
