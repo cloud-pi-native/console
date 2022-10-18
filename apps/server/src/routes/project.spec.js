@@ -5,7 +5,6 @@ import projectRouter from './project.js'
 import { createProject } from '../models/project-queries.js'
 import { createRandomProject } from '../utils/__tests__/project-util.js'
 
-
 export const repeatFn = nb => fn => Array.from({ length: nb }).map(() => fn())
 // import { ITEM_DELETE_SUCCESS_MESSAGE } from '../utils/messages.js'
 
@@ -20,9 +19,8 @@ vi.mock('../connect.js', () => ({
     return randomProjects
       ? { rows: [...randomProjects] }
       : { rows: [randomProject] }
-  })
+  }),
 }))
-
 
 describe('Project routes', () => {
   beforeAll(async () => {
@@ -42,12 +40,12 @@ describe('Project routes', () => {
   describe('post("/", createProjectController)', () => {
     it('Should create a project', async () => {
       randomProject = createRandomProject()
-      
+
       const response = await app.inject()
         .post('/')
         .body(randomProject)
         .end()
-      
+
       expect(response.statusCode).toEqual(201)
       expect(JSON.parse(response.body)).toMatchObject(randomProject)
     })
@@ -92,8 +90,9 @@ describe('Project routes', () => {
     })
 
     it.skip('Should not get a project when id is invalid', async () => {
-      const response = await request(app)
+      const response = await app.inject()
         .get('/invalid')
+        .end()
         // .set('Authorization', `Bearer ${token}`)
 
       expect(response.statusCode).toEqual(500)
