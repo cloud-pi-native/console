@@ -7,7 +7,8 @@ export const loggerConf = {
       options: {
         translateTime: 'dd/mm/yyyy - HH:MM:ss Z',
         ignore: 'pid,hostname',
-        colorize: true
+        colorize: true,
+        singleLine: true,
       },
     },
   },
