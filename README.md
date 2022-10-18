@@ -15,14 +15,14 @@ Ce projet est construit avec [NodeJS](https://nodejs.org/), [VueJS](https://vuej
 
 ### Liste des services docker
 
-| Nom du service | Github                                             | Role                                          | Utilisé en production |
-| -------------- | -------------------------------------------------- | --------------------------------------------- | --------------------- |
-| __postgres__   | [Postgres](https://github.com/postgres/postgres)   | Base de données de l'application              | Oui                   |
-| __pgadmin__    | [Pgadmin](https://github.com/pgadmin-org/pgadmin4) | Interface d'administration de Postgres        | -                     |
-| __server__     | [NodeJS](https://github.com/nodejs/node)           | API de l'application                          | Oui                   |
-| __client__     | [VueJS](https://github.com/vuejs/vue)              | Interface graphique de l'application          | Oui                   |
-| __keycloak__   | [Keycloak](https://github.com/keycloak/keycloak)   | E2E Gestionnaire d'authentification / d'accès | -                     |
-| __cypress__    | [Cypress](https://github.com/cypress-io/cypress)   | Tests de bout en bout                         | -                     |
+| Nom du service | Github                                             | Role                                      | Utilisé en production |
+| -------------- | -------------------------------------------------- | ----------------------------------------- | --------------------- |
+| __postgres__   | [Postgres](https://github.com/postgres/postgres)   | Base de données de l'application          | Oui                   |
+| __pgadmin__    | [Pgadmin](https://github.com/pgadmin-org/pgadmin4) | Interface d'administration de Postgres    | -                     |
+| __server__     | [NodeJS](https://github.com/nodejs/node)           | API de l'application                      | Oui                   |
+| __client__     | [VueJS](https://github.com/vuejs/vue)              | Interface graphique de l'application      | Oui                   |
+| __keycloak__   | [Keycloak](https://github.com/keycloak/keycloak)   | Gestionnaire d'authentification / d'accès | -                     |
+| __cypress__    | [Cypress](https://github.com/cypress-io/cypress)   | Tests de bout en bout                     | -                     |
 
 ## Développement
 
@@ -30,7 +30,7 @@ Lancez les commandes suivantes dans votre terminal :
 
 ```shell
 # Cloner le projet
-git clone <this_project_url>
+git clone https://github.com/dnum-mi/dso-console.git
 
 # Se rendre dans le dossier du projet
 cd dso-console
