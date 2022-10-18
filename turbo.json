@@ -22,6 +22,9 @@
     "format": {
       "outputs": []
     },
+    "format:style": {
+      "outputs": []
+    },
     "lint": {
       "outputs": []
     },

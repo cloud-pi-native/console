@@ -15,6 +15,7 @@
     "dev:down": "docker compose -f ./docker/docker-compose.dev.yml --env-file ./env/.env down",
     "lint": "turbo run lint",
     "format": "turbo run format",
+    "format:style": "turbo run format:style",
     "test:e2e": "./ci/scripts/run-tests.sh -e",
     "test:e2e-build": "docker compose -f ./docker/docker-compose.prod.yml --env-file ./env/.env build --pull",
     "test": "turbo run test --concurrency 1",
