@@ -1,15 +1,22 @@
 # Dev stage
 FROM node:lts-bullseye-slim as dev
 
+RUN npm install --global pnpm
+
+WORKDIR /build
+
+COPY pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY apps/server/package*.json ./apps/client/
+COPY packages/shared/ ./packages/shared/
+
+RUN pnpm --filter=./apps/client deploy /app
+
 WORKDIR /app
 
 RUN chown node:node /app
 USER node
 
-COPY --chown=node:node apps/client/package*.json ./
-RUN npm i
-
-CMD [ "npm", "run", "dev" ]
+CMD [ "pnpm", "run", "dev" ]
 
 
 # Install stage
