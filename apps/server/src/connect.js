@@ -1,11 +1,12 @@
-import Pool from 'pg-pool'
+import { Sequelize } from 'sequelize'
 import { setTimeout } from 'node:timers/promises'
 import { isTest, isCI, isProd } from './utils/env.js'
 import app from './app.js'
 
-const DELAY_BEFORE_RETRY = isTest || isCI ? 5 : 2000
+const DELAY_BEFORE_RETRY = isTest || isCI ? 1000 : 10000
 let closingConnections = false
-let pool
+
+export let sequelize
 
 export const getConnection = async (triesLeft = 5) => {
   if (closingConnections || triesLeft <= 0) {
@@ -18,21 +19,13 @@ export const getConnection = async (triesLeft = 5) => {
   const dbUser = process.env.DB_USER
   const dbPasswd = process.env.DB_PASS
   const dbName = process.env.DB_NAME
-  const pgConfig = {
-    host: dbHost,
-    port: dbPort,
-    database: dbName,
-    user: dbUser,
-    password: dbPasswd,
-  }
-
-  pool = new Pool(pgConfig)
+  const postgresUri = `postgres://${dbUser}:${dbPasswd}@${dbHost}:${dbPort}/${dbName}`
 
   try {
     if (!isProd) {
-      app.log.info(`Trying to connect to Postgres with: ${JSON.stringify(pgConfig)}`)
+      app.log.info(`Trying to connect to Postgres with: ${postgresUri}`)
     }
-    await pool.connect()
+    sequelize = new Sequelize(postgresUri)
     app.log.info('Connected to Postgres!')
   } catch (error) {
     if (triesLeft > 0) {
@@ -49,14 +42,10 @@ export const getConnection = async (triesLeft = 5) => {
   }
 }
 
-export const query = (text, params, callback) => {
-  return pool.query(text, params, callback)
-}
-
 export const closeConnections = async () => {
   closingConnections = true
   try {
-    await pool.end()
+    await sequelize.close()
   } catch (error) {
     app.log.error(error)
   }
