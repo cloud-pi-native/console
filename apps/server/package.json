@@ -17,7 +17,8 @@
     "lodash.kebabcase": "^4.1.1",
     "nanoid": "4.0.0",
     "pg": "8.8.0",
-    "pg-pool": "3.5.2"
+    "sequelize": "^6.25.2",
+    "shared": "workspace:^1.0.0"
   },
   "devDependencies": {
     "@faker-js/faker": "^7.6.0",
