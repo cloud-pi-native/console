@@ -24,6 +24,31 @@ Ce projet est construit avec [NodeJS](https://nodejs.org/), [VueJS](https://vuej
 | __keycloak__   | [Keycloak](https://github.com/keycloak/keycloak)   | Gestionnaire d'authentification / d'accès | -                     |
 | __cypress__    | [Cypress](https://github.com/cypress-io/cypress)   | Tests de bout en bout                     | -                     |
 
+### Architecture du dépôt
+
+La gestion des dépendances est effectuée à l'aide de [pnpm](https://pnpm.io/) selon la structure de dossiers suivante :
+
+- Les différentes briques applicatives se trouvent dans le dossier `apps/`
+- Les bibliothèques additionnelles se trouvent dans le dossier `packages`
+
+*Schema de l'architecture du monorepo :*
+
+```shell
+├── apps
+│   ├── client/
+│   └── server/
+├── packages
+│   ├── cypress/
+│   └── shared/
+├── node_modules/
+├── package.json
+├── pnpm-lock.yaml
+├── pnpm-workspace.yaml
+├── turbo.json
+├── README.md
+ ...
+```
+
 ## Développement
 
 Lancez les commandes suivantes dans votre terminal :
