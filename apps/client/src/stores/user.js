@@ -9,5 +9,6 @@ export const useUserStore = defineStore('user', () => {
   const setLoggedIn = (isLoggedIn) => {
     loggedIn.value = isLoggedIn
   }
+
   return { loggedIn, setLoggedIn }
 })
