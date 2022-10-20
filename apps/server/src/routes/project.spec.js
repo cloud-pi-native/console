@@ -6,7 +6,6 @@ import { createProject } from '../models/project-queries.js'
 import { createRandomProject } from '../utils/__tests__/project-util.js'
 
 export const repeatFn = nb => fn => Array.from({ length: nb }).map(() => fn())
-// import { ITEM_DELETE_SUCCESS_MESSAGE } from '../utils/messages.js'
 
 const app = fastify({ logger: false }).register(projectRouter)
 
@@ -15,11 +14,24 @@ let randomProjects, randomProject
 vi.mock('../connect.js', () => ({
   getConnection: vi.fn(() => Promise.resolve()),
   closeConnections: vi.fn(() => Promise.resolve()),
-  query: vi.fn(() => {
-    return randomProjects
-      ? { rows: [...randomProjects] }
-      : { rows: [randomProject] }
-  }),
+}))
+
+vi.mock('../models/project.js', () => ({
+  sequelize: vi.fn(() => ({
+    authenticate: vi.fn(),
+    define: vi.fn(),
+  })),
+  default: vi.fn(() => ({
+    create: vi.fn(() => {
+      return randomProjects || randomProject
+    }),
+    findAll: vi.fn(() => {
+      return randomProjects
+    }),
+    findOne: vi.fn(() => {
+      return randomProject
+    }),
+  })),
 }))
 
 describe('Project routes', () => {
