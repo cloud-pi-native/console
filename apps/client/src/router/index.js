@@ -9,6 +9,7 @@ import DsoProjects from '@/views/projects/DsoProjects.vue'
 import DsoDashboard from '@/views/projects/DsoDashboard.vue'
 import DsoServices from '@/views/projects/DsoServices.vue'
 import DsoTeam from '@/views/projects/DsoTeam.vue'
+import { useUserStore } from '@/stores/user.js'
 
 const MAIN_TITLE = 'Portail Cloud PI Native'
 
@@ -21,9 +22,11 @@ const routes = [
     name: 'Auth',
     component: DsoAuth,
     beforeEnter: async (to, from) => {
-      await initKeycloak()
+      const userStore = useUserStore()
+      const isLoggIn = await initKeycloak()
       const kc = getKeycloak()
       console.log({ 2: kc, token: kc.token })
+      userStore.setLoggedIn(isLoggIn)
     },
   },
   {
