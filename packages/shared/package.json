@@ -1,9 +1,23 @@
 {
-  "name": "@dnum-mi/dso-console-shared",
+  "name": "shared",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
-  "scripts": {},
-  "author": "",
-  "license": "ISC"
+  "private": true,
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "node src/index.js",
+    "lint": "eslint ./src",
+    "format": "eslint ./src --fix"
+  },
+  "dependencies": {
+    "joi": "^17.6.3"
+  },
+  "devDependencies": {
+    "eslint": "^8.25.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "^15.3.0",
+    "eslint-plugin-promise": "^6.1.0"
+  }
 }
