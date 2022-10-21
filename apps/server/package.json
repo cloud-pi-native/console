@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon --experimental-json-modules --inspect src/server.js  --watch src",
     "lint": "eslint ./src",
-    "format": "eslint ./src --fix",
+    "format": "eslint ./src --fix --ext .js,.cjs,.ts",
     "start": "node --experimental-json-modules src/server.js",
     "test": "vitest run --coverage"
   },
