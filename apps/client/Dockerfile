@@ -3,17 +3,17 @@ FROM node:lts-bullseye-slim as dev
 
 RUN npm install --global pnpm
 
-WORKDIR /build
+WORKDIR /install
 
 COPY pnpm-workspace.yaml pnpm-lock.yaml ./
-COPY apps/server/package*.json ./apps/client/
+COPY apps/client/package*.json ./apps/client/
 COPY packages/shared/ ./packages/shared/
 
 RUN pnpm --filter=./apps/client deploy /app
 
 WORKDIR /app
 
-RUN chown node:node /app
+RUN chown -R node:node /app
 USER node
 
 CMD [ "pnpm", "run", "dev" ]
@@ -22,9 +22,10 @@ CMD [ "pnpm", "run", "dev" ]
 # Install stage
 FROM node:lts-bullseye-slim as install
 
-WORKDIR /app
-
 RUN npm install --global pnpm
+
+WORKDIR /install
+
 COPY . .
 RUN pnpm --filter ./apps/client deploy pruned
 
@@ -34,7 +35,7 @@ FROM node:lts-bullseye-slim as build
 
 WORKDIR /app
 
-COPY --from=install /app/pruned/ .
+COPY --from=install /install/pruned .
 RUN npm run build
 
 
