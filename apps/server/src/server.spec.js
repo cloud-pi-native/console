@@ -5,7 +5,8 @@ import { getConnection, closeConnections } from './connect.js'
 // import { initDb } from '../dev-setup/init-db.js'
 
 vi.mock('./app.js')
-vi.mock('./connect.js', () => ({ getConnection: vi.fn(), closeConnections: vi.fn() }))
+vi.mock('./connect.js')
+// vi.mock('./connect.js', () => ({ getConnection: vi.fn(), closeConnections: vi.fn() }))
 vi.mock('./utils/logger.js')
 // vi.mock('../dev-setup/init-db.js')
 
