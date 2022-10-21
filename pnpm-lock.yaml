@@ -81,6 +81,7 @@ importers:
       pg: 8.8.0
       pino-pretty: ^9.1.1
       sequelize: ^6.25.2
+      sequelize-mock: ^0.10.2
       shared: workspace:^1.0.0
       supertest: ^6.3.0
       vitest: ^0.24.3
@@ -103,6 +104,7 @@ importers:
       eslint-plugin-promise: 6.1.0_eslint@8.25.0
       nodemon: 2.0.20
       pino-pretty: 9.1.1
+      sequelize-mock: 0.10.2
       supertest: 6.3.0
       vitest: 0.24.3
 
@@ -801,6 +803,10 @@ packages:
   /binary-extensions/2.2.0:
     resolution: {integrity: sha512-jDctJ/IVQbZoJykoeHbhXpOlNBqGNcwXJKJog42E5HDPUwQTSdjCHdihjj0DlnheQ7blbT6dHOafNAiS8ooQKA==}
     engines: {node: '>=8'}
+    dev: true
+
+  /bluebird/3.7.2:
+    resolution: {integrity: sha512-XpNj6GDQzdfW+r2Wnn7xiSAd7TM3jzkxGXBGTtWKuSXv1xUV+azxAm8jdWZN06QTQk+2N2XB9jRDkvbmQmcRtg==}
     dev: true
 
   /boolbase/1.0.0:
@@ -2381,7 +2387,6 @@ packages:
   /inflection/1.13.4:
     resolution: {integrity: sha512-6I/HUDeYFfuNCVS3td055BaXBwKYuzw7K3ExVMStBowKo9oOAMJIXIHvdyR3iboTCp1b+1i5DSkIZTcwIktuDw==}
     engines: {'0': node >= 0.4.0}
-    dev: false
 
   /inflight/1.0.6:
     resolution: {integrity: sha512-k92I/b08q4wvFscXCLvqfsHCrjrF7yiXsQuIVvVE7N82W3+aqpzuUdBbfhWcy/FZR3/4IgflMgKLOsvPDrGCJA==}
@@ -3742,6 +3747,14 @@ packages:
     hasBin: true
     dependencies:
       lru-cache: 6.0.0
+
+  /sequelize-mock/0.10.2:
+    resolution: {integrity: sha512-Vu95by/Bmhcx9PHKlZe+w7/7zw1AycV/SeevxQ5lDokAb50H7Kaf2SkjK5mqKxHWX6y/ICZ8JEfyMOg0nd1M2w==}
+    dependencies:
+      bluebird: 3.7.2
+      inflection: 1.13.4
+      lodash: 4.17.21
+    dev: true
 
   /sequelize-pool/7.1.0:
     resolution: {integrity: sha512-G9c0qlIWQSK29pR/5U2JF5dDQeqqHRragoyahj/Nx4KOOQ3CPPfzxnfqFPCSB7x5UgjOgnZ61nSxz+fjDpRlJg==}
