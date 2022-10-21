@@ -1,6 +1,5 @@
 module.exports = {
   env: {
-    jest: true,
     node: true,
   },
   extends: [
@@ -14,4 +13,12 @@ module.exports = {
   rules: {
     'comma-dangle': [2, 'always-multiline'],
   },
+  overrides: [
+    {
+      files: ['**/src/**/*.spec.{j,t}s?(x)'],
+      env: {
+        jest: true,
+      },
+    },
+  ],
 }
