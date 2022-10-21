@@ -1,7 +1,8 @@
 import { DataTypes } from 'sequelize'
 import { sequelize } from '../connect.js'
 
-const Project = () => sequelize.define('Project', {
+let Project
+export const getProject = () => Project ?? (Project = sequelize.define('Project', {
   id: {
     type: DataTypes.INTEGER,
     allowNull: false,
@@ -15,6 +16,4 @@ const Project = () => sequelize.define('Project', {
   },
 }, {
   tableName: 'Projects',
-})
-
-export default Project
+}))
