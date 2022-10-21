@@ -1,16 +1,18 @@
 import { Op } from 'sequelize'
-import Project from './project.js'
+import { getProject } from './project.js'
 
 export const createProject = async (data) => {
-  const res = await Project().create({ data })
+  const res = await getProject().create({ data }, { attributes: ['data'] })
   return res
 }
 
 export const getProjectById = async (id) => {
-  const res = await Project().findOne({
+  const res = await getProject().findOne({
     where: {
-      'data.id': {
-        [Op.eq]: id,
+      data: {
+        id: {
+          [Op.eq]: id,
+        },
       },
     },
     attributes: ['data'],
@@ -19,6 +21,6 @@ export const getProjectById = async (id) => {
 }
 
 export const getProjects = async () => {
-  const res = await Project().findAll({ attributes: ['data'] })
+  const res = await getProject().findAll({ attributes: ['data'] })
   return res
 }
