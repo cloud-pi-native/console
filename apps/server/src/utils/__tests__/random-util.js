@@ -14,7 +14,7 @@ export const getRandomProjectName = () => {
 }
 
 export const getRandomProjectServices = () => {
-  return faker.helpers.arrayElements(allServices)
+  return allServices
 }
 
 export const getRandomProjectRepo = (length = 1) => {
