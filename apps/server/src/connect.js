@@ -21,6 +21,11 @@ export const getConnection = async (triesLeft = 5) => {
   const dbName = process.env.DB_NAME
   const postgresUri = `postgres://${dbUser}:${dbPasswd}@${dbHost}:${dbPort}/${dbName}`
 
+  if (isTest || isCI) {
+    const { default: SequelizeMock } = await import('sequelize-mock')
+    sequelize = new SequelizeMock({ autoQueryFallback: false, stopPropagation: true })
+    return
+  }
   try {
     if (!isProd) {
       app.log.info(`Trying to connect to Postgres with: ${postgresUri}`)
