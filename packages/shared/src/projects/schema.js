@@ -9,7 +9,7 @@ export const repoSchema = Joi.object({
   gitSourceName: Joi.string()
     .required(),
 
-  managerName: Joi.string()
+  userName: Joi.string()
     .required(),
 
   isPrivate: Joi.boolean()
