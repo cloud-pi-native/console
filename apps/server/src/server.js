@@ -1,4 +1,3 @@
-import fs from 'fs'
 import app from './app.js'
 import { getConnection, closeConnections } from './connect.js'
 import { isDev, isTest, isProd } from './utils/env.js'
@@ -16,28 +15,17 @@ export async function startServer () {
     throw error
   }
 
-  app.log.info('server connected to postgres, reading init-db.js')
+  app.log.info('Reading init-db.js')
 
   try {
-    // const { initDb } = await import('../dev-setup/init-db.js')
-    const initDb = false
-    if (initDb) {
+    const { initDb } = await import('../dev-setup/init-db.js')
+    if (isTest && initDb) {
       app.log.info('Starting init DB...')
       await initDb()
       app.log.info('DB successfully init')
     }
-    if (isProd && initDb) {
-      app.log.info('Cleaning up init file...')
-      await new Promise((resolve, reject) => {
-        fs.unlink('./dev-setup/init-db.js', (err) => {
-          if (err) return reject(err)
-          app.log.info('Successfully deleted ../dev-setup/init-db.js')
-          resolve()
-        })
-      })
-    }
   } catch (error) {
-    if (error.code === 'ERR_MODULE_NOT_FOUND' || error.message.startsWith('Cannot find module')) {
+    if (error.code === 'ERR_MODULE_NOT_FOUND' || error.message.includes('Failed to load')) {
       app.log.info('No initDb file, skipping')
     } else {
       app.log.warn(error.message)

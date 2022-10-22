@@ -2,13 +2,12 @@ import app from './app.js'
 import { vi } from 'vitest'
 import { startServer, handleExit, exitGracefuly } from './server.js'
 import { getConnection, closeConnections } from './connect.js'
-// import { initDb } from '../dev-setup/init-db.js'
+import { initDb } from '../dev-setup/init-db.js'
 
 vi.mock('./app.js')
 vi.mock('./connect.js')
-// vi.mock('./connect.js', () => ({ getConnection: vi.fn(), closeConnections: vi.fn() }))
 vi.mock('./utils/logger.js')
-// vi.mock('../dev-setup/init-db.js')
+vi.mock('../dev-setup/init-db.js')
 
 describe('Server', () => {
   beforeEach(() => {
@@ -24,16 +23,38 @@ describe('Server', () => {
   })
 
   it('Should getConnection', async () => {
-    await startServer().catch(error => console.warn(error))
+    await startServer().catch(err => console.warn(err))
 
     expect(getConnection.mock.calls).toHaveLength(1)
-    // expect(initDb.mock.calls).toHaveLength(1)
+    expect(initDb.mock.calls).toHaveLength(1)
     expect(app.listen.mock.calls).toHaveLength(1)
   })
 
-  it('Should throw an error', async () => {
+  it('Should throw an error on connection to DB', async () => {
     const error = new Error('This is OK!')
     getConnection.mockReturnValueOnce(Promise.reject(error))
+
+    let response
+    await startServer().catch(err => { response = err })
+
+    expect(getConnection.mock.calls).toHaveLength(1)
+    expect(app.listen.mock.calls).toHaveLength(0)
+    expect(response).toMatchObject(error)
+  })
+
+  it('Should throw an error on initDb import if module is not found', async () => {
+    const error = new Error('Failed to load')
+    initDb.mockReturnValueOnce(Promise.reject(error))
+
+    await startServer()
+
+    expect(initDb.mock.calls).toHaveLength(1)
+    expect(app.log.info.mock.calls).toHaveLength(4)
+  })
+
+  it('Should throw an error on initDb import', async () => {
+    const error = new Error('This is OK!')
+    initDb.mockReturnValueOnce(Promise.reject(error))
 
     let response
     try {
@@ -42,8 +63,8 @@ describe('Server', () => {
       response = err
     }
 
-    expect(getConnection.mock.calls).toHaveLength(1)
-    expect(app.listen.mock.calls).toHaveLength(0)
+    expect(initDb.mock.calls).toHaveLength(1)
+    expect(app.log.info.mock.calls).toHaveLength(3)
     expect(response).toMatchObject(error)
   })
 

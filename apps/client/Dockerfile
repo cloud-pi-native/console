@@ -3,20 +3,17 @@ FROM node:lts-bullseye-slim as dev
 
 RUN npm install --global pnpm
 
-WORKDIR /install
-
-COPY pnpm-workspace.yaml pnpm-lock.yaml ./
-COPY apps/client/package*.json ./apps/client/
-COPY packages/shared/ ./packages/shared/
-
-RUN pnpm --filter=./apps/client deploy /app
-
 WORKDIR /app
 
-RUN chown -R node:node /app
+RUN chown node:node /app
 USER node
 
-CMD [ "pnpm", "run", "dev" ]
+COPY --chown=node:node pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY --chown=node:node apps/client/package*.json ./apps/client/
+COPY --chown=node:node packages/shared/ ./packages/shared/
+RUN pnpm install
+
+CMD [ "pnpm", "--filter", "client", "run", "dev" ]
 
 
 # Install stage

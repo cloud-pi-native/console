@@ -31,6 +31,7 @@ export const getConnection = async (triesLeft = 5) => {
       app.log.info(`Trying to connect to Postgres with: ${postgresUri}`)
     }
     sequelize = new Sequelize(postgresUri)
+    await sequelize.authenticate()
     app.log.info('Connected to Postgres!')
   } catch (error) {
     if (triesLeft > 0) {

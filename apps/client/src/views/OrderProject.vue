@@ -15,7 +15,7 @@ const projectStore = useProjectStore()
  * @property {Object[]} [repo]
  * @property {(string|undefined)} repo[].gitName
  * @property {(string|undefined)} [repo[].gitSourceName]
- * @property {(string|undefined)} [repo[].managerName]
+ * @property {(string|undefined)} [repo[].userName]
  * @property {(boolean|undefined)} [repo[].isPrivate]
  * @property {(string|undefined)} [repo[].gitToken]
  */
@@ -65,14 +65,14 @@ const isRepoValid = computed(() => {
       return repo.gitName &&
         noSpace.test(repo.gitName) &&
         repo.gitSourceName &&
-        repo.managerName &&
+        repo.userName &&
         repo.gitToken
     }
-    if (repo.gitSourceName || repo.managerName) {
+    if (repo.gitSourceName || repo.userName) {
       return repo.gitName &&
         noSpace.test(repo.gitName) &&
         repo.gitSourceName &&
-        repo.managerName
+        repo.userName
     }
     return repo.gitName && noSpace.test(repo.gitName)
   })
@@ -182,7 +182,7 @@ const orderProject = () => {
         v-model="repo.gitSourceName"
         :data-testid="`gitSrcNameInput-${index}`"
         type="text"
-        :required="repo.managerName || repo.gitToken || repo.isPrivate ? 'required': false"
+        :required="repo.userName || repo.gitToken || repo.isPrivate ? 'required': false"
         label="Nom du dépôt Git source"
         label-visible
         hint="Nom du dépôt Git qui servira de source pour la synchronisation"
@@ -191,8 +191,8 @@ const orderProject = () => {
         @update:model-value="updateRepo(index, 'gitSourceName', $event)"
       />
       <DsfrInput
-        v-model="repo.managerName"
-        :data-testid="`managerNameInput-${index}`"
+        v-model="repo.userName"
+        :data-testid="`userNameInput-${index}`"
         type="text"
         :required="repo.gitSourceName ? 'required' : false"
         autocomplete="name"
@@ -201,11 +201,11 @@ const orderProject = () => {
         hint="Nom de l'utilisateur / organisation propriétaire du dépôt Git source"
         placeholder="LAB-MI"
         class="fr-mb-2w"
-        @update:model-value="updateRepo(index, 'managerName', $event)"
+        @update:model-value="updateRepo(index, 'userName', $event)"
       />
       <DsfrCheckbox
         v-model="repo.isPrivate"
-        :data-testid="`managerNameCbx-${index}`"
+        :data-testid="`userNameCbx-${index}`"
         label="Dépôt source privé"
         hint="Cochez la case si le dépôt Git source est privé"
         name="isGitSourcePrivate"
