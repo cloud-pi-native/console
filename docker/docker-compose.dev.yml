@@ -50,8 +50,6 @@ services:
   server:
     restart: always
     build:
-      # context: apps/server
-      # dockerfile: Dockerfile
       context: ..
       dockerfile: apps/server/Dockerfile
       target: dev
@@ -63,8 +61,11 @@ services:
     ports:
       - 4000:4000
     volumes:
-      - ../apps/server:/app/
       - /app/node_modules/
+      - ../apps/server:/app/apps/server
+      - /app/apps/server/node_modules/
+      - ../packages/shared:/app/packages/shared
+      - /app/packages/shared/node_modules/
     environment:
       SERVER_PORT: ${SERVER_PORT:-4000}
       DB_HOST: postgres
@@ -79,8 +80,6 @@ services:
   client:
     restart: always
     build:
-      # context: apps/client
-      # dockerfile: Dockerfile
       context: ..
       dockerfile: apps/client/Dockerfile
       target: dev
@@ -91,8 +90,11 @@ services:
     ports:
       - 8080:8080
     volumes:
-      - ../apps/client:/app/
       - /app/node_modules/
+      - ../apps/client:/app/apps/client
+      - /app/apps/client/node_modules/
+      - ../packages/shared:/app/packages/shared
+      - /app/packages/shared/node_modules/
     environment:
       KEYCLOAK_HOST: ${KEYCLOAK_HOST:-localhost}
       KEYCLOAK_PORT: ${KEYCLOAK_PORT:-8090}
