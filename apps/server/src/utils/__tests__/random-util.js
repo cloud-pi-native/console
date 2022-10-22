@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import { allOrgNames, allServices } from 'shared'
+import { allOrgNames, allServices } from 'shared/src/projects/utils.js'
 
 export const getRandomProjectEmail = () => {
   return faker.internet.email()

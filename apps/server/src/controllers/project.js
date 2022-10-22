@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid'
-import { projectSchema, allServices } from 'shared'
+import { allServices } from 'shared/src/projects/utils.js'
 import { getLogInfos } from '../utils/logger.js'
 import {
   createProject,
@@ -14,7 +14,6 @@ export const createProjectController = async (req, res) => {
   data.services = allServices
 
   try {
-    await projectSchema.validateAsync(data)
     const project = await createProject(data)
 
     res.log.info({

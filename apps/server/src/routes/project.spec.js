@@ -22,6 +22,8 @@ describe('Project routes', () => {
     it('Should create a project', async () => {
       const randomProject = createRandomProject()
 
+      Project.$queueResult(null)
+
       const response = await app.inject()
         .post('/')
         .body(randomProject)
@@ -35,6 +37,17 @@ describe('Project routes', () => {
     it('Should not create a project if payload is invalid', async () => {
       const randomProject = createRandomProject()
       delete randomProject.email
+
+      const response = await app.inject()
+        .post('/')
+        .body(randomProject)
+        .end()
+
+      expect(response.statusCode).toEqual(500)
+    })
+
+    it('Should not create a project if projectName already exists', async () => {
+      const randomProject = createRandomProject()
 
       const response = await app.inject()
         .post('/')
