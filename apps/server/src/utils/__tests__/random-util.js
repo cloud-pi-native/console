@@ -24,7 +24,7 @@ export const getRandomProjectRepo = (length = 1) => {
 
     projectRepo.gitName = faker.lorem.word()
     projectRepo.gitSourceName = faker.lorem.word()
-    projectRepo.managerName = faker.name.fullName()
+    projectRepo.userName = faker.name.fullName()
     projectRepo.isPrivate = faker.datatype.boolean()
     if (projectRepo.isPrivate) projectRepo.gitToken = faker.git.shortSha()
 
