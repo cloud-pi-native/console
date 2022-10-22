@@ -1,23 +1,9 @@
 import Joi from 'joi'
-
-export const allOrgNames = [
-  'dinum',
-  'ministere-interieur',
-  'ministere-justice',
-]
-
-export const allServices = [
-  'argocd',
-  'gitlab',
-  'nexus',
-  'quay',
-  'sonarqube',
-  'vault',
-]
+import { allOrgNames, allServices } from './utils.js'
 
 export const repoSchema = Joi.object({
   gitName: Joi.string()
-    .alphanum()
+    .pattern(/^[a-zA-Z0-9-]+$/)
     .required(),
 
   gitSourceName: Joi.string()
@@ -29,7 +15,8 @@ export const repoSchema = Joi.object({
   isPrivate: Joi.boolean()
     .required(),
 
-  gitToken: Joi.string(),
+  gitToken: Joi.string()
+    .when('isPrivate', { is: true, then: Joi.required() }),
 })
 
 export const projectSchema = Joi.object({
@@ -45,7 +32,7 @@ export const projectSchema = Joi.object({
     .required(),
 
   projectName: Joi.string()
-    .alphanum()
+    .pattern(/^[a-zA-Z0-9-]+$/)
     .required(),
 
   repo: Joi.array()
