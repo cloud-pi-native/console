@@ -11,7 +11,9 @@ export async function initKeycloak () {
   try {
     const { onLoad } = conf
     const kc = getKeycloak()
-    const authenticated = await kc.init({ onLoad })
+    const authenticated = await kc.init({ onLoad, flow: 'implicit' })
+    const token = kc.token
+    window.localStorage.setItem('token', token)
     return authenticated
   } catch (error) {
     console.log(error)
