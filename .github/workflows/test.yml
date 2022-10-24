@@ -85,6 +85,7 @@ jobs:
               -Dsonar.sources=apps/client,apps/server \
               -Dsonar.javascript.lcov.reportPaths=coverage/client/coverage/lcov.info,coverage/server/coverage/lcov.info \
               -Dsonar.coverage.exclusions=**/*.spec.js,**/*.vue,apps/client/src/router/**,apps/client/src/stores/**,**/assets/**,apps/client/src/main.js,apps/client/src/icons.js
+        continue-on-error: true
 
   e2e-tests:
     name: Run e2e test suite
