@@ -19,23 +19,7 @@ export async function initKeycloak () {
   }
 }
 
-export async function checkKeycloak () {
-  try {
-    const kc = getKeycloak()
-    const authenticated = await kc.init({ onLoad: 'check-sso' })
-    return { kc, authenticated }
-  } catch (error) {
-    console.log(error)
-    return false
-  }
-}
-
 export async function logout () {
-  const { kc, authenticated } = await checkKeycloak()
-  console.log('test ', { kc, authenticated })
-  if (authenticated === true) {
-    await kc.cleanToken()
-  }
-
-  console.log('test 1', { kc, authenticated })
+  const kc = getKeycloak()
+  await kc.logout()
 }
