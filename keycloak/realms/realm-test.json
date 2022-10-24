@@ -472,9 +472,6 @@
         }
       ],
       "disableableCredentialTypes": [],
-      "requiredActions": [
-        "UPDATE_PASSWORD"
-      ],
       "realmRoles": [
         "default-roles-test"
       ],
@@ -506,6 +503,7 @@
     {
       "id": "e7d105eb-28d4-4557-a274-eb354a60a33b",
       "clientId": "TEST",
+      "secret": "TEST",
       "name": "TEST",
       "description": "",
       "rootUrl": "",
@@ -555,7 +553,25 @@
         "phone",
         "offline_access",
         "microprofile-jwt"
-      ]
+      ],
+      "authorizationSettings": {
+        "allowRemoteResourceManagement": true,
+        "policyEnforcementMode": "ENFORCING",
+        "resources": [
+          {
+            "name": "Default Resource",
+            "type": "urn:TEST:resources:default",
+            "ownerManagedAccess": false,
+            "attributes": {},
+            "_id": "fd85dada-073c-4da0-ac3c-73a823e86e70",
+            "uris": [
+              "/*"
+            ]
+          }
+        ],
+        "policies": [],
+        "scopes": []
+      }
     },
     {
       "id": "f21579e2-39c3-42d3-9cc8-9c9d84c66038",
