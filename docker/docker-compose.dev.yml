@@ -75,6 +75,10 @@ services:
       NODE_ENV: development
     networks:
       - dso-network
+    command:
+      - '/bin/sh'
+      - '-c'
+      - '/bin/sleep 10 && pnpm --filter server run dev '
 
   client:
     restart: always
@@ -103,6 +107,10 @@ services:
       SERVER_PORT: ${SERVER_PORT:-4000}
     networks:
       - dso-network
+    command:
+      - '/bin/sh'
+      - '-c'
+      - '/bin/sleep 10 && pnpm --filter client run dev '
 
 networks:
   dso-network:
