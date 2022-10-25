@@ -1,3 +1,4 @@
+import { getKeycloak } from '@/utils/keycloak/init-sso.js'
 import axios from 'axios'
 
 export const apiClient = axios.create({
@@ -12,6 +13,7 @@ apiClient.interceptors.request.use(
     }
     // TODO : gestion token avec keycloak
     const token = window.localStorage.getItem('token')
+    console.log({ kc: getKeycloak() })
     if (token) {
       Object.assign(request.headers, {
         Authorization: `Bearer ${token}`,

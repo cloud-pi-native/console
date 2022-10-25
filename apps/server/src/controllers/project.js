@@ -7,6 +7,7 @@ import {
   getProjectById,
 } from '../models/project-queries.js'
 import { send200, send201, send500 } from '../utils/response.js'
+import app from '../app.js'
 
 export const createProjectController = async (req, res) => {
   const data = req.body
@@ -31,9 +32,17 @@ export const createProjectController = async (req, res) => {
   }
 }
 
-export const getProjectsController = async (_req, res) => {
+export const getProjectsController = async (req, res) => {
   try {
     const projects = await getProjects()
+
+    const headers = req.headers
+    const cookies = req.cookies
+    const session = req.session
+
+    console.log('req: ', app.jwt.verify(req.headers.authorization.split(' ')[1]))
+
+    console.log({ headers, cookies, session })
 
     res.log.info({
       ...getLogInfos(),
