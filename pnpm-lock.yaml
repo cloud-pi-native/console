@@ -77,7 +77,7 @@ importers:
       eslint-plugin-n: ^15.3.0
       eslint-plugin-promise: ^6.1.0
       fastify: ^4.9.1
-      fastify-keycloak-adapter: 1.6.2
+      fastify-keycloak-adapter: ^1.6.2
       lodash.kebabcase: ^4.1.1
       nanoid: 4.0.0
       nodemon: ^2.0.20
