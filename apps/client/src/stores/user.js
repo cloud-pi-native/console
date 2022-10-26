@@ -11,7 +11,6 @@ export const useUserStore = defineStore('user', () => {
   const setIsLoggedIn = () => {
     const keycloak = getKeycloak()
     isLoggedIn.value = keycloak.authenticated
-    console.log('users.js - authenticated: ', keycloak.authenticated)
   }
 
   return {

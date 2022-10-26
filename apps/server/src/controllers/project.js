@@ -13,6 +13,7 @@ export const createProjectController = async (req, res) => {
   const data = req.body
   data.id = nanoid()
   data.services = allServices
+  data.owner = req.session.user
 
   try {
     const project = await createProject(data)

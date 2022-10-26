@@ -19,12 +19,21 @@ export const repoSchema = Joi.object({
     .when('isPrivate', { is: true, then: Joi.required() }),
 })
 
-export const projectSchema = Joi.object({
+export const userSchema = Joi.object({
   id: Joi.string()
     .required(),
 
   email: Joi.string()
     .email()
+    .required(),
+
+  firstName: Joi.string(),
+
+  lastName: Joi.string(),
+})
+
+export const projectSchema = Joi.object({
+  id: Joi.string()
     .required(),
 
   orgName: Joi.string()
@@ -42,4 +51,10 @@ export const projectSchema = Joi.object({
   services: Joi.array()
     .items(Joi.string().valid(...allServices))
     .required(),
+
+  owner: userSchema
+    .required(),
+
+  users: Joi.array()
+    .items(userSchema),
 })
