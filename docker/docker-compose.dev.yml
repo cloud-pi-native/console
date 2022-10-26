@@ -111,10 +111,6 @@ services:
       SERVER_PORT: ${SERVER_PORT:-4000}
     networks:
       - dso-network
-    command:
-      - '/bin/sh'
-      - '-c'
-      - '/bin/sleep 10 && pnpm --filter client run dev '
 
 networks:
   dso-network:

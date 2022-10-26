@@ -5,7 +5,6 @@ export const ssoConf = {
   url: `http://${keycloakHost}:${keycloakPort}`,
   realm: process.env.KEYCLOAK_REALM,
   clientId: process.env.KEYCLOAK_CLIENTID,
-  // onLoad: 'login-required',
   onLoad: 'check-sso',
   flow: 'hybrid',
   redirectUri: process.env.BASE_FULL_URL || 'http://localhost:8080',

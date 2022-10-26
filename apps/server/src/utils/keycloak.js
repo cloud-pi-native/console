@@ -8,8 +8,6 @@ export const keycloakConf = {
   keycloakSubdomain: 'keycloak:8080/realms/quickstart',
   clientId: 'test-backend',
   clientSecret: 'client-secret-backend',
-  // clientId: 'test-frontend',
-  // clientSecret: 'client-secret-frontend',
   useHttps: false,
   disableCookiePlugin: true,
   disableSessionPlugin: true,
