@@ -33,6 +33,11 @@ export const createProjectController = async (req, res) => {
 }
 
 export const getProjectsController = async (req, res) => {
+  const headers = req.headers
+  const session = req.session
+  const user = req.session?.user
+  const cookies = req.cookies
+  console.log('/user', { headers, session, user, cookies })
   try {
     const projects = await getProjects()
 

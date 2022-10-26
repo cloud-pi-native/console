@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-
-// import { getKeycloak, initKeycloak } from '@/utils/keycloak/init-sso.js'
+import { keycloakLogin, keycloakLogout } from '@/utils/keycloak/init-sso.js'
 
 import DsoHome from '@/views/DsoHome.vue'
 import OrderProject from '@/views/OrderProject.vue'
@@ -24,6 +23,20 @@ const routes = [
     beforeEnter: async (to, from) => {
       const userStore = useUserStore()
       userStore.login()
+    },
+  },
+  {
+    path: '/login',
+    name: 'Login',
+    beforeEnter: async (to, from) => {
+      await keycloakLogin()
+    },
+  },
+  {
+    path: '/logout',
+    name: 'Logout',
+    beforeEnter: async (to, from) => {
+      await keycloakLogout()
     },
   },
   {
@@ -72,34 +85,33 @@ router.beforeEach((to) => { // Cf. https://github.com/vueuse/head pour des trans
   const specificTitle = to.meta.title ? `${to.meta.title} - ` : ''
   document.title = `${specificTitle}${MAIN_TITLE}`
 })
-router.beforeEach(checkToken)
-
+// router.beforeEach(checkToken)
 export default router
 
-async function checkToken (to, from, next) {
-  const noTokenRequiredRoutes = [
-    'Auth',
-    'Home',
-    'Doc',
-  ]
-  if (noTokenRequiredRoutes.includes(to.name)) {
-    return next()
-  }
-  const userStore = useUserStore()
-  console.log('test: ', await userStore?.loggedIn?.value)
-  if (!userStore?.loggedIn?.value) {
-    console.log('not loggedin')
-    const token = window.localStorage.getItem('token')
-    if (!token) {
-      console.log('no token')
-      return next({ name: 'Auth' })
-    }
-    // await store.dispatch('checkToken', token)
-    if (!userStore?.loggedIn?.value) {
-      console.log('no loggedin')
-      return next({ name: 'Auth' })
-    }
-  }
-  console.log('next')
-  next()
-}
+// async function checkToken (to, from, next) {
+//   const noTokenRequiredRoutes = [
+//     'Auth',
+//     'Home',
+//     'Doc',
+//   ]
+//   if (noTokenRequiredRoutes.includes(to.name)) {
+//     return next()
+//   }
+//   const userStore = useUserStore()
+//   console.log('test: ', await userStore?.loggedIn?.value)
+//   if (!userStore?.loggedIn?.value) {
+//     console.log('not loggedin')
+//     const token = window.localStorage.getItem('token')
+//     if (!token) {
+//       console.log('no token')
+//       return next({ name: 'Auth' })
+//     }
+//     // await store.dispatch('checkToken', token)
+//     if (!userStore?.loggedIn?.value) {
+//       console.log('no loggedin')
+//       return next({ name: 'Auth' })
+//     }
+//   }
+//   console.log('next')
+//   next()
+// }
