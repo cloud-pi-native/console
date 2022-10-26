@@ -3,8 +3,8 @@ import { allServices } from 'shared/src/projects/utils.js'
 import { getLogInfos } from '../utils/logger.js'
 import {
   createProject,
-  getProjects,
-  getProjectById,
+  getUserProjects,
+  getUserProjectById,
 } from '../models/project-queries.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import app from '../app.js'
@@ -35,7 +35,9 @@ export const createProjectController = async (req, res) => {
 
 export const getProjectsController = async (req, res) => {
   try {
-    const projects = await getProjects()
+    const userId = req.session.user.id
+
+    const projects = await getUserProjects(userId)
 
     app.log.info({
       ...getLogInfos(),
@@ -56,7 +58,9 @@ export const getProjectByIdController = async (req, res) => {
   const id = req.params.id
 
   try {
-    const project = await getProjectById(id)
+    const userId = req.session.user.id
+
+    const project = await getUserProjectById(id, userId)
 
     app.log.info({
       ...getLogInfos({ projectId: project.id }),

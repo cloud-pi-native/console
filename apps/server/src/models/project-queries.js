@@ -1,5 +1,5 @@
 import { Op } from 'sequelize'
-import { getProject } from './project.js'
+import { getProjectModel } from './project.js'
 import { projectSchema } from 'shared/src/projects/schema.js'
 
 export const createProject = async (data) => {
@@ -9,26 +9,12 @@ export const createProject = async (data) => {
     throw new Error(`Project '${data.projectName}' already exists in database`)
   }
 
-  const res = await getProject().create({ data }, { attributes: ['data'] })
-  return res
-}
-
-export const getProjectById = async (id) => {
-  const res = await getProject().findOne({
-    where: {
-      data: {
-        id: {
-          [Op.eq]: id,
-        },
-      },
-    },
-    attributes: ['data'],
-  })
+  const res = await getProjectModel().create({ data }, { attributes: ['data'] })
   return res
 }
 
 export const getProjectByName = async (name) => {
-  const res = await getProject().findOne({
+  const res = await getProjectModel().findOne({
     where: {
       data: {
         projectName: {
@@ -42,6 +28,77 @@ export const getProjectByName = async (name) => {
 }
 
 export const getProjects = async () => {
-  const res = await getProject().findAll({ attributes: ['data'] })
+  const res = await getProjectModel().findAll({ attributes: ['data'] })
   return res
 }
+
+// TODO : ajouter itération dans users[].id (cf test en dessous)
+export const getUserProjectById = async (id, userId) => {
+  const res = await getProjectModel().findOne({
+    where: {
+      data: {
+        [Op.and]: [{
+          id: {
+            [Op.eq]: id,
+          },
+        }, {
+          owner: {
+            id: {
+              [Op.eq]: userId,
+            },
+          },
+        },
+        ],
+      },
+    },
+    attributes: ['data'],
+  })
+  return res
+}
+
+// TODO : ajouter itération dans users[].id (test en dessous)
+export const getUserProjects = async (userId) => {
+  const res = await getProjectModel().findAll({
+    where: {
+      data: {
+        owner: {
+          id: {
+            [Op.eq]: userId,
+          },
+        },
+      },
+    },
+    attributes: ['data'],
+  })
+  return res
+}
+
+// export const getProjectsByUserId = async (userId) => {
+//   console.log({ userId })
+//   const res = await getProjectModel().findAll({
+//     where: {
+//       data: {
+//         [Op.or]: [
+//           {
+//             owner: {
+//               id: {
+//                 [Op.eq]: userId,
+//               },
+//             },
+//           }, {
+//             users: {
+//               [Op.contains]: {
+//                 id: {
+//                   [Op.eq]: userId,
+//                 },
+//               },
+//             },
+//           },
+//         ],
+//       },
+//     },
+//     attributes: ['data'],
+//   })
+//   console.log({ res })
+//   return res
+// }
