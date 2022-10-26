@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon --experimental-json-modules --inspect src/server.js  --watch src",
-    "lint": "eslint ./src",
-    "format": "eslint ./src --fix --ext .js,.cjs,.ts",
+    "lint": "eslint . --ext .js,.cjs,.ts",
+    "format": "eslint . --ext .js,.cjs,.ts --fix",
     "start": "node --experimental-json-modules src/server.js",
     "test": "vitest run --coverage"
   },

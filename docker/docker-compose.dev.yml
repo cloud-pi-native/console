@@ -1,4 +1,5 @@
 version: '3.9'
+
 services:
   postgres:
     restart: always
@@ -27,10 +28,10 @@ services:
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
     command: start-dev --import-realm
     healthcheck:
-        test: ["CMD", "curl", "-f", "http://localhost:8080"]
-        interval: 30s
-        timeout: 10s
-        retries: 5
+      test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
+      interval: 20s
+      timeout: 10s
+      retries: 5
     networks:
       - dso-network
 

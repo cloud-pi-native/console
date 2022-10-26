@@ -3,13 +3,13 @@
   "description": "dso-portal client",
   "version": "1.0.0",
   "scripts": {
-    "dev": "vite",
     "build": "vite build",
+    "dev": "vite",
+    "format": "eslint . --ext .js,.cjs,.ts --fix",
+    "format:style": "stylelint ./src/**/*.{css,vue} --fix",
+    "lint": "eslint . --ext .js,.cjs,.ts && stylelint ./src/**/*.{css,vue}",
     "preview": "vite preview --port 8080",
-    "test": "vitest run --coverage",
-    "lint": "eslint ./src && stylelint ./src/**/*.{css,vue}",
-    "format": "eslint ./src --fix",
-    "format:style": "stylelint --fix"
+    "test": "vitest run --coverage"
   },
   "dependencies": {
     "@gouvminint/vue-dsfr": "^1.6.0",

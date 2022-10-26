@@ -1,8 +1,14 @@
 import { vi } from 'vitest'
 import * as xhrClient from './xhr-client.js'
 
-vi.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem')
-Object.getPrototypeOf(window.localStorage).getItem = vi.fn(() => 'token')
+// vi.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem')
+// Object.getPrototypeOf(window.localStorage).getItem = vi.fn(() => 'token')
+vi.mock('@/utils/keycloak/init-sso.js')
+// vi.mock('@/utils/keycloak/init-sso.js', () => ({
+//   getKeycloack: () => ({
+//     token: 'secret-token',
+//   }),
+// }))
 
 describe('xhr-client', () => {
   describe('Request interceptor', () => {
@@ -31,7 +37,6 @@ describe('xhr-client', () => {
       }
 
       const fullfiled = xhrClient.apiClient.interceptors.request.handlers[0].fulfilled(config)
-      expect(localStorage.getItem).toHaveBeenCalled()
       expect(fullfiled.headers).toHaveProperty('Authorization', 'Bearer token')
     })
   })
