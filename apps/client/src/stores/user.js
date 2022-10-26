@@ -8,8 +8,10 @@ export const useUserStore = defineStore('user', () => {
   /**
    * @param {boolean} isLoggedIn
    */
-  const setIsLoggedIn = (value) => {
-    isLoggedIn.value = value
+  const setIsLoggedIn = () => {
+    const keycloak = getKeycloak()
+    isLoggedIn.value = keycloak.authenticated
+    console.log('users.js - authenticated: ', keycloak.authenticated)
   }
 
   const login = async () => {

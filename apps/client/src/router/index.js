@@ -3,12 +3,12 @@ import { keycloakLogin, keycloakLogout } from '@/utils/keycloak/init-sso.js'
 
 import DsoHome from '@/views/DsoHome.vue'
 import OrderProject from '@/views/OrderProject.vue'
-import DsoAuth from '@/views/DsoAuth.vue'
+// import DsoAuth from '@/views/DsoAuth.vue'
 import DsoProjects from '@/views/projects/DsoProjects.vue'
 import DsoDashboard from '@/views/projects/DsoDashboard.vue'
 import DsoServices from '@/views/projects/DsoServices.vue'
 import DsoTeam from '@/views/projects/DsoTeam.vue'
-import { useUserStore } from '@/stores/user.js'
+// import { useUserStore } from '@/stores/user.js'
 
 const MAIN_TITLE = 'Portail Cloud PI Native'
 
@@ -16,15 +16,15 @@ const MAIN_TITLE = 'Portail Cloud PI Native'
  * @type {import('vue-router').RouteRecord[]}
  */
 const routes = [
-  {
-    path: '/auth',
-    name: 'Auth',
-    component: DsoAuth,
-    beforeEnter: async (to, from) => {
-      const userStore = useUserStore()
-      userStore.login()
-    },
-  },
+  // {
+  //   path: '/auth',
+  //   name: 'Auth',
+  //   component: DsoAuth,
+  //   beforeEnter: async (to, from) => {
+  //     const userStore = useUserStore()
+  //     userStore.login()
+  //   },
+  // },
   {
     path: '/login',
     name: 'Login',

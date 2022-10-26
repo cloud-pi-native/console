@@ -10,7 +10,7 @@ module.exports = {
     'promise',
   ],
   parserOptions: {
-    ecmaVersion: 12,
+    ecmaVersion: 'latest',
     sourceType: 'module',
   },
   env: {
