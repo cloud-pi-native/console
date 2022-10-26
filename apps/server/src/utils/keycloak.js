@@ -1,12 +1,9 @@
-const userPayloadMapper = (userPayload) => {
-  console.log({ userPayload })
-  return {
-    id: userPayload.sub,
-    email: userPayload.email,
-    firstName: userPayload.given_name,
-    lastName: userPayload.family_name,
-  }
-}
+const userPayloadMapper = (userPayload) => ({
+  id: userPayload.sub,
+  email: userPayload.email,
+  firstName: userPayload.given_name,
+  lastName: userPayload.family_name,
+})
 
 export const keycloakConf = {
   appOrigin: 'http://localhost:8080',
