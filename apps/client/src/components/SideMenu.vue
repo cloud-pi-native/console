@@ -1,10 +1,14 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useUserStore } from '@/stores/user.js'
 
 const route = useRoute()
+const userStore = useUserStore()
 
 const routeName = computed(() => route.name)
+
+const isLoggedIn = computed(() => userStore.isLoggedIn)
 
 const isExpanded = ref({
   mainMenu: false,
@@ -52,7 +56,9 @@ watch(routeName, () => {
           Accueil
         </DsfrSideMenuLink>
       </DsfrSideMenuListItem>
-      <DsfrSideMenuListItem>
+      <DsfrSideMenuListItem
+        v-if="isLoggedIn"
+      >
         <DsfrSideMenuButton
           data-testid="menuProjectsBtn"
           :expanded="isExpanded.projects"
