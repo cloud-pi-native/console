@@ -18,60 +18,6 @@ Cypress.on('uncaught:exception', (_err, _runnable) => {
   return false
 })
 
-Cypress.Commands.add('goOffline', () => {
-  cy.log('**go offline**')
-    .then(() => {
-      return Cypress.automation('remote:debugger:protocol',
-        {
-          command: 'Network.enable',
-        })
-    })
-    .then(() => {
-      return Cypress.automation('remote:debugger:protocol',
-        {
-          command: 'Network.emulateNetworkConditions',
-          params: {
-            offline: true,
-            latency: -1,
-            downloadThroughput: -1,
-            uploadThroughput: -1,
-          },
-        })
-    })
-})
-
-Cypress.Commands.add('goOnline', () => {
-  // disable offline mode, otherwise we will break our tests :)
-  cy.log('**go online**')
-    .then(() => {
-    // https://chromedevtools.github.io/devtools-protocol/1-3/Network/#method-emulateNetworkConditions
-      return Cypress.automation('remote:debugger:protocol',
-        {
-          command: 'Network.emulateNetworkConditions',
-          params: {
-            offline: false,
-            latency: -1,
-            downloadThroughput: -1,
-            uploadThroughput: -1,
-          },
-        })
-    })
-    .then(() => {
-      return Cypress.automation('remote:debugger:protocol',
-        {
-          command: 'Network.disable',
-        })
-    })
-})
-
-Cypress.Commands.add('assertOnline', () => {
-  return cy.wrap(window).its('navigator.onLine').should('be.true')
-})
-
-Cypress.Commands.add('assertOffline', () => {
-  return cy.wrap(window).its('navigator.onLine').should('be.false')
-})
-
 // Commande pour accéder / interagir avec le store dans les tests
 Cypress.Commands.add('getStore', () => cy.window().its('app.$store'))
 

@@ -1,4 +1,4 @@
-import { getKeycloak, keycloakInit } from '@/utils/keycloak/init-sso.js'
+import { getKeycloak } from '@/utils/keycloak/init-sso.js'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
@@ -14,18 +14,8 @@ export const useUserStore = defineStore('user', () => {
     console.log('users.js - authenticated: ', keycloak.authenticated)
   }
 
-  const login = async () => {
-    await keycloakInit()
-    const kc = getKeycloak()
-    const token = kc.token
-    window.localStorage.setItem('token', token)
-    setIsLoggedIn(kc.authenticated)
-    console.log('authenticated: ', kc.authenticated)
-  }
-
   return {
     isLoggedIn,
     setIsLoggedIn,
-    login,
   }
 })

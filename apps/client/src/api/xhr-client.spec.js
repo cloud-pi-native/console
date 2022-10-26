@@ -1,6 +1,7 @@
 import { vi } from 'vitest'
 import * as xhrClient from './xhr-client.js'
 
+// TODO : faire des tests
 // vi.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem')
 // Object.getPrototypeOf(window.localStorage).getItem = vi.fn(() => 'token')
 vi.mock('@/utils/keycloak/init-sso.js')
