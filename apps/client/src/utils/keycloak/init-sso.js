@@ -1,6 +1,5 @@
 import Keycloak from 'keycloak-js'
 import { ssoConf } from './config-sso.js'
-import { useUserStore } from '@/stores/user.js'
 
 let keycloak
 
@@ -21,8 +20,6 @@ export const keycloakInit = async () => {
   } catch (error) {
     console.log(error)
   }
-  const userStore = useUserStore()
-  userStore.setIsLoggedIn(keycloak.authenticated)
 }
 
 export const keycloakLogin = async () => {

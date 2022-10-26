@@ -9,10 +9,10 @@ import * as icons from './icons.js'
 import './main.css'
 import { keycloakInit } from './utils/keycloak/init-sso.js'
 
+await keycloakInit()
+
 createApp(App)
   .use(createPinia())
   .use(router)
   .use(VueDsfr, { icons: Object.values(icons) })
   .mount('#app')
-
-keycloakInit()
