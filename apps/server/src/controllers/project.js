@@ -17,13 +17,13 @@ export const createProjectController = async (req, res) => {
   try {
     const project = await createProject(data)
 
-    res.log.info({
+    app.log.info({
       ...getLogInfos({ projectId: project.id }),
       description: 'Project successfully created',
     })
     send201(res, project)
   } catch (error) {
-    res.log.error({
+    app.log.error({
       ...getLogInfos(),
       description: 'Cannot create project',
       error,
@@ -33,29 +33,16 @@ export const createProjectController = async (req, res) => {
 }
 
 export const getProjectsController = async (req, res) => {
-  const headers = req.headers
-  const session = req.session
-  const user = req.session?.user
-  const cookies = req.cookies
-  console.log('/user', { headers, session, user, cookies })
   try {
     const projects = await getProjects()
 
-    const headers = req.headers
-    const cookies = req.cookies
-    const session = req.session
-
-    console.log('req: ', app.jwt.verify(req.headers.authorization.split(' ')[1]))
-
-    console.log({ headers, cookies, session })
-
-    res.log.info({
+    app.log.info({
       ...getLogInfos(),
       description: 'Projects successfully retrived',
     })
     send200(res, projects)
   } catch (error) {
-    res.log.error({
+    app.log.error({
       ...getLogInfos(),
       description: 'Cannot retrieve projects',
       error,
@@ -70,13 +57,13 @@ export const getProjectByIdController = async (req, res) => {
   try {
     const project = await getProjectById(id)
 
-    res.log.info({
+    app.log.info({
       ...getLogInfos({ projectId: project.id }),
       description: 'Project successfully retrived',
     })
     send200(res, project)
   } catch (error) {
-    res.log.error({
+    app.log.error({
       ...getLogInfos({ projectId: id }),
       description: 'Cannot retrieve project',
       error,
