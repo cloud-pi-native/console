@@ -1,10 +1,13 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { noSpace } from '@/utils/regex.js'
 import { useProjectStore } from '@/stores/project.js'
-import { getUserProfile } from '@/utils/keycloak/init-sso.js'
+import { useUserStore } from '@/stores/user.js'
 
 const projectStore = useProjectStore()
+const userStore = useUserStore()
+
+const owner = computed(() => userStore.userProfile)
 
 /**
  * Defines a project
@@ -39,8 +42,6 @@ const orgOptions = ref([
     value: 'dinum',
   },
 ])
-
-const owner = ref({})
 
 /**
  * @returns {boolean}
@@ -106,10 +107,6 @@ const orderProject = () => {
   projectStore.orderProject(project.value)
 }
 // TODO : gérer l'après requête create
-
-onMounted(async () => {
-  owner.value = await getUserProfile()
-})
 
 </script>
 
