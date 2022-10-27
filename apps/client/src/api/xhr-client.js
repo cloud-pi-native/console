@@ -8,7 +8,7 @@ export const apiClient = axios.create({
 
 apiClient.interceptors.request.use(
   request => {
-    if (request.url === '/auth' || request.url?.startsWith('/version')) {
+    if (request.url?.startsWith('/version')) {
       return request
     }
     // TODO : gestion token avec keycloak
