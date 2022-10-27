@@ -29,9 +29,9 @@ services:
     command: start-dev --import-realm
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
-      interval: 20s
-      timeout: 10s
-      retries: 5
+      interval: 15s
+      timeout: 5s
+      retries: 10
     networks:
       - dso-network
 
