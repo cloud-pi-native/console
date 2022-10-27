@@ -27,11 +27,6 @@ export const getProjectByName = async (name) => {
   return res
 }
 
-export const getProjects = async () => {
-  const res = await getProjectModel().findAll({ attributes: ['data'] })
-  return res
-}
-
 // TODO : ajouter itération dans users[].id (cf test en dessous)
 export const getUserProjectById = async (id, userId) => {
   const res = await getProjectModel().findOne({
@@ -73,7 +68,7 @@ export const getUserProjects = async (userId) => {
   return res
 }
 
-// export const getProjectsByUserId = async (userId) => {
+// export const getUserProjects = async (userId) => {
 //   console.log({ userId })
 //   const res = await getProjectModel().findAll({
 //     where: {

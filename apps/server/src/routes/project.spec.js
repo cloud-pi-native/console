@@ -79,7 +79,7 @@ describe('Project routes', () => {
     })
   })
 
-  describe('get("/", getProjectsController)', () => {
+  describe('get("/", getUserProjectsController)', () => {
     it('Should get list of projects', async () => {
       const randomProjects = repeatFn(3)(createRandomProject)
 
@@ -112,7 +112,7 @@ describe('Project routes', () => {
     })
   })
 
-  describe('get("/:id", getProjectByIdController)', () => {
+  describe('get("/:id", getUserProjectByIdController)', () => {
     it('Should get a project by id', async () => {
       const randomProject = createRandomProject()
 

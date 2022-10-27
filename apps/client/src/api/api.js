@@ -1,12 +1,12 @@
 import { apiClient } from './xhr-client.js'
 
 // Project
-export const getProjects = async () => {
+export const getUserProjects = async () => {
   const response = await apiClient.get('/projects')
   return response.data
 }
 
-export const getProjectById = async (id) => {
+export const getUserProjectById = async (id) => {
   const response = await apiClient.get(`/projects/${id}`)
   return response.data
 }
