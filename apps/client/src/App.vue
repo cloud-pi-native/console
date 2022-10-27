@@ -1,6 +1,6 @@
 <script setup>
 import SideMenu from './components/SideMenu.vue'
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useUserStore } from './stores/user.js'
 import { getKeycloak } from './utils/keycloak/init-sso.js'
 
@@ -17,6 +17,10 @@ const quickLinks = [{
   icon: 'ri-account-circle-line',
   iconRight: true,
 }]
+
+onMounted(() => {
+  if (isLoggedIn.value) userStore.setUserProfile()
+})
 
 </script>
 
