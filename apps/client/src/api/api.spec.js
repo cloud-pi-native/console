@@ -1,8 +1,9 @@
 import { vi } from 'vitest'
 import { apiClient } from './xhr-client.js'
 import {
-  requestToken,
-  verifyToken,
+  getProjects,
+  getProjectById,
+  createProject,
 } from './api.js'
 
 vi.spyOn(apiClient, 'get')
@@ -11,24 +12,40 @@ vi.spyOn(apiClient, 'put')
 vi.spyOn(apiClient, 'patch')
 vi.spyOn(apiClient, 'delete')
 
-describe('Connection', () => {
-  it('Should request token (POST)', async () => {
-    apiClient.post.mockReturnValueOnce(Promise.resolve({ data: { success: true } }))
-
-    await requestToken({})
-
-    expect(apiClient.post).toHaveBeenCalled()
-    expect(apiClient.post).toHaveBeenCalledTimes(1)
-    expect(apiClient.post.mock.calls[0][0]).toBe('/auth')
+describe('API', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
   })
+  describe('Projects', () => {
+    it('Should create a project (POST)', async () => {
+      apiClient.post.mockReturnValueOnce(Promise.resolve({ data: {} }))
 
-  it('Should verify token (GET)', async () => {
-    apiClient.get.mockReturnValueOnce(Promise.resolve({ data: { success: true } }))
+      await createProject({})
 
-    await verifyToken({})
+      expect(apiClient.post).toHaveBeenCalled()
+      expect(apiClient.post).toHaveBeenCalledTimes(1)
+      expect(apiClient.post.mock.calls[0][0]).toBe('/projects')
+    })
 
-    expect(apiClient.get).toHaveBeenCalled()
-    expect(apiClient.get).toHaveBeenCalledTimes(1)
-    expect(apiClient.get.mock.calls[0][0]).toBe('/auth/verify-token')
+    it('Should get projects (GET)', async () => {
+      apiClient.get.mockReturnValueOnce(Promise.resolve({ data: {} }))
+
+      await getProjects()
+
+      expect(apiClient.get).toHaveBeenCalled()
+      expect(apiClient.get).toHaveBeenCalledTimes(1)
+      expect(apiClient.get.mock.calls[0][0]).toBe('/projects')
+    })
+
+    it('Should get a project (GET)', async () => {
+      const projectId = 'thisIsAnId'
+      apiClient.get.mockReturnValueOnce(Promise.resolve({ data: {} }))
+
+      await getProjectById(projectId)
+
+      expect(apiClient.get).toHaveBeenCalled()
+      expect(apiClient.get).toHaveBeenCalledTimes(1)
+      expect(apiClient.get.mock.calls[0][0]).toBe(`/projects/${projectId}`)
+    })
   })
 })
