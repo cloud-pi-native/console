@@ -33,7 +33,7 @@ export const createProjectController = async (req, res) => {
   }
 }
 
-export const getProjectsController = async (req, res) => {
+export const getUserProjectsController = async (req, res) => {
   try {
     const userId = req.session.user.id
 
@@ -54,7 +54,7 @@ export const getProjectsController = async (req, res) => {
   }
 }
 
-export const getProjectByIdController = async (req, res) => {
+export const getUserProjectByIdController = async (req, res) => {
   const id = req.params.id
 
   try {
