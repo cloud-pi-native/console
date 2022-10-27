@@ -12,8 +12,7 @@ export const repoSchema = Joi.object({
   userName: Joi.string()
     .required(),
 
-  isPrivate: Joi.boolean()
-    .required(),
+  isPrivate: Joi.boolean(),
 
   gitToken: Joi.string()
     .when('isPrivate', { is: true, then: Joi.required() }),

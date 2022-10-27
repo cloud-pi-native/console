@@ -1,4 +1,5 @@
 import { Op } from 'sequelize'
+import { sequelize } from '../connect.js'
 import { getProjectModel } from './project.js'
 import { projectSchema } from 'shared/src/projects/schema.js'
 
@@ -27,73 +28,12 @@ export const getProjectByName = async (name) => {
   return res
 }
 
-// TODO : ajouter itération dans users[].id (cf test en dessous)
 export const getUserProjectById = async (id, userId) => {
-  const res = await getProjectModel().findOne({
-    where: {
-      data: {
-        [Op.and]: [{
-          id: {
-            [Op.eq]: id,
-          },
-        }, {
-          owner: {
-            id: {
-              [Op.eq]: userId,
-            },
-          },
-        },
-        ],
-      },
-    },
-    attributes: ['data'],
-  })
+  const res = await sequelize.query(`SELECT data FROM "Projects" WHERE (("data"#>>'{owner,id}') = '${userId}' OR data->'users' @> '[{"id": "${userId}"}]') AND ("data"#>>'{id}') = '${id}' LIMIT 1;`, { type: sequelize.QueryTypes.SELECT, model: getProjectModel(), plain: true })
   return res
 }
 
-// TODO : ajouter itération dans users[].id (test en dessous)
 export const getUserProjects = async (userId) => {
-  const res = await getProjectModel().findAll({
-    where: {
-      data: {
-        owner: {
-          id: {
-            [Op.eq]: userId,
-          },
-        },
-      },
-    },
-    attributes: ['data'],
-  })
+  const res = await sequelize.query(`SELECT data FROM "Projects" WHERE (("data"#>>'{owner,id}') = '${userId}' OR data->'users' @> '[{"id": "${userId}"}]');`, { type: sequelize.QueryTypes.SELECT, model: getProjectModel() })
   return res
 }
-
-// export const getUserProjects = async (userId) => {
-//   console.log({ userId })
-//   const res = await getProjectModel().findAll({
-//     where: {
-//       data: {
-//         [Op.or]: [
-//           {
-//             owner: {
-//               id: {
-//                 [Op.eq]: userId,
-//               },
-//             },
-//           }, {
-//             users: {
-//               [Op.contains]: {
-//                 id: {
-//                   [Op.eq]: userId,
-//                 },
-//               },
-//             },
-//           },
-//         ],
-//       },
-//     },
-//     attributes: ['data'],
-//   })
-//   console.log({ res })
-//   return res
-// }
