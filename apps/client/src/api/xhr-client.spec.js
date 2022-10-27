@@ -1,20 +1,14 @@
 import { vi } from 'vitest'
 import * as xhrClient from './xhr-client.js'
 
-vi.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem')
-Object.getPrototypeOf(window.localStorage).getItem = vi.fn(() => 'token')
+vi.mock('@/utils/keycloak/init-sso.js', () => ({
+  getKeycloak: () => ({
+    token: 'token',
+  }),
+}))
 
 describe('xhr-client', () => {
   describe('Request interceptor', () => {
-    it('Should return config if url = "/auth"', async () => {
-      const config = {
-        url: '/auth',
-      }
-
-      const fullfiled = xhrClient.apiClient.interceptors.request.handlers[0].fulfilled(config)
-      expect(fullfiled).toMatchObject(config)
-    })
-
     it('Should return config if url = "/version"', async () => {
       const config = {
         url: '/version',
@@ -26,12 +20,11 @@ describe('xhr-client', () => {
 
     it('Should add token to the request', async () => {
       const config = {
-        url: '/items',
+        url: '/projects',
         headers: {},
       }
 
       const fullfiled = xhrClient.apiClient.interceptors.request.handlers[0].fulfilled(config)
-      expect(localStorage.getItem).toHaveBeenCalled()
       expect(fullfiled.headers).toHaveProperty('Authorization', 'Bearer token')
     })
   })

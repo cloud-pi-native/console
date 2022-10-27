@@ -5,15 +5,18 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon --experimental-json-modules --inspect src/server.js  --watch src",
-    "lint": "eslint ./src",
-    "format": "eslint ./src --fix --ext .js,.cjs,.ts",
+    "lint": "eslint . --ext .js,.cjs,.ts",
+    "format": "eslint . --ext .js,.cjs,.ts --fix",
     "start": "node --experimental-json-modules src/server.js",
     "test": "vitest run --coverage"
   },
   "dependencies": {
+    "@fastify/cookie": "^8.3.0",
     "@fastify/helmet": "^10.0.2",
+    "@fastify/session": "^10.0.2",
     "date-fns": "^2.29.3",
     "fastify": "^4.9.1",
+    "fastify-keycloak-adapter": "^1.6.2",
     "lodash.kebabcase": "^4.1.1",
     "nanoid": "4.0.0",
     "pg": "8.8.0",
@@ -30,6 +33,7 @@
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-n": "^15.3.0",
     "eslint-plugin-promise": "^6.1.0",
+    "fastify-plugin": "^4.3.0",
     "nodemon": "^2.0.20",
     "pino-pretty": "^9.1.1",
     "sequelize-mock": "^0.10.2",

@@ -1,5 +1,22 @@
 <script setup>
 import SideMenu from './components/SideMenu.vue'
+import { ref } from 'vue'
+import { useUserStore } from './stores/user.js'
+import { getKeycloak } from './utils/keycloak/init-sso.js'
+
+const keycloak = getKeycloak()
+const userStore = useUserStore()
+userStore.setIsLoggedIn()
+
+const isLoggedIn = ref(keycloak.authenticated)
+const label = isLoggedIn.value ? 'Se déconnecter' : 'Se connecter'
+const to = isLoggedIn.value ? '/logout' : '/login'
+const quickLinks = [{
+  label,
+  to,
+  icon: 'ri-account-circle-line',
+  iconRight: true,
+}]
 
 </script>
 
@@ -7,6 +24,7 @@ import SideMenu from './components/SideMenu.vue'
   <DsfrHeader
     service-title="Portail Cloud PI Native"
     :logo-text="['Ministère', 'de l’intérieur']"
+    :quick-links="quickLinks"
   />
   <div class="fr-container fr-grid-row">
     <div class="fr-col-12 fr-col-md-3">

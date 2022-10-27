@@ -1,10 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
-
-import { getKeycloak, initKeycloak } from '@/utils/keycloak/init-sso.js'
+import { keycloakLogin, keycloakLogout } from '@/utils/keycloak/init-sso.js'
 
 import DsoHome from '@/views/DsoHome.vue'
 import OrderProject from '@/views/OrderProject.vue'
-import DsoAuth from '@/views/DsoAuth.vue'
 import DsoProjects from '@/views/projects/DsoProjects.vue'
 import DsoDashboard from '@/views/projects/DsoDashboard.vue'
 import DsoServices from '@/views/projects/DsoServices.vue'
@@ -17,13 +15,17 @@ const MAIN_TITLE = 'Portail Cloud PI Native'
  */
 const routes = [
   {
-    path: '/auth',
-    name: 'Auth',
-    component: DsoAuth,
+    path: '/login',
+    name: 'Login',
     beforeEnter: async (to, from) => {
-      await initKeycloak()
-      const kc = getKeycloak()
-      console.log({ 2: kc, token: kc.token })
+      await keycloakLogin()
+    },
+  },
+  {
+    path: '/logout',
+    name: 'Logout',
+    beforeEnter: async (to, from) => {
+      await keycloakLogout()
     },
   },
   {

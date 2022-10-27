@@ -7,6 +7,7 @@ import {
   getProjectById,
 } from '../models/project-queries.js'
 import { send200, send201, send500 } from '../utils/response.js'
+import app from '../app.js'
 
 export const createProjectController = async (req, res) => {
   const data = req.body
@@ -16,13 +17,13 @@ export const createProjectController = async (req, res) => {
   try {
     const project = await createProject(data)
 
-    res.log.info({
+    app.log.info({
       ...getLogInfos({ projectId: project.id }),
       description: 'Project successfully created',
     })
     send201(res, project)
   } catch (error) {
-    res.log.error({
+    app.log.error({
       ...getLogInfos(),
       description: 'Cannot create project',
       error,
@@ -31,17 +32,17 @@ export const createProjectController = async (req, res) => {
   }
 }
 
-export const getProjectsController = async (_req, res) => {
+export const getProjectsController = async (req, res) => {
   try {
     const projects = await getProjects()
 
-    res.log.info({
+    app.log.info({
       ...getLogInfos(),
       description: 'Projects successfully retrived',
     })
     send200(res, projects)
   } catch (error) {
-    res.log.error({
+    app.log.error({
       ...getLogInfos(),
       description: 'Cannot retrieve projects',
       error,
@@ -56,13 +57,13 @@ export const getProjectByIdController = async (req, res) => {
   try {
     const project = await getProjectById(id)
 
-    res.log.info({
+    app.log.info({
       ...getLogInfos({ projectId: project.id }),
       description: 'Project successfully retrived',
     })
     send200(res, project)
   } catch (error) {
-    res.log.error({
+    app.log.error({
       ...getLogInfos({ projectId: id }),
       description: 'Cannot retrieve project',
       error,
