@@ -1,5 +1,5 @@
 import {
-  getRandomProjectEmail,
+  getRandomOwner,
   getRandomProjectName,
   getRandomProjectOrgName,
   getRandomProjectRepo,
@@ -8,7 +8,7 @@ import {
 
 export const createRandomProject = () => {
   return {
-    email: getRandomProjectEmail(),
+    owner: getRandomOwner(),
     orgName: getRandomProjectOrgName(),
     projectName: getRandomProjectName(),
     services: getRandomProjectServices(),

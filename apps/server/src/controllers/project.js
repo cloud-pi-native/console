@@ -15,6 +15,8 @@ export const createProjectController = async (req, res) => {
   data.services = allServices
   data.owner = req.session.user
 
+  // console.log({ session: req.session, headers: req.headers, cookies: req.cookies, user: req.session.user })
+
   try {
     const project = await createProject(data)
 
