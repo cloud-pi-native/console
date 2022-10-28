@@ -4,7 +4,7 @@ import fastifySession from '@fastify/session'
 import fastifyCookie from '@fastify/cookie'
 import fp from 'fastify-plugin'
 import { sessionConf } from '../utils/keycloak.js'
-import { getConnection, closeConnections } from '../connect.js'
+import { getConnection, closeConnections, sequelize } from '../connect.js'
 import { getProjectModel } from '../models/project.js'
 import projectRouter from './project.js'
 import { createRandomProject } from '../utils/__tests__/project-util.js'
@@ -17,10 +17,10 @@ const app = fastify({ logger: false })
   .register(fastifyCookie)
   .register(fastifySession, sessionConf)
 
-const mockSession = (app, owner) => {
+const mockSession = (app) => {
   app.register(fp(async (app, opt, done) => {
     app.addHook('onRequest', (req, res, done) => {
-      req.session = { user: owner }
+      req.session = { user: getOwner() }
       done()
     })
     done()
@@ -28,14 +28,27 @@ const mockSession = (app, owner) => {
     .register(projectRouter)
 }
 
+let owner
+const setOwner = (givenOwner) => {
+  owner = givenOwner
+}
+
+const getOwner = () => {
+  return owner
+}
+
 describe('Project routes', () => {
   let Project
   beforeAll(async () => {
+    mockSession(app)
     await getConnection()
     Project = getProjectModel()
   })
   afterAll(async () => {
     return closeConnections()
+  })
+  beforeEach(() => {
+    vi.clearAllMocks()
   })
 
   describe('post("/", createProjectController)', () => {
@@ -43,7 +56,7 @@ describe('Project routes', () => {
       const randomProject = createRandomProject()
 
       Project.$queueResult(null)
-      mockSession(app, randomProject.owner)
+      setOwner(randomProject.owner)
 
       const response = await app.inject()
         .post('/')
@@ -80,10 +93,14 @@ describe('Project routes', () => {
   })
 
   describe('get("/", getUserProjectsController)', () => {
-    it('Should get list of projects', async () => {
+    it('Should get list of a user\'s projects', async () => {
       const randomProjects = repeatFn(3)(createRandomProject)
 
-      Project.$queueResult(randomProjects.map(randomProject => Project.create({ data: randomProject })))
+      sequelize.$queueResult(randomProjects.map(randomProject => {
+        randomProject.owner = randomProjects[0].owner
+        return Project.create({ data: randomProject })
+      }))
+      setOwner(randomProjects[0].owner)
 
       const response = await app.inject()
         .get('/')
@@ -99,7 +116,7 @@ describe('Project routes', () => {
 
     it('Should return an error while get list of projects', async () => {
       const errorMessage = 'error message'
-      Project.$queueFailure(errorMessage)
+      sequelize.$queueFailure(errorMessage)
 
       const response = await app.inject()
         .get('/')
@@ -116,7 +133,8 @@ describe('Project routes', () => {
     it('Should get a project by id', async () => {
       const randomProject = createRandomProject()
 
-      Project.$queueResult(Project.create({ data: randomProject }))
+      sequelize.$queueResult(Project.create({ data: randomProject }))
+      setOwner(randomProject.owner)
 
       const response = await app.inject()
         .get(`/${randomProject.id}`)
@@ -129,7 +147,7 @@ describe('Project routes', () => {
 
     it('Should not get a project when id is invalid', async () => {
       const errorMessage = 'error message'
-      Project.$queueFailure(errorMessage)
+      sequelize.$queueFailure(errorMessage)
 
       const response = await app.inject()
         .get('/invalid')

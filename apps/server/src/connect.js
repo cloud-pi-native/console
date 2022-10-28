@@ -23,7 +23,7 @@ export const getConnection = async (triesLeft = 5) => {
 
   if (isTest || isCI) {
     const { default: SequelizeMock } = await import('sequelize-mock')
-    sequelize = new SequelizeMock({ autoQueryFallback: false, stopPropagation: true })
+    sequelize = new SequelizeMock()
     return
   }
   try {

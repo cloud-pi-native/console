@@ -37,7 +37,7 @@ export const getRandomProjectRepo = (length = 1) => {
 export const getRandomOwner = () => {
   const owner = {}
 
-  owner.id = faker.database.mongodbObjectId()
+  owner.id = faker.datatype.uuid()
   owner.email = faker.internet.email()
   owner.firstName = faker.name.firstName()
   owner.lastName = faker.name.lastName()
