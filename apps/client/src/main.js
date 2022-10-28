@@ -10,11 +10,15 @@ import './main.css'
 import { keycloakInit } from './utils/keycloak/init-sso.js'
 
 (async () => {
-  await keycloakInit()
-})()
+  try {
+    await keycloakInit()
+  } catch (e) {
+    console.log(e)
+  }
 
-createApp(App)
-  .use(createPinia())
-  .use(router)
-  .use(VueDsfr, { icons: Object.values(icons) })
-  .mount('#app')
+  createApp(App)
+    .use(createPinia())
+    .use(router)
+    .use(VueDsfr, { icons: Object.values(icons) })
+    .mount('#app')
+})()

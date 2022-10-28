@@ -1,8 +1,8 @@
 import { faker } from '@faker-js/faker'
 import { allOrgNames, allServices } from 'shared/src/projects/utils.js'
 
-export const getRandomProjectEmail = () => {
-  return faker.internet.email()
+export const getRandomUuid = () => {
+  return faker.datatype.uuid()
 }
 
 export const getRandomProjectOrgName = () => {
@@ -32,4 +32,15 @@ export const getRandomProjectRepo = (length = 1) => {
     i++
   }
   return repo
+}
+
+export const getRandomOwner = () => {
+  const owner = {}
+
+  owner.id = faker.database.mongodbObjectId()
+  owner.email = faker.internet.email()
+  owner.firstName = faker.name.firstName()
+  owner.lastName = faker.name.lastName()
+
+  return owner
 }

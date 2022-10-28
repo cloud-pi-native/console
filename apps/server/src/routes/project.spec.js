@@ -1,6 +1,9 @@
 import { vi } from 'vitest'
 import fastify from 'fastify'
+import fastifySession from '@fastify/session'
+import fastifyCookie from '@fastify/cookie'
 import fp from 'fastify-plugin'
+import { sessionConf } from '../utils/keycloak.js'
 import { getConnection, closeConnections } from '../connect.js'
 import { getProject } from '../models/project.js'
 import projectRouter from './project.js'
@@ -10,7 +13,20 @@ vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) })
 
 export const repeatFn = nb => fn => Array.from({ length: nb }).map(() => fn())
 
-const app = fastify({ logger: false }).register(projectRouter)
+const app = fastify({ logger: false })
+  .register(fastifyCookie)
+  .register(fastifySession, sessionConf)
+
+const mockSession = (app, owner) => {
+  app.register(fp(async (app, opt, done) => {
+    app.addHook('onRequest', (req, res, done) => {
+      req.session = { user: owner }
+      done()
+    })
+    done()
+  }))
+    .register(projectRouter)
+}
 
 describe('Project routes', () => {
   let Project
@@ -27,6 +43,7 @@ describe('Project routes', () => {
       const randomProject = createRandomProject()
 
       Project.$queueResult(null)
+      mockSession(app, randomProject.owner)
 
       const response = await app.inject()
         .post('/')
