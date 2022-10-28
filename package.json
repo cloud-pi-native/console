@@ -18,7 +18,7 @@
     "format:style": "turbo run format:style",
     "test:e2e": "./ci/scripts/run-tests.sh -e",
     "test:e2e-build": "docker compose -f ./docker/docker-compose.prod.yml --env-file ./env/.env build --pull",
-    "test:e2e-open": "./ci/scripts/run-tests.sh -e -o; cd ./packages/cypress; npm run test:e2e-open",
+    "test:e2e-open": "./ci/scripts/run-tests.sh -e -o",
     "test": "turbo run test --concurrency 1",
     "test:client": "turbo run test --filter client",
     "test:server": "turbo run test --filter server"
