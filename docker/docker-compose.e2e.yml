@@ -78,14 +78,20 @@ services:
       - server
     ports:
       - 8080:8080
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
     networks:
       - dso-network
 
   cypress:
-    image: cypress/included:10.8.0
+    image: cypress/included:10.11.0
     container_name: dso-console_cypress
     depends_on:
-      - client
+      client:
+        condition: service_healthy
     working_dir: /app
     volumes:
       - ../packages/cypress:/app
