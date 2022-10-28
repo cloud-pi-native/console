@@ -5,7 +5,7 @@ import fastifyCookie from '@fastify/cookie'
 import fp from 'fastify-plugin'
 import { sessionConf } from '../utils/keycloak.js'
 import { getConnection, closeConnections } from '../connect.js'
-import { getProject } from '../models/project.js'
+import { getProjectModel } from '../models/project.js'
 import projectRouter from './project.js'
 import { createRandomProject } from '../utils/__tests__/project-util.js'
 
@@ -32,7 +32,7 @@ describe('Project routes', () => {
   let Project
   beforeAll(async () => {
     await getConnection()
-    Project = getProject()
+    Project = getProjectModel()
   })
   afterAll(async () => {
     return closeConnections()
