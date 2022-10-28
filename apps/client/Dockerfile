@@ -30,6 +30,13 @@ RUN pnpm --filter ./apps/client deploy pruned
 # Build stage
 FROM node:lts-bullseye-slim as build
 
+ARG KEYCLOAK_HOST
+ARG KEYCLOAK_PORT
+ARG KEYCLOAK_REALM
+ARG KEYCLOAK_CLIENTID
+ARG SERVER_HOST
+ARG SERVER_PORT
+
 WORKDIR /app
 
 COPY --from=install /install/pruned .

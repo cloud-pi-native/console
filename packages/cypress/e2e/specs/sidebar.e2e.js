@@ -14,8 +14,7 @@ describe('Sidebar', () => {
       .getByDataTestid('menuDoc')
       .should('have.class', 'router-link-active')
   })
-  // TODO : connexion keycloak
-  it.skip('Should display Sidebar, loggedIn', () => {
+  it('Should display Sidebar, loggedIn', () => {
     cy.visit('/')
       .kcLogin()
       .getByDataTestid('mainMenu')
