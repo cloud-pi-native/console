@@ -8,7 +8,7 @@ import DsoDashboard from '@/views/projects/DsoDashboard.vue'
 import DsoServices from '@/views/projects/DsoServices.vue'
 import DsoTeam from '@/views/projects/DsoTeam.vue'
 
-const MAIN_TITLE = 'Portail Cloud PI Native'
+const MAIN_TITLE = 'Console Cloud PI Native'
 
 /**
  * @type {import('vue-router').RouteRecord[]}
