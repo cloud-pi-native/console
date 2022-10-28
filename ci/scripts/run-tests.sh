@@ -123,6 +123,9 @@ if [ "$RUN_E2E_TESTS" ]; then
         --detach postgres server client keycloak \
         --pull always \
         --quiet-pull
+  
+  cd ./packages/cypress && npm run test:e2e-open
+
   else
     docker compose \
       --file "$PROJECT_DIR/docker/docker-compose.prod.yml" \
