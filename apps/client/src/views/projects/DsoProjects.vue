@@ -26,7 +26,7 @@ const goToOrderProject = () => {
 }
 
 onMounted(() => {
-  projectStore.getProjects()
+  projectStore.getUserProjects()
 })
 
 watch(selectedProjectId, () => {

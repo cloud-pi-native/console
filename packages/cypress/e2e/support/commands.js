@@ -1,3 +1,12 @@
+Cypress.Commands.add('kcLogin', () => {
+  cy.visit('/login')
+    .getSettled('input#username')
+    .type('test')
+    .get('input#password')
+    .type('test')
+    .get('input#kc-login').click()
+})
+
 Cypress.Commands.add('getByDataTestid', (dataTestid) => {
   cy.get(`[data-testid="${dataTestid}"]`)
 })

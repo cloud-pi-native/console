@@ -1,6 +1,86 @@
 version: '3.9'
 
 services:
+  
+  postgres:
+    restart: always
+    image: postgres:14.5
+    container_name: dso-console_postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DATABASE}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ../db/postgres/scripts:/docker-entrypoint-initdb.d
+    networks:
+      - dso-network
+
+  keycloak:
+    restart: always
+    image: quay.io/keycloak/keycloak:19.0.2
+    container_name: dso-console_keycloak
+    ports:
+      - 8090:8080
+    volumes:
+      - ../keycloak/realms/realm-quickstart.json:/opt/keycloak/data/import/realm.json
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+    command: start-dev --import-realm
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    networks:
+      - dso-network
+
+  server:
+    restart: always
+    build:
+      context: ..
+      dockerfile: apps/server/Dockerfile
+      target: prod
+    image: dso-console/server
+    container_name: dso-console_server
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      postgres:
+        condition: service_started
+    ports:
+      - 4000:4000
+    environment:
+      SERVER_PORT: ${SERVER_PORT:-4000}
+      DB_HOST: postgres
+      DB_PORT: ${DB_PORT:-5432}
+      DB_USER: ${DB_USER:-admin}
+      DB_PASS: ${DB_PASS:-admin}
+      DB_NAME: ${DB_NAME:-dso-console-db}
+      NODE_ENV: production
+    networks:
+      - dso-network
+
+  client:
+    build:
+      context: ..
+      dockerfile: apps/client/Dockerfile
+      target: prod
+      args: 
+        KEYCLOAK_HOST: ${KEYCLOAK_HOST:-localhost}
+        KEYCLOAK_PORT: ${KEYCLOAK_PORT:-8090}
+        KEYCLOAK_REALM: ${KEYCLOAK_REALM:-quickstart}
+        KEYCLOAK_CLIENTID: ${KEYCLOAK_CLIENTID:-test-frontend}
+        SERVER_HOST: ${SERVER_HOST:-server}
+        SERVER_PORT: ${SERVER_PORT:-4000}
+    image: dso-console/client
+    depends_on:
+      - server
+    ports:
+      - 8080:8080
+    networks:
+      - dso-network
+
   cypress:
     image: cypress/included:10.8.0
     container_name: dso-console_cypress
@@ -10,8 +90,8 @@ services:
     volumes:
       - ../packages/cypress:/app
     environment:
-      CLIENT_HOST: ${CLIENT_HOST}
-      CLIENT_PORT: ${CLIENT_PORT}
+      CLIENT_HOST: ${CLIENT_HOST:-client}
+      CLIENT_PORT: ${CLIENT_PORT:-8080}
       NODE_ENV: test
     networks:
       - dso-network

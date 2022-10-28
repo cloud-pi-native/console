@@ -1,5 +1,6 @@
 import { Op } from 'sequelize'
-import { getProject } from './project.js'
+import { sequelize } from '../connect.js'
+import { getProjectModel } from './project.js'
 import { projectSchema } from 'shared/src/projects/schema.js'
 
 export const createProject = async (data) => {
@@ -9,26 +10,12 @@ export const createProject = async (data) => {
     throw new Error(`Project '${data.projectName}' already exists in database`)
   }
 
-  const res = await getProject().create({ data }, { attributes: ['data'] })
-  return res
-}
-
-export const getProjectById = async (id) => {
-  const res = await getProject().findOne({
-    where: {
-      data: {
-        id: {
-          [Op.eq]: id,
-        },
-      },
-    },
-    attributes: ['data'],
-  })
+  const res = await getProjectModel().create({ data }, { attributes: ['data'] })
   return res
 }
 
 export const getProjectByName = async (name) => {
-  const res = await getProject().findOne({
+  const res = await getProjectModel().findOne({
     where: {
       data: {
         projectName: {
@@ -41,7 +28,12 @@ export const getProjectByName = async (name) => {
   return res
 }
 
-export const getProjects = async () => {
-  const res = await getProject().findAll({ attributes: ['data'] })
+export const getUserProjectById = async (id, userId) => {
+  const res = await sequelize.query(`SELECT data FROM "Projects" WHERE (("data"#>>'{owner,id}') = '${userId}' OR data->'users' @> '[{"id": "${userId}"}]') AND ("data"#>>'{id}') = '${id}' LIMIT 1;`, { type: sequelize.QueryTypes?.SELECT, model: getProjectModel(), plain: true })
+  return res
+}
+
+export const getUserProjects = async (userId) => {
+  const res = await sequelize.query(`SELECT data FROM "Projects" WHERE (("data"#>>'{owner,id}') = '${userId}' OR data->'users' @> '[{"id": "${userId}"}]');`, { type: sequelize.QueryTypes?.SELECT, model: getProjectModel() })
   return res
 }

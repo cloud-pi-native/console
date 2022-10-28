@@ -1,4 +1,4 @@
-# Portail Cloud PI Native
+# Console Cloud PI Native
 
 ## Règles métier
 

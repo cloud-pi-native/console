@@ -1,6 +1,22 @@
 describe('Sidebar', () => {
-  it('Should display Sidebar', () => {
+  it('Should display Sidebar, not loggedIn', () => {
     cy.visit('/')
+      .getByDataTestid('mainMenu')
+      .should('be.visible')
+      .getByDataTestid('menuProjectsList')
+      .should('not.exist')
+      .getByDataTestid('menuProjectsBtn')
+      .should('not.exist')
+      .getByDataTestid('menuDoc').click()
+      .getByDataTestid('menuProjectsBtn')
+      .should('not.exist')
+      .url().should('contain', '/doc')
+      .getByDataTestid('menuDoc')
+      .should('have.class', 'router-link-active')
+  })
+  it('Should display Sidebar, loggedIn', () => {
+    cy.visit('/')
+      .kcLogin()
       .getByDataTestid('mainMenu')
       .should('be.visible')
       .getByDataTestid('menuProjectsList')

@@ -17,15 +17,18 @@
     "format": "turbo run format",
     "format:style": "turbo run format:style",
     "test:e2e": "./ci/scripts/run-tests.sh -e",
-    "test:e2e-build": "docker compose -f ./docker/docker-compose.prod.yml --env-file ./env/.env build --pull",
+    "test:e2e-build": "docker compose -f ./docker/docker-compose.e2e.yml --env-file ./env/.env build --pull",
+    "test:e2e-open": "./ci/scripts/run-tests.sh -e -o",
+    "test:e2e-up": "docker compose -f ./docker/docker-compose.e2e.yml --env-file ./env/.env up --attach cypress --remove-orphans --pull always --quiet-pull",
+    "test:e2e-down": "docker compose --file ./docker/docker-compose.e2e.yml --env-file ./env/.env down --volumes",
     "test": "turbo run test --concurrency 1",
-    "test:client": "turbo run test --filter=apps/client",
-    "test:server": "turbo run test --filter=apps/server"
+    "test:client": "turbo run test --filter client",
+    "test:server": "turbo run test --filter server"
   },
   "devDependencies": {
     "husky": "^8.0.1",
     "lint-staged": "^13.0.3",
-    "turbo": "^1.5.6"
+    "turbo": "^1.6.2"
   },
   "volta": {
     "node": "18.11.0"
