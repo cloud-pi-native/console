@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+# set -e
 
 # Colorize terminal
 red='\e[0;31m'
@@ -19,6 +19,7 @@ DOCKER_COMPOSE_VERSION="$(docker compose version)"
 
 # Default
 ENV_FILE="$PROJECT_DIR/env/.env"
+RUN_E2E_OPEN="false"
 
 # Declare script helper
 TEXT_HELPER="\nThis script aims to run application tests.
@@ -79,7 +80,8 @@ printf "\nScript settings:
   -> node version: $NODE_VERSION
   -> npm version: $NPM_VERSION
   -> docker version: $DOCKER_VERSION
-  -> docker-compose version: $DOCKER_COMPOSE_VERSION\n"
+  -> docker-compose version: $DOCKER_COMPOSE_VERSION
+  -> cypress-open: $RUN_E2E_OPEN\n"
 
 
 # Run unit tests
@@ -115,20 +117,18 @@ if [ "$RUN_E2E_TESTS" ]; then
 
   cd "$PROJECT_DIR"
 
-  if [ "$RUN_E2E_OPEN" ]; then
+  if [ "$RUN_E2E_OPEN" == "true" ]; then
     docker compose \
-      --file "$PROJECT_DIR/docker/docker-compose.prod.yml" \
       --file "$PROJECT_DIR/docker/docker-compose.e2e.yml" \
       --env-file "$ENV_FILE" up \
         --detach postgres server client keycloak \
         --pull always \
         --quiet-pull
   
-  cd ./packages/cypress && npm run test:e2e-open
+    cd ./packages/cypress && npm run test:e2e-open
 
   else
     docker compose \
-      --file "$PROJECT_DIR/docker/docker-compose.prod.yml" \
       --file "$PROJECT_DIR/docker/docker-compose.e2e.yml" \
       --env-file "$ENV_FILE" up \
         --exit-code-from cypress \
@@ -136,13 +136,13 @@ if [ "$RUN_E2E_TESTS" ]; then
         --remove-orphans \
         --pull always \
         --quiet-pull
+
   fi
 
   printf "\n${red}${i}.${no_color} Remove stopped containers\n"
   i=$(($i + 1))
 
   docker compose \
-    --file "$PROJECT_DIR/docker/docker-compose.prod.yml" \
     --file "$PROJECT_DIR/docker/docker-compose.e2e.yml" \
     --env-file "$ENV_FILE" down \
       --volumes
