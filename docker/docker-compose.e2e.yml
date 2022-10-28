@@ -1,6 +1,26 @@
 version: '3.9'
 
 services:
+  keycloak:
+    restart: always
+    image: quay.io/keycloak/keycloak:19.0.2
+    container_name: dso-console_keycloak
+    ports:
+      - 8090:8080
+    volumes:
+      - ../keycloak/realms/realm-quickstart.json:/opt/keycloak/data/import/realm.json
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+    command: start-dev --import-realm
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    networks:
+      - dso-network
+
   cypress:
     image: cypress/included:10.8.0
     container_name: dso-console_cypress
