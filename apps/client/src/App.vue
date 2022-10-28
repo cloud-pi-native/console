@@ -26,7 +26,7 @@ onMounted(() => {
 
 <template>
   <DsfrHeader
-    service-title="Portail Cloud PI Native"
+    service-title="Console Cloud PI Native"
     :logo-text="['Ministère', 'de l’intérieur']"
     :quick-links="quickLinks"
   />
