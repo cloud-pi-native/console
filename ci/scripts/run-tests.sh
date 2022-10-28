@@ -28,6 +28,8 @@ Following flags are available:
 
   -u    Run unit tests for the given directory
         This argument can be call multiple times if needed
+  
+  -o    Run e2e tests in open mode
 
   -h    Print script help\n\n"
 
@@ -36,13 +38,15 @@ print_help() {
 }
 
 # Parse options
-while getopts heu: flag
+while getopts heu:o flag
 do
   case "${flag}" in
     e)
       RUN_E2E_TESTS=true;;
     u)
       UNIT_TESTS_DIRS+=(${OPTARG});;
+    o)
+      RUN_E2E_OPEN=true;;
     h | *)
       print_help
       exit 0;;
@@ -111,16 +115,26 @@ if [ "$RUN_E2E_TESTS" ]; then
 
   cd "$PROJECT_DIR"
 
-  docker compose \
-    --file "$PROJECT_DIR/docker/docker-compose.prod.yml" \
-    --file "$PROJECT_DIR/docker/docker-compose.e2e.yml" \
-    --env-file "$ENV_FILE" up \
-      --exit-code-from cypress \
-      --attach cypress \
-      --remove-orphans \
-      --pull always \
-      --quiet-pull
-  
+  if [ "$RUN_E2E_OPEN" ]; then
+    docker compose \
+      --file "$PROJECT_DIR/docker/docker-compose.prod.yml" \
+      --file "$PROJECT_DIR/docker/docker-compose.e2e.yml" \
+      --env-file "$ENV_FILE" up \
+        --detach postgres server client keycloak \
+        --pull always \
+        --quiet-pull
+  else
+    docker compose \
+      --file "$PROJECT_DIR/docker/docker-compose.prod.yml" \
+      --file "$PROJECT_DIR/docker/docker-compose.e2e.yml" \
+      --env-file "$ENV_FILE" up \
+        --exit-code-from cypress \
+        --attach cypress \
+        --remove-orphans \
+        --pull always \
+        --quiet-pull
+    fi
+
   printf "\n${red}${i}.${no_color} Remove stopped containers\n"
   i=$(($i + 1))
 
