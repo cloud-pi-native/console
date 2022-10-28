@@ -66,16 +66,18 @@ services:
       context: ..
       dockerfile: apps/client/Dockerfile
       target: prod
+      args: 
+        KEYCLOAK_HOST: ${KEYCLOAK_HOST:-localhost}
+        KEYCLOAK_PORT: ${KEYCLOAK_PORT:-8090}
+        KEYCLOAK_REALM: ${KEYCLOAK_REALM:-quickstart}
+        KEYCLOAK_CLIENTID: ${KEYCLOAK_CLIENTID:-test-frontend}
+        SERVER_HOST: ${SERVER_HOST:-server}
+        SERVER_PORT: ${SERVER_PORT:-4000}
     image: dso-console/client
+    depends_on:
+      - server
     ports:
       - 8080:8080
-    environment:
-      KEYCLOAK_HOST: ${KEYCLOAK_HOST:-localhost}
-      KEYCLOAK_PORT: ${KEYCLOAK_PORT:-8090}
-      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-quickstart}
-      KEYCLOAK_CLIENTID: ${KEYCLOAK_CLIENTID:-test-frontend}
-      SERVER_HOST: ${SERVER_HOST:-server}
-      SERVER_PORT: ${SERVER_PORT:-4000}
     networks:
       - dso-network
 
@@ -88,8 +90,8 @@ services:
     volumes:
       - ../packages/cypress:/app
     environment:
-      CLIENT_HOST: ${CLIENT_HOST}
-      CLIENT_PORT: ${CLIENT_PORT}
+      CLIENT_HOST: ${CLIENT_HOST:-client}
+      CLIENT_PORT: ${CLIENT_PORT:-8080}
       NODE_ENV: test
     networks:
       - dso-network
