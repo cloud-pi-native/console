@@ -128,10 +128,6 @@ if [ "$RUN_E2E_TESTS" ]; then
     cd ./packages/cypress \
     && npm run test:e2e-open
 
-    # && cat "$ENV_FILE" \
-    #   | grep -Ev '#|^$' \
-    #   | while read v; do export $v; done \
-    
   else
     docker compose \
       --file "$PROJECT_DIR/docker/docker-compose.e2e.yml" \
