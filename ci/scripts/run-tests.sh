@@ -136,7 +136,7 @@ if [ "$RUN_E2E_TESTS" ]; then
         --remove-orphans \
         --pull always \
         --quiet-pull
-    fi
+  fi
 
   printf "\n${red}${i}.${no_color} Remove stopped containers\n"
   i=$(($i + 1))
