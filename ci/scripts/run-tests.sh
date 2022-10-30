@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# set -e
+set -e
 
 # Colorize terminal
 red='\e[0;31m'
@@ -19,19 +19,19 @@ DOCKER_COMPOSE_VERSION="$(docker compose version)"
 
 # Default
 ENV_FILE="$PROJECT_DIR/env/.env"
-RUN_E2E_OPEN="false"
+RUN_E2E_HEADLESS="false"
 
 # Declare script helper
 TEXT_HELPER="\nThis script aims to run application tests.
 Following flags are available:
+
+  -c    (Optional) Run e2e tests in CI mode, i.e headless
 
   -e    Run e2e tests
 
   -u    Run unit tests for the given directory
         This argument can be call multiple times if needed
   
-  -o    Run e2e tests in open mode
-
   -h    Print script help\n\n"
 
 print_help() {
@@ -39,15 +39,16 @@ print_help() {
 }
 
 # Parse options
-while getopts heu:o flag
+while getopts hceu: flag
 do
   case "${flag}" in
+    c)
+      RUN_E2E_HEADLESS=true
+      ENV_FILE="$PROJECT_DIR/env/.env.ci";;
     e)
       RUN_E2E_TESTS=true;;
     u)
       UNIT_TESTS_DIRS+=(${OPTARG});;
-    o)
-      RUN_E2E_OPEN=true;;
     h | *)
       print_help
       exit 0;;
@@ -63,7 +64,7 @@ if [ ! "$RUN_E2E_TESTS" ] && [ ! "$UNIT_TESTS_DIRS" ]; then
 fi
 
 if [ ! -f "$ENV_FILE" ]; then
-  printf "\n${red}Optional.${no_color} Trying to copy file '.env-example' to '.env' because it's missing\n"
+  printf "\n${red}Optional.${no_color} Trying to copy file '.env*-example' to '.env*' because it's missing\n"
 
   if [ -f "$ENV_FILE-example" ]; then
     cp $ENV_FILE-example $ENV_FILE
@@ -81,7 +82,8 @@ printf "\nScript settings:
   -> npm version: $NPM_VERSION
   -> docker version: $DOCKER_VERSION
   -> docker-compose version: $DOCKER_COMPOSE_VERSION
-  -> cypress-open: $RUN_E2E_OPEN\n"
+  -> headless cypress: $RUN_E2E_HEADLESS
+  -> env file: $ENV_FILE\n"
 
 
 # Run unit tests
@@ -117,27 +119,23 @@ if [ "$RUN_E2E_TESTS" ]; then
 
   cd "$PROJECT_DIR"
 
-  if [ "$RUN_E2E_OPEN" == "true" ]; then
-    docker compose \
-      --file "$PROJECT_DIR/docker/docker-compose.e2e.yml" \
-      --env-file "$ENV_FILE" up \
-        --detach postgres server client keycloak \
-        --pull always \
-        --quiet-pull
-  
-    cd ./packages/cypress \
-    && npm run test:e2e-open
-
-  else
+  if [ "$RUN_E2E_HEADLESS" == "true" ]; then
     docker compose \
       --file "$PROJECT_DIR/docker/docker-compose.e2e.yml" \
       --env-file "$ENV_FILE" up \
         --exit-code-from cypress \
         --attach cypress \
-        --remove-orphans \
-        --pull always \
-        --quiet-pull
-
+        --build \
+        --quiet-pull \
+        --remove-orphans
+  else
+    docker compose \
+      --file "$PROJECT_DIR/docker/docker-compose.e2e.yml" \
+      --env-file "$ENV_FILE" up \
+        --detach postgres server client keycloak
+  
+    cd ./packages/cypress
+    npm run cypress:open
   fi
 
   printf "\n${red}${i}.${no_color} Remove stopped containers\n"

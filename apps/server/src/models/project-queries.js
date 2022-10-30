@@ -5,7 +5,7 @@ import { projectSchema } from 'shared/src/projects/schema.js'
 
 export const createProject = async (data) => {
   await projectSchema.validateAsync(data)
-  const alreadyExist = await getProjectByName(data.projectName)
+  const alreadyExist = await checkUniqueProject(data.projectName, data.orgName)
   if (alreadyExist) {
     throw new Error(`Project '${data.projectName}' already exists in database`)
   }
@@ -14,14 +14,25 @@ export const createProject = async (data) => {
   return res
 }
 
-export const getProjectByName = async (name) => {
+export const checkUniqueProject = async (name, orgName) => {
   const res = await getProjectModel().findOne({
     where: {
-      data: {
-        projectName: {
-          [Op.iLike]: name,
+      [Op.and]: [
+        {
+          data: {
+            projectName: {
+              [Op.iLike]: name,
+            },
+          },
         },
-      },
+        {
+          data: {
+            orgName: {
+              [Op.eq]: orgName,
+            },
+          },
+        },
+      ],
     },
     attributes: ['data'],
   })
@@ -37,3 +48,5 @@ export const getUserProjects = async (userId) => {
   const res = await sequelize.query(`SELECT data FROM "Projects" WHERE (("data"#>>'{owner,id}') = '${userId}' OR data->'users' @> '[{"id": "${userId}"}]');`, { type: sequelize.QueryTypes?.SELECT, model: getProjectModel() })
   return res
 }
+
+export const _deleteAllProjects = async () => await getProjectModel().destroy({ truncate: true })

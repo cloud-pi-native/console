@@ -13,6 +13,13 @@ module.exports = defineConfig({
     screenshotsFolder: 'e2e/screenshots',
     numTestsKeptInMemory: 1,
     chromeWebSecurity: false,
+    experimentalModifyObstructiveThirdPartyCode: false,
+    experimentalWebKitSupport: false,
+    experimentalSessionAndOrigin: true,
+    env: {
+      clientHost,
+      clientPort,
+    },
   },
   components: {
     specPattern: 'components/specs/**/*.{cy,ct}.js',

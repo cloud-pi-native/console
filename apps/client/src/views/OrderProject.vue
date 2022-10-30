@@ -193,7 +193,7 @@ const orderProject = () => {
       />
       <DsfrCheckbox
         v-model="repo.isPrivate"
-        :data-testid="`userNameCbx-${index}`"
+        :data-testid="`privateRepoCbx-${index}`"
         label="Dépôt source privé"
         hint="Cochez la case si le dépôt Git source est privé"
         name="isGitSourcePrivate"

@@ -96,7 +96,7 @@ jobs:
       - name: Checks-out repository
         uses: actions/checkout@v3
       - name: Run e2e tests
-        run: ./ci/scripts/run-tests.sh -e
+        run: ./ci/scripts/run-tests.sh -e -c
       - name: Upload cypress artifacts
         if: ${{ failure() }}
         uses: actions/upload-artifact@v3

@@ -1,7 +1,6 @@
 version: '3.9'
 
 services:
-  
   postgres:
     restart: always
     image: postgres:14.5
@@ -41,7 +40,7 @@ services:
       context: ..
       dockerfile: apps/server/Dockerfile
       target: prod
-    image: dso-console/server
+    image: dso-console/server:test
     container_name: dso-console_server
     depends_on:
       keycloak:
@@ -53,11 +52,17 @@ services:
     environment:
       SERVER_PORT: ${SERVER_PORT:-4000}
       DB_HOST: postgres
-      DB_PORT: ${DB_PORT:-5432}
-      DB_USER: ${DB_USER:-admin}
-      DB_PASS: ${DB_PASS:-admin}
-      DB_NAME: ${DB_NAME:-dso-console-db}
-      NODE_ENV: production
+      DB_PORT: ${POSTGRES_PORT:-5432}
+      DB_USER: ${POSTGRES_USER:-admin}
+      DB_PASS: ${POSTGRES_PASSWORD:-admin}
+      DB_NAME: ${POSTGRES_DATABASE:-dso-console-db}
+      SESSION_SECRET: ${SESSION_SECRET:-a-very-strong-secret-with-more-than-32-char}
+      KEYCLOAK_DOMAIN: keycloak:8080
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-quickstart}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_BACKEND:-test-backend}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_BACKEND:-client-secret-backend}
+      CI: "true"
+      DEV_SETUP: "true"
     networks:
       - dso-network
 
@@ -66,44 +71,48 @@ services:
       context: ..
       dockerfile: apps/client/Dockerfile
       target: prod
-      args: 
-        KEYCLOAK_HOST: ${KEYCLOAK_HOST:-localhost}
-        KEYCLOAK_PORT: ${KEYCLOAK_PORT:-8090}
+      args:
+        KEYCLOAK_DOMAIN: ${KEYCLOAK_DOMAIN:-localhost:8090}
         KEYCLOAK_REALM: ${KEYCLOAK_REALM:-quickstart}
-        KEYCLOAK_CLIENTID: ${KEYCLOAK_CLIENTID:-test-frontend}
+        KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_FRONTEND:-test-frontend}
+        KEYCLOAK_REDIRECT_URI: ${KEYCLOAK_REDIRECT_URI:-http://client:8080}
         SERVER_HOST: ${SERVER_HOST:-server}
         SERVER_PORT: ${SERVER_PORT:-4000}
-    image: dso-console/client
+    image: dso-console/client:test
+    container_name: dso-console_client
     depends_on:
-      - server
+      server:
+        condition: service_started
     ports:
       - 8080:8080
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
-      interval: 10s
-      timeout: 5s
-      retries: 10
     networks:
       - dso-network
 
   cypress:
-    image: cypress/included:10.11.0
+    build:
+      context: ..
+      dockerfile: packages/cypress/Dockerfile
+    image: dso-console/cypress:test
     container_name: dso-console_cypress
     depends_on:
       client:
-        condition: service_healthy
-    working_dir: /app
+        condition: service_started
     volumes:
-      - ../packages/cypress:/app
+      - /app/node_modules/
+      - ../packages/cypress:/app/packages/cypress
+      - /app/packages/cypress/node_modules/
+      - ../packages/shared:/app/packages/shared
+      - /app/packages/shared/node_modules/
     environment:
       CLIENT_HOST: ${CLIENT_HOST:-client}
       CLIENT_PORT: ${CLIENT_PORT:-8080}
-      NODE_ENV: test
     networks:
       - dso-network
 
 networks:
   dso-network:
-    name: dso-network
+    driver: bridge
+    # dso-network:
+    #   name: dso-network
     # driver_opts:
     # com.docker.network.driver.mtu: 1450
