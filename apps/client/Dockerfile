@@ -24,22 +24,22 @@ RUN npm install --global pnpm
 WORKDIR /install
 
 COPY . .
-RUN pnpm --filter ./apps/client deploy pruned
+RUN pnpm --filter ./apps/client --prod deploy client
 
 
 # Build stage
 FROM node:lts-bullseye-slim as build
 
-ARG KEYCLOAK_HOST
-ARG KEYCLOAK_PORT
-ARG KEYCLOAK_REALM
-ARG KEYCLOAK_CLIENTID
 ARG SERVER_HOST
 ARG SERVER_PORT
+ARG KEYCLOAK_DOMAIN
+ARG KEYCLOAK_REALM
+ARG KEYCLOAK_CLIENT_ID
+ARG KEYCLOAK_REDIRECT_URI
 
 WORKDIR /app
 
-COPY --from=install /install/pruned .
+COPY --from=install /install/client .
 RUN npm run build
 
 

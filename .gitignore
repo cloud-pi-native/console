@@ -10,8 +10,12 @@
 # modules
 node_modules
 **/node_modules
+
 # env
 .env
+.env.ci
+.env.test
+.env.prod
 
 # cypress
 screenshots

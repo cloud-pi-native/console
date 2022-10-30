@@ -16,7 +16,7 @@ export const useProjectStore = defineStore('project', () => {
 
   const getUserProjects = async () => {
     const res = await api.getUserProjects()
-    projects.value = res.map(({ data }) => data)
+    projects.value = res?.map(({ data }) => data)
   }
 
   const orderProject = async (project) => {

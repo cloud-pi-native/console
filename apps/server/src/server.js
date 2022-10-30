@@ -1,6 +1,6 @@
 import app from './app.js'
 import { getConnection, closeConnections } from './connect.js'
-import { isDev, isTest, isProd } from './utils/env.js'
+import { isDev, isTest, isCI, isProd, isDevSetup } from './utils/env.js'
 
 const port = process.env.SERVER_PORT
 
@@ -19,7 +19,7 @@ export async function startServer () {
 
   try {
     const { initDb } = await import('../dev-setup/init-db.js')
-    if (isTest && initDb) {
+    if (initDb && (isDevSetup || isTest)) {
       app.log.info('Starting init DB...')
       await initDb()
       app.log.info('DB successfully init')
@@ -39,7 +39,7 @@ export async function startServer () {
       process.exit(1)
     }
   })
-  app.log.debug({ isDev, isTest, isProd })
+  app.log.debug({ isDev, isTest, isCI, isDevSetup, isProd })
 }
 
 export function handleExit () {

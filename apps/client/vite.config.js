@@ -2,19 +2,20 @@ import { fileURLToPath, URL } from 'url'
 import { defineConfig } from 'vite'
 import WindiCSS from 'vite-plugin-windicss'
 import vue from '@vitejs/plugin-vue'
-import { keycloakHost, keycloakPort } from './src/utils/keycloak/config-sso.js'
+import { keycloakDomain } from './src/utils/keycloak/config-sso.js'
 
 const serverHost = process.env.SERVER_HOST
 const serverPort = process.env.SERVER_PORT
+const clientPort = process.env.CLIENT_PORT
 
 // https://vitejs.dev/config/
 export default defineConfig({
   server: {
     host: '0.0.0.0',
-    port: 8080,
+    port: clientPort || 8080,
     proxy: {
       '^/realms': {
-        target: `http://${keycloakHost}:${keycloakPort}`,
+        target: `http://${keycloakDomain}`,
         changeOrigin: true,
         ws: true,
       },

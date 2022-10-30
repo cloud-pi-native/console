@@ -24,17 +24,19 @@ RUN npm install --global pnpm
 WORKDIR /install
 
 COPY . .
-RUN pnpm --filter=./apps/server --prod deploy pruned
+RUN pnpm --filter=./apps/server --prod deploy server
 
 
 # Prod stage
 FROM node:lts-bullseye-slim as prod
 
+ARG NODE_ENV
+
 WORKDIR /app
 
-COPY --from=install /install/pruned .
+COPY --chown=node:node --from=install /install/server .
 
-RUN chown -R node:node /app
+# RUN chown -R node:node /app
 USER node
 
 CMD ["npm", "run", "start"]

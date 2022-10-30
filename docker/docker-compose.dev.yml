@@ -76,10 +76,15 @@ services:
     environment:
       SERVER_PORT: ${SERVER_PORT:-4000}
       DB_HOST: postgres
-      DB_PORT: ${DB_PORT:-5432}
-      DB_USER: ${DB_USER:-admin}
-      DB_PASS: ${DB_PASS:-admin}
-      DB_NAME: ${DB_NAME:-dso-console-db}
+      DB_PORT: ${POSTGRES_PORT:-5432}
+      DB_USER: ${POSTGRES_USER:-admin}
+      DB_PASS: ${POSTGRES_PASSWORD:-admin}
+      DB_NAME: ${POSTGRES_DATABASE:-dso-console-db}
+      SESSION_SECRET: ${SESSION_SECRET:-a-very-strong-secret-with-more-than-32-char}
+      KEYCLOAK_DOMAIN: keycloak:8080
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-quickstart}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_BACKEND:-test-backend}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_BACKEND:-client-secret-backend}
       NODE_ENV: development
     networks:
       - dso-network
@@ -103,12 +108,12 @@ services:
       - ../packages/shared:/app/packages/shared
       - /app/packages/shared/node_modules/
     environment:
-      KEYCLOAK_HOST: ${KEYCLOAK_HOST:-localhost}
-      KEYCLOAK_PORT: ${KEYCLOAK_PORT:-8090}
+      KEYCLOAK_DOMAIN: localhost:8090
       KEYCLOAK_REALM: ${KEYCLOAK_REALM:-quickstart}
-      KEYCLOAK_CLIENTID: ${KEYCLOAK_CLIENTID:-test-frontend}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_FRONTEND:-test-frontend}
       SERVER_HOST: ${SERVER_HOST:-server}
       SERVER_PORT: ${SERVER_PORT:-4000}
+      CLIENT_PORT: ${CLIENT_PORT:-4000}
     networks:
       - dso-network
 

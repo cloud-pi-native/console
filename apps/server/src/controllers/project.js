@@ -27,7 +27,7 @@ export const createProjectController = async (req, res) => {
     app.log.error({
       ...getLogInfos(),
       description: 'Cannot create project',
-      error,
+      error: error.message,
     })
     send500(res, error.message)
   }
@@ -48,7 +48,7 @@ export const getUserProjectsController = async (req, res) => {
     app.log.error({
       ...getLogInfos(),
       description: 'Cannot retrieve projects',
-      error,
+      error: error.message,
     })
     send500(res, error.message)
   }
@@ -71,7 +71,7 @@ export const getUserProjectByIdController = async (req, res) => {
     app.log.error({
       ...getLogInfos({ projectId: id }),
       description: 'Cannot retrieve project',
-      error,
+      error: error.message,
     })
     send500(res, error.message)
   }
