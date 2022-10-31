@@ -19,16 +19,19 @@ DOCKER_COMPOSE_VERSION="$(docker compose version)"
 
 # Default
 ENV_FILE="$PROJECT_DIR/env/.env"
+RUN_E2E_HEADLESS="false"
 
 # Declare script helper
 TEXT_HELPER="\nThis script aims to run application tests.
 Following flags are available:
 
+  -c    (Optional) Run e2e tests in CI mode, i.e headless
+
   -e    Run e2e tests
 
   -u    Run unit tests for the given directory
         This argument can be call multiple times if needed
-
+  
   -h    Print script help\n\n"
 
 print_help() {
@@ -36,9 +39,12 @@ print_help() {
 }
 
 # Parse options
-while getopts heu: flag
+while getopts hceu: flag
 do
   case "${flag}" in
+    c)
+      RUN_E2E_HEADLESS=true
+      ENV_FILE="$PROJECT_DIR/env/.env.ci";;
     e)
       RUN_E2E_TESTS=true;;
     u)
@@ -58,7 +64,7 @@ if [ ! "$RUN_E2E_TESTS" ] && [ ! "$UNIT_TESTS_DIRS" ]; then
 fi
 
 if [ ! -f "$ENV_FILE" ]; then
-  printf "\n${red}Optional.${no_color} Trying to copy file '.env-example' to '.env' because it's missing\n"
+  printf "\n${red}Optional.${no_color} Trying to copy file '.env*-example' to '.env*' because it's missing\n"
 
   if [ -f "$ENV_FILE-example" ]; then
     cp $ENV_FILE-example $ENV_FILE
@@ -75,7 +81,9 @@ printf "\nScript settings:
   -> node version: $NODE_VERSION
   -> npm version: $NPM_VERSION
   -> docker version: $DOCKER_VERSION
-  -> docker-compose version: $DOCKER_COMPOSE_VERSION\n"
+  -> docker-compose version: $DOCKER_COMPOSE_VERSION
+  -> headless cypress: $RUN_E2E_HEADLESS
+  -> env file: $ENV_FILE\n"
 
 
 # Run unit tests
@@ -111,21 +119,29 @@ if [ "$RUN_E2E_TESTS" ]; then
 
   cd "$PROJECT_DIR"
 
-  docker compose \
-    --file "$PROJECT_DIR/docker/docker-compose.prod.yml" \
-    --file "$PROJECT_DIR/docker/docker-compose.e2e.yml" \
-    --env-file "$ENV_FILE" up \
-      --exit-code-from cypress \
-      --attach cypress \
-      --remove-orphans \
-      --pull always \
-      --quiet-pull
+  if [ "$RUN_E2E_HEADLESS" == "true" ]; then
+    docker compose \
+      --file "$PROJECT_DIR/docker/docker-compose.e2e.yml" \
+      --env-file "$ENV_FILE" up \
+        --exit-code-from cypress \
+        --attach cypress \
+        --build \
+        --quiet-pull \
+        --remove-orphans
+  else
+    docker compose \
+      --file "$PROJECT_DIR/docker/docker-compose.e2e.yml" \
+      --env-file "$ENV_FILE" up \
+        --detach postgres server client keycloak
   
+    cd ./packages/cypress
+    npm run cypress:open
+  fi
+
   printf "\n${red}${i}.${no_color} Remove stopped containers\n"
   i=$(($i + 1))
 
   docker compose \
-    --file "$PROJECT_DIR/docker/docker-compose.prod.yml" \
     --file "$PROJECT_DIR/docker/docker-compose.e2e.yml" \
     --env-file "$ENV_FILE" down \
       --volumes

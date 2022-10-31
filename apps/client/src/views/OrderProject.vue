@@ -1,17 +1,20 @@
 <script setup>
 import { computed, ref } from 'vue'
-import { noSpace, email } from '@/utils/regex.js'
+import { noSpace } from '@/utils/regex.js'
 import { useProjectStore } from '@/stores/project.js'
+import { useUserStore } from '@/stores/user.js'
 
 const projectStore = useProjectStore()
+const userStore = useUserStore()
+
+const owner = computed(() => userStore.userProfile)
 
 /**
  * Defines a project
  *
  * @typedef {Object} project
- * @property {(string|undefined)} email
- * @property {(string|undefined)} orgname
- * @property {(string|undefined)} projectName
+ * @property {string} orgname
+ * @property {string} projectName
  * @property {Object[]} [repo]
  * @property {(string|undefined)} repo[].gitName
  * @property {(string|undefined)} [repo[].gitSourceName]
@@ -20,7 +23,6 @@ const projectStore = useProjectStore()
  * @property {(string|undefined)} [repo[].gitToken]
  */
 const project = ref({
-  email: undefined,
   orgName: undefined,
   projectName: undefined,
   repo: [],
@@ -40,13 +42,6 @@ const orgOptions = ref([
     value: 'dinum',
   },
 ])
-
-/**
- * @returns {boolean}
- */
-const isEmailValid = computed(() => {
-  return email.test(project.value.email)
-})
 
 /**
  * @returns {boolean}
@@ -82,8 +77,7 @@ const isRepoValid = computed(() => {
  * @returns {boolean}
  */
 const isFormValid = computed(() => {
-  return isEmailValid.value &&
-    project.value.orgName &&
+  return project.value.orgName &&
     project.value.projectName &&
     isProjectNameValid.value &&
     isRepoValid.value
@@ -122,16 +116,10 @@ const orderProject = () => {
     legend="Coordonnées"
     hint="Tous les champs sont requis"
   >
-    <DsfrInput
-      v-model="project.email"
-      data-testid="emailInput"
-      type="email"
-      required="required"
-      autocomplete="email"
-      :is-invalid="project.email ? !isEmailValid : false"
-      label="E-mail professionnel"
-      label-visible
-      placeholder="prenom.nom@interieur.gouv.fr"
+    <DsfrAlert
+      type="info"
+      :description="`L'adresse e-mail associée au projet sera : ${owner.email}`"
+      small
       class="fr-mb-2w"
     />
     <DsfrSelect
@@ -205,7 +193,7 @@ const orderProject = () => {
       />
       <DsfrCheckbox
         v-model="repo.isPrivate"
-        :data-testid="`userNameCbx-${index}`"
+        :data-testid="`privateRepoCbx-${index}`"
         label="Dépôt source privé"
         hint="Cochez la case si le dépôt Git source est privé"
         name="isGitSourcePrivate"

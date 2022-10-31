@@ -3,6 +3,26 @@
 version: '3.9'
 
 services:
+  keycloak:
+    restart: always
+    image: quay.io/keycloak/keycloak:19.0.2
+    container_name: dso-console_keycloak
+    ports:
+      - 8090:8080
+    volumes:
+      - ../keycloak/realms/realm-quickstart.json:/opt/keycloak/data/import/realm.json
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+    command: start-dev --import-realm
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    networks:
+      - dso-network
+
   postgres:
     restart: always
     image: postgres:14.5
@@ -19,39 +39,52 @@ services:
   server:
     restart: always
     build:
-      # context: apps/server
-      # dockerfile: Dockerfile
       context: ..
       dockerfile: apps/server/Dockerfile
       target: prod
     image: dso-console/server
     container_name: dso-console_server
     depends_on:
-      # - keycloak
-      - postgres
+      keycloak:
+        condition: service_healthy
+      postgres:
+        condition: service_started
     ports:
       - 4000:4000
     environment:
       SERVER_PORT: ${SERVER_PORT}
+      DB_HOST: postgres
+      DB_PORT: ${POSTGRES_PORT}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASS: ${POSTGRES_PASSWORD}
+      DB_NAME: ${POSTGRES_DATABASE}
+      SESSION_SECRET: ${SESSION_SECRET}
+      KEYCLOAK_DOMAIN: keycloak:8080
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_BACKEND}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_BACKEND}
+      KEYCLOAK_REDIRECT_URI: ${KEYCLOAK_REDIRECT_URI}
       NODE_ENV: production
     networks:
       - dso-network
 
   client:
     build:
-      # context: apps/client
-      # dockerfile: Dockerfile
       context: ..
       dockerfile: apps/client/Dockerfile
       target: prod
+      args:
+        KEYCLOAK_DOMAIN: localhost:8090
+        KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+        KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_FRONTEND}
+        SERVER_HOST: server
+        SERVER_PORT: ${SERVER_PORT}
     image: dso-console/client
+    depends_on:
+      server:
+        condition: service_started
     ports:
       - 8080:8080
-    environment:
-      KEYCLOAK_HOST: ${KEYCLOAK_HOST}
-      KEYCLOAK_PORT: ${KEYCLOAK_PORT}
-      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
-      KEYCLOAK_CLIENTID: ${KEYCLOAK_CLIENTID}
     networks:
       - dso-network
 

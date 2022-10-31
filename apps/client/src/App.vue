@@ -1,6 +1,6 @@
 <script setup>
 import SideMenu from './components/SideMenu.vue'
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useUserStore } from './stores/user.js'
 import { getKeycloak } from './utils/keycloak/init-sso.js'
 
@@ -18,11 +18,15 @@ const quickLinks = [{
   iconRight: true,
 }]
 
+onMounted(() => {
+  if (isLoggedIn.value) userStore.setUserProfile()
+})
+
 </script>
 
 <template>
   <DsfrHeader
-    service-title="Portail Cloud PI Native"
+    service-title="Console Cloud PI Native"
     :logo-text="['Ministère', 'de l’intérieur']"
     :quick-links="quickLinks"
   />

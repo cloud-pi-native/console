@@ -1,13 +1,18 @@
+export const keycloakDomain = process.env.KEYCLOAK_DOMAIN
+export const keycloakRealm = process.env.KEYCLOAK_REALM
+
 const userPayloadMapper = (userPayload) => ({
-  account: userPayload.preferred_username,
-  name: userPayload.name,
+  id: userPayload.sub,
+  email: userPayload.email,
+  firstName: userPayload.given_name,
+  lastName: userPayload.family_name,
 })
 
 export const keycloakConf = {
-  appOrigin: 'http://localhost:8080',
-  keycloakSubdomain: 'keycloak:8080/realms/quickstart',
-  clientId: 'test-backend',
-  clientSecret: 'client-secret-backend',
+  appOrigin: 'http://localhost:4000',
+  keycloakSubdomain: `${keycloakDomain}/realms/${keycloakRealm}`,
+  clientId: process.env.KEYCLOAK_CLIENT_ID,
+  clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
   useHttps: false,
   disableCookiePlugin: true,
   disableSessionPlugin: true,
@@ -17,7 +22,7 @@ export const keycloakConf = {
 
 export const sessionConf = {
   cookieName: 'sessionId',
-  secret: 'a-very-strong-secret-with-more-than-32-char',
+  secret: process.env.SESSION_SECRET || 'a-very-strong-secret-with-more-than-32-char',
   cookie: {
     httpOnly: true,
     secure: true,

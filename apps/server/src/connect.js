@@ -1,6 +1,6 @@
 import { Sequelize } from 'sequelize'
 import { setTimeout } from 'node:timers/promises'
-import { isTest, isCI, isProd } from './utils/env.js'
+import { isTest, isCI, isDev } from './utils/env.js'
 import app from './app.js'
 
 const DELAY_BEFORE_RETRY = isTest || isCI ? 1000 : 10000
@@ -21,13 +21,13 @@ export const getConnection = async (triesLeft = 5) => {
   const dbName = process.env.DB_NAME
   const postgresUri = `postgres://${dbUser}:${dbPasswd}@${dbHost}:${dbPort}/${dbName}`
 
-  if (isTest || isCI) {
+  if (isTest) {
     const { default: SequelizeMock } = await import('sequelize-mock')
-    sequelize = new SequelizeMock({ autoQueryFallback: false, stopPropagation: true })
+    sequelize = new SequelizeMock()
     return
   }
   try {
-    if (!isProd) {
+    if (isDev || isTest || isCI) {
       app.log.info(`Trying to connect to Postgres with: ${postgresUri}`)
     }
     sequelize = new Sequelize(postgresUri)

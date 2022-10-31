@@ -1,7 +1,7 @@
 const { defineConfig } = require('cypress')
 
-const clientHost = process.env.CLIENT_HOST
-const clientPort = process.env.CLIENT_PORT
+const clientHost = process.env.CLIENT_HOST || 'localhost'
+const clientPort = process.env.CLIENT_PORT || '8080'
 
 module.exports = defineConfig({
   e2e: {
@@ -12,6 +12,14 @@ module.exports = defineConfig({
     video: false,
     screenshotsFolder: 'e2e/screenshots',
     numTestsKeptInMemory: 1,
+    chromeWebSecurity: false,
+    experimentalModifyObstructiveThirdPartyCode: false,
+    experimentalWebKitSupport: false,
+    experimentalSessionAndOrigin: true,
+    env: {
+      clientHost,
+      clientPort,
+    },
   },
   components: {
     specPattern: 'components/specs/**/*.{cy,ct}.js',

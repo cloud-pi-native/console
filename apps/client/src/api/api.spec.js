@@ -1,8 +1,8 @@
 import { vi } from 'vitest'
 import { apiClient } from './xhr-client.js'
 import {
-  getProjects,
-  getProjectById,
+  getUserProjects,
+  getUserProjectById,
   createProject,
 } from './api.js'
 
@@ -30,7 +30,7 @@ describe('API', () => {
     it('Should get projects (GET)', async () => {
       apiClient.get.mockReturnValueOnce(Promise.resolve({ data: {} }))
 
-      await getProjects()
+      await getUserProjects()
 
       expect(apiClient.get).toHaveBeenCalled()
       expect(apiClient.get).toHaveBeenCalledTimes(1)
@@ -41,7 +41,7 @@ describe('API', () => {
       const projectId = 'thisIsAnId'
       apiClient.get.mockReturnValueOnce(Promise.resolve({ data: {} }))
 
-      await getProjectById(projectId)
+      await getUserProjectById(projectId)
 
       expect(apiClient.get).toHaveBeenCalled()
       expect(apiClient.get).toHaveBeenCalledTimes(1)

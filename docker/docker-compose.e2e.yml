@@ -1,23 +1,118 @@
 version: '3.9'
 
 services:
+  postgres:
+    restart: always
+    image: postgres:14.5
+    container_name: dso-console_postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DATABASE}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ../db/postgres/scripts:/docker-entrypoint-initdb.d
+    networks:
+      - dso-network
+
+  keycloak:
+    restart: always
+    image: quay.io/keycloak/keycloak:19.0.2
+    container_name: dso-console_keycloak
+    ports:
+      - 8090:8080
+    volumes:
+      - ../keycloak/realms/realm-quickstart.json:/opt/keycloak/data/import/realm.json
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+    command: start-dev --import-realm
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    networks:
+      - dso-network
+
+  server:
+    restart: always
+    build:
+      context: ..
+      dockerfile: apps/server/Dockerfile
+      target: prod
+    image: dso-console/server:test
+    container_name: dso-console_server
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      postgres:
+        condition: service_started
+    ports:
+      - 4000:4000
+    environment:
+      SERVER_PORT: ${SERVER_PORT:-4000}
+      DB_HOST: postgres
+      DB_PORT: ${POSTGRES_PORT:-5432}
+      DB_USER: ${POSTGRES_USER:-admin}
+      DB_PASS: ${POSTGRES_PASSWORD:-admin}
+      DB_NAME: ${POSTGRES_DATABASE:-dso-console-db}
+      SESSION_SECRET: ${SESSION_SECRET:-a-very-strong-secret-with-more-than-32-char}
+      KEYCLOAK_DOMAIN: keycloak:8080
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-quickstart}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_BACKEND:-test-backend}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_BACKEND:-client-secret-backend}
+      CI: "true"
+      DEV_SETUP: "true"
+    networks:
+      - dso-network
+
+  client:
+    build:
+      context: ..
+      dockerfile: apps/client/Dockerfile
+      target: prod
+      args:
+        KEYCLOAK_DOMAIN: ${KEYCLOAK_DOMAIN:-localhost:8090}
+        KEYCLOAK_REALM: ${KEYCLOAK_REALM:-quickstart}
+        KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_FRONTEND:-test-frontend}
+        KEYCLOAK_REDIRECT_URI: ${KEYCLOAK_REDIRECT_URI:-http://client:8080}
+        SERVER_HOST: ${SERVER_HOST:-server}
+        SERVER_PORT: ${SERVER_PORT:-4000}
+    image: dso-console/client:test
+    container_name: dso-console_client
+    depends_on:
+      server:
+        condition: service_started
+    ports:
+      - 8080:8080
+    networks:
+      - dso-network
+
   cypress:
-    image: cypress/included:10.8.0
+    build:
+      context: ..
+      dockerfile: packages/cypress/Dockerfile
+    image: dso-console/cypress:test
     container_name: dso-console_cypress
     depends_on:
-      - client
-    working_dir: /app
+      client:
+        condition: service_started
     volumes:
-      - ../packages/cypress:/app
+      - /app/node_modules/
+      - ../packages/cypress:/app/packages/cypress
+      - /app/packages/cypress/node_modules/
+      - ../packages/shared:/app/packages/shared
+      - /app/packages/shared/node_modules/
     environment:
-      CLIENT_HOST: ${CLIENT_HOST}
-      CLIENT_PORT: ${CLIENT_PORT}
-      NODE_ENV: test
+      CLIENT_HOST: ${CLIENT_HOST:-client}
+      CLIENT_PORT: ${CLIENT_PORT:-8080}
     networks:
       - dso-network
 
 networks:
   dso-network:
-    name: dso-network
+    driver: bridge
+    # dso-network:
+    #   name: dso-network
     # driver_opts:
     # com.docker.network.driver.mtu: 1450

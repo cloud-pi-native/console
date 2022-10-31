@@ -1,82 +1,64 @@
 describe('Order Project', () => {
-  it('Should fill basic form to order a project', () => {
-    cy.visit('/order-project')
-      .get('h1').should('contain', 'Commander un espace projet')
-      .get('[data-testid^="repoFieldset-"]')
-      .should('not.exist')
-      .getByDataTestid('orderProjectBtn')
-      .should('be.disabled')
-      .getByDataTestid('emailInput')
-      .type('prenom.nom')
-      .getByDataTestid('emailInput')
-      .should('have.class', 'fr-input--error')
-      .type('@interieur.gouv.fr')
-      .should('not.have.class', 'fr-input--error')
-      .getByDataTestid('orgNameSelect')
-      .find('select')
-      .select('ministere-interieur')
-      .getByDataTestid('projectNameInput')
-      .type('my Project')
-      .getByDataTestid('projectNameInput')
-      .should('have.class', 'fr-input--error')
-      .getByDataTestid('orderProjectBtn')
-      .should('be.disabled')
-      .getByDataTestid('projectNameInput')
-      .clear()
-      .type('myProject')
-      .getByDataTestid('projectNameInput')
-      .should('not.have.class', 'fr-input--error')
-      .getByDataTestid('orderProjectBtn')
-      .should('be.enabled')
+  beforeEach(() => {
+    cy.kcLogin('test')
   })
 
-  it('Should add simple repo to order a project', () => {
-    cy.getByDataTestid('addRepoBtn')
-      .click()
-      .get('[data-testid^="repoFieldset-"]')
-      .should('have.length', 1)
-      .getByDataTestid('orderProjectBtn')
-      .should('be.disabled')
-      .getByDataTestid('gitNameInput-0')
-      .type('my Git')
-      .getByDataTestid('gitNameInput-0')
-      .should('have.class', 'fr-input--error')
-      .getByDataTestid('gitNameInput-0')
-      .clear()
-      .type('myGit')
-      .getByDataTestid('gitNameInput-0')
-      .should('not.have.class', 'fr-input--error')
-      .getByDataTestid('orderProjectBtn')
-      .should('be.enabled')
+  it('Should order a project with minimal form informations', () => {
+    const project = { projectName: 'project01' }
+
+    cy.orderProject(project)
+    cy.assertOrderProject(project.projectName)
   })
 
-  it('Should add repo with source to order a project', () => {
-    cy.getByDataTestid('addRepoBtn')
-      .click()
-      .get('[data-testid^="repoFieldset-"]')
-      .should('have.length', 2)
-      .getByDataTestid('orderProjectBtn')
-      .should('be.disabled')
-      .getByDataTestid('gitNameInput-1')
-      .type('myGitSourced')
-      .getByDataTestid('orderProjectBtn')
-      .should('be.enabled')
-      .getByDataTestid('gitSrcNameInput-1')
-      .type('sourceName')
-      .getByDataTestid('orderProjectBtn')
-      .should('be.disabled')
-      .getByDataTestid('userNameInput-1')
-      .type('manager')
-      .getByDataTestid('orderProjectBtn')
-      .should('be.enabled')
-      .getByDataTestid('userNameCbx-1')
-      .find('input[type="checkbox"]')
-      .check({ force: true })
-      .getByDataTestid('orderProjectBtn')
-      .should('be.disabled')
-      .getByDataTestid('gitTokenInput-1')
-      .type('xxxxxx')
-      .getByDataTestid('orderProjectBtn')
-      .should('be.enabled')
+  it('Should order a project with one external repo', () => {
+    const project = {
+      projectName: 'project02',
+      repo: [{
+        gitName: 'repo01',
+        userName: 'externalUser01',
+        gitSourceName: 'externalRepo01',
+      }],
+    }
+
+    cy.orderProject(project)
+    cy.assertOrderProject(project.projectName)
+  })
+
+  it('Should order a project with one external private repo', () => {
+    const project = {
+      projectName: 'project03',
+      repo: [{
+        gitName: 'repo01',
+        userName: 'externalUser01',
+        gitSourceName: 'externalRepo01',
+        gitToken: 'xxxxxxxx',
+      }],
+    }
+
+    cy.orderProject(project)
+    cy.assertOrderProject(project.projectName)
+  })
+
+  it('Should order a project with multiple external repos', () => {
+    const project = {
+      projectName: 'project04',
+      repo: [
+        {
+          gitName: 'repo01',
+          userName: 'externalUser01',
+          gitSourceName: 'externalRepo01',
+          gitToken: 'xxxxxxxx',
+        },
+        {
+          gitName: 'repo02',
+          userName: 'externalUser02',
+          gitSourceName: 'externalRepo02',
+          gitToken: 'xxxxxxxx',
+        },
+      ],
+    }
+
+    cy.orderProject(project)
+    cy.assertOrderProject(project.projectName)
   })
 })

@@ -10,14 +10,13 @@ export const useProjectStore = defineStore('project', () => {
    * @param {string} project
    */
   const setSelectedProject = async (id) => {
-    const res = await api.getProjectById(id)
+    const res = await api.getUserProjectById(id)
     selectedProject.value = res.data
   }
 
-  // TODO : getProjects of current user
-  const getProjects = async () => {
-    const res = await api.getProjects()
-    projects.value = res.map(({ data }) => data)
+  const getUserProjects = async () => {
+    const res = await api.getUserProjects()
+    projects.value = res?.map(({ data }) => data)
   }
 
   const orderProject = async (project) => {
@@ -28,7 +27,7 @@ export const useProjectStore = defineStore('project', () => {
     selectedProject,
     projects,
     setSelectedProject,
-    getProjects,
+    getUserProjects,
     orderProject,
   }
 })
