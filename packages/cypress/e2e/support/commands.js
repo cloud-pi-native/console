@@ -18,6 +18,7 @@ Cypress.Commands.add('kcLogin', (name) => {
 
 Cypress.Commands.add('createProject', (project) => {
   cy.intercept('POST', '/api/v1/projects').as('postProject')
+  cy.intercept('GET', '/api/v1/projects').as('getProjects')
 
   const newProject = {
     id: nanoid(),
@@ -77,6 +78,7 @@ Cypress.Commands.add('createProject', (project) => {
 
   cy.getByDataTestid('createProjectBtn').click()
   cy.wait('@postProject').its('response.statusCode').should('eq', 201)
+  cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
 })
 
 Cypress.Commands.add('assertCreateProject', (projectName) => {
@@ -85,8 +87,9 @@ Cypress.Commands.add('assertCreateProject', (projectName) => {
     .getByDataTestid(`projectTile-${projectName}`).should('exist')
 })
 
-Cypress.Commands.add('addRepo', (repos) => {
-  cy.intercept('PUT', '/api/v1/projects').as('putProject')
+Cypress.Commands.add('addRepo', (project, repos) => {
+  cy.intercept('PUT', '/api/v1/projects/*').as('putProject')
+  cy.intercept('GET', '/api/v1/projects').as('getProjects')
 
   const newRepo = (repo) => ({
     gitName: 'dso-console',
@@ -99,14 +102,19 @@ Cypress.Commands.add('addRepo', (repos) => {
 
   const newRepos = repos.map(newRepo)
 
-  cy.getByDataTestid('menuRepos').click()
-    .url().should('contain', '/projects/*/repos')
-    .getByDataTestid('addRepoLink').click()
-    .get('h1').should('contain', 'Ajouter un dépôt au projet')
+  cy.visit('/')
+    .getByDataTestid('menuProjectsBtn').click()
+    .getByDataTestid('menuMyProjects').click()
+    .url().should('contain', '/projects')
+    .getByDataTestid(`projectTile-${project.projectName}`).click()
+    .getByDataTestid('menuRepos').click()
+    .url().should('contain', '/repos')
 
-  newRepos.forEach((repo) => {
-    cy.getByDataTestid('gitNameInput').type(repo.gitName)
-      .getByDataTestid('gitSrcNameInput').clear().type(repo.gitSrcName)
+  newRepos.forEach(async (repo) => {
+    cy.getByDataTestid('addRepoLink').click()
+      .get('h1').should('contain', 'Ajouter un dépôt au projet')
+      .getByDataTestid('gitNameInput').type(repo.gitName)
+      .getByDataTestid('gitSrcNameInput').clear().type(repo.gitSourceName)
 
     if (repo.isPrivate) {
       cy.getByDataTestid('userNameInput').type(repo.userName)
@@ -115,10 +123,19 @@ Cypress.Commands.add('addRepo', (repos) => {
 
     cy.getByDataTestid('addRepoBtn').click()
     cy.wait('@putProject').its('response.statusCode').should('eq', 200)
+    cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
+    cy.getByDataTestid(`repoTile-${repo.gitName}`).should('exist')
   })
 })
 
-Cypress.Commands.add('assertAddRepo', (repos) => {
+Cypress.Commands.add('assertAddRepo', (project, repos) => {
+  cy.visit('/')
+    .getByDataTestid('menuProjectsBtn').click()
+    .getByDataTestid('menuMyProjects').click()
+    .url().should('contain', '/projects')
+    .getByDataTestid(`projectTile-${project.projectName}`).click()
+    .getByDataTestid('menuRepos').click()
+
   repos.forEach((repo) => {
     cy.getByDataTestid(`repoTile-${repo.gitName}`).should('exist')
   })
