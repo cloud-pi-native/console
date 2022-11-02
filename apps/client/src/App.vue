@@ -1,6 +1,6 @@
 <script setup>
 import SideMenu from './components/SideMenu.vue'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useUserStore } from './stores/user.js'
 import { getKeycloak } from './utils/keycloak/init-sso.js'
 
@@ -20,6 +20,10 @@ const quickLinks = ref([{
 
 onMounted(() => {
   if (isLoggedIn.value) userStore.setUserProfile()
+})
+
+watch(label, (label) => {
+  quickLinks.value.label = label
 })
 
 </script>

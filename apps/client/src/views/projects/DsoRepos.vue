@@ -46,6 +46,7 @@ const addRepo = async (repo) => {
   project.repo = [...project.repo, repo]
   cancel()
   await projectStore.updateProject(project)
+  setReposTiles(selectedProject.value)
 }
 
 onMounted(() => {
