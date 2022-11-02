@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
+import DsoSelectedProject from './DsoSelectedProject.vue'
 
 const projectStore = useProjectStore()
 
@@ -8,6 +9,7 @@ const projectStore = useProjectStore()
  * @returns {string}
  */
 const selectedProject = computed(() => projectStore.selectedProject)
+const projectServices = ref([])
 
 const allServices = ref([{
   id: 'gitlab',
@@ -52,8 +54,6 @@ const allServices = ref([{
   to: 'https://argo-cd.readthedocs.io/',
 }])
 
-const projectServices = ref([])
-
 const setProjectServices = () => {
   projectServices.value = []
   if (!selectedProject.value) return
@@ -91,6 +91,7 @@ watch(selectedProject, () => {
 </script>
 
 <template>
+  <DsoSelectedProject />
   <DsfrTiles
     :tiles="projectServices"
     data-testid="projectTiles"

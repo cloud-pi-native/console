@@ -11,12 +11,12 @@ userStore.setIsLoggedIn()
 const isLoggedIn = ref(keycloak.authenticated)
 const label = isLoggedIn.value ? 'Se déconnecter' : 'Se connecter'
 const to = isLoggedIn.value ? '/logout' : '/login'
-const quickLinks = [{
+const quickLinks = ref([{
   label,
   to,
   icon: 'ri-account-circle-line',
   iconRight: true,
-}]
+}])
 
 onMounted(() => {
   if (isLoggedIn.value) userStore.setUserProfile()
