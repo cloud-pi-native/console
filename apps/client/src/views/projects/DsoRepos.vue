@@ -15,7 +15,7 @@ const selectedRepo = ref({})
 const isNewRepoForm = ref(false)
 
 const setReposTiles = (selectedProject) => {
-  repos.value = selectedProject.repo?.map(repo => ({
+  repos.value = selectedProject.repos?.map(repo => ({
     id: repo.gitName,
     title: repo.gitName,
     data: repo,
@@ -42,8 +42,8 @@ const cancel = () => {
 
 const addRepo = async (repo) => {
   const project = selectedProject.value
-  project.repo ||= []
-  project.repo = [...project.repo, repo]
+  project.repos ||= []
+  project.repos = [...project.repos, repo]
   cancel()
   await projectStore.updateProject(project)
   setReposTiles(selectedProject.value)

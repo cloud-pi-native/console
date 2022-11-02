@@ -21,7 +21,7 @@ services:
     ports:
       - 8090:8080
     volumes:
-      - ../keycloak/realms/realm-cloud-pi-native.json:/opt/keycloak/data/import/realm.json
+      - ../keycloak/realms:/opt/keycloak/data/import
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}

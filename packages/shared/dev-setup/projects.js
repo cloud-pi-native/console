@@ -1,7 +1,7 @@
 export const projects = [
   {
     id: '9FG4CeGkMavI5CtAh_3Ss',
-    repo: [
+    repos: [
       {
         gitName: 'candilib',
         gitSourceName: 'https://github.com/dnum-mi/candilib',
@@ -29,7 +29,7 @@ export const projects = [
   },
   {
     id: '9FG4CeGkMavI5CtAh_3St',
-    repo: [
+    repos: [
       {
         gitName: 'psij',
         gitSourceName: 'https://github.com/dnum-mi/psij',

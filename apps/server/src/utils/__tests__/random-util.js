@@ -17,8 +17,8 @@ export const getRandomProjectServices = () => {
   return allServices
 }
 
-export const getRandomProjectRepo = (length = 1) => {
-  const repo = []
+export const getRandomProjectRepos = (length = 1) => {
+  const repos = []
   for (let i = 0; i < length;) {
     const projectRepo = {}
     const httpsUrl = (url) => !url.startsWith('https://') ? 'https://' + url.split('://')[1] : url
@@ -29,10 +29,10 @@ export const getRandomProjectRepo = (length = 1) => {
     projectRepo.isPrivate = faker.datatype.boolean()
     if (projectRepo.isPrivate) projectRepo.gitToken = faker.git.shortSha()
 
-    repo.push(projectRepo)
+    repos.push(projectRepo)
     i++
   }
-  return repo
+  return repos
 }
 
 export const getRandomOwner = () => {

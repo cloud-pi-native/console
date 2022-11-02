@@ -14,44 +14,43 @@ describe('Add repos into project', () => {
     cy.kcLogin('test')
   })
 
-  it('Should create a project with one external repo', () => {
+  it('Should create a project with one external public repo', () => {
     const repos = [{
       gitName: 'repo01',
-      userName: 'externalUser01',
       gitSourceName: 'https://github.com/externalUser01/repo01',
     }]
 
-    cy.addRepo(project, repos)
+    cy.addRepos(project, repos)
     cy.assertAddRepo(project, repos)
   })
 
   it('Should create a project with one external private repo', () => {
     const repos = [{
       gitName: 'repo02',
-      userName: 'externalUser02',
       gitSourceName: 'https://github.com/externalUser02/repo02',
+      isPrivate: true,
+      userName: 'externalUser02',
       gitToken: 'xxxxxxxx',
     }]
 
-    cy.addRepo(project, repos)
+    cy.addRepos(project, repos)
     cy.assertAddRepo(project, repos)
   })
 
   it('Should create a project with multiple external repos', () => {
     const repos = [{
       gitName: 'repo03',
-      userName: 'externalUser03',
       gitSourceName: 'https://github.com/externalUser03/repo03',
+      isPrivate: true,
+      userName: 'externalUser03',
       gitToken: 'xxxxxxxx',
     },
     {
       gitName: 'repo04',
-      userName: 'externalUser03',
       gitSourceName: 'https://github.com/externalUser03/repo04',
-      gitToken: 'xxxxxxxx',
     }]
 
-    cy.addRepo(project, repos)
+    cy.addRepos(project, repos)
     cy.assertAddRepo(project, repos)
   })
 })

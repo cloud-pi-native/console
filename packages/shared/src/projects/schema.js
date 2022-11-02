@@ -49,7 +49,7 @@ export const projectSchema = Joi.object({
     .pattern(/^[a-zA-Z0-9-]+$/)
     .required(),
 
-  repo: Joi.array()
+  repos: Joi.array()
     .items(repoSchema)
     .unique('gitName'),
 
