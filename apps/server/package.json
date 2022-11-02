@@ -24,8 +24,6 @@
     "shared": "workspace:^1.0.0"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "^7.19.1",
-    "@babel/plugin-syntax-import-assertions": "^7.20.0",
     "@faker-js/faker": "^7.6.0",
     "@vitest/coverage-c8": "^0.24.3",
     "eslint": "^8.26.0",
