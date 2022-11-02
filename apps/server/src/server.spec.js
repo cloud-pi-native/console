@@ -1,4 +1,4 @@
-import { vi } from 'vitest'
+import { vi, describe, it, expect, beforeEach } from 'vitest'
 import fp from 'fastify-plugin'
 import app from './app.js'
 import { startServer, handleExit, exitGracefuly } from './server.js'

@@ -1,4 +1,4 @@
-import { vi } from 'vitest'
+import { vi, describe, it, expect } from 'vitest'
 import fp from 'fastify-plugin'
 import app, { apiPrefix } from './app.js'
 

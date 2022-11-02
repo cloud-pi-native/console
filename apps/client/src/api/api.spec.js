@@ -1,4 +1,4 @@
-import { vi } from 'vitest'
+import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { apiClient } from './xhr-client.js'
 import {
   getUserProjects,

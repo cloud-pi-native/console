@@ -41,7 +41,6 @@ export default defineConfig({
     dedupe: ['vue', 'oh-vue-icons'],
   },
   test: {
-    globals: true,
     environment: 'jsdom',
     testTimeout: 2000,
     watch: false,
