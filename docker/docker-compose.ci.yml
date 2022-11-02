@@ -39,7 +39,7 @@ services:
     build:
       context: ..
       dockerfile: apps/server/Dockerfile
-      target: dev
+      target: prod
     image: dso-console/server:test
     container_name: dso-console_server
     depends_on:
@@ -49,12 +49,6 @@ services:
         condition: service_started
     ports:
       - 4000:4000
-    volumes:
-      - /app/node_modules/
-      - ../apps/server:/app/apps/server
-      - /app/apps/server/node_modules/
-      - ../packages/shared:/app/packages/shared
-      - /app/packages/shared/node_modules/
     environment:
       SERVER_PORT: ${SERVER_PORT:-4000}
       DB_HOST: postgres
@@ -76,7 +70,14 @@ services:
     build:
       context: ..
       dockerfile: apps/client/Dockerfile
-      target: dev
+      target: prod
+      args:
+        KEYCLOAK_DOMAIN: ${KEYCLOAK_DOMAIN:-localhost:8090}
+        KEYCLOAK_REALM: ${KEYCLOAK_REALM:-quickstart}
+        KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_FRONTEND:-test-frontend}
+        KEYCLOAK_REDIRECT_URI: ${KEYCLOAK_REDIRECT_URI:-http://client:8080}
+        SERVER_HOST: ${SERVER_HOST:-server}
+        SERVER_PORT: ${SERVER_PORT:-4000}
     image: dso-console/client:test
     container_name: dso-console_client
     depends_on:
@@ -84,19 +85,27 @@ services:
         condition: service_started
     ports:
       - 8080:8080
+    networks:
+      - dso-network
+
+  cypress:
+    build:
+      context: ..
+      dockerfile: packages/cypress/Dockerfile
+    image: dso-console/cypress:test
+    container_name: dso-console_cypress
+    depends_on:
+      client:
+        condition: service_started
     volumes:
       - /app/node_modules/
-      - ../apps/client:/app/apps/client
-      - /app/apps/client/node_modules/
+      - ../packages/cypress:/app/packages/cypress
+      - /app/packages/cypress/node_modules/
       - ../packages/shared:/app/packages/shared
       - /app/packages/shared/node_modules/
     environment:
-      KEYCLOAK_DOMAIN: localhost:8090
-      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-quickstart}
-      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_FRONTEND:-test-frontend}
-      SERVER_HOST: ${SERVER_HOST:-server}
-      SERVER_PORT: ${SERVER_PORT:-4000}
-      CLIENT_PORT: ${CLIENT_PORT:-4000}
+      CLIENT_HOST: ${CLIENT_HOST:-client}
+      CLIENT_PORT: ${CLIENT_PORT:-8080}
     networks:
       - dso-network
 
