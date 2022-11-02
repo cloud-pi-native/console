@@ -1,4 +1,5 @@
 import { defineConfig } from 'cypress'
+import * as viteConfig from '../../apps/client/vite.config.js'
 
 const clientHost = process.env.CLIENT_HOST || 'localhost'
 const clientPort = process.env.CLIENT_PORT || '8080'
@@ -21,7 +22,8 @@ export default defineConfig({
       clientPort,
     },
   },
-  components: {
+
+  component: {
     specPattern: 'components/specs/**/*.{cy,ct}.js',
     supportFile: 'components/support/index.js',
     video: false,
@@ -32,6 +34,7 @@ export default defineConfig({
       bundler: 'vite',
       host: '127.0.0.1',
       port: '8080',
+      viteConfig,
     },
   },
 })
