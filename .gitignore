@@ -31,10 +31,8 @@ coverage
 # sonarqube
 .scannerwork
 
-# db
-db/postgres/data/*
-db/pgadmin/data/*
-!.gitkeep
+# keycloak
+keycloak/data
 
 # turbo
 .turbo

@@ -21,14 +21,14 @@ services:
     ports:
       - 8090:8080
     volumes:
-      - ../keycloak/realms/realm-quickstart.json:/opt/keycloak/data/import/realm.json
+      - ../keycloak/realms/realm-cloud-pi-native.json:/opt/keycloak/data/import/realm.json
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
     command: start-dev --import-realm
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
-      interval: 15s
+      interval: 10s
       timeout: 5s
       retries: 10
     networks:
@@ -58,8 +58,8 @@ services:
       DB_NAME: ${POSTGRES_DATABASE:-dso-console-db}
       SESSION_SECRET: ${SESSION_SECRET:-a-very-strong-secret-with-more-than-32-char}
       KEYCLOAK_DOMAIN: keycloak:8080
-      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-quickstart}
-      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_BACKEND:-test-backend}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-cloud-pi-native}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_BACKEND:-dso-console-backend}
       KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_BACKEND:-client-secret-backend}
       CI: "true"
       DEV_SETUP: "true"
@@ -73,8 +73,8 @@ services:
       target: prod
       args:
         KEYCLOAK_DOMAIN: ${KEYCLOAK_DOMAIN:-localhost:8090}
-        KEYCLOAK_REALM: ${KEYCLOAK_REALM:-quickstart}
-        KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_FRONTEND:-test-frontend}
+        KEYCLOAK_REALM: ${KEYCLOAK_REALM:-cloud-pi-native}
+        KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_FRONTEND:-dso-console-frontend}
         KEYCLOAK_REDIRECT_URI: ${KEYCLOAK_REDIRECT_URI:-http://client:8080}
         SERVER_HOST: ${SERVER_HOST:-server}
         SERVER_PORT: ${SERVER_PORT:-4000}

@@ -10,14 +10,14 @@ services:
     ports:
       - 8090:8080
     volumes:
-      - ../keycloak/realms/realm-quickstart.json:/opt/keycloak/data/import/realm.json
+      - ../keycloak/realms/realm-cloud-pi-native.json:/opt/keycloak/data/import/realm.json
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
     command: start-dev --import-realm
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
-      interval: 15s
+      interval: 10s
       timeout: 5s
       retries: 10
     networks:
