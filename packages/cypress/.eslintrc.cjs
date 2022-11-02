@@ -1,17 +1,13 @@
 module.exports = {
-  root: true,
   extends: [
     'standard',
   ],
   plugins: [
-    'cypress',
+    'n',
     'import',
     'promise',
+    'cypress',
   ],
-  parserOptions: {
-    ecmaVersion: 12,
-    sourceType: 'module',
-  },
   env: {
     'cypress/globals': true,
     browser: true,
@@ -19,7 +15,5 @@ module.exports = {
   },
   rules: {
     'comma-dangle': [2, 'always-multiline'],
-    'vue/no-v-html': 0,
-    'no-irregular-whitespace': 0,
   },
 }

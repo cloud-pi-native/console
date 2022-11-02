@@ -7,12 +7,18 @@ export const repoSchema = Joi.object({
     .required(),
 
   gitSourceName: Joi.string()
-    .required(),
-
-  userName: Joi.string()
+    .uri({
+      scheme: [
+        'git',
+        'https',
+      ],
+    })
     .required(),
 
   isPrivate: Joi.boolean(),
+
+  userName: Joi.string()
+    .when('isPrivate', { is: true, then: Joi.required() }),
 
   gitToken: Joi.string()
     .when('isPrivate', { is: true, then: Joi.required() }),
@@ -23,7 +29,7 @@ export const userSchema = Joi.object({
     .required(),
 
   email: Joi.string()
-    .email()
+    .email({ tlds: { allow: false } })
     .required(),
 
   firstName: Joi.string(),
@@ -45,7 +51,7 @@ export const projectSchema = Joi.object({
 
   repo: Joi.array()
     .items(repoSchema)
-    .required(),
+    .unique('gitName'),
 
   services: Joi.array()
     .items(Joi.string().valid(...allServices))
