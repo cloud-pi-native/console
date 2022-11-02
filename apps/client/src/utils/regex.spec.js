@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest'
 import { noSpace, email } from '@/utils/regex.js'
 
 describe('regex', () => {

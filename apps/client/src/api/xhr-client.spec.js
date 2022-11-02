@@ -1,4 +1,4 @@
-import { vi } from 'vitest'
+import { vi, describe, it, expect } from 'vitest'
 import * as xhrClient from './xhr-client.js'
 
 vi.mock('@/utils/keycloak/init.js', () => ({
