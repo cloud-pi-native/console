@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-// import { getKeycloak, keycloakLogin, keycloakLogout } from '@/utils/keycloak/init-sso.js'
 import { useUserStore } from '@/stores/user.js'
 
 import DsoHome from '@/views/DsoHome.vue'
@@ -22,7 +21,6 @@ const routes = [
     beforeEnter: async (to, from) => {
       const userStore = useUserStore()
       await userStore.login()
-      // await keycloakLogin()
     },
   },
   {
@@ -31,7 +29,6 @@ const routes = [
     beforeEnter: async (to, from) => {
       const userStore = useUserStore()
       await userStore.logout()
-      // await keycloakLogout()
     },
   },
   {
