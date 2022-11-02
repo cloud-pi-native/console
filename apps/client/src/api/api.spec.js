@@ -4,6 +4,7 @@ import {
   getUserProjects,
   getUserProjectById,
   createProject,
+  updateProject,
 } from './api.js'
 
 vi.spyOn(apiClient, 'get')
@@ -46,6 +47,17 @@ describe('API', () => {
       expect(apiClient.get).toHaveBeenCalled()
       expect(apiClient.get).toHaveBeenCalledTimes(1)
       expect(apiClient.get.mock.calls[0][0]).toBe(`/projects/${projectId}`)
+    })
+
+    it('Should update a project (PUT)', async () => {
+      const projectId = 'thisIsAnId'
+      apiClient.put.mockReturnValueOnce(Promise.resolve({ data: {} }))
+
+      await updateProject(projectId, {})
+
+      expect(apiClient.put).toHaveBeenCalled()
+      expect(apiClient.put).toHaveBeenCalledTimes(1)
+      expect(apiClient.put.mock.calls[0][0]).toBe(`/projects/${projectId}`)
     })
   })
 })
