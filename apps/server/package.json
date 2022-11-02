@@ -4,10 +4,10 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "nodemon --experimental-json-modules --inspect src/server.js  --watch src",
+    "dev": "node --watch src/server.js",
     "lint": "eslint . --ext .js,.cjs,.ts",
     "format": "eslint . --ext .js,.cjs,.ts --fix",
-    "start": "node --experimental-json-modules src/server.js",
+    "start": "node src/server.js",
     "test": "vitest run --coverage"
   },
   "dependencies": {
@@ -32,7 +32,6 @@
     "eslint-plugin-n": "^15.3.0",
     "eslint-plugin-promise": "^6.1.1",
     "fastify-plugin": "^4.3.0",
-    "nodemon": "^2.0.20",
     "pino-pretty": "^9.1.1",
     "sequelize-mock": "^0.10.2",
     "supertest": "^6.3.1",
