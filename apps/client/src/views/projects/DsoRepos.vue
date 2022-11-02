@@ -80,7 +80,7 @@ watch(selectedProject.value, () => {
     <DsfrTile
       :title="repo.title"
       :data-testid="`repoTile-${repo.id}`"
-      horizontal="true"
+      :horizontal="true"
       class="fr-mb-2w"
       @click="setSelectedRepo(repo.data)"
     />
