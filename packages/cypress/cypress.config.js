@@ -1,4 +1,5 @@
 import { defineConfig } from 'cypress'
+
 const clientHost = process.env.CLIENT_HOST || 'localhost'
 const clientPort = process.env.CLIENT_PORT || '8080'
 
