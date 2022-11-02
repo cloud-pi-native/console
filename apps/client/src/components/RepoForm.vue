@@ -6,7 +6,7 @@ import { schemaValidator, isValid, getTruthySchema } from '../utils/func.js'
 const props = defineProps({
   repo: {
     type: Object,
-    default: () => undefined,
+    default: () => {},
   },
   isEditable: {
     type: Boolean,
