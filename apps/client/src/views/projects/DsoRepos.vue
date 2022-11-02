@@ -42,9 +42,10 @@ const cancel = () => {
 
 const addRepo = async (repo) => {
   const project = selectedProject.value
+  project.repo ||= []
   project.repo = [...project.repo, repo]
-  await projectStore.updateProject(project)
   cancel()
+  await projectStore.updateProject(project)
 }
 
 onMounted(() => {

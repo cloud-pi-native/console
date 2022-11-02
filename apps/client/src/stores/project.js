@@ -19,7 +19,8 @@ export const useProjectStore = defineStore('project', () => {
   }
 
   const createProject = async (project) => {
-    api.createProject(project)
+    await api.createProject(project)
+    await getUserProjects()
   }
 
   const updateProject = async (project) => {

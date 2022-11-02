@@ -25,7 +25,7 @@ describe('Sidebar', () => {
       .getByDataTestid('menuProjectsList').should('be.visible')
       .getByDataTestid('menuMyProjects').click()
       .url().should('contain', '/projects')
-      .getByDataTestid(`projectTile-${candilib.id}`).click()
+      .getByDataTestid(`projectTile-${candilib.projectName}`).click()
       .getByDataTestid('menuProjectsList').should('be.visible')
       .url().should('contain', `/projects/${candilib.id}/dashboard`)
       .getByDataTestid('menuServices').click()
