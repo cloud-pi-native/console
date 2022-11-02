@@ -116,7 +116,6 @@ describe('Project routes', () => {
       const randomProject = createRandomProject()
 
       Project.$queueResult(null)
-      // Project.$queueResult(1)
       setOwner(randomProject.owner)
 
       const response = await app.inject()
