@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import RepoForm from '@/components/RepoForm.vue'
 import DsoSelectedProject from './DsoSelectedProject.vue'
@@ -14,7 +14,7 @@ const repos = ref([])
 const selectedRepo = ref({})
 const isNewRepoForm = ref(false)
 
-const setReposTile = (selectedProject) => {
+const setReposTiles = (selectedProject) => {
   repos.value = selectedProject.repo?.map(repo => ({
     id: repo.gitName,
     title: repo.gitName,
@@ -49,11 +49,7 @@ const addRepo = async (repo) => {
 }
 
 onMounted(() => {
-  setReposTile(selectedProject.value)
-})
-
-watch(selectedProject.value, () => {
-  setReposTile(selectedProject.value)
+  setReposTiles(selectedProject.value)
 })
 
 </script>
