@@ -1,6 +1,5 @@
 import { identity, schemaValidator } from '@/utils/func.js'
 import { repoSchema } from 'shared/src/projects/schema.js'
-import { it } from 'vitest'
 
 describe('func', () => {
   it('Should return identity', () => {
