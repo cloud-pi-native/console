@@ -7,13 +7,14 @@ export const apiClient = axios.create({
 })
 
 apiClient.interceptors.request.use(
-  request => {
+  async request => {
     if (request.url?.startsWith('/version')) {
       return request
     }
-    // TODO : gestion token avec keycloak
     const keycloak = getKeycloak()
-    // keycloak.updateToken()
+    // console.log({ tokenBefore: keycloak.token, keycloak })
+    await keycloak.updateToken()
+    // console.log({ tokenAfter: keycloak.token, keycloak })
     const token = keycloak.token
     if (token) {
       Object.assign(request.headers, {
