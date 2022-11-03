@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid'
-import { allServices } from 'shared/src/projects/utils.js'
+import { allServices } from 'shared/src/schemas/project.js'
 import { getLogInfos } from '../utils/logger.js'
 import {
   createProject,

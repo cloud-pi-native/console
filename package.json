@@ -18,7 +18,8 @@
     "format:style": "turbo run format:style",
     "test:e2e": "docker compose -f ./docker/docker-compose.e2e.yml --env-file ./env/.env up -d; cd ./packages/cypress; npm run cypress:open; cd -; docker compose -f ./docker/docker-compose.e2e.yml --env-file ./env/.env down",
     "test:e2e-build": "docker compose -f ./docker/docker-compose.e2e.yml --env-file ./env/.env build --pull",
-    "test:e2e-ci": "docker compose -f ./docker/docker-compose.ci.yml --env-file ./env/.env.ci up --attach cypress --build; docker compose -f ./docker/docker-compose.ci.yml --env-file ./env/.env.ci down",
+    "test:e2e-ci": "docker compose -f ./docker/docker-compose.ci.yml --env-file ./env/.env.ci up --attach cypress; docker compose -f ./docker/docker-compose.ci.yml --env-file ./env/.env.ci down",
+    "test:e2e-ci-build": "docker compose -f ./docker/docker-compose.ci.yml --env-file ./env/.env.ci build --pull",
     "test": "turbo run test --concurrency 1",
     "test:client": "turbo run test --filter client",
     "test:server": "turbo run test --filter server"

@@ -139,20 +139,24 @@ importers:
 
   packages/shared:
     specifiers:
+      '@vitest/coverage-c8': ^0.24.3
       eslint: ^8.25.0
       eslint-config-standard: ^17.0.0
       eslint-plugin-import: ^2.26.0
       eslint-plugin-n: ^15.3.0
       eslint-plugin-promise: ^6.1.0
       joi: ^17.6.3
+      vitest: ^0.24.5
     dependencies:
       joi: 17.7.0
     devDependencies:
+      '@vitest/coverage-c8': 0.24.5
       eslint: 8.26.0
       eslint-config-standard: 17.0.0_pxgizx7scytnzv6tfhdgsab7u4
       eslint-plugin-import: 2.26.0_eslint@8.26.0
       eslint-plugin-n: 15.4.0_eslint@8.26.0
       eslint-plugin-promise: 6.1.1_eslint@8.26.0
+      vitest: 0.24.5
 
 packages:
 
@@ -539,7 +543,7 @@ packages:
     resolution: {integrity: sha512-Cn6WYCm0tXv8p6k+A8PvbDG763EDpBoTzHdA+Q/MF6H3sapGjCm9NzoaJncJS9tUKSuCoDs9XHxYYsQDgxR6kw==}
     requiresBuild: true
     dependencies:
-      '@types/node': 14.18.33
+      '@types/node': 18.11.9
     dev: false
     optional: true
 

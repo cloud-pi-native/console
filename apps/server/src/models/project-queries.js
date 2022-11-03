@@ -1,7 +1,7 @@
 import { Op } from 'sequelize'
 import { sequelize } from '../connect.js'
 import { getProjectModel } from './project.js'
-import { projectSchema } from 'shared/src/projects/schema.js'
+import { projectSchema } from 'shared/src/schemas/project.js'
 
 export const createProject = async (data) => {
   await projectSchema.validateAsync(data)
