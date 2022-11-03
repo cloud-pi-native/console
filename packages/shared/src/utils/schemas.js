@@ -1,10 +1,3 @@
-
-/**
- * @param {*} value Value wanted to be return as is
- * @returns {*} Value returned as is
- */
-export const identity = (value) => value
-
 /**
  * @param {object} schema Schema used for validation
  * @param {object} data Data to test

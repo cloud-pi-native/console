@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
-import { repoSchema } from 'shared/src/projects/schema.js'
-import { schemaValidator, isValid, getTruthySchema } from '../utils/func.js'
+import { repoSchema } from 'shared/src/schemas/repo.js'
+import { schemaValidator, isValid, getTruthySchema } from 'shared/src/utils/schemas.js'
 
 const props = defineProps({
   repo: {

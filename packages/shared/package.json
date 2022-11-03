@@ -8,16 +8,19 @@
   "scripts": {
     "dev": "node src/index.js",
     "lint": "eslint ./src",
-    "format": "eslint ./src --fix --ext .js,.cjs,.ts"
+    "format": "eslint ./src --ext .js,.cjs,.ts --fix",
+    "test": "vitest run --coverage"
   },
   "dependencies": {
     "joi": "^17.6.3"
   },
   "devDependencies": {
+    "@vitest/coverage-c8": "^0.24.3",
     "eslint": "^8.25.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-n": "^15.3.0",
-    "eslint-plugin-promise": "^6.1.0"
+    "eslint-plugin-promise": "^6.1.0",
+    "vitest": "^0.24.5"
   }
 }

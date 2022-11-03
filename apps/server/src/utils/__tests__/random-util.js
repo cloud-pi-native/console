@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import { allOrgNames, allServices } from 'shared/src/projects/utils.js'
+import { allOrgNames, allServices } from 'shared/src/schemas/project.js'
 
 export const getRandomUuid = () => {
   return faker.datatype.uuid()

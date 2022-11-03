@@ -40,7 +40,7 @@ services:
       context: ..
       dockerfile: apps/server/Dockerfile
       target: prod
-    image: dso-console/server:test
+    image: dso-console/server:ci
     container_name: dso-console_server
     depends_on:
       keycloak:
@@ -78,7 +78,7 @@ services:
         KEYCLOAK_REDIRECT_URI: ${KEYCLOAK_REDIRECT_URI:-http://client:8080}
         SERVER_HOST: ${SERVER_HOST:-server}
         SERVER_PORT: ${SERVER_PORT:-4000}
-    image: dso-console/client:test
+    image: dso-console/client:ci
     container_name: dso-console_client
     depends_on:
       server:
@@ -92,7 +92,7 @@ services:
     build:
       context: ..
       dockerfile: packages/cypress/Dockerfile
-    image: dso-console/cypress:test
+    image: dso-console/cypress:ci
     container_name: dso-console_cypress
     depends_on:
       client:
