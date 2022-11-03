@@ -3,11 +3,11 @@ export const projects = [
     id: '9FG4CeGkMavI5CtAh_3Ss',
     repos: [
       {
-        gitName: 'candilib',
-        gitSourceName: 'https://github.com/dnum-mi/candilib',
+        internalRepoName: 'candilib',
+        externalRepoUrl: 'https://github.com/dnum-mi/candilib',
         isPrivate: true,
-        userName: 'this-is-a-test',
-        gitToken: 'this-is-a-token',
+        externalUserName: 'this-is-a-test',
+        externalToken: 'this-is-a-token',
       },
     ],
     owner: {
@@ -31,11 +31,11 @@ export const projects = [
     id: '9FG4CeGkMavI5CtAh_3St',
     repos: [
       {
-        gitName: 'psij',
-        gitSourceName: 'https://github.com/dnum-mi/psij',
+        internalRepoName: 'psij',
+        externalRepoUrl: 'https://github.com/dnum-mi/psij',
         isPrivate: true,
-        userName: 'this-is-a-test',
-        gitToken: 'this-is-a-token',
+        externalUserName: 'this-is-a-test',
+        externalToken: 'this-is-a-token',
       },
     ],
     owner: {

@@ -16,14 +16,14 @@ const isNewRepoForm = ref(false)
 
 const setReposTiles = (selectedProject) => {
   repos.value = selectedProject.repos?.map(repo => ({
-    id: repo.gitName,
-    title: repo.gitName,
+    id: repo.internalRepoName,
+    title: repo.internalRepoName,
     data: repo,
   }))
 }
 
 const setSelectedRepo = (repo) => {
-  if (selectedRepo.value.gitName === repo.gitName) {
+  if (selectedRepo.value.internalRepoName === repo.internalRepoName) {
     selectedRepo.value = {}
     return
   }
@@ -82,7 +82,7 @@ onMounted(() => {
       @click="setSelectedRepo(repo.data)"
     />
     <RepoForm
-      v-if="Object.keys(selectedRepo).length !== 0 && selectedRepo.gitName === repo.id"
+      v-if="Object.keys(selectedRepo).length !== 0 && selectedRepo.internalRepoName === repo.id"
       :repo="selectedRepo"
       :is-editable="false"
     />

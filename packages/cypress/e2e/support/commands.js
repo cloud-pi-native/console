@@ -76,11 +76,11 @@ Cypress.Commands.add('addRepos', (project, repos) => {
   cy.intercept('GET', '/api/v1/projects').as('getProjects')
 
   const newRepo = (repo) => ({
-    gitName: 'dso-console',
-    userName: 'this-is-tobi',
-    gitSourceName: 'https://github.com/dnum-mi/dso-console',
+    internalRepoName: 'dso-console',
+    externalUserName: 'this-is-tobi',
+    externalRepoUrl: 'https://github.com/dnum-mi/dso-console',
     isPrivate: false,
-    gitToken: 'private-token',
+    externalToken: 'private-token',
     ...repo,
   })
 
@@ -97,19 +97,19 @@ Cypress.Commands.add('addRepos', (project, repos) => {
   newRepos.forEach((repo) => {
     cy.getByDataTestid('addRepoLink').click()
       .get('h1').should('contain', 'Ajouter un dépôt au projet')
-      .getByDataTestid('gitNameInput').type(repo.gitName)
-      .getByDataTestid('gitSrcNameInput').clear().type(repo.gitSourceName)
+      .getByDataTestid('internalRepoNameInput').type(repo.internalRepoName)
+      .getByDataTestid('externalRepoUrlInput').clear().type(repo.externalRepoUrl)
 
     if (repo.isPrivate) {
       cy.getByDataTestid('privateRepoCbx').find('input[type="checkbox"]').check({ force: true })
-        .getByDataTestid('userNameInput').type(repo.userName)
-        .getByDataTestid('gitTokenInput').clear().type(repo.gitToken)
+        .getByDataTestid('externalUserNameInput').type(repo.externalUserName)
+        .getByDataTestid('externalTokenInput').clear().type(repo.externalToken)
     }
 
     cy.getByDataTestid('addRepoBtn').click()
     cy.wait('@putProject').its('response.statusCode').should('eq', 200)
     cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
-    cy.getByDataTestid(`repoTile-${repo.gitName}`).should('exist')
+    cy.getByDataTestid(`repoTile-${repo.internalRepoName}`).should('exist')
   })
 })
 
@@ -122,7 +122,7 @@ Cypress.Commands.add('assertAddRepo', (project, repos) => {
     .getByDataTestid('menuRepos').click()
 
   repos.forEach((repo) => {
-    cy.getByDataTestid(`repoTile-${repo.gitName}`).should('exist')
+    cy.getByDataTestid(`repoTile-${repo.internalRepoName}`).should('exist')
   })
 })
 
