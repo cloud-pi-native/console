@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { getKeycloak } from '@/utils/keycloak/init-sso.js'
+import { getKeycloak } from '@/utils/keycloak/init.js'
 
 export const apiClient = axios.create({
   baseURL: '/api/v1',
