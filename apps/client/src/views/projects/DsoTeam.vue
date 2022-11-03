@@ -10,14 +10,17 @@ const projectStore = useProjectStore()
 
 const selectedProject = computed(() => projectStore.selectedProject)
 
-const newUserEmail = ref('')
+const isUserAlreadyInTeam = computed(() => !!selectedProject.value.users.find(user => user.email === newUser.value.email))
 
-const newUser = ref({})
+const newUser = ref({
+  id: undefined,
+  email: undefined,
+  firstName: undefined,
+  lastName: undefined,
+})
 
 const headers = [
   'E-mail',
-  'Prénom',
-  'Nom',
   'Rôle',
 ]
 
@@ -27,7 +30,7 @@ const rows = ref([])
 const setRows = () => {
   rows.value = []
 
-  rows.value.push([...Object.values(selectedProject.value.owner).filter(val => val !== selectedProject.value.owner.id), {
+  rows.value.push([selectedProject.value.owner.email, {
     component: DsfrTag,
     label: 'owner',
     class: 'fr-tag--dismiss',
@@ -37,29 +40,34 @@ const setRows = () => {
 
   if (selectedProject.value.users) {
     selectedProject.value.users.forEach(user => {
-      rows.value.push([...Object.values(user).filter(val => val !== user.id), {
+      rows.value.push([user.email, {
         component: DsfrTag,
         label: 'user',
         class: 'fr-tag--dismiss',
-        disabled: false,
+        disabled: true,
         selected: false,
       }])
     })
   }
 }
 
-const addUserToProject = () => {
+const addUserToProject = async () => {
   // TODO : récupérer données keycloak de l'utilisateur via son e-mail ?
   newUser.value.id = 'xxxxxx'
-  newUser.value.email = newUserEmail.value
-  newUser.value.firstName = newUserEmail.value.split('.')[0]
-  newUser.value.lastName = newUserEmail.value.split('.')[1].split('@')[0]
+  newUser.value.firstName = newUser.value.email.split('.')[0]
+  newUser.value.lastName = newUser.value.email.split('.')[1].split('@')[0]
 
   const keysToValidate = ['id', 'email', 'firstName', 'lastName']
   const errorSchema = schemaValidator(userSchema, newUser.value, keysToValidate)
 
-  if (Object.keys(errorSchema).length || selectedProject.value.users.find(user => user.email === newUserEmail.value)) return
-  projectStore.addUserToProject(newUser.value)
+  if (Object.keys(errorSchema).length || isUserAlreadyInTeam.value) return
+  await projectStore.addUserToProject(newUser.value)
+
+  // TODO : remettre newUser à 0
+  // TypeError: can't access property "text", _ctx.field is undefined
+  // Object.keys(newUser.value).forEach(key => {
+  //   newUser.value[key] = undefined
+  // })
 }
 
 onMounted(() => {
@@ -86,20 +94,28 @@ watch(projectStore.selectedProject, () => {
     :rows="rows"
   />
   <DsfrInput
-    v-model="newUserEmail"
+    v-model="newUser.email"
     hint="Adresse e-mail associée au compte keycloak de l'utilisateur"
     type="text"
     label="Ajouter un utilisateur via son adresse e-mail"
     label-visible
     placeholder="prenom.nom@interieur.gouv.fr"
-    :is-valid="!!newUserEmail && isValid(userSchema, newUser, 'email')"
-    :is-invalid="!!newUserEmail && !isValid(userSchema, newUser, 'email')"
+    :is-valid="!!newUser.email && isValid(userSchema, newUser, 'email') && !isUserAlreadyInTeam"
+    :is-invalid="!!newUser.email && (!isValid(userSchema, newUser, 'email') || isUserAlreadyInTeam)"
+    class="fr-mb-2w"
+  />
+  <DsfrAlert
+    v-if="isUserAlreadyInTeam"
+    description="L'utilisateur associé à cette adresse e-mail fait déjà partie du projet."
+    small
+    type="error"
     class="fr-mb-2w"
   />
   <DsfrButton
     label="Ajouter l'utilisateur"
     secondary
     icon="ri-user-add-line"
+    :disabled="!!newUser.email && (!isValid(userSchema, newUser, 'email') || isUserAlreadyInTeam)"
     @click="addUserToProject()"
   />
 </template>
