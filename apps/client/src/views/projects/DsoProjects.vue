@@ -1,62 +1,69 @@
 <script setup>
 import { onMounted, ref, watch, computed } from 'vue'
-import { useRouter } from 'vue-router'
 import { useProjectStore } from '@/stores/project.js'
-const router = useRouter()
+import router from '@/router/index.js'
+import DsoSelectedProject from './DsoSelectedProject.vue'
+
 const projectStore = useProjectStore()
 
+const projects = computed(() => projectStore.projects)
 const projectList = ref([])
 
-const projects = computed(() => projectStore.projects)
-const selectedProjectId = ref(projectStore.selectedProject?.id)
-
-const setProjectList = () => {
-  projectList.value = []
-  if (!projects.value.length) return
-  projects.value.forEach(project => {
-    projectList.value.push({
-      text: project.projectName,
-      value: project.id,
-    })
-  })
+const setProjectList = (projects) => {
+  projectList.value = projects.map(project => ({
+    id: project.id,
+    title: project.projectName,
+    to: `/projects/${project.id}/dashboard`,
+  }))
 }
 
-const goToOrderProject = () => {
-  router.push('/order-project')
+const setSelectedProject = (id) => {
+  projectStore.setSelectedProject(id)
+}
+
+const goToCreateProject = () => {
+  router.push('projects/create-project')
 }
 
 onMounted(() => {
   projectStore.getUserProjects()
 })
 
-watch(selectedProjectId, () => {
-  projectStore.setSelectedProject(selectedProjectId.value)
-})
-
-watch(projects, () => {
-  setProjectList()
+watch(projects, (projects) => {
+  setProjectList(projects)
 })
 
 </script>
 
 <template>
+  <DsoSelectedProject />
   <div
-    class="flex <md:flex-col-reverse items-center justify-between"
+    class="flex <md:flex-col-reverse items-center justify-between pb-5"
   >
-    <DsfrSelect
-      v-model="selectedProjectId"
-      data-testid="projectSelector"
-      label="Projet à visualiser"
-      :options="projectList"
-    />
     <DsfrButton
       label="Créer un nouveau projet"
-      data-testid="orderProjectLink"
+      data-testid="createProjectLink"
       tertiary
       class="fr-mt-2v <md:mb-2"
       icon="ri-add-line"
-      @click="goToOrderProject()"
+      @click="goToCreateProject()"
     />
   </div>
-  <router-view />
+  <div
+    class="grid grid-cols-3 items-center justify-between"
+  >
+    <div
+      v-for="project in projectList"
+      :key="project.id"
+      class="w-11/12 pb-5"
+    >
+      <DsfrTile
+        :title="project.title"
+        :data-testid="`projectTile-${project.title}`"
+        :to="project.to"
+        :horizontal="false"
+        @click="setSelectedProject(project.id)"
+      />
+    </div>
+  </div>
 </template>

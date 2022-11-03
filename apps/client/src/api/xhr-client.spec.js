@@ -1,9 +1,10 @@
 import { vi } from 'vitest'
 import * as xhrClient from './xhr-client.js'
 
-vi.mock('@/utils/keycloak/init-sso.js', () => ({
+vi.mock('@/utils/keycloak/init.js', () => ({
   getKeycloak: () => ({
     token: 'token',
+    updateToken: vi.fn(),
   }),
 }))
 
@@ -14,7 +15,7 @@ describe('xhr-client', () => {
         url: '/version',
       }
 
-      const fullfiled = xhrClient.apiClient.interceptors.request.handlers[0].fulfilled(config)
+      const fullfiled = await xhrClient.apiClient.interceptors.request.handlers[0].fulfilled(config)
       expect(fullfiled).toMatchObject(config)
     })
 
@@ -24,7 +25,7 @@ describe('xhr-client', () => {
         headers: {},
       }
 
-      const fullfiled = xhrClient.apiClient.interceptors.request.handlers[0].fulfilled(config)
+      const fullfiled = await xhrClient.apiClient.interceptors.request.handlers[0].fulfilled(config)
       expect(fullfiled.headers).toHaveProperty('Authorization', 'Bearer token')
     })
   })

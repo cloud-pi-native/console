@@ -2,7 +2,7 @@ import {
   getRandomOwner,
   getRandomProjectName,
   getRandomProjectOrgName,
-  getRandomProjectRepo,
+  getRandomProjectRepos,
   getRandomProjectServices,
 } from './random-util.js'
 
@@ -12,6 +12,6 @@ export const createRandomProject = () => {
     orgName: getRandomProjectOrgName(),
     projectName: getRandomProjectName(),
     services: getRandomProjectServices(),
-    repo: getRandomProjectRepo(3),
+    repos: getRandomProjectRepos(3),
   }
 }

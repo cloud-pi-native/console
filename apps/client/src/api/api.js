@@ -15,3 +15,8 @@ export const createProject = async (data) => {
   const response = await apiClient.post('/projects', data)
   return response.data
 }
+
+export const updateProject = async (id, data) => {
+  const response = await apiClient.put(`/projects/${id}`, data)
+  return response.data
+}

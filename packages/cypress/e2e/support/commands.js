@@ -16,12 +16,13 @@ Cypress.Commands.add('kcLogin', (name) => {
   })
 })
 
-Cypress.Commands.add('orderProject', (project) => {
+Cypress.Commands.add('createProject', (project) => {
   cy.intercept('POST', '/api/v1/projects').as('postProject')
+  cy.intercept('GET', '/api/v1/projects').as('getProjects')
 
   const newProject = {
     id: nanoid(),
-    repo: [],
+    repos: [],
     owner: {
       id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
       email: 'test@test.com',
@@ -43,48 +44,86 @@ Cypress.Commands.add('orderProject', (project) => {
 
   cy.visit('/')
     .getByDataTestid('menuProjectsBtn').click()
-    .getByDataTestid('menuServices').click()
-    .getByDataTestid('orderProjectLink').click()
+    .getByDataTestid('menuMyProjects').click()
+    .url().should('contain', '/projects')
+    .getByDataTestid('createProjectLink').click()
     .get('h1').should('contain', 'Commander un espace projet')
-    .getByDataTestid('orderProjectBtn').should('be.disabled')
     .get('[data-testid^="repoFieldset-"]').should('not.exist')
     .get('p.fr-alert__description').should('contain', newProject.owner.email)
     .getByDataTestid('orgNameSelect').find('select').select('ministere-interieur')
     .getByDataTestid('projectNameInput').type(`${newProject.projectName} ErrorSpace`)
     .getByDataTestid('projectNameInput').should('have.class', 'fr-input--error')
-    .getByDataTestid('orderProjectBtn').should('be.disabled')
     .getByDataTestid('projectNameInput').clear().type(newProject.projectName)
     .getByDataTestid('projectNameInput').should('not.have.class', 'fr-input--error')
-    .getByDataTestid('orderProjectBtn').should('be.enabled')
+    .getByDataTestid('createProjectBtn').should('be.enabled').click()
 
-  if (newProject.repo.length) {
-    newProject.repo.forEach((repo, index) => {
-      cy.getByDataTestid('addRepoBtn').click()
-        .getByDataTestid('orderProjectBtn').should('be.disabled')
-        .get('[data-testid^="repoFieldset-"]').should('have.length', index + 1)
-        .getByDataTestid(`gitNameInput-${index}`).type(repo.gitName)
-        .getByDataTestid('orderProjectBtn').should('be.enabled')
-        .getByDataTestid(`userNameInput-${index}`).type(repo.userName)
-        .getByDataTestid(`gitSrcNameInput-${index}`).type(repo.gitSourceName)
-
-      if (repo.gitToken) {
-        cy.getByDataTestid(`privateRepoCbx-${index}`).find('input[type="checkbox"]').check({ force: true })
-          .getByDataTestid('orderProjectBtn').should('be.disabled')
-          .getByDataTestid(`gitTokenInput-${index}`).type(repo.gitToken)
-          .getByDataTestid('orderProjectBtn').should('be.enabled')
-      }
-    })
-  }
-
-  cy.getByDataTestid('orderProjectBtn').click()
   cy.wait('@postProject').its('response.statusCode').should('eq', 201)
+  cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
+
+  if (newProject.repos.length) {
+    cy.addRepos(newProject.repos)
+  }
 })
 
-Cypress.Commands.add('assertOrderProject', (projectName) => {
+Cypress.Commands.add('assertCreateProject', (projectName) => {
+  cy.getByDataTestid('menuMyProjects').click()
+    .url().should('contain', '/projects')
+    .getByDataTestid(`projectTile-${projectName}`).should('exist')
+})
+
+Cypress.Commands.add('addRepos', (project, repos) => {
+  cy.intercept('PUT', '/api/v1/projects/*').as('putProject')
+  cy.intercept('GET', '/api/v1/projects').as('getProjects')
+
+  const newRepo = (repo) => ({
+    internalRepoName: 'dso-console',
+    externalUserName: 'this-is-tobi',
+    externalRepoUrl: 'https://github.com/dnum-mi/dso-console',
+    isPrivate: false,
+    externalToken: 'private-token',
+    ...repo,
+  })
+
+  const newRepos = repos.map(newRepo)
+
   cy.visit('/')
     .getByDataTestid('menuProjectsBtn').click()
-    .getByDataTestid('menuDashboard').click()
-    .selectProject(projectName)
+    .getByDataTestid('menuMyProjects').click()
+    .url().should('contain', '/projects')
+    .getByDataTestid(`projectTile-${project.projectName}`).click()
+    .getByDataTestid('menuRepos').click()
+    .url().should('contain', '/repos')
+
+  newRepos.forEach((repo) => {
+    cy.getByDataTestid('addRepoLink').click()
+      .get('h1').should('contain', 'Ajouter un dépôt au projet')
+      .getByDataTestid('internalRepoNameInput').type(repo.internalRepoName)
+      .getByDataTestid('externalRepoUrlInput').clear().type(repo.externalRepoUrl)
+
+    if (repo.isPrivate) {
+      cy.getByDataTestid('privateRepoCbx').find('input[type="checkbox"]').check({ force: true })
+        .getByDataTestid('externalUserNameInput').type(repo.externalUserName)
+        .getByDataTestid('externalTokenInput').clear().type(repo.externalToken)
+    }
+
+    cy.getByDataTestid('addRepoBtn').click()
+    cy.wait('@putProject').its('response.statusCode').should('eq', 200)
+    cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
+    cy.getByDataTestid(`repoTile-${repo.internalRepoName}`).should('exist')
+  })
+})
+
+Cypress.Commands.add('assertAddRepo', (project, repos) => {
+  cy.visit('/')
+    .getByDataTestid('menuProjectsBtn').click()
+    .getByDataTestid('menuMyProjects').click()
+    .url().should('contain', '/projects')
+    .getByDataTestid(`projectTile-${project.projectName}`).click()
+    .getByDataTestid('menuRepos').click()
+
+  repos.forEach((repo) => {
+    cy.getByDataTestid(`repoTile-${repo.internalRepoName}`).should('exist')
+  })
 })
 
 Cypress.Commands.add('getByDataTestid', (dataTestid) => {
@@ -105,9 +144,9 @@ Cypress.on('uncaught:exception', (_err, _runnable) => false)
 
 // Commande pour accéder / interagir avec le store dans les tests
 Cypress.Commands.add('getStore', () => cy.window().its('app.$store'))
+
 // A utiliser sur les éléments détâchés du DOM (lors de rerendu assez lourds dans le DOM)
 // https://github.com/cypress-io/cypress/issues/7306#issuecomment-850621378
-
 // Recursively gets an element, returning only after it's determined to be attached to the DOM for good
 Cypress.Commands.add('getSettled', (selector, opts = {}) => {
   const retries = opts.retries || 3

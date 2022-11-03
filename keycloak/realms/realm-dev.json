@@ -1,5 +1,5 @@
 {
-  "realm": "quickstart",
+  "realm": "cloud-pi-native",
   "enabled": true,
   "accessTokenLifespan": 60,
   "accessCodeLifespan": 60,
@@ -28,8 +28,81 @@
       "username": "test",
       "enabled": true,
       "email": "test@test.com",
-      "firstName": "Test",
-      "lastName": "TEST",
+      "emailVerified": true,
+      "firstName": "Jean",
+      "lastName": "DUPOND",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "test"
+        }
+      ],
+      "realmRoles": [
+        "user",
+        "offline_access"
+      ],
+      "clientRoles": {
+        "account": [
+          "manage-account"
+        ]
+      }
+    },
+    {
+      "id": "cb8e5b4b-7b7b-40f5-935f-594f48ae6566",
+      "username": "tcolin",
+      "enabled": true,
+      "email": "thibault.colin@test.com",
+      "emailVerified": true,
+      "firstName": "Thibault",
+      "lastName": "COLIN",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "test"
+        }
+      ],
+      "realmRoles": [
+        "user",
+        "offline_access"
+      ],
+      "clientRoles": {
+        "account": [
+          "manage-account"
+        ]
+      }
+    },
+    {
+      "id": "cb8e5b4b-7b7b-40f5-935f-594f48ae6567",
+      "username": "cnollet",
+      "enabled": true,
+      "email": "claire.nollet@test.com",
+      "emailVerified": true,
+      "firstName": "Claire",
+      "lastName": "NOLLET",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "test"
+        }
+      ],
+      "realmRoles": [
+        "user",
+        "offline_access"
+      ],
+      "clientRoles": {
+        "account": [
+          "manage-account"
+        ]
+      }
+    },
+    {
+      "id": "cb8e5b4b-7b7b-40f5-935f-594f48ae6568",
+      "username": "btran",
+      "enabled": true,
+      "email": "baudoin.tran@test.com",
+      "emailVerified": true,
+      "firstName": "Baudoin",
+      "lastName": "TRAN",
       "credentials": [
         {
           "type": "password",
@@ -50,6 +123,7 @@
       "username": "admin",
       "enabled": true,
       "email": "admin@test.com",
+      "emailVerified": true,
       "firstName": "Admin",
       "lastName": "ADMIN",
       "credentials": [
@@ -87,8 +161,8 @@
   "clients": [
     {
       "id": "e7d105eb-28d4-4557-a274-eb354a60a33b",
-      "clientId": "test-frontend",
-      "name": "test-frontend",
+      "clientId": "dso-console-frontend",
+      "name": "dso-console-frontend",
       "description": "",
       "rootUrl": "",
       "adminUrl": "",
@@ -164,8 +238,8 @@
     },
     {
       "id": "e7d105eb-28d4-4557-a274-eb354a60a33c",
-      "clientId": "test-backend",
-      "name": "test-backend",
+      "clientId": "dso-console-backend",
+      "name": "dso-console-backend",
       "description": "",
       "rootUrl": "",
       "adminUrl": "",

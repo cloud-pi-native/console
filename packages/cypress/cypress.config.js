@@ -1,9 +1,9 @@
-const { defineConfig } = require('cypress')
+import { defineConfig } from 'cypress'
 
 const clientHost = process.env.CLIENT_HOST || 'localhost'
 const clientPort = process.env.CLIENT_PORT || '8080'
 
-module.exports = defineConfig({
+export default defineConfig({
   e2e: {
     baseUrl: `http://${clientHost}:${clientPort}`,
     fixturesFolder: 'e2e/fixtures',

@@ -1,8 +1,9 @@
 import { nanoid } from 'nanoid'
-import { allServices } from 'shared/src/projects/utils.js'
+import { allServices } from 'shared/src/schemas/project.js'
 import { getLogInfos } from '../utils/logger.js'
 import {
   createProject,
+  updateProject,
   getUserProjects,
   getUserProjectById,
 } from '../models/project-queries.js'
@@ -33,6 +34,34 @@ export const createProjectController = async (req, res) => {
   }
 }
 
+export const updateProjectController = async (req, res) => {
+  const id = req.params.id
+  const data = req.body
+
+  try {
+    const userId = req.session.user.id
+    const dbProject = await getUserProjectById(id, userId)
+    if (!dbProject) {
+      throw new Error('Missing permissions on this project')
+    }
+
+    await updateProject(data)
+
+    app.log.info({
+      ...getLogInfos({ projectId: data.id }),
+      description: 'Project successfully updated',
+    })
+    send200(res, { data: `Project ${data.id} updated` })
+  } catch (error) {
+    app.log.error({
+      ...getLogInfos(),
+      description: 'Cannot update project',
+      error: error.message,
+    })
+    send500(res, error.message)
+  }
+}
+
 export const getUserProjectsController = async (req, res) => {
   try {
     const userId = req.session.user.id
@@ -43,7 +72,7 @@ export const getUserProjectsController = async (req, res) => {
       ...getLogInfos(),
       description: 'Projects successfully retrived',
     })
-    send200(res, projects)
+    await send200(res, projects)
   } catch (error) {
     app.log.error({
       ...getLogInfos(),

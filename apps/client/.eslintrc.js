@@ -16,7 +16,7 @@ module.exports = {
   env: {
     'vue/setup-compiler-macros': true,
     browser: true,
-    es2021: true,
+    es2022: true,
   },
   rules: {
     'comma-dangle': [2, 'always-multiline'],

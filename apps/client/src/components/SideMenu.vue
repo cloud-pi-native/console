@@ -2,13 +2,16 @@
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user.js'
+import { useProjectStore } from '@/stores/project.js'
 
 const route = useRoute()
 const userStore = useUserStore()
+const projectStore = useProjectStore()
 
 const routeName = computed(() => route.name)
-
+const routePath = computed(() => route.path)
 const isLoggedIn = computed(() => userStore.isLoggedIn)
+const selectedProject = computed(() => projectStore.selectedProject)
 
 const isExpanded = ref({
   mainMenu: false,
@@ -19,17 +22,12 @@ function toggleExpand (key) {
   isExpanded.value[key] = !isExpanded.value[key]
 }
 
-watch(routeName, () => {
-  Object.keys(isExpanded.value)
-    .filter(key => {
-      if (['Services', 'Dashboard', 'Team'].includes(routeName.value)) {
-        return key !== 'projects'
-      }
-      return true
-    })
-    .forEach(key => {
-      isExpanded.value[key] = false
-    })
+watch(routePath, (routePath) => {
+  if (/projects*/.test(routePath)) {
+    isExpanded.value.projects = true
+    return
+  }
+  isExpanded.value.projects = false
 })
 
 </script>
@@ -66,7 +64,7 @@ watch(routeName, () => {
           control-id="projectsList"
           @toggle-expand="toggleExpand('projects')"
         >
-          Mes projets
+          Projets
         </DsfrSideMenuButton>
         <DsfrSideMenuList
           id="projectsList"
@@ -76,31 +74,51 @@ watch(routeName, () => {
         >
           <DsfrSideMenuListItem>
             <DsfrSideMenuLink
-              data-testid="menuDashboard"
-              :active="routeName === 'Dashboard'"
-              to="/dashboard"
+              data-testid="menuMyProjects"
+              :active="routeName === 'Projects'"
+              to="/projects"
             >
-              Tableau de bord
+              Mes projets
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
-          <DsfrSideMenuListItem>
-            <DsfrSideMenuLink
-              data-testid="menuServices"
-              :active="routeName === 'Services'"
-              to="/services"
-            >
-              Mes services
-            </DsfrSideMenuLink>
-          </DsfrSideMenuListItem>
-          <DsfrSideMenuListItem>
-            <DsfrSideMenuLink
-              data-testid="menuTeam"
-              :active="routeName === 'Team'"
-              to="/team"
-            >
-              Gérer les droits
-            </DsfrSideMenuLink>
-          </DsfrSideMenuListItem>
+          <div v-if="selectedProject">
+            <DsfrSideMenuListItem>
+              <DsfrSideMenuLink
+                data-testid="menuDashboard"
+                :active="routeName === 'Dashboard'"
+                :to="`/projects/${selectedProject?.id}/dashboard`"
+              >
+                Tableau de bord
+              </DsfrSideMenuLink>
+            </DsfrSideMenuListItem>
+            <DsfrSideMenuListItem>
+              <DsfrSideMenuLink
+                data-testid="menuServices"
+                :active="routeName === 'Services'"
+                :to="`/projects/${selectedProject?.id}/services`"
+              >
+                Mes services
+              </DsfrSideMenuLink>
+            </DsfrSideMenuListItem>
+            <DsfrSideMenuListItem>
+              <DsfrSideMenuLink
+                data-testid="menuTeam"
+                :active="routeName === 'Team'"
+                :to="`/projects/${selectedProject?.id}/team`"
+              >
+                Gérer les droits
+              </DsfrSideMenuLink>
+            </DsfrSideMenuListItem>
+            <DsfrSideMenuListItem>
+              <DsfrSideMenuLink
+                data-testid="menuRepos"
+                :active="routeName === 'Repos'"
+                :to="`/projects/${selectedProject?.id}/repos`"
+              >
+                Dépôts synchronisés
+              </DsfrSideMenuLink>
+            </DsfrSideMenuListItem>
+          </div>
         </DsfrSideMenuList>
       </DsfrSideMenuListItem>
       <DsfrSideMenuListItem>

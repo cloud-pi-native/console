@@ -3,6 +3,7 @@ import fastify from 'fastify'
 import fastifySession from '@fastify/session'
 import fastifyCookie from '@fastify/cookie'
 import fp from 'fastify-plugin'
+import { nanoid } from 'nanoid'
 import { sessionConf } from '../utils/keycloak.js'
 import { getConnection, closeConnections, sequelize } from '../connect.js'
 import { getProjectModel } from '../models/project.js'
@@ -56,6 +57,7 @@ describe('Project routes', () => {
       const randomProject = createRandomProject()
 
       Project.$queueResult(null)
+      Project.$queueResult(randomProject)
       setOwner(randomProject.owner)
 
       const response = await app.inject()
@@ -64,8 +66,8 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(201)
-      expect(response.json().data).toBeDefined()
-      expect(response.json().data).toMatchObject(randomProject)
+      expect(response.json()).toBeDefined()
+      expect(response.json()).toMatchObject(randomProject)
     })
 
     it('Should not create a project if payload is invalid', async () => {
@@ -92,14 +94,44 @@ describe('Project routes', () => {
     })
   })
 
+  describe('put("/", updateProjectController)', () => {
+    it('Should update a project', async () => {
+      const randomProject = { ...createRandomProject(), id: nanoid() }
+
+      sequelize.$queueResult({ data: randomProject })
+      sequelize.$queueResult(randomProject)
+      setOwner(randomProject.owner)
+
+      const response = await app.inject()
+        .put(`/${randomProject.id}`)
+        .body(randomProject)
+        .end()
+
+      expect(response.statusCode).toEqual(200)
+      expect(response.json()).toBeDefined()
+      expect(response.json()).toMatchObject({ data: `Project ${randomProject.id} updated` })
+    })
+
+    it('Should not update a project if permission is missing', async () => {
+      const randomProject = createRandomProject()
+
+      Project.$queueResult(null)
+      setOwner(randomProject.owner)
+
+      const response = await app.inject()
+        .put('/')
+        .body(randomProject)
+        .end()
+
+      expect(response.statusCode).toEqual(500)
+    })
+  })
+
   describe('get("/", getUserProjectsController)', () => {
     it('Should get list of a user\'s projects', async () => {
       const randomProjects = repeatFn(3)(createRandomProject)
 
-      sequelize.$queueResult(randomProjects.map(randomProject => {
-        randomProject.owner = randomProjects[0].owner
-        return Project.create({ data: randomProject })
-      }))
+      sequelize.$queueResult(randomProjects.map(randomProject => ({ data: randomProject })))
       setOwner(randomProjects[0].owner)
 
       const response = await app.inject()
@@ -110,7 +142,7 @@ describe('Project routes', () => {
       expect(response.json()).toBeDefined()
       const data = response.json()
       data.forEach(project => {
-        expect(project.data).toMatchObject(randomProjects.find(randomProject => randomProject.projectName === project.projectName))
+        expect(project).toMatchObject(randomProjects.find(randomProject => randomProject.projectName === project.projectName))
       })
     })
 
@@ -133,7 +165,7 @@ describe('Project routes', () => {
     it('Should get a project by id', async () => {
       const randomProject = createRandomProject()
 
-      sequelize.$queueResult(Project.create({ data: randomProject }))
+      sequelize.$queueResult({ data: randomProject })
       setOwner(randomProject.owner)
 
       const response = await app.inject()
@@ -141,8 +173,8 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(200)
-      expect(response.json().data).toBeDefined()
-      expect(response.json().data).toMatchObject(randomProject)
+      expect(response.json()).toBeDefined()
+      expect(response.json()).toMatchObject(randomProject)
     })
 
     it('Should not get a project when id is invalid', async () => {

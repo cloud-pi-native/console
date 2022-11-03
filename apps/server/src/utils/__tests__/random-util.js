@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import { allOrgNames, allServices } from 'shared/src/projects/utils.js'
+import { allOrgNames, allServices } from 'shared/src/schemas/project.js'
 
 export const getRandomUuid = () => {
   return faker.datatype.uuid()
@@ -17,21 +17,22 @@ export const getRandomProjectServices = () => {
   return allServices
 }
 
-export const getRandomProjectRepo = (length = 1) => {
-  const repo = []
+export const getRandomProjectRepos = (length = 1) => {
+  const repos = []
   for (let i = 0; i < length;) {
     const projectRepo = {}
+    const httpsUrl = (url) => !url.startsWith('https://') ? 'https://' + url.split('://')[1] : url
 
-    projectRepo.gitName = faker.lorem.word()
-    projectRepo.gitSourceName = faker.lorem.word()
-    projectRepo.userName = faker.name.fullName()
+    projectRepo.internalRepoName = faker.lorem.word()
+    projectRepo.externalRepoUrl = httpsUrl(faker.internet.url())
+    projectRepo.externalUserName = faker.name.fullName()
     projectRepo.isPrivate = faker.datatype.boolean()
-    if (projectRepo.isPrivate) projectRepo.gitToken = faker.git.shortSha()
+    if (projectRepo.isPrivate) projectRepo.externalToken = faker.git.shortSha()
 
-    repo.push(projectRepo)
+    repos.push(projectRepo)
     i++
   }
-  return repo
+  return repos
 }
 
 export const getRandomOwner = () => {
