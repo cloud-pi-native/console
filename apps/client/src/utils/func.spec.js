@@ -12,20 +12,20 @@ describe('func', () => {
 
   it('Should validate correct schema', () => {
     expect(schemaValidator(repoSchema, {
-      gitName: 'candilib',
-      gitSourceName: 'https://candilib.com',
-      gitToken: 'eddddsqsq',
+      internalRepoName: 'candilib',
+      externalRepoUrl: 'https://candilib.com',
+      externalToken: 'eddddsqsq',
       isPrivate: true,
-      userName: 'clairenlet',
+      externalUserName: 'clairenlet',
     })).toStrictEqual({})
   })
 
   it('Should not validate schema and send specific error', () => {
     expect(schemaValidator(repoSchema, {
-      gitName: 'candilib',
-      gitSourceName: 'https://candilib.com',
+      internalRepoName: 'candilib',
+      externalRepoUrl: 'https://candilib.com',
       isPrivate: true,
-      userName: 'clairenlet',
-    })).toStrictEqual({ gitToken: '"gitToken" is required' })
+      externalUserName: 'clairenlet',
+    })).toStrictEqual({ externalToken: '"externalToken" is required' })
   })
 })

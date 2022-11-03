@@ -53,34 +53,34 @@ const cancel = (event) => {
       legend="Dépôt Git"
     >
       <DsfrInput
-        v-model="localRepo.gitName"
-        data-testid="gitNameInput"
+        v-model="localRepo.internalRepoName"
+        data-testid="internalRepoNameInput"
         type="text"
         required="required"
         :disabled="!props.isEditable"
-        :is-valid="!!updatedValues.gitName && isValid(repoSchema, localRepo, 'gitName')"
-        :is-invalid="!!updatedValues.gitName && !isValid(repoSchema, localRepo, 'gitName')"
+        :is-valid="!!updatedValues.internalRepoName && isValid(repoSchema, localRepo, 'internalRepoName')"
+        :is-invalid="!!updatedValues.internalRepoName && !isValid(repoSchema, localRepo, 'internalRepoName')"
         label="Nom du dépôt Git interne"
         label-visible
         hint="Nom du dépôt Git créé dans le Gitlab interne de la plateforme"
         placeholder="candilib"
         class="fr-mb-2w"
-        @update:model-value="updateRepo('gitName', $event)"
+        @update:model-value="updateRepo('internalRepoName', $event)"
       />
       <DsfrInput
-        v-model="localRepo.gitSourceName"
-        data-testid="gitSrcNameInput"
+        v-model="localRepo.externalRepoUrl"
+        data-testid="externalRepoUrlInput"
         type="text"
         required="required"
         :disabled="!props.isEditable"
-        :is-valid="!!updatedValues.gitSourceName && isValid(repoSchema, localRepo, 'gitSourceName')"
-        :is-invalid="!!updatedValues.gitSourceName && !isValid(repoSchema, localRepo, 'gitSourceName')"
+        :is-valid="!!updatedValues.externalRepoUrl && isValid(repoSchema, localRepo, 'externalRepoUrl')"
+        :is-invalid="!!updatedValues.externalRepoUrl && !isValid(repoSchema, localRepo, 'externalRepoUrl')"
         label="Url du dépôt Git externe"
         label-visible
         hint="Url du dépôt Git qui servira de source pour la synchronisation"
         placeholder="https://github.com/dnum-mi/dso-console"
         class="fr-mb-2w"
-        @update:model-value="updateRepo('gitSourceName', $event)"
+        @update:model-value="updateRepo('externalRepoUrl', $event)"
       />
       <DsfrCheckbox
         v-model="localRepo.isPrivate"
@@ -95,35 +95,35 @@ const cancel = (event) => {
         v-if="localRepo.isPrivate"
       >
         <DsfrInput
-          v-model="localRepo.userName"
-          data-testid="userNameInput"
+          v-model="localRepo.externalUserName"
+          data-testid="externalUserNameInput"
           type="text"
           :required="localRepo.isPrivate ? 'required' : false"
           :disabled="!props.isEditable"
-          :is-valid="!!updatedValues.userName && isValid(repoSchema, localRepo, 'userName')"
-          :is-invalid="!!updatedValues.userName && !isValid(repoSchema, localRepo, 'userName')"
+          :is-valid="!!updatedValues.externalUserName && isValid(repoSchema, localRepo, 'externalUserName')"
+          :is-invalid="!!updatedValues.externalUserName && !isValid(repoSchema, localRepo, 'externalUserName')"
           autocomplete="name"
           label="Nom d'utilisateur"
           label-visible
           hint="Nom de l'utilisateur propriétaire du token"
           placeholder="this-is-tobi"
           class="fr-mb-2w"
-          @update:model-value="updateRepo('userName', $event)"
+          @update:model-value="updateRepo('externalUserName', $event)"
         />
         <DsfrInput
-          v-model="localRepo.gitToken"
-          data-testid="gitTokenInput"
+          v-model="localRepo.externalToken"
+          data-testid="externalTokenInput"
           type="text"
           :required="localRepo.isPrivate ? 'required' : false"
           :disabled="!props.isEditable"
-          :is-valid="!!updatedValues.gitToken && isValid(repoSchema, localRepo, 'gitToken')"
-          :is-invalid="!!updatedValues.gitToken && !isValid(repoSchema, localRepo, 'gitToken')"
+          :is-valid="!!updatedValues.externalToken && isValid(repoSchema, localRepo, 'externalToken')"
+          :is-invalid="!!updatedValues.externalToken && !isValid(repoSchema, localRepo, 'externalToken')"
           label="Token d'accès au dépôt Git externe"
           label-visible
           hint="Token d'accès permettant le clone du dépôt par la chaîne DevSecOps"
           placeholder="hoqjC1vXtABzytBIWBXsdyzubmqMYkgA"
           class="fr-mb-2w"
-          @update:model-value="updateRepo('gitToken', $event)"
+          @update:model-value="updateRepo('externalToken', $event)"
         />
       </div>
     </DsfrFieldset>

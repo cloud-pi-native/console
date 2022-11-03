@@ -23,11 +23,11 @@ export const getRandomProjectRepos = (length = 1) => {
     const projectRepo = {}
     const httpsUrl = (url) => !url.startsWith('https://') ? 'https://' + url.split('://')[1] : url
 
-    projectRepo.gitName = faker.lorem.word()
-    projectRepo.gitSourceName = httpsUrl(faker.internet.url())
-    projectRepo.userName = faker.name.fullName()
+    projectRepo.internalRepoName = faker.lorem.word()
+    projectRepo.externalRepoUrl = httpsUrl(faker.internet.url())
+    projectRepo.externalUserName = faker.name.fullName()
     projectRepo.isPrivate = faker.datatype.boolean()
-    if (projectRepo.isPrivate) projectRepo.gitToken = faker.git.shortSha()
+    if (projectRepo.isPrivate) projectRepo.externalToken = faker.git.shortSha()
 
     repos.push(projectRepo)
     i++

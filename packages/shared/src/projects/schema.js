@@ -2,11 +2,11 @@ import Joi from 'joi'
 import { allOrgNames, allServices } from './utils.js'
 
 export const repoSchema = Joi.object({
-  gitName: Joi.string()
+  internalRepoName: Joi.string()
     .pattern(/^[a-zA-Z0-9-]+$/)
     .required(),
 
-  gitSourceName: Joi.string()
+  externalRepoUrl: Joi.string()
     .uri({
       scheme: [
         'git',
@@ -17,10 +17,10 @@ export const repoSchema = Joi.object({
 
   isPrivate: Joi.boolean(),
 
-  userName: Joi.string()
+  externalUserName: Joi.string()
     .when('isPrivate', { is: true, then: Joi.required() }),
 
-  gitToken: Joi.string()
+  externalToken: Joi.string()
     .when('isPrivate', { is: true, then: Joi.required() }),
 })
 
@@ -51,7 +51,7 @@ export const projectSchema = Joi.object({
 
   repos: Joi.array()
     .items(repoSchema)
-    .unique('gitName'),
+    .unique('internalRepoName'),
 
   services: Joi.array()
     .items(Joi.string().valid(...allServices))
