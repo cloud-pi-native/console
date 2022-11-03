@@ -28,6 +28,15 @@ export const useProjectStore = defineStore('project', () => {
     await getUserProjects()
   }
 
+  const addUserToProject = async (newUser) => {
+    if (!selectedProject.value.users) {
+      selectedProject.value.users = [newUser]
+    } else {
+      selectedProject.value.users = [...selectedProject.value.users, newUser]
+    }
+    await updateProject(selectedProject.value)
+  }
+
   return {
     selectedProject,
     projects,
@@ -35,5 +44,6 @@ export const useProjectStore = defineStore('project', () => {
     getUserProjects,
     createProject,
     updateProject,
+    addUserToProject,
   }
 })
