@@ -1,4 +1,4 @@
-import { getKeycloak, getUserProfile, keycloakLogin, keycloakLogout } from '@/utils/keycloak/init-sso.js'
+import { getKeycloak, getUserProfile, keycloakLogin, keycloakLogout } from '@/utils/keycloak/init.js'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 

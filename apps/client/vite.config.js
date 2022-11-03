@@ -2,7 +2,7 @@ import { fileURLToPath, URL } from 'url'
 import { defineConfig } from 'vite'
 import WindiCSS from 'vite-plugin-windicss'
 import vue from '@vitejs/plugin-vue'
-import { keycloakDomain } from './src/utils/keycloak/config-sso.js'
+import { keycloakDomain } from './src/utils/keycloak/config.js'
 
 const serverHost = process.env.SERVER_HOST
 const serverPort = process.env.SERVER_PORT
