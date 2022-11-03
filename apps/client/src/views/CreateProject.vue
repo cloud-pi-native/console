@@ -59,7 +59,11 @@ const updateProject = (key, value) => {
 </script>
 
 <template>
-  <h1>Commander un espace projet</h1>
+  <h1
+    class="fr-h1"
+  >
+    Commander un espace projet
+  </h1>
   <DsfrFieldset
     legend="Informations du projet"
     hint="Tous les champs sont requis"

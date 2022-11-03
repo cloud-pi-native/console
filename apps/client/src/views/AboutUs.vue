@@ -1,3 +1,7 @@
 <template>
-  <h1>À propos</h1>
+  <h1
+    class="fr-h1"
+  >
+    À propos
+  </h1>
 </template>

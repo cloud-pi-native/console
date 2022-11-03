@@ -39,7 +39,10 @@ const cancel = (event) => {
 </script>
 
 <template>
-  <h1 v-if="props.isEditable">
+  <h1
+    v-if="props.isEditable"
+    class="fr-h1"
+  >
     Ajouter un dépôt au projet
   </h1>
   <DsfrFieldset
