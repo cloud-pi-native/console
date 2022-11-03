@@ -10,13 +10,16 @@
     "cypress:run": "cypress run"
   },
   "devDependencies": {
+    "@cypress/vue": "^4.2.2",
     "eslint": "^8.26.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-cypress": "^2.12.1",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
     "nanoid": "4.0.0",
-    "shared": "workspace:^1.0.0"
+    "shared": "workspace:^1.0.0",
+    "vite": "^3.2.2",
+    "vue": "^3.2.41"
   },
   "optionalDependencies": {
     "cypress": "^10.11.0"
