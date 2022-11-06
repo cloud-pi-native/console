@@ -8,6 +8,7 @@ module.exports = {
     'vue',
     'import',
     'promise',
+    'cypress',
   ],
   parserOptions: {
     ecmaVersion: 'latest',
@@ -15,6 +16,7 @@ module.exports = {
   },
   env: {
     'vue/setup-compiler-macros': true,
+    'cypress/globals': true,
     browser: true,
     es2022: true,
   },

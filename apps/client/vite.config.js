@@ -25,6 +25,12 @@ export default defineConfig({
         ws: true,
       },
     },
+    fs: {
+      allow: [
+        '../../packages/shared',
+        '../..',
+      ],
+    },
   },
   define: {
     'process.env': process.env,
