@@ -140,7 +140,7 @@ const cancel = (event) => {
     />
     <DsfrButton
       label="Annuler"
-      data-testid="cancelBtn"
+      data-testid="cancelRepoBtn"
       secondary
       icon="ri-close-line"
       @click="cancel()"
