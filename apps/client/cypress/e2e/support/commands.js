@@ -16,6 +16,13 @@ Cypress.Commands.add('kcLogin', (name) => {
   })
 })
 
+Cypress.Commands.add('goToProjects', () => {
+  cy.visit('/')
+    .getByDataTestid('menuProjectsBtn').click()
+    .getByDataTestid('menuMyProjects').click()
+    .url().should('contain', '/projects')
+})
+
 Cypress.Commands.add('createProject', (project) => {
   cy.intercept('POST', '/api/v1/projects').as('postProject')
   cy.intercept('GET', '/api/v1/projects').as('getProjects')
@@ -42,10 +49,7 @@ Cypress.Commands.add('createProject', (project) => {
     ...project,
   }
 
-  cy.visit('/')
-    .getByDataTestid('menuProjectsBtn').click()
-    .getByDataTestid('menuMyProjects').click()
-    .url().should('contain', '/projects')
+  cy.goToProjects()
     .getByDataTestid('createProjectLink').click()
     .get('h1').should('contain', 'Commander un espace projet')
     .get('[data-testid^="repoFieldset-"]').should('not.exist')
