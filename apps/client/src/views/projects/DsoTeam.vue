@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import DsoSelectedProject from './DsoSelectedProject.vue'
 import { useProjectStore } from '@/stores/project.js'
-import { DsfrTag } from '@gouvminint/vue-dsfr'
+import { DsfrButton, DsfrTag } from '@gouvminint/vue-dsfr'
 import { userSchema } from 'shared/src/schemas/user.js'
 import { schemaValidator, isValid } from 'shared/src/utils/schemas.js'
 
@@ -34,6 +34,7 @@ const setRows = () => {
     component: DsfrTag,
     label: 'owner',
     class: 'fr-tag--dismiss',
+    tagName: 'button',
     disabled: true,
     selected: false,
   }])
@@ -44,7 +45,8 @@ const setRows = () => {
         component: DsfrTag,
         label: 'user',
         class: 'fr-tag--dismiss',
-        disabled: true,
+        tagName: 'button',
+        disabled: false,
         selected: false,
       }])
     })
