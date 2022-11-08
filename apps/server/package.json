@@ -20,13 +20,13 @@
     "lodash.kebabcase": "^4.1.1",
     "nanoid": "4.0.0",
     "pg": "8.8.0",
-    "sequelize": "^6.25.3",
+    "sequelize": "^6.25.5",
     "shared": "workspace:^1.0.0"
   },
   "devDependencies": {
     "@faker-js/faker": "^7.6.0",
-    "@vitest/coverage-c8": "^0.24.3",
-    "eslint": "^8.26.0",
+    "@vitest/coverage-c8": "^0.25.1",
+    "eslint": "^8.27.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-n": "^15.3.0",
