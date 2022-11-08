@@ -38,7 +38,9 @@ jobs:
       - uses: actions/cache@v3
         name: Setup pnpm cache
         with:
-          path: ${{ env.STORE_PATH }}
+          path: |
+            ${{ env.STORE_PATH }}
+            /home/runner/.cache/Cypress
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
@@ -85,14 +87,58 @@ jobs:
               -Dsonar.projectBaseDir=/usr/src \
               -Dsonar.sources=apps/client,apps/server,packages/shared \
               -Dsonar.javascript.lcov.reportPaths=coverage/apps/client/coverage/lcov.info,coverage/apps/server/coverage/lcov.info,coverage/packages/shared/coverage/lcov.info \
-              -Dsonar.coverage.exclusions=**/*.spec.js,**/*.vue,apps/client/src/router/**,apps/client/src/stores/**,**/assets/**,apps/client/src/main.js,apps/client/src/icons.js,packages/shared/src/schemas/**
+              -Dsonar.coverage.exclusions=**/*.spec.js,**/*.vue,apps/client/src/router/**,apps/client/src/stores/**,**/assets/**,apps/client/src/main.js,apps/client/src/icons.js,apps/client/cypress/**,packages/shared/src/schemas/**
         continue-on-error: true
+
+  component-tests:
+    name: Run component test suite
+    runs-on: ubuntu-latest
+    needs:
+      - code-scan
+    steps:
+      - name: Checks-out repository
+        uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "${{ env.NODE_VERSION }}"
+          check-latest: true
+      - uses: pnpm/action-setup@v2.0.1
+        name: Install pnpm
+        id: pnpm-install
+        with:
+          version: 7
+          run_install: false
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_ENV
+      - uses: actions/cache@v3
+        name: Setup pnpm cache
+        with:
+          path: |
+            ${{ env.STORE_PATH }}
+            /home/runner/.cache/Cypress
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Run component tests
+        run: pnpm --filter client run cypress:run-ct
+      - name: Upload cypress artifacts
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: cypress-report
+          path: ./apps/client/cypress/components/screenshots/
+          retention-days: 14
 
   e2e-tests:
     name: Run e2e test suite
     runs-on: ubuntu-latest
     needs:
-      - code-scan
+      - component-tests
     steps:
       - name: Checks-out repository
         uses: actions/checkout@v3
@@ -104,6 +150,6 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v3
         with:
-          name: e2e-report
-          path: ./cypress/e2e/screenshots/
+          name: cypress-report
+          path: ./apps/client/cypress/e2e/screenshots/
           retention-days: 14

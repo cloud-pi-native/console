@@ -28,10 +28,28 @@ describe('xhr-client', () => {
       const fullfiled = await xhrClient.apiClient.interceptors.request.handlers[0].fulfilled(config)
       expect(fullfiled.headers).toHaveProperty('Authorization', 'Bearer token')
     })
+
+    it('Should return an error if the request', async () => {
+      const error = new Error('Request throw an error')
+      let rejected
+      await xhrClient.apiClient.interceptors.request.handlers[0].rejected(error).catch(e => { rejected = e })
+
+      expect(rejected).toEqual(error)
+    })
   })
 
   describe('Response interceptor', () => {
     it('Should throw error with specific message if response status >= 400', async () => {
+      const message = 'Error while responding'
+      const res = {
+        response: { status: 500, data: { message } },
+      }
+
+      const rejectedRes = xhrClient.apiClient.interceptors.response.handlers[0].rejected(res)
+      expect(rejectedRes).rejects.toMatchObject(new Error(message))
+    })
+
+    it('Should throw error with message if response status is >= 400', async () => {
       const message = 'Error while responding'
       const res = {
         response: { status: 500, data: { message } },
@@ -51,10 +69,9 @@ describe('xhr-client', () => {
       expect(rejectedRes).rejects.toMatchObject(new Error(statusText))
     })
 
-    it('Should throw error with ECONNABORTED if response status >= 400', async () => {
-      const message = 'Error while responding'
+    it('Should throw error with specific message if error code is ECONNABORTED', async () => {
       const res = {
-        response: { status: 400, data: { message } },
+        response: { status: 400 },
         code: 'ECONNABORTED',
       }
 

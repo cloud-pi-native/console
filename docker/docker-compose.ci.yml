@@ -91,7 +91,7 @@ services:
   cypress:
     build:
       context: ..
-      dockerfile: packages/cypress/Dockerfile
+      dockerfile: apps/client/cypress/Dockerfile
     image: dso-console/cypress:ci
     container_name: dso-console_cypress
     depends_on:
@@ -99,8 +99,8 @@ services:
         condition: service_started
     volumes:
       - /app/node_modules/
-      - ../packages/cypress:/app/packages/cypress
-      - /app/packages/cypress/node_modules/
+      - ../apps/client:/app/apps/client
+      - /app/apps/client/node_modules/
       - ../packages/shared:/app/packages/shared
       - /app/packages/shared/node_modules/
     environment:

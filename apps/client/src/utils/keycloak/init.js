@@ -21,7 +21,7 @@ export const getUserProfile = async () => {
       lastName,
     }
   } catch (error) {
-    console.log(error)
+    return error
   }
 }
 
@@ -31,7 +31,7 @@ export const keycloakInit = async () => {
     const keycloak = getKeycloak()
     await keycloak.init({ onLoad, flow, redirectUri })
   } catch (error) {
-    console.log(error)
+    return error
   }
 }
 
@@ -40,7 +40,7 @@ export const keycloakLogin = async () => {
     const keycloak = getKeycloak()
     await keycloak.login()
   } catch (error) {
-    console.log(error)
+    return error
   }
 }
 
@@ -50,6 +50,6 @@ export const keycloakLogout = async () => {
     const keycloak = getKeycloak()
     await keycloak.logout({ redirectUri })
   } catch (error) {
-    console.log(error)
+    return error
   }
 }

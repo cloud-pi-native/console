@@ -11,7 +11,7 @@ USER node
 COPY --chown=node:node pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY --chown=node:node apps/client/package*.json ./apps/client/
 COPY --chown=node:node packages/shared/ ./packages/shared/
-RUN pnpm install
+RUN pnpm install --prod
 
 CMD [ "pnpm", "--filter", "client", "run", "dev" ]
 

@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import { repoSchema } from 'shared/src/schemas/repo.js'
-import { schemaValidator, isValid, getTruthySchema } from 'shared/src/utils/schemas.js'
+import { repoSchema, schemaValidator, isValid, getTruthySchema } from 'shared'
 
 const props = defineProps({
   repo: {
@@ -49,7 +48,7 @@ const cancel = (event) => {
   >
     <DsfrFieldset
       :key="repo"
-      :data-testid="repoFieldset"
+      data-testid="repoFieldset"
       legend="Dépôt Git"
     >
       <DsfrInput
@@ -141,7 +140,7 @@ const cancel = (event) => {
     />
     <DsfrButton
       label="Annuler"
-      data-testid="cancelBtn"
+      data-testid="cancelRepoBtn"
       secondary
       icon="ri-close-line"
       @click="cancel()"
