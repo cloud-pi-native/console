@@ -10,7 +10,8 @@ const projectStore = useProjectStore()
 
 const selectedProject = computed(() => projectStore.selectedProject)
 
-const isUserAlreadyInTeam = computed(() => !!selectedProject.value.users.find(user => user.email === newUser.value.email))
+const isUserAlreadyInTeam = computed(() => !!selectedProject.value.users
+  .find(user => user.email === newUser.value.email))
 
 const newUser = ref({
   id: undefined,

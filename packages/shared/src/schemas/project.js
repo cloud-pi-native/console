@@ -41,5 +41,6 @@ export const projectSchema = Joi.object({
     .required(),
 
   users: Joi.array()
-    .items(userSchema),
+    .items(userSchema)
+    .unique('email'),
 })
