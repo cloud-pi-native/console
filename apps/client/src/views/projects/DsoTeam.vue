@@ -27,7 +27,6 @@ const headers = [
 
 const rows = ref([])
 
-// TODO : gérer DsfrTags
 const setRows = () => {
   rows.value = []
 
@@ -43,6 +42,7 @@ const setRows = () => {
   if (selectedProject.value.users) {
     selectedProject.value.users.forEach(user => {
       rows.value.push([user.email, {
+        onClick: removeUserFromProject(user.email),
         component: DsfrTag,
         label: 'user',
         class: 'fr-tag--dismiss',
@@ -53,6 +53,8 @@ const setRows = () => {
     })
   }
 }
+
+console.log('rows: ', rows.value)
 
 const addUserToProject = async () => {
   // TODO : récupérer données keycloak de l'utilisateur via son e-mail ?
@@ -71,6 +73,11 @@ const addUserToProject = async () => {
   // Object.keys(newUser.value).forEach(key => {
   //   newUser.value[key] = undefined
   // })
+}
+
+const removeUserFromProject = async (userEmail) => {
+  console.log(userEmail)
+  await projectStore.removeUserFromProject(userEmail)
 }
 
 onMounted(() => {
@@ -122,3 +129,9 @@ watch(projectStore.selectedProject, () => {
     @click="addUserToProject()"
   />
 </template>
+
+<style>
+.test {
+  background-color: aliceblue;
+}
+</style>

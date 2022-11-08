@@ -33,6 +33,11 @@ export const useProjectStore = defineStore('project', () => {
     await updateProject(selectedProject.value)
   }
 
+  const removeUserFromProject = async (userEmail) => {
+    const userToRemove = await selectedProject.value.users.find(user => user.email === userEmail)
+    console.log(userToRemove)
+  }
+
   return {
     selectedProject,
     projects,
@@ -41,5 +46,6 @@ export const useProjectStore = defineStore('project', () => {
     createProject,
     updateProject,
     addUserToProject,
+    removeUserFromProject,
   }
 })
