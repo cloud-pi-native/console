@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import DsoSelectedProject from './DsoSelectedProject.vue'
 import { useProjectStore } from '@/stores/project.js'
-import { DsfrButton, DsfrTag } from '@gouvminint/vue-dsfr'
+import { DsfrButton } from '@gouvminint/vue-dsfr'
 import { userSchema } from 'shared/src/schemas/user.js'
 import { schemaValidator, isValid } from 'shared/src/utils/schemas.js'
 
@@ -23,6 +23,7 @@ const newUser = ref({
 const headers = [
   'E-mail',
   'Rôle',
+  'Retirer du projet',
 ]
 
 const rows = ref([])
@@ -30,31 +31,25 @@ const rows = ref([])
 const setRows = () => {
   rows.value = []
 
-  rows.value.push([selectedProject.value.owner.email, {
-    component: DsfrTag,
-    label: 'owner',
-    class: 'fr-tag--dismiss',
-    tagName: 'button',
-    disabled: true,
-    selected: false,
+  rows.value.push([selectedProject.value.owner.email, 'owner', {
+    cellAttrs: {
+      class: 'fr-fi-close-line !flex justify-center disabled',
+      title: `${selectedProject.value.owner.email} ne peut pas être retiré du projet`,
+    },
   }])
 
   if (selectedProject.value.users) {
     selectedProject.value.users.forEach(user => {
-      rows.value.push([user.email, {
-        onClick: removeUserFromProject(user.email),
-        component: DsfrTag,
-        label: 'user',
-        class: 'fr-tag--dismiss',
-        tagName: 'button',
-        disabled: false,
-        selected: false,
+      rows.value.push([user.email, 'user', {
+        cellAttrs: {
+          class: 'fr-fi-close-line fr-text-default--warning !flex justify-center cursor-pointer',
+          title: `retirer ${user.email} du projet`,
+          onClick: () => removeUserFromProject(user.email),
+        },
       }])
     })
   }
 }
-
-console.log('rows: ', rows.value)
 
 const addUserToProject = async () => {
   // TODO : récupérer données keycloak de l'utilisateur via son e-mail ?
@@ -74,9 +69,7 @@ const addUserToProject = async () => {
   //   newUser.value[key] = undefined
   // })
 }
-
 const removeUserFromProject = async (userEmail) => {
-  console.log(userEmail)
   await projectStore.removeUserFromProject(userEmail)
 }
 
@@ -98,11 +91,13 @@ watch(projectStore.selectedProject, () => {
   >
     Team
   </h1>
+
   <DsfrTable
     :title="`Utilisateurs du projet ${selectedProject.projectName}`"
     :headers="headers"
     :rows="rows"
   />
+
   <DsfrInput
     v-model="newUser.email"
     hint="Adresse e-mail associée au compte keycloak de l'utilisateur"
