@@ -5,6 +5,7 @@ import { useProjectStore } from '@/stores/project.js'
 import { DsfrButton } from '@gouvminint/vue-dsfr'
 import { userSchema } from 'shared/src/schemas/user.js'
 import { schemaValidator, isValid } from 'shared/src/utils/schemas.js'
+import { initNewUser } from 'shared/src/utils/index.js'
 
 const projectStore = useProjectStore()
 
@@ -15,12 +16,7 @@ const isUserAlreadyInTeam = computed(() => {
   return !!selectedProject.value.users.find(user => user.email === newUser.value.email)
 })
 
-const newUser = ref({
-  id: undefined,
-  email: undefined,
-  firstName: undefined,
-  lastName: undefined,
-})
+const newUser = ref(initNewUser())
 
 const headers = [
   'E-mail',
@@ -65,12 +61,12 @@ const addUserToProject = async () => {
   if (Object.keys(errorSchema).length || isUserAlreadyInTeam.value) return
   await projectStore.addUserToProject(newUser.value)
 
-  // TODO : remettre newUser à 0
-  // TypeError: can't access property "text", _ctx.field is undefined
-  // Object.keys(newUser.value).forEach(key => {
-  //   newUser.value[key] = undefined
-  // })
+  // TODO : voir pq ça vide la dernière row
+  // console.log(newUser.value)
+  // Object.assign(newUser.value, initNewUser())
+  // console.log(newUser.value)
 }
+
 const removeUserFromProject = async (userEmail) => {
   await projectStore.removeUserFromProject(userEmail)
 }
