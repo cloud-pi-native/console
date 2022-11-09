@@ -10,8 +10,10 @@ const projectStore = useProjectStore()
 
 const selectedProject = computed(() => projectStore.selectedProject)
 
-const isUserAlreadyInTeam = computed(() => !!selectedProject.value.users
-  .find(user => user.email === newUser.value.email))
+const isUserAlreadyInTeam = computed(() => {
+  if (!selectedProject.value.users) return
+  return !!selectedProject.value.users.find(user => user.email === newUser.value.email)
+})
 
 const newUser = ref({
   id: undefined,
@@ -77,8 +79,7 @@ onMounted(() => {
   setRows()
 })
 
-// TODO : comprendre pq watch sur la computed ne fonctionne pas
-watch(projectStore.selectedProject, () => {
+watch(selectedProject.value, () => {
   setRows()
 })
 
@@ -86,14 +87,9 @@ watch(projectStore.selectedProject, () => {
 
 <template>
   <DsoSelectedProject />
-  <h1
-    class="fr-h1"
-  >
-    Team
-  </h1>
 
   <DsfrTable
-    :title="`Utilisateurs du projet ${selectedProject.projectName}`"
+    :title="`Membres du projet ${selectedProject.projectName}`"
     :headers="headers"
     :rows="rows"
   />
