@@ -34,8 +34,8 @@ export const useProjectStore = defineStore('project', () => {
   }
 
   const removeUserFromProject = async (userEmail) => {
-    const userToRemove = await selectedProject.value.users.find(user => user.email === userEmail)
-    console.log(userToRemove)
+    selectedProject.value.users = selectedProject.value.users.filter(user => user.email !== userEmail)
+    await updateProject(selectedProject.value)
   }
 
   return {
