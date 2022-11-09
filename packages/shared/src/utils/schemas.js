@@ -23,13 +23,13 @@ export const isValid = (schema, data, key) => !schemaValidator(schema, data)[key
  * @returns {object} Result parsed schema
  */
 const parseJoi = (model) => Array.from(model.schema._ids._byKey)
-  .reduce((acc, [key, value]) => ({ ...acc, [key]: getTruthySchema(value) }), {})
+  .reduce((acc, [key, value]) => ({ ...acc, [key]: instanciateSchema(value) }), {})
 
 /**
  * @param {object} model Schema that will be convert
  * @returns {object} Result schema with all values set to true
  */
-export const getTruthySchema = (model) => {
+export const instanciateSchema = (model) => {
   if (model.schema?.type === 'object') {
     return parseJoi(model)
   }

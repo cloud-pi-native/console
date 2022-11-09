@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { schemaValidator, isValid, getTruthySchema } from './schemas.js'
+import { schemaValidator, isValid, instanciateSchema } from './schemas.js'
 import { repoSchema } from '../schemas/repo.js'
 
 describe('Schemas utils', () => {
@@ -45,7 +45,7 @@ describe('Schemas utils', () => {
   })
 
   it('Should return truthy schema', () => {
-    expect(getTruthySchema(({ schema: repoSchema }))).toStrictEqual({
+    expect(instanciateSchema(({ schema: repoSchema }))).toStrictEqual({
       internalRepoName: true,
       externalRepoUrl: true,
       externalToken: true,

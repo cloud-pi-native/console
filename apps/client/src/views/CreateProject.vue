@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
 import { projectSchema } from 'shared/src/schemas/project.js'
-import { schemaValidator, isValid, getTruthySchema } from 'shared/src/utils/schemas.js'
+import { schemaValidator, isValid, instanciateSchema } from 'shared/src/utils/schemas.js'
 import router from '@/router/index.js'
 
 const projectStore = useProjectStore()
@@ -39,7 +39,7 @@ const orgOptions = ref([
 const updatedValues = ref({})
 
 const createProject = async () => {
-  updatedValues.value = getTruthySchema({ schema: projectSchema })
+  updatedValues.value = instanciateSchema({ schema: projectSchema })
   const keysToValidate = ['orgName', 'projectName']
   const errorSchema = schemaValidator(projectSchema, project.value, keysToValidate)
 
