@@ -22,7 +22,6 @@ services:
       - 8090:8080
     volumes:
       - ../keycloak/realms:/opt/keycloak/data/import
-      - ../keycloak/data:/opt/keycloak/data/h2
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
