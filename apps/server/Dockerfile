@@ -1,7 +1,8 @@
-# Dev stage
-FROM node:lts-bullseye-slim as dev
-
+FROM node:lts-bullseye-slim as base
 RUN npm install --global pnpm
+
+# Dev stage
+FROM base as dev
 
 WORKDIR /app
 
@@ -17,9 +18,7 @@ CMD [ "pnpm", "--filter", "server", "run", "dev" ]
 
 
 # Install stage
-FROM node:lts-bullseye-slim as install
-
-RUN npm install --global pnpm
+FROM base as install
 
 WORKDIR /install
 
