@@ -24,7 +24,7 @@ const updateRepo = (key, value) => {
 const emit = defineEmits(['add', 'cancel'])
 
 const addRepo = () => {
-  updatedValues.value = instanciateSchema({ schema: repoSchema })
+  updatedValues.value = instanciateSchema({ schema: repoSchema }, true)
   const errorSchema = schemaValidator(repoSchema, localRepo.value)
 
   if (Object.keys(errorSchema).length === 0) {

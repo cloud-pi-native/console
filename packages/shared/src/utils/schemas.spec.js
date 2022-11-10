@@ -45,12 +45,32 @@ describe('Schemas utils', () => {
   })
 
   it('Should return truthy schema', () => {
-    expect(instanciateSchema(({ schema: repoSchema }))).toStrictEqual({
+    expect(instanciateSchema({ schema: repoSchema }, true)).toStrictEqual({
       internalRepoName: true,
       externalRepoUrl: true,
       externalToken: true,
       isPrivate: true,
       externalUserName: true,
+    })
+  })
+
+  it('Should return undefined schema', () => {
+    expect(instanciateSchema({ schema: repoSchema }, undefined)).toStrictEqual({
+      internalRepoName: undefined,
+      externalRepoUrl: undefined,
+      externalToken: undefined,
+      isPrivate: undefined,
+      externalUserName: undefined,
+    })
+  })
+
+  it('Should return string schema', () => {
+    expect(instanciateSchema({ schema: repoSchema }, 'test')).toStrictEqual({
+      internalRepoName: 'test',
+      externalRepoUrl: 'test',
+      externalToken: 'test',
+      isPrivate: 'test',
+      externalUserName: 'test',
     })
   })
 })

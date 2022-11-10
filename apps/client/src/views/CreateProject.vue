@@ -39,7 +39,7 @@ const orgOptions = ref([
 const updatedValues = ref({})
 
 const createProject = async () => {
-  updatedValues.value = instanciateSchema({ schema: projectSchema })
+  updatedValues.value = instanciateSchema({ schema: projectSchema }, true)
   const keysToValidate = ['orgName', 'projectName']
   const errorSchema = schemaValidator(projectSchema, project.value, keysToValidate)
 
