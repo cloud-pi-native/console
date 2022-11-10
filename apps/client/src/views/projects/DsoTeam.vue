@@ -118,9 +118,3 @@ watch(selectedProject.value, () => {
     @click="addUserToProject()"
   />
 </template>
-
-<style>
-.test {
-  background-color: aliceblue;
-}
-</style>
