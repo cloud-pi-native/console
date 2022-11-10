@@ -10,7 +10,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-admin}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - dso-postgres-data:/var/lib/postgresql/data
       - ../db/postgres/scripts:/docker-entrypoint-initdb.d
     networks:
       - dso-network
@@ -43,7 +43,7 @@ services:
     depends_on:
       - postgres
     volumes:
-      - pgadmin-data:/var/lib/pgadmin
+      - dso-pgadmin-data:/var/lib/pgadmin
       - ../db/pgadmin/config/servers.json:/pgadmin4/servers.json
     ports:
       - 8081:80
@@ -126,5 +126,5 @@ networks:
 
 
 volumes:
-  pgadmin-data:
-  postgres-data:
+  dso-pgadmin-data:
+  dso-postgres-data:
