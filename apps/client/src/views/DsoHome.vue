@@ -11,5 +11,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <h1>Accueil</h1>
+  <h1
+    class="fr-h1"
+  >
+    Accueil
+  </h1>
 </template>

@@ -7,3 +7,8 @@ body,
 .h-full {
   height: 100%;
 }
+
+.disabled {
+  color: var(--text-disabled-grey);
+  cursor: not-allowed;
+}

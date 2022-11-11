@@ -8,4 +8,5 @@ export {
   RiSendPlaneLine,
   RiDeleteBin7Line,
   RiAddLine,
+  RiUserAddLine,
 } from 'oh-vue-icons/icons/ri/index.js'

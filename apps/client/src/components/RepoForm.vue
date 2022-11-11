@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import { repoSchema, schemaValidator, isValid, getTruthySchema } from 'shared'
+import { repoSchema, schemaValidator, isValid, instanciateSchema } from 'shared'
 
 const props = defineProps({
   repo: {
@@ -24,7 +24,7 @@ const updateRepo = (key, value) => {
 const emit = defineEmits(['add', 'cancel'])
 
 const addRepo = () => {
-  updatedValues.value = getTruthySchema({ schema: repoSchema })
+  updatedValues.value = instanciateSchema({ schema: repoSchema }, true)
   const errorSchema = schemaValidator(repoSchema, localRepo.value)
 
   if (Object.keys(errorSchema).length === 0) {
@@ -39,7 +39,10 @@ const cancel = (event) => {
 </script>
 
 <template>
-  <h1 v-if="props.isEditable">
+  <h1
+    v-if="props.isEditable"
+    class="fr-h1"
+  >
     Ajouter un dépôt au projet
   </h1>
   <DsfrFieldset
