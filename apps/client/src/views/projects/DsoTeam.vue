@@ -10,7 +10,7 @@ const projectStore = useProjectStore()
 const selectedProject = computed(() => projectStore.selectedProject)
 
 const isUserAlreadyInTeam = computed(() => {
-  const allUsers = !selectedProject.value.users
+  const allUsers = !selectedProject.value.users.length
     ? [selectedProject.value.owner]
     : [...selectedProject.value.users, selectedProject.value.owner]
   return !!allUsers.find(user => user.email === newUser.value.email)
@@ -36,7 +36,7 @@ const setRows = () => {
     },
   }])
 
-  if (selectedProject.value.users) {
+  if (selectedProject.value.users.length) {
     selectedProject.value.users.forEach(user => {
       rows.value.push([user.email, 'user', {
         cellAttrs: {
