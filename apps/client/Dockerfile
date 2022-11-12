@@ -1,5 +1,8 @@
+# Base stage
 FROM node:lts-bullseye-slim as base
+
 RUN npm install --global pnpm
+
 
 # Dev stage
 FROM base as dev

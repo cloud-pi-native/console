@@ -1,5 +1,14 @@
+# Base stage
 FROM node:lts-bullseye-slim as base
+
 RUN npm install --global pnpm
+RUN apt update && apt install -y python3 python3-pip \
+  && echo "deb http://ppa.launchpad.net/ansible/ansible/ubuntu focal main" >> /etc/apt/sources.list.d/ansible.list \
+  && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 93C4A3FD7BB9C367 \
+  && apt update && apt install -y ansible
+ADD https://github.com/dnum-mi/dso-socle/archive/main.tar.gz /tmp/dso-socle.tar.gz
+RUN tar -xf /tmp/dso-socle.tar.gz dso-socle-main/provisionning-project/ -C /dso --strip-components 1 
+
 
 # Dev stage
 FROM base as dev
@@ -27,7 +36,7 @@ RUN pnpm --filter=./apps/server --prod deploy server
 
 
 # Prod stage
-FROM node:lts-bullseye-slim as prod
+FROM base as prod
 
 ARG NODE_ENV
 
@@ -35,7 +44,7 @@ WORKDIR /app
 
 COPY --chown=node:node --from=install /install/server .
 
-# RUN chown -R node:node /app
+RUN chown -R node:node /dso
 USER node
 
-CMD ["npm", "run", "start"]
+CMD ["pnpm", "run", "start"]
