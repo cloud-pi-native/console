@@ -23,7 +23,6 @@ const routes = [
       const userStore = useUserStore()
       await userStore.login()
     },
-    redirect: '/home',
   },
   {
     path: '/logout',
@@ -32,7 +31,6 @@ const routes = [
       const userStore = useUserStore()
       await userStore.logout()
     },
-    redirect: '/home',
   },
   {
     path: '/',
