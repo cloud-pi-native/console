@@ -8,6 +8,7 @@ import DsoDashboard from '@/views/projects/DsoDashboard.vue'
 import DsoServices from '@/views/projects/DsoServices.vue'
 import DsoTeam from '@/views/projects/DsoTeam.vue'
 import DsoRepos from '@/views/projects/DsoRepos.vue'
+import DsoDoc from '@/views/DsoDoc.vue'
 
 const MAIN_TITLE = 'Console Cloud PI Native'
 
@@ -22,6 +23,7 @@ const routes = [
       const userStore = useUserStore()
       await userStore.login()
     },
+    redirect: '/home',
   },
   {
     path: '/logout',
@@ -30,6 +32,7 @@ const routes = [
       const userStore = useUserStore()
       await userStore.logout()
     },
+    redirect: '/home',
   },
   {
     path: '/',
@@ -69,6 +72,7 @@ const routes = [
   {
     path: '/doc',
     name: 'Doc',
+    component: DsoDoc,
   },
 ]
 

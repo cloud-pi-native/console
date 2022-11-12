@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted } from 'vue'
 import { useUserStore } from '../stores/user.js'
+import Home from '@/documentation/home.md'
 
 const userStore = useUserStore()
 
@@ -11,9 +12,5 @@ onMounted(() => {
 </script>
 
 <template>
-  <h1
-    class="fr-h1"
-  >
-    Accueil
-  </h1>
+  <Home />
 </template>
