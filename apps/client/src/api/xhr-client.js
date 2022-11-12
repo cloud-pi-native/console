@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { getKeycloak } from '@/utils/keycloak/init.js'
+import router from '@/router/index.js'
 
 export const apiClient = axios.create({
   baseURL: '/api/v1',
@@ -12,9 +13,11 @@ apiClient.interceptors.request.use(
       return request
     }
     const keycloak = getKeycloak()
-    // console.log({ tokenBefore: keycloak.token, keycloak })
-    await keycloak.updateToken()
-    // console.log({ tokenAfter: keycloak.token, keycloak })
+    try {
+      await keycloak.updateToken()
+    } catch (e) {
+      return router.push('/login')
+    }
     const token = keycloak.token
     if (token) {
       Object.assign(request.headers, {
@@ -45,7 +48,12 @@ apiClient.interceptors.response.use(
       const customError = new Error('Unable to communicate with the server')
       return Promise.reject(customError)
     }
-    const apiError = new Error(response?.data?.message || response?.statusText || error?.message)
+    if (response?.data?.error === 'invalid_grant') {
+      const customError = new Error(response?.body?.error_description)
+      router.push('/login')
+      return Promise.reject(customError)
+    }
+    const apiError = new Error(response?.data?.message || response?.data || response?.statusText)
     apiError.statusCode = response?.status
     return Promise.reject(apiError)
   },
