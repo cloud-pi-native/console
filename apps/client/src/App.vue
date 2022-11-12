@@ -9,8 +9,9 @@ const userStore = useUserStore()
 userStore.setIsLoggedIn()
 
 const isLoggedIn = ref(keycloak.authenticated)
-const label = isLoggedIn.value ? 'Se déconnecter' : 'Se connecter'
-const to = isLoggedIn.value ? '/logout' : '/login'
+const label = ref(isLoggedIn.value ? 'Se déconnecter' : 'Se connecter')
+const to = ref(isLoggedIn.value ? '/logout' : '/login')
+
 const quickLinks = ref([{
   label,
   to,

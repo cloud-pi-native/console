@@ -29,14 +29,14 @@ export const useProjectStore = defineStore('project', () => {
   }
 
   const addUserToProject = async (newUser) => {
-    selectedProject.value.users = !selectedProject.value.users.length
+    selectedProject.value.users = !selectedProject.value.users?.length
       ? [newUser]
       : [...selectedProject.value.users, newUser]
     await updateProject(selectedProject.value)
   }
 
   const removeUserFromProject = async (userEmail) => {
-    selectedProject.value.users = selectedProject.value.users.filter(user => user.email !== userEmail)
+    selectedProject.value.users = selectedProject.value.users?.filter(user => user.email !== userEmail)
     await updateProject(selectedProject.value)
   }
 
