@@ -9,7 +9,7 @@ import {
 } from '../models/project-queries.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import app from '../app.js'
-import { projectProvisioning } from '../ansible/index.js'
+import { projectProvisioning } from '../utils/ansible.js'
 
 export const createProjectController = async (req, res) => {
   const data = req.body

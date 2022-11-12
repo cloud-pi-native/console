@@ -11,6 +11,7 @@ import projectRouter from './project.js'
 import { createRandomProject } from '../utils/__tests__/project-util.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
+vi.mock('../utils/ansible.js', () => ({ projectProvisioning: vi.fn() }))
 
 export const repeatFn = nb => fn => Array.from({ length: nb }).map(() => fn())
 

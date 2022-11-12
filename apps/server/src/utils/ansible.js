@@ -2,23 +2,23 @@ import { spawn } from 'node:child_process'
 import app from '../app.js'
 
 /**
-* Create a subprocess
-* @param {string} command Command that will be execute in the subprocess.
-* @param {[string]} args Arguments used with the given command.
+* Create a childProcess
+* @param {string} command Command that will be execute in the childProcess.
+* @param {string[]} args Arguments used with the given command.
 */
-const spawnProcess = async (command, args) => {
+export const spawnProcess = async (command, args) => {
   try {
-    const subProcess = spawn(command, args)
+    const childProcess = spawn(command, args)
 
-    subProcess.stdout.on('data', (data) => {
+    childProcess.stdout.on('data', (data) => {
       console.log(`Child process [${command} ${args.join(' ')}] : \n\n${data}`)
     })
 
-    subProcess.stderr.on('data', (data) => {
+    childProcess.stderr.on('data', (data) => {
       console.error(`Child process [${command} ${args.join(' ')}] : \n\n${data}`)
     })
 
-    subProcess.on('close', (code) => {
+    childProcess.on('close', (code) => {
       app.log.info({
         description: 'Child process',
         command,
@@ -27,16 +27,17 @@ const spawnProcess = async (command, args) => {
       })
     })
 
-    return subProcess
+    return childProcess
   } catch (error) {
     throw new Error(error)
   }
 }
 
 /**
-* Project provisionning using a subprocess
+* Project provisionning using a childProcess
 */
 export const projectProvisioning = async () => {
+  // TODO: Replace following commands by a real ansible playbook call
   try {
     await spawnProcess('ls', ['-la', '/dso'])
   } catch (error) {
