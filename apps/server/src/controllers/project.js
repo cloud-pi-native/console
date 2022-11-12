@@ -9,6 +9,7 @@ import {
 } from '../models/project-queries.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import app from '../app.js'
+import { projectProvisioning } from '../ansible/index.js'
 
 export const createProjectController = async (req, res) => {
   const data = req.body
@@ -16,18 +17,31 @@ export const createProjectController = async (req, res) => {
   data.services = allServices
   data.owner = req.session.user
 
+  let project
   try {
-    const project = await createProject(data)
-
+    project = await createProject(data)
     app.log.info({
       ...getLogInfos({ projectId: project.id }),
-      description: 'Project successfully created',
+      description: 'Project successfully created in database',
     })
-    send201(res, project)
   } catch (error) {
     app.log.error({
       ...getLogInfos(),
       description: 'Cannot create project',
+      error: error.message,
+    })
+    send500(res, error.message)
+    return
+  }
+
+  try {
+    await projectProvisioning()
+
+    send201(res, project)
+  } catch (error) {
+    app.log.error({
+      ...getLogInfos(),
+      description: 'Cannot provisionne project in services',
       error: error.message,
     })
     send500(res, error.message)
