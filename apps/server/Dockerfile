@@ -7,14 +7,13 @@ RUN apt update && apt install -y python3 python3-pip \
   && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 93C4A3FD7BB9C367 \
   && apt update && apt install -y ansible
 ADD https://github.com/dnum-mi/dso-socle/archive/main.tar.gz /tmp/dso-socle.tar.gz
-RUN tar -xf /tmp/dso-socle.tar.gz dso-socle-main/provisionning-project/ -C /dso --strip-components 1 
+RUN mkdir /dso && tar -C /dso --strip-components=2 -xf /tmp/dso-socle.tar.gz dso-socle-main/provisionning-project/ && rm /tmp/dso-socle.tar.gz
 
 
 # Dev stage
 FROM base as dev
 
 WORKDIR /app
-
 RUN chown node:node /app
 USER node
 
@@ -32,19 +31,16 @@ FROM base as install
 WORKDIR /install
 
 COPY . .
-RUN pnpm --filter=./apps/server --prod deploy server
+RUN pnpm --filter server --prod deploy server
 
 
 # Prod stage
 FROM base as prod
 
-ARG NODE_ENV
-
 WORKDIR /app
+RUN chown node:node /app
+USER node
 
 COPY --chown=node:node --from=install /install/server .
-
-RUN chown -R node:node /dso
-USER node
 
 CMD ["pnpm", "run", "start"]
