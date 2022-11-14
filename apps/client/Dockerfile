@@ -1,5 +1,5 @@
 # Base stage
-FROM node:lts-bullseye-slim as base
+FROM node:18.12.1-bullseye-slim as base
 
 RUN npm install --global pnpm
 
@@ -30,7 +30,7 @@ RUN pnpm --filter client --no-optional deploy client
 
 
 # Build stage
-FROM node:lts-bullseye-slim as build
+FROM node:18.12.1-bullseye-slim as build
 
 WORKDIR /app
 
@@ -46,7 +46,7 @@ RUN npm run build
 
 
 # Prod stage
-FROM nginx:stable as prod
+FROM nginx:1.22.1 as prod
 
 COPY --from=build /app/dist /usr/share/nginx/html/
 COPY --from=build /app/nginx/nginx.conf /etc/nginx/nginx.conf

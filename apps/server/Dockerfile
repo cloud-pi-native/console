@@ -1,8 +1,8 @@
 # Base stage
-FROM node:lts-bullseye-slim as base
+FROM node:18.12.1-bullseye-slim as base
 
 RUN npm install --global pnpm
-RUN apt update && apt install -y python3 python3-pip \
+RUN apt update && apt install -y python3 python3-pip git vim \
   && echo "deb http://ppa.launchpad.net/ansible/ansible/ubuntu focal main" >> /etc/apt/sources.list.d/ansible.list \
   && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 93C4A3FD7BB9C367 \
   && apt update && apt install -y ansible

@@ -1,4 +1,4 @@
-FROM cypress/included:10.11.0
+FROM cypress/included:11.0.1
 
 RUN npm install --global pnpm
 

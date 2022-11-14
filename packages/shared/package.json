@@ -15,12 +15,12 @@
     "joi": "^17.6.3"
   },
   "devDependencies": {
-    "@vitest/coverage-c8": "^0.24.3",
-    "eslint": "^8.25.0",
+    "@vitest/coverage-c8": "^0.25.2",
+    "eslint": "^8.27.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-n": "^15.3.0",
-    "eslint-plugin-promise": "^6.1.0",
-    "vitest": "^0.24.5"
+    "eslint-plugin-n": "^15.5.1",
+    "eslint-plugin-promise": "^6.1.1",
+    "vitest": "^0.25.2"
   }
 }
