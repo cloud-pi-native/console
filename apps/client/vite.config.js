@@ -2,11 +2,16 @@ import { fileURLToPath, URL } from 'url'
 import { defineConfig } from 'vite'
 import WindiCSS from 'vite-plugin-windicss'
 import vue from '@vitejs/plugin-vue'
+import Markdown from 'vite-plugin-md'
+import Prism from 'markdown-it-prism'
+import emoji from 'markdown-it-emoji'
+import LinkAttributes from 'markdown-it-link-attributes'
 import { keycloakDomain } from './src/utils/keycloak/config.js'
 
 const serverHost = process.env.SERVER_HOST
 const serverPort = process.env.SERVER_PORT
 const clientPort = process.env.CLIENT_PORT
+const markdownWrapperClasses = 'text-left markdown-body'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -36,7 +41,29 @@ export default defineConfig({
     'process.env': process.env,
   },
   plugins: [
-    vue(),
+    vue({
+      include: [/\.vue$/, /\.md$/],
+    }),
+    Markdown({
+      wrapperClasses: markdownWrapperClasses,
+      markdownItOptions: {
+        breaks: true,
+        html: true,
+        linkify: true,
+        typographer: true,
+      },
+      markdownItSetup (md) {
+        md.use(Prism)
+        md.use(emoji)
+        md.use(LinkAttributes, {
+          pattern: /^https?:\/\//,
+          attrs: {
+            target: '_blank',
+            rel: 'noopener',
+          },
+        })
+      },
+    }),
     WindiCSS(),
   ],
   base: process.env.BASE_URL || '/',

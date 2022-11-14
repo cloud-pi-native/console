@@ -15,7 +15,7 @@ USER node
 COPY --chown=node:node pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY --chown=node:node apps/client/package*.json ./apps/client/
 COPY --chown=node:node packages/shared/ ./packages/shared/
-RUN pnpm install --prod
+RUN pnpm install --no-optional
 
 CMD [ "pnpm", "--filter", "client", "run", "dev" ]
 
@@ -26,11 +26,13 @@ FROM base as install
 WORKDIR /install
 
 COPY . .
-RUN pnpm --filter ./apps/client --prod deploy client
+RUN pnpm --filter client --no-optional deploy client
 
 
 # Build stage
 FROM node:lts-bullseye-slim as build
+
+WORKDIR /app
 
 ARG SERVER_HOST
 ARG SERVER_PORT
@@ -38,8 +40,6 @@ ARG KEYCLOAK_DOMAIN
 ARG KEYCLOAK_REALM
 ARG KEYCLOAK_CLIENT_ID
 ARG KEYCLOAK_REDIRECT_URI
-
-WORKDIR /app
 
 COPY --from=install /install/client .
 RUN npm run build
