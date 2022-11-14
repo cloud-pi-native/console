@@ -19,14 +19,16 @@ const app = fastify({ logger: false })
   .register(fastifyCookie)
   .register(fastifySession, sessionConf)
 
+const mockSessionPlugin = (app, opt, next) => {
+  app.addHook('onRequest', (req, res, next) => {
+    req.session = { user: getOwner() }
+    next()
+  })
+  next()
+}
+
 const mockSession = (app) => {
-  app.register(fp(async (app, opt, done) => {
-    app.addHook('onRequest', (req, res, done) => {
-      req.session = { user: getOwner() }
-      done()
-    })
-    done()
-  }))
+  app.register(fp(mockSessionPlugin))
     .register(projectRouter)
 }
 
