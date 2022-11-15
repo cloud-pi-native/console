@@ -3,7 +3,7 @@ FROM node:18.12.1-bullseye-slim as base
 
 RUN npm install --global pnpm
 RUN apt-get update && \
-    apt-get install python3 python3-pip libsasl2-dev python-dev libldap2-dev libssl-dev -y && \
+    apt-get install python3 python3-pip libsasl2-dev python-dev libldap2-dev libssl-dev git -y && \
     apt clean && \
     python3 -m pip install ansible-core==2.13.3 python-ldap python-gitlab requests hvac && \
     ln -s /usr/bin/python3 /bin/python3
