@@ -2,10 +2,12 @@
 FROM node:18.12.1-bullseye-slim as base
 
 RUN npm install --global pnpm
-RUN apt update && apt install -y python3 python3-pip git vim \
-  && echo "deb http://ppa.launchpad.net/ansible/ansible/ubuntu focal main" >> /etc/apt/sources.list.d/ansible.list \
-  && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 93C4A3FD7BB9C367 \
-  && apt update && apt install -y ansible
+RUN apt-get update && \
+    apt-get install python3 python3-pip libsasl2-dev python-dev libldap2-dev libssl-dev -y && \
+    apt clean && \
+    python3 -m pip install ansible-core==2.13.3 python-ldap python-gitlab requests hvac && \
+    ln -s /usr/bin/python3 /bin/python3
+RUN ansible-galaxy collection install kubernetes.core community.hashi\_vault community.general
 ADD https://github.com/dnum-mi/dso-socle/archive/main.tar.gz /tmp/dso-socle.tar.gz
 RUN mkdir /dso && tar -C /dso --strip-components=2 -xf /tmp/dso-socle.tar.gz dso-socle-main/provisionning-project/ && rm /tmp/dso-socle.tar.gz
 
