@@ -4,7 +4,9 @@ import {
   getUserProjects,
   getUserProjectById,
   createProject,
-  updateProject,
+  addRepo,
+  addUser,
+  removeUser,
 } from './api.js'
 
 vi.spyOn(apiClient, 'get')
@@ -18,7 +20,7 @@ describe('API', () => {
     vi.clearAllMocks()
   })
   describe('Projects', () => {
-    it('Should create a project (POST)', async () => {
+    it('Should create a project', async () => {
       apiClient.post.mockReturnValueOnce(Promise.resolve({ data: {} }))
 
       await createProject({})
@@ -28,7 +30,7 @@ describe('API', () => {
       expect(apiClient.post.mock.calls[0][0]).toBe('/projects')
     })
 
-    it('Should get projects (GET)', async () => {
+    it('Should get projects', async () => {
       apiClient.get.mockReturnValueOnce(Promise.resolve({ data: {} }))
 
       await getUserProjects()
@@ -38,7 +40,7 @@ describe('API', () => {
       expect(apiClient.get.mock.calls[0][0]).toBe('/projects')
     })
 
-    it('Should get a project (GET)', async () => {
+    it('Should get a project', async () => {
       const projectId = 'thisIsAnId'
       apiClient.get.mockReturnValueOnce(Promise.resolve({ data: {} }))
 
@@ -49,15 +51,37 @@ describe('API', () => {
       expect(apiClient.get.mock.calls[0][0]).toBe(`/projects/${projectId}`)
     })
 
-    it('Should update a project (PUT)', async () => {
+    it('Should add a repo', async () => {
       const projectId = 'thisIsAnId'
-      apiClient.put.mockReturnValueOnce(Promise.resolve({ data: {} }))
+      apiClient.post.mockReturnValueOnce(Promise.resolve({ data: {} }))
 
-      await updateProject(projectId, {})
+      await addRepo(projectId, {})
 
-      expect(apiClient.put).toHaveBeenCalled()
-      expect(apiClient.put).toHaveBeenCalledTimes(1)
-      expect(apiClient.put.mock.calls[0][0]).toBe(`/projects/${projectId}`)
+      expect(apiClient.post).toHaveBeenCalled()
+      expect(apiClient.post).toHaveBeenCalledTimes(1)
+      expect(apiClient.post.mock.calls[0][0]).toBe(`/projects/${projectId}/repos`)
+    })
+
+    it('Should add an user', async () => {
+      const projectId = 'thisIsAnId'
+      apiClient.post.mockReturnValueOnce(Promise.resolve({ data: {} }))
+
+      await addUser(projectId, {})
+
+      expect(apiClient.post).toHaveBeenCalled()
+      expect(apiClient.post).toHaveBeenCalledTimes(1)
+      expect(apiClient.post.mock.calls[0][0]).toBe(`/projects/${projectId}/users`)
+    })
+
+    it('Should remove an user', async () => {
+      const projectId = 'thisIsAnId'
+      apiClient.delete.mockReturnValueOnce(Promise.resolve({ data: {} }))
+
+      await removeUser(projectId, {})
+
+      expect(apiClient.delete).toHaveBeenCalled()
+      expect(apiClient.delete).toHaveBeenCalledTimes(1)
+      expect(apiClient.delete.mock.calls[0][0]).toBe(`/projects/${projectId}/users`)
     })
   })
 })

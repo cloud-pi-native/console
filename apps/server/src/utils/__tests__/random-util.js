@@ -35,7 +35,16 @@ export const getRandomProjectRepos = (length = 1) => {
   return repos
 }
 
-export const getRandomOwner = () => {
+export const getRandomProjectUsers = (length = 1) => {
+  const users = []
+  for (let i = 0; i < length;) {
+    users.push(getRandomUser())
+    i++
+  }
+  return users
+}
+
+export const getRandomUser = () => {
   const owner = {}
 
   owner.id = faker.datatype.uuid()
