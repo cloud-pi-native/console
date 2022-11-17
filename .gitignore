@@ -36,3 +36,9 @@ keycloak/data
 
 # turbo
 .turbo
+
+# playbooks
+apps/ansible-api/playbooks
+
+# vault file
+vault-secret

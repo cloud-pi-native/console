@@ -38,7 +38,16 @@ export const createProjectController = async (req, res) => {
   }
 
   try {
-    await projectProvisioning()
+    const body = {
+      env: "pprod",
+      extra: {
+        orgName: project.orgName,
+        ownerEmail: project.owner.email,
+        projectName: project.projectName,
+        envList: ["dev",	"staging", "integration",	"prod" ],
+      }
+    }
+    fetch('ansible-api:8080/api/project', {method: "POST", body})
 
     send201(res, project)
   } catch (error) {
@@ -56,8 +65,9 @@ export const addRepoController = async (req, res) => {
   const projectId = req.params?.id
   const data = req.body
 
+  let dbProject
   try {
-    const dbProject = await getUserProjectById(projectId, userId)
+    dbProject = await getUserProjectById(projectId, userId)
     if (!dbProject) {
       throw new Error('Missing permissions on this project')
     }
@@ -69,11 +79,40 @@ export const addRepoController = async (req, res) => {
       ...getLogInfos({ projectId: dbProject.id }),
       description: message,
     })
-    send201(res, message)
   } catch (error) {
     app.log.error({
       ...getLogInfos(),
       description: 'Cannot add git repository into project',
+      error: error.message,
+    })
+    send500(res, error.message)
+  }
+
+  try {
+    const body = {
+      env: "pprod",
+      extra: {
+        orgName: dbProject.orgName,
+        ownerEmail: dbProject.owner.email,
+        projectName: dbProject.projectName,
+        envList: ["dev", "staging", "integration", "prod"],
+        internalRepoName: data.internalRepoName,
+        externalRepoUrl: data.externalRepoUrl,
+        externalUserName: data.externalUserName,
+        externalToken: data.externalToken
+      }
+    }
+    if (!data.isPrivate) {
+      delete body.extra.externalUserName
+      delete body.extra.externalToken
+    }
+    fetch('ansible-api:8080/api/project', {method: "POST", body})
+
+    send201(res, 'Git repository succefully added in ansible')
+  } catch (error) {
+    app.log.error({
+      ...getLogInfos(),
+      description: 'Cannot provisionne project in services',
       error: error.message,
     })
     send500(res, error.message)

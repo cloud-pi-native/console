@@ -1,19 +1,6 @@
 version: '3.9'
 
 services:
-  postgres:
-    restart: always
-    image: postgres:14.5
-    container_name: dso-console_postgres
-    environment:
-      POSTGRES_DB: ${POSTGRES_DATABASE:-dso-console-db}
-      POSTGRES_USER: ${POSTGRES_USER:-admin}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
-    volumes:
-      - dso-postgres-data:/var/lib/postgresql/data
-      - ../db/postgres/scripts:/docker-entrypoint-initdb.d
-    networks:
-      - dso-network
 
   keycloak:
     restart: always
@@ -33,6 +20,20 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+    networks:
+      - dso-network
+
+  postgres:
+    restart: always
+    image: postgres:14.5
+    container_name: dso-console_postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DATABASE:-dso-console-db}
+      POSTGRES_USER: ${POSTGRES_USER:-admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
+    volumes:
+      - dso-postgres-data:/var/lib/postgresql/data
+      - ../db/postgres/scripts:/docker-entrypoint-initdb.d
     networks:
       - dso-network
 
@@ -87,6 +88,29 @@ services:
       KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_BACKEND:-dso-console-backend}
       KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_BACKEND:-client-secret-backend}
       NODE_ENV: development
+    networks:
+      - dso-network
+
+  ansible-api:
+    restart: always
+    build:
+      context: ..
+      dockerfile: apps/ansible-api/Dockerfile
+      target: dev
+    image: dso-console/ansible-api:dev
+    container_name: dso-console_ansible-api
+    ports:
+      - 8100:8080
+    volumes:
+      # - /app/node_modules/
+      - ../apps/ansible-api:/app/apps/ansible-api
+      - ../apps/ansible-api/matches.json:/app/apps/ansible-api/matches.json
+      # - /app/apps/ansible-api/node_modules/
+      # - ../packages/shared:/app/packages/shared
+      # - /app/packages/shared/node_modules/
+      - ../vault-secret:/config/vault-secret
+      - ${HOME}/.kube/config:/home/node/.kubeconfig
+      - ../apps/ansible-api/matches.json:/config/matches.json
     networks:
       - dso-network
 

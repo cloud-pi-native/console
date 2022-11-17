@@ -65,6 +65,22 @@ services:
       KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_BACKEND}
       KEYCLOAK_REDIRECT_URI: ${KEYCLOAK_REDIRECT_URI}
       NODE_ENV: production
+
+  ansible-api:
+    restart: always
+    build:
+      context: ..
+      dockerfile: apps/ansible-api/Dockerfile
+      target: prod
+    image: dso-console/ansible-api:dev
+    container_name: dso-console_ansible-api
+    ports:
+      - 8100:8080
+    volumes:
+      - ../apps/ansible-api:/app/apps/ansible-api
+      - ../apps/ansible-api/matches.json:/app/apps/ansible-api/matches.json
+      - ../vault-secret:/app/vault-secret
+      - ${HOME}/.kube/config:/home/node/.kubeconfig
     networks:
       - dso-network
 
@@ -73,18 +89,18 @@ services:
       context: ..
       dockerfile: apps/client/Dockerfile
       target: prod
-      args:
-        KEYCLOAK_DOMAIN: localhost:8090
-        KEYCLOAK_REALM: ${KEYCLOAK_REALM}
-        KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_FRONTEND}
-        SERVER_HOST: server
-        SERVER_PORT: ${SERVER_PORT}
     image: dso-console/client
     depends_on:
       server:
         condition: service_started
     ports:
       - 8080:8080
+    environment:
+      KEYCLOAK_DOMAIN: localhost:8090
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_FRONTEND}
+      SERVER_HOST: server
+      SERVER_PORT: ${SERVER_PORT}
     networks:
       - dso-network
 

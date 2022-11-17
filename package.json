@@ -11,7 +11,7 @@
     "prod:down": "docker compose -f ./docker/docker-compose.prod.yml --env-file ./env/.env down",
     "dev": "npm run dev:up; npm run dev:down",
     "dev:build": "docker compose -f ./docker/docker-compose.dev.yml --env-file ./env/.env build --pull",
-    "dev:up": "docker compose -f ./docker/docker-compose.dev.yml --env-file ./env/.env up --attach server --attach client",
+    "dev:up": "docker compose -f ./docker/docker-compose.dev.yml --env-file ./env/.env up --attach server --attach client --attach ansible-api",
     "dev:down": "docker compose -f ./docker/docker-compose.dev.yml --env-file ./env/.env down",
     "lint": "turbo run lint",
     "format": "turbo run format",

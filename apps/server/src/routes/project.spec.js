@@ -56,7 +56,7 @@ describe('Project routes', () => {
     vi.clearAllMocks()
   })
 
-  describe('createProjectController)', () => {
+  describe.skip('createProjectController)', () => {
     it('Should create a project', async () => {
       const randomProject = createRandomProject()
 
@@ -101,7 +101,7 @@ describe('Project routes', () => {
     })
   })
 
-  describe('addRepoController)', () => {
+  describe.skip('addRepoController)', () => {
     it('Should add a repo in project', async () => {
       const randomProject = { ...createRandomProject(), id: nanoid() }
       const randomRepo = getRandomProjectRepos()[0]
