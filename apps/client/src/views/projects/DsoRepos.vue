@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import RepoForm from '@/components/RepoForm.vue'
 import DsoSelectedProject from './DsoSelectedProject.vue'
@@ -41,15 +41,15 @@ const cancel = () => {
 }
 
 const addRepo = async (repo) => {
-  const project = selectedProject.value
-  project.repos ||= []
-  project.repos = [...project.repos, repo]
   cancel()
-  await projectStore.updateProject(project)
-  setReposTiles(selectedProject.value)
+  await projectStore.addRepoToProject(repo)
 }
 
 onMounted(() => {
+  setReposTiles(selectedProject.value)
+})
+
+watch(selectedProject, () => {
   setReposTiles(selectedProject.value)
 })
 
@@ -70,6 +70,16 @@ onMounted(() => {
     />
   </div>
   <div
+    v-if="isNewRepoForm"
+    class="my-5 pb-10 border-grey-900 border-y-1"
+  >
+    <RepoForm
+      :repo="{}"
+      @add="(repo) => addRepo(repo)"
+      @cancel="cancel()"
+    />
+  </div>
+  <div
     v-for="repo in repos"
     :key="repo.id"
     class="fr-mt-2v fr-mb-4w"
@@ -85,16 +95,6 @@ onMounted(() => {
       v-if="Object.keys(selectedRepo).length !== 0 && selectedRepo.internalRepoName === repo.id"
       :repo="selectedRepo"
       :is-editable="false"
-    />
-  </div>
-  <div
-    v-if="isNewRepoForm"
-    class="mt-10 border-grey-900 border-t-1"
-  >
-    <RepoForm
-      :repo="{}"
-      @add="(repo) => addRepo(repo)"
-      @cancel="cancel()"
     />
   </div>
 </template>

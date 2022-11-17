@@ -53,7 +53,7 @@ apiClient.interceptors.response.use(
       router.push('/login')
       return Promise.reject(customError)
     }
-    const apiError = new Error(response?.data?.message || response?.data || response?.statusText)
+    const apiError = new Error(response?.data?.message || response?.statusText || error.message)
     apiError.statusCode = response?.status
     return Promise.reject(apiError)
   },

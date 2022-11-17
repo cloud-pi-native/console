@@ -16,6 +16,9 @@ export const useProjectStore = defineStore('project', () => {
   const getUserProjects = async () => {
     const res = await api.getUserProjects()
     projects.value = res
+    if (selectedProject.value) {
+      setSelectedProject(selectedProject.value.id)
+    }
   }
 
   const createProject = async (project) => {
@@ -23,21 +26,19 @@ export const useProjectStore = defineStore('project', () => {
     await getUserProjects()
   }
 
-  const updateProject = async (project) => {
-    await api.updateProject(project.id, project)
+  const addRepoToProject = async (newRepo) => {
+    await api.addRepo(selectedProject.value.id, newRepo)
     await getUserProjects()
   }
 
   const addUserToProject = async (newUser) => {
-    selectedProject.value.users = !selectedProject.value.users?.length
-      ? [newUser]
-      : [...selectedProject.value.users, newUser]
-    await updateProject(selectedProject.value)
+    await api.addUser(selectedProject.value.id, newUser)
+    await getUserProjects()
   }
 
   const removeUserFromProject = async (userEmail) => {
-    selectedProject.value.users = selectedProject.value.users?.filter(user => user.email !== userEmail)
-    await updateProject(selectedProject.value)
+    await api.removeUser(selectedProject.value.id, userEmail)
+    await getUserProjects()
   }
 
   return {
@@ -46,7 +47,7 @@ export const useProjectStore = defineStore('project', () => {
     setSelectedProject,
     getUserProjects,
     createProject,
-    updateProject,
+    addRepoToProject,
     addUserToProject,
     removeUserFromProject,
   }

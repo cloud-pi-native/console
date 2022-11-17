@@ -3,34 +3,87 @@ import { sequelize } from '../connect.js'
 import { getProjectModel } from './project.js'
 import { projectSchema } from 'shared/src/schemas/project.js'
 
-export const createProject = async (data) => {
-  await projectSchema.validateAsync(data)
-  const alreadyExist = await checkUniqueProject(data.orgName, data.projectName)
+export const createProject = async (project) => {
+  await projectSchema.validateAsync(project)
+  const alreadyExist = await checkUniqueProject(project.orgName, project.projectName)
   if (alreadyExist) {
-    throw new Error(`Project '${data.orgName}/${data.projectName}' already exists in database`)
+    throw new Error(`Project '${project.orgName}/${project.projectName}' already exists in database`)
   }
 
-  const res = await getProjectModel().create({ data })
+  const res = await getProjectModel().create({ data: project })
   return res.data
 }
 
-export const updateProject = async (data) => {
-  await projectSchema.validateAsync(data)
+export const addRepo = async (project, repo) => {
+  // TODO: Add check if repo already exists
+  project.repos = project.repos?.length ? [...project.repos, repo] : [repo]
+  await projectSchema.validateAsync(project)
 
   const res = await getProjectModel().update({
-    data,
+    data: project,
   }, {
     where: {
       data: {
-        id: data.id,
+        id: {
+          [Op.eq]: project.id,
+        },
       },
     },
   })
   return res
 }
 
-export const getUserProjectById = async (id, userId) => {
-  const res = await sequelize.query(`SELECT data FROM "Projects" WHERE (("data"#>>'{owner,id}') = '${userId}' OR data->'users' @> '[{"id": "${userId}"}]') AND ("data"#>>'{id}') = '${id}' LIMIT 1;`, { type: sequelize.QueryTypes?.SELECT, model: getProjectModel(), plain: true })
+export const addUser = async (project, user) => {
+  // TODO: Add check if user already exists
+  project.users = project.users?.length ? [...project.users, user] : [user]
+  await projectSchema.validateAsync(project)
+
+  const res = await getProjectModel().update({
+    data: project,
+  }, {
+    where: {
+      data: {
+        id: {
+          [Op.eq]: project.id,
+        },
+      },
+    },
+  })
+  return res
+}
+
+export const removeUser = async (project, userEmail) => {
+  // TODO: Add check if user already exists
+  project.users = project.users.filter(user => user.email !== userEmail)
+  await projectSchema.validateAsync(project)
+
+  const res = await getProjectModel().update({
+    data: project,
+  }, {
+    where: {
+      data: {
+        id: {
+          [Op.eq]: project.id,
+        },
+      },
+    },
+  })
+  return res
+}
+
+export const getProjectById = async (projectId) => {
+  const res = await getProjectModel().findOne({
+    where: {
+      id: {
+        [Op.eq]: projectId,
+      },
+    },
+  })
+  return res.data
+}
+
+export const getUserProjectById = async (projectId, userId) => {
+  const res = await sequelize.query(`SELECT data FROM "Projects" WHERE (("data"#>>'{owner,id}') = '${userId}' OR data->'users' @> '[{"id": "${userId}"}]') AND ("data"#>>'{id}') = '${projectId}' LIMIT 1;`, { type: sequelize.QueryTypes?.SELECT, model: getProjectModel(), plain: true })
   return res.data
 }
 
@@ -39,14 +92,14 @@ export const getUserProjects = async (userId) => {
   return res.map(project => project.data)
 }
 
-export const checkUniqueProject = async (orgName, name) => {
+export const checkUniqueProject = async (orgName, projectName) => {
   const res = await getProjectModel().findOne({
     where: {
       [Op.and]: [
         {
           data: {
             projectName: {
-              [Op.iLike]: name,
+              [Op.iLike]: projectName,
             },
           },
         },

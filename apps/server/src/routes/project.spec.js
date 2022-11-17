@@ -9,6 +9,7 @@ import { getConnection, closeConnections, sequelize } from '../connect.js'
 import { getProjectModel } from '../models/project.js'
 import projectRouter from './project.js'
 import { createRandomProject } from '../utils/__tests__/project-util.js'
+import { getRandomUser, getRandomProjectRepos } from '../utils/__tests__/random-util.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 vi.mock('../utils/ansible.js', () => ({ projectProvisioning: vi.fn() }))
@@ -55,7 +56,7 @@ describe('Project routes', () => {
     vi.clearAllMocks()
   })
 
-  describe('post("/", createProjectController)', () => {
+  describe('createProjectController)', () => {
     it('Should create a project', async () => {
       const randomProject = createRandomProject()
 
@@ -88,6 +89,9 @@ describe('Project routes', () => {
     it('Should not create a project if projectName already exists', async () => {
       const randomProject = createRandomProject()
 
+      Project.$queueResult(randomProject)
+      setOwner(randomProject.owner)
+
       const response = await app.inject()
         .post('/')
         .body(randomProject)
@@ -97,32 +101,33 @@ describe('Project routes', () => {
     })
   })
 
-  describe('put("/", updateProjectController)', () => {
-    it('Should update a project', async () => {
+  describe('addRepoController)', () => {
+    it('Should add a repo in project', async () => {
       const randomProject = { ...createRandomProject(), id: nanoid() }
+      const randomRepo = getRandomProjectRepos()[0]
 
       sequelize.$queueResult({ data: randomProject })
       sequelize.$queueResult(randomProject)
       setOwner(randomProject.owner)
 
       const response = await app.inject()
-        .put(`/${randomProject.id}`)
-        .body(randomProject)
+        .post(`/${randomProject.id}/repos`)
+        .body(randomRepo)
         .end()
 
-      expect(response.statusCode).toEqual(200)
-      expect(response.json()).toBeDefined()
-      expect(response.json()).toMatchObject({ data: `Project ${randomProject.id} updated` })
+      expect(response.statusCode).toEqual(201)
+      expect(response.body).toBeDefined()
+      expect(response.body).toEqual('Git repository successfully added into project')
     })
 
-    it('Should not update a project if permission is missing', async () => {
+    it('Should not add a repo if permission is missing', async () => {
       const randomProject = createRandomProject()
 
       Project.$queueResult(null)
       setOwner(randomProject.owner)
 
       const response = await app.inject()
-        .put('/')
+        .post(`/${randomProject.id}/repos`)
         .body(randomProject)
         .end()
 
@@ -130,7 +135,71 @@ describe('Project routes', () => {
     })
   })
 
-  describe('get("/", getUserProjectsController)', () => {
+  describe('addUserController)', () => {
+    it('Should add an user in project', async () => {
+      const randomProject = { ...createRandomProject(), id: nanoid() }
+      const randomUser = getRandomUser()
+
+      sequelize.$queueResult({ data: randomProject })
+      sequelize.$queueResult(randomProject)
+      setOwner(randomProject.owner)
+
+      const response = await app.inject()
+        .post(`/${randomProject.id}/users`)
+        .body(randomUser)
+        .end()
+
+      expect(response.statusCode).toEqual(201)
+      expect(response.body).toBeDefined()
+      expect(response.body).toEqual('User successfully added into project')
+    })
+
+    it('Should not add an user if permission is missing', async () => {
+      const randomProject = createRandomProject()
+      const randomUser = getRandomUser()
+
+      setOwner(randomProject.owner)
+
+      const response = await app.inject()
+        .post(`/${randomProject.id}/users`)
+        .body(randomUser)
+        .end()
+
+      expect(response.statusCode).toEqual(500)
+    })
+
+    it('Should remove an user in project', async () => {
+      const randomProject = { ...createRandomProject(), id: nanoid() }
+      const randomUser = getRandomUser()
+
+      sequelize.$queueResult({ data: randomProject })
+      setOwner(randomProject.owner)
+
+      const response = await app.inject()
+        .delete(`/${randomProject.id}/users`)
+        .body(randomUser.email)
+        .end()
+
+      expect(response.statusCode).toEqual(200)
+    })
+
+    it('Should not remove an user if permission is missing', async () => {
+      const randomProject = { ...createRandomProject(), id: nanoid() }
+      const randomUser = getRandomUser()
+
+      sequelize.$queueResult(null)
+      setOwner(randomProject.owner)
+
+      const response = await app.inject()
+        .delete(`/${randomProject.id}/users`)
+        .body(randomUser)
+        .end()
+
+      expect(response.statusCode).toEqual(500)
+    })
+  })
+
+  describe('getUserProjectsController)', () => {
     it('Should get list of a user\'s projects', async () => {
       const randomProjects = repeatFn(3)(createRandomProject)
 
@@ -164,7 +233,7 @@ describe('Project routes', () => {
     })
   })
 
-  describe('get("/:id", getUserProjectByIdController)', () => {
+  describe('getUserProjectByIdController)', () => {
     it('Should get a project by id', async () => {
       const randomProject = createRandomProject()
 
