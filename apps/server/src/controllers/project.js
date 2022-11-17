@@ -3,9 +3,11 @@ import { allServices } from 'shared/src/schemas/project.js'
 import { getLogInfos } from '../utils/logger.js'
 import {
   createProject,
-  updateProject,
+  addRepo,
+  addUser,
   getUserProjects,
   getUserProjectById,
+  removeUser,
 } from '../models/project-queries.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import app from '../app.js'
@@ -20,6 +22,7 @@ export const createProjectController = async (req, res) => {
   let project
   try {
     project = await createProject(data)
+
     app.log.info({
       ...getLogInfos({ projectId: project.id }),
       description: 'Project successfully created in database',
@@ -48,28 +51,87 @@ export const createProjectController = async (req, res) => {
   }
 }
 
-export const updateProjectController = async (req, res) => {
-  const id = req.params.id
+export const addRepoController = async (req, res) => {
+  const userId = req.session?.user?.id
+  const projectId = req.params?.id
   const data = req.body
 
   try {
-    const userId = req.session.user.id
-    const dbProject = await getUserProjectById(id, userId)
+    const dbProject = await getUserProjectById(projectId, userId)
     if (!dbProject) {
       throw new Error('Missing permissions on this project')
     }
 
-    await updateProject(data)
+    await addRepo(dbProject, data)
 
+    const message = 'Git repository successfully added into project'
     app.log.info({
-      ...getLogInfos({ projectId: data.id }),
-      description: 'Project successfully updated',
+      ...getLogInfos({ projectId: dbProject.id }),
+      description: message,
     })
-    send200(res, { data: `Project ${data.id} updated` })
+    send201(res, message)
   } catch (error) {
     app.log.error({
       ...getLogInfos(),
-      description: 'Cannot update project',
+      description: 'Cannot add git repository into project',
+      error: error.message,
+    })
+    send500(res, error.message)
+  }
+}
+
+export const addUserController = async (req, res) => {
+  const userId = req.session?.user?.id
+  const projectId = req.params?.id
+  const data = req.body
+
+  try {
+    const dbProject = await getUserProjectById(projectId, userId)
+    if (!dbProject) {
+      throw new Error('Missing permissions on this project')
+    }
+
+    await addUser(dbProject, data)
+
+    const message = 'User successfully added into project'
+    app.log.info({
+      ...getLogInfos({ projectId: dbProject.id }),
+      description: message,
+    })
+    send201(res, message)
+  } catch (error) {
+    app.log.error({
+      ...getLogInfos(),
+      description: 'Cannot add user into project',
+      error: error.message,
+    })
+    send500(res, error.message)
+  }
+}
+
+export const removeUserController = async (req, res) => {
+  const userId = req.session?.user?.id
+  const projectId = req.params?.id
+  const data = req.body
+
+  try {
+    const dbProject = await getUserProjectById(projectId, userId)
+    if (!dbProject) {
+      throw new Error('Missing permissions on this project')
+    }
+
+    await removeUser(dbProject, data)
+
+    const message = 'User successfully added into project'
+    app.log.info({
+      ...getLogInfos({ projectId: dbProject.id }),
+      description: message,
+    })
+    send200(res, message)
+  } catch (error) {
+    app.log.error({
+      ...getLogInfos(),
+      description: 'Cannot add user into project',
       error: error.message,
     })
     send500(res, error.message)
@@ -77,9 +139,9 @@ export const updateProjectController = async (req, res) => {
 }
 
 export const getUserProjectsController = async (req, res) => {
-  try {
-    const userId = req.session.user.id
+  const userId = req.session?.user?.id
 
+  try {
     const projects = await getUserProjects(userId)
 
     app.log.info({
@@ -98,11 +160,10 @@ export const getUserProjectsController = async (req, res) => {
 }
 
 export const getUserProjectByIdController = async (req, res) => {
-  const id = req.params.id
+  const userId = req.session?.user?.id
+  const id = req.params?.id
 
   try {
-    const userId = req.session.user.id
-
     const project = await getUserProjectById(id, userId)
 
     app.log.info({

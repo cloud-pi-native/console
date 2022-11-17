@@ -16,7 +16,17 @@ export const createProject = async (data) => {
   return response.data
 }
 
-export const updateProject = async (id, data) => {
-  const response = await apiClient.put(`/projects/${id}`, data)
+export const addRepo = async (id, data) => {
+  const response = await apiClient.post(`/projects/${id}/repos`, data)
+  return response.data
+}
+
+export const addUser = async (id, data) => {
+  const response = await apiClient.post(`/projects/${id}/users`, data)
+  return response.data
+}
+
+export const removeUser = async (id, data) => {
+  const response = await apiClient.delete(`/projects/${id}/users`, { data })
   return response.data
 }

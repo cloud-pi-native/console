@@ -23,6 +23,7 @@ const routes = [
       const userStore = useUserStore()
       await userStore.login()
     },
+    component: DsoProjects,
   },
   {
     path: '/logout',
@@ -31,6 +32,7 @@ const routes = [
       const userStore = useUserStore()
       await userStore.logout()
     },
+    component: DsoProjects,
   },
   {
     path: '/',

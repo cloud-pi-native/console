@@ -73,7 +73,7 @@ onMounted(() => {
   setRows()
 })
 
-watch(selectedProject.value, () => {
+watch(selectedProject, () => {
   setRows()
 })
 
