@@ -4,6 +4,7 @@
   "editor.codeActionsOnSave": {
     "source.fixAll": true,
   },
+  "eslint.packageManager": "pnpm",
   "eslint.enable": true,
   "eslint.validate": [
     "vue",
