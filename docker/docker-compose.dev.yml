@@ -1,7 +1,6 @@
 version: '3.9'
 
 services:
-
   keycloak:
     restart: always
     image: quay.io/keycloak/keycloak:19.0.2
@@ -77,7 +76,7 @@ services:
       - /app/packages/shared/node_modules/
     environment:
       SERVER_PORT: ${SERVER_PORT:-4000}
-      DB_HOST: postgres
+      DB_HOST: ${POSTGRES_HOST:-postgres}
       DB_PORT: ${POSTGRES_PORT:-5432}
       DB_USER: ${POSTGRES_USER:-admin}
       DB_PASS: ${POSTGRES_PASSWORD:-admin}
@@ -87,6 +86,8 @@ services:
       KEYCLOAK_REALM: ${KEYCLOAK_REALM:-cloud-pi-native}
       KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_BACKEND:-dso-console-backend}
       KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_BACKEND:-client-secret-backend}
+      ANSIBLE_HOST: ${ANSIBLE_HOST:-ansible-api}
+      ANSIBLE_PORT: ${ANSIBLE_PORT:-8100}
       NODE_ENV: development
     networks:
       - dso-network
@@ -100,17 +101,17 @@ services:
     image: dso-console/ansible-api:dev
     container_name: dso-console_ansible-api
     ports:
-      - 8100:8080
+      - 8100:8100
     volumes:
-      # - /app/node_modules/
+      - /app/node_modules/
       - ../apps/ansible-api:/app/apps/ansible-api
-      - ../apps/ansible-api/matches.json:/app/apps/ansible-api/matches.json
-      # - /app/apps/ansible-api/node_modules/
-      # - ../packages/shared:/app/packages/shared
-      # - /app/packages/shared/node_modules/
-      - ../vault-secret:/config/vault-secret
+      - /app/apps/ansible-api/node_modules/
+      - ../vault-secret:/app/vault-secret
       - ${HOME}/.kube/config:/home/node/.kubeconfig
-      - ../apps/ansible-api/matches.json:/config/matches.json
+    environment:
+      ANSIBLE_PORT: ${ANSIBLE_PORT:-8100}
+      PLAYBOOK_DIR: ${PLAYBOOK_DIR:-/dso/}
+      KUBECONFIG: ${KUBECONFIG:-/home/node/.kubeconfig}
     networks:
       - dso-network
 
@@ -147,7 +148,6 @@ networks:
     driver: bridge
     # driver_opts:
     # com.docker.network.driver.mtu: 1450
-
 
 volumes:
   dso-pgadmin-data:
