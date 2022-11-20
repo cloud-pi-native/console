@@ -29,7 +29,7 @@ RUN pnpm --filter server --prod deploy server
 
 
 # Prod stage
-FROM base as prod
+FROM node:18.12.1-bullseye-slim as prod
 
 WORKDIR /app
 RUN chown node:node /app
@@ -37,4 +37,4 @@ USER node
 
 COPY --chown=node:node --from=install /install/server .
 
-CMD ["pnpm", "run", "start"]
+CMD ["npm", "run", "start"]
