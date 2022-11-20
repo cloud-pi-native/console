@@ -33,11 +33,3 @@ npm run format
 ```sh
 npm start
 ```
-
-## Crédits
-
-- [vue](https://github.com/vuejs/)
-- [vue-dsfr](https://github.com/dnum-mi/vue-dsfr)
-- [vite](https://github.com/vitejs/vite)
-- [stylelint](https://github.com/stylelint/stylelint)
-- [eslint](https://github.com/eslint/eslint)

@@ -11,7 +11,9 @@ import {
 } from '../models/project-queries.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import app from '../app.js'
-import { projectProvisioning } from '../utils/ansible.js'
+
+const ansibleHost = process.env.ANSIBLE_HOST
+const ansiblePort = process.env.ANSIBLE_PORT
 
 export const createProjectController = async (req, res) => {
   const data = req.body
@@ -39,15 +41,16 @@ export const createProjectController = async (req, res) => {
 
   try {
     const body = {
-      env: "pprod",
+      env: 'pprod',
       extra: {
         orgName: project.orgName,
         ownerEmail: project.owner.email,
         projectName: project.projectName,
-        envList: ["dev",	"staging", "integration",	"prod" ],
-      }
+        envList: ['dev', 'staging', 'integration', 'prod'],
+      },
     }
-    fetch('ansible-api:8080/api/project', {method: "POST", body})
+
+    await fetch(`${ansibleHost}:${ansiblePort}/api/v1/projects`, { method: 'POST', body })
 
     send201(res, project)
   } catch (error) {
@@ -90,25 +93,24 @@ export const addRepoController = async (req, res) => {
 
   try {
     const body = {
-      env: "pprod",
+      env: 'pprod',
       extra: {
         orgName: dbProject.orgName,
         ownerEmail: dbProject.owner.email,
         projectName: dbProject.projectName,
-        envList: ["dev", "staging", "integration", "prod"],
+        envList: ['dev', 'staging', 'integration', 'prod'],
         internalRepoName: data.internalRepoName,
         externalRepoUrl: data.externalRepoUrl,
-        externalUserName: data.externalUserName,
-        externalToken: data.externalToken
-      }
+      },
     }
-    if (!data.isPrivate) {
-      delete body.extra.externalUserName
-      delete body.extra.externalToken
+    if (data.isPrivate) {
+      body.extra.externalUserName = data.externalUserName
+      body.extra.externalToken = data.externalToken
     }
-    fetch('ansible-api:8080/api/project', {method: "POST", body})
 
-    send201(res, 'Git repository succefully added in ansible')
+    await fetch(`${ansibleHost}:${ansiblePort}/api/v1/repos`, { method: 'POST', body })
+
+    send201(res, 'Git repository successfully added into project')
   } catch (error) {
     app.log.error({
       ...getLogInfos(),
@@ -161,7 +163,7 @@ export const removeUserController = async (req, res) => {
 
     await removeUser(dbProject, data)
 
-    const message = 'User successfully added into project'
+    const message = 'User successfully removed from project'
     app.log.info({
       ...getLogInfos({ projectId: dbProject.id }),
       description: message,
@@ -170,7 +172,7 @@ export const removeUserController = async (req, res) => {
   } catch (error) {
     app.log.error({
       ...getLogInfos(),
-      description: 'Cannot add user into project',
+      description: 'Cannot remove user from project',
       error: error.message,
     })
     send500(res, error.message)
