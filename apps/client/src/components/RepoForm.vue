@@ -128,6 +128,15 @@ const cancel = (event) => {
           @update:model-value="updateRepo('externalToken', $event)"
         />
       </div>
+      <DsfrCheckbox
+        v-model="localRepo.isInfra"
+        data-testid="isInfraRepoCb"
+        :disabled="!props.isEditable"
+        label="Dépôt d'infrastructure"
+        hint="Cochez la case s'il s'agit d'un dépôt d'infrastructure"
+        name="isInfraRepoCb"
+        @update:model-value="updateRepo('isInfra', $event)"
+      />
     </DsfrFieldset>
   </DsfrFieldset>
   <div

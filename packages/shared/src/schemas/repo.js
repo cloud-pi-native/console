@@ -21,4 +21,6 @@ export const repoSchema = Joi.object({
 
   externalToken: Joi.string()
     .when('isPrivate', { is: true, then: Joi.required() }),
+
+  isInfra: Joi.boolean(),
 })

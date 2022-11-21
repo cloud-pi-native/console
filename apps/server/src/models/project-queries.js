@@ -15,9 +15,8 @@ export const createProject = async (project) => {
 }
 
 export const addRepo = async (project, repo) => {
-  if (project.repos.find(existingRepo => existingRepo.internalRepoName === repo.internalRepoName)) {
-    // TODO : gérer - renvoi d'une erreur ?
-    return
+  if (project.repos?.find(existingRepo => existingRepo.internalRepoName === repo.internalRepoName)) {
+    throw new Error(`Git repo '${repo.internalRepoName}' already exists in project`)
   }
 
   project.repos = project.repos?.length ? [...project.repos, repo] : [repo]
@@ -38,10 +37,9 @@ export const addRepo = async (project, repo) => {
 }
 
 export const addUser = async (project, user) => {
-  if (project.users.find(existingUser => existingUser.email === user.email) ||
-    project.owner.email === user.email) {
-    // TODO : gérer - renvoi d'une erreur ?
-    return
+  if (project.users?.find(existingUser => existingUser.email === user.email) ||
+  project.owner.email === user.email) {
+    throw new Error(`User with email '${user.email}' already member of project`)
   }
 
   project.users = project.users?.length ? [...project.users, user] : [user]

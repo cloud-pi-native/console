@@ -13,6 +13,7 @@ describe('Schemas utils', () => {
       externalRepoUrl: 'https://github.com/LAB-MI/candilibV2',
       externalToken: 'eddddsqsq',
       isPrivate: true,
+      isInfra: false,
       externalUserName: 'clairenlet',
     })).toStrictEqual({})
   })
@@ -22,6 +23,7 @@ describe('Schemas utils', () => {
       internalRepoName: 'candilib',
       externalRepoUrl: 'https://github.com/LAB-MI/candilibV2',
       isPrivate: true,
+      isInfra: false,
       externalUserName: 'clairenlet',
     })).toStrictEqual({ externalToken: '"externalToken" is required' })
   })
@@ -31,6 +33,7 @@ describe('Schemas utils', () => {
       internalRepoName: 'candilib',
       externalRepoUrl: 'https://github.com/LAB-MI/candilibV2',
       isPrivate: true,
+      isInfra: false,
       externalUserName: 'clairenlet',
     }, 'internalRepoName')).toStrictEqual(true)
   })
@@ -40,6 +43,7 @@ describe('Schemas utils', () => {
       internalRepoName: 'candi lib',
       externalRepoUrl: 'https://github.com/LAB-MI/candilibV2',
       isPrivate: true,
+      isInfra: false,
       externalUserName: 'clairenlet',
     }, 'internalRepoName')).toStrictEqual(false)
   })
@@ -50,6 +54,7 @@ describe('Schemas utils', () => {
       externalRepoUrl: true,
       externalToken: true,
       isPrivate: true,
+      isInfra: true,
       externalUserName: true,
     })
   })
@@ -60,6 +65,7 @@ describe('Schemas utils', () => {
       externalRepoUrl: undefined,
       externalToken: undefined,
       isPrivate: undefined,
+      isInfra: undefined,
       externalUserName: undefined,
     })
   })
@@ -70,6 +76,7 @@ describe('Schemas utils', () => {
       externalRepoUrl: 'test',
       externalToken: 'test',
       isPrivate: 'test',
+      isInfra: 'test',
       externalUserName: 'test',
     })
   })
