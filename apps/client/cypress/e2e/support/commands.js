@@ -76,7 +76,7 @@ Cypress.Commands.add('assertCreateProject', (projectName) => {
 })
 
 Cypress.Commands.add('addRepos', (project, repos) => {
-  cy.intercept('PUT', '/api/v1/projects/*').as('putProject')
+  cy.intercept('POST', '/api/v1/projects/*/repos').as('postRepo')
   cy.intercept('GET', '/api/v1/projects').as('getProjects')
 
   const newRepo = (repo) => ({
@@ -111,7 +111,7 @@ Cypress.Commands.add('addRepos', (project, repos) => {
     }
 
     cy.getByDataTestid('addRepoBtn').click()
-    cy.wait('@putProject').its('response.statusCode').should('eq', 200)
+    cy.wait('@postRepo').its('response.statusCode').should('eq', 201)
     cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
     cy.getByDataTestid(`repoTile-${repo.internalRepoName}`).should('exist')
   })
