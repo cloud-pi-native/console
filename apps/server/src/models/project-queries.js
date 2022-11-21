@@ -15,7 +15,11 @@ export const createProject = async (project) => {
 }
 
 export const addRepo = async (project, repo) => {
-  // TODO: Add check if repo already exists
+  if (project.repos.find(existingRepo => existingRepo.internalRepoName === repo.internalRepoName)) {
+    // TODO : gérer - renvoi d'une erreur ?
+    return
+  }
+
   project.repos = project.repos?.length ? [...project.repos, repo] : [repo]
   await projectSchema.validateAsync(project)
 
@@ -34,7 +38,12 @@ export const addRepo = async (project, repo) => {
 }
 
 export const addUser = async (project, user) => {
-  // TODO: Add check if user already exists
+  if (project.users.find(existingUser => existingUser.email === user.email) ||
+    project.owner.email === user.email) {
+    // TODO : gérer - renvoi d'une erreur ?
+    return
+  }
+
   project.users = project.users?.length ? [...project.users, user] : [user]
   await projectSchema.validateAsync(project)
 
@@ -53,7 +62,6 @@ export const addUser = async (project, user) => {
 }
 
 export const removeUser = async (project, userEmail) => {
-  // TODO: Add check if user already exists
   project.users = project.users.filter(user => user.email !== userEmail)
   await projectSchema.validateAsync(project)
 
