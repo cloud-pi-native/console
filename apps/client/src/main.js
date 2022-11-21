@@ -11,9 +11,7 @@ import { keycloakInit } from './utils/keycloak/init.js'
 
 (async () => {
   try {
-    // TODO : keycloakInit lancé à chaque refresh de page
     await keycloakInit()
-    console.log('kc-init')
   } catch (e) {
     console.log(e)
   }

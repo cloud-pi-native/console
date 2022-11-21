@@ -27,9 +27,8 @@ export const getUserProfile = async () => {
 
 export const keycloakInit = async () => {
   try {
+    keycloakConf.redirectUri = location
     const { onLoad, redirectUri, flow } = keycloakConf
-    // TODO : pq pas accès à keycloak (let keycloak L.4) ici ?
-    // console.log({ keycloak })
     const keycloak = getKeycloak()
     await keycloak.init({ onLoad, flow, redirectUri })
   } catch (error) {
