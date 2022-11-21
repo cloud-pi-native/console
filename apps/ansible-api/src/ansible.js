@@ -1,26 +1,69 @@
-import { spawn } from "child_process";
-const PLAYBOOK_DIR = process.env.PLAYBOOK_DIR
+import { spawn } from 'child_process'
+import { access, constants } from 'fs'
+import app from './app.js'
 
-const ansible = ((playbooks, args) => {
+const PLAYBOOK_DIR = process.env.PLAYBOOK_DIR?.endsWith('/')
+  ? process.env.PLAYBOOK_DIR
+  : process.env.PLAYBOOK_DIR + '/'
+
+export const ansibleArgsDictionary = {
+  repName: 'REPO_NAME',
+  orgName: 'ORGANIZATION_NAME',
+  ownerEmail: 'EMAIL',
+  projectName: 'PROJECT_NAME',
+  envList: 'ENV_LIST',
+  externalRepoUrl: 'REPO_SRC',
+  internalRepoName: 'REPO_DEST',
+  externalUserName: 'GIT_INPUT_USER',
+  externalToken: 'GIT_INPUT_PASSWORD',
+}
+
+export const ansible = (playbooks, args) => {
   const playbook = playbooks[0]
   const playbookSpawn = spawn('ansible-playbook', [`${PLAYBOOK_DIR}${playbook}`, ...args])
-  console.log(`run ${playbook}`);
+  app.log.info(`Run ${playbook}`)
   let logs = Buffer.alloc(0)
-  playbookSpawn.stdout.on('data', (data) => { logs+=data })
-  playbookSpawn.stderr.on('data', (data) => { logs+=data })
+  playbookSpawn.stdout.on('data', (data) => { logs += data })
+  playbookSpawn.stderr.on('data', (data) => { logs += data })
   playbookSpawn.on('close', (code) => {
     if (code !== 0) {
-      console.error(`Playbook ${playbook} failed with rc ${code}`);
-      console.error(logs.toString())
+      app.log.error(`Playbook ${playbook} failed with rc ${code}`)
+      app.log.error(logs.toString())
       return
     }
-    console.info(logs.toString())
+    app.log.info(logs.toString())
     playbooks.shift()
-    ansible(playbooks, args)
+    if (playbooks.length) {
+      ansible(playbooks, args)
+    }
   })
   playbookSpawn.on('error', (err) => {
-    console.log(err)
+    app.log.error(err)
   })
-})
+}
 
-export { ansible }
+export const checkPlaybooksAccess = (playbooksDictionary) => {
+  Object.entries(playbooksDictionary).forEach(([route, paths]) => {
+    paths.forEach(path => {
+      access(`${PLAYBOOK_DIR}${path}`, constants.R_OK, err => {
+        if (err) {
+          app.log.error(`Error playbook ${path} is not readable for route ${route}`)
+          process.exit(1)
+        }
+      })
+    })
+  })
+}
+
+export const runPlaybook = (playbooks, vars) => {
+  const args = [
+    '-i',
+    `${PLAYBOOK_DIR}inventory/${vars.env}`,
+    '--vault-password-file',
+    '/home/node/.vault-secret',
+    '--connection=local',
+    '-e',
+    `"${JSON.stringify(vars).replaceAll('"', '\\"')}"`,
+  ]
+  ansible(playbooks, args)
+}

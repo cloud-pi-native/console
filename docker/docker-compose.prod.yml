@@ -64,7 +64,11 @@ services:
       KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_BACKEND}
       KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_BACKEND}
       KEYCLOAK_REDIRECT_URI: ${KEYCLOAK_REDIRECT_URI}
+      ANSIBLE_HOST: ansible-api
+      ANSIBLE_PORT: ${ANSIBLE_PORT}
       NODE_ENV: production
+    networks:
+      - dso-network
 
   ansible-api:
     restart: always
@@ -72,19 +76,14 @@ services:
       context: ..
       dockerfile: apps/ansible-api/Dockerfile
       target: prod
-    image: dso-console/ansible-api:dev
+    image: dso-console/ansible-api
     container_name: dso-console_ansible-api
     ports:
       - 8100:8100
-    volumes:
-      - /app/node_modules/
-      - ../apps/ansible-api:/app/apps/ansible-api
-      - /app/apps/ansible-api/node_modules/
-      - ../vault-secret:/app/vault-secret
-      - ${HOME}/.kube/config:/home/node/.kubeconfig
     environment:
-      PLAYBOOK_DIR: ${PLAYBOOK_DIR:-/dso/}
-      KUBECONFIG: ${KUBECONFIG:-/home/node/.kubeconfig}
+      PLAYBOOK_DIR: ${PLAYBOOK_DIR:-/dso}
+      ANSIBLE_PORT: ${ANSIBLE_PORT}
+      NODE_ENV: production
     networks:
       - dso-network
 

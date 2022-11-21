@@ -67,8 +67,36 @@ services:
       KEYCLOAK_REALM: ${KEYCLOAK_REALM:-cloud-pi-native}
       KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_BACKEND:-dso-console-backend}
       KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_BACKEND:-client-secret-backend}
+      ANSIBLE_HOST: ${ANSIBLE_HOST:-ansible-api}
+      ANSIBLE_PORT: ${ANSIBLE_PORT:-8100}
       CI: "true"
       DEV_SETUP: "true"
+      NODE_ENV: production
+    networks:
+      - dso-network
+
+  ansible-api:
+    restart: always
+    build:
+      context: ..
+      dockerfile: apps/ansible-api/Dockerfile
+      target: dev
+    image: dso-console/ansible-api:test
+    container_name: dso-console_ansible-api
+    ports:
+      - 8100:8100
+    volumes:
+      - /app/node_modules/
+      - ../apps/ansible-api:/app/apps/ansible-api
+      - /app/apps/ansible-api/node_modules/
+      - ../ansible/.vault-secret:/app/config/.vault-secret
+      - ../ansible/.kubeconfig:/home/node/.kubeconfig
+      - ../ansible/playbooks:/dso
+    environment:
+      PLAYBOOK_DIR: ${PLAYBOOK_DIR:-/dso}
+      ANSIBLE_PORT: ${ANSIBLE_PORT:-8100}
+      CI: "true"
+      NODE_ENV: production
     networks:
       - dso-network
 

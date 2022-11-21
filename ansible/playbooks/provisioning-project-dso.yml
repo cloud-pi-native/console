@@ -1,0 +1,7 @@
+- name: Provisionning DSO - Create project
+  hosts: localhost
+  tasks:
+    - name: Import Git project
+      ansible.builtin.debug:
+        msg:
+        - "Mocking project creation"

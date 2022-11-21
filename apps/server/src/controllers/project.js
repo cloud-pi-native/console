@@ -40,7 +40,7 @@ export const createProjectController = async (req, res) => {
   }
 
   try {
-    const body = {
+    const ansibleData = {
       env: 'pprod',
       extra: {
         orgName: project.orgName,
@@ -50,13 +50,19 @@ export const createProjectController = async (req, res) => {
       },
     }
 
-    await fetch(`${ansibleHost}:${ansiblePort}/api/v1/projects`, { method: 'POST', body })
+    await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/projects`, {
+      method: 'POST',
+      body: JSON.stringify(ansibleData),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
 
     send201(res, project)
   } catch (error) {
     app.log.error({
       ...getLogInfos(),
-      description: 'Cannot provisionne project in services',
+      description: 'Provisioning project with ansible failed',
       error: error.message,
     })
     send500(res, error.message)
@@ -98,7 +104,6 @@ export const addRepoController = async (req, res) => {
         orgName: dbProject.orgName,
         ownerEmail: dbProject.owner.email,
         projectName: dbProject.projectName,
-        envList: ['dev', 'staging', 'integration', 'prod'],
         internalRepoName: data.internalRepoName,
         externalRepoUrl: data.externalRepoUrl,
       },
@@ -114,7 +119,7 @@ export const addRepoController = async (req, res) => {
   } catch (error) {
     app.log.error({
       ...getLogInfos(),
-      description: 'Cannot provisionne project in services',
+      description: 'Provisioning project with ansible failed',
       error: error.message,
     })
     send500(res, error.message)

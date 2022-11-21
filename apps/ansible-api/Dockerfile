@@ -15,11 +15,16 @@ RUN apt-get update && \
 	apt clean && \
 	ln -s /usr/bin/python3 /bin/python3
 RUN python3 -m pip install ansible-core==2.13.3 python-ldap python-gitlab requests hvac kubernetes
+RUN ansible-galaxy collection install kubernetes.core community.hashi\_vault community.general
+# COPY --chown=node:node apps/ansible-api/playbooks /dso
+ADD https://github.com/dnum-mi/dso-socle/archive/main.tar.gz /tmp/dso-socle.tar.gz
+RUN mkdir /dso && \
+	tar -C /dso --strip-components=2 -xf /tmp/dso-socle.tar.gz dso-socle-main/provisionning-project/ && \
+	rm /tmp/dso-socle.tar.gz && \
+	chmod -R 664 /dso
 
 USER node
 
-RUN ansible-galaxy collection install kubernetes.core community.hashi\_vault community.general
-COPY --chown=node:node apps/ansible-api/playbooks /dso
 COPY --chown=node:node pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY --chown=node:node apps/ansible-api/package*.json ./apps/ansible-api/
 COPY --chown=node:node packages/shared/ ./packages/shared/
@@ -50,11 +55,12 @@ RUN apt-get update && \
 	ln -s /usr/bin/python3 /bin/python3
 RUN python3 -m pip install ansible-core==2.13.3 python-ldap python-gitlab requests hvac kubernetes
 RUN ansible-galaxy collection install kubernetes.core community.hashi\_vault community.general
+ADD https://github.com/dnum-mi/dso-socle/archive/main.tar.gz /tmp/dso-socle.tar.gz
+RUN mkdir /dso && \
+	tar -C /dso --strip-components=2 -xf /tmp/dso-socle.tar.gz dso-socle-main/provisionning-project/ && \
+	rm /tmp/dso-socle.tar.gz
 
 USER node
-
-ADD https://github.com/dnum-mi/dso-socle/archive/main.tar.gz /tmp/dso-socle.tar.gz
-RUN mkdir /dso && tar -C /dso --strip-components=2 -xf /tmp/dso-socle.tar.gz dso-socle-main/provisionning-project/ && rm /tmp/dso-socle.tar.gz
 
 COPY --chown=node:node --from=install /install/ansible-api .
 USER root

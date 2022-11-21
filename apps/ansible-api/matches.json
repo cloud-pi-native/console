@@ -1,8 +1,0 @@
-{
-  "project": [
-    "provisioning-project-dso.yml"
-  ],
-  "git": [
-    "import_git_project.yml"
-  ]
-}
