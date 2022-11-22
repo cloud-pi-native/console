@@ -44,15 +44,18 @@ const getOwner = () => {
 
 describe('Project routes', () => {
   let Project
+
   beforeAll(async () => {
     mockSession(app)
     await getConnection()
     Project = getProjectModel()
     global.fetch = vi.fn(() => Promise.resolve())
   })
+
   afterAll(async () => {
     return closeConnections()
   })
+
   afterEach(() => {
     vi.clearAllMocks()
     global.fetch = vi.fn(() => Promise.resolve())
@@ -141,11 +144,10 @@ describe('Project routes', () => {
 
     it('Should not add a repo if internalRepoName already present', async () => {
       const randomProject = { ...createRandomProject(), id: nanoid() }
-      const randomRepo = getRandomProjectRepos()[0]
-      randomRepo.internalRepoName = randomProject.repos[0].internalRepoName
+      const randomRepo = randomProject.repos[0]
 
-      sequelize.$queueResult({ data: randomProject })
-      sequelize.$queueResult(randomProject)
+      await sequelize.$queueResult({ data: randomProject })
+      await sequelize.$queueResult(randomProject)
       setOwner(randomProject.owner)
 
       const response = await app.inject()
@@ -197,8 +199,8 @@ describe('Project routes', () => {
       const randomUser = getRandomUser()
       randomUser.email = randomProject.users[0].email
 
-      sequelize.$queueResult({ data: randomProject })
-      sequelize.$queueResult(randomProject)
+      await sequelize.$queueResult({ data: randomProject })
+      await sequelize.$queueResult(randomProject)
       setOwner(randomProject.owner)
 
       const response = await app.inject()
