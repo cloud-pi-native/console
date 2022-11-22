@@ -56,8 +56,9 @@ describe('Project routes', () => {
     return closeConnections()
   })
 
-  afterEach(() => {
+  afterEach(async () => {
     vi.clearAllMocks()
+    await sequelize.$clearQueue()
     global.fetch = vi.fn(() => Promise.resolve())
   })
 
@@ -65,8 +66,8 @@ describe('Project routes', () => {
     it('Should create a project', async () => {
       const randomProject = createRandomProject()
 
-      Project.$queueResult(null)
-      Project.$queueResult(randomProject)
+      await Project.$queueResult(null)
+      await Project.$queueResult(randomProject)
       setOwner(randomProject.owner)
 
       const response = await app.inject()
@@ -94,7 +95,7 @@ describe('Project routes', () => {
     it('Should not create a project if projectName already exists', async () => {
       const randomProject = createRandomProject()
 
-      Project.$queueResult(randomProject)
+      await Project.$queueResult(randomProject)
       setOwner(randomProject.owner)
 
       const response = await app.inject()
@@ -108,8 +109,8 @@ describe('Project routes', () => {
     it('Should return an error if ansible api call failed', async () => {
       const randomProject = createRandomProject()
 
-      Project.$queueResult(null)
-      Project.$queueResult(randomProject)
+      await Project.$queueResult(null)
+      await Project.$queueResult(randomProject)
       setOwner(randomProject.owner)
       const error = new Error('Invalid ansible-api call')
       global.fetch = vi.fn(() => Promise.reject(error))
@@ -163,7 +164,7 @@ describe('Project routes', () => {
     it('Should not add a repo if permission is missing', async () => {
       const randomProject = createRandomProject()
 
-      Project.$queueResult(null)
+      await sequelize.$queueResult(randomProject)
       setOwner(randomProject.owner)
 
       const response = await app.inject()
@@ -172,6 +173,8 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(500)
+      expect(response.body).toBeDefined()
+      expect(response.body).toEqual('Missing permissions on this project')
     })
   })
 
