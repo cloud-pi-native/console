@@ -10,7 +10,7 @@ const projects = computed(() => projectStore.projects)
 const projectList = ref([])
 
 const setProjectList = (projects) => {
-  projectList.value = projects.map(project => ({
+  projectList.value = projects?.map(project => ({
     id: project.id,
     title: project.projectName,
     to: `/projects/${project.id}/dashboard`,

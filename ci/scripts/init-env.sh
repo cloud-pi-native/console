@@ -32,8 +32,13 @@ do
 done
 
 
-
 find $PROJECT_DIR -type f -name ".env*-example" | while read f; do
+  printf "\n${red}Copy${no_color}: '$f' 
+  ${red}to${no_color}: '${f/-example/}'\n"
+  cp "$f" ${f/-example/}
+done
+
+find $PROJECT_DIR -type f -name ".ansible-secret-example" | while read f; do
   printf "\n${red}Copy${no_color}: '$f' 
   ${red}to${no_color}: '${f/-example/}'\n"
   cp "$f" ${f/-example/}

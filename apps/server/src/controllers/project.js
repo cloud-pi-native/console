@@ -11,7 +11,9 @@ import {
 } from '../models/project-queries.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import app from '../app.js'
-import { projectProvisioning } from '../utils/ansible.js'
+
+const ansibleHost = process.env.ANSIBLE_HOST
+const ansiblePort = process.env.ANSIBLE_PORT
 
 export const createProjectController = async (req, res) => {
   const data = req.body
@@ -38,13 +40,29 @@ export const createProjectController = async (req, res) => {
   }
 
   try {
-    await projectProvisioning()
+    const ansibleData = {
+      env: 'pprod',
+      extra: {
+        orgName: project.orgName,
+        ownerEmail: project.owner.email,
+        projectName: project.projectName,
+        envList: ['dev', 'staging', 'integration', 'prod'],
+      },
+    }
+
+    await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/projects`, {
+      method: 'POST',
+      body: JSON.stringify(ansibleData),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
 
     send201(res, project)
   } catch (error) {
     app.log.error({
       ...getLogInfos(),
-      description: 'Cannot provisionne project in services',
+      description: 'Provisioning project with ansible failed',
       error: error.message,
     })
     send500(res, error.message)
@@ -56,8 +74,9 @@ export const addRepoController = async (req, res) => {
   const projectId = req.params?.id
   const data = req.body
 
+  let dbProject
   try {
-    const dbProject = await getUserProjectById(projectId, userId)
+    dbProject = await getUserProjectById(projectId, userId)
     if (!dbProject) {
       throw new Error('Missing permissions on this project')
     }
@@ -69,11 +88,44 @@ export const addRepoController = async (req, res) => {
       ...getLogInfos({ projectId: dbProject.id }),
       description: message,
     })
-    send201(res, message)
   } catch (error) {
     app.log.error({
       ...getLogInfos(),
       description: 'Cannot add git repository into project',
+      error: error.message,
+    })
+    send500(res, error.message)
+  }
+
+  try {
+    const ansibleData = {
+      env: 'pprod',
+      extra: {
+        orgName: dbProject.orgName,
+        ownerEmail: dbProject.owner.email,
+        projectName: dbProject.projectName,
+        internalRepoName: data.internalRepoName,
+        externalRepoUrl: data.externalRepoUrl,
+      },
+    }
+    if (data.isPrivate) {
+      ansibleData.extra.externalUserName = data.externalUserName
+      ansibleData.extra.externalToken = data.externalToken
+    }
+
+    await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/repos`, {
+      method: 'POST',
+      body: JSON.stringify(ansibleData),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    send201(res, 'Git repository successfully added into project')
+  } catch (error) {
+    app.log.error({
+      ...getLogInfos(),
+      description: 'Provisioning project with ansible failed',
       error: error.message,
     })
     send500(res, error.message)
@@ -122,7 +174,7 @@ export const removeUserController = async (req, res) => {
 
     await removeUser(dbProject, data)
 
-    const message = 'User successfully added into project'
+    const message = 'User successfully removed from project'
     app.log.info({
       ...getLogInfos({ projectId: dbProject.id }),
       description: message,
@@ -131,7 +183,7 @@ export const removeUserController = async (req, res) => {
   } catch (error) {
     app.log.error({
       ...getLogInfos(),
-      description: 'Cannot add user into project',
+      description: 'Cannot remove user from project',
       error: error.message,
     })
     send500(res, error.message)

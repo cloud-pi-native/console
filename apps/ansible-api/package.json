@@ -1,30 +1,20 @@
 {
-  "name": "server",
-  "description": "dso-portal server",
+  "name": "ansible-api",
+  "description": "dso-portal ansible-api",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "node --watch src/server.js",
     "lint": "eslint . --ext .js,.cjs,.ts",
     "format": "eslint . --ext .js,.cjs,.ts --fix",
-    "start": "node src/server.js",
-    "test": "vitest run --coverage"
+    "start": "node src/server.js"
   },
   "dependencies": {
-    "@fastify/cookie": "^8.3.0",
     "@fastify/helmet": "^10.0.2",
-    "@fastify/session": "^10.0.2",
-    "date-fns": "^2.29.3",
     "fastify": "^4.9.2",
-    "fastify-keycloak-adapter": "^1.6.2",
-    "lodash.kebabcase": "^4.1.1",
-    "nanoid": "4.0.0",
-    "pg": "8.8.0",
-    "sequelize": "^6.25.5",
-    "shared": "workspace:^1.0.0"
+    "lodash.kebabcase": "^4.1.1"
   },
   "devDependencies": {
-    "@faker-js/faker": "^7.6.0",
     "@vitest/coverage-c8": "^0.25.2",
     "eslint": "^8.27.0",
     "eslint-config-standard": "^17.0.0",
@@ -33,7 +23,6 @@
     "eslint-plugin-promise": "^6.1.1",
     "fastify-plugin": "^4.3.0",
     "pino-pretty": "^9.1.1",
-    "sequelize-mock": "^0.10.2",
     "vitest": "^0.25.2"
   }
 }

@@ -11,7 +11,7 @@ export const createProject = async (project) => {
   }
 
   const res = await getProjectModel().create({ data: project })
-  return res.data
+  return res?.data
 }
 
 export const addRepo = async (project, repo) => {
@@ -79,12 +79,12 @@ export const getProjectById = async (projectId) => {
       },
     },
   })
-  return res.data
+  return res?.data
 }
 
 export const getUserProjectById = async (projectId, userId) => {
   const res = await sequelize.query(`SELECT data FROM "Projects" WHERE (("data"#>>'{owner,id}') = '${userId}' OR data->'users' @> '[{"id": "${userId}"}]') AND ("data"#>>'{id}') = '${projectId}' LIMIT 1;`, { type: sequelize.QueryTypes?.SELECT, model: getProjectModel(), plain: true })
-  return res.data
+  return res?.data
 }
 
 export const getUserProjects = async (userId) => {

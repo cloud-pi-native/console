@@ -1,4 +1,4 @@
-import { vi, describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest'
+import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
 import fastify from 'fastify'
 import fastifySession from '@fastify/session'
 import fastifyCookie from '@fastify/cookie'
@@ -48,12 +48,14 @@ describe('Project routes', () => {
     mockSession(app)
     await getConnection()
     Project = getProjectModel()
+    global.fetch = vi.fn(() => Promise.resolve())
   })
   afterAll(async () => {
     return closeConnections()
   })
-  beforeEach(() => {
+  afterEach(() => {
     vi.clearAllMocks()
+    global.fetch = vi.fn(() => Promise.resolve())
   })
 
   describe('createProjectController)', () => {
@@ -99,6 +101,23 @@ describe('Project routes', () => {
 
       expect(response.statusCode).toEqual(500)
     })
+
+    it('Should return an error if ansible api call failed', async () => {
+      const randomProject = createRandomProject()
+
+      Project.$queueResult(null)
+      Project.$queueResult(randomProject)
+      setOwner(randomProject.owner)
+      const error = new Error('Invalid ansible-api call')
+      global.fetch = vi.fn(() => Promise.reject(error))
+
+      const response = await app.inject()
+        .post('/')
+        .body(randomProject)
+        .end()
+
+      expect(response.statusCode).toEqual(500)
+    })
   })
 
   describe('addRepoController)', () => {
@@ -106,8 +125,8 @@ describe('Project routes', () => {
       const randomProject = { ...createRandomProject(), id: nanoid() }
       const randomRepo = getRandomProjectRepos()[0]
 
-      sequelize.$queueResult({ data: randomProject })
-      sequelize.$queueResult(randomProject)
+      await sequelize.$queueResult({ data: randomProject })
+      await sequelize.$queueResult(randomProject)
       setOwner(randomProject.owner)
 
       const response = await app.inject()
@@ -140,8 +159,8 @@ describe('Project routes', () => {
       const randomProject = { ...createRandomProject(), id: nanoid() }
       const randomUser = getRandomUser()
 
-      sequelize.$queueResult({ data: randomProject })
-      sequelize.$queueResult(randomProject)
+      await sequelize.$queueResult({ data: randomProject })
+      await sequelize.$queueResult(randomProject)
       setOwner(randomProject.owner)
 
       const response = await app.inject()
@@ -167,12 +186,14 @@ describe('Project routes', () => {
 
       expect(response.statusCode).toEqual(500)
     })
+  })
 
+  describe('removeUserController)', () => {
     it('Should remove an user in project', async () => {
       const randomProject = { ...createRandomProject(), id: nanoid() }
       const randomUser = getRandomUser()
 
-      sequelize.$queueResult({ data: randomProject })
+      await sequelize.$queueResult({ data: randomProject })
       setOwner(randomProject.owner)
 
       const response = await app.inject()
@@ -187,7 +208,7 @@ describe('Project routes', () => {
       const randomProject = { ...createRandomProject(), id: nanoid() }
       const randomUser = getRandomUser()
 
-      sequelize.$queueResult(null)
+      await sequelize.$queueResult(null)
       setOwner(randomProject.owner)
 
       const response = await app.inject()
@@ -196,6 +217,7 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(500)
+      expect(response.body).toEqual('Missing permissions on this project')
     })
   })
 
@@ -203,7 +225,7 @@ describe('Project routes', () => {
     it('Should get list of a user\'s projects', async () => {
       const randomProjects = repeatFn(3)(createRandomProject)
 
-      sequelize.$queueResult(randomProjects.map(randomProject => ({ data: randomProject })))
+      await sequelize.$queueResult(randomProjects.map(randomProject => ({ data: randomProject })))
       setOwner(randomProjects[0].owner)
 
       const response = await app.inject()
@@ -220,7 +242,7 @@ describe('Project routes', () => {
 
     it('Should return an error while get list of projects', async () => {
       const errorMessage = 'error message'
-      sequelize.$queueFailure(errorMessage)
+      await sequelize.$queueFailure(errorMessage)
 
       const response = await app.inject()
         .get('/')
@@ -237,7 +259,7 @@ describe('Project routes', () => {
     it('Should get a project by id', async () => {
       const randomProject = createRandomProject()
 
-      sequelize.$queueResult({ data: randomProject })
+      await sequelize.$queueResult({ data: randomProject })
       setOwner(randomProject.owner)
 
       const response = await app.inject()
@@ -251,7 +273,7 @@ describe('Project routes', () => {
 
     it('Should not get a project when id is invalid', async () => {
       const errorMessage = 'error message'
-      sequelize.$queueFailure(errorMessage)
+      await sequelize.$queueFailure(errorMessage)
 
       const response = await app.inject()
         .get('/invalid')

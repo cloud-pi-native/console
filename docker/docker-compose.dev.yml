@@ -1,20 +1,6 @@
 version: '3.9'
 
 services:
-  postgres:
-    restart: always
-    image: postgres:14.5
-    container_name: dso-console_postgres
-    environment:
-      POSTGRES_DB: ${POSTGRES_DATABASE:-dso-console-db}
-      POSTGRES_USER: ${POSTGRES_USER:-admin}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
-    volumes:
-      - dso-postgres-data:/var/lib/postgresql/data
-      - ../db/postgres/scripts:/docker-entrypoint-initdb.d
-    networks:
-      - dso-network
-
   keycloak:
     restart: always
     image: quay.io/keycloak/keycloak:19.0.2
@@ -36,9 +22,23 @@ services:
     networks:
       - dso-network
 
+  postgres:
+    restart: always
+    image: postgres:14.5
+    container_name: dso-console_postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DATABASE:-dso-console-db}
+      POSTGRES_USER: ${POSTGRES_USER:-admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
+    volumes:
+      - dso-postgres-data:/var/lib/postgresql/data
+      - ../db/postgres/scripts:/docker-entrypoint-initdb.d
+    networks:
+      - dso-network
+
   pgadmin:
     restart: always
-    image: dpage/pgadmin4:6.15
+    image: dpage/pgadmin4:6.16
     container_name: dso-console_pgadmin
     depends_on:
       - postgres
@@ -76,7 +76,7 @@ services:
       - /app/packages/shared/node_modules/
     environment:
       SERVER_PORT: ${SERVER_PORT:-4000}
-      DB_HOST: postgres
+      DB_HOST: ${POSTGRES_HOST:-postgres}
       DB_PORT: ${POSTGRES_PORT:-5432}
       DB_USER: ${POSTGRES_USER:-admin}
       DB_PASS: ${POSTGRES_PASSWORD:-admin}
@@ -86,6 +86,32 @@ services:
       KEYCLOAK_REALM: ${KEYCLOAK_REALM:-cloud-pi-native}
       KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_BACKEND:-dso-console-backend}
       KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_BACKEND:-client-secret-backend}
+      ANSIBLE_HOST: ${ANSIBLE_HOST:-ansible-api}
+      ANSIBLE_PORT: ${ANSIBLE_PORT:-8100}
+      NODE_ENV: development
+    networks:
+      - dso-network
+
+  ansible-api:
+    restart: always
+    build:
+      context: ..
+      dockerfile: apps/ansible-api/Dockerfile
+      target: dev
+    image: dso-console/ansible-api:dev
+    container_name: dso-console_ansible-api
+    ports:
+      - 8100:8100
+    volumes:
+      - /app/node_modules/
+      - ../apps/ansible-api:/app/apps/ansible-api
+      - /app/apps/ansible-api/node_modules/
+      - ../ansible/.vault-secret:/home/node/.vault-secret
+      - ../ansible/.kubeconfig:/home/node/.kubeconfig
+      - ../ansible/playbooks:/dso
+    environment:
+      PLAYBOOK_DIR: ${PLAYBOOK_DIR:-/dso}
+      ANSIBLE_PORT: ${ANSIBLE_PORT:-8100}
       NODE_ENV: development
     networks:
       - dso-network
@@ -123,7 +149,6 @@ networks:
     driver: bridge
     # driver_opts:
     # com.docker.network.driver.mtu: 1450
-
 
 volumes:
   dso-pgadmin-data:
