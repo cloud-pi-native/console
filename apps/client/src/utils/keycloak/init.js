@@ -46,9 +46,8 @@ export const keycloakLogin = async () => {
 
 export const keycloakLogout = async () => {
   try {
-    const { redirectUri } = keycloakConf
     const keycloak = getKeycloak()
-    await keycloak.logout({ redirectUri })
+    await keycloak.logout()
   } catch (error) {
     return error
   }

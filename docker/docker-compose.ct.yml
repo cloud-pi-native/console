@@ -1,0 +1,27 @@
+version: '3.9'
+
+services:
+  cypress:
+    build:
+      context: ..
+      dockerfile: apps/client/cypress/Dockerfile
+    image: dso-console/cypress:ci
+    container_name: dso-console_cypress
+    volumes:
+      - /app/node_modules/
+      - ../apps/client:/app/apps/client
+      - /app/apps/client/node_modules/
+      - ../packages/shared:/app/packages/shared
+      - /app/packages/shared/node_modules/
+    environment:
+      CLIENT_HOST: ${CLIENT_HOST:-client}
+      CLIENT_PORT: ${CLIENT_PORT:-8080}
+    command: pnpm --filter client run cypress:run-ct
+    networks:
+      - dso-network
+
+networks:
+  dso-network:
+    driver: bridge
+    # driver_opts:
+    # com.docker.network.driver.mtu: 1450

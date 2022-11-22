@@ -48,7 +48,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Run unit tests
-        run: pnpm run test
+        run: |
+          ./ci/scripts/init-env.sh
+          ./ci/scripts/run-tests.sh -u
       - name: Upload vitest coverage artifacts
         uses: actions/upload-artifact@v3
         with:
@@ -86,7 +88,7 @@ jobs:
               -Dsonar.branch.name=${{ github.event.pull_request.head.ref }} \
               -Dsonar.qualitygate.wait=true \
               -Dsonar.projectBaseDir=/usr/src \
-              -Dsonar.sources=apps/client,apps/server,packages/shared \
+              -Dsonar.sources=apps/client,apps/server,apps/ansible-api,packages/shared \
               -Dsonar.javascript.lcov.reportPaths=coverage/apps/client/coverage/lcov.info,coverage/apps/server/coverage/lcov.info,coverage/packages/shared/coverage/lcov.info \
               -Dsonar.coverage.exclusions=**/*.spec.js,**/*.vue,apps/client/src/router/**,apps/client/src/stores/**,**/assets/**,apps/client/src/main.js,apps/client/src/icons.js,apps/client/cypress/**,packages/shared/src/schemas/**
         continue-on-error: true
@@ -99,34 +101,10 @@ jobs:
     steps:
       - name: Checks-out repository
         uses: actions/checkout@v3
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "${{ env.NODE_VERSION }}"
-          check-latest: true
-      - uses: pnpm/action-setup@v2.0.1
-        name: Install pnpm
-        id: pnpm-install
-        with:
-          version: 7
-          run_install: false
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        run: |
-          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_ENV
-      - uses: actions/cache@v3
-        name: Setup pnpm cache
-        with:
-          path: |
-            ${{ env.STORE_PATH }}
-            /home/runner/.cache/Cypress
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
       - name: Run component tests
-        run: pnpm --filter client run cypress:run-ct
+        run: |
+          ./ci/scripts/init-env.sh
+          ./ci/scripts/run-tests.sh -c
       - name: Upload cypress artifacts
         if: ${{ failure() }}
         uses: actions/upload-artifact@v3
@@ -146,7 +124,7 @@ jobs:
       - name: Run e2e tests
         run: |
           ./ci/scripts/init-env.sh
-          npm run test:e2e-ci
+          ./ci/scripts/run-tests.sh -e
       - name: Upload cypress artifacts
         if: ${{ failure() }}
         uses: actions/upload-artifact@v3

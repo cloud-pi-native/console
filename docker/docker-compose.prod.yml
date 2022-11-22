@@ -80,6 +80,10 @@ services:
     container_name: dso-console_ansible-api
     ports:
       - 8100:8100
+    volumes:
+      - ../ansible/.vault-secret:/home/node/.vault-secret
+      - ../ansible/.kubeconfig:/home/node/.kubeconfig
+      - ../ansible/playbooks:/dso
     environment:
       PLAYBOOK_DIR: ${PLAYBOOK_DIR:-/dso}
       ANSIBLE_PORT: ${ANSIBLE_PORT}
@@ -92,18 +96,20 @@ services:
       context: ..
       dockerfile: apps/client/Dockerfile
       target: prod
-      args:
-        KEYCLOAK_DOMAIN: localhost:8090
-        KEYCLOAK_REALM: ${KEYCLOAK_REALM}
-        KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_FRONTEND}
-        SERVER_HOST: server
-        SERVER_PORT: ${SERVER_PORT}
     image: dso-console/client
+    container_name: dso-console_client
     depends_on:
       server:
         condition: service_started
     ports:
       - 8080:8080
+    environment:
+      KEYCLOAK_DOMAIN: localhost:8090
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_FRONTEND}
+      KEYCLOAK_REDIRECT_URI: ${KEYCLOAK_REDIRECT_URI}
+      SERVER_HOST: server
+      SERVER_PORT: ${SERVER_PORT}
     networks:
       - dso-network
 

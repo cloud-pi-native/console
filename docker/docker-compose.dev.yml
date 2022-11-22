@@ -138,9 +138,10 @@ services:
       KEYCLOAK_DOMAIN: localhost:8090
       KEYCLOAK_REALM: ${KEYCLOAK_REALM:-cloud-pi-native}
       KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_FRONTEND:-dso-console-frontend}
+      KEYCLOAK_REDIRECT_URI: ${KEYCLOAK_REDIRECT_URI:-http://localhost:8080}
       SERVER_HOST: ${SERVER_HOST:-server}
       SERVER_PORT: ${SERVER_PORT:-4000}
-      CLIENT_PORT: ${CLIENT_PORT:-4000}
+      CLIENT_PORT: ${CLIENT_PORT:-8080}
     networks:
       - dso-network
 

@@ -1,10 +1,10 @@
-export const keycloakDomain = process.env.KEYCLOAK_DOMAIN || 'localhost:8090'
+import { keycloakDomain, keycloakClientId, keycloakRealm, keycloakRedirectUri } from '../env.js'
 
 export const keycloakConf = {
   url: `http://${keycloakDomain}`,
-  realm: process.env.KEYCLOAK_REALM,
-  clientId: process.env.KEYCLOAK_CLIENT_ID,
+  realm: keycloakRealm,
+  clientId: keycloakClientId,
   onLoad: 'check-sso',
   flow: 'hybrid',
-  redirectUri: process.env.KEYCLOAK_REDIRECT_URI || 'http://localhost:8080',
+  redirectUri: keycloakRedirectUri,
 }
