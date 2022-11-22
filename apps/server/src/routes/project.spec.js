@@ -199,8 +199,7 @@ describe('Project routes', () => {
 
     it('Should not add an user if email already present', async () => {
       const randomProject = { ...createRandomProject(), id: nanoid() }
-      const randomUser = getRandomUser()
-      randomUser.email = randomProject.users[0].email
+      const randomUser = randomProject.users[0]
 
       await sequelize.$queueResult({ data: randomProject })
       await sequelize.$queueResult(randomProject)
