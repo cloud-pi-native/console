@@ -139,20 +139,6 @@ describe('Project routes', () => {
       expect(response.body).toEqual('Git repository successfully added into project')
     })
 
-    it('Should not add a repo if permission is missing', async () => {
-      const randomProject = createRandomProject()
-
-      Project.$queueResult(null)
-      setOwner(randomProject.owner)
-
-      const response = await app.inject()
-        .post(`/${randomProject.id}/repos`)
-        .body(randomProject)
-        .end()
-
-      expect(response.statusCode).toEqual(500)
-    })
-
     it('Should not add a repo if internalRepoName already present', async () => {
       const randomProject = { ...createRandomProject(), id: nanoid() }
       const randomRepo = getRandomProjectRepos()[0]
@@ -170,6 +156,20 @@ describe('Project routes', () => {
       expect(response.statusCode).toEqual(500)
       expect(response.body).toBeDefined()
       expect(response.body).toEqual(`Git repo '${randomRepo.internalRepoName}' already exists in project`)
+    })
+
+    it('Should not add a repo if permission is missing', async () => {
+      const randomProject = createRandomProject()
+
+      Project.$queueResult(null)
+      setOwner(randomProject.owner)
+
+      const response = await app.inject()
+        .post(`/${randomProject.id}/repos`)
+        .body(randomProject)
+        .end()
+
+      expect(response.statusCode).toEqual(500)
     })
   })
 
