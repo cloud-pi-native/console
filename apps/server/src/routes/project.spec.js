@@ -56,7 +56,7 @@ describe('Project routes', () => {
     return closeConnections()
   })
 
-  afterEach(async () => {
+  afterEach(() => {
     vi.clearAllMocks()
     sequelize.$clearQueue()
     global.fetch = vi.fn(() => Promise.resolve())
@@ -66,8 +66,8 @@ describe('Project routes', () => {
     it('Should create a project', async () => {
       const randomProject = createRandomProject()
 
-      await Project.$queueResult(null)
-      await Project.$queueResult(randomProject)
+      Project.$queueResult(null)
+      Project.$queueResult(randomProject)
       setOwner(randomProject.owner)
 
       const response = await app.inject()
@@ -85,8 +85,8 @@ describe('Project routes', () => {
       const randomProject = createRandomProject()
       delete randomProject[removedKey]
 
-      await Project.$queueResult(null)
-      await Project.$queueResult(randomProject)
+      Project.$queueResult(null)
+      Project.$queueResult(randomProject)
 
       const response = await app.inject()
         .post('/')
@@ -101,8 +101,8 @@ describe('Project routes', () => {
     it('Should not create a project if projectName already exists', async () => {
       const randomProject = createRandomProject()
 
-      await Project.$queueResult(true)
-      await Project.$queueResult(randomProject)
+      Project.$queueResult(true)
+      Project.$queueResult(randomProject)
       setOwner(randomProject.owner)
 
       const response = await app.inject()
@@ -120,8 +120,8 @@ describe('Project routes', () => {
 
       const randomProject = createRandomProject()
 
-      await Project.$queueResult(null)
-      await Project.$queueResult(randomProject)
+      Project.$queueResult(null)
+      Project.$queueResult(randomProject)
       setOwner(randomProject.owner)
       const error = new Error(ansibleError)
       global.fetch = vi.fn(() => Promise.reject(error))
@@ -142,8 +142,8 @@ describe('Project routes', () => {
       const randomProject = { ...createRandomProject(), id: nanoid() }
       const randomRepo = getRandomProjectRepos()[0]
 
-      await sequelize.$queueResult({ data: randomProject })
-      await Project.$queueResult(randomProject)
+      sequelize.$queueResult({ data: randomProject })
+      Project.$queueResult(randomProject)
       setOwner(randomProject.owner)
 
       const response = await app.inject()
@@ -160,8 +160,8 @@ describe('Project routes', () => {
       const randomProject = { ...createRandomProject(), id: nanoid() }
       const randomRepo = randomProject.repos[0]
 
-      await sequelize.$queueResult({ data: randomProject })
-      await Project.$queueResult(randomProject)
+      sequelize.$queueResult({ data: randomProject })
+      Project.$queueResult(randomProject)
       setOwner(randomProject.owner)
 
       const response = await app.inject()
@@ -177,7 +177,7 @@ describe('Project routes', () => {
     it('Should not add a repo if permission is missing', async () => {
       const randomProject = createRandomProject()
 
-      await sequelize.$queueResult(null)
+      sequelize.$queueResult(null)
       setOwner(randomProject.owner)
 
       const response = await app.inject()
@@ -196,8 +196,8 @@ describe('Project routes', () => {
       const randomProject = { ...createRandomProject(), id: nanoid() }
       const randomUser = getRandomUser()
 
-      await sequelize.$queueResult({ data: randomProject })
-      await Project.$queueResult(randomProject)
+      sequelize.$queueResult({ data: randomProject })
+      Project.$queueResult(randomProject)
       setOwner(randomProject.owner)
 
       const response = await app.inject()
@@ -214,8 +214,8 @@ describe('Project routes', () => {
       const randomProject = { ...createRandomProject(), id: nanoid() }
       const randomUser = randomProject.users[0]
 
-      await sequelize.$queueResult({ data: randomProject })
-      await Project.$queueResult(randomProject)
+      sequelize.$queueResult({ data: randomProject })
+      Project.$queueResult(randomProject)
       setOwner(randomProject.owner)
 
       const response = await app.inject()
@@ -232,7 +232,7 @@ describe('Project routes', () => {
       const randomProject = createRandomProject()
       const randomUser = getRandomUser()
 
-      await Project.$queueResult(null)
+      Project.$queueResult(null)
       setOwner(randomProject.owner)
 
       const response = await app.inject()
@@ -249,7 +249,7 @@ describe('Project routes', () => {
       const randomProject = { ...createRandomProject(), id: nanoid() }
       const randomUser = getRandomUser()
 
-      await sequelize.$queueResult({ data: randomProject })
+      sequelize.$queueResult({ data: randomProject })
       setOwner(randomProject.owner)
 
       const response = await app.inject()
@@ -264,7 +264,7 @@ describe('Project routes', () => {
       const randomProject = { ...createRandomProject(), id: nanoid() }
       const randomUser = getRandomUser()
 
-      await sequelize.$queueResult(null)
+      sequelize.$queueResult(null)
       setOwner(randomProject.owner)
 
       const response = await app.inject()
@@ -281,7 +281,7 @@ describe('Project routes', () => {
     it('Should get list of a user\'s projects', async () => {
       const randomProjects = repeatFn(3)(createRandomProject)
 
-      await sequelize.$queueResult(randomProjects.map(randomProject => ({ data: randomProject })))
+      sequelize.$queueResult(randomProjects.map(randomProject => ({ data: randomProject })))
       setOwner(randomProjects[0].owner)
 
       const response = await app.inject()
@@ -315,7 +315,7 @@ describe('Project routes', () => {
     it('Should get a project by id', async () => {
       const randomProject = createRandomProject()
 
-      await sequelize.$queueResult({ data: randomProject })
+      sequelize.$queueResult({ data: randomProject })
       setOwner(randomProject.owner)
 
       const response = await app.inject()
