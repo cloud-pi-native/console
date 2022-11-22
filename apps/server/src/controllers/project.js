@@ -98,7 +98,7 @@ export const addRepoController = async (req, res) => {
   }
 
   try {
-    const body = {
+    const ansibleData = {
       env: 'pprod',
       extra: {
         orgName: dbProject.orgName,
@@ -109,11 +109,17 @@ export const addRepoController = async (req, res) => {
       },
     }
     if (data.isPrivate) {
-      body.extra.externalUserName = data.externalUserName
-      body.extra.externalToken = data.externalToken
+      ansibleData.extra.externalUserName = data.externalUserName
+      ansibleData.extra.externalToken = data.externalToken
     }
 
-    await fetch(`${ansibleHost}:${ansiblePort}/api/v1/repos`, { method: 'POST', body })
+    await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/repos`, {
+      method: 'POST',
+      body: JSON.stringify(ansibleData),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
 
     send201(res, 'Git repository successfully added into project')
   } catch (error) {

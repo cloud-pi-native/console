@@ -16,7 +16,6 @@ RUN apt-get update && \
 	ln -s /usr/bin/python3 /bin/python3
 RUN python3 -m pip install ansible-core==2.13.3 python-ldap python-gitlab requests hvac kubernetes
 RUN ansible-galaxy collection install kubernetes.core community.hashi\_vault community.general
-# COPY --chown=node:node apps/ansible-api/playbooks /dso
 ADD https://github.com/dnum-mi/dso-socle/archive/main.tar.gz /tmp/dso-socle.tar.gz
 RUN mkdir /dso && \
 	tar -C /dso --strip-components=2 -xf /tmp/dso-socle.tar.gz dso-socle-main/provisionning-project/ && \
@@ -55,16 +54,16 @@ RUN apt-get update && \
 	ln -s /usr/bin/python3 /bin/python3
 RUN python3 -m pip install ansible-core==2.13.3 python-ldap python-gitlab requests hvac kubernetes
 RUN ansible-galaxy collection install kubernetes.core community.hashi\_vault community.general
-ADD https://github.com/dnum-mi/dso-socle/archive/main.tar.gz /tmp/dso-socle.tar.gz
-RUN mkdir /dso && \
-	tar -C /dso --strip-components=2 -xf /tmp/dso-socle.tar.gz dso-socle-main/provisionning-project/ && \
-	rm /tmp/dso-socle.tar.gz
+# ADD https://github.com/dnum-mi/dso-socle/archive/main.tar.gz /tmp/dso-socle.tar.gz
+# RUN mkdir /dso && \
+# 	tar -C /dso --strip-components=2 -xf /tmp/dso-socle.tar.gz dso-socle-main/provisionning-project/ && \
+# 	rm /tmp/dso-socle.tar.gz
 
 USER node
 
 COPY --chown=node:node --from=install /install/ansible-api .
-USER root
-RUN find / -xdev -exec chmod -c g=u {} \; -exec chown -c :0 {} \;
-USER 1001
+# USER root
+# RUN find / -xdev -exec chmod -c g=u {} \; -exec chown -c :0 {} \;
+# USER 1001
 
 CMD ["npm", "run", "start"]

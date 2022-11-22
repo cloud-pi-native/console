@@ -89,7 +89,7 @@ services:
       - /app/node_modules/
       - ../apps/ansible-api:/app/apps/ansible-api
       - /app/apps/ansible-api/node_modules/
-      - ../ansible/.vault-secret:/app/config/.vault-secret
+      - ../ansible/.vault-secret:/home/node/.vault-secret
       - ../ansible/.kubeconfig:/home/node/.kubeconfig
       - ../ansible/playbooks:/dso
     environment:

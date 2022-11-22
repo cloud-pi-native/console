@@ -7,54 +7,43 @@ export const apiClient = axios.create({
   timeout: 5000,
 })
 
-apiClient.interceptors.request.use(
-  async request => {
-    if (request.url?.startsWith('/version')) {
-      return request
-    }
-    const keycloak = getKeycloak()
-    try {
-      await keycloak.updateToken()
-    } catch (e) {
-      return router.push('/login')
-    }
-    const token = keycloak.token
-    if (token) {
-      Object.assign(request.headers, {
-        Authorization: `Bearer ${token}`,
-      })
-    }
-    return request
-  },
+apiClient.interceptors.request.use(async function addAuthHeader (config) {
+  if (config.url?.startsWith('/version') || config.url?.startsWith('/login')) {
+    return config
+  }
+  const keycloak = getKeycloak()
+  await keycloak.updateToken()
+  const token = keycloak.token
+  if (token) {
+    Object.assign(config.headers, {
+      Authorization: `Bearer ${token}`,
+    })
+  }
+  return config
+}, function (error) {
+  return Promise.reject(error)
+})
 
-  error => {
-    return Promise.reject(error)
-  })
-
-apiClient.interceptors.response.use(
-  response => {
-    return Promise.resolve(response)
-  },
-
-  error => {
-    const response = error?.response
-    const isUnauthorized = response?.status === 401
-    if (isUnauthorized) {
-      const customError = new Error('Incorrect authentication')
-      customError.httpCode = 401
-      return Promise.reject(customError)
-    }
-    if (error?.code === 'ECONNABORTED' || error?.message?.includes('Network Error')) {
-      const customError = new Error('Unable to communicate with the server')
-      return Promise.reject(customError)
-    }
-    if (response?.data?.error === 'invalid_grant') {
-      const customError = new Error(response?.body?.error_description)
-      router.push('/login')
-      return Promise.reject(customError)
-    }
-    const apiError = new Error(response?.data?.message || response?.statusText || error.message)
-    apiError.statusCode = response?.status
-    return Promise.reject(apiError)
-  },
-)
+apiClient.interceptors.response.use(function (response) {
+  return response
+}, function (error) {
+  const response = error?.response
+  const isUnauthorized = response?.status === 401
+  if (isUnauthorized) {
+    const customError = new Error('Incorrect authentication')
+    customError.httpCode = 401
+    return Promise.reject(customError)
+  }
+  if (error?.code === 'ECONNABORTED' || error?.message?.includes('Network Error')) {
+    const customError = new Error('Unable to communicate with the server')
+    return Promise.reject(customError)
+  }
+  if (response?.data?.error === 'invalid_grant') {
+    const customError = new Error(response?.body?.error_description)
+    router.push('/login')
+    return Promise.reject(customError)
+  }
+  const apiError = new Error(response?.data?.message || response?.statusText || error?.message)
+  apiError.statusCode = response?.status
+  return Promise.reject(apiError)
+})

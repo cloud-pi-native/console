@@ -8,13 +8,13 @@ import { playbooksDictionary } from '../utils/matches.js'
 export const createRepositoryController = async (req, res) => {
   const data = req.body
 
-  let project
   try {
-    const playbooks = playbooksDictionary.project
+    const playbooks = playbooksDictionary.repos
+    const { env } = data
     const extraVars = convertVars(ansibleArgsDictionary, data)
-    runPlaybook(playbooks, extraVars)
+    runPlaybook(playbooks, extraVars, env)
 
-    send200(res, project)
+    send200(res, 'Provisioning repos in project with ansible started')
   } catch (error) {
     app.log.error({
       ...getLogInfos(),

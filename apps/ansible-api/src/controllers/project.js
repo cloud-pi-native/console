@@ -10,9 +10,9 @@ export const createProjectController = async (req, res) => {
 
   try {
     const playbooks = playbooksDictionary.projects
-    console.log({ playbooks, req: req.body })
+    const { env } = data
     const extraVars = convertVars(ansibleArgsDictionary, data)
-    runPlaybook(playbooks, extraVars)
+    runPlaybook(playbooks, extraVars, env)
 
     send200(res, 'Provisioning project with ansible started')
   } catch (error) {
