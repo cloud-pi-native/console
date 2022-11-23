@@ -4,6 +4,7 @@ import * as xhrClient from './xhr-client.js'
 vi.mock('@/utils/keycloak/keycloak.js', () => ({
   getKeycloak: () => ({
     token: 'token',
+    loadUserProfile: vi.fn(),
     updateToken: vi.fn(),
   }),
 }))

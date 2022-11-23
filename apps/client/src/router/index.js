@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useUserStore } from '@/stores/user.js'
+import { useProjectStore } from '@/stores/project.js'
+import { idInUrl } from '@/utils/regex.js'
 
 import DsoHome from '@/views/DsoHome.vue'
 import CreateProject from '@/views/CreateProject.vue'
@@ -86,7 +88,7 @@ router.beforeEach((to) => { // Cf. https://github.com/vueuse/head pour des trans
   document.title = `${specificTitle}${MAIN_TITLE}`
 })
 
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, _from, next) => {
   const validPath = ['Login', 'Home', 'Doc']
 
   const userStore = useUserStore()
@@ -96,6 +98,20 @@ router.beforeEach(async (to, from, next) => {
   }
 
   next('Login')
+})
+
+router.beforeEach(async (to, _from, next) => {
+  const projectStore = useProjectStore()
+
+  if (to.path.match('^/projects/') && projectStore.selectedProject === undefined) {
+    await projectStore.getUserProjects()
+
+    const idStart = to.path.search(idInUrl)
+    const projectId = to.path.slice(idStart + 1, idStart + 22)
+
+    await projectStore.setSelectedProject(projectId)
+  }
+  next()
 })
 
 export default router

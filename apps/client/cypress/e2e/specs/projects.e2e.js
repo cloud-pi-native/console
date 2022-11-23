@@ -1,3 +1,7 @@
+import { getProjectbyId } from '../support/func.js'
+
+const candilib = getProjectbyId('9FG4CeGkMavI5CtAh_3Ss')
+
 describe('Projects view', () => {
   beforeEach(() => {
     cy.kcLogin('test')
@@ -12,9 +16,9 @@ describe('Projects view', () => {
           .get('[data-testid^="projectTile-"]')
           .should('have.length', `${response.body.length}`)
       })
-      .getByDataTestid('projectTile-candilib').click()
-      .url().should('contain', 'projects/9FG4CeGkMavI5CtAh_3Ss/dashboard')
+      .getByDataTestid(`projectTile-${candilib.projectName}`).click()
+      .url().should('contain', `projects/${candilib.id}/dashboard`)
       .getByDataTestid('currentProjectInfo')
-      .should('contain', 'Le projet courant est : candilib')
+      .should('contain', `Le projet courant est : ${candilib.projectName}`)
   })
 })

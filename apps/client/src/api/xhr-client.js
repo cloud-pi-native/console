@@ -12,7 +12,10 @@ apiClient.interceptors.request.use(async function addAuthHeader (config) {
     return config
   }
   const keycloak = getKeycloak()
+
+  await keycloak.loadUserProfile()
   await keycloak.updateToken()
+
   const token = keycloak.token
   if (token) {
     Object.assign(config.headers, {

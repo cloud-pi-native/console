@@ -42,7 +42,7 @@ export const getUserProfile = async () => {
 }
 
 export const keycloakInit = async () => {
-  keycloakConf.redirectUri = location
+  keycloakConf.redirectUri = keycloakConf.redirectUri.concat(location.pathname)
   try {
     const { onLoad, redirectUri, flow } = keycloakConf
     const keycloak = getKeycloak()
