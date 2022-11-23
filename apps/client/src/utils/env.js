@@ -1,0 +1,7 @@
+export const serverHost = process.env.SERVER_HOST || 'server-host'
+export const serverPort = process.env.SERVER_PORT || 'server-port'
+export const clientPort = process.env.CLIENT_PORT || 'client-port'
+export const keycloakDomain = process.env.KEYCLOAK_DOMAIN || 'keycloak-domain'
+export const keycloakRealm = process.env.KEYCLOAK_REALM || 'keycloak-realm'
+export const keycloakClientId = process.env.KEYCLOAK_CLIENT_ID || 'keycloak-client-id'
+export const keycloakRedirectUri = process.env.KEYCLOAK_REDIRECT_URI || 'keycloak-redirect-uri'

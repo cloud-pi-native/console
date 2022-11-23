@@ -54,16 +54,12 @@ RUN apt-get update && \
 	ln -s /usr/bin/python3 /bin/python3
 RUN python3 -m pip install ansible-core==2.13.3 python-ldap python-gitlab requests hvac kubernetes
 RUN ansible-galaxy collection install kubernetes.core community.hashi\_vault community.general
-# ADD https://github.com/dnum-mi/dso-socle/archive/main.tar.gz /tmp/dso-socle.tar.gz
-# RUN mkdir /dso && \
-# 	tar -C /dso --strip-components=2 -xf /tmp/dso-socle.tar.gz dso-socle-main/provisionning-project/ && \
-# 	rm /tmp/dso-socle.tar.gz
 
-USER node
+
+ENV HOME=/home/node
 
 COPY --chown=node:node --from=install /install/ansible-api .
-# USER root
-# RUN find / -xdev -exec chmod -c g=u {} \; -exec chown -c :0 {} \;
-# USER 1001
+RUN find / -xdev -exec chmod -f g=u {} \; -exec chown -f :0 {} \;
+USER 1001
 
 CMD ["npm", "run", "start"]

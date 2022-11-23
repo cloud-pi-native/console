@@ -34,12 +34,6 @@ FROM node:18.12.1-bullseye-slim as build
 
 WORKDIR /app
 
-ARG SERVER_HOST
-ARG SERVER_PORT
-ARG KEYCLOAK_DOMAIN
-ARG KEYCLOAK_REALM
-ARG KEYCLOAK_CLIENT_ID
-ARG KEYCLOAK_REDIRECT_URI
 
 COPY --from=install /install/client .
 RUN npm run build
@@ -49,7 +43,11 @@ RUN npm run build
 FROM nginx:1.22.1 as prod
 
 COPY --from=build /app/dist /usr/share/nginx/html/
-COPY --from=build /app/nginx/nginx.conf /etc/nginx/nginx.conf
-COPY --from=build /app/nginx/default.conf /etc/nginx/conf.d/default.conf
+COPY ./apps/client/nginx/nginx.conf /etc/nginx/nginx.conf
+COPY ./apps/client/nginx/default.conf /etc/nginx/conf.d/default.conf
+COPY ./apps/client/nginx/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 EXPOSE 8080
+
+ENTRYPOINT [ "/entrypoint.sh" ]

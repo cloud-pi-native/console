@@ -1,19 +1,6 @@
 version: '3.9'
 
 services:
-  postgres:
-    restart: always
-    image: postgres:14.5
-    container_name: dso-console_postgres
-    environment:
-      POSTGRES_DB: ${POSTGRES_DATABASE}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    volumes:
-      - ../db/postgres/scripts:/docker-entrypoint-initdb.d
-    networks:
-      - dso-network
-
   keycloak:
     restart: always
     image: quay.io/keycloak/keycloak:19.0.2
@@ -34,6 +21,19 @@ services:
     networks:
       - dso-network
 
+  postgres:
+    restart: always
+    image: postgres:14.5
+    container_name: dso-console_postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DATABASE:-dso-console-db}
+      POSTGRES_USER: ${POSTGRES_USER:-admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
+    volumes:
+      - ../db/postgres/scripts:/docker-entrypoint-initdb.d
+    networks:
+      - dso-network
+
   server:
     restart: always
     build:
@@ -51,13 +51,13 @@ services:
       - 4000:4000
     environment:
       SERVER_PORT: ${SERVER_PORT:-4000}
-      DB_HOST: postgres
+      DB_HOST: ${POSTGRES_HOST:-postgres}
       DB_PORT: ${POSTGRES_PORT:-5432}
       DB_USER: ${POSTGRES_USER:-admin}
       DB_PASS: ${POSTGRES_PASSWORD:-admin}
       DB_NAME: ${POSTGRES_DATABASE:-dso-console-db}
       SESSION_SECRET: ${SESSION_SECRET:-a-very-strong-secret-with-more-than-32-char}
-      KEYCLOAK_DOMAIN: keycloak:8080
+      KEYCLOAK_DOMAIN: ${KEYCLOAK_DOMAIN:-keycloak:8080}
       KEYCLOAK_REALM: ${KEYCLOAK_REALM:-cloud-pi-native}
       KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_BACKEND:-dso-console-backend}
       KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_BACKEND:-client-secret-backend}
@@ -99,13 +99,6 @@ services:
       context: ..
       dockerfile: apps/client/Dockerfile
       target: prod
-      args:
-        KEYCLOAK_DOMAIN: ${KEYCLOAK_DOMAIN:-keycloak:8080}
-        KEYCLOAK_REALM: ${KEYCLOAK_REALM:-cloud-pi-native}
-        KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_FRONTEND:-dso-console-frontend}
-        KEYCLOAK_REDIRECT_URI: ${KEYCLOAK_REDIRECT_URI:-http://client:8080}
-        SERVER_HOST: ${SERVER_HOST:-server}
-        SERVER_PORT: ${SERVER_PORT:-4000}
     image: dso-console/client:ci
     container_name: dso-console_client
     depends_on:
@@ -113,6 +106,14 @@ services:
         condition: service_started
     ports:
       - 8080:8080
+    environment:
+      KEYCLOAK_DOMAIN: ${KEYCLOAK_DOMAIN:-keycloak:8080}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-cloud-pi-native}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_FRONTEND:-dso-console-frontend}
+      KEYCLOAK_REDIRECT_URI: ${KEYCLOAK_REDIRECT_URI:-http://client:8080}
+      SERVER_HOST: ${SERVER_HOST:-server}
+      SERVER_PORT: ${SERVER_PORT:-4000}
+      CLIENT_PORT: ${CLIENT_PORT:-8080}
     networks:
       - dso-network
 

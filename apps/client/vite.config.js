@@ -6,11 +6,8 @@ import Markdown from 'vite-plugin-md'
 import Prism from 'markdown-it-prism'
 import emoji from 'markdown-it-emoji'
 import LinkAttributes from 'markdown-it-link-attributes'
-import { keycloakDomain } from './src/utils/keycloak/config.js'
+import { serverHost, serverPort, keycloakDomain, clientPort } from './src/utils/env.js'
 
-const serverHost = process.env.SERVER_HOST
-const serverPort = process.env.SERVER_PORT
-const clientPort = process.env.CLIENT_PORT
 const markdownWrapperClasses = 'text-left markdown-body'
 
 // https://vitejs.dev/config/
