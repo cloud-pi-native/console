@@ -8,6 +8,7 @@ export const projects = [
         isPrivate: true,
         externalUserName: 'this-is-a-test',
         externalToken: 'this-is-a-token',
+        isInfra: false,
       },
     ],
     owner: {
@@ -36,6 +37,7 @@ export const projects = [
         isPrivate: true,
         externalUserName: 'this-is-a-test',
         externalToken: 'this-is-a-token',
+        isInfra: false,
       },
     ],
     owner: {

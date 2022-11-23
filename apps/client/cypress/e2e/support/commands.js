@@ -83,6 +83,7 @@ Cypress.Commands.add('addRepos', (project, repos) => {
     internalRepoName: 'dso-console',
     externalUserName: 'this-is-tobi',
     externalRepoUrl: 'https://github.com/dnum-mi/dso-console',
+    isInfra: false,
     isPrivate: false,
     externalToken: 'private-token',
     ...repo,
@@ -108,6 +109,10 @@ Cypress.Commands.add('addRepos', (project, repos) => {
       cy.getByDataTestid('privateRepoCbx').find('input[type="checkbox"]').check({ force: true })
         .getByDataTestid('externalUserNameInput').type(repo.externalUserName)
         .getByDataTestid('externalTokenInput').clear().type(repo.externalToken)
+    }
+
+    if (repo.isInfra) {
+      cy.getByDataTestid('infraRepoCbx').find('input[type="checkbox"]').check({ force: true })
     }
 
     cy.getByDataTestid('addRepoBtn').click()

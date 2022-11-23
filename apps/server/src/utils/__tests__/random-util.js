@@ -28,6 +28,7 @@ export const getRandomProjectRepos = (length = 1) => {
     projectRepo.externalUserName = faker.name.fullName()
     projectRepo.isPrivate = faker.datatype.boolean()
     if (projectRepo.isPrivate) projectRepo.externalToken = faker.git.shortSha()
+    projectRepo.isInfra = faker.datatype.boolean()
 
     repos.push(projectRepo)
     i++

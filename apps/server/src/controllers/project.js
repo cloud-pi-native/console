@@ -35,8 +35,7 @@ export const createProjectController = async (req, res) => {
       description: 'Cannot create project',
       error: error.message,
     })
-    send500(res, error.message)
-    return
+    return send500(res, error.message)
   }
 
   try {
@@ -94,7 +93,7 @@ export const addRepoController = async (req, res) => {
       description: 'Cannot add git repository into project',
       error: error.message,
     })
-    send500(res, error.message)
+    return send500(res, error.message)
   }
 
   try {
@@ -139,6 +138,7 @@ export const addUserController = async (req, res) => {
 
   try {
     const dbProject = await getUserProjectById(projectId, userId)
+
     if (!dbProject) {
       throw new Error('Missing permissions on this project')
     }
