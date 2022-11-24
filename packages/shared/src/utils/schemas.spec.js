@@ -10,7 +10,7 @@ describe('Schemas utils', () => {
   it('Should validate correct schema', () => {
     expect(schemaValidator(repoSchema, {
       internalRepoName: 'candilib',
-      externalRepoUrl: 'https://github.com/LAB-MI/candilibV2',
+      externalRepoUrl: 'https://github.com/LAB-MI/candilibV2.git',
       externalToken: 'eddddsqsq',
       isPrivate: true,
       isInfra: false,
@@ -21,7 +21,7 @@ describe('Schemas utils', () => {
   it('Should not validate schema and send specific error', () => {
     expect(schemaValidator(repoSchema, {
       internalRepoName: 'candilib',
-      externalRepoUrl: 'https://github.com/LAB-MI/candilibV2',
+      externalRepoUrl: 'https://github.com/LAB-MI/candilibV2.git',
       isPrivate: true,
       isInfra: false,
       externalUserName: 'clairenlet',
@@ -31,7 +31,7 @@ describe('Schemas utils', () => {
   it('Should validate a single key with given schema', () => {
     expect(isValid(repoSchema, {
       internalRepoName: 'candilib',
-      externalRepoUrl: 'https://github.com/LAB-MI/candilibV2',
+      externalRepoUrl: 'https://github.com/LAB-MI/candilibV2.git',
       isPrivate: true,
       isInfra: false,
       externalUserName: 'clairenlet',
@@ -41,7 +41,7 @@ describe('Schemas utils', () => {
   it('Should not validate a single key with given schema', () => {
     expect(isValid(repoSchema, {
       internalRepoName: 'candi lib',
-      externalRepoUrl: 'https://github.com/LAB-MI/candilibV2',
+      externalRepoUrl: 'https://github.com/LAB-MI/candilibV2.git',
       isPrivate: true,
       isInfra: false,
       externalUserName: 'clairenlet',
