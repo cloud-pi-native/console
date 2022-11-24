@@ -1,4 +1,5 @@
 import { nanoid } from 'nanoid'
+import { allServices, envList } from 'shared/src/schemas/project.js'
 
 Cypress.Commands.add('kcLogin', (name) => {
   cy.session(name, () => {
@@ -37,14 +38,8 @@ Cypress.Commands.add('createProject', (project) => {
       lastName: 'TEST',
     },
     orgName: 'ministere-interieur',
-    services: [
-      'argocd',
-      'gitlab',
-      'nexus',
-      'quay',
-      'sonarqube',
-      'vault',
-    ],
+    services: allServices,
+    envList,
     projectName: 'CloudPiNative',
     ...project,
   }
@@ -59,7 +54,16 @@ Cypress.Commands.add('createProject', (project) => {
     .getByDataTestid('projectNameInput').should('have.class', 'fr-input--error')
     .getByDataTestid('projectNameInput').clear().type(newProject.projectName)
     .getByDataTestid('projectNameInput').should('not.have.class', 'fr-input--error')
-    .getByDataTestid('createProjectBtn').should('be.enabled').click()
+    .getByDataTestid('envListSelect')
+    .find('[data-testid^="input-checkbox-"]').should('have.length', envList.length)
+  if (newProject.envList.length !== envList.length) {
+    envList.forEach(env => {
+      if (!newProject.envList.includes(env)) {
+        cy.getByDataTestid(`input-checkbox-${env}`).uncheck({ force: true })
+      }
+    })
+  }
+  cy.getByDataTestid('createProjectBtn').should('be.enabled').click()
 
   cy.wait('@postProject').its('response.statusCode').should('eq', 201)
   cy.wait('@getProjects').its('response.statusCode').should('eq', 200)

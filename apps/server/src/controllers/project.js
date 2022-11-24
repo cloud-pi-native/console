@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid'
-import { allServices } from 'shared/src/schemas/project.js'
+import { allServices, envList } from 'shared/src/schemas/project.js'
 import { getLogInfos } from '../utils/logger.js'
 import {
   createProject,
@@ -45,7 +45,7 @@ export const createProjectController = async (req, res) => {
         orgName: project.orgName,
         ownerEmail: project.owner.email,
         projectName: project.projectName,
-        envList: ['dev', 'staging', 'integration', 'prod'],
+        envList,
       },
     }
 
