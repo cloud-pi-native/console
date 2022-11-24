@@ -34,6 +34,7 @@
     "fastify-plugin": "^4.3.0",
     "pino-pretty": "^9.1.1",
     "sequelize-mock": "^0.10.2",
+    "test-utils": "workspace:^1.0.0",
     "vitest": "^0.25.2"
   }
 }
