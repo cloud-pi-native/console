@@ -1,8 +1,8 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
-import { projectSchema } from 'shared/src/schemas/project.js'
+import { projectSchema, envList } from 'shared/src/schemas/project.js'
 import { schemaValidator, isValid, instanciateSchema } from 'shared/src/utils/schemas.js'
 import router from '@/router/index.js'
 
@@ -21,7 +21,11 @@ const owner = computed(() => userStore.userProfile)
 const project = ref({
   orgName: undefined,
   projectName: undefined,
+  envList,
 })
+
+const envOptions = ref([])
+
 const orgOptions = ref([
   {
     text: 'Ministère de l\'Intérieur',
@@ -36,6 +40,7 @@ const orgOptions = ref([
     value: 'dinum',
   },
 ])
+
 const updatedValues = ref({})
 
 const createProject = async () => {
@@ -54,7 +59,19 @@ const updateProject = (key, value) => {
   updatedValues.value[key] = true
 }
 
-// TODO : gérer l'après requête create
+const setEnvOptions = () => {
+  envList.forEach(opt => {
+    envOptions.value.push({
+      label: opt,
+      id: opt,
+      name: opt,
+    })
+  })
+}
+
+onMounted(() => {
+  setEnvOptions()
+})
 
 </script>
 
@@ -96,6 +113,15 @@ const updateProject = (key, value) => {
       placeholder="Candilib"
       class="fr-mb-2w"
       @update:model-value="updateProject('projectName', $event)"
+    />
+    <DsfrCheckboxSet
+      v-model="project.envList"
+      data-testid="envListSelect"
+      legend="Environnements choisis (par défaut, tous les environnements sont sélectionnés)."
+      required="required"
+      :error-message="!isValid(projectSchema, project, 'envList') ? 'Veuillez sélectionner au moins un environnement.' : ''"
+      :options="envOptions"
+      @update:model-value="project.envList = $event"
     />
   </DsfrFieldset>
   <DsfrButton

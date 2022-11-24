@@ -9,4 +9,11 @@ describe('Create Project', () => {
     cy.createProject(project)
     cy.assertCreateProject(project.projectName)
   })
+
+  it('Should create a project with defined env', () => {
+    const project = { projectName: 'project02', envList: ['dev', 'staging'] }
+
+    cy.createProject(project)
+    cy.assertCreateProject(project.projectName)
+  })
 })

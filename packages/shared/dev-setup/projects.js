@@ -1,3 +1,5 @@
+import { allServices, envList } from '../src/index.js'
+
 export const projects = [
   {
     id: '9FG4CeGkMavI5CtAh_3Ss',
@@ -18,14 +20,8 @@ export const projects = [
       email: 'test@test.com',
     },
     orgName: 'ministere-interieur',
-    services: [
-      'argocd',
-      'gitlab',
-      'nexus',
-      'quay',
-      'sonarqube',
-      'vault',
-    ],
+    services: allServices,
+    envList,
     projectName: 'candilib',
   },
   {
@@ -47,14 +43,8 @@ export const projects = [
       email: 'test@test.com',
     },
     orgName: 'ministere-interieur',
-    services: [
-      'argocd',
-      'gitlab',
-      'nexus',
-      'quay',
-      'sonarqube',
-      'vault',
-    ],
+    services: allServices,
+    envList,
     projectName: 'psij',
   },
 ]
