@@ -1,19 +1,6 @@
 version: '3.9'
 
 services:
-  postgres:
-    restart: always
-    image: postgres:14.5
-    container_name: dso-console_postgres
-    environment:
-      POSTGRES_DB: ${POSTGRES_DATABASE}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    volumes:
-      - ../db/postgres/scripts:/docker-entrypoint-initdb.d
-    networks:
-      - dso-network
-
   keycloak:
     restart: always
     image: quay.io/keycloak/keycloak:19.0.2
@@ -31,6 +18,19 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+    networks:
+      - dso-network
+
+  postgres:
+    restart: always
+    image: postgres:14.5
+    container_name: dso-console_postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DATABASE}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ../db/postgres/scripts:/docker-entrypoint-initdb.d
     networks:
       - dso-network
 
@@ -89,11 +89,12 @@ services:
       - /app/node_modules/
       - ../apps/ansible-api:/app/apps/ansible-api
       - /app/apps/ansible-api/node_modules/
-      - ../ansible/.vault-secret:/home/node/.vault-secret
-      - ../ansible/.kubeconfig:/home/node/.kubeconfig
-      - ../ansible/playbooks:/dso
+      - ../ansible/.vault-secret:${CONFIG_DIR:-/config}
+      - ../ansible/.kubeconfig:${CONFIG_DIR:-/config}
+      - ../ansible/playbooks:${PLAYBOOK_DIR:-/dso}
     environment:
       PLAYBOOK_DIR: ${PLAYBOOK_DIR:-/dso}
+      CONFIG_DIR: ${CONFIG_DIR:-/config}
       ANSIBLE_PORT: ${ANSIBLE_PORT:-8100}
       CI: "true"
       NODE_ENV: production

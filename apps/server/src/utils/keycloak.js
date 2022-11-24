@@ -1,3 +1,5 @@
+import { isProd, isCI } from './env.js'
+
 export const keycloakDomain = process.env.KEYCLOAK_DOMAIN
 export const keycloakRealm = process.env.KEYCLOAK_REALM
 
@@ -13,7 +15,7 @@ export const keycloakConf = {
   keycloakSubdomain: `${keycloakDomain}/realms/${keycloakRealm}`,
   clientId: process.env.KEYCLOAK_CLIENT_ID,
   clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
-  useHttps: false,
+  useHttps: isProd && !isCI,
   disableCookiePlugin: true,
   disableSessionPlugin: true,
   userPayloadMapper,
