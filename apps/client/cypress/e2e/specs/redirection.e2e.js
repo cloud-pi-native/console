@@ -2,10 +2,6 @@ import { getProjectbyId } from '../support/func.js'
 
 const candilib = getProjectbyId('9FG4CeGkMavI5CtAh_3Ss')
 
-afterEach(() => {
-  cy.kcLogout()
-})
-
 describe('Redirection', () => {
   it('Should redirect to original page on reload', () => {
     cy.intercept('GET', '/api/v1/projects').as('getProjects')
@@ -16,8 +12,10 @@ describe('Redirection', () => {
       .goToProjects()
       .reload()
       .wait('@getProjects').its('response').then(response => {
-        cy.log(response.body.length)
-          .get('[data-testid^="projectTile-"]')
+        response.body.forEach(project => {
+          cy.log(project.projectName)
+        })
+        cy.getSettled('[data-testid^="projectTile-"]')
           .should('have.length', `${response.body.length}`)
       })
       .url().should('match', /\/projects#state=/)

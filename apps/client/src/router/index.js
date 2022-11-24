@@ -83,11 +83,17 @@ const router = createRouter({
   routes,
 })
 
+/**
+ * Set appliction title
+ */
 router.beforeEach((to) => { // Cf. https://github.com/vueuse/head pour des transformations avancées de Head
   const specificTitle = to.meta.title ? `${to.meta.title} - ` : ''
   document.title = `${specificTitle}${MAIN_TITLE}`
 })
 
+/**
+ * Redirect unlogged user to login view
+ */
 router.beforeEach(async (to, _from, next) => {
   const validPath = ['Login', 'Home', 'Doc']
 
@@ -100,6 +106,9 @@ router.beforeEach(async (to, _from, next) => {
   next('Login')
 })
 
+/**
+ * On reload on projects views, retrieve projectId from url and send it to store
+ */
 router.beforeEach(async (to, _from, next) => {
   const projectStore = useProjectStore()
 
