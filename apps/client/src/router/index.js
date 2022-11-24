@@ -84,7 +84,7 @@ const router = createRouter({
 })
 
 /**
- * Set appliction title
+ * Set application title
  */
 router.beforeEach((to) => { // Cf. https://github.com/vueuse/head pour des transformations avancées de Head
   const specificTitle = to.meta.title ? `${to.meta.title} - ` : ''
