@@ -17,6 +17,13 @@ export const allServices = [
   'vault',
 ]
 
+export const allEnv = [
+  'dev',
+  'staging',
+  'integration',
+  'prod',
+]
+
 export const projectSchema = Joi.object({
   id: Joi.string()
     .required(),
