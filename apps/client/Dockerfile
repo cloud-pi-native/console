@@ -47,6 +47,8 @@ COPY ./apps/client/nginx/nginx.conf /etc/nginx/nginx.conf
 COPY ./apps/client/nginx/default.conf /etc/nginx/conf.d/default.conf
 COPY ./apps/client/nginx/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
+RUN chgrp -R root /var/cache/nginx /var/run /var/log/nginx /usr/share/nginx/html/assets && \
+    chmod -R 770 /var/cache/nginx /var/run /var/log/nginx /usr/share/nginx/html/assets
 
 EXPOSE 8080
 

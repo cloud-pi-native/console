@@ -37,4 +37,4 @@ USER node
 
 COPY --chown=node:node --from=install /install/server .
 
-CMD ["npm", "run", "start"]
+CMD ["node", "src/server.js"]

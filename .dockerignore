@@ -11,3 +11,7 @@ npm-debug.log
 
 # tests
 coverage
+
+**/Dockerfile
+.dockerignore
+docker/

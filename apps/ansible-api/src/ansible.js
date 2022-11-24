@@ -5,6 +5,9 @@ import app from './app.js'
 const PLAYBOOK_DIR = process.env.PLAYBOOK_DIR?.endsWith('/')
   ? process.env.PLAYBOOK_DIR
   : process.env.PLAYBOOK_DIR + '/'
+const CONFIG_DIR = process.env.CONFIG_DIR?.endsWith('/')
+  ? process.env.CONFIG_DIR
+  : process.env.CONFIG_DIR + '/'
 
 export const ansibleArgsDictionary = {
   repName: 'REPO_NAME',
@@ -61,7 +64,7 @@ export const runPlaybook = (playbooks, vars, env) => {
     '-i',
     `${PLAYBOOK_DIR}inventory/${env}`,
     '--vault-password-file',
-    '/home/node/.vault-secret',
+    `${CONFIG_DIR}.vault-secret`,
     '--connection=local',
     '-e',
     `"${JSON.stringify(vars).replaceAll('"', '\\"')}"`,

@@ -1,7 +1,7 @@
 import { keycloakDomain, keycloakClientId, keycloakRealm, keycloakRedirectUri } from '../env.js'
 
 export const keycloakConf = {
-  url: `http://${keycloakDomain}`,
+  url: `https://${keycloakDomain}`,
   realm: keycloakRealm,
   clientId: keycloakClientId,
   onLoad: 'check-sso',

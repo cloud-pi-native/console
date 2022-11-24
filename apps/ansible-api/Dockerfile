@@ -59,7 +59,10 @@ RUN ansible-galaxy collection install kubernetes.core community.hashi\_vault com
 ENV HOME=/home/node
 
 COPY --chown=node:node --from=install /install/ansible-api .
-RUN find / -xdev -exec chmod -f g=u {} \; -exec chown -f :0 {} \;
+RUN mkdir /dso
+COPY --chown=node:node ansible/playbooks/* /dso
+RUN ls /dso
+RUN find /home/node -xdev -exec chmod -f g=u {} \; -exec chown -f :0 {} \;
 USER 1001
 
 CMD ["npm", "run", "start"]
