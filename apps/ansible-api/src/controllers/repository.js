@@ -14,13 +14,19 @@ export const createRepositoryController = async (req, res) => {
     const extraVars = convertVars(ansibleArgsDictionary, data)
     runPlaybook(playbooks, extraVars, env)
 
-    send200(res, 'Provisioning repos in project with ansible started')
-  } catch (error) {
+    const message = 'Provisioning repos in project with ansible started'
     app.log.error({
       ...getLogInfos(),
-      description: 'Provisioning project with ansible failed',
+      description: message,
+    })
+    send200(res, message)
+  } catch (error) {
+    const message = 'Provisioning repos in project with ansible failed'
+    app.log.error({
+      ...getLogInfos(),
+      description: message,
       error: error.message,
     })
-    send500(res, error.message)
+    send500(res, message)
   }
 }
