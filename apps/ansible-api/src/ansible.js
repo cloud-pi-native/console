@@ -40,6 +40,7 @@ export const ansible = (playbooks, args) => {
   playbookSpawn.on('error', (err) => {
     app.log.error(err)
   })
+  return playbookSpawn
 }
 
 export const checkPlaybooksAccess = (playbooksDictionary) => {
