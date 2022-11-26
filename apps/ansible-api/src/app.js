@@ -5,7 +5,7 @@ import { loggerConf } from './utils/logger.js'
 
 export const apiPrefix = '/api/v1'
 
-const app = await fastify({ logger: loggerConf[process.env.NODE_ENV] ?? true })
+const app = fastify({ logger: loggerConf[process.env.NODE_ENV] ?? true })
   .register(helmet)
   .register(routes, { prefix: apiPrefix })
 

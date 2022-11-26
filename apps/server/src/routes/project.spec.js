@@ -1,4 +1,5 @@
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
+import { createRandomProject, getRandomUser, getRandomRepo, repeatFn } from 'test-utils'
 import fastify from 'fastify'
 import fastifySession from '@fastify/session'
 import fastifyCookie from '@fastify/cookie'
@@ -8,13 +9,8 @@ import { sessionConf } from '../utils/keycloak.js'
 import { getConnection, closeConnections, sequelize } from '../connect.js'
 import { getProjectModel } from '../models/project.js'
 import projectRouter from './project.js'
-import { createRandomProject } from '../utils/__tests__/project-util.js'
-import { getRandomUser, getRandomProjectRepos } from '../utils/__tests__/random-util.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
-vi.mock('../utils/ansible.js', () => ({ projectProvisioning: vi.fn() }))
-
-export const repeatFn = nb => fn => Array.from({ length: nb }).map(() => fn())
 
 const app = fastify({ logger: false })
   .register(fastifyCookie)
@@ -140,7 +136,7 @@ describe('Project routes', () => {
   describe('addRepoController', () => {
     it('Should add a repo in project', async () => {
       const randomProject = { ...createRandomProject(), id: nanoid() }
-      const randomRepo = getRandomProjectRepos()[0]
+      const randomRepo = getRandomRepo()
 
       sequelize.$queueResult({ data: randomProject })
       Project.$queueResult(randomProject)

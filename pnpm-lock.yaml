@@ -25,11 +25,14 @@ importers:
       fastify-plugin: ^4.3.0
       lodash.kebabcase: ^4.1.1
       pino-pretty: ^9.1.1
+      shared: workspace:^1.0.0
+      test-utils: workspace:^1.0.0
       vitest: ^0.25.2
     dependencies:
       '@fastify/helmet': 10.0.2
       fastify: 4.9.2
       lodash.kebabcase: 4.1.1
+      shared: link:../../packages/shared
     devDependencies:
       '@vitest/coverage-c8': 0.25.2
       eslint: 8.27.0
@@ -39,6 +42,7 @@ importers:
       eslint-plugin-promise: 6.1.1_eslint@8.27.0
       fastify-plugin: 4.3.0
       pino-pretty: 9.1.1
+      test-utils: link:../../packages/tests-utils
       vitest: 0.25.2
 
   apps/client:
@@ -140,6 +144,7 @@ importers:
       sequelize: ^6.25.5
       sequelize-mock: ^0.10.2
       shared: workspace:^1.0.0
+      test-utils: workspace:^1.0.0
       vitest: ^0.25.2
     dependencies:
       '@fastify/cookie': 8.3.0
@@ -164,6 +169,7 @@ importers:
       fastify-plugin: 4.3.0
       pino-pretty: 9.1.1
       sequelize-mock: 0.10.2
+      test-utils: link:../../packages/tests-utils
       vitest: 0.25.2
 
   packages/shared:
@@ -186,6 +192,25 @@ importers:
       eslint-plugin-n: 15.5.1_eslint@8.27.0
       eslint-plugin-promise: 6.1.1_eslint@8.27.0
       vitest: 0.25.2
+
+  packages/tests-utils:
+    specifiers:
+      '@faker-js/faker': ^7.6.0
+      eslint: ^8.27.0
+      eslint-config-standard: ^17.0.0
+      eslint-plugin-import: ^2.26.0
+      eslint-plugin-n: ^15.5.1
+      eslint-plugin-promise: ^6.1.1
+      shared: workspace:^1.0.0
+    dependencies:
+      '@faker-js/faker': 7.6.0
+      shared: link:../shared
+    devDependencies:
+      eslint: 8.27.0
+      eslint-config-standard: 17.0.0_qmmcbu32ybj7ict4ieqqyvwr3m
+      eslint-plugin-import: 2.26.0_eslint@8.27.0
+      eslint-plugin-n: 15.5.1_eslint@8.27.0
+      eslint-plugin-promise: 6.1.1_eslint@8.27.0
 
 packages:
 
@@ -352,7 +377,6 @@ packages:
   /@faker-js/faker/7.6.0:
     resolution: {integrity: sha512-XK6BTq1NDMo9Xqw/YkYyGjSsg44fbNwYRx7QK2CuoQgyy+f1rrTDHoExVM5PsyXCtfl2vs2vVJ0MN0yN6LppRw==}
     engines: {node: '>=14.0.0', npm: '>=6.0.0'}
-    dev: true
 
   /@fastify/ajv-compiler/3.4.0:
     resolution: {integrity: sha512-69JnK7Cot+ktn7LD5TikP3b7psBPX55tYpQa8WSumt8r117PCa2zwHnImfBtRWYExreJlI48hr0WZaVrTBGj7w==}

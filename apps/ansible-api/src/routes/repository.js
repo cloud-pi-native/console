@@ -1,6 +1,4 @@
-import {
-  createRepositoryController,
-} from '../controllers/repository.js'
+import { createRepositoryController } from '../controllers/repository.js'
 
 const router = async (app, _opt) => {
   await app.post('/', createRepositoryController)
