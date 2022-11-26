@@ -58,7 +58,7 @@ jobs:
           path: |
             ./apps/client/coverage
             ./apps/server/coverage
-            ./apps/server/ansible-api
+            ./apps/ansible-api/coverage
             ./packages/shared/coverage
           retention-days: 1
 
