@@ -42,7 +42,7 @@ importers:
       eslint-plugin-promise: 6.1.1_eslint@8.27.0
       fastify-plugin: 4.3.0
       pino-pretty: 9.1.1
-      test-utils: link:../../packages/tests-utils
+      test-utils: link:../../packages/test-utils
       vitest: 0.25.2
 
   apps/client:
@@ -169,7 +169,7 @@ importers:
       fastify-plugin: 4.3.0
       pino-pretty: 9.1.1
       sequelize-mock: 0.10.2
-      test-utils: link:../../packages/tests-utils
+      test-utils: link:../../packages/test-utils
       vitest: 0.25.2
 
   packages/shared:
@@ -193,7 +193,7 @@ importers:
       eslint-plugin-promise: 6.1.1_eslint@8.27.0
       vitest: 0.25.2
 
-  packages/tests-utils:
+  packages/test-utils:
     specifiers:
       '@faker-js/faker': ^7.6.0
       eslint: ^8.27.0
