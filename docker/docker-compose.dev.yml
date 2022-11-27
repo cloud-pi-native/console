@@ -82,6 +82,7 @@ services:
       DB_PASS: ${POSTGRES_PASSWORD:-admin}
       DB_NAME: ${POSTGRES_DATABASE:-dso-console-db}
       SESSION_SECRET: ${SESSION_SECRET:-a-very-strong-secret-with-more-than-32-char}
+      KEYCLOAK_PROTOCOL: ${KEYCLOAK_PROTOCOL:-http}
       KEYCLOAK_DOMAIN: keycloak:8080
       KEYCLOAK_REALM: ${KEYCLOAK_REALM:-cloud-pi-native}
       KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_BACKEND:-dso-console-backend}
@@ -106,11 +107,12 @@ services:
       - /app/node_modules/
       - ../apps/ansible-api:/app/apps/ansible-api
       - /app/apps/ansible-api/node_modules/
-      - ../ansible/.vault-secret:/home/node/.vault-secret
-      - ../ansible/.kubeconfig:/home/node/.kubeconfig
-      - ../ansible/playbooks:/dso
+      - ../ansible/.vault-secret:${CONFIG_DIR:-/config}/.vault-secret
+      - ../ansible/.kubeconfig:${CONFIG_DIR:-/config}/.kubeconfig
+      - ../ansible/playbooks:${PLAYBOOK_DIR:-/dso}
     environment:
       PLAYBOOK_DIR: ${PLAYBOOK_DIR:-/dso}
+      CONFIG_DIR: ${CONFIG_DIR:-/config}
       ANSIBLE_PORT: ${ANSIBLE_PORT:-8100}
       NODE_ENV: development
     networks:
@@ -135,6 +137,7 @@ services:
       - ../packages/shared:/app/packages/shared
       - /app/packages/shared/node_modules/
     environment:
+      KEYCLOAK_PROTOCOL: ${KEYCLOAK_PROTOCOL:-http}
       KEYCLOAK_DOMAIN: localhost:8090
       KEYCLOAK_REALM: ${KEYCLOAK_REALM:-cloud-pi-native}
       KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_FRONTEND:-dso-console-frontend}

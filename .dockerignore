@@ -1,17 +1,20 @@
-# npm
+# Npm
 node_modules
 npm-debug.log
 
-# git
+# Git
 .gitkeep
 
-# lint
+# Lint
 .eslintrc.js
+.eslintrc.cjs
 .stylelintrc.js
 
-# tests
+# Tests
+.turbo/
 coverage
 
+# Docker
 **/Dockerfile
 .dockerignore
 docker/
