@@ -1,6 +1,11 @@
-import { isProd, isCI } from './env.js'
-export const keycloakDomain = process.env.KEYCLOAK_DOMAIN
-export const keycloakRealm = process.env.KEYCLOAK_REALM
+import {
+  keycloakProtocol,
+  keycloakDomain,
+  keycloakRealm,
+  keycloakClientId,
+  keycloakClientSecret,
+  sessionSecret,
+} from './env.js'
 
 const userPayloadMapper = (userPayload) => ({
   id: userPayload.sub,
@@ -12,9 +17,9 @@ const userPayloadMapper = (userPayload) => ({
 export const keycloakConf = {
   appOrigin: 'http://localhost:4000',
   keycloakSubdomain: `${keycloakDomain}/realms/${keycloakRealm}`,
-  clientId: process.env.KEYCLOAK_CLIENT_ID,
-  clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
-  useHttps: isProd && !isCI,
+  clientId: keycloakClientId,
+  clientSecret: keycloakClientSecret,
+  useHttps: keycloakProtocol === 'https',
   disableCookiePlugin: true,
   disableSessionPlugin: true,
   userPayloadMapper,
@@ -23,7 +28,7 @@ export const keycloakConf = {
 
 export const sessionConf = {
   cookieName: 'sessionId',
-  secret: process.env.SESSION_SECRET || 'a-very-strong-secret-with-more-than-32-char',
+  secret: sessionSecret || 'a-very-strong-secret-with-more-than-32-char',
   cookie: {
     httpOnly: true,
     secure: true,

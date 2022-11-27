@@ -11,9 +11,7 @@ import {
 } from '../models/project-queries.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import app from '../app.js'
-
-const ansibleHost = process.env.ANSIBLE_HOST
-const ansiblePort = process.env.ANSIBLE_PORT
+import { ansibleHost, ansiblePort } from '../utils/env.js'
 
 export const createProjectController = async (req, res) => {
   const data = req.body

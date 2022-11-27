@@ -1,7 +1,16 @@
 import { Sequelize } from 'sequelize'
 import { setTimeout } from 'node:timers/promises'
-import { isTest, isCI, isDev } from './utils/env.js'
 import app from './app.js'
+import {
+  isTest,
+  isCI,
+  isDev,
+  dbHost,
+  dbPort,
+  dbUser,
+  dbName,
+  dbPass,
+} from './utils/env.js'
 
 const DELAY_BEFORE_RETRY = isTest || isCI ? 1000 : 10000
 let closingConnections = false
@@ -14,12 +23,7 @@ export const getConnection = async (triesLeft = 5) => {
   }
   triesLeft--
 
-  const dbHost = process.env.DB_HOST
-  const dbPort = process.env.DB_PORT
-  const dbUser = process.env.DB_USER
-  const dbPasswd = process.env.DB_PASS
-  const dbName = process.env.DB_NAME
-  const postgresUri = `postgres://${dbUser}:${dbPasswd}@${dbHost}:${dbPort}/${dbName}`
+  const postgresUri = `postgres://${dbUser}:${dbPass}@${dbHost}:${dbPort}/${dbName}`
 
   if (isTest) {
     const { default: SequelizeMock } = await import('sequelize-mock')
