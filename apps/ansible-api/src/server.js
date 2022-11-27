@@ -1,9 +1,7 @@
 import app from './app.js'
 import { checkPlaybooksAccess } from './ansible.js'
-import { isDev, isTest, isCI, isProd, isDevSetup } from './utils/env.js'
+import { isDev, isTest, isCI, isProd, port } from './utils/env.js'
 import { playbooksDictionary } from './utils/matches.js'
-
-const port = process.env.ANSIBLE_PORT
 
 startServer()
 
@@ -21,5 +19,5 @@ export async function startServer () {
       process.exit(1)
     }
   })
-  app.log.debug({ isDev, isTest, isCI, isDevSetup, isProd })
+  app.log.debug({ isDev, isTest, isCI, isProd })
 }
