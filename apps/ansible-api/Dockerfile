@@ -53,16 +53,13 @@ RUN apt-get update && \
 	apt clean && \
 	ln -s /usr/bin/python3 /bin/python3
 RUN python3 -m pip install ansible-core==2.13.3 python-ldap python-gitlab requests hvac kubernetes
-RUN ansible-galaxy collection install kubernetes.core community.hashi\_vault community.general
 
 ENV HOME=/home/node
 
 RUN mkdir /dso
 COPY --chown=node:node ./ansible/playbooks/* /dso
 COPY --chown=node:node --from=build /app/build .
-
-# RUN ls /dso
-# RUN find /home/node -xdev -exec chmod -f g=u {} \; -exec chown -f :0 {} \;
 USER node
+RUN ansible-galaxy collection install kubernetes.core community.hashi\_vault community.general
 
 ENTRYPOINT ["node", "src/server.js"]

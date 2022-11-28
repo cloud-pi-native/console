@@ -42,7 +42,7 @@ services:
       context: ..
       dockerfile: apps/server/Dockerfile
       target: prod
-    image: dso-console/server
+    image: dso/console/server
     container_name: dso-console_server
     depends_on:
       keycloak:
@@ -76,7 +76,7 @@ services:
       context: ..
       dockerfile: apps/ansible-api/Dockerfile
       target: prod
-    image: dso-console/ansible-api
+    image: dso/console/ansible-api
     container_name: dso-console_ansible-api
     ports:
       - 8100:8100
@@ -97,7 +97,7 @@ services:
       context: ..
       dockerfile: apps/client/Dockerfile
       target: prod
-    image: dso-console/client
+    image: dso/console/client
     container_name: dso-console_client
     depends_on:
       server:
