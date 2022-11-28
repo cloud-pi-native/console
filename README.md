@@ -15,30 +15,32 @@ Ce projet est construit avec [NodeJS](https://nodejs.org/), [VueJS](https://vuej
 
 ### Liste des services docker
 
-| Nom du service | Github                                             | Role                                      | Utilisé en production |
-| -------------- | -------------------------------------------------- | ----------------------------------------- | --------------------- |
-| __postgres__   | [Postgres](https://github.com/postgres/postgres)   | Base de données de l'application          | Oui                   |
-| __pgadmin__    | [Pgadmin](https://github.com/pgadmin-org/pgadmin4) | Interface d'administration de Postgres    | -                     |
-| __server__     | [NodeJS](https://github.com/nodejs/node)           | API de l'application                      | Oui                   |
-| __client__     | [VueJS](https://github.com/vuejs/vue)              | Interface graphique de l'application      | Oui                   |
-| __keycloak__   | [Keycloak](https://github.com/keycloak/keycloak)   | Gestionnaire d'authentification / d'accès | -                     |
-| __cypress__    | [Cypress](https://github.com/cypress-io/cypress)   | Tests de bout en bout                     | -                     |
+| Nom du service  | Github                                             | Role                                      | Utilisé en production |
+| --------------- | -------------------------------------------------- | ----------------------------------------- | --------------------- |
+| __postgres__    | [Postgres](https://github.com/postgres/postgres)   | Base de données de l'application          | Oui                   |
+| __pgadmin__     | [Pgadmin](https://github.com/pgadmin-org/pgadmin4) | Interface d'administration de Postgres    | -                     |
+| __server__      | [NodeJS](https://github.com/nodejs/node)           | API de l'application                      | Oui                   |
+| __ansible-api__ | [NodeJS](https://github.com/nodejs/node)           | API wrapper d'Ansible                     | Oui                   |
+| __client__      | [VueJS](https://github.com/vuejs/vue)              | Interface graphique de l'application      | Oui                   |
+| __keycloak__    | [Keycloak](https://github.com/keycloak/keycloak)   | Gestionnaire d'authentification / d'accès | -                     |
+| __cypress__     | [Cypress](https://github.com/cypress-io/cypress)   | Tests de bout en bout                     | -                     |
 
 ### Architecture du dépôt
 
 La gestion des dépendances est effectuée à l'aide de [pnpm](https://pnpm.io/) selon la structure de dossiers suivante :
 
 - Les différentes briques applicatives se trouvent dans le dossier `apps/`
-- Les bibliothèques additionnelles se trouvent dans le dossier `packages`
+- Les bibliothèques additionnelles se trouvent dans le dossier `packages/`
 
 *Schema de l'architecture du monorepo :*
 
 ```shell
 ├── apps
+│   ├── ansible-api/
 │   ├── client/
 │   └── server/
 ├── packages
-│   ├── cypress/
+│   ├── test-utils/
 │   └── shared/
 ├── node_modules/
 ├── package.json
@@ -76,12 +78,24 @@ Interface graphique (Client): <http://localhost:8080>
 
 Serveur (API) <http://localhost:4000>
 
+Wrapper ansible (API) <http://localhost:8100>
+
 Interface d'administration de base de données: <http://localhost:8081>
+
+Interface d'administration du serveur keycloak: <http://localhost:8090>
 
 ## Gestion des conteneurs docker
 
 Ce dépôt utilise des fichiers docker-compose, ils sont listés dans le dossier `./docker/` en tant que `docker-compose.*.yml` :
 
 - [docker-compose.dev.yml](./ci/docker/docker-compose.dev.yml) pour le mode développement
-- [docker-compose.e2e.yml](./ci/docker/docker-compose.test.yml) pour les tests e2e
-- [docker-compose.prod.yml](./ci/docker/docker-compose.prod.yml) pour la production
+- [docker-compose.ct.yml](./ci/docker/docker-compose.ct.yml) pour les tests de composant sans interface graphique
+- [docker-compose.e2e.yml](./ci/docker/docker-compose.e2e.yml) pour les tests e2e avec interface graphique
+- [docker-compose.ci.yml](./ci/docker/docker-compose.ci.yml) pour les tests e2e sans interface graphique
+- [docker-compose.prod.yml](./ci/docker/docker-compose.prod.yml) pour la simulation de la production
+
+## Contributions
+
+Les commits doivent suivre la spécification des [Commits Conventionnels](https://www.conventionalcommits.org/en/v1.0.0/), il est possible d'ajouter l'[extension VSCode](https://github.com/vivaxy/vscode-conventional-commits) pour faciliter la création des commits.
+
+Une PR doit être faite avec une branche à jour avec la branche develop en rebase (et sans merge) avant demande de fusion, et la fusion doit être demandée dans develop.
