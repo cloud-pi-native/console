@@ -11,7 +11,10 @@ import {
 } from '../models/project-queries.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import app from '../app.js'
-import { ansibleHost, ansiblePort } from '../utils/env.js'
+// import { ansibleHost, ansiblePort } from '../utils/env.js'
+import { ansibleArgsDictionary, runPlaybook } from '../ansible.js'
+import { convertVars } from '../utils/tools.js'
+import { playbooksDictionary } from '../utils/matches.js'
 
 export const createProjectController = async (req, res) => {
   const data = req.body
@@ -47,14 +50,19 @@ export const createProjectController = async (req, res) => {
       },
     }
 
-    await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/projects`, {
-      method: 'POST',
-      body: JSON.stringify(ansibleData),
-      headers: {
-        'content-type': 'application/json',
-        authorization: req.headers.authorization,
-      },
-    })
+    const playbooks = playbooksDictionary.projects
+    const { env } = ansibleData
+    const extraVars = convertVars(ansibleArgsDictionary, ansibleData)
+    runPlaybook(playbooks, extraVars, env)
+
+    // await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/projects`, {
+    //   method: 'POST',
+    //   body: JSON.stringify(ansibleData),
+    //   headers: {
+    //     'content-type': 'application/json',
+    //     authorization: req.headers.authorization,
+    //   },
+    // })
 
     send201(res, project)
   } catch (error) {
@@ -117,14 +125,19 @@ export const addRepoController = async (req, res) => {
       ansibleData.extra.externalToken = data.externalToken
     }
 
-    await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/repos`, {
-      method: 'POST',
-      body: JSON.stringify(ansibleData),
-      headers: {
-        'Content-Type': 'application/json',
-        authorization: req.headers.authorization,
-      },
-    })
+    const playbooks = playbooksDictionary.repos
+    const { env } = ansibleData
+    const extraVars = convertVars(ansibleArgsDictionary, ansibleData)
+    runPlaybook(playbooks, extraVars, env)
+
+    // await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/repos`, {
+    //   method: 'POST',
+    //   body: JSON.stringify(ansibleData),
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //     authorization: req.headers.authorization,
+    //   },
+    // })
 
     send201(res, 'Git repository successfully added into project')
   } catch (error) {
