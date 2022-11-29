@@ -11,6 +11,7 @@ import {
   dbName,
   dbPass,
 } from './utils/env.js'
+import { getProjectModel } from './models/project.js'
 
 const DELAY_BEFORE_RETRY = isTest || isCI ? 1000 : 10000
 let closingConnections = false
@@ -58,5 +59,14 @@ export const closeConnections = async () => {
     await sequelize.close()
   } catch (error) {
     app.log.error(error)
+  }
+}
+
+export const synchroniseModels = async () => {
+  try {
+    await getProjectModel().sync({ alter: true })
+    app.log.info('All models were synchronized successfully.')
+  } catch (error) {
+    app.log.error('Models synchronisation with database failed.')
   }
 }
