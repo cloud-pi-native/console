@@ -51,7 +51,8 @@ export const createProjectController = async (req, res) => {
       method: 'POST',
       body: JSON.stringify(ansibleData),
       headers: {
-        'Content-Type': 'application/json',
+        'content-type': 'application/json',
+        authorization: req.headers.authorization,
       },
     })
 
@@ -60,7 +61,7 @@ export const createProjectController = async (req, res) => {
     app.log.error({
       ...getLogInfos(),
       description: 'Provisioning project with ansible failed',
-      error: error.message,
+      error,
     })
     send500(res, error.message)
   }
@@ -86,12 +87,13 @@ export const addRepoController = async (req, res) => {
       description: message,
     })
   } catch (error) {
+    const message = 'Cannot add git repository into project'
     app.log.error({
       ...getLogInfos(),
-      description: 'Cannot add git repository into project',
-      error: error.message,
+      description: message,
+      error,
     })
-    return send500(res, error.message)
+    return send500(res, message)
   }
 
   try {
@@ -115,17 +117,19 @@ export const addRepoController = async (req, res) => {
       body: JSON.stringify(ansibleData),
       headers: {
         'Content-Type': 'application/json',
+        authorization: req.headers.authorization,
       },
     })
 
     send201(res, 'Git repository successfully added into project')
   } catch (error) {
+    const message = 'Provisioning project with ansible failed'
     app.log.error({
       ...getLogInfos(),
-      description: 'Provisioning project with ansible failed',
-      error: error.message,
+      description: message,
+      error,
     })
-    send500(res, error.message)
+    send500(res, message)
   }
 }
 
@@ -150,12 +154,13 @@ export const addUserController = async (req, res) => {
     })
     send201(res, message)
   } catch (error) {
+    const message = 'Cannot add user into project'
     app.log.error({
       ...getLogInfos(),
-      description: 'Cannot add user into project',
-      error: error.message,
+      description: message,
+      error,
     })
-    send500(res, error.message)
+    send500(res, message)
   }
 }
 
@@ -179,12 +184,13 @@ export const removeUserController = async (req, res) => {
     })
     send200(res, message)
   } catch (error) {
+    const message = 'Cannot remove user from project'
     app.log.error({
       ...getLogInfos(),
-      description: 'Cannot remove user from project',
-      error: error.message,
+      description: message,
+      error,
     })
-    send500(res, error.message)
+    send500(res, message)
   }
 }
 
@@ -200,12 +206,13 @@ export const getUserProjectsController = async (req, res) => {
     })
     await send200(res, projects)
   } catch (error) {
+    const message = 'Cannot retrieve projects'
     app.log.error({
       ...getLogInfos(),
-      description: 'Cannot retrieve projects',
-      error: error.message,
+      description: message,
+      error,
     })
-    send500(res, error.message)
+    send500(res, message)
   }
 }
 
@@ -222,11 +229,12 @@ export const getUserProjectByIdController = async (req, res) => {
     })
     send200(res, project)
   } catch (error) {
+    const message = 'Cannot retrieve project'
     app.log.error({
       ...getLogInfos({ projectId: id }),
-      description: 'Cannot retrieve project',
-      error: error.message,
+      description: message,
+      error,
     })
-    send500(res, error.message)
+    send500(res, message)
   }
 }

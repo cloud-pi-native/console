@@ -29,8 +29,6 @@ services:
       POSTGRES_DB: ${POSTGRES_DATABASE:-dso-console-db}
       POSTGRES_USER: ${POSTGRES_USER:-admin}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
-    volumes:
-      - ../db/postgres/scripts:/docker-entrypoint-initdb.d
     networks:
       - dso-network
 
@@ -77,6 +75,9 @@ services:
       target: prod
     image: dso-console/ansible-api:ci
     container_name: dso-console_ansible-api
+    depends_on:
+      keycloak:
+        condition: service_healthy
     ports:
       - 8100:8100
     volumes:
@@ -90,6 +91,12 @@ services:
       PLAYBOOK_DIR: ${PLAYBOOK_DIR:-/dso}
       CONFIG_DIR: ${CONFIG_DIR:-/config}
       ANSIBLE_PORT: ${ANSIBLE_PORT:-8100}
+      SESSION_SECRET: ${SESSION_SECRET:-a-very-strong-secret-with-more-than-32-char}
+      KEYCLOAK_PROTOCOL: ${KEYCLOAK_PROTOCOL:-http}
+      KEYCLOAK_DOMAIN: keycloak:8080
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-cloud-pi-native}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_BACKEND:-dso-console-ansible-api}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_BACKEND:-client-secret-ansible-api}
       CI: "true"
       NODE_ENV: production
     networks:
