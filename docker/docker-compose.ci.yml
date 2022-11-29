@@ -46,9 +46,9 @@ services:
       postgres:
         condition: service_started
     ports:
-      - 4000:4000
+      - 4000:80
     environment:
-      SERVER_PORT: ${SERVER_PORT:-4000}
+      SERVER_PORT: 80 # ${SERVER_PORT:-4000}
       DB_HOST: ${POSTGRES_HOST:-postgres}
       DB_PORT: ${POSTGRES_PORT:-5432}
       DB_USER: ${POSTGRES_USER:-admin}
@@ -121,7 +121,7 @@ services:
       KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_FRONTEND:-dso-console-frontend}
       KEYCLOAK_REDIRECT_URI: ${KEYCLOAK_REDIRECT_URI:-http://client:8080}
       SERVER_HOST: ${SERVER_HOST:-server}
-      SERVER_PORT: ${SERVER_PORT:-4000}
+      SERVER_PORT: 80 # ${SERVER_PORT:-4000}
       CLIENT_PORT: ${CLIENT_PORT:-8080}
     networks:
       - dso-network

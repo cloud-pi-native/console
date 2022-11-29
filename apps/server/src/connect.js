@@ -64,7 +64,8 @@ export const closeConnections = async () => {
 
 export const synchroniseModels = async () => {
   try {
-    await getProjectModel().sync({ alter: true })
+    const projectModel = await getProjectModel()
+    await projectModel.sync({ alter: true })
     app.log.info('All models were synchronized successfully.')
   } catch (error) {
     app.log.error('Models synchronisation with database failed.')
