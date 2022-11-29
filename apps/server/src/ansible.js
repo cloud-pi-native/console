@@ -56,12 +56,11 @@ export const checkPlaybooksAccess = (playbooksDictionary) => {
 export const runPlaybook = (playbooks, vars, env) => {
   const args = [
     '-i',
-    `${playbookDir}${env}`,
+    `${playbookDir}/inventory/${env}`,
     '--vault-password-file',
     `${configDir}.vault-secret`,
     '--connection=local',
-    '-e',
-    `"${JSON.stringify(vars).replaceAll('"', '\\"')}"`,
+    ...vars,
   ]
   ansible(playbooks, args)
 }

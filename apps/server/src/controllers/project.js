@@ -13,7 +13,7 @@ import { send200, send201, send500 } from '../utils/response.js'
 import app from '../app.js'
 // import { ansibleHost, ansiblePort } from '../utils/env.js'
 import { ansibleArgsDictionary, runPlaybook } from '../ansible.js'
-import { convertVars } from '../utils/tools.js'
+import { convertVars, prepareEnv } from '../utils/tools.js'
 import { playbooksDictionary } from '../utils/matches.js'
 
 export const createProjectController = async (req, res) => {
@@ -53,7 +53,8 @@ export const createProjectController = async (req, res) => {
     const playbooks = playbooksDictionary.projects
     const { env } = ansibleData
     const extraVars = convertVars(ansibleArgsDictionary, ansibleData)
-    runPlaybook(playbooks, extraVars, env)
+    const preparedVars = prepareEnv(extraVars)
+    runPlaybook(playbooks, preparedVars, env)
 
     // await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/projects`, {
     //   method: 'POST',
