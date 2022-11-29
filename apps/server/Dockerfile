@@ -38,7 +38,7 @@ WORKDIR /app
 RUN chown node:node /app
 
 RUN apt-get update && \
-  apt-get install python3 python3-pip libsasl2-dev python-dev libldap2-dev libssl-dev git -y && \
+  apt-get install python3 python3-pip libsasl2-dev python-dev libldap2-dev libssl-dev git nano -y && \
   apt clean && \
   ln -s /usr/bin/python3 /bin/python3
 RUN python3 -m pip install ansible-core==2.13.3 python-ldap python-gitlab requests hvac kubernetes
@@ -48,6 +48,7 @@ ENV HOME=/home/node
 RUN mkdir /dso
 COPY --chown=node:node ./ansible/playbooks/* /dso
 COPY --chown=node:node --from=build /app/build .
+RUN find /dso -xdev -exec chmod  g=u {} \; -exec chown  :0 {} \;
 USER node
 RUN ansible-galaxy collection install kubernetes.core community.hashi\_vault community.general
 

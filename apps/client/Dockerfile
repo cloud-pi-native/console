@@ -43,8 +43,8 @@ RUN chown -R nginx:nginx /var/cache/nginx && \
   chown -R nginx:nginx /etc/nginx/conf.d
 RUN touch /var/run/nginx.pid && \
   chown -R nginx:nginx /var/run/nginx.pid
-RUN chgrp -R root /var/cache/nginx /var/run /var/log/nginx /var/run/nginx.pid && \
-  chmod -R 775 /var/cache/nginx /var/run /var/log/nginx /var/run/nginx.pid
+RUN chgrp -R root /var/cache/nginx /var/run /var/log/nginx /usr/share/nginx/html/assets/ /var/run/nginx.pid && \
+  chmod -R 775 /var/cache/nginx /var/run /var/log/nginx /usr/share/nginx/html/assets/ /var/run/nginx.pid
 RUN apt install curl 
 
 USER nginx

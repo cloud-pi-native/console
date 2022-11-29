@@ -56,7 +56,7 @@ export const checkPlaybooksAccess = (playbooksDictionary) => {
 export const runPlaybook = (playbooks, vars, env) => {
   const args = [
     '-i',
-    `${playbookDir}inventory/${env}`,
+    `${playbookDir}${env}`,
     '--vault-password-file',
     `${configDir}.vault-secret`,
     '--connection=local',

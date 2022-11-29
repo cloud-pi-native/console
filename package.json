@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "prepare": "husky install",
+    "demo:build": "docker compose -f ./docker/docker-compose.demo.yml --env-file ./env/.env build --pull",
     "prod": "npm run prod:up; npm run prod:down -v",
     "prod:build": "docker compose -f ./docker/docker-compose.prod.yml --env-file ./env/.env build --pull",
     "prod:up": "docker compose -f ./docker/docker-compose.prod.yml --env-file ./env/.env up",
