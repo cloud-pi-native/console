@@ -76,7 +76,12 @@ export const addRepoController = async (req, res) => {
   try {
     dbProject = await getUserProjectById(projectId, userId)
     if (!dbProject) {
-      throw new Error('Missing permissions on this project')
+      const message = 'Missing permissions on this project'
+      app.log.error({
+        ...getLogInfos(),
+        description: message,
+      })
+      return send500(res, message)
     }
 
     await addRepo(dbProject, data)
