@@ -117,7 +117,7 @@ onMounted(() => {
     <DsfrCheckboxSet
       v-model="project.envList"
       data-testid="envListSelect"
-      legend="Environnements choisis (par défaut, tous les environnements sont sélectionnés)."
+      legend="Environnements choisis (par défaut, tous les environnements sont sélectionnés)"
       required="required"
       :error-message="!isValid(projectSchema, project, 'envList') ? 'Veuillez sélectionner au moins un environnement.' : ''"
       :options="envOptions"

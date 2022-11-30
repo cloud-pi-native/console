@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { noSpace, email } from '@/utils/regex.js'
+import { noSpace, email, idInUrl } from '@/utils/regex.js'
+import { nanoid } from 'nanoid'
 
 describe('regex', () => {
   it('Should return false (noSpace)', () => {
@@ -14,5 +15,11 @@ describe('regex', () => {
   })
   it('Should return true (email)', () => {
     expect(email.test('prenom.nom@interieur.gouv.fr')).toStrictEqual(true)
+  })
+  it('Should return true (idInUrl)', () => {
+    expect(idInUrl.test(('/').concat(nanoid(), ('/')))).toStrictEqual(true)
+  })
+  it('Should return false (idInUrl)', () => {
+    expect(idInUrl.test(('/').concat(nanoid() + 'abc', ('/')))).toStrictEqual(false)
   })
 })

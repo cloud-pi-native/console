@@ -25,8 +25,8 @@ const goToCreateProject = () => {
   router.push('projects/create-project')
 }
 
-onMounted(() => {
-  projectStore.getUserProjects()
+onMounted(async () => {
+  await projectStore.getUserProjects()
 })
 
 watch(projects, (projects) => {

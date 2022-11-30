@@ -15,7 +15,7 @@ export const createProjectController = async (req, res) => {
     runPlaybook(playbooks, extraVars, env)
 
     const message = 'Provisioning project with ansible started'
-    app.log.error({
+    app.log.info({
       ...getLogInfos(),
       description: message,
     })

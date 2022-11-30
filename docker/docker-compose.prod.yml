@@ -31,8 +31,6 @@ services:
       POSTGRES_DB: ${POSTGRES_DATABASE}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    volumes:
-      - ../db/postgres/scripts:/docker-entrypoint-initdb.d
     networks:
       - dso-network
 
@@ -42,7 +40,7 @@ services:
       context: ..
       dockerfile: apps/server/Dockerfile
       target: prod
-    image: dso-console/server
+    image: dso/console/server
     container_name: dso-console_server
     depends_on:
       keycloak:
@@ -50,9 +48,9 @@ services:
       postgres:
         condition: service_started
     ports:
-      - 4000:4000
+      - 4000:80
     environment:
-      SERVER_PORT: ${SERVER_PORT}
+      SERVER_PORT: 80
       DB_HOST: postgres
       DB_PORT: ${POSTGRES_PORT}
       DB_USER: ${POSTGRES_USER}
@@ -76,17 +74,27 @@ services:
       context: ..
       dockerfile: apps/ansible-api/Dockerfile
       target: prod
-    image: dso-console/ansible-api
+    image: dso/console/ansible-api
     container_name: dso-console_ansible-api
+    depends_on:
+      keycloak:
+        condition: service_healthy
     ports:
       - 8100:8100
     volumes:
-      - ../ansible/.vault-secret:/home/node/.vault-secret
-      - ../ansible/.kubeconfig:/home/node/.kubeconfig
-      - ../ansible/playbooks:/dso
+      - ../ansible/.vault-secret:${CONFIG_DIR:-/config}/.vault-secret
+      - ../ansible/.kubeconfig:${CONFIG_DIR:-/config}/.kubeconfig
+      - ../ansible/playbooks:${PLAYBOOK_DIR:-/dso}
     environment:
       PLAYBOOK_DIR: ${PLAYBOOK_DIR:-/dso}
+      CONFIG_DIR: ${CONFIG_DIR:-/config}
       ANSIBLE_PORT: ${ANSIBLE_PORT}
+      SESSION_SECRET: ${SESSION_SECRET:-a-very-strong-secret-with-more-than-32-char}
+      KEYCLOAK_PROTOCOL: ${KEYCLOAK_PROTOCOL:-http}
+      KEYCLOAK_DOMAIN: keycloak:8080
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-cloud-pi-native}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_BACKEND:-dso-console-ansible-api}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_BACKEND:-client-secret-ansible-api}
       NODE_ENV: production
     networks:
       - dso-network
@@ -96,7 +104,7 @@ services:
       context: ..
       dockerfile: apps/client/Dockerfile
       target: prod
-    image: dso-console/client
+    image: dso/console/client
     container_name: dso-console_client
     depends_on:
       server:
@@ -104,12 +112,13 @@ services:
     ports:
       - 8080:8080
     environment:
+      KEYCLOAK_PROTOCOL: ${KEYCLOAK_PROTOCOL}
       KEYCLOAK_DOMAIN: localhost:8090
       KEYCLOAK_REALM: ${KEYCLOAK_REALM}
       KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_FRONTEND}
       KEYCLOAK_REDIRECT_URI: ${KEYCLOAK_REDIRECT_URI}
       SERVER_HOST: server
-      SERVER_PORT: ${SERVER_PORT}
+      SERVER_PORT: 80
     networks:
       - dso-network
 

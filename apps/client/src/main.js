@@ -7,7 +7,7 @@ import App from './App.vue'
 import router from './router/index.js'
 import * as icons from './icons.js'
 import './main.css'
-import { keycloakInit } from './utils/keycloak/init.js'
+import { keycloakInit } from './utils/keycloak/keycloak.js'
 
 (async () => {
   try {

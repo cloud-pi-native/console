@@ -1,5 +1,21 @@
 import Keycloak from 'keycloak-js'
-import { keycloakConf } from './config.js'
+
+import {
+  keycloakProtocol,
+  keycloakDomain,
+  keycloakClientId,
+  keycloakRealm,
+  keycloakRedirectUri,
+} from '../env.js'
+
+export const keycloakConf = {
+  url: `${keycloakProtocol}://${keycloakDomain}`,
+  realm: keycloakRealm,
+  clientId: keycloakClientId,
+  onLoad: 'check-sso',
+  flow: 'hybrid',
+  redirectUri: keycloakRedirectUri,
+}
 
 let keycloak
 
@@ -26,6 +42,7 @@ export const getUserProfile = async () => {
 }
 
 export const keycloakInit = async () => {
+  keycloakConf.redirectUri = keycloakConf.redirectUri.concat(location.pathname)
   try {
     const { onLoad, redirectUri, flow } = keycloakConf
     const keycloak = getKeycloak()

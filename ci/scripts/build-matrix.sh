@@ -82,7 +82,7 @@ fi
 MATRIX=$(cat "$COMPOSE_FILE" \
   | docker run -i --rm mikefarah/yq -o=json \
   | jq \
-    --arg d "$(pwd)" \
+    --arg d "$(dirname $(readlink -f $COMPOSE_FILE))" \
     --arg p "$PLATFORMS" \
     --arg r "$REGISTRY" \
     --arg t "$TAGS" \

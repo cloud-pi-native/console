@@ -1,8 +1,6 @@
 import app from './app.js'
-import { getConnection, closeConnections } from './connect.js'
-import { isDev, isTest, isCI, isProd, isDevSetup } from './utils/env.js'
-
-const port = process.env.SERVER_PORT
+import { getConnection, closeConnections, synchroniseModels } from './connect.js'
+import { isDev, isTest, isCI, isProd, isDevSetup, port } from './utils/env.js'
 
 startServer()
 handleExit()
@@ -10,6 +8,7 @@ handleExit()
 export async function startServer () {
   try {
     await getConnection()
+    await synchroniseModels()
   } catch (error) {
     app.log.error(error.message)
     throw error

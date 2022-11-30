@@ -1,10 +1,7 @@
 import { spawn } from 'child_process'
 import { access, constants } from 'fs'
 import app from './app.js'
-
-const PLAYBOOK_DIR = process.env.PLAYBOOK_DIR?.endsWith('/')
-  ? process.env.PLAYBOOK_DIR
-  : process.env.PLAYBOOK_DIR + '/'
+import { playbookDir, configDir } from './utils/env.js'
 
 export const ansibleArgsDictionary = {
   repName: 'REPO_NAME',
@@ -20,7 +17,7 @@ export const ansibleArgsDictionary = {
 
 export const ansible = (playbooks, args) => {
   const playbook = playbooks[0]
-  const playbookSpawn = spawn('ansible-playbook', [`${PLAYBOOK_DIR}${playbook}`, ...args])
+  const playbookSpawn = spawn('ansible-playbook', [`${playbookDir}${playbook}`, ...args])
   app.log.info(`Run ${playbook}`)
   let logs = Buffer.alloc(0)
   playbookSpawn.stdout.on('data', (data) => { logs += data })
@@ -46,7 +43,7 @@ export const ansible = (playbooks, args) => {
 export const checkPlaybooksAccess = (playbooksDictionary) => {
   Object.entries(playbooksDictionary).forEach(([route, paths]) => {
     paths.forEach(path => {
-      access(`${PLAYBOOK_DIR}${path}`, constants.R_OK, err => {
+      access(`${playbookDir}${path}`, constants.R_OK, err => {
         if (err) {
           app.log.error(`Error playbook ${path} is not readable for route ${route}`)
           process.exit(1)
@@ -59,9 +56,9 @@ export const checkPlaybooksAccess = (playbooksDictionary) => {
 export const runPlaybook = (playbooks, vars, env) => {
   const args = [
     '-i',
-    `${PLAYBOOK_DIR}inventory/${env}`,
+    `${playbookDir}inventory/${env}`,
     '--vault-password-file',
-    '/home/node/.vault-secret',
+    `${configDir}.vault-secret`,
     '--connection=local',
     '-e',
     `"${JSON.stringify(vars).replaceAll('"', '\\"')}"`,

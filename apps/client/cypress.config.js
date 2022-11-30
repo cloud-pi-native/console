@@ -1,10 +1,13 @@
 import { defineConfig } from 'cypress'
+import viteConfig from './vite.config.js'
 
 const clientHost = process.env.CLIENT_HOST || 'localhost'
 const clientPort = process.env.CLIENT_PORT || '8080'
 
+viteConfig.server.host = '127.0.0.1'
+viteConfig.server.port = 9000
+
 export default defineConfig({
-  port: 8082,
   e2e: {
     baseUrl: `http://${clientHost}:${clientPort}`,
     fixturesFolder: 'cypress/e2e/fixtures',
@@ -33,6 +36,7 @@ export default defineConfig({
     devServer: {
       framework: 'vue',
       bundler: 'vite',
+      viteConfig,
     },
   },
 })
