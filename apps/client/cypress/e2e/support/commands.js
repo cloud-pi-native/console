@@ -1,18 +1,6 @@
 import { nanoid } from 'nanoid'
 import { allServices, envList } from 'shared/src/schemas/project.js'
 
-Cypress.on('fail', (err, _runnable) => {
-  cy.log(err.message)
-
-  throw err
-})
-
-Cypress.on('uncaught:exception', (err, _runnable) => {
-  cy.log(err.message)
-
-  throw err
-})
-
 Cypress.Commands.add('kcLogout', () => {
   cy.get('a.fr-btn').should('contain', 'Se déconnecter').click()
 })
