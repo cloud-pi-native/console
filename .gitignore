@@ -43,3 +43,6 @@ keycloak/data
 
 # kube config
 .kubeconfig
+
+# dist
+dist
