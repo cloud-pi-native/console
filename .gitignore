@@ -27,6 +27,7 @@ screenshots
 
 # vitest
 coverage
+apps/client/vite.config.js.timestamp-*.mjs
 
 # sonarqube
 .scannerwork

@@ -32,7 +32,6 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
     volumes:
       - dso-postgres-data:/var/lib/postgresql/data
-      - ../db/postgres/scripts:/docker-entrypoint-initdb.d
     networks:
       - dso-network
 
@@ -82,6 +81,7 @@ services:
       DB_PASS: ${POSTGRES_PASSWORD:-admin}
       DB_NAME: ${POSTGRES_DATABASE:-dso-console-db}
       SESSION_SECRET: ${SESSION_SECRET:-a-very-strong-secret-with-more-than-32-char}
+      KEYCLOAK_PROTOCOL: ${KEYCLOAK_PROTOCOL:-http}
       KEYCLOAK_DOMAIN: keycloak:8080
       KEYCLOAK_REALM: ${KEYCLOAK_REALM:-cloud-pi-native}
       KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_BACKEND:-dso-console-backend}
@@ -100,18 +100,28 @@ services:
       target: dev
     image: dso-console/ansible-api:dev
     container_name: dso-console_ansible-api
+    depends_on:
+      keycloak:
+        condition: service_healthy
     ports:
       - 8100:8100
     volumes:
       - /app/node_modules/
       - ../apps/ansible-api:/app/apps/ansible-api
       - /app/apps/ansible-api/node_modules/
-      - ../ansible/.vault-secret:/home/node/.vault-secret
-      - ../ansible/.kubeconfig:/home/node/.kubeconfig
-      - ../ansible/playbooks:/dso
+      - ../ansible/.vault-secret:${CONFIG_DIR:-/config}/.vault-secret
+      - ../ansible/.kubeconfig:${CONFIG_DIR:-/config}/.kubeconfig
+      - ../ansible/playbooks:${PLAYBOOK_DIR:-/dso}
     environment:
       PLAYBOOK_DIR: ${PLAYBOOK_DIR:-/dso}
+      CONFIG_DIR: ${CONFIG_DIR:-/config}
       ANSIBLE_PORT: ${ANSIBLE_PORT:-8100}
+      SESSION_SECRET: ${SESSION_SECRET:-a-very-strong-secret-with-more-than-32-char}
+      KEYCLOAK_PROTOCOL: ${KEYCLOAK_PROTOCOL:-http}
+      KEYCLOAK_DOMAIN: keycloak:8080
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-cloud-pi-native}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_BACKEND:-dso-console-ansible-api}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_BACKEND:-client-secret-ansible-api}
       NODE_ENV: development
     networks:
       - dso-network
@@ -135,6 +145,7 @@ services:
       - ../packages/shared:/app/packages/shared
       - /app/packages/shared/node_modules/
     environment:
+      KEYCLOAK_PROTOCOL: ${KEYCLOAK_PROTOCOL:-http}
       KEYCLOAK_DOMAIN: localhost:8090
       KEYCLOAK_REALM: ${KEYCLOAK_REALM:-cloud-pi-native}
       KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_FRONTEND:-dso-console-frontend}
@@ -152,5 +163,6 @@ networks:
     # com.docker.network.driver.mtu: 1450
 
 volumes:
+  dso-keycloak-data:
   dso-pgadmin-data:
   dso-postgres-data:

@@ -1,6 +1,4 @@
-import { projects } from 'shared/dev-setup/projects.js'
-
-const getProjectbyId = (id) => projects.find(project => project.id === id)
+import { getProjectbyId } from '../support/func.js'
 
 const candilib = getProjectbyId('9FG4CeGkMavI5CtAh_3Ss')
 

@@ -2,7 +2,7 @@
 import SideMenu from './components/SideMenu.vue'
 import { ref, onMounted, watch } from 'vue'
 import { useUserStore } from './stores/user.js'
-import { getKeycloak } from './utils/keycloak/init.js'
+import { getKeycloak } from './utils/keycloak/keycloak.js'
 
 const keycloak = getKeycloak()
 const userStore = useUserStore()

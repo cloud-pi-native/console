@@ -1,19 +1,6 @@
 version: '3.9'
 
 services:
-  postgres:
-    restart: always
-    image: postgres:14.5
-    container_name: dso-console_postgres
-    environment:
-      POSTGRES_DB: ${POSTGRES_DATABASE}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    volumes:
-      - ../db/postgres/scripts:/docker-entrypoint-initdb.d
-    networks:
-      - dso-network
-
   keycloak:
     restart: always
     image: quay.io/keycloak/keycloak:19.0.2
@@ -31,6 +18,17 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+    networks:
+      - dso-network
+
+  postgres:
+    restart: always
+    image: postgres:14.5
+    container_name: dso-console_postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DATABASE}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     networks:
       - dso-network
 
@@ -83,18 +81,28 @@ services:
       target: dev
     image: dso-console/ansible-api:test
     container_name: dso-console_ansible-api
+    depends_on:
+      keycloak:
+        condition: service_healthy
     ports:
       - 8100:8100
     volumes:
       - /app/node_modules/
       - ../apps/ansible-api:/app/apps/ansible-api
       - /app/apps/ansible-api/node_modules/
-      - ../ansible/.vault-secret:/home/node/.vault-secret
-      - ../ansible/.kubeconfig:/home/node/.kubeconfig
-      - ../ansible/playbooks:/dso
+      - ../ansible/.vault-secret:${CONFIG_DIR:-/config}/.vault-secret
+      - ../ansible/.kubeconfig:${CONFIG_DIR:-/config}/.kubeconfig
+      - ../ansible/playbooks:${PLAYBOOK_DIR:-/dso}
     environment:
       PLAYBOOK_DIR: ${PLAYBOOK_DIR:-/dso}
+      CONFIG_DIR: ${CONFIG_DIR:-/config}
       ANSIBLE_PORT: ${ANSIBLE_PORT:-8100}
+      SESSION_SECRET: ${SESSION_SECRET:-a-very-strong-secret-with-more-than-32-char}
+      KEYCLOAK_PROTOCOL: ${KEYCLOAK_PROTOCOL:-http}
+      KEYCLOAK_DOMAIN: keycloak:8080
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-cloud-pi-native}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_BACKEND:-dso-console-ansible-api}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_BACKEND:-client-secret-ansible-api}
       CI: "true"
       NODE_ENV: production
     networks:
@@ -119,6 +127,7 @@ services:
       - ../packages/shared:/app/packages/shared
       - /app/packages/shared/node_modules/
     environment:
+      KEYCLOAK_PROTOCOL: ${KEYCLOAK_PROTOCOL:-http}
       KEYCLOAK_DOMAIN: localhost:8090
       KEYCLOAK_REALM: ${KEYCLOAK_REALM:-cloud-pi-native}
       KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_FRONTEND:-dso-console-frontend}

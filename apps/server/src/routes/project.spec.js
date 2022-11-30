@@ -167,7 +167,7 @@ describe('Project routes', () => {
 
       expect(response.statusCode).toEqual(500)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual(`Git repo '${randomRepo.internalRepoName}' already exists in project`)
+      expect(response.body).toEqual('Cannot add git repository into project')
     })
 
     it('Should not add a repo if permission is missing', async () => {
@@ -221,7 +221,7 @@ describe('Project routes', () => {
 
       expect(response.statusCode).toEqual(500)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual(`User with email '${randomUser.email}' already member of project`)
+      expect(response.body).toEqual('Cannot add user into project')
     })
 
     it('Should not add an user if permission is missing', async () => {
@@ -269,7 +269,7 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(500)
-      expect(response.body).toEqual('Missing permissions on this project')
+      expect(response.body).toEqual('Cannot remove user from project')
     })
   })
 
@@ -293,8 +293,7 @@ describe('Project routes', () => {
     })
 
     it('Should return an error while get list of projects', async () => {
-      const errorMessage = 'error message'
-      sequelize.$queueFailure(errorMessage)
+      sequelize.$queueFailure('error message')
 
       const response = await app.inject()
         .get('/')
@@ -303,7 +302,7 @@ describe('Project routes', () => {
       expect(response.statusCode).toEqual(500)
       expect(response.body.json).not.toBeDefined()
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual(errorMessage)
+      expect(response.body).toEqual('Cannot retrieve projects')
     })
   })
 
@@ -324,8 +323,7 @@ describe('Project routes', () => {
     })
 
     it('Should not get a project when id is invalid', async () => {
-      const errorMessage = 'error message'
-      sequelize.$queueFailure(errorMessage)
+      sequelize.$queueFailure('error message')
 
       const response = await app.inject()
         .get('/invalid')
@@ -334,7 +332,7 @@ describe('Project routes', () => {
       expect(response.statusCode).toEqual(500)
       expect(response.body.json).not.toBeDefined()
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual(errorMessage)
+      expect(response.body).toEqual('Cannot retrieve project')
     })
   })
 })

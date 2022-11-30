@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
-import { getKeycloak, getUserProfile, keycloakInit, keycloakLogin, keycloakLogout } from './init.js'
+import { getKeycloak, getUserProfile, keycloakInit, keycloakLogin, keycloakLogout } from './keycloak.js'
 
 const user = {
   email: 'test@test.com',

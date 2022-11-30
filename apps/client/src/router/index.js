@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useUserStore } from '@/stores/user.js'
+import { useProjectStore } from '@/stores/project.js'
+import { idInUrl } from '@/utils/regex.js'
 
 import DsoHome from '@/views/DsoHome.vue'
 import CreateProject from '@/views/CreateProject.vue'
@@ -81,12 +83,18 @@ const router = createRouter({
   routes,
 })
 
+/**
+ * Set application title
+ */
 router.beforeEach((to) => { // Cf. https://github.com/vueuse/head pour des transformations avancées de Head
   const specificTitle = to.meta.title ? `${to.meta.title} - ` : ''
   document.title = `${specificTitle}${MAIN_TITLE}`
 })
 
-router.beforeEach(async (to, from, next) => {
+/**
+ * Redirect unlogged user to login view
+ */
+router.beforeEach(async (to, _from, next) => {
   const validPath = ['Login', 'Home', 'Doc']
 
   const userStore = useUserStore()
@@ -96,6 +104,23 @@ router.beforeEach(async (to, from, next) => {
   }
 
   next('Login')
+})
+
+/**
+ * On reload on projects views, retrieve projectId from url and send it to store
+ */
+router.beforeEach(async (to, _from, next) => {
+  const projectStore = useProjectStore()
+
+  if (to.path.match('^/projects/') && projectStore.selectedProject === undefined) {
+    await projectStore.getUserProjects()
+
+    const idStart = to.path.search(idInUrl)
+    const projectId = to.path.slice(idStart + 1, idStart + 22)
+
+    await projectStore.setSelectedProject(projectId)
+  }
+  next()
 })
 
 export default router
