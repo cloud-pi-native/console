@@ -9,7 +9,7 @@ import {
   getUserProjectById,
   removeUser,
 } from '../models/project-queries.js'
-import { send200, send201, send500 } from '../utils/response.js'
+import { send200, send201, send404, send500 } from '../utils/response.js'
 import app from '../app.js'
 // import { ansibleHost, ansiblePort } from '../utils/env.js'
 import { ansibleArgsDictionary, runPlaybook } from '../ansible.js'
@@ -50,7 +50,7 @@ export const createProjectController = async (req, res) => {
       },
     }
 
-    const playbooks = playbooksDictionary.projects
+    const playbooks = structuredClone(playbooksDictionary.projects)
     const { env } = ansibleData
     const extraVars = convertVars(ansibleArgsDictionary, ansibleData)
     const preparedVars = prepareEnv(extraVars)
@@ -104,8 +104,7 @@ export const addRepoController = async (req, res) => {
     const message = 'Cannot add git repository into project'
     app.log.error({
       ...getLogInfos(),
-      description: message,
-      error,
+      description: `${message} erreur: ${error}`,
     })
     return send500(res, message)
   }
@@ -118,7 +117,7 @@ export const addRepoController = async (req, res) => {
         ownerEmail: dbProject.owner.email,
         projectName: dbProject.projectName,
         internalRepoName: data.internalRepoName,
-        externalRepoUrl: data.externalRepoUrl,
+        externalRepoUrl: data.externalRepoUrl.startsWith('http') ? data.externalRepoUrl.split('://')[1] : data.externalRepoUrl,
       },
     }
     if (data.isPrivate) {
@@ -126,10 +125,15 @@ export const addRepoController = async (req, res) => {
       ansibleData.extra.externalToken = data.externalToken
     }
 
-    const playbooks = playbooksDictionary.repos
+    const playbooks = structuredClone(playbooksDictionary.repos)
+    if (playbooks.length === 0 || playbooks === undefined) {
+      const message = 'No playbooks defined for this routes'
+      return send404(res, message)
+    }
     const { env } = ansibleData
     const extraVars = convertVars(ansibleArgsDictionary, ansibleData)
-    runPlaybook(playbooks, extraVars, env)
+    const preparedVars = prepareEnv(extraVars)
+    runPlaybook(playbooks, preparedVars, env)
 
     // await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/repos`, {
     //   method: 'POST',
@@ -221,7 +225,7 @@ export const getUserProjectsController = async (req, res) => {
 
     app.log.info({
       ...getLogInfos(),
-      description: 'Projects successfully retrived',
+      description: 'Projects successfully retreived',
     })
     await send200(res, projects)
   } catch (error) {

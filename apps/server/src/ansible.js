@@ -18,7 +18,7 @@ export const ansibleArgsDictionary = {
 export const ansible = (playbooks, args) => {
   const playbook = playbooks[0]
   const playbookSpawn = spawn('ansible-playbook', [`${playbookDir}${playbook}`, ...args])
-  app.log.info(`Run ${playbook}`)
+  app.log.info(`Run ${playbook} ${[`${playbookDir}${playbook}`, ...args].join(' ')}`)
   let logs = Buffer.alloc(0)
   playbookSpawn.stdout.on('data', (data) => { logs += data })
   playbookSpawn.stderr.on('data', (data) => { logs += data })
