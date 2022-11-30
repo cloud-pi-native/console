@@ -51,8 +51,7 @@ ENV HOME=/home/node
 RUN mkdir /dso
 COPY --chown=node:root ./ansible/playbooks/ /dso
 COPY --chown=node:root --from=build /app/build .
-RUN find /dso /app -not -path '**/node_modules/*' -xdev -exec chmod  g=u {} \; -exec chown  :0 {} \;
-COPY --chown=node:root .kubeconfig /home/node/.kube/config
+RUN find /dso /app /home/node -not -path '**/node_modules/*' -xdev -exec chmod  g=u {} \; -exec chown  :0 {} \;
 USER node
 
 ENTRYPOINT ["node", "src/server.js"]
