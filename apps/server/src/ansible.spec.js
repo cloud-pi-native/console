@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { spawn } from 'child_process'
 import fp from 'fastify-plugin'
+import { access } from 'fs'
 import { checkPlaybooksAccess, runPlaybook, ansible } from './ansible.js'
 import { playbooksDictionary } from './utils/matches.js'
-import { access } from 'fs'
+import { prepareEnv } from './utils/tools.js'
 
 vi.mock('fs')
 vi.spyOn(process, 'exit').mockImplementation(vi.fn())
@@ -39,9 +40,10 @@ describe('ansible', () => {
   it('Should run playbook', async () => {
     const playbooks = ['test1.yml', 'test2.yml']
     const vars = { key1: 'value1', key2: 'value2' }
+    const preparedVars = prepareEnv(vars)
     const env = 'test'
 
-    runPlaybook(playbooks, vars, env)
+    runPlaybook(playbooks, preparedVars, env)
 
     expect(spawn).toHaveBeenCalled()
   })
@@ -49,6 +51,7 @@ describe('ansible', () => {
   it('Should spawn a subprocess that run ansible', async (done) => {
     const playbooks = ['test1.yml']
     const vars = { key1: 'value1', key2: 'value2' }
+    const preparedVars = prepareEnv(vars)
     const env = 'test'
     const args = [
       '-i',
@@ -57,7 +60,7 @@ describe('ansible', () => {
       '/test/.vault-secret',
       '--connection=local',
       '-e',
-      `"${JSON.stringify(vars).replaceAll('"', '\\"')}"`,
+      ...preparedVars,
     ]
 
     const playbookSpawn = ansible(playbooks, args)
