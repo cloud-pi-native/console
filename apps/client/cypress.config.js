@@ -1,6 +1,12 @@
 import { defineConfig } from 'cypress'
 import viteConfig from './vite.config.js'
 
+const argocdUrl = process.env.ARGOCD_URL || 'https://argo-cd.readthedocs.io'
+const gitlabUrl = process.env.GITLAB_URL || 'https://gitlab.com'
+const quayUrl = process.env.QUAY_URL || 'https://quay.io'
+const nexusUrl = process.env.NEXUS_URL || 'https://sonatype.com/products/nexus-repository'
+const sonarqubeUrl = process.env.SONARQUBE_URL || 'https://www.sonarqube.org'
+const vaultUrl = process.env.VAULT_URL || 'https://www.vaultproject.io'
 const clientHost = process.env.CLIENT_HOST || 'localhost'
 const clientPort = process.env.CLIENT_PORT || '8080'
 
@@ -21,6 +27,12 @@ export default defineConfig({
     experimentalWebKitSupport: false,
     experimentalSessionAndOrigin: true,
     env: {
+      argocdUrl,
+      gitlabUrl,
+      nexusUrl,
+      quayUrl,
+      sonarqubeUrl,
+      vaultUrl,
       clientHost,
       clientPort,
     },

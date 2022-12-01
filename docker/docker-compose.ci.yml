@@ -123,6 +123,12 @@ services:
       SERVER_HOST: ${SERVER_HOST:-server}
       SERVER_PORT: 80 # ${SERVER_PORT:-4000}
       CLIENT_PORT: ${CLIENT_PORT:-8080}
+      ARGOCD_URL: ${ARGOCD_URL:-https://argo-cd.readthedocs.io}
+      GITLAB_URL: ${GITLAB_URL:-https://gitlab.com}
+      NEXUS_URL: ${NEXUS_URL:-https://sonatype.com/products/nexus-repository}
+      QUAY_URL: ${QUAY_URL:-https://quay.io}
+      SONARQUBE_URL: ${SONARQUBE_URL:-https://www.sonarqube.org}
+      VAULT_URL: ${VAULT_URL:-https://www.vaultproject.io}
     networks:
       - dso-network
 
