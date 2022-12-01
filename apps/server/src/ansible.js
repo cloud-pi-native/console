@@ -29,7 +29,10 @@ export const ansible = (playbooks, args) => {
       return
     }
     app.log.info(logs.toString())
-    playbooks.shift()
+    const [_, ...lastsPlaybooks] = playbooks // another way to get a 'shifted' array without mutate it 
+    if (lastsPlaybooks.length) {
+      ansible(lastsPlaybooks, args)
+    }
     if (playbooks.length) {
       ansible(playbooks, args)
     }

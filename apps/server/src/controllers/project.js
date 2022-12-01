@@ -50,7 +50,7 @@ export const createProjectController = async (req, res) => {
       },
     }
 
-    const playbooks = structuredClone(playbooksDictionary.projects)
+    const playbooks = playbooksDictionary.projects
     const { env } = ansibleData
     const extraVars = convertVars(ansibleArgsDictionary, ansibleData)
     const preparedVars = prepareEnv(extraVars)
@@ -125,7 +125,7 @@ export const addRepoController = async (req, res) => {
       ansibleData.extra.externalToken = data.externalToken
     }
 
-    const playbooks = structuredClone(playbooksDictionary.repos)
+    const playbooks = playbooksDictionary.repos
     if (playbooks.length === 0 || playbooks === undefined) {
       const message = 'No playbooks defined for this routes'
       return send404(res, message)
