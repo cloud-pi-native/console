@@ -7,7 +7,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /app
 
 # Install packages
-RUN apt-get update \
+RUN apt-get update -y \
   && apt-get install -y \
   ssh \
   lsb-release \

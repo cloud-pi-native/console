@@ -1,0 +1,104 @@
+include:
+  {{#isJava}}
+  - local: "/includes/java.yml"
+  {{/isJava}}
+  {{#isNode}}
+  - local: "/includes/node.yml"
+  {{/isNode}}
+  {{#isPython}}
+  - local: "/includes/python.yml"
+  {{/isPython}}
+  - local: "/includes/docker.yml"
+  - local: "/includes/vault.yml"
+  - local: "/includes/rules.yml"
+
+default:
+  image: alpine:latest
+#  tags:
+#    - ADD_CUSTOM_TAG_HERE
+
+cache:
+  paths:
+    - .m2/repository/
+    - node_modules
+
+variables:
+{{#isJava}}
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+  MAVEN_CLI_OPTS: ""
+  MVN_CONFIG_FILE: $MVN_CONFIG
+{{/isJava}}
+  TAG: "${CI_COMMIT_REF_SLUG}"
+  DOCKERFILE: Dockerfile
+  PROJECT_NAME: {{ projectName }}
+  PROJECT_ORGANISATION: {{ orgName }}
+  PROJECT_PATH: ${PROJECT_ORGANISATION}-${PROJECT_NAME}
+  REGISTRY_URL: "${QUAY_ROOT_URL}/${PROJECT_PATH}"
+
+
+stages:
+  - read-secret
+  - quality-app
+  - build-app
+  - docker-test
+  - docker-build
+
+read_secret:
+  stage: read-secret
+  extends:
+    - .vault:read_secret
+
+{{#isJava}}
+quality_app:
+  variables:
+    BUILD_IMAGE_NAME: maven:3.8-openjdk-{{javaVersion}}
+    WORKING_DIR: "{{{workingDir}}}"
+  stage: quality-app
+  extends:
+    - .java:sonar
+
+package-app:
+  variables:
+    BUILD_IMAGE_NAME: maven:3.8-openjdk-{{javaVersion}}
+    WORKING_DIR: "{{{workingDir}}}"
+    ARTEFACT_DIR: "{{{artefactDir}}}"
+
+  stage: build-app
+  extends:
+    - .java:build
+{{/isJava}}
+
+{{#isNode}}
+build_front:
+  variables:
+    BUILD_IMAGE_NAME: node:{{nodeVersion}}
+    NODE_INSTALL_COMMAND: {{nodeInstallCommand}}
+    NODE_BUILD_COMMAND: {{nodeBuildCommand}}
+    WORKING_DIR: "{{{workingDir}}}"
+  stage: build-app
+  extends:
+    - .node:build
+
+test_front:
+  variables:
+    WORKING_DIR: "{{{workingDir}}}"
+  stage: test
+  extends:
+    - .node:sonar
+{{/isNode}}
+
+docker-test:
+  variables:
+    WORKING_DIR: "."
+    IMAGE_NAME: {{projectName}}
+  stage: docker-test
+  extends:
+    - .buildah:test
+
+docker-build:
+  variables:
+    WORKING_DIR: "."
+    IMAGE_NAME: {{projectName}}
+  stage: docker-build
+  extends:
+    - .buildah:build

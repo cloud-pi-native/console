@@ -17,7 +17,7 @@ FROM base as dev
 
 WORKDIR /app
 
-RUN apt-get update && \
+RUN apt-get update -y && \
 	apt-get install python3 python3-pip libsasl2-dev python-dev libldap2-dev libssl-dev git -y && \
 	apt clean && \
 	ln -s /usr/bin/python3 /bin/python3
@@ -25,7 +25,8 @@ RUN python3 -m pip install ansible-core==2.13.3 python-ldap python-gitlab reques
 RUN ansible-galaxy collection install kubernetes.core community.hashi\_vault community.general
 
 RUN mkdir /dso
-COPY --chown=node:node ansible/playbooks/* /dso
+COPY --chown=node:node ansible/playbooks/* /dso/
+COPY --chown=node:node ansible/.vault-secret /config/
 
 USER node
 RUN pnpm install
@@ -50,7 +51,7 @@ RUN chown node:node /app
 ENV HOME=/home/node
 ENV PLAYBOOK_DIR=/dso
 ENV CLONE_DIR=/dso
-RUN apt-get update && \
+RUN apt-get update -y && \
 	apt-get install python3 python3-pip libsasl2-dev python-dev libldap2-dev libssl-dev git -y && \
 	apt clean && \
 	ln -s /usr/bin/python3 /bin/python3

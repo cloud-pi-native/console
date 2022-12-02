@@ -109,8 +109,8 @@ onMounted(() => {
       :is-invalid="!!updatedValues.projectName && !isValid(projectSchema, project, 'projectName')"
       label="Nom du projet"
       label-visible
-      hint="Nom du projet dans l'offre Cloud PI Native. Ne doit pas contenir d'espace"
-      placeholder="Candilib"
+      hint="Nom du projet dans l'offre Cloud PI Native. Ne doit pas contenir d'espace, doit être unique pour l'organisation, doit être en minuscules."
+      placeholder="candilib"
       class="fr-mb-2w"
       @update:model-value="updateProject('projectName', $event)"
     />

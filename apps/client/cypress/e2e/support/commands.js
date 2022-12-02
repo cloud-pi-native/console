@@ -90,7 +90,7 @@ Cypress.Commands.add('addRepos', (project, repos) => {
   const newRepo = (repo) => ({
     internalRepoName: 'dso-console',
     externalUserName: 'this-is-tobi',
-    externalRepoUrl: 'https://github.com/dnum-mi/dso-console',
+    externalRepoUrl: 'https://github.com/dnum-mi/dso-console.git',
     isInfra: false,
     isPrivate: false,
     externalToken: 'private-token',
@@ -140,6 +140,43 @@ Cypress.Commands.add('assertAddRepo', (project, repos) => {
 
   repos.forEach((repo) => {
     cy.getByDataTestid(`repoTile-${repo.internalRepoName}`).should('exist')
+  })
+})
+
+Cypress.Commands.add('generateGitLabCI', (ciForms) => {
+  ciForms.forEach(ciForm => {
+    cy.getByDataTestid('typeLanguageSelect')
+      .find('select').select(`${ciForm.language}`)
+
+    if (ciForm.language === 'node') {
+      cy.getByDataTestid('nodeVersionInput').clear().type(`${ciForm.version}`)
+        .getByDataTestid('nodeInstallInput').clear().type(`${ciForm.install}`)
+        .getByDataTestid('nodeBuildInput').clear().type(`${ciForm.build}`)
+    }
+    if (ciForm.language === 'java') {
+      cy.getByDataTestid('javaVersionInput').clear().type(`${ciForm.version}`)
+        .getByDataTestid('artefactDirInput').clear().type(`${ciForm.artefactDir}`)
+    }
+    cy.getByDataTestid('workingDirInput').clear().type(`${ciForm.workingDir}`)
+      .getByDataTestid('generateCIBtn').click()
+      .getByDataTestid('generatedCI').should('be.visible')
+      .getByDataTestid(`copy-${ciForm.language}-ContentBtn`).should('exist')
+      .getByDataTestid('copy-vault-ContentBtn').should('exist')
+      .getByDataTestid('copy-docker-ContentBtn').should('exist')
+      .getByDataTestid('copy-rules-ContentBtn').should('exist')
+      .getByDataTestid('copy-gitlab-ContentBtn').click()
+    cy.window().then((window) => {
+      window.navigator.clipboard.readText().then((text) => {
+        if (ciForm.language === 'java') expect(text).to.contain(`BUILD_IMAGE_NAME: maven:3.8-openjdk-${ciForm.version}`).and.to.contain('- local: "/includes/java.yml"')
+        if (ciForm.language === 'node') expect(text).to.contain(`BUILD_IMAGE_NAME: node:${ciForm.version}`).and.to.contain('- local: "/includes/node.yml"')
+        if (ciForm.language === 'python') expect(text).to.contain(`BUILD_IMAGE_NAME: maven:3.8-openjdk-${ciForm.version}`).and.to.contain('- local: "/includes/python.yml"')
+      })
+    })
+    cy.get('.fr-download__link').first().click()
+      .find('span').should(($span) => {
+        const text = $span.text()
+        expect(text).to.match(/YAML – \d* bytes/)
+      })
   })
 })
 

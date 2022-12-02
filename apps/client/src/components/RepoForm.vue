@@ -81,7 +81,7 @@ const cancel = (event) => {
         label="Url du dépôt Git externe"
         label-visible
         hint="Url du dépôt Git qui servira de source pour la synchronisation"
-        placeholder="https://github.com/dnum-mi/dso-console"
+        placeholder="https://github.com/dnum-mi/dso-console.git"
         class="fr-mb-2w"
         @update:model-value="updateRepo('externalRepoUrl', $event)"
       />
@@ -139,6 +139,7 @@ const cancel = (event) => {
         @update:model-value="updateRepo('isInfra', $event)"
       />
       <CIForm
+        v-if="props.isEditable"
         :internal-repo-name="localRepo.internalRepoName"
       />
     </DsfrFieldset>
@@ -150,7 +151,7 @@ const cancel = (event) => {
     <DsfrButton
       label="Ajouter le dépôt"
       data-testid="addRepoBtn"
-      secondary
+      primary
       icon="ri-upload-cloud-line"
       @click="addRepo()"
     />

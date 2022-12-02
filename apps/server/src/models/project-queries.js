@@ -135,4 +135,4 @@ export const checkUniqueProject = async (orgName, projectName) => {
   return res
 }
 
-export const _deleteAllProjects = async () => await getProjectModel().destroy({ truncate: true })
+export const _deleteAllProjects = () => getProjectModel().destroy({ truncate: true })
