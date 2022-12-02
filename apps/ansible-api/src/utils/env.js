@@ -14,6 +14,8 @@ export const configDir = process.env.CONFIG_DIR?.endsWith('/')
   ? process.env.CONFIG_DIR
   : process.env.CONFIG_DIR + '/'
 
+export const inventory = process.env.INVENTORY
+
 export const port = process.env.ANSIBLE_PORT
 
 export const sessionSecret = process.env.SESSION_SECRET

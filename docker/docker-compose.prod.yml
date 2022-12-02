@@ -1,5 +1,3 @@
-# TODO : Ajouter server, db et keycloak
-
 version: '3.9'
 
 services:
@@ -65,8 +63,21 @@ services:
       ANSIBLE_HOST: ansible-api
       ANSIBLE_PORT: ${ANSIBLE_PORT}
       NODE_ENV: production
+      INVENTORY: dev
     networks:
       - dso-network
+
+  clone_playbooks:
+    restart: no
+    build:
+      context: ../apps/init-ansible
+      dockerfile: Dockerfile
+    image: dso/console/init-ansible-api
+    environment:
+      GIT_USER: a
+      GIT_TOKEN: b
+      GIT_REPO: c
+      GIT_BRANCH: d
 
   ansible-api:
     restart: always

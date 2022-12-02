@@ -32,9 +32,9 @@ export const keycloakClientId = process.env.KEYCLOAK_CLIENT_ID
 
 export const keycloakClientSecret = process.env.KEYCLOAK_CLIENT_SECRET
 
-// export const ansibleHost = process.env.ANSIBLE_HOST
+export const ansibleHost = process.env.ANSIBLE_HOST
 
-// export const ansiblePort = process.env.ANSIBLE_PORT
+export const ansiblePort = process.env.ANSIBLE_PORT
 
 export const playbookDir = process.env.PLAYBOOK_DIR?.endsWith('/')
   ? process.env.PLAYBOOK_DIR

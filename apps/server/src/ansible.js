@@ -16,7 +16,7 @@ export const ansibleArgsDictionary = {
 }
 
 export const ansible = (playbooks, args) => {
-  const [playbook, ...lastsPlaybooks] = playbooks
+  const [playbook, ...lastsPlaybooks] = playbooks // another way to get a 'shifted' array without mutate it
   const playbookSpawn = spawn('ansible-playbook', [`${playbookDir}${playbook}`, ...args])
   app.log.info(`Run ${playbook} ${[`${playbookDir}${playbook}`, ...args].join(' ')}`)
   let logs = Buffer.alloc(0)
@@ -55,7 +55,7 @@ export const checkPlaybooksAccess = (playbooksDictionary) => {
 export const runPlaybook = (playbooks, vars, env) => {
   const args = [
     '-i',
-    `${playbookDir}/inventory/${env}`,
+    `${playbookDir}inventory/${env}`,
     '--vault-password-file',
     `${configDir}.vault-secret`,
     '--connection=local',

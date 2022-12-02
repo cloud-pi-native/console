@@ -1,24 +1,13 @@
 import { spawn } from 'child_process'
 import { access, constants } from 'fs'
 import app from './app.js'
-import { playbookDir, configDir } from './utils/env.js'
-
-export const ansibleArgsDictionary = {
-  repName: 'REPO_NAME',
-  orgName: 'ORGANIZATION_NAME',
-  ownerEmail: 'EMAIL',
-  projectName: 'PROJECT_NAME',
-  envList: 'ENV_LIST',
-  externalRepoUrl: 'REPO_SRC',
-  internalRepoName: 'REPO_DEST',
-  externalUserName: 'GIT_INPUT_USER',
-  externalToken: 'GIT_INPUT_PASSWORD',
-}
+import { playbookDir, configDir, inventory } from './utils/env.js'
+import { convertVars } from "./utils/tools.js";
 
 export const ansible = (playbooks, args) => {
-  const playbook = playbooks[0]
+  const [playbook, ...lastsPlaybooks] = playbooks // another way to get a 'shifted' array without mutate it
   const playbookSpawn = spawn('ansible-playbook', [`${playbookDir}${playbook}`, ...args])
-  app.log.info(`Run ${playbook}`)
+  app.log.info(`Run ${playbook} ${[`${playbookDir}${playbook}`, ...args].join(' ')}`)
   let logs = Buffer.alloc(0)
   playbookSpawn.stdout.on('data', (data) => { logs += data })
   playbookSpawn.stderr.on('data', (data) => { logs += data })
@@ -29,9 +18,8 @@ export const ansible = (playbooks, args) => {
       return
     }
     app.log.info(logs.toString())
-    playbooks.shift()
-    if (playbooks.length) {
-      ansible(playbooks, args)
+    if (lastsPlaybooks.length) {
+      ansible(lastsPlaybooks, args)
     }
   })
   playbookSpawn.on('error', (err) => {
@@ -53,15 +41,15 @@ export const checkPlaybooksAccess = (playbooksDictionary) => {
   })
 }
 
-export const runPlaybook = (playbooks, vars, env) => {
+export const runPlaybook = (playbooks, vars) => {
+  const extraVars = convertVars(vars)
   const args = [
     '-i',
-    `${playbookDir}inventory/${env}`,
+    `${playbookDir}inventory/${inventory}`,
     '--vault-password-file',
     `${configDir}.vault-secret`,
     '--connection=local',
-    '-e',
-    `"${JSON.stringify(vars).replaceAll('"', '\\"')}"`,
+    ...extraVars,
   ]
   ansible(playbooks, args)
 }

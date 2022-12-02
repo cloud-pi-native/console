@@ -14,7 +14,7 @@ services:
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
-    command: start-dev --import-realm
+    command: start-demo --import-realm
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
       interval: 10s
@@ -68,6 +68,18 @@ services:
     networks:
       - dso-network
 
+  clone_playbooks:
+    restart: never
+    build:
+      context: ../apps/init-ansible-api
+      dockerfile: Dockerfile
+    image: dso/console/init-ansible-api:demo
+    environment:
+      GIT_USER: a
+      GIT_TOKEN: b
+      GIT_REPO: c
+      GIT_BRANCH: d
+      
   ansible-api:
     restart: always
     build:

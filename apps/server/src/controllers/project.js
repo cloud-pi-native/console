@@ -11,9 +11,7 @@ import {
 } from '../models/project-queries.js'
 import { send200, send201, send404, send500 } from '../utils/response.js'
 import app from '../app.js'
-// import { ansibleHost, ansiblePort } from '../utils/env.js'
-import { ansibleArgsDictionary, runPlaybook } from '../ansible.js'
-import { convertVars, prepareEnv } from '../utils/tools.js'
+import { ansibleHost, ansiblePort } from '../utils/env.js'
 import { playbooksDictionary } from '../utils/matches.js'
 
 export const createProjectController = async (req, res) => {
@@ -41,29 +39,20 @@ export const createProjectController = async (req, res) => {
 
   try {
     const ansibleData = {
-      env: 'pprod',
-      extra: {
-        orgName: project.orgName,
-        ownerEmail: project.owner.email,
-        projectName: project.projectName,
-        envList,
-      },
+      orgName: project.orgName,
+      ownerEmail: project.owner.email,
+      projectName: project.projectName,
+      envList,
     }
 
-    const playbooks = playbooksDictionary.projects
-    const { env } = ansibleData
-    const extraVars = convertVars(ansibleArgsDictionary, ansibleData)
-    const preparedVars = prepareEnv(extraVars)
-    runPlaybook(playbooks, preparedVars, env)
-
-    // await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/projects`, {
-    //   method: 'POST',
-    //   body: JSON.stringify(ansibleData),
-    //   headers: {
-    //     'content-type': 'application/json',
-    //     authorization: req.headers.authorization,
-    //   },
-    // })
+    await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/projects`, {
+      method: 'POST',
+      body: JSON.stringify(ansibleData),
+      headers: {
+        'content-type': 'application/json',
+        authorization: req.headers.authorization,
+      },
+    })
 
     send201(res, project)
   } catch (error) {
@@ -72,7 +61,7 @@ export const createProjectController = async (req, res) => {
       description: 'Provisioning project with ansible failed',
       error,
     })
-    send500(res, error.message)
+    send500(res, error)
   }
 }
 
@@ -111,14 +100,11 @@ export const addRepoController = async (req, res) => {
 
   try {
     const ansibleData = {
-      env: 'pprod',
-      extra: {
-        orgName: dbProject.orgName,
-        ownerEmail: dbProject.owner.email,
-        projectName: dbProject.projectName,
-        internalRepoName: data.internalRepoName,
-        externalRepoUrl: data.externalRepoUrl.startsWith('http') ? data.externalRepoUrl.split('://')[1] : data.externalRepoUrl,
-      },
+      orgName: dbProject.orgName,
+      ownerEmail: dbProject.owner.email,
+      projectName: dbProject.projectName,
+      internalRepoName: data.internalRepoName,
+      externalRepoUrl: data.externalRepoUrl.startsWith('http') ? data.externalRepoUrl.split('://')[1] : data.externalRepoUrl,
     }
     if (data.isPrivate) {
       ansibleData.extra.externalUserName = data.externalUserName
@@ -130,19 +116,15 @@ export const addRepoController = async (req, res) => {
       const message = 'No playbooks defined for this routes'
       return send404(res, message)
     }
-    const { env } = ansibleData
-    const extraVars = convertVars(ansibleArgsDictionary, ansibleData)
-    const preparedVars = prepareEnv(extraVars)
-    runPlaybook(playbooks, preparedVars, env)
 
-    // await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/repos`, {
-    //   method: 'POST',
-    //   body: JSON.stringify(ansibleData),
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     authorization: req.headers.authorization,
-    //   },
-    // })
+    await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/repos`, {
+      method: 'POST',
+      body: JSON.stringify(ansibleData),
+      headers: {
+        'Content-Type': 'application/json',
+        authorization: req.headers.authorization,
+      },
+    })
 
     send201(res, 'Git repository successfully added into project')
   } catch (error) {

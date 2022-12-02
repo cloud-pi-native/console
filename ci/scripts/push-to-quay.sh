@@ -1,10 +1,6 @@
 #!/bin/bash
+. ./env/.env
 for image in $@ ; do
-  image=$image
-  if [ ! $(docker images inspect $image 2> /dev/null) ]; then
-    docker pull $image
-  fi
-
-  docker tag $image $QUAY_URL$image
-  docker push $QUAY_URL$image
+  docker tag $image $DOCKER_REGISTRY$image
+  docker push $DOCKER_REGISTRY$image
 done
