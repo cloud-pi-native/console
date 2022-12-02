@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { repoSchema, schemaValidator, isValid, instanciateSchema } from 'shared'
+import CIForm from './CIForm.vue'
 
 const props = defineProps({
   repo: {
@@ -47,7 +48,7 @@ const cancel = (event) => {
   </h1>
   <DsfrFieldset
     :legend="props.isEditable ? 'Informations du dépôt' : undefined"
-    :hint="props.isEditable ? 'Tous les champs sont requis' : undefined"
+    :hint="props.isEditable ? 'Les champs munis d\'une astérisque (*) sont requis' : undefined"
   >
     <DsfrFieldset
       :key="repo"
@@ -136,6 +137,9 @@ const cancel = (event) => {
         hint="Cochez la case s'il s'agit d'un dépôt d'infrastructure"
         name="infraRepoCbx"
         @update:model-value="updateRepo('isInfra', $event)"
+      />
+      <CIForm
+        :internal-repo-name="localRepo.internalRepoName"
       />
     </DsfrFieldset>
   </DsfrFieldset>
