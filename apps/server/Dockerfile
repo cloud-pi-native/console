@@ -54,4 +54,4 @@ COPY --chown=node:root --from=build /app/build .
 RUN find /dso /app /home/node -not -path '**/node_modules/*' -xdev -exec chmod  g=u {} \; -exec chown  :0 {} \;
 USER node
 
-ENTRYPOINT ["node", "src/server.js"]
+CMD ["node", "src/server.js"]
