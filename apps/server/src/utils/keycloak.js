@@ -25,6 +25,8 @@ export const keycloakConf = {
   disableSessionPlugin: true,
   userPayloadMapper,
   retries: 5,
+  keycloakRealm,
+  keycloakDomain,
 }
 
 export const sessionConf = {
