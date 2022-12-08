@@ -5,7 +5,7 @@ import { playbooksDictionary } from './utils/matches.js'
 
 startServer()
 
-export async function startServer () {
+export async function startServer() {
   try {
     checkPlaybooksAccess(playbooksDictionary)
   } catch (error) {

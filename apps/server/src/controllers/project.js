@@ -9,10 +9,9 @@ import {
   getUserProjectById,
   removeUser,
 } from '../models/project-queries.js'
-import { send200, send201, send404, send500 } from '../utils/response.js'
+import { send200, send201, send500 } from '../utils/response.js'
 import app from '../app.js'
 import { ansibleHost, ansiblePort } from '../utils/env.js'
-import { playbooksDictionary } from '../utils/matches.js'
 
 export const createProjectController = async (req, res) => {
   const data = req.body
@@ -109,12 +108,6 @@ export const addRepoController = async (req, res) => {
     if (data.isPrivate) {
       ansibleData.extra.externalUserName = data.externalUserName
       ansibleData.extra.externalToken = data.externalToken
-    }
-
-    const playbooks = playbooksDictionary.repos
-    if (playbooks.length === 0 || playbooks === undefined) {
-      const message = 'No playbooks defined for this routes'
-      return send404(res, message)
     }
 
     await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/repos`, {
