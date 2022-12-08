@@ -106,8 +106,8 @@ export const addRepoController = async (req, res) => {
       externalRepoUrl: data.externalRepoUrl.startsWith('http') ? data.externalRepoUrl.split('://')[1] : data.externalRepoUrl,
     }
     if (data.isPrivate) {
-      ansibleData.extra.externalUserName = data.externalUserName
-      ansibleData.extra.externalToken = data.externalToken
+      ansibleData.externalUserName = data.externalUserName
+      ansibleData.externalToken = data.externalToken
     }
 
     await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/repos`, {
