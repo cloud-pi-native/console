@@ -68,9 +68,10 @@ const removeUserFromProject = async (userEmail) => {
   await projectStore.removeUserFromProject(userEmail)
 }
 
-onMounted(() => {
+onMounted(async () => {
   newUser.value = instanciateSchema({ schema: userSchema }, undefined)
   setRows()
+  await projectStore.getUsers()
 })
 
 watch(selectedProject, () => {

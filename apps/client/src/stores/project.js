@@ -41,6 +41,12 @@ export const useProjectStore = defineStore('project', () => {
     await getUserProjects()
   }
 
+  const users = ref([])
+
+  const getUsers = async () => {
+    users.value = await api.getUsers()
+  }
+
   return {
     selectedProject,
     projects,
@@ -50,5 +56,8 @@ export const useProjectStore = defineStore('project', () => {
     addRepoToProject,
     addUserToProject,
     removeUserFromProject,
+    users,
+    getUsers,
+
   }
 })

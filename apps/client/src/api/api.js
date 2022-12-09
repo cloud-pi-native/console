@@ -30,3 +30,8 @@ export const removeUser = async (id, data) => {
   const response = await apiClient.delete(`/projects/${id}/users`, { data })
   return response.data
 }
+
+export const getUsers = async () => {
+  const response = await apiClient.get('/keycloakinfo')
+  return response.data
+}
