@@ -2,12 +2,12 @@ import { spawn } from 'child_process'
 import { access, constants } from 'fs'
 import app from './app.js'
 import { playbookDir, configDir, inventory } from './utils/env.js'
-import { convertVars } from "./utils/tools.js";
+import { convertVars } from './utils/tools.js'
 
 export const ansible = (playbooks, args) => {
   const [playbook, ...lastsPlaybooks] = playbooks // another way to get a 'shifted' array without mutate it
   const playbookSpawn = spawn('ansible-playbook', [`${playbookDir}${playbook}`, ...args])
-  app.log.info(`Run ${playbook} ${[`${playbookDir}${playbook}`, ...args].join(' ')}`)
+  app.log.info(`Run ${playbookDir}${playbook} ${args.join(' ')}`)
   let logs = Buffer.alloc(0)
   playbookSpawn.stdout.on('data', (data) => { logs += data })
   playbookSpawn.stderr.on('data', (data) => { logs += data })

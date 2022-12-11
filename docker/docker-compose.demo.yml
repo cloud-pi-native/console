@@ -68,7 +68,7 @@ services:
     networks:
       - dso-network
 
-  clone_playbooks:
+  clone-playbooks:
     restart: never
     build:
       context: ../apps/init-ansible-api
@@ -79,7 +79,7 @@ services:
       GIT_TOKEN: b
       GIT_REPO: c
       GIT_BRANCH: d
-      
+
   ansible-api:
     restart: always
     build:
