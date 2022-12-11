@@ -105,6 +105,7 @@ services:
       KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_BACKEND:-client-secret-ansible-api}
       CI: "true"
       NODE_ENV: production
+      INVENTORY: dev
     networks:
       - dso-network
 

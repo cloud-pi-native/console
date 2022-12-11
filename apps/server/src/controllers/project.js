@@ -38,13 +38,10 @@ export const createProjectController = async (req, res) => {
 
   try {
     const ansibleData = {
-      env: 'pprod',
-      extra: {
-        orgName: project.orgName,
-        ownerEmail: project.owner.email,
-        projectName: project.projectName,
-        envList,
-      },
+      orgName: project.orgName,
+      ownerEmail: project.owner.email,
+      projectName: project.projectName,
+      envList,
     }
 
     await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/projects`, {
@@ -63,7 +60,7 @@ export const createProjectController = async (req, res) => {
       description: 'Provisioning project with ansible failed',
       error,
     })
-    send500(res, error.message)
+    send500(res, error)
   }
 }
 
@@ -95,26 +92,22 @@ export const addRepoController = async (req, res) => {
     const message = 'Cannot add git repository into project'
     app.log.error({
       ...getLogInfos(),
-      description: message,
-      error,
+      description: `${message} erreur: ${error}`,
     })
     return send500(res, message)
   }
 
   try {
     const ansibleData = {
-      env: 'pprod',
-      extra: {
-        orgName: dbProject.orgName,
-        ownerEmail: dbProject.owner.email,
-        projectName: dbProject.projectName,
-        internalRepoName: data.internalRepoName,
-        externalRepoUrl: data.externalRepoUrl,
-      },
+      orgName: dbProject.orgName,
+      ownerEmail: dbProject.owner.email,
+      projectName: dbProject.projectName,
+      internalRepoName: data.internalRepoName,
+      externalRepoUrl: data.externalRepoUrl.startsWith('http') ? data.externalRepoUrl.split('://')[1] : data.externalRepoUrl,
     }
     if (data.isPrivate) {
-      ansibleData.extra.externalUserName = data.externalUserName
-      ansibleData.extra.externalToken = data.externalToken
+      ansibleData.externalUserName = data.externalUserName
+      ansibleData.externalToken = data.externalToken
     }
 
     await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/repos`, {
@@ -207,7 +200,7 @@ export const getUserProjectsController = async (req, res) => {
 
     app.log.info({
       ...getLogInfos(),
-      description: 'Projects successfully retrived',
+      description: 'Projects successfully retreived',
     })
     await send200(res, projects)
   } catch (error) {
