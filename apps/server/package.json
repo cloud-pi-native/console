@@ -20,6 +20,7 @@
     "lodash.kebabcase": "^4.1.1",
     "nanoid": "4.0.0",
     "pg": "8.8.0",
+    "qs": "^6.11.0",
     "sequelize": "^6.25.5",
     "shared": "workspace:^1.0.0"
   },

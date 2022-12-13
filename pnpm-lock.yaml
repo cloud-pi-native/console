@@ -153,6 +153,7 @@ importers:
       nanoid: 4.0.0
       pg: 8.8.0
       pino-pretty: ^9.1.1
+      qs: ^6.11.0
       sequelize: ^6.25.5
       sequelize-mock: ^0.10.2
       shared: workspace:^1.0.0
@@ -168,6 +169,7 @@ importers:
       lodash.kebabcase: 4.1.1
       nanoid: 4.0.0
       pg: 8.8.0
+      qs: 6.11.0
       sequelize: 6.25.6_pg@8.8.0
       shared: link:../../packages/shared
     devDependencies:
@@ -260,7 +262,7 @@ packages:
     engines: {node: '>=6.0.0'}
     hasBin: true
     dependencies:
-      '@babel/types': 7.20.2
+      '@babel/types': 7.20.5
     dev: false
 
   /@babel/runtime/7.20.1:
@@ -270,8 +272,8 @@ packages:
       regenerator-runtime: 0.13.10
     dev: false
 
-  /@babel/types/7.20.2:
-    resolution: {integrity: sha512-FnnvsNWgZCr232sqtXggapvlkk/tuwR/qhGzcmxI0GXLCjmPYQPzio2FbdlWuY6y1sHFfQKk+rRbUZ9VStQMog==}
+  /@babel/types/7.20.5:
+    resolution: {integrity: sha512-c9fst/h2/dcF7H+MJKZ2T0KjEQ8hY/BNnDk/H3XY8C4Aw/eWQXWn/lWntHF9ooUBnGmEvbfGrTgLWc+um0YDUg==}
     engines: {node: '>=6.9.0'}
     dependencies:
       '@babel/helper-string-parser': 7.19.4
