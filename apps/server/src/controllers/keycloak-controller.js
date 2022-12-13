@@ -12,31 +12,34 @@ export const getUsersKeyCloakController = async (req, res) => {
   })
 
   try {
-    const { keycloakSubdomain /* appOrigin, keycloakRealm, keycloakDomain */ } = keycloakConf
-    // const connect = await fetchJson(`http://${keycloakSubdomain}/token`,
-    //   {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/x-www-form-urlencoded',
-    //     }
-    //     body: {
+    const { keycloakSubdomain, keycloakDomain, keycloakRealm /* appOrigin, keycloakRealm,  */ } = keycloakConf
+    const resGetToken = await fetchJson(
+        // 'http://localhost:8090/realms/cloud-pi-native/protocol/openid-connect/token'
+        // `http://dso-console_keycloak:8080/realms/cloud-pi-native/protocol/openid-connect/token`,
+        `http://${keycloakSubdomain}/protocol/openid-connect/token`,
+        {
+          method: 'POST',
+          body: {
+            client_id: 'admin-cli',
+            username: 'admin',
+            password: 'admin',
+            grant_type: 'password',
 
-    //     }
-    // })
+          },
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+        })
 
-    const resGetToken = await fetchJson(`http://dso-console_keycloak:8080/realms/admin/protocol/openid-connect/token`, //`http://${keycloakSubdomain}/users`, ///${keycloakRealm}`, //`http://${keycloakSubdomain}/users`,
-      {
-        method: 'POST',
-        body: {
-          username:'admin',
-          password: 'admin',
-          grant_type: 'password',
-          client_id: 'admin-cli',
-        }
-      })
-    const response = await fetchJson(`http://dso-console_keycloak:8080/admin/realms/cloud-pi-native/users`, //`http://${keycloakSubdomain}/users`, ///${keycloakRealm}`, //`http://${keycloakSubdomain}/users`,
+    const response = await fetchJson(
+      // `http://localhost:8090/admin/realms/cloud-pi-native/users`,
+      //  `http://dso-console_keycloak:8080/admin/realms/cloud-pi-native/users`,
+      `http://${keycloakDomain}/admin/realms/${keycloakRealm}/users`,
       {
         method: 'GET',
+        headers: {
+          Authorization: `Bearer ${resGetToken.access_token}`,
+        },
       })
     console.log(response)
     app.log.info({

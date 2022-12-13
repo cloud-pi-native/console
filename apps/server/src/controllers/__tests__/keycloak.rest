@@ -1,0 +1,7 @@
+@remote-server = http://localhost:4000/api/v1 
+
+###
+{{remote-server}}/version
+
+###
+{{remote-server}}/keycloakinfo

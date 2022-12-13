@@ -1,11 +1,14 @@
+import qs from 'qs'
+
 export const fetchJson = async (url, { method, headers, body }) => {
+  const headersDefault = {
+    'Content-type': 'application/json',
+  }
+
   const res = await fetch(url, {
     method,
-    headers: {
-      'content-type': 'application/json',
-      ...headers,
-    },
-    body,
+    headers: headers || headersDefault,
+    body: body && qs.stringify(body),
   })
 
   const json = await res.json()
