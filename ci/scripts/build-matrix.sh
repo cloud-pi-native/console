@@ -16,11 +16,11 @@ DOCKER_VERSION="$(docker --version)"
 
 
 # Default
-REGISTRY="docker.io"
+# REGISTRY="docker.io"
 TAGS="latest"
 COMMIT_SHA="$(git rev-parse --short HEAD)"
-PLATFORMS="linux/`uname -m`"
-# PLATFORMS="linux/amd64,linux/arm64"
+PLATFORMS="linux/`uname -m`" # "linux/amd64,linux/arm64"
+CSV=false
 
 unset MAJOR_VERSION
 unset MINOR_VERSION
@@ -29,6 +29,8 @@ unset PATCH_VERSION
 # Declare script helper
 TEXT_HELPER="\nThis script aims to build matrix for CI/CD. It will parse the given docker-compose file and return a json object with images infos (name, tag, context, dockerfile and if it need to be build)
 Following flags are available:
+
+  -c    Use csv list formated output for tags instead of json array
 
   -f    Docker-compose file used to build matrix
 
@@ -48,9 +50,11 @@ print_help() {
 }
 
 # Parse options
-while getopts hf:p:r:t: flag
+while getopts hcf:p:r:t: flag
 do
   case "${flag}" in
+    c)
+      CSV=true;;
     f)
       COMPOSE_FILE=${OPTARG};;
     p)
@@ -74,11 +78,12 @@ if [ ! -f "$(readlink -f $COMPOSE_FILE)" ]; then
 fi
 
 
-if [[ "$REGISTRY" == *"/" ]]; then
-  REGISTRY=${REGISTRY%?}
+if [ "$REGISTRY" ] && [[ "$REGISTRY" != */ ]]; then
+  REGISTRY="$REGISTRY/"
 fi
 
 
+# Build core matrix
 MATRIX=$(cat "$COMPOSE_FILE" \
   | docker run -i --rm mikefarah/yq -o=json \
   | jq \
@@ -89,13 +94,14 @@ MATRIX=$(cat "$COMPOSE_FILE" \
     --arg major "$MAJOR_VERSION" \
     --arg minor "$MINOR_VERSION" \
     '.services | to_entries | map({
+      name: (.value.image | split(":")[0]),
       image: (.value.image),
       build: (
         if .value.build then {
           context: ($d + "/" + .value.build.context),
           dockerfile: ($d + "/" + .value.build.context + "/" + .value.build.dockerfile),
           target: (.value.build.target),
-          platforms: ($p),
+          platforms: [],
           tags: []
         } 
         else 
@@ -103,6 +109,7 @@ MATRIX=$(cat "$COMPOSE_FILE" \
         end)
       })')
 
+# Add tags in matrix
 for t in $(echo $TAGS | tr "," "\n"); do
   if [[ "$t" == *"."*"."* ]]; then
     MAJOR_VERSION="$(echo $t | cut -d "." -f 1)"
@@ -115,10 +122,11 @@ for t in $(echo $TAGS | tr "," "\n"); do
         --arg major "$MAJOR_VERSION" \
         --arg minor "$MINOR_VERSION" \
         'map(. |
-          if .build != false then .build.tags += [
-            ($r + "/" + .image + ":" + $major),
-            ($r + "/" + .image + ":" + $major + "." + $minor)
-          ]
+          if .build != false then 
+            .build.tags += [
+              ($r + .image + ":" + $major),
+              ($r + .image + ":" + $major + "." + $minor)
+            ]
           else
             .
           end
@@ -130,13 +138,56 @@ for t in $(echo $TAGS | tr "," "\n"); do
       --arg t "$t" \
       --arg r "$REGISTRY" \
       'map(. |
-        if .build != false then .build.tags += [
-          ($r + "/" + .image + ":" + $t)
-        ]
+        if .build != false then
+          .build.tags += [
+            ($r + .image + ":" + $t)
+          ]
         else
           .
         end
       )')
 done
 
-echo "$MATRIX"
+# Add platforms in matrix
+for p in $(echo $PLATFORMS | tr "," "\n"); do
+  MATRIX=$(echo "$MATRIX" \
+    | jq \
+      --arg p "$p" \
+      'map(. |
+        if .build != false then
+          .build.platforms += [
+            ($p)
+          ]
+        else
+          .
+        end
+      )')
+done
+
+# Update image key with first tag
+MATRIX=$(echo "$MATRIX" \
+  | jq \
+    --arg t "$TAGS" \
+    'map(. |
+      if .build != false then 
+        .image += (":" + ($t | split(",")[0]))
+      else
+        .
+      end
+    )')
+
+# Convert tags & platforms from json array to csv list (use join instead of @csv to don't get unwanted quotes)
+if [ "$CSV" == "true" ]; then
+  MATRIX=$(echo "$MATRIX" \
+    | jq -r \
+      'map(. |
+        if .build != false then 
+          .build.tags = (.build.tags | join(",")) |
+          .build.platforms = (.build.platforms | join(","))
+        else
+          .
+        end
+      )')
+fi
+
+echo "$MATRIX" | jq .
