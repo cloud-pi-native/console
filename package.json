@@ -1,6 +1,6 @@
 {
   "name": "dso-console",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -27,6 +27,8 @@
     "test:e2e-ci-build": "docker compose -f ./docker/docker-compose.ci.yml --env-file ./env/.env.ci build --pull"
   },
   "devDependencies": {
+    "@commitlint/cli": "^17.3.0",
+    "@commitlint/config-conventional": "^17.3.0",
     "husky": "^8.0.2",
     "lint-staged": "^13.0.3",
     "turbo": "^1.6.3"
