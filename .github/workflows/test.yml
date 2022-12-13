@@ -14,8 +14,8 @@ env:
   NODE_VERSION: "18.12.1"
 
 jobs:
-  unit-tests:
-    name: Run unit test suite
+  lint:
+    name: Run linter
     if: ${{ !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
     steps:
@@ -26,7 +26,44 @@ jobs:
         with:
           node-version: "${{ env.NODE_VERSION }}"
           check-latest: true
-      - uses: pnpm/action-setup@v2.0.1
+      - uses: pnpm/action-setup@v2
+        name: Install pnpm
+        id: pnpm-install
+        with:
+          version: 7
+          run_install: false
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_ENV
+      - uses: actions/cache@v3
+        name: Setup pnpm cache
+        with:
+          path: |
+            ${{ env.STORE_PATH }}
+            /home/runner/.cache/Cypress
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Check lint error
+        run: pnpm run lint
+
+  unit-tests:
+    name: Run unit test suite
+    runs-on: ubuntu-latest
+    needs:
+      - lint
+    steps:
+      - name: Checks-out repository
+        uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "${{ env.NODE_VERSION }}"
+          check-latest: true
+      - uses: pnpm/action-setup@v2
         name: Install pnpm
         id: pnpm-install
         with:
