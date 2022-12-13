@@ -19,4 +19,5 @@ jobs:
           release-type: node
           package-name: dso-console
           default-branch: main
+          pull-request-title-pattern: v${version}
           token: ${{ secrets.GITHUB_TOKEN }}
