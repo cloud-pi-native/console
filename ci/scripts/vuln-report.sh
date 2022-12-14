@@ -51,11 +51,11 @@ do
 done
 
 
-NOW="$(date +'%d/%m/%Y at %H:%M')"
+NOW="$(date +'%Y-%m-%d at %H:%M')"
 ARTIFACT_DOWNLOAD_URL="https://github.com/${REPO}/actions/runs/${RUN_ID}"
 
 
-if [ -z "$INPUT" ] || [ -z "$OUTPUT" ] || [ -z "$REPO" ] || [ -z "$RUN_ID" ] || [ -z "$TOKEN" ]; then
+if [ -z "$INPUT" ] || [ -z "$OUTPUT" ] || [ -z "$REPO" ] || [ -z "$RUN_ID" ]; then
   echo "Argument(s) missing, you should set all paramters."
   print_help
   exit 0
@@ -103,11 +103,10 @@ if [[ -n $(find $INPUT/images/*) ]]; then
 
   VULNERABILITY_REPORT_BODY="$VULNERABILITY_REPORT_BODY
 
-## Images scan"
+## Images"
 
   for row in $(echo "${FORMATED_REPORT}" | jq -r '.[] | @base64'); do
-    OS_NAME=$(echo "$(_jq "${row}" '.')" | jq -r '.results[] | select(.class == "os-pkgs") | .target' | awk '{split($0,a,":"); print a[1]}')
-    OS_FULL_NAME=$(echo "$(_jq "${row}" '.')" | jq -r '.results[] | select(.class == "os-pkgs") | .target')
+    IMAGE_NAME=$(echo "$(_jq "${row}" '.')" | jq -r '.name')
     OS_TOTAL_COUNT=$(echo "$(_jq "${row}" '.')" | jq -r '[ .results[] | select(.class == "os-pkgs") | .length ] | add')
     OS_CRITICAL_COUNT=$(echo "$(_jq "${row}" '.')" | jq -r '[ .results[] | select(.class == "os-pkgs") | .vulnerabilityType.critical ] | add')
     OS_HIGH_COUNT=$(echo "$(_jq "${row}" '.')" | jq -r '[ .results[] | select(.class == "os-pkgs") | .vulnerabilityType.high ] | add')
@@ -117,7 +116,8 @@ if [[ -n $(find $INPUT/images/*) ]]; then
 
     if [[ $OS_TOTAL_COUNT = 'null' ]]; then
       IMAGE_SCAN_SUMMARY="
-:white_check_mark: No security issues were detected."
+:white_check_mark: No security issues were detected.
+"
     else
       IMAGE_SCAN_SUMMARY="
 |     Critical    |     High    |     Medium    |     Low    |     Unknown    |    Total    |
@@ -128,18 +128,17 @@ if [[ -n $(find $INPUT/images/*) ]]; then
 
     VULNERABILITY_REPORT_BODY="$VULNERABILITY_REPORT_BODY
 
-### Results for image '$OS_NAME'
+### \`$IMAGE_NAME\`
 
-**Image tag**: $OS_FULL_NAME
-
-**Image scan**
+**OS Packages**
 
 $IMAGE_SCAN_SUMMARY"
 
     DEP_TOTAL_COUNT=$(echo "$(_jq "${row}" '.')" | jq -r '[ .results[] | select(.class == "lang-pkgs") | .length ] | add')
     if [[ $DEP_TOTAL_COUNT = 'null' ]]; then
       SCAN_SUMMARY="
-:white_check_mark: No security issues were detected."
+:white_check_mark: No security issues were detected.
+"
     else
       SCAN_SUMMARY="
 |   Target   |     Critical    |     High    |     Medium    |     Low    |     Unknown    |    Total    |
@@ -160,7 +159,7 @@ $IMAGE_SCAN_SUMMARY"
       done
     fi
     VULNERABILITY_REPORT_BODY="$VULNERABILITY_REPORT_BODY
-**Dependencies scan**
+**Language-specific packages**
 
 $SCAN_SUMMARY"
   done
@@ -194,12 +193,13 @@ if [[ -n $(find $INPUT/configs/*) ]]; then
 
   VULNERABILITY_REPORT_BODY="$VULNERABILITY_REPORT_BODY
 
-## Config scan"
+## Configs"
 
   TOTAL_CONFIG=$(echo $FORMATED_REPORT | jq -r '[ .results[].length ] | add')
   if [[ $TOTAL_CONFIG = 'null' ]]; then
       SCAN_SUMMARY="
-:white_check_mark: No security issues were detected."
+:white_check_mark: No security issues were detected.
+"
     else
       SCAN_SUMMARY="
 |   Target   |     Critical    |     High    |     Medium    |     Low    |     Unknown    |    Total    |

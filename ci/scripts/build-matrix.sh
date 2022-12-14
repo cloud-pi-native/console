@@ -94,8 +94,8 @@ MATRIX=$(cat "$COMPOSE_FILE" \
     --arg major "$MAJOR_VERSION" \
     --arg minor "$MINOR_VERSION" \
     '.services | to_entries | map({
-      name: (.value.image | split(":")[0]),
       image: (.value.image),
+      name: (.value.image | split(":")[0] | split("/")[-1]),
       build: (
         if .value.build then {
           context: ($d + "/" + .value.build.context),
@@ -170,7 +170,7 @@ MATRIX=$(echo "$MATRIX" \
     --arg t "$TAGS" \
     'map(. |
       if .build != false then 
-        .image += (":" + ($t | split(",")[0]))
+        .image = (.image  | split("/")[-1] + ":" + ($t | split(",")[0]))
       else
         .
       end

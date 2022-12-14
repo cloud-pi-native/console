@@ -25,7 +25,9 @@ jobs:
       - name: Generate matrix for build
         id: build-matrix
         run: |
-          echo "images=$(./ci/scripts/build-matrix.sh -f ./docker/docker-compose.prod.yml -c)" >> $GITHUB_OUTPUT
+          echo 'images<<EOF' >> $GITHUB_OUTPUT
+          ./ci/scripts/build-matrix.sh -f ./docker/docker-compose.prod.yml -c >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
 
   build:
     name: Build application
@@ -37,12 +39,18 @@ jobs:
         images: ${{ fromJSON(needs.build-matrix.outputs.images) }}
     steps:
       - name: Checks-out repository
+        if: ${{ matrix.images.build != false }}
         uses: actions/checkout@v3
       - name: Set up Docker buildx
+        if: ${{ matrix.images.build != false }}
         uses: docker/setup-buildx-action@v2
-      # - name: Set up QEMU (for multi platform build)
-      #   uses: docker/setup-qemu-action@v2
-      - name: Build and push docker images
+      - name: Set up QEMU (for multi platform build)
+        if: ${{ matrix.images.build != false }}
+        uses: docker/setup-qemu-action@v2
+      - name: Create image directory
+        if: ${{ matrix.images.build != false }}
+        run: mkdir ./artifacts
+      - name: Build docker image
         if: ${{ matrix.images.build != false }}
         uses: docker/build-push-action@v3
         with:
@@ -50,20 +58,21 @@ jobs:
           file: ${{ matrix.images.build.dockerfile }}
           tags: ${{ matrix.images.image }}
           target: ${{ matrix.images.build.target }}
-          # platforms: ${{ matrix.images.build.platforms }}
-          # push: true
-          outputs: type=docker,dest=/tmp/${{ matrix.images.name }}.tar
+          platforms: ${{ matrix.images.build.platforms }}
+          outputs: type=docker,dest=./artifacts/${{ matrix.images.name }}.tar
       - name: Upload artifact
+        if: ${{ matrix.images.build != false }}
         uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.images.name }}
-          path: /tmp/${{ matrix.images.name }}.tar
+          path: ./artifacts/${{ matrix.images.name }}.tar
           retention-days: 1
 
   images-scan:
     name: Scan images vulnerabilities
     runs-on: ubuntu-latest
     needs:
+      - build-matrix
       - build
     strategy:
       matrix:
@@ -77,14 +86,12 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: ${{ matrix.images.name }}
-          path: /tmp
+          path: ./artifacts
       - name: Load Docker image
         if: ${{ matrix.images.build != false }}
-        run: |
-          docker load --input /tmp/${{ matrix.images.name }}.tar
-          docker image ls -a
+        run: docker load --input ./artifacts/${{ matrix.images.name }}.tar
       - name: Create security artifacts directory
-        run: mkdir -p /tmp/vulnerability-report/images/
+        run: mkdir -p ./artifacts/vulnerability-report/images/
       - name: Run Trivy vulnerability scanner on images
         uses: aquasecurity/trivy-action@master
         with:
@@ -94,13 +101,13 @@ jobs:
           vuln-type: "os,library"
           security-checks: "vuln,secret,config"
           ignore-unfixed: true
-          output: "/tmp/vulnerability-report/images/${{ matrix.images.name }}.json"
+          output: "./artifacts/vulnerability-report/images/${{ matrix.images.name }}.json"
         continue-on-error: true
       - name: Upload scan artifacts
         uses: actions/upload-artifact@v3
         with:
           name: vulnerability-report
-          path: /tmp/vulnerability-report/
+          path: ./artifacts/vulnerability-report/
           retention-days: 14
 
   config-scan:
@@ -112,7 +119,7 @@ jobs:
       - name: Checks-out repository
         uses: actions/checkout@v3
       - name: Create security artifacts directory
-        run: mkdir -p /tmp/vulnerability-report/configs/
+        run: mkdir -p ./artifacts/vulnerability-report/configs/
       - name: Run Trivy vulnerability scanner on config files
         uses: aquasecurity/trivy-action@master
         with:
@@ -121,19 +128,20 @@ jobs:
           format: "json"
           exit-code: "1"
           ignore-unfixed: true
-          output: "/tmp/vulnerability-report/configs/config.json"
+          output: "./artifacts/vulnerability-report/configs/config.json"
         continue-on-error: true
       - name: Upload scan artifacts
         uses: actions/upload-artifact@v3
         with:
           name: vulnerability-report
-          path: /tmp/vulnerability-report/
+          path: ./artifacts/vulnerability-report/
           retention-days: 14
 
   vulnerability-report:
     name: Build vulnerability report
     runs-on: ubuntu-latest
     needs:
+      - build-matrix
       - images-scan
       - config-scan
     steps:
@@ -143,15 +151,17 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: vulnerability-report
-          path: /tmp/vulnerability-report
+          path: ./artifacts/vulnerability-report
       - name: Build vulnerability report
         run: |
-          sh ci/scripts/vuln-report.sh \
-            -i "/tmp/vulnerability-report" \
-            -o "/tmp/vulnerability-issue.md" \
+          ./ci/scripts/vuln-report.sh \
+            -i "./artifacts/vulnerability-report" \
+            -o "./artifacts/vulnerability-issue.md" \
             -p "${{ github.repository }}" \
             -r "${{ github.run_id }}"
-          echo "REPORT_BODY=$(cat /tmp/vulnerability-issue.md)" >> $GITHUB_ENV
+          echo 'REPORT_BODY<<EOF' >> $GITHUB_ENV
+          cat ./artifacts/vulnerability-issue.md >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
       - name: Create security report issue
         uses: imjohnbo/issue-bot@v3
         env:
