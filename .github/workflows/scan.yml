@@ -8,8 +8,7 @@ on:
       - synchronize
       - ready_for_review
     branches:
-      # - main
-      - "**"
+      - main
   workflow_dispatch:
 
 jobs:

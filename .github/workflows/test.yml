@@ -1,14 +1,14 @@
 name: Test application
 
 on:
-  # pull_request:
-  #   types:
-  #     - opened
-  #     - reopened
-  #     - synchronize
-  #     - ready_for_review
-  #   branches:
-  #     - "**"
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+    branches:
+      - "**"
   workflow_dispatch:
 
 env:
