@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid'
-import { allServices, envList } from 'shared/src/schemas/project.js'
+import { allServices } from 'shared/src/schemas/project.js'
 import { getLogInfos } from '../utils/logger.js'
 import {
   createProject,
@@ -10,7 +10,6 @@ import {
   removeUser,
 } from '../models/project-queries.js'
 import { send200, send201, send500 } from '../utils/response.js'
-import app from '../app.js'
 import { ansibleHost, ansiblePort } from '../utils/env.js'
 
 export const createProjectController = async (req, res) => {
@@ -23,12 +22,12 @@ export const createProjectController = async (req, res) => {
   try {
     project = await createProject(data)
 
-    app.log.info({
+    req.log.info({
       ...getLogInfos({ projectId: project.id }),
       description: 'Project successfully created in database',
     })
   } catch (error) {
-    app.log.error({
+    req.log.error({
       ...getLogInfos(),
       description: 'Cannot create project',
       error: error.message,
@@ -41,7 +40,7 @@ export const createProjectController = async (req, res) => {
       orgName: project.orgName,
       ownerEmail: project.owner.email,
       projectName: project.projectName,
-      envList,
+      envList: project.envList,
     }
 
     await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/projects`, {
@@ -50,12 +49,13 @@ export const createProjectController = async (req, res) => {
       headers: {
         'content-type': 'application/json',
         authorization: req.headers.authorization,
+        'request-id': req.id,
       },
     })
 
     send201(res, project)
   } catch (error) {
-    app.log.error({
+    req.log.error({
       ...getLogInfos(),
       description: 'Provisioning project with ansible failed',
       error,
@@ -74,7 +74,7 @@ export const addRepoController = async (req, res) => {
     dbProject = await getUserProjectById(projectId, userId)
     if (!dbProject) {
       const message = 'Missing permissions on this project'
-      app.log.error({
+      req.log.error({
         ...getLogInfos(),
         description: message,
       })
@@ -84,13 +84,13 @@ export const addRepoController = async (req, res) => {
     await addRepo(dbProject, data)
 
     const message = 'Git repository successfully added into project'
-    app.log.info({
+    req.log.info({
       ...getLogInfos({ projectId: dbProject.id }),
       description: message,
     })
   } catch (error) {
     const message = 'Cannot add git repository into project'
-    app.log.error({
+    req.log.error({
       ...getLogInfos(),
       description: `${message} erreur: ${error}`,
     })
@@ -122,7 +122,7 @@ export const addRepoController = async (req, res) => {
     send201(res, 'Git repository successfully added into project')
   } catch (error) {
     const message = 'Provisioning project with ansible failed'
-    app.log.error({
+    req.log.error({
       ...getLogInfos(),
       description: message,
       error,
@@ -146,14 +146,14 @@ export const addUserController = async (req, res) => {
     await addUser(dbProject, data)
 
     const message = 'User successfully added into project'
-    app.log.info({
+    req.log.info({
       ...getLogInfos({ projectId: dbProject.id }),
       description: message,
     })
     send201(res, message)
   } catch (error) {
     const message = 'Cannot add user into project'
-    app.log.error({
+    req.log.error({
       ...getLogInfos(),
       description: message,
       error,
@@ -176,14 +176,14 @@ export const removeUserController = async (req, res) => {
     await removeUser(dbProject, data)
 
     const message = 'User successfully removed from project'
-    app.log.info({
+    req.log.info({
       ...getLogInfos({ projectId: dbProject.id }),
       description: message,
     })
     send200(res, message)
   } catch (error) {
     const message = 'Cannot remove user from project'
-    app.log.error({
+    req.log.error({
       ...getLogInfos(),
       description: message,
       error,
@@ -198,14 +198,14 @@ export const getUserProjectsController = async (req, res) => {
   try {
     const projects = await getUserProjects(userId)
 
-    app.log.info({
+    req.log.info({
       ...getLogInfos(),
       description: 'Projects successfully retreived',
     })
     await send200(res, projects)
   } catch (error) {
     const message = 'Cannot retrieve projects'
-    app.log.error({
+    req.log.error({
       ...getLogInfos(),
       description: message,
       error,
@@ -221,14 +221,14 @@ export const getUserProjectByIdController = async (req, res) => {
   try {
     const project = await getUserProjectById(id, userId)
 
-    app.log.info({
+    req.log.info({
       ...getLogInfos({ projectId: project.id }),
       description: 'Project successfully retrived',
     })
     send200(res, project)
   } catch (error) {
     const message = 'Cannot retrieve project'
-    app.log.error({
+    req.log.error({
       ...getLogInfos({ projectId: id }),
       description: message,
       error,

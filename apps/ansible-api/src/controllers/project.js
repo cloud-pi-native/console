@@ -2,7 +2,6 @@ import { getLogInfos } from '../utils/logger.js'
 import { send200, send500 } from '../utils/response.js'
 import { runPlaybook } from '../ansible.js'
 import { playbooksDictionary } from '../utils/matches.js'
-import app from '../app.js'
 
 export const createProjectController = async (req, res) => {
   const data = req.body
@@ -12,14 +11,14 @@ export const createProjectController = async (req, res) => {
     runPlaybook(playbooks, data)
 
     const message = 'Provisioning project with ansible started'
-    app.log.info({
+    req.log.info({
       ...getLogInfos(),
       description: message,
     })
     send200(res, message)
   } catch (error) {
     const message = 'Provisioning project with ansible failed'
-    app.log.error({
+    req.log.error({
       ...getLogInfos(),
       description: message,
       error: error.message,
