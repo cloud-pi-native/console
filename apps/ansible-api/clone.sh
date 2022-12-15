@@ -17,7 +17,6 @@ if [ ! -z "$GIT_REPO" ]; then
   if [ ! -z "$GIT_BRANCH" ]; then
     BRANCH="--branch ${GIT_BRANCH}"
   fi
-  [ ! -d ${PLAYBOOK_DIR} ] && mkdir -p ${PLAYBOOK_DIR}
   git clone https://${AUTH}${GIT_REPO} ${PLAYBOOK_DIR} ${BRANCH}
 fi
 exec "$@"
