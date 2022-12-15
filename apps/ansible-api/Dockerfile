@@ -47,19 +47,22 @@ FROM node:18.12.1-bullseye-slim as prod
 
 WORKDIR /app
 RUN chown node:node /app
-
+ENV HOME=/home/node
+ENV PLAYBOOK_DIR=/dso
 RUN apt-get update && \
 	apt-get install python3 python3-pip libsasl2-dev python-dev libldap2-dev libssl-dev git -y && \
 	apt clean && \
 	ln -s /usr/bin/python3 /bin/python3
 RUN python3 -m pip install ansible-core==2.13.3 python-ldap python-gitlab requests hvac kubernetes
 
-ENV HOME=/home/node
-
-RUN mkdir /dso
-COPY --chown=node:node ./ansible/playbooks/* /dso
-COPY --chown=node:node --from=build /app/build .
 USER node
 RUN ansible-galaxy collection install kubernetes.core community.hashi\_vault community.general
+COPY --chown=node:node --from=build /app/build .
 
-ENTRYPOINT ["node", "src/server.js"]
+USER root
+COPY apps/ansible-api/clone.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
+USER node
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["node", "src/server.js"]

@@ -67,18 +67,6 @@ services:
     networks:
       - dso-network
 
-  clone_playbooks:
-    restart: no
-    build:
-      context: ../apps/init-ansible
-      dockerfile: Dockerfile
-    image: dso/console/init-ansible-api
-    environment:
-      GIT_USER: a
-      GIT_TOKEN: b
-      GIT_REPO: c
-      GIT_BRANCH: d
-
   ansible-api:
     restart: always
     build:
