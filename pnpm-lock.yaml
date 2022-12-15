@@ -27,6 +27,7 @@ importers:
       fastify-keycloak-adapter: ^1.6.2
       fastify-plugin: ^4.3.0
       lodash.kebabcase: ^4.1.1
+      nanoid: 4.0.0
       pino-pretty: ^9.1.1
       shared: workspace:^1.0.0
       test-utils: workspace:^1.0.0
@@ -38,6 +39,7 @@ importers:
       fastify: 4.9.2
       fastify-keycloak-adapter: 1.6.2
       lodash.kebabcase: 4.1.1
+      nanoid: 4.0.0
       shared: link:../../packages/shared
     devDependencies:
       '@vitest/coverage-c8': 0.25.2
@@ -93,7 +95,6 @@ importers:
       '@vitejs/plugin-vue': 3.2.0_vite@3.2.4+vue@3.2.45
       axios: 1.1.3
       keycloak-js: 20.0.1
-      nanoid: 4.0.0
       oh-vue-icons: 1.0.0-rc3_vue@3.2.45
       pinia: 2.0.23_vue@3.2.45
       shared: link:../../packages/shared
@@ -116,6 +117,7 @@ importers:
       markdown-it-emoji: 2.0.2
       markdown-it-link-attributes: 4.0.1
       markdown-it-prism: 2.3.0
+      nanoid: 4.0.0
       prism-theme-vars: 0.2.4
       stylelint: 14.15.0
       stylelint-config-html: 1.1.0_qendsqix7hqecpnpx4fjs6qry4
@@ -4088,7 +4090,6 @@ packages:
     resolution: {integrity: sha512-IgBP8piMxe/gf73RTQx7hmnhwz0aaEXYakvqZyE302IXW3HyVNhdNGC+O2MwMAVhLEnvXlvKtGbtJf6wvHihCg==}
     engines: {node: ^14 || ^16 || >=18}
     hasBin: true
-    dev: false
 
   /native-dash/1.23.2_tlo5wpislwvo3k6z3ar2t37as4:
     resolution: {integrity: sha512-Ev5OPB5vDZ+HLj4MXfAwZRHJV/LJr2LHjsIr1UN7jZigMS2JRpF7Qy77t66GURhtzp7GSWLNSLeRwXOg1iwJkQ==}
