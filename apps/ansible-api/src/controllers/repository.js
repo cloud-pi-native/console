@@ -11,7 +11,7 @@ export const createRepositoryController = async (req, res) => {
     runPlaybook(playbooks, data)
 
     const message = 'Provisioning repos in project with ansible started'
-    req.log.error({
+    req.log.info({
       ...getLogInfos(),
       description: message,
     })
@@ -21,7 +21,7 @@ export const createRepositoryController = async (req, res) => {
     req.log.error({
       ...getLogInfos(),
       description: message,
-      error: error.message,
+      error,
     })
     send500(res, message)
   }
