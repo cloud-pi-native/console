@@ -1,26 +1,6 @@
 version: '3.9'
 
 services:
-  keycloak:
-    restart: always
-    image: quay.io/keycloak/keycloak:19.0.2
-    container_name: dso-console_keycloak
-    ports:
-      - 8090:8080
-    volumes:
-      - ../keycloak/realms:/opt/keycloak/data/import
-    environment:
-      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
-      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
-    command: start-dev --import-realm
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-    networks:
-      - dso-network
-
   postgres:
     restart: always
     image: postgres:14.5
@@ -41,8 +21,6 @@ services:
     image: dso/console/server
     container_name: dso-console_server
     depends_on:
-      keycloak:
-        condition: service_healthy
       postgres:
         condition: service_started
     ports:
@@ -55,7 +33,7 @@ services:
       DB_PASS: ${POSTGRES_PASSWORD}
       DB_NAME: ${POSTGRES_DATABASE}
       SESSION_SECRET: ${SESSION_SECRET}
-      KEYCLOAK_DOMAIN: keycloak:8080
+      KEYCLOAK_DOMAIN: ${KEYCLOAK_DOMAIN}
       KEYCLOAK_REALM: ${KEYCLOAK_REALM}
       KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_BACKEND}
       KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_BACKEND}
@@ -75,9 +53,6 @@ services:
       target: prod
     image: dso/console/ansible-api
     container_name: dso-console_ansible-api
-    depends_on:
-      keycloak:
-        condition: service_healthy
     ports:
       - 8100:8100
     volumes:
@@ -90,7 +65,7 @@ services:
       ANSIBLE_PORT: ${ANSIBLE_PORT}
       SESSION_SECRET: ${SESSION_SECRET:-a-very-strong-secret-with-more-than-32-char}
       KEYCLOAK_PROTOCOL: ${KEYCLOAK_PROTOCOL:-http}
-      KEYCLOAK_DOMAIN: keycloak:8080
+      KEYCLOAK_DOMAIN: ${KEYCLOAK_DOMAIN}
       KEYCLOAK_REALM: ${KEYCLOAK_REALM:-cloud-pi-native}
       KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_BACKEND:-dso-console-ansible-api}
       KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_BACKEND:-client-secret-ansible-api}
@@ -112,7 +87,7 @@ services:
       - 8080:8080
     environment:
       KEYCLOAK_PROTOCOL: ${KEYCLOAK_PROTOCOL}
-      KEYCLOAK_DOMAIN: localhost:8090
+      KEYCLOAK_DOMAIN: ${KEYCLOAK_DOMAIN}
       KEYCLOAK_REALM: ${KEYCLOAK_REALM}
       KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_FRONTEND}
       KEYCLOAK_REDIRECT_URI: ${KEYCLOAK_REDIRECT_URI}
