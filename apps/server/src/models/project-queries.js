@@ -89,12 +89,25 @@ export const getProjectById = async (projectId) => {
 }
 
 export const getUserProjectById = async (projectId, userId) => {
-  const res = await sequelize.query(`SELECT data FROM "Projects" WHERE (("data"#>>'{owner,id}') = '${userId}' OR data->'users' @> '[{"id": "${userId}"}]') AND ("data"#>>'{id}') = '${projectId}' LIMIT 1;`, { type: sequelize.QueryTypes?.SELECT, model: getProjectModel(), plain: true })
+  const res = await sequelize.query(
+    'SELECT data FROM "Projects" WHERE (("data"#>>\'{owner,id}\') = $userId OR data->\'users\' @> \'[{"id": "$userId"}]\') AND ("data"#>>\'{id}\') = $projectId LIMIT 1;',
+    {
+      type: sequelize.QueryTypes?.SELECT,
+      bind: { projectId, userId },
+      model: getProjectModel(),
+      plain: true,
+    }).catch(e => { throw e })
   return res?.data
 }
 
 export const getUserProjects = async (userId) => {
-  const res = await sequelize.query(`SELECT data FROM "Projects" WHERE (("data"#>>'{owner,id}') = '${userId}' OR data->'users' @> '[{"id": "${userId}"}]');`, { type: sequelize.QueryTypes?.SELECT, model: getProjectModel() })
+  const res = await sequelize.query(
+    'SELECT data FROM "Projects" WHERE (("data"#>>\'{owner,id}\') = $userId OR data->\'users\' @> \'[{"id": "$userId"}]\');',
+    {
+      type: sequelize.QueryTypes?.SELECT,
+      bind: { userId },
+      model: getProjectModel(),
+    }).catch(e => { throw e })
   return res.map(project => project.data)
 }
 
