@@ -65,12 +65,17 @@ cd dso-console
 # Installer les dépendances du projet
 pnpm install
 
+# Copier les fichiers d'exemples
+./ci/scripts/init-env.sh
+
 # Construire les images docker
 pnpm run dev:build
 
 # Lancer l'application en mode développement
 pnpm run dev
 ```
+
+De nombreuses commandes sont disponible dans le fichier `package.json` à la racine du projet, vous pouvez lancer ces dernières à l'aide de la commande `pnpm run <le_nom_du_script>`.
 
 ### Accès aux services
 
@@ -92,7 +97,7 @@ Ce dépôt utilise des fichiers docker-compose, ils sont listés dans le dossier
 - [docker-compose.ct.yml](./ci/docker/docker-compose.ct.yml) pour les tests de composant sans interface graphique
 - [docker-compose.e2e.yml](./ci/docker/docker-compose.e2e.yml) pour les tests e2e avec interface graphique
 - [docker-compose.ci.yml](./ci/docker/docker-compose.ci.yml) pour les tests e2e sans interface graphique
-- [docker-compose.prod.yml](./ci/docker/docker-compose.prod.yml) pour la simulation de la production
+- [docker-compose.prod.yml](./ci/docker/docker-compose.prod.yml) pour la construction des images docker
 
 ## Contributions
 
