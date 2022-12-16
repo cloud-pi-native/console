@@ -1,0 +1,23 @@
+name: Create new release PR
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    name: Create new release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checks-out repository
+        uses: actions/checkout@v3
+      - name: Pre release new version
+        uses: google-github-actions/release-please-action@v3
+        id: release
+        with:
+          release-type: node
+          package-name: dso-console
+          default-branch: main
+          pull-request-title-pattern: v${version}
+          token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,16 @@
+@import url("./markdown.css");
+
+html,
+body,
+#app {
+  height: 100%;
+}
+
+.h-full {
+  height: 100%;
+}
+
+.disabled {
+  color: var(--text-disabled-grey);
+  cursor: not-allowed;
+}

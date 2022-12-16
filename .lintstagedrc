@@ -1,5 +1,7 @@
 {
-  "client/**/*.{js,vue}": "npm run format:client-js --",
-  "client/**/*.{vue,css}": "npm run format:client-css --",
-  "cypress/**/*.{js,cjs}": "npm run format:cypress --"
+  "**/client/**/*.{js,ts,vue}": "pnpm run format --filter client --",
+  "**/client/**/*.{vue,css}": "pnpm run format:style --filter client --",
+  "**/server/**/*.{js,cjs,ts}": "pnpm run format --filter server --",
+  "**/shared/**/*.{js,cjs,ts}": "pnpm run format --filter shared --",
+  "**/cypress/**/*.{js,cjs,ts}": "pnpm run format --filter cypress --"
 }

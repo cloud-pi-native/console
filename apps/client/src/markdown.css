@@ -1,0 +1,40 @@
+/* https://github.com/sindresorhus/github-markdown-css */
+@import url("github-markdown-css/github-markdown-light.css");
+
+/* https://github.com/antfu/prism-theme-vars */
+@import url("prism-theme-vars/base.css");
+
+.markdown-body ul {
+  list-style: inherit;
+}
+
+.markdown-body ol {
+  list-style: upper-roman;
+}
+
+.markdown-body img {
+  width: 100%;
+}
+
+.markdown-body {
+  --prism-font-family: "Input Mono", monospace;
+  --prism-foreground: #393a34;
+  --prism-background: #f3f6f9;
+  --prism-comment: #a0ada0;
+  --prism-string: #000091;
+  --prism-literal: #2f8a89;
+  --prism-number: #296aa3;
+  --prism-keyword: #1c6b48;
+  --prism-function: #d400c9;
+  --prism-boolean: #1c6b48;
+  --prism-constant: #a65e2b;
+  --prism-deleted: #a14f55;
+  --prism-class: #2993a3;
+  --prism-builtin: #ab5959;
+  --prism-property: #b58451;
+  --prism-namespace: #b05a78;
+  --prism-punctuation: #8e8f8b;
+  --prism-decorator: #bd8f8f;
+  --prism-regex: #ab5e3f;
+  --prism-json-property: #698c96;
+}

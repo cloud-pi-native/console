@@ -1,0 +1,175 @@
+version: '3.9'
+
+services:
+  keycloak:
+    restart: always
+    image: quay.io/keycloak/keycloak:19.0.2
+    container_name: dso-console_keycloak
+    ports:
+      - 8090:8080
+    volumes:
+      - ../keycloak/realms:/opt/keycloak/data/import
+      - ../keycloak/data:/opt/keycloak/data/h2
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+    command: start-dev --import-realm
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - dso-network
+
+  postgres:
+    restart: always
+    image: postgres:14.5
+    container_name: dso-console_postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DATABASE:-dso-console-db}
+      POSTGRES_USER: ${POSTGRES_USER:-admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
+    volumes:
+      - dso-postgres-data:/var/lib/postgresql/data
+    networks:
+      - dso-network
+
+  pgadmin:
+    restart: always
+    image: dpage/pgadmin4:6.16
+    container_name: dso-console_pgadmin
+    depends_on:
+      - postgres
+    volumes:
+      - dso-pgadmin-data:/var/lib/pgadmin
+      - ../db/pgadmin/config/servers.json:/pgadmin4/servers.json
+    ports:
+      - 8081:80
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@dso.fr}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+    networks:
+      - dso-network
+
+  server:
+    restart: always
+    build:
+      context: ..
+      dockerfile: apps/server/Dockerfile
+      target: dev
+    image: dso-console/server:dev
+    container_name: dso-console_server
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      postgres:
+        condition: service_started
+    ports:
+      - 4000:4000
+    volumes:
+      - /app/node_modules/
+      - ../apps/server:/app/apps/server
+      - /app/apps/server/node_modules/
+      - ../packages/shared:/app/packages/shared
+      - /app/packages/shared/node_modules/
+    environment:
+      SERVER_PORT: ${SERVER_PORT:-4000}
+      DB_HOST: ${POSTGRES_HOST:-postgres}
+      DB_PORT: ${POSTGRES_PORT:-5432}
+      DB_USER: ${POSTGRES_USER:-admin}
+      DB_PASS: ${POSTGRES_PASSWORD:-admin}
+      DB_NAME: ${POSTGRES_DATABASE:-dso-console-db}
+      SESSION_SECRET: ${SESSION_SECRET:-a-very-strong-secret-with-more-than-32-char}
+      KEYCLOAK_PROTOCOL: ${KEYCLOAK_PROTOCOL:-http}
+      KEYCLOAK_DOMAIN: keycloak:8080
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-cloud-pi-native}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_BACKEND:-dso-console-backend}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_BACKEND:-client-secret-backend}
+      ANSIBLE_HOST: ${ANSIBLE_HOST:-ansible-api}
+      ANSIBLE_PORT: ${ANSIBLE_PORT:-8100}
+      NODE_ENV: development
+    networks:
+      - dso-network
+
+  ansible-api:
+    restart: always
+    build:
+      context: ..
+      dockerfile: apps/ansible-api/Dockerfile
+      target: dev
+    image: dso-console/ansible-api:dev
+    container_name: dso-console_ansible-api
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    ports:
+      - 8100:8100
+    volumes:
+      - /app/node_modules/
+      - ../apps/ansible-api:/app/apps/ansible-api
+      - /app/apps/ansible-api/node_modules/
+      - ../ansible/.vault-secret:${CONFIG_DIR:-/config}/.vault-secret
+      - ../ansible/.kubeconfig:${CONFIG_DIR:-/config}/.kubeconfig
+      - ../ansible/playbooks:${PLAYBOOK_DIR:-/dso}
+    environment:
+      PLAYBOOK_DIR: ${PLAYBOOK_DIR:-/dso}
+      CONFIG_DIR: ${CONFIG_DIR:-/config}
+      ANSIBLE_PORT: ${ANSIBLE_PORT:-8100}
+      SESSION_SECRET: ${SESSION_SECRET:-a-very-strong-secret-with-more-than-32-char}
+      KEYCLOAK_PROTOCOL: ${KEYCLOAK_PROTOCOL:-http}
+      KEYCLOAK_DOMAIN: keycloak:8080
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-cloud-pi-native}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_BACKEND:-dso-console-ansible-api}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_BACKEND:-client-secret-ansible-api}
+      NODE_ENV: development
+      INVENTORY: dev
+    networks:
+      - dso-network
+
+  client:
+    restart: always
+    build:
+      context: ..
+      dockerfile: apps/client/Dockerfile
+      target: dev
+    image: dso-console/client:dev
+    container_name: dso-console_client
+    depends_on:
+      - server
+    ports:
+      - 8080:8080
+    volumes:
+      - /app/node_modules/
+      - ../apps/client:/app/apps/client
+      - /app/apps/client/node_modules/
+      - ../packages/shared:/app/packages/shared
+      - /app/packages/shared/node_modules/
+    environment:
+      KEYCLOAK_PROTOCOL: ${KEYCLOAK_PROTOCOL:-http}
+      KEYCLOAK_DOMAIN: localhost:8090
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-cloud-pi-native}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_FRONTEND:-dso-console-frontend}
+      KEYCLOAK_REDIRECT_URI: ${KEYCLOAK_REDIRECT_URI:-http://localhost:8080}
+      SERVER_HOST: ${SERVER_HOST:-server}
+      SERVER_PORT: ${SERVER_PORT:-4000}
+      CLIENT_PORT: ${CLIENT_PORT:-8080}
+      ARGOCD_URL: ${ARGOCD_URL:-https://argo-cd.readthedocs.io}
+      GITLAB_URL: ${GITLAB_URL:-https://gitlab.com}
+      NEXUS_URL: ${NEXUS_URL:-https://sonatype.com/products/nexus-repository}
+      QUAY_URL: ${QUAY_URL:-https://quay.io}
+      SONARQUBE_URL: ${SONARQUBE_URL:-https://www.sonarqube.org}
+      VAULT_URL: ${VAULT_URL:-https://www.vaultproject.io}
+    networks:
+      - dso-network
+
+networks:
+  dso-network:
+    driver: bridge
+    # driver_opts:
+    # com.docker.network.driver.mtu: 1450
+
+volumes:
+  dso-keycloak-data:
+  dso-pgadmin-data:
+  dso-postgres-data:

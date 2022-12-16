@@ -1,0 +1,43 @@
+import { getProjectbyId } from '../support/func.js'
+
+const candilib = getProjectbyId('9FG4CeGkMavI5CtAh_3Ss')
+
+describe('Sidebar', () => {
+  it('Should display Sidebar, not loggedIn', () => {
+    cy.visit('/')
+      .getByDataTestid('mainMenu').should('be.visible')
+      .getByDataTestid('menuProjectsList').should('not.exist')
+      .getByDataTestid('menuProjectsBtn').should('not.exist')
+      .getByDataTestid('menuDoc').click()
+      .getByDataTestid('menuProjectsBtn').should('not.exist')
+      .url().should('contain', '/doc')
+      .getByDataTestid('menuDoc').should('have.class', 'router-link-active')
+  })
+  it('Should display Sidebar, loggedIn', () => {
+    cy.kcLogin('test')
+
+    cy.visit('/')
+      .getByDataTestid('mainMenu').should('be.visible')
+      .getByDataTestid('menuProjectsList').should('not.be.visible')
+      .getByDataTestid('menuProjectsBtn').click()
+      .getByDataTestid('menuProjectsList').should('be.visible')
+      .getByDataTestid('menuMyProjects').click()
+      .url().should('contain', '/projects')
+      .getByDataTestid(`projectTile-${candilib.projectName}`).click()
+      .getByDataTestid('menuProjectsList').should('be.visible')
+      .url().should('contain', `/projects/${candilib.id}/dashboard`)
+      .getByDataTestid('menuServices').click()
+      .getByDataTestid('menuProjectsList').should('be.visible')
+      .url().should('contain', `/projects/${candilib.id}/services`)
+      .getByDataTestid('menuTeam').click()
+      .getByDataTestid('menuProjectsList').should('be.visible')
+      .url().should('contain', `/projects/${candilib.id}/team`)
+      .getByDataTestid('menuRepos').click()
+      .getByDataTestid('menuProjectsList').should('be.visible')
+      .url().should('contain', `/projects/${candilib.id}/repos`)
+      .getByDataTestid('menuDoc').click()
+      .getByDataTestid('menuProjectsList').should('not.be.visible')
+      .url().should('contain', '/doc')
+      .getByDataTestid('menuDoc').should('have.class', 'router-link-active')
+  })
+})

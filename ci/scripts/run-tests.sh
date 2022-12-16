@@ -17,39 +17,34 @@ NPM_VERSION="$(npm --version)"
 DOCKER_VERSION="$(docker --version)"
 DOCKER_COMPOSE_VERSION="$(docker compose version)"
 
-# Default arguments
-RUN_UNIT_TESTS=false
-RUN_E2E_TESTS=false
+# Default
+ENV_FILE="$PROJECT_DIR/env/.env.ci"
+RUN_UNIT_TESTS="false"
+RUN_COMPONENT_TESTS="false"
+RUN_E2E_TESTS="false"
 
 # Declare script helper
 TEXT_HELPER="\nThis script aims to run application tests.
-
 Following flags are available:
 
-  -e, --e2e     Run e2e tests.
+  -c    Run component tests
 
-  -u, --unit    Run unit tests.
+  -e    Run e2e tests
 
-  -h, --help    Print script help.\n\n"
+  -u    Run unit tests
+  
+  -h    Print script help\n\n"
 
 print_help() {
   printf "$TEXT_HELPER"
 }
 
 # Parse options
-while getopts :heu-: flag
+while getopts hceu flag
 do
   case "${flag}" in
-    -)
-      case "${OPTARG}" in
-        e2e)
-          RUN_E2E_TESTS=true;;
-        unit)
-          RUN_UNIT_TESTS=true;;
-        help | *)
-          print_help
-          exit 0;;
-      esac;;
+    c)
+      RUN_COMPONENT_TESTS=true;;
     e)
       RUN_E2E_TESTS=true;;
     u)
@@ -60,54 +55,96 @@ do
   esac
 done
 
-if [ "$RUN_E2E_TESTS" = false ] && [ "$RUN_UNIT_TESTS" = false ]; then
-  echo "\nArgument(s) missing, you don't specify any kind of test to run."
+
+# Script condition
+if [ "$RUN_UNIT_TESTS" == "false" ] && [ "$RUN_E2E_TESTS" == "false" ] && [ "$RUN_COMPONENT_TESTS" == "false" ]; then
+  printf "\nArgument(s) missing, you don't specify any kind of test to run.\n"
   print_help
   exit 0
 fi
 
-# Copy env example files
-ENV_FILE=cypress/env/.env
-if [ ! -f "$PROJECT_DIR/$ENV_FILE" ]; then
-  printf "\n${red}Optional.${no_color} Trying to copy file '.env-example' to '.env' because it's missing\n"
-
-  if [ -f "$PROJECT_DIR/$ENV_FILE-example" ]; then
-    cp $PROJECT_DIR/$ENV_FILE-example $PROJECT_DIR/$ENV_FILE
-    printf "\n${red}Optional.${no_color} Successful copying\n"
-  else
-    printf "\n${red}Optional.${no_color} Error while trying to copy, '$PROJECT_DIR/$ENV_FILE-example' is missing too\n"
+checkDockerRunning () {
+  if [ ! -x "$(command -v docker)" ]; then
+    printf "\nThis script uses docker, and it isn't running - please start docker and try again!\n"
     exit 1
   fi
-fi
+}
 
-# Run tests
+checkComposePlugin () {
+  if [ ! "$DOCKER_COMPOSE_VERSION" ]; then
+    printf "\nThis script uses docker compose plugin, and it isn't installed - please install docker compose plugin and try again!\n"
+    exit 1
+  fi
+}
+
+
+# Settings
 printf "\nScript settings:
   -> node version: $NODE_VERSION
   -> npm version: $NPM_VERSION
   -> docker version: $DOCKER_VERSION
-  -> docker-compose version: $DOCKER_COMPOSE_VERSION\n"
+  -> docker-compose version: $DOCKER_COMPOSE_VERSION
+  -> env file: $ENV_FILE
+  -> run unit tests: $RUN_UNIT_TESTS
+  -> run component tests: $RUN_COMPONENT_TESTS
+  -> run e2e tests: $RUN_E2E_TESTS\n"
 
-if [ "$RUN_UNIT_TESTS" = true ]; then
-  printf "\n${red}${i}.${no_color} Launch unit tests\n"
-  i=$(($i + 1))
 
-  cd $PROJECT_DIR
+# Run unit tests
+if [ "$RUN_UNIT_TESTS" == "true" ]; then
+  cd "$PROJECT_DIR"
   npm run test
 fi
 
-if [ "$RUN_E2E_TESTS" = true ]; then
-  if [ ! -x "$(command -v docker)" ]; then
-    echo "\nThis script uses docker, and it isn't running - please start docker and try again!\n"
-    exit 1
-  fi
-  if [ ! "$DOCKER_COMPOSE_VERSION" ]; then
-    echo "\nThis script uses docker compose plugin, and it isn't installed - please install docker compose plugin and try again!\n"
-    exit 1
-  fi
+# Run component tests
+if [ "$RUN_COMPONENT_TESTS" == "true" ]; then
+  checkDockerRunning
+  checkComposePlugin
 
+  printf "\n${red}${i}.${no_color} Launch component tests\n"
+  i=$(($i + 1))
+
+  cd "$PROJECT_DIR"
+  docker compose \
+    --file "$PROJECT_DIR/docker/docker-compose.ct.yml" \
+    --env-file "$ENV_FILE" \
+    up \
+      --exit-code-from cypress \
+      --remove-orphans
+
+  printf "\n${red}${i}.${no_color} Remove stopped containers\n"
+  i=$(($i + 1))
+
+  docker compose \
+    --file "$PROJECT_DIR/docker/docker-compose.ct.yml" \
+    --env-file "$ENV_FILE" \
+    down \
+      --volumes
+fi
+
+# Run e2e tests
+if [ "$RUN_E2E_TESTS" == "true" ]; then
+  checkDockerRunning
+  checkComposePlugin
+  
   printf "\n${red}${i}.${no_color} Launch e2e tests\n"
   i=$(($i + 1))
 
-  cd $PROJECT_DIR
-  npm run test:e2e
+  cd "$PROJECT_DIR"
+  docker compose \
+    --file "$PROJECT_DIR/docker/docker-compose.ci.yml" \
+    --env-file "$ENV_FILE" \
+    up \
+      --exit-code-from cypress \
+      --attach cypress \
+      --remove-orphans
+
+  printf "\n${red}${i}.${no_color} Remove stopped containers\n"
+  i=$(($i + 1))
+
+  docker compose \
+    --file "$PROJECT_DIR/docker/docker-compose.ci.yml" \
+    --env-file "$ENV_FILE" \
+    down \
+      --volumes
 fi

@@ -1,0 +1,24 @@
+{
+  "name": "test-utils",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "node src/index.js",
+    "lint": "eslint ./src",
+    "format": "eslint ./src --ext .js,.cjs,.ts --fix"
+  },
+  "dependencies": {
+    "@faker-js/faker": "^7.6.0",
+    "shared": "workspace:^1.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.27.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "^15.5.1",
+    "eslint-plugin-promise": "^6.1.1"
+  }
+}

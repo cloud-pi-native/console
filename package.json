@@ -1,20 +1,39 @@
 {
   "name": "dso-console",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "private": true,
   "type": "module",
   "scripts": {
     "prepare": "husky install",
-    "test:client": "cd client && npm run test:unit",
-    "test:e2e": "docker compose -f ./docker-compose.e2e.yml up --exit-code-from cypress --attach cypress",
-    "lint:client": "cd client && npm run lint",
-    "lint:cypress": "cd cypress && npm run lint",
-    "format:client-js": "cd client && npm run format:js && npm run format:css",
-    "format:client-css": "cd client && npm run format:js && npm run format:css",
-    "format:cypress": "cd cypress && npm run format"
+    "prod": "npm run prod:up; npm run prod:down -v",
+    "prod:build": "docker compose -f ./docker/docker-compose.prod.yml --env-file ./env/.env build --pull",
+    "prod:up": "docker compose -f ./docker/docker-compose.prod.yml --env-file ./env/.env up",
+    "prod:down": "docker compose -f ./docker/docker-compose.prod.yml --env-file ./env/.env down",
+    "dev": "npm run dev:up; npm run dev:down",
+    "dev:build": "docker compose -f ./docker/docker-compose.dev.yml --env-file ./env/.env build --pull",
+    "dev:up": "docker compose -f ./docker/docker-compose.dev.yml --env-file ./env/.env up --attach server --attach client --attach ansible-api",
+    "dev:down": "docker compose -f ./docker/docker-compose.dev.yml --env-file ./env/.env down -v",
+    "lint": "turbo run lint",
+    "format": "turbo run format",
+    "format:style": "turbo run format:style",
+    "test": "turbo run test --concurrency 1",
+    "test:client": "turbo run test --filter client",
+    "test:server": "turbo run test --filter server",
+    "test:ct": "pnpm --filter client run cypress:open-ct",
+    "test:ct-ci": "docker compose -f ./docker/docker-compose.ct.yml --env-file ./env/.env.ci up --exit-code-from cypress --quiet-pull; docker compose -f ./docker/docker-compose.ct.yml --env-file ./env/.env.ci down -v",
+    "test:e2e": "docker compose -f ./docker/docker-compose.e2e.yml --env-file ./env/.env up -d; cd ./apps/client; npm run cypress:open; cd -; docker compose -f ./docker/docker-compose.e2e.yml --env-file ./env/.env down -v",
+    "test:e2e-build": "docker compose -f ./docker/docker-compose.e2e.yml --env-file ./env/.env build --pull",
+    "test:e2e-ci": "docker compose -f ./docker/docker-compose.ci.yml --env-file ./env/.env.ci up --attach cypress --exit-code-from cypress --quiet-pull; docker compose -f ./docker/docker-compose.ci.yml --env-file ./env/.env.ci down -v",
+    "test:e2e-ci-build": "docker compose -f ./docker/docker-compose.ci.yml --env-file ./env/.env.ci build --pull"
   },
   "devDependencies": {
-    "husky": "^8.0.1",
-    "lint-staged": "^13.0.3"
+    "@commitlint/cli": "^17.3.0",
+    "@commitlint/config-conventional": "^17.3.0",
+    "husky": "^8.0.2",
+    "lint-staged": "^13.0.3",
+    "turbo": "^1.6.3"
+  },
+  "volta": {
+    "node": "18.12.1"
   }
 }

@@ -8,7 +8,41 @@
 
 
 # modules
+node_modules
 **/node_modules
 
 # env
 .env
+.env.ci
+.env.test
+.env.prod
+
+# cypress
+screenshots
+
+# act
+**/act/artifacts
+**/act/docker/registry/auth
+**/act/docker/registry/data
+
+# vitest
+coverage
+apps/client/vite.config.js.timestamp-*.mjs
+
+# sonarqube
+.scannerwork
+
+# keycloak
+keycloak/data
+
+# turbo
+.turbo
+
+# vault file
+.vault-secret
+
+# kube config
+.kubeconfig
+
+# dist
+dist
