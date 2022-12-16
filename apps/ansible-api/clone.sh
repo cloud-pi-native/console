@@ -8,7 +8,8 @@ fi
 
 # assume you want to clone a repo if you pass GIT_REPO var
 if [ ! -z "$GIT_REPO" ]; then
-  [ ! -d "$PLAYBOOK_DIR" ] && mkdir -p "$PLAYBOOK_DIR"
+  [ ! -d "$CLONE_DIR" ] && mkdir -p "$CLONE_DIR"
+  rm "$CLONE_DIR"/* "$CLONE_DIR"/.* -rf || true
   # assume you want to clone with auth if you pass GIT_USER var
   if [ ! -z "$GIT_USER" ]; then
     AUTH="${GIT_USER}:${GIT_TOKEN}@"
@@ -17,6 +18,6 @@ if [ ! -z "$GIT_REPO" ]; then
   if [ ! -z "$GIT_BRANCH" ]; then
     BRANCH="--branch ${GIT_BRANCH}"
   fi
-  git clone https://${AUTH}${GIT_REPO} ${PLAYBOOK_DIR} ${BRANCH}
+  git clone https://${AUTH}${GIT_REPO} ${CLONE_DIR} ${BRANCH}
 fi
 exec "$@"
