@@ -30,7 +30,7 @@ export const createProjectController = async (req, res) => {
     req.log.error({
       ...getLogInfos(),
       description: 'Cannot create project',
-      error: error.message,
+      error,
     })
     return send500(res, error.message)
   }
@@ -92,7 +92,8 @@ export const addRepoController = async (req, res) => {
     const message = 'Cannot add git repository into project'
     req.log.error({
       ...getLogInfos(),
-      description: `${message} erreur: ${error}`,
+      description: message,
+      error,
     })
     return send500(res, message)
   }
