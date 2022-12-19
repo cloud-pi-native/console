@@ -120,8 +120,8 @@ services:
       KEYCLOAK_PROTOCOL: ${KEYCLOAK_PROTOCOL:-http}
       KEYCLOAK_DOMAIN: keycloak:8080
       KEYCLOAK_REALM: ${KEYCLOAK_REALM:-cloud-pi-native}
-      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_BACKEND:-dso-console-ansible-api}
-      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_BACKEND:-client-secret-ansible-api}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_ANSIBLE:-dso-console-ansible-api}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_ANSIBLE:-client-secret-ansible-api}
       NODE_ENV: development
       INVENTORY: dev
     networks:
