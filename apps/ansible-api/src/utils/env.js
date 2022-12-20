@@ -1,3 +1,6 @@
+import { resolve } from 'path'
+import { fileURLToPath } from 'url'
+
 export const isDev = process.env.NODE_ENV === 'development'
 
 export const isTest = process.env.NODE_ENV === 'test'
@@ -6,9 +9,7 @@ export const isProd = process.env.NODE_ENV === 'production'
 
 export const isCI = process.env.CI === 'true'
 
-export const playbookDir = process.env.PLAYBOOK_DIR?.endsWith('/')
-  ? process.env.PLAYBOOK_DIR
-  : process.env.PLAYBOOK_DIR + '/'
+export const playbookDir = resolve(fileURLToPath(import.meta.url), process.env.PLAYBOOK_DIR) + '/'
 
 export const configDir = process.env.CONFIG_DIR?.endsWith('/')
   ? process.env.CONFIG_DIR

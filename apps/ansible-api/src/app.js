@@ -15,12 +15,19 @@ const fastifyConf = {
   genReqId: () => nanoid(),
 }
 
-const app = fastify(fastifyConf)
+const routes = {}
+const app = await fastify(fastifyConf)
   .register(helmet)
   .register(fastifyCookie)
   .register(fastifySession, sessionConf)
   .register(keycloak, keycloakConf)
+  // eslint-disable-next-line no-return-assign
+  .addHook('onRoute', route => routes[route.path]
+    ? routes[route.path].push(route.method)
+    : routes[route.path] = [route.method].flat())
   .register(apiRouter, { prefix: apiPrefix })
   .register(miscRouter)
+
+Object.keys(routes).sort((a, b) => a.localeCompare(b)).map(key => app.log.info(`${key.padEnd(30, ' ')}${JSON.stringify(routes[key])}`))
 
 export default app

@@ -50,12 +50,12 @@ export const createProjectController = async (req, res) => {
     }
     await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/projects`, {
       method: 'POST',
-      body: JSON.stringify(ansibleData),
       headers: {
         'Content-Type': 'application/json',
         authorization: req.headers.authorization,
         'request-id': req.id,
       },
+      body: ansibleData,
     })
 
     try {
