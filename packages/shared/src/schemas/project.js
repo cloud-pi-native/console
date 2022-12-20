@@ -31,6 +31,12 @@ export const allEnv = [
   'prod',
 ]
 
+export const status = [
+  'initializing',
+  'created',
+  'failed',
+]
+
 export const projectSchema = Joi.object({
   id: Joi.string()
     .required(),
@@ -61,4 +67,8 @@ export const projectSchema = Joi.object({
   users: Joi.array()
     .items(userSchema)
     .unique('email'),
+
+  status: Joi.string()
+    .valid(...status)
+    .required(),
 })

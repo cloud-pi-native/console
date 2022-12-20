@@ -8,15 +8,18 @@ import {
   getUserProjects,
   getUserProjectById,
   removeUser,
+  updateProject,
 } from '../models/project-queries.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import { ansibleHost, ansiblePort } from '../utils/env.js'
+import http from 'http'
 
 export const createProjectController = async (req, res) => {
   const data = req.body
   data.id = nanoid()
   data.services = allServices
   data.owner = req.session.user
+  data.status = 'initializing'
 
   let project
   try {
@@ -26,6 +29,7 @@ export const createProjectController = async (req, res) => {
       ...getLogInfos({ projectId: project.id }),
       description: 'Project successfully created in database',
     })
+    send201(res, project)
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
@@ -42,18 +46,29 @@ export const createProjectController = async (req, res) => {
       projectName: project.projectName,
       envList: project.envList,
     }
-
-    await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/projects`, {
+    const jsonData = JSON.stringify(ansibleData)
+    const options = {
+      hostname: ansibleHost,
+      port: ansiblePort,
+      path: '/api/v1/projects',
       method: 'POST',
-      body: JSON.stringify(ansibleData),
       headers: {
         'content-type': 'application/json',
+        'Content-Length': Buffer.byteLength(jsonData),
         authorization: req.headers.authorization,
         'request-id': req.id,
       },
+    }
+    const ansibleReq = http.request(options, (ansibleRes) => {
+      if (ansibleRes.statusCode === 201) {
+        project.status = 'created'
+      } else {
+        project.status = 'failed'
+      }
+      updateProject(project)
     })
-
-    send201(res, project)
+    ansibleReq.write(jsonData)
+    ansibleReq.end()
   } catch (error) {
     req.log.error({
       ...getLogInfos(),

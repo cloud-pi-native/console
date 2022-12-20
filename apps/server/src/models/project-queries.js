@@ -1,4 +1,4 @@
-import { Op } from 'sequelize'
+import { Op, QueryTypes } from 'sequelize'
 import { sequelize } from '../connect.js'
 import { getProjectModel } from './project.js'
 import { projectSchema } from 'shared/src/schemas/project.js'
@@ -12,6 +12,23 @@ export const createProject = async (project) => {
 
   const res = await getProjectModel().create({ data: project })
   return res?.data
+}
+
+export const updateProject = async (project) => {
+  await projectSchema.validateAsync(project)
+
+  const res = await getProjectModel().update({
+    data: project,
+  }, {
+    where: {
+      data: {
+        id: {
+          [Op.eq]: project.id,
+        },
+      },
+    },
+  })
+  return res
 }
 
 export const addRepo = async (project, repo) => {
@@ -98,6 +115,12 @@ export const getUserProjectById = async (projectId, userId) => {
       plain: true,
     }).catch(e => { throw e })
   return res?.data
+}
+
+export const getAllProject = async () => {
+  const res = await sequelize.query(
+    'SELECT * FROM "Projects";', { type: QueryTypes.SELECT }).catch(e => { throw e })
+  return res
 }
 
 export const getUserProjects = async (userId) => {

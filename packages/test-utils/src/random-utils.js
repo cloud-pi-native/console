@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import { allOrgNames, allServices, allEnv } from 'shared'
+import { allOrgNames, allServices, allEnv, status } from 'shared'
 
 export const getRandomUuid = () => {
   return faker.datatype.uuid()
@@ -48,4 +48,8 @@ export const getRandomRepo = () => {
 
 export const getRandomEnvList = (nbEnv) => {
   return faker.helpers.arrayElements(allEnv, nbEnv)
+}
+
+export const getRandomStatus = () => {
+  return faker.helpers.arrayElement(status)
 }

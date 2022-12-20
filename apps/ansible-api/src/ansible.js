@@ -4,7 +4,7 @@ import app from './app.js'
 import { playbookDir } from './utils/env.js'
 import { convertVars } from './utils/tools.js'
 
-export const ansible = (playbooks, args) => {
+export const ansible = (playbooks, args, resolve, reject) => {
   const [playbook, ...lastsPlaybooks] = playbooks // another way to get a 'shifted' array without mutate it
   const playbookSpawn = spawn('ansible-playbook', [`${playbookDir}${playbook}`, ...args])
   app.log.info(`Run ${playbookDir}${playbook} ${args.join(' ')}`)
@@ -13,19 +13,23 @@ export const ansible = (playbooks, args) => {
   playbookSpawn.stderr.on('data', (data) => { logs += data })
   playbookSpawn.on('close', (code) => {
     if (code !== 0) {
-      app.log.error(`Playbook ${playbook} failed with rc ${code}`)
       app.log.error(logs.toString())
+      app.log.error(`Playbook ${playbook} failed with rc ${code}`)
+      reject()
       return
     }
     app.log.info(logs.toString())
+    app.log.info(`Playbook ${playbook} terminated correctly`)
     if (lastsPlaybooks.length) {
-      ansible(lastsPlaybooks, args)
+      ansible(lastsPlaybooks, args, resolve, reject)
+    } else {
+      resolve()
     }
   })
   playbookSpawn.on('error', (err) => {
     app.log.error(err)
+    reject()
   })
-  return playbookSpawn
 }
 
 export const checkPlaybooksAccess = (playbooksDictionary) => {
@@ -49,5 +53,7 @@ export const runPlaybook = (playbooks, vars) => {
     '--connection=local',
     ...extraVars,
   ]
-  ansible(playbooks, args)
+  return new Promise((resolve, reject) => {
+    ansible(playbooks, args, resolve, reject)
+  })
 }

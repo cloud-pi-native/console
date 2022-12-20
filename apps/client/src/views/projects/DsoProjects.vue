@@ -14,6 +14,7 @@ const setProjectList = (projects) => {
     id: project.id,
     title: project.projectName,
     to: `/projects/${project.id}/dashboard`,
+    status: project.status,
   }))
 }
 
@@ -63,6 +64,20 @@ watch(projects, (projects) => {
         :to="project.to"
         :horizontal="false"
         @click="setSelectedProject(project.id)"
+      />
+      <DsfrBadge
+        v-if="project.status === 'initializing'"
+        label="Création..."
+      />
+      <DsfrBadge
+        v-else-if="project.status === 'failed'"
+        type="error"
+        label="Erreur"
+      />
+      <DsfrBadge
+        v-else
+        type="info"
+        label="OK"
       />
     </div>
   </div>

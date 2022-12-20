@@ -14,9 +14,11 @@ export const repoSchema = Joi.object({
     })
     .required(),
 
-  isPrivate: Joi.boolean(),
+  isPrivate: Joi.boolean()
+    .required(),
 
-  isInfra: Joi.boolean(),
+  isInfra: Joi.boolean()
+    .required(),
 
   externalUserName: Joi.string()
     .when('isPrivate', { is: true, then: Joi.required() }),

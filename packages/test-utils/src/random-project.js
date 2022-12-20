@@ -6,6 +6,7 @@ import {
   getRandomRepo,
   getRandomUser,
   getRandomEnvList,
+  getRandomStatus,
 } from './random-utils.js'
 
 export const createRandomProject = (nbRepos = 3, nbUsers = 3, nbEnv = 3) => ({
@@ -16,4 +17,5 @@ export const createRandomProject = (nbRepos = 3, nbUsers = 3, nbEnv = 3) => ({
   repos: repeatFn(nbRepos)(getRandomRepo),
   users: repeatFn(nbUsers)(getRandomUser),
   envList: getRandomEnvList(nbEnv),
+  status: getRandomStatus(),
 })
