@@ -1,6 +1,5 @@
 import Joi from 'joi'
-import { allStatus } from 'shared/src/utils/iterables.js'
-import { allEnv } from '../utils/iterables.js'
+import { allStatus, allEnv } from '../utils/iterables.js'
 
 export const envSchema = Joi.object({
   envName: Joi.string()

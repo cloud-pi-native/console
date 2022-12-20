@@ -1,5 +1,5 @@
 import Joi from 'joi'
-import { allStatus } from 'shared/src/utils/iterables.js'
+import { allStatus } from '../utils/iterables.js'
 
 export const userSchema = Joi.object({
   id: Joi.string()

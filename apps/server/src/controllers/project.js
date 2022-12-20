@@ -20,6 +20,7 @@ export const createProjectController = async (req, res) => {
   data.status = 'initializing'
   data.locked = true
   data.owner = req.session.user
+  data.status = 'initializing'
 
   let project
   try {
@@ -29,6 +30,7 @@ export const createProjectController = async (req, res) => {
       ...getLogInfos({ projectId: project.id }),
       description: 'Project successfully created in database',
     })
+    send201(res, project)
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
@@ -45,16 +47,16 @@ export const createProjectController = async (req, res) => {
       projectName: project.projectName,
       envList: project.envList,
     }
-
     await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/projects`, {
       method: 'POST',
       body: JSON.stringify(ansibleData),
       headers: {
-        'content-type': 'application/json',
+        'Content-Type': 'application/json',
         authorization: req.headers.authorization,
         'request-id': req.id,
       },
     })
+
     try {
       project = await updateProjectStatus(project, 'created')
 
@@ -75,7 +77,6 @@ export const createProjectController = async (req, res) => {
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: 'Provisioning project with ansible failed',
       error,
     })
     try {

@@ -1,4 +1,4 @@
-import { allServices, allEnv } from '../src/index.js'
+import { allServices, allEnv } from '../src/utils/iterables.js'
 
 export const projects = [
   {
