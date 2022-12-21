@@ -1,0 +1,137 @@
+---
+{{- with .Values.ansible_api.service }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $.Release.Name }}-{{ .hostname }}
+spec:
+  selector:
+    app: {{ $.Release.Name }}-ansible-api
+  type: ClusterIP
+  sessionAffinity: None
+  sessionAffinityConfig: 
+    clientIP: 
+      timeoutSeconds: 10800
+  ports:
+  - name: {{ $.Release.Name }}-http
+    protocol: TCP
+    port: {{ .port }}
+{{- end }}
+{{- with .Values.ansible_api.container }}
+    targetPort: {{ $.Release.Name }}-ansible-api
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $.Release.Name }}-vault
+data:
+  {{- with .playbooks }}
+  .vault-secret: {{ .vaultPassword | b64enc }}
+---
+kind: Secret
+apiVersion: v1
+metadata:
+  name: {{ $.Release.Name }}-git-playbooks
+data:
+  GIT_USER: {{ .repoUser | b64enc }}
+  GIT_TOKEN: {{ .repoPass | b64enc }}
+  GIT_BRANCH: {{ .repoBranch  | b64enc}}
+  GIT_REPO: {{ .repoUrl | b64enc}}
+{{- end }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  {{ $.Release.Name }}-ansible-api
+  labels:
+    app: {{ $.Release.Name }}-ansible-api
+spec:
+  selector:
+    matchLabels:
+      app: {{ $.Release.Name }}-ansible-api
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: {{ $.Release.Name }}-ansible-api
+    spec:
+      serviceAccountName: dso-ansible-sa
+      imagePullSecrets:
+      - name: {{ $.Release.Name }}-myregistrykey
+      containers:
+      - name: {{ $.Release.Name }}-ansible-api
+        image:  {{ .image }}
+        ports:
+        - containerPort: {{ .port }}
+          name: {{ $.Release.Name }}-ansible-api
+        envFrom:
+        - secretRef: 
+            name: {{ $.Release.Name }}-git-playbooks
+        env:
+          - name: HOME
+            value: /home/node/
+          - name: PLAYBOOK_DIR
+            value: {{ .playbooks.repoDir}}
+          - name: ANSIBLE_PORT
+            value: {{ .port | quote }}
+          - name: NODE_ENV
+            value: {{ .node_env }}
+          - name: CONFIG_DIR
+            value: {{ .config_dir }}
+          - name: INVENTORY
+            value: {{ .playbooks.inventory }}
+{{- with $.Values.keycloak }}
+          - name: SESSION_SECRET
+            value: {{ .session_secret }}
+          - name: KEYCLOAK_DOMAIN
+            value: {{ .domain }}
+          - name: KEYCLOAK_REALM
+            value: {{ .realm }}
+          - name: KEYCLOAK_PROTOCOL
+            value: https
+          - name: KEYCLOAK_CLIENT_ID
+            value: {{ .client_id_backend }}
+          - name: KEYCLOAK_CLIENT_SECRET
+            value: {{ .client_secret_backend }}
+{{- end }}
+{{- end }}
+          - name: KEYCLOAK_REDIRECT_URI
+            value: https://{{ .Values.client.service.publicUrl }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        resources:
+          requests:
+            cpu: 500m
+            memory: 500Mi
+          limits:
+            cpu: 1000m
+            memory: 1000Mi
+        volumeMounts:
+        - name: config
+          mountPath: /config/
+          readOnly: true
+        - name: ansible-tmp
+          mountPath: /home/node/.ansible/tmp
+        - name: playbooks
+          mountPath: {{ .Values.ansible_api.container.playbooks.repoMount }}
+        - mountPath: /home/node/.kube
+          name: kubedir
+      volumes:
+      - name: config
+        projected:
+          sources:
+          - secret:
+              name: {{ $.Release.Name }}-kubeconfig
+          - secret:
+              name: {{ $.Release.Name }}-vault
+          - configMap:
+              name: {{ $.Release.Name }}-matches
+      - name: ansible-tmp
+        emptyDir:
+          sizeLimit: "500m"
+      - name: playbooks
+        emptyDir:
+          sizeLimit: 100M
+      - emptyDir:
+          sizeLimit: 10M
+        name: kubedir
+      restartPolicy: Always

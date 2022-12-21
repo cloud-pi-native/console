@@ -1,5 +1,6 @@
 upstream api {
-  server server:80;
+  server $SERVER;
+
 }
 
 server {

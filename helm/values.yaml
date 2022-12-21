@@ -1,0 +1,78 @@
+imagePullPolicy: Always
+env: production
+
+imageCredentials:
+  registry: 
+  username: 
+  password: 
+  email: 
+
+#list of custom vars applied on all pods
+extraEnv: 
+
+ansible_api:
+  container:
+    image: 
+    playbooks:
+      repoUrl: http://required.git.url
+      repoUser: 
+      repoPass: 
+      repoBranch: 
+      repoMount: /dso
+      repoDir: /dso/ansible
+      vaultPassword: mysecretpassword
+      inventory: 
+    config_dir: /config/
+    node_env: production
+    port: 8080
+  service:
+    hostname: ansible-api
+    port: 80
+
+server:
+  container:
+    image: 
+    port: 8080
+    node_env: production
+  service:
+    port: 80
+    hostname: server
+
+client:
+  container:
+    image: 
+    port: 8080
+  service:
+    port: 80
+    hostname: client
+    publicUrl: 
+
+
+postgres:
+  container: 
+    db: yourdbname
+    user: youruser
+    pass: yourpass
+  service:
+    hostname: postgres
+    port: 5432
+
+keycloak:
+  domain: 
+  realm: yourkeycloakrealm
+  admin: 
+  admin_password: 
+  client_id_frontend: 
+  client_id_backend: 
+  client_secret_backend: 
+  redirect_uri: 
+  session_secret: 
+
+  container:
+  # no deployment of keycloak just infos on how to connect other pods to it
+  service:
+    hostname:
+    port:
+
+kubeconfig: |
+  content of my kubeconfig

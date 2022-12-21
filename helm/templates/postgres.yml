@@ -1,0 +1,80 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-db-storage
+  annotations:
+    "helm.sh/resource-policy": keep
+spec:
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 4Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-{{ .Values.postgres.service.hostname }}
+spec:
+  selector:
+    app: {{ .Release.Name }}-postgres
+  ports:
+  - port: {{ .Values.postgres.service.port }}
+    targetPort: {{ .Release.Name }}-postgres
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ .Release.Name }}-postgres
+  name: {{ .Release.Name }}-postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-postgres
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-postgres
+    spec:
+      imagePullSecrets:
+      - name: {{ $.Release.Name }}-myregistrykey
+      containers:
+        - image: registry.redhat.io/rhscl/postgresql-13-rhel7
+          name: {{ .Release.Name }}-postgres
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          env:
+{{- with .Values.postgres }}
+            - name: POSTGRESQL_DATABASE
+              value: {{ .container.db }}
+            - name: POSTGRESQL_USER
+              value: {{ .container.user }}
+            - name: POSTGRESQL_PASSWORD
+              value: {{ .container.pass }}
+          volumeMounts:
+            - mountPath: /var/lib/pgsql/data
+              name: db-storage
+            # - mountPath: /docker-entrypoint-initdb.d
+            #   name: initdb
+          ports:
+            - containerPort: {{ .service.port }}
+              name: {{ $.Release.Name }}-postgres
+{{- end }}
+      volumes:
+        - name: db-storage
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-db-storage
+        # - name: initdb
+        #   secret:
+        #     secretName: initdb
+        #     defaultMode: 0777

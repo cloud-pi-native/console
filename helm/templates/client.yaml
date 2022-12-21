@@ -1,0 +1,80 @@
+{{- with .Values.client }}
+{{- with .service }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $.Release.Name }}-{{ .hostname }}
+spec:
+  selector:
+    app: {{ $.Release.Name }}-client
+  ports:
+  - port: 80
+    targetPort: {{ $.Release.Name }}-http
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ $.Release.Name }}-client
+spec:
+  host: {{ .publicUrl }}
+  tls:
+    termination: edge
+  to:
+    kind: Service
+    name: {{ $.Release.Name }}-{{ .hostname }}
+    {{- end }}
+    weight: 100
+  wildcardPolicy: None
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ $.Release.Name }}-client
+  name: {{ $.Release.Name }}-client
+spec:
+  selector:
+    matchLabels:
+      app: {{ $.Release.Name }}-client
+  template:
+    metadata:
+      labels:
+        app: {{ $.Release.Name }}-client
+    spec:
+      imagePullSecrets:
+      - name: {{ $.Release.Name }}-myregistrykey
+      containers:
+      - imagePullPolicy: {{ $.Values.imagePullPolicy }}
+        image: {{ .container.image }}
+        ports: 
+          - containerPort: {{ .container.port }}
+            name: {{ $.Release.Name }}-http
+        name: {{ $.Release.Name }}-client
+{{- end }}
+        env:
+{{- with .Values.keycloak }}
+          - name: KEYCLOAK_PROTOCOL
+            value: https
+          - name: KEYCLOAK_DOMAIN
+            value: {{ .domain }}
+          - name: KEYCLOAK_REALM
+            value: {{ .realm }}
+          - name: KEYCLOAK_CLIENT_ID
+            value: {{ .client_id_frontend }}
+          - name: KEYCLOAK_REDIRECT_URI
+            value: {{ .redirect_uri }}
+{{- end }}
+{{- with .Values.server.service }}
+          - name: SERVER_HOST
+            value: {{ $.Release.Name }}-{{ .hostname }}
+          - name: SERVER_PORT
+            value: {{ .port | quote }}
+{{- end }}
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"

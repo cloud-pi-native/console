@@ -20,5 +20,7 @@ for file in $ROOT_DIR/assets/index.*.js; do
   sed -i 's|sonarqube-url|'${SONARQUBE_URL}'|g' $file
   sed -i 's|vault-url|'${VAULT_URL}'|g' $file
 done
+export SERVER="$SERVER_HOST:$SERVER_PORT"
+cat /default.conf.tpl | envsubst '$SERVER' > /etc/nginx/conf.d/default.conf
 
 nginx -g 'daemon off;'
