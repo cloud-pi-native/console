@@ -20,6 +20,8 @@ if [ ! -z "$GIT_REPO" ]; then
   fi
   git clone https://${AUTH}${GIT_REPO} ${CLONE_DIR} ${BRANCH}
 fi
-cp /config/.kubeconfig /home/node/.kube/config
-ansible-playbook $PLAYBOOK_DIR/import_all.yml -i $PLAYBOOK_DIR/inventory/ --connection=local
+if [ "$NODE_ENV" == "production" && "$CI" != "true" ]; then
+  cp /config/.kubeconfig /home/node/.kube/config
+  ansible-playbook $PLAYBOOK_DIR/import_all.yml -i $PLAYBOOK_DIR/inventory/ --connection=local
+fi
 exec "$@"
