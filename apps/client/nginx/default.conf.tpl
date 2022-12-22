@@ -1,6 +1,5 @@
 upstream api {
   server $SERVER;
-
 }
 
 server {
