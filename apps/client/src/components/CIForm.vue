@@ -55,23 +55,21 @@ const generateCI = async () => {
 }
 
 const prepareForDownload = () => {
-  if (files.value.length) files.value = []
-
-  Object.keys(generatedCI.value).forEach(key => {
+  files.value = Object.keys(generatedCI.value).map((key) => {
     const filename = `.${key}.yml`
-    const index = files.value.length
-    files.value.push({})
-    files.value[index].file = new File([generatedCI.value[key]], filename, {
+    const file = new File([generatedCI.value[key]], filename, {
       type: 'text/plain;charset=utf-8',
     })
+    const url = URL.createObjectURL(file)
+    window.URL.revokeObjectURL(file)
 
-    files.value[index].key = key
-    files.value[index].href = URL.createObjectURL(files.value[index].file)
-    files.value[index].size = `${files.value[index].file.size} bytes`
-    files.value[index].format = 'YAML'
-    files.value[index].title = filename
-
-    window.URL.revokeObjectURL(files.value[index].file)
+    return {
+      key,
+      href: url,
+      size: `${file.size} bytes`,
+      format: 'YAML',
+      title: filename,
+    }
   })
 }
 

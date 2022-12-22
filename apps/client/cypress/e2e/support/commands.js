@@ -165,13 +165,12 @@ Cypress.Commands.add('generateGitLabCI', (ciForms) => {
       .getByDataTestid('copy-docker-ContentBtn').should('exist')
       .getByDataTestid('copy-rules-ContentBtn').should('exist')
       .getByDataTestid('copy-gitlab-ContentBtn').click()
-    cy.window().then((window) => {
-      window.navigator.clipboard.readText().then((text) => {
+      .window().its('navigator.clipboard')
+      .invoke('readText').then((text) => {
         if (ciForm.language === 'java') expect(text).to.contain(`BUILD_IMAGE_NAME: maven:3.8-openjdk-${ciForm.version}`).and.to.contain('- local: "/includes/java.yml"')
         if (ciForm.language === 'node') expect(text).to.contain(`BUILD_IMAGE_NAME: node:${ciForm.version}`).and.to.contain('- local: "/includes/node.yml"')
         if (ciForm.language === 'python') expect(text).to.contain(`BUILD_IMAGE_NAME: maven:3.8-openjdk-${ciForm.version}`).and.to.contain('- local: "/includes/python.yml"')
       })
-    })
     cy.get('.fr-download__link').first().click()
       .find('span').should(($span) => {
         const text = $span.text()
