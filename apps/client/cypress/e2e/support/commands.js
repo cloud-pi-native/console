@@ -144,7 +144,12 @@ Cypress.Commands.add('assertAddRepo', (project, repos) => {
 })
 
 Cypress.Commands.add('generateGitLabCI', (ciForms) => {
+  let version
   ciForms.forEach(ciForm => {
+    if (ciForm.language === 'java') version = `BUILD_IMAGE_NAME: maven:3.8-openjdk-${ciForm.version}`
+    if (ciForm.language === 'node') version = `BUILD_IMAGE_NAME: node:${ciForm.version}`
+    if (ciForm.language === 'python') version = `BUILD_IMAGE_NAME: maven:3.8-openjdk-${ciForm.version}`
+
     cy.getByDataTestid('typeLanguageSelect')
       .find('select').select(`${ciForm.language}`)
 
@@ -166,11 +171,7 @@ Cypress.Commands.add('generateGitLabCI', (ciForms) => {
       .getByDataTestid('copy-rules-ContentBtn').should('exist')
       .getByDataTestid('copy-gitlab-ContentBtn').click()
       .window().its('navigator.clipboard')
-      .invoke('readText').then((text) => {
-        if (ciForm.language === 'java') expect(text).to.contain(`BUILD_IMAGE_NAME: maven:3.8-openjdk-${ciForm.version}`).and.to.contain('- local: "/includes/java.yml"')
-        if (ciForm.language === 'node') expect(text).to.contain(`BUILD_IMAGE_NAME: node:${ciForm.version}`).and.to.contain('- local: "/includes/node.yml"')
-        if (ciForm.language === 'python') expect(text).to.contain(`BUILD_IMAGE_NAME: maven:3.8-openjdk-${ciForm.version}`).and.to.contain('- local: "/includes/python.yml"')
-      })
+      .invoke('readText').should('equal', version)
     cy.get('.fr-download__link').first().click()
       .find('span').should(($span) => {
         const text = $span.text()
