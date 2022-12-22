@@ -1,7 +1,7 @@
 import { spawn } from 'child_process'
 import { access, constants } from 'fs'
 import app from './app.js'
-import { playbookDir, configDir, inventory } from './utils/env.js'
+import { playbookDir } from './utils/env.js'
 import { convertVars } from './utils/tools.js'
 
 export const ansible = (playbooks, args) => {
@@ -45,9 +45,7 @@ export const runPlaybook = (playbooks, vars) => {
   const extraVars = convertVars(vars)
   const args = [
     '-i',
-    `${playbookDir}inventory/${inventory}`,
-    '--vault-password-file',
-    `${configDir}.vault-secret`,
+    `${playbookDir}inventory/`,
     '--connection=local',
     ...extraVars,
   ]

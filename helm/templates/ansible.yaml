@@ -20,23 +20,18 @@ spec:
 {{- with .Values.ansible_api.container }}
     targetPort: {{ $.Release.Name }}-ansible-api
 ---
-apiVersion: v1
-kind: Secret
-metadata:
-  name: {{ $.Release.Name }}-vault
-data:
-  {{- with .playbooks }}
-  .vault-secret: {{ .vaultPassword | b64enc }}
----
 kind: Secret
 apiVersion: v1
 metadata:
   name: {{ $.Release.Name }}-git-playbooks
 data:
+  {{- with .playbooks }}
+  {{- if .repoUser }}
   GIT_USER: {{ .repoUser | b64enc }}
   GIT_TOKEN: {{ .repoPass | b64enc }}
-  GIT_BRANCH: {{ .repoBranch  | b64enc}}
-  GIT_REPO: {{ .repoUrl | b64enc}}
+{{- end }}
+  GIT_BRANCH: {{ .repoBranch  | b64enc }}
+  GIT_REPO: {{ .repoUrl | b64enc }}
 {{- end }}
 ---
 apiVersion: apps/v1
@@ -46,6 +41,8 @@ metadata:
   labels:
     app: {{ $.Release.Name }}-ansible-api
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: {{ $.Release.Name }}-ansible-api
@@ -78,8 +75,12 @@ spec:
             value: {{ .node_env }}
           - name: CONFIG_DIR
             value: {{ .config_dir }}
-          - name: INVENTORY
-            value: {{ .playbooks.inventory }}
+          - name: INVENTORY_NAMESPACE
+            value: {{ .playbooks.inventory.namespace }}
+          - name: INVENTORY_NAME
+            value: {{ .playbooks.inventory.name }}
+          - name: INVENTORY_KEY
+            value: {{ .playbooks.inventory.key }}
 {{- with $.Values.keycloak }}
           - name: SESSION_SECRET
             value: {{ .session_secret }}
@@ -121,8 +122,6 @@ spec:
           sources:
           - secret:
               name: {{ $.Release.Name }}-kubeconfig
-          - secret:
-              name: {{ $.Release.Name }}-vault
           - configMap:
               name: {{ $.Release.Name }}-matches
       - name: ansible-tmp
