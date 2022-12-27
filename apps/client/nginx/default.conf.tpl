@@ -1,5 +1,5 @@
 upstream api {
-  server server:80;
+  server $SERVER;
 }
 
 server {
@@ -8,6 +8,7 @@ server {
   root /usr/share/nginx/html;
   index index.html;
 
+  large_client_header_buffers 4 32k;
 
   location / {
     try_files $uri $uri/ @rewrites;
