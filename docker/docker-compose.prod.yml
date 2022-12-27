@@ -51,7 +51,7 @@ services:
       context: ..
       dockerfile: apps/ansible-api/Dockerfile
       target: prod
-    image: dso/console/ansible-api
+    image: dso/console/ansible
     container_name: dso-console_ansible-api
     ports:
       - 8100:8100
@@ -106,5 +106,3 @@ services:
 networks:
   dso-network:
     name: dso-network
-    # driver_opts:
-    # com.docker.network.driver.mtu: 1450
