@@ -1,0 +1,14 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ $.Release.Name }}-ansible-cluster-role
+rules:
+- apiGroups:
+  - ""
+  - user.openshift.io
+  - rbac.authorization.k8s.io
+  - argoproj.io
+  resources:
+  - '*'
+  verbs:
+  - '*'

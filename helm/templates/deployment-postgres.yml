@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ .Release.Name }}-postgres
+  name: {{ .Release.Name }}-postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-postgres
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-postgres
+    spec:
+      imagePullSecrets:
+      - name: {{ .Release.Name }}-pullsecret
+      containers:
+      - name: {{ .Release.Name }}-postgres
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        image: registry.redhat.io/rhscl/postgresql-13-rhel7
+        ports:
+        - containerPort: {{ .Values.containers.postgres.service.port }}
+        envFrom:
+        - configMapRef:
+            name: {{ .Release.Name }}-postgres-cm
+        volumeMounts:
+          - mountPath: /var/lib/pgsql/data
+            name: db-storage
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+      volumes:
+        - name: db-storage
+          persistentVolumeClaim:
+            claimName: dso-db-storage # TODO

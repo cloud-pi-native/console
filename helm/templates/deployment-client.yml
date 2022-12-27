@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ .Release.Name }}-client
+  name: {{ .Release.Name }}-client
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-client
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-client
+    spec:
+      imagePullSecrets:
+      - name: {{ .Release.Name }}-pullsecret
+      containers:
+      - name: {{ .Release.Name }}-client
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        image: {{ .Values.containers.client.container.image }}
+        ports:
+        - containerPort: {{ .Values.containers.client.container.port }}
+        envFrom:
+        - configMapRef:
+            name: {{ .Release.Name }}-client-cm
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
