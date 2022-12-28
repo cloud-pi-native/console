@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ .Release.Name }}-ansible
+  name: {{ .Release.Name }}-ansible
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-ansible
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-ansible
+    spec:
+      serviceAccountName: {{ $.Release.Name }}-ansible-sa
+      imagePullSecrets:
+      - name: {{ .Release.Name }}-pullsecret
+      containers:
+      - image: {{ .Values.containers.ansible.container.image }}
+        imagePullPolicy: {{ .Values.containers.imagePullPolicy }}
+        name: {{ .Release.Name }}-ansible
+        ports:
+        - containerPort: {{ .Values.containers.ansible.container.port }}
+        envFrom:
+        - configMapRef:
+            name: {{ .Release.Name }}-ansible-cm
+        - secretRef: 
+            name: {{ .Release.Name }}-git-playbooks
+        resources:
+          requests:
+            memory: "300Mi"
+            cpu: "300m"
+          limits:
+            memory: "2000Mi"
+            cpu: "1000m"
+        volumeMounts:
+        - name: config
+          mountPath: /config/
+          readOnly: true
+        - name: playbooks
+          mountPath: {{ .Values.containers.ansible.container.playbooks.repoMount }}
+      volumes:
+      - name: config
+        projected:
+          sources:
+          - configMap:
+              name: {{ .Release.Name }}-matches
+      - name: playbooks
+        emptyDir:
+          sizeLimit: 1000M

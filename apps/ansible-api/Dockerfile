@@ -63,6 +63,8 @@ COPY --chown=node:node --from=build /app/build .
 USER root
 COPY apps/ansible-api/clone.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
+RUN mkdir -p /home/node/.ansible/tmp/ && \
+   chmod 777 /home/node/.ansible/tmp/
 
 USER node
 ENTRYPOINT ["/docker-entrypoint.sh"]

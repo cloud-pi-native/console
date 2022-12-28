@@ -1,0 +1,13 @@
+{{- range $key, $val := .Values.containers }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $.Release.Name }}-{{ $key }}-service
+spec:
+  selector:
+    app: {{ $.Release.Name }}-{{ $key }}
+  ports:
+  - port: {{ $val.service.port }}
+    targetPort: {{ $val.container.port }}
+{{ end -}}

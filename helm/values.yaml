@@ -1,0 +1,83 @@
+imagePullPolicy: Always
+env: production
+
+imageCredentials:
+  registry:
+  username:
+  password:
+  email:
+
+#list of custom vars applied on all pods
+globalEnv:
+
+containers:
+  ansible:
+    container:
+      image:
+      playbooks:
+        repoUrl: github.com/dnum-mi/dso-playbooks
+        repoBranch: main
+        # Use the 2 following if you want to clone a private repository
+        repoUser:
+        repoPass:
+        repoMount: /dso/
+        repoDir: /dso/
+        # define where the inventory is in kube (see dso-infra repo, incoming)
+        inventory:
+          namespace: in which namespace your inventory is
+          name: what is your inventory secret name
+          key: which key to look for
+      config_dir: /config/
+      node_env: production
+      port: 8080
+    service:
+      hostname: ansible
+      port: 80
+
+  server:
+    container:
+      image:
+      port: 8080
+      node_env: production
+    service:
+      port: 80
+      hostname: server
+
+  client:
+    container:
+      image:
+      port: 8080
+    service:
+      port: 80
+      hostname: client
+    route:
+      host: replace.me
+
+  postgres:
+    container:
+      db: yourdbname
+      user: youruser
+      pass: yourpass
+    service:
+      hostname: postgres
+      port: 5432
+
+keycloak:
+  domain:
+  realm: yourkeycloakrealm
+  admin:
+  admin_password:
+  client_id_frontend:
+  client_id_backend:
+  client_secret_backend:
+  redirect_uri:
+  session_secret:
+
+  container:
+  # no deployment of keycloak just infos on how to connect other pods to it
+  service:
+    hostname:
+    port:
+
+kubeconfig: |
+  content of my kubeconfig
