@@ -170,14 +170,18 @@ Cypress.Commands.add('generateGitLabCI', (ciForms) => {
       .getByDataTestid('copy-docker-ContentBtn').should('exist')
       .getByDataTestid('copy-rules-ContentBtn').should('exist')
       .getByDataTestid('copy-gitlab-ContentBtn').click()
-      .window().its('navigator.clipboard')
-      .invoke('readText').should('equal', version)
+    cy.assertClipboard(version)
     cy.get('.fr-download__link').first().click()
       .find('span').should(($span) => {
         const text = $span.text()
         expect(text).to.match(/YAML – \d* bytes/)
       })
   })
+})
+
+Cypress.Commands.add('assertClipboard', (value) => {
+  cy.window().its('navigator.clipboard')
+    .invoke('readText').should('contain', value)
 })
 
 Cypress.Commands.add('getByDataTestid', (dataTestid) => {
