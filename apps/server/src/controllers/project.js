@@ -68,6 +68,7 @@ export const addRepoController = async (req, res) => {
   const userId = req.session?.user?.id
   const projectId = req.params?.id
   const data = req.body
+  data.isInfra = data.isInfra || false
 
   let dbProject
   try {
@@ -105,6 +106,7 @@ export const addRepoController = async (req, res) => {
       projectName: dbProject.projectName,
       internalRepoName: data.internalRepoName,
       externalRepoUrl: data.externalRepoUrl.startsWith('http') ? data.externalRepoUrl.split('://')[1] : data.externalRepoUrl,
+      isInfra: data.isInfra,
     }
     if (data.isPrivate) {
       ansibleData.externalUserName = data.externalUserName

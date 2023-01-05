@@ -16,11 +16,11 @@ export const repoSchema = Joi.object({
 
   isPrivate: Joi.boolean(),
 
+  isInfra: Joi.boolean(),
+
   externalUserName: Joi.string()
     .when('isPrivate', { is: true, then: Joi.required() }),
 
   externalToken: Joi.string()
     .when('isPrivate', { is: true, then: Joi.required() }),
-
-  isInfra: Joi.boolean(),
 })
