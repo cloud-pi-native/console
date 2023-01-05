@@ -8,6 +8,7 @@ const ansibleArgsDictionary = {
   internalRepoName: 'REPO_DEST',
   externalUserName: 'GIT_INPUT_USER',
   externalToken: 'GIT_INPUT_PASSWORD',
+  isInfra: 'IS_INFRA',
 }
 
 export const convertVars = (vars) => {
