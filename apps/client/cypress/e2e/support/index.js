@@ -13,9 +13,18 @@
 // https://on.cypress.io/configuration
 // ***********************************************************
 
-// Import commands.js using ES2015 syntax:
-// import './mailhog-commands.js'
 import './commands.js'
 
-// Alternatively you can use CommonJS syntax:
-// require('./commands')
+Cypress.on('window:before:load', (win) => {
+  let copyText
+
+  if (!win.navigator.clipboard) {
+    win.navigator.clipboard = {}
+    // Object.setPrototypeOf(win.navigator.clipboard, {})
+  }
+
+  Object.setPrototypeOf(win.navigator.clipboard, {
+    writeText: async (text) => (copyText = text),
+    readText: async () => copyText,
+  })
+})

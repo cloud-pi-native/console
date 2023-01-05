@@ -1,5 +1,11 @@
 import { apiClient } from './xhr-client.js'
 
+// CIFiles
+export const generateCIFiles = async (data) => {
+  const response = await apiClient.post('/ci-files', data)
+  return response.data
+}
+
 // Project
 export const getUserProjects = async () => {
   const response = await apiClient.get('/projects')

@@ -13,6 +13,9 @@ apiClient.interceptors.request.use(async function addAuthHeader (config) {
   }
   const keycloak = getKeycloak()
 
+  if (process.env.NODE_ENV === 'test' && process.env.CT === 'true') {
+    return config
+  }
   await keycloak.loadUserProfile()
   await keycloak.updateToken()
 

@@ -90,7 +90,7 @@ Cypress.Commands.add('addRepos', (project, repos) => {
   const newRepo = (repo) => ({
     internalRepoName: 'dso-console',
     externalUserName: 'this-is-tobi',
-    externalRepoUrl: 'https://github.com/dnum-mi/dso-console',
+    externalRepoUrl: 'https://github.com/dnum-mi/dso-console.git',
     isInfra: false,
     isPrivate: false,
     externalToken: 'private-token',
@@ -141,6 +141,47 @@ Cypress.Commands.add('assertAddRepo', (project, repos) => {
   repos.forEach((repo) => {
     cy.getByDataTestid(`repoTile-${repo.internalRepoName}`).should('exist')
   })
+})
+
+Cypress.Commands.add('generateGitLabCI', (ciForms) => {
+  let version
+  ciForms.forEach(ciForm => {
+    if (ciForm.language === 'java') version = `BUILD_IMAGE_NAME: maven:3.8-openjdk-${ciForm.version}`
+    if (ciForm.language === 'node') version = `BUILD_IMAGE_NAME: node:${ciForm.version}`
+    if (ciForm.language === 'python') version = `BUILD_IMAGE_NAME: maven:3.8-openjdk-${ciForm.version}`
+
+    cy.getByDataTestid('typeLanguageSelect')
+      .find('select').select(`${ciForm.language}`)
+
+    if (ciForm.language === 'node') {
+      cy.getByDataTestid('nodeVersionInput').clear().type(`${ciForm.version}`)
+        .getByDataTestid('nodeInstallInput').clear().type(`${ciForm.install}`)
+        .getByDataTestid('nodeBuildInput').clear().type(`${ciForm.build}`)
+    }
+    if (ciForm.language === 'java') {
+      cy.getByDataTestid('javaVersionInput').clear().type(`${ciForm.version}`)
+        .getByDataTestid('artefactDirInput').clear().type(`${ciForm.artefactDir}`)
+    }
+    cy.getByDataTestid('workingDirInput').clear().type(`${ciForm.workingDir}`)
+      .getByDataTestid('generateCIBtn').click()
+      .getByDataTestid('generatedCI').should('be.visible')
+      .getByDataTestid(`copy-${ciForm.language}-ContentBtn`).should('exist')
+      .getByDataTestid('copy-vault-ContentBtn').should('exist')
+      .getByDataTestid('copy-docker-ContentBtn').should('exist')
+      .getByDataTestid('copy-rules-ContentBtn').should('exist')
+      .getByDataTestid('copy-gitlab-ContentBtn').click()
+    cy.assertClipboard(version)
+    cy.get('.fr-download__link').first().click()
+      .find('span').should(($span) => {
+        const text = $span.text()
+        expect(text).to.match(/YAML – \d* bytes/)
+      })
+  })
+})
+
+Cypress.Commands.add('assertClipboard', (value) => {
+  cy.window().its('navigator.clipboard')
+    .invoke('readText').should('contain', value)
 })
 
 Cypress.Commands.add('getByDataTestid', (dataTestid) => {

@@ -17,6 +17,7 @@
     "date-fns": "^2.29.3",
     "fastify": "^4.9.2",
     "fastify-keycloak-adapter": "^1.6.2",
+    "mustache": "^4.2.0",
     "lodash.kebabcase": "^4.1.1",
     "nanoid": "4.0.0",
     "pg": "8.8.0",

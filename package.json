@@ -21,6 +21,7 @@
     "test:server": "turbo run test --filter server",
     "test:ct": "pnpm --filter client run cypress:open-ct",
     "test:ct-ci": "docker compose -f ./docker/docker-compose.ct.yml --env-file ./env/.env.ci up --exit-code-from cypress --quiet-pull; docker compose -f ./docker/docker-compose.ct.yml --env-file ./env/.env.ci down -v",
+    "test:ct-ci-build": "docker compose -f ./docker/docker-compose.ct.yml --env-file ./env/.env.ci build",
     "test:e2e": "docker compose -f ./docker/docker-compose.e2e.yml --env-file ./env/.env up -d; cd ./apps/client; npm run cypress:open; cd -; docker compose -f ./docker/docker-compose.e2e.yml --env-file ./env/.env down -v",
     "test:e2e-build": "docker compose -f ./docker/docker-compose.e2e.yml --env-file ./env/.env build --pull",
     "test:e2e-ci": "docker compose -f ./docker/docker-compose.ci.yml --env-file ./env/.env.ci up --attach cypress --exit-code-from cypress --quiet-pull; docker compose -f ./docker/docker-compose.ci.yml --env-file ./env/.env.ci down -v",
@@ -30,7 +31,7 @@
     "@commitlint/cli": "^17.3.0",
     "@commitlint/config-conventional": "^17.3.0",
     "husky": "^8.0.2",
-    "lint-staged": "^13.0.3",
+    "lint-staged": "^13.1.0",
     "turbo": "^1.6.3"
   },
   "volta": {
