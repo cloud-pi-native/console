@@ -51,8 +51,6 @@ describe('ansible', () => {
     const args = [
       '-i',
       `/test/inventory/${env}`,
-      '--vault-password-file',
-      '/test/.vault-secret',
       '--connection=local',
       '-e',
       `"${JSON.stringify(vars).replaceAll('"', '\\"')}"`,
