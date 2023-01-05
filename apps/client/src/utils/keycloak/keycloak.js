@@ -13,7 +13,7 @@ export const keycloakConf = {
   realm: keycloakRealm,
   clientId: keycloakClientId,
   onLoad: 'check-sso',
-  flow: 'hybrid',
+  flow: 'standard',
   redirectUri: keycloakRedirectUri,
 }
 
