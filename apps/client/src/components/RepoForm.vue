@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { repoSchema, schemaValidator, isValid, instanciateSchema } from 'shared'
+import CIForm from './CIForm.vue'
 
 const props = defineProps({
   repo: {
@@ -47,7 +48,7 @@ const cancel = (event) => {
   </h1>
   <DsfrFieldset
     :legend="props.isEditable ? 'Informations du dépôt' : undefined"
-    :hint="props.isEditable ? 'Tous les champs sont requis' : undefined"
+    :hint="props.isEditable ? 'Les champs munis d\'une astérisque (*) sont requis' : undefined"
   >
     <DsfrFieldset
       :key="repo"
@@ -80,7 +81,7 @@ const cancel = (event) => {
         label="Url du dépôt Git externe"
         label-visible
         hint="Url du dépôt Git qui servira de source pour la synchronisation"
-        placeholder="https://github.com/dnum-mi/dso-console"
+        placeholder="https://github.com/dnum-mi/dso-console.git"
         class="fr-mb-2w"
         @update:model-value="updateRepo('externalRepoUrl', $event)"
       />
@@ -137,6 +138,10 @@ const cancel = (event) => {
         name="infraRepoCbx"
         @update:model-value="updateRepo('isInfra', $event)"
       />
+      <CIForm
+        v-if="props.isEditable"
+        :internal-repo-name="localRepo.internalRepoName"
+      />
     </DsfrFieldset>
   </DsfrFieldset>
   <div
@@ -146,7 +151,7 @@ const cancel = (event) => {
     <DsfrButton
       label="Ajouter le dépôt"
       data-testid="addRepoBtn"
-      secondary
+      primary
       icon="ri-upload-cloud-line"
       @click="addRepo()"
     />

@@ -40,7 +40,7 @@ export const projectSchema = Joi.object({
     .required(),
 
   projectName: Joi.string()
-    .pattern(/^[a-zA-Z0-9-]+$/)
+    .pattern(/^[a-z0-9-]+$/)
     .required(),
 
   repos: Joi.array()

@@ -1,4 +1,5 @@
 import projectsRouter from './project.js'
+import ciFilesRouter from './ciFiles.js'
 import { send200 } from '../utils/response.js'
 
 const version = process.env.npm_package_version || 'Unable to find version'
@@ -13,6 +14,7 @@ const getHealth = async (_req, res) => {
 
 export const apiRouter = async (app, _opts) => {
   await app.register(projectsRouter, { prefix: '/projects' })
+  await app.register(ciFilesRouter, { prefix: '/ci-files' })
 }
 
 export const miscRouter = async (app, _opts) => {
