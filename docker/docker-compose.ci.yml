@@ -137,6 +137,9 @@ services:
     depends_on:
       client:
         condition: service_started
+    ipc: host
+    cap_add:
+      - SYS_ADMIN
     volumes:
       - /app/node_modules/
       - ../apps/client:/app/apps/client

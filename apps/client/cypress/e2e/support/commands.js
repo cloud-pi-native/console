@@ -180,8 +180,11 @@ Cypress.Commands.add('generateGitLabCI', (ciForms) => {
 })
 
 Cypress.Commands.add('assertClipboard', (value) => {
-  cy.window().its('navigator.clipboard')
-    .invoke('readText').should('contain', value)
+  cy.window().then((win) => {
+    win.navigator.clipboard.readText().then((text) => {
+      expect(text).to.contain(value)
+    })
+  })
 })
 
 Cypress.Commands.add('getByDataTestid', (dataTestid) => {

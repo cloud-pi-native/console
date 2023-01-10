@@ -25,7 +25,6 @@ export default defineConfig({
     chromeWebSecurity: false,
     experimentalModifyObstructiveThirdPartyCode: false,
     experimentalWebKitSupport: false,
-    experimentalSessionAndOrigin: true,
     env: {
       argocdUrl,
       gitlabUrl,

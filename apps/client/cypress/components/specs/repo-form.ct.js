@@ -66,8 +66,11 @@ describe('RepoForm.vue', () => {
       .getByDataTestid('generateCIBtn').click()
       .getByDataTestid('generatedCI').should('be.visible')
       .getByDataTestid('copy-gitlab-ContentBtn').click()
-      .window().its('navigator.clipboard')
-      .invoke('readText').should('equal', 'my generated file')
+      .window().then((win) => {
+        win.navigator.clipboard.readText().then((text) => {
+          expect(text).to.eq('my generated file')
+        })
+      })
     cy.get('.fr-download__link').first()
       .find('span').should(($span) => {
         const text = $span.text()
