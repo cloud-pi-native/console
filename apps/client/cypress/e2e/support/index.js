@@ -17,12 +17,9 @@ import './commands.js'
 
 Cypress.on('window:before:load', (win) => {
   let copyText
-
   if (!win.navigator.clipboard) {
     win.navigator.clipboard = {}
-    // Object.setPrototypeOf(win.navigator.clipboard, {})
   }
-
   Object.setPrototypeOf(win.navigator.clipboard, {
     writeText: async (text) => (copyText = text),
     readText: async () => copyText,

@@ -12,7 +12,7 @@
     "dev": "npm run dev:up; npm run dev:down",
     "dev:build": "docker compose -f ./docker/docker-compose.dev.yml --env-file ./env/.env build --pull",
     "dev:up": "docker compose -f ./docker/docker-compose.dev.yml --env-file ./env/.env up --attach server --attach client --attach ansible-api",
-    "dev:down": "docker compose -f ./docker/docker-compose.dev.yml --env-file ./env/.env down -v",
+    "dev:down": "docker compose -f ./docker/docker-compose.dev.yml --env-file ./env/.env down",
     "lint": "turbo run lint",
     "format": "turbo run format",
     "format:style": "turbo run format:style",
@@ -28,9 +28,9 @@
     "test:e2e-ci-build": "docker compose -f ./docker/docker-compose.ci.yml --env-file ./env/.env.ci build --pull"
   },
   "devDependencies": {
-    "@commitlint/cli": "^17.3.0",
-    "@commitlint/config-conventional": "^17.3.0",
-    "husky": "^8.0.2",
+    "@commitlint/cli": "^17.4.1",
+    "@commitlint/config-conventional": "^17.4.0",
+    "husky": "^8.0.3",
     "lint-staged": "^13.1.0",
     "turbo": "^1.6.3"
   },

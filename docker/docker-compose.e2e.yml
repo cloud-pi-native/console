@@ -90,8 +90,6 @@ services:
       - /app/node_modules/
       - ../apps/ansible-api:/app/apps/ansible-api
       - /app/apps/ansible-api/node_modules/
-      - ../ansible/.vault-secret:${CONFIG_DIR:-/config}/.vault-secret
-      - ../ansible/.kubeconfig:${CONFIG_DIR:-/config}/.kubeconfig
       - ../ansible/playbooks:${PLAYBOOK_DIR:-/dso}
     environment:
       PLAYBOOK_DIR: ${PLAYBOOK_DIR:-/dso}

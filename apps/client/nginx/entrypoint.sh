@@ -3,7 +3,7 @@
 ROOT_DIR=/usr/share/nginx/html
 
 echo "Replacing env constants in JS"
-for file in $ROOT_DIR/assets/index.*.js; do
+for file in $ROOT_DIR/assets/index*.js; do
   echo "Processing $file ...";
 
   sed -i 's|server-host|'${SERVER_HOST}'|g' $file

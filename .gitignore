@@ -39,9 +39,6 @@ keycloak/data
 # turbo
 .turbo
 
-# vault file
-.vault-secret
-
 # kube config
 .kubeconfig
 

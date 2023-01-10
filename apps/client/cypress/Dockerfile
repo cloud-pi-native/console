@@ -1,4 +1,4 @@
-FROM cypress/included:11.2.0
+FROM cypress/included:12.3.0
 
 RUN npm install --global pnpm
 
@@ -8,7 +8,9 @@ COPY pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY apps/client/package*.json ./apps/client/
 COPY packages/shared/ ./packages/shared/
 COPY packages/test-utils/ ./packages/test-utils/
+
 RUN pnpm install
 
-ENTRYPOINT []
-CMD [ "pnpm", "--filter", "client", "run", "cypress:run" ]
+
+ENTRYPOINT [ "pnpm", "--filter", "client", "run" ]
+CMD [ "cypress:run" ]

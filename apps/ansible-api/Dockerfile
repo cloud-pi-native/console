@@ -26,7 +26,6 @@ RUN ansible-galaxy collection install kubernetes.core community.hashi\_vault com
 
 RUN mkdir /dso
 COPY --chown=node:node ansible/playbooks/* /dso/
-COPY --chown=node:node ansible/.vault-secret /config/
 
 USER node
 RUN pnpm install
