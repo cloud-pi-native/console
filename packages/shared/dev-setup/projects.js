@@ -1,4 +1,4 @@
-import { allServices, envList } from '../src/index.js'
+import { allServices, allEnv } from '../src/index.js'
 
 export const projects = [
   {
@@ -21,7 +21,7 @@ export const projects = [
     },
     orgName: 'ministere-interieur',
     services: allServices,
-    envList,
+    envList: allEnv,
     projectName: 'candilib',
   },
   {
@@ -44,7 +44,7 @@ export const projects = [
     },
     orgName: 'ministere-interieur',
     services: allServices,
-    envList,
+    envList: allEnv,
     projectName: 'psij',
   },
 ]

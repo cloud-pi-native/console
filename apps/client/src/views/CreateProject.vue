@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
-import { projectSchema, envList } from 'shared/src/schemas/project.js'
+import { projectSchema, allEnv } from 'shared/src/schemas/project.js'
 import { schemaValidator, isValid, instanciateSchema } from 'shared/src/utils/schemas.js'
 import router from '@/router/index.js'
 
@@ -21,7 +21,7 @@ const owner = computed(() => userStore.userProfile)
 const project = ref({
   orgName: undefined,
   projectName: undefined,
-  envList,
+  envList: allEnv,
 })
 
 const envOptions = ref([])
@@ -60,7 +60,7 @@ const updateProject = (key, value) => {
 }
 
 const setEnvOptions = () => {
-  envList.forEach(opt => {
+  allEnv.forEach(opt => {
     envOptions.value.push({
       label: opt,
       id: opt,
