@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid'
-import { allServices, envList } from 'shared/src/schemas/project.js'
+import { allServices, allEnv } from 'shared/src/schemas/project.js'
 
 Cypress.Commands.add('kcLogout', () => {
   cy.get('a.fr-btn').should('contain', 'Se déconnecter').click()
@@ -43,7 +43,7 @@ Cypress.Commands.add('createProject', (project) => {
     },
     orgName: 'ministere-interieur',
     services: allServices,
-    envList,
+    envList: allEnv,
     projectName: 'CloudPiNative',
     ...project,
   }
@@ -59,9 +59,9 @@ Cypress.Commands.add('createProject', (project) => {
     .getByDataTestid('projectNameInput').clear().type(newProject.projectName)
     .getByDataTestid('projectNameInput').should('not.have.class', 'fr-input--error')
     .getByDataTestid('envListSelect')
-    .find('[data-testid^="input-checkbox-"]').should('have.length', envList.length)
-  if (newProject.envList.length !== envList.length) {
-    envList.forEach(env => {
+    .find('[data-testid^="input-checkbox-"]').should('have.length', allEnv.length)
+  if (newProject.envList.length !== allEnv.length) {
+    allEnv.forEach(env => {
       if (!newProject.envList.includes(env)) {
         cy.getByDataTestid(`input-checkbox-${env}`).uncheck({ force: true })
       }

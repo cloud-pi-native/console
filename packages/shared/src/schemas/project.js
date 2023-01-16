@@ -2,13 +2,6 @@ import Joi from 'joi'
 import { repoSchema } from './repo.js'
 import { userSchema } from './user.js'
 
-export const envList = [
-  'dev',
-  'staging',
-  'integration',
-  'prod',
-]
-
 export const allOrgNames = [
   'dinum',
   'ministere-interieur',
@@ -52,7 +45,7 @@ export const projectSchema = Joi.object({
     .required(),
 
   envList: Joi.array()
-    .items(Joi.string().valid(...envList).required())
+    .items(Joi.string().valid(...allEnv).required())
     .required(),
 
   owner: userSchema
