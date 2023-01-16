@@ -3,6 +3,7 @@ import { allServices } from 'shared/src/schemas/project.js'
 import { getLogInfos } from '../utils/logger.js'
 import {
   createProject,
+  updateProjectStatus,
   addRepo,
   addUser,
   getUserProjects,
@@ -16,6 +17,8 @@ export const createProjectController = async (req, res) => {
   const data = req.body
   data.id = nanoid()
   data.services = allServices
+  data.status = 'initializing'
+  data.locked = true
   data.owner = req.session.user
 
   let project
@@ -52,6 +55,21 @@ export const createProjectController = async (req, res) => {
         'request-id': req.id,
       },
     })
+    try {
+      project = await updateProjectStatus(project, 'created')
+
+      req.log.info({
+        ...getLogInfos({ projectId: project.id }),
+        description: 'Project status successfully updated in database',
+      })
+    } catch (error) {
+      req.log.error({
+        ...getLogInfos(),
+        description: 'Cannot update project status',
+        error,
+      })
+      return send500(res, error.message)
+    }
 
     send201(res, project)
   } catch (error) {
@@ -60,6 +78,21 @@ export const createProjectController = async (req, res) => {
       description: 'Provisioning project with ansible failed',
       error,
     })
+    try {
+      project = await updateProjectStatus(project, 'failed')
+
+      req.log.info({
+        ...getLogInfos({ projectId: project.id }),
+        description: 'Project status successfully updated in database',
+      })
+    } catch (error) {
+      req.log.error({
+        ...getLogInfos(),
+        description: 'Cannot update project status',
+        error,
+      })
+      return send500(res, error.message)
+    }
     send500(res, error)
   }
 }

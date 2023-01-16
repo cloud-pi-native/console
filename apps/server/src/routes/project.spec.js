@@ -63,7 +63,11 @@ describe('Project routes', () => {
     it('Should create a project', async () => {
       const randomProject = createRandomProject()
 
+      // first query : checkUniqueProject
       Project.$queueResult(null)
+      // second query : createProject
+      Project.$queueResult(randomProject)
+      // third query : updateProjectStatus
       Project.$queueResult(randomProject)
       setOwner(randomProject.owner)
 
@@ -84,6 +88,7 @@ describe('Project routes', () => {
 
       Project.$queueResult(null)
       Project.$queueResult(randomProject)
+      Project.$queueResult(randomProject)
 
       const response = await app.inject()
         .post('/')
@@ -99,6 +104,7 @@ describe('Project routes', () => {
       const randomProject = createRandomProject()
 
       Project.$queueResult(true)
+      Project.$queueResult(randomProject)
       Project.$queueResult(randomProject)
       setOwner(randomProject.owner)
 
@@ -119,6 +125,7 @@ describe('Project routes', () => {
 
       Project.$queueResult(null)
       Project.$queueResult(randomProject)
+      Project.$queueResult(randomProject)
       setOwner(randomProject.owner)
       const error = new Error(ansibleError)
       global.fetch = vi.fn(() => Promise.reject(error))
@@ -136,7 +143,7 @@ describe('Project routes', () => {
 
   describe('addRepoController', () => {
     it('Should add a repo in project', async () => {
-      const randomProject = { ...createRandomProject(), id: nanoid() }
+      const randomProject = { ...createRandomProject(), id: nanoid(), status: 'created', locked: false }
       const randomRepo = getRandomRepo()
 
       sequelize.$queueResult({ data: randomProject })
@@ -154,7 +161,7 @@ describe('Project routes', () => {
     })
 
     it('Should not add a repo if internalRepoName already present', async () => {
-      const randomProject = { ...createRandomProject(), id: nanoid() }
+      const randomProject = { ...createRandomProject(), id: nanoid(), status: 'created', locked: false }
       const randomRepo = randomProject.repos[0]
 
       sequelize.$queueResult({ data: randomProject })
@@ -190,7 +197,7 @@ describe('Project routes', () => {
 
   describe('addUserController', () => {
     it('Should add an user in project', async () => {
-      const randomProject = { ...createRandomProject(), id: nanoid() }
+      const randomProject = { ...createRandomProject(), id: nanoid(), status: 'created', locked: false }
       const randomUser = getRandomUser()
 
       sequelize.$queueResult({ data: randomProject })
@@ -208,7 +215,7 @@ describe('Project routes', () => {
     })
 
     it('Should not add an user if email already present', async () => {
-      const randomProject = { ...createRandomProject(), id: nanoid() }
+      const randomProject = { ...createRandomProject(), id: nanoid(), status: 'created', locked: false }
       const randomUser = randomProject.users[0]
 
       sequelize.$queueResult({ data: randomProject })
@@ -243,7 +250,7 @@ describe('Project routes', () => {
 
   describe('removeUserController', () => {
     it('Should remove an user in project', async () => {
-      const randomProject = { ...createRandomProject(), id: nanoid() }
+      const randomProject = { ...createRandomProject(), id: nanoid(), status: 'created', locked: false }
       const randomUser = getRandomUser()
 
       sequelize.$queueResult({ data: randomProject })
@@ -258,7 +265,7 @@ describe('Project routes', () => {
     })
 
     it('Should not remove an user if permission is missing', async () => {
-      const randomProject = { ...createRandomProject(), id: nanoid() }
+      const randomProject = { ...createRandomProject(), id: nanoid(), status: 'created', locked: false }
       const randomUser = getRandomUser()
 
       sequelize.$queueResult(null)
