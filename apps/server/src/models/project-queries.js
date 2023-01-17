@@ -1,4 +1,4 @@
-import { Op, QueryTypes } from 'sequelize'
+import { Op } from 'sequelize'
 import { sequelize } from '../connect.js'
 import { getProjectModel } from './project.js'
 import { projectSchema } from 'shared/src/schemas/project.js'
@@ -122,7 +122,7 @@ export const getUserProjectById = async (projectId, userId) => {
 
 export const getAllProject = async () => {
   const res = await sequelize.query(
-    'SELECT * FROM "Projects";', { type: QueryTypes.SELECT }).catch(e => { throw e })
+    'SELECT * FROM "Projects";', { type: sequelize.QueryTypes?.SELECT }).catch(e => { throw e })
   return res
 }
 
