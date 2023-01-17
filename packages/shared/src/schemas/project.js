@@ -1,47 +1,12 @@
 import Joi from 'joi'
 import { repoSchema } from './repo.js'
 import { userSchema } from './user.js'
-
-export const allOrgNames = [
-  'dinum',
-  'ministere-interieur',
-  'ministere-justice',
-]
-
-export const allServices = [
-  'argocd',
-  'gitlab',
-  'nexus',
-  'quay',
-  'sonarqube',
-  'vault',
-]
-
-export const allStatus = [
-  'initializing',
-  'created',
-  'failed',
-  'deleting',
-]
-
-export const projectStatus = [
-  'initializing',
-  'created',
-  'failed',
-  'archived',
-]
-
-export const achievedStatus = [
-  'created',
-  'failed',
-]
-
-export const allEnv = [
-  'dev',
-  'staging',
-  'integration',
-  'prod',
-]
+import { envSchema } from './env.js'
+import {
+  allOrgNames,
+  allServices,
+  projectStatus,
+} from 'shared/src/utils/iterables.js'
 
 export const projectSchema = Joi.object({
   id: Joi.string()
@@ -67,9 +32,13 @@ export const projectSchema = Joi.object({
     .valid(...projectStatus)
     .required(),
 
-  envList: Joi.array()
-    .items(Joi.string().valid(...allEnv).required())
-    .required(),
+  // TODO : keys parmi allEnv
+  envList: Joi.object({
+    dev: envSchema,
+    staging: envSchema,
+    integration: envSchema,
+    prod: envSchema,
+  }),
 
   locked: Joi.boolean()
     .required(),

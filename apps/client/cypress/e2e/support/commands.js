@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid'
-import { allServices, allEnv } from 'shared/src/schemas/project.js'
+import { allServices, allEnv } from 'shared/src/utils/iterables.js'
 
 Cypress.Commands.add('kcLogout', () => {
   cy.get('a.fr-btn').should('contain', 'Se déconnecter').click()

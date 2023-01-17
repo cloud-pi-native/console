@@ -1,4 +1,5 @@
 import Joi from 'joi'
+import { allStatus } from 'shared/src/utils/iterables.js'
 
 export const repoSchema = Joi.object({
   internalRepoName: Joi.string()
@@ -23,4 +24,8 @@ export const repoSchema = Joi.object({
 
   externalToken: Joi.string()
     .when('isPrivate', { is: true, then: Joi.required() }),
+
+  status: Joi.string()
+    .valid(...allStatus)
+    .required(),
 })

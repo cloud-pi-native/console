@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid'
-import { allServices } from 'shared/src/schemas/project.js'
+import { allServices } from 'shared/src/utils/iterables.js'
 import { getLogInfos } from '../utils/logger.js'
 import {
   createProject,
@@ -102,8 +102,10 @@ export const addRepoController = async (req, res) => {
   const projectId = req.params?.id
   const data = req.body
   data.isInfra = data.isInfra || false
+  data.status = 'initializing'
 
   let dbProject
+  dbProject.locked = true
   try {
     dbProject = await getUserProjectById(projectId, userId)
     if (!dbProject) {
@@ -155,6 +157,22 @@ export const addRepoController = async (req, res) => {
       },
     })
 
+    try {
+      dbProject = await updateProjectStatus(dbProject, 'created')
+
+      req.log.info({
+        ...getLogInfos({ projectId: dbProject.id }),
+        description: 'Project status successfully updated in database',
+      })
+    } catch (error) {
+      req.log.error({
+        ...getLogInfos(),
+        description: 'Cannot update project status',
+        error,
+      })
+      return send500(res, error.message)
+    }
+
     send201(res, 'Git repository successfully added into project')
   } catch (error) {
     const message = 'Provisioning project with ansible failed'
@@ -163,6 +181,22 @@ export const addRepoController = async (req, res) => {
       description: message,
       error,
     })
+
+    try {
+      dbProject = await updateProjectStatus(dbProject, 'failed')
+
+      req.log.info({
+        ...getLogInfos({ projectId: dbProject.id }),
+        description: 'Project status successfully updated in database',
+      })
+    } catch (error) {
+      req.log.error({
+        ...getLogInfos(),
+        description: 'Cannot update project status',
+        error,
+      })
+      return send500(res, error.message)
+    }
     send500(res, message)
   }
 }
@@ -171,7 +205,9 @@ export const addUserController = async (req, res) => {
   const userId = req.session?.user?.id
   const projectId = req.params?.id
   const data = req.body
+  data.status = 'initializing'
 
+  let dbProject
   try {
     const dbProject = await getUserProjectById(projectId, userId)
 
@@ -194,7 +230,48 @@ export const addUserController = async (req, res) => {
       description: message,
       error,
     })
-    send500(res, message)
+    return send500(res, message)
+  }
+
+  try {
+    // TODO : US #132 appel ansible
+    try {
+      dbProject = await updateProjectStatus(dbProject, 'created')
+
+      req.log.info({
+        ...getLogInfos({ projectId: dbProject.id }),
+        description: 'Project status successfully updated in database',
+      })
+    } catch (error) {
+      req.log.error({
+        ...getLogInfos(),
+        description: 'Cannot update project status',
+        error,
+      })
+      return send500(res, error.message)
+    }
+  } catch (error) {
+    req.log.error({
+      ...getLogInfos(),
+      description: 'Provisioning project with ansible failed',
+      error,
+    })
+    try {
+      dbProject = await updateProjectStatus(dbProject, 'created')
+
+      req.log.info({
+        ...getLogInfos({ projectId: dbProject.id }),
+        description: 'Project status successfully updated in database',
+      })
+    } catch (error) {
+      req.log.error({
+        ...getLogInfos(),
+        description: 'Cannot update project status',
+        error,
+      })
+      return send500(res, error.message)
+    }
+    send500(res, error)
   }
 }
 
@@ -203,8 +280,9 @@ export const removeUserController = async (req, res) => {
   const projectId = req.params?.id
   const data = req.body
 
+  let dbProject
   try {
-    const dbProject = await getUserProjectById(projectId, userId)
+    dbProject = await getUserProjectById(projectId, userId)
     if (!dbProject) {
       throw new Error('Missing permissions on this project')
     }
@@ -224,7 +302,47 @@ export const removeUserController = async (req, res) => {
       description: message,
       error,
     })
-    send500(res, message)
+    return send500(res, message)
+  }
+  try {
+    // TODO : US #132 appel ansible
+    try {
+      dbProject = await updateProjectStatus(dbProject, 'created')
+
+      req.log.info({
+        ...getLogInfos({ projectId: dbProject.id }),
+        description: 'Project status successfully updated in database',
+      })
+    } catch (error) {
+      req.log.error({
+        ...getLogInfos(),
+        description: 'Cannot update project status',
+        error,
+      })
+      return send500(res, error.message)
+    }
+  } catch (error) {
+    req.log.error({
+      ...getLogInfos(),
+      description: 'Provisioning project with ansible failed',
+      error,
+    })
+    try {
+      dbProject = await updateProjectStatus(dbProject, 'failed')
+
+      req.log.info({
+        ...getLogInfos({ projectId: dbProject.id }),
+        description: 'Project status successfully updated in database',
+      })
+    } catch (error) {
+      req.log.error({
+        ...getLogInfos(),
+        description: 'Cannot update project status',
+        error,
+      })
+      return send500(res, error.message)
+    }
+    send500(res, error)
   }
 }
 

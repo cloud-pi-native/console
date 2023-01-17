@@ -2,7 +2,8 @@
 import { computed, onMounted, ref } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
-import { projectSchema, allEnv } from 'shared/src/schemas/project.js'
+import { projectSchema } from 'shared/src/schemas/project.js'
+import { allEnv } from 'shared/src/utils/iterables.js'
 import { schemaValidator, isValid, instanciateSchema } from 'shared/src/utils/schemas.js'
 import router from '@/router/index.js'
 
