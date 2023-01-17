@@ -120,12 +120,6 @@ export const getUserProjectById = async (projectId, userId) => {
   return res?.data
 }
 
-export const getAllProject = async () => {
-  const res = await sequelize.query(
-    'SELECT * FROM "Projects";', { type: sequelize.QueryTypes?.SELECT }).catch(e => { throw e })
-  return res
-}
-
 export const getUserProjects = async (userId) => {
   const res = await sequelize.query(
     'SELECT data FROM "Projects" WHERE (("data"#>>\'{owner,id}\') = $userId OR data->\'users\' @> \'[{"id": "$userId"}]\');',
