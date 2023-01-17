@@ -5,15 +5,16 @@ import {
   getRandomRepo,
   getRandomUser,
 } from './random-utils.js'
+import { allEnv } from 'shared/src/utils/iterables.js'
 
-export const createRandomAnsibleProject = (nbEnv = 3) => {
+export const createRandomAnsibleProject = (envList = allEnv) => {
   return {
     env: 'pprod',
     extra: {
       orgName: getRandomProjectOrgName(),
       ownerEmail: getRandomUser().email,
       projectName: getRandomProjectName(),
-      envList: getRandomEnvList(nbEnv),
+      envList: getRandomEnvList(envList),
     },
   }
 }
