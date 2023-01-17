@@ -32,13 +32,9 @@ export const projectSchema = Joi.object({
     .valid(...projectStatus)
     .required(),
 
-  // TODO : keys parmi allEnv
-  envList: Joi.object({
-    dev: envSchema,
-    staging: envSchema,
-    integration: envSchema,
-    prod: envSchema,
-  }),
+  envList: Joi.array()
+    .items(envSchema)
+    .unique('envName'),
 
   locked: Joi.boolean()
     .required(),
