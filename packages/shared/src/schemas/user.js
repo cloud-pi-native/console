@@ -14,6 +14,5 @@ export const userSchema = Joi.object({
   lastName: Joi.string(),
 
   status: Joi.string()
-    .valid(...allStatus)
-    .required(),
+    .valid(...allStatus),
 })

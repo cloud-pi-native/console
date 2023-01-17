@@ -65,20 +65,6 @@ watch(projects, (projects) => {
         :horizontal="false"
         @click="setSelectedProject(project.id)"
       />
-      <DsfrBadge
-        v-if="project.status === 'initializing'"
-        label="Création..."
-      />
-      <DsfrBadge
-        v-else-if="project.status === 'failed'"
-        type="error"
-        label="Erreur"
-      />
-      <DsfrBadge
-        v-else
-        type="info"
-        label="OK"
-      />
     </div>
   </div>
 </template>

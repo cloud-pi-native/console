@@ -2,9 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { schemaValidator, isValid, instanciateSchema } from './schemas.js'
 import { repoSchema } from '../schemas/repo.js'
 
-// TODO : Error: Failed to load url shared/src/utils/iterables.js (resolved id: shared/src/utils/iterables.js). Does the file exist?
-
-describe.skip('Schemas utils', () => {
+describe('Schemas utils', () => {
   it('Should validate undefined schema', () => {
     expect(schemaValidator(repoSchema, undefined)).toStrictEqual({})
   })

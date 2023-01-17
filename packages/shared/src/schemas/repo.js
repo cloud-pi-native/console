@@ -28,6 +28,5 @@ export const repoSchema = Joi.object({
     .when('isPrivate', { is: true, then: Joi.required() }),
 
   status: Joi.string()
-    .valid(...allStatus)
-    .required(),
+    .valid(...allStatus),
 })

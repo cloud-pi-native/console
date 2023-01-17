@@ -76,6 +76,7 @@ describe('Project routes', () => {
         .body(randomProject)
         .end()
 
+      randomProject.owner.status = 'initializing'
       expect(response.statusCode).toEqual(201)
       expect(response.json()).toBeDefined()
       expect(response.json()).toMatchObject(randomProject)

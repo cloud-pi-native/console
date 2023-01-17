@@ -20,6 +20,7 @@ export const createProjectController = async (req, res) => {
   data.status = 'initializing'
   data.locked = true
   data.owner = req.session.user
+  data.owner.status = 'initializing'
   data.status = 'initializing'
 
   let project
@@ -58,6 +59,7 @@ export const createProjectController = async (req, res) => {
     })
 
     try {
+      project.owner.status = 'created'
       project = await updateProjectStatus(project, 'created')
 
       req.log.info({

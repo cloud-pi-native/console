@@ -13,6 +13,5 @@ export const envSchema = Joi.object({
     .items(Joi.string()),
 
   status: Joi.string()
-    .valid(...allStatus)
-    .required(),
+    .valid(...allStatus),
 })
