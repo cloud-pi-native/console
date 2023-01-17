@@ -146,8 +146,11 @@ describe('Project routes', () => {
       const randomProject = { ...createRandomProject(), id: nanoid(), status: 'created', locked: false }
       const randomRepo = getRandomRepo()
 
+      // first query : getUserProjectById
       sequelize.$queueResult({ data: randomProject })
+      // second query : addRepo
       Project.$queueResult(randomProject)
+      // third query : updateProjectStatus
       Project.$queueResult(randomProject)
       setOwner(randomProject.owner)
 
@@ -202,8 +205,11 @@ describe('Project routes', () => {
       const randomProject = { ...createRandomProject(), id: nanoid(), status: 'created', locked: false }
       const randomUser = getRandomUser()
 
+      // first query : getUserProjectById
       sequelize.$queueResult({ data: randomProject })
+      // second query : addUser
       Project.$queueResult(randomProject)
+      // third query : updateProjectStatus
       Project.$queueResult(randomProject)
       setOwner(randomProject.owner)
 

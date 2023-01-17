@@ -106,7 +106,6 @@ export const addRepoController = async (req, res) => {
   data.status = 'initializing'
 
   let dbProject
-  dbProject.locked = true
   try {
     dbProject = await getUserProjectById(projectId, userId)
     if (!dbProject) {
@@ -118,6 +117,7 @@ export const addRepoController = async (req, res) => {
       return send500(res, message)
     }
 
+    dbProject.locked = true
     await addRepo(dbProject, data)
 
     const message = 'Git repository successfully added into project'
