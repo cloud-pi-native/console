@@ -11,7 +11,14 @@ import {
   dbName,
   dbPass,
 } from './utils/env.js'
-import { getProjectModel } from './models/project.js'
+import {
+  getOrganizationModel,
+  getUserModel,
+  getProjectModel,
+  getEnvironmentModel,
+  getPermissionModel,
+  getRepositoryModel,
+} from './models/project.js'
 
 const DELAY_BEFORE_RETRY = isTest || isCI ? 1000 : 10000
 let closingConnections = false
@@ -64,8 +71,30 @@ export const closeConnections = async () => {
 
 export const synchroniseModels = async () => {
   try {
+    const organizationModel = await getOrganizationModel()
+    await organizationModel.sync({ force: true, logging: false })
+
+    const userModel = await getUserModel()
+    userModel.belongsTo(organizationModel, { foreignKey: 'organization' })
+    await userModel.sync({ force: true })
+
     const projectModel = await getProjectModel()
-    await projectModel.sync({ alter: true })
+    projectModel.belongsTo(userModel, { foreignKey: 'ownerUuid' })
+    projectModel.belongsTo(organizationModel, { foreignKey: 'organization' })
+    await projectModel.sync({ force: true })
+
+    const environmentModel = await getEnvironmentModel()
+    environmentModel.belongsTo(projectModel, { foreignK: 'project_id' })
+    await environmentModel.sync({ force: true, logging: false })
+
+    const permissionModel = await getPermissionModel()
+    permissionModel.belongsTo(userModel, { foreignKey: 'user_uuid' })
+    permissionModel.belongsTo(environmentModel, { foreignKey: 'environment_id' })
+    await permissionModel.sync({ force: true, logging: false })
+
+    const repositoryModel = await getRepositoryModel()
+    repositoryModel.belongsTo(projectModel, { foreignKey: 'project_id' })
+    await repositoryModel.sync({ force: true, logging: false })
     app.log.info('All models were synchronized successfully.')
   } catch (error) {
     app.log.error('Models synchronisation with database failed.')
