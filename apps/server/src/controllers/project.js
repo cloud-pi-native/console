@@ -77,6 +77,7 @@ export const createProjectController = async (req, res) => {
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
+      description: 'Provisioning project with ansible failed',
       error,
     })
     try {
