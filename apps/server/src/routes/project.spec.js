@@ -148,6 +148,7 @@ describe('Project routes', () => {
 
       sequelize.$queueResult({ data: randomProject })
       Project.$queueResult(randomProject)
+      Project.$queueResult(randomProject)
       setOwner(randomProject.owner)
 
       const response = await app.inject()
@@ -165,6 +166,7 @@ describe('Project routes', () => {
       const randomRepo = randomProject.repos[0]
 
       sequelize.$queueResult({ data: randomProject })
+      Project.$queueResult(randomProject)
       Project.$queueResult(randomProject)
       setOwner(randomProject.owner)
 
@@ -202,6 +204,7 @@ describe('Project routes', () => {
 
       sequelize.$queueResult({ data: randomProject })
       Project.$queueResult(randomProject)
+      Project.$queueResult(randomProject)
       setOwner(randomProject.owner)
 
       const response = await app.inject()
@@ -219,6 +222,7 @@ describe('Project routes', () => {
       const randomUser = randomProject.users[0]
 
       sequelize.$queueResult({ data: randomProject })
+      Project.$queueResult(randomProject)
       Project.$queueResult(randomProject)
       setOwner(randomProject.owner)
 
@@ -254,6 +258,7 @@ describe('Project routes', () => {
       const randomUser = getRandomUser()
 
       sequelize.$queueResult({ data: randomProject })
+      Project.$queueResult(randomProject)
       setOwner(randomProject.owner)
 
       const response = await app.inject()
