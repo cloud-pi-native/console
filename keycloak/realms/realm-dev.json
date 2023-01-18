@@ -120,6 +120,30 @@
       }
     },
     {
+      "id": "cb8e5b4b-7b7b-40f5-935f-594f48ae6569",
+      "username": "atardif",
+      "enabled": true,
+      "email": "arnaud.tardif@test.com",
+      "emailVerified": true,
+      "firstName": "Arnaud",
+      "lastName": "TARDIF",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "test"
+        }
+      ],
+      "realmRoles": [
+        "user",
+        "offline_access"
+      ],
+      "clientRoles": {
+        "account": [
+          "manage-account"
+        ]
+      }
+    },
+    {
       "username": "admin",
       "enabled": true,
       "email": "admin@test.com",

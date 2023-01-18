@@ -1,5 +1,5 @@
 describe('Add repos into project', () => {
-  const project = { projectName: 'project10' }
+  const project = { name: 'project10' }
 
   before(() => {
     cy.kcLogin('test')
@@ -7,7 +7,7 @@ describe('Add repos into project', () => {
     cy.createProject(project)
 
     cy.getByDataTestid('menuMyProjects').click()
-      .getByDataTestid(`projectTile-${project.projectName}`).click()
+      .getByDataTestid(`projectTile-${project.name}`).click()
   })
 
   beforeEach(() => {
@@ -104,9 +104,9 @@ describe('Add repos into project', () => {
       .getByDataTestid('menuProjectsBtn').click()
       .getByDataTestid('menuMyProjects').click()
       .url().should('contain', '/projects')
-      .getByDataTestid(`projectTile-${project.projectName}`).click()
+      .getByDataTestid(`projectTile-${project.name}`).click()
       .getByDataTestid('menuRepos').click()
-      .url().should('contain', '/repos')
+      .url().should('contain', '/repositories')
 
     cy.getByDataTestid('addRepoLink').click()
       .getByDataTestid('internalRepoNameInput').type(repo.internalRepoName)

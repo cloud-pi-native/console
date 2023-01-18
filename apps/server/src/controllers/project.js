@@ -1,52 +1,113 @@
-import { nanoid } from 'nanoid'
-import { allServices } from 'shared/src/utils/iterables.js'
-import { getLogInfos } from '../utils/logger.js'
 import {
-  createProject,
-  updateProjectStatus,
-  addRepo,
-  addUser,
   getUserProjects,
-  getUserProjectById,
-  removeUser,
-} from '../models/project-queries.js'
+  getProject,
+  initializeProject,
+  updateProjectCreated,
+  updateProjectFailed,
+  getProjectById,
+  lockProject,
+  unlockProject,
+  addUserToProject,
+  archiveProject,
+} from '../models/queries/project-queries.js'
+import { getUserById } from '../models/queries/user-queries.js'
+import { getRoleByUserIdAndProjectId } from '../models/queries/users-projects-queries.js'
+import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import { ansibleHost, ansiblePort } from '../utils/env.js'
+import { projectSchema } from 'shared/src/schemas/project.js'
+import { replaceNestedKeys, lowercaseFirstLetter } from '../utils/queries-tools.js'
+import { getOrganizationById } from '../models/queries/organization-queries.js'
 
-export const createProjectController = async (req, res) => {
-  const data = req.body
-  data.id = nanoid()
-  data.services = allServices
-  data.status = 'initializing'
-  data.locked = true
-  data.owner = req.session.user
-  data.owner.status = 'initializing'
-  delete data.owner.groups
+// GET
+export const getUserProjectsController = async (req, res) => {
+  const userId = req.session?.user?.id
 
-  let project
   try {
-    project = await createProject(data)
+    const user = await getUserById(userId)
+    const projects = await getUserProjects(user)
+    req.log.info({
+      ...getLogInfos(),
+      description: 'Projects successfully retreived',
+    })
+    projects.map(project => replaceNestedKeys(project, lowercaseFirstLetter))
+    await send200(res, projects)
+  } catch (error) {
+    const message = `Cannot retrieve projects: ${error.message}`
+    req.log.error({
+      ...getLogInfos(),
+      description: message,
+      error: error.message,
+    })
+    send500(res, message)
+  }
+}
+
+export const getProjectByIdController = async (req, res) => {
+  const projectId = req.params?.projectId
+  const userId = req.session?.user?.id
+
+  try {
+    const project = await getProjectById(projectId)
+    const role = await getRoleByUserIdAndProjectId(userId, projectId)
+    if (!role) throw new Error('Requestor is not member of project')
 
     req.log.info({
-      ...getLogInfos({ projectId: project.id }),
+      ...getLogInfos({ projectId }),
+      description: 'Project successfully retrived',
+    })
+    send200(res, project)
+  } catch (error) {
+    const message = `Cannot retrieve project: ${error.message}`
+    req.log.error({
+      ...getLogInfos({ projectId }),
+      description: message,
+      error: error.message,
+    })
+    send500(res, message)
+  }
+}
+
+// POST
+export const createProjectController = async (req, res) => {
+  const data = req.body
+  const userId = req.session?.user?.id
+
+  let project
+
+  try {
+    await projectSchema.validateAsync(data)
+
+    project = await getProject({ name: data.name, organization: data.organization })
+    if (project) throw new Error('Un projet avec le nom et dans l\'organisation demandés existe déjà')
+
+    project = await initializeProject(data)
+    const user = await getUserById(userId)
+    await addUserToProject({ project, user, role: 'owner' })
+    req.log.info({
+      ...getLogInfos({
+        projectId: project.id,
+      }),
       description: 'Project successfully created in database',
     })
     send201(res, project)
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: 'Cannot create project',
+      description: `Cannot create project: ${error.message}`,
       error: error.message,
     })
     return send500(res, error.message)
   }
 
   try {
+    const owner = await getUserById(userId)
+    const orgName = await getOrganizationById(project.organization)
+
     const ansibleData = {
-      orgName: project.orgName,
-      ownerEmail: project.owner.email,
-      projectName: project.projectName,
-      envList: project.envList,
+      ORGANIZATION_NAME: orgName,
+      EMAILS: owner.email,
+      PROJECT_NAME: project.name,
     }
     await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/projects`, {
       method: 'POST',
@@ -59,9 +120,7 @@ export const createProjectController = async (req, res) => {
     })
 
     try {
-      project.status = 'created'
-      project.owner.status = 'created'
-      project = await updateProjectStatus(project, 'created')
+      project = await updateProjectCreated(project.id)
 
       req.log.info({
         ...getLogInfos({ projectId: project.id }),
@@ -70,13 +129,10 @@ export const createProjectController = async (req, res) => {
     } catch (error) {
       req.log.error({
         ...getLogInfos(),
-        description: `Cannot update project status: ${error.message}`,
-        error,
+        description: 'Cannot update project status to created',
+        error: error.message,
       })
-      return send500(res, error.message)
     }
-
-    send201(res, project)
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
@@ -84,9 +140,7 @@ export const createProjectController = async (req, res) => {
       error,
     })
     try {
-      project.status = 'failed'
-      project.owner.status = 'failed'
-      project = await updateProjectStatus(project, 'failed')
+      project = await updateProjectFailed(project.id)
 
       req.log.info({
         ...getLogInfos({ projectId: project.id }),
@@ -95,175 +149,59 @@ export const createProjectController = async (req, res) => {
     } catch (error) {
       req.log.error({
         ...getLogInfos(),
-        description: `Cannot update project status: ${error.message}`,
-        error,
+        description: 'Cannot update project status to failed',
+        error: error.message,
       })
-      return send500(res, error.message)
     }
-    send500(res, error)
   }
 }
 
-export const addRepoController = async (req, res) => {
+// DELETE
+export const archiveProjectController = async (req, res) => {
   const userId = req.session?.user?.id
-  const projectId = req.params?.id
-  const data = req.body
-  data.status = 'initializing'
+  const projectId = req.params?.projectId
 
-  let dbProject
   try {
-    dbProject = await getUserProjectById(projectId, userId)
-    if (!dbProject) {
-      const message = 'Missing permissions on this project'
-      req.log.error({
-        ...getLogInfos(),
-        description: message,
-      })
-      return send500(res, message)
-    }
+    const project = await getProjectById(projectId)
+    if (!project) throw new Error('Project not found')
 
-    dbProject.locked = true
-    await addRepo(dbProject, data)
-    dbProject = await getUserProjectById(projectId, userId)
+    const role = await getRoleByUserIdAndProjectId(userId, projectId)
+    if (!role) throw new Error('Requestor is not member of project')
+    if (role.role !== 'owner') throw new Error('Requestor is not owner of project')
 
-    const message = 'Git repository successfully added into project'
+    await lockProject(projectId)
+    await archiveProject(projectId)
     req.log.info({
-      ...getLogInfos({ projectId: dbProject.id }),
-      description: message,
+      ...getLogInfos({
+        projectId,
+      }),
+      description: 'Project successfully archived in database',
     })
+    send200(res, projectId)
   } catch (error) {
-    const message = `Cannot add git repository into project: ${error.message}`
     req.log.error({
       ...getLogInfos(),
-      description: message,
-      error,
+      description: `Cannot archive project: ${error.message}`,
+      error: error.message,
     })
-    return send500(res, message)
+    return send500(res, error.message)
   }
 
   try {
-    const ansibleData = {
-      orgName: dbProject.orgName,
-      ownerEmail: dbProject.owner.email,
-      projectName: dbProject.projectName,
-      internalRepoName: data.internalRepoName,
-      externalRepoUrl: data.externalRepoUrl.startsWith('http') ? data.externalRepoUrl.split('://')[1] : data.externalRepoUrl,
-      isInfra: data.isInfra,
-    }
-    if (data.isPrivate) {
-      ansibleData.externalUserName = data.externalUserName
-      ansibleData.externalToken = data.externalToken
-    }
-
-    await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/repos`, {
-      method: 'POST',
-      body: JSON.stringify(ansibleData),
-      headers: {
-        'Content-Type': 'application/json',
-        authorization: req.headers.authorization,
-      },
-    })
-
+    // TODO : US #130 appel ansible
     try {
-      const indexRepo = dbProject.repos.findIndex(repo => repo.internalRepoName === data.internalRepoName)
-      dbProject.repos[indexRepo].status = 'created'
-
-      dbProject = await updateProjectStatus(dbProject, 'created')
+      await unlockProject(projectId)
 
       req.log.info({
-        ...getLogInfos({ projectId: dbProject.id }),
-        description: 'Project status successfully updated in database',
+        ...getLogInfos({ projectId }),
+        description: 'Project archived and unlocked',
       })
     } catch (error) {
       req.log.error({
         ...getLogInfos(),
-        description: `Cannot update project status: ${error.message}`,
-        error,
+        description: 'Cannot unlock project',
+        error: error.message,
       })
-      return send500(res, error.message)
-    }
-
-    send201(res, 'Git repository successfully added into project')
-  } catch (error) {
-    const message = `Provisioning project with ansible failed: ${error.message}`
-    req.log.error({
-      ...getLogInfos(),
-      description: message,
-      error,
-    })
-
-    try {
-      const indexRepo = dbProject.repos.findIndex(repo => repo.internalRepoName === data.internalRepoName)
-      dbProject.repos[indexRepo].status = 'failed'
-      dbProject = await updateProjectStatus(dbProject, 'failed')
-
-      req.log.info({
-        ...getLogInfos({ projectId: dbProject.id }),
-        description: 'Project status successfully updated in database',
-      })
-    } catch (error) {
-      req.log.error({
-        ...getLogInfos(),
-        description: `Cannot update project status: ${error.message}`,
-        error,
-      })
-      return send500(res, error.message)
-    }
-    send500(res, message)
-  }
-}
-
-export const addUserController = async (req, res) => {
-  const userId = req.session?.user?.id
-  const projectId = req.params?.id
-  const data = req.body
-  data.status = 'initializing'
-
-  let dbProject
-  try {
-    dbProject = await getUserProjectById(projectId, userId)
-
-    if (!dbProject) {
-      throw new Error('Missing permissions on this project')
-    }
-
-    await addUser(dbProject, data)
-    dbProject = await getUserProjectById(projectId, userId)
-
-    const message = 'User successfully added into project'
-    req.log.info({
-      ...getLogInfos({ projectId: dbProject.id }),
-      description: message,
-    })
-    send201(res, message)
-  } catch (error) {
-    const message = `Cannot add user into project: ${error.message}`
-    req.log.error({
-      ...getLogInfos(),
-      description: message,
-      error,
-    })
-    return send500(res, message)
-  }
-
-  try {
-    // TODO : US #132 appel ansible
-    try {
-      const indexUser = dbProject.users.findIndex(user => user.email === data.email)
-      dbProject.users[indexUser].status = 'created'
-      dbProject = await updateProjectStatus(dbProject, 'created')
-
-      req.log.info({
-        ...getLogInfos({ projectId: dbProject.id }),
-        description: 'Project status successfully updated in database',
-      })
-    } catch (error) {
-      req.log.error({
-        ...getLogInfos(),
-        description: `Cannot update project status: ${error.message}`,
-        error,
-      })
-      return send500(res, error.message)
     }
   } catch (error) {
     req.log.error({
@@ -272,138 +210,20 @@ export const addUserController = async (req, res) => {
       error,
     })
     try {
-      const indexUser = dbProject.users.findIndex(user => user.email === data.email)
-      dbProject.users[indexUser].status = 'failed'
-      dbProject = await updateProjectStatus(dbProject, 'failed')
+      await updateProjectFailed(projectId)
+      await unlockProject(projectId)
 
       req.log.info({
-        ...getLogInfos({ projectId: dbProject.id }),
+        ...getLogInfos({ projectId }),
         description: 'Project status successfully updated in database',
       })
     } catch (error) {
       req.log.error({
         ...getLogInfos(),
-        description: `Cannot update project status: ${error.message}`,
-        error,
+        description: 'Cannot update project status',
+        error: error.message,
       })
-      return send500(res, error.message)
     }
     send500(res, error)
-  }
-}
-
-export const removeUserController = async (req, res) => {
-  const userId = req.session?.user?.id
-  const projectId = req.params?.id
-  const data = req.body
-
-  let dbProject
-  try {
-    dbProject = await getUserProjectById(projectId, userId)
-    if (!dbProject) {
-      throw new Error('Missing permissions on this project')
-    }
-
-    await removeUser(dbProject, data)
-
-    const message = 'User successfully removed from project'
-    req.log.info({
-      ...getLogInfos({ projectId: dbProject.id }),
-      description: message,
-    })
-    send200(res, message)
-  } catch (error) {
-    const message = `Cannot remove user from project: ${error.message}`
-    req.log.error({
-      ...getLogInfos(),
-      description: message,
-      error,
-    })
-    return send500(res, message)
-  }
-  try {
-    // TODO : US #132 appel ansible
-    try {
-      dbProject = await updateProjectStatus(dbProject, 'created')
-
-      req.log.info({
-        ...getLogInfos({ projectId: dbProject.id }),
-        description: 'Project status successfully updated in database',
-      })
-    } catch (error) {
-      req.log.error({
-        ...getLogInfos(),
-        description: `Cannot update project status: ${error.message}`,
-        error,
-      })
-      return send500(res, error.message)
-    }
-  } catch (error) {
-    req.log.error({
-      ...getLogInfos(),
-      description: 'Provisioning project with ansible failed',
-      error,
-    })
-    try {
-      dbProject = await updateProjectStatus(dbProject, 'failed')
-
-      req.log.info({
-        ...getLogInfos({ projectId: dbProject.id }),
-        description: 'Project status successfully updated in database',
-      })
-    } catch (error) {
-      req.log.error({
-        ...getLogInfos(),
-        description: `Cannot update project status: ${error.message}`,
-        error,
-      })
-      return send500(res, error.message)
-    }
-    send500(res, error)
-  }
-}
-
-export const getUserProjectsController = async (req, res) => {
-  const userId = req.session?.user?.id
-
-  try {
-    const projects = await getUserProjects(userId)
-
-    req.log.info({
-      ...getLogInfos(),
-      description: 'Projects successfully retreived',
-    })
-    await send200(res, projects)
-  } catch (error) {
-    const message = 'Cannot retrieve projects'
-    req.log.error({
-      ...getLogInfos(),
-      description: message,
-      error,
-    })
-    send500(res, message)
-  }
-}
-
-export const getUserProjectByIdController = async (req, res) => {
-  const userId = req.session?.user?.id
-  const id = req.params?.id
-
-  try {
-    const project = await getUserProjectById(id, userId)
-
-    req.log.info({
-      ...getLogInfos({ projectId: project.id }),
-      description: 'Project successfully retrived',
-    })
-    send200(res, project)
-  } catch (error) {
-    const message = 'Cannot retrieve project'
-    req.log.error({
-      ...getLogInfos({ projectId: id }),
-      description: message,
-      error,
-    })
-    send500(res, message)
   }
 }

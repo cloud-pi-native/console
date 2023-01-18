@@ -1,9 +1,20 @@
+import { rm } from 'node:fs/promises'
+import { resolve, dirname } from 'path'
+import { fileURLToPath } from 'url'
 import app from './app.js'
 import { getConnection, closeConnections, synchroniseModels } from './connect.js'
 import { isDev, isTest, isCI, isProd, isDevSetup, port } from './utils/env.js'
+import { initDb } from './init-db/index.js'
 
 startServer()
 handleExit()
+
+const initializeDB = async (path) => {
+  app.log.info('Starting init DB...')
+  const { data } = await import(path)
+  await initDb(data)
+  app.log.info('initDb invoked successfully')
+}
 
 export async function startServer () {
   try {
@@ -17,11 +28,17 @@ export async function startServer () {
   app.log.info('Reading init-db.js')
 
   try {
-    const { initDb } = await import('../dev-setup/init-db.js')
-    if (initDb && (isDevSetup || isTest)) {
-      app.log.info('Starting init DB...')
-      await initDb()
-      app.log.info('DB successfully init')
+    const dataPath = isProd
+      ? './init-db/imports/data.js'
+      : 'test-utils/src/imports/data.js'
+
+    await initializeDB(dataPath)
+    if (isProd && !isDevSetup) {
+      app.log.info('Cleaning up imported data file...')
+      const __filename = fileURLToPath(import.meta.url)
+      const __dirname = dirname(__filename)
+      await rm(resolve(__dirname, dataPath))
+      app.log.info(`Successfully deleted '${dataPath}'`)
     }
   } catch (error) {
     if (error.code === 'ERR_MODULE_NOT_FOUND' || error.message.includes('Failed to load')) {

@@ -59,7 +59,7 @@ describe('API', () => {
 
       expect(apiClient.post).toHaveBeenCalled()
       expect(apiClient.post).toHaveBeenCalledTimes(1)
-      expect(apiClient.post.mock.calls[0][0]).toBe(`/projects/${projectId}/repos`)
+      expect(apiClient.post.mock.calls[0][0]).toBe(`/projects/${projectId}/repositories`)
     })
 
     it('Should add an user', async () => {
@@ -75,13 +75,14 @@ describe('API', () => {
 
     it('Should remove an user', async () => {
       const projectId = 'thisIsAnId'
+      const userId = 'anOtherId'
       apiClient.delete.mockReturnValueOnce(Promise.resolve({ data: {} }))
 
-      await removeUser(projectId, {})
+      await removeUser(projectId, userId)
 
       expect(apiClient.delete).toHaveBeenCalled()
       expect(apiClient.delete).toHaveBeenCalledTimes(1)
-      expect(apiClient.delete.mock.calls[0][0]).toBe(`/projects/${projectId}/users`)
+      expect(apiClient.delete.mock.calls[0][0]).toBe(`/projects/${projectId}/users/${userId}`)
     })
   })
 })

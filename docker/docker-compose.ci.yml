@@ -47,6 +47,8 @@ services:
         condition: service_started
     ports:
       - 4000:80
+    volumes:
+      - ../packages/test-utils/src/imports:/app/src/init-db/imports
     environment:
       SERVER_PORT: 80 # ${SERVER_PORT:-4000}
       DB_HOST: ${POSTGRES_HOST:-postgres}

@@ -22,15 +22,14 @@ const app = await fastify(fastifyConf)
   .register(fastifySession, sessionConf)
   .register(keycloak, keycloakConf)
   .addHook('onRoute', route => {
-    routes[route.path]
-      ? routes[route.path].push(route.method)
-      : routes[route.path] = [route.method].flat()
+    if (routes[route.path]) routes[route.path].push(route.method)
+    else routes[route.path] = [route.method].flat()
   })
   .register(apiRouter, { prefix: apiPrefix })
   .register(miscRouter)
 
 Object.keys(routes)
   .sort((a, b) => a.localeCompare(b))
-  .map(key => app.log.info(`${key.padEnd(30, ' ')}${JSON.stringify(routes[key])}`))
+  .forEach(key => app.log.info(`${key.padEnd(30, ' ')}${JSON.stringify(routes[key])}`))
 
 export default app

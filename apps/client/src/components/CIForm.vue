@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
+import { useOrganizationStore } from '@/stores/organization.js'
 import { useCIFilesStore } from '@/stores/ciFiles.js'
 
 const props = defineProps({
@@ -12,13 +13,15 @@ const props = defineProps({
 
 const projectStore = useProjectStore()
 
+const organizationStore = useOrganizationStore()
+
 const ciFilesStore = useCIFilesStore()
 
-const orgName = computed(() => projectStore.selectedProject.orgName)
-const projectName = computed(() => projectStore.selectedProject.projectName)
+const projectName = computed(() => projectStore.selectedProject.name)
+const internalRepoName = ref(props.internalRepoName)
 
 const ciData = ref({
-  orgName: orgName.value,
+  orgName: '',
   projectName: projectName.value,
   internalRepoName: '',
   typeLanguage: 'java',
@@ -81,11 +84,18 @@ const copyContent = async (key) => {
   }
 }
 
+const setOrganizationName = async () => {
+  await organizationStore.setOrganizations()
+  const org = organizationStore.organizations.find(org => org.id === projectStore.selectedProject.organization)
+  ciData.value.orgName = org?.name
+}
+
 onMounted(() => {
-  ciData.value.internalRepoName = props.internalRepoName
+  ciData.value.internalRepoName = internalRepoName
+  setOrganizationName()
 })
 
-watch(props.internalRepoName, (internalRepoName) => {
+watch(internalRepoName, (internalRepoName) => {
   ciData.value.internalRepoName = internalRepoName
 })
 </script>

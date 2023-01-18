@@ -21,6 +21,9 @@ node_modules
 screenshots
 downloads
 
+# init-db
+apps/server/src/init-db/imports/data.js
+
 # act
 **/act/artifacts
 **/act/docker/registry/auth

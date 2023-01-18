@@ -4,9 +4,9 @@ import fastifySession from '@fastify/session'
 import fastifyCookie from '@fastify/cookie'
 import fp from 'fastify-plugin'
 import { sessionConf } from '../utils/keycloak.js'
-import ciFilesRouter from '../routes/ciFiles.js'
+import ciFilesRouter from '../routes/ci-files.js'
 import { closeConnections, getConnection, sequelize } from '../connect.js'
-import { createRandomProject } from 'test-utils'
+import { createRandomDbSetup } from 'test-utils'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 vi.mock('../ansible.js')
@@ -45,11 +45,11 @@ describe('ciFiles routes', () => {
   })
 
   it('Should generate files for a node project', async () => {
-    const randomProject = createRandomProject()
+    const randomDbSetup = createRandomDbSetup({})
     const ciData = {
-      orgName: randomProject.orgName,
-      projectName: randomProject.projectName,
-      internalRepoName: randomProject.repos[0].internalRepoName,
+      orgName: randomDbSetup.organization.name,
+      projectName: randomDbSetup.project.name,
+      internalRepoName: randomDbSetup.repositories[0].internalRepoName,
       typeLanguage: 'node',
       nodeVersion: '18.1.1',
       nodeInstallCommand: 'npm install',
@@ -70,11 +70,11 @@ describe('ciFiles routes', () => {
   })
 
   it('Should generate files for a java project', async () => {
-    const randomProject = createRandomProject()
+    const randomDbSetup = createRandomDbSetup({})
     const ciData = {
-      orgName: randomProject.orgName,
-      projectName: randomProject.projectName,
-      internalRepoName: randomProject.repos[0].internalRepoName,
+      orgName: randomDbSetup.organization.name,
+      projectName: randomDbSetup.project.name,
+      internalRepoName: randomDbSetup.repositories[0].internalRepoName,
       typeLanguage: 'java',
       workingDir: '../client',
       javaVersion: '8.1.2',
@@ -94,11 +94,11 @@ describe('ciFiles routes', () => {
   })
 
   it('Should generate files for a python project', async () => {
-    const randomProject = createRandomProject()
+    const randomDbSetup = createRandomDbSetup({})
     const ciData = {
-      orgName: randomProject.orgName,
-      projectName: randomProject.projectName,
-      internalRepoName: randomProject.repos[0].internalRepoName,
+      orgName: randomDbSetup.organization.name,
+      projectName: randomDbSetup.project.name,
+      internalRepoName: randomDbSetup.repositories[0].internalRepoName,
       typeLanguage: 'python',
       workingDir: './',
     }

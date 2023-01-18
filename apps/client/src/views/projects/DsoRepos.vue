@@ -15,7 +15,7 @@ const selectedRepo = ref({})
 const isNewRepoForm = ref(false)
 
 const setReposTiles = (selectedProject) => {
-  repos.value = selectedProject.repos?.map(repo => ({
+  repos.value = selectedProject.repositories?.map(repo => ({
     id: repo.internalRepoName,
     title: repo.internalRepoName,
     data: repo,
