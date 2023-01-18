@@ -11,6 +11,6 @@ const projectStore = useProjectStore()
     :description="`Le projet courant est : ${projectStore.selectedProject?.projectName}`"
     data-testid="currentProjectInfo"
     small
-    class="fr-mb-2w"
+    class="w-max fr-mb-2w"
   />
 </template>
