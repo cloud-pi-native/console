@@ -1,6 +1,7 @@
 import Joi from 'joi'
 import { allStatus } from '../utils/iterables.js'
 
+// TODO : status doit être required, prévoir migration
 export const userSchema = Joi.object({
   id: Joi.string()
     .required(),
@@ -15,4 +16,5 @@ export const userSchema = Joi.object({
 
   status: Joi.string()
     .valid(...allStatus),
+  // .required(),
 })

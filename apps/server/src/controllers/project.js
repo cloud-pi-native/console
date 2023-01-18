@@ -84,6 +84,7 @@ export const createProjectController = async (req, res) => {
     })
     try {
       project.status = 'failed'
+      project.owner.status = 'failed'
       project = await updateProjectStatus(project, 'failed')
 
       req.log.info({

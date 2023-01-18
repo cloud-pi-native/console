@@ -8,6 +8,8 @@ import {
   projectStatus,
 } from '../utils/iterables.js'
 
+// TODO : status et locked doivent être required, prévoir migration
+
 export const projectSchema = Joi.object({
   id: Joi.string()
     .required(),
@@ -29,15 +31,15 @@ export const projectSchema = Joi.object({
     .required(),
 
   status: Joi.string()
-    .valid(...projectStatus)
-    .required(),
+    .valid(...projectStatus),
+  // .required(),
 
   envList: Joi.array()
     .items(envSchema)
     .unique('envName'),
 
-  locked: Joi.boolean()
-    .required(),
+  locked: Joi.boolean(),
+  // .required(),
 
   owner: userSchema
     .required(),

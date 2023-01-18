@@ -14,7 +14,6 @@ const setProjectList = (projects) => {
     id: project.id,
     title: project.projectName,
     to: `/projects/${project.id}/dashboard`,
-    status: project.status,
   }))
 }
 
