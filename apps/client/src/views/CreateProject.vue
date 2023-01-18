@@ -103,7 +103,6 @@ const updateProject = (key, value) => {
     data-testid="createProjectBtn"
     primary
     icon="ri-send-plane-line"
-    class="fr-ml-2w"
     @click="createProject()"
   />
 </template>
