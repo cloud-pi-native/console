@@ -69,7 +69,7 @@ export const createProjectController = async (req, res) => {
     } catch (error) {
       req.log.error({
         ...getLogInfos(),
-        description: 'Cannot update project status',
+        description: `Cannot update project status: ${error.message}`,
         error,
       })
       return send500(res, error.message)
@@ -93,7 +93,7 @@ export const createProjectController = async (req, res) => {
     } catch (error) {
       req.log.error({
         ...getLogInfos(),
-        description: 'Cannot update project status',
+        description: `Cannot update project status: ${error.message}`,
         error,
       })
       return send500(res, error.message)
@@ -101,12 +101,11 @@ export const createProjectController = async (req, res) => {
     send500(res, error)
   }
 }
-// TODO : Provisioning project with ansible failed
+
 export const addRepoController = async (req, res) => {
   const userId = req.session?.user?.id
   const projectId = req.params?.id
   const data = req.body
-  data.isInfra = data.isInfra || false
   data.status = 'initializing'
 
   let dbProject
@@ -122,7 +121,8 @@ export const addRepoController = async (req, res) => {
     }
 
     dbProject.locked = true
-    dbProject = await addRepo(dbProject, data)
+    await addRepo(dbProject, data)
+    dbProject = await getUserProjectById(projectId, userId)
 
     const message = 'Git repository successfully added into project'
     req.log.info({
@@ -130,7 +130,7 @@ export const addRepoController = async (req, res) => {
       description: message,
     })
   } catch (error) {
-    const message = 'Cannot add git repository into project'
+    const message = `Cannot add git repository into project: ${error.message}`
     req.log.error({
       ...getLogInfos(),
       description: message,
@@ -163,8 +163,9 @@ export const addRepoController = async (req, res) => {
     })
 
     try {
-      const addedRepo = dbProject.repos.find(repo => repo.internalRepoName === data.internalRepoName)
-      dbProject.repos[addedRepo].status = 'created'
+      const indexRepo = dbProject.repos.findIndex(repo => repo.internalRepoName === data.internalRepoName)
+      dbProject.repos[indexRepo].status = 'created'
+
       dbProject = await updateProjectStatus(dbProject, 'created')
 
       req.log.info({
@@ -174,7 +175,7 @@ export const addRepoController = async (req, res) => {
     } catch (error) {
       req.log.error({
         ...getLogInfos(),
-        description: 'Cannot update project status',
+        description: `Cannot update project status: ${error.message}`,
         error,
       })
       return send500(res, error.message)
@@ -182,7 +183,7 @@ export const addRepoController = async (req, res) => {
 
     send201(res, 'Git repository successfully added into project')
   } catch (error) {
-    const message = 'Provisioning project with ansible failed'
+    const message = `Provisioning project with ansible failed: ${error.message}`
     req.log.error({
       ...getLogInfos(),
       description: message,
@@ -190,8 +191,8 @@ export const addRepoController = async (req, res) => {
     })
 
     try {
-      const addedRepo = dbProject.repos.find(repo => repo.internalRepoName === data.internalRepoName)
-      dbProject.repos[addedRepo].status = 'failed'
+      const indexRepo = dbProject.repos.findIndex(repo => repo.internalRepoName === data.internalRepoName)
+      dbProject.repos[indexRepo].status = 'failed'
       dbProject = await updateProjectStatus(dbProject, 'failed')
 
       req.log.info({
@@ -201,7 +202,7 @@ export const addRepoController = async (req, res) => {
     } catch (error) {
       req.log.error({
         ...getLogInfos(),
-        description: 'Cannot update project status',
+        description: `Cannot update project status: ${error.message}`,
         error,
       })
       return send500(res, error.message)
@@ -218,13 +219,14 @@ export const addUserController = async (req, res) => {
 
   let dbProject
   try {
-    const dbProject = await getUserProjectById(projectId, userId)
+    dbProject = await getUserProjectById(projectId, userId)
 
     if (!dbProject) {
       throw new Error('Missing permissions on this project')
     }
 
     await addUser(dbProject, data)
+    dbProject = await getUserProjectById(projectId, userId)
 
     const message = 'User successfully added into project'
     req.log.info({
@@ -233,7 +235,7 @@ export const addUserController = async (req, res) => {
     })
     send201(res, message)
   } catch (error) {
-    const message = 'Cannot add user into project'
+    const message = `Cannot add user into project: ${error.message}`
     req.log.error({
       ...getLogInfos(),
       description: message,
@@ -245,8 +247,8 @@ export const addUserController = async (req, res) => {
   try {
     // TODO : US #132 appel ansible
     try {
-      const addedUser = dbProject.users.find(user => user.email === addedUser.email)
-      dbProject.users[addedUser].status = 'created'
+      const indexUser = dbProject.users.findIndex(user => user.email === data.email)
+      dbProject.users[indexUser].status = 'created'
       dbProject = await updateProjectStatus(dbProject, 'created')
 
       req.log.info({
@@ -256,7 +258,7 @@ export const addUserController = async (req, res) => {
     } catch (error) {
       req.log.error({
         ...getLogInfos(),
-        description: 'Cannot update project status',
+        description: `Cannot update project status: ${error.message}`,
         error,
       })
       return send500(res, error.message)
@@ -268,8 +270,8 @@ export const addUserController = async (req, res) => {
       error,
     })
     try {
-      const addedUser = dbProject.users.find(user => user.email === addedUser.email)
-      dbProject.users[addedUser].status = 'failed'
+      const indexUser = dbProject.users.findIndex(user => user.email === data.email)
+      dbProject.users[indexUser].status = 'failed'
       dbProject = await updateProjectStatus(dbProject, 'failed')
 
       req.log.info({
@@ -279,7 +281,7 @@ export const addUserController = async (req, res) => {
     } catch (error) {
       req.log.error({
         ...getLogInfos(),
-        description: 'Cannot update project status',
+        description: `Cannot update project status: ${error.message}`,
         error,
       })
       return send500(res, error.message)
@@ -309,7 +311,7 @@ export const removeUserController = async (req, res) => {
     })
     send200(res, message)
   } catch (error) {
-    const message = 'Cannot remove user from project'
+    const message = `Cannot remove user from project: ${error.message}`
     req.log.error({
       ...getLogInfos(),
       description: message,
@@ -329,7 +331,7 @@ export const removeUserController = async (req, res) => {
     } catch (error) {
       req.log.error({
         ...getLogInfos(),
-        description: 'Cannot update project status',
+        description: `Cannot update project status: ${error.message}`,
         error,
       })
       return send500(res, error.message)
@@ -350,7 +352,7 @@ export const removeUserController = async (req, res) => {
     } catch (error) {
       req.log.error({
         ...getLogInfos(),
-        description: 'Cannot update project status',
+        description: `Cannot update project status: ${error.message}`,
         error,
       })
       return send500(res, error.message)
