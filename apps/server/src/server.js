@@ -18,7 +18,8 @@ export async function startServer () {
 
   try {
     const { initDb } = await import('../dev-setup/init-db.js')
-    if (initDb && (isDevSetup || isTest)) {
+    console.log(initDb)
+    if (initDb) {
       app.log.info('Starting init DB...')
       await initDb()
       app.log.info('DB successfully init')
