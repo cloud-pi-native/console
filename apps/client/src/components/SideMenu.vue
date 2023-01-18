@@ -33,7 +33,6 @@ watch(routePath, (routePath) => {
 </script>
 
 <template>
-  <!-- TODO : voir https://discord.com/channels/690194719011242153/797040508508700692/1025424011133472838 -->
   <DsfrSideMenu
     id="mainMenu"
     data-testid="mainMenu"
@@ -133,14 +132,3 @@ watch(routePath, (routePath) => {
     </DsfrSideMenuList>
   </DsfrSideMenu>
 </template>
-
-<!-- TODO : voir https://discord.com/channels/690194719011242153/797040508508700692/1025426773380431975 -->
-<style scoped>
-.fr-sidemenu__btn[aria-current="false"] {
-  color: var(--text-action-high-grey)
-}
-
-.fr-sidemenu__btn[aria-current="false"]::before {
-  display: none;
-}
-</style>

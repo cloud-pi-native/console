@@ -60,7 +60,7 @@ importers:
   apps/client:
     specifiers:
       '@cypress/vue': ^5.0.3
-      '@gouvminint/vue-dsfr': ^1.8.0
+      '@gouvminint/vue-dsfr': ^1.8.3
       '@vitejs/plugin-vue': ^4.0.0
       '@vitest/coverage-c8': ^0.26.3
       axios: ^1.2.2
@@ -96,7 +96,7 @@ importers:
       vue-router: ^4.1.6
       windicss: ^3.5.6
     dependencies:
-      '@gouvminint/vue-dsfr': 1.8.0_s7nwwaqyi7dyqxgmudgackwt5y
+      '@gouvminint/vue-dsfr': 1.8.3_s7nwwaqyi7dyqxgmudgackwt5y
       axios: 1.2.2
       keycloak-js: 20.0.2
       oh-vue-icons: 1.0.0-rc3_vue@3.2.45
@@ -801,8 +801,8 @@ packages:
     engines: {node: '>=14.18.0'}
     dev: false
 
-  /@gouvminint/vue-dsfr/1.8.0_s7nwwaqyi7dyqxgmudgackwt5y:
-    resolution: {integrity: sha512-m6tsYsm7N0Y8Spec1rZrnbmM7Nxuevc1r4hBpJXPD/izQtIHDeFQPQv7MaE7gpz/tAUjvPZNAHJB0ehdj+reng==}
+  /@gouvminint/vue-dsfr/1.8.3_s7nwwaqyi7dyqxgmudgackwt5y:
+    resolution: {integrity: sha512-vogJKxq2YFUHdHyis+YcJTtAUbGTxHVCq/jg5Rpup8FSbrLI6lNZhSYN/Cn+RzKmWNo4zyzXueqU8mV1Ewz5fw==}
     engines: {node: '>=18.x.x', npm: 8.x.x}
     peerDependencies:
       oh-vue-icons: 1.0.0-rc3
