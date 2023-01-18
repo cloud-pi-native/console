@@ -1,14 +1,14 @@
 <script setup>
-import { useProjectStore } from '@/stores/project.js'
+// import { useProjectStore } from '@/stores/project.js'
 import DsoSelectedProject from './DsoSelectedProject.vue'
 
-const projectStore = useProjectStore()
-// TODO : requêter le projet pour avoir le status à jour
+// const projectStore = useProjectStore()
+// TODO : avoir le status à jour en permanence
 </script>
 
 <template>
   <DsoSelectedProject />
-  <div
+  <!-- <div
     class="flex justify-between"
   >
     <DsfrBadge
@@ -31,5 +31,5 @@ const projectStore = useProjectStore()
       type="warning"
       label="Projet verrouillé"
     />
-  </div>
+  </div> -->
 </template>
