@@ -107,7 +107,7 @@ watch(selectedProject, () => {
     description="L'utilisateur associé à cette adresse e-mail fait déjà partie du projet."
     small
     type="error"
-    class="fr-mb-2w"
+    class="w-max fr-mb-2w"
   />
   <DsfrButton
     data-testid="addUserBtn"
