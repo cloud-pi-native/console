@@ -6,10 +6,12 @@ import {
   updateProjectStatus,
   addRepo,
   addUser,
-  getUserProjects,
   getUserProjectById,
   removeUser,
 } from '../models/project-queries.js'
+import {
+  getUserProjects,
+} from '../models/project-queries2.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import { ansibleHost, ansiblePort } from '../utils/env.js'
 
