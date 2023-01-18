@@ -8,12 +8,6 @@ import {
   projectStatus,
 } from '../utils/iterables.js'
 
-export const status = [
-  'initializing',
-  'created',
-  'failed',
-]
-
 export const projectSchema = Joi.object({
   id: Joi.string()
     .required(),

@@ -21,7 +21,6 @@ export const createProjectController = async (req, res) => {
   data.locked = true
   data.owner = req.session.user
   data.owner.status = 'initializing'
-  data.status = 'initializing'
 
   let project
   try {
@@ -59,6 +58,7 @@ export const createProjectController = async (req, res) => {
     })
 
     try {
+      project.status = 'created'
       project.owner.status = 'created'
       project = await updateProjectStatus(project, 'created')
 
@@ -83,6 +83,7 @@ export const createProjectController = async (req, res) => {
       error,
     })
     try {
+      project.status = 'failed'
       project = await updateProjectStatus(project, 'failed')
 
       req.log.info({
@@ -121,7 +122,7 @@ export const addRepoController = async (req, res) => {
     }
 
     dbProject.locked = true
-    await addRepo(dbProject, data)
+    dbProject = await addRepo(dbProject, data)
 
     const message = 'Git repository successfully added into project'
     req.log.info({
@@ -162,6 +163,8 @@ export const addRepoController = async (req, res) => {
     })
 
     try {
+      const addedRepo = dbProject.repos.find(repo => repo.internalRepoName === data.internalRepoName)
+      dbProject.repos[addedRepo].status = 'created'
       dbProject = await updateProjectStatus(dbProject, 'created')
 
       req.log.info({
@@ -187,6 +190,8 @@ export const addRepoController = async (req, res) => {
     })
 
     try {
+      const addedRepo = dbProject.repos.find(repo => repo.internalRepoName === data.internalRepoName)
+      dbProject.repos[addedRepo].status = 'failed'
       dbProject = await updateProjectStatus(dbProject, 'failed')
 
       req.log.info({
@@ -240,6 +245,8 @@ export const addUserController = async (req, res) => {
   try {
     // TODO : US #132 appel ansible
     try {
+      const addedUser = dbProject.users.find(user => user.email === addedUser.email)
+      dbProject.users[addedUser].status = 'created'
       dbProject = await updateProjectStatus(dbProject, 'created')
 
       req.log.info({
@@ -261,7 +268,9 @@ export const addUserController = async (req, res) => {
       error,
     })
     try {
-      dbProject = await updateProjectStatus(dbProject, 'created')
+      const addedUser = dbProject.users.find(user => user.email === addedUser.email)
+      dbProject.users[addedUser].status = 'failed'
+      dbProject = await updateProjectStatus(dbProject, 'failed')
 
       req.log.info({
         ...getLogInfos({ projectId: dbProject.id }),

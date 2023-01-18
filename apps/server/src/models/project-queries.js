@@ -16,7 +16,6 @@ export const createProject = async (project) => {
 }
 
 export const updateProjectStatus = async (project, status) => {
-  project.status = status
   project.locked = !achievedStatus.includes(status)
   await projectSchema.validateAsync(project)
 

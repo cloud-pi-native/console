@@ -15,6 +15,10 @@ const props = defineProps({
 })
 
 const localRepo = ref(props.repo)
+if (!localRepo.value.isInfra && !localRepo.value.isPrivate) {
+  localRepo.value.isInfra = false
+  localRepo.value.isPrivate = false
+}
 const updatedValues = ref({})
 
 const updateRepo = (key, value) => {
