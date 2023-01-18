@@ -1,3 +1,4 @@
+import { faker } from '@faker-js/faker'
 import { repeatFn } from './func-utils.js'
 import {
   getRandomProjectName,
@@ -7,13 +8,15 @@ import {
   getRandomUser,
   getRandomEnvList,
 } from './random-utils.js'
+import { allEnv, achievedStatus } from 'shared/src/utils/iterables.js'
 
-export const createRandomProject = (nbRepos = 3, nbUsers = 3, nbEnv = 3) => ({
+export const createRandomProject = (nbRepos = 3, nbUsers = 3, envList = allEnv) => ({
   owner: getRandomUser(),
   orgName: getRandomProjectOrgName(),
   projectName: getRandomProjectName(),
   services: getRandomProjectServices(),
   repos: repeatFn(nbRepos)(getRandomRepo),
   users: repeatFn(nbUsers)(getRandomUser),
-  envList: getRandomEnvList(nbEnv),
+  envList: getRandomEnvList(envList),
+  status: faker.helpers.arrayElement(achievedStatus),
 })

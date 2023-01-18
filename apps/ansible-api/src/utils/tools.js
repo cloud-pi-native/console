@@ -17,6 +17,9 @@ export const convertVars = (vars) => {
       if (key === 'isPrivate') {
         return null
       }
+      if (!ansibleArgsDictionary?.[key]) {
+        return null
+      }
       const varKey = ansibleArgsDictionary?.[key] ?? key // get the equivalent key in dictionnary or the one who was passed
       const varValue = Array.isArray(value) ? JSON.stringify(value) : value // if the value is an array, stringify it, else let as it is
       return [

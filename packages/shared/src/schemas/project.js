@@ -1,28 +1,14 @@
 import Joi from 'joi'
 import { repoSchema } from './repo.js'
 import { userSchema } from './user.js'
+import { envSchema } from './env.js'
+import {
+  allOrgNames,
+  allServices,
+  projectStatus,
+} from '../utils/iterables.js'
 
-export const allOrgNames = [
-  'dinum',
-  'ministere-interieur',
-  'ministere-justice',
-]
-
-export const allServices = [
-  'argocd',
-  'gitlab',
-  'nexus',
-  'quay',
-  'sonarqube',
-  'vault',
-]
-
-export const allEnv = [
-  'dev',
-  'staging',
-  'integration',
-  'prod',
-]
+// TODO : status et locked doivent être required, prévoir migration
 
 export const projectSchema = Joi.object({
   id: Joi.string()
@@ -44,9 +30,16 @@ export const projectSchema = Joi.object({
     .items(Joi.string().valid(...allServices).required())
     .required(),
 
+  status: Joi.string()
+    .valid(...projectStatus),
+  // .required(),
+
   envList: Joi.array()
-    .items(Joi.string().valid(...allEnv).required())
-    .required(),
+    .items(envSchema)
+    .unique('envName'),
+
+  locked: Joi.boolean(),
+  // .required(),
 
   owner: userSchema
     .required(),

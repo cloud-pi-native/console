@@ -1,4 +1,4 @@
-import { allServices, allEnv } from '../src/index.js'
+import { allServices } from '../src/utils/iterables.js'
 
 export const projects = [
   {
@@ -11,6 +11,7 @@ export const projects = [
         externalUserName: 'this-is-a-test',
         externalToken: 'this-is-a-token',
         isInfra: false,
+        status: 'created',
       },
     ],
     owner: {
@@ -18,10 +19,24 @@ export const projects = [
       firstName: 'test',
       lastName: 'TEST',
       email: 'test@test.com',
+      status: 'created',
     },
     orgName: 'ministere-interieur',
     services: allServices,
-    envList: allEnv,
+    envList: [{
+      envName: 'dev',
+      ro: [],
+      rw: ['cb8e5b4b-7b7b-40f5-935f-594f48ae6565'],
+      status: 'created',
+    },
+    {
+      envName: 'prod',
+      ro: [],
+      rw: ['cb8e5b4b-7b7b-40f5-935f-594f48ae6565'],
+      status: 'created',
+    }],
+    status: 'created',
+    locked: false,
     projectName: 'candilib',
   },
   {
@@ -34,6 +49,7 @@ export const projects = [
         externalUserName: 'this-is-a-test',
         externalToken: 'this-is-a-token',
         isInfra: false,
+        status: 'created',
       },
     ],
     owner: {
@@ -41,10 +57,18 @@ export const projects = [
       firstName: 'test',
       lastName: 'TEST',
       email: 'test@test.com',
+      status: 'created',
     },
     orgName: 'ministere-interieur',
     services: allServices,
-    envList: allEnv,
+    envList: [{
+      envName: 'dev',
+      ro: [],
+      rw: ['cb8e5b4b-7b7b-40f5-935f-594f48ae6565'],
+      status: 'created',
+    }],
+    status: 'created',
+    locked: false,
     projectName: 'psij',
   },
 ]

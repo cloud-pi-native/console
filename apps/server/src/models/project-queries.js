@@ -2,6 +2,7 @@ import { Op } from 'sequelize'
 import { sequelize } from '../connect.js'
 import { getProjectModel } from './project.js'
 import { projectSchema } from 'shared/src/schemas/project.js'
+import { achievedStatus } from 'shared/src/utils/iterables.js'
 
 export const createProject = async (project) => {
   await projectSchema.validateAsync(project)
@@ -12,6 +13,24 @@ export const createProject = async (project) => {
 
   const res = await getProjectModel().create({ data: project })
   return res?.data
+}
+
+export const updateProjectStatus = async (project, status) => {
+  project.locked = !achievedStatus.includes(status)
+  await projectSchema.validateAsync(project)
+
+  const res = await getProjectModel().update({
+    data: project,
+  }, {
+    where: {
+      data: {
+        id: {
+          [Op.eq]: project.id,
+        },
+      },
+    },
+  })
+  return res
 }
 
 export const addRepo = async (project, repo) => {

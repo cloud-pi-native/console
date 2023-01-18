@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import { allOrgNames, allServices, allEnv } from 'shared'
+import { allOrgNames, allServices, achievedStatus } from 'shared/src/utils/iterables.js'
 
 export const getRandomUuid = () => {
   return faker.datatype.uuid()
@@ -28,6 +28,7 @@ export const getRandomUser = () => {
     email: faker.internet.email(),
     firstName: faker.name.firstName(),
     lastName: faker.name.lastName(),
+    status: faker.helpers.arrayElement(achievedStatus),
   }
 }
 
@@ -37,6 +38,7 @@ export const getRandomRepo = () => {
     externalRepoUrl: getRandomGitUrl(),
     isPrivate: faker.datatype.boolean(),
     isInfra: faker.datatype.boolean(),
+    status: faker.helpers.arrayElement(achievedStatus),
   }
   if (repo.isPrivate) {
     repo.externalUserName = faker.internet.userName()
@@ -46,6 +48,11 @@ export const getRandomRepo = () => {
   return repo
 }
 
-export const getRandomEnvList = (nbEnv) => {
-  return faker.helpers.arrayElements(allEnv, nbEnv)
+export const getRandomEnvList = (envList) => {
+  return envList.map(env => ({
+    envName: env,
+    ro: [faker.datatype.uuid()],
+    rw: [faker.datatype.uuid()],
+    status: faker.helpers.arrayElement(achievedStatus),
+  }))
 }

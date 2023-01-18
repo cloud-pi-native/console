@@ -15,6 +15,7 @@ describe('Schemas utils', () => {
       isPrivate: true,
       isInfra: false,
       externalUserName: 'clairenlet',
+      status: 'created',
     })).toStrictEqual({})
   })
 
@@ -25,6 +26,7 @@ describe('Schemas utils', () => {
       isPrivate: true,
       isInfra: false,
       externalUserName: 'clairenlet',
+      status: 'created',
     })).toStrictEqual({ externalToken: '"externalToken" is required' })
   })
 
@@ -35,6 +37,7 @@ describe('Schemas utils', () => {
       isPrivate: true,
       isInfra: false,
       externalUserName: 'clairenlet',
+      status: 'created',
     }, 'internalRepoName')).toStrictEqual(true)
   })
 
@@ -45,6 +48,7 @@ describe('Schemas utils', () => {
       isPrivate: true,
       isInfra: false,
       externalUserName: 'clairenlet',
+      status: 'created',
     }, 'internalRepoName')).toStrictEqual(false)
   })
 
@@ -56,6 +60,7 @@ describe('Schemas utils', () => {
       isPrivate: true,
       isInfra: true,
       externalUserName: true,
+      status: true,
     })
   })
 
@@ -67,6 +72,7 @@ describe('Schemas utils', () => {
       isPrivate: undefined,
       isInfra: undefined,
       externalUserName: undefined,
+      status: undefined,
     })
   })
 
@@ -78,6 +84,7 @@ describe('Schemas utils', () => {
       isPrivate: 'test',
       isInfra: 'test',
       externalUserName: 'test',
+      status: 'test',
     })
   })
 })

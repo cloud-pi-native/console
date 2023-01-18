@@ -63,7 +63,11 @@ describe('Project routes', () => {
     it('Should create a project', async () => {
       const randomProject = createRandomProject()
 
+      // first query : checkUniqueProject
       Project.$queueResult(null)
+      // second query : createProject
+      Project.$queueResult(randomProject)
+      // third query : updateProjectStatus
       Project.$queueResult(randomProject)
       setOwner(randomProject.owner)
 
@@ -72,6 +76,8 @@ describe('Project routes', () => {
         .body(randomProject)
         .end()
 
+      randomProject.status = 'initializing'
+      randomProject.owner.status = 'initializing'
       expect(response.statusCode).toEqual(201)
       expect(response.json()).toBeDefined()
       expect(response.json()).toMatchObject(randomProject)
@@ -83,6 +89,7 @@ describe('Project routes', () => {
       delete randomProject[removedKey]
 
       Project.$queueResult(null)
+      Project.$queueResult(randomProject)
       Project.$queueResult(randomProject)
 
       const response = await app.inject()
@@ -99,6 +106,7 @@ describe('Project routes', () => {
       const randomProject = createRandomProject()
 
       Project.$queueResult(true)
+      Project.$queueResult(randomProject)
       Project.$queueResult(randomProject)
       setOwner(randomProject.owner)
 
@@ -119,6 +127,7 @@ describe('Project routes', () => {
 
       Project.$queueResult(null)
       Project.$queueResult(randomProject)
+      Project.$queueResult(randomProject)
       setOwner(randomProject.owner)
       const error = new Error(ansibleError)
       global.fetch = vi.fn(() => Promise.reject(error))
@@ -136,11 +145,17 @@ describe('Project routes', () => {
 
   describe('addRepoController', () => {
     it('Should add a repo in project', async () => {
-      const randomProject = { ...createRandomProject(), id: nanoid() }
+      const randomProject = { ...createRandomProject(), id: nanoid(), locked: false }
       const randomRepo = getRandomRepo()
 
+      // first query : getUserProjectById
       sequelize.$queueResult({ data: randomProject })
-      Project.$queueResult(randomProject)
+      // second query : addRepo
+      Project.$queueResult([1])
+      // third query : getUserProjectById
+      sequelize.$queueResult({ data: randomProject })
+      // fourth query : updateProjectStatus
+      Project.$queueResult([1])
       setOwner(randomProject.owner)
 
       const response = await app.inject()
@@ -154,11 +169,13 @@ describe('Project routes', () => {
     })
 
     it('Should not add a repo if internalRepoName already present', async () => {
-      const randomProject = { ...createRandomProject(), id: nanoid() }
+      const randomProject = { ...createRandomProject(), id: nanoid(), locked: false }
       const randomRepo = randomProject.repos[0]
 
       sequelize.$queueResult({ data: randomProject })
-      Project.$queueResult(randomProject)
+      Project.$queueResult([1])
+      sequelize.$queueResult({ data: randomProject })
+      Project.$queueResult([1])
       setOwner(randomProject.owner)
 
       const response = await app.inject()
@@ -168,7 +185,7 @@ describe('Project routes', () => {
 
       expect(response.statusCode).toEqual(500)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Cannot add git repository into project')
+      expect(response.body).toEqual(`Cannot add git repository into project: Git repo '${randomRepo.internalRepoName}' already exists in project`)
     })
 
     it('Should not add a repo if permission is missing', async () => {
@@ -190,11 +207,17 @@ describe('Project routes', () => {
 
   describe('addUserController', () => {
     it('Should add an user in project', async () => {
-      const randomProject = { ...createRandomProject(), id: nanoid() }
+      const randomProject = { ...createRandomProject(), id: nanoid(), locked: false }
       const randomUser = getRandomUser()
 
+      // first query : getUserProjectById
       sequelize.$queueResult({ data: randomProject })
-      Project.$queueResult(randomProject)
+      // second query : addUser
+      Project.$queueResult([1])
+      // third query : getUserProjectById
+      sequelize.$queueResult({ data: randomProject })
+      // fourth query : updateProjectStatus
+      Project.$queueResult([1])
       setOwner(randomProject.owner)
 
       const response = await app.inject()
@@ -208,11 +231,13 @@ describe('Project routes', () => {
     })
 
     it('Should not add an user if email already present', async () => {
-      const randomProject = { ...createRandomProject(), id: nanoid() }
+      const randomProject = { ...createRandomProject(), id: nanoid(), locked: false }
       const randomUser = randomProject.users[0]
 
       sequelize.$queueResult({ data: randomProject })
-      Project.$queueResult(randomProject)
+      Project.$queueResult([1])
+      sequelize.$queueResult({ data: randomProject })
+      Project.$queueResult([1])
       setOwner(randomProject.owner)
 
       const response = await app.inject()
@@ -222,7 +247,7 @@ describe('Project routes', () => {
 
       expect(response.statusCode).toEqual(500)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Cannot add user into project')
+      expect(response.body).toEqual(`Cannot add user into project: User with email '${randomUser.email}' already member of project`)
     })
 
     it('Should not add an user if permission is missing', async () => {
@@ -243,10 +268,11 @@ describe('Project routes', () => {
 
   describe('removeUserController', () => {
     it('Should remove an user in project', async () => {
-      const randomProject = { ...createRandomProject(), id: nanoid() }
+      const randomProject = { ...createRandomProject(), id: nanoid(), locked: false }
       const randomUser = getRandomUser()
 
       sequelize.$queueResult({ data: randomProject })
+      Project.$queueResult(randomProject)
       setOwner(randomProject.owner)
 
       const response = await app.inject()
@@ -258,7 +284,7 @@ describe('Project routes', () => {
     })
 
     it('Should not remove an user if permission is missing', async () => {
-      const randomProject = { ...createRandomProject(), id: nanoid() }
+      const randomProject = { ...createRandomProject(), id: nanoid(), locked: false }
       const randomUser = getRandomUser()
 
       sequelize.$queueResult(null)
@@ -270,7 +296,7 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(500)
-      expect(response.body).toEqual('Cannot remove user from project')
+      expect(response.body).toEqual('Cannot remove user from project: Missing permissions on this project')
     })
   })
 

@@ -1,8 +1,8 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
-import { projectSchema, allEnv } from 'shared/src/schemas/project.js'
+import { projectSchema } from 'shared/src/schemas/project.js'
 import { schemaValidator, isValid, instanciateSchema } from 'shared/src/utils/schemas.js'
 import router from '@/router/index.js'
 
@@ -21,10 +21,7 @@ const owner = computed(() => userStore.userProfile)
 const project = ref({
   orgName: undefined,
   projectName: undefined,
-  envList: allEnv,
 })
-
-const envOptions = ref([])
 
 const orgOptions = ref([
   {
@@ -58,20 +55,6 @@ const updateProject = (key, value) => {
   project.value[key] = value
   updatedValues.value[key] = true
 }
-
-const setEnvOptions = () => {
-  allEnv.forEach(opt => {
-    envOptions.value.push({
-      label: opt,
-      id: opt,
-      name: opt,
-    })
-  })
-}
-
-onMounted(() => {
-  setEnvOptions()
-})
 
 </script>
 
@@ -113,15 +96,6 @@ onMounted(() => {
       placeholder="candilib"
       class="fr-mb-2w"
       @update:model-value="updateProject('projectName', $event)"
-    />
-    <DsfrCheckboxSet
-      v-model="project.envList"
-      data-testid="envListSelect"
-      legend="Environnements choisis (par défaut, tous les environnements sont sélectionnés)"
-      required="required"
-      :error-message="!isValid(projectSchema, project, 'envList') ? 'Veuillez sélectionner au moins un environnement.' : ''"
-      :options="envOptions"
-      @update:model-value="project.envList = $event"
     />
   </DsfrFieldset>
   <DsfrButton
