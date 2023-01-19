@@ -65,8 +65,35 @@ export const updateRepository = async (repoId, infos) => {
 }
 
 // DELETE
+export const repositoryDeleting = async (repoId) => {
+  const doesRepoExists = await getRepositoryById(repoId)
+  if (doesRepoExists) {
+    const res = await getRepositoryModel().update({
+      status: 'deleting',
+    }, {
+      where: {
+        id: repoId,
+      },
+    })
+    return res
+  }
+  throw Error('Le dépôt interne demandé n\'existe pas en base pour ce projet')
+}
 
-// TODO : requête delete
+export const deleteRepository = async (repoId) => {
+
+  const doesRepoExists = await getRepositoryById(repoId)
+  console.log(doesRepoExists);
+  if (doesRepoExists) {
+    const res = await getRepositoryModel().destroy({
+      where: {
+        id: repoId,
+      },
+    })
+    return res
+  }
+  throw Error('Le dépôt interne demandé n\'existe pas en base pour ce projet')
+}
 
 // DROP
 export const dropRepositoriesTable = async () => {
