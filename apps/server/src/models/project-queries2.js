@@ -1,16 +1,18 @@
 import { Sequelize } from 'sequelize'
 import { sequelize } from '../connect.js'
 import { getProjectModel } from './project.js'
+import { getReposByProjectId } from './repository-queries.js'
+import { getEnvironmentsByProjectId } from './environment-queries.js'
 
 // SELECT
-export const getUserProjects = async (userUuid) => {
+export const getUserProjects = async (userId) => {
   const res = await getProjectModel().findAll({
     where: {
       [Sequelize.Op.or]: [
-        { ownerUuid: userUuid },
+        { ownerId: userId },
+        { usersId: { [Sequelize.Op.contains]: [userId] } },
       ],
     },
-
   })
   return res
 }
@@ -26,8 +28,8 @@ export const getProject = async (name, organization) => {
 }
 
 // CREATE
-export const projectInitialize = async ({ name, organization, ownerUuid }) => {
-  const res = await getProjectModel().create({ name, organization, users: [], status: 'initializing', locked: true, ownerUuid })
+export const projectInitialize = async ({ name, organization, ownerId }) => {
+  const res = await getProjectModel().create({ name, organization, usersId: [ownerId], status: 'initializing', locked: true, ownerId })
   return res
 }
 
@@ -42,19 +44,44 @@ export const projectFailed = async ({ name, organization }) => {
   return res
 }
 
-export const projectAddUser = async ({ name, organization, userUuid }) => {
+export const projectAddUser = async ({ name, organization, userId }) => {
+  // TODO s'assurer que le user exist dans le model User
   const project = await getProject(name, organization)
-  const users = Array.from(project.dataValues.users)
-  if (users.indexOf(userUuid) === -1) {
+  console.log(project.dataValues.usersId)
+  const users = project.dataValues.usersId ?? [project.dataValues.ownerId]
+  if (users.indexOf(userId) === -1) {
     console.log('no')
     await getProjectModel().update({
-      users: sequelize.fn('array_append', sequelize.col('users'), userUuid),
+      usersId: sequelize.fn('array_append', sequelize.col('usersId'), userId),
     }, {
       where: { name, organization },
     })
   }
   return project
 }
+
+export const projectDeleting = async ({ name, organization }) => {
+  const project = await getProject(name, organization)
+  console.log(project.dataValues)
+  const projectId = project.dataValues.id
+  // Ensure Projects has zero ressources
+  await getProjectModel().
+  if (project.dataValues.id) {
+    
+  }
+  return project
+}
+
+// DROP
+export const dropProjectsTable = async () => {
+  await sequelize.drop({
+    tableName: getProjectModel().tableName,
+    force: true,
+    cascade: true,
+  })
+}
+
+// DELETE / TRUNCATE
 // export const getProjectModel = () => Project ?? (Project = sequelize.define('Project', {
 //   id: {
 //     type: DataTypes.INTEGER,

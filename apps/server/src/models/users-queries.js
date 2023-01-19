@@ -1,4 +1,5 @@
 import { Op } from 'sequelize'
+import { sequelize } from '../connect.js'
 import { getUserModel } from './project.js'
 
 // SELECT
@@ -22,11 +23,11 @@ export const getUserByEmail = async (email) => {
 }
 
 // CREATE
-export const createUser = async ({ uuid, email, organization, firstName, _lastName }) => {
+export const createUser = async ({ id, email, organization, firstName, lastName }) => {
   const users = await getUserByEmail(email)
   console.log(users)
   if (!users.length) {
-    const res = await getUserModel().create({ uuid, email, organization, firstName, _lastName })
+    const res = await getUserModel().create({ id, email, organization, firstName, lastName })
     return res
   }
   return users
@@ -49,4 +50,13 @@ export const updateUserById = async ({ id, name, email, organization, firstName,
     return res
   }
   throw Error('Email déjà existant en BDD')
+}
+
+// DROP
+export const dropUsersTable = async () => {
+  await sequelize.drop({
+    tableName: getUserModel().tableName,
+    force: true,
+    cascade: true,
+  })
 }
