@@ -47,33 +47,25 @@ export const environmentInitializing = async ({ name, projectId }) => {
 }
 
 // UPDATE
-export const environmentCreated = async (name, projectId) => {
+export const environmentCreated = async (id) => {
   const res = await getEnvironmentModel().update(
     {
       status: 'created',
     }, {
       where: {
-        name,
-        projectId,
-      },
-      include: {
-        model: getProjectModel(),
+        id,
       },
     })
   return getUniq(res)
 }
 
-export const environmentFailed = async (name, projectId) => {
+export const environmentFailed = async (id) => {
   const res = await getEnvironmentModel().update(
     {
       status: 'failed',
     }, {
       where: {
-        name,
-        projectId,
-      },
-      include: {
-        model: getProjectModel(),
+        id,
       },
     })
   return getUniq(res)
