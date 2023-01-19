@@ -1,12 +1,12 @@
 import { faker } from '@faker-js/faker'
-import { allOrgNames, allServices, achievedStatus } from 'shared/src/utils/iterables.js'
+import { allOrganizations, allServices, achievedStatus } from 'shared/src/utils/iterables.js'
 
 export const getRandomUuid = () => {
   return faker.datatype.uuid()
 }
 
 export const getRandomProjectOrgName = () => {
-  return faker.helpers.arrayElement(allOrgNames)
+  return faker.helpers.arrayElement(allOrganizations)
 }
 
 export const getRandomProjectName = () => {

@@ -18,7 +18,7 @@ import {
   getEnvironmentModel,
   getPermissionModel,
   getRepositoryModel,
-} from './models/project.js'
+} from './models/models.js'
 import { dropPermissionsTable } from './models/permission-queries.js'
 import { dropEnvironmentsTable } from './models/environment-queries.js'
 import { dropRepositoriesTable } from './models/repository-queries.js'
@@ -87,13 +87,12 @@ export const synchroniseModels = async () => {
     await organizationModel.sync({ alter: true, logging: false })
 
     const userModel = await getUserModel()
-    userModel.belongsTo(organizationModel, { foreignKey: 'organization' })
-    await userModel.sync({ alter: true })
+    await userModel.sync({ alter: true, logging: false })
 
     const projectModel = await getProjectModel()
     projectModel.belongsTo(userModel, { foreignKey: 'ownerId' })
     projectModel.belongsTo(organizationModel, { foreignKey: 'organization' })
-    await projectModel.sync({ alter: true })
+    await projectModel.sync({ alter: true, logging: false })
 
     const environmentModel = await getEnvironmentModel()
     environmentModel.belongsTo(projectModel, { foreignKey: 'projectId' })

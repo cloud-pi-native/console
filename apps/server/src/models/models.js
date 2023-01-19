@@ -9,6 +9,11 @@ export const getOrganizationModel = () => Organization ?? (Organization = sequel
     unique: true,
     primaryKey: true,
   },
+  label: {
+    type: DataTypes.STRING(50),
+    allowNull: false,
+    unique: true,
+  },
 }, {
   tableName: 'Organizations',
 }))
@@ -131,12 +136,13 @@ export const getRepositoryModel = () => Repository ?? (Repository = sequelize.de
     type: DataTypes.UUID,
     allowNull: false,
     primaryKey: true,
+    defaultValue: DataTypes.UUIDV4,
   },
   projectId: {
     type: DataTypes.UUID,
     allowNull: false,
   },
-  internalName: {
+  internalRepoName: {
     type: DataTypes.STRING(50),
     allowNull: false,
   },

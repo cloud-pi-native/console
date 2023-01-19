@@ -3,7 +3,7 @@ import { repoSchema } from './repo.js'
 import { userSchema } from './user.js'
 import { envSchema } from './env.js'
 import {
-  allOrgNames,
+  allOrganizations,
   allServices,
   projectStatus,
 } from '../utils/iterables.js'
@@ -15,7 +15,7 @@ export const projectSchema = Joi.object({
     .required(),
 
   orgName: Joi.string()
-    .valid(...allOrgNames)
+    .valid(...allOrganizations)
     .required(),
 
   projectName: Joi.string()
