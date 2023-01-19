@@ -1,8 +1,6 @@
-import { nanoid } from 'nanoid'
 import { allServices } from 'shared/src/utils/iterables.js'
 import { getLogInfos } from '../utils/logger.js'
 import {
-  createProject,
   updateProjectStatus,
   addRepo,
   addUser,
@@ -11,13 +9,13 @@ import {
 } from '../models/project-queries.js'
 import {
   getUserProjects,
+  projectInitialize,
 } from '../models/project-queries2.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import { ansibleHost, ansiblePort } from '../utils/env.js'
 
 export const createProjectController = async (req, res) => {
   const data = req.body
-  data.id = nanoid()
   data.services = allServices
   data.status = 'initializing'
   data.locked = true
@@ -27,7 +25,7 @@ export const createProjectController = async (req, res) => {
 
   let project
   try {
-    project = await createProject(data)
+    project = await projectInitialize(data)
 
     req.log.info({
       ...getLogInfos({ projectId: project.id }),

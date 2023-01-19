@@ -1,3 +1,4 @@
+import { sequelize } from '../connect.js'
 import { getOrganizationModel } from './project.js'
 
 // SELECT
@@ -21,4 +22,13 @@ export const createOrganization = async (name) => {
     return res
   }
   return organizations
+}
+
+// DROP
+export const dropOrganizationsTable = async () => {
+  await sequelize.drop({
+    tableName: getOrganizationModel().tableName,
+    force: true,
+    cascade: true,
+  })
 }

@@ -15,14 +15,10 @@ export const getOrganizationModel = () => Organization ?? (Organization = sequel
 
 let User
 export const getUserModel = () => User ?? (User = sequelize.define('User', {
-  uuid: {
+  id: {
     type: DataTypes.UUID,
     allowNull: false,
-    unique: true,
-  },
-  organization: {
-    type: DataTypes.STRING(50),
-    allowNull: false,
+    primaryKey: true,
   },
   firstName: {
     type: DataTypes.STRING(50),
@@ -30,12 +26,12 @@ export const getUserModel = () => User ?? (User = sequelize.define('User', {
   },
   lastName: {
     type: DataTypes.STRING(50),
-    allowNull: true,
+    allowNull: false,
   },
   email: {
-    type: DataTypes.STRING(50),
+    type: DataTypes.STRING,
     allowNull: false,
-    primaryKey: true,
+    unique: true,
   },
 }, {
   tableName: 'Users',
@@ -44,26 +40,26 @@ export const getUserModel = () => User ?? (User = sequelize.define('User', {
 let Project
 export const getProjectModel = () => Project ?? (Project = sequelize.define('Project', {
   id: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.UUID,
     allowNull: false,
-    autoIncrement: true,
     unique: true,
     primaryKey: true,
+    defaultValue: DataTypes.UUIDV4,
   },
   name: {
     type: DataTypes.STRING(50),
     allowNull: false,
   },
-  ownerUuid: {
-    type: DataTypes.STRING(50),
+  ownerId: {
+    type: DataTypes.UUID,
     allowNull: false,
   },
   organization: {
     type: DataTypes.STRING(50),
     allowNull: false,
   },
-  users: {
-    type: DataTypes.ARRAY(DataTypes.STRING(50)),
+  usersId: {
+    type: DataTypes.ARRAY(DataTypes.UUID),
     allowNull: true,
   },
   status: {
@@ -77,23 +73,27 @@ export const getProjectModel = () => Project ?? (Project = sequelize.define('Pro
   },
 }, {
   tableName: 'Projects',
+  uniqueKeys: {
+    unique_fields: {
+      fields: ['organization', 'name'],
+    },
+  },
 }))
 
 let Environment
 export const getEnvironmentModel = () => Environment ?? (Environment = sequelize.define('Environment', {
   id: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.UUID,
     allowNull: false,
-    autoIncrement: true,
-    unique: true,
     primaryKey: true,
+    defaultValue: DataTypes.UUIDV4,
   },
   name: {
     type: DataTypes.STRING(50),
     allowNull: false,
   },
-  project_id: {
-    type: DataTypes.INTEGER,
+  projectId: {
+    type: DataTypes.UUID,
     allowNull: false,
   },
   status: {
@@ -107,12 +107,12 @@ export const getEnvironmentModel = () => Environment ?? (Environment = sequelize
 
 let Permission
 export const getPermissionModel = () => Permission ?? (Permission = sequelize.define('Permission', {
-  user_uuid: {
-    type: DataTypes.STRING(50),
+  userId: {
+    type: DataTypes.UUID,
     allowNull: false,
   },
-  environment_id: {
-    type: DataTypes.INTEGER,
+  environmentId: {
+    type: DataTypes.UUID,
     allowNull: false,
   },
   level: {
@@ -122,33 +122,33 @@ export const getPermissionModel = () => Permission ?? (Permission = sequelize.de
   },
 }, {
   tableName: 'Permissions',
-  primaryKey: ['user_id', 'environment_id'],
+  primaryKey: ['userId', 'environmentId'],
 }))
 
 let Repository
 export const getRepositoryModel = () => Repository ?? (Repository = sequelize.define('Repository', {
   id: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.UUID,
     allowNull: false,
     primaryKey: true,
   },
-  project_id: {
-    type: DataTypes.INTEGER,
+  projectId: {
+    type: DataTypes.UUID,
     allowNull: false,
   },
   internalName: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(50),
     allowNull: false,
   },
-  repoSrc: {
-    type: DataTypes.STRING,
+  externalRepoUrl: {
+    type: DataTypes.STRING(500),
     allowNull: false,
   },
-  authUser: {
+  externalUserName: {
     type: DataTypes.STRING,
     allowNull: true,
   },
-  authToken: {
+  externalToken: {
     type: DataTypes.STRING,
     allowNull: true,
   },
