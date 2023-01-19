@@ -1,5 +1,6 @@
 import { sequelize } from '../connect.js'
-import { getOrganizationModel } from './project.js'
+import { getOrganizationModel } from './models.js'
+import { getUniq } from '../utils/queries-tools.js'
 
 // SELECT
 export const getOrganizations = async () => {
@@ -11,17 +12,17 @@ export const getOrganizationByName = async (name) => {
   const res = await getOrganizationModel().findAll({
     where: { name },
   })
-  return res
+  return getUniq(res)
 }
 
 // CREATE
-export const createOrganization = async (name) => {
-  const organizations = await getOrganizationByName(name)
-  if (!organizations.length) {
-    const res = await getOrganizationModel().create({ name })
+export const createOrganization = async ({ name, label }) => {
+  const organization = await getOrganizationByName(name)
+  if (!organization) {
+    const res = await getOrganizationModel().create({ name, label })
     return res
   }
-  return organizations
+  return organization
 }
 
 // DROP

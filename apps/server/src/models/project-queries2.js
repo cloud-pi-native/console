@@ -1,39 +1,45 @@
-import { Sequelize } from 'sequelize'
+import { Op } from 'sequelize'
 import { sequelize } from '../connect.js'
-import { getProjectModel } from './project.js'
-import { getReposByProjectId } from './repository-queries.js'
-import { getEnvironmentsByProjectId } from './environment-queries.js'
+import { getProjectModel } from './models.js'
+import { getUniq } from '../utils/queries-tools.js'
 
 // SELECT
 export const getUserProjects = async (userId) => {
   const res = await getProjectModel().findAll({
     where: {
-      [Sequelize.Op.or]: [
+      [Op.or]: [
         { ownerId: userId },
-        { usersId: { [Sequelize.Op.contains]: [userId] } },
+        { usersId: { [Op.contains]: [userId] } },
       ],
     },
   })
   return res
 }
 
-export const getProject = async (name, organization) => {
+export const getProject = async ({ name, organization }) => {
   const res = await getProjectModel().findAll({
     where: {
       name,
       organization,
     },
   })
-  return res[0]
+  return getUniq(res)
 }
 
 // CREATE
-export const projectInitialize = async ({ name, organization, ownerId }) => {
-  const res = await getProjectModel().create({ name, organization, usersId: [ownerId], status: 'initializing', locked: true, ownerId })
-  return res
+export const projectInitializing = async ({ name, organization, ownerId }) => {
+  const project = await getProject({ name, organization })
+  if (!project) {
+    const res = await getProjectModel().create({ name, organization, usersId: [ownerId], status: 'initializing', locked: true, ownerId })
+    return res
+  }
+  return project
 }
 
 // UPDATE
+
+// TODO : requête lockProject()
+
 export const projectCreated = async ({ name, organization }) => {
   const res = await getProjectModel().update({ locked: false, status: 'created' }, { where: { name, organization } })
   return res
@@ -45,12 +51,9 @@ export const projectFailed = async ({ name, organization }) => {
 }
 
 export const projectAddUser = async ({ name, organization, userId }) => {
-  // TODO s'assurer que le user exist dans le model User
-  const project = await getProject(name, organization)
-  console.log(project.dataValues.usersId)
+  const project = await getProject({ name, organization })
   const users = project.dataValues.usersId ?? [project.dataValues.ownerId]
-  if (users.indexOf(userId) === -1) {
-    console.log('no')
+  if (!users.includes(userId)) {
     await getProjectModel().update({
       usersId: sequelize.fn('array_append', sequelize.col('usersId'), userId),
     }, {
@@ -60,16 +63,20 @@ export const projectAddUser = async ({ name, organization, userId }) => {
   return project
 }
 
-export const projectDeleting = async ({ name, organization }) => {
-  const project = await getProject(name, organization)
-  console.log(project.dataValues)
-  const projectId = project.dataValues.id
-  // Ensure Projects has zero ressources
-  await getProjectModel().
-  if (project.dataValues.id) {
-    
+// TODO : requête removeUser
+
+export const projectArchiving = async ({ name, organization }) => {
+  const project = await getProject({ name, organization })
+  if (project) {
+    const res = await getProjectModel().update({
+      status: 'archived',
+      locked: true,
+    }, {
+      where: { name, organization },
+    })
+    return res
   }
-  return project
+  throw Error('Projet non trouvé')
 }
 
 // DROP
@@ -82,39 +89,3 @@ export const dropProjectsTable = async () => {
 }
 
 // DELETE / TRUNCATE
-// export const getProjectModel = () => Project ?? (Project = sequelize.define('Project', {
-//   id: {
-//     type: DataTypes.INTEGER,
-//     allowNull: false,
-//     autoIncrement: true,
-//     unique: true,
-//     primaryKey: true,
-//   },
-//   name: {
-//     type: DataTypes.STRING(50),
-//     allowNull: false,
-//   },
-//   owner_id: {
-//     type: DataTypes.INTEGER,
-//     allowNull: false,
-//   },
-//   organization: {
-//     type: DataTypes.STRING(50),
-//     allowNull: false,
-//   },
-//   users: {
-//     type: DataTypes.ARRAY(DataTypes.INTEGER),
-//     allowNull: true,
-//   },
-//   status: {
-//     type: DataTypes.STRING(50),
-//     allowNull: false,
-//   },
-//   locked: {
-//     type: DataTypes.BOOLEAN,
-//     allowNull: false,
-//     defaultValue: false,
-//   },
-// }, {
-//   tableName: 'Projects',
-// }))

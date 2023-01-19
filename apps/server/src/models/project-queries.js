@@ -1,6 +1,6 @@
 import { Op } from 'sequelize'
 import { sequelize } from '../connect.js'
-import { getProjectModel } from './project.js'
+import { getProjectModel } from './models.js'
 import { projectSchema } from 'shared/src/schemas/project.js'
 import { achievedStatus } from 'shared/src/utils/iterables.js'
 
@@ -96,15 +96,9 @@ export const removeUser = async (project, userEmail) => {
   return res
 }
 
-export const getProjectById = async (projectId) => {
-  const res = await getProjectModel().findOne({
-    where: {
-      id: {
-        [Op.eq]: projectId,
-      },
-    },
-  })
-  return res?.data
+export const getProjectById = async (id) => {
+  const res = await getProjectModel().findByPk(id)
+  return res
 }
 
 export const getUserProjectById = async (projectId, userId) => {

@@ -9,7 +9,7 @@ import {
 } from '../models/project-queries.js'
 import {
   getUserProjects,
-  projectInitialize,
+  projectInitializing,
 } from '../models/project-queries2.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import { ansibleHost, ansiblePort } from '../utils/env.js'
@@ -24,7 +24,7 @@ export const createProjectController = async (req, res) => {
 
   let project
   try {
-    project = await projectInitialize(data)
+    project = await projectInitializing(data)
 
     req.log.info({
       ...getLogInfos({ projectId: project.id }),

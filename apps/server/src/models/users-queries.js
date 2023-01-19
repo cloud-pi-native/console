@@ -1,6 +1,7 @@
 import { Op } from 'sequelize'
 import { sequelize } from '../connect.js'
-import { getUserModel } from './project.js'
+import { getUserModel } from './models.js'
+import { getUniq } from '../utils/queries-tools.js'
 
 // SELECT
 export const getUsers = async () => {
@@ -9,7 +10,7 @@ export const getUsers = async () => {
 }
 
 export const getUserById = async (id) => {
-  const res = await getUserModel().findByPK(id)
+  const res = await getUserModel().findByPk(id)
   return res
 }
 
@@ -19,37 +20,36 @@ export const getUserByEmail = async (email) => {
       email: { [Op.eq]: email },
     },
   })
-  return res
+  return getUniq(res)
 }
 
 // CREATE
-export const createUser = async ({ id, email, organization, firstName, lastName }) => {
-  const users = await getUserByEmail(email)
-  console.log(users)
-  if (!users.length) {
-    const res = await getUserModel().create({ id, email, organization, firstName, lastName })
+export const createUser = async ({ id, email, firstName, lastName }) => {
+  const user = await getUserByEmail(email)
+  if (!user) {
+    const res = await getUserModel().create({ id, email, firstName, lastName })
     return res
   }
-  return users
+  return user
 }
 
 // UPDATE
-export const updateUserById = async ({ id, name, email, organization, firstName, _lastName }) => {
-  const users = await getUserById(id)
-  console.log(users)
-  if (users.length) {
+export const updateUserById = async ({ id, name, email, firstName, lastName }) => {
+  const user = await getUserById(id)
+  const isEmailAlreadyTaken = await getUserByEmail(email)
+  if (user && !isEmailAlreadyTaken) {
     const res = await getUserModel().update({
       name,
       email,
-      organization,
       firstName,
-      _lastName,
+      lastName,
     }, {
       where: id,
     })
     return res
   }
-  throw Error('Email déjà existant en BDD')
+  if (!user) throw Error('Cet utilisateur n\'existe pas')
+  if (isEmailAlreadyTaken) throw Error('Email déjà utilisé pour un autre user')
 }
 
 // DROP
