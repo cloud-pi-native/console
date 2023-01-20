@@ -5,13 +5,11 @@ import { getUniq } from '../utils/queries-tools.js'
 
 // SELECT
 export const getUsers = async () => {
-  const res = await getUserModel().findAll()
-  return res
+  return await getUserModel().findAll()
 }
 
 export const getUserById = async (id) => {
-  const res = await getUserModel().findByPk(id)
-  return res
+  return await getUserModel().findByPk(id)
 }
 
 export const getUserByEmail = async (email) => {
@@ -26,17 +24,16 @@ export const getUserByEmail = async (email) => {
 // CREATE
 export const createUser = async ({ id, email, firstName, lastName }) => {
   const user = await getUserByEmail(email)
-  if (!user) {
-    const res = await getUserModel().create({ id, email, firstName, lastName })
-    return res
-  }
-  return user
+  if (user) throw Error('Un utilisateur avec cette adresse e-mail existe déjà')
+  return await getUserModel().create({ id, email, firstName, lastName })
 }
 
 // UPDATE
 export const updateUserById = async ({ id, name, email, firstName, lastName }) => {
   const user = await getUserById(id)
   const isEmailAlreadyTaken = await getUserByEmail(email)
+  if (!user) throw Error('L\'utilisateur demandé n\'existe pas')
+  if (isEmailAlreadyTaken) throw Error('Un utilisateur avec cette adresse e-mail existe déjà')
   if (user && !isEmailAlreadyTaken) {
     const res = await getUserModel().update({
       name,
@@ -48,8 +45,6 @@ export const updateUserById = async ({ id, name, email, firstName, lastName }) =
     })
     return res
   }
-  if (!user) throw Error('Cet utilisateur n\'existe pas')
-  if (isEmailAlreadyTaken) throw Error('Email déjà utilisé pour un autre user')
 }
 
 // DROP

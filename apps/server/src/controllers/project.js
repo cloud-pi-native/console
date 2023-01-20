@@ -4,6 +4,7 @@ import {
   addUser,
   getUserProjectById,
   removeUser,
+  updateProjectStatus,
 } from '../models/project-queries.js'
 import {
   projectFailed,
@@ -39,7 +40,7 @@ export const createProjectController = async (req, res) => {
   try {
     const ansibleData = {
       orgName: project.organization,
-      ownerEmail: project.owner.email, //TODO aller chercher la bonne valeur
+      ownerEmail: project.owner.email, // TODO aller chercher la bonne valeur
       projectName: project.name,
       // envList: project.envList, //virer le requested sur ansible
     }
