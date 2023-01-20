@@ -30,7 +30,7 @@ export const getProjectByEnvironmentId = async (envId) => {
 
 // INSERT
 export const environmentInitializing = async ({ name, projectId }) => {
-  const res = await getEnvironmentModel().create(
+  return await getEnvironmentModel().create(
     { name, projectId, status: 'initializing' }, {
       where: {
         name,
@@ -40,12 +40,10 @@ export const environmentInitializing = async ({ name, projectId }) => {
         model: getProjectModel(),
       },
     })
-  return getUniq(res)
 }
 
-// UPDATE
 export const environmentCreated = async (id) => {
-  const res = await getEnvironmentModel().update(
+  return await getEnvironmentModel().update(
     {
       status: 'created',
     }, {
@@ -53,11 +51,10 @@ export const environmentCreated = async (id) => {
         id,
       },
     })
-  return getUniq(res)
 }
 
 export const environmentFailed = async (id) => {
-  const res = await getEnvironmentModel().update(
+  return await getEnvironmentModel().update(
     {
       status: 'failed',
     }, {
@@ -65,10 +62,20 @@ export const environmentFailed = async (id) => {
         id,
       },
     })
-  return getUniq(res)
 }
 
 // DELETE
+export const environmentDeleting = async (id) => {
+  const doesEnvExist = await getEnvironmentById(id)
+  if (!doesEnvExist) throw new Error('L\'environnement demandé n\'existe pas en base pour ce projet')
+  return await getEnvironmentModel().update({
+    status: 'deleting',
+  }, {
+    where: {
+      id,
+    },
+  })
+}
 
 // TODO : controller : suppression permissions associées
 export const deleteEnvironment = async (id) => {

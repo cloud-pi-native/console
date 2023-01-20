@@ -14,6 +14,8 @@ import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import { ansibleHost, ansiblePort } from '../utils/env.js'
 import { getUserByEmail, getUserById } from '../models/users-queries.js'
+import { deletePermission, getUserPermissions } from '../models/permission-queries.js'
+import { getEnvironmentById } from '../models/environment-queries.js'
 
 // GET
 
@@ -101,7 +103,7 @@ export const createProjectController = async (req, res) => {
   }
 
   try {
-    const owner = getUserById(project.ownerId)
+    const owner = await getUserById(project.ownerId)
     const ansibleData = {
       orgName: project.organization,
       ownerEmail: owner.email,
@@ -250,6 +252,14 @@ export const projectRemoveUserController = async (req, res) => {
     // TODO : user status initializing ?
     await projectLocked(projectId)
     await projectRemoveUser({ projectId, userId: userToRemove.id })
+    const userPermissionsToDelete = await getUserPermissions(userToRemove.id)
+    for (const userPermission of userPermissionsToDelete) {
+      const envId = userPermission.environmentId
+      await getEnvironmentById(envId)
+      if (envId.projectId === projectId) {
+        await deletePermission(userPermission.id)
+      }
+    }
 
     const message = 'User successfully removed from project'
     req.log.info({
