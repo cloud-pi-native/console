@@ -43,7 +43,8 @@
       ],
       "clientRoles": {
         "account": [
-          "manage-account"
+          "manage-account",
+          "view-groups"
         ]
       }
     },
@@ -156,7 +157,19 @@
         "name": "admin",
         "description": "Administrator privileges"
       }
-    ]
+    ],
+    "client": {
+      "account": [
+        {
+          "id": "5b36d7ed-e828-489d-aa6a-a943878db0aa",
+          "name": "view-groups",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "18818acc-089f-4675-99a9-e488219dfe98",
+          "attributes": {}
+        }
+      ]
+    }
   },
   "clients": [
     {
