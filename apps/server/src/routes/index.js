@@ -1,4 +1,5 @@
 import projectsRouter from './project.js'
+// import organizationsRouter from './organization.js'
 import ciFilesRouter from './ciFiles.js'
 import { send200 } from '../utils/response.js'
 
@@ -14,6 +15,7 @@ const getHealth = async (_req, res) => {
 
 export const apiRouter = async (app, _opts) => {
   await app.register(projectsRouter, { prefix: '/projects' })
+  // await app.register(organizationsRouter, { prefix: '/organizations' })
   await app.register(ciFilesRouter, { prefix: '/ci-files' })
 }
 

@@ -11,6 +11,7 @@ export const initDb = async () => {
   for (const org of allOrganizations) {
     await createOrganization(org)
   }
+
   // Create users
   await createUser({
     id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
@@ -25,22 +26,30 @@ export const initDb = async () => {
     lastName: 'com',
   })
   await getUserById('cb8e5b4b-7b7b-40f5-935f-594f48ae6464')
-  // Create projects
+
+  // Initialize projects
   await projectInitializing({ name: 'test-projet', organization: 'dinum', ownerId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565' })
-  await projectCreated({ name: 'test-projet', organization: 'dinum' })
   await projectInitializing({ name: 'failed-projet', organization: 'dinum', ownerId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565' })
-  await projectFailed({ name: 'failed-projet', organization: 'dinum' })
   await projectInitializing({ name: 'toto-projet', organization: 'dinum', ownerId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6464' })
-  await projectCreated({ name: 'toto-projet', organization: 'dinum' })
-  // Add user to project
-  const projectToto = await getProject({ name: 'toto-projet', organization: 'dinum' })
-  await projectAddUser({ projectId: projectToto.id, userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565' })
-  // Remove user from a project
+  console.log('initialized')
+
+  // Update projects statuses
   let projectTest = await getProject({ name: 'test-projet', organization: 'dinum' })
+  const projectToto = await getProject({ name: 'toto-projet', organization: 'dinum' })
+  const project0 = await getProject({ name: 'failed-projet', organization: 'dinum' })
+  await projectCreated(projectTest.id)
+  await projectCreated(projectToto.id)
+  await projectFailed(project0.id)
+
+  // Add user to project
+  await projectAddUser({ projectId: projectToto.id, userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565' })
+
+  // Remove user from a project
   await projectAddUser({ projectId: projectTest.id, userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6464' })
   projectTest = await getProject({ name: 'test-projet', organization: 'dinum' })
   await projectRemoveUser({ projectId: projectTest.id, userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6464' })
   projectTest = await getProject({ name: 'test-projet', organization: 'dinum' })
+
   // Create environments for a project
   await environmentInitializing({ name: 'staging', projectId: projectToto.id })
   await environmentInitializing({ name: 'prod', projectId: projectToto.id })
@@ -48,9 +57,11 @@ export const initDb = async () => {
   const envProd = await getEnvironment({ projectId: projectToto.id, name: 'prod' })
   await environmentCreated(envStaging.id)
   await environmentFailed(envProd.id)
+
   // Set permissions for a user on given environments
   await setPermission({ userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565', envId: envStaging.id, level: 0 })
   await setPermission({ userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565', envId: envProd.id, level: 10 })
+
   // Create repositories for a project
   const repo0 = await repositoryInitializing({ projectId: projectToto.id, internalRepoName: 'candilib', externalRepoUrl: 'https://github.com/dnum-mi/candilib', externalUserName: 'test', externalToken: 'token', isInfra: false, isPrivate: true })
   await repositoryCreated(repo0.id)
@@ -58,8 +69,10 @@ export const initDb = async () => {
   await repositoryFailed(repo1.id)
   await updateRepository(repo0.id, { externalUserName: 'toto' })
   await repositoryDeleting(repo1.id)
+
   // Delete a repository
   await deleteRepository(repo1.id)
+
   // Archive a project
   await projectArchiving(projectTest.id)
 }
