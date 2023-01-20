@@ -13,7 +13,7 @@ const userPayloadMapper = (userPayload) => ({
   email: userPayload.email,
   firstName: userPayload.given_name,
   lastName: userPayload.family_name,
-  // others: {userPayload},
+  groups: userPayload.groups,
 })
 
 export const keycloakConf = {
@@ -27,6 +27,7 @@ export const keycloakConf = {
   userPayloadMapper,
   retries: 5,
   excludedPatterns: ['/version', '/healthz'],
+  scope: ['openid', 'email', 'profile', 'groups'],
 }
 
 export const sessionConf = {
