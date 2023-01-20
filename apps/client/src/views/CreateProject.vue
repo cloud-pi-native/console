@@ -44,10 +44,12 @@ const createProject = async () => {
   updatedValues.value = instanciateSchema({ schema: projectSchema }, true)
   const keysToValidate = ['organization', 'name']
   const errorSchema = schemaValidator(projectSchema, project.value, keysToValidate)
-  // TODO bloque tous le temps
   if (Object.keys(errorSchema).length === 0) {
     await projectStore.createProject(project.value)
     router.push('/projects')
+  }
+  else {
+    console.log('invalid', errorSchema) // réparer la gestion d'erreur
   }
 }
 

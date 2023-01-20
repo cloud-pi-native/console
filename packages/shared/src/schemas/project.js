@@ -9,16 +9,17 @@ import {
 } from '../utils/iterables.js'
 
 // TODO : status et locked doivent être required, prévoir migration
-
+// TODO vérifier que le schéma est toujours bon pour tous ceux qui l'utilisent
+const organizationBlob = allOrganizations.map(org => org.name)
 export const projectSchema = Joi.object({
   id: Joi.string()
     .required(),
 
-  orgName: Joi.string()
-    .valid(...allOrganizations)
+  organization: Joi.string()
+    .valid(...organizationBlob)
     .required(),
 
-  projectName: Joi.string()
+  name: Joi.string()
     .pattern(/^[a-z0-9-]+$/)
     .required(),
 

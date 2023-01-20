@@ -6,6 +6,7 @@ import { getUniq } from '../utils/queries-tools.js'
 // SELECT
 export const getUserProjects = async (userId) => {
   const res = await getProjectModel().findAll({
+    raw: true,
     where: {
       [Op.or]: [
         { ownerId: userId },
@@ -18,6 +19,7 @@ export const getUserProjects = async (userId) => {
 
 export const getProject = async ({ name, organization }) => {
   const res = await getProjectModel().findAll({
+    raw: true,
     where: {
       name,
       organization,
@@ -31,7 +33,7 @@ export const projectInitializing = async ({ name, organization, ownerId }) => {
   const project = await getProject({ name, organization })
   if (!project) {
     const res = await getProjectModel().create({ name, organization, usersId: [ownerId], status: 'initializing', locked: true, ownerId })
-    return res
+    return res?.dataValues
   }
   return project
 }

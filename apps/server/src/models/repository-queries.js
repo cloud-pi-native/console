@@ -10,8 +10,9 @@ export const getRepositoryById = async (id) => {
 
 export const getProjectRepositories = async (projectId) => {
   const res = await getRepositoryModel().findAll({
+    raw: true,
     where: {
-      projectId: { [Op.eq]: projectId },
+      projectId,
     },
   })
   return res
@@ -81,9 +82,7 @@ export const repositoryDeleting = async (repoId) => {
 }
 
 export const deleteRepository = async (repoId) => {
-
   const doesRepoExists = await getRepositoryById(repoId)
-  console.log(doesRepoExists);
   if (doesRepoExists) {
     const res = await getRepositoryModel().destroy({
       where: {
