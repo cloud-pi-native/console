@@ -17,12 +17,9 @@ import { getProjectRepositories } from '../models/repository-queries.js'
 
 export const createProjectController = async (req, res) => {
   const data = req.body
-  data.services = allServices
   data.status = 'initializing'
-  data.locked = true
-  data.owner = req.session.user
-  data.owner.status = 'initializing'
-
+  data.ownerId = req.session.user.id
+  console.log(data);
   let project
   try {
     project = await projectInitializing(data)
@@ -36,7 +33,7 @@ export const createProjectController = async (req, res) => {
     req.log.error({
       ...getLogInfos(),
       description: 'Cannot create project',
-      error,
+      error: error.message,
     })
     return send500(res, error.message)
   }
@@ -75,8 +72,6 @@ export const createProjectController = async (req, res) => {
       })
       return send500(res, error.message)
     }
-
-    send201(res, project)
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
