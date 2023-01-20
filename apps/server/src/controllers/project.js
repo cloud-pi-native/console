@@ -1,13 +1,13 @@
-import { allServices } from 'shared/src/utils/iterables.js'
 import { getLogInfos } from '../utils/logger.js'
 import {
-  updateProjectStatus,
   addRepo,
   addUser,
   getUserProjectById,
   removeUser,
 } from '../models/project-queries.js'
 import {
+  projectFailed,
+  projectCreated,
   getUserProjects,
   projectInitializing,
 } from '../models/project-queries2.js'
@@ -19,11 +19,9 @@ export const createProjectController = async (req, res) => {
   const data = req.body
   data.status = 'initializing'
   data.ownerId = req.session.user.id
-  console.log(data);
   let project
   try {
     project = await projectInitializing(data)
-
     req.log.info({
       ...getLogInfos({ projectId: project.id }),
       description: 'Project successfully created in database',
@@ -40,10 +38,10 @@ export const createProjectController = async (req, res) => {
 
   try {
     const ansibleData = {
-      orgName: project.orgName,
-      ownerEmail: project.owner.email,
-      projectName: project.projectName,
-      envList: project.envList,
+      orgName: project.organization,
+      ownerEmail: project.owner.email, //TODO aller chercher la bonne valeur
+      projectName: project.name,
+      // envList: project.envList, //virer le requested sur ansible
     }
     await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/projects`, {
       method: 'POST',
@@ -56,9 +54,7 @@ export const createProjectController = async (req, res) => {
     })
 
     try {
-      project.status = 'created'
-      project.owner.status = 'created'
-      project = await updateProjectStatus(project, 'created')
+      project = await projectCreated(project)
 
       req.log.info({
         ...getLogInfos({ projectId: project.id }),
@@ -67,10 +63,9 @@ export const createProjectController = async (req, res) => {
     } catch (error) {
       req.log.error({
         ...getLogInfos(),
-        description: `Cannot update project status: ${error.message}`,
-        error,
+        description: 'Cannot update project status to created',
+        error: error.message,
       })
-      return send500(res, error.message)
     }
   } catch (error) {
     req.log.error({
@@ -79,9 +74,7 @@ export const createProjectController = async (req, res) => {
       error,
     })
     try {
-      project.status = 'failed'
-      project.owner.status = 'failed'
-      project = await updateProjectStatus(project, 'failed')
+      project = await projectFailed(project)
 
       req.log.info({
         ...getLogInfos({ projectId: project.id }),
@@ -90,12 +83,10 @@ export const createProjectController = async (req, res) => {
     } catch (error) {
       req.log.error({
         ...getLogInfos(),
-        description: `Cannot update project status: ${error.message}`,
-        error,
+        description: 'Cannot update project status to failed',
+        error: error.message,
       })
-      return send500(res, error.message)
     }
-    send500(res, error)
   }
 }
 
@@ -172,19 +163,19 @@ export const addRepoController = async (req, res) => {
     } catch (error) {
       req.log.error({
         ...getLogInfos(),
-        description: `Cannot update project status: ${error.message}`,
-        error,
+        description: 'Cannot update repo status to created',
+        error: error.message,
       })
       return send500(res, error.message)
     }
 
     send201(res, 'Git repository successfully added into project')
   } catch (error) {
-    const message = `Provisioning project with ansible failed: ${error.message}`
+    const message = 'Provisioning repo with ansible failed'
     req.log.error({
       ...getLogInfos(),
       description: message,
-      error,
+      error: error.message,
     })
 
     try {
@@ -194,13 +185,13 @@ export const addRepoController = async (req, res) => {
 
       req.log.info({
         ...getLogInfos({ projectId: dbProject.id }),
-        description: 'Project status successfully updated in database',
+        description: 'Repo status successfully updated in database to failed',
       })
     } catch (error) {
       req.log.error({
         ...getLogInfos(),
-        description: `Cannot update project status: ${error.message}`,
-        error,
+        description: 'Cannot update repo status to failed',
+        error: error.message,
       })
       return send500(res, error.message)
     }
@@ -232,11 +223,10 @@ export const addUserController = async (req, res) => {
     })
     send201(res, message)
   } catch (error) {
-    const message = `Cannot add user into project: ${error.message}`
+    const message = 'Cannot add user into project'
     req.log.error({
       ...getLogInfos(),
-      description: message,
-      error,
+      error: error.message,
     })
     return send500(res, message)
   }
@@ -255,8 +245,8 @@ export const addUserController = async (req, res) => {
     } catch (error) {
       req.log.error({
         ...getLogInfos(),
-        description: `Cannot update project status: ${error.message}`,
-        error,
+        description: 'Cannot update project status',
+        error: error.message,
       })
       return send500(res, error.message)
     }
@@ -278,8 +268,8 @@ export const addUserController = async (req, res) => {
     } catch (error) {
       req.log.error({
         ...getLogInfos(),
-        description: `Cannot update project status: ${error.message}`,
-        error,
+        description: 'Cannot update project status',
+        error: error.message,
       })
       return send500(res, error.message)
     }
@@ -308,11 +298,11 @@ export const removeUserController = async (req, res) => {
     })
     send200(res, message)
   } catch (error) {
-    const message = `Cannot remove user from project: ${error.message}`
+    const message = 'Cannot remove user from project'
     req.log.error({
       ...getLogInfos(),
       description: message,
-      error,
+      error: error.message,
     })
     return send500(res, message)
   }
@@ -328,8 +318,8 @@ export const removeUserController = async (req, res) => {
     } catch (error) {
       req.log.error({
         ...getLogInfos(),
-        description: `Cannot update project status: ${error.message}`,
-        error,
+        description: 'Cannot update project status',
+        error: error.message,
       })
       return send500(res, error.message)
     }
@@ -349,8 +339,8 @@ export const removeUserController = async (req, res) => {
     } catch (error) {
       req.log.error({
         ...getLogInfos(),
-        description: `Cannot update project status: ${error.message}`,
-        error,
+        description: 'Cannot update project status',
+        error: error.message,
       })
       return send500(res, error.message)
     }
@@ -362,28 +352,28 @@ export const getUserProjectsController = async (req, res) => {
   const userId = req.session?.user?.id
 
   try {
-    let projects = await getUserProjects(userId)
-    const newProjects = []
-    for (const project of projects) {
-      const repos = await getProjectRepositories(project.dataValues.id)
-      const newRepos = []
-      for (const repo of repos) {
-        newRepos.push({ ...repo.dataValues })
+    const projectsOnly = await getUserProjects(userId)
+    const projectsWithRepos = await Promise.all(projectsOnly.map(async (project) => {
+      const repos = await getProjectRepositories(project.id)
+      return {
+        ...project,
+        projectName: project.name,
+        orgName: project.organization,
+        usersId: project.ownerId === userId ? project.usersId : [userId],
+        repos,
       }
-      newProjects.push({...project.dataValues, projectName: project.dataValues.name, orgName: project.dataValues.organization, repos})
-    }
-
+    }))
     req.log.info({
       ...getLogInfos(),
       description: 'Projects successfully retreived',
     })
-    await send200(res, newProjects)
+    await send200(res, projectsWithRepos)
   } catch (error) {
     const message = 'Cannot retrieve projects'
     req.log.error({
       ...getLogInfos(),
       description: message,
-      error,
+      error: error.message,
     })
     send500(res, message)
   }
@@ -406,7 +396,7 @@ export const getUserProjectByIdController = async (req, res) => {
     req.log.error({
       ...getLogInfos({ projectId: id }),
       description: message,
-      error,
+      error: error.message,
     })
     send500(res, message)
   }

@@ -21,7 +21,7 @@ export const createProjectController = async (req, res) => {
     req.log.error({
       ...getLogInfos(),
       description: message,
-      error,
+      error: error.message,
     })
     send500(res, message)
   }
