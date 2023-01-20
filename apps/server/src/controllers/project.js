@@ -13,6 +13,7 @@ import {
 } from '../models/project-queries2.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import { ansibleHost, ansiblePort } from '../utils/env.js'
+import { getProjectRepositories } from '../models/repository-queries.js'
 
 export const createProjectController = async (req, res) => {
   const data = req.body
@@ -366,13 +367,22 @@ export const getUserProjectsController = async (req, res) => {
   const userId = req.session?.user?.id
 
   try {
-    const projects = await getUserProjects(userId)
+    let projects = await getUserProjects(userId)
+    const newProjects = []
+    for (const project of projects) {
+      const repos = await getProjectRepositories(project.dataValues.id)
+      const newRepos = []
+      for (const repo of repos) {
+        newRepos.push({ ...repo.dataValues })
+      }
+      newProjects.push({...project.dataValues, projectName: project.dataValues.name, orgName: project.dataValues.organization, repos})
+    }
 
     req.log.info({
       ...getLogInfos(),
       description: 'Projects successfully retreived',
     })
-    await send200(res, projects)
+    await send200(res, newProjects)
   } catch (error) {
     const message = 'Cannot retrieve projects'
     req.log.error({
