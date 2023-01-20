@@ -4,8 +4,7 @@ import { getUniq } from '../utils/queries-tools.js'
 
 // SELECT
 export const getOrganizations = async () => {
-  const res = await getOrganizationModel().findAll()
-  return res
+  return await getOrganizationModel().findAll()
 }
 
 export const getOrganizationByName = async (name) => {
@@ -18,11 +17,8 @@ export const getOrganizationByName = async (name) => {
 // CREATE
 export const createOrganization = async ({ name, label }) => {
   const organization = await getOrganizationByName(name)
-  if (!organization) {
-    const res = await getOrganizationModel().create({ name, label })
-    return res
-  }
-  return organization
+  if (organization) throw Error('Cette organisation existe déjà')
+  return await getOrganizationModel().create({ name, label })
 }
 
 // DROP

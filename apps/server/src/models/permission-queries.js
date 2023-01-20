@@ -8,15 +8,13 @@ export const setPermission = async ({ userId, envId, level }) => {
   const project = await getProjectByEnvironmentId(envId)
   const isUserInProject = project?.usersId.includes(userId)
   if (!isUserInProject) throw Error('L\'utilisateur ne fait pas partie du projet')
-
-  const res = getPermissionModel().upsert({ userId, environmentId: envId, level },
+  return getPermissionModel().upsert({ userId, environmentId: envId, level },
     {
       includes: [
         { model: getUserModel() },
         { model: getEnvironmentModel() },
       ],
     })
-  return res
 }
 
 // DELETE

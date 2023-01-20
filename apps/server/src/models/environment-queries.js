@@ -5,8 +5,7 @@ import { getProjectById } from './project-queries.js'
 
 // SELECT
 export const getEnvironmentById = async (id) => {
-  const res = await getEnvironmentModel().findByPk(id)
-  return res
+  return await getEnvironmentModel().findByPk(id)
 }
 
 export const getEnvironment = async ({ projectId, name }) => {
@@ -18,17 +17,15 @@ export const getEnvironment = async ({ projectId, name }) => {
 }
 
 export const getEnvironmentsByProjectId = async (projectId) => {
-  const res = await getEnvironmentModel().findAll({
+  return await getEnvironmentModel().findAll({
     where: { projectId },
     include: { model: getProjectModel() },
   })
-  return res
 }
 
 export const getProjectByEnvironmentId = async (envId) => {
   const env = await getEnvironmentById(envId)
-  const project = await getProjectById(env.projectId)
-  return project
+  return await getProjectById(env.projectId)
 }
 
 // INSERT
