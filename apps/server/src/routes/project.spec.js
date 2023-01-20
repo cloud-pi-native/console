@@ -8,7 +8,7 @@ import { nanoid } from 'nanoid'
 import { sessionConf } from '../utils/keycloak.js'
 import { getConnection, closeConnections, sequelize } from '../connect.js'
 import { getProjectModel } from '../models/models.js'
-import projectRouter from './models.js'
+import projectRouter from './project.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 vi.mock('../ansible.js')
