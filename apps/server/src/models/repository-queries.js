@@ -19,7 +19,7 @@ export const getProjectRepositories = async (projectId) => {
 export const repositoryInitializing = async ({ projectId, internalRepoName, externalRepoUrl, isInfra, isPrivate, externalUserName, externalToken }) => {
   const repos = await getProjectRepositories(projectId)
   const isInternalRepoNameTaken = repos.find(repo => repo.internalRepoName === internalRepoName)
-  if (isInternalRepoNameTaken) throw Error(`Le nom du dépôt interne ${internalRepoName} existe déjà en base pour ce projet`)
+  if (isInternalRepoNameTaken) throw new Error(`Le nom du dépôt interne ${internalRepoName} existe déjà en base pour ce projet`)
   return await getRepositoryModel().create({
     projectId,
     internalRepoName,
@@ -43,7 +43,7 @@ export const repositoryFailed = async (id) => {
 
 export const updateRepository = async (id, infos) => {
   const doesRepoExist = await getRepositoryById(id)
-  if (!doesRepoExist) throw Error('Le dépôt interne demandé n\'existe pas en base pour ce projet')
+  if (!doesRepoExist) throw new Error('Le dépôt interne demandé n\'existe pas en base pour ce projet')
   return await getRepositoryModel().update({
     ...infos,
     status: 'initializing',
@@ -57,7 +57,7 @@ export const updateRepository = async (id, infos) => {
 // DELETE
 export const repositoryDeleting = async (id) => {
   const doesRepoExists = await getRepositoryById(id)
-  if (!doesRepoExists) throw Error('Le dépôt interne demandé n\'existe pas en base pour ce projet')
+  if (!doesRepoExists) throw new Error('Le dépôt interne demandé n\'existe pas en base pour ce projet')
   return await getRepositoryModel().update({
     status: 'deleting',
   }, {
@@ -69,7 +69,7 @@ export const repositoryDeleting = async (id) => {
 
 export const deleteRepository = async (id) => {
   const doesRepoExists = await getRepositoryById(id)
-  if (!doesRepoExists) throw Error('Le dépôt interne demandé n\'existe pas en base pour ce projet')
+  if (!doesRepoExists) throw new Error('Le dépôt interne demandé n\'existe pas en base pour ce projet')
   return await getRepositoryModel().destroy({
     where: {
       id,

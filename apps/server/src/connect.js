@@ -22,7 +22,7 @@ import {
 import { dropPermissionsTable } from './models/permission-queries.js'
 import { dropEnvironmentsTable } from './models/environment-queries.js'
 import { dropRepositoriesTable } from './models/repository-queries.js'
-import { dropProjectsTable } from './models/project-queries2.js'
+import { dropProjectsTable } from './models/project-queries.js'
 import { dropUsersTable } from './models/users-queries.js'
 import { dropOrganizationsTable } from './models/organization-queries.js'
 
