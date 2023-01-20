@@ -19,6 +19,11 @@ const quickLinks = ref([{
   iconRight: true,
 }])
 
+const closed = ref(false)
+const close = () => {
+  closed.value = !closed.value
+}
+
 onMounted(() => {
   if (isLoggedIn.value) userStore.setUserProfile()
 })
@@ -43,4 +48,14 @@ watch(label, (label) => {
       <router-view />
     </div>
   </div>
+  <DsfrAlert
+    v-if="isLoggedIn"
+    class="w-max my-2 mx-auto"
+    :description="`Vous êtes connecté(e) en tant que ${userStore.userProfile.firstName} ${userStore.userProfile.lastName}`"
+    type="info"
+    small
+    :closed="closed"
+    closeable
+    @close="close()"
+  />
 </template>
