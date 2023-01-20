@@ -33,46 +33,46 @@ export const repositoryInitializing = async ({ projectId, internalRepoName, exte
 }
 
 // UPDATE
-export const repositoryCreated = async (repoId) => {
-  return await getRepositoryModel().update({ status: 'created' }, { where: { id: repoId } })
+export const repositoryCreated = async (id) => {
+  return await getRepositoryModel().update({ status: 'created' }, { where: { id } })
 }
 
-export const repositoryFailed = async (repoId) => {
-  return await getRepositoryModel().update({ status: 'failed' }, { where: { id: repoId } })
+export const repositoryFailed = async (id) => {
+  return await getRepositoryModel().update({ status: 'failed' }, { where: { id } })
 }
 
-export const updateRepository = async (repoId, infos) => {
-  const doesRepoExist = await getRepositoryById(repoId)
+export const updateRepository = async (id, infos) => {
+  const doesRepoExist = await getRepositoryById(id)
   if (!doesRepoExist) throw Error('Le dépôt interne demandé n\'existe pas en base pour ce projet')
   return await getRepositoryModel().update({
     ...infos,
     status: 'initializing',
   }, {
     where: {
-      id: repoId,
+      id,
     },
   })
 }
 
 // DELETE
-export const repositoryDeleting = async (repoId) => {
-  const doesRepoExists = await getRepositoryById(repoId)
+export const repositoryDeleting = async (id) => {
+  const doesRepoExists = await getRepositoryById(id)
   if (!doesRepoExists) throw Error('Le dépôt interne demandé n\'existe pas en base pour ce projet')
   return await getRepositoryModel().update({
     status: 'deleting',
   }, {
     where: {
-      id: repoId,
+      id,
     },
   })
 }
 
-export const deleteRepository = async (repoId) => {
-  const doesRepoExists = await getRepositoryById(repoId)
+export const deleteRepository = async (id) => {
+  const doesRepoExists = await getRepositoryById(id)
   if (!doesRepoExists) throw Error('Le dépôt interne demandé n\'existe pas en base pour ce projet')
   return await getRepositoryModel().destroy({
     where: {
-      id: repoId,
+      id,
     },
   })
 }
