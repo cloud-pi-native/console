@@ -19,8 +19,8 @@ const owner = computed(() => userStore.userProfile)
  * @property {string} projectName
  */
 const project = ref({
-  orgName: undefined,
-  projectName: undefined,
+  organization: undefined,
+  name: undefined,
 })
 
 const orgOptions = ref([
@@ -42,9 +42,9 @@ const updatedValues = ref({})
 
 const createProject = async () => {
   updatedValues.value = instanciateSchema({ schema: projectSchema }, true)
-  const keysToValidate = ['orgName', 'projectName']
+  const keysToValidate = ['organization', 'name']
   const errorSchema = schemaValidator(projectSchema, project.value, keysToValidate)
-
+  // TODO bloque tous le temps
   if (Object.keys(errorSchema).length === 0) {
     await projectStore.createProject(project.value)
     router.push('/projects')
@@ -75,27 +75,27 @@ const updateProject = (key, value) => {
       class="fr-mb-2w"
     />
     <DsfrSelect
-      v-model="project.orgName"
-      data-testid="orgNameSelect"
+      v-model="project.organization"
+      data-testid="organizationSelect"
       required
       label="Nom de l'organisation"
       label-visible
       :options="orgOptions"
-      @update:model-value="updateProject('orgName', $event)"
+      @update:model-value="updateProject('organization', $event)"
     />
     <DsfrInput
-      v-model="project.projectName"
-      data-testid="projectNameInput"
+      v-model="project.name"
+      data-testid="nameInput"
       type="text"
       required="required"
-      :is-valid="!!updatedValues.projectName && isValid(projectSchema, project, 'projectName')"
-      :is-invalid="!!updatedValues.projectName && !isValid(projectSchema, project, 'projectName')"
+      :is-valid="!!updatedValues.name && isValid(projectSchema, project, 'name')"
+      :is-invalid="!!updatedValues.name && !isValid(projectSchema, project, 'name')"
       label="Nom du projet"
       label-visible
       hint="Nom du projet dans l'offre Cloud PI Native. Ne doit pas contenir d'espace, doit être unique pour l'organisation, doit être en minuscules."
       placeholder="candilib"
       class="fr-mb-2w"
-      @update:model-value="updateProject('projectName', $event)"
+      @update:model-value="updateProject('name', $event)"
     />
   </DsfrFieldset>
   <DsfrButton
