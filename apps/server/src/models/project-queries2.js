@@ -46,12 +46,12 @@ export const projectLocked = async (id) => {
   return await getProjectModel().update({ locked: true }, { where: { id } })
 }
 
-export const projectCreated = async ({ name, organization }) => {
-  return await getProjectModel().update({ locked: false, status: 'created' }, { where: { name, organization } })
+export const projectCreated = async (id) => {
+  return await getProjectModel().update({ locked: false, status: 'created' }, { where: { id } })
 }
 
-export const projectFailed = async ({ name, organization }) => {
-  return await getProjectModel().update({ locked: false, status: 'failed' }, { where: { name, organization } })
+export const projectFailed = async (id) => {
+  return await getProjectModel().update({ locked: false, status: 'failed' }, { where: { id } })
 }
 
 export const projectAddUser = async ({ projectId, userId }) => {
@@ -71,8 +71,7 @@ export const projectRemoveUser = async ({ projectId, userId }) => {
   const users = project.usersId ?? [project.ownerId]
   if (!users.includes(userId)) throw Error('Cet utilisateur n\'est pas membre du projet')
   return await getProjectModel().update({
-    // usersId: sequelize.fn('array_append', sequelize.col('usersId'), userId),
-    // TODO : retirer le userId de l'array
+    usersId: sequelize.fn('array_remove', sequelize.col('usersId'), userId),
   }, {
     where: { id: projectId },
   })

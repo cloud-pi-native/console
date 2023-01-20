@@ -55,7 +55,7 @@ export const createProjectController = async (req, res) => {
     })
 
     try {
-      project = await projectCreated(project)
+      project = await projectCreated(project.id)
 
       req.log.info({
         ...getLogInfos({ projectId: project.id }),
