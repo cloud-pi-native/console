@@ -17,7 +17,7 @@ export const getOrganizationByName = async (name) => {
 // CREATE
 export const createOrganization = async ({ name, label }) => {
   const organization = await getOrganizationByName(name)
-  if (organization) throw Error('Cette organisation existe déjà')
+  if (organization) throw new Error('Cette organisation existe déjà')
   return await getOrganizationModel().create({ name, label })
 }
 

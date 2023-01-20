@@ -1,6 +1,6 @@
 import { createUser, getUserById } from '../src/models/users-queries.js'
 import { createOrganization } from './../src/models/organization-queries.js'
-import { projectInitializing, projectArchiving, projectCreated, projectFailed, projectAddUser, getProject, projectRemoveUser } from './../src/models/project-queries2.js'
+import { projectInitializing, projectArchiving, projectCreated, projectFailed, projectAddUser, getProject, projectRemoveUser } from './../src/models/project-queries.js'
 import { allOrganizations } from 'shared/src/utils/iterables.js'
 import { getEnvironment, environmentInitializing, environmentCreated, environmentFailed } from '../src/models/environment-queries.js'
 import { setPermission } from '../src/models/permission-queries.js'
@@ -28,18 +28,14 @@ export const initDb = async () => {
   await getUserById('cb8e5b4b-7b7b-40f5-935f-594f48ae6464')
 
   // Initialize projects
-  await projectInitializing({ name: 'test-projet', organization: 'dinum', ownerId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565' })
-  await projectInitializing({ name: 'failed-projet', organization: 'dinum', ownerId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565' })
-  await projectInitializing({ name: 'toto-projet', organization: 'dinum', ownerId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6464' })
-  console.log('initialized')
+  let projectTest = await projectInitializing({ name: 'test-projet', organization: 'dinum', ownerId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565' })
+  const projectToto = await projectInitializing({ name: 'toto-projet', organization: 'dinum', ownerId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6464' })
+  const projectFailing = await projectInitializing({ name: 'failed-projet', organization: 'dinum', ownerId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565' })
 
   // Update projects statuses
-  let projectTest = await getProject({ name: 'test-projet', organization: 'dinum' })
-  const projectToto = await getProject({ name: 'toto-projet', organization: 'dinum' })
-  const project0 = await getProject({ name: 'failed-projet', organization: 'dinum' })
   await projectCreated(projectTest.id)
   await projectCreated(projectToto.id)
-  await projectFailed(project0.id)
+  await projectFailed(projectFailing.id)
 
   // Add user to project
   await projectAddUser({ projectId: projectToto.id, userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565' })

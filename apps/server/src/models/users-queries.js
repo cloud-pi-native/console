@@ -24,7 +24,7 @@ export const getUserByEmail = async (email) => {
 // CREATE
 export const createUser = async ({ id, email, firstName, lastName }) => {
   const user = await getUserByEmail(email)
-  if (user) throw Error('Un utilisateur avec cette adresse e-mail existe déjà')
+  if (user) throw new Error('Un utilisateur avec cette adresse e-mail existe déjà')
   return await getUserModel().create({ id, email, firstName, lastName })
 }
 
@@ -32,8 +32,8 @@ export const createUser = async ({ id, email, firstName, lastName }) => {
 export const updateUserById = async ({ id, name, email, firstName, lastName }) => {
   const user = await getUserById(id)
   const isEmailAlreadyTaken = await getUserByEmail(email)
-  if (!user) throw Error('L\'utilisateur demandé n\'existe pas')
-  if (isEmailAlreadyTaken) throw Error('Un utilisateur avec cette adresse e-mail existe déjà')
+  if (!user) throw new Error('L\'utilisateur demandé n\'existe pas')
+  if (isEmailAlreadyTaken) throw new Error('Un utilisateur avec cette adresse e-mail existe déjà')
   if (user && !isEmailAlreadyTaken) {
     const res = await getUserModel().update({
       name,

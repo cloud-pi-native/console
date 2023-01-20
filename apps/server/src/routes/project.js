@@ -1,19 +1,23 @@
 import {
-  getUserProjectByIdController,
   getUserProjectsController,
+  getProjectByIdController,
   createProjectController,
-  addRepoController,
-  addUserController,
-  removeUserController,
+  projectAddUserController,
+  projectRemoveUserController,
+  projectArchivingController,
 } from '../controllers/project.js'
 
 const router = async (app, _opt) => {
-  await app.post('/', createProjectController)
-  await app.post('/:id/repos', addRepoController)
-  await app.post('/:id/users', addUserController)
+  // GET
   await app.get('/', getUserProjectsController)
-  await app.get('/:id', getUserProjectByIdController)
-  await app.delete('/:id/users', removeUserController)
+  await app.get('/:id', getProjectByIdController)
+  // POST
+  await app.post('/', createProjectController)
+  // PUT
+  await app.put('/:id/users', projectAddUserController)
+  // DELETE
+  await app.delete('/:id/users', projectRemoveUserController)
+  await app.delete('/:id', projectArchivingController)
 }
 
 export default router
