@@ -24,13 +24,13 @@ export const projects = [
     orgName: 'ministere-interieur',
     services: allServices,
     envList: [{
-      envName: 'dev',
+      name: 'dev',
       ro: [],
       rw: ['cb8e5b4b-7b7b-40f5-935f-594f48ae6565'],
       status: 'created',
     },
     {
-      envName: 'prod',
+      name: 'prod',
       ro: [],
       rw: ['cb8e5b4b-7b7b-40f5-935f-594f48ae6565'],
       status: 'created',
@@ -62,7 +62,7 @@ export const projects = [
     orgName: 'ministere-interieur',
     services: allServices,
     envList: [{
-      envName: 'dev',
+      name: 'dev',
       ro: [],
       rw: ['cb8e5b4b-7b7b-40f5-935f-594f48ae6565'],
       status: 'created',

@@ -154,6 +154,7 @@ export const environmentDeletingController = async (req, res) => {
     try {
       await deleteEnvironment(id)
       const permissions = await getEnvPermissions(id)
+      // TODO : cascading
       for (const permission of permissions) {
         await deletePermission(permission.id)
       }

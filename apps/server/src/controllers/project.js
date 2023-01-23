@@ -232,6 +232,7 @@ export const projectRemoveUserController = async (req, res) => {
     await projectLocked(projectId)
     await projectRemoveUser({ projectId, userId: userToRemove.id })
     const userPermissionsToDelete = await getUserPermissions(userToRemove.id)
+    // TODO : cascading
     for (const userPermission of userPermissionsToDelete) {
       const envId = userPermission.environmentId
       await getEnvironmentById(envId)

@@ -35,7 +35,7 @@ describe('RepoForm.vue', () => {
       },
     }
 
-    const project = createRandomProject()
+    const project = createRandomProject({})
     const projectStore = useProjectStore(pinia)
     projectStore.selectedProject = project
 

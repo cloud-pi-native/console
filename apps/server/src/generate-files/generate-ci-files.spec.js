@@ -45,7 +45,7 @@ describe.skip('ciFiles routes', () => {
   })
 
   it('Should generate files for a node project', async () => {
-    const randomProject = createRandomProject()
+    const randomProject = createRandomProject({})
     const ciData = {
       orgName: randomProject.orgName,
       projectName: randomProject.projectName,
@@ -70,7 +70,7 @@ describe.skip('ciFiles routes', () => {
   })
 
   it('Should generate files for a java project', async () => {
-    const randomProject = createRandomProject()
+    const randomProject = createRandomProject({})
     const ciData = {
       orgName: randomProject.orgName,
       projectName: randomProject.projectName,
@@ -94,7 +94,7 @@ describe.skip('ciFiles routes', () => {
   })
 
   it('Should generate files for a python project', async () => {
-    const randomProject = createRandomProject()
+    const randomProject = createRandomProject({})
     const ciData = {
       orgName: randomProject.orgName,
       projectName: randomProject.projectName,

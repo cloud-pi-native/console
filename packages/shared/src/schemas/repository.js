@@ -3,6 +3,10 @@ import { allStatus } from '../utils/iterables.js'
 
 // TODO : isInfra, isPrivate et status doivent être required, prévoir migration
 export const repoSchema = Joi.object({
+  id: Joi.string()
+    .uuid()
+    .required(),
+
   internalRepoName: Joi.string()
     .pattern(/^[a-zA-Z0-9-]+$/)
     .required(),
