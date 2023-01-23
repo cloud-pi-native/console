@@ -10,7 +10,6 @@ import {
   projectRemoveUser,
   projectArchiving,
 } from '../models/queries/project-queries.js'
-import { getProjectRepositories } from '../models/queries/repository-queries.js'
 import { getUserByEmail, getUserById } from '../models/queries/user-queries.js'
 import { deletePermission, getUserPermissions } from '../models/queries/permission-queries.js'
 import { getEnvironmentById } from '../models/queries/environment-queries.js'
@@ -25,22 +24,11 @@ export const getUserProjectsController = async (req, res) => {
 
   try {
     const projects = await getUserProjects(userId)
-    const projectsWithRepos = await Promise.all(projects.map(async (project) => {
-      const repos = await getProjectRepositories(project.id)
-      return {
-        ...project,
-        // TODO : #139 : migration de ces données pour ne plus avoir à gérer ça ?
-        projectName: project.name,
-        orgName: project.organization,
-        usersId: project.ownerId === userId ? project.usersId : [userId],
-        repos,
-      }
-    }))
     req.log.info({
       ...getLogInfos(),
       description: 'Projects successfully retreived',
     })
-    await send200(res, projectsWithRepos)
+    await send200(res, projects)
   } catch (error) {
     const message = 'Cannot retrieve projects'
     req.log.error({

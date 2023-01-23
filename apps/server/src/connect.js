@@ -46,7 +46,7 @@ export const getConnection = async (triesLeft = 5) => {
     if (isDev || isTest || isCI) {
       app.log.info(`Trying to connect to Postgres with: ${postgresUri}`)
     }
-    sequelize = new Sequelize(postgresUri)
+    sequelize = new Sequelize(postgresUri, { logging: false }) // TODO réactiver
     await sequelize.authenticate()
     app.log.info('Connected to Postgres!')
   } catch (error) {
@@ -82,28 +82,37 @@ export const synchroniseModels = async () => {
   await dropOrganizationsTable()
   try {
     const organizationModel = await getOrganizationModel()
-    await organizationModel.sync({ alter: true, logging: false })
-
     const userModel = await getUserModel()
-    await userModel.sync({ alter: true, logging: false })
-
     const projectModel = await getProjectModel()
-    projectModel.belongsTo(userModel, { foreignKey: 'ownerId' })
-    projectModel.belongsTo(organizationModel, { foreignKey: 'organization' })
-    await projectModel.sync({ alter: true, logging: false })
-
     const environmentModel = await getEnvironmentModel()
-    environmentModel.belongsTo(projectModel, { foreignKey: 'projectId' })
-    await environmentModel.sync({ alter: true, logging: false })
-
     const permissionModel = await getPermissionModel()
-    permissionModel.belongsTo(userModel, { foreignKey: 'userId' })
-    permissionModel.belongsTo(environmentModel, { foreignKey: 'environmentId' })
-    await permissionModel.sync({ alter: true, logging: false })
-
     const repositoryModel = await getRepositoryModel()
+
+    organizationModel.hasMany(projectModel, { foreignKey: 'organization' })
+    projectModel.belongsTo(organizationModel, { foreignKey: 'organization' })
+
+    userModel.hasMany(projectModel, { foreignKey: 'ownerId' })
+    projectModel.belongsTo(userModel, { foreignKey: 'ownerId' })
+
+    userModel.hasMany(permissionModel, { foreignKey: 'userId' })
+    permissionModel.belongsTo(userModel, { foreignKey: 'userId' })
+
+    projectModel.hasMany(repositoryModel, { foreignKey: 'projectId' })
     repositoryModel.belongsTo(projectModel, { foreignKey: 'projectId' })
+
+    projectModel.hasMany(environmentModel, { foreignKey: 'projectId' })
+    environmentModel.belongsTo(projectModel, { foreignKey: 'projectId' })
+
+    environmentModel.hasMany(permissionModel, { foreignKey: 'environmentId' })
+    permissionModel.belongsTo(environmentModel, { foreignKey: 'environmentId' })
+
+    await organizationModel.sync({ alter: true, logging: false })
+    await userModel.sync({ alter: true, logging: false })
+    await projectModel.sync({ alter: true, logging: false })
+    await environmentModel.sync({ alter: true, logging: false })
+    await permissionModel.sync({ alter: true, logging: false })
     await repositoryModel.sync({ alter: true, logging: false })
+
     app.log.info('All models were synchronized successfully.')
   } catch (error) {
     app.log.error('Models synchronisation with database failed.')

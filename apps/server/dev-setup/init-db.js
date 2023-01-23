@@ -29,16 +29,16 @@ export const initDb = async () => {
     lastName: 'com',
   })
   await createUser({
-    id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6464',
+    id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6567',
     email: 'toto@test.com',
     firstName: 'toto',
     lastName: 'com',
   })
-  await getUserById('cb8e5b4b-7b7b-40f5-935f-594f48ae6464')
+  await getUserById('cb8e5b4b-7b7b-40f5-935f-594f48ae6567')
 
   // Initialize projects
   let projectTest = await projectInitializing({ name: 'test-projet', organization: 'dinum', ownerId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565' })
-  const projectToto = await projectInitializing({ name: 'toto-projet', organization: 'dinum', ownerId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6464' })
+  const projectToto = await projectInitializing({ name: 'toto-projet', organization: 'dinum', ownerId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6567' })
   const projectFailing = await projectInitializing({ name: 'failed-projet', organization: 'dinum', ownerId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565' })
 
   // Update projects statuses
@@ -50,9 +50,9 @@ export const initDb = async () => {
   await projectAddUser({ projectId: projectToto.id, userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565' })
 
   // Remove user from a project
-  await projectAddUser({ projectId: projectTest.id, userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6464' })
+  await projectAddUser({ projectId: projectTest.id, userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6567' })
   projectTest = await getProject({ name: 'test-projet', organization: 'dinum' })
-  await projectRemoveUser({ projectId: projectTest.id, userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6464' })
+  await projectRemoveUser({ projectId: projectTest.id, userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6567' })
   projectTest = await getProject({ name: 'test-projet', organization: 'dinum' })
 
   // Create environments for a project
@@ -64,8 +64,8 @@ export const initDb = async () => {
   await environmentFailed(envProd.id)
 
   // Set permissions for a user on given environments
-  await setPermission({ userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565', envId: envStaging.id, level: 0 })
-  await setPermission({ userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565', envId: envProd.id, level: 10 })
+  await setPermission({ userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6567', envId: envStaging.id, level: 0 })
+  await setPermission({ userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6567', envId: envProd.id, level: 10 })
 
   // Create repositories for a project
   const repo0 = await repositoryInitializing({ projectId: projectToto.id, internalRepoName: 'candilib', externalRepoUrl: 'https://github.com/dnum-mi/candilib', externalUserName: 'test', externalToken: 'token', isInfra: false, isPrivate: true })

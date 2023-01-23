@@ -1,13 +1,8 @@
 import { faker } from '@faker-js/faker'
-import { repeatFn } from './func-utils.js'
 import {
   getRandomProjectName,
   getRandomProjectOrgName,
-  getRandomProjectServices,
-  getRandomRepo,
   getRandomUser,
-  getRandomEnvList,
-  getRandomUuid,
 } from './random-utils.js'
 import { allEnv, achievedStatus } from 'shared/src/utils/iterables.js'
 

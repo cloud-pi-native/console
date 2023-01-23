@@ -1,11 +1,24 @@
 import { Op } from 'sequelize'
 import { sequelize } from '../../connect.js'
 import { getUserModel } from '../user.js'
-import { getUniq } from '../../utils/queries-tools.js'
+import { allDataAttributes, getUniq } from '../../utils/queries-tools.js'
 
 // SELECT
 export const getUsers = async () => {
   return await getUserModel().findAll()
+}
+
+export const getUserInfos = async (id) => {
+  const usr = await getUserModel().findAll({
+    ...allDataAttributes,
+    where: { id },
+    include: {
+      all: true,
+      nested: true,
+      ...allDataAttributes,
+    },
+  })
+  return usr
 }
 
 export const getUserById = async (id) => {

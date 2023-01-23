@@ -1,17 +1,22 @@
 import { Op } from 'sequelize'
 import { sequelize } from '../../connect.js'
 import { getProjectModel } from '../project.js'
-import { getUniq } from '../../utils/queries-tools.js'
+import { allDataAttributes, getUniq } from '../../utils/queries-tools.js'
 
 // SELECT
 export const getUserProjects = async (userId) => {
   const res = await getProjectModel().findAll({
-    raw: true,
+    ...allDataAttributes,
     where: {
       [Op.or]: [
         { ownerId: userId },
         { usersId: { [Op.contains]: [userId] } },
       ],
+    },
+    include: {
+      all: true,
+      nested: true,
+      ...allDataAttributes,
     },
   })
   return res
