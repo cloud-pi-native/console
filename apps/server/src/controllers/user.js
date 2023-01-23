@@ -5,15 +5,15 @@ import { send200, send201, send500 } from '../utils/response.js'
 // GET
 export const getUsersController = async (req, res) => {
   try {
-  // TODO : #139 : besoin d'un contrôle ici (user session ?)
-    const organizations = await getUsers()
+  // TODO : besoin d'un contrôle ici (user session ?)
+    const users = await getUsers()
     req.log.info({
       ...getLogInfos(),
-      description: 'Organizations successfully retreived',
+      description: 'Users successfully retreived',
     })
-    await send200(res, organizations)
+    await send200(res, users)
   } catch (error) {
-    const message = 'Cannot retrieve organizations'
+    const message = 'Cannot retrieve users'
     req.log.error({
       ...getLogInfos(),
       description: message,

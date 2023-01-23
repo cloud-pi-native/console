@@ -12,7 +12,7 @@ const projectList = ref([])
 const setProjectList = (projects) => {
   projectList.value = projects?.map(project => ({
     id: project.id,
-    title: project.projectName,
+    title: project.name,
     to: `/projects/${project.id}/dashboard`,
   }))
 }
@@ -27,6 +27,7 @@ const goToCreateProject = () => {
 
 onMounted(async () => {
   await projectStore.getUserProjects()
+  console.log({ projects: projects.value })
 })
 
 watch(projects, (projects) => {

@@ -59,10 +59,10 @@ const setProjectServices = () => {
   projectServices.value = []
   if (!selectedProject.value) return
   allServices.value.forEach(service => {
-    if (selectedProject.value.services.includes(service.id)) {
-      service.to = service.to.concat(...serviceUrlTail(service.id))
-      projectServices.value.push(service)
-    }
+    // if (selectedProject.value.services.includes(service.id)) {
+    service.to = service.to.concat(...serviceUrlTail(service.id))
+    projectServices.value.push(service)
+    // }
   })
 }
 

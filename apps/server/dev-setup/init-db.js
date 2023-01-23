@@ -5,6 +5,15 @@ import { getEnvironment, environmentInitializing, environmentCreated, environmen
 import { setPermission } from '../src/models/queries/permission-queries.js'
 import { repositoryCreated, repositoryFailed, repositoryInitializing, repositoryDeleting, updateRepository, deleteRepository } from '../src/models/queries/repository-queries.js'
 import { allOrganizations } from 'shared/src/utils/iterables.js'
+// import setupProject from './create-project.js'
+// import setupUser from './create-user.js'
+
+// export const initDb = async () => {
+//   return Promise.all([
+//     setupUser(),
+//     setupProject(),
+//   ])
+// }
 
 export const initDb = async () => {
   // Create organizations
