@@ -78,7 +78,6 @@ export const environmentDeleting = async (id) => {
   })
 }
 
-// TODO : controller : suppression permissions associées
 export const deleteEnvironment = async (id) => {
   await sequelize.destroy({
     where: {

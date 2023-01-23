@@ -68,7 +68,6 @@ export const projectAddUser = async ({ projectId, userId }) => {
   })
 }
 
-// TODO : controller : suppression permissions associées
 export const projectRemoveUser = async ({ projectId, userId }) => {
   const project = await getProjectById(projectId)
   const users = project.usersId ?? [project.ownerId]
