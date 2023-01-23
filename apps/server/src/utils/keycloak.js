@@ -13,6 +13,7 @@ const userPayloadMapper = (userPayload) => ({
   email: userPayload.email,
   firstName: userPayload.given_name,
   lastName: userPayload.family_name,
+  groups: userPayload.groups,
 })
 
 export const keycloakConf = {
