@@ -26,25 +26,25 @@ export const generateCIFiles = async (req, res) => {
   }
 
   try {
-    const template = await fs.readFile(path.resolve('src/generateFile/templates/gitlab-ci.yml'))
+    const template = await fs.readFile(path.resolve('src/generate-ci-files/templates/gitlab-ci.yml'))
     const gitlab = Mustache.render(template.toString(), data)
     content.gitlab = gitlab
 
-    const rules = await fs.readFile(path.resolve('src/generateFile/templates/rules.yml'))
+    const rules = await fs.readFile(path.resolve('src/generate-ci-files/templates/rules.yml'))
     content.rules = Mustache.render(rules.toString())
-    const vault = await fs.readFile(path.resolve('src/generateFile/templates/vault.yml'))
+    const vault = await fs.readFile(path.resolve('src/generate-ci-files/templates/vault.yml'))
     content.vault = Mustache.render(vault.toString())
-    const docker = await fs.readFile(path.resolve('src/generateFile/templates/docker.yml'))
+    const docker = await fs.readFile(path.resolve('src/generate-ci-files/templates/docker.yml'))
     content.docker = Mustache.render(docker.toString())
 
     if (data.typeLanguage === 'python') {
-      const python = await fs.readFile(path.resolve('src/generateFile/templates/python.yml'))
+      const python = await fs.readFile(path.resolve('src/generate-ci-files/templates/python.yml'))
       content.python = Mustache.render(python.toString())
     } else if (data.typeLanguage === 'java') {
-      const java = await fs.readFile(path.resolve('src/generateFile/templates/java.yml'))
+      const java = await fs.readFile(path.resolve('src/generate-ci-files/templates/java.yml'))
       content.java = Mustache.render(java.toString())
     } else if (data.typeLanguage === 'node') {
-      const node = await fs.readFile(path.resolve('src/generateFile/templates/node.yml'))
+      const node = await fs.readFile(path.resolve('src/generate-ci-files/templates/node.yml'))
       content.node = Mustache.render(node.toString())
     }
 

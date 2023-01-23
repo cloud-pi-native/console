@@ -30,9 +30,9 @@ const mockSession = (app) => {
     .register(projectRouter)
 }
 
-const owner = {}
-const setOwner = (id) => {
-  owner.id = id
+let owner
+const setOwner = (givenOwner) => {
+  owner = givenOwner
 }
 
 const getOwner = () => {
@@ -69,7 +69,7 @@ describe('Project routes', () => {
       Project.$queueResult(randomProject)
       // third query : updateProjectStatus
       Project.$queueResult(randomProject)
-      setOwner(randomProject.ownerId)
+      setOwner(randomProject.owner)
 
       const response = await app.inject()
         .post('/')
@@ -77,14 +77,14 @@ describe('Project routes', () => {
         .end()
 
       randomProject.status = 'initializing'
-      // randomProject.owner.status = 'initializing'
+      randomProject.owner.status = 'initializing'
       expect(response.statusCode).toEqual(201)
       expect(response.json()).toBeDefined()
       expect(response.json()).toMatchObject(randomProject)
     })
 
     it('Should not create a project if payload is invalid', async () => {
-      const removedKey = 'organization'
+      const removedKey = 'orgName'
       const randomProject = createRandomProject()
       delete randomProject[removedKey]
 
@@ -102,7 +102,7 @@ describe('Project routes', () => {
       expect(response.body).toEqual(`"${removedKey}" is required`)
     })
 
-    it.skip('Should not create a project if projectName already exists', async () => {
+    it('Should not create a project if projectName already exists', async () => {
       const randomProject = createRandomProject()
 
       Project.$queueResult(true)
@@ -144,7 +144,7 @@ describe('Project routes', () => {
   })
 
   describe('addRepoController', () => {
-    it.skip('Should add a repo in project', async () => {
+    it('Should add a repo in project', async () => {
       const randomProject = { ...createRandomProject(), id: nanoid(), locked: false }
       const randomRepo = getRandomRepo()
 
@@ -168,7 +168,7 @@ describe('Project routes', () => {
       expect(response.body).toEqual('Git repository successfully added into project')
     })
 
-    it.skip('Should not add a repo if internalRepoName already present', async () => {
+    it('Should not add a repo if internalRepoName already present', async () => {
       const randomProject = { ...createRandomProject(), id: nanoid(), locked: false }
       const randomRepo = randomProject.repos[0]
 
@@ -188,7 +188,7 @@ describe('Project routes', () => {
       expect(response.body).toEqual(`Cannot add git repository into project: Git repo '${randomRepo.internalRepoName}' already exists in project`)
     })
 
-    it.skip('Should not add a repo if permission is missing', async () => {
+    it('Should not add a repo if permission is missing', async () => {
       const randomProject = createRandomProject()
 
       sequelize.$queueResult(null)
@@ -206,7 +206,7 @@ describe('Project routes', () => {
   })
 
   describe('addUserController', () => {
-    it.skip('Should add an user in project', async () => {
+    it('Should add an user in project', async () => {
       const randomProject = { ...createRandomProject(), id: nanoid(), locked: false }
       const randomUser = getRandomUser()
 
@@ -230,7 +230,7 @@ describe('Project routes', () => {
       expect(response.body).toEqual('User successfully added into project')
     })
 
-    it.skip('Should not add an user if email already present', async () => {
+    it('Should not add an user if email already present', async () => {
       const randomProject = { ...createRandomProject(), id: nanoid(), locked: false }
       const randomUser = randomProject.users[0]
 
@@ -250,7 +250,7 @@ describe('Project routes', () => {
       expect(response.body).toEqual(`Cannot add user into project: User with email '${randomUser.email}' already member of project`)
     })
 
-    it.skip('Should not add an user if permission is missing', async () => {
+    it('Should not add an user if permission is missing', async () => {
       const randomProject = createRandomProject()
       const randomUser = getRandomUser()
 
@@ -267,7 +267,7 @@ describe('Project routes', () => {
   })
 
   describe('removeUserController', () => {
-    it.skip('Should remove an user in project', async () => {
+    it('Should remove an user in project', async () => {
       const randomProject = { ...createRandomProject(), id: nanoid(), locked: false }
       const randomUser = getRandomUser()
 
@@ -283,7 +283,7 @@ describe('Project routes', () => {
       expect(response.statusCode).toEqual(200)
     })
 
-    it.skip('Should not remove an user if permission is missing', async () => {
+    it('Should not remove an user if permission is missing', async () => {
       const randomProject = { ...createRandomProject(), id: nanoid(), locked: false }
       const randomUser = getRandomUser()
 
@@ -301,7 +301,7 @@ describe('Project routes', () => {
   })
 
   describe('getUserProjectsController', () => {
-    it.skip('Should get list of a user\'s projects', async () => {
+    it('Should get list of a user\'s projects', async () => {
       const randomProjects = repeatFn(3)(createRandomProject)
 
       sequelize.$queueResult(randomProjects.map(randomProject => ({ data: randomProject })))
@@ -319,7 +319,7 @@ describe('Project routes', () => {
       })
     })
 
-    it.skip('Should return an error while get list of projects', async () => {
+    it('Should return an error while get list of projects', async () => {
       sequelize.$queueFailure('error message')
 
       const response = await app.inject()
@@ -334,7 +334,7 @@ describe('Project routes', () => {
   })
 
   describe('getUserProjectByIdController', () => {
-    it.skip('Should get a project by id', async () => {
+    it('Should get a project by id', async () => {
       const randomProject = createRandomProject()
 
       sequelize.$queueResult({ data: randomProject })
@@ -349,7 +349,7 @@ describe('Project routes', () => {
       expect(response.json()).toMatchObject(randomProject)
     })
 
-    it.skip('Should not get a project when id is invalid', async () => {
+    it('Should not get a project when id is invalid', async () => {
       sequelize.$queueFailure('error message')
 
       const response = await app.inject()

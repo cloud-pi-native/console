@@ -1,16 +1,12 @@
-import {
-  getUser,
-  createUser,
-} from '../models/users-queries.js'
+import { getUsers, createUser } from '../models/queries/user-queries.js'
 import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
 
 // GET
-
 export const getUsersController = async (req, res) => {
   try {
   // TODO : besoin d'un contrôle ici (user session ?)
-    const organizations = await getUser()
+    const organizations = await getUsers()
     req.log.info({
       ...getLogInfos(),
       description: 'Organizations successfully retreived',

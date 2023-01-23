@@ -1,7 +1,7 @@
 import { Op } from 'sequelize'
-import { sequelize } from '../connect.js'
-import { getProjectModel } from './models.js'
-import { getUniq } from '../utils/queries-tools.js'
+import { sequelize } from '../../connect.js'
+import { getProjectModel } from '../project.js'
+import { getUniq } from '../../utils/queries-tools.js'
 
 // SELECT
 export const getUserProjects = async (userId) => {
@@ -36,8 +36,7 @@ export const getProject = async ({ name, organization }) => {
 export const projectInitializing = async ({ name, organization, ownerId }) => {
   const project = await getProject({ name, organization })
   if (project) throw new Error('Un projet avec le nom et dans l\'organisation demandés existe déjà')
-  const res = await getProjectModel().create({ name, organization, usersId: [ownerId], status: 'initializing', locked: true, ownerId })
-  return res
+  return await getProjectModel().create({ name, organization, usersId: [ownerId], status: 'initializing', locked: true, ownerId })
 }
 
 // UPDATE

@@ -7,14 +7,13 @@ import {
   environmentFailed,
   environmentDeleting,
   deleteEnvironment,
-} from '../models/environment-queries.js'
-import { deletePermission, getEnvPermissions, setPermission } from '../models/permission-queries.js'
-import { getProjectById, projectLocked, projectUnlocked } from '../models/project-queries.js'
+} from '../models/queries/environment-queries.js'
+import { deletePermission, getEnvPermissions, setPermission } from '../models/queries/permission-queries.js'
+import { getProjectById, projectLocked, projectUnlocked } from '../models/queries/project-queries.js'
 import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
 
 // GET
-
 export const getEnvironmentByIdController = async (req, res) => {
   const id = req.params.id
   const userId = req.session?.user?.id
@@ -42,7 +41,6 @@ export const getEnvironmentByIdController = async (req, res) => {
 }
 
 // POST
-
 export const environmentInitializingController = async (req, res) => {
   const data = req.body
   const userId = req.session?.user.id
@@ -123,7 +121,6 @@ export const environmentInitializingController = async (req, res) => {
 }
 
 // DELETE
-
 export const environmentDeletingController = async (req, res) => {
   const id = req.params.id
   const userId = req.session?.user.id

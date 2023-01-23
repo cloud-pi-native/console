@@ -1,6 +1,7 @@
-import { sequelize } from '../connect.js'
-import { getEnvironmentModel, getProjectModel } from './models.js'
-import { getUniq } from '../utils/queries-tools.js'
+import { sequelize } from '../../connect.js'
+import { getEnvironmentModel } from '../environment.js'
+import { getProjectModel } from '../project.js'
+import { getUniq } from '../../utils/queries-tools.js'
 import { getProjectById } from './project-queries.js'
 
 // SELECT

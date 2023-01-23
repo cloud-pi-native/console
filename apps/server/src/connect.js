@@ -11,20 +11,18 @@ import {
   dbName,
   dbPass,
 } from './utils/env.js'
-import {
-  getOrganizationModel,
-  getUserModel,
-  getProjectModel,
-  getEnvironmentModel,
-  getPermissionModel,
-  getRepositoryModel,
-} from './models/models.js'
-import { dropPermissionsTable } from './models/permission-queries.js'
-import { dropEnvironmentsTable } from './models/environment-queries.js'
-import { dropRepositoriesTable } from './models/repository-queries.js'
-import { dropProjectsTable } from './models/project-queries.js'
-import { dropUsersTable } from './models/users-queries.js'
-import { dropOrganizationsTable } from './models/organization-queries.js'
+import { getOrganizationModel } from './models/organization.js'
+import { getUserModel } from './models/user.js'
+import { getProjectModel } from './models/project.js'
+import { getEnvironmentModel } from './models/environment.js'
+import { getPermissionModel } from './models/permission.js'
+import { getRepositoryModel } from './models/repository.js'
+import { dropPermissionsTable } from './models/queries/permission-queries.js'
+import { dropEnvironmentsTable } from './models/queries/environment-queries.js'
+import { dropRepositoriesTable } from './models/queries/repository-queries.js'
+import { dropProjectsTable } from './models/queries/project-queries.js'
+import { dropUsersTable } from './models/queries/user-queries.js'
+import { dropOrganizationsTable } from './models/queries/organization-queries.js'
 
 const DELAY_BEFORE_RETRY = isTest || isCI ? 1000 : 10000
 let closingConnections = false

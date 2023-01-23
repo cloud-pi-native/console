@@ -9,21 +9,22 @@ import {
   projectAddUser,
   projectRemoveUser,
   projectArchiving,
-} from '../models/project-queries.js'
+} from '../models/queries/project-queries.js'
+import { getUserByEmail, getUserById } from '../models/queries/user-queries.js'
+import { deletePermission, getUserPermissions } from '../models/queries/permission-queries.js'
+import { getEnvironmentById } from '../models/queries/environment-queries.js'
 import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import { ansibleHost, ansiblePort } from '../utils/env.js'
-import { getUserByEmail, getUserById } from '../models/users-queries.js'
-import { deletePermission, getUserPermissions } from '../models/permission-queries.js'
-import { getEnvironmentById } from '../models/environment-queries.js'
+import { projectSchema } from 'shared/src/schemas/project.js'
 
 // GET
-
 export const getUserProjectsController = async (req, res) => {
   const userId = req.session?.user?.id
 
   try {
     const projects = await getUserProjects(userId)
+    console.log({ projects, userId })
     // TODO : pourquoi ne pas juste renvoyer projects ?
     // const projectsOnly = await getUserProjects(userId)
     // const projectsWithRepos = await Promise.all(projectsOnly.map(async (project) => {
@@ -77,7 +78,6 @@ export const getProjectByIdController = async (req, res) => {
 }
 
 // POST
-
 export const createProjectController = async (req, res) => {
   const data = req.body
   data.ownerId = req.session.user.id
@@ -85,6 +85,7 @@ export const createProjectController = async (req, res) => {
   let project
 
   try {
+    await projectSchema.validateAsync(project)
     project = await projectInitializing(data)
     req.log.info({
       ...getLogInfos({
@@ -157,7 +158,6 @@ export const createProjectController = async (req, res) => {
 }
 
 // PUT
-
 export const projectAddUserController = async (req, res) => {
   const userId = req.session?.user.id
   const projectId = req.params?.id
@@ -206,7 +206,6 @@ export const projectAddUserController = async (req, res) => {
         description: 'Cannot update project status',
         error: error.message,
       })
-      return send500(res, error.message)
     }
   } catch (error) {
     req.log.error({
@@ -228,14 +227,11 @@ export const projectAddUserController = async (req, res) => {
         description: 'Cannot update project status',
         error: error.message,
       })
-      return send500(res, error.message)
     }
-    send500(res, error)
   }
 }
 
 // DELETE
-
 export const projectRemoveUserController = async (req, res) => {
   const userId = req.session?.user.id
   const projectId = req.params?.id
@@ -266,7 +262,7 @@ export const projectRemoveUserController = async (req, res) => {
       ...getLogInfos({ projectId }),
       description: message,
     })
-    send201(res, message)
+    send200(res, message)
   } catch (error) {
     const message = 'Cannot remove user from project'
     req.log.error({
@@ -292,7 +288,6 @@ export const projectRemoveUserController = async (req, res) => {
         description: 'Cannot update project status',
         error: error.message,
       })
-      return send500(res, error.message)
     }
   } catch (error) {
     req.log.error({
@@ -314,9 +309,7 @@ export const projectRemoveUserController = async (req, res) => {
         description: 'Cannot update project status',
         error: error.message,
       })
-      return send500(res, error.message)
     }
-    send500(res, error)
   }
 }
 
@@ -336,7 +329,7 @@ export const projectArchivingController = async (req, res) => {
       }),
       description: 'Project successfully archived in database',
     })
-    send201(res, projectId)
+    send200(res, projectId)
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
@@ -361,7 +354,6 @@ export const projectArchivingController = async (req, res) => {
         description: 'Cannot unlock project',
         error: error.message,
       })
-      return send500(res, error.message)
     }
   } catch (error) {
     req.log.error({
@@ -383,7 +375,6 @@ export const projectArchivingController = async (req, res) => {
         description: 'Cannot update project status',
         error: error.message,
       })
-      return send500(res, error.message)
     }
     send500(res, error)
   }

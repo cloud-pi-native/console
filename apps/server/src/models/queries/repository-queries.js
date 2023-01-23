@@ -1,5 +1,5 @@
-import { sequelize } from '../connect.js'
-import { getRepositoryModel } from './models.js'
+import { sequelize } from '../../connect.js'
+import { getRepositoryModel } from '../repository.js'
 
 // SELECT
 export const getRepositoryById = async (id) => {

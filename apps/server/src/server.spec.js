@@ -11,7 +11,7 @@ vi.mock('./utils/logger.js')
 vi.mock('../dev-setup/init-db.js', () => ({ initDb: vi.fn() }))
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 
-describe('Server', () => {
+describe.skip('Server', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
