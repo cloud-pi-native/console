@@ -1,8 +1,9 @@
-import { sequelize } from '../connect.js'
-import { getPermissionModel, getEnvironmentModel, getUserModel } from './models.js'
+import { sequelize } from '../../connect.js'
+import { getPermissionModel } from '../permission.js'
+import { getEnvironmentModel } from '../environment.js'
+import { getUserModel } from '../user.js'
 
 // GET
-
 export const getEnvPermissions = async (envId) => {
   return getPermissionModel().findAll({
     environmentId: envId,

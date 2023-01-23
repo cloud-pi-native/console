@@ -4,6 +4,7 @@ import { allStatus } from '../utils/iterables.js'
 // TODO : status doit être required, prévoir migration
 export const userSchema = Joi.object({
   id: Joi.string()
+    .uuid()
     .required(),
 
   email: Joi.string()

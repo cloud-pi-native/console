@@ -7,13 +7,15 @@ import {
   updateRepository,
   repositoryDeleting,
   deleteRepository,
-} from '../models/repository-queries.js'
+} from '../models/queries/repository-queries.js'
 import {
-  getProjectById, projectLocked, projectUnlocked,
-} from '../models/project-queries.js'
+  getProjectById,
+  projectLocked,
+  projectUnlocked,
+} from '../models/queries/project-queries.js'
+import { getUserById } from '../models/queries/user-queries.js'
 import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
-import { getUserById } from '../models/users-queries.js'
 import { ansibleHost, ansiblePort } from '../utils/env.js'
 
 // GET

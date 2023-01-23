@@ -47,8 +47,7 @@ const createProject = async () => {
   if (Object.keys(errorSchema).length === 0) {
     await projectStore.createProject(project.value)
     router.push('/projects')
-  }
-  else {
+  } else {
     console.log('invalid', errorSchema) // réparer la gestion d'erreur
   }
 }

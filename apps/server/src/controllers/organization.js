@@ -1,12 +1,11 @@
 import {
   getOrganizations,
   createOrganization,
-} from '../models/organization-queries.js'
+} from '../models/queries/organization-queries.js'
 import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
 
 // GET
-
 export const getOrganizationsController = async (req, res) => {
   try {
     // TODO : besoin d'un contrôle ici (user session ?)
@@ -28,7 +27,6 @@ export const getOrganizationsController = async (req, res) => {
 }
 
 // POST
-
 export const createOrganizationController = async (req, res) => {
   const data = req.body
 

@@ -6,7 +6,7 @@ export const getRandomUuid = () => {
 }
 
 export const getRandomProjectOrgName = () => {
-  return faker.helpers.arrayElement(allOrganizations)
+  return faker.helpers.arrayElement(allOrganizations.map(({ name }) => name))
 }
 
 export const getRandomProjectName = () => {

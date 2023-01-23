@@ -1,7 +1,7 @@
 import { Op } from 'sequelize'
-import { sequelize } from '../connect.js'
-import { getUserModel } from './models.js'
-import { getUniq } from '../utils/queries-tools.js'
+import { sequelize } from '../../connect.js'
+import { getUserModel } from '../user.js'
+import { getUniq } from '../../utils/queries-tools.js'
 
 // SELECT
 export const getUsers = async () => {

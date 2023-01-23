@@ -1,10 +1,10 @@
-import { createUser, getUserById } from '../src/models/users-queries.js'
-import { createOrganization } from './../src/models/organization-queries.js'
-import { projectInitializing, projectArchiving, projectCreated, projectFailed, projectAddUser, getProject, projectRemoveUser } from './../src/models/project-queries.js'
+import { createUser, getUserById } from '../src/models/queries/user-queries.js'
+import { createOrganization } from '../src/models/queries/organization-queries.js'
+import { projectInitializing, projectArchiving, projectCreated, projectFailed, projectAddUser, getProject, projectRemoveUser } from '../src/models/queries/project-queries.js'
+import { getEnvironment, environmentInitializing, environmentCreated, environmentFailed } from '../src/models/queries/environment-queries.js'
+import { setPermission } from '../src/models/queries/permission-queries.js'
+import { repositoryCreated, repositoryFailed, repositoryInitializing, repositoryDeleting, updateRepository, deleteRepository } from '../src/models/queries/repository-queries.js'
 import { allOrganizations } from 'shared/src/utils/iterables.js'
-import { getEnvironment, environmentInitializing, environmentCreated, environmentFailed } from '../src/models/environment-queries.js'
-import { setPermission } from '../src/models/permission-queries.js'
-import { repositoryCreated, repositoryFailed, repositoryInitializing, repositoryDeleting, updateRepository, deleteRepository } from '../src/models/repository-queries.js'
 
 export const initDb = async () => {
   // Create organizations
