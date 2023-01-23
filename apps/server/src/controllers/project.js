@@ -29,7 +29,7 @@ export const getUserProjectsController = async (req, res) => {
       const repos = await getProjectRepositories(project.id)
       return {
         ...project,
-        // TODO : migration de ces données pour ne plus avoir à gérer ça ?
+        // TODO : #139 : migration de ces données pour ne plus avoir à gérer ça ?
         projectName: project.name,
         orgName: project.organization,
         usersId: project.ownerId === userId ? project.usersId : [userId],
@@ -170,7 +170,7 @@ export const projectAddUserController = async (req, res) => {
     if (!project.usersId.includes(userId) && project.ownerId !== userId) throw new Error('Requestor is not member of the project')
 
     const userToAdd = await getUserByEmail(data.email)
-    // TODO : user status initializing ?
+    // TODO : #139 : user status initializing ?
     await projectLocked(projectId)
     await projectAddUser({ projectId, userId: userToAdd.id })
 
@@ -192,7 +192,7 @@ export const projectAddUserController = async (req, res) => {
   try {
     // TODO : US #132 appel ansible
     try {
-      // TODO : user status created ?
+      // TODO : #139 : user status created ?
       await projectUnlocked(projectId)
 
       req.log.info({
@@ -213,7 +213,7 @@ export const projectAddUserController = async (req, res) => {
       error,
     })
     try {
-      // TODO : user status failed ?
+      // TODO : #139 : user status failed ?
       await projectUnlocked(projectId)
 
       req.log.info({
@@ -244,7 +244,7 @@ export const projectRemoveUserController = async (req, res) => {
     if (!project.usersId.includes(userId) && project.ownerId !== userId) throw new Error('Requestor is not member of the project')
 
     const userToRemove = await getUserByEmail(data.email)
-    // TODO : user status initializing ?
+    // TODO : #139 : user status initializing ?
     await projectLocked(projectId)
     await projectRemoveUser({ projectId, userId: userToRemove.id })
     const userPermissionsToDelete = await getUserPermissions(userToRemove.id)
@@ -274,7 +274,7 @@ export const projectRemoveUserController = async (req, res) => {
   try {
     // TODO : US #132 appel ansible
     try {
-      // TODO : user status deleting ?
+      // TODO : #139 : user status deleting ?
       await projectUnlocked(projectId)
 
       req.log.info({
@@ -295,7 +295,7 @@ export const projectRemoveUserController = async (req, res) => {
       error,
     })
     try {
-      // TODO : user status failed ?
+      // TODO : #139 : user status failed ?
       await projectUnlocked(projectId)
 
       req.log.info({

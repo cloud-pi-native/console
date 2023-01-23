@@ -40,4 +40,4 @@ spec:
       volumes:
         - name: db-storage
           persistentVolumeClaim:
-            claimName: dso-db-storage # TODO
+            claimName: dso-db-storage # TODO : #139

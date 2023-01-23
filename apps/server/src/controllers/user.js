@@ -5,7 +5,7 @@ import { send200, send201, send500 } from '../utils/response.js'
 // GET
 export const getUsersController = async (req, res) => {
   try {
-  // TODO : besoin d'un contrôle ici (user session ?)
+  // TODO : #139 : besoin d'un contrôle ici (user session ?)
     const organizations = await getUsers()
     req.log.info({
       ...getLogInfos(),
@@ -28,7 +28,7 @@ export const createUserController = async (req, res) => {
   const data = req.body
 
   try {
-    // TODO : ce controller sera-t-il utilisé (tous les users viennent de Keycloak) ?
+    // TODO : #139 : ce controller sera-t-il utilisé (tous les users viennent de Keycloak) ?
     const user = await createUser(data)
     req.log.info({
       ...getLogInfos({

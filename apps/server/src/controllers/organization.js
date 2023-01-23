@@ -8,7 +8,7 @@ import { send200, send201, send500 } from '../utils/response.js'
 // GET
 export const getOrganizationsController = async (req, res) => {
   try {
-    // TODO : besoin d'un contrôle ici (user session ?)
+    // TODO : #139 : besoin d'un contrôle ici (user session ?)
     const organizations = await getOrganizations()
     req.log.info({
       ...getLogInfos(),
@@ -31,7 +31,7 @@ export const createOrganizationController = async (req, res) => {
   const data = req.body
 
   try {
-    // TODO : besoin d'un contrôle ici (user session ?)
+    // TODO : #139 : besoin d'un contrôle ici (user session ?)
     const organization = await createOrganization(data)
     req.log.info({
       ...getLogInfos({

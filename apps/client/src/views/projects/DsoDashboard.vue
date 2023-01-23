@@ -3,7 +3,7 @@
 import DsoSelectedProject from './DsoSelectedProject.vue'
 
 // const projectStore = useProjectStore()
-// TODO : avoir le status à jour en permanence
+// TODO : #140 : avoir le status à jour en permanence
 </script>
 
 <template>

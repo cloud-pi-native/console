@@ -50,7 +50,7 @@ const setRows = () => {
 }
 
 const addUserToProject = async () => {
-  // TODO : récupérer données keycloak de l'utilisateur via son e-mail ?
+  // TODO : #66 : récupérer données keycloak de l'utilisateur via son e-mail ?
   newUser.value.id = 'xxxxxx'
   newUser.value.firstName = newUser.value.email.split('.')[0]
   newUser.value.lastName = newUser.value.email.split('.')[1].split('@')[0]
