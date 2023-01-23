@@ -1,34 +1,33 @@
-import { getUsers, createUser } from '../models/queries/user-queries.js'
+import { createUser } from '../models/queries/user-queries.js'
 import { getLogInfos } from '../utils/logger.js'
-import { send200, send201, send500 } from '../utils/response.js'
+import { send201, send500 } from '../utils/response.js'
 
 // GET
-export const getUsersController = async (req, res) => {
-  try {
-  // TODO : besoin d'un contrôle ici (user session ?)
-    const users = await getUsers()
-    req.log.info({
-      ...getLogInfos(),
-      description: 'Users successfully retreived',
-    })
-    await send200(res, users)
-  } catch (error) {
-    const message = 'Cannot retrieve users'
-    req.log.error({
-      ...getLogInfos(),
-      description: message,
-      error: error.message,
-    })
-    send500(res, message)
-  }
-}
+// TODO : conditionner possibilité de récupérer touts les utilisateurs selon les droits de l'utilisateur
+// export const getUsersController = async (req, res) => {
+//   try {
+//     const users = await getUsers()
+//     req.log.info({
+//       ...getLogInfos(),
+//       description: 'Users successfully retreived',
+//     })
+//     await send200(res, users)
+//   } catch (error) {
+//     const message = 'Cannot retrieve users'
+//     req.log.error({
+//       ...getLogInfos(),
+//       description: message,
+//       error: error.message,
+//     })
+//     send500(res, message)
+//   }
+// }
 
 // CREATE
 export const createUserController = async (req, res) => {
   const data = req.body
 
   try {
-    // TODO : #139 : ce controller sera-t-il utilisé (tous les users viennent de Keycloak) ?
     const user = await createUser(data)
     req.log.info({
       ...getLogInfos({

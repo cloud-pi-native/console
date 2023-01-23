@@ -2,7 +2,6 @@ import Joi from 'joi'
 import { allOrganizations, projectStatus } from '../utils/iterables.js'
 
 // TODO : status et locked doivent être required, prévoir migration
-// TODO : #139 : vérifier que le schéma est toujours bon pour tous ceux qui l'utilisent
 export const projectSchema = Joi.object({
   id: Joi.string()
     .uuid()

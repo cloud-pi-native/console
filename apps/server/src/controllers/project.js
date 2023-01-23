@@ -158,7 +158,6 @@ export const projectAddUserController = async (req, res) => {
     if (!project.usersId.includes(userId) && project.ownerId !== userId) throw new Error('Requestor is not member of the project')
 
     const userToAdd = await getUserByEmail(data.email)
-    // TODO : #139 : user status initializing ?
     await projectLocked(projectId)
     await projectAddUser({ projectId, userId: userToAdd.id })
 
@@ -180,7 +179,6 @@ export const projectAddUserController = async (req, res) => {
   try {
     // TODO : US #132 appel ansible
     try {
-      // TODO : #139 : user status created ?
       await projectUnlocked(projectId)
 
       req.log.info({
@@ -201,7 +199,6 @@ export const projectAddUserController = async (req, res) => {
       error,
     })
     try {
-      // TODO : #139 : user status failed ?
       await projectUnlocked(projectId)
 
       req.log.info({
@@ -232,7 +229,6 @@ export const projectRemoveUserController = async (req, res) => {
     if (!project.usersId.includes(userId) && project.ownerId !== userId) throw new Error('Requestor is not member of the project')
 
     const userToRemove = await getUserByEmail(data.email)
-    // TODO : #139 : user status initializing ?
     await projectLocked(projectId)
     await projectRemoveUser({ projectId, userId: userToRemove.id })
     const userPermissionsToDelete = await getUserPermissions(userToRemove.id)
@@ -262,7 +258,6 @@ export const projectRemoveUserController = async (req, res) => {
   try {
     // TODO : US #132 appel ansible
     try {
-      // TODO : #139 : user status deleting ?
       await projectUnlocked(projectId)
 
       req.log.info({
@@ -283,7 +278,6 @@ export const projectRemoveUserController = async (req, res) => {
       error,
     })
     try {
-      // TODO : #139 : user status failed ?
       await projectUnlocked(projectId)
 
       req.log.info({
