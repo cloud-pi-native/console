@@ -1,3 +1,4 @@
+import app from '../app.js'
 import {
   keycloakProtocol,
   keycloakDomain,
@@ -8,13 +9,22 @@ import {
   port,
 } from './env.js'
 
-const userPayloadMapper = (userPayload) => ({
-  id: userPayload.sub,
-  email: userPayload.email,
-  firstName: userPayload.given_name,
-  lastName: userPayload.family_name,
-  groups: userPayload.groups,
-})
+const userPayloadMapper = (userPayload) => {
+  const payload = {
+    id: userPayload.sub,
+    email: userPayload.email,
+    firstName: userPayload.given_name,
+    lastName: userPayload.family_name,
+  }
+  if (!userPayload.groups) {
+    app.log.error('Le user payload de keycloak n\'envoie pas groups')
+    return payload
+  }
+  return {
+    ...payload,
+    groups: userPayload.groups,
+  }
+}
 
 export const keycloakConf = {
   appOrigin: `http://localhost:${port}`,
