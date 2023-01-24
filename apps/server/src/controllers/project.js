@@ -21,6 +21,7 @@ export const createProjectController = async (req, res) => {
   data.locked = true
   data.owner = req.session.user
   data.owner.status = 'initializing'
+  delete data.owner.groups
 
   let project
   try {
@@ -35,7 +36,7 @@ export const createProjectController = async (req, res) => {
     req.log.error({
       ...getLogInfos(),
       description: 'Cannot create project',
-      error,
+      error: error.message,
     })
     return send500(res, error.message)
   }
