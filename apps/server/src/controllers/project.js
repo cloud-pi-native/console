@@ -1,5 +1,6 @@
 import {
   getUserProjects,
+  getProject,
   projectInitializing,
   projectCreated,
   projectFailed,
@@ -75,6 +76,10 @@ export const createProjectController = async (req, res) => {
 
   try {
     await projectSchema.validateAsync(data)
+
+    project = await getProject({ name: data.name, organization: data.organization })
+    if (project) throw new Error('Un projet avec le nom et dans l\'organisation demandés existe déjà')
+
     project = await projectInitializing(data)
     req.log.info({
       ...getLogInfos({
@@ -152,8 +157,6 @@ export const projectAddUserController = async (req, res) => {
   const projectId = req.params?.id
   const data = req.body
 
-  console.log({ data, projectId, userId })
-
   let project
   try {
     project = await getProjectById(projectId)
@@ -177,7 +180,6 @@ export const projectAddUserController = async (req, res) => {
     send201(res, message)
   } catch (error) {
     const message = `Cannot add user into project: ${error.message}`
-    console.log(error)
     req.log.error({
       ...getLogInfos(),
       error: error.message,

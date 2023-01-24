@@ -67,11 +67,13 @@ describe('Project routes', () => {
       delete randomDbSetup.project.id
 
       // first query : checkUniqueProject
-      Project.$queueResult(null)
+      sequelize.$queueResult(null)
       // second query : createProject
       Project.$queueResult(randomDbSetup.project)
-      // third query : updateProjectStatus
-      Project.$queueResult(randomDbSetup.project)
+      // third query : getUserById
+      User.$queueResult(randomDbSetup.owner)
+      // fourth query : updateProjectStatus
+      sequelize.$queueResult([1])
       setOwnerId(randomDbSetup.owner.id)
 
       const response = await app.inject()
@@ -91,9 +93,7 @@ describe('Project routes', () => {
       const randomDbSetup = createRandomDbSetup({})
       delete randomDbSetup.project[removedKey]
 
-      Project.$queueResult(null)
-      Project.$queueResult(randomDbSetup.project)
-      Project.$queueResult(randomDbSetup.project)
+      sequelize.$queueResult(null)
 
       const response = await app.inject()
         .post('/')
@@ -109,9 +109,7 @@ describe('Project routes', () => {
       const randomDbSetup = createRandomDbSetup({})
 
       // TODO : envoie de true pour la requête getProject(name, org) ne semble pas fonctionner
-      Project.$queueResult(true)
-      Project.$queueResult(randomDbSetup.project)
-      Project.$queueResult(randomDbSetup.project)
+      sequelize.$queueResult(true)
       setOwnerId(randomDbSetup.owner.id)
 
       const response = await app.inject()
@@ -146,68 +144,6 @@ describe('Project routes', () => {
       expect(response.body).toEqual(ansibleError)
     })
   })
-
-  // describe('addRepoController', () => {
-  //   it.skip('Should add a repo in project', async () => {
-  //     const randomDbSetup = createRandomDbSetup({})
-  //     const randomRepo = randomDbSetup.repositories[0]
-
-  //     // first query : getUserProjectById
-  //     sequelize.$queueResult({ data: randomDbSetup })
-  //     // second query : addRepo
-  //     Project.$queueResult([1])
-  //     // third query : getUserProjectById
-  //     sequelize.$queueResult({ data: randomDbSetup })
-  //     // fourth query : updateProjectStatus
-  //     Project.$queueResult([1])
-  //     setOwnerId(randomDbSetup.owner)
-
-  //     const response = await app.inject()
-  //       .post(`/${randomDbSetup.id}/repos`)
-  //       .body(randomRepo)
-  //       .end()
-
-  //     expect(response.statusCode).toEqual(201)
-  //     expect(response.body).toBeDefined()
-  //     expect(response.body).toEqual('Git repository successfully added into project')
-  //   })
-
-  //   it.skip('Should not add a repo if internalRepoName already present', async () => {
-  //     const randomDbSetup = { ...createRandomDbSetup({}), id: nanoid(), locked: false }
-  //     const randomRepo = randomDbSetup.repos[0]
-
-  //     sequelize.$queueResult({ data: randomDbSetup })
-  //     Project.$queueResult([1])
-  //     sequelize.$queueResult({ data: randomDbSetup })
-  //     Project.$queueResult([1])
-  //     setOwnerId(randomDbSetup.owner)
-
-  //     const response = await app.inject()
-  //       .post(`/${randomDbSetup.id}/repos`)
-  //       .body(randomRepo)
-  //       .end()
-
-  //     expect(response.statusCode).toEqual(500)
-  //     expect(response.body).toBeDefined()
-  //     expect(response.body).toEqual(`Cannot add git repository into project: Git repo '${randomRepo.internalRepoName}' already exists in project`)
-  //   })
-
-  //   it.skip('Should not add a repo if permission is missing', async () => {
-  //     const randomDbSetup = createRandomDbSetup({})
-
-  //     sequelize.$queueResult(null)
-  //     setOwnerId(randomDbSetup.owner)
-
-  //     const response = await app.inject()
-  //       .post(`/${randomDbSetup.id}/repos`)
-  //       .body(randomDbSetup)
-  //       .end()
-
-  //     expect(response.statusCode).toEqual(500)
-  //     expect(response.body).toBeDefined()
-  //     expect(response.body).toEqual('Missing permissions on this project')
-  //   })
-  // })
 
   describe('projectAddUserController', () => {
     it.skip('Should add an user in project', async () => {
@@ -315,8 +251,7 @@ describe('Project routes', () => {
   })
 
   describe('projectArchivingController', () => {
-    it.skip('Should archive a project', async () => {
-      // TODO : sur getProjectById controller l.315 - TypeError: __vite_ssr_import_2__.getProjectModel(...).findByPk is not a function
+    it('Should archive a project', async () => {
       const randomDbSetup = createRandomDbSetup({})
 
       // first query : getProjectById
@@ -331,14 +266,12 @@ describe('Project routes', () => {
         .delete(`/${randomDbSetup.project.id}`)
         .end()
 
-      console.log({ response })
       expect(response.statusCode).toEqual(200)
       expect(response.body).toBeDefined()
-      expect(response.body).toMatchObject('Project successfully archived in database')
+      expect(response.body).toMatchObject(`${randomDbSetup.project.id}`)
     })
 
-    it.skip('Should not archive a project if requestor is not owner', async () => {
-      // TODO : sur getProjectById controller l.315 - TypeError: __vite_ssr_import_2__.getProjectModel(...).findByPk is not a function
+    it('Should not archive a project if requestor is not owner', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const randomUser = getRandomUser()
 
@@ -349,12 +282,12 @@ describe('Project routes', () => {
         .delete(`/${randomDbSetup.project.id}`)
         .end()
 
-      console.log({ response })
       expect(response.statusCode).toEqual(500)
-      expect(response.body).toEqual('Cannot remove user from project: Requestor is not owner of the project')
+      expect(response.body).toEqual('Requestor is not owner of the project')
     })
   })
 
+  // TODO : wip
   describe('getUserProjectsController', () => {
     it.skip('Should get list of a user\'s projects', async () => {
       const randomDbSetups = repeatFn(3)(createRandomDbSetup)
@@ -388,7 +321,7 @@ describe('Project routes', () => {
     })
   })
 
-  describe('getUserProjectByIdController', () => {
+  describe('getProjectByIdController', () => {
     it.skip('Should get a project by id', async () => {
       const randomDbSetup = createRandomDbSetup({})
 

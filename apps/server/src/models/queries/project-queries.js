@@ -39,8 +39,6 @@ export const getProject = async ({ name, organization }) => {
 
 // CREATE
 export const projectInitializing = async ({ name, organization, ownerId }) => {
-  const project = await getProject({ name, organization })
-  if (project) throw new Error('Un projet avec le nom et dans l\'organisation demandés existe déjà')
   return await getProjectModel().create({ name, organization, usersId: [ownerId], status: 'initializing', locked: true, ownerId })
 }
 

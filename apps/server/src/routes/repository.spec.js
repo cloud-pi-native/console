@@ -64,7 +64,68 @@ import { describe, it } from 'vitest'
 //   })
 
 describe('', () => {
-  it.skip('', () => {
+  it('', () => {
 
   })
+  // describe('addRepoController', () => {
+  //   it.skip('Should add a repo in project', async () => {
+  //     const randomDbSetup = createRandomDbSetup({})
+  //     const randomRepo = randomDbSetup.repositories[0]
+
+  //     // first query : getUserProjectById
+  //     sequelize.$queueResult({ data: randomDbSetup })
+  //     // second query : addRepo
+  //     Project.$queueResult([1])
+  //     // third query : getUserProjectById
+  //     sequelize.$queueResult({ data: randomDbSetup })
+  //     // fourth query : updateProjectStatus
+  //     Project.$queueResult([1])
+  //     setOwnerId(randomDbSetup.owner)
+
+  //     const response = await app.inject()
+  //       .post(`/${randomDbSetup.id}/repos`)
+  //       .body(randomRepo)
+  //       .end()
+
+  //     expect(response.statusCode).toEqual(201)
+  //     expect(response.body).toBeDefined()
+  //     expect(response.body).toEqual('Git repository successfully added into project')
+  //   })
+
+  //   it.skip('Should not add a repo if internalRepoName already present', async () => {
+  //     const randomDbSetup = { ...createRandomDbSetup({}), id: nanoid(), locked: false }
+  //     const randomRepo = randomDbSetup.repos[0]
+
+  //     sequelize.$queueResult({ data: randomDbSetup })
+  //     Project.$queueResult([1])
+  //     sequelize.$queueResult({ data: randomDbSetup })
+  //     Project.$queueResult([1])
+  //     setOwnerId(randomDbSetup.owner)
+
+  //     const response = await app.inject()
+  //       .post(`/${randomDbSetup.id}/repos`)
+  //       .body(randomRepo)
+  //       .end()
+
+  //     expect(response.statusCode).toEqual(500)
+  //     expect(response.body).toBeDefined()
+  //     expect(response.body).toEqual(`Cannot add git repository into project: Git repo '${randomRepo.internalRepoName}' already exists in project`)
+  //   })
+
+  //   it.skip('Should not add a repo if permission is missing', async () => {
+  //     const randomDbSetup = createRandomDbSetup({})
+
+  //     sequelize.$queueResult(null)
+  //     setOwnerId(randomDbSetup.owner)
+
+  //     const response = await app.inject()
+  //       .post(`/${randomDbSetup.id}/repos`)
+  //       .body(randomDbSetup)
+  //       .end()
+
+  //     expect(response.statusCode).toEqual(500)
+  //     expect(response.body).toBeDefined()
+  //     expect(response.body).toEqual('Missing permissions on this project')
+  //   })
+  // })
 })
