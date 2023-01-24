@@ -1,11 +1,10 @@
 import Joi from 'joi'
-import { allOrganizations, projectStatus } from '../utils/iterables.js'
+import { projectStatus } from '../utils/iterables.js'
 
 // TODO : status et locked doivent être required, prévoir migration
 export const projectSchema = Joi.object({
   id: Joi.string()
-    .uuid()
-    .required(),
+    .uuid(),
 
   name: Joi.string()
     .pattern(/^[a-z0-9-]+$/)
@@ -15,7 +14,7 @@ export const projectSchema = Joi.object({
     .required(),
 
   organization: Joi.string()
-    .valid(...allOrganizations.map(org => org.name))
+    .uuid()
     .required(),
 
   usersId: Joi.array()

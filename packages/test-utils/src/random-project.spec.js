@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { createRandomProject } from './random-project.js'
+import { createRandomDbSetup } from './random-project.js'
 
 describe('Random utils', () => {
   it('Should create a random project for tests', () => {
-    expect(createRandomProject({ nbUsers: 2 })).toStrictEqual({
+    expect(createRandomDbSetup({ nbUsers: 2 })).toStrictEqual({
       project: {
 
       },

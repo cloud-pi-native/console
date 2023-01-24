@@ -6,7 +6,7 @@ import fp from 'fastify-plugin'
 import { sessionConf } from '../utils/keycloak.js'
 import ciFilesRouter from '../routes/ci-files.js'
 import { closeConnections, getConnection, sequelize } from '../connect.js'
-import { createRandomProject } from 'test-utils'
+import { createRandomDbSetup } from 'test-utils'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 vi.mock('../ansible.js')
@@ -45,7 +45,7 @@ describe.skip('ciFiles routes', () => {
   })
 
   it('Should generate files for a node project', async () => {
-    const randomProject = createRandomProject({})
+    const randomProject = createRandomDbSetup({})
     const ciData = {
       orgName: randomProject.orgName,
       projectName: randomProject.projectName,
@@ -70,7 +70,7 @@ describe.skip('ciFiles routes', () => {
   })
 
   it('Should generate files for a java project', async () => {
-    const randomProject = createRandomProject({})
+    const randomProject = createRandomDbSetup({})
     const ciData = {
       orgName: randomProject.orgName,
       projectName: randomProject.projectName,
@@ -94,7 +94,7 @@ describe.skip('ciFiles routes', () => {
   })
 
   it('Should generate files for a python project', async () => {
-    const randomProject = createRandomProject({})
+    const randomProject = createRandomDbSetup({})
     const ciData = {
       orgName: randomProject.orgName,
       projectName: randomProject.projectName,

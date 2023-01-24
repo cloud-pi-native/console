@@ -4,7 +4,7 @@ import '@gouvminint/vue-dsfr/styles'
 import '@/main.css'
 import * as icons from '@/icons.js'
 import RepoForm from '@/components/RepoForm.vue'
-import { createRandomProject } from 'test-utils'
+import { createRandomDbSetup } from 'test-utils'
 import { useProjectStore } from '@/stores/project.js'
 
 describe('RepoForm.vue', () => {
@@ -35,7 +35,7 @@ describe('RepoForm.vue', () => {
       },
     }
 
-    const project = createRandomProject({})
+    const project = createRandomDbSetup({})
     const projectStore = useProjectStore(pinia)
     projectStore.selectedProject = project
 

@@ -1,9 +1,5 @@
 import { faker } from '@faker-js/faker'
-import { allOrganizations, achievedStatus } from 'shared/src/utils/iterables.js'
-
-export const getRandomProjectOrganization = () => {
-  return faker.helpers.arrayElement(allOrganizations.map(({ name }) => name))
-}
+import { achievedStatus } from 'shared/src/utils/iterables.js'
 
 export const getRandomProjectName = () => {
   return faker.lorem.word()
@@ -14,12 +10,20 @@ export const getRandomGitUrl = () => {
   return !url.startsWith('https://') ? 'https://' + url.split('://')[1] : url
 }
 
-export const getRandomProject = (ownerId = faker.datatype.uuid(), usersId = []) => {
+export const getRandomOrganization = (name = 'ministere-interieur', label = 'Ministère de l\'Intérieur') => {
+  return {
+    id: faker.datatype.uuid(),
+    name,
+    label,
+  }
+}
+
+export const getRandomProject = (ownerId = faker.datatype.uuid(), usersId = [], organization = faker.datatype.uuid()) => {
   return {
     id: faker.datatype.uuid(),
     name: getRandomProjectName(),
     ownerId,
-    organization: getRandomProjectOrganization(),
+    organization,
     usersId: [ownerId, ...usersId],
     status: faker.helpers.arrayElement(achievedStatus),
     locked: false,

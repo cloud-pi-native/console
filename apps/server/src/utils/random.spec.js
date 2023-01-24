@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { createRandomProject } from 'test-utils'
+import { createRandomDbSetup } from 'test-utils'
 
 describe('Random utils', () => {
   it('Should create a random project for tests', () => {
-    expect(createRandomProject({ nbUsers: 2, nbRepo: 1, envs: ['dev', 'prod'] })).toEqual(
+    expect(createRandomDbSetup({ nbUsers: 2, nbRepo: 1, envs: ['dev', 'prod'] })).toEqual(
       expect.objectContaining({
         project: expect.objectContaining({
           id: expect.any(String),

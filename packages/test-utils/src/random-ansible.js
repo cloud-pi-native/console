@@ -1,7 +1,7 @@
 import {
   getRandomEnv,
   getRandomProjectName,
-  getRandomProjectOrganization,
+  getRandomOrganization,
   getRandomRepo,
   getRandomUser,
 } from './random-utils.js'
@@ -11,7 +11,7 @@ export const createRandomAnsibleProject = (envList = allEnv) => {
   return {
     env: 'pprod',
     extra: {
-      orgName: getRandomProjectOrganization(),
+      orgName: getRandomOrganization(),
       ownerEmail: getRandomUser().email,
       projectName: getRandomProjectName(),
       envList: getRandomEnv(envList),
@@ -24,7 +24,7 @@ export const createRandomAnsibleRepo = (nbEnv = 3) => {
   const data = {
     env: 'pprod',
     extra: {
-      orgName: getRandomProjectOrganization(),
+      orgName: getRandomOrganization(),
       ownerEmail: getRandomUser().email,
       projectName: getRandomProjectName(),
       internalRepoName: randomRepo.internalRepoName,

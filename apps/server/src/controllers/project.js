@@ -74,7 +74,7 @@ export const createProjectController = async (req, res) => {
   let project
 
   try {
-    await projectSchema.validateAsync(project)
+    await projectSchema.validateAsync(data)
     project = await projectInitializing(data)
     req.log.info({
       ...getLogInfos({

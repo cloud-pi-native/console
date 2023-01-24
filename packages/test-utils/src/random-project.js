@@ -1,4 +1,5 @@
 import {
+  getRandomOrganization,
   getRandomProject,
   getRandomUser,
   getRandomRepo,
@@ -6,16 +7,20 @@ import {
   getRandomPerm,
 } from './random-utils.js'
 import { repeatFn } from './func-utils.js'
-import { allEnv } from 'shared/src/utils/iterables.js'
+import { allOrganizations, allEnv } from 'shared/src/utils/iterables.js'
 
-export const createRandomProject = ({ nbUsers = 1, nbRepo = 3, envs = allEnv }) => {
+export const createRandomDbSetup = ({ nbUsers = 0, nbRepo = 3, envs = allEnv, organizationName = allOrganizations[0].name }) => {
+  // Create organization
+  const organization = getRandomOrganization(...Object.values(allOrganizations.find(org => org.name === organizationName)))
+
   // Create users
   const owner = getRandomUser()
   const users = repeatFn(nbUsers)(getRandomUser)
-  const usersId = [owner.id, ...users.map(user => user.id)]
+  const usersOnlyId = users.map(user => user.id)
+  const usersId = [owner.id, ...usersOnlyId]
 
   // Create project
-  const project = getRandomProject(owner.id, usersId)
+  const project = getRandomProject(owner.id, usersOnlyId, organization.id)
 
   // Create repositories
   const repositories = repeatFn(nbRepo, project.id)(getRandomRepo)
