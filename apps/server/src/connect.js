@@ -17,12 +17,14 @@ import { getProjectModel } from './models/project.js'
 import { getEnvironmentModel } from './models/environment.js'
 import { getPermissionModel } from './models/permission.js'
 import { getRepositoryModel } from './models/repository.js'
+import { getUsersProjectsModel } from './models/users-projects.js'
 import { _dropPermissionsTable } from './models/queries/permission-queries.js'
 import { _dropEnvironmentsTable } from './models/queries/environment-queries.js'
 import { _dropRepositoriesTable } from './models/queries/repository-queries.js'
 import { _dropProjectsTable } from './models/queries/project-queries.js'
 import { _dropUsersTable } from './models/queries/user-queries.js'
 import { _dropOrganizationsTable } from './models/queries/organization-queries.js'
+import { _dropUsersProjectsTable } from './models/queries/users-projects-queries.js'
 
 const DELAY_BEFORE_RETRY = isTest || isCI ? 1000 : 10000
 let closingConnections = false
@@ -80,6 +82,7 @@ export const dropTables = async () => {
     await _dropEnvironmentsTable()
     await _dropProjectsTable()
     await _dropUsersTable()
+    await _dropUsersProjectsTable()
     await _dropOrganizationsTable()
 
     app.log.info('All tables were droped successfully.')
@@ -96,12 +99,13 @@ export const synchroniseModels = async () => {
     const environmentModel = await getEnvironmentModel()
     const permissionModel = await getPermissionModel()
     const repositoryModel = await getRepositoryModel()
+    const usersProjectsModel = await getUsersProjectsModel()
 
     organizationModel.hasMany(projectModel, { foreignKey: 'organization' })
     projectModel.belongsTo(organizationModel, { foreignKey: 'organization' })
 
-    userModel.hasMany(projectModel, { foreignKey: 'ownerId' })
-    projectModel.belongsTo(userModel, { foreignKey: 'ownerId' })
+    userModel.belongsToMany(projectModel, { through: usersProjectsModel, uniqueKey: false })
+    projectModel.belongsToMany(userModel, { through: usersProjectsModel })
 
     userModel.hasMany(permissionModel, { foreignKey: 'userId' })
     permissionModel.belongsTo(userModel, { foreignKey: 'userId' })
@@ -118,6 +122,7 @@ export const synchroniseModels = async () => {
     await organizationModel.sync({ alter: true, logging: false })
     await userModel.sync({ alter: true, logging: false })
     await projectModel.sync({ alter: true, logging: false })
+    await usersProjectsModel.sync({ alter: true, logging: false })
     await environmentModel.sync({ alter: true, logging: false })
     await permissionModel.sync({ alter: true, logging: false })
     await repositoryModel.sync({ alter: true, logging: false })

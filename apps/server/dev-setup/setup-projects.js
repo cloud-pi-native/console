@@ -4,6 +4,7 @@ import { setPermission } from '../src/models/queries/permission-queries.js'
 import { repositoryInitializing, repositoryCreated, repositoryFailed } from '../src/models/queries/repository-queries.js'
 import app from '../src/app.js'
 import { projects } from 'shared/dev-setup/projects.js'
+import { getUserById } from '../src/models/queries/user-queries.js'
 
 export default async () => {
   // app.log.info('Clear projects...')
@@ -14,6 +15,8 @@ export default async () => {
     try {
       // Create project
       const createdProject = await _projectInitializing(project)
+      const user = await getUserById(project.ownerId)
+      await user.addProject(createdProject, { through: { role: 'owner' } })
       if (project.status === 'created') {
         await projectCreated(createdProject.dataValues.id)
       } else if (createdProject.status === 'archived') {
