@@ -4,7 +4,7 @@ import {
   repositoryInitializingController,
   updateRepositoryController,
   repositoryDeletingController,
-} from '../controllers/repo.js'
+} from '../controllers/repository.js'
 
 const router = async (app, _opt) => {
   await app.get('/:id', getRepositoryByIdController)

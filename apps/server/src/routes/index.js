@@ -2,7 +2,7 @@ import ciFilesRouter from './ci-files.js'
 import environmentsRouter from './environment.js'
 import organizationsRouter from './organization.js'
 import projectsRouter from './project.js'
-import reposRouter from './repo.js'
+import reposRouter from './repository.js'
 import usersRouter from './user.js'
 import { send200 } from '../utils/response.js'
 

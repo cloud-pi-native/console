@@ -152,14 +152,20 @@ export const projectAddUserController = async (req, res) => {
   const projectId = req.params?.id
   const data = req.body
 
+  console.log({ data, projectId, userId })
+
   let project
   try {
     project = await getProjectById(projectId)
+
     if (!project) throw new Error('Project not found')
 
     if (!project.usersId.includes(userId) && project.ownerId !== userId) throw new Error('Requestor is not member of the project')
 
     const userToAdd = await getUserByEmail(data.email)
+
+    if (project.usersId.includes(userToAdd.id) || project.ownerId === userToAdd.id) throw new Error(`User with email '${data.email}' already member of project`)
+
     await projectLocked(projectId)
     await projectAddUser({ projectId, userId: userToAdd.id })
 
@@ -170,7 +176,8 @@ export const projectAddUserController = async (req, res) => {
     })
     send201(res, message)
   } catch (error) {
-    const message = 'Cannot add user into project'
+    const message = `Cannot add user into project: ${error.message}`
+    console.log(error)
     req.log.error({
       ...getLogInfos(),
       error: error.message,
@@ -231,6 +238,9 @@ export const projectRemoveUserController = async (req, res) => {
     if (!project.usersId.includes(userId) && project.ownerId !== userId) throw new Error('Requestor is not member of the project')
 
     const userToRemove = await getUserByEmail(data.email)
+
+    if (!project.usersId.includes(userToRemove.id)) throw new Error('Cet utilisateur n\'est pas membre du projet')
+
     await projectLocked(projectId)
     await projectRemoveUser({ projectId, userId: userToRemove.id })
     const userPermissionsToDelete = await getUserPermissions(userToRemove.id)
@@ -250,7 +260,7 @@ export const projectRemoveUserController = async (req, res) => {
     })
     send200(res, message)
   } catch (error) {
-    const message = 'Cannot remove user from project'
+    const message = `Cannot remove user from project: ${error.message}`
     req.log.error({
       ...getLogInfos(),
       error: error.message,
@@ -303,6 +313,7 @@ export const projectArchivingController = async (req, res) => {
 
   try {
     const project = await getProjectById(projectId)
+    if (!project) throw new Error('Project not found')
     if (project.ownerId !== userId) throw new Error('Requestor is not owner of the project')
 
     await projectLocked(projectId)
@@ -317,7 +328,7 @@ export const projectArchivingController = async (req, res) => {
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: 'Cannot archive project',
+      description: `Cannot archive project: ${error.message}`,
       error: error.message,
     })
     return send500(res, error.message)

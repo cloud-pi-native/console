@@ -63,9 +63,6 @@ export const projectFailed = async (id) => {
 }
 
 export const projectAddUser = async ({ projectId, userId }) => {
-  const project = await getProjectById(projectId)
-  const users = project.usersId ?? [project.ownerId]
-  if (users.includes(userId)) throw new Error('Cet utilisateur est déjà membre du projet')
   return await getProjectModel().update({
     usersId: sequelize.fn('array_append', sequelize.col('usersId'), userId),
   }, {
@@ -74,9 +71,6 @@ export const projectAddUser = async ({ projectId, userId }) => {
 }
 
 export const projectRemoveUser = async ({ projectId, userId }) => {
-  const project = await getProjectById(projectId)
-  const users = project.usersId ?? [project.ownerId]
-  if (!users.includes(userId)) throw new Error('Cet utilisateur n\'est pas membre du projet')
   return await getProjectModel().update({
     usersId: sequelize.fn('array_remove', sequelize.col('usersId'), userId),
   }, {
@@ -85,8 +79,6 @@ export const projectRemoveUser = async ({ projectId, userId }) => {
 }
 
 export const projectArchiving = async (id) => {
-  const project = await getProjectById(id)
-  if (!project) throw new Error('Projet non trouvé')
   return await getProjectModel().update({
     status: 'archived',
     locked: true,
