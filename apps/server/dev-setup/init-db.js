@@ -17,10 +17,8 @@ export const initDb = async () => {
     await createOrganization(org)
   }
 
-  return Promise.all([
-    setupUsers(),
-    setupProjects(),
-  ])
+  await setupUsers()
+  await setupProjects()
 }
 
 // export const initDb = async () => {
