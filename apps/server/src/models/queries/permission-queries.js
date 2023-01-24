@@ -36,8 +36,8 @@ export const deletePermission = async (id) => {
   })
 }
 
-// DROP
-export const dropPermissionsTable = async () => {
+// TECH
+export const _dropPermissionsTable = async () => {
   await sequelize.drop({
     tableName: getPermissionModel().tableName,
     force: true,

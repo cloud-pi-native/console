@@ -27,7 +27,6 @@ const goToCreateProject = () => {
 
 onMounted(async () => {
   await projectStore.getUserProjects()
-  console.log({ projects: projects.value })
 })
 
 watch(projects, (projects) => {

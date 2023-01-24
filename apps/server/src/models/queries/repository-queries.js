@@ -77,8 +77,8 @@ export const deleteRepository = async (id) => {
   })
 }
 
-// DROP
-export const dropRepositoriesTable = async () => {
+// TECH
+export const _dropRepositoriesTable = async () => {
   await sequelize.drop({
     tableName: getRepositoryModel().tableName,
     force: true,

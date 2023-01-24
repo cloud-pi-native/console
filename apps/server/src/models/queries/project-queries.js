@@ -95,8 +95,14 @@ export const projectArchiving = async (id) => {
   })
 }
 
-// DROP
-export const dropProjectsTable = async () => {
+// TECH
+export const _projectInitializing = async ({ id, name, organization, ownerId }) => {
+  const project = await getProject({ name, organization })
+  if (project) throw new Error('Un projet avec le nom et dans l\'organisation demandés existe déjà')
+  return await getProjectModel().create({ id, name, organization, usersId: [ownerId], status: 'initializing', locked: true, ownerId })
+}
+
+export const _dropProjectsTable = async () => {
   await sequelize.drop({
     tableName: getProjectModel().tableName,
     force: true,

@@ -17,12 +17,12 @@ import { getProjectModel } from './models/project.js'
 import { getEnvironmentModel } from './models/environment.js'
 import { getPermissionModel } from './models/permission.js'
 import { getRepositoryModel } from './models/repository.js'
-import { dropPermissionsTable } from './models/queries/permission-queries.js'
-import { dropEnvironmentsTable } from './models/queries/environment-queries.js'
-import { dropRepositoriesTable } from './models/queries/repository-queries.js'
-import { dropProjectsTable } from './models/queries/project-queries.js'
-import { dropUsersTable } from './models/queries/user-queries.js'
-import { dropOrganizationsTable } from './models/queries/organization-queries.js'
+import { _dropPermissionsTable } from './models/queries/permission-queries.js'
+import { _dropEnvironmentsTable } from './models/queries/environment-queries.js'
+import { _dropRepositoriesTable } from './models/queries/repository-queries.js'
+import { _dropProjectsTable } from './models/queries/project-queries.js'
+import { _dropUsersTable } from './models/queries/user-queries.js'
+import { _dropOrganizationsTable } from './models/queries/organization-queries.js'
 
 const DELAY_BEFORE_RETRY = isTest || isCI ? 1000 : 10000
 let closingConnections = false
@@ -73,13 +73,22 @@ export const closeConnections = async () => {
   }
 }
 
+export const dropTables = async () => {
+  try {
+    await _dropRepositoriesTable()
+    await _dropPermissionsTable()
+    await _dropEnvironmentsTable()
+    await _dropProjectsTable()
+    await _dropUsersTable()
+    await _dropOrganizationsTable()
+
+    app.log.info('All tables were droped successfully.')
+  } catch (error) {
+    app.log.error('Drop database tables failed.')
+  }
+}
+
 export const synchroniseModels = async () => {
-  await dropRepositoriesTable()
-  await dropPermissionsTable()
-  await dropEnvironmentsTable()
-  await dropProjectsTable()
-  await dropUsersTable()
-  await dropOrganizationsTable()
   try {
     const organizationModel = await getOrganizationModel()
     const userModel = await getUserModel()

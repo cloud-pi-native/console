@@ -1,6 +1,6 @@
 import { getProjectbyId } from '../support/func.js'
 
-const candilib = getProjectbyId('9FG4CeGkMavI5CtAh_3Ss')
+const project = getProjectbyId('011e7860-04d7-461f-912d-334c622d38b3')
 
 describe('Projects view', () => {
   beforeEach(() => {
@@ -16,9 +16,9 @@ describe('Projects view', () => {
           .get('[data-testid^="projectTile-"]')
           .should('have.length', `${response.body.length}`)
       })
-      .getByDataTestid(`projectTile-${candilib.projectName}`).click()
-      .url().should('contain', `projects/${candilib.id}/dashboard`)
+      .getByDataTestid(`projectTile-${project.name}`).click()
+      .url().should('contain', `projects/${project.id}/dashboard`)
       .getByDataTestid('currentProjectInfo')
-      .should('contain', `Le projet courant est : ${candilib.projectName}`)
+      .should('contain', `Le projet courant est : ${project.name}`)
   })
 })

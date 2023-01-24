@@ -1,6 +1,6 @@
 import { getProjectbyId } from '../support/func.js'
 
-const candilib = getProjectbyId('9FG4CeGkMavI5CtAh_3Ss')
+const project = getProjectbyId('011e7860-04d7-461f-912d-334c622d38b3')
 
 describe('Team view', () => {
   beforeEach(() => {
@@ -9,9 +9,9 @@ describe('Team view', () => {
 
   it('Should display team members', () => {
     cy.goToProjects()
-      .getByDataTestid(`projectTile-${candilib.projectName}`).click()
+      .getByDataTestid(`projectTile-${project.name}`).click()
       .getByDataTestid('menuTeam').click()
-      .url().should('contain', `/projects/${candilib.id}/team`)
+      .url().should('contain', `/projects/${project.id}/team`)
       .getByDataTestid('teamTable')
       .find('tbody > tr')
       .should('have.length', 1)
@@ -19,9 +19,9 @@ describe('Team view', () => {
 
   it('Should add a team member', () => {
     cy.goToProjects()
-      .getByDataTestid(`projectTile-${candilib.projectName}`).click()
+      .getByDataTestid(`projectTile-${project.name}`).click()
       .getByDataTestid('menuTeam').click()
-      .url().should('contain', `/projects/${candilib.id}/team`)
+      .url().should('contain', `/projects/${project.id}/team`)
       .getByDataTestid('teamTable')
       .find('tbody > tr')
       .should('have.length', 1)
@@ -44,9 +44,9 @@ describe('Team view', () => {
 
   it('Should remove a team member', () => {
     cy.goToProjects()
-      .getByDataTestid(`projectTile-${candilib.projectName}`).click()
+      .getByDataTestid(`projectTile-${project.name}`).click()
       .getByDataTestid('menuTeam').click()
-      .url().should('contain', `/projects/${candilib.id}/team`)
+      .url().should('contain', `/projects/${project.id}/team`)
       .getByDataTestid('teamTable')
       .find('tbody > tr')
       .should('have.length', 2)

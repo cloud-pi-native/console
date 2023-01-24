@@ -17,6 +17,7 @@ import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import { ansibleHost, ansiblePort } from '../utils/env.js'
 import { projectSchema } from 'shared/src/schemas/project.js'
+import { replaceNestedKeys, lowercaseFirstLetter } from '../utils/queries-tools.js'
 
 // GET
 export const getUserProjectsController = async (req, res) => {
@@ -28,6 +29,7 @@ export const getUserProjectsController = async (req, res) => {
       ...getLogInfos(),
       description: 'Projects successfully retreived',
     })
+    projects.map(project => replaceNestedKeys(project, lowercaseFirstLetter))
     await send200(res, projects)
   } catch (error) {
     const message = 'Cannot retrieve projects'

@@ -21,8 +21,8 @@ export const createOrganization = async ({ name, label }) => {
   return await getOrganizationModel().create({ name, label })
 }
 
-// DROP
-export const dropOrganizationsTable = async () => {
+// TECH
+export const _dropOrganizationsTable = async () => {
   await sequelize.drop({
     tableName: getOrganizationModel().tableName,
     force: true,

@@ -1,6 +1,6 @@
 import { getProjectbyId } from '../support/func.js'
 
-const candilib = getProjectbyId('9FG4CeGkMavI5CtAh_3Ss')
+const project = getProjectbyId('011e7860-04d7-461f-912d-334c622d38b3')
 
 describe('Sidebar', () => {
   it('Should display Sidebar, not loggedIn', () => {
@@ -23,18 +23,18 @@ describe('Sidebar', () => {
       .getByDataTestid('menuProjectsList').should('be.visible')
       .getByDataTestid('menuMyProjects').click()
       .url().should('contain', '/projects')
-      .getByDataTestid(`projectTile-${candilib.projectName}`).click()
+      .getByDataTestid(`projectTile-${project.name}`).click()
       .getByDataTestid('menuProjectsList').should('be.visible')
-      .url().should('contain', `/projects/${candilib.id}/dashboard`)
+      .url().should('contain', `/projects/${project.id}/dashboard`)
       .getByDataTestid('menuServices').click()
       .getByDataTestid('menuProjectsList').should('be.visible')
-      .url().should('contain', `/projects/${candilib.id}/services`)
+      .url().should('contain', `/projects/${project.id}/services`)
       .getByDataTestid('menuTeam').click()
       .getByDataTestid('menuProjectsList').should('be.visible')
-      .url().should('contain', `/projects/${candilib.id}/team`)
+      .url().should('contain', `/projects/${project.id}/team`)
       .getByDataTestid('menuRepos').click()
       .getByDataTestid('menuProjectsList').should('be.visible')
-      .url().should('contain', `/projects/${candilib.id}/repos`)
+      .url().should('contain', `/projects/${project.id}/repos`)
       .getByDataTestid('menuDoc').click()
       .getByDataTestid('menuProjectsList').should('not.be.visible')
       .url().should('contain', '/doc')

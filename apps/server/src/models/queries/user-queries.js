@@ -60,8 +60,8 @@ export const updateUserById = async ({ id, name, email, firstName, lastName }) =
   }
 }
 
-// DROP
-export const dropUsersTable = async () => {
+// TECH
+export const _dropUsersTable = async () => {
   await sequelize.drop({
     tableName: getUserModel().tableName,
     force: true,

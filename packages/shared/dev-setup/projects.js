@@ -1,12 +1,13 @@
-import { allServices } from '../src/utils/iterables.js'
-
 export const projects = [
   {
-    id: '9FG4CeGkMavI5CtAh_3Ss',
-    repos: [
+    id: '011e7860-04d7-461f-912d-334c622d38b3',
+    organization: 'ministere-interieur',
+    name: 'candilib',
+    ownerId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+    repositories: [
       {
         internalRepoName: 'candilib',
-        externalRepoUrl: 'https://github.com/dnum-mi/candilib',
+        externalRepoUrl: 'https://github.com/dnum-mi/candilib.git',
         isPrivate: true,
         externalUserName: 'this-is-a-test',
         externalToken: 'this-is-a-token',
@@ -14,61 +15,55 @@ export const projects = [
         status: 'created',
       },
     ],
-    owner: {
-      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
-      firstName: 'test',
-      lastName: 'TEST',
-      email: 'test@test.com',
-      status: 'created',
-    },
-    orgName: 'ministere-interieur',
-    services: allServices,
-    envList: [{
-      name: 'dev',
-      ro: [],
-      rw: ['cb8e5b4b-7b7b-40f5-935f-594f48ae6565'],
-      status: 'created',
-    },
-    {
-      name: 'prod',
-      ro: [],
-      rw: ['cb8e5b4b-7b7b-40f5-935f-594f48ae6565'],
-      status: 'created',
-    }],
+    environments: [
+      {
+        name: 'staging',
+        status: 'created',
+        permissions: [
+          {
+            userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+            level: 0,
+          },
+        ],
+      }, {
+        name: 'prod',
+        status: 'created',
+        permissions: [
+          {
+            userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+            level: 10,
+          },
+        ],
+      },
+    ],
     status: 'created',
-    locked: false,
-    projectName: 'candilib',
   },
   {
-    id: '9FG4CeGkMavI5CtAh_3St',
-    repos: [
+    id: '83833faf-f654-40dd-bcd5-cf2e944fc702',
+    organization: 'ministere-interieur',
+    name: 'psij',
+    ownerId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+    repositories: [
       {
         internalRepoName: 'psij',
-        externalRepoUrl: 'https://github.com/dnum-mi/psij',
+        externalRepoUrl: 'https://github.com/dnum-mi/psij.git',
         isPrivate: true,
         externalUserName: 'this-is-a-test',
         externalToken: 'this-is-a-token',
         isInfra: false,
-        status: 'created',
+        status: 'failed',
       },
     ],
-    owner: {
-      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
-      firstName: 'test',
-      lastName: 'TEST',
-      email: 'test@test.com',
+    environments: [{
+      name: 'prod',
       status: 'created',
-    },
-    orgName: 'ministere-interieur',
-    services: allServices,
-    envList: [{
-      name: 'dev',
-      ro: [],
-      rw: ['cb8e5b4b-7b7b-40f5-935f-594f48ae6565'],
-      status: 'created',
+      permissions: [
+        {
+          userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+          level: 10,
+        },
+      ],
     }],
     status: 'created',
-    locked: false,
-    projectName: 'psij',
   },
 ]

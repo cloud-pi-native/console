@@ -86,8 +86,8 @@ export const deleteEnvironment = async (id) => {
   })
 }
 
-// DROP
-export const dropEnvironmentsTable = async () => {
+// TECH
+export const _dropEnvironmentsTable = async () => {
   await sequelize.drop({
     tableName: getEnvironmentModel().tableName,
     force: true,
