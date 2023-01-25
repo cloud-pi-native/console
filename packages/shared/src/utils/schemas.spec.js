@@ -1,14 +1,20 @@
 import { describe, it, expect } from 'vitest'
 import { faker } from '@faker-js/faker'
 import { schemaValidator, isValid, instanciateSchema } from './schemas.js'
-import { repoSchema } from '../schemas/repository.js'
+import {
+  repoSchema,
+  environmentSchema,
+  permissionSchema,
+  projectSchema,
+  userSchema,
+} from '../index.js'
 
 describe('Schemas utils', () => {
   it('Should validate undefined schema', () => {
     expect(schemaValidator(repoSchema, undefined)).toStrictEqual({})
   })
 
-  it('Should validate correct schema', () => {
+  it('Should validate a correct repository schema', () => {
     expect(schemaValidator(repoSchema, {
       id: faker.datatype.uuid(),
       internalRepoName: 'candilib',
@@ -18,6 +24,45 @@ describe('Schemas utils', () => {
       isInfra: false,
       externalUserName: 'clairenlet',
       status: 'created',
+    })).toStrictEqual({})
+  })
+
+  it('Should validate a correct environment schema', () => {
+    expect(schemaValidator(environmentSchema, {
+      id: faker.datatype.uuid(),
+      name: 'dev',
+      projectId: faker.datatype.uuid(),
+      status: 'created',
+    })).toStrictEqual({})
+  })
+
+  it('Should validate a correct permission schema', () => {
+    expect(schemaValidator(permissionSchema, {
+      id: faker.datatype.uuid(),
+      userId: faker.datatype.uuid(),
+      environmentId: faker.datatype.uuid(),
+      level: 0,
+    })).toStrictEqual({})
+  })
+
+  it('Should validate a correct project schema', () => {
+    expect(schemaValidator(projectSchema, {
+      id: faker.datatype.uuid(),
+      name: faker.datatype.uuid(),
+      ownerId: faker.datatype.uuid(),
+      organization: faker.datatype.uuid(),
+      usersId: [faker.datatype.uuid(), faker.datatype.uuid()],
+      status: 'created',
+      locked: false,
+    })).toStrictEqual({})
+  })
+
+  it('Should validate a correct user schema', () => {
+    expect(schemaValidator(userSchema, {
+      id: faker.datatype.uuid(),
+      email: faker.internet.email(),
+      firstName: faker.name.firstName(),
+      lastName: faker.name.lastName(),
     })).toStrictEqual({})
   })
 
