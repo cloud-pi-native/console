@@ -2,6 +2,9 @@ import { Op } from 'sequelize'
 import { sequelize } from '../../connect.js'
 import { getProjectModel } from '../project.js'
 import { allDataAttributes, getUniq } from '../../utils/queries-tools.js'
+import { getPermissionModel } from '../permission.js'
+import { getEnvironmentModel } from '../environment.js'
+import { getUserModel } from '../user.js'
 
 // SELECT
 export const getUserProjects = async (userId) => {
@@ -13,11 +16,23 @@ export const getUserProjects = async (userId) => {
         { usersId: { [Op.contains]: [userId] } },
       ],
     },
-    include: {
-      all: true,
-      nested: true,
-      ...allDataAttributes,
-    },
+    include: [
+      {
+        model: getEnvironmentModel(),
+        include: {
+          model: getPermissionModel(),
+          include: {
+            model: getUserModel(),
+            attributes: { exclude: ['role'] },
+          },
+        },
+        ...allDataAttributes,
+      },
+      {
+        model: getUserModel(),
+        attributes: { exclude: ['role'] },
+      },
+    ],
   })
   return res
 }
