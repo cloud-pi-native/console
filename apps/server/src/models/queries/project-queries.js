@@ -58,7 +58,6 @@ export const projectInitializing = async ({ name, organization, ownerId }) => {
 }
 
 // UPDATE
-
 export const projectLocked = async (id) => {
   return await getProjectModel().update({ locked: true }, { where: { id } })
 }
@@ -75,20 +74,27 @@ export const projectFailed = async (id) => {
   return await getProjectModel().update({ locked: false, status: 'failed' }, { where: { id } })
 }
 
-export const projectAddUser = async ({ projectId, userId }) => {
-  return await getProjectModel().update({
-    usersId: sequelize.fn('array_append', sequelize.col('usersId'), userId),
-  }, {
-    where: { id: projectId },
-  })
+// export const projectAddUser = async ({ projectId, userId }) => {
+//   console.log('queries: ', { projectId, userId })
+//   return await getProjectModel().update({
+//     usersId: sequelize.fn('array_append', sequelize.col('usersId'), userId),
+//   }, {
+//     where: { id: projectId },
+//   })
+// }
+export const projectAddUser = async ({ project, user, role }) => {
+  return await user.addProject(project, { through: { role } })
 }
 
-export const projectRemoveUser = async ({ projectId, userId }) => {
-  return await getProjectModel().update({
-    usersId: sequelize.fn('array_remove', sequelize.col('usersId'), userId),
-  }, {
-    where: { id: projectId },
-  })
+// export const projectRemoveUser = async ({ projectId, userId }) => {
+//   return await getProjectModel().update({
+//     usersId: sequelize.fn('array_remove', sequelize.col('usersId'), userId),
+//   }, {
+//     where: { id: projectId },
+//   })
+// }
+export const projectRemoveUser = async ({ project, user }) => {
+  return await user.removeProject(project)
 }
 
 export const projectArchiving = async (id) => {
@@ -114,5 +120,3 @@ export const _dropProjectsTable = async () => {
     cascade: true,
   })
 }
-
-// DELETE / TRUNCATE

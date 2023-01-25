@@ -70,8 +70,8 @@ export const getProjectByIdController = async (req, res) => {
 // POST
 export const createProjectController = async (req, res) => {
   const data = req.body
-  data.ownerId = req.session.user.id
-
+  const userId = req.session?.user.id
+  data.ownerId = req.session?.user.id // TODO: à supprimer les clés `ownerId` et `usersId`
   let project
 
   try {
@@ -81,6 +81,9 @@ export const createProjectController = async (req, res) => {
     if (project) throw new Error('Un projet avec le nom et dans l\'organisation demandés existe déjà')
 
     project = await projectInitializing(data)
+    const user = await getUserById(userId)
+    // await user.addProject(project, { through: { role: 'owner' } })
+    await projectAddUser({ project, user, role: 'owner' })
     req.log.info({
       ...getLogInfos({
         projectId: project.id,
@@ -170,7 +173,7 @@ export const projectAddUserController = async (req, res) => {
     if (project.usersId.includes(userToAdd.id) || project.ownerId === userToAdd.id) throw new Error(`User with email '${data.email}' already member of project`)
 
     await projectLocked(projectId)
-    await projectAddUser({ projectId, userId: userToAdd.id })
+    await projectAddUser({ project, user: userToAdd, role: 'user' })
 
     const message = 'User successfully added into project'
     req.log.info({
@@ -230,7 +233,7 @@ export const projectAddUserController = async (req, res) => {
 export const projectRemoveUserController = async (req, res) => {
   const userId = req.session?.user.id
   const projectId = req.params?.id
-  const data = req.body
+  const email = req.body
 
   let project
   try {
@@ -239,12 +242,13 @@ export const projectRemoveUserController = async (req, res) => {
 
     if (!project.usersId.includes(userId) && project.ownerId !== userId) throw new Error('Requestor is not member of the project')
 
-    const userToRemove = await getUserByEmail(data.email)
+    const userToRemove = await getUserByEmail(email)
 
-    if (!project.usersId.includes(userToRemove.id)) throw new Error('Cet utilisateur n\'est pas membre du projet')
+    // TODO: remplacer ce mécanisme de vérification en utilisant la table `UsersProjects`
+    // if (!project.usersId.includes(userToRemove.id)) throw new Error('Cet utilisateur n\'est pas membre du projet')
 
     await projectLocked(projectId)
-    await projectRemoveUser({ projectId, userId: userToRemove.id })
+    await projectRemoveUser({ project, user: userToRemove })
     const userPermissionsToDelete = await getUserPermissions(userToRemove.id)
     // TODO : cascading
     for (const userPermission of userPermissionsToDelete) {

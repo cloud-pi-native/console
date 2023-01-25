@@ -28,7 +28,7 @@ export const addRepo = async (id, data) => {
 }
 
 export const addUser = async (id, data) => {
-  const response = await apiClient.post(`/projects/${id}/users`, data)
+  const response = await apiClient.put(`/projects/${id}/users`, data)
   return response.data
 }
 

@@ -10,11 +10,11 @@ const projectStore = useProjectStore()
 const selectedProject = computed(() => projectStore.selectedProject)
 
 const isUserAlreadyInTeam = computed(() => {
-  const allUsers = !selectedProject.value.users?.length
-    ? [selectedProject.value.owner]
-    : [...selectedProject.value.users, selectedProject.value.owner]
+  const allUsers = selectedProject.value.users
   return !!allUsers.find(user => user.email === newUser.value.email)
 })
+
+const owner = computed(() => selectedProject.value.users.find(user => user.id === selectedProject.value.ownerId))
 
 const newUser = ref({})
 
@@ -29,15 +29,17 @@ const rows = ref([])
 const setRows = () => {
   rows.value = []
 
-  rows.value.push([selectedProject.value.owner.email, 'owner', {
-    cellAttrs: {
-      class: 'fr-fi-close-line !flex justify-center disabled',
-      title: `${selectedProject.value.owner.email} ne peut pas être retiré du projet`,
-    },
-  }])
-
   if (selectedProject.value.users?.length) {
     selectedProject.value.users.forEach(user => {
+      if (user.id === selectedProject.value.ownerId) {
+        rows.value.push([owner.value.email, 'owner', {
+          cellAttrs: {
+            class: 'fr-fi-close-line !flex justify-center disabled',
+            title: `${owner.value.email} ne peut pas être retiré du projet`,
+          },
+        }])
+        return
+      }
       rows.value.push([user.email, 'user', {
         cellAttrs: {
           class: 'fr-fi-close-line fr-text-default--warning !flex justify-center cursor-pointer',
@@ -57,7 +59,6 @@ const addUserToProject = async () => {
 
   const keysToValidate = ['id', 'email', 'firstName', 'lastName']
   const errorSchema = schemaValidator(userSchema, newUser.value, keysToValidate)
-
   if (Object.keys(errorSchema).length || isUserAlreadyInTeam.value) return
   await projectStore.addUserToProject(newUser.value)
 
@@ -84,7 +85,7 @@ watch(selectedProject, () => {
 
   <DsfrTable
     data-testid="teamTable"
-    :title="`Membres du projet ${selectedProject.projectName}`"
+    :title="`Membres du projet ${selectedProject.name}`"
     :headers="headers"
     :rows="rows"
   />

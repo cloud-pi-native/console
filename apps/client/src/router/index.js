@@ -112,7 +112,7 @@ router.beforeEach(async (to, _from, next) => {
   const projectStore = useProjectStore()
   const projectsPath = '/projects/'
 
-  if (to.path.match(`^${projectsPath}[0-9a-f-]{36+}`) && projectStore.selectedProject === undefined) {
+  if (to.path.match('^/projects/') && projectStore.selectedProject === undefined) {
     await projectStore.getUserProjects()
 
     const idStart = projectsPath.length
