@@ -5,6 +5,7 @@ import { allDataAttributes, getUniq } from '../../utils/queries-tools.js'
 import { getPermissionModel } from '../permission.js'
 import { getEnvironmentModel } from '../environment.js'
 import { getUserModel } from '../user.js'
+import { getRepositoryModel } from '../repository.js'
 
 // SELECT
 export const getUserProjects = async (userId) => {
@@ -31,6 +32,10 @@ export const getUserProjects = async (userId) => {
       {
         model: getUserModel(),
         attributes: { exclude: ['role'] },
+      },
+      {
+        model: getRepositoryModel(),
+        ...allDataAttributes,
       },
     ],
   })
