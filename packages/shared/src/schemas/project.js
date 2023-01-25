@@ -10,15 +10,8 @@ export const projectSchema = Joi.object({
     .pattern(/^[a-z0-9-]+$/)
     .required(),
 
-  ownerId: Joi.string()
-    .required(),
-
   organization: Joi.string()
     .uuid()
-    .required(),
-
-  usersId: Joi.array()
-    .items(Joi.string().uuid())
     .required(),
 
   status: Joi.string()

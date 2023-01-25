@@ -8,9 +8,7 @@ describe('Random utils', () => {
         project: expect.objectContaining({
           id: expect.any(String),
           name: expect.any(String),
-          ownerId: expect.any(String),
           organization: expect.any(String),
-          usersId: expect.any(Array),
           status: expect.any(String),
           locked: expect.any(Boolean),
         }),
@@ -32,6 +30,13 @@ describe('Random utils', () => {
           firstName: expect.any(String),
           lastName: expect.any(String),
         }]),
+        usersProjects: expect.arrayContaining([
+          {
+            UserId: expect.any(String),
+            ProjectId: expect.any(String),
+            role: expect.any(String),
+          },
+        ]),
         repositories: expect.any(Array),
         environments: expect.arrayContaining([{
           id: expect.any(String),

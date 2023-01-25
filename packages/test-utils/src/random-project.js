@@ -5,6 +5,7 @@ import {
   getRandomRepo,
   getRandomEnv,
   getRandomPerm,
+  getRandomUserProject,
 } from './random-utils.js'
 import { repeatFn } from './func-utils.js'
 import { allOrganizations, allEnv } from 'shared/src/utils/iterables.js'
@@ -20,7 +21,11 @@ export const createRandomDbSetup = ({ nbUsers = 0, nbRepo = 3, envs = allEnv, or
   const usersId = [owner.id, ...usersOnlyId]
 
   // Create project
-  const project = getRandomProject(owner.id, usersOnlyId, organization.id)
+  const project = getRandomProject(organization.id)
+
+  // Create user project association table
+  let usersProjects = users.map(user => getRandomUserProject(user.id, project.id))
+  usersProjects = [...usersProjects, getRandomUserProject(owner.id, project.id, 'owner')]
 
   // Create repositories
   const repositories = repeatFn(nbRepo, project.id)(getRandomRepo)
@@ -38,6 +43,7 @@ export const createRandomDbSetup = ({ nbUsers = 0, nbRepo = 3, envs = allEnv, or
     project,
     owner,
     users,
+    usersProjects,
     repositories,
     environments,
     permissions,

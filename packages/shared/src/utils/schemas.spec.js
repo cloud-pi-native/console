@@ -49,9 +49,7 @@ describe('Schemas utils', () => {
     expect(schemaValidator(projectSchema, {
       id: faker.datatype.uuid(),
       name: faker.datatype.uuid(),
-      ownerId: faker.datatype.uuid(),
       organization: faker.datatype.uuid(),
-      usersId: [faker.datatype.uuid(), faker.datatype.uuid()],
       status: 'created',
       locked: false,
     })).toStrictEqual({})

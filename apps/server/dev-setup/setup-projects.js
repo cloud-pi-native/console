@@ -1,4 +1,4 @@
-import { _projectInitializing, projectCreated, projectFailed, projectArchiving } from '../src/models/queries/project-queries.js'
+import { _projectInitializing, projectCreated, projectFailed, projectArchiving, projectAddUser } from '../src/models/queries/project-queries.js'
 import { environmentInitializing, environmentCreated, environmentFailed } from '../src/models/queries/environment-queries.js'
 import { setPermission } from '../src/models/queries/permission-queries.js'
 import { repositoryInitializing, repositoryCreated, repositoryFailed } from '../src/models/queries/repository-queries.js'
@@ -7,16 +7,11 @@ import { projects } from 'shared/dev-setup/projects.js'
 import { getUserById } from '../src/models/queries/user-queries.js'
 
 export default async () => {
-  // app.log.info('Clear projects...')
-  // await _deleteAllProjects()
-
   app.log.info('Creating projects...')
   const projectsCreated = projects.map(async project => {
     try {
       // Create project
       const createdProject = await _projectInitializing(project)
-      const user = await getUserById(project.ownerId)
-      await user.addProject(createdProject, { through: { role: 'owner' } })
       if (project.status === 'created') {
         await projectCreated(createdProject.dataValues.id)
       } else if (createdProject.status === 'archived') {
@@ -24,6 +19,12 @@ export default async () => {
       } else {
         await projectFailed(createdProject.dataValues.id)
       }
+
+      // Create users
+      project.users.forEach(async user => {
+        const dbUser = await getUserById(user.id)
+        await projectAddUser({ project: createdProject, user: dbUser, role: user.role })
+      })
 
       project.environments.forEach(async environment => {
         // Create environments

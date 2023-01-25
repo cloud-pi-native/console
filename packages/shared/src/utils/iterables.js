@@ -1,3 +1,8 @@
+export const projectRoles = [
+  'owner',
+  'user',
+]
+
 export const allOrganizations = [
   {
     name: 'dinum',

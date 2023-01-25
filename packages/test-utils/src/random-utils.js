@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import { achievedStatus } from 'shared/src/utils/iterables.js'
+import { achievedStatus, projectRoles } from 'shared/src/utils/iterables.js'
 
 export const getRandomProjectName = () => {
   return faker.lorem.word()
@@ -18,13 +18,11 @@ export const getRandomOrganization = (name = 'ministere-interieur', label = 'Min
   }
 }
 
-export const getRandomProject = (ownerId = faker.datatype.uuid(), usersId = [], organization = faker.datatype.uuid()) => {
+export const getRandomProject = (organization = faker.datatype.uuid()) => {
   return {
     id: faker.datatype.uuid(),
     name: getRandomProjectName(),
-    ownerId,
     organization,
-    usersId: [ownerId, ...usersId],
     status: faker.helpers.arrayElement(achievedStatus),
     locked: false,
   }
@@ -36,6 +34,14 @@ export const getRandomUser = () => {
     email: faker.internet.email(),
     firstName: faker.name.firstName(),
     lastName: faker.name.lastName(),
+  }
+}
+
+export const getRandomUserProject = (userId = faker.datatype.uuid(), projectId = faker.datatype.uuid(), role = projectRoles[1]) => {
+  return {
+    UserId: userId,
+    ProjectId: projectId,
+    role,
   }
 }
 

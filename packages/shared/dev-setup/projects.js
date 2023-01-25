@@ -3,7 +3,6 @@ export const projects = [
     id: '011e7860-04d7-461f-912d-334c622d38b3',
     organization: 'ministere-interieur',
     name: 'candilib',
-    ownerId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
     repositories: [
       {
         internalRepoName: 'candilib',
@@ -13,6 +12,16 @@ export const projects = [
         externalToken: 'this-is-a-token',
         isInfra: false,
         status: 'created',
+      },
+    ],
+    users: [
+      {
+        userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+        role: 'owner',
+      },
+      {
+        userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6564',
+        role: 'user',
       },
     ],
     environments: [
@@ -42,7 +51,6 @@ export const projects = [
     id: '83833faf-f654-40dd-bcd5-cf2e944fc702',
     organization: 'ministere-interieur',
     name: 'psij',
-    ownerId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
     repositories: [
       {
         internalRepoName: 'psij',
