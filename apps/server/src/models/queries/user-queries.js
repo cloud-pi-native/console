@@ -2,6 +2,7 @@ import { Op } from 'sequelize'
 import { sequelize } from '../../connect.js'
 import { getUserModel } from '../user.js'
 import { allDataAttributes, getUniq } from '../../utils/queries-tools.js'
+import { adminsUserId } from '../../utils/env.js'
 
 // SELECT
 export const getUsers = async () => {
@@ -37,8 +38,9 @@ export const getUserByEmail = async (email) => {
 // CREATE
 export const createUser = async ({ id, email, firstName, lastName }) => {
   const user = await getUserByEmail(email)
+  const role = adminsUserId.includes(id) ? 'admin' : ''
   if (user) throw new Error('Un utilisateur avec cette adresse e-mail existe déjà')
-  return await getUserModel().create({ id, email, firstName, lastName })
+  return await getUserModel().create({ id, email, firstName, lastName, role })
 }
 
 // UPDATE
