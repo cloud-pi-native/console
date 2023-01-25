@@ -45,7 +45,7 @@ export const getUserProjectsController = async (req, res) => {
 }
 
 export const getProjectByIdController = async (req, res) => {
-  const projectId = req.params?.id
+  const projectId = req.params?.projectId
   const userId = req.session?.user?.id
 
   try {
@@ -322,7 +322,7 @@ export const projectRemoveUserController = async (req, res) => {
 
 export const projectArchivingController = async (req, res) => {
   const userId = req.session?.user.id
-  const projectId = req.params?.id
+  const projectId = req.params?.projectId
 
   try {
     const project = await getProjectById(projectId)
