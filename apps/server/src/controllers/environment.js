@@ -22,6 +22,7 @@ export const getEnvironmentByIdController = async (req, res) => {
     const env = await getEnvironmentById(id)
     const project = await getProjectByEnvironmentId(id)
 
+    // TODO : utiliser UsersProjects
     if (!project.usersId.includes(userId)) throw new Error('Requestor is not member of env\'s project')
     req.log.info({
       ...getLogInfos({
@@ -48,6 +49,7 @@ export const environmentInitializingController = async (req, res) => {
   let env
   try {
     const project = await getProjectById(data.projectId)
+    // TODO : utiliser UsersProjects
     if (!project.usersId.includes(userId)) throw new Error('Requestor is not member of env\'s project')
 
     const projectEnvs = await getEnvironmentsByProjectId(data.projectId)
@@ -128,6 +130,7 @@ export const environmentDeletingController = async (req, res) => {
   let project
   try {
     project = await getProjectByEnvironmentId(id)
+    // TODO : utiliser UsersProjects
     if (project.ownerId !== userId) throw new Error('Requestor is not owner of env\'s project')
 
     const env = await environmentDeleting(id)

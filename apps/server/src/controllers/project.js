@@ -10,6 +10,7 @@ import {
   projectAddUser,
   projectRemoveUser,
   projectArchiving,
+  projectGetUser,
 } from '../models/queries/project-queries.js'
 import { getUserByEmail, getUserById } from '../models/queries/user-queries.js'
 import { deletePermission, getUserPermissions } from '../models/queries/permission-queries.js'
@@ -49,6 +50,7 @@ export const getProjectByIdController = async (req, res) => {
 
   try {
     const project = await getProjectById(projectId)
+    // TODO : utiliser UsersProjects
     if (!project.usersId.includes(userId) && project.ownerId !== userId) throw new Error('Requestor is not member of the project')
 
     req.log.info({
@@ -71,7 +73,7 @@ export const getProjectByIdController = async (req, res) => {
 export const createProjectController = async (req, res) => {
   const data = req.body
   const userId = req.session?.user.id
-  data.ownerId = req.session?.user.id // TODO: à supprimer les clés `ownerId` et `usersId`
+
   let project
 
   try {
@@ -82,7 +84,6 @@ export const createProjectController = async (req, res) => {
 
     project = await projectInitializing(data)
     const user = await getUserById(userId)
-    // await user.addProject(project, { through: { role: 'owner' } })
     await projectAddUser({ project, user, role: 'owner' })
     req.log.info({
       ...getLogInfos({
@@ -101,7 +102,7 @@ export const createProjectController = async (req, res) => {
   }
 
   try {
-    const owner = await getUserById(project.ownerId)
+    const owner = await getUserById(userId)
     const ansibleData = {
       orgName: project.organization,
       ownerEmail: owner.email,
@@ -166,10 +167,12 @@ export const projectAddUserController = async (req, res) => {
 
     if (!project) throw new Error('Project not found')
 
+    // TODO : utiliser UsersProjects
     if (!project.usersId.includes(userId) && project.ownerId !== userId) throw new Error('Requestor is not member of the project')
 
     const userToAdd = await getUserByEmail(data.email)
 
+    // TODO : utiliser UsersProjects
     if (project.usersId.includes(userToAdd.id) || project.ownerId === userToAdd.id) throw new Error(`User with email '${data.email}' already member of project`)
 
     await projectLocked(projectId)
@@ -240,12 +243,16 @@ export const projectRemoveUserController = async (req, res) => {
     project = await getProjectById(projectId)
     if (!project) throw new Error('Project not found')
 
+    // TODO : utiliser UsersProjects
     if (!project.usersId.includes(userId) && project.ownerId !== userId) throw new Error('Requestor is not member of the project')
 
     const userToRemove = await getUserByEmail(email)
 
-    // TODO: remplacer ce mécanisme de vérification en utilisant la table `UsersProjects`
+    // TODO : utiliser UsersProjects
     // if (!project.usersId.includes(userToRemove.id)) throw new Error('Cet utilisateur n\'est pas membre du projet')
+
+    const role = await projectGetUser({ project, userToRemove })
+    console.log({ role })
 
     await projectLocked(projectId)
     await projectRemoveUser({ project, user: userToRemove })
@@ -320,6 +327,7 @@ export const projectArchivingController = async (req, res) => {
   try {
     const project = await getProjectById(projectId)
     if (!project) throw new Error('Project not found')
+    // TODO : utiliser UsersProjects
     if (project.ownerId !== userId) throw new Error('Requestor is not owner of the project')
 
     await projectLocked(projectId)

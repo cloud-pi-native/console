@@ -27,6 +27,7 @@ export const getRepositoryByIdController = async (req, res) => {
     const repo = await getRepositoryById(id)
     const project = await getProjectById(repo.projectId)
 
+    // TODO : utiliser UsersProjects
     if (!project.usersId.includes(userId)) throw new Error('Requestor is not a member of the repository\'s project')
 
     req.log.info({
@@ -52,6 +53,7 @@ export const getProjectRepositoriesController = async (req, res) => {
     const repos = await getProjectRepositories(projectId)
     const project = await getProjectById(projectId)
 
+    // TODO : utiliser UsersProjects
     if (!project.usersId.includes(userId)) throw new Error('Requestor is not a member of the repository\'s project')
 
     req.log.info({
@@ -89,6 +91,7 @@ export const repositoryInitializingController = async (req, res) => {
       return send500(res, message)
     }
 
+    // TODO : utiliser UsersProjects
     if (!project.usersId.includes(userId)) throw new Error('Requestor is not a member of the repository\'s project')
 
     await projectLocked(data.projectId)
@@ -110,6 +113,7 @@ export const repositoryInitializingController = async (req, res) => {
   }
 
   try {
+    // TODO : utiliser UsersProjects
     const owner = await getUserById(project.ownerId)
     const ansibleData = {
       orgName: project.orgName,
@@ -198,6 +202,7 @@ export const updateRepositoryController = async (req, res) => {
     }
 
     const project = await getProjectById(repo.projectId)
+    // TODO : utiliser UsersProjects
     if (!project.usersId.includes(userId)) throw new Error('Requestor is not a member of the repository\'s project')
 
     await projectLocked(data.projectId)
@@ -285,6 +290,7 @@ export const repositoryDeletingController = async (req, res) => {
     }
 
     const project = await getProjectById(repo.projectId)
+    // TODO : utiliser UsersProjects
     if (project.ownerId !== userId) throw new Error('Requestor is not owner of the repository\'s project')
 
     await projectLocked(repo.projectId)

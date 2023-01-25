@@ -8,6 +8,12 @@ import { getUserModel } from '../user.js'
 import { getRepositoryModel } from '../repository.js'
 
 // SELECT
+
+export const projectGetUser = async ({ project, user }) => {
+  return await user.hasProject(project)
+}
+
+// TODO : utiliser UsersProjects
 export const getUserProjects = async (userId) => {
   const res = await getProjectModel().findAll({
     ...allDataAttributes,
@@ -58,8 +64,8 @@ export const getProject = async ({ name, organization }) => {
 }
 
 // CREATE
-export const projectInitializing = async ({ name, organization, ownerId }) => {
-  return await getProjectModel().create({ name, organization, usersId: [ownerId], status: 'initializing', locked: true, ownerId })
+export const projectInitializing = async ({ name, organization }) => {
+  return await getProjectModel().create({ name, organization, status: 'initializing', locked: true })
 }
 
 // UPDATE
@@ -79,25 +85,10 @@ export const projectFailed = async (id) => {
   return await getProjectModel().update({ locked: false, status: 'failed' }, { where: { id } })
 }
 
-// export const projectAddUser = async ({ projectId, userId }) => {
-//   console.log('queries: ', { projectId, userId })
-//   return await getProjectModel().update({
-//     usersId: sequelize.fn('array_append', sequelize.col('usersId'), userId),
-//   }, {
-//     where: { id: projectId },
-//   })
-// }
 export const projectAddUser = async ({ project, user, role }) => {
   return await user.addProject(project, { through: { role } })
 }
 
-// export const projectRemoveUser = async ({ projectId, userId }) => {
-//   return await getProjectModel().update({
-//     usersId: sequelize.fn('array_remove', sequelize.col('usersId'), userId),
-//   }, {
-//     where: { id: projectId },
-//   })
-// }
 export const projectRemoveUser = async ({ project, user }) => {
   return await user.removeProject(project)
 }
@@ -112,10 +103,10 @@ export const projectArchiving = async (id) => {
 }
 
 // TECH
-export const _projectInitializing = async ({ id, name, organization, ownerId }) => {
+export const _projectInitializing = async ({ id, name, organization }) => {
   const project = await getProject({ name, organization })
   if (project) throw new Error('Un projet avec le nom et dans l\'organisation demandés existe déjà')
-  return await getProjectModel().create({ id, name, organization, usersId: [ownerId], status: 'initializing', locked: true, ownerId })
+  return await getProjectModel().create({ id, name, organization, status: 'initializing', locked: true })
 }
 
 export const _dropProjectsTable = async () => {
