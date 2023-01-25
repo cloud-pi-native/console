@@ -44,7 +44,7 @@ const setRows = () => {
         cellAttrs: {
           class: 'fr-fi-close-line fr-text-default--warning !flex justify-center cursor-pointer',
           title: `retirer ${user.email} du projet`,
-          onClick: () => removeUserFromProject(user.email),
+          onClick: () => removeUserFromProject(user.id),
         },
       }])
     })
@@ -65,8 +65,8 @@ const addUserToProject = async () => {
   newUser.value = instanciateSchema({ schema: userSchema }, undefined)
 }
 
-const removeUserFromProject = async (userEmail) => {
-  await projectStore.removeUserFromProject(userEmail)
+const removeUserFromProject = async (userId) => {
+  await projectStore.removeUserFromProject(userId)
 }
 
 onMounted(() => {
