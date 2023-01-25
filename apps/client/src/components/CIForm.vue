@@ -14,8 +14,9 @@ const projectStore = useProjectStore()
 
 const ciFilesStore = useCIFilesStore()
 
-const orgName = computed(() => projectStore.selectedProject.orgName)
-const projectName = computed(() => projectStore.selectedProject.projectName)
+const orgName = computed(() => projectStore.selectedProject.organization)
+const projectName = computed(() => projectStore.selectedProject.name)
+const internalRepoName = ref(props.internalRepoName)
 
 const ciData = ref({
   orgName: orgName.value,
@@ -82,10 +83,10 @@ const copyContent = async (key) => {
 }
 
 onMounted(() => {
-  ciData.value.internalRepoName = props.internalRepoName
+  ciData.value.internalRepoName = internalRepoName
 })
 
-watch(props.internalRepoName, (internalRepoName) => {
+watch(internalRepoName, (internalRepoName) => {
   ciData.value.internalRepoName = internalRepoName
 })
 </script>
