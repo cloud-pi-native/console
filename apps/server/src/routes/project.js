@@ -1,7 +1,7 @@
 import {
   getUserProjectsController,
   getProjectByIdController,
-  createProjectController,
+  projectAddUserController,
   projectArchivingController,
 } from '../controllers/project.js'
 
@@ -10,7 +10,7 @@ const router = async (app, _opt) => {
 
   await app.get('/projects/:projectId', getProjectByIdController)
 
-  await app.post('/projects', createProjectController)
+  await app.post('/:id/users', projectAddUserController)
 
   await app.delete('/projects/:projectId', projectArchivingController)
 }

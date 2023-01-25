@@ -3,6 +3,16 @@ export const projects = [
     id: '011e7860-04d7-461f-912d-334c622d38b3',
     organization: 'ministere-interieur',
     name: 'candilib',
+    users: [
+      {
+        id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+        role: 'owner',
+      },
+      {
+        id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6464',
+        role: 'user',
+      },
+    ],
     repositories: [
       {
         internalRepoName: 'candilib',
@@ -14,16 +24,6 @@ export const projects = [
         status: 'created',
       },
     ],
-    users: [
-      {
-        userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
-        role: 'owner',
-      },
-      {
-        userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6564',
-        role: 'user',
-      },
-    ],
     environments: [
       {
         name: 'staging',
@@ -31,16 +31,21 @@ export const projects = [
         permissions: [
           {
             userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
-            level: 0,
+            level: 10,
           },
         ],
-      }, {
+      },
+      {
         name: 'prod',
         status: 'created',
         permissions: [
           {
             userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
             level: 10,
+          },
+          {
+            userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6464',
+            level: 0,
           },
         ],
       },
@@ -51,6 +56,12 @@ export const projects = [
     id: '83833faf-f654-40dd-bcd5-cf2e944fc702',
     organization: 'ministere-interieur',
     name: 'psij',
+    users: [
+      {
+        id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+        role: 'owner',
+      },
+    ],
     repositories: [
       {
         internalRepoName: 'psij',
