@@ -3,7 +3,7 @@ import { getLogInfos } from '../utils/logger.js'
 import { send201, send500 } from '../utils/response.js'
 
 // GET
-// TODO : conditionner possibilité de récupérer touts les utilisateurs selon les droits de l'utilisateur
+// TODO : conditionner possibilité de récupérer tous les utilisateurs selon les droits de l'utilisateur
 // export const getUsersController = async (req, res) => {
 //   try {
 //     const users = await getUsers()

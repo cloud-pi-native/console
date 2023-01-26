@@ -1,4 +1,5 @@
 import {
+  getProjectUsers,
   getUserProjects,
   getProject,
   projectInitializing,
@@ -10,21 +11,46 @@ import {
   projectAddUser,
   projectRemoveUser,
   projectArchiving,
-  projectGetUser,
 } from '../models/queries/project-queries.js'
 import { getUserByEmail, getUserById } from '../models/queries/user-queries.js'
-import { deletePermission, getUserPermissions } from '../models/queries/permission-queries.js'
-import { getEnvironmentById } from '../models/queries/environment-queries.js'
+import { deletePermission } from '../models/queries/permission-queries.js'
+import { getEnvironmentsByProjectId } from '../models/queries/environment-queries.js'
 import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import { ansibleHost, ansiblePort } from '../utils/env.js'
 import { projectSchema } from 'shared/src/schemas/project.js'
 import { replaceNestedKeys, lowercaseFirstLetter } from '../utils/queries-tools.js'
+import {
+  getRoleByUserIdAndProjectId,
+  deleteRoleByUserIdAndProjectId,
+} from '../models/queries/users-projects-queries.js'
 
 // GET
 
 export const projectGetUsersController = async (req, res) => {
-// TODO : récupérer users d'un projet via UsersProjects
+  const userId = req.session?.id
+  const projectId = req.params?.projectId
+
+  try {
+    const role = await getRoleByUserIdAndProjectId(userId, projectId)
+    if (!role) throw new Error('Requestor is not member of project')
+
+    const users = await getProjectUsers(projectId)
+
+    req.log.info({
+      ...getLogInfos(),
+      description: 'Project members successfully retreived',
+    })
+    await send200(res, users)
+  } catch (error) {
+    const message = 'Cannot retrieve members of project'
+    req.log.error({
+      ...getLogInfos(),
+      description: message,
+      error: error.message,
+    })
+    send500(res, message)
+  }
 }
 
 export const getUserProjectsController = async (req, res) => {
@@ -55,8 +81,8 @@ export const getProjectByIdController = async (req, res) => {
 
   try {
     const project = await getProjectById(projectId)
-    // TODO : utiliser UsersProjects
-    if (!project.usersId.includes(userId) && project.ownerId !== userId) throw new Error('Requestor is not member of the project')
+    const role = await getRoleByUserIdAndProjectId(userId, projectId)
+    if (!role) throw new Error('Requestor is not member of project')
 
     req.log.info({
       ...getLogInfos({ projectId }),
@@ -172,13 +198,16 @@ export const projectAddUserController = async (req, res) => {
 
     if (!project) throw new Error('Project not found')
 
-    // TODO : utiliser UsersProjects
-    if (!project.usersId.includes(userId) && project.ownerId !== userId) throw new Error('Requestor is not member of the project')
+    const requestorRole = await getRoleByUserIdAndProjectId(userId, projectId)
+    if (!requestorRole) throw new Error('Requestor is not member of project')
 
     const userToAdd = await getUserByEmail(data.email)
 
-    // TODO : utiliser UsersProjects
-    if (project.usersId.includes(userToAdd.id) || project.ownerId === userToAdd.id) throw new Error(`User with email '${data.email}' already member of project`)
+    // TODO : refacto add et update en upsert ?
+    const userToAddRole = await getRoleByUserIdAndProjectId(userToAdd.id, projectId)
+    // TODO : test, si aucune valeur pour role, est-ce bien falsy ?
+    console.log(userToAddRole.dataValues)
+    if (userToAddRole) throw new Error('User is already member of projet')
 
     await projectLocked(projectId)
     await projectAddUser({ project, user: userToAdd, role: 'user' })
@@ -244,36 +273,31 @@ export const projectUpdateUserController = async (req, res) => {
 // DELETE
 export const projectRemoveUserController = async (req, res) => {
   const userId = req.session?.user.id
-  const projectId = req.params?.id
-  const email = req.body
+  const projectId = req.params?.projectId
+  const userToRemoveId = req.params?.userId
 
   let project
   try {
     project = await getProjectById(projectId)
     if (!project) throw new Error('Project not found')
 
-    // TODO : utiliser UsersProjects
-    if (!project.usersId.includes(userId) && project.ownerId !== userId) throw new Error('Requestor is not member of the project')
+    const requestorRole = await getRoleByUserIdAndProjectId(userId, projectId)
+    if (!requestorRole) throw new Error('Requestor is not member of project')
 
-    const userToRemove = await getUserByEmail(email)
+    const userToRemove = await getUserById(userToRemoveId)
 
-    // TODO : utiliser UsersProjects
-    // if (!project.usersId.includes(userToRemove.id)) throw new Error('Cet utilisateur n\'est pas membre du projet')
-
-    const role = await projectGetUser({ project, userToRemove })
-    console.log({ role })
+    const userToRemoveRole = await getRoleByUserIdAndProjectId(userToRemoveId, projectId)
+    if (!userToRemoveRole) throw new Error('User to remove is not member of the project')
 
     await projectLocked(projectId)
     await projectRemoveUser({ project, user: userToRemove })
-    const userPermissionsToDelete = await getUserPermissions(userToRemove.id)
-    // TODO : cascading
-    for (const userPermission of userPermissionsToDelete) {
-      const envId = userPermission.environmentId
-      await getEnvironmentById(envId)
-      if (envId.projectId === projectId) {
-        await deletePermission(userPermission.id)
-      }
-    }
+
+    const environments = await getEnvironmentsByProjectId(projectId)
+    environments.forEach(async env => {
+      // TODO : retirer user des groupes keycloak permission pour le projet
+      await deletePermission(userToRemoveId, env.id)
+    })
+    await deleteRoleByUserIdAndProjectId(userToRemoveId, projectId)
 
     const message = 'User successfully removed from project'
     req.log.info({
@@ -336,8 +360,10 @@ export const projectArchivingController = async (req, res) => {
   try {
     const project = await getProjectById(projectId)
     if (!project) throw new Error('Project not found')
-    // TODO : utiliser UsersProjects
-    if (project.ownerId !== userId) throw new Error('Requestor is not owner of the project')
+
+    const role = await getRoleByUserIdAndProjectId(userId, projectId)
+    if (!role) throw new Error('Requestor is not member of project')
+    if (role !== 'owner') throw new Error('Requestor is not owner of project')
 
     await projectLocked(projectId)
     await projectArchiving(projectId)

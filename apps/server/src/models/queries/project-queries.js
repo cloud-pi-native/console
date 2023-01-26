@@ -7,12 +7,21 @@ import { getUserModel } from '../user.js'
 import { getRepositoryModel } from '../repository.js'
 
 // SELECT
+export const getProjectUsers = async (projectId) => {
+  return await getProjectModel({
+    where: { id: projectId },
+    include: {
+      model: getUserModel(),
+      attributes: { exclude: ['role'] },
+    },
+    // TODO : tester pour vérifier si PascalCase ou pas
+  }).Users
+}
 
 export const projectGetUser = async ({ project, user }) => {
   return await user.hasProject(project)
 }
 
-// TODO : utiliser UsersProjects
 export const getUserProjects = async (userId) => {
   const res = await getProjectModel().findAll({
     ...allDataAttributes,

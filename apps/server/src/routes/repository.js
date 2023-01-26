@@ -8,7 +8,7 @@ import {
 
 const router = async (app, _opt) => {
   // Récupérer un repository par son id
-  await app.get('/:repositoryId', getRepositoryByIdController)
+  await app.get('/:projectId/:repositoryId', getRepositoryByIdController)
 
   // Récupérer tous les repositories d'un projet
   await app.get('/:projectId/repositories', getProjectRepositoriesController)

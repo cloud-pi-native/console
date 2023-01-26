@@ -13,6 +13,10 @@ import {
   projectLocked,
   projectUnlocked,
 } from '../models/queries/project-queries.js'
+import {
+  getEnvironmentsNamesByProjectId,
+} from '../models/queries/environment-queries.js'
+import { getRoleByUserIdAndProjectId } from '../models/queries/users-projects-queries.js'
 import { getUserById } from '../models/queries/user-queries.js'
 import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
@@ -21,24 +25,24 @@ import { ansibleHost, ansiblePort } from '../utils/env.js'
 // GET
 
 export const getRepositoryByIdController = async (req, res) => {
+  const projectId = req.params?.projectId
   const repositoryId = req.params?.repositoryId
   const userId = req.session?.user.id
+
   try {
     const repo = await getRepositoryById(repositoryId)
-    const project = await getProjectById(repo.projectId)
-
-    // TODO : utiliser UsersProjects
-    if (!project.usersId.includes(userId)) throw new Error('Requestor is not a member of the repository\'s project')
+    const role = await getRoleByUserIdAndProjectId(userId, projectId)
+    if (!role) throw new Error('Requestor is not member of project')
 
     req.log.info({
-      ...getLogInfos({ repoId: repositoryId }),
+      ...getLogInfos({ repositoryId }),
       description: 'Project successfully retrived',
     })
     send200(res, repo)
   } catch (error) {
     const message = 'Cannot retrieve repository'
     req.log.error({
-      ...getLogInfos({ repoId: repositoryId }),
+      ...getLogInfos({ repositoryId }),
       description: message,
       error: error.message,
     })
@@ -51,10 +55,8 @@ export const getProjectRepositoriesController = async (req, res) => {
   const userId = req.session?.user.id
   try {
     const repos = await getProjectRepositories(projectId)
-    const project = await getProjectById(projectId)
-
-    // TODO : utiliser UsersProjects
-    if (!project.usersId.includes(userId)) throw new Error('Requestor is not a member of the repository\'s project')
+    const role = await getRoleByUserIdAndProjectId(userId, projectId)
+    if (!role) throw new Error('Requestor is not member of project')
 
     req.log.info({
       ...getLogInfos({ projectId }),
@@ -92,15 +94,15 @@ export const repositoryInitializingController = async (req, res) => {
       return send500(res, message)
     }
 
-    // TODO : utiliser UsersProjects
-    if (!project.usersId.includes(userId)) throw new Error('Requestor is not a member of the repository\'s project')
+    const role = await getRoleByUserIdAndProjectId(userId, projectId)
+    if (!role) throw new Error('Requestor is not member of project')
 
     await projectLocked(projectId)
     repo = await repositoryInitializing(data)
 
     const message = 'Repository successfully created'
     req.log.info({
-      ...getLogInfos({ repoId: repo.id }),
+      ...getLogInfos({ repositoryId: repo.id }),
       description: message,
     })
   } catch (error) {
@@ -114,19 +116,26 @@ export const repositoryInitializingController = async (req, res) => {
   }
 
   try {
-    // TODO : utiliser UsersProjects
+    // TODO : qst @tobi - Faut-il envoyer à ansible le owner du projet, ou le user qui crée le repo ?
+    // si owner, requête dans UsersProjects avec projectId et role='owner' pour récupérer UserId du owner
+    // puis avec ce UserId, getUserById pour récupérer email
     const owner = await getUserById(project.ownerId)
+    owner.email = 'test@test.fr'
+
+    const environmentsNames = await getEnvironmentsNamesByProjectId(projectId)
+
     const ansibleData = {
-      orgName: project.orgName,
-      ownerEmail: owner.email,
-      projectName: project.projectName,
-      internalRepoName: data.internalRepoName,
-      externalRepoUrl: data.externalRepoUrl.startsWith('http') ? data.externalRepoUrl.split('://')[1] : data.externalRepoUrl,
-      isInfra: data.isInfra,
+      ORGANIZATION_NAME: project.orgName,
+      EMAIL: owner.email,
+      PROJECT_NAME: project.projectName,
+      REPO_DEST: data.internalRepoName,
+      REPO_SRC: data.externalRepoUrl.startsWith('http') ? data.externalRepoUrl.split('://')[1] : data.externalRepoUrl,
+      IS_INFRA: data.isInfra,
+      ENV_LIST: environmentsNames,
     }
     if (data.isPrivate) {
-      ansibleData.externalUserName = data.externalUserName
-      ansibleData.externalToken = data.externalToken
+      ansibleData.GIT_INPUT_USER = data.externalUserName
+      ansibleData.GIT_INPUT_PASSWORD = data.externalToken
     }
 
     await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/repos`, {
@@ -143,7 +152,7 @@ export const repositoryInitializingController = async (req, res) => {
       await projectUnlocked(projectId)
 
       req.log.info({
-        ...getLogInfos({ repoId: repo.id }),
+        ...getLogInfos({ repositoryId: repo.id }),
         description: 'Repository status successfully updated in database to created',
       })
     } catch (error) {
@@ -169,7 +178,7 @@ export const repositoryInitializingController = async (req, res) => {
       await projectUnlocked(projectId)
 
       req.log.info({
-        ...getLogInfos({ repoId: repo.id }),
+        ...getLogInfos({ repositoryId: repo.id }),
         description: 'Repo status successfully updated in database to failed',
       })
     } catch (error) {
@@ -204,16 +213,15 @@ export const updateRepositoryController = async (req, res) => {
       return send500(res, message)
     }
 
-    const project = await getProjectById(projectId)
-    // TODO : utiliser UsersProjects
-    if (!project.usersId.includes(userId)) throw new Error('Requestor is not a member of the repository\'s project')
+    const role = await getRoleByUserIdAndProjectId(userId, projectId)
+    if (!role) throw new Error('Requestor is not member of project')
 
     await projectLocked(projectId)
     await updateRepository(repositoryId, data.info)
 
     const message = 'Repository successfully updated'
     req.log.info({
-      ...getLogInfos({ repoId: repositoryId }),
+      ...getLogInfos({ repositoryId }),
       description: message,
     })
   } catch (error) {
@@ -233,7 +241,7 @@ export const updateRepositoryController = async (req, res) => {
       await projectUnlocked(projectId)
 
       req.log.info({
-        ...getLogInfos({ repoId: repositoryId }),
+        ...getLogInfos({ repositoryId }),
         description: 'Repository status successfully updated in database to created',
       })
     } catch (error) {
@@ -259,7 +267,7 @@ export const updateRepositoryController = async (req, res) => {
       await projectUnlocked(projectId)
 
       req.log.info({
-        ...getLogInfos({ repoId: repositoryId }),
+        ...getLogInfos({ repositoryId }),
         description: 'Repo status successfully updated in database to failed',
       })
     } catch (error) {
@@ -293,16 +301,16 @@ export const repositoryDeletingController = async (req, res) => {
       return send500(res, message)
     }
 
-    const project = await getProjectById(projectId)
-    // TODO : utiliser UsersProjects
-    if (project.ownerId !== userId) throw new Error('Requestor is not owner of the repository\'s project')
+    const role = await getRoleByUserIdAndProjectId(userId, projectId)
+    if (!role) throw new Error('Requestor is not member of project')
+    if (role !== 'owner') throw new Error('Requestor is not owner of project')
 
     await projectLocked(projectId)
     await repositoryDeleting(repositoryId)
 
     const message = 'Repository status successfully deleting'
     req.log.info({
-      ...getLogInfos({ repoId: repositoryId }),
+      ...getLogInfos({ repositoryId }),
       description: message,
     })
   } catch (error) {
@@ -322,7 +330,7 @@ export const repositoryDeletingController = async (req, res) => {
       await projectUnlocked(projectId)
 
       req.log.info({
-        ...getLogInfos({ repoId: repositoryId }),
+        ...getLogInfos({ repositoryId }),
         description: 'Repository successfully deleted, project unlocked',
       })
     } catch (error) {
@@ -348,7 +356,7 @@ export const repositoryDeletingController = async (req, res) => {
       await projectUnlocked(projectId)
 
       req.log.info({
-        ...getLogInfos({ repoId: repositoryId }),
+        ...getLogInfos({ repositoryId }),
         description: 'Repository status successfully updated in database to failed, project unlocked',
       })
     } catch (error) {

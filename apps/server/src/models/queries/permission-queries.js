@@ -16,6 +16,16 @@ export const getUserPermissions = async (userId) => {
   })
 }
 
+export const getPermissionByUserIdAndEnvironmentId = async (userId, environmentId) => {
+  return getPermissionModel().findAll({
+    attributes: ['level'],
+    where: {
+      userId,
+      environmentId,
+    },
+  })
+}
+
 // CREATE
 export const setPermission = async ({ userId, envId, level }) => {
   return getPermissionModel().upsert({ userId, environmentId: envId, level },
@@ -28,10 +38,11 @@ export const setPermission = async ({ userId, envId, level }) => {
 }
 
 // DELETE
-export const deletePermission = async (id) => {
+export const deletePermission = async (userId, environmentId) => {
   return await getPermissionModel().destroy({
     where: {
-      id,
+      userId,
+      environmentId,
     },
   })
 }
