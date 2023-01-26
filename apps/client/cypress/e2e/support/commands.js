@@ -34,7 +34,7 @@ Cypress.Commands.add('createProject', (project) => {
 
   const newProject = {
     id: nanoid(),
-    repositoies: [],
+    repositories: [],
     owner: {
       id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
       email: 'test@test.com',
@@ -62,8 +62,8 @@ Cypress.Commands.add('createProject', (project) => {
   cy.wait('@postProject').its('response.statusCode').should('eq', 201)
   cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
 
-  if (newProject.repositoies.length) {
-    cy.addRepos(newProject.repositoies)
+  if (newProject.repositories.length) {
+    cy.addRepos(newProject.repositories)
   }
 })
 
