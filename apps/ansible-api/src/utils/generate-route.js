@@ -16,7 +16,6 @@ export const generateRoute = (path, method) => {
   if (!Array.isArray(playbookParsed) && !playbookParsed[0]?.vars?.validation) {
     throw Error(`Playbook ${playbook} does not have a validation vars`)
   }
-
   return {
     handler,
     schema,

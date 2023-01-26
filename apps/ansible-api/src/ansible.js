@@ -3,14 +3,12 @@ import app from './app.js'
 import { playbookDir } from './utils/env.js'
 import { getLogInfos } from './utils/logger.js'
 
-export function responseFormatter (status, code, logs) {
-  return {
-    command: this.command,
-    status,
-    code,
-    logs: logs.toString(),
-  }
-}
+export const responseFormatter = (status, code, logs) => ({
+  command: this.command,
+  status,
+  code,
+  logs: logs.toString(),
+})
 
 export const runPlaybook = (playbook, vars) => {
   const args = [
