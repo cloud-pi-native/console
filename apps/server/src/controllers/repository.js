@@ -21,24 +21,24 @@ import { ansibleHost, ansiblePort } from '../utils/env.js'
 // GET
 
 export const getRepositoryByIdController = async (req, res) => {
-  const id = req.params.id
+  const repositoryId = req.params?.repositoryId
   const userId = req.session?.user.id
   try {
-    const repo = await getRepositoryById(id)
+    const repo = await getRepositoryById(repositoryId)
     const project = await getProjectById(repo.projectId)
 
     // TODO : utiliser UsersProjects
     if (!project.usersId.includes(userId)) throw new Error('Requestor is not a member of the repository\'s project')
 
     req.log.info({
-      ...getLogInfos({ repoId: id }),
+      ...getLogInfos({ repoId: repositoryId }),
       description: 'Project successfully retrived',
     })
     send200(res, repo)
   } catch (error) {
     const message = 'Cannot retrieve repository'
     req.log.error({
-      ...getLogInfos({ repoId: id }),
+      ...getLogInfos({ repoId: repositoryId }),
       description: message,
       error: error.message,
     })
@@ -47,7 +47,7 @@ export const getRepositoryByIdController = async (req, res) => {
 }
 
 export const getProjectRepositoriesController = async (req, res) => {
-  const projectId = req.params.id
+  const projectId = req.params?.projectId
   const userId = req.session?.user.id
   try {
     const repos = await getProjectRepositories(projectId)
@@ -77,11 +77,12 @@ export const getProjectRepositoriesController = async (req, res) => {
 export const repositoryInitializingController = async (req, res) => {
   const data = req.body
   const userId = req.session?.user?.id
+  const projectId = req.params?.projectId
 
   let project
   let repo
   try {
-    project = await getProjectById(data.projectId)
+    project = await getProjectById(projectId)
     if (!project) {
       const message = 'The required project does not exists'
       req.log.error({
@@ -94,7 +95,7 @@ export const repositoryInitializingController = async (req, res) => {
     // TODO : utiliser UsersProjects
     if (!project.usersId.includes(userId)) throw new Error('Requestor is not a member of the repository\'s project')
 
-    await projectLocked(data.projectId)
+    await projectLocked(projectId)
     repo = await repositoryInitializing(data)
 
     const message = 'Repository successfully created'
@@ -139,7 +140,7 @@ export const repositoryInitializingController = async (req, res) => {
 
     try {
       await repositoryCreated(repo.id)
-      await projectUnlocked(data.projectId)
+      await projectUnlocked(projectId)
 
       req.log.info({
         ...getLogInfos({ repoId: repo.id }),
@@ -165,7 +166,7 @@ export const repositoryInitializingController = async (req, res) => {
 
     try {
       await repositoryFailed(repo.id)
-      await projectUnlocked(data.projectId)
+      await projectUnlocked(projectId)
 
       req.log.info({
         ...getLogInfos({ repoId: repo.id }),
@@ -188,10 +189,12 @@ export const repositoryInitializingController = async (req, res) => {
 export const updateRepositoryController = async (req, res) => {
   const data = req.body
   const userId = req.session?.user?.id
+  const projectId = req.params?.projectId
+  const repositoryId = req.params?.repositoryId
 
   let repo
   try {
-    repo = await getRepositoryById(data.id)
+    repo = await getRepositoryById(repositoryId)
     if (!repo) {
       const message = 'The required repository does not exists'
       req.log.error({
@@ -201,16 +204,16 @@ export const updateRepositoryController = async (req, res) => {
       return send500(res, message)
     }
 
-    const project = await getProjectById(repo.projectId)
+    const project = await getProjectById(projectId)
     // TODO : utiliser UsersProjects
     if (!project.usersId.includes(userId)) throw new Error('Requestor is not a member of the repository\'s project')
 
-    await projectLocked(data.projectId)
-    repo = await updateRepository(repo.id, data.info)
+    await projectLocked(projectId)
+    await updateRepository(repositoryId, data.info)
 
     const message = 'Repository successfully updated'
     req.log.info({
-      ...getLogInfos({ repoId: repo.id }),
+      ...getLogInfos({ repoId: repositoryId }),
       description: message,
     })
   } catch (error) {
@@ -226,11 +229,11 @@ export const updateRepositoryController = async (req, res) => {
   try {
     // TODO : #131 : appel ansible
     try {
-      await repositoryCreated(repo.id)
-      await projectUnlocked(repo.projectId)
+      await repositoryCreated(repositoryId)
+      await projectUnlocked(projectId)
 
       req.log.info({
-        ...getLogInfos({ repoId: repo.id }),
+        ...getLogInfos({ repoId: repositoryId }),
         description: 'Repository status successfully updated in database to created',
       })
     } catch (error) {
@@ -252,11 +255,11 @@ export const updateRepositoryController = async (req, res) => {
     })
 
     try {
-      await repositoryFailed(repo.id)
-      await projectUnlocked(repo.projectId)
+      await repositoryFailed(repositoryId)
+      await projectUnlocked(projectId)
 
       req.log.info({
-        ...getLogInfos({ repoId: repo.id }),
+        ...getLogInfos({ repoId: repositoryId }),
         description: 'Repo status successfully updated in database to failed',
       })
     } catch (error) {
@@ -274,12 +277,13 @@ export const updateRepositoryController = async (req, res) => {
 // DELETE
 
 export const repositoryDeletingController = async (req, res) => {
-  const id = req.params.id
+  const projectId = req.params?.projectId
+  const repositoryId = req.params?.repositoryId
   const userId = req.session?.user?.id
 
   let repo
   try {
-    repo = await getRepositoryById(id)
+    repo = await getRepositoryById(repositoryId)
     if (!repo) {
       const message = 'The required repository does not exists'
       req.log.error({
@@ -289,16 +293,16 @@ export const repositoryDeletingController = async (req, res) => {
       return send500(res, message)
     }
 
-    const project = await getProjectById(repo.projectId)
+    const project = await getProjectById(projectId)
     // TODO : utiliser UsersProjects
     if (project.ownerId !== userId) throw new Error('Requestor is not owner of the repository\'s project')
 
-    await projectLocked(repo.projectId)
-    repo = repositoryDeleting(id)
+    await projectLocked(projectId)
+    await repositoryDeleting(repositoryId)
 
     const message = 'Repository status successfully deleting'
     req.log.info({
-      ...getLogInfos({ repoId: id }),
+      ...getLogInfos({ repoId: repositoryId }),
       description: message,
     })
   } catch (error) {
@@ -314,11 +318,11 @@ export const repositoryDeletingController = async (req, res) => {
   try {
     // TODO : #131 : appel ansible
     try {
-      await deleteRepository(id)
-      await projectUnlocked(repo.projectId)
+      await deleteRepository(repositoryId)
+      await projectUnlocked(projectId)
 
       req.log.info({
-        ...getLogInfos({ repoId: id }),
+        ...getLogInfos({ repoId: repositoryId }),
         description: 'Repository successfully deleted, project unlocked',
       })
     } catch (error) {
@@ -340,11 +344,11 @@ export const repositoryDeletingController = async (req, res) => {
     })
 
     try {
-      await repositoryFailed(id)
-      await projectUnlocked(repo.projectId)
+      await repositoryFailed(repositoryId)
+      await projectUnlocked(projectId)
 
       req.log.info({
-        ...getLogInfos({ repoId: id }),
+        ...getLogInfos({ repoId: repositoryId }),
         description: 'Repository status successfully updated in database to failed, project unlocked',
       })
     } catch (error) {

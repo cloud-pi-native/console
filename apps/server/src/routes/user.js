@@ -3,23 +3,28 @@
 //   createUserController,
 // } from '../controllers/user.js'
 import {
+  projectGetUsersController,
   projectAddUserController,
   projectRemoveUserController,
+  projectUpdateUserController,
 } from '../controllers/project.js'
 
 const router = async (app, _opt) => {
+  // TODO : routes non utilisées
   // await app.get('/', getUsersController)
   // await app.post('/', createUserController)
 
-  // TODO : controller get users via projectId dans UsersProjects
-  await app.get('/projects/:projectId/users', projectAddUserController)
+  // Récupérer les membres d'un projet
+  await app.get('/:projectId/users', projectGetUsersController)
 
-  await app.post('/projects/:projectId/users', projectAddUserController)
+  // Ajouter un membre dans un projet
+  await app.post('/:projectId/users', projectAddUserController)
 
-  // TODO : controller modifier rôle dans UsersProjects
-  // await app.put('/projects/:projectId/users/:userId', projectAddUserController)
+  // Mettre à jour un membre d'un projet
+  await app.put('/:projectId/users/:userId', projectUpdateUserController)
 
-  await app.delete('/projects/:projectId/users/:userId', projectRemoveUserController)
+  // Supprimer un membre d'un projet
+  await app.delete('/:projectId/users/:userId', projectRemoveUserController)
 }
 
 export default router

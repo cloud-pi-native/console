@@ -7,14 +7,20 @@ import {
 } from '../controllers/repository.js'
 
 const router = async (app, _opt) => {
-  await app.get('/:id', getRepositoryByIdController)
-  await app.get('/project/:id', getProjectRepositoriesController)
+  // Récupérer un repository par son id
+  await app.get('/:repositoryId', getRepositoryByIdController)
 
-  await app.post('/', repositoryInitializingController)
+  // Récupérer tous les repositories d'un projet
+  await app.get('/:projectId/repositories', getProjectRepositoriesController)
 
-  await app.put('/:id', updateRepositoryController)
+  // Créer un repository
+  await app.post('/:projectId/repositories', repositoryInitializingController)
 
-  await app.delete('/:id', repositoryDeletingController)
+  // Mettre à jour un repository
+  await app.put('/:projectId/repositories/:repositoryId', updateRepositoryController)
+
+  // Supprimer un repository
+  await app.delete('/:projectId/repositories/:repositoryId', repositoryDeletingController)
 }
 
 export default router

@@ -5,11 +5,14 @@ import {
 } from '../controllers/environment.js'
 
 const router = async (app, _opt) => {
-  await app.get('/:id', getEnvironmentByIdController)
+  // Récupérer un environnement par son id
+  await app.get('/:environmentId', getEnvironmentByIdController)
 
-  await app.post('/', environmentInitializingController)
+  // Créer un environnement
+  await app.post('/:projectId/environments', environmentInitializingController)
 
-  await app.delete('/:id', environmentDeletingController)
+  // Supprimer un environnement
+  await app.delete('/:projectId/environments/:environmentId', environmentDeletingController)
 }
 
 export default router

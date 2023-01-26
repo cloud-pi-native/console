@@ -15,12 +15,12 @@ import { send200, send201, send500 } from '../utils/response.js'
 
 // GET
 export const getEnvironmentByIdController = async (req, res) => {
-  const id = req.params.id
+  const environmentId = req.params?.environmentId
   const userId = req.session?.user?.id
 
   try {
-    const env = await getEnvironmentById(id)
-    const project = await getProjectByEnvironmentId(id)
+    const env = await getEnvironmentById(environmentId)
+    const project = await getProjectByEnvironmentId(environmentId)
 
     // TODO : utiliser UsersProjects
     if (!project.usersId.includes(userId)) throw new Error('Requestor is not member of env\'s project')
@@ -45,20 +45,21 @@ export const getEnvironmentByIdController = async (req, res) => {
 export const environmentInitializingController = async (req, res) => {
   const data = req.body
   const userId = req.session?.user.id
+  const projectId = req.params?.projectId
 
   let env
   try {
-    const project = await getProjectById(data.projectId)
+    const project = await getProjectById(projectId)
     // TODO : utiliser UsersProjects
     if (!project.usersId.includes(userId)) throw new Error('Requestor is not member of env\'s project')
 
-    const projectEnvs = await getEnvironmentsByProjectId(data.projectId)
+    const projectEnvs = await getEnvironmentsByProjectId(projectId)
     projectEnvs.forEach(env => {
       if (env.name === data.name) throw new Error('Requested environment already exists for this project')
     })
 
     env = await environmentInitializing(data)
-    await projectLocked(data.projectId)
+    await projectLocked(projectId)
 
     req.log.info({
       ...getLogInfos({
@@ -85,7 +86,7 @@ export const environmentInitializingController = async (req, res) => {
         envId: env.id,
         level: data.level,
       })
-      await projectUnlocked(data.projectId)
+      await projectUnlocked(projectId)
 
       req.log.info({
         ...getLogInfos({ projectId: env.id }),
@@ -106,7 +107,7 @@ export const environmentInitializingController = async (req, res) => {
     })
     try {
       await environmentFailed(env.id)
-      await projectUnlocked(data.projectId)
+      await projectUnlocked(projectId)
 
       req.log.info({
         ...getLogInfos({ projectId: env.id }),
@@ -124,21 +125,22 @@ export const environmentInitializingController = async (req, res) => {
 
 // DELETE
 export const environmentDeletingController = async (req, res) => {
-  const id = req.params.id
+  const environmentId = req.params?.environmentId
+  const projectId = req.params?.projectId
   const userId = req.session?.user.id
 
   let project
   try {
-    project = await getProjectByEnvironmentId(id)
+    project = await getProjectByEnvironmentId(environmentId)
     // TODO : utiliser UsersProjects
     if (project.ownerId !== userId) throw new Error('Requestor is not owner of env\'s project')
 
-    const env = await environmentDeleting(id)
-    await projectLocked(project.id)
+    const env = await environmentDeleting(environmentId)
+    await projectLocked(projectId)
 
     req.log.info({
       ...getLogInfos({
-        projectId: project.id,
+        projectId,
       }),
       description: 'Environment status successfully updated in database',
     })
@@ -155,16 +157,16 @@ export const environmentDeletingController = async (req, res) => {
   try {
     // TODO : #133 : appel ansible
     try {
-      await deleteEnvironment(id)
-      const permissions = await getEnvPermissions(id)
+      await deleteEnvironment(environmentId)
+      const permissions = await getEnvPermissions(environmentId)
       // TODO : cascading
       for (const permission of permissions) {
         await deletePermission(permission.id)
       }
-      await projectUnlocked(project.id)
+      await projectUnlocked(projectId)
 
       req.log.info({
-        ...getLogInfos({ envId: id }),
+        ...getLogInfos({ envId: environmentId }),
         description: 'Environment successfully deleted',
       })
     } catch (error) {
@@ -181,11 +183,11 @@ export const environmentDeletingController = async (req, res) => {
       error,
     })
     try {
-      await environmentFailed(id)
-      await projectUnlocked(project.id)
+      await environmentFailed(environmentId)
+      await projectUnlocked(projectId)
 
       req.log.info({
-        ...getLogInfos({ envId: id }),
+        ...getLogInfos({ envId: environmentId }),
         description: 'Environment status successfully updated to failed in database',
       })
     } catch (error) {

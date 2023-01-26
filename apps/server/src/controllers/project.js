@@ -22,6 +22,11 @@ import { projectSchema } from 'shared/src/schemas/project.js'
 import { replaceNestedKeys, lowercaseFirstLetter } from '../utils/queries-tools.js'
 
 // GET
+
+export const projectGetUsersController = async (req, res) => {
+// TODO : récupérer users d'un projet via UsersProjects
+}
+
 export const getUserProjectsController = async (req, res) => {
   const userId = req.session?.user?.id
 
@@ -230,6 +235,10 @@ export const projectAddUserController = async (req, res) => {
       })
     }
   }
+}
+
+export const projectUpdateUserController = async (req, res) => {
+// TODO : modifier role d'un user d'un projet via UsersProjects
 }
 
 // DELETE
