@@ -1,4 +1,3 @@
-import { Op } from 'sequelize'
 import { sequelize } from '../../connect.js'
 import { getProjectModel } from '../project.js'
 import { allDataAttributes, getUniq } from '../../utils/queries-tools.js'
@@ -17,12 +16,6 @@ export const projectGetUser = async ({ project, user }) => {
 export const getUserProjects = async (userId) => {
   const res = await getProjectModel().findAll({
     ...allDataAttributes,
-    where: {
-      [Op.or]: [
-        { ownerId: userId },
-        { usersId: { [Op.contains]: [userId] } },
-      ],
-    },
     include: [
       {
         model: getEnvironmentModel(),
@@ -38,6 +31,11 @@ export const getUserProjects = async (userId) => {
       {
         model: getUserModel(),
         attributes: { exclude: ['role'] },
+        through: {
+          where: {
+            id: userId,
+          },
+        },
       },
       {
         model: getRepositoryModel(),
