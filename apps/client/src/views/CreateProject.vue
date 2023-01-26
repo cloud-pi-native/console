@@ -1,13 +1,15 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
+import { useOrganizationStore } from '@/stores/organization.js'
 import { projectSchema } from 'shared/src/schemas/project.js'
 import { schemaValidator, isValid, instanciateSchema } from 'shared/src/utils/schemas.js'
 import router from '@/router/index.js'
 
 const projectStore = useProjectStore()
 const userStore = useUserStore()
+const organizationStore = useOrganizationStore()
 
 const owner = computed(() => userStore.userProfile)
 
@@ -23,20 +25,7 @@ const project = ref({
   name: undefined,
 })
 
-const orgOptions = ref([
-  {
-    text: 'Ministère de l\'Intérieur',
-    value: 'ministere-interieur',
-  },
-  {
-    text: 'Ministère de la Justice',
-    value: 'ministere-justice',
-  },
-  {
-    text: 'Direction Interministérielle du Numérique',
-    value: 'dinum',
-  },
-])
+const orgOptions = ref([])
 
 const updatedValues = ref({})
 
@@ -53,10 +42,23 @@ const createProject = async () => {
 }
 
 const updateProject = (key, value) => {
-  project.value[key] = value
+  if (key === 'organization') {
+    const org = orgOptions.value.find(org => org.value === value)
+    project.value[key] = org.id
+  } else {
+    project.value[key] = value
+  }
   updatedValues.value[key] = true
 }
 
+onMounted(async () => {
+  await organizationStore.setOrganizations()
+  orgOptions.value = organizationStore.organizations.map(org => ({
+    text: org.label,
+    value: org.name,
+    id: org.id,
+  }))
+})
 </script>
 
 <template>

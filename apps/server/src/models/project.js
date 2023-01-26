@@ -14,13 +14,8 @@ export const getProjectModel = () => Project ?? (Project = sequelize.define('Pro
     type: DataTypes.STRING(50),
     allowNull: false,
   },
-  // TODO attention cette colonne va disparaitre
-  // ownerId: {
-  //   type: DataTypes.UUID,
-  //   allowNull: false,
-  // },
   organization: {
-    type: DataTypes.STRING(50),
+    type: DataTypes.UUID,
     allowNull: false,
   },
   status: {

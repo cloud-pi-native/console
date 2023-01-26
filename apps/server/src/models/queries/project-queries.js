@@ -1,10 +1,11 @@
 import { sequelize } from '../../connect.js'
+// import { Op } from 'sequelize'
 import { getProjectModel } from '../project.js'
-import { allDataAttributes, getUniq } from '../../utils/queries-tools.js'
+import { dbKeysExcluded, getUniq } from '../../utils/queries-tools.js'
 import { getPermissionModel } from '../permission.js'
 import { getEnvironmentModel } from '../environment.js'
-import { getUserModel } from '../user.js'
 import { getRepositoryModel } from '../repository.js'
+import { getUserModel } from '../user.js'
 
 // SELECT
 export const getProjectUsers = async (projectId) => {
@@ -23,8 +24,22 @@ export const projectGetUser = async ({ project, user }) => {
 }
 
 export const getUserProjects = async (userId) => {
+  // const res = await getProjectModel().findAll({
+  //   ...dbKeysExcluded,
+  //   where: {
+  //     [Op.or]: [
+  //       { ownerId: userId },
+  //       { usersId: { [Op.contains]: [userId] } },
+  //     ],
+  //   },
+  //   include: {
+  //     all: true,
+  //     nested: true,
+  //     ...dbKeysExcluded,
+  //   },
+  // })
   const res = await getProjectModel().findAll({
-    ...allDataAttributes,
+    ...dbKeysExcluded,
     include: [
       {
         model: getEnvironmentModel(),
@@ -35,25 +50,28 @@ export const getUserProjects = async (userId) => {
             attributes: { exclude: ['role'] },
           },
         },
-        ...allDataAttributes,
+        ...dbKeysExcluded,
       },
-      {
-        model: getUserModel(),
-        attributes: { exclude: ['role'] },
-        through: {
-          where: {
-            id: userId,
-          },
-        },
-      },
+      // TODO : commenté car error: "column Users->UsersProjects.id does not exist"
+      // {
+      //   model: getUserModel(),
+      //   attributes: { exclude: ['role'] },
+      //   through: {
+      //     where: {
+      //       id: userId,
+      //     },
+      //   },
+      // },
       {
         model: getRepositoryModel(),
-        ...allDataAttributes,
+        ...dbKeysExcluded,
       },
     ],
   })
   return res
 }
+
+// column Users->UsersProjects.id does not exist
 
 export const getProjectById = async (id) => {
   return await getProjectModel().findByPk(id)

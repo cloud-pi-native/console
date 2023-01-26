@@ -14,12 +14,11 @@
 | Champ                                           | Type    | Description                               |
 | ----------------------------------------------- | ------- | ----------------------------------------- |
 | Nom du dépôt Git interne                        | string  | obligatoire, regex([a-z0-9-]{2,53})       |
-| Url du dépôt Git externe                        | string  | obligatoire, regex(^https://)             |
+| Url du dépôt Git externe                        | string  | obligatoire, regex(^<https://)>             |
 | Dépôt externe privé                             | boolean | obligatoire                               |
 | Nom d'utilisateur lié au token du dépôt externe | string  | obligatoire si le dépôt externe est privé |
 | Token d'accès au dépôt externe                  | string  | obligatoire si le dépôt externe est privé |
 | Dépôt d'infrastructure                          | boolean | obligatoire                               |
-
 
 ## Point d'api
 
@@ -110,7 +109,9 @@ delete('/projects/:projectId/environments/:environmentId/permissions')
 ```
 
 ---
+
 ## TODO: Idées
+
 ### Admin
 
 - Lister chacune des tables

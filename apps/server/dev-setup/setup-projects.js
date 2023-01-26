@@ -1,6 +1,7 @@
 import { _projectInitializing, projectCreated, projectFailed, projectArchiving, projectAddUser } from '../src/models/queries/project-queries.js'
 import { environmentInitializing, environmentCreated, environmentFailed } from '../src/models/queries/environment-queries.js'
-import { setPermission } from '../src/models/queries/permission-queries.js'
+import { setEnvironmentPermission } from '../src/models/queries/permission-queries.js'
+import { getOrganizationByName } from '../src/models/queries/organization-queries.js'
 import { repositoryInitializing, repositoryCreated, repositoryFailed } from '../src/models/queries/repository-queries.js'
 import app from '../src/app.js'
 import { projects } from 'shared/dev-setup/projects.js'
@@ -11,6 +12,8 @@ export default async () => {
   const projectsCreated = projects.map(async project => {
     try {
       // Create project
+      const dbOrganization = await getOrganizationByName(project.organization)
+      project.organization = dbOrganization.id
       const createdProject = await _projectInitializing(project)
       if (project.status === 'created') {
         await projectCreated(createdProject.dataValues.id)
@@ -40,9 +43,9 @@ export default async () => {
 
         // Create permissions
         environment.permissions.forEach(async permission => {
-          await setPermission({
+          await setEnvironmentPermission({
             userId: permission.userId,
-            envId: createdEnv.id,
+            environmentId: createdEnv.id,
             level: permission.level,
           })
         })

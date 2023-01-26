@@ -4,9 +4,9 @@ import { getEnvironmentModel } from '../environment.js'
 import { getUserModel } from '../user.js'
 
 // GET
-export const getEnvPermissions = async (envId) => {
+export const getEnvironmentPermissions = async (environmentId) => {
   return getPermissionModel().findAll({
-    environmentId: envId,
+    environmentId,
   })
 }
 
@@ -27,8 +27,8 @@ export const getPermissionByUserIdAndEnvironmentId = async (userId, environmentI
 }
 
 // CREATE
-export const setPermission = async ({ userId, envId, level }) => {
-  return getPermissionModel().upsert({ userId, environmentId: envId, level },
+export const setEnvironmentPermission = async ({ userId, environmentId, level }) => {
+  return getPermissionModel().upsert({ userId, environmentId, level },
     {
       includes: [
         { model: getUserModel() },

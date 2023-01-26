@@ -6,7 +6,7 @@ import { dropTables, synchroniseModels } from '../src/connect.js'
 // import { createUser, getUserById } from '../src/models/queries/user-queries.js'
 // import { projectInitializing, projectArchiving, projectCreated, projectFailed, projectAddUser, getProject, projectRemoveUser } from '../src/models/queries/project-queries.js'
 // import { getEnvironment, environmentInitializing, environmentCreated, environmentFailed } from '../src/models/queries/environment-queries.js'
-// import { setPermission } from '../src/models/queries/permission-queries.js'
+// import { setEnvironmentPermission } from '../src/models/queries/permission-queries.js'
 // import { repositoryCreated, repositoryFailed, repositoryInitializing, repositoryDeleting, updateRepository, deleteRepository } from '../src/models/queries/repository-queries.js'
 
 export const initDb = async () => {
@@ -70,8 +70,8 @@ export const initDb = async () => {
 //   await environmentFailed(envProd.id)
 
 //   // Set permissions for a user on given environments
-//   await setPermission({ userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565', envId: envStaging.id, level: 0 })
-//   await setPermission({ userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565', envId: envProd.id, level: 10 })
+//   await setEnvironmentPermission({ userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565', envId: envStaging.id, level: 0 })
+//   await setEnvironmentPermission({ userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565', envId: envProd.id, level: 10 })
 
 //   // Create repositories for a project
 //   const repo0 = await repositoryInitializing({ projectId: projectToto.id, internalRepoName: 'candilib', externalRepoUrl: 'https://github.com/dnum-mi/candilib', externalUserName: 'test', externalToken: 'token', isInfra: false, isPrivate: true })

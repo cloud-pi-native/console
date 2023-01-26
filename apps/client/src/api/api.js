@@ -6,6 +6,12 @@ export const generateCIFiles = async (data) => {
   return response.data
 }
 
+// Organizations
+export const getOrganizations = async () => {
+  const response = await apiClient.get('/organizations')
+  return response.data
+}
+
 // Project
 export const createProject = async (data) => {
   const response = await apiClient.post('/projects', data)

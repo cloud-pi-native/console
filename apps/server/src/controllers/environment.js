@@ -8,7 +8,7 @@ import {
   deleteEnvironment,
 } from '../models/queries/environment-queries.js'
 import {
-  setPermission,
+  setEnvironmentPermission,
   getPermissionByUserIdAndEnvironmentId,
 } from '../models/queries/permission-queries.js'
 import { getProjectById, projectLocked, projectUnlocked } from '../models/queries/project-queries.js'
@@ -59,8 +59,8 @@ export const environmentInitializingController = async (req, res) => {
     const project = await getProjectById(projectId)
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
     if (!role) throw new Error('Requestor is not member of project')
-    // TODO : qst @tobi - faut-il être owner du projet pour créer un envrionnement ?
-    if (role !== 'owner') throw new Error('Requestor is not owner of project')
+    // TODO : plus tard il sera nécessaire d'être owner pour créer un environment
+    // if (role !== 'owner') throw new Error('Requestor is not owner of project')
 
     const projectEnvs = await getEnvironmentsByProjectId(projectId)
     projectEnvs.forEach(env => {
@@ -90,9 +90,9 @@ export const environmentInitializingController = async (req, res) => {
     // TODO : #133 : appel ansible + création groupe keycloak + ajout owner au groupe keycloak
     try {
       await environmentCreated(env.id)
-      await setPermission({
+      await setEnvironmentPermission({
         userId: data.userId,
-        envId: env.id,
+        environmentId: env.id,
         level: data.level,
       })
       await projectUnlocked(projectId)

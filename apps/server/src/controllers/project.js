@@ -65,7 +65,7 @@ export const getUserProjectsController = async (req, res) => {
     projects.map(project => replaceNestedKeys(project, lowercaseFirstLetter))
     await send200(res, projects)
   } catch (error) {
-    const message = 'Cannot retrieve projects'
+    const message = `Cannot retrieve projects: ${error.message}`
     req.log.error({
       ...getLogInfos(),
       description: message,
@@ -126,7 +126,7 @@ export const createProjectController = async (req, res) => {
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: 'Cannot create project',
+      description: `Cannot create project: ${error.message}`,
       error: error.message,
     })
     return send500(res, error.message)
