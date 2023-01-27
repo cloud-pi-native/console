@@ -16,7 +16,10 @@ import {
 import {
   getEnvironmentsNamesByProjectId,
 } from '../models/queries/environment-queries.js'
-import { getRoleByUserIdAndProjectId } from '../models/queries/users-projects-queries.js'
+import {
+  getRoleByUserIdAndProjectId,
+  getSingleOwnerByProjectId,
+} from '../models/queries/users-projects-queries.js'
 import { getUserById } from '../models/queries/user-queries.js'
 import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
@@ -80,6 +83,7 @@ export const repositoryInitializingController = async (req, res) => {
   const data = req.body
   const userId = req.session?.user?.id
   const projectId = req.params?.projectId
+  data.projectId = projectId
 
   let project
   let repo
@@ -120,18 +124,17 @@ export const repositoryInitializingController = async (req, res) => {
   }
 
   try {
-    // TODO : qst @tobi - Faut-il envoyer à ansible le owner du projet, ou le user qui crée le repo ?
-    // si owner, requête dans UsersProjects avec projectId et role='owner' pour récupérer UserId du owner
-    // puis avec ce UserId, getUserById pour récupérer email
-    const owner = await getUserById(project.ownerId)
-    owner.email = 'test@test.fr'
+    // TODO : qst @tobi - Faut-il envoyer à ansible le owner du projet, ou le requestor (user qui crée le repo) ?
+    // const requestor = await getUserById(userId)
+    const ownerId = await getSingleOwnerByProjectId(projectId)
+    const owner = await getUserById(ownerId)
 
     const environmentsNames = await getEnvironmentsNamesByProjectId(projectId)
 
     const ansibleData = {
-      ORGANIZATION_NAME: project.orgName,
+      ORGANIZATION_NAME: project.organization,
       EMAIL: owner.email,
-      PROJECT_NAME: project.projectName,
+      PROJECT_NAME: project.name,
       REPO_DEST: data.internalRepoName,
       REPO_SRC: data.externalRepoUrl.startsWith('http') ? data.externalRepoUrl.split('://')[1] : data.externalRepoUrl,
       IS_INFRA: data.isInfra,
@@ -142,6 +145,7 @@ export const repositoryInitializingController = async (req, res) => {
       ansibleData.GIT_INPUT_PASSWORD = data.externalToken
     }
 
+    // TODO : error: "fetch failed"
     await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/repos`, {
       method: 'POST',
       body: JSON.stringify(ansibleData),

@@ -16,6 +16,20 @@ export const getRoleByUserIdAndProjectId = async (UserId, ProjectId) => {
   return Array.isArray(res) ? res[0] : res
 }
 
+export const getSingleOwnerByProjectId = async (ProjectId) => {
+  const res = await getUsersProjectsModel().findAll({
+    attributes: [
+      'UserId',
+    ],
+    where: {
+      role: 'owner',
+      ProjectId,
+    },
+    limit: 1,
+  })
+  return Array.isArray(res) ? res[0].UserId : res.UserId
+}
+
 // DELETE
 export const deleteRoleByUserIdAndProjectId = async (UserId, ProjectId) => {
   return await getUsersProjectsModel().destroy({
