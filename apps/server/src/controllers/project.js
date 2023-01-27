@@ -23,7 +23,8 @@ export const getUserProjectsController = async (req, res) => {
   const userId = req.session?.user?.id
 
   try {
-    const projects = await getUserProjects(userId)
+    const user = await getUserById(userId)
+    const projects = await getUserProjects(user)
     req.log.info({
       ...getLogInfos(),
       description: 'Projects successfully retreived',

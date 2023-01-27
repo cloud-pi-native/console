@@ -14,7 +14,7 @@ const isUserAlreadyInTeam = computed(() => {
   return !!allUsers.find(user => user.email === newUser.value.email)
 })
 
-const owner = computed(() => selectedProject.value.users.find(user => user.id === selectedProject.value.ownerId))
+const owner = computed(() => selectedProject.value.users.find(user => user.usersProjects.role === 'owner'))
 
 const newUser = ref({})
 
@@ -31,8 +31,8 @@ const setRows = () => {
 
   if (selectedProject.value.users?.length) {
     selectedProject.value.users.forEach(user => {
-      if (user.id === selectedProject.value.ownerId) {
-        rows.value.push([owner.value.email, 'owner', {
+      if (user.usersProjects.role === 'owner') {
+        rows.value.unshift([owner.value.email, 'owner', {
           cellAttrs: {
             class: 'fr-fi-close-line !flex justify-center disabled',
             title: `${owner.value.email} ne peut pas être retiré du projet`,

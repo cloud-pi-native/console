@@ -19,8 +19,8 @@ export const getProjectUsers = async (projectId) => {
   return res
 }
 
-export const getUserProjects = async (userId) => {
-  const res = await getProjectModel().findAll({
+export const getUserProjects = async (user) => {
+  const res = await user.getProjects({
     ...dbKeysExcluded,
     include: [
       {
@@ -34,17 +34,16 @@ export const getUserProjects = async (userId) => {
         },
         ...dbKeysExcluded,
       },
-      // TODO : commenté car error: "column Users->UsersProjects.id does not exist"
-      // Plus aucun filtrage (plus de where ! 👻)
-      // {
-      //   model: getUserModel(),
-      //   attributes: { exclude: ['role'] },
-      //   through: {
-      //     where: {
-      //       id: userId,
-      //     },
-      //   },
-      // },
+      {
+        model: getUserModel(),
+        attributes: { exclude: ['role'] },
+        // TODO: faire une repasse sur le nom des models / cles utilisees et verifier le besoin de ce code commente
+        // through: {
+        //   where: {
+        //     UserId: user.id,
+        //   },
+        // },
+      },
       {
         model: getRepositoryModel(),
         ...dbKeysExcluded,

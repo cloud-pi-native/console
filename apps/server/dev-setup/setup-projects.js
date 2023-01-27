@@ -69,7 +69,7 @@ export default async () => {
         }
       })
 
-      app.log.info(`Project '${project.organization} - ${project.name}' created !`)
+      app.log.info(`Project '${project.name}' created !`)
     } catch (err) {
       app.log.error(err)
     }
