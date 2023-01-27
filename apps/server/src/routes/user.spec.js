@@ -66,18 +66,17 @@ describe('User routes', () => {
 
   // GET
   describe('getProjectUsersController', () => {
-    it.skip('Should retreive members of a project', async () => {
-      const randomDbSetup = createRandomDbSetup({})
+    it('Should retreive members of a project', async () => {
+      const randomDbSetup = createRandomDbSetup({ nbUsers: 2 })
 
       Role.$queueResult(randomDbSetup.usersProjects[0])
-      sequelize.$queueResult(randomDbSetup.users)
+      Project.$queueResult(randomDbSetup.users)
       setOwnerId(randomDbSetup.owner.id)
 
       const response = await app.inject()
         .get(`/${randomDbSetup.project.id}/users`)
         .end()
 
-      console.log(response.body)
       expect(response.statusCode).toEqual(200)
       expect(response.json()).toBeDefined()
       expect(response.json()).toEqual(randomDbSetup.users)
