@@ -36,6 +36,7 @@ importers:
       shared: workspace:^1.0.0
       test-utils: workspace:^1.0.0
       vitest: ^0.26.3
+      yaml: ^2.2.1
     dependencies:
       '@fastify/cookie': 8.3.0
       '@fastify/helmet': 10.1.0
@@ -45,6 +46,7 @@ importers:
       lodash.kebabcase: 4.1.1
       nanoid: 4.0.0
       shared: link:../../packages/shared
+      yaml: 2.2.1
     devDependencies:
       '@vitest/coverage-c8': 0.26.3
       eslint: 8.31.0
@@ -6928,6 +6930,11 @@ packages:
     resolution: {integrity: sha512-AacA8nRULjKMX2DvWvOAdBZMOfQlypSFkjcOcu9FalllIDJ1kvlREzcdIZmidQUqqeMv7jorHjq2HlLv/+c2lg==}
     engines: {node: '>= 14'}
     dev: true
+
+  /yaml/2.2.1:
+    resolution: {integrity: sha512-e0WHiYql7+9wr4cWMx3TVQrNwejKaEe7/rHNmQmqRjazfOP5W8PB6Jpebb5o6fIapbz9o9+2ipcaTM2ZwDI6lw==}
+    engines: {node: '>= 14'}
+    dev: false
 
   /yargs-parser/20.2.9:
     resolution: {integrity: sha512-y11nGElTIV+CT3Zv9t7VKl+Q3hTQoT9a1Qzezhhl6Rp21gJ/IVTW7Z3y9EWXhuUBC2Shnf+DX0antecpAwSP8w==}

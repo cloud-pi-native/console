@@ -1,7 +1,0 @@
-- name: Provisionning DSO - Import git
-  hosts: localhost
-  tasks:
-    - name: Import Git project
-      ansible.builtin.debug:
-        msg:
-        - "Mocking git repository import"

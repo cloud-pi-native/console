@@ -1,0 +1,35 @@
+- name: Create repo in project
+  hosts: localhost
+  vars:
+    validation:
+      type: object
+      required: ["PROJECT_NAME", "ORGANIZATION_NAME", "EMAILS", "ENV_LIST", "REPO_DEST", "REPO_SRC", "IS_INFRA"]
+      properties:
+        PROJECT_NAME:
+          type: string
+        ORGANIZATION_NAME:
+          type: string
+        EMAILS:
+          type: array
+          items:
+            type: string
+        ENV_LIST:
+          type: array
+          items:
+            type: string
+        REPO_DEST:
+          type: string
+        REPO_SRC:
+          type: string
+        GIT_INPUT_USER:
+          type: string
+        GIT_INPUT_PASSWORD:
+          type: string
+        IS_INFRA:
+          type: boolean
+      
+  tasks:
+    - name: Create a repo in project
+      ansible.builtin.debug:
+        msg:
+        - "Create a repo in project"

@@ -7,8 +7,8 @@
     "dev": "node --watch src/server.js",
     "lint": "eslint . --ext .js,.cjs,.ts",
     "format": "eslint . --ext .js,.cjs,.ts --fix",
-    "start": "node src/server.js",
-    "test": "vitest run --coverage"
+    "start": "PLAYBOOK_DIR=../../../../../ansible/playbooks node src/server.js",
+    "test": "PLAYBOOK_DIR=../../../../../ansible/playbooks vitest run --coverage"
   },
   "dependencies": {
     "@fastify/cookie": "^8.3.0",
@@ -18,7 +18,8 @@
     "fastify-keycloak-adapter": "^2.0.0",
     "lodash.kebabcase": "^4.1.1",
     "nanoid": "4.0.0",
-    "shared": "workspace:^1.0.0"
+    "shared": "workspace:^1.0.0",
+    "yaml": "^2.2.1"
   },
   "devDependencies": {
     "@vitest/coverage-c8": "^0.26.3",
