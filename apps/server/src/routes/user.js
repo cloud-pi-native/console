@@ -3,7 +3,7 @@
 //   createUserController,
 // } from '../controllers/user.js'
 import {
-  projectGetUsersController,
+  getProjectUsersController,
   projectAddUserController,
   projectRemoveUserController,
   projectUpdateUserController,
@@ -15,7 +15,7 @@ const router = async (app, _opt) => {
   // await app.post('/', createUserController)
 
   // Récupérer les membres d'un projet
-  await app.get('/:projectId/users', projectGetUsersController)
+  await app.get('/:projectId/users', getProjectUsersController)
 
   // Ajouter un membre dans un projet
   await app.post('/:projectId/users', projectAddUserController)
