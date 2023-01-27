@@ -1,5 +1,3 @@
-export const getUniq = (res) => res?.length ? res[0] : false
-
 export const dbKeysExcluded = { attributes: { exclude: ['updatedAt', 'createdAt', 'externalToken'] } }
 
 export const lowercaseFirstLetter = string => string.charAt(0).toLowerCase() + string.slice(1)

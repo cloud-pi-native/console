@@ -1,7 +1,6 @@
 import { sequelize } from '../../connect.js'
 import { getEnvironmentModel } from '../environment.js'
 import { getProjectModel } from '../project.js'
-import { getUniq } from '../../utils/queries-tools.js'
 import { getProjectById } from './project-queries.js'
 
 // SELECT
@@ -10,11 +9,11 @@ export const getEnvironmentById = async (id) => {
 }
 
 export const getEnvironment = async ({ projectId, name }) => {
-  const res = await getEnvironmentModel().findAll({
+  return await getEnvironmentModel().findAll({
     where: { name, projectId },
     include: { model: getProjectModel() },
+    limit: 1,
   })
-  return getUniq(res)
 }
 
 export const getEnvironmentsByProjectId = async (projectId) => {

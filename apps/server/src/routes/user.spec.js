@@ -40,8 +40,7 @@ const getOwner = () => {
   return owner
 }
 
-// TODO :  Missing handler function for GET:/:projectId/users route.
-describe.skip('User routes', () => {
+describe('User routes', () => {
   let Project
   let User
   let Role
@@ -67,7 +66,7 @@ describe.skip('User routes', () => {
 
   // GET
   describe('getProjectUsersController', () => {
-    it('Should retreive members of a project', async () => {
+    it.skip('Should retreive members of a project', async () => {
       const randomDbSetup = createRandomDbSetup({})
 
       Role.$queueResult(randomDbSetup.usersProjects[0])
@@ -78,7 +77,7 @@ describe.skip('User routes', () => {
         .get(`/${randomDbSetup.project.id}/users`)
         .end()
 
-      console.log({ response })
+      console.log(response.body)
       expect(response.statusCode).toEqual(200)
       expect(response.json()).toBeDefined()
       expect(response.json()).toEqual(randomDbSetup.users)
@@ -102,7 +101,8 @@ describe.skip('User routes', () => {
 
   // POST
   describe('projectAddUserController', () => {
-    it('Should add an user in project', async () => {
+    it.skip('Should add an user in project', async () => {
+      // TODO : user.addProject is not a function
       const randomDbSetup = createRandomDbSetup({})
       const randomUser = getRandomUser()
 
@@ -141,7 +141,7 @@ describe.skip('User routes', () => {
       setOwnerId(randomDbSetup.owner.id)
 
       const response = await app.inject()
-        .put(`/${randomDbSetup.project.id}/users`)
+        .post(`/${randomDbSetup.project.id}/users`)
         .body(randomUser)
         .end()
 
@@ -158,7 +158,7 @@ describe.skip('User routes', () => {
       setOwnerId(randomDbSetup.owner.id)
 
       const response = await app.inject()
-        .put(`/${randomDbSetup.project.id}/users`)
+        .post(`/${randomDbSetup.project.id}/users`)
         .body(randomUser)
         .end()
 
@@ -177,7 +177,8 @@ describe.skip('User routes', () => {
 
   // DELETE
   describe('projectRemoveUserController', () => {
-    it('Should remove an user from a project', async () => {
+    it.skip('Should remove an user from a project', async () => {
+      // TODO : user.removeProject is not a function
       const randomDbSetup = createRandomDbSetup({ nbUsers: 1 })
       const randomUser = randomDbSetup.users[0]
 
@@ -197,10 +198,11 @@ describe.skip('User routes', () => {
       setOwnerId(randomDbSetup.owner.id)
 
       const response = await app.inject()
-        .delete(`/${randomDbSetup.project.id}/users`)
+        .delete(`/${randomDbSetup.project.id}/users/${randomUser.id}`)
         .body(randomUser.email)
         .end()
 
+      console.log(response.body)
       expect(response.statusCode).toEqual(200)
       expect(response.body).toEqual('User successfully removed from project')
     })
@@ -213,7 +215,7 @@ describe.skip('User routes', () => {
       setOwnerId(randomDbSetup.owner.id)
 
       const response = await app.inject()
-        .delete(`/${randomDbSetup.project.id}/users`)
+        .delete(`/${randomDbSetup.project.id}/users/${randomUser.id}`)
         .body(randomUser)
         .end()
 
@@ -230,7 +232,7 @@ describe.skip('User routes', () => {
       setOwnerId(randomDbSetup.owner.id)
 
       const response = await app.inject()
-        .delete(`/${randomDbSetup.project.id}/users`)
+        .delete(`/${randomDbSetup.project.id}/users/${randomUser.id}`)
         .body(randomUser)
         .end()
 
@@ -249,7 +251,7 @@ describe.skip('User routes', () => {
       setOwnerId(randomDbSetup.owner.id)
 
       const response = await app.inject()
-        .delete(`/${randomDbSetup.project.id}/users`)
+        .delete(`/${randomDbSetup.project.id}/users/${randomUser.id}`)
         .body(randomUser)
         .end()
 

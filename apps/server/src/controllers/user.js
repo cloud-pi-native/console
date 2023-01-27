@@ -76,7 +76,6 @@ export const projectAddUserController = async (req, res) => {
   let project
   try {
     project = await getProjectById(projectId)
-
     if (!project) throw new Error('Project not found')
 
     const requestorRole = await getRoleByUserIdAndProjectId(userId, projectId)
@@ -86,8 +85,6 @@ export const projectAddUserController = async (req, res) => {
 
     // TODO : refacto add et update en upsert ?
     const userToAddRole = await getRoleByUserIdAndProjectId(userToAdd.id, projectId)
-    // TODO : test, si aucune valeur pour role, est-ce bien falsy ?
-    console.log(userToAddRole.dataValues)
     if (userToAddRole) throw new Error('User is already member of projet')
 
     await projectLocked(projectId)

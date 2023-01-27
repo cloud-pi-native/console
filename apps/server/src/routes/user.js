@@ -7,7 +7,7 @@ import {
   projectAddUserController,
   projectRemoveUserController,
   projectUpdateUserController,
-} from '../controllers/project.js'
+} from '../controllers/user.js'
 
 const router = async (app, _opt) => {
   // TODO : routes non utilisées

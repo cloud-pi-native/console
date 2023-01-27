@@ -1,7 +1,7 @@
 import { Op } from 'sequelize'
 import { sequelize } from '../../connect.js'
 import { getUserModel } from '../user.js'
-import { dbKeysExcluded, getUniq } from '../../utils/queries-tools.js'
+import { dbKeysExcluded } from '../../utils/queries-tools.js'
 import { adminsUserId } from '../../utils/env.js'
 
 // SELECT
@@ -27,12 +27,12 @@ export const getUserById = async (id) => {
 }
 
 export const getUserByEmail = async (email) => {
-  const res = await getUserModel().findAll({
+  return await getUserModel().findAll({
     where: {
       email: { [Op.eq]: email },
     },
+    limit: 1,
   })
-  return getUniq(res)
 }
 
 // CREATE

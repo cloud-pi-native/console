@@ -1,6 +1,5 @@
 import { sequelize } from '../../connect.js'
 import { getOrganizationModel } from '../organization.js'
-import { getUniq } from '../../utils/queries-tools.js'
 
 // SELECT
 export const getOrganizations = async () => {
@@ -8,10 +7,10 @@ export const getOrganizations = async () => {
 }
 
 export const getOrganizationByName = async (name) => {
-  const res = await getOrganizationModel().findAll({
+  return await getOrganizationModel().findAll({
     where: { name },
+    limit: 1,
   })
-  return getUniq(res)
 }
 
 // CREATE

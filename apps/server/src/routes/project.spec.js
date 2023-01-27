@@ -195,7 +195,7 @@ describe('Project routes', () => {
     it('Should not create a project if projectName already exists', async () => {
       const randomDbSetup = createRandomDbSetup({})
 
-      Project.$queueResult([randomDbSetup.project])
+      Project.$queueResult(randomDbSetup.project)
       setOwnerId(randomDbSetup.owner.id)
 
       const response = await app.inject()

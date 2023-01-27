@@ -1,7 +1,7 @@
 import { sequelize } from '../../connect.js'
 // import { Op } from 'sequelize'
 import { getProjectModel } from '../project.js'
-import { dbKeysExcluded, getUniq } from '../../utils/queries-tools.js'
+import { dbKeysExcluded } from '../../utils/queries-tools.js'
 import { getPermissionModel } from '../permission.js'
 import { getEnvironmentModel } from '../environment.js'
 import { getRepositoryModel } from '../repository.js'
@@ -64,14 +64,15 @@ export const getProjectById = async (id) => {
 }
 
 export const getProject = async ({ name, organization }) => {
-  const res = await getProjectModel().findAll({
+  const test = await getProjectModel().findAll({
     raw: true,
     where: {
       name,
       organization,
     },
+    limit: 1,
   })
-  return getUniq(res)
+  return test
 }
 
 // CREATE
