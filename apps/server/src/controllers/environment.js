@@ -29,7 +29,7 @@ export const getEnvironmentByIdController = async (req, res) => {
     const userPermissionLevel = await getPermissionByUserIdAndEnvironmentId(userId, environmentId)
 
     if (!role) throw new Error('Requestor is not member of env\'s project')
-    if (role !== 'owner' && !userPermissionLevel) throw new Error('Requestor is not owner and has no rights on this environment')
+    if (role.role !== 'owner' && !userPermissionLevel) throw new Error('Requestor is not owner and has no rights on this environment')
 
     req.log.info({
       ...getLogInfos({
@@ -41,7 +41,7 @@ export const getEnvironmentByIdController = async (req, res) => {
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: 'Cannot retrieve environment',
+      description: `Cannot retrieve environment: ${error.message}`,
       error: error.message,
     })
     return send500(res, error.message)
@@ -63,7 +63,7 @@ export const environmentInitializingController = async (req, res) => {
     // if (role.role !== 'owner') throw new Error('Requestor is not owner of project')
 
     const projectEnvs = await getEnvironmentsByProjectId(projectId)
-    projectEnvs.forEach(env => {
+    projectEnvs?.forEach(env => {
       if (env.name === data.name) throw new Error('Requested environment already exists for this project')
     })
 
@@ -141,7 +141,7 @@ export const environmentDeletingController = async (req, res) => {
   try {
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
     if (!role) throw new Error('Requestor is not member of project')
-    if (role.role !== 'owner') throw new Error('Requestor is not owner of env\'s project')
+    if (role.role !== 'owner') throw new Error('Requestor is not owner of project')
 
     const env = await environmentDeleting(environmentId)
     await projectLocked(projectId)

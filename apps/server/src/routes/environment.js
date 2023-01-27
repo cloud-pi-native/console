@@ -6,7 +6,7 @@ import {
 
 const router = async (app, _opt) => {
   // Récupérer un environnement par son id
-  await app.get('/:projectId/:environmentId', getEnvironmentByIdController)
+  await app.get('/:projectId/environments/:environmentId', getEnvironmentByIdController)
 
   // Créer un environnement
   await app.post('/:projectId/environments', environmentInitializingController)
