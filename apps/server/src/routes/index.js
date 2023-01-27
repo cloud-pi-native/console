@@ -1,9 +1,6 @@
 import ciFilesRouter from './ci-files.js'
-import environmentRouter from './environment.js'
-import organizationRouter from './organization.js'
+import projectOrganizationRouter from './organization.js'
 import projectRouter from './project.js'
-import repositoryRouter from './repository.js'
-import userRouter from './user.js'
 import { send200 } from '../utils/response.js'
 
 const version = process.env.npm_package_version || 'Unable to find version'
@@ -18,11 +15,8 @@ const getHealth = async (_req, res) => {
 
 export const apiRouter = async (app, _opts) => {
   await app.register(ciFilesRouter, { prefix: '/ci-files' })
-  await app.register(environmentRouter, { prefix: '/environments' })
-  await app.register(organizationRouter, { prefix: '/organizations' })
+  await app.register(projectOrganizationRouter, { prefix: '/organizations' })
   await app.register(projectRouter, { prefix: '/projects' })
-  await app.register(repositoryRouter, { prefix: '/repositories' })
-  await app.register(userRouter, { prefix: '/users' })
 }
 
 export const miscRouter = async (app, _opts) => {

@@ -6,7 +6,7 @@ import fastifyCookie from '@fastify/cookie'
 import fp from 'fastify-plugin'
 import { sessionConf } from '../utils/keycloak.js'
 import { getConnection, closeConnections, sequelize } from '../connect.js'
-import repositoryRouter from './repository.js'
+import projectRepositoryRouter from './project-repository.js'
 import { getProjectModel } from '../models/project.js'
 import { getUsersProjectsModel } from '../models/users-projects.js'
 import { getRepositoryModel } from '../models/repository.js'
@@ -28,7 +28,7 @@ const mockSessionPlugin = (app, opt, next) => {
 
 const mockSession = (app) => {
   app.register(fp(mockSessionPlugin))
-    .register(repositoryRouter)
+    .register(projectRepositoryRouter)
 }
 
 const owner = {}
