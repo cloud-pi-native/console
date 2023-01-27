@@ -152,11 +152,6 @@ export const createProjectController = async (req, res) => {
   }
 }
 
-// PUT
-export const projectUpdateUserController = async (req, res) => {
-// TODO : modifier role d'un user d'un projet via UsersProjects
-}
-
 // DELETE
 export const projectArchivingController = async (req, res) => {
   const userId = req.session?.user.id

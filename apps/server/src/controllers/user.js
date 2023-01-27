@@ -37,7 +37,7 @@ export const getProjectUsersController = async (req, res) => {
     })
     await send200(res, users)
   } catch (error) {
-    const message = 'Cannot retrieve members of project'
+    const message = `Cannot retrieve members of project: ${error.message}`
     req.log.error({
       ...getLogInfos(),
       description: message,
@@ -169,6 +169,11 @@ export const createUserController = async (req, res) => {
   }
 }
 
+// PUT
+export const projectUpdateUserController = async (req, res) => {
+// TODO : modifier role d'un user d'un projet via UsersProjects
+}
+
 // DELETE
 export const projectRemoveUserController = async (req, res) => {
   const userId = req.session?.user.id
@@ -186,7 +191,7 @@ export const projectRemoveUserController = async (req, res) => {
     const userToRemove = await getUserById(userToRemoveId)
 
     const userToRemoveRole = await getRoleByUserIdAndProjectId(userToRemoveId, projectId)
-    if (!userToRemoveRole) throw new Error('User to remove is not member of the project')
+    if (!userToRemoveRole) throw new Error('User to remove is not member of project')
 
     await projectLocked(projectId)
     await projectRemoveUser({ project, user: userToRemove })

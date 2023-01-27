@@ -80,7 +80,7 @@ describe('', () => {
   //     sequelize.$queueResult({ data: randomDbSetup })
   //     // fourth query : updateProjectStatus
   //     Project.$queueResult([1])
-  //     setOwnerId(randomDbSetup.owner)
+  //     setOwnerId(randomDbSetup.owner.id)
 
   //     const response = await app.inject()
   //       .post(`/${randomDbSetup.id}/repos`)
@@ -100,7 +100,7 @@ describe('', () => {
   //     Project.$queueResult([1])
   //     sequelize.$queueResult({ data: randomDbSetup })
   //     Project.$queueResult([1])
-  //     setOwnerId(randomDbSetup.owner)
+  //     setOwnerId(randomDbSetup.owner.id)
 
   //     const response = await app.inject()
   //       .post(`/${randomDbSetup.id}/repos`)
@@ -116,7 +116,7 @@ describe('', () => {
   //     const randomDbSetup = createRandomDbSetup({})
 
   //     sequelize.$queueResult(null)
-  //     setOwnerId(randomDbSetup.owner)
+  //     setOwnerId(randomDbSetup.owner.id)
 
   //     const response = await app.inject()
   //       .post(`/${randomDbSetup.id}/repos`)
