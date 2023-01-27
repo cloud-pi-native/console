@@ -32,8 +32,6 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
     volumes:
       - dso-postgres-data:/var/lib/postgresql/data
-    ports:
-      - 5432:5432
     networks:
       - dso-network
 

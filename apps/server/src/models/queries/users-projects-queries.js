@@ -3,7 +3,7 @@ import { getUsersProjectsModel } from '../users-projects.js'
 
 // SELECT
 export const getRoleByUserIdAndProjectId = async (UserId, ProjectId) => {
-  return await getUsersProjectsModel().findAll({
+  const res = await getUsersProjectsModel().findAll({
     attributes: [
       'role',
     ],
@@ -11,7 +11,9 @@ export const getRoleByUserIdAndProjectId = async (UserId, ProjectId) => {
       UserId,
       ProjectId,
     },
+    limit: 1,
   })
+  return Array.isArray(res) ? res[0] : res
 }
 
 // DELETE

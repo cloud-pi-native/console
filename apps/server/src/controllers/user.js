@@ -70,7 +70,7 @@ export const getProjectUsersController = async (req, res) => {
 // CREATE
 export const projectAddUserController = async (req, res) => {
   const userId = req.session?.user.id
-  const projectId = req.params?.id
+  const projectId = req.params?.projectId
   const data = req.body
 
   let project
