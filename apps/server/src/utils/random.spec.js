@@ -18,6 +18,13 @@ describe('Random utils', () => {
           firstName: expect.any(String),
           lastName: expect.any(String),
         }),
+        organization: expect.objectContaining(
+          {
+            id: expect.any(String),
+            name: expect.any(String),
+            label: expect.any(String),
+          },
+        ),
         users: expect.arrayContaining([{
           id: expect.any(String),
           email: expect.any(String),
