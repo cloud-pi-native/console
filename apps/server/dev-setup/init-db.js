@@ -70,8 +70,8 @@ export const initDb = async () => {
 //   await environmentFailed(envProd.id)
 
 //   // Set permissions for a user on given environments
-//   await setEnvironmentPermission({ userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565', envId: envStaging.id, level: 0 })
-//   await setEnvironmentPermission({ userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565', envId: envProd.id, level: 10 })
+//   await setEnvironmentPermission({ userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565', environmentId: envStaging.id, level: 0 })
+//   await setEnvironmentPermission({ userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565', environmentId: envProd.id, level: 10 })
 
 //   // Create repositories for a project
 //   const repo0 = await repositoryInitializing({ projectId: projectToto.id, internalRepoName: 'candilib', externalRepoUrl: 'https://github.com/dnum-mi/candilib', externalUserName: 'test', externalToken: 'token', isInfra: false, isPrivate: true })

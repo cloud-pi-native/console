@@ -3,7 +3,7 @@ import {
   setEnvironmentPermissionController,
   envUpdatePermissionController,
   envRemovePermissionController,
-} from '../controllers/permissions.js'
+} from '../controllers/permission.js'
 
 const router = async (app, _opt) => {
   // Récupérer les permissions d'un environnement

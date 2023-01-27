@@ -17,9 +17,6 @@ export const getProjectRepositories = async (projectId) => {
 
 // CREATE
 export const repositoryInitializing = async ({ projectId, internalRepoName, externalRepoUrl, isInfra, isPrivate, externalUserName, externalToken }) => {
-  const repos = await getProjectRepositories(projectId)
-  const isInternalRepoNameTaken = repos.find(repo => repo.internalRepoName === internalRepoName)
-  if (isInternalRepoNameTaken) throw new Error(`Le nom du dépôt interne ${internalRepoName} existe déjà en base pour ce projet`)
   return await getRepositoryModel().create({
     projectId,
     internalRepoName,

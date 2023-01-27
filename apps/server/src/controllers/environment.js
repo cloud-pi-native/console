@@ -33,7 +33,7 @@ export const getEnvironmentByIdController = async (req, res) => {
 
     req.log.info({
       ...getLogInfos({
-        envId: env.id,
+        environmentId: env.id,
       }),
       description: 'Environment successfully retrieved',
     })
@@ -169,7 +169,7 @@ export const environmentDeletingController = async (req, res) => {
       await projectUnlocked(projectId)
 
       req.log.info({
-        ...getLogInfos({ envId: environmentId }),
+        ...getLogInfos({ environmentId }),
         description: 'Environment successfully deleted',
       })
     } catch (error) {
@@ -190,7 +190,7 @@ export const environmentDeletingController = async (req, res) => {
       await projectUnlocked(projectId)
 
       req.log.info({
-        ...getLogInfos({ envId: environmentId }),
+        ...getLogInfos({ environmentId }),
         description: 'Environment status successfully updated to failed in database',
       })
     } catch (error) {

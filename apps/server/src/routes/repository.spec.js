@@ -1,131 +1,176 @@
-// import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
-import { describe, it } from 'vitest'
-// import { createRandomDbSetup, getRandomUser, repeatFn } from 'test-utils'
-// import fastify from 'fastify'
-// import fastifySession from '@fastify/session'
-// import fastifyCookie from '@fastify/cookie'
-// import fp from 'fastify-plugin'
-// import { nanoid } from 'nanoid'
-// import { sessionConf } from '../utils/keycloak.js'
-// import { getConnection, closeConnections, sequelize } from '../connect.js'
-// import { getProjectModel } from '../models/project.js'
-// import projectRouter from './project.js'
-// import { getUserModel } from '../models/user.js'
+import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
+import { createRandomDbSetup, getRandomRepo } from 'test-utils'
+import fastify from 'fastify'
+import fastifySession from '@fastify/session'
+import fastifyCookie from '@fastify/cookie'
+import fp from 'fastify-plugin'
+import { sessionConf } from '../utils/keycloak.js'
+import { getConnection, closeConnections, sequelize } from '../connect.js'
+import repositoryRouter from './repository.js'
+import { getProjectModel } from '../models/project.js'
+import { getUsersProjectsModel } from '../models/users-projects.js'
+import { getRepositoryModel } from '../models/repository.js'
 
-// vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
-// vi.mock('../ansible.js')
+vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
+vi.mock('../ansible.js')
 
-// const app = fastify({ logger: false })
-//   .register(fastifyCookie)
-//   .register(fastifySession, sessionConf)
+const app = fastify({ logger: false })
+  .register(fastifyCookie)
+  .register(fastifySession, sessionConf)
 
-// const mockSessionPlugin = (app, opt, next) => {
-//   app.addHook('onRequest', (req, res, next) => {
-//     req.session = { user: getOwner() }
-//     next()
-//   })
-//   next()
-// }
-
-// const mockSession = (app) => {
-//   app.register(fp(mockSessionPlugin))
-//     .register(projectRouter)
-// }
-
-// const owner = {}
-// const setOwnerId = (id) => {
-//   owner.id = id
-// }
-
-// const getOwner = () => {
-//   return owner
-// }
-
-// describe('Project routes', () => {
-//   let Project
-//   let User
-
-//   beforeAll(async () => {
-//     mockSession(app)
-//     await getConnection()
-//     Project = getProjectModel()
-//     User = getUserModel()
-//     global.fetch = vi.fn(() => Promise.resolve())
-//   })
-
-//   afterAll(async () => {
-//     return closeConnections()
-//   })
-
-//   afterEach(() => {
-//     vi.clearAllMocks()
-//     sequelize.$clearQueue()
-//     global.fetch = vi.fn(() => Promise.resolve())
-//   })
-
-describe('', () => {
-  it('', () => {
-
+const mockSessionPlugin = (app, opt, next) => {
+  app.addHook('onRequest', (req, res, next) => {
+    req.session = { user: getOwner() }
+    next()
   })
-  // describe('addRepoController', () => {
-  //   it.skip('Should add a repo in project', async () => {
-  //     const randomDbSetup = createRandomDbSetup({})
-  //     const randomRepo = randomDbSetup.repositories[0]
+  next()
+}
 
-  //     // first query : getUserProjectById
-  //     sequelize.$queueResult({ data: randomDbSetup })
-  //     // second query : addRepo
-  //     Project.$queueResult([1])
-  //     // third query : getUserProjectById
-  //     sequelize.$queueResult({ data: randomDbSetup })
-  //     // fourth query : updateProjectStatus
-  //     Project.$queueResult([1])
-  //     setOwnerId(randomDbSetup.owner.id)
+const mockSession = (app) => {
+  app.register(fp(mockSessionPlugin))
+    .register(repositoryRouter)
+}
 
-  //     const response = await app.inject()
-  //       .post(`/${randomDbSetup.id}/repos`)
-  //       .body(randomRepo)
-  //       .end()
+const owner = {}
+const setOwnerId = (id) => {
+  owner.id = id
+}
 
-  //     expect(response.statusCode).toEqual(201)
-  //     expect(response.body).toBeDefined()
-  //     expect(response.body).toEqual('Git repository successfully added into project')
-  //   })
+const getOwner = () => {
+  return owner
+}
 
-  //   it.skip('Should not add a repo if internalRepoName already present', async () => {
-  //     const randomDbSetup = { ...createRandomDbSetup({}), id: nanoid(), locked: false }
-  //     const randomRepo = randomDbSetup.repos[0]
+describe('Project routes', () => {
+  let Project
+  let Role
+  let Repository
 
-  //     sequelize.$queueResult({ data: randomDbSetup })
-  //     Project.$queueResult([1])
-  //     sequelize.$queueResult({ data: randomDbSetup })
-  //     Project.$queueResult([1])
-  //     setOwnerId(randomDbSetup.owner.id)
+  beforeAll(async () => {
+    mockSession(app)
+    await getConnection()
+    Project = getProjectModel()
+    Role = getUsersProjectsModel()
+    Repository = getRepositoryModel()
+    global.fetch = vi.fn(() => Promise.resolve())
+  })
 
-  //     const response = await app.inject()
-  //       .post(`/${randomDbSetup.id}/repos`)
-  //       .body(randomRepo)
-  //       .end()
+  afterAll(async () => {
+    return closeConnections()
+  })
 
-  //     expect(response.statusCode).toEqual(500)
-  //     expect(response.body).toBeDefined()
-  //     expect(response.body).toEqual(`Cannot add git repository into project: Git repo '${randomRepo.internalRepoName}' already exists in project`)
-  //   })
+  afterEach(() => {
+    vi.clearAllMocks()
+    sequelize.$clearQueue()
+    global.fetch = vi.fn(() => Promise.resolve())
+  })
 
-  //   it.skip('Should not add a repo if permission is missing', async () => {
-  //     const randomDbSetup = createRandomDbSetup({})
+  // GET
+  describe('getRepositoryByIdController', () => {
+    it('Should get a repository by its id', async () => {
+      const randomDbSetup = createRandomDbSetup({})
+      const repoToGet = randomDbSetup.repositories[0]
 
-  //     sequelize.$queueResult(null)
-  //     setOwnerId(randomDbSetup.owner.id)
+      Repository.$queueResult(repoToGet)
+      Role.$queueResult(randomDbSetup.usersProjects[0])
+      setOwnerId(randomDbSetup.owner.id)
 
-  //     const response = await app.inject()
-  //       .post(`/${randomDbSetup.id}/repos`)
-  //       .body(randomDbSetup)
-  //       .end()
+      const response = await app.inject()
+        .get(`${randomDbSetup.project.id}/repositories/${repoToGet.id}`)
+        .end()
 
-  //     expect(response.statusCode).toEqual(500)
-  //     expect(response.body).toBeDefined()
-  //     expect(response.body).toEqual('Missing permissions on this project')
-  //   })
-  // })
+      expect(response.statusCode).toEqual(200)
+      expect(response.json()).toBeDefined()
+      expect(response.json()).toEqual(repoToGet)
+    })
+  })
+
+  describe('getProjectRepositoriesController', () => {
+    it('Should get repositories of a project', async () => {
+      const randomDbSetup = createRandomDbSetup({})
+
+      Repository.$queueResult(randomDbSetup.repositories)
+      Role.$queueResult(randomDbSetup.usersProjects[0])
+      setOwnerId(randomDbSetup.owner.id)
+
+      const response = await app.inject()
+        .get(`${randomDbSetup.project.id}/repositories`)
+        .end()
+
+      expect(response.statusCode).toEqual(200)
+      expect(response.json()).toBeDefined()
+      expect(response.json()).toEqual(randomDbSetup.repositories)
+    })
+  })
+
+  // POST
+  describe('repositoryInitializingController', () => {
+    it('Should create a repository', async () => {
+      const randomDbSetup = createRandomDbSetup({})
+      const newRepository = getRandomRepo(randomDbSetup.project.id)
+
+      Project.$queueResult(randomDbSetup.project)
+      Role.$queueResult(randomDbSetup.usersProjects[0])
+      Repository.$queueResult(randomDbSetup.repositories)
+      setOwnerId(randomDbSetup.owner.id)
+
+      const response = await app.inject()
+        .post(`${randomDbSetup.project.id}/repositories`)
+        .body(newRepository)
+        .end()
+
+      expect(response.statusCode).toEqual(201)
+      expect(response.body).toBeDefined()
+      expect(response.body).toEqual('Repository successfully created')
+    })
+  })
+
+  // PUT
+  describe('updateRepositoryController', () => {
+    it('Should update a repository', async () => {
+      const randomDbSetup = createRandomDbSetup({})
+      const repoToUpdate = randomDbSetup.repositories[2]
+      const updatedKeys = {
+        externalRepoUrl: 'new',
+        externalUserName: 'new',
+        externalToken: 'new',
+      }
+
+      Repository.$queueResult(repoToUpdate)
+      Role.$queueResult(randomDbSetup.usersProjects[0])
+      Project.$queueResult([1])
+      Repository.$queueResult([1])
+      setOwnerId(randomDbSetup.owner.id)
+
+      const response = await app.inject()
+        .put(`${randomDbSetup.project.id}/repositories/${repoToUpdate.id}`)
+        .body(updatedKeys)
+        .end()
+
+      expect(response.statusCode).toEqual(201)
+      expect(response.body).toBeDefined()
+      expect(response.body).toEqual('Repository successfully updated')
+    })
+  })
+
+  // DELETE
+  describe('repositoryDeletingController', () => {
+    it('Should delete a repository', async () => {
+      const randomDbSetup = createRandomDbSetup({})
+      const repoToDelete = randomDbSetup.repositories[1]
+
+      Repository.$queueResult(repoToDelete)
+      Role.$queueResult(randomDbSetup.usersProjects[0])
+      Project.$queueResult([1])
+      Repository.$queueResult([1])
+      setOwnerId(randomDbSetup.owner.id)
+
+      const response = await app.inject()
+        .delete(`${randomDbSetup.project.id}/repositories/${repoToDelete.id}`)
+        .end()
+
+      expect(response.statusCode).toEqual(201)
+      expect(response.body).toBeDefined()
+      expect(response.body).toEqual('Repository successfully deleted')
+    })
+  })
 })

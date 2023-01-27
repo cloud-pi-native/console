@@ -31,8 +31,8 @@ export const getEnvironmentsNamesByProjectId = async (projectId) => {
   })
 }
 
-export const getProjectByEnvironmentId = async (envId) => {
-  const env = await getEnvironmentById(envId)
+export const getProjectByEnvironmentId = async (environmentId) => {
+  const env = await getEnvironmentById(environmentId)
   return await getProjectById(env.projectId)
 }
 

@@ -97,6 +97,10 @@ export const repositoryInitializingController = async (req, res) => {
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
     if (!role) throw new Error('Requestor is not member of project')
 
+    const repos = await getProjectRepositories(projectId)
+    const isInternalRepoNameTaken = repos.find(repo => repo.internalRepoName === data.internalRepoName)
+    if (isInternalRepoNameTaken) throw new Error(`Le nom du dépôt interne ${data.internalRepoName} existe déjà en base pour ce projet`)
+
     await projectLocked(projectId)
     repo = await repositoryInitializing(data)
 
@@ -194,7 +198,9 @@ export const repositoryInitializingController = async (req, res) => {
 }
 
 // UPDATE
-
+// TODO : maj controller
+// si isPrivate, token obligatoire
+// pas possible d'update isInfra et internalRepoName
 export const updateRepositoryController = async (req, res) => {
   const data = req.body
   const userId = req.session?.user?.id

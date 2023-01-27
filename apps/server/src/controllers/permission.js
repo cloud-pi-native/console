@@ -25,7 +25,7 @@ export const getEnvironmentPermissionsController = async (req, res) => {
     })
     await send200(res, permissions)
   } catch (error) {
-    const message = 'Cannot retrieve permissions'
+    const message = `Cannot retrieve permissions: ${error.message}`
     req.log.error({
       ...getLogInfos(),
       description: message,
@@ -41,7 +41,7 @@ export const setEnvironmentPermissionController = async (req, res) => {
   const userId = req.session?.userId
   const environmentId = req.params?.environmentId
   const projectId = req.params?.projectId
-  const data = req.data
+  const data = req.body
 
   try {
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
@@ -54,7 +54,7 @@ export const setEnvironmentPermissionController = async (req, res) => {
     })
     await send201(res, permission)
   } catch (error) {
-    const message = `Cannot create permissions ${error.message}`
+    const message = `Cannot create permissions: ${error.message}`
     req.log.error({
       ...getLogInfos(),
       description: message,

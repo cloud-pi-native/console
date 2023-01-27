@@ -55,37 +55,37 @@ describe('Random utils', () => {
         // permissions: expect.arrayContaining([
         //   [{
         //     id: expect.any(String),
-        //     envId: expect.any(String),
+        //     environmentId: expect.any(String),
         //     userId: expect.any(String),
         //     level: expect.any(Boolean),
         //   },
         //   {
         //     id: expect.any(String),
-        //     envId: expect.any(String),
+        //     environmentId: expect.any(String),
         //     userId: expect.any(String),
         //     level: expect.any(Boolean),
         //   }],
         //   [{
         //     id: expect.any(String),
-        //     envId: expect.any(String),
+        //     environmentId: expect.any(String),
         //     userId: expect.any(String),
         //     level: expect.any(Boolean),
         //   },
         //   {
         //     id: expect.any(String),
-        //     envId: expect.any(String),
+        //     environmentId: expect.any(String),
         //     userId: expect.any(String),
         //     level: expect.any(Boolean),
         //   }],
         //   [{
         //     id: expect.any(String),
-        //     envId: expect.any(String),
+        //     environmentId: expect.any(String),
         //     userId: expect.any(String),
         //     level: expect.any(Boolean),
         //   },
         //   {
         //     id: expect.any(String),
-        //     envId: expect.any(String),
+        //     environmentId: expect.any(String),
         //     userId: expect.any(String),
         //     level: expect.any(Boolean),
         //   }],
