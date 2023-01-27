@@ -27,7 +27,7 @@ const mockSession = (app) => {
     .register(ciFilesRouter)
 }
 
-describe.skip('ciFiles routes', () => {
+describe('ciFiles routes', () => {
   beforeAll(async () => {
     mockSession(app)
     await getConnection()
@@ -45,11 +45,11 @@ describe.skip('ciFiles routes', () => {
   })
 
   it('Should generate files for a node project', async () => {
-    const randomProject = createRandomDbSetup({})
+    const randomDbSetup = createRandomDbSetup({})
     const ciData = {
-      orgName: randomProject.orgName,
-      projectName: randomProject.projectName,
-      internalRepoName: randomProject.repos[0].internalRepoName,
+      orgName: randomDbSetup.organization.name,
+      projectName: randomDbSetup.project.name,
+      internalRepoName: randomDbSetup.repositories[0].internalRepoName,
       typeLanguage: 'node',
       nodeVersion: '18.1.1',
       nodeInstallCommand: 'npm install',
@@ -70,11 +70,11 @@ describe.skip('ciFiles routes', () => {
   })
 
   it('Should generate files for a java project', async () => {
-    const randomProject = createRandomDbSetup({})
+    const randomDbSetup = createRandomDbSetup({})
     const ciData = {
-      orgName: randomProject.orgName,
-      projectName: randomProject.projectName,
-      internalRepoName: randomProject.repos[0].internalRepoName,
+      orgName: randomDbSetup.organization.name,
+      projectName: randomDbSetup.project.name,
+      internalRepoName: randomDbSetup.repositories[0].internalRepoName,
       typeLanguage: 'java',
       workingDir: '../client',
       javaVersion: '8.1.2',
@@ -94,11 +94,11 @@ describe.skip('ciFiles routes', () => {
   })
 
   it('Should generate files for a python project', async () => {
-    const randomProject = createRandomDbSetup({})
+    const randomDbSetup = createRandomDbSetup({})
     const ciData = {
-      orgName: randomProject.orgName,
-      projectName: randomProject.projectName,
-      internalRepoName: randomProject.repos[0].internalRepoName,
+      orgName: randomDbSetup.organization.name,
+      projectName: randomDbSetup.project.name,
+      internalRepoName: randomDbSetup.repositories[0].internalRepoName,
       typeLanguage: 'python',
       workingDir: './',
     }

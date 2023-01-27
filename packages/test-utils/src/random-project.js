@@ -40,6 +40,7 @@ export const createRandomDbSetup = ({ nbUsers = 0, nbRepo = 3, envs = allEnv, or
     ))
 
   return {
+    organization,
     project,
     owner,
     users,

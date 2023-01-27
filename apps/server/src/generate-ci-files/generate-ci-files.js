@@ -52,7 +52,7 @@ export const generateCIFiles = async (req, res) => {
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: 'Cannot generate files',
+      description: `Cannot generate files: ${error.message}`,
       error,
     })
     return send500(res, error.message)
