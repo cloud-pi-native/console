@@ -65,12 +65,12 @@ describe('Project routes', () => {
   })
 
   // GET
-  // TODO : wip
   describe('getUserProjectsController', () => {
     it('Should get list of a user\'s projects', async () => {
       const randomDbSetups = [createRandomDbSetup({}), createRandomDbSetup({}), createRandomDbSetup({})]
+      const projects = randomDbSetups.map(project => project)
 
-      sequelize.$queueResult(randomDbSetups)
+      Project.$queueResult(projects)
       setOwnerId(randomDbSetups[0].owner)
 
       const response = await app.inject()
@@ -79,7 +79,7 @@ describe('Project routes', () => {
 
       expect(response.statusCode).toEqual(200)
       expect(response.json()).toBeDefined()
-      expect(response.json()).toEqual(randomDbSetups)
+      expect(response.json()).toEqual(projects)
     })
 
     it('Should return an error while get list of projects', async () => {
