@@ -56,7 +56,7 @@ export const getProjectByIdController = async (req, res) => {
     })
     send200(res, project)
   } catch (error) {
-    const message = 'Cannot retrieve project'
+    const message = `Cannot retrieve project: ${error.message}`
     req.log.error({
       ...getLogInfos({ projectId }),
       description: message,
@@ -168,7 +168,7 @@ export const projectArchivingController = async (req, res) => {
 
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
     if (!role) throw new Error('Requestor is not member of project')
-    if (role !== 'owner') throw new Error('Requestor is not owner of project')
+    if (role.role !== 'owner') throw new Error('Requestor is not owner of project')
 
     await projectLocked(projectId)
     await projectArchiving(projectId)

@@ -24,20 +24,6 @@ export const projectGetUser = async ({ project, user }) => {
 }
 
 export const getUserProjects = async (userId) => {
-  // const res = await getProjectModel().findAll({
-  //   ...dbKeysExcluded,
-  //   where: {
-  //     [Op.or]: [
-  //       { ownerId: userId },
-  //       { usersId: { [Op.contains]: [userId] } },
-  //     ],
-  //   },
-  //   include: {
-  //     all: true,
-  //     nested: true,
-  //     ...dbKeysExcluded,
-  //   },
-  // })
   const res = await getProjectModel().findAll({
     ...dbKeysExcluded,
     include: [

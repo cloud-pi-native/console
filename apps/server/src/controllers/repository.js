@@ -303,7 +303,7 @@ export const repositoryDeletingController = async (req, res) => {
 
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
     if (!role) throw new Error('Requestor is not member of project')
-    if (role !== 'owner') throw new Error('Requestor is not owner of project')
+    if (role.role !== 'owner') throw new Error('Requestor is not owner of project')
 
     await projectLocked(projectId)
     await repositoryDeleting(repositoryId)

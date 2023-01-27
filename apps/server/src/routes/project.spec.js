@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
-import { createRandomDbSetup, getRandomUser, repeatFn } from 'test-utils'
+import { createRandomDbSetup, getRandomUser } from 'test-utils'
 import fastify from 'fastify'
 import fastifySession from '@fastify/session'
 import fastifyCookie from '@fastify/cookie'
@@ -9,6 +9,7 @@ import { getConnection, closeConnections, sequelize } from '../connect.js'
 import projectRouter from './project.js'
 import { getProjectModel } from '../models/project.js'
 import { getUserModel } from '../models/user.js'
+import { getUsersProjectsModel } from '../models/users-projects.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 vi.mock('../ansible.js')
@@ -42,12 +43,14 @@ const getOwner = () => {
 describe('Project routes', () => {
   let Project
   let User
+  let Role
 
   beforeAll(async () => {
     mockSession(app)
     await getConnection()
     Project = getProjectModel()
     User = getUserModel()
+    Role = getUsersProjectsModel()
     global.fetch = vi.fn(() => Promise.resolve())
   })
 
@@ -64,10 +67,10 @@ describe('Project routes', () => {
   // GET
   // TODO : wip
   describe('getUserProjectsController', () => {
-    it.skip('Should get list of a user\'s projects', async () => {
-      const randomDbSetups = repeatFn(3)(createRandomDbSetup)
+    it('Should get list of a user\'s projects', async () => {
+      const randomDbSetups = [createRandomDbSetup({}), createRandomDbSetup({}), createRandomDbSetup({})]
 
-      sequelize.$queueResult(randomDbSetups.map(randomDbSetup => ({ data: randomDbSetup })))
+      sequelize.$queueResult(randomDbSetups)
       setOwnerId(randomDbSetups[0].owner)
 
       const response = await app.inject()
@@ -76,13 +79,10 @@ describe('Project routes', () => {
 
       expect(response.statusCode).toEqual(200)
       expect(response.json()).toBeDefined()
-      const data = response.json()
-      data.forEach(project => {
-        expect(project).toMatchObject(randomDbSetups.find(randomDbSetup => randomDbSetup.projectName === project.projectName))
-      })
+      expect(response.json()).toEqual(randomDbSetups)
     })
 
-    it.skip('Should return an error while get list of projects', async () => {
+    it('Should return an error while get list of projects', async () => {
       sequelize.$queueFailure('error message')
 
       const response = await app.inject()
@@ -92,16 +92,17 @@ describe('Project routes', () => {
       expect(response.statusCode).toEqual(500)
       expect(response.body.json).not.toBeDefined()
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Cannot retrieve projects')
+      expect(response.body).toEqual('Cannot retrieve projects: error message')
     })
   })
 
   describe('getProjectByIdController', () => {
-    it.skip('Should get a project by id', async () => {
+    it('Should get a project by id', async () => {
       const randomDbSetup = createRandomDbSetup({})
 
-      sequelize.$queueResult({ data: randomDbSetup })
-      setOwnerId(randomDbSetup.owner)
+      Project.$queueResult(randomDbSetup.project)
+      Role.$queueResult(randomDbSetup.usersProjects[0])
+      setOwnerId(randomDbSetup.owner.id)
 
       const response = await app.inject()
         .get(`/${randomDbSetup.id}`)
@@ -109,11 +110,11 @@ describe('Project routes', () => {
 
       expect(response.statusCode).toEqual(200)
       expect(response.json()).toBeDefined()
-      expect(response.json()).toMatchObject(randomDbSetup)
+      expect(response.json()).toMatchObject(randomDbSetup.project)
     })
 
-    it.skip('Should not get a project when id is invalid', async () => {
-      sequelize.$queueFailure('error message')
+    it('Should not retreive a project when id is invalid', async () => {
+      sequelize.$queueFailure('custom error message')
 
       const response = await app.inject()
         .get('/invalid')
@@ -122,7 +123,24 @@ describe('Project routes', () => {
       expect(response.statusCode).toEqual(500)
       expect(response.body.json).not.toBeDefined()
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Cannot retrieve project')
+      expect(response.body).toEqual('Cannot retrieve project: custom error message')
+    })
+
+    it('Should not retreive a project when requestor is not member of project', async () => {
+      const randomDbSetup = createRandomDbSetup({})
+
+      Project.$queueResult(randomDbSetup.project)
+      Role.$queueResult(null)
+      setOwnerId(randomDbSetup.owner.id)
+
+      const response = await app.inject()
+        .get(`/${randomDbSetup.id}`)
+        .end()
+
+      expect(response.statusCode).toEqual(500)
+      expect(response.body.json).not.toBeDefined()
+      expect(response.body).toBeDefined()
+      expect(response.body).toEqual('Cannot retrieve project: Requestor is not member of project')
     })
   })
 
@@ -132,13 +150,13 @@ describe('Project routes', () => {
       const randomDbSetup = createRandomDbSetup({})
       delete randomDbSetup.project.id
 
-      // first query : checkUniqueProject
+      // 1. checkUniqueProject
       sequelize.$queueResult(null)
-      // second query : createProject
+      // 2. createProject
       Project.$queueResult(randomDbSetup.project)
-      // third query : getUserById
+      // 3. getUserById
       User.$queueResult(randomDbSetup.owner)
-      // fourth query : updateProjectStatus
+      // 4. updateProjectStatus
       sequelize.$queueResult([1])
       setOwnerId(randomDbSetup.owner.id)
 
@@ -151,7 +169,7 @@ describe('Project routes', () => {
       randomDbSetup.project.locked = true
       // TODO : user.addProject is not a function
       // ok en local donc pb avec bibliothèque
-      console.log({ response })
+      console.log(response.body)
       expect(response.statusCode).toEqual(201)
       expect(response.json()).toBeDefined()
       expect(response.json()).toMatchObject(randomDbSetup.project)
@@ -190,24 +208,25 @@ describe('Project routes', () => {
       expect(response.body).toEqual('Un projet avec le nom et dans l\'organisation demandés existe déjà')
     })
 
-    // TODO : à réparer
     it.skip('Should return an error if ansible api call failed', async () => {
       const ansibleError = 'Invalid ansible-api call'
 
       const randomDbSetup = createRandomDbSetup({})
 
       Project.$queueResult(null)
-      Project.$queueResult(randomDbSetup)
-      Project.$queueResult(randomDbSetup)
-      setOwnerId(randomDbSetup.owner)
+      Project.$queueResult(randomDbSetup.project)
+      Project.$queueResult(randomDbSetup.project)
+      setOwnerId(randomDbSetup.owner.id)
       const error = new Error(ansibleError)
       global.fetch = vi.fn(() => Promise.reject(error))
 
       const response = await app.inject()
         .post('/')
-        .body(randomDbSetup)
+        .body(randomDbSetup.project)
         .end()
 
+      // TODO : user.addProject is not a function
+      console.log(response.body)
       expect(response.statusCode).toEqual(500)
       expect(response.body).toBeDefined()
       expect(response.body).toEqual(ansibleError)
@@ -219,11 +238,13 @@ describe('Project routes', () => {
     it('Should archive a project', async () => {
       const randomDbSetup = createRandomDbSetup({})
 
-      // first query : getProjectById
+      // 1. getProjectById
       Project.$queueResult(randomDbSetup.project)
-      // second query : projectLoked
+      // 2. getRequestorRole
+      Role.$queueResult(randomDbSetup.usersProjects[0])
+      // 3. projectLoked
       sequelize.$queueResult([1])
-      // third query : projectArchiving
+      // 4. projectArchiving
       sequelize.$queueResult([1])
       setOwnerId(randomDbSetup.owner.id)
 
@@ -236,11 +257,29 @@ describe('Project routes', () => {
       expect(response.body).toMatchObject(`${randomDbSetup.project.id}`)
     })
 
-    it('Should not archive a project if requestor is not owner', async () => {
+    it('Should not archive a project if requestor is not member', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const randomUser = getRandomUser()
 
       Project.$queueResult(randomDbSetup.project)
+      Role.$queueResult(null)
+      setOwnerId(randomUser.id)
+
+      const response = await app.inject()
+        .delete(`/${randomDbSetup.project.id}`)
+        .end()
+
+      expect(response.statusCode).toEqual(500)
+      expect(response.body).toEqual('Requestor is not member of project')
+    })
+
+    it('Should not archive a project if requestor is not owner', async () => {
+      const randomDbSetup = createRandomDbSetup({})
+      randomDbSetup.usersProjects[0].role = 'user'
+      const randomUser = getRandomUser()
+
+      Project.$queueResult(randomDbSetup.project)
+      Role.$queueResult(randomDbSetup.usersProjects[0])
       setOwnerId(randomUser.id)
 
       const response = await app.inject()
