@@ -27,12 +27,13 @@ export const getUserById = async (id) => {
 }
 
 export const getUserByEmail = async (email) => {
-  return await getUserModel().findAll({
+  const res = await getUserModel().findAll({
     where: {
       email: { [Op.eq]: email },
     },
     limit: 1,
   })
+  return Array.isArray(res) ? res[0] : res
 }
 
 // CREATE

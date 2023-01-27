@@ -35,6 +35,7 @@ export const getUserProjects = async (userId) => {
         ...dbKeysExcluded,
       },
       // TODO : commenté car error: "column Users->UsersProjects.id does not exist"
+      // Plus aucun filtrage (plus de where ! 👻)
       // {
       //   model: getUserModel(),
       //   attributes: { exclude: ['role'] },
@@ -60,7 +61,7 @@ export const getProjectById = async (id) => {
 }
 
 export const getProject = async ({ name, organization }) => {
-  const test = await getProjectModel().findAll({
+  const res = await getProjectModel().findAll({
     raw: true,
     where: {
       name,
@@ -68,7 +69,7 @@ export const getProject = async ({ name, organization }) => {
     },
     limit: 1,
   })
-  return test
+  return Array.isArray(res) ? res[0] : res
 }
 
 // CREATE

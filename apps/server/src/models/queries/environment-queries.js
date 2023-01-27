@@ -9,11 +9,12 @@ export const getEnvironmentById = async (id) => {
 }
 
 export const getEnvironment = async ({ projectId, name }) => {
-  return await getEnvironmentModel().findAll({
+  const res = await getEnvironmentModel().findAll({
     where: { name, projectId },
     include: { model: getProjectModel() },
     limit: 1,
   })
+  return Array.isArray(res) ? res[0] : res
 }
 
 export const getEnvironmentsByProjectId = async (projectId) => {

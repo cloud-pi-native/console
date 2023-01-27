@@ -7,10 +7,11 @@ export const getOrganizations = async () => {
 }
 
 export const getOrganizationByName = async (name) => {
-  return await getOrganizationModel().findAll({
+  const res = await getOrganizationModel().findAll({
     where: { name },
     limit: 1,
   })
+  return Array.isArray(res) ? res[0] : res
 }
 
 // CREATE
