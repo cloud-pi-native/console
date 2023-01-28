@@ -71,7 +71,7 @@ importers:
       '@vitejs/plugin-vue': ^4.0.0
       '@vitest/coverage-c8': ^0.26.3
       axios: ^1.2.2
-      cypress: ^12.3.0
+      cypress: ^12.4.1
       cypress-vite: ^1.3.0
       eslint: ^8.31.0
       eslint-config-standard: ^17.0.0
@@ -112,8 +112,8 @@ importers:
       vue: 3.2.45
       vue-router: 4.1.6_vue@3.2.45
     optionalDependencies:
-      '@cypress/vue': 5.0.3_cypress@12.3.0+vue@3.2.45
-      cypress: 12.3.0
+      '@cypress/vue': 5.0.3_cypress@12.4.1+vue@3.2.45
+      cypress: 12.4.1
       cypress-vite: 1.3.0_vite@4.0.4
     devDependencies:
       '@vitejs/plugin-vue': 4.0.0_vite@4.0.4+vue@3.2.45
@@ -511,7 +511,7 @@ packages:
     dev: false
     optional: true
 
-  /@cypress/vue/5.0.3_cypress@12.3.0+vue@3.2.45:
+  /@cypress/vue/5.0.3_cypress@12.4.1+vue@3.2.45:
     resolution: {integrity: sha512-wGOr/aI5KAwpbO44Anb0lgi3mdOUg8V+F16Mam7txBqSCIoX4nRHNDVOx6MR3fSUEsDRhYi3reF+mQgdZdc9rQ==}
     engines: {node: '>=8'}
     requiresBuild: true
@@ -523,7 +523,7 @@ packages:
       '@cypress/webpack-dev-server':
         optional: true
     dependencies:
-      cypress: 12.3.0
+      cypress: 12.4.1
       vue: 3.2.45
     dev: false
     optional: true
@@ -1233,7 +1233,7 @@ packages:
     resolution: {integrity: sha512-TLtRc/mxI74ahP3s+fJpIi+lBFAhuJuVjiQhmyi/xEwJ2pDepuWMRXT6UfJOA1cGkZ5/XGa9NFw/SQR6M5jfoQ==}
     engines: {node: '>=14.0'}
     dependencies:
-      inferred-types: 0.37.6_jsdom@21.0.0
+      inferred-types: 0.37.6
       js-yaml: 4.1.0
       kind-of: 6.0.3
       section-matter: 1.0.0
@@ -1574,8 +1574,6 @@ packages:
 
   /bluebird/3.7.2:
     resolution: {integrity: sha512-XpNj6GDQzdfW+r2Wnn7xiSAd7TM3jzkxGXBGTtWKuSXv1xUV+azxAm8jdWZN06QTQk+2N2XB9jRDkvbmQmcRtg==}
-    dev: false
-    optional: true
 
   /bn.js/4.12.0:
     resolution: {integrity: sha512-c98Bf3tPniI+scsdk237ku1Dc3ujXQTSgyiPUDEOe7tRkhrqridvh8klBv0HCEso1OLOYcHuCv/cS6DNxKH+ZA==}
@@ -1632,7 +1630,7 @@ packages:
     dependencies:
       bumpp: 8.2.1
       callsites: 4.0.0
-      inferred-types: 0.37.6_jsdom@21.0.0
+      inferred-types: 0.37.6
       vitest: 0.25.8_jsdom@21.0.0
     transitivePeerDependencies:
       - '@edge-runtime/vm'
@@ -2087,8 +2085,8 @@ packages:
     dev: false
     optional: true
 
-  /cypress/12.3.0:
-    resolution: {integrity: sha512-ZQNebibi6NBt51TRxRMYKeFvIiQZ01t50HSy7z/JMgRVqBUey3cdjog5MYEbzG6Ktti5ckDt1tfcC47lmFwXkw==}
+  /cypress/12.4.1:
+    resolution: {integrity: sha512-IFMPzc1RJ22Fac+YbdqywtpcuqZXqQJh+JqZDXn+A15zG/dw99njfv8f0bTvD+WAHhP118+xWG/VwilkFg1rnA==}
     engines: {node: ^14.0.0 || ^16.0.0 || >=18.0.0}
     hasBin: true
     requiresBuild: true
@@ -3793,6 +3791,12 @@ packages:
     resolution: {integrity: sha512-EdDDZu4A2OyIK7Lr/2zG+w5jmbuk1DVBnEwREQvBzspBJkCEbRa8GxU1lghYcaGJCnRWibjDXlq779X1/y5xwg==}
     engines: {node: '>=8'}
 
+  /inferred-types/0.37.6:
+    resolution: {integrity: sha512-CfL5g1wR5rVwX2K5S6wSL+h9eODScum/LBwlhGRrcBIvfYppvUQM0aeRJ1BZS+QE38kGzd3v+U526+nQR7ZUkg==}
+    dependencies:
+      brilliant-errors: 0.7.3_jsdom@21.0.0
+    dev: true
+
   /inferred-types/0.37.6_6grxc4k7msn2b62hyzxmsw5una:
     resolution: {integrity: sha512-CfL5g1wR5rVwX2K5S6wSL+h9eODScum/LBwlhGRrcBIvfYppvUQM0aeRJ1BZS+QE38kGzd3v+U526+nQR7ZUkg==}
     dependencies:
@@ -3832,7 +3836,6 @@ packages:
   /inflection/1.13.4:
     resolution: {integrity: sha512-6I/HUDeYFfuNCVS3td055BaXBwKYuzw7K3ExVMStBowKo9oOAMJIXIHvdyR3iboTCp1b+1i5DSkIZTcwIktuDw==}
     engines: {'0': node >= 0.4.0}
-    dev: false
 
   /inflight/1.0.6:
     resolution: {integrity: sha512-k92I/b08q4wvFscXCLvqfsHCrjrF7yiXsQuIVvVE7N82W3+aqpzuUdBbfhWcy/FZR3/4IgflMgKLOsvPDrGCJA==}
@@ -5581,6 +5584,10 @@ packages:
 
   /sequelize-mock/0.10.2_i4ffowa4pg2pczh4nf4453yae4:
     resolution: {integrity: sha512-Vu95by/Bmhcx9PHKlZe+w7/7zw1AycV/SeevxQ5lDokAb50H7Kaf2SkjK5mqKxHWX6y/ICZ8JEfyMOg0nd1M2w==}
+    dependencies:
+      bluebird: 3.7.2
+      inflection: 1.13.4
+      lodash: 4.17.21
     dev: true
     patched: true
 
