@@ -1,5 +1,10 @@
 lockfileVersion: 5.4
 
+patchedDependencies:
+  sequelize-mock@0.10.2:
+    hash: i4ffowa4pg2pczh4nf4453yae4
+    path: patches/sequelize-mock@0.10.2.patch
+
 importers:
 
   .:
@@ -186,7 +191,7 @@ importers:
       eslint-plugin-promise: 6.1.1_eslint@8.31.0
       fastify-plugin: 4.4.0
       pino-pretty: 9.1.1
-      sequelize-mock: 0.10.2
+      sequelize-mock: 0.10.2_i4ffowa4pg2pczh4nf4453yae4
       test-utils: link:../../packages/test-utils
       vitest: 0.26.3
 
@@ -1569,6 +1574,8 @@ packages:
 
   /bluebird/3.7.2:
     resolution: {integrity: sha512-XpNj6GDQzdfW+r2Wnn7xiSAd7TM3jzkxGXBGTtWKuSXv1xUV+azxAm8jdWZN06QTQk+2N2XB9jRDkvbmQmcRtg==}
+    dev: false
+    optional: true
 
   /bn.js/4.12.0:
     resolution: {integrity: sha512-c98Bf3tPniI+scsdk237ku1Dc3ujXQTSgyiPUDEOe7tRkhrqridvh8klBv0HCEso1OLOYcHuCv/cS6DNxKH+ZA==}
@@ -3825,6 +3832,7 @@ packages:
   /inflection/1.13.4:
     resolution: {integrity: sha512-6I/HUDeYFfuNCVS3td055BaXBwKYuzw7K3ExVMStBowKo9oOAMJIXIHvdyR3iboTCp1b+1i5DSkIZTcwIktuDw==}
     engines: {'0': node >= 0.4.0}
+    dev: false
 
   /inflight/1.0.6:
     resolution: {integrity: sha512-k92I/b08q4wvFscXCLvqfsHCrjrF7yiXsQuIVvVE7N82W3+aqpzuUdBbfhWcy/FZR3/4IgflMgKLOsvPDrGCJA==}
@@ -5571,13 +5579,10 @@ packages:
     dependencies:
       lru-cache: 6.0.0
 
-  /sequelize-mock/0.10.2:
+  /sequelize-mock/0.10.2_i4ffowa4pg2pczh4nf4453yae4:
     resolution: {integrity: sha512-Vu95by/Bmhcx9PHKlZe+w7/7zw1AycV/SeevxQ5lDokAb50H7Kaf2SkjK5mqKxHWX6y/ICZ8JEfyMOg0nd1M2w==}
-    dependencies:
-      bluebird: 3.7.2
-      inflection: 1.13.4
-      lodash: 4.17.21
     dev: true
+    patched: true
 
   /sequelize-pool/7.1.0:
     resolution: {integrity: sha512-G9c0qlIWQSK29pR/5U2JF5dDQeqqHRragoyahj/Nx4KOOQ3CPPfzxnfqFPCSB7x5UgjOgnZ61nSxz+fjDpRlJg==}
