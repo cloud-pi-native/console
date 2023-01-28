@@ -6,7 +6,7 @@ RUN npm install --location=global pnpm
 WORKDIR /app
 RUN chown node:root /app
 
-COPY --chown=node:root package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
+COPY --chown=node:root pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
 COPY --chown=node:root apps/server/ ./apps/server/
 COPY --chown=node:root packages/shared/ ./packages/shared/
 COPY --chown=node:root packages/test-utils/ ./packages/test-utils/

@@ -87,7 +87,7 @@ const copyContent = async (key) => {
 const setOrganizationName = async () => {
   await organizationStore.setOrganizations()
   const org = organizationStore.organizations.find(org => org.id === projectStore.selectedProject.organization)
-  ciData.value.orgName = org.name
+  ciData.value.orgName = org?.name
 }
 
 onMounted(() => {
