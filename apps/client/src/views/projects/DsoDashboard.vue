@@ -8,6 +8,11 @@ import DsoSelectedProject from './DsoSelectedProject.vue'
 
 <template>
   <DsoSelectedProject />
+  <DsfrCallout
+    title="Développement en cours"
+    content="Cette page est en cours de construction"
+    data-testid="calloutWipDashboard"
+  />
   <!-- <div
     class="flex justify-between"
   >

@@ -3,7 +3,7 @@ import { getProjectbyId } from '../support/func.js'
 const project = getProjectbyId('011e7860-04d7-461f-912d-334c622d38b3')
 
 // TODO : cette suite passe en mode open mais pas en mode ci (getProjects() pas reçu)
-describe.skip('Redirection', () => {
+describe('Redirection', () => {
   it('Should redirect to original page on reload', () => {
     cy.intercept('GET', '/api/v1/projects').as('getProjects')
     cy.intercept('POST', '/realms/cloud-pi-native/protocol/openid-connect/token').as('postToken')
@@ -23,14 +23,14 @@ describe.skip('Redirection', () => {
       cy.should('have.length', `${response.body.length}`)
       cy.getByDataTestid(`projectTile-${project.name}`).click()
       cy.url().should('contain', `/projects/${project.id}/dashboard`)
-      cy.getSettled('p').should('contain', 'Dashboard')
+      cy.getByDataTestid('calloutWipDashboard').should('contain', 'Développement en cours')
     })
     cy.reload()
     cy.wait('@postToken')
     cy.wait('@getAccount')
     cy.url().should('contain', `/projects/${project.id}/dashboard`)
     cy.wait('@getProjects').its('response').then(_response => {
-      cy.getSettled('p').should('contain', 'Dashboard')
+      cy.getByDataTestid('calloutWipDashboard').should('contain', 'Développement en cours')
       cy.getByDataTestid('currentProjectInfo')
       cy.should('contain', `Le projet courant est : ${project.name}`)
     })
@@ -50,7 +50,7 @@ describe.skip('Redirection', () => {
     cy.wait('@getAccount')
     cy.url().should('contain', `/projects/${project.id}/dashboard`)
     cy.wait('@getProjects', { timeout: 5000 }).its('response').then(_response => {
-      cy.getSettled('p').should('contain', 'Dashboard')
+      cy.getByDataTestid('calloutWipDashboard').should('contain', 'Développement en cours')
       cy.getByDataTestid('currentProjectInfo')
       cy.should('contain', `Le projet courant est : ${project.name}`)
     })
