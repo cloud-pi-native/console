@@ -2,7 +2,6 @@ import { getProjectbyId } from '../support/func.js'
 
 const project = getProjectbyId('011e7860-04d7-461f-912d-334c622d38b3')
 
-// TODO : cette suite passe en mode open mais pas en mode ci (getProjects() pas reçu)
 describe('Redirection', () => {
   it('Should redirect to original page on reload', () => {
     cy.intercept('GET', '/api/v1/projects').as('getProjects')
