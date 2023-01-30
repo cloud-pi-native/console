@@ -1,6 +1,7 @@
-import { getProjectbyId } from '../support/func.js'
+import { getProjectbyId, getUserById } from '../support/func.js'
 
 const project = getProjectbyId('011e7860-04d7-461f-912d-334c622d38b3')
+const newMember = getUserById('cb8e5b4b-7b7b-40f5-935f-594f48ae6567')
 
 describe('Team view', () => {
   beforeEach(() => {
@@ -14,7 +15,7 @@ describe('Team view', () => {
       .url().should('contain', `/projects/${project.id}/team`)
       .getByDataTestid('teamTable')
       .find('tbody > tr')
-      .should('have.length', 1)
+      .should('have.length', project.users.length)
   })
 
   it('Should add a team member', () => {
@@ -24,7 +25,7 @@ describe('Team view', () => {
       .url().should('contain', `/projects/${project.id}/team`)
       .getByDataTestid('teamTable')
       .find('tbody > tr')
-      .should('have.length', 1)
+      .should('have.length', project.users.length)
       .getByDataTestid('addUserInput').clear()
       .type('test@test.com')
       .getByDataTestid('userErrorInfo')
@@ -32,14 +33,14 @@ describe('Team view', () => {
       .getByDataTestid('addUserBtn')
       .should('be.disabled')
       .getByDataTestid('addUserInput').clear()
-      .type('test@test.fr')
+      .type(newMember.email)
       .getByDataTestid('userErrorInfo')
       .should('not.exist')
       .getByDataTestid('addUserBtn')
       .should('be.enabled').click()
       .getByDataTestid('teamTable')
       .find('tbody > tr')
-      .should('have.length', 2)
+      .should('have.length', project.users.length + 1)
   })
 
   it('Should remove a team member', () => {
@@ -49,11 +50,11 @@ describe('Team view', () => {
       .url().should('contain', `/projects/${project.id}/team`)
       .getByDataTestid('teamTable')
       .find('tbody > tr')
-      .should('have.length', 2)
-      .get('td[title="retirer test@test.fr du projet"]')
+      .should('have.length', project.users.length + 1)
+      .get(`td[title="retirer ${newMember.email} du projet"]`)
       .click()
       .getByDataTestid('teamTable')
       .find('tbody > tr')
-      .should('have.length', 1)
+      .should('have.length', project.users.length)
   })
 })

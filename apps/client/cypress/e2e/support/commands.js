@@ -1,6 +1,6 @@
-import { getUserByEmail } from '../support/func.js'
+import { getUserById } from '../support/func.js'
 
-const owner = getUserByEmail('test@test.com')
+const owner = getUserById('cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
 
 Cypress.Commands.add('kcLogout', () => {
   cy.get('a.fr-btn').should('contain', 'Se déconnecter').click()
