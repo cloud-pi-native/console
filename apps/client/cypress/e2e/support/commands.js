@@ -1,4 +1,3 @@
-import { nanoid } from 'nanoid'
 import { getUserByEmail } from '../support/func.js'
 
 const owner = getUserByEmail('test@test.com')
@@ -35,7 +34,6 @@ Cypress.Commands.add('createProject', (project) => {
   cy.intercept('GET', '/api/v1/projects').as('getProjects')
 
   const newProject = {
-    id: nanoid(),
     orgName: 'ministere-interieur',
     name: 'cloud-pi-native',
     ...project,
