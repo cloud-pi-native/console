@@ -17,8 +17,8 @@ const owner = computed(() => userStore.userProfile)
  * Defines a project
  *
  * @typedef {object} project
- * @property {string} orgName
- * @property {string} projectName
+ * @property {string} organization
+ * @property {string} name
  */
 const project = ref({
   organization: undefined,

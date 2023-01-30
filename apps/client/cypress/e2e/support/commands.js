@@ -1,5 +1,7 @@
 import { nanoid } from 'nanoid'
-import { allServices } from 'shared/src/utils/iterables.js'
+import { getUserByEmail } from '../support/func.js'
+
+const owner = getUserByEmail('test@test.com')
 
 Cypress.Commands.add('kcLogout', () => {
   cy.get('a.fr-btn').should('contain', 'Se déconnecter').click()
@@ -34,16 +36,8 @@ Cypress.Commands.add('createProject', (project) => {
 
   const newProject = {
     id: nanoid(),
-    repositories: [],
-    owner: {
-      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
-      email: 'test@test.com',
-      firstName: 'test',
-      lastName: 'TEST',
-    },
     orgName: 'ministere-interieur',
-    services: allServices,
-    projectName: 'CloudPiNative',
+    name: 'cloud-pi-native',
     ...project,
   }
 
@@ -51,26 +45,22 @@ Cypress.Commands.add('createProject', (project) => {
     .getByDataTestid('createProjectLink').click()
     .get('h1').should('contain', 'Commander un espace projet')
     .get('[data-testid^="repoFieldset-"]').should('not.exist')
-    .get('p.fr-alert__description').should('contain', newProject.owner.email)
-    .getByDataTestid('orgNameSelect').find('select').select('ministere-interieur')
-    .getByDataTestid('projectNameInput').type(`${newProject.projectName} ErrorSpace`)
-    .getByDataTestid('projectNameInput').should('have.class', 'fr-input--error')
-    .getByDataTestid('projectNameInput').clear().type(newProject.projectName)
-    .getByDataTestid('projectNameInput').should('not.have.class', 'fr-input--error')
+    .get('p.fr-alert__description').should('contain', owner.email)
+    .getByDataTestid('organizationSelect').find('select').select(newProject.orgName)
+    .getByDataTestid('nameInput').type(`${newProject.name} ErrorSpace`)
+    .getByDataTestid('nameInput').should('have.class', 'fr-input--error')
+    .getByDataTestid('nameInput').clear().type(newProject.name)
+    .getByDataTestid('nameInput').should('not.have.class', 'fr-input--error')
   cy.getByDataTestid('createProjectBtn').should('be.enabled').click()
 
   cy.wait('@postProject').its('response.statusCode').should('eq', 201)
   cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
-
-  if (newProject.repositories.length) {
-    cy.addRepos(newProject.repositories)
-  }
 })
 
-Cypress.Commands.add('assertCreateProject', (projectName) => {
+Cypress.Commands.add('assertCreateProject', (name) => {
   cy.getByDataTestid('menuMyProjects').click()
     .url().should('contain', '/projects')
-    .getByDataTestid(`projectTile-${projectName}`).should('exist')
+    .getByDataTestid(`projectTile-${name}`).should('exist')
 })
 
 Cypress.Commands.add('addRepos', (project, repos) => {
@@ -93,7 +83,7 @@ Cypress.Commands.add('addRepos', (project, repos) => {
     .getByDataTestid('menuProjectsBtn').click()
     .getByDataTestid('menuMyProjects').click()
     .url().should('contain', '/projects')
-    .getByDataTestid(`projectTile-${project.projectName}`).click()
+    .getByDataTestid(`projectTile-${project.name}`).click()
     .getByDataTestid('menuRepos').click()
     .url().should('contain', '/repos')
 
@@ -125,7 +115,7 @@ Cypress.Commands.add('assertAddRepo', (project, repos) => {
     .getByDataTestid('menuProjectsBtn').click()
     .getByDataTestid('menuMyProjects').click()
     .url().should('contain', '/projects')
-    .getByDataTestid(`projectTile-${project.projectName}`).click()
+    .getByDataTestid(`projectTile-${project.name}`).click()
     .getByDataTestid('menuRepos').click()
 
   repos.forEach((repo) => {
