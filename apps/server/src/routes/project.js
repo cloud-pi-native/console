@@ -2,7 +2,7 @@ import {
   getUserProjectsController,
   getProjectByIdController,
   createProjectController,
-  projectArchivingController,
+  archiveProjectController,
 } from '../controllers/project.js'
 import projectEnvironmentRouter from './project-environment.js'
 import projectRepositoryRouter from './project-repository.js'
@@ -20,7 +20,7 @@ const router = async (app, _opt) => {
   await app.post('/', createProjectController)
 
   // Archiver un projet
-  await app.delete('/:projectId', projectArchivingController)
+  await app.delete('/:projectId', archiveProjectController)
 
   // Enregistrement du sous routeur environment
   await app.register(projectEnvironmentRouter)

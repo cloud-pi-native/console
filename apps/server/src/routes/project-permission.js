@@ -1,8 +1,8 @@
 import {
   getEnvironmentPermissionsController,
-  setEnvironmentPermissionController,
-  envUpdatePermissionController,
-  envRemovePermissionController,
+  setPermissionController,
+  updatePermissionController,
+  deletePermissionController,
 } from '../controllers/permission.js'
 
 const router = async (app, _opt) => {
@@ -10,13 +10,13 @@ const router = async (app, _opt) => {
   await app.get('/:projectId/environments/:environmentId/permissions', getEnvironmentPermissionsController)
 
   // Créer une permission
-  await app.post('/:projectId/environments/:environmentId/permissions', setEnvironmentPermissionController)
+  await app.post('/:projectId/environments/:environmentId/permissions', setPermissionController)
 
   // Mettre à jour le level d'une permission
-  await app.put('/:projectId/environments/:environmentId/:permissionId', envUpdatePermissionController)
+  await app.put('/:projectId/environments/:environmentId/:permissionId', updatePermissionController)
 
   // Supprimer une permission
-  await app.delete('/:projectId/environments/:environmentId/permissions', envRemovePermissionController)
+  await app.delete('/:projectId/environments/:environmentId/permissions', deletePermissionController)
 }
 
 export default router

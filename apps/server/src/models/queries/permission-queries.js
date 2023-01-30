@@ -27,7 +27,7 @@ export const getPermissionByUserIdAndEnvironmentId = async (userId, environmentI
 }
 
 // CREATE
-export const setEnvironmentPermission = async ({ userId, environmentId, level }) => {
+export const setPermission = async ({ userId, environmentId, level }) => {
   return getPermissionModel().upsert({ userId, environmentId, level },
     {
       includes: [

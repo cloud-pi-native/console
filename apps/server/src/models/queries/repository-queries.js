@@ -16,7 +16,7 @@ export const getProjectRepositories = async (projectId) => {
 }
 
 // CREATE
-export const repositoryInitializing = async ({ projectId, internalRepoName, externalRepoUrl, isInfra, isPrivate, externalUserName, externalToken }) => {
+export const initializeRepository = async ({ projectId, internalRepoName, externalRepoUrl, isInfra, isPrivate, externalUserName, externalToken }) => {
   return await getRepositoryModel().create({
     projectId,
     internalRepoName,
@@ -30,11 +30,11 @@ export const repositoryInitializing = async ({ projectId, internalRepoName, exte
 }
 
 // UPDATE
-export const repositoryCreated = async (id) => {
+export const updateRepositoryCreated = async (id) => {
   return await getRepositoryModel().update({ status: 'created' }, { where: { id } })
 }
 
-export const repositoryFailed = async (id) => {
+export const updateRepositoryFailed = async (id) => {
   return await getRepositoryModel().update({ status: 'failed' }, { where: { id } })
 }
 
@@ -52,7 +52,7 @@ export const updateRepository = async (id, infos) => {
 }
 
 // DELETE
-export const repositoryDeleting = async (id) => {
+export const updateRepositoryDeleting = async (id) => {
   const doesRepoExist = await getRepositoryById(id)
   if (!doesRepoExist) throw new Error('Le dépôt interne demandé n\'existe pas en base pour ce projet')
   return await getRepositoryModel().update({

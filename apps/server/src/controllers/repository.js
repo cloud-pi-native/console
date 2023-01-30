@@ -1,17 +1,17 @@
 import {
   getRepositoryById,
   getProjectRepositories,
-  repositoryInitializing,
-  repositoryCreated,
-  repositoryFailed,
+  initializeRepository,
+  updateRepositoryCreated,
+  updateRepositoryFailed,
   updateRepository,
-  repositoryDeleting,
+  updateRepositoryDeleting,
   deleteRepository,
 } from '../models/queries/repository-queries.js'
 import {
   getProjectById,
-  projectLocked,
-  projectUnlocked,
+  lockProject,
+  unlockProject,
 } from '../models/queries/project-queries.js'
 import {
   getEnvironmentsNamesByProjectId,
@@ -30,7 +30,7 @@ import { ansibleHost, ansiblePort } from '../utils/env.js'
 export const getRepositoryByIdController = async (req, res) => {
   const projectId = req.params?.projectId
   const repositoryId = req.params?.repositoryId
-  const userId = req.session?.user.id
+  const userId = req.session?.user?.id
 
   try {
     const repo = await getRepositoryById(repositoryId)
@@ -55,7 +55,7 @@ export const getRepositoryByIdController = async (req, res) => {
 
 export const getProjectRepositoriesController = async (req, res) => {
   const projectId = req.params?.projectId
-  const userId = req.session?.user.id
+  const userId = req.session?.user?.id
   try {
     const repos = await getProjectRepositories(projectId)
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
@@ -79,7 +79,7 @@ export const getProjectRepositoriesController = async (req, res) => {
 
 // CREATE
 
-export const repositoryInitializingController = async (req, res) => {
+export const createRepositoryController = async (req, res) => {
   const data = req.body
   const userId = req.session?.user?.id
   const projectId = req.params?.projectId
@@ -105,8 +105,8 @@ export const repositoryInitializingController = async (req, res) => {
     const isInternalRepoNameTaken = repos.find(repo => repo.internalRepoName === data.internalRepoName)
     if (isInternalRepoNameTaken) throw new Error(`Le nom du dépôt interne ${data.internalRepoName} existe déjà en base pour ce projet`)
 
-    await projectLocked(projectId)
-    repo = await repositoryInitializing(data)
+    await lockProject(projectId)
+    repo = await initializeRepository(data)
 
     const message = 'Repository successfully created'
     req.log.info({
@@ -156,8 +156,8 @@ export const repositoryInitializingController = async (req, res) => {
     })
 
     try {
-      await repositoryCreated(repo.id)
-      await projectUnlocked(projectId)
+      await updateRepositoryCreated(repo.id)
+      await unlockProject(projectId)
 
       req.log.info({
         ...getLogInfos({ repositoryId: repo.id }),
@@ -182,8 +182,8 @@ export const repositoryInitializingController = async (req, res) => {
     })
 
     try {
-      await repositoryFailed(repo.id)
-      await projectUnlocked(projectId)
+      await updateRepositoryFailed(repo.id)
+      await unlockProject(projectId)
 
       req.log.info({
         ...getLogInfos({ repositoryId: repo.id }),
@@ -226,7 +226,7 @@ export const updateRepositoryController = async (req, res) => {
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
     if (!role) throw new Error('Requestor is not member of project')
 
-    await projectLocked(projectId)
+    await lockProject(projectId)
     await updateRepository(repositoryId, data.info)
 
     const message = 'Repository successfully updated'
@@ -247,8 +247,8 @@ export const updateRepositoryController = async (req, res) => {
   try {
     // TODO : #131 : appel ansible
     try {
-      await repositoryCreated(repositoryId)
-      await projectUnlocked(projectId)
+      await updateRepositoryCreated(repositoryId)
+      await unlockProject(projectId)
 
       req.log.info({
         ...getLogInfos({ repositoryId }),
@@ -273,8 +273,8 @@ export const updateRepositoryController = async (req, res) => {
     })
 
     try {
-      await repositoryFailed(repositoryId)
-      await projectUnlocked(projectId)
+      await updateRepositoryFailed(repositoryId)
+      await unlockProject(projectId)
 
       req.log.info({
         ...getLogInfos({ repositoryId }),
@@ -294,7 +294,7 @@ export const updateRepositoryController = async (req, res) => {
 
 // DELETE
 
-export const repositoryDeletingController = async (req, res) => {
+export const deleteRepositoryController = async (req, res) => {
   const projectId = req.params?.projectId
   const repositoryId = req.params?.repositoryId
   const userId = req.session?.user?.id
@@ -315,8 +315,8 @@ export const repositoryDeletingController = async (req, res) => {
     if (!role) throw new Error('Requestor is not member of project')
     if (role.role !== 'owner') throw new Error('Requestor is not owner of project')
 
-    await projectLocked(projectId)
-    await repositoryDeleting(repositoryId)
+    await lockProject(projectId)
+    await updateRepositoryDeleting(repositoryId)
 
     const message = 'Repository status successfully deleting'
     req.log.info({
@@ -337,7 +337,7 @@ export const repositoryDeletingController = async (req, res) => {
     // TODO : #131 : appel ansible
     try {
       await deleteRepository(repositoryId)
-      await projectUnlocked(projectId)
+      await unlockProject(projectId)
 
       req.log.info({
         ...getLogInfos({ repositoryId }),
@@ -362,8 +362,8 @@ export const repositoryDeletingController = async (req, res) => {
     })
 
     try {
-      await repositoryFailed(repositoryId)
-      await projectUnlocked(projectId)
+      await updateRepositoryFailed(repositoryId)
+      await unlockProject(projectId)
 
       req.log.info({
         ...getLogInfos({ repositoryId }),

@@ -1,13 +1,13 @@
 import {
-  projectLocked,
-  projectUnlocked,
+  lockProject,
+  unlockProject,
 } from '../models/queries/project-queries.js'
 
 import { ansibleHost, ansiblePort } from '../utils/env.js'
 
 export const ansibleConnector = async ({ payload, route, method, initQuery, initQueryParams, okQuery, okQueryParams, nokQuery, nokQueryParams, lockProjectId }) => {
   await initQuery(initQueryParams)
-  await projectLocked(lockProjectId)
+  await lockProject(lockProjectId)
   try {
     await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/${route}`, {
       method,
@@ -21,11 +21,11 @@ export const ansibleConnector = async ({ payload, route, method, initQuery, init
   } catch {
     await nokQuery(nokQueryParams)
   }
-  await projectUnlocked(lockProjectId)
+  await unlockProject(lockProjectId)
 }
 // j'ai perdu webconf
 
-// const userId = req.session?.user.id
+// const userId = req.session?.user?.id
 // const projectId = req.params?.projectId
 
 // try {
@@ -36,7 +36,7 @@ export const ansibleConnector = async ({ payload, route, method, initQuery, init
 //   if (!role) throw new Error('Requestor is not member of project')
 //   if (role.role !== 'owner') throw new Error('Requestor is not owner of project')
 
-//  await projectArchiving(projectId)
+//  await archiveProject(projectId)
 //  req.log.info({
 //    ...getLogInfos({
 //      projectId,
@@ -57,7 +57,7 @@ export const ansibleConnector = async ({ payload, route, method, initQuery, init
 // try {
 //  // TODO : US #130 appel ansible
 //  try {
-//    await projectUnlocked(projectId)
+//    await unlockProject(projectId)
 
 //    req.log.info({
 //      ...getLogInfos({ projectId }),
@@ -78,8 +78,8 @@ export const ansibleConnector = async ({ payload, route, method, initQuery, init
 //    error,
 //  })
 //  try {
-//    await projectFailed(projectId)
-//    await projectUnlocked(projectId)
+//    await updateProjectFailed(projectId)
+//    await unlockProject(projectId)
 
 //    req.log.info({
 //      ...getLogInfos({ projectId }),

@@ -96,7 +96,8 @@ describe('Project routes', () => {
     })
   })
 
-  describe('setEnvironmentPermissionController', () => {
+  // POST
+  describe('setPermissionController', () => {
     it('Should set a permission', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const newPermission = randomDbSetup.permissions[0][0]
@@ -133,6 +134,51 @@ describe('Project routes', () => {
       expect(response.statusCode).toEqual(500)
       expect(response.body).toBeDefined()
       expect(response.body).toEqual('Cannot create permissions: Requestor is not member of project')
+    })
+  })
+
+  // PUT
+  describe('updatePermissionController', () => {
+    it('Should update a permission', async () => {
+      const randomDbSetup = createRandomDbSetup({})
+      const updatedPermission = randomDbSetup.permissions[0][0]
+      updatedPermission.level = 2
+
+      // 1. getRequestorRole
+      Role.$queueResult(randomDbSetup.usersProjects[0])
+      // 2. setPermissions
+      Permission.$queueResult(updatedPermission)
+      setOwnerId(randomDbSetup.owner.id)
+
+      const response = await app.inject()
+        .put(`${randomDbSetup.project.id}/environments/${randomDbSetup.environments[0].id}/permissions`)
+        .body(updatedPermission)
+        .end()
+
+      expect(response.statusCode).toEqual(201)
+      expect(response.json()).toBeDefined()
+      expect(response.json()).toEqual(updatedPermission)
+    })
+  })
+
+  // DELETE
+  describe('deletePermissionController', () => {
+    it('Should delete a permission', async () => {
+      const randomDbSetup = createRandomDbSetup({})
+      const removedPermission = randomDbSetup.permissions[0][0]
+
+      // 1. getRequestorRole
+      Role.$queueResult(randomDbSetup.usersProjects[0])
+      // 2. setPermissions
+      Permission.$queueResult(removedPermission.id)
+      setOwnerId(randomDbSetup.owner.id)
+
+      const response = await app.inject()
+        .delete(`${randomDbSetup.project.id}/environments/${randomDbSetup.environments[0].id}/permissions`)
+        .body(removedPermission)
+        .end()
+
+      expect(response.statusCode).toEqual(200)
     })
   })
 })

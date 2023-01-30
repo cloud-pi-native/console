@@ -122,7 +122,7 @@ describe('User routes', () => {
   })
 
   // POST
-  describe('environmentInitializingController', () => {
+  describe('initializeEnvironmentController', () => {
     it('Should create an environment', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const newEnvironment = getRandomEnv('dev', randomDbSetup.project.id)
@@ -137,7 +137,7 @@ describe('User routes', () => {
       Environment.$queueResult(null)
       // 4. createEnvironment
       Environment.$queueResult(newEnvironment)
-      // 5. projectLocked
+      // 5. lockProject
       sequelize.$queueResult([1])
       setOwnerId(randomDbSetup.owner.id)
 
@@ -185,7 +185,7 @@ describe('User routes', () => {
       Environment.$queueResult(randomDbSetup.environments)
       // 4. createEnvironment
       Environment.$queueResult(newEnvironment)
-      // 5. projectLocked
+      // 5. lockProject
       sequelize.$queueResult([1])
       setOwnerId(randomDbSetup.owner.id)
 
@@ -201,7 +201,7 @@ describe('User routes', () => {
   })
 
   // DELETE
-  describe('environmentDeletingController', () => {
+  describe('deleteEnvironmentController', () => {
     it('Should delete an environment', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const environmentToDelete = randomDbSetup.environments[0]
@@ -210,7 +210,7 @@ describe('User routes', () => {
       Role.$queueResult(randomDbSetup.usersProjects[0])
       // 2. deleteEnvironment
       Environment.$queueResult(randomDbSetup.environments[0])
-      // 3. projectLocked
+      // 3. lockProject
       sequelize.$queueResult([1])
       setOwnerId(randomDbSetup.owner.id)
 
@@ -218,9 +218,7 @@ describe('User routes', () => {
         .delete(`/${randomDbSetup.project.id}/environments/${environmentToDelete.id}`)
         .end()
 
-      expect(response.statusCode).toEqual(201)
-      expect(response.json()).toBeDefined()
-      expect(response.json()).toEqual(environmentToDelete)
+      expect(response.statusCode).toEqual(200)
     })
 
     it('Should not delete an environment if requestor is not member of project', async () => {

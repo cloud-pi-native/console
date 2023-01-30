@@ -38,7 +38,7 @@ export const getProjectByEnvironmentId = async (environmentId) => {
 }
 
 // INSERT
-export const environmentInitializing = async ({ name, projectId }) => {
+export const initializeEnvironment = async ({ name, projectId }) => {
   return await getEnvironmentModel().create(
     { name, projectId, status: 'initializing' }, {
       where: {
@@ -51,7 +51,7 @@ export const environmentInitializing = async ({ name, projectId }) => {
     })
 }
 
-export const environmentCreated = async (id) => {
+export const updateEnvironmentCreated = async (id) => {
   return await getEnvironmentModel().update(
     {
       status: 'created',
@@ -62,7 +62,7 @@ export const environmentCreated = async (id) => {
     })
 }
 
-export const environmentFailed = async (id) => {
+export const updateEnvironmentFailed = async (id) => {
   return await getEnvironmentModel().update(
     {
       status: 'failed',
@@ -74,7 +74,7 @@ export const environmentFailed = async (id) => {
 }
 
 // DELETE
-export const environmentDeleting = async (id) => {
+export const updateEnvironmentDeleting = async (id) => {
   const doesEnvExist = await getEnvironmentById(id)
   if (!doesEnvExist) throw new Error('L\'environnement demandé n\'existe pas en base pour ce projet')
   return await getEnvironmentModel().update({

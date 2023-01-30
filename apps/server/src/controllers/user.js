@@ -1,10 +1,10 @@
 import {
   getProjectUsers,
   getProjectById,
-  projectLocked,
-  projectUnlocked,
-  projectAddUser,
-  projectRemoveUser,
+  lockProject,
+  unlockProject,
+  addUserToProject,
+  removeUserFromProject,
 } from '../models/queries/project-queries.js'
 import {
   createUser,
@@ -68,8 +68,8 @@ export const getProjectUsersController = async (req, res) => {
 // }
 
 // CREATE
-export const projectAddUserController = async (req, res) => {
-  const userId = req.session?.user.id
+export const addUserToProjectController = async (req, res) => {
+  const userId = req.session?.user?.id
   const projectId = req.params?.projectId
   const data = req.body
 
@@ -87,8 +87,8 @@ export const projectAddUserController = async (req, res) => {
     const userToAddRole = await getRoleByUserIdAndProjectId(userToAdd.id, projectId)
     if (userToAddRole) throw new Error('User is already member of projet')
 
-    await projectLocked(projectId)
-    await projectAddUser({ project, user: userToAdd, role: 'user' })
+    await lockProject(projectId)
+    await addUserToProject({ project, user: userToAdd, role: 'user' })
 
     const message = 'User successfully added into project'
     req.log.info({
@@ -108,7 +108,7 @@ export const projectAddUserController = async (req, res) => {
   try {
     // TODO : US #132 appel ansible
     try {
-      await projectUnlocked(projectId)
+      await unlockProject(projectId)
 
       req.log.info({
         ...getLogInfos({ projectId }),
@@ -128,7 +128,7 @@ export const projectAddUserController = async (req, res) => {
       error,
     })
     try {
-      await projectUnlocked(projectId)
+      await unlockProject(projectId)
 
       req.log.info({
         ...getLogInfos({ projectId }),
@@ -167,13 +167,13 @@ export const createUserController = async (req, res) => {
 }
 
 // PUT
-export const projectUpdateUserController = async (req, res) => {
+export const updateUserProjectRoleController = async (req, res) => {
 // TODO : modifier role d'un user d'un projet via UsersProjects
 }
 
 // DELETE
-export const projectRemoveUserController = async (req, res) => {
-  const userId = req.session?.user.id
+export const removeUserFromProjectController = async (req, res) => {
+  const userId = req.session?.user?.id
   const projectId = req.params?.projectId
   const userToRemoveId = req.params?.userId
 
@@ -190,8 +190,8 @@ export const projectRemoveUserController = async (req, res) => {
     const userToRemoveRole = await getRoleByUserIdAndProjectId(userToRemoveId, projectId)
     if (!userToRemoveRole) throw new Error('User to remove is not member of project')
 
-    await projectLocked(projectId)
-    await projectRemoveUser({ project, user: userToRemove })
+    await lockProject(projectId)
+    await removeUserFromProject({ project, user: userToRemove })
 
     const environments = await getEnvironmentsByProjectId(projectId)
     environments.forEach(async env => {
@@ -218,7 +218,7 @@ export const projectRemoveUserController = async (req, res) => {
   try {
     // TODO : US #132 appel ansible
     try {
-      await projectUnlocked(projectId)
+      await unlockProject(projectId)
 
       req.log.info({
         ...getLogInfos({ projectId }),
@@ -238,7 +238,7 @@ export const projectRemoveUserController = async (req, res) => {
       error,
     })
     try {
-      await projectUnlocked(projectId)
+      await unlockProject(projectId)
 
       req.log.info({
         ...getLogInfos({ projectId }),

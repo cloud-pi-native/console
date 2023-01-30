@@ -72,36 +72,36 @@ export const getProject = async ({ name, organization }) => {
 }
 
 // CREATE
-export const projectInitializing = async ({ name, organization }) => {
+export const initializeProject = async ({ name, organization }) => {
   return await getProjectModel().create({ name, organization, status: 'initializing', locked: true })
 }
 
 // UPDATE
-export const projectLocked = async (id) => {
+export const lockProject = async (id) => {
   return await getProjectModel().update({ locked: true }, { where: { id } })
 }
 
-export const projectUnlocked = async (id) => {
+export const unlockProject = async (id) => {
   return await getProjectModel().update({ locked: false }, { where: { id } })
 }
 
-export const projectCreated = async (id) => {
+export const updateProjectCreated = async (id) => {
   return await getProjectModel().update({ locked: false, status: 'created' }, { where: { id } })
 }
 
-export const projectFailed = async (id) => {
+export const updateProjectFailed = async (id) => {
   return await getProjectModel().update({ locked: false, status: 'failed' }, { where: { id } })
 }
 
-export const projectAddUser = async ({ project, user, role }) => {
+export const addUserToProject = async ({ project, user, role }) => {
   return await user.addProject(project, { through: { role } })
 }
 
-export const projectRemoveUser = async ({ project, user }) => {
+export const removeUserFromProject = async ({ project, user }) => {
   return await user.removeProject(project)
 }
 
-export const projectArchiving = async (id) => {
+export const archiveProject = async (id) => {
   return await getProjectModel().update({
     status: 'archived',
     locked: true,
@@ -111,7 +111,7 @@ export const projectArchiving = async (id) => {
 }
 
 // TECH
-export const _projectInitializing = async ({ id, name, organization }) => {
+export const _initializeProject = async ({ id, name, organization }) => {
   const project = await getProject({ name, organization })
   if (project) throw new Error('Un projet avec le nom et dans l\'organisation demandés existe déjà')
   return await getProjectModel().create({ id, name, organization, status: 'initializing', locked: true })

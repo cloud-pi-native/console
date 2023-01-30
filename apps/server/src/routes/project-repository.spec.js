@@ -103,7 +103,7 @@ describe('Project routes', () => {
   })
 
   // POST
-  describe('repositoryInitializingController', () => {
+  describe('createRepositoryController', () => {
     it('Should create a repository', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const newRepository = getRandomRepo(randomDbSetup.project.id)
@@ -153,7 +153,7 @@ describe('Project routes', () => {
   })
 
   // DELETE
-  describe('repositoryDeletingController', () => {
+  describe('deleteRepositoryController', () => {
     it('Should delete a repository', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const repoToDelete = randomDbSetup.repositories[1]

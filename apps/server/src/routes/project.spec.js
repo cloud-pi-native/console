@@ -241,7 +241,7 @@ describe('Project routes', () => {
   })
 
   // DELETE
-  describe('projectArchivingController', () => {
+  describe('archiveProjectController', () => {
     it('Should archive a project', async () => {
       const randomDbSetup = createRandomDbSetup({})
 
@@ -251,7 +251,7 @@ describe('Project routes', () => {
       Role.$queueResult(randomDbSetup.usersProjects[0])
       // 3. projectLoked
       sequelize.$queueResult([1])
-      // 4. projectArchiving
+      // 4. archiveProject
       sequelize.$queueResult([1])
       setOwnerId(randomDbSetup.owner.id)
 

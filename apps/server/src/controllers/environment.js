@@ -1,17 +1,17 @@
 import {
   getEnvironmentById,
-  environmentInitializing,
+  initializeEnvironment,
   getEnvironmentsByProjectId,
-  environmentCreated,
-  environmentFailed,
-  environmentDeleting,
+  updateEnvironmentCreated,
+  updateEnvironmentFailed,
+  updateEnvironmentDeleting,
   deleteEnvironment,
 } from '../models/queries/environment-queries.js'
 import {
-  setEnvironmentPermission,
+  setPermission,
   getPermissionByUserIdAndEnvironmentId,
 } from '../models/queries/permission-queries.js'
-import { getProjectById, projectLocked, projectUnlocked } from '../models/queries/project-queries.js'
+import { getProjectById, lockProject, unlockProject } from '../models/queries/project-queries.js'
 import { getRoleByUserIdAndProjectId } from '../models/queries/users-projects-queries.js'
 import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
@@ -49,9 +49,9 @@ export const getEnvironmentByIdController = async (req, res) => {
 }
 
 // POST
-export const environmentInitializingController = async (req, res) => {
+export const initializeEnvironmentController = async (req, res) => {
   const data = req.body
-  const userId = req.session?.user.id
+  const userId = req.session?.user?.id
   const projectId = req.params?.projectId
 
   let env
@@ -67,8 +67,8 @@ export const environmentInitializingController = async (req, res) => {
       if (env.name === data.name) throw new Error('Requested environment already exists for this project')
     })
 
-    env = await environmentInitializing(data)
-    await projectLocked(projectId)
+    env = await initializeEnvironment(data)
+    await lockProject(projectId)
 
     req.log.info({
       ...getLogInfos({
@@ -89,13 +89,13 @@ export const environmentInitializingController = async (req, res) => {
   try {
     // TODO : #133 : appel ansible + création groupe keycloak + ajout owner au groupe keycloak
     try {
-      await environmentCreated(env.id)
-      await setEnvironmentPermission({
+      await updateEnvironmentCreated(env.id)
+      await setPermission({
         userId: data.userId,
         environmentId: env.id,
         level: data.level,
       })
-      await projectUnlocked(projectId)
+      await unlockProject(projectId)
 
       req.log.info({
         ...getLogInfos({ projectId: env.id }),
@@ -115,8 +115,8 @@ export const environmentInitializingController = async (req, res) => {
       error,
     })
     try {
-      await environmentFailed(env.id)
-      await projectUnlocked(projectId)
+      await updateEnvironmentFailed(env.id)
+      await unlockProject(projectId)
 
       req.log.info({
         ...getLogInfos({ projectId: env.id }),
@@ -133,18 +133,18 @@ export const environmentInitializingController = async (req, res) => {
 }
 
 // DELETE
-export const environmentDeletingController = async (req, res) => {
+export const deleteEnvironmentController = async (req, res) => {
   const environmentId = req.params?.environmentId
   const projectId = req.params?.projectId
-  const userId = req.session?.user.id
+  const userId = req.session?.user?.id
 
   try {
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
     if (!role) throw new Error('Requestor is not member of project')
     if (role.role !== 'owner') throw new Error('Requestor is not owner of project')
 
-    const env = await environmentDeleting(environmentId)
-    await projectLocked(projectId)
+    await updateEnvironmentDeleting(environmentId)
+    await lockProject(projectId)
 
     req.log.info({
       ...getLogInfos({
@@ -152,7 +152,6 @@ export const environmentDeletingController = async (req, res) => {
       }),
       description: 'Environment status successfully updated in database',
     })
-    send201(res, env)
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
@@ -166,7 +165,7 @@ export const environmentDeletingController = async (req, res) => {
     // TODO : #133 : appel ansible + suppression groupe keycloak (+ retirer users du groupe keycloak ?)
     try {
       await deleteEnvironment(environmentId)
-      await projectUnlocked(projectId)
+      await unlockProject(projectId)
 
       req.log.info({
         ...getLogInfos({ environmentId }),
@@ -186,8 +185,8 @@ export const environmentDeletingController = async (req, res) => {
       error,
     })
     try {
-      await environmentFailed(environmentId)
-      await projectUnlocked(projectId)
+      await updateEnvironmentFailed(environmentId)
+      await unlockProject(projectId)
 
       req.log.info({
         ...getLogInfos({ environmentId }),

@@ -99,7 +99,7 @@ describe('User routes', () => {
   })
 
   // POST
-  describe('projectAddUserController', () => {
+  describe('addUserToProjectController', () => {
     it.skip('Should add an user in project', async () => {
       // TODO : user.addProject is not a function
       const randomDbSetup = createRandomDbSetup({})
@@ -113,9 +113,9 @@ describe('User routes', () => {
       User.$queueResult(randomUser)
       // 4. getUserToAddRole
       Role.$queueResult(null)
-      // 5. projectLocked
+      // 5. lockProject
       sequelize.$queueResult([1])
-      // 6. projectAddUser
+      // 6. addUserToProject
       sequelize.$queueResult([1])
       setOwnerId(randomDbSetup.owner.id)
 
@@ -168,14 +168,14 @@ describe('User routes', () => {
   })
 
   // PUT
-  describe('projectUpdateUserController', () => {
+  describe('updateUserProjectRoleController', () => {
     it('Should update a project member\'s role', () => {
       // TODO
     })
   })
 
   // DELETE
-  describe('projectRemoveUserController', () => {
+  describe('removeUserFromProjectController', () => {
     it.skip('Should remove an user from a project', async () => {
       // TODO : user.removeProject is not a function
       const randomDbSetup = createRandomDbSetup({ nbUsers: 1 })
@@ -191,7 +191,7 @@ describe('User routes', () => {
       Role.$queueResult(randomDbSetup.usersProjects[0])
       // 5. project locked
       sequelize.$queueResult([1])
-      // 6. projectRemoveUser
+      // 6. removeUserFromProject
       sequelize.$queueResult([1])
 
       setOwnerId(randomDbSetup.owner.id)

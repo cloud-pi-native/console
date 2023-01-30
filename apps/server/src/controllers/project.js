@@ -1,14 +1,14 @@
 import {
   getUserProjects,
   getProject,
-  projectInitializing,
-  projectCreated,
-  projectFailed,
+  initializeProject,
+  updateProjectCreated,
+  updateProjectFailed,
   getProjectById,
-  projectLocked,
-  projectUnlocked,
-  projectAddUser,
-  projectArchiving,
+  lockProject,
+  unlockProject,
+  addUserToProject,
+  archiveProject,
 } from '../models/queries/project-queries.js'
 import { getUserById } from '../models/queries/user-queries.js'
 import { getRoleByUserIdAndProjectId } from '../models/queries/users-projects-queries.js'
@@ -70,7 +70,7 @@ export const getProjectByIdController = async (req, res) => {
 // POST
 export const createProjectController = async (req, res) => {
   const data = req.body
-  const userId = req.session?.user.id
+  const userId = req.session?.user?.id
 
   let project
 
@@ -80,9 +80,9 @@ export const createProjectController = async (req, res) => {
     project = await getProject({ name: data.name, organization: data.organization })
     if (project) throw new Error('Un projet avec le nom et dans l\'organisation demandés existe déjà')
 
-    project = await projectInitializing(data)
+    project = await initializeProject(data)
     const user = await getUserById(userId)
-    await projectAddUser({ project, user, role: 'owner' })
+    await addUserToProject({ project, user, role: 'owner' })
     req.log.info({
       ...getLogInfos({
         projectId: project.id,
@@ -117,7 +117,7 @@ export const createProjectController = async (req, res) => {
     })
 
     try {
-      project = await projectCreated(project.id)
+      project = await updateProjectCreated(project.id)
 
       req.log.info({
         ...getLogInfos({ projectId: project.id }),
@@ -137,7 +137,7 @@ export const createProjectController = async (req, res) => {
       error,
     })
     try {
-      project = await projectFailed(project.id)
+      project = await updateProjectFailed(project.id)
 
       req.log.info({
         ...getLogInfos({ projectId: project.id }),
@@ -154,8 +154,8 @@ export const createProjectController = async (req, res) => {
 }
 
 // DELETE
-export const projectArchivingController = async (req, res) => {
-  const userId = req.session?.user.id
+export const archiveProjectController = async (req, res) => {
+  const userId = req.session?.user?.id
   const projectId = req.params?.projectId
 
   try {
@@ -166,8 +166,8 @@ export const projectArchivingController = async (req, res) => {
     if (!role) throw new Error('Requestor is not member of project')
     if (role.role !== 'owner') throw new Error('Requestor is not owner of project')
 
-    await projectLocked(projectId)
-    await projectArchiving(projectId)
+    await lockProject(projectId)
+    await archiveProject(projectId)
     req.log.info({
       ...getLogInfos({
         projectId,
@@ -187,7 +187,7 @@ export const projectArchivingController = async (req, res) => {
   try {
     // TODO : US #130 appel ansible
     try {
-      await projectUnlocked(projectId)
+      await unlockProject(projectId)
 
       req.log.info({
         ...getLogInfos({ projectId }),
@@ -207,8 +207,8 @@ export const projectArchivingController = async (req, res) => {
       error,
     })
     try {
-      await projectFailed(projectId)
-      await projectUnlocked(projectId)
+      await updateProjectFailed(projectId)
+      await unlockProject(projectId)
 
       req.log.info({
         ...getLogInfos({ projectId }),

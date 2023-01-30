@@ -1,6 +1,6 @@
 import {
   getEnvironmentPermissions,
-  setEnvironmentPermission,
+  setPermission,
   deletePermission,
 } from '../models/queries/permission-queries.js'
 import { getRoleByUserIdAndProjectId } from '../models/queries/users-projects-queries.js'
@@ -10,7 +10,7 @@ import { send200, send201, send500 } from '../utils/response.js'
 // GET
 
 export const getEnvironmentPermissionsController = async (req, res) => {
-  const userId = req.session?.userId
+  const userId = req.session?.user?.id
   const environmentId = req.params?.environmentId
   const projectId = req.params?.projectId
 
@@ -37,8 +37,8 @@ export const getEnvironmentPermissionsController = async (req, res) => {
 
 // POST
 
-export const setEnvironmentPermissionController = async (req, res) => {
-  const userId = req.session?.userId
+export const setPermissionController = async (req, res) => {
+  const userId = req.session?.user?.id
   const environmentId = req.params?.environmentId
   const projectId = req.params?.projectId
   const data = req.body
@@ -47,7 +47,7 @@ export const setEnvironmentPermissionController = async (req, res) => {
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
     if (!role) throw new Error('Requestor is not member of project')
 
-    const permission = await setEnvironmentPermission({ userId: data.userId, environmentId, level: data.level })
+    const permission = await setPermission({ userId: data.userId, environmentId, level: data.level })
     req.log.info({
       ...getLogInfos(),
       description: 'Permission successfully created',
@@ -66,17 +66,17 @@ export const setEnvironmentPermissionController = async (req, res) => {
 
 // PUT
 
-export const envUpdatePermissionController = async (req, res) => {
-  const userId = req.session?.userId
+export const updatePermissionController = async (req, res) => {
+  const userId = req.session?.user?.id
   const environmentId = req.params?.environmentId
   const projectId = req.params?.projectId
-  const data = req.data
+  const data = req.body
 
   try {
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
     if (!role) throw new Error('Requestor is not member of project')
 
-    const permission = await setEnvironmentPermission({ userId: data.userId, environmentId, level: data.level })
+    const permission = await setPermission({ userId: data.userId, environmentId, level: data.level })
     req.log.info({
       ...getLogInfos(),
       description: 'Permission successfully updated',
@@ -95,11 +95,11 @@ export const envUpdatePermissionController = async (req, res) => {
 
 // DELETE
 
-export const envRemovePermissionController = async (req, res) => {
-  const userId = req.session?.userId
+export const deletePermissionController = async (req, res) => {
+  const userId = req.session?.user?.id
   const environmentId = req.params?.environmentId
   const projectId = req.params?.projectId
-  const data = req.data
+  const data = req.body
 
   try {
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
@@ -107,13 +107,11 @@ export const envRemovePermissionController = async (req, res) => {
 
     const permission = await deletePermission(data.userId, environmentId)
 
+    const message = 'Permission successfully deleted in database'
     req.log.info({
-      ...getLogInfos({
-        projectId,
-      }),
-      description: 'Permission status successfully deleted in database',
+      ...getLogInfos({ permission }),
+      description: message,
     })
-    send201(res, permission)
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
