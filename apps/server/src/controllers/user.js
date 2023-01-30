@@ -14,6 +14,7 @@ import {
 import {
   getRoleByUserIdAndProjectId,
   deleteRoleByUserIdAndProjectId,
+  updateUserProjectRole,
 } from '../models/queries/users-projects-queries.js'
 import { deletePermission } from '../models/queries/permission-queries.js'
 import { getEnvironmentsByProjectId } from '../models/queries/environment-queries.js'
@@ -169,7 +170,36 @@ export const createUserController = async (req, res) => {
 
 // PUT
 export const updateUserProjectRoleController = async (req, res) => {
-// TODO : modifier role d'un user d'un projet via UsersProjects
+  const userId = req.session?.user.id
+  const projectId = req.params?.projectId
+  const userToUpdateId = req.params?.userId
+  const data = req.body
+
+  let project
+  try {
+    project = await getProjectById(projectId)
+    if (!project) throw new Error('Project not found')
+
+    const requestorRole = await getRoleByUserIdAndProjectId(userId, projectId)
+    if (!requestorRole) throw new Error('Requestor is not member of project')
+
+    const userToUpdateRole = await getRoleByUserIdAndProjectId(userToUpdateId, projectId)
+    if (!userToUpdateRole) throw new Error('User role not found for this projet')
+
+    await updateUserProjectRole(projectId, userToUpdateId, data.role)
+
+    const message = 'User role into project successfully updated'
+    req.log.info({
+      ...getLogInfos({ userToUpdateRole }),
+      description: message,
+    })
+  } catch (error) {
+    const message = `Cannot update user role into project: ${error.message}`
+    req.log.error({
+      ...getLogInfos(),
+      error: message,
+    })
+  }
 }
 
 // DELETE

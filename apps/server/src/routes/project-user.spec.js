@@ -169,8 +169,28 @@ describe('User routes', () => {
 
   // PUT
   describe('updateUserProjectRoleController', () => {
-    it('Should update a project member\'s role', () => {
-      // TODO
+    it('Should update a project member\'s role', async () => {
+      const randomDbSetup = createRandomDbSetup({ nbUsers: 1 })
+      const userToUpdate = randomDbSetup.users[0]
+      userToUpdate.role = 'newRole'
+
+      // 1. getProject
+      Project.$queueResult(randomDbSetup.project)
+      // 2. getRequestorRole
+      Role.$queueResult(randomDbSetup.usersProjects[1])
+      // 3. getUserToUpdateRole
+      Role.$queueResult(randomDbSetup.usersProjects[0])
+      // 4. updateUserProjectRole
+      Role.$queueResult([1])
+
+      setOwnerId(randomDbSetup.owner.id)
+
+      const response = await app.inject()
+        .put(`/${randomDbSetup.project.id}/users/${userToUpdate.id}`)
+        .body(userToUpdate)
+        .end()
+
+      expect(response.statusCode).toEqual(200)
     })
   })
 

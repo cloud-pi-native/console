@@ -30,6 +30,19 @@ export const getSingleOwnerByProjectId = async (ProjectId) => {
   return Array.isArray(res) ? res[0].UserId : res.UserId
 }
 
+// UPDATE
+export const updateUserProjectRole = async (UserId, ProjectId, role) => {
+  return await getUsersProjectsModel().update(
+    { role },
+    {
+      where: {
+        UserId,
+        ProjectId,
+      },
+    },
+  )
+}
+
 // DELETE
 export const deleteRoleByUserIdAndProjectId = async (UserId, ProjectId) => {
   return await getUsersProjectsModel().destroy({
