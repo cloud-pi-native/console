@@ -6,7 +6,7 @@ import DsoSelectedProject from './DsoSelectedProject.vue'
 
 const projectStore = useProjectStore()
 
-const projects = computed(() => projectStore.projects)
+const projects = computed(() => projectStore?.projects)
 const projectList = ref([])
 
 const setProjectList = (projects) => {

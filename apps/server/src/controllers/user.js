@@ -82,6 +82,7 @@ export const addUserToProjectController = async (req, res) => {
     if (!requestorRole) throw new Error('Requestor is not member of project')
 
     const userToAdd = await getUserByEmail(data.email)
+    if (!userToAdd) throw new Error('User not found')
 
     // TODO : refacto add et update en upsert ?
     const userToAddRole = await getRoleByUserIdAndProjectId(userToAdd.id, projectId)

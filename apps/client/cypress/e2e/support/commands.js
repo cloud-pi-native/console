@@ -6,12 +6,12 @@ Cypress.Commands.add('kcLogout', () => {
   cy.get('a.fr-btn').should('contain', 'Se déconnecter').click()
 })
 
-Cypress.Commands.add('kcLogin', (name) => {
+Cypress.Commands.add('kcLogin', (name, password = 'test') => {
   cy.session(name, () => {
     cy.visit('/')
       .get('a.fr-btn').should('contain', 'Se connecter').click()
       .get('input#username').type(name)
-      .get('input#password').type(name)
+      .get('input#password').type(password)
       .get('input#kc-login').click()
       .url().should('contain', `${Cypress.env('clientHost')}:${Cypress.env('clientPort')}`)
   }, {

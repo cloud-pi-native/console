@@ -58,45 +58,6 @@ describe('Random utils', () => {
           status: expect.any(String),
         }]),
         permissions: expect.any(Array),
-        // TODO : verifier permissions
-        // permissions: expect.arrayContaining([
-        //   [{
-        //     id: expect.any(String),
-        //     environmentId: expect.any(String),
-        //     userId: expect.any(String),
-        //     level: expect.any(Boolean),
-        //   },
-        //   {
-        //     id: expect.any(String),
-        //     environmentId: expect.any(String),
-        //     userId: expect.any(String),
-        //     level: expect.any(Boolean),
-        //   }],
-        //   [{
-        //     id: expect.any(String),
-        //     environmentId: expect.any(String),
-        //     userId: expect.any(String),
-        //     level: expect.any(Boolean),
-        //   },
-        //   {
-        //     id: expect.any(String),
-        //     environmentId: expect.any(String),
-        //     userId: expect.any(String),
-        //     level: expect.any(Boolean),
-        //   }],
-        //   [{
-        //     id: expect.any(String),
-        //     environmentId: expect.any(String),
-        //     userId: expect.any(String),
-        //     level: expect.any(Boolean),
-        //   },
-        //   {
-        //     id: expect.any(String),
-        //     environmentId: expect.any(String),
-        //     userId: expect.any(String),
-        //     level: expect.any(Boolean),
-        //   }],
-        // ]),
       }),
     )
   })

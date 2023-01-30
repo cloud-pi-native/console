@@ -67,7 +67,7 @@ describe('Project routes', () => {
   // GET
   describe('getUserProjectsController', () => {
     it.skip('Should get list of a user\'s projects', async () => {
-      // TODO : Cannot retrieve projects: user.getProjects is not a function
+      // TODO : user.getProjects is not a function
       const randomDbSetups = [createRandomDbSetup({}), createRandomDbSetup({}), createRandomDbSetup({})]
       const randomUser = getRandomUser()
       randomDbSetups.forEach(setup => {

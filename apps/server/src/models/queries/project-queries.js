@@ -37,12 +37,6 @@ export const getUserProjects = async (user) => {
       {
         model: getUserModel(),
         attributes: { exclude: ['role'] },
-        // TODO: faire une repasse sur le nom des models / cles utilisees et verifier le besoin de ce code commente
-        // through: {
-        //   where: {
-        //     UserId: user.id,
-        //   },
-        // },
       },
       {
         model: getRepositoryModel(),
