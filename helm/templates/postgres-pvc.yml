@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: dso-db-storage # TODO : #139
+  name: {{ .Release.Name }}-db-storage # TODO : #139
   annotations:
     "helm.sh/resource-policy": keep
 spec:
