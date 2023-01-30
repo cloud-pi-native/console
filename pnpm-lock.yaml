@@ -148,6 +148,7 @@ importers:
       '@fastify/cookie': ^8.3.0
       '@fastify/helmet': ^10.1.0
       '@fastify/session': ^10.1.1
+      '@keycloak/keycloak-admin-client': ^20.0.3
       '@vitest/coverage-c8': ^0.26.3
       date-fns: ^2.29.3
       eslint: ^8.31.0
@@ -172,6 +173,7 @@ importers:
       '@fastify/cookie': 8.3.0
       '@fastify/helmet': 10.1.0
       '@fastify/session': 10.1.1
+      '@keycloak/keycloak-admin-client': 20.0.3
       date-fns: 2.29.3
       fastify: 4.12.0
       fastify-keycloak-adapter: 2.0.0
@@ -878,6 +880,19 @@ packages:
       string-argv: 0.3.1
       type-detect: 4.0.8
     dev: true
+
+  /@keycloak/keycloak-admin-client/20.0.3:
+    resolution: {integrity: sha512-b3f3P0Asnq/UOMRx4NNJ4d3fPw/GGm9+NzpYSqoQVVPp1koV89b0kbQT0l6melHlsDbkILyZd6UCw2CCMuC0+g==}
+    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+    dependencies:
+      axios: 0.27.2
+      camelize-ts: 2.2.0
+      lodash-es: 4.17.21
+      url-join: 5.0.0
+      url-template: 3.1.0
+    transitivePeerDependencies:
+      - debug
+    dev: false
 
   /@lukeed/ms/2.0.1:
     resolution: {integrity: sha512-Xs/4RZltsAL7pkvaNStUQt7netTkyxrS0K+RILcVr3TRMS/ToOg4I6uNfhB9SlGsnWBym4U+EaXq0f0cEMNkHA==}
@@ -1753,6 +1768,11 @@ packages:
     resolution: {integrity: sha512-L28STB170nwWS63UjtlEOE3dldQApaJXZkOI1uMFfzf3rRuPegHaHesyee+YxQ+W6SvRDQV6UrdOdRiR153wJg==}
     engines: {node: '>=6'}
     dev: true
+
+  /camelize-ts/2.2.0:
+    resolution: {integrity: sha512-6jMy83qFmNrJIMQXXU6Bi7VVkyl/nBVvoxcVsGRDA6R01pPZpnO/LaIcx6dijJjHbBA2G0uHY4Irk7LeA274NQ==}
+    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+    dev: false
 
   /caseless/0.12.0:
     resolution: {integrity: sha512-4tYFyifaFfGacoiObjJegolkwSU4xQNGbVgUiNYVUxbQ2x2lUsFvY4hVgVzGiIe6WLOPqycWXA40l+PWsxthUw==}
@@ -4279,6 +4299,10 @@ packages:
       p-locate: 5.0.0
     dev: true
 
+  /lodash-es/4.17.21:
+    resolution: {integrity: sha512-mKnC+QJ9pWVzv+C4/U3rRsHapFfHvQFoFB92e52xeyGMcX6/OlIl78je1u8vePzYZSkkogMPJ2yjxxsb89cxyw==}
+    dev: false
+
   /lodash.camelcase/4.3.0:
     resolution: {integrity: sha512-TwuEnCnxbc3rAvhf/LbG7tJUDzhqXyFnv3dtzLOPgCG/hODL7WFnsbwktkD7yUV0RrreP/l1PALq/YSg6VvjlA==}
     dev: true
@@ -6210,12 +6234,22 @@ packages:
     dependencies:
       punycode: 2.3.0
 
+  /url-join/5.0.0:
+    resolution: {integrity: sha512-n2huDr9h9yzd6exQVnH/jU5mr+Pfx08LRXXZhkLLetAMESRj+anQsTAh940iMrIetKAmry9coFuZQ2jY8/p3WA==}
+    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+    dev: false
+
   /url-parse/1.5.10:
     resolution: {integrity: sha512-WypcfiRhfeUP9vvF0j6rw0J3hrWrw6iZv3+22h6iRMJ/8z1Tj6XfLP4DsUix5MhMPnXpiHDoKyoZ/bdCkwBCiQ==}
     dependencies:
       querystringify: 2.2.0
       requires-port: 1.0.0
     dev: true
+
+  /url-template/3.1.0:
+    resolution: {integrity: sha512-vB/eHWttzhN+NZzk9FcQB2h1cSEgb7zDYyvyxPhw02LYw7YqIzO+w1AqkcKvZ51gPH8o4+nyiWve/xuQqMdJZw==}
+    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+    dev: false
 
   /util-deprecate/1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}

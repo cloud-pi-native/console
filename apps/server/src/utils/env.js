@@ -32,6 +32,10 @@ export const keycloakClientId = process.env.KEYCLOAK_CLIENT_ID
 
 export const keycloakClientSecret = process.env.KEYCLOAK_CLIENT_SECRET
 
+export const keycloakUser = process.env.KEYCLOAK_ADMIN_USER
+
+export const keycloakToken = process.env.KEYCLOAK_ADMIN_PASSWORD
+
 export const ansibleHost = process.env.ANSIBLE_HOST
 
 export const ansiblePort = process.env.ANSIBLE_PORT
