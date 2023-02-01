@@ -21,6 +21,8 @@
     "mustache": "^4.2.0",
     "nanoid": "4.0.1",
     "pg": "8.9.0",
+    "mustache": "^4.2.0",
+    "node-vault-client": "^0.6.1",
     "sequelize": "^6.28.0",
     "shared": "workspace:^1.0.0"
   },
