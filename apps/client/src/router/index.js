@@ -4,6 +4,7 @@ import { useProjectStore } from '@/stores/project.js'
 
 import DsoHome from '@/views/DsoHome.vue'
 import CreateProject from '@/views/CreateProject.vue'
+import ManageEnvironments from '@/views/projects/ManageEnvironments.vue'
 import DsoProjects from '@/views/projects/DsoProjects.vue'
 import DsoDashboard from '@/views/projects/DsoDashboard.vue'
 import DsoServices from '@/views/projects/DsoServices.vue'
@@ -69,6 +70,11 @@ const routes = [
     path: '/projects/:id/repositories',
     name: 'Repos',
     component: DsoRepos,
+  },
+  {
+    path: '/projects/:id/environments',
+    name: 'Environments',
+    component: ManageEnvironments,
   },
   {
     path: '/doc',

@@ -121,6 +121,45 @@ Cypress.Commands.add('assertAddRepo', (project, repos) => {
   })
 })
 
+Cypress.Commands.add('addEnvironment', (project, environments) => {
+  cy.intercept('POST', '/api/v1/projects/*/environments').as('postEnvironment')
+  cy.intercept('GET', '/api/v1/projects').as('getProjects')
+
+  cy.visit('/')
+    .getByDataTestid('menuProjectsBtn').click()
+    .getByDataTestid('menuMyProjects').click()
+    .url().should('contain', '/projects')
+    .getByDataTestid(`projectTile-${project.name}`).click()
+    .getByDataTestid('menuEnvironments').click()
+    .url().should('contain', '/environments')
+
+  environments.forEach((environment) => {
+    cy.getByDataTestid('addEnvironmentLink').click()
+      .get('h1').should('contain', 'Ajouter un environment au projet')
+      .getByDataTestid('environmentNameSelect')
+      .find('select')
+      .select(environment)
+
+    cy.getByDataTestid('addEnvironmentBtn').click()
+    cy.wait('@postEnvironment').its('response.statusCode').should('eq', 201)
+    cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
+    cy.getByDataTestid(`repoTile-${environment}`).should('exist')
+  })
+})
+
+Cypress.Commands.add('assertAddEnvironment', (project, environments) => {
+  cy.visit('/')
+    .getByDataTestid('menuProjectsBtn').click()
+    .getByDataTestid('menuMyProjects').click()
+    .url().should('contain', '/projects')
+    .getByDataTestid(`projectTile-${project.name}`).click()
+    .getByDataTestid('menuEnvironments').click()
+
+  environments.forEach((env) => {
+    cy.getByDataTestid(`environmentTile-${env}`).should('exist')
+  })
+})
+
 Cypress.Commands.add('generateGitLabCI', (ciForms) => {
   let version
   ciForms.forEach(ciForm => {

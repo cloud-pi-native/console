@@ -91,9 +91,9 @@ export const initializeEnvironmentController = async (req, res) => {
     try {
       await updateEnvironmentCreated(env.id)
       await setPermission({
-        userId: data.userId,
+        userId,
         environmentId: env.id,
-        level: data.level,
+        level: 1,
       })
       await unlockProject(projectId)
 

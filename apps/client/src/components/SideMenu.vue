@@ -117,6 +117,15 @@ watch(routePath, (routePath) => {
                 Dépôts synchronisés
               </DsfrSideMenuLink>
             </DsfrSideMenuListItem>
+            <DsfrSideMenuListItem>
+              <DsfrSideMenuLink
+                data-testid="menuEnvironments"
+                :active="routeName === 'Environments'"
+                :to="`/projects/${selectedProject?.id}/environments`"
+              >
+                Environments du projet
+              </DsfrSideMenuLink>
+            </DsfrSideMenuListItem>
           </div>
         </DsfrSideMenuList>
       </DsfrSideMenuListItem>
