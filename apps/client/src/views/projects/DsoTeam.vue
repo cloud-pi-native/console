@@ -92,7 +92,7 @@ watch(selectedProject, () => {
 
   <!-- TODO : #66 suggest sur utilisateurs keycloak, ajout dans notre db si pas existant -->
   <div
-    v-if="false"
+    v-if="true"
   >
     <DsfrInput
       v-model="newUser.email"

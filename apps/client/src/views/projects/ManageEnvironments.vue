@@ -4,10 +4,14 @@ import DsoSelectedProject from './DsoSelectedProject.vue'
 import { useProjectStore } from '@/stores/project.js'
 import EnvironmentForm from '@/components/EnvironmentForm.vue'
 import { allEnv } from 'shared/src/utils/iterables.js'
+import { useUserStore } from '@/stores/user.js'
 
 const projectStore = useProjectStore()
+const userStore = useUserStore()
 
 const selectedProject = computed(() => projectStore.selectedProject)
+const owner = computed(() => projectStore.selectedProjectOwner)
+const isOwner = computed(() => owner.value.id === userStore.userProfile.id)
 const environmentNames = computed(() => environments.value.map(env => env.title))
 const environments = ref([])
 const selectedEnvironment = ref({})
@@ -44,6 +48,11 @@ const addEnvironment = async (environment) => {
   await projectStore.addEnvironmentToProject(environment)
 }
 
+const deleteEnvironment = async (environment) => {
+  await projectStore.deleteEnvironment(environment.id)
+  setSelectedEnvironment({})
+}
+
 onMounted(() => {
   setEnvironmentsTiles(selectedProject.value)
 })
@@ -75,7 +84,7 @@ watch(selectedProject, () => {
     <EnvironmentForm
       :environment="{projectId: selectedProject.id}"
       :environment-names="environmentNames"
-      @add="(environment) => addEnvironment(environment)"
+      @add-environment="(environment) => addEnvironment(environment)"
       @cancel="cancel()"
     />
   </div>
@@ -95,6 +104,8 @@ watch(selectedProject, () => {
       v-if="Object.keys(selectedEnvironment).length !== 0 && selectedEnvironment.id === environment.id"
       :environment="selectedEnvironment"
       :is-editable="false"
+      :is-owner="isOwner"
+      @delete-environment="(environment) => deleteEnvironment(environment)"
     />
   </div>
 </template>

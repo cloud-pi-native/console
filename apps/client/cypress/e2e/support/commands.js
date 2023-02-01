@@ -77,10 +77,7 @@ Cypress.Commands.add('addRepos', (project, repos) => {
 
   const newRepos = repos.map(newRepo)
 
-  cy.visit('/')
-    .getByDataTestid('menuProjectsBtn').click()
-    .getByDataTestid('menuMyProjects').click()
-    .url().should('contain', '/projects')
+  cy.goToProjects()
     .getByDataTestid(`projectTile-${project.name}`).click()
     .getByDataTestid('menuRepos').click()
     .url().should('contain', '/repositories')
@@ -109,10 +106,7 @@ Cypress.Commands.add('addRepos', (project, repos) => {
 })
 
 Cypress.Commands.add('assertAddRepo', (project, repos) => {
-  cy.visit('/')
-    .getByDataTestid('menuProjectsBtn').click()
-    .getByDataTestid('menuMyProjects').click()
-    .url().should('contain', '/projects')
+  cy.goToProjects()
     .getByDataTestid(`projectTile-${project.name}`).click()
     .getByDataTestid('menuRepos').click()
 
@@ -125,17 +119,14 @@ Cypress.Commands.add('addEnvironment', (project, environments) => {
   cy.intercept('POST', '/api/v1/projects/*/environments').as('postEnvironment')
   cy.intercept('GET', '/api/v1/projects').as('getProjects')
 
-  cy.visit('/')
-    .getByDataTestid('menuProjectsBtn').click()
-    .getByDataTestid('menuMyProjects').click()
-    .url().should('contain', '/projects')
+  cy.goToProjects()
     .getByDataTestid(`projectTile-${project.name}`).click()
     .getByDataTestid('menuEnvironments').click()
     .url().should('contain', '/environments')
 
   environments.forEach((environment) => {
     cy.getByDataTestid('addEnvironmentLink').click()
-      .get('h1').should('contain', 'Ajouter un environment au projet')
+      .get('h1').should('contain', 'Ajouter un environnement au projet')
       .getByDataTestid('environmentNameSelect')
       .find('select')
       .select(environment)
@@ -143,21 +134,101 @@ Cypress.Commands.add('addEnvironment', (project, environments) => {
     cy.getByDataTestid('addEnvironmentBtn').click()
     cy.wait('@postEnvironment').its('response.statusCode').should('eq', 201)
     cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
-    cy.getByDataTestid(`repoTile-${environment}`).should('exist')
+    cy.getByDataTestid(`environmentTile-${environment}`).should('exist')
   })
 })
 
 Cypress.Commands.add('assertAddEnvironment', (project, environments) => {
-  cy.visit('/')
-    .getByDataTestid('menuProjectsBtn').click()
-    .getByDataTestid('menuMyProjects').click()
-    .url().should('contain', '/projects')
+  cy.goToProjects()
     .getByDataTestid(`projectTile-${project.name}`).click()
     .getByDataTestid('menuEnvironments').click()
 
   environments.forEach((env) => {
-    cy.getByDataTestid(`environmentTile-${env}`).should('exist')
+    cy.getByDataTestid(`environmentTile-${env}`)
+      .should('exist')
   })
+})
+
+Cypress.Commands.add('deleteEnvironment', (project, environment) => {
+  cy.intercept('DELETE', '/api/v1/projects/*/environments/*').as('deleteEnvironment')
+  cy.intercept('GET', '/api/v1/projects').as('getProjects')
+
+  cy.goToProjects()
+    .getByDataTestid(`projectTile-${project.name}`).click()
+    .getByDataTestid('menuEnvironments').click()
+    .getByDataTestid(`environmentTile-${environment}`)
+    .click()
+    .url().should('contain', '/environments')
+    .getByDataTestid('permissionsFieldset').should('be.visible')
+  cy.getByDataTestid('showDeleteEnvironmentBtn').click()
+    .getByDataTestid('deleteEnvironmentInput').should('be.visible')
+    .getByDataTestid('permissionsFieldset').should('not.exist')
+    .getByDataTestid('deleteEnvironmentInput')
+    .type(environment.slice(0, 2))
+    .getByDataTestid('deleteEnvironmentBtn').should('be.disabled')
+    .getByDataTestid('deleteEnvironmentInput').clear()
+    .type(environment)
+    .getByDataTestid('deleteEnvironmentBtn').should('be.enabled')
+    .click()
+  cy.wait('@deleteEnvironment').its('response.statusCode').should('eq', 200)
+  cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
+  cy.getByDataTestid(`environmentTile-${environment}`).should('not.exist')
+})
+
+Cypress.Commands.add('addPermission', (project, environment, userToLicence) => {
+  cy.intercept('POST', `/api/v1/projects/${project.id}/environments/*/permissions`).as('postPermission')
+  cy.goToProjects()
+    .getByDataTestid(`projectTile-${project.name}`).click()
+    .getByDataTestid('menuEnvironments').click()
+    .getByDataTestid(`environmentTile-${environment}`)
+    .click()
+    .getByDataTestid('permissionSuggestionInput').first()
+    .clear().type(userToLicence)
+    .getByDataTestid('permissionSuggestionInput').first().find('input').focus().blur({ force: true })
+    .wait('@postPermission')
+    .its('response.statusCode').should('eq', 201)
+})
+
+Cypress.Commands.add('assertPermission', (project, environment, permissions) => {
+  cy.goToProjects()
+    .getByDataTestid(`projectTile-${project.name}`).click()
+    .getByDataTestid('menuEnvironments').click()
+    .getByDataTestid(`environmentTile-${environment}`)
+    .click()
+
+  permissions.forEach(permission => {
+    cy.getByDataTestid(`userPermissionLi-${permission.email}`).within(() => {
+      cy.getByDataTestid('userEmail')
+        .should('contain', permission.email)
+        .getByDataTestid('deletePermissionBtn')
+        .should(permission.isOwner ? 'be.disabled' : 'be.enabled')
+        .and('have.attr', 'title', permission.isOwner ? 'Les droits du owner ne peuvent être retirés' : `Retirer les droits de ${permission.email}`)
+        .getByDataTestid('permissionLevelRange')
+        .should(permission.isOwner ? 'be.disabled' : 'be.enabled')
+    })
+  })
+})
+
+Cypress.Commands.add('addProjectMember', (project, userEmail) => {
+  cy.intercept('POST', `/api/v1/projects/${project.id}/users`).as('postUser')
+  cy.goToProjects()
+    .getByDataTestid(`projectTile-${project.name}`).click()
+    .getByDataTestid('menuTeam').click()
+    .url().should('contain', `/projects/${project.id}/team`)
+    .getByDataTestid('teamTable')
+    .find('tbody > tr')
+    .should('have.length', project.users.length)
+    .getByDataTestid('addUserInput').clear()
+    .type(userEmail)
+    .getByDataTestid('userErrorInfo')
+    .should('not.exist')
+    .getByDataTestid('addUserBtn')
+    .should('be.enabled').click()
+    .wait('@postUser')
+    .its('response.statusCode').should('eq', 201)
+    .getByDataTestid('teamTable')
+    .find('tbody > tr')
+    .should('have.length', project.users.length + 1)
 })
 
 Cypress.Commands.add('generateGitLabCI', (ciForms) => {

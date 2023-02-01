@@ -36,7 +36,7 @@ export const getProjectUsersController = async (req, res) => {
       ...getLogInfos(),
       description: 'Project members successfully retreived',
     })
-    await send200(res, users)
+    return send200(res, users)
   } catch (error) {
     const message = `Cannot retrieve members of project: ${error.message}`
     req.log.error({
@@ -56,7 +56,7 @@ export const getProjectUsersController = async (req, res) => {
 //       ...getLogInfos(),
 //       description: 'Users successfully retreived',
 //     })
-//     await send200(res, users)
+//     return send200(res, users)
 //   } catch (error) {
 //     const message = 'Cannot retrieve users'
 //     req.log.error({

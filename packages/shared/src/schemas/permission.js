@@ -16,6 +16,6 @@ export const permissionSchema = Joi.object({
   level: Joi.number()
     .integer()
     .min(0)
-    .max(10),
+    .max(2),
   // .required(),
 })

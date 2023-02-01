@@ -5,15 +5,12 @@ import '@/main.css'
 import * as icons from '@/icons.js'
 import EnvironmentForm from '@/components/EnvironmentForm.vue'
 import { createRandomDbSetup } from 'test-utils'
-import { useProjectStore } from '@/stores/project.js'
 
 describe('EnvironmentForm.vue', () => {
   it('Should mount a EnvironmentForm', () => {
     const pinia = createPinia()
 
     const randomDbSetup = createRandomDbSetup({ envs: [] })
-    const projectStore = useProjectStore(pinia)
-    projectStore.selectedProject = randomDbSetup
 
     const props = {
       environment: {
