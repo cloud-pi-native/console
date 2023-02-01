@@ -40,7 +40,7 @@ watch(label, (label) => {
     :logo-text="['Ministère', 'de l’intérieur']"
     :quick-links="quickLinks"
   />
-  <div class="fr-container fr-grid-row">
+  <div class="fr-container fr-grid-row fr-mb-8w">
     <div class="fr-col-12 fr-col-md-3">
       <SideMenu />
     </div>
@@ -49,6 +49,7 @@ watch(label, (label) => {
     </div>
     <DsfrAlert
       v-if="isLoggedIn"
+      data-testid="whoamiSnackbar"
       class="snackbar"
       :description="`Vous êtes connecté(e) en tant que ${userStore.userProfile.firstName} ${userStore.userProfile.lastName}`"
       type="info"
@@ -62,7 +63,7 @@ watch(label, (label) => {
 
 <style>
 .snackbar {
-  @apply w-11/12 md:w-max fixed bottom-4;
+  @apply w-11/12 md:w-max fixed bottom-1;
 
   background-color: white;
 }

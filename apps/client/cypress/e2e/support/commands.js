@@ -135,7 +135,7 @@ Cypress.Commands.add('addEnvironment', (project, environments) => {
 
   environments.forEach((environment) => {
     cy.getByDataTestid('addEnvironmentLink').click()
-      .get('h1').should('contain', 'Ajouter un environment au projet')
+      .get('h1').should('contain', 'Ajouter un environnement au projet')
       .getByDataTestid('environmentNameSelect')
       .find('select')
       .select(environment)
@@ -143,7 +143,7 @@ Cypress.Commands.add('addEnvironment', (project, environments) => {
     cy.getByDataTestid('addEnvironmentBtn').click()
     cy.wait('@postEnvironment').its('response.statusCode').should('eq', 201)
     cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
-    cy.getByDataTestid(`repoTile-${environment}`).should('exist')
+    cy.getByDataTestid(`environmentTile-${environment}`).should('exist')
   })
 })
 
