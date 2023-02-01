@@ -31,6 +31,16 @@ export const useProjectStore = defineStore('project', () => {
     await getUserProjects()
   }
 
+  const addEnvironmentToProject = async (newEnvironment) => {
+    await api.addEnvironment(selectedProject.value.id, newEnvironment)
+    await getUserProjects()
+  }
+
+  const addPermission = async (environmentId, newPermission) => {
+    await api.addPermission(selectedProject.value.id, environmentId, newPermission)
+    await getUserProjects()
+  }
+
   const addUserToProject = async (newUser) => {
     await api.addUser(selectedProject.value.id, newUser)
     await getUserProjects()
@@ -48,6 +58,8 @@ export const useProjectStore = defineStore('project', () => {
     getUserProjects,
     createProject,
     addRepoToProject,
+    addEnvironmentToProject,
+    addPermission,
     addUserToProject,
     removeUserFromProject,
   }

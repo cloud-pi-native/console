@@ -10,6 +10,7 @@ import {
 import { repeatFn } from './func-utils.js'
 import { allOrganizations, allEnv } from 'shared/src/utils/iterables.js'
 
+// TODO : à refaire sur le modèle de data.js
 export const createRandomDbSetup = ({ nbUsers = 0, nbRepo = 3, envs = allEnv, organizationName = allOrganizations[0].name }) => {
   // Create organization
   const organization = getRandomOrganization(...Object.values(allOrganizations.find(org => org.name === organizationName)))

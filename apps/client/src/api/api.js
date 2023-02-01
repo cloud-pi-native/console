@@ -75,7 +75,13 @@ export const removeUser = async (projectId, userId) => {
   return response.data
 }
 
-// Users
+// Environnements
+export const addEnvironment = async (projectId, data) => {
+  const response = await apiClient.post(`/projects/${projectId}/environments`, data)
+  return response.data
+}
+
+// Permissions
 export const addPermission = async (projectId, environmentId, data) => {
   const response = await apiClient.post(`/projects/${projectId}/environments/:${environmentId}/permissions`, data)
   return response.data
