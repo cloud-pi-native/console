@@ -47,15 +47,23 @@ watch(label, (label) => {
     <div class="fr-col-12 fr-col-md-9 fr-py-6v">
       <router-view />
     </div>
+    <DsfrAlert
+      v-if="isLoggedIn"
+      class="snackbar"
+      :description="`Vous êtes connecté(e) en tant que ${userStore.userProfile.firstName} ${userStore.userProfile.lastName}`"
+      type="info"
+      small
+      :closed="closed"
+      closeable
+      @close="close()"
+    />
   </div>
-  <DsfrAlert
-    v-if="isLoggedIn"
-    class="w-max my-2 mx-auto"
-    :description="`Vous êtes connecté(e) en tant que ${userStore.userProfile.firstName} ${userStore.userProfile.lastName}`"
-    type="info"
-    small
-    :closed="closed"
-    closeable
-    @close="close()"
-  />
 </template>
+
+<style>
+.snackbar {
+  @apply w-11/12 md:w-max fixed bottom-4;
+
+  background-color: white;
+}
+</style>
