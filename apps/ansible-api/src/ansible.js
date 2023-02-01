@@ -3,13 +3,6 @@ import app from './app.js'
 import { playbookDir } from './utils/env.js'
 import { getLogInfos } from './utils/logger.js'
 
-export const responseFormatter = (status, code, logs) => ({
-  command: this.command,
-  status,
-  code,
-  logs: logs.toString(),
-})
-
 export const runPlaybook = (playbook, vars) => {
   const args = [
     '-i=./inventory/',
@@ -17,7 +10,7 @@ export const runPlaybook = (playbook, vars) => {
     '-e',
     JSON.stringify(vars),
   ]
-  const response = responseFormatter.bind({ command: `ansible-playbook ${playbook} ${args.join(' ')}` })
+  const command = `ansible-playbook ${playbook} ${args.join(' ')}`
   return new Promise((resolve, reject) => {
     const playbookSpawn = spawn(
       'ansible-playbook',
@@ -35,17 +28,32 @@ export const runPlaybook = (playbook, vars) => {
     playbookSpawn.stderr.on('data', (data) => { logs += data })
     playbookSpawn.on('close', (code) => {
       if (code !== 0) {
-        reject(response('FAIL', code, logs))
+        resolve({
+          command,
+          status: 'FAIL',
+          code,
+          logs: logs.toString(),
+        })
         return
       }
-      resolve(response('OK', code, logs))
+      resolve({
+        command,
+        status: 'OK',
+        code,
+        logs: logs.toString(),
+      })
     })
     playbookSpawn.on('error', (err) => {
       app.log.error({
         ...getLogInfos(),
         message: 'Error occured when executing playbook',
       })
-      reject(response('ERROR', 'inconnu', `${logs.toString()}\n${err.message}`))
+      resolve({
+        command,
+        status: 'ERROR',
+        code: 'inconnu',
+        logs: `${logs.toString()}\n${err.message}`,
+      })
     })
   })
 }

@@ -112,7 +112,7 @@ watch(routePath, (routePath) => {
               <DsfrSideMenuLink
                 data-testid="menuRepos"
                 :active="routeName === 'Repos'"
-                :to="`/projects/${selectedProject?.id}/repos`"
+                :to="`/projects/${selectedProject?.id}/repositories`"
               >
                 Dépôts synchronisés
               </DsfrSideMenuLink>

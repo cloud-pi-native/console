@@ -3,12 +3,12 @@ import fp from 'fastify-plugin'
 import app from './app.js'
 import { startServer, handleExit, exitGracefuly } from './server.js'
 import { getConnection, closeConnections } from './connect.js'
-import { initDb } from '../dev-setup/init-db.js'
+import { initDb } from './init-db/index.js'
 
 vi.mock('./app.js')
 vi.mock('./connect.js')
 vi.mock('./utils/logger.js')
-vi.mock('../dev-setup/init-db.js', () => ({ initDb: vi.fn() }))
+vi.mock('./init-db/index.js', () => ({ initDb: vi.fn() }))
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 
 describe('Server', () => {

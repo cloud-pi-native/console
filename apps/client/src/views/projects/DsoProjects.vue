@@ -6,13 +6,13 @@ import DsoSelectedProject from './DsoSelectedProject.vue'
 
 const projectStore = useProjectStore()
 
-const projects = computed(() => projectStore.projects)
+const projects = computed(() => projectStore?.projects)
 const projectList = ref([])
 
 const setProjectList = (projects) => {
   projectList.value = projects?.map(project => ({
     id: project.id,
-    title: project.projectName,
+    title: project.name,
     to: `/projects/${project.id}/dashboard`,
   }))
 }

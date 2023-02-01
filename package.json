@@ -19,6 +19,8 @@
     "test": "turbo run test --concurrency 1",
     "test:client": "turbo run test --filter client",
     "test:server": "turbo run test --filter server",
+    "test:shared": "turbo run test --filter shared",
+    "test:ansible-api": "turbo run test --filter ansible-api",
     "test:ct": "pnpm --filter client run cypress:open-ct",
     "test:ct-ci": "docker compose -f ./docker/docker-compose.ct.yml --env-file ./env/.env.ci up --exit-code-from cypress --quiet-pull; docker compose -f ./docker/docker-compose.ct.yml --env-file ./env/.env.ci down -v",
     "test:ct-ci-build": "docker compose -f ./docker/docker-compose.ct.yml --env-file ./env/.env.ci build",
@@ -36,5 +38,10 @@
   },
   "volta": {
     "node": "18.12.1"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "sequelize-mock@0.10.2": "patches/sequelize-mock@0.10.2.patch"
+    }
   }
 }

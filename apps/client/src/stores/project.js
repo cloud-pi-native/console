@@ -36,8 +36,8 @@ export const useProjectStore = defineStore('project', () => {
     await getUserProjects()
   }
 
-  const removeUserFromProject = async (userEmail) => {
-    await api.removeUser(selectedProject.value.id, userEmail)
+  const removeUserFromProject = async (userId) => {
+    await api.removeUser(selectedProject.value.id, userId)
     await getUserProjects()
   }
 

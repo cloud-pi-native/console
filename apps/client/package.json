@@ -17,7 +17,7 @@
     "test": "vitest run --coverage"
   },
   "dependencies": {
-    "@gouvminint/vue-dsfr": "^1.8.3",
+    "@gouvminint/vue-dsfr": "^2.0.0",
     "axios": "^1.2.2",
     "keycloak-js": "^20.0.2",
     "oh-vue-icons": "^1.0.0-rc3",
@@ -55,7 +55,7 @@
   },
   "optionalDependencies": {
     "@cypress/vue": "^5.0.3",
-    "cypress": "^12.3.0",
+    "cypress": "^12.4.1",
     "cypress-vite": "^1.3.0"
   }
 }

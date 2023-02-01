@@ -14,14 +14,14 @@ const getHealth = async (_req, res) => {
 
 const apiRoutes = [
   { path: '/project', method: 'post' },
-  { path: '/project', method: 'delete' },
-  { path: '/project/users', method: 'post' },
-  { path: '/project/users', method: 'delete' },
-  { path: '/project/repos', method: 'put' },
+  // { path: '/project', method: 'delete' },
+  // { path: '/project/users', method: 'post' },
+  // { path: '/project/users', method: 'delete' },
+  // { path: '/project/repos', method: 'put' },
   { path: '/project/repos', method: 'post' },
-  { path: '/project/repos', method: 'delete' },
-  { path: '/project/envlist', method: 'post' },
-  { path: '/project/envlist', method: 'delete' },
+  // { path: '/project/repos', method: 'delete' },
+  // { path: '/project/env', method: 'post' },
+  // { path: '/project/env', method: 'delete' },
   // { path: '/project/owner', method: 'put' },
 ]
 

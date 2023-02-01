@@ -55,4 +55,8 @@
   "conventionalCommits.scopes": [
     "projectInit"
   ],
+  "sonarlint.connectedMode.project": {
+    "connectionId": "https://test-sonarqube.osc-secnum-fr1.scalingo.io",
+    "projectKey": "dso-console"
+  },
 }

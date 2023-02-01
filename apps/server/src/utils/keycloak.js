@@ -17,7 +17,7 @@ const userPayloadMapper = (userPayload) => {
     lastName: userPayload.family_name,
   }
   if (!userPayload.groups) {
-    app.log.error('Le user payload de keycloak n\'envoie pas groups')
+    app.log.warn('Le user payload de keycloak n\'envoie pas groups')
     return payload
   }
   return {

@@ -11,7 +11,20 @@ import {
   dbName,
   dbPass,
 } from './utils/env.js'
+import { getOrganizationModel } from './models/organization.js'
+import { getUserModel } from './models/user.js'
 import { getProjectModel } from './models/project.js'
+import { getEnvironmentModel } from './models/environment.js'
+import { getPermissionModel } from './models/permission.js'
+import { getRepositoryModel } from './models/repository.js'
+import { getUsersProjectsModel } from './models/users-projects.js'
+import { _dropPermissionsTable } from './models/queries/permission-queries.js'
+import { _dropEnvironmentsTable } from './models/queries/environment-queries.js'
+import { _dropRepositoriesTable } from './models/queries/repository-queries.js'
+import { _dropProjectsTable } from './models/queries/project-queries.js'
+import { _dropUsersTable } from './models/queries/user-queries.js'
+import { _dropOrganizationsTable } from './models/queries/organization-queries.js'
+import { _dropUsersProjectsTable } from './models/queries/users-projects-queries.js'
 
 const DELAY_BEFORE_RETRY = isTest || isCI ? 1000 : 10000
 let closingConnections = false
@@ -35,7 +48,7 @@ export const getConnection = async (triesLeft = 5) => {
     if (isDev || isTest || isCI) {
       app.log.info(`Trying to connect to Postgres with: ${postgresUri}`)
     }
-    sequelize = new Sequelize(postgresUri)
+    sequelize = new Sequelize(postgresUri, { logging: false })
     await sequelize.authenticate()
     app.log.info('Connected to Postgres!')
   } catch (error) {
@@ -62,10 +75,58 @@ export const closeConnections = async () => {
   }
 }
 
+export const dropTables = async () => {
+  try {
+    await _dropRepositoriesTable()
+    await _dropPermissionsTable()
+    await _dropEnvironmentsTable()
+    await _dropProjectsTable()
+    await _dropUsersTable()
+    await _dropUsersProjectsTable()
+    await _dropOrganizationsTable()
+
+    app.log.info('All tables were droped successfully.')
+  } catch (error) {
+    app.log.error('Drop database tables failed.')
+  }
+}
+
 export const synchroniseModels = async () => {
   try {
+    const organizationModel = await getOrganizationModel()
+    const userModel = await getUserModel()
     const projectModel = await getProjectModel()
-    await projectModel.sync({ alter: true })
+    const environmentModel = await getEnvironmentModel()
+    const permissionModel = await getPermissionModel()
+    const repositoryModel = await getRepositoryModel()
+    const usersProjectsModel = await getUsersProjectsModel()
+
+    organizationModel.hasMany(projectModel, { foreignKey: 'organization' })
+    projectModel.belongsTo(organizationModel, { foreignKey: 'organization' })
+
+    userModel.belongsToMany(projectModel, { through: usersProjectsModel, uniqueKey: false })
+    projectModel.belongsToMany(userModel, { through: usersProjectsModel })
+
+    userModel.hasMany(permissionModel, { foreignKey: 'userId' })
+    permissionModel.belongsTo(userModel, { foreignKey: 'userId' })
+
+    projectModel.hasMany(repositoryModel, { foreignKey: 'projectId' })
+    repositoryModel.belongsTo(projectModel, { foreignKey: 'projectId' })
+
+    projectModel.hasMany(environmentModel, { foreignKey: 'projectId' })
+    environmentModel.belongsTo(projectModel, { foreignKey: 'projectId' })
+
+    environmentModel.hasMany(permissionModel, { foreignKey: 'environmentId' })
+    permissionModel.belongsTo(environmentModel, { foreignKey: 'environmentId' })
+
+    await organizationModel.sync({ alter: true, logging: false })
+    await userModel.sync({ alter: true, logging: false })
+    await projectModel.sync({ alter: true, logging: false })
+    await usersProjectsModel.sync({ alter: true, logging: false })
+    await environmentModel.sync({ alter: true, logging: false })
+    await permissionModel.sync({ alter: true, logging: false })
+    await repositoryModel.sync({ alter: true, logging: false })
+
     app.log.info('All models were synchronized successfully.')
   } catch (error) {
     app.log.error('Models synchronisation with database failed.')

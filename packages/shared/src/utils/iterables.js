@@ -1,7 +1,21 @@
-export const allOrgNames = [
-  'dinum',
-  'ministere-interieur',
-  'ministere-justice',
+export const projectRoles = [
+  'owner',
+  'user',
+]
+
+export const allOrganizations = [
+  {
+    name: 'dinum',
+    label: 'DINUM',
+  },
+  {
+    name: 'ministere-interieur',
+    label: 'Ministère de l\'Intérieur',
+  },
+  {
+    name: 'ministere-justice',
+    label: 'Ministère de la Justice',
+  },
 ]
 
 export const allServices = [
