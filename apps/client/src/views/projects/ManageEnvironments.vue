@@ -75,6 +75,7 @@ watch(selectedProject, () => {
     <EnvironmentForm
       :environment="{projectId: selectedProject.id}"
       :environment-names="environmentNames"
+      :project-members="selectedProject.users"
       @add="(environment) => addEnvironment(environment)"
       @cancel="cancel()"
     />
@@ -94,6 +95,7 @@ watch(selectedProject, () => {
     <EnvironmentForm
       v-if="Object.keys(selectedEnvironment).length !== 0 && selectedEnvironment.id === environment.id"
       :environment="selectedEnvironment"
+      :project-members="selectedProject.users"
       :is-editable="false"
     />
   </div>

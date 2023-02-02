@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { environmentSchema, schemaValidator, instanciateSchema } from 'shared'
 import { allEnv } from 'shared/src/utils/iterables.js'
+import PermissionForm from './PermissionForm.vue'
 
 const props = defineProps({
   environment: {
@@ -9,6 +10,10 @@ const props = defineProps({
     default: () => {},
   },
   environmentNames: {
+    type: Array,
+    default: () => [],
+  },
+  projectMembers: {
     type: Array,
     default: () => [],
   },
@@ -87,6 +92,12 @@ onMounted(() => {
       @update:model-value="updateEnvironment('name', $event)"
     />
   </DsfrFieldset>
+  <!-- TODO : n'afficher qu'une fois l'environnement créé -->
+  <PermissionForm
+    v-if="localEnvironment.name"
+    :environment="localEnvironment"
+    :project-members="projectMembers"
+  />
   <div
     v-if="props.isEditable"
     class="flex space-x-10 mt-5"

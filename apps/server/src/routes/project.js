@@ -10,7 +10,7 @@ import projectUserRouter from './project-user.js'
 import projectPermissionRouter from './project-permission.js'
 
 const router = async (app, _opt) => {
-  // Récupérer tous les projet d'un user
+  // Récupérer tous les projets d'un user
   await app.get('/', getUserProjectsController)
 
   // Récupérer un projet par son id
