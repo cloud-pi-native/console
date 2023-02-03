@@ -71,7 +71,7 @@ onMounted(() => {
 <template>
   <DsfrFieldset
     :legend="`Droits des utilisateurs sur l\'environnement de ${props.environment?.name}`"
-    hint="Gérez les droits de lecture, écrire et suppression d'un membre du projet sur l'environnement sélectionné."
+    hint="Gérez les droits de lecture, écriture et suppression d'un membre du projet sur l'environnement sélectionné."
   >
     <ul>
       <li
@@ -109,7 +109,7 @@ onMounted(() => {
     <SuggestionInput
       list-id="permissionList"
       data-testid="permissionInput"
-      label="E-mail de l'utilisateur à accréditer"
+      :label="`E-mail de l'utilisateur à accréditer sur l\'environnement de ${props.environment?.name}`"
       label-visible
       placeholder="prenom.nom@interieur.gouv.fr"
       type="text"

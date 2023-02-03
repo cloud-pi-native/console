@@ -119,9 +119,8 @@ onMounted(() => {
       @update:model-value="updateEnvironment('name', $event)"
     />
   </DsfrFieldset>
-  <!-- TODO : n'afficher qu'une fois l'environnement créé -->
   <PermissionForm
-    v-if="localEnvironment.name"
+    v-if="localEnvironment.id"
     :environment="localEnvironment"
     :project-members="projectMembers"
     @add-permission="(permission) => addPermission(permission)"
