@@ -22,14 +22,13 @@ const localValue = ref(props.value)
 const emit = defineEmits(['updateValue'])
 
 watch(localValue, () => {
-  console.log({ localValue })
-  if (!props.datalist.includes(localValue)) return
-  emit('updateValue', localValue)
+  if (!props.datalist.includes(localValue.value)) return
+  emit('updateValue', localValue.value)
+  localValue.value = ''
 })
 
 </script>
 <template>
-  lV: {{ localValue }}
   <DsfrInputGroup
     v-bind="$attrs"
     v-model="localValue"

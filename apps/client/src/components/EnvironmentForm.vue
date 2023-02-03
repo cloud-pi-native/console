@@ -46,17 +46,44 @@ const updateEnvironment = (key, value) => {
   updatedValues.value[key] = true
 }
 
-const emit = defineEmits(['add', 'cancel'])
+const emit = defineEmits([
+  'addEnvironment',
+  'cancel',
+  'addPermission',
+  'updatePermission',
+  'deletePermission',
+])
 
 const addEnvironment = () => {
   updatedValues.value = instanciateSchema({ schema: environmentSchema }, true)
   const errorSchema = schemaValidator(environmentSchema, localEnvironment.value)
 
   if (Object.keys(errorSchema).length === 0) {
-    emit('add', localEnvironment.value)
+    emit('addEnvironment', localEnvironment.value)
   } else {
     console.log(errorSchema)
   }
+}
+
+const addPermission = (permission) => {
+  emit('addPermission', {
+    environmentId: localEnvironment.value.id,
+    permission,
+  })
+}
+
+const updatePermission = (permission) => {
+  emit('updatePermission', {
+    environmentId: localEnvironment.value.id,
+    permission,
+  })
+}
+
+const deletePermission = (userId) => {
+  emit('deletePermission', {
+    environmentId: localEnvironment.value.id,
+    userId,
+  })
 }
 
 const cancel = (event) => {
@@ -97,6 +124,9 @@ onMounted(() => {
     v-if="localEnvironment.name"
     :environment="localEnvironment"
     :project-members="projectMembers"
+    @add-permission="(permission) => addPermission(permission)"
+    @update-permission="(permission) => updatePermission(permission)"
+    @delete-permission="(userId) => deletePermission(userId)"
   />
   <div
     v-if="props.isEditable"

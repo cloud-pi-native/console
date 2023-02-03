@@ -44,6 +44,27 @@ const addEnvironment = async (environment) => {
   await projectStore.addEnvironmentToProject(environment)
 }
 
+const addPermission = async (envPermission) => {
+  // TODO : emit non reçu ?
+  console.log({ envPermission })
+  const { environmentId, permission } = envPermission
+  await projectStore.addPermission(environmentId, permission)
+}
+
+const updatePermission = async (envPermission) => {
+  // TODO : emit non reçu ?
+  console.log({ envPermission })
+  const { environmentId, permission } = envPermission
+  await projectStore.updatePermission(environmentId, permission)
+}
+
+const deletePermission = async (envPermission) => {
+  // TODO : emit non reçu ?
+  console.log({ envPermission })
+  const { environmentId, userId } = envPermission
+  await projectStore.deletePermission(environmentId, userId)
+}
+
 onMounted(() => {
   setEnvironmentsTiles(selectedProject.value)
 })
@@ -76,8 +97,11 @@ watch(selectedProject, () => {
       :environment="{projectId: selectedProject.id}"
       :environment-names="environmentNames"
       :project-members="selectedProject.users"
-      @add="(environment) => addEnvironment(environment)"
+      @add-environment="(environment) => addEnvironment(environment)"
       @cancel="cancel()"
+      @add-permission="(envPermission) => addPermission(envPermission)"
+      @update-permission="(envPermission) => updatePermission(envPermission)"
+      @delete-permission="(envPermission) => deletePermission(envPermission)"
     />
   </div>
   <div
