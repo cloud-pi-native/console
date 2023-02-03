@@ -74,6 +74,7 @@ export const getRandomEnv = (name = 'dev', projectId = faker.datatype.uuid()) =>
 
 export const getRandomPerm = (environmentId = faker.datatype.uuid(), userId = faker.datatype.uuid()) => {
   return {
+    id: faker.datatype.uuid(),
     environmentId,
     userId,
     level: faker.datatype.number({ min: 0, max: 1 }),

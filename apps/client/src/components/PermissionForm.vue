@@ -2,6 +2,7 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import SuggestionInput from './SuggestionInput.vue'
 import RangeInput from './RangeInput.vue'
+import { levels } from 'shared/src/utils/iterables.js'
 
 const props = defineProps({
   environment: {
@@ -12,17 +13,7 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
-  isEditable: {
-    type: Boolean,
-    default: true,
-  },
 })
-
-const levels = [
-  'lecture seule',
-  'lecture, écriture',
-  'lecture, écriture, suppression',
-]
 
 const environment = ref(props.environment)
 const permissions = ref([])
@@ -70,7 +61,8 @@ onMounted(() => {
 
 <template>
   <DsfrFieldset
-    :legend="`Droits des utilisateurs sur l\'environnement de ${props.environment?.name}`"
+    data-testid="permissionsFieldset"
+    :legend="`Droits des utilisateurs sur l'environnement de ${props.environment?.name}`"
     hint="Gérez les droits de lecture, écriture et suppression d'un membre du projet sur l'environnement sélectionné."
   >
     <ul>
@@ -81,6 +73,7 @@ onMounted(() => {
       >
         <span
           class="p-4 mr-4"
+          data-testid="userEmail"
         >
           {{ permission.user.email }}
         </span>
@@ -94,6 +87,7 @@ onMounted(() => {
         <DsfrButton
           class="ml-8"
           secondary
+          data-testid="deletePermissionBtn"
           :title="`Supprimer les droits de ${permission.user.email}`"
           :icon-only="true"
           icon="ri-close-line"
@@ -104,12 +98,13 @@ onMounted(() => {
   </DsfrFieldset>
   <DsfrFieldset
     v-if="usersToLicence.length"
+    data-testid="newPermissionFieldset"
     legend="Accréditer un membre du projet"
   >
     <SuggestionInput
       list-id="permissionList"
       data-testid="permissionInput"
-      :label="`E-mail de l'utilisateur à accréditer sur l\'environnement de ${props.environment?.name}`"
+      :label="`E-mail de l'utilisateur à accréditer sur l'environnement de ${props.environment?.name}`"
       label-visible
       placeholder="prenom.nom@interieur.gouv.fr"
       type="text"
