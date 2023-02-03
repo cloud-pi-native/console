@@ -13,6 +13,10 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  isOwner: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const environment = ref(props.environment)
@@ -71,6 +75,16 @@ onMounted(() => {
         :key="permission.id"
         class="flex items-center"
       >
+        <DsfrButton
+          class="ml-8"
+          secondary
+          data-testid="deletePermissionBtn"
+          :disabled="permission.userId === props.isOwner"
+          :title="`Supprimer les droits de ${permission.user.email}`"
+          :icon-only="true"
+          icon="ri-close-line"
+          @click="deletePermission(permission.userId)"
+        />
         <span
           class="p-4 mr-4"
           data-testid="userEmail"
@@ -83,15 +97,6 @@ onMounted(() => {
           :levels="levels"
           required="required"
           @update-level="updatePermission(permission.userId, $event)"
-        />
-        <DsfrButton
-          class="ml-8"
-          secondary
-          data-testid="deletePermissionBtn"
-          :title="`Supprimer les droits de ${permission.user.email}`"
-          :icon-only="true"
-          icon="ri-close-line"
-          @click="deletePermission(permission.userId)"
         />
       </li>
     </ul>
