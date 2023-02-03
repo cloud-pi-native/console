@@ -36,24 +36,27 @@ const usersToLicence = computed(() =>
 )
 const datalist = computed(() => usersToLicence.value[0].map(user => user.email))
 
+const emit = defineEmits([
+  'addPermission',
+  'updatePermission',
+  'deletePermission',
+])
+
 const setPermissions = () => {
   permissions.value = props.environment?.permissions
 }
 
-const createPermission = (userEmail) => {
-  const userId = usersToLicence.value[0].find(user => user.email === userEmail)
-  // TODO call api level 0
-  console.log({ userId })
+const addPermission = (userEmail) => {
+  const userId = usersToLicence.value[0].find(user => user.email === userEmail).id
+  emit('addPermission', { userId, level: 1 })
 }
 
-const setNewPermission = (level, userId) => {
-  // TODO call api
-  console.log({ level, userId })
+const updatePermission = (userId, level) => {
+  emit('updatePermission', { userId, level })
 }
 
-const deletePermission = (permissionId) => {
-  // TODO call api
-  console.log({ permissionId })
+const deletePermission = (userId) => {
+  emit('deletePermission', userId)
 }
 
 watch(environment, (newValue) => {
@@ -86,7 +89,7 @@ onMounted(() => {
           :level="permission.level"
           :levels="levels"
           required="required"
-          @update-level="setNewPermission($event, permission.userId)"
+          @update-level="updatePermission(permission.userId, $event)"
         />
         <DsfrButton
           class="ml-8"
@@ -94,7 +97,7 @@ onMounted(() => {
           :title="`Supprimer les droits de ${permission.user.email}`"
           :icon-only="true"
           icon="ri-close-line"
-          @click="deletePermission(permission.id)"
+          @click="deletePermission(permission.userId)"
         />
       </li>
     </ul>
@@ -111,7 +114,7 @@ onMounted(() => {
       placeholder="prenom.nom@interieur.gouv.fr"
       type="text"
       :datalist="datalist"
-      @update-value="createPermission($event)"
+      @update-value="addPermission($event)"
     />
   </DsfrFieldset>
 </template>

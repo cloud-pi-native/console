@@ -97,7 +97,7 @@ export const getPermissions = async (projectId, environmentId) => {
   return response.data
 }
 
-export const removePermission = async (projectId, environmentId, userId) => {
+export const deletePermission = async (projectId, environmentId, userId) => {
   const response = await apiClient.delete(`/projects/${projectId}/environments/${environmentId}/permissions`, { userId })
   return response.data
 }

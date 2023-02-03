@@ -103,7 +103,7 @@ put('/projects/:projectId/environments/:environmentId/permissions')
 // Get environment permissions
 get('/projects/:projectId/environments/:environmentId/permissions')
 
-// Delete project environment
+// Delete environment permission
 delete('/projects/:projectId/environments/:environmentId/permissions')
   => body({ userId })
 ```

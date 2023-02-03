@@ -46,8 +46,18 @@ export const useProjectStore = defineStore('project', () => {
     await getUserProjects()
   }
 
+  const updatePermission = async (environmentId, permission) => {
+    await api.updatePermission(selectedProject.value.id, environmentId, permission)
+    await getUserProjects()
+  }
+
   const removeUserFromProject = async (userId) => {
     await api.removeUser(selectedProject.value.id, userId)
+    await getUserProjects()
+  }
+
+  const deletePermission = async (environmentId, userId) => {
+    await api.deletePermission(selectedProject.value.id, environmentId, userId)
     await getUserProjects()
   }
 
@@ -61,6 +71,8 @@ export const useProjectStore = defineStore('project', () => {
     addEnvironmentToProject,
     addPermission,
     addUserToProject,
+    updatePermission,
     removeUserFromProject,
+    deletePermission,
   }
 })
