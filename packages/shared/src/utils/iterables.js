@@ -1,3 +1,9 @@
+export const levels = [
+  'lecture seule',
+  'lecture, écriture',
+  'lecture, écriture, suppression',
+]
+
 export const projectRoles = [
   'owner',
   'user',
