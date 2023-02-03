@@ -21,6 +21,10 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  isOwner: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const localEnvironment = ref(props.environment)
@@ -110,6 +114,7 @@ onMounted(() => {
     data-testid="environmentFieldset"
   >
     <DsfrSelect
+      v-if="props.isEditable"
       v-model="localEnvironment.name"
       data-testid="environmentNameSelect"
       label="Nom de l'environnement"
@@ -122,7 +127,8 @@ onMounted(() => {
   <PermissionForm
     v-if="localEnvironment.id"
     :environment="localEnvironment"
-    :project-members="projectMembers"
+    :project-members="props.projectMembers"
+    :is-owner="props.isOwner"
     @add-permission="(permission) => addPermission(permission)"
     @update-permission="(permission) => updatePermission(permission)"
     @delete-permission="(userId) => deletePermission(userId)"

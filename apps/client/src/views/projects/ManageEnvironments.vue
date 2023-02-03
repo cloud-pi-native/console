@@ -9,6 +9,8 @@ const projectStore = useProjectStore()
 
 const selectedProject = computed(() => projectStore.selectedProject)
 const environmentNames = computed(() => environments.value.map(env => env.title))
+// TODO : isOwner ne passe pas au composant enfant
+const isOwner = selectedProject.value.usersProjects.role === 'owner'
 const environments = ref([])
 const selectedEnvironment = ref({})
 const isNewEnvironmentForm = ref(false)
@@ -97,6 +99,7 @@ watch(selectedProject, () => {
       :environment="{projectId: selectedProject.id}"
       :environment-names="environmentNames"
       :project-members="selectedProject.users"
+      :is-owner="isOwner"
       @add-environment="(environment) => addEnvironment(environment)"
       @cancel="cancel()"
       @add-permission="(envPermission) => addPermission(envPermission)"
