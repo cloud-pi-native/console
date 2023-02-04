@@ -35,17 +35,9 @@ spec:
             memory: "2000Mi"
             cpu: "1000m"
         volumeMounts:
-        - name: config
-          mountPath: /config/
-          readOnly: true
         - name: playbooks
           mountPath: {{ .Values.containers.ansible.container.playbooks.repoMount }}
       volumes:
-      - name: config
-        projected:
-          sources:
-          - configMap:
-              name: {{ .Release.Name }}-matches
       - name: playbooks
         emptyDir:
           sizeLimit: 1000M
