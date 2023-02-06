@@ -68,6 +68,7 @@ services:
       KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_BACKEND:-client-secret-backend}
       ANSIBLE_HOST: ${ANSIBLE_HOST:-ansible-api}
       ANSIBLE_PORT: ${ANSIBLE_PORT:-8100}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-a-strong-key-with-32-characters!}
       CI: "true"
       DEV_SETUP: "true"
       NODE_ENV: production
