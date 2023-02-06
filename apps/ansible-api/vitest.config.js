@@ -10,5 +10,6 @@ export default defineConfig({
       reporter: ['text', 'lcov'],
       exclude: ['**/*.spec.js'],
     },
+    setupFiles: ['./vitest-init.js'],
   },
 })

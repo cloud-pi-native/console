@@ -25,9 +25,9 @@ import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import { ansibleHost, ansiblePort } from '../utils/env.js'
 import { getOrganizationById } from '../models/queries/organization-queries.js'
+import { encrypt, decrypt } from '../utils/crypto.js'
 
 // GET
-
 export const getRepositoryByIdController = async (req, res) => {
   const projectId = req.params?.projectId
   const repositoryId = req.params?.repositoryId
@@ -79,7 +79,6 @@ export const getProjectRepositoriesController = async (req, res) => {
 }
 
 // CREATE
-
 export const createRepositoryController = async (req, res) => {
   const data = req.body
   const userId = req.session?.user?.id
@@ -105,6 +104,11 @@ export const createRepositoryController = async (req, res) => {
     const repos = await getProjectRepositories(projectId)
     const isInternalRepoNameTaken = repos.find(repo => repo.internalRepoName === data.internalRepoName)
     if (isInternalRepoNameTaken) throw new Error(`Le nom du dépôt interne ${data.internalRepoName} existe déjà en base pour ce projet`)
+
+    if (data.externalToken) {
+      const encryptedToken = await encrypt(data.externalToken)
+      data.externalToken = encryptedToken
+    }
 
     await lockProject(projectId)
     repo = await initializeRepository(data)
@@ -146,7 +150,7 @@ export const createRepositoryController = async (req, res) => {
     }
     if (data.isPrivate) {
       ansibleData.GIT_INPUT_USER = data.externalUserName
-      ansibleData.GIT_INPUT_PASSWORD = data.externalToken
+      ansibleData.GIT_INPUT_PASSWORD = await decrypt(data.externalToken)
     }
 
     await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
@@ -229,6 +233,11 @@ export const updateRepositoryController = async (req, res) => {
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
     if (!role) throw new Error('Requestor is not member of project')
 
+    if (data.externalToken) {
+      const encryptedToken = encrypt(data.externalToken)
+      data.externalToken = encryptedToken
+    }
+
     await lockProject(projectId)
     await updateRepository(repositoryId, data.info)
 
@@ -296,7 +305,6 @@ export const updateRepositoryController = async (req, res) => {
 }
 
 // DELETE
-
 export const deleteRepositoryController = async (req, res) => {
   const projectId = req.params?.projectId
   const repositoryId = req.params?.repositoryId
