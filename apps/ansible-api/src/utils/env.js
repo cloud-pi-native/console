@@ -11,10 +11,6 @@ export const isCI = process.env.CI === 'true'
 
 export const playbookDir = resolve(fileURLToPath(import.meta.url), process.env.PLAYBOOK_DIR) + '/'
 
-export const configDir = process.env.CONFIG_DIR?.endsWith('/')
-  ? process.env.CONFIG_DIR
-  : process.env.CONFIG_DIR + '/'
-
 export const inventory = process.env.INVENTORY
 
 export const port = process.env.ANSIBLE_PORT
