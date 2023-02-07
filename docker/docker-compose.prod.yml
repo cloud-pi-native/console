@@ -60,7 +60,6 @@ services:
       - ../ansible/playbooks:${PLAYBOOK_DIR:-/dso}
     environment:
       PLAYBOOK_DIR: ${PLAYBOOK_DIR:-/dso}
-      CONFIG_DIR: ${CONFIG_DIR:-/config}
       CLONE_DIR: ${CLONE_DIR:-/dso}
       ANSIBLE_PORT: ${ANSIBLE_PORT}
       SESSION_SECRET: ${SESSION_SECRET:-a-very-strong-secret-with-more-than-32-char}

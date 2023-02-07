@@ -9,7 +9,6 @@ data:
   PLAYBOOK_DIR: {{ .playbooks.repoDir}}
   ANSIBLE_PORT: {{ .port | quote }}
   NODE_ENV: {{ .node_env }}
-  CONFIG_DIR: {{ .config_dir }}
   INVENTORY_NAMESPACE: {{ .playbooks.inventory.namespace }}
   INVENTORY_NAME: {{ .playbooks.inventory.name }}
   INVENTORY_KEY: {{ .playbooks.inventory.key }}
