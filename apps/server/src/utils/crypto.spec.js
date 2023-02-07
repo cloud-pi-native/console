@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { compareToHash, getHash, encrypt, decrypt } from './crypto'
+import { compareToHash, getHash, encrypt, decrypt, generateRandomPassword } from './crypto'
 
 describe('crypto', () => {
   it('Should return true if hashes are equal', async () => {
@@ -49,5 +49,16 @@ describe('crypto', () => {
     await decrypt().catch(err => { res = err })
 
     expect(res).toBeInstanceOf(Error)
+  })
+
+  it('Should generate a random password', async () => {
+    const defaultLength = 24
+    const length = 15
+
+    const password1 = generateRandomPassword()
+    const password2 = generateRandomPassword(length)
+
+    expect(password1).toHaveLength(defaultLength)
+    expect(password2).toHaveLength(length)
   })
 })
