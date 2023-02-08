@@ -27,7 +27,6 @@ containers:
           namespace: in which namespace your inventory is
           name: what is your inventory secret name
           key: which key to look for
-      config_dir: /config/
       node_env: production
       port: 8080
     service:

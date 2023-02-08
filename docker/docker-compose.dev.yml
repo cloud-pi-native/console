@@ -91,6 +91,7 @@ services:
       ADMIN_KC_USER_ID: cb8e5b4b-7b7b-40f5-935f-594f48ae6565
       ANSIBLE_HOST: ${ANSIBLE_HOST:-ansible-api}
       ANSIBLE_PORT: ${ANSIBLE_PORT:-8100}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-a-strong-key-with-32-characters!}
       NODE_ENV: development
     networks:
       - dso-network

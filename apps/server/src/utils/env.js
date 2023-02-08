@@ -44,8 +44,6 @@ export const playbookDir = process.env.PLAYBOOK_DIR?.endsWith('/')
   ? process.env.PLAYBOOK_DIR
   : process.env.PLAYBOOK_DIR + '/'
 
-export const configDir = process.env.CONFIG_DIR?.endsWith('/')
-  ? process.env.CONFIG_DIR
-  : process.env.CONFIG_DIR + '/'
-
 export const adminsUserId = process.env.ADMIN_KC_USER_ID ? process.env.ADMIN_KC_USER_ID.split(',') : []
+
+export const encryptionKey = process.env.ENCRYPTION_KEY
