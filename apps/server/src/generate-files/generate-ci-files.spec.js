@@ -49,7 +49,7 @@ describe('ciFiles routes', () => {
     const ciData = {
       orgName: randomDbSetup.organization.name,
       projectName: randomDbSetup.project.name,
-      internalRepoName: randomDbSetup.repositories[0].internalRepoName,
+      internalRepoName: randomDbSetup.project.repositories[0].internalRepoName,
       typeLanguage: 'node',
       nodeVersion: '18.1.1',
       nodeInstallCommand: 'npm install',
@@ -74,7 +74,7 @@ describe('ciFiles routes', () => {
     const ciData = {
       orgName: randomDbSetup.organization.name,
       projectName: randomDbSetup.project.name,
-      internalRepoName: randomDbSetup.repositories[0].internalRepoName,
+      internalRepoName: randomDbSetup.project.repositories[0].internalRepoName,
       typeLanguage: 'java',
       workingDir: '../client',
       javaVersion: '8.1.2',
@@ -98,7 +98,7 @@ describe('ciFiles routes', () => {
     const ciData = {
       orgName: randomDbSetup.organization.name,
       projectName: randomDbSetup.project.name,
-      internalRepoName: randomDbSetup.repositories[0].internalRepoName,
+      internalRepoName: randomDbSetup.project.repositories[0].internalRepoName,
       typeLanguage: 'python',
       workingDir: './',
     }

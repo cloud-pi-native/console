@@ -67,11 +67,12 @@ describe('User routes', () => {
   // GET
   describe('getProjectUsersController', () => {
     it('Should retreive members of a project', async () => {
-      const randomDbSetup = createRandomDbSetup({ nbUsers: 2 })
+      const randomDbSetup = createRandomDbSetup({ nbUsers: 3 })
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
-      Role.$queueResult(randomDbSetup.usersProjects[0])
+      Role.$queueResult(randomDbSetup.project.users[0])
       Project.$queueResult(randomDbSetup.users)
-      setOwnerId(randomDbSetup.owner.id)
+      setOwnerId(owner.id)
 
       const response = await app.inject()
         .get(`/${randomDbSetup.project.id}/users`)
@@ -84,9 +85,10 @@ describe('User routes', () => {
 
     it('Should not retreive members of a project if requestor is not member himself', async () => {
       const randomDbSetup = createRandomDbSetup({})
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       Role.$queueResult(null)
-      setOwnerId(randomDbSetup.owner.id)
+      setOwnerId(owner.id)
 
       const response = await app.inject()
         .get(`/${randomDbSetup.project.id}/users`)
@@ -104,11 +106,12 @@ describe('User routes', () => {
       // TODO : user.addProject is not a function
       const randomDbSetup = createRandomDbSetup({})
       const randomUser = getRandomUser()
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       // 1. getProjectById
       Project.$queueResult(randomDbSetup.project)
       // 2. getRequestorRole
-      Role.$queueResult(randomDbSetup.usersProjects[0])
+      Role.$queueResult(randomDbSetup.project.users[0])
       // 3. getUserByEmail
       User.$queueResult(randomUser)
       // 4. getUserToAddRole
@@ -117,7 +120,7 @@ describe('User routes', () => {
       sequelize.$queueResult([1])
       // 6. addUserToProject
       sequelize.$queueResult([1])
-      setOwnerId(randomDbSetup.owner.id)
+      setOwnerId(owner.id)
 
       const response = await app.inject()
         .post(`/${randomDbSetup.project.id}/users`)
@@ -130,14 +133,15 @@ describe('User routes', () => {
     })
 
     it('Should not add an user if email already present', async () => {
-      const randomDbSetup = createRandomDbSetup({ nbUsers: 1 })
-      const randomUser = randomDbSetup.users[0]
+      const randomDbSetup = createRandomDbSetup({ nbUsers: 2 })
+      const randomUser = randomDbSetup.users[1]
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       Project.$queueResult(randomDbSetup.project)
-      Role.$queueResult(randomDbSetup.usersProjects[1])
+      Role.$queueResult(randomDbSetup.project.users[0])
       User.$queueResult(randomUser)
-      Role.$queueResult(randomDbSetup.usersProjects[0])
-      setOwnerId(randomDbSetup.owner.id)
+      Role.$queueResult(randomDbSetup.project.users[1])
+      setOwnerId(owner.id)
 
       const response = await app.inject()
         .post(`/${randomDbSetup.project.id}/users`)
@@ -152,9 +156,10 @@ describe('User routes', () => {
     it('Should not add an user if project is missing', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const randomUser = getRandomUser()
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       Project.$queueResult(null)
-      setOwnerId(randomDbSetup.owner.id)
+      setOwnerId(owner.id)
 
       const response = await app.inject()
         .post(`/${randomDbSetup.project.id}/users`)
@@ -170,20 +175,21 @@ describe('User routes', () => {
   // PUT
   describe('updateUserProjectRoleController', () => {
     it('Should update a project member\'s role', async () => {
-      const randomDbSetup = createRandomDbSetup({ nbUsers: 1 })
-      const userToUpdate = randomDbSetup.users[0]
+      const randomDbSetup = createRandomDbSetup({ nbUsers: 2 })
+      const userToUpdate = randomDbSetup.users[1]
       userToUpdate.role = 'newRole'
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       // 1. getProject
       Project.$queueResult(randomDbSetup.project)
       // 2. getRequestorRole
-      Role.$queueResult(randomDbSetup.usersProjects[1])
+      Role.$queueResult(randomDbSetup.project.users[0])
       // 3. getUserToUpdateRole
-      Role.$queueResult(randomDbSetup.usersProjects[0])
+      Role.$queueResult(randomDbSetup.project.users[1])
       // 4. updateUserProjectRole
       Role.$queueResult([1])
 
-      setOwnerId(randomDbSetup.owner.id)
+      setOwnerId(owner.id)
 
       const response = await app.inject()
         .put(`/${randomDbSetup.project.id}/users/${userToUpdate.id}`)
@@ -198,23 +204,24 @@ describe('User routes', () => {
   describe('removeUserFromProjectController', () => {
     it.skip('Should remove an user from a project', async () => {
       // TODO : user.removeProject is not a function
-      const randomDbSetup = createRandomDbSetup({ nbUsers: 1 })
-      const randomUser = randomDbSetup.users[0]
+      const randomDbSetup = createRandomDbSetup({ nbUsers: 2 })
+      const randomUser = randomDbSetup.users[1]
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       // 1. getProjectById
       Project.$queueResult(randomDbSetup.project)
       // 2. getRequestorRole
-      Role.$queueResult(randomDbSetup.usersProjects[1])
+      Role.$queueResult(randomDbSetup.project.users[0])
       // 3. getUserToRemove
       User.$queueResult(randomUser)
       // 4. getUserToRemoveRole
-      Role.$queueResult(randomDbSetup.usersProjects[0])
+      Role.$queueResult(randomDbSetup.project.users[1])
       // 5. project locked
       sequelize.$queueResult([1])
       // 6. removeUserFromProject
       sequelize.$queueResult([1])
 
-      setOwnerId(randomDbSetup.owner.id)
+      setOwnerId(owner.id)
 
       const response = await app.inject()
         .delete(`/${randomDbSetup.project.id}/users/${randomUser.id}`)
@@ -227,11 +234,12 @@ describe('User routes', () => {
     })
 
     it('Should not remove an user if project is missing', async () => {
-      const randomDbSetup = createRandomDbSetup({ nbUsers: 1 })
-      const randomUser = randomDbSetup.users[0]
+      const randomDbSetup = createRandomDbSetup({ nbUsers: 2 })
+      const randomUser = randomDbSetup.users[1]
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       Project.$queueResult(null)
-      setOwnerId(randomDbSetup.owner.id)
+      setOwnerId(owner.id)
 
       const response = await app.inject()
         .delete(`/${randomDbSetup.project.id}/users/${randomUser.id}`)
@@ -243,12 +251,13 @@ describe('User routes', () => {
     })
 
     it('Should not remove an user if requestor is not member himself', async () => {
-      const randomDbSetup = createRandomDbSetup({ nbUsers: 1 })
-      const randomUser = randomDbSetup.users[0]
+      const randomDbSetup = createRandomDbSetup({ nbUsers: 2 })
+      const randomUser = randomDbSetup.users[1]
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       Project.$queueResult(randomDbSetup.project)
       Role.$queueResult(null)
-      setOwnerId(randomDbSetup.owner.id)
+      setOwnerId(owner.id)
 
       const response = await app.inject()
         .delete(`/${randomDbSetup.project.id}/users/${randomUser.id}`)
@@ -260,14 +269,15 @@ describe('User routes', () => {
     })
 
     it('Should not remove an user if user is not member', async () => {
-      const randomDbSetup = createRandomDbSetup({ nbUsers: 1 })
-      const randomUser = randomDbSetup.users[0]
+      const randomDbSetup = createRandomDbSetup({ nbUsers: 2 })
+      const randomUser = randomDbSetup.users[1]
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       Project.$queueResult(randomDbSetup.project)
-      Role.$queueResult(randomDbSetup.usersProjects[1])
+      Role.$queueResult(randomDbSetup.project.users[0])
       User.$queueResult(randomUser)
       Role.$queueResult(null)
-      setOwnerId(randomDbSetup.owner.id)
+      setOwnerId(owner.id)
 
       const response = await app.inject()
         .delete(`/${randomDbSetup.project.id}/users/${randomUser.id}`)

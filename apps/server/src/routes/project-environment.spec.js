@@ -71,30 +71,32 @@ describe('User routes', () => {
   describe('getEnvironmentByIdController', () => {
     it('Should retreive an environment by its id', async () => {
       const randomDbSetup = createRandomDbSetup({})
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
-      Environment.$queueResult(randomDbSetup.environments[0])
-      Role.$queueResult(randomDbSetup.usersProjects[0])
-      Permission.$queueResult(randomDbSetup.permissions[0][0])
-      setOwnerId(randomDbSetup.owner.id)
+      Environment.$queueResult(randomDbSetup.project.environments[0])
+      Role.$queueResult(randomDbSetup.project.users[0])
+      Permission.$queueResult(randomDbSetup.project.environments[0].permissions[0])
+      setOwnerId(owner.id)
 
       const response = await app.inject()
-        .get(`/${randomDbSetup.project.id}/environments/${randomDbSetup.environments[0].id}`)
+        .get(`/${randomDbSetup.project.id}/environments/${randomDbSetup.project.environments[0].id}`)
         .end()
 
       expect(response.statusCode).toEqual(200)
       expect(response.json()).toBeDefined()
-      expect(response.json()).toEqual(randomDbSetup.environments[0])
+      expect(response.json()).toEqual(randomDbSetup.project.environments[0])
     })
 
     it('Should not retreive an environment if requestor is not member of project', async () => {
       const randomDbSetup = createRandomDbSetup({})
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
-      Environment.$queueResult(randomDbSetup.environments[0])
+      Environment.$queueResult(randomDbSetup.project.environments[0])
       Role.$queueResult(null)
-      setOwnerId(randomDbSetup.owner.id)
+      setOwnerId(owner.id)
 
       const response = await app.inject()
-        .get(`/${randomDbSetup.project.id}/environments/${randomDbSetup.environments[0].id}`)
+        .get(`/${randomDbSetup.project.id}/environments/${randomDbSetup.project.environments[0].id}`)
         .end()
 
       expect(response.statusCode).toEqual(500)
@@ -104,15 +106,16 @@ describe('User routes', () => {
 
     it('Should not retreive an environment if requestor has no permission', async () => {
       const randomDbSetup = createRandomDbSetup({})
-      randomDbSetup.usersProjects[0].role = 'user'
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
+      randomDbSetup.project.users[0].role = 'user'
 
-      Environment.$queueResult(randomDbSetup.environments[0])
-      Role.$queueResult(randomDbSetup.usersProjects[0])
+      Environment.$queueResult(randomDbSetup.project.environments[0])
+      Role.$queueResult(randomDbSetup.project.users[0])
       Permission.$queueResult(null)
-      setOwnerId(randomDbSetup.owner.id)
+      setOwnerId(owner.id)
 
       const response = await app.inject()
-        .get(`/${randomDbSetup.project.id}/environments/${randomDbSetup.environments[0].id}`)
+        .get(`/${randomDbSetup.project.id}/environments/${randomDbSetup.project.environments[0].id}`)
         .end()
 
       expect(response.statusCode).toEqual(500)
@@ -128,18 +131,19 @@ describe('User routes', () => {
       const newEnvironment = getRandomEnv('dev', randomDbSetup.project.id)
       delete newEnvironment.id
       delete newEnvironment.status
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       // 1. getProjectById
       Project.$queueResult(randomDbSetup.project)
       // 2. getRequestorRole
-      Role.$queueResult(randomDbSetup.usersProjects[0])
+      Role.$queueResult(randomDbSetup.project.users[0])
       // 3. getExistingEnvironments
       Environment.$queueResult(null)
       // 4. createEnvironment
       Environment.$queueResult(newEnvironment)
       // 5. lockProject
       sequelize.$queueResult([1])
-      setOwnerId(randomDbSetup.owner.id)
+      setOwnerId(owner.id)
 
       const response = await app.inject()
         .post(`/${randomDbSetup.project.id}/environments`)
@@ -156,12 +160,13 @@ describe('User routes', () => {
       const newEnvironment = getRandomEnv('dev', randomDbSetup.project.id)
       delete newEnvironment.id
       delete newEnvironment.status
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       // 1. getProjectById
       Project.$queueResult(randomDbSetup.project)
       // 2. getRequestorRole
       Role.$queueResult(null)
-      setOwnerId(randomDbSetup.owner.id)
+      setOwnerId(owner.id)
 
       const response = await app.inject()
         .post(`/${randomDbSetup.project.id}/environments`)
@@ -175,19 +180,20 @@ describe('User routes', () => {
 
     it('Should not create an environment if name already present', async () => {
       const randomDbSetup = createRandomDbSetup({})
-      const newEnvironment = randomDbSetup.environments[0]
+      const newEnvironment = randomDbSetup.project.environments[0]
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       // 1. getProjectById
       Project.$queueResult(randomDbSetup.project)
       // 2. getRequestorRole
-      Role.$queueResult(randomDbSetup.usersProjects[0])
+      Role.$queueResult(randomDbSetup.project.users[0])
       // 3. getExistingEnvironments
-      Environment.$queueResult(randomDbSetup.environments)
+      Environment.$queueResult(randomDbSetup.project.environments)
       // 4. createEnvironment
       Environment.$queueResult(newEnvironment)
       // 5. lockProject
       sequelize.$queueResult([1])
-      setOwnerId(randomDbSetup.owner.id)
+      setOwnerId(owner.id)
 
       const response = await app.inject()
         .post(`/${randomDbSetup.project.id}/environments`)
@@ -204,15 +210,16 @@ describe('User routes', () => {
   describe('deleteEnvironmentController', () => {
     it('Should delete an environment', async () => {
       const randomDbSetup = createRandomDbSetup({})
-      const environmentToDelete = randomDbSetup.environments[0]
+      const environmentToDelete = randomDbSetup.project.environments[0]
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       // 1. getRequestorRole
-      Role.$queueResult(randomDbSetup.usersProjects[0])
+      Role.$queueResult(randomDbSetup.project.users[0])
       // 2. deleteEnvironment
-      Environment.$queueResult(randomDbSetup.environments[0])
+      Environment.$queueResult(randomDbSetup.project.environments[0])
       // 3. lockProject
       sequelize.$queueResult([1])
-      setOwnerId(randomDbSetup.owner.id)
+      setOwnerId(owner.id)
 
       const response = await app.inject()
         .delete(`/${randomDbSetup.project.id}/environments/${environmentToDelete.id}`)
@@ -223,11 +230,12 @@ describe('User routes', () => {
 
     it('Should not delete an environment if requestor is not member of project', async () => {
       const randomDbSetup = createRandomDbSetup({})
-      const environmentToDelete = randomDbSetup.environments[0]
+      const environmentToDelete = randomDbSetup.project.environments[0]
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       // 1. getRequestorRole
       Role.$queueResult(null)
-      setOwnerId(randomDbSetup.owner.id)
+      setOwnerId(owner.id)
 
       const response = await app.inject()
         .delete(`/${randomDbSetup.project.id}/environments/${environmentToDelete.id}`)
@@ -240,13 +248,14 @@ describe('User routes', () => {
 
     it('Should not delete an environment if requestor is not owner of project', async () => {
       const randomDbSetup = createRandomDbSetup({})
-      const environmentToDelete = randomDbSetup.environments[0]
-      const requestorRole = randomDbSetup.usersProjects[0]
+      const environmentToDelete = randomDbSetup.project.environments[0]
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
+      const requestorRole = randomDbSetup.project.users[0]
       requestorRole.role = 'user'
 
       // 1. getRequestorRole
       Role.$queueResult(requestorRole)
-      setOwnerId(randomDbSetup.owner.id)
+      setOwnerId(owner.id)
 
       const response = await app.inject()
         .delete(`/${randomDbSetup.project.id}/environments/${environmentToDelete.id}`)

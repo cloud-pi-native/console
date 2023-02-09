@@ -65,27 +65,29 @@ describe('Project routes', () => {
   describe('getEnvironmentPermissionsController', () => {
     it('Should retrieve permissions for an environment', async () => {
       const randomDbSetup = createRandomDbSetup({})
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       // 1. getRequestorRole
-      Role.$queueResult(randomDbSetup.usersProjects[0])
+      Role.$queueResult(randomDbSetup.project.users[0])
       // 2. getPermissions
-      Permission.$queueResult(randomDbSetup.permissions[0])
-      setOwnerId(randomDbSetup.owner.id)
+      Permission.$queueResult(randomDbSetup.project.environments[0].permissions[0])
+      setOwnerId(owner.id)
 
       const response = await app.inject()
         .get(`${randomDbSetup.project.id}/environments/${randomDbSetup.environments[0].id}/permissions`)
         .end()
 
       expect(response.statusCode).toEqual(200)
-      expect(response.json()).toEqual(randomDbSetup.permissions[0])
+      expect(response.json()).toEqual(randomDbSetup.project.environments[0].permissions[0])
     })
 
     it('Should not retrieve permissions for an environment if requestor is not member', async () => {
       const randomDbSetup = createRandomDbSetup({})
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       // 1. getRequestorRole
       Role.$queueResult(null)
-      setOwnerId(randomDbSetup.owner.id)
+      setOwnerId(owner.id)
 
       const response = await app.inject()
         .get(`${randomDbSetup.project.id}/environments/${randomDbSetup.environments[0].id}/permissions`)
@@ -100,13 +102,14 @@ describe('Project routes', () => {
   describe('setPermissionController', () => {
     it('Should set a permission', async () => {
       const randomDbSetup = createRandomDbSetup({})
-      const newPermission = randomDbSetup.permissions[0][0]
+      const newPermission = randomDbSetup.project.environments[0].permissions[0]
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       // 1. getRequestorRole
-      Role.$queueResult(randomDbSetup.usersProjects[0])
+      Role.$queueResult(randomDbSetup.project.users[0])
       // 2. setPermissions
       Permission.$queueResult(newPermission)
-      setOwnerId(randomDbSetup.owner.id)
+      setOwnerId(owner.id)
 
       const response = await app.inject()
         .post(`${randomDbSetup.project.id}/environments/${randomDbSetup.environments[0].id}/permissions`)
@@ -120,11 +123,12 @@ describe('Project routes', () => {
 
     it('Should not set a permission if requestor is not member of project', async () => {
       const randomDbSetup = createRandomDbSetup({})
-      const newPermission = randomDbSetup.permissions[0][0]
+      const newPermission = randomDbSetup.project.environments[0].permissions[0]
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       // 1. getRequestorRole
       Role.$queueResult(null)
-      setOwnerId(randomDbSetup.owner.id)
+      setOwnerId(owner.id)
 
       const response = await app.inject()
         .post(`${randomDbSetup.project.id}/environments/${randomDbSetup.environments[0].id}/permissions`)
@@ -141,14 +145,15 @@ describe('Project routes', () => {
   describe('updatePermissionController', () => {
     it('Should update a permission', async () => {
       const randomDbSetup = createRandomDbSetup({})
-      const updatedPermission = randomDbSetup.permissions[0][0]
+      const updatedPermission = randomDbSetup.project.environments[0].permissions[0]
       updatedPermission.level = 2
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       // 1. getRequestorRole
-      Role.$queueResult(randomDbSetup.usersProjects[0])
+      Role.$queueResult(randomDbSetup.project.users[0])
       // 2. setPermissions
       Permission.$queueResult(updatedPermission)
-      setOwnerId(randomDbSetup.owner.id)
+      setOwnerId(owner.id)
 
       const response = await app.inject()
         .put(`${randomDbSetup.project.id}/environments/${randomDbSetup.environments[0].id}/permissions`)
@@ -165,13 +170,14 @@ describe('Project routes', () => {
   describe('deletePermissionController', () => {
     it('Should delete a permission', async () => {
       const randomDbSetup = createRandomDbSetup({})
-      const removedPermission = randomDbSetup.permissions[0][0]
+      const removedPermission = randomDbSetup.project.environments[0].permissions[0]
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       // 1. getRequestorRole
-      Role.$queueResult(randomDbSetup.usersProjects[0])
+      Role.$queueResult(randomDbSetup.project.users[0])
       // 2. setPermissions
       Permission.$queueResult(removedPermission.id)
-      setOwnerId(randomDbSetup.owner.id)
+      setOwnerId(owner.id)
 
       const response = await app.inject()
         .delete(`${randomDbSetup.project.id}/environments/${randomDbSetup.environments[0].id}/permissions/${removedPermission.userId}`)
