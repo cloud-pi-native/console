@@ -21,13 +21,14 @@ const props = defineProps({
 
 const environment = ref(props.environment)
 const permissions = ref([])
+
+const permittedUsersId = computed(() => permissions.value.map(permission => permission.userId))
 const usersToLicence = computed(() =>
-  permissions.value.flatMap(permission =>
-    props.projectMembers.filter(projectMember =>
-      projectMember.id !== permission.user.id,
-    ),
+  props.projectMembers.filter(projectMember =>
+    !permittedUsersId.value.includes(projectMember.id),
   ),
 )
+
 const datalist = computed(() => usersToLicence.value.map(user => user.email))
 
 const emit = defineEmits([
