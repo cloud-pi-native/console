@@ -68,11 +68,12 @@ describe('Project routes', () => {
   describe('getRepositoryByIdController', () => {
     it('Should get a repository by its id', async () => {
       const randomDbSetup = createRandomDbSetup({})
-      const repoToGet = randomDbSetup.repositories[0]
+      const repoToGet = randomDbSetup.project.repositories[0]
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       Repository.$queueResult(repoToGet)
-      Role.$queueResult(randomDbSetup.usersProjects[0])
-      setOwnerId(randomDbSetup.owner.id)
+      Role.$queueResult(randomDbSetup.project.users[0])
+      setOwnerId(owner.id)
 
       const response = await app.inject()
         .get(`${randomDbSetup.project.id}/repositories/${repoToGet.id}`)
@@ -87,10 +88,11 @@ describe('Project routes', () => {
   describe('getProjectRepositoriesController', () => {
     it('Should get repositories of a project', async () => {
       const randomDbSetup = createRandomDbSetup({})
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
-      Repository.$queueResult(randomDbSetup.repositories)
-      Role.$queueResult(randomDbSetup.usersProjects[0])
-      setOwnerId(randomDbSetup.owner.id)
+      Repository.$queueResult(randomDbSetup.project.repositories)
+      Role.$queueResult(randomDbSetup.project.users[0])
+      setOwnerId(owner.id)
 
       const response = await app.inject()
         .get(`${randomDbSetup.project.id}/repositories`)
@@ -98,7 +100,7 @@ describe('Project routes', () => {
 
       expect(response.statusCode).toEqual(200)
       expect(response.json()).toBeDefined()
-      expect(response.json()).toEqual(randomDbSetup.repositories)
+      expect(response.json()).toEqual(randomDbSetup.project.repositories)
     })
   })
 
@@ -107,11 +109,12 @@ describe('Project routes', () => {
     it('Should create a repository', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const newRepository = getRandomRepo(randomDbSetup.project.id)
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       Project.$queueResult(randomDbSetup.project)
-      Role.$queueResult(randomDbSetup.usersProjects[0])
-      Repository.$queueResult(randomDbSetup.repositories)
-      setOwnerId(randomDbSetup.owner.id)
+      Role.$queueResult(randomDbSetup.project.users[0])
+      Repository.$queueResult(randomDbSetup.project.repositories)
+      setOwnerId(owner.id)
 
       const response = await app.inject()
         .post(`${randomDbSetup.project.id}/repositories`)
@@ -128,18 +131,19 @@ describe('Project routes', () => {
   describe('updateRepositoryController', () => {
     it('Should update a repository', async () => {
       const randomDbSetup = createRandomDbSetup({})
-      const repoToUpdate = randomDbSetup.repositories[2]
+      const repoToUpdate = randomDbSetup.project.repositories[2]
       const updatedKeys = {
         externalRepoUrl: 'new',
         externalUserName: 'new',
         externalToken: 'new',
       }
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       Repository.$queueResult(repoToUpdate)
-      Role.$queueResult(randomDbSetup.usersProjects[0])
+      Role.$queueResult(randomDbSetup.project.users[0])
       Project.$queueResult([1])
       Repository.$queueResult([1])
-      setOwnerId(randomDbSetup.owner.id)
+      setOwnerId(owner.id)
 
       const response = await app.inject()
         .put(`${randomDbSetup.project.id}/repositories/${repoToUpdate.id}`)
@@ -153,17 +157,18 @@ describe('Project routes', () => {
 
     it('Should should not update a repository if invalid keys', async () => {
       const randomDbSetup = createRandomDbSetup({})
-      const repoToUpdate = randomDbSetup.repositories[2]
+      const repoToUpdate = randomDbSetup.project.repositories[2]
       const updatedKeys = {
         isPrivate: true,
         externalRepoUrl: 'new',
         externalToken: undefined,
       }
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       Repository.$queueResult(repoToUpdate)
-      Role.$queueResult(randomDbSetup.usersProjects[0])
+      Role.$queueResult(randomDbSetup.project.users[0])
       Project.$queueResult([1])
-      setOwnerId(randomDbSetup.owner.id)
+      setOwnerId(owner.id)
 
       const response = await app.inject()
         .put(`${randomDbSetup.project.id}/repositories/${repoToUpdate.id}`)
@@ -180,13 +185,14 @@ describe('Project routes', () => {
   describe('deleteRepositoryController', () => {
     it('Should delete a repository', async () => {
       const randomDbSetup = createRandomDbSetup({})
-      const repoToDelete = randomDbSetup.repositories[1]
+      const repoToDelete = randomDbSetup.project.repositories[1]
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       Repository.$queueResult(repoToDelete)
-      Role.$queueResult(randomDbSetup.usersProjects[0])
+      Role.$queueResult(randomDbSetup.project.users[0])
       Project.$queueResult([1])
       Repository.$queueResult([1])
-      setOwnerId(randomDbSetup.owner.id)
+      setOwnerId(owner.id)
 
       const response = await app.inject()
         .delete(`${randomDbSetup.project.id}/repositories/${repoToDelete.id}`)

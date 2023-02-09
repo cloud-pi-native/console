@@ -37,10 +37,9 @@ export const getRandomUser = () => {
   }
 }
 
-export const getRandomUserProject = (userId = faker.datatype.uuid(), projectId = faker.datatype.uuid(), role = projectRoles[1]) => {
+export const getRandomUserProject = (userId = faker.datatype.uuid(), role = projectRoles[1]) => {
   return {
-    UserId: userId,
-    ProjectId: projectId,
+    id: userId,
     role,
   }
 }
