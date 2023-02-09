@@ -16,7 +16,6 @@ export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = allEnv, or
 
   // Create users
   const users = repeatFn(nbUsers)(getRandomUser)
-  const usersId = users.map(user => user.id)
 
   // Create project
   const project = getRandomProject(organization.id)
@@ -34,8 +33,8 @@ export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = allEnv, or
 
   // Create permissions
   project.environments.forEach(env => {
-    env.permissions = usersId.map(userId =>
-      getRandomPerm(env.id, userId),
+    env.permissions = users.map(user =>
+      getRandomPerm(env.id, user),
     )
   })
 
