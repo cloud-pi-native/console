@@ -4,28 +4,23 @@ import '@gouvminint/vue-dsfr/styles'
 import '@/main.css'
 import * as icons from '@/icons.js'
 import PermissionForm from '@/components/PermissionForm.vue'
-import { createRandomDbSetup } from 'test-utils'
+import { createRandomDbSetup, getRandomUser } from 'test-utils'
 import { useProjectStore } from '@/stores/project.js'
 
 describe('PermissionForm.vue', () => {
   it('Should mount a PermissionForm', () => {
     const pinia = createPinia()
 
-    const randomDbSetup = createRandomDbSetup({ nbUsers: 2, envs: ['dev'] })
+    const randomDbSetup = createRandomDbSetup({ nbUsers: 3, envs: ['dev'] })
     const projectStore = useProjectStore(pinia)
-    projectStore.selectedProject = randomDbSetup
-
-    const environment = randomDbSetup.environments[0]
-    environment.permissions = [
-      ...randomDbSetup.permissions[0],
-      ...randomDbSetup.permissions[1],
-    ]
-    environment.permissions[0].user = randomDbSetup.owner
-    environment.permissions[1].user = randomDbSetup.users[0]
+    projectStore.selectedProject = randomDbSetup.project
+    const environment = projectStore.selectedProject.environments[0]
+    const userToLicence = getRandomUser()
+    randomDbSetup.users = [userToLicence, ...randomDbSetup.users]
 
     const props = {
       environment,
-      projectMembers: [...randomDbSetup.users, randomDbSetup.owner],
+      projectMembers: randomDbSetup.users,
     }
 
     const extensions = {
@@ -61,8 +56,8 @@ describe('PermissionForm.vue', () => {
           .should('contain', `E-mail de l'utilisateur à accréditer sur l'environnement de ${props.environment?.name}`)
         cy.get('datalist#permissionList')
           .find('option')
-        // TODO
-          // .should('have.length', props.projectMembers.length - props.environment.permissions.length)
+          .should('have.length', props.projectMembers.length - props.environment.permissions.length)
+          .should('have.value', userToLicence.email)
       })
   })
 })
