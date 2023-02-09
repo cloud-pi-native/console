@@ -21,15 +21,14 @@ const props = defineProps({
 
 const environment = ref(props.environment)
 const permissions = ref([])
-// TODO : pq ça fait un tableau dans un tableau ?
 const usersToLicence = computed(() =>
-  permissions.value.map(permission =>
+  permissions.value.flatMap(permission =>
     props.projectMembers.filter(projectMember =>
       projectMember.id !== permission.user.id,
     ),
   ),
 )
-const datalist = computed(() => usersToLicence.value[0].map(user => user.email))
+const datalist = computed(() => usersToLicence.value.map(user => user.email))
 
 const emit = defineEmits([
   'addPermission',
@@ -42,7 +41,7 @@ const setPermissions = () => {
 }
 
 const addPermission = (userEmail) => {
-  const userId = usersToLicence.value[0].find(user => user.email === userEmail).id
+  const userId = usersToLicence.value.find(user => user.email === userEmail).id
   emit('addPermission', { userId, level: 1 })
 }
 
