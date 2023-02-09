@@ -140,6 +140,17 @@ jobs:
     steps:
       - name: Checks-out repository
         uses: actions/checkout@v3
+      - name: Set up Docker buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Build docker image
+        uses: docker/bake-action@v2
+        with:
+          workdir: ./docker
+          files: docker-compose.ct.yml
+          load: true
+          set: |
+            *.cache-to=type=gha,mode=max
+            *.cache-from=type=gha
       - name: Run component tests
         run: |
           ./ci/scripts/init-env.sh
@@ -160,6 +171,17 @@ jobs:
     steps:
       - name: Checks-out repository
         uses: actions/checkout@v3
+      - name: Set up Docker buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Build docker image
+        uses: docker/bake-action@v2
+        with:
+          workdir: ./docker
+          files: docker-compose.e2e.yml
+          load: true
+          set: |
+            *.cache-to=type=gha,mode=max
+            *.cache-from=type=gha
       - name: Run e2e tests
         run: |
           ./ci/scripts/init-env.sh

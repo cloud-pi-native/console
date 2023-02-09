@@ -134,6 +134,7 @@ services:
     build:
       context: ..
       dockerfile: apps/client/cypress/Dockerfile
+      target: build
     image: dso-console/cypress:ci
     container_name: dso-console_cypress
     depends_on:
