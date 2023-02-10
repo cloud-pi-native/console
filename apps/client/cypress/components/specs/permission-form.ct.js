@@ -14,13 +14,13 @@ describe('PermissionForm.vue', () => {
     const randomDbSetup = createRandomDbSetup({ nbUsers: 3, envs: ['dev'] })
     const projectStore = useProjectStore(pinia)
     projectStore.selectedProject = randomDbSetup.project
+    projectStore.selectedProjectOwner = randomDbSetup.users[0]
     const environment = projectStore.selectedProject.environments[0]
     const userToLicence = getRandomUser()
-    randomDbSetup.users = [userToLicence, ...randomDbSetup.users]
+    randomDbSetup.project.users = [userToLicence, ...randomDbSetup.project.users]
 
     const props = {
       environment,
-      projectMembers: randomDbSetup.users,
     }
 
     const extensions = {
@@ -46,8 +46,21 @@ describe('PermissionForm.vue', () => {
           .should('contain', props.environment.permissions[0].user.email)
           .get('input#range')
           .should('have.value', props.environment.permissions[0].level)
+          .and('be.disabled')
           .getByDataTestid('deletePermissionBtn')
-          .should('have.attr', 'title', `Supprimer les droits de ${props.environment.permissions[0].user.email}`)
+          .should('have.attr', 'title', 'Les droits du owner ne peuvent être retirés')
+          .and('be.disabled')
+      })
+    cy.get('li:nth-of-type(2)')
+      .within(() => {
+        cy.getByDataTestid('userEmail')
+          .should('contain', props.environment.permissions[1].user.email)
+          .get('input#range')
+          .should('have.value', props.environment.permissions[1].level)
+          .and('be.enabled')
+          .getByDataTestid('deletePermissionBtn')
+          .should('have.attr', 'title', `Retirer les droits de ${props.environment.permissions[1].user.email}`)
+          .and('be.enabled')
       })
     cy.getByDataTestid('newPermissionFieldset')
       .should('contain', 'Accréditer un membre du projet')
@@ -56,7 +69,7 @@ describe('PermissionForm.vue', () => {
           .should('contain', `E-mail de l'utilisateur à accréditer sur l'environnement de ${props.environment?.name}`)
         cy.get('datalist#permissionList')
           .find('option')
-          .should('have.length', props.projectMembers.length - props.environment.permissions.length)
+          .should('have.length', randomDbSetup.project.users.length - props.environment.permissions.length)
           .should('have.value', userToLicence.email)
       })
   })
