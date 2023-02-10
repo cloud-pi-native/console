@@ -16,7 +16,7 @@ const router = async (app, _opt) => {
   await app.put('/:projectId/environments/:environmentId/:permissionId', updatePermissionController)
 
   // Supprimer une permission
-  await app.delete('/:projectId/environments/:environmentId/permissions', deletePermissionController)
+  await app.delete('/:projectId/environments/:environmentId/permissions/:userId', deletePermissionController)
 }
 
 export default router

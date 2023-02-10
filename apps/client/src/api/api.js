@@ -28,6 +28,11 @@ export const getUserProjectById = async (projectId) => {
   return response.data
 }
 
+export const getProjectOwner = async (projectId) => {
+  const response = await apiClient.get(`/projects/${projectId}/owner`)
+  return response.data
+}
+
 export const deleteProject = async (projectId) => {
   const response = await apiClient.delete(`/projects/${projectId}`)
   return response.data
@@ -83,21 +88,21 @@ export const addEnvironment = async (projectId, data) => {
 
 // Permissions
 export const addPermission = async (projectId, environmentId, data) => {
-  const response = await apiClient.post(`/projects/${projectId}/environments/:${environmentId}/permissions`, data)
+  const response = await apiClient.post(`/projects/${projectId}/environments/${environmentId}/permissions`, data)
   return response.data
 }
 
 export const updatePermission = async (projectId, environmentId, data) => {
-  const response = await apiClient.put(`/projects/${projectId}/environments/:${environmentId}/permissions`, data)
+  const response = await apiClient.put(`/projects/${projectId}/environments/${environmentId}/permissions`, data)
   return response.data
 }
 
 export const getPermissions = async (projectId, environmentId) => {
-  const response = await apiClient.get(`/projects/${projectId}/environments/:${environmentId}/permissions`)
+  const response = await apiClient.get(`/projects/${projectId}/environments/${environmentId}/permissions`)
   return response.data
 }
 
 export const deletePermission = async (projectId, environmentId, userId) => {
-  const response = await apiClient.delete(`/projects/${projectId}/environments/${environmentId}/permissions`, { userId })
+  const response = await apiClient.delete(`/projects/${projectId}/environments/${environmentId}/permissions/${userId}`)
   return response.data
 }

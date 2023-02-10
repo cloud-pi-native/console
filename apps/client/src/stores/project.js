@@ -4,6 +4,7 @@ import api from '@/api/index.js'
 
 export const useProjectStore = defineStore('project', () => {
   const selectedProject = ref(undefined)
+  const selectedProjectOwner = ref(undefined)
   const projects = ref([])
 
   /**
@@ -11,6 +12,11 @@ export const useProjectStore = defineStore('project', () => {
    */
   const setSelectedProject = async (id) => {
     selectedProject.value = projects.value.find(project => project.id === id)
+    await setSelectedProjectOwner()
+  }
+
+  const setSelectedProjectOwner = async () => {
+    selectedProjectOwner.value = await api.getProjectOwner(selectedProject.value.id)
   }
 
   const getUserProjects = async () => {
@@ -63,8 +69,10 @@ export const useProjectStore = defineStore('project', () => {
 
   return {
     selectedProject,
+    selectedProjectOwner,
     projects,
     setSelectedProject,
+    setSelectedProjectOwner,
     getUserProjects,
     createProject,
     addRepoToProject,

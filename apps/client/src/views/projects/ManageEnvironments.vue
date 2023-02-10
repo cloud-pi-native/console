@@ -9,8 +9,6 @@ const projectStore = useProjectStore()
 
 const selectedProject = computed(() => projectStore.selectedProject)
 const environmentNames = computed(() => environments.value.map(env => env.title))
-// TODO : isOwner ne passe pas au composant enfant
-const isOwner = selectedProject.value.usersProjects.role === 'owner'
 const environments = ref([])
 const selectedEnvironment = ref({})
 const isNewEnvironmentForm = ref(false)
@@ -46,27 +44,6 @@ const addEnvironment = async (environment) => {
   await projectStore.addEnvironmentToProject(environment)
 }
 
-const addPermission = async (envPermission) => {
-  // TODO : emit non reçu ?
-  console.log({ envPermission })
-  const { environmentId, permission } = envPermission
-  await projectStore.addPermission(environmentId, permission)
-}
-
-const updatePermission = async (envPermission) => {
-  // TODO : emit non reçu ?
-  console.log({ envPermission })
-  const { environmentId, permission } = envPermission
-  await projectStore.updatePermission(environmentId, permission)
-}
-
-const deletePermission = async (envPermission) => {
-  // TODO : emit non reçu ?
-  console.log({ envPermission })
-  const { environmentId, userId } = envPermission
-  await projectStore.deletePermission(environmentId, userId)
-}
-
 onMounted(() => {
   setEnvironmentsTiles(selectedProject.value)
 })
@@ -98,13 +75,8 @@ watch(selectedProject, () => {
     <EnvironmentForm
       :environment="{projectId: selectedProject.id}"
       :environment-names="environmentNames"
-      :project-members="selectedProject.users"
-      :is-owner="isOwner"
       @add-environment="(environment) => addEnvironment(environment)"
       @cancel="cancel()"
-      @add-permission="(envPermission) => addPermission(envPermission)"
-      @update-permission="(envPermission) => updatePermission(envPermission)"
-      @delete-permission="(envPermission) => deletePermission(envPermission)"
     />
   </div>
   <div
@@ -122,7 +94,6 @@ watch(selectedProject, () => {
     <EnvironmentForm
       v-if="Object.keys(selectedEnvironment).length !== 0 && selectedEnvironment.id === environment.id"
       :environment="selectedEnvironment"
-      :project-members="selectedProject.users"
       :is-editable="false"
     />
   </div>

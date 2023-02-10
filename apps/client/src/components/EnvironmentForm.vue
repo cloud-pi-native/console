@@ -13,17 +13,9 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
-  projectMembers: {
-    type: Array,
-    default: () => [],
-  },
   isEditable: {
     type: Boolean,
     default: true,
-  },
-  isOwner: {
-    type: Boolean,
-    default: false,
   },
 })
 
@@ -69,27 +61,6 @@ const addEnvironment = () => {
   }
 }
 
-const addPermission = (permission) => {
-  emit('addPermission', {
-    environmentId: localEnvironment.value.id,
-    permission,
-  })
-}
-
-const updatePermission = (permission) => {
-  emit('updatePermission', {
-    environmentId: localEnvironment.value.id,
-    permission,
-  })
-}
-
-const deletePermission = (userId) => {
-  emit('deletePermission', {
-    environmentId: localEnvironment.value.id,
-    userId,
-  })
-}
-
 const cancel = (event) => {
   emit('cancel', event)
 }
@@ -127,11 +98,6 @@ onMounted(() => {
   <PermissionForm
     v-if="localEnvironment.id"
     :environment="localEnvironment"
-    :project-members="props.projectMembers"
-    :is-owner="props.isOwner"
-    @add-permission="(permission) => addPermission(permission)"
-    @update-permission="(permission) => updatePermission(permission)"
-    @delete-permission="(userId) => deletePermission(userId)"
   />
   <div
     v-if="props.isEditable"

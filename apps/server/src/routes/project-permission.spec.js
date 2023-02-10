@@ -155,7 +155,7 @@ describe('Project routes', () => {
         .body(updatedPermission)
         .end()
 
-      expect(response.statusCode).toEqual(201)
+      expect(response.statusCode).toEqual(200)
       expect(response.json()).toBeDefined()
       expect(response.json()).toEqual(updatedPermission)
     })
@@ -174,7 +174,7 @@ describe('Project routes', () => {
       setOwnerId(randomDbSetup.owner.id)
 
       const response = await app.inject()
-        .delete(`${randomDbSetup.project.id}/environments/${randomDbSetup.environments[0].id}/permissions`)
+        .delete(`${randomDbSetup.project.id}/environments/${randomDbSetup.environments[0].id}/permissions/${removedPermission.userId}`)
         .body(removedPermission)
         .end()
 
