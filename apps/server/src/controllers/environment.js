@@ -93,7 +93,7 @@ export const initializeEnvironmentController = async (req, res) => {
       await setPermission({
         userId,
         environmentId: env.id,
-        level: 1,
+        level: 2,
       })
       await unlockProject(projectId)
 

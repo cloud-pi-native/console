@@ -33,7 +33,7 @@ const setPermissions = () => {
 
 const addPermission = async (userEmail) => {
   const userId = usersToLicence.value.find(user => user.email === userEmail).id
-  await projectStore.addPermission(environment.value.id, { userId, level: 1 })
+  await projectStore.addPermission(environment.value.id, { userId, level: 0 })
 }
 
 const updatePermission = async (userId, level) => {

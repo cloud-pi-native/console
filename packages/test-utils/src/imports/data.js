@@ -32,7 +32,7 @@ export const data = {
           permissions: [
             {
               userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
-              level: 1,
+              level: 2,
             },
           ],
         },
@@ -42,7 +42,7 @@ export const data = {
           permissions: [
             {
               userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
-              level: 1,
+              level: 2,
             },
             {
               userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6566',
@@ -80,7 +80,7 @@ export const data = {
         permissions: [
           {
             userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
-            level: 1,
+            level: 2,
           },
         ],
       }],
