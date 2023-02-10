@@ -12,7 +12,10 @@ import {
   getPermissionByUserIdAndEnvironmentId,
 } from '../models/queries/permission-queries.js'
 import { getProjectById, lockProject, unlockProject } from '../models/queries/project-queries.js'
-import { getRoleByUserIdAndProjectId } from '../models/queries/users-projects-queries.js'
+import {
+  getRoleByUserIdAndProjectId,
+  getSingleOwnerByProjectId,
+} from '../models/queries/users-projects-queries.js'
 import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
 
@@ -90,6 +93,14 @@ export const initializeEnvironmentController = async (req, res) => {
     // TODO : #133 : appel ansible + création groupe keycloak + ajout owner au groupe keycloak
     try {
       await updateEnvironmentCreated(env.id)
+      const ownerId = await getSingleOwnerByProjectId(projectId)
+      if (ownerId !== userId) {
+        await setPermission({
+          ownerId,
+          environmentId: env.id,
+          level: 2,
+        })
+      }
       await setPermission({
         userId,
         environmentId: env.id,
