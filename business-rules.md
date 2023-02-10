@@ -35,6 +35,9 @@ get('/projects')
 // Get user project
 get('/projects/:projectId')
 
+// Get project owner
+get('/projects/:projectId/owner')
+
 // Delete project
 delete('/projects/:projectId')
 ```
@@ -104,8 +107,7 @@ put('/projects/:projectId/environments/:environmentId/permissions')
 get('/projects/:projectId/environments/:environmentId/permissions')
 
 // Delete environment permission
-delete('/projects/:projectId/environments/:environmentId/permissions')
-  => body({ userId })
+delete('/projects/:projectId/environments/:environmentId/permissions/:userId')
 ```
 
 ---

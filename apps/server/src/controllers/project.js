@@ -11,7 +11,10 @@ import {
   archiveProject,
 } from '../models/queries/project-queries.js'
 import { getUserById } from '../models/queries/user-queries.js'
-import { getRoleByUserIdAndProjectId } from '../models/queries/users-projects-queries.js'
+import {
+  getRoleByUserIdAndProjectId,
+  getSingleOwnerByProjectId,
+} from '../models/queries/users-projects-queries.js'
 import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import { ansibleHost, ansiblePort } from '../utils/env.js'
@@ -57,6 +60,33 @@ export const getProjectByIdController = async (req, res) => {
       description: 'Project successfully retrived',
     })
     send200(res, project)
+  } catch (error) {
+    const message = `Cannot retrieve project: ${error.message}`
+    req.log.error({
+      ...getLogInfos({ projectId }),
+      description: message,
+      error: error.message,
+    })
+    send500(res, message)
+  }
+}
+
+export const getProjectOwnerController = async (req, res) => {
+  const projectId = req.params?.projectId
+  const userId = req.session?.user?.id
+
+  try {
+    const role = await getRoleByUserIdAndProjectId(userId, projectId)
+    if (!role) throw new Error('Requestor is not member of project')
+
+    const ownerId = await getSingleOwnerByProjectId(projectId)
+    const owner = await getUserById(ownerId)
+
+    req.log.info({
+      ...getLogInfos({ owner }),
+      description: 'Project owner successfully retrived',
+    })
+    send200(res, owner)
   } catch (error) {
     const message = `Cannot retrieve project: ${error.message}`
     req.log.error({

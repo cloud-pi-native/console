@@ -81,7 +81,7 @@ export const updatePermissionController = async (req, res) => {
       ...getLogInfos(),
       description: 'Permission successfully updated',
     })
-    await send201(res, permission)
+    await send200(res, permission)
   } catch (error) {
     const message = `Cannot update permissions ${error.message}`
     req.log.error({
@@ -96,27 +96,30 @@ export const updatePermissionController = async (req, res) => {
 // DELETE
 
 export const deletePermissionController = async (req, res) => {
-  const userId = req.session?.user?.id
+  const requestorId = req.session?.user?.id
   const environmentId = req.params?.environmentId
   const projectId = req.params?.projectId
-  const data = req.body
+  const userId = req.params?.userId
 
   try {
-    const role = await getRoleByUserIdAndProjectId(userId, projectId)
+    const role = await getRoleByUserIdAndProjectId(requestorId, projectId)
     if (!role) throw new Error('Requestor is not member of project')
 
-    const permission = await deletePermission(data.userId, environmentId)
+    const permission = await deletePermission(userId, environmentId)
 
     const message = 'Permission successfully deleted in database'
     req.log.info({
       ...getLogInfos({ permission }),
       description: message,
     })
+    await send200(res, permission)
   } catch (error) {
+    const message = `Cannot delete permissions ${error.message}`
     req.log.error({
       ...getLogInfos(),
       description: 'Cannot delete permission',
       error: error.message,
     })
+    send500(res, message)
   }
 }
