@@ -44,11 +44,17 @@ const addEnvironment = async (environment) => {
   await projectStore.addEnvironmentToProject(environment)
 }
 
+const deleteEnvironment = async (environment) => {
+  await projectStore.deleteEnvironment(environment.id)
+  setSelectedEnvironment({})
+}
+
 onMounted(() => {
   setEnvironmentsTiles(selectedProject.value)
 })
 
 watch(selectedProject, () => {
+  console.log('watch selectedProject')
   setEnvironmentsTiles(selectedProject.value)
 })
 </script>
@@ -95,6 +101,7 @@ watch(selectedProject, () => {
       v-if="Object.keys(selectedEnvironment).length !== 0 && selectedEnvironment.id === environment.id"
       :environment="selectedEnvironment"
       :is-editable="false"
+      @delete-environment="(environment) => deleteEnvironment(environment)"
     />
   </div>
 </template>

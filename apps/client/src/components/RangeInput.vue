@@ -66,7 +66,7 @@ defineEmits(['updateLevel'])
   </div>
 </template>
 
-<style>
+<style scoped>
 input[type="range"] {
   appearance: auto;
   width: 30rem;

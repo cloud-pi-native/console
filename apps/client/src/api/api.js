@@ -86,6 +86,11 @@ export const addEnvironment = async (projectId, data) => {
   return response.data
 }
 
+export const deleteEnvironment = async (projectId, environmentId) => {
+  const response = await apiClient.delete(`/projects/${projectId}/environments/${environmentId}`)
+  return response.data
+}
+
 // Permissions
 export const addPermission = async (projectId, environmentId, data) => {
   const response = await apiClient.post(`/projects/${projectId}/environments/${environmentId}/permissions`, data)
