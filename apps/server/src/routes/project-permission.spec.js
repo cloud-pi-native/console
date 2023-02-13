@@ -39,7 +39,8 @@ const getOwner = () => {
   return owner
 }
 
-// TODO : c'est ce test qui plante
+// TODO : ce test plante
+// Error: must have required property 'url',must have required property 'path',must match exactly one schema in oneOf
 describe.skip('Project routes', () => {
   let Role
   let Permission
