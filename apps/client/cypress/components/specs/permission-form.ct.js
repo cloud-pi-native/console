@@ -67,7 +67,7 @@ describe('PermissionForm.vue', () => {
       .within(() => {
         cy.get('label')
           .should('contain', `E-mail de l'utilisateur à accréditer sur l'environnement de ${props.environment?.name}`)
-        cy.get('datalist#permissionList')
+        cy.get('datalist#suggestionList')
           .find('option')
           .should('have.length', randomDbSetup.project.users.length - props.environment.permissions.length)
           .should('have.value', userToLicence.email)

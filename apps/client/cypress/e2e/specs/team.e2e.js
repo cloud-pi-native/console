@@ -1,6 +1,6 @@
 import { getProjectbyId, getUserById } from '../support/func.js'
 
-const project = getProjectbyId('011e7860-04d7-461f-912d-334c622d38b3')
+const project = getProjectbyId('83833faf-f654-40dd-bcd5-cf2e944fc702')
 const newMember = getUserById('cb8e5b4b-7b7b-40f5-935f-594f48ae6567')
 
 describe('Team view', () => {

@@ -3,8 +3,6 @@ import {
   getUserById,
 } from '../support/func.js'
 
-// TODO ce test passe en mode open, erreur en mode ci :
-// The Test Runner unexpectedly exited via a exit event with signal SIGSEGV
 describe('Manage permissions for environment', () => {
   const project = getProjectbyId('011e7860-04d7-461f-912d-334c622d38b3')
   const owner = getUserById('cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
@@ -31,7 +29,7 @@ describe('Manage permissions for environment', () => {
     cy.addPermission(project, environment, user0.email)
     cy.assertPermission(project, environment, [{ email: owner.email, isOwner: true }, { email: user0.email, isOwner: false }])
 
-    cy.getByDataTestid('permissionInput')
+    cy.getByDataTestid('permissionSuggestionInput')
       .should('not.exist')
 
     cy.addProjectMember(project, user1.email)
@@ -44,7 +42,7 @@ describe('Manage permissions for environment', () => {
 
     cy.get('[data-testid^="userPermissionLi-"]')
       .should('have.length', 2)
-      .getByDataTestid('permissionInput')
+      .getByDataTestid('permissionSuggestionInput').first()
       .should('be.visible')
       .clear()
 
@@ -60,7 +58,7 @@ describe('Manage permissions for environment', () => {
     cy.assertAddEnvironment(project, [environment])
     cy.assertPermission(project, environment, [{ email: owner.email, isOwner: true }, { email: user0.email, isOwner: false }, { email: user1.email, isOwner: false }])
 
-    cy.getByDataTestid('permissionInput')
+    cy.getByDataTestid('permissionSuggestionInput')
       .should('not.exist')
 
     // TODO : Interragir avec input[type=range]
@@ -82,7 +80,7 @@ describe('Manage permissions for environment', () => {
     cy.assertAddEnvironment(project, [environment])
     cy.assertPermission(project, environment, [{ email: owner.email, isOwner: true }, { email: user0.email, isOwner: false }, { email: user1.email, isOwner: false }])
 
-    cy.getByDataTestid('permissionInput')
+    cy.getByDataTestid('permissionSuggestionInput')
       .should('not.exist')
 
     cy.getByDataTestid(`userPermissionLi-${user1.email}`).within(() => {
@@ -94,7 +92,7 @@ describe('Manage permissions for environment', () => {
 
     cy.get('[data-testid^="userPermissionLi-"]')
       .should('have.length', 2)
-      .getByDataTestid('permissionInput')
+      .getByDataTestid('permissionSuggestionInput')
       .should('be.visible')
       .getByDataTestid(`userPermissionLi-${user1.email}`)
       .should('not.exist')

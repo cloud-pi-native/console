@@ -12,6 +12,7 @@ const props = defineProps({
   },
   levels: {
     type: Array,
+    required: true,
     default: () => [],
   },
   step: {

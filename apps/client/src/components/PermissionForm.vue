@@ -25,7 +25,7 @@ const usersToLicence = computed(() =>
     !permittedUsersId.value.includes(projectMember.id),
   ),
 )
-const datalist = computed(() => usersToLicence.value.map(user => user.email))
+const suggestions = computed(() => usersToLicence.value.map(user => user.email))
 
 const setPermissions = () => {
   permissions.value = environment.value.permissions
@@ -103,13 +103,10 @@ onMounted(() => {
     legend="Accréditer un membre du projet"
   >
     <SuggestionInput
-      list-id="permissionList"
-      data-testid="permissionInput"
+      data-testid="permissionSuggestionInput"
       :label="`E-mail de l'utilisateur à accréditer sur l'environnement de ${environment?.name}`"
-      label-visible
       placeholder="prenom.nom@interieur.gouv.fr"
-      type="text"
-      :datalist="datalist"
+      :suggestions="suggestions"
       @update-value="addPermission($event)"
     />
   </DsfrFieldset>

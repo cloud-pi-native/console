@@ -1,12 +1,8 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 
 const props = defineProps({
-  listId: {
-    type: String,
-    default: 'suggestionInput',
-  },
-  datalist: {
+  suggestions: {
     type: Array,
     required: true,
     default: () => [],
@@ -21,26 +17,29 @@ const localValue = ref(props.value)
 
 const emit = defineEmits(['updateValue'])
 
-watch(localValue, () => {
-  if (!props.datalist.includes(localValue.value)) return
+const updateValue = () => {
+  if (!props.suggestions.includes(localValue.value)) return
   emit('updateValue', localValue.value)
   localValue.value = ''
-})
+}
 
 </script>
 <template>
-  <DsfrInputGroup
-    v-bind="$attrs"
-    v-model="localValue"
-    :list="props.listId"
-  />
-  <datalist
-    :id="props.listId"
-  >
-    <option
-      v-for="data, i in props.datalist"
-      :key="i"
-      :value="data"
+  <div>
+    <DsfrInputGroup
+      v-bind="$attrs"
+      v-model="localValue"
+      list="suggestionList"
+      @blur="updateValue()"
     />
-  </datalist>
+    <datalist
+      id="suggestionList"
+    >
+      <option
+        v-for="suggestion, i in props.suggestions"
+        :key="`${i}-suggestion`"
+        :value="suggestion"
+      />
+    </datalist>
+  </div>
 </template>

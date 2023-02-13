@@ -7,9 +7,6 @@ import SuggestionInput from '@/components/SuggestionInput.vue'
 import { createRandomDbSetup } from 'test-utils'
 import { useProjectStore } from '@/stores/project.js'
 
-// TODO ce test passe en mode open, erreur en mode ci :
-// [469:0100/000000.054933:ERROR:connection.cc(46)] X connection error received.
-// The Test Runner unexpectedly exited via a exit event with signal SIGSEGV
 describe('SuggestionInput.vue', () => {
   it('Should mount a SuggestionInput', () => {
     const pinia = createPinia()
@@ -19,7 +16,7 @@ describe('SuggestionInput.vue', () => {
     projectStore.selectedProject = randomDbSetup
 
     const props = {
-      datalist: randomDbSetup.users.map(user => user.email),
+      suggestions: randomDbSetup.users.map(user => user.email),
     }
 
     const extensions = {
@@ -33,17 +30,16 @@ describe('SuggestionInput.vue', () => {
       },
     }
 
-    const email = props.datalist[0]
-
     cy.mount(SuggestionInput, { extensions, props })
 
-    cy.get('input[list="suggestionInput"]')
+    cy.get('input[list="suggestionList"]')
       .should('have.length', 1)
       .and('have.value', '')
-      .type(email.substring(0, 2))
-    cy.get('datalist#suggestionInput')
+      .clear()
+      .type(props.suggestions[0].slice(0, 2))
+    cy.get('datalist#suggestionList')
       .should('have.length', 1)
       .find('option')
-      .should('have.length', props.datalist.length)
+      .should('have.length', props.suggestions.length)
   })
 })

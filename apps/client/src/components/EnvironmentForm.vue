@@ -17,6 +17,10 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  isOwner: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const localEnvironment = ref(props.environment)
@@ -98,10 +102,15 @@ onMounted(() => {
     />
   </DsfrFieldset>
   <div v-if="localEnvironment.id">
-    <div class="fr-my-2w fr-py-4w fr-px-1w border-solid border-1 rounded-sm border-red-500">
+    <div
+      v-if="isOwner"
+      data-testid="deleteEnvironmentZone"
+      class="fr-my-2w fr-py-4w fr-px-1w border-solid border-1 rounded-sm border-red-500"
+    >
       <div class="flex justify-between items-center <md:flex-col">
         <DsfrButton
           v-show="!isDeletingEnvironment"
+          data-testid="showDeleteEnvironmentBtn"
           :label="`Supprimer l'environnement ${localEnvironment.name}`"
           secondary
           icon="ri-delete-bin-7-line"
@@ -120,6 +129,7 @@ onMounted(() => {
       >
         <DsfrInput
           v-model="environmentToDelete"
+          data-testid="deleteEnvironmentInput"
           :label="`Veuillez taper '${localEnvironment.name}' pour confirmer la suppression de l'environnement`"
           label-visible
           :placeholder="localEnvironment.name"
@@ -129,6 +139,7 @@ onMounted(() => {
           class="flex justify-between"
         >
           <DsfrButton
+            data-testid="deleteEnvironmentBtn"
             :label="`Supprimer définitivement l'environnement ${localEnvironment.name}`"
             :disabled="environmentToDelete !== localEnvironment.name"
             secondary

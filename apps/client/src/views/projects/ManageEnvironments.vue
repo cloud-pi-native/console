@@ -4,10 +4,14 @@ import DsoSelectedProject from './DsoSelectedProject.vue'
 import { useProjectStore } from '@/stores/project.js'
 import EnvironmentForm from '@/components/EnvironmentForm.vue'
 import { allEnv } from 'shared/src/utils/iterables.js'
+import { useUserStore } from '@/stores/user.js'
 
 const projectStore = useProjectStore()
+const userStore = useUserStore()
 
 const selectedProject = computed(() => projectStore.selectedProject)
+const owner = computed(() => projectStore.selectedProjectOwner)
+const isOwner = computed(() => owner.value.id === userStore.userProfile.id)
 const environmentNames = computed(() => environments.value.map(env => env.title))
 const environments = ref([])
 const selectedEnvironment = ref({})
@@ -54,7 +58,6 @@ onMounted(() => {
 })
 
 watch(selectedProject, () => {
-  console.log('watch selectedProject')
   setEnvironmentsTiles(selectedProject.value)
 })
 </script>
@@ -101,6 +104,7 @@ watch(selectedProject, () => {
       v-if="Object.keys(selectedEnvironment).length !== 0 && selectedEnvironment.id === environment.id"
       :environment="selectedEnvironment"
       :is-editable="false"
+      :is-owner="isOwner"
       @delete-environment="(environment) => deleteEnvironment(environment)"
     />
   </div>
