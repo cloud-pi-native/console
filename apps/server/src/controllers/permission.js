@@ -1,6 +1,7 @@
 import {
   getEnvironmentPermissions,
   setPermission,
+  updatePermission,
   deletePermission,
 } from '../models/queries/permission-queries.js'
 import {
@@ -26,7 +27,7 @@ export const getEnvironmentPermissionsController = async (req, res) => {
       ...getLogInfos(),
       description: 'Permissions successfully retreived',
     })
-    await send200(res, permissions)
+    return send200(res, permissions)
   } catch (error) {
     const message = `Cannot retrieve permissions: ${error.message}`
     req.log.error({
@@ -55,7 +56,7 @@ export const setPermissionController = async (req, res) => {
       ...getLogInfos(),
       description: 'Permission successfully created',
     })
-    await send201(res, permission)
+    return send201(res, permission)
   } catch (error) {
     const message = `Cannot create permissions: ${error.message}`
     req.log.error({
@@ -82,12 +83,12 @@ export const updatePermissionController = async (req, res) => {
     const ownerId = await getSingleOwnerByProjectId(projectId)
     if (data.userId === ownerId) throw new Error('La permission du owner du projet ne peut être modifiée')
 
-    const permission = await setPermission({ userId: data.userId, environmentId, level: data.level })
+    const permission = await updatePermission({ userId: data.userId, environmentId, level: data.level })
     req.log.info({
       ...getLogInfos(),
       description: 'Permission successfully updated',
     })
-    await send200(res, permission)
+    return send200(res, permission)
   } catch (error) {
     const message = `Cannot update permissions ${error.message}`
     req.log.error({
@@ -121,7 +122,7 @@ export const deletePermissionController = async (req, res) => {
       ...getLogInfos({ permission }),
       description: message,
     })
-    await send200(res, permission)
+    return send200(res, permission)
   } catch (error) {
     const message = `Cannot delete permissions ${error.message}`
     req.log.error({

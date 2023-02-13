@@ -5,7 +5,7 @@ import {
 
 // TODO ce test passe en mode open, erreur en mode ci :
 // The Test Runner unexpectedly exited via a exit event with signal SIGSEGV
-describe.skip('Manage permissions for environment', () => {
+describe('Manage permissions for environment', () => {
   const project = getProjectbyId('011e7860-04d7-461f-912d-334c622d38b3')
   const owner = getUserById('cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
   const user0 = getUserById('cb8e5b4b-7b7b-40f5-935f-594f48ae6566')

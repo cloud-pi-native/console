@@ -1,7 +1,5 @@
 import { sequelize } from '../../connect.js'
 import { getPermissionModel } from '../permission.js'
-import { getEnvironmentModel } from '../environment.js'
-import { getUserModel } from '../user.js'
 
 // GET
 export const getEnvironmentPermissions = async (environmentId) => {
@@ -28,13 +26,22 @@ export const getPermissionByUserIdAndEnvironmentId = async (userId, environmentI
 
 // CREATE
 export const setPermission = async ({ userId, environmentId, level }) => {
-  return getPermissionModel().upsert({ userId, environmentId, level },
-    {
-      includes: [
-        { model: getUserModel() },
-        { model: getEnvironmentModel() },
-      ],
-    })
+  return getPermissionModel().create({ userId, environmentId, level })
+}
+
+// UPDATE
+export const updatePermission = async ({ userId, environmentId, level }) => {
+  return getPermissionModel().update({
+    userId,
+    environmentId,
+    level,
+  },
+  {
+    where: {
+      userId,
+      environmentId,
+    },
+  })
 }
 
 // DELETE

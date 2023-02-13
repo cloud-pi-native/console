@@ -34,7 +34,7 @@ export const getUserProjectsController = async (req, res) => {
       description: 'Projects successfully retreived',
     })
     projects.map(project => replaceNestedKeys(project, lowercaseFirstLetter))
-    await send200(res, projects)
+    return send200(res, projects)
   } catch (error) {
     const message = `Cannot retrieve projects: ${error.message}`
     req.log.error({

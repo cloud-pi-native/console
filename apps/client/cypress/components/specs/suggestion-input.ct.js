@@ -10,7 +10,7 @@ import { useProjectStore } from '@/stores/project.js'
 // TODO ce test passe en mode open, erreur en mode ci :
 // [469:0100/000000.054933:ERROR:connection.cc(46)] X connection error received.
 // The Test Runner unexpectedly exited via a exit event with signal SIGSEGV
-describe.skip('SuggestionInput.vue', () => {
+describe('SuggestionInput.vue', () => {
   it('Should mount a SuggestionInput', () => {
     const pinia = createPinia()
 

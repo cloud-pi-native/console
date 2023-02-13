@@ -13,7 +13,7 @@ const router = async (app, _opt) => {
   await app.post('/:projectId/environments/:environmentId/permissions', setPermissionController)
 
   // Mettre à jour le level d'une permission
-  await app.put('/:projectId/environments/:environmentId/:permissionId', updatePermissionController)
+  await app.put('/:projectId/environments/:environmentId/permissions', updatePermissionController)
 
   // Supprimer une permission
   await app.delete('/:projectId/environments/:environmentId/permissions/:userId', deletePermissionController)
