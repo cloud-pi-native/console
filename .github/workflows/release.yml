@@ -5,10 +5,18 @@ on:
     branches:
       - main
 
+env:
+  REGISTRY: "ghcr.io"
+
 jobs:
   release:
     name: Create new release
     runs-on: ubuntu-latest
+    outputs:
+      release-created: ${{ steps.release.outputs.release_created }}
+      major-tag: ${{ steps.release.outputs.major }}
+      minor-tag: ${{ steps.release.outputs.minor }}
+      patch-tag: ${{ steps.release.outputs.patch }}
     steps:
       - name: Checks-out repository
         uses: actions/checkout@v3
@@ -21,3 +29,51 @@ jobs:
           default-branch: main
           pull-request-title-pattern: v${version}
           token: ${{ secrets.GITHUB_TOKEN }}
+
+  matrix:
+    name: Generate matrix for build & scan
+    if: ${{ needs.release.outputs.release-created }}
+    runs-on: ubuntu-latest
+    outputs:
+      build-matrix: ${{ steps.build-matrix.outputs.BUILD_MATRIX }}
+    steps:
+      - name: Generate matrix for build
+        id: build-matrix
+        env:
+          TAG: "${{ needs.release.outputs.major-tag }}.${{ needs.release.outputs.minor-tag }}.${{ needs.release.outputs.patch-tag }}"
+        run: |
+          echo 'BUILD_MATRIX<<EOF' >> $GITHUB_OUTPUT
+          ./ci/scripts/build-matrix.sh -f ./docker/docker-compose.prod.yml -c -p linux/amd64,linux/arm64 -r ghcr.io -t ${{ env.TAG }} | jq '[.[] | select(.build != false)]' >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
+
+  build:
+    name: Build application
+    runs-on: ubuntu-latest
+    needs:
+      - matrix
+    strategy:
+      matrix:
+        images: ${{ fromJSON(needs.matrix.outputs.build-matrix) }}
+    steps:
+      - name: Checks-out repository
+        uses: actions/checkout@v3
+      - name: Set up Docker buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Set up QEMU (for multi platform build)
+        uses: docker/setup-qemu-action@v2
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          logout: true
+      - name: Build docker image
+        uses: docker/build-push-action@v3
+        with:
+          context: ${{ matrix.images.build.context }}
+          file: ${{ matrix.images.build.dockerfile }}
+          tags: ${{ matrix.images.build.tags }}
+          target: ${{ matrix.images.build.target }}
+          platforms: ${{ matrix.images.build.platforms }}
+          push: true

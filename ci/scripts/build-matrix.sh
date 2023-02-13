@@ -19,7 +19,7 @@ DOCKER_VERSION="$(docker --version)"
 # REGISTRY="docker.io"
 TAGS="latest"
 COMMIT_SHA="$(git rev-parse --short HEAD)"
-PLATFORMS="linux/`uname -m`" # "linux/amd64,linux/arm64"
+PLATFORMS="linux/amd64"
 CSV=false
 
 unset MAJOR_VERSION
@@ -30,18 +30,18 @@ unset PATCH_VERSION
 TEXT_HELPER="\nThis script aims to build matrix for CI/CD. It will parse the given docker-compose file and return a json object with images infos (name, tag, context, dockerfile and if it need to be build)
 Following flags are available:
 
-  -c    Use csv list formated output for tags instead of json array
+  -c    Use csv list formated output for tags instead of json array.
 
-  -f    Docker-compose file used to build matrix
+  -f    Docker-compose file used to build matrix.
 
-  -p    Target platforms used to build matrix (List/CSV format. ex: 'linux/amd64,linux/arm64')
-        Default is '$PLATFORMS'
+  -p    Target platforms used to build matrix (List/CSV format. ex: 'linux/amd64,linux/arm64').
+        Default is '$PLATFORMS'.
 
-  -r    Registry host used to build matrix
-        Default is '$REGISTRY'
+  -r    Registry host used to build matrix.
+        Default is '$REGISTRY'.
 
-  -t    Docker tag used to build matrix
-        Default is '$TAGS'
+  -t    Docker tag used to build matrix.
+        Default is '$TAGS'.
 
   -h    Print script help.\n\n"
 
@@ -94,7 +94,7 @@ MATRIX=$(cat "$COMPOSE_FILE" \
     --arg major "$MAJOR_VERSION" \
     --arg minor "$MINOR_VERSION" \
     '.services | to_entries | map({
-      image: (.value.image),
+      image: (.value.image | split(":")[0]),
       name: (.value.image | split(":")[0] | split("/")[-1]),
       build: (
         if .value.build then {

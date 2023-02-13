@@ -80,14 +80,14 @@ checkComposePlugin () {
 
 # Settings
 printf "\nScript settings:
-  -> node version: $NODE_VERSION
-  -> npm version: $NPM_VERSION
-  -> docker version: $DOCKER_VERSION
-  -> docker-compose version: $DOCKER_COMPOSE_VERSION
-  -> env file: $ENV_FILE
-  -> run unit tests: $RUN_UNIT_TESTS
-  -> run component tests: $RUN_COMPONENT_TESTS
-  -> run e2e tests: $RUN_E2E_TESTS\n"
+  -> node version: ${NODE_VERSION}
+  -> npm version: ${NPM_VERSION}
+  -> docker version: ${DOCKER_VERSION}
+  -> docker-compose version: ${DOCKER_COMPOSE_VERSION}
+  -> env file: ${ENV_FILE}
+  -> run unit tests: ${RUN_UNIT_TESTS}
+  -> run component tests: ${RUN_COMPONENT_TESTS}
+  -> run e2e tests: ${RUN_E2E_TESTS}\n"
 
 
 # Run unit tests
@@ -95,6 +95,7 @@ if [ "$RUN_UNIT_TESTS" == "true" ]; then
   cd "$PROJECT_DIR"
   npm run test
 fi
+
 
 # Run component tests
 if [ "$RUN_COMPONENT_TESTS" == "true" ]; then
@@ -104,7 +105,7 @@ if [ "$RUN_COMPONENT_TESTS" == "true" ]; then
   printf "\n${red}${i}.${no_color} Launch component tests\n"
   i=$(($i + 1))
 
-  cd "$PROJECT_DIR"
+  cd "$PROJECT_DIR/docker"
   docker compose \
     --file "$PROJECT_DIR/docker/docker-compose.ct.yml" \
     --env-file "$ENV_FILE" \
@@ -130,7 +131,7 @@ if [ "$RUN_E2E_TESTS" == "true" ]; then
   printf "\n${red}${i}.${no_color} Launch e2e tests\n"
   i=$(($i + 1))
 
-  cd "$PROJECT_DIR"
+  cd "$PROJECT_DIR/docker"
   docker compose \
     --file "$PROJECT_DIR/docker/docker-compose.ci.yml" \
     --env-file "$ENV_FILE" \
