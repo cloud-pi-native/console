@@ -96,10 +96,6 @@ if [ "$RUN_UNIT_TESTS" == "true" ]; then
   npm run test
 fi
 
-# if [ "$RUN_COMPONENT_TESTS" == "true" ] || [ "$RUN_E2E_TESTS" == "true" ]; then
-#   docker buildx inspect cross-platform > /dev/null || docker buildx create --use --name cross-platform --driver=docker-container
-# fi
-
 
 # Run component tests
 if [ "$RUN_COMPONENT_TESTS" == "true" ]; then
@@ -110,15 +106,6 @@ if [ "$RUN_COMPONENT_TESTS" == "true" ]; then
   i=$(($i + 1))
 
   cd "$PROJECT_DIR/docker"
-
-  # printf "\n  ${red}->${no_color} Build app:\n\n"
-  # docker buildx bake \
-  #   --file "$PROJECT_DIR/docker/docker-compose.ct.yml" \
-  #   --set *.cache-to="type=gha,mode=max" \
-  #   --set *.cache-from="type=gha" \
-  #   --load
-
-  # printf "\n  ${red}->${no_color} Launch app:\n\n"
   docker compose \
     --file "$PROJECT_DIR/docker/docker-compose.ct.yml" \
     --env-file "$ENV_FILE" \
@@ -145,15 +132,6 @@ if [ "$RUN_E2E_TESTS" == "true" ]; then
   i=$(($i + 1))
 
   cd "$PROJECT_DIR/docker"
-
-  # printf "\n  ${red}->${no_color} Build app:\n\n"
-  # docker buildx bake \
-  #   --file "$PROJECT_DIR/docker/docker-compose.ci.yml" \
-  #   --set *.cache-to="type=gha,mode=max" \
-  #   --set *.cache-from="type=gha" \
-  #   --load
-
-  # printf "\n  ${red}->${no_color} Launch app:\n\n"
   docker compose \
     --file "$PROJECT_DIR/docker/docker-compose.ci.yml" \
     --env-file "$ENV_FILE" \
