@@ -106,6 +106,7 @@ Cypress.Commands.add('addRepos', (project, repos) => {
 })
 
 Cypress.Commands.add('assertAddRepo', (project, repos) => {
+  cy.log(repos)
   cy.goToProjects()
     .getByDataTestid(`projectTile-${project.name}`).click()
     .getByDataTestid('menuRepos').click()
@@ -113,6 +114,26 @@ Cypress.Commands.add('assertAddRepo', (project, repos) => {
   repos.forEach((repo) => {
     cy.getByDataTestid(`repoTile-${repo.internalRepoName}`).should('exist')
   })
+})
+
+Cypress.Commands.add('deleteRepo', (project, repo) => {
+  cy.goToProjects()
+    .getByDataTestid(`projectTile-${project.name}`).click()
+    .getByDataTestid('menuRepos').click()
+
+  cy.getByDataTestid(`repoTile-${repo.internalRepoName}`).click()
+    .getByDataTestid('deleteRepoInput').should('not.exist')
+    .getByDataTestid('deleteRepoZone').should('be.visible')
+    .getByDataTestid('showDeleteRepoBtn').click()
+    .getByDataTestid('deleteRepoBtn')
+    .should('be.disabled')
+    .getByDataTestid('deleteRepoInput').should('be.visible')
+    .type(repo.internalRepoName)
+    .getByDataTestid('deleteRepoBtn')
+    .should('be.enabled')
+    .click()
+    .getByDataTestid(`repoTile-${repo.internalRepoName}`)
+    .should('not.exist')
 })
 
 Cypress.Commands.add('addEnvironment', (project, environments) => {

@@ -121,4 +121,33 @@ describe('Add repos into project', () => {
     cy.getByDataTestid('addRepoBtn').click()
     cy.assertAddRepo(project, [repo])
   })
+
+  it('Should delete a repo', () => {
+    const repos = [
+      {
+        internalRepoName: 'repo01',
+      },
+      {
+        internalRepoName: 'repo02',
+      },
+      {
+        internalRepoName: 'repo03',
+      },
+      {
+        internalRepoName: 'repo04',
+      },
+      {
+        internalRepoName: 'repo05',
+      },
+      {
+        internalRepoName: 'repo06',
+      },
+      {
+        internalRepoName: 'repo07',
+      },
+    ]
+
+    cy.deleteRepo(project, repos[0])
+    cy.assertAddRepo(project, repos.slice(1))
+  })
 })

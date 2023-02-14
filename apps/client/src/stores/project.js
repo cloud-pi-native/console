@@ -72,6 +72,11 @@ export const useProjectStore = defineStore('project', () => {
     await getUserProjects()
   }
 
+  const deleteRepo = async (repoId) => {
+    await api.deleteRepo(selectedProject.value.id, repoId)
+    await getUserProjects()
+  }
+
   return {
     selectedProject,
     selectedProjectOwner,
@@ -88,5 +93,6 @@ export const useProjectStore = defineStore('project', () => {
     removeUserFromProject,
     deleteEnvironment,
     deletePermission,
+    deleteRepo,
   }
 })
