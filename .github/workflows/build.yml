@@ -1,6 +1,9 @@
 name: Build and push last version
 
 on:
+  release:
+    types:
+      - created
   workflow_dispatch:
 
 env:
