@@ -7,13 +7,13 @@ export const getOrganizationModel = () => Organization ?? (Organization = sequel
     type: DataTypes.UUID,
     allowNull: false,
     primaryKey: true,
+    unique: true,
     defaultValue: DataTypes.UUIDV4,
   },
   name: {
     type: DataTypes.STRING(50),
     allowNull: false,
     unique: true,
-    primaryKey: true,
   },
   label: {
     type: DataTypes.STRING(50),
