@@ -1,4 +1,4 @@
-name: Build and push last version
+name: Build and push image with branch sha
 
 on:
   workflow_dispatch:
@@ -6,7 +6,7 @@ on:
 env:
   REGISTRY: "ghcr.io"
   NAMESPACE: "${{ github.repository }}"
-  PLATFORM: "linux/amd64,linux/arm64"
+  PLATFORM: "linux/amd64"
   TAG: "${{ github.sha }}"
 
 jobs:
