@@ -91,8 +91,9 @@ watch(selectedProject, () => {
   />
 
   <!-- TODO : #66 suggest sur utilisateurs keycloak, ajout dans notre db si pas existant -->
+  <!-- TODO : enlever v-if lorsque les playbooks seront intégrés -->
   <div
-    v-if="true"
+    v-if="false"
   >
     <DsfrInput
       v-model="newUser.email"

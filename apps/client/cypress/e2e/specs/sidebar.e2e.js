@@ -35,9 +35,10 @@ describe('Sidebar', () => {
       .getByDataTestid('menuRepos').click()
       .getByDataTestid('menuProjectsList').should('be.visible')
       .url().should('contain', `/projects/${project.id}/repositories`)
-      .getByDataTestid('menuEnvironments').click()
-      .getByDataTestid('menuProjectsList').should('be.visible')
-      .url().should('contain', `/projects/${project.id}/environments`)
+      // TODO : deskip lorsque les playbooks seront intégrés
+      // .getByDataTestid('menuEnvironments').click()
+      // .getByDataTestid('menuProjectsList').should('be.visible')
+      // .url().should('contain', `/projects/${project.id}/environments`)
       .getByDataTestid('menuDoc').click()
       .getByDataTestid('menuProjectsList').should('not.be.visible')
       .url().should('contain', '/doc')

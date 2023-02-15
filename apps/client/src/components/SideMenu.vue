@@ -117,7 +117,10 @@ watch(routePath, (routePath) => {
                 Dépôts synchronisés
               </DsfrSideMenuLink>
             </DsfrSideMenuListItem>
-            <DsfrSideMenuListItem>
+            <!-- TODO : enlever v-if lorsque les playbooks seront intégrés -->
+            <DsfrSideMenuListItem
+              v-if="false"
+            >
               <DsfrSideMenuLink
                 data-testid="menuEnvironments"
                 :active="routeName === 'Environments'"
