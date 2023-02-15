@@ -87,7 +87,7 @@ export const updateEnvironmentDeleting = async (id) => {
 }
 
 export const deleteEnvironment = async (id) => {
-  await sequelize.destroy({
+  await getEnvironmentModel().destroy({
     where: {
       id,
     },

@@ -19,6 +19,7 @@ describe('RepoForm.vue', () => {
         internalRepoName: 'candilib',
         externalRepoUrl: 'https://github.com/LAB-MI/candilibV2.git',
         isPrivate: true,
+        isInfra: false,
         externalUserName: 'clairenlet',
         externalToken: 'eddddsqsq',
       },
@@ -37,9 +38,9 @@ describe('RepoForm.vue', () => {
       },
     }
 
-    const project = createRandomDbSetup({})
+    const randomDbSetup = createRandomDbSetup({})
     const projectStore = useProjectStore(pinia)
-    projectStore.selectedProject = project
+    projectStore.selectedProject = randomDbSetup
 
     cy.mount(RepoForm, { extensions, props })
 
@@ -51,6 +52,7 @@ describe('RepoForm.vue', () => {
       .getByDataTestid('privateRepoCbx').find('input[type="checkbox"]').should('be.checked')
       .getByDataTestid('externalUserNameInput').should('have.value', props.repo.externalUserName)
       .getByDataTestid('externalTokenInput').should('have.value', props.repo.externalToken)
+      .getByDataTestid('infraRepoCbx').find('input[type="checkbox"]').should('not.be.checked')
       .getByDataTestid('addRepoBtn').should('be.enabled')
       .getByDataTestid('cancelRepoBtn').should('be.enabled')
       .getByDataTestid('privateRepoCbx').find('input[type="checkbox"]').uncheck({ force: true })

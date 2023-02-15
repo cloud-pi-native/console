@@ -6,5 +6,6 @@
     "base": {
       "ref": "main"
     }
-  }
+  },
+  "act": true
 }

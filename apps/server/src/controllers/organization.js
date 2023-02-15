@@ -13,7 +13,7 @@ export const getOrganizationsController = async (req, res) => {
       ...getLogInfos(),
       description: 'Organizations successfully retreived',
     })
-    await send200(res, organizations)
+    return send200(res, organizations)
   } catch (error) {
     const message = 'Cannot retrieve organizations'
     req.log.error({
