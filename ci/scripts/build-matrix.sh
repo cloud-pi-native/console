@@ -21,6 +21,7 @@ TAGS="latest"
 COMMIT_SHA="$(git rev-parse --short HEAD)"
 PLATFORMS="linux/amd64"
 CSV=false
+RECURSIVE=false
 
 unset MAJOR_VERSION
 unset MINOR_VERSION
@@ -50,13 +51,17 @@ print_help() {
 }
 
 # Parse options
-while getopts hcf:p:r:t: flag
+while getopts hacf:n:p:r:t: flag
 do
   case "${flag}" in
+    a)
+      RECURSIVE=true;;
     c)
       CSV=true;;
     f)
       COMPOSE_FILE=${OPTARG};;
+    n)
+      NAMESPACE=${OPTARG};;
     p)
       PLATFORMS=${OPTARG};;
     r)
@@ -82,6 +87,10 @@ if [ "$REGISTRY" ] && [[ "$REGISTRY" != */ ]]; then
   REGISTRY="$REGISTRY/"
 fi
 
+if [ "$NAMESPACE" ] && [[ "$NAMESPACE" != */ ]]; then
+  NAMESPACE="$NAMESPACE/"
+fi
+
 
 # Build core matrix
 MATRIX=$(cat "$COMPOSE_FILE" \
@@ -91,8 +100,6 @@ MATRIX=$(cat "$COMPOSE_FILE" \
     --arg p "$PLATFORMS" \
     --arg r "$REGISTRY" \
     --arg t "$TAGS" \
-    --arg major "$MAJOR_VERSION" \
-    --arg minor "$MINOR_VERSION" \
     '.services | to_entries | map({
       image: (.value.image | split(":")[0]),
       name: (.value.image | split(":")[0] | split("/")[-1]),
@@ -111,7 +118,7 @@ MATRIX=$(cat "$COMPOSE_FILE" \
 
 # Add tags in matrix
 for t in $(echo $TAGS | tr "," "\n"); do
-  if [[ "$t" == *"."*"."* ]]; then
+  if [[ "$t" == *"."*"."* ]] && [[ "$RECURSIVE" == "true" ]]; then
     MAJOR_VERSION="$(echo $t | cut -d "." -f 1)"
     MINOR_VERSION="$(echo $t | cut -d "." -f 2)"
     PATCH_VERSION="$(echo $t | cut -d "." -f 3)"
@@ -119,13 +126,14 @@ for t in $(echo $TAGS | tr "," "\n"); do
     MATRIX=$(echo "$MATRIX" \
       | jq \
         --arg r "$REGISTRY" \
+        --arg n "$NAMESPACE" \
         --arg major "$MAJOR_VERSION" \
         --arg minor "$MINOR_VERSION" \
         'map(. |
           if .build != false then 
             .build.tags += [
-              ($r + .image + ":" + $major),
-              ($r + .image + ":" + $major + "." + $minor)
+              ($r + $n + (.image | split("/")[-1]) + ":" + $major),
+              ($r + $n + (.image | split("/")[-1]) + ":" + $major + "." + $minor)
             ]
           else
             .
@@ -137,10 +145,11 @@ for t in $(echo $TAGS | tr "," "\n"); do
     | jq \
       --arg t "$t" \
       --arg r "$REGISTRY" \
+      --arg n "$NAMESPACE" \
       'map(. |
         if .build != false then
           .build.tags += [
-            ($r + .image + ":" + $t)
+            ($r + $n + (.image | split("/")[-1]) + ":" + $t)
           ]
         else
           .
