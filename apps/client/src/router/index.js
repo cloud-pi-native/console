@@ -4,6 +4,7 @@ import { useProjectStore } from '@/stores/project.js'
 
 import DsoHome from '@/views/DsoHome.vue'
 import CreateProject from '@/views/CreateProject.vue'
+import ManageEnvironments from '@/views/projects/ManageEnvironments.vue'
 import DsoProjects from '@/views/projects/DsoProjects.vue'
 import DsoDashboard from '@/views/projects/DsoDashboard.vue'
 import DsoServices from '@/views/projects/DsoServices.vue'
@@ -71,6 +72,11 @@ const routes = [
     component: DsoRepos,
   },
   {
+    path: '/projects/:id/environments',
+    name: 'Environments',
+    component: ManageEnvironments,
+  },
+  {
     path: '/doc',
     name: 'Doc',
     component: DsoDoc,
@@ -112,7 +118,7 @@ router.beforeEach(async (to, _from, next) => {
   const projectStore = useProjectStore()
   const projectsPath = '/projects/'
 
-  if (to.path.match('^/projects/') && projectStore.selectedProject === undefined) {
+  if (to.path.match('^/projects/[^create-project]') && projectStore.selectedProject === undefined) {
     await projectStore.getUserProjects()
 
     const idStart = projectsPath.length
