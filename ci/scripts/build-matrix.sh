@@ -31,6 +31,8 @@ unset PATCH_VERSION
 TEXT_HELPER="\nThis script aims to build matrix for CI/CD. It will parse the given docker-compose file and return a json object with images infos (name, tag, context, dockerfile and if it need to be build)
 Following flags are available:
 
+  -a    Create recursive tags, if it match 'x.x.x' it will create 'x.x' and 'x'.
+
   -c    Use csv list formated output for tags instead of json array.
 
   -f    Docker-compose file used to build matrix.
