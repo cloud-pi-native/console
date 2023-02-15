@@ -2,12 +2,14 @@
 import { computed, onMounted, ref } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
-import { projectSchema, envList } from 'shared/src/schemas/project.js'
+import { useOrganizationStore } from '@/stores/organization.js'
+import { projectSchema } from 'shared/src/schemas/project.js'
 import { schemaValidator, isValid, instanciateSchema } from 'shared/src/utils/schemas.js'
 import router from '@/router/index.js'
 
 const projectStore = useProjectStore()
 const userStore = useUserStore()
+const organizationStore = useOrganizationStore()
 
 const owner = computed(() => userStore.userProfile)
 
@@ -15,39 +17,22 @@ const owner = computed(() => userStore.userProfile)
  * Defines a project
  *
  * @typedef {object} project
- * @property {string} orgName
- * @property {string} projectName
+ * @property {string} organization
+ * @property {string} name
  */
 const project = ref({
-  orgName: undefined,
-  projectName: undefined,
-  envList,
+  organization: undefined,
+  name: '',
 })
 
-const envOptions = ref([])
-
-const orgOptions = ref([
-  {
-    text: 'Ministère de l\'Intérieur',
-    value: 'ministere-interieur',
-  },
-  {
-    text: 'Ministère de la Justice',
-    value: 'ministere-justice',
-  },
-  {
-    text: 'Direction Interministérielle du Numérique',
-    value: 'dinum',
-  },
-])
+const orgOptions = ref([])
 
 const updatedValues = ref({})
 
 const createProject = async () => {
   updatedValues.value = instanciateSchema({ schema: projectSchema }, true)
-  const keysToValidate = ['orgName', 'projectName']
+  const keysToValidate = ['organization', 'name']
   const errorSchema = schemaValidator(projectSchema, project.value, keysToValidate)
-
   if (Object.keys(errorSchema).length === 0) {
     await projectStore.createProject(project.value)
     router.push('/projects')
@@ -55,24 +40,23 @@ const createProject = async () => {
 }
 
 const updateProject = (key, value) => {
-  project.value[key] = value
+  if (key === 'organization') {
+    const org = orgOptions.value.find(org => org.value === value)
+    project.value[key] = org.id
+  } else {
+    project.value[key] = value
+  }
   updatedValues.value[key] = true
 }
 
-const setEnvOptions = () => {
-  envList.forEach(opt => {
-    envOptions.value.push({
-      label: opt,
-      id: opt,
-      name: opt,
-    })
-  })
-}
-
-onMounted(() => {
-  setEnvOptions()
+onMounted(async () => {
+  await organizationStore.setOrganizations()
+  orgOptions.value = organizationStore.organizations.map(org => ({
+    text: org.label,
+    value: org.name,
+    id: org.id,
+  }))
 })
-
 </script>
 
 <template>
@@ -92,44 +76,35 @@ onMounted(() => {
       class="fr-mb-2w"
     />
     <DsfrSelect
-      v-model="project.orgName"
-      data-testid="orgNameSelect"
+      v-model="project.organization"
+      data-testid="organizationSelect"
       required
       label="Nom de l'organisation"
       label-visible
       :options="orgOptions"
-      @update:model-value="updateProject('orgName', $event)"
+      @update:model-value="updateProject('organization', $event)"
     />
-    <DsfrInput
-      v-model="project.projectName"
-      data-testid="projectNameInput"
+    <DsfrInputGroup
+      v-model="project.name"
+      data-testid="nameInput"
       type="text"
       required="required"
-      :is-valid="!!updatedValues.projectName && isValid(projectSchema, project, 'projectName')"
-      :is-invalid="!!updatedValues.projectName && !isValid(projectSchema, project, 'projectName')"
+      :error-message="!!updatedValues.name && !isValid(projectSchema, project, 'name') ? 'Le nom du projet doit être en minuscule et ne doit pas contenir d\'espace.': undefined"
       label="Nom du projet"
       label-visible
-      hint="Nom du projet dans l'offre Cloud PI Native. Ne doit pas contenir d'espace"
-      placeholder="Candilib"
+      hint="Nom du projet dans l'offre Cloud PI Native. Ne doit pas contenir d'espace, doit être unique pour l'organisation, doit être en minuscules."
+      placeholder="candilib"
       class="fr-mb-2w"
-      @update:model-value="updateProject('projectName', $event)"
-    />
-    <DsfrCheckboxSet
-      v-model="project.envList"
-      data-testid="envListSelect"
-      legend="Environnements choisis (par défaut, tous les environnements sont sélectionnés)"
-      required="required"
-      :error-message="!isValid(projectSchema, project, 'envList') ? 'Veuillez sélectionner au moins un environnement.' : ''"
-      :options="envOptions"
-      @update:model-value="project.envList = $event"
+      @update:model-value="updateProject('name', $event)"
     />
   </DsfrFieldset>
   <DsfrButton
     label="Commander mon espace projet"
     data-testid="createProjectBtn"
     primary
+    class="fr-mt-2w"
+    :disabled="!project.organization || !isValid(projectSchema, project, 'name')"
     icon="ri-send-plane-line"
-    class="fr-ml-2w"
     @click="createProject()"
   />
 </template>

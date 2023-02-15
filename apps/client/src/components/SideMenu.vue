@@ -33,7 +33,6 @@ watch(routePath, (routePath) => {
 </script>
 
 <template>
-  <!-- TODO : voir https://discord.com/channels/690194719011242153/797040508508700692/1025424011133472838 -->
   <DsfrSideMenu
     id="mainMenu"
     data-testid="mainMenu"
@@ -113,9 +112,21 @@ watch(routePath, (routePath) => {
               <DsfrSideMenuLink
                 data-testid="menuRepos"
                 :active="routeName === 'Repos'"
-                :to="`/projects/${selectedProject?.id}/repos`"
+                :to="`/projects/${selectedProject?.id}/repositories`"
               >
                 Dépôts synchronisés
+              </DsfrSideMenuLink>
+            </DsfrSideMenuListItem>
+            <!-- TODO : enlever v-if lorsque les playbooks seront intégrés -->
+            <DsfrSideMenuListItem
+              v-if="false"
+            >
+              <DsfrSideMenuLink
+                data-testid="menuEnvironments"
+                :active="routeName === 'Environments'"
+                :to="`/projects/${selectedProject?.id}/environments`"
+              >
+                Environments du projet
               </DsfrSideMenuLink>
             </DsfrSideMenuListItem>
           </div>
@@ -133,14 +144,3 @@ watch(routePath, (routePath) => {
     </DsfrSideMenuList>
   </DsfrSideMenu>
 </template>
-
-<!-- TODO : voir https://discord.com/channels/690194719011242153/797040508508700692/1025426773380431975 -->
-<style scoped>
-.fr-sidemenu__btn[aria-current="false"] {
-  color: var(--text-action-high-grey)
-}
-
-.fr-sidemenu__btn[aria-current="false"]::before {
-  display: none;
-}
-</style>

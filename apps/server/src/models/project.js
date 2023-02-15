@@ -4,16 +4,34 @@ import { sequelize } from '../connect.js'
 let Project
 export const getProjectModel = () => Project ?? (Project = sequelize.define('Project', {
   id: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.UUID,
     allowNull: false,
-    autoIncrement: true,
     unique: true,
     primaryKey: true,
+    defaultValue: DataTypes.UUIDV4,
   },
-  data: {
-    type: DataTypes.JSONB,
+  name: {
+    type: DataTypes.STRING(50),
     allowNull: false,
+  },
+  organization: {
+    type: DataTypes.UUID,
+    allowNull: false,
+  },
+  status: {
+    type: DataTypes.STRING(50),
+    allowNull: false,
+  },
+  locked: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
   },
 }, {
   tableName: 'Projects',
+  uniqueKeys: {
+    unique_fields: {
+      fields: ['organization', 'name'],
+    },
+  },
 }))

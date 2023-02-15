@@ -1,10 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useUserStore } from '@/stores/user.js'
 import { useProjectStore } from '@/stores/project.js'
-import { idInUrl } from '@/utils/regex.js'
 
 import DsoHome from '@/views/DsoHome.vue'
 import CreateProject from '@/views/CreateProject.vue'
+import ManageEnvironments from '@/views/projects/ManageEnvironments.vue'
 import DsoProjects from '@/views/projects/DsoProjects.vue'
 import DsoDashboard from '@/views/projects/DsoDashboard.vue'
 import DsoServices from '@/views/projects/DsoServices.vue'
@@ -67,9 +67,14 @@ const routes = [
     component: DsoTeam,
   },
   {
-    path: '/projects/:id/repos',
+    path: '/projects/:id/repositories',
     name: 'Repos',
     component: DsoRepos,
+  },
+  {
+    path: '/projects/:id/environments',
+    name: 'Environments',
+    component: ManageEnvironments,
   },
   {
     path: '/doc',
@@ -111,13 +116,13 @@ router.beforeEach(async (to, _from, next) => {
  */
 router.beforeEach(async (to, _from, next) => {
   const projectStore = useProjectStore()
+  const projectsPath = '/projects/'
 
-  if (to.path.match('^/projects/') && projectStore.selectedProject === undefined) {
+  if (to.path.match('^/projects/[^create-project]') && projectStore.selectedProject === undefined) {
     await projectStore.getUserProjects()
 
-    const idStart = to.path.search(idInUrl)
-    const projectId = to.path.slice(idStart + 1, idStart + 22)
-
+    const idStart = projectsPath.length
+    const projectId = to.path.slice(idStart, idStart + 36)
     await projectStore.setSelectedProject(projectId)
   }
   next()

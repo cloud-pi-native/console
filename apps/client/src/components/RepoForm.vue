@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { repoSchema, schemaValidator, isValid, instanciateSchema } from 'shared'
+import CIForm from './CIForm.vue'
 
 const props = defineProps({
   repo: {
@@ -11,17 +12,23 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  isOwner: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const localRepo = ref(props.repo)
 const updatedValues = ref({})
+const repoToDelete = ref('')
+const isDeletingRepo = ref(false)
 
 const updateRepo = (key, value) => {
   localRepo.value[key] = value
   updatedValues.value[key] = true
 }
 
-const emit = defineEmits(['add', 'cancel'])
+const emit = defineEmits(['add', 'delete', 'cancel'])
 
 const addRepo = () => {
   updatedValues.value = instanciateSchema({ schema: repoSchema }, true)
@@ -39,6 +46,58 @@ const cancel = (event) => {
 </script>
 
 <template>
+  <div
+    v-if="isOwner"
+    data-testid="deleteRepoZone"
+    class="fr-my-2w fr-py-4w fr-px-1w border-solid border-1 rounded-sm border-red-500"
+  >
+    <div class="flex justify-between items-center <md:flex-col">
+      <DsfrButton
+        v-show="!isDeletingRepo"
+        data-testid="showDeleteRepoBtn"
+        :label="`Retirer le dépôt ${localRepo.internalRepoName} du projet`"
+        secondary
+        icon="ri-delete-bin-7-line"
+        @click="isDeletingRepo = true"
+      />
+      <DsfrAlert
+        class="<md:mt-2"
+        description="Le retrait d'un dépôt est irréversible."
+        type="warning"
+        small
+      />
+    </div>
+    <div
+      v-if="isDeletingRepo"
+      class="fr-mt-4w"
+    >
+      <DsfrInput
+        v-model="repoToDelete"
+        data-testid="deleteRepoInput"
+        :label="`Veuillez taper '${localRepo.internalRepoName}' pour confirmer la suppression du dépôt`"
+        label-visible
+        :placeholder="localRepo.internalRepoName"
+        class="fr-mb-2w"
+      />
+      <div
+        class="flex justify-between"
+      >
+        <DsfrButton
+          data-testid="deleteRepoBtn"
+          :label="`Supprimer définitivement le dépôt ${localRepo.internalRepoName}`"
+          :disabled="repoToDelete !== localRepo.internalRepoName"
+          secondary
+          icon="ri-delete-bin-7-line"
+          @click="$emit('delete', localRepo.id)"
+        />
+        <DsfrButton
+          label="Annuler"
+          primary
+          @click="isDeletingRepo = false"
+        />
+      </div>
+    </div>
+  </div>
   <h1
     v-if="props.isEditable"
     class="fr-h1"
@@ -47,7 +106,7 @@ const cancel = (event) => {
   </h1>
   <DsfrFieldset
     :legend="props.isEditable ? 'Informations du dépôt' : undefined"
-    :hint="props.isEditable ? 'Tous les champs sont requis' : undefined"
+    :hint="props.isEditable ? 'Les champs munis d\'une astérisque (*) sont requis' : undefined"
   >
     <DsfrFieldset
       :key="repo"
@@ -80,7 +139,7 @@ const cancel = (event) => {
         label="Url du dépôt Git externe"
         label-visible
         hint="Url du dépôt Git qui servira de source pour la synchronisation"
-        placeholder="https://github.com/dnum-mi/dso-console"
+        placeholder="https://github.com/dnum-mi/dso-console.git"
         class="fr-mb-2w"
         @update:model-value="updateRepo('externalRepoUrl', $event)"
       />
@@ -137,6 +196,10 @@ const cancel = (event) => {
         name="infraRepoCbx"
         @update:model-value="updateRepo('isInfra', $event)"
       />
+      <CIForm
+        v-if="props.isEditable"
+        :internal-repo-name="localRepo.internalRepoName"
+      />
     </DsfrFieldset>
   </DsfrFieldset>
   <div
@@ -146,7 +209,7 @@ const cancel = (event) => {
     <DsfrButton
       label="Ajouter le dépôt"
       data-testid="addRepoBtn"
-      secondary
+      primary
       icon="ri-upload-cloud-line"
       @click="addRepo()"
     />

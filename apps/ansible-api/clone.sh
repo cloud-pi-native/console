@@ -20,4 +20,7 @@ if [ ! -z "$GIT_REPO" ]; then
   fi
   git clone https://${AUTH}${GIT_REPO} ${CLONE_DIR} ${BRANCH}
 fi
+if [[ "$NODE_ENV" == "production" && "$CI" != "true" ]]; then
+  ansible-playbook $PLAYBOOK_DIR/import_all.yml -i $PLAYBOOK_DIR/inventory/ --connection=local
+fi
 exec "$@"

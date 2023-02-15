@@ -1,7 +1,7 @@
 # Base stage
 FROM node:18.12.1-bullseye-slim as base
 
-RUN npm install --global pnpm
+RUN npm install --location=global pnpm
 
 WORKDIR /app
 RUN chown node:root /app
@@ -10,6 +10,7 @@ COPY --chown=node:root pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
 COPY --chown=node:root apps/server/ ./apps/server/
 COPY --chown=node:root packages/shared/ ./packages/shared/
 COPY --chown=node:root packages/test-utils/ ./packages/test-utils/
+COPY --chown=node:root patches/ ./patches/
 
 
 # Dev stage
@@ -33,6 +34,7 @@ RUN pnpm --filter server --prod deploy build
 
 # Prod stage
 FROM node:18.12.1-bullseye-slim as prod
+RUN mkdir -p /home/node/logs && chmod 777 -R /home/node/logs
 
 WORKDIR /app
 RUN chown node:root /app

@@ -53,6 +53,7 @@ services:
       - /app/apps/server/node_modules/
       - ../packages/shared:/app/packages/shared
       - /app/packages/shared/node_modules/
+      - ../packages/test-utils/src/imports:/app/apps/server/src/init-db/imports
     environment:
       SERVER_PORT: ${SERVER_PORT:-4000}
       DB_HOST: postgres
@@ -67,6 +68,7 @@ services:
       KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_BACKEND:-client-secret-backend}
       ANSIBLE_HOST: ${ANSIBLE_HOST:-ansible-api}
       ANSIBLE_PORT: ${ANSIBLE_PORT:-8100}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-a-strong-key-with-32-characters!}
       CI: "true"
       DEV_SETUP: "true"
       NODE_ENV: production
@@ -90,19 +92,16 @@ services:
       - /app/node_modules/
       - ../apps/ansible-api:/app/apps/ansible-api
       - /app/apps/ansible-api/node_modules/
-      - ../ansible/.vault-secret:${CONFIG_DIR:-/config}/.vault-secret
-      - ../ansible/.kubeconfig:${CONFIG_DIR:-/config}/.kubeconfig
       - ../ansible/playbooks:${PLAYBOOK_DIR:-/dso}
     environment:
       PLAYBOOK_DIR: ${PLAYBOOK_DIR:-/dso}
-      CONFIG_DIR: ${CONFIG_DIR:-/config}
       ANSIBLE_PORT: ${ANSIBLE_PORT:-8100}
       SESSION_SECRET: ${SESSION_SECRET:-a-very-strong-secret-with-more-than-32-char}
       KEYCLOAK_PROTOCOL: ${KEYCLOAK_PROTOCOL:-http}
       KEYCLOAK_DOMAIN: keycloak:8080
       KEYCLOAK_REALM: ${KEYCLOAK_REALM:-cloud-pi-native}
-      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_BACKEND:-dso-console-ansible-api}
-      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_BACKEND:-client-secret-ansible-api}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_ANSIBLE:-dso-console-ansible-api}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_ANSIBLE:-client-secret-ansible-api}
       CI: "true"
       NODE_ENV: production
       INVENTORY: dev

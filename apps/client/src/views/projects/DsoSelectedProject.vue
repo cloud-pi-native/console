@@ -8,9 +8,9 @@ const projectStore = useProjectStore()
   <DsfrAlert
     v-if="projectStore.selectedProject"
     type="info"
-    :description="`Le projet courant est : ${projectStore.selectedProject?.projectName}`"
+    :description="`Le projet courant est : ${projectStore.selectedProject?.name}`"
     data-testid="currentProjectInfo"
     small
-    class="fr-mb-2w"
+    class="w-max fr-mb-2w"
   />
 </template>

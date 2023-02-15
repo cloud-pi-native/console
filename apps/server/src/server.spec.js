@@ -3,12 +3,12 @@ import fp from 'fastify-plugin'
 import app from './app.js'
 import { startServer, handleExit, exitGracefuly } from './server.js'
 import { getConnection, closeConnections } from './connect.js'
-import { initDb } from '../dev-setup/init-db.js'
+import { initDb } from './init-db/index.js'
 
 vi.mock('./app.js')
 vi.mock('./connect.js')
 vi.mock('./utils/logger.js')
-vi.mock('../dev-setup/init-db.js')
+vi.mock('./init-db/index.js', () => ({ initDb: vi.fn() }))
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 
 describe('Server', () => {
@@ -34,7 +34,7 @@ describe('Server', () => {
 
   it('Should throw an error on connection to DB', async () => {
     const error = new Error('This is OK!')
-    getConnection.mockReturnValueOnce(Promise.reject(error))
+    getConnection.mockRejectedValueOnce(error)
 
     let response
     await startServer().catch(err => { response = err })
@@ -46,7 +46,7 @@ describe('Server', () => {
 
   it('Should throw an error on initDb import if module is not found', async () => {
     const error = new Error('Failed to load')
-    initDb.mockReturnValueOnce(Promise.reject(error))
+    initDb.mockRejectedValueOnce(error)
 
     await startServer()
 
@@ -56,7 +56,7 @@ describe('Server', () => {
 
   it('Should throw an error on initDb import', async () => {
     const error = new Error('This is OK!')
-    initDb.mockReturnValueOnce(Promise.reject(error))
+    initDb.mockRejectedValueOnce(error)
 
     let response
     try {

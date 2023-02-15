@@ -1,25 +1,31 @@
 import { faker } from '@faker-js/faker'
-import { allOrgNames, allServices, allEnv } from 'shared'
-
-export const getRandomUuid = () => {
-  return faker.datatype.uuid()
-}
-
-export const getRandomProjectOrgName = () => {
-  return faker.helpers.arrayElement(allOrgNames)
-}
+import { achievedStatus, projectRoles } from 'shared/src/utils/iterables.js'
 
 export const getRandomProjectName = () => {
   return faker.lorem.word()
 }
 
-export const getRandomProjectServices = () => {
-  return allServices
-}
-
 export const getRandomGitUrl = () => {
   const url = faker.internet.url().split('.')[0] + '.git'
   return !url.startsWith('https://') ? 'https://' + url.split('://')[1] : url
+}
+
+export const getRandomOrganization = (name = 'ministere-interieur', label = 'Ministère de l\'Intérieur') => {
+  return {
+    id: faker.datatype.uuid(),
+    name,
+    label,
+  }
+}
+
+export const getRandomProject = (organization = faker.datatype.uuid()) => {
+  return {
+    id: faker.datatype.uuid(),
+    name: getRandomProjectName(),
+    organization,
+    status: faker.helpers.arrayElement(achievedStatus),
+    locked: false,
+  }
 }
 
 export const getRandomUser = () => {
@@ -31,12 +37,22 @@ export const getRandomUser = () => {
   }
 }
 
-export const getRandomRepo = () => {
+export const getRandomUserProject = (userId = faker.datatype.uuid(), role = projectRoles[1]) => {
+  return {
+    id: userId,
+    role,
+  }
+}
+
+export const getRandomRepo = (projectId = faker.datatype.uuid()) => {
   const repo = {
+    id: faker.datatype.uuid(),
+    projectId,
     internalRepoName: faker.lorem.word(),
     externalRepoUrl: getRandomGitUrl(),
     isPrivate: faker.datatype.boolean(),
     isInfra: faker.datatype.boolean(),
+    status: faker.helpers.arrayElement(achievedStatus),
   }
   if (repo.isPrivate) {
     repo.externalUserName = faker.internet.userName()
@@ -46,6 +62,21 @@ export const getRandomRepo = () => {
   return repo
 }
 
-export const getRandomEnvList = (nbEnv) => {
-  return faker.helpers.arrayElements(allEnv, nbEnv)
+export const getRandomEnv = (name = 'dev', projectId = faker.datatype.uuid()) => {
+  return {
+    id: faker.datatype.uuid(),
+    name,
+    projectId,
+    status: faker.helpers.arrayElement(achievedStatus),
+  }
+}
+
+export const getRandomPerm = (environmentId = faker.datatype.uuid(), user = getRandomUser()) => {
+  return {
+    id: faker.datatype.uuid(),
+    environmentId,
+    userId: user.id,
+    level: faker.datatype.number({ min: 0, max: 1 }),
+    user,
+  }
 }

@@ -4,7 +4,7 @@ import keycloak from 'fastify-keycloak-adapter'
 import fastifySession from '@fastify/session'
 import fastifyCookie from '@fastify/cookie'
 import { nanoid } from 'nanoid'
-import routes from './routes/index.js'
+import { apiRouter, miscRouter } from './routes/index.js'
 import { loggerConf } from './utils/logger.js'
 import { keycloakConf, sessionConf } from './utils/keycloak.js'
 
@@ -15,11 +15,21 @@ const fastifyConf = {
   genReqId: () => nanoid(),
 }
 
-const app = fastify(fastifyConf)
+const routes = {}
+const app = await fastify(fastifyConf)
   .register(helmet)
   .register(fastifyCookie)
   .register(fastifySession, sessionConf)
   .register(keycloak, keycloakConf)
-  .register(routes, { prefix: apiPrefix })
+  .addHook('onRoute', route => {
+    if (routes[route.path]) routes[route.path].push(route.method)
+    else routes[route.path] = [route.method].flat()
+  })
+  .register(apiRouter, { prefix: apiPrefix })
+  .register(miscRouter)
+
+Object.keys(routes)
+  .sort((a, b) => a.localeCompare(b))
+  .forEach(key => app.log.info(`${key.padEnd(30, ' ')}${JSON.stringify(routes[key])}`))
 
 export default app

@@ -1,16 +1,17 @@
-import { nanoid } from 'nanoid'
-import { allServices, envList } from 'shared/src/schemas/project.js'
+import { getUserById } from '../support/func.js'
+
+const owner = getUserById('cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
 
 Cypress.Commands.add('kcLogout', () => {
   cy.get('a.fr-btn').should('contain', 'Se déconnecter').click()
 })
 
-Cypress.Commands.add('kcLogin', (name) => {
+Cypress.Commands.add('kcLogin', (name, password = 'test') => {
   cy.session(name, () => {
     cy.visit('/')
       .get('a.fr-btn').should('contain', 'Se connecter').click()
       .get('input#username').type(name)
-      .get('input#password').type(name)
+      .get('input#password').type(password)
       .get('input#kc-login').click()
       .url().should('contain', `${Cypress.env('clientHost')}:${Cypress.env('clientPort')}`)
   }, {
@@ -33,18 +34,8 @@ Cypress.Commands.add('createProject', (project) => {
   cy.intercept('GET', '/api/v1/projects').as('getProjects')
 
   const newProject = {
-    id: nanoid(),
-    repos: [],
-    owner: {
-      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
-      email: 'test@test.com',
-      firstName: 'test',
-      lastName: 'TEST',
-    },
     orgName: 'ministere-interieur',
-    services: allServices,
-    envList,
-    projectName: 'CloudPiNative',
+    name: 'cloud-pi-native',
     ...project,
   }
 
@@ -52,45 +43,32 @@ Cypress.Commands.add('createProject', (project) => {
     .getByDataTestid('createProjectLink').click()
     .get('h1').should('contain', 'Commander un espace projet')
     .get('[data-testid^="repoFieldset-"]').should('not.exist')
-    .get('p.fr-alert__description').should('contain', newProject.owner.email)
-    .getByDataTestid('orgNameSelect').find('select').select('ministere-interieur')
-    .getByDataTestid('projectNameInput').type(`${newProject.projectName} ErrorSpace`)
-    .getByDataTestid('projectNameInput').should('have.class', 'fr-input--error')
-    .getByDataTestid('projectNameInput').clear().type(newProject.projectName)
-    .getByDataTestid('projectNameInput').should('not.have.class', 'fr-input--error')
-    .getByDataTestid('envListSelect')
-    .find('[data-testid^="input-checkbox-"]').should('have.length', envList.length)
-  if (newProject.envList.length !== envList.length) {
-    envList.forEach(env => {
-      if (!newProject.envList.includes(env)) {
-        cy.getByDataTestid(`input-checkbox-${env}`).uncheck({ force: true })
-      }
-    })
-  }
+    .get('p.fr-alert__description').should('contain', owner.email)
+    .getByDataTestid('organizationSelect').find('select').select(newProject.orgName)
+    .getByDataTestid('nameInput').type(`${newProject.name} ErrorSpace`)
+    .getByDataTestid('nameInput').should('have.class', 'fr-input--error')
+    .getByDataTestid('nameInput').clear().type(newProject.name)
+    .getByDataTestid('nameInput').should('not.have.class', 'fr-input--error')
   cy.getByDataTestid('createProjectBtn').should('be.enabled').click()
 
   cy.wait('@postProject').its('response.statusCode').should('eq', 201)
   cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
-
-  if (newProject.repos.length) {
-    cy.addRepos(newProject.repos)
-  }
 })
 
-Cypress.Commands.add('assertCreateProject', (projectName) => {
+Cypress.Commands.add('assertCreateProject', (name) => {
   cy.getByDataTestid('menuMyProjects').click()
     .url().should('contain', '/projects')
-    .getByDataTestid(`projectTile-${projectName}`).should('exist')
+    .getByDataTestid(`projectTile-${name}`).should('exist')
 })
 
 Cypress.Commands.add('addRepos', (project, repos) => {
-  cy.intercept('POST', '/api/v1/projects/*/repos').as('postRepo')
+  cy.intercept('POST', '/api/v1/projects/*/repositories').as('postRepo')
   cy.intercept('GET', '/api/v1/projects').as('getProjects')
 
   const newRepo = (repo) => ({
     internalRepoName: 'dso-console',
     externalUserName: 'this-is-tobi',
-    externalRepoUrl: 'https://github.com/dnum-mi/dso-console',
+    externalRepoUrl: 'https://github.com/dnum-mi/dso-console.git',
     isInfra: false,
     isPrivate: false,
     externalToken: 'private-token',
@@ -99,13 +77,10 @@ Cypress.Commands.add('addRepos', (project, repos) => {
 
   const newRepos = repos.map(newRepo)
 
-  cy.visit('/')
-    .getByDataTestid('menuProjectsBtn').click()
-    .getByDataTestid('menuMyProjects').click()
-    .url().should('contain', '/projects')
-    .getByDataTestid(`projectTile-${project.projectName}`).click()
+  cy.goToProjects()
+    .getByDataTestid(`projectTile-${project.name}`).click()
     .getByDataTestid('menuRepos').click()
-    .url().should('contain', '/repos')
+    .url().should('contain', '/repositories')
 
   newRepos.forEach((repo) => {
     cy.getByDataTestid('addRepoLink').click()
@@ -131,15 +106,192 @@ Cypress.Commands.add('addRepos', (project, repos) => {
 })
 
 Cypress.Commands.add('assertAddRepo', (project, repos) => {
-  cy.visit('/')
-    .getByDataTestid('menuProjectsBtn').click()
-    .getByDataTestid('menuMyProjects').click()
-    .url().should('contain', '/projects')
-    .getByDataTestid(`projectTile-${project.projectName}`).click()
+  cy.goToProjects()
+    .getByDataTestid(`projectTile-${project.name}`).click()
     .getByDataTestid('menuRepos').click()
 
   repos.forEach((repo) => {
     cy.getByDataTestid(`repoTile-${repo.internalRepoName}`).should('exist')
+  })
+})
+
+Cypress.Commands.add('deleteRepo', (project, repo) => {
+  cy.goToProjects()
+    .getByDataTestid(`projectTile-${project.name}`).click()
+    .getByDataTestid('menuRepos').click()
+
+  cy.getByDataTestid(`repoTile-${repo.internalRepoName}`).click()
+    .getByDataTestid('deleteRepoInput').should('not.exist')
+    .getByDataTestid('deleteRepoZone').should('be.visible')
+    .getByDataTestid('showDeleteRepoBtn').click()
+    .getByDataTestid('deleteRepoBtn')
+    .should('be.disabled')
+    .getByDataTestid('deleteRepoInput').should('be.visible')
+    .type(repo.internalRepoName)
+    .getByDataTestid('deleteRepoBtn')
+    .should('be.enabled')
+    .click()
+    .getByDataTestid(`repoTile-${repo.internalRepoName}`)
+    .should('not.exist')
+})
+
+Cypress.Commands.add('addEnvironment', (project, environments) => {
+  cy.intercept('POST', '/api/v1/projects/*/environments').as('postEnvironment')
+  cy.intercept('GET', '/api/v1/projects').as('getProjects')
+
+  cy.goToProjects()
+    .getByDataTestid(`projectTile-${project.name}`).click()
+    .getByDataTestid('menuEnvironments').click()
+    .url().should('contain', '/environments')
+
+  environments.forEach((environment) => {
+    cy.getByDataTestid('addEnvironmentLink').click()
+      .get('h1').should('contain', 'Ajouter un environnement au projet')
+      .getByDataTestid('environmentNameSelect')
+      .find('select')
+      .select(environment)
+
+    cy.getByDataTestid('addEnvironmentBtn').click()
+    cy.wait('@postEnvironment').its('response.statusCode').should('eq', 201)
+    cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
+    cy.getByDataTestid(`environmentTile-${environment}`).should('exist')
+  })
+})
+
+Cypress.Commands.add('assertAddEnvironment', (project, environments) => {
+  cy.goToProjects()
+    .getByDataTestid(`projectTile-${project.name}`).click()
+    .getByDataTestid('menuEnvironments').click()
+
+  environments.forEach((env) => {
+    cy.getByDataTestid(`environmentTile-${env}`)
+      .should('exist')
+  })
+})
+
+Cypress.Commands.add('deleteEnvironment', (project, environment) => {
+  cy.intercept('DELETE', '/api/v1/projects/*/environments/*').as('deleteEnvironment')
+  cy.intercept('GET', '/api/v1/projects').as('getProjects')
+
+  cy.goToProjects()
+    .getByDataTestid(`projectTile-${project.name}`).click()
+    .getByDataTestid('menuEnvironments').click()
+    .getByDataTestid(`environmentTile-${environment}`)
+    .click()
+    .url().should('contain', '/environments')
+    .getByDataTestid('permissionsFieldset').should('be.visible')
+  cy.getByDataTestid('showDeleteEnvironmentBtn').click()
+    .getByDataTestid('deleteEnvironmentInput').should('be.visible')
+    .getByDataTestid('permissionsFieldset').should('not.exist')
+    .getByDataTestid('deleteEnvironmentInput')
+    .type(environment.slice(0, 2))
+    .getByDataTestid('deleteEnvironmentBtn').should('be.disabled')
+    .getByDataTestid('deleteEnvironmentInput').clear()
+    .type(environment)
+    .getByDataTestid('deleteEnvironmentBtn').should('be.enabled')
+    .click()
+  cy.wait('@deleteEnvironment').its('response.statusCode').should('eq', 200)
+  cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
+  cy.getByDataTestid(`environmentTile-${environment}`).should('not.exist')
+})
+
+Cypress.Commands.add('addPermission', (project, environment, userToLicence) => {
+  cy.intercept('POST', `/api/v1/projects/${project.id}/environments/*/permissions`).as('postPermission')
+  cy.goToProjects()
+    .getByDataTestid(`projectTile-${project.name}`).click()
+    .getByDataTestid('menuEnvironments').click()
+    .getByDataTestid(`environmentTile-${environment}`)
+    .click()
+    .getByDataTestid('permissionSuggestionInput').first()
+    .clear().type(userToLicence)
+    .getByDataTestid('permissionSuggestionInput').first().find('input').focus().blur({ force: true })
+    .wait('@postPermission')
+    .its('response.statusCode').should('eq', 201)
+})
+
+Cypress.Commands.add('assertPermission', (project, environment, permissions) => {
+  cy.goToProjects()
+    .getByDataTestid(`projectTile-${project.name}`).click()
+    .getByDataTestid('menuEnvironments').click()
+    .getByDataTestid(`environmentTile-${environment}`)
+    .click()
+
+  permissions.forEach(permission => {
+    cy.getByDataTestid(`userPermissionLi-${permission.email}`).within(() => {
+      cy.getByDataTestid('userEmail')
+        .should('contain', permission.email)
+        .getByDataTestid('deletePermissionBtn')
+        .should(permission.isOwner ? 'be.disabled' : 'be.enabled')
+        .and('have.attr', 'title', permission.isOwner ? 'Les droits du owner ne peuvent être retirés' : `Retirer les droits de ${permission.email}`)
+        .getByDataTestid('permissionLevelRange')
+        .should(permission.isOwner ? 'be.disabled' : 'be.enabled')
+    })
+  })
+})
+
+Cypress.Commands.add('addProjectMember', (project, userEmail) => {
+  cy.intercept('POST', `/api/v1/projects/${project.id}/users`).as('postUser')
+  cy.goToProjects()
+    .getByDataTestid(`projectTile-${project.name}`).click()
+    .getByDataTestid('menuTeam').click()
+    .url().should('contain', `/projects/${project.id}/team`)
+    .getByDataTestid('teamTable')
+    .find('tbody > tr')
+    .should('have.length', project.users.length)
+    .getByDataTestid('addUserInput').clear()
+    .type(userEmail)
+    .getByDataTestid('userErrorInfo')
+    .should('not.exist')
+    .getByDataTestid('addUserBtn')
+    .should('be.enabled').click()
+    .wait('@postUser')
+    .its('response.statusCode').should('eq', 201)
+    .getByDataTestid('teamTable')
+    .find('tbody > tr')
+    .should('have.length', project.users.length + 1)
+})
+
+Cypress.Commands.add('generateGitLabCI', (ciForms) => {
+  let version
+  ciForms.forEach(ciForm => {
+    if (ciForm.language === 'java') version = `BUILD_IMAGE_NAME: maven:3.8-openjdk-${ciForm.version}`
+    if (ciForm.language === 'node') version = `BUILD_IMAGE_NAME: node:${ciForm.version}`
+    if (ciForm.language === 'python') version = `BUILD_IMAGE_NAME: maven:3.8-openjdk-${ciForm.version}`
+
+    cy.getByDataTestid('typeLanguageSelect')
+      .find('select').select(`${ciForm.language}`)
+
+    if (ciForm.language === 'node') {
+      cy.getByDataTestid('nodeVersionInput').clear().type(`${ciForm.version}`)
+        .getByDataTestid('nodeInstallInput').clear().type(`${ciForm.install}`)
+        .getByDataTestid('nodeBuildInput').clear().type(`${ciForm.build}`)
+    }
+    if (ciForm.language === 'java') {
+      cy.getByDataTestid('javaVersionInput').clear().type(`${ciForm.version}`)
+        .getByDataTestid('artefactDirInput').clear().type(`${ciForm.artefactDir}`)
+    }
+    cy.getByDataTestid('workingDirInput').clear().type(`${ciForm.workingDir}`)
+      .getByDataTestid('generateCIBtn').click()
+      .getByDataTestid('generatedCI').should('be.visible')
+      .getByDataTestid(`copy-${ciForm.language}-ContentBtn`).should('exist')
+      .getByDataTestid('copy-vault-ContentBtn').should('exist')
+      .getByDataTestid('copy-docker-ContentBtn').should('exist')
+      .getByDataTestid('copy-rules-ContentBtn').should('exist')
+      .getByDataTestid('copy-gitlab-ContentBtn').click()
+    cy.assertClipboard(version)
+    cy.get('.fr-download__link').first().click()
+      .find('span').should(($span) => {
+        const text = $span.text()
+        expect(text).to.match(/YAML – \d* bytes/)
+      })
+  })
+})
+
+Cypress.Commands.add('assertClipboard', (value) => {
+  cy.window().then((win) => {
+    win.navigator.clipboard.readText().then((text) => {
+      expect(text).to.contain(value)
+    })
   })
 })
 

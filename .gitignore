@@ -19,6 +19,10 @@ node_modules
 
 # cypress
 screenshots
+downloads
+
+# init-db
+apps/server/src/init-db/imports/data.js
 
 # act
 **/act/artifacts
@@ -37,9 +41,6 @@ keycloak/data
 
 # turbo
 .turbo
-
-# vault file
-.vault-secret
 
 # kube config
 .kubeconfig

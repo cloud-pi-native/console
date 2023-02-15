@@ -6,7 +6,7 @@ import Markdown from 'vite-plugin-md'
 import Prism from 'markdown-it-prism'
 import emoji from 'markdown-it-emoji'
 import LinkAttributes from 'markdown-it-link-attributes'
-import { serverHost, serverPort, keycloakDomain, clientPort } from './src/utils/env.js'
+import { serverHost, serverPort, clientPort } from './src/utils/env.js'
 
 const markdownWrapperClasses = 'text-left markdown-body'
 
@@ -16,11 +16,6 @@ export default defineConfig({
     host: '0.0.0.0',
     port: clientPort || 8080,
     proxy: {
-      '^/realms': {
-        target: `http://${keycloakDomain}`,
-        changeOrigin: true,
-        ws: true,
-      },
       '^/api': {
         target: `http://${serverHost}:${serverPort}`,
         changeOrigin: true,

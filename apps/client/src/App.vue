@@ -19,6 +19,11 @@ const quickLinks = ref([{
   iconRight: true,
 }])
 
+const closed = ref(false)
+const close = () => {
+  closed.value = !closed.value
+}
+
 onMounted(() => {
   if (isLoggedIn.value) userStore.setUserProfile()
 })
@@ -35,12 +40,31 @@ watch(label, (label) => {
     :logo-text="['Ministère', 'de l’intérieur']"
     :quick-links="quickLinks"
   />
-  <div class="fr-container fr-grid-row">
+  <div class="fr-container fr-grid-row fr-mb-8w">
     <div class="fr-col-12 fr-col-md-3">
       <SideMenu />
     </div>
     <div class="fr-col-12 fr-col-md-9 fr-py-6v">
       <router-view />
     </div>
+    <DsfrAlert
+      v-if="isLoggedIn"
+      data-testid="whoamiSnackbar"
+      class="snackbar"
+      :description="`Vous êtes connecté(e) en tant que ${userStore.userProfile.firstName} ${userStore.userProfile.lastName}`"
+      type="info"
+      small
+      :closed="closed"
+      closeable
+      @close="close()"
+    />
   </div>
 </template>
+
+<style>
+.snackbar {
+  @apply w-11/12 md:w-max fixed bottom-1 z-2;
+
+  background-color: white;
+}
+</style>

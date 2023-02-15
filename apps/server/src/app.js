@@ -4,7 +4,7 @@ import keycloak from 'fastify-keycloak-adapter'
 import fastifySession from '@fastify/session'
 import fastifyCookie from '@fastify/cookie'
 import { nanoid } from 'nanoid'
-import routes from './routes/index.js'
+import { apiRouter, miscRouter } from './routes/index.js'
 import { loggerConf } from './utils/logger.js'
 import { keycloakConf, sessionConf } from './utils/keycloak.js'
 
@@ -20,6 +20,7 @@ const app = fastify(fastifyConf)
   .register(fastifyCookie)
   .register(fastifySession, sessionConf)
   .register(keycloak, keycloakConf)
-  .register(routes, { prefix: apiPrefix })
+  .register(apiRouter, { prefix: apiPrefix })
+  .register(miscRouter)
 
 export default app

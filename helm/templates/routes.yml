@@ -1,0 +1,17 @@
+{{- range $key, $val := .Values.containers -}}
+{{- if $val.route -}}
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ $.Release.Name }}-{{ $key }}-route
+spec:
+  host: {{ $val.route.host }}
+  tls:
+    termination: edge
+  to:
+    kind: Service
+    name: {{ $.Release.Name }}-{{ $key }}-service
+  wildcardPolicy: None
+{{- end -}}
+{{- end -}}

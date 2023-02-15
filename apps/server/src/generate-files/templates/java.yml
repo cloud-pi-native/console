@@ -1,0 +1,30 @@
+.java:build:
+  image:
+    name: ${BUILD_IMAGE_NAME}
+  cache:
+    key: "$CI_COMMIT_REF_SLUG"
+    paths:
+      - .m2/repository/
+  script:
+    - cd $WORKING_DIR
+    - echo ${PROJECT_PATH}
+    - mvn $MAVEN_CLI_OPTS clean deploy -s $MVN_CONFIG_FILE -DaltReleaseDeploymentRepository=nexus::default::${NEXUS_HOST_URL}/${PROJECT_PATH}-repository-release/ -DaltSnapshotDeploymentRepository=nexus::default::${NEXUS_HOST_URL}/${PROJECT_PATH}-repository-snapshot/
+  artifacts:
+    paths:
+      - ${ARTEFACT_DIR}
+    expire_in: 1 seconds
+  interruptible: true
+
+.java:sonar:
+  image:
+    name: ${BUILD_IMAGE_NAME}
+  cache:
+    key: "$CI_COMMIT_REF_SLUG"
+    paths:
+      - .m2/repository/
+  variables:
+    GIT_DEPTH: "0"
+  script:
+    - cd $WORKING_DIR
+    - mvn $MAVEN_CLI_OPTS clean org.jacoco:jacoco-maven-plugin:prepare-agent package test jacoco:report sonar:sonar -Dsonar.qualitygate.wait=true -Dsonar.login=$SONAR_TOKEN -s $MVN_CONFIG_FILE
+  allow_failure: true

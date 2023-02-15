@@ -1,16 +1,19 @@
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
+import { useOrganizationStore } from '@/stores/organization.js'
 import DsoSelectedProject from './DsoSelectedProject.vue'
 import { argocdUrl, gitlabUrl, nexusUrl, quayUrl, sonarqubeUrl, vaultUrl } from '@/utils/env.js'
 
 const projectStore = useProjectStore()
+const organizationStore = useOrganizationStore()
 
 /**
  * @returns {string}
  */
 const selectedProject = computed(() => projectStore.selectedProject)
 const projectServices = ref([])
+const orgName = ref(undefined)
 
 const allServices = ref([{
   id: 'gitlab',
@@ -59,10 +62,8 @@ const setProjectServices = () => {
   projectServices.value = []
   if (!selectedProject.value) return
   allServices.value.forEach(service => {
-    if (selectedProject.value.services.includes(service.id)) {
-      service.to = service.to.concat(...serviceUrlTail(service.id))
-      projectServices.value.push(service)
-    }
+    service.to = service.to.concat(...serviceUrlTail(service.id))
+    projectServices.value.push(service)
   })
 }
 
@@ -71,22 +72,25 @@ const setProjectServices = () => {
  * @returns {(Array|string)}
  */
 const serviceUrlTail = (serviceId) => {
-  // ARGOCD_URL/applications?showFavorites=false&proj=&sync=&health=&namespace=&cluster=&labels=&search=<orgName>-<projectName>
-  if (serviceId === 'argocd') return ['/applications?showFavorites=false&proj=&sync=&health=&namespace=&cluster=&labels=&search=', selectedProject.value.orgName, '-', selectedProject.value.projectName]
-  // GITLAB_URL/forge-mi/projects/<orgName>/<projectName>
-  if (serviceId === 'gitlab') return ['/forge-mi/projects/', selectedProject.value.orgName, '/', selectedProject.value.projectName]
-  // QUAY_URL/organization/<orgName>-<projectName>
-  if (serviceId === 'quay') return ['/organization/', selectedProject.value.orgName, '-', selectedProject.value.projectName]
-  // NEXUS_URL/#browse/browse:<orgName>-<projectName>-repository-group
-  if (serviceId === 'nexus') return ['/#browse/browse:', selectedProject.value.orgName, '-', selectedProject.value.projectName, '-repository-group']
-  // SONARQUBE_URL/dashboard?id=<orgName>-<projectName>
-  if (serviceId === 'sonarqube') return ['/dashboard?id=', selectedProject.value.orgName, '-', selectedProject.value.projectName]
-  // VAULT_URL/ui/vault/secrets/forge-dso/list/forge-mi/projects/<orgName>/<projectName>
-  if (serviceId === 'vault') return ['/ui/vault/secrets/forge-dso/list/forge-mi/projects/', selectedProject.value.orgName, '/', selectedProject.value.projectName]
+  // ARGOCD_URL/applications?showFavorites=false&proj=&sync=&health=&namespace=&cluster=&labels=&search=<orgName>-<name>
+  if (serviceId === 'argocd') return ['/applications?showFavorites=false&proj=&sync=&health=&namespace=&cluster=&labels=&search=', orgName.value, '-', selectedProject.value.name]
+  // GITLAB_URL/forge-mi/projects/<orgName>/<name>
+  if (serviceId === 'gitlab') return ['/forge-mi/projects/', orgName.value, '/', selectedProject.value.name]
+  // QUAY_URL/organization/<orgName>-<name>
+  if (serviceId === 'quay') return ['/organization/', orgName.value, '-', selectedProject.value.name]
+  // NEXUS_URL/#browse/browse:<orgName>-<name>-repository-group
+  if (serviceId === 'nexus') return ['/#browse/browse:', orgName.value, '-', selectedProject.value.name, '-repository-group']
+  // SONARQUBE_URL/dashboard?id=<orgName>-<name>
+  if (serviceId === 'sonarqube') return ['/dashboard?id=', orgName.value, '-', selectedProject.value.name]
+  // VAULT_URL/ui/vault/secrets/forge-dso/list/forge-mi/projects/<orgName>/<name>
+  if (serviceId === 'vault') return ['/ui/vault/secrets/forge-dso/list/forge-mi/projects/', orgName.value, '/', selectedProject.value.name]
   return ['']
 }
 
-onMounted(() => {
+onMounted(async () => {
+  await organizationStore.setOrganizations()
+  const org = organizationStore.organizations.find(org => org.id === selectedProject.value.organization)
+  orgName.value = org?.name
   setProjectServices()
 })
 

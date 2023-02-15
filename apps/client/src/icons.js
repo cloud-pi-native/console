@@ -9,4 +9,6 @@ export {
   RiDeleteBin7Line,
   RiAddLine,
   RiUserAddLine,
+  RiFileSettingsLine,
+  RiFileCopy2Line,
 } from 'oh-vue-icons/icons/ri/index.js'

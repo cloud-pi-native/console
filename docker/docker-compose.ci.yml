@@ -47,6 +47,8 @@ services:
         condition: service_started
     ports:
       - 4000:80
+    volumes:
+      - ../packages/test-utils/src/imports:/app/src/init-db/imports
     environment:
       SERVER_PORT: 80 # ${SERVER_PORT:-4000}
       DB_HOST: ${POSTGRES_HOST:-postgres}
@@ -61,6 +63,7 @@ services:
       KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_BACKEND:-client-secret-backend}
       ANSIBLE_HOST: ${ANSIBLE_HOST:-ansible-api}
       ANSIBLE_PORT: ${ANSIBLE_PORT:-8100}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-a-strong-key-with-32-characters!}
       CI: "true"
       DEV_SETUP: "true"
       NODE_ENV: production
@@ -81,23 +84,17 @@ services:
     ports:
       - 8100:8100
     volumes:
-      - /app/node_modules/
-      - ../apps/ansible-api:/app/apps/ansible-api
-      - /app/apps/ansible-api/node_modules/
-      - ../ansible/.vault-secret:${CONFIG_DIR:-/config}/.vault-secret
-      - ../ansible/.kubeconfig:${CONFIG_DIR:-/config}/.kubeconfig
       - ../ansible/playbooks:${PLAYBOOK_DIR:-/dso}
     environment:
       PLAYBOOK_DIR: ${PLAYBOOK_DIR:-/dso}
-      CONFIG_DIR: ${CONFIG_DIR:-/config}
       CLONE_DIR: ${CLONE_DIR:-/dso}
       ANSIBLE_PORT: ${ANSIBLE_PORT:-8100}
       SESSION_SECRET: ${SESSION_SECRET:-a-very-strong-secret-with-more-than-32-char}
       KEYCLOAK_PROTOCOL: ${KEYCLOAK_PROTOCOL:-http}
       KEYCLOAK_DOMAIN: keycloak:8080
       KEYCLOAK_REALM: ${KEYCLOAK_REALM:-cloud-pi-native}
-      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_BACKEND:-dso-console-ansible-api}
-      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_BACKEND:-client-secret-ansible-api}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_ANSIBLE:-dso-console-ansible-api}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_ANSIBLE:-client-secret-ansible-api}
       CI: "true"
       NODE_ENV: production
     networks:
@@ -137,8 +134,10 @@ services:
     build:
       context: ..
       dockerfile: apps/client/cypress/Dockerfile
+      target: build
     image: dso-console/cypress:ci
     container_name: dso-console_cypress
+    command: cypress:run --browser chrome
     depends_on:
       client:
         condition: service_started
