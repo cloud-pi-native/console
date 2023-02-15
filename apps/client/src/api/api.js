@@ -50,12 +50,12 @@ export const getRepos = async (projectId) => {
 }
 
 export const updateRepo = async (projectId, data) => {
-  const response = await apiClient.put(`/projects/${projectId}/repositories/:${data.id}`, data)
+  const response = await apiClient.put(`/projects/${projectId}/repositories/${data.id}`, data)
   return response.data
 }
 
 export const deleteRepo = async (projectId, repoId) => {
-  const response = await apiClient.delete(`/projects/${projectId}/repositories/:${repoId}`)
+  const response = await apiClient.delete(`/projects/${projectId}/repositories/${repoId}`)
   return response.data
 }
 

@@ -115,6 +115,26 @@ Cypress.Commands.add('assertAddRepo', (project, repos) => {
   })
 })
 
+Cypress.Commands.add('deleteRepo', (project, repo) => {
+  cy.goToProjects()
+    .getByDataTestid(`projectTile-${project.name}`).click()
+    .getByDataTestid('menuRepos').click()
+
+  cy.getByDataTestid(`repoTile-${repo.internalRepoName}`).click()
+    .getByDataTestid('deleteRepoInput').should('not.exist')
+    .getByDataTestid('deleteRepoZone').should('be.visible')
+    .getByDataTestid('showDeleteRepoBtn').click()
+    .getByDataTestid('deleteRepoBtn')
+    .should('be.disabled')
+    .getByDataTestid('deleteRepoInput').should('be.visible')
+    .type(repo.internalRepoName)
+    .getByDataTestid('deleteRepoBtn')
+    .should('be.enabled')
+    .click()
+    .getByDataTestid(`repoTile-${repo.internalRepoName}`)
+    .should('not.exist')
+})
+
 Cypress.Commands.add('addEnvironment', (project, environments) => {
   cy.intercept('POST', '/api/v1/projects/*/environments').as('postEnvironment')
   cy.intercept('GET', '/api/v1/projects').as('getProjects')

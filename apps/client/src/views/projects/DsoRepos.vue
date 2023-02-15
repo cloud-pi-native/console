@@ -1,15 +1,20 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
+import { useUserStore } from '@/stores/user.js'
 import RepoForm from '@/components/RepoForm.vue'
 import DsoSelectedProject from './DsoSelectedProject.vue'
 
 const projectStore = useProjectStore()
+const userStore = useUserStore()
 
 /**
  * @returns {string}
  */
 const selectedProject = computed(() => projectStore.selectedProject)
+const owner = computed(() => projectStore.selectedProjectOwner)
+const isOwner = computed(() => userStore.userProfile.id === owner.value.id)
+
 const repos = ref([])
 const selectedRepo = ref({})
 const isNewRepoForm = ref(false)
@@ -43,6 +48,10 @@ const cancel = () => {
 const addRepo = async (repo) => {
   cancel()
   await projectStore.addRepoToProject(repo)
+}
+
+const deleteRepo = async (repoId) => {
+  await projectStore.deleteRepo(repoId)
 }
 
 onMounted(() => {
@@ -93,8 +102,10 @@ watch(selectedProject, () => {
     />
     <RepoForm
       v-if="Object.keys(selectedRepo).length !== 0 && selectedRepo.internalRepoName === repo.id"
+      :is-owner="isOwner"
       :repo="selectedRepo"
       :is-editable="false"
+      @delete="(repoId) => deleteRepo(repoId)"
     />
   </div>
 </template>
