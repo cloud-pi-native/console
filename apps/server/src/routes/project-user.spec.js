@@ -71,7 +71,7 @@ describe('User routes', () => {
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       Role.$queueResult(randomDbSetup.project.users[0])
-      Project.$queueResult(randomDbSetup.users)
+      User.$queueResult(randomDbSetup.users)
       setOwnerId(owner.id)
 
       const response = await app.inject()

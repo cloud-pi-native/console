@@ -22,14 +22,12 @@ describe('Redirection', () => {
       cy.should('have.length', `${response.body.length}`)
       cy.getByDataTestid(`projectTile-${project.name}`).click()
       cy.url().should('contain', `/projects/${project.id}/dashboard`)
-      cy.getByDataTestid('calloutWipDashboard').should('contain', 'Développement en cours')
     })
     cy.reload()
     cy.wait('@postToken')
     cy.wait('@getAccount')
     cy.url().should('contain', `/projects/${project.id}/dashboard`)
     cy.wait('@getProjects').its('response').then(_response => {
-      cy.getByDataTestid('calloutWipDashboard').should('contain', 'Développement en cours')
       cy.getByDataTestid('currentProjectInfo')
       cy.should('contain', `Le projet courant est : ${project.name}`)
     })
@@ -49,7 +47,6 @@ describe('Redirection', () => {
     cy.wait('@getAccount')
     cy.url().should('contain', `/projects/${project.id}/dashboard`)
     cy.wait('@getProjects', { timeout: 5000 }).its('response').then(_response => {
-      cy.getByDataTestid('calloutWipDashboard').should('contain', 'Développement en cours')
       cy.getByDataTestid('currentProjectInfo')
       cy.should('contain', `Le projet courant est : ${project.name}`)
     })

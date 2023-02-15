@@ -62,6 +62,12 @@ export const useProjectStore = defineStore('project', () => {
     await getUserProjects()
   }
 
+  const archiveProject = async (projectId) => {
+    await api.archiveProject(projectId)
+    selectedProject.value = undefined
+    await getUserProjects()
+  }
+
   const deleteEnvironment = async (environmentId) => {
     await api.deleteEnvironment(selectedProject.value.id, environmentId)
     await getUserProjects()
@@ -91,6 +97,7 @@ export const useProjectStore = defineStore('project', () => {
     addUserToProject,
     updatePermission,
     removeUserFromProject,
+    archiveProject,
     deleteEnvironment,
     deletePermission,
     deleteRepo,

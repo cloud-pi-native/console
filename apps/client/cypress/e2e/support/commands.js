@@ -56,9 +56,36 @@ Cypress.Commands.add('createProject', (project) => {
 })
 
 Cypress.Commands.add('assertCreateProject', (name) => {
-  cy.getByDataTestid('menuMyProjects').click()
-    .url().should('contain', '/projects')
+  cy.intercept('GET', '/api/v1/projects').as('getProjects')
+  cy.goToProjects()
+    .url().should('match', /\/projects$/)
+    .wait('@getProjects').its('response.statusCode').should('eq', 200)
     .getByDataTestid(`projectTile-${name}`).should('exist')
+})
+
+Cypress.Commands.add('archiveProject', (project) => {
+  cy.intercept('GET', '/api/v1/projects').as('getProjects')
+
+  cy.goToProjects()
+    .getByDataTestid(`projectTile-${project.name}`).click()
+    .getByDataTestid('menuDashboard').click()
+
+  cy.url().should('contain', 'dashboard')
+    .getByDataTestid('archiveProjectInput').should('not.exist')
+    .getByDataTestid('archiveProjectZone').should('be.visible')
+    .getByDataTestid('showArchiveProjectBtn').click()
+    .getByDataTestid('archiveProjectBtn')
+    .should('be.disabled')
+    .getByDataTestid('archiveProjectInput').should('be.visible')
+    .type(project.name)
+    .getByDataTestid('archiveProjectBtn')
+    .should('be.enabled')
+    .click()
+
+  cy.url().should('match', /\/projects$/)
+    .wait('@getProjects').its('response.statusCode').should('eq', 200)
+    .getByDataTestid(`projectTile-${project.name}`)
+    .should('not.exist')
 })
 
 Cypress.Commands.add('addRepos', (project, repos) => {
@@ -230,11 +257,11 @@ Cypress.Commands.add('assertPermission', (project, environment, permissions) => 
 })
 
 Cypress.Commands.add('addProjectMember', (project, userEmail) => {
-  cy.intercept('POST', `/api/v1/projects/${project.id}/users`).as('postUser')
+  cy.intercept('POST', /\/api\/v1\/projects\/[\w-]{36}\/users$/).as('postUser')
   cy.goToProjects()
     .getByDataTestid(`projectTile-${project.name}`).click()
     .getByDataTestid('menuTeam').click()
-    .url().should('contain', `/projects/${project.id}/team`)
+    .url().should('match', /\/team$/)
     .getByDataTestid('teamTable')
     .find('tbody > tr')
     .should('have.length', project.users.length)

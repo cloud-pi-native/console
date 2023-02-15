@@ -54,6 +54,14 @@ export const deletePermission = async (userId, environmentId) => {
   })
 }
 
+export const deletePermissionById = async (permissionId) => {
+  return getPermissionModel().destroy({
+    where: {
+      id: permissionId,
+    },
+  })
+}
+
 // TECH
 export const _dropPermissionsTable = async () => {
   await sequelize.drop({
