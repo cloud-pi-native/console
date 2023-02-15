@@ -19,7 +19,7 @@ services:
       CLIENT_PORT: ${CLIENT_PORT:-8080}
       NODE_ENV: test
       CT: 'true'
-    command: cypress:run-ct
+    command: cypress:run-ct --browser chrome
     networks:
       - dso-network
 

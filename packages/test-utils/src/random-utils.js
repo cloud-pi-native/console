@@ -37,10 +37,9 @@ export const getRandomUser = () => {
   }
 }
 
-export const getRandomUserProject = (userId = faker.datatype.uuid(), projectId = faker.datatype.uuid(), role = projectRoles[1]) => {
+export const getRandomUserProject = (userId = faker.datatype.uuid(), role = projectRoles[1]) => {
   return {
-    UserId: userId,
-    ProjectId: projectId,
+    id: userId,
     role,
   }
 }
@@ -72,10 +71,12 @@ export const getRandomEnv = (name = 'dev', projectId = faker.datatype.uuid()) =>
   }
 }
 
-export const getRandomPerm = (environmentId = faker.datatype.uuid(), userId = faker.datatype.uuid()) => {
+export const getRandomPerm = (environmentId = faker.datatype.uuid(), user = getRandomUser()) => {
   return {
+    id: faker.datatype.uuid(),
     environmentId,
-    userId,
+    userId: user.id,
     level: faker.datatype.number({ min: 0, max: 1 }),
+    user,
   }
 }

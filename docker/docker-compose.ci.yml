@@ -137,6 +137,7 @@ services:
       target: build
     image: dso-console/cypress:ci
     container_name: dso-console_cypress
+    command: cypress:run --browser chrome
     depends_on:
       client:
         condition: service_started

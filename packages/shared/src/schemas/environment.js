@@ -3,8 +3,7 @@ import { allEnv, projectStatus } from '../utils/iterables.js'
 
 export const environmentSchema = Joi.object({
   id: Joi.string()
-    .uuid()
-    .required(),
+    .uuid(),
 
   name: Joi.string()
     .valid(...allEnv)

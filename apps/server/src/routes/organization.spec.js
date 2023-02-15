@@ -64,10 +64,11 @@ describe('Project routes', () => {
     it('Should retrieve organizations', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const organizations = allOrganizations.map(org => getRandomOrganization(org.name, org.label))
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       // 1. getOrganizations
       Organization.$queueResult(organizations)
-      setOwnerId(randomDbSetup.owner.id)
+      setOwnerId(owner.id)
 
       const response = await app.inject()
         .get('/')
