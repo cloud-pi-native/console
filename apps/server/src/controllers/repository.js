@@ -313,14 +313,7 @@ export const deleteRepositoryController = async (req, res) => {
   let repo
   try {
     repo = await getRepositoryById(repositoryId)
-    if (!repo) {
-      const message = 'The required repository does not exists'
-      req.log.error({
-        ...getLogInfos(),
-        description: message,
-      })
-      return send500(res, message)
-    }
+    if (!repo) throw new Error('The required repository does not exists')
 
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
     if (!role) throw new Error('Requestor is not member of project')
@@ -345,7 +338,13 @@ export const deleteRepositoryController = async (req, res) => {
   }
 
   try {
-    // TODO : #131 : appel ansible
+    await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos/${repositoryId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        authorization: req.headers.authorization,
+      },
+    })
     try {
       await deleteRepository(repositoryId)
       await unlockProject(projectId)

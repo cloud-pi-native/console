@@ -106,7 +106,6 @@ Cypress.Commands.add('addRepos', (project, repos) => {
 })
 
 Cypress.Commands.add('assertAddRepo', (project, repos) => {
-  cy.log(repos)
   cy.goToProjects()
     .getByDataTestid(`projectTile-${project.name}`).click()
     .getByDataTestid('menuRepos').click()
