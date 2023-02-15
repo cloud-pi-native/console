@@ -12,11 +12,6 @@ jobs:
   release:
     name: Create new release
     runs-on: ubuntu-latest
-    outputs:
-      release-created: ${{ steps.release.outputs.release_created }}
-      major-tag: ${{ steps.release.outputs.major }}
-      minor-tag: ${{ steps.release.outputs.minor }}
-      patch-tag: ${{ steps.release.outputs.patch }}
     steps:
       - name: Checks-out repository
         uses: actions/checkout@v3
