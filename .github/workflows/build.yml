@@ -1,15 +1,13 @@
 name: Build and push last version
 
 on:
-  release:
-    types:
-      - created
   workflow_dispatch:
 
 env:
   REGISTRY: "ghcr.io"
   NAMESPACE: "${{ github.repository }}"
   PLATFORM: "linux/amd64,linux/arm64"
+  TAG: "${{ github.sha }}"
 
 jobs:
   matrix:
@@ -20,18 +18,11 @@ jobs:
     steps:
       - name: Checks-out repository
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          ref: main
       - name: Generate matrix for build
         id: build-matrix
         run: |
-          TAG=$(git for-each-ref --sort=-creatordate --count 1 --format="%(refname:short)" "refs/tags/${tagPrefix}" | grep -o "[0-9.]\+")
-          echo "TAG: $TAG"
-          echo "NAMESPACE: $NAMESPACE"
-          echo "PLATFORM: $PLATFORM"
           echo 'BUILD_MATRIX<<EOF' >> $GITHUB_OUTPUT
-          ./ci/scripts/build-matrix.sh -f ./docker/docker-compose.prod.yml -c -p "${{ env.PLATFORM }}" -r "${{ env.REGISTRY }}" -t "latest,$TAG" -n "${{ env.NAMESPACE }}" | jq '[.[] | select(.build != false)]' >> $GITHUB_OUTPUT
+          ./ci/scripts/build-matrix.sh -f ./docker/docker-compose.prod.yml -c -p "${{ env.PLATFORM }}" -r "${{ env.REGISTRY }}" -t "${{ env.TAG }}" -n "${{ env.NAMESPACE }}" | jq '[.[] | select(.build != false)]' >> $GITHUB_OUTPUT
           echo 'EOF' >> $GITHUB_OUTPUT
 
   build:
@@ -45,8 +36,6 @@ jobs:
     steps:
       - name: Checks-out repository
         uses: actions/checkout@v3
-        with:
-          ref: main
       - name: Set up Docker buildx
         uses: docker/setup-buildx-action@v2
       - name: Set up QEMU (for multi platform build)

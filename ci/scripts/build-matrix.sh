@@ -35,6 +35,8 @@ Following flags are available:
 
   -f    Docker-compose file used to build matrix.
 
+  -n    Namespace used to tag images. e.g 'username/reponame'.
+
   -p    Target platforms used to build matrix (List/CSV format. ex: 'linux/amd64,linux/arm64').
         Default is '$PLATFORMS'.
 
