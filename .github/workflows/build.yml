@@ -8,6 +8,8 @@ on:
 
 env:
   REGISTRY: "ghcr.io"
+  NAMESPACE: "${{ github.repository }}"
+  PLATFORM: "linux/amd64,linux/arm64"
 
 jobs:
   matrix:
@@ -16,13 +18,18 @@ jobs:
     outputs:
       build-matrix: ${{ steps.build-matrix.outputs.BUILD_MATRIX }}
     steps:
+      - name: Checks-out repository
+        uses: actions/checkout@v3
+        with:
+          ref: main
       - name: Generate matrix for build
         id: build-matrix
         run: |
           TAG=$(git for-each-ref --sort=-creatordate --count 1 --format="%(refname:short)" "refs/tags/${tagPrefix}" | grep -o "[0-9.]\+")
           echo 'BUILD_MATRIX<<EOF' >> $GITHUB_OUTPUT
-          ./ci/scripts/build-matrix.sh -f ./docker/docker-compose.prod.yml -c -p linux/amd64,linux/arm64 -r ghcr.io -t latest,$TAG -n ${{ github.repository }} | jq '[.[] | select(.build != false)]' >> $GITHUB_OUTPUT
+          ./ci/scripts/build-matrix.sh -f ./docker/docker-compose.prod.yml -c -p ${{ env.PLATFORM }} -r ${{ env.REGISTRY }} -t latest,$TAG -n ${{ env.NAMESPACE }} | jq '[.[] | select(.build != false)]' >> $GITHUB_OUTPUT
           echo 'EOF' >> $GITHUB_OUTPUT
+
   build:
     name: Build application
     runs-on: ubuntu-latest
