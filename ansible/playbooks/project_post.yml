@@ -13,7 +13,7 @@
           type: string
         ORGANIZATION_NAME:
           type: string
-        EMAILS:
+        EMAIL:
           type: string
         ENV_LIST:
           type: array
