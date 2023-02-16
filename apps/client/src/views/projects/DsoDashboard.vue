@@ -89,7 +89,7 @@ const archiveProject = async (projectId) => {
       v-else-if="projectStore.selectedProject.status === 'failed'"
       type="error"
       label="Echec de création du projet"
-      />
+    />
     <DsfrBadge
       v-else
       type="success"
