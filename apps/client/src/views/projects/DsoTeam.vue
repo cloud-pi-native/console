@@ -11,7 +11,7 @@ const selectedProject = computed(() => projectStore.selectedProject)
 
 const isUserAlreadyInTeam = computed(() => {
   const allUsers = selectedProject.value.users
-  return !!allUsers.find(user => user.email === newUser.value.email)
+  return !!allUsers?.find(user => user.email === newUser.value.email)
 })
 
 const owner = computed(() => selectedProject.value.users?.find(user => user?.usersProjects?.role === 'owner'))

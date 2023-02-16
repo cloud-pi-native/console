@@ -1,5 +1,4 @@
 import { sequelize } from '../../connect.js'
-// import { Op } from 'sequelize'
 import { getProjectModel } from '../project.js'
 import { dbKeysExcluded } from '../../utils/queries-tools.js'
 import { getPermissionModel } from '../permission.js'
@@ -9,10 +8,10 @@ import { getUserModel } from '../user.js'
 
 // SELECT
 export const getProjectUsers = async (projectId) => {
-  const res = await getProjectModel().findAll({
-    where: { id: projectId },
+  const res = await getUserModel().findAll({
     include: {
-      model: getUserModel(),
+      model: getProjectModel(),
+      where: { id: projectId },
       attributes: { exclude: ['role'] },
     },
   })

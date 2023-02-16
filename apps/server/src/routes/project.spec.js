@@ -10,6 +10,9 @@ import projectRouter from './project.js'
 import { getProjectModel } from '../models/project.js'
 import { getUserModel } from '../models/user.js'
 import { getUsersProjectsModel } from '../models/users-projects.js'
+import { getRepositoryModel } from '../models/repository.js'
+import { getEnvironmentModel } from '../models/environment.js'
+import { getPermissionModel } from '../models/permission.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 vi.mock('../ansible.js')
@@ -44,6 +47,9 @@ describe('Project routes', () => {
   let Project
   let User
   let Role
+  let Repository
+  let Environment
+  let Permissions
 
   beforeAll(async () => {
     mockSession(app)
@@ -51,6 +57,9 @@ describe('Project routes', () => {
     Project = getProjectModel()
     User = getUserModel()
     Role = getUsersProjectsModel()
+    Repository = getRepositoryModel()
+    Environment = getEnvironmentModel()
+    Permissions = getPermissionModel()
     global.fetch = vi.fn(() => Promise.resolve())
   })
 
@@ -283,6 +292,11 @@ describe('Project routes', () => {
       Project.$queueResult(randomDbSetup.project)
       // 2. getRequestorRole
       Role.$queueResult(randomDbSetup.project.users[0])
+      // retrieve associated data
+      Repository.$queueResult(randomDbSetup.project.repositories)
+      Environment.$queueResult(randomDbSetup.project.environments)
+      randomDbSetup.project.environments.forEach(environment => Permissions.$queueResult(environment.permissions))
+      User.$queueResult(randomDbSetup.users)
       // 3. projectLoked
       sequelize.$queueResult([1])
       // 4. archiveProject

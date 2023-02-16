@@ -8,7 +8,7 @@ export const getUserById = (id) => users.find(user => user.id === id)
 export const getUserProjects = (userId) => {
   const userProjects = []
   projects.forEach(project => {
-    if (project.users.find(user => user.id === userId)) {
+    if (project.users.find(user => user.id === userId) && project.status !== 'archived') {
       userProjects.push(project)
     }
   })

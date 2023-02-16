@@ -4,13 +4,17 @@ import { getPermissionModel } from '../permission.js'
 // GET
 export const getEnvironmentPermissions = async (environmentId) => {
   return getPermissionModel().findAll({
-    environmentId,
+    where: {
+      environmentId,
+    },
   })
 }
 
 export const getUserPermissions = async (userId) => {
   return getPermissionModel().findAll({
-    userId,
+    where: {
+      userId,
+    },
   })
 }
 
@@ -50,6 +54,14 @@ export const deletePermission = async (userId, environmentId) => {
     where: {
       userId,
       environmentId,
+    },
+  })
+}
+
+export const deletePermissionById = async (permissionId) => {
+  return getPermissionModel().destroy({
+    where: {
+      id: permissionId,
     },
   })
 }
