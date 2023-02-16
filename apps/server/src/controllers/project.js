@@ -210,7 +210,7 @@ export const archiveProjectController = async (req, res) => {
 
   let repos
   let environments
-  let permissions
+  const permissions = []
   let users
   try {
     const project = await getProjectById(projectId)
@@ -222,8 +222,9 @@ export const archiveProjectController = async (req, res) => {
 
     repos = await getProjectRepositories(projectId)
     environments = await getEnvironmentsByProjectId(projectId)
-    permissions = environments?.map(async environment => {
-      await getEnvironmentPermissions(environment.id)
+    environments?.forEach(async environment => {
+      const envPerms = await getEnvironmentPermissions(environment?.id)
+      permissions.push(...envPerms)
     })
     users = await getProjectUsers(projectId)
 

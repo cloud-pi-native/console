@@ -278,6 +278,20 @@ Cypress.Commands.add('addProjectMember', (project, userEmail) => {
     .should('have.length', project.users.length + 1)
 })
 
+Cypress.Commands.add('assertUsers', (project, emails) => {
+  cy.goToProjects()
+    .getByDataTestid(`projectTile-${project.name}`).click()
+    .getByDataTestid('menuTeam').click()
+
+  emails.forEach(email => {
+    cy.getByDataTestid('teamTable').within(() => {
+      cy.get('td')
+        .contains(email)
+        .should('exist')
+    })
+  })
+})
+
 Cypress.Commands.add('generateGitLabCI', (ciForms) => {
   let version
   ciForms.forEach(ciForm => {
