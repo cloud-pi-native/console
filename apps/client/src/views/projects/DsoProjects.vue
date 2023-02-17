@@ -14,6 +14,7 @@ const setProjectList = (projects) => {
     id: project.id,
     title: project.name,
     to: `/projects/${project.id}/dashboard`,
+    locked: project.locked,
   }))
 }
 
@@ -62,6 +63,7 @@ watch(projects, (projects) => {
         :data-testid="`projectTile-${project.title}`"
         :to="project.to"
         :horizontal="false"
+        :disabled="project.locked"
         @click="setSelectedProject(project.id)"
       />
     </div>
