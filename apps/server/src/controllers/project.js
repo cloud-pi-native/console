@@ -252,6 +252,9 @@ export const archiveProjectController = async (req, res) => {
   }
 
   try {
+    // TODO :
+    // project_repos_delete.yml => delete repos attend un body avec  "PROJECT_NAME", "ORGANIZATION_NAME", "ENV_LIST", "REPO_DEST"
+    // Mais on ne peut pas passer de body à une requête avec la méthode DELETE
     repos?.forEach(async repo => {
       await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos/${repo.id}`, {
         method: 'DELETE',
