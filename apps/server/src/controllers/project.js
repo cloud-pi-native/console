@@ -253,9 +253,6 @@ export const archiveProjectController = async (req, res) => {
   }
 
   try {
-    // TODO :
-    // project_repos_delete.yml => delete repos attend un body avec  "PROJECT_NAME", "ORGANIZATION_NAME", "ENV_LIST", "REPO_DEST"
-    // Mais on ne peut pas passer de body à une requête avec la méthode DELETE
     const organization = await getOrganizationById(project.organization)
 
     const ansibleData = {
@@ -266,22 +263,20 @@ export const archiveProjectController = async (req, res) => {
     }
 
     repos?.forEach(async repo => {
-      ansibleData.REPO_DEST = repo.id
-      console.log({ ansibleData })
+      ansibleData.REPO_DEST = repo.internalRepoName
       await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
-        method: 'DELETE',
-        body: ansibleData,
+        method: 'PUT',
+        body: JSON.stringify(ansibleData),
         headers: {
           'Content-Type': 'application/json',
           authorization: req.headers.authorization,
         },
       })
     })
-    ansibleData.REPO_DEST = []
-    console.log({ ansibleData })
+
     await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project`, {
-      method: 'DELETE',
-      body: ansibleData,
+      method: 'PUT',
+      body: JSON.stringify(ansibleData),
       headers: {
         'Content-Type': 'application/json',
         authorization: req.headers.authorization,
