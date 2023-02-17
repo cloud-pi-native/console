@@ -149,10 +149,10 @@ export const createProjectController = async (req, res) => {
 
   try {
     const owner = await getUserById(userId)
-    const orgName = await getOrganizationById(project.organization)
+    const organization = await getOrganizationById(project.organization)
 
     const ansibleData = {
-      ORGANIZATION_NAME: orgName,
+      ORGANIZATION_NAME: organization.name,
       EMAILS: owner.email,
       PROJECT_NAME: project.name,
     }
@@ -212,8 +212,9 @@ export const archiveProjectController = async (req, res) => {
   let environments
   const permissions = []
   let users
+  let project
   try {
-    const project = await getProjectById(projectId)
+    project = await getProjectById(projectId)
     if (!project) throw new Error('Project not found')
 
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
@@ -255,17 +256,32 @@ export const archiveProjectController = async (req, res) => {
     // TODO :
     // project_repos_delete.yml => delete repos attend un body avec  "PROJECT_NAME", "ORGANIZATION_NAME", "ENV_LIST", "REPO_DEST"
     // Mais on ne peut pas passer de body à une requête avec la méthode DELETE
+    const organization = await getOrganizationById(project.organization)
+
+    const ansibleData = {
+      ORGANIZATION_NAME: organization.name,
+      ENV_LIST: environments.map(environment => environment.name),
+      REPO_DEST: undefined,
+      PROJECT_NAME: project.name,
+    }
+
     repos?.forEach(async repo => {
-      await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos/${repo.id}`, {
+      ansibleData.REPO_DEST = repo.id
+      console.log({ ansibleData })
+      await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
         method: 'DELETE',
+        body: ansibleData,
         headers: {
           'Content-Type': 'application/json',
           authorization: req.headers.authorization,
         },
       })
     })
-    await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/${projectId}`, {
+    ansibleData.REPO_DEST = []
+    console.log({ ansibleData })
+    await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project`, {
       method: 'DELETE',
+      body: ansibleData,
       headers: {
         'Content-Type': 'application/json',
         authorization: req.headers.authorization,
