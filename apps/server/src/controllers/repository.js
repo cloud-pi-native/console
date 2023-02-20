@@ -159,6 +159,7 @@ export const createRepositoryController = async (req, res) => {
       headers: {
         'Content-Type': 'application/json',
         authorization: req.headers.authorization,
+        'request-id': req.id,
       },
     })
 
@@ -355,6 +356,7 @@ export const deleteRepositoryController = async (req, res) => {
       headers: {
         'Content-Type': 'application/json',
         authorization: req.headers.authorization,
+        'request-id': req.id,
       },
     })
     try {
