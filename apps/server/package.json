@@ -8,12 +8,13 @@
     "lint": "eslint . --ext .js,.cjs,.ts",
     "format": "eslint . --ext .js,.cjs,.ts --fix",
     "start": "node src/server.js",
-    "test": "vitest run --coverage"
+    "test": "vitest run related src/routes/websocket.spec.js"
   },
   "dependencies": {
     "@fastify/cookie": "^8.3.0",
     "@fastify/helmet": "^10.1.0",
     "@fastify/session": "^10.1.1",
+    "@fastify/websocket": "^7.1.2",
     "date-fns": "^2.29.3",
     "dotenv": "^16.0.3",
     "fastify": "^4.15.0",

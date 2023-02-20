@@ -3,6 +3,7 @@ import helmet from '@fastify/helmet'
 import keycloak from 'fastify-keycloak-adapter'
 import fastifySession from '@fastify/session'
 import fastifyCookie from '@fastify/cookie'
+import fastifyWebsocket from '@fastify/websocket'
 import { nanoid } from 'nanoid'
 import { apiRouter, miscRouter } from './routes/index.js'
 import { loggerConf } from './utils/logger.js'
@@ -18,6 +19,7 @@ const fastifyConf = {
 const app = fastify(fastifyConf)
   .register(helmet)
   .register(fastifyCookie)
+  .register(fastifyWebsocket)
   .register(fastifySession, sessionConf)
   .register(keycloak, keycloakConf)
   .register(apiRouter, { prefix: apiPrefix })
