@@ -9,4 +9,4 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: {{ $.Release.Name }}-ansible-sa
-  namespace: openshift-operators
+  namespace: {{ $.Release.Namespace }}
