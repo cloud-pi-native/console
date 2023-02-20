@@ -270,6 +270,7 @@ export const archiveProjectController = async (req, res) => {
         headers: {
           'Content-Type': 'application/json',
           authorization: req.headers.authorization,
+          'request-id': req.id,
         },
       })
     })
@@ -280,6 +281,7 @@ export const archiveProjectController = async (req, res) => {
       headers: {
         'Content-Type': 'application/json',
         authorization: req.headers.authorization,
+        'request-id': req.id,
       },
     })
     try {
