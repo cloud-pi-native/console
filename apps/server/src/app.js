@@ -22,5 +22,10 @@ const app = fastify(fastifyConf)
   .register(keycloak, keycloakConf)
   .register(apiRouter, { prefix: apiPrefix })
   .register(miscRouter)
+  .addHook('onRoute', opts => {
+    if (opts.path === '/healthz') {
+      opts.logLevel = 'silent'
+    }
+  })
 
 export default app

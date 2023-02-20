@@ -22,6 +22,9 @@ const app = await fastify(fastifyConf)
   .register(fastifySession, sessionConf)
   .register(keycloak, keycloakConf)
   .addHook('onRoute', route => {
+    if (route.path === '/healthz') {
+      route.logLevel = 'silent'
+    }
     if (routes[route.path]) routes[route.path].push(route.method)
     else routes[route.path] = [route.method].flat()
   })
