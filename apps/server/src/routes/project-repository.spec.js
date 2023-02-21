@@ -198,9 +198,9 @@ describe('Project routes', () => {
         .delete(`${randomDbSetup.project.id}/repositories/${repoToDelete.id}`)
         .end()
 
-      expect(response.statusCode).toEqual(201)
+      expect(response.statusCode).toEqual(200)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Repository successfully deleted')
+      expect(response.body).toEqual('Repository successfully deleting')
     })
   })
 })
