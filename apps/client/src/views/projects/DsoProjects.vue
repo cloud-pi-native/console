@@ -60,6 +60,7 @@ watch(projects, (projects) => {
     >
       <DsfrTile
         :title="project.title"
+        :description="project.locked ? 'opérations en cours' : null"
         :data-testid="`projectTile-${project.title}`"
         :to="project.to"
         :horizontal="false"
