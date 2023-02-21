@@ -44,3 +44,12 @@ spec:
             port: {{ .Values.containers.server.container.port }}
           failureThreshold: 10
           periodSeconds: 4
+{{- if .Values.containers.server.container.data_configmap }}
+        volumeMounts:
+          - name: imports
+            mountPath: /app/src/init-db/imports
+      volumes:
+        - name: imports
+          configMap: 
+            name: {{ .Values.containers.server.container.data_configmap }}
+{{- end }}

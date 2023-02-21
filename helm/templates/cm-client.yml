@@ -4,6 +4,7 @@ metadata:
   name: {{ $.Release.Name }}-client-cm
 data:
   {{- include "globalEnv" $.Values | indent 2 }}
+  {{- include "containerEnv" .Values.containers.client | indent 2 }}
   {{- with .Values.keycloak }}
   KEYCLOAK_PROTOCOL: https
   KEYCLOAK_DOMAIN: {{ .domain }}
