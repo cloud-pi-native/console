@@ -373,7 +373,6 @@ export const deleteRepositoryController = async (req, res) => {
         description: 'Cannot delete repository',
         error: error.message,
       })
-      return send500(res, error.message)
     }
   } catch (error) {
     const message = 'Provisioning repo with ansible failed'
@@ -397,8 +396,6 @@ export const deleteRepositoryController = async (req, res) => {
         description: 'Cannot update repository status to failed',
         error: error.message,
       })
-      return send500(res, error.message)
     }
-    send500(res, message)
   }
 }
