@@ -2,11 +2,13 @@
 import { computed, onMounted, ref } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useOrganizationStore } from '@/stores/organization.js'
 import { projectSchema } from 'shared/src/schemas/project.js'
 import { schemaValidator, isValid, instanciateSchema } from 'shared/src/utils/schemas.js'
 import router from '@/router/index.js'
 
+const snackbarStore = useSnackbarStore()
 const projectStore = useProjectStore()
 const userStore = useUserStore()
 const organizationStore = useOrganizationStore()
@@ -34,8 +36,13 @@ const createProject = async () => {
   const keysToValidate = ['organization', 'name']
   const errorSchema = schemaValidator(projectSchema, project.value, keysToValidate)
   if (Object.keys(errorSchema).length === 0) {
-    await projectStore.createProject(project.value)
-    router.push('/projects')
+    try {
+      await projectStore.createProject(project.value)
+      router.push('/projects')
+    } catch (error) {
+      console.log(error)
+      snackbarStore.setMessage(error)
+    }
   }
 }
 

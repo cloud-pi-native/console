@@ -27,7 +27,11 @@ const goToCreateProject = () => {
 }
 
 onMounted(async () => {
-  await projectStore.getUserProjects()
+  try {
+    await projectStore.getUserProjects()
+  } catch (error) {
+    console.log(error)
+  }
 })
 
 watch(projects, (projects) => {

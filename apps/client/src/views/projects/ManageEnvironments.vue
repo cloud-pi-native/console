@@ -45,11 +45,19 @@ const cancel = () => {
 
 const addEnvironment = async (environment) => {
   cancel()
-  await projectStore.addEnvironmentToProject(environment)
+  try {
+    await projectStore.addEnvironmentToProject(environment)
+  } catch (error) {
+    console.log(error)
+  }
 }
 
 const deleteEnvironment = async (environment) => {
-  await projectStore.deleteEnvironment(environment.id)
+  try {
+    await projectStore.deleteEnvironment(environment.id)
+  } catch (error) {
+    console.log(error)
+  }
   setSelectedEnvironment({})
 }
 

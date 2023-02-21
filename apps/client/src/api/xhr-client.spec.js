@@ -43,7 +43,7 @@ describe('xhr-client', () => {
     it('Should throw error with specific message if response status >= 400', async () => {
       const message = 'Error while responding'
       const res = {
-        response: { status: 500, data: { message } },
+        response: { status: 500, data: message },
       }
 
       const rejectedRes = xhrClient.apiClient.interceptors.response.handlers[0].rejected(res)
@@ -53,7 +53,7 @@ describe('xhr-client', () => {
     it('Should throw error with message if response status is >= 400', async () => {
       const message = 'Error while responding'
       const res = {
-        response: { status: 500, data: { message } },
+        response: { status: 500, data: message },
       }
 
       const rejectedRes = xhrClient.apiClient.interceptors.response.handlers[0].rejected(res)
