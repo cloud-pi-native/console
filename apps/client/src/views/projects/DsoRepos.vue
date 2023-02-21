@@ -86,7 +86,6 @@ watch(selectedProject, () => {
     class="my-5 pb-10 border-grey-900 border-y-1"
   >
     <RepoForm
-      :repo="{}"
       @add="(repo) => addRepo(repo)"
       @cancel="cancel()"
     />
@@ -98,6 +97,7 @@ watch(selectedProject, () => {
   >
     <DsfrTile
       :title="repo.title"
+      :description="repo.status === 'deleting' ? 'opérations en cours' : null"
       :data-testid="`repoTile-${repo.id}`"
       :horizontal="true"
       :class="{

@@ -1,16 +1,20 @@
 <script setup>
 import SideMenu from './components/SideMenu.vue'
-import { ref, onMounted, watch } from 'vue'
-import { useUserStore } from './stores/user.js'
+import { ref, onMounted, watch, onBeforeMount } from 'vue'
 import { getKeycloak } from './utils/keycloak/keycloak.js'
+import { useUserStore } from './stores/user.js'
+import { useProjectStore } from './stores/project.js'
 
 const keycloak = getKeycloak()
 const userStore = useUserStore()
+const projectStore = useProjectStore()
+
 userStore.setIsLoggedIn()
 
 const isLoggedIn = ref(keycloak.authenticated)
 const label = ref(isLoggedIn.value ? 'Se déconnecter' : 'Se connecter')
 const to = ref(isLoggedIn.value ? '/logout' : '/login')
+const intervalId = ref(undefined)
 
 const quickLinks = ref([{
   label,
@@ -24,8 +28,21 @@ const close = () => {
   closed.value = !closed.value
 }
 
+const refreshProjects = () => {
+  intervalId.value = setInterval(async () => {
+    await projectStore.getUserProjects()
+  }, 60_000)
+}
+
+onBeforeMount(() => {
+  clearInterval(intervalId.value)
+})
+
 onMounted(() => {
-  if (isLoggedIn.value) userStore.setUserProfile()
+  if (isLoggedIn.value) {
+    userStore.setUserProfile()
+    refreshProjects()
+  }
 })
 
 watch(label, (label) => {

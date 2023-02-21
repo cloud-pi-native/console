@@ -10,6 +10,7 @@ import {
 } from '../models/queries/repository-queries.js'
 import {
   getProjectById,
+  getProjectUsers,
   lockProject,
   unlockProject,
 } from '../models/queries/project-queries.js'
@@ -18,9 +19,7 @@ import {
 } from '../models/queries/environment-queries.js'
 import {
   getRoleByUserIdAndProjectId,
-  getSingleOwnerByProjectId,
 } from '../models/queries/users-projects-queries.js'
-import { getUserById } from '../models/queries/user-queries.js'
 import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import { ansibleHost, ansiblePort } from '../utils/env.js'
@@ -131,19 +130,16 @@ export const createRepositoryController = async (req, res) => {
   }
 
   try {
-    // TODO : qst @tobi - Faut-il envoyer à ansible le owner du projet, ou le requestor (user qui crée le repo) ?
-    // const requestor = await getUserById(userId)
-    const ownerId = await getSingleOwnerByProjectId(projectId)
-    const owner = await getUserById(ownerId)
+    const users = await getProjectUsers(projectId)
 
     const envRes = await getEnvironmentsByProjectId(projectId)
     const environmentsNames = envRes.map(env => env.name)
 
-    const orgName = await getOrganizationById(project.organization)
+    const organization = await getOrganizationById(project.organization)
 
     const ansibleData = {
-      ORGANIZATION_NAME: orgName,
-      EMAILS: owner.email,
+      ORGANIZATION_NAME: organization.name,
+      EMAILS: users.map(user => user.email),
       PROJECT_NAME: project.name,
       REPO_DEST: data.internalRepoName,
       REPO_SRC: data.externalRepoUrl.startsWith('http') ? data.externalRepoUrl.split('://')[1] : data.externalRepoUrl,
