@@ -23,7 +23,7 @@ const app = fastify({ logger: false })
 
 const mockSessionPlugin = (app, opt, next) => {
   app.addHook('onRequest', (req, res, next) => {
-    req.session = { user: getOwner() }
+    req.session = { user: getRequestor() }
     next()
   })
   next()
@@ -34,13 +34,13 @@ const mockSession = (app) => {
     .register(projectRouter)
 }
 
-const owner = {}
-const setOwnerId = (id) => {
-  owner.id = id
+const requestor = {}
+const setRequestorId = (id) => {
+  requestor.id = id
 }
 
-const getOwner = () => {
-  return owner
+const getRequestor = () => {
+  return requestor
 }
 
 describe('Project routes', () => {
@@ -86,7 +86,7 @@ describe('Project routes', () => {
 
       User.$queueResult(randomUser)
       Project.$queueResult(projects)
-      setOwnerId(randomDbSetups[0].project.users[0].id)
+      setRequestorId(randomDbSetups[0].project.users[0].id)
 
       const response = await app.inject()
         .get('/')
@@ -118,7 +118,7 @@ describe('Project routes', () => {
 
       Project.$queueResult(randomDbSetup.project)
       Role.$queueResult(randomDbSetup.project.users[0])
-      setOwnerId(owner.id)
+      setRequestorId(owner.id)
 
       const response = await app.inject()
         .get(`/${randomDbSetup.project.id}`)
@@ -148,7 +148,7 @@ describe('Project routes', () => {
 
       Project.$queueResult(randomDbSetup.project)
       Role.$queueResult(null)
-      setOwnerId(owner.id)
+      setRequestorId(owner.id)
 
       const response = await app.inject()
         .get(`/${randomDbSetup.project.id}`)
@@ -173,7 +173,7 @@ describe('Project routes', () => {
       Role.$queueResult({ UserId: ownerId })
       // getOwnerById
       User.$queueResult(owner)
-      setOwnerId(ownerId)
+      setRequestorId(ownerId)
 
       const response = await app.inject()
         .get(`/${randomDbSetup.project.id}/owner`)
@@ -200,7 +200,7 @@ describe('Project routes', () => {
       User.$queueResult(randomDbSetup.users[0])
       // 4. updateProjectStatus
       sequelize.$queueResult([1])
-      setOwnerId(owner.id)
+      setRequestorId(owner.id)
 
       const response = await app.inject()
         .post('/')
@@ -244,7 +244,7 @@ describe('Project routes', () => {
       delete newProject.environments
 
       Project.$queueResult(randomDbSetup.project)
-      setOwnerId(owner.id)
+      setRequestorId(owner.id)
 
       const response = await app.inject()
         .post('/')
@@ -265,7 +265,7 @@ describe('Project routes', () => {
       Project.$queueResult(null)
       Project.$queueResult(randomDbSetup.project)
       Project.$queueResult(randomDbSetup.project)
-      setOwnerId(owner.id)
+      setRequestorId(owner.id)
       const error = new Error(ansibleError)
       global.fetch = vi.fn(() => Promise.reject(error))
 
@@ -301,7 +301,7 @@ describe('Project routes', () => {
       sequelize.$queueResult([1])
       // 4. archiveProject
       sequelize.$queueResult([1])
-      setOwnerId(owner.id)
+      setRequestorId(owner.id)
 
       const response = await app.inject()
         .delete(`/${randomDbSetup.project.id}`)
@@ -318,7 +318,7 @@ describe('Project routes', () => {
 
       Project.$queueResult(randomDbSetup.project)
       Role.$queueResult(null)
-      setOwnerId(randomUser.id)
+      setRequestorId(randomUser.id)
 
       const response = await app.inject()
         .delete(`/${randomDbSetup.project.id}`)
@@ -335,7 +335,7 @@ describe('Project routes', () => {
 
       Project.$queueResult(randomDbSetup.project)
       Role.$queueResult(randomDbSetup.project.users[0])
-      setOwnerId(randomUser.id)
+      setRequestorId(randomUser.id)
 
       const response = await app.inject()
         .delete(`/${randomDbSetup.project.id}`)

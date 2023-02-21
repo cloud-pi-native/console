@@ -20,7 +20,7 @@ const app = fastify({ logger: false })
 
 const mockSessionPlugin = (app, opt, next) => {
   app.addHook('onRequest', (req, res, next) => {
-    req.session = { user: getOwner() }
+    req.session = { user: getRequestor() }
     next()
   })
   next()
@@ -31,13 +31,13 @@ const mockSession = (app) => {
     .register(projectRepositoryRouter)
 }
 
-const owner = {}
-const setOwnerId = (id) => {
-  owner.id = id
+const requestor = {}
+const setRequestorId = (id) => {
+  requestor.id = id
 }
 
-const getOwner = () => {
-  return owner
+const getRequestor = () => {
+  return requestor
 }
 
 describe('Project routes', () => {
@@ -73,7 +73,7 @@ describe('Project routes', () => {
 
       Repository.$queueResult(repoToGet)
       Role.$queueResult(randomDbSetup.project.users[0])
-      setOwnerId(owner.id)
+      setRequestorId(owner.id)
 
       const response = await app.inject()
         .get(`${randomDbSetup.project.id}/repositories/${repoToGet.id}`)
@@ -92,7 +92,7 @@ describe('Project routes', () => {
 
       Repository.$queueResult(randomDbSetup.project.repositories)
       Role.$queueResult(randomDbSetup.project.users[0])
-      setOwnerId(owner.id)
+      setRequestorId(owner.id)
 
       const response = await app.inject()
         .get(`${randomDbSetup.project.id}/repositories`)
@@ -114,7 +114,7 @@ describe('Project routes', () => {
       Project.$queueResult(randomDbSetup.project)
       Role.$queueResult(randomDbSetup.project.users[0])
       Repository.$queueResult(randomDbSetup.project.repositories)
-      setOwnerId(owner.id)
+      setRequestorId(owner.id)
 
       const response = await app.inject()
         .post(`${randomDbSetup.project.id}/repositories`)
@@ -143,7 +143,7 @@ describe('Project routes', () => {
       Role.$queueResult(randomDbSetup.project.users[0])
       Project.$queueResult([1])
       Repository.$queueResult([1])
-      setOwnerId(owner.id)
+      setRequestorId(owner.id)
 
       const response = await app.inject()
         .put(`${randomDbSetup.project.id}/repositories/${repoToUpdate.id}`)
@@ -168,7 +168,7 @@ describe('Project routes', () => {
       Repository.$queueResult(repoToUpdate)
       Role.$queueResult(randomDbSetup.project.users[0])
       Project.$queueResult([1])
-      setOwnerId(owner.id)
+      setRequestorId(owner.id)
 
       const response = await app.inject()
         .put(`${randomDbSetup.project.id}/repositories/${repoToUpdate.id}`)
@@ -192,7 +192,7 @@ describe('Project routes', () => {
       Role.$queueResult(randomDbSetup.project.users[0])
       Project.$queueResult([1])
       Repository.$queueResult([1])
-      setOwnerId(owner.id)
+      setRequestorId(owner.id)
 
       const response = await app.inject()
         .delete(`${randomDbSetup.project.id}/repositories/${repoToDelete.id}`)
