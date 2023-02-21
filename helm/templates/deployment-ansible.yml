@@ -37,6 +37,12 @@ spec:
         volumeMounts:
         - name: playbooks
           mountPath: {{ .Values.containers.ansible.container.playbooks.repoMount }}
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: {{ .Values.containers.ansible.container.port }}
+          initialDelaySeconds: 10
+          periodSeconds: 5
       volumes:
       - name: playbooks
         emptyDir:

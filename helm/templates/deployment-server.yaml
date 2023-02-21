@@ -32,6 +32,18 @@ spec:
           limits:
             memory: "128Mi"
             cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: {{ .Values.containers.server.container.port }}
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        startupProbe:
+          httpGet:
+            path: /healthz
+            port: {{ .Values.containers.server.container.port }}
+          failureThreshold: 10
+          periodSeconds: 4
 {{- if .Values.containers.server.container.data_configmap }}
         volumeMounts:
           - name: imports

@@ -14,7 +14,7 @@ import {
   unlockProject,
 } from '../models/queries/project-queries.js'
 import {
-  getEnvironmentsNamesByProjectId,
+  getEnvironmentsByProjectId,
 } from '../models/queries/environment-queries.js'
 import {
   getRoleByUserIdAndProjectId,
@@ -134,7 +134,7 @@ export const createRepositoryController = async (req, res) => {
     const ownerId = await getSingleOwnerByProjectId(projectId)
     const owner = await getUserById(ownerId)
 
-    const envRes = await getEnvironmentsNamesByProjectId(projectId)
+    const envRes = await getEnvironmentsByProjectId(projectId)
     const environmentsNames = envRes.map(env => env.name)
 
     const orgName = await getOrganizationById(project.organization)
@@ -159,6 +159,7 @@ export const createRepositoryController = async (req, res) => {
       headers: {
         'Content-Type': 'application/json',
         authorization: req.headers.authorization,
+        'request-id': req.id,
       },
     })
 
@@ -338,11 +339,24 @@ export const deleteRepositoryController = async (req, res) => {
   }
 
   try {
-    await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos/${repositoryId}`, {
-      method: 'DELETE',
+    const project = await getProjectById(projectId)
+    const organization = await getOrganizationById(project.organization)
+    const environments = await getEnvironmentsByProjectId(projectId)
+
+    const ansibleData = {
+      ORGANIZATION_NAME: organization.name,
+      ENV_LIST: environments.map(environment => environment.name),
+      REPO_DEST: repo.internalRepoName,
+      PROJECT_NAME: project.name,
+    }
+
+    await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
+      method: 'PUT',
+      body: JSON.stringify(ansibleData),
       headers: {
         'Content-Type': 'application/json',
         authorization: req.headers.authorization,
+        'request-id': req.id,
       },
     })
     try {

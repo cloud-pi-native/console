@@ -24,14 +24,6 @@ export const getEnvironmentsByProjectId = async (projectId) => {
   })
 }
 
-export const getEnvironmentsNamesByProjectId = async (projectId) => {
-  return getEnvironmentModel().findAll({
-    attributes: ['name'],
-    where: { projectId },
-    include: { model: getProjectModel() },
-  })
-}
-
 export const getProjectByEnvironmentId = async (environmentId) => {
   const env = await getEnvironmentById(environmentId)
   return getProjectById(env.projectId)

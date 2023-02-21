@@ -149,10 +149,10 @@ export const createProjectController = async (req, res) => {
 
   try {
     const owner = await getUserById(userId)
-    const orgName = await getOrganizationById(project.organization)
+    const organization = await getOrganizationById(project.organization)
 
     const ansibleData = {
-      ORGANIZATION_NAME: orgName,
+      ORGANIZATION_NAME: organization.name,
       EMAILS: owner.email,
       PROJECT_NAME: project.name,
     }
@@ -212,8 +212,9 @@ export const archiveProjectController = async (req, res) => {
   let environments
   const permissions = []
   let users
+  let project
   try {
-    const project = await getProjectById(projectId)
+    project = await getProjectById(projectId)
     if (!project) throw new Error('Project not found')
 
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
@@ -252,20 +253,35 @@ export const archiveProjectController = async (req, res) => {
   }
 
   try {
+    const organization = await getOrganizationById(project.organization)
+
+    const ansibleData = {
+      ORGANIZATION_NAME: organization.name,
+      ENV_LIST: environments.map(environment => environment.name),
+      REPO_DEST: undefined,
+      PROJECT_NAME: project.name,
+    }
+
     repos?.forEach(async repo => {
-      await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos/${repo.id}`, {
-        method: 'DELETE',
+      ansibleData.REPO_DEST = repo.internalRepoName
+      await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
+        method: 'PUT',
+        body: JSON.stringify(ansibleData),
         headers: {
           'Content-Type': 'application/json',
           authorization: req.headers.authorization,
+          'request-id': req.id,
         },
       })
     })
-    await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/${projectId}`, {
-      method: 'DELETE',
+
+    await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project`, {
+      method: 'PUT',
+      body: JSON.stringify(ansibleData),
       headers: {
         'Content-Type': 'application/json',
         authorization: req.headers.authorization,
+        'request-id': req.id,
       },
     })
     try {

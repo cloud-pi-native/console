@@ -2,7 +2,7 @@
   hosts: localhost
   vars:
     validation:
-      required: ["PROJECT_NAME", "ORGANIZATION_NAME", "ENV_LIST", "REPO_DEST"]
+      required: ["PROJECT_NAME", "ORGANIZATION_NAME", "ENV_LIST"]
       type: object
       properties:
         PROJECT_NAME:
@@ -10,10 +10,6 @@
         ORGANIZATION_NAME:
           type: string
         ENV_LIST:
-          type: array
-          items:
-            type: string
-        REPO_DEST:
           type: array
           items:
             type: string
