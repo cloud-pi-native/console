@@ -159,6 +159,9 @@ Cypress.Commands.add('deleteRepo', (project, repo) => {
     .should('be.enabled')
     .click()
     .getByDataTestid(`repoTile-${repo.internalRepoName}`)
+    .should('have.class', 'disabled-tile')
+    .reload()
+    .getByDataTestid(`repoTile-${repo.internalRepoName}`)
     .should('not.exist')
 })
 

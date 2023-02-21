@@ -24,6 +24,7 @@ const setReposTiles = (selectedProject) => {
     id: repo.internalRepoName,
     title: repo.internalRepoName,
     data: repo,
+    status: repo.status,
   }))
 }
 
@@ -52,6 +53,8 @@ const addRepo = async (repo) => {
 
 const deleteRepo = async (repoId) => {
   await projectStore.deleteRepo(repoId)
+  setReposTiles(selectedProject.value)
+  selectedRepo.value = {}
 }
 
 onMounted(() => {
@@ -97,11 +100,14 @@ watch(selectedProject, () => {
       :title="repo.title"
       :data-testid="`repoTile-${repo.id}`"
       :horizontal="true"
-      class="fr-mb-2w"
+      :class="{
+        'fr-mb-2w': true,
+        'disabled-tile' : repo.status === 'deleting'
+      }"
       @click="setSelectedRepo(repo.data)"
     />
     <RepoForm
-      v-if="Object.keys(selectedRepo).length !== 0 && selectedRepo.internalRepoName === repo.id"
+      v-if="Object.keys(selectedRepo).length && selectedRepo.internalRepoName === repo.id && selectedRepo.status !== 'deleting'"
       :is-owner="isOwner"
       :repo="selectedRepo"
       :is-editable="false"
