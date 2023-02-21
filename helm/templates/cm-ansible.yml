@@ -4,6 +4,7 @@ metadata:
   name: {{ $.Release.Name }}-ansible-cm
 data:
   {{- include "globalEnv" $.Values | indent 2 }}
+  {{- include "containerEnv" .Values.containers.ansible | indent 2 }}
   {{- with .Values.containers.ansible.container }}
   HOME: /home/node/
   PLAYBOOK_DIR: {{ .playbooks.repoDir}}

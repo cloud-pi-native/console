@@ -38,6 +38,7 @@ containers:
       image:
       port: 8080
       node_env: production
+      data-configmap: 
     service:
       port: 80
       hostname: server
