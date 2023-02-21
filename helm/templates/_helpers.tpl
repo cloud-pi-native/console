@@ -90,6 +90,14 @@ Create the name of the service account to use
 {{ end -}}
 {{ end -}}
 
+{{- define "containerEnv" -}}
+{{- if .env }}
+{{- range $name, $value := .env }}
+{{ $name }}: {{ $value | quote }}
+{{ end -}}
+{{ end -}}
+{{ end -}}
+
 {{- define "ressourceName" }}
 {{- if . -}}
 {{- $.Release.Name -}}-

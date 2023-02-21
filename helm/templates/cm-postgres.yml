@@ -4,6 +4,7 @@ metadata:
   name: {{ $.Release.Name }}-postgres-cm
 data:
   {{- include "globalEnv" $.Values | indent 2 }}
+  {{- include "containerEnv" .Values.containers.postgres | indent 2 }}
   {{- with .Values.containers.postgres }}
   POSTGRESQL_DATABASE: {{ .container.db }}
   POSTGRESQL_USER: {{ .container.user }}
