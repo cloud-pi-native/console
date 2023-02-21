@@ -37,6 +37,7 @@ import { send200, send201, send500 } from '../utils/response.js'
 import { ansibleHost, ansiblePort } from '../utils/env.js'
 import { projectSchema } from 'shared/src/schemas/project.js'
 import { replaceNestedKeys, lowercaseFirstLetter } from '../utils/queries-tools.js'
+import { addLogs } from '../models/queries/log-queries.js'
 
 // GET
 export const getUserProjectsController = async (req, res) => {
@@ -156,7 +157,7 @@ export const createProjectController = async (req, res) => {
       EMAILS: owner.email,
       PROJECT_NAME: project.name,
     }
-    await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/projects`, {
+    const ansibleRes = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/projects`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -165,6 +166,7 @@ export const createProjectController = async (req, res) => {
       },
       body: ansibleData,
     })
+    addLogs(await ansibleRes.json(), userId)
 
     try {
       project = await updateProjectCreated(project.id)
@@ -264,7 +266,7 @@ export const archiveProjectController = async (req, res) => {
 
     repos?.forEach(async repo => {
       ansibleData.REPO_DEST = repo.internalRepoName
-      await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
+      const ansibleRes = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
         method: 'PUT',
         body: JSON.stringify(ansibleData),
         headers: {
@@ -273,9 +275,10 @@ export const archiveProjectController = async (req, res) => {
           'request-id': req.id,
         },
       })
+      addLogs(await ansibleRes.json(), userId)
     })
     ansibleData.REPO_DEST = `${project.name}-argo`
-    await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
+    const ansibleRes1 = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
       method: 'PUT',
       body: JSON.stringify(ansibleData),
       headers: {
@@ -284,8 +287,9 @@ export const archiveProjectController = async (req, res) => {
         'request-id': req.id,
       },
     })
+    addLogs(await ansibleRes1.json(), userId)
 
-    await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project`, {
+    const ansibleRes2 = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project`, {
       method: 'PUT',
       body: JSON.stringify(ansibleData),
       headers: {
@@ -294,6 +298,8 @@ export const archiveProjectController = async (req, res) => {
         'request-id': req.id,
       },
     })
+    addLogs(await ansibleRes2.json(), userId)
+
     try {
       repos?.forEach(async repo => {
         await deleteRepository(repo.id)

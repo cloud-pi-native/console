@@ -21,6 +21,15 @@ export const getAllLogs = async (offset = 0) => {
   return res
 }
 
+// CREATE
+export const addLogs = async (data, userId) => {
+  const res = await getLogModel().create({
+    userId,
+    data,
+  })
+  return res
+}
+
 // TECH
 export const _dropLogsTable = async () => {
   await sequelize.drop({

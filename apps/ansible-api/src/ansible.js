@@ -1,6 +1,6 @@
 import { spawn } from 'child_process'
 import app from './app.js'
-import { playbookDir } from './utils/env.js'
+import { isProd, playbookDir } from './utils/env.js'
 import { getLogInfos } from './utils/logger.js'
 
 export const runPlaybook = (playbook, vars) => {
@@ -19,7 +19,7 @@ export const runPlaybook = (playbook, vars) => {
         cwd: playbookDir,
         env: {
           ...process.env,
-          ANSIBLE_STDOUT_CALLBACK: 'community.general.unixy',
+          ANSIBLE_STDOUT_CALLBACK: isProd ? 'community.general.unixy' : 'default',
         },
       },
     )
