@@ -136,13 +136,13 @@ describe('User routes', () => {
       // 1. getProjectById
       Project.$queueResult(randomDbSetup.project)
       // 2. getRequestorRole
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: 'owner' })
       // 3. getExistingEnvironments
       Environment.$queueResult(null)
       // 4. createEnvironment
       Environment.$queueResult(newEnvironment)
       // 5. lockProject
-      sequelize.$queueResult([1])
+      Project.$queueResult([1])
       setRequestorId(owner.id)
 
       const response = await app.inject()
@@ -166,6 +166,8 @@ describe('User routes', () => {
       Project.$queueResult(randomDbSetup.project)
       // 2. getRequestorRole
       Role.$queueResult(null)
+      Role.$queueResult(null) // TODO: A retirer lorsque la gestion du post send dans le controlleur sera effective
+
       setRequestorId(owner.id)
 
       const response = await app.inject()
