@@ -49,16 +49,12 @@ export const keycloakInit = async () => {
     await keycloak.init({ onLoad, flow, redirectUri })
 
     // Permet de refresh le token keycloak toutes les minutes
-    setInterval(() => {
-      keycloak.updateToken(70).then((refreshed) => {
-        if (refreshed) {
-          console.log('Token refreshed ' + refreshed)
-        } else {
-          console.log('Token not refreshed, valid for ' + Math.round(keycloak.tokenParsed.exp + keycloak.timeSkew - new Date().getTime() / 1000) + ' seconds')
-        }
-      }).catch(() => {
-        console.log('Failed to refresh token')
-      })
+    setInterval(async () => {
+      try {
+        await keycloak.updateToken(70)
+      } catch (error) {
+        console.log(`Failed to refresh token. ${error.message}`)
+      }
     }, 60000)
   } catch (error) {
     return error
