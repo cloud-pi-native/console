@@ -32,3 +32,12 @@ spec:
           limits:
             memory: "128Mi"
             cpu: "500m"
+{{- if .Values.containers.server.container.data_configmap }}
+        volumeMounts:
+          - name: imports
+            mountPath: /app/src/init-db/imports
+      volumes:
+        - name: imports
+          configMap: 
+            name: {{ .Values.containers.server.container.data_configmap }}
+{{- end }}
