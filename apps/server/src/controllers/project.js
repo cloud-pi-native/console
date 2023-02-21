@@ -152,18 +152,19 @@ export const createProjectController = async (req, res) => {
     const organization = await getOrganizationById(project.organization)
 
     const ansibleData = {
-      ORGANIZATION_NAME: organization.name,
-      EMAILS: owner.email,
       PROJECT_NAME: project.name,
+      ORGANIZATION_NAME: organization.name,
+      EMAIL: owner.email,
     }
-    await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/projects`, {
+
+    await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         authorization: req.headers.authorization,
         'request-id': req.id,
       },
-      body: ansibleData,
+      body: JSON.stringify(ansibleData),
     })
 
     try {
