@@ -63,7 +63,7 @@ watch(projects, (projects) => {
         :data-testid="`projectTile-${project.title}`"
         :to="project.to"
         :horizontal="false"
-        :disabled="project.locked"
+        :class="project.locked ? 'disabled-tile' : null"
         @click="setSelectedProject(project.id)"
       />
     </div>

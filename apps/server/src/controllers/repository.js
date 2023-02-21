@@ -118,6 +118,7 @@ export const createRepositoryController = async (req, res) => {
       ...getLogInfos({ repositoryId: repo.id }),
       description: message,
     })
+    send201(res, 'Repository successfully created')
   } catch (error) {
     const message = 'Cannot create repository'
     req.log.error({
@@ -179,8 +180,6 @@ export const createRepositoryController = async (req, res) => {
       })
       return send500(res, error.message)
     }
-
-    send201(res, 'Repository successfully created')
   } catch (error) {
     const message = `Provisioning repo with ansible failed: ${error.message}`
     req.log.error({
@@ -328,6 +327,7 @@ export const deleteRepositoryController = async (req, res) => {
       ...getLogInfos({ repositoryId }),
       description: message,
     })
+    send200(res, 'Repository successfully deleting')
   } catch (error) {
     const message = 'Cannot delete repository'
     req.log.error({
@@ -375,8 +375,6 @@ export const deleteRepositoryController = async (req, res) => {
       })
       return send500(res, error.message)
     }
-
-    send201(res, 'Repository successfully deleted')
   } catch (error) {
     const message = 'Provisioning repo with ansible failed'
     req.log.error({
