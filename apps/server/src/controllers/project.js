@@ -274,6 +274,16 @@ export const archiveProjectController = async (req, res) => {
         },
       })
     })
+    ansibleData.REPO_DEST = `${project.name}-argo`
+    await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
+      method: 'PUT',
+      body: JSON.stringify(ansibleData),
+      headers: {
+        'Content-Type': 'application/json',
+        authorization: req.headers.authorization,
+        'request-id': req.id,
+      },
+    })
 
     await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project`, {
       method: 'PUT',
