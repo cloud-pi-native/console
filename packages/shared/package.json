@@ -12,16 +12,16 @@
     "test": "vitest run --coverage"
   },
   "dependencies": {
-    "joi": "^17.7.0"
+    "joi": "^17.8.3"
   },
   "devDependencies": {
-    "@vitest/coverage-c8": "^0.26.3",
+    "@vitest/coverage-c8": "^0.28.5",
     "@faker-js/faker": "^7.6.0",
-    "eslint": "^8.31.0",
+    "eslint": "^8.34.0",
     "eslint-config-standard": "^17.0.0",
-    "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-n": "^15.6.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-n": "^15.6.1",
     "eslint-plugin-promise": "^6.1.1",
-    "vitest": "^0.26.3"
+    "vitest": "^0.28.5"
   }
 }

@@ -1,5 +1,5 @@
 # Base stage
-FROM node:18.12.1-bullseye-slim as base
+FROM node:18.14.1-bullseye-slim as base
 
 RUN npm install --location=global pnpm
 
@@ -33,7 +33,7 @@ RUN pnpm --filter server --prod deploy build
 
 
 # Prod stage
-FROM node:18.12.1-bullseye-slim as prod
+FROM node:18.14.1-bullseye-slim as prod
 RUN mkdir -p /home/node/logs && chmod 777 -R /home/node/logs
 
 WORKDIR /app
