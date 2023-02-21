@@ -25,6 +25,8 @@ import { _dropProjectsTable } from './models/queries/project-queries.js'
 import { _dropUsersTable } from './models/queries/user-queries.js'
 import { _dropOrganizationsTable } from './models/queries/organization-queries.js'
 import { _dropUsersProjectsTable } from './models/queries/users-projects-queries.js'
+import { getLogModel } from './models/log.js'
+import { _dropLogsTable } from './models/queries/log-queries.js'
 
 const DELAY_BEFORE_RETRY = isTest || isCI ? 1000 : 10000
 let closingConnections = false
@@ -77,6 +79,7 @@ export const closeConnections = async () => {
 
 export const dropTables = async () => {
   try {
+    await _dropLogsTable()
     await _dropRepositoriesTable()
     await _dropPermissionsTable()
     await _dropEnvironmentsTable()
@@ -93,6 +96,7 @@ export const dropTables = async () => {
 
 export const synchroniseModels = async () => {
   try {
+    const logModel = await getLogModel()
     const organizationModel = await getOrganizationModel()
     const userModel = await getUserModel()
     const projectModel = await getProjectModel()
@@ -100,6 +104,8 @@ export const synchroniseModels = async () => {
     const permissionModel = await getPermissionModel()
     const repositoryModel = await getRepositoryModel()
     const usersProjectsModel = await getUsersProjectsModel()
+
+    logModel.belongsTo(userModel, { foreignKey: 'userId' })
 
     organizationModel.hasMany(projectModel, { foreignKey: 'organization' })
     projectModel.belongsTo(organizationModel, { foreignKey: 'organization' })
@@ -126,6 +132,7 @@ export const synchroniseModels = async () => {
     await environmentModel.sync({ alter: true, logging: false })
     await permissionModel.sync({ alter: true, logging: false })
     await repositoryModel.sync({ alter: true, logging: false })
+    await logModel.sync({ alter: true })
 
     app.log.info('All models were synchronized successfully.')
   } catch (error) {

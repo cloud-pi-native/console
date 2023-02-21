@@ -56,7 +56,7 @@ describe('Project routes', () => {
   afterEach(() => {
     vi.clearAllMocks()
     sequelize.$clearQueue()
-    global.fetch = vi.fn(() => Promise.resolve())
+    global.fetch = vi.fn(() => Promise.resolve({ json: async () => {} }))
   })
 
   // GET

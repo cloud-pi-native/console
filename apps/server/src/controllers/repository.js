@@ -25,6 +25,7 @@ import { send200, send201, send500 } from '../utils/response.js'
 import { ansibleHost, ansiblePort } from '../utils/env.js'
 import { getOrganizationById } from '../models/queries/organization-queries.js'
 import { encrypt, decrypt } from '../utils/crypto.js'
+import { addLogs } from '../models/queries/log-queries.js'
 
 // GET
 export const getRepositoryByIdController = async (req, res) => {
@@ -150,7 +151,7 @@ export const createRepositoryController = async (req, res) => {
       ansibleData.GIT_INPUT_PASSWORD = await decrypt(data.externalToken)
     }
 
-    await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
+    const ansibleRes = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
       method: 'POST',
       body: JSON.stringify(ansibleData),
       headers: {
@@ -159,6 +160,7 @@ export const createRepositoryController = async (req, res) => {
         'request-id': req.id,
       },
     })
+    addLogs(await ansibleRes.json(), userId)
 
     try {
       await updateRepositoryCreated(repo.id)
@@ -346,7 +348,7 @@ export const deleteRepositoryController = async (req, res) => {
       PROJECT_NAME: project.name,
     }
 
-    await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
+    const ansibleRes = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
       method: 'PUT',
       body: JSON.stringify(ansibleData),
       headers: {
@@ -355,6 +357,8 @@ export const deleteRepositoryController = async (req, res) => {
         'request-id': req.id,
       },
     })
+    addLogs(await ansibleRes.json(), userId)
+
     try {
       await deleteRepository(repositoryId)
       await unlockProject(projectId)
