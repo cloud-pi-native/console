@@ -16,8 +16,12 @@ const isArchivingProject = ref(false)
 const projectToArchive = ref('')
 
 const archiveProject = async (projectId) => {
-  await projectStore.archiveProject(projectId)
-  router.push('/projects')
+  try {
+    await projectStore.archiveProject(projectId)
+    router.push('/projects')
+  } catch (error) {
+    console.log(error)
+  }
 }
 
 </script>

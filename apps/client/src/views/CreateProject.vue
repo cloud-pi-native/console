@@ -34,8 +34,12 @@ const createProject = async () => {
   const keysToValidate = ['organization', 'name']
   const errorSchema = schemaValidator(projectSchema, project.value, keysToValidate)
   if (Object.keys(errorSchema).length === 0) {
-    await projectStore.createProject(project.value)
-    router.push('/projects')
+    try {
+      await projectStore.createProject(project.value)
+      router.push('/projects')
+    } catch (error) {
+      console.log(error)
+    }
   }
 }
 

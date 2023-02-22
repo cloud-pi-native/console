@@ -36,15 +36,27 @@ const setPermissions = () => {
 
 const addPermission = async (userEmail) => {
   const userId = usersToLicence.value.find(user => user.email === userEmail).id
-  await projectStore.addPermission(environment.value.id, { userId, level: 0 })
+  try {
+    await projectStore.addPermission(environment.value.id, { userId, level: 0 })
+  } catch (error) {
+    console.log(error)
+  }
 }
 
 const updatePermission = async (userId, level) => {
-  await projectStore.updatePermission(environment.value.id, { userId, level })
+  try {
+    await projectStore.updatePermission(environment.value.id, { userId, level })
+  } catch (error) {
+    console.log(error)
+  }
 }
 
 const deletePermission = async (userId) => {
-  await projectStore.deletePermission(environment.value.id, userId)
+  try {
+    await projectStore.deletePermission(environment.value.id, userId)
+  } catch (error) {
+    console.log(error)
+  }
 }
 
 watch(project, () => {

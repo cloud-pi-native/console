@@ -48,11 +48,19 @@ const cancel = () => {
 
 const addRepo = async (repo) => {
   cancel()
-  await projectStore.addRepoToProject(repo)
+  try {
+    await projectStore.addRepoToProject(repo)
+  } catch (error) {
+    console.log(error)
+  }
 }
 
 const deleteRepo = async (repoId) => {
-  await projectStore.deleteRepo(repoId)
+  try {
+    await projectStore.deleteRepo(repoId)
+  } catch (error) {
+    console.log(error)
+  }
   setReposTiles(selectedProject.value)
   selectedRepo.value = {}
 }
