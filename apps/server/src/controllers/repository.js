@@ -160,7 +160,9 @@ export const createRepositoryController = async (req, res) => {
         'request-id': req.id,
       },
     })
-    addLogs(await ansibleRes.json(), userId)
+    const resJson = await ansibleRes.json()
+    await addLogs(resJson, userId)
+    if (resJson.status !== 'OK') throw new Error(`Echec de création du repo ${repo.internalRepoName} côté ansible`)
 
     try {
       await updateRepositoryCreated(repo.id)
@@ -179,7 +181,7 @@ export const createRepositoryController = async (req, res) => {
       return send500(res, error.message)
     }
   } catch (error) {
-    const message = `Provisioning repo with ansible failed: ${error.message}`
+    const message = `Echec requête ${req.id} : ${error.message}`
     req.log.error({
       ...getLogInfos(),
       description: message,
@@ -357,7 +359,9 @@ export const deleteRepositoryController = async (req, res) => {
         'request-id': req.id,
       },
     })
-    addLogs(await ansibleRes.json(), userId)
+    const resJson = await ansibleRes.json()
+    await addLogs(resJson, userId)
+    if (resJson.status !== 'OK') throw new Error(`Echec de suppression du repo ${repo.internalRepoName} côté ansible`)
 
     try {
       await deleteRepository(repositoryId)

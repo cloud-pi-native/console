@@ -13,6 +13,7 @@ import { getUsersProjectsModel } from '../models/users-projects.js'
 import { getRepositoryModel } from '../models/repository.js'
 import { getEnvironmentModel } from '../models/environment.js'
 import { getPermissionModel } from '../models/permission.js'
+import { getOrganizationModel } from '../models/organization.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 vi.mock('../ansible.js')
@@ -50,6 +51,7 @@ describe('Project routes', () => {
   let Repository
   let Environment
   let Permissions
+  let Organization
 
   beforeAll(async () => {
     mockSession(app)
@@ -60,7 +62,7 @@ describe('Project routes', () => {
     Repository = getRepositoryModel()
     Environment = getEnvironmentModel()
     Permissions = getPermissionModel()
-    global.fetch = vi.fn(() => Promise.resolve())
+    Organization = getOrganizationModel()
   })
 
   afterAll(async () => {
@@ -70,7 +72,6 @@ describe('Project routes', () => {
   afterEach(() => {
     vi.clearAllMocks()
     sequelize.$clearQueue()
-    global.fetch = vi.fn(() => Promise.resolve({ json: async () => {} }))
   })
 
   // GET
@@ -298,9 +299,25 @@ describe('Project routes', () => {
       randomDbSetup.project.environments.forEach(environment => Permissions.$queueResult(environment.permissions))
       User.$queueResult(randomDbSetup.users)
       // 3. projectLoked
-      sequelize.$queueResult([1])
-      // 4. archiveProject
-      sequelize.$queueResult([1])
+      Project.$queueResult(randomDbSetup.project.id)
+      // 4. ansible
+      Organization.$queueResult(randomDbSetup.organization)
+      Repository.$queueResult(randomDbSetup.project.repositories)
+      Environment.$queueResult(randomDbSetup.project.environments)
+
+      global.fetch = vi.fn(() => Promise.resolve({
+        json: async () => (
+          {
+            command: 'ansible-playbook',
+            status: 'OK',
+            code: 0,
+            logs: 'logs',
+          }
+        ),
+      },
+      ))
+      // 5. archiveProject
+      Project.$queueResult(randomDbSetup.project.id)
       setRequestorId(owner.id)
 
       const response = await app.inject()
