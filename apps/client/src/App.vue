@@ -61,3 +61,11 @@ watch(label, (label) => {
     </div>
   </div>
 </template>
+
+<style>
+.snackbar {
+  @apply w-11/12 md:w-max fixed bottom-1 z-2;
+
+  background-color: white;
+}
+</style>
