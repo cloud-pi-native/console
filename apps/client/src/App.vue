@@ -1,7 +1,6 @@
 <script setup>
 import SideMenu from './components/SideMenu.vue'
 import { ref, onMounted, watch, onBeforeMount } from 'vue'
-import DsoSnackbar from './components/DsoSnackbar.vue'
 import { getKeycloak } from './utils/keycloak/keycloak.js'
 import { useUserStore } from './stores/user.js'
 import { useProjectStore } from './stores/project.js'
@@ -76,14 +75,5 @@ watch(label, (label) => {
       closeable
       @close="close()"
     />
-    <DsoSnackbar />
   </div>
 </template>
-
-<style>
-.snackbar {
-  @apply w-11/12 md:w-max fixed bottom-1 z-2;
-
-  background-color: white;
-}
-</style>
