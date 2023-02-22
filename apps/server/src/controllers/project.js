@@ -54,11 +54,11 @@ export const getUserProjectsController = async (req, res) => {
     projects.map(project => replaceNestedKeys(project, lowercaseFirstLetter))
     return send200(res, projects)
   } catch (error) {
-    const message = `Cannot retrieve projects: ${error.message}`
+    const message = `Cannot retrieve projects: ${error?.message}`
     req.log.error({
       ...getLogInfos(),
       description: message,
-      error: error.message,
+      error: error?.message,
     })
     send500(res, message)
   }
@@ -79,11 +79,11 @@ export const getProjectByIdController = async (req, res) => {
     })
     send200(res, project)
   } catch (error) {
-    const message = `Cannot retrieve project: ${error.message}`
+    const message = `Cannot retrieve project: ${error?.message}`
     req.log.error({
       ...getLogInfos({ projectId }),
       description: message,
-      error: error.message,
+      error: error?.message,
     })
     send500(res, message)
   }
@@ -106,11 +106,11 @@ export const getProjectOwnerController = async (req, res) => {
     })
     send200(res, owner)
   } catch (error) {
-    const message = `Cannot retrieve project: ${error.message}`
+    const message = `Cannot retrieve project: ${error?.message}`
     req.log.error({
       ...getLogInfos({ projectId }),
       description: message,
-      error: error.message,
+      error: error?.message,
     })
     send500(res, message)
   }
@@ -142,10 +142,10 @@ export const createProjectController = async (req, res) => {
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: `Cannot create project: ${error.message}`,
-      error: error.message,
+      description: `Cannot create project: ${error?.message}`,
+      error: error?.message,
     })
-    return send500(res, error.message)
+    return send500(res, error?.message)
   }
 
   try {
@@ -166,8 +166,9 @@ export const createProjectController = async (req, res) => {
       },
       body: JSON.stringify(ansibleData),
     })
-    addLogs(await ansibleRes.json(), userId)
-
+    const resJson = await ansibleRes.json()
+    await addLogs(resJson, userId)
+    if (resJson?.status !== 'OK') throw new Error('Echec de création du projet côté ansible')
     try {
       project = await updateProjectCreated(project.id)
 
@@ -179,13 +180,13 @@ export const createProjectController = async (req, res) => {
       req.log.error({
         ...getLogInfos(),
         description: 'Cannot update project status to created',
-        error: error.message,
+        error: error?.message,
       })
     }
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: 'Provisioning project with ansible failed',
+      description: `Echec requête ${req.id} : ${error?.message}`,
       error,
     })
     try {
@@ -199,7 +200,7 @@ export const createProjectController = async (req, res) => {
       req.log.error({
         ...getLogInfos(),
         description: 'Cannot update project status to failed',
-        error: error.message,
+        error: error?.message,
       })
     }
   }
@@ -248,10 +249,10 @@ export const archiveProjectController = async (req, res) => {
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: `Cannot lock project: ${error.message}`,
-      error: error.message,
+      description: `Cannot lock project: ${error?.message}`,
+      error: error?.message,
     })
-    return send500(res, error.message)
+    return send500(res, error?.message)
   }
 
   try {
@@ -266,7 +267,7 @@ export const archiveProjectController = async (req, res) => {
 
     repos?.forEach(async repo => {
       ansibleData.REPO_DEST = repo.internalRepoName
-      const ansibleRes = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
+      const ansibleRes0 = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
         method: 'PUT',
         body: JSON.stringify(ansibleData),
         headers: {
@@ -275,8 +276,11 @@ export const archiveProjectController = async (req, res) => {
           'request-id': req.id,
         },
       })
-      addLogs(await ansibleRes.json(), userId)
+      const res0json = await ansibleRes0.json()
+      await addLogs(res0json, userId)
+      if (res0json?.status !== 'OK') throw new Error(`Echec de suppression du repo ${repo.internalRepoName} côté ansible`)
     })
+
     ansibleData.REPO_DEST = `${project.name}-argo`
     const ansibleRes1 = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
       method: 'PUT',
@@ -287,7 +291,9 @@ export const archiveProjectController = async (req, res) => {
         'request-id': req.id,
       },
     })
-    addLogs(await ansibleRes1.json(), userId)
+    const res1json = await ansibleRes1.json()
+    await addLogs(res1json, userId)
+    if (res1json?.status !== 'OK') throw new Error('Echec de suppression du projet-argo côté ansible')
 
     const ansibleRes2 = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project`, {
       method: 'PUT',
@@ -298,7 +304,9 @@ export const archiveProjectController = async (req, res) => {
         'request-id': req.id,
       },
     })
-    addLogs(await ansibleRes2.json(), userId)
+    const res2Json = await ansibleRes2.json()
+    await addLogs(res2Json, userId)
+    if (res2Json?.status !== 'OK') throw new Error('Echec de suppression du projet côté ansible')
 
     try {
       repos?.forEach(async repo => {
@@ -324,13 +332,13 @@ export const archiveProjectController = async (req, res) => {
       req.log.error({
         ...getLogInfos(),
         description: 'Cannot unlock project',
-        error: error.message,
+        error: error?.message,
       })
     }
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: 'Provisioning project with ansible failed',
+      description: `Echec requête ${req.id} : ${error?.message}`,
       error,
     })
     try {
@@ -345,7 +353,7 @@ export const archiveProjectController = async (req, res) => {
       req.log.error({
         ...getLogInfos(),
         description: 'Cannot update project status',
-        error: error.message,
+        error: error?.message,
       })
     }
     send500(res, error)
