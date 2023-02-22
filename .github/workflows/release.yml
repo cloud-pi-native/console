@@ -36,6 +36,8 @@ jobs:
     name: Generate matrix for build & scan
     if: ${{ needs.release.outputs.release-created }}
     runs-on: ubuntu-latest
+    needs:
+      - release
     outputs:
       build-matrix: ${{ steps.build-matrix.outputs.BUILD_MATRIX }}
     steps:
