@@ -6,10 +6,10 @@ import { getConnection, closeConnections, synchroniseModels } from './connect.js
 import { isDev, isTest, isCI, isProd, isDevSetup, port } from './utils/env.js'
 import { initDb } from './init-db/index.js'
 
-startServer()
+await startServer()
 handleExit()
 
-const initializeDB = async (path) => {
+async function initializeDB (path) {
   app.log.info('Starting init DB...')
   const { data } = await import(path)
   await initDb(data)

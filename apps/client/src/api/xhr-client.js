@@ -16,7 +16,7 @@ apiClient.interceptors.request.use(async function addAuthHeader (config) {
   if (process.env.NODE_ENV === 'test' && process.env.CT === 'true') {
     return config
   }
-  await keycloak.loadUserProfile()
+
   await keycloak.updateToken()
 
   const token = keycloak.token
@@ -49,7 +49,7 @@ apiClient.interceptors.response.use(function (response) {
     router.push('/login')
     return Promise.reject(customError)
   }
-  const apiError = new Error(response?.data?.message || response?.statusText || error?.message)
+  const apiError = new Error(response?.data || response?.statusText || error?.message)
   apiError.statusCode = response?.status
   return Promise.reject(apiError)
 })

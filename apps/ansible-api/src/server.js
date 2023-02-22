@@ -1,7 +1,7 @@
 import app from './app.js'
 import { isDev, isTest, isCI, isProd, port } from './utils/env.js'
 
-startServer()
+await startServer()
 
 export async function startServer () {
   app.listen({ host: '0.0.0.0', port }, (err, _address) => {

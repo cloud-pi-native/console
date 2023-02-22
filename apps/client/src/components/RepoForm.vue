@@ -6,7 +6,10 @@ import CIForm from './CIForm.vue'
 const props = defineProps({
   repo: {
     type: Object,
-    default: () => {},
+    default: () => ({
+      isInfra: false,
+      isPrivate: false,
+    }),
   },
   isEditable: {
     type: Boolean,

@@ -19,7 +19,7 @@ const app = fastify({ logger: false })
 
 const mockSessionPlugin = (app, opt, next) => {
   app.addHook('onRequest', (req, res, next) => {
-    req.session = { user: getOwner() }
+    req.session = { user: getRequestor() }
     next()
   })
   next()
@@ -30,13 +30,13 @@ const mockSession = (app) => {
     .register(organizationRouter)
 }
 
-const owner = {}
-const setOwnerId = (id) => {
-  owner.id = id
+const requestor = {}
+const setRequestorId = (id) => {
+  requestor.id = id
 }
 
-const getOwner = () => {
-  return owner
+const getRequestor = () => {
+  return requestor
 }
 
 describe('Project routes', () => {
@@ -56,7 +56,7 @@ describe('Project routes', () => {
   afterEach(() => {
     vi.clearAllMocks()
     sequelize.$clearQueue()
-    global.fetch = vi.fn(() => Promise.resolve())
+    global.fetch = vi.fn(() => Promise.resolve({ json: async () => {} }))
   })
 
   // GET
@@ -68,7 +68,7 @@ describe('Project routes', () => {
 
       // 1. getOrganizations
       Organization.$queueResult(organizations)
-      setOwnerId(owner.id)
+      setRequestorId(owner.id)
 
       const response = await app.inject()
         .get('/')

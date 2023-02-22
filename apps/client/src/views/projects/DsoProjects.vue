@@ -14,6 +14,7 @@ const setProjectList = (projects) => {
     id: project.id,
     title: project.name,
     to: `/projects/${project.id}/dashboard`,
+    locked: project.locked,
   }))
 }
 
@@ -26,7 +27,11 @@ const goToCreateProject = () => {
 }
 
 onMounted(async () => {
-  await projectStore.getUserProjects()
+  try {
+    await projectStore.getUserProjects()
+  } catch (error) {
+    console.log(error)
+  }
 })
 
 watch(projects, (projects) => {
@@ -59,9 +64,11 @@ watch(projects, (projects) => {
     >
       <DsfrTile
         :title="project.title"
+        :description="project.locked ? 'opérations en cours' : null"
         :data-testid="`projectTile-${project.title}`"
         :to="project.to"
         :horizontal="false"
+        :class="project.locked ? 'disabled-tile' : null"
         @click="setSelectedProject(project.id)"
       />
     </div>

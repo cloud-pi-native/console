@@ -1,5 +1,5 @@
 # Base stage
-FROM node:18.12.1-bullseye-slim as base
+FROM node:18.14.1-bullseye-slim as base
 
 RUN npm install --location=global pnpm
 
@@ -29,7 +29,7 @@ FROM base as build
 
 WORKDIR /app
 
-RUN pnpm --filter client --no-optional deploy build
+RUN pnpm --filter client --prod deploy build
 WORKDIR /app/build
 RUN npm run build
 

@@ -10,22 +10,22 @@ import {
 } from '../models/queries/repository-queries.js'
 import {
   getProjectById,
+  getProjectUsers,
   lockProject,
   unlockProject,
 } from '../models/queries/project-queries.js'
 import {
-  getEnvironmentsNamesByProjectId,
+  getEnvironmentsByProjectId,
 } from '../models/queries/environment-queries.js'
 import {
   getRoleByUserIdAndProjectId,
-  getSingleOwnerByProjectId,
 } from '../models/queries/users-projects-queries.js'
-import { getUserById } from '../models/queries/user-queries.js'
 import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import { ansibleHost, ansiblePort } from '../utils/env.js'
 import { getOrganizationById } from '../models/queries/organization-queries.js'
 import { encrypt, decrypt } from '../utils/crypto.js'
+import { addLogs } from '../models/queries/log-queries.js'
 
 // GET
 export const getRepositoryByIdController = async (req, res) => {
@@ -118,6 +118,7 @@ export const createRepositoryController = async (req, res) => {
       ...getLogInfos({ repositoryId: repo.id }),
       description: message,
     })
+    send201(res, 'Repository successfully created')
   } catch (error) {
     const message = 'Cannot create repository'
     req.log.error({
@@ -129,19 +130,16 @@ export const createRepositoryController = async (req, res) => {
   }
 
   try {
-    // TODO : qst @tobi - Faut-il envoyer à ansible le owner du projet, ou le requestor (user qui crée le repo) ?
-    // const requestor = await getUserById(userId)
-    const ownerId = await getSingleOwnerByProjectId(projectId)
-    const owner = await getUserById(ownerId)
+    const users = await getProjectUsers(projectId)
 
-    const envRes = await getEnvironmentsNamesByProjectId(projectId)
+    const envRes = await getEnvironmentsByProjectId(projectId)
     const environmentsNames = envRes.map(env => env.name)
 
-    const orgName = await getOrganizationById(project.organization)
+    const organization = await getOrganizationById(project.organization)
 
     const ansibleData = {
-      ORGANIZATION_NAME: orgName,
-      EMAILS: owner.email,
+      ORGANIZATION_NAME: organization.name,
+      EMAILS: users.map(user => user.email),
       PROJECT_NAME: project.name,
       REPO_DEST: data.internalRepoName,
       REPO_SRC: data.externalRepoUrl.startsWith('http') ? data.externalRepoUrl.split('://')[1] : data.externalRepoUrl,
@@ -153,14 +151,16 @@ export const createRepositoryController = async (req, res) => {
       ansibleData.GIT_INPUT_PASSWORD = await decrypt(data.externalToken)
     }
 
-    await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
+    const ansibleRes = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
       method: 'POST',
       body: JSON.stringify(ansibleData),
       headers: {
         'Content-Type': 'application/json',
         authorization: req.headers.authorization,
+        'request-id': req.id,
       },
     })
+    addLogs(await ansibleRes.json(), userId)
 
     try {
       await updateRepositoryCreated(repo.id)
@@ -178,8 +178,6 @@ export const createRepositoryController = async (req, res) => {
       })
       return send500(res, error.message)
     }
-
-    send201(res, 'Repository successfully created')
   } catch (error) {
     const message = `Provisioning repo with ansible failed: ${error.message}`
     req.log.error({
@@ -327,6 +325,7 @@ export const deleteRepositoryController = async (req, res) => {
       ...getLogInfos({ repositoryId }),
       description: message,
     })
+    send200(res, 'Repository successfully deleting')
   } catch (error) {
     const message = 'Cannot delete repository'
     req.log.error({
@@ -338,13 +337,28 @@ export const deleteRepositoryController = async (req, res) => {
   }
 
   try {
-    await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos/${repositoryId}`, {
-      method: 'DELETE',
+    const project = await getProjectById(projectId)
+    const organization = await getOrganizationById(project.organization)
+    const environments = await getEnvironmentsByProjectId(projectId)
+
+    const ansibleData = {
+      ORGANIZATION_NAME: organization.name,
+      ENV_LIST: environments.map(environment => environment.name),
+      REPO_DEST: repo.internalRepoName,
+      PROJECT_NAME: project.name,
+    }
+
+    const ansibleRes = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
+      method: 'PUT',
+      body: JSON.stringify(ansibleData),
       headers: {
         'Content-Type': 'application/json',
         authorization: req.headers.authorization,
+        'request-id': req.id,
       },
     })
+    addLogs(await ansibleRes.json(), userId)
+
     try {
       await deleteRepository(repositoryId)
       await unlockProject(projectId)
@@ -359,10 +373,7 @@ export const deleteRepositoryController = async (req, res) => {
         description: 'Cannot delete repository',
         error: error.message,
       })
-      return send500(res, error.message)
     }
-
-    send201(res, 'Repository successfully deleted')
   } catch (error) {
     const message = 'Provisioning repo with ansible failed'
     req.log.error({
@@ -385,8 +396,6 @@ export const deleteRepositoryController = async (req, res) => {
         description: 'Cannot update repository status to failed',
         error: error.message,
       })
-      return send500(res, error.message)
     }
-    send500(res, message)
   }
 }

@@ -21,7 +21,7 @@ const app = fastify({ logger: false })
 
 const mockSessionPlugin = (app, opt, next) => {
   app.addHook('onRequest', (req, res, next) => {
-    req.session = { user: getOwner() }
+    req.session = { user: getRequestor() }
     next()
   })
   next()
@@ -32,13 +32,13 @@ const mockSession = (app) => {
     .register(projectEnvironmentRouter)
 }
 
-const owner = {}
-const setOwnerId = (id) => {
-  owner.id = id
+const requestor = {}
+const setRequestorId = (id) => {
+  requestor.id = id
 }
 
-const getOwner = () => {
-  return owner
+const getRequestor = () => {
+  return requestor
 }
 
 describe('User routes', () => {
@@ -64,7 +64,7 @@ describe('User routes', () => {
   afterEach(() => {
     vi.clearAllMocks()
     sequelize.$clearQueue()
-    global.fetch = vi.fn(() => Promise.resolve())
+    global.fetch = vi.fn(() => Promise.resolve({ json: async () => {} }))
   })
 
   // GET
@@ -76,7 +76,7 @@ describe('User routes', () => {
       Environment.$queueResult(randomDbSetup.project.environments[0])
       Role.$queueResult(randomDbSetup.project.users[0])
       Permission.$queueResult(randomDbSetup.project.environments[0].permissions[0])
-      setOwnerId(owner.id)
+      setRequestorId(owner.id)
 
       const response = await app.inject()
         .get(`/${randomDbSetup.project.id}/environments/${randomDbSetup.project.environments[0].id}`)
@@ -93,7 +93,7 @@ describe('User routes', () => {
 
       Environment.$queueResult(randomDbSetup.project.environments[0])
       Role.$queueResult(null)
-      setOwnerId(owner.id)
+      setRequestorId(owner.id)
 
       const response = await app.inject()
         .get(`/${randomDbSetup.project.id}/environments/${randomDbSetup.project.environments[0].id}`)
@@ -112,7 +112,7 @@ describe('User routes', () => {
       Environment.$queueResult(randomDbSetup.project.environments[0])
       Role.$queueResult(randomDbSetup.project.users[0])
       Permission.$queueResult(null)
-      setOwnerId(owner.id)
+      setRequestorId(owner.id)
 
       const response = await app.inject()
         .get(`/${randomDbSetup.project.id}/environments/${randomDbSetup.project.environments[0].id}`)
@@ -136,14 +136,14 @@ describe('User routes', () => {
       // 1. getProjectById
       Project.$queueResult(randomDbSetup.project)
       // 2. getRequestorRole
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: 'owner' })
       // 3. getExistingEnvironments
       Environment.$queueResult(null)
       // 4. createEnvironment
       Environment.$queueResult(newEnvironment)
       // 5. lockProject
-      sequelize.$queueResult([1])
-      setOwnerId(owner.id)
+      Project.$queueResult([1])
+      setRequestorId(owner.id)
 
       const response = await app.inject()
         .post(`/${randomDbSetup.project.id}/environments`)
@@ -166,7 +166,9 @@ describe('User routes', () => {
       Project.$queueResult(randomDbSetup.project)
       // 2. getRequestorRole
       Role.$queueResult(null)
-      setOwnerId(owner.id)
+      Role.$queueResult(null) // TODO: A retirer lorsque la gestion du post send dans le controlleur sera effective
+
+      setRequestorId(owner.id)
 
       const response = await app.inject()
         .post(`/${randomDbSetup.project.id}/environments`)
@@ -193,7 +195,7 @@ describe('User routes', () => {
       Environment.$queueResult(newEnvironment)
       // 5. lockProject
       sequelize.$queueResult([1])
-      setOwnerId(owner.id)
+      setRequestorId(owner.id)
 
       const response = await app.inject()
         .post(`/${randomDbSetup.project.id}/environments`)
@@ -219,7 +221,7 @@ describe('User routes', () => {
       Environment.$queueResult(randomDbSetup.project.environments[0])
       // 3. lockProject
       sequelize.$queueResult([1])
-      setOwnerId(owner.id)
+      setRequestorId(owner.id)
 
       const response = await app.inject()
         .delete(`/${randomDbSetup.project.id}/environments/${environmentToDelete.id}`)
@@ -235,7 +237,7 @@ describe('User routes', () => {
 
       // 1. getRequestorRole
       Role.$queueResult(null)
-      setOwnerId(owner.id)
+      setRequestorId(owner.id)
 
       const response = await app.inject()
         .delete(`/${randomDbSetup.project.id}/environments/${environmentToDelete.id}`)
@@ -255,7 +257,7 @@ describe('User routes', () => {
 
       // 1. getRequestorRole
       Role.$queueResult(requestorRole)
-      setOwnerId(owner.id)
+      setRequestorId(owner.id)
 
       const response = await app.inject()
         .delete(`/${randomDbSetup.project.id}/environments/${environmentToDelete.id}`)

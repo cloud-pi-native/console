@@ -1,7 +1,7 @@
 {
   "realm": "cloud-pi-native",
   "enabled": true,
-  "accessTokenLifespan": 60,
+  "accessTokenLifespan": 900,
   "accessCodeLifespan": 60,
   "accessCodeLifespanUserAction": 300,
   "ssoSessionIdleTimeout": 600,

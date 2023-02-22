@@ -7,7 +7,7 @@ export const controller = async (req, res) => {
 
   return runPlaybook(res.context.config.playbook, data).then(message => {
     message.id = req.id
-    if (message.status !== 'OK') {
+    if (message.status === 'OK') {
       send200(res, message)
       return
     }

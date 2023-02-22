@@ -1,48 +1,31 @@
 # Variables nécessaires :
-# - PROJECT_NAME (immutable)
-# - ORGANIZATION_NAME (immutable)
+# - PROJECT_NAME
+# - ORGANIZATION_NAME
 # - EMAILS (Sous réserve. Array, on boucle dessus : owner + users)
 # - ENV_LIST (doit venir de la base)
-# - REPO_DEST (immutable)
-# - REPO_SRC
-# - GIT_INPUT_USER
-# - GIT_INPUT_PASSWORD
-# - IS_INFRA (immutable)
+# - REPO_DEST
+# - IS_INFRA
 
-# est-ce que un put n'est pas juste un post ou on s'est assuré que les valeurs d'entrées sont bonnes ?
-
-- name: Update repo in project
+- name: Delete repo in project
   hosts: localhost
   vars:
     validation:
       type: object
-      required: ["PROJECT_NAME", "ORGANIZATION_NAME", "EMAILS", "ENV_LIST", "REPO_DEST", "REPO_SRC", "IS_INFRA"]
+      required: ["PROJECT_NAME", "ORGANIZATION_NAME", "ENV_LIST", "REPO_DEST"]
       properties:
         PROJECT_NAME:
-          type: string # immutable
+          type: string
         ORGANIZATION_NAME:
-          type: string # immutable
-        EMAILS:
-          type: array
-          items:
-            type: string
+          type: string
         ENV_LIST:
           type: array
           items:
             type: string
         REPO_DEST:
-          type: string # immutable
-        REPO_SRC:
           type: string
-        GIT_INPUT_USER:
-          type: string
-        GIT_INPUT_PASSWORD:
-          type: string
-        IS_INFRA:
-          type: boolean # immutable
       
   tasks:
-    - name: Update a repo in project
+    - name: Delete a repo in project
       ansible.builtin.debug:
         msg:
-        - "Update a repo in project"
+        - "Delete a repo in project"

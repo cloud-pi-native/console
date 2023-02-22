@@ -11,7 +11,7 @@ const selectedProject = computed(() => projectStore.selectedProject)
 
 const isUserAlreadyInTeam = computed(() => {
   const allUsers = selectedProject.value.users
-  return !!allUsers.find(user => user.email === newUser.value.email)
+  return !!allUsers?.find(user => user.email === newUser.value.email)
 })
 
 const owner = computed(() => selectedProject.value.users?.find(user => user?.usersProjects?.role === 'owner'))
@@ -60,13 +60,21 @@ const addUserToProject = async () => {
   const keysToValidate = ['id', 'email', 'firstName', 'lastName']
   const errorSchema = schemaValidator(userSchema, newUser.value, keysToValidate)
   if (Object.keys(errorSchema).length || isUserAlreadyInTeam.value) return
-  await projectStore.addUserToProject(newUser.value)
+  try {
+    await projectStore.addUserToProject(newUser.value)
+  } catch (error) {
+    console.log(error)
+  }
 
   newUser.value = instanciateSchema({ schema: userSchema }, undefined)
 }
 
 const removeUserFromProject = async (userId) => {
-  await projectStore.removeUserFromProject(userId)
+  try {
+    await projectStore.removeUserFromProject(userId)
+  } catch (error) {
+    console.log(error)
+  }
 }
 
 onMounted(() => {

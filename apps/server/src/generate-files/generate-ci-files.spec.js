@@ -41,7 +41,7 @@ describe('ciFiles routes', () => {
   afterAll(async () => {
     vi.clearAllMocks()
     sequelize.$clearQueue()
-    global.fetch = vi.fn(() => Promise.resolve())
+    global.fetch = vi.fn(() => Promise.resolve({ json: async () => {} }))
   })
 
   it('Should generate files for a node project', async () => {

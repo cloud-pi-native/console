@@ -24,6 +24,7 @@ const setReposTiles = (selectedProject) => {
     id: repo.internalRepoName,
     title: repo.internalRepoName,
     data: repo,
+    status: repo.status,
   }))
 }
 
@@ -47,11 +48,21 @@ const cancel = () => {
 
 const addRepo = async (repo) => {
   cancel()
-  await projectStore.addRepoToProject(repo)
+  try {
+    await projectStore.addRepoToProject(repo)
+  } catch (error) {
+    console.log(error)
+  }
 }
 
 const deleteRepo = async (repoId) => {
-  await projectStore.deleteRepo(repoId)
+  try {
+    await projectStore.deleteRepo(repoId)
+  } catch (error) {
+    console.log(error)
+  }
+  setReposTiles(selectedProject.value)
+  selectedRepo.value = {}
 }
 
 onMounted(() => {
@@ -83,7 +94,6 @@ watch(selectedProject, () => {
     class="my-5 pb-10 border-grey-900 border-y-1"
   >
     <RepoForm
-      :repo="{}"
       @add="(repo) => addRepo(repo)"
       @cancel="cancel()"
     />
@@ -95,13 +105,17 @@ watch(selectedProject, () => {
   >
     <DsfrTile
       :title="repo.title"
+      :description="repo.status === 'deleting' ? 'opérations en cours' : null"
       :data-testid="`repoTile-${repo.id}`"
       :horizontal="true"
-      class="fr-mb-2w"
+      :class="{
+        'fr-mb-2w': true,
+        'disabled-tile' : repo.status === 'deleting'
+      }"
       @click="setSelectedRepo(repo.data)"
     />
     <RepoForm
-      v-if="Object.keys(selectedRepo).length !== 0 && selectedRepo.internalRepoName === repo.id"
+      v-if="Object.keys(selectedRepo).length && selectedRepo.internalRepoName === repo.id && selectedRepo.status !== 'deleting'"
       :is-owner="isOwner"
       :repo="selectedRepo"
       :is-editable="false"
