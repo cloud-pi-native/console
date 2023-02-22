@@ -28,7 +28,7 @@ export const generateCIFiles = async (req, res) => {
   try {
     const template = await fs.readFile(path.resolve('src/generate-files/templates/gitlab-ci.yml'))
     const gitlab = Mustache.render(template.toString(), data)
-    content.gitlab = gitlab
+    content['gitlab-ci'] = gitlab
 
     const rules = await fs.readFile(path.resolve('src/generate-files/templates/rules.yml'))
     content.rules = Mustache.render(rules.toString())
