@@ -21,7 +21,7 @@ spec:
       containers:
       - name: {{ .Release.Name }}-postgres
         imagePullPolicy: {{ .Values.imagePullPolicy }}
-        image: registry.redhat.io/rhscl/postgresql-13-rhel7
+        image: {{ .Values.containers.postgres.container.image }}
         ports:
         - containerPort: {{ .Values.containers.postgres.service.port }}
         envFrom:
