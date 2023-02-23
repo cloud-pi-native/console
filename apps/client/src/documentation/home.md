@@ -1,11 +1,11 @@
-# Cloud Pi Native
+# Cloud π Native
 
 :warning: __*La plateforme est en cours de construction et des évolutions fréquentes sont à prévoir.*__ :warning:
 __*Pour toute demande, contactez l'équipe DSO*__
 
-L'offre Cloud Pi Native, portée par le Ministère de l'Intérieur et des Outre-Mer et à visée interministérielle a pour but d'améliorer la qualité applicative tout en améliorant les capacités de déploiement au sein de l'administration.
+L'offre Cloud π Native, portée par le Ministère de l'Intérieur et des Outre-Mer et à visée interministérielle a pour but d'améliorer la qualité applicative tout en améliorant les capacités de déploiement au sein de l'administration.
 
-Cette offre s'appuie sur le [Cloud Pi](https://www.numerique.gouv.fr/services/cloud/cloud-interne/) pour le déploiement des applications dans un cluster OpenShift ainsi que sur une plateforme de déploiement offrant un catalogue de services pour suivre le cycle de vie complet de son projet.
+Cette offre s'appuie sur le [Cloud π](https://www.numerique.gouv.fr/services/cloud/cloud-interne/) pour le déploiement des applications dans un cluster OpenShift ainsi que sur une plateforme de déploiement offrant un catalogue de services pour suivre le cycle de vie complet de son projet.
 
 ## Concept
 

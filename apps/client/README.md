@@ -1,4 +1,4 @@
-# Console Cloud PI Native - Client
+# Console Cloud π Native - Client
 
 ## Installation
 

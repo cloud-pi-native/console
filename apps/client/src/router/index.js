@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useUserStore } from '@/stores/user.js'
 import { useProjectStore } from '@/stores/project.js'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 
 import DsoHome from '@/views/DsoHome.vue'
 import CreateProject from '@/views/CreateProject.vue'
@@ -12,7 +13,7 @@ import DsoTeam from '@/views/projects/DsoTeam.vue'
 import DsoRepos from '@/views/projects/DsoRepos.vue'
 import DsoDoc from '@/views/DsoDoc.vue'
 
-const MAIN_TITLE = 'Console Cloud PI Native'
+const MAIN_TITLE = 'Console Cloud π Native'
 
 /**
  * @type {import('vue-router').RouteRecord[]}
@@ -115,6 +116,7 @@ router.beforeEach(async (to, _from, next) => {
  * On reload on projects views, retrieve projectId from url and send it to store
  */
 router.beforeEach(async (to, _from, next) => {
+  const snackbarStore = useSnackbarStore()
   const projectStore = useProjectStore()
   const projectsPath = '/projects/'
 
@@ -122,7 +124,7 @@ router.beforeEach(async (to, _from, next) => {
     try {
       await projectStore.getUserProjects()
     } catch (error) {
-      console.log(error)
+      snackbarStore.setMessage(error?.message, 'error')
     }
 
     const idStart = projectsPath.length

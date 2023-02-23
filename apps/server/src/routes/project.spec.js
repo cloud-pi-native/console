@@ -143,7 +143,7 @@ describe('Project routes', () => {
       expect(response.body).toEqual('Cannot retrieve project: custom error message')
     })
 
-    it('Should not retreive a project when requestor is not member of project', async () => {
+    it('Should not retreive a project when Vous n\'êtes pas membre du projet', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
@@ -158,7 +158,7 @@ describe('Project routes', () => {
       expect(response.statusCode).toEqual(500)
       expect(response.body.json).not.toBeDefined()
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Cannot retrieve project: Requestor is not member of project')
+      expect(response.body).toEqual('Cannot retrieve project: Vous n\'êtes pas membre du projet')
     })
   })
 
@@ -284,7 +284,7 @@ describe('Project routes', () => {
 
       expect(response.statusCode).toEqual(500)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Un projet avec le nom et dans l\'organisation demandés existe déjà')
+      expect(response.body).toEqual(`"${newProject.name}" existe déjà`)
     })
 
     it.skip('Should return an error if ansible api call failed', async () => {
@@ -372,7 +372,7 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(500)
-      expect(response.body).toEqual('Requestor is not member of project')
+      expect(response.body).toEqual('Vous n\'êtes pas membre du projet')
     })
 
     it('Should not archive a project if requestor is not owner', async () => {
@@ -389,7 +389,7 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(500)
-      expect(response.body).toEqual('Requestor is not owner of project')
+      expect(response.body).toEqual('Vous n\'êtes pas souscripteur du projet')
     })
   })
 })

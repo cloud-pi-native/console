@@ -40,8 +40,7 @@ const createProject = async () => {
       await projectStore.createProject(project.value)
       router.push('/projects')
     } catch (error) {
-      console.log(error)
-      snackbarStore.setMessage(error)
+      snackbarStore.setMessage(error?.message, 'error')
     }
   }
 }
@@ -99,7 +98,7 @@ onMounted(async () => {
       :error-message="!!updatedValues.name && !isValid(projectSchema, project, 'name') ? 'Le nom du projet doit être en minuscule et ne doit pas contenir d\'espace.': undefined"
       label="Nom du projet"
       label-visible
-      hint="Nom du projet dans l'offre Cloud PI Native. Ne doit pas contenir d'espace, doit être unique pour l'organisation, doit être en minuscules."
+      hint="Nom du projet dans l'offre Cloud π Native. Ne doit pas contenir d'espace, doit être unique pour l'organisation, doit être en minuscules."
       placeholder="candilib"
       class="fr-mb-2w"
       @update:model-value="updateProject('name', $event)"

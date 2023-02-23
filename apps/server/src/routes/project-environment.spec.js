@@ -87,7 +87,7 @@ describe('User routes', () => {
       expect(response.json()).toEqual(randomDbSetup.project.environments[0])
     })
 
-    it('Should not retreive an environment if requestor is not member of project', async () => {
+    it('Should not retreive an environment if Vous n\'êtes pas membre du projet', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
@@ -101,7 +101,7 @@ describe('User routes', () => {
 
       expect(response.statusCode).toEqual(500)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Requestor is not member of env\'s project')
+      expect(response.body).toEqual('Vous n\'êtes pas membre du projet')
     })
 
     it('Should not retreive an environment if requestor has no permission', async () => {
@@ -120,7 +120,7 @@ describe('User routes', () => {
 
       expect(response.statusCode).toEqual(500)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Requestor is not owner and has no rights on this environment')
+      expect(response.body).toEqual('Vous n\'êtes pas souscripteur et n\'avez pas accès à cet environnement')
     })
   })
 
@@ -155,7 +155,7 @@ describe('User routes', () => {
       expect(response.json()).toMatchObject(newEnvironment)
     })
 
-    it('Should not create an environment if requestor is not member of project', async () => {
+    it('Should not create an environment if Vous n\'êtes pas membre du projet', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const newEnvironment = getRandomEnv('dev', randomDbSetup.project.id)
       delete newEnvironment.id
@@ -177,7 +177,7 @@ describe('User routes', () => {
 
       expect(response.statusCode).toEqual(500)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Requestor is not member of project')
+      expect(response.body).toEqual('Vous n\'êtes pas membre du projet')
     })
 
     it('Should not create an environment if name already present', async () => {
@@ -230,7 +230,7 @@ describe('User routes', () => {
       expect(response.statusCode).toEqual(200)
     })
 
-    it('Should not delete an environment if requestor is not member of project', async () => {
+    it('Should not delete an environment if Vous n\'êtes pas membre du projet', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const environmentToDelete = randomDbSetup.project.environments[0]
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
@@ -245,10 +245,10 @@ describe('User routes', () => {
 
       expect(response.statusCode).toEqual(500)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Requestor is not member of project')
+      expect(response.body).toEqual('Vous n\'êtes pas membre du projet')
     })
 
-    it('Should not delete an environment if requestor is not owner of project', async () => {
+    it('Should not delete an environment if Vous n\'êtes pas souscripteur du projet', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const environmentToDelete = randomDbSetup.project.environments[0]
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
@@ -265,7 +265,7 @@ describe('User routes', () => {
 
       expect(response.statusCode).toEqual(500)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Requestor is not owner of project')
+      expect(response.body).toEqual('Vous n\'êtes pas souscripteur du projet')
     })
   })
 })

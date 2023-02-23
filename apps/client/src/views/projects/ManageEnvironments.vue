@@ -5,9 +5,11 @@ import { useProjectStore } from '@/stores/project.js'
 import EnvironmentForm from '@/components/EnvironmentForm.vue'
 import { allEnv } from 'shared/src/utils/iterables.js'
 import { useUserStore } from '@/stores/user.js'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const projectStore = useProjectStore()
 const userStore = useUserStore()
+const snackbarStore = useSnackbarStore()
 
 const selectedProject = computed(() => projectStore.selectedProject)
 const owner = computed(() => projectStore.selectedProjectOwner)
@@ -48,7 +50,7 @@ const addEnvironment = async (environment) => {
   try {
     await projectStore.addEnvironmentToProject(environment)
   } catch (error) {
-    console.log(error)
+    snackbarStore.setMessage(error?.message, 'error')
   }
 }
 
@@ -56,7 +58,7 @@ const deleteEnvironment = async (environment) => {
   try {
     await projectStore.deleteEnvironment(environment.id)
   } catch (error) {
-    console.log(error)
+    snackbarStore.setMessage(error?.message, 'error')
   }
   setSelectedEnvironment({})
 }

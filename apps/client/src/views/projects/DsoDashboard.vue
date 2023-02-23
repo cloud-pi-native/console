@@ -2,11 +2,13 @@
 import { ref, computed } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 import DsoSelectedProject from './DsoSelectedProject.vue'
 import router from '@/router/index.js'
 
 const projectStore = useProjectStore()
 const userStore = useUserStore()
+const snackbarStore = useSnackbarStore()
 
 const project = computed(() => projectStore.selectedProject)
 const owner = computed(() => projectStore.selectedProjectOwner)
@@ -20,7 +22,7 @@ const archiveProject = async (projectId) => {
     await projectStore.archiveProject(projectId)
     router.push('/projects')
   } catch (error) {
-    console.log(error)
+    snackbarStore.setMessage(error?.message, 'error')
   }
 }
 

@@ -2,10 +2,12 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import DsoSelectedProject from './DsoSelectedProject.vue'
 import { useProjectStore } from '@/stores/project.js'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 import { DsfrButton } from '@gouvminint/vue-dsfr'
 import { schemaValidator, isValid, instanciateSchema, userSchema } from 'shared'
 
 const projectStore = useProjectStore()
+const snackbarStore = useSnackbarStore()
 
 const selectedProject = computed(() => projectStore.selectedProject)
 
@@ -63,7 +65,7 @@ const addUserToProject = async () => {
   try {
     await projectStore.addUserToProject(newUser.value)
   } catch (error) {
-    console.log(error)
+    snackbarStore.setMessage(error?.message, 'error')
   }
 
   newUser.value = instanciateSchema({ schema: userSchema }, undefined)
@@ -73,7 +75,7 @@ const removeUserFromProject = async (userId) => {
   try {
     await projectStore.removeUserFromProject(userId)
   } catch (error) {
-    console.log(error)
+    snackbarStore.setMessage(error?.message, 'error')
   }
 }
 

@@ -21,7 +21,7 @@ export const getEnvironmentPermissionsController = async (req, res) => {
 
   try {
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
-    if (!role) throw new Error('Requestor is not member of project')
+    if (!role) throw new Error('Vous n\'êtes pas membre du projet')
 
     const permissions = await getEnvironmentPermissions(environmentId)
     req.log.info({
@@ -50,7 +50,7 @@ export const setPermissionController = async (req, res) => {
 
   try {
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
-    if (!role) throw new Error('Requestor is not member of project')
+    if (!role) throw new Error('Vous n\'êtes pas membre du projet')
 
     const permission = await setPermission({ userId: data.userId, environmentId, level: data.level })
     req.log.info({
@@ -79,7 +79,7 @@ export const updatePermissionController = async (req, res) => {
 
   try {
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
-    if (!role) throw new Error('Requestor is not member of project')
+    if (!role) throw new Error('Vous n\'êtes pas membre du projet')
 
     const requestorPermission = await getPermissionByUserIdAndEnvironmentId(userId, environmentId)
     if (!requestorPermission) throw new Error('Le requérant doit avoir des droits sur l\'environnement pour modifier des permissions')
@@ -114,7 +114,7 @@ export const deletePermissionController = async (req, res) => {
 
   try {
     const role = await getRoleByUserIdAndProjectId(requestorId, projectId)
-    if (!role) throw new Error('Requestor is not member of project')
+    if (!role) throw new Error('Vous n\'êtes pas membre du projet')
 
     const requestorPermission = await getPermissionByUserIdAndEnvironmentId(requestorId, environmentId)
     if (!requestorPermission) throw new Error('Le requérant doit avoir des droits sur l\'environnement pour supprimer des permissions')

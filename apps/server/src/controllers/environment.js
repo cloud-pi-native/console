@@ -31,8 +31,8 @@ export const getEnvironmentByIdController = async (req, res) => {
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
     const userPermissionLevel = await getPermissionByUserIdAndEnvironmentId(userId, environmentId)
 
-    if (!role) throw new Error('Requestor is not member of env\'s project')
-    if (role.role !== 'owner' && !userPermissionLevel) throw new Error('Requestor is not owner and has no rights on this environment')
+    if (!role) throw new Error('Vous n\'êtes pas membre du projet')
+    if (role.role !== 'owner' && !userPermissionLevel) throw new Error('Vous n\'êtes pas souscripteur et n\'avez pas accès à cet environnement')
 
     req.log.info({
       ...getLogInfos({
@@ -61,9 +61,9 @@ export const initializeEnvironmentController = async (req, res) => {
   try {
     const project = await getProjectById(projectId)
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
-    if (!role) throw new Error('Requestor is not member of project')
+    if (!role) throw new Error('Vous n\'êtes pas membre du projet')
     // TODO : plus tard il sera nécessaire d'être owner pour créer un environment
-    // if (role.role !== 'owner') throw new Error('Requestor is not owner of project')
+    // if (role.role !== 'owner') throw new Error('Vous n\'êtes pas souscripteur du projet')
 
     const projectEnvs = await getEnvironmentsByProjectId(projectId)
     projectEnvs?.forEach(env => {
@@ -151,8 +151,8 @@ export const deleteEnvironmentController = async (req, res) => {
 
   try {
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
-    if (!role) throw new Error('Requestor is not member of project')
-    if (role.role !== 'owner') throw new Error('Requestor is not owner of project')
+    if (!role) throw new Error('Vous n\'êtes pas membre du projet')
+    if (role.role !== 'owner') throw new Error('Vous n\'êtes pas souscripteur du projet')
 
     await updateEnvironmentDeleting(environmentId)
     await lockProject(projectId)
