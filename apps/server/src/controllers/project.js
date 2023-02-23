@@ -130,7 +130,7 @@ export const createProjectController = async (req, res) => {
 
   try {
     owner = await getUserById(user.id)
-    if (!owner) owner = createUser({ id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName })
+    if (!owner) owner = createUser({ id: user.id, email: user?.email, firstName: user?.firstName, lastName: user?.lastName })
 
     await projectSchema.validateAsync(data)
 
@@ -140,7 +140,7 @@ export const createProjectController = async (req, res) => {
     project = await initializeProject(data)
     await lockProject(project.id)
 
-    await addUserToProject({ project, owner, role: 'owner' })
+    await addUserToProject({ project, user: owner, role: 'owner' })
 
     environment = await initializeEnvironment({ name: 'dev', projectId: project.id })
 
@@ -179,7 +179,7 @@ export const createProjectController = async (req, res) => {
       body: JSON.stringify(ansibleData),
     })
     const resJson = await ansibleRes.json()
-    await addLogs(resJson, user.id)
+    await addLogs(resJson, owner.id)
     if (resJson?.status !== 'OK') throw new Error('Echec de création du projet côté ansible')
     try {
       await updateEnvironmentCreated(environment.id)
