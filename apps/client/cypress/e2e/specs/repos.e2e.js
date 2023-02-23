@@ -31,7 +31,7 @@ describe('Add repos into project', () => {
       isInfra: false,
       isPrivate: true,
       externalUserName: 'externalUser02',
-      externalToken: 'xxxxxxxx',
+      externalToken: 'hoqjC1vXtABzytBIWBXsdyzubmqMYkgA',
     }]
 
     cy.addRepos(project, repos)
@@ -45,7 +45,7 @@ describe('Add repos into project', () => {
       isInfra: true,
       isPrivate: true,
       externalUserName: 'externalUser03',
-      externalToken: 'xxxxxxxx',
+      externalToken: 'hoqjC1vXtABzytBIWBXsdyzubmqMYkgA',
     },
     {
       internalRepoName: 'repo04',
@@ -64,7 +64,7 @@ describe('Add repos into project', () => {
       isPrivate: true,
       isInfra: false,
       externalUserName: 'externalUser05',
-      externalToken: 'xxxxxxxx',
+      externalToken: 'hoqjC1vXtABzytBIWBXsdyzubmqMYkgA',
     },
     {
       internalRepoName: 'repo06',
