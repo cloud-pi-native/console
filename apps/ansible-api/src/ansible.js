@@ -1,6 +1,6 @@
 import { spawn } from 'child_process'
 import app from './app.js'
-import { isProd, playbookDir } from './utils/env.js'
+import { playbookDir } from './utils/env.js'
 import { getLogInfos } from './utils/logger.js'
 
 export const runPlaybook = (playbook, vars) => {
