@@ -17,7 +17,7 @@ const organizationStore = useOrganizationStore()
 
 const ciFilesStore = useCIFilesStore()
 
-const projectName = computed(() => projectStore.selectedProject.name)
+const projectName = computed(() => projectStore.selectedProject?.name)
 const internalRepoName = ref(props.internalRepoName)
 
 const ciData = ref({
@@ -86,7 +86,7 @@ const copyContent = async (key) => {
 
 const setOrganizationName = async () => {
   await organizationStore.setOrganizations()
-  const org = organizationStore.organizations.find(org => org.id === projectStore.selectedProject.organization)
+  const org = organizationStore.organizations.find(org => org.id === projectStore.selectedProject?.organization)
   ciData.value.orgName = org?.name
 }
 

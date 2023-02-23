@@ -45,6 +45,7 @@ watch(routePath, (routePath) => {
       :expanded="isExpanded.mainMenu"
     >
       <p
+        v-if="isLoggedIn"
         data-testid="whoami-hint"
         class="fr-hint-text fr-mb-2w"
       >

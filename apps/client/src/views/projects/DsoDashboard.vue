@@ -85,12 +85,12 @@ const archiveProject = async (projectId) => {
     class="flex justify-between"
   >
     <DsfrBadge
-      v-if="projectStore.selectedProject.status === 'initializing'"
+      v-if="projectStore.selectedProject?.status === 'initializing'"
       type="info"
       label="Projet en cours de création"
     />
     <DsfrBadge
-      v-else-if="projectStore.selectedProject.status === 'failed'"
+      v-else-if="projectStore.selectedProject?.status === 'failed'"
       type="error"
       label="Echec de création du projet"
     />
@@ -100,7 +100,7 @@ const archiveProject = async (projectId) => {
       label="Projet créé"
     />
     <DsfrBadge
-      v-if="projectStore.selectedProject.locked"
+      v-if="projectStore.selectedProject?.locked"
       type="warning"
       label="Projet verrouillé"
     />

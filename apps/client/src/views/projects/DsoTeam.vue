@@ -93,7 +93,7 @@ watch(selectedProject, () => {
 
   <DsfrTable
     data-testid="teamTable"
-    :title="`Membres du projet ${selectedProject.name}`"
+    :title="`Membres du projet ${selectedProject?.name}`"
     :headers="headers"
     :rows="rows"
   />

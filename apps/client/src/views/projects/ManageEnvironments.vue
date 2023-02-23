@@ -18,7 +18,7 @@ const selectedEnvironment = ref({})
 const isNewEnvironmentForm = ref(false)
 
 const setEnvironmentsTiles = (selectedProject) => {
-  environments.value = selectedProject.environments?.map(environment => ({
+  environments.value = selectedProject?.environments?.map(environment => ({
     id: environment.id,
     title: environment.name,
     data: environment,
@@ -90,7 +90,7 @@ watch(selectedProject, () => {
     class="my-5 pb-10 border-grey-900 border-y-1"
   >
     <EnvironmentForm
-      :environment="{projectId: selectedProject.id}"
+      :environment="{projectId: selectedProject?.id}"
       :environment-names="environmentNames"
       @add-environment="(environment) => addEnvironment(environment)"
       @cancel="cancel()"
