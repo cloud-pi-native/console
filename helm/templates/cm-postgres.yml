@@ -6,7 +6,8 @@ data:
   {{- include "globalEnv" $.Values | indent 2 }}
   {{- include "containerEnv" .Values.containers.postgres | indent 2 }}
   {{- with .Values.containers.postgres }}
-  POSTGRESQL_DATABASE: {{ .container.db }}
-  POSTGRESQL_USER: {{ .container.user }}
-  POSTGRESQL_PASSWORD: {{ .container.pass }}
+  POSTGRES_DB: {{ .container.db }}
+  POSTGRES_USER: {{ .container.user }}
+  POSTGRES_PASSWORD: {{ .container.pass }}
+  PGDATA: /var/lib/postgresql/data/pgdata
   {{- end }}

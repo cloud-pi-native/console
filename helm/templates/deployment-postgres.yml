@@ -21,14 +21,14 @@ spec:
       containers:
       - name: {{ .Release.Name }}-postgres
         imagePullPolicy: {{ .Values.imagePullPolicy }}
-        image: {{ .Values.containers.postgres.container.image }}
+        image: docker.io/postgres:14.5
         ports:
         - containerPort: {{ .Values.containers.postgres.service.port }}
         envFrom:
         - configMapRef:
             name: {{ .Release.Name }}-postgres-cm
         volumeMounts:
-          - mountPath: /var/lib/pgsql/data
+          - mountPath: /var/lib/postgresql/data
             name: db-storage
         resources:
           requests:
