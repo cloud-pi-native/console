@@ -36,7 +36,7 @@ export const getRepositoryByIdController = async (req, res) => {
   try {
     const repo = await getRepositoryById(repositoryId)
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
-    if (!role) throw new Error('Requestor is not member of project')
+    if (!role) throw new Error('Vous n\'êtes pas membre du projet')
 
     req.log.info({
       ...getLogInfos({ repositoryId }),
@@ -60,7 +60,7 @@ export const getProjectRepositoriesController = async (req, res) => {
   try {
     const repos = await getProjectRepositories(projectId)
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
-    if (!role) throw new Error('Requestor is not member of project')
+    if (!role) throw new Error('Vous n\'êtes pas membre du projet')
 
     req.log.info({
       ...getLogInfos({ projectId }),
@@ -99,7 +99,7 @@ export const createRepositoryController = async (req, res) => {
     }
 
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
-    if (!role) throw new Error('Requestor is not member of project')
+    if (!role) throw new Error('Vous n\'êtes pas membre du projet')
 
     const repos = await getProjectRepositories(projectId)
     const isInternalRepoNameTaken = repos.find(repo => repo.internalRepoName === data.internalRepoName)
@@ -222,7 +222,7 @@ export const updateRepositoryController = async (req, res) => {
 
     repo = await getRepositoryById(repositoryId)
     if (!repo) {
-      const message = 'The required repository does not exists'
+      const message = 'Dépôt introuvable'
       req.log.error({
         ...getLogInfos(),
         description: message,
@@ -231,7 +231,7 @@ export const updateRepositoryController = async (req, res) => {
     }
 
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
-    if (!role) throw new Error('Requestor is not member of project')
+    if (!role) throw new Error('Vous n\'êtes pas membre du projet')
 
     if (data.externalToken) {
       const encryptedToken = encrypt(data.externalToken)
@@ -313,11 +313,11 @@ export const deleteRepositoryController = async (req, res) => {
   let repo
   try {
     repo = await getRepositoryById(repositoryId)
-    if (!repo) throw new Error('The required repository does not exists')
+    if (!repo) throw new Error('Dépôt introuvable')
 
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
-    if (!role) throw new Error('Requestor is not member of project')
-    if (role.role !== 'owner') throw new Error('Requestor is not owner of project')
+    if (!role) throw new Error('Vous n\'êtes pas membre du projet')
+    if (role.role !== 'owner') throw new Error('Vous n\'êtes pas souscripteur du projet')
 
     await lockProject(projectId)
     await updateRepositoryDeleting(repositoryId)

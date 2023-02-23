@@ -28,7 +28,7 @@ export const getProjectUsersController = async (req, res) => {
 
   try {
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
-    if (!role) throw new Error('Requestor is not member of project')
+    if (!role) throw new Error('Vous n\'êtes pas membre du projet')
 
     const users = await getProjectUsers(projectId)
 
@@ -77,16 +77,16 @@ export const addUserToProjectController = async (req, res) => {
   let project
   try {
     project = await getProjectById(projectId)
-    if (!project) throw new Error('Project not found')
+    if (!project) throw new Error('Projet introuvable')
 
     const requestorRole = await getRoleByUserIdAndProjectId(userId, projectId)
-    if (!requestorRole) throw new Error('Requestor is not member of project')
+    if (!requestorRole) throw new Error('Vous n\'êtes pas membre du projet')
 
     const userToAdd = await getUserByEmail(data.email)
-    if (!userToAdd) throw new Error('User not found')
+    if (!userToAdd) throw new Error('Utilisateur introuvable')
 
     const userToAddRole = await getRoleByUserIdAndProjectId(userToAdd.id, projectId)
-    if (userToAddRole) throw new Error('User is already member of projet')
+    if (userToAddRole) throw new Error('L\'utilisateur est déjà membre du projet')
 
     await lockProject(projectId)
     await addUserToProject({ project, user: userToAdd, role: 'user' })
@@ -177,13 +177,13 @@ export const updateUserProjectRoleController = async (req, res) => {
   let project
   try {
     project = await getProjectById(projectId)
-    if (!project) throw new Error('Project not found')
+    if (!project) throw new Error('Projet introuvable')
 
     const requestorRole = await getRoleByUserIdAndProjectId(userId, projectId)
-    if (!requestorRole) throw new Error('Requestor is not member of project')
+    if (!requestorRole) throw new Error('Vous n\'êtes pas membre du projet')
 
     const userToUpdateRole = await getRoleByUserIdAndProjectId(userToUpdateId, projectId)
-    if (!userToUpdateRole) throw new Error('User role not found for this projet')
+    if (!userToUpdateRole) throw new Error('L\'utilisateur ne fait pas partie du projet')
 
     await updateUserProjectRole(projectId, userToUpdateId, data.role)
 
@@ -210,15 +210,15 @@ export const removeUserFromProjectController = async (req, res) => {
   let project
   try {
     project = await getProjectById(projectId)
-    if (!project) throw new Error('Project not found')
+    if (!project) throw new Error('Projet introuvable')
 
     const requestorRole = await getRoleByUserIdAndProjectId(userId, projectId)
-    if (!requestorRole) throw new Error('Requestor is not member of project')
+    if (!requestorRole) throw new Error('Vous n\'êtes pas membre du projet')
 
     const userToRemove = await getUserById(userToRemoveId)
 
     const userToRemoveRole = await getRoleByUserIdAndProjectId(userToRemoveId, projectId)
-    if (!userToRemoveRole) throw new Error('User to remove is not member of project')
+    if (!userToRemoveRole) throw new Error('L\'utilisateur n\'est pas membre du projet')
 
     await lockProject(projectId)
     await removeUserFromProject({ project, user: userToRemove })

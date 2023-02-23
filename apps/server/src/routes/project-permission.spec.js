@@ -93,7 +93,7 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(500)
-      expect(response.body).toEqual('Cannot retrieve permissions: Requestor is not member of project')
+      expect(response.body).toEqual('Cannot retrieve permissions: Vous n\'êtes pas membre du projet')
     })
   })
 
@@ -123,7 +123,7 @@ describe('Project routes', () => {
       expect(response.json()).toBeDefined()
       expect(response.json()).toMatchObject(newPermission)
     })
-    it('Should not set a permission if requestor is not member of project', async () => {
+    it('Should not set a permission if Vous n\'êtes pas membre du projet', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const newPermission = randomDbSetup.project.environments[0].permissions[0]
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
@@ -139,7 +139,7 @@ describe('Project routes', () => {
 
       expect(response.statusCode).toEqual(500)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Cannot create permissions: Requestor is not member of project')
+      expect(response.body).toEqual('Cannot create permissions: Vous n\'êtes pas membre du projet')
     })
   })
 

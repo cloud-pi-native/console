@@ -1,5 +1,6 @@
 <script setup>
 import SideMenu from './components/SideMenu.vue'
+import DsoSnackbar from './components/DsoSnackbar.vue'
 import { ref, onMounted, watch, onBeforeMount } from 'vue'
 import { getKeycloak } from './utils/keycloak/keycloak.js'
 import { useUserStore } from './stores/user.js'
@@ -48,8 +49,8 @@ watch(label, (label) => {
 
 <template>
   <DsfrHeader
-    service-title="Console Cloud PI Native"
-    :logo-text="['Ministère', 'de l’intérieur']"
+    service-title="Console Cloud π Native"
+    :logo-text="['Ministère', 'de l’intérieur', 'et des outre-mer']"
     :quick-links="quickLinks"
   />
   <div class="fr-container fr-grid-row fr-mb-8w">
@@ -59,5 +60,6 @@ watch(label, (label) => {
     <div class="fr-col-12 fr-col-md-9 fr-py-6v">
       <router-view />
     </div>
+    <DsoSnackbar />
   </div>
 </template>

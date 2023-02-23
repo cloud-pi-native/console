@@ -103,8 +103,6 @@ export const archiveProject = async (id) => {
 
 // TECH
 export const _initializeProject = async ({ id, name, organization }) => {
-  const project = await getProject({ name, organization })
-  if (project) throw new Error('Un projet avec le nom et dans l\'organisation demandés existe déjà')
   return getProjectModel().create({ id, name, organization, status: 'initializing', locked: true })
 }
 

@@ -1,4 +1,4 @@
-# Console Cloud PI Native
+# Console Cloud π Native
 
 ## Prérequis
 

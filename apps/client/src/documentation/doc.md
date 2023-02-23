@@ -4,7 +4,7 @@
 
 ### Processus
 
-- Avoir un compte dans le SSO de Cloud Pi Native (à demander à l'équipe DSO).
+- Avoir un compte dans le SSO de Cloud π Native (à demander à l'équipe DSO).
 - Avoir l'url de l'API Gateway (`API_DOMAIN`) (à demander à l'équipe DSO).
 - Avoir une clé d'authentification (`CONSUMER_KEY`) auprès de l'API Gateway (à demander à l'équipe DSO).
 - Avoir un secret d'authentification (`CONSUMER_SECRET`) auprès de l'API Gateway (à demander à l'équipe DSO).
@@ -20,13 +20,13 @@
   > Pour le moment nous ne générons pas de fichiers d'infrastructure, c'est donc à la main de l'utilisateur de l'offre.
   > Nous souhaitons ultérieurement mettre à disposition des templates pour couvrir les architectures majoritaires.
   
-- Si le dépôt externe est privé, fournir à Cloud Pi Native un jeton d'accès personnel (PAT dans GiHub) avec le scope `repo` permettant de pull le dépôt.
+- Si le dépôt externe est privé, fournir à Cloud π Native un jeton d'accès personnel (PAT dans GiHub) avec le scope `repo` permettant de pull le dépôt.
   > Réflexion en cours sur l'amélioration du système de mirroring des dépôts.
 
 ## Get Started
 ### Commander un espace projet
 
-1. [Se connecter](/login) à l'aide de vos identifiants SSO Cloud Pi Native.
+1. [Se connecter](/login) à l'aide de vos identifiants SSO Cloud π Native.
 
 2. Remplir le formulaire de création de projet.
     - Dans le menu latéral, section `Mes Projets`.
@@ -34,13 +34,13 @@
 
 ### Synchroniser les dépôts
 
-1. [Se connecter](/login) à l'aide de vos identifiants SSO Cloud Pi Native.
+1. [Se connecter](/login) à l'aide de vos identifiants SSO Cloud π Native.
 
 2. Remplir le formulaire de synchronisation des dépôts.
     - Dans le menu latéral, section `Mes projets`.
     - Sélectionner un projet courant.
     - Dans le menu latéral, section `Dépôts synchronisés`.
-    - Générer les fichiers de *gitlab-ci* à l'aide du formulaire. Le fichier `.gitlab-ci.yml` est à placer à la racine de votre dépôt externe et les `includes` (les autres fichiers `.yml`) sont à placer dans un dossier `includes/` dans votre dépôt externe. Ces fichiers seront utilisés par le Gitlab de Cloud Pi Native pour effectuer les divers tests, scans et déploiements du projet.
+    - Générer les fichiers de *gitlab-ci* à l'aide du formulaire. Le fichier `.gitlab-ci.yml` est à placer à la racine de votre dépôt externe et les `includes` (les autres fichiers `.yml`) sont à placer dans un dossier `includes/` dans votre dépôt externe. Ces fichiers seront utilisés par le Gitlab de Cloud π Native pour effectuer les divers tests, scans et déploiements du projet.
       >  Si votre dépôt d'origine possède déjà un fichier `.gitlab-ci.yml`, nommer le fichier généré `.gitlab-ci-dso.yml` et modifier dans le dépôt du Gitlab interne de la plateforme le fichier utilisé par la CI/CD pour correspondre au nom donné (`Settings > CI/CD > General pipelines > CI/CD configuration file`).
     - Cliquer sur le bouton `Ajouter un nouveau dépôt`.
 
@@ -66,7 +66,7 @@ Pour que la synchronisation des dépôts soit effective, suivre ces instructions
 
   ```yaml
   # Dans un fichier .github/workflows/script-mirror.yaml
-  name: Repo sync with Cloud Pi Native
+  name: Repo sync with Cloud π Native
 
   on:
     push:
@@ -76,7 +76,7 @@ Pour que la synchronisation des dépôts soit effective, suivre ces instructions
 
   jobs:
     mirror:
-      name: Sync repo with Cloud Pi Native
+      name: Sync repo with Cloud π Native
       runs-on: ubuntu-latest
       steps:
         - name: Checks-out repository

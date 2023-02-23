@@ -35,7 +35,6 @@ export const getOrCreateUser = async (user) => {
       isAdmin: false,
     },
   })
-  console.log(foundUser)
   return foundUser[0]
 }
 

@@ -3,6 +3,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useOrganizationStore } from '@/stores/organization.js'
 import { useCIFilesStore } from '@/stores/ciFiles.js'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = defineProps({
   internalRepoName: {
@@ -16,6 +17,8 @@ const projectStore = useProjectStore()
 const organizationStore = useOrganizationStore()
 
 const ciFilesStore = useCIFilesStore()
+
+const snackbarStore = useSnackbarStore()
 
 const projectName = computed(() => projectStore.selectedProject?.name)
 const internalRepoName = ref(props.internalRepoName)
@@ -80,7 +83,7 @@ const copyContent = async (key) => {
   try {
     await navigator.clipboard.writeText(generatedCI.value[key])
   } catch (error) {
-    return error
+    snackbarStore.setMessage(error?.message, 'error')
   }
 }
 

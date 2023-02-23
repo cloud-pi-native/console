@@ -96,7 +96,7 @@ describe('User routes', () => {
 
       expect(response.statusCode).toEqual(500)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Cannot retrieve members of project: Requestor is not member of project')
+      expect(response.body).toEqual('Cannot retrieve members of project: Vous n\'êtes pas membre du projet')
     })
   })
 
@@ -150,7 +150,7 @@ describe('User routes', () => {
 
       expect(response.statusCode).toEqual(500)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Cannot add user into project: User is already member of projet')
+      expect(response.body).toEqual('Cannot add user into project: L\'utilisateur est déjà membre du projet')
     })
 
     it('Should not add an user if project is missing', async () => {
@@ -168,7 +168,7 @@ describe('User routes', () => {
 
       expect(response.statusCode).toEqual(500)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Cannot add user into project: Project not found')
+      expect(response.body).toEqual('Cannot add user into project: Projet introuvable')
     })
   })
 
@@ -247,7 +247,7 @@ describe('User routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(500)
-      expect(response.body).toEqual('Cannot remove user from project: Project not found')
+      expect(response.body).toEqual('Cannot remove user from project: Projet introuvable')
     })
 
     it('Should not remove an user if requestor is not member himself', async () => {
@@ -265,7 +265,7 @@ describe('User routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(500)
-      expect(response.body).toEqual('Cannot remove user from project: Requestor is not member of project')
+      expect(response.body).toEqual('Cannot remove user from project: Vous n\'êtes pas membre du projet')
     })
 
     it('Should not remove an user if user is not member', async () => {
@@ -285,7 +285,7 @@ describe('User routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(500)
-      expect(response.body).toEqual('Cannot remove user from project: User to remove is not member of project')
+      expect(response.body).toEqual('Cannot remove user from project: L\'utilisateur n\'est pas membre du projet')
     })
   })
 })

@@ -78,7 +78,7 @@ export const getProjectByIdController = async (req, res) => {
   try {
     const project = await getProjectById(projectId)
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
-    if (!role) throw new Error('Requestor is not member of project')
+    if (!role) throw new Error('Vous n\'êtes pas membre du projet')
 
     req.log.info({
       ...getLogInfos({ projectId }),
@@ -102,7 +102,7 @@ export const getProjectOwnerController = async (req, res) => {
 
   try {
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
-    if (!role) throw new Error('Requestor is not member of project')
+    if (!role) throw new Error('Vous n\'êtes pas membre du projet')
 
     const ownerId = await getSingleOwnerByProjectId(projectId)
     const owner = await getUserById(ownerId)
@@ -139,7 +139,8 @@ export const createProjectController = async (req, res) => {
     await projectSchema.validateAsync(data)
 
     project = await getProject({ name: data.name, organization: data.organization })
-    if (project) throw new Error('Un projet avec le nom et dans l\'organisation demandés existe déjà')
+    if (project?.archived) throw new Error(`"${data.name}" est archivé et n'est plus disponible`)
+    if (project) throw new Error(`"${data.name}" existe déjà`)
 
     project = await initializeProject(data)
     await lockProject(project.id)
@@ -242,11 +243,11 @@ export const archiveProjectController = async (req, res) => {
   let project
   try {
     project = await getProjectById(projectId)
-    if (!project) throw new Error('Project not found')
+    if (!project) throw new Error('Projet introuvable')
 
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
-    if (!role) throw new Error('Requestor is not member of project')
-    if (role.role !== 'owner') throw new Error('Requestor is not owner of project')
+    if (!role) throw new Error('Vous n\'êtes pas membre du projet')
+    if (role.role !== 'owner') throw new Error('Vous n\'êtes pas souscripteur du projet')
 
     repos = await getProjectRepositories(projectId)
     environments = await getEnvironmentsByProjectId(projectId)
