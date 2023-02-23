@@ -44,6 +44,16 @@ watch(routePath, (routePath) => {
       id="menuList"
       :expanded="isExpanded.mainMenu"
     >
+      <p
+        data-testid="whoami-hint"
+        class="fr-hint-text fr-mb-2w"
+      >
+        <span
+          class="fr-icon-account-line"
+          aria-hidden="true"
+        />
+        {{ userStore.userProfile.firstName }} {{ userStore.userProfile.lastName }}
+      </p>
       <DsfrSideMenuListItem>
         <DsfrSideMenuLink
           data-testid="menuHome"

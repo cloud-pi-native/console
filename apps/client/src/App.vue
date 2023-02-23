@@ -23,11 +23,6 @@ const quickLinks = ref([{
   iconRight: true,
 }])
 
-const closed = ref(false)
-const close = () => {
-  closed.value = !closed.value
-}
-
 const refreshProjects = () => {
   intervalId.value = setInterval(async () => {
     await projectStore.getUserProjects()
@@ -64,16 +59,5 @@ watch(label, (label) => {
     <div class="fr-col-12 fr-col-md-9 fr-py-6v">
       <router-view />
     </div>
-    <DsfrAlert
-      v-if="isLoggedIn"
-      data-testid="whoamiSnackbar"
-      class="snackbar"
-      :description="`Vous êtes connecté(e) en tant que ${userStore.userProfile.firstName} ${userStore.userProfile.lastName}`"
-      type="info"
-      small
-      :closed="closed"
-      closeable
-      @close="close()"
-    />
   </div>
 </template>
