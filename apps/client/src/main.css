@@ -26,19 +26,19 @@ body,
   margin-bottom: 1rem;
 }
 
-.disabled-tile {
+.fr-tile.disabled-tile {
   background-color: var(--background-disabled-grey);
   box-shadow: var(--border-disabled-grey);
 }
 
-.disabled-tile:hover {
+.fr-tile.disabled-tile:hover {
   background-color: var(--background-disabled-grey);
 }
 
-.disabled-tile h3 {
+.fr-tile.disabled-tile h3 {
   color: var(--text-disabled-grey);
 }
 
-.disabled-tile a {
+.fr-tile.disabled-tile a {
   @apply cursor-not-allowed;
 }
