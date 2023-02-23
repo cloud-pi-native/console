@@ -11,7 +11,7 @@ import {
   archiveProject,
   getProjectUsers,
 } from '../models/queries/project-queries.js'
-import { createUser, getUserById } from '../models/queries/user-queries.js'
+import { getOrCreateUser, getUserById } from '../models/queries/user-queries.js'
 import {
   deleteRoleByUserIdAndProjectId,
   getRoleByUserIdAndProjectId,
@@ -44,15 +44,19 @@ import { addLogs } from '../models/queries/log-queries.js'
 
 // GET
 export const getUserProjectsController = async (req, res) => {
-  const userId = req.session?.user?.id
+  const requestor = req.session?.user
 
   try {
-    const user = await getUserById(userId)
+    const user = await getOrCreateUser(requestor)
+    if (!user) return send200(res, [])
+
     let projects = await getUserProjects(user)
     req.log.info({
       ...getLogInfos(),
       description: 'Projects successfully retreived',
     })
+    if (!projects.length) return send200(res, [])
+
     projects = projects.filter(project => project.status !== 'archived')
     projects.map(project => replaceNestedKeys(project, lowercaseFirstLetter))
     return send200(res, projects)
@@ -130,7 +134,7 @@ export const createProjectController = async (req, res) => {
 
   try {
     owner = await getUserById(user.id)
-    if (!owner) owner = createUser({ id: user.id, email: user?.email, firstName: user?.firstName, lastName: user?.lastName })
+    if (!owner) owner = await getOrCreateUser({ id: user.id, email: user?.email, firstName: user?.firstName, lastName: user?.lastName })
 
     await projectSchema.validateAsync(data)
 

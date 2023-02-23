@@ -155,8 +155,6 @@ jobs:
   e2e-tests:
     name: Run e2e test suite
     runs-on: ubuntu-latest
-    needs:
-      - component-tests
     steps:
       - name: Checks-out repository
         uses: actions/checkout@v3
