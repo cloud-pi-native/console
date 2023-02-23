@@ -11,7 +11,7 @@ import {
   archiveProject,
   getProjectUsers,
 } from '../models/queries/project-queries.js'
-import { getUserById } from '../models/queries/user-queries.js'
+import { createUser, getUserById } from '../models/queries/user-queries.js'
 import {
   deleteRoleByUserIdAndProjectId,
   getRoleByUserIdAndProjectId,
@@ -27,10 +27,13 @@ import {
   deleteEnvironment,
   getEnvironmentsByProjectId,
   updateEnvironmentDeleting,
+  initializeEnvironment,
+  updateEnvironmentCreated,
 } from '../models/queries/environment-queries.js'
 import {
   getEnvironmentPermissions,
   deletePermissionById,
+  setPermission,
 } from '../models/queries/permission-queries.js'
 import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
@@ -119,19 +122,28 @@ export const getProjectOwnerController = async (req, res) => {
 // POST
 export const createProjectController = async (req, res) => {
   const data = req.body
-  const userId = req.session?.user?.id
+  const user = req.session?.user
 
   let project
+  let environment
+  let owner
 
   try {
+    owner = await getUserById(user.id)
+    if (!owner) owner = createUser({ id: user.id, email: user?.email, firstName: user?.firstName, lastName: user?.lastName })
+
     await projectSchema.validateAsync(data)
 
     project = await getProject({ name: data.name, organization: data.organization })
     if (project) throw new Error('Un projet avec le nom et dans l\'organisation demandés existe déjà')
 
     project = await initializeProject(data)
-    const user = await getUserById(userId)
-    await addUserToProject({ project, user, role: 'owner' })
+    await lockProject(project.id)
+
+    await addUserToProject({ project, user: owner, role: 'owner' })
+
+    environment = await initializeEnvironment({ name: 'dev', projectId: project.id })
+
     req.log.info({
       ...getLogInfos({
         projectId: project.id,
@@ -149,15 +161,15 @@ export const createProjectController = async (req, res) => {
   }
 
   try {
-    const owner = await getUserById(userId)
     const organization = await getOrganizationById(project.organization)
 
     const ansibleData = {
       PROJECT_NAME: project.name,
       ORGANIZATION_NAME: organization.name,
       EMAIL: owner.email,
+      ENV_LIST: [environment.name],
     }
-    const ansibleRes = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/projects`, {
+    const ansibleRes = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -167,10 +179,17 @@ export const createProjectController = async (req, res) => {
       body: JSON.stringify(ansibleData),
     })
     const resJson = await ansibleRes.json()
-    await addLogs(resJson, userId)
+    await addLogs(resJson, owner.id)
     if (resJson?.status !== 'OK') throw new Error('Echec de création du projet côté ansible')
     try {
-      project = await updateProjectCreated(project.id)
+      await updateEnvironmentCreated(environment.id)
+      await setPermission({
+        userId: owner.id,
+        environmentId: environment.id,
+        level: 2,
+      })
+      await updateProjectCreated(project.id)
+      await unlockProject(project.id)
 
       req.log.info({
         ...getLogInfos({ projectId: project.id }),
@@ -190,7 +209,8 @@ export const createProjectController = async (req, res) => {
       error,
     })
     try {
-      project = await updateProjectFailed(project.id)
+      await updateProjectFailed(project.id)
+      await unlockProject(project.id)
 
       req.log.info({
         ...getLogInfos({ projectId: project.id }),

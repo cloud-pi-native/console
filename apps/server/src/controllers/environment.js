@@ -96,7 +96,7 @@ export const initializeEnvironmentController = async (req, res) => {
       const ownerId = await getSingleOwnerByProjectId(projectId)
       if (ownerId !== userId) {
         await setPermission({
-          ownerId,
+          userId: ownerId,
           environmentId: env.id,
           level: 2,
         })

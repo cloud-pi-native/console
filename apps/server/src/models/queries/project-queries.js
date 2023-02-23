@@ -19,7 +19,7 @@ export const getProjectUsers = async (projectId) => {
 }
 
 export const getUserProjects = async (user) => {
-  const res = await user.getProjects({
+  const res = await user?.getProjects({
     ...dbKeysExcluded,
     include: [
       {

@@ -193,12 +193,31 @@ describe('Project routes', () => {
       delete randomDbSetup.project.id
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
-      // 1. checkUniqueProject
-      sequelize.$queueResult(null)
-      // 2. createProject
+      // get user
+      User.$queueResult(owner)
+
+      // validate project schema
+      sequelize.$queueResult(true)
+
+      // checkUniqueProject
+      Project.$queueResult(null)
+
+      // initialize project and lock
       Project.$queueResult(randomDbSetup.project)
-      // 3. getUserById
-      User.$queueResult(randomDbSetup.users[0])
+      Project.$queueResult([1])
+
+      // add user to project
+      Role.$queueResult({ UserId: owner.id, role: 'owner' })
+
+      // initialize environment
+      Environment.$queueResult(randomDbSetup.project.environments[0])
+
+      // get organization
+      Organization.$queueResult(randomDbSetup.organization)
+
+      // add logs
+      sequelize.$queueResult(null)
+
       // 4. updateProjectStatus
       sequelize.$queueResult([1])
       setRequestorId(owner.id)
@@ -223,7 +242,11 @@ describe('Project routes', () => {
       const randomDbSetup = createRandomDbSetup({})
       delete randomDbSetup.project[removedKey]
 
-      sequelize.$queueResult(null)
+      // get user
+      User.$queueResult(randomDbSetup.users[0])
+
+      // validate project schema
+      sequelize.$queueResult(true)
 
       const response = await app.inject()
         .post('/')
@@ -244,6 +267,13 @@ describe('Project routes', () => {
       delete newProject.repositories
       delete newProject.environments
 
+      // get user
+      User.$queueResult(owner)
+
+      // validate project schema
+      sequelize.$queueResult(true)
+
+      // checkUniqueProject
       Project.$queueResult(randomDbSetup.project)
       setRequestorId(owner.id)
 
