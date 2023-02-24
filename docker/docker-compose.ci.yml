@@ -23,10 +23,7 @@ services:
 
   postgres:
     restart: always
-    build:
-      context: ..
-      dockerfile: db/Dockerfile
-    image: dso/console/postgres 
+    image: docker.io/postgres:14.5
     container_name: dso-console_postgres
     environment:
       POSTGRES_DB: ${POSTGRES_DATABASE:-dso-console-db}

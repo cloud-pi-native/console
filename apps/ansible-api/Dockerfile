@@ -1,5 +1,5 @@
 # Base stage
-FROM node:18.14.2-bullseye-slim as base
+FROM docker.io/node:18.14.2-bullseye-slim as base
 
 RUN apt-get update -y && \
   apt-get install python3 python3-pip libsasl2-dev python-dev libldap2-dev libssl-dev git -y && \
@@ -45,7 +45,7 @@ RUN pnpm --filter ansible-api --prod deploy build
 
 
 # Prod stage
-FROM node:18.14.2-bullseye-slim as prod
+FROM docker.io/node:18.14.2-bullseye-slim as prod
 
 WORKDIR /app
 RUN chown node:node /app

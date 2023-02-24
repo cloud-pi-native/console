@@ -1,5 +1,5 @@
 # FROM ubuntu-latest
-FROM ubuntu:22.04
+FROM docker.io/ubuntu:22.04
 
 # Set system env
 ENV DEBIAN_FRONTEND=noninteractive

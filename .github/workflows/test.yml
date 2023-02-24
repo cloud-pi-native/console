@@ -54,8 +54,6 @@ jobs:
   unit-tests:
     name: Run unit test suite
     runs-on: ubuntu-latest
-    needs:
-      - lint
     steps:
       - name: Checks-out repository
         uses: actions/checkout@v3
@@ -135,8 +133,6 @@ jobs:
   component-tests:
     name: Run component test suite
     runs-on: ubuntu-latest
-    needs:
-      - code-scan
     steps:
       - name: Checks-out repository
         uses: actions/checkout@v3
