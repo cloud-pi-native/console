@@ -15,7 +15,7 @@ const setProjectList = (projects) => {
   projectList.value = projects?.map(project => ({
     id: project.id,
     title: project.name,
-    to: `/projects/${project.id}/dashboard`,
+    to: `/projects/${project.id}/services`,
     locked: project.locked,
   }))
 }
