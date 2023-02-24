@@ -39,7 +39,7 @@ const getRequestor = () => {
   return requestor
 }
 
-describe('Project routes', () => {
+describe('Organizations routes', () => {
   let Organization
 
   beforeAll(async () => {
