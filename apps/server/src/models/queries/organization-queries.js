@@ -6,6 +6,12 @@ export const getOrganizations = async () => {
   return getOrganizationModel().findAll()
 }
 
+export const getActiveOrganizations = async () => {
+  return getOrganizationModel().findAll({
+    where: { active: true },
+  })
+}
+
 export const getOrganizationById = async (id) => {
   return getOrganizationModel().findByPk(id)
 }
@@ -23,6 +29,11 @@ export const createOrganization = async ({ name, label }) => {
   const organization = await getOrganizationByName(name)
   if (organization) throw new Error('Cette organisation existe déjà')
   return getOrganizationModel().create({ name, label })
+}
+
+// UPDATE
+export const updateActiveOrganization = async ({ name, active }) => {
+  return getOrganizationModel().update({ active }, { where: { name } })
 }
 
 // TECH
