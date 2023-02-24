@@ -18,7 +18,12 @@ export const getOrganizationModel = () => Organization ?? (Organization = sequel
   label: {
     type: DataTypes.STRING(50),
     allowNull: false,
-    unique: true,
+    unique: false,
+  },
+  active: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: true,
   },
 }, {
   tableName: 'Organizations',

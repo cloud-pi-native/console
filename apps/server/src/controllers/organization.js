@@ -1,5 +1,5 @@
 import {
-  getOrganizations,
+  getActiveOrganizations,
   createOrganization,
 } from '../models/queries/organization-queries.js'
 import { getLogInfos } from '../utils/logger.js'
@@ -8,7 +8,7 @@ import { send200, send201, send500 } from '../utils/response.js'
 // GET
 export const getOrganizationsController = async (req, res) => {
   try {
-    const organizations = await getOrganizations()
+    const organizations = await getActiveOrganizations()
     req.log.info({
       ...getLogInfos(),
       description: 'Organizations successfully retreived',
