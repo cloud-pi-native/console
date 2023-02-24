@@ -48,7 +48,7 @@ describe('Schemas utils', () => {
   it('Should validate a correct project schema', () => {
     expect(schemaValidator(projectSchema, {
       id: faker.datatype.uuid(),
-      name: faker.lorem.word(10),
+      name: faker.lorem.slug(1),
       organization: faker.datatype.uuid(),
       status: 'created',
       locked: false,
@@ -79,7 +79,7 @@ describe('Schemas utils', () => {
   it('Should not validate a too long project name', () => {
     expect(schemaValidator(projectSchema, {
       id: faker.datatype.uuid(),
-      name: 'candilibbbbbbbbbbbbbbbbbbbbbbbbbbb',
+      name: faker.lorem.slug(10),
       organization: faker.datatype.uuid(),
       status: 'created',
       locked: false,
