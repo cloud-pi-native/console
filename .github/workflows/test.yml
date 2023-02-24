@@ -53,6 +53,7 @@ jobs:
 
   unit-tests:
     name: Run unit test suite
+    if: ${{ !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
     steps:
       - name: Checks-out repository
@@ -132,6 +133,7 @@ jobs:
 
   component-tests:
     name: Run component test suite
+    if: ${{ !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
     steps:
       - name: Checks-out repository
@@ -150,6 +152,7 @@ jobs:
 
   e2e-tests:
     name: Run e2e test suite
+    if: ${{ !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
     steps:
       - name: Checks-out repository
