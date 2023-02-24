@@ -9,6 +9,7 @@ export const projectRoles = [
   'user',
 ]
 
+// ! Une organisation ne doit pas faire plus de 19 caractères
 export const allOrganizations = [
   {
     name: 'dinum',
@@ -52,6 +53,7 @@ export const achievedStatus = [
   'failed',
 ]
 
+// ! Un environnement ne doit pas faire plus de 11 caractères
 export const allEnv = [
   'dev',
   'staging',

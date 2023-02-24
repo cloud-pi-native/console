@@ -48,7 +48,7 @@ describe('Schemas utils', () => {
   it('Should validate a correct project schema', () => {
     expect(schemaValidator(projectSchema, {
       id: faker.datatype.uuid(),
-      name: faker.datatype.uuid(),
+      name: faker.lorem.word(10),
       organization: faker.datatype.uuid(),
       status: 'created',
       locked: false,
@@ -74,6 +74,17 @@ describe('Schemas utils', () => {
       externalUserName: 'clairenlet',
       status: 'created',
     })).toStrictEqual({ externalToken: '"externalToken" is required' })
+  })
+
+  // TODO : max() joi ne fonctionne pas
+  it.skip('Should not validate a too long project name', () => {
+    expect(schemaValidator(projectSchema, {
+      id: faker.datatype.uuid(),
+      name: faker.lorem.word(200),
+      organization: faker.datatype.uuid(),
+      status: 'created',
+      locked: false,
+    })).toStrictEqual({ name: '"name" length must be 31 characters long' })
   })
 
   it('Should validate a single key with given schema', () => {

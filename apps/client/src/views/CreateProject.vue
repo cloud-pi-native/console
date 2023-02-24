@@ -6,6 +6,7 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useOrganizationStore } from '@/stores/organization.js'
 import { projectSchema } from 'shared/src/schemas/project.js'
 import { schemaValidator, isValid, instanciateSchema } from 'shared/src/utils/schemas.js'
+import { projectNameMaxLength } from 'shared/src/utils/functions.js'
 import router from '@/router/index.js'
 
 const snackbarStore = useSnackbarStore()
@@ -14,6 +15,7 @@ const userStore = useUserStore()
 const organizationStore = useOrganizationStore()
 
 const owner = computed(() => userStore.userProfile)
+const remainingCharacters = computed(() => projectNameMaxLength - project.value.name.length)
 
 /**
  * Defines a project
@@ -90,19 +92,28 @@ onMounted(async () => {
       :options="orgOptions"
       @update:model-value="updateProject('organization', $event)"
     />
-    <DsfrInputGroup
-      v-model="project.name"
-      data-testid="nameInput"
-      type="text"
-      required="required"
-      :error-message="!!updatedValues.name && !isValid(projectSchema, project, 'name') ? 'Le nom du projet doit être en minuscule et ne doit pas contenir d\'espace.': undefined"
-      label="Nom du projet"
-      label-visible
-      hint="Nom du projet dans l'offre Cloud π Native. Ne doit pas contenir d'espace, doit être unique pour l'organisation, doit être en minuscules."
-      placeholder="candilib"
-      class="fr-mb-2w"
-      @update:model-value="updateProject('name', $event)"
-    />
+    <div
+      class="fr-mb-0"
+    >
+      <DsfrInputGroup
+        v-model="project.name"
+        data-testid="nameInput"
+        type="text"
+        required="required"
+        :error-message="!!updatedValues.name && !isValid(projectSchema, project, 'name') ? `Le nom du projet doit être en minuscule, ne pas contenir d\'espace et faire moins de ${projectNameMaxLength} caractères.`: undefined"
+        label="Nom du projet"
+        label-visible
+        :hint="`Nom du projet dans l'offre Cloud π Native. Ne doit pas contenir d'espace, doit être unique pour l'organisation, doit être en minuscules, doit faire moins de ${projectNameMaxLength} caractères.`"
+        placeholder="candilib"
+        @update:model-value="updateProject('name', $event)"
+      />
+    </div>
+    <span
+      v-if="remainingCharacters >= 0"
+      class="fr-hint-text"
+    >
+      {{ remainingCharacters }} caractères restants
+    </span>
   </DsfrFieldset>
   <DsfrButton
     label="Commander mon espace projet"
