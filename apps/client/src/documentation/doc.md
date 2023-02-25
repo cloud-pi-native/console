@@ -94,6 +94,8 @@ Pour que la synchronisation des dépôts soit effective, suivre ces instructions
 
 La synchronisation est maintenant en place et chaque appel API effectué avec le script `script-mirror.sh` entrainera le déclenchement de la chaine DevSecOps.
 
+## Architecture
+![archi](/img/architecture.png)
 ## Services de la plateforme
 
 | Service   | Description                               |
