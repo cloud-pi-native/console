@@ -1,5 +1,36 @@
 # Changelog
 
+## [2.1.0](https://github.com/dnum-mi/dso-console/compare/v2.0.0...v2.1.0) (2023-02-27)
+
+
+### Features
+
+* :children_crossing: redirect to services when selecting a project ([3849dad](https://github.com/dnum-mi/dso-console/commit/3849dad734e07ae0250962c8a71c1eb3470614c2))
+* :lipstick: whoami in sidemenu rather than snackbar ([70fcbf5](https://github.com/dnum-mi/dso-console/commit/70fcbf537fa32a04538d10673a1d0b4246fddd65))
+* :memo: ajout d'un schéma d'architecture ([72f61fb](https://github.com/dnum-mi/dso-console/commit/72f61fbf6060455f56d578003e927196c0292a50))
+* :necktie: add constraint for project name length ([f2d3975](https://github.com/dnum-mi/dso-console/commit/f2d3975f8cf5124142edc38a64f219ac9a223985))
+* :sparkles: add snackbar to handle errors ([0b5fa71](https://github.com/dnum-mi/dso-console/commit/0b5fa71b5d993fb7529f4fa2b74d78dacb0b33d3))
+* add active column on organization table, and client get only active: true ([de7b9d0](https://github.com/dnum-mi/dso-console/commit/de7b9d01bf878ee1cf298736e83410905390a5a3))
+
+
+### Bug Fixes
+
+* :ambulance: bad owner w/ new queries ([5153b62](https://github.com/dnum-mi/dso-console/commit/5153b621c0707a438f191dd2b06d8c801804f014))
+* :ambulance: log more of ansible output ([e2b10d6](https://github.com/dnum-mi/dso-console/commit/e2b10d6875605c836606cb5ba79c963787d4c177))
+* :bug: error in ansible route ([a470677](https://github.com/dnum-mi/dso-console/commit/a470677a5d5c3b2b262434adc3f399f948caccd2))
+* :bug: error in ansible route ([1565411](https://github.com/dnum-mi/dso-console/commit/1565411524a2c17d0e7de79e5965562053a2024b))
+* :goal_net: catch fetch errors and send it to front ([fcca40b](https://github.com/dnum-mi/dso-console/commit/fcca40b2efbc5d38ae8fe0001043671756ebda34))
+* :goal_net: optional chaining to avoid errors on selected project ([6750077](https://github.com/dnum-mi/dso-console/commit/67500771939efb2e2329d8ab94407588aa76fa5b))
+* :goal_net: return if  user does not have project ([f2a3d74](https://github.com/dnum-mi/dso-console/commit/f2a3d7449abc729b5506aaaf43a163e600c51bcb))
+* :lipstick: enforce ui on disabled dsfrtiles ([4de5d25](https://github.com/dnum-mi/dso-console/commit/4de5d257d847c4ecff137face3cbb276d543b779))
+* :truck: rename generated gitlab ci file ([d3e637e](https://github.com/dnum-mi/dso-console/commit/d3e637e04ef008c5316b7e720a9fc905c0ab0000))
+* :wrench: update postgres image ([16e5d55](https://github.com/dnum-mi/dso-console/commit/16e5d557c52e149def7f7c216371ba23fc721bbf))
+
+
+### Reverts
+
+* :rewind: rebase error ([728a704](https://github.com/dnum-mi/dso-console/commit/728a704522a3f5cfcc2dc5879671a83a051a82c6))
+
 ## [2.0.0](https://github.com/dnum-mi/dso-console/compare/v1.0.0...v2.0.0) (2023-02-22)
 
 
