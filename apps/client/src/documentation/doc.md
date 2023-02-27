@@ -40,8 +40,7 @@
     - Dans le menu latéral, section `Mes projets`.
     - Sélectionner un projet courant.
     - Dans le menu latéral, section `Dépôts synchronisés`.
-    - Générer les fichiers de *gitlab-ci* à l'aide du formulaire. Le fichier `.gitlab-ci.yml` est à placer à la racine de votre dépôt externe et les `includes` (les autres fichiers `.yml`) sont à placer dans un dossier `includes/` dans votre dépôt externe. Ces fichiers seront utilisés par le Gitlab de Cloud π Native pour effectuer les divers tests, scans et déploiements du projet.
-      >  Si votre dépôt d'origine possède déjà un fichier `.gitlab-ci.yml`, nommer le fichier généré `.gitlab-ci-dso.yml` et modifier dans le dépôt du Gitlab interne de la plateforme le fichier utilisé par la CI/CD pour correspondre au nom donné (`Settings > CI/CD > General pipelines > CI/CD configuration file`).
+    - Générer les fichiers de *gitlab-ci* à l'aide du formulaire dans la console. Le fichier `.gitlab-ci-dso.yml` est à placer à la racine de votre dépôt externe et les `includes` (les autres fichiers `.yml`) sont à placer dans un dossier `includes/` à la racine de votre dépôt externe. Ces fichiers seront utilisés par le Gitlab de Cloud π Native pour effectuer les divers tests, scans et déploiements du projet.
     - Cliquer sur le bouton `Ajouter un nouveau dépôt`.
 
 Pour que la synchronisation des dépôts soit effective, suivre ces instructions :
