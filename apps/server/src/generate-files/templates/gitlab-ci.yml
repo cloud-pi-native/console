@@ -23,16 +23,8 @@ cache:
     - node_modules
 
 variables:
-{{#isJava}}
-  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
-  MAVEN_CLI_OPTS: ""
-  MVN_CONFIG_FILE: $MVN_CONFIG
-{{/isJava}}
   TAG: "${CI_COMMIT_REF_SLUG}"
   DOCKERFILE: Dockerfile
-  PROJECT_NAME: {{ projectName }}
-  PROJECT_ORGANISATION: {{ orgName }}
-  PROJECT_PATH: ${PROJECT_ORGANISATION}-${PROJECT_NAME}
   REGISTRY_URL: "${QUAY_ROOT_URL}/${PROJECT_PATH}"
 
 
@@ -53,6 +45,9 @@ quality_app:
   variables:
     BUILD_IMAGE_NAME: maven:3.8-openjdk-{{javaVersion}}
     WORKING_DIR: "{{{workingDir}}}"
+    MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+    MAVEN_CLI_OPTS: ""
+    MVN_CONFIG_FILE: $MVN_CONFIG
   stage: quality-app
   extends:
     - .java:sonar
@@ -62,6 +57,9 @@ package-app:
     BUILD_IMAGE_NAME: maven:3.8-openjdk-{{javaVersion}}
     WORKING_DIR: "{{{workingDir}}}"
     ARTEFACT_DIR: "{{{artefactDir}}}"
+    MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+    MAVEN_CLI_OPTS: ""
+    MVN_CONFIG_FILE: $MVN_CONFIG
 
   stage: build-app
   extends:
