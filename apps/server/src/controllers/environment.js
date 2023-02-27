@@ -44,7 +44,7 @@ export const getEnvironmentByIdController = async (req, res) => {
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: `Cannot retrieve environment: ${error.message}`,
+      description: `Environnement non trouvé: ${error.message}`,
       error: error.message,
     })
     return send500(res, error.message)
@@ -83,7 +83,7 @@ export const initializeEnvironmentController = async (req, res) => {
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: 'Cannot create environment',
+      description: 'Environnement non créé',
       error: error.message,
     })
     return send500(res, error.message)

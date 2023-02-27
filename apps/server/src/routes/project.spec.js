@@ -108,7 +108,7 @@ describe('Project routes', () => {
       expect(response.statusCode).toEqual(500)
       expect(response.body.json).not.toBeDefined()
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Cannot retrieve projects: error message')
+      expect(response.body).toEqual('Projets non trouvés: error message')
     })
   })
 
@@ -140,7 +140,7 @@ describe('Project routes', () => {
       expect(response.statusCode).toEqual(500)
       expect(response.body.json).not.toBeDefined()
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Cannot retrieve project: custom error message')
+      expect(response.body).toEqual('Projet non trouvé: custom error message')
     })
 
     it('Should not retreive a project when Vous n\'êtes pas membre du projet', async () => {
@@ -158,7 +158,7 @@ describe('Project routes', () => {
       expect(response.statusCode).toEqual(500)
       expect(response.body.json).not.toBeDefined()
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Cannot retrieve project: Vous n\'êtes pas membre du projet')
+      expect(response.body).toEqual('Projet non trouvé: Vous n\'êtes pas membre du projet')
     })
   })
 

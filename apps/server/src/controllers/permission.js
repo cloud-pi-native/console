@@ -30,7 +30,7 @@ export const getEnvironmentPermissionsController = async (req, res) => {
     })
     return send200(res, permissions)
   } catch (error) {
-    const message = `Cannot retrieve permissions: ${error.message}`
+    const message = `Permissions non trouvées: ${error.message}`
     req.log.error({
       ...getLogInfos(),
       description: message,
@@ -59,7 +59,7 @@ export const setPermissionController = async (req, res) => {
     })
     return send201(res, permission)
   } catch (error) {
-    const message = `Cannot create permissions: ${error.message}`
+    const message = `Permissions non créées : ${error.message}`
     req.log.error({
       ...getLogInfos(),
       description: message,

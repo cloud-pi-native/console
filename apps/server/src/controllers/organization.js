@@ -11,11 +11,11 @@ export const getOrganizationsController = async (req, res) => {
     const organizations = await getActiveOrganizations()
     req.log.info({
       ...getLogInfos(),
-      description: 'Organizations successfully retreived',
+      description: 'Organisations récupérées avec succès',
     })
     return send200(res, organizations)
   } catch (error) {
-    const message = 'Cannot retrieve organizations'
+    const message = 'Echec de récupération des organisations'
     req.log.error({
       ...getLogInfos(),
       description: message,
@@ -36,13 +36,13 @@ export const createOrganizationController = async (req, res) => {
       ...getLogInfos({
         organizationId: organization.id,
       }),
-      description: 'Organization successfully created in database',
+      description: 'L\'organization a bien été enregistrée en base',
     })
     send201(res, organization)
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: 'Cannot create organization',
+      description: 'Echec d\'enregistrement de l\'organisation',
       error: error.message,
     })
     return send500(res, error.message)

@@ -93,7 +93,7 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(500)
-      expect(response.body).toEqual('Cannot retrieve permissions: Vous n\'êtes pas membre du projet')
+      expect(response.body).toEqual('Permissions non trouvées: Vous n\'êtes pas membre du projet')
     })
   })
 
@@ -139,7 +139,7 @@ describe('Project routes', () => {
 
       expect(response.statusCode).toEqual(500)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Cannot create permissions: Vous n\'êtes pas membre du projet')
+      expect(response.body).toEqual('Permissions non créées : Vous n\'êtes pas membre du projet')
     })
   })
 

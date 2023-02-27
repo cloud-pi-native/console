@@ -96,7 +96,7 @@ describe('User routes', () => {
 
       expect(response.statusCode).toEqual(500)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Cannot retrieve members of project: Vous n\'êtes pas membre du projet')
+      expect(response.body).toEqual('Echec de récupération des membres du projet: Vous n\'êtes pas membre du projet')
     })
   })
 
