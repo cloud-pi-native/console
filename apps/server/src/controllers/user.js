@@ -38,7 +38,7 @@ export const getProjectUsersController = async (req, res) => {
     })
     return send200(res, users)
   } catch (error) {
-    const message = `Cannot retrieve members of project: ${error.message}`
+    const message = `Echec de récupération des membres du projet: ${error.message}`
     req.log.error({
       ...getLogInfos(),
       description: message,
@@ -58,7 +58,7 @@ export const getProjectUsersController = async (req, res) => {
 //     })
 //     return send200(res, users)
 //   } catch (error) {
-//     const message = 'Cannot retrieve users'
+//     const message = 'Utilisateurs non trouvés'
 //     req.log.error({
 //       ...getLogInfos(),
 //       description: message,
@@ -160,7 +160,7 @@ export const createUserController = async (req, res) => {
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: 'Cannot create user',
+      description: 'Utilisateur non créé',
       error: error.message,
     })
     return send500(res, error.message)
