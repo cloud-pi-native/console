@@ -32,54 +32,9 @@ export const useProjectStore = defineStore('project', () => {
     await getUserProjects()
   }
 
-  const addRepoToProject = async (newRepo) => {
-    await api.addRepo(selectedProject.value.id, newRepo)
-    await getUserProjects()
-  }
-
-  const addEnvironmentToProject = async (newEnvironment) => {
-    await api.addEnvironment(selectedProject.value.id, newEnvironment)
-    await getUserProjects()
-  }
-
-  const addPermission = async (environmentId, newPermission) => {
-    await api.addPermission(selectedProject.value.id, environmentId, newPermission)
-    await getUserProjects()
-  }
-
-  const addUserToProject = async (newUser) => {
-    await api.addUser(selectedProject.value.id, newUser)
-    await getUserProjects()
-  }
-
-  const updatePermission = async (environmentId, permission) => {
-    await api.updatePermission(selectedProject.value.id, environmentId, permission)
-    await getUserProjects()
-  }
-
-  const removeUserFromProject = async (userId) => {
-    await api.removeUser(selectedProject.value.id, userId)
-    await getUserProjects()
-  }
-
   const archiveProject = async (projectId) => {
     await api.archiveProject(projectId)
     selectedProject.value = undefined
-    await getUserProjects()
-  }
-
-  const deleteEnvironment = async (environmentId) => {
-    await api.deleteEnvironment(selectedProject.value.id, environmentId)
-    await getUserProjects()
-  }
-
-  const deletePermission = async (environmentId, userId) => {
-    await api.deletePermission(selectedProject.value.id, environmentId, userId)
-    await getUserProjects()
-  }
-
-  const deleteRepo = async (repoId) => {
-    await api.deleteRepo(selectedProject.value.id, repoId)
     await getUserProjects()
   }
 
@@ -91,15 +46,6 @@ export const useProjectStore = defineStore('project', () => {
     setSelectedProjectOwner,
     getUserProjects,
     createProject,
-    addRepoToProject,
-    addEnvironmentToProject,
-    addPermission,
-    addUserToProject,
-    updatePermission,
-    removeUserFromProject,
     archiveProject,
-    deleteEnvironment,
-    deletePermission,
-    deleteRepo,
   }
 })

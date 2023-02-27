@@ -1,12 +1,14 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
+import { useProjectRepositoryStore } from '@/stores/project-repository.js'
 import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import RepoForm from '@/components/RepoForm.vue'
 import DsoSelectedProject from './DsoSelectedProject.vue'
 
 const projectStore = useProjectStore()
+const projectRepositoryStore = useProjectRepositoryStore()
 const userStore = useUserStore()
 const snackbarStore = useSnackbarStore()
 
@@ -51,7 +53,7 @@ const cancel = () => {
 const addRepo = async (repo) => {
   cancel()
   try {
-    await projectStore.addRepoToProject(repo)
+    await projectRepositoryStore.addRepoToProject(repo)
   } catch (error) {
     snackbarStore.setMessage(error?.message, 'error')
   }
@@ -59,7 +61,7 @@ const addRepo = async (repo) => {
 
 const deleteRepo = async (repoId) => {
   try {
-    await projectStore.deleteRepo(repoId)
+    await projectRepositoryStore.deleteRepo(repoId)
   } catch (error) {
     snackbarStore.setMessage(error?.message, 'error')
   }
