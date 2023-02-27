@@ -79,7 +79,7 @@ export const data = {
           externalUserName: 'this-is-a-test',
           externalToken: 'this-is-a-token',
           isInfra: false,
-          status: 'failed',
+          status: 'created',
         },
       ],
       environments: [{
@@ -92,7 +92,7 @@ export const data = {
           },
         ],
       }],
-      status: 'created',
+      status: 'failed',
     },
     {
       id: '22e7044f-8414-435d-9c4a-2df42a65034b',
@@ -131,7 +131,7 @@ export const data = {
           externalRepoUrl: 'https://github.com/dnum-mi/beta-back.git',
           isPrivate: false,
           isInfra: false,
-          status: 'created',
+          status: 'failed',
         },
       ],
       environments: [{

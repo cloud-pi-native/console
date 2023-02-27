@@ -1,5 +1,8 @@
+import { getProjectbyId } from '../support/func.js'
+
 describe('Add repos into project', () => {
   const project = { name: 'project10' }
+  const projectWithFailedRepo = getProjectbyId('22e7044f-8414-435d-9c4a-2df42a65034b')
 
   before(() => {
     cy.kcLogin('test')
@@ -77,6 +80,16 @@ describe('Add repos into project', () => {
       .getByDataTestid('addRepoBtn').should('be.enabled')
       .getByDataTestid('infraRepoCbx').find('input[type="checkbox"]').check({ force: true })
       .getByDataTestid('addRepoBtn').should('be.enabled')
+  })
+
+  it('Should display repositories statuses', () => {
+    const repos = projectWithFailedRepo.repositories
+
+    cy.assertAddRepo(projectWithFailedRepo, repos)
+      .getByDataTestid(`${repos[0].internalRepoName}-${repos[0].status}-badge`)
+      .should('contain', 'Dépôt correctement déployé')
+      .getByDataTestid(`${repos[1].internalRepoName}-${repos[1].status}-badge`)
+      .should('contain', 'Echec des opérations')
   })
 
   it('Should create a project with one external public repo', () => {

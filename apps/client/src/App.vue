@@ -27,7 +27,7 @@ const quickLinks = ref([{
 const refreshProjects = () => {
   intervalId.value = setInterval(async () => {
     await projectStore.getUserProjects()
-  }, 60_000)
+  }, 30_000)
 }
 
 onBeforeMount(() => {
