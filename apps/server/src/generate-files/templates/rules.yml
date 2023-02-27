@@ -3,4 +3,4 @@
     - changes:
         - $WORKING_DIR/*
         - $WORKING_DIR/**/*
-        - .gitlab-ci.yml
+        - .gitlab-ci-dso.yml
