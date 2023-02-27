@@ -61,7 +61,7 @@ export const getUserProjectsController = async (req, res) => {
     projects.map(project => replaceNestedKeys(project, lowercaseFirstLetter))
     return send200(res, projects)
   } catch (error) {
-    const message = `Cannot retrieve projects: ${error?.message}`
+    const message = `Projets non trouvés: ${error?.message}`
     req.log.error({
       ...getLogInfos(),
       description: message,
@@ -86,7 +86,7 @@ export const getProjectByIdController = async (req, res) => {
     })
     send200(res, project)
   } catch (error) {
-    const message = `Cannot retrieve project: ${error?.message}`
+    const message = `Projet non trouvé: ${error?.message}`
     req.log.error({
       ...getLogInfos({ projectId }),
       description: message,
@@ -113,7 +113,7 @@ export const getProjectOwnerController = async (req, res) => {
     })
     send200(res, owner)
   } catch (error) {
-    const message = `Cannot retrieve project: ${error?.message}`
+    const message = `Projet non trouvé: ${error?.message}`
     req.log.error({
       ...getLogInfos({ projectId }),
       description: message,
@@ -158,7 +158,7 @@ export const createProjectController = async (req, res) => {
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: `Cannot create project: ${error?.message}`,
+      description: `Projet non créé: ${error?.message}`,
       error: error?.message,
     })
     return send500(res, error?.message)

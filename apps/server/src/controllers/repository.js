@@ -44,7 +44,7 @@ export const getRepositoryByIdController = async (req, res) => {
     })
     send200(res, repo)
   } catch (error) {
-    const message = 'Cannot retrieve repository'
+    const message = 'Dépôt non trouvé'
     req.log.error({
       ...getLogInfos({ repositoryId }),
       description: message,
@@ -68,7 +68,7 @@ export const getProjectRepositoriesController = async (req, res) => {
     })
     send200(res, repos)
   } catch (error) {
-    const message = 'Cannot retrieve repository'
+    const message = 'Dépôt non trouvé'
     req.log.error({
       ...getLogInfos({ projectId }),
       description: message,
@@ -120,7 +120,7 @@ export const createRepositoryController = async (req, res) => {
     })
     send201(res, 'Repository successfully created')
   } catch (error) {
-    const message = 'Cannot create repository'
+    const message = 'Dépôt non créé'
     req.log.error({
       ...getLogInfos(),
       description: message,
