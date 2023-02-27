@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.1](https://github.com/dnum-mi/dso-console/compare/v2.1.0...v2.1.1) (2023-02-27)
+
+
+### Bug Fixes
+
+* :globe_with_meridians: translate error messages in french ([a2827c3](https://github.com/dnum-mi/dso-console/commit/a2827c3746aad94293de183725bd2e77ac34f525))
+
 ## [2.1.0](https://github.com/dnum-mi/dso-console/compare/v2.0.0...v2.1.0) (2023-02-27)
 
 
