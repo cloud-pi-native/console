@@ -287,6 +287,36 @@ describe('Project routes', () => {
       expect(response.body).toEqual(`"${newProject.name}" existe déjà`)
     })
 
+    it('Should not create a project if name exists in archives', async () => {
+      const randomDbSetup = createRandomDbSetup({})
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
+      const newProject = randomDbSetup.project
+      newProject.status = 'archived'
+      delete newProject.id
+      delete newProject.users
+      delete newProject.repositories
+      delete newProject.environments
+
+      // get user
+      User.$queueResult(owner)
+
+      // validate project schema
+      sequelize.$queueResult(true)
+
+      // checkUniqueProject
+      Project.$queueResult(randomDbSetup.project)
+      setRequestorId(owner.id)
+
+      const response = await app.inject()
+        .post('/')
+        .body(newProject)
+        .end()
+
+      expect(response.statusCode).toEqual(500)
+      expect(response.body).toBeDefined()
+      expect(response.body).toEqual(`"${newProject.name}" est archivé et n'est plus disponible`)
+    })
+
     it.skip('Should return an error if ansible api call failed', async () => {
       const ansibleError = 'Invalid ansible-api call'
 
