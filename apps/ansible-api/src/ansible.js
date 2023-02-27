@@ -1,6 +1,6 @@
 import { spawn } from 'child_process'
 import app from './app.js'
-import { isProd, playbookDir } from './utils/env.js'
+import { playbookDir } from './utils/env.js'
 import { getLogInfos } from './utils/logger.js'
 
 export const runPlaybook = (playbook, vars) => {
@@ -9,6 +9,7 @@ export const runPlaybook = (playbook, vars) => {
     '-c=local',
     '-e',
     JSON.stringify(vars),
+    '-v',
   ]
   const command = `ansible-playbook ${playbook} ${args.join(' ')}`
   return new Promise((resolve, reject) => {
@@ -17,10 +18,6 @@ export const runPlaybook = (playbook, vars) => {
       [playbook, ...args],
       {
         cwd: playbookDir,
-        env: {
-          ...process.env,
-          ANSIBLE_STDOUT_CALLBACK: isProd ? 'community.general.unixy' : 'default',
-        },
       },
     )
     let logs = Buffer.alloc(0)

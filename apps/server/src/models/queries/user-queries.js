@@ -26,6 +26,18 @@ export const getUserById = async (id) => {
   return getUserModel().findByPk(id)
 }
 
+export const getOrCreateUser = async (user) => {
+  delete user.groups
+  const foundUser = await getUserModel().findOrCreate({
+    where: { id: user.id },
+    defaults: {
+      ...user,
+      isAdmin: false,
+    },
+  })
+  return foundUser[0]
+}
+
 export const getUserByEmail = async (email) => {
   const res = await getUserModel().findAll({
     where: {

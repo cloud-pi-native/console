@@ -5,9 +5,11 @@ import { useProjectStore } from '@/stores/project.js'
 import EnvironmentForm from '@/components/EnvironmentForm.vue'
 import { allEnv } from 'shared/src/utils/iterables.js'
 import { useUserStore } from '@/stores/user.js'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const projectStore = useProjectStore()
 const userStore = useUserStore()
+const snackbarStore = useSnackbarStore()
 
 const selectedProject = computed(() => projectStore.selectedProject)
 const owner = computed(() => projectStore.selectedProjectOwner)
@@ -18,7 +20,7 @@ const selectedEnvironment = ref({})
 const isNewEnvironmentForm = ref(false)
 
 const setEnvironmentsTiles = (selectedProject) => {
-  environments.value = selectedProject.environments?.map(environment => ({
+  environments.value = selectedProject?.environments?.map(environment => ({
     id: environment.id,
     title: environment.name,
     data: environment,
@@ -48,7 +50,7 @@ const addEnvironment = async (environment) => {
   try {
     await projectStore.addEnvironmentToProject(environment)
   } catch (error) {
-    console.log(error)
+    snackbarStore.setMessage(error?.message, 'error')
   }
 }
 
@@ -56,7 +58,7 @@ const deleteEnvironment = async (environment) => {
   try {
     await projectStore.deleteEnvironment(environment.id)
   } catch (error) {
-    console.log(error)
+    snackbarStore.setMessage(error?.message, 'error')
   }
   setSelectedEnvironment({})
 }
@@ -90,7 +92,7 @@ watch(selectedProject, () => {
     class="my-5 pb-10 border-grey-900 border-y-1"
   >
     <EnvironmentForm
-      :environment="{projectId: selectedProject.id}"
+      :environment="{projectId: selectedProject?.id}"
       :environment-names="environmentNames"
       @add-environment="(environment) => addEnvironment(environment)"
       @cancel="cancel()"

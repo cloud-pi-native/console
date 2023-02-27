@@ -1,5 +1,6 @@
 <script setup>
 import SideMenu from './components/SideMenu.vue'
+import DsoSnackbar from './components/DsoSnackbar.vue'
 import { ref, onMounted, watch, onBeforeMount } from 'vue'
 import { getKeycloak } from './utils/keycloak/keycloak.js'
 import { useUserStore } from './stores/user.js'
@@ -22,11 +23,6 @@ const quickLinks = ref([{
   icon: 'ri-account-circle-line',
   iconRight: true,
 }])
-
-const closed = ref(false)
-const close = () => {
-  closed.value = !closed.value
-}
 
 const refreshProjects = () => {
   intervalId.value = setInterval(async () => {
@@ -53,8 +49,8 @@ watch(label, (label) => {
 
 <template>
   <DsfrHeader
-    service-title="Console Cloud PI Native"
-    :logo-text="['Ministère', 'de l’intérieur']"
+    service-title="Console Cloud π Native"
+    :logo-text="['Ministère', 'de l’intérieur', 'et des outre-mer']"
     :quick-links="quickLinks"
   />
   <div class="fr-container fr-grid-row fr-mb-8w">
@@ -64,16 +60,6 @@ watch(label, (label) => {
     <div class="fr-col-12 fr-col-md-9 fr-py-6v">
       <router-view />
     </div>
-    <DsfrAlert
-      v-if="isLoggedIn"
-      data-testid="whoamiSnackbar"
-      class="snackbar"
-      :description="`Vous êtes connecté(e) en tant que ${userStore.userProfile.firstName} ${userStore.userProfile.lastName}`"
-      type="info"
-      small
-      :closed="closed"
-      closeable
-      @close="close()"
-    />
+    <DsoSnackbar />
   </div>
 </template>

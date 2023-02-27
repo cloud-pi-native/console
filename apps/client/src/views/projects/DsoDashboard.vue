@@ -2,11 +2,13 @@
 import { ref, computed } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 import DsoSelectedProject from './DsoSelectedProject.vue'
 import router from '@/router/index.js'
 
 const projectStore = useProjectStore()
 const userStore = useUserStore()
+const snackbarStore = useSnackbarStore()
 
 const project = computed(() => projectStore.selectedProject)
 const owner = computed(() => projectStore.selectedProjectOwner)
@@ -20,7 +22,7 @@ const archiveProject = async (projectId) => {
     await projectStore.archiveProject(projectId)
     router.push('/projects')
   } catch (error) {
-    console.log(error)
+    snackbarStore.setMessage(error?.message, 'error')
   }
 }
 
@@ -85,12 +87,12 @@ const archiveProject = async (projectId) => {
     class="flex justify-between"
   >
     <DsfrBadge
-      v-if="projectStore.selectedProject.status === 'initializing'"
+      v-if="projectStore.selectedProject?.status === 'initializing'"
       type="info"
       label="Projet en cours de création"
     />
     <DsfrBadge
-      v-else-if="projectStore.selectedProject.status === 'failed'"
+      v-else-if="projectStore.selectedProject?.status === 'failed'"
       type="error"
       label="Echec de création du projet"
     />
@@ -100,7 +102,7 @@ const archiveProject = async (projectId) => {
       label="Projet créé"
     />
     <DsfrBadge
-      v-if="projectStore.selectedProject.locked"
+      v-if="projectStore.selectedProject?.locked"
       type="warning"
       label="Projet verrouillé"
     />

@@ -1,10 +1,12 @@
 <script setup>
 import { onMounted, ref, watch, computed } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 import router from '@/router/index.js'
 import DsoSelectedProject from './DsoSelectedProject.vue'
 
 const projectStore = useProjectStore()
+const snackbarStore = useSnackbarStore()
 
 const projects = computed(() => projectStore?.projects)
 const projectList = ref([])
@@ -13,7 +15,7 @@ const setProjectList = (projects) => {
   projectList.value = projects?.map(project => ({
     id: project.id,
     title: project.name,
-    to: `/projects/${project.id}/dashboard`,
+    to: `/projects/${project.id}/services`,
     locked: project.locked,
   }))
 }
@@ -30,7 +32,7 @@ onMounted(async () => {
   try {
     await projectStore.getUserProjects()
   } catch (error) {
-    console.log(error)
+    snackbarStore.setMessage(error?.message, 'error')
   }
 })
 

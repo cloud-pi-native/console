@@ -13,6 +13,7 @@ import { getUsersProjectsModel } from '../models/users-projects.js'
 import { getRepositoryModel } from '../models/repository.js'
 import { getEnvironmentModel } from '../models/environment.js'
 import { getPermissionModel } from '../models/permission.js'
+import { getOrganizationModel } from '../models/organization.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 vi.mock('../ansible.js')
@@ -50,6 +51,7 @@ describe('Project routes', () => {
   let Repository
   let Environment
   let Permissions
+  let Organization
 
   beforeAll(async () => {
     mockSession(app)
@@ -60,7 +62,7 @@ describe('Project routes', () => {
     Repository = getRepositoryModel()
     Environment = getEnvironmentModel()
     Permissions = getPermissionModel()
-    global.fetch = vi.fn(() => Promise.resolve())
+    Organization = getOrganizationModel()
   })
 
   afterAll(async () => {
@@ -70,7 +72,6 @@ describe('Project routes', () => {
   afterEach(() => {
     vi.clearAllMocks()
     sequelize.$clearQueue()
-    global.fetch = vi.fn(() => Promise.resolve({ json: async () => {} }))
   })
 
   // GET
@@ -142,7 +143,7 @@ describe('Project routes', () => {
       expect(response.body).toEqual('Cannot retrieve project: custom error message')
     })
 
-    it('Should not retreive a project when requestor is not member of project', async () => {
+    it('Should not retreive a project when Vous n\'êtes pas membre du projet', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
@@ -157,7 +158,7 @@ describe('Project routes', () => {
       expect(response.statusCode).toEqual(500)
       expect(response.body.json).not.toBeDefined()
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Cannot retrieve project: Requestor is not member of project')
+      expect(response.body).toEqual('Cannot retrieve project: Vous n\'êtes pas membre du projet')
     })
   })
 
@@ -192,12 +193,31 @@ describe('Project routes', () => {
       delete randomDbSetup.project.id
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
-      // 1. checkUniqueProject
-      sequelize.$queueResult(null)
-      // 2. createProject
+      // get user
+      User.$queueResult(owner)
+
+      // validate project schema
+      sequelize.$queueResult(true)
+
+      // checkUniqueProject
+      Project.$queueResult(null)
+
+      // initialize project and lock
       Project.$queueResult(randomDbSetup.project)
-      // 3. getUserById
-      User.$queueResult(randomDbSetup.users[0])
+      Project.$queueResult([1])
+
+      // add user to project
+      Role.$queueResult({ UserId: owner.id, role: 'owner' })
+
+      // initialize environment
+      Environment.$queueResult(randomDbSetup.project.environments[0])
+
+      // get organization
+      Organization.$queueResult(randomDbSetup.organization)
+
+      // add logs
+      sequelize.$queueResult(null)
+
       // 4. updateProjectStatus
       sequelize.$queueResult([1])
       setRequestorId(owner.id)
@@ -222,7 +242,11 @@ describe('Project routes', () => {
       const randomDbSetup = createRandomDbSetup({})
       delete randomDbSetup.project[removedKey]
 
-      sequelize.$queueResult(null)
+      // get user
+      User.$queueResult(randomDbSetup.users[0])
+
+      // validate project schema
+      sequelize.$queueResult(true)
 
       const response = await app.inject()
         .post('/')
@@ -243,6 +267,13 @@ describe('Project routes', () => {
       delete newProject.repositories
       delete newProject.environments
 
+      // get user
+      User.$queueResult(owner)
+
+      // validate project schema
+      sequelize.$queueResult(true)
+
+      // checkUniqueProject
       Project.$queueResult(randomDbSetup.project)
       setRequestorId(owner.id)
 
@@ -253,7 +284,7 @@ describe('Project routes', () => {
 
       expect(response.statusCode).toEqual(500)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Un projet avec le nom et dans l\'organisation demandés existe déjà')
+      expect(response.body).toEqual(`"${newProject.name}" existe déjà`)
     })
 
     it.skip('Should return an error if ansible api call failed', async () => {
@@ -298,9 +329,25 @@ describe('Project routes', () => {
       randomDbSetup.project.environments.forEach(environment => Permissions.$queueResult(environment.permissions))
       User.$queueResult(randomDbSetup.users)
       // 3. projectLoked
-      sequelize.$queueResult([1])
-      // 4. archiveProject
-      sequelize.$queueResult([1])
+      Project.$queueResult(randomDbSetup.project.id)
+      // 4. ansible
+      Organization.$queueResult(randomDbSetup.organization)
+      Repository.$queueResult(randomDbSetup.project.repositories)
+      Environment.$queueResult(randomDbSetup.project.environments)
+
+      global.fetch = vi.fn(() => Promise.resolve({
+        json: async () => (
+          {
+            command: 'ansible-playbook',
+            status: 'OK',
+            code: 0,
+            logs: 'logs',
+          }
+        ),
+      },
+      ))
+      // 5. archiveProject
+      Project.$queueResult(randomDbSetup.project.id)
       setRequestorId(owner.id)
 
       const response = await app.inject()
@@ -325,7 +372,7 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(500)
-      expect(response.body).toEqual('Requestor is not member of project')
+      expect(response.body).toEqual('Vous n\'êtes pas membre du projet')
     })
 
     it('Should not archive a project if requestor is not owner', async () => {
@@ -342,7 +389,7 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(500)
-      expect(response.body).toEqual('Requestor is not owner of project')
+      expect(response.body).toEqual('Vous n\'êtes pas souscripteur du projet')
     })
   })
 })

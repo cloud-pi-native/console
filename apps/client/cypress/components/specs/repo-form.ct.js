@@ -10,7 +10,7 @@ import { allOrganizations } from 'shared/src/utils/iterables.js'
 
 describe('RepoForm.vue', () => {
   it('Should mount a RepoForm', () => {
-    cy.intercept('POST', '/api/v1/ci-files', { gitlab: 'my generated file' })
+    cy.intercept('POST', '/api/v1/ci-files', { 'gitlab-ci-dso': 'my generated file' })
     cy.intercept('GET', '/api/v1/organizations', allOrganizations)
     const pinia = createPinia()
 
@@ -69,7 +69,7 @@ describe('RepoForm.vue', () => {
       .getByDataTestid('workingDirInput').type('./')
       .getByDataTestid('generateCIBtn').click()
       .getByDataTestid('generatedCI').should('be.visible')
-      .getByDataTestid('copy-gitlab-ContentBtn').click()
+      .getByDataTestid('copy-gitlab-ci-dso-ContentBtn').click()
       .window().then((win) => {
         win.navigator.clipboard.readText().then((text) => {
           expect(text).to.eq('my generated file')

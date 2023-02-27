@@ -1,4 +1,4 @@
-# Console Cloud PI Native
+# Console Cloud π Native
 
 ## Prérequis
 
@@ -118,3 +118,17 @@ Pour pouvoir gérer les droits utilisateurs des services le pod `server` doit ac
   * Add to userinfo: `Off`
 
 En environnement de dev l'import par défaut prévoit déjà la modification
+
+## Tableau des ressources, terminologie
+| Console Cloud Pi | Projet                       | Environnement | Dépots                                  | Utilisateur / membre |
+| ---------------- | ---------------------------- | ------------- | --------------------------------------- | -------------------- |
+| **Openshift**        |                              | Namespace     |                                         |                      |
+| **ArgoCD**           |                              |               | (infra) Secret, AppProject, Application |                      |
+| **Gitlab**           | Group                        |               | Repository (Dépôt)                      | User                 |
+| **Quay**             | Organization                 |               | Repository *                            |                      |
+| **Ldap**             | Group                        |               |                                         | User / memberof      |
+| **Keycloak**         |                              | Group         |                                         | User / member        |
+| **Sonar**            | User                         |               |                                         |                      |
+| **Nexus**            | Repositories, role, user ... |               |                                         |                      |
+
+ * N'est pas crée par la console mais par le produit de la CI

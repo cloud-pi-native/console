@@ -1,4 +1,4 @@
-FROM cypress/included:12.4.1 as build
+FROM docker.io/cypress/included:12.4.1 as build
 
 RUN npm install --location=global pnpm
 

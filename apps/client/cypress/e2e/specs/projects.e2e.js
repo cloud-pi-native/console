@@ -16,7 +16,7 @@ describe('Projects view', () => {
           .should('have.length', `${response.body.length}`)
       })
       .getByDataTestid(`projectTile-${project.name}`).click()
-      .url().should('contain', `projects/${project.id}/dashboard`)
+      .url().should('contain', `projects/${project.id}/services`)
       .getByDataTestid('currentProjectInfo')
       .should('contain', `Le projet courant est : ${project.name}`)
   })

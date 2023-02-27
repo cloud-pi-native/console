@@ -11,7 +11,7 @@ import {
   archiveProject,
   getProjectUsers,
 } from '../models/queries/project-queries.js'
-import { getUserById } from '../models/queries/user-queries.js'
+import { getOrCreateUser, getUserById } from '../models/queries/user-queries.js'
 import {
   deleteRoleByUserIdAndProjectId,
   getRoleByUserIdAndProjectId,
@@ -27,10 +27,13 @@ import {
   deleteEnvironment,
   getEnvironmentsByProjectId,
   updateEnvironmentDeleting,
+  initializeEnvironment,
+  updateEnvironmentCreated,
 } from '../models/queries/environment-queries.js'
 import {
   getEnvironmentPermissions,
   deletePermissionById,
+  setPermission,
 } from '../models/queries/permission-queries.js'
 import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
@@ -41,24 +44,28 @@ import { addLogs } from '../models/queries/log-queries.js'
 
 // GET
 export const getUserProjectsController = async (req, res) => {
-  const userId = req.session?.user?.id
+  const requestor = req.session?.user
 
   try {
-    const user = await getUserById(userId)
+    const user = await getOrCreateUser(requestor)
+    if (!user) return send200(res, [])
+
     let projects = await getUserProjects(user)
     req.log.info({
       ...getLogInfos(),
       description: 'Projects successfully retreived',
     })
+    if (!projects.length) return send200(res, [])
+
     projects = projects.filter(project => project.status !== 'archived')
     projects.map(project => replaceNestedKeys(project, lowercaseFirstLetter))
     return send200(res, projects)
   } catch (error) {
-    const message = `Cannot retrieve projects: ${error.message}`
+    const message = `Cannot retrieve projects: ${error?.message}`
     req.log.error({
       ...getLogInfos(),
       description: message,
-      error: error.message,
+      error: error?.message,
     })
     send500(res, message)
   }
@@ -71,7 +78,7 @@ export const getProjectByIdController = async (req, res) => {
   try {
     const project = await getProjectById(projectId)
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
-    if (!role) throw new Error('Requestor is not member of project')
+    if (!role) throw new Error('Vous n\'êtes pas membre du projet')
 
     req.log.info({
       ...getLogInfos({ projectId }),
@@ -79,11 +86,11 @@ export const getProjectByIdController = async (req, res) => {
     })
     send200(res, project)
   } catch (error) {
-    const message = `Cannot retrieve project: ${error.message}`
+    const message = `Cannot retrieve project: ${error?.message}`
     req.log.error({
       ...getLogInfos({ projectId }),
       description: message,
-      error: error.message,
+      error: error?.message,
     })
     send500(res, message)
   }
@@ -95,7 +102,7 @@ export const getProjectOwnerController = async (req, res) => {
 
   try {
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
-    if (!role) throw new Error('Requestor is not member of project')
+    if (!role) throw new Error('Vous n\'êtes pas membre du projet')
 
     const ownerId = await getSingleOwnerByProjectId(projectId)
     const owner = await getUserById(ownerId)
@@ -106,11 +113,11 @@ export const getProjectOwnerController = async (req, res) => {
     })
     send200(res, owner)
   } catch (error) {
-    const message = `Cannot retrieve project: ${error.message}`
+    const message = `Cannot retrieve project: ${error?.message}`
     req.log.error({
       ...getLogInfos({ projectId }),
       description: message,
-      error: error.message,
+      error: error?.message,
     })
     send500(res, message)
   }
@@ -119,19 +126,28 @@ export const getProjectOwnerController = async (req, res) => {
 // POST
 export const createProjectController = async (req, res) => {
   const data = req.body
-  const userId = req.session?.user?.id
+  const user = req.session?.user
 
   let project
+  let environment
+  let owner
 
   try {
+    owner = await getOrCreateUser({ id: user.id, email: user?.email, firstName: user?.firstName, lastName: user?.lastName })
+
     await projectSchema.validateAsync(data)
 
     project = await getProject({ name: data.name, organization: data.organization })
-    if (project) throw new Error('Un projet avec le nom et dans l\'organisation demandés existe déjà')
+    if (project?.archived) throw new Error(`"${data.name}" est archivé et n'est plus disponible`)
+    if (project) throw new Error(`"${data.name}" existe déjà`)
 
     project = await initializeProject(data)
-    const user = await getUserById(userId)
-    await addUserToProject({ project, user, role: 'owner' })
+    await lockProject(project.id)
+
+    await addUserToProject({ project, user: owner, role: 'owner' })
+
+    environment = await initializeEnvironment({ name: 'dev', projectId: project.id })
+
     req.log.info({
       ...getLogInfos({
         projectId: project.id,
@@ -142,22 +158,22 @@ export const createProjectController = async (req, res) => {
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: `Cannot create project: ${error.message}`,
-      error: error.message,
+      description: `Cannot create project: ${error?.message}`,
+      error: error?.message,
     })
-    return send500(res, error.message)
+    return send500(res, error?.message)
   }
 
   try {
-    const owner = await getUserById(userId)
     const organization = await getOrganizationById(project.organization)
 
     const ansibleData = {
       PROJECT_NAME: project.name,
       ORGANIZATION_NAME: organization.name,
-      EMAIL: owner.email,
+      EMAIL: owner.dataValues.email,
+      ENV_LIST: [environment.name],
     }
-    const ansibleRes = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/projects`, {
+    const ansibleRes = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -166,10 +182,18 @@ export const createProjectController = async (req, res) => {
       },
       body: JSON.stringify(ansibleData),
     })
-    addLogs(await ansibleRes.json(), userId)
-
+    const resJson = await ansibleRes.json()
+    await addLogs(resJson, owner.dataValues.id)
+    if (resJson?.status !== 'OK') throw new Error('Echec de création du projet côté ansible')
     try {
-      project = await updateProjectCreated(project.id)
+      await updateEnvironmentCreated(environment.id)
+      await setPermission({
+        userId: owner.id,
+        environmentId: environment.id,
+        level: 2,
+      })
+      await updateProjectCreated(project.id)
+      await unlockProject(project.id)
 
       req.log.info({
         ...getLogInfos({ projectId: project.id }),
@@ -179,17 +203,18 @@ export const createProjectController = async (req, res) => {
       req.log.error({
         ...getLogInfos(),
         description: 'Cannot update project status to created',
-        error: error.message,
+        error: error?.message,
       })
     }
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: 'Provisioning project with ansible failed',
+      description: `Echec requête ${req.id} : ${error?.message}`,
       error,
     })
     try {
-      project = await updateProjectFailed(project.id)
+      await updateProjectFailed(project.id)
+      await unlockProject(project.id)
 
       req.log.info({
         ...getLogInfos({ projectId: project.id }),
@@ -199,7 +224,7 @@ export const createProjectController = async (req, res) => {
       req.log.error({
         ...getLogInfos(),
         description: 'Cannot update project status to failed',
-        error: error.message,
+        error: error?.message,
       })
     }
   }
@@ -217,11 +242,11 @@ export const archiveProjectController = async (req, res) => {
   let project
   try {
     project = await getProjectById(projectId)
-    if (!project) throw new Error('Project not found')
+    if (!project) throw new Error('Projet introuvable')
 
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
-    if (!role) throw new Error('Requestor is not member of project')
-    if (role.role !== 'owner') throw new Error('Requestor is not owner of project')
+    if (!role) throw new Error('Vous n\'êtes pas membre du projet')
+    if (role.role !== 'owner') throw new Error('Vous n\'êtes pas souscripteur du projet')
 
     repos = await getProjectRepositories(projectId)
     environments = await getEnvironmentsByProjectId(projectId)
@@ -248,10 +273,10 @@ export const archiveProjectController = async (req, res) => {
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: `Cannot lock project: ${error.message}`,
-      error: error.message,
+      description: `Cannot lock project: ${error?.message}`,
+      error: error?.message,
     })
-    return send500(res, error.message)
+    return send500(res, error?.message)
   }
 
   try {
@@ -266,7 +291,7 @@ export const archiveProjectController = async (req, res) => {
 
     repos?.forEach(async repo => {
       ansibleData.REPO_DEST = repo.internalRepoName
-      const ansibleRes = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
+      const ansibleRes0 = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
         method: 'PUT',
         body: JSON.stringify(ansibleData),
         headers: {
@@ -275,8 +300,11 @@ export const archiveProjectController = async (req, res) => {
           'request-id': req.id,
         },
       })
-      addLogs(await ansibleRes.json(), userId)
+      const res0json = await ansibleRes0.json()
+      await addLogs(res0json, userId)
+      if (res0json?.status !== 'OK') throw new Error(`Echec de suppression du repo ${repo.internalRepoName} côté ansible`)
     })
+
     ansibleData.REPO_DEST = `${project.name}-argo`
     const ansibleRes1 = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
       method: 'PUT',
@@ -287,7 +315,9 @@ export const archiveProjectController = async (req, res) => {
         'request-id': req.id,
       },
     })
-    addLogs(await ansibleRes1.json(), userId)
+    const res1json = await ansibleRes1.json()
+    await addLogs(res1json, userId)
+    if (res1json?.status !== 'OK') throw new Error('Echec de suppression du projet-argo côté ansible')
 
     const ansibleRes2 = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project`, {
       method: 'PUT',
@@ -298,7 +328,9 @@ export const archiveProjectController = async (req, res) => {
         'request-id': req.id,
       },
     })
-    addLogs(await ansibleRes2.json(), userId)
+    const res2Json = await ansibleRes2.json()
+    await addLogs(res2Json, userId)
+    if (res2Json?.status !== 'OK') throw new Error('Echec de suppression du projet côté ansible')
 
     try {
       repos?.forEach(async repo => {
@@ -324,13 +356,13 @@ export const archiveProjectController = async (req, res) => {
       req.log.error({
         ...getLogInfos(),
         description: 'Cannot unlock project',
-        error: error.message,
+        error: error?.message,
       })
     }
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: 'Provisioning project with ansible failed',
+      description: `Echec requête ${req.id} : ${error?.message}`,
       error,
     })
     try {
@@ -345,7 +377,7 @@ export const archiveProjectController = async (req, res) => {
       req.log.error({
         ...getLogInfos(),
         description: 'Cannot update project status',
-        error: error.message,
+        error: error?.message,
       })
     }
     send500(res, error)

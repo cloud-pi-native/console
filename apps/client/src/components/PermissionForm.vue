@@ -5,6 +5,7 @@ import RangeInput from './RangeInput.vue'
 import { levels } from 'shared/src/utils/iterables.js'
 import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = defineProps({
   environment: {
@@ -15,6 +16,7 @@ const props = defineProps({
 
 const projectStore = useProjectStore()
 const userStore = useUserStore()
+const snackbarStore = useSnackbarStore()
 const environment = ref(props.environment)
 const permissions = ref([])
 
@@ -39,7 +41,7 @@ const addPermission = async (userEmail) => {
   try {
     await projectStore.addPermission(environment.value.id, { userId, level: 0 })
   } catch (error) {
-    console.log(error)
+    snackbarStore.setMessage(error?.message, 'error')
   }
 }
 
@@ -47,7 +49,7 @@ const updatePermission = async (userId, level) => {
   try {
     await projectStore.updatePermission(environment.value.id, { userId, level })
   } catch (error) {
-    console.log(error)
+    snackbarStore.setMessage(error?.message, 'error')
   }
 }
 
@@ -55,7 +57,7 @@ const deletePermission = async (userId) => {
   try {
     await projectStore.deletePermission(environment.value.id, userId)
   } catch (error) {
-    console.log(error)
+    snackbarStore.setMessage(error?.message, 'error')
   }
 }
 

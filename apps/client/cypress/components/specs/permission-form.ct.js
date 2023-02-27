@@ -20,7 +20,7 @@ describe('PermissionForm.vue', () => {
     projectStore.selectedProjectOwner = randomDbSetup.users[0]
     userStore.userProfile = randomDbSetup.users[1]
 
-    const environment = projectStore.selectedProject.environments[0]
+    const environment = projectStore.selectedProject?.environments[0]
     const userToLicence = getRandomUser()
     randomDbSetup.project.users = [userToLicence, ...randomDbSetup.project.users]
 

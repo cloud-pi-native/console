@@ -321,7 +321,7 @@ Cypress.Commands.add('generateGitLabCI', (ciForms) => {
       .getByDataTestid('copy-vault-ContentBtn').should('exist')
       .getByDataTestid('copy-docker-ContentBtn').should('exist')
       .getByDataTestid('copy-rules-ContentBtn').should('exist')
-      .getByDataTestid('copy-gitlab-ContentBtn').click()
+      .getByDataTestid('copy-gitlab-ci-dso-ContentBtn').click()
     cy.assertClipboard(version)
     cy.get('.fr-download__link').first().click()
       .find('span').should(($span) => {
