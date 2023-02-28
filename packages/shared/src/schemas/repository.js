@@ -16,6 +16,7 @@ export const repoSchema = Joi.object({
         'https',
       ],
     })
+    .pattern(/^https:\/\/.*\.git$/)
     .required(),
 
   isPrivate: Joi.boolean(),
@@ -25,10 +26,14 @@ export const repoSchema = Joi.object({
   // .required(),
 
   externalUserName: Joi.string()
-    .when('isPrivate', { is: true, then: Joi.required() }),
+    .pattern(/^[a-zA-Z0-9-]+$/)
+    .when('isPrivate', { is: true, then: Joi.required() })
+    .when('isPrivate', { is: false, then: Joi.string().allow('') }),
 
   externalToken: Joi.string()
-    .when('isPrivate', { is: true, then: Joi.required() }),
+    .token()
+    .when('isPrivate', { is: true, then: Joi.required() })
+    .when('isPrivate', { is: false, then: Joi.string().allow('') }),
 
   status: Joi.string()
     .valid(...allStatus),
