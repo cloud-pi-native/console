@@ -47,7 +47,6 @@ describe('ciFiles routes', () => {
   it('Should generate files for a node project', async () => {
     const randomDbSetup = createRandomDbSetup({})
     const ciData = {
-      orgName: randomDbSetup.organization.name,
       projectName: randomDbSetup.project.name,
       internalRepoName: randomDbSetup.project.repositories[0].internalRepoName,
       typeLanguage: 'node',
@@ -64,15 +63,13 @@ describe('ciFiles routes', () => {
 
     expect(response.statusCode).toEqual(201)
     expect(response.body)
-      .to.contain(`PROJECT_NAME: ${ciData.projectName}`)
-      .and.to.contain(`PROJECT_ORGANISATION: ${ciData.orgName}`)
+      .to.contain(`IMAGE_NAME: ${ciData.projectName}`)
       .and.to.contain(`NODE_INSTALL_COMMAND: ${ciData.nodeInstallCommand}`)
   })
 
   it('Should generate files for a java project', async () => {
     const randomDbSetup = createRandomDbSetup({})
     const ciData = {
-      orgName: randomDbSetup.organization.name,
       projectName: randomDbSetup.project.name,
       internalRepoName: randomDbSetup.project.repositories[0].internalRepoName,
       typeLanguage: 'java',
@@ -88,15 +85,13 @@ describe('ciFiles routes', () => {
 
     expect(response.statusCode).toEqual(201)
     expect(response.body)
-      .to.contain(`PROJECT_NAME: ${ciData.projectName}`)
-      .and.to.contain(`PROJECT_ORGANISATION: ${ciData.orgName}`)
+      .to.contain(`IMAGE_NAME: ${ciData.projectName}`)
       .and.to.contain(`BUILD_IMAGE_NAME: maven:3.8-openjdk-${ciData.javaVersion}`)
   })
 
   it('Should generate files for a python project', async () => {
     const randomDbSetup = createRandomDbSetup({})
     const ciData = {
-      orgName: randomDbSetup.organization.name,
       projectName: randomDbSetup.project.name,
       internalRepoName: randomDbSetup.project.repositories[0].internalRepoName,
       typeLanguage: 'python',
@@ -110,7 +105,6 @@ describe('ciFiles routes', () => {
 
     expect(response.statusCode).toEqual(201)
     expect(response.body)
-      .to.contain(`PROJECT_NAME: ${ciData.projectName}`)
-      .and.to.contain(`PROJECT_ORGANISATION: ${ciData.orgName}`)
+      .to.contain(`IMAGE_NAME: ${ciData.projectName}`)
   })
 })
