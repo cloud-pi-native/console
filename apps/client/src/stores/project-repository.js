@@ -6,12 +6,12 @@ export const useProjectRepositoryStore = defineStore('project-repository', () =>
   const projectStore = useProjectStore()
 
   const addRepoToProject = async (newRepo) => {
-    await api.addRepo(projectStore.selectedProject.value.id, newRepo)
+    await api.addRepo(projectStore.selectedProject.id, newRepo)
     await projectStore.getUserProjects()
   }
 
   const deleteRepo = async (repoId) => {
-    await api.deleteRepo(projectStore.selectedProject.value.id, repoId)
+    await api.deleteRepo(projectStore.selectedProject.id, repoId)
     await projectStore.getUserProjects()
   }
 
