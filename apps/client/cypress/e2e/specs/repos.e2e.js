@@ -14,6 +14,71 @@ describe('Add repos into project', () => {
     cy.kcLogin('test')
   })
 
+  it('Should handle repository schema validation', () => {
+    const repo = {
+      internalRepoName: 'repo00',
+      externalRepoUrl: 'https://github.com/externalUser01/repo00.git',
+      externalUserName: 'user',
+      externalToken: 'videnden88EHEBdldd_T0k9n',
+    }
+
+    cy.goToProjects()
+      .getByDataTestid(`projectTile-${project.name}`).click()
+      .getByDataTestid('menuRepos').click()
+      .url().should('contain', '/repositories')
+
+    cy.getByDataTestid('addRepoLink').click({ timeout: 30_000 })
+      .get('h1').should('contain', 'Ajouter un dépôt au projet')
+      .getByDataTestid('addRepoBtn').should('be.disabled')
+      .getByDataTestid('internalRepoNameInput').clear().type(repo.internalRepoName)
+      .getByDataTestid('addRepoBtn').should('be.disabled')
+      .getByDataTestid('externalRepoUrlInput').clear().type(repo.externalRepoUrl)
+      .getByDataTestid('addRepoBtn').should('be.enabled')
+      .getByDataTestid('internalRepoNameInput').clear().type('$%_>')
+      .get('.fr-error-text')
+      .should('have.length', 1)
+      .and('contain', 'Le nom du dépôt ne doit contenir ni espaces ni caractères spéciaux')
+      .getByDataTestid('addRepoBtn').should('be.disabled')
+      .getByDataTestid('internalRepoNameInput').clear().type(repo.internalRepoName)
+      .get('.fr-error-text')
+      .should('not.exist')
+      .getByDataTestid('addRepoBtn').should('be.enabled')
+      .getByDataTestid('externalRepoUrlInput').clear().type(repo.externalRepoUrl.slice(0, -4))
+      .get('.fr-error-text')
+      .should('have.length', 1)
+      .and('contain', 'L\'url du dépôt doit commencer par https et se terminer par .git')
+      .getByDataTestid('addRepoBtn').should('be.disabled')
+      .getByDataTestid('externalRepoUrlInput').clear().type(repo.externalRepoUrl.slice(8))
+      .get('.fr-error-text')
+      .should('have.length', 1)
+      .and('contain', 'L\'url du dépôt doit commencer par https et se terminer par .git')
+      .getByDataTestid('addRepoBtn').should('be.disabled')
+      .getByDataTestid('externalRepoUrlInput').clear().type(repo.externalRepoUrl.replace(/s/i, ''))
+      .get('.fr-error-text')
+      .should('have.length', 1)
+      .and('contain', 'L\'url du dépôt doit commencer par https et se terminer par .git')
+      .getByDataTestid('addRepoBtn').should('be.disabled')
+      .getByDataTestid('externalRepoUrlInput').clear().type(repo.externalRepoUrl)
+      .get('.fr-error-text')
+      .should('not.exist')
+      .getByDataTestid('addRepoBtn').should('be.enabled')
+      .getByDataTestid('privateRepoCbx').find('input[type="checkbox"]').check({ force: true })
+      .getByDataTestid('addRepoBtn').should('be.disabled')
+      .getByDataTestid('externalUserNameInput').type(repo.externalUserName)
+      .getByDataTestid('addRepoBtn').should('be.disabled')
+      .getByDataTestid('externalTokenInput').clear().type(repo.externalToken)
+      .getByDataTestid('addRepoBtn').should('be.enabled')
+      .getByDataTestid('externalTokenInput').clear()
+      .get('.fr-error-text')
+      .should('have.length', 1)
+      .and('contain', 'Le token d\'accès au dépôt est obligatoire en cas de dépôt privé et ne doit contenir ni espaces ni caractères spéciaux')
+      .getByDataTestid('addRepoBtn').should('be.disabled')
+      .getByDataTestid('privateRepoCbx').find('input[type="checkbox"]').uncheck({ force: true })
+      .getByDataTestid('addRepoBtn').should('be.enabled')
+      .getByDataTestid('infraRepoCbx').find('input[type="checkbox"]').check({ force: true })
+      .getByDataTestid('addRepoBtn').should('be.enabled')
+  })
+
   it('Should create a project with one external public repo', () => {
     const repos = [{
       internalRepoName: 'repo01',

@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { repoSchema, schemaValidator, isValid, instanciateSchema } from 'shared'
 import CIForm from './CIForm.vue'
 
@@ -7,6 +7,10 @@ const props = defineProps({
   repo: {
     type: Object,
     default: () => ({
+      internalRepoName: '',
+      externalRepoUrl: '',
+      externalUserName: '',
+      externalToken: '',
       isInfra: false,
       isPrivate: false,
     }),
@@ -26,6 +30,9 @@ const updatedValues = ref({})
 const repoToDelete = ref('')
 const isDeletingRepo = ref(false)
 
+const errorSchema = computed(() => schemaValidator(repoSchema, localRepo.value))
+const isRepoValid = computed(() => Object.keys(errorSchema.value).length === 0)
+
 const updateRepo = (key, value) => {
   localRepo.value[key] = value
   updatedValues.value[key] = true
@@ -35,11 +42,8 @@ const emit = defineEmits(['add', 'delete', 'cancel'])
 
 const addRepo = () => {
   updatedValues.value = instanciateSchema({ schema: repoSchema }, true)
-  const errorSchema = schemaValidator(repoSchema, localRepo.value)
 
-  if (Object.keys(errorSchema).length === 0) {
-    emit('add', localRepo.value)
-  }
+  if (isRepoValid.value) emit('add', localRepo.value)
 }
 
 const cancel = (event) => {
@@ -116,36 +120,37 @@ const cancel = (event) => {
       data-testid="repoFieldset"
       legend="Dépôt Git"
     >
-      <DsfrInput
-        v-model="localRepo.internalRepoName"
-        data-testid="internalRepoNameInput"
-        type="text"
-        required="required"
-        :disabled="!props.isEditable"
-        :is-valid="!!updatedValues.internalRepoName && isValid(repoSchema, localRepo, 'internalRepoName')"
-        :is-invalid="!!updatedValues.internalRepoName && !isValid(repoSchema, localRepo, 'internalRepoName')"
-        label="Nom du dépôt Git interne"
-        label-visible
-        hint="Nom du dépôt Git créé dans le Gitlab interne de la plateforme"
-        placeholder="candilib"
-        class="fr-mb-2w"
-        @update:model-value="updateRepo('internalRepoName', $event)"
-      />
-      <DsfrInput
-        v-model="localRepo.externalRepoUrl"
-        data-testid="externalRepoUrlInput"
-        type="text"
-        required="required"
-        :disabled="!props.isEditable"
-        :is-valid="!!updatedValues.externalRepoUrl && isValid(repoSchema, localRepo, 'externalRepoUrl')"
-        :is-invalid="!!updatedValues.externalRepoUrl && !isValid(repoSchema, localRepo, 'externalRepoUrl')"
-        label="Url du dépôt Git externe"
-        label-visible
-        hint="Url du dépôt Git qui servira de source pour la synchronisation"
-        placeholder="https://github.com/dnum-mi/dso-console.git"
-        class="fr-mb-2w"
-        @update:model-value="updateRepo('externalRepoUrl', $event)"
-      />
+      <div class="fr-mb-2w">
+        <DsfrInputGroup
+          v-model="localRepo.internalRepoName"
+          data-testid="internalRepoNameInput"
+          type="text"
+          required="required"
+          :disabled="!props.isEditable"
+          :error-message="!!updatedValues.internalRepoName && !isValid(repoSchema, localRepo, 'internalRepoName') ? 'Le nom du dépôt ne doit contenir ni espaces ni caractères spéciaux': undefined"
+          label="Nom du dépôt Git interne"
+          label-visible
+          hint="Nom du dépôt Git créé dans le Gitlab interne de la plateforme"
+          placeholder="candilib"
+          @update:model-value="updateRepo('internalRepoName', $event)"
+        />
+      </div>
+      <div class="fr-mb-2w">
+        <DsfrInputGroup
+          v-model="localRepo.externalRepoUrl"
+          data-testid="externalRepoUrlInput"
+          type="text"
+          required="required"
+          :disabled="!props.isEditable"
+          :error-message="!!updatedValues.externalRepoUrl && !isValid(repoSchema, localRepo, 'externalRepoUrl') ? 'L\'url du dépôt doit commencer par https et se terminer par .git': undefined"
+          label="Url du dépôt Git externe"
+          label-visible
+          hint="Url du dépôt Git qui servira de source pour la synchronisation"
+          placeholder="https://github.com/dnum-mi/dso-console.git"
+          class="fr-mb-2w"
+          @update:model-value="updateRepo('externalRepoUrl', $event)"
+        />
+      </div>
       <DsfrCheckbox
         v-model="localRepo.isPrivate"
         data-testid="privateRepoCbx"
@@ -158,37 +163,39 @@ const cancel = (event) => {
       <div
         v-if="localRepo.isPrivate"
       >
-        <DsfrInput
-          v-model="localRepo.externalUserName"
-          data-testid="externalUserNameInput"
-          type="text"
-          :required="localRepo.isPrivate ? 'required' : false"
-          :disabled="!props.isEditable"
-          :is-valid="!!updatedValues.externalUserName && isValid(repoSchema, localRepo, 'externalUserName')"
-          :is-invalid="!!updatedValues.externalUserName && !isValid(repoSchema, localRepo, 'externalUserName')"
-          autocomplete="name"
-          label="Nom d'utilisateur"
-          label-visible
-          hint="Nom de l'utilisateur propriétaire du token"
-          placeholder="this-is-tobi"
-          class="fr-mb-2w"
-          @update:model-value="updateRepo('externalUserName', $event)"
-        />
-        <DsfrInput
-          v-model="localRepo.externalToken"
-          data-testid="externalTokenInput"
-          type="text"
-          :required="localRepo.isPrivate ? 'required' : false"
-          :disabled="!props.isEditable"
-          :is-valid="!!updatedValues.externalToken && isValid(repoSchema, localRepo, 'externalToken')"
-          :is-invalid="!!updatedValues.externalToken && !isValid(repoSchema, localRepo, 'externalToken')"
-          label="Token d'accès au dépôt Git externe"
-          label-visible
-          hint="Token d'accès permettant le clone du dépôt par la chaîne DevSecOps"
-          placeholder="hoqjC1vXtABzytBIWBXsdyzubmqMYkgA"
-          class="fr-mb-2w"
-          @update:model-value="updateRepo('externalToken', $event)"
-        />
+        <div class="fr-mb-2w">
+          <DsfrInputGroup
+            v-model="localRepo.externalUserName"
+            data-testid="externalUserNameInput"
+            type="text"
+            :required="localRepo.isPrivate ? 'required' : false"
+            :disabled="!props.isEditable"
+            :error-message="!!updatedValues.externalUserName && !isValid(repoSchema, localRepo, 'externalUserName') ? 'Le nom du propriétaire du token est obligatoire en cas de dépôt privé et ne doit contenir ni espaces ni caractères spéciaux': undefined"
+            autocomplete="name"
+            label="Nom d'utilisateur"
+            label-visible
+            hint="Nom de l'utilisateur propriétaire du token"
+            placeholder="this-is-tobi"
+            class="fr-mb-2w"
+            @update:model-value="updateRepo('externalUserName', $event)"
+          />
+        </div>
+        <div class="fr-mb-2w">
+          <DsfrInputGroup
+            v-model="localRepo.externalToken"
+            data-testid="externalTokenInput"
+            type="text"
+            :required="localRepo.isPrivate ? 'required' : false"
+            :disabled="!props.isEditable"
+            :error-message="!!updatedValues.externalToken && !isValid(repoSchema, localRepo, 'externalToken') ? 'Le token d\'accès au dépôt est obligatoire en cas de dépôt privé et ne doit contenir ni espaces ni caractères spéciaux': undefined"
+            label="Token d'accès au dépôt Git externe"
+            label-visible
+            hint="Token d'accès permettant le clone du dépôt par la chaîne DevSecOps"
+            placeholder="hoqjC1vXtABzytBIWBXsdyzubmqMYkgA"
+            class="fr-mb-2w"
+            @update:model-value="updateRepo('externalToken', $event)"
+          />
+        </div>
       </div>
       <DsfrCheckbox
         v-model="localRepo.isInfra"
@@ -212,6 +219,7 @@ const cancel = (event) => {
     <DsfrButton
       label="Ajouter le dépôt"
       data-testid="addRepoBtn"
+      :disabled="!isRepoValid"
       primary
       icon="ri-upload-cloud-line"
       @click="addRepo()"
