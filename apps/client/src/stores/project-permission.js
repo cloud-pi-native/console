@@ -3,19 +3,21 @@ import api from '@/api/index.js'
 import { useProjectStore } from '@/stores/project.js'
 
 export const useProjectPermissionStore = defineStore('project-permission', () => {
+  const projectStore = useProjectStore()
+
   const addPermission = async (environmentId, newPermission) => {
-    await api.addPermission(useProjectStore.selectedProject.value.id, environmentId, newPermission)
-    await useProjectStore.getUserProjects()
+    await api.addPermission(projectStore.selectedProject.value.id, environmentId, newPermission)
+    await projectStore.getUserProjects()
   }
 
   const updatePermission = async (environmentId, permission) => {
-    await api.updatePermission(useProjectStore.selectedProject.value.id, environmentId, permission)
-    await useProjectStore.getUserProjects()
+    await api.updatePermission(projectStore.selectedProject.value.id, environmentId, permission)
+    await projectStore.getUserProjects()
   }
 
   const deletePermission = async (environmentId, userId) => {
-    await api.deletePermission(useProjectStore.selectedProject.value.id, environmentId, userId)
-    await useProjectStore.getUserProjects()
+    await api.deletePermission(projectStore.selectedProject.value.id, environmentId, userId)
+    await projectStore.getUserProjects()
   }
 
   return {

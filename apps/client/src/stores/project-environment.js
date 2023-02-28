@@ -3,14 +3,16 @@ import api from '@/api/index.js'
 import { useProjectStore } from '@/stores/project.js'
 
 export const useProjectEnvironmentStore = defineStore('project-environment', () => {
+  const projectStore = useProjectStore()
+
   const addEnvironmentToProject = async (newEnvironment) => {
-    await api.addEnvironment(useProjectStore.selectedProject.value.id, newEnvironment)
-    await useProjectStore.getUserProjects()
+    await api.addEnvironment(projectStore.selectedProject.value.id, newEnvironment)
+    await projectStore.getUserProjects()
   }
 
   const deleteEnvironment = async (environmentId) => {
-    await api.deleteEnvironment(useProjectStore.selectedProject.value.id, environmentId)
-    await useProjectStore.getUserProjects()
+    await api.deleteEnvironment(projectStore.selectedProject.value.id, environmentId)
+    await projectStore.getUserProjects()
   }
 
   return {
