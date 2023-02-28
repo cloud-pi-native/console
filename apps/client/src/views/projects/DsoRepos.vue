@@ -86,6 +86,7 @@ watch(selectedProject, () => {
       label="Ajouter un nouveau dépôt"
       data-testid="addRepoLink"
       tertiary
+      :disabled="projectStore.selectedProject?.locked"
       class="fr-mt-2v <md:mb-2"
       icon="ri-add-line"
       @click="showNewRepoForm()"
@@ -101,27 +102,59 @@ watch(selectedProject, () => {
     />
   </div>
   <div
-    v-for="repo in repos"
-    :key="repo.id"
-    class="fr-mt-2v fr-mb-4w"
+    :class="{
+      'grid grid-cols-3 items-center justify-between': !selectedRepo.internalRepoName,
+    }"
   >
-    <DsfrTile
-      :title="repo.title"
-      :description="repo.status === 'deleting' ? 'opérations en cours' : null"
-      :data-testid="`repoTile-${repo.id}`"
-      :horizontal="true"
-      :class="{
-        'fr-mb-2w': true,
-        'disabled-tile' : repo.status === 'deleting'
-      }"
-      @click="setSelectedRepo(repo.data)"
-    />
-    <RepoForm
-      v-if="Object.keys(selectedRepo).length && selectedRepo.internalRepoName === repo.id && selectedRepo.status !== 'deleting'"
-      :is-owner="isOwner"
-      :repo="selectedRepo"
-      :is-editable="false"
-      @delete="(repoId) => deleteRepo(repoId)"
-    />
+    <div
+      v-for="repo in repos"
+      :key="repo.id"
+      class="fr-mt-2v fr-mb-4w"
+    >
+      <div>
+        <DsfrTile
+          :title="repo.title"
+          :description="['deleting', 'initializing'].includes(repo?.data?.status) ? 'Opérations en cours' : null"
+          :data-testid="`repoTile-${repo.id}`"
+          :horizontal="selectedRepo.internalRepoName"
+          :class="{
+            'fr-mb-2w w-11/12': true,
+            'disabled-tile' : ['deleting', 'initializing'].includes(repo?.data?.status)
+          }"
+          @click="setSelectedRepo(repo.data)"
+        />
+        <DsfrBadge
+          v-if="repo?.data?.status === 'initializing'"
+          :data-testid="`${repo?.data?.internalRepoName}-${repo?.data?.status}-badge`"
+          type="info"
+          label="Dépôt en cours de création"
+        />
+        <DsfrBadge
+          v-else-if="repo?.data?.status === 'deleting'"
+          :data-testid="`${repo?.data?.internalRepoName}-${repo?.data?.status}-badge`"
+          type="info"
+          label="Dépôt en cours de suppression"
+        />
+        <DsfrBadge
+          v-else-if="repo?.data?.status === 'failed'"
+          :data-testid="`${repo?.data?.internalRepoName}-${repo?.data?.status}-badge`"
+          type="error"
+          label="Echec des opérations"
+        />
+        <DsfrBadge
+          v-else
+          :data-testid="`${repo?.data?.internalRepoName}-${repo?.data?.status}-badge`"
+          type="success"
+          label="Dépôt correctement déployé"
+        />
+      </div>
+      <RepoForm
+        v-if="Object.keys(selectedRepo).length && selectedRepo.internalRepoName === repo.id && selectedRepo.status !== 'deleting'"
+        :is-owner="isOwner"
+        :repo="selectedRepo"
+        :is-editable="false"
+        @delete="(repoId) => deleteRepo(repoId)"
+      />
+    </div>
   </div>
 </template>

@@ -55,12 +55,12 @@ Cypress.Commands.add('createProject', (project) => {
   cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
 })
 
-Cypress.Commands.add('assertCreateProject', (name) => {
+Cypress.Commands.add('assertCreateProjects', (names) => {
   cy.intercept('GET', '/api/v1/projects').as('getProjects')
   cy.goToProjects()
     .url().should('match', /\/projects$/)
     .wait('@getProjects').its('response.statusCode').should('eq', 200)
-    .getByDataTestid(`projectTile-${name}`).should('exist')
+  names.forEach(name => cy.getByDataTestid(`projectTile-${name}`).should('exist'))
 })
 
 Cypress.Commands.add('archiveProject', (project) => {
@@ -110,7 +110,7 @@ Cypress.Commands.add('addRepos', (project, repos) => {
     .url().should('contain', '/repositories')
 
   newRepos.forEach((repo) => {
-    cy.getByDataTestid('addRepoLink').click()
+    cy.getByDataTestid('addRepoLink').click({ timeout: 30_000 })
       .get('h1').should('contain', 'Ajouter un dépôt au projet')
       .getByDataTestid('internalRepoNameInput').type(repo.internalRepoName)
       .getByDataTestid('externalRepoUrlInput').clear().type(repo.externalRepoUrl)
@@ -129,6 +129,8 @@ Cypress.Commands.add('addRepos', (project, repos) => {
     cy.wait('@postRepo').its('response.statusCode').should('eq', 201)
     cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
     cy.getByDataTestid(`repoTile-${repo.internalRepoName}`).should('exist')
+    cy.reload()
+    cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
   })
 })
 
@@ -339,8 +341,8 @@ Cypress.Commands.add('assertClipboard', (value) => {
   })
 })
 
-Cypress.Commands.add('getByDataTestid', (dataTestid) => {
-  cy.get(`[data-testid="${dataTestid}"]`)
+Cypress.Commands.add('getByDataTestid', (dataTestid, timeout = 4_000) => {
+  cy.get(`[data-testid="${dataTestid}"]`, { timeout })
 })
 
 Cypress.Commands.add('selectProject', (element) => {

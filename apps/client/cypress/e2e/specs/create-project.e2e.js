@@ -7,6 +7,6 @@ describe('Create Project', () => {
     const project = { name: 'project01' }
 
     cy.createProject(project)
-    cy.assertCreateProject(project.name)
+    cy.assertCreateProjects([project.name])
   })
 })
