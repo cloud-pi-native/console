@@ -191,11 +191,44 @@ export const createProjectController = async (req, res) => {
       await updateProjectCreated(project.id)
       await unlockProject(project.id)
 
+      // TODO : en attente déploiement canel
+
+      const canelData = {
+        applications: {
+          nom_application: project.name,
+          statut_application: project.status,
+          date_mise_en_production: project.updatedAt,
+          createur: owner.id,
+          date_creation: project.createdAt,
+          derniere_modification_utilisateur: project.updatedAt,
+          date_derniere_modification: project.updatedAt,
+          canel_id: project.id,
+          ministere_responsable: organization.name,
+          acteurs: [
+            owner.dataValues,
+          ],
+        },
+      }
+
+      console.log(canelData.applications)
+
+      const canelRes = await fetch('https://qualification.ines-api.dsic.minint.fr/canel/api/v1/applications', {
+        method: 'POST',
+        body: JSON.stringify(canelData),
+      })
+
+      const canelJson = await canelRes.json()
+
+      console.log({ canelJson })
+
+      if (canelJson?.code !== 201) throw new Error(`Echec de création du projet côté canel : ${canelJson.description}`)
+
       req.log.info({
         ...getLogInfos({ projectId: project.id }),
         description: 'Project status successfully updated in database',
       })
     } catch (error) {
+      console.log(error)
       req.log.error({
         ...getLogInfos(),
         description: 'Cannot update project status to created',
@@ -344,6 +377,28 @@ export const archiveProjectController = async (req, res) => {
       await archiveProject(projectId)
       await unlockProject(projectId)
 
+      // TODO : en attente déploiement canel
+
+      const canelData = {
+        applications: {
+          canel_id: project.id,
+          nom_application: project.name,
+          statut_application: 'archived',
+        },
+      }
+
+      console.log(canelData.applications)
+
+      const canelRes = await fetch('https://qualification.ines-api.dsic.minint.fr/canel/api/v1/applications', {
+        method: 'PUT',
+        body: JSON.stringify(canelData),
+      })
+
+      const canelJson = await canelRes.json()
+
+      console.log({ canelJson })
+
+      if (canelJson?.code !== 201) throw new Error(`Echec de maj du projet côté canel : ${canelJson.description}`)
       req.log.info({
         ...getLogInfos({ projectId }),
         description: 'Project archived and unlocked',
