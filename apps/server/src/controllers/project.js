@@ -135,7 +135,7 @@ export const createProjectController = async (req, res) => {
   const data = req.body
   const user = req.session?.user
 
-  // const h = req.h.createProject.execute
+  const h = req.h.createProject.execute
   let environment
   let project
   let owner
