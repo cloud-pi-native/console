@@ -123,7 +123,11 @@ watch(selectedProject, () => {
             'fr-mb-2w w-11/12': true,
             'disabled-tile' : ['deleting', 'initializing'].includes(repo?.data?.status)
           }"
-          @click="setSelectedRepo(repo.data)"
+          @click="(
+            ['deleting', 'initializing'].includes(repo?.data?.status)
+              ? {}
+              : setSelectedRepo(repo.data)
+          )"
         />
         <DsfrBadge
           v-if="repo?.data?.status === 'initializing'"

@@ -68,10 +68,15 @@ watch(projects, (projects) => {
         :title="project.title"
         :description="project.locked ? 'opérations en cours' : null"
         :data-testid="`projectTile-${project.title}`"
-        :to="project.to"
+        :to="project.locked ? '' : project.to"
         :horizontal="false"
         :class="project.locked ? 'disabled-tile' : null"
-        @click="setSelectedProject(project.id)"
+        @click="
+          (
+            project.locked
+              ? {}
+              : setSelectedProject(project.id)
+          )"
       />
     </div>
   </div>

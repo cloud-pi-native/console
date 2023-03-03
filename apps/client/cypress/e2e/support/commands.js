@@ -150,6 +150,7 @@ Cypress.Commands.add('deleteRepo', (project, repo) => {
     .getByDataTestid('menuRepos').click()
 
   cy.getByDataTestid(`repoTile-${repo.internalRepoName}`).click()
+    .getByDataTestid('repo-form').should('exist')
     .getByDataTestid('deleteRepoInput').should('not.exist')
     .getByDataTestid('deleteRepoZone').should('be.visible')
     .getByDataTestid('showDeleteRepoBtn').click()
@@ -162,6 +163,8 @@ Cypress.Commands.add('deleteRepo', (project, repo) => {
     .click()
     .getByDataTestid(`repoTile-${repo.internalRepoName}`)
     .should('have.class', 'disabled-tile')
+    .click()
+    .getByDataTestid('repo-form').should('not.exist')
     .reload()
     .getByDataTestid(`repoTile-${repo.internalRepoName}`)
     .should('not.exist')
