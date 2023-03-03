@@ -20,8 +20,8 @@ const setProjectList = (projects) => {
   }))
 }
 
-const setSelectedProject = (id) => {
-  projectStore.setSelectedProject(id)
+const setSelectedProject = (project) => {
+  if (!project.locked) projectStore.setSelectedProject(project.id)
 }
 
 const goToCreateProject = () => {
@@ -68,10 +68,10 @@ watch(projects, (projects) => {
         :title="project.title"
         :description="project.locked ? 'opérations en cours' : null"
         :data-testid="`projectTile-${project.title}`"
-        :to="project.to"
+        :to="project.locked ? '' : project.to"
         :horizontal="false"
         :class="project.locked ? 'disabled-tile' : null"
-        @click="setSelectedProject(project.id)"
+        @click="setSelectedProject(project)"
       />
     </div>
   </div>

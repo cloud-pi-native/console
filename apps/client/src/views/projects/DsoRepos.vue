@@ -33,7 +33,7 @@ const setReposTiles = (selectedProject) => {
 }
 
 const setSelectedRepo = (repo) => {
-  if (selectedRepo.value.internalRepoName === repo.internalRepoName) {
+  if (selectedRepo.value.internalRepoName === repo.internalRepoName || ['deleting', 'initializing'].includes(repo?.status)) {
     selectedRepo.value = {}
     return
   }
