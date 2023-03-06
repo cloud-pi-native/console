@@ -1,4 +1,5 @@
-const sonarqubeToken = 'squ_4b08e8e08f6927e1a5edd891e6eb782bf9e1748f'
+const sonarqubeToken = 'sonar-token'
+const permission = 'sonar-permission'
 
 export const createDefaultTemplate = async () => {
   await fetch('https://sonar-system-ingress.apps.ocp4-7.infocepo.com/web_api/api/permissions/create_template', {
@@ -15,7 +16,7 @@ export const createDefaultTemplate = async () => {
     method: 'POST',
     body: {
       templateName: 'Mi-Forge Default',
-      permission
+      permission,
     },
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
