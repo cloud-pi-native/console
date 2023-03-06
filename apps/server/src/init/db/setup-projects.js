@@ -8,7 +8,7 @@ import { getUserById } from '../../models/queries/user-queries.js'
 
 export default async (projects) => {
   app.log.info('Creating projects...')
-  const projectsCreated = projects.map(async project => {
+  for (const project of projects) {
     try {
       // Create project
       const dbOrganization = await getOrganizationByName(project.organization)
@@ -51,7 +51,7 @@ export default async (projects) => {
       })
 
       // Create repositories
-      project.repositories.forEach(async repository => {
+      project.repositories?.forEach(async repository => {
         const createdRepository = await initializeRepository({
           projectId: createdProject.dataValues.id,
           internalRepoName: repository.internalRepoName,
@@ -72,6 +72,5 @@ export default async (projects) => {
     } catch (err) {
       app.log.error(err)
     }
-  })
-  return Promise.all(projectsCreated)
+  }
 }

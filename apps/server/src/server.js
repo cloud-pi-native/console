@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url'
 import app from './app.js'
 import { getConnection, closeConnections, synchroniseModels } from './connect.js'
 import { isDev, isTest, isCI, isProd, isDevSetup, port } from './utils/env.js'
-import { initDb } from './init-db/index.js'
+import { initDb } from './init/db/index.js'
 
 await startServer()
 handleExit()
@@ -25,11 +25,11 @@ export async function startServer () {
     throw error
   }
 
-  app.log.info('Reading init-db.js')
+  app.log.info('Reading init database file')
 
   try {
     const dataPath = isProd
-      ? './init-db/imports/data.js'
+      ? './init/db/imports/data.js'
       : 'test-utils/src/imports/data.js'
 
     await initializeDB(dataPath)

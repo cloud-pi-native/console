@@ -53,7 +53,7 @@ services:
       - /app/apps/server/node_modules/
       - ../packages/shared:/app/packages/shared
       - /app/packages/shared/node_modules/
-      - ../packages/test-utils/src/imports:/app/apps/server/src/init-db/imports
+      - ../packages/test-utils/src/imports:/app/apps/server/src/init/db/imports
     environment:
       SERVER_PORT: ${SERVER_PORT:-4000}
       DB_HOST: postgres

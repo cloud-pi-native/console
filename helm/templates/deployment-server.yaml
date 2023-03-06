@@ -47,7 +47,7 @@ spec:
 {{- if .Values.containers.server.container.data_configmap }}
         volumeMounts:
           - name: imports
-            mountPath: /app/src/init-db/imports
+            mountPath: /app/src/init/db/imports
       volumes:
         - name: imports
           configMap: 

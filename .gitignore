@@ -22,7 +22,7 @@ screenshots
 downloads
 
 # init-db
-apps/server/src/init-db/imports/data.js
+apps/server/src/init/db/imports/data.js
 
 # act
 **/act/artifacts
