@@ -24,7 +24,6 @@ import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import { ansibleHost, ansiblePort } from '../utils/env.js'
 import { getOrganizationById } from '../models/queries/organization-queries.js'
-import { encrypt, decrypt } from '../utils/crypto.js'
 import { addLogs } from '../models/queries/log-queries.js'
 
 // GET
@@ -105,11 +104,6 @@ export const createRepositoryController = async (req, res) => {
     const isInternalRepoNameTaken = repos.find(repo => repo.internalRepoName === data.internalRepoName)
     if (isInternalRepoNameTaken) throw new Error(`Le nom du dépôt interne ${data.internalRepoName} existe déjà en base pour ce projet`)
 
-    if (data.externalToken) {
-      const encryptedToken = await encrypt(data.externalToken)
-      data.externalToken = encryptedToken
-    }
-
     await lockProject(projectId)
     repo = await initializeRepository(data)
 
@@ -148,7 +142,7 @@ export const createRepositoryController = async (req, res) => {
     }
     if (data.isPrivate) {
       ansibleData.GIT_INPUT_USER = data.externalUserName
-      ansibleData.GIT_INPUT_PASSWORD = await decrypt(data.externalToken)
+      ansibleData.GIT_INPUT_PASSWORD = data.externalToken
     }
 
     const ansibleRes = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
@@ -232,11 +226,6 @@ export const updateRepositoryController = async (req, res) => {
 
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
     if (!role) throw new Error('Vous n\'êtes pas membre du projet')
-
-    if (data.externalToken) {
-      const encryptedToken = encrypt(data.externalToken)
-      data.externalToken = encryptedToken
-    }
 
     await lockProject(projectId)
     await updateRepository(repositoryId, data.info)
