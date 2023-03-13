@@ -1,5 +1,24 @@
 # Changelog
 
+## [2.2.0](https://github.com/dnum-mi/dso-console/compare/v2.1.1...v2.2.0) (2023-03-13)
+
+
+### Features
+
+* :sparkles: display project and repositories statuses in dashboard and repo pages ([ba27167](https://github.com/dnum-mi/dso-console/commit/ba2716798e8d39e5470b6fe0e97acc3a54480612))
+
+
+### Bug Fixes
+
+* :bug: add joi schema validation in repo form ([8524e50](https://github.com/dnum-mi/dso-console/commit/8524e50cca3a97965b6cc2eb104620aec2d3e5dd))
+* :bug: do nothing when tile is disabled ([e09043c](https://github.com/dnum-mi/dso-console/commit/e09043c34a21315abd8c0c3d1570488057a3d1a6))
+* :bug: wrong key for project archived ([8e6b27b](https://github.com/dnum-mi/dso-console/commit/8e6b27b576e7ad28bde1b8a00b84acf366531993))
+
+
+### Performance Improvements
+
+* :fire: no external token in database, no crypto needed ([0a3fb8c](https://github.com/dnum-mi/dso-console/commit/0a3fb8c5403215e1ae3d24fb8ea7cfcf43a8060f))
+
 ## [2.1.1](https://github.com/dnum-mi/dso-console/compare/v2.1.0...v2.1.1) (2023-02-27)
 
 
