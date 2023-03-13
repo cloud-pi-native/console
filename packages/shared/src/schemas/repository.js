@@ -26,12 +26,12 @@ export const repoSchema = Joi.object({
   // .required(),
 
   externalUserName: Joi.string()
-    .pattern(/^[a-zA-Z0-9-]+$/)
+    .pattern(/^[a-zA-Z0-9_-]+$/)
     .when('isPrivate', { is: true, then: Joi.required() })
     .when('isPrivate', { is: false, then: Joi.string().allow('') }),
 
   externalToken: Joi.string()
-    .token()
+    .pattern(/^[a-zA-Z0-9_-]+$/)
     .when('isPrivate', { is: true, then: Joi.required() })
     .when('isPrivate', { is: false, then: Joi.string().allow('') }),
 
