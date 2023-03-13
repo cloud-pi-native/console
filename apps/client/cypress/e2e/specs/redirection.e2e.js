@@ -6,7 +6,6 @@ describe('Redirection', () => {
   it('Should redirect to original page on reload', () => {
     cy.intercept('GET', '/api/v1/projects').as('getProjects')
     cy.intercept('POST', '/realms/cloud-pi-native/protocol/openid-connect/token').as('postToken')
-    cy.intercept('GET', '/realms/cloud-pi-native/account').as('getAccount')
 
     cy.kcLogin('test')
     cy.visit('/')
@@ -15,7 +14,6 @@ describe('Redirection', () => {
     cy.goToProjects()
     cy.reload()
     cy.wait('@postToken')
-    cy.wait('@getAccount')
     cy.url().should('match', /projects#state=/)
     cy.wait('@getProjects').its('response').then(response => {
       cy.get('[data-testid^="projectTile-"]')
@@ -25,7 +23,6 @@ describe('Redirection', () => {
     })
     cy.reload()
     cy.wait('@postToken')
-    cy.wait('@getAccount')
     cy.url().should('contain', `/projects/${project.id}/services`)
     cy.wait('@getProjects').its('response').then(_response => {
       cy.getByDataTestid('currentProjectInfo')
@@ -44,7 +41,6 @@ describe('Redirection', () => {
     cy.get('input#password').type('test')
     cy.get('input#kc-login').click()
     cy.wait('@postToken')
-    cy.wait('@getAccount')
     cy.url().should('contain', `/projects/${project.id}/dashboard`)
     cy.wait('@getProjects', { timeout: 5000 }).its('response').then(_response => {
       cy.getByDataTestid('currentProjectInfo')

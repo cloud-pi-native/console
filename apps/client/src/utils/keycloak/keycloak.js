@@ -29,7 +29,7 @@ export const getKeycloak = () => {
 export const getUserProfile = async () => {
   try {
     const keycloak = getKeycloak()
-    const { email, id, firstName, lastName } = await keycloak.loadUserProfile()
+    const { email, sub: id, given_name: firstName, family_name: lastName } = keycloak.idTokenParsed
     return {
       email,
       id,
