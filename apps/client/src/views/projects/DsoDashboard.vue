@@ -31,6 +31,34 @@ const archiveProject = async (projectId) => {
 <template>
   <DsoSelectedProject />
   <div
+    class="flex justify-between"
+  >
+    <DsfrBadge
+      v-if="projectStore.selectedProject?.status === 'initializing'"
+      :data-testid="`${projectStore.selectedProject?.status}-badge`"
+      type="info"
+      label="Projet en cours de création"
+    />
+    <DsfrBadge
+      v-else-if="projectStore.selectedProject?.status === 'failed'"
+      :data-testid="`${projectStore.selectedProject?.status}-badge`"
+      type="error"
+      label="Echec des opérations"
+    />
+    <DsfrBadge
+      v-else
+      :data-testid="`${projectStore.selectedProject?.status}-badge`"
+      type="success"
+      label="Projet correctement déployé"
+    />
+    <DsfrBadge
+      v-if="projectStore.selectedProject?.locked"
+      data-testid="locked-badge"
+      type="warning"
+      label="Projet verrouillé : opérations en cours"
+    />
+  </div>
+  <div
     v-if="isOwner"
     data-testid="archiveProjectZone"
     class="fr-my-2w fr-py-4w fr-px-1w border-solid border-1 rounded-sm border-red-500"
@@ -40,6 +68,7 @@ const archiveProject = async (projectId) => {
         v-show="!isArchivingProject"
         data-testid="showArchiveProjectBtn"
         :label="`Archiver le projet ${project?.name}`"
+        :disabled="projectStore.selectedProject?.locked"
         secondary
         icon="ri-delete-bin-7-line"
         @click="isArchivingProject = true"
@@ -82,29 +111,4 @@ const archiveProject = async (projectId) => {
       </div>
     </div>
   </div>
-  <!-- TODO : #140 : avoir le status à jour en permanence -->
-  <!-- <div
-    class="flex justify-between"
-  >
-    <DsfrBadge
-      v-if="projectStore.selectedProject?.status === 'initializing'"
-      type="info"
-      label="Projet en cours de création"
-    />
-    <DsfrBadge
-      v-else-if="projectStore.selectedProject?.status === 'failed'"
-      type="error"
-      label="Echec de création du projet"
-    />
-    <DsfrBadge
-      v-else
-      type="success"
-      label="Projet créé"
-    />
-    <DsfrBadge
-      v-if="projectStore.selectedProject?.locked"
-      type="warning"
-      label="Projet verrouillé"
-    />
-  </div> -->
 </template>

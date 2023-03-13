@@ -138,7 +138,7 @@ export const createProjectController = async (req, res) => {
     await projectSchema.validateAsync(data)
 
     project = await getProject({ name: data.name, organization: data.organization })
-    if (project?.archived) throw new Error(`"${data.name}" est archivé et n'est plus disponible`)
+    if (project?.status === 'archived') throw new Error(`"${data.name}" est archivé et n'est plus disponible`)
     if (project) throw new Error(`"${data.name}" existe déjà`)
 
     project = await initializeProject(data)

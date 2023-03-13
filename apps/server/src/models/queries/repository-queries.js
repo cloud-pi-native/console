@@ -22,7 +22,7 @@ export const initializeRepository = async ({ projectId, internalRepoName, extern
     internalRepoName,
     externalRepoUrl,
     externalUserName,
-    externalToken,
+    externalToken: '',
     isInfra,
     isPrivate,
     status: 'initializing',

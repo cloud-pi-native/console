@@ -4,6 +4,7 @@ import SuggestionInput from './SuggestionInput.vue'
 import RangeInput from './RangeInput.vue'
 import { levels } from 'shared/src/utils/iterables.js'
 import { useProjectStore } from '@/stores/project.js'
+import { useProjectPermissionStore } from '@/stores/project-permission.js'
 import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
@@ -15,6 +16,7 @@ const props = defineProps({
 })
 
 const projectStore = useProjectStore()
+const projectPermissionStore = useProjectPermissionStore()
 const userStore = useUserStore()
 const snackbarStore = useSnackbarStore()
 const environment = ref(props.environment)
@@ -39,7 +41,7 @@ const setPermissions = () => {
 const addPermission = async (userEmail) => {
   const userId = usersToLicence.value.find(user => user.email === userEmail).id
   try {
-    await projectStore.addPermission(environment.value.id, { userId, level: 0 })
+    await projectPermissionStore.addPermission(environment.value.id, { userId, level: 0 })
   } catch (error) {
     snackbarStore.setMessage(error?.message, 'error')
   }
@@ -47,7 +49,7 @@ const addPermission = async (userEmail) => {
 
 const updatePermission = async (userId, level) => {
   try {
-    await projectStore.updatePermission(environment.value.id, { userId, level })
+    await projectPermissionStore.updatePermission(environment.value.id, { userId, level })
   } catch (error) {
     snackbarStore.setMessage(error?.message, 'error')
   }
@@ -55,7 +57,7 @@ const updatePermission = async (userId, level) => {
 
 const deletePermission = async (userId) => {
   try {
-    await projectStore.deletePermission(environment.value.id, userId)
+    await projectPermissionStore.deletePermission(environment.value.id, userId)
   } catch (error) {
     snackbarStore.setMessage(error?.message, 'error')
   }

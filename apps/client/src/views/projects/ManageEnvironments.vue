@@ -2,12 +2,14 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import DsoSelectedProject from './DsoSelectedProject.vue'
 import { useProjectStore } from '@/stores/project.js'
+import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 import EnvironmentForm from '@/components/EnvironmentForm.vue'
 import { allEnv } from 'shared/src/utils/iterables.js'
 import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const projectStore = useProjectStore()
+const projectEnvironmentStore = useProjectEnvironmentStore()
 const userStore = useUserStore()
 const snackbarStore = useSnackbarStore()
 
@@ -48,7 +50,7 @@ const cancel = () => {
 const addEnvironment = async (environment) => {
   cancel()
   try {
-    await projectStore.addEnvironmentToProject(environment)
+    await projectEnvironmentStore.addEnvironmentToProject(environment)
   } catch (error) {
     snackbarStore.setMessage(error?.message, 'error')
   }
@@ -56,7 +58,7 @@ const addEnvironment = async (environment) => {
 
 const deleteEnvironment = async (environment) => {
   try {
-    await projectStore.deleteEnvironment(environment.id)
+    await projectEnvironmentStore.deleteEnvironment(environment.id)
   } catch (error) {
     snackbarStore.setMessage(error?.message, 'error')
   }
