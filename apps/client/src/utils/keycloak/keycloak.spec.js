@@ -1,7 +1,13 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { getKeycloak, getUserProfile, keycloakInit, keycloakLogin, keycloakLogout } from './keycloak.js'
 
-const user = {
+const userToken = {
+  email: 'test@test.com',
+  sub: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+  given_name: 'Jean',
+  family_name: 'DUPOND',
+}
+const userStored = {
   email: 'test@test.com',
   id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
   firstName: 'Jean',
@@ -12,7 +18,7 @@ const keycloak = await getKeycloak()
 vi.mock('keycloak-js', () => {
   class Keycloak {
     constructor () {
-      this.loadUserProfile = vi.fn(() => user)
+      this.idTokenParsed = userToken
       this.init = vi.fn()
       this.login = vi.fn()
       this.logout = vi.fn()
@@ -21,7 +27,6 @@ vi.mock('keycloak-js', () => {
   return { default: Keycloak }
 })
 
-vi.spyOn(keycloak, 'loadUserProfile')
 vi.spyOn(keycloak, 'login')
 vi.spyOn(keycloak, 'logout')
 
@@ -39,18 +44,8 @@ describe('keycloak-init', () => {
   it('Should return keycloak user profile', async () => {
     const keycloakUser = await getUserProfile()
 
-    expect(keycloak.loadUserProfile.mock.calls).toHaveLength(1)
     expect(keycloakUser).toBeInstanceOf(Object)
-    expect(keycloakUser).toMatchObject(user)
-  })
-
-  it('Should return error if user profile can\'t be be loaded', async () => {
-    const error = new Error('Failed to load user profile')
-    keycloak.loadUserProfile.mockReturnValueOnce(Promise.reject(error))
-    const keycloakUser = await getUserProfile()
-
-    expect(keycloak.loadUserProfile.mock.calls).toHaveLength(1)
-    expect(keycloakUser).toEqual(error)
+    expect(keycloakUser).toMatchObject(userStored)
   })
 
   it('Should init keycloak', async () => {
