@@ -13,7 +13,7 @@ globalEnv:
 containers:
   ansible:
     container:
-      image:
+      image: ghcr.io/dnum-mi/dso-console/ansible:2
       playbooks:
         repoUrl: github.com/dnum-mi/dso-playbooks
         repoBranch: main
@@ -24,9 +24,9 @@ containers:
         repoDir: /dso/
         # define where the inventory is in kube (see dso-infra repo, incoming)
         inventory:
-          namespace: in which namespace your inventory is
-          name: what is your inventory secret name
-          key: which key to look for
+          namespace: openshift-infra
+          name: ansible-inventory
+          key: inventory
       node_env: production
       port: 8080
     service:
@@ -35,7 +35,7 @@ containers:
 
   server:
     container:
-      image:
+      image: ghcr.io/dnum-mi/dso-console/server:2
       port: 8080
       node_env: production
       data-configmap: 
@@ -45,7 +45,7 @@ containers:
 
   client:
     container:
-      image:
+      image: ghcr.io/dnum-mi/dso-console/client:2
       port: 8080
     service:
       port: 80
@@ -67,8 +67,8 @@ keycloak:
   realm: yourkeycloakrealm
   admin:
   admin_password:
-  client_id_frontend:
-  client_id_backend:
+  client_id_frontend: console-frontend
+  client_id_backend: console-backend
   client_secret_backend:
   redirect_uri:
   session_secret:
@@ -78,6 +78,3 @@ keycloak:
   service:
     hostname:
     port:
-
-kubeconfig: |
-  content of my kubeconfig
