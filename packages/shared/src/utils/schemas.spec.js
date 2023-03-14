@@ -19,10 +19,10 @@ describe('Schemas utils', () => {
       id: faker.datatype.uuid(),
       internalRepoName: 'candilib',
       externalRepoUrl: 'https://github.com/LAB-MI/candilibV2.git',
-      externalToken: 'eddddsqsq',
+      externalToken: 'eddddsqsq-_',
       isPrivate: true,
       isInfra: false,
-      externalUserName: 'clairenlet',
+      externalUserName: 'claire-nlet_',
       status: 'created',
     })).toStrictEqual({})
   })
