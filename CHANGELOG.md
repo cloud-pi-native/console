@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.2.1](https://github.com/dnum-mi/dso-console/compare/v2.2.0...v2.2.1) (2023-03-14)
+
+
+### Bug Fixes
+
+* :bug: token should authorize "-" ([277f292](https://github.com/dnum-mi/dso-console/commit/277f29232fd5713c0a6e5c42f29ba257b71cdb75))
+
+
+### Performance Improvements
+
+* :zap: no need to call /account endpoint ([3b278f7](https://github.com/dnum-mi/dso-console/commit/3b278f7e8a2fc22cf3a9aec8b1319c83a934a7f6))
+
 ## [2.2.0](https://github.com/dnum-mi/dso-console/compare/v2.1.1...v2.2.0) (2023-03-13)
 
 
