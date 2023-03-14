@@ -1,9 +1,9 @@
+import { isDev, isTest, isCI, isProd, isDevSetup, port } from './utils/env.js'
 import { rm } from 'node:fs/promises'
 import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import app from './app.js'
 import { getConnection, closeConnections, synchroniseModels } from './connect.js'
-import { isDev, isTest, isCI, isProd, isDevSetup, port } from './utils/env.js'
 import { initDb } from './init/db/index.js'
 
 await startServer()

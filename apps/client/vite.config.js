@@ -3,6 +3,7 @@ import { defineConfig } from 'vite'
 import WindiCSS from 'vite-plugin-windicss'
 import vue from '@vitejs/plugin-vue'
 import Markdown from 'vite-plugin-md'
+import { chunkSplitPlugin } from 'vite-plugin-chunk-split'
 import Prism from 'markdown-it-prism'
 import emoji from 'markdown-it-emoji'
 import LinkAttributes from 'markdown-it-link-attributes'
@@ -57,6 +58,11 @@ export default defineConfig({
       },
     }),
     WindiCSS(),
+    chunkSplitPlugin({
+      customSplitting: {
+        'vuedsfr-vendor': ['@gouvminint/vue-dsfr'],
+      },
+    }),
   ],
   base: process.env.BASE_URL || '/',
   resolve: {
