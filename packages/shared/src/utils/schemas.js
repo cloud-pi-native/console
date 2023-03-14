@@ -3,8 +3,8 @@
  * @param {object} data Data to test
  * @returns {object} Validation error object
  */
-export const schemaValidator = (schema, data, keysToValidate) => {
-  const validation = schema.validate(data, { abortEarly: false }).error?.details || []
+export const schemaValidator = (schema, data, { keysToValidate, context } = {}) => {
+  const validation = schema.validate(data, { abortEarly: false, context }).error?.details || []
   return validation
     .filter((error) => keysToValidate ? keysToValidate.includes(error.context.key) : true)
     .reduce((acc, cur) => ({ ...acc, [cur.context.key]: cur.message }), {})
@@ -16,7 +16,7 @@ export const schemaValidator = (schema, data, keysToValidate) => {
  * @param {object} key Key to test
  * @returns {boolean} Is valid key
  */
-export const isValid = (schema, data, key) => !schemaValidator(schema, data)[key]
+export const isValid = (schema, data, key, ctx) => !schemaValidator(schema, data, { context: ctx })[key]
 
 /**
  * @param {object} model Schema that will be parse

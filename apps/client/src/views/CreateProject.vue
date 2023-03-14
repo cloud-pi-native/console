@@ -6,7 +6,7 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useOrganizationStore } from '@/stores/organization.js'
 import { projectSchema } from 'shared/src/schemas/project.js'
 import { schemaValidator, isValid, instanciateSchema } from 'shared/src/utils/schemas.js'
-import { projectNameMaxLength } from 'shared/src/utils/functions.js'
+import { calcProjectNameMaxLength } from 'shared/src/utils/functions.js'
 import router from '@/router/index.js'
 
 const snackbarStore = useSnackbarStore()
@@ -15,7 +15,16 @@ const userStore = useUserStore()
 const organizationStore = useOrganizationStore()
 
 const owner = computed(() => userStore.userProfile)
-const remainingCharacters = computed(() => projectNameMaxLength - project.value.name.length)
+const organizationName = computed(() => {
+  const org = orgOptions?.value.find(org => org.id === project.value?.organization)
+  return org?.value
+})
+const projectNameMaxLength = computed(() => {
+  return calcProjectNameMaxLength(organizationName?.value)
+})
+const remainingCharacters = computed(() => {
+  return projectNameMaxLength?.value - project.value?.name.length
+})
 
 /**
  * Defines a project
@@ -36,7 +45,7 @@ const updatedValues = ref({})
 const createProject = async () => {
   updatedValues.value = instanciateSchema({ schema: projectSchema }, true)
   const keysToValidate = ['organization', 'name']
-  const errorSchema = schemaValidator(projectSchema, project.value, keysToValidate)
+  const errorSchema = schemaValidator(projectSchema, project.value, { keysToValidate, context: { projectNameMaxLength: projectNameMaxLength.value } })
   if (Object.keys(errorSchema).length === 0) {
     try {
       await projectStore.createProject(project.value)
@@ -100,7 +109,7 @@ onMounted(async () => {
         data-testid="nameInput"
         type="text"
         required="required"
-        :error-message="!!updatedValues.name && !isValid(projectSchema, project, 'name') ? `Le nom du projet doit être en minuscule, ne pas contenir d\'espace et faire moins de ${projectNameMaxLength} caractères.`: undefined"
+        :error-message="!!updatedValues.name && !isValid(projectSchema, project, 'name', { projectNameMaxLength }) ? `Le nom du projet doit être en minuscule, ne pas contenir d\'espace et faire moins de ${projectNameMaxLength} caractères.`: undefined"
         label="Nom du projet"
         label-visible
         :hint="`Nom du projet dans l'offre Cloud π Native. Ne doit pas contenir d'espace, doit être unique pour l'organisation, doit être en minuscules, doit faire moins de ${projectNameMaxLength} caractères.`"
@@ -120,7 +129,7 @@ onMounted(async () => {
     data-testid="createProjectBtn"
     primary
     class="fr-mt-2w"
-    :disabled="!project.organization || !isValid(projectSchema, project, 'name')"
+    :disabled="!project.organization || !isValid(projectSchema, project, 'name', { projectNameMaxLength })"
     icon="ri-send-plane-line"
     @click="createProject()"
   />

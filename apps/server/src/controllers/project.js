@@ -41,6 +41,7 @@ import { ansibleHost, ansiblePort } from '../utils/env.js'
 import { projectSchema } from 'shared/src/schemas/project.js'
 import { replaceNestedKeys, lowercaseFirstLetter } from '../utils/queries-tools.js'
 import { addLogs } from '../models/queries/log-queries.js'
+import { calcProjectNameMaxLength } from 'shared/src/utils/functions.js'
 
 // GET
 export const getUserProjectsController = async (req, res) => {
@@ -135,7 +136,8 @@ export const createProjectController = async (req, res) => {
   try {
     owner = await getOrCreateUser({ id: user.id, email: user?.email, firstName: user?.firstName, lastName: user?.lastName })
 
-    await projectSchema.validateAsync(data)
+    const organization = await getOrganizationById(data.organization)
+    await projectSchema.validateAsync(data, { context: { projectNameMaxLength: calcProjectNameMaxLength(organization.name) } })
 
     project = await getProject({ name: data.name, organization: data.organization })
     if (project?.status === 'archived') throw new Error(`"${data.name}" est archivé et n'est plus disponible`)

@@ -1,6 +1,5 @@
 import Joi from 'joi'
 import { projectStatus } from '../utils/iterables.js'
-import { projectNameMaxLength } from '../utils/functions.js'
 
 // TODO : status et locked doivent être required, prévoir migration
 export const projectSchema = Joi.object({
@@ -9,7 +8,7 @@ export const projectSchema = Joi.object({
 
   name: Joi.string()
     .pattern(/^[a-z0-9-]+$/)
-    .max(projectNameMaxLength)
+    .max(Joi.ref('$projectNameMaxLength'))
     .required(),
 
   organization: Joi.string()
