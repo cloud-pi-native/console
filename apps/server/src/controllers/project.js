@@ -42,6 +42,7 @@ import { projectSchema } from 'shared/src/schemas/project.js'
 import { replaceNestedKeys, lowercaseFirstLetter } from '../utils/queries-tools.js'
 import { addLogs } from '../models/queries/log-queries.js'
 import { calcProjectNameMaxLength } from 'shared/src/utils/functions.js'
+import { getServices } from '../utils/services.js'
 
 // GET
 export const getUserProjectsController = async (req, res) => {
@@ -59,7 +60,8 @@ export const getUserProjectsController = async (req, res) => {
     if (!projects.length) return send200(res, [])
 
     projects = projects.filter(project => project.status !== 'archived')
-    projects.map(project => replaceNestedKeys(project, lowercaseFirstLetter))
+      .map(project => getServices(project.dataValues))
+      .map(project => replaceNestedKeys(project, lowercaseFirstLetter))
     return send200(res, projects)
   } catch (error) {
     const message = `Projets non trouvés: ${error?.message}`

@@ -5,6 +5,7 @@ import { getPermissionModel } from '../permission.js'
 import { getEnvironmentModel } from '../environment.js'
 import { getRepositoryModel } from '../repository.js'
 import { getUserModel } from '../user.js'
+import { getOrganizationModel } from '../organization.js'
 
 // SELECT
 export const getProjectUsers = async (projectId) => {
@@ -39,6 +40,10 @@ export const getUserProjects = async (user) => {
       },
       {
         model: getRepositoryModel(),
+        ...dbKeysExcluded,
+      },
+      {
+        model: getOrganizationModel(),
         ...dbKeysExcluded,
       },
     ],
