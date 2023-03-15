@@ -67,6 +67,17 @@ watch(routePath, (routePath) => {
       <DsfrSideMenuListItem
         v-if="isLoggedIn"
       >
+        <DsfrSideMenuLink
+          data-testid="menuServicesHealth"
+          :active="routeName === 'ServicesHealth'"
+          to="/services-health"
+        >
+          Status des services
+        </DsfrSideMenuLink>
+      </DsfrSideMenuListItem>
+      <DsfrSideMenuListItem
+        v-if="isLoggedIn"
+      >
         <DsfrSideMenuButton
           data-testid="menuProjectsBtn"
           :expanded="isExpanded.projects"

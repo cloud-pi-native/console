@@ -342,6 +342,20 @@ Cypress.Commands.add('assertClipboard', (value) => {
   })
 })
 
+Cypress.Commands.add('getServicesResponse', () => {
+  cy.wait('@getServices').its('response').then(response => {
+    const services = response.body
+    services.map(service =>
+      cy.getByDataTestid(`${service.id}-info`).should('contain', `${service.code} - ${service.message}`),
+    )
+    if (services.find(service => service.code >= 400)) {
+      cy.getByDataTestid('services-health-badge').should('contain', 'Un ou plusieurs services dysfonctionnent')
+    } else {
+      cy.getByDataTestid('services-health-badge').should('contain', 'Tous les services fonctionnent')
+    }
+  })
+})
+
 Cypress.Commands.add('getByDataTestid', (dataTestid, timeout = 4_000) => {
   cy.get(`[data-testid="${dataTestid}"]`, { timeout })
 })
