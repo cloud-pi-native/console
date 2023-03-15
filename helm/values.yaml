@@ -10,61 +10,41 @@ imageCredentials:
 #hashmap of custom env applied on all pods
 globalEnv:
 
-containers:
-  ansible:
-    container:
-      env: #hashmap of custom env
-      image: ghcr.io/dnum-mi/dso-console/ansible:2
-      playbooks:
-        repoUrl: github.com/dnum-mi/dso-playbooks
-        repoBranch: main
-        # Use the 2 following if you want to clone a private repository
-        repoUser:
-        repoPass:
-        repoMount: /dso/
-        repoDir: /dso/
-        # define where the inventory is in kube (see dso-infra repo, incoming)
-        inventory:
-          namespace: openshift-infra
-          name: ansible-inventory
-          key: inventory
-      node_env: production
-      port: 8080
-    service:
-      hostname: ansible
-      port: 80
+server:
+  container:
+    env: #hashmap of custom env
+    image: ghcr.io/dnum-mi/dso-console/server:2
+    port: 8080
+    node_env: production
+    data-configmap: 
+  service:
+    port: 80
+    hostname: server
+  # list of zips to download; basically curl url, unzip and stores it in plugins/external/<dir_name>
+  plugins: []
 
-  server:
-    container:
-      env: #hashmap of custom env
-      image: ghcr.io/dnum-mi/dso-console/server:2
-      port: 8080
-      node_env: production
-      data-configmap: 
-    service:
-      port: 80
-      hostname: server
 
-  client:
-    container:
-      image: ghcr.io/dnum-mi/dso-console/client:2
-      port: 8080
-      env: #hashmap of custom env
-    service:
-      port: 80
-      hostname: client
-    route:
-      host: replace.me
+client:
+  container:
+    image: ghcr.io/dnum-mi/dso-console/client:2
+    port: 8080
+    env: #hashmap of custom env
+  service:
+    port: 80
+    hostname: client
+  route:
+    host: replace.me
 
-  postgres:
-    container:
-      env: #hashmap of custom env
-      db: yourdbname
-      user: youruser
-      pass: yourpass
-    service:
-      hostname: postgres
-      port: 5432
+postgres:
+  container:
+    env: #hashmap of custom env
+    port: 5432
+    db: yourdbname
+    user: youruser
+    pass: yourpass
+  service:
+    hostname: postgres
+    port: 5432
 
 keycloak:
   domain:

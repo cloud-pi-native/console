@@ -18,9 +18,9 @@ spec:
       containers:
       - name: {{ .Release.Name }}-client
         imagePullPolicy: {{ .Values.imagePullPolicy }}
-        image: {{ .Values.containers.client.container.image }}
+        image: {{ .Values.client.container.image }}
         ports:
-        - containerPort: {{ .Values.containers.client.container.port }}
+        - containerPort: {{ .Values.client.container.port }}
         envFrom:
         - configMapRef:
             name: {{ .Release.Name }}-client-cm
