@@ -75,6 +75,7 @@ export const addUserToProjectController = async (req, res) => {
   const data = req.body
 
   let project
+  let userToAdd
   try {
     project = await getProjectById(projectId)
     if (!project) throw new Error('Projet introuvable')
@@ -82,7 +83,7 @@ export const addUserToProjectController = async (req, res) => {
     const requestorRole = await getRoleByUserIdAndProjectId(userId, projectId)
     if (!requestorRole) throw new Error('Vous n\'êtes pas membre du projet')
 
-    const userToAdd = await getUserByEmail(data.email)
+    userToAdd = await getUserByEmail(data.email)
     if (!userToAdd) throw new Error('Utilisateur introuvable')
 
     const userToAddRole = await getRoleByUserIdAndProjectId(userToAdd.id, projectId)
@@ -108,6 +109,41 @@ export const addUserToProjectController = async (req, res) => {
 
   try {
     // TODO : US #132 appel ansible
+
+    // TODO : en attente déploiement canel
+
+    const canelDataToUpdate = await fetch(`https://qualification.ines-api.dsic.minint.fr/canel/api/v1/applications/${project.id}`, {
+      method: 'GET',
+    })
+    if (!canelDataToUpdate) throw new Error('Echec de récupération du project côté canel')
+
+    const canelJson0 = await canelDataToUpdate.json()
+    if (canelJson0.code !== 200) throw new Error(`Echec de récupération du projet côté canel : ${canelJson0.description}`)
+
+    const newActeurs = [...canelJson0.results.acteurs, userToAdd.dataValues]
+
+    console.log(newActeurs)
+
+    const canelData = {
+      applications: {
+        uuid: project.id,
+        canel_id: project.id,
+        acteurs: newActeurs,
+      },
+    }
+
+    console.log(canelData.applications)
+
+    const canelRes = await fetch('https://qualification.ines-api.dsic.minint.fr/canel/api/v1/applications', {
+      method: 'PUT',
+      body: JSON.stringify(canelData),
+    })
+
+    const canelJson = await canelRes.json()
+
+    console.log({ canelJson })
+
+    if (canelJson.code !== 200) throw new Error(`Echec de maj du projet côté canel : ${canelJson.description}`)
     try {
       await unlockProject(projectId)
 
@@ -188,6 +224,48 @@ export const updateUserProjectRoleController = async (req, res) => {
     await updateUserProjectRole(projectId, userToUpdateId, data.role)
 
     const message = 'User role into project successfully updated'
+
+    // TODO : en attente déploiement canel
+
+    const canelDataToUpdate = await fetch(`https://qualification.ines-api.dsic.minint.fr/canel/api/v1/applications/${project.id}`, {
+      method: 'GET',
+    })
+    if (!canelDataToUpdate) throw new Error('Echec de récupération du project côté canel')
+
+    const canelJson0 = await canelDataToUpdate.json()
+    if (canelJson0.code !== 200) throw new Error(`Echec de récupération du projet côté canel : ${canelJson0.description}`)
+
+    const newActeurs = canelJson0.results.acteurs.splice(
+      canelJson0.results.acteurs.findIndex(acteur => acteur.uuid === userToUpdateId),
+      1,
+      {
+        uuid: userToUpdateId,
+        role: data.role,
+      },
+    )
+
+    console.log(newActeurs)
+
+    const canelData = {
+      applications: {
+        uuid: project.id,
+        canel_id: project.id,
+        acteurs: newActeurs,
+      },
+    }
+
+    console.log(canelData.applications)
+
+    const canelRes = await fetch('https://qualification.ines-api.dsic.minint.fr/canel/api/v1/applications', {
+      method: 'PUT',
+      body: JSON.stringify(canelData),
+    })
+
+    const canelJson = await canelRes.json()
+
+    console.log({ canelJson })
+
+    if (canelJson.code !== 200) throw new Error(`Echec de maj du projet côté canel : ${canelJson.description}`)
     req.log.info({
       ...getLogInfos({ userToUpdateRole }),
       description: message,
@@ -247,6 +325,44 @@ export const removeUserFromProjectController = async (req, res) => {
 
   try {
     // TODO : US #132 appel ansible
+
+    // TODO : en attente déploiement canel
+
+    const canelDataToUpdate = await fetch(`https://qualification.ines-api.dsic.minint.fr/canel/api/v1/applications/${project.id}`, {
+      method: 'GET',
+    })
+    if (!canelDataToUpdate) throw new Error('Echec de récupération du project côté canel')
+
+    const canelJson0 = await canelDataToUpdate.json()
+    if (canelJson0.code !== 200) throw new Error(`Echec de récupération du projet côté canel : ${canelJson0.description}`)
+
+    const newActeurs = canelJson0.results.acteurs.splice(
+      canelJson0.results.acteurs.findIndex(acteur => acteur.uuid === userToRemoveId),
+      1,
+    )
+
+    console.log(newActeurs)
+
+    const canelData = {
+      applications: {
+        uuid: project.id,
+        canel_id: project.id,
+        acteurs: newActeurs,
+      },
+    }
+
+    console.log(canelData.applications)
+
+    const canelRes = await fetch('https://qualification.ines-api.dsic.minint.fr/canel/api/v1/applications', {
+      method: 'PUT',
+      body: JSON.stringify(canelData),
+    })
+
+    const canelJson = await canelRes.json()
+
+    console.log({ canelJson })
+
+    if (canelJson.code !== 200) throw new Error(`Echec de maj du projet côté canel : ${canelJson.description}`)
     try {
       await unlockProject(projectId)
 

@@ -195,6 +195,8 @@ export const createProjectController = async (req, res) => {
 
       const canelData = {
         applications: {
+          uuid: project.id,
+          canel_id: project.id,
           nom_application: project.name,
           statut_application: project.status,
           date_mise_en_production: project.updatedAt,
@@ -202,7 +204,6 @@ export const createProjectController = async (req, res) => {
           date_creation: project.createdAt,
           derniere_modification_utilisateur: project.updatedAt,
           date_derniere_modification: project.updatedAt,
-          canel_id: project.id,
           ministere_responsable: organization.name,
           acteurs: [
             owner.dataValues,
@@ -221,7 +222,7 @@ export const createProjectController = async (req, res) => {
 
       console.log({ canelJson })
 
-      if (canelJson?.code !== 201) throw new Error(`Echec de création du projet côté canel : ${canelJson.description}`)
+      if (canelJson.code !== 201) throw new Error(`Echec de création du projet côté canel : ${canelJson.description}`)
 
       req.log.info({
         ...getLogInfos({ projectId: project.id }),
@@ -381,6 +382,7 @@ export const archiveProjectController = async (req, res) => {
 
       const canelData = {
         applications: {
+          uuid: project.id,
           canel_id: project.id,
           nom_application: project.name,
           statut_application: 'archived',
@@ -398,7 +400,7 @@ export const archiveProjectController = async (req, res) => {
 
       console.log({ canelJson })
 
-      if (canelJson?.code !== 201) throw new Error(`Echec de maj du projet côté canel : ${canelJson.description}`)
+      if (canelJson.code !== 200) throw new Error(`Echec de maj du projet côté canel : ${canelJson.description}`)
       req.log.info({
         ...getLogInfos({ projectId }),
         description: 'Project archived and unlocked',
