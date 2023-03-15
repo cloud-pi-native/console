@@ -38,6 +38,12 @@ export const archiveProject = async (projectId) => {
   return response.data
 }
 
+// Services
+export const checkServiceHealth = async (projectId, data) => {
+  const response = await apiClient.post(`/projects/${projectId}/services`, data)
+  return response.data
+}
+
 // Repositories
 export const addRepo = async (projectId, data) => {
   const response = await apiClient.post(`/projects/${projectId}/repositories`, data)

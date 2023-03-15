@@ -9,6 +9,7 @@ import projectEnvironmentRouter from './project-environment.js'
 import projectRepositoryRouter from './project-repository.js'
 import projectUserRouter from './project-user.js'
 import projectPermissionRouter from './project-permission.js'
+import projectServiceRouter from './project-service.js'
 
 const router = async (app, _opt) => {
   // Récupérer tous les projets d'un user
@@ -25,6 +26,9 @@ const router = async (app, _opt) => {
 
   // Archiver un projet
   await app.delete('/:projectId', archiveProjectController)
+
+  // Enregistrement du sous routeur service
+  await app.register(projectServiceRouter)
 
   // Enregistrement du sous routeur environment
   await app.register(projectEnvironmentRouter)

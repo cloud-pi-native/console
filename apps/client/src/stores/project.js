@@ -12,6 +12,10 @@ export const useProjectStore = defineStore('project', () => {
    */
   const setSelectedProject = async (id) => {
     selectedProject.value = projects.value.find(project => project.id === id)
+
+    for (const service of selectedProject.value.services) {
+      service.status = await api.checkServiceHealth(selectedProject.value.id, service)
+    }
     await setSelectedProjectOwner()
   }
 
