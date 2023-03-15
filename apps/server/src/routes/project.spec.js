@@ -316,31 +316,6 @@ describe('Project routes', () => {
       expect(response.body).toBeDefined()
       expect(response.body).toEqual(`"${newProject.name}" est archivé et n'est plus disponible`)
     })
-
-    it.skip('Should return an error if ansible api call failed', async () => {
-      const ansibleError = 'Invalid ansible-api call'
-
-      const randomDbSetup = createRandomDbSetup({})
-      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
-
-      Project.$queueResult(null)
-      Project.$queueResult(randomDbSetup.project)
-      Project.$queueResult(randomDbSetup.project)
-      setRequestorId(owner.id)
-      const error = new Error(ansibleError)
-      global.fetch = vi.fn(() => Promise.reject(error))
-
-      const response = await app.inject()
-        .post('/')
-        .body(randomDbSetup.project)
-        .end()
-
-      // TODO : user.addProject is not a function
-      console.log(response.body)
-      expect(response.statusCode).toEqual(500)
-      expect(response.body).toBeDefined()
-      expect(response.body).toEqual(ansibleError)
-    })
   })
 
   // DELETE

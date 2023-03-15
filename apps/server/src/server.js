@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url'
 import app from './app.js'
 import { getConnection, closeConnections, synchroniseModels } from './connect.js'
 import { initDb } from './init/db/index.js'
-
+import { m } from './plugins/index.js'
 await startServer()
 handleExit()
 
