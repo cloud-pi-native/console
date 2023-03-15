@@ -3,8 +3,8 @@ apiVersion: v1
 metadata:
   name: {{ $.Release.Name }}-server-cm
 data:
-  {{- include "globalEnv" $.Values | indent 2 }}
-  {{- include "containerEnv" .Values.containers.server | indent 2 }}
+  {{- include "globalEnv" .Values | indent 2 }}
+  {{- include "containerEnv" .Values.containers.server.container | indent 2 }}
   SERVER_PORT: {{ .Values.containers.server.container.port | quote }}
   {{- with .Values.containers.postgres }}
   DB_HOST: {{ $.Release.Name }}-{{ .service.hostname }}-service

@@ -7,12 +7,13 @@ imageCredentials:
   password:
   email:
 
-#list of custom vars applied on all pods
+#hashmap of custom env applied on all pods
 globalEnv:
 
 containers:
   ansible:
     container:
+      env: #hashmap of custom env
       image: ghcr.io/dnum-mi/dso-console/ansible:2
       playbooks:
         repoUrl: github.com/dnum-mi/dso-playbooks
@@ -35,6 +36,7 @@ containers:
 
   server:
     container:
+      env: #hashmap of custom env
       image: ghcr.io/dnum-mi/dso-console/server:2
       port: 8080
       node_env: production
@@ -47,6 +49,7 @@ containers:
     container:
       image: ghcr.io/dnum-mi/dso-console/client:2
       port: 8080
+      env: #hashmap of custom env
     service:
       port: 80
       hostname: client
@@ -55,6 +58,7 @@ containers:
 
   postgres:
     container:
+      env: #hashmap of custom env
       db: yourdbname
       user: youruser
       pass: yourpass
