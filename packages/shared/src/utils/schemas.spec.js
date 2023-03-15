@@ -52,7 +52,7 @@ describe('Schemas utils', () => {
       organization: faker.datatype.uuid(),
       status: 'created',
       locked: false,
-    })).toStrictEqual({})
+    }, { context: { projectNameMaxLength: 23 } })).toStrictEqual({})
   })
 
   it('Should validate a correct user schema', () => {
@@ -83,7 +83,7 @@ describe('Schemas utils', () => {
       organization: faker.datatype.uuid(),
       status: 'created',
       locked: false,
-    })).toStrictEqual({ name: '"name" length must be less than or equal to 31 characters long' })
+    }, { context: { projectNameMaxLength: 23 } })).toStrictEqual({ name: '"name" length must be less than or equal to ref:global:projectNameMaxLength characters long' })
   })
 
   it('Should validate a single key with given schema', () => {
