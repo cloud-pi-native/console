@@ -58,6 +58,7 @@ export const initializeEnvironmentController = async (req, res) => {
   const projectId = req.params?.projectId
 
   let env
+  let projectEnvs
   try {
     const project = await getProjectById(projectId)
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
@@ -65,13 +66,14 @@ export const initializeEnvironmentController = async (req, res) => {
     // TODO : plus tard il sera nécessaire d'être owner pour créer un environment
     // if (role.role !== 'owner') throw new Error('Vous n\'êtes pas souscripteur du projet')
 
-    const projectEnvs = await getEnvironmentsByProjectId(projectId)
+    projectEnvs = await getEnvironmentsByProjectId(projectId)
     projectEnvs?.forEach(env => {
       if (env.name === data.name) throw new Error('Requested environment already exists for this project')
     })
 
     env = await initializeEnvironment(data)
     await lockProject(projectId)
+    projectEnvs = await getEnvironmentsByProjectId(projectId)
 
     req.log.info({
       ...getLogInfos({
@@ -91,6 +93,29 @@ export const initializeEnvironmentController = async (req, res) => {
 
   try {
     // TODO : #133 : appel ansible + création groupe keycloak + ajout owner au groupe keycloak
+
+    // TODO : en attente déploiement canel
+
+    const canelData = {
+      applications: {
+        uuid: projectId,
+        canel_id: projectId,
+        environnements: projectEnvs,
+      },
+    }
+
+    console.log(canelData.applications)
+
+    const canelRes = await fetch('https://qualification.ines-api.dsic.minint.fr/canel/api/v1/applications', {
+      method: 'PUT',
+      body: JSON.stringify(canelData),
+    })
+
+    const canelJson = await canelRes.json()
+
+    console.log({ canelJson })
+
+    if (canelJson.code !== 200) throw new Error(`Echec de maj du projet côté canel : ${canelJson.description}`)
     try {
       await updateEnvironmentCreated(env.id)
       const ownerId = await getSingleOwnerByProjectId(projectId)
@@ -149,6 +174,7 @@ export const deleteEnvironmentController = async (req, res) => {
   const projectId = req.params?.projectId
   const userId = req.session?.user?.id
 
+  let projectEnvs
   try {
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
     if (!role) throw new Error('Vous n\'êtes pas membre du projet')
@@ -156,6 +182,12 @@ export const deleteEnvironmentController = async (req, res) => {
 
     await updateEnvironmentDeleting(environmentId)
     await lockProject(projectId)
+
+    projectEnvs = await getEnvironmentsByProjectId(projectId)
+    projectEnvs.splice(
+      projectEnvs.findIndex(environment => environment.id === environmentId),
+      1,
+    )
 
     req.log.info({
       ...getLogInfos({
@@ -174,6 +206,29 @@ export const deleteEnvironmentController = async (req, res) => {
 
   try {
     // TODO : #133 : appel ansible + suppression groupe keycloak (+ retirer users du groupe keycloak ?)
+
+    // TODO : en attente déploiement canel
+
+    const canelData = {
+      applications: {
+        uuid: projectId,
+        canel_id: projectId,
+        environnements: projectEnvs,
+      },
+    }
+
+    console.log(canelData.applications)
+
+    const canelRes = await fetch('https://qualification.ines-api.dsic.minint.fr/canel/api/v1/applications', {
+      method: 'PUT',
+      body: JSON.stringify(canelData),
+    })
+
+    const canelJson = await canelRes.json()
+
+    console.log({ canelJson })
+
+    if (canelJson.code !== 200) throw new Error(`Echec de maj du projet côté canel : ${canelJson.description}`)
     try {
       await deleteEnvironment(environmentId)
       await unlockProject(projectId)
