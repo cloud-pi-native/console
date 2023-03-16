@@ -2,7 +2,6 @@
 import { readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import url from 'url'
-import app from '../app.js'
 import { getLogInfos } from '../utils/logger.js'
 import { init as gitlabInit } from './core/gitlab/init.js'
 import { init as harborInit } from './core/harbor/init.js'
@@ -12,15 +11,9 @@ import { init as nexusInit } from './core/nexus/init.js'
 import { init as sonarqubeInit } from './core/sonarqube/init.js'
 import { init as vaultInit } from './core/vault/init.js'
 
-const promiseGenerator = (fn, payload) => {
-  return new Promise((resolve, _reject) => {
-    resolve(fn(payload))
-  })
-}
-
 const executeStep = async (step, payload) => {
   const names = Object.keys(step)
-  const fns = names.map(name => promiseGenerator(step[name], payload))
+  const fns = names.map(name => Promise.resolve(step[name](payload)))
   const results = await Promise.all(fns)
   names.forEach((name, index) => {
     payload[name] = results[index]
@@ -48,7 +41,7 @@ const createHook = () => {
   }
 }
 
-export const initCorePlugins = () => {
+export const initCorePlugins = (app) => {
   const hooks = {
     projectCreate: createHook(),
     projectDelete: createHook(),
@@ -86,7 +79,7 @@ export const initCorePlugins = () => {
   return pluginManager
 }
 
-const initExternalPlugins = async (m) => {
+export const initExternalPlugins = async (app, m) => {
   const __dirname = url.fileURLToPath(new URL('.', import.meta.url))
   try {
     const pluginDir = resolve(__dirname, 'external')
@@ -99,10 +92,3 @@ const initExternalPlugins = async (m) => {
     app.log.error(err)
   }
 }
-
-const m = initCorePlugins()
-await initExternalPlugins(m)
-
-export { m }
-
-app.log.warn({ projC: await m.hooks.projectCreate.execute({ dsvch: 'djdffbvkb' }) })

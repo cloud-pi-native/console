@@ -130,6 +130,7 @@ export const getProjectOwnerController = async (req, res) => {
 export const createProjectController = async (req, res) => {
   const data = req.body
   const user = req.session?.user
+  const api = req.globalContext.m.hooks.projectCreate
 
   let project
   let environment
@@ -177,18 +178,9 @@ export const createProjectController = async (req, res) => {
       EMAIL: owner.dataValues.email,
       ENV_LIST: [environment.name],
     }
-    const ansibleRes = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        authorization: req.headers.authorization,
-        'request-id': req.id,
-      },
-      body: JSON.stringify(ansibleData),
-    })
-    const resJson = await ansibleRes.json()
-    await addLogs(resJson, owner.dataValues.id)
-    if (resJson?.status !== 'OK') throw new Error('Echec de création du projet côté ansible')
+    const ansibleRes = api.execute(ansibleData)
+    await addLogs(ansibleRes, owner.dataValues.id)
+    if (ansibleRes?.status !== 'OK') throw new Error('Echec de création du projet côté ansible')
     try {
       await updateEnvironmentCreated(environment.id)
       await setPermission({
