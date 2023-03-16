@@ -11,5 +11,8 @@ data:
     KEYCLOAK_CLIENT_ID={{ .client_id_frontend }}
     KEYCLOAK_REDIRECT_URI={{ .redirect_uri }}
     {{- end }}
-
+    {{- with .Values.server.service }}
+    SERVER_HOST={{ $.Release.Name }}-{{ .hostname }}-service
+    SERVER_PORT={{ .port }}
+    {{- end }}
 

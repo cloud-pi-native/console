@@ -7,5 +7,5 @@ data:
   {{- include "containerEnv" .Values.client.container | indent 2 }}
   {{- with .Values.server.service }}
   SERVER_HOST: {{ $.Release.Name }}-{{ .hostname }}-service
-  SERVER_PORT: {{ .port  }}
+  SERVER_PORT: {{ .port | quote }}
   {{- end }}
