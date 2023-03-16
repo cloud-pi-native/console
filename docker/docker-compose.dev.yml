@@ -69,6 +69,7 @@ services:
         condition: service_started
     ports:
       - 4000:4000
+      - 9229:9229
     volumes:
       - /app/node_modules/
       - ../apps/server:/app/apps/server
