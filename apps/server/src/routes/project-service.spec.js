@@ -1,4 +1,4 @@
-import { vi, describe, it, beforeAll, afterEach, afterAll } from 'vitest'
+import { vi, describe, it, beforeAll, expect, afterEach, afterAll } from 'vitest'
 import { createRandomDbSetup } from 'test-utils'
 import fastify from 'fastify'
 import fastifySession from '@fastify/session'
@@ -45,7 +45,6 @@ describe('Service route', () => {
     mockSession(app)
     await getConnection()
     Role = getUsersProjectsModel()
-    global.fetch = vi.fn(() => Promise.resolve())
   })
 
   afterAll(async () => {
@@ -55,20 +54,11 @@ describe('Service route', () => {
   afterEach(() => {
     vi.clearAllMocks()
     sequelize.$clearQueue()
-    global.fetch = vi.fn(() => Promise.resolve({
-      json: async () => (
-        {
-          status: 'OK',
-          code: 200,
-        }
-      ),
-    },
-    ))
   })
 
   // GET
   describe('checkServiceHealthController', () => {
-    it('Should retreive a service status', async () => {
+    it('Should retreive an OK service status', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const requestor = randomDbSetup.project.users.find(user => user.role === 'owner')
       const service = {
@@ -76,7 +66,7 @@ describe('Service route', () => {
         title: 'Vault',
         imgSrc: '/img/vault.svg',
         description: 'Vault s\'intègre profondément avec les identités de confiance pour automatiser l\'accès aux secrets, aux données et aux systèmes',
-        to: 'https://example.com',
+        to: 'https://developer.mozilla.org',
       }
 
       Role.$queueResult(requestor)
@@ -87,10 +77,32 @@ describe('Service route', () => {
         .body(service)
         .end()
 
-      console.log(response.body)
-      // expect(response.statusCode).toEqual(200)
-      // expect(response.json()).toBeDefined()
-      // expect(response.json()).toEqual('success')
+      expect(response.statusCode).toEqual(200)
+      expect(response.body).toBeDefined()
+      expect(response.body).toEqual('success')
+    })
+    it('Should retreive a NOK service status', async () => {
+      const randomDbSetup = createRandomDbSetup({})
+      const requestor = randomDbSetup.project.users.find(user => user.role === 'owner')
+      const service = {
+        id: 'vault',
+        title: 'Vault',
+        imgSrc: '/img/vault.svg',
+        description: 'Vault s\'intègre profondément avec les identités de confiance pour automatiser l\'accès aux secrets, aux données et aux systèmes',
+        to: 'https://gitlab.com/xxxxxxxxxxxxxxx',
+      }
+
+      Role.$queueResult(requestor)
+      setRequestorId(requestor.id)
+
+      const response = await app.inject()
+        .post(`/${randomDbSetup.project.id}/services`)
+        .body(service)
+        .end()
+
+      expect(response.statusCode).toEqual(200)
+      expect(response.body).toBeDefined()
+      expect(response.body).toEqual('error')
     })
   })
 })
