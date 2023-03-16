@@ -5,7 +5,6 @@ services:
     build:
       context: ..
       dockerfile: apps/client/cypress/Dockerfile
-      target: build
     image: dso-console/cypress:ci
     container_name: dso-console_cypress
     volumes:
@@ -14,6 +13,8 @@ services:
       - /app/apps/client/node_modules/
       - ../packages/shared:/app/packages/shared
       - /app/packages/shared/node_modules/
+    env_file:
+      - ../apps/server/env/.env.ci
     environment:
       NODE_ENV: test
       CT: 'true'

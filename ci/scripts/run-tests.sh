@@ -108,7 +108,6 @@ if [ "$RUN_COMPONENT_TESTS" == "true" ]; then
   cd "$PROJECT_DIR/docker"
   docker compose \
     --file "$PROJECT_DIR/docker/docker-compose.ct.yml" \
-    --env-file "$ENV_FILE" \
     up \
       --exit-code-from cypress \
       --remove-orphans
@@ -118,7 +117,6 @@ if [ "$RUN_COMPONENT_TESTS" == "true" ]; then
 
   docker compose \
     --file "$PROJECT_DIR/docker/docker-compose.ct.yml" \
-    --env-file "$ENV_FILE" \
     down \
       --volumes
 fi
@@ -134,7 +132,6 @@ if [ "$RUN_E2E_TESTS" == "true" ]; then
   cd "$PROJECT_DIR/docker"
   docker compose \
     --file "$PROJECT_DIR/docker/docker-compose.ci.yml" \
-    --env-file "$ENV_FILE" \
     up \
       --exit-code-from cypress \
       --attach cypress \
@@ -145,7 +142,6 @@ if [ "$RUN_E2E_TESTS" == "true" ]; then
 
   docker compose \
     --file "$PROJECT_DIR/docker/docker-compose.ci.yml" \
-    --env-file "$ENV_FILE" \
     down \
       --volumes
 fi
