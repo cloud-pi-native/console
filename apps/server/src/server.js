@@ -33,7 +33,7 @@ export async function startServer () {
       ? './init/db/imports/data.js'
       : 'test-utils/src/imports/data.js'
 
-    // await initializeDB(dataPath)
+    await initializeDB(dataPath)
     if (isProd && !isDevSetup) {
       app.log.info('Cleaning up imported data file...')
       const __filename = fileURLToPath(import.meta.url)
