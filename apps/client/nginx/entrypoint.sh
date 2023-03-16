@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ROOT_DIR=/usr/share/nginx/html
-ENV_DIR=/docker-entrypoint.d/
+ENV_DIR=/env/
 
 populate () {
   if [ -z $(eval "echo \${$1}") ]; then
