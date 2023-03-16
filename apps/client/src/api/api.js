@@ -81,6 +81,11 @@ export const getUsers = async (projectId) => {
   return response.data
 }
 
+export const getAllUsers = async () => {
+  const response = await apiClient.get('/admin/users')
+  return response.data
+}
+
 export const removeUser = async (projectId, userId) => {
   const response = await apiClient.delete(`/projects/${projectId}/users/${userId}`)
   return response.data

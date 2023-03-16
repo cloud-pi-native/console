@@ -13,6 +13,7 @@ import DsoServices from '@/views/projects/DsoServices.vue'
 import DsoTeam from '@/views/projects/DsoTeam.vue'
 import DsoRepos from '@/views/projects/DsoRepos.vue'
 import DsoDoc from '@/views/DsoDoc.vue'
+import ListUser from '@/views/admin/ListUser.vue'
 
 const MAIN_TITLE = 'Console Cloud π Native'
 
@@ -84,6 +85,11 @@ const routes = [
     component: ManageEnvironments,
   },
   {
+    path: '/admin/users',
+    name: 'ListUser',
+    component: ListUser,
+  },
+  {
     path: '/doc',
     name: 'Doc',
     component: DsoDoc,
@@ -108,14 +114,22 @@ router.beforeEach((to) => { // Cf. https://github.com/vueuse/head pour des trans
  */
 router.beforeEach(async (to, _from, next) => {
   const validPath = ['Login', 'Home', 'Doc']
-
+  const snackbarStore = useSnackbarStore()
   const userStore = useUserStore()
   userStore.setIsLoggedIn()
-  if (validPath.includes(to.name) || userStore.isLoggedIn) {
-    return next()
+
+  // Redirige sur la page login si le path le requiert et l'utilisateur n'est pas connecté
+  if (!validPath.includes(to.name) && !userStore.isLoggedIn) {
+    return next('Login')
   }
 
-  next('Login')
+  // Redirige sur la page d'accueil si le path est admin et l'utilisateur n'est pas admin
+  if (to.path.match('^/admin/') && !userStore.isAdmin) {
+    snackbarStore.setMessage('Vous ne possédez pas les droits administeurs', 'error')
+    return next('/')
+  }
+
+  next()
 })
 
 /**

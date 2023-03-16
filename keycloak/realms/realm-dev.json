@@ -22,6 +22,17 @@
     "xXSSProtection": "1; mode=block",
     "strictTransportSecurity": "max-age=31536000; includeSubDomains"
   },
+  "groups": [
+    {
+      "id": "07169ee1-d967-48da-a784-1b1ccbdaea7a",
+      "name": "admin",
+      "path": "/admin",
+      "attributes": {},
+      "realmRoles": [],
+      "clientRoles": {},
+      "subGroups": []
+    }
+  ],
   "users": [
     {
       "id": "cb8e5b4b-7b7b-40f5-935f-594f48ae6565",
@@ -69,7 +80,10 @@
         "account": [
           "manage-account"
         ]
-      }
+      },
+      "groups": [
+        "admin"
+      ]
     },
     {
       "id": "cb8e5b4b-7b7b-40f5-935f-594f48ae6567",

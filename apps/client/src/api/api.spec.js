@@ -12,6 +12,7 @@ import {
   addUser,
   removeUser,
   getUsers,
+  getAllUsers,
   updateUser,
   getRepos,
   updateRepo,
@@ -192,6 +193,16 @@ describe('API', () => {
       expect(apiClient.delete).toHaveBeenCalled()
       expect(apiClient.delete).toHaveBeenCalledTimes(1)
       expect(apiClient.delete.mock.calls[0][0]).toBe(`/projects/${projectId}/users/${userId}`)
+    })
+
+    it('Should get all users', async () => {
+      apiClient.get.mockReturnValueOnce(Promise.resolve({ data: {} }))
+
+      await getAllUsers()
+
+      expect(apiClient.get).toHaveBeenCalled()
+      expect(apiClient.get).toHaveBeenCalledTimes(1)
+      expect(apiClient.get.mock.calls[0][0]).toBe('/admin/users')
     })
 
     // Environments

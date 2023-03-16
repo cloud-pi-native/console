@@ -116,7 +116,7 @@ export const getProjectOwnerController = async (req, res) => {
 
     req.log.info({
       ...getLogInfos({ owner }),
-      description: 'Project owner successfully retrived',
+      description: 'Propriétaire du projet récupéré avec succès',
     })
     sendOk(res, owner)
   } catch (error) {

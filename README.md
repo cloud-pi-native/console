@@ -11,18 +11,18 @@ Liste des outils utilisés par le projet à installer sur son ordinateur :
 
 ## Architecture
 
-Ce projet est construit avec [NodeJS](https://nodejs.org/), [VueJS](https://vuejs.org/), [Postgres](https://www.postgresql.org/) & [Docker](https://www.docker.com/).
+Ce projet est construit avec [NodeJS](https://nodejs.org/), [VueJS](https://vuejs.org/), [Postgres](https://www.postgresql.org/) et construit sous forme d'images [Docker](https://www.docker.com/).
 
 ### Liste des services docker
 
-| Nom du service | Github                                             | Role                                      | Utilisé en production |
-| -------------- | -------------------------------------------------- | ----------------------------------------- | --------------------- |
-| __postgres__   | [Postgres](https://github.com/postgres/postgres)   | Base de données de l'application          | Oui                   |
-| __pgadmin__    | [Pgadmin](https://github.com/pgadmin-org/pgadmin4) | Interface d'administration de Postgres    | -                     |
-| __server__     | [NodeJS](https://github.com/nodejs/node)           | API de l'application                      | Oui                   |
-| __client__     | [VueJS](https://github.com/vuejs/vue)              | Interface graphique de l'application      | Oui                   |
-| __keycloak__   | [Keycloak](https://github.com/keycloak/keycloak)   | Gestionnaire d'authentification / d'accès | -                     |
-| __cypress__    | [Cypress](https://github.com/cypress-io/cypress)   | Tests de bout en bout                     | -                     |
+| Nom du service | Github                                                                     | Role                                      | Utilisé en production |
+| -------------- | -------------------------------------------------------------------------- | ----------------------------------------- | --------------------- |
+| __postgres__   | [Postgres](https://github.com/postgres/postgres)                           | Base de données de l'application          | Oui                   |
+| __pgadmin__    | [Pgadmin](https://github.com/pgadmin-org/pgadmin4)                         | Interface d'administration de Postgres    | -                     |
+| __server__     | [NodeJS](https://github.com/nodejs/node)                                   | API de l'application                      | Oui                   |
+| __client__     | [VueJS](https://github.com/vuejs/vue) / [Nginx](https://nginx.org/) (prod) | Interface graphique de l'application      | Oui                   |
+| __keycloak__   | [Keycloak](https://github.com/keycloak/keycloak)                           | Gestionnaire d'authentification / d'accès | -                     |
+| __cypress__    | [Cypress](https://github.com/cypress-io/cypress)                           | Tests de bout en bout                     | -                     |
 
 ### Architecture du dépôt
 
@@ -107,7 +107,10 @@ Pour pouvoir gérer les droits utilisateurs des services le pod `server` doit ac
   * Add to access token: `on`
   * Add to userinfo: `off`
 
-En environnement de dev l'import par défaut prévoit déjà la modification
+> En environnement de dev l'import par défaut prévoit déjà cette modification.
+
+Les utilisateurs faisant parti du group `admin` ont également accès à l'interface administrateur de la console une fois connectés via un onglet supplémentaire `Administration` dans le menu latéral de l'application.
+
 
 ## Tableau des ressources, terminologie
 | Console Cloud Pi | Projet                       | Environnement | Dépots                                  | Utilisateur / membre |
@@ -115,13 +118,13 @@ En environnement de dev l'import par défaut prévoit déjà la modification
 | **Openshift**    |                              | Namespace     |                                         |                      |
 | **ArgoCD**       |                              |               | (infra) Secret, AppProject, Application |                      |
 | **Gitlab**       | Group                        |               | Repository (Dépôt)                      | User                 |
-| **Quay**         | Organization                 |               | Repository *                            |                      |
+| **Quay**         | Organization                 |               | Repository [1]                          |                      |
 | **Ldap**         | Group                        |               |                                         | User / memberof      |
 | **Keycloak**     |                              | Group         |                                         | User / member        |
 | **Sonar**        | User                         |               |                                         |                      |
 | **Nexus**        | Repositories, role, user ... |               |                                         |                      |
 
- * N'est pas crée par la console mais par le produit de la CI
+[1] N'est pas crée par la console mais par le produit de la CI
 
 ## Contributions
 

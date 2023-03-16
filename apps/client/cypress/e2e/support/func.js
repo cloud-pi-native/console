@@ -14,3 +14,7 @@ export const getUserProjects = (userId) => {
   })
   return userProjects
 }
+
+export const getUsers = () => {
+  return users
+}
