@@ -7,7 +7,7 @@ export const replaceNestedKeys = (obj, fn) => {
     obj.forEach(el => replaceNestedKeys(el, fn))
   } else if (typeof obj === 'object') {
     for (const key in obj) {
-      if (key.startsWith('_')) return
+      if (key.startsWith('_')) continue
       const newKey = lowercaseFirstLetter(key)
       obj[newKey] = obj[key]
       if (key !== newKey) {

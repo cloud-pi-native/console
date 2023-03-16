@@ -1,12 +1,12 @@
-import KcAdminClient from '@keycloak/keycloak-admin-client'
+// import KcAdminClient from '@keycloak/keycloak-admin-client'
 
-import {
-  keycloakProtocol,
-  keycloakDomain,
-  keycloakRealm,
-  keycloakUser,
-  keycloakToken,
-} from '../../../utils/env.js'
+// import {
+//   keycloakProtocol,
+//   keycloakDomain,
+//   keycloakRealm,
+//   keycloakUser,
+//   keycloakToken,
+// } from '../../../utils/env.js'
 
 // const kcAdminClient = new KcAdminClient({
 //   baseUrl: `${keycloakProtocol}://${keycloakDomain}`,
