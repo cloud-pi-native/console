@@ -10,8 +10,9 @@ services:
     volumes:
       - ../keycloak/realms:/opt/keycloak/data/import
     environment:
-      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
-      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      CI: "true"
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
     command: start-dev --import-realm
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
@@ -26,9 +27,10 @@ services:
     image: docker.io/postgres:14.5
     container_name: dso-console_postgres
     environment:
-      POSTGRES_DB: ${POSTGRES_DATABASE:-dso-console-db}
-      POSTGRES_USER: ${POSTGRES_USER:-admin}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
+      CI: "true"
+      POSTGRES_DB: dso-console-db
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
     networks:
       - dso-network
 
@@ -46,24 +48,12 @@ services:
       postgres:
         condition: service_started
     ports:
-      - 4000:80
+      - 4000:4000
     volumes:
       - ../packages/test-utils/src/imports:/app/src/init-db/imports
+    env_file:
+      - ../apps/server/env/.env.ci
     environment:
-      SERVER_PORT: 80 # ${SERVER_PORT:-4000}
-      DB_HOST: ${POSTGRES_HOST:-postgres}
-      DB_PORT: ${POSTGRES_PORT:-5432}
-      DB_USER: ${POSTGRES_USER:-admin}
-      DB_PASS: ${POSTGRES_PASSWORD:-admin}
-      DB_NAME: ${POSTGRES_DATABASE:-dso-console-db}
-      SESSION_SECRET: ${SESSION_SECRET:-a-very-strong-secret-with-more-than-32-char}
-      KEYCLOAK_DOMAIN: ${KEYCLOAK_DOMAIN:-keycloak:8080}
-      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-cloud-pi-native}
-      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_BACKEND:-dso-console-backend}
-      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_BACKEND:-client-secret-backend}
-      ANSIBLE_HOST: ${ANSIBLE_HOST:-ansible-api}
-      ANSIBLE_PORT: ${ANSIBLE_PORT:-8100}
-      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-a-strong-key-with-32-characters!}
       CI: "true"
       DEV_SETUP: "true"
       NODE_ENV: production
@@ -84,17 +74,10 @@ services:
     ports:
       - 8100:8100
     volumes:
-      - ../ansible/playbooks:${PLAYBOOK_DIR:-/dso}
+      - ../ansible/playbooks:/dso
+    env_file:
+      - ../apps/ansible-api/env/.env.ci
     environment:
-      PLAYBOOK_DIR: ${PLAYBOOK_DIR:-/dso}
-      CLONE_DIR: ${CLONE_DIR:-/dso}
-      ANSIBLE_PORT: ${ANSIBLE_PORT:-8100}
-      SESSION_SECRET: ${SESSION_SECRET:-a-very-strong-secret-with-more-than-32-char}
-      KEYCLOAK_PROTOCOL: ${KEYCLOAK_PROTOCOL:-http}
-      KEYCLOAK_DOMAIN: keycloak:8080
-      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-cloud-pi-native}
-      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_ANSIBLE:-dso-console-ansible-api}
-      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_ANSIBLE:-client-secret-ansible-api}
       CI: "true"
       NODE_ENV: production
     networks:
@@ -112,21 +95,11 @@ services:
         condition: service_started
     ports:
       - 8080:8080
+    env_file:
+      - ../apps/client/env/.env.ci
     environment:
-      KEYCLOAK_PROTOCOL: ${KEYCLOAK_PROTOCOL:-http}
-      KEYCLOAK_DOMAIN: ${KEYCLOAK_DOMAIN:-keycloak:8080}
-      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-cloud-pi-native}
-      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID_FRONTEND:-dso-console-frontend}
-      KEYCLOAK_REDIRECT_URI: ${KEYCLOAK_REDIRECT_URI:-http://client:8080}
-      SERVER_HOST: ${SERVER_HOST:-server}
-      SERVER_PORT: 80 # ${SERVER_PORT:-4000}
-      CLIENT_PORT: ${CLIENT_PORT:-8080}
-      ARGOCD_URL: ${ARGOCD_URL:-https://argo-cd.readthedocs.io}
-      GITLAB_URL: ${GITLAB_URL:-https://gitlab.com}
-      NEXUS_URL: ${NEXUS_URL:-https://sonatype.com/products/nexus-repository}
-      QUAY_URL: ${QUAY_URL:-https://quay.io}
-      SONARQUBE_URL: ${SONARQUBE_URL:-https://www.sonarqube.org}
-      VAULT_URL: ${VAULT_URL:-https://www.vaultproject.io}
+      CI: "true"
+      NODE_ENV: production
     networks:
       - dso-network
 
@@ -134,7 +107,6 @@ services:
     build:
       context: ..
       dockerfile: apps/client/cypress/Dockerfile
-      target: build
     image: dso-console/cypress:ci
     container_name: dso-console_cypress
     command: cypress:run --browser chrome
@@ -147,9 +119,18 @@ services:
       - /app/apps/client/node_modules/
       - ../packages/shared:/app/packages/shared
       - /app/packages/shared/node_modules/
+      - ../packages/test-utils:/app/packages/test-utils
+      - /app/packages/test-utils/node_modules/
     environment:
-      CLIENT_HOST: ${CLIENT_HOST:-client}
-      CLIENT_PORT: ${CLIENT_PORT:-8080}
+      CI: "true"
+      CLIENT_HOST: client
+      CLIENT_PORT: 8080
+      ARGOCD_URL: https://argo-cd.readthedocs.io
+      GITLAB_URL: https://gitlab.com
+      QUAY_URL: https://quay.io
+      NEXUS_URL: https://sonatype.com/products/nexus-repository
+      SONARQUBE_URL: https://www.sonarqube.org
+      VAULT_URL: https://www.vaultproject.io
     networks:
       - dso-network
 

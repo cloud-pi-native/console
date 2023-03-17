@@ -1,5 +1,5 @@
-import app from './app.js'
 import { isDev, isTest, isCI, isProd, port } from './utils/env.js'
+import app from './app.js'
 
 await startServer()
 

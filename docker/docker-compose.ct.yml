@@ -5,7 +5,6 @@ services:
     build:
       context: ..
       dockerfile: apps/client/cypress/Dockerfile
-      target: build
     image: dso-console/cypress:ci
     container_name: dso-console_cypress
     volumes:
@@ -14,11 +13,20 @@ services:
       - /app/apps/client/node_modules/
       - ../packages/shared:/app/packages/shared
       - /app/packages/shared/node_modules/
+      - ../packages/test-utils:/app/packages/test-utils
+      - /app/packages/test-utils/node_modules/
     environment:
-      CLIENT_HOST: ${CLIENT_HOST:-client}
-      CLIENT_PORT: ${CLIENT_PORT:-8080}
       NODE_ENV: test
-      CT: 'true'
+      CI: "true"
+      CT: "true"
+      CLIENT_HOST: client
+      CLIENT_PORT: 8080
+      ARGOCD_URL: https://argo-cd.readthedocs.io
+      GITLAB_URL: https://gitlab.com
+      QUAY_URL: https://quay.io
+      NEXUS_URL: https://sonatype.com/products/nexus-repository
+      SONARQUBE_URL: https://www.sonarqube.org
+      VAULT_URL: https://www.vaultproject.io
     command: cypress:run-ct --browser chrome
     networks:
       - dso-network

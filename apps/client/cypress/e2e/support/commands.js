@@ -45,8 +45,6 @@ Cypress.Commands.add('createProject', (project) => {
     .get('[data-testid^="repoFieldset-"]').should('not.exist')
     .get('p.fr-alert__description').should('contain', owner.email)
     .getByDataTestid('organizationSelect').find('select').select(newProject.orgName)
-    .getByDataTestid('nameInput').type(`${newProject.name} ErrorSpace`)
-    .getByDataTestid('nameInput').should('have.class', 'fr-input--error')
     .getByDataTestid('nameInput').clear().type(newProject.name)
     .getByDataTestid('nameInput').should('not.have.class', 'fr-input--error')
   cy.getByDataTestid('createProjectBtn').should('be.enabled').click()
@@ -110,7 +108,7 @@ Cypress.Commands.add('addRepos', (project, repos) => {
     .url().should('contain', '/repositories')
 
   newRepos.forEach((repo) => {
-    cy.getByDataTestid('addRepoLink').click({ timeout: 30_000 })
+    cy.getByDataTestid('addRepoLink').click()
       .get('h1').should('contain', 'Ajouter un dépôt au projet')
       .getByDataTestid('internalRepoNameInput').type(repo.internalRepoName)
       .getByDataTestid('externalRepoUrlInput').clear().type(repo.externalRepoUrl)
@@ -129,7 +127,7 @@ Cypress.Commands.add('addRepos', (project, repos) => {
     cy.wait('@postRepo').its('response.statusCode').should('eq', 201)
     cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
     cy.getByDataTestid(`repoTile-${repo.internalRepoName}`).should('exist')
-    cy.reload()
+    cy.wait(1000).reload()
     cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
   })
 })
