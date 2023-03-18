@@ -80,7 +80,7 @@ export const removeUser = async (projectId, userId) => {
   return response.data
 }
 
-// Environnements
+// Environments
 export const addEnvironment = async (projectId, data) => {
   const response = await apiClient.post(`/projects/${projectId}/environments`, data)
   return response.data
