@@ -36,12 +36,12 @@ apiClient.interceptors.response.use(function (response) {
   const response = error?.response
   const isUnauthorized = response?.status === 401
   if (isUnauthorized) {
-    const customError = new Error('Incorrect authentication')
+    const customError = new Error('Echec d\'identification')
     customError.httpCode = 401
     return Promise.reject(customError)
   }
-  if (error?.code === 'ECONNABORTED' || error?.message?.includes('Network Error')) {
-    const customError = new Error('Unable to communicate with the server')
+  if (error?.code === 'ECONNABORTED' || error?.message?.includes('Network Error') || response?.status >= 500) {
+    const customError = new Error('Echec de réponse du serveur')
     return Promise.reject(customError)
   }
   if (response?.data?.error === 'invalid_grant') {

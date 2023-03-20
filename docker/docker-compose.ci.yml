@@ -28,9 +28,9 @@ services:
     container_name: dso-console_postgres
     environment:
       CI: "true"
-      POSTGRES_DB: dso-console-db
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
     networks:
       - dso-network
 
@@ -50,35 +50,13 @@ services:
     ports:
       - 4000:4000
     volumes:
-      - ../packages/test-utils/src/imports:/app/src/init-db/imports
+      - ../packages/test-utils/src/imports:/app/src/init/db/imports
     env_file:
+      - ../env/.env.ci
       - ../apps/server/env/.env.ci
     environment:
       CI: "true"
       DEV_SETUP: "true"
-      NODE_ENV: production
-    networks:
-      - dso-network
-
-  ansible-api:
-    restart: always
-    build:
-      context: ..
-      dockerfile: apps/ansible-api/Dockerfile
-      target: prod
-    image: dso-console/ansible-api:ci
-    container_name: dso-console_ansible-api
-    depends_on:
-      keycloak:
-        condition: service_healthy
-    ports:
-      - 8100:8100
-    volumes:
-      - ../ansible/playbooks:/dso
-    env_file:
-      - ../apps/ansible-api/env/.env.ci
-    environment:
-      CI: "true"
       NODE_ENV: production
     networks:
       - dso-network
@@ -96,6 +74,7 @@ services:
     ports:
       - 8080:8080
     env_file:
+      - ../env/.env.ci
       - ../apps/client/env/.env.ci
     environment:
       CI: "true"
@@ -125,12 +104,9 @@ services:
       CI: "true"
       CLIENT_HOST: client
       CLIENT_PORT: 8080
-      ARGOCD_URL: https://argo-cd.readthedocs.io
-      GITLAB_URL: https://gitlab.com
-      QUAY_URL: https://quay.io
-      NEXUS_URL: https://sonatype.com/products/nexus-repository
-      SONARQUBE_URL: https://www.sonarqube.org
-      VAULT_URL: https://www.vaultproject.io
+    env_file:
+      - ../env/.env.ci
+      - ../apps/server/env/.env.ci
     networks:
       - dso-network
 

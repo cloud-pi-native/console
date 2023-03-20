@@ -18,12 +18,13 @@ spec:
     spec:
       imagePullSecrets:
       - name: {{ .Release.Name }}-pullsecret
+
       containers:
       - name: {{ .Release.Name }}-postgres
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         image: docker.io/postgres:14.5
         ports:
-        - containerPort: {{ .Values.containers.postgres.service.port }}
+        - containerPort: {{ .Values.postgres.service.port }}
         envFrom:
         - configMapRef:
             name: {{ .Release.Name }}-postgres-cm

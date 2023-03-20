@@ -16,13 +16,14 @@ node_modules
 .env.ci
 .env.test
 .env.prod
+.env.int
 
 # cypress
 screenshots
 downloads
 
 # init-db
-apps/server/src/init-db/imports/data.js
+apps/server/src/init/db/imports/data.js
 
 # act
 **/act/artifacts

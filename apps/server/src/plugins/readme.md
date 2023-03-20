@@ -21,6 +21,7 @@
 ## Result
 
 Note: Si un module réutilise son propre payload, il doit penser à renvoyer le précédent s'il ne veut pas l'écraser. Charge aussi au plugin de gérer les erreurs des étapes précédentes.
+
 ```js
 {
   status: {

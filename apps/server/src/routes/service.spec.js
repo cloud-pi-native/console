@@ -10,7 +10,6 @@ import userRouter from './service.js'
 import { getUserModel } from '../models/user.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
-vi.mock('../ansible.js')
 
 const app = fastify({ logger: false })
   .register(fastifyCookie)
@@ -61,7 +60,7 @@ describe('Service route', () => {
   })
 
   // GET
-  describe.skip('checkServicesHealthController', () => {
+  describe('checkServicesHealthController', () => {
     it('Should retreive an OK service status', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const requestor = randomDbSetup.project.users.find(user => user.role === 'owner')
@@ -76,37 +75,37 @@ describe('Service route', () => {
       expect(response.statusCode).toEqual(200)
       expect(response.body).toBeDefined()
       expect(response.json()).toEqual([{
-        id: 'argocd',
+        name: 'argocd',
         status: 'success',
         message: 'OK',
         code: 200,
       },
       {
-        id: 'gitlab',
+        name: 'gitlab',
         status: 'success',
         message: 'OK',
         code: 200,
       },
       {
-        id: 'nexus',
+        name: 'nexus',
         status: 'success',
         message: 'OK',
         code: 200,
       },
       {
-        id: 'quay',
+        name: 'registry',
         status: 'success',
         message: 'OK',
         code: 200,
       },
       {
-        id: 'sonarqube',
+        name: 'sonarqube',
         status: 'success',
         message: 'OK',
         code: 200,
       },
       {
-        id: 'vault',
+        name: 'vault',
         status: 'success',
         message: 'OK',
         code: 200,

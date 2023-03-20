@@ -1,43 +1,45 @@
-import { quayUrl, nexusUrl, vaultUrl, argocdUrl, gitlabUrl, sonarqubeUrl } from './env.js'
+import { harborUrl, nexusUrl, vaultUrl, argocdUrl, gitlabUrl, sonarqubeUrl, projectPath } from './env.js'
+
+const projectPathStr = projectPath.join('/')
 
 export const allServices = {
   argocd: {
-    id: 'argocd',
+    name: 'argocd',
     url: `${argocdUrl}`,
     title: 'ArgoCD',
     imgSrc: '/img/argocd.png',
     description: 'ArgoCD est un outil déclaratif de livraison continue GitOps pour Kubernetes',
   },
   gitlab: {
-    id: 'gitlab',
+    name: 'gitlab',
     url: `${gitlabUrl}`,
     title: 'Gitlab',
     imgSrc: '/img/gitlab.svg',
     description: 'GitLab est un service d\'hébergement de code source et de pipeline CI/CD',
   },
   nexus: {
-    id: 'nexus',
+    name: 'nexus',
     url: `${nexusUrl}`,
     title: 'Nexus',
     imgSrc: '/img/nexus.png',
     description: 'Nexus permet de gérer les binaires et artefacts de build à travers la chaîne logistique logicielle',
   },
-  quay: {
-    id: 'quay',
-    url: `${quayUrl}`,
-    title: 'Quay',
-    imgSrc: '/img/quay.png',
-    description: 'Quay construit, analyse et distribue vos images de conteneurs',
+  registry: {
+    name: 'registry',
+    url: `${harborUrl}`,
+    title: 'Harbor',
+    imgSrc: '/img/harbor.png',
+    description: 'Harbor stocke, analyse et distribue vos images de conteneurs',
   },
   sonarqube: {
-    id: 'sonarqube',
+    name: 'sonarqube',
     url: `${sonarqubeUrl}`,
-    title: 'sonarqube',
+    title: 'Sonarqube',
     imgSrc: '/img/sonarqube.svg',
     description: 'SonarQube permet à tous les développeurs d\'écrire un code plus propre et plus sûr',
   },
   vault: {
-    id: 'vault',
+    name: 'vault',
     url: `${vaultUrl}`,
     title: 'Vault',
     imgSrc: '/img/vault.svg',
@@ -48,31 +50,31 @@ export const allServices = {
 export const getServices = (project) => ({
   argocd: {
     ...allServices.argocd,
-    to: `${allServices.argocd.url}/applications?showFavorites=false&proj=&sync=&health=&namespace=&cluster=&labels=&search=${project.organization.name}-${project.name}`,
+    to: `${allServices.argocd.url}/applications?showFavorites=false&proj=&sync=&health=&namespace=&cluster=&labels=&search=${project.organization?.name}-${project.name}`,
   },
 
   gitlab: {
     ...allServices.gitlab,
-    to: `${allServices.gitlab.url}/forge-mi/projects/${project.organization.name}/${project.name}`,
+    to: `${allServices.gitlab.url}/${projectPathStr}/${project.organization?.name}/${project.name}`,
   },
 
   nexus: {
     ...allServices.nexus,
-    to: `${allServices.nexus.url}/#browse/browse:${project.organization.name}-${project.name}-repository-group`,
+    to: `${allServices.nexus.url}/#browse/browse:${project.organization?.name}-${project.name}-repository-group`,
   },
 
-  quay: {
-    ...allServices.quay,
-    to: `${allServices.quay.url}/organization/${project.organization.name}-${project.name}`,
+  registry: {
+    ...allServices.registry,
+    to: `${allServices.registry.url}/projects/${project.services?.registry?.id}`,
   },
 
   sonarqube: {
     ...allServices.sonarqube,
-    to: `${allServices.sonarqube.url}/dashboard?id=${project.organization.name}-${project.name}`,
+    to: `${allServices.sonarqube.url}/dashboard?id=${project.organization?.name}-${project.name}`,
   },
 
   vault: {
     ...allServices.vault,
-    to: `${allServices.vault.url}/ui/vault/secrets/forge-dso/list/forge-mi/projects/${project.organization.name}/${project.name}`,
+    to: `${allServices.vault.url}/ui/vault/secrets/forge-dso/list/${projectPathStr}/${project.organization?.name}/${project.name}`,
   },
 })

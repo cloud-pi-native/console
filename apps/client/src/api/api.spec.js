@@ -51,14 +51,18 @@ describe('API', () => {
       apiClient.get.mockReturnValueOnce(Promise.resolve({ data: {} }))
 
       await getUserProjects()
+
       expect(apiClient.get).toHaveBeenCalled()
       expect(apiClient.get).toHaveBeenCalledTimes(1)
       expect(apiClient.get.mock.calls[0][0]).toBe('/projects')
     })
+
     it('Should get a project', async () => {
       const projectId = 'thisIsAnId'
       apiClient.get.mockReturnValueOnce(Promise.resolve({ data: {} }))
+
       await getUserProjectById(projectId)
+
       expect(apiClient.get).toHaveBeenCalled()
       expect(apiClient.get).toHaveBeenCalledTimes(1)
       expect(apiClient.get.mock.calls[0][0]).toBe(`/projects/${projectId}`)
@@ -100,7 +104,9 @@ describe('API', () => {
     it('Should add a repo', async () => {
       const projectId = 'thisIsAnId'
       apiClient.post.mockReturnValueOnce(Promise.resolve({ data: {} }))
+
       await addRepo(projectId, {})
+
       expect(apiClient.post).toHaveBeenCalled()
       expect(apiClient.post).toHaveBeenCalledTimes(1)
       expect(apiClient.post.mock.calls[0][0]).toBe(`/projects/${projectId}/repositories`)
@@ -147,6 +153,7 @@ describe('API', () => {
       apiClient.post.mockReturnValueOnce(Promise.resolve({ data: {} }))
 
       await addUser(projectId, {})
+
       expect(apiClient.post).toHaveBeenCalled()
       expect(apiClient.post).toHaveBeenCalledTimes(1)
       expect(apiClient.post.mock.calls[0][0]).toBe(`/projects/${projectId}/users`)
@@ -179,7 +186,9 @@ describe('API', () => {
       const projectId = 'thisIsAnId'
       const userId = 'anOtherId'
       apiClient.delete.mockReturnValueOnce(Promise.resolve({ data: {} }))
+
       await removeUser(projectId, userId)
+
       expect(apiClient.delete).toHaveBeenCalled()
       expect(apiClient.delete).toHaveBeenCalledTimes(1)
       expect(apiClient.delete.mock.calls[0][0]).toBe(`/projects/${projectId}/users/${userId}`)

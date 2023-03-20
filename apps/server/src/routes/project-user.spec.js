@@ -12,7 +12,6 @@ import { getUserModel } from '../models/user.js'
 import { getUsersProjectsModel } from '../models/users-projects.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
-vi.mock('../ansible.js')
 
 const app = fastify({ logger: false })
   .register(fastifyCookie)
@@ -70,7 +69,7 @@ describe('User routes', () => {
       const randomDbSetup = createRandomDbSetup({ nbUsers: 3 })
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: owner.role })
       User.$queueResult(randomDbSetup.users)
       setRequestorId(owner.id)
 
@@ -111,7 +110,7 @@ describe('User routes', () => {
       // 1. getProjectById
       Project.$queueResult(randomDbSetup.project)
       // 2. getRequestorRole
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: owner.role })
       // 3. getUserByEmail
       User.$queueResult(randomUser)
       // 4. getUserToAddRole
@@ -138,9 +137,9 @@ describe('User routes', () => {
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       Project.$queueResult(randomDbSetup.project)
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: owner.role })
       User.$queueResult(randomUser)
-      Role.$queueResult(randomDbSetup.project.users[1])
+      Role.$queueResult({ UserId: randomUser.id, role: randomUser.role })
       setRequestorId(owner.id)
 
       const response = await app.inject()
@@ -150,7 +149,7 @@ describe('User routes', () => {
 
       expect(response.statusCode).toEqual(500)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Cannot add user into project: L\'utilisateur est déjà membre du projet')
+      expect(response.body).toEqual('Utilisateur non ajouté au projet : L\'utilisateur est déjà membre du projet')
     })
 
     it('Should not add an user if project is missing', async () => {
@@ -168,7 +167,7 @@ describe('User routes', () => {
 
       expect(response.statusCode).toEqual(500)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Cannot add user into project: Projet introuvable')
+      expect(response.body).toEqual('Utilisateur non ajouté au projet : Projet introuvable')
     })
   })
 
@@ -183,9 +182,9 @@ describe('User routes', () => {
       // 1. getProject
       Project.$queueResult(randomDbSetup.project)
       // 2. getRequestorRole
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: owner.role })
       // 3. getUserToUpdateRole
-      Role.$queueResult(randomDbSetup.project.users[1])
+      Role.$queueResult({ UserId: userToUpdate.id, role: userToUpdate.role })
       // 4. updateUserProjectRole
       Role.$queueResult([1])
 
@@ -211,11 +210,11 @@ describe('User routes', () => {
       // 1. getProjectById
       Project.$queueResult(randomDbSetup.project)
       // 2. getRequestorRole
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: owner.role })
       // 3. getUserToRemove
       User.$queueResult(randomUser)
       // 4. getUserToRemoveRole
-      Role.$queueResult(randomDbSetup.project.users[1])
+      Role.$queueResult({ UserId: randomUser.id, role: randomUser.role })
       // 5. project locked
       sequelize.$queueResult([1])
       // 6. removeUserFromProject
@@ -228,7 +227,6 @@ describe('User routes', () => {
         .body(randomUser.email)
         .end()
 
-      console.log(response.body)
       expect(response.statusCode).toEqual(200)
       expect(response.body).toEqual('User successfully removed from project')
     })
@@ -247,7 +245,7 @@ describe('User routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(500)
-      expect(response.body).toEqual('Cannot remove user from project: Projet introuvable')
+      expect(response.body).toEqual('L\'utilisateur ne peut être retiré du projet : Projet introuvable')
     })
 
     it('Should not remove an user if requestor is not member himself', async () => {
@@ -265,7 +263,7 @@ describe('User routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(500)
-      expect(response.body).toEqual('Cannot remove user from project: Vous n\'êtes pas membre du projet')
+      expect(response.body).toEqual('L\'utilisateur ne peut être retiré du projet : Vous n\'êtes pas membre du projet')
     })
 
     it('Should not remove an user if user is not member', async () => {
@@ -274,7 +272,7 @@ describe('User routes', () => {
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       Project.$queueResult(randomDbSetup.project)
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: owner.role })
       User.$queueResult(randomUser)
       Role.$queueResult(null)
       setRequestorId(owner.id)
@@ -285,7 +283,7 @@ describe('User routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(500)
-      expect(response.body).toEqual('Cannot remove user from project: L\'utilisateur n\'est pas membre du projet')
+      expect(response.body).toEqual('L\'utilisateur ne peut être retiré du projet : L\'utilisateur n\'est pas membre du projet')
     })
   })
 })

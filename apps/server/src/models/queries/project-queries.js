@@ -100,6 +100,10 @@ export const removeUserFromProject = async ({ project, user }) => {
   return user.removeProject(project)
 }
 
+export const updateProjectServices = async (id, services) => {
+  return getProjectModel().update({ services }, { where: { id } })
+}
+
 export const archiveProject = async (id) => {
   return getProjectModel().update({
     status: 'archived',
@@ -110,8 +114,8 @@ export const archiveProject = async (id) => {
 }
 
 // TECH
-export const _initializeProject = async ({ id, name, organization }) => {
-  return getProjectModel().create({ id, name, organization, status: 'initializing', locked: true })
+export const _initializeProject = async ({ id, name, organization, services }) => {
+  return getProjectModel().create({ id, name, organization, status: 'initializing', locked: true, services })
 }
 
 export const _dropProjectsTable = async () => {

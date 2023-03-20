@@ -38,24 +38,49 @@ export const keycloakClientId = process.env.KEYCLOAK_CLIENT_ID
 
 export const keycloakClientSecret = process.env.KEYCLOAK_CLIENT_SECRET
 
-export const ansibleHost = process.env.ANSIBLE_HOST
-
-export const ansiblePort = process.env.ANSIBLE_PORT
-
-export const playbookDir = process.env.PLAYBOOK_DIR?.endsWith('/')
-  ? process.env.PLAYBOOK_DIR
-  : process.env.PLAYBOOK_DIR + '/'
-
-export const encryptionKey = process.env.ENCRYPTION_KEY
+export const adminsUserId = process.env.ADMIN_KC_USER_ID ? process.env.ADMIN_KC_USER_ID.split(',') : []
 
 export const argocdUrl = process.env.ARGOCD_URL
 
-export const gitlabUrl = process.env.GITLAB_URL
+export const vaultUrl = process.env.VAULT_URL?.endsWith('/')
+  ? process.env.VAULT_URL?.slice(0, -1)
+  : process.env.VAULT_URL
+export const nexusUrl = process.env.NEXUS_URL?.endsWith('/')
+  ? process.env.NEXUS_URL?.slice(0, -1)
+  : process.env.NEXUS_URL
+export const gitlabUrl = process.env.GITLAB_URL?.endsWith('/')
+  ? process.env.GITLAB_URL?.slice(0, -1)
+  : process.env.GITLAB_URL
+export const sonarqubeUrl = process.env.SONARQUBE_URL?.endsWith('/')
+  ? process.env.SONARQUBE_URL?.slice(0, -1)
+  : process.env.SONARQUBE_URL
+export const harborUrl = process.env.HARBOR_URL?.endsWith('/')
+  ? process.env.HARBOR_URL?.slice(0, -1)
+  : process.env.HARBOR_URL
+export const keycloakUrl = process.env.KEYCLOAK_URL?.endsWith('/')
+  ? process.env.KEYCLOAK_URL?.slice(0, -1)
+  : process.env.KEYCLOAK_URL
 
-export const nexusUrl = process.env.NEXUS_URL
+export const gitlabToken = process.env.GITLAB_TOKEN
 
-export const quayUrl = process.env.QUAY_URL
+export const nexusUser = process.env.NEXUS_ADMIN
+export const nexusPassword = process.env.NEXUS_ADMIN_PASSWORD
 
-export const sonarqubeUrl = process.env.SONARQUBE_URL
+export const sonarqubeApiToken = process.env.SONAR_API_TOKEN
 
-export const vaultUrl = process.env.VAULT_URL
+export const vaultToken = process.env.VAULT_TOKEN
+
+export const harborUser = process.env.HARBOR_ADMIN
+export const harborPassword = process.env.HARBOR_ADMIN_PASSWORD
+
+export const projectPath = process.env.PROJECT_PATH?.split('/') || ['forge-mi', 'projects']
+
+export const mockPlugins = process.env.MOCK_PLUGINS === 'true'
+
+export const keycloakToken = process.env.KEYCLOAK_ADMIN_PASSWORD
+export const keycloakUser = process.env.KEYCLOAK_ADMIN
+
+export const kubeconfigCtx = process.env.KUBECONFIG_CTX
+export const kubeconfigPath = '/home/node/.kube/config'
+
+export const argoNamespace = process.env.ARGO_NAMESPACE

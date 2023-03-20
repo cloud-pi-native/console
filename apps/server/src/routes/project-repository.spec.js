@@ -12,7 +12,6 @@ import { getUsersProjectsModel } from '../models/users-projects.js'
 import { getRepositoryModel } from '../models/repository.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
-vi.mock('../ansible.js')
 
 const app = fastify({ logger: false })
   .register(fastifyCookie)
@@ -72,7 +71,7 @@ describe('Project routes', () => {
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       Repository.$queueResult(repoToGet)
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: owner.role })
       setRequestorId(owner.id)
 
       const response = await app.inject()
@@ -91,7 +90,7 @@ describe('Project routes', () => {
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       Repository.$queueResult(randomDbSetup.project.repositories)
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: owner.role })
       setRequestorId(owner.id)
 
       const response = await app.inject()
@@ -112,7 +111,7 @@ describe('Project routes', () => {
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       Project.$queueResult(randomDbSetup.project)
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: owner.role })
       Repository.$queueResult(randomDbSetup.project.repositories)
       setRequestorId(owner.id)
 
@@ -121,9 +120,12 @@ describe('Project routes', () => {
         .body(newRepository)
         .end()
 
+      delete newRepository.id
+      delete newRepository.status
+      delete newRepository.externalToken
       expect(response.statusCode).toEqual(201)
-      expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Repository successfully created')
+      expect(response.json()).toBeDefined()
+      expect(response.json()).toMatchObject(newRepository)
     })
   })
 
@@ -140,7 +142,7 @@ describe('Project routes', () => {
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       Repository.$queueResult(repoToUpdate)
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: owner.role })
       Project.$queueResult([1])
       Repository.$queueResult([1])
       setRequestorId(owner.id)
@@ -150,9 +152,9 @@ describe('Project routes', () => {
         .body(updatedKeys)
         .end()
 
-      expect(response.statusCode).toEqual(201)
+      expect(response.statusCode).toEqual(200)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Repository successfully updated')
+      expect(response.body).toEqual('Dépôt mis à jour')
     })
 
     it('Should should not update a repository if invalid keys', async () => {
@@ -166,7 +168,7 @@ describe('Project routes', () => {
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       Repository.$queueResult(repoToUpdate)
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: owner.role })
       Project.$queueResult([1])
       setRequestorId(owner.id)
 
@@ -177,7 +179,7 @@ describe('Project routes', () => {
 
       expect(response.statusCode).toEqual(500)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Cannot update repository: Le token est requis')
+      expect(response.body).toEqual('Dépôt non mis à jour')
     })
   })
 
@@ -189,7 +191,7 @@ describe('Project routes', () => {
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       Repository.$queueResult(repoToDelete)
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: owner.role })
       Project.$queueResult([1])
       Repository.$queueResult([1])
       setRequestorId(owner.id)
@@ -200,7 +202,7 @@ describe('Project routes', () => {
 
       expect(response.statusCode).toEqual(200)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Repository successfully deleting')
+      expect(response.body).toEqual('Dépôt en cours de suppression')
     })
   })
 })

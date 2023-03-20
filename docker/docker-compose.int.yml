@@ -1,0 +1,102 @@
+version: '3.9'
+
+services:
+  postgres:
+    restart: always
+    image: docker.io/postgres:14.5
+    container_name: dso-console_postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    ports:
+      - 5432:5432
+    volumes:
+      - dso-postgres-data:/var/lib/postgresql/data
+    networks:
+      - dso-network
+
+  pgadmin:
+    restart: always
+    image: docker.io/dpage/pgadmin4:6.16
+    container_name: dso-console_pgadmin
+    depends_on:
+      - postgres
+    volumes:
+      - dso-pgadmin-data:/var/lib/pgadmin
+      - ../db/pgadmin/config/servers.json:/pgadmin4/servers.json
+    ports:
+      - 8081:80
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@dso.fr
+      PGADMIN_DEFAULT_PASSWORD: admin
+    networks:
+      - dso-network
+
+  server:
+    restart: always
+    build:
+      context: ..
+      dockerfile: apps/server/Dockerfile
+      target: dev
+    image: dso-console/server:dev
+    container_name: dso-console_server
+    depends_on:
+      postgres:
+        condition: service_started
+    ports:
+      - 4000:4000
+      - 9229:9229
+    volumes:
+      - /app/node_modules/
+      - ../apps/server:/app/apps/server
+      - /app/apps/server/node_modules/
+      - ../packages/shared:/app/packages/shared
+      - /app/packages/shared/node_modules/
+      - ${KUBE_CONFIG_PATH}:/home/node/.kube/config
+    env_file:
+      - ../env/.env.int
+      - ../apps/server/env/.env.int
+    environment:
+      NODE_ENV: development
+      INTEGRATION: 'true'
+      KUBECONFIG_CTX: admin4-7
+    networks:
+      - dso-network
+
+  client:
+    restart: always
+    build:
+      context: ..
+      dockerfile: apps/client/Dockerfile
+      target: dev
+    image: dso-console/client:dev
+    container_name: dso-console_client
+    depends_on:
+      - server
+    ports:
+      - 8080:8080
+    volumes:
+      - /app/node_modules/
+      - ../apps/client:/app/apps/client
+      - /app/apps/client/node_modules/
+      - ../packages/shared:/app/packages/shared
+      - /app/packages/shared/node_modules/
+    env_file:
+      - ../env/.env.int
+      - ../apps/client/env/.env.int
+    environment:
+      NODE_ENV: development
+    networks:
+      - dso-network
+
+networks:
+  dso-network:
+    driver: bridge
+    # driver_opts:
+    # com.docker.network.driver.mtu: 1450
+
+volumes:
+  dso-keycloak-data:
+  dso-pgadmin-data:
+  dso-postgres-data:

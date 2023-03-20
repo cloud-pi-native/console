@@ -11,7 +11,6 @@ import { getUsersProjectsModel } from '../models/users-projects.js'
 import { getPermissionModel } from '../models/permission.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
-vi.mock('../ansible.js')
 
 const app = fastify({ logger: false })
   .register(fastifyCookie)
@@ -68,7 +67,7 @@ describe('Project routes', () => {
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       // 1. getRequestorRole
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: 'owner' })
       // 2. getPermissions
       Permission.$queueResult(randomDbSetup.project.environments[0].permissions[0])
       setRequestorId(owner.id)
@@ -110,7 +109,7 @@ describe('Project routes', () => {
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       // 1. getRequestorRole
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: 'owner' })
       // 2. setPermissions
       sequelize.$queueResult(newPermission)
       setRequestorId(owner.id)
@@ -155,7 +154,7 @@ describe('Project routes', () => {
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       // 1. getRequestorRole
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: 'owner' })
       // 2. getRequestorPermission
       Permission.$queueResult(requestorPermission)
       // 3. getOwnerId
@@ -181,7 +180,7 @@ describe('Project routes', () => {
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       // 1. getRequestorRole
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: 'owner' })
       // 2. getRequestorPermission
       Permission.$queueResult(permissionToUpdate)
       // 3. getOwnerId
@@ -194,7 +193,7 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(500)
-      expect(response.body).toEqual('Cannot update permissions : La permission du owner du projet ne peut être modifiée')
+      expect(response.body).toEqual('Permission non modifiée : La permission du owner du projet ne peut être modifiée')
     })
 
     it('Should not update a permission if not permitted on given environment', async () => {
@@ -204,7 +203,7 @@ describe('Project routes', () => {
       const requestor = randomDbSetup.users[2]
 
       // 1. getRequestorRole
-      Role.$queueResult(randomDbSetup.project.users[2])
+      Role.$queueResult({ UserId: requestor.id, role: requestor.role })
       // 2. getRequestorPermission
       Permission.$queueResult(null)
       setRequestorId(requestor.id)
@@ -215,7 +214,7 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(500)
-      expect(response.body).toEqual('Cannot update permissions : Le requérant doit avoir des droits sur l\'environnement pour modifier des permissions')
+      expect(response.body).toEqual('Permission non modifiée : Le requérant doit avoir des droits sur l\'environnement pour modifier des permissions')
     })
   })
 
@@ -227,7 +226,7 @@ describe('Project routes', () => {
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       // 1. getRequestorRole
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: owner.role })
       // 2. getRequestorPermission
       Permission.$queueResult(removedPermission)
       // 3. getOwnerId
@@ -248,10 +247,11 @@ describe('Project routes', () => {
       const randomDbSetup = createRandomDbSetup({ nbUsers: 2 })
       const requestorPermission = randomDbSetup.project.environments[0].permissions[1]
       const removedPermission = randomDbSetup.project.environments[0].permissions[0]
+      const requestor = randomDbSetup.project.users[1]
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       // 1. getRequestorRole
-      Role.$queueResult(randomDbSetup.project.users[1])
+      Role.$queueResult({ UserId: requestor.id, role: requestor.role })
       // 2. getRequestorPermission
       Permission.$queueResult(requestorPermission)
       // 3. getOwnerId
@@ -264,7 +264,7 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(500)
-      expect(response.body).toEqual('Cannot delete permissions : La permission du owner du projet ne peut être supprimée')
+      expect(response.body).toEqual('Permission non supprimée : La permission du owner du projet ne peut être supprimée')
     })
 
     it('Should not delete permission if not permitted on given environment', async () => {
@@ -273,7 +273,7 @@ describe('Project routes', () => {
       const requestor = randomDbSetup.users[2]
 
       // 1. getRequestorRole
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: requestor.id, role: requestor.role })
       // 2. getRequestorPermission
       Permission.$queueResult(null)
       setRequestorId(requestor.id)
@@ -284,7 +284,7 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(500)
-      expect(response.body).toEqual('Cannot delete permissions : Le requérant doit avoir des droits sur l\'environnement pour supprimer des permissions')
+      expect(response.body).toEqual('Permission non supprimée : Le requérant doit avoir des droits sur l\'environnement pour supprimer des permissions')
     })
   })
 })

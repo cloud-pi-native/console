@@ -95,7 +95,6 @@ jobs:
           path: |
             ./apps/client/coverage
             ./apps/server/coverage
-            ./apps/ansible-api/coverage
             ./packages/shared/coverage
           retention-days: 1
 
@@ -126,9 +125,9 @@ jobs:
               -Dsonar.branch.name=${{ github.event.pull_request.head.ref }} \
               -Dsonar.qualitygate.wait=true \
               -Dsonar.projectBaseDir=/usr/src \
-              -Dsonar.sources=apps/client,apps/server,apps/ansible-api,packages/shared \
-              -Dsonar.javascript.lcov.reportPaths=coverage/apps/client/coverage/lcov.info,coverage/apps/server/coverage/lcov.info,coverage/apps/ansible-api/coverage/lcov.info,coverage/packages/shared/coverage/lcov.info \
-              -Dsonar.coverage.exclusions=**/*.spec.js,**/*.vue,apps/client/src/router/**,apps/client/src/stores/**,**/assets/**,apps/client/src/main.js,apps/client/src/icons.js,apps/client/cypress/**,packages/shared/src/schemas/**
+              -Dsonar.sources=apps/client,apps/server,packages/shared \
+              -Dsonar.javascript.lcov.reportPaths=coverage/apps/client/coverage/lcov.info,coverage/apps/server/coverage/lcov.info,coverage/packages/shared/coverage/lcov.info \
+              -Dsonar.coverage.exclusions=**/*.spec.js,**/*.vue,apps/client/src/router/**,**/assets/**,apps/client/src/main.js,apps/client/src/icons.js,apps/client/cypress/**,packages/shared/src/schemas/**
         continue-on-error: true
 
   component-tests:

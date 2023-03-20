@@ -1,6 +1,6 @@
 <script setup>
 import { useServiceStore } from '@/stores/services.js'
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onBeforeMount } from 'vue'
 
 const serviceStore = useServiceStore()
 
@@ -14,7 +14,7 @@ const checkServicesHealth = async () => {
   isUpdating.value = ref(false)
 }
 
-onMounted(async () => {
+onBeforeMount(async () => {
   await checkServicesHealth()
 })
 </script>
@@ -46,9 +46,9 @@ onMounted(async () => {
   >
     <DsfrAlert
       v-for="service in services"
-      :key="service.id"
-      :data-testid="`${service.id}-info`"
-      :title="service.id"
+      :key="service.name"
+      :data-testid="`${service.name}-info`"
+      :title="service.name"
       class="pb-5 fr-mt-2w"
       :description="service.message ? `${service.code} - ${service.message}` : `${service.code}`"
       :type="service.status"

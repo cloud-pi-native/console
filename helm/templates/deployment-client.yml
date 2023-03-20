@@ -16,14 +16,14 @@ spec:
       imagePullSecrets:
       - name: {{ .Release.Name }}-pullsecret
       containers:
-      - name: {{ .Release.Name }}-client
-        imagePullPolicy: {{ .Values.imagePullPolicy }}
-        image: {{ .Values.containers.client.container.image }}
-        ports:
-        - containerPort: {{ .Values.containers.client.container.port }}
-        envFrom:
+      - envFrom:
         - configMapRef:
             name: {{ .Release.Name }}-client-cm
+        name: {{ .Release.Name }}-client
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        image: {{ .Values.client.container.image }}
+        ports:
+        - containerPort: {{ .Values.client.container.port }}
         resources:
           requests:
             memory: "64Mi"
@@ -31,3 +31,11 @@ spec:
           limits:
             memory: "128Mi"
             cpu: "500m"
+        volumeMounts:
+          - name: env
+            mountPath: /env/
+      volumes:
+        - name: env
+          configMap:
+            name: {{ $.Release.Name }}-client-app-cm
+

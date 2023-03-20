@@ -59,6 +59,14 @@ export const data = {
           ],
         },
       ],
+      services: {
+        gitlab: {
+          id: 34,
+        },
+        registry: {
+          id: 25,
+        },
+      },
       status: 'created',
     },
     {
@@ -92,6 +100,14 @@ export const data = {
           },
         ],
       }],
+      services: {
+        gitlab: {
+          id: 34,
+        },
+        registry: {
+          id: 25,
+        },
+      },
       status: 'failed',
     },
     {
@@ -170,6 +186,14 @@ export const data = {
           },
         ],
       }],
+      services: {
+        gitlab: {
+          id: 34,
+        },
+        registry: {
+          id: 25,
+        },
+      },
       status: 'created',
     },
     {
@@ -240,6 +264,14 @@ export const data = {
           },
         ],
       }],
+      services: {
+        gitlab: {
+          id: 34,
+        },
+        registry: {
+          id: 25,
+        },
+      },
       status: 'created',
     },
   ],

@@ -159,9 +159,6 @@ Cypress.Commands.add('deleteRepo', (project, repo) => {
     .getByDataTestid('deleteRepoBtn')
     .should('be.enabled')
     .click()
-    .getByDataTestid(`repoTile-${repo.internalRepoName}`)
-    .should('have.class', 'disabled-tile')
-    .click()
     .getByDataTestid('repo-form').should('not.exist')
     .reload()
     .getByDataTestid(`repoTile-${repo.internalRepoName}`)
@@ -345,7 +342,7 @@ Cypress.Commands.add('getServicesResponse', () => {
   cy.wait('@getServices').its('response').then(response => {
     const services = response.body
     services.map(service =>
-      cy.getByDataTestid(`${service.id}-info`).should('contain', `${service.code} - ${service.message}`),
+      cy.getByDataTestid(`${service.name}-info`).should('contain', `${service.code} - ${service.message}`),
     )
     if (services.find(service => service.code >= 400)) {
       cy.getByDataTestid('services-health-badge').should('contain', 'Un ou plusieurs services dysfonctionnent')
