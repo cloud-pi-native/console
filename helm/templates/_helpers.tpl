@@ -80,10 +80,6 @@ Create the name of the service account to use
 {{ . }}
 {{- end -}}
 
-{{- define "cloneVar"}}
-
-{{- end }}
-
 {{- define "globalEnv" -}}
 {{- range $key, $val := .globalEnv }}
 {{ $key }}: {{ $val | quote -}}
@@ -95,31 +91,3 @@ Create the name of the service account to use
 {{ $key }}: {{ $val | quote -}}
 {{ end -}}
 {{ end -}}
-
-{{- define "servicesEnv" -}}
-{{ range $key, $val := .services }}
-{{ $key }}: {{ $val | quote -}}
-{{ end -}}
-{{ end -}}
-
-{{- define "ressourceName" }}
-{{- if . -}}
-{{- $.Release.Name -}}-
-{{- end -}}
-{{ . }}
-{{- end -}}
-
-{{- define "service" -}}
-apiVersion: v1
-kind: Service
-metadata:
-  name: {{ .Release.Name }}-{{ .Values.server.service.hostname }}
-  {{ include }}
-spec:
-  selector:
-    app: {{ .Release.Name }}-server
-  ports:
-  - port: {{ .Values.server.service.port }}
-    targetPort: http
-{{- end -}}
-
