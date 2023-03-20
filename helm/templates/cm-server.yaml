@@ -4,10 +4,9 @@ metadata:
   name: {{ $.Release.Name }}-server-cm
 data:
   {{- include "globalEnv" .Values | indent 2 }}
-  {{- include "servicesEnv" .Values | indent 2 }}
-  {{- include "containerEnv" .Values.containers.server.container | indent 2 }}
-  SERVER_PORT: {{ .Values.containers.server.container.port | quote }}
-  {{- with .Values.containers.postgres }}
+  {{- include "containerEnv" .Values.server.container | indent 2 }}
+  SERVER_PORT: {{ .Values.server.container.port | quote }}
+  {{- with .Values.postgres }}
   DB_HOST: {{ $.Release.Name }}-{{ .service.hostname }}-service
   DB_PORT: {{ .service.port | quote }}
   DB_USER: {{ .container.user }}
