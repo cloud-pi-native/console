@@ -15,15 +15,14 @@ Ce projet est construit avec [NodeJS](https://nodejs.org/), [VueJS](https://vuej
 
 ### Liste des services docker
 
-| Nom du service  | Github                                             | Role                                      | Utilisé en production |
-| --------------- | -------------------------------------------------- | ----------------------------------------- | --------------------- |
-| __postgres__    | [Postgres](https://github.com/postgres/postgres)   | Base de données de l'application          | Oui                   |
-| __pgadmin__     | [Pgadmin](https://github.com/pgadmin-org/pgadmin4) | Interface d'administration de Postgres    | -                     |
-| __server__      | [NodeJS](https://github.com/nodejs/node)           | API de l'application                      | Oui                   |
-| __ansible-api__ | [NodeJS](https://github.com/nodejs/node)           | API wrapper d'Ansible                     | Oui                   |
-| __client__      | [VueJS](https://github.com/vuejs/vue)              | Interface graphique de l'application      | Oui                   |
-| __keycloak__    | [Keycloak](https://github.com/keycloak/keycloak)   | Gestionnaire d'authentification / d'accès | -                     |
-| __cypress__     | [Cypress](https://github.com/cypress-io/cypress)   | Tests de bout en bout                     | -                     |
+| Nom du service | Github                                             | Role                                      | Utilisé en production |
+| -------------- | -------------------------------------------------- | ----------------------------------------- | --------------------- |
+| __postgres__   | [Postgres](https://github.com/postgres/postgres)   | Base de données de l'application          | Oui                   |
+| __pgadmin__    | [Pgadmin](https://github.com/pgadmin-org/pgadmin4) | Interface d'administration de Postgres    | -                     |
+| __server__     | [NodeJS](https://github.com/nodejs/node)           | API de l'application                      | Oui                   |
+| __client__     | [VueJS](https://github.com/vuejs/vue)              | Interface graphique de l'application      | Oui                   |
+| __keycloak__   | [Keycloak](https://github.com/keycloak/keycloak)   | Gestionnaire d'authentification / d'accès | -                     |
+| __cypress__    | [Cypress](https://github.com/cypress-io/cypress)   | Tests de bout en bout                     | -                     |
 
 ### Architecture du dépôt
 
@@ -36,7 +35,6 @@ La gestion des dépendances est effectuée à l'aide de [pnpm](https://pnpm.io/)
 
 ```shell
 ├── apps
-│   ├── ansible-api/
 │   ├── client/
 │   └── server/
 ├── packages
