@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "node --watch src/server.js",
+    "dev": "node  --inspect=0.0.0.0 --watch src/server.js",
     "lint": "eslint . --ext .js,.cjs,.ts",
     "format": "eslint . --ext .js,.cjs,.ts --fix",
     "start": "node src/server.js",
