@@ -1,13 +1,16 @@
-{{- range $key, $val := .Values.containers }}
+{{ $containers := list "server" "client" "postgres" }}
+{{- range $container := $containers -}}
+{{- with index $.Values $container }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ $.Release.Name }}-{{ $key }}-service
+  name: {{ $.Release.Name }}-{{ $container }}-service
 spec:
   selector:
-    app: {{ $.Release.Name }}-{{ $key }}
+    app: {{ $.Release.Name }}-{{ $container }}
   ports:
-  - port: {{ $val.service.port }}
-    targetPort: {{ $val.container.port }}
+  - port: {{ .service.port }}
+    targetPort: {{ .container.port }}
+{{ end -}}
 {{ end -}}
