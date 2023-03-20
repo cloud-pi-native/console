@@ -92,17 +92,18 @@ describe('Add repos into project', () => {
       .should('contain', 'Echec des opérations')
   })
 
-  it('Should create a project with one external public repo', () => {
+  it('Should add an external public repo', () => {
     const repos = [{
       internalRepoName: 'repo01',
       externalRepoUrl: 'https://github.com/externalUser01/repo01.git',
+      isInfra: false,
     }]
 
     cy.addRepos(project, repos)
     cy.assertAddRepo(project, repos)
   })
 
-  it('Should create a project with one external private repo', () => {
+  it('Should add an external private repo', () => {
     const repos = [{
       internalRepoName: 'repo02',
       externalRepoUrl: 'https://github.com/externalUser02/repo02.git',
@@ -116,18 +117,10 @@ describe('Add repos into project', () => {
     cy.assertAddRepo(project, repos)
   })
 
-  it('Should create a project with two external infra repos', () => {
+  it('Should add an external public infra repo', () => {
     const repos = [{
       internalRepoName: 'repo03',
       externalRepoUrl: 'https://github.com/externalUser03/repo03.git',
-      isInfra: true,
-      isPrivate: true,
-      externalUserName: 'externalUser03',
-      externalToken: 'hoqjC1vXtABzytBIWBXsdyzubmqMYkgA',
-    },
-    {
-      internalRepoName: 'repo04',
-      externalRepoUrl: 'https://github.com/externalUser04/repo04.git',
       isInfra: true,
     }]
 
@@ -135,23 +128,14 @@ describe('Add repos into project', () => {
     cy.assertAddRepo(project, repos)
   })
 
-  it('Should create a project with multiple external repos', () => {
+  it('Should add an external private infra repo', () => {
     const repos = [{
-      internalRepoName: 'repo05',
-      externalRepoUrl: 'https://github.com/externalUser05/repo05.git',
-      isPrivate: true,
-      isInfra: false,
-      externalUserName: 'externalUser05',
-      externalToken: 'hoqjC1vXtABzytBIWBXsdyzubmqMYkgA',
-    },
-    {
-      internalRepoName: 'repo06',
-      externalRepoUrl: 'https://github.com/externalUser06/repo06.git',
-    },
-    {
-      internalRepoName: 'repo07',
-      externalRepoUrl: 'https://github.com/externalUser07/repo07.git',
+      internalRepoName: 'repo04',
+      externalRepoUrl: 'https://github.com/externalUser04/repo04.git',
       isInfra: true,
+      isPrivate: true,
+      externalUserName: 'externalUser04',
+      externalToken: 'hoqjC1vXtABzytBIWBXsdyzubmqMYkgA',
     }]
 
     cy.addRepos(project, repos)
@@ -159,8 +143,11 @@ describe('Add repos into project', () => {
   })
 
   it('Should generate a GitLab CI for a repo', () => {
+    cy.intercept('POST', '/api/v1/projects/*/repositories').as('postRepo')
+    cy.intercept('GET', '/api/v1/projects').as('getProjects')
+
     const repo = {
-      internalRepoName: 'repo08',
+      internalRepoName: 'repo05',
       externalRepoUrl: 'https://github.com/externalUser08/repo08.git',
     }
 
@@ -197,6 +184,11 @@ describe('Add repos into project', () => {
     cy.generateGitLabCI(ciForms)
 
     cy.getByDataTestid('addRepoBtn').click()
+    cy.wait('@postRepo').its('response.statusCode').should('eq', 201)
+    cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
+    cy.getByDataTestid(`repoTile-${repo.internalRepoName}`).should('exist')
+    cy.wait(1000).reload()
+    cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
     cy.assertAddRepo(project, [repo])
   })
 
@@ -213,15 +205,6 @@ describe('Add repos into project', () => {
       },
       {
         internalRepoName: 'repo04',
-      },
-      {
-        internalRepoName: 'repo05',
-      },
-      {
-        internalRepoName: 'repo06',
-      },
-      {
-        internalRepoName: 'repo07',
       },
     ]
 
