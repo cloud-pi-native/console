@@ -60,29 +60,6 @@ services:
     networks:
       - dso-network
 
-  ansible-api:
-    restart: always
-    build:
-      context: ..
-      dockerfile: apps/ansible-api/Dockerfile
-      target: prod
-    image: dso-console/ansible-api:ci
-    container_name: dso-console_ansible-api
-    depends_on:
-      keycloak:
-        condition: service_healthy
-    ports:
-      - 8100:8100
-    volumes:
-      - ../ansible/playbooks:/dso
-    env_file:
-      - ../apps/ansible-api/env/.env.ci
-    environment:
-      CI: "true"
-      NODE_ENV: production
-    networks:
-      - dso-network
-
   client:
     build:
       context: ..

@@ -1,17 +1,21 @@
-{{- range $key, $val := .Values.containers -}}
-{{- if $val.route -}}
+{{ $containers := list "server" "client" "postgres" }}
+{{- range $container := $containers -}}
+{{- with index $.Values $container }}
+  
+{{- if .route -}}
 ---
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
-  name: {{ $.Release.Name }}-{{ $key }}-route
+  name: {{ $.Release.Name }}-{{ $container }}-route
 spec:
-  host: {{ $val.route.host }}
+  host: {{ .route.host }}
   tls:
     termination: edge
   to:
     kind: Service
-    name: {{ $.Release.Name }}-{{ $key }}-service
+    name: {{ $.Release.Name }}-{{ $container }}-service
   wildcardPolicy: None
+{{- end -}}
 {{- end -}}
 {{- end -}}

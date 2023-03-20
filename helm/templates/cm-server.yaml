@@ -23,9 +23,5 @@ data:
   KEYCLOAK_CLIENT_SECRET: {{ .client_secret_backend }}
   KEYCLOAK_REDIRECT_URI: {{ .redirect_uri }}
   {{- end }}
-  {{- with .Values.containers.ansible.service }}
-  ANSIBLE_HOST: {{ $.Release.Name }}-{{ .hostname }}-service
-  ANSIBLE_PORT: {{ .port | quote }}
-  {{- end }}
   NODE_ENV: production
   HOME: /home/node
