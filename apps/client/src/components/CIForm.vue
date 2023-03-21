@@ -109,7 +109,7 @@ watch(internalRepoName, (internalRepoName) => {
     >
       <DsfrSelect
         v-model="ciData.typeLanguage"
-        data-testid="typeLanguageSelect"
+        select-id="type-language-select"
         label="Type de l'application"
         :options="typeLanguages"
       />

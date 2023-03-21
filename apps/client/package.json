@@ -17,7 +17,8 @@
     "test": "vitest run --coverage"
   },
   "dependencies": {
-    "@gouvminint/vue-dsfr": "^2.1.1",
+    "@gouvfr/dsfr": "^1.9.0",
+    "@gouvminint/vue-dsfr": "^3.1.0",
     "axios": "^1.3.4",
     "keycloak-js": "^21.0.1",
     "oh-vue-icons": "^1.0.0-rc3",
