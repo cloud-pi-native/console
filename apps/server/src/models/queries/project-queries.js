@@ -47,6 +47,9 @@ export const getUserProjects = async (user) => {
         ...dbKeysExcluded,
       },
     ],
+    order: [
+      ['name', 'ASC'],
+    ],
   })
   return res
 }
