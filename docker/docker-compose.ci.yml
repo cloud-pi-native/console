@@ -50,7 +50,7 @@ services:
     ports:
       - 4000:4000
     volumes:
-      - ../packages/test-utils/src/imports:/app/src/init-db/imports
+      - ../packages/test-utils/src/imports:/app/src/init/db/imports
     env_file:
       - ../apps/server/env/.env.ci
     environment:

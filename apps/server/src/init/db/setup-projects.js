@@ -1,10 +1,10 @@
-import { _initializeProject, updateProjectCreated, updateProjectFailed, archiveProject, addUserToProject } from '../models/queries/project-queries.js'
-import { initializeEnvironment, updateEnvironmentCreated, updateEnvironmentFailed } from '../models/queries/environment-queries.js'
-import { setPermission } from '../models/queries/permission-queries.js'
-import { getOrganizationByName } from '../models/queries/organization-queries.js'
-import { initializeRepository, updateRepositoryCreated, updateRepositoryFailed } from '../models/queries/repository-queries.js'
-import app from '../app.js'
-import { getUserById } from '../models/queries/user-queries.js'
+import { _initializeProject, updateProjectCreated, updateProjectFailed, archiveProject, addUserToProject } from '../../models/queries/project-queries.js'
+import { initializeEnvironment, updateEnvironmentCreated, updateEnvironmentFailed } from '../../models/queries/environment-queries.js'
+import { setPermission } from '../../models/queries/permission-queries.js'
+import { getOrganizationByName } from '../../models/queries/organization-queries.js'
+import { initializeRepository, updateRepositoryCreated, updateRepositoryFailed } from '../../models/queries/repository-queries.js'
+import app from '../../app.js'
+import { getUserById } from '../../models/queries/user-queries.js'
 
 export default async (projects) => {
   app.log.info('Creating projects...')
