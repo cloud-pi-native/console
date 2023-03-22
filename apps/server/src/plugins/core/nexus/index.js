@@ -24,12 +24,17 @@ export const nexusFetch = async ({ method, path, body, codes }) => {
   return res
 }
 
+// nexus-project-provisioning
+
 export const createNexusProject = async (organization, project, email) => {
+  // search local user
   await nexusFetch({
     method: 'GET',
     path: `/security/users?userId=${organization}-${project}`,
     codes: ['200'],
   })
+
+  // get password
   let password
   try {
     password = await readVault(`/forge-mi/projects/${organization}/${project}/NEXUS`)
@@ -37,7 +42,7 @@ export const createNexusProject = async (organization, project, email) => {
     password = Math.random().toString(36).slice(-8)
   }
 
-  // create local repo maven
+  // create local repo maven snapshot
   for (const repVersion of ['release', 'snapshot']) {
     await nexusFetch({
       method: 'POST',
@@ -58,11 +63,11 @@ export const createNexusProject = async (organization, project, email) => {
           contentDisposition: 'ATTACHMENT',
         },
       },
-      codes: ['204'],
+      codes: ['201', '400'],
     })
   }
 
-  // delete maven group
+  // create maven group
   await nexusFetch({
     method: 'POST',
     path: '/repositories/maven/group',
@@ -81,7 +86,7 @@ export const createNexusProject = async (organization, project, email) => {
         ],
       },
     },
-    codes: ['201'],
+    codes: ['201', '400'],
   })
 
   // create privileges
@@ -96,7 +101,7 @@ export const createNexusProject = async (organization, project, email) => {
         format: 'maven2',
         repository: `${organization}-${project}-repository-${privilege}`,
       },
-      codes: ['201'],
+      codes: ['201', '400'],
     })
   }
 
@@ -114,10 +119,10 @@ export const createNexusProject = async (organization, project, email) => {
         `${organization}-${project}-privilege-group`,
       ],
     },
-    codes: ['200'],
+    codes: ['200', '400'],
   })
 
-  // createUser
+  // create local user
   await nexusFetch({
     method: 'POST',
     path: '/security/users',
@@ -130,7 +135,7 @@ export const createNexusProject = async (organization, project, email) => {
       status: 'active',
       roles: [`${organization}-${project}-ID`],
     },
-    codes: ['204'],
+    codes: ['200', '400'],
   })
 
   await writeVault(`/forge-mi/projects/${organization}/${project}/NEXUS`, {
@@ -139,12 +144,17 @@ export const createNexusProject = async (organization, project, email) => {
   })
 }
 
+// nexus-project-delete
+
 export const deleteNexusProject = async (organization, project, email) => {
+  // search local user
   await nexusFetch({
     method: 'GET',
     path: `/security/users?userId=${organization}-${project}`,
     codes: ['200'],
   })
+
+  // get password
   let password
   try {
     password = await readVault(`/forge-mi/projects/${organization}/${project}/NEXUS`)
@@ -181,10 +191,10 @@ export const deleteNexusProject = async (organization, project, email) => {
   await nexusFetch({
     method: 'DELETE',
     path: `/security/roles/${organization}-${project}-ID`,
-    codes: ['404'],
+    codes: ['204', '404'],
   })
 
-  // createUser
+  // delete user
   await nexusFetch({
     method: 'DELETE',
     path: `/security/users/${organization}-${project}`,
