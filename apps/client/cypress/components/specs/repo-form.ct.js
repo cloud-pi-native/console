@@ -1,6 +1,9 @@
 import VueDsfr from '@gouvminint/vue-dsfr'
 import { createPinia } from 'pinia'
 import '@gouvminint/vue-dsfr/styles'
+import '@gouvfr/dsfr/dist/dsfr.min.css'
+import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
+import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@/main.css'
 import * as icons from '@/icons.js'
 import RepoForm from '@/components/RepoForm.vue'
@@ -46,7 +49,7 @@ describe('RepoForm.vue', () => {
 
     cy.get('h1').should('contain', 'Ajouter un dépôt au projet')
       .getByDataTestid('repoFieldset').should('have.length', 1)
-      .getByDataTestid('typeLanguageSelect').should('not.be.visible')
+      .get('select#type-language-select').should('not.be.visible')
       .getByDataTestid('internalRepoNameInput').should('have.value', props.repo.internalRepoName)
       .getByDataTestid('externalRepoUrlInput').should('have.value', props.repo.externalRepoUrl)
       .getByDataTestid('privateRepoCbx').find('input[type="checkbox"]').should('be.checked')
@@ -61,8 +64,8 @@ describe('RepoForm.vue', () => {
       .getByDataTestid('addRepoBtn').should('be.enabled')
       .getByDataTestid('cancelRepoBtn').should('be.enabled')
       .getByDataTestid('gitlabCIAccordion').click()
-      .getByDataTestid('typeLanguageSelect').should('be.visible')
-      .find('select').select('node')
+      .get('select#type-language-select').should('be.visible')
+      .select('node')
       .getByDataTestid('nodeVersionInput').type('18.1.1')
       .getByDataTestid('nodeInstallInput').type('npm install')
       .getByDataTestid('nodeBuildInput').type('npm build')

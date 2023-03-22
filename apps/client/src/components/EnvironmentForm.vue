@@ -93,7 +93,7 @@ onMounted(() => {
     <DsfrSelect
       v-if="props.isEditable"
       v-model="localEnvironment.name"
-      data-testid="environmentNameSelect"
+      select-id="environment-name-select"
       label="Nom de l'environnement"
       required="required"
       :disabled="!props.isEditable"

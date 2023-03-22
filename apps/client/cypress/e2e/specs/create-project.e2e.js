@@ -20,7 +20,7 @@ describe('Create Project', () => {
       .get('h1').should('contain', 'Commander un espace projet')
       .get('[data-testid^="repoFieldset-"]').should('not.exist')
       .get('p.fr-alert__description').should('contain', owner.email)
-      .getByDataTestid('organizationSelect').find('select').select(project.orgName)
+      .get('select#organization-select').select(project.orgName)
       .getByDataTestid('nameInput').type(`${project.name} ErrorSpace`)
       .getByDataTestid('nameInput').should('have.class', 'fr-input--error')
       .getByDataTestid('nameInput').clear().type(project.name)

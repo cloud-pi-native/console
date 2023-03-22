@@ -1,5 +1,8 @@
 import VueDsfr from '@gouvminint/vue-dsfr'
 import { createPinia } from 'pinia'
+import '@gouvfr/dsfr/dist/dsfr.min.css'
+import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
+import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@gouvminint/vue-dsfr/styles'
 import '@/main.css'
 import * as icons from '@/icons.js'
@@ -36,8 +39,7 @@ describe('EnvironmentForm.vue', () => {
 
     cy.get('h1').should('contain', 'Ajouter un environnement au projet')
       .getByDataTestid('environmentFieldset').should('have.length', 1)
-      .getByDataTestid('environmentNameSelect')
-      .find('select')
+      .get('select#environment-name-select')
       .should('have.value', props.environment.name)
       .getByDataTestid('addEnvironmentBtn').should('be.enabled')
       .getByDataTestid('cancelEnvironmentBtn').should('be.enabled')

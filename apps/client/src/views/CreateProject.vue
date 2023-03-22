@@ -94,7 +94,7 @@ onMounted(async () => {
     />
     <DsfrSelect
       v-model="project.organization"
-      data-testid="organizationSelect"
+      select-id="organization-select"
       required
       label="Nom de l'organisation"
       label-visible
