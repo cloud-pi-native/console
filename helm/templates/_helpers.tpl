@@ -96,6 +96,12 @@ Create the name of the service account to use
 {{ end -}}
 {{ end -}}
 
+{{- define "servicesEnv" -}}
+{{ range $key, $val := .services }}
+{{ $key }}: {{ $val | quote -}}
+{{ end -}}
+{{ end -}}
+
 {{- define "ressourceName" }}
 {{- if . -}}
 {{- $.Release.Name -}}-
