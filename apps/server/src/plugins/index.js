@@ -16,8 +16,10 @@ const executeStep = async (step, payload) => {
   const fns = names.map(name => Promise.resolve(step[name](payload)))
   const results = await Promise.all(fns)
   names.forEach((name, index) => {
+    if (results[index].status.result === 'KO') payload.failed = true
     payload[name] = results[index]
   })
+
   return payload
 }
 
