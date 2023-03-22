@@ -1,5 +1,5 @@
 # Base stage
-FROM docker.io/node:18.14.2-bullseye-slim as base
+FROM docker.io/node:18.14.2-bullseye-slim AS base
 
 RUN apt-get update -y && \
   apt-get install python3 python3-pip libsasl2-dev python-dev libldap2-dev libssl-dev git -y && \
@@ -18,7 +18,7 @@ COPY --chown=node:node patches/ ./patches/
 
 
 # Dev stage
-FROM base as dev
+FROM base AS dev
 
 RUN mkdir /dso
 COPY --chown=node:node ansible/playbooks/* /dso/
@@ -28,13 +28,13 @@ ENTRYPOINT [ "pnpm", "--filter", "ansible-api", "run", "dev"]
 
 
 # Build stage
-FROM base as build
+FROM base AS build
 
 RUN pnpm --filter ansible-api --prod deploy build
 
 
 # Prod stage
-FROM docker.io/node:18.14.2-bullseye-slim as prod
+FROM docker.io/node:18.14.2-bullseye-slim AS prod
 
 WORKDIR /app
 RUN chown node:node /app

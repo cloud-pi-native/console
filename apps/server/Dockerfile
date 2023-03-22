@@ -1,5 +1,5 @@
 # Base stage
-FROM docker.io/node:18.14.2-bullseye-slim as base
+FROM docker.io/node:18.14.2-bullseye-slim AS base
 
 RUN npm install --location=global pnpm
 WORKDIR /app
@@ -12,7 +12,7 @@ COPY --chown=node:root patches/ ./patches/
 
 
 # Dev stage
-FROM base as dev
+FROM base AS dev
 
 USER node
 RUN pnpm install
@@ -20,13 +20,13 @@ ENTRYPOINT [ "pnpm", "--filter", "server", "run", "dev" ]
 
 
 # Build stage
-FROM base as build
+FROM base AS build
 
 RUN pnpm --filter server --prod deploy build
 
 
 # Prod stage
-FROM docker.io/node:18.14.2-bullseye-slim as prod
+FROM docker.io/node:18.14.2-bullseye-slim AS prod
 
 RUN mkdir -p /home/node/logs && chmod 777 -R /home/node/logs
 WORKDIR /app

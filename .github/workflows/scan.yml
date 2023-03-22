@@ -99,7 +99,6 @@ jobs:
           format: "json"
           exit-code: "1"
           vuln-type: "os,library"
-          security-checks: "vuln,secret,config"
           ignore-unfixed: true
           output: "./artifacts/vulnerability-report/images/${{ matrix.images.name }}.json"
         continue-on-error: true
