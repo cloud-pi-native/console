@@ -1,13 +1,20 @@
+import '@gouvfr/dsfr/dist/dsfr.min.css'
+import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
+import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@gouvminint/vue-dsfr/styles'
+
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import { keycloakInit } from './utils/keycloak/keycloak.js'
+
 import VueDsfr from '@gouvminint/vue-dsfr'
-import 'virtual:windi.css'
+
 import App from './App.vue'
 import router from './router/index.js'
 import * as icons from './icons.js'
+
+import 'virtual:windi.css'
 import './main.css'
-import { keycloakInit } from './utils/keycloak/keycloak.js'
 
 (async () => {
   try {

@@ -91,10 +91,14 @@ Create the name of the service account to use
 {{ end -}}
 
 {{- define "containerEnv" -}}
-{{- if .env }}
-{{- range $name, $value := .env }}
-{{ $name }}: {{ $value | quote }}
+{{ range $key, $val := .env }}
+{{ $key }}: {{ $val | quote -}}
 {{ end -}}
+{{ end -}}
+
+{{- define "servicesEnv" -}}
+{{ range $key, $val := .services }}
+{{ $key }}: {{ $val | quote -}}
 {{ end -}}
 {{ end -}}
 

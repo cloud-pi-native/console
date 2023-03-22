@@ -24,8 +24,9 @@ export default defineConfig({
     },
     fs: {
       allow: [
-        '../../packages/shared',
-        '../..',
+        './',
+        '../../packages',
+        '../../node_modules',
       ],
     },
   },

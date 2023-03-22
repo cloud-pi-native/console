@@ -39,8 +39,10 @@ import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import { ansibleHost, ansiblePort } from '../utils/env.js'
 import { projectSchema } from 'shared/src/schemas/project.js'
-import { replaceNestedKeys, lowercaseFirstLetter } from '../utils/queries-tools.js'
 import { addLogs } from '../models/queries/log-queries.js'
+import { calcProjectNameMaxLength } from 'shared/src/utils/functions.js'
+import { getServices } from '../utils/services.js'
+import { lowercaseFirstLetter, replaceNestedKeys } from '../utils/queries-tools.js'
 
 // GET
 export const getUserProjectsController = async (req, res) => {
@@ -58,7 +60,10 @@ export const getUserProjectsController = async (req, res) => {
     if (!projects.length) return send200(res, [])
 
     projects = projects.filter(project => project.status !== 'archived')
-    projects.map(project => replaceNestedKeys(project, lowercaseFirstLetter))
+      .map(project => project.get({ plain: true }))
+      .map(project => replaceNestedKeys(project, lowercaseFirstLetter))
+      .map(project => ({ ...project, services: getServices(project) }))
+
     return send200(res, projects)
   } catch (error) {
     const message = `Projets non trouvés: ${error?.message}`
@@ -66,6 +71,7 @@ export const getUserProjectsController = async (req, res) => {
       ...getLogInfos(),
       description: message,
       error: error?.message,
+      trace: error?.trace,
     })
     send500(res, message)
   }
@@ -135,7 +141,8 @@ export const createProjectController = async (req, res) => {
   try {
     owner = await getOrCreateUser({ id: user.id, email: user?.email, firstName: user?.firstName, lastName: user?.lastName })
 
-    await projectSchema.validateAsync(data)
+    const organization = await getOrganizationById(data.organization)
+    await projectSchema.validateAsync(data, { context: { projectNameMaxLength: calcProjectNameMaxLength(organization.name) } })
 
     project = await getProject({ name: data.name, organization: data.organization })
     if (project?.status === 'archived') throw new Error(`"${data.name}" est archivé et n'est plus disponible`)

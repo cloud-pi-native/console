@@ -62,7 +62,7 @@ const addUserToProject = async () => {
   newUser.value.lastName = newUser.value.email.split('.')[1].split('@')[0]
 
   const keysToValidate = ['id', 'email', 'firstName', 'lastName']
-  const errorSchema = schemaValidator(userSchema, newUser.value, keysToValidate)
+  const errorSchema = schemaValidator(userSchema, newUser.value, { keysToValidate })
   if (Object.keys(errorSchema).length || isUserAlreadyInTeam.value) return
   try {
     await projectUserStore.addUserToProject(newUser.value)

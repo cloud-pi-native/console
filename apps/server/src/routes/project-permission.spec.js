@@ -80,6 +80,7 @@ describe('Project routes', () => {
       expect(response.statusCode).toEqual(200)
       expect(response.json()).toEqual(randomDbSetup.project.environments[0].permissions[0])
     })
+
     it('Should not retrieve permissions for an environment if requestor is not member', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
@@ -123,6 +124,7 @@ describe('Project routes', () => {
       expect(response.json()).toBeDefined()
       expect(response.json()).toMatchObject(newPermission)
     })
+
     it('Should not set a permission if Vous n\'êtes pas membre du projet', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const newPermission = randomDbSetup.project.environments[0].permissions[0]
@@ -171,6 +173,7 @@ describe('Project routes', () => {
       expect(response.json()).toBeDefined()
       expect(response.json()).toMatchObject(permissionToUpdate)
     })
+
     it('Should not update owner permission', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const permissionToUpdate = randomDbSetup.project.environments[0].permissions[0]
@@ -193,6 +196,7 @@ describe('Project routes', () => {
       expect(response.statusCode).toEqual(500)
       expect(response.body).toEqual('Cannot update permissions : La permission du owner du projet ne peut être modifiée')
     })
+
     it('Should not update a permission if not permitted on given environment', async () => {
       const randomDbSetup = createRandomDbSetup({ nbUsers: 3 })
       const permissionToUpdate = randomDbSetup.project.environments[0].permissions[1]
@@ -239,6 +243,7 @@ describe('Project routes', () => {
 
       expect(response.statusCode).toEqual(200)
     })
+
     it('Should not delete owner permission', async () => {
       const randomDbSetup = createRandomDbSetup({ nbUsers: 2 })
       const requestorPermission = randomDbSetup.project.environments[0].permissions[1]
@@ -261,6 +266,7 @@ describe('Project routes', () => {
       expect(response.statusCode).toEqual(500)
       expect(response.body).toEqual('Cannot delete permissions : La permission du owner du projet ne peut être supprimée')
     })
+
     it('Should not delete permission if not permitted on given environment', async () => {
       const randomDbSetup = createRandomDbSetup({ nbUsers: 3 })
       const removedPermission = randomDbSetup.project.environments[0].permissions[1]

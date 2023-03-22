@@ -4,6 +4,7 @@ import { useProjectStore } from '@/stores/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 import DsoHome from '@/views/DsoHome.vue'
+import ServicesHealth from '@/views/ServicesHealth.vue'
 import CreateProject from '@/views/CreateProject.vue'
 import ManageEnvironments from '@/views/projects/ManageEnvironments.vue'
 import DsoProjects from '@/views/projects/DsoProjects.vue'
@@ -41,6 +42,11 @@ const routes = [
     path: '/',
     name: 'Home',
     component: DsoHome,
+  },
+  {
+    path: '/services-health',
+    name: 'ServicesHealth',
+    component: ServicesHealth,
   },
   {
     path: '/projects',

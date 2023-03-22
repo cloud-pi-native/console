@@ -44,9 +44,7 @@ Cypress.Commands.add('createProject', (project) => {
     .get('h1').should('contain', 'Commander un espace projet')
     .get('[data-testid^="repoFieldset-"]').should('not.exist')
     .get('p.fr-alert__description').should('contain', owner.email)
-    .getByDataTestid('organizationSelect').find('select').select(newProject.orgName)
-    .getByDataTestid('nameInput').type(`${newProject.name} ErrorSpace`)
-    .getByDataTestid('nameInput').should('have.class', 'fr-input--error')
+    .get('select#organization-select').select(newProject.orgName)
     .getByDataTestid('nameInput').clear().type(newProject.name)
     .getByDataTestid('nameInput').should('not.have.class', 'fr-input--error')
   cy.getByDataTestid('createProjectBtn').should('be.enabled').click()
@@ -110,7 +108,7 @@ Cypress.Commands.add('addRepos', (project, repos) => {
     .url().should('contain', '/repositories')
 
   newRepos.forEach((repo) => {
-    cy.getByDataTestid('addRepoLink').click({ timeout: 30_000 })
+    cy.getByDataTestid('addRepoLink').click()
       .get('h1').should('contain', 'Ajouter un dépôt au projet')
       .getByDataTestid('internalRepoNameInput').type(repo.internalRepoName)
       .getByDataTestid('externalRepoUrlInput').clear().type(repo.externalRepoUrl)
@@ -129,7 +127,7 @@ Cypress.Commands.add('addRepos', (project, repos) => {
     cy.wait('@postRepo').its('response.statusCode').should('eq', 201)
     cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
     cy.getByDataTestid(`repoTile-${repo.internalRepoName}`).should('exist')
-    cy.reload()
+    cy.wait(1000).reload()
     cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
   })
 })
@@ -182,8 +180,7 @@ Cypress.Commands.add('addEnvironment', (project, environments) => {
   environments.forEach((environment) => {
     cy.getByDataTestid('addEnvironmentLink').click()
       .get('h1').should('contain', 'Ajouter un environnement au projet')
-      .getByDataTestid('environmentNameSelect')
-      .find('select')
+      .get('select#environment-name-select')
       .select(environment)
 
     cy.getByDataTestid('addEnvironmentBtn').click()
@@ -307,8 +304,8 @@ Cypress.Commands.add('generateGitLabCI', (ciForms) => {
     if (ciForm.language === 'node') version = `BUILD_IMAGE_NAME: node:${ciForm.version}`
     if (ciForm.language === 'python') version = `BUILD_IMAGE_NAME: maven:3.8-openjdk-${ciForm.version}`
 
-    cy.getByDataTestid('typeLanguageSelect')
-      .find('select').select(`${ciForm.language}`)
+    cy.get('select#type-language-select')
+      .select(`${ciForm.language}`)
 
     if (ciForm.language === 'node') {
       cy.getByDataTestid('nodeVersionInput').clear().type(`${ciForm.version}`)
@@ -341,6 +338,20 @@ Cypress.Commands.add('assertClipboard', (value) => {
     win.navigator.clipboard.readText().then((text) => {
       expect(text).to.contain(value)
     })
+  })
+})
+
+Cypress.Commands.add('getServicesResponse', () => {
+  cy.wait('@getServices').its('response').then(response => {
+    const services = response.body
+    services.map(service =>
+      cy.getByDataTestid(`${service.id}-info`).should('contain', `${service.code} - ${service.message}`),
+    )
+    if (services.find(service => service.code >= 400)) {
+      cy.getByDataTestid('services-health-badge').should('contain', 'Un ou plusieurs services dysfonctionnent')
+    } else {
+      cy.getByDataTestid('services-health-badge').should('contain', 'Tous les services fonctionnent')
+    }
   })
 })
 

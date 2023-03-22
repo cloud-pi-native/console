@@ -99,36 +99,36 @@ Ce dépôt utilise des fichiers docker-compose, ils sont listés dans le dossier
 - [docker-compose.ci.yml](./ci/docker/docker-compose.ci.yml) pour les tests e2e sans interface graphique
 - [docker-compose.prod.yml](./ci/docker/docker-compose.prod.yml) pour la construction des images docker
 
-## Contributions
-
-Les commits doivent suivre la spécification des [Commits Conventionnels](https://www.conventionalcommits.org/en/v1.0.0/), il est possible d'ajouter l'[extension VSCode](https://github.com/vivaxy/vscode-conventional-commits) pour faciliter la création des commits.
-
-Une PR doit être faite avec une branche à jour avec la branche develop en rebase (et sans merge) avant demande de fusion, et la fusion doit être demandée dans develop.
-
 ## Configuration du Keycloak
 
-Pour pouvoir gérer les droits utilisateurs des services le pod `server` doit accèder aux groupes des users. Cela signifie modifier le clientScope `profile`:  
+Pour pouvoir gérer les droits utilisateurs des services le pod `server` doit accéder aux groupes des users. Cela signifie modifier le clientScope `profile`:  
 * Onglet `Mappers`
-* `Add Mappers` -> `By configuration` -> `Group Membership`
+* `Add Mappers > By configuration > Group Membership`
   * Name: `groups`
   * Token Claim Name: `groups`
-  * Full group path: `Off`
-  * Add to ID token: `On`
-  * Add to access token: `On`
-  * Add to userinfo: `Off`
+  * Full group path: `off`
+  * Add to ID token: `on`
+  * Add to access token: `on`
+  * Add to userinfo: `off`
 
 En environnement de dev l'import par défaut prévoit déjà la modification
 
 ## Tableau des ressources, terminologie
 | Console Cloud Pi | Projet                       | Environnement | Dépots                                  | Utilisateur / membre |
 | ---------------- | ---------------------------- | ------------- | --------------------------------------- | -------------------- |
-| **Openshift**        |                              | Namespace     |                                         |                      |
-| **ArgoCD**           |                              |               | (infra) Secret, AppProject, Application |                      |
-| **Gitlab**           | Group                        |               | Repository (Dépôt)                      | User                 |
-| **Quay**             | Organization                 |               | Repository *                            |                      |
-| **Ldap**             | Group                        |               |                                         | User / memberof      |
-| **Keycloak**         |                              | Group         |                                         | User / member        |
-| **Sonar**            | User                         |               |                                         |                      |
-| **Nexus**            | Repositories, role, user ... |               |                                         |                      |
+| **Openshift**    |                              | Namespace     |                                         |                      |
+| **ArgoCD**       |                              |               | (infra) Secret, AppProject, Application |                      |
+| **Gitlab**       | Group                        |               | Repository (Dépôt)                      | User                 |
+| **Quay**         | Organization                 |               | Repository *                            |                      |
+| **Ldap**         | Group                        |               |                                         | User / memberof      |
+| **Keycloak**     |                              | Group         |                                         | User / member        |
+| **Sonar**        | User                         |               |                                         |                      |
+| **Nexus**        | Repositories, role, user ... |               |                                         |                      |
 
  * N'est pas crée par la console mais par le produit de la CI
+
+## Contributions
+
+Les commits doivent suivre la spécification des [Commits Conventionnels](https://www.conventionalcommits.org/en/v1.0.0/), il est possible d'ajouter l'[extension VSCode](https://github.com/vivaxy/vscode-conventional-commits) pour faciliter la création des commits.
+
+Une PR doit être faite avec une branche à jour avec la branche develop en rebase (et sans merge) avant demande de fusion, et la fusion doit être demandée dans develop.

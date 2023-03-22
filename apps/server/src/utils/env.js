@@ -1,3 +1,7 @@
+import * as dotenv from 'dotenv'
+
+dotenv.config()
+
 export const isDev = process.env.NODE_ENV === 'development'
 
 export const isTest = process.env.NODE_ENV === 'test'
@@ -43,3 +47,15 @@ export const playbookDir = process.env.PLAYBOOK_DIR?.endsWith('/')
 export const adminsUserId = process.env.ADMIN_KC_USER_ID ? process.env.ADMIN_KC_USER_ID.split(',') : []
 
 export const encryptionKey = process.env.ENCRYPTION_KEY
+
+export const argocdUrl = process.env.ARGOCD_URL
+
+export const gitlabUrl = process.env.GITLAB_URL
+
+export const nexusUrl = process.env.NEXUS_URL
+
+export const quayUrl = process.env.QUAY_URL
+
+export const sonarqubeUrl = process.env.SONARQUBE_URL
+
+export const vaultUrl = process.env.VAULT_URL

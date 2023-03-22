@@ -25,15 +25,6 @@ export const allOrganizations = [
   },
 ]
 
-export const allServices = [
-  'argocd',
-  'gitlab',
-  'nexus',
-  'quay',
-  'sonarqube',
-  'vault',
-]
-
 export const allStatus = [
   'initializing',
   'created',
