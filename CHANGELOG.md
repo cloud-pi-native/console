@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.3.0](https://github.com/dnum-mi/dso-console/compare/v2.2.1...v2.3.0) (2023-03-22)
+
+
+### Features
+
+* :alien: fetch services to get their statuses ([2febba2](https://github.com/dnum-mi/dso-console/commit/2febba22bbed8355d2ea516cd232f6c47ca1a212))
+* :art: review tobi ([2febba2](https://github.com/dnum-mi/dso-console/commit/2febba22bbed8355d2ea516cd232f6c47ca1a212))
+* :monocle_face: sort projects by ASC name ([ccb7fbb](https://github.com/dnum-mi/dso-console/commit/ccb7fbb5066da6ebc1776a893c86d8d80a292856))
+* :sparkles: build project services url in api ([2173f8a](https://github.com/dnum-mi/dso-console/commit/2173f8abade9848c83cc68e4a68da02982d4a887))
+* :sparkles: new page dedicated to services ([2febba2](https://github.com/dnum-mi/dso-console/commit/2febba22bbed8355d2ea516cd232f6c47ca1a212))
+
+
+### Bug Fixes
+
+* :bug: fix container env ([f9fd457](https://github.com/dnum-mi/dso-console/commit/f9fd45715d94789e02d8c88991b02fe9831e4460))
+
 ## [2.2.1](https://github.com/dnum-mi/dso-console/compare/v2.2.0...v2.2.1) (2023-03-14)
 
 
