@@ -62,7 +62,8 @@ export const getUserProjectsController = async (req, res) => {
     projects = projects.filter(project => project.status !== 'archived')
       .map(project => project.get({ plain: true }))
       .map(project => replaceNestedKeys(project, lowercaseFirstLetter))
-      .map(project => getServices(project))
+      .map(project => ({ ...project, services: getServices(project) }))
+
     return send200(res, projects)
   } catch (error) {
     const message = `Projets non trouvés: ${error?.message}`
@@ -70,6 +71,7 @@ export const getUserProjectsController = async (req, res) => {
       ...getLogInfos(),
       description: message,
       error: error?.message,
+      trace: error?.trace,
     })
     send500(res, message)
   }

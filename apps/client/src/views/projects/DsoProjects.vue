@@ -20,8 +20,14 @@ const setProjectList = (projects) => {
   }))
 }
 
-const setSelectedProject = (project) => {
-  if (!project.locked) projectStore.setSelectedProject(project.id)
+const setSelectedProject = async (project) => {
+  if (!project.locked) {
+    try {
+      await projectStore.setSelectedProject(project.id)
+    } catch (error) {
+      snackbarStore.setMessage(error?.message, 'error')
+    }
+  }
 }
 
 const goToCreateProject = () => {

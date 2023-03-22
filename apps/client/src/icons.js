@@ -11,4 +11,5 @@ export {
   RiUserAddLine,
   RiFileSettingsLine,
   RiFileCopy2Line,
+  RiRefreshFill,
 } from 'oh-vue-icons/icons/ri/index.js'
