@@ -1,5 +1,5 @@
 # Base stage
-FROM docker.io/node:18.14.2-bullseye-slim as base
+FROM docker.io/node:18.14.2-bullseye-slim AS base
 
 RUN npm install --location=global pnpm
 WORKDIR /app
@@ -12,7 +12,7 @@ COPY --chown=node:node patches/ ./patches/
 
 
 # Dev stage
-FROM base as dev
+FROM base AS dev
 
 USER node
 RUN pnpm install --no-optional
@@ -20,7 +20,7 @@ ENTRYPOINT [ "pnpm", "--filter", "client", "run", "dev" ]
 
 
 # Build stage
-FROM base as build
+FROM base AS build
 
 RUN pnpm --filter client --no-optional deploy build
 WORKDIR /app/build
@@ -28,7 +28,7 @@ RUN npm run build
 
 
 # Prod stage
-FROM docker.io/nginx:1.22.1 as prod
+FROM docker.io/nginx:1.22.1 AS prod
 
 COPY --chown=nginx:nginx --from=build /app/build/dist /usr/share/nginx/html/
 COPY --chown=nginx:nginx ./apps/client/nginx/nginx.conf /etc/nginx/nginx.conf
