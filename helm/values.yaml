@@ -1,6 +1,14 @@
 imagePullPolicy: Always
 env: production
 
+services: # à remplacerpar l'URL de vos services
+  ARGOCD_URL: https://argo-cd.readthedocs.io/en/stable/
+  GITLAB_URL: https://gitlab.com/
+  QUAY_URL: https://quay.io/
+  NEXUS_URL: https://www.sonatype.com/products/nexus-repository/
+  SONARQUBE_URL: https://docs.sonarqube.org/
+  VAULT_URL: https://www.vaultproject.io/
+
 imageCredentials:
   registry:
   username:
@@ -40,7 +48,7 @@ containers:
       image: ghcr.io/dnum-mi/dso-console/server:2
       port: 8080
       node_env: production
-      data-configmap: 
+      data-configmap:
     service:
       port: 80
       hostname: server
