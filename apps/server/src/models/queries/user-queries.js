@@ -2,7 +2,6 @@ import { Op } from 'sequelize'
 import { sequelize } from '../../connect.js'
 import { getUserModel } from '../user.js'
 import { dbKeysExcluded } from '../../utils/queries-tools.js'
-import { adminsUserId } from '../../utils/env.js'
 
 // SELECT
 export const getUsers = async () => {
@@ -30,10 +29,7 @@ export const getOrCreateUser = async (user) => {
   delete user.groups
   const foundUser = await getUserModel().findOrCreate({
     where: { id: user.id },
-    defaults: {
-      ...user,
-      isAdmin: false,
-    },
+    defaults: user,
   })
   return foundUser[0]
 }
@@ -51,9 +47,8 @@ export const getUserByEmail = async (email) => {
 // CREATE
 export const createUser = async ({ id, email, firstName, lastName }) => {
   const user = await getUserByEmail(email)
-  const isAdmin = !!adminsUserId.includes(id)
   if (user) throw new Error('Un utilisateur avec cette adresse e-mail existe déjà')
-  return getUserModel().create({ id, email, firstName, lastName, isAdmin })
+  return getUserModel().create({ id, email, firstName, lastName })
 }
 
 // UPDATE
