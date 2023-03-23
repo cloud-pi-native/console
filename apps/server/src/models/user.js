@@ -21,11 +21,6 @@ export const getUserModel = () => User ?? (User = sequelize.define('User', {
     allowNull: false,
     unique: true,
   },
-  isAdmin: {
-    type: DataTypes.BOOLEAN,
-    allowNull: false,
-    defaultValue: false,
-  },
 }, {
   tableName: 'Users',
 }))
