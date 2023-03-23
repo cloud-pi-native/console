@@ -3,7 +3,6 @@ import { defineConfig } from 'vite'
 import WindiCSS from 'vite-plugin-windicss'
 import vue from '@vitejs/plugin-vue'
 import Markdown from 'vite-plugin-md'
-import Prism from 'markdown-it-prism'
 import emoji from 'markdown-it-emoji'
 import LinkAttributes from 'markdown-it-link-attributes'
 import { serverHost, serverPort, clientPort } from './src/utils/env.js'
@@ -46,7 +45,6 @@ export default defineConfig({
         typographer: true,
       },
       markdownItSetup (md) {
-        md.use(Prism)
         md.use(emoji)
         md.use(LinkAttributes, {
           pattern: /^https?:\/\//,
