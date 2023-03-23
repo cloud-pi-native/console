@@ -13,6 +13,11 @@ import DsoServices from '@/views/projects/DsoServices.vue'
 import DsoTeam from '@/views/projects/DsoTeam.vue'
 import DsoRepos from '@/views/projects/DsoRepos.vue'
 import DsoDoc from '@/views/DsoDoc.vue'
+import DocIntroduction from '@/views/doc/DocIntroduction.vue'
+import DocPrerequisites from '@/views/doc/DocPrerequisites.vue'
+import DocTutorials from '@/views/doc/DocTutorials.vue'
+import DocProjects from '@/views/doc/DocProjects.vue'
+import DocUtils from '@/views/doc/DocUtils.vue'
 
 const MAIN_TITLE = 'Console Cloud π Native'
 
@@ -87,6 +92,33 @@ const routes = [
     path: '/doc',
     name: 'Doc',
     component: DsoDoc,
+    children: [
+      {
+        name: 'DocIntroduction',
+        path: 'introduction',
+        component: DocIntroduction,
+      },
+      {
+        name: 'DocPrerequisites',
+        path: 'prerequisites',
+        component: DocPrerequisites,
+      },
+      {
+        name: 'DocTutorials',
+        path: 'tutorials',
+        component: DocTutorials,
+      },
+      {
+        name: 'DocProjects',
+        path: 'projects',
+        component: DocProjects,
+      },
+      {
+        name: 'DocUtils',
+        path: 'utils',
+        component: DocUtils,
+      },
+    ],
   },
 ]
 
@@ -107,15 +139,16 @@ router.beforeEach((to) => { // Cf. https://github.com/vueuse/head pour des trans
  * Redirect unlogged user to login view
  */
 router.beforeEach(async (to, _from, next) => {
-  const validPath = ['Login', 'Home', 'Doc']
+  const validPath = [/^\/$/, /^\/login$/, /^\/logout$/, /^\/doc\/.*$/]
 
   const userStore = useUserStore()
   userStore.setIsLoggedIn()
-  if (validPath.includes(to.name) || userStore.isLoggedIn) {
+  validPath.some(path => path.test(to.path))
+  if (validPath.some(path => to.path.match(path)) || userStore.isLoggedIn) {
     return next()
   }
 
-  next('Login')
+  next({ path: '/login' })
 })
 
 /**

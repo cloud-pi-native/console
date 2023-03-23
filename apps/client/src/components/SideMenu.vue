@@ -22,6 +22,7 @@ const isDarkScheme = ref(isDarkPrefered)
 const isExpanded = ref({
   mainMenu: false,
   projects: false,
+  doc: false,
 })
 
 function toggleExpand (key) {
@@ -29,10 +30,17 @@ function toggleExpand (key) {
 }
 
 watch(routePath, (routePath) => {
-  if (/projects*/.test(routePath)) {
-    isExpanded.value.projects = true
+  if (/doc*/.test(routePath)) {
+    isExpanded.value.doc = true
+    isExpanded.value.projects = false
     return
   }
+  if (/projects*/.test(routePath)) {
+    isExpanded.value.projects = true
+    isExpanded.value.doc = false
+    return
+  }
+  isExpanded.value.doc = false
   isExpanded.value.projects = false
 })
 
@@ -178,15 +186,59 @@ onMounted(() => {
           </div>
         </DsfrSideMenuList>
       </DsfrSideMenuListItem>
-      <DsfrSideMenuListItem>
-        <DsfrSideMenuLink
-          data-testid="menuDoc"
-          :active="routeName === 'Doc'"
-          to="/doc"
-        >
-          Documentation
-        </DsfrSideMenuLink>
-      </DsfrSideMenuListItem>
-    </DsfrSideMenuList>
+      <DsfrSideMenuButton
+        data-testid="menuDocBtn"
+        :expanded="isExpanded.doc"
+        button-label="Documentation"
+        control-id="docList"
+        @toggle-expand="toggleExpand('doc')"
+      >
+        Documentation
+      </DsfrSideMenuButton>
+      <DsfrSideMenuList
+        id="docList"
+        data-testid="menuDocList"
+        :expanded="isExpanded.doc"
+        :collapsable="true"
+      >
+        <DsfrSideMenuListItem>
+          <DsfrSideMenuLink
+            data-testid="menuDocIntroduction"
+            :active="routeName === 'DocIntroduction'"
+            to="/doc/introduction"
+          >
+            Introduction
+          </DsfrSideMenuLink>
+          <DsfrSideMenuLink
+            data-testid="menuDocPrerequisites"
+            :active="routeName === 'DocPrerequisites'"
+            to="/doc/prerequisites"
+          >
+            Prérequis
+          </DsfrSideMenuLink>
+          <DsfrSideMenuLink
+            data-testid="menuDocProjects"
+            :active="routeName === 'DocProjects'"
+            to="/doc/projects"
+          >
+            Projets
+          </DsfrSideMenuLink>
+          <DsfrSideMenuLink
+            data-testid="menuDocTutorials"
+            :active="routeName === 'DocTutorials'"
+            to="/doc/tutorials"
+          >
+            Tutoriels
+          </DsfrSideMenuLink>
+          <DsfrSideMenuLink
+            data-testid="menuDocUtils"
+            :active="routeName === 'DocUtils'"
+            to="/doc/utils"
+          >
+            Liens utiles
+          </DsfrSideMenuLink>
+        </DsfrSideMenuListItem>
+      </DsfrSideMenuList>
+    </Dsfrsidemenulist>
   </DsfrSideMenu>
 </template>
