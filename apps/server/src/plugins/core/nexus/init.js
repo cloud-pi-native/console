@@ -1,2 +1,2 @@
-export const init = (m) => {
+export const init = (register) => {
 }
