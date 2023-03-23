@@ -24,37 +24,60 @@ const executeStep = async (step, payload) => {
 }
 
 const createHook = () => {
+  const check = {}
   const pre = {}
   const main = {}
   const post = {}
+  const save = {}
+
   const execute = async (args) => {
     let payload = { args }
+    payload = await executeStep(check, payload)
+    if (payload.failed) {
+      return payload
+    }
     payload = await executeStep(pre, payload)
     payload = await executeStep(main, payload)
     payload = await executeStep(post, payload)
+    payload = await executeStep(save, payload)
     return payload
   }
 
   return {
+    check,
     pre,
     main,
     post,
+    save,
     execute,
   }
 }
 
 export const initCorePlugins = (app) => {
   const hooks = {
-    projectCreate: createHook(),
-    projectDelete: createHook(),
-    repositoryCreate: createHook(),
-    repositoryDelete: createHook(),
+    createProject: createHook(),
+    archiveProject: createHook(),
+
+    createRepository: createHook(),
+    updateRepository: createHook(),
+    deleteRepository: createHook(),
+
+    addUserToProject: createHook(),
+    updateUserProjectRole: createHook(),
+    removeUserFromProject: createHook(),
+
+    initializeEnvironment: createHook(),
+    deleteEnvironment: createHook(),
+
+    setPermission: createHook(),
+    updatePermission: createHook(),
+    deletePermission: createHook(),
   }
   const register = (name, hook, fn, step = 'main') => {
     if (!(hook in hooks)) {
-      app.log.warning({
+      app.log.warn({
         ...getLogInfos(),
-        message: `Plugin ${name} tried to register on an unknown hook`,
+        message: `Plugin ${name} tried to register on an unknown hook ${hook}`,
       })
       return
     }
@@ -70,13 +93,13 @@ export const initCorePlugins = (app) => {
     unregister,
   }
 
-  gitlabInit(pluginManager)
-  harborInit(pluginManager)
-  keycloakInit(pluginManager)
-  kubernetesInit(pluginManager)
-  nexusInit(pluginManager)
-  sonarqubeInit(pluginManager)
-  vaultInit(pluginManager)
+  gitlabInit(register)
+  harborInit(register)
+  keycloakInit(register)
+  kubernetesInit(register)
+  nexusInit(register)
+  sonarqubeInit(register)
+  vaultInit(register)
 
   return pluginManager
 }
@@ -88,7 +111,7 @@ export const initExternalPlugins = async (app, m) => {
     const plugins = readdirSync(resolve(__dirname, 'external'))
     for (const plugin of plugins) {
       const myPlugin = await import(`${pluginDir}/${plugin}/init.js`)
-      myPlugin.init(m)
+      myPlugin.init(m.register)
     }
   } catch (err) {
     app.log.error(err)
