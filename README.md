@@ -49,6 +49,8 @@ La gestion des dépendances est effectuée à l'aide de [pnpm](https://pnpm.io/)
  ...
 ```
 
+Le dépôt contient un dossier [helm](/helm/) qui contient les templates [Helm](https://helm.sh/) de déploiement de la console.
+
 ## Développement
 
 Lancez les commandes suivantes dans votre terminal :
@@ -60,11 +62,11 @@ git clone https://github.com/dnum-mi/dso-console.git
 # Se rendre dans le dossier du projet
 cd dso-console
 
-# Installer les dépendances du projet
-pnpm install
-
 # Copier les fichiers d'exemples
 ./ci/scripts/init-env.sh
+
+# Installer les dépendances du projet
+pnpm install
 
 # Construire les images docker
 pnpm run dev:build
@@ -77,13 +79,15 @@ De nombreuses commandes sont disponible dans le fichier `package.json` à la rac
 
 ### Accès aux services
 
-Interface graphique (Client): <http://localhost:8080>
+- Interface graphique (Client): <http://localhost:8080>
+  (username: `test`, password: `test`)
 
-Serveur (API) <http://localhost:4000>
+- Serveur (API) <http://localhost:4000>
 
-Interface d'administration de base de données: <http://localhost:8081>
+- Interface d'administration de base de données: <http://localhost:8081>
 
-Interface d'administration du serveur keycloak: <http://localhost:8090>
+- Interface d'administration du serveur keycloak: <http://localhost:8090>
+  (username: `admin`, password: `admin`)
 
 ## Gestion des conteneurs docker
 
@@ -97,31 +101,35 @@ Ce dépôt utilise des fichiers docker-compose, ils sont listés dans le dossier
 
 ## Configuration du Keycloak
 
+*Il est important de suivre cette section pour que la console puisse correctement fonctionner avec le keycloak qui lui est lié.*
+
 Pour pouvoir gérer les droits utilisateurs des services le pod `server` doit accéder aux groupes des users. Cela signifie modifier le clientScope `profile`:  
-* Onglet `Mappers`
-* `Add Mappers > By configuration > Group Membership`
-  * Name: `groups`
-  * Token Claim Name: `groups`
-  * Full group path: `off`
-  * Add to ID token: `on`
-  * Add to access token: `on`
-  * Add to userinfo: `off`
+
+- Onglet `Mappers`
+- `Add Mappers > By configuration > Group Membership`
+  - Name: `groups`
+  - Token Claim Name: `groups`
+  - Full group path: `off`
+  - Add to ID token: `on`
+  - Add to access token: `on`
+  - Add to userinfo: `off`
 
 En environnement de dev l'import par défaut prévoit déjà la modification
 
 ## Tableau des ressources, terminologie
+
 | Console Cloud Pi | Projet                       | Environnement | Dépots                                  | Utilisateur / membre |
 | ---------------- | ---------------------------- | ------------- | --------------------------------------- | -------------------- |
-| **Openshift**    |                              | Namespace     |                                         |                      |
-| **ArgoCD**       |                              |               | (infra) Secret, AppProject, Application |                      |
-| **Gitlab**       | Group                        |               | Repository (Dépôt)                      | User                 |
-| **Quay**         | Organization                 |               | Repository *                            |                      |
-| **Ldap**         | Group                        |               |                                         | User / memberof      |
-| **Keycloak**     |                              | Group         |                                         | User / member        |
-| **Sonar**        | User                         |               |                                         |                      |
-| **Nexus**        | Repositories, role, user ... |               |                                         |                      |
+| __Openshift__    |                              | Namespace     |                                         |                      |
+| __ArgoCD__       |                              |               | (infra) Secret, AppProject, Application |                      |
+| __Gitlab__       | Group                        |               | Repository (Dépôt)                      | User                 |
+| __Quay__         | Organization                 |               | Repository [1]                          |                      |
+| __Ldap__         | Group                        |               |                                         | User / memberof      |
+| __Keycloak__     |                              | Group         |                                         | User / member        |
+| __Sonar__        | User                         |               |                                         |                      |
+| __Nexus__        | Repositories, role, user ... |               |                                         |                      |
 
- * N'est pas crée par la console mais par le produit de la CI
+[1] : *N'est pas crée par la console mais par le produit de la CI*
 
 ## Contributions
 
