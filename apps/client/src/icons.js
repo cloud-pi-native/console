@@ -12,4 +12,6 @@ export {
   RiFileSettingsLine,
   RiFileCopy2Line,
   RiRefreshFill,
+  RiSunLine,
+  RiMoonClearLine,
 } from 'oh-vue-icons/icons/ri/index.js'
