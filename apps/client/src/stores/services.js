@@ -4,7 +4,7 @@ import { ref } from 'vue'
 
 export const useServiceStore = defineStore('service', () => {
   const servicesHealth = ref({})
-  const services = ref({})
+  const services = ref([])
 
   const checkServiceHealth = async () => {
     servicesHealth.value = {
