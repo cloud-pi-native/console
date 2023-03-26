@@ -6,14 +6,14 @@ export const useServiceStore = defineStore('service', () => {
   const servicesHealth = ref({})
   const services = ref([])
 
-  const checkServiceHealth = async () => {
+  const checkServicesHealth = async () => {
     servicesHealth.value = {
       message: 'Vérification de l\'état des services...',
       status: 'info',
     }
-    services.value = {}
+    services.value = []
 
-    services.value = await api.checkServiceHealth()
+    services.value = await api.checkServicesHealth()
     servicesHealth.value = services.value
       .map(service => service.code)
       .find(code => code >= 400)
@@ -30,6 +30,6 @@ export const useServiceStore = defineStore('service', () => {
   return {
     servicesHealth,
     services,
-    checkServiceHealth,
+    checkServicesHealth,
   }
 })

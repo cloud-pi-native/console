@@ -25,7 +25,7 @@ describe('Counter Store', () => {
     expect(serviceStore.servicesHealth).toMatchObject({})
     expect(serviceStore.services).toMatchObject([])
 
-    await serviceStore.checkServiceHealth()
+    await serviceStore.checkServicesHealth()
 
     expect(apiClient.get).toHaveBeenCalledTimes(1)
     expect(apiClient.get.mock.calls[0][0]).toBe('/services')
@@ -44,7 +44,7 @@ describe('Counter Store', () => {
     expect(serviceStore.servicesHealth).toMatchObject({})
     expect(serviceStore.services).toMatchObject([])
 
-    await serviceStore.checkServiceHealth()
+    await serviceStore.checkServicesHealth()
 
     expect(apiClient.get).toHaveBeenCalledTimes(1)
     expect(apiClient.get.mock.calls[0][0]).toBe('/services')

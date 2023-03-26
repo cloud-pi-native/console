@@ -39,7 +39,7 @@ export const archiveProject = async (projectId) => {
 }
 
 // Services
-export const checkServiceHealth = async () => {
+export const checkServicesHealth = async () => {
   const response = await apiClient.get('/services')
   return response.data
 }
