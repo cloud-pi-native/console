@@ -94,13 +94,11 @@ export const createNexusProject = async (payload) => {
       url: `/security/users?userId=${projectName}`,
     })
     if (getUser.data.length) {
-      console.log(getUser.data)
       res.user = getUser.data[0]
       res.status = { result: 'OK', message: 'User already exist' }
       return res
     }
 
-    console.log('là')
     const newPwd = generate({
       length: 30,
       numbers: true,
@@ -120,7 +118,6 @@ export const createNexusProject = async (payload) => {
         roles: [`${projectName}-ID`],
       },
     })
-    console.log(newUser)
     res.vault = [{
       name: 'NEXUS',
       data: {
@@ -138,66 +135,75 @@ export const createNexusProject = async (payload) => {
   }
 }
 
-export const deleteNexusProject = async (organization, project, email) => {
-  return {
-    status: {
-      result: 'OK',
-    },
-  }
-  // await nexusFetch({
+export const deleteNexusProject = async (payload) => {
+  const { organization, name } = payload.args
+  const projectName = `${organization}-${name}`
+  // await axios({
   //   method: 'GET',
-  //   path: `/security/users?userId=${organization}-${project}`,
+  //   url: `/security/users?userId=${projectName}`,
   //   codes: ['200'],
   // })
-  // let password
-  // try {
-  //   password = await readVault(`/forge-mi/projects/${organization}/${project}/NEXUS`)
-  // } catch (error) {
-  //   password = Math.random().toString(36).slice(-8)
-  // }
 
-  // // delete local repo maven snapshot
-  // for (const repVersion of ['release', 'snapshot']) {
-  //   await nexusFetch({
-  //     method: 'DELETE',
-  //     path: `/repositories/${organization}-${project}-repository-${repVersion}`,
-  //     codes: ['404'],
-  //   })
-  // }
+  try {
+    // delete local repo maven snapshot
+    for (const repVersion of ['release', 'snapshot']) {
+      await axios({
+        ...axiosOptions,
+        method: 'delete',
+        url: `/repositories/${projectName}-repository-${repVersion}`,
+        validateStatus: code => code === 404 || code < 300,
+      })
+    }
 
-  // // delete maven group
-  // await nexusFetch({
-  //   method: 'DELETE',
-  //   path: `/repositories/${organization}-${project}-repository-group`,
-  //   codes: ['404'],
-  // })
+    // delete maven group
+    await axios({
+      ...axiosOptions,
+      method: 'delete',
+      url: `/repositories/${projectName}-repository-group`,
+      validateStatus: code => code === 404 || code < 300,
+    })
 
-  // // delete privileges
-  // for (const privilege of ['snapshot', 'release', 'group']) {
-  //   await nexusFetch({
-  //     method: 'DELETE',
-  //     path: `/security/privileges/${organization}-${project}-privilege-${privilege}`,
-  //     codes: ['404'],
-  //   })
-  // }
+    // delete privileges
+    for (const privilege of ['snapshot', 'release', 'group']) {
+      await axios({
+        ...axiosOptions,
+        method: 'delete',
+        url: `/security/privileges/${projectName}-privilege-${privilege}`,
+        validateStatus: code => code === 404 || code < 300,
+      })
+    }
 
-  // // delete role
-  // await nexusFetch({
-  //   method: 'DELETE',
-  //   path: `/security/roles/${organization}-${project}-ID`,
-  //   codes: ['404'],
-  // })
+    // delete role
+    await axios({
+      ...axiosOptions,
+      method: 'delete',
+      url: `/security/roles/${projectName}-ID`,
+      validateStatus: code => code === 404 || code < 300,
+    })
 
-  // // createUser
-  // await nexusFetch({
-  //   method: 'DELETE',
-  //   path: `/security/users/${organization}-${project}`,
-  //   codes: ['404'],
-  // })
+    // delete user
+    await axios({
+      ...axiosOptions,
+      method: 'delete',
+      url: `/security/users/${projectName}`,
+      validateStatus: code => code === 404 || code < 300,
+    })
 
-  // await writeVault(`/forge-mi/projects/${organization}/${project}/NEXUS`, {
-  //   NEXUS_PASSWORD: password,
-  //   NEXUS_USERNAME: `${organization}-${project}`,
-  // })
-  // await destroyVault(`/forge-mi/projects/${organization}/${project}/NEXUS`)
+    return {
+      status: {
+        result: 'OK',
+        message: 'User deleted',
+      },
+      vault: [{
+        name: 'NEXUS',
+      }],
+    }
+  } catch (error) {
+    return {
+      status: {
+        result: 'KO',
+        message: error.message,
+      },
+    }
+  }
 }
