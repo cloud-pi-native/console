@@ -37,7 +37,6 @@ import {
 } from '../models/queries/permission-queries.js'
 import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
-import { ansibleHost, ansiblePort } from '../utils/env.js'
 import { projectSchema } from 'shared/src/schemas/project.js'
 import { addLogs } from '../models/queries/log-queries.js'
 import { calcProjectNameMaxLength } from 'shared/src/utils/functions.js'
@@ -136,14 +135,15 @@ export const createProjectController = async (req, res) => {
   const data = req.body
   const user = req.session?.user
 
-  let project
+  const h = req.h.createProject.execute
   let environment
+  let project
   let owner
 
+  const organization = await getOrganizationById(data.organization)
   try {
     owner = await getOrCreateUser({ id: user.id, email: user?.email, firstName: user?.firstName, lastName: user?.lastName })
 
-    const organization = await getOrganizationById(data.organization)
     await projectSchema.validateAsync(data, { context: { projectNameMaxLength: calcProjectNameMaxLength(organization.name) } })
 
     project = await getProject({ name: data.name, organization: data.organization })
@@ -163,39 +163,58 @@ export const createProjectController = async (req, res) => {
       }),
       description: 'Project successfully created in database',
     })
+    const projectData = {
+      ...project.get({ plain: true }),
+      organization: organization.dataValues.name,
+      email: owner.email,
+    }
+    const result = await h(projectData)
+    console.log({ h_create: result.nexus.status })
+    await addLogs(result, owner.dataValues.id)
     send201(res, project)
   } catch (error) {
+    console.log(Object.keys(error))
     req.log.error({
       ...getLogInfos(),
-      description: `Projet non créé: ${error.message}`,
-      error: error.message,
-      trace: error.trace,
+      description: `Projet non créé: ${error?.message}`,
+      error: error?.message,
+      stack: error?.stack,
+      data: error.request
     })
     return send500(res, error?.message)
   }
 
   // Process api call to external service
   try {
-    const organization = await getOrganizationById(project.organization)
+    // const ansibleData = {
+    //   PROJECT_NAME: project.name,
+    //   ORGANIZATION_NAME: organization.name,
+    //   EMAIL: owner.dataValues.email,
+    //   ENV_LIST: [environment.name],
+    // }
 
-    const ansibleData = {
-      PROJECT_NAME: project.name,
-      ORGANIZATION_NAME: organization.name,
-      EMAIL: owner.dataValues.email,
-      ENV_LIST: [environment.name],
+    // if (result.failed) throw new Error('Echec de création du projet')
+    try {
+      await updateEnvironmentCreated(environment.id)
+      await setPermission({
+        userId: owner.id,
+        environmentId: environment.id,
+        level: 2,
+      })
+      await updateProjectCreated(project.id)
+      await unlockProject(project.id)
+
+      req.log.info({
+        ...getLogInfos({ projectId: project.id }),
+        description: 'Project status successfully updated in database',
+      })
+    } catch (error) {
+      req.log.error({
+        ...getLogInfos(),
+        description: 'Cannot update project status to created',
+        error: error?.message,
+      })
     }
-    const ansibleRes = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        authorization: req.headers.authorization,
-        'request-id': req.id,
-      },
-      body: JSON.stringify(ansibleData),
-    })
-    const resJson = await ansibleRes.json()
-    await addLogs(resJson, owner.dataValues.id)
-    if (resJson?.status !== 'OK') throw new Error('Echec de création du projet côté ansible')
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
@@ -309,48 +328,84 @@ export const archiveProjectController = async (req, res) => {
       PROJECT_NAME: project.name,
     }
 
-    repos?.forEach(async repo => {
-      ansibleData.REPO_DEST = repo.internalRepoName
-      const ansibleRes0 = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
-        method: 'PUT',
-        body: JSON.stringify(ansibleData),
-        headers: {
-          'Content-Type': 'application/json',
-          authorization: req.headers.authorization,
-          'request-id': req.id,
-        },
-      })
-      const res0json = await ansibleRes0.json()
-      await addLogs(res0json, userId)
-      if (res0json?.status !== 'OK') throw new Error(`Echec de suppression du repo ${repo.internalRepoName} côté ansible`)
-    })
+    // repos?.forEach(async repo => {
+    //   ansibleData.REPO_DEST = repo.internalRepoName
+    //   const ansibleRes0 = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
+    //     method: 'PUT',
+    //     body: JSON.stringify(ansibleData),
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //       authorization: req.headers.authorization,
+    //       'request-id': req.id,
+    //     },
+    //   })
+    //   const res0json = await ansibleRes0.json()
+    //   await addLogs(res0json, userId)
+    //   if (res0json?.status !== 'OK') throw new Error(`Echec de suppression du repo ${repo.internalRepoName} côté ansible`)
+    // })
 
-    ansibleData.REPO_DEST = `${project.name}-argo`
-    const ansibleRes1 = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
-      method: 'PUT',
-      body: JSON.stringify(ansibleData),
-      headers: {
-        'Content-Type': 'application/json',
-        authorization: req.headers.authorization,
-        'request-id': req.id,
-      },
-    })
-    const res1json = await ansibleRes1.json()
-    await addLogs(res1json, userId)
-    if (res1json?.status !== 'OK') throw new Error('Echec de suppression du projet-argo côté ansible')
+    // ansibleData.REPO_DEST = `${project.name}-argo`
+    // const ansibleRes1 = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
+    //   method: 'PUT',
+    //   body: JSON.stringify(ansibleData),
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //     authorization: req.headers.authorization,
+    //     'request-id': req.id,
+    //   },
+    // })
+    // const res1json = await ansibleRes1.json()
+    // await addLogs(res1json, userId)
+    // if (res1json?.status !== 'OK') throw new Error('Echec de suppression du projet-argo côté ansible')
 
-    const ansibleRes2 = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project`, {
-      method: 'PUT',
-      body: JSON.stringify(ansibleData),
-      headers: {
-        'Content-Type': 'application/json',
-        authorization: req.headers.authorization,
-        'request-id': req.id,
-      },
-    })
-    const res2Json = await ansibleRes2.json()
-    await addLogs(res2Json, userId)
-    if (res2Json?.status !== 'OK') throw new Error('Echec de suppression du projet côté ansible')
+    // const ansibleRes2 = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project`, {
+    //   method: 'PUT',
+    //   body: JSON.stringify(ansibleData),
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //     authorization: req.headers.authorization,
+    //     'request-id': req.id,
+    //   },
+    // })
+    // const res2Json = await ansibleRes2.json()
+    const hp = req.h.archiveProject.execute
+    const projectData = {
+      ...project.get({ plain: true }),
+      organization: organization.dataValues.name,
+    }
+
+    const archiveProjectResult = await hp(projectData)
+
+    await addLogs(archiveProjectResult, userId)
+    if (archiveProjectResult?.failed === true) throw new Error('Echec de suppression du projet côté ansible')
+
+    // try {
+    //   repos?.forEach(async repo => {
+    //     await deleteRepository(repo.id)
+    //   })
+    //   environments?.forEach(async environment => {
+    //     await deleteEnvironment(environment.id)
+    //   })
+    //   permissions?.forEach(async permission => {
+    //     await deletePermissionById(permission.id)
+    //   })
+    //   users?.forEach(async user => {
+    //     await deleteRoleByUserIdAndProjectId(user.id, projectId)
+    //   })
+    //   await archiveProject(projectId)
+    //   await unlockProject(projectId)
+
+    //   req.log.info({
+    //     ...getLogInfos({ projectId }),
+    //     description: 'Project archived and unlocked',
+    //   })
+    // } catch (error) {
+    //   req.log.error({
+    //     ...getLogInfos(),
+    //     description: 'Cannot unlock project',
+    //     error: error?.message,
+    //   })
+    // }
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
@@ -360,51 +415,16 @@ export const archiveProjectController = async (req, res) => {
     })
   }
 
-  // Update DB after service call
-  try {
-    repos?.forEach(async repo => {
-      await deleteRepository(repo.id)
-    })
-    environments?.forEach(async environment => {
-      await deleteEnvironment(environment.id)
-    })
-    permissions?.forEach(async permission => {
-      await deletePermissionById(permission.id)
-    })
-    users?.forEach(async user => {
-      await deleteRoleByUserIdAndProjectId(user.id, projectId)
-    })
-    await archiveProject(projectId)
-    await unlockProject(projectId)
-
-    req.log.info({
-      ...getLogInfos({ projectId }),
-      description: 'Project archived and unlocked',
-    })
-    return
-  } catch (error) {
-    req.log.error({
-      ...getLogInfos(),
-      description: 'Cannot unlock project',
-      error: error.message,
-      trace: error.trace,
-    })
-  }
-
-  try {
-    await updateProjectFailed(projectId)
-    await unlockProject(projectId)
-
-    req.log.info({
-      ...getLogInfos({ projectId }),
-      description: 'Project status successfully updated in database',
-    })
-  } catch (error) {
-    req.log.error({
-      ...getLogInfos(),
-      description: 'Cannot update project status',
-      error: error.message,
-      trace: error.trace,
-    })
+      req.log.info({
+        ...getLogInfos({ projectId }),
+        description: 'Project status successfully updated in database',
+      })
+    } catch (error) {
+      req.log.error({
+        ...getLogInfos(),
+        description: 'Cannot update project status',
+        error: error?.message,
+      })
+    }
   }
 }

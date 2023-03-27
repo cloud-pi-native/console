@@ -22,7 +22,6 @@ import {
 } from '../models/queries/users-projects-queries.js'
 import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
-import { ansibleHost, ansiblePort } from '../utils/env.js'
 import { getOrganizationById } from '../models/queries/organization-queries.js'
 import { addLogs } from '../models/queries/log-queries.js'
 
@@ -85,6 +84,7 @@ export const createRepositoryController = async (req, res) => {
   const userId = req.session?.user?.id
   const projectId = req.params?.projectId
   data.projectId = projectId
+  const h = req.h.createRepository.execute
 
   let project
   let repo
