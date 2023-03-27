@@ -13,13 +13,14 @@ export const getOrganizationsController = async (req, res) => {
       ...getLogInfos(),
       description: 'Organisations récupérées avec succès',
     })
-    return send200(res, organizations)
+    send200(res, organizations)
   } catch (error) {
     const message = 'Echec de récupération des organisations'
     req.log.error({
       ...getLogInfos(),
       description: message,
       error: error.message,
+      trace: error.trace,
     })
     send500(res, message)
   }
@@ -44,7 +45,8 @@ export const createOrganizationController = async (req, res) => {
       ...getLogInfos(),
       description: 'Echec d\'enregistrement de l\'organisation',
       error: error.message,
+      trace: error.trace,
     })
-    return send500(res, error.message)
+    send500(res, error.message)
   }
 }

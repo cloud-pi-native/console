@@ -46,6 +46,7 @@ export const getEnvironmentByIdController = async (req, res) => {
       ...getLogInfos(),
       description: `Environnement non trouvé: ${error.message}`,
       error: error.message,
+      trace: error.trace,
     })
     return send500(res, error.message)
   }
@@ -85,61 +86,58 @@ export const initializeEnvironmentController = async (req, res) => {
       ...getLogInfos(),
       description: 'Environnement non créé',
       error: error.message,
+      trace: error.trace,
     })
     return send500(res, error.message)
   }
 
+  // TODO : #133 : appel ansible + création groupe keycloak + ajout owner au groupe keycloak
   try {
-    // TODO : #133 : appel ansible + création groupe keycloak + ajout owner au groupe keycloak
-    try {
-      await updateEnvironmentCreated(env.id)
-      const ownerId = await getSingleOwnerByProjectId(projectId)
-      if (ownerId !== userId) {
-        await setPermission({
-          userId: ownerId,
-          environmentId: env.id,
-          level: 2,
-        })
-      }
+    await updateEnvironmentCreated(env.id)
+    const ownerId = await getSingleOwnerByProjectId(projectId)
+    if (ownerId !== userId) {
       await setPermission({
-        userId,
+        userId: ownerId,
         environmentId: env.id,
         level: 2,
       })
-      await unlockProject(projectId)
-
-      req.log.info({
-        ...getLogInfos({ projectId: env.id }),
-        description: 'Environment status successfully updated to created in database',
-      })
-    } catch (error) {
-      req.log.error({
-        ...getLogInfos(),
-        description: 'Cannot update environment status to created',
-        error: error.message,
-      })
     }
+    await setPermission({
+      userId,
+      environmentId: env.id,
+      level: 2,
+    })
+    await unlockProject(projectId)
+
+    req.log.info({
+      ...getLogInfos({ projectId: env.id }),
+      description: 'Environment status successfully updated to created in database',
+    })
+    return
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: 'Provisioning project with ansible failed',
-      error,
+      description: 'Cannot update environment status to created',
+      error: error.message,
+      trace: error.trace,
     })
-    try {
-      await updateEnvironmentFailed(env.id)
-      await unlockProject(projectId)
+  }
 
-      req.log.info({
-        ...getLogInfos({ projectId: env.id }),
-        description: 'Environment status successfully updated to failed in database',
-      })
-    } catch (error) {
-      req.log.error({
-        ...getLogInfos(),
-        description: 'Cannot update environment status to failed',
-        error: error.message,
-      })
-    }
+  try {
+    await updateEnvironmentFailed(env.id)
+    await unlockProject(projectId)
+
+    req.log.info({
+      ...getLogInfos({ projectId: env.id }),
+      description: 'Environment status successfully updated to failed in database',
+    })
+  } catch (error) {
+    req.log.error({
+      ...getLogInfos(),
+      description: 'Cannot update environment status to failed',
+      error: error.message,
+      trace: error.trace,
+    })
   }
 }
 
@@ -168,47 +166,44 @@ export const deleteEnvironmentController = async (req, res) => {
       ...getLogInfos(),
       description: 'Cannot update environment status',
       error: error.message,
+      trace: error.trace,
     })
     return send500(res, error.message)
   }
 
+  // TODO : #133 : appel ansible + suppression groupe keycloak (+ retirer users du groupe keycloak ?)
   try {
-    // TODO : #133 : appel ansible + suppression groupe keycloak (+ retirer users du groupe keycloak ?)
-    try {
-      await deleteEnvironment(environmentId)
-      await unlockProject(projectId)
+    await deleteEnvironment(environmentId)
+    await unlockProject(projectId)
 
-      req.log.info({
-        ...getLogInfos({ environmentId }),
-        description: 'Environment successfully deleted',
-      })
-    } catch (error) {
-      req.log.error({
-        ...getLogInfos(),
-        description: 'Cannot delete environment',
-        error: error.message,
-      })
-    }
+    req.log.info({
+      ...getLogInfos({ environmentId }),
+      description: 'Environment successfully deleted',
+    })
+    return
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: 'Provisioning project with ansible failed',
-      error,
+      description: 'Cannot delete environment',
+      error: error.message,
+      trace: error.trace,
     })
-    try {
-      await updateEnvironmentFailed(environmentId)
-      await unlockProject(projectId)
+  }
 
-      req.log.info({
-        ...getLogInfos({ environmentId }),
-        description: 'Environment status successfully updated to failed in database',
-      })
-    } catch (error) {
-      req.log.error({
-        ...getLogInfos(),
-        description: 'Cannot update environment status to failed',
-        error: error.message,
-      })
-    }
+  try {
+    await updateEnvironmentFailed(environmentId)
+    await unlockProject(projectId)
+
+    req.log.info({
+      ...getLogInfos({ environmentId }),
+      description: 'Environment status successfully updated to failed in database',
+    })
+  } catch (error) {
+    req.log.error({
+      ...getLogInfos(),
+      description: 'Cannot update environment status to failed',
+      error: error.message,
+      trace: error.trace,
+    })
   }
 }

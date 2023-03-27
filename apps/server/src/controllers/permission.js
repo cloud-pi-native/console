@@ -27,13 +27,14 @@ export const getEnvironmentPermissionsController = async (req, res) => {
       ...getLogInfos(),
       description: 'Permissions successfully retreived',
     })
-    return send200(res, permissions)
+    send200(res, permissions)
   } catch (error) {
     const message = `Permissions non trouvées: ${error.message}`
     req.log.error({
       ...getLogInfos(),
       description: message,
       error: error.message,
+      trace: error.trace,
     })
     send500(res, message)
   }
@@ -59,13 +60,14 @@ export const setPermissionController = async (req, res) => {
       ...getLogInfos(),
       description: 'Permission successfully created',
     })
-    return send201(res, permission)
+    send201(res, permission)
   } catch (error) {
     const message = `Permissions non créées : ${error.message}`
     req.log.error({
       ...getLogInfos(),
       description: message,
       error: error.message,
+      trace: error.trace,
     })
     send500(res, message)
   }
@@ -93,13 +95,14 @@ export const updatePermissionController = async (req, res) => {
       ...getLogInfos(),
       description: 'Permission successfully updated',
     })
-    return send200(res, permission)
+    send200(res, permission)
   } catch (error) {
     const message = `Cannot update permissions : ${error.message}`
     req.log.error({
       ...getLogInfos(),
       description: message,
       error: error.message,
+      trace: error.trace,
     })
     send500(res, message)
   }
@@ -129,13 +132,14 @@ export const deletePermissionController = async (req, res) => {
       ...getLogInfos({ permission }),
       description: message,
     })
-    return send200(res, permission)
+    send200(res, permission)
   } catch (error) {
     const message = `Cannot delete permissions : ${error.message}`
     req.log.error({
       ...getLogInfos(),
       description: 'Cannot delete permission',
       error: error.message,
+      trace: error.trace,
     })
     send500(res, message)
   }
