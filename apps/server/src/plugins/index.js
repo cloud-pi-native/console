@@ -2,7 +2,6 @@
 import { readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import url from 'url'
-import { getLogInfos } from '../utils/logger.js'
 import { init as gitlabInit } from './core/gitlab/init.js'
 import { init as harborInit } from './core/harbor/init.js'
 import { init as keycloakInit } from './core/keycloak/init.js'
@@ -29,6 +28,7 @@ const createHook = () => {
   const main = {}
   const post = {}
   const save = {}
+  const revert = {}
 
   const execute = async (args) => {
     let payload = { args }
@@ -40,6 +40,9 @@ const createHook = () => {
     payload = await executeStep(main, payload)
     payload = await executeStep(post, payload)
     payload = await executeStep(save, payload)
+    if (payload.failed) {
+      payload = await executeStep(revert, payload)
+    }
     return payload
   }
 
@@ -49,12 +52,15 @@ const createHook = () => {
     main,
     post,
     save,
+    revert,
     execute,
   }
 }
 
 export const initCorePlugins = (app) => {
   const hooks = {
+    checkServices: createHook(),
+
     createProject: createHook(),
     archiveProject: createHook(),
 
@@ -76,8 +82,13 @@ export const initCorePlugins = (app) => {
   const register = (name, hook, fn, step = 'main') => {
     if (!(hook in hooks)) {
       app.log.warn({
-        ...getLogInfos(),
         message: `Plugin ${name} tried to register on an unknown hook ${hook}`,
+      })
+      return
+    }
+    if (hook === 'checkServices' && step !== 'check') {
+      app.log.warn({
+        message: `Plugin ${name} tried to register on 'checkServices' hook at ${step} which is invalid`,
       })
       return
     }
