@@ -33,7 +33,7 @@ app.register(apiRouter, { prefix: apiPrefix })
     }
   })
   .addHook('onRequest', (request, _reply, done) => {
-    request.globalContext = { m }
+    request.h = m.hooks
     done()
   })
 
