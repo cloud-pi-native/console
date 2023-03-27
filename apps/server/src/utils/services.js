@@ -1,4 +1,4 @@
-import { quayUrl, nexusUrl, vaultUrl, argocdUrl, gitlabUrl, sonarqubeUrl } from './env.js'
+import { harborUrl, nexusUrl, vaultUrl, argocdUrl, gitlabUrl, sonarqubeUrl, projectPath } from './env.js'
 
 export const allServices = {
   argocd: {
@@ -22,12 +22,12 @@ export const allServices = {
     imgSrc: '/img/nexus.png',
     description: 'Nexus permet de gérer les binaires et artefacts de build à travers la chaîne logistique logicielle',
   },
-  quay: {
-    id: 'quay',
-    url: `${quayUrl}`,
-    title: 'Quay',
-    imgSrc: '/img/quay.png',
-    description: 'Quay construit, analyse et distribue vos images de conteneurs',
+  registry: {
+    id: 'registry',
+    url: `${harborUrl}`,
+    title: 'Harbor',
+    imgSrc: '/img/harbor.png',
+    description: 'Harbor stocke, analyse et distribue vos images de conteneurs',
   },
   sonarqube: {
     id: 'sonarqube',
@@ -53,7 +53,7 @@ export const getServices = (project) => ({
 
   gitlab: {
     ...allServices.gitlab,
-    to: `${allServices.gitlab.url}/forge-mi/projects/${project.organization.name}/${project.name}`,
+    to: `${allServices.gitlab.url}/${projectPath}/${project.organization.name}/${project.name}`,
   },
 
   nexus: {
@@ -61,9 +61,9 @@ export const getServices = (project) => ({
     to: `${allServices.nexus.url}/#browse/browse:${project.organization.name}-${project.name}-repository-group`,
   },
 
-  quay: {
-    ...allServices.quay,
-    to: `${allServices.quay.url}/organization/${project.organization.name}-${project.name}`,
+  registry: {
+    ...allServices.registry,
+    to: `${allServices.registry.url}/organization/${project.organization.name}-${project.name}`,
   },
 
   sonarqube: {
@@ -73,6 +73,6 @@ export const getServices = (project) => ({
 
   vault: {
     ...allServices.vault,
-    to: `${allServices.vault.url}/ui/vault/secrets/forge-dso/list/forge-mi/projects/${project.organization.name}/${project.name}`,
+    to: `${allServices.vault.url}/ui/vault/secrets/forge-dso/list/${projectPath}/${project.organization.name}/${project.name}`,
   },
 })
