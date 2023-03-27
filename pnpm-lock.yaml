@@ -120,6 +120,7 @@ importers:
       fastify: ^4.15.0
       fastify-keycloak-adapter: ^2.0.0
       fastify-plugin: ^4.5.0
+      generate-password: ^1.7.0
       lodash.kebabcase: ^4.1.1
       mustache: ^4.2.0
       nanoid: 4.0.1
@@ -139,10 +140,12 @@ importers:
       '@gitbeaker/node': 35.8.1
       '@keycloak/keycloak-admin-client': 21.0.1
       '@kubernetes/client-node': 0.18.1
+      axios: 1.3.4
       date-fns: 2.29.3
       dotenv: 16.0.3
       fastify: 4.15.0
       fastify-keycloak-adapter: 2.0.0
+      generate-password: 1.7.0
       lodash.kebabcase: 4.1.1
       mustache: 4.2.0
       nanoid: 4.0.1
@@ -3759,6 +3762,10 @@ packages:
   /functions-have-names/1.2.3:
     resolution: {integrity: sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ==}
     dev: true
+
+  /generate-password/1.7.0:
+    resolution: {integrity: sha512-WPCtlfy0jexf7W5IbwxGUgpIDvsZIohbI2DAq2Q6TSlKKis+G4GT9sxvPxrZUGL8kP6WUXMWNqYnxY6DDKAdFA==}
+    dev: false
 
   /get-caller-file/2.0.5:
     resolution: {integrity: sha512-DyFP3BM/3YHTQOCUL/w0OZHR0lpKeGrxotcHWcqNEdnltqFwXVfhEBQ94eIo34AfQpo0rGki4cyIiftY06h2Fg==}
