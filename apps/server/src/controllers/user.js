@@ -36,13 +36,14 @@ export const getProjectUsersController = async (req, res) => {
       ...getLogInfos(),
       description: 'Project members successfully retreived',
     })
-    return send200(res, users)
+    send200(res, users)
   } catch (error) {
     const message = `Echec de récupération des membres du projet: ${error.message}`
     req.log.error({
       ...getLogInfos(),
       description: message,
       error: error.message,
+      trace: error.trace,
     })
     send500(res, message)
   }
@@ -56,13 +57,14 @@ export const getProjectUsersController = async (req, res) => {
 //       ...getLogInfos(),
 //       description: 'Users successfully retreived',
 //     })
-//     return send200(res, users)
+//     send200(res, users)
 //   } catch (error) {
 //     const message = 'Utilisateurs non trouvés'
 //     req.log.error({
 //       ...getLogInfos(),
 //       description: message,
 //       error: error.message,
+//       trace: error.trace,
 //     })
 //     send500(res, message)
 //   }
@@ -101,47 +103,28 @@ export const addUserToProjectController = async (req, res) => {
     const message = `Cannot add user into project: ${error.message}`
     req.log.error({
       ...getLogInfos(),
+      description: message,
       error: error.message,
+      trace: error.trace,
     })
     return send500(res, message)
   }
 
+  // TODO : US #132 appel ansible
   try {
-    // TODO : US #132 appel ansible
-    try {
-      await unlockProject(projectId)
+    await unlockProject(projectId)
 
-      req.log.info({
-        ...getLogInfos({ projectId }),
-        description: 'Project status successfully updated in database',
-      })
-    } catch (error) {
-      req.log.error({
-        ...getLogInfos(),
-        description: 'Cannot update project status',
-        error: error.message,
-      })
-    }
+    req.log.info({
+      ...getLogInfos({ projectId }),
+      description: 'Project status successfully updated in database',
+    })
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: 'Provisioning project with ansible failed',
-      error,
+      description: 'Cannot update project status',
+      error: error.message,
+      trace: error.trace,
     })
-    try {
-      await unlockProject(projectId)
-
-      req.log.info({
-        ...getLogInfos({ projectId }),
-        description: 'Project status successfully updated in database',
-      })
-    } catch (error) {
-      req.log.error({
-        ...getLogInfos(),
-        description: 'Cannot update project status',
-        error: error.message,
-      })
-    }
   }
 }
 
@@ -158,12 +141,14 @@ export const createUserController = async (req, res) => {
     })
     send201(res, user)
   } catch (error) {
+    const message = 'Utilisateur non créé'
     req.log.error({
       ...getLogInfos(),
-      description: 'Utilisateur non créé',
+      description: message,
       error: error.message,
+      trace: error.trace,
     })
-    return send500(res, error.message)
+    send500(res, message)
   }
 }
 
@@ -192,12 +177,16 @@ export const updateUserProjectRoleController = async (req, res) => {
       ...getLogInfos({ userToUpdateRole }),
       description: message,
     })
+    send200(res, message)
   } catch (error) {
     const message = `Cannot update user role into project: ${error.message}`
     req.log.error({
       ...getLogInfos(),
-      error: message,
+      description: message,
+      error: error.message,
+      trace: error.trace,
     })
+    send500(res, message)
   }
 }
 
@@ -240,46 +229,27 @@ export const removeUserFromProjectController = async (req, res) => {
     const message = `Cannot remove user from project: ${error.message}`
     req.log.error({
       ...getLogInfos(),
+      description: message,
       error: error.message,
+      trace: error.trace,
     })
     return send500(res, message)
   }
 
+  // TODO : US #132 appel ansible
   try {
-    // TODO : US #132 appel ansible
-    try {
-      await unlockProject(projectId)
+    await unlockProject(projectId)
 
-      req.log.info({
-        ...getLogInfos({ projectId }),
-        description: 'Project status successfully updated in database',
-      })
-    } catch (error) {
-      req.log.error({
-        ...getLogInfos(),
-        description: 'Cannot update project status',
-        error: error.message,
-      })
-    }
+    req.log.info({
+      ...getLogInfos({ projectId }),
+      description: 'Project status successfully updated in database',
+    })
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: 'Provisioning project with ansible failed',
-      error,
+      description: 'Cannot update project status',
+      error: error.message,
+      trace: error.trace,
     })
-    try {
-      await unlockProject(projectId)
-
-      req.log.info({
-        ...getLogInfos({ projectId }),
-        description: 'Project status successfully updated in database',
-      })
-    } catch (error) {
-      req.log.error({
-        ...getLogInfos(),
-        description: 'Cannot update project status',
-        error: error.message,
-      })
-    }
   }
 }

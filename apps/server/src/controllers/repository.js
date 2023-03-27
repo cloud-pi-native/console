@@ -48,6 +48,7 @@ export const getRepositoryByIdController = async (req, res) => {
       ...getLogInfos({ repositoryId }),
       description: message,
       error: error.message,
+      trace: error.trace,
     })
     send500(res, message)
   }
@@ -72,6 +73,7 @@ export const getProjectRepositoriesController = async (req, res) => {
       ...getLogInfos({ projectId }),
       description: message,
       error: error.message,
+      trace: error.trace,
     })
     send500(res, message)
   }
@@ -119,10 +121,12 @@ export const createRepositoryController = async (req, res) => {
       ...getLogInfos(),
       description: message,
       error: error.message,
+      trace: error.trace,
     })
     return send500(res, message)
   }
 
+  // Process api call to external service
   try {
     const users = await getProjectUsers(projectId)
 
@@ -157,48 +161,51 @@ export const createRepositoryController = async (req, res) => {
     const resJson = await ansibleRes.json()
     await addLogs(resJson, userId)
     if (resJson.status !== 'OK') throw new Error(`Echec de création du repo ${repo.internalRepoName} côté ansible`)
-
-    try {
-      await updateRepositoryCreated(repo.id)
-      await unlockProject(projectId)
-
-      req.log.info({
-        ...getLogInfos({ repositoryId: repo.id }),
-        description: 'Repository status successfully updated in database to created',
-      })
-    } catch (error) {
-      req.log.error({
-        ...getLogInfos(),
-        description: 'Cannot update repository status to created',
-        error: error.message,
-      })
-      return send500(res, error.message)
-    }
   } catch (error) {
     const message = `Echec requête ${req.id} : ${error.message}`
     req.log.error({
       ...getLogInfos(),
       description: message,
       error: error.message,
+      trace: error.trace,
     })
+    return
+  }
 
-    try {
-      await updateRepositoryFailed(repo.id)
-      await unlockProject(projectId)
+  // Update DB after service call
+  try {
+    await updateRepositoryCreated(repo.id)
+    await unlockProject(projectId)
 
-      req.log.info({
-        ...getLogInfos({ repositoryId: repo.id }),
-        description: 'Repo status successfully updated in database to failed',
-      })
-    } catch (error) {
-      req.log.error({
-        ...getLogInfos(),
-        description: 'Cannot update repo status to failed',
-        error: error.message,
-      })
-      return send500(res, error.message)
-    }
-    send500(res, message)
+    req.log.info({
+      ...getLogInfos({ repositoryId: repo.id }),
+      description: 'Repository status successfully updated in database to created',
+    })
+    return
+  } catch (error) {
+    req.log.error({
+      ...getLogInfos(),
+      description: 'Cannot update repository status to created',
+      error: error.message,
+      trace: error.trace,
+    })
+  }
+
+  try {
+    await updateRepositoryFailed(repo.id)
+    await unlockProject(projectId)
+
+    req.log.info({
+      ...getLogInfos({ repositoryId: repo.id }),
+      description: 'Repo status successfully updated in database to failed',
+    })
+  } catch (error) {
+    req.log.error({
+      ...getLogInfos(),
+      description: 'Cannot update repo status to failed',
+      error: error.message,
+      trace: error.trace,
+    })
   }
 }
 
@@ -241,56 +248,49 @@ export const updateRepositoryController = async (req, res) => {
       ...getLogInfos(),
       description: message,
       error: error.message,
+      trace: error.trace,
     })
     return send500(res, message)
   }
 
   try {
-    // TODO : #131 : appel ansible
-    try {
-      await updateRepositoryCreated(repositoryId)
-      await unlockProject(projectId)
+    await updateRepositoryCreated(repositoryId)
+    await unlockProject(projectId)
 
-      req.log.info({
-        ...getLogInfos({ repositoryId }),
-        description: 'Repository status successfully updated in database to created',
-      })
-    } catch (error) {
-      req.log.error({
-        ...getLogInfos(),
-        description: 'Cannot update repository status to created',
-        error: error.message,
-      })
-      return send500(res, error.message)
-    }
-
-    send201(res, 'Repository successfully updated')
+    req.log.info({
+      ...getLogInfos({ repositoryId }),
+      description: 'Repository status successfully updated in database to created',
+    })
+    return send201(res, 'Repository successfully updated')
   } catch (error) {
-    const message = 'Provisioning repo with ansible failed'
+    req.log.error({
+      ...getLogInfos(),
+      description: 'Cannot update repository status to created',
+      error: error.message,
+      trace: error.trace,
+    })
+  }
+
+  let message
+  try {
+    await updateRepositoryFailed(repositoryId)
+    await unlockProject(projectId)
+
+    message = 'Repo status successfully updated in database to failed'
+    req.log.info({
+      ...getLogInfos({ repositoryId }),
+      description: message,
+    })
+  } catch (error) {
+    message = 'Cannot update repo status to failed'
     req.log.error({
       ...getLogInfos(),
       description: message,
       error: error.message,
+      trace: error.trace,
     })
-
-    try {
-      await updateRepositoryFailed(repositoryId)
-      await unlockProject(projectId)
-
-      req.log.info({
-        ...getLogInfos({ repositoryId }),
-        description: 'Repo status successfully updated in database to failed',
-      })
-    } catch (error) {
-      req.log.error({
-        ...getLogInfos(),
-        description: 'Cannot update repo status to failed',
-        error: error.message,
-      })
-      return send500(res, error.message)
-    }
-    send500(res, message)
   }
+  send500(res, message)
 }
 
 // DELETE
@@ -323,10 +323,12 @@ export const deleteRepositoryController = async (req, res) => {
       ...getLogInfos(),
       description: message,
       error: error.message,
+      trace: error.trace,
     })
     return send500(res, message)
   }
 
+  // Process api call to external service
   try {
     const project = await getProjectById(projectId)
     const organization = await getOrganizationById(project.organization)
@@ -351,44 +353,50 @@ export const deleteRepositoryController = async (req, res) => {
     const resJson = await ansibleRes.json()
     await addLogs(resJson, userId)
     if (resJson.status !== 'OK') throw new Error(`Echec de suppression du repo ${repo.internalRepoName} côté ansible`)
-
-    try {
-      await deleteRepository(repositoryId)
-      await unlockProject(projectId)
-
-      req.log.info({
-        ...getLogInfos({ repositoryId }),
-        description: 'Repository successfully deleted, project unlocked',
-      })
-    } catch (error) {
-      req.log.error({
-        ...getLogInfos(),
-        description: 'Cannot delete repository',
-        error: error.message,
-      })
-    }
   } catch (error) {
     const message = 'Provisioning repo with ansible failed'
     req.log.error({
       ...getLogInfos(),
       description: message,
       error: error.message,
+      trace: error.trace,
     })
+    return
+  }
 
-    try {
-      await updateRepositoryFailed(repositoryId)
-      await unlockProject(projectId)
+  // Update DB after service call
+  try {
+    await deleteRepository(repositoryId)
+    await unlockProject(projectId)
 
-      req.log.info({
-        ...getLogInfos({ repositoryId }),
-        description: 'Repository status successfully updated in database to failed, project unlocked',
-      })
-    } catch (error) {
-      req.log.error({
-        ...getLogInfos(),
-        description: 'Cannot update repository status to failed',
-        error: error.message,
-      })
-    }
+    req.log.info({
+      ...getLogInfos({ repositoryId }),
+      description: 'Repository successfully deleted, project unlocked',
+    })
+    return
+  } catch (error) {
+    req.log.error({
+      ...getLogInfos(),
+      description: 'Cannot delete repository',
+      error: error.message,
+      trace: error.trace,
+    })
+  }
+
+  try {
+    await updateRepositoryFailed(repositoryId)
+    await unlockProject(projectId)
+
+    req.log.info({
+      ...getLogInfos({ repositoryId }),
+      description: 'Repository status successfully updated in database to failed, project unlocked',
+    })
+  } catch (error) {
+    req.log.error({
+      ...getLogInfos(),
+      description: 'Cannot update repository status to failed',
+      error: error.message,
+      trace: error.trace,
+    })
   }
 }
