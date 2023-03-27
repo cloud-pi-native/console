@@ -1,26 +1,23 @@
-import { sonarUrl, sonarToken } from '../../utils/env.js'
+import axios from 'axios'
+import { sonarqubeApiUrl, sonarqubeApiToken as username } from '../../../utils/env.js'
 
-export const sonarFetch = async ({ method, bodyParams, path }) => {
-  const body = new URLSearchParams()
-  Object.entries(bodyParams).forEach(params => {
-    body.append(params[0], params[1])
-  })
-  return fetch(`${sonarUrl}/api/${path}`, {
-    method,
-    body,
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      Authorization: 'Basic ' + Buffer.from(sonarToken + ':').toString('base64'),
-    },
-  })
+export const axiosOptions = {
+  baseURL: `${sonarqubeApiUrl}api/`,
+  auth: {
+    username,
+  },
+  headers: {
+    'Content-Type': 'application/x-www-form-urlencoded',
+  },
 }
 
-// idempotent par nature
 export const initSonar = async () => {
-  await sonarFetch({
-    method: 'POST',
-    bodyParams: { name: 'Mi-Forge Default' },
-    path: 'permissions/create_template',
+  await axios({
+    ...axiosOptions,
+    method: 'post',
+    params: { name: 'Forge Default' },
+    url: 'permissions/create_template',
+    validateStatus: (code) => [200, 400].includes(code),
   })
   const permissions = [
     'admin',
@@ -31,29 +28,32 @@ export const initSonar = async () => {
     'user',
   ]
   for (const permission of permissions) {
-    await sonarFetch({
-      method: 'POST',
-      bodyParams: {
-        templateName: 'Mi-Forge Default',
+    await axios({
+      ...axiosOptions,
+      method: 'post',
+      params: {
+        templateName: 'Forge Default',
         permission,
       },
-      path: 'permissions/add_project_creator_to_template',
+      url: 'permissions/add_project_creator_to_template',
     })
-    await sonarFetch({
-      method: 'POST',
-      bodyParams: {
+    await axios({
+      ...axiosOptions,
+      method: 'post',
+      params: {
         groupName: 'sonar-administrators',
-        templateName: 'Mi-Forge Default',
+        templateName: 'Forge Default',
         permission,
       },
-      path: 'permissions/add_group_to_template',
+      url: 'permissions/add_group_to_template',
     })
   }
-  await sonarFetch({
-    method: 'POST',
-    bodyParams: {
-      templateName: 'Mi-Forge Default',
+  await axios({
+    ...axiosOptions,
+    method: 'post',
+    params: {
+      templateName: 'Forge Default',
     },
-    path: 'permissions/set_default_template',
+    url: 'permissions/set_default_template',
   })
 }
