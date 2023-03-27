@@ -8,14 +8,14 @@ const isUpdating = ref(true)
 const services = computed(() => serviceStore.services)
 const servicesHealth = computed(() => serviceStore.servicesHealth)
 
-const checkServiceHealth = async () => {
+const checkServicesHealth = async () => {
   isUpdating.value = ref(true)
-  await serviceStore.checkServiceHealth()
+  await serviceStore.checkServicesHealth()
   isUpdating.value = ref(false)
 }
 
 onMounted(async () => {
-  await checkServiceHealth()
+  await checkServicesHealth()
 })
 </script>
 
@@ -38,7 +38,7 @@ onMounted(async () => {
       icon-only
       icon="ri-refresh-fill"
       :disabled="isUpdating.value === true"
-      @click="checkServiceHealth()"
+      @click="checkServicesHealth()"
     />
   </div>
   <div

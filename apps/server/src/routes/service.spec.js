@@ -45,6 +45,10 @@ describe('Service route', () => {
     mockSession(app)
     await getConnection()
     User = getUserModel()
+    global.fetch = vi.fn(() => Promise.resolve({
+      status: 200,
+      statusText: 'OK',
+    }))
   })
 
   afterAll(async () => {

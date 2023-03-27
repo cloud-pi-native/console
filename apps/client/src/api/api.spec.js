@@ -29,6 +29,7 @@ vi.spyOn(apiClient, 'post')
 vi.spyOn(apiClient, 'put')
 vi.spyOn(apiClient, 'patch')
 vi.spyOn(apiClient, 'delete')
+
 describe('API', () => {
   beforeEach(() => {
     vi.clearAllMocks()
