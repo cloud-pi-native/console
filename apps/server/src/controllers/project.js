@@ -163,6 +163,14 @@ export const createProjectController = async (req, res) => {
       }),
       description: 'Project successfully created in database',
     })
+    const projectData = {
+      ...project.get({ plain: true }),
+      organization: organization.dataValues.name,
+      email: owner.email,
+    }
+    const result = await h(projectData)
+    console.log({ h_create: result.nexus.status })
+    await addLogs(result, owner.dataValues.id)
     send201(res, project)
   } catch (error) {
     // console.log(Object.keys(error))
