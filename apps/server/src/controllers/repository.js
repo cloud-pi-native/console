@@ -84,7 +84,7 @@ export const createRepositoryController = async (req, res) => {
   const userId = req.session?.user?.id
   const projectId = req.params?.projectId
   data.projectId = projectId
-  const h = req.h.createRepository.execute
+  // const h = req.h.createRepository.execute
 
   // const req.h.createRepository.execute
 
@@ -163,6 +163,23 @@ export const createRepositoryController = async (req, res) => {
     // const resJson = await ansibleRes.json()
     // await addLogs(resJson, userId)
     // if (resJson.status !== 'OK') throw new Error(`Echec de création du repo ${repo.internalRepoName} côté ansible`)
+
+    try {
+      await updateRepositoryCreated(repo.id)
+      await unlockProject(projectId)
+
+      req.log.info({
+        ...getLogInfos({ repositoryId: repo.id }),
+        description: 'Repository status successfully updated in database to created',
+      })
+    } catch (error) {
+      req.log.error({
+        ...getLogInfos(),
+        description: 'Cannot update repository status to created',
+        error: error.message,
+      })
+      return send500(res, error.message)
+    }
   } catch (error) {
     const message = `Echec requête ${req.id} : ${error.message}`
     req.log.error({
@@ -353,6 +370,22 @@ export const deleteRepositoryController = async (req, res) => {
     // const resJson = await ansibleRes.json()
     // await addLogs(resJson, userId)
     // if (resJson.status !== 'OK') throw new Error(`Echec de suppression du repo ${repo.internalRepoName} côté ansible`)
+
+    try {
+      await deleteRepository(repositoryId)
+      await unlockProject(projectId)
+
+      req.log.info({
+        ...getLogInfos({ repositoryId }),
+        description: 'Repository successfully deleted, project unlocked',
+      })
+    } catch (error) {
+      req.log.error({
+        ...getLogInfos(),
+        description: 'Cannot delete repository',
+        error: error.message,
+      })
+    }
   } catch (error) {
     const message = 'Provisioning repo with ansible failed'
     req.log.error({

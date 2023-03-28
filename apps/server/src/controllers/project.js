@@ -8,23 +8,23 @@ import {
   lockProject,
   unlockProject,
   addUserToProject,
-  archiveProject,
-  getProjectUsers,
+  // archiveProject,
+  // getProjectUsers,
 } from '../models/queries/project-queries.js'
 import { getOrCreateUser, getUserById } from '../models/queries/user-queries.js'
 import {
-  deleteRoleByUserIdAndProjectId,
+  // deleteRoleByUserIdAndProjectId,
   getRoleByUserIdAndProjectId,
   getSingleOwnerByProjectId,
 } from '../models/queries/users-projects-queries.js'
 import { getOrganizationById } from '../models/queries/organization-queries.js'
 import {
   getProjectRepositories,
-  deleteRepository,
+  // deleteRepository,
   updateRepositoryDeleting,
 } from '../models/queries/repository-queries.js'
 import {
-  deleteEnvironment,
+  // deleteEnvironment,
   getEnvironmentsByProjectId,
   updateEnvironmentDeleting,
   initializeEnvironment,
@@ -32,7 +32,7 @@ import {
 } from '../models/queries/environment-queries.js'
 import {
   getEnvironmentPermissions,
-  deletePermissionById,
+  // deletePermissionById,
   setPermission,
 } from '../models/queries/permission-queries.js'
 import { getLogInfos } from '../utils/logger.js'
@@ -136,6 +136,7 @@ export const createProjectController = async (req, res) => {
   const user = req.session?.user
 
   const h = req.h.createProject.execute
+  const createCanelProject = req.createCanelProject.execute
   let environment
   let project
   let owner
@@ -218,19 +219,16 @@ export const createProjectController = async (req, res) => {
           date_creation: project.createdAt,
           derniere_modification_utilisateur: project.updatedAt,
           date_derniere_modification: project.updatedAt,
-          ministere_responsable: organization.name,
+          ministere_responsable: organization.dataValues.name,
           acteurs: [
             owner.dataValues,
           ],
         },
       }
 
-      console.log(canelData.applications)
-
-      const canelRes = await fetch('https://qualification.ines-api.dsic.minint.fr/canel/api/v1/applications', {
-        method: 'POST',
-        body: JSON.stringify(canelData),
-      })
+      const canelRes = await createCanelProject(canelData)
+      console.log({ canelRes })
+      await addLogs(canelRes, owner.dataValues.id)
 
       const canelJson = await canelRes.json()
 
@@ -310,7 +308,7 @@ export const archiveProjectController = async (req, res) => {
   let repos
   let environments
   const permissions = []
-  let users
+  // let users
   let project
   try {
     project = await getProjectById(projectId)
@@ -326,7 +324,7 @@ export const archiveProjectController = async (req, res) => {
       const envPerms = await getEnvironmentPermissions(environment?.id)
       permissions.push(...envPerms)
     })
-    users = await getProjectUsers(projectId)
+    // users = await getProjectUsers(projectId)
 
     await lockProject(projectId)
     repos?.forEach(async repo => {

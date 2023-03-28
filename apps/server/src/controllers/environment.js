@@ -16,6 +16,9 @@ import {
   getRoleByUserIdAndProjectId,
   getSingleOwnerByProjectId,
 } from '../models/queries/users-projects-queries.js'
+import {
+  addLogs,
+} from '../models/queries/log-queries.js'
 import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
 
@@ -58,6 +61,7 @@ export const initializeEnvironmentController = async (req, res) => {
   const userId = req.session?.user?.id
   const projectId = req.params?.projectId
 
+  const updateCanelProject = req.updateCanelProject.execute
   let env
   let projectEnvs
   try {
@@ -107,12 +111,9 @@ export const initializeEnvironmentController = async (req, res) => {
       },
     }
 
-    console.log(canelData.applications)
-
-    const canelRes = await fetch('https://qualification.ines-api.dsic.minint.fr/canel/api/v1/applications', {
-      method: 'PUT',
-      body: JSON.stringify(canelData),
-    })
+    const canelRes = await updateCanelProject(canelData)
+    console.log({ canelRes })
+    await addLogs(canelRes, userId)
 
     const canelJson = await canelRes.json()
 
@@ -180,6 +181,7 @@ export const deleteEnvironmentController = async (req, res) => {
   const projectId = req.params?.projectId
   const userId = req.session?.user?.id
 
+  const createCanelProject = req.createCanelProject.execute
   let projectEnvs
   try {
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
@@ -225,12 +227,9 @@ export const deleteEnvironmentController = async (req, res) => {
       },
     }
 
-    console.log(canelData.applications)
-
-    const canelRes = await fetch('https://qualification.ines-api.dsic.minint.fr/canel/api/v1/applications', {
-      method: 'PUT',
-      body: JSON.stringify(canelData),
-    })
+    const canelRes = await createCanelProject(canelData)
+    console.log({ canelRes })
+    await addLogs(canelRes, userId)
 
     const canelJson = await canelRes.json()
 

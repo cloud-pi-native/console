@@ -18,6 +18,7 @@ import {
 } from '../models/queries/users-projects-queries.js'
 import { deletePermission } from '../models/queries/permission-queries.js'
 import { getEnvironmentsByProjectId } from '../models/queries/environment-queries.js'
+import { addLogs } from '../models/queries/log-queries.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import { getLogInfos } from '../utils/logger.js'
 
@@ -76,6 +77,8 @@ export const addUserToProjectController = async (req, res) => {
   const projectId = req.params?.projectId
   const data = req.body
 
+  const getCanelProject = req.getCanelProject.execute
+  const updateCanelProject = req.updateCanelProject.execute
   let project
   let userToAdd
   try {
@@ -117,9 +120,7 @@ export const addUserToProjectController = async (req, res) => {
 
     // TODO : en attente déploiement canel
 
-    const canelDataToUpdate = await fetch(`https://qualification.ines-api.dsic.minint.fr/canel/api/v1/applications/${project.id}`, {
-      method: 'GET',
-    })
+    const canelDataToUpdate = await getCanelProject(project.id)
     if (!canelDataToUpdate) throw new Error('Echec de récupération du project côté canel')
 
     const canelJson0 = await canelDataToUpdate.json()
@@ -139,10 +140,9 @@ export const addUserToProjectController = async (req, res) => {
 
     console.log(canelData.applications)
 
-    const canelRes = await fetch('https://qualification.ines-api.dsic.minint.fr/canel/api/v1/applications', {
-      method: 'PUT',
-      body: JSON.stringify(canelData),
-    })
+    const canelRes = await updateCanelProject(canelData)
+    console.log({ canelRes })
+    await addLogs(canelRes, userId)
 
     const canelJson = await canelRes.json()
 
@@ -197,6 +197,8 @@ export const updateUserProjectRoleController = async (req, res) => {
   const userToUpdateId = req.params?.userId
   const data = req.body
 
+  const getCanelProject = req.getCanelProject.execute
+  const updateCanelProject = req.updateCanelProject.execute
   let project
   try {
     project = await getProjectById(projectId)
@@ -214,9 +216,7 @@ export const updateUserProjectRoleController = async (req, res) => {
 
     // TODO : en attente déploiement canel
 
-    const canelDataToUpdate = await fetch(`https://qualification.ines-api.dsic.minint.fr/canel/api/v1/applications/${project.id}`, {
-      method: 'GET',
-    })
+    const canelDataToUpdate = await getCanelProject(project.id)
     if (!canelDataToUpdate) throw new Error('Echec de récupération du project côté canel')
 
     const canelJson0 = await canelDataToUpdate.json()
@@ -243,13 +243,11 @@ export const updateUserProjectRoleController = async (req, res) => {
 
     console.log(canelData.applications)
 
-    const canelRes = await fetch('https://qualification.ines-api.dsic.minint.fr/canel/api/v1/applications', {
-      method: 'PUT',
-      body: JSON.stringify(canelData),
-    })
+    const canelRes = await updateCanelProject(canelData)
+    console.log({ canelRes })
+    await addLogs(canelRes, userId)
 
     const canelJson = await canelRes.json()
-
     console.log({ canelJson })
 
     if (canelJson.code !== 200) throw new Error(`Echec de maj du projet côté canel : ${canelJson.description}`)
@@ -276,6 +274,8 @@ export const removeUserFromProjectController = async (req, res) => {
   const projectId = req.params?.projectId
   const userToRemoveId = req.params?.userId
 
+  const getCanelProject = req.getCanelProject.execute
+  const updateCanelProject = req.updateCanelProject.execute
   let project
   try {
     project = await getProjectById(projectId)
@@ -322,9 +322,7 @@ export const removeUserFromProjectController = async (req, res) => {
 
     // TODO : en attente déploiement canel
 
-    const canelDataToUpdate = await fetch(`https://qualification.ines-api.dsic.minint.fr/canel/api/v1/applications/${project.id}`, {
-      method: 'GET',
-    })
+    const canelDataToUpdate = await getCanelProject(project.id)
     if (!canelDataToUpdate) throw new Error('Echec de récupération du project côté canel')
 
     const canelJson0 = await canelDataToUpdate.json()
@@ -347,13 +345,11 @@ export const removeUserFromProjectController = async (req, res) => {
 
     console.log(canelData.applications)
 
-    const canelRes = await fetch('https://qualification.ines-api.dsic.minint.fr/canel/api/v1/applications', {
-      method: 'PUT',
-      body: JSON.stringify(canelData),
-    })
+    const canelRes = await updateCanelProject(canelData)
+    console.log({ canelRes })
+    await addLogs(canelRes, userId)
 
     const canelJson = await canelRes.json()
-
     console.log({ canelJson })
 
     if (canelJson.code !== 200) throw new Error(`Echec de maj du projet côté canel : ${canelJson.description}`)
