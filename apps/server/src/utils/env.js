@@ -40,8 +40,6 @@ export const keycloakClientSecret = process.env.KEYCLOAK_CLIENT_SECRET
 
 export const adminsUserId = process.env.ADMIN_KC_USER_ID ? process.env.ADMIN_KC_USER_ID.split(',') : []
 
-export const encryptionKey = process.env.ENCRYPTION_KEY
-
 export const argocdUrl = process.env.ARGOCD_URL
 
 export const vaultUrl = process.env.VAULT_URL
