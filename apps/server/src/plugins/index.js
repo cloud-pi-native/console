@@ -1,5 +1,5 @@
 // import { readdir } from 'node:fs/promises'
-import { readdirSync } from 'node:fs'
+import { readdirSync, existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import url from 'url'
 // import { init as gitlabInit } from './core/gitlab/init.js'
@@ -121,8 +121,12 @@ export const initExternalPlugins = async (app, m) => {
     const pluginDir = resolve(__dirname, 'external')
     const plugins = readdirSync(resolve(__dirname, 'external'))
     for (const plugin of plugins) {
-      const myPlugin = await import(`${pluginDir}/${plugin}/init.js`)
-      myPlugin.init(m.register)
+      if (existsSync(resolve(__dirname, `external/${plugin}/init.js`))) {
+        const myPlugin = await import(`${pluginDir}/${plugin}/init.js`)
+        myPlugin.init(m.register)
+      } else {
+        app.log.warn(`ignoring ${plugin}, ${plugin}/init.js does not exist`)
+      }
     }
   } catch (err) {
     app.log.error(err)
