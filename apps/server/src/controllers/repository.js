@@ -23,7 +23,7 @@ import {
 import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import { getOrganizationById } from '../models/queries/organization-queries.js'
-import { addLogs } from '../models/queries/log-queries.js'
+// import { addLogs } from '../models/queries/log-queries.js'
 
 // GET
 export const getRepositoryByIdController = async (req, res) => {
@@ -84,7 +84,8 @@ export const createRepositoryController = async (req, res) => {
   const userId = req.session?.user?.id
   const projectId = req.params?.projectId
   data.projectId = projectId
-  const h = req.h.createRepository.execute
+
+  // const req.h.createRepository.execute
 
   let project
   let repo
@@ -149,18 +150,18 @@ export const createRepositoryController = async (req, res) => {
       ansibleData.GIT_INPUT_PASSWORD = data.externalToken
     }
 
-    const ansibleRes = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
-      method: 'POST',
-      body: JSON.stringify(ansibleData),
-      headers: {
-        'Content-Type': 'application/json',
-        authorization: req.headers.authorization,
-        'request-id': req.id,
-      },
-    })
-    const resJson = await ansibleRes.json()
-    await addLogs(resJson, userId)
-    if (resJson.status !== 'OK') throw new Error(`Echec de création du repo ${repo.internalRepoName} côté ansible`)
+    // const ansibleRes = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
+    //   method: 'POST',
+    //   body: JSON.stringify(ansibleData),
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //     authorization: req.headers.authorization,
+    //     'request-id': req.id,
+    //   },
+    // })
+    // const resJson = await ansibleRes.json()
+    // await addLogs(resJson, userId)
+    // if (resJson.status !== 'OK') throw new Error(`Echec de création du repo ${repo.internalRepoName} côté ansible`)
   } catch (error) {
     const message = `Echec requête ${req.id} : ${error.message}`
     req.log.error({
@@ -330,29 +331,27 @@ export const deleteRepositoryController = async (req, res) => {
 
   // Process api call to external service
   try {
-    const project = await getProjectById(projectId)
-    const organization = await getOrganizationById(project.organization)
-    const environments = await getEnvironmentsByProjectId(projectId)
-
-    const ansibleData = {
-      ORGANIZATION_NAME: organization.name,
-      ENV_LIST: environments.map(environment => environment.name),
-      REPO_DEST: repo.internalRepoName,
-      PROJECT_NAME: project.name,
-    }
-
-    const ansibleRes = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
-      method: 'PUT',
-      body: JSON.stringify(ansibleData),
-      headers: {
-        'Content-Type': 'application/json',
-        authorization: req.headers.authorization,
-        'request-id': req.id,
-      },
-    })
-    const resJson = await ansibleRes.json()
-    await addLogs(resJson, userId)
-    if (resJson.status !== 'OK') throw new Error(`Echec de suppression du repo ${repo.internalRepoName} côté ansible`)
+    // const project = await getProjectById(projectId)
+    // const organization = await getOrganizationById(project.organization)
+    // const environments = await getEnvironmentsByProjectId(projectId)
+    // const ansibleData = {
+    //   ORGANIZATION_NAME: organization.name,
+    //   ENV_LIST: environments.map(environment => environment.name),
+    //   REPO_DEST: repo.internalRepoName,
+    //   PROJECT_NAME: project.name,
+    // }
+    // const ansibleRes = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
+    //   method: 'PUT',
+    //   body: JSON.stringify(ansibleData),
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //     authorization: req.headers.authorization,
+    //     'request-id': req.id,
+    //   },
+    // })
+    // const resJson = await ansibleRes.json()
+    // await addLogs(resJson, userId)
+    // if (resJson.status !== 'OK') throw new Error(`Echec de suppression du repo ${repo.internalRepoName} côté ansible`)
   } catch (error) {
     const message = 'Provisioning repo with ansible failed'
     req.log.error({

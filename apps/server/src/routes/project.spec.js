@@ -231,7 +231,6 @@ describe('Project routes', () => {
       randomDbSetup.project.locked = true
       // TODO : user.addProject is not a function
       // ok en local donc pb avec bibliothèque
-      console.log(response.body)
       expect(response.statusCode).toEqual(201)
       expect(response.json()).toBeDefined()
       expect(response.json()).toMatchObject(randomDbSetup.project)

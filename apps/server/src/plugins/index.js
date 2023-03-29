@@ -2,13 +2,13 @@
 import { readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import url from 'url'
-import { init as gitlabInit } from './core/gitlab/init.js'
-import { init as harborInit } from './core/harbor/init.js'
-import { init as keycloakInit } from './core/keycloak/init.js'
-import { init as kubernetesInit } from './core/kubernetes/init.js'
-import { init as nexusInit } from './core/nexus/init.js'
-import { init as sonarqubeInit } from './core/sonarqube/init.js'
-import { init as vaultInit } from './core/vault/init.js'
+// import { init as gitlabInit } from './core/gitlab/init.js'
+// import { init as harborInit } from './core/harbor/init.js'
+// import { init as keycloakInit } from './core/keycloak/init.js'
+// import { init as kubernetesInit } from './core/kubernetes/init.js'
+// import { init as nexusInit } from './core/nexus/init.js'
+// import { init as sonarqubeInit } from './core/sonarqube/init.js'
+// import { init as vaultInit } from './core/vault/init.js'
 
 const executeStep = async (step, payload) => {
   const names = Object.keys(step)
@@ -104,13 +104,13 @@ export const initCorePlugins = (app) => {
     unregister,
   }
 
-  gitlabInit(register)
-  harborInit(register)
-  keycloakInit(register)
-  kubernetesInit(register)
-  nexusInit(register)
-  sonarqubeInit(register)
-  vaultInit(register)
+  // gitlabInit(register)
+  // harborInit(register)
+  // keycloakInit(register)
+  // kubernetesInit(register)
+  // nexusInit(register)
+  // sonarqubeInit(register)
+  // vaultInit(register)
 
   return pluginManager
 }
