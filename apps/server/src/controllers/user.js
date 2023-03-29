@@ -116,8 +116,6 @@ export const addUserToProjectController = async (req, res) => {
 
   // TODO : US #132 appel ansible
   try {
-    // TODO : US #132 appel ansible
-
     // TODO : en attente déploiement canel
 
     const canelDataToUpdate = await getCanelProject(project.id)
@@ -149,8 +147,7 @@ export const addUserToProjectController = async (req, res) => {
     console.log({ canelJson })
 
     if (canelJson.code !== 200) throw new Error(`Echec de maj du projet côté canel : ${canelJson.description}`)
-    try {
-      await unlockProject(projectId)
+    await unlockProject(projectId)
 
     req.log.info({
       ...getLogInfos({ projectId }),
@@ -318,8 +315,6 @@ export const removeUserFromProjectController = async (req, res) => {
 
   // TODO : US #132 appel ansible
   try {
-    // TODO : US #132 appel ansible
-
     // TODO : en attente déploiement canel
 
     const canelDataToUpdate = await getCanelProject(project.id)
@@ -353,8 +348,7 @@ export const removeUserFromProjectController = async (req, res) => {
     console.log({ canelJson })
 
     if (canelJson.code !== 200) throw new Error(`Echec de maj du projet côté canel : ${canelJson.description}`)
-    try {
-      await unlockProject(projectId)
+    await unlockProject(projectId)
 
     req.log.info({
       ...getLogInfos({ projectId }),

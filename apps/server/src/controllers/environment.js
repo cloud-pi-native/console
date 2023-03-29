@@ -99,8 +99,21 @@ export const initializeEnvironmentController = async (req, res) => {
 
   // TODO : #133 : appel ansible + création groupe keycloak + ajout owner au groupe keycloak
   try {
-    // TODO : #133 : appel ansible + création groupe keycloak + ajout owner au groupe keycloak
+    await updateEnvironmentCreated(env.id)
 
+    const ownerId = await getSingleOwnerByProjectId(projectId)
+    if (ownerId !== userId) {
+      await setPermission({
+        userId: ownerId,
+        environmentId: env.id,
+        level: 2,
+      })
+    }
+    await setPermission({
+      userId,
+      environmentId: env.id,
+      level: 2,
+    })
     // TODO : en attente déploiement canel
 
     const canelData = {
@@ -120,27 +133,6 @@ export const initializeEnvironmentController = async (req, res) => {
     console.log({ canelJson })
 
     if (canelJson.code !== 200) throw new Error(`Echec de maj du projet côté canel : ${canelJson.description}`)
-    try {
-      await updateEnvironmentCreated(env.id)
-      const ownerId = await getSingleOwnerByProjectId(projectId)
-      if (ownerId !== userId) {
-        await setPermission({
-          userId: ownerId,
-          environmentId: env.id,
-          level: 2,
-        })
-      }
-      await setPermission({
-        userId: ownerId,
-        environmentId: env.id,
-        level: 2,
-      })
-    }
-    await setPermission({
-      userId,
-      environmentId: env.id,
-      level: 2,
-    })
     await unlockProject(projectId)
 
     req.log.info({
@@ -215,8 +207,6 @@ export const deleteEnvironmentController = async (req, res) => {
 
   // TODO : #133 : appel ansible + suppression groupe keycloak (+ retirer users du groupe keycloak ?)
   try {
-    // TODO : #133 : appel ansible + suppression groupe keycloak (+ retirer users du groupe keycloak ?)
-
     // TODO : en attente déploiement canel
 
     const canelData = {
@@ -236,9 +226,8 @@ export const deleteEnvironmentController = async (req, res) => {
     console.log({ canelJson })
 
     if (canelJson.code !== 200) throw new Error(`Echec de maj du projet côté canel : ${canelJson.description}`)
-    try {
-      await deleteEnvironment(environmentId)
-      await unlockProject(projectId)
+    await deleteEnvironment(environmentId)
+    await unlockProject(projectId)
 
     req.log.info({
       ...getLogInfos({ environmentId }),

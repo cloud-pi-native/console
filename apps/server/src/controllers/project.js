@@ -8,23 +8,23 @@ import {
   lockProject,
   unlockProject,
   addUserToProject,
-  // archiveProject,
-  // getProjectUsers,
+  archiveProject,
+  getProjectUsers,
 } from '../models/queries/project-queries.js'
 import { getOrCreateUser, getUserById } from '../models/queries/user-queries.js'
 import {
-  // deleteRoleByUserIdAndProjectId,
+  deleteRoleByUserIdAndProjectId,
   getRoleByUserIdAndProjectId,
   getSingleOwnerByProjectId,
 } from '../models/queries/users-projects-queries.js'
 import { getOrganizationById } from '../models/queries/organization-queries.js'
 import {
   getProjectRepositories,
-  // deleteRepository,
+  deleteRepository,
   updateRepositoryDeleting,
 } from '../models/queries/repository-queries.js'
 import {
-  // deleteEnvironment,
+  deleteEnvironment,
   getEnvironmentsByProjectId,
   updateEnvironmentDeleting,
   initializeEnvironment,
@@ -32,7 +32,7 @@ import {
 } from '../models/queries/environment-queries.js'
 import {
   getEnvironmentPermissions,
-  // deletePermissionById,
+  deletePermissionById,
   setPermission,
 } from '../models/queries/permission-queries.js'
 import { getLogInfos } from '../utils/logger.js'
@@ -135,7 +135,7 @@ export const createProjectController = async (req, res) => {
   const data = req.body
   const user = req.session?.user
 
-  const h = req.h.createProject.execute
+  // const h = req.h.createProject.execute
   const createCanelProject = req.createCanelProject.execute
   let environment
   let project
@@ -164,14 +164,6 @@ export const createProjectController = async (req, res) => {
       }),
       description: 'Project successfully created in database',
     })
-    const projectData = {
-      ...project.get({ plain: true }),
-      organization: organization.dataValues.name,
-      email: owner.email,
-    }
-    const result = await h(projectData)
-    console.log({ h_create: result.nexus.status })
-    await addLogs(result, owner.dataValues.id)
     send201(res, project)
   } catch (error) {
     // console.log(Object.keys(error))
@@ -197,15 +189,6 @@ export const createProjectController = async (req, res) => {
     // await addLogs(result, owner.dataValues.id)
     // if (result.failed) throw new Error('Echec de création du projet')
     try {
-      await updateEnvironmentCreated(environment.id)
-      await setPermission({
-        userId: owner.id,
-        environmentId: environment.id,
-        level: 2,
-      })
-      await updateProjectCreated(project.id)
-      await unlockProject(project.id)
-
       // TODO : en attente déploiement canel
 
       const canelData = {
@@ -228,7 +211,7 @@ export const createProjectController = async (req, res) => {
 
       const canelRes = await createCanelProject(canelData)
       console.log({ canelRes })
-      await addLogs(canelRes, owner.dataValues.id)
+      // await addLogs(canelRes, owner.dataValues.id)
 
       const canelJson = await canelRes.json()
 
@@ -308,7 +291,7 @@ export const archiveProjectController = async (req, res) => {
   let repos
   let environments
   const permissions = []
-  // let users
+  let users
   let project
   try {
     project = await getProjectById(projectId)
@@ -324,7 +307,7 @@ export const archiveProjectController = async (req, res) => {
       const envPerms = await getEnvironmentPermissions(environment?.id)
       permissions.push(...envPerms)
     })
-    // users = await getProjectUsers(projectId)
+    users = await getProjectUsers(projectId)
 
     await lockProject(projectId)
     repos?.forEach(async repo => {
