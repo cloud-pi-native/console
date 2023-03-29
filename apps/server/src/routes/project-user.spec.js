@@ -228,7 +228,6 @@ describe('User routes', () => {
         .body(randomUser.email)
         .end()
 
-      console.log(response.body)
       expect(response.statusCode).toEqual(200)
       expect(response.body).toEqual('User successfully removed from project')
     })
