@@ -1,6 +1,6 @@
 import axios from 'axios'
-import { generate } from 'generate-password'
 import { axiosOptions } from './index.js'
+import { generateRandomPassword } from '../../../utils/crypto.js'
 
 export const createNexusProject = async (payload) => {
   const { organization, name, email } = payload.args
@@ -99,10 +99,7 @@ export const createNexusProject = async (payload) => {
       return res
     }
 
-    const newPwd = generate({
-      length: 30,
-      numbers: true,
-    })
+    const newPwd = generateRandomPassword(30)
     // createUser
     const newUser = await axios({
       ...axiosOptions,

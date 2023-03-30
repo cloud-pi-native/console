@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { axiosOptions } from './index.js'
-import { generate } from 'generate-password'
+import { generateRandomPassword } from '../../../utils/crypto.js'
 
 export const createUser = async (payload) => {
   const { name, organization, email } = payload.args
@@ -21,10 +21,7 @@ export const createUser = async (payload) => {
       },
     })
     const user = getUsers.data.users.find(u => u.login === username)
-    const newPwd = generate({
-      length: 30,
-      numbers: true,
-    })
+    const newPwd = generateRandomPassword(30)
     if (!user) {
       res.status.message = 'User Created'
       const newUser = await axios({
