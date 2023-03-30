@@ -1,5 +1,6 @@
 import { harborUrl, nexusUrl, vaultUrl, argocdUrl, gitlabUrl, sonarqubeUrl, projectPath } from './env.js'
 
+const projectPathStr = projectPath.join('/')
 export const allServices = {
   argocd: {
     id: 'argocd',
@@ -53,7 +54,7 @@ export const getServices = (project) => ({
 
   gitlab: {
     ...allServices.gitlab,
-    to: `${allServices.gitlab.url}/${projectPath}/${project.organization.name}/${project.name}`,
+    to: `${allServices.gitlab.url}/${projectPathStr}/${project.organization.name}/${project.name}`,
   },
 
   nexus: {
@@ -73,6 +74,6 @@ export const getServices = (project) => ({
 
   vault: {
     ...allServices.vault,
-    to: `${allServices.vault.url}/ui/vault/secrets/forge-dso/list/${projectPath}/${project.organization.name}/${project.name}`,
+    to: `${allServices.vault.url}/ui/vault/secrets/forge-dso/list/${projectPathStr}/${project.organization.name}/${project.name}`,
   },
 })
