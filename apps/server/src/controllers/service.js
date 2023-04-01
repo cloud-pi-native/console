@@ -17,7 +17,7 @@ export const checkServicesHealthController = async (req, res) => {
         const urlParsed = new URL(service.url)
         const res = await axios.get(urlParsed)
         return {
-          id: service.id,
+          name: service.name,
           status: res.status < 400 ? 'success' : 'error',
           message: res?.statusText,
           code: res?.status,

@@ -22,8 +22,8 @@ const app = fastify(fastifyConf)
   .register(fastifySession, sessionConf)
   .register(keycloak, keycloakConf)
 
-const m = initCorePlugins(app)
-initExternalPlugins(app, m)
+const pluginManager = initCorePlugins(app)
+initExternalPlugins(app, pluginManager)
 
 app.register(apiRouter, { prefix: apiPrefix })
   .register(miscRouter)
@@ -32,9 +32,9 @@ app.register(apiRouter, { prefix: apiPrefix })
       opts.logLevel = 'silent'
     }
   })
-  .addHook('onRequest', (request, _reply, done) => {
-    request.h = m.hooks
-    done()
-  })
+  // .addHook('onRequest', (request, _reply, done) => {
+  //   request.hooks = pluginManager.hooks
+  //   done()
+  // })
 
 export default app

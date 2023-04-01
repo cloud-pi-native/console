@@ -21,7 +21,7 @@ describe('services', () => {
     expect(project).toHaveProperty('name', project.name)
     expect(project).toHaveProperty('organization', project.Organization.dataValues.name)
     Object.values(project.services).forEach(service => {
-      expect(service).toHaveProperty('id')
+      expect(service).toHaveProperty('name')
       expect(service).toHaveProperty('title')
       expect(service).toHaveProperty('imgSrc')
       expect(service).toHaveProperty('description')

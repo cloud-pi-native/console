@@ -331,6 +331,7 @@ describe('Project routes', () => {
       Repository.$queueResult(randomDbSetup.project.repositories)
       Environment.$queueResult(randomDbSetup.project.environments)
       randomDbSetup.project.environments.forEach(environment => Permissions.$queueResult(environment.permissions))
+      randomDbSetup.project.users.forEach(() => Role.$queueResult(null))
       User.$queueResult(randomDbSetup.users)
       // 3. projectLoked
       Project.$queueResult(randomDbSetup.project.id)
