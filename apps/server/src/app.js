@@ -32,9 +32,9 @@ app.register(apiRouter, { prefix: apiPrefix })
       opts.logLevel = 'silent'
     }
   })
-  // .addHook('onRequest', (request, _reply, done) => {
-  //   request.hooks = pluginManager.hooks
-  //   done()
-  // })
+  .addHook('onRequest', (request, _reply, done) => {
+    request.hooks = pluginManager.hooks
+    done()
+  })
 
 export default app

@@ -43,14 +43,6 @@ import { calcProjectNameMaxLength } from 'shared/src/utils/functions.js'
 import { getServices } from '../utils/services.js'
 import { lowercaseFirstLetter, replaceNestedKeys } from '../utils/queries-tools.js'
 import { addLogs } from '../models/queries/log-queries.js'
-import {
-  createDsoProject as createProjectGitlab,
-  archiveDsoProject as archiveProjectGitlab,
-} from '../plugins/core/gitlab/index.js'
-import {
-  createDsoProject as createProjectHarbor,
-  archiveDsoProject as archiveProjectHarbor,
-} from '../plugins/core/harbor/index.js'
 
 // GET
 export const getUserProjectsController = async (req, res) => {
@@ -195,10 +187,8 @@ export const createProjectController = async (req, res) => {
       organization: organization.dataValues.name,
       email: owner.dataValues.email,
     }
-    const result = Promise.all(
-      createProjectGitlab(projectData),
-      createProjectHarbor(projectData),
-    )
+    const hook = req.hooks.createProject.execute
+    const result = await hook(projectData)
     const { gitlab, registry } = result
     await addLogs(result, owner.dataValues.id)
     const services = {
@@ -321,12 +311,10 @@ export const archiveProjectController = async (req, res) => {
       ...project.get({ plain: true }),
       organization: organization.dataValues.name,
     }
-    const result = Promise.all(
-      archiveProjectGitlab(projectData),
-      archiveProjectHarbor(projectData),
-    )
-    await addLogs(result, userId)
-    if (result?.failed === true) throw new Error('Echec de suppression du projet côté ansible')
+    const hook = req.hooks.archiveProject.execute
+    const archiveProjectResult = await hook(projectData)
+    await addLogs(archiveProjectResult, userId)
+    if (archiveProjectResult?.failed === true) throw new Error('Echec de suppression du projet côté ansible')
   } catch (error) {
     req.log.error({
       ...getLogInfos(),

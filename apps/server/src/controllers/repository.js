@@ -156,6 +156,9 @@ export const createRepositoryController = async (req, res) => {
       repoData.externalUserName = data.externalUserName
       repoData.externalToken = data.externalToken
     }
+
+    // const hook = req.hooks.createRepository.execute
+
     // console.log({ repoData })
     // if isInfra lancer création argo
     // const result = await hook(repoData)
