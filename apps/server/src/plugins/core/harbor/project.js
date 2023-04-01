@@ -1,78 +1,33 @@
 import axios from 'axios'
 import { axiosOptions } from './index.js'
-import { getRobotPermissions } from './utils.js'
 
-export const createProject = async (payload) => {
-  const { name, organization } = payload.args
-  const projectName = `${organization}-${name}`
-
+export const createProject = async (projectName) => {
   try {
-    try {
-      const oldProject = await axios({
-        ...axiosOptions,
-        url: `projects/${projectName}`,
-      })
-      return {
-        status: {
-          result: 'OK',
-          message: 'Already Exists',
-        },
-        result: {
-          project: oldProject.data,
-        },
-      }
-    } catch (error) { // Create project if not exist
-      await axios({
-        ...axiosOptions,
-        url: 'projects',
-        method: 'post',
-        data: {
-          project_name: projectName,
-        },
-      })
-      const newProject = await axios({
-        ...axiosOptions,
-        url: `projects/${projectName}`,
-        method: 'get',
-      })
-      const newRobot = await axios({
-        ...axiosOptions,
-        url: 'robots',
-        method: 'post',
-        data: getRobotPermissions(projectName),
-      })
-      return {
-        status: {
-          result: 'OK',
-          message: 'Created',
-        },
-        result: {
-          project: newProject.data,
-          vault: [{
-            name: 'QUAY',
-            data: {
-              QUAY_ROBOT_USERNAME: newRobot.data.name,
-              QUAY_ROBOT_TOKEN: newRobot.data.secret,
-            },
-          }],
-        },
-      }
-    }
-  } catch (error) {
-    return {
-      status: {
-        result: 'KO',
-        message: error.message,
-        stack: error.stack,
+    const existingProject = await axios({
+      ...axiosOptions,
+      url: `projects/${projectName}`,
+      method: 'get',
+    })
+    return existingProject.data
+  } catch (error) { // Create project if not exist
+    await axios({
+      ...axiosOptions,
+      url: 'projects',
+      method: 'post',
+      data: {
+        project_name: projectName,
       },
-    }
+    })
+    const newProject = await axios({
+      ...axiosOptions,
+      url: `projects/${projectName}`,
+      method: 'get',
+    })
+    return newProject.data
   }
 }
 
-export const archiveProject = async (payload) => {
-  const { name, organization } = payload.args
-  const projectName = `${organization}-${name}`
-
+export const deleteProject = async (projectName) => {
   try {
     const project = await axios({
       ...axiosOptions,

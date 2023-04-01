@@ -16,6 +16,8 @@ node_modules
 .env.ci
 .env.test
 .env.prod
+.env-database
+.env-keycloak
 
 # cypress
 screenshots

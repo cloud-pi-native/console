@@ -1,5 +1,4 @@
 import axios from 'axios'
-
 import app from '../../../app.js'
 import { axiosOptions } from './index.js'
 

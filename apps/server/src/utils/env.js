@@ -40,12 +40,24 @@ export const adminsUserId = process.env.ADMIN_KC_USER_ID ? process.env.ADMIN_KC_
 
 export const argocdUrl = process.env.ARGOCD_URL
 
-export const vaultUrl = process.env.VAULT_URL
-export const nexusUrl = process.env.NEXUS_URL
-export const gitlabUrl = process.env.GITLAB_URL
-export const sonarqubeUrl = process.env.SONARQUBE_URL
-export const harborUrl = process.env.HARBOR_URL
-export const keycloakUrl = process.env.KEYCLOAK_URL
+export const vaultUrl = process.env.VAULT_URL?.endsWith('/')
+  ? process.env.VAULT_URL?.slice(0, -1)
+  : process.env.VAULT_URL
+export const nexusUrl = process.env.NEXUS_URL?.endsWith('/')
+  ? process.env.NEXUS_URL?.slice(0, -1)
+  : process.env.NEXUS_URL
+export const gitlabUrl = process.env.GITLAB_URL?.endsWith('/')
+  ? process.env.GITLAB_URL?.slice(0, -1)
+  : process.env.GITLAB_URL
+export const sonarqubeUrl = process.env.SONARQUBE_URL?.endsWith('/')
+  ? process.env.SONARQUBE_URL?.slice(0, -1)
+  : process.env.SONARQUBE_URL
+export const harborUrl = process.env.HARBOR_URL?.endsWith('/')
+  ? process.env.HARBOR_URL?.slice(0, -1)
+  : process.env.HARBOR_URL
+export const keycloakUrl = process.env.KEYCLOAK_URL?.endsWith('/')
+  ? process.env.KEYCLOAK_URL?.slice(0, -1)
+  : process.env.KEYCLOAK_URL
 
 export const gitlabToken = process.env.GITLAB_TOKEN
 

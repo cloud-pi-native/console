@@ -23,7 +23,7 @@ import {
 import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import { getOrganizationById } from '../models/queries/organization-queries.js'
-// import { addLogs } from '../models/queries/log-queries.js'
+import { addLogs } from '../models/queries/log-queries.js'
 
 // GET
 export const getRepositoryByIdController = async (req, res) => {
@@ -85,7 +85,7 @@ export const createRepositoryController = async (req, res) => {
   const projectId = req.params?.projectId
   data.projectId = projectId
 
-  // const req.h.createRepository.execute
+  // const hook = req.hooks.createRepository.execute
 
   let project
   let repo
@@ -145,11 +145,20 @@ export const createRepositoryController = async (req, res) => {
       IS_INFRA: data.isInfra,
       ENV_LIST: environmentsNames,
     }
-    if (data.isPrivate) {
-      ansibleData.GIT_INPUT_USER = data.externalUserName
-      ansibleData.GIT_INPUT_PASSWORD = data.externalToken
-    }
 
+    const repoData = {
+      ...repo.get({ plain: true }),
+      projectName: project.name,
+      organization: organization.dataValues.name,
+      services: project.services,
+    }
+    if (data.isPrivate) {
+      repoData.externalUserName = data.externalUserName
+      repoData.externalToken = data.externalToken
+    }
+    // console.log({ repoData })
+    // if isInfra lancer création argo
+    // const result = await hook(repoData)
     // const ansibleRes = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
     //   method: 'POST',
     //   body: JSON.stringify(ansibleData),
@@ -160,8 +169,9 @@ export const createRepositoryController = async (req, res) => {
     //   },
     // })
     // const resJson = await ansibleRes.json()
-    // await addLogs(resJson, userId)
-    // if (resJson.status !== 'OK') throw new Error(`Echec de création du repo ${repo.internalRepoName} côté ansible`)
+    const resJson = ansibleData
+    await addLogs(resJson, userId)
+    if (resJson.status !== 'OK') throw new Error(`Echec de création du repo ${repo.internalRepoName} côté ansible`)
   } catch (error) {
     const message = `Echec requête ${req.id} : ${error.message}`
     req.log.error({

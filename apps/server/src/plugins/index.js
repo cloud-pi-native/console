@@ -1,4 +1,3 @@
-// import { readdir } from 'node:fs/promises'
 import { readdirSync, existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import url from 'url'
@@ -115,7 +114,7 @@ export const initCorePlugins = (app) => {
   return pluginManager
 }
 
-export const initExternalPlugins = async (app, m) => {
+export const initExternalPlugins = async (app, pluginManager) => {
   const __dirname = url.fileURLToPath(new URL('.', import.meta.url))
   try {
     const pluginDir = resolve(__dirname, 'external')
@@ -123,7 +122,7 @@ export const initExternalPlugins = async (app, m) => {
     for (const plugin of plugins) {
       if (existsSync(resolve(__dirname, `external/${plugin}/init.js`))) {
         const myPlugin = await import(`${pluginDir}/${plugin}/init.js`)
-        myPlugin.init(m.register)
+        myPlugin.init(pluginManager.register)
       } else {
         app.log.warn(`ignoring ${plugin}, ${plugin}/init.js does not exist`)
       }

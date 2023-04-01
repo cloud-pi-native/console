@@ -2,7 +2,7 @@ import axios from 'axios'
 import { sonarqubeUrl, sonarqubeApiToken as username } from '../../../utils/env.js'
 
 export const axiosOptions = {
-  baseURL: `${sonarqubeUrl}api/`,
+  baseURL: `${sonarqubeUrl}/api/`,
   auth: {
     username,
   },

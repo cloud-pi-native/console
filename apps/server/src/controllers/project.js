@@ -10,6 +10,7 @@ import {
   addUserToProject,
   archiveProject,
   getProjectUsers,
+  updateProjectServices,
 } from '../models/queries/project-queries.js'
 import { getOrCreateUser, getUserById } from '../models/queries/user-queries.js'
 import {
@@ -41,7 +42,15 @@ import { projectSchema } from 'shared/src/schemas/project.js'
 import { calcProjectNameMaxLength } from 'shared/src/utils/functions.js'
 import { getServices } from '../utils/services.js'
 import { lowercaseFirstLetter, replaceNestedKeys } from '../utils/queries-tools.js'
-// import { addLogs } from '../models/queries/log-queries.js'
+import { addLogs } from '../models/queries/log-queries.js'
+import {
+  createDsoProject as createProjectGitlab,
+  archiveDsoProject as archiveProjectGitlab,
+} from '../plugins/core/gitlab/index.js'
+import {
+  createDsoProject as createProjectHarbor,
+  archiveDsoProject as archiveProjectHarbor,
+} from '../plugins/core/harbor/index.js'
 
 // GET
 export const getUserProjectsController = async (req, res) => {
@@ -57,6 +66,11 @@ export const getUserProjectsController = async (req, res) => {
       description: 'Projects successfully retreived',
     })
     if (!projects.length) return send200(res, [])
+
+    console.log({
+      projects: projects.filter(project => project.status !== 'archived')
+        .map(project => project.get({ plain: true })),
+    })
 
     projects = projects.filter(project => project.status !== 'archived')
       .map(project => project.get({ plain: true }))
@@ -135,7 +149,6 @@ export const createProjectController = async (req, res) => {
   const data = req.body
   const user = req.session?.user
 
-  // const h = req.h.createProject.execute
   let environment
   let project
   let owner
@@ -165,28 +178,39 @@ export const createProjectController = async (req, res) => {
     })
     send201(res, project)
   } catch (error) {
-    // console.log(Object.keys(error))
     req.log.error({
       ...getLogInfos(),
-      description: `Projet non créé: ${error?.message}`,
-      error: error?.message,
-      stack: error?.stack,
+      description: `Projet non créé: ${error.message}`,
+      error: error.message,
+      stack: error.stack,
       data: error.request,
     })
-    return send500(res, error?.message)
+    return send500(res, error.message)
   }
 
   // Process api call to external service
   try {
-    // const projectData = {
-    //   ...project.get({ plain: true }),
-    //   organization: organization.dataValues.name,
-    //   email: owner.email,
-    // }
-    // const result = await h(projectData)
-    // // console.log({ h_create: result.nexus.status })
-    // await addLogs(result, owner.dataValues.id)
-    // if (result.failed) throw new Error('Echec de création du projet')
+    const projectData = {
+      ...project.get({ plain: true }),
+      organization: organization.dataValues.name,
+      email: owner.dataValues.email,
+    }
+    const result = Promise.all(
+      createProjectGitlab(projectData),
+      createProjectHarbor(projectData),
+    )
+    const { gitlab, registry } = result
+    await addLogs(result, owner.dataValues.id)
+    const services = {
+      gitlab: {
+        id: gitlab.result.group.id,
+      },
+      registry: {
+        id: registry.result.project.project_id,
+      },
+    }
+    await updateProjectServices(project.id, services)
+    if (result.failed) throw new Error('Echec de création du projet')
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
@@ -291,16 +315,18 @@ export const archiveProjectController = async (req, res) => {
 
   // Process api call to external service
   try {
-    // const organization = await getOrganizationById(project.organization)
+    const organization = await getOrganizationById(project.organization)
 
-    // const hp = req.h.archiveProject.execute
-    // const projectData = {
-    //   ...project.get({ plain: true }),
-    //   organization: organization.dataValues.name,
-    // }
-    // const archiveProjectResult = await hp(projectData)
-    // await addLogs(archiveProjectResult, userId)
-    // if (archiveProjectResult?.failed === true) throw new Error('Echec de suppression du projet côté ansible')
+    const projectData = {
+      ...project.get({ plain: true }),
+      organization: organization.dataValues.name,
+    }
+    const result = Promise.all(
+      archiveProjectGitlab(projectData),
+      archiveProjectHarbor(projectData),
+    )
+    await addLogs(result, userId)
+    if (result?.failed === true) throw new Error('Echec de suppression du projet côté ansible')
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
