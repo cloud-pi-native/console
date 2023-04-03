@@ -1,63 +1,38 @@
-import { kcAdminClient } from './init.js'
+import KcAdminClient from '@keycloak/keycloak-admin-client'
 
-export const getGroups = async () => {
-  return kcAdminClient.groups.find()
-}
+import {
+  keycloakProtocol,
+  keycloakDomain,
+  keycloakRealm,
+  keycloakUser,
+  keycloakToken,
+} from '../../../utils/env.js'
+import { createGroups } from './group.js'
+import { addMembers } from './permission.js'
 
-export const createGroups = async (groupsName) => {
-  const groupRes = await kcAdminClient.groups.find()
-  await Promise.all(
-    groupsName.map((groupName) => {
-      const group = groupRes.find((groupRes) => groupRes.name === groupName)
-      return (
-        group ||
-        kcAdminClient.groups.create({
-          name: groupName,
-        })
-      )
-    }),
-  )
-}
+const kcClient = new KcAdminClient({
+  baseUrl: `${keycloakProtocol}://${keycloakDomain}`,
+})
 
-export const deleteGroups = async (groupsName) => {
-  const groupRes = await kcAdminClient.groups.find()
-  await Promise.all(
-    groupsName.map((groupName) => {
-      const group = groupRes.find((groupRes) => groupRes.name === groupName)
-      return (
-        !group ||
-        kcAdminClient.groups.del({
-          id: group.id,
-        })
-      )
-    }),
-  )
-}
+await kcClient.auth({
+  clientId: 'admin-cli',
+  grantType: 'password',
+  username: keycloakUser,
+  password: keycloakToken,
+})
+kcClient.setConfig({ realmName: keycloakRealm })
 
-export const getMembers = async (groupName) => {
-  const allGroups = await getGroups()
-  const { id } = allGroups.find((group) => groupName === group.name)
-  return kcAdminClient.groups.listMembers({ id })
-}
+export { kcClient }
 
-export const getUsers = async () => {
-  return kcAdminClient.users.find()
-}
-
-export const getUserByEmail = async (email) => {
-  return kcAdminClient.users.find({ email })
-}
-
-export const removeMembers = async (usersId, groupsName) => {
-  const allGroups = await getGroups()
-  const groups = allGroups.filter((group) => groupsName.includes(group.name))
-  const prms = groups.flatMap((group) => (usersId.map((id) => kcAdminClient.users.delFromGroup({ id, groupId: group.id }))))
-  return Promise.all(prms)
-}
-
-export const addMembers = async (usersId, groupsName) => {
-  const allGroups = await getGroups()
-  const groups = allGroups.filter((group) => groupsName.includes(group.name))
-  const prms = groups.flatMap((group) => (usersId.map((id) => kcAdminClient.users.addToGroup({ id, groupId: group.id }))))
-  return Promise.all(prms)
+export const createProjectGroup = async (payload) => {
+  const { organization, name, userId } = payload.args
+  const projectName = `${organization}-${name}`
+  const group = (await createGroups([projectName]))[0]
+  await addMembers([userId], [projectName])
+  console.log(group)
+  const res = {
+    status: { result: 'OK' },
+    group: group[0],
+  }
+  return res
 }

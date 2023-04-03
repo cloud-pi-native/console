@@ -76,3 +76,6 @@ export const harborPassword = process.env.HARBOR_PASSWORD
 export const projectPath = process.env.PROJECT_PATH?.split('/') || ['forge-mi', 'projects']
 
 export const mockPlugins = process.env.MOCK_PLUGINS === 'true'
+
+export const keycloakToken = process.env.KEYCLOAK_ADMIN_PASSWORD
+export const keycloakUser = process.env.KEYCLOAK_ADMIN

@@ -186,10 +186,12 @@ export const createProjectController = async (req, res) => {
       ...project.get({ plain: true }),
       organization: organization.dataValues.name,
       email: owner.dataValues.email,
+      userId: owner.dataValues.id,
     }
+    const payload = { args: projectData }
     const result = Promise.all([
-      createProjectGitlab(projectData),
-      createProjectHarbor(projectData),
+      createProjectGitlab(payload),
+      createProjectHarbor(payload),
     ],
     )
     const { gitlab, registry } = result
