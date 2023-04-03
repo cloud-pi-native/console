@@ -79,12 +79,10 @@ export const archiveDsoProject = async (payload) => {
 // Repo
 export const createDsoRepository = async (payload) => {
   try {
-    const { internalRepoName, organization, projectName, services } = payload.args
+    const { internalRepoName, externalRepoUrl, organization, projectName, services } = payload.args
     const group = `forge-mi/projects/${organization}/${projectName}`
 
-    const project = await createProject(internalRepoName, group, services.gitlab.id)
-    // const user = await createUser(email)
-    // const groupMember = await addGroupMember(group.id, user.id)
+    const project = await createProject(internalRepoName, group, services.gitlab.id, externalRepoUrl)
 
     return {
       status: {

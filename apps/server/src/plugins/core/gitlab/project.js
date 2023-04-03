@@ -1,15 +1,13 @@
 import { api } from './index.js'
 
 export const createProject = async (repo, group, groupId, externalRepoUrl) => {
-  const path = `${group}/${repo}`
-  // const searchResult = await api.Projects.search(repo)
-  // const searchResult = await api.Projects.show()
-  // console.log({ searchResult })
-  // const existingProject = searchResult.find(project => project.path_with_namespace === group)
-  // if (existingProject) {
-  //   return existingProject
-  // }
-  console.log({ repo, path, group })
+  const searchResult = await api.Projects.search(repo)
+  console.log({ searchResult })
+  if (searchResult.length) {
+    const existingProject = searchResult.find(project => project.path_with_namespace === group)
+    if (existingProject) return existingProject
+  }
+  console.log({ repo, group })
 
   const test = await api.Projects.create({
     name: repo,

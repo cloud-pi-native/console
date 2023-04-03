@@ -10,13 +10,9 @@ import {
 } from '../models/queries/repository-queries.js'
 import {
   getProjectById,
-  getProjectUsers,
   lockProject,
   unlockProject,
 } from '../models/queries/project-queries.js'
-import {
-  getEnvironmentsByProjectId,
-} from '../models/queries/environment-queries.js'
 import {
   getRoleByUserIdAndProjectId,
 } from '../models/queries/users-projects-queries.js'
@@ -86,8 +82,6 @@ export const createRepositoryController = async (req, res) => {
   const projectId = req.params?.projectId
   data.projectId = projectId
 
-  // const hook = req.hooks.createRepository.execute
-
   let project
   let repo
   try {
@@ -130,22 +124,7 @@ export const createRepositoryController = async (req, res) => {
 
   // Process api call to external service
   try {
-    const users = await getProjectUsers(projectId)
-
-    const envRes = await getEnvironmentsByProjectId(projectId)
-    const environmentsNames = envRes.map(env => env.name)
-
     const organization = await getOrganizationById(project.organization)
-
-    const ansibleData = {
-      ORGANIZATION_NAME: organization.name,
-      EMAILS: users.map(user => user.email),
-      PROJECT_NAME: project.name,
-      REPO_DEST: data.internalRepoName,
-      REPO_SRC: data.externalRepoUrl.startsWith('http') ? data.externalRepoUrl.split('://')[1] : data.externalRepoUrl,
-      IS_INFRA: data.isInfra,
-      ENV_LIST: environmentsNames,
-    }
 
     const repoData = {
       ...repo.get({ plain: true }),
@@ -157,22 +136,10 @@ export const createRepositoryController = async (req, res) => {
       repoData.externalUserName = data.externalUserName
       repoData.externalToken = data.externalToken
     }
-    // console.log({ repoData })
-    // if isInfra lancer création argo
-    // const result = await hook(repoData)
-    // const ansibleRes = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
-    //   method: 'POST',
-    //   body: JSON.stringify(ansibleData),
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     authorization: req.headers.authorization,
-    //     'request-id': req.id,
-    //   },
-    // })
-    // const resJson = await ansibleRes.json()
-    const resJson = ansibleData
-    await addLogs(resJson, userId)
-    if (resJson.status !== 'OK') throw new Error(`Echec de création du repo ${repo.internalRepoName} côté ansible`)
+
+    const result = await createRepositoryGitlab(repoData)
+    await addLogs(result, userId)
+    if (result.failed) throw new Error('Echec de création du dépôt')
   } catch (error) {
     const message = `Echec requête ${req.id} : ${error.message}`
     req.log.error({
