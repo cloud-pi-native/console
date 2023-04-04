@@ -187,9 +187,10 @@ export const createProjectController = async (req, res) => {
       organization: organization.dataValues.name,
       email: owner.dataValues.email,
     }
-    const result = Promise.all(
+    const result = Promise.all([
       createProjectGitlab(projectData),
       createProjectHarbor(projectData),
+    ],
     )
     const { gitlab, registry } = result
     await addLogs(result, owner.dataValues.id)
