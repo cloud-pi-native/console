@@ -10,7 +10,7 @@ import {
   addUserToProject,
   archiveProject,
   getProjectUsers,
-  updateProjectServices,
+  // updateProjectServices,
 } from '../models/queries/project-queries.js'
 import { getOrCreateUser, getUserById } from '../models/queries/user-queries.js'
 import {
@@ -188,24 +188,25 @@ export const createProjectController = async (req, res) => {
       email: owner.dataValues.email,
       userId: owner.dataValues.id,
     }
+
     const payload = { args: projectData }
-    const result = await Promise.all([
+    const results = await Promise.all([
       createProjectGitlab(payload),
-      createProjectHarbor(payload),
+      // createProjectHarbor(payload),
     ],
     )
-    const { gitlab, registry } = result
-    await addLogs(result, owner.dataValues.id)
-    const services = {
-      gitlab: {
-        id: gitlab.result.group.id,
-      },
-      registry: {
-        id: registry.result.project.project_id,
-      },
-    }
-    await updateProjectServices(project.id, services)
-    if (result.failed) throw new Error('Echec de création du projet')
+    // const { gitlab, registry } = result
+    // const services = {
+    //   gitlab: {
+    //     id: gitlab.result.group.id,
+    //   },
+    //   registry: {
+    //     id: registry.result.project.project_id,
+    //   },
+    // }
+    // await updateProjectServices(project.id, services)
+    await addLogs(results, owner.dataValues.id)
+    if (results.find(result => result.status.result === 'KO')) throw new Error('Echec de création du projet')
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
