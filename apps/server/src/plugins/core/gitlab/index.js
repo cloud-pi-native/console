@@ -79,14 +79,24 @@ export const archiveDsoProject = async (payload) => {
 // Repo
 // https://github.com/dnum-mi/dso-playbooks/blob/main/roles/gitlab-project-checkout/tasks/main.yml
 export const createDsoRepository = async (payload) => {
+  console.log('payload.args: ', payload.args)
+  // TODO :
+  // {
+  //   status: {
+  //     result: 'KO',
+  //     message: "Cannot set properties of null (setting 'gitlab')"
+  //   }
+  // }
   try {
-    const { internalRepoName, externalRepoUrl, organization, projectName, services } = payload.args
+    const { userId, internalRepoName, externalRepoUrl, organization, projectName, services } = payload.args
     const group = `forge-mi/projects/${organization}/${projectName}`
 
-    const project = await createProject(internalRepoName, group, services.gitlab.id, externalRepoUrl)
+    services.gitlab = {
+      id: 200,
+    }
+    const project = await createProject(userId, internalRepoName, group, services.gitlab?.id, externalRepoUrl)
     // await createProjectMirror()
     // await setProjectTriggers()
-    // await setVaultProjectInfos()
 
     return {
       status: {

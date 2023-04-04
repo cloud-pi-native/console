@@ -137,9 +137,11 @@ export const createRepositoryController = async (req, res) => {
       repoData.externalToken = data.externalToken
     }
 
-    const result = await createRepositoryGitlab(repoData)
+    const payload = { args: { ...repoData, userId } }
+    const result = await createRepositoryGitlab(payload)
+    console.log(result)
     await addLogs(result, userId)
-    if (result.failed) throw new Error('Echec de création du dépôt')
+    if (result.status.result === 'KO') throw new Error('Echec de création du dépôt')
   } catch (error) {
     const message = `Echec requête ${req.id} : ${error.message}`
     req.log.error({
@@ -148,6 +150,8 @@ export const createRepositoryController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
+    await updateRepositoryFailed(repo.id)
+    await unlockProject(projectId)
     return
   }
 
@@ -170,22 +174,22 @@ export const createRepositoryController = async (req, res) => {
     })
   }
 
-  try {
-    await updateRepositoryFailed(repo.id)
-    await unlockProject(projectId)
+  //   try {
+  //     await updateRepositoryFailed(repo.id)
+  //     await unlockProject(projectId)
 
-    req.log.info({
-      ...getLogInfos({ repositoryId: repo.id }),
-      description: 'Repo status successfully updated in database to failed',
-    })
-  } catch (error) {
-    req.log.error({
-      ...getLogInfos(),
-      description: 'Cannot update repo status to failed',
-      error: error.message,
-      trace: error.trace,
-    })
-  }
+//     req.log.info({
+//       ...getLogInfos({ repositoryId: repo.id }),
+//       description: 'Repo status successfully updated in database to failed',
+//     })
+//   } catch (error) {
+//     req.log.error({
+//       ...getLogInfos(),
+//       description: 'Cannot update repo status to failed',
+//       error: error.message,
+//       trace: error.trace,
+//     })
+//   }
 }
 
 // UPDATE

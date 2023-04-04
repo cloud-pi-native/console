@@ -1,6 +1,6 @@
 import { api } from './index.js'
 
-export const createProject = async (repo, group, groupId, externalRepoUrl) => {
+export const createProject = async (userId, repo, group, groupId, externalRepoUrl) => {
   console.log({ repo, group })
   const searchResult = await api.Projects.search(repo)
   console.log({ searchResult })
@@ -10,6 +10,7 @@ export const createProject = async (repo, group, groupId, externalRepoUrl) => {
   }
 
   const test = await api.Projects.create({
+    userId,
     name: repo,
     ci_config_path: '.gitlab-ci-dso.yml',
     namespace_id: groupId,

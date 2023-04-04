@@ -205,6 +205,7 @@ export const createProjectController = async (req, res) => {
     //   },
     // }
     // await updateProjectServices(project.id, services)
+    console.log(results)
     await addLogs(results, owner.dataValues.id)
     if (results.find(result => result.status.result === 'KO')) throw new Error('Echec de création du projet')
   } catch (error) {
@@ -214,6 +215,9 @@ export const createProjectController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
+    await updateProjectFailed(project.id)
+    await unlockProject(project.id)
+    return
   }
 
   // Update DB after service call
@@ -241,22 +245,22 @@ export const createProjectController = async (req, res) => {
     })
   }
 
-  try {
-    await updateProjectFailed(project.id)
-    await unlockProject(project.id)
+  // try {
+  //   await updateProjectFailed(project.id)
+  //   await unlockProject(project.id)
 
-    req.log.info({
-      ...getLogInfos({ projectId: project.id }),
-      description: 'Project status successfully updated in database',
-    })
-  } catch (error) {
-    req.log.error({
-      ...getLogInfos(),
-      description: 'Cannot update project status to failed',
-      error: error.message,
-      trace: error.trace,
-    })
-  }
+  //   req.log.info({
+  //     ...getLogInfos({ projectId: project.id }),
+  //     description: 'Project status successfully updated in database',
+  //   })
+  // } catch (error) {
+  //   req.log.error({
+  //     ...getLogInfos(),
+  //     description: 'Cannot update project status to failed',
+  //     error: error.message,
+  //     trace: error.trace,
+  //   })
+  // }
 }
 
 // DELETE
@@ -318,13 +322,14 @@ export const archiveProjectController = async (req, res) => {
       organization: organization.dataValues.name,
     }
     const payload = { args: projectData }
-    const result = await Promise.all([
+    const results = await Promise.all([
       archiveProjectGitlab(payload),
       archiveProjectHarbor(payload),
     ],
     )
-    await addLogs(result, userId)
-    if (result?.failed === true) throw new Error('Echec de suppression du projet côté ansible')
+    console.log(results)
+    await addLogs(results, userId)
+    if (results.find(result => result.status.result === 'KO')) throw new Error('Echec de suppression du projet côté ansible')
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
@@ -355,6 +360,7 @@ export const archiveProjectController = async (req, res) => {
       ...getLogInfos({ projectId }),
       description: 'Project archived and unlocked',
     })
+    return
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
@@ -371,6 +377,7 @@ export const archiveProjectController = async (req, res) => {
       ...getLogInfos({ projectId }),
       description: 'Project status successfully updated in database',
     })
+    return
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
