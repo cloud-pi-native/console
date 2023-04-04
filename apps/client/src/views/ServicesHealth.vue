@@ -50,7 +50,7 @@ onMounted(async () => {
       :data-testid="`${service.id}-info`"
       :title="service.id"
       class="pb-5 fr-mt-2w"
-      :description="`${service.code} - ${service.message}`"
+      :description="service.message ? `${service.code} - ${service.message}` : `${service.code}`"
       :type="service.status"
     />
   </div>

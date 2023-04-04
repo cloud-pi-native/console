@@ -26,10 +26,18 @@ watch(routePath, () => {
       :description="message"
       :type="type"
       :closed="!isOpen"
-      class="fixed bg-white bottom-4"
+      class="dso-snackbar"
       small
       closeable
       @close="closeSnackbar()"
     />
   </div>
 </template>
+
+<style scoped>
+.dso-snackbar {
+  @apply fixed bottom-4;
+
+  background-color: var(--background-default-grey);
+}
+</style>
