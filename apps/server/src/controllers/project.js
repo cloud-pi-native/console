@@ -189,7 +189,7 @@ export const createProjectController = async (req, res) => {
       userId: owner.dataValues.id,
     }
     const payload = { args: projectData }
-    const result = Promise.all([
+    const result = await Promise.all([
       createProjectGitlab(payload),
       createProjectHarbor(payload),
     ],
@@ -317,7 +317,7 @@ export const archiveProjectController = async (req, res) => {
       organization: organization.dataValues.name,
     }
     const payload = { args: projectData }
-    const result = Promise.all([
+    const result = await Promise.all([
       archiveProjectGitlab(payload),
       archiveProjectHarbor(payload),
     ],
