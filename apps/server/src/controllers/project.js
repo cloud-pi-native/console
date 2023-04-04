@@ -59,11 +59,6 @@ export const getUserProjectsController = async (req, res) => {
     })
     if (!projects.length) return send200(res, [])
 
-    console.log({
-      projects: projects.filter(project => project.status !== 'archived')
-        .map(project => project.get({ plain: true })),
-    })
-
     projects = projects.filter(project => project.status !== 'archived')
       .map(project => project.get({ plain: true }))
       .map(project => replaceNestedKeys(project, lowercaseFirstLetter))

@@ -3,7 +3,7 @@ import { gitlabToken, gitlabUrl, projectPath } from '../../../utils/env.js'
 import { createGroup, deleteGroup } from './group.js'
 import { addGroupMember } from './permission.js'
 import { createProject, deleteProject } from './project.js'
-import { createUser } from './user.js'
+import { createUser, getUser } from './user.js'
 
 export const api = new Gitlab({ token: gitlabToken, host: gitlabUrl })
 
@@ -88,13 +88,15 @@ export const createDsoRepository = async (payload) => {
   //   }
   // }
   try {
-    const { userId, internalRepoName, externalRepoUrl, organization, projectName, services } = payload.args
+    const { userEmail, internalRepoName, externalRepoUrl, organization, projectName } = payload.args
     const group = `forge-mi/projects/${organization}/${projectName}`
-
-    services.gitlab = {
-      id: 200,
+    const services = {
+      gitlab: {
+        id: 200,
+      },
     }
-    const project = await createProject(userId, internalRepoName, group, services.gitlab?.id, externalRepoUrl)
+    const user = await getUser(userEmail)
+    const project = await createProject(user.id, internalRepoName, group, services.gitlab?.id, externalRepoUrl)
     // await createProjectMirror()
     // await setProjectTriggers()
 

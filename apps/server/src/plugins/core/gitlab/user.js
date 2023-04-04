@@ -2,6 +2,11 @@ import { api } from './index.js'
 
 const createUsername = (email) => email.replace('@', '.')
 
+export const getUser = async (email) => {
+  const users = await api.Users.search(email)
+  return users.length ? users[0] : null
+}
+
 export const createUser = async (email) => {
   const searchResult = await api.Users.search(email)
   const existingUser = searchResult.find(user => user.email === email)
