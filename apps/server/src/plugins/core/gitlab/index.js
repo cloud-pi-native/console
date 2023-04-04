@@ -2,7 +2,7 @@ import { Gitlab } from '@gitbeaker/node'
 import { gitlabToken, gitlabUrl, projectPath } from '../../../utils/env.js'
 import { createGroup, deleteGroup } from './group.js'
 import { addGroupMember } from './permission.js'
-import { createProject } from './project.js'
+import { createProject, deleteProject } from './project.js'
 import { createUser } from './user.js'
 
 export const api = new Gitlab({ token: gitlabToken, host: gitlabUrl })
@@ -77,12 +77,16 @@ export const archiveDsoProject = async (payload) => {
 }
 
 // Repo
+// https://github.com/dnum-mi/dso-playbooks/blob/main/roles/gitlab-project-checkout/tasks/main.yml
 export const createDsoRepository = async (payload) => {
   try {
     const { internalRepoName, externalRepoUrl, organization, projectName, services } = payload.args
     const group = `forge-mi/projects/${organization}/${projectName}`
 
     const project = await createProject(internalRepoName, group, services.gitlab.id, externalRepoUrl)
+    // await createProjectMirror()
+    // await setProjectTriggers()
+    // await setVaultProjectInfos()
 
     return {
       status: {
@@ -99,6 +103,33 @@ export const createDsoRepository = async (payload) => {
           PROJECT_NAME: projectName,
         },
       }],
+    }
+  } catch (error) {
+    return {
+      status: {
+        result: 'KO',
+        message: error.message,
+      },
+    }
+  }
+}
+
+// https://github.com/dnum-mi/dso-playbooks/blob/main/roles/gitlab-project-delete/tasks/main.yml
+export const archiveDsoRepository = async (payload) => {
+  try {
+    const { internalRepoName, externalRepoUrl, organization, projectName, services } = payload.args
+    const group = `forge-mi/projects/${organization}/${projectName}`
+
+    await deleteProject(internalRepoName, group, services.gitlab.id, externalRepoUrl)
+    // await deleteProjectMirror()
+    // await deleteArgoProject()
+    // await deleteVaultProjectInfos()
+
+    return {
+      status: {
+        result: 'OK',
+        message: 'Created',
+      },
     }
   } catch (error) {
     return {
