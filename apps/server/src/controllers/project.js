@@ -316,9 +316,11 @@ export const archiveProjectController = async (req, res) => {
       ...project.get({ plain: true }),
       organization: organization.dataValues.name,
     }
-    const result = Promise.all(
-      archiveProjectGitlab(projectData),
-      archiveProjectHarbor(projectData),
+    const payload = { args: projectData }
+    const result = Promise.all([
+      archiveProjectGitlab(payload),
+      archiveProjectHarbor(payload),
+    ],
     )
     await addLogs(result, userId)
     if (result?.failed === true) throw new Error('Echec de suppression du projet côté ansible')
