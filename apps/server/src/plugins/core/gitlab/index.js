@@ -3,6 +3,7 @@ import { gitlabToken, gitlabUrl, projectPath } from '../../../utils/env.js'
 import { createGroup, deleteGroup } from './group.js'
 import { addGroupMember } from './permission.js'
 import { createProject, deleteProject } from './project.js'
+import { setProjectTrigger } from './triggers.js'
 import { createUser } from './user.js'
 
 export const api = new Gitlab({ token: gitlabToken, host: gitlabUrl })
@@ -77,13 +78,12 @@ export const archiveDsoProject = async (payload) => {
 }
 
 // Repo
-// https://github.com/dnum-mi/dso-playbooks/blob/main/roles/gitlab-project-checkout/tasks/main.yml
 export const createDsoRepository = async (payload) => {
   try {
     const { internalRepoName, externalRepoUrl, organization, projectName } = payload.args
     const project = await createProject(internalRepoName, externalRepoUrl, projectName, organization)
     const mirror = await createProject(`${internalRepoName}-mirror`, externalRepoUrl, projectName, organization)
-    // await setProjectTriggers()
+    await setProjectTrigger(mirror.id)
 
     return {
       status: {
@@ -112,7 +112,6 @@ export const createDsoRepository = async (payload) => {
   }
 }
 
-// https://github.com/dnum-mi/dso-playbooks/blob/main/roles/gitlab-project-delete/tasks/main.yml
 export const deleteDsoRepository = async (payload) => {
   try {
     const { internalRepoName, organization, projectName } = payload.args
