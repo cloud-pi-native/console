@@ -21,7 +21,7 @@ import { getEnvironmentsByProjectId } from '../models/queries/environment-querie
 import { send200, send201, send500 } from '../utils/response.js'
 import { getLogInfos } from '../utils/logger.js'
 import { addLogs } from '../models/queries/log-queries.js'
-import hooks from '../plugins/index.js'
+import hooksFns from '../plugins/index.js'
 
 // GET
 export const getProjectUsersController = async (req, res) => {
@@ -114,7 +114,7 @@ export const addUserToProjectController = async (req, res) => {
 
   try {
     const userData = {} // TODO to define
-    const results = await hooks.addUserToProject.execute(userData)
+    const results = await hooksFns.addUserToProject(userData)
     await addLogs(results, userId)
     if (results.failed) throw new Error('Echec de création du projet')
     await unlockProject(projectId)
@@ -183,7 +183,7 @@ export const updateUserProjectRoleController = async (req, res) => {
       description: message,
     })
     const userData = {} // TODO to define
-    const results = await hooks.addUserToProject.execute(userData)
+    const results = await hooksFns.addUserToProject(userData)
     await addLogs(results, userId)
     if (results.failed) throw new Error('Echec de création du projet')
     await unlockProject(projectId)
@@ -223,7 +223,7 @@ export const removeUserFromProjectController = async (req, res) => {
     await removeUserFromProject({ project, user: userToRemove })
 
     const userData = {} // TODO to define
-    const results = await hooks.addUserToProject.execute(userData)
+    const results = await hooksFns.addUserToProject(userData)
     await addLogs(results, userId)
     if (results.failed) throw new Error('Echec de création du projet')
     await unlockProject(projectId)

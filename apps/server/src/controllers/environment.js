@@ -19,7 +19,7 @@ import {
 } from '../models/queries/users-projects-queries.js'
 import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
-import hooks from '../plugins/index.js'
+import hooksFns from '../plugins/index.js'
 
 // GET
 export const getEnvironmentByIdController = async (req, res) => {
@@ -95,7 +95,7 @@ export const initializeEnvironmentController = async (req, res) => {
 
   try {
     const envData = {} // TODO to define
-    const results = await hooks.initializeEnvironment.execute(envData)
+    const results = await hooksFns.initializeEnvironment(envData)
     // await updateProjectServices(project.id, services)
     await addLogs(results, userId)
     if (results.failed) throw new Error('Echec de création du projet')
@@ -180,7 +180,7 @@ export const deleteEnvironmentController = async (req, res) => {
 
   try {
     const envData = {} // TODO to define
-    const results = await hooks.deleteEnvironment.execute(envData)
+    const results = await hooksFns.deleteEnvironment(envData)
     await addLogs(results, userId)
     if (results.failed) throw new Error('Echec de création du projet')
 

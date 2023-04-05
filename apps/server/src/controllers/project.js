@@ -42,7 +42,7 @@ import { calcProjectNameMaxLength } from 'shared/src/utils/functions.js'
 import { getServices } from '../utils/services.js'
 import { lowercaseFirstLetter, replaceNestedKeys } from '../utils/queries-tools.js'
 import { addLogs } from '../models/queries/log-queries.js'
-import hooks from '../plugins/index.js'
+import hooksFns from '../plugins/index.js'
 
 // GET
 export const getUserProjectsController = async (req, res) => {
@@ -190,7 +190,7 @@ export const createProjectController = async (req, res) => {
       env: 'dev',
     }
 
-    const results = await hooks.createProject.execute(projectData)
+    const results = await hooksFns.createProject(projectData)
     console.log(results)
     await addLogs(results, owner.dataValues.id)
     if (results.failed) throw new Error('Echec de création du projet')
@@ -305,7 +305,7 @@ export const archiveProjectController = async (req, res) => {
       ...project.get({ plain: true }),
       organization: organization.dataValues.name,
     }
-    const results = await hooks.archiveProject.execute(projectData)
+    const results = await hooksFns.archiveProject(projectData)
     console.log(results)
     await addLogs(results, userId)
     if (results.failed) throw new Error('Echec de suppression du projet côté ansible')

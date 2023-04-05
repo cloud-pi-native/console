@@ -10,7 +10,7 @@ import {
   getRoleByUserIdAndProjectId,
   getSingleOwnerByProjectId,
 } from '../models/queries/users-projects-queries.js'
-import hooks from '../plugins/index.js'
+import hooksFns from '../plugins/index.js'
 import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
 
@@ -60,7 +60,7 @@ export const setPermissionController = async (req, res) => {
     // if (data.level === 20) await addMembers([data.userId], [permission.Environment.name])
 
     const permissionsData = {} // TODO to define
-    const results = await hooks.setPermission.execute(permissionsData)
+    const results = await hooksFns.setPermission(permissionsData)
     await addLogs(results, userId)
     if (results.failed) throw new Error('Echec de création du projet')
     req.log.info({
@@ -100,7 +100,7 @@ export const updatePermissionController = async (req, res) => {
     const permission = await updatePermission({ userId: data.userId, environmentId, level: data.level })
 
     const permissionsData = {} // TODO to define
-    const results = await hooks.updatePermission.execute(permissionsData)
+    const results = await hooksFns.updatePermission(permissionsData)
     await addLogs(results, userId)
     if (results.failed) throw new Error('Echec de création du projet')
 
@@ -146,7 +146,7 @@ export const deletePermissionController = async (req, res) => {
       description: message,
     })
     const permissionsData = {} // TODO to define
-    const results = await hooks.deletePermission.execute(permissionsData)
+    const results = await hooksFns.deletePermission(permissionsData)
     await addLogs(results, userId)
     if (results.failed) throw new Error('Echec de création du projet')
     send200(res, permission)

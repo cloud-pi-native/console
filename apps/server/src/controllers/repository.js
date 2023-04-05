@@ -24,7 +24,7 @@ import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import { getOrganizationById } from '../models/queries/organization-queries.js'
 import { addLogs } from '../models/queries/log-queries.js'
-import hooks from '../plugins/index.js'
+import hooksFns from '../plugins/index.js'
 
 // GET
 export const getRepositoryByIdController = async (req, res) => {
@@ -149,8 +149,7 @@ export const createRepositoryController = async (req, res) => {
       repoData.externalToken = data.externalToken
     }
 
-    const result = hooks.createRepository.execute(repoData)
-    console.log(result)
+    const result = await hooksFns.createRepository(repoData)
     await addLogs(result, userId)
     if (result.failed) throw new Error('Echec de création du dépôt')
   } catch (error) {
@@ -229,7 +228,7 @@ export const updateRepositoryController = async (req, res) => {
     await updateRepository(repositoryId, data.info)
 
     const reposData = {} // TODO to define
-    const results = await hooks.updateRepository.execute(reposData)
+    const results = await hooksFns.updateRepository(reposData)
     await addLogs(results, userId)
     if (results.failed) throw new Error('Echec de création du projet')
 
@@ -348,7 +347,7 @@ export const deleteRepositoryController = async (req, res) => {
     // await addLogs(resJson, userId)
     // if (resJson.status !== 'OK') throw new Error(`Echec de suppression du repo ${repo.internalRepoName} côté ansible`)
     const reposData = {} // TODO to define
-    const results = await hooks.deleteRepository.execute(reposData)
+    const results = await hooksFns.deleteRepository(reposData)
     await addLogs(results, userId)
     if (results.failed) throw new Error('Echec de création du projet')
   } catch (error) {

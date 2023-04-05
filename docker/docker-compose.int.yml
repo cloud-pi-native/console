@@ -59,6 +59,7 @@ services:
       - ../apps/server/env/.env
     environment:
       NODE_ENV: development
+      INTEGRATION: "true"
     networks:
       - dso-network
 
