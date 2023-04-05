@@ -78,6 +78,7 @@ export const createDsoProject = async (payload) => {
       status: {
         result: 'KO',
         message: error.message,
+        error: JSON.stringify(error),
       },
     }
   }
@@ -102,6 +103,7 @@ export const archiveDsoProject = async (payload) => {
       status: {
         result: 'KO',
         message: error.message,
+        error: JSON.stringify(error),
       },
     }
   }

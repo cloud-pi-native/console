@@ -25,14 +25,24 @@ kcClient.setConfig({ realmName: keycloakRealm })
 export { kcClient }
 
 export const createProjectGroup = async (payload) => {
-  const { organization, name, userId } = payload.args
-  const projectName = `${organization}-${name}`
-  const group = (await createGroups([projectName]))[0]
-  await addMembers([userId], [projectName])
-  console.log(group)
-  const res = {
-    status: { result: 'OK' },
-    group: group[0],
+  try {
+    const { organization, name, userId } = payload.args
+    const projectName = `${organization}-${name}`
+    const group = (await createGroups([projectName]))[0]
+    await addMembers([userId], [projectName])
+    console.log(group)
+    const res = {
+      status: { result: 'OK' },
+      group: group[0],
+    }
+    return res
+  } catch (error) {
+    return {
+      status: {
+        result: 'KO',
+        message: error.message,
+        error: JSON.stringify(error),
+      },
+    }
   }
-  return res
 }

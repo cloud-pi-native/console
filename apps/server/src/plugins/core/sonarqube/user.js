@@ -78,7 +78,11 @@ export const createUser = async (payload) => {
 
     return res
   } catch (error) {
-    res.status = { result: 'KO', message: error.message }
+    res.status = {
+      result: 'KO',
+      message: error.message,
+      error: JSON.stringify(error),
+    }
     return res
   }
 }
