@@ -312,27 +312,20 @@ export const deleteRepositoryController = async (req, res) => {
 
   // Process api call to external service
   try {
-    // const project = await getProjectById(projectId)
-    // const organization = await getOrganizationById(project.organization)
-    // const environments = await getEnvironmentsByProjectId(projectId)
-    // const ansibleData = {
-    //   ORGANIZATION_NAME: organization.name,
-    //   ENV_LIST: environments.map(environment => environment.name),
-    //   REPO_DEST: repo.internalRepoName,
-    //   PROJECT_NAME: project.name,
-    // }
-    // const ansibleRes = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
-    //   method: 'PUT',
-    //   body: JSON.stringify(ansibleData),
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     authorization: req.headers.authorization,
-    //     'request-id': req.id,
-    //   },
-    // })
-    // const resJson = await ansibleRes.json()
-    // await addLogs(resJson, userId)
-    // if (resJson.status !== 'OK') throw new Error(`Echec de suppression du repo ${repo.internalRepoName} côté ansible`)
+    const project = await getProjectById(projectId)
+    const organization = await getOrganizationById(project.organization)
+
+    const repoData = {
+      ...repo.get({ plain: true }),
+      projectName: project.name,
+      organization: organization.dataValues.name,
+      services: project.services,
+    }
+
+    const payload = { args: repoData }
+    const result = await deleteRepositoryGitlab(payload)
+    await addLogs(result, userId)
+    if (result.status.result === 'KO') throw new Error('Echec de suppression du dépôt')
   } catch (error) {
     const message = 'Provisioning repo with ansible failed'
     req.log.error({

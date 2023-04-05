@@ -113,15 +113,11 @@ export const createDsoRepository = async (payload) => {
 }
 
 // https://github.com/dnum-mi/dso-playbooks/blob/main/roles/gitlab-project-delete/tasks/main.yml
-export const archiveDsoRepository = async (payload) => {
+export const deleteDsoRepository = async (payload) => {
   try {
-    const { internalRepoName, externalRepoUrl, organization, projectName, services } = payload.args
-    const group = `forge-mi/projects/${organization}/${projectName}`
-
-    await deleteProject(internalRepoName, group, services.gitlab.id, externalRepoUrl)
-    // await deleteProjectMirror()
-    // await deleteArgoProject()
-    // await deleteVaultProjectInfos()
+    const { internalRepoName, organization, projectName } = payload.args
+    await deleteProject(internalRepoName, projectName, organization)
+    await deleteProject(`${internalRepoName}-mirror`, projectName, organization)
 
     return {
       status: {

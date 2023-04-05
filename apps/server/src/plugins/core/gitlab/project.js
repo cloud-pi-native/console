@@ -24,13 +24,17 @@ export const createProject = async (internalRepoName, externalRepoUrl, group, or
   )
 }
 
-export const deleteProject = async (repo, group) => {
-  console.log({ repo, group })
-  const searchResult = await api.Groups.search(repo)
-  console.log({ searchResult })
-  if (searchResult.length) {
-    const existingProject = searchResult.find(project => project.path_with_namespace === group)
-    if (existingProject) return existingProject
-  }
-  return api.Projects.remove(searchResult.id)
+/**
+ * @param {string} internalRepoName - nom du dépôt.
+ * @param {string} group - nom du projet DSO.
+ * @param {string} organization - nom de l'organisation DSO.
+ */
+export const deleteProject = async (internalRepoName, group, organization) => {
+  const groupId = await getGroupId(group, organization)
+  const searchResult = await api.Projects.search(internalRepoName)
+  if (!searchResult.length) return
+  const existingProject = searchResult
+    .find(project => project.name === internalRepoName && project.namespace.id === groupId)
+  if (!existingProject) return
+  return api.Projects.remove(existingProject.id)
 }
