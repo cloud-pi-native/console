@@ -3,7 +3,7 @@ import { gitlabToken, gitlabUrl, projectPath } from '../../../utils/env.js'
 import { createGroup, deleteGroup } from './group.js'
 import { addGroupMember } from './permission.js'
 import { createProject, deleteProject } from './project.js'
-import { createUser, getUser } from './user.js'
+import { createUser } from './user.js'
 
 export const api = new Gitlab({ token: gitlabToken, host: gitlabUrl })
 
@@ -79,18 +79,10 @@ export const archiveDsoProject = async (payload) => {
 // Repo
 // https://github.com/dnum-mi/dso-playbooks/blob/main/roles/gitlab-project-checkout/tasks/main.yml
 export const createDsoRepository = async (payload) => {
-  // TODO :
-  // {
-  //   status: {
-  //     result: 'KO',
-  //     message: "Cannot set properties of null (setting 'gitlab')"
-  //   }
-  // }
   try {
-    const { userEmail, internalRepoName, externalRepoUrl, organization, projectName } = payload.args
-    const user = await getUser(userEmail)
-    const project = await createProject(user.id, internalRepoName, externalRepoUrl, projectName, organization)
-    // await createProjectMirror()
+    const { internalRepoName, externalRepoUrl, organization, projectName } = payload.args
+    const project = await createProject(internalRepoName, externalRepoUrl, projectName, organization)
+    const mirror = await createProject(`${internalRepoName}-mirror`, externalRepoUrl, projectName, organization)
     // await setProjectTriggers()
 
     return {
@@ -100,6 +92,7 @@ export const createDsoRepository = async (payload) => {
       },
       result: {
         project,
+        mirror,
       },
       vault: [{
         name: 'GITLAB',

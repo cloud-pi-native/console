@@ -1,7 +1,13 @@
 import { api } from './index.js'
 import { getGroupId } from './group.js'
 
-export const createProject = async (userId, internalRepoName, externalRepoUrl, group, organization) => {
+/**
+ * @param {string} internalRepoName - nom du dépôt.
+ * @param {string} externalRepoUrl - url du dépôt.
+ * @param {string} group - nom du projet DSO.
+ * @param {string} organization - nom de l'organisation DSO.
+ */
+export const createProject = async (internalRepoName, externalRepoUrl, group, organization) => {
   const groupId = await getGroupId(group, organization)
   const searchResults = await api.Projects.search(internalRepoName)
   if (searchResults.length) {

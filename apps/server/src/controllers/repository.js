@@ -125,7 +125,6 @@ export const createRepositoryController = async (req, res) => {
   // Process api call to external service
   try {
     const organization = await getOrganizationById(project.organization)
-    const user = await getUserById(userId)
 
     const repoData = {
       ...repo.get({ plain: true }),
@@ -138,9 +137,8 @@ export const createRepositoryController = async (req, res) => {
       repoData.externalToken = data.externalToken
     }
 
-    const payload = { args: { ...repoData, userEmail: user.dataValues.email } }
+    const payload = { args: repoData }
     const result = await createRepositoryGitlab(payload)
-    console.log(result)
     await addLogs(result, userId)
     if (result.status.result === 'KO') throw new Error('Echec de création du dépôt')
   } catch (error) {

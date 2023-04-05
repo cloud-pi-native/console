@@ -200,7 +200,6 @@ export const createProjectController = async (req, res) => {
     //   },
     // }
     // await updateProjectServices(project.id, services)
-    console.log(results)
     await addLogs(results, owner.dataValues.id)
     if (results.find(result => result.status.result === 'KO')) throw new Error('Echec de création du projet')
   } catch (error) {
@@ -322,7 +321,6 @@ export const archiveProjectController = async (req, res) => {
       archiveProjectHarbor(payload),
     ],
     )
-    console.log(results)
     await addLogs(results, userId)
     if (results.find(result => result.status.result === 'KO')) throw new Error('Echec de suppression du projet côté ansible')
   } catch (error) {
