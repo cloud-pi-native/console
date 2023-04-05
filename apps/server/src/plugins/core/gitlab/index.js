@@ -97,6 +97,7 @@ export const createDsoRepository = async (payload) => {
     }
     const user = await getUser(userEmail)
     const project = await createProject(user.id, internalRepoName, group, services.gitlab?.id, externalRepoUrl)
+    console.log(project)
     // await createProjectMirror()
     // await setProjectTriggers()
 

@@ -7,17 +7,26 @@ export const createProject = async (userId, repo, group, groupId, externalRepoUr
     if (existingProject) return existingProject
   }
   // TODO : 400 bad request
+  //   description: {
+  //   path: [ 'repo-1 is a reserved name' ],
+  //   namespace: [ "can't be blank" ]
+  // }
   console.log({ userId, repo, group, groupId, externalRepoUrl })
-  const test = await api.Projects.create({
-    user_id: userId,
-    name: repo,
-    ci_config_path: '.gitlab-ci-dso.yml',
-    namespace_id: groupId,
-    import_url: externalRepoUrl,
-    // mirror: true,
-  })
-  console.log({ test })
-  return test
+  try {
+    const test = await api.Projects.create({
+      user_id: userId,
+      name: repo,
+      ci_config_path: '.gitlab-ci-dso.yml',
+      namespace_id: groupId,
+      import_url: externalRepoUrl,
+      // mirror: true,
+    })
+    console.log(test)
+    return test
+  } catch (error) {
+    console.log(error)
+    return error
+  }
 }
 
 export const deleteProject = async (repo, group) => {
