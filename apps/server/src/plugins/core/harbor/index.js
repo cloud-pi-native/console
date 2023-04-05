@@ -5,7 +5,7 @@ import {
   harborPassword as password,
 } from '../../../utils/env.js'
 import { createProject, deleteProject } from './project.js'
-import { addProjectMember } from './permission.js'
+import { addProjectGroupMember } from './permission.js'
 import { createRobot } from './robot.js'
 
 export const axiosOptions = {
@@ -48,11 +48,11 @@ export const check = async () => {
 
 export const createDsoProject = async (payload) => {
   try {
-    const { name, organization, email } = payload.args
+    const { name, organization } = payload.args
     const projectName = `${organization}-${name}`
 
     const project = await createProject(projectName)
-    const projectMember = await addProjectMember(projectName, email)
+    const projectMember = await addProjectGroupMember(projectName)
     const robot = await createRobot(projectName)
 
     return {
