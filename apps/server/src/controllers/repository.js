@@ -311,6 +311,7 @@ export const deleteRepositoryController = async (req, res) => {
   }
 
   // Process api call to external service
+  let isServicesCallOk
   try {
     const project = await getProjectById(projectId)
     const organization = await getOrganizationById(project.organization)
@@ -326,6 +327,7 @@ export const deleteRepositoryController = async (req, res) => {
     const result = await deleteRepositoryGitlab(payload)
     await addLogs(result, userId)
     if (result.status.result === 'KO') throw new Error('Echec de suppression du dépôt')
+    isServicesCallOk = true
   } catch (error) {
     const message = 'Provisioning repo with ansible failed'
     req.log.error({
@@ -334,42 +336,35 @@ export const deleteRepositoryController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    return
+    isServicesCallOk = false
   }
 
   // Update DB after service call
   try {
-    await deleteRepository(repositoryId)
-    await unlockProject(projectId)
+    if (isServicesCallOk) {
+      await deleteRepository(repositoryId)
+      await unlockProject(projectId)
+      req.log.info({
+        ...getLogInfos({ repositoryId }),
+        description: 'Dépôt supprimé, projet déverrouillé',
+      })
+      return send200(res, 'Dépôt supprimé, projet déverrouillé')
+    } else {
+      await updateRepositoryFailed(repositoryId)
+      await unlockProject(projectId)
 
-    req.log.info({
-      ...getLogInfos({ repositoryId }),
-      description: 'Repository successfully deleted, project unlocked',
-    })
-    return
+      req.log.info({
+        ...getLogInfos({ repositoryId }),
+        description: 'Dépôt en échec, projet déverrouillé',
+      })
+      return send500(res, 'Dépôt en échec, projet déverrouillé')
+    }
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: 'Cannot delete repository',
       error: error.message,
       trace: error.trace,
     })
-  }
-
-  try {
-    await updateRepositoryFailed(repositoryId)
-    await unlockProject(projectId)
-
-    req.log.info({
-      ...getLogInfos({ repositoryId }),
-      description: 'Repository status successfully updated in database to failed, project unlocked',
-    })
-  } catch (error) {
-    req.log.error({
-      ...getLogInfos(),
-      description: 'Cannot update repository status to failed',
-      error: error.message,
-      trace: error.trace,
-    })
+    send500(res, error.message)
   }
 }
