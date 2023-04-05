@@ -11,6 +11,7 @@ import {
 } from '../models/queries/users-projects-queries.js'
 import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
+// import hooksFns from '../plugins/index.js'
 
 // GET
 export const getEnvironmentPermissionsController = async (req, res) => {

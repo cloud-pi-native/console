@@ -20,6 +20,7 @@ import { deletePermission } from '../models/queries/permission-queries.js'
 import { getEnvironmentsByProjectId } from '../models/queries/environment-queries.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import { getLogInfos } from '../utils/logger.js'
+// import hooksFns from '../plugins/index.js'
 
 // GET
 export const getProjectUsersController = async (req, res) => {

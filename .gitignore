@@ -47,3 +47,6 @@ keycloak/data
 
 # dist
 dist
+
+# plugins
+apps/server/src/plugins/external
