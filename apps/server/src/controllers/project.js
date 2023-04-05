@@ -43,6 +43,7 @@ import { addLogs } from '../models/queries/log-queries.js'
 import { calcProjectNameMaxLength } from 'shared/src/utils/functions.js'
 import { getServices } from '../utils/services.js'
 import { lowercaseFirstLetter, replaceNestedKeys } from '../utils/queries-tools.js'
+// import hooksFns from '../plugins/index.js'
 
 // GET
 export const getUserProjectsController = async (req, res) => {
