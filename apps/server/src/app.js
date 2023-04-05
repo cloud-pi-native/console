@@ -7,7 +7,6 @@ import { nanoid } from 'nanoid'
 import { apiRouter, miscRouter } from './routes/index.js'
 import { loggerConf } from './utils/logger.js'
 import { keycloakConf, sessionConf } from './utils/keycloak.js'
-import { initCorePlugins, initExternalPlugins } from './plugins/index.js'
 
 export const apiPrefix = '/api/v1'
 
@@ -21,20 +20,12 @@ const app = fastify(fastifyConf)
   .register(fastifyCookie)
   .register(fastifySession, sessionConf)
   .register(keycloak, keycloakConf)
-
-const pluginManager = initCorePlugins(app)
-initExternalPlugins(app, pluginManager)
-
-app.register(apiRouter, { prefix: apiPrefix })
+  .register(apiRouter, { prefix: apiPrefix })
   .register(miscRouter)
   .addHook('onRoute', opts => {
     if (opts.path === '/healthz') {
       opts.logLevel = 'silent'
     }
   })
-  // .addHook('onRequest', (request, _reply, done) => {
-  //   request.hooks = pluginManager.hooks
-  //   done()
-  // })
 
 export default app

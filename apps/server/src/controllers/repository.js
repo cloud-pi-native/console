@@ -137,8 +137,7 @@ export const createRepositoryController = async (req, res) => {
       repoData.externalToken = data.externalToken
     }
 
-    const payload = { args: repoData }
-    const result = await createRepositoryGitlab(payload)
+    const result = await hooksFns.createRepository(repoData)
     await addLogs(result, userId)
     if (result.status.result === 'KO') throw new Error('Echec de création du dépôt')
   } catch (error) {
@@ -323,8 +322,7 @@ export const deleteRepositoryController = async (req, res) => {
       services: project.services,
     }
 
-    const payload = { args: repoData }
-    const result = await deleteRepositoryGitlab(payload)
+    const result = await hooksFns.deleteRepository(repoData)
     await addLogs(result, userId)
     if (result.status.result === 'KO') throw new Error('Echec de suppression du dépôt')
     isServicesCallOk = true

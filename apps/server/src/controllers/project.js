@@ -184,12 +184,7 @@ export const createProjectController = async (req, res) => {
       userId: owner.dataValues.id,
     }
 
-    const payload = { args: projectData }
-    const results = await Promise.all([
-      createProjectGitlab(payload),
-      // createProjectHarbor(payload),
-    ],
-    )
+    const results = await hooksFns.createProject(projectData)
     // const { gitlab, registry } = result
     // const services = {
     //   gitlab: {
@@ -315,12 +310,7 @@ export const archiveProjectController = async (req, res) => {
       ...project.get({ plain: true }),
       organization: organization.dataValues.name,
     }
-    const payload = { args: projectData }
-    const results = await Promise.all([
-      archiveProjectGitlab(payload),
-      archiveProjectHarbor(payload),
-    ],
-    )
+    const results = await hooksFns.createProject(projectData)
     await addLogs(results, userId)
     if (results.find(result => result.status.result === 'KO')) throw new Error('Echec de suppression du projet côté ansible')
   } catch (error) {
