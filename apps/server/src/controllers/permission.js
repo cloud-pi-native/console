@@ -1,3 +1,4 @@
+import { addLogs } from '../models/queries/log-queries.js'
 import {
   getEnvironmentPermissions,
   setPermission,
@@ -9,6 +10,7 @@ import {
   getRoleByUserIdAndProjectId,
   getSingleOwnerByProjectId,
 } from '../models/queries/users-projects-queries.js'
+import hooks from '../plugins/index.js'
 import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
 
@@ -56,6 +58,11 @@ export const setPermissionController = async (req, res) => {
     // if (data.level === 0) await removeMembers([data.userId], [permission.Environment.name])
     // if (data.level === 10) await removeMembers([data.userId], [permission.Environment.name]) && await addMembers([data.userId], [permission.Environment.name])
     // if (data.level === 20) await addMembers([data.userId], [permission.Environment.name])
+
+    const permissionsData = {} // TODO to define
+    const results = await hooks.setPermission.execute(permissionsData)
+    await addLogs(results, userId)
+    if (results.failed) throw new Error('Echec de création du projet')
     req.log.info({
       ...getLogInfos(),
       description: 'Permission successfully created',
@@ -91,6 +98,12 @@ export const updatePermissionController = async (req, res) => {
     if (data.userId === ownerId) throw new Error('La permission du owner du projet ne peut être modifiée')
 
     const permission = await updatePermission({ userId: data.userId, environmentId, level: data.level })
+
+    const permissionsData = {} // TODO to define
+    const results = await hooks.updatePermission.execute(permissionsData)
+    await addLogs(results, userId)
+    if (results.failed) throw new Error('Echec de création du projet')
+
     req.log.info({
       ...getLogInfos(),
       description: 'Permission successfully updated',
@@ -132,6 +145,10 @@ export const deletePermissionController = async (req, res) => {
       ...getLogInfos({ permission }),
       description: message,
     })
+    const permissionsData = {} // TODO to define
+    const results = await hooks.deletePermission.execute(permissionsData)
+    await addLogs(results, userId)
+    if (results.failed) throw new Error('Echec de création du projet')
     send200(res, permission)
   } catch (error) {
     const message = `Cannot delete permissions : ${error.message}`

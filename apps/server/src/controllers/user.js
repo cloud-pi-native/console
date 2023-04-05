@@ -20,6 +20,8 @@ import { deletePermission } from '../models/queries/permission-queries.js'
 import { getEnvironmentsByProjectId } from '../models/queries/environment-queries.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import { getLogInfos } from '../utils/logger.js'
+import { addLogs } from '../models/queries/log-queries.js'
+import hooks from '../plugins/index.js'
 
 // GET
 export const getProjectUsersController = async (req, res) => {
@@ -110,8 +112,11 @@ export const addUserToProjectController = async (req, res) => {
     return send500(res, message)
   }
 
-  // TODO : US #132 appel ansible
   try {
+    const userData = {} // TODO to define
+    const results = await hooks.addUserToProject.execute(userData)
+    await addLogs(results, userId)
+    if (results.failed) throw new Error('Echec de création du projet')
     await unlockProject(projectId)
 
     req.log.info({
@@ -177,6 +182,11 @@ export const updateUserProjectRoleController = async (req, res) => {
       ...getLogInfos({ userToUpdateRole }),
       description: message,
     })
+    const userData = {} // TODO to define
+    const results = await hooks.addUserToProject.execute(userData)
+    await addLogs(results, userId)
+    if (results.failed) throw new Error('Echec de création du projet')
+    await unlockProject(projectId)
     send200(res, message)
   } catch (error) {
     const message = `Cannot update user role into project: ${error.message}`
@@ -212,6 +222,11 @@ export const removeUserFromProjectController = async (req, res) => {
     await lockProject(projectId)
     await removeUserFromProject({ project, user: userToRemove })
 
+    const userData = {} // TODO to define
+    const results = await hooks.addUserToProject.execute(userData)
+    await addLogs(results, userId)
+    if (results.failed) throw new Error('Echec de création du projet')
+    await unlockProject(projectId)
     const environments = await getEnvironmentsByProjectId(projectId)
     environments.forEach(async env => {
       // TODO : retirer user des groupes keycloak permission pour le projet

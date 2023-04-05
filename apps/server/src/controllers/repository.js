@@ -24,6 +24,7 @@ import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import { getOrganizationById } from '../models/queries/organization-queries.js'
 import { addLogs } from '../models/queries/log-queries.js'
+import hooks from '../plugins/index.js'
 
 // GET
 export const getRepositoryByIdController = async (req, res) => {
@@ -132,49 +133,26 @@ export const createRepositoryController = async (req, res) => {
     const users = await getProjectUsers(projectId)
 
     const envRes = await getEnvironmentsByProjectId(projectId)
-    const environmentsNames = envRes.map(env => env.name)
 
     const organization = await getOrganizationById(project.organization)
-
-    const ansibleData = {
-      ORGANIZATION_NAME: organization.name,
-      EMAILS: users.map(user => user.email),
-      PROJECT_NAME: project.name,
-      REPO_DEST: data.internalRepoName,
-      REPO_SRC: data.externalRepoUrl.startsWith('http') ? data.externalRepoUrl.split('://')[1] : data.externalRepoUrl,
-      IS_INFRA: data.isInfra,
-      ENV_LIST: environmentsNames,
-    }
 
     const repoData = {
       ...repo.get({ plain: true }),
       projectName: project.name,
       organization: organization.dataValues.name,
       services: project.services,
+      usersEmail: users.map(user => user.email),
+      environmentsNames: envRes.map(env => env.name),
     }
     if (data.isPrivate) {
       repoData.externalUserName = data.externalUserName
       repoData.externalToken = data.externalToken
     }
 
-    // const hook = req.hooks.createRepository.execute
-
-    // console.log({ repoData })
-    // if isInfra lancer création argo
-    // const result = await hook(repoData)
-    // const ansibleRes = await fetch(`http://${ansibleHost}:${ansiblePort}/api/v1/project/repos`, {
-    //   method: 'POST',
-    //   body: JSON.stringify(ansibleData),
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     authorization: req.headers.authorization,
-    //     'request-id': req.id,
-    //   },
-    // })
-    // const resJson = await ansibleRes.json()
-    const resJson = ansibleData
-    await addLogs(resJson, userId)
-    if (resJson.status !== 'OK') throw new Error(`Echec de création du repo ${repo.internalRepoName} côté ansible`)
+    const result = hooks.createRepository.execute(repoData)
+    console.log(result)
+    await addLogs(result, userId)
+    if (result.failed) throw new Error('Echec de création du dépôt')
   } catch (error) {
     const message = `Echec requête ${req.id} : ${error.message}`
     req.log.error({
@@ -190,7 +168,6 @@ export const createRepositoryController = async (req, res) => {
   try {
     await updateRepositoryCreated(repo.id)
     await unlockProject(projectId)
-
     req.log.info({
       ...getLogInfos({ repositoryId: repo.id }),
       description: 'Repository status successfully updated in database to created',
@@ -250,6 +227,11 @@ export const updateRepositoryController = async (req, res) => {
 
     await lockProject(projectId)
     await updateRepository(repositoryId, data.info)
+
+    const reposData = {} // TODO to define
+    const results = await hooks.updateRepository.execute(reposData)
+    await addLogs(results, userId)
+    if (results.failed) throw new Error('Echec de création du projet')
 
     const message = 'Repository successfully updated'
     req.log.info({
@@ -365,6 +347,10 @@ export const deleteRepositoryController = async (req, res) => {
     // const resJson = await ansibleRes.json()
     // await addLogs(resJson, userId)
     // if (resJson.status !== 'OK') throw new Error(`Echec de suppression du repo ${repo.internalRepoName} côté ansible`)
+    const reposData = {} // TODO to define
+    const results = await hooks.deleteRepository.execute(reposData)
+    await addLogs(results, userId)
+    if (results.failed) throw new Error('Echec de création du projet')
   } catch (error) {
     const message = 'Provisioning repo with ansible failed'
     req.log.error({

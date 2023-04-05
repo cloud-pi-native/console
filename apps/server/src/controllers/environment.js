@@ -7,6 +7,7 @@ import {
   updateEnvironmentDeleting,
   deleteEnvironment,
 } from '../models/queries/environment-queries.js'
+import { addLogs } from '../models/queries/log-queries.js'
 import {
   setPermission,
   getPermissionByUserIdAndEnvironmentId,
@@ -18,6 +19,7 @@ import {
 } from '../models/queries/users-projects-queries.js'
 import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
+import hooks from '../plugins/index.js'
 
 // GET
 export const getEnvironmentByIdController = async (req, res) => {
@@ -91,8 +93,13 @@ export const initializeEnvironmentController = async (req, res) => {
     return send500(res, error.message)
   }
 
-  // TODO : #133 : appel ansible + création groupe keycloak + ajout owner au groupe keycloak
   try {
+    const envData = {} // TODO to define
+    const results = await hooks.initializeEnvironment.execute(envData)
+    // await updateProjectServices(project.id, services)
+    await addLogs(results, userId)
+    if (results.failed) throw new Error('Echec de création du projet')
+
     await updateEnvironmentCreated(env.id)
     const ownerId = await getSingleOwnerByProjectId(projectId)
     if (ownerId !== userId) {
@@ -171,8 +178,12 @@ export const deleteEnvironmentController = async (req, res) => {
     return send500(res, error.message)
   }
 
-  // TODO : #133 : appel ansible + suppression groupe keycloak (+ retirer users du groupe keycloak ?)
   try {
+    const envData = {} // TODO to define
+    const results = await hooks.deleteEnvironment.execute(envData)
+    await addLogs(results, userId)
+    if (results.failed) throw new Error('Echec de création du projet')
+
     await deleteEnvironment(environmentId)
     await unlockProject(projectId)
 

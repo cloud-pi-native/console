@@ -56,7 +56,7 @@ const createHook = () => {
   }
 }
 
-export const initCorePlugins = (app) => {
+const initCorePlugins = () => {
   const hooks = {
     checkServices: createHook(),
 
@@ -80,19 +80,19 @@ export const initCorePlugins = (app) => {
   }
   const register = (name, hook, fn, step = 'main') => {
     if (!(hook in hooks)) {
-      app.log.warn({
+      console.warn({
         message: `Plugin ${name} tried to register on an unknown hook ${hook}`,
       })
       return
     }
     if (hook === 'checkServices' && step !== 'check') {
-      app.log.warn({
+      console.warn({
         message: `Plugin ${name} tried to register on 'checkServices' hook at ${step} which is invalid`,
       })
       return
     }
     hooks[hook][step][name] = fn
-    app.log.warn(`Plugin ${name} registered at ${hook}:${step}`)
+    console.warn(`Plugin ${name} registered at ${hook}:${step}`)
   }
   const unregister = (name, hook, step = 'main') => {
     delete hooks[hook][step][name]
@@ -114,7 +114,7 @@ export const initCorePlugins = (app) => {
   return pluginManager
 }
 
-export const initExternalPlugins = async (app, pluginManager) => {
+const initExternalPlugins = async (pluginManager) => {
   const __dirname = url.fileURLToPath(new URL('.', import.meta.url))
   try {
     const pluginDir = resolve(__dirname, 'external')
@@ -124,10 +124,17 @@ export const initExternalPlugins = async (app, pluginManager) => {
         const myPlugin = await import(`${pluginDir}/${plugin}/init.js`)
         myPlugin.init(pluginManager.register)
       } else {
-        app.log.warn(`ignoring ${plugin}, ${plugin}/init.js does not exist`)
+        console.warn(`ignoring ${plugin}, ${plugin}/init.js does not exist`)
       }
     }
   } catch (err) {
-    app.log.error(err)
+    console.error(err)
   }
 }
+
+const pluginManager = initCorePlugins()
+await initExternalPlugins(pluginManager)
+
+const hooks = pluginManager.hooks
+
+export default hooks

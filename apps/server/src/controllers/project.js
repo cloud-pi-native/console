@@ -10,7 +10,6 @@ import {
   addUserToProject,
   archiveProject,
   getProjectUsers,
-  updateProjectServices,
 } from '../models/queries/project-queries.js'
 import { getOrCreateUser, getUserById } from '../models/queries/user-queries.js'
 import {
@@ -43,6 +42,7 @@ import { calcProjectNameMaxLength } from 'shared/src/utils/functions.js'
 import { getServices } from '../utils/services.js'
 import { lowercaseFirstLetter, replaceNestedKeys } from '../utils/queries-tools.js'
 import { addLogs } from '../models/queries/log-queries.js'
+import hooks from '../plugins/index.js'
 
 // GET
 export const getUserProjectsController = async (req, res) => {
@@ -186,21 +186,14 @@ export const createProjectController = async (req, res) => {
       ...project.get({ plain: true }),
       organization: organization.dataValues.name,
       email: owner.dataValues.email,
+      userId: owner.dataValues.id,
+      env: 'dev',
     }
-    const hook = req.hooks.createProject.execute
-    const result = await hook(projectData)
-    const { gitlab, registry } = result
-    await addLogs(result, owner.dataValues.id)
-    const services = {
-      gitlab: {
-        id: gitlab.result.group.id,
-      },
-      registry: {
-        id: registry.result.project.project_id,
-      },
-    }
-    await updateProjectServices(project.id, services)
-    if (result.failed) throw new Error('Echec de création du projet')
+
+    const results = await hooks.createProject.execute(projectData)
+    console.log(results)
+    await addLogs(results, owner.dataValues.id)
+    if (results.failed) throw new Error('Echec de création du projet')
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
@@ -263,6 +256,7 @@ export const archiveProjectController = async (req, res) => {
   const permissions = []
   let users
   let project
+
   try {
     project = await getProjectById(projectId)
     if (!project) throw new Error('Projet introuvable')
@@ -311,10 +305,10 @@ export const archiveProjectController = async (req, res) => {
       ...project.get({ plain: true }),
       organization: organization.dataValues.name,
     }
-    const hook = req.hooks.archiveProject.execute
-    const archiveProjectResult = await hook(projectData)
-    await addLogs(archiveProjectResult, userId)
-    if (archiveProjectResult?.failed === true) throw new Error('Echec de suppression du projet côté ansible')
+    const results = await hooks.archiveProject.execute(projectData)
+    console.log(results)
+    await addLogs(results, userId)
+    if (results.failed) throw new Error('Echec de suppression du projet côté ansible')
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
