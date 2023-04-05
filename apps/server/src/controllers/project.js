@@ -196,7 +196,7 @@ export const createProjectController = async (req, res) => {
     // }
     // await updateProjectServices(project.id, services)
     await addLogs(results, owner.dataValues.id)
-    if (results.find(result => result.status.result === 'KO')) throw new Error('Echec de création du projet')
+    if (results.failed) throw new Error('Echec de création du projet')
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
@@ -312,7 +312,7 @@ export const archiveProjectController = async (req, res) => {
     }
     const results = await hooksFns.createProject(projectData)
     await addLogs(results, userId)
-    if (results.find(result => result.status.result === 'KO')) throw new Error('Echec de suppression du projet côté ansible')
+    if (results.failed) throw new Error('Echec de suppression du projet côté ansible')
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
