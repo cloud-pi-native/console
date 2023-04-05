@@ -79,7 +79,6 @@ export const archiveDsoProject = async (payload) => {
 // Repo
 // https://github.com/dnum-mi/dso-playbooks/blob/main/roles/gitlab-project-checkout/tasks/main.yml
 export const createDsoRepository = async (payload) => {
-  console.log('payload.args: ', payload.args)
   // TODO :
   // {
   //   status: {
@@ -89,15 +88,8 @@ export const createDsoRepository = async (payload) => {
   // }
   try {
     const { userEmail, internalRepoName, externalRepoUrl, organization, projectName } = payload.args
-    const group = `forge-mi/projects/${organization}/${projectName}`
-    const services = {
-      gitlab: {
-        id: 200,
-      },
-    }
     const user = await getUser(userEmail)
-    const project = await createProject(user.id, internalRepoName, group, services.gitlab?.id, externalRepoUrl)
-    console.log(project)
+    const project = await createProject(user.id, internalRepoName, externalRepoUrl, projectName, organization)
     // await createProjectMirror()
     // await setProjectTriggers()
 
