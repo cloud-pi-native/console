@@ -25,7 +25,7 @@ export const createDsoProject = async (payload) => {
 
     const group = await createGroup(name, organization)
     const user = await createUser(email)
-    const groupMember = await addGroupMember(group.id, user.id)
+    const groupMember = await addGroupMember(group.id, user.id, 40)
 
     return {
       status: {
