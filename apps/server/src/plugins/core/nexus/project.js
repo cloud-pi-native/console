@@ -191,9 +191,6 @@ export const deleteNexusProject = async (payload) => {
         result: 'OK',
         message: 'User deleted',
       },
-      vault: [{
-        name: 'NEXUS',
-      }],
     }
   } catch (error) {
     return {

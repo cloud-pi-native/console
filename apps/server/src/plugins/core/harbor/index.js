@@ -96,7 +96,6 @@ export const archiveDsoProject = async (payload) => {
         result: 'OK',
         message: 'Deleted',
       },
-      vault: [{ name: 'QUAY' }],
     }
   } catch (error) {
     return {

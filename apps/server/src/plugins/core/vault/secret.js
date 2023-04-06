@@ -44,11 +44,38 @@ export const destroyVault = async (path) => {
   const token = await getToken()
   const response = await axios({
     ...axiosOptions,
-    url: `/v1/forge-dso/data/${projectDir}/${path}`,
+    url: `/v1/forge-dso/metadata/${projectDir}/${path}`,
     headers: {
       'X-Vault-Token': token,
     },
     method: 'delete',
   })
   return response
+}
+
+export const listVault = async (path) => {
+  const listSecretPath = []
+  const token = await getToken()
+  const response = await axios({
+    ...axiosOptions,
+    url: `/v1/forge-dso/metadata/${projectDir}/${path}`,
+    headers: {
+      'X-Vault-Token': token,
+    },
+    method: 'list',
+    validateStatus: (code) => [200, 404].includes(code),
+  })
+  console.log(response.data)
+  if (response.status === 404) { return listSecretPath }
+  for (const key of response.data.data.keys) {
+    if (key.endsWith('/')) {
+      const subSecrets = await listVault(`${path}/${key}`)
+      subSecrets.forEach(secret => {
+        listSecretPath.push(`${key}${secret}`)
+      })
+    } else {
+      listSecretPath.push(key)
+    }
+  }
+  return listSecretPath.flat(-1)
 }
