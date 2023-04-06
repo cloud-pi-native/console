@@ -190,6 +190,8 @@ export const updateRepositoryController = async (req, res) => {
     await lockProject(projectId)
     await updateRepository(repositoryId, data.info)
 
+    repo = await getRepositoryById(repositoryId)
+
     const message = 'Dépôt mis à jour'
     req.log.info({
       ...getLogInfos({ repositoryId }),
@@ -208,8 +210,34 @@ export const updateRepositoryController = async (req, res) => {
   }
 
   // Process api call to external service
-  const isServicesCallOk = true
-  // TODO
+  let isServicesCallOk
+  try {
+    const project = await getProjectById(projectId)
+    const organization = await getOrganizationById(project.organization)
+
+    const repoData = {
+      ...repo.get({ plain: true }),
+      projectName: project.name,
+      organization: organization.dataValues.name,
+      services: project.services,
+    }
+    delete repoData?.isInfra
+    delete repoData?.internalRepoName
+
+    const results = await hooksFns.updateRepository(repoData)
+    await addLogs(results, userId)
+    if (results.failed) throw new Error('Echec des services associés au dépôt')
+    isServicesCallOk = true
+  } catch (error) {
+    const message = `Echec requête ${req.id} : ${error.message}`
+    req.log.error({
+      ...getLogInfos(),
+      description: message,
+      error: error.message,
+      trace: error.trace,
+    })
+    isServicesCallOk = false
+  }
 
   // Update DB after service call
   try {

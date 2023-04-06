@@ -113,6 +113,27 @@ export const createDsoRepository = async (payload) => {
   }
 }
 
+export const updateDsoRepository = async (payload) => {
+  try {
+    // TODO #330
+    console.log(payload)
+
+    return {
+      status: {
+        result: 'OK',
+        message: 'Updated',
+      },
+    }
+  } catch (error) {
+    return {
+      status: {
+        result: 'KO',
+        message: error.message,
+      },
+    }
+  }
+}
+
 export const deleteDsoRepository = async (payload) => {
   try {
     const { internalRepoName, organization, projectName } = payload.args
