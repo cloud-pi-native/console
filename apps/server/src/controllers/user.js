@@ -35,7 +35,7 @@ export const getProjectUsersController = async (req, res) => {
 
     req.log.info({
       ...getLogInfos(),
-      description: 'Project members successfully retreived',
+      description: 'Membres du projet récupérés',
     })
     send200(res, users)
   } catch (error) {
@@ -94,14 +94,14 @@ export const addUserToProjectController = async (req, res) => {
     await lockProject(projectId)
     await addUserToProject({ project, user: userToAdd, role: 'user' })
 
-    const message = 'User successfully added into project'
+    const message = 'Utilisateur ajouté au projet'
     req.log.info({
       ...getLogInfos({ projectId }),
       description: message,
     })
     send201(res, message)
   } catch (error) {
-    const message = `Cannot add user into project: ${error.message}`
+    const message = `Utilisateur non ajouté au projet : ${error.message}`
     req.log.error({
       ...getLogInfos(),
       description: message,
@@ -111,18 +111,19 @@ export const addUserToProjectController = async (req, res) => {
     return send500(res, message)
   }
 
-  // TODO : US #132 appel ansible
+  // Process api call to external service
+  // TODO #132
   try {
     await unlockProject(projectId)
 
     req.log.info({
       ...getLogInfos({ projectId }),
-      description: 'Project status successfully updated in database',
+      description: 'Projet déverrouillé',
     })
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: 'Cannot update project status',
+      description: 'Echec, projet verrouillé',
       error: error.message,
       trace: error.trace,
     })
@@ -138,11 +139,11 @@ export const createUserController = async (req, res) => {
       ...getLogInfos({
         userId: user.id,
       }),
-      description: 'User successfully created in database',
+      description: 'Utilisateur enregistré en base',
     })
     send201(res, user)
   } catch (error) {
-    const message = 'Utilisateur non créé'
+    const message = 'Utilisateur non enregistré'
     req.log.error({
       ...getLogInfos(),
       description: message,
@@ -173,14 +174,14 @@ export const updateUserProjectRoleController = async (req, res) => {
 
     await updateUserProjectRole(projectId, userToUpdateId, data.role)
 
-    const message = 'User role into project successfully updated'
+    const message = 'Rôle de l\'utilisateur mis à jour'
     req.log.info({
       ...getLogInfos({ userToUpdateRole }),
       description: message,
     })
     send200(res, message)
   } catch (error) {
-    const message = `Cannot update user role into project: ${error.message}`
+    const message = `Le rôle de l'utilisateur ne peut pas être modifié : ${error.message}`
     req.log.error({
       ...getLogInfos(),
       description: message,
@@ -220,14 +221,14 @@ export const removeUserFromProjectController = async (req, res) => {
     })
     await deleteRoleByUserIdAndProjectId(userToRemoveId, projectId)
 
-    const message = 'User successfully removed from project'
+    const message = 'Utilisateur retiré du projet'
     req.log.info({
       ...getLogInfos({ projectId }),
       description: message,
     })
     send200(res, message)
   } catch (error) {
-    const message = `Cannot remove user from project: ${error.message}`
+    const message = `L'utilisateur ne peut être retiré du projet : ${error.message}`
     req.log.error({
       ...getLogInfos(),
       description: message,
@@ -237,18 +238,19 @@ export const removeUserFromProjectController = async (req, res) => {
     return send500(res, message)
   }
 
-  // TODO : US #132 appel ansible
+  // Process api call to external service
+  // TODO #132
   try {
     await unlockProject(projectId)
 
     req.log.info({
       ...getLogInfos({ projectId }),
-      description: 'Project status successfully updated in database',
+      description: 'Projet déverrouillé',
     })
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: 'Cannot update project status',
+      description: 'Echec, projet verrouillé',
       error: error.message,
       trace: error.trace,
     })

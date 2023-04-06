@@ -150,7 +150,7 @@ describe('User routes', () => {
 
       expect(response.statusCode).toEqual(500)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Cannot add user into project: L\'utilisateur est déjà membre du projet')
+      expect(response.body).toEqual('Utilisateur non ajouté au projet : L\'utilisateur est déjà membre du projet')
     })
 
     it('Should not add an user if project is missing', async () => {
@@ -168,7 +168,7 @@ describe('User routes', () => {
 
       expect(response.statusCode).toEqual(500)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Cannot add user into project: Projet introuvable')
+      expect(response.body).toEqual('Utilisateur non ajouté au projet : Projet introuvable')
     })
   })
 
@@ -246,7 +246,7 @@ describe('User routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(500)
-      expect(response.body).toEqual('Cannot remove user from project: Projet introuvable')
+      expect(response.body).toEqual('L\'utilisateur ne peut être retiré du projet : Projet introuvable')
     })
 
     it('Should not remove an user if requestor is not member himself', async () => {
@@ -264,7 +264,7 @@ describe('User routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(500)
-      expect(response.body).toEqual('Cannot remove user from project: Vous n\'êtes pas membre du projet')
+      expect(response.body).toEqual('L\'utilisateur ne peut être retiré du projet : Vous n\'êtes pas membre du projet')
     })
 
     it('Should not remove an user if user is not member', async () => {
@@ -284,7 +284,7 @@ describe('User routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(500)
-      expect(response.body).toEqual('Cannot remove user from project: L\'utilisateur n\'est pas membre du projet')
+      expect(response.body).toEqual('L\'utilisateur ne peut être retiré du projet : L\'utilisateur n\'est pas membre du projet')
     })
   })
 })

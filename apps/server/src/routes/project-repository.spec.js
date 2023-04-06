@@ -123,6 +123,7 @@ describe('Project routes', () => {
 
       delete newRepository.id
       delete newRepository.status
+      delete newRepository.externalToken
       expect(response.statusCode).toEqual(201)
       expect(response.json()).toBeDefined()
       expect(response.json()).toMatchObject(newRepository)

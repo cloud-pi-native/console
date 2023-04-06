@@ -194,7 +194,7 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(500)
-      expect(response.body).toEqual('Cannot update permissions : La permission du owner du projet ne peut être modifiée')
+      expect(response.body).toEqual('Permission non modifiée : La permission du owner du projet ne peut être modifiée')
     })
 
     it('Should not update a permission if not permitted on given environment', async () => {
@@ -215,7 +215,7 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(500)
-      expect(response.body).toEqual('Cannot update permissions : Le requérant doit avoir des droits sur l\'environnement pour modifier des permissions')
+      expect(response.body).toEqual('Permission non modifiée : Le requérant doit avoir des droits sur l\'environnement pour modifier des permissions')
     })
   })
 
@@ -264,7 +264,7 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(500)
-      expect(response.body).toEqual('Cannot delete permissions : La permission du owner du projet ne peut être supprimée')
+      expect(response.body).toEqual('Permission non supprimée : La permission du owner du projet ne peut être supprimée')
     })
 
     it('Should not delete permission if not permitted on given environment', async () => {
@@ -284,7 +284,7 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(500)
-      expect(response.body).toEqual('Cannot delete permissions : Le requérant doit avoir des droits sur l\'environnement pour supprimer des permissions')
+      expect(response.body).toEqual('Permission non supprimée : Le requérant doit avoir des droits sur l\'environnement pour supprimer des permissions')
     })
   })
 })
