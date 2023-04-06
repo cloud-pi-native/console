@@ -7,7 +7,6 @@ import {
   keycloakUser,
   keycloakToken,
 } from '../../../utils/env.js'
-import { createGroups } from './group.js'
 import { addMembers } from './permission.js'
 
 const kcClient = new KcAdminClient({
@@ -28,7 +27,9 @@ export const createProjectGroup = async (payload) => {
   try {
     const { organization, name, userId } = payload.args
     const projectName = `${organization}-${name}`
-    const group = (await createGroups([projectName]))[0]
+    const group = await kcClient.groups.create({
+      name: projectName,
+    })
     await addMembers([userId], [projectName])
     console.log(group)
     const res = {
@@ -43,6 +44,64 @@ export const createProjectGroup = async (payload) => {
         message: error.message,
         error: JSON.stringify(error),
       },
+    }
+  }
+}
+
+export const createKeycloakEnvGroup = async (payload) => {
+  try {
+    const { organization, project, environment } = payload.args
+    const projectName = `${organization}-${project}`
+    const projectGroup = (await kcClient.groups.find({ search: projectName })).find(grpRes => grpRes.name === projectName)
+    const envGroup = projectGroup.subGroups.find(subGrp => subGrp.name === environment)
+    if (!envGroup) {
+      const group = await kcClient.groups.setOrCreateChild({
+        id: projectGroup.id,
+      }, {
+        name: environment,
+      })
+      await kcClient.groups.setOrCreateChild({ id: group.id }, { name: 'RO' })
+      await kcClient.groups.setOrCreateChild({ id: group.id }, { name: 'RW' })
+      return {
+        status: { result: 'OK' },
+        group,
+      }
+    }
+    return {
+      status: { result: 'Already Exists' },
+      group: envGroup,
+    }
+  } catch (error) {
+    return {
+      status: {
+        result: 'KO',
+        message: 'Failed',
+      },
+      error: JSON.stringify(error),
+    }
+  }
+}
+
+export const deleteKeycloakEnvGroup = async (payload) => {
+  try {
+    const { organization, project, environment } = payload.args
+    const projectName = `${organization}-${project}`
+    const projectGroup = (await kcClient.groups.find({ search: projectName })).find(grpRes => grpRes.name === projectName)
+    console.log(projectGroup)
+    const envGroup = projectGroup.subGroups.find(subGrp => subGrp.name === environment)
+    if (envGroup) {
+      await kcClient.groups.del({ id: envGroup.id })
+    }
+    return {
+      status: { result: 'OK', message: 'Deleted' },
+    }
+  } catch (error) {
+    return {
+      status: {
+        result: 'KO',
+        message: 'Failed',
+      },
+      error: JSON.stringify(error),
     }
   }
 }
