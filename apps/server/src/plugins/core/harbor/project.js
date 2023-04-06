@@ -28,39 +28,22 @@ export const createProject = async (projectName) => {
 }
 
 export const deleteProject = async (projectName) => {
-  try {
-    const project = await axios({
+  const project = await axios({
+    ...axiosOptions,
+    url: `projects/${projectName}`,
+    headers: {
+      'X-Is-Resource-Name': true,
+    },
+    validateStatus: status => [200, 404].includes(status),
+  })
+  if (project.status === 200) {
+    await axios({
       ...axiosOptions,
       url: `projects/${projectName}`,
+      method: 'delete',
       headers: {
         'X-Is-Resource-Name': true,
       },
-      validateStatus: status => [200, 404].includes(status),
     })
-    if (project.status === 200) {
-      await axios({
-        ...axiosOptions,
-        url: `projects/${projectName}`,
-        method: 'delete',
-        headers: {
-          'X-Is-Resource-Name': true,
-        },
-      })
-    }
-
-    return {
-      status: {
-        result: 'OK',
-        message: 'Deleted',
-      },
-      vault: [{ name: 'QUAY' }],
-    }
-  } catch (error) {
-    return {
-      status: {
-        result: 'KO',
-        message: error.message,
-      },
-    }
   }
 }
