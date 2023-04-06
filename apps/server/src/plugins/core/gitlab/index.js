@@ -65,7 +65,7 @@ export const archiveDsoProject = async (payload) => {
     return {
       status: {
         result: 'OK',
-        message: 'Created',
+        message: 'Deleted',
       },
     }
   } catch (error) {
@@ -117,12 +117,12 @@ export const deleteDsoRepository = async (payload) => {
   try {
     const { internalRepoName, organization, projectName } = payload.args
     await deleteProject(internalRepoName, projectName, organization)
-    await deleteProject(`${internalRepoName}-mirror`, projectName, organization)
+    deleteProject(`${internalRepoName}-mirror`, projectName, organization)
 
     return {
       status: {
         result: 'OK',
-        message: 'Created',
+        message: 'Deleted',
       },
     }
   } catch (error) {

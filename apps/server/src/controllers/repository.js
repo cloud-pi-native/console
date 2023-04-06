@@ -137,9 +137,9 @@ export const createRepositoryController = async (req, res) => {
       repoData.externalToken = data.externalToken
     }
 
-    const result = await hooksFns.createRepository(repoData)
-    await addLogs(result, userId)
-    if (result.status.result === 'KO') throw new Error('Echec de création du dépôt')
+    const results = await hooksFns.createRepository(repoData)
+    await addLogs(results, userId)
+    if (results.failed) throw new Error('Echec de création du dépôt')
   } catch (error) {
     const message = `Echec requête ${req.id} : ${error.message}`
     req.log.error({
@@ -322,9 +322,9 @@ export const deleteRepositoryController = async (req, res) => {
       services: project.services,
     }
 
-    const result = await hooksFns.deleteRepository(repoData)
-    await addLogs(result, userId)
-    if (result.status.result === 'KO') throw new Error('Echec de suppression du dépôt')
+    const results = await hooksFns.deleteRepository(repoData)
+    await addLogs(results, userId)
+    if (results.failed) throw new Error('Echec de suppression du dépôt')
     isServicesCallOk = true
   } catch (error) {
     const message = 'Provisioning repo with ansible failed'
