@@ -40,7 +40,6 @@ export const archiveDsoProject = async (payload) => {
   try {
     const vaultPath = [organization, name].join('/')
     const allSecrets = await listVault(vaultPath)
-    console.log(allSecrets)
     const promisesDestroy = allSecrets.map(path => {
       return destroyVault(`${vaultPath}/${path}`)
     })
