@@ -161,7 +161,7 @@ export const createProjectController = async (req, res) => {
       ...getLogInfos({
         projectId: project.id,
       }),
-      description: 'Project successfully created in database',
+      description: 'Projet créé en base de données',
     })
     send201(res, project)
   } catch (error) {
@@ -176,6 +176,7 @@ export const createProjectController = async (req, res) => {
   }
 
   // Process api call to external service
+  let isServicesCallOk
   try {
     const projectData = {
       ...project.get({ plain: true }),
@@ -196,7 +197,8 @@ export const createProjectController = async (req, res) => {
     // }
     // await updateProjectServices(project.id, services)
     await addLogs(results, owner.dataValues.id)
-    if (results.failed) throw new Error('Echec de création du projet')
+    if (results.failed) throw new Error('Echec des services associés au projet')
+    isServicesCallOk = true
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
@@ -204,52 +206,36 @@ export const createProjectController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    await updateProjectFailed(project.id)
-    await unlockProject(project.id)
-    return
+    isServicesCallOk = false
   }
 
   // Update DB after service call
   try {
-    await updateEnvironmentCreated(environment.id)
-    await setPermission({
-      userId: owner.id,
-      environmentId: environment.id,
-      level: 2,
-    })
-    await updateProjectCreated(project.id)
+    if (isServicesCallOk) {
+      await updateEnvironmentCreated(environment.id)
+      await setPermission({
+        userId: owner.id,
+        environmentId: environment.id,
+        level: 2,
+      })
+      await updateProjectCreated(project.id)
+    } else {
+      await updateProjectFailed(project.id)
+    }
     await unlockProject(project.id)
 
     req.log.info({
       ...getLogInfos({ projectId: project.id }),
-      description: 'Project status successfully updated in database',
+      description: 'Projet déverrouillé',
     })
-    return
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: 'Cannot update project status to created',
+      description: 'Echec, projet verrouillé',
       error: error.message,
       trace: error.trace,
     })
   }
-
-  // try {
-  //   await updateProjectFailed(project.id)
-  //   await unlockProject(project.id)
-
-  //   req.log.info({
-  //     ...getLogInfos({ projectId: project.id }),
-  //     description: 'Project status successfully updated in database',
-  //   })
-  // } catch (error) {
-  //   req.log.error({
-  //     ...getLogInfos(),
-  //     description: 'Cannot update project status to failed',
-  //     error: error.message,
-  //     trace: error.trace,
-  //   })
-  // }
 }
 
 // DELETE
@@ -289,20 +275,21 @@ export const archiveProjectController = async (req, res) => {
       ...getLogInfos({
         projectId,
       }),
-      description: 'Project successfully locked in database',
+      description: 'Projet en cours de suppression',
     })
     send200(res, projectId)
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: `Cannot lock project: ${error.message}`,
+      description: `Echec de suppression du projet : ${error.message}`,
       error: error.message,
       trace: error.trace,
     })
-    return send500(res, error?.message)
+    return send500(res, error.message)
   }
 
   // Process api call to external service
+  let isServicesCallOk
   try {
     const organization = await getOrganizationById(project.organization)
 
@@ -312,7 +299,8 @@ export const archiveProjectController = async (req, res) => {
     }
     const results = await hooksFns.archiveProject(projectData)
     await addLogs(results, userId)
-    if (results.failed) throw new Error('Echec de suppression du projet côté ansible')
+    if (results.failed) throw new Error('Echec des services associés au projet')
+    isServicesCallOk = true
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
@@ -320,53 +308,39 @@ export const archiveProjectController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
+    isServicesCallOk = false
   }
 
   // Update DB after service call
   try {
-    repos?.forEach(async repo => {
-      await deleteRepository(repo.id)
-    })
-    environments?.forEach(async environment => {
-      await deleteEnvironment(environment.id)
-    })
-    permissions?.forEach(async permission => {
-      await deletePermissionById(permission.id)
-    })
-    users?.forEach(async user => {
-      await deleteRoleByUserIdAndProjectId(user.id, projectId)
-    })
-    await archiveProject(projectId)
+    if (isServicesCallOk) {
+      repos?.forEach(async repo => {
+        await deleteRepository(repo.id)
+      })
+      environments?.forEach(async environment => {
+        await deleteEnvironment(environment.id)
+      })
+      permissions?.forEach(async permission => {
+        await deletePermissionById(permission.id)
+      })
+      users?.forEach(async user => {
+        await deleteRoleByUserIdAndProjectId(user.id, projectId)
+      })
+      await archiveProject(projectId)
+    } else {
+      await updateProjectFailed(projectId)
+    }
     await unlockProject(projectId)
 
     req.log.info({
       ...getLogInfos({ projectId }),
-      description: 'Project archived and unlocked',
+      description: 'Project déverrouillé',
     })
-    return
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: 'Cannot unlock project',
-      error: error?.message,
-    })
-  }
-
-  try {
-    await updateProjectFailed(projectId)
-    await unlockProject(projectId)
-
-    req.log.info({
-      ...getLogInfos({ projectId }),
-      description: 'Project status successfully updated in database',
-    })
-    return
-  } catch (error) {
-    req.log.error({
-      ...getLogInfos(),
-      description: 'Cannot update project status',
+      description: 'Echec, projet verrouillé',
       error: error.message,
-      trace: error.trace,
     })
   }
 }

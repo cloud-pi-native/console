@@ -72,6 +72,7 @@ describe('Project routes', () => {
   afterEach(() => {
     vi.clearAllMocks()
     sequelize.$clearQueue()
+    Role.$clearQueue()
   })
 
   // GET
@@ -326,33 +327,17 @@ describe('Project routes', () => {
       // 1. getProjectById
       Project.$queueResult(randomDbSetup.project)
       // 2. getRequestorRole
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult(Role.$queueResult({ UserId: owner.id, role: owner.role }))
       // retrieve associated data
       Repository.$queueResult(randomDbSetup.project.repositories)
       Environment.$queueResult(randomDbSetup.project.environments)
       randomDbSetup.project.environments.forEach(environment => Permissions.$queueResult(environment.permissions))
-      randomDbSetup.project.users.forEach(() => Role.$queueResult(null))
-      User.$queueResult(randomDbSetup.users)
-      // 3. projectLoked
+      Role.$queueResult(randomDbSetup.project.users)
+      // 3. projectLocked
       Project.$queueResult(randomDbSetup.project.id)
-      // 4. ansible
-      Organization.$queueResult(randomDbSetup.organization)
-      Repository.$queueResult(randomDbSetup.project.repositories)
-      Environment.$queueResult(randomDbSetup.project.environments)
-
-      global.fetch = vi.fn(() => Promise.resolve({
-        json: async () => (
-          {
-            command: 'ansible-playbook',
-            status: 'OK',
-            code: 0,
-            logs: 'logs',
-          }
-        ),
-      },
-      ))
-      // 5. archiveProject
-      Project.$queueResult(randomDbSetup.project.id)
+      // 4. deleting
+      randomDbSetup.project.repositories.forEach(repository => Repository.$queueResult(repository))
+      randomDbSetup.project.environments.forEach(environment => Environment.$queueResult(environment))
       setRequestorId(owner.id)
 
       const response = await app.inject()
@@ -382,12 +367,12 @@ describe('Project routes', () => {
 
     it('Should not archive a project if requestor is not owner', async () => {
       const randomDbSetup = createRandomDbSetup({})
-      randomDbSetup.project.users[0].role = 'user'
-      const randomUser = getRandomUser()
+      const requestor = randomDbSetup.project.users[0]
+      requestor.role = 'user'
 
       Project.$queueResult(randomDbSetup.project)
-      Role.$queueResult(randomDbSetup.project.users[0])
-      setRequestorId(randomUser.id)
+      Role.$queueResult({ UserId: requestor.id, role: requestor.role })
+      setRequestorId(requestor.id)
 
       const response = await app.inject()
         .delete(`/${randomDbSetup.project.id}`)
