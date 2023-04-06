@@ -310,7 +310,7 @@ export const archiveProjectController = async (req, res) => {
       ...project.get({ plain: true }),
       organization: organization.dataValues.name,
     }
-    const results = await hooksFns.createProject(projectData)
+    const results = await hooksFns.archiveProject(projectData)
     await addLogs(results, userId)
     if (results.failed) throw new Error('Echec de suppression du projet côté ansible')
   } catch (error) {
