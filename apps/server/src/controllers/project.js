@@ -55,7 +55,7 @@ export const getUserProjectsController = async (req, res) => {
     let projects = await getUserProjects(user)
     req.log.info({
       ...getLogInfos(),
-      description: 'Projects successfully retreived',
+      description: 'Projets récupérés',
     })
     if (!projects.length) return send200(res, [])
 
@@ -88,7 +88,7 @@ export const getProjectByIdController = async (req, res) => {
 
     req.log.info({
       ...getLogInfos({ projectId }),
-      description: 'Project successfully retrived',
+      description: 'Projet récupéré',
     })
     send200(res, project)
   } catch (error) {

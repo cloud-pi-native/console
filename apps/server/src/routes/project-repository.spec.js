@@ -121,9 +121,11 @@ describe('Project routes', () => {
         .body(newRepository)
         .end()
 
+      delete newRepository.id
+      delete newRepository.status
       expect(response.statusCode).toEqual(201)
-      expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Repository successfully created')
+      expect(response.json()).toBeDefined()
+      expect(response.json()).toMatchObject(newRepository)
     })
   })
 
@@ -150,9 +152,9 @@ describe('Project routes', () => {
         .body(updatedKeys)
         .end()
 
-      expect(response.statusCode).toEqual(201)
+      expect(response.statusCode).toEqual(200)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Repository successfully updated')
+      expect(response.body).toEqual('Dépôt mis à jour')
     })
 
     it('Should should not update a repository if invalid keys', async () => {
@@ -177,7 +179,7 @@ describe('Project routes', () => {
 
       expect(response.statusCode).toEqual(500)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Cannot update repository: Le token est requis')
+      expect(response.body).toEqual('Dépôt non mis à jour')
     })
   })
 
@@ -200,7 +202,7 @@ describe('Project routes', () => {
 
       expect(response.statusCode).toEqual(200)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Repository successfully deleting')
+      expect(response.body).toEqual('Dépôt en cours de suppression')
     })
   })
 })
