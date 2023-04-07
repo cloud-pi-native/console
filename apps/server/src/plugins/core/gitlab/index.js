@@ -21,9 +21,9 @@ export const getGroupRootId = async () => {
 // Project
 export const createDsoProject = async (payload) => {
   try {
-    const { name, organization, email } = payload.args
+    const { project, organization, email } = payload.args
 
-    const group = await createGroup(name, organization)
+    const group = await createGroup(project, organization)
     const user = await createUser(email)
     const groupMember = await addGroupMember(group.id, user.id, 40)
 
@@ -41,7 +41,7 @@ export const createDsoProject = async (payload) => {
         name: 'GITLAB',
         data: {
           ORGANIZATION_NAME: organization,
-          PROJECT_NAME: name,
+          PROJECT_NAME: project,
         },
       }],
     }
@@ -58,9 +58,9 @@ export const createDsoProject = async (payload) => {
 
 export const archiveDsoProject = async (payload) => {
   try {
-    const { name, organization } = payload.args
+    const { project, organization } = payload.args
 
-    await deleteGroup(name, organization)
+    await deleteGroup(project, organization)
 
     return {
       status: {
