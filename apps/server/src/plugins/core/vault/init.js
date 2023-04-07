@@ -1,4 +1,4 @@
-import { archiveDsoProject, writePaylodToVault } from './index.js'
+import { archiveDsoProject, writePaylodToVault, getRegistrySecret } from './index.js'
 
 export const init = (register) => {
   register('vault', 'createProject', writePaylodToVault, 'save')
@@ -12,8 +12,7 @@ export const init = (register) => {
   register('vault', 'updateUserProjectRole', writePaylodToVault, 'save')
   register('vault', 'removeUserFromProject', writePaylodToVault, 'save')
 
-  register('vault', 'initializeEnvironment', writePaylodToVault, 'save')
-  register('vault', 'deleteEnvironment', writePaylodToVault, 'save')
+  register('vault', 'initializeEnvironment', getRegistrySecret, 'pre') // Function is not the same here, it fetch registry secret
 
   register('vault', 'setPermission', writePaylodToVault, 'save')
   register('vault', 'updatePermission', writePaylodToVault, 'save')

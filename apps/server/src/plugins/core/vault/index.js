@@ -1,5 +1,5 @@
 import { vaultUrl, vaultToken } from '../../../utils/env.js'
-import { destroyVault, listVault, writeVault } from './secret.js'
+import { destroyVault, listVault, readVault, writeVault } from './secret.js'
 
 export const axiosOptions = {
   baseURL: `${vaultUrl}`,
@@ -19,6 +19,7 @@ export const writePaylodToVault = async (payload) => {
     })
     const responses = await Promise.all(promisesWrite.flat())
     return {
+      ...payload.vault,
       status: {
         result: 'OK',
       },
@@ -49,6 +50,28 @@ export const archiveDsoProject = async (payload) => {
         result: 'OK',
       },
       secretsDestroyed: allSecrets.length,
+    }
+  } catch (error) {
+    return {
+      status: {
+        result: 'KO',
+        message: error.message,
+      },
+      error: JSON.stringify(error),
+    }
+  }
+}
+
+export const getRegistrySecret = async (payload) => {
+  const { organization, project } = payload.args
+  try {
+    const vaultPath = [organization, project, 'REGISTRY'].join('/')
+
+    return {
+      status: {
+        result: 'OK',
+      },
+      pullSecret: await readVault(vaultPath),
     }
   } catch (error) {
     return {

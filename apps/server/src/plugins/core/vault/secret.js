@@ -23,7 +23,7 @@ export const readVault = async (path) => {
       'X-Vault-Token': token,
     },
   })
-  return await response.data
+  return await response.data.data
 }
 
 export const writeVault = async (path, body) => {
