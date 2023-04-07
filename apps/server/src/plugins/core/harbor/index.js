@@ -66,10 +66,10 @@ export const createDsoProject = async (payload) => {
         robot,
       },
       vault: [{
-        name: 'GITLAB',
+        name: 'REGISTRY',
         data: {
-          ORGANIZATION_NAME: organization,
-          PROJECT_NAME: project,
+          QUAY_ROBOT_TOKEN: robot.secret,
+          QUAY_ROBOT_USERNAME: robot.name,
         },
       }],
     }
@@ -102,8 +102,8 @@ export const archiveDsoProject = async (payload) => {
       status: {
         result: 'KO',
         message: error.message,
-        error: JSON.stringify(error),
       },
+      error: JSON.stringify(error),
     }
   }
 }
