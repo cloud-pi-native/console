@@ -3,8 +3,8 @@ import { axiosOptions } from './index.js'
 import { generateRandomPassword } from '../../../utils/crypto.js'
 
 export const createNexusProject = async (payload) => {
-  const { organization, name, email } = payload.args
-  const projectName = `${organization}-${name}`
+  const { organization, project, email } = payload.args
+  const projectName = `${organization}-${project}`
   const res = { status: {} }
 
   try {

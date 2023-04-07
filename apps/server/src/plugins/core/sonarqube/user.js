@@ -3,8 +3,8 @@ import { axiosOptions } from './index.js'
 import { generateRandomPassword } from '../../../utils/crypto.js'
 
 export const createUser = async (payload) => {
-  const { name, organization, email } = payload.args
-  const username = `${organization}-${name}`
+  const { project, organization, email } = payload.args
+  const username = `${organization}-${project}`
   const res = {
     status: {
       result: 'OK',
@@ -54,7 +54,7 @@ export const createUser = async (payload) => {
       method: 'post',
       params: {
         login: username,
-        name: `Sonar Token for ${name}`,
+        name: `Sonar Token for ${project}`,
       },
     })
     const newToken = await axios({
@@ -63,7 +63,7 @@ export const createUser = async (payload) => {
       method: 'post',
       params: {
         login: username,
-        name: `Sonar Token for ${name}`,
+        name: `Sonar Token for ${project}`,
       },
     })
 

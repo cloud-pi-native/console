@@ -9,11 +9,11 @@ export const axiosOptions = {
 }
 
 export const writePaylodToVault = async (payload) => {
-  const { organization, name } = payload.args
+  const { organization, project } = payload.args
   try {
     const promisesWrite = Object.values(payload).filter(({ vault }) => (Array.isArray(vault))).map(({ vault }) => {
       return vault.map(secret => {
-        const vaultPath = [organization, name, secret.name].join('/')
+        const vaultPath = [organization, project, secret.name].join('/')
         return writeVault(vaultPath, secret.data)
       })
     })

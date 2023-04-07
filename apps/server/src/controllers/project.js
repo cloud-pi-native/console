@@ -184,6 +184,8 @@ export const createProjectController = async (req, res) => {
       email: owner.dataValues.email,
       userId: owner.dataValues.id,
     }
+    projectData.project = projectData.name
+    delete projectData.name
 
     const results = await hooksFns.createProject(projectData)
     // const { gitlab, registry } = result
@@ -297,6 +299,8 @@ export const archiveProjectController = async (req, res) => {
       ...project.get({ plain: true }),
       organization: organization.dataValues.name,
     }
+    projectData.project = projectData.name
+    delete projectData.name
     const results = await hooksFns.archiveProject(projectData)
     await addLogs(results, userId)
     if (results.failed) throw new Error('Echec des services associés au projet')

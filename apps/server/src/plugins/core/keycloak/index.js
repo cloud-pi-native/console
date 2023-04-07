@@ -25,8 +25,8 @@ export { kcClient }
 
 export const createKeycloakProjectGroup = async (payload) => {
   try {
-    const { organization, name, userId } = payload.args
-    const projectName = `${organization}-${name}`
+    const { organization, project, userId } = payload.args
+    const projectName = `${organization}-${project}`
     const group = await kcClient.groups.create({
       name: projectName,
     })

@@ -48,10 +48,10 @@ export const check = async () => {
 
 export const createDsoProject = async (payload) => {
   try {
-    const { name, organization } = payload.args
-    const projectName = `${organization}-${name}`
+    const { project, organization } = payload.args
+    const projectName = `${organization}-${project}`
 
-    const project = await createProject(projectName)
+    const projectCreated = await createProject(projectName)
     const projectMember = await addProjectGroupMember(projectName)
     const robot = await createRobot(projectName)
 
@@ -61,7 +61,7 @@ export const createDsoProject = async (payload) => {
         message: 'Created',
       },
       result: {
-        project,
+        project: projectCreated,
         projectMember,
         robot,
       },
@@ -69,7 +69,7 @@ export const createDsoProject = async (payload) => {
         name: 'GITLAB',
         data: {
           ORGANIZATION_NAME: organization,
-          PROJECT_NAME: name,
+          PROJECT_NAME: project,
         },
       }],
     }
@@ -86,8 +86,8 @@ export const createDsoProject = async (payload) => {
 
 export const archiveDsoProject = async (payload) => {
   try {
-    const { name, organization } = payload.args
-    const projectName = `${organization}-${name}`
+    const { project, organization } = payload.args
+    const projectName = `${organization}-${project}`
 
     await deleteProject(projectName)
 

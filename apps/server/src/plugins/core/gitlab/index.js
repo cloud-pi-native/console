@@ -81,9 +81,9 @@ export const archiveDsoProject = async (payload) => {
 // Repo
 export const createDsoRepository = async (payload) => {
   try {
-    const { internalRepoName, externalRepoUrl, organization, projectName } = payload.args
-    const project = await createProject(internalRepoName, externalRepoUrl, projectName, organization)
-    const mirror = await createProject(`${internalRepoName}-mirror`, externalRepoUrl, projectName, organization)
+    const { internalRepoName, externalRepoUrl, organization, project } = payload.args
+    const projectCreated = await createProject(internalRepoName, externalRepoUrl, project, organization)
+    const mirror = await createProject(`${internalRepoName}-mirror`, externalRepoUrl, project, organization)
     await setProjectTrigger(mirror.id)
 
     return {
@@ -92,14 +92,14 @@ export const createDsoRepository = async (payload) => {
         message: 'Created',
       },
       result: {
-        project,
+        project: projectCreated,
         mirror,
       },
       vault: [{
         name: 'GITLAB',
         data: {
           ORGANIZATION_NAME: organization,
-          PROJECT_NAME: projectName,
+          PROJECT_NAME: project,
         },
       }],
     }
@@ -136,9 +136,9 @@ export const updateDsoRepository = async (payload) => {
 
 export const deleteDsoRepository = async (payload) => {
   try {
-    const { internalRepoName, organization, projectName } = payload.args
-    await deleteProject(internalRepoName, projectName, organization)
-    deleteProject(`${internalRepoName}-mirror`, projectName, organization)
+    const { internalRepoName, organization, project } = payload.args
+    await deleteProject(internalRepoName, project, organization)
+    deleteProject(`${internalRepoName}-mirror`, project, organization)
 
     return {
       status: {
