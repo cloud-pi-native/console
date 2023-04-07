@@ -50,8 +50,8 @@ export const createDsoProject = async (payload) => {
       status: {
         result: 'KO',
         message: error.message,
-        error: JSON.stringify(error),
       },
+      error: JSON.stringify(error),
     }
   }
 }

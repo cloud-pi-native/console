@@ -81,8 +81,8 @@ export const createUser = async (payload) => {
     res.status = {
       result: 'KO',
       message: error.message,
-      error: JSON.stringify(error),
     }
+    res.error = JSON.stringify(error)
     return res
   }
 }
