@@ -81,10 +81,10 @@ export const archiveDsoProject = async (payload) => {
 // Repo
 export const createDsoRepository = async (payload) => {
   try {
-    const { internalRepoName, externalRepoUrl, organization, project } = payload.args
+    const { internalRepoName, externalRepoUrl, organization, project, externalUserName, externalToken } = payload.args
     const projectCreated = await createProject(internalRepoName, externalRepoUrl, project, organization)
     const mirror = await createProject(`${internalRepoName}-mirror`, externalRepoUrl, project, organization)
-    await setProjectTrigger(mirror.id)
+    const triggerToken = await setProjectTrigger(mirror.id)
 
     return {
       status: {
@@ -100,6 +100,13 @@ export const createDsoRepository = async (payload) => {
         data: {
           ORGANIZATION_NAME: organization,
           PROJECT_NAME: project,
+          GIT_INPUT_URL: externalRepoUrl,
+          GIT_INPUT_USER: externalUserName,
+          GIT_INPUT_PASSWORD: externalToken,
+          GIT_OUTPUT_USER: triggerToken.owner.username,
+          GIT_OUTPUT_PASSWORD: gitlabToken,
+          GIT_OUTPUT_URL: projectCreated.http_url_to_repo,
+          GIT_PIPELINE_TOKEN: triggerToken.token,
         },
       }],
     }
