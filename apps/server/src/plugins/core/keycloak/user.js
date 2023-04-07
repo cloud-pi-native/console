@@ -1,9 +1,7 @@
-import { kcAdminClient } from './index.js'
-
-export const getUsers = async () => {
-  return kcAdminClient.users.find()
+export const getUsers = async (kcClient) => {
+  return kcClient.users.find()
 }
 
-export const getUserByEmail = async (email) => {
-  return kcAdminClient.users.find({ email })
+export const getUserByEmail = async (kcClient, email) => {
+  return kcClient.users.find({ email })
 }

@@ -1,42 +1,24 @@
-import KcAdminClient from '@keycloak/keycloak-admin-client'
-
-import {
-  keycloakProtocol,
-  keycloakDomain,
-  keycloakRealm,
-  keycloakUser,
-  keycloakToken,
-} from '../../../utils/env.js'
 import { addMembers } from './permission.js'
-
-const kcClient = new KcAdminClient({
-  baseUrl: `${keycloakProtocol}://${keycloakDomain}`,
-})
-
-await kcClient.auth({
-  clientId: 'admin-cli',
-  grantType: 'password',
-  username: keycloakUser,
-  password: keycloakToken,
-})
-kcClient.setConfig({ realmName: keycloakRealm })
-
-export { kcClient }
+import { getProjectGroupByName } from './group.js'
+import { getkcClient } from './client.js'
 
 export const createKeycloakProjectGroup = async (payload) => {
+  const kcClient = await getkcClient()
   try {
-    const { organization, project, userId } = payload.args
-    const projectName = `${organization}-${project}`
-    const group = await kcClient.groups.create({
-      name: projectName,
-    })
-    await addMembers([userId], [projectName])
-    console.log(group)
-    const res = {
-      status: { result: 'OK' },
-      group: group[0],
+    const { organization, name, userId } = payload.args
+    const projectName = `${organization}-${name}`
+    let group = await getProjectGroupByName(kcClient, projectName)
+    if (!group) {
+      group = await kcClient.groups.create({
+        name: projectName,
+      })
     }
-    return res
+    await addMembers(kcClient, [userId], group.id)
+
+    return {
+      status: { result: 'OK' },
+      group,
+    }
   } catch (error) {
     return {
       status: {
@@ -49,19 +31,46 @@ export const createKeycloakProjectGroup = async (payload) => {
 }
 
 export const deleteKeycloakProjectGroup = async (payload) => {
-  return {
-    status: { result: 'OK' },
+  try {
+    const kcClient = await getkcClient()
+    const { organization, name } = payload.args
+    const projectName = `${organization}-${name}`
+    const group = await getProjectGroupByName(kcClient, projectName)
+    if (group) {
+      await kcClient.groups.del({ id: group.id })
+      return {
+        status: {
+          result: 'OK',
+          message: 'Deleted',
+        },
+      }
+    }
+    return {
+      status: {
+        result: 'OK',
+        message: 'Already Missing',
+      },
+    }
+  } catch (error) {
+    return {
+      status: {
+        result: 'KO',
+        message: error.message,
+      },
+      error: JSON.stringify(error),
+    }
   }
 }
 
 export const createKeycloakEnvGroup = async (payload) => {
   try {
+    const kcClient = await getkcClient()
     const { organization, project, environment } = payload.args
     const projectName = `${organization}-${project}`
-    const projectGroup = (await kcClient.groups.find({ search: projectName })).find(grpRes => grpRes.name === projectName)
-    const envGroup = projectGroup.subGroups.find(subGrp => subGrp.name === environment)
-    if (!envGroup) {
-      const group = await kcClient.groups.setOrCreateChild({
+    const projectGroup = await getProjectGroupByName(kcClient, projectName)
+    let group = projectGroup.subGroups.find(subGrp => subGrp.name === environment)
+    if (!group) {
+      group = await kcClient.groups.setOrCreateChild({
         id: projectGroup.id,
       }, {
         name: environment,
@@ -75,7 +84,7 @@ export const createKeycloakEnvGroup = async (payload) => {
     }
     return {
       status: { result: 'Already Exists' },
-      group: envGroup,
+      group,
     }
   } catch (error) {
     return {
@@ -90,10 +99,12 @@ export const createKeycloakEnvGroup = async (payload) => {
 
 export const deleteKeycloakEnvGroup = async (payload) => {
   try {
+    const kcClient = await getkcClient()
     const { organization, project, environment } = payload.args
     const projectName = `${organization}-${project}`
-    const projectGroup = (await kcClient.groups.find({ search: projectName })).find(grpRes => grpRes.name === projectName)
-    console.log(projectGroup)
+    const projectGroupSearch = await kcClient.groups.find({ search: projectName })
+    console.log(projectGroupSearch)
+    const projectGroup = projectGroupSearch.find(grpRes => grpRes.name === projectName)
     const envGroup = projectGroup.subGroups.find(subGrp => subGrp.name === environment)
     if (envGroup) {
       await kcClient.groups.del({ id: envGroup.id })

@@ -1,22 +1,29 @@
-import { kcClient } from './index.js'
 import { getGroups } from './group.js'
 
-export const getMembers = async (groupName) => {
+export const getMembers = async (kcClient, groupName) => {
   const allGroups = await getGroups()
   const { id } = allGroups.find((group) => groupName === group.name)
   return kcClient.groups.listMembers({ id })
 }
 
-export const removeMembers = async (usersId, groupsName) => {
-  const allGroups = await getGroups()
-  const groups = allGroups.filter((group) => groupsName.includes(group.name))
-  const prms = groups.flatMap((group) => (usersId.map((id) => kcClient.users.delFromGroup({ id, groupId: group.id }))))
-  return Promise.all(prms)
+/**
+ * Function delete an array of userId from a groupId
+ *
+ * @param {Array<String>} usersId - An array of keycloak user ID
+ * @param {String} groupId - A keycloak group ID
+ * @return {Promise} Return a Promise
+ */
+export const removeMembers = async (kcClient, usersId, groupId) => {
+  return Promise.all(usersId.map(userId => (kcClient.users.delFromGroup({ id: userId, groupId }))))
 }
 
-export const addMembers = async (usersId, groupsName) => {
-  const allGroups = await getGroups()
-  const groups = allGroups.filter((group) => groupsName.includes(group.name))
-  const prms = groups.flatMap((group) => (usersId.map((id) => kcClient.users.addToGroup({ id, groupId: group.id }))))
-  return Promise.all(prms)
+/**
+ * Function add an array of userId to a groupId
+ *
+ * @param {Array<String>} usersId - An array of keycloak user ID
+ * @param {String} groupId - A keycloak group ID
+ * @return {Promise} Return a Promise
+ */
+export const addMembers = async (kcClient, usersId, groupId) => {
+  return Promise.all(usersId.map(userId => (kcClient.users.addToGroup({ id: userId, groupId }))))
 }
