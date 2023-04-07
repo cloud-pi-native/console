@@ -61,6 +61,7 @@ services:
     environment:
       NODE_ENV: development
       INTEGRATION: 'true'
+      KUBECONFIG_CTX: #PLEASE DEFINE ME
     networks:
       - dso-network
 
