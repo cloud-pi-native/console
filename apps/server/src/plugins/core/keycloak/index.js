@@ -23,7 +23,7 @@ kcClient.setConfig({ realmName: keycloakRealm })
 
 export { kcClient }
 
-export const createProjectGroup = async (payload) => {
+export const createKeycloakProjectGroup = async (payload) => {
   try {
     const { organization, name, userId } = payload.args
     const projectName = `${organization}-${name}`
@@ -45,6 +45,12 @@ export const createProjectGroup = async (payload) => {
         error: JSON.stringify(error),
       },
     }
+  }
+}
+
+export const deleteKeycloakProjectGroup = async (payload) => {
+  return {
+    status: { result: 'OK' },
   }
 }
 

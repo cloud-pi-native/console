@@ -122,7 +122,7 @@ export const createRepositoryController = async (req, res) => {
 
     const repoData = {
       ...repo.get({ plain: true }),
-      projectName: project.name,
+      project: project.name,
       organization: organization.dataValues.name,
       services: project.services,
     }
@@ -217,7 +217,7 @@ export const updateRepositoryController = async (req, res) => {
 
     const repoData = {
       ...repo.get({ plain: true }),
-      projectName: project.name,
+      project: project.name,
       organization: organization.dataValues.name,
       services: project.services,
     }
@@ -304,7 +304,7 @@ export const deleteRepositoryController = async (req, res) => {
 
     const repoData = {
       ...repo.get({ plain: true }),
-      projectName: project.name,
+      project: project.name,
       organization: organization.dataValues.name,
       services: project.services,
     }
