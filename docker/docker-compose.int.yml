@@ -53,6 +53,7 @@ services:
       - /app/apps/server/node_modules/
       - ../packages/shared:/app/packages/shared
       - /app/packages/shared/node_modules/
+      - ${HOME}/.kube/config:/home/node/.kube/config
     env_file:
       - ../env/.env-database
       - ../env/.env-keycloak
