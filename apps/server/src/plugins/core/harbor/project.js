@@ -7,6 +7,9 @@ export const createProject = async (projectName) => {
       ...axiosOptions,
       url: `projects/${projectName}`,
       method: 'get',
+      headers: {
+        'X-Is-Resource-Name': true,
+      },
     })
     return existingProject.data
   } catch (error) { // Create project if not exist
