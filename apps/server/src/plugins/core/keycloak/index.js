@@ -5,8 +5,8 @@ import { getkcClient } from './client.js'
 export const createKeycloakProjectGroup = async (payload) => {
   const kcClient = await getkcClient()
   try {
-    const { organization, name, userId } = payload.args
-    const projectName = `${organization}-${name}`
+    const { organization, project, userId } = payload.args
+    const projectName = `${organization}-${project}`
     let group = await getProjectGroupByName(kcClient, projectName)
     if (!group) {
       group = await kcClient.groups.create({
@@ -33,8 +33,8 @@ export const createKeycloakProjectGroup = async (payload) => {
 export const deleteKeycloakProjectGroup = async (payload) => {
   try {
     const kcClient = await getkcClient()
-    const { organization, name } = payload.args
-    const projectName = `${organization}-${name}`
+    const { organization, project } = payload.args
+    const projectName = `${organization}-${project}`
     const group = await getProjectGroupByName(kcClient, projectName)
     if (group) {
       await kcClient.groups.del({ id: group.id })
@@ -103,7 +103,7 @@ export const deleteKeycloakEnvGroup = async (payload) => {
     const { organization, project, environment } = payload.args
     const projectName = `${organization}-${project}`
     const projectGroupSearch = await kcClient.groups.find({ search: projectName })
-    console.log(projectGroupSearch)
+    console.log({ projectGroupSearch })
     const projectGroup = projectGroupSearch.find(grpRes => grpRes.name === projectName)
     const envGroup = projectGroup.subGroups.find(subGrp => subGrp.name === environment)
     if (envGroup) {

@@ -123,7 +123,7 @@ export const createDsoRepository = async (payload) => {
 export const updateDsoRepository = async (payload) => {
   try {
     // TODO #330
-    console.log(payload)
+    console.log('à implémenter')
 
     return {
       status: {

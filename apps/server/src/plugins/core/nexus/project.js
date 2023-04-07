@@ -133,8 +133,8 @@ export const createNexusProject = async (payload) => {
 }
 
 export const deleteNexusProject = async (payload) => {
-  const { organization, name } = payload.args
-  const projectName = `${organization}-${name}`
+  const { organization, project } = payload.args
+  const projectName = `${organization}-${project}`
   // await axios({
   //   method: 'GET',
   //   url: `/security/users?userId=${projectName}`,

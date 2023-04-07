@@ -37,9 +37,9 @@ export const writePaylodToVault = async (payload) => {
 }
 
 export const archiveDsoProject = async (payload) => {
-  const { organization, name } = payload.args
+  const { organization, project } = payload.args
   try {
-    const vaultPath = [organization, name].join('/')
+    const vaultPath = [organization, project].join('/')
     const allSecrets = await listVault(vaultPath)
     const promisesDestroy = allSecrets.map(path => {
       return destroyVault(`${vaultPath}/${path}`)

@@ -13,14 +13,14 @@ export const createUser = async (payload) => {
     result: {},
   }
   try {
-    const getUsers = await axios({
+    const users = (await axios({
       ...axiosOptions,
       url: 'users/search',
       params: {
         q: username,
       },
-    })
-    const user = getUsers.data.users.find(u => u.login === username)
+    }))?.data
+    const user = users.users.find(u => u.login === username)
     const newPwd = generateRandomPassword(30)
     if (!user) {
       res.status.message = 'User Created'
@@ -88,23 +88,25 @@ export const createUser = async (payload) => {
 }
 
 export const deleteUser = async (payload) => {
-  const { name, organization } = payload.args
-  const username = `${organization}-${name}`
+  const { project, organization } = payload.args
+  const username = `${organization}-${project}`
   const res = {
     status: {
       result: 'OK',
-      message: 'Password recreated',
+      message: 'User deleted',
     },
   }
   try {
-    const getUsers = await axios({
+    const users = (await axios({
       ...axiosOptions,
       url: 'users/search',
       params: {
         q: username,
       },
-    })
-    const user = getUsers.data.users.find(u => u.login === username)
+    }))?.data
+    // TODO : tableau users vide + à quoi sert const res ici ?
+    console.log({ users })
+    const user = users.users.find(u => u.login === username)
     if (!user) {
       return {
         status: {

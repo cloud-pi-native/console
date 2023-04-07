@@ -65,7 +65,6 @@ export const listVault = async (path) => {
     method: 'list',
     validateStatus: (code) => [200, 404].includes(code),
   })
-  console.log(response.data)
   if (response.status === 404) { return listSecretPath }
   for (const key of response.data.data.keys) {
     if (key.endsWith('/')) {
