@@ -23,6 +23,7 @@ import {
   getProjectRepositories,
   deleteRepository,
   updateRepositoryDeleting,
+  getInfraProjectRepositories,
 } from '../models/queries/repository-queries.js'
 import {
   deleteEnvironment,
@@ -44,6 +45,7 @@ import { getServices } from '../utils/services.js'
 import { lowercaseFirstLetter, replaceNestedKeys } from '../utils/queries-tools.js'
 import { addLogs } from '../models/queries/log-queries.js'
 import hooksFns from '../plugins/index.js'
+import { gitlabUrl, harborUrl, projectPath } from '../utils/env.js'
 
 // GET
 export const getUserProjectsController = async (req, res) => {
@@ -140,10 +142,12 @@ export const createProjectController = async (req, res) => {
   let environment
   let project
   let owner
+  let organization
 
-  const organization = await getOrganizationById(data.organization)
   try {
     owner = await getOrCreateUser({ id: user.id, email: user?.email, firstName: user?.firstName, lastName: user?.lastName })
+
+    organization = await getOrganizationById(data.organization)
 
     await projectSchema.validateAsync(data, { context: { projectNameMaxLength: calcProjectNameMaxLength(organization.name) } })
 
@@ -155,8 +159,7 @@ export const createProjectController = async (req, res) => {
     await lockProject(project.id)
 
     await addUserToProject({ project, user: owner, role: 'owner' })
-
-    environment = await initializeEnvironment({ name: 'dev', projectId: project.id })
+    project = { ...project.get({ plain: true }) }
 
     req.log.info({
       ...getLogInfos({
@@ -180,10 +183,10 @@ export const createProjectController = async (req, res) => {
   let isServicesCallOk
   try {
     const projectData = {
-      ...project.get({ plain: true }),
-      organization: organization.dataValues.name,
-      email: owner.dataValues.email,
-      userId: owner.dataValues.id,
+      ...project,
+      organization: organization.name,
+      email: owner.email,
+      userId: owner.id,
     }
     projectData.project = projectData.name
     delete projectData.name
@@ -199,8 +202,41 @@ export const createProjectController = async (req, res) => {
     //   },
     // }
     // await updateProjectServices(project.id, services)
-    await addLogs(results, owner.dataValues.id)
+    await addLogs(results, owner.id)
     if (results.failed) throw new Error('Echec des services associés au projet')
+
+    // -- début - Environnement dev créé par défaut --
+    console.log('gestion environnement')
+    environment = await initializeEnvironment({ name: 'dev', projectId: project.id })
+    environment = { ...environment.get({ plain: true }) }
+    const registryHost = harborUrl.split('//')[1].split('/')[0]
+    const environmentName = environment.name
+    const projectName = project.name
+    const organizationName = organization.name
+    const gitlabBaseURL = `${gitlabUrl}/${projectPath.join('/')}/${organizationName}/${projectName}/`
+    console.log({ gitlabBaseURL })
+    const repositoriesURL = (await getInfraProjectRepositories(project.id)).map(({ internalRepoName }) => (`${gitlabBaseURL}/${internalRepoName}.git`))
+    const envData = {
+      environment: environmentName,
+      project: projectName,
+      organization: organizationName,
+      repositoriesURL,
+      registryHost,
+    }
+    console.log('envData\n', envData)
+    const resultsEnv = await hooksFns.initializeEnvironment(envData)
+    console.log(resultsEnv)
+    await addLogs(resultsEnv, owner.id)
+    if (resultsEnv.failed) throw new Error('Echec services à la création de l\'environnement')
+    await updateEnvironmentCreated(environment.id)
+    await setPermission({
+      userId: owner.id,
+      environmentId: environment.id,
+      level: 2,
+    })
+    await unlockProject(project.id)
+    // -- fin - Environnement dev créé par défaut --
+
     isServicesCallOk = true
   } catch (error) {
     req.log.error({

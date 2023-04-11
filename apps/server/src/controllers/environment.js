@@ -18,7 +18,11 @@ import {
 } from '../models/queries/users-projects-queries.js'
 import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
-// import hooksFns from '../plugins/index.js'
+import hooksFns from '../plugins/index.js'
+import { addLogs } from '../models/queries/log-queries.js'
+import { getOrganizationById } from '../models/queries/organization-queries.js'
+import { getInfraProjectRepositories } from '../models/queries/repository-queries.js'
+import { gitlabUrl, harborUrl, projectPath } from '../utils/env.js'
 
 // GET
 export const getEnvironmentByIdController = async (req, res) => {
@@ -60,8 +64,11 @@ export const initializeEnvironmentController = async (req, res) => {
   const projectId = req.params?.projectId
 
   let env
+  let project
+  let organization
   try {
-    const project = await getProjectById(projectId)
+    project = await getProjectById(projectId)
+    organization = await getOrganizationById(project.organization)
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
     if (!role) throw new Error('Vous n\'êtes pas membre du projet')
     // TODO : plus tard il sera nécessaire d'être owner pour créer un environment
@@ -92,8 +99,26 @@ export const initializeEnvironmentController = async (req, res) => {
     return send500(res, error.message)
   }
 
-  // TODO : #133 : appel ansible + création groupe keycloak + ajout owner au groupe keycloak
   try {
+    const registryHost = harborUrl.split('//')[1].split('/')[0]
+    const environmentName = env.dataValues.name
+    const projectName = project.dataValues.name
+    const organizationName = organization.name
+    const gitlabBaseURL = `${gitlabUrl}/${projectPath.join('/')}/${organizationName}/${projectName}/`
+    console.log(gitlabBaseURL)
+    const repositoriesURL = (await getInfraProjectRepositories(projectId)).map(({ internalRepoName }) => (`${gitlabBaseURL}/${internalRepoName}.git`))
+    console.log(env.get({ plain: true }))
+    const envData = {
+      environment: environmentName,
+      project: projectName,
+      organization: organizationName,
+      repositoriesURL,
+      registryHost,
+    }
+    const results = await hooksFns.initializeEnvironment(envData)
+    console.log(results)
+    await addLogs(results, userId)
+    if (results.failed) throw new Error('Echec services à la création de l\'environnement')
     await updateEnvironmentCreated(env.id)
     const ownerId = await getSingleOwnerByProjectId(projectId)
     if (ownerId !== userId) {
@@ -119,7 +144,7 @@ export const initializeEnvironmentController = async (req, res) => {
     req.log.error({
       ...getLogInfos(),
       description: 'Cannot update environment status to created',
-      error: error.message,
+      error: JSON.stringify(error),
       trace: error.trace,
     })
   }
@@ -148,10 +173,17 @@ export const deleteEnvironmentController = async (req, res) => {
   const projectId = req.params?.projectId
   const userId = req.session?.user?.id
 
+  let env
+  let project
+  let organization
   try {
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
     if (!role) throw new Error('Vous n\'êtes pas membre du projet')
     if (role.role !== 'owner') throw new Error('Vous n\'êtes pas souscripteur du projet')
+
+    env = await getEnvironmentById(environmentId)
+    project = await getProjectById(projectId)
+    organization = await getOrganizationById(project.organization)
 
     await updateEnvironmentDeleting(environmentId)
     await lockProject(projectId)
@@ -172,8 +204,20 @@ export const deleteEnvironmentController = async (req, res) => {
     return send500(res, error.message)
   }
 
-  // TODO : #133 : appel ansible + suppression groupe keycloak (+ retirer users du groupe keycloak ?)
   try {
+    const environmentName = env.name
+    const projectName = project.name
+    const organizationName = organization.name
+
+    const envData = {
+      environment: environmentName,
+      project: projectName,
+      organization: organizationName,
+    }
+    const results = await hooksFns.deleteEnvironment(envData)
+    console.log(results)
+    await addLogs(results, userId)
+    if (results.failed) throw new Error('Echec des services à la suppression de l\'environnement')
     await deleteEnvironment(environmentId)
     await unlockProject(projectId)
 
@@ -186,7 +230,7 @@ export const deleteEnvironmentController = async (req, res) => {
     req.log.error({
       ...getLogInfos(),
       description: 'Cannot delete environment',
-      error: error.message,
+      error: JSON.stringify(error),
       trace: error.trace,
     })
   }
