@@ -9,7 +9,19 @@
 
 ## Delete DSO project
 
-0 KO mais attention sonarqube :
+- problème suppression groupe keycloak
+
+```log
+TypeError: Cannot read properties of undefined (reading 'subGroups')
+at Object.deleteKeycloakEnvGroup [as keycloak] (file:///app/apps/server/src/plugins/core/keycloak/index.js:108:35)
+at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+at async Promise.all (index 0)
+at async executeStep (file:///app/apps/server/src/plugins/index.js:16:19)
+at async Object.execute [as deleteEnvironment] (file:///app/apps/server/src/plugins/index.js:40:15)
+at async Object.archiveProjectController (file:///app/apps/server/src/controllers/project.js:357:26)
+```
+
+- attention sonarqube :
 
 - 0 users retrouvés dans `deleteUser`
 

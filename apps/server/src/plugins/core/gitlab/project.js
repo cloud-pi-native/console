@@ -17,7 +17,6 @@ export const createProject = async (internalRepoName, externalRepoUrl, group, or
   if (externalUserName && externalToken) {
     externalRepoUrl = `https://${externalUserName}:${externalToken}@${externalRepoUrl.slice(8)}`
   }
-  console.log({ externalRepoUrl, externalUserName, externalToken })
   return await api.Projects.create(
     {
       name: internalRepoName,

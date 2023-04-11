@@ -16,6 +16,9 @@ import {
 import {
   getRoleByUserIdAndProjectId,
 } from '../models/queries/users-projects-queries.js'
+import {
+  getEnvironmentsByProjectId,
+} from '../models/queries/environment-queries.js'
 import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import { getOrganizationById } from '../models/queries/organization-queries.js'
@@ -119,12 +122,15 @@ export const createRepositoryController = async (req, res) => {
   let isServicesCallOk
   try {
     const organization = await getOrganizationById(project.organization)
+    const environments = await getEnvironmentsByProjectId(project.id)
+    const environmentNames = environments?.map(env => env.name)
 
     const repoData = {
       ...repo.get({ plain: true }),
       project: project.name,
       organization: organization.dataValues.name,
       services: project.services,
+      environment: environmentNames,
     }
     if (data.isPrivate) {
       repoData.externalUserName = data.externalUserName
@@ -301,12 +307,15 @@ export const deleteRepositoryController = async (req, res) => {
   try {
     const project = await getProjectById(projectId)
     const organization = await getOrganizationById(project.organization)
+    const environments = await getEnvironmentsByProjectId(project.id)
+    const environmentNames = environments?.map(env => env.name)
 
     const repoData = {
       ...repo.get({ plain: true }),
       project: project.name,
       organization: organization.dataValues.name,
       services: project.services,
+      environments: environmentNames,
     }
 
     const results = await hooksFns.deleteRepository(repoData)

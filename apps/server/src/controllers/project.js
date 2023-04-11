@@ -206,7 +206,6 @@ export const createProjectController = async (req, res) => {
     if (results.failed) throw new Error('Echec des services associés au projet')
 
     // -- début - Environnement dev créé par défaut --
-    console.log('gestion environnement')
     environment = await initializeEnvironment({ name: 'dev', projectId: project.id })
     environment = { ...environment.get({ plain: true }) }
     const registryHost = harborUrl.split('//')[1].split('/')[0]
@@ -214,7 +213,6 @@ export const createProjectController = async (req, res) => {
     const projectName = project.name
     const organizationName = organization.name
     const gitlabBaseURL = `${gitlabUrl}/${projectPath.join('/')}/${organizationName}/${projectName}/`
-    console.log({ gitlabBaseURL })
     const repositories = (await getInfraProjectRepositories(project.id)).map(({ internalRepoName }) => ({
       url: `${gitlabBaseURL}/${internalRepoName}.git`,
       internalRepoName,
@@ -226,9 +224,7 @@ export const createProjectController = async (req, res) => {
       repositories,
       registryHost,
     }
-    console.log('envData\n', envData)
     const resultsEnv = await hooksFns.initializeEnvironment(envData)
-    console.log(resultsEnv)
     await addLogs(resultsEnv, owner.id)
     if (resultsEnv.failed) throw new Error('Echec services à la création de l\'environnement')
     await updateEnvironmentCreated(environment.id)
@@ -237,8 +233,9 @@ export const createProjectController = async (req, res) => {
       environmentId: environment.id,
       level: 2,
     })
-    await unlockProject(project.id)
     // -- fin - Environnement dev créé par défaut --
+
+    await unlockProject(project.id)
 
     isServicesCallOk = true
   } catch (error) {
@@ -344,6 +341,26 @@ export const archiveProjectController = async (req, res) => {
     const results = await hooksFns.archiveProject(projectData)
     await addLogs(results, userId)
     if (results.failed) throw new Error('Echec des services associés au projet')
+
+    // -- début - Suppression environnements --
+
+    const environmentsName = environments.map(env => env.name)
+    const projectName = project.name
+    const organizationName = organization.name
+
+    for (const envName of environmentsName) {
+      const envData = {
+        environment: envName,
+        project: projectName,
+        organization: organizationName,
+      }
+      const resultsEnv = await hooksFns.deleteEnvironment(envData)
+      console.log(resultsEnv)
+      await addLogs(resultsEnv, userId)
+      if (resultsEnv.failed) throw new Error('Echec des services à la suppression de l\'environnement')
+    }
+    // -- fin - Suppression environnements --
+
     isServicesCallOk = true
   } catch (error) {
     req.log.error({
