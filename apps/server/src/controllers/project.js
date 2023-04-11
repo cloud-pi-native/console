@@ -215,12 +215,15 @@ export const createProjectController = async (req, res) => {
     const organizationName = organization.name
     const gitlabBaseURL = `${gitlabUrl}/${projectPath.join('/')}/${organizationName}/${projectName}/`
     console.log({ gitlabBaseURL })
-    const repositoriesURL = (await getInfraProjectRepositories(project.id)).map(({ internalRepoName }) => (`${gitlabBaseURL}/${internalRepoName}.git`))
+    const repositories = (await getInfraProjectRepositories(project.id)).map(({ internalRepoName }) => ({
+      url: `${gitlabBaseURL}/${internalRepoName}.git`,
+      internalRepoName,
+    }))
     const envData = {
       environment: environmentName,
       project: projectName,
       organization: organizationName,
-      repositoriesURL,
+      repositories,
       registryHost,
     }
     console.log('envData\n', envData)

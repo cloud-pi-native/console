@@ -7,13 +7,17 @@ import { getGroupId } from './group.js'
  * @param {string} group - nom du projet DSO.
  * @param {string} organization - nom de l'organisation DSO.
  */
-export const createProject = async (internalRepoName, externalRepoUrl, group, organization) => {
+export const createProject = async (internalRepoName, externalRepoUrl, group, organization, externalUserName, externalToken) => {
   const groupId = await getGroupId(group, organization)
   const searchResults = await api.Projects.search(internalRepoName)
   if (searchResults.length) {
     const existingProject = searchResults.find(project => project.namespace.id === groupId)
     if (existingProject) return existingProject
   }
+  if (externalUserName && externalToken) {
+    externalRepoUrl = `https://${externalUserName}:${externalToken}@${externalRepoUrl.slice(8)}`
+  }
+  console.log({ externalRepoUrl, externalUserName, externalToken })
   return await api.Projects.create(
     {
       name: internalRepoName,
