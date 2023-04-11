@@ -20,7 +20,7 @@ import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import { getOrganizationById } from '../models/queries/organization-queries.js'
 import { addLogs } from '../models/queries/log-queries.js'
-// import hooksFns from '../plugins/index.js'
+import hooksFns from '../plugins/index.js'
 
 // GET
 export const getRepositoryByIdController = async (req, res) => {
