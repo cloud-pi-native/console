@@ -101,7 +101,7 @@ export const removeUserFromProject = async ({ project, user }) => {
 }
 
 export const updateProjectServices = async (id, services) => {
-  return getProjectModel().update({ locked: false, services }, { where: { id } })
+  return getProjectModel().update({ services }, { where: { id } })
 }
 
 export const archiveProject = async (id) => {

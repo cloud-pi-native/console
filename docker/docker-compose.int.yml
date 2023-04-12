@@ -53,7 +53,7 @@ services:
       - /app/apps/server/node_modules/
       - ../packages/shared:/app/packages/shared
       - /app/packages/shared/node_modules/
-      - ${HOME}/.kube/config:/home/node/.kube/config
+      - ${KUBE_CONFIG_PATH}:/home/node/.kube/config
     env_file:
       - ../env/.env-database
       - ../env/.env-keycloak
@@ -61,7 +61,7 @@ services:
     environment:
       NODE_ENV: development
       INTEGRATION: 'true'
-      KUBECONFIG_CTX: #PLEASE DEFINE ME
+      KUBECONFIG_CTX: admin4-7
     networks:
       - dso-network
 

@@ -10,7 +10,7 @@ import {
   addUserToProject,
   archiveProject,
   getProjectUsers,
-  // updateProjectServices,
+  updateProjectServices,
 } from '../models/queries/project-queries.js'
 import { getOrCreateUser, getUserById } from '../models/queries/user-queries.js'
 import {
@@ -192,18 +192,20 @@ export const createProjectController = async (req, res) => {
     delete projectData.name
 
     const results = await hooksFns.createProject(projectData)
-    // const { gitlab, registry } = result
-    // const services = {
-    //   gitlab: {
-    //     id: gitlab.result.group.id,
-    //   },
-    //   registry: {
-    //     id: registry.result.project.project_id,
-    //   },
-    // }
-    // await updateProjectServices(project.id, services)
     await addLogs(results, owner.id)
     if (results.failed) throw new Error('Echec des services associés au projet')
+
+    // enregistrement des ids GitLab et Harbor
+    const { gitlab, registry } = results
+    const services = {
+      gitlab: {
+        id: gitlab?.result?.group?.id,
+      },
+      registry: {
+        id: registry?.result?.project?.project_id,
+      },
+    }
+    await updateProjectServices(project.id, services)
 
     // -- début - Environnement dev créé par défaut --
     environment = await initializeEnvironment({ name: 'dev', projectId: project.id })
@@ -234,8 +236,6 @@ export const createProjectController = async (req, res) => {
       level: 2,
     })
     // -- fin - Environnement dev créé par défaut --
-
-    await unlockProject(project.id)
 
     isServicesCallOk = true
   } catch (error) {
