@@ -332,16 +332,6 @@ export const archiveProjectController = async (req, res) => {
   try {
     const organization = await getOrganizationById(project.organization)
 
-    const projectData = {
-      ...project.get({ plain: true }),
-      organization: organization.dataValues.name,
-    }
-    projectData.project = projectData.name
-    delete projectData.name
-    const results = await hooksFns.archiveProject(projectData)
-    await addLogs(results, userId)
-    if (results.failed) throw new Error('Echec des services associés au projet')
-
     // -- début - Suppression environnements --
 
     const environmentsName = environments.map(env => env.name)
@@ -360,6 +350,16 @@ export const archiveProjectController = async (req, res) => {
       if (resultsEnv.failed) throw new Error('Echec des services à la suppression de l\'environnement')
     }
     // -- fin - Suppression environnements --
+
+    const projectData = {
+      ...project.get({ plain: true }),
+      organization: organization.dataValues.name,
+    }
+    projectData.project = projectData.name
+    delete projectData.name
+    const results = await hooksFns.archiveProject(projectData)
+    await addLogs(results, userId)
+    if (results.failed) throw new Error('Echec des services associés au projet')
 
     isServicesCallOk = true
   } catch (error) {

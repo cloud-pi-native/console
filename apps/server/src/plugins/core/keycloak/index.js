@@ -102,12 +102,8 @@ export const deleteKeycloakEnvGroup = async (payload) => {
     const kcClient = await getkcClient()
     const { organization, project, environment } = payload.args
     const projectName = `${organization}-${project}`
-    console.log({ projectName })
-    // TODO : a débugger (ne remonte pas de groups)
     const projectGroupSearch = await kcClient.groups.find({ search: projectName })
-    console.log({ projectGroupSearch })
     const projectGroup = projectGroupSearch.find(grpRes => grpRes.name === projectName)
-    console.log({ projectGroup })
     const envGroup = projectGroup.subGroups.find(subGrp => subGrp.name === environment)
     if (envGroup) {
       await kcClient.groups.del({ id: envGroup.id })
