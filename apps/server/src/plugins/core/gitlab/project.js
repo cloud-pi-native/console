@@ -49,7 +49,7 @@ export const createProjectMirror = async (internalRepoName, group, organization)
       namespace_id: groupId,
     },
   )
-  api.Commits.create(project.id, 'main', 'test', mirrorFirstActions)
+  api.Commits.create(project.id, 'main', 'ci: :construction_worker: first mirror', mirrorFirstActions)
   return project
 }
 
