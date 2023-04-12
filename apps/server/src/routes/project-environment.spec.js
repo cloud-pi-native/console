@@ -77,7 +77,7 @@ describe('User routes', () => {
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       Environment.$queueResult(randomDbSetup.project.environments[0])
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: 'owner' })
       Permission.$queueResult(randomDbSetup.project.environments[0].permissions[0])
       setRequestorId(owner.id)
 
@@ -113,7 +113,7 @@ describe('User routes', () => {
       randomDbSetup.project.users[0].role = 'user'
 
       Environment.$queueResult(randomDbSetup.project.environments[0])
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: 'user' })
       Permission.$queueResult(null)
       setRequestorId(owner.id)
 
@@ -224,7 +224,7 @@ describe('User routes', () => {
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       // 1. getRequestorRole
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: 'owner' })
       // 2. deleteEnvironment
       Environment.$queueResult(randomDbSetup.project.environments[0])
       // 3. lockProject
@@ -260,11 +260,11 @@ describe('User routes', () => {
       const randomDbSetup = createRandomDbSetup({})
       const environmentToDelete = randomDbSetup.project.environments[0]
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
-      const requestorRole = randomDbSetup.project.users[0]
-      requestorRole.role = 'user'
+      const requestor = randomDbSetup.project.users[0]
+      requestor.role = 'user'
 
       // 1. getRequestorRole
-      Role.$queueResult(requestorRole)
+      Role.$queueResult({ UserId: requestor.id, role: requestor.role })
       setRequestorId(owner.id)
 
       const response = await app.inject()

@@ -72,7 +72,7 @@ describe('Project routes', () => {
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       Repository.$queueResult(repoToGet)
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: owner.role })
       setRequestorId(owner.id)
 
       const response = await app.inject()
@@ -91,7 +91,7 @@ describe('Project routes', () => {
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       Repository.$queueResult(randomDbSetup.project.repositories)
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: owner.role })
       setRequestorId(owner.id)
 
       const response = await app.inject()
@@ -112,7 +112,7 @@ describe('Project routes', () => {
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       Project.$queueResult(randomDbSetup.project)
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: owner.role })
       Repository.$queueResult(randomDbSetup.project.repositories)
       setRequestorId(owner.id)
 
@@ -143,7 +143,7 @@ describe('Project routes', () => {
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       Repository.$queueResult(repoToUpdate)
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: owner.role })
       Project.$queueResult([1])
       Repository.$queueResult([1])
       setRequestorId(owner.id)
@@ -169,7 +169,7 @@ describe('Project routes', () => {
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       Repository.$queueResult(repoToUpdate)
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: owner.role })
       Project.$queueResult([1])
       setRequestorId(owner.id)
 
@@ -192,7 +192,7 @@ describe('Project routes', () => {
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       Repository.$queueResult(repoToDelete)
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: owner.role })
       Project.$queueResult([1])
       Repository.$queueResult([1])
       setRequestorId(owner.id)

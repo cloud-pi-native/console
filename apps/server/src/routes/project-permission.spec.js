@@ -68,7 +68,7 @@ describe('Project routes', () => {
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       // 1. getRequestorRole
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: 'owner' })
       // 2. getPermissions
       Permission.$queueResult(randomDbSetup.project.environments[0].permissions[0])
       setRequestorId(owner.id)
@@ -110,7 +110,7 @@ describe('Project routes', () => {
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       // 1. getRequestorRole
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: 'owner' })
       // 2. setPermissions
       sequelize.$queueResult(newPermission)
       setRequestorId(owner.id)
@@ -155,7 +155,7 @@ describe('Project routes', () => {
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       // 1. getRequestorRole
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: 'owner' })
       // 2. getRequestorPermission
       Permission.$queueResult(requestorPermission)
       // 3. getOwnerId
@@ -181,7 +181,7 @@ describe('Project routes', () => {
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       // 1. getRequestorRole
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: 'owner' })
       // 2. getRequestorPermission
       Permission.$queueResult(permissionToUpdate)
       // 3. getOwnerId
@@ -204,7 +204,7 @@ describe('Project routes', () => {
       const requestor = randomDbSetup.users[2]
 
       // 1. getRequestorRole
-      Role.$queueResult(randomDbSetup.project.users[2])
+      Role.$queueResult({ UserId: requestor.id, role: requestor.role })
       // 2. getRequestorPermission
       Permission.$queueResult(null)
       setRequestorId(requestor.id)
@@ -227,7 +227,7 @@ describe('Project routes', () => {
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       // 1. getRequestorRole
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: owner.role })
       // 2. getRequestorPermission
       Permission.$queueResult(removedPermission)
       // 3. getOwnerId
@@ -248,10 +248,11 @@ describe('Project routes', () => {
       const randomDbSetup = createRandomDbSetup({ nbUsers: 2 })
       const requestorPermission = randomDbSetup.project.environments[0].permissions[1]
       const removedPermission = randomDbSetup.project.environments[0].permissions[0]
+      const requestor = randomDbSetup.project.users[1]
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       // 1. getRequestorRole
-      Role.$queueResult(randomDbSetup.project.users[1])
+      Role.$queueResult({ UserId: requestor.id, role: requestor.role })
       // 2. getRequestorPermission
       Permission.$queueResult(requestorPermission)
       // 3. getOwnerId
@@ -273,7 +274,7 @@ describe('Project routes', () => {
       const requestor = randomDbSetup.users[2]
 
       // 1. getRequestorRole
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: requestor.id, role: requestor.role })
       // 2. getRequestorPermission
       Permission.$queueResult(null)
       setRequestorId(requestor.id)

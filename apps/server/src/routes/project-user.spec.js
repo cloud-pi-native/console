@@ -70,7 +70,7 @@ describe('User routes', () => {
       const randomDbSetup = createRandomDbSetup({ nbUsers: 3 })
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: owner.role })
       User.$queueResult(randomDbSetup.users)
       setRequestorId(owner.id)
 
@@ -111,7 +111,7 @@ describe('User routes', () => {
       // 1. getProjectById
       Project.$queueResult(randomDbSetup.project)
       // 2. getRequestorRole
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: owner.role })
       // 3. getUserByEmail
       User.$queueResult(randomUser)
       // 4. getUserToAddRole
@@ -138,9 +138,9 @@ describe('User routes', () => {
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       Project.$queueResult(randomDbSetup.project)
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: owner.role })
       User.$queueResult(randomUser)
-      Role.$queueResult(randomDbSetup.project.users[1])
+      Role.$queueResult({ UserId: randomUser.id, role: randomUser.role })
       setRequestorId(owner.id)
 
       const response = await app.inject()
@@ -183,9 +183,9 @@ describe('User routes', () => {
       // 1. getProject
       Project.$queueResult(randomDbSetup.project)
       // 2. getRequestorRole
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: owner.role })
       // 3. getUserToUpdateRole
-      Role.$queueResult(randomDbSetup.project.users[1])
+      Role.$queueResult({ UserId: userToUpdate.id, role: userToUpdate.role })
       // 4. updateUserProjectRole
       Role.$queueResult([1])
 
@@ -211,11 +211,11 @@ describe('User routes', () => {
       // 1. getProjectById
       Project.$queueResult(randomDbSetup.project)
       // 2. getRequestorRole
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: owner.role })
       // 3. getUserToRemove
       User.$queueResult(randomUser)
       // 4. getUserToRemoveRole
-      Role.$queueResult(randomDbSetup.project.users[1])
+      Role.$queueResult({ UserId: randomUser.id, role: randomUser.role })
       // 5. project locked
       sequelize.$queueResult([1])
       // 6. removeUserFromProject
@@ -273,7 +273,7 @@ describe('User routes', () => {
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       Project.$queueResult(randomDbSetup.project)
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: owner.role })
       User.$queueResult(randomUser)
       Role.$queueResult(null)
       setRequestorId(owner.id)

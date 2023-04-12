@@ -170,9 +170,9 @@ describe('Project routes', () => {
       const owner = randomDbSetup.users.find(user => user.id === ownerId)
 
       // getRequestorRole
-      Role.$queueResult(randomDbSetup.project.users[1])
+      Role.$queueResult({ UserId: owner.id, role: owner.role })
       // getOwnerId
-      Role.$queueResult({ UserId: ownerId })
+      Role.$queueResult({ UserId: owner.id, role: owner.role })
       // getOwnerById
       User.$queueResult(owner)
       setRequestorId(ownerId)
@@ -327,7 +327,7 @@ describe('Project routes', () => {
       // 1. getProjectById
       Project.$queueResult(randomDbSetup.project)
       // 2. getRequestorRole
-      Role.$queueResult(Role.$queueResult({ UserId: owner.id, role: owner.role }))
+      Role.$queueResult({ UserId: owner.id, role: owner.role })
       // retrieve associated data
       Repository.$queueResult(randomDbSetup.project.repositories)
       Environment.$queueResult(randomDbSetup.project.environments)
