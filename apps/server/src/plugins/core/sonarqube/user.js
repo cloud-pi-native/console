@@ -128,7 +128,7 @@ export const deleteUser = async (payload) => {
     return {
       status: {
         result: 'KO',
-        message: error.message,
+        message: 'failed',
       },
       error: JSON.stringify(error),
     }

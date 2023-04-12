@@ -101,17 +101,21 @@ export const createKeycloakEnvGroup = async (payload) => {
 
 export const deleteKeycloakEnvGroup = async (payload) => {
   try {
+    let message = 'Already missing'
     const kcClient = await getkcClient()
     const { organization, project, environment } = payload.args
     const projectName = `${organization}-${project}`
     const projectGroupSearch = await kcClient.groups.find({ search: projectName })
     const projectGroup = projectGroupSearch?.find(grpRes => grpRes.name === projectName)
-    if (!projectGroup) throw new Error('Impossible de retrouver le groupe keycloak du projet')
-    const envGroup = projectGroup.subGroups?.find(subGrp => subGrp.name === environment)
-    if (!envGroup) throw new Error('Impossible de retrouver le sous-groupe keycloak d\'environnement')
-    await kcClient.groups.del({ id: envGroup.id })
+    if (projectGroup) {
+      const envGroup = projectGroup.subGroups.find(subGrp => subGrp.name === environment)
+      if (envGroup) {
+        await kcClient.groups.del({ id: envGroup.id })
+        message = 'Deleted'
+      }
+    }
     return {
-      status: { result: 'OK', message: 'Deleted' },
+      status: { result: 'OK', message },
     }
   } catch (error) {
     return {

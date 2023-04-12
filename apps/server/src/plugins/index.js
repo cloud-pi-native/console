@@ -32,17 +32,15 @@ const createHook = () => {
 
   const execute = async (args) => {
     let payload = { args }
-    payload = await executeStep(check, payload)
-    if (payload.failed) {
-      return payload
+
+    for (const step of [check, pre, main, post, save]) {
+      payload = await executeStep(step, payload)
+      if (payload.failed) {
+        payload = await executeStep(revert, payload)
+        break
+      }
     }
-    payload = await executeStep(pre, payload)
-    payload = await executeStep(main, payload)
-    payload = await executeStep(post, payload)
-    payload = await executeStep(save, payload)
-    if (payload.failed) {
-      payload = await executeStep(revert, payload)
-    }
+
     return payload
   }
 

@@ -23,6 +23,7 @@ import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import { getOrganizationById } from '../models/queries/organization-queries.js'
 import { addLogs } from '../models/queries/log-queries.js'
+import { gitlabUrl, projectPath } from '../utils/env.js'
 import hooksFns from '../plugins/index.js'
 
 // GET
@@ -128,9 +129,10 @@ export const createRepositoryController = async (req, res) => {
     const repoData = {
       ...repo.get({ plain: true }),
       project: project.name,
-      organization: organization.dataValues.name,
+      organization: organization.name,
       services: project.services,
       environment: environmentNames,
+      internalUrl: `${gitlabUrl}/${projectPath.join('/')}/${organization.name}/${project.name}/${repo.dataValues.internalRepoName}.git`,
     }
     if (data.isPrivate) {
       repoData.externalUserName = data.externalUserName

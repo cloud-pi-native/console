@@ -337,12 +337,18 @@ export const archiveProjectController = async (req, res) => {
     const environmentsName = environments.map(env => env.name)
     const projectName = project.name
     const organizationName = organization.name
+    const gitlabBaseURL = `${gitlabUrl}/${projectPath.join('/')}/${organization.name}/${project.name}/`
+    const repositories = (await getInfraProjectRepositories(project.id)).map(({ internalRepoName }) => ({
+      url: `${gitlabBaseURL}/${internalRepoName}.git`,
+      internalRepoName,
+    }))
 
     for (const envName of environmentsName) {
       const envData = {
         environment: envName,
         project: projectName,
         organization: organizationName,
+        repositories,
       }
       const resultsEnv = await hooksFns.deleteEnvironment(envData)
       console.log(resultsEnv)

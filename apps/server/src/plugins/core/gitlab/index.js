@@ -91,10 +91,6 @@ export const createDsoRepository = async (payload) => {
         result: 'OK',
         message: 'Created',
       },
-      result: {
-        project: projectCreated,
-        mirror,
-      },
       vault: [{
         name: 'GITLAB',
         data: {

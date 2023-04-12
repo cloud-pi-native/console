@@ -54,7 +54,18 @@ export const createDsoProject = async (payload) => {
     const projectCreated = await createProject(projectName)
     const projectMember = await addProjectGroupMember(projectName)
     const robot = await createRobot(projectName)
-
+    const auth = `${robot.name}:${robot.secret}`
+    const buff = Buffer.from(auth)
+    const b64auth = buff.toString('base64')
+    const registryHost = harborUrl.split('://')[1]
+    const dockerConfigStr = JSON.stringify({
+      auths: {
+        [registryHost]: {
+          auth: b64auth,
+          email: '',
+        },
+      },
+    })
     return {
       status: {
         result: 'OK',
@@ -68,8 +79,10 @@ export const createDsoProject = async (payload) => {
       vault: [{
         name: 'REGISTRY',
         data: {
-          QUAY_ROBOT_TOKEN: robot.secret,
-          QUAY_ROBOT_USERNAME: robot.name,
+          TOKEN: robot.secret,
+          USERNAME: robot.name,
+          HOST: registryHost,
+          DOCKER_CONFIG: dockerConfigStr,
         },
       }],
     }
