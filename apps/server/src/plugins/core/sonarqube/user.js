@@ -90,12 +90,6 @@ export const createUser = async (payload) => {
 export const deleteUser = async (payload) => {
   const { project, organization } = payload.args
   const username = `${organization}-${project}`
-  const res = {
-    status: {
-      result: 'OK',
-      message: 'User deleted',
-    },
-  }
   try {
     const users = (await axios({
       ...axiosOptions,
@@ -104,7 +98,7 @@ export const deleteUser = async (payload) => {
         q: username,
       },
     }))?.data
-    // TODO : tableau users vide + à quoi sert const res ici ?
+    // TODO : tableau users vide
     console.log({ users })
     const user = users.users.find(u => u.login === username)
     if (!user) {
@@ -131,7 +125,12 @@ export const deleteUser = async (payload) => {
       },
     }
   } catch (error) {
-    res.status = { result: 'KO', message: error.message }
-    return res
+    return {
+      status: {
+        result: 'KO',
+        message: error.message,
+      },
+      error: JSON.stringify(error),
+    }
   }
 }
