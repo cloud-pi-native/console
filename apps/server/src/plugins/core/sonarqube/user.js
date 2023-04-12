@@ -98,8 +98,6 @@ export const deleteUser = async (payload) => {
         q: username,
       },
     }))?.data
-    // TODO : tableau users vide
-    console.log({ users })
     const user = users.users.find(u => u.login === username)
     if (!user) {
       return {

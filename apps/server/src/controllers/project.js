@@ -351,7 +351,6 @@ export const archiveProjectController = async (req, res) => {
         repositories,
       }
       const resultsEnv = await hooksFns.deleteEnvironment(envData)
-      console.log(resultsEnv)
       await addLogs(resultsEnv, userId)
       if (resultsEnv.failed) throw new Error('Echec des services à la suppression de l\'environnement')
     }
