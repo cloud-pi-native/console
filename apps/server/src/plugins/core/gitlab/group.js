@@ -2,9 +2,9 @@ import app from '../../../app.js'
 import { api, getGroupRootId } from './index.js'
 
 export const getGroupId = async (name, organization) => {
-  const searchResult = await api.Groups.search(name)
   const parentId = await getOrganizationId(organization)
-  const existingGroup = searchResult.find(group => group.parent_id === parentId)
+  const searchResult = await api.Groups.subgroups(parentId)
+  const existingGroup = searchResult.find(group => group.name === name)
   return existingGroup?.id
 }
 

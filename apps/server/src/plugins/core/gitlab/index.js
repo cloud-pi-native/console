@@ -2,7 +2,7 @@ import { Gitlab } from '@gitbeaker/node'
 import { gitlabToken, gitlabUrl, projectPath } from '../../../utils/env.js'
 import { createGroup, deleteGroup } from './group.js'
 import { addGroupMember } from './permission.js'
-import { createProject, deleteProject } from './project.js'
+import { createProject, createProjectMirror, deleteProject } from './project.js'
 import { setProjectTrigger } from './triggers.js'
 import { createUser } from './user.js'
 
@@ -14,7 +14,7 @@ export const getGroupRootId = async () => {
   if (groupRootId) return groupRootId
   const groupRootSearch = await api.Groups.search(projectPath.join('/'))
   groupRootId = (groupRootSearch.find(grp => grp.full_path === projectPath.join('/'))).id
-  if (!groupRootId) throw Error(`Gitlab not ready, group ${projectPath} not found`)
+  if (!groupRootId) throw Error(`Gitlab inaccessible, impossible de trouver le groupe ${projectPath}`)
   return groupRootId
 }
 
@@ -83,7 +83,7 @@ export const createDsoRepository = async (payload) => {
   try {
     const { internalRepoName, externalRepoUrl, organization, project, externalUserName, externalToken } = payload.args
     const projectCreated = await createProject(internalRepoName, externalRepoUrl, project, organization, externalUserName, externalToken)
-    const mirror = await createProject(`${internalRepoName}-mirror`, externalRepoUrl, project, organization, externalUserName, externalToken)
+    const mirror = await createProjectMirror(`${internalRepoName}-mirror`, project, organization)
     const triggerToken = await setProjectTrigger(mirror.id)
 
     return {
@@ -116,6 +116,7 @@ export const createDsoRepository = async (payload) => {
         result: 'KO',
         message: error.message,
       },
+      error: JSON.stringify(error),
     }
   }
 }
