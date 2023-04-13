@@ -1,6 +1,6 @@
 import * as fs from 'node:fs/promises'
 import path from 'node:path'
-import { api } from './index.js'
+import { api } from './utils.js'
 import { getGroupId } from './group.js'
 
 /**

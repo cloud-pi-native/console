@@ -1,22 +1,9 @@
-import { Gitlab } from '@gitbeaker/node'
-import { gitlabToken, gitlabUrl, projectPath } from '../../../utils/env.js'
+import { gitlabToken } from '../../../utils/env.js'
 import { createGroup, deleteGroup } from './group.js'
 import { addGroupMember } from './permission.js'
 import { createProject, createProjectMirror, deleteProject } from './project.js'
 import { setProjectTrigger } from './triggers.js'
 import { createUser } from './user.js'
-
-export const api = new Gitlab({ token: gitlabToken, host: gitlabUrl })
-
-let groupRootId
-
-export const getGroupRootId = async () => {
-  if (groupRootId) return groupRootId
-  const groupRootSearch = await api.Groups.search(projectPath.join('/'))
-  groupRootId = (groupRootSearch.find(grp => grp.full_path === projectPath.join('/'))).id
-  if (!groupRootId) throw Error(`Gitlab inaccessible, impossible de trouver le groupe ${projectPath}`)
-  return groupRootId
-}
 
 // Project
 export const createDsoProject = async (payload) => {
@@ -117,26 +104,26 @@ export const createDsoRepository = async (payload) => {
   }
 }
 
-export const updateDsoRepository = async (payload) => {
-  try {
-    // TODO #330
-    console.log('à implémenter')
+// export const updateDsoRepository = async (payload) => {
+//   try {
+//     // TODO #330
+//     console.log('à implémenter')
 
-    return {
-      status: {
-        result: 'OK',
-        message: 'Updated',
-      },
-    }
-  } catch (error) {
-    return {
-      status: {
-        result: 'KO',
-        message: error.message,
-      },
-    }
-  }
-}
+//     return {
+//       status: {
+//         result: 'OK',
+//         message: 'Updated',
+//       },
+//     }
+//   } catch (error) {
+//     return {
+//       status: {
+//         result: 'KO',
+//         message: error.message,
+//       },
+//     }
+//   }
+// }
 
 export const deleteDsoRepository = async (payload) => {
   try {
