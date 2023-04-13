@@ -8,7 +8,6 @@ export const newEnv = async (payload) => {
     const { roGroup, rwGroup } = payload.keycloak
     const namespace = `${organization}-${project}-${environment}`
 
-    console.log(payload)
     for (const repo of repositories) {
       const appProjectName = `${organization}-${project}-${repo.internalRepoName}-${environment}-project`
       await createApplicationProject({ appProjectName, namespace, repo, roGroup, rwGroup })
@@ -36,7 +35,6 @@ export const deleteEnv = async (payload) => {
   try {
     const { project, organization, environment, repositories } = payload.args
 
-    console.log(payload)
     for (const repo of repositories) {
       const appProjectName = `${organization}-${project}-${repo.internalRepoName}-${environment}-project`
       await deleteApplicationProject(appProjectName)
@@ -68,7 +66,6 @@ const nothingStatus = {
 }
 export const newRepo = async (payload) => {
   try {
-    console.log({ newRepo: payload.args })
     if (!payload.args.isInfra) return nothingStatus
 
     const repo = { internalRepoName: payload.args.internalRepoName, url: payload.args.internalUrl }
@@ -76,7 +73,6 @@ export const newRepo = async (payload) => {
     await createRepoSecret({ project, organization, repo })
 
     for (const env of environment) {
-      console.log('Create app for', env)
       const roGroup = `/${organization}-${project}/${env}/RO`
       const rwGroup = `/${organization}-${project}/${env}/RW`
       const namespace = `${organization}-${project}-${env}`
@@ -106,10 +102,7 @@ export const deleteRepo = async (payload) => {
   if (!payload.args.isInfra) return nothingStatus
 
   try {
-    console.log({ payload: payload.args })
-
     const { project, organization, environments, internalRepoName } = payload.args
-    console.log({ internalRepoName })
     const secretName = `${organization}-${project}-${internalRepoName}-repo`
     await deleteRepoSecret(secretName)
 

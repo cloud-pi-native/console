@@ -5,7 +5,6 @@ export const createApplicationProject = async ({ appProjectName, namespace, repo
   const appprojects = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', argoNamespace, 'appprojects', undefined, undefined, undefined, `metadata.name=${appProjectName}`)
   const appproject = appprojects.body.items.find(appp => appp.metadata.name === appProjectName)
   if (!appproject) {
-    console.log('CreateAppProject')
     await customK8sApi.createNamespacedCustomObject('argoproj.io', 'v1alpha1', argoNamespace, 'appprojects', getAppProjectObject({
       name: appProjectName,
       destNamespace: namespace,

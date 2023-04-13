@@ -105,9 +105,7 @@ export const initializeEnvironmentController = async (req, res) => {
     const projectName = project.dataValues.name
     const organizationName = organization.name
     const gitlabBaseURL = `${gitlabUrl}/${projectPath.join('/')}/${organizationName}/${projectName}/`
-    console.log(gitlabBaseURL)
     const repositoriesURL = (await getInfraProjectRepositories(projectId)).map(({ internalRepoName }) => (`${gitlabBaseURL}/${internalRepoName}.git`))
-    console.log(env.get({ plain: true }))
     const envData = {
       environment: environmentName,
       project: projectName,
@@ -116,7 +114,6 @@ export const initializeEnvironmentController = async (req, res) => {
       registryHost,
     }
     const results = await hooksFns.initializeEnvironment(envData)
-    console.log(results)
     await addLogs(results, userId)
     if (results.failed) throw new Error('Echec services à la création de l\'environnement')
     await updateEnvironmentCreated(env.id)
@@ -215,7 +212,6 @@ export const deleteEnvironmentController = async (req, res) => {
       organization: organizationName,
     }
     const results = await hooksFns.deleteEnvironment(envData)
-    console.log(results)
     await addLogs(results, userId)
     if (results.failed) throw new Error('Echec des services à la suppression de l\'environnement')
     await deleteEnvironment(environmentId)
