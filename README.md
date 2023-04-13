@@ -81,8 +81,6 @@ Interface graphique (Client): <http://localhost:8080>
 
 Serveur (API) <http://localhost:4000>
 
-Wrapper ansible (API) <http://localhost:8100>
-
 Interface d'administration de base de données: <http://localhost:8081>
 
 Interface d'administration du serveur keycloak: <http://localhost:8090>

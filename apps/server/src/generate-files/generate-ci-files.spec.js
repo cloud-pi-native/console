@@ -9,7 +9,6 @@ import { closeConnections, getConnection, sequelize } from '../connect.js'
 import { createRandomDbSetup } from 'test-utils'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
-vi.mock('../ansible.js')
 
 const app = fastify({ logger: false })
   .register(fastifyCookie)

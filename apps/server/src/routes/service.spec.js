@@ -10,7 +10,6 @@ import userRouter from './service.js'
 import { getUserModel } from '../models/user.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
-vi.mock('../ansible.js')
 
 const app = fastify({ logger: false })
   .register(fastifyCookie)

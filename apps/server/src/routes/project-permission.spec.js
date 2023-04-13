@@ -11,7 +11,6 @@ import { getUsersProjectsModel } from '../models/users-projects.js'
 import { getPermissionModel } from '../models/permission.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
-vi.mock('../ansible.js')
 
 const app = fastify({ logger: false })
   .register(fastifyCookie)
