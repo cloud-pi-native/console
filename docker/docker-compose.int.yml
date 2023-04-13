@@ -55,9 +55,8 @@ services:
       - /app/packages/shared/node_modules/
       - ${KUBE_CONFIG_PATH}:/home/node/.kube/config
     env_file:
-      - ../env/.env-database
-      - ../env/.env-keycloak
-      - ../apps/server/env/.env
+      - ../env/.env.int
+      - ../apps/server/env/.env.int
     environment:
       NODE_ENV: development
       INTEGRATION: 'true'
@@ -84,8 +83,8 @@ services:
       - ../packages/shared:/app/packages/shared
       - /app/packages/shared/node_modules/
     env_file:
-      - ../apps/client/env/.env
-      - ../env/.env-keycloak
+      - ../apps/client/env/.env.int
+      - ../env/.env.int
     environment:
       NODE_ENV: development
     networks:

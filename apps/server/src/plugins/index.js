@@ -2,13 +2,6 @@ import { readdirSync, existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import url from 'url'
 import { isCI, isInt, isProd } from '../utils/env.js'
-import { init as gitlabInit } from './core/gitlab/init.js'
-import { init as harborInit } from './core/harbor/init.js'
-import { init as keycloakInit } from './core/keycloak/init.js'
-import { init as kubernetesInit } from './core/kubernetes/init.js'
-import { init as nexusInit } from './core/nexus/init.js'
-import { init as sonarqubeInit } from './core/sonarqube/init.js'
-import { init as vaultInit } from './core/vault/init.js'
 
 const executeStep = async (step, payload) => {
   const names = Object.keys(step)
@@ -55,7 +48,7 @@ const createHook = () => {
   }
 }
 
-const initCorePlugins = () => {
+const initCorePlugins = async () => {
   const hooks = {
     checkServices: createHook(),
 
@@ -103,6 +96,14 @@ const initCorePlugins = () => {
   }
 
   if ((isInt || isProd) && !isCI) {
+    const { init: gitlabInit } = await import('./core/gitlab/init.js')
+    const { init: harborInit } = await import('./core/harbor/init.js')
+    const { init: keycloakInit } = await import('./core/keycloak/init.js')
+    const { init: kubernetesInit } = await import('./core/kubernetes/init.js')
+    const { init: nexusInit } = await import('./core/nexus/init.js')
+    const { init: sonarqubeInit } = await import('./core/sonarqube/init.js')
+    const { init: vaultInit } = await import('./core/vault/init.js')
+
     gitlabInit(register)
     harborInit(register)
     keycloakInit(register)
@@ -133,7 +134,7 @@ const initExternalPlugins = async (pluginManager) => {
   }
 }
 
-const pluginManager = initCorePlugins()
+const pluginManager = await initCorePlugins()
 if ((isInt || isProd) && !isCI) { // execute only when in real prod env and local dev integration
   await initExternalPlugins(pluginManager)
 }

@@ -41,7 +41,7 @@ describe('xhr-client', () => {
 
   describe('Response interceptor', () => {
     it('Should throw error with specific message if response status >= 400', async () => {
-      const message = 'Error while responding'
+      const message = 'Echec de réponse du serveur'
       const res = {
         response: { status: 500, data: message },
       }
@@ -51,9 +51,9 @@ describe('xhr-client', () => {
     })
 
     it('Should throw error with message if response status is >= 400', async () => {
-      const message = 'Error while responding'
+      const message = 'Message d\'erreur personnalisé'
       const res = {
-        response: { status: 500, data: message },
+        response: { status: 409, data: message },
       }
 
       const rejectedRes = xhrClient.apiClient.interceptors.response.handlers[0].rejected(res)
@@ -61,9 +61,9 @@ describe('xhr-client', () => {
     })
 
     it('Should throw error with statusText if response status is >= 400', async () => {
-      const statusText = 'Error while responding'
+      const statusText = 'failed'
       const res = {
-        response: { status: 500, statusText },
+        response: { status: 402, statusText },
       }
 
       const rejectedRes = xhrClient.apiClient.interceptors.response.handlers[0].rejected(res)
@@ -77,7 +77,16 @@ describe('xhr-client', () => {
       }
 
       const rejectedRes = xhrClient.apiClient.interceptors.response.handlers[0].rejected(res)
-      expect(rejectedRes).rejects.toMatchObject(new Error('Unable to communicate with the server'))
+      expect(rejectedRes).rejects.toMatchObject(new Error('Echec de réponse du serveur'))
+    })
+
+    it('Should throw error with specific message if res status is >= 500', async () => {
+      const res = {
+        response: { status: 500 },
+      }
+
+      const rejectedRes = xhrClient.apiClient.interceptors.response.handlers[0].rejected(res)
+      expect(rejectedRes).rejects.toMatchObject(new Error('Echec de réponse du serveur'))
     })
 
     it('Should return res if promise is resolve', async () => {
@@ -90,7 +99,7 @@ describe('xhr-client', () => {
     })
 
     it('Should throw error an authentication error if status = 401', async () => {
-      const message = 'Incorrect authentication'
+      const message = 'Echec d\'identification'
       const res = {
         response: { status: 401 },
       }

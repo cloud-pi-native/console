@@ -65,7 +65,7 @@ export const getServices = (project) => ({
 
   registry: {
     ...allServices.registry,
-    to: `${allServices.registry.url}/harbor/projects/${project.services?.registry?.id}`,
+    to: `${allServices.registry.url}/projects/${project.services?.registry?.id}`,
   },
 
   sonarqube: {

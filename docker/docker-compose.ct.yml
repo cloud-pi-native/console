@@ -25,7 +25,7 @@ services:
       CLIENT_PORT: 8080
       ARGOCD_URL: https://argo-cd.readthedocs.io
       GITLAB_URL: https://gitlab.com
-      QUAY_URL: https://quay.io
+      HARBOR_URL: https://quay.io
       NEXUS_URL: https://sonatype.com/products/nexus-repository
       SONARQUBE_URL: https://www.sonarqube.org
       VAULT_URL: https://www.vaultproject.io
