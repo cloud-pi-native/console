@@ -77,8 +77,7 @@ services:
       - ../packages/shared:/app/packages/shared
       - /app/packages/shared/node_modules/
     env_file:
-      - ../env/.env-database
-      - ../env/.env-keycloak
+      - ../env/.env
       - ../apps/server/env/.env
     environment:
       NODE_ENV: development
@@ -105,7 +104,7 @@ services:
       - /app/packages/shared/node_modules/
     env_file:
       - ../apps/client/env/.env
-      - ../env/.env-keycloak
+      - ../env/.env
     environment:
       NODE_ENV: development
     networks:
