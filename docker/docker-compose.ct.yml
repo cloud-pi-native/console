@@ -19,13 +19,10 @@ services:
       - ../apps/server/env/.env.ci
     environment:
       NODE_ENV: test
-      CI: "true"
       CT: "true"
-      CLIENT_HOST: client
-      CLIENT_PORT: 8080
       ARGOCD_URL: https://argo-cd.readthedocs.io
       GITLAB_URL: https://gitlab.com
-      HARBOR_URL: https://quay.io
+      HARBOR_URL: https://goharbor.io
       NEXUS_URL: https://sonatype.com/products/nexus-repository
       SONARQUBE_URL: https://www.sonarqube.org
       VAULT_URL: https://www.vaultproject.io

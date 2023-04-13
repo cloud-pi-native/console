@@ -28,9 +28,9 @@ services:
     container_name: dso-console_postgres
     environment:
       CI: "true"
-      POSTGRES_DB: dso-console-db
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
     networks:
       - dso-network
 
@@ -52,8 +52,8 @@ services:
     volumes:
       - ../packages/test-utils/src/imports:/app/src/init/db/imports
     env_file:
+      - ../env/.env.ci
       - ../apps/server/env/.env.ci
-      - ../env/.env
     environment:
       CI: "true"
       DEV_SETUP: "true"
@@ -104,6 +104,7 @@ services:
       CLIENT_HOST: client
       CLIENT_PORT: 8080
     env_file:
+      - ../env/.env.ci
       - ../apps/server/env/.env.ci
     networks:
       - dso-network

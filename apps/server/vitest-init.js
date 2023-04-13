@@ -1,6 +1,5 @@
 import { vi } from 'vitest'
 
-process.env.ENCRYPTION_KEY = 'a-strong-key-with-32-characters!'
 process.env.ARGOCD_URL = 'https://argo-cd.readthedocs.io'
 process.env.GITLAB_URL = 'https://gitlab.com'
 process.env.HARBOR_URL = 'https://harbor.com'

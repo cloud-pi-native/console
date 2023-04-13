@@ -103,8 +103,8 @@ services:
       - ../packages/shared:/app/packages/shared
       - /app/packages/shared/node_modules/
     env_file:
-      - ../apps/client/env/.env
       - ../env/.env
+      - ../apps/client/env/.env
     environment:
       NODE_ENV: development
     networks:
