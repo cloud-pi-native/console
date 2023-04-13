@@ -103,6 +103,7 @@ const initCorePlugins = async () => {
     const { init: nexusInit } = await import('./core/nexus/init.js')
     const { init: sonarqubeInit } = await import('./core/sonarqube/init.js')
     const { init: vaultInit } = await import('./core/vault/init.js')
+
     gitlabInit(register)
     harborInit(register)
     keycloakInit(register)

@@ -56,6 +56,7 @@ services:
       - ../packages/test-utils/src/imports:/app/apps/server/src/init/db/imports
     env_file:
       - ../apps/server/env/.env
+      - ../env/.env
     environment:
       CI: "true"
       DEV_SETUP: "true"
