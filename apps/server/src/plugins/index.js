@@ -48,7 +48,7 @@ const createHook = () => {
   }
 }
 
-const initCorePlugins = async () => {
+const initPluginManager = async () => {
   const hooks = {
     checkServices: createHook(),
 
@@ -70,6 +70,7 @@ const initCorePlugins = async () => {
     updatePermission: createHook(),
     deletePermission: createHook(),
   }
+
   const register = (name, hook, fn, step = 'main') => {
     if (!(hook in hooks)) {
       console.warn({
@@ -86,36 +87,36 @@ const initCorePlugins = async () => {
     hooks[hook][step][name] = fn
     console.warn(`Plugin ${name} registered at ${hook}:${step}`)
   }
+
   const unregister = (name, hook, step = 'main') => {
     delete hooks[hook][step][name]
   }
-  const pluginManager = {
+
+  return {
     hooks,
     register,
     unregister,
   }
+}
 
-  if ((isInt || isProd) && !isCI) {
-    const { init: gitlabInit } = await import('./core/gitlab/init.js')
-    const { init: harborInit } = await import('./core/harbor/init.js')
-    const { init: keycloakInit } = await import('./core/keycloak/init.js')
-    const { init: kubernetesInit } = await import('./core/kubernetes/init.js')
-    const { init: argoInit } = await import('./core/argo/init.js')
-    const { init: nexusInit } = await import('./core/nexus/init.js')
-    const { init: sonarqubeInit } = await import('./core/sonarqube/init.js')
-    const { init: vaultInit } = await import('./core/vault/init.js')
+export const initCorePlugins = async (pluginManager) => {
+  const { init: gitlabInit } = await import('./core/gitlab/init.js')
+  const { init: harborInit } = await import('./core/harbor/init.js')
+  const { init: keycloakInit } = await import('./core/keycloak/init.js')
+  const { init: kubernetesInit } = await import('./core/kubernetes/init.js')
+  const { init: argoInit } = await import('./core/argo/init.js')
+  const { init: nexusInit } = await import('./core/nexus/init.js')
+  const { init: sonarqubeInit } = await import('./core/sonarqube/init.js')
+  const { init: vaultInit } = await import('./core/vault/init.js')
 
-    gitlabInit(register)
-    harborInit(register)
-    keycloakInit(register)
-    kubernetesInit(register)
-    argoInit(register)
-    nexusInit(register)
-    sonarqubeInit(register)
-    vaultInit(register)
-  }
-
-  return pluginManager
+  gitlabInit(pluginManager.register)
+  harborInit(pluginManager.register)
+  keycloakInit(pluginManager.register)
+  kubernetesInit(pluginManager.register)
+  argoInit(pluginManager.register)
+  nexusInit(pluginManager.register)
+  sonarqubeInit(pluginManager.register)
+  vaultInit(pluginManager.register)
 }
 
 const initExternalPlugins = async (pluginManager) => {
@@ -136,12 +137,15 @@ const initExternalPlugins = async (pluginManager) => {
   }
 }
 
-const pluginManager = await initCorePlugins()
+const pluginManager = await initPluginManager()
+
 if ((isInt || isProd) && !isCI) { // execute only when in real prod env and local dev integration
+  await initCorePlugins(pluginManager)
   await initExternalPlugins(pluginManager)
 }
 
 const hooksFns = {}
+
 Object.entries(pluginManager.hooks).forEach(([key, val]) => {
   hooksFns[key] = val.execute
 })

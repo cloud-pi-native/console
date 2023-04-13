@@ -71,7 +71,7 @@ export const sonarqubeApiToken = process.env.SONAR_API_TOKEN
 export const vaultToken = process.env.VAULT_TOKEN
 
 export const harborUser = process.env.HARBOR_ADMIN
-export const harborPassword = process.env.HARBOR_PASSWORD
+export const harborPassword = process.env.HARBOR_ADMIN_PASSWORD
 
 export const projectPath = process.env.PROJECT_PATH?.split('/') || ['forge-mi', 'projects']
 
