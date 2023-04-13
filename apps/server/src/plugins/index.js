@@ -1,7 +1,7 @@
 import { readdirSync, existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import url from 'url'
-import { isCI, isInt, isProd } from '../utils/env.js'
+import { isCI, isInt, isProd, isTest } from '../utils/env.js'
 import { init as gitlabInit } from './core/gitlab/init.js'
 import { init as harborInit } from './core/harbor/init.js'
 import { init as keycloakInit } from './core/keycloak/init.js'
@@ -102,7 +102,7 @@ const initCorePlugins = () => {
     unregister,
   }
 
-  if ((isInt || isProd) && !isCI) {
+  if ((isInt || isProd) && !isCI && !isTest) {
     gitlabInit(register)
     harborInit(register)
     keycloakInit(register)
@@ -134,7 +134,7 @@ const initExternalPlugins = async (pluginManager) => {
 }
 
 const pluginManager = initCorePlugins()
-if ((isInt || isProd) && !isCI) { // execute only when in real prod env and local dev integration
+if ((isInt || isProd) && !isCI && !isTest) { // execute only when in real prod env and local dev integration
   await initExternalPlugins(pluginManager)
 }
 
