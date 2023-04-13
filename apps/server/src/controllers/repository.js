@@ -141,7 +141,7 @@ export const createRepositoryController = async (req, res) => {
 
     const results = await hooksFns.createRepository(repoData)
     await addLogs(results, userId)
-    if (results.failed) throw new Error('Echec des services associés au dépôt')
+    if (results.failed) throw new Error('Echec des services lors de la création du dépôt')
     isServicesCallOk = true
   } catch (error) {
     const message = `Echec requête ${req.id} : ${error.message}`

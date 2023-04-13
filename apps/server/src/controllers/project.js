@@ -364,7 +364,7 @@ export const archiveProjectController = async (req, res) => {
     delete projectData.name
     const results = await hooksFns.archiveProject(projectData)
     await addLogs(results, userId)
-    if (results.failed) throw new Error('Echec des services associés au projet')
+    if (results.failed) throw new Error('Echec des services à la suppression du projet')
 
     isServicesCallOk = true
   } catch (error) {
