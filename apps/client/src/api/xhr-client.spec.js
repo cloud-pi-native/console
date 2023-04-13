@@ -51,9 +51,9 @@ describe('xhr-client', () => {
     })
 
     it('Should throw error with message if response status is >= 400', async () => {
-      const message = 'Echec de réponse du serveur'
+      const message = 'Message d\'erreur personnalisé'
       const res = {
-        response: { status: 500, data: message },
+        response: { status: 409, data: message },
       }
 
       const rejectedRes = xhrClient.apiClient.interceptors.response.handlers[0].rejected(res)
@@ -61,9 +61,9 @@ describe('xhr-client', () => {
     })
 
     it('Should throw error with statusText if response status is >= 400', async () => {
-      const statusText = 'Echec de réponse du serveur'
+      const statusText = 'failed'
       const res = {
-        response: { status: 500, statusText },
+        response: { status: 402, statusText },
       }
 
       const rejectedRes = xhrClient.apiClient.interceptors.response.handlers[0].rejected(res)
@@ -74,6 +74,15 @@ describe('xhr-client', () => {
       const res = {
         response: { status: 400 },
         code: 'ECONNABORTED',
+      }
+
+      const rejectedRes = xhrClient.apiClient.interceptors.response.handlers[0].rejected(res)
+      expect(rejectedRes).rejects.toMatchObject(new Error('Echec de réponse du serveur'))
+    })
+
+    it('Should throw error with specific message if res status is >= 500', async () => {
+      const res = {
+        response: { status: 500 },
       }
 
       const rejectedRes = xhrClient.apiClient.interceptors.response.handlers[0].rejected(res)
