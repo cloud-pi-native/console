@@ -1,6 +1,6 @@
 <script setup>
 import { useServiceStore } from '@/stores/services.js'
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onBeforeMount } from 'vue'
 
 const serviceStore = useServiceStore()
 
@@ -14,7 +14,7 @@ const checkServicesHealth = async () => {
   isUpdating.value = ref(false)
 }
 
-onMounted(async () => {
+onBeforeMount(async () => {
   await checkServicesHealth()
 })
 </script>

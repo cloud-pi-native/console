@@ -114,8 +114,8 @@ export const archiveProject = async (id) => {
 }
 
 // TECH
-export const _initializeProject = async ({ id, name, organization }) => {
-  return getProjectModel().create({ id, name, organization, status: 'initializing', locked: true })
+export const _initializeProject = async ({ id, name, organization, services }) => {
+  return getProjectModel().create({ id, name, organization, status: 'initializing', locked: true, services })
 }
 
 export const _dropProjectsTable = async () => {

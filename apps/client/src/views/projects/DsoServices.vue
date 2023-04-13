@@ -8,12 +8,8 @@ const projectStore = useProjectStore()
 /**
  * @returns {string}
  */
-const projectServices = Object.entries(computed(() => projectStore.selectedProject?.services).value)
-  .map(([key, value]) => [key, { ...value, id: value?.name }])
-  .reduce((acc, [key, value]) => {
-    acc[key] = value
-    return acc
-  }, {})
+const projectServices = Object.values(computed(() => projectStore.selectedProject?.services).value)
+  .map(value => ({ ...value, id: value?.name }))
 
 </script>
 
