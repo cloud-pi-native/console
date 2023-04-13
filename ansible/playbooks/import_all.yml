@@ -1,7 +1,0 @@
-- name: Delete repo in project
-  hosts: localhost
-  tasks:
-    - name: Import ansible inventory vars
-      ansible.builtin.debug:
-        msg:
-        - "Import ansible inventory vars"
