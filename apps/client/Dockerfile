@@ -1,5 +1,5 @@
 # Base stage
-FROM docker.io/node:18.14.2-bullseye-slim AS base
+FROM docker.io/node:18.16.0-bullseye-slim AS base
 
 RUN npm install --location=global pnpm
 WORKDIR /app
@@ -28,7 +28,7 @@ RUN npm run build
 
 
 # Prod stage
-FROM docker.io/nginx:1.22.1 AS prod
+FROM docker.io/nginx:1.24.0 AS prod
 
 COPY --chown=nginx:nginx --from=build /app/build/dist /usr/share/nginx/html/
 COPY --chown=nginx:nginx ./apps/client/nginx/nginx.conf /etc/nginx/nginx.conf
