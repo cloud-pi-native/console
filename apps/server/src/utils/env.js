@@ -81,6 +81,6 @@ export const keycloakToken = process.env.KEYCLOAK_ADMIN_PASSWORD
 export const keycloakUser = process.env.KEYCLOAK_ADMIN
 
 export const kubeconfigCtx = process.env.KUBECONFIG_CTX
-export const kubeconfigPath = '/home/node/.kube/config'
+export const kubeconfigPath = process.env.KUBECONFIG_PATH
 
 export const argoNamespace = process.env.ARGO_NAMESPACE
