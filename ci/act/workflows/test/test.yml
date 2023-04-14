@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: "18.14.2"
+  NODE_VERSION: "18.16.0"
 
 jobs:
   lint:
