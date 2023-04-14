@@ -103,7 +103,7 @@ watch(selectedProject, () => {
   />
 
   <!-- TODO : #66 suggest sur utilisateurs keycloak, ajout dans notre db si pas existant -->
-  <!-- TODO : enlever v-if lorsque les playbooks seront intégrés -->
+  <!-- TODO : enlever v-if avec #132 -->
   <div
     v-if="false"
   >

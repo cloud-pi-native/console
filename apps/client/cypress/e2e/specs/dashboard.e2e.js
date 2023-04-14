@@ -7,15 +7,15 @@ describe('Dashboard', () => {
   const projectCreated = getProjectbyId('011e7860-04d7-461f-912d-334c622d38b3')
   const owner = getUserById('cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
   const user = getUserById('cb8e5b4b-7b7b-40f5-935f-594f48ae6566')
-  // const permissions = [{
-  //   email: owner.email,
-  //   isOwner: true,
-  // },
-  // {
-  //   email: user.email,
-  //   isOwner: false,
-  // }]
-  // const environmentNames = projectToKeep.environments.map(environment => environment.name)
+  const permissions = [{
+    email: owner.email,
+    isOwner: true,
+  },
+  {
+    email: user.email,
+    isOwner: false,
+  }]
+  const environmentNames = projectToKeep.environments.map(environment => environment.name)
 
   before(() => {
     cy.kcLogin('test')
@@ -55,8 +55,7 @@ describe('Dashboard', () => {
     cy.assertCreateProjects([projectToKeep.name, projectCreated.name, projectFailed.name])
     cy.assertAddRepo(projectToKeep, projectToKeep.repositories)
     cy.assertUsers(projectToKeep, [owner.email, user.email])
-    // TODO : deskip avec #172
-    // cy.assertAddEnvironment(projectToKeep, environmentNames)
-    // cy.assertPermission(projectToKeep, environmentNames[0], permissions)
+    cy.assertAddEnvironment(projectToKeep, environmentNames)
+    cy.assertPermission(projectToKeep, environmentNames[0], permissions)
   })
 })

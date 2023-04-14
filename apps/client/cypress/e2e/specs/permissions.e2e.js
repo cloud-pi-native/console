@@ -3,12 +3,12 @@ import {
   getUserById,
 } from '../support/func.js'
 
-// TODO : deskip lorsque les playbooks seront intégrés
-describe.skip('Manage permissions for environment', () => {
+describe('Manage permissions for environment', () => {
   const project = getProjectbyId('011e7860-04d7-461f-912d-334c622d38b3')
   const owner = getUserById('cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
   const user0 = getUserById('cb8e5b4b-7b7b-40f5-935f-594f48ae6566')
   const user1 = getUserById('cb8e5b4b-7b7b-40f5-935f-594f48ae6567')
+  const user2 = getUserById('cb8e5b4b-7b7b-40f5-935f-594f48ae6569')
 
   before(() => {
     cy.kcLogin('test')
@@ -50,28 +50,34 @@ describe.skip('Manage permissions for environment', () => {
 
     cy.assertAddEnvironment(project, [environment])
     cy.addPermission(project, environment, user0.email)
-    cy.assertPermission(project, environment, [{ email: owner.email, isOwner: true }, { email: user0.email, isOwner: false }])
+    cy.addPermission(project, environment, user2.email)
+    cy.assertPermission(project, environment, [
+      { email: owner.email, isOwner: true },
+      { email: user0.email, isOwner: false },
+      { email: user2.email, isOwner: false },
+    ])
 
     cy.getByDataTestid('permissionSuggestionInput')
       .should('not.exist')
 
-    cy.addProjectMember(project, user1.email)
+    // TODO : décommenter avec #132
+    // cy.addProjectMember(project, user1.email)
 
-    cy.goToProjects()
-      .getByDataTestid(`projectTile-${project.name}`).click()
-      .getByDataTestid('menuEnvironments').click()
-      .getByDataTestid(`environmentTile-${environment}`)
-      .click()
+    // cy.goToProjects()
+    //   .getByDataTestid(`projectTile-${project.name}`).click()
+    //   .getByDataTestid('menuEnvironments').click()
+    //   .getByDataTestid(`environmentTile-${environment}`)
+    //   .click()
 
-    cy.get('[data-testid^="userPermissionLi-"]')
-      .should('have.length', 2)
-      .getByDataTestid('permissionSuggestionInput').first()
-      .should('be.visible')
-      .clear()
+    // cy.get('[data-testid^="userPermissionLi-"]')
+    //   .should('have.length', 3)
+    //   .getByDataTestid('permissionSuggestionInput').first()
+    //   .should('be.visible')
+    //   .clear()
 
-    cy.addPermission(project, environment, user1.email)
-    cy.getByDataTestid(`userPermissionLi-${user1.email}`)
-      .should('exist')
+    // cy.addPermission(project, environment, user1.email)
+    // cy.getByDataTestid(`userPermissionLi-${user1.email}`)
+    //   .should('exist')
   })
 
   it.skip('Should update existing permissions', () => {
@@ -114,7 +120,7 @@ describe.skip('Manage permissions for environment', () => {
       .its('response.statusCode').should('eq', 200)
 
     cy.get('[data-testid^="userPermissionLi-"]')
-      .should('have.length', 2)
+      .should('have.length', 3)
       .getByDataTestid('permissionSuggestionInput')
       .should('be.visible')
       .getByDataTestid(`userPermissionLi-${user1.email}`)

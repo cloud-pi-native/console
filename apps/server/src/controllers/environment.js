@@ -99,65 +99,72 @@ export const initializeEnvironmentController = async (req, res) => {
     return send500(res, error.message)
   }
 
+  // Process api call to external service
+  let isServicesCallOk
   try {
     const registryHost = harborUrl.split('//')[1].split('/')[0]
     const environmentName = env.dataValues.name
     const projectName = project.dataValues.name
     const organizationName = organization.name
     const gitlabBaseURL = `${gitlabUrl}/${projectPath.join('/')}/${organizationName}/${projectName}/`
-    const repositoriesURL = (await getInfraProjectRepositories(projectId)).map(({ internalRepoName }) => (`${gitlabBaseURL}/${internalRepoName}.git`))
+    const repositories = (await getInfraProjectRepositories(project.id)).map(({ internalRepoName }) => ({
+      url: `${gitlabBaseURL}/${internalRepoName}.git`,
+      internalRepoName,
+    }))
+
     const envData = {
       environment: environmentName,
       project: projectName,
       organization: organizationName,
-      repositoriesURL,
+      repositories,
       registryHost,
     }
     const results = await hooksFns.initializeEnvironment(envData)
     await addLogs('Create Environment', results, userId)
     if (results.failed) throw new Error('Echec services à la création de l\'environnement')
-    await updateEnvironmentCreated(env.id)
-    const ownerId = await getSingleOwnerByProjectId(projectId)
-    if (ownerId !== userId) {
-      await setPermission({
-        userId: ownerId,
-        environmentId: env.id,
-        level: 2,
-      })
-    }
-    await setPermission({
-      userId,
-      environmentId: env.id,
-      level: 2,
-    })
-    await unlockProject(projectId)
 
-    req.log.info({
-      ...getLogInfos({ projectId: env.id }),
-      description: 'Environment status successfully updated to created in database',
-    })
-    return
+    isServicesCallOk = true
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: 'Cannot update environment status to created',
+      description: `Echec requête ${req.id} : ${error.message}`,
       error: JSON.stringify(error),
       trace: error.trace,
     })
+    isServicesCallOk = false
   }
 
+  // Update DB after service call
   try {
-    await updateEnvironmentFailed(env.id)
+    if (isServicesCallOk) {
+      await updateEnvironmentCreated(env.id)
+      const ownerId = await getSingleOwnerByProjectId(projectId)
+      if (ownerId !== userId) {
+        await setPermission({
+          userId: ownerId,
+          environmentId: env.id,
+          level: 2,
+        })
+      }
+      await setPermission({
+        userId,
+        environmentId: env.id,
+        level: 2,
+      })
+      await unlockProject(projectId)
+    } else {
+      await updateEnvironmentFailed(env.id)
+    }
     await unlockProject(projectId)
 
     req.log.info({
       ...getLogInfos({ projectId: env.id }),
-      description: 'Environment status successfully updated to failed in database',
+      description: 'Projet déverrouillé',
     })
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: 'Cannot update environment status to failed',
+      description: 'Echec, projet verrouillé',
       error: error.message,
       trace: error.trace,
     })
@@ -205,11 +212,17 @@ export const deleteEnvironmentController = async (req, res) => {
     const environmentName = env.name
     const projectName = project.name
     const organizationName = organization.name
+    const gitlabBaseURL = `${gitlabUrl}/${projectPath.join('/')}/${organizationName}/${projectName}/`
+    const repositories = (await getInfraProjectRepositories(project.id)).map(({ internalRepoName }) => ({
+      url: `${gitlabBaseURL}/${internalRepoName}.git`,
+      internalRepoName,
+    }))
 
     const envData = {
       environment: environmentName,
       project: projectName,
       organization: organizationName,
+      repositories,
     }
     const results = await hooksFns.deleteEnvironment(envData)
     await addLogs('Delete Environment', results, userId)

@@ -88,7 +88,7 @@ export const createKubeSecret = async (payload) => {
     return {
       ...payload.kubernetes,
       status: {
-        result: 'OK',
+        result: 'KO',
         message: 'Failed',
       },
       error: JSON.stringify(error),
