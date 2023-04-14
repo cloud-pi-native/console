@@ -29,6 +29,7 @@ spec:
       labels:
         app: {{ .Release.Name }}-server
     spec:
+      serviceAccountName: {{ $.Release.Name }}-console-sa
       restartPolicy: Always
       imagePullSecrets:
       - name: {{ .Release.Name }}-pullsecret
@@ -54,6 +55,8 @@ spec:
         envFrom:
         - configMapRef:
             name: {{ $.Release.Name }}-server-cm
+        - configMapRef:
+            name: {{ .dso_config.name }}
         resources:
           requests:
             memory: "64Mi"
@@ -82,7 +85,6 @@ spec:
           - name: plugins
             mountPath: /app/src/plugins/external
 {{- end }}
-      volumes:
 {{- if .container.data_configmap }}
         - name: imports
           configMap: 

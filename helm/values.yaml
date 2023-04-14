@@ -1,13 +1,6 @@
 imagePullPolicy: Always
 env: production
 
-services: # à remplacerpar l'URL de vos services
-  ARGOCD_URL: https://argo-cd.readthedocs.io/en/stable/
-  GITLAB_URL: https://gitlab.com/
-  QUAY_URL: https://quay.io/
-  NEXUS_URL: https://www.sonatype.com/products/nexus-repository/
-  SONARQUBE_URL: https://docs.sonarqube.org/
-  VAULT_URL: https://www.vaultproject.io/
 
 imageCredentials:
   registry:
@@ -19,6 +12,8 @@ imageCredentials:
 globalEnv:
 
 server:
+  dso_config:
+    name: dso-config
   container:
     env: #hashmap of custom env
     image: ghcr.io/dnum-mi/dso-console/server:2
