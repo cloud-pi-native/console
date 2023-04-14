@@ -105,7 +105,7 @@ watch(selectedProject, () => {
   </div>
   <div
     :class="{
-      'grid grid-cols-3 items-center justify-between': !selectedRepo.internalRepoName,
+      'md:(grid grid-cols-3 gap-3) items-center justify-between': !selectedRepo.internalRepoName,
     }"
   >
     <div
@@ -119,10 +119,8 @@ watch(selectedProject, () => {
           :description="['deleting', 'initializing'].includes(repo?.data?.status) ? 'Opérations en cours' : null"
           :data-testid="`repoTile-${repo.id}`"
           :horizontal="selectedRepo.internalRepoName"
-          :class="{
-            'fr-mb-2w w-11/12': true,
-            'disabled-tile' : ['deleting', 'initializing'].includes(repo?.data?.status)
-          }"
+          :disabled="['deleting', 'initializing'].includes(repo?.data?.status)"
+          class="fr-mb-2w w-11/12"
           @click="setSelectedRepo(repo.data)"
         />
         <DsfrBadge

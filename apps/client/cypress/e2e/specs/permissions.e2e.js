@@ -103,16 +103,16 @@ describe('Manage permissions for environment', () => {
   })
 
   it('Should remove a permission', () => {
-    cy.intercept('DELETE', `/api/v1/projects/${project.id}/environments/*/permissions/${user1.id}`).as('deletePermission')
+    cy.intercept('DELETE', `/api/v1/projects/${project.id}/environments/*/permissions/${user2.id}`).as('deletePermission')
     const environment = 'staging'
 
     cy.assertAddEnvironment(project, [environment])
-    cy.assertPermission(project, environment, [{ email: owner.email, isOwner: true }, { email: user0.email, isOwner: false }, { email: user1.email, isOwner: false }])
+    cy.assertPermission(project, environment, [{ email: owner.email, isOwner: true }, { email: user0.email, isOwner: false }, { email: user2.email, isOwner: false }])
 
     cy.getByDataTestid('permissionSuggestionInput')
       .should('not.exist')
 
-    cy.getByDataTestid(`userPermissionLi-${user1.email}`).within(() => {
+    cy.getByDataTestid(`userPermissionLi-${user2.email}`).within(() => {
       cy.getByDataTestid('deletePermissionBtn')
         .click()
     })
@@ -123,7 +123,7 @@ describe('Manage permissions for environment', () => {
       .should('have.length', 3)
       .getByDataTestid('permissionSuggestionInput')
       .should('be.visible')
-      .getByDataTestid(`userPermissionLi-${user1.email}`)
+      .getByDataTestid(`userPermissionLi-${user2.email}`)
       .should('not.exist')
   })
 })

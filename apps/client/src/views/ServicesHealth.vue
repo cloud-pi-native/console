@@ -42,7 +42,7 @@ onBeforeMount(async () => {
     />
   </div>
   <div
-    class="grid grid-cols-3 gap-2 items-center justify-between"
+    class="md:(grid grid-cols-3 gap-3) items-center justify-between"
   >
     <DsfrAlert
       v-for="service in services"

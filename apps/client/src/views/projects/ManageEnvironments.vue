@@ -26,11 +26,12 @@ const setEnvironmentsTiles = (selectedProject) => {
     id: environment.id,
     title: environment.name,
     data: environment,
+    status: environment.status,
   }))
 }
 
 const setSelectedEnvironment = (environment) => {
-  if (selectedEnvironment.value.id === environment.id) {
+  if (selectedEnvironment.value.id === environment.id || ['deleting', 'initializing'].includes(environment?.status)) {
     selectedEnvironment.value = {}
     return
   }
@@ -84,6 +85,7 @@ watch(selectedProject, () => {
       label="Ajouter un nouvel environnement"
       data-testid="addEnvironmentLink"
       tertiary
+      :disabled="projectStore.selectedProject?.locked"
       class="fr-mt-2v <md:mb-2"
       icon="ri-add-line"
       @click="showNewEnvironmentForm()"
@@ -101,23 +103,57 @@ watch(selectedProject, () => {
     />
   </div>
   <div
-    v-for="environment in environments"
-    :key="environment.id"
-    class="fr-mt-2v fr-mb-4w"
+    :class="{
+      'md:(grid grid-cols-3 gap-3) items-center justify-between': !selectedEnvironment.id,
+    }"
   >
-    <DsfrTile
-      :title="environment.title"
-      :data-testid="`environmentTile-${environment.title}`"
-      :horizontal="true"
-      class="fr-mb-2w"
-      @click="setSelectedEnvironment(environment.data)"
-    />
-    <EnvironmentForm
-      v-if="Object.keys(selectedEnvironment).length !== 0 && selectedEnvironment.id === environment.id"
-      :environment="selectedEnvironment"
-      :is-editable="false"
-      :is-owner="isOwner"
-      @delete-environment="(environment) => deleteEnvironment(environment)"
-    />
+    <div
+      v-for="environment in environments"
+      :key="environment.id"
+      class="fr-mt-2v fr-mb-4w"
+    >
+      <div>
+        <DsfrTile
+          :title="environment.title"
+          :description="['deleting', 'initializing'].includes(environment.status) ? 'Opérations en cours' : null"
+          :data-testid="`environmentTile-${environment.title}`"
+          :horizontal="selectedEnvironment.id"
+          :disabled="['deleting', 'initializing'].includes(environment.status)"
+          class="fr-mb-2w w-11/12"
+          @click="setSelectedEnvironment(environment.data)"
+        />
+        <DsfrBadge
+          v-if="environment.data?.status === 'initializing'"
+          :data-testid="`${environment.title}-${environment.data?.status}-badge`"
+          type="info"
+          label="Environnement en cours de création"
+        />
+        <DsfrBadge
+          v-else-if="environment.data?.status === 'deleting'"
+          :data-testid="`${environment.title}-${environment.data?.status}-badge`"
+          type="info"
+          label="Environnement en cours de suppression"
+        />
+        <DsfrBadge
+          v-else-if="environment.data?.status === 'failed'"
+          :data-testid="`${environment.title}-${environment.data?.status}-badge`"
+          type="error"
+          label="Echec des opérations"
+        />
+        <DsfrBadge
+          v-else
+          :data-testid="`${environment.title}-${environment.data?.status}-badge`"
+          type="success"
+          label="Environnement correctement déployé"
+        />
+      </div>
+      <EnvironmentForm
+        v-if="Object.keys(selectedEnvironment).length !== 0 && selectedEnvironment.id === environment.id"
+        :environment="selectedEnvironment"
+        :is-editable="false"
+        :is-owner="isOwner"
+        @delete-environment="(environment) => deleteEnvironment(environment)"
+      />
+    </div>
   </div>
 </template>
