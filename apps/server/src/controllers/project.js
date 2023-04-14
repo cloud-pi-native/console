@@ -192,7 +192,7 @@ export const createProjectController = async (req, res) => {
     delete projectData.name
 
     const results = await hooksFns.createProject(projectData)
-    await addLogs(results, owner.id)
+    await addLogs('Create Project', results, owner.id)
     if (results.failed) throw new Error('Echec des services associés au projet')
 
     // enregistrement des ids GitLab et Harbor
@@ -227,7 +227,7 @@ export const createProjectController = async (req, res) => {
       registryHost,
     }
     const resultsEnv = await hooksFns.initializeEnvironment(envData)
-    await addLogs(resultsEnv, owner.id)
+    await addLogs('Create Environment', resultsEnv, owner.id)
     if (resultsEnv.failed) throw new Error('Echec services à la création de l\'environnement')
     await updateEnvironmentCreated(environment.id)
     await setPermission({
@@ -351,7 +351,7 @@ export const archiveProjectController = async (req, res) => {
         repositories,
       }
       const resultsEnv = await hooksFns.deleteEnvironment(envData)
-      await addLogs(resultsEnv, userId)
+      await addLogs('Delete Environment', resultsEnv, userId)
       if (resultsEnv.failed) throw new Error('Echec des services à la suppression de l\'environnement')
     }
     // -- fin - Suppression environnements --
@@ -363,7 +363,7 @@ export const archiveProjectController = async (req, res) => {
     projectData.project = projectData.name
     delete projectData.name
     const results = await hooksFns.archiveProject(projectData)
-    await addLogs(results, userId)
+    await addLogs('Delete Project', results, userId)
     if (results.failed) throw new Error('Echec des services à la suppression du projet')
 
     isServicesCallOk = true

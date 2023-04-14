@@ -140,7 +140,7 @@ export const createRepositoryController = async (req, res) => {
     }
 
     const results = await hooksFns.createRepository(repoData)
-    await addLogs(results, userId)
+    await addLogs('Create Repository', results, userId)
     if (results.failed) throw new Error('Echec des services lors de la création du dépôt')
     isServicesCallOk = true
   } catch (error) {
@@ -233,7 +233,7 @@ export const updateRepositoryController = async (req, res) => {
     delete repoData?.internalRepoName
 
     const results = await hooksFns.updateRepository(repoData)
-    await addLogs(results, userId)
+    await addLogs('Update Repository', results, userId)
     if (results.failed) throw new Error('Echec des services associés au dépôt')
     isServicesCallOk = true
   } catch (error) {
@@ -321,7 +321,7 @@ export const deleteRepositoryController = async (req, res) => {
     }
 
     const results = await hooksFns.deleteRepository(repoData)
-    await addLogs(results, userId)
+    await addLogs('Delete Repository', results, userId)
     if (results.failed) throw new Error('Echec des opérations')
     isServicesCallOk = true
   } catch (error) {

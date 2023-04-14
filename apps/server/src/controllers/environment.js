@@ -114,7 +114,7 @@ export const initializeEnvironmentController = async (req, res) => {
       registryHost,
     }
     const results = await hooksFns.initializeEnvironment(envData)
-    await addLogs(results, userId)
+    await addLogs('Create Environment', results, userId)
     if (results.failed) throw new Error('Echec services à la création de l\'environnement')
     await updateEnvironmentCreated(env.id)
     const ownerId = await getSingleOwnerByProjectId(projectId)
@@ -212,7 +212,7 @@ export const deleteEnvironmentController = async (req, res) => {
       organization: organizationName,
     }
     const results = await hooksFns.deleteEnvironment(envData)
-    await addLogs(results, userId)
+    await addLogs('Delete Environment', results, userId)
     if (results.failed) throw new Error('Echec des services à la suppression de l\'environnement')
     await deleteEnvironment(environmentId)
     await unlockProject(projectId)
