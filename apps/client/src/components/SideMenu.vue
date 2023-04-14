@@ -1,5 +1,6 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { useScheme } from '@gouvminint/vue-dsfr'
+import { computed, ref, watch, onMounted, watchEffect } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user.js'
 import { useProjectStore } from '@/stores/project.js'
@@ -12,6 +13,11 @@ const routeName = computed(() => route.name)
 const routePath = computed(() => route.path)
 const isLoggedIn = computed(() => userStore.isLoggedIn)
 const selectedProject = computed(() => projectStore.selectedProject)
+
+const isDarkPrefered = window.matchMedia(
+  '(prefers-color-scheme: dark)',
+).matches
+const isDarkScheme = ref(isDarkPrefered)
 
 const isExpanded = ref({
   mainMenu: false,
@@ -28,6 +34,12 @@ watch(routePath, (routePath) => {
     return
   }
   isExpanded.value.projects = false
+})
+
+onMounted(() => {
+  const { setScheme } = useScheme()
+
+  watchEffect(() => setScheme(isDarkScheme.value ? 'dark' : 'light'))
 })
 
 </script>
@@ -55,6 +67,18 @@ watch(routePath, (routePath) => {
         />
         {{ userStore.userProfile.firstName }} {{ userStore.userProfile.lastName }}
       </p>
+      <div
+        class="my-2 flex flex-row gap-2 items-center cursor-pointer"
+        @click="isDarkScheme = !isDarkScheme"
+      >
+        <v-icon
+          :name="isDarkScheme ? 'ri-sun-line' : 'ri-moon-clear-line'"
+          :fill="isDarkScheme ? 'var(--yellow-moutarde-sun-348-moon-860)' : 'var(--blue-france-sun-113-625)'"
+        />
+        <span
+          class="fr-hint-text"
+        >{{ isDarkScheme ? 'Thème clair': 'Thème sombre' }}</span>
+      </div>
       <DsfrSideMenuListItem>
         <DsfrSideMenuLink
           data-testid="menuHome"

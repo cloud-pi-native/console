@@ -20,6 +20,7 @@ import { deletePermission } from '../models/queries/permission-queries.js'
 import { getEnvironmentsByProjectId } from '../models/queries/environment-queries.js'
 import { send200, send201, send500 } from '../utils/response.js'
 import { getLogInfos } from '../utils/logger.js'
+// import hooksFns from '../plugins/index.js'
 
 // GET
 export const getProjectUsersController = async (req, res) => {
@@ -34,15 +35,16 @@ export const getProjectUsersController = async (req, res) => {
 
     req.log.info({
       ...getLogInfos(),
-      description: 'Project members successfully retreived',
+      description: 'Membres du projet récupérés',
     })
-    return send200(res, users)
+    send200(res, users)
   } catch (error) {
     const message = `Echec de récupération des membres du projet: ${error.message}`
     req.log.error({
       ...getLogInfos(),
       description: message,
       error: error.message,
+      trace: error.trace,
     })
     send500(res, message)
   }
@@ -56,13 +58,14 @@ export const getProjectUsersController = async (req, res) => {
 //       ...getLogInfos(),
 //       description: 'Users successfully retreived',
 //     })
-//     return send200(res, users)
+//     send200(res, users)
 //   } catch (error) {
 //     const message = 'Utilisateurs non trouvés'
 //     req.log.error({
 //       ...getLogInfos(),
 //       description: message,
 //       error: error.message,
+//       trace: error.trace,
 //     })
 //     send500(res, message)
 //   }
@@ -91,57 +94,39 @@ export const addUserToProjectController = async (req, res) => {
     await lockProject(projectId)
     await addUserToProject({ project, user: userToAdd, role: 'user' })
 
-    const message = 'User successfully added into project'
+    const message = 'Utilisateur ajouté au projet'
     req.log.info({
       ...getLogInfos({ projectId }),
       description: message,
     })
     send201(res, message)
   } catch (error) {
-    const message = `Cannot add user into project: ${error.message}`
+    const message = `Utilisateur non ajouté au projet : ${error.message}`
     req.log.error({
       ...getLogInfos(),
+      description: message,
       error: error.message,
+      trace: error.trace,
     })
     return send500(res, message)
   }
 
+  // Process api call to external service
+  // TODO #132
   try {
-    // TODO : US #132 appel ansible
-    try {
-      await unlockProject(projectId)
+    await unlockProject(projectId)
 
-      req.log.info({
-        ...getLogInfos({ projectId }),
-        description: 'Project status successfully updated in database',
-      })
-    } catch (error) {
-      req.log.error({
-        ...getLogInfos(),
-        description: 'Cannot update project status',
-        error: error.message,
-      })
-    }
+    req.log.info({
+      ...getLogInfos({ projectId }),
+      description: 'Projet déverrouillé',
+    })
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: 'Provisioning project with ansible failed',
-      error,
+      description: 'Echec, projet verrouillé',
+      error: error.message,
+      trace: error.trace,
     })
-    try {
-      await unlockProject(projectId)
-
-      req.log.info({
-        ...getLogInfos({ projectId }),
-        description: 'Project status successfully updated in database',
-      })
-    } catch (error) {
-      req.log.error({
-        ...getLogInfos(),
-        description: 'Cannot update project status',
-        error: error.message,
-      })
-    }
   }
 }
 
@@ -154,16 +139,18 @@ export const createUserController = async (req, res) => {
       ...getLogInfos({
         userId: user.id,
       }),
-      description: 'User successfully created in database',
+      description: 'Utilisateur enregistré en base',
     })
     send201(res, user)
   } catch (error) {
+    const message = 'Utilisateur non enregistré'
     req.log.error({
       ...getLogInfos(),
-      description: 'Utilisateur non créé',
+      description: message,
       error: error.message,
+      trace: error.trace,
     })
-    return send500(res, error.message)
+    send500(res, message)
   }
 }
 
@@ -187,17 +174,21 @@ export const updateUserProjectRoleController = async (req, res) => {
 
     await updateUserProjectRole(projectId, userToUpdateId, data.role)
 
-    const message = 'User role into project successfully updated'
+    const message = 'Rôle de l\'utilisateur mis à jour'
     req.log.info({
       ...getLogInfos({ userToUpdateRole }),
       description: message,
     })
+    send200(res, message)
   } catch (error) {
-    const message = `Cannot update user role into project: ${error.message}`
+    const message = `Le rôle de l'utilisateur ne peut pas être modifié : ${error.message}`
     req.log.error({
       ...getLogInfos(),
-      error: message,
+      description: message,
+      error: error.message,
+      trace: error.trace,
     })
+    send500(res, message)
   }
 }
 
@@ -230,56 +221,38 @@ export const removeUserFromProjectController = async (req, res) => {
     })
     await deleteRoleByUserIdAndProjectId(userToRemoveId, projectId)
 
-    const message = 'User successfully removed from project'
+    const message = 'Utilisateur retiré du projet'
     req.log.info({
       ...getLogInfos({ projectId }),
       description: message,
     })
     send200(res, message)
   } catch (error) {
-    const message = `Cannot remove user from project: ${error.message}`
+    const message = `L'utilisateur ne peut être retiré du projet : ${error.message}`
     req.log.error({
       ...getLogInfos(),
+      description: message,
       error: error.message,
+      trace: error.trace,
     })
     return send500(res, message)
   }
 
+  // Process api call to external service
+  // TODO #132
   try {
-    // TODO : US #132 appel ansible
-    try {
-      await unlockProject(projectId)
+    await unlockProject(projectId)
 
-      req.log.info({
-        ...getLogInfos({ projectId }),
-        description: 'Project status successfully updated in database',
-      })
-    } catch (error) {
-      req.log.error({
-        ...getLogInfos(),
-        description: 'Cannot update project status',
-        error: error.message,
-      })
-    }
+    req.log.info({
+      ...getLogInfos({ projectId }),
+      description: 'Projet déverrouillé',
+    })
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: 'Provisioning project with ansible failed',
-      error,
+      description: 'Echec, projet verrouillé',
+      error: error.message,
+      trace: error.trace,
     })
-    try {
-      await unlockProject(projectId)
-
-      req.log.info({
-        ...getLogInfos({ projectId }),
-        description: 'Project status successfully updated in database',
-      })
-    } catch (error) {
-      req.log.error({
-        ...getLogInfos(),
-        description: 'Cannot update project status',
-        error: error.message,
-      })
-    }
   }
 }

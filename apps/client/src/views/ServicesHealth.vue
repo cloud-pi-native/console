@@ -1,6 +1,6 @@
 <script setup>
 import { useServiceStore } from '@/stores/services.js'
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onBeforeMount } from 'vue'
 
 const serviceStore = useServiceStore()
 
@@ -8,14 +8,14 @@ const isUpdating = ref(true)
 const services = computed(() => serviceStore.services)
 const servicesHealth = computed(() => serviceStore.servicesHealth)
 
-const checkServiceHealth = async () => {
+const checkServicesHealth = async () => {
   isUpdating.value = ref(true)
-  await serviceStore.checkServiceHealth()
+  await serviceStore.checkServicesHealth()
   isUpdating.value = ref(false)
 }
 
-onMounted(async () => {
-  await checkServiceHealth()
+onBeforeMount(async () => {
+  await checkServicesHealth()
 })
 </script>
 
@@ -38,7 +38,7 @@ onMounted(async () => {
       icon-only
       icon="ri-refresh-fill"
       :disabled="isUpdating.value === true"
-      @click="checkServiceHealth()"
+      @click="checkServicesHealth()"
     />
   </div>
   <div
@@ -46,11 +46,11 @@ onMounted(async () => {
   >
     <DsfrAlert
       v-for="service in services"
-      :key="service.id"
-      :data-testid="`${service.id}-info`"
-      :title="service.id"
+      :key="service.name"
+      :data-testid="`${service.name}-info`"
+      :title="service.name"
       class="pb-5 fr-mt-2w"
-      :description="`${service.code} - ${service.message}`"
+      :description="service.message ? `${service.code} - ${service.message}` : `${service.code}`"
       :type="service.status"
     />
   </div>

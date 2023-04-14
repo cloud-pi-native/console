@@ -8,7 +8,8 @@ const projectStore = useProjectStore()
 /**
  * @returns {string}
  */
-const projectServices = computed(() => projectStore.selectedProject?.services)
+const projectServices = Object.values(computed(() => projectStore.selectedProject?.services).value)
+  .map(value => ({ ...value, id: value?.name }))
 
 </script>
 

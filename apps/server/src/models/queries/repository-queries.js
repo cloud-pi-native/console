@@ -15,6 +15,15 @@ export const getProjectRepositories = async (projectId) => {
   })
 }
 
+export const getInfraProjectRepositories = async (projectId) => {
+  return getRepositoryModel().findAll({
+    raw: true,
+    where: {
+      projectId,
+      isInfra: true,
+    },
+  })
+}
 // CREATE
 export const initializeRepository = async ({ projectId, internalRepoName, externalRepoUrl, isInfra, isPrivate, externalUserName, externalToken }) => {
   return getRepositoryModel().create({

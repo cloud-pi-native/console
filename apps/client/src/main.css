@@ -1,8 +1,35 @@
+/* Imports */
 @import url("./markdown.css");
+
+@font-face {
+  font-family: Marianne;
+  src: url('@/assets/fonts/Marianne-Regular.otf');
+}
+
+@font-face {
+  font-family: Marianne;
+  src: url('@/assets/fonts/Marianne-RegularItalic.otf');
+  font-style: italic;
+}
+
+@font-face {
+  font-family: Marianne;
+  src: url('@/assets/fonts/Marianne-Bold.otf');
+  font-weight: 700;
+}
+
+@font-face {
+  font-family: Marianne;
+  src: url('@/assets/fonts/Marianne-BoldItalic.otf');
+  font-weight: 700;
+  font-style: italic;
+}
+
 
 html,
 body,
 #app {
+  font-family: Marianne, sans-serif;
   height: 100%;
 }
 

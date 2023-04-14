@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
-import { useCIFilesStore } from '@/stores/ciFiles.js'
+import { useCIFilesStore } from '@/stores/ci-files.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = defineProps({

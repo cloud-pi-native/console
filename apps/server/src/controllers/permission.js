@@ -11,6 +11,7 @@ import {
 } from '../models/queries/users-projects-queries.js'
 import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
+// import hooksFns from '../plugins/index.js'
 
 // GET
 export const getEnvironmentPermissionsController = async (req, res) => {
@@ -25,15 +26,16 @@ export const getEnvironmentPermissionsController = async (req, res) => {
     const permissions = await getEnvironmentPermissions(environmentId)
     req.log.info({
       ...getLogInfos(),
-      description: 'Permissions successfully retreived',
+      description: 'Permissions récupérées',
     })
-    return send200(res, permissions)
+    send200(res, permissions)
   } catch (error) {
     const message = `Permissions non trouvées: ${error.message}`
     req.log.error({
       ...getLogInfos(),
       description: message,
       error: error.message,
+      trace: error.trace,
     })
     send500(res, message)
   }
@@ -51,21 +53,22 @@ export const setPermissionController = async (req, res) => {
     if (!role) throw new Error('Vous n\'êtes pas membre du projet')
 
     const permission = await setPermission({ userId: data.userId, environmentId, level: data.level })
-    // TODO chercher le noms de l'environnement associé et dériver les noms keycloak
+    // TODO chercher le nom de l'environnement associé et dériver les noms keycloak
     // if (data.level === 0) await removeMembers([data.userId], [permission.Environment.name])
     // if (data.level === 10) await removeMembers([data.userId], [permission.Environment.name]) && await addMembers([data.userId], [permission.Environment.name])
     // if (data.level === 20) await addMembers([data.userId], [permission.Environment.name])
     req.log.info({
       ...getLogInfos(),
-      description: 'Permission successfully created',
+      description: 'Permission enregistrée',
     })
-    return send201(res, permission)
+    send201(res, permission)
   } catch (error) {
     const message = `Permissions non créées : ${error.message}`
     req.log.error({
       ...getLogInfos(),
       description: message,
       error: error.message,
+      trace: error.trace,
     })
     send500(res, message)
   }
@@ -91,15 +94,16 @@ export const updatePermissionController = async (req, res) => {
     const permission = await updatePermission({ userId: data.userId, environmentId, level: data.level })
     req.log.info({
       ...getLogInfos(),
-      description: 'Permission successfully updated',
+      description: 'Permission mise à jour',
     })
-    return send200(res, permission)
+    send200(res, permission)
   } catch (error) {
-    const message = `Cannot update permissions : ${error.message}`
+    const message = `Permission non modifiée : ${error.message}`
     req.log.error({
       ...getLogInfos(),
       description: message,
       error: error.message,
+      trace: error.trace,
     })
     send500(res, message)
   }
@@ -124,18 +128,19 @@ export const deletePermissionController = async (req, res) => {
 
     const permission = await deletePermission(userId, environmentId)
 
-    const message = 'Permission successfully deleted in database'
+    const message = 'Permission supprimée'
     req.log.info({
       ...getLogInfos({ permission }),
       description: message,
     })
-    return send200(res, permission)
+    send200(res, permission)
   } catch (error) {
-    const message = `Cannot delete permissions : ${error.message}`
+    const message = `Permission non supprimée : ${error.message}`
     req.log.error({
       ...getLogInfos(),
-      description: 'Cannot delete permission',
+      description: message,
       error: error.message,
+      trace: error.trace,
     })
     send500(res, message)
   }

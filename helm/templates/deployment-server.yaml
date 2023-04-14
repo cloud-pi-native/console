@@ -1,3 +1,19 @@
+{{- if  .Values.server.plugins }}
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ .Release.Name }}-fetch-script
+data:
+  fetch: |
+    #!/bin/bash
+    cd /tmp
+{{- range $i, $val := .Values.server.plugins }}
+    wget {{ $val }} -O {{ $i }}.zip;
+    unzip {{ $i }}.zip -d /plugins;
+{{- end -}}
+{{- end -}}
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -13,18 +29,34 @@ spec:
       labels:
         app: {{ .Release.Name }}-server
     spec:
+      serviceAccountName: {{ $.Release.Name }}-console-sa
       restartPolicy: Always
       imagePullSecrets:
       - name: {{ .Release.Name }}-pullsecret
+{{- with .Values.server }}
+{{- if  .plugins }}
+      initContainers:
+      - image: busybox
+        command:
+        - sh
+        - /script/fetch
+        volumesMounts:
+          - name: fetch-script
+            mountDir: /script
+          - name: plugins
+            mountDir: /plugins
+{{- end }}
       containers:
-      - image: {{ .Values.containers.server.container.image }}
+      - image: {{ .container.image }}
         imagePullPolicy: Always
-        name: {{ .Release.Name }}-server
+        name: {{ $.Release.Name }}-server
         ports:
-        - containerPort: {{ .Values.containers.server.container.port }}
+        - containerPort: {{ .container.port }}
         envFrom:
         - configMapRef:
-            name: {{ .Release.Name }}-server-cm
+            name: {{ $.Release.Name }}-server-cm
+        - configMapRef:
+            name: {{ .dso_config.name }}
         resources:
           requests:
             memory: "64Mi"
@@ -35,21 +67,34 @@ spec:
         livenessProbe:
           httpGet:
             path: /healthz
-            port: {{ .Values.containers.server.container.port }}
+            port: {{ .container.port }}
           initialDelaySeconds: 5
           periodSeconds: 5
         startupProbe:
           httpGet:
             path: /healthz
-            port: {{ .Values.containers.server.container.port }}
+            port: {{ .container.port }}
           failureThreshold: 10
           periodSeconds: 4
-{{- if .Values.containers.server.container.data_configmap }}
         volumeMounts:
+{{- if .container.data_configmap }}
           - name: imports
-            mountPath: /app/src/init-db/imports
-      volumes:
+            mountPath: /app/src/init/db/imports
+{{- end }}
+{{- if and .plugins (len .plugins) }}
+          - name: plugins
+            mountPath: /app/src/plugins/external
+{{- end }}
+{{- if .container.data_configmap }}
         - name: imports
           configMap: 
-            name: {{ .Values.containers.server.container.data_configmap }}
+            name: {{ .container.data_configmap }}
 {{- end }}
+{{- if and .plugins (len .plugins) }}
+        - name: plugins
+          emptyDir: {}
+        - name: fetch-script
+          configMap:
+            name: {{ $.Release.Name }}-fetch-script
+{{- end }}
+{{- end -}}

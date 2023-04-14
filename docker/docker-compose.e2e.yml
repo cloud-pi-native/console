@@ -26,9 +26,9 @@ services:
     image: docker.io/postgres:14.5
     container_name: dso-console_postgres
     environment:
-      POSTGRES_DB: dso-console-db
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
     networks:
       - dso-network
 
@@ -53,39 +53,14 @@ services:
       - /app/apps/server/node_modules/
       - ../packages/shared:/app/packages/shared
       - /app/packages/shared/node_modules/
-      - ../packages/test-utils/src/imports:/app/apps/server/src/init-db/imports
+      - ../packages/test-utils/src/imports:/app/apps/server/src/init/db/imports
     env_file:
+      - ../env/.env
       - ../apps/server/env/.env
     environment:
       CI: "true"
       DEV_SETUP: "true"
-      NODE_ENV: dev
-    networks:
-      - dso-network
-
-  ansible-api:
-    restart: always
-    build:
-      context: ..
-      dockerfile: apps/ansible-api/Dockerfile
-      target: dev
-    image: dso-console/ansible-api:test
-    container_name: dso-console_ansible-api
-    depends_on:
-      keycloak:
-        condition: service_healthy
-    ports:
-      - 8100:8100
-    volumes:
-      - /app/node_modules/
-      - ../apps/ansible-api:/app/apps/ansible-api
-      - /app/apps/ansible-api/node_modules/
-      - ../ansible/playbooks:/dso
-    env_file:
-      - ../apps/ansible-api/env/.env
-    environment:
-      CI: "true"
-      NODE_ENV: dev
+      NODE_ENV: development
     networks:
       - dso-network
 
@@ -108,6 +83,7 @@ services:
       - ../packages/shared:/app/packages/shared
       - /app/packages/shared/node_modules/
     env_file:
+      - ../env/.env
       - ../apps/client/env/.env
     environment:
       NODE_ENV: development

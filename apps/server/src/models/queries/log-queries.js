@@ -22,8 +22,9 @@ export const getAllLogs = async (offset = 0) => {
 }
 
 // CREATE
-export const addLogs = async (data, userId) => {
+export const addLogs = async (action, data, userId) => {
   const res = await getLogModel().create({
+    action,
     userId,
     data,
   })

@@ -5,7 +5,7 @@ import viteConfig from './vite.config.js'
 
 const argocdUrl = process.env.ARGOCD_URL || 'https://argo-cd.readthedocs.io'
 const gitlabUrl = process.env.GITLAB_URL || 'https://gitlab.com'
-const quayUrl = process.env.QUAY_URL || 'https://quay.io'
+const harborUrl = process.env.HARBOR_URL || 'https://goharbor.io'
 const nexusUrl = process.env.NEXUS_URL || 'https://sonatype.com/products/nexus-repository'
 const sonarqubeUrl = process.env.SONARQUBE_URL || 'https://www.sonarqube.org'
 const vaultUrl = process.env.VAULT_URL || 'https://www.vaultproject.io'
@@ -34,7 +34,7 @@ export default defineConfig({
       argocdUrl,
       gitlabUrl,
       nexusUrl,
-      quayUrl,
+      harborUrl,
       sonarqubeUrl,
       vaultUrl,
       clientHost,

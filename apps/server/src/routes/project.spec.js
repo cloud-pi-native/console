@@ -16,7 +16,6 @@ import { getPermissionModel } from '../models/permission.js'
 import { getOrganizationModel } from '../models/organization.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
-vi.mock('../ansible.js')
 
 const app = fastify({ logger: false })
   .register(fastifyCookie)
@@ -72,6 +71,7 @@ describe('Project routes', () => {
   afterEach(() => {
     vi.clearAllMocks()
     sequelize.$clearQueue()
+    Role.$clearQueue()
   })
 
   // GET
@@ -169,9 +169,9 @@ describe('Project routes', () => {
       const owner = randomDbSetup.users.find(user => user.id === ownerId)
 
       // getRequestorRole
-      Role.$queueResult(randomDbSetup.project.users[1])
+      Role.$queueResult({ UserId: owner.id, role: owner.role })
       // getOwnerId
-      Role.$queueResult({ UserId: ownerId })
+      Role.$queueResult({ UserId: owner.id, role: owner.role })
       // getOwnerById
       User.$queueResult(owner)
       setRequestorId(ownerId)
@@ -231,7 +231,6 @@ describe('Project routes', () => {
       randomDbSetup.project.locked = true
       // TODO : user.addProject is not a function
       // ok en local donc pb avec bibliothèque
-      console.log(response.body)
       expect(response.statusCode).toEqual(201)
       expect(response.json()).toBeDefined()
       expect(response.json()).toMatchObject(randomDbSetup.project)
@@ -316,31 +315,6 @@ describe('Project routes', () => {
       expect(response.body).toBeDefined()
       expect(response.body).toEqual(`"${newProject.name}" est archivé et n'est plus disponible`)
     })
-
-    it.skip('Should return an error if ansible api call failed', async () => {
-      const ansibleError = 'Invalid ansible-api call'
-
-      const randomDbSetup = createRandomDbSetup({})
-      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
-
-      Project.$queueResult(null)
-      Project.$queueResult(randomDbSetup.project)
-      Project.$queueResult(randomDbSetup.project)
-      setRequestorId(owner.id)
-      const error = new Error(ansibleError)
-      global.fetch = vi.fn(() => Promise.reject(error))
-
-      const response = await app.inject()
-        .post('/')
-        .body(randomDbSetup.project)
-        .end()
-
-      // TODO : user.addProject is not a function
-      console.log(response.body)
-      expect(response.statusCode).toEqual(500)
-      expect(response.body).toBeDefined()
-      expect(response.body).toEqual(ansibleError)
-    })
   })
 
   // DELETE
@@ -352,32 +326,17 @@ describe('Project routes', () => {
       // 1. getProjectById
       Project.$queueResult(randomDbSetup.project)
       // 2. getRequestorRole
-      Role.$queueResult(randomDbSetup.project.users[0])
+      Role.$queueResult({ UserId: owner.id, role: owner.role })
       // retrieve associated data
       Repository.$queueResult(randomDbSetup.project.repositories)
       Environment.$queueResult(randomDbSetup.project.environments)
       randomDbSetup.project.environments.forEach(environment => Permissions.$queueResult(environment.permissions))
-      User.$queueResult(randomDbSetup.users)
-      // 3. projectLoked
+      Role.$queueResult(randomDbSetup.project.users)
+      // 3. projectLocked
       Project.$queueResult(randomDbSetup.project.id)
-      // 4. ansible
-      Organization.$queueResult(randomDbSetup.organization)
-      Repository.$queueResult(randomDbSetup.project.repositories)
-      Environment.$queueResult(randomDbSetup.project.environments)
-
-      global.fetch = vi.fn(() => Promise.resolve({
-        json: async () => (
-          {
-            command: 'ansible-playbook',
-            status: 'OK',
-            code: 0,
-            logs: 'logs',
-          }
-        ),
-      },
-      ))
-      // 5. archiveProject
-      Project.$queueResult(randomDbSetup.project.id)
+      // 4. deleting
+      randomDbSetup.project.repositories.forEach(repository => Repository.$queueResult(repository))
+      randomDbSetup.project.environments.forEach(environment => Environment.$queueResult(environment))
       setRequestorId(owner.id)
 
       const response = await app.inject()
@@ -407,12 +366,12 @@ describe('Project routes', () => {
 
     it('Should not archive a project if requestor is not owner', async () => {
       const randomDbSetup = createRandomDbSetup({})
-      randomDbSetup.project.users[0].role = 'user'
-      const randomUser = getRandomUser()
+      const requestor = randomDbSetup.project.users[0]
+      requestor.role = 'user'
 
       Project.$queueResult(randomDbSetup.project)
-      Role.$queueResult(randomDbSetup.project.users[0])
-      setRequestorId(randomUser.id)
+      Role.$queueResult({ UserId: requestor.id, role: requestor.role })
+      setRequestorId(requestor.id)
 
       const response = await app.inject()
         .delete(`/${randomDbSetup.project.id}`)

@@ -18,6 +18,11 @@ import {
 } from '../models/queries/users-projects-queries.js'
 import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
+import hooksFns from '../plugins/index.js'
+import { addLogs } from '../models/queries/log-queries.js'
+import { getOrganizationById } from '../models/queries/organization-queries.js'
+import { getInfraProjectRepositories } from '../models/queries/repository-queries.js'
+import { gitlabUrl, harborUrl, projectPath } from '../utils/env.js'
 
 // GET
 export const getEnvironmentByIdController = async (req, res) => {
@@ -46,6 +51,7 @@ export const getEnvironmentByIdController = async (req, res) => {
       ...getLogInfos(),
       description: `Environnement non trouvé: ${error.message}`,
       error: error.message,
+      trace: error.trace,
     })
     return send500(res, error.message)
   }
@@ -58,8 +64,11 @@ export const initializeEnvironmentController = async (req, res) => {
   const projectId = req.params?.projectId
 
   let env
+  let project
+  let organization
   try {
-    const project = await getProjectById(projectId)
+    project = await getProjectById(projectId)
+    organization = await getOrganizationById(project.organization)
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
     if (!role) throw new Error('Vous n\'êtes pas membre du projet')
     // TODO : plus tard il sera nécessaire d'être owner pour créer un environment
@@ -85,61 +94,73 @@ export const initializeEnvironmentController = async (req, res) => {
       ...getLogInfos(),
       description: 'Environnement non créé',
       error: error.message,
+      trace: error.trace,
     })
     return send500(res, error.message)
   }
 
   try {
-    // TODO : #133 : appel ansible + création groupe keycloak + ajout owner au groupe keycloak
-    try {
-      await updateEnvironmentCreated(env.id)
-      const ownerId = await getSingleOwnerByProjectId(projectId)
-      if (ownerId !== userId) {
-        await setPermission({
-          userId: ownerId,
-          environmentId: env.id,
-          level: 2,
-        })
-      }
+    const registryHost = harborUrl.split('//')[1].split('/')[0]
+    const environmentName = env.dataValues.name
+    const projectName = project.dataValues.name
+    const organizationName = organization.name
+    const gitlabBaseURL = `${gitlabUrl}/${projectPath.join('/')}/${organizationName}/${projectName}/`
+    const repositoriesURL = (await getInfraProjectRepositories(projectId)).map(({ internalRepoName }) => (`${gitlabBaseURL}/${internalRepoName}.git`))
+    const envData = {
+      environment: environmentName,
+      project: projectName,
+      organization: organizationName,
+      repositoriesURL,
+      registryHost,
+    }
+    const results = await hooksFns.initializeEnvironment(envData)
+    await addLogs('Create Environment', results, userId)
+    if (results.failed) throw new Error('Echec services à la création de l\'environnement')
+    await updateEnvironmentCreated(env.id)
+    const ownerId = await getSingleOwnerByProjectId(projectId)
+    if (ownerId !== userId) {
       await setPermission({
-        userId,
+        userId: ownerId,
         environmentId: env.id,
         level: 2,
       })
-      await unlockProject(projectId)
-
-      req.log.info({
-        ...getLogInfos({ projectId: env.id }),
-        description: 'Environment status successfully updated to created in database',
-      })
-    } catch (error) {
-      req.log.error({
-        ...getLogInfos(),
-        description: 'Cannot update environment status to created',
-        error: error.message,
-      })
     }
+    await setPermission({
+      userId,
+      environmentId: env.id,
+      level: 2,
+    })
+    await unlockProject(projectId)
+
+    req.log.info({
+      ...getLogInfos({ projectId: env.id }),
+      description: 'Environment status successfully updated to created in database',
+    })
+    return
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: 'Provisioning project with ansible failed',
-      error,
+      description: 'Cannot update environment status to created',
+      error: JSON.stringify(error),
+      trace: error.trace,
     })
-    try {
-      await updateEnvironmentFailed(env.id)
-      await unlockProject(projectId)
+  }
 
-      req.log.info({
-        ...getLogInfos({ projectId: env.id }),
-        description: 'Environment status successfully updated to failed in database',
-      })
-    } catch (error) {
-      req.log.error({
-        ...getLogInfos(),
-        description: 'Cannot update environment status to failed',
-        error: error.message,
-      })
-    }
+  try {
+    await updateEnvironmentFailed(env.id)
+    await unlockProject(projectId)
+
+    req.log.info({
+      ...getLogInfos({ projectId: env.id }),
+      description: 'Environment status successfully updated to failed in database',
+    })
+  } catch (error) {
+    req.log.error({
+      ...getLogInfos(),
+      description: 'Cannot update environment status to failed',
+      error: error.message,
+      trace: error.trace,
+    })
   }
 }
 
@@ -149,10 +170,17 @@ export const deleteEnvironmentController = async (req, res) => {
   const projectId = req.params?.projectId
   const userId = req.session?.user?.id
 
+  let env
+  let project
+  let organization
   try {
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
     if (!role) throw new Error('Vous n\'êtes pas membre du projet')
     if (role.role !== 'owner') throw new Error('Vous n\'êtes pas souscripteur du projet')
+
+    env = await getEnvironmentById(environmentId)
+    project = await getProjectById(projectId)
+    organization = await getOrganizationById(project.organization)
 
     await updateEnvironmentDeleting(environmentId)
     await lockProject(projectId)
@@ -168,47 +196,55 @@ export const deleteEnvironmentController = async (req, res) => {
       ...getLogInfos(),
       description: 'Cannot update environment status',
       error: error.message,
+      trace: error.trace,
     })
     return send500(res, error.message)
   }
 
   try {
-    // TODO : #133 : appel ansible + suppression groupe keycloak (+ retirer users du groupe keycloak ?)
-    try {
-      await deleteEnvironment(environmentId)
-      await unlockProject(projectId)
+    const environmentName = env.name
+    const projectName = project.name
+    const organizationName = organization.name
 
-      req.log.info({
-        ...getLogInfos({ environmentId }),
-        description: 'Environment successfully deleted',
-      })
-    } catch (error) {
-      req.log.error({
-        ...getLogInfos(),
-        description: 'Cannot delete environment',
-        error: error.message,
-      })
+    const envData = {
+      environment: environmentName,
+      project: projectName,
+      organization: organizationName,
     }
+    const results = await hooksFns.deleteEnvironment(envData)
+    await addLogs('Delete Environment', results, userId)
+    if (results.failed) throw new Error('Echec des services à la suppression de l\'environnement')
+    await deleteEnvironment(environmentId)
+    await unlockProject(projectId)
+
+    req.log.info({
+      ...getLogInfos({ environmentId }),
+      description: 'Environment successfully deleted',
+    })
+    return
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
-      description: 'Provisioning project with ansible failed',
-      error,
+      description: 'Cannot delete environment',
+      error: JSON.stringify(error),
+      trace: error.trace,
     })
-    try {
-      await updateEnvironmentFailed(environmentId)
-      await unlockProject(projectId)
+  }
 
-      req.log.info({
-        ...getLogInfos({ environmentId }),
-        description: 'Environment status successfully updated to failed in database',
-      })
-    } catch (error) {
-      req.log.error({
-        ...getLogInfos(),
-        description: 'Cannot update environment status to failed',
-        error: error.message,
-      })
-    }
+  try {
+    await updateEnvironmentFailed(environmentId)
+    await unlockProject(projectId)
+
+    req.log.info({
+      ...getLogInfos({ environmentId }),
+      description: 'Environment status successfully updated to failed in database',
+    })
+  } catch (error) {
+    req.log.error({
+      ...getLogInfos(),
+      description: 'Cannot update environment status to failed',
+      error: error.message,
+      trace: error.trace,
+    })
   }
 }

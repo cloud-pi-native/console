@@ -89,9 +89,10 @@ printf "\nScript settings:
   -> run e2e tests: ${RUN_E2E_TESTS}\n"
 
 
+cd "$PROJECT_DIR"
+
 # Run unit tests
 if [ "$RUN_UNIT_TESTS" == "true" ]; then
-  cd "$PROJECT_DIR"
   npm run test
 fi
 
@@ -104,20 +105,7 @@ if [ "$RUN_COMPONENT_TESTS" == "true" ]; then
   printf "\n${red}${i}.${no_color} Launch component tests\n"
   i=$(($i + 1))
 
-  cd "$PROJECT_DIR/docker"
-  docker compose \
-    --file "$PROJECT_DIR/docker/docker-compose.ct.yml" \
-    up \
-      --exit-code-from cypress \
-      --remove-orphans
-
-  printf "\n${red}${i}.${no_color} Remove stopped containers\n"
-  i=$(($i + 1))
-
-  docker compose \
-    --file "$PROJECT_DIR/docker/docker-compose.ct.yml" \
-    down \
-      --volumes
+  npm run test:ct-ci
 fi
 
 # Run e2e tests
@@ -128,19 +116,5 @@ if [ "$RUN_E2E_TESTS" == "true" ]; then
   printf "\n${red}${i}.${no_color} Launch e2e tests\n"
   i=$(($i + 1))
 
-  cd "$PROJECT_DIR/docker"
-  docker compose \
-    --file "$PROJECT_DIR/docker/docker-compose.ci.yml" \
-    up \
-      --exit-code-from cypress \
-      --attach cypress \
-      --remove-orphans
-
-  printf "\n${red}${i}.${no_color} Remove stopped containers\n"
-  i=$(($i + 1))
-
-  docker compose \
-    --file "$PROJECT_DIR/docker/docker-compose.ci.yml" \
-    down \
-      --volumes
+  npm run test:e2e-ci
 fi

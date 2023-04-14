@@ -27,6 +27,9 @@ export const getProjectModel = () => Project ?? (Project = sequelize.define('Pro
     allowNull: false,
     defaultValue: false,
   },
+  services: {
+    type: DataTypes.JSONB,
+  },
 }, {
   tableName: 'Projects',
   uniqueKeys: {

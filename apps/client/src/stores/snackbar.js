@@ -23,6 +23,8 @@ export const useSnackbarStore = defineStore('snackbar', () => {
 
   const hideMessage = () => {
     isOpen.value = false
+    clearTimeout(timeoutId.value)
+    timeoutId.value = undefined
   }
 
   return {

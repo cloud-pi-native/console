@@ -2,17 +2,10 @@ kind: ConfigMap
 apiVersion: v1
 metadata:
   name: {{ $.Release.Name }}-client-cm
-data:
+data: 
   {{- include "globalEnv" $.Values | indent 2 }}
-  {{- include "containerEnv" .Values.containers.client.container | indent 2 }}
-  {{- with .Values.keycloak }}
-  KEYCLOAK_PROTOCOL: https
-  KEYCLOAK_DOMAIN: {{ .domain }}
-  KEYCLOAK_REALM: {{ .realm }}
-  KEYCLOAK_CLIENT_ID: {{ .client_id_frontend }}
-  KEYCLOAK_REDIRECT_URI: {{ .redirect_uri }}
-  {{- end }}
-  {{- with .Values.containers.server.service }}
+  {{- include "containerEnv" .Values.client.container | indent 2 }}
+  {{- with .Values.server.service }}
   SERVER_HOST: {{ $.Release.Name }}-{{ .hostname }}-service
   SERVER_PORT: {{ .port | quote }}
   {{- end }}

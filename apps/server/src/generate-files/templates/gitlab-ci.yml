@@ -99,4 +99,4 @@ docker-build:
     IMAGE_NAME: {{projectName}}
   stage: docker-build
   extends:
-    - .buildah:build
+    - .kaniko:build

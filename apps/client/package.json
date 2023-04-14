@@ -42,7 +42,6 @@
     "markdown-it-emoji": "^2.0.2",
     "markdown-it-link-attributes": "^4.0.1",
     "markdown-it-prism": "^2.3.0",
-    "prism-theme-vars": "^0.2.4",
     "stylelint": "^15.3.0",
     "stylelint-config-html": "^1.1.0",
     "stylelint-config-recommended-vue": "^1.4.0",
