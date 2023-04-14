@@ -20,7 +20,7 @@ describe('Services view', () => {
       .get('#nexus').find('a')
       .should('have.attr', 'href', `${Cypress.env('nexusUrl')}/#browse/browse:${project.organization}-${project.name}-repository-group`)
       .get('#registry').find('a')
-      .should('have.attr', 'href').then(href => expect(href).to.match(new RegExp(`${Cypress.env('harborUrl')}/projects/`)))
+      .should('have.attr', 'href').then(href => expect(href).to.match(new RegExp(`${Cypress.env('harborUrl')}/harbor/projects/`)))
       .get('#sonarqube').find('a')
       .should('have.attr', 'href', `${Cypress.env('sonarqubeUrl')}/dashboard?id=${project.organization}-${project.name}`)
       .get('#vault').find('a')
