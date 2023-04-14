@@ -1,4 +1,4 @@
-import { isDev, isTest, isCI, isProd, isDevSetup, port } from './utils/env.js'
+import { isDev, isTest, isCI, isProd, isDevSetup, port, isInt } from './utils/env.js'
 import { rm } from 'node:fs/promises'
 import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
@@ -28,7 +28,7 @@ export async function startServer () {
   app.log.info('Reading init database file')
 
   try {
-    const dataPath = isProd
+    const dataPath = (isProd || isInt)
       ? './init/db/imports/data.js'
       : 'test-utils/src/imports/data.js'
 

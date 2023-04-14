@@ -53,7 +53,7 @@ services:
       - /app/apps/server/node_modules/
       - ../packages/shared:/app/packages/shared
       - /app/packages/shared/node_modules/
-      - ${KUBE_CONFIG_PATH}:/home/node/.kube/config
+      - ${DEV_KUBECONFIG_PATH}:${KUBECONFIG_PATH}
     env_file:
       - ../env/.env.int
       - ../apps/server/env/.env.int

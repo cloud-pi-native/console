@@ -59,8 +59,9 @@ export const archiveDsoProject = async (payload) => {
     return {
       status: {
         result: 'KO',
-        message: error.message,
+        message: 'Failed',
       },
+      error: JSON.stringify(error),
     }
   }
 }
@@ -68,9 +69,11 @@ export const archiveDsoProject = async (payload) => {
 // Repo
 export const createDsoRepository = async (payload) => {
   try {
-    const { internalRepoName, externalRepoUrl, organization, project, externalUserName, externalToken } = payload.args
-    const projectCreated = await createProject(internalRepoName, externalRepoUrl, project, organization, externalUserName, externalToken)
-    const mirror = await createProjectMirror(`${internalRepoName}-mirror`, project, organization)
+    const { internalRepoName, externalRepoUrl, organization, project, externalUserName, externalToken, isPrivate } = payload.args
+    const externalRepoUrn = externalRepoUrl.split(/:\/\/(.*)/s)[1] // Un urN ne contient pas le protocole
+    const internalMirrorRepoName = `${internalRepoName}-mirror`
+    const projectCreated = await createProject({ internalRepoName, externalRepoUrn, group: project, organization, externalUserName, externalToken, isPrivate })
+    const mirror = await createProjectMirror(internalMirrorRepoName, project, organization)
     const triggerToken = await setProjectTrigger(mirror.id)
 
     return {
@@ -79,11 +82,11 @@ export const createDsoRepository = async (payload) => {
         message: 'Created',
       },
       vault: [{
-        name: 'GITLAB',
+        name: `${internalMirrorRepoName}`,
         data: {
           ORGANIZATION_NAME: organization,
           PROJECT_NAME: project,
-          GIT_INPUT_URL: externalRepoUrl,
+          GIT_INPUT_URL: externalRepoUrn,
           GIT_INPUT_USER: externalUserName,
           GIT_INPUT_PASSWORD: externalToken,
           GIT_OUTPUT_USER: triggerToken.owner.username,
@@ -141,8 +144,9 @@ export const deleteDsoRepository = async (payload) => {
     return {
       status: {
         result: 'KO',
-        message: error.message,
+        message: 'Failed',
       },
+      error: JSON.stringify(error),
     }
   }
 }

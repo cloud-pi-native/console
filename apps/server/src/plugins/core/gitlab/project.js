@@ -5,11 +5,11 @@ import { getGroupId } from './group.js'
 
 /**
  * @param {string} internalRepoName - nom du dépôt.
- * @param {string} externalRepoUrl - url du dépôt.
+ * @param {string} externalRepoUrn - url du dépôt.
  * @param {string} group - nom du projet DSO.
  * @param {string} organization - nom de l'organisation DSO.
  */
-export const createProject = async (internalRepoName, externalRepoUrl, group, organization, externalUserName, externalToken) => {
+export const createProject = async ({ internalRepoName, externalRepoUrn, group, organization, externalUserName, externalToken, isPrivate }) => {
   const groupId = await getGroupId(group, organization)
   if (!groupId) throw Error('Impossible de retrouver le namespace')
   const searchResults = await api.Projects.search(internalRepoName)
@@ -17,9 +17,10 @@ export const createProject = async (internalRepoName, externalRepoUrl, group, or
     const existingProject = searchResults.find(project => project.namespace.id === groupId)
     if (existingProject) return existingProject
   }
-  if (externalUserName && externalToken) {
-    externalRepoUrl = `https://${externalUserName}:${externalToken}@${externalRepoUrl.split('://')[1]}`
-  }
+  const externalRepoUrl = isPrivate
+    ? `https://${externalUserName}:${externalToken}@${externalRepoUrn}`
+    : `https://${externalRepoUrn}`
+
   return await api.Projects.create(
     {
       name: internalRepoName,

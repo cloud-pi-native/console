@@ -3,8 +3,14 @@ import { deleteEnv, deleteRepo, newEnv, newRepo } from './index.js'
 import { kubeconfigPath, kubeconfigCtx } from '../../../utils/env.js'
 
 const kc = new k8s.KubeConfig()
-if (kubeconfigPath) kc.loadFromFile(kubeconfigPath)
-if (kubeconfigCtx) kc.setCurrentContext(kubeconfigCtx)
+if (kubeconfigPath) {
+  kc.loadFromFile(kubeconfigPath)
+  if (kubeconfigCtx) {
+    kc.setCurrentContext(kubeconfigCtx)
+  }
+} else {
+  kc.loadFromCluster()
+}
 
 export const k8sApi = kc.makeApiClient(k8s.CoreV1Api)
 export const customK8sApi = kc.makeApiClient(k8s.CustomObjectsApi)

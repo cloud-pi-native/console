@@ -5,10 +5,13 @@ import { createKubeNamespace, createKubeSecret, deleteKubeNamespace } from './in
 const kc = new k8s.KubeConfig()
 if (kubeconfigPath) {
   kc.loadFromFile(kubeconfigPath)
+  if (kubeconfigCtx) {
+    kc.setCurrentContext(kubeconfigCtx)
+  }
+} else {
+  kc.loadFromCluster()
 }
-if (kubeconfigCtx) {
-  kc.setCurrentContext(kubeconfigCtx)
-}
+
 const k8sApi = kc.makeApiClient(k8s.CoreV1Api)
 
 export default k8sApi
