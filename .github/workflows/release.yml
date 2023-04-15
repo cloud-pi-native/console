@@ -46,7 +46,7 @@ jobs:
       - name: Generate matrix for build
         id: build-matrix
         env:
-          TAG: "${{ needs.release.outputs.major-tag }}.${{ needs.release.outputs.minor-tag }}.${{ needs.release.outputs.patch-tag }}"
+          TAG: "${{ needs.release.outputs.major-tag }}.${{ needs.release.outputs.minor-tag }}.${{ needs.release.outputs.patch-tag }},latest"
         run: |
           echo 'BUILD_MATRIX<<EOF' >> $GITHUB_OUTPUT
           ./ci/scripts/build-matrix.sh -f ./docker/docker-compose.prod.yml -c -p "${{ env.PLATFORM }}" -r "${{ env.REGISTRY }}" -t "${{ env.TAG }}" -n "${{ env.NAMESPACE }}" -a | jq '[.[] | select(.build != false)]' >> $GITHUB_OUTPUT
@@ -75,7 +75,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
           logout: true
       - name: Build docker image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: ${{ matrix.images.build.context }}
           file: ${{ matrix.images.build.dockerfile }}
