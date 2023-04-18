@@ -12,6 +12,9 @@ imageCredentials:
 globalEnv:
 
 server:
+  extra_ca:
+    name: # the configmap in namespace where certificates are stored
+    key: # the key to lookup
   dso_config:
     name: dso-config
   container:
