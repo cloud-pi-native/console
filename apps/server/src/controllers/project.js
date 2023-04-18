@@ -189,7 +189,7 @@ export const createProjectController = async (req, res) => {
 
     const results = await hooksFns.createProject(projectData)
     await addLogs('Create Project', results, owner.id)
-    if (results.failed) throw new Error('Echec des services associés au projet')
+    if (results.failed) throw new Error('Echec des services lors de la création du projet')
 
     // enregistrement des ids GitLab et Harbor
     const { gitlab, registry } = results

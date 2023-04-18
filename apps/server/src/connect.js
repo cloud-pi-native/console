@@ -136,6 +136,9 @@ export const synchroniseModels = async () => {
 
     app.log.info('All models were synchronized successfully.')
   } catch (error) {
-    app.log.error('Models synchronisation with database failed.')
+    app.log.error({
+      message: 'Models synchronisation with database failed.',
+      error: JSON.stringify(error),
+    })
   }
 }
