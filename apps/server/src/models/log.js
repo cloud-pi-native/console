@@ -16,6 +16,7 @@ export const getLogModel = () => Log ?? (Log = sequelize.define('Log', {
   action: {
     type: DataTypes.STRING,
     allowNull: false,
+    defaultValue: '',
   },
   userId: {
     type: DataTypes.UUID,

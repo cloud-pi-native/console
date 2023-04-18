@@ -145,8 +145,8 @@ export const createProjectController = async (req, res) => {
 
     if (isValid?.failed) {
       const reasons = Object.values(isValid)
-        .filter(({ status }) => status.result === 'KO')
-        .map(({ status }) => status.message)
+        .filter(({ status }) => status?.result === 'KO')
+        .map(({ status }) => status?.message)
         .join('; ')
       send422(res, reasons)
       req.log.error(reasons)
