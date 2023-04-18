@@ -23,7 +23,7 @@ export const newEnv = async (payload) => {
   } catch (error) {
     return {
       status: {
-        result: 'OK',
+        result: 'KO',
         message: 'Failed',
       },
       error: JSON.stringify(error),
@@ -50,7 +50,7 @@ export const deleteEnv = async (payload) => {
   } catch (error) {
     return {
       status: {
-        result: 'OK',
+        result: 'KO',
         message: 'Failed',
       },
       error: JSON.stringify(error),

@@ -15,7 +15,7 @@ export const checkServicesHealthController = async (req, res) => {
     const serviceData = await Promise.all(Object.values(allServices)
       .map(async service => {
         const urlParsed = new URL(service.url)
-        const res = await axios.get(urlParsed)
+        const res = await axios.get(urlParsed, { validateStatus: status => status })
         return {
           name: service.name,
           status: res.status < 400 ? 'success' : 'error',

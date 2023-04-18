@@ -63,7 +63,7 @@ watch(projects, (projects) => {
     />
   </div>
   <div
-    class="grid grid-cols-3 items-center justify-between"
+    class="md:(grid grid-cols-3 gap-3) items-center justify-between"
   >
     <div
       v-for="project in projectList"
@@ -76,7 +76,7 @@ watch(projects, (projects) => {
         :data-testid="`projectTile-${project.title}`"
         :to="project.locked ? '' : project.to"
         :horizontal="false"
-        :class="project.locked ? 'disabled-tile' : null"
+        :disabled="project.locked"
         @click="setSelectedProject(project)"
       />
     </div>
