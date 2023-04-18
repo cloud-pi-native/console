@@ -1,7 +1,6 @@
 imagePullPolicy: Always
 env: production
 
-
 imageCredentials:
   registry:
   username:
@@ -19,7 +18,7 @@ server:
     name: dso-config
   container:
     env: #hashmap of custom env
-    image: ghcr.io/dnum-mi/dso-console/server:2
+    image: ghcr.io/dnum-mi/dso-console/server:3
     port: 8080
     node_env: production
     data-configmap:
@@ -31,7 +30,7 @@ server:
 
 client:
   container:
-    image: ghcr.io/dnum-mi/dso-console/client:2
+    image: ghcr.io/dnum-mi/dso-console/client:3
     port: 8080
     env: #hashmap of custom env
   service:
