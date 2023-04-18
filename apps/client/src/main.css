@@ -52,20 +52,3 @@ body,
 .fr-checkbox-group {
   margin-bottom: 1rem;
 }
-
-.fr-tile.disabled-tile {
-  background-color: var(--background-disabled-grey);
-  box-shadow: var(--border-disabled-grey);
-}
-
-.fr-tile.disabled-tile:hover {
-  background-color: var(--background-disabled-grey);
-}
-
-.fr-tile.disabled-tile h3 {
-  color: var(--text-disabled-grey);
-}
-
-.fr-tile.disabled-tile a {
-  @apply cursor-not-allowed;
-}

@@ -62,6 +62,28 @@ export const archiveDsoProject = async (payload) => {
   }
 }
 
+export const deleteDsoRepository = async (payload) => {
+  const { internalRepoName, organization, project } = payload.args
+  try {
+    const vaultPath = [organization, project, `${internalRepoName}-mirror`].join('/')
+    await destroyVault(`${vaultPath}`)
+    return {
+      status: {
+        result: 'OK',
+        message: 'Deleted',
+      },
+    }
+  } catch (error) {
+    return {
+      status: {
+        result: 'KO',
+        message: 'Failed',
+      },
+      error: JSON.stringify(error),
+    }
+  }
+}
+
 export const getRegistrySecret = async (payload) => {
   const { organization, project } = payload.args
   try {

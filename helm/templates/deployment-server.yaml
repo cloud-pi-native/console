@@ -34,6 +34,7 @@ spec:
       imagePullSecrets:
       - name: {{ .Release.Name }}-pullsecret
 {{- with .Values.server }}
+
 {{- if  .plugins }}
       initContainers:
       - image: busybox
@@ -46,6 +47,7 @@ spec:
           - name: plugins
             mountDir: /plugins
 {{- end }}
+
       containers:
       - image: {{ .container.image }}
         imagePullPolicy: Always
@@ -84,6 +86,25 @@ spec:
 {{- if and .plugins (len .plugins) }}
           - name: plugins
             mountPath: /app/src/plugins/external
+{{- end }}
+          - name: config
+            mountPath: /config
+
+      volumes:
+        - name: config
+          projected:
+            sources:
+{{- if .extra_ca.name }}
+              - configMap:
+                  name: {{ .extra_ca.name }}
+                  items:
+                    - key: {{ .extra_ca.key }}
+                      path: ca_certs
+{{- end }}
+{{- if .container.data_configmap }}
+        - name: imports
+          configMap: 
+            name: {{ .container.data_configmap }}
 {{- end }}
 {{- if .container.data_configmap }}
         - name: imports

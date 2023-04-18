@@ -1,12 +1,12 @@
-import { archiveDsoProject, writePaylodToVault, getRegistrySecret } from './index.js'
+import { archiveDsoProject, writePaylodToVault, getRegistrySecret, deleteDsoRepository } from './index.js'
 
 export const init = (register) => {
   register('vault', 'createProject', writePaylodToVault, 'save')
-  register('vault', 'archiveProject', archiveDsoProject, 'save') // Function is not the same here, it destroys everything about project
+  register('vault', 'archiveProject', archiveDsoProject) // Function is not the same here, it destroys everything about project
 
   register('vault', 'createRepository', writePaylodToVault, 'save')
   register('vault', 'updateRepository', writePaylodToVault, 'save')
-  register('vault', 'deleteRepository', writePaylodToVault, 'save')
+  register('vault', 'deleteRepository', deleteDsoRepository) // Function is not the same here, it destroys the mirror repository secret
 
   register('vault', 'addUserToProject', writePaylodToVault, 'save')
   register('vault', 'updateUserProjectRole', writePaylodToVault, 'save')

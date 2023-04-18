@@ -163,10 +163,7 @@ onMounted(() => {
                 Dépôts synchronisés
               </DsfrSideMenuLink>
             </DsfrSideMenuListItem>
-            <!-- TODO : enlever v-if lorsque les playbooks seront intégrés -->
-            <DsfrSideMenuListItem
-              v-if="false"
-            >
+            <DsfrSideMenuListItem>
               <DsfrSideMenuLink
                 data-testid="menuEnvironments"
                 :active="routeName === 'Environments'"

@@ -29,13 +29,10 @@ import {
   deleteEnvironment,
   getEnvironmentsByProjectId,
   updateEnvironmentDeleting,
-  initializeEnvironment,
-  updateEnvironmentCreated,
 } from '../models/queries/environment-queries.js'
 import {
   getEnvironmentPermissions,
   deletePermissionById,
-  setPermission,
 } from '../models/queries/permission-queries.js'
 import { getLogInfos } from '../utils/logger.js'
 import { send200, send201, send500 } from '../utils/response.js'
@@ -45,7 +42,7 @@ import { getServices } from '../utils/services.js'
 import { lowercaseFirstLetter, replaceNestedKeys } from '../utils/queries-tools.js'
 import { addLogs } from '../models/queries/log-queries.js'
 import hooksFns from '../plugins/index.js'
-import { gitlabUrl, harborUrl, projectPath } from '../utils/env.js'
+import { gitlabUrl, projectPath } from '../utils/env.js'
 
 // GET
 export const getUserProjectsController = async (req, res) => {
@@ -139,7 +136,6 @@ export const createProjectController = async (req, res) => {
   const data = req.body
   const user = req.session?.user
 
-  let environment
   let project
   let owner
   let organization
@@ -207,36 +203,6 @@ export const createProjectController = async (req, res) => {
     }
     await updateProjectServices(project.id, services)
 
-    // -- début - Environnement dev créé par défaut --
-    environment = await initializeEnvironment({ name: 'dev', projectId: project.id })
-    environment = { ...environment.get({ plain: true }) }
-    const registryHost = harborUrl.split('//')[1].split('/')[0]
-    const environmentName = environment.name
-    const projectName = project.name
-    const organizationName = organization.name
-    const gitlabBaseURL = `${gitlabUrl}/${projectPath.join('/')}/${organizationName}/${projectName}/`
-    const repositories = (await getInfraProjectRepositories(project.id)).map(({ internalRepoName }) => ({
-      url: `${gitlabBaseURL}/${internalRepoName}.git`,
-      internalRepoName,
-    }))
-    const envData = {
-      environment: environmentName,
-      project: projectName,
-      organization: organizationName,
-      repositories,
-      registryHost,
-    }
-    const resultsEnv = await hooksFns.initializeEnvironment(envData)
-    await addLogs('Create Environment', resultsEnv, owner.id)
-    if (resultsEnv.failed) throw new Error('Echec services à la création de l\'environnement')
-    await updateEnvironmentCreated(environment.id)
-    await setPermission({
-      userId: owner.id,
-      environmentId: environment.id,
-      level: 2,
-    })
-    // -- fin - Environnement dev créé par défaut --
-
     isServicesCallOk = true
   } catch (error) {
     req.log.error({
@@ -251,12 +217,6 @@ export const createProjectController = async (req, res) => {
   // Update DB after service call
   try {
     if (isServicesCallOk) {
-      await updateEnvironmentCreated(environment.id)
-      await setPermission({
-        userId: owner.id,
-        environmentId: environment.id,
-        level: 2,
-      })
       await updateProjectCreated(project.id)
     } else {
       await updateProjectFailed(project.id)

@@ -91,7 +91,7 @@ export const createDsoRepository = async (payload) => {
           GIT_INPUT_PASSWORD: externalToken,
           GIT_OUTPUT_USER: triggerToken.owner.username,
           GIT_OUTPUT_PASSWORD: gitlabToken,
-          GIT_OUTPUT_URL: projectCreated.http_url_to_repo,
+          GIT_OUTPUT_URL: projectCreated.http_url_to_repo.split(/:\/\/(.*)/s)[1],
           GIT_PIPELINE_TOKEN: triggerToken.token,
         },
       }],

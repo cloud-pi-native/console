@@ -24,3 +24,6 @@ data:
   {{- end }}
   NODE_ENV: production
   HOME: /home/node
+  {{- if .Values.server.extra_ca.name }}
+  NODE_EXTRA_CA_CERTS: /config/ca_certs
+  {{- end }}

@@ -83,7 +83,6 @@ printf "\nScript settings:
   -> npm version: ${NPM_VERSION}
   -> docker version: ${DOCKER_VERSION}
   -> docker-compose version: ${DOCKER_COMPOSE_VERSION}
-  -> env file: ${ENV_FILE}
   -> run unit tests: ${RUN_UNIT_TESTS}
   -> run component tests: ${RUN_COMPONENT_TESTS}
   -> run e2e tests: ${RUN_E2E_TESTS}\n"
@@ -105,7 +104,15 @@ if [ "$RUN_COMPONENT_TESTS" == "true" ]; then
   printf "\n${red}${i}.${no_color} Launch component tests\n"
   i=$(($i + 1))
 
-  npm run test:ct-ci
+  docker compose --file $PROJECT_DIR/docker/docker-compose.ct.yml up \
+    --exit-code-from cypress --quiet-pull
+
+
+  printf "\n${red}${i}.${no_color} Remove docker containers\n"
+  i=$(($i + 1))
+
+  docker compose --file $PROJECT_DIR/docker/docker-compose.ct.yml down \
+    --volumes
 fi
 
 # Run e2e tests
@@ -116,5 +123,13 @@ if [ "$RUN_E2E_TESTS" == "true" ]; then
   printf "\n${red}${i}.${no_color} Launch e2e tests\n"
   i=$(($i + 1))
 
-  npm run test:e2e-ci
+  docker compose --env-file $PROJECT_DIR/env/.env.ci --file $PROJECT_DIR/docker/docker-compose.ci.yml up \
+    --attach cypress --exit-code-from cypress --quiet-pull
+
+
+  printf "\n${red}${i}.${no_color} Remove docker containers\n"
+  i=$(($i + 1))
+
+  docker compose --env-file $PROJECT_DIR/env/.env.ci --file $PROJECT_DIR/docker/docker-compose.ci.yml down \
+    --volumes
 fi

@@ -1,4 +1,4 @@
-FROM docker.io/cypress/included:12.8.1
+FROM docker.io/cypress/included:12.9.0
 
 RUN npm install --location=global pnpm
 WORKDIR /app
