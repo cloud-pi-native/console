@@ -1,5 +1,20 @@
 # Changelog
 
+## [3.1.0](https://github.com/dnum-mi/dso-console/compare/v3.0.0...v3.1.0) (2023-04-18)
+
+
+### Features
+
+* :children_crossing: add deployment infos below environment tiles ([992b34e](https://github.com/dnum-mi/dso-console/commit/992b34e070401ae330cab239d73bf27b56ba516c))
+* :sparkles: add custom ca to server ([8583577](https://github.com/dnum-mi/dso-console/commit/85835775d1bf21dfadffe5094dc1a513d6782525))
+* :sparkles: introduce environment management page ([3e77a67](https://github.com/dnum-mi/dso-console/commit/3e77a679446853b981d9bf98f1bd62795ce5cf1d))
+
+
+### Bug Fixes
+
+* :bug: fix git output url ([e3402b4](https://github.com/dnum-mi/dso-console/commit/e3402b44dddbd71805293305df181321af04dafe))
+* :bug: forget delete mirror repository secret ([f00aac7](https://github.com/dnum-mi/dso-console/commit/f00aac7f6315a1f27ee05ebaa6863feb466ac654))
+
 ## [3.0.0](https://github.com/dnum-mi/dso-console/compare/v2.3.0...v3.0.0) (2023-04-14)
 
 
