@@ -12,4 +12,6 @@ export const send403 = (res, data) => sendRes(res, 403, data)
 
 export const send404 = (res, data) => sendRes(res, 404, data)
 
+export const send422 = (res, data) => sendRes(res, 422, data)
+
 export const send500 = (res, data) => sendRes(res, 500, data)

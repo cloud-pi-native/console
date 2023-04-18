@@ -10,24 +10,26 @@ process.env.VAULT_URL = 'https://www.vaultproject.io'
 
 vi.mock('./src/plugins/index.js', async () => {
   return {
-    checkServices: () => {},
+    default: {
+      checkServices: () => {},
 
-    createProject: () => {},
-    archiveProject: () => {},
+      createProject: () => {},
+      archiveProject: () => {},
 
-    createRepository: () => {},
-    updateRepository: () => {},
-    deleteRepository: () => {},
+      createRepository: () => {},
+      updateRepository: () => {},
+      deleteRepository: () => {},
 
-    addUserToProject: () => {},
-    updateUserProjectRole: () => {},
-    removeUserFromProject: () => {},
+      addUserToProject: () => {},
+      updateUserProjectRole: () => {},
+      removeUserFromProject: () => {},
 
-    initializeEnvironment: () => {},
-    deleteEnvironment: () => {},
+      initializeEnvironment: () => {},
+      deleteEnvironment: () => {},
 
-    setPermission: () => {},
-    updatePermission: () => {},
-    deletePermission: () => {},
+      setPermission: () => {},
+      updatePermission: () => {},
+      deletePermission: () => {},
+    },
   }
 })
