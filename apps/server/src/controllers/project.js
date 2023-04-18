@@ -35,7 +35,7 @@ import {
   deletePermissionById,
 } from '../models/queries/permission-queries.js'
 import { getLogInfos } from '../utils/logger.js'
-import { send200, send201, send500 } from '../utils/response.js'
+import { send200, send201, send422, send500 } from '../utils/response.js'
 import { projectSchema } from 'shared/src/schemas/project.js'
 import { calcProjectNameMaxLength } from 'shared/src/utils/functions.js'
 import { getServices } from '../utils/services.js'
@@ -141,6 +141,18 @@ export const createProjectController = async (req, res) => {
   let organization
 
   try {
+    const isValid = await hooksFns.createProject({ email: user.email }, true)
+
+    if (isValid?.failed) {
+      const reasons = Object.values(isValid)
+        .filter(({ status }) => status.result === 'KO')
+        .map(({ status }) => status.message)
+        .join('; ')
+      send422(res, reasons)
+      req.log.error(reasons)
+      addLogs('Create Project Validation', { reasons }, user.id)
+      return
+    }
     owner = await getOrCreateUser({ id: user.id, email: user?.email, firstName: user?.firstName, lastName: user?.lastName })
 
     organization = await getOrganizationById(data.organization)

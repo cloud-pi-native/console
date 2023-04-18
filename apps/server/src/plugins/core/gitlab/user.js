@@ -4,12 +4,11 @@ const createUsername = (email) => email.replace('@', '.')
 
 export const getUser = async (email) => {
   const users = await api.Users.search(email)
-  return users.length ? users[0] : null
+  return users.length ? users.find(user => user.email === email) : undefined
 }
 
 export const createUser = async (email) => {
-  const searchResult = await api.Users.search(email)
-  const existingUser = searchResult.find(user => user.email === email)
+  const existingUser = await getUser(email)
   if (existingUser) {
     return existingUser
   }

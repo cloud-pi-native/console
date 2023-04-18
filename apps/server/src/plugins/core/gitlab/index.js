@@ -3,7 +3,26 @@ import { createGroup, deleteGroup } from './group.js'
 import { addGroupMember } from './permission.js'
 import { createProject, createProjectMirror, deleteProject } from './project.js'
 import { setProjectTrigger } from './triggers.js'
-import { createUser } from './user.js'
+import { createUser, getUser } from './user.js'
+
+// Check
+export const checkApi = async (payload) => {
+  const { email } = payload.args
+  const user = await getUser(email)
+  if (user.id === 1) {
+    return {
+      status: {
+        result: 'KO',
+        message: 'Gitlab notify: User 1 (root) should not use Console',
+      },
+    }
+  }
+  return {
+    status: {
+      result: 'OK',
+    },
+  }
+}
 
 // Project
 export const createDsoProject = async (payload) => {

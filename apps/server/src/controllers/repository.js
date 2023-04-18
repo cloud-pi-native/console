@@ -20,7 +20,7 @@ import {
   getEnvironmentsByProjectId,
 } from '../models/queries/environment-queries.js'
 import { getLogInfos } from '../utils/logger.js'
-import { send200, send201, send500 } from '../utils/response.js'
+import { send200, send201, send422, send500 } from '../utils/response.js'
 import { getOrganizationById } from '../models/queries/organization-queries.js'
 import { addLogs } from '../models/queries/log-queries.js'
 import { gitlabUrl, projectPath } from '../utils/env.js'
@@ -82,17 +82,29 @@ export const getProjectRepositoriesController = async (req, res) => {
 // CREATE
 export const createRepositoryController = async (req, res) => {
   const data = req.body
-  const userId = req.session?.user?.id
+  const user = req.session?.user
   const projectId = req.params?.projectId
   data.projectId = projectId
 
   let project
   let repo
   try {
+    const isValid = await hooksFns.createProject({ email: user.email }, true)
+
+    if (isValid?.failed) {
+      const reasons = Object.values(isValid)
+        .filter(({ status }) => status.result === 'KO')
+        .map(({ status }) => status.message)
+        .join('; ')
+      send422(res, reasons)
+      req.log.error(reasons)
+      addLogs('Create Project Validation', { reasons }, user.id)
+      return
+    }
     project = await getProjectById(projectId)
     if (!project) throw new Error('Le projet n\'existe pas')
 
-    const role = await getRoleByUserIdAndProjectId(userId, projectId)
+    const role = await getRoleByUserIdAndProjectId(user.id, projectId)
     if (!role) throw new Error('Vous n\'êtes pas membre du projet')
 
     const repos = await getProjectRepositories(projectId)
@@ -140,7 +152,7 @@ export const createRepositoryController = async (req, res) => {
     }
 
     const results = await hooksFns.createRepository(repoData)
-    await addLogs('Create Repository', results, userId)
+    await addLogs('Create Repository', results, user.id)
     if (results.failed) throw new Error('Echec des services lors de la création du dépôt')
     isServicesCallOk = true
   } catch (error) {
