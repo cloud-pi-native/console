@@ -26,10 +26,13 @@ jobs:
         uses: google-github-actions/release-please-action@v3
         id: release
         with:
-          release-type: node
           package-name: dso-console
+          release-type: node
           default-branch: main
-          pull-request-title-pattern: v${version}
+          group-pull-request-title-pattern: release v${version}
+          extra-files: |
+            helm/Chart.yaml
+            helm/values.yaml
           token: ${{ secrets.GITHUB_TOKEN }}
 
   matrix:
