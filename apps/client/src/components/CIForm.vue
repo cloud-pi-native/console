@@ -1,4 +1,5 @@
 <script setup>
+import JSZip from 'jszip'
 import { ref, computed, onMounted, watch } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useCIFilesStore } from '@/stores/ci-files.js'
@@ -50,18 +51,22 @@ const typeLanguages = ref([
 const expandedId = ref(undefined)
 const generatedCI = ref(undefined)
 const files = ref([])
+const zipDir = ref({})
 
 const generateCI = async () => {
   generatedCI.value = await ciFilesStore.generateCIFiles(ciData.value)
   prepareForDownload()
 }
 
-const prepareForDownload = () => {
+const prepareForDownload = async () => {
+  const zip = new JSZip()
+
   files.value = Object.keys(generatedCI.value).map((key) => {
     const filename = `.${key}.yml`
     const file = new File([generatedCI.value[key]], filename, {
       type: 'text/plain;charset=utf-8',
     })
+    zip.file(filename, file)
     const url = URL.createObjectURL(file)
     window.URL.revokeObjectURL(file)
 
@@ -73,6 +78,14 @@ const prepareForDownload = () => {
       title: filename,
     }
   })
+
+  const zipBlob = await zip.generateAsync({ type: 'blob' })
+  zipDir.value.href = URL.createObjectURL(zipBlob)
+  zipDir.value.size = `${zipBlob.size} bytes`
+  zipDir.value.format = 'zip'
+  zipDir.value.title = 'Télécharger tous les fichiers'
+  zipDir.value.download = 'includes.zip'
+  window.URL.revokeObjectURL(zipBlob)
 }
 
 const copyContent = async (key) => {
@@ -186,6 +199,33 @@ watch(internalRepoName, (internalRepoName) => {
           Copiez le contenu des fichiers générés en cliquant sur l'icône ou bien téléchargez-les via les liens ci-dessous.
         </p>
         <ul>
+          <li>
+            <!-- TODO : pr vue-dsfr, pouvoir passer une props download -->
+            <!-- <DsfrFileDownload
+              :format="zipDir.format"
+              :size="zipDir.size"
+              :href="zipDir.href"
+              :title="zipDir.title"
+              :download="zipDir.download"
+            /> -->
+            <div
+              data-testid="zip-download-link"
+              class="fr-download"
+              :class="{ 'fr-enlarge-link fr-download--card': block }"
+            >
+              <p>
+                <a
+                  :href="zipDir.href"
+                  :download="zipDir.download"
+                  class="fr-download__link"
+                > {{ zipDir.title }}
+                  <span class="fr-download__detail">
+                    {{ zipDir.format }} – {{ zipDir.size }}
+                  </span>
+                </a>
+              </p>
+            </div>
+          </li>
           <li
             v-for="file in files"
             :key="file.key"
