@@ -89,7 +89,7 @@ describe('Organizations routes', () => {
         .get('/')
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(404)
       expect(response.body).toEqual('Echec de récupération des organisations')
     })
 
@@ -131,7 +131,7 @@ describe('Organizations routes', () => {
         .body(organization)
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(400)
       expect(response.body).toEqual('Cette organisation existe déjà')
     })
   })

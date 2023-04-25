@@ -3,7 +3,7 @@ import Mustache from 'mustache'
 import path from 'node:path'
 
 import { getLogInfos } from '../utils/logger.js'
-import { send201, send500 } from '../utils/response.js'
+import { sendCreated, sendServerError } from '../utils/response.js'
 
 export const generateCIFiles = async (req, res) => {
   const content = {}
@@ -48,7 +48,7 @@ export const generateCIFiles = async (req, res) => {
       content.node = Mustache.render(node.toString())
     }
 
-    send201(res, content)
+    sendCreated(res, content)
   } catch (error) {
     const message = `Cannot generate files: ${error.message}`
     req.log.error({
@@ -57,6 +57,6 @@ export const generateCIFiles = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    return send500(res, message)
+    return sendServerError(res, message)
   }
 }

@@ -17,7 +17,7 @@ import {
   getSingleOwnerByProjectId,
 } from '../models/queries/users-projects-queries.js'
 import { getLogInfos } from '../utils/logger.js'
-import { send200, send201, send500 } from '../utils/response.js'
+import { sendOk, sendCreated, sendNotFound, sendBadRequest, sendForbidden } from '../utils/response.js'
 import hooksFns from '../plugins/index.js'
 import { addLogs } from '../models/queries/log-queries.js'
 import { getOrganizationById } from '../models/queries/organization-queries.js'
@@ -45,7 +45,7 @@ export const getEnvironmentByIdController = async (req, res) => {
       }),
       description: 'Environment successfully retrieved',
     })
-    send200(res, env)
+    sendOk(res, env)
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
@@ -53,7 +53,7 @@ export const getEnvironmentByIdController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    return send500(res, error.message)
+    return sendNotFound(res, error.message)
   }
 }
 
@@ -88,7 +88,7 @@ export const initializeEnvironmentController = async (req, res) => {
       }),
       description: 'Environment successfully created in database',
     })
-    send201(res, env)
+    sendCreated(res, env)
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
@@ -96,7 +96,7 @@ export const initializeEnvironmentController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    return send500(res, error.message)
+    return sendBadRequest(res, error.message)
   }
 
   // Process api call to external service
@@ -205,7 +205,7 @@ export const deleteEnvironmentController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    return send500(res, error.message)
+    return sendForbidden(res, error.message)
   }
 
   try {

@@ -35,7 +35,7 @@ import {
   deletePermissionById,
 } from '../models/queries/permission-queries.js'
 import { getLogInfos } from '../utils/logger.js'
-import { send200, send201, send422, send500 } from '../utils/response.js'
+import { sendOk, sendCreated, sendUnprocessableContent, sendNotFound, sendBadRequest, sendForbidden } from '../utils/response.js'
 import { projectSchema } from 'shared/src/schemas/project.js'
 import { calcProjectNameMaxLength } from 'shared/src/utils/functions.js'
 import { getServices } from '../utils/services.js'
@@ -50,21 +50,21 @@ export const getUserProjectsController = async (req, res) => {
 
   try {
     const user = await getOrCreateUser(requestor)
-    if (!user) return send200(res, [])
+    if (!user) return sendOk(res, [])
 
     let projects = await getUserProjects(user)
     req.log.info({
       ...getLogInfos(),
       description: 'Projets récupérés',
     })
-    if (!projects.length) return send200(res, [])
+    if (!projects.length) return sendOk(res, [])
 
     projects = projects.filter(project => project.status !== 'archived')
       .map(project => project.get({ plain: true }))
       .map(project => replaceNestedKeys(project, lowercaseFirstLetter))
       .map(project => ({ ...project, services: getServices(project) }))
 
-    send200(res, projects)
+    sendOk(res, projects)
   } catch (error) {
     const message = `Projets non trouvés: ${error.message}`
     req.log.error({
@@ -73,7 +73,7 @@ export const getUserProjectsController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    send500(res, message)
+    sendNotFound(res, message)
   }
 }
 
@@ -90,7 +90,7 @@ export const getProjectByIdController = async (req, res) => {
       ...getLogInfos({ projectId }),
       description: 'Projet récupéré',
     })
-    send200(res, project)
+    sendOk(res, project)
   } catch (error) {
     const message = `Projet non trouvé: ${error.message}`
     req.log.error({
@@ -99,7 +99,7 @@ export const getProjectByIdController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    send500(res, message)
+    sendNotFound(res, message)
   }
 }
 
@@ -118,7 +118,7 @@ export const getProjectOwnerController = async (req, res) => {
       ...getLogInfos({ owner }),
       description: 'Project owner successfully retrived',
     })
-    send200(res, owner)
+    sendOk(res, owner)
   } catch (error) {
     const message = `Projet non trouvé: ${error.message}`
     req.log.error({
@@ -127,7 +127,7 @@ export const getProjectOwnerController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    send500(res, message)
+    sendNotFound(res, message)
   }
 }
 
@@ -148,7 +148,7 @@ export const createProjectController = async (req, res) => {
         .filter(({ status }) => status?.result === 'KO')
         .map(({ status }) => status?.message)
         .join('; ')
-      send422(res, reasons)
+      sendUnprocessableContent(res, reasons)
       req.log.error(reasons)
       addLogs('Create Project Validation', { reasons }, user.id)
       return
@@ -175,7 +175,7 @@ export const createProjectController = async (req, res) => {
       }),
       description: 'Projet créé en base de données',
     })
-    send201(res, project)
+    sendCreated(res, project)
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
@@ -184,7 +184,7 @@ export const createProjectController = async (req, res) => {
       stack: error.stack,
       data: error.request,
     })
-    return send500(res, error.message)
+    return sendBadRequest(res, error.message)
   }
 
   // Process api call to external service
@@ -288,7 +288,7 @@ export const archiveProjectController = async (req, res) => {
       }),
       description: 'Projet en cours de suppression',
     })
-    send200(res, projectId)
+    sendOk(res, projectId)
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
@@ -296,7 +296,7 @@ export const archiveProjectController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    return send500(res, error.message)
+    return sendForbidden(res, error.message)
   }
 
   // Process api call to external service

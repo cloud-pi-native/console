@@ -101,7 +101,7 @@ describe('User routes', () => {
         .get(`/${randomDbSetup.project.id}/environments/${randomDbSetup.project.environments[0].id}`)
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(404)
       expect(response.body).toBeDefined()
       expect(response.body).toEqual('Vous n\'êtes pas membre du projet')
     })
@@ -120,7 +120,7 @@ describe('User routes', () => {
         .get(`/${randomDbSetup.project.id}/environments/${randomDbSetup.project.environments[0].id}`)
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(404)
       expect(response.body).toBeDefined()
       expect(response.body).toEqual('Vous n\'êtes pas souscripteur et n\'avez pas accès à cet environnement')
     })
@@ -180,7 +180,7 @@ describe('User routes', () => {
         .body(newEnvironment)
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(400)
       expect(response.body).toBeDefined()
       expect(response.body).toEqual('Vous n\'êtes pas membre du projet')
     })
@@ -209,7 +209,7 @@ describe('User routes', () => {
         .body(newEnvironment)
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(400)
       expect(response.body).toBeDefined()
       expect(response.body).toEqual('Requested environment already exists for this project')
     })
@@ -250,7 +250,7 @@ describe('User routes', () => {
         .delete(`/${randomDbSetup.project.id}/environments/${environmentToDelete.id}`)
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(403)
       expect(response.body).toBeDefined()
       expect(response.body).toEqual('Vous n\'êtes pas membre du projet')
     })
@@ -270,7 +270,7 @@ describe('User routes', () => {
         .delete(`/${randomDbSetup.project.id}/environments/${environmentToDelete.id}`)
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(403)
       expect(response.body).toBeDefined()
       expect(response.body).toEqual('Vous n\'êtes pas souscripteur du projet')
     })

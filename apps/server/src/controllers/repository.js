@@ -20,7 +20,7 @@ import {
   getEnvironmentsByProjectId,
 } from '../models/queries/environment-queries.js'
 import { getLogInfos } from '../utils/logger.js'
-import { send200, send201, send422, send500 } from '../utils/response.js'
+import { sendOk, sendCreated, sendUnprocessableContent, sendNotFound, sendBadRequest, sendForbidden } from '../utils/response.js'
 import { getOrganizationById } from '../models/queries/organization-queries.js'
 import { addLogs } from '../models/queries/log-queries.js'
 import { gitlabUrl, projectPath } from '../utils/env.js'
@@ -41,7 +41,7 @@ export const getRepositoryByIdController = async (req, res) => {
       ...getLogInfos({ repositoryId }),
       description: 'Dépôt récupéré',
     })
-    send200(res, repo)
+    sendOk(res, repo)
   } catch (error) {
     const message = 'Dépôt non trouvé'
     req.log.error({
@@ -50,7 +50,7 @@ export const getRepositoryByIdController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    send500(res, message)
+    sendNotFound(res, message)
   }
 }
 
@@ -66,7 +66,7 @@ export const getProjectRepositoriesController = async (req, res) => {
       ...getLogInfos({ projectId }),
       description: 'Dépôts récupérés',
     })
-    send200(res, repos)
+    sendOk(res, repos)
   } catch (error) {
     const message = 'Dépôts non trouvés'
     req.log.error({
@@ -75,7 +75,7 @@ export const getProjectRepositoriesController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    send500(res, message)
+    sendNotFound(res, message)
   }
 }
 
@@ -96,7 +96,7 @@ export const createRepositoryController = async (req, res) => {
         .filter(({ status }) => status?.result === 'KO')
         .map(({ status }) => status?.message)
         .join('; ')
-      send422(res, reasons)
+      sendUnprocessableContent(res, reasons)
       req.log.error(reasons)
       addLogs('Create Project Validation', { reasons }, user.id)
       return
@@ -119,7 +119,7 @@ export const createRepositoryController = async (req, res) => {
       ...getLogInfos({ repositoryId: repo.id }),
       description: message,
     })
-    send201(res, repo)
+    sendCreated(res, repo)
   } catch (error) {
     const message = 'Dépôt non créé'
     req.log.error({
@@ -128,7 +128,7 @@ export const createRepositoryController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    return send500(res, message)
+    return sendBadRequest(res, message)
   }
 
   // Process api call to external service
@@ -217,7 +217,7 @@ export const updateRepositoryController = async (req, res) => {
       ...getLogInfos({ repositoryId }),
       description: message,
     })
-    send200(res, message)
+    sendOk(res, message)
   } catch (error) {
     const message = 'Dépôt non mis à jour'
     req.log.error({
@@ -226,7 +226,7 @@ export const updateRepositoryController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    return send500(res, message)
+    return sendBadRequest(res, message)
   }
 
   // Process api call to external service
@@ -304,7 +304,7 @@ export const deleteRepositoryController = async (req, res) => {
       ...getLogInfos({ repositoryId }),
       description: message,
     })
-    send200(res, message)
+    sendOk(res, message)
   } catch (error) {
     const message = 'Dépôt non supprimé'
     req.log.error({
@@ -313,7 +313,7 @@ export const deleteRepositoryController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    return send500(res, message)
+    return sendForbidden(res, message)
   }
 
   // Process api call to external service

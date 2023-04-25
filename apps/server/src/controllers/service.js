@@ -1,7 +1,7 @@
 import { URL } from 'node:url'
 import axios from 'axios'
 import { getLogInfos } from '../utils/logger.js'
-import { send200, send400 } from '../utils/response.js'
+import { sendOk, sendBadRequest } from '../utils/response.js'
 import { allServices } from '../utils/services.js'
 import { getUserById } from '../models/queries/user-queries.js'
 
@@ -33,7 +33,7 @@ export const checkServicesHealthController = async (req, res) => {
           }
         }
       }))
-    send200(res, serviceData)
+    sendOk(res, serviceData)
   } catch (error) {
     let message = `Erreur : ${error.message}`
     if (error.message.match(/^Failed to parse URL from/)) message = 'Url de service invalide'
@@ -43,6 +43,6 @@ export const checkServicesHealthController = async (req, res) => {
       error: error.message,
       stack: error.stack,
     })
-    send400(res, message)
+    sendBadRequest(res, message)
   }
 }
