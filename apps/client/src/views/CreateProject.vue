@@ -109,10 +109,10 @@ onMounted(async () => {
         data-testid="nameInput"
         type="text"
         required="required"
-        :error-message="!!updatedValues.name && !isValid(projectSchema, project, 'name', { projectNameMaxLength }) ? `Le nom du projet doit être en minuscule, ne pas contenir d\'espace et faire moins de ${projectNameMaxLength} caractères.`: undefined"
+        :error-message="!!updatedValues.name && !isValid(projectSchema, project, 'name', { projectNameMaxLength }) ? `Le nom du projet doit être en minuscule, ne pas contenir d\'espace, faire plus de 2 et moins de ${projectNameMaxLength} caractères.`: undefined"
         label="Nom du projet"
         label-visible
-        :hint="`Nom du projet dans l'offre Cloud π Native. Ne doit pas contenir d'espace, doit être unique pour l'organisation, doit être en minuscules, doit faire moins de ${projectNameMaxLength} caractères.`"
+        :hint="`Nom du projet dans l'offre Cloud π Native. Ne doit pas contenir d'espace, doit être unique pour l'organisation, doit être en minuscules, doit faire plus de 2 et moins de ${projectNameMaxLength} caractères.`"
         placeholder="candilib"
         @update:model-value="updateProject('name', $event)"
       />

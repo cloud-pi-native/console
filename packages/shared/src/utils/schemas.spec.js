@@ -76,6 +76,16 @@ describe('Schemas utils', () => {
     })).toStrictEqual({ externalToken: '"externalToken" is required' })
   })
 
+  it('Should not validate a too short project name', () => {
+    expect(schemaValidator(projectSchema, {
+      id: faker.datatype.uuid(),
+      name: faker.random.alpha(),
+      organization: faker.datatype.uuid(),
+      status: 'created',
+      locked: false,
+    }, { context: { projectNameMaxLength: 23 } })).toStrictEqual({ name: '"name" length must be at least 2 characters long' })
+  })
+
   it('Should not validate a too long project name', () => {
     expect(schemaValidator(projectSchema, {
       id: faker.datatype.uuid(),
