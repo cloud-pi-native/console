@@ -13,7 +13,9 @@ import App from './App.vue'
 import router from './router/index.js'
 import * as icons from './icons.js'
 
-import 'virtual:windi.css'
+import 'virtual:uno.css'
+import 'uno.css'
+import 'virtual:unocss-devtools'
 import './main.css'
 
 (async () => {
