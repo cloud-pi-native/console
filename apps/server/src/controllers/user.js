@@ -18,7 +18,7 @@ import {
 } from '../models/queries/users-projects-queries.js'
 import { deletePermission } from '../models/queries/permission-queries.js'
 import { getEnvironmentsByProjectId } from '../models/queries/environment-queries.js'
-import { send200, send201, send500 } from '../utils/response.js'
+import { sendOk, sendCreated, sendNotFound, sendBadRequest, sendForbidden } from '../utils/response.js'
 import { getLogInfos } from '../utils/logger.js'
 // import hooksFns from '../plugins/index.js'
 
@@ -37,7 +37,7 @@ export const getProjectUsersController = async (req, res) => {
       ...getLogInfos(),
       description: 'Membres du projet récupérés',
     })
-    send200(res, users)
+    sendOk(res, users)
   } catch (error) {
     const message = `Echec de récupération des membres du projet: ${error.message}`
     req.log.error({
@@ -46,7 +46,7 @@ export const getProjectUsersController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    send500(res, message)
+    sendNotFound(res, message)
   }
 }
 
@@ -58,7 +58,7 @@ export const getProjectUsersController = async (req, res) => {
 //       ...getLogInfos(),
 //       description: 'Users successfully retreived',
 //     })
-//     send200(res, users)
+//     sendOk(res, users)
 //   } catch (error) {
 //     const message = 'Utilisateurs non trouvés'
 //     req.log.error({
@@ -67,7 +67,7 @@ export const getProjectUsersController = async (req, res) => {
 //       error: error.message,
 //       trace: error.trace,
 //     })
-//     send500(res, message)
+//     sendNotFound(res, message)
 //   }
 // }
 
@@ -99,7 +99,7 @@ export const addUserToProjectController = async (req, res) => {
       ...getLogInfos({ projectId }),
       description: message,
     })
-    send201(res, message)
+    sendCreated(res, message)
   } catch (error) {
     const message = `Utilisateur non ajouté au projet : ${error.message}`
     req.log.error({
@@ -108,7 +108,7 @@ export const addUserToProjectController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    return send500(res, message)
+    return sendBadRequest(res, message)
   }
 
   // Process api call to external service
@@ -141,7 +141,7 @@ export const createUserController = async (req, res) => {
       }),
       description: 'Utilisateur enregistré en base',
     })
-    send201(res, user)
+    sendCreated(res, user)
   } catch (error) {
     const message = 'Utilisateur non enregistré'
     req.log.error({
@@ -150,7 +150,7 @@ export const createUserController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    send500(res, message)
+    sendBadRequest(res, message)
   }
 }
 
@@ -179,7 +179,7 @@ export const updateUserProjectRoleController = async (req, res) => {
       ...getLogInfos({ userToUpdateRole }),
       description: message,
     })
-    send200(res, message)
+    sendOk(res, message)
   } catch (error) {
     const message = `Le rôle de l'utilisateur ne peut pas être modifié : ${error.message}`
     req.log.error({
@@ -188,7 +188,7 @@ export const updateUserProjectRoleController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    send500(res, message)
+    sendBadRequest(res, message)
   }
 }
 
@@ -226,7 +226,7 @@ export const removeUserFromProjectController = async (req, res) => {
       ...getLogInfos({ projectId }),
       description: message,
     })
-    send200(res, message)
+    sendOk(res, message)
   } catch (error) {
     const message = `L'utilisateur ne peut être retiré du projet : ${error.message}`
     req.log.error({
@@ -235,7 +235,7 @@ export const removeUserFromProjectController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    return send500(res, message)
+    return sendForbidden(res, message)
   }
 
   // Process api call to external service

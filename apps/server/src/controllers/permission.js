@@ -10,7 +10,7 @@ import {
   getSingleOwnerByProjectId,
 } from '../models/queries/users-projects-queries.js'
 import { getLogInfos } from '../utils/logger.js'
-import { send200, send201, send500 } from '../utils/response.js'
+import { sendOk, sendCreated, sendNotFound, sendBadRequest, sendForbidden } from '../utils/response.js'
 // import hooksFns from '../plugins/index.js'
 
 // GET
@@ -28,7 +28,7 @@ export const getEnvironmentPermissionsController = async (req, res) => {
       ...getLogInfos(),
       description: 'Permissions récupérées',
     })
-    send200(res, permissions)
+    sendOk(res, permissions)
   } catch (error) {
     const message = `Permissions non trouvées: ${error.message}`
     req.log.error({
@@ -37,7 +37,7 @@ export const getEnvironmentPermissionsController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    send500(res, message)
+    sendNotFound(res, message)
   }
 }
 
@@ -61,7 +61,7 @@ export const setPermissionController = async (req, res) => {
       ...getLogInfos(),
       description: 'Permission enregistrée',
     })
-    send201(res, permission)
+    sendCreated(res, permission)
   } catch (error) {
     const message = `Permissions non créées : ${error.message}`
     req.log.error({
@@ -70,7 +70,7 @@ export const setPermissionController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    send500(res, message)
+    sendBadRequest(res, message)
   }
 }
 
@@ -96,7 +96,7 @@ export const updatePermissionController = async (req, res) => {
       ...getLogInfos(),
       description: 'Permission mise à jour',
     })
-    send200(res, permission)
+    sendOk(res, permission)
   } catch (error) {
     const message = `Permission non modifiée : ${error.message}`
     req.log.error({
@@ -105,7 +105,7 @@ export const updatePermissionController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    send500(res, message)
+    sendBadRequest(res, message)
   }
 }
 
@@ -133,7 +133,7 @@ export const deletePermissionController = async (req, res) => {
       ...getLogInfos({ permission }),
       description: message,
     })
-    send200(res, permission)
+    sendOk(res, permission)
   } catch (error) {
     const message = `Permission non supprimée : ${error.message}`
     req.log.error({
@@ -142,6 +142,6 @@ export const deletePermissionController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    send500(res, message)
+    sendForbidden(res, message)
   }
 }

@@ -93,7 +93,7 @@ describe('User routes', () => {
         .get(`/${randomDbSetup.project.id}/users`)
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(404)
       expect(response.body).toBeDefined()
       expect(response.body).toEqual('Echec de récupération des membres du projet: Vous n\'êtes pas membre du projet')
     })
@@ -147,7 +147,7 @@ describe('User routes', () => {
         .body(randomUser)
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(400)
       expect(response.body).toBeDefined()
       expect(response.body).toEqual('Utilisateur non ajouté au projet : L\'utilisateur est déjà membre du projet')
     })
@@ -165,7 +165,7 @@ describe('User routes', () => {
         .body(randomUser)
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(400)
       expect(response.body).toBeDefined()
       expect(response.body).toEqual('Utilisateur non ajouté au projet : Projet introuvable')
     })
@@ -244,7 +244,7 @@ describe('User routes', () => {
         .body(randomUser)
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(403)
       expect(response.body).toEqual('L\'utilisateur ne peut être retiré du projet : Projet introuvable')
     })
 
@@ -262,7 +262,7 @@ describe('User routes', () => {
         .body(randomUser)
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(403)
       expect(response.body).toEqual('L\'utilisateur ne peut être retiré du projet : Vous n\'êtes pas membre du projet')
     })
 
@@ -282,7 +282,7 @@ describe('User routes', () => {
         .body(randomUser)
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(403)
       expect(response.body).toEqual('L\'utilisateur ne peut être retiré du projet : L\'utilisateur n\'est pas membre du projet')
     })
   })

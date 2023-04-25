@@ -92,7 +92,7 @@ describe('Project routes', () => {
         .get(`/${randomDbSetup.project.id}/environments/${randomDbSetup.project.environments[0].id}/permissions`)
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(404)
       expect(response.body).toEqual('Permissions non trouvées: Vous n\'êtes pas membre du projet')
     })
   })
@@ -138,7 +138,7 @@ describe('Project routes', () => {
         .body(newPermission)
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(400)
       expect(response.body).toBeDefined()
       expect(response.body).toEqual('Permissions non créées : Vous n\'êtes pas membre du projet')
     })
@@ -192,7 +192,7 @@ describe('Project routes', () => {
         .body(permissionToUpdate)
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(400)
       expect(response.body).toEqual('Permission non modifiée : La permission du owner du projet ne peut être modifiée')
     })
 
@@ -213,7 +213,7 @@ describe('Project routes', () => {
         .body(permissionToUpdate)
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(400)
       expect(response.body).toEqual('Permission non modifiée : Le requérant doit avoir des droits sur l\'environnement pour modifier des permissions')
     })
   })
@@ -263,7 +263,7 @@ describe('Project routes', () => {
         .body(removedPermission)
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(403)
       expect(response.body).toEqual('Permission non supprimée : La permission du owner du projet ne peut être supprimée')
     })
 
@@ -283,7 +283,7 @@ describe('Project routes', () => {
         .body(removedPermission)
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(403)
       expect(response.body).toEqual('Permission non supprimée : Le requérant doit avoir des droits sur l\'environnement pour supprimer des permissions')
     })
   })

@@ -177,7 +177,7 @@ describe('Project routes', () => {
         .body(updatedKeys)
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(400)
       expect(response.body).toBeDefined()
       expect(response.body).toEqual('Dépôt non mis à jour')
     })

@@ -105,7 +105,7 @@ describe('Project routes', () => {
         .get('/')
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(404)
       expect(response.body.json).not.toBeDefined()
       expect(response.body).toBeDefined()
       expect(response.body).toEqual('Projets non trouvés: error message')
@@ -137,7 +137,7 @@ describe('Project routes', () => {
         .get('/invalid')
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(404)
       expect(response.body.json).not.toBeDefined()
       expect(response.body).toBeDefined()
       expect(response.body).toEqual('Projet non trouvé: custom error message')
@@ -155,7 +155,7 @@ describe('Project routes', () => {
         .get(`/${randomDbSetup.project.id}`)
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(404)
       expect(response.body.json).not.toBeDefined()
       expect(response.body).toBeDefined()
       expect(response.body).toEqual('Projet non trouvé: Vous n\'êtes pas membre du projet')
@@ -252,7 +252,7 @@ describe('Project routes', () => {
         .body(randomDbSetup.project)
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(400)
       expect(response.body).toBeDefined()
       expect(response.body).toEqual(`"${removedKey}" is required`)
     })
@@ -281,7 +281,7 @@ describe('Project routes', () => {
         .body(newProject)
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(400)
       expect(response.body).toBeDefined()
       expect(response.body).toEqual(`"${newProject.name}" existe déjà`)
     })
@@ -311,7 +311,7 @@ describe('Project routes', () => {
         .body(newProject)
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(400)
       expect(response.body).toBeDefined()
       expect(response.body).toEqual(`"${newProject.name}" est archivé et n'est plus disponible`)
     })
@@ -360,7 +360,7 @@ describe('Project routes', () => {
         .delete(`/${randomDbSetup.project.id}`)
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(403)
       expect(response.body).toEqual('Vous n\'êtes pas membre du projet')
     })
 
@@ -377,7 +377,7 @@ describe('Project routes', () => {
         .delete(`/${randomDbSetup.project.id}`)
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(403)
       expect(response.body).toEqual('Vous n\'êtes pas souscripteur du projet')
     })
   })

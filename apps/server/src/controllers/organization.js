@@ -3,7 +3,7 @@ import {
   createOrganization,
 } from '../models/queries/organization-queries.js'
 import { getLogInfos } from '../utils/logger.js'
-import { send200, send201, send500 } from '../utils/response.js'
+import { sendOk, sendCreated, sendNotFound, sendBadRequest } from '../utils/response.js'
 
 // GET
 export const getOrganizationsController = async (req, res) => {
@@ -13,7 +13,7 @@ export const getOrganizationsController = async (req, res) => {
       ...getLogInfos(),
       description: 'Organisations récupérées avec succès',
     })
-    send200(res, organizations)
+    sendOk(res, organizations)
   } catch (error) {
     const message = 'Echec de récupération des organisations'
     req.log.error({
@@ -22,7 +22,7 @@ export const getOrganizationsController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    send500(res, message)
+    sendNotFound(res, message)
   }
 }
 
@@ -39,7 +39,7 @@ export const createOrganizationController = async (req, res) => {
       }),
       description: 'L\'organization a bien été enregistrée en base',
     })
-    send201(res, organization)
+    sendCreated(res, organization)
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
@@ -47,6 +47,6 @@ export const createOrganizationController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    send500(res, error.message)
+    sendBadRequest(res, error.message)
   }
 }
