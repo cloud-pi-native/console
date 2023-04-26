@@ -33,6 +33,11 @@ export const getProjectOwner = async (projectId) => {
   return response.data
 }
 
+export const updateProject = async (projectId, data) => {
+  const response = await apiClient.put(`/projects/${projectId}`, data)
+  return response.data
+}
+
 export const archiveProject = async (projectId) => {
   const response = await apiClient.delete(`/projects/${projectId}`)
   return response.data

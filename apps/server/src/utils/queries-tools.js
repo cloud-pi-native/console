@@ -18,3 +18,10 @@ export const replaceNestedKeys = (obj, fn) => {
   }
   return obj
 }
+
+export const filterObjectByKeys = (obj, keys) =>
+  Object.fromEntries(
+    Object.entries(obj)
+      ?.filter(([key, _value]) =>
+        keys.includes(key)),
+  )

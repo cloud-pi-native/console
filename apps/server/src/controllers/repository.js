@@ -19,6 +19,7 @@ import {
 import {
   getEnvironmentsByProjectId,
 } from '../models/queries/environment-queries.js'
+import { filterObjectByKeys } from '../utils/queries-tools.js'
 import { getLogInfos } from '../utils/logger.js'
 import { sendOk, sendCreated, sendUnprocessableContent, sendNotFound, sendBadRequest, sendForbidden } from '../utils/response.js'
 import { getOrganizationById } from '../models/queries/organization-queries.js'
@@ -191,12 +192,20 @@ export const createRepositoryController = async (req, res) => {
 
 // UPDATE
 export const updateRepositoryController = async (req, res) => {
-  const data = req.body
   const userId = req.session?.user?.id
   const projectId = req.params?.projectId
   const repositoryId = req.params?.repositoryId
 
+  const keysAllowedForUpdate = [
+    'externalRepoUrl',
+    'isPrivate',
+    'externalToken',
+    'externalUserName',
+  ]
+  const data = filterObjectByKeys(req.body, keysAllowedForUpdate)
+
   let repo
+
   try {
     if (data.isPrivate && !data.externalToken) throw new Error('Le token est requis')
     if (data.isPrivate && !data.externalUserName) throw new Error('Le nom d\'utilisateur est requis')

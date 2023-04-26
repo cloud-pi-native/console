@@ -38,6 +38,33 @@ describe('Dashboard', () => {
       .should('contain', 'Echec des opérations')
   })
 
+  it('Should add, display and edit description', () => {
+    cy.intercept('PUT', `/api/v1/projects/${projectToKeep.id}`).as('updateProject')
+    const description1 = 'Application de prise de rendez-vous en préfécture.'
+    const description2 = 'Application d\'organisation de tournois de pétanque interministériels.'
+
+    cy.kcLogin('test')
+      .goToProjects()
+      .getByDataTestid(`projectTile-${projectToKeep.name}`).click()
+      .getByDataTestid('menuDashboard').click()
+      .getByDataTestid('descriptionP').should('not.exist')
+      .getByDataTestid('setDescriptionBtn').click()
+      .getByDataTestid('descriptionInput').clear().type(description1)
+      .getByDataTestid('saveDescriptionBtn').click()
+      .wait('@updateProject').its('response.statusCode').should('eq', 200)
+      .getByDataTestid('descriptionP').should('contain', description1)
+      .getByDataTestid('setDescriptionBtn').click()
+      .getByDataTestid('descriptionInput').clear().type(description2)
+      .getByDataTestid('saveDescriptionBtn').click()
+      .wait('@updateProject').its('response.statusCode').should('eq', 200)
+      .getByDataTestid('descriptionP').should('contain', description2)
+      .getByDataTestid('setDescriptionBtn').click()
+      .getByDataTestid('descriptionInput').clear()
+      .getByDataTestid('saveDescriptionBtn').click()
+      .wait('@updateProject').its('response.statusCode').should('eq', 200)
+      .getByDataTestid('descriptionP').should('not.exist')
+  })
+
   it('Should not be able to archive a project if not owner', () => {
     cy.kcLogin((user.firstName.slice(0, 1) + user.lastName).toLowerCase())
 

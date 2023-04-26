@@ -11,6 +11,7 @@ import {
   archiveProject,
   getProjectUsers,
   updateProjectServices,
+  updateProject,
 } from '../models/queries/project-queries.js'
 import { getOrCreateUser, getUserById } from '../models/queries/user-queries.js'
 import {
@@ -34,12 +35,12 @@ import {
   getEnvironmentPermissions,
   deletePermissionById,
 } from '../models/queries/permission-queries.js'
+import { filterObjectByKeys, lowercaseFirstLetter, replaceNestedKeys } from '../utils/queries-tools.js'
 import { getLogInfos } from '../utils/logger.js'
 import { sendOk, sendCreated, sendUnprocessableContent, sendNotFound, sendBadRequest, sendForbidden } from '../utils/response.js'
 import { projectSchema } from 'shared/src/schemas/project.js'
 import { calcProjectNameMaxLength } from 'shared/src/utils/functions.js'
 import { getServices } from '../utils/services.js'
-import { lowercaseFirstLetter, replaceNestedKeys } from '../utils/queries-tools.js'
 import { addLogs } from '../models/queries/log-queries.js'
 import hooksFns from '../plugins/index.js'
 import { gitlabUrl, projectPath } from '../utils/env.js'
@@ -246,6 +247,53 @@ export const createProjectController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
+  }
+}
+
+// UPDATE
+export const updateProjectController = async (req, res) => {
+  const userId = req.session?.user?.id
+  const projectId = req.params?.projectId
+
+  const keysAllowedForUpdate = ['description']
+  const data = filterObjectByKeys(req.body, keysAllowedForUpdate)
+
+  try {
+    let project = await getProjectById(projectId)
+    if (!project) throw new Error('Projet introuvable')
+
+    const role = await getRoleByUserIdAndProjectId(userId, projectId)
+    if (!role) throw new Error('Vous n\'êtes pas membre du projet')
+
+    const organization = await getOrganizationById(project.organization)
+
+    project = project.get({ plain: true })
+    project = {
+      ...data,
+      id: project.id,
+      name: project.name,
+      organization: project.organization,
+    }
+    await projectSchema.validateAsync(project, { context: { projectNameMaxLength: calcProjectNameMaxLength(organization.name) } })
+
+    await lockProject(projectId)
+    await updateProject(projectId, data)
+    await unlockProject(projectId)
+
+    req.log.info({
+      ...getLogInfos({ projectId }),
+      description: 'Project déverrouillé',
+    })
+    sendOk(res, projectId)
+  } catch (error) {
+    req.log.error({
+      ...getLogInfos(),
+      description: `Description du projet non mise à jour : ${error.message}`,
+      error: error.message,
+      stack: error.stack,
+      data: error.request,
+    })
+    return sendBadRequest(res, error.message)
   }
 }
 
