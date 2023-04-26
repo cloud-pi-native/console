@@ -8,6 +8,10 @@ import { getUserModel } from '../user.js'
 import { getOrganizationModel } from '../organization.js'
 
 // SELECT
+export const getAllProjects = async () => {
+  return getProjectModel().findAll()
+}
+
 export const getProjectUsers = async (projectId) => {
   const res = await getUserModel().findAll({
     include: {

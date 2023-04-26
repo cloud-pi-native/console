@@ -29,12 +29,13 @@ export const getKeycloak = () => {
 export const getUserProfile = async () => {
   try {
     const keycloak = getKeycloak()
-    const { email, sub: id, given_name: firstName, family_name: lastName } = keycloak.idTokenParsed
+    const { email, sub: id, given_name: firstName, family_name: lastName, groups } = keycloak.idTokenParsed
     return {
       email,
       id,
       firstName,
       lastName,
+      groups,
     }
   } catch (error) {
     return error

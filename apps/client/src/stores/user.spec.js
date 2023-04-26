@@ -18,6 +18,7 @@ vi.mock('keycloak-js', () => {
     sub: 'userId',
     given_name: 'Michel',
     family_name: 'MICHEL',
+    groups: ['admin'],
   }
   Keycloak.prototype.login = vi.fn()
   Keycloak.prototype.logout = vi.fn()
@@ -45,6 +46,21 @@ describe('Counter Store', () => {
     userStore.setIsLoggedIn()
 
     expect(userStore.isLoggedIn).toEqual(true)
+  })
+
+  it('Should retrieve isAdmin from Keycloak (true)', async () => {
+    const userStore = useUserStore()
+
+    expect(userStore.isLoggedIn).toBeUndefined()
+    expect(userStore.isAdmin).toBeUndefined()
+    expect(userStore.userProfile).toMatchObject({})
+
+    await userStore.setUserProfile()
+
+    userStore.setIsLoggedIn()
+
+    expect(userStore.isLoggedIn).toEqual(true)
+    expect(userStore.isAdmin).toEqual(true)
   })
 
   it('Should retrieve userProfile from Keycloak', async () => {

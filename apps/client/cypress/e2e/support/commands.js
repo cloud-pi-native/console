@@ -402,3 +402,10 @@ Cypress.Commands.add('getSettled', (selector, opts = {}) => {
     })
   })
 })
+
+Cypress.Commands.add('goToAdminListUsers', () => {
+  cy.visit('/')
+    .getByDataTestid('menuAdministrationBtn').click()
+    .getByDataTestid('menuAdministrationUsers').click()
+    .url().should('contain', '/admin/users')
+})
