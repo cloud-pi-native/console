@@ -72,6 +72,7 @@ describe('RepoForm.vue', () => {
       .getByDataTestid('workingDirInput').type('./')
       .getByDataTestid('generateCIBtn').click()
       .getByDataTestid('generatedCI').should('be.visible')
+      .getByDataTestid('zip-download-link').should('contain', 'Télécharger tous les fichiers')
       .getByDataTestid('copy-gitlab-ci-dso-ContentBtn').click()
       .window().then((win) => {
         win.navigator.clipboard.readText().then((text) => {
@@ -79,6 +80,11 @@ describe('RepoForm.vue', () => {
         })
       })
     cy.get('.fr-download__link').first()
+      .find('span').should(($span) => {
+        const text = $span.text()
+        expect(text).to.match(/zip – \d* bytes/)
+      })
+    cy.get('.fr-download__link').last()
       .find('span').should(($span) => {
         const text = $span.text()
         expect(text).to.match(/YAML – \d* bytes/)
