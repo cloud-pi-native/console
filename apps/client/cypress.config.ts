@@ -1,4 +1,6 @@
+import { fileURLToPath } from 'url'
 import { defineConfig } from 'cypress'
+import vitePreprocessor from 'cypress-vite'
 import viteConfig from './vite.config'
 
 const argocdUrl = process.env.ARGOCD_URL || 'https://argo-cd.readthedocs.io'
