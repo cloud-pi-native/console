@@ -4,7 +4,7 @@ import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useOrganizationStore } from '@/stores/organization.js'
-import { projectSchema } from 'shared/src/schemas/project.js'
+import { descriptionMaxLength, projectSchema } from 'shared/src/schemas/project.js'
 import { schemaValidator, isValid, instanciateSchema } from 'shared/src/utils/schemas.js'
 import { calcProjectNameMaxLength } from 'shared/src/utils/functions.js'
 import router from '@/router/index.js'
@@ -84,7 +84,7 @@ onMounted(async () => {
   </h1>
   <DsfrFieldset
     legend="Informations du projet"
-    hint="Tous les champs sont requis"
+    hint="Les champs munis d'une astérisque (*) sont requis."
   >
     <DsfrAlert
       type="info"
@@ -102,27 +102,42 @@ onMounted(async () => {
       @update:model-value="updateProject('organization', $event)"
     />
     <div
-      class="fr-mb-0"
+      class="fr-mb-6v"
     >
-      <DsfrInputGroup
-        v-model="project.name"
-        data-testid="nameInput"
-        type="text"
-        required="required"
-        :error-message="!!updatedValues.name && !isValid(projectSchema, project, 'name', { projectNameMaxLength }) ? `Le nom du projet doit être en minuscule, ne pas contenir d\'espace, faire plus de 2 et moins de ${projectNameMaxLength} caractères.`: undefined"
-        label="Nom du projet"
-        label-visible
-        :hint="`Nom du projet dans l'offre Cloud π Native. Ne doit pas contenir d'espace, doit être unique pour l'organisation, doit être en minuscules, doit faire plus de 2 et moins de ${projectNameMaxLength} caractères.`"
-        placeholder="candilib"
-        @update:model-value="updateProject('name', $event)"
-      />
+      <div
+        class="fr-mb-1v"
+      >
+        <DsfrInputGroup
+          v-model="project.name"
+          data-testid="nameInput"
+          type="text"
+          required="required"
+          :error-message="!!updatedValues.name && !isValid(projectSchema, project, 'name', { projectNameMaxLength }) ? `Le nom du projet doit être en minuscule, ne pas contenir d\'espace, faire plus de 2 et moins de ${projectNameMaxLength} caractères.`: undefined"
+          label="Nom du projet"
+          label-visible
+          :hint="`Nom du projet dans l'offre Cloud π Native. Ne doit pas contenir d'espace, doit être unique pour l'organisation, doit être en minuscules, doit faire plus de 2 et moins de ${projectNameMaxLength} caractères.`"
+          placeholder="candilib"
+          @update:model-value="updateProject('name', $event)"
+        />
+      </div>
+      <span
+        v-if="remainingCharacters >= 0"
+        class="fr-hint-text"
+      >
+        {{ remainingCharacters }} caractères restants
+      </span>
     </div>
-    <span
-      v-if="remainingCharacters >= 0"
-      class="fr-hint-text"
-    >
-      {{ remainingCharacters }} caractères restants
-    </span>
+    <DsfrInput
+      v-model="project.description"
+      data-testid="descriptionInput"
+      :is-textarea="true"
+      :maxlength="descriptionMaxLength"
+      label="Description du projet"
+      label-visible
+      :hint="`Courte description expliquant la finalité du projet (${descriptionMaxLength} caractères maximum).`"
+      placeholder="Application de réservation de places à l'examen du permis B."
+      @update:model-value="updateProject('description', $event)"
+    />
   </DsfrFieldset>
   <DsfrButton
     label="Commander mon espace projet"

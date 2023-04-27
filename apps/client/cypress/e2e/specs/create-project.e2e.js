@@ -13,6 +13,7 @@ describe('Create Project', () => {
     const project = {
       orgName: 'ministere-interieur',
       name: 'project01',
+      description: 'Application de prise de rendez-vous en préfécture.',
     }
 
     cy.goToProjects()
@@ -23,8 +24,11 @@ describe('Create Project', () => {
       .get('select#organization-select').select(project.orgName)
       .getByDataTestid('nameInput').type(`${project.name} ErrorSpace`)
       .getByDataTestid('nameInput').should('have.class', 'fr-input--error')
+      .getByDataTestid('createProjectBtn').should('be.disabled')
       .getByDataTestid('nameInput').clear().type(project.name)
       .getByDataTestid('nameInput').should('not.have.class', 'fr-input--error')
+      .getByDataTestid('createProjectBtn').should('be.enabled')
+      .getByDataTestid('descriptionInput').clear().type(project.description)
     cy.getByDataTestid('createProjectBtn').should('be.enabled').click()
 
     cy.wait('@postProject').its('response.statusCode').should('eq', 201)

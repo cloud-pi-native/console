@@ -19,6 +19,11 @@ export const useProjectStore = defineStore('project', () => {
     selectedProjectOwner.value = await api.getProjectOwner(selectedProject.value.id)
   }
 
+  const updateProject = async (projectId, data) => {
+    await api.updateProject(projectId, data)
+    await getUserProjects()
+  }
+
   const getUserProjects = async () => {
     const res = await api.getUserProjects()
     projects.value = res
@@ -44,6 +49,7 @@ export const useProjectStore = defineStore('project', () => {
     projects,
     setSelectedProject,
     setSelectedProjectOwner,
+    updateProject,
     getUserProjects,
     createProject,
     archiveProject,

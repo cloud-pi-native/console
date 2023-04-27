@@ -1,5 +1,6 @@
 import { DataTypes } from 'sequelize'
 import { sequelize } from '../connect.js'
+import { descriptionMaxLength } from 'shared/src/schemas/project.js'
 
 let Project
 export const getProjectModel = () => Project ?? (Project = sequelize.define('Project', {
@@ -17,6 +18,10 @@ export const getProjectModel = () => Project ?? (Project = sequelize.define('Pro
   organization: {
     type: DataTypes.UUID,
     allowNull: false,
+  },
+  description: {
+    type: DataTypes.STRING(descriptionMaxLength),
+    allowNull: true,
   },
   status: {
     type: DataTypes.STRING(50),

@@ -38,6 +38,9 @@ get('/projects/:projectId')
 // Get project owner
 get('/projects/:projectId/owner')
 
+// Update project
+put('/projects/:projectId')
+
 // Delete project
 delete('/projects/:projectId')
 ```
