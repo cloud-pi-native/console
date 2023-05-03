@@ -69,8 +69,9 @@ defineEmits(['updateLevel'])
 
 <style scoped>
 input[type="range"] {
+  @apply md:w-30rem;
+
   appearance: auto;
-  width: 30rem;
 }
 
 datalist {
