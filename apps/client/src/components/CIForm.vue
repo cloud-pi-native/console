@@ -200,31 +200,14 @@ watch(internalRepoName, (internalRepoName) => {
         </p>
         <ul>
           <li>
-            <!-- TODO : pr vue-dsfr, pouvoir passer une props download -->
-            <!-- <DsfrFileDownload
+            <DsfrFileDownload
+              data-testid="zip-download-link"
               :format="zipDir.format"
               :size="zipDir.size"
               :href="zipDir.href"
               :title="zipDir.title"
               :download="zipDir.download"
-            /> -->
-            <div
-              data-testid="zip-download-link"
-              class="fr-download"
-              :class="{ 'fr-enlarge-link fr-download--card': block }"
-            >
-              <p>
-                <a
-                  :href="zipDir.href"
-                  :download="zipDir.download"
-                  class="fr-download__link"
-                > {{ zipDir.title }}
-                  <span class="fr-download__detail">
-                    {{ zipDir.format }} – {{ zipDir.size }}
-                  </span>
-                </a>
-              </p>
-            </div>
+            />
           </li>
           <li
             v-for="file in files"
