@@ -1,5 +1,31 @@
 # Changelog
 
+## [3.2.0](https://github.com/dnum-mi/dso-console/compare/v3.1.0...v3.2.0) (2023-05-05)
+
+
+### Features
+
+* :lipstick: better ui for permission form ([56e0739](https://github.com/dnum-mi/dso-console/commit/56e0739d935d96c4eedd55807151f72f8fafcb6b))
+* :sparkles: add description field for a project ([e9d65ed](https://github.com/dnum-mi/dso-console/commit/e9d65eda3084ac46b48f8e7a4a7e78324cf8d351))
+* :sparkles: add download link for includes.zip ([0e067d1](https://github.com/dnum-mi/dso-console/commit/0e067d1965e39084d3f21191e27aa3b82948df17))
+* :sparkles: introduce users admin view ([34ffbf7](https://github.com/dnum-mi/dso-console/commit/34ffbf735c6d5e103a3814a0cd739242efc77240))
+
+
+### Bug Fixes
+
+* :alien: refacto plugins to check services before save in database ([c58f3da](https://github.com/dnum-mi/dso-console/commit/c58f3dab057fd39f62e20ca3951278a87f6cfad0))
+* :bug: forget default value for log table ([ade449b](https://github.com/dnum-mi/dso-console/commit/ade449b0a834f850d4f64c94cfb489174b946463))
+* :construction: fix e2e test admin (temporary) ([34ffbf7](https://github.com/dnum-mi/dso-console/commit/34ffbf735c6d5e103a3814a0cd739242efc77240))
+* :construction: use ingress ([621d5ee](https://github.com/dnum-mi/dso-console/commit/621d5eee80adfb5f14459b93c7f51b431dd61c31))
+* :fire: remove routes ([65dabcb](https://github.com/dnum-mi/dso-console/commit/65dabcb28f8ede298975a2cec3e7ff5623ee4d8c))
+* :loud_sound: log database sync error ([3e73dac](https://github.com/dnum-mi/dso-console/commit/3e73dac0fc470051c5aaf410ebbbf28cafc9ee0e))
+* :wrench: update helm values ([16d3223](https://github.com/dnum-mi/dso-console/commit/16d32233c84001b8aa206a76b8ac3b772875cb64))
+
+
+### Performance Improvements
+
+* :art: admin users no custom exception ([34ffbf7](https://github.com/dnum-mi/dso-console/commit/34ffbf735c6d5e103a3814a0cd739242efc77240))
+
 ## [3.1.0](https://github.com/dnum-mi/dso-console/compare/v3.0.0...v3.1.0) (2023-04-18)
 
 
