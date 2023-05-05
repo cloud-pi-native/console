@@ -12,6 +12,7 @@ const projectStore = useProjectStore()
 const routeName = computed(() => route.name)
 const routePath = computed(() => route.path)
 const isLoggedIn = computed(() => userStore.isLoggedIn)
+const isAdmin = computed(() => userStore.isAdmin)
 const selectedProject = computed(() => projectStore.selectedProject)
 
 const isDarkPrefered = window.matchMedia(
@@ -22,6 +23,7 @@ const isDarkScheme = ref(isDarkPrefered)
 const isExpanded = ref({
   mainMenu: false,
   projects: false,
+  administration: false,
 })
 
 function toggleExpand (key) {
@@ -31,9 +33,16 @@ function toggleExpand (key) {
 watch(routePath, (routePath) => {
   if (/projects*/.test(routePath)) {
     isExpanded.value.projects = true
+    isExpanded.value.administration = false
+    return
+  }
+  if (/admin*/.test(routePath)) {
+    isExpanded.value.projects = false
+    isExpanded.value.administration = true
     return
   }
   isExpanded.value.projects = false
+  isExpanded.value.administration = false
 })
 
 onMounted(() => {
@@ -88,6 +97,7 @@ onMounted(() => {
           Accueil
         </DsfrSideMenuLink>
       </DsfrSideMenuListItem>
+      <!-- Onglet Projet -->
       <DsfrSideMenuListItem
         v-if="isLoggedIn"
       >
@@ -175,6 +185,38 @@ onMounted(() => {
           </div>
         </DsfrSideMenuList>
       </DsfrSideMenuListItem>
+
+      <!-- Onglet Administration-->
+      <DsfrSideMenuListItem
+        v-if="isAdmin"
+      >
+        <DsfrSideMenuButton
+          data-testid="menuAdministrationBtn"
+          :expanded="isExpanded.administration"
+          button-label="Administration"
+          control-id="administrationList"
+          @toggle-expand="toggleExpand('administration')"
+        >
+          Administration
+        </DsfrSideMenuButton>
+        <DsfrSideMenuList
+          id="administrationList"
+          data-testid="menuAdministrationList"
+          :expanded="isExpanded.administration"
+          :collapsable="true"
+        >
+          <DsfrSideMenuListItem>
+            <DsfrSideMenuLink
+              data-testid="menuAdministrationUsers"
+              :active="routeName === 'ListUser'"
+              to="/admin/users"
+            >
+              Liste des utilisateurs
+            </DsfrSideMenuLink>
+          </DsfrSideMenuListItem>
+        </DsfrSideMenuList>
+      </DsfrSideMenuListItem>
+
       <DsfrSideMenuListItem>
         <DsfrSideMenuLink
           data-testid="menuDoc"

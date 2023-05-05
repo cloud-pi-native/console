@@ -8,6 +8,7 @@ import {
   projectSchema,
   userSchema,
 } from '../index.js'
+import { descriptionMaxLength } from '../schemas/project.js'
 
 describe('Schemas utils', () => {
   it('Should validate undefined schema', () => {
@@ -76,6 +77,16 @@ describe('Schemas utils', () => {
     })).toStrictEqual({ externalToken: '"externalToken" is required' })
   })
 
+  it('Should not validate a too short project name', () => {
+    expect(schemaValidator(projectSchema, {
+      id: faker.datatype.uuid(),
+      name: faker.random.alpha(),
+      organization: faker.datatype.uuid(),
+      status: 'created',
+      locked: false,
+    }, { context: { projectNameMaxLength: 23 } })).toStrictEqual({ name: '"name" length must be at least 2 characters long' })
+  })
+
   it('Should not validate a too long project name', () => {
     expect(schemaValidator(projectSchema, {
       id: faker.datatype.uuid(),
@@ -84,6 +95,17 @@ describe('Schemas utils', () => {
       status: 'created',
       locked: false,
     }, { context: { projectNameMaxLength: 23 } })).toStrictEqual({ name: '"name" length must be less than or equal to ref:global:projectNameMaxLength characters long' })
+  })
+
+  it('Should not validate a too long project description', () => {
+    expect(schemaValidator(projectSchema, {
+      id: faker.datatype.uuid(),
+      name: 'candilib',
+      organization: faker.datatype.uuid(),
+      description: faker.random.alpha(descriptionMaxLength + 1),
+      status: 'created',
+      locked: false,
+    }, { context: { projectNameMaxLength: 23 } })).toStrictEqual({ description: '"description" length must be less than or equal to 280 characters long' })
   })
 
   it('Should validate a single key with given schema', () => {

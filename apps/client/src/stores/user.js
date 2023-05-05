@@ -4,6 +4,7 @@ import { ref } from 'vue'
 
 export const useUserStore = defineStore('user', () => {
   const isLoggedIn = ref(undefined)
+  const isAdmin = ref(undefined)
 
   const userProfile = ref({})
 
@@ -13,6 +14,9 @@ export const useUserStore = defineStore('user', () => {
   const setIsLoggedIn = () => {
     const keycloak = getKeycloak()
     isLoggedIn.value = keycloak.authenticated
+    if (isLoggedIn.value) {
+      isAdmin.value = userProfile.value.groups?.includes('admin')
+    }
   }
 
   const setUserProfile = async () => {
@@ -29,6 +33,7 @@ export const useUserStore = defineStore('user', () => {
 
   return {
     isLoggedIn,
+    isAdmin,
     setIsLoggedIn,
     userProfile,
     setUserProfile,

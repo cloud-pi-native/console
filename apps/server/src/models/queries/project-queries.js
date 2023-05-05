@@ -8,6 +8,10 @@ import { getUserModel } from '../user.js'
 import { getOrganizationModel } from '../organization.js'
 
 // SELECT
+export const getAllProjects = async () => {
+  return getProjectModel().findAll()
+}
+
 export const getProjectUsers = async (projectId) => {
   const res = await getUserModel().findAll({
     include: {
@@ -71,8 +75,8 @@ export const getProject = async ({ name, organization }) => {
 }
 
 // CREATE
-export const initializeProject = async ({ name, organization }) => {
-  return getProjectModel().create({ name, organization, status: 'initializing', locked: true })
+export const initializeProject = async ({ name, organization, description }) => {
+  return getProjectModel().create({ name, organization, description, status: 'initializing', locked: true })
 }
 
 // UPDATE
@@ -104,6 +108,14 @@ export const updateProjectServices = async (id, services) => {
   return getProjectModel().update({ services }, { where: { id } })
 }
 
+export const updateProject = async (id, data) => {
+  return getProjectModel().update({
+    ...data,
+  }, {
+    where: { id },
+  })
+}
+
 export const archiveProject = async (id) => {
   return getProjectModel().update({
     status: 'archived',
@@ -114,8 +126,8 @@ export const archiveProject = async (id) => {
 }
 
 // TECH
-export const _initializeProject = async ({ id, name, organization, services }) => {
-  return getProjectModel().create({ id, name, organization, status: 'initializing', locked: true, services })
+export const _initializeProject = async ({ id, name, organization, description, services }) => {
+  return getProjectModel().create({ id, name, organization, description, status: 'initializing', locked: true, services })
 }
 
 export const _dropProjectsTable = async () => {

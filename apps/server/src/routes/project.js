@@ -4,6 +4,7 @@ import {
   createProjectController,
   archiveProjectController,
   getProjectOwnerController,
+  updateProjectController,
 } from '../controllers/project.js'
 import projectEnvironmentRouter from './project-environment.js'
 import projectRepositoryRouter from './project-repository.js'
@@ -22,6 +23,9 @@ const router = async (app, _opt) => {
 
   // Créer un projet
   await app.post('/', createProjectController)
+
+  // Mettre à jour un projet
+  await app.put('/:projectId', updateProjectController)
 
   // Archiver un projet
   await app.delete('/:projectId', archiveProjectController)

@@ -19,8 +19,9 @@ import {
 import {
   getEnvironmentsByProjectId,
 } from '../models/queries/environment-queries.js'
+import { filterObjectByKeys } from '../utils/queries-tools.js'
 import { getLogInfos } from '../utils/logger.js'
-import { send200, send201, send500 } from '../utils/response.js'
+import { sendOk, sendCreated, sendUnprocessableContent, sendNotFound, sendBadRequest, sendForbidden } from '../utils/response.js'
 import { getOrganizationById } from '../models/queries/organization-queries.js'
 import { addLogs } from '../models/queries/log-queries.js'
 import { gitlabUrl, projectPath } from '../utils/env.js'
@@ -41,7 +42,7 @@ export const getRepositoryByIdController = async (req, res) => {
       ...getLogInfos({ repositoryId }),
       description: 'Dépôt récupéré',
     })
-    send200(res, repo)
+    sendOk(res, repo)
   } catch (error) {
     const message = 'Dépôt non trouvé'
     req.log.error({
@@ -50,7 +51,7 @@ export const getRepositoryByIdController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    send500(res, message)
+    sendNotFound(res, message)
   }
 }
 
@@ -66,7 +67,7 @@ export const getProjectRepositoriesController = async (req, res) => {
       ...getLogInfos({ projectId }),
       description: 'Dépôts récupérés',
     })
-    send200(res, repos)
+    sendOk(res, repos)
   } catch (error) {
     const message = 'Dépôts non trouvés'
     req.log.error({
@@ -75,24 +76,36 @@ export const getProjectRepositoriesController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    send500(res, message)
+    sendNotFound(res, message)
   }
 }
 
 // CREATE
 export const createRepositoryController = async (req, res) => {
   const data = req.body
-  const userId = req.session?.user?.id
+  const user = req.session?.user
   const projectId = req.params?.projectId
   data.projectId = projectId
 
   let project
   let repo
   try {
+    const isValid = await hooksFns.createProject({ email: user.email }, true)
+
+    if (isValid?.failed) {
+      const reasons = Object.values(isValid)
+        .filter(({ status }) => status?.result === 'KO')
+        .map(({ status }) => status?.message)
+        .join('; ')
+      sendUnprocessableContent(res, reasons)
+      req.log.error(reasons)
+      addLogs('Create Project Validation', { reasons }, user.id)
+      return
+    }
     project = await getProjectById(projectId)
     if (!project) throw new Error('Le projet n\'existe pas')
 
-    const role = await getRoleByUserIdAndProjectId(userId, projectId)
+    const role = await getRoleByUserIdAndProjectId(user.id, projectId)
     if (!role) throw new Error('Vous n\'êtes pas membre du projet')
 
     const repos = await getProjectRepositories(projectId)
@@ -107,7 +120,7 @@ export const createRepositoryController = async (req, res) => {
       ...getLogInfos({ repositoryId: repo.id }),
       description: message,
     })
-    send201(res, repo)
+    sendCreated(res, repo)
   } catch (error) {
     const message = 'Dépôt non créé'
     req.log.error({
@@ -116,7 +129,7 @@ export const createRepositoryController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    return send500(res, message)
+    return sendBadRequest(res, message)
   }
 
   // Process api call to external service
@@ -140,7 +153,7 @@ export const createRepositoryController = async (req, res) => {
     }
 
     const results = await hooksFns.createRepository(repoData)
-    await addLogs('Create Repository', results, userId)
+    await addLogs('Create Repository', results, user.id)
     if (results.failed) throw new Error('Echec des services lors de la création du dépôt')
     isServicesCallOk = true
   } catch (error) {
@@ -179,12 +192,20 @@ export const createRepositoryController = async (req, res) => {
 
 // UPDATE
 export const updateRepositoryController = async (req, res) => {
-  const data = req.body
   const userId = req.session?.user?.id
   const projectId = req.params?.projectId
   const repositoryId = req.params?.repositoryId
 
+  const keysAllowedForUpdate = [
+    'externalRepoUrl',
+    'isPrivate',
+    'externalToken',
+    'externalUserName',
+  ]
+  const data = filterObjectByKeys(req.body, keysAllowedForUpdate)
+
   let repo
+
   try {
     if (data.isPrivate && !data.externalToken) throw new Error('Le token est requis')
     if (data.isPrivate && !data.externalUserName) throw new Error('Le nom d\'utilisateur est requis')
@@ -205,7 +226,7 @@ export const updateRepositoryController = async (req, res) => {
       ...getLogInfos({ repositoryId }),
       description: message,
     })
-    send200(res, message)
+    sendOk(res, message)
   } catch (error) {
     const message = 'Dépôt non mis à jour'
     req.log.error({
@@ -214,7 +235,7 @@ export const updateRepositoryController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    return send500(res, message)
+    return sendBadRequest(res, message)
   }
 
   // Process api call to external service
@@ -292,7 +313,7 @@ export const deleteRepositoryController = async (req, res) => {
       ...getLogInfos({ repositoryId }),
       description: message,
     })
-    send200(res, message)
+    sendOk(res, message)
   } catch (error) {
     const message = 'Dépôt non supprimé'
     req.log.error({
@@ -301,7 +322,7 @@ export const deleteRepositoryController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    return send500(res, message)
+    return sendForbidden(res, message)
   }
 
   // Process api call to external service

@@ -48,8 +48,6 @@ export const updateRepositoryFailed = async (id) => {
 }
 
 export const updateRepository = async (id, infos) => {
-  delete infos?.isInfra
-  delete infos?.internalRepoName
   return getRepositoryModel().update({
     ...infos,
     status: 'initializing',

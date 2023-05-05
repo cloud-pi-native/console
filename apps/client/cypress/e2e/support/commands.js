@@ -316,6 +316,7 @@ Cypress.Commands.add('generateGitLabCI', (ciForms) => {
     cy.getByDataTestid('workingDirInput').clear().type(`${ciForm.workingDir}`)
       .getByDataTestid('generateCIBtn').click()
       .getByDataTestid('generatedCI').should('be.visible')
+      .getByDataTestid('zip-download-link').should('contain', 'Télécharger tous les fichiers')
       .getByDataTestid(`copy-${ciForm.language}-ContentBtn`).should('exist')
       .getByDataTestid('copy-vault-ContentBtn').should('exist')
       .getByDataTestid('copy-docker-ContentBtn').should('exist')
@@ -323,6 +324,11 @@ Cypress.Commands.add('generateGitLabCI', (ciForms) => {
       .getByDataTestid('copy-gitlab-ci-dso-ContentBtn').click()
     cy.assertClipboard(version)
     cy.get('.fr-download__link').first().click()
+      .find('span').should(($span) => {
+        const text = $span.text()
+        expect(text).to.match(/zip – \d* bytes/)
+      })
+    cy.get('.fr-download__link').last().click()
       .find('span').should(($span) => {
         const text = $span.text()
         expect(text).to.match(/YAML – \d* bytes/)
@@ -401,4 +407,11 @@ Cypress.Commands.add('getSettled', (selector, opts = {}) => {
       return cy.wrap(el)
     })
   })
+})
+
+Cypress.Commands.add('goToAdminListUsers', () => {
+  cy.visit('/')
+    .getByDataTestid('menuAdministrationBtn').click()
+    .getByDataTestid('menuAdministrationUsers').click()
+    .url().should('contain', '/admin/users')
 })

@@ -4,6 +4,7 @@ export const data = {
       id: '011e7860-04d7-461f-912d-334c622d38b3',
       organization: 'ministere-interieur',
       name: 'candilib',
+      description: 'Application de réservation de places à l\'examen du permis B.',
       users: [
         {
           id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
@@ -73,6 +74,7 @@ export const data = {
       id: '83833faf-f654-40dd-bcd5-cf2e944fc702',
       organization: 'ministere-interieur',
       name: 'psij',
+      description: 'Application de transmission d\'informations entre agents de la PS et de l\'IJ.',
       users: [
         {
           id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',

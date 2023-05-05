@@ -104,6 +104,24 @@ describe('Counter Store', () => {
     expect(projectStore.projects).toMatchObject([project])
   })
 
+  it('Should set a project description by api call', async () => {
+    const projectStore = useProjectStore()
+
+    expect(projectStore.projects).toEqual([])
+
+    const project = { id: 'projectId', description: 'Application de prise de rendez-vous en préfécture.' }
+    apiClient.put.mockReturnValueOnce(Promise.resolve({ data: project }))
+    apiClient.get.mockReturnValueOnce(Promise.resolve({ data: [] }))
+
+    await projectStore.updateProject(project.id, { description: project.description })
+
+    expect(apiClient.put).toHaveBeenCalledTimes(1)
+    expect(apiClient.put.mock.calls[0][0]).toBe('/projects/projectId')
+    expect(apiClient.get).toHaveBeenCalledTimes(1)
+    expect(apiClient.get.mock.calls[0][0]).toBe('/projects')
+    expect(projectStore.projects).toEqual([])
+  })
+
   it('Should archive a project by api call', async () => {
     const projectStore = useProjectStore()
     const projects = [{ id: 'projectId' }]

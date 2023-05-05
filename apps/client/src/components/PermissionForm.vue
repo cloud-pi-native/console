@@ -35,7 +35,7 @@ const usersToLicence = computed(() =>
 const suggestions = computed(() => usersToLicence.value.map(user => user.email))
 
 const setPermissions = () => {
-  permissions.value = environment.value.permissions
+  permissions.value = environment.value.permissions.sort((a, b) => a.level <= b.level)
 }
 
 const addPermission = async (userEmail) => {
@@ -81,29 +81,31 @@ onMounted(() => {
     :legend="`Droits des utilisateurs sur l'environnement de ${environment?.name}`"
     hint="Gérez les droits de lecture, écriture et suppression d'un membre du projet sur l'environnement sélectionné."
   >
-    <ul>
+    <ul class="flex flex-col gap-2 items-center">
       <li
         v-for="permission in permissions"
         :key="permission.id"
         :data-testid="`userPermissionLi-${permission.user?.email}`"
-        class="flex items-center"
+        class="flex justify-between md:flex-row flex-col w-full"
       >
-        <DsfrButton
-          class="ml-8"
-          secondary
-          data-testid="deletePermissionBtn"
-          :disabled="permission.userId === owner.id || !isPermitted"
-          :title="permission.userId === owner.id ? 'Les droits du owner ne peuvent être retirés' : `Retirer les droits de ${permission.user.email}`"
-          :icon-only="true"
-          icon="ri-close-line"
-          @click="deletePermission(permission.userId)"
-        />
-        <span
-          class="p-4 mr-4"
-          data-testid="userEmail"
-        >
-          {{ permission.user.email }}
-        </span>
+        <div>
+          <DsfrButton
+            class="ml-8"
+            secondary
+            data-testid="deletePermissionBtn"
+            :disabled="permission.userId === owner.id || !isPermitted"
+            :title="permission.userId === owner.id ? 'Les droits du owner ne peuvent être retirés' : `Retirer les droits de ${permission.user.email}`"
+            :icon-only="true"
+            icon="ri-close-line"
+            @click="deletePermission(permission.userId)"
+          />
+          <span
+            class="p-4 mr-4"
+            data-testid="userEmail"
+          >
+            {{ permission.user.email }}
+          </span>
+        </div>
         <RangeInput
           data-testid="permissionLevelRange"
           label="Niveau de droits"

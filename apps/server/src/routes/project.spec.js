@@ -4,6 +4,7 @@ import fastify from 'fastify'
 import fastifySession from '@fastify/session'
 import fastifyCookie from '@fastify/cookie'
 import fp from 'fastify-plugin'
+import { faker } from '@faker-js/faker'
 import { sessionConf } from '../utils/keycloak.js'
 import { getConnection, closeConnections, sequelize } from '../connect.js'
 import projectRouter from './project.js'
@@ -14,6 +15,7 @@ import { getRepositoryModel } from '../models/repository.js'
 import { getEnvironmentModel } from '../models/environment.js'
 import { getPermissionModel } from '../models/permission.js'
 import { getOrganizationModel } from '../models/organization.js'
+import { descriptionMaxLength } from 'shared/src/schemas/project.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 
@@ -105,7 +107,7 @@ describe('Project routes', () => {
         .get('/')
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(404)
       expect(response.body.json).not.toBeDefined()
       expect(response.body).toBeDefined()
       expect(response.body).toEqual('Projets non trouvés: error message')
@@ -137,7 +139,7 @@ describe('Project routes', () => {
         .get('/invalid')
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(404)
       expect(response.body.json).not.toBeDefined()
       expect(response.body).toBeDefined()
       expect(response.body).toEqual('Projet non trouvé: custom error message')
@@ -155,7 +157,7 @@ describe('Project routes', () => {
         .get(`/${randomDbSetup.project.id}`)
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(404)
       expect(response.body.json).not.toBeDefined()
       expect(response.body).toBeDefined()
       expect(response.body).toEqual('Projet non trouvé: Vous n\'êtes pas membre du projet')
@@ -252,7 +254,7 @@ describe('Project routes', () => {
         .body(randomDbSetup.project)
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(400)
       expect(response.body).toBeDefined()
       expect(response.body).toEqual(`"${removedKey}" is required`)
     })
@@ -281,7 +283,7 @@ describe('Project routes', () => {
         .body(newProject)
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(400)
       expect(response.body).toBeDefined()
       expect(response.body).toEqual(`"${newProject.name}" existe déjà`)
     })
@@ -311,9 +313,77 @@ describe('Project routes', () => {
         .body(newProject)
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(400)
       expect(response.body).toBeDefined()
       expect(response.body).toEqual(`"${newProject.name}" est archivé et n'est plus disponible`)
+    })
+  })
+
+  // PUT
+  describe('updateProjectController', () => {
+    it('Should update a project description', async () => {
+      const randomDbSetup = createRandomDbSetup({})
+      const project = Project.build(randomDbSetup.project)
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
+
+      // 1. getProjectById
+      Project.$queueResult(project)
+      // 2. getRequestorRole
+      Role.$queueResult({ UserId: owner.id, role: owner.role })
+      // Retreive organization
+      Organization.$queueResult(randomDbSetup.organization)
+      // 3. projectLocked
+      Project.$queueResult(project.id)
+      // 4. updating
+      Project.$queueResult(project.id)
+      // 5. projectUnlocked
+      Project.$queueResult(project.id)
+      setRequestorId(owner.id)
+
+      const response = await app.inject()
+        .put(`/${project.id}`)
+        .body({ description: 'nouvelle description' })
+        .end()
+
+      expect(response.statusCode).toEqual(200)
+      expect(response.body).toBeDefined()
+      expect(response.body).toMatchObject(`${project.id}`)
+    })
+
+    it('Should not update a project description if requestor is not member', async () => {
+      const randomDbSetup = createRandomDbSetup({})
+      const randomUser = getRandomUser()
+
+      Project.$queueResult(randomDbSetup.project)
+      Role.$queueResult(null)
+      setRequestorId(randomUser.id)
+
+      const response = await app.inject()
+        .put(`/${randomDbSetup.project.id}`)
+        .body({ description: 'nouvelle description' })
+        .end()
+
+      expect(response.statusCode).toEqual(400)
+      expect(response.body).toEqual('Vous n\'êtes pas membre du projet')
+    })
+
+    it('Should not update a project description if description is invalid', async () => {
+      const randomDbSetup = createRandomDbSetup({})
+      const project = Project.build(randomDbSetup.project)
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
+
+      Project.$queueResult(project)
+      Role.$queueResult({ UserId: owner.id, role: owner.role })
+      Organization.$queueResult(randomDbSetup.organization)
+      setRequestorId(owner.id)
+
+      const response = await app.inject()
+        .put(`/${project.id}`)
+        .body({ description: faker.random.alpha(descriptionMaxLength + 1) })
+        .end()
+
+      expect(response.statusCode).toEqual(400)
+      expect(response.body).toEqual(`"description" length must be less than or equal to ${descriptionMaxLength} characters long`)
     })
   })
 
@@ -360,7 +430,7 @@ describe('Project routes', () => {
         .delete(`/${randomDbSetup.project.id}`)
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(403)
       expect(response.body).toEqual('Vous n\'êtes pas membre du projet')
     })
 
@@ -377,7 +447,7 @@ describe('Project routes', () => {
         .delete(`/${randomDbSetup.project.id}`)
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(403)
       expect(response.body).toEqual('Vous n\'êtes pas souscripteur du projet')
     })
   })

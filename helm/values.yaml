@@ -11,6 +11,13 @@ imageCredentials:
 globalEnv:
 
 server:
+  ingress:
+    enabled: false
+    hosts: 
+      - server-host-to-replace
+    tls: true
+    annotations: {}
+    labels: {}
   extra_ca:
     name: # the configmap in namespace where certificates are stored
     key: # the key to lookup
@@ -18,7 +25,7 @@ server:
     name: dso-config
   container:
     env: #hashmap of custom env
-    image: ghcr.io/dnum-mi/dso-console/server:3
+    image: ghcr.io/dnum-mi/dso-console/server:3.1.0 # x-release-please-version
     port: 8080
     node_env: production
     data-configmap:
@@ -30,14 +37,19 @@ server:
 
 client:
   container:
-    image: ghcr.io/dnum-mi/dso-console/client:3
+    image: ghcr.io/dnum-mi/dso-console/client:3.1.0 # x-release-please-version
     port: 8080
     env: #hashmap of custom env
   service:
     port: 80
     hostname: client
-  route:
-    host: replace.me
+  ingress:
+    enabled: true
+    hosts:
+      - server-host-to-replace
+    tls: true
+    annotations: {}
+    labels: {}
 
 postgres:
   container:

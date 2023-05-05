@@ -11,6 +11,7 @@ import {
   archiveProject,
   getProjectUsers,
   updateProjectServices,
+  updateProject,
 } from '../models/queries/project-queries.js'
 import { getOrCreateUser, getUserById } from '../models/queries/user-queries.js'
 import {
@@ -34,12 +35,12 @@ import {
   getEnvironmentPermissions,
   deletePermissionById,
 } from '../models/queries/permission-queries.js'
+import { filterObjectByKeys, lowercaseFirstLetter, replaceNestedKeys } from '../utils/queries-tools.js'
 import { getLogInfos } from '../utils/logger.js'
-import { send200, send201, send500 } from '../utils/response.js'
+import { sendOk, sendCreated, sendUnprocessableContent, sendNotFound, sendBadRequest, sendForbidden } from '../utils/response.js'
 import { projectSchema } from 'shared/src/schemas/project.js'
 import { calcProjectNameMaxLength } from 'shared/src/utils/functions.js'
 import { getServices } from '../utils/services.js'
-import { lowercaseFirstLetter, replaceNestedKeys } from '../utils/queries-tools.js'
 import { addLogs } from '../models/queries/log-queries.js'
 import hooksFns from '../plugins/index.js'
 import { gitlabUrl, projectPath } from '../utils/env.js'
@@ -50,21 +51,21 @@ export const getUserProjectsController = async (req, res) => {
 
   try {
     const user = await getOrCreateUser(requestor)
-    if (!user) return send200(res, [])
+    if (!user) return sendOk(res, [])
 
     let projects = await getUserProjects(user)
     req.log.info({
       ...getLogInfos(),
       description: 'Projets récupérés',
     })
-    if (!projects.length) return send200(res, [])
+    if (!projects.length) return sendOk(res, [])
 
     projects = projects.filter(project => project.status !== 'archived')
       .map(project => project.get({ plain: true }))
       .map(project => replaceNestedKeys(project, lowercaseFirstLetter))
       .map(project => ({ ...project, services: getServices(project) }))
 
-    send200(res, projects)
+    sendOk(res, projects)
   } catch (error) {
     const message = `Projets non trouvés: ${error.message}`
     req.log.error({
@@ -73,7 +74,7 @@ export const getUserProjectsController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    send500(res, message)
+    sendNotFound(res, message)
   }
 }
 
@@ -90,7 +91,7 @@ export const getProjectByIdController = async (req, res) => {
       ...getLogInfos({ projectId }),
       description: 'Projet récupéré',
     })
-    send200(res, project)
+    sendOk(res, project)
   } catch (error) {
     const message = `Projet non trouvé: ${error.message}`
     req.log.error({
@@ -99,7 +100,7 @@ export const getProjectByIdController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    send500(res, message)
+    sendNotFound(res, message)
   }
 }
 
@@ -116,9 +117,9 @@ export const getProjectOwnerController = async (req, res) => {
 
     req.log.info({
       ...getLogInfos({ owner }),
-      description: 'Project owner successfully retrived',
+      description: 'Propriétaire du projet récupéré avec succès',
     })
-    send200(res, owner)
+    sendOk(res, owner)
   } catch (error) {
     const message = `Projet non trouvé: ${error.message}`
     req.log.error({
@@ -127,7 +128,7 @@ export const getProjectOwnerController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    send500(res, message)
+    sendNotFound(res, message)
   }
 }
 
@@ -141,6 +142,18 @@ export const createProjectController = async (req, res) => {
   let organization
 
   try {
+    const isValid = await hooksFns.createProject({ email: user.email }, true)
+
+    if (isValid?.failed) {
+      const reasons = Object.values(isValid)
+        .filter(({ status }) => status?.result === 'KO')
+        .map(({ status }) => status?.message)
+        .join('; ')
+      sendUnprocessableContent(res, reasons)
+      req.log.error(reasons)
+      addLogs('Create Project Validation', { reasons }, user.id)
+      return
+    }
     owner = await getOrCreateUser({ id: user.id, email: user?.email, firstName: user?.firstName, lastName: user?.lastName })
 
     organization = await getOrganizationById(data.organization)
@@ -163,7 +176,7 @@ export const createProjectController = async (req, res) => {
       }),
       description: 'Projet créé en base de données',
     })
-    send201(res, project)
+    sendCreated(res, project)
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
@@ -172,7 +185,7 @@ export const createProjectController = async (req, res) => {
       stack: error.stack,
       data: error.request,
     })
-    return send500(res, error.message)
+    return sendBadRequest(res, error.message)
   }
 
   // Process api call to external service
@@ -189,7 +202,7 @@ export const createProjectController = async (req, res) => {
 
     const results = await hooksFns.createProject(projectData)
     await addLogs('Create Project', results, owner.id)
-    if (results.failed) throw new Error('Echec des services associés au projet')
+    if (results.failed) throw new Error('Echec des services lors de la création du projet')
 
     // enregistrement des ids GitLab et Harbor
     const { gitlab, registry } = results
@@ -237,6 +250,53 @@ export const createProjectController = async (req, res) => {
   }
 }
 
+// UPDATE
+export const updateProjectController = async (req, res) => {
+  const userId = req.session?.user?.id
+  const projectId = req.params?.projectId
+
+  const keysAllowedForUpdate = ['description']
+  const data = filterObjectByKeys(req.body, keysAllowedForUpdate)
+
+  try {
+    let project = await getProjectById(projectId)
+    if (!project) throw new Error('Projet introuvable')
+
+    const role = await getRoleByUserIdAndProjectId(userId, projectId)
+    if (!role) throw new Error('Vous n\'êtes pas membre du projet')
+
+    const organization = await getOrganizationById(project.organization)
+
+    project = project.get({ plain: true })
+    project = {
+      ...data,
+      id: project.id,
+      name: project.name,
+      organization: project.organization,
+    }
+    await projectSchema.validateAsync(project, { context: { projectNameMaxLength: calcProjectNameMaxLength(organization.name) } })
+
+    await lockProject(projectId)
+    await updateProject(projectId, data)
+    await unlockProject(projectId)
+
+    req.log.info({
+      ...getLogInfos({ projectId }),
+      description: 'Project déverrouillé',
+    })
+    sendOk(res, projectId)
+  } catch (error) {
+    req.log.error({
+      ...getLogInfos(),
+      description: `Description du projet non mise à jour : ${error.message}`,
+      error: error.message,
+      stack: error.stack,
+      data: error.request,
+    })
+    return sendBadRequest(res, error.message)
+  }
+}
+
 // DELETE
 export const archiveProjectController = async (req, res) => {
   const userId = req.session?.user?.id
@@ -276,7 +336,7 @@ export const archiveProjectController = async (req, res) => {
       }),
       description: 'Projet en cours de suppression',
     })
-    send200(res, projectId)
+    sendOk(res, projectId)
   } catch (error) {
     req.log.error({
       ...getLogInfos(),
@@ -284,7 +344,7 @@ export const archiveProjectController = async (req, res) => {
       error: error.message,
       trace: error.trace,
     })
-    return send500(res, error.message)
+    return sendForbidden(res, error.message)
   }
 
   // Process api call to external service

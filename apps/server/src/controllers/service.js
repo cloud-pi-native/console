@@ -1,7 +1,7 @@
 import { URL } from 'node:url'
 import axios from 'axios'
 import { getLogInfos } from '../utils/logger.js'
-import { send200, send400 } from '../utils/response.js'
+import { sendOk, sendBadRequest } from '../utils/response.js'
 import { allServices } from '../utils/services.js'
 import { getUserById } from '../models/queries/user-queries.js'
 
@@ -15,15 +15,25 @@ export const checkServicesHealthController = async (req, res) => {
     const serviceData = await Promise.all(Object.values(allServices)
       .map(async service => {
         const urlParsed = new URL(service.url)
-        const res = await axios.get(urlParsed, { validateStatus: status => status })
-        return {
-          name: service.name,
-          status: res.status < 400 ? 'success' : 'error',
-          message: res?.statusText,
-          code: res?.status,
+        let res
+        try {
+          res = await axios.get(urlParsed, { validateStatus: () => true })
+          return {
+            name: service.name,
+            status: res.status < 400 ? 'success' : 'error',
+            message: `${res?.statusText}`,
+            code: res?.status,
+          }
+        } catch (error) {
+          return {
+            name: service.name,
+            status: res?.status < 400 ? 'success' : 'error',
+            message: `Erreur : ${error.message}`,
+            code: res?.status,
+          }
         }
       }))
-    send200(res, serviceData)
+    sendOk(res, serviceData)
   } catch (error) {
     let message = `Erreur : ${error.message}`
     if (error.message.match(/^Failed to parse URL from/)) message = 'Url de service invalide'
@@ -31,8 +41,8 @@ export const checkServicesHealthController = async (req, res) => {
       ...getLogInfos(),
       description: message,
       error: error.message,
-      trace: error.trace,
+      stack: error.stack,
     })
-    send400(res, message)
+    sendBadRequest(res, message)
   }
 }

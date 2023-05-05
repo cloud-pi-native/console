@@ -2,20 +2,20 @@
   "name": "test-utils",
   "version": "1.0.0",
   "description": "",
-  "private": true,
   "type": "module",
   "main": "src/index.js",
+  "private": true,
   "scripts": {
     "dev": "node src/index.js",
-    "lint": "eslint ./src",
-    "format": "eslint ./src --ext .js,.cjs,.ts --fix"
+    "format": "eslint ./src --ext .js,.cjs,.ts --fix",
+    "lint": "eslint ./src"
   },
   "dependencies": {
     "@faker-js/faker": "^7.6.0",
     "shared": "workspace:^1.0.0"
   },
   "devDependencies": {
-    "eslint": "^8.38.0",
+    "eslint": "^8.39.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-n": "^15.7.0",
