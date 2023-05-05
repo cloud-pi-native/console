@@ -1,0 +1,46 @@
+{{ $containers := list "client" "server" }}
+{{- range $container := $containers -}}
+{{- with index $.Values $container }}
+
+{{- if .ingress.enabled -}}
+{{- $servicePort := .service.port -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ $.Release.Name }}-{{ $container }}-ingress
+  labels:
+    app: 
+    release: "{{ $.Release.Name }}"
+  annotations:
+    {{- range $key, $value := .ingress.annotations }}
+      {{ $key }}: {{ $value | quote }}
+    {{- end }}
+  labels:
+    {{- range $key, $value := .ingress.labels }}
+      {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  rules:
+    {{- range $host := .ingress.hosts }}
+    - host: {{ $host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ $.Release.Name }}-{{ $container }}-service
+                port:
+                  number: {{ $servicePort }}
+    {{- end -}}
+{{- if .ingress.tls }}
+  tls:
+    - hosts:
+    {{- range $host := .ingress.hosts }}
+      - {{ $host }}
+    {{- end }}
+      secretName: {{ $.Release.Name }}-{{ $container }}-secret
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
