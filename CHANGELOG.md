@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.2.3](https://github.com/dnum-mi/dso-console/compare/v3.2.2...v3.2.3) (2023-05-09)
+
+
+### Bug Fixes
+
+* :ambulance: keycloak group id, typo ([1aedf77](https://github.com/dnum-mi/dso-console/commit/1aedf77b4a74698bb1d52cbfe6863bd249a7eadb))
+
 ## [3.2.2](https://github.com/dnum-mi/dso-console/compare/v3.2.1...v3.2.2) (2023-05-09)
 
 
