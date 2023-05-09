@@ -66,6 +66,7 @@ export const initializeEnvironmentController = async (req, res) => {
   let env
   let project
   let organization
+  let ownerId
   try {
     project = await getProjectById(projectId)
     organization = await getOrganizationById(project.organization)
@@ -81,6 +82,7 @@ export const initializeEnvironmentController = async (req, res) => {
 
     env = await initializeEnvironment(data)
     await lockProject(projectId)
+    ownerId = await getSingleOwnerByProjectId(projectId)
 
     req.log.info({
       ...getLogInfos({
@@ -118,6 +120,7 @@ export const initializeEnvironmentController = async (req, res) => {
       organization: organizationName,
       repositories,
       registryHost,
+      ownerId,
     }
     const results = await hooksFns.initializeEnvironment(envData)
     await addLogs('Create Environment', results, userId)
