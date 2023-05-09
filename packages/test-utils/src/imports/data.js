@@ -313,14 +313,17 @@ export const data = {
     {
       name: 'dinum',
       label: 'DINUM',
+      active: true,
     },
     {
       name: 'ministere-interieur',
       label: 'Ministère de l\'Intérieur',
+      active: true,
     },
     {
       name: 'ministere-justice',
       label: 'Ministère de la Justice',
+      active: true,
     },
   ],
 }

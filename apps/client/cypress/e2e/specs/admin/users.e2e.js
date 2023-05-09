@@ -1,4 +1,4 @@
-import { getUsers } from '../support/func.js'
+import { getUsers } from '../../support/func.js'
 
 describe('Administration users', () => {
   const users = getUsers().map(({ firstName, lastName, email }) => ({

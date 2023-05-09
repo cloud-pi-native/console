@@ -10,7 +10,7 @@ const router = async (app, _opt) => {
   // await app.post('/', createUserController)
 
   // Récupérer tous les utilisateurs
-  await app.get('/users', getUsersController)
+  await app.get('/', getUsersController)
 }
 
 export default router

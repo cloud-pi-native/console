@@ -23,6 +23,7 @@ watch(routePath, () => {
 <template>
   <div class="w-full flex justify-center">
     <DsfrAlert
+      data-testid="snackbar"
       :description="message"
       :type="type"
       :closed="!isOpen"

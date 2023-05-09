@@ -2,7 +2,7 @@ import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { apiClient } from './xhr-client.js'
 import {
   generateCIFiles,
-  getOrganizations,
+  getActiveOrganizations,
   getUserProjects,
   getUserProjectById,
   createProject,
@@ -23,6 +23,9 @@ import {
   deletePermission,
   updatePermission,
   getPermissions,
+  getAllOrganizations,
+  createOrganization,
+  updateOrganization,
 } from './api.js'
 
 vi.spyOn(apiClient, 'get')
@@ -195,16 +198,6 @@ describe('API', () => {
       expect(apiClient.delete.mock.calls[0][0]).toBe(`/projects/${projectId}/users/${userId}`)
     })
 
-    it('Should get all users', async () => {
-      apiClient.get.mockReturnValueOnce(Promise.resolve({ data: {} }))
-
-      await getAllUsers()
-
-      expect(apiClient.get).toHaveBeenCalled()
-      expect(apiClient.get).toHaveBeenCalledTimes(1)
-      expect(apiClient.get.mock.calls[0][0]).toBe('/admin/users')
-    })
-
     // Environments
     it('Should add an environment in project', async () => {
       const projectId = 'thisIsAnId'
@@ -282,14 +275,67 @@ describe('API', () => {
 
   describe('Organizations', () => {
     // Organizations
-    it('Should get organizations', async () => {
+    it('Should get active organizations', async () => {
       apiClient.get.mockReturnValueOnce(Promise.resolve({ data: {} }))
 
-      await getOrganizations()
+      await getActiveOrganizations()
 
       expect(apiClient.get).toHaveBeenCalled()
       expect(apiClient.get).toHaveBeenCalledTimes(1)
       expect(apiClient.get.mock.calls[0][0]).toBe('/organizations')
+    })
+  })
+
+  // Admin
+  describe('Admin', () => {
+    // Users
+    it('Should get all users', async () => {
+      apiClient.get.mockReturnValueOnce(Promise.resolve({ data: {} }))
+
+      await getAllUsers()
+
+      expect(apiClient.get).toHaveBeenCalled()
+      expect(apiClient.get).toHaveBeenCalledTimes(1)
+      expect(apiClient.get.mock.calls[0][0]).toBe('/admin/users')
+    })
+
+    // Organizations
+    it('Should get all organizations', async () => {
+      const data = [
+        { id: 'thisIsAnId', label: 'label', name: 'name' },
+      ]
+      apiClient.get.mockReturnValueOnce(Promise.resolve({ data }))
+
+      const res = await getAllOrganizations()
+
+      expect(res).toBe(data)
+      expect(apiClient.get).toHaveBeenCalled()
+      expect(apiClient.get).toHaveBeenCalledTimes(1)
+      expect(apiClient.get.mock.calls[0][0]).toBe('/admin/organizations')
+    })
+
+    it('Should create an organization', async () => {
+      const data = { name: 'name', label: 'label' }
+      apiClient.post.mockReturnValueOnce(Promise.resolve({ data }))
+
+      const res = await createOrganization(data)
+
+      expect(res).toBe(data)
+      expect(apiClient.post).toHaveBeenCalled()
+      expect(apiClient.post).toHaveBeenCalledTimes(1)
+      expect(apiClient.post.mock.calls[0][0]).toBe('/admin/organizations')
+    })
+
+    it('Should update an organization', async () => {
+      const data = { active: false }
+      apiClient.put.mockReturnValueOnce(Promise.resolve({ data }))
+
+      const res = await updateOrganization('name', data)
+
+      expect(res).toBe(data)
+      expect(apiClient.put).toHaveBeenCalled()
+      expect(apiClient.put).toHaveBeenCalledTimes(1)
+      expect(apiClient.put.mock.calls[0][0]).toBe('/admin/organizations/name')
     })
   })
 })

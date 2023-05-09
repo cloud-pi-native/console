@@ -214,6 +214,15 @@ onMounted(() => {
               Liste des utilisateurs
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
+          <DsfrSideMenuListItem>
+            <DsfrSideMenuLink
+              data-testid="menuAdministrationOrganizations"
+              :active="routeName === 'ListOrganizations'"
+              to="/admin/organizations"
+            >
+              Liste des organisations
+            </DsfrSideMenuLink>
+          </DsfrSideMenuListItem>
         </DsfrSideMenuList>
       </DsfrSideMenuListItem>
 

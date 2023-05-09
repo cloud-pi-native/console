@@ -6,7 +6,7 @@ export const useOrganizationStore = defineStore('organization', () => {
   const organizations = ref([])
 
   const setOrganizations = async () => {
-    organizations.value = await api.getOrganizations()
+    organizations.value = await api.getActiveOrganizations()
   }
 
   return {

@@ -14,6 +14,7 @@ import DsoTeam from '@/views/projects/DsoTeam.vue'
 import DsoRepos from '@/views/projects/DsoRepos.vue'
 import DsoDoc from '@/views/DsoDoc.vue'
 import ListUser from '@/views/admin/ListUser.vue'
+import ListOrganizations from '@/views/admin/ListOrganizations.vue'
 
 const MAIN_TITLE = 'Console Cloud π Native'
 
@@ -88,6 +89,11 @@ const routes = [
     path: '/admin/users',
     name: 'ListUser',
     component: ListUser,
+  },
+  {
+    path: '/admin/organizations',
+    name: 'ListOrganizations',
+    component: ListOrganizations,
   },
   {
     path: '/doc',
