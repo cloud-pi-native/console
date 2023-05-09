@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.2.1](https://github.com/dnum-mi/dso-console/compare/v3.2.0...v3.2.1) (2023-05-09)
+
+
+### Bug Fixes
+
+* :ambulance: habor missing slash on oidc group ([e85b903](https://github.com/dnum-mi/dso-console/commit/e85b9031f77c7feba05f04b9444c5d6862342246))
+* :ambulance: keycloak do not add owner in group env ([f20b3da](https://github.com/dnum-mi/dso-console/commit/f20b3da4a8666d3b2912c3b7147819818a96c8ed))
+
 ## [3.2.0](https://github.com/dnum-mi/dso-console/compare/v3.1.0...v3.2.0) (2023-05-05)
 
 
