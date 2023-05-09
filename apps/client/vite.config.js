@@ -1,6 +1,6 @@
 import { fileURLToPath, URL } from 'url'
 import { defineConfig } from 'vite'
-import WindiCSS from 'vite-plugin-windicss'
+import UnoCSS from 'unocss/vite'
 import vue from '@vitejs/plugin-vue'
 import Markdown from 'vite-plugin-md'
 import Prism from 'markdown-it-prism'
@@ -57,7 +57,7 @@ export default defineConfig({
         })
       },
     }),
-    WindiCSS(),
+    UnoCSS(),
   ],
   base: process.env.BASE_URL || '/',
   resolve: {
