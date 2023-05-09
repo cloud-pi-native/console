@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.2.2](https://github.com/dnum-mi/dso-console/compare/v3.2.1...v3.2.2) (2023-05-09)
+
+
+### Bug Fixes
+
+* :ambulance: missing ownerid at env init ([14696ff](https://github.com/dnum-mi/dso-console/commit/14696ffc24a2bfe5345b135e99f48502ba0d2fae))
+
 ## [3.2.1](https://github.com/dnum-mi/dso-console/compare/v3.2.0...v3.2.1) (2023-05-09)
 
 
