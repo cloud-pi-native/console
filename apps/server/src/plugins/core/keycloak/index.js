@@ -65,7 +65,7 @@ export const deleteKeycloakProjectGroup = async (payload) => {
 export const createKeycloakEnvGroup = async (payload) => {
   try {
     const kcClient = await getkcClient()
-    const { organization, project, environment, userId } = payload.args
+    const { organization, project, environment, ownerId } = payload.args
     const projectName = `${organization}-${project}`
     const projectGroup = await getProjectGroupByName(kcClient, projectName)
     let group = projectGroup.subGroups.find(subGrp => subGrp.name === environment)
@@ -77,8 +77,8 @@ export const createKeycloakEnvGroup = async (payload) => {
       })
       const roGroup = await kcClient.groups.setOrCreateChild({ id: group.id }, { name: 'RO' })
       const rwGroup = await kcClient.groups.setOrCreateChild({ id: group.id }, { name: 'RW' })
-      await kcClient.users.addToGroup({ id: userId, groupId: roGroup })
-      await kcClient.users.addToGroup({ id: userId, groupId: rwGroup })
+      await kcClient.users.addToGroup({ id: ownerId, groupId: roGroup })
+      await kcClient.users.addToGroup({ id: ownerId, groupId: rwGroup })
       return {
         status: { result: 'OK' },
         group,
