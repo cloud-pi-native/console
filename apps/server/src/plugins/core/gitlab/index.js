@@ -9,7 +9,7 @@ import { createUser, getUser } from './user.js'
 export const checkApi = async (payload) => {
   const { email } = payload.args
   const user = await getUser(email)
-  if (user.id === 1) {
+  if (user?.id === 1) {
     return {
       status: {
         result: 'KO',
