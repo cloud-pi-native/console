@@ -77,8 +77,8 @@ export const createKeycloakEnvGroup = async (payload) => {
       })
       const roGroup = await kcClient.groups.setOrCreateChild({ id: group.id }, { name: 'RO' })
       const rwGroup = await kcClient.groups.setOrCreateChild({ id: group.id }, { name: 'RW' })
-      await kcClient.users.addToGroup({ id: ownerId, groupId: roGroup })
-      await kcClient.users.addToGroup({ id: ownerId, groupId: rwGroup })
+      await kcClient.users.addToGroup({ id: ownerId, groupId: roGroup.id })
+      await kcClient.users.addToGroup({ id: ownerId, groupId: rwGroup.id })
       return {
         status: { result: 'OK' },
         group,
