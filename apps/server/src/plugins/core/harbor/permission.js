@@ -28,7 +28,7 @@ export const addProjectGroupMember = async (projectName, accessLevel = 3) => {
       data: {
         role_id: accessLevel,
         member_group: {
-          group_name: `${projectName}`,
+          group_name: `/${projectName}`,
           group_type: 3,
         },
       },
