@@ -7,6 +7,9 @@ imageCredentials:
   password:
   email:
 
+# Experimental feature, disabling it means no sa, cr, crb will be created or used
+clusterLevel: true
+
 #hashmap of custom env applied on all pods
 globalEnv:
 
