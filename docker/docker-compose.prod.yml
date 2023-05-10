@@ -21,8 +21,6 @@ services:
     image: dso/console/server
     container_name: dso-console_server
     depends_on:
-      keycloak:
-        condition: service_healthy
       postgres:
         condition: service_started
     ports:

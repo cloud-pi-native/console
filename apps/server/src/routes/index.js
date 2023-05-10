@@ -5,7 +5,7 @@ import serviceRouter from './service.js'
 import { sendOk } from '../utils/response.js'
 import adminRouter from './admin/user.js'
 
-const version = process.env.npm_package_version || 'Unable to find version'
+const version = process.env.APP_VERSION || 'dev'
 
 const getVersion = async (_req, res) => {
   sendOk(res, version)
