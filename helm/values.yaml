@@ -12,10 +12,14 @@ globalEnv:
 
 server:
   ingress:
+    # We strongly discourage expose api server
     enabled: false
     hosts: 
       - server-host-to-replace
-    tls: true
+    tls:
+      enabled: true
+      # optional secret used for ingress.spec.tls.secretName
+      secretName: 
     annotations: {}
     labels: {}
   extra_ca:
@@ -47,7 +51,10 @@ client:
     enabled: true
     hosts:
       - server-host-to-replace
-    tls: true
+    tls:
+      enabled: true
+      # optional secret used for ingress.spec.tls.secretName
+      secretName: 
     annotations: {}
     labels: {}
 
