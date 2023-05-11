@@ -8,7 +8,7 @@ import { sessionConf } from '../utils/keycloak.js'
 import { getConnection, closeConnections, sequelize } from '../connect.js'
 import organizationRouter from './organization.js'
 import { getOrganizationModel } from '../models/organization.js'
-import { allOrganizations } from 'shared/src/utils/iterables.js'
+import { allOrganizations } from 'shared/src/utils/const.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 

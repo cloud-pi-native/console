@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { environmentSchema, schemaValidator, instanciateSchema } from 'shared'
-import { allEnv } from 'shared/src/utils/iterables.js'
+import { allEnv } from 'shared/src/utils/const.js'
 import PermissionForm from './PermissionForm.vue'
 
 const props = defineProps({
