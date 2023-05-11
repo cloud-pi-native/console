@@ -85,6 +85,18 @@ Interface d'administration de base de données: <http://localhost:8081>
 
 Interface d'administration du serveur keycloak: <http://localhost:8090>
 
+### Variables d'environnements
+
+Plusieurs dossiers de variables d'environnements sont utilisés, à savoir :
+- Le dossier `env/` continent les variables partagées entre différents conteneurs
+- Le dossier `apps/server/env/` continent les variables de l'api
+- Le dossier `apps/client/env/` continent les variables du client
+
+Chacun de ces dossiers comprend lui même différents fichiers, à savoir :
+- Le fichier `.env` contient les variables pour le développement
+- Le fichier `.env.ci` contient les variables pour la CI/CD
+- Le fichier `.env.int` contient les variables pour l'intégration
+
 ## Gestion des conteneurs docker
 
 Ce dépôt utilise des fichiers docker-compose, ils sont listés dans le dossier `./docker/` en tant que `docker-compose.*.yml` :
@@ -93,6 +105,7 @@ Ce dépôt utilise des fichiers docker-compose, ils sont listés dans le dossier
 - [docker-compose.ct.yml](./ci/docker/docker-compose.ct.yml) pour les tests de composant sans interface graphique
 - [docker-compose.e2e.yml](./ci/docker/docker-compose.e2e.yml) pour les tests e2e avec interface graphique
 - [docker-compose.ci.yml](./ci/docker/docker-compose.ci.yml) pour les tests e2e sans interface graphique
+- [docker-compose.int.yml](./ci/docker/docker-compose.int.yml) pour les tests d'intégration dans un cluster kubernetes provisionnés des services annexes à la console
 - [docker-compose.prod.yml](./ci/docker/docker-compose.prod.yml) pour la construction des images docker
 
 ## Configuration du Keycloak
