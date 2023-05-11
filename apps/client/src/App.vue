@@ -16,6 +16,7 @@ const isLoggedIn = ref(keycloak.authenticated)
 const label = ref(isLoggedIn.value ? 'Se déconnecter' : 'Se connecter')
 const to = ref(isLoggedIn.value ? '/logout' : '/login')
 const intervalId = ref(undefined)
+const appVersion = process.env.APP_VERSION ? `v${process.env.APP_VERSION}` : 'v-dev'
 
 const quickLinks = ref([{
   label,
@@ -62,4 +63,14 @@ watch(label, (label) => {
     </div>
     <DsoSnackbar />
   </div>
+
+  <DsfrFooter
+    class="dso-footer"
+    a11y-compliance="partiellement conforme"
+    :logo-text="['Ministère', 'de l’Intérieur', 'et des Outre-Mer']"
+  >
+    <template #description>
+      {{ appVersion }}
+    </template>
+  </DsfrFooter>
 </template>
