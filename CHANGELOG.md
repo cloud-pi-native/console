@@ -1,5 +1,18 @@
 # Changelog
 
+## [3.3.0](https://github.com/dnum-mi/dso-console/compare/v3.2.3...v3.3.0) (2023-05-11)
+
+
+### Features
+
+* :sparkles: add organization page for admins ([5e6b7fa](https://github.com/dnum-mi/dso-console/commit/5e6b7fa252285b432ef5869aedf8881b642eff53))
+
+
+### Bug Fixes
+
+* :ambulance: handle unocss migration for media queries ([8fdf445](https://github.com/dnum-mi/dso-console/commit/8fdf4455a34a274c3723685928549bb30bb04762))
+* :sparkles: set ingress secretName ([8be3479](https://github.com/dnum-mi/dso-console/commit/8be34796b15219a6b4f77585662b21d8d04c76c8))
+
 ## [3.2.3](https://github.com/dnum-mi/dso-console/compare/v3.2.2...v3.2.3) (2023-05-09)
 
 
