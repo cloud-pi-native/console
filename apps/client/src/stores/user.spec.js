@@ -18,7 +18,7 @@ vi.mock('keycloak-js', () => {
     sub: 'userId',
     given_name: 'Michel',
     family_name: 'MICHEL',
-    groups: ['admin'],
+    groups: ['/admin'],
   }
   Keycloak.prototype.login = vi.fn()
   Keycloak.prototype.logout = vi.fn()

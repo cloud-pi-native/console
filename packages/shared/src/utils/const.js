@@ -1,3 +1,5 @@
+export const adminGroupPath = '/admin'
+
 export const levels = [
   'lecture seule',
   'lecture, écriture',

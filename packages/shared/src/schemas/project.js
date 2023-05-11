@@ -1,5 +1,5 @@
 import Joi from 'joi'
-import { projectStatus } from '../utils/iterables.js'
+import { projectStatus } from '../utils/const.js'
 
 export const descriptionMaxLength = 280
 

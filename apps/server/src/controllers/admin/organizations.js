@@ -5,15 +5,14 @@ import {
   updateLabelOrganization,
   getOrganizationByName,
 } from '../../models/queries/organization-queries.js'
-import {
-  organizationSchema,
-} from 'shared/src/schemas/organization.js'
+import { organizationSchema } from 'shared/src/schemas/organization.js'
+import { adminGroupPath } from 'shared/src/utils/const.js'
 import { getLogInfos } from '../../utils/logger.js'
 import { sendOk, sendCreated, sendNotFound, sendBadRequest, sendForbidden } from '../../utils/response.js'
 
 // GET
 export const getAllOrganizationsController = async (req, res) => {
-  if (!req.session.user.groups?.includes('admin')) sendForbidden(res, 'Vous n\'avez pas les droits administrateurs')
+  if (!req.session.user.groups?.includes(adminGroupPath)) sendForbidden(res, 'Vous n\'avez pas les droits administrateurs')
 
   try {
     const organizations = await getOrganizations()
@@ -38,7 +37,7 @@ export const getAllOrganizationsController = async (req, res) => {
 export const createOrganizationController = async (req, res) => {
   const data = req.body
 
-  if (!req.session.user.groups?.includes('admin')) sendForbidden(res, 'Vous n\'avez pas les droits administrateurs')
+  if (!req.session.user.groups?.includes(adminGroupPath)) sendForbidden(res, 'Vous n\'avez pas les droits administrateurs')
 
   try {
     await organizationSchema.validateAsync(data)
@@ -70,7 +69,7 @@ export const updateOrganizationController = async (req, res) => {
   const name = req.params.orgName
   const { active, label } = req.body
 
-  if (!req.session.user.groups?.includes('admin')) sendForbidden(res, 'Vous n\'avez pas les droits administrateurs')
+  if (!req.session.user.groups?.includes(adminGroupPath)) sendForbidden(res, 'Vous n\'avez pas les droits administrateurs')
   try {
     if (active !== undefined) {
       await updateActiveOrganization({ name, active })

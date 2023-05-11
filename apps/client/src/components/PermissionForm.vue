@@ -2,7 +2,7 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import SuggestionInput from './SuggestionInput.vue'
 import RangeInput from './RangeInput.vue'
-import { levels } from 'shared/src/utils/iterables.js'
+import { levels } from 'shared/src/utils/const.js'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectPermissionStore } from '@/stores/project-permission.js'
 import { useUserStore } from '@/stores/user.js'

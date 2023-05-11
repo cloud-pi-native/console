@@ -1,6 +1,7 @@
 import { getKeycloak, getUserProfile, keycloakLogin, keycloakLogout } from '@/utils/keycloak/keycloak.js'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { adminGroupPath } from 'shared/src/utils/const.js'
 
 export const useUserStore = defineStore('user', () => {
   const isLoggedIn = ref(undefined)
@@ -15,7 +16,7 @@ export const useUserStore = defineStore('user', () => {
     const keycloak = getKeycloak()
     isLoggedIn.value = keycloak.authenticated
     if (isLoggedIn.value) {
-      isAdmin.value = userProfile.value.groups?.includes('admin')
+      isAdmin.value = userProfile.value.groups?.includes(adminGroupPath)
     }
   }
 

@@ -8,7 +8,7 @@ import { sessionConf } from '../../utils/keycloak.js'
 import { getConnection, closeConnections, sequelize } from '../../connect.js'
 import organizationRouter from './organization.js'
 import { getOrganizationModel } from '../../models/organization.js'
-import { allOrganizations } from 'shared/src/utils/iterables.js'
+import { adminGroupPath, allOrganizations } from 'shared/src/utils/const.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 
@@ -19,7 +19,7 @@ const app = fastify({ logger: false })
 const mockSessionPlugin = (app, opt, next) => {
   app.addHook('onRequest', (req, res, next) => {
     if (req.headers.admin) {
-      req.session = { user: { groups: ['admin'] } }
+      req.session = { user: { groups: [adminGroupPath] } }
     } else {
       req.session = { user: { } }
     }
