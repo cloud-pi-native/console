@@ -59,8 +59,8 @@ describe('Organizations routes', () => {
   })
 
   // GET
-  describe('getOrganizationsController', () => {
-    it('Should retrieve organizations', async () => {
+  describe('getActiveOrganizationsController', () => {
+    it('Should retrieve active organizations', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const organizations = allOrganizations.map(org => getRandomOrganization(org.name, org.label))
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
@@ -91,48 +91,6 @@ describe('Organizations routes', () => {
 
       expect(response.statusCode).toEqual(404)
       expect(response.body).toEqual('Echec de récupération des organisations')
-    })
-
-    it.skip('Should create an organization', async () => {
-      const randomDbSetup = createRandomDbSetup({})
-      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
-      const organization = {
-        name: 'test-create-org',
-        label: 'test organisation',
-      }
-
-      // 1. getOrganizations
-      Organization.$queueResult(null)
-      setRequestorId(owner.id)
-
-      const response = await app.inject()
-        .post('/')
-        .body(organization)
-        .end()
-
-      expect(response.statusCode).toEqual(201)
-      expect(response.json()).toMatchObject(organization)
-    })
-
-    it.skip('Should return an error if create an organization already exists', async () => {
-      const randomDbSetup = createRandomDbSetup({})
-      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
-      const organization = {
-        name: 'test-create-org',
-        label: 'test organisation',
-      }
-
-      // 1. getOrganizations
-      Organization.$queueResult(organization)
-      setRequestorId(owner.id)
-
-      const response = await app.inject()
-        .post('/')
-        .body(organization)
-        .end()
-
-      expect(response.statusCode).toEqual(400)
-      expect(response.body).toEqual('Cette organisation existe déjà')
     })
   })
 })

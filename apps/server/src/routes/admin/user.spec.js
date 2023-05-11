@@ -60,7 +60,7 @@ describe('Admin Users routes', () => {
       User.$queueResult(users)
 
       const response = await app.inject({ headers: { admin: 'admin' } })
-        .get('/users')
+        .get('/')
         .end()
       expect(response.statusCode).toEqual(200)
       expect(response.json()).toEqual(users)
@@ -70,7 +70,7 @@ describe('Admin Users routes', () => {
       User.$queueFailure(new Error('Erreur inexpliquable'))
 
       const response = await app.inject({ headers: { admin: 'admin' } })
-        .get('/users')
+        .get('/')
         .end()
 
       expect(response.statusCode).toEqual(404)
@@ -83,7 +83,7 @@ describe('Admin Users routes', () => {
       User.$queueResult(users)
 
       const response = await app.inject()
-        .get('/users')
+        .get('/')
         .end()
       expect(response.statusCode).toEqual(404)
       expect(response.body).toEqual('Vous n\'avez pas les droits administrateurs')

@@ -26,14 +26,16 @@ export const getOrganizationByName = async (name) => {
 
 // CREATE
 export const createOrganization = async ({ name, label }) => {
-  const organization = await getOrganizationByName(name)
-  if (organization) throw new Error('Cette organisation existe déjà')
-  return getOrganizationModel().create({ name, label })
+  return getOrganizationModel().create({ name, label, active: true })
 }
 
 // UPDATE
 export const updateActiveOrganization = async ({ name, active }) => {
   return getOrganizationModel().update({ active }, { where: { name } })
+}
+
+export const updateLabelOrganization = async ({ name, label }) => {
+  return getOrganizationModel().update({ label }, { where: { name } })
 }
 
 // TECH

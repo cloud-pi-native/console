@@ -7,6 +7,7 @@ import {
   permissionSchema,
   projectSchema,
   userSchema,
+  organizationSchema,
 } from '../index.js'
 import { descriptionMaxLength } from '../schemas/project.js'
 
@@ -43,6 +44,15 @@ describe('Schemas utils', () => {
       userId: faker.datatype.uuid(),
       environmentId: faker.datatype.uuid(),
       level: 0,
+    })).toStrictEqual({})
+  })
+
+  it('Should validate a correct organization schema', () => {
+    expect(schemaValidator(organizationSchema, {
+      id: faker.datatype.uuid(),
+      name: faker.word.noun(),
+      label: faker.company.name(),
+      active: faker.datatype.boolean(),
     })).toStrictEqual({})
   })
 

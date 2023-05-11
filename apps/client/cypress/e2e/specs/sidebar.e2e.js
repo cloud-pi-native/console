@@ -53,6 +53,8 @@ describe('Sidebar', () => {
       .getByDataTestid('mainMenu').should('be.visible')
       .getByDataTestid('menuProjectsList').should('not.be.visible')
       .getByDataTestid('menuAdministrationList').should('not.be.visible')
+
+      // Projects
       .getByDataTestid('menuProjectsBtn').click()
       .getByDataTestid('menuProjectsList').should('be.visible')
       .getByDataTestid('menuAdministrationList').should('not.be.visible')
@@ -74,23 +76,32 @@ describe('Sidebar', () => {
       .getByDataTestid('menuProjectsList').should('be.visible')
       .getByDataTestid('menuAdministrationList').should('not.be.visible')
       .url().should('contain', `/projects/${project.id}/repositories`)
+      .getByDataTestid('menuEnvironments').click()
+      .getByDataTestid('menuProjectsList').should('be.visible')
+      .getByDataTestid('menuAdministrationList').should('not.be.visible')
+      .url().should('contain', `/projects/${project.id}/environments`)
 
-      // TODO : deskip lorsque les playbooks seront intégrés
-      // .getByDataTestid('menuEnvironments').click()
-      // .getByDataTestid('menuProjectsList').should('be.visible')
-      // .getByDataTestid('menuAdministrationList').should('not.be.visible')
-      // .url().should('contain', `/projects/${project.id}/environments`)
+      // Doc
       .getByDataTestid('menuDoc').click()
       .getByDataTestid('menuProjectsList').should('not.be.visible')
       .getByDataTestid('menuAdministrationList').should('not.be.visible')
       .url().should('contain', '/doc')
       .getByDataTestid('menuDoc').should('have.class', 'router-link-active')
       .getByDataTestid('menuAdministrationList').should('not.be.visible')
+
+      // Admin
       .getByDataTestid('menuAdministrationBtn').click()
       .getByDataTestid('menuAdministrationList').should('be.visible')
       .getByDataTestid('menuAdministrationUsers').click()
+      .getByDataTestid('menuAdministrationUsers').should('have.class', 'router-link-active')
       .getByDataTestid('menuAdministrationList').should('be.visible')
       .getByDataTestid('menuProjectsList').should('not.be.visible')
       .url().should('contain', '/admin/users')
+      .getByDataTestid('menuAdministrationOrganizations').click()
+      .getByDataTestid('menuAdministrationOrganizations').should('have.class', 'router-link-active')
+      .getByDataTestid('menuAdministrationUsers').should('not.have.class', 'router-link-active')
+      .getByDataTestid('menuAdministrationList').should('be.visible')
+      .getByDataTestid('menuProjectsList').should('not.be.visible')
+      .url().should('contain', '/admin/organizations')
   })
 })

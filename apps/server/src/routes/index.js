@@ -3,7 +3,7 @@ import projectOrganizationRouter from './organization.js'
 import projectRouter from './project.js'
 import serviceRouter from './service.js'
 import { sendOk } from '../utils/response.js'
-import adminRouter from './admin/user.js'
+import adminRouter from './admin/index.js'
 
 const version = process.env.APP_VERSION || 'dev'
 
