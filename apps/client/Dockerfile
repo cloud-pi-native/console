@@ -22,6 +22,7 @@ ENTRYPOINT [ "pnpm", "--filter", "client", "run", "dev" ]
 # Build stage
 FROM base AS build
 
+ARG APP_VERSION
 RUN pnpm --filter client --no-optional deploy build
 WORKDIR /app/build
 RUN npm run build

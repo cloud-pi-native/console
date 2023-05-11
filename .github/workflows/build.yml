@@ -36,6 +36,9 @@ jobs:
     steps:
       - name: Checks-out repository
         uses: actions/checkout@v3
+      - name: Get short git sha
+        id: sha
+        run: echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
       - name: Set up Docker buildx
         uses: docker/setup-buildx-action@v2
       - name: Set up QEMU (for multi platform build)
@@ -56,3 +59,5 @@ jobs:
           target: ${{ matrix.images.build.target }}
           platforms: ${{ matrix.images.build.platforms }}
           push: true
+          build-args: |
+            APP_VERSION="${{ steps.sha.outputs.SHORT_SHA }}"

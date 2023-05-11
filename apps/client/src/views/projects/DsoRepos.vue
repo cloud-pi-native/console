@@ -105,7 +105,7 @@ watch(selectedProject, () => {
   </div>
   <div
     :class="{
-      'md:(grid grid-cols-3 gap-3) items-center justify-between': !selectedRepo.internalRepoName,
+      'md:grid md:grid-cols-3 md:gap-3 items-center justify-between': !selectedRepo.internalRepoName,
     }"
   >
     <div

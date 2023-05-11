@@ -45,6 +45,7 @@ defineEmits(['updateLevel'])
         id="range"
         v-bind="$attrs"
         v-model="localLevel"
+        class="range-input"
         name="range"
         type="range"
         list="rangeList"
@@ -55,6 +56,7 @@ defineEmits(['updateLevel'])
       >
       <datalist
         id="rangeList"
+        class="range-list"
       >
         <option
           v-for="lvl, i in props.levels"
@@ -68,13 +70,13 @@ defineEmits(['updateLevel'])
 </template>
 
 <style scoped>
-input[type="range"] {
+.range-input {
   @apply md:w-30rem;
 
   appearance: auto;
 }
 
-datalist {
+.range-list {
   display: flex;
   font-size: 0.7rem;
   justify-content: space-between;

@@ -63,7 +63,7 @@ watch(projects, (projects) => {
     />
   </div>
   <div
-    class="md:(grid grid-cols-3 gap-3) items-center justify-between"
+    class="md:grid md:grid-cols-3 md:gap-3 items-center justify-between"
   >
     <div
       v-for="project in projectList"

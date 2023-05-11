@@ -28,6 +28,8 @@ RUN pnpm --filter server --prod deploy build
 # Prod stage
 FROM docker.io/node:18.16.0-bullseye-slim AS prod
 
+ARG APP_VERSION
+ENV APP_VERSION=$APP_VERSION
 RUN mkdir -p /home/node/logs && chmod 777 -R /home/node/logs
 WORKDIR /app
 RUN chown node:root /app

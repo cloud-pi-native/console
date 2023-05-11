@@ -33,13 +33,17 @@ spec:
                 port:
                   number: {{ $servicePort }}
     {{- end -}}
-{{- if .ingress.tls }}
+{{- if .ingress.tls.enabled }}
   tls:
     - hosts:
     {{- range $host := .ingress.hosts }}
       - {{ $host }}
     {{- end }}
+{{- if .ingress.tls.secretName }}
+      secretName: {{ .ingress.tls.secretName }}
+{{- else }}
       secretName: {{ $.Release.Name }}-{{ $container }}-secret
+{{- end -}}
 {{- end -}}
 {{- end -}}
 {{- end -}}

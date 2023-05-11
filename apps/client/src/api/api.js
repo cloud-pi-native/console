@@ -7,7 +7,7 @@ export const generateCIFiles = async (data) => {
 }
 
 // Organizations
-export const getOrganizations = async () => {
+export const getActiveOrganizations = async () => {
   const response = await apiClient.get('/organizations')
   return response.data
 }
@@ -86,11 +86,6 @@ export const getUsers = async (projectId) => {
   return response.data
 }
 
-export const getAllUsers = async () => {
-  const response = await apiClient.get('/admin/users')
-  return response.data
-}
-
 export const removeUser = async (projectId, userId) => {
   const response = await apiClient.delete(`/projects/${projectId}/users/${userId}`)
   return response.data
@@ -125,5 +120,27 @@ export const getPermissions = async (projectId, environmentId) => {
 
 export const deletePermission = async (projectId, environmentId, userId) => {
   const response = await apiClient.delete(`/projects/${projectId}/environments/${environmentId}/permissions/${userId}`)
+  return response.data
+}
+
+// Admin - Users
+export const getAllUsers = async () => {
+  const response = await apiClient.get('/admin/users')
+  return response.data
+}
+
+// Admin - Organizations
+export const getAllOrganizations = async () => {
+  const response = await apiClient.get('/admin/organizations')
+  return response.data
+}
+
+export const createOrganization = async (data) => {
+  const response = await apiClient.post('/admin/organizations', data)
+  return response.data
+}
+
+export const updateOrganization = async (orgName, data) => {
+  const response = await apiClient.put(`/admin/organizations/${orgName}`, data)
   return response.data
 }

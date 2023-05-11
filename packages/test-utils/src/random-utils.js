@@ -15,6 +15,7 @@ export const getRandomOrganization = (name = 'ministere-interieur', label = 'Min
     id: faker.datatype.uuid(),
     name,
     label,
+    active: true,
   }
 }
 
