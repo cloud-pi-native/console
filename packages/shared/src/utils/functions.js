@@ -1,4 +1,4 @@
-import { allEnv } from './iterables.js'
+import { allEnv } from './const.js'
 
 /**
  * @param {*} value Value wanted to be return as is

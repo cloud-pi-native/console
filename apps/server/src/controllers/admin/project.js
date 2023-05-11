@@ -1,10 +1,11 @@
 import { getAllProjects } from '../models/queries/project-queries.js'
 import { getLogInfos } from '../utils/logger.js'
 import { sendOk, sendNotFound } from '../utils/response.js'
+import { adminGroupPath } from 'shared/src/utils/const.js'
 
 export const getAllProjectsController = async (req, res) => {
   try {
-    if (!req.session.user.groups?.includes('admin')) throw new Error('Vous n\'avez pas les droits administrateurs')
+    if (!req.session.user.groups?.includes(adminGroupPath)) throw new Error('Vous n\'avez pas les droits administrateurs')
     const projects = await getAllProjects()
     req.log.info({
       ...getLogInfos(),

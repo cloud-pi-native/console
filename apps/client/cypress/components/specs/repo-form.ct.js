@@ -9,7 +9,7 @@ import * as icons from '@/icons.js'
 import RepoForm from '@/components/RepoForm.vue'
 import { createRandomDbSetup } from 'test-utils'
 import { useProjectStore } from '@/stores/project.js'
-import { allOrganizations } from 'shared/src/utils/iterables.js'
+import { allOrganizations } from 'shared/src/utils/const.js'
 
 describe('RepoForm.vue', () => {
   it('Should mount a RepoForm', () => {
