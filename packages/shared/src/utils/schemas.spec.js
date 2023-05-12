@@ -56,6 +56,17 @@ describe('Schemas utils', () => {
     })).toStrictEqual({})
   })
 
+  it('Should validate a correct organization schema with external data', () => {
+    expect(schemaValidator(organizationSchema, {
+      id: faker.datatype.uuid(),
+      contributorId: faker.word.noun(),
+      source: faker.word.noun(),
+      name: faker.word.noun(),
+      label: faker.company.name(),
+      active: faker.datatype.boolean(),
+    })).toStrictEqual({})
+  })
+
   it('Should validate a correct project schema', () => {
     expect(schemaValidator(projectSchema, {
       id: faker.datatype.uuid(),
@@ -73,6 +84,17 @@ describe('Schemas utils', () => {
       firstName: faker.name.firstName(),
       lastName: faker.name.lastName(),
     })).toStrictEqual({})
+  })
+
+  it('Should not validate an organization schema with wrong external data', () => {
+    expect(schemaValidator(organizationSchema, {
+      id: faker.datatype.uuid(),
+      contributorId: faker.datatype.array(),
+      source: faker.word.noun(),
+      name: faker.word.noun(),
+      label: faker.company.name(),
+      active: faker.datatype.boolean(),
+    })).toStrictEqual({ contributorId: '"contributorId" must be a string' })
   })
 
   it('Should not validate schema and send specific error', () => {
