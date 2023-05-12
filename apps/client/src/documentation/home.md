@@ -17,7 +17,7 @@ Ces appels API permettent de déclencher auprès de DSO une demande de 'pull' du
 - Effectuer une analyse de la qualité du code source à l'aide d'un [Sonarqube](https://www.sonarqube.org/) hébergé par la plateforme.
 - Construire les images de conteneur de l'application.
 - Scanner les images et le code source à l'aide de [Trivy](https://aquasecurity.github.io/trivy).
-- Stocker ces images dans un [Quay](https://quay.io/) hébergé par la plateforme.
+- Stocker ces images dans un [Harbor](https://goharbor.io/) hébergé par la plateforme.
 - Déployer les images générées à l'aide d'[ArgoCD](https://argo-cd.readthedocs.io/en/stable/).
 
 ## Dépôts de code

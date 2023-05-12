@@ -88,4 +88,4 @@ jobs:
           platforms: ${{ matrix.images.build.platforms }}
           push: true
           build-args: |
-            APP_VERSION="${{ needs.release.outputs.major-tag }}.${{ needs.release.outputs.minor-tag }}.${{ needs.release.outputs.patch-tag }}"
+            APP_VERSION=${{ needs.release.outputs.major-tag }}.${{ needs.release.outputs.minor-tag }}.${{ needs.release.outputs.patch-tag }}

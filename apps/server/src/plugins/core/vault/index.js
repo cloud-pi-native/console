@@ -8,7 +8,7 @@ export const axiosOptions = {
   },
 }
 
-export const writePaylodToVault = async (payload) => {
+export const writePayloadToVault = async (payload) => {
   const { organization, project } = payload.args
   try {
     const promisesWrite = Object.values(payload).filter(({ vault }) => (Array.isArray(vault))).map(({ vault }) => {

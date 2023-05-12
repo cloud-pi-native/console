@@ -5,15 +5,19 @@
     - export PROJECT_PATH=`echo "$CI_PROJECT_NAMESPACE" | sed 's/forge-mi\/projects\///g' | sed 's/\//-/g'`
     - export VAULT_ADDR=$VAULT_SERVER_URL
     - export VAULT_TOKEN="$(vault write -field=token auth/jwt/login role=default-ci jwt=$CI_JOB_JWT)"
+    - export DOCKER_AUTH=`vault kv get -field=DOCKER_CONFIG forge-dso/${CI_PROJECT_NAMESPACE}/REGISTRY`
+    - export REGISTRY_HOST=`vault kv get -field=HOST forge-dso/${CI_PROJECT_NAMESPACE}/REGISTRY`
+    - export REGISTRY_USERNAME=`vault kv get -field=USERNAME forge-dso/${CI_PROJECT_NAMESPACE}/REGISTRY`
+    - export REGISTRY_TOKEN=`vault kv get -field=TOKEN forge-dso/${CI_PROJECT_NAMESPACE}/REGISTRY`
     - |
       cat <<EOF > vault.env
-      NEXUS_PASSWORD=`vault kv get -field=NEXUS_PASSWORD forge-dso/${CI_PROJECT_NAMESPACE}/NEXUS`
-      NEXUS_USERNAME=`vault kv get -field=NEXUS_USERNAME forge-dso/${CI_PROJECT_NAMESPACE}/NEXUS`
-      QUAY_ROBOT_TOKEN=`vault kv get -field=QUAY_ROBOT_TOKEN forge-dso/${CI_PROJECT_NAMESPACE}/QUAY`
-      QUAY_ROBOT_USERNAME=`vault kv get -field=QUAY_ROBOT_USERNAME forge-dso/${CI_PROJECT_NAMESPACE}/QUAY`
-      SONAR_TOKEN=`vault kv get -field=SONAR_TOKEN forge-dso/${CI_PROJECT_NAMESPACE}/SONAR`
+      REGISTRY_HOST=$REGISTRY_HOST
       PROJECT_PATH=$PROJECT_PATH
+      REGISTRY_USERNAME=$REGISTRY_USERNAME
+      REGISTRY_TOKEN=$REGISTRY_TOKEN
+      DOCKER_AUTH=$DOCKER_AUTH
       EOF
+    - cat vault.env
   artifacts:
     reports:
       dotenv: vault.env
