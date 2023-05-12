@@ -26,7 +26,7 @@ services:
       NEXUS_URL: https://sonatype.com/products/nexus-repository
       SONARQUBE_URL: https://www.sonarqube.org
       VAULT_URL: https://www.vaultproject.io
-    command: cypress:run-ct --browser chrome
+    command: test:ct
     networks:
       - dso-network
 

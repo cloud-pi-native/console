@@ -66,14 +66,4 @@ export default defineConfig({
     },
     dedupe: ['vue', 'oh-vue-icons'],
   },
-  test: {
-    environment: 'jsdom',
-    testTimeout: 2000,
-    watch: false,
-    coverage: {
-      provider: 'c8',
-      reporter: ['text', 'lcov'],
-      exclude: ['**/*.spec.js'],
-    },
-  },
 })

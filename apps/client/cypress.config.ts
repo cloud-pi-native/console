@@ -1,7 +1,5 @@
 import { defineConfig } from 'cypress'
-import vitePreprocessor from 'cypress-vite'
-import { fileURLToPath } from 'url'
-import viteConfig from './vite.config.js'
+import viteConfig from './vite.config'
 
 const argocdUrl = process.env.ARGOCD_URL || 'https://argo-cd.readthedocs.io'
 const gitlabUrl = process.env.GITLAB_URL || 'https://gitlab.com'
@@ -27,9 +25,9 @@ export default defineConfig({
     chromeWebSecurity: false,
     experimentalModifyObstructiveThirdPartyCode: false,
     experimentalWebKitSupport: false,
-    setupNodeEvents (on) {
-      on('file:preprocessor', vitePreprocessor(fileURLToPath(import.meta.url)))
-    },
+    // setupNodeEvents (on) {
+    //   on('file:preprocessor', vitePreprocessor(fileURLToPath(import.meta.url)))
+    // },
     env: {
       argocdUrl,
       gitlabUrl,

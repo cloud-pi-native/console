@@ -10,8 +10,8 @@ import { keycloakInit } from './utils/keycloak/keycloak.js'
 import VueDsfr from '@gouvminint/vue-dsfr'
 
 import App from './App.vue'
-import router from './router/index.js'
-import * as icons from './icons.js'
+import router from './router/index'
+import * as icons from './icons'
 
 import 'virtual:windi.css'
 import './main.css'
