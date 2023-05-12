@@ -5,20 +5,25 @@ set -e
 # Colorize terminal
 red='\e[0;31m'
 no_color='\033[0m'
+
 # Console step increment
 i=1
 
+# Default values
+BRANCH_TO_SYNC=main
+
 # Declare script helper
-TEXT_HELPER="\nThis script aims to send a request through DSO api to trigger pipelines.
-
-
+TEXT_HELPER="\nThis script aims to send a synchronization request to DSO.
 Following flags are available:
 
-  -g  GitLab trigger token
+  -a  Api url to send the synchronization request.
 
-  -k  Api manager consummer key.
+  -b  Branch which is wanted to be synchronize.
+      Default is '$BRANCH_TO_SYNC'.
 
-  -s  Api manager consummer secret.
+  -g  GitLab token to trigger the pipeline on the gitlab mirror project.
+
+  -m  Gitlab mirror project id.
 
   -h  Print script help.\n\n"
 
@@ -27,37 +32,39 @@ print_help() {
 }
 
 # Parse options
-while getopts :hg:k:s: flag
+while getopts :ha:b:g:i: flag
 do
   case "${flag}" in
+    a)
+      API_URL=${OPTARG};;
+    b)
+      BRANCH_TO_SYNC=${OPTARG};;
     g)
       GITLAB_TRIGGER_TOKEN=${OPTARG};;
-    k)
-      CONSUMER_KEY=${OPTARG};;
-    s)
-      CONSUMER_SECRET=${OPTARG};;
+    i)
+      GITLAB_MIRROR_PROJECT_ID=${OPTARG};;
     h | *)
       print_help
       exit 0;;
   esac
 done
 
-if [ -z ${GITLAB_TRIGGER_TOKEN} ] || [ -z ${CONSUMER_KEY} ] || [ -z ${CONSUMER_SECRET} ]; then
-  echo "\nArgument(s) missing, you don't specify consumer key, consumer secret and gitlab trigger token."
+
+# Test if arguments are missing
+if [ -z ${API_URL} ] || [ -z ${BRANCH_TO_SYNC} ] || [ -z ${GITLAB_TRIGGER_TOKEN} ] || [ -z ${GITLAB_MIRROR_PROJECT_ID} ]; then
+  printf "\nArgument(s) missing.\n"
   print_help
   exit 0
 fi
 
-URL="https://ingate.foo-test.org/gitlab/v4/projects/{{ mirror_project.project.id }}/trigger/pipeline?ref=main&token=${GITLAB_TRIGGER_TOKEN}"
 
-printf "$\n${red}${i}.${no_color} Retrieve DSO api access token.\n\n"
-i=$(($i + 1))
-CONSUMER_CREDENTIALS=$(echo "${CONSUMER_KEY}:${CONSUMER_SECRET}" | tr -d '\n' | base64)
+# Send synchronization request
+printf "\n\n${red}${i}.${no_color} Send request to DSO api.\n\n"
 
-TOKEN=$(curl -k -X POST https://ingate.foo-test.org/oauth2/token \
-  -d "grant_type=client_credentials" \
-  -H "Authorization: Basic ${CONSUMER_CREDENTIALS}" \
-  | sed -e 's,{"access_token":"\([^"]*\)".*,\1,')
-
-printf "\n${red}${i}.${no_color} Send request to DSO api.\n\n"
-curl -X POST -H "Authorization: Bearer ${TOKEN}" -H "accept: application/json" "$URL" | jq '.'
+curl \
+  -X POST \
+  --fail \
+  -F token=${GITLAB_TRIGGER_TOKEN} \
+  -F ref=main \
+  -F variables[GIT_BRANCH_DEPLOY]=${BRANCH_TO_SYNC} \
+  "${API_URL}/api/v4/projects/${GITLAB_MIRROR_PROJECT_ID}/trigger/pipeline"

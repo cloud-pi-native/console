@@ -36,6 +36,7 @@ export const createGroup = async (name, organization) => {
     parent_id: parentId,
     project_creation_level: 'maintainer',
     subgroup_creation_level: 'owner',
+    default_branch_protection: 0,
   })
 }
 

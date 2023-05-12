@@ -15,14 +15,14 @@ Ce projet est construit avec [NodeJS](https://nodejs.org/), [VueJS](https://vuej
 
 ### Liste des services docker
 
-| Nom du service | Github                                                                     | Role                                      | Utilisé en production |
-| -------------- | -------------------------------------------------------------------------- | ----------------------------------------- | --------------------- |
-| __postgres__   | [Postgres](https://github.com/postgres/postgres)                           | Base de données de l'application          | Oui                   |
-| __pgadmin__    | [Pgadmin](https://github.com/pgadmin-org/pgadmin4)                         | Interface d'administration de Postgres    | -                     |
-| __server__     | [NodeJS](https://github.com/nodejs/node)                                   | API de l'application                      | Oui                   |
-| __client__     | [VueJS](https://github.com/vuejs/vue) / [Nginx](https://nginx.org/) (prod) | Interface graphique de l'application      | Oui                   |
-| __keycloak__   | [Keycloak](https://github.com/keycloak/keycloak)                           | Gestionnaire d'authentification / d'accès | -                     |
-| __cypress__    | [Cypress](https://github.com/cypress-io/cypress)                           | Tests de bout en bout                     | -                     |
+| Nom du service | Github project                                                                  | Role                                      | Utilisé en production |
+| -------------- | ------------------------------------------------------------------------------- | ----------------------------------------- | --------------------- |
+| __postgres__   | [Postgres](https://github.com/postgres/postgres)                                | Base de données de l'application          | Oui                   |
+| __pgadmin__    | [Pgadmin](https://github.com/pgadmin-org/pgadmin4)                              | Interface d'administration de Postgres    | -                     |
+| __server__     | [NodeJS](https://github.com/nodejs/node)                                        | API de l'application                      | Oui                   |
+| __client__     | [VueJS](https://github.com/vuejs/vue) / [Nginx](https://github.com/nginx/nginx) | Interface graphique de l'application      | Oui                   |
+| __keycloak__   | [Keycloak](https://github.com/keycloak/keycloak)                                | Gestionnaire d'authentification / d'accès | -                     |
+| __cypress__    | [Cypress](https://github.com/cypress-io/cypress)                                | Tests de bout en bout                     | -                     |
 
 ### Architecture du dépôt
 
@@ -105,7 +105,7 @@ Ce dépôt utilise des fichiers docker-compose, ils sont listés dans le dossier
 - [docker-compose.ct.yml](./ci/docker/docker-compose.ct.yml) pour les tests de composant sans interface graphique
 - [docker-compose.e2e.yml](./ci/docker/docker-compose.e2e.yml) pour les tests e2e avec interface graphique
 - [docker-compose.ci.yml](./ci/docker/docker-compose.ci.yml) pour les tests e2e sans interface graphique
-- [docker-compose.int.yml](./ci/docker/docker-compose.int.yml) pour les tests d'intégration dans un cluster kubernetes provisionnés des services annexes à la console
+- [docker-compose.int.yml](./ci/docker/docker-compose.int.yml) pour les tests d'intégration dans un cluster kubernetes provisionné des services annexes à la console
 - [docker-compose.prod.yml](./ci/docker/docker-compose.prod.yml) pour la construction des images docker
 
 ## Configuration du Keycloak
@@ -131,7 +131,7 @@ Les utilisateurs faisant parti du group `admin` ont également accès à l'inter
 | **Openshift**    |                              | Namespace     |                                         |                      |
 | **ArgoCD**       |                              |               | (infra) Secret, AppProject, Application |                      |
 | **Gitlab**       | Group                        |               | Repository (Dépôt)                      | User                 |
-| **Quay**         | Organization                 |               | Repository [1]                          |                      |
+| **Harbor**       | Project                      |               | Repository [1]                          |                      |
 | **Ldap**         | Group                        |               |                                         | User / memberof      |
 | **Keycloak**     |                              | Group         |                                         | User / member        |
 | **Sonar**        | User                         |               |                                         |                      |
