@@ -1,6 +1,6 @@
 #!/bin/sh
 
-ROOT_DIR=/usr/share/nginx/html
+ROOT_DIR=/opt/bitnami/nginx/html
 ENV_DIR=/env
 
 populate () {
@@ -31,6 +31,6 @@ for file in $ROOT_DIR/assets/index*.js; do
 done
 
 export SERVER="$SERVER_HOST:$SERVER_PORT"
-cat /default.conf.tpl | envsubst '$SERVER' > /etc/nginx/conf.d/default.conf
+cat /default.conf.tpl | envsubst '$SERVER' > /opt/bitnami/nginx/conf/server_blocks/default.conf
 
 nginx -g 'daemon off;'
