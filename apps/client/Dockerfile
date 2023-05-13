@@ -29,15 +29,13 @@ RUN npm run build
 
 
 # Prod stage
-FROM docker.io/nginx:1.24.0 AS prod
+FROM docker.io/bitnami/nginx:1.24.0 AS prod
 
-COPY --chown=nginx:nginx --from=build /app/build/dist /usr/share/nginx/html/
-COPY --chown=nginx:nginx ./apps/client/nginx/nginx.conf /etc/nginx/nginx.conf
-COPY --chown=nginx:nginx ./apps/client/nginx/default.conf.tpl /default.conf.tpl
-COPY --chown=nginx:nginx ./apps/client/nginx/entrypoint.sh /docker-entrypoint.d/load-env.sh
-RUN touch /var/run/nginx.pid 
-RUN chown -R nginx:nginx /var/cache/nginx /var/log/nginx /var/run/nginx.pid /etc/nginx/conf.d 
-RUN chgrp -R root /var/cache/nginx /var/run /var/log/nginx /usr/share/nginx/html/assets/ /var/run/nginx.pid /etc/nginx/conf.d && \
-  chmod -R 775 /var/cache/nginx /var/run /var/log/nginx /usr/share/nginx/html/assets/ /var/run/nginx.pid /etc/nginx/conf.d
-USER nginx
+USER 0
+RUN apt update && apt install -y gettext-base
+COPY --chown=1001:0 --from=build /app/build/dist /opt/bitnami/nginx/html/
+COPY --chown=1001:0 ./apps/client/nginx/default.conf.tpl /default.conf.tpl
+COPY --chown=1001:0 ./apps/client/nginx/entrypoint.sh /docker-entrypoint-initdb.d/load-env.sh
+RUN chown -R 1001:0 /opt/bitnami/nginx/html/assets
+USER 1001
 EXPOSE 8080
