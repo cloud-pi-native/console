@@ -5,7 +5,7 @@ ENV_DIR=/env
 
 populate () {
   if [ -z $(eval "echo \${$1}") ]; then
-    VAR="$(grep "^$1" ${ENV_DIR%/}/.env | xargs)"
+    VAR="$(grep "^$1" $ENV_DIR/.env | xargs)"
     if [ ! -z "$VAR" ]; then
       export "$(grep "^$1" $ENV_DIR/.env | xargs)"
     fi
@@ -18,7 +18,7 @@ populate () {
 
 
 echo "Replacing env constants in JS"
-for file in ${ROOT_DIR%/}/assets/index*.js; do
+for file in $ROOT_DIR/assets/index*.js; do
   echo "Processing $file ...";
 
   populate SERVER_HOST $file

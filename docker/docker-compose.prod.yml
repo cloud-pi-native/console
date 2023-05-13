@@ -19,8 +19,6 @@ services:
       dockerfile: apps/server/Dockerfile
       target: prod
     image: dso/console/server
-    user: "1039900:0"
-    
     container_name: dso-console_server
     depends_on:
       postgres:
