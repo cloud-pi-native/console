@@ -5,7 +5,7 @@ upstream api {
 server {
   listen 8080;
   server_name localhost;
-  root /opt/bitnami/nginx/html/;
+  root /opt/bitnami/nginx/html;
   index index.html;
 
   large_client_header_buffers 4 32k;
