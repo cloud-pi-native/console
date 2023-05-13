@@ -43,7 +43,7 @@ import { calcProjectNameMaxLength } from 'shared/src/utils/functions.js'
 import { getServices } from '../utils/services.js'
 import { addLogs } from '../models/queries/log-queries.js'
 import hooksFns from '../plugins/index.js'
-import { gitlabUrl, projectPath } from '../utils/env.js'
+import { gitlabUrl, projectRootDir } from '../utils/env.js'
 
 // GET
 export const getUserProjectsController = async (req, res) => {
@@ -358,7 +358,7 @@ export const archiveProjectController = async (req, res) => {
     const environmentsName = environments.map(env => env.name)
     const projectName = project.name
     const organizationName = organization.name
-    const gitlabBaseURL = `${gitlabUrl}/${projectPath.join('/')}/${organization.name}/${project.name}/`
+    const gitlabBaseURL = `${gitlabUrl}/${projectRootDir}/${organization.name}/${project.name}/`
     const repositories = (await getInfraProjectRepositories(project.id)).map(({ internalRepoName }) => ({
       url: `${gitlabBaseURL}/${internalRepoName}.git`,
       internalRepoName,

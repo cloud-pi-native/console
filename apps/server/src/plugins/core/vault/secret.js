@@ -1,8 +1,8 @@
 import axios from 'axios'
 import { axiosOptions } from './index.js'
-import { projectPath } from '../../../utils/env.js'
+import { projectRootDir } from '../../../utils/env.js'
 
-const projectDir = projectPath.join('/')
+const projectDir = projectRootDir
 
 export const getToken = async () => {
   const tokenRes = await axios({
