@@ -7,8 +7,8 @@ import { createUser, getUser } from './user.js'
 
 // Check
 export const checkApi = async (payload) => {
-  const { email } = payload.args
-  const user = await getUser(email)
+  const { owner } = payload.args
+  const user = await getUser(owner.email)
   if (user?.id === 1) {
     return {
       status: {
@@ -27,10 +27,10 @@ export const checkApi = async (payload) => {
 // Project
 export const createDsoProject = async (payload) => {
   try {
-    const { project, organization, email } = payload.args
+    const { project, organization, owner } = payload.args
 
     const group = await createGroup(project, organization)
-    const user = await createUser(email)
+    const user = await createUser(owner.email)
     const groupMember = await addGroupMember(group.id, user.id, 40)
 
     return {

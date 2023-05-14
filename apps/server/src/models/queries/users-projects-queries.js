@@ -1,4 +1,5 @@
 import { sequelize } from '../../connect.js'
+import { getUserModel } from '../user.js'
 import { getUsersProjectsModel } from '../users-projects.js'
 
 // SELECT
@@ -18,16 +19,20 @@ export const getRoleByUserIdAndProjectId = async (UserId, ProjectId) => {
 
 export const getSingleOwnerByProjectId = async (ProjectId) => {
   const res = await getUsersProjectsModel().findAll({
-    attributes: [
-      'UserId',
-    ],
     where: {
-      role: 'owner',
       ProjectId,
+      role: 'owner',
     },
     limit: 1,
   })
-  return Array.isArray(res) ? res[0].UserId : res.UserId
+  const user = Array.isArray(res)
+    ? res[0]
+    : res
+  const userId = user.dataValues ? user.dataValues.UserId : user.UserId
+  const resUser = await getUserModel().findByPk(userId, {
+    raw: true,
+  })
+  return resUser
 }
 
 // UPDATE
