@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.4.0](https://github.com/dnum-mi/dso-console/compare/v3.3.1...v3.4.0) (2023-05-15)
+
+
+### Features
+
+* :alien: owner name is required to create Canel user ([e4aa5e9](https://github.com/dnum-mi/dso-console/commit/e4aa5e9662fb0494ef43b7f52140c9c11702613f))
+
 ## [3.3.1](https://github.com/dnum-mi/dso-console/compare/v3.3.0...v3.3.1) (2023-05-11)
 
 
