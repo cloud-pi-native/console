@@ -20,7 +20,7 @@ export const getSecretObject = (nsName, { DOCKER_CONFIG }) => {
     apiVersion: 'v1',
     kind: 'Secret',
     metadata: {
-      name: 'quay-image-pull-secret',
+      name: 'registry-pull-secret',
       namespace: nsName,
     },
     data: { '.dockerconfigjson': b64dockerConfig },

@@ -35,6 +35,10 @@ const ciData = ref({
 
 const typeLanguages = ref([
   {
+    text: 'Autre',
+    value: 'other',
+  },
+  {
     text: 'Java',
     value: 'java',
   },
@@ -173,7 +177,7 @@ watch(internalRepoName, (internalRepoName) => {
         v-model="ciData.workingDir"
         data-testid="workingDirInput"
         label="Chemin relatif de construction de l'application"
-        hint="dossier contenant le fichier package.json ou pom.xml"
+        hint="Dossier contenant le Dockerfile, le fichier package.json, pom.xml etc..."
         label-visible
         placeholder="./"
       />

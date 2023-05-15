@@ -195,6 +195,7 @@ export const createProjectController = async (req, res) => {
       ...project,
       organization: organization.name,
       email: owner.email,
+      userInfos: { firstName: owner.firstName, lastName: owner.lastName },
       userId: owner.id,
     }
     projectData.project = projectData.name

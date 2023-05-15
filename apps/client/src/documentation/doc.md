@@ -101,7 +101,7 @@ La synchronisation est maintenant en place et chaque appel API effectué avec le
 | --------- | ----------------------------------------- |
 | Gitlab    | Hébergement de code et pipeline CI/CD     |
 | Vault     | Hébergement de secrets                    |
-| Quay      | Hébergement d'image de conteneur          |
+| Harbor    | Hébergement d'image de conteneur          |
 | Nexus     | Hébergement d'artefacts                   |
 | Sonarqube | Analyse de qualité de code                |
 | Argocd    | Outil de déploiement automatique (GitOps) |

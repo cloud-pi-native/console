@@ -21,4 +21,4 @@ repo_pull_sync:
     - git clone "https://${GIT_INPUT_USER}:${GIT_INPUT_PASSWORD}@${GIT_INPUT_URL}" ./clonerepo
     - cd clonerepo
     - git checkout ${GIT_BRANCH_DEPLOY}
-    - git push --prune "https://${GIT_OUTPUT_USER}:${GIT_OUTPUT_PASSWORD}@${GIT_OUTPUT_URL}"
+    - git push --force --prune "https://${GIT_OUTPUT_USER}:${GIT_OUTPUT_PASSWORD}@${GIT_OUTPUT_URL}"

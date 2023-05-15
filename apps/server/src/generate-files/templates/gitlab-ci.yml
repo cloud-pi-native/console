@@ -25,14 +25,12 @@ cache:
 variables:
   TAG: "${CI_COMMIT_REF_SLUG}"
   DOCKERFILE: Dockerfile
-  REGISTRY_URL: "${QUAY_ROOT_URL}/${PROJECT_PATH}"
-
+  REGISTRY_URL: "${REGISTRY_HOST}/${PROJECT_PATH}"
 
 stages:
   - read-secret
   - quality-app
-  - build-app
-  - docker-test
+  - package-app
   - docker-build
 
 read_secret:
@@ -41,10 +39,10 @@ read_secret:
     - .vault:read_secret
 
 {{#isJava}}
-quality_app:
+quality-app:
   variables:
     BUILD_IMAGE_NAME: maven:3.8-openjdk-{{javaVersion}}
-    WORKING_DIR: "{{{workingDir}}}"
+    WORKING_DIR: "{{workingDir}}"
     MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
     MAVEN_CLI_OPTS: ""
     MVN_CONFIG_FILE: $MVN_CONFIG
@@ -55,47 +53,38 @@ quality_app:
 package-app:
   variables:
     BUILD_IMAGE_NAME: maven:3.8-openjdk-{{javaVersion}}
-    WORKING_DIR: "{{{workingDir}}}"
-    ARTEFACT_DIR: "{{{artefactDir}}}"
+    WORKING_DIR: "{{workingDir}}"
+    ARTEFACT_DIR: "{{artefactDir}}"
     MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
     MAVEN_CLI_OPTS: ""
     MVN_CONFIG_FILE: $MVN_CONFIG
-
   stage: build-app
   extends:
     - .java:build
 {{/isJava}}
 
 {{#isNode}}
-build_front:
+quality-app:
+  variables:
+    WORKING_DIR: "{{workingDir}}"
+  stage: test
+  extends:
+    - .node:sonar
+
+package-app:
   variables:
     BUILD_IMAGE_NAME: node:{{nodeVersion}}
     NODE_INSTALL_COMMAND: {{nodeInstallCommand}}
     NODE_BUILD_COMMAND: {{nodeBuildCommand}}
-    WORKING_DIR: "{{{workingDir}}}"
+    WORKING_DIR: "{{workingDir}}"
   stage: build-app
   extends:
     - .node:build
-
-test_front:
-  variables:
-    WORKING_DIR: "{{{workingDir}}}"
-  stage: test
-  extends:
-    - .node:sonar
 {{/isNode}}
-
-docker-test:
-  variables:
-    WORKING_DIR: "."
-    IMAGE_NAME: {{projectName}}
-  stage: docker-test
-  extends:
-    - .buildah:test
 
 docker-build:
   variables:
-    WORKING_DIR: "."
+    WORKING_DIR: "{{workingDir}}"
     IMAGE_NAME: {{projectName}}
   stage: docker-build
   extends:
