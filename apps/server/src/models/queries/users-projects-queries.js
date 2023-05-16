@@ -19,9 +19,12 @@ export const getRoleByUserIdAndProjectId = async (UserId, ProjectId) => {
 
 export const getSingleOwnerByProjectId = async (ProjectId) => {
   const res = await getUsersProjectsModel().findAll({
+    attributes: [
+      'UserId',
+    ],
     where: {
-      ProjectId,
       role: 'owner',
+      ProjectId,
     },
     limit: 1,
   })
