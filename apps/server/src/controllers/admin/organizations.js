@@ -7,29 +7,28 @@ import {
 } from '../../models/queries/organization-queries.js'
 import { organizationSchema } from 'shared/src/schemas/organization.js'
 import { adminGroupPath } from 'shared/src/utils/const.js'
-import { getLogInfos } from '../../utils/logger.js'
+import { addReqLogs } from '../../utils/logger.js'
 import { sendOk, sendCreated, sendNotFound, sendBadRequest, sendForbidden } from '../../utils/response.js'
 
 // GET
 export const getAllOrganizationsController = async (req, res) => {
-  if (!req.session.user.groups?.includes(adminGroupPath)) sendForbidden(res, 'Vous n\'avez pas les droits administrateurs')
+  if (!req.session.user.groups?.includes(adminGroupPath)) sendForbidden(res, 'Vous n\'avez pas les droits administrateur')
 
   try {
     const organizations = await getOrganizations()
-    req.log.info({
-      ...getLogInfos(),
+    addReqLogs({
+      req,
       description: 'Organisations récupérées avec succès',
     })
     sendOk(res, organizations)
   } catch (error) {
-    const message = 'Echec de récupération des organisations'
-    req.log.error({
-      ...getLogInfos(),
-      description: message,
-      error: error.message,
-      trace: error.trace,
+    const description = 'Echec de la récupération des organisations'
+    addReqLogs({
+      req,
+      description,
+      error,
     })
-    sendNotFound(res, message)
+    sendNotFound(res, description)
   }
 }
 
@@ -37,7 +36,7 @@ export const getAllOrganizationsController = async (req, res) => {
 export const createOrganizationController = async (req, res) => {
   const data = req.body
 
-  if (!req.session.user.groups?.includes(adminGroupPath)) sendForbidden(res, 'Vous n\'avez pas les droits administrateurs')
+  if (!req.session.user.groups?.includes(adminGroupPath)) sendForbidden(res, 'Vous n\'avez pas les droits administrateur')
 
   try {
     await organizationSchema.validateAsync(data)
@@ -46,21 +45,23 @@ export const createOrganizationController = async (req, res) => {
     if (isNameTaken) throw new Error('Cette organisation existe déjà')
 
     const organization = await createOrganization(data)
-    req.log.info({
-      ...getLogInfos({
+
+    addReqLogs({
+      req,
+      description: 'Organisation créée avec succès',
+      extras: {
         organizationId: organization.id,
-      }),
-      description: 'L\'organisation a bien été enregistrée en base',
+      },
     })
     sendCreated(res, organization)
   } catch (error) {
-    req.log.error({
-      ...getLogInfos(),
-      description: 'Echec d\'enregistrement de l\'organisation',
-      error: error.message,
-      trace: error.trace,
+    const description = 'Echec de la création de l\'organisation'
+    addReqLogs({
+      req,
+      description,
+      error,
     })
-    sendBadRequest(res, error.message)
+    sendBadRequest(res, description)
   }
 }
 
@@ -69,7 +70,7 @@ export const updateOrganizationController = async (req, res) => {
   const name = req.params.orgName
   const { active, label } = req.body
 
-  if (!req.session.user.groups?.includes(adminGroupPath)) sendForbidden(res, 'Vous n\'avez pas les droits administrateurs')
+  if (!req.session.user.groups?.includes(adminGroupPath)) sendForbidden(res, 'Vous n\'avez pas les droits administrateur')
   try {
     if (active !== undefined) {
       await updateActiveOrganization({ name, active })
@@ -78,20 +79,25 @@ export const updateOrganizationController = async (req, res) => {
       await updateLabelOrganization({ name, label })
     }
     const organization = await getOrganizationByName(name)
-    req.log.info({
-      ...getLogInfos({
+
+    addReqLogs({
+      req,
+      description: 'Organisation mise à jour avec succès',
+      extras: {
         organizationId: organization.id,
-      }),
-      description: 'L\'organisation a bien été mise à jour',
+      },
     })
     sendCreated(res, organization)
   } catch (error) {
-    req.log.error({
-      ...getLogInfos(),
-      description: 'Echec de mise à jour de l\'organisation',
-      error: error.message,
-      trace: error.trace,
+    const description = 'Echec de la mise à jour de l\'organisation'
+    addReqLogs({
+      req,
+      description,
+      extras: {
+        organizationName: name,
+      },
+      error,
     })
-    sendBadRequest(res, error.message)
+    sendBadRequest(res, description)
   }
 }

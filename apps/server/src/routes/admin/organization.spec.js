@@ -76,7 +76,7 @@ describe('Organizations routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(404)
-      expect(response.body).toEqual('Echec de récupération des organisations')
+      expect(response.body).toEqual('Echec de la récupération des organisations')
     })
 
     it('Should return an error if requestor is not admin', async () => {
@@ -87,7 +87,7 @@ describe('Organizations routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.body).toEqual('Vous n\'avez pas les droits administrateurs')
+      expect(response.body).toEqual('Vous n\'avez pas les droits administrateur')
     })
   })
 
@@ -122,7 +122,7 @@ describe('Organizations routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(400)
-      expect(response.body).toEqual('"name" length must be less than or equal to 10 characters long')
+      expect(response.body).toEqual('Echec de la création de l\'organisation')
     })
 
     it('Should return an error if organization already exists', async () => {
@@ -139,7 +139,7 @@ describe('Organizations routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(400)
-      expect(response.body).toEqual('Cette organisation existe déjà')
+      expect(response.body).toEqual('Echec de la création de l\'organisation')
     })
 
     it('Should return an error if requestor is not admin', async () => {
@@ -156,7 +156,7 @@ describe('Organizations routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.body).toEqual('Vous n\'avez pas les droits administrateurs')
+      expect(response.body).toEqual('Vous n\'avez pas les droits administrateur')
     })
   })
 
@@ -228,7 +228,7 @@ describe('Organizations routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.body).toEqual('Vous n\'avez pas les droits administrateurs')
+      expect(response.body).toEqual('Vous n\'avez pas les droits administrateur')
     })
   })
 })

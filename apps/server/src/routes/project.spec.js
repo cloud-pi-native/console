@@ -110,7 +110,7 @@ describe('Project routes', () => {
       expect(response.statusCode).toEqual(404)
       expect(response.body.json).not.toBeDefined()
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Projets non trouvés: error message')
+      expect(response.body).toEqual('Echec de la récupération des projets de l\'utilisateur')
     })
   })
 
@@ -142,10 +142,10 @@ describe('Project routes', () => {
       expect(response.statusCode).toEqual(404)
       expect(response.body.json).not.toBeDefined()
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Projet non trouvé: custom error message')
+      expect(response.body).toEqual('Echec de récupération du projet de l\'utilisateur')
     })
 
-    it('Should not retreive a project when Vous n\'êtes pas membre du projet', async () => {
+    it('Should not retreive a project when not project member', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
@@ -160,7 +160,7 @@ describe('Project routes', () => {
       expect(response.statusCode).toEqual(404)
       expect(response.body.json).not.toBeDefined()
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Projet non trouvé: Vous n\'êtes pas membre du projet')
+      expect(response.body).toEqual('Echec de récupération du projet de l\'utilisateur')
     })
   })
 
@@ -255,7 +255,7 @@ describe('Project routes', () => {
 
       expect(response.statusCode).toEqual(400)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual(`"${removedKey}" is required`)
+      expect(response.body).toEqual('Echec de la création du projet')
     })
 
     it('Should not create a project if name already exists', async () => {
@@ -284,7 +284,7 @@ describe('Project routes', () => {
 
       expect(response.statusCode).toEqual(400)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual(`"${newProject.name}" existe déjà`)
+      expect(response.body).toEqual('Echec de la création du projet')
     })
 
     it('Should not create a project if name exists in archives', async () => {
@@ -314,7 +314,7 @@ describe('Project routes', () => {
 
       expect(response.statusCode).toEqual(400)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual(`"${newProject.name}" est archivé et n'est plus disponible`)
+      expect(response.body).toEqual('Echec de la création du projet')
     })
   })
 
@@ -363,7 +363,7 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(400)
-      expect(response.body).toEqual('Vous n\'êtes pas membre du projet')
+      expect(response.body).toEqual('Echec de la mise à jour du projet')
     })
 
     it('Should not update a project description if description is invalid', async () => {
@@ -382,7 +382,7 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(400)
-      expect(response.body).toEqual(`"description" length must be less than or equal to ${descriptionMaxLength} characters long`)
+      expect(response.body).toEqual('Echec de la mise à jour du projet')
     })
   })
 
@@ -430,7 +430,7 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.body).toEqual('Vous n\'êtes pas membre du projet')
+      expect(response.body).toEqual('Echec de la suppression du projet')
     })
 
     it('Should not archive a project if requestor is not owner', async () => {
@@ -447,7 +447,7 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.body).toEqual('Vous n\'êtes pas souscripteur du projet')
+      expect(response.body).toEqual('Echec de la suppression du projet')
     })
   })
 })

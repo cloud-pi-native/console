@@ -2,7 +2,7 @@ import * as fs from 'node:fs/promises'
 import Mustache from 'mustache'
 import path from 'node:path'
 
-import { getLogInfos } from '../utils/logger.js'
+import { addReqLogs } from '../utils/logger.js'
 import { sendCreated, sendServerError } from '../utils/response.js'
 
 export const generateCIFiles = async (req, res) => {
@@ -48,15 +48,18 @@ export const generateCIFiles = async (req, res) => {
       content.node = Mustache.render(node.toString())
     }
 
+    addReqLogs({
+      req,
+      description: 'Fichiers de gitlab-ci créés avec succès',
+    })
     sendCreated(res, content)
   } catch (error) {
-    const message = `Cannot generate files: ${error.message}`
-    req.log.error({
-      ...getLogInfos(),
-      description: message,
-      error: error.message,
-      trace: error.trace,
+    const description = 'Echec de la création des fichiers de gitlab-ci'
+    addReqLogs({
+      req,
+      description,
+      error,
     })
-    return sendServerError(res, message)
+    return sendServerError(res, description)
   }
 }
