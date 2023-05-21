@@ -19,7 +19,7 @@ import {
 import { deletePermission } from '../models/queries/permission-queries.js'
 import { getEnvironmentsByProjectId } from '../models/queries/environment-queries.js'
 import { sendOk, sendCreated, sendNotFound, sendBadRequest, sendForbidden } from '../utils/response.js'
-import { getLogInfos } from '../utils/logger.js'
+import { addReqLogs } from '../utils/logger.js'
 // import hooksFns from '../plugins/index.js'
 
 // GET
@@ -33,43 +33,27 @@ export const getProjectUsersController = async (req, res) => {
 
     const users = await getProjectUsers(projectId)
 
-    req.log.info({
-      ...getLogInfos(),
-      description: 'Membres du projet récupérés',
+    addReqLogs({
+      req,
+      description: 'Membres du projet récupérés avec succès',
+      extras: {
+        projectId,
+      },
     })
     sendOk(res, users)
   } catch (error) {
-    const message = `Echec de récupération des membres du projet: ${error.message}`
-    req.log.error({
-      ...getLogInfos(),
-      description: message,
-      error: error.message,
-      trace: error.trace,
+    const description = 'Echec de la récupération des membres du projet'
+    addReqLogs({
+      req,
+      description,
+      extras: {
+        projectId,
+      },
+      error,
     })
-    sendNotFound(res, message)
+    sendNotFound(res, description)
   }
 }
-
-// TODO : conditionner possibilité de récupérer tous les utilisateurs selon les droits de l'utilisateur
-// export const getUsersController = async (req, res) => {
-//   try {
-//     const users = await getUsers()
-//     req.log.info({
-//       ...getLogInfos(),
-//       description: 'Users successfully retreived',
-//     })
-//     sendOk(res, users)
-//   } catch (error) {
-//     const message = 'Utilisateurs non trouvés'
-//     req.log.error({
-//       ...getLogInfos(),
-//       description: message,
-//       error: error.message,
-//       trace: error.trace,
-//     })
-//     sendNotFound(res, message)
-//   }
-// }
 
 // CREATE
 export const addUserToProjectController = async (req, res) => {
@@ -94,21 +78,27 @@ export const addUserToProjectController = async (req, res) => {
     await lockProject(projectId)
     await addUserToProject({ project, user: userToAdd, role: 'user' })
 
-    const message = 'Utilisateur ajouté au projet'
-    req.log.info({
-      ...getLogInfos({ projectId }),
-      description: message,
+    const description = 'Utilisateur ajouté au projet avec succès'
+    addReqLogs({
+      req,
+      description,
+      extras: {
+        projectId,
+        userId: userToAdd.id,
+      },
     })
-    sendCreated(res, message)
+    sendCreated(res, description)
   } catch (error) {
-    const message = `Utilisateur non ajouté au projet : ${error.message}`
-    req.log.error({
-      ...getLogInfos(),
-      description: message,
-      error: error.message,
-      trace: error.trace,
+    const description = 'Echec de l\'ajout de l\'utilisateur au projet'
+    addReqLogs({
+      req,
+      description,
+      extras: {
+        projectId,
+      },
+      error,
     })
-    return sendBadRequest(res, message)
+    return sendBadRequest(res, description)
   }
 
   // Process api call to external service
@@ -116,16 +106,21 @@ export const addUserToProjectController = async (req, res) => {
   try {
     await unlockProject(projectId)
 
-    req.log.info({
-      ...getLogInfos({ projectId }),
-      description: 'Projet déverrouillé',
+    addReqLogs({
+      req,
+      description: 'Projet déverrouillé avec succès après l\'ajout de l\'utilisateur au projet',
+      extras: {
+        projectId,
+      },
     })
   } catch (error) {
-    req.log.error({
-      ...getLogInfos(),
-      description: 'Echec, projet verrouillé',
-      error: error.message,
-      trace: error.trace,
+    addReqLogs({
+      req,
+      description: 'Echec du déverrouillage du projet après l\'ajout de l\'utilisateur au projet',
+      extras: {
+        projectId,
+      },
+      error,
     })
   }
 }
@@ -135,22 +130,23 @@ export const createUserController = async (req, res) => {
 
   try {
     const user = await createUser(data)
-    req.log.info({
-      ...getLogInfos({
+
+    addReqLogs({
+      req,
+      description: 'Utilisateur créé avec succès',
+      extras: {
         userId: user.id,
-      }),
-      description: 'Utilisateur enregistré en base',
+      },
     })
     sendCreated(res, user)
   } catch (error) {
-    const message = 'Utilisateur non enregistré'
-    req.log.error({
-      ...getLogInfos(),
-      description: message,
-      error: error.message,
-      trace: error.trace,
+    const description = 'Echec de la création de l\'utilisateur'
+    addReqLogs({
+      req,
+      description,
+      error,
     })
-    sendBadRequest(res, message)
+    sendBadRequest(res, description)
   }
 }
 
@@ -174,21 +170,28 @@ export const updateUserProjectRoleController = async (req, res) => {
 
     await updateUserProjectRole(projectId, userToUpdateId, data.role)
 
-    const message = 'Rôle de l\'utilisateur mis à jour'
-    req.log.info({
-      ...getLogInfos({ userToUpdateRole }),
-      description: message,
+    const description = 'Rôle de l\'utilisateur mis à jour avec succès'
+    addReqLogs({
+      req,
+      description,
+      extras: {
+        projectId,
+        userId: userToUpdateId,
+      },
     })
-    sendOk(res, message)
+    sendOk(res, description)
   } catch (error) {
-    const message = `Le rôle de l'utilisateur ne peut pas être modifié : ${error.message}`
-    req.log.error({
-      ...getLogInfos(),
-      description: message,
-      error: error.message,
-      trace: error.trace,
+    const description = 'Echec de la mise à jour du rôle de l\'utilisateur'
+    addReqLogs({
+      req,
+      description,
+      extras: {
+        projectId,
+        userId: userToUpdateId,
+      },
+      error,
     })
-    sendBadRequest(res, message)
+    sendBadRequest(res, description)
   }
 }
 
@@ -221,21 +224,28 @@ export const removeUserFromProjectController = async (req, res) => {
     })
     await deleteRoleByUserIdAndProjectId(userToRemoveId, projectId)
 
-    const message = 'Utilisateur retiré du projet'
-    req.log.info({
-      ...getLogInfos({ projectId }),
-      description: message,
+    const description = 'Utilisateur supprimé dans le projet avec succès'
+    addReqLogs({
+      req,
+      description,
+      extras: {
+        projectId,
+        userId: userToRemoveId,
+      },
     })
-    sendOk(res, message)
+    sendOk(res, description)
   } catch (error) {
-    const message = `L'utilisateur ne peut être retiré du projet : ${error.message}`
-    req.log.error({
-      ...getLogInfos(),
-      description: message,
-      error: error.message,
-      trace: error.trace,
+    const description = 'Echec de la suppression de l\'utilisateur dans le projet'
+    addReqLogs({
+      req,
+      description,
+      extras: {
+        projectId,
+        userId: userToRemoveId,
+      },
+      error,
     })
-    return sendForbidden(res, message)
+    return sendForbidden(res, description)
   }
 
   // Process api call to external service
@@ -243,16 +253,23 @@ export const removeUserFromProjectController = async (req, res) => {
   try {
     await unlockProject(projectId)
 
-    req.log.info({
-      ...getLogInfos({ projectId }),
-      description: 'Projet déverrouillé',
+    addReqLogs({
+      req,
+      description: 'Projet déverrouillé avec succès après suppression de l\'utilisateur dans le projet',
+      extras: {
+        projectId,
+        userId: userToRemoveId,
+      },
     })
   } catch (error) {
-    req.log.error({
-      ...getLogInfos(),
-      description: 'Echec, projet verrouillé',
-      error: error.message,
-      trace: error.trace,
+    addReqLogs({
+      req,
+      description: 'Echec du déverrouillage du projet après suppression de l\'utilisateur dans le projet',
+      extras: {
+        projectId,
+        userId: userToRemoveId,
+      },
+      error,
     })
   }
 }

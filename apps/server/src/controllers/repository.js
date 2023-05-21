@@ -20,7 +20,7 @@ import {
   getEnvironmentsByProjectId,
 } from '../models/queries/environment-queries.js'
 import { filterObjectByKeys } from '../utils/queries-tools.js'
-import { getLogInfos } from '../utils/logger.js'
+import { addReqLogs } from '../utils/logger.js'
 import { sendOk, sendCreated, sendUnprocessableContent, sendNotFound, sendBadRequest, sendForbidden } from '../utils/response.js'
 import { getOrganizationById } from '../models/queries/organization-queries.js'
 import { addLogs } from '../models/queries/log-queries.js'
@@ -38,20 +38,27 @@ export const getRepositoryByIdController = async (req, res) => {
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
     if (!role) throw new Error('Vous n\'êtes pas membre du projet')
 
-    req.log.info({
-      ...getLogInfos({ repositoryId }),
-      description: 'Dépôt récupéré',
+    addReqLogs({
+      req,
+      description: 'Dépôt récupéré avec succès',
+      extras: {
+        repositoryId,
+        projectId,
+      },
     })
     sendOk(res, repo)
   } catch (error) {
-    const message = 'Dépôt non trouvé'
-    req.log.error({
-      ...getLogInfos({ repositoryId }),
-      description: message,
-      error: error.message,
-      trace: error.trace,
+    const description = 'Echec de la récupération du dépôt'
+    addReqLogs({
+      req,
+      description,
+      extras: {
+        repositoryId,
+        projectId,
+      },
+      error,
     })
-    sendNotFound(res, message)
+    sendNotFound(res, description)
   }
 }
 
@@ -63,20 +70,26 @@ export const getProjectRepositoriesController = async (req, res) => {
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
     if (!role) throw new Error('Vous n\'êtes pas membre du projet')
 
-    req.log.info({
-      ...getLogInfos({ projectId }),
-      description: 'Dépôts récupérés',
+    addReqLogs({
+      req,
+      description: 'Dépôts du projet récupérés avec succès',
+      extras: {
+        projectId,
+        repositoriesId: repos.map(({ id }) => id),
+      },
     })
     sendOk(res, repos)
   } catch (error) {
-    const message = 'Dépôts non trouvés'
-    req.log.error({
-      ...getLogInfos({ projectId }),
-      description: message,
-      error: error.message,
-      trace: error.trace,
+    const description = 'Echec de la récupération des dépôt du projet'
+    addReqLogs({
+      req,
+      description,
+      extras: {
+        projectId,
+      },
+      error,
     })
-    sendNotFound(res, message)
+    sendNotFound(res, description)
   }
 }
 
@@ -98,7 +111,15 @@ export const createRepositoryController = async (req, res) => {
         .map(({ status }) => status?.message)
         .join('; ')
       sendUnprocessableContent(res, reasons)
-      req.log.error(reasons)
+
+      addReqLogs({
+        req,
+        description: 'Dépôt récupéré avec succès',
+        extras: {
+          reasons,
+        },
+        error: new Error('Failed to validation repository creation'),
+      })
       addLogs('Create Project Validation', { reasons }, user.id)
       return
     }
@@ -115,21 +136,26 @@ export const createRepositoryController = async (req, res) => {
     await lockProject(projectId)
     repo = await initializeRepository(data)
 
-    const message = 'Dépôt créé avec succès'
-    req.log.info({
-      ...getLogInfos({ repositoryId: repo.id }),
-      description: message,
+    addReqLogs({
+      req,
+      description: 'Dépôt créé avec succès',
+      extras: {
+        projectId,
+        repositoryId: repo.id,
+      },
     })
     sendCreated(res, repo)
   } catch (error) {
-    const message = 'Dépôt non créé'
-    req.log.error({
-      ...getLogInfos(),
-      description: message,
-      error: error.message,
-      trace: error.trace,
+    const description = 'Echec de la création du dépôt'
+    addReqLogs({
+      req,
+      description,
+      extras: {
+        projectId,
+      },
+      error,
     })
-    return sendBadRequest(res, message)
+    return sendBadRequest(res, description)
   }
 
   // Process api call to external service
@@ -156,13 +182,23 @@ export const createRepositoryController = async (req, res) => {
     await addLogs('Create Repository', results, user.id)
     if (results.failed) throw new Error('Echec des services lors de la création du dépôt')
     isServicesCallOk = true
+    addReqLogs({
+      req,
+      description: 'Dépôt créé avec succès par les plugins',
+      extras: {
+        projectId,
+        repositoryId: repo.id,
+      },
+    })
   } catch (error) {
-    const message = `Echec requête ${req.id} : ${error.message}`
-    req.log.error({
-      ...getLogInfos(),
-      description: message,
-      error: error.message,
-      trace: error.trace,
+    const description = 'Echec de la création du dépôt par les plugins'
+    addReqLogs({
+      req,
+      description,
+      extras: {
+        projectId,
+        repositoryId: repo.id,
+      },
     })
     isServicesCallOk = false
   }
@@ -176,16 +212,23 @@ export const createRepositoryController = async (req, res) => {
     }
     await unlockProject(projectId)
 
-    req.log.info({
-      ...getLogInfos({ repositoryId: repo.id }),
-      description: 'Statut du dépôt mis à jour, projet déverrouillé',
+    addReqLogs({
+      req,
+      description: 'Déverrouillage du projet avec succès après la mise à jour du statut du dépôt',
+      extras: {
+        projectId,
+        repositoryId: repo.id,
+      },
     })
   } catch (error) {
-    req.log.error({
-      ...getLogInfos(),
-      description: 'Echec de mise à jour du statut du dépôt, projet verrouillé',
-      error: error.message,
-      trace: error.trace,
+    addReqLogs({
+      req,
+      description: 'Echec du déverrouillage du projet après la mise à jour du statut du dépôt',
+      extras: {
+        projectId,
+        repositoryId: repo.id,
+      },
+      error,
     })
   }
 }
@@ -220,22 +263,29 @@ export const updateRepositoryController = async (req, res) => {
     await updateRepository(repositoryId, data.info)
 
     repo = await getRepositoryById(repositoryId)
+    const description = 'Dépôt mis à jour avec succès'
 
-    const message = 'Dépôt mis à jour'
-    req.log.info({
-      ...getLogInfos({ repositoryId }),
-      description: message,
+    addReqLogs({
+      req,
+      description,
+      extras: {
+        projectId,
+        repositoryId,
+      },
     })
-    sendOk(res, message)
+    sendOk(res, description)
   } catch (error) {
-    const message = 'Dépôt non mis à jour'
-    req.log.error({
-      ...getLogInfos(),
-      description: message,
-      error: error.message,
-      trace: error.trace,
+    const description = 'Echec de la mise à jour du dépôt'
+    addReqLogs({
+      req,
+      description,
+      extras: {
+        projectId,
+        repositoryId,
+      },
+      error,
     })
-    return sendBadRequest(res, message)
+    return sendBadRequest(res, description)
   }
 
   // Process api call to external service
@@ -258,12 +308,14 @@ export const updateRepositoryController = async (req, res) => {
     if (results.failed) throw new Error('Echec des services associés au dépôt')
     isServicesCallOk = true
   } catch (error) {
-    const message = `Echec requête ${req.id} : ${error.message}`
-    req.log.error({
-      ...getLogInfos(),
-      description: message,
-      error: error.message,
-      trace: error.trace,
+    const description = 'Echec de la mise à jour du dépôt par les services externes'
+    addReqLogs({
+      req,
+      description,
+      extras: {
+        repositoryId: repo.id,
+      },
+      error,
     })
     isServicesCallOk = false
   }
@@ -275,17 +327,24 @@ export const updateRepositoryController = async (req, res) => {
     }
     await unlockProject(projectId)
 
-    req.log.info({
-      ...getLogInfos({ repositoryId: repo.id }),
-      description: 'Statut du dépôt mis à jour, projet déverrouillé',
+    addReqLogs({
+      req,
+      description: 'Déverrouillage du projet avec succès après mise à jour du statut du dépôt',
+      extras: {
+        projectId,
+        repositoryId: repo.id,
+      },
     })
     return
   } catch (error) {
-    req.log.error({
-      ...getLogInfos(),
-      description: 'Echec de mise à jour du statut du dépôt, projet verrouillé',
-      error: error.message,
-      trace: error.trace,
+    addReqLogs({
+      req,
+      description: 'Echec du déverrouillage du projet après la mise à jour du statut du dépôt',
+      extras: {
+        projectId,
+        repositoryId: repo.id,
+      },
+      error,
     })
   }
 }
@@ -308,21 +367,28 @@ export const deleteRepositoryController = async (req, res) => {
     await lockProject(projectId)
     await updateRepositoryDeleting(repositoryId)
 
-    const message = 'Dépôt en cours de suppression'
-    req.log.info({
-      ...getLogInfos({ repositoryId }),
-      description: message,
+    const description = 'Dépôt en cours de suppression'
+    addReqLogs({
+      req,
+      description,
+      extras: {
+        projectId,
+        repositoryId: repo.id,
+      },
     })
-    sendOk(res, message)
+    sendOk(res, description)
   } catch (error) {
-    const message = 'Dépôt non supprimé'
-    req.log.error({
-      ...getLogInfos(),
-      description: message,
-      error: error.message,
-      trace: error.trace,
+    const description = 'Echec de la suppression du dépôt'
+    addReqLogs({
+      req,
+      description,
+      extras: {
+        projectId,
+        repositoryId: repo.id,
+      },
+      error,
     })
-    return sendForbidden(res, message)
+    return sendForbidden(res, description)
   }
 
   // Process api call to external service
@@ -346,11 +412,14 @@ export const deleteRepositoryController = async (req, res) => {
     if (results.failed) throw new Error('Echec des opérations')
     isServicesCallOk = true
   } catch (error) {
-    req.log.error({
-      ...getLogInfos(),
-      description: error.message,
-      error: error.message,
-      trace: error.trace,
+    addReqLogs({
+      req,
+      description: 'Echec de la suppresion du dépôt par les plugins',
+      extras: {
+        projectId,
+        repositoryId: repo.id,
+      },
+      error,
     })
     isServicesCallOk = false
   }
@@ -363,18 +432,23 @@ export const deleteRepositoryController = async (req, res) => {
       await updateRepositoryFailed(repo.id)
     }
     await unlockProject(projectId)
-
-    req.log.info({
-      ...getLogInfos({ repositoryId: repo.id }),
-      description: 'Projet déverrouillé',
+    addReqLogs({
+      req,
+      description: 'Déverrouillage du projet avec succès après la suppression du dépôt par les plugins',
+      extras: {
+        projectId,
+        repositoryId: repo.id,
+      },
     })
-    return
   } catch (error) {
-    req.log.error({
-      ...getLogInfos(),
-      description: 'Echec, projet verrouillé',
-      error: error.message,
-      trace: error.trace,
+    addReqLogs({
+      req,
+      description: 'Echec du déverrouillage du projet après la suppression du dépôt par les plugins',
+      extras: {
+        projectId,
+        repositoryId: repo.id,
+      },
+      error,
     })
   }
 }

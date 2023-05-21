@@ -4,22 +4,24 @@ import {
 import { adminGroupPath } from 'shared/src/utils/const.js'
 
 import { sendNotFound, sendOk } from '../../utils/response.js'
-import { getLogInfos } from '../../utils/logger.js'
+import { addReqLogs } from '../../utils/logger.js'
 
 export const getUsersController = async (req, res) => {
   try {
-    if (!req.session.user.groups?.includes(adminGroupPath)) throw new Error('Vous n\'avez pas les droits administrateurs')
+    if (!req.session.user.groups?.includes(adminGroupPath)) throw new Error('Vous n\'avez pas les droits administrateur')
     const users = await getUsers()
-    req.log.info({
-      ...getLogInfos(),
-      description: 'Utilisateurs récupérés avec succès',
+
+    addReqLogs({
+      req,
+      description: 'Ensemble des utilisateurs récupérés avec succès',
     })
     sendOk(res, users)
   } catch (error) {
-    req.log.error({
-      ...getLogInfos(),
-      description: 'Echec de récupération des utilisateurs',
-      error: error.message,
+    const description = 'Echec de la récupération de l\'ensemble des utilisateurs'
+    addReqLogs({
+      req,
+      description,
+      error,
     })
     sendNotFound(res, error.message)
   }

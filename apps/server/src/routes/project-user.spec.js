@@ -95,7 +95,7 @@ describe('User routes', () => {
 
       expect(response.statusCode).toEqual(404)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Echec de récupération des membres du projet: Vous n\'êtes pas membre du projet')
+      expect(response.body).toEqual('Echec de la récupération des membres du projet')
     })
   })
 
@@ -149,7 +149,7 @@ describe('User routes', () => {
 
       expect(response.statusCode).toEqual(400)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Utilisateur non ajouté au projet : L\'utilisateur est déjà membre du projet')
+      expect(response.body).toEqual('Echec de l\'ajout de l\'utilisateur au projet')
     })
 
     it('Should not add an user if project is missing', async () => {
@@ -167,7 +167,7 @@ describe('User routes', () => {
 
       expect(response.statusCode).toEqual(400)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Utilisateur non ajouté au projet : Projet introuvable')
+      expect(response.body).toEqual('Echec de l\'ajout de l\'utilisateur au projet')
     })
   })
 
@@ -245,7 +245,7 @@ describe('User routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.body).toEqual('L\'utilisateur ne peut être retiré du projet : Projet introuvable')
+      expect(response.body).toEqual('Echec de la suppression de l\'utilisateur dans le projet')
     })
 
     it('Should not remove an user if requestor is not member himself', async () => {
@@ -263,7 +263,7 @@ describe('User routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.body).toEqual('L\'utilisateur ne peut être retiré du projet : Vous n\'êtes pas membre du projet')
+      expect(response.body).toEqual('Echec de la suppression de l\'utilisateur dans le projet')
     })
 
     it('Should not remove an user if user is not member', async () => {
@@ -283,7 +283,7 @@ describe('User routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.body).toEqual('L\'utilisateur ne peut être retiré du projet : L\'utilisateur n\'est pas membre du projet')
+      expect(response.body).toEqual('Echec de la suppression de l\'utilisateur dans le projet')
     })
   })
 })

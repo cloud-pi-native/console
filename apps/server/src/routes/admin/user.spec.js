@@ -87,7 +87,7 @@ describe('Admin Users routes', () => {
         .get('/')
         .end()
       expect(response.statusCode).toEqual(404)
-      expect(response.body).toEqual('Vous n\'avez pas les droits administrateurs')
+      expect(response.body).toEqual('Vous n\'avez pas les droits administrateur')
     })
   })
 })

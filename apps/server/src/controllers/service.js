@@ -1,6 +1,6 @@
 import { URL } from 'node:url'
 import axios from 'axios'
-import { getLogInfos } from '../utils/logger.js'
+import { addReqLogs } from '../utils/logger.js'
 import { sendOk, sendBadRequest } from '../utils/response.js'
 import { allServices } from '../utils/services.js'
 import { getUserById } from '../models/queries/user-queries.js'
@@ -33,16 +33,19 @@ export const checkServicesHealthController = async (req, res) => {
           }
         }
       }))
+    addReqLogs({
+      req,
+      description: 'Etats des services récupérés avec succès',
+    })
     sendOk(res, serviceData)
   } catch (error) {
-    let message = `Erreur : ${error.message}`
-    if (error.message.match(/^Failed to parse URL from/)) message = 'Url de service invalide'
-    req.log.error({
-      ...getLogInfos(),
-      description: message,
-      error: error.message,
-      stack: error.stack,
+    let description = 'Echec de la récupération de l\'état des services'
+    if (error.message.match(/^Failed to parse URL from/)) description = 'Url de service invalide'
+    addReqLogs({
+      req,
+      description,
+      error,
     })
-    sendBadRequest(res, message)
+    sendBadRequest(res, description)
   }
 }
