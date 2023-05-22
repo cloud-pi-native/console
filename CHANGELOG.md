@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.4.1](https://github.com/dnum-mi/dso-console/compare/v3.4.0...v3.4.1) (2023-05-22)
+
+
+### Bug Fixes
+
+* :art: change ns labels ([ae14d67](https://github.com/dnum-mi/dso-console/commit/ae14d6736a3b3276b3406562709cf77e3aab0668))
+* :construction: hooks payload send full owner object, bug getSingleOwnerByProjectId ([0e74895](https://github.com/dnum-mi/dso-console/commit/0e74895695b42d4e13a645ef4005afbffec59b64))
+
 ## [3.4.0](https://github.com/dnum-mi/dso-console/compare/v3.3.1...v3.4.0) (2023-05-15)
 
 
