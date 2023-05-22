@@ -73,7 +73,7 @@ export const vaultToken = process.env.VAULT_TOKEN
 export const harborUser = process.env.HARBOR_ADMIN
 export const harborPassword = process.env.HARBOR_ADMIN_PASSWORD
 
-export const projectPath = process.env.PROJECT_PATH?.split('/') || ['forge-mi', 'projects']
+export const projectRootDir = process.env.PROJECTS_ROOT_DIR
 
 export const mockPlugins = process.env.MOCK_PLUGINS === 'true'
 

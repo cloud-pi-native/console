@@ -88,8 +88,8 @@ export const updatePermissionController = async (req, res) => {
     const requestorPermission = await getPermissionByUserIdAndEnvironmentId(userId, environmentId)
     if (!requestorPermission) throw new Error('Le requérant doit avoir des droits sur l\'environnement pour modifier des permissions')
 
-    const ownerId = await getSingleOwnerByProjectId(projectId)
-    if (data.userId === ownerId) throw new Error('La permission du owner du projet ne peut être modifiée')
+    const owner = await getSingleOwnerByProjectId(projectId)
+    if (data.userId === owner.id) throw new Error('La permission du owner du projet ne peut être modifiée')
 
     const permission = await updatePermission({ userId: data.userId, environmentId, level: data.level })
     req.log.info({
@@ -123,8 +123,8 @@ export const deletePermissionController = async (req, res) => {
     const requestorPermission = await getPermissionByUserIdAndEnvironmentId(requestorId, environmentId)
     if (!requestorPermission) throw new Error('Le requérant doit avoir des droits sur l\'environnement pour supprimer des permissions')
 
-    const ownerId = await getSingleOwnerByProjectId(projectId)
-    if (userId === ownerId) throw new Error('La permission du owner du projet ne peut être supprimée')
+    const owner = await getSingleOwnerByProjectId(projectId)
+    if (userId === owner.id) throw new Error('La permission du owner du projet ne peut être supprimée')
 
     const permission = await deletePermission(userId, environmentId)
 

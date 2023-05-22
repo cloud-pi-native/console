@@ -1,4 +1,5 @@
 import { sequelize } from '../../connect.js'
+import { getUserModel } from '../user.js'
 import { getUsersProjectsModel } from '../users-projects.js'
 
 // SELECT
@@ -27,7 +28,14 @@ export const getSingleOwnerByProjectId = async (ProjectId) => {
     },
     limit: 1,
   })
-  return Array.isArray(res) ? res[0].UserId : res.UserId
+  const user = Array.isArray(res)
+    ? res[0]
+    : res
+  const userId = user.dataValues ? user.dataValues.UserId : user.UserId
+  const resUser = await getUserModel().findByPk(userId, {
+    raw: true,
+  })
+  return resUser
 }
 
 // UPDATE

@@ -22,7 +22,7 @@ import hooksFns from '../plugins/index.js'
 import { addLogs } from '../models/queries/log-queries.js'
 import { getOrganizationById } from '../models/queries/organization-queries.js'
 import { getInfraProjectRepositories } from '../models/queries/repository-queries.js'
-import { gitlabUrl, harborUrl, projectPath } from '../utils/env.js'
+import { gitlabUrl, harborUrl, projectRootDir } from '../utils/env.js'
 
 // GET
 export const getEnvironmentByIdController = async (req, res) => {
@@ -66,7 +66,7 @@ export const initializeEnvironmentController = async (req, res) => {
   let env
   let project
   let organization
-  let ownerId
+  let owner
   try {
     project = await getProjectById(projectId)
     organization = await getOrganizationById(project.organization)
@@ -82,7 +82,7 @@ export const initializeEnvironmentController = async (req, res) => {
 
     env = await initializeEnvironment(data)
     await lockProject(projectId)
-    ownerId = await getSingleOwnerByProjectId(projectId)
+    owner = await getSingleOwnerByProjectId(projectId)
 
     req.log.info({
       ...getLogInfos({
@@ -108,7 +108,7 @@ export const initializeEnvironmentController = async (req, res) => {
     const environmentName = env.dataValues.name
     const projectName = project.dataValues.name
     const organizationName = organization.name
-    const gitlabBaseURL = `${gitlabUrl}/${projectPath.join('/')}/${organizationName}/${projectName}/`
+    const gitlabBaseURL = `${gitlabUrl}/${projectRootDir}/${organizationName}/${projectName}/`
     const repositories = (await getInfraProjectRepositories(project.id)).map(({ internalRepoName }) => ({
       url: `${gitlabBaseURL}/${internalRepoName}.git`,
       internalRepoName,
@@ -120,7 +120,7 @@ export const initializeEnvironmentController = async (req, res) => {
       organization: organizationName,
       repositories,
       registryHost,
-      ownerId,
+      owner,
     }
     const results = await hooksFns.initializeEnvironment(envData)
     await addLogs('Create Environment', results, userId)
@@ -141,10 +141,10 @@ export const initializeEnvironmentController = async (req, res) => {
   try {
     if (isServicesCallOk) {
       await updateEnvironmentCreated(env.id)
-      const ownerId = await getSingleOwnerByProjectId(projectId)
-      if (ownerId !== userId) {
+      const owner = await getSingleOwnerByProjectId(projectId)
+      if (owner.id !== userId) {
         await setPermission({
-          userId: ownerId,
+          userId: owner.id,
           environmentId: env.id,
           level: 2,
         })
@@ -215,7 +215,7 @@ export const deleteEnvironmentController = async (req, res) => {
     const environmentName = env.name
     const projectName = project.name
     const organizationName = organization.name
-    const gitlabBaseURL = `${gitlabUrl}/${projectPath.join('/')}/${organizationName}/${projectName}/`
+    const gitlabBaseURL = `${gitlabUrl}/${projectRootDir}/${organizationName}/${projectName}/`
     const repositories = (await getInfraProjectRepositories(project.id)).map(({ internalRepoName }) => ({
       url: `${gitlabBaseURL}/${internalRepoName}.git`,
       internalRepoName,

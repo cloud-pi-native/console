@@ -1,0 +1,58 @@
+# This file is an example on how to use CI on Gitlab DSO platform, it is not yet functionnal with environnment
+# references for includes are at https://github.com/hexa-forge/gitlab-ci-catalog
+stages:
+  - read-secret
+  - build-push
+  
+include: 
+  - project: $CATALOG_PATH
+    file: vault-ci.yml
+    ref: main
+  - project: $CATALOG_PATH
+    file: kaniko-ci.yml
+    ref: main
+
+vault:read_secret:
+  stage: read-secret
+
+.build-push-branches:
+  only:
+    refs:
+      - branches
+  extends: .kaniko:build-push
+  stage: build-push
+  variables:
+    WORKING_DIR: .
+
+.build-push-tags:
+  only:
+    refs:
+      - tags
+  extends: .kaniko:build-push
+  stage: build-push
+  variables:
+    WORKING_DIR: .
+
+build-push-server-tag:
+  extends: .build-push-tags
+  variables:
+    IMAGES_NAMES: server:$CI_COMMIT_TAG server:latest
+    DOCKERFILE: apps/server/Dockerfile
+
+build-push-client-tag:
+  extends: .build-push-tags
+  variables:
+    IMAGES_NAMES: client:$CI_COMMIT_TAG client:latest
+    DOCKERFILE: apps/client/Dockerfile
+
+build-push-server-branch:
+  extends: .build-push-branches
+  variables:
+    IMAGES_NAMES: server:$CI_COMMIT_BRANCH
+    DOCKERFILE: apps/server/Dockerfile
+
+build-push-client-branch:
+  extends: .build-push-branches
+  variables:
+    IMAGES_NAMES: client:$CI_COMMIT_BRANCH
+    DOCKERFILE: apps/client/Dockerfile
