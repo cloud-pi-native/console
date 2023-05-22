@@ -3,7 +3,7 @@ import { axiosOptions } from './index.js'
 import { generateRandomPassword } from '../../../utils/crypto.js'
 
 export const createUser = async (payload) => {
-  const { project, organization, email } = payload.args
+  const { project, organization, owner } = payload.args
   const username = `${organization}-${project}`
   const res = {
     status: {
@@ -29,7 +29,7 @@ export const createUser = async (payload) => {
         url: 'users/create',
         method: 'post',
         params: {
-          email,
+          email: owner.email,
           local: 'true',
           login: username,
           name: username,

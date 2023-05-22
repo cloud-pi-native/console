@@ -174,7 +174,6 @@ describe('Project routes', () => {
       Role.$queueResult({ UserId: owner.id, role: owner.role })
       // getOwnerId
       Role.$queueResult({ UserId: owner.id, role: owner.role })
-      // getOwnerById
       User.$queueResult(owner)
       setRequestorId(ownerId)
 

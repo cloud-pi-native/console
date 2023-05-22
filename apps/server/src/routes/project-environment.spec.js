@@ -12,6 +12,7 @@ import { getEnvironmentModel } from '../models/environment.js'
 import { getPermissionModel } from '../models/permission.js'
 import { getProjectModel } from '../models/project.js'
 import { getOrganizationModel } from '../models/organization.js'
+import { getUserModel } from '../models/user.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 
@@ -43,6 +44,7 @@ const getRequestor = () => {
 
 describe('User routes', () => {
   let Role
+  let User
   let Environment
   let Permission
   let Project
@@ -53,6 +55,7 @@ describe('User routes', () => {
     await getConnection()
     Project = getProjectModel()
     Role = getUsersProjectsModel()
+    User = getUserModel()
     Environment = getEnvironmentModel()
     Permission = getPermissionModel()
     Organization = getOrganizationModel()
@@ -66,6 +69,12 @@ describe('User routes', () => {
   afterEach(() => {
     vi.clearAllMocks()
     sequelize.$clearQueue()
+    Project.$clearQueue()
+    Role.$clearQueue()
+    User.$clearQueue()
+    Environment.$clearQueue()
+    Permission.$clearQueue()
+    Organization.$clearQueue()
     global.fetch = vi.fn(() => Promise.resolve({ json: async () => {} }))
   })
 
@@ -141,6 +150,7 @@ describe('User routes', () => {
       Organization.$queueResult(randomDbSetup.organization)
       // getRequestorRole
       Role.$queueResult({ UserId: owner.id, role: 'owner' })
+      User.$queueResult(owner)
       // getExistingEnvironments
       Environment.$queueResult(null)
       // createEnvironment
@@ -172,6 +182,7 @@ describe('User routes', () => {
       Organization.$queueResult(randomDbSetup.organization)
       // getRequestorRole
       Role.$queueResult(null)
+      User.$queueResult(null)
 
       setRequestorId(owner.id)
 

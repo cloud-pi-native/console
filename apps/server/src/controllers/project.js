@@ -13,7 +13,7 @@ import {
   updateProjectServices,
   updateProject,
 } from '../models/queries/project-queries.js'
-import { getOrCreateUser, getUserById } from '../models/queries/user-queries.js'
+import { getOrCreateUser } from '../models/queries/user-queries.js'
 import {
   deleteRoleByUserIdAndProjectId,
   getRoleByUserIdAndProjectId,
@@ -112,9 +112,7 @@ export const getProjectOwnerController = async (req, res) => {
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
     if (!role) throw new Error('Vous n\'êtes pas membre du projet')
 
-    const ownerId = await getSingleOwnerByProjectId(projectId)
-    const owner = await getUserById(ownerId)
-
+    const owner = await getSingleOwnerByProjectId(projectId)
     req.log.info({
       ...getLogInfos({ owner }),
       description: 'Propriétaire du projet récupéré avec succès',
@@ -142,7 +140,9 @@ export const createProjectController = async (req, res) => {
   let organization
 
   try {
-    const isValid = await hooksFns.createProject({ email: user.email }, true)
+    owner = await getOrCreateUser({ id: user.id, email: user?.email, firstName: user?.firstName, lastName: user?.lastName })
+
+    const isValid = await hooksFns.createProject({ owner }, true)
 
     if (isValid?.failed) {
       const reasons = Object.values(isValid)
@@ -154,7 +154,6 @@ export const createProjectController = async (req, res) => {
       addLogs('Create Project Validation', { reasons }, user.id)
       return
     }
-    owner = await getOrCreateUser({ id: user.id, email: user?.email, firstName: user?.firstName, lastName: user?.lastName })
 
     organization = await getOrganizationById(data.organization)
 
@@ -194,9 +193,7 @@ export const createProjectController = async (req, res) => {
     const projectData = {
       ...project,
       organization: organization.name,
-      email: owner.email,
-      userInfos: { firstName: owner.firstName, lastName: owner.lastName },
-      userId: owner.id,
+      owner,
     }
     projectData.project = projectData.name
     delete projectData.name
