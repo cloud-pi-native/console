@@ -9,6 +9,7 @@ import { getConnection, closeConnections, sequelize } from '../connect.js'
 import projectPermissionRouter from './project-permission.js'
 import { getUsersProjectsModel } from '../models/users-projects.js'
 import { getPermissionModel } from '../models/permission.js'
+import { getUserModel } from '../models/user.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 
@@ -40,12 +41,14 @@ const getRequestor = () => {
 
 describe('Project routes', () => {
   let Role
+  let User
   let Permission
 
   beforeAll(async () => {
     mockSession(app)
     await getConnection()
     Role = getUsersProjectsModel()
+    User = getUserModel()
     Permission = getPermissionModel()
     global.fetch = vi.fn(() => Promise.resolve())
   })
@@ -57,6 +60,9 @@ describe('Project routes', () => {
   afterEach(() => {
     vi.clearAllMocks()
     sequelize.$clearQueue()
+    Role.$clearQueue()
+    User.$clearQueue()
+    Permission.$clearQueue()
     global.fetch = vi.fn(() => Promise.resolve({ json: async () => {} }))
   })
 
@@ -159,6 +165,7 @@ describe('Project routes', () => {
       Permission.$queueResult(requestorPermission)
       // 3. getOwnerId
       Role.$queueResult({ UserId: owner.id, role: 'owner' })
+      User.$queueResult(owner)
       // 4. setPermissions
       Permission.$queueResult(permissionToUpdate)
       setRequestorId(owner.id)
@@ -185,6 +192,7 @@ describe('Project routes', () => {
       Permission.$queueResult(permissionToUpdate)
       // 3. getOwnerId
       Role.$queueResult({ UserId: owner.id, role: 'owner' })
+      User.$queueResult(owner)
       setRequestorId(owner.id)
 
       const response = await app.inject()
@@ -231,6 +239,7 @@ describe('Project routes', () => {
       Permission.$queueResult(removedPermission)
       // 3. getOwnerId
       Role.$queueResult({ UserId: owner.id, role: 'owner' })
+      User.$queueResult(owner)
       // 4. deletePermissions
       Permission.$queueResult(removedPermission.id)
       setRequestorId(owner.id)
@@ -256,6 +265,7 @@ describe('Project routes', () => {
       Permission.$queueResult(requestorPermission)
       // 3. getOwnerId
       Role.$queueResult({ UserId: owner.id, role: 'owner' })
+      User.$queueResult(owner)
       setRequestorId(owner.id)
 
       const response = await app.inject()
