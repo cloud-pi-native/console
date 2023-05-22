@@ -3,9 +3,9 @@ import { getNsObject, getSecretObject } from './utils.js'
 
 export const createKubeNamespace = async (payload) => {
   try {
-    const { organization, project, environment } = payload.args
+    const { organization, project, environment, owner } = payload.args
     const nsName = `${organization}-${project}-${environment}`
-    const nsObject = getNsObject(organization, project, environment)
+    const nsObject = getNsObject(organization, project, environment, owner)
     const nsSearch = (await k8sApi.listNamespace()).body
     const ns = nsSearch.items.find(ns => ns.metadata.name === nsName)
     if (!ns) {

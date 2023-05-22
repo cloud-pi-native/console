@@ -1,12 +1,15 @@
 
-export const getNsObject = (organization, projet, environment) => {
+export const getNsObject = (organization, projet, environment, owner) => {
   return {
     metadata: {
       name: `${organization}-${projet}-${environment}`,
       labels: {
-        organization,
-        projet,
-        environment,
+        'dso/organization': organization,
+        'dso/projet': projet,
+        'dso/environment': environment,
+        'dso/owner.id': owner.id,
+        'dso/owner.firstName': owner.firstName,
+        'dso/owner.lastName': owner.lastName,
       },
     },
     kind: 'Namespace',

@@ -5,7 +5,7 @@ import { getkcClient } from './client.js'
 export const createKeycloakProjectGroup = async (payload) => {
   const kcClient = await getkcClient()
   try {
-    const { organization, project, userId } = payload.args
+    const { organization, project, owner } = payload.args
     const projectName = `${organization}-${project}`
     let group = await getProjectGroupByName(kcClient, projectName)
     if (!group) {
@@ -13,7 +13,7 @@ export const createKeycloakProjectGroup = async (payload) => {
         name: projectName,
       })
     }
-    await addMembers(kcClient, [userId], group.id)
+    await addMembers(kcClient, [owner.id], group.id)
 
     return {
       status: { result: 'OK' },
