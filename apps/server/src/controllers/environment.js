@@ -22,7 +22,7 @@ import hooksFns from '../plugins/index.js'
 import { addLogs } from '../models/queries/log-queries.js'
 import { getOrganizationById } from '../models/queries/organization-queries.js'
 import { getInfraProjectRepositories } from '../models/queries/repository-queries.js'
-import { gitlabUrl, harborUrl, projectPath } from '../utils/env.js'
+import { gitlabUrl, harborUrl, projectRootDir } from '../utils/env.js'
 
 // GET
 export const getEnvironmentByIdController = async (req, res) => {
@@ -108,7 +108,7 @@ export const initializeEnvironmentController = async (req, res) => {
     const environmentName = env.dataValues.name
     const projectName = project.dataValues.name
     const organizationName = organization.name
-    const gitlabBaseURL = `${gitlabUrl}/${projectPath.join('/')}/${organizationName}/${projectName}/`
+    const gitlabBaseURL = `${gitlabUrl}/${projectRootDir}/${organizationName}/${projectName}/`
     const repositories = (await getInfraProjectRepositories(project.id)).map(({ internalRepoName }) => ({
       url: `${gitlabBaseURL}/${internalRepoName}.git`,
       internalRepoName,
@@ -215,7 +215,7 @@ export const deleteEnvironmentController = async (req, res) => {
     const environmentName = env.name
     const projectName = project.name
     const organizationName = organization.name
-    const gitlabBaseURL = `${gitlabUrl}/${projectPath.join('/')}/${organizationName}/${projectName}/`
+    const gitlabBaseURL = `${gitlabUrl}/${projectRootDir}/${organizationName}/${projectName}/`
     const repositories = (await getInfraProjectRepositories(project.id)).map(({ internalRepoName }) => ({
       url: `${gitlabBaseURL}/${internalRepoName}.git`,
       internalRepoName,
