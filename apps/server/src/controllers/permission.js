@@ -9,7 +9,7 @@ import {
   getRoleByUserIdAndProjectId,
   getSingleOwnerByProjectId,
 } from '../models/queries/users-projects-queries.js'
-import { getLogInfos } from '../utils/logger.js'
+import { addReqLogs } from '../utils/logger.js'
 import { sendOk, sendCreated, sendNotFound, sendBadRequest, sendForbidden } from '../utils/response.js'
 // import hooksFns from '../plugins/index.js'
 
@@ -24,20 +24,28 @@ export const getEnvironmentPermissionsController = async (req, res) => {
     if (!role) throw new Error('Vous n\'êtes pas membre du projet')
 
     const permissions = await getEnvironmentPermissions(environmentId)
-    req.log.info({
-      ...getLogInfos(),
-      description: 'Permissions récupérées',
+
+    addReqLogs({
+      req,
+      description: 'Permissions de l\'environnement récupérées avec succès',
+      extras: {
+        projectId,
+        environmentId,
+      },
     })
     sendOk(res, permissions)
   } catch (error) {
-    const message = `Permissions non trouvées: ${error.message}`
-    req.log.error({
-      ...getLogInfos(),
-      description: message,
-      error: error.message,
-      trace: error.trace,
+    const description = 'Echec de la récupération des permissions de l\'environnement'
+    addReqLogs({
+      req,
+      description,
+      extras: {
+        projectId,
+        environmentId,
+      },
+      error,
     })
-    sendNotFound(res, message)
+    sendNotFound(res, description)
   }
 }
 
@@ -57,20 +65,28 @@ export const setPermissionController = async (req, res) => {
     // if (data.level === 0) await removeMembers([data.userId], [permission.Environment.name])
     // if (data.level === 10) await removeMembers([data.userId], [permission.Environment.name]) && await addMembers([data.userId], [permission.Environment.name])
     // if (data.level === 20) await addMembers([data.userId], [permission.Environment.name])
-    req.log.info({
-      ...getLogInfos(),
-      description: 'Permission enregistrée',
+    addReqLogs({
+      req,
+      description: 'Permission créée avec succès',
+      extras: {
+        permissionId: permission.id,
+        projectId,
+        environmentId,
+      },
     })
     sendCreated(res, permission)
   } catch (error) {
-    const message = `Permissions non créées : ${error.message}`
-    req.log.error({
-      ...getLogInfos(),
-      description: message,
-      error: error.message,
-      trace: error.trace,
+    const description = 'Echec de la création d\'une permission'
+    addReqLogs({
+      req,
+      description,
+      extras: {
+        projectId,
+        environmentId,
+      },
+      error,
     })
-    sendBadRequest(res, message)
+    sendBadRequest(res, description)
   }
 }
 
@@ -92,20 +108,29 @@ export const updatePermissionController = async (req, res) => {
     if (data.userId === owner.id) throw new Error('La permission du owner du projet ne peut être modifiée')
 
     const permission = await updatePermission({ userId: data.userId, environmentId, level: data.level })
-    req.log.info({
-      ...getLogInfos(),
-      description: 'Permission mise à jour',
+
+    addReqLogs({
+      req,
+      description: 'Permission mise à jour avec succès',
+      extras: {
+        permissionId: permission.id,
+        projectId,
+        environmentId,
+      },
     })
     sendOk(res, permission)
   } catch (error) {
-    const message = `Permission non modifiée : ${error.message}`
-    req.log.error({
-      ...getLogInfos(),
-      description: message,
-      error: error.message,
-      trace: error.trace,
+    const description = 'Echec de la mise à jour de la permission'
+    addReqLogs({
+      req,
+      description,
+      extras: {
+        projectId,
+        environmentId,
+      },
+      error,
     })
-    sendBadRequest(res, message)
+    sendBadRequest(res, description)
   }
 }
 
@@ -128,20 +153,27 @@ export const deletePermissionController = async (req, res) => {
 
     const permission = await deletePermission(userId, environmentId)
 
-    const message = 'Permission supprimée'
-    req.log.info({
-      ...getLogInfos({ permission }),
-      description: message,
+    addReqLogs({
+      req,
+      description: 'Permissions supprimée avec succès',
+      extras: {
+        permissionId: permission.id,
+        projectId,
+        environmentId,
+      },
     })
     sendOk(res, permission)
   } catch (error) {
-    const message = `Permission non supprimée : ${error.message}`
-    req.log.error({
-      ...getLogInfos(),
-      description: message,
-      error: error.message,
-      trace: error.trace,
+    const description = 'Echec de la suppression de la permission'
+    addReqLogs({
+      req,
+      description,
+      extras: {
+        projectId,
+        environmentId,
+      },
+      error,
     })
-    sendForbidden(res, message)
+    sendForbidden(res, description)
   }
 }

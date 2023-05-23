@@ -154,7 +154,7 @@ describe('Project routes', () => {
 
       expect(response.statusCode).toEqual(200)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Dépôt mis à jour')
+      expect(response.body).toEqual('Dépôt mis à jour avec succès')
     })
 
     it('Should should not update a repository if invalid keys', async () => {
@@ -179,7 +179,7 @@ describe('Project routes', () => {
 
       expect(response.statusCode).toEqual(400)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Dépôt non mis à jour')
+      expect(response.body).toEqual('Echec de la mise à jour du dépôt')
     })
   })
 

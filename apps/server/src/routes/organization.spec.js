@@ -90,7 +90,7 @@ describe('Organizations routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(404)
-      expect(response.body).toEqual('Echec de récupération des organisations')
+      expect(response.body).toEqual('Echec de la récupération des organisations')
     })
   })
 })
