@@ -25,8 +25,8 @@ export const getOrganizationByName = async (name) => {
 }
 
 // CREATE
-export const createOrganization = async ({ name, label }) => {
-  return getOrganizationModel().create({ name, label, active: true })
+export const createOrganization = async ({ name, label, source }) => {
+  return getOrganizationModel().create({ name, label, source, active: true })
 }
 
 // UPDATE
@@ -34,8 +34,8 @@ export const updateActiveOrganization = async ({ name, active }) => {
   return getOrganizationModel().update({ active }, { where: { name } })
 }
 
-export const updateLabelOrganization = async ({ name, label }) => {
-  return getOrganizationModel().update({ label }, { where: { name } })
+export const updateLabelOrganization = async ({ name, label, source }) => {
+  return getOrganizationModel().update({ label, source }, { where: { name } })
 }
 
 // TECH

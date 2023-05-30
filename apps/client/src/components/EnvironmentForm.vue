@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { environmentSchema, schemaValidator, instanciateSchema } from 'shared'
 import { allEnv } from 'shared/src/utils/const.js'
 import PermissionForm from './PermissionForm.vue'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = defineProps({
   environment: {
@@ -22,6 +23,8 @@ const props = defineProps({
     default: false,
   },
 })
+
+const snackbarStore = useSnackbarStore()
 
 const localEnvironment = ref(props.environment)
 
@@ -63,7 +66,7 @@ const addEnvironment = () => {
   if (Object.keys(errorSchema).length === 0) {
     emit('addEnvironment', localEnvironment.value)
   } else {
-    console.log(errorSchema)
+    snackbarStore.setMessage(Object.values(errorSchema)[0])
   }
 }
 

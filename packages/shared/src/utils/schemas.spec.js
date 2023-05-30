@@ -50,7 +50,7 @@ describe('Schemas utils', () => {
   it('Should validate a correct organization schema', () => {
     expect(schemaValidator(organizationSchema, {
       id: faker.datatype.uuid(),
-      name: faker.word.noun(),
+      name: faker.word.noun({ length: { min: 2, max: 10 } }),
       label: faker.company.name(),
       active: faker.datatype.boolean(),
     })).toStrictEqual({})
@@ -60,7 +60,7 @@ describe('Schemas utils', () => {
     expect(schemaValidator(organizationSchema, {
       id: faker.datatype.uuid(),
       source: faker.word.noun(),
-      name: faker.word.noun(),
+      name: faker.word.noun({ length: { min: 2, max: 10 } }),
       label: faker.company.name(),
       active: faker.datatype.boolean(),
     })).toStrictEqual({})
@@ -89,7 +89,7 @@ describe('Schemas utils', () => {
     expect(schemaValidator(organizationSchema, {
       id: faker.datatype.uuid(),
       source: faker.datatype.array(),
-      name: faker.word.noun(),
+      name: faker.word.noun({ length: { min: 2, max: 10 } }),
       label: faker.company.name(),
       active: faker.datatype.boolean(),
     })).toStrictEqual({ source: '"source" must be a string' })

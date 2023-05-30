@@ -14,3 +14,5 @@ export const calcProjectNameMaxLength = (organizationName) => {
     ? 61 - longestEnvironmentName.length - organizationName.length
     : 61 - longestEnvironmentName.length
 }
+
+export const getUniqueListBy = (arr, key) => [...new Map(arr.map(item => [item[key], item])).values()]
