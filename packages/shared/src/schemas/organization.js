@@ -4,8 +4,6 @@ export const organizationSchema = Joi.object({
   id: Joi.string()
     .uuid(),
 
-  contributorId: Joi.string(),
-
   source: Joi.string(),
 
   name: Joi.string()
