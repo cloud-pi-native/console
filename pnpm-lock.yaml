@@ -289,6 +289,9 @@ importers:
       rimraf:
         specifier: ^5.0.1
         version: 5.0.1
+      prisma:
+        specifier: ^4.15.0
+        version: 4.15.0
       sequelize-mock:
         specifier: ^0.10.2
         version: 0.10.2(patch_hash=i4ffowa4pg2pczh4nf4453yae4)
@@ -1274,6 +1277,11 @@ packages:
 
   /@polka/url@1.0.0-next.21:
     resolution: {integrity: sha512-a5Sab1C4/icpTZVzZc5Ghpz88yQtGOyNqYXcZgOssB2uuAr+wF/MvN6bgtW32q7HHrvBki+BsZ0OuNv6EV3K9g==}
+    dev: true
+
+  /@prisma/engines@4.15.0:
+    resolution: {integrity: sha512-FTaOCGs0LL0OW68juZlGxFtYviZa4xdQj/rQEdat2txw0s3Vu/saAPKjNVXfIgUsGXmQ72HPgNr6935/P8FNAA==}
+    requiresBuild: true
     dev: true
 
   /@rollup/pluginutils@5.0.2:
@@ -6626,6 +6634,15 @@ packages:
       parse-ms: 1.0.1
       plur: 1.0.0
     dev: false
+
+  /prisma@4.15.0:
+    resolution: {integrity: sha512-iKZZpobPl48gTcSZVawLMQ3lEy6BnXwtoMj7hluoGFYu2kQ6F9LBuBrUyF95zRVnNo8/3KzLXJXJ5TEnLSJFiA==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+    requiresBuild: true
+    dependencies:
+      '@prisma/engines': 4.15.0
+    dev: true
 
   /prismjs@1.29.0:
     resolution: {integrity: sha512-Kx/1w86q/epKcmte75LNrEoT+lX8pBpavuAbvJWRXar7Hz8jrtF+e3vY751p0R8H9HdArwaCTNDDzHg/ScJK1Q==}

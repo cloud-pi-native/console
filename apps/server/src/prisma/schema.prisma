@@ -1,0 +1,88 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Environment {
+  id        Int     @id @default(autoincrement())
+  name      String
+  projectId Int
+  status    String  @default("initializing")
+  project   Project @relation(fields: [projectId], references: [id])
+
+  permissions Permission[]
+}
+
+model Log {
+  id     Int    @id @default(autoincrement())
+  data   Json
+  action String @default("")
+  userId Int
+  user   User   @relation(fields: [userId], references: [id])
+}
+
+model Organization {
+  id     Int     @id @unique @default(autoincrement())
+  source String
+  name   String  @unique
+  label  String  @unique
+  active Boolean @default(true)
+
+  projects Project[]
+}
+
+model Permission {
+  id            Int         @id @unique @default(autoincrement())
+  userId        Int
+  environmentId Int
+  level         Int         @default(0)
+  user          User        @relation(fields: [userId], references: [id])
+  environment   Environment @relation(fields: [environmentId], references: [id])
+}
+
+model Project {
+  id             Int          @id @unique @default(autoincrement())
+  name           String
+  organizationId Int
+  description    String
+  status         String
+  locked         Boolean      @default(false)
+  services       Json
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  environments Environment[]
+  Repository   Repository[]
+  // UsersProjects UsersProjects[]
+}
+
+model Repository {
+  id               Int     @id @default(autoincrement())
+  projectId        Int
+  internalRepoName String
+  externalRepoUrl  String
+  externalUserName String
+  externalToken    String
+  isInfra          Boolean @default(false)
+  isPrivate        Boolean @default(false)
+  status           String  @default("initializing")
+  project          Project @relation(fields: [projectId], references: [id])
+}
+
+model User {
+  id        Int    @id @default(autoincrement())
+  firstName String
+  lastName  String
+  email     String @unique
+
+  logs        Log[]
+  permissions Permission[]
+  // UsersProjects UsersProjects[]
+}
+
+// model UsersProjects {
+//   UserId    Int
+//   ProjectId Int
+//   role      String
+//   user      User    @relation(fields: [ProjectId], references: [id])
+//   project   Project @relation(fields: [ProjectId], references: [id])
+// }
