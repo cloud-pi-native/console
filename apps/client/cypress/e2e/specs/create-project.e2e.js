@@ -1,4 +1,4 @@
-import { getUserById } from '../support/func.js'
+import { getModelById } from '../support/func.js'
 
 describe('Create Project', () => {
   beforeEach(() => {
@@ -9,7 +9,7 @@ describe('Create Project', () => {
     cy.intercept('POST', '/api/v1/projects').as('postProject')
     cy.intercept('GET', '/api/v1/projects').as('getProjects')
 
-    const owner = getUserById('cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
+    const owner = getModelById('users', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
     const project = {
       orgName: 'mi',
       name: 'project01',
@@ -21,11 +21,11 @@ describe('Create Project', () => {
       .get('h1').should('contain', 'Commander un espace projet')
       .get('[data-testid^="repoFieldset-"]').should('not.exist')
       .get('p.fr-alert__description').should('contain', owner.email)
-      .get('select#organization-select').select(project.orgName)
-      .getByDataTestid('nameInput').type(`${project.name} ErrorSpace`)
+      .get('select#organizationId-select').select(project.orgName)
+      .getByDataTestid('nameInput').find('input').type(`${project.name} ErrorSpace`)
       .getByDataTestid('nameInput').should('have.class', 'fr-input--error')
       .getByDataTestid('createProjectBtn').should('be.disabled')
-      .getByDataTestid('nameInput').clear().type(project.name)
+      .getByDataTestid('nameInput').find('input').clear().type(project.name)
       .getByDataTestid('nameInput').should('not.have.class', 'fr-input--error')
       .getByDataTestid('createProjectBtn').should('be.enabled')
       .getByDataTestid('descriptionInput').clear().type(project.description)

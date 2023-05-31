@@ -3,7 +3,7 @@ import { rm } from 'node:fs/promises'
 import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import app from './app.js'
-import { getConnection, closeConnections, synchroniseModels } from './connect.js'
+import { getConnection, closeConnections } from './connect.js'
 import { initDb } from './init/db/index.js'
 import { initCorePlugins, initExternalPlugins, initPluginManager } from './plugins/index.js'
 
@@ -26,7 +26,6 @@ export async function startServer () {
 
   try {
     await getConnection()
-    await synchroniseModels()
   } catch (error) {
     app.log.error(error.message)
     throw error

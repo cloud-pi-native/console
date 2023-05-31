@@ -3,7 +3,6 @@ import {
   getProjectByIdController,
   createProjectController,
   archiveProjectController,
-  getProjectOwnerController,
   updateProjectController,
 } from '../controllers/project.js'
 import projectEnvironmentRouter from './project-environment.js'
@@ -17,9 +16,6 @@ const router = async (app, _opt) => {
 
   // Récupérer un projet par son id
   await app.get('/:projectId', getProjectByIdController)
-
-  // Récupérer le owner d'un projet
-  await app.get('/:projectId/owner', getProjectOwnerController)
 
   // Créer un projet
   await app.post('/', createProjectController)

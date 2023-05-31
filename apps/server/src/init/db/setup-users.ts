@@ -1,5 +1,5 @@
 import app from '../../app.js'
-import { createUser } from '../../models/queries/user-queries.js'
+import { createUser } from '../../queries/user-queries.js'
 
 export default async (users) => {
   app.log.info('Creating users...')

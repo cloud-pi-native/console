@@ -8,6 +8,8 @@ services:
     image: dso-console/cypress:ci
     container_name: dso-console_cypress
     command: cypress:run-ct --browser chrome
+    volumes:
+      - ../apps/client/cypress:/app/apps/client/cypress
     env_file:
       - ../apps/server/env/.env.ci
     environment:

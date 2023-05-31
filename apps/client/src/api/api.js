@@ -28,11 +28,6 @@ export const getUserProjectById = async (projectId) => {
   return response.data
 }
 
-export const getProjectOwner = async (projectId) => {
-  const response = await apiClient.get(`/projects/${projectId}/owner`)
-  return response.data
-}
-
 export const updateProject = async (projectId, data) => {
   const response = await apiClient.put(`/projects/${projectId}`, data)
   return response.data
@@ -158,11 +153,6 @@ export const getAllProjects = async () => {
 
 // Admin - Logs
 export const getAllLogs = async ({ offset, limit }) => {
-  const response = await apiClient.get(`/admin/logs/${offset}/${limit}`)
-  return response.data
-}
-
-export const countAllLogs = async () => {
-  const response = await apiClient.get('/admin/logs/count')
+  const response = await apiClient.get(`/admin/logs?offset=${offset}&limit=${limit}`)
   return response.data
 }

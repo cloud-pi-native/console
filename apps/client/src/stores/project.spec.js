@@ -9,7 +9,7 @@ vi.spyOn(apiClient, 'put')
 vi.spyOn(apiClient, 'patch')
 vi.spyOn(apiClient, 'delete')
 
-describe('Counter Store', () => {
+describe('Project Store', () => {
   beforeEach(() => {
     vi.resetAllMocks()
     // creates a fresh pinia and make it active so it's automatically picked
@@ -17,38 +17,23 @@ describe('Counter Store', () => {
     setActivePinia(createPinia())
   })
 
-  it('Should set working project', async () => {
+  it('Should set working project and its owner', async () => {
     const projectStore = useProjectStore()
-    projectStore.projects = [{ id: 'projectId' }]
+    const user = { id: 'userId', firstName: 'Michel' }
+    projectStore.projects = [{
+      id: 'projectId',
+      roles: [{
+        role: 'owner',
+        user,
+      }],
+    }]
 
     expect(projectStore.selectedProject).toBeUndefined()
     expect(projectStore.selectedProjectOwner).toBeUndefined()
 
-    const user = { id: 'userId', firstName: 'Michel' }
-    apiClient.get.mockReturnValueOnce(Promise.resolve({ data: user }))
+    projectStore.setSelectedProject('projectId')
 
-    await projectStore.setSelectedProject('projectId')
-
-    expect(apiClient.get).toHaveBeenCalledTimes(1)
-    expect(apiClient.get.mock.calls[0][0]).toBe('/projects/projectId/owner')
     expect(projectStore.selectedProject).toMatchObject(projectStore.projects[0])
-    expect(projectStore.selectedProjectOwner).toMatchObject(user)
-  })
-
-  it('Should set working project owner info by api call', async () => {
-    const projectStore = useProjectStore()
-    projectStore.projects = [{ id: 'projectId' }]
-    projectStore.selectedProject = { id: 'projectId' }
-
-    expect(projectStore.selectedProjectOwner).toBeUndefined()
-
-    const user = { id: 'userId', firstName: 'Michel' }
-    apiClient.get.mockReturnValueOnce(Promise.resolve({ data: user }))
-
-    await projectStore.setSelectedProjectOwner()
-
-    expect(apiClient.get).toHaveBeenCalledTimes(1)
-    expect(apiClient.get.mock.calls[0][0]).toBe('/projects/projectId/owner')
     expect(projectStore.selectedProjectOwner).toMatchObject(user)
   })
 
@@ -69,21 +54,27 @@ describe('Counter Store', () => {
 
   it('Should retrieve user\'s projects by api call (with actual working projet)', async () => {
     const projectStore = useProjectStore()
-    projectStore.projects = [{ id: 'projectId' }]
-    projectStore.selectedProject = { id: 'projectId' }
-    projectStore.selectedProjectOwner = { id: 'userId', firstName: 'Michel' }
+    const user = { id: 'userId', firstName: 'Michel' }
+    const project = {
+      id: 'projectId',
+      roles: [{
+        role: 'owner',
+        user,
+      }],
+    }
+    projectStore.projects = [project]
+    projectStore.selectedProject = project
+    projectStore.selectedProjectOwner = user
 
-    const projects = [{ id: 'projectId' }, { id: 'anotherProjectId' }]
+    const projects = [project, { id: 'anotherProjectId' }]
     apiClient.get.mockReturnValueOnce(Promise.resolve({ data: projects }))
-    apiClient.get.mockReturnValueOnce(Promise.resolve({ data: { id: 'userId', firstName: 'Michel' } }))
 
     await projectStore.getUserProjects()
 
-    expect(apiClient.get).toHaveBeenCalledTimes(2)
+    expect(apiClient.get).toHaveBeenCalledTimes(1)
     expect(apiClient.get.mock.calls[0][0]).toBe('/projects')
-    expect(apiClient.get.mock.calls[1][0]).toBe('/projects/projectId/owner')
     expect(projectStore.projects).toMatchObject(projects)
-    expect(projectStore.selectedProject).toMatchObject({ id: 'projectId' })
+    expect(projectStore.selectedProject).toMatchObject(project)
   })
 
   it('Should create a project by api call', async () => {

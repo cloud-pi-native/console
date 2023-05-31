@@ -17,29 +17,21 @@ describe('Counter Store', () => {
     setActivePinia(createPinia())
   })
 
-  it('Should get organization list by api call', async () => {
-    const data = [
-      { id: 'thisIsAnId', data: {}, action: 'Create Project', userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565' },
-    ]
+  it('Should get logs list and total by api call', async () => {
+    const data = {
+      total: 1,
+      logs: [
+        { id: 'thisIsAnId', data: {}, action: 'Create Project', userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565' },
+      ],
+    }
     apiClient.get.mockReturnValueOnce(Promise.resolve({ data }))
     const adminLogStore = useAdminLogStore()
 
-    const res = await adminLogStore.getAllLogs({ offset: 5, limit: 10 })
+    await adminLogStore.getAllLogs({ offset: 5, limit: 10 })
 
-    expect(res).toBe(data)
+    expect(adminLogStore.total).toEqual(data.count)
+    expect(adminLogStore.logs).toStrictEqual(data.logs)
     expect(apiClient.get).toHaveBeenCalledTimes(1)
-    expect(apiClient.get.mock.calls[0][0]).toBe('/admin/logs/5/10')
-  })
-
-  it('Should count logs by api call', async () => {
-    const data = 12
-    apiClient.get.mockReturnValueOnce(Promise.resolve({ data }))
-    const adminLogStore = useAdminLogStore()
-
-    const res = await adminLogStore.countAllLogs()
-
-    expect(res).toBe(data)
-    expect(apiClient.get).toHaveBeenCalledTimes(1)
-    expect(apiClient.get.mock.calls[0][0]).toBe('/admin/logs/count')
+    expect(apiClient.get.mock.calls[0][0]).toBe('/admin/logs?offset=5&limit=10')
   })
 })

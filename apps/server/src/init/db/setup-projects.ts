@@ -1,11 +1,11 @@
-import { _initializeProject, updateProjectCreated, updateProjectFailed, archiveProject, addUserToProject } from '../../models/queries/project-queries.js'
-import { initializeEnvironment, updateEnvironmentCreated, updateEnvironmentFailed } from '../../models/queries/environment-queries.js'
-import { setPermission } from '../../models/queries/permission-queries.js'
-import { getOrganizationByName } from '../../models/queries/organization-queries.js'
-import { initializeRepository, updateRepositoryCreated, updateRepositoryFailed } from '../../models/queries/repository-queries.js'
+import { _initializeProject, updateProjectCreated, updateProjectFailed, archiveProject, addUserToProject } from '../../queries/project-queries.js'
+import { initializeEnvironment, updateEnvironmentCreated, updateEnvironmentFailed } from '../../queries/environment-queries.js'
+import { setPermission } from '../../queries/permission-queries.js'
+import { getOrganizationByName } from '../../queries/organization-queries.js'
+import { initializeRepository, updateRepositoryCreated, updateRepositoryFailed } from '../../queries/repository-queries.js'
 import app from '../../app.js'
-import { getUserById } from '../../models/queries/user-queries.js'
-import { addLogs } from '../../models/queries/log-queries.js'
+import { getUserById } from '../../queries/user-queries.js'
+import { addLogs } from '../../queries/log-queries.js'
 
 export default async (projects) => {
   app.log.info('Creating projects...')
@@ -16,11 +16,11 @@ export default async (projects) => {
       project.organization = dbOrganization.id
       const createdProject = await _initializeProject(project)
       if (project.status === 'created') {
-        await updateProjectCreated(createdProject.dataValues.id)
+        await updateProjectCreated(createdProject.id)
       } else if (createdProject.status === 'archived') {
-        await archiveProject(createdProject.dataValues.id)
+        await archiveProject(createdProject.id)
       } else {
-        await updateProjectFailed(createdProject.dataValues.id)
+        await updateProjectFailed(createdProject.id)
       }
 
       // Create users
@@ -32,13 +32,14 @@ export default async (projects) => {
       project.environments.forEach(async environment => {
         // Create environments
         const createdEnv = await initializeEnvironment({
+          projectOwners: project.users.filter(user => user.role === 'owner'),
           name: environment.name,
-          projectId: createdProject.dataValues.id,
+          projectId: createdProject.id,
         })
         if (environment.status === 'created') {
-          await updateEnvironmentCreated(createdEnv.dataValues.id)
+          await updateEnvironmentCreated(createdEnv.id)
         } else {
-          await updateEnvironmentFailed(createdEnv.dataValues.id)
+          await updateEnvironmentFailed(createdEnv.id)
         }
 
         // Create permissions
@@ -54,18 +55,17 @@ export default async (projects) => {
       // Create repositories
       project.repositories?.forEach(async repository => {
         const createdRepository = await initializeRepository({
-          projectId: createdProject.dataValues.id,
+          projectId: createdProject.id,
           internalRepoName: repository.internalRepoName,
           externalRepoUrl: repository.externalRepoUrl,
           isPrivate: repository.isPrivate,
           externalUserName: repository.externalUserName,
-          externalToken: repository.externalToken,
           isInfra: repository.isInfra,
         })
         if (repository.status === 'created') {
-          await updateRepositoryCreated(createdRepository.dataValues.id)
+          await updateRepositoryCreated(createdRepository.id)
         } else {
-          await updateRepositoryFailed(createdRepository.dataValues.id)
+          await updateRepositoryFailed(createdRepository.id)
         }
       })
 

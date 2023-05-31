@@ -1,9 +1,9 @@
-import { getProjectbyId, getUserById } from '../support/func.js'
+import { getModelById } from '../support/func.js'
 
 describe('Add environments into project', () => {
   const project0 = { name: 'project11' }
-  const project1 = getProjectbyId('011e7860-04d7-461f-912d-334c622d38b3')
-  const user = getUserById('cb8e5b4b-7b7b-40f5-935f-594f48ae6566')
+  const project1 = getModelById('projects', '011e7860-04d7-461f-912d-334c622d38b3')
+  const user = getModelById('users', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6566')
   const environments = ['prod', 'staging']
 
   before(() => {

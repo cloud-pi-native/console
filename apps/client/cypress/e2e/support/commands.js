@@ -1,6 +1,6 @@
-import { getUserById } from '../support/func.js'
+import { getModelById } from '../support/func.js'
 
-const owner = getUserById('cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
+const owner = getModelById('users', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
 
 Cypress.Commands.add('kcLogout', () => {
   cy.get('a.fr-btn').should('contain', 'Se déconnecter').click()
@@ -44,8 +44,8 @@ Cypress.Commands.add('createProject', (project) => {
     .get('h1').should('contain', 'Commander un espace projet')
     .get('[data-testid^="repoFieldset-"]').should('not.exist')
     .get('p.fr-alert__description').should('contain', owner.email)
-    .get('select#organization-select').select(newProject.orgName)
-    .getByDataTestid('nameInput').clear().type(newProject.name)
+    .get('select#organizationId-select').select(newProject.orgName)
+    .getByDataTestid('nameInput').find('input').clear().type(newProject.name)
     .getByDataTestid('nameInput').should('not.have.class', 'fr-input--error')
   cy.getByDataTestid('createProjectBtn').should('be.enabled').click()
 
@@ -110,13 +110,13 @@ Cypress.Commands.add('addRepos', (project, repos) => {
   newRepos.forEach((repo) => {
     cy.getByDataTestid('addRepoLink').click()
       .get('h1').should('contain', 'Ajouter un dépôt au projet')
-      .getByDataTestid('internalRepoNameInput').type(repo.internalRepoName)
-      .getByDataTestid('externalRepoUrlInput').clear().type(repo.externalRepoUrl)
+      .getByDataTestid('internalRepoNameInput').find('input').type(repo.internalRepoName)
+      .getByDataTestid('externalRepoUrlInput').find('input').clear().type(repo.externalRepoUrl)
 
     if (repo.isPrivate) {
       cy.getByDataTestid('privateRepoCbx').find('input[type="checkbox"]').check({ force: true })
-        .getByDataTestid('externalUserNameInput').type(repo.externalUserName)
-        .getByDataTestid('externalTokenInput').clear().type(repo.externalToken)
+        .getByDataTestid('externalUserNameInput').find('input').type(repo.externalUserName)
+        .getByDataTestid('externalTokenInput').find('input').clear().type(repo.externalToken)
     }
 
     if (repo.isInfra) {

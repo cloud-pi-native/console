@@ -1,14 +1,11 @@
-import {
-  getProjectbyId,
-  getUserById,
-} from '../support/func.js'
+import { getModelById } from '../support/func.js'
 
 describe('Manage permissions for environment', () => {
-  const project = getProjectbyId('011e7860-04d7-461f-912d-334c622d38b3')
-  const owner = getUserById('cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
-  const user0 = getUserById('cb8e5b4b-7b7b-40f5-935f-594f48ae6566')
-  // const user1 = getUserById('cb8e5b4b-7b7b-40f5-935f-594f48ae6567')
-  const user2 = getUserById('cb8e5b4b-7b7b-40f5-935f-594f48ae6569')
+  const project = getModelById('projects', '011e7860-04d7-461f-912d-334c622d38b3')
+  const owner = getModelById('users', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
+  const user0 = getModelById('users', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6566')
+  // const user1 = getModelById('users', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6567')
+  const user2 = getModelById('users', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6569')
 
   before(() => {
     cy.kcLogin('test')

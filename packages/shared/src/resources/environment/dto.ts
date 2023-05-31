@@ -12,6 +12,6 @@ export type InitializeEnvironmentDto = {
 export type DeleteEnvironmentDto = {
   params: {
     projectId: ProjectModel['id'],
-    environmentId: EnvironmentModel['id']
+    environmentId: string
   }
 }

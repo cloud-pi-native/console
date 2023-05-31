@@ -1,7 +1,7 @@
-import { getProjectbyId, getUserById } from '../support/func.js'
+import { getModelById } from '../support/func.js'
 
-const project = getProjectbyId('22e7044f-8414-435d-9c4a-2df42a65034b')
-const newMember = getUserById('cb8e5b4b-7b7b-40f5-935f-594f48ae6567')
+const project = getModelById('projects', '22e7044f-8414-435d-9c4a-2df42a65034b')
+const newMember = getModelById('users', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6567')
 
 describe('Team view', () => {
   beforeEach(() => {

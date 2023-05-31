@@ -43,10 +43,5 @@
   },
   "volta": {
     "node": "18.16.0"
-  },
-  "pnpm": {
-    "patchedDependencies": {
-      "sequelize-mock@0.10.2": "patches/sequelize-mock@0.10.2.patch"
-    }
   }
 }

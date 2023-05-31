@@ -1,7 +1,7 @@
-import { getOrganizations } from '../../support/func.js'
+import { getModel } from '../../support/func.js'
 
 describe('Administration organizations', () => {
-  const organizations = getOrganizations().map(({ label, name, active }) => ({
+  const organizations = getModel('organizations').map(({ label, name, active }) => ({
     label,
     name,
     active,
@@ -70,7 +70,7 @@ describe('Administration organizations', () => {
     })
 
     cy.visit('/projects/create-project')
-      .get('select#organization-select')
+      .get('select#organizationId-select')
       .select(newOrg.label)
       .should('have.value', newOrg.name)
   })
@@ -96,9 +96,9 @@ describe('Administration organizations', () => {
     })
 
     cy.visit('/projects/create-project')
-      .get(`select#organization-select > option[value="${organizations[0].name}"]`)
+      .get(`select#organizationId-select > option[value="${organizations[0].name}"]`)
       .should('not.exist')
-      .get(`select#organization-select > option[value="${newOrg.name}"]`)
+      .get(`select#organizationId-select > option[value="${newOrg.name}"]`)
       .should('not.exist')
   })
 

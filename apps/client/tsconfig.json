@@ -1,4 +1,12 @@
 {
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "**/*.spec.{js,ts}",
+    "node_modules",
+    "dist"
+  ],
   "files": [],
   "compilerOptions": {
     "module": "ES2022"

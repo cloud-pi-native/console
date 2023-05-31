@@ -12,4 +12,10 @@ export const userSchema = Joi.object({
   firstName: Joi.string(),
 
   lastName: Joi.string(),
+
+  createdAt: Joi.date()
+    .optional(),
+
+  updatedAt: Joi.date()
+    .optional(),
 })

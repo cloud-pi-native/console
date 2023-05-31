@@ -1,28 +1,32 @@
 import { data } from 'test-utils'
 
-const { projects, users, organizations } = data
+export const getModel = (model) => data[model]
+export const getModelById = (model, id) => model === 'projects'
+  ? getProjectById(id)
+  : data[model].find(key => key.id === id)
 
-export const getProjectbyId = (id) => projects.find(project => project.id === id)
-export const getUserById = (id) => users.find(user => user.id === id)
+export const getProjects = () => getModel('projects')
+  .map(project => ({
+    ...project,
+    organization: getModel('organizations')
+      .find(organization => organization.id === project.organizationId),
+    repositories: getModel('repositories')
+      .filter(repository => repository.projectId === project.id),
+    environments: getModel('environments')
+      .filter(environment => environment.projectId === project.id)
+      .map(environment => ({
+        ...environment,
+        permissions: getModel('permissions').filter(permission => permission.environmentId === environment.id),
+      })),
+    users: getModel('roles')
+      .filter(role => role.projectId === project.id)
+      .map(role => ({
+        role: role.role,
+        ...getModelById('users', role.userId),
+      })),
+  }))
 
-export const getUserProjects = (userId) => {
-  const userProjects = []
-  projects.forEach(project => {
-    if (project.users.find(user => user.id === userId) && project.status !== 'archived') {
-      userProjects.push(project)
-    }
-  })
-  return userProjects
-}
+export const getProjectById = (id) => getProjects().find(project => project.id === id)
 
-export const getUsers = () => {
-  return users
-}
-
-export const getOrganizations = () => {
-  return organizations
-}
-
-export const getProjects = () => {
-  return projects
-}
+export const getUserProjects = (userId) => getProjects()
+  .filter(project => project.status !== 'archived' && project.users.find(user => user.id === userId))

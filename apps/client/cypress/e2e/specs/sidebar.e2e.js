@@ -1,6 +1,6 @@
-import { getProjectbyId } from '../support/func.js'
+import { getModelById } from '../support/func.js'
 
-const project = getProjectbyId('011e7860-04d7-461f-912d-334c622d38b3')
+const project = getModelById('projects', '011e7860-04d7-461f-912d-334c622d38b3')
 
 describe('Sidebar', () => {
   it('Should display Sidebar, not loggedIn', () => {

@@ -4,7 +4,6 @@ import type { RepositoryForEnv } from './repository.js'
 import type { Project } from './project.js'
 
 type EnvironmentInit = {
-  internalRepoName: InternalRepoName,
   organization: Organization,
   project: Project,
   environment: Environment,

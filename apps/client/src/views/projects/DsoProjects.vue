@@ -23,7 +23,7 @@ const setProjectList = (projects) => {
 
 const setSelectedProject = async (project) => {
   try {
-    await projectStore.setSelectedProject(project.id)
+    projectStore.setSelectedProject(project.id)
   } catch (error) {
     snackbarStore.setMessage(error?.message, 'error')
   }

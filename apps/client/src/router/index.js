@@ -167,7 +167,7 @@ router.beforeEach(async (to, _from, next) => {
 
     const idStart = projectsPath.length
     const projectId = to.path.slice(idStart, idStart + 36)
-    await projectStore.setSelectedProject(projectId)
+    projectStore.setSelectedProject(projectId)
   }
   next()
 })
