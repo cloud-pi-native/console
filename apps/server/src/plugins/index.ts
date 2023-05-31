@@ -1,7 +1,6 @@
 import { readdirSync, existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import url from 'url'
-import { isCI, isInt, isProd } from '../utils/env.js'
 import { objectEntries, objectKeys } from '@/utils/type.js'
 import * as hooks from './hooks/index.js'
 import { type PluginsFunctions } from './hooks/hook.js'
@@ -14,7 +13,6 @@ const initPluginManager = async <E, V>(app: FastifyInstance): PluginManager<E, V
   const register = (name: string, functions: PluginsFunctions<E, V>) => {
     const message = []
     for (const [hook, steps] of objectEntries(functions)) {
-      app.log.info([hook, steps])
       if (!(hook in hooks) && hook !== 'all') {
         app.log.warn({
           message: `Plugin ${name} tried to register on an unknown hook ${hook}`,

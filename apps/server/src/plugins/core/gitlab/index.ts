@@ -8,6 +8,7 @@ import { createUser, createUsername, getUser } from './user.js'
 import type { ArchiveProjectExecArgs, CreateProjectExecArgs } from '@/plugins/hooks/project.js'
 import type { CreateRepositoryExecArgs, DeleteRepositoryExecArgs } from '@/plugins/hooks/repository.js'
 import type { User } from '@/plugins/hooks/index.js'
+import { PipelineTriggerTokenSchema } from '@gitbeaker/rest'
 
 // Check
 export const checkApi = async (payload: HookPayload<{ owner: User }>) => {
@@ -98,7 +99,7 @@ export const createDsoRepository = async (payload: HookPayload<CreateRepositoryE
     const internalMirrorRepoName = `${internalRepoName}-mirror`
     const projectCreated = await createProject({ internalRepoName, externalRepoUrn, group: project, organization, externalUserName, externalToken, isPrivate })
     const mirror = await createProjectMirror(internalMirrorRepoName, project, organization)
-    const triggerToken = await setProjectTrigger(mirror.id)
+    const triggerToken = await setProjectTrigger(mirror.id) as PipelineTriggerTokenSchema
 
     return {
       status: {

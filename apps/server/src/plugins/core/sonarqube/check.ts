@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { axiosOptions } from './index.js'
-import { PluginResult } from '@/types/index.js'
+import { PluginResult } from '@/plugins/hooks/hook.js'
 
 let status: PluginResult
 

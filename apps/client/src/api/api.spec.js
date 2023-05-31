@@ -6,7 +6,6 @@ import {
   getUserProjects,
   getUserProjectById,
   createProject,
-  getProjectOwner,
   archiveProject,
   addRepo,
   addUser,
@@ -80,17 +79,6 @@ describe('API', () => {
       expect(apiClient.post).toHaveBeenCalled()
       expect(apiClient.post).toHaveBeenCalledTimes(1)
       expect(apiClient.post.mock.calls[0][0]).toBe('/projects')
-    })
-
-    it('Should get project owner', async () => {
-      const projectId = 'thisIsAnId'
-      apiClient.get.mockReturnValueOnce(Promise.resolve({ data: {} }))
-
-      await getProjectOwner(projectId)
-
-      expect(apiClient.get).toHaveBeenCalled()
-      expect(apiClient.get).toHaveBeenCalledTimes(1)
-      expect(apiClient.get.mock.calls[0][0]).toBe(`/projects/${projectId}/owner`)
     })
 
     it('Should archive a project', async () => {

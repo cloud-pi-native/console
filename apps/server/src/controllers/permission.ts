@@ -4,11 +4,11 @@ import {
   updatePermission,
   deletePermission,
   getPermissionByUserIdAndEnvironmentId,
-} from '../models/queries/permission-queries.js'
+} from '../queries/permission-queries.js'
 import {
   getRoleByUserIdAndProjectId,
   getSingleOwnerByProjectId,
-} from '../models/queries/users-projects-queries.js'
+} from '../queries/roles-queries.js'
 import { addReqLogs } from '../utils/logger.js'
 import { sendOk, sendCreated, sendNotFound, sendBadRequest, sendForbidden } from '../utils/response.js'
 // import hooksHandlers from '../plugins/index.js'
@@ -107,7 +107,7 @@ export const updatePermissionController = async (req, res) => {
     const owner = await getSingleOwnerByProjectId(projectId)
     if (data.userId === owner.id) throw new Error('La permission du owner du projet ne peut être modifiée')
 
-    const permission = await updatePermission({ userId: data.userId, environmentId, level: data.level })
+    const permission = await updatePermission({ userId: data.userId, environmentId, level: parseInt(data.level) })
 
     addReqLogs({
       req,
@@ -157,7 +157,6 @@ export const deletePermissionController = async (req, res) => {
       req,
       description: 'Permissions supprimée avec succès',
       extras: {
-        permissionId: permission.id,
         projectId,
         environmentId,
       },

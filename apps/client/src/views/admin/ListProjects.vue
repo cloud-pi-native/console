@@ -29,11 +29,11 @@ const rows = ref([])
 const setRows = () => {
   rows.value = allProjects.value
     ?.sort((a, b) => a.name >= b.name ? 1 : -1)
-    ?.map(({ organization, name, description, owner, status, locked, createdAt, updatedAt }) => ([
-      organizations.value?.find(org => org.id === organization)?.label,
+    ?.map(({ organizationId, name, description, roles, status, locked, createdAt, updatedAt }) => ([
+      organizations.value?.find(org => org.id === organizationId).label,
       name,
       description ?? '',
-      owner.email,
+      roles[0].user.email,
       {
         component: 'v-icon',
         name: statusDict.status[status].icon,

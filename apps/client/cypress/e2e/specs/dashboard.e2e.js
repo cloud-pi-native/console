@@ -1,13 +1,13 @@
-import { getProjectbyId, getUserById } from '../support/func.js'
+import { getModelById } from '../support/func.js'
 import { statusDict } from 'shared'
 
 describe('Dashboard', () => {
-  const projectToArchive = getProjectbyId('9dabf3f9-6c86-4358-8598-65007d78df65')
-  const projectToKeep = getProjectbyId('22e7044f-8414-435d-9c4a-2df42a65034b')
-  const projectFailed = getProjectbyId('83833faf-f654-40dd-bcd5-cf2e944fc702')
-  const projectCreated = getProjectbyId('011e7860-04d7-461f-912d-334c622d38b3')
-  const owner = getUserById('cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
-  const user = getUserById('cb8e5b4b-7b7b-40f5-935f-594f48ae6566')
+  const projectToArchive = getModelById('project', '9dabf3f9-6c86-4358-8598-65007d78df65')
+  const projectToKeep = getModelById('project', '22e7044f-8414-435d-9c4a-2df42a65034b')
+  const projectFailed = getModelById('project', '83833faf-f654-40dd-bcd5-cf2e944fc702')
+  const projectCreated = getModelById('project', '011e7860-04d7-461f-912d-334c622d38b3')
+  const owner = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
+  const user = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6566')
   const permissions = [{
     email: owner.email,
     isOwner: true,

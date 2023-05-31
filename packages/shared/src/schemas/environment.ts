@@ -16,4 +16,10 @@ export const environmentSchema = Joi.object({
   status: Joi.string()
     .valid(...projectStatus),
   // .required(),
+
+  createdAt: Joi.date()
+    .optional(),
+
+  updatedAt: Joi.date()
+    .optional(),
 })

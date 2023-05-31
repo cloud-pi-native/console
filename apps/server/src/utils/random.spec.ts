@@ -3,7 +3,8 @@ import { createRandomDbSetup } from 'test-utils'
 
 describe('Random utils', () => {
   it('Should create a random project for tests', () => {
-    expect(createRandomDbSetup({ nbUsers: 3, nbRepo: 1, envs: ['dev', 'prod'] })).toEqual(
+    const db = createRandomDbSetup({ nbUsers: 3, nbRepo: 1, envs: ['dev', 'prod'] })
+    expect(db).toEqual(
       expect.objectContaining({
         project: expect.objectContaining({
           id: expect.any(String),
@@ -11,19 +12,38 @@ describe('Random utils', () => {
           organization: expect.any(String),
           status: expect.any(String),
           locked: expect.any(Boolean),
-          users: expect.arrayContaining([
+          roles: expect.arrayContaining([
             {
               id: expect.any(String),
               role: expect.any(String),
+              user: expect.objectContaining({
+                id: expect.any(String),
+                email: expect.any(String),
+                firstName: expect.any(String),
+                lastName: expect.any(String),
+              }),
             },
             {
               id: expect.any(String),
               role: expect.any(String),
+              user: expect.objectContaining({
+                id: expect.any(String),
+                email: expect.any(String),
+                firstName: expect.any(String),
+                lastName: expect.any(String),
+              }),
             },
             {
               id: expect.any(String),
               role: expect.any(String),
-            }]),
+              user: expect.objectContaining({
+                id: expect.any(String),
+                email: expect.any(String),
+                firstName: expect.any(String),
+                lastName: expect.any(String),
+              }),
+            },
+          ]),
           repositories: expect.any(Array),
           environments: expect.arrayContaining([
             {

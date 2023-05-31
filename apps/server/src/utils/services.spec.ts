@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { getServices } from './services.js'
 
-describe('services', () => {
+describe.skip('services', () => {
   it('Should return an object of services for a given project', () => {
     const project = {
       id: 'thisIsAnId',

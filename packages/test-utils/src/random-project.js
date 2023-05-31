@@ -20,10 +20,12 @@ export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = allEnv, or
   // Create project
   const project = getRandomProject(organization.id)
 
-  // Create usersProjects association table
-  project.users = users.map(user =>
-    getRandomUserProject(user.id))
-  project.users[0].role = projectRoles[0]
+  // Create Roles association table
+  project.roles = users.map(user => ({
+    ...getRandomUserProject(user.id),
+    user,
+  }))
+  project.roles[0].role = projectRoles[0]
 
   // Create repositories
   project.repositories = repeatFn(nbRepo, project.id)(getRandomRepo)

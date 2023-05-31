@@ -37,6 +37,14 @@
 - `archived` : les opérations des `plugins` se sont bien déroulées, le projet et son équipe sont toujours présents en base de données pour archive, mais invisibles des utilisateurs hors `admin` - le `project` est `locked: true`
 - `project.locked: true` : toute opération de Create / Update sur le projet et ses ressource est interdite.
 
+### Permissions d'environnement
+Trois niveaux de permissions différents, 
+| Valeur en base | Description dans le front | Niveaux       |
+| -------------- | ------------------------- | ------------- |
+| 0              | r                         | Lecture       |
+| 1              | rw                        | + Ecriture    |
+| 2              | rwd                       | + Suppression |
+
 ## Point d'api
 
 ### Projects
@@ -185,9 +193,8 @@ get('/', getUsersController)
 
 - Lister chacune des tables
 - Import / Export de données depuis des fichiers (csv, json ...)
-- Modification du label d'une organisation
 - Possibilité pour un admin de modifier des ressources sans faire parti du projet
-- Possibilité d'unlock un projet / rejouer les playbooks pour un projet
+- Possibilité d'unlock un projet / rejouer les plugins pour un projet ou une ressource
 - Mise en place d'une table d'historisation des status des projets
 - Mettre en place un point d'api pour gérer l'équipe d'admin (création/suppression)
 - Possibilité de réexecuter dans keycloak les droits présents dans la DB (synchro DB - keycloak)

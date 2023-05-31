@@ -16,7 +16,7 @@ services:
     command: start-dev --import-realm
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
-      interval: 10s
+      interval: 5s
       timeout: 5s
       retries: 10
     networks:
@@ -92,6 +92,8 @@ services:
     depends_on:
       client:
         condition: service_started
+    volumes:
+      - ../apps/client/cypress:/app/apps/client/cypress
     environment:
       CI: "true"
       CLIENT_HOST: client
