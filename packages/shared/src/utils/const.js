@@ -1,9 +1,9 @@
 export const adminGroupPath = '/admin'
 
 export const levels = [
-  'lecture seule',
-  'lecture, écriture',
-  'lecture, écriture, suppression',
+  'r',
+  'rw',
+  'rwd',
 ]
 
 export const projectRoles = [

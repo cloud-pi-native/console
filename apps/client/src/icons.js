@@ -16,4 +16,7 @@ export {
   RiMoonClearLine,
   RiPencilFill,
   RiExchangeLine,
+  RiCheckFill,
+  RiUserStarFill,
+  RiUserFill,
 } from 'oh-vue-icons/icons/ri/index.js'

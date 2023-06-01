@@ -7,7 +7,7 @@ describe('Manage permissions for environment', () => {
   const project = getProjectbyId('011e7860-04d7-461f-912d-334c622d38b3')
   const owner = getUserById('cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
   const user0 = getUserById('cb8e5b4b-7b7b-40f5-935f-594f48ae6566')
-  const user1 = getUserById('cb8e5b4b-7b7b-40f5-935f-594f48ae6567')
+  // const user1 = getUserById('cb8e5b4b-7b7b-40f5-935f-594f48ae6567')
   const user2 = getUserById('cb8e5b4b-7b7b-40f5-935f-594f48ae6569')
 
   before(() => {
@@ -58,7 +58,11 @@ describe('Manage permissions for environment', () => {
     ])
 
     cy.getByDataTestid('permissionSuggestionInput')
-      .should('not.exist')
+      .should('be.disabled')
+      .getByDataTestid('newPermissionFieldset').within(() => {
+        cy.get('.fr-hint-text')
+          .should('contain', `Tous les membres du projet ${project.name} sont déjà accrédités.`)
+      })
 
     // TODO : décommenter avec #132
     // cy.addProjectMember(project, user1.email)
@@ -68,6 +72,13 @@ describe('Manage permissions for environment', () => {
     //   .getByDataTestid('menuEnvironments').click()
     //   .getByDataTestid(`environmentTile-${environment}`)
     //   .click()
+
+    // cy.getByDataTestid('permissionSuggestionInput')
+    //   .should('be.enabled')
+    //   .getByDataTestid('newPermissionFieldset').within(() => {
+    //     cy.get('.fr-hint-text')
+    //       .should('contain', `Entrez l'e-mail d'un membre du projet ${project.name}. Ex : ${user1.email}`)
+    //   })
 
     // cy.get('[data-testid^="userPermissionLi-"]')
     //   .should('have.length', 3)
@@ -81,23 +92,27 @@ describe('Manage permissions for environment', () => {
   })
 
   it.skip('Should update existing permissions', () => {
+    cy.kcLogin('test')
     cy.intercept('PUT', `/api/v1/projects/${project.id}/environments/*/permissions`).as('putPermission')
     const environment = 'staging'
 
     cy.assertAddEnvironment(project, [environment])
-    cy.assertPermission(project, environment, [{ email: owner.email, isOwner: true }, { email: user0.email, isOwner: false }, { email: user1.email, isOwner: false }])
+    cy.assertPermission(project, environment, [{ email: owner.email, isOwner: true }, { email: user0.email, isOwner: false }])
 
-    cy.getByDataTestid('permissionSuggestionInput')
-      .should('not.exist')
+    cy.getByDataTestid(`${user0.id}UpdatePermissionBtn`)
+      .should('be.disabled')
 
     // TODO : Interragir avec input[type=range]
     // https://docs.cypress.io/api/commands/trigger#Interact-with-a-range-input-slider
-    cy.getByDataTestid(`userPermissionLi-${user1.email}`).within(() => {
+    cy.getByDataTestid(`userPermissionLi-${user0.email}`).within(() => {
       cy.getByDataTestid('permissionLevelRange')
         .find('input[type=range]')
         .invoke('val', 0)
         .trigger('change')
     })
+    cy.getByDataTestid(`${user0.id}UpdatePermissionBtn`)
+      .should('be.enabled')
+      .click()
       .wait('@putPermission')
       .its('response.statusCode').should('eq', 200)
   })
@@ -110,7 +125,11 @@ describe('Manage permissions for environment', () => {
     cy.assertPermission(project, environment, [{ email: owner.email, isOwner: true }, { email: user0.email, isOwner: false }, { email: user2.email, isOwner: false }])
 
     cy.getByDataTestid('permissionSuggestionInput')
-      .should('not.exist')
+      .should('be.disabled')
+      .getByDataTestid('newPermissionFieldset').within(() => {
+        cy.get('.fr-hint-text')
+          .should('contain', `Tous les membres du projet ${project.name} sont déjà accrédités.`)
+      })
 
     cy.getByDataTestid(`userPermissionLi-${user2.email}`).within(() => {
       cy.getByDataTestid('deletePermissionBtn')
@@ -122,8 +141,22 @@ describe('Manage permissions for environment', () => {
     cy.get('[data-testid^="userPermissionLi-"]')
       .should('have.length', 3)
       .getByDataTestid('permissionSuggestionInput')
-      .should('be.visible')
+      .should('be.enabled')
+      .getByDataTestid('newPermissionFieldset').within(() => {
+        cy.get('.fr-hint-text')
+          .should('contain', `Entrez l'e-mail d'un membre du projet ${project.name}. Ex : ${user2.email}`)
+      })
       .getByDataTestid(`userPermissionLi-${user2.email}`)
       .should('not.exist')
+
+    cy.kcLogin((user2.firstName.slice(0, 1) + user2.lastName).toLowerCase())
+      .goToProjects()
+      .getByDataTestid(`projectTile-${project.name}`).click()
+      .getByDataTestid('menuEnvironments').click()
+      .getByDataTestid(`environmentTile-${environment}`)
+      .click()
+      .url().should('contain', '/environments')
+    cy.getByDataTestid('notPermittedAlert')
+      .should('be.visible')
   })
 })
