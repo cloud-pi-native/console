@@ -5,10 +5,13 @@ import {
   updateLabelOrganization,
   getOrganizationByName,
 } from '../../models/queries/organization-queries.js'
+import { addLogs } from '../../models/queries/log-queries.js'
 import { organizationSchema } from 'shared/src/schemas/organization.js'
 import { adminGroupPath } from 'shared/src/utils/const.js'
 import { addReqLogs } from '../../utils/logger.js'
 import { sendOk, sendCreated, sendNotFound, sendBadRequest, sendForbidden } from '../../utils/response.js'
+import hooksFns from '../../plugins/index.js'
+import { getUniqueListBy } from 'shared/src/utils/functions.js'
 
 // GET
 export const getAllOrganizationsController = async (req, res) => {
@@ -68,7 +71,7 @@ export const createOrganizationController = async (req, res) => {
 // PUT
 export const updateOrganizationController = async (req, res) => {
   const name = req.params.orgName
-  const { active, label } = req.body
+  const { active, label, source } = req.body
 
   if (!req.session.user.groups?.includes(adminGroupPath)) sendForbidden(res, 'Vous n\'avez pas les droits administrateur')
   try {
@@ -76,7 +79,7 @@ export const updateOrganizationController = async (req, res) => {
       await updateActiveOrganization({ name, active })
     }
     if (label) {
-      await updateLabelOrganization({ name, label })
+      await updateLabelOrganization({ name, label, source })
     }
     const organization = await getOrganizationByName(name)
 
@@ -96,6 +99,65 @@ export const updateOrganizationController = async (req, res) => {
       extras: {
         organizationName: name,
       },
+      error,
+    })
+    sendBadRequest(res, description)
+  }
+}
+
+export const fetchOrganizationsController = async (req, res) => {
+  const user = req.session.user
+
+  if (!user.groups?.includes(adminGroupPath)) sendForbidden(res, 'Vous n\'avez pas les droits administrateur')
+  try {
+    let consoleOrganizations = await getOrganizations()
+
+    const results = await hooksFns.fetchOrganizations()
+
+    await addLogs('Fetch organizations', results, user.id)
+
+    if (results.failed) throw new Error('Echec des services à la synchronisation des organisations')
+
+    /**
+    * Filter plugin results to get a single array of organizations with unique name
+    */
+    const externalOrganizations = getUniqueListBy(Object.values(results)
+      .reduce((acc, value) => {
+        if (typeof value !== 'object' || !value.result.organizations?.length) return acc
+        return [...acc, ...value.result.organizations]
+      }, [])
+      .filter(externalOrg => externalOrg.name), 'name')
+
+    if (!externalOrganizations.length) throw new Error('Aucune organisation à synchroniser')
+
+    /**
+    * Defines an organization retrieved from plugins
+    *
+    * @typedef {object}
+    * @property {string} label
+    * @property {string} name
+    * @property {string} source
+    */
+    for (const externalOrg of externalOrganizations) {
+      await organizationSchema.validateAsync(externalOrg)
+      if (consoleOrganizations.find(consoleOrg => consoleOrg.name === externalOrg.name)) {
+        await updateLabelOrganization(externalOrg)
+      } else {
+        await createOrganization(externalOrg)
+      }
+    }
+
+    consoleOrganizations = await getOrganizations()
+    addReqLogs({
+      req,
+      description: 'Organisations synchronisées avec succès',
+    })
+    sendCreated(res, consoleOrganizations)
+  } catch (error) {
+    const description = error.message
+    addReqLogs({
+      req,
+      description,
       error,
     })
     sendBadRequest(res, description)

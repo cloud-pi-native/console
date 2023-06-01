@@ -22,6 +22,8 @@ const headers = [
 ]
 const rows = ref([])
 
+const isSyncingOrganizations = ref(false)
+
 const isOrgAlreadyTaken = computed(() => allOrganizations.value.find(org => org.name === newOrg.value.name))
 
 const setRows = () => {
@@ -65,6 +67,17 @@ const getAllOrganizations = async () => {
   } catch (error) {
     snackbarStore.setMessage(error?.message, 'error')
   }
+}
+
+const syncOrganizations = async () => {
+  isSyncingOrganizations.value = true
+  try {
+    await adminOrganizationStore.fetchOrganizations()
+    getAllOrganizations()
+  } catch (error) {
+    snackbarStore.setMessage(error?.message, 'error')
+  }
+  isSyncingOrganizations.value = false
 }
 
 const createOrganization = async () => {
@@ -159,6 +172,21 @@ onMounted(async () => {
       icon="ri-user-add-line"
       :disabled="!newOrg.label || !newOrg.name || !isValid(organizationSchema, newOrg, 'label') || !isValid(organizationSchema, newOrg, 'name') || isOrgAlreadyTaken"
       @click="createOrganization()"
+    />
+  </DsfrFieldset>
+
+  <DsfrFieldset
+    legend="Synchroniser les organisations"
+    hint="Cette opération mettra à jour la liste des organisations."
+    data-testid="syncOrgsForm"
+  >
+    <DsfrButton
+      data-testid="syncOrgsBtn"
+      label="Synchroniser les organisations"
+      primary
+      icon="ri-exchange-line"
+      :disabled="isSyncingOrganizations"
+      @click="syncOrganizations()"
     />
   </DsfrFieldset>
 </template>

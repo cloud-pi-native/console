@@ -54,4 +54,20 @@ describe('Counter Store', () => {
     expect(apiClient.put).toHaveBeenCalledTimes(1)
     expect(apiClient.put.mock.calls[0][0]).toBe('/admin/organizations/name')
   })
+
+  it('Should synchronize organizations by api call', async () => {
+    const data = [
+      { name: 'name1', label: 'label', source: 'source1', active: false },
+      { name: 'name2', label: 'label', source: 'source1', active: false },
+      { name: 'name3', label: 'label', source: 'source2', active: false },
+    ]
+    apiClient.put.mockReturnValueOnce(Promise.resolve({ data }))
+    const adminOrganizationStore = useAdminOrganizationStore()
+
+    const res = await adminOrganizationStore.fetchOrganizations()
+
+    expect(res).toBe(data)
+    expect(apiClient.put).toHaveBeenCalledTimes(1)
+    expect(apiClient.put.mock.calls[0][0]).toBe('/admin/organizations/sync/organizations')
+  })
 })
