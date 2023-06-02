@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { useAdminUserStore } from '@/stores/admin/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { formatDate } from '@/utils/date.js'
+import { formatDate } from 'shared/src/utils/date.js'
 
 const adminUserStore = useAdminUserStore()
 

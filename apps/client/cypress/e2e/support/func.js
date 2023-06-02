@@ -22,3 +22,7 @@ export const getUsers = () => {
 export const getOrganizations = () => {
   return organizations
 }
+
+export const getProjects = () => {
+  return projects
+}

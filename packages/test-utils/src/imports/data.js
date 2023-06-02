@@ -311,18 +311,21 @@ export const data = {
   ],
   organizations: [
     {
+      id: '2368a61e-f243-42f6-b471-a85b056ee131',
       name: 'dinum',
       label: 'DINUM',
       active: true,
       source: 'dso-console',
     },
     {
+      id: 'b644c07f-193c-47ed-ae10-b88a8f63d20b',
       name: 'ministere-interieur',
       label: 'Ministère de l\'Intérieur',
       active: true,
       source: 'dso-console',
     },
     {
+      id: '94e5b24b-ba73-4169-af09-e2df4b83a60f',
       name: 'ministere-justice',
       label: 'Ministère de la Justice',
       active: true,

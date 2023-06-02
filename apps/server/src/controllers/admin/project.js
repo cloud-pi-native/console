@@ -1,12 +1,25 @@
 import { addReqLogs } from '../../utils/logger.js'
 import { getAllProjects } from '../../models/queries/project-queries.js'
-import { sendOk, sendNotFound } from '../../utils/response.js'
+import { getSingleOwnerByProjectId } from '../../models/queries/users-projects-queries.js'
+import { sendOk, sendNotFound, sendForbidden } from '../../utils/response.js'
 import { adminGroupPath } from 'shared/src/utils/const.js'
 
 export const getAllProjectsController = async (req, res) => {
+  if (!req.session.user.groups?.includes(adminGroupPath)) sendForbidden(res, 'Vous n\'avez pas les droits administrateur')
+
   try {
-    if (!req.session.user.groups?.includes(adminGroupPath)) throw new Error('Vous n\'avez pas les droits administrateur')
-    const projects = await getAllProjects()
+    const allProjects = await getAllProjects()
+
+    const projects = []
+
+    for (const project of allProjects) {
+      const owner = await getSingleOwnerByProjectId(project.id)
+      projects.push({
+        ...project.get({ plain: true }),
+        owner,
+      })
+    }
+
     addReqLogs({
       req,
       description: 'Ensemble des projets récupérés avec succès',
