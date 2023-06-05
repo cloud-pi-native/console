@@ -19,4 +19,7 @@ export {
   RiCheckFill,
   RiUserStarFill,
   RiUserFill,
+  RiLockUnlockFill,
+  RiLockFill,
+  RiArchiveFill,
 } from 'oh-vue-icons/icons/ri/index.js'

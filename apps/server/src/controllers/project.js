@@ -9,13 +9,13 @@ import {
   unlockProject,
   addUserToProject,
   archiveProject,
-  getProjectUsers,
+  // getProjectUsers,
   updateProjectServices,
   updateProject,
 } from '../models/queries/project-queries.js'
 import { getOrCreateUser } from '../models/queries/user-queries.js'
 import {
-  deleteRoleByUserIdAndProjectId,
+  // deleteRoleByUserIdAndProjectId,
   getRoleByUserIdAndProjectId,
   getSingleOwnerByProjectId,
 } from '../models/queries/users-projects-queries.js'
@@ -344,7 +344,7 @@ export const archiveProjectController = async (req, res) => {
   let repos
   let environments
   const permissions = []
-  let users
+  // let users
   let project
   try {
     project = await getProjectById(projectId)
@@ -360,7 +360,7 @@ export const archiveProjectController = async (req, res) => {
       const envPerms = await getEnvironmentPermissions(environment?.id)
       permissions.push(...envPerms)
     })
-    users = await getProjectUsers(projectId)
+    // users = await getProjectUsers(projectId)
 
     await lockProject(projectId)
     repos?.forEach(async repo => {
@@ -461,9 +461,10 @@ export const archiveProjectController = async (req, res) => {
       permissions?.forEach(async permission => {
         await deletePermissionById(permission.id)
       })
-      users?.forEach(async user => {
-        await deleteRoleByUserIdAndProjectId(user.id, projectId)
-      })
+      // TODO : garder les roles
+      // users?.forEach(async user => {
+      //   await deleteRoleByUserIdAndProjectId(user.id, projectId)
+      // })
       await archiveProject(projectId)
     } else {
       await updateProjectFailed(projectId)

@@ -223,6 +223,15 @@ onMounted(() => {
               Liste des organisations
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
+          <DsfrSideMenuListItem>
+            <DsfrSideMenuLink
+              data-testid="menuAdministrationProjects"
+              :active="routeName === 'ListProjects'"
+              to="/admin/projects"
+            >
+              Liste des projets
+            </DsfrSideMenuLink>
+          </DsfrSideMenuListItem>
         </DsfrSideMenuList>
       </DsfrSideMenuListItem>
 

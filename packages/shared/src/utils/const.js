@@ -53,3 +53,35 @@ export const allEnv = [
   'integration',
   'prod',
 ]
+
+export const projectDict = {
+  locked: {
+    false: {
+      icon: 'ri-lock-unlock-fill',
+      wording: 'déverrouillé',
+      color: 'var(--success-425-625)',
+    },
+    true: {
+      icon: 'ri-lock-fill',
+      wording: 'verrouillé',
+      color: 'var(--warning-425-625)',
+    },
+  },
+  status: {
+    created: {
+      icon: 'ri-check-fill',
+      wording: 'en succès',
+      color: 'var(--success-425-625)',
+    },
+    failed: {
+      icon: 'ri-close-line',
+      wording: 'en échec',
+      color: 'var(--warning-425-625)',
+    },
+    archived: {
+      icon: 'ri-archive-fill',
+      wording: 'archivé',
+      color: 'var(--info-425-625)',
+    },
+  },
+}

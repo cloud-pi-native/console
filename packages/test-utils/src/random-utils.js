@@ -25,6 +25,7 @@ export const getRandomProject = (organization = faker.datatype.uuid()) => {
     id: faker.datatype.uuid(),
     name: getRandomProjectName(),
     organization,
+    description: faker.lorem.sentence(),
     status: faker.helpers.arrayElement(achievedStatus),
     locked: false,
   }
