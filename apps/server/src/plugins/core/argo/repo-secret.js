@@ -26,7 +26,8 @@ const getSecretObject = ({ repo, project, organization }) => {
       },
     },
     stringData: {
-      url: Buffer.from(repo.url).toString('base64'),
+      url: repo.url,
+      insecure: 'true', // TODO check with dso-socle to exclude it
     },
   }
 }
