@@ -10,6 +10,7 @@ import { getProjectModel } from '../../models/project.js'
 import { getUserModel } from '../../models/user.js'
 import { adminGroupPath } from 'shared/src/utils/const.js'
 import { getRandomProject, getRandomUser, repeatFn } from 'test-utils'
+import { checkAdminGroup } from '../../utils/controller.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 
@@ -30,7 +31,8 @@ const mockSessionPlugin = (app, opt, next) => {
 }
 
 const mockSession = (app) => {
-  app.register(fp(mockSessionPlugin))
+  app.addHook('preHandler', checkAdminGroup)
+    .register(fp(mockSessionPlugin))
     .register(projectRouter)
 }
 

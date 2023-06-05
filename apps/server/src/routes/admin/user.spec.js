@@ -8,6 +8,7 @@ import { sessionConf } from '../../utils/keycloak.js'
 import { getConnection, closeConnections, sequelize } from '../../connect.js'
 import adminUsersRouter from './user.js'
 import { getUserModel } from '../../models/user.js'
+import { checkAdminGroup } from '../../utils/controller.js'
 import { adminGroupPath } from 'shared/src/utils/const.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
@@ -29,7 +30,8 @@ const mockSessionPlugin = (app, opt, next) => {
 }
 
 const mockSession = (app) => {
-  app.register(fp(mockSessionPlugin))
+  app.addHook('preHandler', checkAdminGroup)
+    .register(fp(mockSessionPlugin))
     .register(adminUsersRouter)
 }
 
@@ -77,7 +79,7 @@ describe('Admin Users routes', () => {
       expect(response.statusCode).toEqual(404)
       expect(response.body).toEqual('Erreur inexpliquable')
     })
-    it('Should not retrieve users because not admin', async () => {
+    it('Should return an error if requestor is not admin', async () => {
       // Create users
       const users = repeatFn(5)(getRandomUser)
 
@@ -86,7 +88,7 @@ describe('Admin Users routes', () => {
       const response = await app.inject()
         .get('/')
         .end()
-      expect(response.statusCode).toEqual(404)
+      expect(response.statusCode).toEqual(403)
       expect(response.body).toEqual('Vous n\'avez pas les droits administrateur')
     })
   })
