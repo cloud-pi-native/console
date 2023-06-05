@@ -7,16 +7,13 @@ import {
 } from '../../models/queries/organization-queries.js'
 import { addLogs } from '../../models/queries/log-queries.js'
 import { organizationSchema } from 'shared/src/schemas/organization.js'
-import { adminGroupPath } from 'shared/src/utils/const.js'
 import { addReqLogs } from '../../utils/logger.js'
-import { sendOk, sendCreated, sendNotFound, sendBadRequest, sendForbidden } from '../../utils/response.js'
+import { sendOk, sendCreated, sendNotFound, sendBadRequest } from '../../utils/response.js'
 import hooksFns from '../../plugins/index.js'
 import { getUniqueListBy } from 'shared/src/utils/functions.js'
 
 // GET
 export const getAllOrganizationsController = async (req, res) => {
-  if (!req.session.user.groups?.includes(adminGroupPath)) sendForbidden(res, 'Vous n\'avez pas les droits administrateur')
-
   try {
     const organizations = await getOrganizations()
     addReqLogs({
@@ -38,8 +35,6 @@ export const getAllOrganizationsController = async (req, res) => {
 // POST
 export const createOrganizationController = async (req, res) => {
   const data = req.body
-
-  if (!req.session.user.groups?.includes(adminGroupPath)) sendForbidden(res, 'Vous n\'avez pas les droits administrateur')
 
   try {
     await organizationSchema.validateAsync(data)
@@ -73,7 +68,6 @@ export const updateOrganizationController = async (req, res) => {
   const name = req.params.orgName
   const { active, label, source } = req.body
 
-  if (!req.session.user.groups?.includes(adminGroupPath)) sendForbidden(res, 'Vous n\'avez pas les droits administrateur')
   try {
     if (active !== undefined) {
       await updateActiveOrganization({ name, active })
@@ -108,7 +102,6 @@ export const updateOrganizationController = async (req, res) => {
 export const fetchOrganizationsController = async (req, res) => {
   const user = req.session.user
 
-  if (!user.groups?.includes(adminGroupPath)) sendForbidden(res, 'Vous n\'avez pas les droits administrateur')
   try {
     let consoleOrganizations = await getOrganizations()
 
@@ -122,11 +115,11 @@ export const fetchOrganizationsController = async (req, res) => {
     * Filter plugin results to get a single array of organizations with unique name
     */
     const externalOrganizations = getUniqueListBy(Object.values(results)
-      .reduce((acc, value) => {
+      ?.reduce((acc, value) => {
         if (typeof value !== 'object' || !value.result.organizations?.length) return acc
         return [...acc, ...value.result.organizations]
       }, [])
-      .filter(externalOrg => externalOrg.name), 'name')
+      ?.filter(externalOrg => externalOrg.name), 'name')
 
     if (!externalOrganizations.length) throw new Error('Aucune organisation à synchroniser')
 
