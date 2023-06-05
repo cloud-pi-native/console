@@ -149,3 +149,9 @@ export const fetchOrganizations = async () => {
   const response = await apiClient.put('/admin/organizations/sync/organizations')
   return response.data
 }
+
+// Admin - Projects
+export const getAllProjects = async () => {
+  const response = await apiClient.get('/admin/projects')
+  return response.data
+}

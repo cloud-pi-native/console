@@ -38,7 +38,11 @@ export const updateLabelOrganization = async ({ name, label, source }) => {
   return getOrganizationModel().update({ label, source }, { where: { name } })
 }
 
-// TECH
+// TEC
+export const _createOrganizations = async ({ id, name, label, source }) => {
+  return getOrganizationModel().create({ id, name, label, source, active: true })
+}
+
 export const _dropOrganizationsTable = async () => {
   await sequelize.drop({
     tableName: getOrganizationModel().tableName,
