@@ -26,7 +26,7 @@ const createHook = () => {
   const execute = async (args, isOnlyValidation = false) => {
     let payload = { args }
 
-    const steps = isOnlyValidation ? [check] : [check, pre, main, post, save]
+    const steps = isOnlyValidation ? [check] : [pre, main, post, save]
 
     for (const step of steps) {
       payload = await executeStep(step, payload)

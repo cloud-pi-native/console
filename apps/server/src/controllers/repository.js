@@ -103,8 +103,7 @@ export const createRepositoryController = async (req, res) => {
   let project
   let repo
   try {
-    const isValid = await hooksFns.createProject({ user }, true)
-
+    const isValid = await hooksFns.createProject({ owner: user }, true)
     if (isValid?.failed) {
       const reasons = Object.values(isValid)
         .filter(({ status }) => status?.result === 'KO')
