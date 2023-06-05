@@ -24,12 +24,14 @@ const selectedRepo = ref({})
 const isNewRepoForm = ref(false)
 
 const setReposTiles = (selectedProject) => {
-  repos.value = selectedProject?.repositories?.map(repo => ({
-    id: repo.internalRepoName,
-    title: repo.internalRepoName,
-    data: repo,
-    status: repo.status,
-  }))
+  repos.value = selectedProject?.repositories
+    ?.sort((a, b) => (a.internalRepoName >= b.internalRepoName ? 1 : -1))
+    ?.map(repo => ({
+      id: repo.internalRepoName,
+      title: repo.internalRepoName,
+      data: repo,
+      status: repo.status,
+    }))
 }
 
 const setSelectedRepo = (repo) => {

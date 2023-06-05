@@ -105,10 +105,14 @@ onMounted(() => {
     />
   </DsfrFieldset>
   <div v-if="localEnvironment.id">
+    <PermissionForm
+      v-if="!isDeletingEnvironment"
+      :environment="localEnvironment"
+    />
     <div
       v-if="isOwner"
       data-testid="deleteEnvironmentZone"
-      class="fr-my-2w fr-py-4w fr-px-1w border-solid border-1 rounded-sm border-red-500"
+      class="danger-zone"
     >
       <div class="flex justify-between items-center <md:flex-col">
         <DsfrButton
@@ -157,10 +161,6 @@ onMounted(() => {
         </div>
       </div>
     </div>
-    <PermissionForm
-      v-if="!isDeletingEnvironment"
-      :environment="localEnvironment"
-    />
   </div>
   <div
     v-if="props.isEditable"

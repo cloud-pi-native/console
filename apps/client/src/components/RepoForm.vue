@@ -56,58 +56,6 @@ const cancel = (event) => {
   <div
     data-testid="repo-form"
   >
-    <div
-      v-if="isOwner"
-      data-testid="deleteRepoZone"
-      class="fr-my-2w fr-py-4w fr-px-1w border-solid border-1 rounded-sm border-red-500"
-    >
-      <div class="flex justify-between items-center <md:flex-col">
-        <DsfrButton
-          v-show="!isDeletingRepo"
-          data-testid="showDeleteRepoBtn"
-          :label="`Retirer le dépôt ${localRepo.internalRepoName} du projet`"
-          secondary
-          icon="ri-delete-bin-7-line"
-          @click="isDeletingRepo = true"
-        />
-        <DsfrAlert
-          class="<md:mt-2"
-          description="Le retrait d'un dépôt est irréversible."
-          type="warning"
-          small
-        />
-      </div>
-      <div
-        v-if="isDeletingRepo"
-        class="fr-mt-4w"
-      >
-        <DsfrInput
-          v-model="repoToDelete"
-          data-testid="deleteRepoInput"
-          :label="`Veuillez taper '${localRepo.internalRepoName}' pour confirmer la suppression du dépôt`"
-          label-visible
-          :placeholder="localRepo.internalRepoName"
-          class="fr-mb-2w"
-        />
-        <div
-          class="flex justify-between"
-        >
-          <DsfrButton
-            data-testid="deleteRepoBtn"
-            :label="`Supprimer définitivement le dépôt ${localRepo.internalRepoName}`"
-            :disabled="repoToDelete !== localRepo.internalRepoName"
-            secondary
-            icon="ri-delete-bin-7-line"
-            @click="$emit('delete', localRepo.id)"
-          />
-          <DsfrButton
-            label="Annuler"
-            primary
-            @click="isDeletingRepo = false"
-          />
-        </div>
-      </div>
-    </div>
     <h1
       v-if="props.isEditable"
       class="fr-h1"
@@ -234,6 +182,58 @@ const cancel = (event) => {
         icon="ri-close-line"
         @click="cancel()"
       />
+    </div>
+    <div
+      v-if="isOwner"
+      data-testid="deleteRepoZone"
+      class="danger-zone"
+    >
+      <div class="flex justify-between items-center <md:flex-col">
+        <DsfrButton
+          v-show="!isDeletingRepo"
+          data-testid="showDeleteRepoBtn"
+          :label="`Retirer le dépôt ${localRepo.internalRepoName} du projet`"
+          secondary
+          icon="ri-delete-bin-7-line"
+          @click="isDeletingRepo = true"
+        />
+        <DsfrAlert
+          class="<md:mt-2"
+          description="Le retrait d'un dépôt est irréversible."
+          type="warning"
+          small
+        />
+      </div>
+      <div
+        v-if="isDeletingRepo"
+        class="fr-mt-4w"
+      >
+        <DsfrInput
+          v-model="repoToDelete"
+          data-testid="deleteRepoInput"
+          :label="`Veuillez taper '${localRepo.internalRepoName}' pour confirmer la suppression du dépôt`"
+          label-visible
+          :placeholder="localRepo.internalRepoName"
+          class="fr-mb-2w"
+        />
+        <div
+          class="flex justify-between"
+        >
+          <DsfrButton
+            data-testid="deleteRepoBtn"
+            :label="`Supprimer définitivement le dépôt ${localRepo.internalRepoName}`"
+            :disabled="repoToDelete !== localRepo.internalRepoName"
+            secondary
+            icon="ri-delete-bin-7-line"
+            @click="$emit('delete', localRepo.id)"
+          />
+          <DsfrButton
+            label="Annuler"
+            primary
+            @click="isDeletingRepo = false"
+          />
+        </div>
+      </div>
     </div>
   </div>
 </template>

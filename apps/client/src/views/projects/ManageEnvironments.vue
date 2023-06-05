@@ -22,12 +22,14 @@ const selectedEnvironment = ref({})
 const isNewEnvironmentForm = ref(false)
 
 const setEnvironmentsTiles = (selectedProject) => {
-  environments.value = selectedProject?.environments?.map(environment => ({
-    id: environment.id,
-    title: environment.name,
-    data: environment,
-    status: environment.status,
-  }))
+  environments.value = selectedProject?.environments
+    ?.sort((a, b) => (a.name >= b.name ? 1 : -1))
+    ?.map(environment => ({
+      id: environment.id,
+      title: environment.name,
+      data: environment,
+      status: environment.status,
+    }))
 }
 
 const setSelectedEnvironment = (environment) => {

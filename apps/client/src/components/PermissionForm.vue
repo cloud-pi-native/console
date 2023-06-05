@@ -36,7 +36,7 @@ const usersToLicence = computed(() =>
 const suggestions = computed(() => usersToLicence.value.map(user => user.email))
 
 const setPermissions = () => {
-  permissions.value = environment.value.permissions.sort((a, b) => a.user?.email >= b.user?.email)
+  permissions.value = environment.value.permissions.sort((a, b) => a.user?.email >= b.user?.email ? 1 : -1)
 }
 
 const addPermission = async (userEmail) => {
