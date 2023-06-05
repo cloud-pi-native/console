@@ -5,6 +5,7 @@ import { getOrganizationByName } from '../../models/queries/organization-queries
 import { initializeRepository, updateRepositoryCreated, updateRepositoryFailed } from '../../models/queries/repository-queries.js'
 import app from '../../app.js'
 import { getUserById } from '../../models/queries/user-queries.js'
+import { addLogs } from '../../models/queries/log-queries.js'
 
 export default async (projects) => {
   app.log.info('Creating projects...')
@@ -66,6 +67,11 @@ export default async (projects) => {
         } else {
           await updateRepositoryFailed(createdRepository.dataValues.id)
         }
+      })
+
+      // Create logs
+      project.logs?.forEach(async log => {
+        await addLogs(log.action, log.data, log.userId)
       })
 
       app.log.info(`Project '${project.name}' created !`)

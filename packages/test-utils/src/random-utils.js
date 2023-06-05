@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import { achievedStatus, projectRoles } from 'shared'
+import { achievedStatus, projectRoles, logActions } from 'shared'
 
 export const getRandomProjectName = () => {
   return faker.lorem.word()
@@ -81,5 +81,13 @@ export const getRandomPerm = (environmentId = faker.string.uuid(), user = getRan
     userId: user.id,
     level: faker.number.int({ min: 0, max: 1 }),
     user,
+  }
+}
+
+export const getRandomLog = (action = faker.helpers.arrayElement(logActions), userId = faker.string.uuid()) => {
+  return {
+    id: faker.string.uuid(),
+    action,
+    userId,
   }
 }
