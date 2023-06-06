@@ -64,6 +64,15 @@ const initPluginManager = async () => {
 
     fetchOrganizations: createHook(),
 
+    addCluster: createHook(),
+    updateCluster: createHook(),
+    deleteCluster: createHook(),
+    testCluster: createHook(),
+    enableCluster: createHook(),
+    disableCluster: createHook(),
+    linkProjectCluster: createHook(),
+    unlinkProjectCluster: createHook(),
+
     createProject: createHook(),
     archiveProject: createHook(),
 
