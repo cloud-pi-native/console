@@ -6,11 +6,10 @@ import {
   getOrganizationByName,
 } from '../../models/queries/organization-queries.js'
 import { addLogs } from '../../models/queries/log-queries.js'
-import { organizationSchema } from 'shared/src/schemas/organization.js'
+import { organizationSchema, getUniqueListBy } from 'shared'
 import { addReqLogs } from '../../utils/logger.js'
 import { sendOk, sendCreated, sendNotFound, sendBadRequest } from '../../utils/response.js'
 import hooksFns from '../../plugins/index.js'
-import { getUniqueListBy } from 'shared/src/utils/functions.js'
 
 // GET
 export const getAllOrganizationsController = async (req, res) => {

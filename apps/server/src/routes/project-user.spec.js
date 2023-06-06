@@ -10,6 +10,7 @@ import userRouter from './project-user.js'
 import { getProjectModel } from '../models/project.js'
 import { getUserModel } from '../models/user.js'
 import { getUsersProjectsModel } from '../models/users-projects.js'
+import { projectIsLockedInfo } from 'shared'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 
@@ -169,6 +170,24 @@ describe('User routes', () => {
       expect(response.body).toBeDefined()
       expect(response.body).toEqual('Echec de l\'ajout de l\'utilisateur au projet')
     })
+
+    it('Should not add an user if project is locked', async () => {
+      const randomDbSetup = createRandomDbSetup({})
+      randomDbSetup.project.locked = true
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
+
+      Project.$queueResult(randomDbSetup.project)
+      setRequestorId(owner.id)
+
+      const response = await app.inject()
+        .post(`/${randomDbSetup.project.id}/users`)
+        .body({})
+        .end()
+
+      expect(response.statusCode).toEqual(403)
+      expect(response.body).toBeDefined()
+      expect(response.body).toEqual(projectIsLockedInfo)
+    })
   })
 
   // PUT
@@ -196,6 +215,24 @@ describe('User routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(200)
+    })
+
+    it('Should not update a project member\'s role if project locked', async () => {
+      const randomDbSetup = createRandomDbSetup({})
+      randomDbSetup.project.locked = true
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
+
+      Project.$queueResult(randomDbSetup.project)
+      setRequestorId(owner.id)
+
+      const response = await app.inject()
+        .put(`/${randomDbSetup.project.id}/users/thisIsAnId`)
+        .body({})
+        .end()
+
+      expect(response.statusCode).toEqual(403)
+      expect(response.body).toBeDefined()
+      expect(response.body).toEqual(projectIsLockedInfo)
     })
   })
 

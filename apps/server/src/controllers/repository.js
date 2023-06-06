@@ -11,7 +11,6 @@ import {
 import {
   getProjectById,
   lockProject,
-  unlockProject,
 } from '../models/queries/project-queries.js'
 import {
   getRoleByUserIdAndProjectId,
@@ -25,7 +24,9 @@ import { sendOk, sendCreated, sendUnprocessableContent, sendNotFound, sendBadReq
 import { getOrganizationById } from '../models/queries/organization-queries.js'
 import { addLogs } from '../models/queries/log-queries.js'
 import { gitlabUrl, projectRootDir } from '../utils/env.js'
+import { unlockProjectIfNotFailed } from '../utils/controller.js'
 import hooksFns from '../plugins/index.js'
+import { projectIsLockedInfo } from 'shared'
 
 // GET
 export const getRepositoryByIdController = async (req, res) => {
@@ -124,13 +125,14 @@ export const createRepositoryController = async (req, res) => {
     }
     project = await getProjectById(projectId)
     if (!project) throw new Error('Le projet n\'existe pas')
+    if (project.locked) return sendForbidden(res, projectIsLockedInfo)
 
     const role = await getRoleByUserIdAndProjectId(user.id, projectId)
-    if (!role) throw new Error('Vous n\'êtes pas membre du projet')
+    if (!role) return sendForbidden(res, 'Vous n\'êtes pas membre du projet')
 
     const repos = await getProjectRepositories(projectId)
     const isInternalRepoNameTaken = repos.find(repo => repo.internalRepoName === data.internalRepoName)
-    if (isInternalRepoNameTaken) throw new Error(`Le nom du dépôt interne ${data.internalRepoName} existe déjà en base pour ce projet`)
+    if (isInternalRepoNameTaken) return sendBadRequest(res, `Le nom du dépôt interne ${data.internalRepoName} existe déjà en base pour ce projet`)
 
     await lockProject(projectId)
     repo = await initializeRepository(data)
@@ -206,14 +208,13 @@ export const createRepositoryController = async (req, res) => {
   try {
     if (isServicesCallOk) {
       await updateRepositoryCreated(repo.id)
+      await unlockProjectIfNotFailed(projectId)
     } else {
       await updateRepositoryFailed(repo.id)
     }
-    await unlockProject(projectId)
-
     addReqLogs({
       req,
-      description: 'Déverrouillage du projet avec succès après la mise à jour du statut du dépôt',
+      description: 'Statut mis à jour après l\'appel aux plugins',
       extras: {
         projectId,
         repositoryId: repo.id,
@@ -222,7 +223,7 @@ export const createRepositoryController = async (req, res) => {
   } catch (error) {
     addReqLogs({
       req,
-      description: 'Echec du déverrouillage du projet après la mise à jour du statut du dépôt',
+      description: 'Echec de mise à jour du statut après l\'appel aux plugins',
       extras: {
         projectId,
         repositoryId: repo.id,
@@ -249,6 +250,9 @@ export const updateRepositoryController = async (req, res) => {
   let repo
 
   try {
+    const project = await getProjectById(projectId)
+    if (project.locked) return sendForbidden(res, projectIsLockedInfo)
+
     if (data.isPrivate && !data.externalToken) throw new Error('Le token est requis')
     if (data.isPrivate && !data.externalUserName) throw new Error('Le nom d\'utilisateur est requis')
 
@@ -306,8 +310,16 @@ export const updateRepositoryController = async (req, res) => {
     await addLogs('Update Repository', results, userId)
     if (results.failed) throw new Error('Echec des services associés au dépôt')
     isServicesCallOk = true
+    addReqLogs({
+      req,
+      description: 'Dépôt mis à jour avec succès par les plugins',
+      extras: {
+        projectId,
+        repositoryId: repo.id,
+      },
+    })
   } catch (error) {
-    const description = 'Echec de la mise à jour du dépôt par les services externes'
+    const description = 'Echec de la mise à jour du dépôt par les plugins'
     addReqLogs({
       req,
       description,
@@ -321,14 +333,15 @@ export const updateRepositoryController = async (req, res) => {
 
   // Update DB after service call
   try {
-    if (!isServicesCallOk) {
+    if (isServicesCallOk) {
+      await unlockProjectIfNotFailed(projectId)
+    } else {
       await updateRepositoryFailed(repo.id)
     }
-    await unlockProject(projectId)
 
     addReqLogs({
       req,
-      description: 'Déverrouillage du projet avec succès après mise à jour du statut du dépôt',
+      description: 'Statut mis à jour après l\'appel aux plugins',
       extras: {
         projectId,
         repositoryId: repo.id,
@@ -338,7 +351,7 @@ export const updateRepositoryController = async (req, res) => {
   } catch (error) {
     addReqLogs({
       req,
-      description: 'Echec du déverrouillage du projet après la mise à jour du statut du dépôt',
+      description: 'Echec de mise à jour du statut après l\'appel aux plugins',
       extras: {
         projectId,
         repositoryId: repo.id,
@@ -357,11 +370,11 @@ export const deleteRepositoryController = async (req, res) => {
   let repo
   try {
     repo = await getRepositoryById(repositoryId)
-    if (!repo) throw new Error('Dépôt introuvable')
+    if (!repo) return sendNotFound(res, 'Dépôt introuvable')
 
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
-    if (!role) throw new Error('Vous n\'êtes pas membre du projet')
-    if (role.role !== 'owner') throw new Error('Vous n\'êtes pas souscripteur du projet')
+    if (!role) return sendForbidden(res, 'Vous n\'êtes pas membre du projet')
+    if (role.role !== 'owner') return sendForbidden(res, 'Vous n\'êtes pas souscripteur du projet')
 
     await lockProject(projectId)
     await updateRepositoryDeleting(repositoryId)
@@ -387,7 +400,7 @@ export const deleteRepositoryController = async (req, res) => {
       },
       error,
     })
-    return sendForbidden(res, description)
+    return sendBadRequest(res, description)
   }
 
   // Process api call to external service
@@ -427,13 +440,13 @@ export const deleteRepositoryController = async (req, res) => {
   try {
     if (isServicesCallOk) {
       await deleteRepository(repositoryId)
+      await unlockProjectIfNotFailed(projectId)
     } else {
       await updateRepositoryFailed(repo.id)
     }
-    await unlockProject(projectId)
     addReqLogs({
       req,
-      description: 'Déverrouillage du projet avec succès après la suppression du dépôt par les plugins',
+      description: 'Statut mis à jour après l\'appel aux plugins',
       extras: {
         projectId,
         repositoryId: repo.id,
@@ -442,7 +455,7 @@ export const deleteRepositoryController = async (req, res) => {
   } catch (error) {
     addReqLogs({
       req,
-      description: 'Echec du déverrouillage du projet après la suppression du dépôt par les plugins',
+      description: 'Echec de mise à jour du statut après l\'appel aux plugins',
       extras: {
         projectId,
         repositoryId: repo.id,

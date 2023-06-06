@@ -69,11 +69,12 @@ export const data = {
         },
       },
       status: 'created',
+      locked: false,
     },
     {
       id: '83833faf-f654-40dd-bcd5-cf2e944fc702',
       organization: 'ministere-interieur',
-      name: 'psij',
+      name: 'psij-failed',
       description: 'Application de transmission d\'informations entre agents de la PS et de l\'IJ.',
       users: [
         {
@@ -83,13 +84,22 @@ export const data = {
       ],
       repositories: [
         {
-          internalRepoName: 'psij',
-          externalRepoUrl: 'https://github.com/dnum-mi/psij.git',
+          internalRepoName: 'psij-front',
+          externalRepoUrl: 'https://github.com/dnum-mi/psij-front.git',
           isPrivate: true,
           externalUserName: 'this-is-a-test',
           externalToken: 'this-is-a-token',
           isInfra: false,
           status: 'created',
+        },
+        {
+          internalRepoName: 'psij-back',
+          externalRepoUrl: 'https://github.com/dnum-mi/psij-back.git',
+          isPrivate: true,
+          externalUserName: 'this-is-a-test',
+          externalToken: 'this-is-a-token',
+          isInfra: false,
+          status: 'failed',
         },
       ],
       environments: [{
@@ -111,6 +121,7 @@ export const data = {
         },
       },
       status: 'failed',
+      locked: true,
     },
     {
       id: '22e7044f-8414-435d-9c4a-2df42a65034b',
@@ -149,7 +160,7 @@ export const data = {
           externalRepoUrl: 'https://github.com/dnum-mi/beta-back.git',
           isPrivate: false,
           isInfra: false,
-          status: 'failed',
+          status: 'created',
         },
       ],
       environments: [{
@@ -197,6 +208,7 @@ export const data = {
         },
       },
       status: 'created',
+      locked: false,
     },
     {
       id: '9dabf3f9-6c86-4358-8598-65007d78df65',
@@ -275,6 +287,7 @@ export const data = {
         },
       },
       status: 'created',
+      locked: false,
     },
   ],
   users: [

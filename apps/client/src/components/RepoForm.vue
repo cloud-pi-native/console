@@ -23,6 +23,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  isProjectLocked: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const localRepo = ref(props.repo)
@@ -77,7 +81,7 @@ const cancel = (event) => {
             data-testid="internalRepoNameInput"
             type="text"
             required="required"
-            :disabled="!props.isEditable"
+            :disabled="!props.isEditable || props.isProjectLocked"
             :error-message="!!updatedValues.internalRepoName && !isValid(repoSchema, localRepo, 'internalRepoName') ? 'Le nom du dépôt ne doit contenir ni espaces ni caractères spéciaux': undefined"
             label="Nom du dépôt Git interne"
             label-visible
@@ -92,7 +96,7 @@ const cancel = (event) => {
             data-testid="externalRepoUrlInput"
             type="text"
             required="required"
-            :disabled="!props.isEditable"
+            :disabled="!props.isEditable || props.isProjectLocked"
             :error-message="!!updatedValues.externalRepoUrl && !isValid(repoSchema, localRepo, 'externalRepoUrl') ? 'L\'url du dépôt doit commencer par https et se terminer par .git': undefined"
             label="Url du dépôt Git externe"
             label-visible
@@ -105,7 +109,7 @@ const cancel = (event) => {
         <DsfrCheckbox
           v-model="localRepo.isPrivate"
           data-testid="privateRepoCbx"
-          :disabled="!props.isEditable"
+          :disabled="!props.isEditable || props.isProjectLocked"
           label="Dépôt source privé"
           hint="Cochez la case si le dépôt Git source est privé"
           name="isGitSourcePrivate"
@@ -120,7 +124,7 @@ const cancel = (event) => {
               data-testid="externalUserNameInput"
               type="text"
               :required="localRepo.isPrivate ? 'required' : false"
-              :disabled="!props.isEditable"
+              :disabled="!props.isEditable || props.isProjectLocked"
               :error-message="!!updatedValues.externalUserName && !isValid(repoSchema, localRepo, 'externalUserName') ? 'Le nom du propriétaire du token est obligatoire en cas de dépôt privé et ne doit contenir ni espaces ni caractères spéciaux': undefined"
               autocomplete="name"
               label="Nom d'utilisateur"
@@ -137,7 +141,7 @@ const cancel = (event) => {
               data-testid="externalTokenInput"
               type="text"
               :required="localRepo.isPrivate ? 'required' : false"
-              :disabled="!props.isEditable"
+              :disabled="!props.isEditable || props.isProjectLocked"
               :error-message="!!updatedValues.externalToken && !isValid(repoSchema, localRepo, 'externalToken') ? 'Le token d\'accès au dépôt est obligatoire en cas de dépôt privé et ne doit contenir ni espaces ni caractères spéciaux': undefined"
               label="Token d'accès au dépôt Git externe"
               label-visible
@@ -151,7 +155,7 @@ const cancel = (event) => {
         <DsfrCheckbox
           v-model="localRepo.isInfra"
           data-testid="infraRepoCbx"
-          :disabled="!props.isEditable"
+          :disabled="!props.isEditable || props.isProjectLocked"
           label="Dépôt d'infrastructure"
           hint="Cochez la case s'il s'agit d'un dépôt d'infrastructure"
           name="infraRepoCbx"
@@ -164,7 +168,7 @@ const cancel = (event) => {
       </DsfrFieldset>
     </DsfrFieldset>
     <div
-      v-if="props.isEditable"
+      v-if="props.isEditable && !props.isProjectLocked"
       class="flex space-x-10 mt-5"
     >
       <DsfrButton
@@ -223,6 +227,7 @@ const cancel = (event) => {
             data-testid="deleteRepoBtn"
             :label="`Supprimer définitivement le dépôt ${localRepo.internalRepoName}`"
             :disabled="repoToDelete !== localRepo.internalRepoName"
+            :title="`Supprimer définitivement le dépôt ${localRepo.internalRepoName}`"
             secondary
             icon="ri-delete-bin-7-line"
             @click="$emit('delete', localRepo.id)"

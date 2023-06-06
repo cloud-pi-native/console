@@ -2,7 +2,6 @@ import {
   getProjectUsers,
   getProjectById,
   lockProject,
-  unlockProject,
   addUserToProject,
   removeUserFromProject,
 } from '../models/queries/project-queries.js'
@@ -20,7 +19,8 @@ import { deletePermission } from '../models/queries/permission-queries.js'
 import { getEnvironmentsByProjectId } from '../models/queries/environment-queries.js'
 import { sendOk, sendCreated, sendNotFound, sendBadRequest, sendForbidden } from '../utils/response.js'
 import { addReqLogs } from '../utils/logger.js'
-// import hooksFns from '../plugins/index.js'
+import { unlockProjectIfNotFailed } from '../utils/controller.js'
+import { projectIsLockedInfo } from 'shared'
 
 // GET
 export const getProjectUsersController = async (req, res) => {
@@ -65,6 +65,7 @@ export const addUserToProjectController = async (req, res) => {
   try {
     project = await getProjectById(projectId)
     if (!project) throw new Error('Projet introuvable')
+    if (project.locked) return sendForbidden(res, projectIsLockedInfo)
 
     const requestorRole = await getRoleByUserIdAndProjectId(userId, projectId)
     if (!requestorRole) throw new Error('Vous n\'êtes pas membre du projet')
@@ -104,7 +105,7 @@ export const addUserToProjectController = async (req, res) => {
   // Process api call to external service
   // TODO #132
   try {
-    await unlockProject(projectId)
+    await unlockProjectIfNotFailed(projectId)
 
     addReqLogs({
       req,
@@ -161,6 +162,7 @@ export const updateUserProjectRoleController = async (req, res) => {
   try {
     project = await getProjectById(projectId)
     if (!project) throw new Error('Projet introuvable')
+    if (project.locked) return sendForbidden(res, projectIsLockedInfo)
 
     const requestorRole = await getRoleByUserIdAndProjectId(userId, projectId)
     if (!requestorRole) throw new Error('Vous n\'êtes pas membre du projet')
@@ -251,7 +253,7 @@ export const removeUserFromProjectController = async (req, res) => {
   // Process api call to external service
   // TODO #132
   try {
-    await unlockProject(projectId)
+    await unlockProjectIfNotFailed(projectId)
 
     addReqLogs({
       req,

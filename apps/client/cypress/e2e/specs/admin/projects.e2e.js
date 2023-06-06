@@ -1,6 +1,5 @@
 import { getOrganizations } from '../../support/func.js'
-import { projectDict } from 'shared/src/utils/const.js'
-import { formatDate } from 'shared/src/utils/date.js'
+import { statusDict, formatDate } from 'shared'
 
 describe('Administration projects', () => {
   const organizations = getOrganizations()
@@ -37,8 +36,8 @@ describe('Administration projects', () => {
           cy.get('td:nth-of-type(2)').should('contain', project.name)
           cy.get('td:nth-of-type(3)').should('contain', project.description)
           cy.get('td:nth-of-type(4)').should('contain', project.owner.email)
-          cy.get('td:nth-of-type(5) svg title').should('contain', `Le projet ${project.name} est ${projectDict.status[project.status].wording}`)
-          cy.get('td:nth-of-type(6) svg title').should('contain', `Le projet ${project.name} est ${projectDict.locked[!!project.locked].wording}`)
+          cy.get('td:nth-of-type(5) svg title').should('contain', `Le projet ${project.name} est ${statusDict.status[project.status].wording}`)
+          cy.get('td:nth-of-type(6) svg title').should('contain', `Le projet ${project.name} est ${statusDict.locked[!!project.locked].wording}`)
           cy.get('td:nth-of-type(7)').should('contain', formatDate(project.createdAt))
           cy.get('td:nth-of-type(8)').should('contain', formatDate(project.updatedAt))
         })

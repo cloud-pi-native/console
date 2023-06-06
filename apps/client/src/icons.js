@@ -22,4 +22,6 @@ export {
   RiLockUnlockFill,
   RiLockFill,
   RiArchiveFill,
+  RiHeartPulseLine,
+  RiLoader4Line,
 } from 'oh-vue-icons/icons/ri/index.js'

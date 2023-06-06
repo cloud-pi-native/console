@@ -8,7 +8,7 @@ import { getConnection, closeConnections, sequelize } from '../../connect.js'
 import projectRouter from './project.js'
 import { getProjectModel } from '../../models/project.js'
 import { getUserModel } from '../../models/user.js'
-import { adminGroupPath } from 'shared/src/utils/const.js'
+import { adminGroupPath } from 'shared'
 import { getRandomProject, getRandomUser, repeatFn } from 'test-utils'
 import { checkAdminGroup } from '../../utils/controller.js'
 

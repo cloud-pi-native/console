@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import { achievedStatus, projectRoles } from 'shared/src/utils/const.js'
+import { achievedStatus, projectRoles } from 'shared'
 
 export const getRandomProjectName = () => {
   return faker.lorem.word()

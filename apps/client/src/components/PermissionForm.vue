@@ -2,7 +2,7 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import SuggestionInput from './SuggestionInput.vue'
 import RangeInput from './RangeInput.vue'
-import { levels } from 'shared/src/utils/const.js'
+import { levels, projectIsLockedInfo } from 'shared'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectPermissionStore } from '@/stores/project-permission.js'
 import { useUserStore } from '@/stores/user.js'
@@ -40,21 +40,25 @@ const setPermissions = () => {
 }
 
 const addPermission = async (userEmail) => {
-  const userId = usersToLicence.value.find(user => user.email === userEmail).id
-  try {
-    await projectPermissionStore.addPermission(environment.value.id, { userId, level: 0 })
-  } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+  if (!project.value.locked) {
+    const userId = usersToLicence.value.find(user => user.email === userEmail).id
+    try {
+      await projectPermissionStore.addPermission(environment.value.id, { userId, level: 0 })
+    } catch (error) {
+      snackbarStore.setMessage(error?.message, 'error')
+    }
   }
 }
 
 const updatePermission = async () => {
-  try {
-    await projectPermissionStore.updatePermission(environment.value.id, permissionToUpdate.value)
-  } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+  if (!project.value.locked) {
+    try {
+      await projectPermissionStore.updatePermission(environment.value.id, permissionToUpdate.value)
+    } catch (error) {
+      snackbarStore.setMessage(error?.message, 'error')
+    }
+    permissionToUpdate.value = {}
   }
-  permissionToUpdate.value = {}
 }
 
 const deletePermission = async (userId) => {
@@ -63,6 +67,12 @@ const deletePermission = async (userId) => {
   } catch (error) {
     snackbarStore.setMessage(error?.message, 'error')
   }
+}
+
+const getDynamicTitle = (locked, permission) => {
+  if (locked) return projectIsLockedInfo
+  if (permission.userId === owner.value.id) return 'Les droits du owner ne peuvent être modifiés'
+  return `Modifier les droits de ${permission.user.email}`
 }
 
 watch(project, () => {
@@ -116,7 +126,7 @@ onMounted(() => {
           <DsfrButton
             data-testid="deletePermissionBtn"
             :disabled="permission.userId === owner.id || !isPermitted"
-            :title="permission.userId === owner.id ? 'Les droits du owner ne peuvent être retirés' : `Retirer les droits de ${permission.user.email}`"
+            :title="permission.userId === owner.id ? `Les droits du owner ne peuvent être supprimés`: `Supprimer les droits de ${permission.user.email}`"
             label="Supprimer la permission"
             class="my-4"
             secondary
@@ -131,7 +141,7 @@ onMounted(() => {
             :level="permission.level"
             :levels="levels"
             required="required"
-            :disabled="permission.userId === owner.id || !isPermitted"
+            :disabled="permission.userId === owner.id || !isPermitted || project?.locked"
             @update-level="(event) => {
               permissionToUpdate.userId = permission.userId
               permissionToUpdate.level = event
@@ -139,8 +149,8 @@ onMounted(() => {
           />
           <DsfrButton
             :data-testid="`${permission.userId}UpdatePermissionBtn`"
-            :disabled="permission.userId === owner.id || !isPermitted || permissionToUpdate.userId !== permission.userId"
-            :title="permission.userId === owner.id ? 'Les droits du owner ne peuvent être modifiés' : `Confirmer la modification des droits de ${permission.user.email}`"
+            :disabled="permission.userId === owner.id || !isPermitted || permissionToUpdate.userId !== permission.userId || project?.locked"
+            :title="getDynamicTitle(project?.locked, permission)"
             label="Confirmer la modification"
             class="my-4"
             secondary
@@ -159,7 +169,7 @@ onMounted(() => {
   >
     <SuggestionInput
       data-testid="permissionSuggestionInput"
-      :disabled="!isPermitted || !usersToLicence.length"
+      :disabled="!isPermitted || !usersToLicence.length || project?.locked"
       :label="`E-mail de l'utilisateur à accréditer sur l'environnement de ${environment?.name}`"
       placeholder="prenom.nom@interieur.gouv.fr"
       :suggestions="suggestions"

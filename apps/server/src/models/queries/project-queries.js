@@ -89,11 +89,11 @@ export const unlockProject = async (id) => {
 }
 
 export const updateProjectCreated = async (id) => {
-  return getProjectModel().update({ locked: false, status: 'created' }, { where: { id } })
+  return getProjectModel().update({ status: 'created' }, { where: { id } })
 }
 
 export const updateProjectFailed = async (id) => {
-  return getProjectModel().update({ locked: false, status: 'failed' }, { where: { id } })
+  return getProjectModel().update({ status: 'failed' }, { where: { id } })
 }
 
 export const addUserToProject = async ({ project, user, role }) => {
@@ -126,8 +126,8 @@ export const archiveProject = async (id) => {
 }
 
 // TECH
-export const _initializeProject = async ({ id, name, organization, description, services }) => {
-  return getProjectModel().create({ id, name, organization, description, status: 'initializing', locked: true, services })
+export const _initializeProject = async ({ id, name, organization, description, services, locked }) => {
+  return getProjectModel().create({ id, name, organization, description, status: 'initializing', locked, services })
 }
 
 export const _dropProjectsTable = async () => {

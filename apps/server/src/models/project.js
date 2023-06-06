@@ -1,6 +1,6 @@
 import { DataTypes } from 'sequelize'
 import { sequelize } from '../connect.js'
-import { descriptionMaxLength } from 'shared/src/schemas/project.js'
+import { descriptionMaxLength } from 'shared'
 
 let Project
 export const getProjectModel = () => Project ?? (Project = sequelize.define('Project', {

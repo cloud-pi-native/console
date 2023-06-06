@@ -7,7 +7,7 @@ flowchart TD
     B --> G{return}
     A -->|try OK| C>send code < 400]
     C --> D[services call]
-    D -->|catch KO| E[(status failed & project unlock)]
+    D -->|catch KO| E[(status failed)]
     E -->|catch KO| G
     E -->|try OK| G
     D -->|try OK| F[(status ok & project unlock)]
