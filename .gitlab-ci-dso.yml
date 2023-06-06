@@ -14,6 +14,7 @@ include:
 
 vault:read_secret:
   stage: read-secret
+  extends: .vault:read_secret
 
 .build-push-branches:
   only:
