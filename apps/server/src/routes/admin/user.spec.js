@@ -8,8 +8,8 @@ import { sessionConf } from '../../utils/keycloak.js'
 import { getConnection, closeConnections, sequelize } from '../../connect.js'
 import adminUsersRouter from './user.js'
 import { getUserModel } from '../../models/user.js'
+import { checkAdminGroup } from '../../utils/controller.js'
 import { adminGroupPath } from 'shared/src/utils/const.js'
-import { sendForbidden } from '../../utils/response.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 
@@ -30,12 +30,7 @@ const mockSessionPlugin = (app, opt, next) => {
 }
 
 const mockSession = (app) => {
-  app.addHook('preHandler', (req, res, done) => {
-    if (!req.session.user.groups?.includes(adminGroupPath)) {
-      sendForbidden(res, 'Vous n\'avez pas les droits administrateur')
-    }
-    done()
-  })
+  app.addHook('preHandler', checkAdminGroup)
     .register(fp(mockSessionPlugin))
     .register(adminUsersRouter)
 }

@@ -11,7 +11,7 @@ import { getOrganizationModel } from '../../models/organization.js'
 import { adminGroupPath, allOrganizations } from 'shared/src/utils/const.js'
 import { fetchOrganizationsRes, filteredOrganizations } from '../../utils/mock-plugins.js'
 import { getLogModel } from '../../models/log.js'
-import { sendForbidden } from '../../utils/response.js'
+import { checkAdminGroup } from '../../utils/controller.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 
@@ -40,12 +40,7 @@ const mockSessionPlugin = (app, opt, next) => {
 }
 
 const mockSession = (app) => {
-  app.addHook('preHandler', (req, res, done) => {
-    if (!req.session.user.groups?.includes(adminGroupPath)) {
-      sendForbidden(res, 'Vous n\'avez pas les droits administrateur')
-    }
-    done()
-  })
+  app.addHook('preHandler', checkAdminGroup)
     .register(fp(mockSessionPlugin))
     .register(organizationRouter)
 }
