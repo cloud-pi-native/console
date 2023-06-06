@@ -1,14 +1,12 @@
 import {
   getUsers,
 } from '../../models/queries/user-queries.js'
-import { adminGroupPath } from 'shared/src/utils/const.js'
 
 import { sendNotFound, sendOk } from '../../utils/response.js'
 import { addReqLogs } from '../../utils/logger.js'
 
 export const getUsersController = async (req, res) => {
   try {
-    if (!req.session.user.groups?.includes(adminGroupPath)) throw new Error('Vous n\'avez pas les droits administrateur')
     const users = await getUsers()
 
     addReqLogs({
