@@ -417,6 +417,7 @@ export const deleteRepositoryController = async (req, res) => {
       organization: organization.dataValues.name,
       services: project.services,
       environments: environmentNames,
+      internalUrl: `${gitlabUrl}/${projectRootDir}/${organization.name}/${project.name}/${repo.dataValues.internalRepoName}.git`,
     }
 
     const results = await hooksFns.deleteRepository(repoData)

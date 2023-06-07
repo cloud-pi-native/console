@@ -1,6 +1,6 @@
 import { createApplicationProject, deleteApplicationProject } from './app-project.js'
 import { createApplication, deleteApplication } from './applications.js'
-import { createRepoSecret, deleteRepoSecret } from './repo-secret.js'
+import { migrateAppProject } from './migrate.js'
 
 export const newEnv = async (payload) => {
   try {
@@ -8,10 +8,10 @@ export const newEnv = async (payload) => {
     const { roGroup, rwGroup } = payload.keycloak
     const namespace = `${organization}-${project}-${environment}`
 
-    for (const repo of repositories) {
-      const appProjectName = `${organization}-${project}-${repo.internalRepoName}-${environment}-project`
-      await createApplicationProject({ appProjectName, namespace, repo, roGroup, rwGroup })
+    const appProjectName = `${organization}-${project}-${environment}-project`
+    await createApplicationProject({ appProjectName, namespace, roGroup, rwGroup, repositories })
 
+    for (const repo of repositories) {
       const applicationName = `${organization}-${project}-${repo.internalRepoName}-${environment}`
       await createApplication({ applicationName, appProjectName, namespace, repo, roGroup, rwGroup })
     }
@@ -35,12 +35,12 @@ export const deleteEnv = async (payload) => {
   try {
     const { project, organization, environment, repositories } = payload.args
 
+    const appProjectName = `${organization}-${project}-${environment}-project`
+    const destNamespace = `${organization}-${project}-${environment}`
+    await deleteApplicationProject({ appProjectName, destNamespace })
     for (const repo of repositories) {
-      const appProjectName = `${organization}-${project}-${repo.internalRepoName}-${environment}-project`
-      await deleteApplicationProject(appProjectName)
-
       const applicationName = `${organization}-${project}-${repo.internalRepoName}-${environment}`
-      await deleteApplication(applicationName)
+      await deleteApplication({ applicationName, repoUrl: repo.url })
     }
     return {
       status: {
@@ -67,18 +67,17 @@ const nothingStatus = {
 export const newRepo = async (payload) => {
   try {
     if (!payload.args.isInfra) return nothingStatus
-
     const repo = { internalRepoName: payload.args.internalRepoName, url: payload.args.internalUrl }
     const { project, organization, environment } = payload.args
-    await createRepoSecret({ project, organization, repo })
 
     for (const env of environment) {
       const roGroup = `/${organization}-${project}/${env}/RO`
       const rwGroup = `/${organization}-${project}/${env}/RW`
       const namespace = `${organization}-${project}-${env}`
-      const appProjectName = `${organization}-${project}-${repo.internalRepoName}-${env}-project`
-      await createApplicationProject({ namespace, roGroup, rwGroup, repo, appProjectName })
-      const applicationName = `${organization}-${project}-${repo.internalRepoName}-${environment}`
+      const appProjectName = `${organization}-${project}-${env}-project`
+      const destNamespace = `${organization}-${project}-${env}`
+      const applicationName = `${organization}-${project}-${repo.internalRepoName}-${env}`
+      await migrateAppProject({ appProjectName, destNamespace, roGroup, rwGroup })
       await createApplication({ applicationName, appProjectName, namespace, repo, roGroup, rwGroup })
     }
     return {
@@ -102,15 +101,13 @@ export const deleteRepo = async (payload) => {
   if (!payload.args.isInfra) return nothingStatus
 
   try {
-    const { project, organization, environments, internalRepoName } = payload.args
-    const secretName = `${organization}-${project}-${internalRepoName}-repo`
-    await deleteRepoSecret(secretName)
+    const { project, organization, environments, internalRepoName, internalUrl } = payload.args
 
     for (const env of environments) {
-      const appProjectName = `${organization}-${project}-${internalRepoName}-${env}-project`
+      const oldAppProjectName = `${organization}-${project}-${internalRepoName}-${env}-project` // Support Old appproject method
       const applicationName = `${organization}-${project}-${internalRepoName}-${env}`
-      await deleteApplicationProject(appProjectName)
-      await deleteApplication(applicationName)
+      await deleteApplicationProject(oldAppProjectName) // Support Old appproject method
+      await deleteApplication({ applicationName, repoUrl: internalUrl })
     }
     return {
       status: {

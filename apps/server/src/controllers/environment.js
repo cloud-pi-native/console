@@ -135,7 +135,7 @@ export const initializeEnvironmentController = async (req, res) => {
     const environmentName = env.dataValues.name
     const projectName = project.dataValues.name
     const organizationName = organization.name
-    const gitlabBaseURL = `${gitlabUrl}/${projectRootDir}/${organizationName}/${projectName}/`
+    const gitlabBaseURL = `${gitlabUrl}/${projectRootDir}/${organizationName}/${projectName}`
     const repositories = (await getInfraProjectRepositories(project.id)).map(({ internalRepoName }) => ({
       url: `${gitlabBaseURL}/${internalRepoName}.git`,
       internalRepoName,
@@ -252,7 +252,7 @@ export const deleteEnvironmentController = async (req, res) => {
     const environmentName = env.name
     const projectName = project.name
     const organizationName = organization.name
-    const gitlabBaseURL = `${gitlabUrl}/${projectRootDir}/${organizationName}/${projectName}/`
+    const gitlabBaseURL = `${gitlabUrl}/${projectRootDir}/${organizationName}/${projectName}`
     const repositories = (await getInfraProjectRepositories(project.id)).map(({ internalRepoName }) => ({
       url: `${gitlabBaseURL}/${internalRepoName}.git`,
       internalRepoName,

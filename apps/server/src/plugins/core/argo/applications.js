@@ -1,4 +1,5 @@
 import { argoNamespace } from '../../../utils/env.js'
+import { addRepoToApplicationProject, removeRepoFromApplicationProject } from './app-project.js'
 import { customK8sApi } from './init.js'
 
 export const createApplication = async ({ applicationName, namespace, repo, appProjectName }) => {
@@ -11,15 +12,18 @@ export const createApplication = async ({ applicationName, namespace, repo, appP
       repoURL: repo.url,
       appProjectName,
     }))
+    await addRepoToApplicationProject({ appProjectName, repoUrl: repo.url })
     return result.body
   }
   return application
 }
 
-export const deleteApplication = async (applicationName) => {
+export const deleteApplication = async ({ applicationName, repoUrl }) => {
   const applications = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', argoNamespace, 'applications', undefined, undefined, undefined, `metadata.name=${applicationName}`)
   const application = applications.body.items.find(app => app.metadata.name === applicationName)
   if (application) {
+    const appProjectName = application.spec.project
+    await removeRepoFromApplicationProject({ appProjectName, repoUrl })
     await customK8sApi.deleteNamespacedCustomObject('argoproj.io', 'v1alpha1', argoNamespace, 'applications', applicationName)
   }
 }
