@@ -2,8 +2,13 @@
 import { computed, onMounted, ref } from 'vue'
 import { useAdminOrganizationStore } from '@/stores/admin/organization.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { formatDate } from 'shared/src/utils/date.js'
-import { schemaValidator, isValid, instanciateSchema, organizationSchema } from 'shared'
+import {
+  formatDate,
+  schemaValidator,
+  isValid,
+  instanciateSchema,
+  organizationSchema,
+} from 'shared'
 
 const adminOrganizationStore = useAdminOrganizationStore()
 

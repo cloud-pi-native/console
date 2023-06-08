@@ -9,7 +9,7 @@ import { getConnection, closeConnections, sequelize } from '../../connect.js'
 import adminUsersRouter from './user.js'
 import { getUserModel } from '../../models/user.js'
 import { checkAdminGroup } from '../../utils/controller.js'
-import { adminGroupPath } from 'shared/src/utils/const.js'
+import { adminGroupPath } from 'shared'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 

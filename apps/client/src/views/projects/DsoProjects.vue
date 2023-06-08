@@ -18,17 +18,14 @@ const setProjectList = (projects) => {
       id: project.id,
       title: project.name,
       to: `/projects/${project.id}/dashboard`,
-      locked: project.locked,
     }))
 }
 
 const setSelectedProject = async (project) => {
-  if (!project.locked) {
-    try {
-      await projectStore.setSelectedProject(project.id)
-    } catch (error) {
-      snackbarStore.setMessage(error?.message, 'error')
-    }
+  try {
+    await projectStore.setSelectedProject(project.id)
+  } catch (error) {
+    snackbarStore.setMessage(error?.message, 'error')
   }
 }
 
@@ -74,11 +71,9 @@ watch(projects, (projects) => {
     >
       <DsfrTile
         :title="project.title"
-        :description="project.locked ? 'opérations en cours' : null"
         :data-testid="`projectTile-${project.title}`"
-        :to="project.locked ? '' : project.to"
+        :to="project.to"
         :horizontal="false"
-        :disabled="project.locked"
         @click="setSelectedProject(project)"
       />
     </div>

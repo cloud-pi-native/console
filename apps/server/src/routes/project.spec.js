@@ -15,7 +15,7 @@ import { getRepositoryModel } from '../models/repository.js'
 import { getEnvironmentModel } from '../models/environment.js'
 import { getPermissionModel } from '../models/permission.js'
 import { getOrganizationModel } from '../models/organization.js'
-import { descriptionMaxLength } from 'shared/src/schemas/project.js'
+import { descriptionMaxLength, projectIsLockedInfo } from 'shared'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 
@@ -383,6 +383,22 @@ describe('Project routes', () => {
 
       expect(response.statusCode).toEqual(400)
       expect(response.body).toEqual('Echec de la mise à jour du projet')
+    })
+    it('Should not update a project if locked', async () => {
+      const randomDbSetup = createRandomDbSetup({})
+      randomDbSetup.project.locked = true
+      const randomUser = getRandomUser()
+
+      Project.$queueResult(randomDbSetup.project)
+      setRequestorId(randomUser.id)
+
+      const response = await app.inject()
+        .put(`/${randomDbSetup.project.id}`)
+        .body({ description: 'nouvelle description' })
+        .end()
+
+      expect(response.statusCode).toEqual(403)
+      expect(response.body).toEqual(projectIsLockedInfo)
     })
   })
 

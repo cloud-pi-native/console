@@ -6,7 +6,6 @@ import {
   updateProjectFailed,
   getProjectById,
   lockProject,
-  unlockProject,
   addUserToProject,
   archiveProject,
   // getProjectUsers,
@@ -38,12 +37,12 @@ import {
 import { filterObjectByKeys, lowercaseFirstLetter, replaceNestedKeys } from '../utils/queries-tools.js'
 import { addReqLogs } from '../utils/logger.js'
 import { sendOk, sendCreated, sendUnprocessableContent, sendNotFound, sendBadRequest, sendForbidden } from '../utils/response.js'
-import { projectSchema } from 'shared/src/schemas/project.js'
-import { calcProjectNameMaxLength } from 'shared/src/utils/functions.js'
+import { projectSchema, calcProjectNameMaxLength, projectIsLockedInfo } from 'shared'
 import { getServices } from '../utils/services.js'
 import { addLogs } from '../models/queries/log-queries.js'
 import hooksFns from '../plugins/index.js'
 import { gitlabUrl, projectRootDir } from '../utils/env.js'
+import { unlockProjectIfNotFailed } from '../utils/controller.js'
 
 // GET
 export const getUserProjectsController = async (req, res) => {
@@ -224,7 +223,7 @@ export const createProjectController = async (req, res) => {
 
     const results = await hooksFns.createProject(projectData)
     await addLogs('Create Project', results, owner.id)
-    if (results.failed) throw new Error('Failed to create project by external servcices')
+    if (results.failed) throw new Error('Echec de la création du projet par les plugins')
 
     // enregistrement des ids GitLab et Harbor
     const { gitlab, registry } = results
@@ -261,14 +260,13 @@ export const createProjectController = async (req, res) => {
   try {
     if (isServicesCallOk) {
       await updateProjectCreated(project.id)
+      await unlockProjectIfNotFailed(project.id)
     } else {
       await updateProjectFailed(project.id)
     }
-    await unlockProject(project.id)
-
     addReqLogs({
       req,
-      description: 'Projet déverrouillé avec succès après création par les plugins',
+      description: 'Statut mis à jour après l\'appel aux plugins',
       extras: {
         projectId: project.id,
       },
@@ -276,7 +274,7 @@ export const createProjectController = async (req, res) => {
   } catch (error) {
     addReqLogs({
       req,
-      description: 'Echec du déverrouillage du projet après création par les plugins',
+      description: 'Echec de mise à jour du statut après l\'appel aux plugins',
       extras: {
         projectId: project.id,
       },
@@ -295,6 +293,7 @@ export const updateProjectController = async (req, res) => {
   try {
     let project = await getProjectById(projectId)
     if (!project) throw new Error('Projet introuvable')
+    if (project.locked) return sendForbidden(res, projectIsLockedInfo)
 
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
     if (!role) throw new Error('Vous n\'êtes pas membre du projet')
@@ -312,7 +311,7 @@ export const updateProjectController = async (req, res) => {
 
     await lockProject(projectId)
     await updateProject(projectId, data)
-    await unlockProject(projectId)
+    await unlockProjectIfNotFailed(projectId)
 
     addReqLogs({
       req,
@@ -428,7 +427,7 @@ export const archiveProjectController = async (req, res) => {
     delete projectData.name
     const results = await hooksFns.archiveProject(projectData)
     await addLogs('Delete Project', results, userId)
-    if (results.failed) throw new Error('Echec de la suppression du projet par les services externes')
+    if (results.failed) throw new Error('Echec de la suppression du projet par les plugins')
     isServicesCallOk = true
     addReqLogs({
       req,
@@ -469,11 +468,9 @@ export const archiveProjectController = async (req, res) => {
     } else {
       await updateProjectFailed(projectId)
     }
-    await unlockProject(projectId)
-
     addReqLogs({
       req,
-      description: 'Déverrouillage du projet avec succès après suppression',
+      description: 'Statut mis à jour après l\'appel aux plugins',
       extras: {
         projectId,
       },
@@ -481,7 +478,7 @@ export const archiveProjectController = async (req, res) => {
   } catch (error) {
     addReqLogs({
       req,
-      description: 'Echec du déverrouillage du projet après suprpession',
+      description: 'Echec de mise à jour du statut après l\'appel aux plugins',
       extras: {
         projectId,
       },

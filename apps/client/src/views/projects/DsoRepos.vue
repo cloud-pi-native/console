@@ -6,6 +6,7 @@ import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import RepoForm from '@/components/RepoForm.vue'
 import DsoSelectedProject from './DsoSelectedProject.vue'
+import { projectIsLockedInfo } from 'shared'
 
 const projectStore = useProjectStore()
 const projectRepositoryStore = useProjectRepositoryStore()
@@ -15,7 +16,7 @@ const snackbarStore = useSnackbarStore()
 /**
  * @returns {string}
  */
-const selectedProject = computed(() => projectStore.selectedProject)
+const project = computed(() => projectStore.selectedProject)
 const owner = computed(() => projectStore.selectedProjectOwner)
 const isOwner = computed(() => userStore.userProfile.id === owner.value.id)
 
@@ -23,8 +24,8 @@ const repos = ref([])
 const selectedRepo = ref({})
 const isNewRepoForm = ref(false)
 
-const setReposTiles = (selectedProject) => {
-  repos.value = selectedProject?.repositories
+const setReposTiles = (project) => {
+  repos.value = project?.repositories
     ?.sort((a, b) => (a.internalRepoName >= b.internalRepoName ? 1 : -1))
     ?.map(repo => ({
       id: repo.internalRepoName,
@@ -67,16 +68,16 @@ const deleteRepo = async (repoId) => {
   } catch (error) {
     snackbarStore.setMessage(error?.message, 'error')
   }
-  setReposTiles(selectedProject.value)
+  setReposTiles(project.value)
   selectedRepo.value = {}
 }
 
 onMounted(() => {
-  setReposTiles(selectedProject.value)
+  setReposTiles(project.value)
 })
 
-watch(selectedProject, () => {
-  setReposTiles(selectedProject.value)
+watch(project, () => {
+  setReposTiles(project.value)
 })
 
 </script>
@@ -90,7 +91,8 @@ watch(selectedProject, () => {
       label="Ajouter un nouveau dépôt"
       data-testid="addRepoLink"
       tertiary
-      :disabled="projectStore.selectedProject?.locked"
+      :disabled="project?.locked"
+      :title="project?.locked ? projectIsLockedInfo : 'Ajouter un dépôt'"
       class="fr-mt-2v <md:mb-2"
       icon="ri-add-line"
       @click="showNewRepoForm()"
@@ -101,6 +103,7 @@ watch(selectedProject, () => {
     class="my-5 pb-10 border-grey-900 border-y-1"
   >
     <RepoForm
+      :is-project-locked="project?.locked"
       @add="(repo) => addRepo(repo)"
       @cancel="cancel()"
     />
@@ -152,6 +155,7 @@ watch(selectedProject, () => {
       </div>
       <RepoForm
         v-if="Object.keys(selectedRepo).length && selectedRepo.internalRepoName === repo.id && selectedRepo.status !== 'deleting'"
+        :is-project-locked="project?.locked"
         :is-owner="isOwner"
         :repo="selectedRepo"
         :is-editable="false"

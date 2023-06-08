@@ -1,7 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { environmentSchema, schemaValidator, instanciateSchema } from 'shared'
-import { allEnv } from 'shared/src/utils/const.js'
+import { environmentSchema, schemaValidator, instanciateSchema, allEnv, projectIsLockedInfo } from 'shared'
 import PermissionForm from './PermissionForm.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
@@ -19,6 +18,10 @@ const props = defineProps({
     default: true,
   },
   isOwner: {
+    type: Boolean,
+    default: false,
+  },
+  isProjectLocked: {
     type: Boolean,
     default: false,
   },
@@ -149,6 +152,7 @@ onMounted(() => {
             data-testid="deleteEnvironmentBtn"
             :label="`Supprimer définitivement l'environnement ${localEnvironment.name}`"
             :disabled="environmentToDelete !== localEnvironment.name"
+            :title="`Supprimer définitivement l'environnement ${localEnvironment.name}`"
             secondary
             icon="ri-delete-bin-7-line"
             @click="$emit('deleteEnvironment', localEnvironment)"
@@ -169,6 +173,8 @@ onMounted(() => {
     <DsfrButton
       label="Ajouter l'environnement"
       data-testid="addEnvironmentBtn"
+      :disabled="props.isProjectLocked"
+      :title="props.isProjectLocked ? projectIsLockedInfo : 'Ajouter l\'environnement'"
       primary
       icon="ri-upload-cloud-line"
       @click="addEnvironment()"

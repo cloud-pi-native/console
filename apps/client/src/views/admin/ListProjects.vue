@@ -2,9 +2,8 @@
 import { onMounted, ref, computed } from 'vue'
 import { useAdminProjectStore } from '@/stores/admin/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { formatDate } from 'shared/src/utils/date.js'
+import { formatDate, statusDict } from 'shared'
 import { useOrganizationStore } from '@/stores/organization.js'
-import { projectDict } from 'shared/src/utils/const.js'
 
 const adminProjectStore = useAdminProjectStore()
 const organizationStore = useOrganizationStore()
@@ -37,15 +36,15 @@ const setRows = () => {
       owner.email,
       {
         component: 'v-icon',
-        name: projectDict.status[status].icon,
-        title: `Le projet ${name} est ${projectDict.status[status].wording}`,
-        fill: projectDict.status[status].color,
+        name: statusDict.status[status].icon,
+        title: `Le projet ${name} est ${statusDict.status[status].wording}`,
+        fill: statusDict.status[status].color,
       },
       {
         component: 'v-icon',
-        name: projectDict.locked[locked].icon,
-        title: `Le projet ${name} est ${projectDict.locked[locked].wording}`,
-        fill: projectDict.locked[locked].color,
+        name: statusDict.locked[locked].icon,
+        title: `Le projet ${name} est ${statusDict.locked[locked].wording}`,
+        fill: statusDict.locked[locked].color,
       },
       formatDate(createdAt),
       formatDate(updatedAt),
