@@ -1,0 +1,53 @@
+# code
+.vscode/*
+!.vscode/vue-dsfr.code-snippets
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+
+# modules
+node_modules
+**/node_modules
+
+# env
+.env
+.env.ci
+.env.test
+.env.prod
+.env.int
+
+# cypress
+screenshots
+downloads
+
+# init-db
+apps/server/src/init/db/imports/data.js
+
+# act
+**/act/artifacts
+**/act/docker/registry/auth
+**/act/docker/registry/data
+
+# vitest
+coverage
+apps/client/vite.config.js.timestamp-*.mjs
+
+# sonarqube
+.scannerwork
+
+# keycloak
+keycloak/data
+
+# turbo
+.turbo
+
+# kube config
+.kubeconfig
+
+# dist
+dist
+
+# plugins
+apps/server/src/plugins/external

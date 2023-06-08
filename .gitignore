@@ -48,6 +48,7 @@ keycloak/data
 
 # dist
 dist
+build
 
 # plugins
 apps/server/src/plugins/external

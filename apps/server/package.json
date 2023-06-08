@@ -4,11 +4,15 @@
   "description": "dso-portal server",
   "type": "module",
   "scripts": {
-    "dev": "node --inspect=0.0.0.0 --watch src/server.js",
+    "build": "run-s clean:build compile",
+    "clean:build": "rimraf dist",
+    "compile": "tspc || exit 0",
+    "dev": "nodemon --exec 'vite-node src/server.ts'",
     "format": "eslint . --ext .js,.cjs,.ts --fix",
     "lint": "eslint . --ext .js,.cjs,.ts",
-    "start": "node src/server.js",
-    "test": "vitest run --coverage"
+    "start": "node dist/server.js",
+    "test": "vitest run",
+    "test:cov": "vitest run --coverage"
   },
   "dependencies": {
     "@fastify/cookie": "^8.3.0",
@@ -31,17 +35,29 @@
   },
   "devDependencies": {
     "@faker-js/faker": "^7.6.0",
+    "@rushstack/eslint-patch": "^1.2.0",
+    "@types/node": "^18.16.1",
+    "@typescript-eslint/eslint-plugin": "^5.59.1",
+    "@typescript-eslint/parser": "^5.59.1",
     "@vitest/coverage-c8": "^0.30.1",
-    "eslint": "^8.39.0",
+    "eslint": "^8.40.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-n": "^15.7.0",
     "eslint-plugin-promise": "^6.1.1",
     "fastify-plugin": "^4.5.0",
+    "npm-run-all": "^4.1.5",
+    "nodemon": "^2.0.22",
     "pino-pretty": "^10.0.0",
+    "rimraf": "^5.0.0",
     "sequelize-mock": "^0.10.2",
     "test-utils": "workspace:^1.0.0",
+    "ts-patch": "3.0.0-beta3",
+    "ttypescript": "^1.5.15",
+    "typescript": "^5.0.4",
+    "typescript-transform-paths": "^3.4.6",
     "vite": "^4.3.4",
+    "vite-node": "^0.30.1",
     "vitest": "^0.30.1"
   }
 }

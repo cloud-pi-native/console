@@ -1,7 +1,7 @@
 import { vi, describe, it, expect } from 'vitest'
 import * as xhrClient from './xhr-client.js'
 
-vi.mock('@/utils/keycloak/keycloak.js', () => ({
+vi.mock('@/utils/keycloak/keycloak.ts', () => ({
   getKeycloak: () => ({
     token: 'token',
     loadUserProfile: vi.fn(),

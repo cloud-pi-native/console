@@ -1,4 +1,4 @@
-import { getKeycloak, getUserProfile, keycloakLogin, keycloakLogout } from '@/utils/keycloak/keycloak.js'
+import { getKeycloak, getUserProfile, keycloakLogin, keycloakLogout } from '@/utils/keycloak/keycloak'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { adminGroupPath } from 'shared'
