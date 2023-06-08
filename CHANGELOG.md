@@ -1,5 +1,38 @@
 # Changelog
 
+## [4.0.0](https://github.com/dnum-mi/dso-console/compare/v3.4.1...v4.0.0) (2023-06-08)
+
+
+### ⚠ BREAKING CHANGES
+
+* :boom: clarify business logic on status and locking
+
+### Features
+
+* :alien: add hook to synchronize organizations ([6ccd985](https://github.com/dnum-mi/dso-console/commit/6ccd9855fc8713043a9f24687cfe07d105540c91))
+* :alien: add hook to synchronize organizations ([6ccd985](https://github.com/dnum-mi/dso-console/commit/6ccd9855fc8713043a9f24687cfe07d105540c91))
+* :alien: add keys to source organizations ([626c031](https://github.com/dnum-mi/dso-console/commit/626c03135571199c3a1f1e72e19132bc651288a3))
+* :boom: if status: failed (aka plugins failed), project remains locked ([8548d6e](https://github.com/dnum-mi/dso-console/commit/8548d6e0d654673789bdebba31237fa98a86788a))
+* :children_crossing: improve user experience on dso-console ([720b3c9](https://github.com/dnum-mi/dso-console/commit/720b3c9570238453edeb9ceff11ba21f37c50c41))
+* :children_crossing: improve ux for danger zone ([720b3c9](https://github.com/dnum-mi/dso-console/commit/720b3c9570238453edeb9ceff11ba21f37c50c41))
+* :children_crossing: improve UX on permission form ([fb72076](https://github.com/dnum-mi/dso-console/commit/fb72076f16f79df456392fc7f9a7129ab1655832))
+* :children_crossing: redirect to dashboard when selecting a project ([720b3c9](https://github.com/dnum-mi/dso-console/commit/720b3c9570238453edeb9ceff11ba21f37c50c41))
+* :necktie: allow only one plugin to register on hook fetchOrganizations ([6ccd985](https://github.com/dnum-mi/dso-console/commit/6ccd9855fc8713043a9f24687cfe07d105540c91))
+* :sparkles: add project admin view ([b49ff96](https://github.com/dnum-mi/dso-console/commit/b49ff967853e31ca6cbcd8cd2ff78b299023788e))
+
+
+### Bug Fixes
+
+* :art: temp fix labels, add check, refacto get ns ([a43f50c](https://github.com/dnum-mi/dso-console/commit/a43f50cb93b2453f025b9d4284f2b65b6134161a))
+* :bug: fix payload, fix check step ([ff76b27](https://github.com/dnum-mi/dso-console/commit/ff76b2750352cbe7b2d49ff5fb6e4d3e424b328f))
+* :bug: remove harbor repos before projects ([7239329](https://github.com/dnum-mi/dso-console/commit/72393297dcfaf44938e2814cccfd8366613ba75c))
+* :necktie: clarify business logic on status and locking ([8548d6e](https://github.com/dnum-mi/dso-console/commit/8548d6e0d654673789bdebba31237fa98a86788a))
+
+
+### Code Refactoring
+
+* :boom: clarify business logic on status and locking ([8548d6e](https://github.com/dnum-mi/dso-console/commit/8548d6e0d654673789bdebba31237fa98a86788a))
+
 ## [3.4.1](https://github.com/dnum-mi/dso-console/compare/v3.4.0...v3.4.1) (2023-05-22)
 
 
