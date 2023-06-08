@@ -92,7 +92,7 @@ cd "$PROJECT_DIR"
 
 # Run unit tests
 if [ "$RUN_UNIT_TESTS" == "true" ]; then
-  npm run test
+  npm run test:cov
 fi
 
 
