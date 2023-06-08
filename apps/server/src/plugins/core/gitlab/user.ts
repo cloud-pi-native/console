@@ -2,26 +2,57 @@ import { api } from './utils.js'
 
 const createUsername = (email) => email.replace('@', '.')
 
-export const getUser = async (email) => {
-  const users = await api.Users.search(email)
-  return users.length ? users.find(user => user.email === email) : undefined
+export const getUser = async (user) => {
+  let gitlabUser
+
+  // test finding by extern_uid by searching with email
+  const usersByEmail = await api.Users.search(user.email)
+  gitlabUser = usersByEmail.find(gitlabUser => gitlabUser?.extern_uid === user.id)
+  if (gitlabUser) return gitlabUser
+
+  // if not found, test finding by extern_uid by searching with username
+  const usersByUsername = await api.Users.search(user.username)
+  gitlabUser = usersByUsername.find(gitlabUser => gitlabUser?.extern_uid === user.id)
+  if (gitlabUser) return gitlabUser
+
+  // if not found, test finding by email or username
+  const allUsers = [...usersByEmail, ...usersByUsername]
+  return allUsers.find(gitlabUser => gitlabUser.email === user.email) ||
+    allUsers.find(gitlabUser => gitlabUser.username === user.username)
 }
 
-export const createUser = async (email) => {
-  const existingUser = await getUser(email)
+export const createUser = async (user) => {
+  user.username = createUsername(user.email)
+  const existingUser = await getUser(user)
+
+  const userDefinitionBase = {
+    // required options
+    name: `${user.firstName} ${user.lastName}`,
+    username: user.username,
+    email: user.email,
+    // sso options
+    extern_uid: user.id,
+    provider: 'openid_connect',
+  }
+
   if (existingUser) {
+    if (Object.keys(userDefinitionBase).some(prop => existingUser[prop] !== userDefinitionBase[prop])) {
+      api.Users.edit(existingUser.id, userDefinitionBase)
+    }
+    api.Users.edit(existingUser.id, {})
     return existingUser
   }
 
-  return api.Users.create({
+  const userDefinition = {
+    ...userDefinitionBase,
+    // optionals options
     admin: false,
     can_create_group: false,
-    email,
     force_random_password: true,
-    name: createUsername(email),
+    projects_limit: 0,
     skip_confirmation: true,
-    username: createUsername(email),
-  })
+  }
+  return api.Users.create(userDefinition)
 }
 
 export const deleteUser = async (email) => {
