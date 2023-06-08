@@ -8,8 +8,8 @@ export const getNsObject = (organization, projet, environment, owner) => {
         'dso/projet': projet,
         'dso/environment': environment,
         'dso/owner.id': owner.id,
-        'dso/owner.firstName': owner.firstName,
-        'dso/owner.lastName': owner.lastName,
+        // 'dso/owner.firstName': owner.firstName, // deactivate, need time to find a way to validate/transform specials chars
+        // 'dso/owner.lastName': owner.lastName,
       },
     },
     kind: 'Namespace',
