@@ -8,7 +8,7 @@ import { sessionConf } from '../utils/keycloak.js'
 import { getConnection, closeConnections, sequelize } from '../connect.js'
 import organizationRouter from './organization.js'
 import { getOrganizationModel } from '../models/organization.js'
-import { allOrganizations } from 'shared/src/utils/const.js'
+import { allOrganizations } from 'shared'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 
@@ -90,7 +90,7 @@ describe('Organizations routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(404)
-      expect(response.body).toEqual('Echec de récupération des organisations')
+      expect(response.body).toEqual('Echec de la récupération des organisations')
     })
   })
 })

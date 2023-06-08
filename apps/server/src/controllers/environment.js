@@ -11,18 +11,20 @@ import {
   setPermission,
   getPermissionByUserIdAndEnvironmentId,
 } from '../models/queries/permission-queries.js'
-import { getProjectById, lockProject, unlockProject } from '../models/queries/project-queries.js'
+import { getProjectById, lockProject } from '../models/queries/project-queries.js'
 import {
   getRoleByUserIdAndProjectId,
   getSingleOwnerByProjectId,
 } from '../models/queries/users-projects-queries.js'
-import { getLogInfos } from '../utils/logger.js'
+import { addReqLogs } from '../utils/logger.js'
 import { sendOk, sendCreated, sendNotFound, sendBadRequest, sendForbidden } from '../utils/response.js'
+import { unlockProjectIfNotFailed } from '../utils/controller.js'
 import hooksFns from '../plugins/index.js'
 import { addLogs } from '../models/queries/log-queries.js'
 import { getOrganizationById } from '../models/queries/organization-queries.js'
 import { getInfraProjectRepositories } from '../models/queries/repository-queries.js'
 import { gitlabUrl, harborUrl, projectRootDir } from '../utils/env.js'
+import { projectIsLockedInfo } from 'shared'
 
 // GET
 export const getEnvironmentByIdController = async (req, res) => {
@@ -39,21 +41,27 @@ export const getEnvironmentByIdController = async (req, res) => {
     if (!role) throw new Error('Vous n\'êtes pas membre du projet')
     if (role.role !== 'owner' && !userPermissionLevel) throw new Error('Vous n\'êtes pas souscripteur et n\'avez pas accès à cet environnement')
 
-    req.log.info({
-      ...getLogInfos({
-        environmentId: env.id,
-      }),
-      description: 'Environment successfully retrieved',
+    addReqLogs({
+      req,
+      description: 'Environnement récupéré avec succès',
+      extras: {
+        environmentId,
+        projectId,
+      },
     })
     sendOk(res, env)
   } catch (error) {
-    req.log.error({
-      ...getLogInfos(),
-      description: `Environnement non trouvé: ${error.message}`,
-      error: error.message,
-      trace: error.trace,
+    const description = 'Echec de la récupération de l\'environnement'
+    addReqLogs({
+      req,
+      description,
+      extras: {
+        environmentId,
+        projectId,
+      },
+      error,
     })
-    return sendNotFound(res, error.message)
+    return sendNotFound(res, description)
   }
 }
 
@@ -69,36 +77,55 @@ export const initializeEnvironmentController = async (req, res) => {
   let owner
   try {
     project = await getProjectById(projectId)
+    if (project.locked) return sendForbidden(res, projectIsLockedInfo)
+
     organization = await getOrganizationById(project.organization)
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
-    if (!role) throw new Error('Vous n\'êtes pas membre du projet')
+    if (!role) return sendForbidden(res, 'Vous n\'êtes pas membre du projet')
     // TODO : plus tard il sera nécessaire d'être owner pour créer un environment
     // if (role.role !== 'owner') throw new Error('Vous n\'êtes pas souscripteur du projet')
 
     const projectEnvs = await getEnvironmentsByProjectId(projectId)
     projectEnvs?.forEach(env => {
-      if (env.name === data.name) throw new Error('Requested environment already exists for this project')
+      if (env.name === data.name) return sendBadRequest(res, `L'environnement ${data.name} existe déjà pour ce projet`)
     })
 
-    env = await initializeEnvironment(data)
     await lockProject(projectId)
+    env = await initializeEnvironment(data)
     owner = await getSingleOwnerByProjectId(projectId)
+    if (owner.id !== userId) {
+      await setPermission({
+        userId: owner.id,
+        environmentId: env.id,
+        level: 2,
+      })
+    }
+    await setPermission({
+      userId,
+      environmentId: env.id,
+      level: 2,
+    })
 
-    req.log.info({
-      ...getLogInfos({
-        projectId: project.id,
-      }),
-      description: 'Environment successfully created in database',
+    addReqLogs({
+      req,
+      description: 'Environnement et permissions créés avec succès',
+      extras: {
+        environmentId: env.id,
+        projectId,
+      },
     })
     sendCreated(res, env)
   } catch (error) {
-    req.log.error({
-      ...getLogInfos(),
-      description: 'Environnement non créé',
-      error: error.message,
-      trace: error.trace,
+    const description = 'Echec de la création de l\'environnement'
+    addReqLogs({
+      req,
+      description,
+      extras: {
+        projectId,
+      },
+      error,
     })
-    return sendBadRequest(res, error.message)
+    return sendBadRequest(res, description)
   }
 
   // Process api call to external service
@@ -108,7 +135,7 @@ export const initializeEnvironmentController = async (req, res) => {
     const environmentName = env.dataValues.name
     const projectName = project.dataValues.name
     const organizationName = organization.name
-    const gitlabBaseURL = `${gitlabUrl}/${projectRootDir}/${organizationName}/${projectName}/`
+    const gitlabBaseURL = `${gitlabUrl}/${projectRootDir}/${organizationName}/${projectName}`
     const repositories = (await getInfraProjectRepositories(project.id)).map(({ internalRepoName }) => ({
       url: `${gitlabBaseURL}/${internalRepoName}.git`,
       internalRepoName,
@@ -125,14 +152,24 @@ export const initializeEnvironmentController = async (req, res) => {
     const results = await hooksFns.initializeEnvironment(envData)
     await addLogs('Create Environment', results, userId)
     if (results.failed) throw new Error('Echec services à la création de l\'environnement')
-
     isServicesCallOk = true
+    addReqLogs({
+      req,
+      description: 'Environnement créé avec succès par les plugins',
+      extras: {
+        environmentId: env.id,
+        projectId,
+      },
+    })
   } catch (error) {
-    req.log.error({
-      ...getLogInfos(),
-      description: `Echec requête ${req.id} : ${error.message}`,
-      error: JSON.stringify(error),
-      trace: error.trace,
+    addReqLogs({
+      req,
+      description: 'Echec de création de l\'environnement par les plugins',
+      extras: {
+        environmentId: env.id,
+        projectId,
+      },
+      error,
     })
     isServicesCallOk = false
   }
@@ -141,35 +178,27 @@ export const initializeEnvironmentController = async (req, res) => {
   try {
     if (isServicesCallOk) {
       await updateEnvironmentCreated(env.id)
-      const owner = await getSingleOwnerByProjectId(projectId)
-      if (owner.id !== userId) {
-        await setPermission({
-          userId: owner.id,
-          environmentId: env.id,
-          level: 2,
-        })
-      }
-      await setPermission({
-        userId,
-        environmentId: env.id,
-        level: 2,
-      })
-      await unlockProject(projectId)
+      await unlockProjectIfNotFailed(projectId)
     } else {
       await updateEnvironmentFailed(env.id)
     }
-    await unlockProject(projectId)
-
-    req.log.info({
-      ...getLogInfos({ projectId: env.id }),
-      description: 'Projet déverrouillé',
+    addReqLogs({
+      req,
+      description: 'Statut mis à jour après l\'appel aux plugins',
+      extras: {
+        environmentId: env.id,
+        projectId,
+      },
     })
   } catch (error) {
-    req.log.error({
-      ...getLogInfos(),
-      description: 'Echec, projet verrouillé',
-      error: error.message,
-      trace: error.trace,
+    addReqLogs({
+      req,
+      description: 'Echec de mise à jour du statut après l\'appel aux plugins',
+      extras: {
+        environmentId: env.id,
+        projectId,
+      },
+      error,
     })
   }
 }
@@ -185,8 +214,8 @@ export const deleteEnvironmentController = async (req, res) => {
   let organization
   try {
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
-    if (!role) throw new Error('Vous n\'êtes pas membre du projet')
-    if (role.role !== 'owner') throw new Error('Vous n\'êtes pas souscripteur du projet')
+    if (!role) return sendForbidden(res, 'Vous n\'êtes pas membre du projet')
+    if (role.role !== 'owner') return sendForbidden(res, 'Vous n\'êtes pas souscripteur du projet')
 
     env = await getEnvironmentById(environmentId)
     project = await getProjectById(projectId)
@@ -195,27 +224,35 @@ export const deleteEnvironmentController = async (req, res) => {
     await updateEnvironmentDeleting(environmentId)
     await lockProject(projectId)
 
-    req.log.info({
-      ...getLogInfos({
+    addReqLogs({
+      req,
+      description: 'Statut de l\'environnement mis à jour avec succès, environnement en cours de suppression',
+      extras: {
+        environmentId,
         projectId,
-      }),
-      description: 'Environment status successfully updated in database',
+      },
     })
   } catch (error) {
-    req.log.error({
-      ...getLogInfos(),
-      description: 'Cannot update environment status',
-      error: error.message,
-      trace: error.trace,
+    const description = 'Echec de la suppression de l\'environnement'
+    addReqLogs({
+      req,
+      description,
+      extras: {
+        environmentId,
+        projectId,
+      },
+      error,
     })
-    return sendForbidden(res, error.message)
+    return sendBadRequest(res, description)
   }
 
+  // Process api call to external service
+  let isServicesCallOk
   try {
     const environmentName = env.name
     const projectName = project.name
     const organizationName = organization.name
-    const gitlabBaseURL = `${gitlabUrl}/${projectRootDir}/${organizationName}/${projectName}/`
+    const gitlabBaseURL = `${gitlabUrl}/${projectRootDir}/${organizationName}/${projectName}`
     const repositories = (await getInfraProjectRepositories(project.id)).map(({ internalRepoName }) => ({
       url: `${gitlabBaseURL}/${internalRepoName}.git`,
       internalRepoName,
@@ -230,37 +267,53 @@ export const deleteEnvironmentController = async (req, res) => {
     const results = await hooksFns.deleteEnvironment(envData)
     await addLogs('Delete Environment', results, userId)
     if (results.failed) throw new Error('Echec des services à la suppression de l\'environnement')
-    await deleteEnvironment(environmentId)
-    await unlockProject(projectId)
-
-    req.log.info({
-      ...getLogInfos({ environmentId }),
-      description: 'Environment successfully deleted',
+    isServicesCallOk = true
+    addReqLogs({
+      req,
+      description: 'Environnement supprimé avec succès',
+      extras: {
+        environmentId,
+        projectId,
+      },
     })
-    return
   } catch (error) {
-    req.log.error({
-      ...getLogInfos(),
-      description: 'Cannot delete environment',
-      error: JSON.stringify(error),
-      trace: error.trace,
+    addReqLogs({
+      req,
+      description: 'Erreur de la suppression de l\'environnement',
+      extras: {
+        environmentId,
+        projectId,
+      },
+      error,
     })
+    isServicesCallOk = false
   }
 
+  // Update DB after service call
   try {
-    await updateEnvironmentFailed(environmentId)
-    await unlockProject(projectId)
-
-    req.log.info({
-      ...getLogInfos({ environmentId }),
-      description: 'Environment status successfully updated to failed in database',
+    if (isServicesCallOk) {
+      await deleteEnvironment(environmentId)
+      await unlockProjectIfNotFailed(projectId)
+    } else {
+      await updateEnvironmentFailed(environmentId)
+    }
+    addReqLogs({
+      req,
+      description: 'Statut mis à jour après l\'appel aux plugins',
+      extras: {
+        environmentId: env.id,
+        projectId,
+      },
     })
   } catch (error) {
-    req.log.error({
-      ...getLogInfos(),
-      description: 'Cannot update environment status to failed',
-      error: error.message,
-      trace: error.trace,
+    addReqLogs({
+      req,
+      description: 'Echec de mise à jour du statut après l\'appel aux plugins',
+      extras: {
+        environmentId: env.id,
+        projectId,
+      },
+      error,
     })
   }
 }

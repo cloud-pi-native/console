@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
-import { createRandomDbSetup, getRandomRepo } from 'test-utils'
+import { createRandomDbSetup, getRandomRepo, getRandomUser } from 'test-utils'
 import fastify from 'fastify'
 import fastifySession from '@fastify/session'
 import fastifyCookie from '@fastify/cookie'
@@ -10,6 +10,7 @@ import projectRepositoryRouter from './project-repository.js'
 import { getProjectModel } from '../models/project.js'
 import { getUsersProjectsModel } from '../models/users-projects.js'
 import { getRepositoryModel } from '../models/repository.js'
+import { projectIsLockedInfo } from 'shared'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 
@@ -60,6 +61,9 @@ describe('Project routes', () => {
   afterEach(() => {
     vi.clearAllMocks()
     sequelize.$clearQueue()
+    Project.$clearQueue()
+    Role.$clearQueue()
+    Repository.$clearQueue()
     global.fetch = vi.fn(() => Promise.resolve({ json: async () => {} }))
   })
 
@@ -127,6 +131,24 @@ describe('Project routes', () => {
       expect(response.json()).toBeDefined()
       expect(response.json()).toMatchObject(newRepository)
     })
+
+    it('Should not create a repository if project locked', async () => {
+      const randomDbSetup = createRandomDbSetup({})
+      randomDbSetup.project.locked = true
+      const newRepository = getRandomRepo(randomDbSetup.project.id)
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
+
+      Project.$queueResult(randomDbSetup.project)
+      setRequestorId(owner.id)
+
+      const response = await app.inject()
+        .post(`${randomDbSetup.project.id}/repositories`)
+        .body(newRepository)
+        .end()
+
+      expect(response.statusCode).toEqual(403)
+      expect(response.body).toEqual(projectIsLockedInfo)
+    })
   })
 
   // PUT
@@ -141,6 +163,7 @@ describe('Project routes', () => {
       }
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
+      Project.$queueResult(randomDbSetup.project)
       Repository.$queueResult(repoToUpdate)
       Role.$queueResult({ UserId: owner.id, role: owner.role })
       Project.$queueResult([1])
@@ -154,10 +177,10 @@ describe('Project routes', () => {
 
       expect(response.statusCode).toEqual(200)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Dépôt mis à jour')
+      expect(response.body).toEqual('Dépôt mis à jour avec succès')
     })
 
-    it('Should should not update a repository if invalid keys', async () => {
+    it('Should not update a repository if invalid keys', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const repoToUpdate = randomDbSetup.project.repositories[2]
       const updatedKeys = {
@@ -167,9 +190,10 @@ describe('Project routes', () => {
       }
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
+      Project.$queueResult(randomDbSetup.project)
       Repository.$queueResult(repoToUpdate)
       Role.$queueResult({ UserId: owner.id, role: owner.role })
-      Project.$queueResult([1])
+      sequelize.$queueResult([1])
       setRequestorId(owner.id)
 
       const response = await app.inject()
@@ -179,7 +203,25 @@ describe('Project routes', () => {
 
       expect(response.statusCode).toEqual(400)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Dépôt non mis à jour')
+      expect(response.body).toEqual('Echec de la mise à jour du dépôt')
+    })
+
+    it('Should not update a repository if project locked', async () => {
+      const randomDbSetup = createRandomDbSetup({})
+      randomDbSetup.project.locked = true
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
+
+      Project.$queueResult(randomDbSetup.project)
+      setRequestorId(owner.id)
+
+      const response = await app.inject()
+        .put(`${randomDbSetup.project.id}/repositories/thisIsAnId`)
+        .body({})
+        .end()
+
+      expect(response.statusCode).toEqual(403)
+      expect(response.body).toBeDefined()
+      expect(response.body).toEqual(projectIsLockedInfo)
     })
   })
 
@@ -203,6 +245,24 @@ describe('Project routes', () => {
       expect(response.statusCode).toEqual(200)
       expect(response.body).toBeDefined()
       expect(response.body).toEqual('Dépôt en cours de suppression')
+    })
+
+    it('Should not delete a repository if not owner', async () => {
+      const randomDbSetup = createRandomDbSetup({})
+      randomDbSetup.project.locked = true
+      const user = getRandomUser()
+
+      Project.$queueResult(randomDbSetup.project)
+      Role.$queueResult({ UserId: user.id, role: 'user' })
+      setRequestorId(user.id)
+
+      const response = await app.inject()
+        .delete(`${randomDbSetup.project.id}/repositories/thisIsAnId`)
+        .end()
+
+      expect(response.statusCode).toEqual(403)
+      expect(response.body).toBeDefined()
+      expect(response.body).toEqual('Vous n\'êtes pas souscripteur du projet')
     })
   })
 })

@@ -8,7 +8,7 @@ import {
   getRandomUserProject,
 } from './random-utils.js'
 import { repeatFn } from './func-utils.js'
-import { projectRoles, allOrganizations, allEnv } from 'shared/src/utils/const.js'
+import { projectRoles, allOrganizations, allEnv } from 'shared'
 
 export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = allEnv, organizationName = allOrganizations[0].name }) => {
   // Create organization

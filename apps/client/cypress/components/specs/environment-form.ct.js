@@ -8,10 +8,13 @@ import '@/main.css'
 import * as icons from '@/icons.js'
 import EnvironmentForm from '@/components/EnvironmentForm.vue'
 import { createRandomDbSetup } from 'test-utils'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 
 describe('EnvironmentForm.vue', () => {
   it('Should mount a EnvironmentForm', () => {
     const pinia = createPinia()
+
+    useSnackbarStore(pinia)
 
     const randomDbSetup = createRandomDbSetup({ envs: [] })
 

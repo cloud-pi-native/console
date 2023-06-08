@@ -13,6 +13,7 @@ import { getPermissionModel } from '../models/permission.js'
 import { getProjectModel } from '../models/project.js'
 import { getOrganizationModel } from '../models/organization.js'
 import { getUserModel } from '../models/user.js'
+import { projectIsLockedInfo } from 'shared'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 
@@ -98,7 +99,7 @@ describe('User routes', () => {
       expect(response.json()).toEqual(randomDbSetup.project.environments[0])
     })
 
-    it('Should not retreive an environment if Vous n\'êtes pas membre du projet', async () => {
+    it('Should not retreive an environment if not project member', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
@@ -112,7 +113,7 @@ describe('User routes', () => {
 
       expect(response.statusCode).toEqual(404)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Vous n\'êtes pas membre du projet')
+      expect(response.body).toEqual('Echec de la récupération de l\'environnement')
     })
 
     it('Should not retreive an environment if requestor has no permission', async () => {
@@ -131,7 +132,7 @@ describe('User routes', () => {
 
       expect(response.statusCode).toEqual(404)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Vous n\'êtes pas souscripteur et n\'avez pas accès à cet environnement')
+      expect(response.body).toEqual('Echec de la récupération de l\'environnement')
     })
   })
 
@@ -156,7 +157,7 @@ describe('User routes', () => {
       // createEnvironment
       Environment.$queueResult(newEnvironment)
       // lockProject
-      Project.$queueResult([1])
+      sequelize.$queueResult([1])
       setRequestorId(owner.id)
 
       const response = await app.inject()
@@ -169,11 +170,8 @@ describe('User routes', () => {
       expect(response.json()).toMatchObject(newEnvironment)
     })
 
-    it('Should not create an environment if Vous n\'êtes pas membre du projet', async () => {
+    it('Should not create an environment if not project member', async () => {
       const randomDbSetup = createRandomDbSetup({})
-      const newEnvironment = getRandomEnv('dev', randomDbSetup.project.id)
-      delete newEnvironment.id
-      delete newEnvironment.status
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
       // getProjectById
@@ -188,10 +186,10 @@ describe('User routes', () => {
 
       const response = await app.inject()
         .post(`/${randomDbSetup.project.id}/environments`)
-        .body(newEnvironment)
+        .body({})
         .end()
 
-      expect(response.statusCode).toEqual(400)
+      expect(response.statusCode).toEqual(403)
       expect(response.body).toBeDefined()
       expect(response.body).toEqual('Vous n\'êtes pas membre du projet')
     })
@@ -222,7 +220,26 @@ describe('User routes', () => {
 
       expect(response.statusCode).toEqual(400)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Requested environment already exists for this project')
+      expect(response.body).toEqual(`L'environnement ${newEnvironment.name} existe déjà pour ce projet`)
+    })
+
+    it('Should not create an environment if project locked', async () => {
+      const randomDbSetup = createRandomDbSetup({})
+      randomDbSetup.project.locked = true
+      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
+
+      // getProjectById
+      Project.$queueResult(randomDbSetup.project)
+      setRequestorId(owner.id)
+
+      const response = await app.inject()
+        .post(`/${randomDbSetup.project.id}/environments`)
+        .body({})
+        .end()
+
+      expect(response.statusCode).toEqual(403)
+      expect(response.body).toBeDefined()
+      expect(response.body).toEqual(projectIsLockedInfo)
     })
   })
 
@@ -233,11 +250,13 @@ describe('User routes', () => {
       const environmentToDelete = randomDbSetup.project.environments[0]
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
-      // 1. getRequestorRole
+      // getRequestorRole
       Role.$queueResult({ UserId: owner.id, role: 'owner' })
-      // 2. deleteEnvironment
+      // deleteEnvironment
       Environment.$queueResult(randomDbSetup.project.environments[0])
-      // 3. lockProject
+      // getProjectById
+      Project.$queueResult(randomDbSetup.project)
+      // lockProject
       sequelize.$queueResult([1])
       setRequestorId(owner.id)
 
@@ -248,12 +267,12 @@ describe('User routes', () => {
       expect(response.statusCode).toEqual(200)
     })
 
-    it('Should not delete an environment if Vous n\'êtes pas membre du projet', async () => {
+    it('Should not delete an environment if not project member', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const environmentToDelete = randomDbSetup.project.environments[0]
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
-      // 1. getRequestorRole
+      // getRequestorRole
       Role.$queueResult(null)
       setRequestorId(owner.id)
 
@@ -266,14 +285,14 @@ describe('User routes', () => {
       expect(response.body).toEqual('Vous n\'êtes pas membre du projet')
     })
 
-    it('Should not delete an environment if Vous n\'êtes pas souscripteur du projet', async () => {
+    it('Should not delete an environment if not project owner', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const environmentToDelete = randomDbSetup.project.environments[0]
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
       const requestor = randomDbSetup.project.users[0]
       requestor.role = 'user'
 
-      // 1. getRequestorRole
+      // getRequestorRole
       Role.$queueResult({ UserId: requestor.id, role: requestor.role })
       setRequestorId(owner.id)
 

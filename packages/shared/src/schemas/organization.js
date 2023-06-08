@@ -4,6 +4,8 @@ export const organizationSchema = Joi.object({
   id: Joi.string()
     .uuid(),
 
+  source: Joi.string(),
+
   name: Joi.string()
     .min(2)
     .max(10)

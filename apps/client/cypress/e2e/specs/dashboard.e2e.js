@@ -1,4 +1,5 @@
 import { getProjectbyId, getUserById } from '../support/func.js'
+import { statusDict } from 'shared'
 
 describe('Dashboard', () => {
   const projectToArchive = getProjectbyId('9dabf3f9-6c86-4358-8598-65007d78df65')
@@ -23,19 +24,29 @@ describe('Dashboard', () => {
     cy.assertCreateProjects([projectToKeep.name, projectCreated.name, projectFailed.name])
   })
 
-  it('Should display project status', () => {
-    cy.kcLogin('test')
-      .goToProjects()
-      .getByDataTestid(`projectTile-${projectCreated.name}`).click()
-      .getByDataTestid('menuDashboard').click()
-      .getByDataTestid(`${projectCreated.status}-badge`)
-      .should('contain', 'Projet correctement déployé')
+  it('Should display project statuses', () => {
+    const projects = [projectCreated, projectFailed]
 
-      .goToProjects()
-      .getByDataTestid(`projectTile-${projectFailed.name}`).click()
-      .getByDataTestid('menuDashboard').click()
-      .getByDataTestid(`${projectFailed.status}-badge`)
-      .should('contain', 'Echec des opérations')
+    cy.kcLogin('test')
+    projects.forEach(project => {
+      cy.goToProjects()
+        .getByDataTestid(`projectTile-${project.name}`).click()
+        .getByDataTestid('menuDashboard').click()
+        .getByDataTestid(`${project.id}-${project.status}-badge`)
+        .should('contain', `Projet ${project.name} : ${statusDict.status[project.status]?.wording}`)
+        .getByDataTestid(`${project.id}-${project.locked ? '' : 'un'}locked-badge`)
+        .should('contain', `Projet ${project.name} : ${statusDict.locked[project.locked]?.wording}`)
+
+      project.repositories?.forEach(repository => {
+        cy.get(`[data-testid$="-${repository.status}-badge"]`)
+          .should('contain', `Dépôt ${repository.internalRepoName} : ${statusDict.status[repository.status]?.wording}`)
+      })
+
+      project.environments?.forEach(environment => {
+        cy.get(`[data-testid$="-${environment.status}-badge"]`)
+          .should('contain', `Environnement ${environment.name} : ${statusDict.status[environment.status]?.wording}`)
+      })
+    })
   })
 
   it('Should add, display and edit description', () => {

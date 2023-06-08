@@ -251,7 +251,7 @@ Cypress.Commands.add('assertPermission', (project, environment, permissions) => 
         .should('contain', permission.email)
         .getByDataTestid('deletePermissionBtn')
         .should(permission.isOwner ? 'be.disabled' : 'be.enabled')
-        .and('have.attr', 'title', permission.isOwner ? 'Les droits du owner ne peuvent être retirés' : `Retirer les droits de ${permission.email}`)
+        .and('have.attr', 'title', permission.isOwner ? 'Les droits du owner ne peuvent être supprimés' : `Supprimer les droits de ${permission.email}`)
         .getByDataTestid('permissionLevelRange')
         .should(permission.isOwner ? 'be.disabled' : 'be.enabled')
     })

@@ -1,7 +1,7 @@
 import { getKeycloak, getUserProfile, keycloakLogin, keycloakLogout } from '@/utils/keycloak/keycloak.js'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { adminGroupPath } from 'shared/src/utils/const.js'
+import { adminGroupPath } from 'shared'
 
 export const useUserStore = defineStore('user', () => {
   const isLoggedIn = ref(undefined)

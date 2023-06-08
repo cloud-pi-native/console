@@ -2,7 +2,7 @@ import { getProjectbyId } from '../support/func.js'
 
 describe('Add repos into project', () => {
   const project = { name: 'project10' }
-  const projectWithFailedRepo = getProjectbyId('22e7044f-8414-435d-9c4a-2df42a65034b')
+  const projectWithFailedRepo = getProjectbyId('83833faf-f654-40dd-bcd5-cf2e944fc702')
 
   before(() => {
     cy.kcLogin('test')

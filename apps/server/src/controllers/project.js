@@ -6,16 +6,15 @@ import {
   updateProjectFailed,
   getProjectById,
   lockProject,
-  unlockProject,
   addUserToProject,
   archiveProject,
-  getProjectUsers,
+  // getProjectUsers,
   updateProjectServices,
   updateProject,
 } from '../models/queries/project-queries.js'
 import { getOrCreateUser } from '../models/queries/user-queries.js'
 import {
-  deleteRoleByUserIdAndProjectId,
+  // deleteRoleByUserIdAndProjectId,
   getRoleByUserIdAndProjectId,
   getSingleOwnerByProjectId,
 } from '../models/queries/users-projects-queries.js'
@@ -36,14 +35,14 @@ import {
   deletePermissionById,
 } from '../models/queries/permission-queries.js'
 import { filterObjectByKeys, lowercaseFirstLetter, replaceNestedKeys } from '../utils/queries-tools.js'
-import { getLogInfos } from '../utils/logger.js'
+import { addReqLogs } from '../utils/logger.js'
 import { sendOk, sendCreated, sendUnprocessableContent, sendNotFound, sendBadRequest, sendForbidden } from '../utils/response.js'
-import { projectSchema } from 'shared/src/schemas/project.js'
-import { calcProjectNameMaxLength } from 'shared/src/utils/functions.js'
+import { projectSchema, calcProjectNameMaxLength, projectIsLockedInfo } from 'shared'
 import { getServices } from '../utils/services.js'
 import { addLogs } from '../models/queries/log-queries.js'
 import hooksFns from '../plugins/index.js'
 import { gitlabUrl, projectRootDir } from '../utils/env.js'
+import { unlockProjectIfNotFailed } from '../utils/controller.js'
 
 // GET
 export const getUserProjectsController = async (req, res) => {
@@ -54,9 +53,13 @@ export const getUserProjectsController = async (req, res) => {
     if (!user) return sendOk(res, [])
 
     let projects = await getUserProjects(user)
-    req.log.info({
-      ...getLogInfos(),
-      description: 'Projets récupérés',
+
+    addReqLogs({
+      req,
+      description: 'Projets de l\'utilisateur récupérés avec succès',
+      extras: {
+        userId: requestor.id,
+      },
     })
     if (!projects.length) return sendOk(res, [])
 
@@ -67,14 +70,16 @@ export const getUserProjectsController = async (req, res) => {
 
     sendOk(res, projects)
   } catch (error) {
-    const message = `Projets non trouvés: ${error.message}`
-    req.log.error({
-      ...getLogInfos(),
-      description: message,
-      error: error.message,
-      trace: error.trace,
+    const description = 'Echec de la récupération des projets de l\'utilisateur'
+    addReqLogs({
+      req,
+      description,
+      extras: {
+        userId: requestor.id,
+      },
+      error,
     })
-    sendNotFound(res, message)
+    sendNotFound(res, description)
   }
 }
 
@@ -87,20 +92,27 @@ export const getProjectByIdController = async (req, res) => {
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
     if (!role) throw new Error('Vous n\'êtes pas membre du projet')
 
-    req.log.info({
-      ...getLogInfos({ projectId }),
-      description: 'Projet récupéré',
+    addReqLogs({
+      req,
+      description: 'Projet de l\'utilisateur récupéré avec succès',
+      extras: {
+        projectId,
+        userId,
+      },
     })
     sendOk(res, project)
   } catch (error) {
-    const message = `Projet non trouvé: ${error.message}`
-    req.log.error({
-      ...getLogInfos({ projectId }),
-      description: message,
-      error: error.message,
-      trace: error.trace,
+    const description = 'Echec de récupération du projet de l\'utilisateur'
+    addReqLogs({
+      req,
+      description,
+      extras: {
+        projectId,
+        userId,
+      },
+      error,
     })
-    sendNotFound(res, message)
+    sendNotFound(res, description)
   }
 }
 
@@ -113,20 +125,23 @@ export const getProjectOwnerController = async (req, res) => {
     if (!role) throw new Error('Vous n\'êtes pas membre du projet')
 
     const owner = await getSingleOwnerByProjectId(projectId)
-    req.log.info({
-      ...getLogInfos({ owner }),
-      description: 'Propriétaire du projet récupéré avec succès',
+
+    addReqLogs({
+      req,
+      description: 'Souscripteur du projet récupéré avec succès',
+      extras: {
+        ownerId: owner.id,
+      },
     })
     sendOk(res, owner)
   } catch (error) {
-    const message = `Projet non trouvé: ${error.message}`
-    req.log.error({
-      ...getLogInfos({ projectId }),
-      description: message,
-      error: error.message,
-      trace: error.trace,
+    const description = 'Echec de la récupération du souscripteur du projet'
+    addReqLogs({
+      req,
+      description,
+      error,
     })
-    sendNotFound(res, message)
+    sendNotFound(res, description)
   }
 }
 
@@ -150,7 +165,15 @@ export const createProjectController = async (req, res) => {
         .map(({ status }) => status?.message)
         .join('; ')
       sendUnprocessableContent(res, reasons)
-      req.log.error(reasons)
+
+      addReqLogs({
+        req,
+        description: 'Echec de la validation des prérequis de création du projet par les services externes',
+        extras: {
+          reasons,
+        },
+        error: new Error('Failed to validate project creation'),
+      })
       addLogs('Create Project Validation', { reasons }, user.id)
       return
     }
@@ -169,22 +192,22 @@ export const createProjectController = async (req, res) => {
     await addUserToProject({ project, user: owner, role: 'owner' })
     project = { ...project.get({ plain: true }) }
 
-    req.log.info({
-      ...getLogInfos({
+    addReqLogs({
+      req,
+      description: 'Projet créé avec succès',
+      extras: {
         projectId: project.id,
-      }),
-      description: 'Projet créé en base de données',
+      },
     })
     sendCreated(res, project)
   } catch (error) {
-    req.log.error({
-      ...getLogInfos(),
-      description: `Projet non créé: ${error.message}`,
-      error: error.message,
-      stack: error.stack,
-      data: error.request,
+    const description = 'Echec de la création du projet'
+    addReqLogs({
+      req,
+      description,
+      error,
     })
-    return sendBadRequest(res, error.message)
+    return sendBadRequest(res, description)
   }
 
   // Process api call to external service
@@ -200,7 +223,7 @@ export const createProjectController = async (req, res) => {
 
     const results = await hooksFns.createProject(projectData)
     await addLogs('Create Project', results, owner.id)
-    if (results.failed) throw new Error('Echec des services lors de la création du projet')
+    if (results.failed) throw new Error('Echec de la création du projet par les plugins')
 
     // enregistrement des ids GitLab et Harbor
     const { gitlab, registry } = results
@@ -213,14 +236,22 @@ export const createProjectController = async (req, res) => {
       },
     }
     await updateProjectServices(project.id, services)
-
     isServicesCallOk = true
+    addReqLogs({
+      req,
+      description: 'Projet créé avec succès par les plugins',
+      extras: {
+        projectId: project.id,
+      },
+    })
   } catch (error) {
-    req.log.error({
-      ...getLogInfos(),
-      description: `Echec requête ${req.id} : ${error.message}`,
-      error: error.message,
-      trace: error.trace,
+    addReqLogs({
+      req,
+      description: 'Echec de la création du projet par les plugins',
+      extras: {
+        projectId: project.id,
+      },
+      error,
     })
     isServicesCallOk = false
   }
@@ -229,21 +260,24 @@ export const createProjectController = async (req, res) => {
   try {
     if (isServicesCallOk) {
       await updateProjectCreated(project.id)
+      await unlockProjectIfNotFailed(project.id)
     } else {
       await updateProjectFailed(project.id)
     }
-    await unlockProject(project.id)
-
-    req.log.info({
-      ...getLogInfos({ projectId: project.id }),
-      description: 'Projet déverrouillé',
+    addReqLogs({
+      req,
+      description: 'Statut mis à jour après l\'appel aux plugins',
+      extras: {
+        projectId: project.id,
+      },
     })
   } catch (error) {
-    req.log.error({
-      ...getLogInfos(),
-      description: 'Echec, projet verrouillé',
-      error: error.message,
-      trace: error.trace,
+    addReqLogs({
+      req,
+      description: 'Echec de mise à jour du statut après l\'appel aux plugins',
+      extras: {
+        projectId: project.id,
+      },
     })
   }
 }
@@ -259,6 +293,7 @@ export const updateProjectController = async (req, res) => {
   try {
     let project = await getProjectById(projectId)
     if (!project) throw new Error('Projet introuvable')
+    if (project.locked) return sendForbidden(res, projectIsLockedInfo)
 
     const role = await getRoleByUserIdAndProjectId(userId, projectId)
     if (!role) throw new Error('Vous n\'êtes pas membre du projet')
@@ -276,22 +311,27 @@ export const updateProjectController = async (req, res) => {
 
     await lockProject(projectId)
     await updateProject(projectId, data)
-    await unlockProject(projectId)
+    await unlockProjectIfNotFailed(projectId)
 
-    req.log.info({
-      ...getLogInfos({ projectId }),
-      description: 'Project déverrouillé',
+    addReqLogs({
+      req,
+      description: 'Projet mis à jour avec succès',
+      extras: {
+        projectId,
+      },
     })
     sendOk(res, projectId)
   } catch (error) {
-    req.log.error({
-      ...getLogInfos(),
-      description: `Description du projet non mise à jour : ${error.message}`,
-      error: error.message,
-      stack: error.stack,
-      data: error.request,
+    const description = 'Echec de la mise à jour du projet'
+    addReqLogs({
+      req,
+      description,
+      extras: {
+        projectId,
+      },
+      error,
     })
-    return sendBadRequest(res, error.message)
+    return sendBadRequest(res, description)
   }
 }
 
@@ -303,7 +343,7 @@ export const archiveProjectController = async (req, res) => {
   let repos
   let environments
   const permissions = []
-  let users
+  // let users
   let project
   try {
     project = await getProjectById(projectId)
@@ -319,7 +359,7 @@ export const archiveProjectController = async (req, res) => {
       const envPerms = await getEnvironmentPermissions(environment?.id)
       permissions.push(...envPerms)
     })
-    users = await getProjectUsers(projectId)
+    // users = await getProjectUsers(projectId)
 
     await lockProject(projectId)
     repos?.forEach(async repo => {
@@ -328,21 +368,26 @@ export const archiveProjectController = async (req, res) => {
     environments?.forEach(async environment => {
       await updateEnvironmentDeleting(environment.id)
     })
-    req.log.info({
-      ...getLogInfos({
-        projectId,
-      }),
+
+    addReqLogs({
+      req,
       description: 'Projet en cours de suppression',
+      extras: {
+        projectId,
+      },
     })
     sendOk(res, projectId)
   } catch (error) {
-    req.log.error({
-      ...getLogInfos(),
-      description: `Echec de suppression du projet : ${error.message}`,
-      error: error.message,
-      trace: error.trace,
+    const description = 'Echec de la suppression du projet'
+    addReqLogs({
+      req,
+      description,
+      extras: {
+        projectId,
+      },
+      error,
     })
-    return sendForbidden(res, error.message)
+    return sendForbidden(res, description)
   }
 
   // Process api call to external service
@@ -382,15 +427,23 @@ export const archiveProjectController = async (req, res) => {
     delete projectData.name
     const results = await hooksFns.archiveProject(projectData)
     await addLogs('Delete Project', results, userId)
-    if (results.failed) throw new Error('Echec des services à la suppression du projet')
-
+    if (results.failed) throw new Error('Echec de la suppression du projet par les plugins')
     isServicesCallOk = true
+    addReqLogs({
+      req,
+      description: 'Projet supprimé avec succès par les plugins',
+      extras: {
+        projectId: project.id,
+      },
+    })
   } catch (error) {
-    req.log.error({
-      ...getLogInfos(),
-      description: `Echec requête ${req.id} : ${error.message}`,
-      error: error.message,
-      trace: error.trace,
+    addReqLogs({
+      req,
+      description: 'Echec de la suppression du projet par les plugins',
+      extras: {
+        projectId,
+      },
+      error,
     })
     isServicesCallOk = false
   }
@@ -407,24 +460,29 @@ export const archiveProjectController = async (req, res) => {
       permissions?.forEach(async permission => {
         await deletePermissionById(permission.id)
       })
-      users?.forEach(async user => {
-        await deleteRoleByUserIdAndProjectId(user.id, projectId)
-      })
+      // TODO : garder les roles
+      // users?.forEach(async user => {
+      //   await deleteRoleByUserIdAndProjectId(user.id, projectId)
+      // })
       await archiveProject(projectId)
     } else {
       await updateProjectFailed(projectId)
     }
-    await unlockProject(projectId)
-
-    req.log.info({
-      ...getLogInfos({ projectId }),
-      description: 'Project déverrouillé',
+    addReqLogs({
+      req,
+      description: 'Statut mis à jour après l\'appel aux plugins',
+      extras: {
+        projectId,
+      },
     })
   } catch (error) {
-    req.log.error({
-      ...getLogInfos(),
-      description: 'Echec, projet verrouillé',
-      error: error.message,
+    addReqLogs({
+      req,
+      description: 'Echec de mise à jour du statut après l\'appel aux plugins',
+      extras: {
+        projectId,
+      },
+      error,
     })
   }
 }

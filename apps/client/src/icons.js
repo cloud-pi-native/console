@@ -15,4 +15,13 @@ export {
   RiSunLine,
   RiMoonClearLine,
   RiPencilFill,
+  RiExchangeLine,
+  RiCheckFill,
+  RiUserStarFill,
+  RiUserFill,
+  RiLockUnlockFill,
+  RiLockFill,
+  RiArchiveFill,
+  RiHeartPulseLine,
+  RiLoader4Line,
 } from 'oh-vue-icons/icons/ri/index.js'

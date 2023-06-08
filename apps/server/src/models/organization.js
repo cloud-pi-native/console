@@ -10,13 +10,16 @@ export const getOrganizationModel = () => Organization ?? (Organization = sequel
     unique: true,
     defaultValue: DataTypes.UUIDV4,
   },
+  source: {
+    type: DataTypes.STRING(50),
+  },
   name: {
     type: DataTypes.STRING(50),
     allowNull: false,
     unique: true,
   },
   label: {
-    type: DataTypes.STRING(50),
+    type: DataTypes.STRING(90),
     allowNull: false,
     unique: false,
   },

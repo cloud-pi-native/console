@@ -20,6 +20,23 @@
 | Token d'accès au dépôt externe                  | string  | obligatoire si le dépôt externe est privé |
 | Dépôt d'infrastructure                          | boolean | obligatoire                               |
 
+### Status et verrouillage
+
+#### Schema
+
+- un `project` peut avoir pour `status: Enum('initializing', 'created', 'failed', 'archived')`
+- un `repository` et un `environnement` peuvent avoir pour `status: Enum('initializing', 'created', 'failed', 'deleting')`
+- un `project` peut être `locked (boolean)`
+
+#### Principe
+
+- `initializing` : la ressource est en cours de création, des opérations sont en cours côté `plugins` - le `project` est `locked: true`
+- `created` : la ressource est créée, les opérations des `plugins` se sont bien déroulées - le `project` est `locked: false`
+- `failed` : la ressource est créée, les opérations des `plugins` ont échoué - le `project` est `locked: true`
+- `deleting` : la ressource est en cours de suppression, des opérations sont en cours côté `plugins` - le `project` est `locked: true`
+- `archived` : les opérations des `plugins` se sont bien déroulées, le projet et son équipe sont toujours présents en base de données pour archive, mais invisibles des utilisateurs hors `admin` - le `project` est `locked: true`
+- `project.locked: true` : toute opération de Create / Update sur le projet et ses ressource est interdite.
+
 ## Point d'api
 
 ### Projects
@@ -48,7 +65,7 @@ delete('/projects/:projectId')
 ### Users
 
 ```js
-// Add user in project
+// Add user to project
 post('/projects/:projectId/users')
   => body({ email, role })
 
@@ -59,7 +76,7 @@ put('/projects/:projectId/users/:userId')
 // Get project users
 get('/projects/:projectId/users')
 
-// Delete user in project team
+// Remove user from project team
 delete('/projects/:projectId/users/:userId')
 ```
 
@@ -76,6 +93,9 @@ put('/projects/:projectId/repositories/:repositoryId')
 
 // Get project repositories
 get('/projects/:projectId/repositories')
+
+// Get repository by id
+get('/:projectId/repositories/:repositoryId')
 
 // Delete project repository
 delete('/projects/:projectId/repositories/:repositoryId')
@@ -111,6 +131,50 @@ get('/projects/:projectId/environments/:environmentId/permissions')
 
 // Delete environment permission
 delete('/projects/:projectId/environments/:environmentId/permissions/:userId')
+```
+
+### Organizations
+
+```js
+// Get active organizations
+get('/', getActiveOrganizationsController)
+```
+
+### Services
+
+```js
+// Check services health
+get('/', checkServicesHealthController)
+```
+
+### ADMIN Organizations
+
+```js
+// Create an organization
+post('/', createOrganizationController)
+
+// Update an organization
+put('/:orgName', updateOrganizationController)
+
+// Synchronize organizations with plugins
+put('/sync/organizations', fetchOrganizationsController)
+
+// Get all organizations
+get('/', getAllOrganizationsController)
+```
+
+### ADMIN Projects
+
+```js
+// Get all projects
+get('/', getAllProjectsController)
+```
+
+### ADMIN Users
+
+```js
+// Get all users
+get('/', getUsersController)
 ```
 
 ---

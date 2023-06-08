@@ -4,9 +4,14 @@ import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useOrganizationStore } from '@/stores/organization.js'
-import { descriptionMaxLength, projectSchema } from 'shared/src/schemas/project.js'
-import { schemaValidator, isValid, instanciateSchema } from 'shared/src/utils/schemas.js'
-import { calcProjectNameMaxLength } from 'shared/src/utils/functions.js'
+import {
+  descriptionMaxLength,
+  projectSchema,
+  schemaValidator,
+  isValid,
+  instanciateSchema,
+  calcProjectNameMaxLength,
+} from 'shared'
 import router from '@/router/index.js'
 
 const snackbarStore = useSnackbarStore()

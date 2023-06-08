@@ -26,7 +26,7 @@ const createHook = () => {
   const execute = async (args, isOnlyValidation = false) => {
     let payload = { args }
 
-    const steps = isOnlyValidation ? [check] : [check, pre, main, post, save]
+    const steps = isOnlyValidation ? [check] : [pre, main, post, save]
 
     for (const step of steps) {
       payload = await executeStep(step, payload)
@@ -50,9 +50,16 @@ const createHook = () => {
   }
 }
 
+const fetchOrganizationRegistration = {
+  isRegisteredOn: false,
+  plugin: undefined,
+}
+
 const initPluginManager = async () => {
   const hooks = {
     checkServices: createHook(),
+
+    fetchOrganizations: createHook(),
 
     createProject: createHook(),
     archiveProject: createHook(),
@@ -85,6 +92,19 @@ const initPluginManager = async () => {
         message: `Plugin ${name} tried to register on 'checkServices' hook at ${step} which is invalid`,
       })
       return
+    }
+    if (hook === 'fetchOrganizations' &&
+      fetchOrganizationRegistration.isRegisteredOn &&
+      fetchOrganizationRegistration.plugin !== name) {
+      console.warn({
+        message: `Plugin ${name} cannot register on 'fetchOrganizations', hook is already registered on`,
+      })
+      return
+    }
+    if (hook === 'fetchOrganizations' &&
+      !fetchOrganizationRegistration.isRegisteredOn) {
+      fetchOrganizationRegistration.isRegisteredOn = true
+      fetchOrganizationRegistration.plugin = name
     }
     hooks[hook][step][name] = fn
     console.warn(`Plugin ${name} registered at ${hook}:${step}`)

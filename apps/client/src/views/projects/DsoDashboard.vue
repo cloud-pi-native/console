@@ -3,8 +3,9 @@ import { ref, computed } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { descriptionMaxLength } from 'shared/src/schemas/project.js'
+import { descriptionMaxLength, projectIsLockedInfo } from 'shared'
 import DsoSelectedProject from './DsoSelectedProject.vue'
+import DsoBadge from '@/components/DsoBadge.vue'
 import router from '@/router/index.js'
 
 const projectStore = useProjectStore()
@@ -15,7 +16,7 @@ const project = computed(() => projectStore.selectedProject)
 const owner = computed(() => projectStore.selectedProjectOwner)
 const isOwner = computed(() => owner?.value?.id === userStore.userProfile.id)
 
-const description = ref(project.value.description)
+const description = ref(project?.value.description)
 const isEditingDescription = ref(false)
 const isArchivingProject = ref(false)
 const projectToArchive = ref('')
@@ -38,6 +39,11 @@ const archiveProject = async (projectId) => {
   }
 }
 
+const getDynamicTitle = (locked, description) => {
+  if (locked) return projectIsLockedInfo
+  if (description) return 'Editer la description'
+  return 'Ajouter une description'
+}
 </script>
 
 <template>
@@ -45,28 +51,28 @@ const archiveProject = async (projectId) => {
   <div
     class="fr-callout fr-my-8w"
   >
-    <h3
+    <h1
       class="fr-callout__title fr-mb-3w"
     >
-      {{ project.name }}
-    </h3>
+      {{ project?.name }}
+    </h1>
     <div
       v-if="!isEditingDescription"
       class="flex gap-4 items-center"
     >
       <p
-        v-if="project.description"
+        v-if="project?.description"
         data-testid="descriptionP"
       >
-        {{ project.description }}
+        {{ project?.description }}
       </p>
       <DsfrButton
         class="fr-mt-0"
         icon="ri-pencil-fill"
         data-testid="setDescriptionBtn"
-        :title="project.description ? 'Editer la description' : 'Ajouter une description'"
-        label="Ajouter une description"
-        :icon-only="!!project.description"
+        :title="getDynamicTitle(project?.locked, project?.description)"
+        :disabled="project?.locked"
+        :icon-only="!!project?.description"
         secondary
         @click="isEditingDescription = true"
       />
@@ -92,7 +98,7 @@ const archiveProject = async (projectId) => {
           label="Enregistrer la description"
           secondary
           icon="ri-send-plane-line"
-          @click="updateProject(project.id)"
+          @click="updateProject(project?.id)"
         />
         <DsfrButton
           label="Annuler"
@@ -101,46 +107,65 @@ const archiveProject = async (projectId) => {
         />
       </div>
     </div>
+  </div>
+  <div>
     <div
-      class="flex justify-between fr-mt-2w"
+      class="flex gap-2"
     >
-      <DsfrBadge
-        v-if="projectStore.selectedProject?.status === 'initializing'"
-        :data-testid="`${projectStore.selectedProject?.status}-badge`"
-        type="info"
-        label="Projet en cours de création"
+      <v-icon
+        scale="2"
+        name="ri-heart-pulse-line"
+        fill="var(--info-425-625)"
       />
-      <DsfrBadge
-        v-else-if="projectStore.selectedProject?.status === 'failed'"
-        :data-testid="`${projectStore.selectedProject?.status}-badge`"
-        type="error"
-        label="Echec des opérations"
-      />
-      <DsfrBadge
-        v-else
-        :data-testid="`${projectStore.selectedProject?.status}-badge`"
-        type="success"
-        label="Projet correctement déployé"
-      />
-      <DsfrBadge
-        v-if="projectStore.selectedProject?.locked"
-        data-testid="locked-badge"
-        type="warning"
-        label="Projet verrouillé : opérations en cours"
-      />
+      <h3>Monitoring</h3>
     </div>
+  </div>
+  <div
+    class="flex flex-col gap-4"
+  >
+    <DsoBadge
+      :ressource="{
+        ...project,
+        ressourceKey: 'locked',
+        wording: `Projet ${project?.name}`
+      }"
+    />
+    <DsoBadge
+      :ressource="{
+        ...project,
+        ressourceKey: 'status',
+        wording: `Projet ${project?.name}`
+      }"
+    />
+    <DsoBadge
+      v-for="environment in project?.environments"
+      :key="environment?.id"
+      :ressource="{
+        ...environment,
+        ressourceKey: 'status',
+        wording: `Environnement ${environment?.name}`
+      }"
+    />
+    <DsoBadge
+      v-for="repository in project?.repositories"
+      :key="repository?.id"
+      :ressource="{
+        ...repository,
+        ressourceKey: 'status',
+        wording: `Dépôt ${repository?.internalRepoName}`
+      }"
+    />
   </div>
   <div
     v-if="isOwner"
     data-testid="archiveProjectZone"
-    class="fr-my-2w fr-py-4w fr-px-1w border-solid border-1 rounded-sm border-red-500"
+    class="danger-zone"
   >
     <div class="flex justify-between items-center <md:flex-col">
       <DsfrButton
         v-show="!isArchivingProject"
         data-testid="showArchiveProjectBtn"
         :label="`Archiver le projet ${project?.name}`"
-        :disabled="projectStore.selectedProject?.locked"
         primary
         icon="ri-delete-bin-7-line"
         @click="isArchivingProject = true"
@@ -173,7 +198,7 @@ const archiveProject = async (projectId) => {
           :disabled="projectToArchive !== project?.name"
           secondary
           icon="ri-delete-bin-7-line"
-          @click="archiveProject(project.id)"
+          @click="archiveProject(project?.id)"
         />
         <DsfrButton
           label="Annuler"

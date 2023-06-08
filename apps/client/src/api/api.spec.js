@@ -315,7 +315,7 @@ describe('API', () => {
     })
 
     it('Should create an organization', async () => {
-      const data = { name: 'name', label: 'label' }
+      const data = { name: 'name', label: 'label', source: 'dso-console' }
       apiClient.post.mockReturnValueOnce(Promise.resolve({ data }))
 
       const res = await createOrganization(data)
@@ -327,7 +327,7 @@ describe('API', () => {
     })
 
     it('Should update an organization', async () => {
-      const data = { active: false }
+      const data = { active: false, source: 'dso-console' }
       apiClient.put.mockReturnValueOnce(Promise.resolve({ data }))
 
       const res = await updateOrganization('name', data)

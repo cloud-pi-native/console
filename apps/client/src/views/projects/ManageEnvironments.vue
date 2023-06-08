@@ -4,7 +4,7 @@ import DsoSelectedProject from './DsoSelectedProject.vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 import EnvironmentForm from '@/components/EnvironmentForm.vue'
-import { allEnv } from 'shared/src/utils/const.js'
+import { allEnv, projectIsLockedInfo } from 'shared'
 import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
@@ -13,7 +13,7 @@ const projectEnvironmentStore = useProjectEnvironmentStore()
 const userStore = useUserStore()
 const snackbarStore = useSnackbarStore()
 
-const selectedProject = computed(() => projectStore.selectedProject)
+const project = computed(() => projectStore.selectedProject)
 const owner = computed(() => projectStore.selectedProjectOwner)
 const isOwner = computed(() => owner.value.id === userStore.userProfile.id)
 const environmentNames = computed(() => environments.value.map(env => env.title))
@@ -21,13 +21,15 @@ const environments = ref([])
 const selectedEnvironment = ref({})
 const isNewEnvironmentForm = ref(false)
 
-const setEnvironmentsTiles = (selectedProject) => {
-  environments.value = selectedProject?.environments?.map(environment => ({
-    id: environment.id,
-    title: environment.name,
-    data: environment,
-    status: environment.status,
-  }))
+const setEnvironmentsTiles = (project) => {
+  environments.value = project?.environments
+    ?.sort((a, b) => (a.name >= b.name ? 1 : -1))
+    ?.map(environment => ({
+      id: environment.id,
+      title: environment.name,
+      data: environment,
+      status: environment.status,
+    }))
 }
 
 const setSelectedEnvironment = (environment) => {
@@ -49,11 +51,13 @@ const cancel = () => {
 }
 
 const addEnvironment = async (environment) => {
-  cancel()
-  try {
-    await projectEnvironmentStore.addEnvironmentToProject(environment)
-  } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+  if (!project.value.locked) {
+    cancel()
+    try {
+      await projectEnvironmentStore.addEnvironmentToProject(environment)
+    } catch (error) {
+      snackbarStore.setMessage(error?.message, 'error')
+    }
   }
 }
 
@@ -67,11 +71,11 @@ const deleteEnvironment = async (environment) => {
 }
 
 onMounted(() => {
-  setEnvironmentsTiles(selectedProject.value)
+  setEnvironmentsTiles(project.value)
 })
 
-watch(selectedProject, () => {
-  setEnvironmentsTiles(selectedProject.value)
+watch(project, () => {
+  setEnvironmentsTiles(project.value)
 })
 </script>
 
@@ -85,7 +89,8 @@ watch(selectedProject, () => {
       label="Ajouter un nouvel environnement"
       data-testid="addEnvironmentLink"
       tertiary
-      :disabled="projectStore.selectedProject?.locked"
+      :disabled="project?.locked"
+      :title="project?.locked ? projectIsLockedInfo : 'Ajouter un nouvel environnement'"
       class="fr-mt-2v <md:mb-2"
       icon="ri-add-line"
       @click="showNewEnvironmentForm()"
@@ -96,8 +101,9 @@ watch(selectedProject, () => {
     class="my-5 pb-10 border-grey-900 border-y-1"
   >
     <EnvironmentForm
-      :environment="{projectId: selectedProject?.id}"
+      :environment="{projectId: project?.id}"
       :environment-names="environmentNames"
+      :is-project-locked="project?.locked"
       @add-environment="(environment) => addEnvironment(environment)"
       @cancel="cancel()"
     />
@@ -151,6 +157,7 @@ watch(selectedProject, () => {
         v-if="Object.keys(selectedEnvironment).length !== 0 && selectedEnvironment.id === environment.id"
         :environment="selectedEnvironment"
         :is-editable="false"
+        :is-project-locked="project?.locked"
         :is-owner="isOwner"
         @delete-environment="(environment) => deleteEnvironment(environment)"
       />

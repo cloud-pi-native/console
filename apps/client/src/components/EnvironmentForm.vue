@@ -1,8 +1,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { environmentSchema, schemaValidator, instanciateSchema } from 'shared'
-import { allEnv } from 'shared/src/utils/const.js'
+import { environmentSchema, schemaValidator, instanciateSchema, allEnv, projectIsLockedInfo } from 'shared'
 import PermissionForm from './PermissionForm.vue'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = defineProps({
   environment: {
@@ -21,7 +21,13 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  isProjectLocked: {
+    type: Boolean,
+    default: false,
+  },
 })
+
+const snackbarStore = useSnackbarStore()
 
 const localEnvironment = ref(props.environment)
 
@@ -63,7 +69,7 @@ const addEnvironment = () => {
   if (Object.keys(errorSchema).length === 0) {
     emit('addEnvironment', localEnvironment.value)
   } else {
-    console.log(errorSchema)
+    snackbarStore.setMessage(Object.values(errorSchema)[0])
   }
 }
 
@@ -102,10 +108,14 @@ onMounted(() => {
     />
   </DsfrFieldset>
   <div v-if="localEnvironment.id">
+    <PermissionForm
+      v-if="!isDeletingEnvironment"
+      :environment="localEnvironment"
+    />
     <div
       v-if="isOwner"
       data-testid="deleteEnvironmentZone"
-      class="fr-my-2w fr-py-4w fr-px-1w border-solid border-1 rounded-sm border-red-500"
+      class="danger-zone"
     >
       <div class="flex justify-between items-center <md:flex-col">
         <DsfrButton
@@ -142,6 +152,7 @@ onMounted(() => {
             data-testid="deleteEnvironmentBtn"
             :label="`Supprimer définitivement l'environnement ${localEnvironment.name}`"
             :disabled="environmentToDelete !== localEnvironment.name"
+            :title="`Supprimer définitivement l'environnement ${localEnvironment.name}`"
             secondary
             icon="ri-delete-bin-7-line"
             @click="$emit('deleteEnvironment', localEnvironment)"
@@ -154,10 +165,6 @@ onMounted(() => {
         </div>
       </div>
     </div>
-    <PermissionForm
-      v-if="!isDeletingEnvironment"
-      :environment="localEnvironment"
-    />
   </div>
   <div
     v-if="props.isEditable"
@@ -166,6 +173,8 @@ onMounted(() => {
     <DsfrButton
       label="Ajouter l'environnement"
       data-testid="addEnvironmentBtn"
+      :disabled="props.isProjectLocked"
+      :title="props.isProjectLocked ? projectIsLockedInfo : 'Ajouter l\'environnement'"
       primary
       icon="ri-upload-cloud-line"
       @click="addEnvironment()"

@@ -11,14 +11,14 @@ const projectStore = useProjectStore()
 const projectUserStore = useProjectUserStore()
 const snackbarStore = useSnackbarStore()
 
-const selectedProject = computed(() => projectStore.selectedProject)
+const project = computed(() => projectStore.selectedProject)
 
 const isUserAlreadyInTeam = computed(() => {
-  const allUsers = selectedProject.value.users
+  const allUsers = project.value.users
   return !!allUsers?.find(user => user.email === newUser.value.email)
 })
 
-const owner = computed(() => selectedProject.value.users?.find(user => user?.usersProjects?.role === 'owner'))
+const owner = computed(() => project.value.users?.find(user => user?.usersProjects?.role === 'owner'))
 
 const newUser = ref({})
 
@@ -33,24 +33,32 @@ const rows = ref([])
 const setRows = () => {
   rows.value = []
 
-  if (selectedProject.value.users?.length) {
-    selectedProject.value.users?.forEach(user => {
+  if (project.value.users?.length) {
+    project.value.users?.forEach(user => {
       if (user.usersProjects?.role === 'owner') {
-        rows.value.unshift([owner.value.email, 'owner', {
-          cellAttrs: {
-            class: 'fr-fi-close-line !flex justify-center disabled',
-            title: `${owner.value.email} ne peut pas être retiré du projet`,
+        rows.value.unshift([
+          owner.value.email,
+          'owner',
+          {
+            cellAttrs: {
+              class: 'fr-fi-close-line !flex justify-center disabled',
+              title: `${owner.value.email} ne peut pas être retiré du projet`,
+            },
           },
-        }])
+        ])
         return
       }
-      rows.value.push([user.email, 'user', {
-        cellAttrs: {
-          class: 'fr-fi-close-line fr-text-default--warning !flex justify-center cursor-pointer',
-          title: `retirer ${user.email} du projet`,
-          onClick: () => removeUserFromProject(user.id),
+      rows.value.push([
+        user.email,
+        'user',
+        {
+          cellAttrs: {
+            class: 'fr-fi-close-line !flex justify-center cursor-pointer fr-text-default--warning',
+            title: `retirer ${user.email} du projet`,
+            onClick: () => removeUserFromProject(user.id),
+          },
         },
-      }])
+      ])
     })
   }
 }
@@ -86,7 +94,7 @@ onMounted(() => {
   setRows()
 })
 
-watch(selectedProject, () => {
+watch(project, () => {
   setRows()
 })
 
@@ -97,7 +105,7 @@ watch(selectedProject, () => {
 
   <DsfrTable
     data-testid="teamTable"
-    :title="`Membres du projet ${selectedProject?.name}`"
+    :title="`Membres du projet ${project?.name}`"
     :headers="headers"
     :rows="rows"
   />
@@ -113,6 +121,7 @@ watch(selectedProject, () => {
       hint="Adresse e-mail associée au compte keycloak de l'utilisateur"
       type="text"
       label="Ajouter un utilisateur via son adresse e-mail"
+      :disabled="project?.locked"
       label-visible
       placeholder="prenom.nom@interieur.gouv.fr"
       :is-valid="!!newUser.email && isValid(userSchema, newUser, 'email') && !isUserAlreadyInTeam"

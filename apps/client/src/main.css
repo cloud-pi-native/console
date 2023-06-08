@@ -65,3 +65,10 @@ body,
   text-align: right;
   margin-right: 25px;
 }
+
+.danger-zone {
+  border-bottom: solid var(--border-plain-warning);
+  margin: 2rem 0;
+  padding: 4rem 2rem;
+  background-color: var(--background-alt-grey);
+}

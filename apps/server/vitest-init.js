@@ -11,6 +11,8 @@ process.env.PROJECTS_ROOT_DIR = 'forge-mi/projects'
 vi.mock('./src/plugins/index.js', async () => {
   return {
     default: {
+      fetchOrganizations: () => {},
+
       checkServices: () => {},
 
       createProject: () => {},

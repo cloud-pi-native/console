@@ -1,24 +1,34 @@
-import { getAllProjects } from '../models/queries/project-queries.js'
-import { getLogInfos } from '../utils/logger.js'
-import { sendOk, sendNotFound } from '../utils/response.js'
-import { adminGroupPath } from 'shared/src/utils/const.js'
+import { addReqLogs } from '../../utils/logger.js'
+import { getAllProjects } from '../../models/queries/project-queries.js'
+import { getSingleOwnerByProjectId } from '../../models/queries/users-projects-queries.js'
+import { sendOk, sendNotFound } from '../../utils/response.js'
 
 export const getAllProjectsController = async (req, res) => {
   try {
-    if (!req.session.user.groups?.includes(adminGroupPath)) throw new Error('Vous n\'avez pas les droits administrateurs')
-    const projects = await getAllProjects()
-    req.log.info({
-      ...getLogInfos(),
-      description: 'Projects récupérés avec succès',
+    const allProjects = await getAllProjects()
+
+    const projects = []
+
+    for (const project of allProjects) {
+      const owner = await getSingleOwnerByProjectId(project.id)
+      projects.push({
+        ...project.get({ plain: true }),
+        owner,
+      })
+    }
+
+    addReqLogs({
+      req,
+      description: 'Ensemble des projets récupérés avec succès',
     })
     return sendOk(res, projects)
   } catch (error) {
-    const message = 'Projets non trouvés'
-    req.log.error({
-      ...getLogInfos(),
-      description: message,
-      error: error.message,
+    const description = 'Echec de la récupération de l\'ensemble des projets'
+    addReqLogs({
+      req,
+      description,
+      error,
     })
-    sendNotFound(res, message)
+    sendNotFound(res, description)
   }
 }

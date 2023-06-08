@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import { achievedStatus, projectRoles } from 'shared/src/utils/const.js'
+import { achievedStatus, projectRoles } from 'shared'
 
 export const getRandomProjectName = () => {
   return faker.lorem.word()
@@ -10,11 +10,12 @@ export const getRandomGitUrl = () => {
   return !url.startsWith('https://') ? 'https://' + url.split('://')[1] : url
 }
 
-export const getRandomOrganization = (name = 'ministere-interieur', label = 'Ministère de l\'Intérieur') => {
+export const getRandomOrganization = (name = 'ministere-interieur', label = 'Ministère de l\'Intérieur', source = 'dso-console') => {
   return {
     id: faker.datatype.uuid(),
     name,
     label,
+    source,
     active: true,
   }
 }
@@ -24,6 +25,7 @@ export const getRandomProject = (organization = faker.datatype.uuid()) => {
     id: faker.datatype.uuid(),
     name: getRandomProjectName(),
     organization,
+    description: faker.lorem.sentence(),
     status: faker.helpers.arrayElement(achievedStatus),
     locked: false,
   }

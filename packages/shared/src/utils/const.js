@@ -1,9 +1,11 @@
 export const adminGroupPath = '/admin'
 
+export const projectIsLockedInfo = 'Le projet est verrouillé, pas d\'action possible'
+
 export const levels = [
-  'lecture seule',
-  'lecture, écriture',
-  'lecture, écriture, suppression',
+  'r',
+  'rw',
+  'rwd',
 ]
 
 export const projectRoles = [
@@ -53,3 +55,51 @@ export const allEnv = [
   'integration',
   'prod',
 ]
+
+export const statusDict = {
+  locked: {
+    false: {
+      testId: 'unlocked-badge',
+      type: 'success',
+      icon: 'ri-lock-unlock-fill',
+      wording: 'déverrouillé',
+      color: 'var(--success-425-625)',
+    },
+    true: {
+      testId: 'locked-badge',
+      type: 'warning',
+      icon: 'ri-lock-fill',
+      wording: 'verrouillé',
+      color: 'var(--warning-425-625)',
+    },
+  },
+  status: {
+    created: {
+      testId: 'created-badge',
+      type: 'success',
+      icon: 'ri-check-fill',
+      wording: 'opérations réussies',
+      color: 'var(--success-425-625)',
+    },
+    failed: {
+      testId: 'failed-badge',
+      type: 'error',
+      icon: 'ri-close-line',
+      wording: 'opérations échouées',
+      color: 'var(--warning-425-625)',
+    },
+    initializing: {
+      testId: 'initializing-badge',
+      type: 'info',
+      icon: 'ri-loader-4-line',
+      animation: 'spin',
+      wording: 'opérations en cours',
+      color: 'var(--info-425-625)',
+    },
+    archived: {
+      icon: 'ri-archive-fill',
+      wording: 'archivé',
+      color: 'var(--background-default-grey)',
+    },
+  },
+}

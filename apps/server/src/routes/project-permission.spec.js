@@ -99,7 +99,7 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(404)
-      expect(response.body).toEqual('Permissions non trouvées: Vous n\'êtes pas membre du projet')
+      expect(response.body).toEqual('Echec de la récupération des permissions de l\'environnement')
     })
   })
 
@@ -130,7 +130,7 @@ describe('Project routes', () => {
       expect(response.json()).toMatchObject(newPermission)
     })
 
-    it('Should not set a permission if Vous n\'êtes pas membre du projet', async () => {
+    it('Should not set a permission if not project member', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const newPermission = randomDbSetup.project.environments[0].permissions[0]
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
@@ -146,7 +146,7 @@ describe('Project routes', () => {
 
       expect(response.statusCode).toEqual(400)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Permissions non créées : Vous n\'êtes pas membre du projet')
+      expect(response.body).toEqual('Echec de la création d\'une permission')
     })
   })
 
@@ -201,7 +201,7 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(400)
-      expect(response.body).toEqual('Permission non modifiée : La permission du owner du projet ne peut être modifiée')
+      expect(response.body).toEqual('Echec de la mise à jour de la permission')
     })
 
     it('Should not update a permission if not permitted on given environment', async () => {
@@ -222,7 +222,7 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(400)
-      expect(response.body).toEqual('Permission non modifiée : Le requérant doit avoir des droits sur l\'environnement pour modifier des permissions')
+      expect(response.body).toEqual('Echec de la mise à jour de la permission')
     })
   })
 
@@ -274,7 +274,7 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.body).toEqual('Permission non supprimée : La permission du owner du projet ne peut être supprimée')
+      expect(response.body).toEqual('Echec de la suppression de la permission')
     })
 
     it('Should not delete permission if not permitted on given environment', async () => {
@@ -294,7 +294,7 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.body).toEqual('Permission non supprimée : Le requérant doit avoir des droits sur l\'environnement pour supprimer des permissions')
+      expect(response.body).toEqual('Echec de la suppression de la permission')
     })
   })
 })

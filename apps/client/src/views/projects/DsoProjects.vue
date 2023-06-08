@@ -12,21 +12,20 @@ const projects = computed(() => projectStore?.projects)
 const projectList = ref([])
 
 const setProjectList = (projects) => {
-  projectList.value = projects?.map(project => ({
-    id: project.id,
-    title: project.name,
-    to: `/projects/${project.id}/services`,
-    locked: project.locked,
-  }))
+  projectList.value = projects
+    ?.sort((a, b) => (a.name >= b.name ? 1 : -1))
+    ?.map(project => ({
+      id: project.id,
+      title: project.name,
+      to: `/projects/${project.id}/dashboard`,
+    }))
 }
 
 const setSelectedProject = async (project) => {
-  if (!project.locked) {
-    try {
-      await projectStore.setSelectedProject(project.id)
-    } catch (error) {
-      snackbarStore.setMessage(error?.message, 'error')
-    }
+  try {
+    await projectStore.setSelectedProject(project.id)
+  } catch (error) {
+    snackbarStore.setMessage(error?.message, 'error')
   }
 }
 
@@ -72,11 +71,9 @@ watch(projects, (projects) => {
     >
       <DsfrTile
         :title="project.title"
-        :description="project.locked ? 'opérations en cours' : null"
         :data-testid="`projectTile-${project.title}`"
-        :to="project.locked ? '' : project.to"
+        :to="project.to"
         :horizontal="false"
-        :disabled="project.locked"
         @click="setSelectedProject(project)"
       />
     </div>

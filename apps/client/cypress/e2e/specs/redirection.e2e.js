@@ -19,11 +19,11 @@ describe('Redirection', () => {
       cy.get('[data-testid^="projectTile-"]')
       cy.should('have.length', `${response.body.length}`)
       cy.getByDataTestid(`projectTile-${project.name}`).click()
-      cy.url().should('contain', `/projects/${project.id}/services`)
+      cy.url().should('contain', `/projects/${project.id}/dashboard`)
     })
     cy.reload()
     cy.wait('@postToken')
-    cy.url().should('contain', `/projects/${project.id}/services`)
+    cy.url().should('contain', `/projects/${project.id}/dashboard`)
     cy.wait('@getProjects').its('response').then(_response => {
       cy.getByDataTestid('currentProjectInfo')
       cy.should('contain', `Le projet courant est : ${project.name}`)

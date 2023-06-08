@@ -30,6 +30,35 @@ export const createProject = async (projectName) => {
   }
 }
 
+const removeRepositories = async (projectName) => {
+  const repositories = await axios({
+    ...axiosOptions,
+    method: 'get',
+    url: `projects/${projectName}/repositories`,
+    headers: {
+      'X-Is-Resource-Name': true,
+    },
+    params: {
+      page_size: 100,
+    },
+  })
+
+  for (const repo of repositories.data) {
+    const repoName = repo.name.split('/').slice(1).join('/')
+    await axios({
+      ...axiosOptions,
+      method: 'delete',
+      url: `projects/${projectName}/repositories/${repoName}`,
+      headers: {
+        'X-Is-Resource-Name': true,
+      },
+    })
+  }
+  if (repositories.headers['x-total-count'] > repositories.data.length) {
+    await removeRepositories(projectName)
+  }
+}
+
 export const deleteProject = async (projectName) => {
   const project = await axios({
     ...axiosOptions,
@@ -39,6 +68,7 @@ export const deleteProject = async (projectName) => {
     },
     validateStatus: status => [200, 404].includes(status),
   })
+  await removeRepositories(projectName)
   if (project.status === 200) {
     await axios({
       ...axiosOptions,

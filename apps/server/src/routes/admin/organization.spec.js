@@ -8,9 +8,20 @@ import { sessionConf } from '../../utils/keycloak.js'
 import { getConnection, closeConnections, sequelize } from '../../connect.js'
 import organizationRouter from './organization.js'
 import { getOrganizationModel } from '../../models/organization.js'
-import { adminGroupPath, allOrganizations } from 'shared/src/utils/const.js'
+import { adminGroupPath, allOrganizations } from 'shared'
+import { fetchOrganizationsRes, filteredOrganizations } from '../../utils/mock-plugins.js'
+import { getLogModel } from '../../models/log.js'
+import { checkAdminGroup } from '../../utils/controller.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
+
+vi.mock('../../plugins/index.js', async () => {
+  return {
+    default: {
+      fetchOrganizations: () => fetchOrganizationsRes,
+    },
+  }
+})
 
 const app = fastify({ logger: false })
   .register(fastifyCookie)
@@ -29,18 +40,20 @@ const mockSessionPlugin = (app, opt, next) => {
 }
 
 const mockSession = (app) => {
-  app.register(fp(mockSessionPlugin))
+  app.addHook('preHandler', checkAdminGroup)
+    .register(fp(mockSessionPlugin))
     .register(organizationRouter)
 }
 
 describe('Organizations routes', () => {
   let Organization
+  let Logs
 
   beforeAll(async () => {
     mockSession(app)
     await getConnection()
     Organization = getOrganizationModel()
-    global.fetch = vi.fn(() => Promise.resolve())
+    Logs = getLogModel()
   })
 
   afterAll(async () => {
@@ -50,7 +63,7 @@ describe('Organizations routes', () => {
   afterEach(() => {
     vi.clearAllMocks()
     sequelize.$clearQueue()
-    global.fetch = vi.fn(() => Promise.resolve({ json: async () => {} }))
+    Organization.$clearQueue()
   })
 
   // GET
@@ -76,7 +89,7 @@ describe('Organizations routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(404)
-      expect(response.body).toEqual('Echec de récupération des organisations')
+      expect(response.body).toEqual('Echec de la récupération des organisations')
     })
 
     it('Should return an error if requestor is not admin', async () => {
@@ -87,7 +100,7 @@ describe('Organizations routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.body).toEqual('Vous n\'avez pas les droits administrateurs')
+      expect(response.body).toEqual('Vous n\'avez pas les droits administrateur')
     })
   })
 
@@ -122,7 +135,7 @@ describe('Organizations routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(400)
-      expect(response.body).toEqual('"name" length must be less than or equal to 10 characters long')
+      expect(response.body).toEqual('Echec de la création de l\'organisation')
     })
 
     it('Should return an error if organization already exists', async () => {
@@ -139,7 +152,7 @@ describe('Organizations routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(400)
-      expect(response.body).toEqual('Cette organisation existe déjà')
+      expect(response.body).toEqual('Echec de la création de l\'organisation')
     })
 
     it('Should return an error if requestor is not admin', async () => {
@@ -156,7 +169,7 @@ describe('Organizations routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.body).toEqual('Vous n\'avez pas les droits administrateurs')
+      expect(response.body).toEqual('Vous n\'avez pas les droits administrateur')
     })
   })
 
@@ -228,7 +241,31 @@ describe('Organizations routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.body).toEqual('Vous n\'avez pas les droits administrateurs')
+      expect(response.body).toEqual('Vous n\'avez pas les droits administrateur')
+    })
+  })
+
+  describe('fetchOrganizationsController', () => {
+    it('Should fetch organizations from external plugins', async () => {
+      const organizations = [getRandomOrganization()]
+      const allOrganizations = [
+        ...organizations,
+        ...filteredOrganizations,
+      ]
+
+      Organization.$queueResult(organizations)
+      Logs.$queueResult({})
+      filteredOrganizations.forEach(externalOrg => {
+        sequelize.$queueResult(externalOrg)
+      })
+      Organization.$queueResult(allOrganizations)
+
+      const response = await app.inject({ headers: { admin: 'admin' } })
+        .put('sync/organizations')
+        .end()
+
+      expect(response.statusCode).toEqual(201)
+      expect(response.body).toEqual(JSON.stringify(allOrganizations))
     })
   })
 })

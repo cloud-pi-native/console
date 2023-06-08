@@ -101,4 +101,14 @@ describe('Administration organizations', () => {
       .get(`select#organization-select > option[value="${newOrg.name}"]`)
       .should('not.exist')
   })
+
+  it('Should synchronize organizations from plugins', () => {
+    cy.intercept('PUT', '/api/v1/admin/organizations/sync/organizations').as('syncOrganizations')
+
+    cy.getByDataTestid('syncOrgsBtn')
+      .click()
+      .wait('@syncOrganizations')
+
+    cy.getByDataTestid('snackbar').should('contain', 'Aucune organisation à synchroniser')
+  })
 })

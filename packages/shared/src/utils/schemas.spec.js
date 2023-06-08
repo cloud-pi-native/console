@@ -50,7 +50,17 @@ describe('Schemas utils', () => {
   it('Should validate a correct organization schema', () => {
     expect(schemaValidator(organizationSchema, {
       id: faker.datatype.uuid(),
-      name: faker.word.noun(),
+      name: faker.word.noun({ length: { min: 2, max: 10 } }),
+      label: faker.company.name(),
+      active: faker.datatype.boolean(),
+    })).toStrictEqual({})
+  })
+
+  it('Should validate a correct organization schema with external data', () => {
+    expect(schemaValidator(organizationSchema, {
+      id: faker.datatype.uuid(),
+      source: faker.word.noun(),
+      name: faker.word.noun({ length: { min: 2, max: 10 } }),
       label: faker.company.name(),
       active: faker.datatype.boolean(),
     })).toStrictEqual({})
@@ -73,6 +83,16 @@ describe('Schemas utils', () => {
       firstName: faker.name.firstName(),
       lastName: faker.name.lastName(),
     })).toStrictEqual({})
+  })
+
+  it('Should not validate an organization schema with wrong external data', () => {
+    expect(schemaValidator(organizationSchema, {
+      id: faker.datatype.uuid(),
+      source: faker.datatype.array(),
+      name: faker.word.noun({ length: { min: 2, max: 10 } }),
+      label: faker.company.name(),
+      active: faker.datatype.boolean(),
+    })).toStrictEqual({ source: '"source" must be a string' })
   })
 
   it('Should not validate schema and send specific error', () => {
