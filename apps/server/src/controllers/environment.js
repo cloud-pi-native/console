@@ -90,6 +90,18 @@ export const initializeEnvironmentController = async (req, res) => {
     await lockProject(projectId)
     owner = await getSingleOwnerByProjectId(projectId)
 
+    if (owner.id !== userId) {
+      await setPermission({
+        userId: owner.id,
+        environmentId: env.id,
+        level: 2,
+      })
+    }
+    await setPermission({
+      userId: owner.id,
+      environmentId: env.id,
+      level: 2,
+    })
     addReqLogs({
       req,
       description: 'Environnement créé avec succès',
@@ -162,19 +174,6 @@ export const initializeEnvironmentController = async (req, res) => {
   try {
     if (isServicesCallOk) {
       await updateEnvironmentCreated(env.id)
-      const owner = await getSingleOwnerByProjectId(projectId)
-      if (owner.id !== userId) {
-        await setPermission({
-          userId: owner.id,
-          environmentId: env.id,
-          level: 2,
-        })
-      }
-      await setPermission({
-        userId,
-        environmentId: env.id,
-        level: 2,
-      })
       await unlockProject(projectId)
     } else {
       await updateEnvironmentFailed(env.id)
