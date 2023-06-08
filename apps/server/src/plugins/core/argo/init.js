@@ -1,6 +1,7 @@
 import k8s from '@kubernetes/client-node'
 import { deleteEnv, deleteRepo, newEnv, newRepo } from './index.js'
 import { kubeconfigPath, kubeconfigCtx } from '../../../utils/env.js'
+export const patchOptions = { headers: { 'Content-type': k8s.PatchUtils.PATCH_FORMAT_JSON_PATCH } }
 
 const kc = new k8s.KubeConfig()
 if (kubeconfigPath) {
