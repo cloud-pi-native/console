@@ -159,7 +159,7 @@ export const createProjectController = async (req, res) => {
 
     // TODO: Fix type
     // @ts-ignore See TODO
-    const isValid = await hooksFns.createProject({ owner }, true)
+    const isValid = await hooksFns.createProject.validate({ owner })
 
     if (isValid?.failed) {
       const reasons = Object.values(isValid)
@@ -225,7 +225,7 @@ export const createProjectController = async (req, res) => {
 
     // TODO: Fix type
     // @ts-ignore See TODO
-    const results = await hooksFns.createProject(projectData)
+    const results = await hooksFns.createProject.execute(projectData)
     await addLogs('Create Project', results, owner.id)
     if (results.failed) throw new Error('Echec de la création du projet par les plugins')
 
@@ -419,7 +419,7 @@ export const archiveProjectController = async (req, res) => {
       }
       // TODO: Fix type
       // @ts-ignore See TODO
-      const resultsEnv = await hooksFns.deleteEnvironment(envData)
+      const resultsEnv = await hooksFns.deleteEnvironment.execute(envData)
       await addLogs('Delete Environment', resultsEnv, userId)
       if (resultsEnv.failed) throw new Error('Echec des services à la suppression de l\'environnement')
     }
@@ -433,7 +433,7 @@ export const archiveProjectController = async (req, res) => {
     delete projectData.name
     // TODO: Fix type
     // @ts-ignore See TODO
-    const results = await hooksFns.archiveProject(projectData)
+    const results = await hooksFns.archiveProject.execute(projectData)
     await addLogs('Delete Project', results, userId)
     if (results.failed) throw new Error('Echec de la suppression du projet par les plugins')
     isServicesCallOk = true

@@ -23,11 +23,9 @@ const createHook = () => {
   const save = {}
   const revert = {}
 
-  const execute = async (args, isOnlyValidation = false) => {
+  const execute = async (args) => {
     let payload = { failed: false, args }
-
-    const steps = isOnlyValidation ? [check] : [pre, main, post, save]
-
+    const steps = [pre, main, post, save]
     for (const step of steps) {
       payload = await executeStep(step, payload)
       if (payload.failed) {
@@ -35,8 +33,12 @@ const createHook = () => {
         break
       }
     }
-
     return payload
+  }
+
+  const validate = async (args) => {
+    const payload = { failed: false, args }
+    return executeStep(check, payload)
   }
 
   return {
@@ -47,6 +49,7 @@ const createHook = () => {
     save,
     revert,
     execute,
+    validate,
   }
 }
 
@@ -169,7 +172,7 @@ if ((isInt || isProd) && !isCI) { // execute only when in real prod env and loca
 const hooksHandlers = {}
 
 Object.entries(pluginManager.hooks).forEach(([key, val]) => {
-  hooksHandlers[key] = val.execute
+  hooksHandlers[key] = { execute: val.execute, validate: val.validate }
 })
 
 export default hooksHandlers

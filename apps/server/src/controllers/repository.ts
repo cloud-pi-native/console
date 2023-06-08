@@ -106,7 +106,7 @@ export const createRepositoryController = async (req, res) => {
   try {
     // TODO: Fix type
     // @ts-ignore See TODO
-    const isValid = await hooksFns.createProject({ owner: user }, true)
+    const isValid = await hooksFns.createProject.validate({ owner: user })
     if (isValid?.failed) {
       const reasons = Object.values(isValid)
         .filter(({ status }) => status?.result === 'KO')
@@ -183,7 +183,7 @@ export const createRepositoryController = async (req, res) => {
 
     // TODO: Fix type
     // @ts-ignore See TODO
-    const results = await hooksFns.createRepository(repoData)
+    const results = await hooksFns.createRepository.execute(repoData)
     await addLogs('Create Repository', results, user.id)
     if (results.failed) throw new Error('Echec des services lors de la création du dépôt')
     isServicesCallOk = true
@@ -312,7 +312,7 @@ export const updateRepositoryController = async (req, res) => {
 
     // TODO: Fix type
     // @ts-ignore See TODO
-    const results = await hooksFns.updateRepository(repoData)
+    const results = await hooksFns.updateRepository.execute(repoData)
     await addLogs('Update Repository', results, userId)
     if (results.failed) throw new Error('Echec des services associés au dépôt')
     isServicesCallOk = true
@@ -428,7 +428,7 @@ export const deleteRepositoryController = async (req, res) => {
 
     // TODO: Fix type
     // @ts-ignore See TODO
-    const results = await hooksFns.deleteRepository(repoData)
+    const results = await hooksFns.deleteRepository.execute(repoData)
     await addLogs('Delete Repository', results, userId)
     if (results.failed) throw new Error('Echec des opérations')
     isServicesCallOk = true

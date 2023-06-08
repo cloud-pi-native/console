@@ -12,27 +12,27 @@ process.env.PROJECTS_ROOT_DIR = 'forge-mi/projects'
 vi.mock('./src/plugins/index.js', async () => {
   return {
     default: {
-      fetchOrganizations: () => {},
+      fetchOrganizations: ({ execute: () => {}, validate: () => {} }),
 
-      checkServices: () => {},
+      checkServices: ({ execute: () => {}, validate: () => {} }),
 
-      createProject: () => {},
-      archiveProject: () => {},
+      createProject: ({ execute: () => {}, validate: () => {} }),
+      archiveProject: ({ execute: () => {}, validate: () => {} }),
 
-      createRepository: () => {},
-      updateRepository: () => {},
-      deleteRepository: () => {},
+      createRepository: ({ execute: () => {}, validate: () => {} }),
+      updateRepository: ({ execute: () => {}, validate: () => {} }),
+      deleteRepository: ({ execute: () => {}, validate: () => {} }),
 
-      addUserToProject: () => {},
-      updateUserProjectRole: () => {},
-      removeUserFromProject: () => {},
+      addUserToProject: ({ execute: () => {}, validate: () => {} }),
+      updateUserProjectRole: ({ execute: () => {}, validate: () => {} }),
+      removeUserFromProject: ({ execute: () => {}, validate: () => {} }),
 
-      initializeEnvironment: () => {},
-      deleteEnvironment: () => {},
+      initializeEnvironment: ({ execute: () => {}, validate: () => {} }),
+      deleteEnvironment: ({ execute: () => {}, validate: () => {} }),
 
-      setPermission: () => {},
-      updatePermission: () => {},
-      deletePermission: () => {},
+      setPermission: ({ execute: () => {}, validate: () => {} }),
+      updatePermission: ({ execute: () => {}, validate: () => {} }),
+      deletePermission: ({ execute: () => {}, validate: () => {} }),
     },
   }
 })

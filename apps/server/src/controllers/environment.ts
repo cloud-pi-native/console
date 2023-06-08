@@ -151,7 +151,7 @@ export const initializeEnvironmentController = async (req, res) => {
     }
     // TODO: Fix type
     // @ts-ignore See TODO
-    const results = await hooksFns.initializeEnvironment(envData)
+    const results = await hooksFns.initializeEnvironment.execute(envData)
     await addLogs('Create Environment', results, userId)
     if (results.failed) throw new Error('Echec services à la création de l\'environnement')
     isServicesCallOk = true
@@ -268,7 +268,7 @@ export const deleteEnvironmentController = async (req, res) => {
     }
     // TODO: Fix type
     // @ts-ignore See TODO
-    const results = await hooksFns.deleteEnvironment(envData)
+    const results = await hooksFns.deleteEnvironment.execute(envData)
     await addLogs('Delete Environment', results, userId)
     if (results.failed) throw new Error('Echec des services à la suppression de l\'environnement')
     isServicesCallOk = true
