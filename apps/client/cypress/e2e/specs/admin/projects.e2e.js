@@ -13,17 +13,19 @@ describe('Administration projects', () => {
     cy.visit('/admin/projects')
     cy.url().should('contain', '/admin/projects')
     cy.wait('@getAllProjects', { timeout: 10000 }).its('response').then(response => {
-      projects = response.body?.map(project => ({
-        organization: organizations.find(organization => organization.id === project.organization).label,
-        name: project.name,
-        description: project.description ?? '',
-        owner: project.owner,
-        status: project.status,
-        locked: project.locked,
-        createdAt: project.createdAt,
-        updatedAt: project.updatedAt,
-      }),
-      )
+      projects = response?.body
+        ?.sort((a, b) => a.name >= b.name ? 1 : -1)
+        ?.map(project => ({
+          organization: organizations.find(organization => organization.id === project.organization).label,
+          name: project.name,
+          description: project.description ?? '',
+          owner: project.owner,
+          status: project.status,
+          locked: project.locked,
+          createdAt: project.createdAt,
+          updatedAt: project.updatedAt,
+        }),
+        )
     })
   })
 

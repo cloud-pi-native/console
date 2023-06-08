@@ -133,7 +133,7 @@ const archiveProject = async (projectId) => {
   <div
     v-if="isOwner"
     data-testid="archiveProjectZone"
-    class="fr-my-2w fr-py-4w fr-px-1w border-solid border-1 rounded-sm border-red-500"
+    class="danger-zone"
   >
     <div class="flex justify-between items-center <md:flex-col">
       <DsfrButton

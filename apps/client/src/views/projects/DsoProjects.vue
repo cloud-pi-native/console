@@ -12,12 +12,14 @@ const projects = computed(() => projectStore?.projects)
 const projectList = ref([])
 
 const setProjectList = (projects) => {
-  projectList.value = projects?.map(project => ({
-    id: project.id,
-    title: project.name,
-    to: `/projects/${project.id}/services`,
-    locked: project.locked,
-  }))
+  projectList.value = projects
+    ?.sort((a, b) => (a.name >= b.name ? 1 : -1))
+    ?.map(project => ({
+      id: project.id,
+      title: project.name,
+      to: `/projects/${project.id}/dashboard`,
+      locked: project.locked,
+    }))
 }
 
 const setSelectedProject = async (project) => {
