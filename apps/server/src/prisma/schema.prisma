@@ -1,6 +1,6 @@
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("DB_URL")
 }
 
 model Environment {
@@ -50,9 +50,9 @@ model Project {
   services       Json
   organization   Organization @relation(fields: [organizationId], references: [id])
 
-  environments Environment[]
-  Repository   Repository[]
-  // UsersProjects UsersProjects[]
+  environments  Environment[]
+  Repository    Repository[]
+  UsersProjects UsersProjects[]
 }
 
 model Repository {
@@ -74,15 +74,21 @@ model User {
   lastName  String
   email     String @unique
 
-  logs        Log[]
-  permissions Permission[]
-  // UsersProjects UsersProjects[]
+  logs          Log[]
+  permissions   Permission[]
+  UsersProjects UsersProjects[]
 }
 
-// model UsersProjects {
-//   UserId    Int
-//   ProjectId Int
-//   role      String
-//   user      User    @relation(fields: [ProjectId], references: [id])
-//   project   Project @relation(fields: [ProjectId], references: [id])
-// }
+model UsersProjects {
+  UserId    Int
+  ProjectId Int
+  role      String
+  user      User    @relation(fields: [UserId], references: [id])
+  project   Project @relation(fields: [ProjectId], references: [id])
+
+  @@id([UserId, ProjectId])
+}
+
+model Test {
+  id Int @id @default(autoincrement())
+}
