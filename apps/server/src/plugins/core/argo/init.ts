@@ -17,8 +17,10 @@ export const k8sApi = kc.makeApiClient(CoreV1Api)
 export const customK8sApi = kc.makeApiClient(CustomObjectsApi)
 
 export const init = (register) => {
-  register('argo', 'initializeEnvironment', newEnv, 'post')
-  register('argo', 'deleteEnvironment', deleteEnv, 'main')
-  register('argo', 'createRepository', newRepo, 'main')
-  register('argo', 'deleteRepository', deleteRepo, 'main')
+  register('argo', {
+    initializeEnvironment: { post: newEnv },
+    deleteEnvironment: { main: deleteEnv },
+    createRepository: { main: newRepo },
+    deleteRepository: { main: deleteRepo },
+  })
 }

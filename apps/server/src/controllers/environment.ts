@@ -19,7 +19,7 @@ import {
 import { addReqLogs } from '../utils/logger.js'
 import { sendOk, sendCreated, sendNotFound, sendBadRequest, sendForbidden } from '../utils/response.js'
 import { unlockProjectIfNotFailed } from '../utils/controller.js'
-import hooksFns from '../plugins/index.js'
+import { hooks } from '../plugins/index.js'
 import { addLogs } from '../models/queries/log-queries.js'
 import { getOrganizationById } from '../models/queries/organization-queries.js'
 import { getInfraProjectRepositories } from '../models/queries/repository-queries.js'
@@ -151,7 +151,7 @@ export const initializeEnvironmentController = async (req, res) => {
     }
     // TODO: Fix type
     // @ts-ignore See TODO
-    const results = await hooksFns.initializeEnvironment.execute(envData)
+    const results = await hooks.initializeEnvironment.execute(envData)
     await addLogs('Create Environment', results, userId)
     if (results.failed) throw new Error('Echec services à la création de l\'environnement')
     isServicesCallOk = true
@@ -268,7 +268,7 @@ export const deleteEnvironmentController = async (req, res) => {
     }
     // TODO: Fix type
     // @ts-ignore See TODO
-    const results = await hooksFns.deleteEnvironment.execute(envData)
+    const results = await hooks.deleteEnvironment.execute(envData)
     await addLogs('Delete Environment', results, userId)
     if (results.failed) throw new Error('Echec des services à la suppression de l\'environnement')
     isServicesCallOk = true

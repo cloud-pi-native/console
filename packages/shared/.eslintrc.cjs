@@ -18,6 +18,8 @@ module.exports = {
   ],
   rules: {
     'comma-dangle': [2, 'always-multiline'],
+    '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/ban-ts-comment': 'off',
   },
   overrides: [
     {

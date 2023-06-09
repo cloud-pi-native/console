@@ -17,8 +17,12 @@ const k8sApi = kc.makeApiClient(CoreV1Api)
 export default k8sApi
 
 export const init = (register) => {
-  register('kubernetes', 'initializeEnvironment', checkInitializeEnvironment, 'check') // TODO implement check in controller
-  register('kubernetes', 'initializeEnvironment', createKubeNamespace, 'main')
-  register('kubernetes', 'initializeEnvironment', createKubeSecret, 'post')
-  register('kubernetes', 'deleteEnvironment', deleteKubeNamespace, 'main')
+  register('kubernetes', {
+    initializeEnvironment: {
+      check: checkInitializeEnvironment, // TODO implement check in controller
+      main: createKubeNamespace,
+      post: createKubeSecret,
+    },
+    deleteEnvironment: { main: deleteKubeNamespace },
+  })
 }
