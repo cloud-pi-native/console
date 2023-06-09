@@ -40,9 +40,10 @@ import { sendOk, sendCreated, sendUnprocessableContent, sendNotFound, sendBadReq
 import { projectSchema, calcProjectNameMaxLength, projectIsLockedInfo } from 'shared'
 import { getServices } from '../utils/services.js'
 import { addLogs } from '../models/queries/log-queries.js'
-import hooksFns from '../plugins/index.js'
+import { hooks } from '../plugins/index.js'
 import { gitlabUrl, projectRootDir } from '../utils/env.js'
 import { unlockProjectIfNotFailed } from '../utils/controller.js'
+import { PluginResult } from '@/plugins/hooks/hook.js'
 
 // GET
 export const getUserProjectsController = async (req, res) => {
@@ -159,12 +160,12 @@ export const createProjectController = async (req, res) => {
 
     // TODO: Fix type
     // @ts-ignore See TODO
-    const isValid = await hooksFns.createProject.validate({ owner })
+    const isValid = await hooks.createProject.validate({ owner })
 
     if (isValid?.failed) {
       const reasons = Object.values(isValid)
-        .filter(({ status }) => status?.result === 'KO')
-        .map(({ status }) => status?.message)
+        .filter((plugin: PluginResult) => plugin?.status?.result === 'KO')
+        .map((plugin: PluginResult) => plugin?.status?.message)
         .join('; ')
       sendUnprocessableContent(res, reasons)
 
@@ -225,17 +226,20 @@ export const createProjectController = async (req, res) => {
 
     // TODO: Fix type
     // @ts-ignore See TODO
-    const results = await hooksFns.createProject.execute(projectData)
+    const results = await hooks.createProject.execute(projectData)
     await addLogs('Create Project', results, owner.id)
     if (results.failed) throw new Error('Echec de la création du projet par les plugins')
 
     // enregistrement des ids GitLab et Harbor
-    const { gitlab, registry } = results
+    // @ts-ignore
+    const { gitlab, registry }: { gitlab: PluginResult, registry: PluginResult} = results
     const services = {
       gitlab: {
+        // @ts-ignore
         id: gitlab?.result?.group?.id,
       },
       registry: {
+        // @ts-ignore
         id: registry?.result?.project?.project_id,
       },
     }
@@ -419,7 +423,7 @@ export const archiveProjectController = async (req, res) => {
       }
       // TODO: Fix type
       // @ts-ignore See TODO
-      const resultsEnv = await hooksFns.deleteEnvironment.execute(envData)
+      const resultsEnv = await hooks.deleteEnvironment.execute(envData)
       await addLogs('Delete Environment', resultsEnv, userId)
       if (resultsEnv.failed) throw new Error('Echec des services à la suppression de l\'environnement')
     }
@@ -433,7 +437,7 @@ export const archiveProjectController = async (req, res) => {
     delete projectData.name
     // TODO: Fix type
     // @ts-ignore See TODO
-    const results = await hooksFns.archiveProject.execute(projectData)
+    const results = await hooks.archiveProject.execute(projectData)
     await addLogs('Delete Project', results, userId)
     if (results.failed) throw new Error('Echec de la suppression du projet par les plugins')
     isServicesCallOk = true

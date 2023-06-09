@@ -18,7 +18,7 @@ vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) })
 
 vi.mock('../../plugins/index.js', async () => {
   return {
-    default: {
+    hooks: {
       fetchOrganizations: { execute: () => fetchOrganizationsRes },
     },
   }

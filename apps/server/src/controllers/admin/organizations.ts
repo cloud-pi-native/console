@@ -9,7 +9,7 @@ import { addLogs } from '../../models/queries/log-queries.js'
 import { organizationSchema, getUniqueListBy } from 'shared'
 import { addReqLogs } from '../../utils/logger.js'
 import { sendOk, sendCreated, sendNotFound, sendBadRequest } from '../../utils/response.js'
-import hooksFns from '../../plugins/index.js'
+import { hooks } from '../../plugins/index.js'
 
 // GET
 export const getAllOrganizationsController = async (req, res) => {
@@ -106,7 +106,7 @@ export const fetchOrganizationsController = async (req, res) => {
 
     // TODO: Fix type
     // @ts-ignore See TODO
-    const results: Record<string, any>[] = await hooksFns.fetchOrganizations.execute()
+    const results: Record<string, any>[] = await hooks.fetchOrganizations.execute()
 
     await addLogs('Fetch organizations', results, user.id)
 

@@ -117,7 +117,9 @@ export const updateProject = async (id, data) => {
 }
 
 export const archiveProject = async (id) => {
+  const project = await getProjectModel().findByPk(id)
   return getProjectModel().update({
+    name: `${project.name}_${Date.now()}_archived`,
     status: 'archived',
     locked: true,
   }, {
