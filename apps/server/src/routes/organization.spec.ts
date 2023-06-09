@@ -5,10 +5,11 @@ import fastifySession from '@fastify/session'
 import fastifyCookie from '@fastify/cookie'
 import fp from 'fastify-plugin'
 import { sessionConf } from '../utils/keycloak.js'
-import { getConnection, closeConnections, sequelize } from '../connect.js'
+import { getConnection, closeConnections } from '../connect.js'
 import organizationRouter from './organization.js'
 import { getOrganizationModel } from '../models/organization.js'
 import { allOrganizations } from 'shared'
+import { sequelize } from '../../vitest-init'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 
@@ -55,7 +56,7 @@ describe('Organizations routes', () => {
   afterEach(() => {
     vi.clearAllMocks()
     sequelize.$clearQueue()
-    global.fetch = vi.fn(() => Promise.resolve({ json: async () => {} }))
+    global.fetch = vi.fn(() => Promise.resolve({ json: async () => { } }))
   })
 
   // GET

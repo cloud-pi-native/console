@@ -35,11 +35,11 @@
     "test:e2e-ci-build": "docker compose --env-file env/.env.ci -f docker/docker-compose.ci.yml build --pull"
   },
   "devDependencies": {
-    "@commitlint/cli": "^17.6.1",
-    "@commitlint/config-conventional": "^17.6.1",
+    "@commitlint/cli": "^17.6.5",
+    "@commitlint/config-conventional": "^17.6.5",
     "husky": "^8.0.3",
-    "lint-staged": "^13.2.1",
-    "turbo": "^1.9.1"
+    "lint-staged": "^13.2.2",
+    "turbo": "^1.10.2"
   },
   "volta": {
     "node": "18.16.0"
