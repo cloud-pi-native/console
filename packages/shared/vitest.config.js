@@ -6,7 +6,7 @@ export default defineConfig({
     testTimeout: 2000,
     watch: false,
     coverage: {
-      provider: 'c8',
+      provider: 'v8',
       reporter: ['text', 'lcov'],
       exclude: [
         '**/*.spec.js',

@@ -5,11 +5,13 @@ import fastifySession from '@fastify/session'
 import fastifyCookie from '@fastify/cookie'
 import fp from 'fastify-plugin'
 import { sessionConf } from '../../utils/keycloak.js'
-import { getConnection, closeConnections, sequelize } from '../../connect.js'
+import { getConnection, closeConnections } from '../../connect.js'
 import adminUsersRouter from './user.js'
 import { getUserModel } from '../../models/user.js'
 import { checkAdminGroup } from '../../utils/controller.js'
 import { adminGroupPath } from 'shared'
+import { sequelize } from '../../../vitest-init'
+
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 
@@ -22,7 +24,7 @@ const mockSessionPlugin = (app, opt, next) => {
     if (req.headers.admin) {
       req.session = { user: { groups: [adminGroupPath] } }
     } else {
-      req.session = { user: { } }
+      req.session = { user: {} }
     }
     next()
   })

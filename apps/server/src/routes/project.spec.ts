@@ -6,7 +6,7 @@ import fastifyCookie from '@fastify/cookie'
 import fp from 'fastify-plugin'
 import { faker } from '@faker-js/faker'
 import { sessionConf } from '../utils/keycloak.js'
-import { getConnection, closeConnections, sequelize } from '../connect.js'
+import { getConnection, closeConnections } from '../connect.js'
 import projectRouter from './project.js'
 import { getProjectModel } from '../models/project.js'
 import { getUserModel } from '../models/user.js'
@@ -16,6 +16,7 @@ import { getEnvironmentModel } from '../models/environment.js'
 import { getPermissionModel } from '../models/permission.js'
 import { getOrganizationModel } from '../models/organization.js'
 import { descriptionMaxLength, projectIsLockedInfo } from 'shared'
+import { sequelize } from '../../vitest-init'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 
@@ -73,6 +74,13 @@ describe('Project routes', () => {
   afterEach(() => {
     vi.clearAllMocks()
     sequelize.$clearQueue()
+    Project.$clearQueue()
+    User.$clearQueue()
+    Role.$clearQueue()
+    Repository.$clearQueue()
+    Environment.$clearQueue()
+    Permissions.$clearQueue()
+    Organization.$clearQueue()
     Role.$clearQueue()
   })
 
@@ -133,7 +141,7 @@ describe('Project routes', () => {
     })
 
     it('Should not retreive a project when id is invalid', async () => {
-      sequelize.$queueFailure('custom error message')
+      Project.$queueFailure('custom error message')
 
       const response = await app.inject()
         .get('/invalid')
@@ -378,12 +386,13 @@ describe('Project routes', () => {
 
       const response = await app.inject()
         .put(`/${project.id}`)
-        .body({ description: faker.random.alpha(descriptionMaxLength + 1) })
+        .body({ description: faker.string.alpha(descriptionMaxLength + 1) })
         .end()
 
       expect(response.statusCode).toEqual(400)
       expect(response.body).toEqual('Echec de la mise à jour du projet')
     })
+
     it('Should not update a project if locked', async () => {
       const randomDbSetup = createRandomDbSetup({})
       randomDbSetup.project.locked = true

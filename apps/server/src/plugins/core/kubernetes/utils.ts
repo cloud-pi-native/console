@@ -1,4 +1,3 @@
-
 export const getNsObject = (organization, projet, environment, owner) => {
   return {
     metadata: {

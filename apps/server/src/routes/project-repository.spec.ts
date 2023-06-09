@@ -5,12 +5,13 @@ import fastifySession from '@fastify/session'
 import fastifyCookie from '@fastify/cookie'
 import fp from 'fastify-plugin'
 import { sessionConf } from '../utils/keycloak.js'
-import { getConnection, closeConnections, sequelize } from '../connect.js'
+import { getConnection, closeConnections } from '../connect.js'
 import projectRepositoryRouter from './project-repository.js'
 import { getProjectModel } from '../models/project.js'
 import { getUsersProjectsModel } from '../models/users-projects.js'
 import { getRepositoryModel } from '../models/repository.js'
 import { projectIsLockedInfo } from 'shared'
+import { sequelize } from '../../vitest-init'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 
@@ -64,7 +65,7 @@ describe('Project routes', () => {
     Project.$clearQueue()
     Role.$clearQueue()
     Repository.$clearQueue()
-    global.fetch = vi.fn(() => Promise.resolve({ json: async () => {} }))
+    global.fetch = vi.fn(() => Promise.resolve({ json: async () => { } }))
   })
 
   // GET

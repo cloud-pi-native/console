@@ -353,7 +353,6 @@ export const updateRepositoryController = async (req, res) => {
         repositoryId: repo.id,
       },
     })
-    return
   } catch (error) {
     addReqLogs({
       req,

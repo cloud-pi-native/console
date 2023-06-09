@@ -9,30 +9,35 @@ process.env.SONARQUBE_URL = 'https://www.sonarqube.org'
 process.env.VAULT_URL = 'https://www.vaultproject.io'
 process.env.PROJECTS_ROOT_DIR = 'forge-mi/projects'
 
+export const sequelize = await (async () => {
+  const { default: SequelizeMock } = await import('sequelize-mock')
+  return new SequelizeMock()
+})()
+
 vi.mock('./src/plugins/index.js', async () => {
   return {
     default: {
-      fetchOrganizations: ({ execute: () => {}, validate: () => {} }),
+      fetchOrganizations: ({ execute: () => { }, validate: () => { } }),
 
-      checkServices: ({ execute: () => {}, validate: () => {} }),
+      checkServices: ({ execute: () => { }, validate: () => { } }),
 
-      createProject: ({ execute: () => {}, validate: () => {} }),
-      archiveProject: ({ execute: () => {}, validate: () => {} }),
+      createProject: ({ execute: () => { }, validate: () => { } }),
+      archiveProject: ({ execute: () => { }, validate: () => { } }),
 
-      createRepository: ({ execute: () => {}, validate: () => {} }),
-      updateRepository: ({ execute: () => {}, validate: () => {} }),
-      deleteRepository: ({ execute: () => {}, validate: () => {} }),
+      createRepository: ({ execute: () => { }, validate: () => { } }),
+      updateRepository: ({ execute: () => { }, validate: () => { } }),
+      deleteRepository: ({ execute: () => { }, validate: () => { } }),
 
-      addUserToProject: ({ execute: () => {}, validate: () => {} }),
-      updateUserProjectRole: ({ execute: () => {}, validate: () => {} }),
-      removeUserFromProject: ({ execute: () => {}, validate: () => {} }),
+      addUserToProject: ({ execute: () => { }, validate: () => { } }),
+      updateUserProjectRole: ({ execute: () => { }, validate: () => { } }),
+      removeUserFromProject: ({ execute: () => { }, validate: () => { } }),
 
-      initializeEnvironment: ({ execute: () => {}, validate: () => {} }),
-      deleteEnvironment: ({ execute: () => {}, validate: () => {} }),
+      initializeEnvironment: ({ execute: () => { }, validate: () => { } }),
+      deleteEnvironment: ({ execute: () => { }, validate: () => { } }),
 
-      setPermission: ({ execute: () => {}, validate: () => {} }),
-      updatePermission: ({ execute: () => {}, validate: () => {} }),
-      deletePermission: ({ execute: () => {}, validate: () => {} }),
+      setPermission: ({ execute: () => { }, validate: () => { } }),
+      updatePermission: ({ execute: () => { }, validate: () => { } }),
+      deletePermission: ({ execute: () => { }, validate: () => { } }),
     },
   }
 })
