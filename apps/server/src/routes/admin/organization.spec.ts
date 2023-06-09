@@ -18,7 +18,7 @@ vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) })
 vi.mock('../../plugins/index.js', async () => {
   return {
     default: {
-      fetchOrganizations: () => fetchOrganizationsRes,
+      fetchOrganizations: { execute: () => fetchOrganizationsRes },
     },
   }
 })
@@ -32,7 +32,7 @@ const mockSessionPlugin = (app, opt, next) => {
     if (req.headers.admin) {
       req.session = { user: { groups: [adminGroupPath] } }
     } else {
-      req.session = { user: { } }
+      req.session = { user: {} }
     }
     next()
   })

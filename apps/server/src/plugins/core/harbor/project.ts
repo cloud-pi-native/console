@@ -68,8 +68,8 @@ export const deleteProject = async (projectName) => {
     },
     validateStatus: status => [200, 404].includes(status),
   })
-  await removeRepositories(projectName)
   if (project.status === 200) {
+    await removeRepositories(projectName)
     await axios({
       ...axiosOptions,
       url: `projects/${projectName}`,

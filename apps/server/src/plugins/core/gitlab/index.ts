@@ -30,7 +30,7 @@ export const createDsoProject = async (payload) => {
     const { project, organization, owner } = payload.args
 
     const group = await createGroup(project, organization)
-    const user = await createUser(owner.email)
+    const user = await createUser(owner)
     const groupMember = await addGroupMember(group.id, user.id, 40)
 
     return {

@@ -106,7 +106,7 @@ export const fetchOrganizationsController = async (req, res) => {
 
     // TODO: Fix type
     // @ts-ignore See TODO
-    const results: Record<string, any>[] = await hooksFns.fetchOrganizations()
+    const results: Record<string, any>[] = await hooksFns.fetchOrganizations.execute()
 
     await addLogs('Fetch organizations', results, user.id)
 
