@@ -91,9 +91,9 @@ Cypress.Commands.add('addRepos', (project, repos) => {
   cy.intercept('GET', '/api/v1/projects').as('getProjects')
 
   const newRepo = (repo) => ({
-    internalRepoName: 'dso-console',
+    internalRepoName: 'console',
     externalUserName: 'this-is-tobi',
-    externalRepoUrl: 'https://github.com/dnum-mi/dso-console.git',
+    externalRepoUrl: 'https://github.com/cloud-pi-native/console.git',
     isInfra: false,
     isPrivate: false,
     externalToken: 'private-token',

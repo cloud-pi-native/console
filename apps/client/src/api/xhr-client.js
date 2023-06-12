@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { getKeycloak } from '@/utils/keycloak/keycloak.js'
+import { getKeycloak } from '@/utils/keycloak/keycloak'
 import router from '@/router/index.js'
 
 export const apiClient = axios.create({

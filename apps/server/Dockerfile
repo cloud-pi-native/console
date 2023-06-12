@@ -22,6 +22,8 @@ ENTRYPOINT [ "pnpm", "--filter", "server", "run", "dev" ]
 # Build stage
 FROM base AS build
 
+RUN pnpm install
+RUN pnpm --filter server run build
 RUN pnpm --filter server --prod deploy build
 
 
@@ -30,9 +32,10 @@ FROM docker.io/node:18.16.0-bullseye-slim AS prod
 
 ARG APP_VERSION
 ENV APP_VERSION=$APP_VERSION
-RUN mkdir -p /home/node/logs && chmod 777 -R /home/node/logs
+RUN mkdir -p /home/node/logs && chmod 770 -R /home/node/logs
 WORKDIR /app
 RUN chown node:root /app
 COPY --chown=node:root --from=build /app/build .
+RUN npm install --location=global pnpm
 USER node
-CMD ["node", "src/server.js"]
+CMD ["pnpm", "start"]

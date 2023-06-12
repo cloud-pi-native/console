@@ -31,7 +31,7 @@ function toggleExpand (key) {
 }
 
 watch(routePath, (routePath) => {
-  if (/projects*/.test(routePath)) {
+  if (/^\/projects*/.test(routePath)) {
     isExpanded.value.projects = true
     isExpanded.value.administration = false
     return
@@ -230,6 +230,15 @@ onMounted(() => {
               to="/admin/projects"
             >
               Liste des projets
+            </DsfrSideMenuLink>
+          </DsfrSideMenuListItem>
+          <DsfrSideMenuListItem>
+            <DsfrSideMenuLink
+              data-testid="menuAdministrationLogs"
+              :active="routeName === 'ListLogs'"
+              to="/admin/logs"
+            >
+              Liste des logs
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
         </DsfrSideMenuList>

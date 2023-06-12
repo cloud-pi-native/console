@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import { achievedStatus, projectRoles } from 'shared'
+import { achievedStatus, projectRoles, logActions } from 'shared'
 
 export const getRandomProjectName = () => {
   return faker.lorem.word()
@@ -12,7 +12,7 @@ export const getRandomGitUrl = () => {
 
 export const getRandomOrganization = (name = 'ministere-interieur', label = 'Ministère de l\'Intérieur', source = 'dso-console') => {
   return {
-    id: faker.datatype.uuid(),
+    id: faker.string.uuid(),
     name,
     label,
     source,
@@ -20,9 +20,9 @@ export const getRandomOrganization = (name = 'ministere-interieur', label = 'Min
   }
 }
 
-export const getRandomProject = (organization = faker.datatype.uuid()) => {
+export const getRandomProject = (organization = faker.string.uuid()) => {
   return {
-    id: faker.datatype.uuid(),
+    id: faker.string.uuid(),
     name: getRandomProjectName(),
     organization,
     description: faker.lorem.sentence(),
@@ -33,23 +33,23 @@ export const getRandomProject = (organization = faker.datatype.uuid()) => {
 
 export const getRandomUser = () => {
   return {
-    id: faker.datatype.uuid(),
+    id: faker.string.uuid(),
     email: faker.internet.email(),
-    firstName: faker.name.firstName(),
-    lastName: faker.name.lastName(),
+    firstName: faker.person.firstName(),
+    lastName: faker.person.lastName(),
   }
 }
 
-export const getRandomUserProject = (userId = faker.datatype.uuid(), role = projectRoles[1]) => {
+export const getRandomUserProject = (userId = faker.string.uuid(), role = projectRoles[1]) => {
   return {
     id: userId,
     role,
   }
 }
 
-export const getRandomRepo = (projectId = faker.datatype.uuid()) => {
+export const getRandomRepo = (projectId = faker.string.uuid()) => {
   const repo = {
-    id: faker.datatype.uuid(),
+    id: faker.string.uuid(),
     projectId,
     internalRepoName: faker.lorem.word(),
     externalRepoUrl: getRandomGitUrl(),
@@ -65,21 +65,29 @@ export const getRandomRepo = (projectId = faker.datatype.uuid()) => {
   return repo
 }
 
-export const getRandomEnv = (name = 'dev', projectId = faker.datatype.uuid()) => {
+export const getRandomEnv = (name = 'dev', projectId = faker.string.uuid()) => {
   return {
-    id: faker.datatype.uuid(),
+    id: faker.string.uuid(),
     name,
     projectId,
     status: faker.helpers.arrayElement(achievedStatus),
   }
 }
 
-export const getRandomPerm = (environmentId = faker.datatype.uuid(), user = getRandomUser()) => {
+export const getRandomPerm = (environmentId = faker.string.uuid(), user = getRandomUser()) => {
   return {
-    id: faker.datatype.uuid(),
+    id: faker.string.uuid(),
     environmentId,
     userId: user.id,
-    level: faker.datatype.number({ min: 0, max: 1 }),
+    level: faker.number.int({ min: 0, max: 1 }),
     user,
+  }
+}
+
+export const getRandomLog = (action = faker.helpers.arrayElement(logActions), userId = faker.string.uuid()) => {
+  return {
+    id: faker.string.uuid(),
+    action,
+    userId,
   }
 }

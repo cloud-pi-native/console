@@ -101,7 +101,7 @@ const cancel = (event) => {
             label="Url du dépôt Git externe"
             label-visible
             hint="Url du dépôt Git qui servira de source pour la synchronisation"
-            placeholder="https://github.com/dnum-mi/dso-console.git"
+            placeholder="https://github.com/cloud-pi-native/console.git"
             class="fr-mb-2w"
             @update:model-value="updateRepo('externalRepoUrl', $event)"
           />

@@ -32,7 +32,8 @@ apps/server/src/init/db/imports/data.js
 
 # vitest
 coverage
-apps/client/vite.config.js.timestamp-*.mjs
+apps/client/vite.config.*.timestamp-*.mjs
+apps/server/vite.config.*.timestamp-*.mjs
 
 # sonarqube
 .scannerwork
@@ -48,6 +49,7 @@ keycloak/data
 
 # dist
 dist
+build
 
 # plugins
 apps/server/src/plugins/external

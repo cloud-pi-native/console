@@ -1,8 +1,12 @@
+/* eslint-env node */
+require('@rushstack/eslint-patch/modern-module-resolution')
+
 module.exports = {
   root: true,
   extends: [
     'standard',
     'plugin:vue/vue3-recommended',
+    '@vue/eslint-config-typescript',
   ],
   plugins: [
     'vue',
@@ -26,6 +30,14 @@ module.exports = {
     'no-irregular-whitespace': 0,
   },
   overrides: [
+    {
+      files: [
+        'cypress/e2e/**/*.{cy,spec}.{js,ts,jsx,tsx}',
+      ],
+      extends: [
+        'plugin:cypress/recommended',
+      ],
+    },
     {
       files: ['**/src/**/*.spec.{j,t}s?(x)'],
       env: {

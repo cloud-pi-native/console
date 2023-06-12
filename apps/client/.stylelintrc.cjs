@@ -7,7 +7,6 @@ module.exports = {
     'stylelint-config-recommended-vue',
   ],
   rules: {
-    'max-line-length': 160,
     'at-rule-no-unknown': [
       true,
       {

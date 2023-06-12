@@ -1,4 +1,3 @@
-
 import { getProjectbyId, getUserById } from '../support/func.js'
 
 describe('Add environments into project', () => {

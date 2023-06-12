@@ -48,6 +48,15 @@ export const achievedStatus = [
   'failed',
 ]
 
+export const logActions = [
+  'Create Project',
+  'Create Repository',
+  'Create Environment',
+  'Delete Project',
+  'Delete Repository',
+  'Delete Environment',
+]
+
 // ! Un environnement ne doit pas faire plus de 11 caractères
 export const allEnv = [
   'dev',

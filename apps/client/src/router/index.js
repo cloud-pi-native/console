@@ -3,19 +3,20 @@ import { useUserStore } from '@/stores/user.js'
 import { useProjectStore } from '@/stores/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
-import DsoHome from '@/views/DsoHome.vue'
-import ServicesHealth from '@/views/ServicesHealth.vue'
-import CreateProject from '@/views/CreateProject.vue'
-import ManageEnvironments from '@/views/projects/ManageEnvironments.vue'
-import DsoProjects from '@/views/projects/DsoProjects.vue'
-import DsoDashboard from '@/views/projects/DsoDashboard.vue'
-import DsoServices from '@/views/projects/DsoServices.vue'
-import DsoTeam from '@/views/projects/DsoTeam.vue'
-import DsoRepos from '@/views/projects/DsoRepos.vue'
-import DsoDoc from '@/views/DsoDoc.vue'
-import ListUser from '@/views/admin/ListUser.vue'
-import ListOrganizations from '@/views/admin/ListOrganizations.vue'
-import ListProjects from '@/views/admin/ListProjects.vue'
+const DsoHome = () => import('@/views/DsoHome.vue')
+const ServicesHealth = () => import('@/views/ServicesHealth.vue')
+const CreateProject = () => import('@/views/CreateProject.vue')
+const ManageEnvironments = () => import('@/views/projects/ManageEnvironments.vue')
+const DsoProjects = () => import('@/views/projects/DsoProjects.vue')
+const DsoDashboard = () => import('@/views/projects/DsoDashboard.vue')
+const DsoServices = () => import('@/views/projects/DsoServices.vue')
+const DsoTeam = () => import('@/views/projects/DsoTeam.vue')
+const DsoRepos = () => import('@/views/projects/DsoRepos.vue')
+const DsoDoc = () => import('@/views/DsoDoc.vue')
+const ListUser = () => import('@/views/admin/ListUser.vue')
+const ListOrganizations = () => import('@/views/admin/ListOrganizations.vue')
+const ListProjects = () => import('@/views/admin/ListProjects.vue')
+const ListLogs = () => import('@/views/admin/ListLogs.vue')
 
 const MAIN_TITLE = 'Console Cloud π Native'
 
@@ -100,6 +101,11 @@ const routes = [
     path: '/admin/projects',
     name: 'ListProjects',
     component: ListProjects,
+  },
+  {
+    path: '/admin/logs',
+    name: 'ListLogs',
+    component: ListLogs,
   },
   {
     path: '/doc',

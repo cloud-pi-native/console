@@ -18,7 +18,7 @@ describe('Schemas utils', () => {
 
   it('Should validate a correct repository schema', () => {
     expect(schemaValidator(repoSchema, {
-      id: faker.datatype.uuid(),
+      id: faker.string.uuid(),
       internalRepoName: 'candilib',
       externalRepoUrl: 'https://github.com/LAB-MI/candilibV2.git',
       externalToken: 'eddddsqsq-_',
@@ -31,25 +31,25 @@ describe('Schemas utils', () => {
 
   it('Should validate a correct environment schema', () => {
     expect(schemaValidator(environmentSchema, {
-      id: faker.datatype.uuid(),
+      id: faker.string.uuid(),
       name: 'dev',
-      projectId: faker.datatype.uuid(),
+      projectId: faker.string.uuid(),
       status: 'created',
     })).toStrictEqual({})
   })
 
   it('Should validate a correct permission schema', () => {
     expect(schemaValidator(permissionSchema, {
-      id: faker.datatype.uuid(),
-      userId: faker.datatype.uuid(),
-      environmentId: faker.datatype.uuid(),
+      id: faker.string.uuid(),
+      userId: faker.string.uuid(),
+      environmentId: faker.string.uuid(),
       level: 0,
     })).toStrictEqual({})
   })
 
   it('Should validate a correct organization schema', () => {
     expect(schemaValidator(organizationSchema, {
-      id: faker.datatype.uuid(),
+      id: faker.string.uuid(),
       name: faker.word.noun({ length: { min: 2, max: 10 } }),
       label: faker.company.name(),
       active: faker.datatype.boolean(),
@@ -58,7 +58,7 @@ describe('Schemas utils', () => {
 
   it('Should validate a correct organization schema with external data', () => {
     expect(schemaValidator(organizationSchema, {
-      id: faker.datatype.uuid(),
+      id: faker.string.uuid(),
       source: faker.word.noun(),
       name: faker.word.noun({ length: { min: 2, max: 10 } }),
       label: faker.company.name(),
@@ -68,9 +68,9 @@ describe('Schemas utils', () => {
 
   it('Should validate a correct project schema', () => {
     expect(schemaValidator(projectSchema, {
-      id: faker.datatype.uuid(),
+      id: faker.string.uuid(),
       name: faker.lorem.slug(1),
-      organization: faker.datatype.uuid(),
+      organization: faker.string.uuid(),
       status: 'created',
       locked: false,
     }, { context: { projectNameMaxLength: 23 } })).toStrictEqual({})
@@ -78,17 +78,17 @@ describe('Schemas utils', () => {
 
   it('Should validate a correct user schema', () => {
     expect(schemaValidator(userSchema, {
-      id: faker.datatype.uuid(),
+      id: faker.string.uuid(),
       email: faker.internet.email(),
-      firstName: faker.name.firstName(),
-      lastName: faker.name.lastName(),
+      firstName: faker.person.firstName(),
+      lastName: faker.person.lastName(),
     })).toStrictEqual({})
   })
 
   it('Should not validate an organization schema with wrong external data', () => {
     expect(schemaValidator(organizationSchema, {
-      id: faker.datatype.uuid(),
-      source: faker.datatype.array(),
+      id: faker.string.uuid(),
+      source: [],
       name: faker.word.noun({ length: { min: 2, max: 10 } }),
       label: faker.company.name(),
       active: faker.datatype.boolean(),
@@ -97,7 +97,7 @@ describe('Schemas utils', () => {
 
   it('Should not validate schema and send specific error', () => {
     expect(schemaValidator(repoSchema, {
-      id: faker.datatype.uuid(),
+      id: faker.string.uuid(),
       internalRepoName: 'candilib',
       externalRepoUrl: 'https://github.com/LAB-MI/candilibV2.git',
       isPrivate: true,
@@ -109,9 +109,9 @@ describe('Schemas utils', () => {
 
   it('Should not validate a too short project name', () => {
     expect(schemaValidator(projectSchema, {
-      id: faker.datatype.uuid(),
-      name: faker.random.alpha(),
-      organization: faker.datatype.uuid(),
+      id: faker.string.uuid(),
+      name: faker.string.alpha(),
+      organization: faker.string.uuid(),
       status: 'created',
       locked: false,
     }, { context: { projectNameMaxLength: 23 } })).toStrictEqual({ name: '"name" length must be at least 2 characters long' })
@@ -119,9 +119,9 @@ describe('Schemas utils', () => {
 
   it('Should not validate a too long project name', () => {
     expect(schemaValidator(projectSchema, {
-      id: faker.datatype.uuid(),
+      id: faker.string.uuid(),
       name: faker.lorem.slug(10),
-      organization: faker.datatype.uuid(),
+      organization: faker.string.uuid(),
       status: 'created',
       locked: false,
     }, { context: { projectNameMaxLength: 23 } })).toStrictEqual({ name: '"name" length must be less than or equal to ref:global:projectNameMaxLength characters long' })
@@ -129,10 +129,10 @@ describe('Schemas utils', () => {
 
   it('Should not validate a too long project description', () => {
     expect(schemaValidator(projectSchema, {
-      id: faker.datatype.uuid(),
+      id: faker.string.uuid(),
       name: 'candilib',
-      organization: faker.datatype.uuid(),
-      description: faker.random.alpha(descriptionMaxLength + 1),
+      organization: faker.string.uuid(),
+      description: faker.string.alpha(descriptionMaxLength + 1),
       status: 'created',
       locked: false,
     }, { context: { projectNameMaxLength: 23 } })).toStrictEqual({ description: '"description" length must be less than or equal to 280 characters long' })
@@ -140,7 +140,7 @@ describe('Schemas utils', () => {
 
   it('Should validate a single key with given schema', () => {
     expect(isValid(repoSchema, {
-      id: faker.datatype.uuid(),
+      id: faker.string.uuid(),
       internalRepoName: 'candilib',
       externalRepoUrl: 'https://github.com/LAB-MI/candilibV2.git',
       isPrivate: true,
@@ -152,7 +152,7 @@ describe('Schemas utils', () => {
 
   it('Should not validate a single key with given schema', () => {
     expect(isValid(repoSchema, {
-      id: faker.datatype.uuid(),
+      id: faker.string.uuid(),
       internalRepoName: 'candi lib',
       externalRepoUrl: 'https://github.com/LAB-MI/candilibV2.git',
       isPrivate: true,
