@@ -148,7 +148,11 @@ const initExternalPlugins = async (pluginManager) => {
   const __dirname = url.fileURLToPath(new URL('.', import.meta.url))
   try {
     const pluginDir = resolve(__dirname, 'external')
-    const plugins = readdirSync(resolve(__dirname, 'external'))
+    if (!existsSync(pluginDir)) {
+      console.log(`Directory ${pluginDir} does not exist, skipping import of external plugins`)
+      return
+    }
+    const plugins = readdirSync(pluginDir)
     for (const plugin of plugins) {
       if (existsSync(resolve(__dirname, `external/${plugin}/init.js`))) {
         const myPlugin = await import(`${pluginDir}/${plugin}/init.js`)

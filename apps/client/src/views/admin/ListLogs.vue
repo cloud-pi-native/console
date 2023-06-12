@@ -144,6 +144,7 @@ onMounted(async () => {
     </div>
   </div>
 </template>
+
 <style>
 .log-box.jv-container span.jv-item.jv-object,
 .log-box.jv-container span.jv-key {

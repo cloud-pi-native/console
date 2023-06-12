@@ -64,7 +64,7 @@ spec:
             memory: "64Mi"
             cpu: "250m"
           limits:
-            memory: "128Mi"
+            memory: "256Mi"
             cpu: "500m"
         livenessProbe:
           httpGet:
@@ -81,11 +81,11 @@ spec:
         volumeMounts:
 {{- if .container.data_configmap }}
           - name: imports
-            mountPath: /app/src/init/db/imports
+            mountPath: /app/dist/init/db/imports
 {{- end }}
 {{- if and .plugins (len .plugins) }}
           - name: plugins
-            mountPath: /app/src/plugins/external
+            mountPath: /app/dist/plugins/external
 {{- end }}
           - name: config
             mountPath: /config
