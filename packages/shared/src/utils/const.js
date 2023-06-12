@@ -108,7 +108,7 @@ export const statusDict = {
     archived: {
       icon: 'ri-archive-fill',
       wording: 'archivé',
-      color: 'var(--background-default-grey)',
+      color: 'var(--text-mention-grey)',
     },
   },
 }
