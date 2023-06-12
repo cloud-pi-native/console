@@ -1,5 +1,19 @@
 # Changelog
 
+## [4.1.0](https://github.com/cloud-pi-native/console/compare/v4.0.0...v4.1.0) (2023-06-12)
+
+
+### Features
+
+* :sparkles: add admin log page ([41058ee](https://github.com/cloud-pi-native/console/commit/41058ee51899d4ec351ae7adad10eb3fefa99f8b))
+
+
+### Bug Fixes
+
+* :bug: harbor, fix remove repos from unknown project ([8a18381](https://github.com/cloud-pi-native/console/commit/8a18381c2197634d90649a8520dd068a59e5369c))
+* :bug: test if external dir exists ([3276400](https://github.com/cloud-pi-native/console/commit/3276400a00b3435eb87e225e0e8deadd5a311b0d))
+* :zap: gitlab, stabilize user search and lifecycle ([179c912](https://github.com/cloud-pi-native/console/commit/179c91269ecf04ff6a489a5d92f490b940446e70))
+
 ## [4.0.0](https://github.com/dnum-mi/dso-console/compare/v3.4.1...v4.0.0) (2023-06-08)
 
 
