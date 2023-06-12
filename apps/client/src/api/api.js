@@ -155,3 +155,14 @@ export const getAllProjects = async () => {
   const response = await apiClient.get('/admin/projects')
   return response.data
 }
+
+// Admin - Logs
+export const getAllLogs = async ({ offset, limit }) => {
+  const response = await apiClient.get(`/admin/logs/${offset}/${limit}`)
+  return response.data
+}
+
+export const countAllLogs = async () => {
+  const response = await apiClient.get('/admin/logs/count')
+  return response.data
+}

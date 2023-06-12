@@ -9,9 +9,9 @@ const services = computed(() => serviceStore.services)
 const servicesHealth = computed(() => serviceStore.servicesHealth)
 
 const checkServicesHealth = async () => {
-  isUpdating.value = ref(true)
+  isUpdating.value = true
   await serviceStore.checkServicesHealth()
-  isUpdating.value = ref(false)
+  isUpdating.value = false
 }
 
 onBeforeMount(async () => {
@@ -37,7 +37,7 @@ onBeforeMount(async () => {
       secondary
       icon-only
       icon="ri-refresh-fill"
-      :disabled="isUpdating.value === true"
+      :disabled="isUpdating === true"
       @click="checkServicesHealth()"
     />
   </div>

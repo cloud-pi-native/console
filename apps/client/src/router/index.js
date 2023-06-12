@@ -3,7 +3,7 @@ import { useUserStore } from '@/stores/user.js'
 import { useProjectStore } from '@/stores/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
-import DsoHome from '@/views/DsoHome.vue'
+const DsoHome = () => import('@/views/DsoHome.vue')
 const ServicesHealth = () => import('@/views/ServicesHealth.vue')
 const CreateProject = () => import('@/views/CreateProject.vue')
 const ManageEnvironments = () => import('@/views/projects/ManageEnvironments.vue')
@@ -16,6 +16,7 @@ const DsoDoc = () => import('@/views/DsoDoc.vue')
 const ListUser = () => import('@/views/admin/ListUser.vue')
 const ListOrganizations = () => import('@/views/admin/ListOrganizations.vue')
 const ListProjects = () => import('@/views/admin/ListProjects.vue')
+const ListLogs = () => import('@/views/admin/ListLogs.vue')
 
 const MAIN_TITLE = 'Console Cloud π Native'
 
@@ -100,6 +101,11 @@ const routes = [
     path: '/admin/projects',
     name: 'ListProjects',
     component: ListProjects,
+  },
+  {
+    path: '/admin/logs',
+    name: 'ListLogs',
+    component: ListLogs,
   },
   {
     path: '/doc',

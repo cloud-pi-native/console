@@ -95,6 +95,7 @@ const prepareForDownload = async () => {
 const copyContent = async (key) => {
   try {
     await navigator.clipboard.writeText(generatedCI.value[key])
+    snackbarStore.setMessage('Fichier copié', 'success')
   } catch (error) {
     snackbarStore.setMessage(error?.message, 'error')
   }

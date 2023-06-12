@@ -24,4 +24,8 @@ export {
   RiArchiveFill,
   RiHeartPulseLine,
   RiLoader4Line,
+  RiArrowDropRightLine,
+  RiArrowDropLeftLine,
+  RiArrowDropLeftFill,
+  RiArrowDropRightFill,
 } from 'oh-vue-icons/icons/ri/index.js'

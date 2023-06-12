@@ -12,11 +12,18 @@ export const getAllLogsForUser = async (user, offset = 0) => {
   })
   return res
 }
+export const countAllLogs = async () => {
+  const res = await getLogModel().count()
+  return res
+}
 
-export const getAllLogs = async (offset = 0) => {
+export const getAllLogs = async ({ offset, limit }) => {
   const res = await getLogModel().findAll({
-    limit: 100,
+    order: [
+      ['createdAt', 'DESC'],
+    ],
     offset,
+    limit,
   })
   return res
 }
