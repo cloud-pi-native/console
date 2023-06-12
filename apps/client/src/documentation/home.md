@@ -25,7 +25,7 @@ Ces appels API permettent de déclencher auprès de DSO une demande de 'pull' du
 La plateforme est open sources et est construite à partir des dépôts de code suivants:
 
 - Code du socle (déploiement des services & provisionning des espaces projets)
-  - <https://github.com/dnum-mi/dso-socle>
+  - <https://github.com/cloud-pi-native/socle>
 - Code de la console (interface utilisateur, documentation).
-  - <https://github.com/dnum-mi/dso-console>
-  - <https://github.com/dnum-mi/dso-console/tree/main/client/src/documentation>
+  - <https://github.com/cloud-pi-native/console>
+  - <https://github.com/cloud-pi-native/console/tree/main/client/src/documentation>

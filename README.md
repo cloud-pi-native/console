@@ -55,7 +55,7 @@ Lancez les commandes suivantes dans votre terminal :
 
 ```shell
 # Cloner le projet
-git clone https://github.com/dnum-mi/dso-console.git
+git clone https://github.com/cloud-pi-native/console.git
 
 # Se rendre dans le dossier du projet
 cd dso-console
