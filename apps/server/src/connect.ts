@@ -27,6 +27,11 @@ import { _dropOrganizationsTable } from './models/queries/organization-queries.j
 import { _dropUsersProjectsTable } from './models/queries/users-projects-queries.js'
 import { getLogModel } from './models/log.js'
 import { _dropLogsTable } from './models/queries/log-queries.js'
+import { _dropProjectsClustersTable } from './models/queries/projects-clusters-queries.js'
+import { _dropClustersTable } from './models/queries/cluster-queries.js'
+import { getClusterModel } from './models/cluster.js'
+import { getProjectsClustersModel } from './models/projects-clusters.js'
+import { getEnvironmentsClustersModel } from './models/environments-clusters.js'
 
 const DELAY_BEFORE_RETRY = isTest || isCI ? 1000 : 10000
 let closingConnections = false
@@ -87,6 +92,8 @@ export const dropTables = async () => {
     await _dropUsersTable()
     await _dropUsersProjectsTable()
     await _dropOrganizationsTable()
+    await _dropClustersTable()
+    await _dropProjectsClustersTable()
 
     app.log.info('All tables were droped successfully.')
   } catch (error) {
@@ -104,6 +111,9 @@ export const synchroniseModels = async () => {
     const permissionModel = await getPermissionModel()
     const repositoryModel = await getRepositoryModel()
     const usersProjectsModel = await getUsersProjectsModel()
+    const clusterModel = await getClusterModel()
+    const projectsClustersModel = await getProjectsClustersModel()
+    const environmentsClustersModel = await getEnvironmentsClustersModel()
 
     logModel.belongsTo(userModel, { foreignKey: 'userId' })
 
@@ -122,14 +132,22 @@ export const synchroniseModels = async () => {
     projectModel.hasMany(environmentModel, { foreignKey: 'projectId' })
     environmentModel.belongsTo(projectModel, { foreignKey: 'projectId' })
 
+    projectModel.belongsToMany(clusterModel, { through: projectsClustersModel })
+    clusterModel.belongsToMany(projectModel, { through: projectsClustersModel })
+
+    environmentModel.belongsToMany(clusterModel, { through: environmentsClustersModel })
+
     environmentModel.hasMany(permissionModel, { foreignKey: 'environmentId' })
     permissionModel.belongsTo(environmentModel, { foreignKey: 'environmentId' })
 
     await organizationModel.sync({ alter: true, logging: false })
     await userModel.sync({ alter: true, logging: false })
     await projectModel.sync({ alter: true, logging: false })
+    await clusterModel.sync({ alter: true, logging: false })
     await usersProjectsModel.sync({ alter: true, logging: false })
+    await projectsClustersModel.sync({ alter: true, logging: false })
     await environmentModel.sync({ alter: true, logging: false })
+    await environmentsClustersModel.sync({ alter: true, logging: false })
     await permissionModel.sync({ alter: true, logging: false })
     await repositoryModel.sync({ alter: true, logging: false })
     await logModel.sync({ alter: true })

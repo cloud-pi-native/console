@@ -4,7 +4,7 @@ import { getProjectModel } from './project.js'
 import { getClusterModel } from './cluster.js'
 
 let ProjectsClusters
-export const getProjectsModelClusters = () => ProjectsClusters ?? (ProjectsClusters = sequelize.define('ProjectsClusters', {
+export const getProjectsClustersModel = () => ProjectsClusters ?? (ProjectsClusters = sequelize.define('ProjectsClusters', {
   ClusterId: {
     type: DataTypes.UUID,
     references: {

@@ -14,23 +14,30 @@ export const getClusterModel = () => Cluster ?? (Cluster = sequelize.define('Clu
     allowNull: false,
     unique: true,
   },
-  clusterConfig: {
+  config: {
     type: DataTypes.JSONB,
     allowNull: false,
   },
-  userConfig: {
-    type: DataTypes.JSONB,
+  server: {
+    type: DataTypes.STRING(500),
     allowNull: false,
+    // URL of api server
   },
-  disabled: {
-    type: DataTypes.BOOLEAN,
+  privacy: {
+    type: DataTypes.ENUM('public', 'dedicated'),
     allowNull: false,
-    defaultValue: false,
+    defaultValue: 'dedicated',
   },
-  default: {
-    type: DataTypes.BOOLEAN,
+  secretName: {
+    type: DataTypes.STRING(50),
     allowNull: false,
+    unique: true,
+    defaultValue: DataTypes.UUIDV4,
+  },
+  clusterResources: {
+    type: DataTypes.BOOLEAN,
     defaultValue: false,
+    allowNull: false,
   },
 }, {
   tableName: 'Clusters',

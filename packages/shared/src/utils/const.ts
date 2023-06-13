@@ -41,7 +41,7 @@ export const projectStatus = [
   'created',
   'failed',
   'archived',
-]
+] as const
 
 export const achievedStatus = [
   'created',

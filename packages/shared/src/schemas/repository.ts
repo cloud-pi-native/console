@@ -1,5 +1,5 @@
 import Joi from 'joi'
-import { allStatus } from '../utils/const.js'
+import { allStatus } from '../utils/const'
 
 // TODO : isInfra, isPrivate et status doivent être required, prévoir migration
 export const repoSchema = Joi.object({
