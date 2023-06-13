@@ -21,4 +21,5 @@ interface Keyable {
     [key: string]: any
 }
 
-export const sortArrByObjKeyAsc = (arr: Array<Keyable>, key: string) => arr.toSorted((a: object, b: object) => a[key] >= b[key] ? 1 : -1)
+// TODO: (#536) change 'sort' to 'toSorted' with Nodejs v20
+export const sortArrByObjKeyAsc = (arr: Array<Keyable>, key: string) => arr.sort((a: object, b: object) => a[key] >= b[key] ? 1 : -1)

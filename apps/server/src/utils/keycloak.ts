@@ -6,7 +6,7 @@ import {
   keycloakClientId,
   keycloakClientSecret,
   sessionSecret,
-  port,
+  keycloakRedirectUri,
 } from './env.js'
 
 const userPayloadMapper = (userPayload) => {
@@ -27,7 +27,7 @@ const userPayloadMapper = (userPayload) => {
 }
 
 export const keycloakConf = {
-  appOrigin: `http://localhost:${port}`,
+  appOrigin: `${keycloakRedirectUri}`,
   keycloakSubdomain: `${keycloakDomain}/realms/${keycloakRealm}`,
   clientId: keycloakClientId,
   clientSecret: keycloakClientSecret,

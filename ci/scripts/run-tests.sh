@@ -99,37 +99,31 @@ fi
 # Run component tests
 if [ "$RUN_COMPONENT_TESTS" == "true" ]; then
   checkDockerRunning
-  checkComposePlugin
 
   printf "\n${red}${i}.${no_color} Launch component tests\n"
   i=$(($i + 1))
 
-  docker compose --file $PROJECT_DIR/docker/docker-compose.ct.yml up \
-    --exit-code-from cypress --quiet-pull
-
-
-  printf "\n${red}${i}.${no_color} Remove docker containers\n"
-  i=$(($i + 1))
-
-  docker compose --file $PROJECT_DIR/docker/docker-compose.ct.yml down \
-    --volumes
+  npm --prefix $PROJECT_DIR/packages/shared run build
+  npm --prefix $PROJECT_DIR/apps/client run cypress:run-ct
 fi
 
 # Run e2e tests
 if [ "$RUN_E2E_TESTS" == "true" ]; then
   checkDockerRunning
-  checkComposePlugin
   
   printf "\n${red}${i}.${no_color} Launch e2e tests\n"
   i=$(($i + 1))
 
-  docker compose --env-file $PROJECT_DIR/env/.env.ci --file $PROJECT_DIR/docker/docker-compose.ci.yml up \
-    --attach cypress --exit-code-from cypress --quiet-pull
+  npm --prefix $PROJECT_DIR/packages/shared run build
+  npm --prefix $PROJECT_DIR/apps/server run db:wrapper
+  npm run kube:init
+  npm run kube:prod:build
+  npm run kube:prod
+  npm run kube:e2e-ci
 
 
-  printf "\n${red}${i}.${no_color} Remove docker containers\n"
+  printf "\n${red}${i}.${no_color} Remove resources\n"
   i=$(($i + 1))
 
-  docker compose --env-file $PROJECT_DIR/env/.env.ci --file $PROJECT_DIR/docker/docker-compose.ci.yml down \
-    --volumes
+  npm run kube:delete
 fi

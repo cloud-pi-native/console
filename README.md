@@ -5,13 +5,17 @@
 Liste des outils utilisés par le projet à installer sur son ordinateur :
 
 - Install [Docker](https://docs.docker.com/get-docker/)
-- Install [Docker Compose Plugin](https://docs.docker.com/compose/install/)
+- Install [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
+- Install [Kubectl](https://kubernetes.io/fr/docs/tasks/tools/install-kubectl/)
+- Install [Helm](https://helm.sh/docs/intro/install/)
 - Install [Nodejs](https://nodejs.org/en/download/)
 - Install [Pnpm](https://pnpm.io/installation)
 
+> *Pour la gestion des versions de Nodejs, il est recommandé d'utiliser [Volta](https://volta.sh/).*
+
 ## Architecture
 
-Ce projet est construit avec [NodeJS](https://nodejs.org/), [VueJS](https://vuejs.org/), [Postgres](https://www.postgresql.org/) et construit sous forme d'images [Docker](https://www.docker.com/).
+Ce projet est construit avec [NodeJS](https://nodejs.org/), [VueJS](https://vuejs.org/), [Postgres](https://www.postgresql.org/) et construit sous forme d'images [Docker](https://www.docker.com/) pour être déployé via Helm dans Kubernetes.
 
 ### Liste des services docker
 
@@ -22,7 +26,7 @@ Ce projet est construit avec [NodeJS](https://nodejs.org/), [VueJS](https://vuej
 | __server__     | [NodeJS](https://github.com/nodejs/node)                                        | API de l'application                      | Oui                   |
 | __client__     | [VueJS](https://github.com/vuejs/vue) / [Nginx](https://github.com/nginx/nginx) | Interface graphique de l'application      | Oui                   |
 | __keycloak__   | [Keycloak](https://github.com/keycloak/keycloak)                                | Gestionnaire d'authentification / d'accès | -                     |
-| __cypress__    | [Cypress](https://github.com/cypress-io/cypress)                                | Tests de bout en bout                     | -                     |
+
 
 ### Architecture du dépôt
 
@@ -59,22 +63,24 @@ Lancez les commandes suivantes dans votre terminal :
 git clone https://github.com/cloud-pi-native/console.git
 
 # Se rendre dans le dossier du projet
-cd dso-console
+cd console
 
 # Installer les dépendances du projet
 pnpm install
 
-# Copier les fichiers d'exemples
+# Copier les fichiers d'environnement exemples
 ./ci/scripts/init-env.sh
 
-# Construire les images docker
-pnpm run dev:build
+# Initialiser Kind (ajoute des noms de domaines dans /etc/hosts, le mot de passe sera demandé)
+pnpm run kube:init
 
 # Lancer l'application en mode développement
 pnpm run dev
 ```
 
 De nombreuses commandes sont disponible dans le fichier `package.json` à la racine du projet, vous pouvez lancer ces dernières à l'aide de la commande `pnpm run <le_nom_du_script>`.
+
+### Base de données
 
 Pour faciliter les opérations de migrations de base de données via [Prisma](https://www.prisma.io/), un script est disponible :
 
@@ -98,26 +104,23 @@ Interface d'administration du serveur keycloak: <http://localhost:8090>
 
 ### Variables d'environnements
 
-Plusieurs dossiers de variables d'environnements sont utilisés, à savoir :
-- Le dossier `env/` continent les variables partagées entre différents conteneurs
-- Le dossier `apps/server/env/` continent les variables de l'api
-- Le dossier `apps/client/env/` continent les variables du client
+Un chart Helm utilitaire est installé pour déployer les services qui ne sont pas inclus dans le chart de la console :
+- Keycloak
+- Pgadmin
 
-Chacun de ces dossiers comprend lui même différents fichiers, à savoir :
-- Le fichier `.env` contient les variables pour le développement
-- Le fichier `.env.ci` contient les variables pour la CI/CD
-- Le fichier `.env.int` contient les variables pour l'intégration
+> *Ces services sont personnalisables [ici](./ci/helm/utils/values.yaml).*
+
+Différents fichiers de `values.yml` sont disponibles pour personnaliser le déploiement de l'application dans le cluster Kind:
+- Le fichier [env/dso-values-dev.yaml](./env/dso-values-dev.yaml) contient les variables de l'application pour le mode développement.
+- Le fichier [env/dso-values.yaml](./env/dso-values.yaml) contient les variables de l'application pour le mode production.
+- Le fichier [env/dso-values-int-example.yaml](./env/dso-values-int-example.yaml) contient les variables de l'application pour le mode intégration.
 
 ## Gestion des conteneurs docker
 
-Ce dépôt utilise des fichiers docker-compose, ils sont listés dans le dossier `./docker/` en tant que `docker-compose.*.yml` :
+Ce dépôt utilise des fichiers docker-compose pour construire les images docker:
 
-- [docker-compose.dev.yml](./ci/docker/docker-compose.dev.yml) pour le mode développement
-- [docker-compose.ct.yml](./ci/docker/docker-compose.ct.yml) pour les tests de composant sans interface graphique
-- [docker-compose.e2e.yml](./ci/docker/docker-compose.e2e.yml) pour les tests e2e avec interface graphique
-- [docker-compose.ci.yml](./ci/docker/docker-compose.ci.yml) pour les tests e2e sans interface graphique
-- [docker-compose.int.yml](./ci/docker/docker-compose.int.yml) pour les tests d'intégration dans un cluster kubernetes provisionné des services annexes à la console
-- [docker-compose.prod.yml](./ci/docker/docker-compose.prod.yml) pour la construction des images docker
+- [docker-compose.dev.yml](./ci/docker/docker-compose.dev.yml) pour la construction des images docker du mode développement.
+- [docker-compose.prod.yml](./ci/docker/docker-compose.prod.yml) pour la construction des images docker du mode production.
 
 ## Configuration du Keycloak
 
@@ -140,7 +143,7 @@ Les utilisateurs faisant parti du group `admin` ont également accès à l'inter
 | Console Cloud Pi | Projet                       | Environnement | Dépots                                  | Utilisateur / membre |
 | ---------------- | ---------------------------- | ------------- | --------------------------------------- | -------------------- |
 | **Openshift**    |                              | Namespace     |                                         |                      |
-| **ArgoCD**       |                              |               | (infra) Secret, AppProject, Application |                      |
+| **ArgoCD**       |                              |               | (infra) Secret, AppProject, Application |                      |
 | **Gitlab**       | Group                        |               | Repository (Dépôt)                      | User                 |
 | **Harbor**       | Project                      |               | Repository [1]                          |                      |
 | **Ldap**         | Group                        |               |                                         | User / memberof      |

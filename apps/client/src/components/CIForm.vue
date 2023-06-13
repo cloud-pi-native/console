@@ -58,8 +58,12 @@ const files = ref([])
 const zipDir = ref({})
 
 const generateCI = async () => {
-  generatedCI.value = await ciFilesStore.generateCIFiles(ciData.value)
-  prepareForDownload()
+  try {
+    generatedCI.value = await ciFilesStore.generateCIFiles(ciData.value)
+    prepareForDownload()
+  } catch (error) {
+    snackbarStore.setMessage(error?.message)
+  }
 }
 
 const prepareForDownload = async () => {

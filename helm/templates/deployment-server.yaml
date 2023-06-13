@@ -13,13 +13,16 @@ spec:
     metadata:
       labels:
         app: {{ .Release.Name }}-server
+      name: {{ .Release.Name }}-server
+      namespace: {{ .Release.Namespace | quote }}
     spec:
       serviceAccountName: {{ $.Release.Name }}-console-sa
       restartPolicy: Always
+      {{- if and .Values.imageCredentials.username .Values.imageCredentials.password }}
       imagePullSecrets:
       - name: {{ .Release.Name }}-pullsecret
-{{- with .Values.server }}
-{{- if  .plugins }}
+      {{- end }}
+      {{- if  .Values.server.plugins }}
       initContainers:
       - image: busybox
         name: fetch-plugins
@@ -27,80 +30,81 @@ spec:
         - sh
         - /script/fetch
         volumeMounts:
-          - name: fetch-script
-            mountPath: /script
-          - name: plugins
-            mountPath: /plugins
-{{- end }}
+        - name: fetch-script
+          mountPath: /script
+        - name: plugins
+          mountPath: /plugins
+      {{- end }}
       containers:
-      - image: {{ .container.image }}
-        imagePullPolicy: Always
+      - image: {{ .Values.server.container.image }}
+        imagePullPolicy: {{ .Values.server.container.imagePullPolicy }}
         name: {{ $.Release.Name }}-server
         ports:
-        - containerPort: {{ .container.port }}
+        - containerPort: {{ .Values.server.container.port }}
         envFrom:
         - configMapRef:
-            name: {{ $.Release.Name }}-server-cm
+            name: {{ .Values.server.dsoConfig.name }}
         - configMapRef:
-            name: {{ .dso_config.name }}
-        resources:
-          requests:
-            memory: "64Mi"
-            cpu: "250m"
-          limits:
-            memory: "256Mi"
-            cpu: "500m"
+            name: {{ $.Release.Name }}-server-cm
+        resources: {{- toYaml .Values.server.container.resources | nindent 10 }}
         livenessProbe:
           httpGet:
             path: /healthz
-            port: {{ .container.port }}
+            port: {{ .Values.server.container.port }}
           initialDelaySeconds: 5
           periodSeconds: 5
         startupProbe:
           httpGet:
             path: /healthz
-            port: {{ .container.port }}
+            port: {{ .Values.server.container.port }}
           failureThreshold: 10
           periodSeconds: 4
         volumeMounts:
-{{- if .container.data_configmap }}
-          - name: imports
-            mountPath: /app/dist/init/db/imports
-{{- end }}
-{{- if and .plugins (len .plugins) }}
-          - name: plugins
-            mountPath: /app/dist/plugins/external
-{{- end }}
-          - name: config
-            mountPath: /config
-
-      volumes:
-        - name: config
-          projected:
-            sources:
-{{- if .extra_ca.name }}
-              - configMap:
-                  name: {{ .extra_ca.name }}
-                  items:
-                    - key: {{ .extra_ca.key }}
-                      path: ca_certs
-{{- end }}
-{{- if .container.data_configmap }}
+        {{- if .Values.server.container.dataConfigmap }}
         - name: imports
-          configMap: 
-            name: {{ .container.data_configmap }}
-{{- end }}
-{{- if .container.data_configmap }}
-        - name: imports
-          configMap: 
-            name: {{ .container.data_configmap }}
-{{- end }}
-{{- if and .plugins (len .plugins) }}
+          mountPath: /app/dist/init/db/imports
+        {{- end }}
+        {{- if and .Values.server.plugins (len .Values.server.plugins) }}
         - name: plugins
-          emptyDir:
-            sizeLimit: 100M
-        - name: fetch-script
-          configMap:
-            name: {{ $.Release.Name }}-fetch-script
-{{- end }}
-{{- end -}}
+          mountPath: /app/dist/plugins/external
+        {{- end }}
+        {{- range $volumeMount := .Values.server.container.extraVolumeMounts }}
+        - name: {{ $volumeMount.name }}
+          mountPath: {{ $volumeMount.mountPath }}
+        {{- end }}
+        - name: config
+          mountPath: /config
+      volumes:
+      - name: config
+        projected:
+          sources:
+          {{- if .Values.server.extraCa.name }}
+          - configMap:
+              name: {{ .Values.server.extraCa.name }}
+              items:
+              - key: {{ .Values.server.extraCa.key }}
+                path: ca_certs
+          {{- end }}
+      {{- range $volume := .Values.server.container.extraVolumes }}
+      - name: {{ $volume.name }}
+        {{- if eq $volume.type "hostPath" }}
+        hostPath:
+          path: {{ $volume.path }}
+        {{- end }}
+        {{- if eq $volume.type "configMap" }}
+        configMap:
+          name: {{ $volume.name }}
+        {{- end }}
+      {{- end }}
+      {{- if .Values.server.container.dataConfigmap }}
+      - name: imports
+        configMap: 
+          name: {{ .Values.server.container.dataConfigmap }}
+      {{- end }}
+      {{- if and .Values.server.plugins (len .Values.server.plugins) }}
+      - name: plugins
+        emptyDir: {}
+      - name: fetch-script
+        configMap:
+          name: {{ $.Release.Name }}-fetch-script
+      {{- end }}
