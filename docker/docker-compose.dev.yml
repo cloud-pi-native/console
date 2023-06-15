@@ -74,8 +74,6 @@ services:
       - /app/node_modules/
       - ../apps/server:/app/apps/server
       - /app/apps/server/node_modules/
-      - ../packages/shared:/app/packages/shared
-      - /app/packages/shared/node_modules/
     env_file:
       - ../env/.env
       - ../apps/server/env/.env
@@ -100,8 +98,6 @@ services:
       - /app/node_modules/
       - ../apps/client:/app/apps/client
       - /app/apps/client/node_modules/
-      - ../packages/shared:/app/packages/shared
-      - /app/packages/shared/node_modules/
     env_file:
       - ../env/.env
       - ../apps/client/env/.env

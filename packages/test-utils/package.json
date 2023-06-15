@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@faker-js/faker": "^8.0.2",
-    "shared": "workspace:^1.0.0"
+    "shared": "workspace:^"
   },
   "devDependencies": {
     "eslint": "^8.42.0",

@@ -92,14 +92,6 @@ services:
     depends_on:
       client:
         condition: service_started
-    volumes:
-      - /app/node_modules/
-      - ../apps/client:/app/apps/client
-      - /app/apps/client/node_modules/
-      - ../packages/shared:/app/packages/shared
-      - /app/packages/shared/node_modules/
-      - ../packages/test-utils:/app/packages/test-utils
-      - /app/packages/test-utils/node_modules/
     environment:
       CI: "true"
       CLIENT_HOST: client
