@@ -7,6 +7,7 @@ RUN chown node:root /app
 COPY --chown=node:root pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
 COPY --chown=node:root apps/server/ ./apps/server/
 COPY --chown=node:root packages/shared/ ./packages/shared/
+COPY --chown=node:root packages/tsconfig/ ./packages/tsconfig/
 COPY --chown=node:root packages/test-utils/ ./packages/test-utils/
 COPY --chown=node:root patches/ ./patches/
 
@@ -23,9 +24,9 @@ ENTRYPOINT [ "pnpm", "--filter", "server", "run", "dev" ]
 FROM base AS build
 
 RUN pnpm install
+RUN pnpm --filter shared run build
 RUN pnpm --filter server run build
 RUN pnpm --filter server --prod deploy build
-
 
 # Prod stage
 FROM docker.io/node:18.16.0-bullseye-slim AS prod
@@ -36,6 +37,5 @@ RUN mkdir -p /home/node/logs && chmod 770 -R /home/node/logs
 WORKDIR /app
 RUN chown node:root /app
 COPY --chown=node:root --from=build /app/build .
-RUN npm install --location=global pnpm
 USER node
-CMD ["pnpm", "start"]
+ENTRYPOINT ["npm", "start"]

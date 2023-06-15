@@ -1,0 +1,9 @@
+{
+  "name": "@dso-console/tsconfig",
+  "version": "1.0.0",
+  "description": "",
+  "author": "",
+  "keywords": [],
+  "license": "ISC",
+  "main": "index.js"
+}

@@ -1,3 +1,13 @@
+import Joi from 'joi'
+
+type Context = {
+  keysToValidate?: string[],
+  context?: {
+    key?: string,
+    projectNameMaxLength?: number
+  }
+}
+
 /**
  * @param {object} schema Schema used for validation
  * @param {object} data Data to test

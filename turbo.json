@@ -9,15 +9,16 @@
         "dist/**"
       ]
     },
-    "dev": {
-      "cache": false
-    },
+    "clean:build": {},
     "deploy": {
       "dependsOn": [
         "build",
         "lint",
         "test"
       ]
+    },
+    "dev": {
+      "cache": false
     },
     "format": {
       "outputs": []
@@ -37,9 +38,15 @@
       ]
     },
     "test": {
+      "dependsOn": [
+        "^shared#build"
+      ],
       "outputs": []
     },
     "test:cov": {
+      "dependsOn": [
+        "^shared#build"
+      ],
       "outputs": []
     }
   }
