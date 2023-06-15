@@ -1,19 +1,17 @@
+import { User, Cluster } from '@kubernetes/client-node'
+
 export type ClusterPrivacy = 'public' | 'dedicated'
 
-export type Cluster = {
+export type ClusterModel = {
   id: string
-  name: string
-  server: string
-  config: string
+  label: string
+  user: Pick<User, 'name' | 'certData' | 'keyData' | 'token' | 'username' | 'password'>
+  cluster: Pick<Cluster, 'name' | 'caData' | 'server' | 'tlsServerName'>
   secretName: string
   clusterResources: boolean
   privacy: ClusterPrivacy
 }
 
-export type ClusterCreate = Omit<Cluster, 'id'>
+export type ClusterCreate = Omit<ClusterModel, 'id' | 'secretName'>
 
-export type ClusterUpdate = Partial<Cluster> & Required<Pick<Cluster, 'id'>>
-
-const a: ClusterUpdate = {
-  id: 'khsbck',
-}
+export type ClusterUpdate = Partial<ClusterModel> & Required<Pick<ClusterModel, 'id'>>

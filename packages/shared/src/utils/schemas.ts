@@ -3,6 +3,8 @@
  * @param {object} data Data to test
  * @returns {object} Validation error object
  */
+// TODO: Fix type
+// @ts-ignore See TODO
 export const schemaValidator = (schema, data, { keysToValidate, context } = {}) => {
   const validation = schema.validate(data, { abortEarly: false, context }).error?.details || []
   return validation
@@ -16,6 +18,8 @@ export const schemaValidator = (schema, data, { keysToValidate, context } = {}) 
  * @param {object} key Key to test
  * @returns {boolean} Is valid key
  */
+// TODO: Fix type
+// @ts-ignore See TODO
 export const isValid = (schema, data, key, ctx) => !schemaValidator(schema, data, { context: ctx })[key]
 
 /**
@@ -23,6 +27,8 @@ export const isValid = (schema, data, key, ctx) => !schemaValidator(schema, data
  * @returns {object} Result parsed schema
  */
 const parseJoi = (model, value) => Array.from(model.schema._ids._byKey)
+// TODO: Fix type
+// @ts-ignore See TODO
   .reduce((acc, [key, val]) => ({ ...acc, [key]: instanciateSchema(val, value) }), {})
 
 /**
