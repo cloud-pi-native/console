@@ -90,7 +90,7 @@ describe('Admin logs routes', () => {
       expect(response.body).toEqual('Vous n\'avez pas les droits administrateur')
     })
   })
-  
+
   describe('countAllLogsController', () => {
     it.skip('Should count all logs', async () => {
       // TODO : _vite_ssr_import_1__.getLogModel(...).count is not a function
