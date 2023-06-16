@@ -62,7 +62,7 @@ describe('Service route', () => {
 
   // GET
   describe('checkServicesHealthController', () => {
-    it('Should retreive an OK service status', async () => {
+    it('Should retrieve an OK service status', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const requestor = randomDbSetup.project.users.find(user => user.role === 'owner')
 

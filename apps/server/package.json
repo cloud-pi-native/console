@@ -18,7 +18,7 @@
     "@fastify/cookie": "^8.3.0",
     "@fastify/helmet": "^10.1.1",
     "@fastify/session": "^10.3.0",
-    "@gitbeaker/node": "^35.8.1",
+    "@gitbeaker/rest": "^38.10.0",
     "@keycloak/keycloak-admin-client": "^21.1.1",
     "@kubernetes/client-node": "^0.18.1",
     "axios": "^1.4.0",

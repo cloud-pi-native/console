@@ -51,8 +51,6 @@ services:
       - /app/node_modules/
       - ../apps/server:/app/apps/server
       - /app/apps/server/node_modules/
-      - ../packages/shared:/app/packages/shared
-      - /app/packages/shared/node_modules/
       - ${DEV_KUBECONFIG_PATH}:${KUBECONFIG_PATH}
     env_file:
       - ../env/.env.int
@@ -80,8 +78,6 @@ services:
       - /app/node_modules/
       - ../apps/client:/app/apps/client
       - /app/apps/client/node_modules/
-      - ../packages/shared:/app/packages/shared
-      - /app/packages/shared/node_modules/
     env_file:
       - ../env/.env.int
       - ../apps/client/env/.env.int

@@ -9,7 +9,7 @@ import { initDb } from './init/db/index.js'
 await startServer()
 handleExit()
 
-async function initializeDB (path) {
+async function initializeDB (path: string) {
   app.log.info('Starting init DB...')
   const { data } = await import(path)
   await initDb(data)
@@ -41,13 +41,12 @@ export async function startServer () {
       app.log.info(`Successfully deleted '${dataPath}'`)
     }
   } catch (error) {
-    if (error.code === 'ERR_MODULE_NOT_FOUND' || error.message.includes('Failed to load')) {
+    if (error.code === 'ERR_MODULE_NOT_FOUND' || error.message.includes('Failed to load') || error.message.includes('Cannot find module')) {
       app.log.info('No initDb file, skipping')
     } else {
       app.log.warn(error.message)
       throw error
     }
-    app.log.error(error)
   }
 
   try {
