@@ -51,7 +51,7 @@ describe('Server', () => {
     await startServer()
 
     expect(initDb.mock.calls).toHaveLength(1)
-    expect(app.log.info.mock.calls).toHaveLength(5)
+    expect(app.log.info.mock.calls).toHaveLength(4)
   })
 
   it('Should throw an error on initDb import', async () => {

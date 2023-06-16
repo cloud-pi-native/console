@@ -1,8 +1,8 @@
-import k8s from '@kubernetes/client-node'
+import { KubeConfig, CoreV1Api } from '@kubernetes/client-node'
 import { kubeconfigPath, kubeconfigCtx } from '../../../utils/env.js'
 import { checkInitializeEnvironment, createKubeNamespace, createKubeSecret, deleteKubeNamespace } from './index.js'
 
-const kc = new k8s.KubeConfig()
+const kc = new KubeConfig()
 if (kubeconfigPath) {
   kc.loadFromFile(kubeconfigPath)
   if (kubeconfigCtx) {
@@ -12,7 +12,7 @@ if (kubeconfigPath) {
   kc.loadFromCluster()
 }
 
-const k8sApi = kc.makeApiClient(k8s.CoreV1Api)
+const k8sApi = kc.makeApiClient(CoreV1Api)
 
 export default k8sApi
 
