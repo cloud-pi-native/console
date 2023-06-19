@@ -17,6 +17,7 @@ const ListUser = () => import('@/views/admin/ListUser.vue')
 const ListOrganizations = () => import('@/views/admin/ListOrganizations.vue')
 const ListProjects = () => import('@/views/admin/ListProjects.vue')
 const ListLogs = () => import('@/views/admin/ListLogs.vue')
+const ListClusters = () => import('@/views/admin/ListClusters.vue')
 
 const MAIN_TITLE = 'Console Cloud π Native'
 
@@ -106,6 +107,11 @@ const routes = [
     path: '/admin/logs',
     name: 'ListLogs',
     component: ListLogs,
+  },
+  {
+    path: '/admin/clusters',
+    name: 'ListClusters',
+    component: ListClusters,
   },
   {
     path: '/doc',

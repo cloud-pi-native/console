@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { environmentSchema, schemaValidator, instanciateSchema, allEnv, projectIsLockedInfo } from 'shared'
 import PermissionForm from './PermissionForm.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+import MultiSelector from './MultiSelector.vue'
 
 const props = defineProps({
   environment: {
@@ -24,6 +25,10 @@ const props = defineProps({
   isProjectLocked: {
     type: Boolean,
     default: false,
+  },
+  projectClusters: {
+    type: Array,
+    default: () => [{ id: 1, name: 'cluster1' }, { id: 2, name: 'cluster2' }],
   },
 })
 
@@ -107,6 +112,15 @@ onMounted(() => {
       @update:model-value="updateEnvironment('name', $event)"
     />
   </DsfrFieldset>
+  <div class="fr-mb-2w">
+    <MultiSelector
+      :options="projectClusters"
+      :array="localEnvironment.clusters"
+      label="Nom du cluster"
+      description="Ajouter un cluster cible pour le déploiement de cet environnement."
+      @update="updateEnvironment('clusters', $event)"
+    />
+  </div>
   <div v-if="localEnvironment.id">
     <PermissionForm
       v-if="!isDeletingEnvironment"
