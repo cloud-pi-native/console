@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url'
 import app from './app.js'
 import { getConnection, closeConnections, synchroniseModels } from './connect.js'
 import { initDb } from './init/db/index.js'
+import { initCorePlugins, initExternalPlugins, initPluginManager } from './plugins/index.js'
 
 await startServer()
 handleExit()
@@ -17,6 +18,12 @@ async function initializeDB (path: string) {
 }
 
 export async function startServer () {
+  if ((isInt || isProd) && !isCI) { // execute only when in real prod env and local dev integration
+    const pluginManager = await initPluginManager(app)
+    await initCorePlugins(pluginManager, app)
+    await initExternalPlugins(pluginManager, app)
+  }
+
   try {
     await getConnection()
     await synchroniseModels()
@@ -64,13 +71,13 @@ export async function startServer () {
 }
 
 export function handleExit () {
-  process.on('exit', exitGracefuly)
-  process.on('SIGINT', exitGracefuly)
-  process.on('SIGTERM', exitGracefuly)
-  process.on('uncaughtException', exitGracefuly)
+  process.on('exit', exitGracefully)
+  process.on('SIGINT', exitGracefully)
+  process.on('SIGTERM', exitGracefully)
+  process.on('uncaughtException', exitGracefully)
 }
 
-export async function exitGracefuly (error: Error) {
+export async function exitGracefully (error: Error) {
   if (error instanceof Error) {
     app.log.error(error)
   }

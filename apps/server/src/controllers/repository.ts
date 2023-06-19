@@ -25,8 +25,9 @@ import { getOrganizationById } from '../models/queries/organization-queries.js'
 import { addLogs } from '../models/queries/log-queries.js'
 import { gitlabUrl, projectRootDir } from '../utils/env.js'
 import { unlockProjectIfNotFailed } from '../utils/controller.js'
-import hooksFns from '../plugins/index.js'
+import { hooks } from '../plugins/index.js'
 import { projectIsLockedInfo } from 'shared'
+import { CreateRepositoryExecArgs } from '@/plugins/hooks/repository.js'
 
 // GET
 export const getRepositoryByIdController = async (req, res) => {
@@ -106,10 +107,12 @@ export const createRepositoryController = async (req, res) => {
   try {
     // TODO: Fix type
     // @ts-ignore See TODO
-    const isValid = await hooksFns.createProject.validate({ owner: user })
+    const isValid = await hooks.createProject.validate({ owner: user })
     if (isValid?.failed) {
       const reasons = Object.values(isValid)
+      // @ts-ignore
         .filter(({ status }) => status?.result === 'KO')
+      // @ts-ignore
         .map(({ status }) => status?.message)
         .join('; ')
       sendUnprocessableContent(res, reasons)
@@ -168,12 +171,12 @@ export const createRepositoryController = async (req, res) => {
     const environments = await getEnvironmentsByProjectId(project.id)
     const environmentNames = environments?.map(env => env.name)
 
-    const repoData = {
+    const repoData: CreateRepositoryExecArgs = {
       ...repo.get({ plain: true }),
       project: project.name,
       organization: organization.name,
       services: project.services,
-      environment: environmentNames,
+      environments: environmentNames,
       internalUrl: `${gitlabUrl}/${projectRootDir}/${organization.name}/${project.name}/${repo.dataValues.internalRepoName}.git`,
     }
     if (data.isPrivate) {
@@ -183,7 +186,7 @@ export const createRepositoryController = async (req, res) => {
 
     // TODO: Fix type
     // @ts-ignore See TODO
-    const results = await hooksFns.createRepository.execute(repoData)
+    const results = await hooks.createRepository.execute(repoData)
     await addLogs('Create Repository', results, user.id)
     if (results.failed) throw new Error('Echec des services lors de la création du dépôt')
     isServicesCallOk = true
@@ -312,7 +315,7 @@ export const updateRepositoryController = async (req, res) => {
 
     // TODO: Fix type
     // @ts-ignore See TODO
-    const results = await hooksFns.updateRepository.execute(repoData)
+    const results = await hooks.updateRepository.execute(repoData)
     await addLogs('Update Repository', results, userId)
     if (results.failed) throw new Error('Echec des services associés au dépôt')
     isServicesCallOk = true
@@ -427,7 +430,7 @@ export const deleteRepositoryController = async (req, res) => {
 
     // TODO: Fix type
     // @ts-ignore See TODO
-    const results = await hooksFns.deleteRepository.execute(repoData)
+    const results = await hooks.deleteRepository.execute(repoData)
     await addLogs('Delete Repository', results, userId)
     if (results.failed) throw new Error('Echec des opérations')
     isServicesCallOk = true

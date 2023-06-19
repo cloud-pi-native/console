@@ -13,6 +13,7 @@ type Context = {
  * @param {object} data Data to test
  * @returns {object} Validation error object
  */
+// @ts-ignore
 export const schemaValidator = (schema: Record<string, any>, data: Record<string, any>, { keysToValidate, context }: Context = {}): Joi.ValidationError => {
   const validation = schema.validate(data, { abortEarly: false, context }).error?.details || []
   return validation
@@ -33,6 +34,7 @@ export const isValid = (schema, data, key, ctx?) => !schemaValidator(schema, dat
  * @returns {object} Result parsed schema
  */
 const parseJoi = (model, value) => Array.from(model.schema._ids._byKey)
+// @ts-ignore
   .reduce((acc: Record<string, any>, [key, val]) => ({ ...acc, [key]: instanciateSchema(val, value) }), {})
 
 /**

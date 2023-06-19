@@ -16,7 +16,7 @@ export const sequelize = await (async () => {
 
 vi.mock('./src/plugins/index.js', async () => {
   return {
-    default: {
+    hooks: {
       fetchOrganizations: ({ execute: () => { }, validate: () => { } }),
 
       checkServices: ({ execute: () => { }, validate: () => { } }),
