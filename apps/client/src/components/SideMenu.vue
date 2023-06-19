@@ -241,6 +241,15 @@ onMounted(() => {
               Liste des logs
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
+          <DsfrSideMenuListItem>
+            <DsfrSideMenuLink
+              data-testid="menuAdministrationClusters"
+              :active="routeName === 'ListClusters'"
+              to="/admin/clusters"
+            >
+              Liste des clusters
+            </DsfrSideMenuLink>
+          </DsfrSideMenuListItem>
         </DsfrSideMenuList>
       </DsfrSideMenuListItem>
 
