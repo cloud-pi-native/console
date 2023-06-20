@@ -160,7 +160,7 @@ export const createProjectController = async (req, res) => {
 
     // TODO: Fix type
     // @ts-ignore See TODO
-    const isValid = await hooks.createProject.validate({ owner })
+    const isValid = await hooks.createProject.validate({ owner: owner.dataValues })
 
     if (isValid?.failed) {
       const reasons = Object.values(isValid)
@@ -219,7 +219,7 @@ export const createProjectController = async (req, res) => {
     const projectData = {
       ...project,
       organization: organization.name,
-      owner,
+      owner: owner.dataValues,
     }
     projectData.project = projectData.name
     delete projectData.name
@@ -232,7 +232,7 @@ export const createProjectController = async (req, res) => {
 
     // enregistrement des ids GitLab et Harbor
     // @ts-ignore
-    const { gitlab, registry }: { gitlab: PluginResult, registry: PluginResult} = results
+    const { gitlab, registry }: { gitlab: PluginResult, registry: PluginResult } = results
     const services = {
       gitlab: {
         // @ts-ignore
