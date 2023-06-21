@@ -1,6 +1,6 @@
 import { type Hook, createHook } from './hook.js'
 import type { Environment, InternalRepoName, Organization, User } from './index.js'
-import type { Repository } from './repository.js'
+import type { RepositoryForEnv } from './repository.js'
 import type { Project } from './project.js'
 
 type EnvironmentInit = {
@@ -8,7 +8,7 @@ type EnvironmentInit = {
   organization: Organization,
   project: Project,
   environment: Environment,
-  repositories: Repository[],
+  repositories: RepositoryForEnv[],
   owner: User,
 }
 
@@ -16,7 +16,7 @@ type EnvironmentDelete = {
   project: Project,
   organization: Organization,
   environment: Environment,
-  repositories: Repository[]
+  repositories: RepositoryForEnv[]
 }
 
 export type InitializeEnvironmentValidateArgs = EnvironmentInit

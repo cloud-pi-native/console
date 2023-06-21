@@ -1,5 +1,4 @@
 import { EnhancedFastifyRequest } from '@/types'
-import type { FastifyRequest } from 'fastify'
 export const loggerConf = {
   development: {
     transport: {
@@ -17,7 +16,7 @@ export const loggerConf = {
 }
 
 interface ReqLogsInput {
-  req: EnhancedFastifyRequest;
+  req: EnhancedFastifyRequest<any>;
   error?: string | Error;
   description: string;
   extras?: Record<string, string>

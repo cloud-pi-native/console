@@ -3,20 +3,24 @@ import type { Environment, ExternalRepoUrl, ExternalToken, ExternalUserName, Int
 import type { Project } from './project.js'
 
 export type Repository = {
-  url: string,
+  url: string
 }
 export type Repositories = Repository[]
 export type RepositoryCreate = {
-  project: Project,
-  organization: Organization,
-  environments: Environment[],
-  internalRepoName: InternalRepoName,
-  externalUserName: ExternalUserName,
-  externalToken: ExternalToken,
-  externalRepoUrl: ExternalRepoUrl,
-  isPrivate: IsPrivate,
-  isInfra: IsInfra,
+  internalUrl: string
+  project: Project
+  organization: Organization
+  environments: Environment[]
+  internalRepoName: InternalRepoName
+  externalUserName: ExternalUserName
+  externalToken: ExternalToken
+  externalRepoUrl: ExternalRepoUrl
+  isPrivate: IsPrivate
+  isInfra: IsInfra
 }
+export type RepositoryForEnv = {
+  internalRepoName: InternalRepoName
+} & Repository
 export type RepositoryDelete = RepositoryCreate & { internalUrl: InternalUrl }
 
 export type CreateRepositoryValidateArgs = void
