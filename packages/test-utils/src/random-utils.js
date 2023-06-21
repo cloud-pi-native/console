@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker'
 import { achievedStatus, projectRoles, logActions } from 'shared'
+import { repeatFn } from './func-utils.js'
 
 export const getRandomProjectName = () => {
   return faker.lorem.word()
@@ -31,6 +32,26 @@ export const getRandomProject = (organization = faker.string.uuid()) => {
   }
 }
 
+export const getRandomCluster = (projectsId = repeatFn(2)(faker.string.uuid)) => {
+  return {
+    id: faker.string.uuid(),
+    label: faker.lorem.word(),
+    projectsId,
+    user: {
+      certData: 'userCAD',
+      keyData: 'userCKD',
+    },
+    cluster: {
+      caData: 'clusterCAD',
+      server: 'https://coucou.com:5000',
+      tlsServerName: 'coucou.com',
+    },
+    privacy: faker.helpers.arrayElement(['public', 'dedicated']),
+    clusterResources: faker.datatype.boolean(),
+    secretName: faker.internet.password({ length: 50 }),
+  }
+}
+
 export const getRandomUser = () => {
   return {
     id: faker.string.uuid(),
@@ -59,7 +80,7 @@ export const getRandomRepo = (projectId = faker.string.uuid()) => {
   }
   if (repo.isPrivate) {
     repo.externalUserName = faker.internet.userName()
-    repo.externalToken = faker.internet.password(25)
+    repo.externalToken = faker.internet.password({ length: 25 })
   }
 
   return repo

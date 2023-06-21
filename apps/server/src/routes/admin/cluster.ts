@@ -10,7 +10,7 @@ const router = async (app, _opt) => {
   // Déclarer un nouveau cluster
   await app.post('/', createClusterController)
   // Mettre à jour un cluster
-  await app.post('/', updateClusterController)
+  await app.put('/', updateClusterController)
 }
 
 export default router

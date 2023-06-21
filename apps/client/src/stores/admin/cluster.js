@@ -10,31 +10,45 @@ export const useAdminClusterStore = defineStore('admin-cluster', () => {
     clusters.value = [
       {
         id: '1e4fdb28-f9ea-46d4-ad16-607c7f1aa8b6',
-        name: 'cluster1',
-        server: 'https://cluster1.com:6443',
-        secretName: 'jey7db28-f9ea-46d4-ad16-607c7f1aa8b6',
-        projects: [
-          'beta-app',
+        label: 'cluster1',
+        projectsId: [
+          '22e7044f-8414-435d-9c4a-2df42a65034b',
         ],
-        config: JSON.stringify({
-          bearerToken: '<authentication token>',
-          tlsClientConfig: {
-            insecure: false,
-            caData: '<base64 encoded certificate>',
-          },
-        }),
+        user: {
+          certData: 'userCAD',
+          keyData: 'userCKD',
+        },
+        cluster: {
+          caData: 'clusterCAD',
+          server: 'https://coucou.com:5000',
+          tlsServerName: 'coucou.com',
+        },
         clusterResources: true,
+        privacy: 'dedicated',
+      },
+      {
+        id: '1e4fdb28-f9ea-46d4-ad16-607c7f1aa8b7',
+        label: 'cluster2',
+        projectsId: [
+          '22e7044f-8414-435d-9c4a-2df42a65034b',
+        ],
+        user: {
+          certData: 'userCAD',
+          keyData: 'userCKD',
+        },
+        clusterResources: true,
+        privacy: 'public',
       },
     ]
     // return api.getAllClusters()
   }
 
-  const addCluster = async ({ name, server, secretName, projects, config, clusterResources }) => {
-    return api.addCluster({ name, server, secretName, projects, config, clusterResources })
+  const addCluster = async ({ label, cluster, user, projectsId, clusterResources, privacy }) => {
+    return api.addCluster({ label, cluster, user, projectsId, clusterResources, privacy })
   }
 
-  const updateCluster = async ({ id, name, server, secretName, projects, config, clusterResources }) => {
-    return api.updateCluster(id, { name, server, secretName, projects, config, clusterResources })
+  const updateCluster = async ({ id, cluster, user, projectsId, clusterResources, privacy }) => {
+    return api.updateCluster(id, { cluster, user, projectsId, clusterResources, privacy })
   }
 
   // const removeCluster = async ({ name, label, active }) => {

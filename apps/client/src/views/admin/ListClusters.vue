@@ -21,18 +21,18 @@ const setClusterTiles = (clusters) => {
     ?.sort((a, b) => (a.name >= b.name ? 1 : -1))
     ?.map(cluster => ({
       id: cluster.id,
-      title: cluster.name,
+      title: cluster.label,
       data: cluster,
     }))
 }
 
 const setSelectedCluster = (cluster) => {
-  if (selectedCluster.value?.name === cluster.name) {
+  if (selectedCluster.value?.label === cluster.label) {
     selectedCluster.value = {}
     return
   }
   selectedCluster.value = cluster
-  cancel()
+  isNewClusterForm.value = false
 }
 
 const showNewClusterForm = () => {
@@ -42,6 +42,7 @@ const showNewClusterForm = () => {
 
 const cancel = () => {
   isNewClusterForm.value = false
+  selectedCluster.value = {}
 }
 
 const addCluster = async (cluster) => {
@@ -119,7 +120,7 @@ watch(clusters, () => {
   </div>
   <div
     :class="{
-      'md:grid md:grid-cols-3 md:gap-3 items-center justify-between': !selectedCluster?.name,
+      'md:grid md:grid-cols-3 md:gap-3 items-center justify-between': !selectedCluster?.label,
     }"
   >
     <div
@@ -131,7 +132,7 @@ watch(clusters, () => {
         <DsfrTile
           :title="cluster.title"
           :data-testid="`clusterTile-${cluster.id}`"
-          :horizontal="!!selectedCluster?.name"
+          :horizontal="!!selectedCluster?.label"
           class="fr-mb-2w w-11/12"
           @click="setSelectedCluster(cluster.data)"
         />
@@ -144,6 +145,7 @@ watch(clusters, () => {
         :is-new-cluster="false"
         @update="(cluster) => updateCluster(cluster)"
         @delete="(clusterId) => removeCluster(clusterId)"
+        @cancel="cancel()"
       />
     </div>
   </div>

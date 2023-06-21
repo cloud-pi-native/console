@@ -1,7 +1,7 @@
-import { createCluster, getClusterById, getClusterByLabel, getClusters, updateCluster } from '@/models/queries/cluster-queries'
+import { createCluster, getClusterById, getClusterByLabel, getClusters, updateCluster } from '@/models/queries/cluster-queries.js'
 import { EnhancedFastifyRequest } from '@/types'
-import { addReqLogs } from '@/utils/logger'
-import { sendBadRequest, sendCreated, sendNotFound, sendOk } from '@/utils/response'
+import { addReqLogs } from '@/utils/logger.js'
+import { sendBadRequest, sendCreated, sendNotFound, sendOk } from '@/utils/response.js'
 import { CreateClusterDto, UpdateClusterDto, clusterSchema } from 'shared'
 
 // GET

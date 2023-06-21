@@ -15,12 +15,16 @@ export const clusterSchema = Joi.object({
   secretName: Joi.string()
     .max(50),
 
-  clusterResources: Joi.boolean(),
+  clusterResources: Joi.boolean()
+    .required(),
 
   privacy: Joi.string()
-    .valid('public', 'dedicated'),
+    .valid('public', 'dedicated')
+    .required(),
 
-  user: Joi.object(),
+  user: Joi.object()
+    .required(),
 
-  cluster: Joi.object(),
+  cluster: Joi.object()
+    .required(),
 })

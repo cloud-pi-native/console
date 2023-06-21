@@ -166,3 +166,19 @@ export const countAllLogs = async () => {
   const response = await apiClient.get('/admin/logs/count')
   return response.data
 }
+
+// Admin - Clusters
+export const getAllClusters = async () => {
+  const response = await apiClient.get('/admin/clusters')
+  return response.data
+}
+
+export const addCluster = async (data) => {
+  const response = await apiClient.post('/admin/clusters', data)
+  return response.data
+}
+
+export const updateCluster = async (id, data) => {
+  const response = await apiClient.put(`/admin/clusters/${id}`, data)
+  return response.data
+}
