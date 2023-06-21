@@ -3,7 +3,7 @@ import { gitlabToken, gitlabUrl, projectRootDir } from '../../../utils/env.js'
 
 export const api = new Gitlab({ token: gitlabToken, host: gitlabUrl })
 
-let groupRootId
+let groupRootId: number
 
 export const getGroupRootId = async () => {
   if (groupRootId) return groupRootId
