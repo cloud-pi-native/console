@@ -3,16 +3,20 @@ import { ref, computed } from 'vue'
 import { clusterSchema, schemaValidator, isValid, instanciateSchema } from 'shared'
 import MultiSelector from './MultiSelector.vue'
 
+// zone upload de fichier de type kubeconfig format yaml
+// user: UserAuthBasic | UserAuthCerts | UserAuthToken => à parser du fichier uploadé
+// cluster: Pick<Cluster, 'name' | 'caData' | 'server' | 'tlsServerName'> => à parser du fichier uploadé
+
 const props = defineProps({
   cluster: {
     type: Object,
     default: () => ({
-      name: '',
-      server: '',
-      config: '',
-      secretName: undefined,
-      projects: [],
+      label: '',
+      cluster: '',
+      user: '',
+      projectsId: [],
       clusterResources: false,
+      privacy: 'dedicated',
     }),
   },
   isNewCluster: {
@@ -27,6 +31,7 @@ const props = defineProps({
 
 const localCluster = ref(props.cluster)
 const updatedValues = ref({})
+const kubeconfig = ref()
 // const clusterToDelete = ref('')
 // const isDeletingCluster = ref(false)
 
@@ -36,6 +41,19 @@ const isClusterValid = computed(() => Object.keys(errorSchema.value).length === 
 const updateValues = (key, value) => {
   localCluster.value[key] = value
   updatedValues.value[key] = true
+
+  /**
+    * Retrieve array of project names form child component, map it into array of project ids.
+    */
+  if (key === 'projectsId') {
+    localCluster.value.projectsId = localCluster.value.projectsId
+      .map(project => props.allProjects
+        ?.find(pFromAll => pFromAll.name === project).id)
+  }
+}
+
+const updateKubeconfig = (event) => {
+  console.log({ event })
 }
 
 const emit = defineEmits(['add', 'update', 'delete', 'cancel'])
@@ -63,87 +81,50 @@ const cancel = (event) => {
     <h1
       class="fr-h1"
     >
-      Ajouter un cluster
+      {{ isNewCluster ? 'Ajouter un cluster' : 'Mettre à jour le cluster' }}
     </h1>
+    <DsfrFileUpload
+      v-model="kubeconfig"
+      label="Kubeconfig"
+      hint="Uploadez le Kubeconfig du cluster."
+      class="fr-mb-2w"
+      @update:model-value="updateKubeconfig($event)"
+    />
     <div class="fr-mb-2w w-full">
       <DsfrInputGroup
-        v-model="localCluster.name"
-        data-testid="nameInput"
+        v-model="localCluster.label"
+        data-testid="labelInput"
         type="text"
         required="required"
-        :error-message="!!updatedValues.name && !isValid(clusterSchema, localCluster, 'name') ? 'Le nom du cluster ne doit contenir ni espaces ni caractères spéciaux': undefined"
+        :error-message="!!updatedValues.label && !isValid(clusterSchema, localCluster, 'label') ? 'Le nom du cluster ne doit contenir ni espaces ni caractères spéciaux': undefined"
         label="Nom du cluster applicatif"
         label-visible
-        hint="Nom du cluster applicatif utilisable lors des déploiements Argocd"
+        hint="Nom du cluster applicatif utilisable lors des déploiements Argocd."
         placeholder="erpc-ovh"
-        @update:model-value="updateValues('name', $event)"
-      />
-    </div>
-    <div class="fr-mb-2w">
-      <DsfrInputGroup
-        v-model="localCluster.server"
-        data-testid="serverInput"
-        type="text"
-        required="required"
-        :error-message="!!updatedValues.server && !isValid(clusterSchema, localCluster, 'server') ? 'L\'url du cluster doit commencer par https': undefined"
-        label="Serveur"
-        label-visible
-        hint="Url de l'api server du cluster (clé 'server' de la kubeconfig)"
-        placeholder="https://my-cluster.com:6443"
-        class="fr-mb-2w"
-        @update:model-value="updateValues('server', $event)"
-      />
-    </div>
-    <div class="fr-mb-2w">
-      <DsfrInput
-        v-model="localCluster.config"
-        data-testid="configInput"
-        required="required"
-        :is-textarea="true"
-        label="Config du cluster"
-        label-visible
-        class="h-50"
-        hint="Configuration de connexion entre Argocd et le cluster."
-        :placeholder="JSON.stringify({
-          bearerToken: '<authentication token>',
-          tlsClientConfig: {
-            insecure: false,
-            caData: '<base64 encoded certificate>'
-          }
-        })"
-        @update:model-value="updateValues('config', $event)"
-      />
-    </div>
-    <div
-      v-if="!isNewCluster"
-      class="fr-mb-2w"
-    >
-      <DsfrInput
-        v-model="localCluster.secretName"
-        data-testid="secretNameInput"
-        label="Nom du secret"
-        label-visible
-        disabled
-        hint="Nom du secret kubernetes portant les infos du cluster."
-        placeholder="secret-name"
-        @update:model-value="updateValues('secretName', $event)"
+        @update:model-value="updateValues('label', $event)"
       />
     </div>
     <DsfrCheckbox
       v-model="localCluster.clusterResources"
       data-testid="clusterResourcesCbx"
       label="Ressources cluster"
-      hint="Cochez la case si des ressources de type cluster peuvent être déployése par Argocd."
+      hint="Cochez la case si des ressources de type cluster peuvent être déployées par Argocd."
       name="isClusterResources"
       @update:model-value="updateValues('clusterResources', $event)"
+    />
+    <DsfrSelect
+      v-model="localCluster.privacy"
+      label="Confidentialité du cluster"
+      :options="['dedicated', 'public']"
+      data-testid="privacySelect"
     />
     <div class="fr-mb-2w">
       <MultiSelector
         :options="allProjects"
-        :array="localCluster.projects"
-        label="Nom du projet"
-        description="Ajouter à la liste des projets autorisés à utiliser ce cluster."
-        @update="updateValues('projects', $event)"
+        :array="localCluster.projectsId"
+        label="Nom des projets"
+        description="Sélectionnez les projets autorisés à utiliser ce cluster."
+        @update="updateValues('projectsId', $event)"
       />
     </div>
     <div
