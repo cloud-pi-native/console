@@ -24,7 +24,8 @@ import { addLogs } from '../models/queries/log-queries.js'
 import { getOrganizationById } from '../models/queries/organization-queries.js'
 import { getInfraProjectRepositories } from '../models/queries/repository-queries.js'
 import { gitlabUrl, harborUrl, projectRootDir } from '../utils/env.js'
-import { projectIsLockedInfo } from 'shared'
+import { DeleteEnvironmentDto, InitializeEnvironmentDto, projectIsLockedInfo } from 'shared'
+import { EnhancedFastifyRequest } from '@/types/index.js'
 
 // GET
 export const getEnvironmentByIdController = async (req, res) => {
@@ -66,7 +67,7 @@ export const getEnvironmentByIdController = async (req, res) => {
 }
 
 // POST
-export const initializeEnvironmentController = async (req, res) => {
+export const initializeEnvironmentController = async (req: EnhancedFastifyRequest<InitializeEnvironmentDto>, res) => {
   const data = req.body
   const userId = req.session?.user?.id
   const projectId = req.params?.projectId
@@ -206,7 +207,7 @@ export const initializeEnvironmentController = async (req, res) => {
 }
 
 // DELETE
-export const deleteEnvironmentController = async (req, res) => {
+export const deleteEnvironmentController = async (req: EnhancedFastifyRequest<DeleteEnvironmentDto>, res) => {
   const environmentId = req.params?.environmentId
   const projectId = req.params?.projectId
   const userId = req.session?.user?.id

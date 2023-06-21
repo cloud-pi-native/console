@@ -41,7 +41,7 @@ export const projectStatus = [
   'created',
   'failed',
   'archived',
-]
+] as const
 
 export const achievedStatus = [
   'created',
@@ -63,7 +63,7 @@ export const allEnv = [
   'staging',
   'integration',
   'prod',
-]
+] as const
 
 export const statusDict = {
   locked: {
