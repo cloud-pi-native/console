@@ -1,10 +1,12 @@
 import { ProjectModel } from '../project/index.js'
 import { ClusterModel } from './model.js'
 
-export type UpdateClusterDto = Omit<ClusterModel, 'secretName'> & {
+type ClusterBodyDto = Omit<ClusterModel, 'secretName'> & {
   projectsId?: ProjectModel['id'][]
 }
-export type CreateClusterDto = Omit<UpdateClusterDto, 'id'>
+export type UpdateClusterDto = {
+  body: Partial<ClusterBodyDto> & {id: ClusterModel['id']} }
+export type CreateClusterDto = { body: Omit<ClusterBodyDto, 'id'> }
 
 // Examples
 // const create: CreateClusterDto = {
