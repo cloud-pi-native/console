@@ -829,6 +829,185 @@ export const data = {
       },
       status: 'created',
       locked: false,
+      logs: [
+        {
+          action: 'create Project',
+          userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+          data: {
+            argo: {
+              status: {
+                result: 'OK',
+              },
+            },
+            args: {
+              owner: {
+                id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+                email: 'claire.nollet@interieur.gouv.fr',
+                lastName: 'Nollet',
+                createdAt: '2023-06-08T14:57:58.401Z',
+                firstName: 'Claire',
+                updatedAt: '2023-06-08T14:57:58.401Z',
+              },
+              project: 'int-2',
+              environment: 'staging',
+              organization: 'ministere-interieur',
+              registryHost: 'blabla.com',
+              repositories: [],
+            },
+            vault: {
+              status: {
+                result: 'OK',
+              },
+              pullSecret: {
+                data: {
+                  HOST: 'blabla.com',
+                  TOKEN: 'token',
+                  USERNAME: 'robot$ministere-interieur-int-2+ci',
+                  DOCKER_CONFIG: '{"auths":{"blabla.com":{"auth":"token","email":""}}}',
+                },
+                metadata: {
+                  version: 1,
+                  destroyed: false,
+                  created_time: '2023-06-08T15:14:56.087835715Z',
+                  deletion_time: '',
+                  custom_metadata: null,
+                },
+              },
+            },
+            keycloak: {
+              group: {
+                id: '6ce9c548-d0f6-490b-b32d-6e62c20e5eff',
+              },
+              status: {
+                result: 'OK',
+              },
+              roGroup: '/ministere-interieur-int-2/staging/RO',
+              rwGroup: '/ministere-interieur-int-2/staging/RW',
+            },
+            kubernetes: {
+              ns: {
+                kind: 'Namespace',
+                spec: {
+                  finalizers: [
+                    'kubernetes',
+                  ],
+                },
+                status: {
+                  phase: 'Active',
+                },
+                metadata: {
+                  uid: 'facaa8a7-956c-4bbb-88d9-b6598ca90b43',
+                  name: 'ministere-interieur-int-2-staging',
+                  labels: {
+                    'dso/projet': 'int-2',
+                    'dso/owner.id': 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+                    'dso/environment': 'staging',
+                    'dso/organization': 'ministere-interieur',
+                    'dso/owner.lastName': 'Nollet',
+                    'dso/owner.firstName': 'Claire',
+                    'kubernetes.io/metadata.name': 'ministere-interieur-int-2-staging',
+                  },
+                  managedFields: [
+                    {
+                      time: '2023-06-08T15:16:44.000Z',
+                      manager: 'unknown',
+                      fieldsV1: {
+                        'f:metadata': {
+                          'f:labels': {
+                            '.': {},
+                            'f:dso/projet': {},
+                            'f:dso/owner.id': {},
+                            'f:dso/environment': {},
+                            'f:dso/organization': {},
+                            'f:dso/owner.lastName': {},
+                            'f:dso/owner.firstName': {},
+                            'f:kubernetes.io/metadata.name': {},
+                          },
+                        },
+                      },
+                      operation: 'Update',
+                      apiVersion: 'v1',
+                      fieldsType: 'FieldsV1',
+                    },
+                  ],
+                  resourceVersion: '140498752',
+                  creationTimestamp: '2023-06-08T15:16:44.000Z',
+                },
+                apiVersion: 'v1',
+              },
+              status: {
+                result: 'OK',
+                message: 'Updated',
+              },
+            },
+          },
+        },
+        {
+          action: 'Create Repository',
+          userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+          data: {
+            argo: {
+              status: {
+                result: 'OK',
+                message: 'Not an infra repository',
+              },
+            },
+            args: {
+              id: 'bd934af0-6de2-41b2-a111-6b0c45b82384',
+              status: 'initializing',
+              isInfra: false,
+              project: 'int-2',
+              services: {
+                gitlab: {
+                  id: 252,
+                },
+                registry: {
+                  id: 63,
+                },
+              },
+              createdAt: '2023-06-08T15:15:56.692Z',
+              isPrivate: false,
+              projectId: '1e4fdb28-f9ea-46d4-ad16-607c7f1aa8b6',
+              updatedAt: '2023-06-08T15:15:56.692Z',
+              environment: [],
+              internalUrl: 'https://blabla.com/bla/projects/ministere-interieur/int-2/repo.git',
+              organization: 'ministere-interieur',
+              externalToken: '',
+              externalRepoUrl: 'https://github.com/dnum-mi/dso-console.git',
+              externalUserName: '',
+              internalRepoName: 'repo',
+            },
+            vault: {
+              status: {
+                result: 'OK',
+              },
+              recordsSaved: 1,
+            },
+            gitlab: {
+              vault: [
+                {
+                  data: {
+                    PROJECT_NAME: 'int-2',
+                    GIT_INPUT_URL: 'github.com/dnum-mi/dso-console.git',
+                    GIT_INPUT_USER: '',
+                    GIT_OUTPUT_URL: 'blabla.com/bla/projects/ministere-interieur/int-2/repo.git',
+                    GIT_OUTPUT_USER: 'root',
+                    ORGANIZATION_NAME: 'ministere-interieur',
+                    GIT_INPUT_PASSWORD: '',
+                    GIT_PIPELINE_TOKEN: 'token',
+                    GIT_OUTPUT_PASSWORD: 'password',
+                  },
+                  name: 'repo-mirror',
+                },
+              ],
+              status: {
+                result: 'OK',
+                message: 'Created',
+              },
+            },
+          },
+        },
+      ],
     },
     {
       id: '9dabf3f9-6c86-4358-8598-65007d78df65',
