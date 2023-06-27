@@ -17,6 +17,7 @@ node_modules
 .env.test
 .env.prod
 .env.int
+.env.codespace
 
 # cypress
 screenshots
