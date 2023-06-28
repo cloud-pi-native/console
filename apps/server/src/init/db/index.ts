@@ -5,7 +5,7 @@ import { dropTables, synchroniseModels } from '../../connect.js'
 
 export const initDb = async (data) => {
   await dropTables()
-  await synchroniseModels()
+  // await synchroniseModels()
 
   for (const org of data.organizations) {
     await _createOrganizations(org)

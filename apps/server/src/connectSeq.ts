@@ -1,5 +1,4 @@
-// import { Sequelize } from 'sequelize'
-import { PrismaClient } from '@prisma/client'
+import { Sequelize } from 'sequelize'
 import { setTimeout } from 'node:timers/promises'
 import app from './app.js'
 import {
@@ -32,8 +31,7 @@ import { _dropLogsTable } from './models/queries/log-queries.js'
 const DELAY_BEFORE_RETRY = isTest || isCI ? 1000 : 10000
 let closingConnections = false
 
-// export let sequelize
-export let prisma
+export let sequelize
 
 export const getConnection = async (triesLeft = 5) => {
   if (closingConnections || triesLeft <= 0) {
@@ -43,21 +41,17 @@ export const getConnection = async (triesLeft = 5) => {
 
   const postgresUri = `postgres://${dbUser}:${dbPass}@${dbHost}:${dbPort}/${dbName}`
 
-  // if (isTest) {
-  //   const { default: SequelizeMock } = await import('sequelize-mock')
-  //   sequelize = new SequelizeMock()
-  //   return
-  // }
+  if (isTest) {
+    const { default: SequelizeMock } = await import('sequelize-mock')
+    sequelize = new SequelizeMock()
+    return
+  }
   try {
     if (isDev || isTest || isCI) {
       app.log.info(`Trying to connect to Postgres with: ${postgresUri}`)
     }
-
-    prisma = new PrismaClient()
-    await prisma.$connect()
-
-    // sequelize = new Sequelize(postgresUri, { logging: false })
-    // await sequelize.authenticate()
+    sequelize = new Sequelize(postgresUri, { logging: false })
+    await sequelize.authenticate()
     app.log.info('Connected to Postgres!')
   } catch (error) {
     if (triesLeft > 0) {
@@ -77,12 +71,9 @@ export const getConnection = async (triesLeft = 5) => {
 export const closeConnections = async () => {
   closingConnections = true
   try {
-    await prisma.$disconnect()
-
-    // await sequelize.close()
+    await sequelize.close()
   } catch (error) {
     app.log.error(error)
-    await prisma.$disconnect()
   }
 }
 

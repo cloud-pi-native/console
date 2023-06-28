@@ -26,7 +26,7 @@ export async function startServer () {
 
   try {
     await getConnection()
-    await synchroniseModels()
+    // await synchroniseModels()
   } catch (error) {
     app.log.error(error.message)
     throw error

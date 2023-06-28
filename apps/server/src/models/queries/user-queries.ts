@@ -1,54 +1,55 @@
 import { Op } from 'sequelize'
-import { sequelize } from '../../connect.js'
-import { getUserModel } from '../user.js'
-import { dbKeysExcluded } from '../../utils/queries-tools.js'
+import { prisma } from '../../connect.js'
+import { dbKeysExcluded, exclude } from '../../utils/queries-tools.js'
 
 // SELECT
 export const getUsers = async () => {
-  return getUserModel().findAll()
+  return prisma.user.findMany()
 }
 
 export const getUserInfos = async (id) => {
-  const usr = await getUserModel().findAll({
-    ...dbKeysExcluded,
+  const usr = await prisma.user.findMany({
     where: { id },
     include: {
-      all: true,
-      nested: true,
-      ...dbKeysExcluded,
+      logs: true,
+      permissions: true,
+      UsersProjects: true,
     },
   })
-  return usr
+  const usrWithKeysExcluded = exclude(usr, dbKeysExcluded)
+
+  return usrWithKeysExcluded
 }
 
 export const getUserById = async (id) => {
-  return getUserModel().findByPk(id)
+  return prisma.user.findUnique({ where: { id } })
 }
 
 export const getOrCreateUser = async (user) => {
   delete user.groups
-  const foundUser = await getUserModel().findOrCreate({
+  const foundUser = await prisma.user.upsert({
     where: { id: user.id },
-    defaults: user,
+    update: {},
+    create: {
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+    },
   })
   return foundUser[0]
 }
 
 export const getUserByEmail = async (email) => {
-  const res = await getUserModel().findAll({
-    where: {
-      email: { [Op.eq]: email },
-    },
-    limit: 1,
-  })
-  return Array.isArray(res) ? res[0] : res
+  const res = await prisma.user.findUnique({ where: { email: { equals: email } } })
+  return res
 }
 
 // CREATE
 export const createUser = async ({ id, email, firstName, lastName }) => {
   const user = await getUserByEmail(email)
   if (user) throw new Error('Un utilisateur avec cette adresse e-mail existe déjà')
-  return getUserModel().create({ id, email, firstName, lastName })
+  return prisma.user.create({ data: { id, email, firstName, lastName } })
 }
 
 // UPDATE
@@ -58,23 +59,12 @@ export const updateUserById = async ({ id, name, email, firstName, lastName }) =
   if (!user) throw new Error('L\'utilisateur demandé n\'existe pas')
   if (isEmailAlreadyTaken) throw new Error('Un utilisateur avec cette adresse e-mail existe déjà')
   if (user && !isEmailAlreadyTaken) {
-    const res = await getUserModel().update({
-      name,
-      email,
-      firstName,
-      lastName,
-    }, {
-      where: id,
-    })
+    const res = await prisma.user.update({ where: { id }, data: { name, email, firstName, lastName } })
     return res
   }
 }
 
 // TECH
 export const _dropUsersTable = async () => {
-  await sequelize.drop({
-    tableName: getUserModel().tableName,
-    force: true,
-    cascade: true,
-  })
+  await prisma.user.deleteMany({})
 }

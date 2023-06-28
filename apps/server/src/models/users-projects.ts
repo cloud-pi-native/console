@@ -1,10 +1,8 @@
 import { DataTypes } from 'sequelize'
-import { sequelize } from '../connect.js'
 import { getProjectModel } from './project.js'
 import { getUserModel } from './user.js'
 
-let UsersProjects
-export const getUsersProjectsModel = () => UsersProjects ?? (UsersProjects = sequelize.define('UsersProjects', {
+export const getUsersProjectsModel = {
   UserId: {
     type: DataTypes.UUID,
     references: {
@@ -22,4 +20,4 @@ export const getUsersProjectsModel = () => UsersProjects ?? (UsersProjects = seq
   role: {
     type: DataTypes.STRING,
   },
-}))
+}

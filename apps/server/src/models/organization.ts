@@ -1,8 +1,6 @@
 import { DataTypes } from 'sequelize'
-import { sequelize } from '../connect.js'
 
-let Organization
-export const getOrganizationModel = () => Organization ?? (Organization = sequelize.define('Organization', {
+export const getOrganizationModel = {
   id: {
     type: DataTypes.UUID,
     allowNull: false,
@@ -28,6 +26,4 @@ export const getOrganizationModel = () => Organization ?? (Organization = sequel
     allowNull: false,
     defaultValue: true,
   },
-}, {
-  tableName: 'Organizations',
-}))
+}

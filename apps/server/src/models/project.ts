@@ -1,9 +1,7 @@
 import { DataTypes } from 'sequelize'
-import { sequelize } from '../connect.js'
 import { descriptionMaxLength } from 'shared'
 
-let Project
-export const getProjectModel = () => Project ?? (Project = sequelize.define('Project', {
+export const getProjectModel = {
   id: {
     type: DataTypes.UUID,
     allowNull: false,
@@ -35,11 +33,4 @@ export const getProjectModel = () => Project ?? (Project = sequelize.define('Pro
   services: {
     type: DataTypes.JSONB,
   },
-}, {
-  tableName: 'Projects',
-  uniqueKeys: {
-    unique_fields: {
-      fields: ['organization', 'name'],
-    },
-  },
-}))
+}

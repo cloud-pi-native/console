@@ -1,8 +1,6 @@
 import { DataTypes } from 'sequelize'
-import { sequelize } from '../connect.js'
 
-let Permission
-export const getPermissionModel = () => Permission ?? (Permission = sequelize.define('Permission', {
+export const getPermissionModel = {
   id: {
     type: DataTypes.UUID,
     unique: true,
@@ -23,6 +21,4 @@ export const getPermissionModel = () => Permission ?? (Permission = sequelize.de
     allowNull: false,
     defaultValue: 0,
   },
-}, {
-  tableName: 'Permissions',
-}))
+}

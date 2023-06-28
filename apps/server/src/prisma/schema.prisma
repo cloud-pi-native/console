@@ -1,3 +1,7 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DB_URL")
@@ -51,7 +55,7 @@ model Project {
   organization   Organization @relation(fields: [organizationId], references: [id])
 
   environments  Environment[]
-  Repository    Repository[]
+  repositories  Repository[]
   UsersProjects UsersProjects[]
 }
 
@@ -87,8 +91,4 @@ model UsersProjects {
   project   Project @relation(fields: [ProjectId], references: [id])
 
   @@id([UserId, ProjectId])
-}
-
-model Test {
-  id Int @id @default(autoincrement())
 }

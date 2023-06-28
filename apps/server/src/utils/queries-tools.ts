@@ -1,4 +1,5 @@
-export const dbKeysExcluded = { attributes: { exclude: ['updatedAt', 'createdAt'] } }
+// export const dbKeysExcluded = { attributes: { exclude: ['updatedAt', 'createdAt'] } }
+export const dbKeysExcluded = ['updatedAt', 'createdAt']
 
 export const lowercaseFirstLetter = string => string.charAt(0).toLowerCase() + string.slice(1)
 
@@ -25,3 +26,10 @@ export const filterObjectByKeys = (obj, keys) =>
       ?.filter(([key, _value]) =>
         keys.includes(key)),
   )
+
+// Export keys from result queries
+export function exclude (user, keys) {
+  return Object.fromEntries(
+    Object.entries(user).filter(([key]) => !keys.includes(key)),
+  )
+}

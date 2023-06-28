@@ -1,8 +1,6 @@
 import { DataTypes } from 'sequelize'
-import { sequelize } from '../connect.js'
 
-let Log
-export const getLogModel = () => Log ?? (Log = sequelize.define('Log', {
+export const getLogModel = {
   id: {
     type: DataTypes.INTEGER,
     allowNull: false,
@@ -22,6 +20,4 @@ export const getLogModel = () => Log ?? (Log = sequelize.define('Log', {
     type: DataTypes.UUID,
     allowNull: false,
   },
-}, {
-  tableName: 'Logs',
-}))
+}

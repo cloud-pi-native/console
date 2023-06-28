@@ -1,8 +1,6 @@
 import { DataTypes } from 'sequelize'
-import { sequelize } from '../connect.js'
 
-let Repository
-export const getRepositoryModel = () => Repository ?? (Repository = sequelize.define('Repository', {
+export const getRepositoryModel = {
   id: {
     type: DataTypes.UUID,
     allowNull: false,
@@ -44,6 +42,4 @@ export const getRepositoryModel = () => Repository ?? (Repository = sequelize.de
     allowNull: false,
     defaultValue: 'initializing',
   },
-}, {
-  tableName: 'Repositories',
-}))
+}

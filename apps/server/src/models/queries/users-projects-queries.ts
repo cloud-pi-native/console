@@ -1,71 +1,29 @@
-import { sequelize } from '../../connect.js'
-import { getUserModel } from '../user.js'
-import { getUsersProjectsModel } from '../users-projects.js'
+import { prisma } from '../../connect.js'
 
 // SELECT
 export const getRoleByUserIdAndProjectId = async (UserId, ProjectId) => {
-  const res = await getUsersProjectsModel().findAll({
-    attributes: [
-      'role',
-    ],
-    where: {
-      UserId,
-      ProjectId,
-    },
-    limit: 1,
-  })
-  return Array.isArray(res) ? res[0] : res
+  const res = await prisma.usersProjects.findUnique({ select: { role: true }, where: { UserId, ProjectId } })
+  return res
 }
 
 export const getSingleOwnerByProjectId = async (ProjectId) => {
-  const res = await getUsersProjectsModel().findAll({
-    attributes: [
-      'UserId',
-    ],
-    where: {
-      role: 'owner',
-      ProjectId,
-    },
-    limit: 1,
-  })
-  const user = Array.isArray(res)
-    ? res[0]
-    : res
-  const userId = user.dataValues ? user.dataValues.UserId : user.UserId
-  const resUser = await getUserModel().findByPk(userId, {
-    raw: true,
-  })
+  const res = await prisma.usersProjects.findUnique({ select: { UserId: true }, where: { role: 'owner', ProjectId } })
+  const resUser = await prisma.user.findUnique({ where: { id: res.UserId } })
+
   return resUser
 }
 
 // UPDATE
 export const updateUserProjectRole = async (UserId, ProjectId, role) => {
-  return getUsersProjectsModel().update(
-    { role },
-    {
-      where: {
-        UserId,
-        ProjectId,
-      },
-    },
-  )
+  return prisma.usersProjects.update({ where: { UserId, ProjectId }, data: { role } })
 }
 
 // DELETE
 export const deleteRoleByUserIdAndProjectId = async (UserId, ProjectId) => {
-  return getUsersProjectsModel().destroy({
-    where: {
-      UserId,
-      ProjectId,
-    },
-  })
+  return prisma.usersProjects.delete({ where: { UserId, ProjectId } })
 }
 
 // TECH
 export const _dropUsersProjectsTable = async () => {
-  await sequelize.drop({
-    tableName: getUsersProjectsModel().tableName,
-    force: true,
-    cascade: true,
-  })
+  await prisma.usersProjects.deleteMany({})
 }

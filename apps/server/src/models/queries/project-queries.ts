@@ -1,6 +1,6 @@
-import { sequelize } from '../../connect.js'
+import { prisma } from '../../connect.js'
 import { getProjectModel } from '../project.js'
-import { dbKeysExcluded } from '../../utils/queries-tools.js'
+import { dbKeysExcluded, exclude } from '../../utils/queries-tools.js'
 import { getPermissionModel } from '../permission.js'
 import { getEnvironmentModel } from '../environment.js'
 import { getRepositoryModel } from '../repository.js'
@@ -9,133 +9,154 @@ import { getOrganizationModel } from '../organization.js'
 
 // SELECT
 export const getAllProjects = async () => {
-  return getProjectModel().findAll()
+  return prisma.project.findMany()
 }
 
+// TODO Prisma
 export const getProjectUsers = async (projectId) => {
-  const res = await getUserModel().findAll({
+  const res = await prisma.user.findMany({
     include: {
-      model: getProjectModel(),
-      where: { id: projectId },
-      attributes: { exclude: ['role'] },
+      UsersProjects: {
+        where: {
+          ProjectId: projectId,
+        },
+      },
     },
   })
-  return res
+
+  // const res = await getUserModel().findAll({
+  //   include: {
+  //     model: getProjectModel(),
+  //     where: { id: projectId },
+  //     attributes: { exclude: ['role'] },
+  //   },
+  // })
+
+  const resWithKeysExcluded = exclude(res, ['role'])
+  return resWithKeysExcluded
 }
 
+// TODO Prisma
 export const getUserProjects = async (user) => {
-  const res = await user?.getProjects({
-    ...dbKeysExcluded,
-    include: [
-      {
-        model: getEnvironmentModel(),
+  const res = await prisma.project.findMany({
+    orderBy: {
+      name: 'asc',
+    },
+    include: {
+      organization: true,
+      repositories: true,
+      UsersProjects: true,
+      environments: {
         include: {
-          model: getPermissionModel(),
-          include: {
-            model: getUserModel(),
-            attributes: { exclude: ['role'] },
+          permissions: {
+            where: { user: true },
           },
         },
-        ...dbKeysExcluded,
       },
-      {
-        model: getUserModel(),
-        attributes: { exclude: ['role'] },
-      },
-      {
-        model: getRepositoryModel(),
-        ...dbKeysExcluded,
-      },
-      {
-        model: getOrganizationModel(),
-        ...dbKeysExcluded,
-      },
-    ],
-    order: [
-      ['name', 'ASC'],
-    ],
+    },
   })
-  return res
+
+  // const res = await user?.getProjects({
+  //   ...dbKeysExcluded,
+  //   include: [
+  //     {
+  //       model: getEnvironmentModel(),
+  //       include: {
+  //         model: getPermissionModel(),
+  //         include: {
+  //           model: getUserModel(),
+  //           attributes: { exclude: ['role'] },
+  //         },
+  //       },
+  //       ...dbKeysExcluded,
+  //     },
+  //     {
+  //       model: getUserModel(),
+  //       attributes: { exclude: ['role'] },
+  //     },
+  //     {
+  //       model: getRepositoryModel(),
+  //       ...dbKeysExcluded,
+  //     },
+  //     {
+  //       model: getOrganizationModel(),
+  //       ...dbKeysExcluded,
+  //     },
+  //   ],
+  //   order: [
+  //     ['name', 'ASC'],
+  //   ],
+  // })
+  const resWithKeysExcluded = exclude(res, dbKeysExcluded)
+  return resWithKeysExcluded
 }
 
 export const getProjectById = async (id) => {
-  return getProjectModel().findByPk(id)
+  return prisma.project.findUnique({ where: { id } })
 }
 
 export const getProject = async ({ name, organization }) => {
-  const res = await getProjectModel().findAll({
-    raw: true,
-    where: {
-      name,
-      organization,
-    },
-    limit: 1,
-  })
-  return Array.isArray(res) ? res[0] : res
+  const res = await prisma.project.findUnique({ where: { name, organization } })
+  return res
 }
 
 // CREATE
 export const initializeProject = async ({ name, organization, description }) => {
-  return getProjectModel().create({ name, organization, description, status: 'initializing', locked: true })
+  return prisma.project.create({ data: { name, organization, description, status: 'initializing', locked: true } })
 }
 
 // UPDATE
 export const lockProject = async (id) => {
-  return getProjectModel().update({ locked: true }, { where: { id } })
+  return prisma.project.update({ where: { id }, data: { locked: true } })
 }
 
 export const unlockProject = async (id) => {
-  return getProjectModel().update({ locked: false }, { where: { id } })
+  return prisma.project.update({ where: { id }, data: { locked: false } })
 }
 
 export const updateProjectCreated = async (id) => {
-  return getProjectModel().update({ status: 'created' }, { where: { id } })
+  return prisma.project.update({ where: { id }, data: { status: 'created' } })
 }
 
 export const updateProjectFailed = async (id) => {
-  return getProjectModel().update({ status: 'failed' }, { where: { id } })
+  return prisma.project.update({ where: { id }, data: { status: 'failed' } })
 }
 
+// TODO Prisma
 export const addUserToProject = async ({ project, user, role }) => {
   return user.addProject(project, { through: { role } })
 }
 
+// TODO Prisma
 export const removeUserFromProject = async ({ project, user }) => {
   return user.removeProject(project)
 }
 
 export const updateProjectServices = async (id, services) => {
-  return getProjectModel().update({ services }, { where: { id } })
+  return prisma.project.update({ where: { id }, data: { services } })
 }
 
 export const updateProject = async (id, data) => {
-  return getProjectModel().update({
-    ...data,
-  }, {
-    where: { id },
-  })
+  return prisma.project.update({ where: { id }, data: { data } })
 }
 
 export const archiveProject = async (id) => {
-  const project = await getProjectModel().findByPk(id)
-  return getProjectModel().update({
-    name: `${project.name}_${Date.now()}_archived`,
-    status: 'archived',
-    locked: true,
-  }, {
+  const project = await prisma.findUnique({ where: { id } })
+  return prisma.project.update({
     where: { id },
+    data: {
+      name: `${project.name}_${Date.now()}_archived`,
+      status: 'archived',
+      locked: true,
+    },
   })
 }
 
 // TECH
 export const _initializeProject = async ({ id, name, organization, description, services, locked }) => {
-  return getProjectModel().create({ id, name, organization, description, status: 'initializing', locked, services })
+  return prisma.project.create({ data: { id, name, organization, description, status: 'initializing', locked, services } })
 }
 
 export const _dropProjectsTable = async () => {
-  await sequelize.drop({
-    tableName: getProjectModel().tableName,
-    force: true,
-    cascade: true,
-  })
+  await prisma.project.deleteMany({})
 }

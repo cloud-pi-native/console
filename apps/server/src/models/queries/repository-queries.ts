@@ -1,32 +1,21 @@
-import { sequelize } from '../../connect.js'
-import { getRepositoryModel } from '../repository.js'
+import { prisma } from '../../connect.js'
 
 // SELECT
 export const getRepositoryById = async (id) => {
-  return getRepositoryModel().findByPk(id)
+  return prisma.repository.findUnique({ where: { id } })
 }
 
 export const getProjectRepositories = async (projectId) => {
-  return getRepositoryModel().findAll({
-    raw: true,
-    where: {
-      projectId,
-    },
-  })
+  return prisma.repository.findMany({ where: { projectId } })
 }
 
 export const getInfraProjectRepositories = async (projectId) => {
-  return getRepositoryModel().findAll({
-    raw: true,
-    where: {
-      projectId,
-      isInfra: true,
-    },
-  })
+  return prisma.repository.findMany({ where: { projectId, isInfra: true } })
 }
+
 // CREATE
 export const initializeRepository = async ({ projectId, internalRepoName, externalRepoUrl, isInfra, isPrivate, externalUserName, externalToken }) => {
-  return getRepositoryModel().create({
+  return prisma.repository.create({
     projectId,
     internalRepoName,
     externalRepoUrl,
@@ -40,52 +29,31 @@ export const initializeRepository = async ({ projectId, internalRepoName, extern
 
 // UPDATE
 export const updateRepositoryCreated = async (id) => {
-  return getRepositoryModel().update({ status: 'created' }, { where: { id } })
+  return prisma.repository.update({ where: { id }, data: { status: 'created' } })
 }
 
 export const updateRepositoryFailed = async (id) => {
-  return getRepositoryModel().update({ status: 'failed' }, { where: { id } })
+  return prisma.repository.update({ where: { id }, data: { status: 'failed' } })
 }
 
-export const updateRepository = async (id, data) => {
-  return getRepositoryModel().update({
-    ...data,
-    status: 'initializing',
-  }, {
-    where: {
-      id,
-    },
-  })
+export const updateRepository = async (id, infos) => {
+  return prisma.repository.update({ where: { id }, data: { ...infos, status: 'initializing' } })
 }
 
 // DELETE
 export const updateRepositoryDeleting = async (id) => {
   const doesRepoExist = await getRepositoryById(id)
   if (!doesRepoExist) throw new Error('Le dépôt interne demandé n\'existe pas en base pour ce projet')
-  return getRepositoryModel().update({
-    status: 'deleting',
-  }, {
-    where: {
-      id,
-    },
-  })
+  return prisma.repository.update({ where: { id }, data: { status: 'deleting' } })
 }
 
 export const deleteRepository = async (id) => {
   const doesRepoExist = await getRepositoryById(id)
   if (!doesRepoExist) throw new Error('Le dépôt interne demandé n\'existe pas en base pour ce projet')
-  return getRepositoryModel().destroy({
-    where: {
-      id,
-    },
-  })
+  return prisma.repository.delete({ where: { id } })
 }
 
 // TECH
 export const _dropRepositoriesTable = async () => {
-  await sequelize.drop({
-    tableName: getRepositoryModel().tableName,
-    force: true,
-    cascade: true,
-  })
+  await prisma.repository.deleteMany({})
 }

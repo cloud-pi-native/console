@@ -1,8 +1,6 @@
 import { DataTypes } from 'sequelize'
-import { sequelize } from '../connect.js'
 
-let User
-export const getUserModel = () => User ?? (User = sequelize.define('User', {
+export const getUserModel = {
   id: {
     type: DataTypes.UUID,
     allowNull: false,
@@ -21,6 +19,4 @@ export const getUserModel = () => User ?? (User = sequelize.define('User', {
     allowNull: false,
     unique: true,
   },
-}, {
-  tableName: 'Users',
-}))
+}

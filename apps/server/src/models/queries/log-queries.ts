@@ -1,48 +1,44 @@
-import { sequelize } from '../../connect.js'
-import { getLogModel } from '../log.js'
+import { userInfo } from 'os'
+import { prisma } from '../../connect.js'
 
 // SELECT
 export const getAllLogsForUser = async (user, offset = 0) => {
-  const res = await getLogModel().findAll({
-    where: {
-      user,
-    },
-    limit: 100,
-    offset,
+  const res = await prisma.log.findMany({
+    where: { userId: user.id },
+    take: 100,
+    skip: offset,
   })
   return res
 }
 export const countAllLogs = async () => {
-  const res = await getLogModel().count()
+  const res = await prisma.log.aggregate({ _count: { id: true } })
   return res
 }
 
 export const getAllLogs = async ({ offset, limit }) => {
-  const res = await getLogModel().findAll({
-    order: [
-      ['createdAt', 'DESC'],
-    ],
-    offset,
-    limit,
+  const res = await prisma.log.findMany({
+    orderBy: {
+      createdAt: 'desc',
+    },
+    take: limit,
+    skip: offset,
   })
   return res
 }
 
 // CREATE
 export const addLogs = async (action, data, userId) => {
-  const res = await getLogModel().create({
-    action,
-    userId,
-    data,
+  const res = await prisma.log.create({
+    data: {
+      action,
+      userId,
+      data,
+    },
   })
   return res
 }
 
 // TECH
 export const _dropLogsTable = async () => {
-  await sequelize.drop({
-    tableName: getLogModel().tableName,
-    force: true,
-    cascade: true,
-  })
+  await prisma.log.deleteMany({})
 }

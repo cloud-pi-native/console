@@ -1,26 +1,26 @@
-import { sequelize } from '../../connect.js'
-import { getEnvironmentModel } from '../environment.js'
-import { getProjectModel } from '../project.js'
+import { prisma } from '../../connect.js'
+// import { getEnvironmentModel } from '../environment.js'
+// import { getProjectModel } from '../project.js'
 import { getProjectById } from './project-queries.js'
 
 // SELECT
 export const getEnvironmentById = async (id) => {
-  return getEnvironmentModel().findByPk(id)
+  return prisma.environment.findUnique({
+    where: { id },
+  })
 }
 
 export const getEnvironment = async ({ projectId, name }) => {
-  const res = await getEnvironmentModel().findAll({
+  return prisma.environment.findUnique({
     where: { name, projectId },
-    include: { model: getProjectModel() },
-    limit: 1,
+    include: { project: true },
   })
-  return Array.isArray(res) ? res[0] : res
 }
 
 export const getEnvironmentsByProjectId = async (projectId) => {
-  return getEnvironmentModel().findAll({
+  return prisma.environment.findMany({
     where: { projectId },
-    include: { model: getProjectModel() },
+    include: { project: true },
   })
 }
 
@@ -30,56 +30,66 @@ export const getProjectByEnvironmentId = async (environmentId) => {
 }
 
 // INSERT
+// TODO Prisma
 export const initializeEnvironment = async ({ name, projectId }) => {
-  return getEnvironmentModel().create(
-    { name, projectId, status: 'initializing' }, {
-      where: {
-        name,
-        projectId,
-      },
-      include: {
-        model: getProjectModel(),
-      },
-    })
+  return prisma.environment.create({
+    data: {
+      name,
+      projectId,
+      status: 'initializing',
+    },
+  })
+
+  // return getEnvironmentModel().create(
+  //   { name, projectId, status: 'initializing' }, {
+  //     where: {
+  //       name,
+  //       projectId,
+  //     },
+  //     include: {
+  //       model: getProjectModel(),
+  //     },
+  //   })
 }
 
 export const updateEnvironmentCreated = async (id) => {
-  return getEnvironmentModel().update(
-    {
+  return prisma.environment.update({
+    where: {
+      id,
+    },
+    data: {
       status: 'created',
-    }, {
-      where: {
-        id,
-      },
-    })
+    },
+  })
 }
 
 export const updateEnvironmentFailed = async (id) => {
-  return getEnvironmentModel().update(
-    {
+  return prisma.environment.update({
+    where: {
+      id,
+    },
+    data: {
       status: 'failed',
-    }, {
-      where: {
-        id,
-      },
-    })
+    },
+  })
 }
 
 // DELETE
 export const updateEnvironmentDeleting = async (id) => {
   const doesEnvExist = await getEnvironmentById(id)
   if (!doesEnvExist) throw new Error('L\'environnement demandé n\'existe pas en base pour ce projet')
-  return getEnvironmentModel().update({
-    status: 'deleting',
-  }, {
+  return prisma.environment.update({
     where: {
       id,
+    },
+    data: {
+      status: 'deleting',
     },
   })
 }
 
 export const deleteEnvironment = async (id) => {
-  await getEnvironmentModel().destroy({
+  await prisma.environment.delete({
     where: {
       id,
     },
@@ -88,9 +98,5 @@ export const deleteEnvironment = async (id) => {
 
 // TECH
 export const _dropEnvironmentsTable = async () => {
-  await sequelize.drop({
-    tableName: getEnvironmentModel().tableName,
-    force: true,
-    cascade: true,
-  })
+  await prisma.environment.deleteMany({})
 }

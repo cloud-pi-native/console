@@ -1,76 +1,51 @@
-import { sequelize } from '../../connect.js'
-import { getPermissionModel } from '../permission.js'
+import { prisma } from '../../connect.js'
 
 // GET
 export const getEnvironmentPermissions = async (environmentId) => {
-  return getPermissionModel().findAll({
-    where: {
-      environmentId,
-    },
-  })
+  return prisma.permission.findMany({ where: { environmentId } })
 }
 
 export const getUserPermissions = async (userId) => {
-  return getPermissionModel().findAll({
-    where: {
-      userId,
-    },
-  })
+  return prisma.permission.findMany({ where: { userId } })
 }
 
 export const getPermissionByUserIdAndEnvironmentId = async (userId, environmentId) => {
-  return getPermissionModel().findAll({
-    attributes: ['level'],
-    where: {
-      userId,
-      environmentId,
-    },
+  return prisma.permission.findMany({
+    select: { level: true },
+    where: { userId, environmentId },
   })
 }
 
 // CREATE
 export const setPermission = async ({ userId, environmentId, level }) => {
-  return getPermissionModel().create({ userId, environmentId, level })
+  return prisma.permission.create({ data: { userId, environmentId, level } })
 }
 
 // UPDATE
 export const updatePermission = async ({ userId, environmentId, level }) => {
-  return getPermissionModel().update({
-    userId,
-    environmentId,
-    level,
-  },
-  {
+  return prisma.permission.update({
     where: {
       userId,
       environmentId,
+    },
+    data: {
+      userId,
+      environmentId,
+      level,
     },
   })
 }
 
 // DELETE
 export const deletePermission = async (userId, environmentId) => {
-  return getPermissionModel().destroy({
-    where: {
-      userId,
-      environmentId,
-    },
-  })
+  return prisma.permission.delete({ where: { userId, environmentId } })
 }
 
 export const deletePermissionById = async (permissionId) => {
-  return getPermissionModel().destroy({
-    where: {
-      id: permissionId,
-    },
-  })
+  return prisma.permission.delete({ where: { id: permissionId } })
 }
 
 // TECH
 export const _dropPermissionsTable = async () => {
-  await sequelize.drop({
-    tableName: getPermissionModel().tableName,
-    force: true,
-    cascade: true,
-  })
+  await prisma.permission.deleteMany({})
 }
