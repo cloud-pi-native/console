@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "npm run dev:up; npm run dev:down",
-    "dev:build": "docker compose --env-file env/.env -f docker/docker-compose.dev.yml build --pull",
-    "dev:up": "docker compose --env-file env/.env -f docker/docker-compose.dev.yml up --attach server --attach client",
+    "dev:build": "docker compose --env-file env/.env --env-file env/.env.codespace -f docker/docker-compose.dev.yml build --pull",
+    "dev:up": "docker compose --env-file env/.env --env-file env/.env.codespace -f docker/docker-compose.dev.yml up --attach server --attach client",
     "dev:down": "docker compose --env-file env/.env -f docker/docker-compose.dev.yml down",
     "lint": "turbo run lint",
     "format": "turbo run format",
