@@ -17,6 +17,7 @@ FROM base AS dev
 
 USER node
 RUN pnpm install --no-optional
+RUN pnpm --filter shared run build 
 ENTRYPOINT [ "pnpm", "--filter", "client", "run", "dev" ]
 
 
