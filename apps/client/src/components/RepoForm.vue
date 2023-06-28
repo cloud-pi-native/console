@@ -162,7 +162,6 @@ const cancel = (event) => {
           @update:model-value="updateRepo('isInfra', $event)"
         />
         <CIForm
-          v-if="props.isEditable"
           :internal-repo-name="localRepo.internalRepoName"
         />
       </DsfrFieldset>
