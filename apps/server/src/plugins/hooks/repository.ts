@@ -21,12 +21,13 @@ export type RepositoryCreate = {
 export type RepositoryForEnv = {
   internalRepoName: InternalRepoName
 } & Repository
+export type RepositoryUpdate = Omit<RepositoryCreate, 'isInfra' | 'environments' | 'internalUrl'>
 export type RepositoryDelete = RepositoryCreate & { internalUrl: InternalUrl }
 
 export type CreateRepositoryValidateArgs = void
 export type CreateRepositoryExecArgs = RepositoryCreate
 export type UpdateRepositoryValidateArgs = void
-export type UpdateRepositoryExecArgs = void
+export type UpdateRepositoryExecArgs = RepositoryUpdate
 export type DeleteRepositoryValidateArgs = void
 export type DeleteRepositoryExecArgs = RepositoryDelete
 

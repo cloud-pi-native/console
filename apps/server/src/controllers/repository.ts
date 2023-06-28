@@ -253,6 +253,9 @@ export const updateRepositoryController = async (req, res) => {
     'externalUserName',
   ]
   const data = filterObjectByKeys(req.body, keysAllowedForUpdate)
+  // Do not save external token in db
+  const externalToken = data.externalToken
+  delete data.externalToken
 
   let repo
 
@@ -260,7 +263,7 @@ export const updateRepositoryController = async (req, res) => {
     const project = await getProjectById(projectId)
     if (project.locked) return sendForbidden(res, projectIsLockedInfo)
 
-    if (data.isPrivate && !data.externalToken) throw new Error('Le token est requis')
+    if (data.isPrivate && !externalToken) throw new Error('Le token est requis')
     if (data.isPrivate && !data.externalUserName) throw new Error('Le nom d\'utilisateur est requis')
 
     repo = await getRepositoryById(repositoryId)
@@ -270,9 +273,15 @@ export const updateRepositoryController = async (req, res) => {
     if (!role) throw new Error('Vous n\'êtes pas membre du projet')
 
     await lockProject(projectId)
-    await updateRepository(repositoryId, data.info)
 
-    repo = await getRepositoryById(repositoryId)
+    if (!data.isPrivate) {
+      data.externalToken = null
+      data.externalUserName = null
+    }
+
+    await updateRepository(repositoryId, data)
+
+    repo = (await getRepositoryById(repositoryId)).get({ plain: true })
     const description = 'Dépôt mis à jour avec succès'
 
     addReqLogs({
@@ -305,13 +314,13 @@ export const updateRepositoryController = async (req, res) => {
     const organization = await getOrganizationById(project.organization)
 
     const repoData = {
-      ...repo.get({ plain: true }),
+      externalToken,
+      internalRepoName: repo.internalRepoName,
+      externalUserName: repo.externalUserName,
+      externalRepoUrl: repo.externalRepoUrl,
       project: project.name,
       organization: organization.dataValues.name,
-      services: project.services,
     }
-    delete repoData?.isInfra
-    delete repoData?.internalRepoName
 
     // TODO: Fix type
     // @ts-ignore See TODO
@@ -328,10 +337,9 @@ export const updateRepositoryController = async (req, res) => {
       },
     })
   } catch (error) {
-    const description = 'Echec de la mise à jour du dépôt par les plugins'
     addReqLogs({
       req,
-      description,
+      description: 'Echec de la mise à jour du dépôt par les plugins',
       extras: {
         repositoryId: repo.id,
       },
@@ -343,6 +351,7 @@ export const updateRepositoryController = async (req, res) => {
   // Update DB after service call
   try {
     if (isServicesCallOk) {
+      await updateRepositoryCreated(repo.id)
       await unlockProjectIfNotFailed(projectId)
     } else {
       await updateRepositoryFailed(repo.id)
