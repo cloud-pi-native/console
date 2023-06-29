@@ -47,9 +47,9 @@ export const updateRepositoryFailed = async (id) => {
   return getRepositoryModel().update({ status: 'failed' }, { where: { id } })
 }
 
-export const updateRepository = async (id, infos) => {
+export const updateRepository = async (id, data) => {
   return getRepositoryModel().update({
-    ...infos,
+    ...data,
     status: 'initializing',
   }, {
     where: {

@@ -142,6 +142,42 @@ describe('Add repos into project', () => {
     cy.assertAddRepo(project, repos)
   })
 
+  it('Should update a repo', () => {
+    cy.intercept('GET', '/api/v1/projects').as('getProjects')
+    cy.intercept('PUT', '/api/v1/projects/*/repositories/*').as('putRepo')
+    let repos
+
+    cy.goToProjects()
+      .getByDataTestid(`projectTile-${project.name}`).click()
+      .getByDataTestid('menuRepos').click()
+      .url().should('contain', '/repositories')
+
+    cy.wait('@getProjects').its('response').then(response => {
+      repos = response.body.find(resProject => resProject.name === project.name).repositories
+      cy.getByDataTestid(`repoTile-${repos[0].internalRepoName}`).click()
+        .get('h1').should('contain', 'Modifier le dépôt')
+        .getByDataTestid('internalRepoNameInput').should('be.disabled')
+        .getByDataTestid('externalRepoUrlInput').clear().type('https://github.com/externalUser04/new-repo.git')
+
+      cy.getByDataTestid('privateRepoCbx').find('input[type="checkbox"]').check({ force: true })
+        .getByDataTestid('externalUserNameInput').type('newUser')
+        .getByDataTestid('externalTokenInput').clear().type('newToken')
+
+      cy.getByDataTestid('infraRepoCbx').find('input[type="checkbox"]').should('be.disabled')
+
+      cy.getByDataTestid('updateRepoBtn').click()
+      cy.wait('@putRepo').its('response.statusCode').should('eq', 200)
+      cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
+      cy.getByDataTestid(`repoTile-${repos[0].internalRepoName}`).should('exist')
+      cy.reload()
+      cy.getByDataTestid(`repoTile-${repos[0].internalRepoName}`).click()
+        .getByDataTestid('externalRepoUrlInput').should('have.value', 'https://github.com/externalUser04/new-repo.git')
+        .getByDataTestid('privateRepoCbx').find('input[type="checkbox"]').should('be.checked')
+        .getByDataTestid('externalUserNameInput').should('have.value', 'newUser')
+        .getByDataTestid('externalTokenInput').should('have.value', '')
+    })
+  })
+
   it('Should generate a GitLab CI for a repo', () => {
     cy.intercept('POST', '/api/v1/projects/*/repositories').as('postRepo')
     cy.intercept('GET', '/api/v1/projects').as('getProjects')
