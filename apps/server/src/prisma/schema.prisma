@@ -8,9 +8,9 @@ datasource db {
 }
 
 model Environment {
-  id        Int     @id @default(autoincrement())
+  id        String  @id @db.Uuid
   name      String
-  projectId Int
+  projectId String  @db.Uuid
   status    String  @default("initializing")
   project   Project @relation(fields: [projectId], references: [id])
 
@@ -21,12 +21,12 @@ model Log {
   id     Int    @id @default(autoincrement())
   data   Json
   action String @default("")
-  userId Int
+  userId String @db.Uuid
   user   User   @relation(fields: [userId], references: [id])
 }
 
 model Organization {
-  id     Int     @id @unique @default(autoincrement())
+  id     String  @id @unique @db.Uuid
   source String
   name   String  @unique
   label  String  @unique
@@ -36,18 +36,18 @@ model Organization {
 }
 
 model Permission {
-  id            Int         @id @unique @default(autoincrement())
-  userId        Int
-  environmentId Int
+  id            String      @id @unique @db.Uuid
+  userId        String      @db.Uuid
+  environmentId String      @db.Uuid
   level         Int         @default(0)
   user          User        @relation(fields: [userId], references: [id])
   environment   Environment @relation(fields: [environmentId], references: [id])
 }
 
 model Project {
-  id             Int          @id @unique @default(autoincrement())
+  id             String       @id @unique @db.Uuid
   name           String
-  organizationId Int
+  organizationId String       @db.Uuid
   description    String
   status         String
   locked         Boolean      @default(false)
@@ -60,8 +60,8 @@ model Project {
 }
 
 model Repository {
-  id               Int     @id @default(autoincrement())
-  projectId        Int
+  id               String  @id @db.Uuid
+  projectId        String  @db.Uuid
   internalRepoName String
   externalRepoUrl  String
   externalUserName String
@@ -73,7 +73,7 @@ model Repository {
 }
 
 model User {
-  id        Int    @id @default(autoincrement())
+  id        String @id @db.Uuid
   firstName String
   lastName  String
   email     String @unique
@@ -84,8 +84,8 @@ model User {
 }
 
 model UsersProjects {
-  UserId    Int
-  ProjectId Int
+  UserId    String  @db.Uuid
+  ProjectId String  @db.Uuid
   role      String
   user      User    @relation(fields: [UserId], references: [id])
   project   Project @relation(fields: [ProjectId], references: [id])

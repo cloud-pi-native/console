@@ -1,11 +1,5 @@
 import { prisma } from '../../connect.js'
-import { getProjectModel } from '../project.js'
 import { dbKeysExcluded, exclude } from '../../utils/queries-tools.js'
-import { getPermissionModel } from '../permission.js'
-import { getEnvironmentModel } from '../environment.js'
-import { getRepositoryModel } from '../repository.js'
-import { getUserModel } from '../user.js'
-import { getOrganizationModel } from '../organization.js'
 
 // SELECT
 export const getAllProjects = async () => {

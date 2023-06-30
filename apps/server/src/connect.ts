@@ -33,7 +33,7 @@ const DELAY_BEFORE_RETRY = isTest || isCI ? 1000 : 10000
 let closingConnections = false
 
 // export let sequelize
-export let prisma
+export let prisma: PrismaClient
 
 export const getConnection = async (triesLeft = 5) => {
   if (closingConnections || triesLeft <= 0) {
