@@ -1,11 +1,10 @@
 import setupProjects from '../db/setup-projects.js'
 import setupUsers from '../db/setup-users.js'
 import { _createOrganizations } from '../../models/queries/organization-queries.js'
-import { dropTables, synchroniseModels } from '../../connect.js'
+import { dropTables } from '../../connect.js'
 
 export const initDb = async (data) => {
   await dropTables()
-  // await synchroniseModels()
 
   for (const org of data.organizations) {
     await _createOrganizations(org)

@@ -1,4 +1,4 @@
-import { prisma } from '../../connect.js'
+import prisma from '../../prisma'
 import { dbKeysExcluded, exclude } from '../../utils/queries-tools.js'
 import { Organization, Project, User, UsersProjects } from '@prisma/client'
 
@@ -7,7 +7,6 @@ export const getAllProjects = async () => {
   return prisma.project.findMany()
 }
 
-// TODO Prisma
 export const getProjectUsers = async (projectId: Project['id']) => {
   const res = await prisma.user.findMany({
     include: {
@@ -23,7 +22,6 @@ export const getProjectUsers = async (projectId: Project['id']) => {
   return resWithKeysExcluded
 }
 
-// TODO Prisma
 export const getUserProjects = async (user: User) => {
   const res = await prisma.project.findMany({
     orderBy: {
@@ -96,7 +94,6 @@ export const updateProjectFailed = async (id: Project['id']) => {
   return prisma.project.update({ where: { id }, data: { status: 'failed' } })
 }
 
-// TODO Prisma
 export const addUserToProject = async ({ project, user, role }: { project: Project, user: User, role: UsersProjects['role'] }) => {
   return prisma.usersProjects.create({
     data: {
@@ -115,8 +112,7 @@ export const addUserToProject = async ({ project, user, role }: { project: Proje
   })
 }
 
-// TODO Prisma
-export const removeUserFromProject = async ({ project, user }: { project: Project, user: User}) => {
+export const removeUserFromProject = async ({ project, user }: { project: Project, user: User }) => {
   return prisma.usersProjects.deleteMany({
     where: {
       ProjectId: project.id,

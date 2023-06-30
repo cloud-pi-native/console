@@ -1,5 +1,5 @@
 import { Log, User } from '@prisma/client'
-import { prisma } from '../../connect.js'
+import prisma from '../../prisma'
 
 // SELECT
 export const getAllLogsForUser = async (user: User, offset = 0) => {

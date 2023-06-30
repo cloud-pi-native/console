@@ -1,4 +1,4 @@
-import { prisma } from '../../connect.js'
+import prisma from '../../prisma'
 import { Project, User, UsersProjects } from '@prisma/client'
 import { projectRoles } from 'shared'
 

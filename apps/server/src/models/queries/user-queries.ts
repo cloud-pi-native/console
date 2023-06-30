@@ -1,4 +1,4 @@
-import { prisma } from '../../connect.js'
+import prisma from '../../prisma'
 import { dbKeysExcluded, exclude } from '../../utils/queries-tools.js'
 import { User } from '@prisma/client'
 

@@ -1,5 +1,5 @@
 import { Project, Repository } from '@prisma/client'
-import { prisma } from '../../connect.js'
+import prisma from '../../prisma'
 
 // SELECT
 export const getRepositoryById = async (id: Repository['id']) => {

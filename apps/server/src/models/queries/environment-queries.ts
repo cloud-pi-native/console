@@ -1,7 +1,5 @@
 import { Environment, Project } from '@prisma/client'
-import { prisma } from '../../connect.js'
-// import { getEnvironmentModel } from '../environment.js'
-// import { getProjectModel } from '../project.js'
+import prisma from '../../prisma'
 import { getProjectById } from './project-queries.js'
 
 // SELECT
@@ -31,7 +29,6 @@ export const getProjectByEnvironmentId = async (environmentId: Environment['id']
 }
 
 // INSERT
-// TODO Prisma
 export const initializeEnvironment = async ({ name, projectId }: { name: Environment['name'], projectId: Project['id'] }) => {
   return prisma.environment.create({
     data: {

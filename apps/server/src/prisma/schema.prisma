@@ -17,6 +17,8 @@ model Environment {
   project   Project  @relation(fields: [projectId], references: [id])
 
   permissions Permission[]
+
+  @@map("Environments")
 }
 
 model Log {
@@ -27,6 +29,8 @@ model Log {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id])
+
+  @@map("Logs")
 }
 
 model Organization {
@@ -39,6 +43,8 @@ model Organization {
   updatedAt DateTime @updatedAt
 
   projects Project[]
+
+  @@map("Organizations")
 }
 
 model Permission {
@@ -50,6 +56,8 @@ model Permission {
   updatedAt     DateTime    @updatedAt
   user          User        @relation(fields: [userId], references: [id])
   environment   Environment @relation(fields: [environmentId], references: [id])
+
+  @@map("Permissions")
 }
 
 model Project {
@@ -67,6 +75,8 @@ model Project {
   environments  Environment[]
   repositories  Repository[]
   UsersProjects UsersProjects[]
+
+  @@map("Projects")
 }
 
 model Repository {
@@ -82,6 +92,8 @@ model Repository {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
   project          Project  @relation(fields: [projectId], references: [id])
+
+  @@map("Repositories")
 }
 
 model User {
@@ -95,6 +107,8 @@ model User {
   logs          Log[]
   permissions   Permission[]
   UsersProjects UsersProjects[]
+
+  @@map("Users")
 }
 
 model UsersProjects {

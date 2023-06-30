@@ -1,4 +1,4 @@
-import { prisma } from '../../connect.js'
+import prisma from '../../prisma'
 import { Organization } from '@prisma/client'
 
 // SELECT

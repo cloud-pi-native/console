@@ -16,11 +16,11 @@ export default async (projects) => {
       project.organization = dbOrganization.id
       const createdProject = await _initializeProject(project)
       if (project.status === 'created') {
-        await updateProjectCreated(createdProject.dataValues.id)
+        await updateProjectCreated(createdProject.id)
       } else if (createdProject.status === 'archived') {
-        await archiveProject(createdProject.dataValues.id)
+        await archiveProject(createdProject.id)
       } else {
-        await updateProjectFailed(createdProject.dataValues.id)
+        await updateProjectFailed(createdProject.id)
       }
 
       // Create users
@@ -33,12 +33,12 @@ export default async (projects) => {
         // Create environments
         const createdEnv = await initializeEnvironment({
           name: environment.name,
-          projectId: createdProject.dataValues.id,
+          projectId: createdProject.id,
         })
         if (environment.status === 'created') {
-          await updateEnvironmentCreated(createdEnv.dataValues.id)
+          await updateEnvironmentCreated(createdEnv.id)
         } else {
-          await updateEnvironmentFailed(createdEnv.dataValues.id)
+          await updateEnvironmentFailed(createdEnv.id)
         }
 
         // Create permissions
@@ -54,18 +54,17 @@ export default async (projects) => {
       // Create repositories
       project.repositories?.forEach(async repository => {
         const createdRepository = await initializeRepository({
-          projectId: createdProject.dataValues.id,
+          projectId: createdProject.id,
           internalRepoName: repository.internalRepoName,
           externalRepoUrl: repository.externalRepoUrl,
           isPrivate: repository.isPrivate,
           externalUserName: repository.externalUserName,
-          externalToken: repository.externalToken,
           isInfra: repository.isInfra,
         })
         if (repository.status === 'created') {
-          await updateRepositoryCreated(createdRepository.dataValues.id)
+          await updateRepositoryCreated(createdRepository.id)
         } else {
-          await updateRepositoryFailed(createdRepository.dataValues.id)
+          await updateRepositoryFailed(createdRepository.id)
         }
       })
 
