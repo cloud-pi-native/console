@@ -11,7 +11,7 @@ export const levels = [
 export const projectRoles = [
   'owner',
   'user',
-]
+] as const
 
 // ! Une organisation ne doit pas faire plus de 19 caractères
 export const allOrganizations = [

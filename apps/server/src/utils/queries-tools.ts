@@ -1,11 +1,12 @@
 // export const dbKeysExcluded = { attributes: { exclude: ['updatedAt', 'createdAt'] } }
 export const dbKeysExcluded = ['updatedAt', 'createdAt']
 
-export const lowercaseFirstLetter = string => string.charAt(0).toLowerCase() + string.slice(1)
+export const lowercaseFirstLetter = (string) =>
+  string.charAt(0).toLowerCase() + string.slice(1)
 
 export const replaceNestedKeys = (obj: any, fn: (key: string) => any) => {
   if (Array.isArray(obj)) {
-    obj.forEach(el => replaceNestedKeys(el, fn))
+    obj.forEach((el) => replaceNestedKeys(el, fn))
   } else if (typeof obj === 'object') {
     for (const key in obj) {
       if (key.startsWith('_')) continue
@@ -22,14 +23,23 @@ export const replaceNestedKeys = (obj: any, fn: (key: string) => any) => {
 
 export const filterObjectByKeys = (obj, keys) =>
   Object.fromEntries(
-    Object.entries(obj)
-      ?.filter(([key, _value]) =>
-        keys.includes(key)),
+    Object.entries(obj)?.filter(([key, _value]) => keys.includes(key)),
   )
 
 // Export keys from result queries
-export function exclude (user, keys) {
-  return Object.fromEntries(
-    Object.entries(user).filter(([key]) => !keys.includes(key)),
-  )
+export const exclude = <T>(result: T, keys: string[]): T => {
+  const newObj = {}
+  Object.entries(result).forEach(([key, value]) => {
+    if (keys.includes(key)) return
+    if (Array.isArray(value)) {
+      newObj[key] = value.map((val) => exclude(val, keys))
+      return
+    }
+    if (value instanceof Object) {
+      newObj[key] = exclude(value, keys)
+      return
+    }
+    newObj[key] = value
+  })
+  return newObj as any
 }

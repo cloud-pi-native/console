@@ -1,8 +1,8 @@
-import { userInfo } from 'os'
+import { Log, User } from '@prisma/client'
 import { prisma } from '../../connect.js'
 
 // SELECT
-export const getAllLogsForUser = async (user, offset = 0) => {
+export const getAllLogsForUser = async (user: User, offset = 0) => {
   const res = await prisma.log.findMany({
     where: { userId: user.id },
     take: 100,
@@ -15,7 +15,7 @@ export const countAllLogs = async () => {
   return res
 }
 
-export const getAllLogs = async ({ offset, limit }) => {
+export const getAllLogs = async ({ offset, limit }: { offset: number, limit: number}) => {
   const res = await prisma.log.findMany({
     orderBy: {
       createdAt: 'desc',
@@ -27,7 +27,7 @@ export const getAllLogs = async ({ offset, limit }) => {
 }
 
 // CREATE
-export const addLogs = async (action, data, userId) => {
+export const addLogs = async (action: Log['action'], data: Log['data'], userId: User['id']) => {
   const res = await prisma.log.create({
     data: {
       action,

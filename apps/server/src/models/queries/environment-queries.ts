@@ -1,58 +1,52 @@
+import { Environment, Project } from '@prisma/client'
 import { prisma } from '../../connect.js'
 // import { getEnvironmentModel } from '../environment.js'
 // import { getProjectModel } from '../project.js'
 import { getProjectById } from './project-queries.js'
 
 // SELECT
-export const getEnvironmentById = async (id) => {
+export const getEnvironmentById = async (id: Environment['id']) => {
   return prisma.environment.findUnique({
     where: { id },
   })
 }
 
-export const getEnvironment = async ({ projectId, name }) => {
-  return prisma.environment.findUnique({
+export const getEnvironment = async ({ projectId, name }: { projectId: Project['id'], name: Environment['name'] }) => {
+  return prisma.environment.findFirst({
     where: { name, projectId },
     include: { project: true },
   })
 }
 
-export const getEnvironmentsByProjectId = async (projectId) => {
+export const getEnvironmentsByProjectId = async (projectId: Project['id']) => {
   return prisma.environment.findMany({
     where: { projectId },
     include: { project: true },
   })
 }
 
-export const getProjectByEnvironmentId = async (environmentId) => {
+export const getProjectByEnvironmentId = async (environmentId: Environment['id']) => {
   const env = await getEnvironmentById(environmentId)
   return getProjectById(env.projectId)
 }
 
 // INSERT
 // TODO Prisma
-export const initializeEnvironment = async ({ name, projectId }) => {
+export const initializeEnvironment = async ({ name, projectId }: { name: Environment['name'], projectId: Project['id'] }) => {
   return prisma.environment.create({
     data: {
+      project: {
+        connect: {
+          id: projectId,
+        },
+      },
       name,
-      projectId,
       status: 'initializing',
     },
   })
-
-  // return getEnvironmentModel().create(
-  //   { name, projectId, status: 'initializing' }, {
-  //     where: {
-  //       name,
-  //       projectId,
-  //     },
-  //     include: {
-  //       model: getProjectModel(),
-  //     },
-  //   })
 }
 
-export const updateEnvironmentCreated = async (id) => {
+export const updateEnvironmentCreated = async (id: Environment['id']) => {
   return prisma.environment.update({
     where: {
       id,
@@ -63,7 +57,7 @@ export const updateEnvironmentCreated = async (id) => {
   })
 }
 
-export const updateEnvironmentFailed = async (id) => {
+export const updateEnvironmentFailed = async (id: Environment['id']) => {
   return prisma.environment.update({
     where: {
       id,
@@ -75,7 +69,7 @@ export const updateEnvironmentFailed = async (id) => {
 }
 
 // DELETE
-export const updateEnvironmentDeleting = async (id) => {
+export const updateEnvironmentDeleting = async (id: Environment['id']) => {
   const doesEnvExist = await getEnvironmentById(id)
   if (!doesEnvExist) throw new Error('L\'environnement demandé n\'existe pas en base pour ce projet')
   return prisma.environment.update({
@@ -88,7 +82,7 @@ export const updateEnvironmentDeleting = async (id) => {
   })
 }
 
-export const deleteEnvironment = async (id) => {
+export const deleteEnvironment = async (id: Environment['id']) => {
   await prisma.environment.delete({
     where: {
       id,
