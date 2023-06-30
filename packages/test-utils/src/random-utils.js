@@ -10,7 +10,7 @@ export const getRandomGitUrl = () => {
   return !url.startsWith('https://') ? 'https://' + url.split('://')[1] : url
 }
 
-export const getRandomOrganization = (name = 'ministere-interieur', label = 'Ministère de l\'Intérieur', source = 'dso-console') => {
+export const getRandomOrganization = (name = 'mi', label = 'Ministère de l\'Intérieur', source = 'dso-console') => {
   return {
     id: faker.string.uuid(),
     name,

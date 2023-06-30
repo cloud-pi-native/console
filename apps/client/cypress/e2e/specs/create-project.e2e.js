@@ -11,7 +11,7 @@ describe('Create Project', () => {
 
     const owner = getUserById('cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
     const project = {
-      orgName: 'ministere-interieur',
+      orgName: 'mi',
       name: 'project01',
       description: 'Application de prise de rendez-vous en préfécture.',
     }
