@@ -20,7 +20,7 @@ export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = allEnv, or
   // Create project
   const project = getRandomProject(organization.id)
 
-  // Create usersProjects association table
+  // Create Roles association table
   project.users = users.map(user =>
     getRandomUserProject(user.id))
   project.users[0].role = projectRoles[0]

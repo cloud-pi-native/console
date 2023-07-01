@@ -11,35 +11,25 @@ import {
   dbName,
   dbPass,
 } from './utils/env.js'
-import { _dropPermissionsTable } from './models/queries/permission-queries.js'
-import { _dropEnvironmentsTable } from './models/queries/environment-queries.js'
-import { _dropRepositoriesTable } from './models/queries/repository-queries.js'
-import { _dropProjectsTable } from './models/queries/project-queries.js'
-import { _dropUsersTable } from './models/queries/user-queries.js'
-import { _dropOrganizationsTable } from './models/queries/organization-queries.js'
-import { _dropUsersProjectsTable } from './models/queries/users-projects-queries.js'
-import { _dropLogsTable } from './models/queries/log-queries.js'
+import { _dropPermissionsTable } from './queries/permission-queries.js'
+import { _dropEnvironmentsTable } from './queries/environment-queries.js'
+import { _dropRepositoriesTable } from './queries/repository-queries.js'
+import { _dropProjectsTable } from './queries/project-queries.js'
+import { _dropUsersTable } from './queries/user-queries.js'
+import { _dropOrganizationsTable } from './queries/organization-queries.js'
+import { _dropRolesTable } from './queries/roles-queries.js'
+import { _dropLogsTable } from './queries/log-queries.js'
 
 const DELAY_BEFORE_RETRY = isTest || isCI ? 1000 : 10000
 let closingConnections = false
 
-// export let sequelize
 export const getConnection = async (triesLeft = 5) => {
   if (closingConnections || triesLeft <= 0) {
     throw new Error('Unable to connect to Postgres server')
   }
   triesLeft--
 
-  // if (isTest) {
-  //   const { default: SequelizeMock } = await import('sequelize-mock')
-  //   sequelize = new SequelizeMock()
-  //   return
-  // }
   try {
-    // if (isDev || isTest || isCI) {
-    //   app.log.info(`Trying to connect to Postgres with: ${postgresUri}`)
-    // }
-
     await prisma.$connect()
 
     app.log.info('Connected to Postgres!')
@@ -78,7 +68,7 @@ export const dropTables = async () => {
     await _dropEnvironmentsTable()
     await _dropProjectsTable()
     await _dropUsersTable()
-    await _dropUsersProjectsTable()
+    await _dropRolesTable()
     await _dropOrganizationsTable()
 
     app.log.info('All tables were droped successfully.')

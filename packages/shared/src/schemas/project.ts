@@ -17,7 +17,7 @@ export const projectSchema = Joi.object({
   description: Joi.string().allow('')
     .max(descriptionMaxLength),
 
-  organization: Joi.string()
+  organizationId: Joi.string()
     .uuid()
     .required(),
 

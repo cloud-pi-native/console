@@ -163,18 +163,18 @@ INSERT INTO "Users" ("id", "firstName", "lastName", "email", "createdAt", "updat
 ('cb8e5b4b-7b7b-40f5-935f-594f48ae6568',	'Baudoin',	'TRAN',	'baudoin.tran@test.com',	'2023-06-30 07:52:04.406+00',	'2023-06-30 07:52:04.406+00'),
 ('cb8e5b4b-7b7b-40f5-935f-594f48ae6569',	'Arnaud',	'TARDIF',	'arnaud.tardif@test.com',	'2023-06-30 07:52:04.406+00',	'2023-06-30 07:52:04.406+00');
 
-DROP TABLE IF EXISTS "UsersProjects";
-CREATE TABLE "public"."UsersProjects" (
+DROP TABLE IF EXISTS "Roles";
+CREATE TABLE "public"."Roles" (
     "UserId" uuid NOT NULL,
     "ProjectId" uuid NOT NULL,
     "role" character varying(255),
     "createdAt" timestamptz NOT NULL,
     "updatedAt" timestamptz NOT NULL,
-    CONSTRAINT "UsersProjects_pkey" PRIMARY KEY ("UserId", "ProjectId")
+    CONSTRAINT "Roles_pkey" PRIMARY KEY ("UserId", "ProjectId")
 ) WITH (oids = false);
 
-TRUNCATE "UsersProjects";
-INSERT INTO "UsersProjects" ("UserId", "ProjectId", "role", "createdAt", "updatedAt") VALUES
+TRUNCATE "Roles";
+INSERT INTO "Roles" ("UserId", "ProjectId", "role", "createdAt", "updatedAt") VALUES
 ('cb8e5b4b-7b7b-40f5-935f-594f48ae6565',	'011e7860-04d7-461f-912d-334c622d38b3',	'owner',	'2023-06-30 07:52:04.43+00',	'2023-06-30 07:52:04.43+00'),
 ('cb8e5b4b-7b7b-40f5-935f-594f48ae6569',	'011e7860-04d7-461f-912d-334c622d38b3',	'user',	'2023-06-30 07:52:04.431+00',	'2023-06-30 07:52:04.431+00'),
 ('cb8e5b4b-7b7b-40f5-935f-594f48ae6566',	'011e7860-04d7-461f-912d-334c622d38b3',	'user',	'2023-06-30 07:52:04.433+00',	'2023-06-30 07:52:04.433+00'),
@@ -198,7 +198,7 @@ ALTER TABLE ONLY "public"."Projects" ADD CONSTRAINT "Projects_organization_fkey"
 
 ALTER TABLE ONLY "public"."Repositories" ADD CONSTRAINT "Repositories_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Projects"(id) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
 
-ALTER TABLE ONLY "public"."UsersProjects" ADD CONSTRAINT "UsersProjects_ProjectId_fkey" FOREIGN KEY ("ProjectId") REFERENCES "Projects"(id) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
-ALTER TABLE ONLY "public"."UsersProjects" ADD CONSTRAINT "UsersProjects_UserId_fkey" FOREIGN KEY ("UserId") REFERENCES "Users"(id) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."Roles" ADD CONSTRAINT "Roles_ProjectId_fkey" FOREIGN KEY ("ProjectId") REFERENCES "Projects"(id) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."Roles" ADD CONSTRAINT "Roles_UserId_fkey" FOREIGN KEY ("UserId") REFERENCES "Users"(id) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
 
 -- 2023-06-30 07:52:30.258466+00

@@ -78,12 +78,12 @@ CREATE TABLE "User" (
 );
 
 -- CreateTable
-CREATE TABLE "UsersProjects" (
+CREATE TABLE "Roles" (
     "UserId" INTEGER NOT NULL,
     "ProjectId" INTEGER NOT NULL,
     "role" TEXT NOT NULL,
 
-    CONSTRAINT "UsersProjects_pkey" PRIMARY KEY ("UserId","ProjectId")
+    CONSTRAINT "Roles_pkey" PRIMARY KEY ("UserId","ProjectId")
 );
 
 -- CreateIndex
@@ -123,7 +123,7 @@ ALTER TABLE "Project" ADD CONSTRAINT "Project_organizationId_fkey" FOREIGN KEY (
 ALTER TABLE "Repository" ADD CONSTRAINT "Repository_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "UsersProjects" ADD CONSTRAINT "UsersProjects_UserId_fkey" FOREIGN KEY ("UserId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Roles" ADD CONSTRAINT "Roles_UserId_fkey" FOREIGN KEY ("UserId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "UsersProjects" ADD CONSTRAINT "UsersProjects_ProjectId_fkey" FOREIGN KEY ("ProjectId") REFERENCES "Project"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Roles" ADD CONSTRAINT "Roles_ProjectId_fkey" FOREIGN KEY ("ProjectId") REFERENCES "Project"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -4,11 +4,11 @@ import {
   updatePermission,
   deletePermission,
   getPermissionByUserIdAndEnvironmentId,
-} from '../models/queries/permission-queries.js'
+} from '../queries/permission-queries.js'
 import {
   getRoleByUserIdAndProjectId,
   getSingleOwnerByProjectId,
-} from '../models/queries/users-projects-queries.js'
+} from '../queries/roles-queries.js'
 import { addReqLogs } from '../utils/logger.js'
 import { sendOk, sendCreated, sendNotFound, sendBadRequest, sendForbidden } from '../utils/response.js'
 // import hooksHandlers from '../plugins/index.js'
@@ -157,7 +157,6 @@ export const deletePermissionController = async (req, res) => {
       req,
       description: 'Permissions supprimée avec succès',
       extras: {
-        permissionId: permission.id,
         projectId,
         environmentId,
       },

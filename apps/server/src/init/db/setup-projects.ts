@@ -1,11 +1,11 @@
-import { _initializeProject, updateProjectCreated, updateProjectFailed, archiveProject, addUserToProject } from '../../models/queries/project-queries.js'
-import { initializeEnvironment, updateEnvironmentCreated, updateEnvironmentFailed } from '../../models/queries/environment-queries.js'
-import { setPermission } from '../../models/queries/permission-queries.js'
-import { getOrganizationByName } from '../../models/queries/organization-queries.js'
-import { initializeRepository, updateRepositoryCreated, updateRepositoryFailed } from '../../models/queries/repository-queries.js'
+import { _initializeProject, updateProjectCreated, updateProjectFailed, archiveProject, addUserToProject } from '../../queries/project-queries.js'
+import { initializeEnvironment, updateEnvironmentCreated, updateEnvironmentFailed } from '../../queries/environment-queries.js'
+import { setPermission } from '../../queries/permission-queries.js'
+import { getOrganizationByName } from '../../queries/organization-queries.js'
+import { initializeRepository, updateRepositoryCreated, updateRepositoryFailed } from '../../queries/repository-queries.js'
 import app from '../../app.js'
-import { getUserById } from '../../models/queries/user-queries.js'
-import { addLogs } from '../../models/queries/log-queries.js'
+import { getUserById } from '../../queries/user-queries.js'
+import { addLogs } from '../../queries/log-queries.js'
 
 export default async (projects) => {
   app.log.info('Creating projects...')
@@ -32,6 +32,7 @@ export default async (projects) => {
       project.environments.forEach(async environment => {
         // Create environments
         const createdEnv = await initializeEnvironment({
+          projectOwners: project.users.filter(user => user.role === 'owner'),
           name: environment.name,
           projectId: createdProject.id,
         })

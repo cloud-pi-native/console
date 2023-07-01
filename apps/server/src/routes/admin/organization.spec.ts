@@ -7,12 +7,9 @@ import fp from 'fastify-plugin'
 import { sessionConf } from '../../utils/keycloak'
 import { getConnection, closeConnections } from '../../connect.js'
 import organizationRouter from './organization.js'
-import { getOrganizationModel } from '../../models/organization.js'
 import { adminGroupPath, allOrganizations } from 'shared'
 import { fetchOrganizationsRes, filteredOrganizations } from '../../utils/mock-plugins.js'
-import { getLogModel } from '../../models/log.js'
 import { checkAdminGroup } from '../../utils/controller.js'
-import { sequelize } from '../../../vitest-init'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 
@@ -47,14 +44,9 @@ const mockSession = (app) => {
 }
 
 describe('Organizations routes', () => {
-  let Organization
-  let Logs
-
   beforeAll(async () => {
     mockSession(app)
     await getConnection()
-    Organization = getOrganizationModel()
-    Logs = getLogModel()
   })
 
   afterAll(async () => {
@@ -63,16 +55,12 @@ describe('Organizations routes', () => {
 
   afterEach(() => {
     vi.clearAllMocks()
-    sequelize.$clearQueue()
-    Organization.$clearQueue()
   })
 
   // GET
   describe('getAllOrganizationsController', () => {
     it('Should retrieve all organizations', async () => {
       const organizations = allOrganizations.map(org => getRandomOrganization(org.name, org.label))
-
-      Organization.$queueResult(organizations)
 
       const response = await app.inject({ headers: { admin: 'admin' } })
         .get('/')
@@ -83,8 +71,6 @@ describe('Organizations routes', () => {
     })
 
     it('Should return an error if retrieve organizations failed', async () => {
-      Organization.$queueFailure()
-
       const response = await app.inject({ headers: { admin: 'admin' } })
         .get('/')
         .end()
@@ -94,8 +80,6 @@ describe('Organizations routes', () => {
     })
 
     it('Should return an error if requestor is not admin', async () => {
-      Organization.$queueFailure()
-
       const response = await app.inject()
         .get('/')
         .end()
@@ -111,9 +95,6 @@ describe('Organizations routes', () => {
         name: 'my-org',
         label: 'Ministère de la bicyclette',
       }
-
-      Organization.$queueResult(null)
-      Organization.$queueResult(organization)
 
       const response = await app.inject({ headers: { admin: 'admin' } })
         .post('/')
@@ -145,8 +126,6 @@ describe('Organizations routes', () => {
         label: 'Ministère de l\'italo-disco',
       }
 
-      Organization.$queueResult(organization)
-
       const response = await app.inject({ headers: { admin: 'admin' } })
         .post('/')
         .body(organization)
@@ -161,8 +140,6 @@ describe('Organizations routes', () => {
         name: 'my-org',
         label: 'Ministère de l\'italo-disco',
       }
-
-      Organization.$queueResult(organization)
 
       const response = await app.inject()
         .post('/')
@@ -181,10 +158,6 @@ describe('Organizations routes', () => {
         active: false,
         label: 'Ministère du disco',
       }
-      Organization.$queueResult(organization)
-      Organization.$queueResult(organization)
-      Organization.$queueResult(organization)
-
       const response = await app.inject({ headers: { admin: 'admin' } })
         .put('/m-disc')
         .body(data)
@@ -199,9 +172,6 @@ describe('Organizations routes', () => {
       const data = {
         label: 'Ministère du disco',
       }
-      Organization.$queueResult(organization)
-      Organization.$queueResult(organization)
-
       const response = await app.inject({ headers: { admin: 'admin' } })
         .put('/m-disc')
         .body(data)
@@ -216,9 +186,6 @@ describe('Organizations routes', () => {
       const data = {
         active: false,
       }
-      Organization.$queueResult(organization)
-      Organization.$queueResult(organization)
-
       const response = await app.inject({ headers: { admin: 'admin' } })
         .put('/m-disc')
         .body(data)
@@ -233,8 +200,6 @@ describe('Organizations routes', () => {
         active: false,
         label: 'Ministère du disco',
       }
-
-      Organization.$queueResult(organization)
 
       const response = await app.inject()
         .put('/m-disc')
@@ -253,13 +218,7 @@ describe('Organizations routes', () => {
         ...organizations,
         ...filteredOrganizations,
       ]
-
-      Organization.$queueResult(organizations)
-      Logs.$queueResult({})
-      filteredOrganizations.forEach(externalOrg => {
-        sequelize.$queueResult(externalOrg)
-      })
-      Organization.$queueResult(allOrganizations)
+      filteredOrganizations.forEach(externalOrg => {})
 
       const response = await app.inject({ headers: { admin: 'admin' } })
         .put('sync/organizations')

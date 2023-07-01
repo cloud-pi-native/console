@@ -1,7 +1,6 @@
 import { readdirSync, existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import url from 'url'
-import { isCI, isInt, isProd } from '../utils/env.js'
 import { objectEntries, objectKeys } from '@/utils/type.js'
 import * as hooks from './hooks/index.js'
 import { type PluginsFunctions } from './hooks/hook.js'

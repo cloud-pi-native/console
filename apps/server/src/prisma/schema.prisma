@@ -7,33 +7,29 @@ datasource db {
   url      = env("DB_URL")
 }
 
-model Environment {
+model Environments {
   id        String   @id @default(uuid()) @db.Uuid
   name      String
   projectId String   @db.Uuid
   status    String   @default("initializing")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  project   Project  @relation(fields: [projectId], references: [id])
+  project   Projects @relation(fields: [projectId], references: [id])
 
-  permissions Permission[]
-
-  @@map("Environments")
+  permissions Permissions[]
 }
 
-model Log {
+model Logs {
   id        Int      @id @default(autoincrement())
   data      Json
   action    String   @default("")
   userId    String   @db.Uuid
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id])
-
-  @@map("Logs")
+  user      Users    @relation(fields: [userId], references: [id])
 }
 
-model Organization {
+model Organizations {
   id        String   @id @unique @default(uuid()) @db.Uuid
   source    String
   name      String   @unique
@@ -42,44 +38,40 @@ model Organization {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  projects Project[]
-
-  @@map("Organizations")
+  projects Projects[]
 }
 
-model Permission {
-  id            String      @id @unique @default(uuid()) @db.Uuid
-  userId        String      @db.Uuid
-  environmentId String      @db.Uuid
-  level         Int         @default(0)
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  user          User        @relation(fields: [userId], references: [id])
-  environment   Environment @relation(fields: [environmentId], references: [id])
+model Permissions {
+  id            String       @id @unique @default(uuid()) @db.Uuid
+  userId        String       @db.Uuid
+  environmentId String       @db.Uuid
+  level         Int          @default(0) // TODO faire un enum 0,1,2 > voir 10, 20, 30
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  user          Users        @relation(fields: [userId], references: [id])
+  environment   Environments @relation(fields: [environmentId], references: [id])
 
-  @@map("Permissions")
+  @@unique([userId, environmentId])
 }
 
-model Project {
-  id                    String       @id @unique @default(uuid()) @db.Uuid
-  name                  String
-  organization          String       @db.Uuid
-  description           String
-  status                String
-  locked                Boolean      @default(false)
-  services              Json
-  createdAt             DateTime     @default(now())
-  updatedAt             DateTime     @updatedAt
-  organizationReference Organization @relation(fields: [organization], references: [id])
+model Projects {
+  id             String        @id @unique @default(uuid()) @db.Uuid
+  name           String
+  organizationId String        @db.Uuid
+  description    String
+  status         String
+  locked         Boolean       @default(false)
+  services       Json
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  organization   Organizations @relation(fields: [organizationId], references: [id])
 
-  environments  Environment[]
-  repositories  Repository[]
-  UsersProjects UsersProjects[]
-
-  @@map("Projects")
+  environments Environments[]
+  repositories Repositories[]
+  roles        Roles[]
 }
 
-model Repository {
+model Repositories {
   id               String   @id @default(uuid()) @db.Uuid
   projectId        String   @db.Uuid
   internalRepoName String
@@ -91,12 +83,10 @@ model Repository {
   status           String   @default("initializing")
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
-  project          Project  @relation(fields: [projectId], references: [id])
-
-  @@map("Repositories")
+  project          Projects @relation(fields: [projectId], references: [id])
 }
 
-model User {
+model Users {
   id        String   @id @default(uuid()) @db.Uuid
   firstName String
   lastName  String
@@ -104,21 +94,20 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  logs          Log[]
-  permissions   Permission[]
-  UsersProjects UsersProjects[]
-
-  @@map("Users")
+  logs        Logs[]
+  permissions Permissions[]
+  roles       Roles[]
 }
 
-model UsersProjects {
-  UserId    String   @db.Uuid
-  ProjectId String   @db.Uuid
+model Roles {
+  userId    String   @db.Uuid
+  projectId String   @db.Uuid
   role      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [UserId], references: [id])
-  project   Project  @relation(fields: [ProjectId], references: [id])
+  user      Users    @relation(fields: [userId], references: [id])
+  project   Projects @relation(fields: [projectId], references: [id])
 
-  @@id([UserId, ProjectId])
+  @@id([userId, projectId])
+  @@unique([userId, projectId])
 }

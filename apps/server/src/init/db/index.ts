@@ -1,6 +1,6 @@
 import setupProjects from '../db/setup-projects.js'
 import setupUsers from '../db/setup-users.js'
-import { _createOrganizations } from '../../models/queries/organization-queries.js'
+import { _createOrganizations } from '../../queries/organization-queries.js'
 import { dropTables } from '../../connect.js'
 
 export const initDb = async (data) => {

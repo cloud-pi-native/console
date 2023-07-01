@@ -1,25 +1,16 @@
 import {
   getProjectUsers,
-  getProjectById,
   lockProject,
   addUserToProject,
   removeUserFromProject,
-} from '../models/queries/project-queries.js'
-import {
-  createUser,
-  getUserByEmail,
-  getUserById,
-} from '../models/queries/user-queries.js'
-import {
-  getRoleByUserIdAndProjectId,
-  deleteRoleByUserIdAndProjectId,
-  updateUserProjectRole,
-} from '../models/queries/users-projects-queries.js'
-import { deletePermission } from '../models/queries/permission-queries.js'
-import { getEnvironmentsByProjectId } from '../models/queries/environment-queries.js'
+  getProjectInfos,
+} from '../queries/project-queries.js'
+import { createUser, getUserByEmail } from '../queries/user-queries.js'
+import { updateUserProjectRole } from '../queries/roles-queries.js'
+import { deletePermission } from '../queries/permission-queries.js'
 import { sendOk, sendCreated, sendNotFound, sendBadRequest, sendForbidden } from '../utils/response.js'
 import { addReqLogs } from '../utils/logger.js'
-import { unlockProjectIfNotFailed } from '../utils/controller.js'
+import { AsyncReturnType, hasRoleInProject, unlockProjectIfNotFailed } from '../utils/controller.js'
 import { projectIsLockedInfo } from 'shared'
 
 // GET
@@ -28,10 +19,8 @@ export const getProjectUsersController = async (req, res) => {
   const projectId = req.params?.projectId
 
   try {
-    const role = await getRoleByUserIdAndProjectId(userId, projectId)
-    if (!role) throw new Error('Vous n\'êtes pas membre du projet')
-
     const users = await getProjectUsers(projectId)
+    if (!hasRoleInProject(userId, { userList: users })) throw new Error('Vous n\'êtes pas souscripteur du projet')
 
     addReqLogs({
       req,
@@ -61,20 +50,19 @@ export const addUserToProjectController = async (req, res) => {
   const projectId = req.params?.projectId
   const data = req.body
 
-  let project
+  let project: AsyncReturnType<typeof getProjectInfos>
   try {
-    project = await getProjectById(projectId)
+    project = await getProjectInfos(projectId)
     if (!project) throw new Error('Projet introuvable')
     if (project.locked) return sendForbidden(res, projectIsLockedInfo)
 
-    const requestorRole = await getRoleByUserIdAndProjectId(userId, projectId)
-    if (!requestorRole) throw new Error('Vous n\'êtes pas membre du projet')
+    if (!hasRoleInProject(userId, { roles: project.roles, minRole: 'owner' })) throw new Error('Vous n\'êtes pas souscripteur du projet')
 
     const userToAdd = await getUserByEmail(data.email)
     if (!userToAdd) throw new Error('Utilisateur introuvable')
 
-    const userToAddRole = await getRoleByUserIdAndProjectId(userToAdd.id, projectId)
-    if (userToAddRole) throw new Error('L\'utilisateur est déjà membre du projet')
+    // si le user ne fait pas parti du projet
+    if (project.roles.filter(userProject => userProject.userId === userId).length > 0) throw new Error('L\'utilisateur est déjà membre du projet')
 
     await lockProject(projectId)
     await addUserToProject({ project, user: userToAdd, role: 'user' })
@@ -158,17 +146,15 @@ export const updateUserProjectRoleController = async (req, res) => {
   const userToUpdateId = req.params?.userId
   const data = req.body
 
-  let project
+  let project: AsyncReturnType<typeof getProjectInfos>
   try {
-    project = await getProjectById(projectId)
+    project = await getProjectInfos(projectId)
     if (!project) throw new Error('Projet introuvable')
     if (project.locked) return sendForbidden(res, projectIsLockedInfo)
 
-    const requestorRole = await getRoleByUserIdAndProjectId(userId, projectId)
-    if (!requestorRole) throw new Error('Vous n\'êtes pas membre du projet')
+    if (!hasRoleInProject(userId, { roles: project.roles, minRole: 'owner' })) throw new Error('Vous n\'êtes pas membre du projet')
 
-    const userToUpdateRole = await getRoleByUserIdAndProjectId(userToUpdateId, projectId)
-    if (!userToUpdateRole) throw new Error('L\'utilisateur ne fait pas partie du projet')
+    if (project.roles.filter(userProject => userProject.userId === userId).length === 0) throw new Error('L\'utilisateur ne fait pas partie du projet')
 
     await updateUserProjectRole(projectId, userToUpdateId, data.role)
 
@@ -203,28 +189,20 @@ export const removeUserFromProjectController = async (req, res) => {
   const projectId = req.params?.projectId
   const userToRemoveId = req.params?.userId
 
-  let project
+  let project: AsyncReturnType<typeof getProjectInfos>
   try {
-    project = await getProjectById(projectId)
+    project = await getProjectInfos(projectId)
     if (!project) throw new Error('Projet introuvable')
+    if (!hasRoleInProject(userId, { roles: project.roles, minRole: 'owner' })) throw new Error('Vous n\'êtes pas membre du projet')
 
-    const requestorRole = await getRoleByUserIdAndProjectId(userId, projectId)
-    if (!requestorRole) throw new Error('Vous n\'êtes pas membre du projet')
-
-    const userToRemove = await getUserById(userToRemoveId)
-
-    const userToRemoveRole = await getRoleByUserIdAndProjectId(userToRemoveId, projectId)
-    if (!userToRemoveRole) throw new Error('L\'utilisateur n\'est pas membre du projet')
+    if (!hasRoleInProject(userToRemoveId, { roles: project.roles })) throw new Error('L\'utilisateur n\'est pas membre du projet')
 
     await lockProject(projectId)
-    await removeUserFromProject({ project, user: userToRemove })
-
-    const environments = await getEnvironmentsByProjectId(projectId)
-    environments.forEach(async env => {
+    project.environments.forEach(async env => {
       // TODO : retirer user des groupes keycloak permission pour le projet
       await deletePermission(userToRemoveId, env.id)
     })
-    await deleteRoleByUserIdAndProjectId(userToRemoveId, projectId)
+    await removeUserFromProject({ projectId: project.id, userId: userToRemoveId })
 
     const description = 'Utilisateur supprimé dans le projet avec succès'
     addReqLogs({

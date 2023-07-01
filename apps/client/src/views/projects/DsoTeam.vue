@@ -18,7 +18,7 @@ const isUserAlreadyInTeam = computed(() => {
   return !!allUsers?.find(user => user.email === newUser.value.email)
 })
 
-const owner = computed(() => project.value.users?.find(user => user?.usersProjects?.role === 'owner'))
+const owner = computed(() => project.value.users?.find(user => user?.roles?.role === 'owner'))
 
 const newUser = ref({})
 
@@ -35,7 +35,7 @@ const setRows = () => {
 
   if (project.value.users?.length) {
     project.value.users?.forEach(user => {
-      if (user.usersProjects?.role === 'owner') {
+      if (user.roles?.role === 'owner') {
         rows.value.unshift([
           owner.value.email,
           'owner',

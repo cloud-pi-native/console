@@ -6,12 +6,14 @@ export const levels = [
   'r',
   'rw',
   'rwd',
-]
+] as const
+export type PermissionLevels = typeof levels[number]
 
 export const projectRoles = [
   'owner',
   'user',
 ] as const
+export type ProjectRoles = typeof projectRoles[number]
 
 // ! Une organisation ne doit pas faire plus de 19 caractères
 export const allOrganizations = [

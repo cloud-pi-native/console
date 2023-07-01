@@ -9,8 +9,6 @@ import logRouter from './log.js'
 import { adminGroupPath } from 'shared'
 import { getRandomLog, repeatFn } from 'test-utils'
 import { checkAdminGroup } from '../../utils/controller.js'
-import { sequelize } from '../../../vitest-init'
-import { getLogModel } from '../../models/log.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 
@@ -42,7 +40,6 @@ describe('Admin logs routes', () => {
   beforeAll(async () => {
     mockSession(app)
     await getConnection()
-    Log = getLogModel()
   })
 
   afterAll(async () => {
@@ -51,7 +48,6 @@ describe('Admin logs routes', () => {
 
   afterEach(() => {
     vi.clearAllMocks()
-    sequelize.$clearQueue()
     Log.$clearQueue()
   })
 
@@ -99,7 +95,6 @@ describe('Admin logs routes', () => {
       const logsCount = 5
 
       Log.$queueResult(logs)
-      sequelize.$queueResult(logsCount)
 
       const response = await app.inject({ headers: { admin: 'admin' } })
         .get('/count')

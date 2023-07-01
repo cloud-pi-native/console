@@ -7,8 +7,6 @@ import fp from 'fastify-plugin'
 import { sessionConf } from '../utils/keycloak.js'
 import { getConnection, closeConnections } from '../connect.js'
 import userRouter from './service.js'
-import { getUserModel } from '../models/user.js'
-import { sequelize } from '../../vitest-init'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 
@@ -39,12 +37,9 @@ const getRequestor = () => {
 }
 
 describe('Service route', () => {
-  let User
-
   beforeAll(async () => {
     mockSession(app)
     await getConnection()
-    User = getUserModel()
     global.fetch = vi.fn(() => Promise.resolve({
       status: 200,
       statusText: 'OK',
@@ -57,7 +52,6 @@ describe('Service route', () => {
 
   afterEach(() => {
     vi.clearAllMocks()
-    sequelize.$clearQueue()
   })
 
   // GET
@@ -66,7 +60,6 @@ describe('Service route', () => {
       const randomDbSetup = createRandomDbSetup({})
       const requestor = randomDbSetup.project.users.find(user => user.role === 'owner')
 
-      User.$queueResult(requestor)
       setRequestorId(requestor.id)
 
       const response = await app.inject()

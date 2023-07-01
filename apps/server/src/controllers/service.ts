@@ -3,7 +3,7 @@ import axios from 'axios'
 import { addReqLogs } from '../utils/logger.js'
 import { sendOk, sendBadRequest } from '../utils/response.js'
 import { allServices } from '../utils/services.js'
-import { getUserById } from '../models/queries/user-queries.js'
+import { getUserById } from '../queries/user-queries.js'
 
 export const checkServicesHealthController = async (req, res) => {
   const requestorId = req.session?.user?.id

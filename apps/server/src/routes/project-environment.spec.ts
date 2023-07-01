@@ -7,14 +7,7 @@ import fp from 'fastify-plugin'
 import { sessionConf } from '../utils/keycloak.js'
 import { getConnection, closeConnections } from '../connect.js'
 import projectEnvironmentRouter from './project-environment.js'
-import { getUsersProjectsModel } from '../models/users-projects.js'
-import { getEnvironmentModel } from '../models/environment.js'
-import { getPermissionModel } from '../models/permission.js'
-import { getProjectModel } from '../models/project.js'
-import { getOrganizationModel } from '../models/organization.js'
-import { getUserModel } from '../models/user.js'
 import { projectIsLockedInfo } from 'shared'
-import { sequelize } from '../../vitest-init'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 
@@ -55,12 +48,6 @@ describe('User routes', () => {
   beforeAll(async () => {
     mockSession(app)
     await getConnection()
-    Project = getProjectModel()
-    Role = getUsersProjectsModel()
-    User = getUserModel()
-    Environment = getEnvironmentModel()
-    Permission = getPermissionModel()
-    Organization = getOrganizationModel()
     global.fetch = vi.fn(() => Promise.resolve())
   })
 
@@ -70,7 +57,6 @@ describe('User routes', () => {
 
   afterEach(() => {
     vi.clearAllMocks()
-    sequelize.$clearQueue()
     Project.$clearQueue()
     Role.$clearQueue()
     User.$clearQueue()
@@ -158,7 +144,6 @@ describe('User routes', () => {
       // createEnvironment
       Environment.$queueResult(newEnvironment)
       // lockProject
-      sequelize.$queueResult([1])
       setRequestorId(owner.id)
 
       const response = await app.inject()
@@ -211,7 +196,6 @@ describe('User routes', () => {
       // createEnvironment
       Environment.$queueResult(newEnvironment)
       // lockProject
-      sequelize.$queueResult([1])
       setRequestorId(owner.id)
 
       const response = await app.inject()
@@ -258,7 +242,6 @@ describe('User routes', () => {
       // getProjectById
       Project.$queueResult(randomDbSetup.project)
       // lockProject
-      sequelize.$queueResult([1])
       setRequestorId(owner.id)
 
       const response = await app.inject()

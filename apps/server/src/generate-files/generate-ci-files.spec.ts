@@ -7,7 +7,6 @@ import { sessionConf } from '../utils/keycloak.js'
 import ciFilesRouter from '../routes/ci-files.js'
 import { closeConnections, getConnection } from '../connect.js'
 import { createRandomDbSetup } from 'test-utils'
-import { sequelize } from '../../vitest-init'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 
@@ -40,7 +39,6 @@ describe('ciFiles routes', () => {
 
   afterAll(async () => {
     vi.clearAllMocks()
-    sequelize.$clearQueue()
     global.fetch = vi.fn(() => Promise.resolve({ json: async () => { } }))
   })
 
