@@ -198,8 +198,8 @@ export const archiveProject = async (id: Projects['id']) => {
 }
 
 // TECH
-export const _initializeProject = async ({ id, name, organizationId, description, services, locked }: { id: Projects['id'], name: Projects['name'], organizationId: Organizations['id'], description: Projects['description'], services: Projects['services'], locked: Projects['locked'] }) => {
-  return prisma.projects.create({ data: { id, name, organizationId, description, status: 'initializing', locked, services } })
+export const _initializeProject = async (data: Parameters<typeof prisma.projects.upsert>[0]['create']) => {
+  return prisma.projects.upsert({ where: { id: data.id }, create: data, update: data })
 }
 
 export const _dropProjectsTable = async () => {

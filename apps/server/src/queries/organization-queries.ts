@@ -40,8 +40,14 @@ export const updateLabelOrganization = async ({ name, label, source }: { name: O
 }
 
 // TEC
-export const _createOrganizations = async ({ id, name, label, source }: { id: Organizations['id'], name: Organizations['name'], label: Organizations['label'], source: Organizations['source'] }) => {
-  return prisma.organizations.create({ data: { id, name, label, source, active: true } })
+export const _createOrganizations = async (data: Parameters<typeof prisma.organizations.create>[0]['data']) => {
+  return prisma.organizations.upsert({
+    where: {
+      id: data.id,
+    },
+    create: data,
+    update: data,
+  })
 }
 
 export const _dropOrganizationsTable = async () => {

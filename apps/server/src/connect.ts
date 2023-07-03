@@ -66,13 +66,14 @@ export const dropTables = async () => {
     await _dropRepositoriesTable()
     await _dropPermissionsTable()
     await _dropEnvironmentsTable()
+    await _dropRolesTable()
     await _dropProjectsTable()
     await _dropUsersTable()
-    await _dropRolesTable()
     await _dropOrganizationsTable()
 
     app.log.info('All tables were droped successfully.')
   } catch (error) {
+    app.log.error(error)
     app.log.error('Drop database tables failed.')
   }
 }

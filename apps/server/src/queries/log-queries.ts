@@ -1,5 +1,6 @@
 import { Logs, Users } from '@prisma/client'
 import prisma from '@/prisma.js'
+import { d } from 'vitest/dist/types-2b1c412e'
 
 // SELECT
 export const getAllLogsForUser = async (user: Users, offset = 0) => {
@@ -40,4 +41,14 @@ export const addLogs = async (action: Logs['action'], data: Logs['data'], userId
 // TECH
 export const _dropLogsTable = async () => {
   await prisma.logs.deleteMany({})
+}
+
+export const _createLog = async (data: Parameters<typeof prisma.logs.upsert>[0]['create']) => {
+  return prisma.logs.upsert({
+    where: {
+      id: data.id,
+    },
+    create: data,
+    update: data,
+  })
 }

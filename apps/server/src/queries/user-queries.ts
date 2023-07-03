@@ -63,3 +63,7 @@ export const updateUserById = async ({ id, email, firstName, lastName }: UserCre
 export const _dropUsersTable = async () => {
   await prisma.users.deleteMany({})
 }
+
+export const _createUser = async (data: Parameters<typeof prisma.users.create>[0]['data']) => {
+  return prisma.users.upsert({ where: { id: data.id }, create: data, update: data })
+}

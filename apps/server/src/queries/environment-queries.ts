@@ -141,3 +141,7 @@ export const deleteEnvironment = async (id: Environments['id']) => {
 export const _dropEnvironmentsTable = async () => {
   await prisma.environments.deleteMany({})
 }
+
+export const _createEnvironment = async (data: Parameters<typeof prisma.environments.create>[0]['data']) => {
+  await prisma.environments.create({ data })
+}

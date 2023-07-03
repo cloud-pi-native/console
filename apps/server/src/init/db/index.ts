@@ -1,15 +1,14 @@
-import setupProjects from '../db/setup-projects.js'
-import setupUsers from '../db/setup-users.js'
-import { _createOrganizations } from '../../queries/organization-queries.js'
 import { dropTables } from '../../connect.js'
+import prisma from '@/prisma.js'
 
 export const initDb = async (data) => {
   await dropTables()
 
-  for (const org of data.organizations) {
-    await _createOrganizations(org)
+  for (const model of Object.keys(data)) {
+    for (const value of data[model]) {
+      await prisma[model].create({
+        data: value,
+      })
+    }
   }
-
-  await setupUsers(data.users)
-  await setupProjects(data.projects)
 }
