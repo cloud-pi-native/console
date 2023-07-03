@@ -235,7 +235,8 @@ export const updateProjectController = async (req, res) => {
 
     if (!hasRoleInProject(userId, { roles: project.roles, minRole: 'owner' })) throw new Error('Vous n\'êtes pas membre du projet')
 
-    await projectSchema.validateAsync(project, { context: { projectNameMaxLength: calcProjectNameMaxLength(project.organization.name) } })
+    // TODO : pas utile, à ce niveau là project est juste issu de la bdd
+    // await projectSchema.validateAsync(project, { context: { projectNameMaxLength: calcProjectNameMaxLength(project.organization.name) } })
 
     await updateProject(projectId, data)
 
