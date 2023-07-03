@@ -14,11 +14,11 @@ const snackbarStore = useSnackbarStore()
 const project = computed(() => projectStore.selectedProject)
 
 const isUserAlreadyInTeam = computed(() => {
-  const allUsers = project.value.users
-  return !!allUsers?.find(user => user.email === newUser.value.email)
+  const allUsers = project.value.roles
+  return !!allUsers?.find(role => role.user.email === newUser.value.email)
 })
 
-const owner = computed(() => project.value.users?.find(user => user?.roles?.role === 'owner'))
+const owner = computed(() => projectStore.selectedProjectOwner)
 
 const newUser = ref({})
 
@@ -33,9 +33,9 @@ const rows = ref([])
 const setRows = () => {
   rows.value = []
 
-  if (project.value.users?.length) {
-    project.value.users?.forEach(user => {
-      if (user.roles?.role === 'owner') {
+  if (project.value.roles?.length) {
+    project.value.roles?.forEach(role => {
+      if (role.role === 'owner') {
         rows.value.unshift([
           owner.value.email,
           'owner',
@@ -49,13 +49,13 @@ const setRows = () => {
         return
       }
       rows.value.push([
-        user.email,
+        role.user.email,
         'user',
         {
           cellAttrs: {
             class: 'fr-fi-close-line !flex justify-center cursor-pointer fr-text-default--warning',
-            title: `retirer ${user.email} du projet`,
-            onClick: () => removeUserFromProject(user.id),
+            title: `retirer ${role.user.email} du projet`,
+            onClick: () => removeUserFromProject(role.user.id),
           },
         },
       ])
@@ -89,7 +89,7 @@ const removeUserFromProject = async (userId) => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   newUser.value = instanciateSchema({ schema: userSchema }, undefined)
   setRows()
 })
