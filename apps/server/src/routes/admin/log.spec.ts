@@ -86,43 +86,4 @@ describe('Admin logs routes', () => {
       expect(response.body).toEqual('Vous n\'avez pas les droits administrateur')
     })
   })
-
-  describe('countAllLogsController', () => {
-    it.skip('Should count all logs', async () => {
-      // TODO : _vite_ssr_import_1__.getLogModel(...).count is not a function
-
-      const logs = (repeatFn(5)(getRandomLog)).map(log => Log.build(log))
-      const logsCount = 5
-
-      Log.$queueResult(logs)
-
-      const response = await app.inject({ headers: { admin: 'admin' } })
-        .get('/count')
-        .end()
-
-      expect(response.statusCode).toEqual(200)
-      expect(JSON.stringify(response.json())).toMatchObject(JSON.stringify(logsCount))
-    })
-
-    it.skip('Should return an error if retrieve logs failed', async () => {
-      // TODO : _vite_ssr_import_1__.getLogModel(...).count is not a function
-      Log.$queueFailure()
-
-      const response = await app.inject({ headers: { admin: 'admin' } })
-        .get('/count')
-        .end()
-
-      expect(response.statusCode).toEqual(404)
-      expect(response.body).toEqual('Echec du comptage des logs')
-    })
-
-    it('Should return an error if requestor is not admin', async () => {
-      const response = await app.inject()
-        .get('/0/100')
-        .end()
-
-      expect(response.statusCode).toEqual(403)
-      expect(response.body).toEqual('Vous n\'avez pas les droits administrateur')
-    })
-  })
 })

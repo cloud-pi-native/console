@@ -18,8 +18,9 @@ export const getAllLogs = async ({ offset = 0, limit = 0 }: { offset?: number, l
       orderBy: {
         createdAt: 'desc',
       },
-      take: limit,
-      skip: offset,
+      // TODO
+      // take: limit,
+      // skip: offset,
     }),
   ])
 }

@@ -173,6 +173,8 @@ describe('Schemas utils', () => {
       isInfra: true,
       externalUserName: true,
       status: true,
+      updatedAt: true,
+      createdAt: true,
     })
   })
 
@@ -187,6 +189,8 @@ describe('Schemas utils', () => {
       isInfra: undefined,
       externalUserName: undefined,
       status: undefined,
+      updatedAt: undefined,
+      createdAt: undefined,
     })
   })
 
@@ -201,6 +205,8 @@ describe('Schemas utils', () => {
       isInfra: 'test',
       externalUserName: 'test',
       status: 'test',
+      updatedAt: 'test',
+      createdAt: 'test',
     })
   })
 })

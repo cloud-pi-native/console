@@ -14,8 +14,10 @@ export const getAllLogsController = async (req: EnhancedFastifyRequest<AdminLogs
       req,
       description: 'Logs récupérés avec succès',
     })
-    req.headers['x-total-count'] = total.toString()
-    sendOk(res, logs)
+    // TODO
+    // req.headers['x-total-count'] = total.toString()
+    // sendOk(res, logs)
+    sendOk(res, { total, logs })
   } catch (error) {
     const description = 'Echec de la récupération des logs'
     sendNotFound(res, description)
