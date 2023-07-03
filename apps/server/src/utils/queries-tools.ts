@@ -28,6 +28,8 @@ export const filterObjectByKeys = (obj, keys) =>
 
 // Export keys from result queries
 export const exclude = <T>(result: T, keys: string[]): T => {
+  // @ts-ignore
+  if (Array.isArray(result)) return result.map(item => exclude(item, keys))
   const newObj = {}
   Object.entries(result).forEach(([key, value]) => {
     if (keys.includes(key)) return
