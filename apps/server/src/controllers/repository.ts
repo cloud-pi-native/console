@@ -241,8 +241,8 @@ export const updateRepositoryController = async (req: EnhancedFastifyRequest<Upd
     await lockProject(projectId)
 
     if (!data.isPrivate) {
-      data.externalToken = null
-      data.externalUserName = null
+      data.externalToken = undefined
+      data.externalUserName = ''
     }
 
     repo = await updateRepository(repositoryId, data)

@@ -53,15 +53,15 @@ export const addUserToProjectController = async (req, res) => {
   let project: AsyncReturnType<typeof getProjectInfos>
   try {
     project = await getProjectInfos(projectId)
-    if (!project) sendBadRequest(res, 'Projet introuvable')
+    if (!project) return sendBadRequest(res, 'Projet introuvable')
     if (project.locked) return sendForbidden(res, projectIsLockedInfo)
 
-    if (!hasRoleInProject(userId, { roles: project.roles, minRole: 'owner' })) sendBadRequest(res, 'Vous n\'êtes pas souscripteur du projet')
+    if (!hasRoleInProject(userId, { roles: project.roles, minRole: 'owner' })) return sendBadRequest(res, 'Vous n\'êtes pas souscripteur du projet')
 
     const userToAdd = await getUserByEmail(data.email)
-    if (!userToAdd) sendBadRequest(res, 'Utilisateur introuvable')
+    if (!userToAdd) return sendBadRequest(res, 'Utilisateur introuvable')
 
-    if (!hasRoleInProject(userToAdd.id, { roles: project.roles, minRole: 'user' })) sendBadRequest(res, 'L\'utilisateur est déjà membre du projet')
+    if (!hasRoleInProject(userToAdd.id, { roles: project.roles, minRole: 'user' })) return sendBadRequest(res, 'L\'utilisateur est déjà membre du projet')
 
     await lockProject(projectId)
     await addUserToProject({ project, user: userToAdd, role: 'user' })
