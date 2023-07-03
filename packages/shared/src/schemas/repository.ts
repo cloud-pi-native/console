@@ -42,4 +42,10 @@ export const repoSchema = Joi.object({
   projectId: Joi.string()
     .uuid()
     .optional(),
+
+  createdAt: Joi.date()
+    .optional(),
+
+  updatedAt: Joi.date()
+    .optional(),
 })

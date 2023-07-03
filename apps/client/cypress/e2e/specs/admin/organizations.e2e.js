@@ -70,7 +70,7 @@ describe('Administration organizations', () => {
     })
 
     cy.visit('/projects/create-project')
-      .get('select#organization-select')
+      .get('select#organizationId-select')
       .select(newOrg.label)
       .should('have.value', newOrg.name)
   })
@@ -96,9 +96,9 @@ describe('Administration organizations', () => {
     })
 
     cy.visit('/projects/create-project')
-      .get(`select#organization-select > option[value="${organizations[0].name}"]`)
+      .get(`select#organizationId-select > option[value="${organizations[0].name}"]`)
       .should('not.exist')
-      .get(`select#organization-select > option[value="${newOrg.name}"]`)
+      .get(`select#organizationId-select > option[value="${newOrg.name}"]`)
       .should('not.exist')
   })
 

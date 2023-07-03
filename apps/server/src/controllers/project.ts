@@ -51,12 +51,15 @@ export const getUserProjectsController = async (req: EnhancedFastifyRequest<void
         userId: requestor.id,
       },
     })
-    const projectsInfos = projects.map((project) => {
-      if (Object.keys(project?.services).includes('registry')) {
-        return { ...project, services: getServices(project) }
-      }
-      return project
-    })
+
+    const projectsInfos = projects.length
+      ? projects.map((project) => {
+        if (Object.keys(project?.services).includes('registry')) {
+          return { ...project, services: getServices(project) }
+        }
+        return project
+      })
+      : projects
 
     sendOk(res, projectsInfos)
   } catch (error) {
@@ -116,7 +119,7 @@ export const createProjectController = async (req: EnhancedFastifyRequest<Create
   let organization: AsyncReturnType<typeof getOrganizationById>
 
   try {
-    owner = await getOrCreateUser(requestor)
+    owner = await getOrCreateUser({ id: requestor.id, email: requestor.email, firstName: requestor.firstName, lastName: requestor.lastName })
     const isValid = await hooks.createProject.validate({ owner })
     if (isValid?.failed) {
       const reasons = Object.values(isValid)

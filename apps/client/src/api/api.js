@@ -28,11 +28,6 @@ export const getUserProjectById = async (projectId) => {
   return response.data
 }
 
-export const getProjectOwner = async (projectId) => {
-  const response = await apiClient.get(`/projects/${projectId}/owner`)
-  return response.data
-}
-
 export const updateProject = async (projectId, data) => {
   const response = await apiClient.put(`/projects/${projectId}`, data)
   return response.data

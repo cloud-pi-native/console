@@ -72,7 +72,7 @@ export const getUserProjects = async (user: Users) => {
       },
     },
   })
-  const resWithKeysExcluded = exclude(res, dbKeysExcluded)
+  const resWithKeysExcluded = res.length ? res.map(project => exclude(project, dbKeysExcluded)) : res
 
   return resWithKeysExcluded
 }

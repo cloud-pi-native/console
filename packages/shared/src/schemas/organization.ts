@@ -16,4 +16,10 @@ export const organizationSchema = Joi.object({
     .required(),
 
   active: Joi.boolean(),
+
+  createdAt: Joi.date()
+    .optional(),
+
+  updatedAt: Joi.date()
+    .optional(),
 })

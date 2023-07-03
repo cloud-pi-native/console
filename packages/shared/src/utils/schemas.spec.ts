@@ -70,7 +70,7 @@ describe('Schemas utils', () => {
     expect(schemaValidator(projectSchema, {
       id: faker.string.uuid(),
       name: faker.lorem.slug(1),
-      organization: faker.string.uuid(),
+      organizationId: faker.string.uuid(),
       status: 'created',
       locked: false,
     }, { context: { projectNameMaxLength: 23 } })).toStrictEqual({})
@@ -111,7 +111,7 @@ describe('Schemas utils', () => {
     expect(schemaValidator(projectSchema, {
       id: faker.string.uuid(),
       name: faker.string.alpha(),
-      organization: faker.string.uuid(),
+      organizationId: faker.string.uuid(),
       status: 'created',
       locked: false,
     }, { context: { projectNameMaxLength: 23 } })).toStrictEqual({ name: '"name" length must be at least 2 characters long' })
@@ -121,7 +121,7 @@ describe('Schemas utils', () => {
     expect(schemaValidator(projectSchema, {
       id: faker.string.uuid(),
       name: faker.lorem.slug(10),
-      organization: faker.string.uuid(),
+      organizationId: faker.string.uuid(),
       status: 'created',
       locked: false,
     }, { context: { projectNameMaxLength: 23 } })).toStrictEqual({ name: '"name" length must be less than or equal to ref:global:projectNameMaxLength characters long' })
@@ -131,7 +131,7 @@ describe('Schemas utils', () => {
     expect(schemaValidator(projectSchema, {
       id: faker.string.uuid(),
       name: 'candilib',
-      organization: faker.string.uuid(),
+      organizationId: faker.string.uuid(),
       description: faker.string.alpha(descriptionMaxLength + 1),
       status: 'created',
       locked: false,

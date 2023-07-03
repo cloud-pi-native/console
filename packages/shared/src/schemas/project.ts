@@ -29,4 +29,10 @@ export const projectSchema = Joi.object({
 
   locked: Joi.boolean(),
   // .required(),
+
+  createdAt: Joi.date()
+    .optional(),
+
+  updatedAt: Joi.date()
+    .optional(),
 })

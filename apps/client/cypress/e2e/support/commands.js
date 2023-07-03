@@ -44,7 +44,7 @@ Cypress.Commands.add('createProject', (project) => {
     .get('h1').should('contain', 'Commander un espace projet')
     .get('[data-testid^="repoFieldset-"]').should('not.exist')
     .get('p.fr-alert__description').should('contain', owner.email)
-    .get('select#organization-select').select(newProject.orgName)
+    .get('select#organizationId-select').select(newProject.orgName)
     .getByDataTestid('nameInput').clear().type(newProject.name)
     .getByDataTestid('nameInput').should('not.have.class', 'fr-input--error')
   cy.getByDataTestid('createProjectBtn').should('be.enabled').click()
