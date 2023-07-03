@@ -2,7 +2,7 @@ export const data = {
   projects: [
     {
       id: '011e7860-04d7-461f-912d-334c622d38b3',
-      organization: 'ministere-interieur',
+      organization: 'mi',
       name: 'candilib',
       description: 'Application de réservation de places à l\'examen du permis B.',
       users: [
@@ -91,7 +91,7 @@ export const data = {
               },
               project: 'int-2',
               environment: 'staging',
-              organization: 'ministere-interieur',
+              organization: 'mi',
               registryHost: 'blabla.com',
               repositories: [],
             },
@@ -103,7 +103,7 @@ export const data = {
                 data: {
                   HOST: 'blabla.com',
                   TOKEN: 'token',
-                  USERNAME: 'robot$ministere-interieur-int-2+ci',
+                  USERNAME: 'robot$mi-int-2+ci',
                   DOCKER_CONFIG: '{"auths":{"blabla.com":{"auth":"token","email":""}}}',
                 },
                 metadata: {
@@ -122,8 +122,8 @@ export const data = {
               status: {
                 result: 'OK',
               },
-              roGroup: '/ministere-interieur-int-2/staging/RO',
-              rwGroup: '/ministere-interieur-int-2/staging/RW',
+              roGroup: '/mi-int-2/staging/RO',
+              rwGroup: '/mi-int-2/staging/RW',
             },
             kubernetes: {
               ns: {
@@ -138,15 +138,15 @@ export const data = {
                 },
                 metadata: {
                   uid: 'facaa8a7-956c-4bbb-88d9-b6598ca90b43',
-                  name: 'ministere-interieur-int-2-staging',
+                  name: 'mi-int-2-staging',
                   labels: {
                     'dso/projet': 'int-2',
                     'dso/owner.id': 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
                     'dso/environment': 'staging',
-                    'dso/organization': 'ministere-interieur',
+                    'dso/organization': 'mi',
                     'dso/owner.lastName': 'Nollet',
                     'dso/owner.firstName': 'Claire',
-                    'kubernetes.io/metadata.name': 'ministere-interieur-int-2-staging',
+                    'kubernetes.io/metadata.name': 'mi-int-2-staging',
                   },
                   managedFields: [
                     {
@@ -211,8 +211,8 @@ export const data = {
               projectId: '1e4fdb28-f9ea-46d4-ad16-607c7f1aa8b6',
               updatedAt: '2023-06-08T15:15:56.692Z',
               environment: [],
-              internalUrl: 'https://blabla.com/bla/projects/ministere-interieur/int-2/repo.git',
-              organization: 'ministere-interieur',
+              internalUrl: 'https://blabla.com/bla/projects/mi/int-2/repo.git',
+              organization: 'mi',
               externalToken: '',
               externalRepoUrl: 'https://github.com/dnum-mi/dso-console.git',
               externalUserName: '',
@@ -231,9 +231,9 @@ export const data = {
                     PROJECT_NAME: 'int-2',
                     GIT_INPUT_URL: 'github.com/dnum-mi/dso-console.git',
                     GIT_INPUT_USER: '',
-                    GIT_OUTPUT_URL: 'blabla.com/bla/projects/ministere-interieur/int-2/repo.git',
+                    GIT_OUTPUT_URL: 'blabla.com/bla/projects/mi/int-2/repo.git',
                     GIT_OUTPUT_USER: 'root',
-                    ORGANIZATION_NAME: 'ministere-interieur',
+                    ORGANIZATION_NAME: 'mi',
                     GIT_INPUT_PASSWORD: '',
                     GIT_PIPELINE_TOKEN: 'token',
                     GIT_OUTPUT_PASSWORD: 'password',
@@ -269,16 +269,16 @@ export const data = {
               createdAt: '2023-06-08T15:14:53.517Z',
               updatedAt: '2023-06-08T15:14:53.517Z',
               description: null,
-              organization: 'ministere-interieur',
+              organization: 'mi',
             },
             nexus: {
               user: {
                 roles: [
-                  'ministere-interieur-int-2-ID',
+                  'mi-int-2-ID',
                 ],
                 source: 'default',
                 status: 'active',
-                userId: 'ministere-interieur-int-2',
+                userId: 'mi-int-2',
                 lastName: 'Luffy',
                 readOnly: false,
                 firstName: 'Monkey D.',
@@ -289,7 +289,7 @@ export const data = {
                 {
                   data: {
                     NEXUS_PASSWORD: 'password',
-                    NEXUS_USERNAME: 'ministere-interieur-int-2',
+                    NEXUS_USERNAME: 'mi-int-2',
                   },
                   name: 'NEXUS',
                 },
@@ -310,7 +310,7 @@ export const data = {
                 {
                   data: {
                     PROJECT_NAME: 'int-2',
-                    ORGANIZATION_NAME: 'ministere-interieur',
+                    ORGANIZATION_NAME: 'mi',
                   },
                   name: 'GITLAB',
                 },
@@ -376,9 +376,9 @@ export const data = {
                   name: 'int-2',
                   path: 'int-2',
                   ldap_cn: null,
-                  web_url: 'https://blabla.com/groups/forge-mi/projects/ministere-interieur/int-2',
-                  full_name: 'forge-mi / projects / ministere-interieur / int-2',
-                  full_path: 'forge-mi/projects/ministere-interieur/int-2',
+                  web_url: 'https://blabla.com/groups/forge-mi/projects/mi/int-2',
+                  full_name: 'forge-mi / projects / mi / int-2',
+                  full_path: 'forge-mi/projects/mi/int-2',
                   parent_id: 250,
                   avatar_url: null,
                   created_at: '2023-06-08T15:14:54.262Z',
@@ -443,7 +443,7 @@ export const data = {
                   data: {
                     HOST: 'blabla.com',
                     TOKEN: 'token',
-                    USERNAME: 'robot$ministere-interieur-int-2+ci',
+                    USERNAME: 'robot$mi-int-2+ci',
                     DOCKER_CONFIG: '{"auths":{"blabla.com":{"auth":"token","email":""}}}',
                   },
                   name: 'REGISTRY',
@@ -452,13 +452,13 @@ export const data = {
               result: {
                 robot: {
                   id: 70,
-                  name: 'robot$ministere-interieur-int-2+ci',
+                  name: 'robot$mi-int-2+ci',
                   secret: 'token',
                   expires_at: -1,
                   creation_time: '2023-06-08T15:14:55.813Z',
                 },
                 project: {
-                  name: 'ministere-interieur-int-2',
+                  name: 'mi-int-2',
                   metadata: {
                     public: 'false',
                   },
@@ -489,10 +489,10 @@ export const data = {
             sonarqube: {
               user: {
                 user: {
-                  name: 'ministere-interieur-int-2',
+                  name: 'mi-int-2',
                   email: 'claire.nollet@interieur.gouv.fr',
                   local: true,
-                  login: 'ministere-interieur-int-2',
+                  login: 'mi-int-2',
                   active: true,
                   scmAccounts: [],
                 },
@@ -502,7 +502,7 @@ export const data = {
                   data: {
                     SONAR_TOKEN: 'token',
                     SONAR_PASSWORD: 'password',
-                    SONAR_USERNAME: 'ministere-interieur-int-2',
+                    SONAR_USERNAME: 'mi-int-2',
                   },
                   name: 'SONAR',
                 },
@@ -535,7 +535,7 @@ export const data = {
               createdAt: '2023-06-08T15:14:53.517Z',
               updatedAt: '2023-06-08T15:16:49.011Z',
               description: null,
-              organization: 'ministere-interieur',
+              organization: 'mi',
             },
             nexus: {
               status: {
@@ -579,7 +579,7 @@ export const data = {
     },
     {
       id: '83833faf-f654-40dd-bcd5-cf2e944fc702',
-      organization: 'ministere-interieur',
+      organization: 'mi',
       name: 'psij-failed',
       description: 'Application de transmission d\'informations entre agents de la PS et de l\'IJ.',
       users: [
@@ -649,7 +649,7 @@ export const data = {
               },
               project: 'int-2',
               environment: 'staging',
-              organization: 'ministere-interieur',
+              organization: 'mi',
               registryHost: 'blabla.com',
               repositories: [],
             },
@@ -661,7 +661,7 @@ export const data = {
                 data: {
                   HOST: 'blabla.com',
                   TOKEN: 'token',
-                  USERNAME: 'robot$ministere-interieur-int-2+ci',
+                  USERNAME: 'robot$mi-int-2+ci',
                   DOCKER_CONFIG: '{"auths":{"blabla.com":{"auth":"token","email":""}}}',
                 },
                 metadata: {
@@ -680,8 +680,8 @@ export const data = {
               status: {
                 result: 'OK',
               },
-              roGroup: '/ministere-interieur-int-2/staging/RO',
-              rwGroup: '/ministere-interieur-int-2/staging/RW',
+              roGroup: '/mi-int-2/staging/RO',
+              rwGroup: '/mi-int-2/staging/RW',
             },
             kubernetes: {
               ns: {
@@ -696,15 +696,15 @@ export const data = {
                 },
                 metadata: {
                   uid: 'facaa8a7-956c-4bbb-88d9-b6598ca90b43',
-                  name: 'ministere-interieur-int-2-staging',
+                  name: 'mi-int-2-staging',
                   labels: {
                     'dso/projet': 'int-2',
                     'dso/owner.id': 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
                     'dso/environment': 'staging',
-                    'dso/organization': 'ministere-interieur',
+                    'dso/organization': 'mi',
                     'dso/owner.lastName': 'Nollet',
                     'dso/owner.firstName': 'Claire',
-                    'kubernetes.io/metadata.name': 'ministere-interieur-int-2-staging',
+                    'kubernetes.io/metadata.name': 'mi-int-2-staging',
                   },
                   managedFields: [
                     {
@@ -850,7 +850,7 @@ export const data = {
               },
               project: 'int-2',
               environment: 'staging',
-              organization: 'ministere-interieur',
+              organization: 'mi',
               registryHost: 'blabla.com',
               repositories: [],
             },
@@ -862,7 +862,7 @@ export const data = {
                 data: {
                   HOST: 'blabla.com',
                   TOKEN: 'token',
-                  USERNAME: 'robot$ministere-interieur-int-2+ci',
+                  USERNAME: 'robot$mi-int-2+ci',
                   DOCKER_CONFIG: '{"auths":{"blabla.com":{"auth":"token","email":""}}}',
                 },
                 metadata: {
@@ -881,8 +881,8 @@ export const data = {
               status: {
                 result: 'OK',
               },
-              roGroup: '/ministere-interieur-int-2/staging/RO',
-              rwGroup: '/ministere-interieur-int-2/staging/RW',
+              roGroup: '/mi-int-2/staging/RO',
+              rwGroup: '/mi-int-2/staging/RW',
             },
             kubernetes: {
               ns: {
@@ -897,15 +897,15 @@ export const data = {
                 },
                 metadata: {
                   uid: 'facaa8a7-956c-4bbb-88d9-b6598ca90b43',
-                  name: 'ministere-interieur-int-2-staging',
+                  name: 'mi-int-2-staging',
                   labels: {
                     'dso/projet': 'int-2',
                     'dso/owner.id': 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
                     'dso/environment': 'staging',
-                    'dso/organization': 'ministere-interieur',
+                    'dso/organization': 'mi',
                     'dso/owner.lastName': 'Nollet',
                     'dso/owner.firstName': 'Claire',
-                    'kubernetes.io/metadata.name': 'ministere-interieur-int-2-staging',
+                    'kubernetes.io/metadata.name': 'mi-int-2-staging',
                   },
                   managedFields: [
                     {
@@ -970,8 +970,8 @@ export const data = {
               projectId: '1e4fdb28-f9ea-46d4-ad16-607c7f1aa8b6',
               updatedAt: '2023-06-08T15:15:56.692Z',
               environment: [],
-              internalUrl: 'https://blabla.com/bla/projects/ministere-interieur/int-2/repo.git',
-              organization: 'ministere-interieur',
+              internalUrl: 'https://blabla.com/bla/projects/mi/int-2/repo.git',
+              organization: 'mi',
               externalToken: '',
               externalRepoUrl: 'https://github.com/dnum-mi/dso-console.git',
               externalUserName: '',
@@ -990,9 +990,9 @@ export const data = {
                     PROJECT_NAME: 'int-2',
                     GIT_INPUT_URL: 'github.com/dnum-mi/dso-console.git',
                     GIT_INPUT_USER: '',
-                    GIT_OUTPUT_URL: 'blabla.com/bla/projects/ministere-interieur/int-2/repo.git',
+                    GIT_OUTPUT_URL: 'blabla.com/bla/projects/mi/int-2/repo.git',
                     GIT_OUTPUT_USER: 'root',
-                    ORGANIZATION_NAME: 'ministere-interieur',
+                    ORGANIZATION_NAME: 'mi',
                     GIT_INPUT_PASSWORD: '',
                     GIT_PIPELINE_TOKEN: 'token',
                     GIT_OUTPUT_PASSWORD: 'password',
@@ -1131,14 +1131,14 @@ export const data = {
     },
     {
       id: 'b644c07f-193c-47ed-ae10-b88a8f63d20b',
-      name: 'ministere-interieur',
+      name: 'mi',
       label: 'Ministère de l\'Intérieur',
       active: true,
       source: 'dso-console',
     },
     {
       id: '94e5b24b-ba73-4169-af09-e2df4b83a60f',
-      name: 'ministere-justice',
+      name: 'mj',
       label: 'Ministère de la Justice',
       active: true,
       source: 'dso-console',

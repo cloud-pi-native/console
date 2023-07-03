@@ -34,7 +34,7 @@ Cypress.Commands.add('createProject', (project) => {
   cy.intercept('GET', '/api/v1/projects').as('getProjects')
 
   const newProject = {
-    orgName: 'ministere-interieur',
+    orgName: 'mi',
     name: 'cloud-pi-native',
     ...project,
   }

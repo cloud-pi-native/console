@@ -20,11 +20,11 @@ export const allOrganizations = [
     label: 'DINUM',
   },
   {
-    name: 'ministere-interieur',
+    name: 'mi',
     label: 'Ministère de l\'Intérieur',
   },
   {
-    name: 'ministere-justice',
+    name: 'mj',
     label: 'Ministère de la Justice',
   },
 ]
