@@ -41,7 +41,7 @@ export const getUserProjectsController = async (req: EnhancedFastifyRequest<void
   const requestor = req.session?.user
 
   try {
-    const user = await getOrCreateUser(requestor)
+    const user = await getOrCreateUser({ id: requestor.id, email: requestor.email, firstName: requestor.firstName, lastName: requestor.lastName })
     const projects = await getUserProjects(user) as DsoProject[]
 
     addReqLogs({
