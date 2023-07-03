@@ -107,7 +107,7 @@ export const updatePermissionController = async (req, res) => {
     const owner = await getSingleOwnerByProjectId(projectId)
     if (data.userId === owner.id) throw new Error('La permission du owner du projet ne peut être modifiée')
 
-    const permission = await updatePermission({ userId: data.userId, environmentId, level: data.level })
+    const permission = await updatePermission({ userId: data.userId, environmentId, level: parseInt(data.level) })
 
     addReqLogs({
       req,
