@@ -26,7 +26,7 @@ import {
 import { filterObjectByKeys } from '../utils/queries-tools.js'
 import { addReqLogs } from '../utils/logger.js'
 import { sendOk, sendCreated, sendUnprocessableContent, sendNotFound, sendBadRequest, sendForbidden } from '../utils/response.js'
-import { projectSchema, calcProjectNameMaxLength, projectIsLockedInfo } from 'shared'
+import { projectSchema, calcProjectNameMaxLength, projectIsLockedInfo, CreateProjectDto } from 'shared'
 import { DsoProject, getServices } from '../utils/services.js'
 import { addLogs } from '../queries/log-queries.js'
 import { hooks } from '../plugins/index.js'
@@ -107,7 +107,7 @@ export const getProjectByIdController = async (req, res) => {
 }
 
 // POST
-export const createProjectController = async (req, res) => {
+export const createProjectController = async (req: EnhancedFastifyRequest<CreateProjectDto>, res) => {
   const requestor = req.session?.user
   const data = req.body
 
@@ -147,7 +147,7 @@ export const createProjectController = async (req, res) => {
       throw new Error(`"${data.name}" existe déjà`)
     }
 
-    project = await initializeProject(data)
+    project = await initializeProject({ ...data, ownerId: requestor.id })
 
     addReqLogs({
       req,
