@@ -1,10 +1,11 @@
 import { addReqLogs } from '../../utils/logger.js'
 import { getAllProjects } from '../../queries/project-queries.js'
+import { DsoProject } from '../../utils/services.js'
 import { sendOk, sendNotFound } from '../../utils/response.js'
 
 export const getAllProjectsController = async (req, res) => {
   try {
-    const allProjects = await getAllProjects()
+    const allProjects = await getAllProjects() as DsoProject[]
 
     addReqLogs({
       req,

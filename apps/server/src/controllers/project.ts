@@ -146,8 +146,8 @@ export const createProjectController = async (req: EnhancedFastifyRequest<Create
 
     const projectSearch = await getProjectByNames({ name: data.name, organizationName: organization.name })
     if (projectSearch.length > 0) {
-      if (projectSearch[0].status === 'archived') throw new Error(`"${data.name}" est archivé et n'est plus disponible`)
-      throw new Error(`"${data.name}" existe déjà`)
+      if (projectSearch[0].status === 'archived') sendBadRequest(res, `"${data.name}" est archivé et n'est plus disponible`)
+      sendBadRequest(res, `"${data.name}" existe déjà`)
     }
 
     project = await initializeProject({ ...data, ownerId: requestor.id })
