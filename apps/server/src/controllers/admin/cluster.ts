@@ -1,10 +1,20 @@
 import { type CreateClusterDto, type UpdateClusterDto, clusterSchema } from 'shared'
-import { addClusterToProjectWithIds, addLogs, createCluster, getClusterById, getClusterByLabel, getClustersWithProjectId, getProjectsByClusterId, removeClusterFromProject, updateCluster } from '@/queries/index.js'
+import {
+  addClusterToProjectWithIds,
+  addLogs,
+  createCluster,
+  getClusterById,
+  getClusterByLabel,
+  getClustersWithProjectId,
+  getProjectsByClusterId,
+  removeClusterFromProject,
+  updateCluster,
+} from '@/queries/index.js'
 import { hooks } from '@/plugins/index.js'
 import { EnhancedFastifyRequest } from '@/types/index.js'
 import { addReqLogs } from '@/utils/logger.js'
 import { sendBadRequest, sendCreated, sendNotFound, sendOk } from '@/utils/response.js'
-import { AsyncReturnType } from '@/utils/controller'
+import type { AsyncReturnType } from '@/utils/controller'
 
 // GET
 export const getAllClustersController = async (req, res) => {

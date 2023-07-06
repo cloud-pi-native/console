@@ -4,7 +4,7 @@ import {
   removeClusterFromEnvironment,
 } from '@/queries/index.js'
 import { hooks } from '@/plugins/index.js'
-import { Cluster, Environment, Organization, Project, User } from '@prisma/client'
+import type { Cluster, Environment, Organization, Project, User } from '@prisma/client'
 
 export const addClustersToEnvironmentBusiness = async (clusters: Cluster[], environmentName: Environment['name'], environmentId: Environment['id'], project: Project['name'], organization: Organization['name'], userId: User['id'], owner: User) => {
   for (const cluster of clusters) {

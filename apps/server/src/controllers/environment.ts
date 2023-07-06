@@ -13,13 +13,33 @@ import {
   initializeEnvironment,
 } from '@/queries/index.js'
 import { addReqLogs } from '../utils/logger.js'
-import { sendOk, sendCreated, sendNotFound, sendBadRequest, sendForbidden } from '../utils/response.js'
-import { AsyncReturnType, filterOwners, hasPermissionInEnvironment, hasRoleInProject, unlockProjectIfNotFailed } from '../utils/controller.js'
+import {
+  sendOk,
+  sendCreated,
+  sendNotFound,
+  sendBadRequest,
+  sendForbidden,
+} from '../utils/response.js'
+import {
+  AsyncReturnType,
+  filterOwners,
+  hasPermissionInEnvironment,
+  hasRoleInProject,
+  unlockProjectIfNotFailed,
+} from '../utils/controller.js'
 import { hooks } from '../plugins/index.js'
 import { gitlabUrl, harborUrl, projectRootDir } from '../utils/env.js'
-import { type DeleteEnvironmentDto, type InitializeEnvironmentDto, type UpdateEnvironmentDto, projectIsLockedInfo } from 'shared'
+import {
+  type DeleteEnvironmentDto,
+  type InitializeEnvironmentDto,
+  type UpdateEnvironmentDto,
+  projectIsLockedInfo,
+} from 'shared'
 import { EnhancedFastifyRequest } from '@/types/index.js'
-import { addClustersToEnvironmentBusiness, removeClustersFromEnvironmentBusiness } from '@/business/environment.js'
+import {
+  addClustersToEnvironmentBusiness,
+  removeClustersFromEnvironmentBusiness,
+} from '@/business/environment.js'
 
 // GET
 export const getEnvironmentByIdController = async (req, res) => {

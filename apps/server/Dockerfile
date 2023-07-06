@@ -27,7 +27,6 @@ FROM base AS build
 RUN pnpm install
 RUN pnpm --filter shared run build
 RUN pnpm --filter server run build
-RUN pnpm --filter server run db:generate
 RUN pnpm --filter server --prod deploy build
 
 # Prod stage
@@ -40,5 +39,6 @@ RUN mkdir -p /home/node/logs && chmod 770 -R /home/node/logs \
 WORKDIR /app
 RUN chown node:root /app
 COPY --chown=node:root --from=build /app/build .
+RUN npm run db:generate
 USER node
 ENTRYPOINT ["npm", "start"]

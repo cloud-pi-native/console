@@ -25,16 +25,28 @@ import {
 } from '../queries/environment-queries.js'
 import { filterObjectByKeys } from '../utils/queries-tools.js'
 import { addReqLogs } from '../utils/logger.js'
-import { sendOk, sendCreated, sendUnprocessableContent, sendNotFound, sendBadRequest, sendForbidden } from '../utils/response.js'
-import { projectSchema, calcProjectNameMaxLength, projectIsLockedInfo, CreateProjectDto } from 'shared'
-import { DsoProject, getServices } from '../utils/services.js'
+import {
+  sendOk,
+  sendCreated,
+  sendUnprocessableContent,
+  sendNotFound,
+  sendBadRequest,
+  sendForbidden,
+} from '../utils/response.js'
+import {
+  calcProjectNameMaxLength,
+  projectIsLockedInfo,
+  projectSchema,
+  type CreateProjectDto,
+} from 'shared'
+import { type DsoProject, getServices } from '../utils/services.js'
 import { addLogs } from '../queries/log-queries.js'
 import { hooks } from '../plugins/index.js'
 import { gitlabUrl, projectRootDir } from '../utils/env.js'
-import { AsyncReturnType, hasRoleInProject, unlockProjectIfNotFailed } from '../utils/controller.js'
-import { PluginResult } from '@/plugins/hooks/hook.js'
+import { type AsyncReturnType, hasRoleInProject, unlockProjectIfNotFailed } from '../utils/controller.js'
+import type { PluginResult } from '@/plugins/hooks/hook.js'
 import { CreateProjectExecArgs } from '@/plugins/hooks/project.js'
-import { EnhancedFastifyRequest } from '@/types/index.js'
+import type { EnhancedFastifyRequest } from '@/types/index.js'
 
 // GET
 export const getUserProjectsController = async (req: EnhancedFastifyRequest<void>, res) => {
