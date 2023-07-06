@@ -10,7 +10,7 @@ export const useProjectStore = defineStore('project', () => {
   /**
    * @param {string} project
    */
-  const setSelectedProject = async (id) => {
+  const setSelectedProject = (id) => {
     selectedProject.value = projects.value.find(project => project.id === id)
     setSelectedProjectOwner(selectedProject.value)
   }

@@ -17,6 +17,7 @@ const setProjectList = (projects) => {
     ?.map(project => ({
       id: project.id,
       title: project.name,
+      description: project.organization.label,
       to: `/projects/${project.id}/dashboard`,
     }))
 }
@@ -73,9 +74,17 @@ watch(projects, (projects) => {
         :title="project.title"
         :data-testid="`projectTile-${project.title}`"
         :to="project.to"
+        :description="project.description"
         :horizontal="false"
         @click="setSelectedProject(project)"
       />
     </div>
   </div>
 </template>
+
+<style>
+/* TODO : wip vue-dsfr fix position flêche */
+.fr-tile__title a::after {
+  display: none;
+}
+</style>
