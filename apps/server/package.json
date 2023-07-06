@@ -16,7 +16,7 @@
     "dev": "npm run db:migrate ; nodemon --exec 'vite-node src/server.ts'",
     "format": "eslint . --ext .js,.cjs,.ts --fix",
     "lint": "eslint . --ext .js,.cjs,.ts",
-    "start": "npm run db:generate && npm run db:deploy && node dist/server.js",
+    "start": "npm run db:deploy && node dist/server.js",
     "test": "pnpm run db:generate ; vitest run",
     "test:cov": "pnpm run db:generate ; vitest run --coverage"
   },
