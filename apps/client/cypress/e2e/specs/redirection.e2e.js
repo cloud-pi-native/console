@@ -1,6 +1,7 @@
 import { getModelById } from '../support/func.js'
 
 const project = getModelById('project', '011e7860-04d7-461f-912d-334c622d38b3')
+const organization = getModelById('organization', project.organizationId)
 
 describe('Redirection', () => {
   it('Should redirect to original page on reload', () => {
@@ -26,7 +27,7 @@ describe('Redirection', () => {
     cy.url().should('contain', `/projects/${project.id}/dashboard`)
     cy.wait('@getProjects').its('response').then(_response => {
       cy.getByDataTestid('currentProjectInfo')
-      cy.should('contain', `Le projet courant est : ${project.name}`)
+      cy.should('contain', `Le projet courant est : ${project.name} (${organization.label})`)
     })
   })
 
@@ -44,7 +45,7 @@ describe('Redirection', () => {
     cy.url().should('contain', `/projects/${project.id}/dashboard`)
     cy.wait('@getProjects', { timeout: 5000 }).its('response').then(_response => {
       cy.getByDataTestid('currentProjectInfo')
-      cy.should('contain', `Le projet courant est : ${project.name}`)
+      cy.should('contain', `Le projet courant est : ${project.name} (${organization.label})`)
     })
   })
 })
