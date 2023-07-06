@@ -1,15 +1,15 @@
 import prisma from '@/prisma.js'
 import { dbKeysExcluded, exclude } from '../utils/queries-tools.js'
-import { Organizations, Projects, Users, Roles } from '@prisma/client'
+import type { Organization, Project, User, Role } from '@prisma/client'
 
-type ProjectCreate = Partial<Pick<Projects, 'status' | 'locked' | 'description' | 'services'>>
-export const updateProject = async (id: Projects['id'], data: ProjectCreate) => {
-  return prisma.projects.update({ where: { id }, data: { ...data } })
+type ProjectCreate = Partial<Pick<Project, 'status' | 'locked' | 'description' | 'services'>>
+export const updateProject = async (id: Project['id'], data: ProjectCreate) => {
+  return prisma.project.update({ where: { id }, data: { ...data } })
 }
 
 // SELECT
 export const getAllProjects = async () => {
-  return prisma.projects.findMany({
+  return prisma.project.findMany({
     include: {
       roles: {
         select: {
@@ -19,12 +19,13 @@ export const getAllProjects = async () => {
           role: 'owner',
         },
       },
+      organization: true,
     },
   })
 }
 
-export const getProjectUsers = async (projectId: Projects['id']) => {
-  const res = await prisma.users.findMany({
+export const getProjectUsers = async (projectId: Project['id']) => {
+  const res = await prisma.user.findMany({
     include: {
       roles: {
         where: {
@@ -38,8 +39,8 @@ export const getProjectUsers = async (projectId: Projects['id']) => {
   return resWithKeysExcluded
 }
 
-export const getUserProjects = async (user: Users) => {
-  const res = await prisma.projects.findMany({
+export const getUserProjects = async (user: User) => {
+  const res = await prisma.project.findMany({
     where: {
       roles: {
         some: {
@@ -77,8 +78,8 @@ export const getUserProjects = async (user: Users) => {
   return resWithKeysExcluded
 }
 
-export const getProjectById = async (id: Projects['id']) => {
-  return prisma.projects.findUnique({ where: { id } })
+export const getProjectById = async (id: Project['id']) => {
+  return prisma.project.findUnique({ where: { id } })
 }
 
 const baseProjectIncludes = {
@@ -86,15 +87,15 @@ const baseProjectIncludes = {
   roles: true,
   environments: true,
 }
-export const getProjectInfos = async (id: Projects['id']) => {
-  return prisma.projects.findUnique({
+export const getProjectInfos = async (id: Project['id']) => {
+  return prisma.project.findUnique({
     where: { id },
     include: baseProjectIncludes,
   })
 }
 
-export const getProjectInfosAndRepos = async (id: Projects['id']) => {
-  return prisma.projects.findUnique({
+export const getProjectInfosAndRepos = async (id: Project['id']) => {
+  return prisma.project.findUnique({
     where: { id },
     include: {
       ...baseProjectIncludes,
@@ -102,8 +103,8 @@ export const getProjectInfosAndRepos = async (id: Projects['id']) => {
     },
   })
 }
-export const getProjectByNames = async ({ name, organizationName }: { name: Projects['name'], organizationName: Organizations['name'] }) => {
-  const res = await prisma.projects.findMany({
+export const getProjectByNames = async ({ name, organizationName }: { name: Project['name'], organizationName: Organization['name'] }) => {
+  const res = await prisma.project.findMany({
     where: {
       name,
       organization: {
@@ -115,8 +116,8 @@ export const getProjectByNames = async ({ name, organizationName }: { name: Proj
 }
 
 // CREATE
-export const initializeProject = async ({ name, organizationId, description = '', ownerId }: { name: Projects['name'], organizationId: Organizations['id'], description: Projects['description'], ownerId: Users['id'] }) => {
-  return prisma.projects.create({
+export const initializeProject = async ({ name, organizationId, description = '', ownerId }: { name: Project['name'], organizationId: Organization['id'], description: Project['description'], ownerId: User['id'] }) => {
+  return prisma.project.create({
     data: {
       name,
       organizationId,
@@ -135,24 +136,24 @@ export const initializeProject = async ({ name, organizationId, description = ''
 }
 
 // UPDATE
-export const lockProject = async (id: Projects['id']) => {
-  return prisma.projects.update({ where: { id }, data: { locked: true } })
+export const lockProject = async (id: Project['id']) => {
+  return prisma.project.update({ where: { id }, data: { locked: true } })
 }
 
-export const unlockProject = async (id: Projects['id']) => {
-  return prisma.projects.update({ where: { id }, data: { locked: false } })
+export const unlockProject = async (id: Project['id']) => {
+  return prisma.project.update({ where: { id }, data: { locked: false } })
 }
 
-export const updateProjectCreated = async (id: Projects['id']) => {
-  return prisma.projects.update({ where: { id }, data: { status: 'created' } })
+export const updateProjectCreated = async (id: Project['id']) => {
+  return prisma.project.update({ where: { id }, data: { status: 'created' } })
 }
 
-export const updateProjectFailed = async (id: Projects['id']) => {
-  return prisma.projects.update({ where: { id }, data: { status: 'failed' } })
+export const updateProjectFailed = async (id: Project['id']) => {
+  return prisma.project.update({ where: { id }, data: { status: 'failed' } })
 }
 
-export const addUserToProject = async ({ project, user, role }: { project: Projects, user: Users, role: Roles['role'] }) => {
-  return prisma.roles.create({
+export const addUserToProject = async ({ project, user, role }: { project: Project, user: User, role: Role['role'] }) => {
+  return prisma.role.create({
     data: {
       user: {
         connect: {
@@ -169,8 +170,8 @@ export const addUserToProject = async ({ project, user, role }: { project: Proje
   })
 }
 
-export const removeUserFromProject = async ({ projectId, userId }: { projectId: Projects['id'], userId: Users['id'] }) => {
-  return prisma.roles.delete({
+export const removeUserFromProject = async ({ projectId, userId }: { projectId: Project['id'], userId: User['id'] }) => {
+  return prisma.role.delete({
     where: {
       userId_projectId: {
         projectId,
@@ -180,13 +181,13 @@ export const removeUserFromProject = async ({ projectId, userId }: { projectId: 
   })
 }
 
-export const updateProjectServices = async (id: Projects['id'], services: Projects['services']) => {
-  return prisma.projects.update({ where: { id }, data: { services } })
+export const updateProjectServices = async (id: Project['id'], services: Project['services']) => {
+  return prisma.project.update({ where: { id }, data: { services } })
 }
 
-export const archiveProject = async (id: Projects['id']) => {
-  const project = await prisma.projects.findUnique({ where: { id } })
-  return prisma.projects.update({
+export const archiveProject = async (id: Project['id']) => {
+  const project = await prisma.project.findUnique({ where: { id } })
+  return prisma.project.update({
     where: { id },
     data: {
       name: `${project.name}_${Date.now()}_archived`,
@@ -197,10 +198,10 @@ export const archiveProject = async (id: Projects['id']) => {
 }
 
 // TECH
-export const _initializeProject = async (data: Parameters<typeof prisma.projects.upsert>[0]['create']) => {
-  return prisma.projects.upsert({ where: { id: data.id }, create: data, update: data })
+export const _initializeProject = async (data: Parameters<typeof prisma.project.upsert>[0]['create']) => {
+  return prisma.project.upsert({ where: { id: data.id }, create: data, update: data })
 }
 
 export const _dropProjectsTable = async () => {
-  await prisma.projects.deleteMany({})
+  await prisma.project.deleteMany({})
 }

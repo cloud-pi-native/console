@@ -1,5 +1,5 @@
 export const data = {
-  organizations: [
+  organization: [
     {
       id: '2368a61e-f243-42f6-b471-a85b056ee131',
       source: 'dso-console',
@@ -28,7 +28,7 @@ export const data = {
       updatedAt: '2023-07-03T14:46:56.765Z',
     },
   ],
-  projects: [
+  project: [
     {
       id: '22e7044f-8414-435d-9c4a-2df42a65034b',
       name: 'beta-app',
@@ -100,7 +100,7 @@ export const data = {
       updatedAt: '2023-07-03T14:46:56.806Z',
     },
   ],
-  users: [
+  user: [
     {
       id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6569',
       firstName: 'Arnaud',
@@ -142,7 +142,7 @@ export const data = {
       updatedAt: '2023-07-03T14:46:56.771Z',
     },
   ],
-  repositories: [
+  repository: [
     {
       id: '53891549-e628-4893-8bd3-92abcb71068a',
       projectId: '22e7044f-8414-435d-9c4a-2df42a65034b',
@@ -235,7 +235,7 @@ export const data = {
       updatedAt: '2023-07-03T14:46:56.816Z',
     },
   ],
-  environments: [
+  environment: [
     {
       id: 'bc06ace5-ddf6-4f00-97fa-872922baf078',
       name: 'staging',
@@ -293,7 +293,7 @@ export const data = {
       updatedAt: '2023-07-03T14:46:56.815Z',
     },
   ],
-  permissions: [
+  permission: [
     {
       id: '1b5266b4-73b3-4c4e-95bd-cd54f0f22df5',
       userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
@@ -423,7 +423,7 @@ export const data = {
       updatedAt: '2023-07-03T14:46:56.818Z',
     },
   ],
-  roles: [
+  role: [
     {
       userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
       projectId: '22e7044f-8414-435d-9c4a-2df42a65034b',
@@ -502,7 +502,7 @@ export const data = {
       updatedAt: '2023-07-03T14:46:56.816Z',
     },
   ],
-  logs: [
+  log: [
     {
       id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1232',
       data: {
@@ -524,7 +524,7 @@ export const data = {
           environment: 'staging',
           organization: 'mi',
           registryHost: 'blabla.com',
-          repositories: [],
+          repositorie: [],
         },
         vault: {
           status: {
@@ -1026,4 +1026,15 @@ export const data = {
       updatedAt: '2023-07-03T14:46:56.788Z',
     },
   ],
+}
+
+export const oldDatas = {
+  organizations: data.organization,
+  projects: data.project,
+  users: data.user,
+  repositories: data.repository,
+  environments: data.environment,
+  permissions: data.permission,
+  roles: data.role,
+  logs: data.log,
 }

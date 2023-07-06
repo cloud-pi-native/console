@@ -1,9 +1,9 @@
-import { Logs, Users } from '@prisma/client'
+import type { Log, User } from '@prisma/client'
 import prisma from '@/prisma.js'
 
 // SELECT
-export const getAllLogsForUser = async (user: Users, offset = 0) => {
-  return prisma.logs.findMany({
+export const getAllLogsForUser = async (user: User, offset = 0) => {
+  return prisma.log.findMany({
     where: { userId: user.id },
     take: 100,
     skip: offset,
@@ -12,8 +12,8 @@ export const getAllLogsForUser = async (user: Users, offset = 0) => {
 
 export const getAllLogs = async ({ offset = 0, limit = 5 }: { offset?: number, limit?: number }) => {
   return await prisma.$transaction([
-    prisma.logs.count(),
-    prisma.logs.findMany({
+    prisma.log.count(),
+    prisma.log.findMany({
       orderBy: {
         createdAt: 'desc',
       },
@@ -24,8 +24,8 @@ export const getAllLogs = async ({ offset = 0, limit = 5 }: { offset?: number, l
 }
 
 // CREATE
-export const addLogs = async (action: Logs['action'], data: Logs['data'], userId: Users['id']) => {
-  return prisma.logs.create({
+export const addLogs = async (action: Log['action'], data: Log['data'], userId: User['id']) => {
+  return prisma.log.create({
     data: {
       action,
       userId,
@@ -36,11 +36,11 @@ export const addLogs = async (action: Logs['action'], data: Logs['data'], userId
 
 // TECH
 export const _dropLogsTable = async () => {
-  await prisma.logs.deleteMany({})
+  await prisma.log.deleteMany({})
 }
 
-export const _createLog = async (data: Parameters<typeof prisma.logs.upsert>[0]['create']) => {
-  return prisma.logs.upsert({
+export const _createLog = async (data: Parameters<typeof prisma.log.upsert>[0]['create']) => {
+  return prisma.log.upsert({
     where: {
       id: data.id,
     },

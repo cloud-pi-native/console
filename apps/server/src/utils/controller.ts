@@ -3,7 +3,7 @@ import { sendForbidden } from './response.js'
 import { getEnvironmentsByProjectId } from '../queries/environment-queries.js'
 import { getProjectRepositories } from '../queries/repository-queries.js'
 import { getProjectById, lockProject, unlockProject } from '../queries/project-queries.js'
-import { Permissions, Projects, Users, Roles } from '@prisma/client'
+import type { Permission, Project, User, Role } from '@prisma/client'
 import prisma from '@/prisma.js'
 
 export const checkAdminGroup = (req, res, done) => {
@@ -35,9 +35,9 @@ export type RequireOnlyOne<T, Keys extends keyof T = keyof T> =
   }[Keys]
 
 type IsAllowed = {
-  userList: Users[] | Pick<Users, 'id'>[]
-  roles: Roles[]
-  projectId: Projects['id']
+  userList: User[] | Pick<User, 'id'>[]
+  roles: Role[]
+  projectId: Project['id']
   minRole?: ProjectRoles
 }
 
@@ -54,9 +54,9 @@ type SearchOptions = RequireOnlyOne<IsAllowed, 'userList' | 'roles' | 'projectId
  * @param {string} SearchOptions.minRole - Optionnal, Minimum role to have, 'user' or 'owner', undefined value equal 'user'
  * @return {Promise<boolean>} is userId has sufficent permissions
  */
-export const hasRoleInProject = async (userId: Users['id'], { userList, roles, projectId, minRole }: SearchOptions) => {
+export const hasRoleInProject = async (userId: User['id'], { userList, roles, projectId, minRole }: SearchOptions) => {
   // get project by id, assign result to projectUsers
-  if (projectId) roles = await prisma.roles.findMany({ where: { projectId } })
+  if (projectId) roles = await prisma.role.findMany({ where: { projectId } })
   if (roles) {
     // if minRole is 'owner' filter and assign to usersList
     if (minRole === 'owner') userList = roles.filter(userProject => userProject.role === 'owner').map(({ userId }) => ({ id: userId }))
@@ -66,13 +66,13 @@ export const hasRoleInProject = async (userId: Users['id'], { userList, roles, p
   return userList.findIndex(user => user.id === userId) > -1
 }
 
-export const hasPermissionInEnvironment = async (userId: Users['id'], permissions: Permissions[], minLevel: Permissions['level']) => {
+export const hasPermissionInEnvironment = async (userId: User['id'], permissions: Permission[], minLevel: Permission['level']) => {
   // get project by id, assign result to projectUsers
   const { level } = permissions.find(perm => perm.userId === userId)
   return level > minLevel
 }
 
-export const filterOwners = (roles: Roles[]) => {
+export const filterOwners = (roles: Role[]) => {
   return roles.filter(({ role }) => role === 'owner')
 }
 

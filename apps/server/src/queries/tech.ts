@@ -2,13 +2,13 @@ import prisma from '@/prisma.js'
 
 export const dumpDb = async () => {
   return ({
-    organizations: await prisma.organizations.findMany({}),
-    projects: await prisma.projects.findMany({}),
-    users: await prisma.users.findMany({}),
-    repositories: await prisma.repositories.findMany({}),
-    environments: await prisma.environments.findMany({}),
-    permissions: await prisma.permissions.findMany({}),
-    roles: await prisma.roles.findMany({}),
-    logs: await prisma.logs.findMany({}),
+    organization: await prisma.organization.findMany({}),
+    project: await prisma.project.findMany({}),
+    user: await prisma.user.findMany({}),
+    repository: await prisma.repository.findMany({}),
+    environment: await prisma.environment.findMany({}),
+    permission: await prisma.permission.findMany({}),
+    role: await prisma.role.findMany({}),
+    log: await prisma.log.findMany({}),
   })
 }

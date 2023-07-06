@@ -1,22 +1,22 @@
-import { ProjectRoles } from 'shared'
-import { Projects, Users } from '@prisma/client'
+import type { ProjectRoles } from 'shared'
+import type { Project, User } from '@prisma/client'
 import prisma from '@/prisma.js'
 
 // SELECT
-export const getRoleByUserIdAndProjectId = async (userId: Users['id'], projectId: Projects['id']) => {
-  return await prisma.roles.findFirst({ select: { role: true }, where: { userId, projectId } })
+export const getRoleByUserIdAndProjectId = async (userId: User['id'], projectId: Project['id']) => {
+  return await prisma.role.findFirst({ select: { role: true }, where: { userId, projectId } })
 }
 
-export const getSingleOwnerByProjectId = async (projectId: Projects['id']) => {
-  return (await prisma.roles.findFirst({
+export const getSingleOwnerByProjectId = async (projectId: Project['id']) => {
+  return (await prisma.role.findFirst({
     select: { user: true },
     where: { role: 'owner', projectId },
   })).user
 }
 
 // UPDATE
-export const updateUserProjectRole = async (userId: Users['id'], projectId: Projects['id'], role: ProjectRoles) => {
-  return prisma.roles.update({
+export const updateUserProjectRole = async (userId: User['id'], projectId: Project['id'], role: ProjectRoles) => {
+  return prisma.role.update({
     where: {
       userId_projectId: {
         userId,
@@ -28,8 +28,8 @@ export const updateUserProjectRole = async (userId: Users['id'], projectId: Proj
 }
 
 // DELETE
-export const deleteRoleByUserIdAndProjectId = async (userId: Users['id'], projectId: Projects['id']) => {
-  return prisma.roles.delete({
+export const deleteRoleByUserIdAndProjectId = async (userId: User['id'], projectId: Project['id']) => {
+  return prisma.role.delete({
     where: {
       userId_projectId: {
         userId,
@@ -41,11 +41,11 @@ export const deleteRoleByUserIdAndProjectId = async (userId: Users['id'], projec
 
 // TECH
 export const _dropRolesTable = async () => {
-  await prisma.roles.deleteMany({})
+  await prisma.role.deleteMany({})
 }
 
-export const _createRole = async (data: Parameters<typeof prisma.roles.upsert>[0]['create']) => {
-  await prisma.roles.upsert({
+export const _createRole = async (data: Parameters<typeof prisma.role.upsert>[0]['create']) => {
+  await prisma.role.upsert({
     create: data,
     update: data,
     where: {

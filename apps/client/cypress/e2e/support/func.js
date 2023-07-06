@@ -1,16 +1,16 @@
-import { data } from 'test-utils'
+import { oldData } from 'test-utils'
 
-export const getModel = (model) => data[model]
+export const getModel = (model) => oldData[model]
 export const getModelById = (model, id) => model === 'projects'
   ? getProjectById(id)
-  : data[model].find(key => key.id === id)
+  : oldData[model].find(key => key.id === id)
 
 export const getProjects = () => getModel('projects')
   .map(project => ({
     ...project,
     organization: getModel('organizations')
       .find(organization => organization.id === project.organizationId),
-    repositories: getModel('repositories')
+    repositories: getModel('repositorys')
       .filter(repository => repository.projectId === project.id),
     environments: getModel('environments')
       .filter(environment => environment.projectId === project.id)

@@ -1,47 +1,47 @@
 import prisma from '@/prisma.js'
-import { Organizations } from '@prisma/client'
+import { Organization } from '@prisma/client'
 
 // SELECT
 export const getOrganizations = async () => {
-  return prisma.organizations.findMany()
+  return prisma.organization.findMany()
 }
 
 export const getActiveOrganizations = async () => {
-  return prisma.organizations.findMany({
+  return prisma.organization.findMany({
     where: { active: true },
   })
 }
 
-export const getOrganizationById = async (id: Organizations['id']) => {
-  return prisma.organizations.findUnique({
+export const getOrganizationById = async (id: Organization['id']) => {
+  return prisma.organization.findUnique({
     where: { id },
   })
 }
 
-export const getOrganizationByName = async (name: Organizations['name']) => {
-  const res = await prisma.organizations.findUnique({
+export const getOrganizationByName = async (name: Organization['name']) => {
+  const res = await prisma.organization.findUnique({
     where: { name },
   })
   return res
 }
 
 // CREATE
-export const createOrganization = async ({ name, label, source }: { name: Organizations['name'], label: Organizations['label'], source: Organizations['source'] }) => {
-  return prisma.organizations.create({ data: { name, label, source, active: true } })
+export const createOrganization = async ({ name, label, source }: { name: Organization['name'], label: Organization['label'], source: Organization['source'] }) => {
+  return prisma.organization.create({ data: { name, label, source, active: true } })
 }
 
 // UPDATE
-export const updateActiveOrganization = async ({ name, active }: { name: Organizations['name'], active: Organizations['active'] }) => {
-  return prisma.organizations.update({ where: { name }, data: { active } })
+export const updateActiveOrganization = async ({ name, active }: { name: Organization['name'], active: Organization['active'] }) => {
+  return prisma.organization.update({ where: { name }, data: { active } })
 }
 
-export const updateLabelOrganization = async ({ name, label, source }: { name: Organizations['name'], label: Organizations['label'], source: Organizations['source'] }) => {
-  return prisma.organizations.update({ where: { name }, data: { label, source } })
+export const updateLabelOrganization = async ({ name, label, source }: { name: Organization['name'], label: Organization['label'], source: Organization['source'] }) => {
+  return prisma.organization.update({ where: { name }, data: { label, source } })
 }
 
 // TEC
-export const _createOrganizations = async (data: Parameters<typeof prisma.organizations.create>[0]['data']) => {
-  return prisma.organizations.upsert({
+export const _createOrganizations = async (data: Parameters<typeof prisma.organization.create>[0]['data']) => {
+  return prisma.organization.upsert({
     where: {
       id: data.id,
     },
@@ -51,5 +51,5 @@ export const _createOrganizations = async (data: Parameters<typeof prisma.organi
 }
 
 export const _dropOrganizationsTable = async () => {
-  await prisma.organizations.deleteMany({})
+  await prisma.organization.deleteMany({})
 }
