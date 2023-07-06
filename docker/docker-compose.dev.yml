@@ -24,7 +24,7 @@ services:
 
   postgres:
     restart: always
-    image: docker.io/postgres:14.5
+    image: docker.io/postgres:15.3
     container_name: dso-console_postgres
     environment:
       POSTGRES_DB: ${DB_NAME}
