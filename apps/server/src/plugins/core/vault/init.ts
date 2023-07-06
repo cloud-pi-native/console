@@ -6,6 +6,6 @@ export const init = (register) => {
     archiveProject: { main: archiveDsoProject },
     updateRepository: { main: updateRepository },
     deleteRepository: { main: deleteDsoRepository },
-    initializeEnvironment: { pre: getRegistrySecret },
+    addEnvironmentCluster: { pre: getRegistrySecret },
   })
 }

@@ -1,7 +1,6 @@
-import { Environment, Project, Role } from '@prisma/client'
+import { Cluster, Environment, Project, Role } from '@prisma/client'
 import prisma from '@/prisma.js'
 import { getProjectById } from './project-queries.js'
-import { dbKeysExcluded, exclude } from '@/utils/queries-tools.js'
 
 // SELECT
 export const getEnvironmentById = async (id: Environment['id']) => {
@@ -10,37 +9,38 @@ export const getEnvironmentById = async (id: Environment['id']) => {
   })
 }
 
-export const getEnvironmentInfos = async (id: Environment['id']) => {
-  return exclude(await prisma.environment.findUnique({
-    where: { id },
-    include: {
-      project: {
-        select: {
-          organization: true,
-          roles: {
-            include: {
-              user: true,
-            },
-          },
-          name: true,
-          id: true,
-          status: true,
-          services: false,
-          repositories: {
-            where: {
-              isInfra: true,
-            },
+export const getEnvironmentInfos = (id: Environment['id']) => prisma.environment.findUnique({
+  where: { id },
+  include: {
+    project: {
+      select: {
+        organization: true,
+        roles: {
+          include: {
+            user: true,
           },
         },
-      },
-      permissions: {
-        include: {
-          user: true,
+        name: true,
+        id: true,
+        status: true,
+        services: false,
+        repositories: {
+          where: {
+            isInfra: true,
+          },
         },
+        locked: true,
+        clusters: true,
       },
     },
-  }), dbKeysExcluded)
-}
+    permissions: {
+      include: {
+        user: true,
+      },
+    },
+    clusters: true,
+  },
+})
 
 export const getEnvironment = async ({ projectId, name }: { projectId: Project['id'], name: Environment['name'] }) => {
   return prisma.environment.findFirst({
@@ -128,13 +128,11 @@ export const updateEnvironmentDeleting = async (id: Environment['id']) => {
   })
 }
 
-export const deleteEnvironment = async (id: Environment['id']) => {
-  await prisma.environment.delete({
-    where: {
-      id,
-    },
-  })
-}
+export const deleteEnvironment = async (id: Environment['id']) => prisma.environment.delete({
+  where: {
+    id,
+  },
+})
 
 // TECH
 export const _dropEnvironmentsTable = async () => {

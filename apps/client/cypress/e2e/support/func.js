@@ -1,6 +1,7 @@
 import { data } from 'test-utils'
 
 export const getModel = (model) => data[model]
+
 export const getModelById = (model, id) => model === 'project'
   ? getProjectById(id)
   : data[model].find(key => key.id === id)

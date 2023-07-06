@@ -51,7 +51,6 @@ export const createUser = async (payload) => {
       res.user = newUser.data
     } else {
       await axiosInstance({
-
         url: 'users/change_password',
         params: {
           login: username,

@@ -7,14 +7,18 @@ import {
   isDev,
   dbUrl,
 } from './utils/env.js'
-import { _dropPermissionsTable } from './queries/permission-queries.js'
-import { _dropEnvironmentsTable } from './queries/environment-queries.js'
-import { _dropRepositoriesTable } from './queries/repository-queries.js'
-import { _dropProjectsTable } from './queries/project-queries.js'
-import { _dropUsersTable } from './queries/user-queries.js'
-import { _dropOrganizationsTable } from './queries/organization-queries.js'
-import { _dropRolesTable } from './queries/roles-queries.js'
-import { _dropLogsTable } from './queries/log-queries.js'
+import {
+  _dropEnvironmentsTable,
+  _dropRepositoriesTable,
+  _dropProjectsTable,
+  _dropUsersTable,
+  _dropOrganizationsTable,
+  _dropRolesTable,
+  _dropLogsTable,
+  _dropClusterTable,
+  _dropPermissionsTable,
+  _dropKubeconfigTable,
+} from './queries/index.js'
 
 const DELAY_BEFORE_RETRY = isTest || isCI ? 1000 : 10000
 let closingConnections = false
@@ -69,6 +73,8 @@ export const dropTables = async () => {
     await _dropProjectsTable()
     await _dropUsersTable()
     await _dropOrganizationsTable()
+    await _dropClusterTable()
+    await _dropKubeconfigTable()
 
     app.log.info('All tables were droped successfully.')
   } catch (error) {

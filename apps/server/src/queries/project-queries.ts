@@ -1,6 +1,7 @@
 import prisma from '@/prisma.js'
 import { dbKeysExcluded, exclude } from '../utils/queries-tools.js'
 import type { Organization, Project, User, Role } from '@prisma/client'
+import { AsyncReturnType } from '@/utils/controller.js'
 
 type ProjectCreate = Partial<Pick<Project, 'status' | 'locked' | 'description' | 'services'>>
 export const updateProject = async (id: Project['id'], data: ProjectCreate) => {
@@ -63,6 +64,7 @@ export const getUserProjects = async (user: User) => {
               user: true,
             },
           },
+          clusters: true,
         },
       },
       repositories: true,
@@ -71,12 +73,24 @@ export const getUserProjects = async (user: User) => {
           user: true,
         },
       },
+      clusters: {
+        where: {
+          privacy: 'dedicated',
+        },
+        select: {
+          id: true,
+          label: true,
+          privacy: true,
+          clusterResources: true,
+        },
+      },
     },
   })
   const resWithKeysExcluded = exclude(res, dbKeysExcluded)
 
   return resWithKeysExcluded
 }
+export type DsoProject = AsyncReturnType<typeof getUserProjects>[0] & { services: any }
 
 export const getProjectById = async (id: Project['id']) => {
   return prisma.project.findUnique({ where: { id } })

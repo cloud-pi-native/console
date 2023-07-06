@@ -58,7 +58,6 @@ services:
     environment:
       NODE_ENV: development
       INTEGRATION: 'true'
-      KUBECONFIG_CTX: admin4-7
     networks:
       - dso-network
 

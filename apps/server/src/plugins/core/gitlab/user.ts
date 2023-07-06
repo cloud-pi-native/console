@@ -7,14 +7,12 @@ export const getUser = async (user: { email: string, username: string, id: strin
   let gitlabUser: UserSchema
 
   // test finding by extern_uid by searching with email
-  // TODO fix with https://github.com/jdalrymple/gitbeaker/issues/3315
-  const usersByEmail = (await api.requester.get('users', { searchParams: { email: user.email } })).body as ExpandedUserSchema[]
+  const usersByEmail = await api.Users.all({ search: user.email })
   gitlabUser = usersByEmail.find(gitlabUser => gitlabUser?.externUid === user.id)
   if (gitlabUser) return gitlabUser
 
   // if not found, test finding by extern_uid by searching with username
-  // TODO fix with https://github.com/jdalrymple/gitbeaker/issues/3315
-  const usersByUsername = (await api.requester.get('users', { searchParams: { username: user.username } })).body as ExpandedUserSchema[]
+  const usersByUsername = await api.Users.all({ username: user.username })
   gitlabUser = usersByUsername.find(gitlabUser => gitlabUser?.externUid === user.id)
   if (gitlabUser) return gitlabUser
 
@@ -42,7 +40,7 @@ export const createUser = async (user) => {
     if (Object.keys(userDefinitionBase).some(prop => existingUser[prop] !== userDefinitionBase[prop])) {
       api.Users.edit(existingUser.id, userDefinitionBase)
     }
-    api.Users.edit(existingUser.id, {})
+    // api.Users.edit(existingUser.id, )
     return existingUser
   }
 

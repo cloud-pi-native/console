@@ -7,8 +7,8 @@ import { setProjectTrigger } from './triggers.js'
 import { createUser, createUsername, getUser } from './user.js'
 import type { ArchiveProjectExecArgs, CreateProjectExecArgs } from '@/plugins/hooks/project.js'
 import type { CreateRepositoryExecArgs, DeleteRepositoryExecArgs } from '@/plugins/hooks/repository.js'
-import type { User } from '@/plugins/hooks/index.js'
 import { PipelineTriggerTokenSchema } from '@gitbeaker/rest'
+import { User } from '@prisma/client'
 
 // Check
 export const checkApi = async (payload: HookPayload<{ owner: User }>) => {
@@ -63,7 +63,7 @@ export const createDsoProject = async (payload: HookPayload<CreateProjectExecArg
         result: 'KO',
         message: error.message,
       },
-      error: JSON.stringify(error),
+      error,
     }
   }
 }

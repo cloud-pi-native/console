@@ -1,5 +1,5 @@
 import { type Hook, createHook } from './hook.js'
-import type { Environment, ExternalRepoUrl, ExternalToken, ExternalUserName, InternalRepoName, InternalUrl, IsInfra, IsPrivate, Organization } from '.'
+import type { Environment, ExternalRepoUrl, ExternalToken, ExternalUserName, InternalRepoName, InternalUrl, IsInfra, IsPrivate, Organization } from './index.js'
 import type { Project } from './project.js'
 
 export type Repository = {

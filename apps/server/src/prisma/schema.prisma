@@ -7,6 +7,11 @@ datasource db {
   url      = env("DB_URL")
 }
 
+enum ClusterPrivacy {
+  public
+  dedicated
+}
+
 model Environment {
   id        String   @id @default(uuid()) @db.Uuid
   name      String
@@ -14,9 +19,10 @@ model Environment {
   status    String   @default("initializing")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   permissions Permission[]
+  clusters    Cluster[]
 }
 
 model Log {
@@ -26,7 +32,7 @@ model Log {
   userId    String   @db.Uuid
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  user      User    @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model Organization {
@@ -42,12 +48,12 @@ model Organization {
 }
 
 model Permission {
-  id            String       @id @unique @default(uuid()) @db.Uuid
-  userId        String       @db.Uuid
-  environmentId String       @db.Uuid
-  level         Int          @default(0) // TODO faire un enum 0,1,2 > voir 10, 20, 30
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  id            String      @id @unique @default(uuid()) @db.Uuid
+  userId        String      @db.Uuid
+  environmentId String      @db.Uuid
+  level         Int         @default(0) // TODO faire un enum 0,1,2 > voir 10, 20, 30
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
   user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   environment   Environment @relation(fields: [environmentId], references: [id], onDelete: Cascade)
 
@@ -55,20 +61,21 @@ model Permission {
 }
 
 model Project {
-  id             String        @id @unique @default(uuid()) @db.Uuid
+  id             String       @id @unique @default(uuid()) @db.Uuid
   name           String
-  organizationId String        @db.Uuid
+  organizationId String       @db.Uuid
   description    String?
   status         String
-  locked         Boolean       @default(false)
+  locked         Boolean      @default(false)
   services       Json
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
   organization   Organization @relation(fields: [organizationId], references: [id])
 
   environments Environment[]
   repositories Repository[]
   roles        Role[]
+  clusters     Cluster[]
 }
 
 model Repository {
@@ -83,7 +90,7 @@ model Repository {
   status           String   @default("initializing")
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
-  project          Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project          Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 model User {
@@ -99,14 +106,38 @@ model User {
   roles       Role[]
 }
 
+model Cluster {
+  id               String         @id @unique @default(uuid()) @db.Uuid
+  label            String         @unique @db.VarChar(50)
+  privacy          ClusterPrivacy @default(dedicated)
+  secretName       String         @unique @default(uuid()) @db.VarChar(50)
+  clusterResources Boolean        @default(false)
+  kubeConfigId     String         @unique @db.Uuid
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  environments Environment[]
+  projects     Project[]
+  kubeconfig   Kubeconfig    @relation(fields: [kubeConfigId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model Kubeconfig {
+  id        String   @id @unique @default(uuid()) @db.Uuid
+  user      Json
+  cluster   Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  parentCluster   Cluster? @relation()
+}
+
 model Role {
   userId    String   @db.Uuid
   projectId String   @db.Uuid
   role      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  user      User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@id([userId, projectId])
   @@unique([userId, projectId])

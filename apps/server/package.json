@@ -16,7 +16,7 @@
     "dev": "npm run db:migrate ; nodemon --exec 'vite-node src/server.ts'",
     "format": "eslint . --ext .js,.cjs,.ts --fix",
     "lint": "eslint . --ext .js,.cjs,.ts",
-    "start": "npm run db:generate && npm run db:deploy && node dist/server.js",
+    "start": "npm run db:deploy && node dist/server.js",
     "test": "pnpm run db:generate ; vitest run",
     "test:cov": "pnpm run db:generate ; vitest run --coverage"
   },
@@ -24,7 +24,7 @@
     "@fastify/cookie": "^8.3.0",
     "@fastify/helmet": "^10.1.1",
     "@fastify/session": "^10.3.0",
-    "@gitbeaker/rest": "^39.4.0",
+    "@gitbeaker/rest": "^39.5.1",
     "@keycloak/keycloak-admin-client": "^21.1.1",
     "@kubernetes/client-node": "^0.18.1",
     "@prisma/client": "^4.15.0",
@@ -43,6 +43,7 @@
   "devDependencies": {
     "@dso-console/tsconfig": "workspace:^",
     "@faker-js/faker": "^8.0.2",
+    "@kubernetes-models/argo-cd": "^2.3.1",
     "@rushstack/eslint-patch": "^1.3.1",
     "@types/node": "^18.16.16",
     "@typescript-eslint/eslint-plugin": "^5.60.1",

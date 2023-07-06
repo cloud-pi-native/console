@@ -21,6 +21,7 @@ const title = 'Liste des organisations'
 const headers = [
   'Label',
   'Nom',
+  'Source',
   'Active',
   'Création',
   'Modification',
@@ -34,7 +35,7 @@ const isOrgAlreadyTaken = computed(() => allOrganizations.value.find(org => org.
 const setRows = () => {
   rows.value = allOrganizations.value
     ?.sort((a, b) => a.name >= b.name ? 1 : -1)
-    ?.map(({ label, name, active, createdAt, updatedAt }) => ([
+    ?.map(({ label, name, source, active, createdAt, updatedAt }) => ([
       {
         component: 'input',
         value: label,
@@ -48,6 +49,7 @@ const setRows = () => {
         },
       },
       name,
+      source,
       {
         component: 'input',
         type: 'checkbox',
