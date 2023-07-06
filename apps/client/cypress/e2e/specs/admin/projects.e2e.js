@@ -2,7 +2,7 @@ import { getModel } from '../../support/func.js'
 import { statusDict, formatDate } from 'shared'
 
 describe('Administration projects', () => {
-  const organizations = getModel('organizations')
+  const organizations = getModel('organization')
   let projects
 
   beforeEach(() => {

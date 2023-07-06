@@ -1,7 +1,7 @@
 import { getModel } from '../../support/func.js'
 
 describe('Administration users', () => {
-  const users = getModel('users').map(({ firstName, lastName, email }) => ({
+  const users = getModel('user').map(({ firstName, lastName, email }) => ({
     firstName,
     lastName,
     email,

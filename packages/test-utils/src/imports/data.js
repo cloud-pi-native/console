@@ -524,7 +524,7 @@ export const data = {
           environment: 'staging',
           organization: 'mi',
           registryHost: 'blabla.com',
-          repositorie: [],
+          repository: [],
         },
         vault: {
           status: {
@@ -1026,15 +1026,4 @@ export const data = {
       updatedAt: '2023-07-03T14:46:56.788Z',
     },
   ],
-}
-
-export const oldDatas = {
-  organizations: data.organization,
-  projects: data.project,
-  users: data.user,
-  repositories: data.repository,
-  environments: data.environment,
-  permissions: data.permission,
-  roles: data.role,
-  logs: data.log,
 }

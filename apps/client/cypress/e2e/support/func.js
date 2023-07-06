@@ -1,28 +1,28 @@
-import { oldData } from 'test-utils'
+import { data } from 'test-utils'
 
-export const getModel = (model) => oldData[model]
-export const getModelById = (model, id) => model === 'projects'
+export const getModel = (model) => data[model]
+export const getModelById = (model, id) => model === 'project'
   ? getProjectById(id)
-  : oldData[model].find(key => key.id === id)
+  : data[model].find(key => key.id === id)
 
-export const getProjects = () => getModel('projects')
+export const getProjects = () => getModel('project')
   .map(project => ({
     ...project,
-    organization: getModel('organizations')
+    organization: getModel('organization')
       .find(organization => organization.id === project.organizationId),
-    repositories: getModel('repositorys')
+    repositories: getModel('repository')
       .filter(repository => repository.projectId === project.id),
-    environments: getModel('environments')
+    environments: getModel('environment')
       .filter(environment => environment.projectId === project.id)
       .map(environment => ({
         ...environment,
-        permissions: getModel('permissions').filter(permission => permission.environmentId === environment.id),
+        permissions: getModel('permission').filter(permission => permission.environmentId === environment.id),
       })),
-    users: getModel('roles')
+    users: getModel('role')
       .filter(role => role.projectId === project.id)
       .map(role => ({
         role: role.role,
-        ...getModelById('users', role.userId),
+        ...getModelById('user', role.userId),
       })),
   }))
 

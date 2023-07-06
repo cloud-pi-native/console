@@ -1,7 +1,7 @@
 import { getModelById, getUserProjects } from '../support/func.js'
 
-const project = getModelById('projects', '011e7860-04d7-461f-912d-334c622d38b3')
-const user = getModelById('users', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6569')
+const project = getModelById('project', '011e7860-04d7-461f-912d-334c622d38b3')
+const user = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6569')
 const secondUserProjects = getUserProjects('cb8e5b4b-7b7b-40f5-935f-594f48ae6569')
 
 describe('Projects view', () => {

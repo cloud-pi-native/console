@@ -9,7 +9,7 @@ describe('Create Project', () => {
     cy.intercept('POST', '/api/v1/projects').as('postProject')
     cy.intercept('GET', '/api/v1/projects').as('getProjects')
 
-    const owner = getModelById('users', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
+    const owner = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
     const project = {
       orgName: 'mi',
       name: 'project01',

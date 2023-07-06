@@ -1,6 +1,6 @@
 import { getModelById } from '../support/func.js'
 
-const owner = getModelById('users', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
+const owner = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
 
 Cypress.Commands.add('kcLogout', () => {
   cy.get('a.fr-btn').should('contain', 'Se déconnecter').click()

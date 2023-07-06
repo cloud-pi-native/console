@@ -1,7 +1,7 @@
 import { getModel } from '../../support/func.js'
 
 describe('Administration organizations', () => {
-  const organizations = getModel('organizations').map(({ label, name, active }) => ({
+  const organizations = getModel('organization').map(({ label, name, active }) => ({
     label,
     name,
     active,
