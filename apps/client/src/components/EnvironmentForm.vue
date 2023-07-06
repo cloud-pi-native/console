@@ -1,8 +1,9 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeMount } from 'vue'
 import { environmentSchema, schemaValidator, instanciateSchema, allEnv, projectIsLockedInfo } from 'shared'
 import PermissionForm from './PermissionForm.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+import MultiSelector from './MultiSelector.vue'
 
 const props = defineProps({
   environment: {
@@ -25,18 +26,19 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  projectClusters: {
+    type: Array,
+    default: () => [],
+  },
 })
 
 const snackbarStore = useSnackbarStore()
 
+const clustersLabel = ref([])
 const localEnvironment = ref(props.environment)
-
 const updatedValues = ref({})
-
 const environmentOptions = ref([])
-
 const environmentToDelete = ref('')
-
 const isDeletingEnvironment = ref(false)
 
 const setEnvironmentOptions = () => {
@@ -54,12 +56,22 @@ const setEnvironmentOptions = () => {
 const updateEnvironment = (key, value) => {
   localEnvironment.value[key] = value
   updatedValues.value[key] = true
+
+  /**
+    * Retrieve array of cluster labels from child component, map it into array of cluster ids.
+    */
+  if (key === 'clustersId') {
+    localEnvironment.value.clustersId = localEnvironment.value.clustersId
+      .map(cluster => props.projectClusters
+        ?.find(projectCluster => projectCluster.label === cluster).id)
+  }
 }
 
 const emit = defineEmits([
   'addEnvironment',
-  'cancel',
+  'putEnvironment',
   'deleteEnvironment',
+  'cancel',
 ])
 
 const addEnvironment = () => {
@@ -73,9 +85,29 @@ const addEnvironment = () => {
   }
 }
 
+const putEnvironment = () => {
+  updatedValues.value = instanciateSchema({ schema: environmentSchema }, true)
+  const errorSchema = schemaValidator(environmentSchema, localEnvironment.value)
+
+  if (Object.keys(errorSchema).length === 0) {
+    emit('putEnvironment', localEnvironment.value)
+  } else {
+    snackbarStore.setMessage(Object.values(errorSchema)[0])
+  }
+}
+
 const cancel = (event) => {
   emit('cancel', event)
 }
+
+onBeforeMount(() => {
+  /**
+    * Retrieve array of cluster ids from parent component, map it into array of cluster labels and pass it to child component.
+    */
+  localEnvironment.value = props.environment
+  clustersLabel.value = localEnvironment.value.clustersId?.map(clusterId => props.projectClusters
+    ?.find(projectCluster => projectCluster.id === clusterId).label)
+})
 
 onMounted(() => {
   setEnvironmentOptions()
@@ -107,6 +139,36 @@ onMounted(() => {
       @update:model-value="updateEnvironment('name', $event)"
     />
   </DsfrFieldset>
+  <div class="fr-mb-2w">
+    <MultiSelector
+      :options="projectClusters"
+      :array="clustersLabel"
+      label="Nom du cluster"
+      description="Ajouter un cluster cible pour le déploiement de cet environnement."
+      @update="updateEnvironment('clustersId', $event)"
+    />
+    <div
+      v-if="localEnvironment.id"
+      class="flex space-x-10 mt-5"
+    >
+      <DsfrButton
+        label="Enregistrer"
+        data-testid="putEnvironmentBtn"
+        :disabled="props.isProjectLocked"
+        :title="props.isProjectLocked ? projectIsLockedInfo : 'Enregistrer les changements'"
+        primary
+        icon="ri-upload-cloud-line"
+        @click="putEnvironment()"
+      />
+      <DsfrButton
+        label="Annuler"
+        data-testid="cancelEnvironmentBtn"
+        secondary
+        icon="ri-close-line"
+        @click="cancel()"
+      />
+    </div>
+  </div>
   <div v-if="localEnvironment.id">
     <PermissionForm
       v-if="!isDeletingEnvironment"

@@ -7,6 +7,11 @@ datasource db {
   url      = env("DB_URL")
 }
 
+enum ClusterPrivacy {
+  public
+  dedicated
+}
+
 model Environment {
   id        String   @id @default(uuid()) @db.Uuid
   name      String
@@ -17,6 +22,7 @@ model Environment {
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   permissions Permission[]
+  clusters    Cluster[]
 }
 
 model Log {
@@ -69,6 +75,7 @@ model Project {
   environments Environment[]
   repositories Repository[]
   roles        Role[]
+  clusters     Cluster[]
 }
 
 model Repository {
@@ -97,6 +104,19 @@ model User {
   logs        Log[]
   permissions Permission[]
   roles       Role[]
+}
+
+model Cluster {
+  id               String         @id @unique @default(uuid()) @db.Uuid
+  label            String         @unique @db.VarChar(50)
+  user             Json
+  cluster          Json
+  privacy          ClusterPrivacy @default(dedicated)
+  secretName       String         @unique @default(uuid()) @db.VarChar(50)
+  clusterResources Boolean        @default(false)
+
+  environments Environment[]
+  projects     Project[]
 }
 
 model Role {

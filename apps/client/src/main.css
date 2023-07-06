@@ -72,3 +72,14 @@ body,
   padding: 4rem 2rem;
   background-color: var(--background-alt-grey);
 }
+
+.json-box.jv-container span.jv-item.jv-object,
+.json-box.jv-container span.jv-key {
+  color: var(--text-default-grey);
+}
+
+.json-box.jv-container {
+  @apply my-6;
+
+  background-color: var(--background-default-grey);
+}

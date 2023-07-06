@@ -20,6 +20,11 @@ export const environmentSchema = Joi.object({
   createdAt: Joi.date()
     .optional(),
 
-  updatedAt: Joi.date()
+  updatedAt: Joi.date(),
+
+  clustersId: Joi.array()
+    .optional(),
+
+  permissions: Joi.array()
     .optional(),
 })

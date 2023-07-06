@@ -82,7 +82,7 @@ onMounted(async () => {
     :key="log.id"
     :data-testid="`${log.id}-json`"
     :value="log"
-    class="log-box"
+    class="json-box"
     copyable
     boxed
   />
@@ -133,12 +133,12 @@ onMounted(async () => {
 </template>
 
 <style>
-.log-box.jv-container span.jv-item.jv-object,
-.log-box.jv-container span.jv-key {
+.json-box.jv-container span.jv-item.jv-object,
+.json-box.jv-container span.jv-key {
   color: var(--text-default-grey);
 }
 
-.log-box.jv-container {
+.json-box.jv-container {
   @apply my-6;
 
   background-color: var(--background-default-grey);

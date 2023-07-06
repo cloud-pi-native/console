@@ -38,6 +38,7 @@ const setSelectedEnvironment = (environment) => {
     return
   }
   selectedEnvironment.value = environment
+  selectedEnvironment.value.clustersId = selectedEnvironment.value.clusters.map(cluster => cluster.id)
   cancel()
 }
 
@@ -55,6 +56,17 @@ const addEnvironment = async (environment) => {
     cancel()
     try {
       await projectEnvironmentStore.addEnvironmentToProject(environment)
+    } catch (error) {
+      snackbarStore.setMessage(error?.message, 'error')
+    }
+  }
+}
+
+const putEnvironment = async (environment) => {
+  if (!project.value.locked) {
+    cancel()
+    try {
+      await projectEnvironmentStore.updateEnvironment(environment)
     } catch (error) {
       snackbarStore.setMessage(error?.message, 'error')
     }
@@ -104,6 +116,7 @@ watch(project, () => {
       :environment="{projectId: project?.id}"
       :environment-names="environmentNames"
       :is-project-locked="project?.locked"
+      :project-clusters="project?.clusters"
       @add-environment="(environment) => addEnvironment(environment)"
       @cancel="cancel()"
     />
@@ -156,9 +169,12 @@ watch(project, () => {
       <EnvironmentForm
         v-if="Object.keys(selectedEnvironment).length !== 0 && selectedEnvironment.id === environment.id"
         :environment="selectedEnvironment"
+        :environment-names="environmentNames"
+        :project-clusters="project?.clusters"
         :is-editable="false"
         :is-project-locked="project?.locked"
         :is-owner="isOwner"
+        @put-environment="(environment) => putEnvironment(environment)"
         @delete-environment="(environment) => deleteEnvironment(environment)"
       />
     </div>

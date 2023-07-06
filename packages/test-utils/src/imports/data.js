@@ -33,6 +33,7 @@ export const data = {
       id: '22e7044f-8414-435d-9c4a-2df42a65034b',
       name: 'beta-app',
       organizationId: '2368a61e-f243-42f6-b471-a85b056ee131',
+      description: null,
       status: 'created',
       locked: false,
       services: {
@@ -50,6 +51,7 @@ export const data = {
       id: '9dabf3f9-6c86-4358-8598-65007d78df65',
       name: 'project-to-archive',
       organizationId: '2368a61e-f243-42f6-b471-a85b056ee131',
+      description: null,
       status: 'created',
       locked: false,
       services: {
@@ -126,20 +128,20 @@ export const data = {
       updatedAt: '2023-07-03T14:46:56.770Z',
     },
     {
-      id: '89e5d1ca-3194-4b0a-b226-75a5f4fe6a34',
-      firstName: 'Admin',
-      lastName: 'ADMIN',
-      email: 'admin@test.com',
-      createdAt: '2023-07-03T18:01:52.884Z',
-      updatedAt: '2023-07-03T18:01:52.884Z',
-    },
-    {
       id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6567',
       firstName: 'Claire',
       lastName: 'NOLLET',
       email: 'claire.nollet@test.com',
       createdAt: '2023-07-03T14:46:56.771Z',
       updatedAt: '2023-07-03T14:46:56.771Z',
+    },
+    {
+      id: '89e5d1ca-3194-4b0a-b226-75a5f4fe6a34',
+      firstName: 'Admin',
+      lastName: 'ADMIN',
+      email: 'admin@test.com',
+      createdAt: '2023-07-03T18:01:52.884Z',
+      updatedAt: '2023-07-06T11:45:28.844Z',
     },
   ],
   repository: [
@@ -521,10 +523,10 @@ export const data = {
             updatedAt: '2023-06-08T14:57:58.401Z',
           },
           project: 'int-2',
+          repository: [],
           environment: 'staging',
           organization: 'mi',
           registryHost: 'blabla.com',
-          repository: [],
         },
         vault: {
           status: {
@@ -1026,4 +1028,78 @@ export const data = {
       updatedAt: '2023-07-03T14:46:56.788Z',
     },
   ],
+  cluster: [
+    {
+      id: '126ac57f-263c-4463-87bb-d4e9017056b2',
+      label: 'top-secret-cluster',
+      user: {
+        token: 'nyan cat',
+      },
+      cluster: {
+        server: 'https://nothere.cluster',
+        tlsServerName: 'nothere.cluster',
+      },
+      privacy: 'dedicated',
+      secretName: '59be2d50-58f9-42f3-95dc-b0c0518e3d8a',
+      clusterResources: true,
+    },
+    {
+      id: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
+      label: 'pas-top-cluster',
+      user: {
+        token: 'kirikou',
+      },
+      cluster: {
+        server: 'https://pwned.cluster',
+        tlsServerName: 'pwned.cluster',
+      },
+      privacy: 'public',
+      secretName: '94d52618-7869-4192-b33e-85dd0959e815',
+      clusterResources: false,
+    },
+  ],
+  associates: {
+    cluster: {
+      environment: [
+        {
+          id: '126ac57f-263c-4463-87bb-d4e9017056b2',
+          environments: [],
+        },
+        {
+          id: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
+          environments: [],
+        },
+      ],
+      project: [
+        {
+          id: '126ac57f-263c-4463-87bb-d4e9017056b2',
+          projects: [
+            {
+              id: '83833faf-f654-40dd-bcd5-cf2e944fc702',
+            },
+            {
+              id: '011e7860-04d7-461f-912d-334c622d38b3',
+            },
+          ],
+        },
+        {
+          id: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
+          projects: [
+            {
+              id: '9dabf3f9-6c86-4358-8598-65007d78df65',
+            },
+            {
+              id: '83833faf-f654-40dd-bcd5-cf2e944fc702',
+            },
+            {
+              id: '22e7044f-8414-435d-9c4a-2df42a65034b',
+            },
+            {
+              id: '011e7860-04d7-461f-912d-334c622d38b3',
+            },
+          ],
+        },
+      ],
+    },
+  },
 }

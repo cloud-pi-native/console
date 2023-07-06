@@ -52,6 +52,7 @@ describe('Random utils', () => {
               projectId: expect.any(String),
               status: expect.any(String),
               permissions: expect.any(Array),
+              clusters: expect.any(Array),
             },
             {
               id: expect.any(String),
@@ -59,6 +60,7 @@ describe('Random utils', () => {
               projectId: expect.any(String),
               status: expect.any(String),
               permissions: expect.any(Array),
+              clusters: expect.any(Array),
             },
           ]),
         }),

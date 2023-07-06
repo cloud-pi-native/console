@@ -1,6 +1,6 @@
 import * as hooks from './index.js'
 
-export type PluginResult = Record<string, unknown> & { status: { result: 'OK', message?: string } | { result: 'KO', message?: string } }
+export type PluginResult = Record<string, unknown> & { status: { result: 'OK', message?: string } | { result: 'KO', message: string } }
 
 export type HookPayload<Args> = {
   args: Args,
@@ -16,9 +16,9 @@ export type Hook<E, V> = {
   validate: (args: V) => Promise<HookPayload<V>>,
 } & Record<HookStepsNames, HookStep>
 export type HookList<E, V> = Record<keyof typeof hooks, Hook<E, V>>
-export type HookStepChoice<E, V> = keyof HookList<E, V> | 'all'
+export type HookChoice = keyof typeof hooks | 'all'
 
-export type PluginsFunctions<E, V> = Record<HookStepChoice<E, V>, Record<HookStepsNames, StepCall>>
+export type PluginsFunctions = Record<HookChoice, Partial<Record<HookStepsNames, StepCall>>>
 
 const executeStep = async <Args>(step: HookStep, payload: HookPayload<Args>) => {
   const names = Object.keys(step)

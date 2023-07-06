@@ -45,7 +45,6 @@ type SearchOptions = RequireOnlyOne<IsAllowed, 'userList' | 'roles' | 'projectId
 
 /**
  * Returns boolean if userId has minimum role in project
- * @function hasRoleInProject
  * @param {number} userId User Id to check role
  * @param {Object} SearchOptions
  * @param {string} SearchOptions.usersList - List of users, check ids match against userId
@@ -58,9 +57,9 @@ export const hasRoleInProject = async (userId: User['id'], { userList, roles, pr
   // get project by id, assign result to projectUsers
   if (projectId) roles = await prisma.role.findMany({ where: { projectId } })
   if (roles) {
-    // if minRole is 'owner' filter and assign to usersList
+    // if minRole is 'owner' filter and assign to userList
     if (minRole === 'owner') userList = roles.filter(userProject => userProject.role === 'owner').map(({ userId }) => ({ id: userId }))
-    // else assign to usersList
+    // else assign to userList
     else userList = roles.map(({ userId }) => ({ id: userId }))
   }
   return userList.findIndex(user => user.id === userId) > -1

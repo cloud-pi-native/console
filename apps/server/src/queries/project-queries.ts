@@ -63,6 +63,7 @@ export const getUserProjects = async (user: User) => {
               user: true,
             },
           },
+          clusters: true,
         },
       },
       repositories: true,
@@ -71,6 +72,7 @@ export const getUserProjects = async (user: User) => {
           user: true,
         },
       },
+      clusters: true,
     },
   })
   const resWithKeysExcluded = exclude(res, dbKeysExcluded)
