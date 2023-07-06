@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { generateRandomPassword } from './crypto'
+import { generateRandomPassword } from './crypto.js'
 
 describe('crypto', () => {
   it('Should generate a random password', async () => {

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useAdminLogStore } from '@/stores/admin/log.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { JsonViewer } from 'vue3-json-viewer'
@@ -9,9 +9,10 @@ const snackbarStore = useSnackbarStore()
 
 const step = 5
 const isUpdating = ref(true)
-const logs = ref(undefined)
-const logsLength = ref(0)
 const offset = ref(0)
+
+const logs = computed(() => adminLogStore.logs)
+const logsLength = computed(() => adminLogStore.count)
 
 const showLogs = async (key) => {
   if (key === 'first' ||
@@ -44,14 +45,8 @@ const getAllLogs = async ({ offset, limit }, isDisplayingSuccess = true) => {
   isUpdating.value = false
 }
 
-const refreshLogs = async ({ offset, limit }) => {
-  logsLength.value = await adminLogStore.countAllLogs()
-  await getAllLogs({ offset, limit })
-}
-
 onMounted(async () => {
   await getAllLogs({ offset: offset.value, limit: step }, false)
-  logsLength.value = await adminLogStore.countAllLogs()
 })
 
 </script>
@@ -78,7 +73,7 @@ onMounted(async () => {
       icon-only
       icon="ri-refresh-fill"
       :disabled="isUpdating === true"
-      @click="refreshLogs({ offset, limit: step })"
+      @click="getAllLogs({ offset, limit: step })"
     />
   </div>
 

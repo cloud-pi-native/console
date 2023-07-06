@@ -21,7 +21,7 @@ const organizationStore = useOrganizationStore()
 
 const owner = computed(() => userStore.userProfile)
 const organizationName = computed(() => {
-  const org = orgOptions?.value.find(org => org.id === project.value?.organization)
+  const org = orgOptions?.value.find(org => org.id === project.value?.organizationId)
   return org?.value
 })
 const projectNameMaxLength = computed(() => {
@@ -35,11 +35,11 @@ const remainingCharacters = computed(() => {
  * Defines a project
  *
  * @typedef {object} project
- * @property {string} organization
+ * @property {string} organizationId
  * @property {string} name
  */
 const project = ref({
-  organization: undefined,
+  organizationId: undefined,
   name: '',
 })
 
@@ -49,7 +49,7 @@ const updatedValues = ref({})
 
 const createProject = async () => {
   updatedValues.value = instanciateSchema({ schema: projectSchema }, true)
-  const keysToValidate = ['organization', 'name']
+  const keysToValidate = ['organizationId', 'name']
   const errorSchema = schemaValidator(projectSchema, project.value, { keysToValidate, context: { projectNameMaxLength: projectNameMaxLength.value } })
   if (Object.keys(errorSchema).length === 0) {
     try {
@@ -62,7 +62,7 @@ const createProject = async () => {
 }
 
 const updateProject = (key, value) => {
-  if (key === 'organization') {
+  if (key === 'organizationId') {
     const org = orgOptions.value.find(org => org.value === value)
     project.value[key] = org.id
   } else {
@@ -98,13 +98,13 @@ onMounted(async () => {
       class="fr-mb-2w"
     />
     <DsfrSelect
-      v-model="project.organization"
-      select-id="organization-select"
+      v-model="project.organizationId"
+      select-id="organizationId-select"
       required
       label="Nom de l'organisation"
       label-visible
       :options="orgOptions"
-      @update:model-value="updateProject('organization', $event)"
+      @update:model-value="updateProject('organizationId', $event)"
     />
     <div
       class="fr-mb-6v"
@@ -149,7 +149,7 @@ onMounted(async () => {
     data-testid="createProjectBtn"
     primary
     class="fr-mt-2w"
-    :disabled="!project.organization || !isValid(projectSchema, project, 'name', { projectNameMaxLength })"
+    :disabled="!project.organizationId || !isValid(projectSchema, project, 'name', { projectNameMaxLength })"
     icon="ri-send-plane-line"
     @click="createProject()"
   />

@@ -45,7 +45,7 @@ const getApplicationObject = ({ name, destNamespace, repoURL, appProjectName }) 
       },
       project: appProjectName,
       source: {
-        path: 'base',
+        path: '.',
         repoURL,
         targetRevision: 'HEAD',
       },

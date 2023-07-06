@@ -1,6 +1,6 @@
 import {
   getUsers,
-} from '../../models/queries/user-queries.js'
+} from '../../queries/user-queries.js'
 
 import { sendNotFound, sendOk } from '../../utils/response.js'
 import { addReqLogs } from '../../utils/logger.js'

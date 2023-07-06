@@ -4,8 +4,8 @@ import {
   updateActiveOrganization,
   updateLabelOrganization,
   getOrganizationByName,
-} from '../../models/queries/organization-queries.js'
-import { addLogs } from '../../models/queries/log-queries.js'
+} from '../../queries/organization-queries.js'
+import { addLogs } from '../../queries/log-queries.js'
 import { organizationSchema, getUniqueListBy } from 'shared'
 import { addReqLogs } from '../../utils/logger.js'
 import { sendOk, sendCreated, sendNotFound, sendBadRequest } from '../../utils/response.js'
@@ -110,9 +110,10 @@ export const fetchOrganizationsController = async (req, res) => {
     // TODO: Fix define return in plugins dir
     // @ts-ignore See TODO
     type PluginOrganization = { name: string, label: string, source: string }
-    type FetchOrganizationsResult = PluginResult & { result: {organizations: PluginOrganization[]}}
+    type FetchOrganizationsResult = PluginResult & { result: { organizations: PluginOrganization[] } }
     const results = await hooks.fetchOrganizations.execute() as HookPayload<void> & Record<string, FetchOrganizationsResult>
 
+    // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
     await addLogs('Fetch organizations', results, user.id)
 
     // TODO: Fix type

@@ -7,7 +7,7 @@ import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@/main.css'
 import * as icons from '@/icons.js'
 import PermissionForm from '@/components/PermissionForm.vue'
-import { createRandomDbSetup, getRandomUser } from 'test-utils'
+import { createRandomDbSetup, getRandomUser, getRandomUserProject } from 'test-utils'
 import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
 
@@ -23,12 +23,15 @@ describe('PermissionForm.vue', () => {
     projectStore.selectedProjectOwner = randomDbSetup.users[0]
     userStore.userProfile = randomDbSetup.users[1]
 
+    const userToLicence = {
+      ...getRandomUserProject(),
+      user: getRandomUser(),
+    }
+    projectStore.selectedProject.roles = [userToLicence, ...randomDbSetup.project.roles]
+
     const environment = projectStore.selectedProject?.environments[0]
     const ownerPermission = environment.permissions.find(permission => permission.user.email === projectStore.selectedProjectOwner.email)
     const userPermission = environment.permissions.find(permission => permission.user.email !== projectStore.selectedProjectOwner.email)
-
-    const userToLicence = getRandomUser()
-    randomDbSetup.project.users = [userToLicence, ...randomDbSetup.project.users]
 
     const props = {
       environment,
@@ -86,11 +89,11 @@ describe('PermissionForm.vue', () => {
         cy.get('label')
           .should('contain', `E-mail de l'utilisateur à accréditer sur l'environnement de ${props.environment?.name}`)
         cy.get('.fr-hint-text')
-          .should('contain', `Entrez l'e-mail d'un membre du projet ${projectStore.selectedProject.name}. Ex : ${userToLicence.email}`)
+          .should('contain', `Entrez l'e-mail d'un membre du projet ${projectStore.selectedProject.name}. Ex : ${userToLicence.user.email}`)
         cy.get('datalist#suggestionList')
           .find('option')
-          .should('have.length', randomDbSetup.project.users.length - props.environment.permissions.length)
-          .should('have.value', userToLicence.email)
+          .should('have.length', projectStore.selectedProject.roles.length - props.environment.permissions.length)
+          .should('have.value', userToLicence.user.email)
       })
   })
   it('Should mount a PermissionForm with no user to licence', () => {

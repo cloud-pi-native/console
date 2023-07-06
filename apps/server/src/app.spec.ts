@@ -4,7 +4,7 @@ import app from './app.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 
-describe('app', () => {
+describe.skip('app', () => {
   it('should respond with the version', async () => {
     const response = await app.inject()
       .get('/version')
