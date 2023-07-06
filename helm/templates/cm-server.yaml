@@ -8,10 +8,7 @@ data:
   SERVER_PORT: {{ .Values.server.container.port | quote }}
   {{- with .Values.postgres }}
   DB_HOST: {{ $.Release.Name }}-{{ .service.hostname }}-service
-  DB_PORT: {{ .service.port | quote }}
-  DB_USER: {{ .container.user }}
-  DB_PASS: {{ .container.pass }}
-  DB_NAME: {{ .container.db }}
+  DB_URL: postgresql://{{ .container.user }}:{{ .container.pass }}@{{ $.Release.Name }}-{{ .service.hostname }}-service:{{ .service.port }}/{{ .container.db }}?schema=public 
   {{- end }}
   {{- with .Values.keycloak }}
   SESSION_SECRET: {{ .session_secret }}

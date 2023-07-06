@@ -141,7 +141,7 @@ export const data = {
       lastName: 'ADMIN',
       email: 'admin@test.com',
       createdAt: '2023-07-03T18:01:52.884Z',
-      updatedAt: '2023-07-06T11:45:28.844Z',
+      updatedAt: '2023-07-06T12:53:39.183Z',
     },
   ],
   repository: [
@@ -505,65 +505,6 @@ export const data = {
     },
   ],
   log: [
-    {
-      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1232',
-      data: {
-        argo: {
-          status: {
-            result: 'OK',
-          },
-        },
-        args: {
-          owner: {
-            id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
-            email: 'claire.nollet@interieur.gouv.fr',
-            lastName: 'Nollet',
-            createdAt: '2023-06-08T14:57:58.401Z',
-            firstName: 'Claire',
-            updatedAt: '2023-06-08T14:57:58.401Z',
-          },
-          project: 'int-2',
-          repository: [],
-          environment: 'staging',
-          organization: 'mi',
-          registryHost: 'blabla.com',
-        },
-        vault: {
-          status: {
-            result: 'OK',
-          },
-          pullSecret: {
-            data: {
-              HOST: 'blabla.com',
-              TOKEN: 'token',
-              USERNAME: 'robot$mi-int-2+ci',
-              DOCKER_CONFIG: '{"auths":{"blabla.com":{"auth":"token","email":""}}}',
-            },
-            metadata: {
-              version: 1,
-              destroyed: false,
-              created_time: '2023-06-08T15:14:56.087835715Z',
-              deletion_time: '',
-              custom_metadata: null,
-            },
-          },
-        },
-        keycloak: {
-          group: {
-            id: '6ce9c548-d0f6-490b-b32d-6e62c20e5eff',
-          },
-          status: {
-            result: 'OK',
-          },
-          roGroup: '/mi-int-2/staging/RO',
-          rwGroup: '/mi-int-2/staging/RW',
-        },
-      },
-      action: 'create Project',
-      userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
-      createdAt: '2023-07-03T14:46:56.788Z',
-      updatedAt: '2023-07-03T14:46:56.788Z',
-    },
     {
       id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1233',
       data: {
@@ -1027,6 +968,65 @@ export const data = {
       createdAt: '2023-07-03T14:46:56.788Z',
       updatedAt: '2023-07-03T14:46:56.788Z',
     },
+    {
+      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1232',
+      data: {
+        argo: {
+          status: {
+            result: 'OK',
+          },
+        },
+        args: {
+          owner: {
+            id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+            email: 'claire.nollet@interieur.gouv.fr',
+            lastName: 'Nollet',
+            createdAt: '2023-06-08T14:57:58.401Z',
+            firstName: 'Claire',
+            updatedAt: '2023-06-08T14:57:58.401Z',
+          },
+          project: 'int-2',
+          repository: [],
+          environment: 'staging',
+          organization: 'mi',
+          registryHost: 'blabla.com',
+        },
+        vault: {
+          status: {
+            result: 'OK',
+          },
+          pullSecret: {
+            data: {
+              HOST: 'blabla.com',
+              TOKEN: 'token',
+              USERNAME: 'robot$mi-int-2+ci',
+              DOCKER_CONFIG: '{"auths":{"blabla.com":{"auth":"token","email":""}}}',
+            },
+            metadata: {
+              version: 1,
+              destroyed: false,
+              created_time: '2023-06-08T15:14:56.087835715Z',
+              deletion_time: '',
+              custom_metadata: null,
+            },
+          },
+        },
+        keycloak: {
+          group: {
+            id: '6ce9c548-d0f6-490b-b32d-6e62c20e5eff',
+          },
+          status: {
+            result: 'OK',
+          },
+          roGroup: '/mi-int-2/staging/RO',
+          rwGroup: '/mi-int-2/staging/RW',
+        },
+      },
+      action: 'create Project',
+      userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+      createdAt: '2023-07-03T14:46:56.788Z',
+      updatedAt: '2023-07-03T14:46:56.788Z',
+    },
   ],
   cluster: [
     {
@@ -1059,47 +1059,37 @@ export const data = {
     },
   ],
   associates: {
-    cluster: {
-      environment: [
-        {
-          id: '126ac57f-263c-4463-87bb-d4e9017056b2',
-          environments: [],
-        },
-        {
-          id: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
-          environments: [],
-        },
-      ],
-      project: [
-        {
-          id: '126ac57f-263c-4463-87bb-d4e9017056b2',
-          projects: [
-            {
-              id: '83833faf-f654-40dd-bcd5-cf2e944fc702',
-            },
-            {
-              id: '011e7860-04d7-461f-912d-334c622d38b3',
-            },
-          ],
-        },
-        {
-          id: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
-          projects: [
-            {
-              id: '9dabf3f9-6c86-4358-8598-65007d78df65',
-            },
-            {
-              id: '83833faf-f654-40dd-bcd5-cf2e944fc702',
-            },
-            {
-              id: '22e7044f-8414-435d-9c4a-2df42a65034b',
-            },
-            {
-              id: '011e7860-04d7-461f-912d-334c622d38b3',
-            },
-          ],
-        },
-      ],
-    },
+    cluster: [
+      {
+        id: '126ac57f-263c-4463-87bb-d4e9017056b2',
+        environments: [],
+        projects: [
+          {
+            id: '83833faf-f654-40dd-bcd5-cf2e944fc702',
+          },
+          {
+            id: '011e7860-04d7-461f-912d-334c622d38b3',
+          },
+        ],
+      },
+      {
+        id: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
+        environments: [],
+        projects: [
+          {
+            id: '83833faf-f654-40dd-bcd5-cf2e944fc702',
+          },
+          {
+            id: '011e7860-04d7-461f-912d-334c622d38b3',
+          },
+          {
+            id: '9dabf3f9-6c86-4358-8598-65007d78df65',
+          },
+          {
+            id: '22e7044f-8414-435d-9c4a-2df42a65034b',
+          },
+        ],
+      },
+    ],
   },
 }
