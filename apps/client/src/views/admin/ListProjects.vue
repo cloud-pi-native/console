@@ -3,15 +3,15 @@ import { onMounted, ref, computed } from 'vue'
 import { useAdminProjectStore } from '@/stores/admin/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { formatDate, statusDict } from 'shared'
-import { useOrganizationStore } from '@/stores/organization.js'
+import { useAdminOrganizationStore } from '@/stores/admin/organization.js'
 
 const adminProjectStore = useAdminProjectStore()
-const organizationStore = useOrganizationStore()
+const adminOrganizationStore = useAdminOrganizationStore()
 
 const snackbarStore = useSnackbarStore()
 
 const allProjects = ref([])
-const organizations = computed(() => organizationStore.organizations)
+const organizations = ref([])
 
 const title = 'Liste des projets'
 const headers = [
@@ -29,11 +29,11 @@ const rows = ref([])
 const setRows = () => {
   rows.value = allProjects.value
     ?.sort((a, b) => a.name >= b.name ? 1 : -1)
-    ?.map(({ organization, name, description, owner, status, locked, createdAt, updatedAt }) => ([
-      organizations.value?.find(org => org.id === organization).label,
+    ?.map(({ organizationId, name, description, roles, status, locked, createdAt, updatedAt }) => ([
+      organizations.value?.find(org => org.id === organizationId).label,
       name,
       description ?? '',
-      owner.email,
+      roles[0].user.email,
       {
         component: 'v-icon',
         name: statusDict.status[status].icon,
@@ -48,7 +48,8 @@ const setRows = () => {
       },
       formatDate(createdAt),
       formatDate(updatedAt),
-    ]))
+    ]),
+    )
 }
 
 const getAllProjects = async () => {
@@ -61,7 +62,7 @@ const getAllProjects = async () => {
 }
 
 onMounted(async () => {
-  await organizationStore.setOrganizations()
+  organizations.value = await adminOrganizationStore.getAllOrganizations()
   await getAllProjects()
 })
 </script>

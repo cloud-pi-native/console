@@ -1,5 +1,7 @@
+import { HookPayload, PluginResult } from '@/plugins/hooks/hook.js'
 import { vaultUrl, vaultToken } from '../../../utils/env.js'
 import { destroyVault, listVault, readVault, writeVault } from './secret.js'
+import { UpdateRepositoryExecArgs } from '@/plugins/hooks/repository.js'
 
 export const axiosOptions = {
   baseURL: `${vaultUrl}`,
@@ -56,6 +58,34 @@ export const archiveDsoProject = async (payload) => {
       status: {
         result: 'KO',
         message: error.message,
+      },
+      error: JSON.stringify(error),
+    }
+  }
+}
+
+export const updateRepository = async (payload:HookPayload<UpdateRepositoryExecArgs>):Promise<PluginResult> => {
+  const { internalRepoName, organization, project, externalToken, externalRepoUrl, externalUserName } = payload.args
+  try {
+    const vaultPath = [organization, project, `${internalRepoName}-mirror`].join('/')
+    const vaultData = (await readVault(vaultPath)).data
+
+    vaultData.GIT_INPUT_PASSWORD = externalToken
+    vaultData.GIT_INPUT_USER = externalUserName
+    vaultData.GIT_INPUT_URL = externalRepoUrl?.split(/:\/\/(.*)/s)[1] // Un urN ne contient pas le protocole
+
+    await writeVault(vaultPath, vaultData)
+    return {
+      status: {
+        result: 'OK',
+        message: 'Updated',
+      },
+    }
+  } catch (error) {
+    return {
+      status: {
+        result: 'KO',
+        message: 'Failed',
       },
       error: JSON.stringify(error),
     }

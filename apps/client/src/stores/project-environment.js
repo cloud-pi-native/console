@@ -10,6 +10,11 @@ export const useProjectEnvironmentStore = defineStore('project-environment', () 
     await projectStore.getUserProjects()
   }
 
+  const updateEnvironment = async (environment) => {
+    await api.updateEnvironment(projectStore.selectedProject.id, environment.id, environment)
+    await projectStore.getUserProjects()
+  }
+
   const deleteEnvironment = async (environmentId) => {
     await api.deleteEnvironment(projectStore.selectedProject.id, environmentId)
     await projectStore.getUserProjects()
@@ -17,6 +22,7 @@ export const useProjectEnvironmentStore = defineStore('project-environment', () 
 
   return {
     addEnvironmentToProject,
+    updateEnvironment,
     deleteEnvironment,
   }
 })

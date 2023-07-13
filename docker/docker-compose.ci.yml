@@ -16,7 +16,7 @@ services:
     command: start-dev --import-realm
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
-      interval: 10s
+      interval: 5s
       timeout: 5s
       retries: 10
     networks:
@@ -24,7 +24,7 @@ services:
 
   postgres:
     restart: always
-    image: docker.io/postgres:14.5
+    image: docker.io/postgres:15.3
     container_name: dso-console_postgres
     environment:
       CI: "true"
@@ -93,13 +93,7 @@ services:
       client:
         condition: service_started
     volumes:
-      - /app/node_modules/
-      - ../apps/client:/app/apps/client
-      - /app/apps/client/node_modules/
-      - ../packages/shared:/app/packages/shared
-      - /app/packages/shared/node_modules/
-      - ../packages/test-utils:/app/packages/test-utils
-      - /app/packages/test-utils/node_modules/
+      - ../apps/client/cypress:/app/apps/client/cypress
     environment:
       CI: "true"
       CLIENT_HOST: client

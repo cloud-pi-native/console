@@ -4,7 +4,7 @@
 
 Liste des outils utilisés par le projet à installer sur son ordinateur :
 
-- Install [Docker Desktop](https://www.docker.com/products/docker-desktop)
+- Install [Docker](https://docs.docker.com/get-docker/)
 - Install [Docker Compose Plugin](https://docs.docker.com/compose/install/)
 - Install [Nodejs](https://nodejs.org/en/download/)
 - Install [Pnpm](https://pnpm.io/installation)
@@ -39,6 +39,7 @@ La gestion des dépendances est effectuée à l'aide de [pnpm](https://pnpm.io/)
 │   └── server/
 ├── packages
 │   ├── test-utils/
+│   ├── tsconfig/
 │   └── shared/
 ├── node_modules/
 ├── package.json
@@ -74,6 +75,16 @@ pnpm run dev
 ```
 
 De nombreuses commandes sont disponible dans le fichier `package.json` à la racine du projet, vous pouvez lancer ces dernières à l'aide de la commande `pnpm run <le_nom_du_script>`.
+
+Pour faciliter les opérations de migrations de base de données via [Prisma](https://www.prisma.io/), un script est disponible :
+
+```sh
+# Lancer le script
+pnpm --filter server run db:wrapper
+
+# Voir l'aide du script
+pnpm --filter server run db:wrapper -h
+```
 
 ### Accès aux services
 

@@ -1,24 +1,19 @@
-import k8s from '@kubernetes/client-node'
-import { kubeconfigPath, kubeconfigCtx } from '../../../utils/env.js'
-import { checkInitializeEnvironment, createKubeNamespace, createKubeSecret, deleteKubeNamespace } from './index.js'
+import type { RegisterFn } from '@/plugins/index.js'
+import { createKubeSecret } from './secret.js'
+import { createKubeNamespace, deleteKubeNamespace } from './namespace.js'
 
-const kc = new k8s.KubeConfig()
-if (kubeconfigPath) {
-  kc.loadFromFile(kubeconfigPath)
-  if (kubeconfigCtx) {
-    kc.setCurrentContext(kubeconfigCtx)
-  }
-} else {
-  kc.loadFromCluster()
-}
-
-const k8sApi = kc.makeApiClient(k8s.CoreV1Api)
-
-export default k8sApi
-
-export const init = (register) => {
-  register('kubernetes', 'initializeEnvironment', checkInitializeEnvironment, 'check') // TODO implement check in controller
-  register('kubernetes', 'initializeEnvironment', createKubeNamespace, 'main')
-  register('kubernetes', 'initializeEnvironment', createKubeSecret, 'post')
-  register('kubernetes', 'deleteEnvironment', deleteKubeNamespace, 'main')
+export const init = (register: RegisterFn) => {
+  register('kubernetes', {
+    addEnvironmentCluster: {
+      // check: checkInitializeEnvironment, // TODO implement check in controller
+      // @ts-ignore
+      main: createKubeNamespace,
+      // @ts-ignore
+      post: createKubeSecret,
+    },
+    removeEnvironmentCluster: {
+      // @ts-ignore
+      main: deleteKubeNamespace,
+    },
+  })
 }

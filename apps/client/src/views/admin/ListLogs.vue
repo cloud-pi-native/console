@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useAdminLogStore } from '@/stores/admin/log.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { JsonViewer } from 'vue3-json-viewer'
@@ -9,34 +9,27 @@ const snackbarStore = useSnackbarStore()
 
 const step = 5
 const isUpdating = ref(true)
-const logs = ref(undefined)
-const logsLength = ref(0)
-const logsPagination = ref({
-  offset: 0,
-  limit: step,
-})
+const offset = ref(0)
+
+const logs = computed(() => adminLogStore.logs)
+const logsLength = computed(() => adminLogStore.count)
 
 const showLogs = async (key) => {
   if (key === 'first' ||
     (key === 'previous' &&
-    (logsPagination.value.offset < 0 ||
-      logsPagination.value.limit < step))
+    offset.value <= step)
   ) {
-    logsPagination.value.offset = 0
-    logsPagination.value.limit = step
+    offset.value = 0
   } else if (key === 'previous') {
-    logsPagination.value.offset -= step
-    logsPagination.value.limit -= step
+    offset.value -= step
   } else if (key === 'last' ||
     (key === 'next' &&
-      logsPagination.value.offset >= logsLength.value - step)) {
-    logsPagination.value.offset = logsLength.value - step
-    logsPagination.value.limit = logsLength.value
+      offset.value >= logsLength.value - step)) {
+    offset.value = logsLength.value - step
   } else {
-    logsPagination.value.offset += step
-    logsPagination.value.limit += step
+    offset.value += step
   }
-  await getAllLogs({ offset: logsPagination.value.offset, limit: logsPagination.value.limit })
+  await getAllLogs({ offset: offset.value, limit: step })
 }
 
 const getAllLogs = async ({ offset, limit }, isDisplayingSuccess = true) => {
@@ -52,14 +45,8 @@ const getAllLogs = async ({ offset, limit }, isDisplayingSuccess = true) => {
   isUpdating.value = false
 }
 
-const refreshLogs = async ({ offset, limit }) => {
-  logsLength.value = await adminLogStore.countAllLogs()
-  await getAllLogs({ offset, limit })
-}
-
 onMounted(async () => {
-  await getAllLogs({ offset: logsPagination.value.offset, limit: logsPagination.value.limit }, false)
-  logsLength.value = await adminLogStore.countAllLogs()
+  await getAllLogs({ offset: offset.value, limit: step }, false)
 })
 
 </script>
@@ -86,7 +73,7 @@ onMounted(async () => {
       icon-only
       icon="ri-refresh-fill"
       :disabled="isUpdating === true"
-      @click="refreshLogs({ offset: logsPagination.offset, limit: logsPagination.limit })"
+      @click="getAllLogs({ offset, limit: step })"
     />
   </div>
 
@@ -95,7 +82,7 @@ onMounted(async () => {
     :key="log.id"
     :data-testid="`${log.id}-json`"
     :value="log"
-    class="log-box"
+    class="json-box"
     copyable
     boxed
   />
@@ -109,7 +96,7 @@ onMounted(async () => {
         title="voir les premiers logs"
         secondary
         icon-only
-        :disabled="isUpdating === true || logsPagination.offset <= 0"
+        :disabled="isUpdating === true || offset <= 0"
         icon="ri-arrow-drop-left-fill"
         @click="showLogs('first')"
       />
@@ -117,7 +104,7 @@ onMounted(async () => {
         title="voir les logs précédents"
         secondary
         icon-only
-        :disabled="isUpdating === true || logsPagination.offset <= 0"
+        :disabled="isUpdating === true || offset <= 0"
         icon="ri-arrow-drop-left-line"
         @click="showLogs('previous')"
       />
@@ -129,7 +116,7 @@ onMounted(async () => {
         title="voir les logs suivants"
         secondary
         icon-only
-        :disabled="isUpdating === true || logsPagination.offset >= logsLength - step"
+        :disabled="isUpdating === true || offset >= logsLength - step"
         icon="ri-arrow-drop-right-line"
         @click="showLogs('next')"
       />
@@ -137,7 +124,7 @@ onMounted(async () => {
         title="voir les derniers logs"
         secondary
         icon-only
-        :disabled="isUpdating === true || logsPagination.offset >= logsLength - step"
+        :disabled="isUpdating === true || offset >= logsLength - step"
         icon="ri-arrow-drop-right-fill"
         @click="showLogs('last')"
       />
@@ -146,12 +133,12 @@ onMounted(async () => {
 </template>
 
 <style>
-.log-box.jv-container span.jv-item.jv-object,
-.log-box.jv-container span.jv-key {
+.json-box.jv-container span.jv-item.jv-object,
+.json-box.jv-container span.jv-key {
   color: var(--text-default-grey);
 }
 
-.log-box.jv-container {
+.json-box.jv-container {
   @apply my-6;
 
   background-color: var(--background-default-grey);

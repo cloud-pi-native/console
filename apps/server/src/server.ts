@@ -3,13 +3,14 @@ import { rm } from 'node:fs/promises'
 import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import app from './app.js'
-import { getConnection, closeConnections, synchroniseModels } from './connect.js'
+import { getConnection, closeConnections } from './connect.js'
 import { initDb } from './init/db/index.js'
+import { initCorePlugins, initExternalPlugins, initPluginManager } from './plugins/index.js'
 
 await startServer()
 handleExit()
 
-async function initializeDB (path) {
+async function initializeDB (path: string) {
   app.log.info('Starting init DB...')
   const { data } = await import(path)
   await initDb(data)
@@ -17,9 +18,14 @@ async function initializeDB (path) {
 }
 
 export async function startServer () {
+  if ((isInt || isProd) && !isCI) { // execute only when in real prod env and local dev integration
+    const pluginManager = await initPluginManager(app)
+    await initCorePlugins(pluginManager, app)
+    await initExternalPlugins(pluginManager, app)
+  }
+
   try {
     await getConnection()
-    await synchroniseModels()
   } catch (error) {
     app.log.error(error.message)
     throw error
@@ -41,13 +47,12 @@ export async function startServer () {
       app.log.info(`Successfully deleted '${dataPath}'`)
     }
   } catch (error) {
-    if (error.code === 'ERR_MODULE_NOT_FOUND' || error.message.includes('Failed to load')) {
+    if (error.code === 'ERR_MODULE_NOT_FOUND' || error.message.includes('Failed to load') || error.message.includes('Cannot find module')) {
       app.log.info('No initDb file, skipping')
     } else {
       app.log.warn(error.message)
       throw error
     }
-    app.log.error(error)
   }
 
   try {
@@ -65,13 +70,13 @@ export async function startServer () {
 }
 
 export function handleExit () {
-  process.on('exit', exitGracefuly)
-  process.on('SIGINT', exitGracefuly)
-  process.on('SIGTERM', exitGracefuly)
-  process.on('uncaughtException', exitGracefuly)
+  process.on('exit', exitGracefully)
+  process.on('SIGINT', exitGracefully)
+  process.on('SIGTERM', exitGracefully)
+  process.on('uncaughtException', exitGracefully)
 }
 
-export async function exitGracefuly (error: Error) {
+export async function exitGracefully (error: Error) {
   if (error instanceof Error) {
     app.log.error(error)
   }

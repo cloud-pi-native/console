@@ -1,8 +1,8 @@
-import { getOrganizations } from '../../support/func.js'
+import { getModel } from '../../support/func.js'
 import { statusDict, formatDate } from 'shared'
 
 describe('Administration projects', () => {
-  const organizations = getOrganizations()
+  const organizations = getModel('organization')
   let projects
 
   beforeEach(() => {
@@ -15,10 +15,10 @@ describe('Administration projects', () => {
       projects = response?.body
         ?.sort((a, b) => a.name >= b.name ? 1 : -1)
         ?.map(project => ({
-          organization: organizations.find(organization => organization.id === project.organization).label,
+          organization: organizations.find(organization => organization.id === project.organizationId).label,
           name: project.name,
           description: project.description ?? '',
-          owner: project.owner,
+          owner: project.roles[0].user,
           status: project.status,
           locked: project.locked,
           createdAt: project.createdAt,

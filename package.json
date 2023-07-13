@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "npm run dev:up; npm run dev:down",
-    "dev:build": "docker compose --env-file env/.env -f docker/docker-compose.dev.yml build --pull",
-    "dev:up": "docker compose --env-file env/.env -f docker/docker-compose.dev.yml up --attach server --attach client",
+    "dev:build": "docker compose --env-file env/.env --env-file env/.env.codespace -f docker/docker-compose.dev.yml build --pull",
+    "dev:up": "docker compose --env-file env/.env --env-file env/.env.codespace -f docker/docker-compose.dev.yml up --attach server --attach client",
     "dev:down": "docker compose --env-file env/.env -f docker/docker-compose.dev.yml down",
     "lint": "turbo run lint",
     "format": "turbo run format",
@@ -26,27 +26,22 @@
     "test:server": "turbo run test --filter server",
     "build:server": "turbo run build --filter server",
     "test:shared": "turbo run test --filter shared",
-    "test:ct": "pnpm --filter client run cypress:open-ct",
+    "test:ct": "pnpm --filter shared run build; pnpm --filter client run cypress:open-ct",
     "test:ct-ci": "docker compose -f docker/docker-compose.ct.yml up --exit-code-from cypress --quiet-pull; docker compose -f docker/docker-compose.ct.yml down -v",
     "test:ct-ci-build": "docker compose -f docker/docker-compose.ct.yml build",
-    "test:e2e": "docker compose --env-file env/.env -f docker/docker-compose.e2e.yml up -d; cd apps/client; npm run cypress:open; cd -; docker compose --env-file env/.env.ci -f docker/docker-compose.e2e.yml down -v",
+    "test:e2e": "pnpm --filter shared run build; docker compose --env-file env/.env -f docker/docker-compose.e2e.yml up -d; cd apps/client; npm run cypress:open; cd -; docker compose --env-file env/.env.ci -f docker/docker-compose.e2e.yml down -v",
     "test:e2e-build": "docker compose --env-file env/.env -f docker/docker-compose.e2e.yml build --pull",
     "test:e2e-ci": "docker compose --env-file env/.env.ci -f docker/docker-compose.ci.yml up --attach cypress --exit-code-from cypress --quiet-pull; docker compose --env-file env/.env.ci -f docker/docker-compose.ci.yml down -v",
     "test:e2e-ci-build": "docker compose --env-file env/.env.ci -f docker/docker-compose.ci.yml build --pull"
   },
   "devDependencies": {
-    "@commitlint/cli": "^17.6.5",
-    "@commitlint/config-conventional": "^17.6.5",
+    "@commitlint/cli": "^17.6.6",
+    "@commitlint/config-conventional": "^17.6.6",
     "husky": "^8.0.3",
-    "lint-staged": "^13.2.2",
-    "turbo": "^1.10.2"
+    "lint-staged": "^13.2.3",
+    "turbo": "^1.10.7"
   },
   "volta": {
-    "node": "18.16.0"
-  },
-  "pnpm": {
-    "patchedDependencies": {
-      "sequelize-mock@0.10.2": "patches/sequelize-mock@0.10.2.patch"
-    }
+    "node": "18.16.1"
   }
 }

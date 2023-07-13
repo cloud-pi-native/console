@@ -1,0 +1,15 @@
+{{- if  .Values.server.plugins }}
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ .Release.Name }}-fetch-script
+data:
+  fetch: |
+    #!/bin/bash
+    cd /tmp
+{{- range $i, $val := .Values.server.plugins }}
+    wget {{ $val }} -O {{ $i }}.zip;
+    unzip {{ $i }}.zip -d /plugins;
+{{- end -}}
+{{- end -}}

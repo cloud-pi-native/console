@@ -4,12 +4,14 @@ import {
   updateActiveOrganization,
   updateLabelOrganization,
   getOrganizationByName,
-} from '../../models/queries/organization-queries.js'
-import { addLogs } from '../../models/queries/log-queries.js'
+} from '../../queries/organization-queries.js'
+import { addLogs } from '../../queries/log-queries.js'
 import { organizationSchema, getUniqueListBy } from 'shared'
 import { addReqLogs } from '../../utils/logger.js'
 import { sendOk, sendCreated, sendNotFound, sendBadRequest } from '../../utils/response.js'
-import hooksFns from '../../plugins/index.js'
+import { hooks } from '../../plugins/index.js'
+import { HookPayload, PluginResult } from '@/plugins/hooks/hook.js'
+import { objectValues } from '@/utils/type.js'
 
 // GET
 export const getAllOrganizationsController = async (req, res) => {
@@ -104,10 +106,13 @@ export const fetchOrganizationsController = async (req, res) => {
   try {
     let consoleOrganizations = await getOrganizations()
 
-    // TODO: Fix type
+    // TODO: Fix define return in plugins dir
     // @ts-ignore See TODO
-    const results: Record<string, any>[] = await hooksFns.fetchOrganizations.execute()
+    type PluginOrganization = { name: string, label: string, source: string }
+    type FetchOrganizationsResult = PluginResult & { result: { organizations: PluginOrganization[] } }
+    const results = await hooks.fetchOrganizations.execute() as HookPayload<void> & Record<string, FetchOrganizationsResult>
 
+    // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
     await addLogs('Fetch organizations', results, user.id)
 
     // TODO: Fix type
@@ -117,23 +122,15 @@ export const fetchOrganizationsController = async (req, res) => {
     /**
     * Filter plugin results to get a single array of organizations with unique name
     */
-    const externalOrganizations = getUniqueListBy(Object.values(results)
+    const externalOrganizations = getUniqueListBy(objectValues(results)
       ?.reduce((acc: Record<string, any>[], value) => {
         if (typeof value !== 'object' || !value.result.organizations?.length) return acc
         return [...acc, ...value.result.organizations]
       }, [])
-      ?.filter(externalOrg => externalOrg.name), 'name')
+      ?.filter(externalOrg => externalOrg.name), 'name') as PluginOrganization[]
 
     if (!externalOrganizations.length) throw new Error('Aucune organisation à synchroniser')
 
-    /**
-    * Defines an organization retrieved from plugins
-    *
-    * @typedef {object}
-    * @property {string} label
-    * @property {string} name
-    * @property {string} source
-    */
     for (const externalOrg of externalOrganizations) {
       await organizationSchema.validateAsync(externalOrg)
       if (consoleOrganizations.find(consoleOrg => consoleOrg.name === externalOrg.name)) {

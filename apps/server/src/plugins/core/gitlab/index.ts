@@ -1,14 +1,20 @@
+import type { HookPayload } from '@/plugins/hooks/hook.js'
 import { gitlabToken } from '../../../utils/env.js'
 import { createGroup, deleteGroup } from './group.js'
 import { addGroupMember } from './permission.js'
 import { createProject, createProjectMirror, deleteProject } from './project.js'
 import { setProjectTrigger } from './triggers.js'
-import { createUser, getUser } from './user.js'
+import { createUser, createUsername, getUser } from './user.js'
+import type { ArchiveProjectExecArgs, CreateProjectExecArgs } from '@/plugins/hooks/project.js'
+import type { CreateRepositoryExecArgs, DeleteRepositoryExecArgs } from '@/plugins/hooks/repository.js'
+import { PipelineTriggerTokenSchema } from '@gitbeaker/rest'
+import { User } from '@prisma/client'
 
 // Check
-export const checkApi = async (payload) => {
+export const checkApi = async (payload: HookPayload<{ owner: User }>) => {
   const { owner } = payload.args
-  const user = await getUser(owner.email)
+  const user = await getUser({ ...owner, username: createUsername(owner.email) })
+
   if (user?.id === 1) {
     return {
       status: {
@@ -25,7 +31,7 @@ export const checkApi = async (payload) => {
 }
 
 // Project
-export const createDsoProject = async (payload) => {
+export const createDsoProject = async (payload: HookPayload<CreateProjectExecArgs>) => {
   try {
     const { project, organization, owner } = payload.args
 
@@ -57,12 +63,12 @@ export const createDsoProject = async (payload) => {
         result: 'KO',
         message: error.message,
       },
-      error: JSON.stringify(error),
+      error,
     }
   }
 }
 
-export const archiveDsoProject = async (payload) => {
+export const archiveDsoProject = async (payload: HookPayload<ArchiveProjectExecArgs>) => {
   try {
     const { project, organization } = payload.args
 
@@ -86,14 +92,14 @@ export const archiveDsoProject = async (payload) => {
 }
 
 // Repo
-export const createDsoRepository = async (payload) => {
+export const createDsoRepository = async (payload: HookPayload<CreateRepositoryExecArgs>) => {
   try {
     const { internalRepoName, externalRepoUrl, organization, project, externalUserName, externalToken, isPrivate } = payload.args
     const externalRepoUrn = externalRepoUrl.split(/:\/\/(.*)/s)[1] // Un urN ne contient pas le protocole
     const internalMirrorRepoName = `${internalRepoName}-mirror`
     const projectCreated = await createProject({ internalRepoName, externalRepoUrn, group: project, organization, externalUserName, externalToken, isPrivate })
     const mirror = await createProjectMirror(internalMirrorRepoName, project, organization)
-    const triggerToken = await setProjectTrigger(mirror.id)
+    const triggerToken = await setProjectTrigger(mirror.id) as PipelineTriggerTokenSchema
 
     return {
       status: {
@@ -108,7 +114,7 @@ export const createDsoRepository = async (payload) => {
           GIT_INPUT_URL: externalRepoUrn,
           GIT_INPUT_USER: externalUserName,
           GIT_INPUT_PASSWORD: externalToken,
-          GIT_OUTPUT_USER: triggerToken.owner.name,
+          GIT_OUTPUT_USER: triggerToken.owner.username,
           GIT_OUTPUT_PASSWORD: gitlabToken,
           GIT_OUTPUT_URL: projectCreated.http_url_to_repo.split(/:\/\/(.*)/s)[1],
           GIT_PIPELINE_TOKEN: triggerToken.token,
@@ -126,28 +132,7 @@ export const createDsoRepository = async (payload) => {
   }
 }
 
-// export const updateDsoRepository = async (payload) => {
-//   try {
-//     // TODO #330
-//     console.log('à implémenter')
-
-//     return {
-//       status: {
-//         result: 'OK',
-//         message: 'Updated',
-//       },
-//     }
-//   } catch (error) {
-//     return {
-//       status: {
-//         result: 'KO',
-//         message: error.message,
-//       },
-//     }
-//   }
-// }
-
-export const deleteDsoRepository = async (payload) => {
+export const deleteDsoRepository = async (payload: HookPayload<DeleteRepositoryExecArgs>) => {
   try {
     const { internalRepoName, organization, project } = payload.args
     await deleteProject(internalRepoName, project, organization)

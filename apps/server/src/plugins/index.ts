@@ -1,130 +1,61 @@
 import { readdirSync, existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import url from 'url'
-import { isCI, isInt, isProd } from '../utils/env.js'
+import { type FastifyInstance } from 'fastify/types/instance.js'
+import { objectEntries, objectKeys } from '@/utils/type.js'
+import * as hooks from './hooks/index.js'
+import { type PluginsFunctions } from './hooks/hook.js'
 
-const executeStep = async (step, payload) => {
-  const names = Object.keys(step)
-  const fns = names.map(name => Promise.resolve(step[name](payload)))
-  const results = await Promise.all(fns)
-  names.forEach((name, index) => {
-    if (results[index].status.result === 'KO') payload.failed = true
-    payload[name] = results[index]
-  })
+export type RegisterFn = (name: string, subscribedHooks: PluginsFunctions) => void
+export type PluginManager = Promise<{ hookList: typeof hooks, register: RegisterFn }>
 
-  return payload
-}
+const initPluginManager = async (app: FastifyInstance): PluginManager => {
+  const register: RegisterFn = (name: string, subscribedHooks: PluginsFunctions) => {
+    const message = []
+    for (const [hook, steps] of objectEntries(subscribedHooks)) {
+      if (!(hook in hooks) && hook !== 'all') {
+        app.log.warn({
+          message: `Plugin ${name} tried to register on an unknown hook ${hook}`,
+        })
+        continue
+      }
 
-const createHook = () => {
-  const check = {}
-  const pre = {}
-  const main = {}
-  const post = {}
-  const save = {}
-  const revert = {}
+      for (const [step, fn] of objectEntries(steps)) {
+        if (hook === 'checkServices' && step !== 'check') {
+          app.log.warn({
+            message: `Plugin ${name} tried to register on 'checkServices' hook at ${step} which is invalid`,
+          })
+          continue
+        }
 
-  const execute = async (args) => {
-    let payload = { failed: false, args }
-    const steps = [pre, main, post, save]
-    for (const step of steps) {
-      payload = await executeStep(step, payload)
-      if (payload.failed) {
-        payload = await executeStep(revert, payload)
-        break
+        if (hook === 'all') {
+          for (const hook of objectKeys(hooks)) {
+            const a = hooks[hook]
+            if (!('uniquePlugin' in hooks[hook])) {
+              hooks[hook][step][name] = fn
+            }
+          }
+          message.push(`*:${step}`)
+        } else {
+          if ('uniquePlugin' in hooks[hook] && hooks[hook]?.uniquePlugin !== '' && hooks[hook]?.uniquePlugin !== name) {
+            app.log.warn({ message: `Plugin ${name} cannot register on 'fetchOrganizations', hook is already registered on` })
+            continue
+          }
+          hooks[hook][step][name] = fn
+          message.push(`${hook}:${step}`)
+        }
       }
     }
-    return payload
-  }
-
-  const validate = async (args) => {
-    const payload = { failed: false, args }
-    return executeStep(check, payload)
+    app.log.warn(`Plugin ${name} registered at ${message.join(' ')}`)
   }
 
   return {
-    check,
-    pre,
-    main,
-    post,
-    save,
-    revert,
-    execute,
-    validate,
-  }
-}
-
-const fetchOrganizationRegistration = {
-  isRegisteredOn: false,
-  plugin: undefined,
-}
-
-const initPluginManager = async () => {
-  const hooks = {
-    checkServices: createHook(),
-
-    fetchOrganizations: createHook(),
-
-    createProject: createHook(),
-    archiveProject: createHook(),
-
-    createRepository: createHook(),
-    updateRepository: createHook(),
-    deleteRepository: createHook(),
-
-    addUserToProject: createHook(),
-    updateUserProjectRole: createHook(),
-    removeUserFromProject: createHook(),
-
-    initializeEnvironment: createHook(),
-    deleteEnvironment: createHook(),
-
-    setPermission: createHook(),
-    updatePermission: createHook(),
-    deletePermission: createHook(),
-  }
-
-  const register = (name, hook, fn, step = 'main') => {
-    if (!(hook in hooks)) {
-      console.warn({
-        message: `Plugin ${name} tried to register on an unknown hook ${hook}`,
-      })
-      return
-    }
-    if (hook === 'checkServices' && step !== 'check') {
-      console.warn({
-        message: `Plugin ${name} tried to register on 'checkServices' hook at ${step} which is invalid`,
-      })
-      return
-    }
-    if (hook === 'fetchOrganizations' &&
-      fetchOrganizationRegistration.isRegisteredOn &&
-      fetchOrganizationRegistration.plugin !== name) {
-      console.warn({
-        message: `Plugin ${name} cannot register on 'fetchOrganizations', hook is already registered on`,
-      })
-      return
-    }
-    if (hook === 'fetchOrganizations' &&
-      !fetchOrganizationRegistration.isRegisteredOn) {
-      fetchOrganizationRegistration.isRegisteredOn = true
-      fetchOrganizationRegistration.plugin = name
-    }
-    hooks[hook][step][name] = fn
-    console.warn(`Plugin ${name} registered at ${hook}:${step}`)
-  }
-
-  const unregister = (name, hook, step = 'main') => {
-    delete hooks[hook][step][name]
-  }
-
-  return {
-    hooks,
+    hookList: hooks,
     register,
-    unregister,
   }
 }
 
-export const initCorePlugins = async (pluginManager) => {
+export const initCorePlugins = async <E, V>(pluginManager: Awaited<PluginManager>, app: FastifyInstance) => {
   const { init: gitlabInit } = await import('./core/gitlab/init.js')
   const { init: harborInit } = await import('./core/harbor/init.js')
   const { init: keycloakInit } = await import('./core/keycloak/init.js')
@@ -144,12 +75,12 @@ export const initCorePlugins = async (pluginManager) => {
   vaultInit(pluginManager.register)
 }
 
-const initExternalPlugins = async (pluginManager) => {
+export const initExternalPlugins = async <E, V>(pluginManager: Awaited<PluginManager>, app: FastifyInstance) => {
   const __dirname = url.fileURLToPath(new URL('.', import.meta.url))
   try {
     const pluginDir = resolve(__dirname, 'external')
     if (!existsSync(pluginDir)) {
-      console.log(`Directory ${pluginDir} does not exist, skipping import of external plugins`)
+      app.log.info(`Directory ${pluginDir} does not exist, skipping import of external plugins`)
       return
     }
     const plugins = readdirSync(pluginDir)
@@ -158,25 +89,15 @@ const initExternalPlugins = async (pluginManager) => {
         const myPlugin = await import(`${pluginDir}/${plugin}/init.js`)
         myPlugin.init(pluginManager.register)
       } else {
-        console.warn(`ignoring ${plugin}, ${plugin}/init.js does not exist`)
+        app.log.warn(`ignoring ${plugin}, ${plugin}/init.js does not exist`)
       }
     }
   } catch (err) {
-    console.error(err)
+    app.log.error(err)
   }
 }
 
-const pluginManager = await initPluginManager()
-
-if ((isInt || isProd) && !isCI) { // execute only when in real prod env and local dev integration
-  await initCorePlugins(pluginManager)
-  await initExternalPlugins(pluginManager)
+export {
+  initPluginManager,
+  hooks,
 }
-
-const hooksHandlers = {}
-
-Object.entries(pluginManager.hooks).forEach(([key, val]) => {
-  hooksHandlers[key] = { execute: val.execute, validate: val.validate }
-})
-
-export default hooksHandlers

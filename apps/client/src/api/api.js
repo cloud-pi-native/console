@@ -28,11 +28,6 @@ export const getUserProjectById = async (projectId) => {
   return response.data
 }
 
-export const getProjectOwner = async (projectId) => {
-  const response = await apiClient.get(`/projects/${projectId}/owner`)
-  return response.data
-}
-
 export const updateProject = async (projectId, data) => {
   const response = await apiClient.put(`/projects/${projectId}`, data)
   return response.data
@@ -97,6 +92,11 @@ export const addEnvironment = async (projectId, data) => {
   return response.data
 }
 
+export const updateEnvironment = async (projectId, environmentId, data) => {
+  const response = await apiClient.put(`/projects/${projectId}/environments/${environmentId}`, data)
+  return response.data
+}
+
 export const deleteEnvironment = async (projectId, environmentId) => {
   const response = await apiClient.delete(`/projects/${projectId}/environments/${environmentId}`)
   return response.data
@@ -158,11 +158,22 @@ export const getAllProjects = async () => {
 
 // Admin - Logs
 export const getAllLogs = async ({ offset, limit }) => {
-  const response = await apiClient.get(`/admin/logs/${offset}/${limit}`)
+  const response = await apiClient.get(`/admin/logs?offset=${offset}&limit=${limit}`)
   return response.data
 }
 
-export const countAllLogs = async () => {
-  const response = await apiClient.get('/admin/logs/count')
+// Admin - Clusters
+export const getAllClusters = async () => {
+  const response = await apiClient.get('/admin/clusters')
+  return response.data
+}
+
+export const addCluster = async (data) => {
+  const response = await apiClient.post('/admin/clusters', data)
+  return response.data
+}
+
+export const updateCluster = async (id, data) => {
+  const response = await apiClient.put(`/admin/clusters/${id}`, data)
   return response.data
 }

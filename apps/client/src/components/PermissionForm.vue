@@ -25,7 +25,7 @@ const permissionToUpdate = ref({})
 
 const project = computed(() => projectStore.selectedProject)
 const owner = computed(() => projectStore.selectedProjectOwner)
-const projectMembers = computed(() => project.value.users)
+const projectMembers = computed(() => project.value.roles.map(role => role.user))
 const permittedUsersId = computed(() => permissions.value.map(permission => permission.userId))
 const isPermitted = computed(() => permittedUsersId.value.includes(userStore.userProfile.id))
 const usersToLicence = computed(() =>

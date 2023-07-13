@@ -24,9 +24,9 @@ export const createProject = async ({ internalRepoName, externalRepoUrn, group, 
   return await api.Projects.create(
     {
       name: internalRepoName,
-      namespace_id: groupId,
-      ci_config_path: '.gitlab-ci-dso.yml',
-      import_url: externalRepoUrl,
+      namespaceId: groupId,
+      ciConfigPath: '.gitlab-ci-dso.yml',
+      importUrl: externalRepoUrl,
     },
   )
 }
@@ -47,7 +47,7 @@ export const createProjectMirror = async (internalRepoName, group, organization)
   const project = await api.Projects.create(
     {
       name: internalRepoName,
-      namespace_id: groupId,
+      namespaceId: groupId,
     },
   )
   api.Commits.create(project.id, 'main', 'ci: :construction_worker: first mirror', mirrorFirstActions)

@@ -10,13 +10,13 @@ export const useProjectStore = defineStore('project', () => {
   /**
    * @param {string} project
    */
-  const setSelectedProject = async (id) => {
+  const setSelectedProject = (id) => {
     selectedProject.value = projects.value.find(project => project.id === id)
-    await setSelectedProjectOwner()
+    setSelectedProjectOwner(selectedProject.value)
   }
 
-  const setSelectedProjectOwner = async () => {
-    selectedProjectOwner.value = await api.getProjectOwner(selectedProject.value.id)
+  const setSelectedProjectOwner = (project) => {
+    selectedProjectOwner.value = project.roles.find(role => role.role === 'owner').user
   }
 
   const updateProject = async (projectId, data) => {

@@ -3,27 +3,54 @@ import { createRandomDbSetup } from 'test-utils'
 
 describe('Random utils', () => {
   it('Should create a random project for tests', () => {
-    expect(createRandomDbSetup({ nbUsers: 3, nbRepo: 1, envs: ['dev', 'prod'] })).toEqual(
+    const db = createRandomDbSetup({ nbUsers: 3, nbRepo: 1, envs: ['dev', 'prod'] })
+    expect(db).toEqual(
       expect.objectContaining({
         project: expect.objectContaining({
           id: expect.any(String),
           name: expect.any(String),
-          organization: expect.any(String),
+          organizationId: expect.any(String),
+          organization: expect.objectContaining({
+            id: expect.any(String),
+            name: expect.any(String),
+            source: expect.any(String),
+            label: expect.any(String),
+            active: expect.any(Boolean),
+          }),
           status: expect.any(String),
           locked: expect.any(Boolean),
-          users: expect.arrayContaining([
+          roles: expect.arrayContaining([
             {
               id: expect.any(String),
               role: expect.any(String),
+              user: expect.objectContaining({
+                id: expect.any(String),
+                email: expect.any(String),
+                firstName: expect.any(String),
+                lastName: expect.any(String),
+              }),
             },
             {
               id: expect.any(String),
               role: expect.any(String),
+              user: expect.objectContaining({
+                id: expect.any(String),
+                email: expect.any(String),
+                firstName: expect.any(String),
+                lastName: expect.any(String),
+              }),
             },
             {
               id: expect.any(String),
               role: expect.any(String),
-            }]),
+              user: expect.objectContaining({
+                id: expect.any(String),
+                email: expect.any(String),
+                firstName: expect.any(String),
+                lastName: expect.any(String),
+              }),
+            },
+          ]),
           repositories: expect.any(Array),
           environments: expect.arrayContaining([
             {
@@ -32,6 +59,7 @@ describe('Random utils', () => {
               projectId: expect.any(String),
               status: expect.any(String),
               permissions: expect.any(Array),
+              clusters: expect.any(Array),
             },
             {
               id: expect.any(String),
@@ -39,6 +67,7 @@ describe('Random utils', () => {
               projectId: expect.any(String),
               status: expect.any(String),
               permissions: expect.any(Array),
+              clusters: expect.any(Array),
             },
           ]),
         }),

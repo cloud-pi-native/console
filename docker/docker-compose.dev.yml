@@ -13,10 +13,10 @@ services:
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
-    command: start-dev --import-realm
+    command: start-dev --import-realm $KEYCLOAK_CODESPACE
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
-      interval: 10s
+      interval: 5s
       timeout: 5s
       retries: 10
     networks:
@@ -24,7 +24,7 @@ services:
 
   postgres:
     restart: always
-    image: docker.io/postgres:14.5
+    image: docker.io/postgres:15.3
     container_name: dso-console_postgres
     environment:
       POSTGRES_DB: ${DB_NAME}
@@ -39,7 +39,7 @@ services:
 
   pgadmin:
     restart: always
-    image: docker.io/dpage/pgadmin4:6.16
+    image: docker.io/dpage/pgadmin4:7.4
     container_name: dso-console_pgadmin
     depends_on:
       - postgres
@@ -74,8 +74,6 @@ services:
       - /app/node_modules/
       - ../apps/server:/app/apps/server
       - /app/apps/server/node_modules/
-      - ../packages/shared:/app/packages/shared
-      - /app/packages/shared/node_modules/
     env_file:
       - ../env/.env
       - ../apps/server/env/.env
@@ -100,8 +98,6 @@ services:
       - /app/node_modules/
       - ../apps/client:/app/apps/client
       - /app/apps/client/node_modules/
-      - ../packages/shared:/app/packages/shared
-      - /app/packages/shared/node_modules/
     env_file:
       - ../env/.env
       - ../apps/client/env/.env

@@ -12,7 +12,7 @@ import { useProjectStore } from '@/stores/project.js'
 import { allOrganizations } from 'shared'
 
 describe('RepoForm.vue', () => {
-  it('Should mount a RepoForm', () => {
+  it('Should mount a new repo RepoForm', () => {
     cy.intercept('POST', '/api/v1/ci-files', { 'gitlab-ci-dso': 'my generated file' })
     cy.intercept('GET', '/api/v1/organizations', allOrganizations)
     const pinia = createPinia()
@@ -26,8 +26,6 @@ describe('RepoForm.vue', () => {
         externalUserName: 'clairenlet',
         externalToken: 'eddddsqsq',
       },
-      isEditable: true,
-
     }
 
     const extensions = {
@@ -43,18 +41,18 @@ describe('RepoForm.vue', () => {
 
     const randomDbSetup = createRandomDbSetup({})
     const projectStore = useProjectStore(pinia)
-    projectStore.selectedProject = randomDbSetup
+    projectStore.selectedProject = randomDbSetup.project
 
     cy.mount(RepoForm, { extensions, props })
 
     cy.get('h1').should('contain', 'Ajouter un dépôt au projet')
       .getByDataTestid('repoFieldset').should('have.length', 1)
       .get('select#type-language-select').should('not.be.visible')
-      .getByDataTestid('internalRepoNameInput').should('have.value', props.repo.internalRepoName)
-      .getByDataTestid('externalRepoUrlInput').should('have.value', props.repo.externalRepoUrl)
+      .getByDataTestid('internalRepoNameInput').find('input').should('have.value', props.repo.internalRepoName)
+      .getByDataTestid('externalRepoUrlInput').find('input').should('have.value', props.repo.externalRepoUrl)
       .getByDataTestid('privateRepoCbx').find('input[type="checkbox"]').should('be.checked')
-      .getByDataTestid('externalUserNameInput').should('have.value', props.repo.externalUserName)
-      .getByDataTestid('externalTokenInput').should('have.value', props.repo.externalToken)
+      .getByDataTestid('externalUserNameInput').find('input').should('have.value', props.repo.externalUserName)
+      .getByDataTestid('externalTokenInput').find('input').should('have.value', props.repo.externalToken)
       .getByDataTestid('infraRepoCbx').find('input[type="checkbox"]').should('not.be.checked')
       .getByDataTestid('addRepoBtn').should('be.enabled')
       .getByDataTestid('cancelRepoBtn').should('be.enabled')
@@ -89,5 +87,57 @@ describe('RepoForm.vue', () => {
         const text = $span.text()
         expect(text).to.match(/YAML – \d* bytes/)
       })
+  })
+  it('Should mount an update repo RepoForm', () => {
+    cy.intercept('POST', '/api/v1/ci-files', { 'gitlab-ci-dso': 'my generated file' })
+    cy.intercept('GET', '/api/v1/organizations', allOrganizations)
+    const pinia = createPinia()
+
+    const props = {
+      repo: {
+        id: '83833faf-f654-40dd-bcd5-cf2e944fc504',
+        internalRepoName: 'candilib',
+        externalRepoUrl: 'https://github.com/LAB-MI/candilibV2.git',
+        isPrivate: true,
+        isInfra: false,
+        externalUserName: 'clairenlet',
+      },
+    }
+
+    const extensions = {
+      use: [
+        [
+          VueDsfr, { icons: Object.values(icons) },
+        ],
+      ],
+      global: {
+        plugins: [pinia],
+      },
+    }
+
+    const randomDbSetup = createRandomDbSetup({})
+    const projectStore = useProjectStore(pinia)
+    projectStore.selectedProject = randomDbSetup.project
+
+    cy.mount(RepoForm, { extensions, props })
+
+    cy.get('h1').should('contain', 'Modifier le dépôt')
+      .getByDataTestid('repoFieldset').should('have.length', 1)
+      .getByDataTestid('internalRepoNameInput').find('input').should('have.value', props.repo.internalRepoName)
+      .and('be.disabled')
+      .getByDataTestid('externalRepoUrlInput').find('input').should('have.value', props.repo.externalRepoUrl)
+      .and('be.enabled')
+      .getByDataTestid('privateRepoCbx').find('input[type="checkbox"]').should('be.checked')
+      .and('be.enabled')
+      .getByDataTestid('externalUserNameInput').find('input').should('have.value', props.repo.externalUserName)
+      .and('be.enabled')
+      .getByDataTestid('externalTokenInput').find('input').should('have.value', '')
+      .and('be.enabled')
+      .getByDataTestid('infraRepoCbx').find('input[type="checkbox"]').should('not.be.checked')
+      .and('be.disabled')
+      .getByDataTestid('updateRepoBtn').should('be.disabled')
+      .getByDataTestid('cancelRepoBtn').should('be.enabled')
+      .getByDataTestid('externalTokenInput').find('input').type('aaaaaaa').blur()
+      .getByDataTestid('updateRepoBtn').should('be.enabled')
   })
 })

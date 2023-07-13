@@ -9,13 +9,7 @@ services:
     container_name: dso-console_cypress
     command: cypress:run-ct --browser chrome
     volumes:
-      - /app/node_modules/
-      - ../apps/client:/app/apps/client
-      - /app/apps/client/node_modules/
-      - ../packages/shared:/app/packages/shared
-      - /app/packages/shared/node_modules/
-      - ../packages/test-utils:/app/packages/test-utils
-      - /app/packages/test-utils/node_modules/
+      - ../apps/client/cypress:/app/apps/client/cypress
     env_file:
       - ../apps/server/env/.env.ci
     environment:

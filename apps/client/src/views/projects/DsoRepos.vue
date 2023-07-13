@@ -41,7 +41,7 @@ const setSelectedRepo = (repo) => {
     return
   }
   selectedRepo.value = repo
-  cancel()
+  isNewRepoForm.value = false
 }
 
 const showNewRepoForm = () => {
@@ -51,11 +51,13 @@ const showNewRepoForm = () => {
 
 const cancel = () => {
   isNewRepoForm.value = false
+  selectedRepo.value = {}
 }
 
-const addRepo = async (repo) => {
+const saveRepo = async (repo) => {
   cancel()
   try {
+    if (repo.id) return await projectRepositoryStore.updateRepo(repo)
     await projectRepositoryStore.addRepoToProject(repo)
   } catch (error) {
     snackbarStore.setMessage(error?.message, 'error')
@@ -104,7 +106,7 @@ watch(project, () => {
   >
     <RepoForm
       :is-project-locked="project?.locked"
-      @add="(repo) => addRepo(repo)"
+      @save="(repo) => saveRepo(repo)"
       @cancel="cancel()"
     />
   </div>
@@ -158,7 +160,7 @@ watch(project, () => {
         :is-project-locked="project?.locked"
         :is-owner="isOwner"
         :repo="selectedRepo"
-        :is-editable="false"
+        @save="(repo) => saveRepo(repo)"
         @delete="(repoId) => deleteRepo(repoId)"
       />
     </div>

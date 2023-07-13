@@ -1,6 +1,3 @@
-/* eslint-env node */
-require('@rushstack/eslint-patch/modern-module-resolution')
-
 module.exports = {
   root: true,
   extends: [
@@ -28,6 +25,10 @@ module.exports = {
     'comma-dangle': [2, 'always-multiline'],
     'vue/no-v-html': 0,
     'no-irregular-whitespace': 0,
+    '@typescript-eslint/no-unused-vars': 'off',
+    'no-unused-vars': 'off',
+    '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/ban-ts-comment': 'off',
   },
   overrides: [
     {

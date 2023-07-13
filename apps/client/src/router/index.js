@@ -3,7 +3,7 @@ import { useUserStore } from '@/stores/user.js'
 import { useProjectStore } from '@/stores/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
-const DsoHome = () => import('@/views/DsoHome.vue')
+import DsoHome from '@/views/DsoHome.vue'
 const ServicesHealth = () => import('@/views/ServicesHealth.vue')
 const CreateProject = () => import('@/views/CreateProject.vue')
 const ManageEnvironments = () => import('@/views/projects/ManageEnvironments.vue')
@@ -17,6 +17,7 @@ const ListUser = () => import('@/views/admin/ListUser.vue')
 const ListOrganizations = () => import('@/views/admin/ListOrganizations.vue')
 const ListProjects = () => import('@/views/admin/ListProjects.vue')
 const ListLogs = () => import('@/views/admin/ListLogs.vue')
+const ListClusters = () => import('@/views/admin/ListClusters.vue')
 
 const MAIN_TITLE = 'Console Cloud π Native'
 
@@ -108,6 +109,11 @@ const routes = [
     component: ListLogs,
   },
   {
+    path: '/admin/clusters',
+    name: 'ListClusters',
+    component: ListClusters,
+  },
+  {
     path: '/doc',
     name: 'Doc',
     component: DsoDoc,
@@ -167,7 +173,7 @@ router.beforeEach(async (to, _from, next) => {
 
     const idStart = projectsPath.length
     const projectId = to.path.slice(idStart, idStart + 36)
-    await projectStore.setSelectedProject(projectId)
+    projectStore.setSelectedProject(projectId)
   }
   next()
 })

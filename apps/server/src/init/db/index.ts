@@ -1,16 +1,55 @@
-import setupProjects from '../db/setup-projects.js'
-import setupUsers from '../db/setup-users.js'
-import { _createOrganizations } from '../../models/queries/organization-queries.js'
-import { dropTables, synchroniseModels } from '../../connect.js'
+import { dropTables } from '../../connect.js'
+import prisma from '@/prisma.js'
+import { objectEntries } from '@/utils/type.js'
 
-export const initDb = async (data) => {
+type Models = 'cluster' | 'environment' | 'log' | 'organization' | 'permission' | 'project' | 'repository' | 'role' | 'user'
+
+type Associates = Partial<Record<
+  Models, {
+    id: string,
+    [k: string]: { id: string }[] | string
+  }[]>
+>
+
+type Imports = Partial<Record<Models, object[]>> & {
+  associates?: Partial<Associates>
+}
+
+export const initDb = async (data: Imports) => {
   await dropTables()
-  await synchroniseModels()
-
-  for (const org of data.organizations) {
-    await _createOrganizations(org)
+  for (const model of Object.keys(data)) {
+    if (model === 'associates') continue
+    for (let value of data[model]) {
+      try {
+        // Format for one-to-one relation
+        value = Object.fromEntries(Object.entries(value).map(([key, value]) => {
+          return [key, !Object.keys(prisma).includes(key) || model === key
+            ? value
+            : { create: value }]
+        }))
+        await prisma[model].create({
+          data: value,
+        })
+      } catch (error) {
+        console.log({ error, model })
+      }
+    }
   }
-
-  await setupUsers(data.users)
-  await setupProjects(data.projects)
+  if (!data.associates) return
+  for (const [sourceModel, associations] of Object.entries(data.associates)) {
+    for (const association of associations) {
+      for (const [targetModel, targetIds] of objectEntries(association)) {
+        await prisma[sourceModel].update({
+          where: {
+            id: association.id,
+          },
+          data: {
+            [targetModel]: {
+              set: targetIds,
+            },
+          },
+        })
+      }
+    }
+  }
 }
