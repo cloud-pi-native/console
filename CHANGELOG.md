@@ -1,5 +1,40 @@
 # Changelog
 
+## [5.0.0](https://github.com/cloud-pi-native/console/compare/v4.1.0...v5.0.0) (2023-07-13)
+
+
+### ⚠ BREAKING CHANGES
+
+* :boom: migrate from sequelize to prisma
+
+### Features
+
+* :children_crossing: add organization to differenciate project ([5814d7e](https://github.com/cloud-pi-native/console/commit/5814d7e00b5a6a335a16059b62f7af456d3b4a58))
+* :sparkles: allow updating repo ([27b59cf](https://github.com/cloud-pi-native/console/commit/27b59cfc5cacdf0e96b0fd22b090ce4ab038792d))
+* :sparkles: always show ci form ([753d64b](https://github.com/cloud-pi-native/console/commit/753d64bc011701dcc9297097b1a0aec87cef6c03))
+* :tada: introduce multi-cluster deployment ([0e6c065](https://github.com/cloud-pi-native/console/commit/0e6c065d421c117050e00944ca68114414a05dc7))
+* :technologist: add config for codespace ([1ff7996](https://github.com/cloud-pi-native/console/commit/1ff79966454be7961ba80049be65815cfce1d4cf))
+
+
+### Bug Fixes
+
+* :alien: change gitlab api calls ([f04dc87](https://github.com/cloud-pi-native/console/commit/f04dc87208ca19ee2b06ff2c35535e51a72f84cd))
+* :art: finish pr ([2150961](https://github.com/cloud-pi-native/console/commit/2150961433d0b097100ea62cf1fd7be49fbb4571))
+* :art: quote fixes ([2150961](https://github.com/cloud-pi-native/console/commit/2150961433d0b097100ea62cf1fd7be49fbb4571))
+* :bug: add module on shared ([2150961](https://github.com/cloud-pi-native/console/commit/2150961433d0b097100ea62cf1fd7be49fbb4571))
+* :bug: fix imports, change dependencies ([41f427f](https://github.com/cloud-pi-native/console/commit/41f427fe17daef7ef1b3c330ec5635338edfda59))
+* :bug: fix logs pagination bug ([7f3a990](https://github.com/cloud-pi-native/console/commit/7f3a99085f701d02367fab04f194dc0c0e85356d))
+* :bug: forgot await in argo plugin ([f4504d4](https://github.com/cloud-pi-native/console/commit/f4504d4b1ccc999274c3267508c943f23fd8690b))
+* :bug: retrieve also inactive orgs on admin project list page ([4b8977e](https://github.com/cloud-pi-native/console/commit/4b8977e01214295f3090ab16a92bde4b7d7a64f9))
+* :construction_worker: fix CI: tsconfig is needed ([2150961](https://github.com/cloud-pi-native/console/commit/2150961433d0b097100ea62cf1fd7be49fbb4571))
+* :construction: in progress ([2150961](https://github.com/cloud-pi-native/console/commit/2150961433d0b097100ea62cf1fd7be49fbb4571))
+* :lipstick: more contrasted icon color for archived project ([790d276](https://github.com/cloud-pi-native/console/commit/790d2761d3f77756144172e3ccd80bcb0df4572d))
+
+
+### Code Refactoring
+
+* :boom: migrate from sequelize to prisma ([37b065d](https://github.com/cloud-pi-native/console/commit/37b065d6cff844dfd1b9d2276831eddefa64a71e))
+
 ## [4.1.0](https://github.com/cloud-pi-native/console/compare/v4.0.0...v4.1.0) (2023-06-12)
 
 
