@@ -122,12 +122,12 @@ model Cluster {
 }
 
 model Kubeconfig {
-  id        String   @id @unique @default(uuid()) @db.Uuid
-  user      Json
-  cluster   Json
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  parentCluster   Cluster? @relation()
+  id            String   @id @unique @default(uuid()) @db.Uuid
+  user          Json
+  cluster       Json
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  parentCluster Cluster? @relation()
 }
 
 model Role {
