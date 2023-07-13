@@ -1,21 +1,46 @@
 import {
-  initializeEnvironment,
   updateEnvironmentCreated,
   updateEnvironmentFailed,
   updateEnvironmentDeleting,
   deleteEnvironment,
   getEnvironmentInfos,
-} from '../queries/environment-queries.js'
-import { getProjectInfos, lockProject } from '../queries/project-queries.js'
+  getClusterByEnvironmentId,
+  getClustersByIds,
+  getProjectInfos,
+  lockProject,
+  addLogs,
+  getUserById,
+  initializeEnvironment,
+  getPublicClusters,
+} from '@/queries/index.js'
 import { addReqLogs } from '../utils/logger.js'
-import { sendOk, sendCreated, sendNotFound, sendBadRequest, sendForbidden } from '../utils/response.js'
-import { AsyncReturnType, filterOwners, hasPermissionInEnvironment, hasRoleInProject, unlockProjectIfNotFailed } from '../utils/controller.js'
+import {
+  sendOk,
+  sendCreated,
+  sendNotFound,
+  sendBadRequest,
+  sendForbidden,
+} from '../utils/response.js'
+import {
+  AsyncReturnType,
+  filterOwners,
+  hasPermissionInEnvironment,
+  hasRoleInProject,
+  unlockProjectIfNotFailed,
+} from '../utils/controller.js'
 import { hooks } from '../plugins/index.js'
-import { addLogs } from '../queries/log-queries.js'
 import { gitlabUrl, harborUrl, projectRootDir } from '../utils/env.js'
-import { DeleteEnvironmentDto, InitializeEnvironmentDto, projectIsLockedInfo } from 'shared'
+import {
+  type DeleteEnvironmentDto,
+  type InitializeEnvironmentDto,
+  type UpdateEnvironmentDto,
+  projectIsLockedInfo,
+} from 'shared'
 import { EnhancedFastifyRequest } from '@/types/index.js'
-import { getUserById } from '@/queries/user-queries.js'
+import {
+  addClustersToEnvironmentBusiness,
+  removeClustersFromEnvironmentBusiness,
+} from '@/business/environment.js'
 
 // GET
 export const getEnvironmentByIdController = async (req, res) => {
@@ -64,6 +89,7 @@ export const initializeEnvironmentController = async (req: EnhancedFastifyReques
   const data = req.body
   const userId = req.session?.user?.id
   const projectId = req.params?.projectId
+  const newClustersId = req.body?.clustersId || []
 
   let env: AsyncReturnType<typeof initializeEnvironment>
   let project: AsyncReturnType<typeof getProjectInfos>
@@ -96,7 +122,7 @@ export const initializeEnvironmentController = async (req: EnhancedFastifyReques
     })
     sendCreated(res, env)
   } catch (error) {
-    const description = 'Echec de la création de l\'environnement'
+    const description = `Echec de la création de l'environnement : ${error.message}`
     addReqLogs({
       req,
       description,
@@ -128,13 +154,15 @@ export const initializeEnvironmentController = async (req: EnhancedFastifyReques
       registryHost,
       owner,
     }
-
     const results = await hooks.initializeEnvironment.execute(envData)
     // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
     await addLogs('Create Environment', results, userId)
     if (results.failed) throw new Error('Echec services à la création de l\'environnement')
     await updateEnvironmentCreated(env.id)
     await unlockProjectIfNotFailed(projectId)
+    // TODO
+    const clusters = await getClustersByIds(newClustersId)
+    await addClustersToEnvironmentBusiness(clusters, env.name, env.id, project.name, project.organization.name, userId, owner)
     addReqLogs({
       req,
       description: 'Environnement créé avec succès par les plugins',
@@ -154,6 +182,65 @@ export const initializeEnvironmentController = async (req: EnhancedFastifyReques
       },
       error,
     })
+  }
+}
+
+export const updateEnvironmentController = async (req: EnhancedFastifyRequest<UpdateEnvironmentDto>, res) => {
+  const { clustersId: newClustersId } = req.body
+  const userId = req.session?.user?.id
+
+  const { environmentId } = req.params
+
+  let env: AsyncReturnType<typeof getEnvironmentInfos>
+  try {
+    env = await getEnvironmentInfos(environmentId)
+
+    if (env.project.locked) return sendForbidden(res, projectIsLockedInfo)
+    if (!await hasRoleInProject(userId, { minRole: 'owner', roles: env.project.roles })) return sendForbidden(res, 'Vous n\'êtes pas souscripteur du projet')
+    const authorizedClusters = [...await getPublicClusters(), ...env.project.clusters]
+    // si un des newClustersId n'est pas un cluster dans le projet
+    if (newClustersId
+      .some(newClusterId => !authorizedClusters
+        .some(cluster => cluster.id === newClusterId))
+    ) return sendForbidden(res, 'Ce cluster n\'est pas disponible sur pour ce projet')
+
+    // First add environment on Clusters destinations
+    const owner = env.project.roles[0].user
+    const reallyNewClusters = await getClustersByIds(newClustersId.filter(newClusterId => !env.clusters.some(envCluster => envCluster.id === newClusterId)))
+    await addClustersToEnvironmentBusiness(reallyNewClusters, env.name, env.id, env.project.name, env.project.organization.name, userId, owner)
+
+    // Second remove from toRemoveClusters
+    const toRemoveClusters = await getClustersByIds(
+      env.clusters
+        .filter(oldCluster => !newClustersId.includes(oldCluster.id))
+        .map(({ id }) => id),
+    )
+    await removeClustersFromEnvironmentBusiness(toRemoveClusters, env.name, env.id, env.project.name, env.project.organization.name, userId)
+
+    await updateEnvironmentCreated(env.id)
+    await unlockProjectIfNotFailed(env.project.id)
+    addReqLogs({
+      req,
+      description: 'Environnement mise à jour',
+      extras: {
+        environmentId,
+        projectId: env.project.id,
+      },
+    })
+  } catch (error) {
+    await updateEnvironmentCreated(env.id)
+    await unlockProjectIfNotFailed(env.project.id)
+    const description = 'Echec de la mise à jour de l\'environnement'
+    addReqLogs({
+      req,
+      description,
+      extras: {
+        environmentId: env.id,
+        projectId: env.project.id,
+      },
+      error,
+    })
+    return sendBadRequest(res, description)
   }
 }
 
@@ -204,12 +291,14 @@ export const deleteEnvironmentController = async (req: EnhancedFastifyRequest<De
       url: `${gitlabBaseURL}/${internalRepoName}.git`,
       internalRepoName,
     }))
+    const clusters = await getClusterByEnvironmentId(env.id)
 
     const envData = {
       environment: environmentName,
       project: projectName,
       organization: organizationName,
       repositories,
+      clusters,
     }
     // TODO: Fix type
     const results = await hooks.deleteEnvironment.execute(envData)

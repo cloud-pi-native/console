@@ -1,18 +1,18 @@
 import { readdirSync, existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import url from 'url'
+import { type FastifyInstance } from 'fastify/types/instance.js'
 import { objectEntries, objectKeys } from '@/utils/type.js'
 import * as hooks from './hooks/index.js'
 import { type PluginsFunctions } from './hooks/hook.js'
-import { type FastifyInstance } from 'fastify/types/instance.js'
 
-export type RegisterFn<E, V> = (name: string, functions: PluginsFunctions<E, V>) => void
-export type PluginManager<E, V> = Promise<{ hookList: typeof hooks, register: RegisterFn<E, V> }>
+export type RegisterFn = (name: string, subscribedHooks: PluginsFunctions) => void
+export type PluginManager = Promise<{ hookList: typeof hooks, register: RegisterFn }>
 
-const initPluginManager = async <E, V>(app: FastifyInstance): PluginManager<E, V> => {
-  const register = (name: string, functions: PluginsFunctions<E, V>) => {
+const initPluginManager = async (app: FastifyInstance): PluginManager => {
+  const register: RegisterFn = (name: string, subscribedHooks: PluginsFunctions) => {
     const message = []
-    for (const [hook, steps] of objectEntries(functions)) {
+    for (const [hook, steps] of objectEntries(subscribedHooks)) {
       if (!(hook in hooks) && hook !== 'all') {
         app.log.warn({
           message: `Plugin ${name} tried to register on an unknown hook ${hook}`,
@@ -55,7 +55,7 @@ const initPluginManager = async <E, V>(app: FastifyInstance): PluginManager<E, V
   }
 }
 
-export const initCorePlugins = async <E, V>(pluginManager: Awaited<PluginManager<E, V>>, app: FastifyInstance) => {
+export const initCorePlugins = async <E, V>(pluginManager: Awaited<PluginManager>, app: FastifyInstance) => {
   const { init: gitlabInit } = await import('./core/gitlab/init.js')
   const { init: harborInit } = await import('./core/harbor/init.js')
   const { init: keycloakInit } = await import('./core/keycloak/init.js')
@@ -75,7 +75,7 @@ export const initCorePlugins = async <E, V>(pluginManager: Awaited<PluginManager
   vaultInit(pluginManager.register)
 }
 
-export const initExternalPlugins = async <E, V>(pluginManager: Awaited<PluginManager<E, V>>, app: FastifyInstance) => {
+export const initExternalPlugins = async <E, V>(pluginManager: Awaited<PluginManager>, app: FastifyInstance) => {
   const __dirname = url.fileURLToPath(new URL('.', import.meta.url))
   try {
     const pluginDir = resolve(__dirname, 'external')

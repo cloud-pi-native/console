@@ -27,6 +27,7 @@
     "@gouvminint/vue-dsfr": "^4.0.2",
     "@vue/tsconfig": "^0.4.0",
     "axios": "^1.4.0",
+    "js-yaml": "^4.1.0",
     "jszip": "^3.10.1",
     "keycloak-js": "^21.1.2",
     "nanoid": "4.0.2",

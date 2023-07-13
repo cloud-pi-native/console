@@ -1,3 +1,4 @@
+export * from './cluster.js'
 export * from './environment.js'
 export * from './project.js'
 export * from './team.js'
@@ -15,9 +16,3 @@ export type ExternalToken = string
 export type IsPrivate = boolean
 export type IsInfra = boolean
 export type InternalUrl = string
-export type User = {
-  firstName: string,
-  lastName: string,
-  email: string,
-  id: string
-}

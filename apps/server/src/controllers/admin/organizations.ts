@@ -12,7 +12,6 @@ import { sendOk, sendCreated, sendNotFound, sendBadRequest } from '../../utils/r
 import { hooks } from '../../plugins/index.js'
 import { HookPayload, PluginResult } from '@/plugins/hooks/hook.js'
 import { objectValues } from '@/utils/type.js'
-import { OrganizationModel } from 'shared/types/index.js'
 
 // GET
 export const getAllOrganizationsController = async (req, res) => {
@@ -105,7 +104,7 @@ export const fetchOrganizationsController = async (req, res) => {
   const user = req.session.user
 
   try {
-    let consoleOrganizations = await getOrganizations() as OrganizationModel[]
+    let consoleOrganizations = await getOrganizations()
 
     // TODO: Fix define return in plugins dir
     // @ts-ignore See TODO

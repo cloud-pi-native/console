@@ -9,7 +9,14 @@ describe('Random utils', () => {
         project: expect.objectContaining({
           id: expect.any(String),
           name: expect.any(String),
-          organization: expect.any(String),
+          organizationId: expect.any(String),
+          organization: expect.objectContaining({
+            id: expect.any(String),
+            name: expect.any(String),
+            source: expect.any(String),
+            label: expect.any(String),
+            active: expect.any(Boolean),
+          }),
           status: expect.any(String),
           locked: expect.any(Boolean),
           roles: expect.arrayContaining([
@@ -52,6 +59,7 @@ describe('Random utils', () => {
               projectId: expect.any(String),
               status: expect.any(String),
               permissions: expect.any(Array),
+              clusters: expect.any(Array),
             },
             {
               id: expect.any(String),
@@ -59,6 +67,7 @@ describe('Random utils', () => {
               projectId: expect.any(String),
               status: expect.any(String),
               permissions: expect.any(Array),
+              clusters: expect.any(Array),
             },
           ]),
         }),

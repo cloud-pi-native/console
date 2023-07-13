@@ -1,40 +1,47 @@
 import {
-  getUserProjects,
-  getProjectByNames,
-  initializeProject,
-  updateProjectCreated,
-  updateProjectFailed,
-  getProjectById,
-  lockProject,
+  addLogs,
   archiveProject,
-  updateProjectServices,
-  updateProject,
+  deleteEnvironment,
+  deleteRepository,
+  getOrCreateUser,
+  getOrganizationById,
+  getProjectById,
+  getProjectByNames,
   getProjectInfos,
   getProjectInfosAndRepos,
-} from '../queries/project-queries.js'
-import { getOrCreateUser } from '../queries/user-queries.js'
-import {
+  getPublicClusters,
   getRoleByUserIdAndProjectId,
-} from '../queries/roles-queries.js'
-import { getOrganizationById } from '../queries/organization-queries.js'
-import {
-  deleteRepository,
-} from '../queries/repository-queries.js'
-import {
-  deleteEnvironment,
-} from '../queries/environment-queries.js'
+  getUserProjects,
+  initializeProject,
+  lockProject,
+  updateProject,
+  updateProjectCreated,
+  updateProjectFailed,
+  updateProjectServices,
+} from '../queries/index.js'
 import { filterObjectByKeys } from '../utils/queries-tools.js'
 import { addReqLogs } from '../utils/logger.js'
-import { sendOk, sendCreated, sendUnprocessableContent, sendNotFound, sendBadRequest, sendForbidden } from '../utils/response.js'
-import { projectSchema, calcProjectNameMaxLength, projectIsLockedInfo, CreateProjectDto } from 'shared'
-import { DsoProject, getServices } from '../utils/services.js'
-import { addLogs } from '../queries/log-queries.js'
+import {
+  sendOk,
+  sendCreated,
+  sendUnprocessableContent,
+  sendNotFound,
+  sendBadRequest,
+  sendForbidden,
+} from '../utils/response.js'
+import {
+  calcProjectNameMaxLength,
+  projectIsLockedInfo,
+  projectSchema,
+  type CreateProjectDto,
+} from 'shared'
+import { getServices } from '../utils/services.js'
 import { hooks } from '../plugins/index.js'
 import { gitlabUrl, projectRootDir } from '../utils/env.js'
-import { AsyncReturnType, hasRoleInProject, unlockProjectIfNotFailed } from '../utils/controller.js'
-import { PluginResult } from '@/plugins/hooks/hook.js'
-import { CreateProjectExecArgs } from '@/plugins/hooks/project.js'
-import { EnhancedFastifyRequest } from '@/types/index.js'
+import { type AsyncReturnType, hasRoleInProject, unlockProjectIfNotFailed } from '../utils/controller.js'
+import type { PluginResult } from '@/plugins/hooks/hook.js'
+import type { CreateProjectExecArgs } from '@/plugins/hooks/project.js'
+import type { EnhancedFastifyRequest } from '@/types/index.js'
 
 // GET
 export const getUserProjectsController = async (req: EnhancedFastifyRequest<void>, res) => {
@@ -42,7 +49,8 @@ export const getUserProjectsController = async (req: EnhancedFastifyRequest<void
 
   try {
     const user = await getOrCreateUser({ id: requestor.id, email: requestor.email, firstName: requestor.firstName, lastName: requestor.lastName })
-    const projects = await getUserProjects(user) as DsoProject[]
+    const projects = await getUserProjects(user)
+    const publicClusters = await getPublicClusters()
 
     addReqLogs({
       req,
@@ -52,14 +60,13 @@ export const getUserProjectsController = async (req: EnhancedFastifyRequest<void
       },
     })
 
-    const projectsInfos = projects.length
-      ? projects.map((project) => {
-        if (Object.keys(project?.services).includes('registry')) {
-          return { ...project, services: getServices(project) }
-        }
-        return project
-      })
-      : projects
+    const projectsInfos = projects.map((project) => {
+      project.clusters = project.clusters.concat(publicClusters)
+      if (Object.keys(project?.services).includes('registry')) {
+        return { ...project, services: getServices(project) }
+      }
+      return project
+    })
 
     sendOk(res, projectsInfos)
   } catch (error) {

@@ -3,13 +3,13 @@ import { createApplicationProject } from './app-project.js'
 import { customK8sApi, patchOptions } from './init.js'
 
 // idempotent script implemented after 3.4.1 version to merge appProject
-export const migrateAppProject = async ({ appProjectName, destNamespace, roGroup, rwGroup }) => {
+export const migrateAppProject = async ({ appProjectName, destNamespace, roGroup, rwGroup }: { appProjectName: string, destNamespace: string, roGroup: string, rwGroup: string }) => {
   const appProjectListByName = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', argoNamespace, 'appprojects', undefined, undefined, undefined, `metadata.name=${appProjectName}`)
   // @ts-ignore
   if (appProjectListByName.body.items.length) return
   const oldAppProjects = await findOldAppProjects(destNamespace)
   const sourceRepos = oldAppProjects.map(oldAppProject => ({ url: oldAppProject.spec.sourceRepos })).flat()
-  await createApplicationProject({ appProjectName, namespace: destNamespace, roGroup, rwGroup, repositories: sourceRepos })
+  await createApplicationProject({ appProjectName, roGroup, rwGroup, repositories: sourceRepos })
   await patchApplications({ appProjectName, destNamespace })
 }
 

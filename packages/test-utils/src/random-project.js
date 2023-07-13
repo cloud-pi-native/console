@@ -1,3 +1,4 @@
+import { projectRoles, allOrganizations, allEnv } from 'shared'
 import {
   getRandomOrganization,
   getRandomProject,
@@ -6,9 +7,9 @@ import {
   getRandomEnv,
   getRandomPerm,
   getRandomUserProject,
+  getRandomCluster,
 } from './random-utils.js'
 import { repeatFn } from './func-utils.js'
-import { projectRoles, allOrganizations, allEnv } from 'shared'
 
 export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = allEnv, organizationName = allOrganizations[0].name }) => {
   // Create organization
@@ -38,6 +39,11 @@ export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = allEnv, or
     env.permissions = users.map(user =>
       getRandomPerm(env.id, user),
     )
+  })
+
+  // Associate cluster with environments
+  project.environments.forEach(env => {
+    env.clusters = repeatFn(2)(getRandomCluster)
   })
 
   return {

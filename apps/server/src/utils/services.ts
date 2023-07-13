@@ -1,17 +1,5 @@
-import { Project } from '@prisma/client'
 import { harborUrl, nexusUrl, vaultUrl, argocdUrl, gitlabUrl, sonarqubeUrl, projectRootDir } from './env.js'
-
-export interface DsoProject extends Project{
-  name: string
-  organization: {
-    name: string
-  }
-  services: {
-    registry?: {
-      id: string
-    }
-  }
-}
+import type { DsoProject } from '@/queries/project-queries.js'
 
 export const allServices = {
   argocd: {

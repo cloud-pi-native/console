@@ -1,3 +1,4 @@
+import type { Application } from '@kubernetes-models/argo-cd/argoproj.io/v1alpha1'
 import { argoNamespace } from '../../../utils/env.js'
 import { addRepoToApplicationProject, removeRepoFromApplicationProject } from './app-project.js'
 import { customK8sApi } from './init.js'
@@ -60,5 +61,5 @@ const getApplicationObject = ({ name, destNamespace, repoURL, appProjectName }) 
         ],
       },
     },
-  }
+  } as Application
 }

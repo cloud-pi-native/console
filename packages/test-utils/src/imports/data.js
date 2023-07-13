@@ -33,6 +33,7 @@ export const data = {
       id: '22e7044f-8414-435d-9c4a-2df42a65034b',
       name: 'beta-app',
       organizationId: '2368a61e-f243-42f6-b471-a85b056ee131',
+      description: null,
       status: 'created',
       locked: false,
       services: {
@@ -50,6 +51,7 @@ export const data = {
       id: '9dabf3f9-6c86-4358-8598-65007d78df65',
       name: 'project-to-archive',
       organizationId: '2368a61e-f243-42f6-b471-a85b056ee131',
+      description: null,
       status: 'created',
       locked: false,
       services: {
@@ -82,6 +84,24 @@ export const data = {
       updatedAt: '2023-07-03T14:46:56.783Z',
     },
     {
+      id: '011e7860-04d7-461f-912d-334c622d38c5',
+      name: 'basegun',
+      organizationId: 'b644c07f-193c-47ed-ae10-b88a8f63d20b',
+      description: "Application d'aide à la catégorisation d'armes à feu.",
+      status: 'created',
+      locked: false,
+      services: {
+        gitlab: {
+          id: 35,
+        },
+        registry: {
+          id: 26,
+        },
+      },
+      createdAt: '2023-07-10T14:46:56.778Z',
+      updatedAt: '2023-07-10T14:46:56.783Z',
+    },
+    {
       id: '83833faf-f654-40dd-bcd5-cf2e944fc702',
       name: 'psij-failed',
       organizationId: 'b644c07f-193c-47ed-ae10-b88a8f63d20b',
@@ -90,10 +110,10 @@ export const data = {
       locked: true,
       services: {
         gitlab: {
-          id: 34,
+          id: 36,
         },
         registry: {
-          id: 25,
+          id: 27,
         },
       },
       createdAt: '2023-07-03T14:46:56.799Z',
@@ -126,20 +146,20 @@ export const data = {
       updatedAt: '2023-07-03T14:46:56.770Z',
     },
     {
-      id: '89e5d1ca-3194-4b0a-b226-75a5f4fe6a34',
-      firstName: 'Admin',
-      lastName: 'ADMIN',
-      email: 'admin@test.com',
-      createdAt: '2023-07-03T18:01:52.884Z',
-      updatedAt: '2023-07-03T18:01:52.884Z',
-    },
-    {
       id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6567',
       firstName: 'Claire',
       lastName: 'NOLLET',
       email: 'claire.nollet@test.com',
       createdAt: '2023-07-03T14:46:56.771Z',
       updatedAt: '2023-07-03T14:46:56.771Z',
+    },
+    {
+      id: '89e5d1ca-3194-4b0a-b226-75a5f4fe6a34',
+      firstName: 'Admin',
+      lastName: 'ADMIN',
+      email: 'admin@test.com',
+      createdAt: '2023-07-03T18:01:52.884Z',
+      updatedAt: '2023-07-06T12:53:39.183Z',
     },
   ],
   repository: [
@@ -280,6 +300,14 @@ export const data = {
       id: '1c654f00-4798-4a80-929f-960ddb37885a',
       name: 'prod',
       projectId: '011e7860-04d7-461f-912d-334c622d38b3',
+      status: 'created',
+      createdAt: '2023-07-03T14:46:56.788Z',
+      updatedAt: '2023-07-03T14:46:56.803Z',
+    },
+    {
+      id: '1c654f00-4798-4a80-929f-960ddb36774b',
+      name: 'prod',
+      projectId: '011e7860-04d7-461f-912d-334c622d38c5',
       status: 'created',
       createdAt: '2023-07-03T14:46:56.788Z',
       updatedAt: '2023-07-03T14:46:56.803Z',
@@ -481,6 +509,13 @@ export const data = {
       updatedAt: '2023-07-03T14:46:56.804Z',
     },
     {
+      userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+      projectId: '011e7860-04d7-461f-912d-334c622d38c5',
+      role: 'owner',
+      createdAt: '2023-07-03T14:46:56.804Z',
+      updatedAt: '2023-07-03T14:46:56.804Z',
+    },
+    {
       userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6569',
       projectId: '011e7860-04d7-461f-912d-334c622d38b3',
       role: 'user',
@@ -503,65 +538,6 @@ export const data = {
     },
   ],
   log: [
-    {
-      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1232',
-      data: {
-        argo: {
-          status: {
-            result: 'OK',
-          },
-        },
-        args: {
-          owner: {
-            id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
-            email: 'claire.nollet@interieur.gouv.fr',
-            lastName: 'Nollet',
-            createdAt: '2023-06-08T14:57:58.401Z',
-            firstName: 'Claire',
-            updatedAt: '2023-06-08T14:57:58.401Z',
-          },
-          project: 'int-2',
-          environment: 'staging',
-          organization: 'mi',
-          registryHost: 'blabla.com',
-          repository: [],
-        },
-        vault: {
-          status: {
-            result: 'OK',
-          },
-          pullSecret: {
-            data: {
-              HOST: 'blabla.com',
-              TOKEN: 'token',
-              USERNAME: 'robot$mi-int-2+ci',
-              DOCKER_CONFIG: '{"auths":{"blabla.com":{"auth":"token","email":""}}}',
-            },
-            metadata: {
-              version: 1,
-              destroyed: false,
-              created_time: '2023-06-08T15:14:56.087835715Z',
-              deletion_time: '',
-              custom_metadata: null,
-            },
-          },
-        },
-        keycloak: {
-          group: {
-            id: '6ce9c548-d0f6-490b-b32d-6e62c20e5eff',
-          },
-          status: {
-            result: 'OK',
-          },
-          roGroup: '/mi-int-2/staging/RO',
-          rwGroup: '/mi-int-2/staging/RW',
-        },
-      },
-      action: 'create Project',
-      userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
-      createdAt: '2023-07-03T14:46:56.788Z',
-      updatedAt: '2023-07-03T14:46:56.788Z',
-    },
     {
       id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1233',
       data: {
@@ -1025,5 +1001,155 @@ export const data = {
       createdAt: '2023-07-03T14:46:56.788Z',
       updatedAt: '2023-07-03T14:46:56.788Z',
     },
+    {
+      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1232',
+      data: {
+        argo: {
+          status: {
+            result: 'OK',
+          },
+        },
+        args: {
+          owner: {
+            id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+            email: 'claire.nollet@interieur.gouv.fr',
+            lastName: 'Nollet',
+            createdAt: '2023-06-08T14:57:58.401Z',
+            firstName: 'Claire',
+            updatedAt: '2023-06-08T14:57:58.401Z',
+          },
+          project: 'int-2',
+          repository: [],
+          environment: 'staging',
+          organization: 'mi',
+          registryHost: 'blabla.com',
+        },
+        vault: {
+          status: {
+            result: 'OK',
+          },
+          pullSecret: {
+            data: {
+              HOST: 'blabla.com',
+              TOKEN: 'token',
+              USERNAME: 'robot$mi-int-2+ci',
+              DOCKER_CONFIG: '{"auths":{"blabla.com":{"auth":"token","email":""}}}',
+            },
+            metadata: {
+              version: 1,
+              destroyed: false,
+              created_time: '2023-06-08T15:14:56.087835715Z',
+              deletion_time: '',
+              custom_metadata: null,
+            },
+          },
+        },
+        keycloak: {
+          group: {
+            id: '6ce9c548-d0f6-490b-b32d-6e62c20e5eff',
+          },
+          status: {
+            result: 'OK',
+          },
+          roGroup: '/mi-int-2/staging/RO',
+          rwGroup: '/mi-int-2/staging/RW',
+        },
+      },
+      action: 'create Project',
+      userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+      createdAt: '2023-07-03T14:46:56.788Z',
+      updatedAt: '2023-07-03T14:46:56.788Z',
+    },
   ],
+  cluster: [
+    {
+      id: '32636a52-4dd1-430b-b08a-b2e5ed9d1789',
+      label: 'public1',
+      privacy: 'public',
+      secretName: '3972ac09-6abc-4e49-83b6-d046da5260ec',
+      clusterResources: false,
+      createdAt: '2023-07-10T19:32:13.385Z',
+      updatedAt: '2023-07-10T19:32:13.385Z',
+      kubeconfig: {
+        cluster: {
+          server: 'https://public.server:6443',
+          tlsServerName: 'public.server',
+        },
+        user: {
+          keyData: 'LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQotLS0tLUVORCBSU0EgUFJJVkFURSBLRVktLS0tLQo=',
+          certData: 'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K',
+        },
+      },
+    },
+    {
+      id: '126ac57f-263c-4463-87bb-d4e9017056b2',
+      label: 'top-secret-cluster',
+      privacy: 'dedicated',
+      secretName: '59be2d50-58f9-42f3-95dc-b0c0518e3d8a',
+      clusterResources: true,
+      createdAt: '2023-07-10T19:49:31.691Z',
+      updatedAt: '2023-07-10T20:01:46.826Z',
+      kubeconfig: {
+        cluster: {
+          server: 'https://nothere.cluster',
+          tlsServerName: 'nothere.cluster',
+        },
+        user: {
+          token: 'nyan cat',
+        },
+      },
+    },
+    {
+      id: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
+      label: 'pas-top-cluster',
+      privacy: 'dedicated',
+      secretName: '94d52618-7869-4192-b33e-85dd0959e815',
+      clusterResources: false,
+      createdAt: '2023-07-10T19:49:31.697Z',
+      updatedAt: '2023-07-10T20:01:46.833Z',
+      kubeconfig: {
+        cluster: {
+          server: 'https://pwned.cluster',
+          tlsServerName: 'pwned.cluster',
+        },
+        user: {
+          token: 'kirikou',
+        },
+      },
+    },
+  ],
+  associates: {
+    cluster: [
+      {
+        id: '126ac57f-263c-4463-87bb-d4e9017056b2',
+        environments: [],
+        projects: [
+          {
+            id: '83833faf-f654-40dd-bcd5-cf2e944fc702',
+          },
+          {
+            id: '011e7860-04d7-461f-912d-334c622d38b3',
+          },
+        ],
+      },
+      {
+        id: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
+        environments: [],
+        projects: [
+          {
+            id: '83833faf-f654-40dd-bcd5-cf2e944fc702',
+          },
+          {
+            id: '011e7860-04d7-461f-912d-334c622d38b3',
+          },
+          {
+            id: '9dabf3f9-6c86-4358-8598-65007d78df65',
+          },
+          {
+            id: '22e7044f-8414-435d-9c4a-2df42a65034b',
+          },
+        ],
+      },
+    ],
+  },
 }
