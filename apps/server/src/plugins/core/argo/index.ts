@@ -30,7 +30,7 @@ export const newEnv = async (payload: HookPayload<InitializeEnvironmentExecArgs>
         result: 'KO',
         message: 'Failed',
       },
-      error: JSON.stringify(error),
+      error,
     }
   }
 }
@@ -57,7 +57,7 @@ export const deleteEnv = async (payload: HookPayload<DeleteEnvironmentExecArgs>)
         result: 'KO',
         message: 'Failed',
       },
-      error: JSON.stringify(error),
+      error,
     }
   }
 }
@@ -96,7 +96,7 @@ export const newRepo = async (payload: HookPayload<CreateRepositoryExecArgs>): P
         result: 'KO',
         message: 'Failed',
       },
-      error: JSON.stringify(error),
+      error,
     }
   }
 }
@@ -127,7 +127,7 @@ export const deleteRepo = async (payload: HookPayload<DeleteRepositoryExecArgs>)
         result: 'KO',
         message: 'Failed',
       },
-      error: JSON.stringify(error),
+      error,
     }
   }
 }
@@ -138,7 +138,7 @@ export const addCluster = async (payload: HookPayload<AddEnvironmentClusterExecA
 
     const appProjectName = `${organization}-${project}-${environment}-project`
     const namespace = `${organization}-${project}-${environment}`
-    addDestinationToApplicationProject(appProjectName, { namespace, name: cluster.label })
+    await addDestinationToApplicationProject(appProjectName, { namespace, name: cluster.label })
     return {
       status: {
         result: 'OK',
@@ -151,7 +151,7 @@ export const addCluster = async (payload: HookPayload<AddEnvironmentClusterExecA
         result: 'KO',
         message: 'Failed',
       },
-      error: JSON.stringify(error),
+      error,
     }
   }
 }
@@ -161,7 +161,7 @@ export const removeCluster = async (payload: HookPayload<RemoveEnvironmentCluste
     const { project, organization, environment, cluster } = payload.args
 
     const appProjectName = `${organization}-${project}-${environment}-project`
-    removeDestinationFromApplicationProject(appProjectName, cluster.label)
+    await removeDestinationFromApplicationProject(appProjectName, cluster.label)
     return {
       status: {
         result: 'OK',
@@ -174,7 +174,7 @@ export const removeCluster = async (payload: HookPayload<RemoveEnvironmentCluste
         result: 'KO',
         message: 'Failed',
       },
-      error: JSON.stringify(error),
+      error,
     }
   }
 }
