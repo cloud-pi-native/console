@@ -181,6 +181,8 @@ export const createProjectController = async (req: EnhancedFastifyRequest<Create
   try {
     const projectData: CreateProjectExecArgs = {
       project: project.name,
+      description: project.description,
+      status: project.status,
       organization: organization.name,
       owner,
     }
