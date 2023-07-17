@@ -53,7 +53,8 @@ export const createUser = async (user) => {
     admin: false,
     canCreateGroup: false,
     forceRandomPassword: 'true',
-    projectsLimit: true,
+    // TODO : https://github.com/jdalrymple/gitbeaker/issues/3353
+    projectsLimit: 0,
     skipConfirmation: true,
   })
 }

@@ -8,30 +8,37 @@ import { axiosOptions } from './index.js'
  * @returns {Promise}
  */
 export const addProjectGroupMember = async (projectName, accessLevel = 3) => {
-  const members = (await axios({
-    ...axiosOptions,
-    url: `projects/${projectName}/members`,
-    method: 'get',
-    headers: {
-      'X-Is-Resource-Name': false,
-    },
-  }))?.data
-  const member = members.find(m => m.entity_name === projectName)
-  if (!member) {
-    await axios({
+  try {
+    const members = (await axios({
       ...axiosOptions,
       url: `projects/${projectName}/members`,
-      method: 'post',
+      method: 'get',
       headers: {
         'X-Is-Resource-Name': false,
       },
-      data: {
-        role_id: accessLevel,
-        member_group: {
-          group_name: `/${projectName}`,
-          group_type: 3,
+    }))?.data
+    const member = members.find(m => m.entity_name === projectName)
+    if (!member) {
+      await axios({
+        ...axiosOptions,
+        url: `projects/${projectName}/members`,
+        method: 'post',
+        headers: {
+          'X-Is-Resource-Name': false,
         },
-      },
-    })
+        data: {
+          role_id: accessLevel,
+          member_group: {
+            // TODO
+            // code: 'NOT_FOUND',
+            // message: '/mi-test-1 not found: not supported'
+            group_name: `/${projectName}`,
+            group_type: 3,
+          },
+        },
+      })
+    }
+  } catch (error) {
+    console.log(error.response?.data, error.data)
   }
 }
