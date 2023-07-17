@@ -325,8 +325,8 @@ export const archiveProjectController = async (req, res) => {
       }
       // TODO: Fix type
       const resultsEnv = await hooks.deleteEnvironment.execute(envData)
+      await addLogs('Delete Environments', resultsEnv, userId)
       // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
-      // await addLogs('Delete Environment', resultsEnv, userId)
       if (resultsEnv.failed) throw new Error('Echec des services à la suppression de l\'environnement')
       await deleteEnvironment(env.id)
     }
@@ -334,15 +334,15 @@ export const archiveProjectController = async (req, res) => {
 
     // -- début - Suppression repositories --
     for (const repo of repositories) {
-      const result = hooks.deleteRepository.execute({
+      const result = await hooks.deleteRepository.execute({
         environments: environmentNames,
         project: project.name,
         organization: project.organization.name,
         ...repo,
       })
+      await addLogs('Delete Repository', result, userId)
       // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
-      // await addLogs('Delete project, delete a repo', result, userId)
-      if ((await result).failed) throw new Error('Echec des services à la suppression de l\'environnement')
+      if (result.failed) throw new Error('Echec des services à la suppression de l\'environnement')
       await deleteRepository(repo.id)
     }
     // -- fin - Suppression repositories --
@@ -352,8 +352,8 @@ export const archiveProjectController = async (req, res) => {
       organization: project.organization.name,
       project: project.name,
     })
+    await addLogs('Archive Project', results, userId)
     // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
-    // await addLogs('Delete Project', results, userId)
     if (results.failed) throw new Error('Echec de la suppression du projet par les plugins')
     await archiveProject(projectId)
     // -- fin - Suppression projet --
