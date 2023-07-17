@@ -4,7 +4,7 @@ import { type Hook, createHook } from './hook.js'
 
 export type Project = string
 export type ProjectBase = { organization: Organization, project: Project }
-export type ProjectInfos = { description: string, status: ProjectModel.status }
+export type ProjectInfos = { description: string, status: ProjectModel['status'] }
 export type CreateProjectValidateArgs = { owner: UserModel }
 export type CreateProjectExecArgs = CreateProjectValidateArgs & ProjectBase & ProjectInfos
 export type ArchiveProjectValidateArgs = ProjectBase
