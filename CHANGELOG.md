@@ -1,5 +1,20 @@
 # Changelog
 
+## [5.1.0](https://github.com/cloud-pi-native/console/compare/v5.0.0...v5.1.0) (2023-07-18)
+
+
+### Features
+
+* :alien: add project infos for canel plugin ([a4516a1](https://github.com/cloud-pi-native/console/commit/a4516a14b2439dd3a74540168aee6daa586c7308))
+* :alien: add updateProject hook for description update for example ([7e97505](https://github.com/cloud-pi-native/console/commit/7e97505b5a75c3f6c680d5b1bb6f18a9e45b87b3))
+
+
+### Bug Fixes
+
+* :bug: fix projectLimit for gitlab plugin ([13fca89](https://github.com/cloud-pi-native/console/commit/13fca89f37a16b980dce7f16e87151510d6f0b63))
+* :bug: missing await before plugins hook and logs recording on archiveProject ([e221341](https://github.com/cloud-pi-native/console/commit/e221341a7db27d67bfa40e4231d47de1e5e8648f))
+* :bug: missing await before plugins hook and logs recording on archiveProject ([2515c62](https://github.com/cloud-pi-native/console/commit/2515c624afd1d89718a98085c5e41c1c996157b8))
+
 ## [5.0.0](https://github.com/cloud-pi-native/console/compare/v4.1.0...v5.0.0) (2023-07-13)
 
 
