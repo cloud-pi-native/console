@@ -40,7 +40,7 @@ import { hooks } from '../plugins/index.js'
 import { gitlabUrl, projectRootDir } from '../utils/env.js'
 import { type AsyncReturnType, hasRoleInProject, unlockProjectIfNotFailed } from '../utils/controller.js'
 import type { PluginResult } from '@/plugins/hooks/hook.js'
-import type { CreateProjectExecArgs } from '@/plugins/hooks/project.js'
+import type { CreateProjectExecArgs, UpdateProjectExecArgs } from '@/plugins/hooks/project.js'
 import type { EnhancedFastifyRequest } from '@/types/index.js'
 
 // GET
@@ -181,7 +181,7 @@ export const createProjectController = async (req: EnhancedFastifyRequest<Create
   try {
     const projectData: CreateProjectExecArgs = {
       project: project.name,
-      description: project.description,
+      description: project.description === '' ? null : project.description,
       status: project.status,
       organization: organization.name,
       owner,
@@ -237,8 +237,9 @@ export const updateProjectController = async (req, res) => {
   const keysAllowedForUpdate = ['description']
   const data = filterObjectByKeys(req.body, keysAllowedForUpdate)
 
+  let project
   try {
-    const project = await getProjectInfos(projectId)
+    project = await getProjectInfos(projectId)
     if (!project) throw new Error('Projet introuvable')
     if (project.locked) return sendForbidden(res, projectIsLockedInfo)
 
@@ -246,6 +247,7 @@ export const updateProjectController = async (req, res) => {
     if (!isProjectOwner) throw new Error('Vous n\'êtes pas membre du projet')
 
     await updateProject(projectId, data)
+    project = await getProjectInfos(projectId)
 
     addReqLogs({
       req,
@@ -266,6 +268,40 @@ export const updateProjectController = async (req, res) => {
       error,
     })
     return sendBadRequest(res, description)
+  }
+
+  // Process api call to external service
+  try {
+    const projectData: UpdateProjectExecArgs = {
+      project: project.name,
+      description: project.description === '' ? null : project.description,
+      status: project.status,
+      organization: project.organization.name,
+    }
+
+    const results = await hooks.updateProject.execute(projectData)
+    await addLogs('Update Project', results, userId)
+    if (results.failed) throw new Error('Echec de la mise à jour du projet par les plugins')
+
+    await updateProjectCreated(project.id)
+    await unlockProjectIfNotFailed(project.id)
+    addReqLogs({
+      req,
+      description: 'Projet mis à jour avec succès par les plugins',
+      extras: {
+        projectId: project.id,
+      },
+    })
+  } catch (error) {
+    await updateProjectFailed(project.id)
+    addReqLogs({
+      req,
+      description: 'Echec de la mise à jour du projet par les plugins',
+      extras: {
+        projectId: project.id,
+      },
+      error,
+    })
   }
 }
 
@@ -351,6 +387,7 @@ export const archiveProjectController = async (req, res) => {
     const results = await hooks.archiveProject.execute({
       organization: project.organization.name,
       project: project.name,
+      status: 'archived',
     })
     await addLogs('Archive Project', results, userId)
     // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
@@ -366,6 +403,7 @@ export const archiveProjectController = async (req, res) => {
       },
     })
   } catch (error) {
+    await updateProjectFailed(project.id)
     addReqLogs({
       req,
       description: 'Echec de la suppression du projet par les plugins',
