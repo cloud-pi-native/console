@@ -53,7 +53,7 @@ export const createUser = async (user) => {
     admin: false,
     canCreateGroup: false,
     forceRandomPassword: 'true',
-    projectsLimit: true,
+    projectsLimit: 0,
     skipConfirmation: true,
   })
 }
