@@ -8,7 +8,6 @@ import type { AddEnvironmentClusterExecArgs, RemoveEnvironmentClusterExecArgs } 
 export const createKubeNamespace = async (payload: HookPayload<AddEnvironmentClusterExecArgs>) => {
   try {
     const { organization, project, environment, cluster, owner } = payload.args
-    console.log(cluster)
     const nsObject = getNsObject(organization, project, environment, owner)
     await createNamespace(createCoreV1Api(cluster), nsObject)
     return {

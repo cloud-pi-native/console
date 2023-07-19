@@ -100,7 +100,7 @@ export const createClusterController = async (req: EnhancedFastifyRequest<Create
 
   try {
     // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
-    const results = await hooks.createCluster.execute(cluster)
+    const results = await hooks.createCluster.execute({ ...cluster, user: data.user, cluster: data.cluster })
     // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
     await addLogs('Create Cluster', results, userId)
 
@@ -120,7 +120,7 @@ export const createClusterController = async (req: EnhancedFastifyRequest<Create
 }
 
 // PUT
-export const updateClusterController = async (req:EnhancedFastifyRequest<UpdateClusterDto>, res) => {
+export const updateClusterController = async (req: EnhancedFastifyRequest<UpdateClusterDto>, res) => {
   const data = req.body
   const clusterId = req.params?.clusterId
   if (data?.privacy === 'public') delete data.projectsId
