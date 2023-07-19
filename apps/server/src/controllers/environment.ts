@@ -303,7 +303,7 @@ export const deleteEnvironmentController = async (req: EnhancedFastifyRequest<De
     // TODO: Fix type
     const results = await hooks.deleteEnvironment.execute(envData)
     // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
-    // await addLogs('Delete Environment', results, userId)
+    await addLogs('Delete Environment', results, userId)
     if (results.failed) throw new Error('Echec des services à la suppression de l\'environnement')
     await deleteEnvironment(environmentId)
     await unlockProjectIfNotFailed(projectId)

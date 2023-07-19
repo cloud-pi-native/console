@@ -288,7 +288,7 @@ export const updateRepositoryController = async (req: EnhancedFastifyRequest<Upd
 
     const results = await hooks.updateRepository.execute(repoData)
     // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
-    // await addLogs('Update Repository', results, userId)
+    await addLogs('Update Repository', results, userId)
     if (results.failed) throw new Error('Echec des services associés au dépôt')
     await updateRepositoryCreated(repo.id)
     await unlockProjectIfNotFailed(projectId)
@@ -372,7 +372,7 @@ export const deleteRepositoryController = async (req: EnhancedFastifyRequest<Del
     // TODO: Fix type
     const results = await hooks.deleteRepository.execute(repoData)
     // @ts-ignore See TODO
-    // await addLogs('Delete Repository', results, userId)
+    await addLogs('Delete Repository', results, userId)
     if (results.failed) throw new Error('Echec des opérations')
     await deleteRepository(repositoryId)
     await unlockProjectIfNotFailed(projectId)
