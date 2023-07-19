@@ -37,6 +37,9 @@ export const getClusterByEnvironmentId = (id: Environment['id']) => prisma.clust
       },
     },
   },
+  include: {
+    kubeconfig: true,
+  },
 })
 
 export const getClustersWithProjectIdAndConfig = () => prisma.cluster.findMany({
@@ -84,7 +87,7 @@ export const createCluster = (
 
 export const updateCluster = (
   id: Cluster['id'],
-  data: Partial<Omit<Cluster, 'id' | 'updatedAt' | 'createdAt' | 'kubeConfigId' >>,
+  data: Partial<Omit<Cluster, 'id' | 'updatedAt' | 'createdAt' | 'kubeConfigId'>>,
   kubeconfig: Pick<Kubeconfig, 'user' | 'cluster'>,
 ) => prisma.cluster.update({
   where: {
