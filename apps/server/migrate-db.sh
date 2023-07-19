@@ -57,6 +57,10 @@ export DB_URL="postgresql://${DB_USER}:${DB_PASS}@localhost:${DB_PORT}/${DB_NAME
 # Start database container
 docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" up -d postgres
 
+until [ "$(docker inspect -f {{.State.Running}} dso-console_postgres)" == "true" ]; do
+  sleep 3
+done
+
 # Start prisma migration
 if [ "$RESET_DB" = "true" ]; then
   pnpm --filter server run db:reset
