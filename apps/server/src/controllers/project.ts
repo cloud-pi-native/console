@@ -355,6 +355,7 @@ export const archiveProjectController = async (req, res) => {
 
     // -- début - Suppression environnements --
     for (const env of project.environments) {
+      // Delete project namespaces in differents target clusters
       const clusters = await getClusterByEnvironmentId(env.id)
       await removeClustersFromEnvironmentBusiness(clusters, env.name, env.id, project.name, project.organization.name, userId)
       const envData = {

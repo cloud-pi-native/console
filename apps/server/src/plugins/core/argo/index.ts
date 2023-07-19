@@ -1,7 +1,6 @@
 import type { AddEnvironmentClusterExecArgs, DeleteEnvironmentExecArgs, InitializeEnvironmentExecArgs, RemoveEnvironmentClusterExecArgs } from '@/plugins/hooks/environment.js'
 import { addDestinationToApplicationProject, createApplicationProject, deleteApplicationProject, removeDestinationFromApplicationProject } from './app-project.js'
 import { createApplication, deleteApplication } from './applications.js'
-import { migrateAppProject } from './migrate.js'
 import { HookPayload, PluginResult } from '@/plugins/hooks/hook.js'
 import { CreateRepositoryExecArgs, DeleteRepositoryExecArgs } from '@/plugins/hooks/repository.js'
 
@@ -40,8 +39,9 @@ export const deleteEnv = async (payload: HookPayload<DeleteEnvironmentExecArgs>)
     const { project, organization, environment, repositories } = payload.args
 
     const appProjectName = `${organization}-${project}-${environment}-project`
-    const destNamespace = `${organization}-${project}-${environment}`
-    await deleteApplicationProject({ appProjectName, destNamespace })
+    // const destNamespace = `${organization}-${project}-${environment}`
+    // await deleteApplicationProject({ appProjectName, destNamespace })
+    await deleteApplicationProject({ appProjectName })
     for (const repo of repositories) {
       const applicationName = `${organization}-${project}-${repo.internalRepoName}-${environment}`
       await deleteApplication({ applicationName, repoUrl: repo.url })
@@ -68,6 +68,7 @@ const nothingStatus: PluginResult = {
     message: 'Not an infra repository',
   },
 }
+
 export const newRepo = async (payload: HookPayload<CreateRepositoryExecArgs>): Promise<PluginResult> => {
   try {
     if (!payload.args.isInfra) return nothingStatus
@@ -79,9 +80,8 @@ export const newRepo = async (payload: HookPayload<CreateRepositoryExecArgs>): P
       const rwGroup = `/${organization}-${project}/${env}/RW`
       const namespace = `${organization}-${project}-${env}`
       const appProjectName = `${organization}-${project}-${env}-project`
-      const destNamespace = `${organization}-${project}-${env}`
       const applicationName = `${organization}-${project}-${repo.internalRepoName}-${env}`
-      await migrateAppProject({ appProjectName, destNamespace, roGroup, rwGroup })
+      await createApplicationProject({ appProjectName, roGroup, rwGroup, repositories: [] })
       await createApplication({ applicationName, appProjectName, namespace, repo })
     }
     return {
@@ -108,12 +108,14 @@ export const deleteRepo = async (payload: HookPayload<DeleteRepositoryExecArgs>)
     const { project, organization, environments, internalRepoName, internalUrl } = payload.args
 
     for (const env of environments) {
-      const oldAppProjectName = `${organization}-${project}-${internalRepoName}-${env}-project` // Support Old appproject method
+      // const oldAppProjectName = `${organization}-${project}-${internalRepoName}-${env}-project` // Support Old appproject method
+      const appProjectName = `${organization}-${project}-${env}-project`
       const applicationName = `${organization}-${project}-${internalRepoName}-${env}`
       // TODO: Fix type
       // @ts-ignore See TODO
-      await deleteApplicationProject(oldAppProjectName) // Support Old appproject method
+      // await deleteApplicationProject(oldAppProjectName) // Support Old appproject method
       await deleteApplication({ applicationName, repoUrl: internalUrl })
+      await deleteApplicationProject({ appProjectName })
     }
     return {
       status: {
@@ -122,6 +124,7 @@ export const deleteRepo = async (payload: HookPayload<DeleteRepositoryExecArgs>)
       },
     }
   } catch (error) {
+    console.log({ error })
     return {
       status: {
         result: 'KO',
@@ -138,7 +141,7 @@ export const addCluster = async (payload: HookPayload<AddEnvironmentClusterExecA
 
     const appProjectName = `${organization}-${project}-${environment}-project`
     const namespace = `${organization}-${project}-${environment}`
-    await addDestinationToApplicationProject(appProjectName, { namespace, name: cluster.label })
+    await addDestinationToApplicationProject(appProjectName, { namespace, name: cluster.label, server: cluster.cluster.server })
     return {
       status: {
         result: 'OK',
