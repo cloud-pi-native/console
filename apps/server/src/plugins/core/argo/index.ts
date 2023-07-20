@@ -108,12 +108,10 @@ export const deleteRepo = async (payload: HookPayload<DeleteRepositoryExecArgs>)
     const { project, organization, environments, internalRepoName, internalUrl } = payload.args
 
     for (const env of environments) {
-      // const oldAppProjectName = `${organization}-${project}-${internalRepoName}-${env}-project` // Support Old appproject method
       const appProjectName = `${organization}-${project}-${env}-project`
       const applicationName = `${organization}-${project}-${internalRepoName}-${env}`
       // TODO: Fix type
       // @ts-ignore See TODO
-      // await deleteApplicationProject(oldAppProjectName) // Support Old appproject method
       await deleteApplication({ applicationName, repoUrl: internalUrl })
       await deleteApplicationProject({ appProjectName })
     }
@@ -124,7 +122,6 @@ export const deleteRepo = async (payload: HookPayload<DeleteRepositoryExecArgs>)
       },
     }
   } catch (error) {
-    console.log({ error })
     return {
       status: {
         result: 'KO',

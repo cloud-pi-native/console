@@ -1,9 +1,13 @@
-include: 
+variables:
+  PROJECT_NAME:
+    description: "Nom du dépôt Gitlab interne à synchroniser."
+
+include:
   - project: $CATALOG_PATH
     file: mirror.yml
     ref: main
 
-repo_pull_sync: 
+repo_pull_sync:
   extends: .repo_pull_sync
   only:
     - api

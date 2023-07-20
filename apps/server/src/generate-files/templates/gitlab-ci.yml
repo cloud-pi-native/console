@@ -1,4 +1,5 @@
 include:
+  - local: "/includes/rules.yml"
   {{#isJava}}
   - local: "/includes/java.yml"
   {{/isJava}}
@@ -8,20 +9,28 @@ include:
   {{#isPython}}
   - local: "/includes/python.yml"
   {{/isPython}}
-  - local: "/includes/docker.yml"
-  - local: "/includes/vault.yml"
-  - local: "/includes/rules.yml"
+  - project: $CATALOG_PATH
+    file: vault-ci.yml
+    ref: main
+  - project: $CATALOG_PATH
+    file: kaniko-ci.yml
+    ref: main
 
 default:
   image: alpine:latest
-#  tags:
-#    - ADD_CUSTOM_TAG_HERE
 
+{{#isJava}}
 cache:
   paths:
     - .m2/repository/
+
+{{/isJava}}
+{{#isNode}}
+cache:
+  paths:
     - node_modules
 
+{{/isNode}}
 variables:
   TAG: "${CI_COMMIT_REF_SLUG}"
   DOCKERFILE: Dockerfile
@@ -29,8 +38,14 @@ variables:
 
 stages:
   - read-secret
+{{#isJava}}
   - quality-app
   - package-app
+{{/isJava}}
+{{#isNode}}
+  - quality-app
+  - package-app
+{{/isNode}}
   - docker-build
 
 read_secret:
@@ -61,13 +76,13 @@ package-app:
   stage: build-app
   extends:
     - .java:build
-{{/isJava}}
 
+{{/isJava}}
 {{#isNode}}
 quality-app:
   variables:
     WORKING_DIR: "{{workingDir}}"
-  stage: test
+  stage: quality-app
   extends:
     - .node:sonar
 
@@ -80,8 +95,8 @@ package-app:
   stage: build-app
   extends:
     - .node:build
-{{/isNode}}
 
+{{/isNode}}
 docker-build:
   variables:
     WORKING_DIR: "{{workingDir}}"
