@@ -14,7 +14,7 @@ export const createProject = async ({ internalRepoName, externalRepoUrn, group, 
   if (!groupId) throw Error('Impossible de retrouver le namespace')
   const searchResults = await api.Projects.search(internalRepoName)
   if (searchResults.length) {
-    const existingProject = searchResults.find(project => project.namespace.id === groupId)
+    const existingProject = searchResults.find(project => project.namespace.id === groupId && project.name === internalRepoName)
     if (existingProject) return existingProject
   }
   const externalRepoUrl = isPrivate
@@ -41,7 +41,7 @@ export const createProjectMirror = async (internalRepoName, group, organization)
   if (!groupId) throw Error('Impossible de retrouver le namespace')
   const searchResults = await api.Projects.search(internalRepoName)
   if (searchResults.length) {
-    const existingProject = searchResults.find(project => project.namespace.id === groupId)
+    const existingProject = searchResults.find(project => project.namespace.id === groupId && project.name === internalRepoName)
     if (existingProject) return existingProject
   }
   const project = await api.Projects.create(

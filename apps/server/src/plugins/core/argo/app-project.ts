@@ -1,7 +1,6 @@
 import type { AppProject } from '@kubernetes-models/argo-cd/argoproj.io/v1alpha1'
 import { argoNamespace } from '../../../utils/env.js'
 import { customK8sApi, patchOptions } from './init.js'
-import { findOldAppProjects } from './migrate.js'
 
 export const getAppProject = async (appProjectName) => {
   const appProjectList: { body: Record<string, any> } = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', argoNamespace, 'appprojects', undefined, undefined, undefined, `metadata.name=${appProjectName}`)
@@ -16,6 +15,8 @@ export const createApplicationProject = async ({ appProjectName, repositories, r
     rwGroup,
     roGroup,
     sourceRepos,
+    resourceVersion: appProject?.metadata?.resourceVersion,
+    destinations: appProject?.spec?.destinations,
   })
 
   if (!appProject) {
@@ -25,14 +26,10 @@ export const createApplicationProject = async ({ appProjectName, repositories, r
   await customK8sApi.replaceNamespacedCustomObject('argoproj.io', 'v1alpha1', argoNamespace, 'appprojects', appProjectName, appProjectObject)
 }
 
-export const deleteApplicationProject = async ({ appProjectName, destNamespace }) => {
-  const appprojects = await findOldAppProjects(destNamespace) // Support Old appproject method
-  if (appprojects.length) { // Support Old appproject method
-    for (const oldAppProject of appprojects) {
-      await customK8sApi.deleteNamespacedCustomObject('argoproj.io', 'v1alpha1', argoNamespace, 'appprojects', oldAppProject.metadata.name)
-    }
-  } else if (appprojects?.metadata?.name) {
-    await customK8sApi.deleteNamespacedCustomObject('argoproj.io', 'v1alpha1', argoNamespace, 'appprojects', appprojects.metadata.name)
+export const deleteApplicationProject = async ({ appProjectName }) => {
+  const appProject = await getAppProject(appProjectName)
+  if (appProject) {
+    await customK8sApi.deleteNamespacedCustomObject('argoproj.io', 'v1alpha1', argoNamespace, 'appprojects', appProjectName)
   }
 }
 
@@ -60,7 +57,7 @@ export const removeRepoFromApplicationProject = async ({ appProjectName, repoUrl
   }
 }
 
-export const addDestinationToApplicationProject = async (appProjectName: string, newDestination: { name: string, namespace: string}) => {
+export const addDestinationToApplicationProject = async (appProjectName: string, newDestination: { name: string, namespace: string, server: string }) => {
   const appProject = await getAppProject(appProjectName)
   if (appProjectName) {
     const destinations = appProject.spec.destinations
@@ -85,16 +82,17 @@ export const removeDestinationFromApplicationProject = async (appProjectName: st
   throw new Error(`appproject ${appProjectName} not found`)
 }
 
-const getAppProjectObject = ({ name, sourceRepos, roGroup, rwGroup }) => {
+const getAppProjectObject = ({ name, sourceRepos, roGroup, rwGroup, resourceVersion, destinations }) => {
   return {
     apiVersion: 'argoproj.io/v1alpha1',
     kind: 'AppProject',
     metadata: {
       name,
       namespace: argoNamespace,
+      ...(resourceVersion && { resourceVersion }),
     },
     spec: {
-      destinations: [],
+      destinations: destinations || [],
       namespaceResourceWhitelist: [{
         group: '*',
         kind: '*',
