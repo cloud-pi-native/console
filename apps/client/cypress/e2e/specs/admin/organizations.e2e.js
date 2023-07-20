@@ -78,21 +78,49 @@ describe('Administration organizations', () => {
   })
 
   it('Should update an organization loggedIn as admin', () => {
+    const newLabel = 'Ministère de la chambre rouge'
+
+    cy.getByDataTestid('confirmUpdateOrganizationZone')
+      .should('not.exist')
     cy.getByDataTestid('tableAdministrationOrganizations').within(() => {
       cy.getByDataTestid(`${newOrg.name}-label-input`)
         .should('have.value', newOrg.label)
         .clear()
-        .type('Ministère de la chambre rouge')
+        .type(newLabel)
         .blur()
     })
+    cy.getByDataTestid('tableAdministrationOrganizations')
+      .should('not.be.visible')
+    cy.getByDataTestid('confirmUpdateOrganizationZone').within(() => {
+      cy.getByDataTestid('updatedDataSummary')
+        .should('contain', `Les données suivantes seront mises à jour pour l'organisation ${newOrg.name} : label : ${newLabel}`)
+      cy.getByDataTestid('lockOrganizationAlert')
+        .should('not.exist')
+      cy.getByDataTestid('confirmUpdateBtn')
+        .click()
+    })
+
     cy.getByDataTestid('snackbar').should('contain', `Organisation ${newOrg.name} mise à jour`)
+
+    cy.getByDataTestid('confirmUpdateOrganizationZone')
+      .should('not.exist')
 
     cy.getByDataTestid('tableAdministrationOrganizations').within(() => {
       cy.getByDataTestid(`${newOrg.name}-active-cbx`)
         .should('be.checked')
         .uncheck()
-        .blur()
     })
+    cy.getByDataTestid('tableAdministrationOrganizations')
+      .should('not.be.visible')
+    cy.getByDataTestid('confirmUpdateOrganizationZone').within(() => {
+      cy.getByDataTestid('updatedDataSummary')
+        .should('contain', `Les données suivantes seront mises à jour pour l'organisation ${newOrg.name} : active : false`)
+      cy.getByDataTestid('lockOrganizationAlert')
+        .should('exist')
+      cy.getByDataTestid('confirmUpdateBtn')
+        .click()
+    })
+
     cy.getByDataTestid('snackbar').within(() => {
       cy.get('p').should('contain', `Organisation ${newOrg.name} mise à jour`)
     })
@@ -113,7 +141,16 @@ describe('Administration organizations', () => {
       cy.getByDataTestid(`${organization.name}-active-cbx`)
         .should('be.checked')
         .uncheck()
-        .blur()
+    })
+    cy.getByDataTestid('tableAdministrationOrganizations')
+      .should('not.be.visible')
+    cy.getByDataTestid('confirmUpdateOrganizationZone').within(() => {
+      cy.getByDataTestid('updatedDataSummary')
+        .should('contain', `Les données suivantes seront mises à jour pour l'organisation ${organization.name} : active : false`)
+      cy.getByDataTestid('lockOrganizationAlert')
+        .should('contain', 'Les projets associés à cette organisation seront vérrouillés, jusqu\'à la réactivation de l\'organisation.')
+      cy.getByDataTestid('confirmUpdateBtn')
+        .click()
     })
     cy.getByDataTestid('snackbar').within(() => {
       cy.get('p').should('contain', `Organisation ${organization.name} mise à jour`)
@@ -139,7 +176,16 @@ describe('Administration organizations', () => {
       cy.getByDataTestid(`${organization.name}-active-cbx`)
         .should('not.be.checked')
         .check()
-        .blur()
+    })
+    cy.getByDataTestid('tableAdministrationOrganizations')
+      .should('not.be.visible')
+    cy.getByDataTestid('confirmUpdateOrganizationZone').within(() => {
+      cy.getByDataTestid('updatedDataSummary')
+        .should('contain', `Les données suivantes seront mises à jour pour l'organisation ${organization.name} : active : true`)
+      cy.getByDataTestid('lockOrganizationAlert')
+        .should('not.exist')
+      cy.getByDataTestid('confirmUpdateBtn')
+        .click()
     })
     cy.getByDataTestid('snackbar').within(() => {
       cy.get('p').should('contain', `Organisation ${organization.name} mise à jour`)
