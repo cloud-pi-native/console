@@ -38,6 +38,9 @@ export const createDsoProject = async (payload: HookPayload<CreateProjectExecArg
     const group = await createGroup(project, organization)
     const user = await createUser(owner)
     const groupMember = await addGroupMember(group.id, user.id, 40)
+    const internalMirrorRepoName = 'mirror'
+    const mirror = await createProjectMirror(internalMirrorRepoName, project, organization)
+    const triggerToken = await setProjectTrigger(mirror.id)
 
     return {
       status: {
@@ -48,12 +51,15 @@ export const createDsoProject = async (payload: HookPayload<CreateProjectExecArg
         group,
         user,
         groupMember,
+        mirror,
       },
       vault: [{
         name: 'GITLAB',
         data: {
           ORGANIZATION_NAME: organization,
           PROJECT_NAME: project,
+          GIT_MIRROR_PROJECT_ID: mirror.id,
+          GIT_MIRROR_TOKEN: triggerToken.token,
         },
       }],
     }
@@ -98,8 +104,6 @@ export const createDsoRepository = async (payload: HookPayload<CreateRepositoryE
     const externalRepoUrn = externalRepoUrl.split(/:\/\/(.*)/s)[1] // Un urN ne contient pas le protocole
     const internalMirrorRepoName = `${internalRepoName}-mirror`
     const projectCreated = await createProject({ internalRepoName, externalRepoUrn, group: project, organization, externalUserName, externalToken, isPrivate })
-    const mirror = await createProjectMirror(internalMirrorRepoName, project, organization)
-    const triggerToken = await setProjectTrigger(mirror.id) as PipelineTriggerTokenSchema
 
     return {
       status: {
@@ -109,15 +113,12 @@ export const createDsoRepository = async (payload: HookPayload<CreateRepositoryE
       vault: [{
         name: `${internalMirrorRepoName}`,
         data: {
-          ORGANIZATION_NAME: organization,
-          PROJECT_NAME: project,
           GIT_INPUT_URL: externalRepoUrn,
           GIT_INPUT_USER: externalUserName,
           GIT_INPUT_PASSWORD: externalToken,
-          GIT_OUTPUT_USER: triggerToken.owner.username,
+          GIT_OUTPUT_USER: 'root',
           GIT_OUTPUT_PASSWORD: gitlabToken,
           GIT_OUTPUT_URL: projectCreated.http_url_to_repo.split(/:\/\/(.*)/s)[1],
-          GIT_PIPELINE_TOKEN: triggerToken.token,
         },
       }],
     }

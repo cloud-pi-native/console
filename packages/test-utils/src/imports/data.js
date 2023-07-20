@@ -700,14 +700,11 @@ export const data = {
           vault: [
             {
               data: {
-                PROJECT_NAME: 'int-2',
                 GIT_INPUT_URL: 'github.com/dnum-mi/dso-console.git',
                 GIT_INPUT_USER: '',
+                GIT_INPUT_PASSWORD: '',
                 GIT_OUTPUT_URL: 'blabla.com/bla/projects/mi/int-2/repo.git',
                 GIT_OUTPUT_USER: 'root',
-                ORGANIZATION_NAME: 'mi',
-                GIT_INPUT_PASSWORD: '',
-                GIT_PIPELINE_TOKEN: 'token',
                 GIT_OUTPUT_PASSWORD: 'password',
               },
               name: 'repo-mirror',
@@ -768,14 +765,11 @@ export const data = {
           vault: [
             {
               data: {
-                PROJECT_NAME: 'int-2',
                 GIT_INPUT_URL: 'github.com/dnum-mi/dso-console.git',
                 GIT_INPUT_USER: '',
+                GIT_INPUT_PASSWORD: '',
                 GIT_OUTPUT_URL: 'blabla.com/bla/projects/mi/int-2/repo.git',
                 GIT_OUTPUT_USER: 'root',
-                ORGANIZATION_NAME: 'mi',
-                GIT_INPUT_PASSWORD: '',
-                GIT_PIPELINE_TOKEN: 'token',
                 GIT_OUTPUT_PASSWORD: 'password',
               },
               name: 'repo-mirror',

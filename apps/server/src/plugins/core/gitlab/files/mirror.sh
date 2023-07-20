@@ -18,12 +18,14 @@ Following flags are available:
 
   -a  Api url to send the synchronization request.
 
-  -b  Branch which is wanted to be synchronize.
+  -b  Branch which is wanted to be synchronize for the given repository.
       Default is '$BRANCH_TO_SYNC'.
 
   -g  GitLab token to trigger the pipeline on the gitlab mirror project.
 
-  -m  Gitlab mirror project id.
+  -i  Gitlab mirror project id.
+
+  -r  Gitlab repository name to mirror.
 
   -h  Print script help.\n\n"
 
@@ -43,6 +45,8 @@ do
       GITLAB_TRIGGER_TOKEN=${OPTARG};;
     i)
       GITLAB_MIRROR_PROJECT_ID=${OPTARG};;
+    r)
+      REPOSITORY_NAME=${OPTARG};;
     h | *)
       print_help
       exit 0;;
@@ -51,7 +55,7 @@ done
 
 
 # Test if arguments are missing
-if [ -z ${API_URL} ] || [ -z ${BRANCH_TO_SYNC} ] || [ -z ${GITLAB_TRIGGER_TOKEN} ] || [ -z ${GITLAB_MIRROR_PROJECT_ID} ]; then
+if [ -z ${API_URL} ] || [ -z ${BRANCH_TO_SYNC} ] || [ -z ${GITLAB_TRIGGER_TOKEN} ] || [ -z ${GITLAB_MIRROR_PROJECT_ID} ] || [ -z ${REPOSITORY_NAME} ]; then
   printf "\nArgument(s) missing.\n"
   print_help
   exit 0
@@ -67,4 +71,5 @@ curl \
   -F token=${GITLAB_TRIGGER_TOKEN} \
   -F ref=main \
   -F variables[GIT_BRANCH_DEPLOY]=${BRANCH_TO_SYNC} \
+  -F variables[PROJECT_NAME]=${REPOSITORY_NAME} \
   "${API_URL}/api/v4/projects/${GITLAB_MIRROR_PROJECT_ID}/trigger/pipeline"
