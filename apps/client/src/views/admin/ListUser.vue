@@ -12,6 +12,7 @@ const allUsers = ref([])
 
 const title = 'Liste des utilisateurs'
 const headers = [
+  'Identifiant',
   'Prénom',
   'Nom',
   'E-mail',
@@ -19,6 +20,15 @@ const headers = [
   'Modification',
 ]
 const rows = ref([])
+
+const copyContent = async (content) => {
+  try {
+    await navigator.clipboard.writeText(content)
+    snackbarStore.setMessage('Donnée copié', 'success')
+  } catch (error) {
+    snackbarStore.setMessage(error?.message, 'error')
+  }
+}
 
 const getAllUsers = async () => {
   try {
@@ -30,7 +40,14 @@ const getAllUsers = async () => {
 
 onMounted(async () => {
   await getAllUsers()
-  rows.value = allUsers.value?.map(({ firstName, lastName, email, createdAt, updatedAt }) => ([
+  rows.value = allUsers.value?.map(({ id, firstName, lastName, email, createdAt, updatedAt }) => ([
+    {
+      component: 'code',
+      text: id,
+      title: 'Copier l\'id',
+      class: 'fr-text-default--info text-xs cursor-pointer',
+      onClick: () => copyContent(id),
+    },
     firstName,
     lastName,
     email,
