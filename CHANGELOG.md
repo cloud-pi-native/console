@@ -1,5 +1,20 @@
 # Changelog
 
+## [5.2.0](https://github.com/cloud-pi-native/console/compare/v5.1.0...v5.2.0) (2023-07-20)
+
+
+### Features
+
+* :children_crossing: improve gitlab mirroring by using a single mirror repo ([914bbe4](https://github.com/cloud-pi-native/console/commit/914bbe4546a3e876a6cd8847523f18e95d688d44))
+* :sparkles: add id in admin user table ([d1ebcea](https://github.com/cloud-pi-native/console/commit/d1ebcea1768993b6ab31e5f45a6642ac3577cfc5))
+
+
+### Bug Fixes
+
+* :bug: add missing data to add argo cluster ([fc53f54](https://github.com/cloud-pi-native/console/commit/fc53f54d8f2d211857aa82c43589b9ee26e214b8))
+* :bug: delete kube resources when deleting a project ([5e8cd51](https://github.com/cloud-pi-native/console/commit/5e8cd514edc8a0eb4f5d49208cb17b6da82f4fd7))
+* :bug: fix argo plugin ([b1dc1fb](https://github.com/cloud-pi-native/console/commit/b1dc1fb60ba89b534c3e3cd357b89a4e08b74838))
+
 ## [5.1.0](https://github.com/cloud-pi-native/console/compare/v5.0.0...v5.1.0) (2023-07-18)
 
 
