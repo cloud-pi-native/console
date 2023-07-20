@@ -129,6 +129,17 @@ export const getProjectByNames = async ({ name, organizationName }: { name: Proj
   return res
 }
 
+export const getProjectByOrganizationId = async (organizationId: Organization['id']) => {
+  return prisma.project.findMany({
+    where: {
+      organizationId,
+      status: {
+        not: 'archived',
+      },
+    },
+  })
+}
+
 // CREATE
 export const initializeProject = async ({ name, organizationId, description = '', ownerId }: { name: Project['name'], organizationId: Organization['id'], description: Project['description'], ownerId: User['id'] }) => {
   return prisma.project.create({

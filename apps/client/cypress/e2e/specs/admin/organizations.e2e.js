@@ -1,7 +1,8 @@
-import { getModel } from '../../support/func.js'
+import { getModel, getProjectById } from '../../support/func.js'
 
 describe('Administration organizations', () => {
-  const organizations = getModel('organization').map(({ label, name, active }) => ({
+  const organizations = getModel('organization').map(({ id, label, name, active }) => ({
+    id,
     label,
     name,
     active,
@@ -16,6 +17,7 @@ describe('Administration organizations', () => {
 
   beforeEach(() => {
     cy.intercept('GET', 'api/v1/admin/organizations').as('getAllOrganizations')
+    cy.intercept('GET', 'api/v1/projects').as('getProjects')
 
     cy.kcLogin('tcolin')
     cy.visit('/admin/organizations')
@@ -99,6 +101,60 @@ describe('Administration organizations', () => {
       .get(`select#organizationId-select > option[value="${organizations[0].name}"]`)
       .should('not.exist')
       .get(`select#organizationId-select > option[value="${newOrg.name}"]`)
+      .should('not.exist')
+  })
+
+  it('Should deactivate and activate an organization with impact on its projects', () => {
+    const projectFailed = getProjectById('83833faf-f654-40dd-bcd5-cf2e944fc702')
+    const projectSucceed = getProjectById('011e7860-04d7-461f-912d-334c622d38b3')
+    const organization = organizations.find(organization => organization.id === projectFailed.organizationId)
+
+    cy.getByDataTestid('tableAdministrationOrganizations').within(() => {
+      cy.getByDataTestid(`${organization.name}-active-cbx`)
+        .should('be.checked')
+        .uncheck()
+        .blur()
+    })
+    cy.getByDataTestid('snackbar').within(() => {
+      cy.get('p').should('contain', `Organisation ${organization.name} mise à jour`)
+    })
+
+    cy.visit('/projects')
+      .wait('@getProjects')
+    cy.getByDataTestid(`projectTile-${projectFailed.name}`)
+      .click()
+    cy.getByDataTestid(`${projectFailed.id}-locked-badge`)
+      .should('exist')
+
+    cy.visit('/projects')
+      .wait('@getProjects')
+    cy.getByDataTestid(`projectTile-${projectSucceed.name}`)
+      .click()
+    cy.getByDataTestid(`${projectSucceed.id}-locked-badge`)
+      .should('exist')
+
+    cy.visit('/admin/organizations')
+      .wait('@getAllOrganizations')
+    cy.getByDataTestid('tableAdministrationOrganizations').within(() => {
+      cy.getByDataTestid(`${organization.name}-active-cbx`)
+        .should('not.be.checked')
+        .check()
+        .blur()
+    })
+    cy.getByDataTestid('snackbar').within(() => {
+      cy.get('p').should('contain', `Organisation ${organization.name} mise à jour`)
+    })
+
+    cy.visit('/projects')
+    cy.getByDataTestid(`projectTile-${projectFailed.name}`)
+      .click()
+    cy.getByDataTestid(`${projectFailed.id}-locked-badge`)
+      .should('exist')
+
+    cy.visit('/projects')
+    cy.getByDataTestid(`projectTile-${projectSucceed.name}`)
+      .click()
+    cy.getByDataTestid(`${projectSucceed.id}-locked-badge`)
       .should('not.exist')
   })
 

@@ -13,7 +13,7 @@ export const checkAdminGroup = (req, res, done) => {
   done()
 }
 
-export const unlockProjectIfNotFailed = async (projectId) => {
+export const unlockProjectIfNotFailed = async (projectId: Project['id']) => {
   const ressources = [
     ...(await getEnvironmentsByProjectId(projectId))?.map(environment => environment.status),
     ...(await getProjectRepositories(projectId))?.map(repository => repository.status),

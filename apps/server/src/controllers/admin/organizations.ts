@@ -12,6 +12,8 @@ import { sendOk, sendCreated, sendNotFound, sendBadRequest } from '../../utils/r
 import { hooks } from '../../plugins/index.js'
 import { HookPayload, PluginResult } from '@/plugins/hooks/hook.js'
 import { objectValues } from '@/utils/type.js'
+import { getProjectByOrganizationId, lockProject } from '@/queries/project-queries.js'
+import { unlockProjectIfNotFailed } from '@/utils/controller.js'
 
 // GET
 export const getAllOrganizationsController = async (req, res) => {
@@ -70,13 +72,29 @@ export const updateOrganizationController = async (req, res) => {
   const { active, label, source } = req.body
 
   try {
+    let organization = await getOrganizationByName(name)
+
     if (active !== undefined) {
       await updateActiveOrganization({ name, active })
+      /** lock project if organization becomes inactive */
+      if (active === false) {
+        const projects = await getProjectByOrganizationId(organization.id)
+        for (const project of projects) {
+          await lockProject(project.id)
+        }
+      }
+      /** unlock project if organization becomes active and no resource is failed */
+      if (active === true) {
+        const projects = await getProjectByOrganizationId(organization.id)
+        for (const project of projects) {
+          await unlockProjectIfNotFailed(project.id)
+        }
+      }
     }
     if (label) {
       await updateLabelOrganization({ name, label, source })
     }
-    const organization = await getOrganizationByName(name)
+    organization = await getOrganizationByName(name)
 
     addReqLogs({
       req,
