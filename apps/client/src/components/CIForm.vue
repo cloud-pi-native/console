@@ -66,7 +66,9 @@ const prepareForDownload = async () => {
   const zip = new JSZip()
 
   files.value = Object.keys(generatedCI.value).map((key) => {
-    const filename = `.${key}.yml`
+    const filename = key === 'gitlab-ci-dso'
+      ? `.${key}.yml`
+      : `${key}.yml`
     const file = new File([generatedCI.value[key]], filename, {
       type: 'text/plain;charset=utf-8',
     })

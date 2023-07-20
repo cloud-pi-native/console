@@ -12,14 +12,14 @@ export const createCluster = async (payload: HookPayload<CreateClusterExecArgs>)
     return {
       status: {
         result: 'OK',
-        message: 'cluster secret created/updated',
+        message: 'Cluster secret created/updated',
       },
     }
   } catch (error) {
     return {
       status: {
         result: 'KO',
-        message: 'failed create/update cluster secret',
+        message: 'Failed create/update cluster secret',
       },
       error: JSON.stringify(error),
     }
@@ -33,14 +33,14 @@ export const deleteCluster = async (payload: HookPayload<DeleteClusterExecArgs>)
     return {
       status: {
         result: 'OK',
-        message: 'cluster secret created/updated',
+        message: 'Cluster secret deleted',
       },
     }
   } catch (error) {
     return {
       status: {
         result: 'KO',
-        message: 'failed create/update cluster secret',
+        message: 'Failed to delete cluster secret',
       },
       error: JSON.stringify(error),
     }

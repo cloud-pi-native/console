@@ -1,7 +1,8 @@
 import { getModel } from '../../support/func.js'
 
 describe('Administration users', () => {
-  const users = getModel('user').map(({ firstName, lastName, email }) => ({
+  const users = getModel('user').map(({ id, firstName, lastName, email }) => ({
+    id,
     firstName,
     lastName,
     email,
@@ -14,20 +15,19 @@ describe('Administration users', () => {
     cy.visit('/admin/users')
     cy.wait('@getAllUsers').its('response.statusCode').should('eq', 200)
 
-    const values = []
-    cy.get('tbody tr')
-      .then($el => {
-        $el.toArray()
-          .forEach(row => {
-            values.push({
-              firstName: row.children[0].innerHTML,
-              lastName: row.children[1].innerHTML,
-              email: row.children[2].innerHTML,
-            })
-          })
+    cy.getByDataTestid('tableAdministrationUsers').find('tbody').within(() => {
+      users.forEach(user => {
+        cy.get('tr > td')
+          .contains(user.id)
+          .click()
+        cy.assertClipboard(user.id)
+        cy.get('tr > td')
+          .contains(user.firstName)
+        cy.get('tr > td')
+          .contains(user.lastName)
+        cy.get('tr > td')
+          .contains(user.email)
       })
-
-    cy.wrap(values).should('have.length', users.length)
-    users.forEach(user => cy.wrap(values).should('deep.include', user))
+    })
   })
 })

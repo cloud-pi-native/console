@@ -3,6 +3,7 @@ import {
   archiveProject,
   deleteEnvironment,
   deleteRepository,
+  getClusterByEnvironmentId,
   getOrCreateUser,
   getOrganizationById,
   getProjectById,
@@ -42,6 +43,7 @@ import { type AsyncReturnType, hasRoleInProject, unlockProjectIfNotFailed } from
 import type { PluginResult } from '@/plugins/hooks/hook.js'
 import type { CreateProjectExecArgs, UpdateProjectExecArgs } from '@/plugins/hooks/project.js'
 import type { EnhancedFastifyRequest } from '@/types/index.js'
+import { removeClustersFromEnvironmentBusiness } from '@/business/environment.js'
 
 // GET
 export const getUserProjectsController = async (req: EnhancedFastifyRequest<void>, res) => {
@@ -353,6 +355,9 @@ export const archiveProjectController = async (req, res) => {
 
     // -- début - Suppression environnements --
     for (const env of project.environments) {
+      // Delete project namespaces in differents target clusters
+      const clusters = await getClusterByEnvironmentId(env.id)
+      await removeClustersFromEnvironmentBusiness(clusters, env.name, env.id, project.name, project.organization.name, userId)
       const envData = {
         environment: env.name,
         project: project.name,
