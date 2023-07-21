@@ -453,6 +453,13 @@ export const data = {
   ],
   role: [
     {
+      userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6566',
+      projectId: '83833faf-f654-40dd-bcd5-cf2e944fc702',
+      role: 'user',
+      createdAt: '2023-07-03T14:46:56.826Z',
+      updatedAt: '2023-07-03T14:46:56.826Z',
+    },
+    {
       userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
       projectId: '22e7044f-8414-435d-9c4a-2df42a65034b',
       role: 'owner',
