@@ -29,7 +29,7 @@ server:
     name: dso-config
   container:
     env: #hashmap of custom env
-    image: ghcr.io/cloud-pi-native/console/server:5.2.0 # x-release-please-version
+    image: ghcr.io/cloud-pi-native/console/server:5.2.1 # x-release-please-version
     port: 8080
     node_env: production
     data-configmap:
@@ -41,7 +41,7 @@ server:
 
 client:
   container:
-    image: ghcr.io/cloud-pi-native/console/client:5.2.0 # x-release-please-version
+    image: ghcr.io/cloud-pi-native/console/client:5.2.1 # x-release-please-version
     port: 8080
     env: #hashmap of custom env
   service:
