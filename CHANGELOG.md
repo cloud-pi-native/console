@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.2.1](https://github.com/cloud-pi-native/console/compare/v5.2.0...v5.2.1) (2023-07-21)
+
+
+### Bug Fixes
+
+* :adhesive_bandage: update kaniko stage name in gitlab ci ([7a71712](https://github.com/cloud-pi-native/console/commit/7a71712075d7aed5aeeb00adb1d2ec51b6d717ab))
+
 ## [5.2.0](https://github.com/cloud-pi-native/console/compare/v5.1.0...v5.2.0) (2023-07-20)
 
 
