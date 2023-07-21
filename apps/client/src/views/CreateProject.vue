@@ -13,6 +13,7 @@ import {
   calcProjectNameMaxLength,
 } from 'shared'
 import router from '@/router/index.js'
+import LoadingCt from '@/components/LoadingCt.vue'
 
 const snackbarStore = useSnackbarStore()
 const projectStore = useProjectStore()
@@ -43,11 +44,14 @@ const project = ref({
   name: '',
 })
 
+const isCreatingProject = ref(false)
+
 const orgOptions = ref([])
 
 const updatedValues = ref({})
 
 const createProject = async () => {
+  isCreatingProject.value = true
   updatedValues.value = instanciateSchema({ schema: projectSchema }, true)
   const keysToValidate = ['organizationId', 'name']
   const errorSchema = schemaValidator(projectSchema, project.value, { keysToValidate, context: { projectNameMaxLength: projectNameMaxLength.value } })
@@ -59,6 +63,7 @@ const createProject = async () => {
       snackbarStore.setMessage(error?.message, 'error')
     }
   }
+  isCreatingProject.value = false
 }
 
 const updateProject = (key, value) => {
@@ -82,75 +87,83 @@ onMounted(async () => {
 </script>
 
 <template>
-  <h1
-    class="fr-h1"
+  <div
+    class="relative"
   >
-    Commander un espace projet
-  </h1>
-  <DsfrFieldset
-    legend="Informations du projet"
-    hint="Les champs munis d'une astérisque (*) sont requis."
-  >
-    <DsfrAlert
-      type="info"
-      :description="`L'adresse e-mail du souscripteur associé au projet sera : ${owner.email}`"
-      small
-      class="fr-mb-2w"
-    />
-    <DsfrSelect
-      v-model="project.organizationId"
-      select-id="organizationId-select"
-      required
-      label="Nom de l'organisation"
-      label-visible
-      :options="orgOptions"
-      @update:model-value="updateProject('organizationId', $event)"
-    />
-    <div
-      class="fr-mb-6v"
+    <h1
+      class="fr-h1"
     >
+      Commander un espace projet
+    </h1>
+    <DsfrFieldset
+      legend="Informations du projet"
+      hint="Les champs munis d'une astérisque (*) sont requis."
+    >
+      <DsfrAlert
+        type="info"
+        :description="`L'adresse e-mail du souscripteur associé au projet sera : ${owner.email}`"
+        small
+        class="fr-mb-2w"
+      />
+      <DsfrSelect
+        v-model="project.organizationId"
+        select-id="organizationId-select"
+        required
+        label="Nom de l'organisation"
+        label-visible
+        :options="orgOptions"
+        @update:model-value="updateProject('organizationId', $event)"
+      />
       <div
-        class="fr-mb-1v"
+        class="fr-mb-6v"
       >
-        <DsfrInputGroup
-          v-model="project.name"
-          data-testid="nameInput"
-          type="text"
-          required="required"
-          :error-message="!!updatedValues.name && !isValid(projectSchema, project, 'name', { projectNameMaxLength }) ? `Le nom du projet doit être en minuscule, ne pas contenir d\'espace, faire plus de 2 et moins de ${projectNameMaxLength} caractères.`: undefined"
-          label="Nom du projet"
-          label-visible
-          :hint="`Nom du projet dans l'offre Cloud π Native. Ne doit pas contenir d'espace, doit être unique pour l'organisation, doit être en minuscules, doit faire plus de 2 et moins de ${projectNameMaxLength} caractères.`"
-          placeholder="candilib"
-          @update:model-value="updateProject('name', $event)"
-        />
+        <div
+          class="fr-mb-1v"
+        >
+          <DsfrInputGroup
+            v-model="project.name"
+            data-testid="nameInput"
+            type="text"
+            required="required"
+            :error-message="!!updatedValues.name && !isValid(projectSchema, project, 'name', { projectNameMaxLength }) ? `Le nom du projet doit être en minuscule, ne pas contenir d\'espace, faire plus de 2 et moins de ${projectNameMaxLength} caractères.`: undefined"
+            label="Nom du projet"
+            label-visible
+            :hint="`Nom du projet dans l'offre Cloud π Native. Ne doit pas contenir d'espace, doit être unique pour l'organisation, doit être en minuscules, doit faire plus de 2 et moins de ${projectNameMaxLength} caractères.`"
+            placeholder="candilib"
+            @update:model-value="updateProject('name', $event)"
+          />
+        </div>
+        <span
+          v-if="remainingCharacters >= 0"
+          class="fr-hint-text"
+        >
+          {{ remainingCharacters }} caractères restants
+        </span>
       </div>
-      <span
-        v-if="remainingCharacters >= 0"
-        class="fr-hint-text"
-      >
-        {{ remainingCharacters }} caractères restants
-      </span>
-    </div>
-    <DsfrInput
-      v-model="project.description"
-      data-testid="descriptionInput"
-      :is-textarea="true"
-      :maxlength="descriptionMaxLength"
-      label="Description du projet"
-      label-visible
-      :hint="`Courte description expliquant la finalité du projet (${descriptionMaxLength} caractères maximum).`"
-      placeholder="Application de réservation de places à l'examen du permis B."
-      @update:model-value="updateProject('description', $event)"
+      <DsfrInput
+        v-model="project.description"
+        data-testid="descriptionInput"
+        :is-textarea="true"
+        :maxlength="descriptionMaxLength"
+        label="Description du projet"
+        label-visible
+        :hint="`Courte description expliquant la finalité du projet (${descriptionMaxLength} caractères maximum).`"
+        placeholder="Application de réservation de places à l'examen du permis B."
+        @update:model-value="updateProject('description', $event)"
+      />
+    </DsfrFieldset>
+    <DsfrButton
+      label="Commander mon espace projet"
+      data-testid="createProjectBtn"
+      primary
+      class="fr-mt-2w"
+      :disabled="!project.organizationId || !isValid(projectSchema, project, 'name', { projectNameMaxLength })"
+      icon="ri-send-plane-line"
+      @click="createProject()"
     />
-  </DsfrFieldset>
-  <DsfrButton
-    label="Commander mon espace projet"
-    data-testid="createProjectBtn"
-    primary
-    class="fr-mt-2w"
-    :disabled="!project.organizationId || !isValid(projectSchema, project, 'name', { projectNameMaxLength })"
-    icon="ri-send-plane-line"
-    @click="createProject()"
-  />
+    <LoadingCt
+      :show-loader="isCreatingProject"
+      description="Projet en cours de création"
+    />
+  </div>
 </template>

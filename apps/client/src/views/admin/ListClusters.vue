@@ -13,7 +13,7 @@ const clusters = computed(() => adminClusterStore.clusters)
 const selectedCluster = ref({})
 const clusterList = ref([])
 const allProjects = ref([])
-
+const isUpdatingCluster = ref(false)
 const isNewClusterForm = ref(false)
 
 const setClusterTiles = (clusters) => {
@@ -46,6 +46,7 @@ const cancel = () => {
 }
 
 const addCluster = async (cluster) => {
+  isUpdatingCluster.value = true
   cancel()
   try {
     await adminClusterStore.addCluster(cluster)
@@ -53,19 +54,23 @@ const addCluster = async (cluster) => {
   } catch (error) {
     snackbarStore.setMessage(error?.message, 'error')
   }
+  isUpdatingCluster.value = false
 }
 
 const updateCluster = async (cluster) => {
-  cancel()
+  isUpdatingCluster.value = true
   try {
     await adminClusterStore.updateCluster(cluster)
     await adminClusterStore.getAllClusters()
   } catch (error) {
     snackbarStore.setMessage(error?.message, 'error')
   }
+  cancel()
+  isUpdatingCluster.value = false
 }
 
 const removeCluster = async (clusterId) => {
+  isUpdatingCluster.value = true
   try {
     await adminClusterStore.removeCluster(clusterId)
     await adminClusterStore.getAllClusters()
@@ -74,6 +79,7 @@ const removeCluster = async (clusterId) => {
   }
   setClusterTiles(clusters.value)
   selectedCluster.value = {}
+  isUpdatingCluster.value = false
 }
 
 const getAllProjects = async () => {
@@ -117,6 +123,7 @@ watch(clusters, () => {
     <ClusterForm
       :all-projects="allProjects"
       class="w-full"
+      is-updating-cluster="isUpdatingCluster"
       @add="(cluster) => addCluster(cluster)"
       @cancel="cancel()"
     />
@@ -144,6 +151,7 @@ watch(clusters, () => {
         v-if="Object.keys(selectedCluster).length && selectedCluster.id === cluster.id"
         :cluster="selectedCluster"
         :all-projects="allProjects"
+        is-updating-cluster="isUpdatingCluster"
         class="w-full"
         :is-new-cluster="false"
         @update="(cluster) => updateCluster(cluster)"

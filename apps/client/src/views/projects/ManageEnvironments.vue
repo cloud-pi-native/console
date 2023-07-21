@@ -20,6 +20,7 @@ const environmentNames = computed(() => environments.value.map(env => env.title)
 const environments = ref([])
 const selectedEnvironment = ref({})
 const isNewEnvironmentForm = ref(false)
+const isUpdatingEnvironment = ref(false)
 
 const setEnvironmentsTiles = (project) => {
   environments.value = project?.environments
@@ -38,7 +39,7 @@ const setSelectedEnvironment = (environment) => {
     return
   }
   selectedEnvironment.value = environment
-  selectedEnvironment.value.clustersId = selectedEnvironment.value.clusters.map(cluster => cluster.id)
+  selectedEnvironment.value.clustersId = selectedEnvironment.value.clusters?.map(cluster => cluster.id)
   cancel()
 }
 
@@ -52,34 +53,40 @@ const cancel = () => {
 }
 
 const addEnvironment = async (environment) => {
+  isUpdatingEnvironment.value = true
   if (!project.value.locked) {
-    cancel()
     try {
       await projectEnvironmentStore.addEnvironmentToProject(environment)
     } catch (error) {
       snackbarStore.setMessage(error?.message, 'error')
     }
   }
+  cancel()
+  isUpdatingEnvironment.value = false
 }
 
 const putEnvironment = async (environment) => {
+  isUpdatingEnvironment.value = true
   if (!project.value.locked) {
-    cancel()
     try {
       await projectEnvironmentStore.updateEnvironment(environment)
     } catch (error) {
       snackbarStore.setMessage(error?.message, 'error')
     }
   }
+  cancel()
+  isUpdatingEnvironment.value = false
 }
 
 const deleteEnvironment = async (environment) => {
+  isUpdatingEnvironment.value = true
   try {
     await projectEnvironmentStore.deleteEnvironment(environment.id)
   } catch (error) {
     snackbarStore.setMessage(error?.message, 'error')
   }
   setSelectedEnvironment({})
+  isUpdatingEnvironment.value = false
 }
 
 onMounted(() => {
@@ -115,6 +122,7 @@ watch(project, () => {
     <EnvironmentForm
       :environment="{projectId: project?.id}"
       :environment-names="environmentNames"
+      :is-updating-environment="isUpdatingEnvironment"
       :is-project-locked="project?.locked"
       :project-clusters="project?.clusters"
       @add-environment="(environment) => addEnvironment(environment)"
@@ -170,6 +178,7 @@ watch(project, () => {
         v-if="Object.keys(selectedEnvironment).length !== 0 && selectedEnvironment.id === environment.id"
         :environment="selectedEnvironment"
         :environment-names="environmentNames"
+        :is-updating-environment="isUpdatingEnvironment"
         :project-clusters="project?.clusters"
         :is-editable="false"
         :is-project-locked="project?.locked"

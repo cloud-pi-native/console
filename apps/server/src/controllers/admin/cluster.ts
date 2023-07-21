@@ -80,6 +80,11 @@ export const createClusterController = async (req: EnhancedFastifyRequest<Create
       await addClusterToProjectWithIds(cluster.id, projectId)
     }
 
+    // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
+    const results = await hooks.createCluster.execute({ ...cluster, user: data.user, cluster: data.cluster })
+    // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
+    await addLogs('Create Cluster', results, userId)
+
     addReqLogs({
       req,
       description: 'Cluster créé avec succès',
@@ -96,26 +101,6 @@ export const createClusterController = async (req: EnhancedFastifyRequest<Create
       error,
     })
     sendBadRequest(res, description)
-  }
-
-  try {
-    // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
-    const results = await hooks.createCluster.execute({ ...cluster, user: data.user, cluster: data.cluster })
-    // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
-    await addLogs('Create Cluster', results, userId)
-
-    const description = 'Cluster créé par les plugins avec succès'
-    addReqLogs({
-      req,
-      description,
-    })
-  } catch (error) {
-    const description = 'Problème à la création du cluster par les plugins'
-    addReqLogs({
-      req,
-      description,
-      error,
-    })
   }
 }
 
