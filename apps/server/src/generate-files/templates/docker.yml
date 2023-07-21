@@ -15,7 +15,7 @@
     - docker build -t $REGISTRY_URL/$IMAGE_NAME:$TAG .
     - docker push $REGISTRY_URL/$IMAGE_NAME:$TAG
 
-.kaniko:build:
+.kaniko:build-push:
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
