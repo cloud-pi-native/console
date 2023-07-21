@@ -12,7 +12,7 @@ export const getOrganizationInfos = async (organizationId: string) => {
 export const getActiveOrganizations = async (requestor: UserDto) => {
   const user = await getOrCreateUser(requestor)
   if (!user) throw new UnauthorizedError('Veuillez vous connecter')
-  const organizations = getActiveOrganizationsQuery()
+  const organizations = await getActiveOrganizationsQuery()
   if (!organizations) throw new NotFoundError('Aucune organisation active trouvée')
   return organizations
 }

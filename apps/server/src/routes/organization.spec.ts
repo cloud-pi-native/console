@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
-import { getRandomOrganization } from 'test-utils'
+import { getRandomOrganization, getRandomUser, User } from 'test-utils'
 import fastify from 'fastify'
 import fastifySession from '@fastify/session'
 import fastifyCookie from '@fastify/cookie'
@@ -29,17 +29,17 @@ const mockSession = (app) => {
     .register(organizationRouter)
 }
 
-const requestor = {}
+let requestor: User
 
-// const setRequestorId = (id) => {
-//   requestor.id = id
-// }
+const setRequestor = (user: User) => {
+  requestor = user
+}
 
 const getRequestor = () => {
   return requestor
 }
 
-describe.skip('Organizations routes', () => {
+describe('Organizations routes', () => {
 
   beforeAll(async () => {
     mockSession(app)
@@ -56,20 +56,36 @@ describe.skip('Organizations routes', () => {
 
   // GET
   describe('getActiveOrganizationsController', () => {
+    const requestor = getRandomUser()
+    setRequestor(requestor)
+    
     it('Should retrieve active organizations', async () => {
-      const mockPublishedPost = getRandomOrganization()
+      const mockPublishedGet = getRandomOrganization()
 
-      prisma.organization.findMany.mockResolvedValueOnce([{ ...mockPublishedPost, active: false }])
+      prisma.user.upsert.mockResolvedValueOnce(requestor)
+      prisma.organization.findMany.mockResolvedValueOnce([mockPublishedGet])
 
       const response = await app.inject()
         .get('/')
         .end()
 
-      expect(response.body).toStrictEqual(JSON.stringify([mockPublishedPost]))
+      expect(response.body).toStrictEqual(JSON.stringify([mockPublishedGet]))
       expect(response.statusCode).toEqual(200)
     })
 
+    it('Should return an error if requestor cannot be found', async () => {
+      prisma.user.upsert.mockResolvedValueOnce(undefined)
+
+      const response = await app.inject()
+        .get('/')
+        .end()
+
+      expect(JSON.parse(response.body).message).toBe('Veuillez vous connecter')
+      expect(response.statusCode).toEqual(401)
+    })
+    
     it('Should return an error if retrieve organizations failed', async () => {
+      prisma.user.upsert.mockResolvedValueOnce(requestor)
       prisma.organization.findMany.mockImplementation(() => {
         throw new Error('Echec de la récupération des organisations')
       })
@@ -78,8 +94,8 @@ describe.skip('Organizations routes', () => {
         .get('/')
         .end()
 
-      expect(response.body).toBe('Echec de la récupération des organisations')
-      expect(response.statusCode).toEqual(404)
+      expect(JSON.parse(response.body).message).toBe('Echec de la récupération des organisations')
+      expect(response.statusCode).toEqual(500)
     })
   })
 })

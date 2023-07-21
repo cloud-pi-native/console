@@ -4,13 +4,15 @@ export type Organization = {
     label: string,
     source: string,
     active: boolean,
-    createdAt: Date,
-    updatedAt: Date,
+    createdAt?: Date,
+    updatedAt?: Date,
 }
 
 export type UserProject = {
   id: string,
   role: string,
+  updatedAt?: Date,
+  createdAt?: Date,
 }
 
 export type Repository = {
@@ -21,8 +23,8 @@ export type Repository = {
   isPrivate: boolean,
   isInfra: boolean,
   status: string,
-  createdAt: Date,
-  updatedAt: Date,
+  createdAt?: Date,
+  updatedAt?: Date,
   externalUserName?: string,
   externalToken?: string,
 }
@@ -32,6 +34,8 @@ export type User = {
   email: string,
   firstName: string,
   lastName: string,
+  updatedAt?: Date,
+  createdAt?: Date,
 }
 
 export type Permission = {
@@ -40,6 +44,8 @@ export type Permission = {
   userId: string,
   level: number,
   user: User,
+  updatedAt?: Date,
+  createdAt?: Date,
 }
 
 export type Cluster = {
@@ -58,6 +64,8 @@ export type Cluster = {
   privacy: string,
   clusterResources: boolean,
   secretName: string,
+  updatedAt?: Date,
+  createdAt?: Date,
 }
 
 export type Environment = {
@@ -67,12 +75,16 @@ export type Environment = {
   status: string,
   permissions?: Permission[],
   clusters?: Cluster[],
+  updatedAt?: Date,
+  createdAt?: Date,
 }
 
 export type Log = {
   id: string,
   action: string,
   userId: string,
+  updatedAt?: Date,
+  createdAt?: Date,
 }
 
 export type Project = {
@@ -86,4 +98,6 @@ export type Project = {
   roles?: UserProject[],
   repositories?: Repository[],
   environments?: Environment[],
+  updatedAt?: Date,
+  createdAt?: Date,
 }
