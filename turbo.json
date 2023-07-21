@@ -39,13 +39,15 @@
     },
     "test": {
       "dependsOn": [
-        "^shared#build"
+        "^shared#build",
+        "^test-utils#build"
       ],
       "outputs": []
     },
     "test:cov": {
       "dependsOn": [
-        "^shared#build"
+        "^shared#build",
+        "^test-utils#build"
       ],
       "outputs": []
     }

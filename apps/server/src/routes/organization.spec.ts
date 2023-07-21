@@ -1,17 +1,16 @@
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
-import { createRandomDbSetup, getRandomOrganization } from 'test-utils'
+import { getRandomOrganization } from 'test-utils'
 import fastify from 'fastify'
 import fastifySession from '@fastify/session'
 import fastifyCookie from '@fastify/cookie'
 import fp from 'fastify-plugin'
 import { sessionConf } from '../utils/keycloak.js'
-import { closeConnections } from '../connect.js'
+import { getConnection, closeConnections } from '../connect.js'
 import organizationRouter from './organization.js'
-import { allOrganizations } from 'shared'
-import prisma from '../prisma.js'
+import prisma from '../__mocks__/prisma.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
-vi.mock('../prisma.js')
+vi.mock('../prisma')
 
 const app = fastify({ logger: false })
   .register(fastifyCookie)
@@ -31,20 +30,20 @@ const mockSession = (app) => {
 }
 
 const requestor = {}
-const setRequestorId = (id) => {
-  requestor.id = id
-}
+
+// const setRequestorId = (id) => {
+//   requestor.id = id
+// }
 
 const getRequestor = () => {
   return requestor
 }
 
 describe.skip('Organizations routes', () => {
-  let Organization
 
   beforeAll(async () => {
     mockSession(app)
-    // await getConnection()
+    await getConnection()
   })
 
   afterAll(async () => {
@@ -58,39 +57,29 @@ describe.skip('Organizations routes', () => {
   // GET
   describe('getActiveOrganizationsController', () => {
     it('Should retrieve active organizations', async () => {
-      const randomDbSetup = createRandomDbSetup({})
-      const organizations = allOrganizations.map(org => getRandomOrganization(org.name, org.label))
-      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
-      prisma.organization.findMany.mockResolvedValue(organizations)
+      const mockPublishedPost = getRandomOrganization()
 
-      // 1. getOrganizations
-      // Organization.$queueResult(organizations)
-      setRequestorId(owner.id)
+      prisma.organization.findMany.mockResolvedValueOnce([{ ...mockPublishedPost, active: false }])
 
       const response = await app.inject()
         .get('/')
         .end()
 
-      // expect(prisma.organization.findMany.mock.calls).toHaveLength(1)
+      expect(response.body).toStrictEqual(JSON.stringify([mockPublishedPost]))
       expect(response.statusCode).toEqual(200)
-      expect(response.json()).toEqual(organizations)
     })
 
     it('Should return an error if retrieve organizations failed', async () => {
-      const randomDbSetup = createRandomDbSetup({})
-      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
-      prisma.organization.findMany.mockRejectedValue(new Error('Impossible de trouver l’organisation'))
-
-      // 1. getOrganizations
-      // Organization.$queueFailure()
-      setRequestorId(owner.id)
+      prisma.organization.findMany.mockImplementation(() => {
+        throw new Error('Echec de la récupération des organisations')
+      })
 
       const response = await app.inject()
         .get('/')
         .end()
 
+      expect(response.body).toBe('Echec de la récupération des organisations')
       expect(response.statusCode).toEqual(404)
-      expect(response.body).toEqual('Echec de la récupération des organisations')
     })
   })
 })

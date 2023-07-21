@@ -23,8 +23,8 @@
     "prepare": "husky install",
     "test": "turbo run test --concurrency 1",
     "test:cov": "turbo run test:cov --concurrency 1",
-    "test:ct": "pnpm --filter shared run build; pnpm --filter client run cypress:open-ct",
-    "test:ct-ci": "pnpm --filter shared run build; pnpm --filter client run cypress:run-ct",
+    "test:ct": "pnpm --filter shared run build; pnpm --filter test-utils run build; pnpm --filter client run cypress:open-ct",
+    "test:ct-ci": "pnpm --filter shared run build; pnpm --filter test-utils run build; pnpm --filter client run cypress:run-ct",
     "test:e2e": "npm run kube:dev:build; npm run kube:e2e",
     "test:e2e-ci": "npm run kube:prod:build; npm run kube:e2e-ci"
   },

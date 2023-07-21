@@ -10,13 +10,15 @@ import {
   getRandomCluster,
 } from './random-utils.js'
 import { repeatFn } from './func-utils.js'
+import { User } from './types.js'
 
 export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = allEnv, organizationName = allOrganizations[0].name }) => {
   // Create organization
-  const organization = getRandomOrganization(...Object.values(allOrganizations.find(org => org.name === organizationName)))
+  const allOrganizationsWhereName = allOrganizations.find(org => org.name === organizationName)
+  const organization = getRandomOrganization(allOrganizationsWhereName?.name, allOrganizationsWhereName?.label)
 
   // Create users
-  const users = repeatFn(nbUsers)(getRandomUser)
+  const users: User[] = repeatFn(nbUsers)(getRandomUser)
 
   // Create project
   const project = getRandomProject(organization.id)
@@ -29,7 +31,7 @@ export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = allEnv, or
   project.roles[0].role = projectRoles[0]
 
   // Create repositories
-  project.repositories = repeatFn(nbRepo, project.id)(getRandomRepo)
+  project.repositories = repeatFn(nbRepo)(getRandomRepo, project.id)
 
   // Create environment
   project.environments = envs.map(env => getRandomEnv(env, project.id))
