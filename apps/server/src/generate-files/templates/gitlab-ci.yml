@@ -103,4 +103,4 @@ docker-build:
     IMAGE_NAME: {{projectName}}
   stage: docker-build
   extends:
-    - .kaniko:build
+    - .kaniko:build-push
