@@ -4,6 +4,7 @@ import { useProjectStore } from '@/stores/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import router from '@/router/index.js'
 import DsoSelectedProject from './DsoSelectedProject.vue'
+import { sortArrByObjKeyAsc } from 'shared'
 
 const projectStore = useProjectStore()
 const snackbarStore = useSnackbarStore()
@@ -12,8 +13,7 @@ const projects = computed(() => projectStore?.projects)
 const projectList = ref([])
 
 const setProjectList = (projects) => {
-  projectList.value = projects
-    ?.sort((a, b) => (a.name >= b.name ? 1 : -1))
+  projectList.value = sortArrByObjKeyAsc(projects, 'name')
     ?.map(project => ({
       id: project.id,
       title: project.name,

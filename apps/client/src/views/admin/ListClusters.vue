@@ -4,6 +4,7 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useAdminClusterStore } from '@/stores/admin/cluster.js'
 import { useAdminProjectStore } from '@/stores/admin/project.js'
 import ClusterForm from '@/components/ClusterForm.vue'
+import { sortArrByObjKeyAsc } from 'shared'
 
 const adminClusterStore = useAdminClusterStore()
 const adminProjectStore = useAdminProjectStore()
@@ -17,8 +18,7 @@ const isUpdatingCluster = ref(false)
 const isNewClusterForm = ref(false)
 
 const setClusterTiles = (clusters) => {
-  clusterList.value = clusters
-    ?.sort((a, b) => (a.label >= b.label ? 1 : -1))
+  clusterList.value = sortArrByObjKeyAsc(clusters, 'label')
     ?.map(cluster => ({
       id: cluster.id,
       title: cluster.label,

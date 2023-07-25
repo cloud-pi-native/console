@@ -1,5 +1,5 @@
 import { getModel } from '../../support/func.js'
-import { statusDict, formatDate } from 'shared'
+import { statusDict, formatDate, sortArrByObjKeyAsc } from 'shared'
 
 describe('Administration projects', () => {
   const organizations = getModel('organization')
@@ -12,8 +12,7 @@ describe('Administration projects', () => {
     cy.visit('/admin/projects')
     cy.url().should('contain', '/admin/projects')
     cy.wait('@getAllProjects', { timeout: 10000 }).its('response').then(response => {
-      projects = response?.body
-        ?.sort((a, b) => a.name >= b.name ? 1 : -1)
+      projects = sortArrByObjKeyAsc(response.body, 'name')
         ?.map(project => ({
           organization: organizations.find(organization => organization.id === project.organizationId).label,
           name: project.name,
