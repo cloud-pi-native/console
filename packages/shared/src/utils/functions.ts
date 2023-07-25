@@ -16,3 +16,9 @@ export const calcProjectNameMaxLength = (organizationName) => {
 }
 
 export const getUniqueListBy = (arr, key) => [...new Map(arr.map(item => [item[key], item])).values()]
+
+interface Keyable {
+    [key: string]: any
+}
+
+export const sortArrByObjKeyAsc = (arr: Array<Keyable>, key: string) => arr.toSorted((a: object, b: object) => a[key] >= b[key] ? 1 : -1)

@@ -2,7 +2,7 @@
 import { onMounted, ref, computed } from 'vue'
 import { useAdminProjectStore } from '@/stores/admin/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { formatDate, statusDict } from 'shared'
+import { formatDate, statusDict, sortArrByObjKeyAsc } from 'shared'
 import { useAdminOrganizationStore } from '@/stores/admin/organization.js'
 
 const adminProjectStore = useAdminProjectStore()
@@ -27,8 +27,7 @@ const headers = [
 const rows = ref([])
 
 const setRows = () => {
-  rows.value = allProjects.value
-    ?.sort((a, b) => a.name >= b.name ? 1 : -1)
+  rows.value = sortArrByObjKeyAsc(allProjects.value, 'name')
     ?.map(({ organizationId, name, description, roles, status, locked, createdAt, updatedAt }) => ([
       organizations.value?.find(org => org.id === organizationId).label,
       name,

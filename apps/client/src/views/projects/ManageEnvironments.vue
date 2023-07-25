@@ -4,7 +4,7 @@ import DsoSelectedProject from './DsoSelectedProject.vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 import EnvironmentForm from '@/components/EnvironmentForm.vue'
-import { allEnv, projectIsLockedInfo } from 'shared'
+import { allEnv, projectIsLockedInfo, sortArrByObjKeyAsc } from 'shared'
 import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
@@ -23,8 +23,7 @@ const isNewEnvironmentForm = ref(false)
 const isUpdatingEnvironment = ref(false)
 
 const setEnvironmentsTiles = (project) => {
-  environments.value = project?.environments
-    ?.sort((a, b) => (a.name >= b.name ? 1 : -1))
+  environments.value = sortArrByObjKeyAsc(project?.environments, 'name')
     ?.map(environment => ({
       id: environment.id,
       title: environment.name,

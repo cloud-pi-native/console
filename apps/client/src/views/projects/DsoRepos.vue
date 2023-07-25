@@ -6,7 +6,7 @@ import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import RepoForm from '@/components/RepoForm.vue'
 import DsoSelectedProject from './DsoSelectedProject.vue'
-import { projectIsLockedInfo } from 'shared'
+import { projectIsLockedInfo, sortArrByObjKeyAsc } from 'shared'
 
 const projectStore = useProjectStore()
 const projectRepositoryStore = useProjectRepositoryStore()
@@ -26,8 +26,7 @@ const isNewRepoForm = ref(false)
 const isUpsertingRepo = ref(false)
 
 const setReposTiles = (project) => {
-  repos.value = project?.repositories
-    ?.sort((a, b) => (a.internalRepoName >= b.internalRepoName ? 1 : -1))
+  repos.value = sortArrByObjKeyAsc(project?.repositories, 'internalRepoName')
     ?.map(repo => ({
       id: repo.internalRepoName,
       title: repo.internalRepoName,

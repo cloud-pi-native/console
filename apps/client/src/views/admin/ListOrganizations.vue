@@ -8,6 +8,7 @@ import {
   isValid,
   instanciateSchema,
   organizationSchema,
+  sortArrByObjKeyAsc,
 } from 'shared'
 import { getRandomId } from '@gouvminint/vue-dsfr'
 
@@ -36,8 +37,7 @@ const isUpdatingOrganization = ref(null)
 const isOrgAlreadyTaken = computed(() => allOrganizations.value.find(org => org.name === newOrg.value.name))
 
 const setRows = () => {
-  rows.value = allOrganizations.value
-    ?.sort((a, b) => a.name >= b.name ? 1 : -1)
+  rows.value = sortArrByObjKeyAsc(allOrganizations.value, 'name')
     ?.map(({ label, name, source, active, createdAt, updatedAt }) => ([
       {
         component: 'input',
