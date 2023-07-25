@@ -112,30 +112,6 @@ export const initializeEnvironmentController = async (req: EnhancedFastifyReques
     const projectOwners = filterOwners(project.roles)
     env = await initializeEnvironment({ projectId: project.id, name: data.name, projectOwners })
 
-    addReqLogs({
-      req,
-      description: 'Environnement et permissions créés avec succès',
-      extras: {
-        environmentId: env.id,
-        projectId,
-      },
-    })
-    sendCreated(res, env)
-  } catch (error) {
-    const description = `Echec de la création de l'environnement : ${error.message}`
-    addReqLogs({
-      req,
-      description,
-      extras: {
-        projectId,
-      },
-      error,
-    })
-    return sendBadRequest(res, description)
-  }
-
-  // Process api call to external service
-  try {
     const registryHost = harborUrl.split('//')[1].split('/')[0]
     const environmentName = env.name
     const projectName = project.name
@@ -158,30 +134,34 @@ export const initializeEnvironmentController = async (req: EnhancedFastifyReques
     // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
     await addLogs('Create Environment', results, userId)
     if (results.failed) throw new Error('Echec services à la création de l\'environnement')
-    await updateEnvironmentCreated(env.id)
-    await unlockProjectIfNotFailed(projectId)
-    // TODO
+
     const clusters = await getClustersByIds(newClustersId)
     await addClustersToEnvironmentBusiness(clusters, env.name, env.id, project.name, project.organization.name, userId, owner)
+
+    await updateEnvironmentCreated(env.id)
+    await unlockProjectIfNotFailed(projectId)
+
     addReqLogs({
       req,
-      description: 'Environnement créé avec succès par les plugins',
+      description: 'Environnement et permissions créés avec succès',
       extras: {
         environmentId: env.id,
         projectId,
       },
     })
+    sendCreated(res, env)
   } catch (error) {
     await updateEnvironmentFailed(env.id)
+    const description = `Echec de la création de l'environnement : ${error.message}`
     addReqLogs({
       req,
-      description: 'Echec de création de l\'environnement par les plugins',
+      description,
       extras: {
-        environmentId: env.id,
         projectId,
       },
       error,
     })
+    return sendBadRequest(res, description)
   }
 }
 
@@ -228,8 +208,7 @@ export const updateEnvironmentController = async (req: EnhancedFastifyRequest<Up
       },
     })
   } catch (error) {
-    await updateEnvironmentCreated(env.id)
-    await unlockProjectIfNotFailed(env.project.id)
+    await updateEnvironmentFailed(env.id)
     const description = 'Echec de la mise à jour de l\'environnement'
     addReqLogs({
       req,
@@ -260,29 +239,6 @@ export const deleteEnvironmentController = async (req: EnhancedFastifyRequest<De
     await updateEnvironmentDeleting(environmentId)
     await lockProject(projectId)
 
-    addReqLogs({
-      req,
-      description: 'Statut de l\'environnement mis à jour avec succès, environnement en cours de suppression',
-      extras: {
-        environmentId,
-        projectId,
-      },
-    })
-  } catch (error) {
-    const description = 'Echec de la suppression de l\'environnement'
-    addReqLogs({
-      req,
-      description,
-      extras: {
-        environmentId,
-        projectId,
-      },
-      error,
-    })
-    return sendBadRequest(res, description)
-  }
-
-  try {
     const environmentName = env.name
     const projectName = env.project.name
     const organizationName = env.project.organization.name
@@ -309,7 +265,7 @@ export const deleteEnvironmentController = async (req: EnhancedFastifyRequest<De
     await unlockProjectIfNotFailed(projectId)
     addReqLogs({
       req,
-      description: 'Environnement supprimé avec succès',
+      description: 'Statut de l\'environnement mis à jour avec succès, environnement en cours de suppression',
       extras: {
         environmentId,
         projectId,
@@ -317,14 +273,16 @@ export const deleteEnvironmentController = async (req: EnhancedFastifyRequest<De
     })
   } catch (error) {
     await updateEnvironmentFailed(environmentId)
+    const description = 'Echec de la suppression de l\'environnement'
     addReqLogs({
       req,
-      description: 'Erreur de la suppression de l\'environnement',
+      description,
       extras: {
         environmentId,
         projectId,
       },
       error,
     })
+    return sendBadRequest(res, description)
   }
 }

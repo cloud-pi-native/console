@@ -18,6 +18,10 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  disabled: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const selectValue = ref(undefined)
@@ -54,6 +58,7 @@ const removeElementFromArray = (elementToDelete) => {
     <select
       id="multi-select"
       name="multi-select"
+      :disabled="props.disabled"
       :value="selectValue"
       class="fr-select"
       @change="addElementToArray($event.target.value)"
@@ -89,6 +94,7 @@ const removeElementFromArray = (elementToDelete) => {
       :label="element"
       :data-testid="`${element}-tag`"
       tag-name="button"
+      :disabled="props.disabled"
       class="fr-tag--dismiss"
       @click="(event) => removeElementFromArray(event.target.outerText)"
     />

@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { repoSchema, schemaValidator, isValid, instanciateSchema } from 'shared'
 import CIForm from './CIForm.vue'
+import LoadingCt from './LoadingCt.vue'
 
 const props = defineProps({
   repo: {
@@ -20,6 +21,10 @@ const props = defineProps({
     default: false,
   },
   isProjectLocked: {
+    type: Boolean,
+    default: false,
+  },
+  isUpsertingRepo: {
     type: Boolean,
     default: false,
   },
@@ -56,6 +61,7 @@ const cancel = (event) => {
 <template>
   <div
     data-testid="repo-form"
+    class="relative"
   >
     <h1
       class="fr-h1 fr-mt-2w"
@@ -235,5 +241,9 @@ const cancel = (event) => {
         </div>
       </div>
     </div>
+    <LoadingCt
+      :show-loader="props.isUpsertingRepo"
+      description="Opérations en cours sur le dépôt"
+    />
   </div>
 </template>

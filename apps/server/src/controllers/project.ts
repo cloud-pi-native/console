@@ -161,26 +161,6 @@ export const createProjectController = async (req: EnhancedFastifyRequest<Create
 
     project = await initializeProject({ ...data, ownerId: requestor.id })
 
-    addReqLogs({
-      req,
-      description: 'Projet créé avec succès',
-      extras: {
-        projectId: project.id,
-      },
-    })
-    sendCreated(res, project)
-  } catch (error) {
-    const description = 'Echec de la création du projet'
-    addReqLogs({
-      req,
-      description,
-      error,
-    })
-    return sendBadRequest(res, description)
-  }
-
-  // Process api call to external service
-  try {
     const projectData: CreateProjectExecArgs = {
       project: project.name,
       description: project.description === '' ? null : project.description,
@@ -218,16 +198,24 @@ export const createProjectController = async (req: EnhancedFastifyRequest<Create
         projectId: project.id,
       },
     })
-  } catch (error) {
-    await updateProjectFailed(project.id)
+
     addReqLogs({
       req,
-      description: 'Echec de la création du projet par les plugins',
+      description: 'Projet créé avec succès',
       extras: {
         projectId: project.id,
       },
+    })
+    sendCreated(res, project)
+  } catch (error) {
+    await updateProjectFailed(project.id)
+    const description = 'Echec de la création du projet'
+    addReqLogs({
+      req,
+      description,
       error,
     })
+    return sendBadRequest(res, description)
   }
 }
 
@@ -251,29 +239,6 @@ export const updateProjectController = async (req, res) => {
     await updateProject(projectId, data)
     project = await getProjectInfos(projectId)
 
-    addReqLogs({
-      req,
-      description: 'Projet mis à jour avec succès',
-      extras: {
-        projectId,
-      },
-    })
-    sendOk(res, projectId)
-  } catch (error) {
-    const description = 'Echec de la mise à jour du projet'
-    addReqLogs({
-      req,
-      description,
-      extras: {
-        projectId,
-      },
-      error,
-    })
-    return sendBadRequest(res, description)
-  }
-
-  // Process api call to external service
-  try {
     const projectData: UpdateProjectExecArgs = {
       project: project.name,
       description: project.description === '' ? null : project.description,
@@ -287,23 +252,27 @@ export const updateProjectController = async (req, res) => {
 
     await updateProjectCreated(project.id)
     await unlockProjectIfNotFailed(project.id)
+
     addReqLogs({
       req,
-      description: 'Projet mis à jour avec succès par les plugins',
+      description: 'Projet mis à jour avec succès',
       extras: {
-        projectId: project.id,
+        projectId,
       },
     })
+    sendOk(res, projectId)
   } catch (error) {
     await updateProjectFailed(project.id)
+    const description = 'Echec de la mise à jour du projet'
     addReqLogs({
       req,
-      description: 'Echec de la mise à jour du projet par les plugins',
+      description,
       extras: {
-        projectId: project.id,
+        projectId,
       },
       error,
     })
+    return sendBadRequest(res, description)
   }
 }
 
@@ -322,28 +291,6 @@ export const archiveProjectController = async (req, res) => {
 
     await lockProject(projectId)
 
-    addReqLogs({
-      req,
-      description: 'Projet en cours de suppression',
-      extras: {
-        projectId,
-      },
-    })
-    sendOk(res, projectId)
-  } catch (error) {
-    const description = 'Echec de la suppression du projet'
-    addReqLogs({
-      req,
-      description,
-      extras: {
-        projectId,
-      },
-      error,
-    })
-    return sendForbidden(res, description)
-  }
-
-  try {
     const gitlabBaseURL = `${gitlabUrl}/${projectRootDir}/${project.organization.name}/${project.name}/`
     const repositories = project.repositories.map(repo => ({
       // TODO harmonize keys in plugins should be internalUrl
@@ -402,20 +349,23 @@ export const archiveProjectController = async (req, res) => {
 
     addReqLogs({
       req,
-      description: 'Projet supprimé avec succès par les plugins',
+      description: 'Projet en cours de suppression',
       extras: {
-        projectId: project.id,
+        projectId,
       },
     })
+    sendOk(res, projectId)
   } catch (error) {
     await updateProjectFailed(project.id)
+    const description = 'Echec de la suppression du projet'
     addReqLogs({
       req,
-      description: 'Echec de la suppression du projet par les plugins',
+      description,
       extras: {
         projectId,
       },
       error,
     })
+    return sendForbidden(res, description)
   }
 }

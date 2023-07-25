@@ -97,7 +97,7 @@ export const statusDict = {
       type: 'error',
       icon: 'ri-close-line',
       wording: 'opérations échouées',
-      color: 'var(--warning-425-625)',
+      color: 'var(--error-425-625)',
     },
     initializing: {
       testId: 'initializing-badge',

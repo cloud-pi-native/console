@@ -23,6 +23,7 @@ const isOwner = computed(() => userStore.userProfile.id === owner.value.id)
 const repos = ref([])
 const selectedRepo = ref({})
 const isNewRepoForm = ref(false)
+const isUpsertingRepo = ref(false)
 
 const setReposTiles = (project) => {
   repos.value = project?.repositories
@@ -55,16 +56,20 @@ const cancel = () => {
 }
 
 const saveRepo = async (repo) => {
-  cancel()
+  isUpsertingRepo.value = true
   try {
     if (repo.id) return await projectRepositoryStore.updateRepo(repo)
     await projectRepositoryStore.addRepoToProject(repo)
   } catch (error) {
     snackbarStore.setMessage(error?.message, 'error')
   }
+  setReposTiles(project.value)
+  cancel()
+  isUpsertingRepo.value = false
 }
 
 const deleteRepo = async (repoId) => {
+  isUpsertingRepo.value = true
   try {
     await projectRepositoryStore.deleteRepo(repoId)
   } catch (error) {
@@ -72,6 +77,7 @@ const deleteRepo = async (repoId) => {
   }
   setReposTiles(project.value)
   selectedRepo.value = {}
+  isUpsertingRepo.value = false
 }
 
 onMounted(() => {
@@ -106,6 +112,7 @@ watch(project, () => {
   >
     <RepoForm
       :is-project-locked="project?.locked"
+      :is-upserting-repo="isUpsertingRepo"
       @save="(repo) => saveRepo(repo)"
       @cancel="cancel()"
     />
@@ -157,6 +164,7 @@ watch(project, () => {
       </div>
       <RepoForm
         v-if="Object.keys(selectedRepo).length && selectedRepo.internalRepoName === repo.id && selectedRepo.status !== 'deleting'"
+        :is-upserting-repo="isUpsertingRepo"
         :is-project-locked="project?.locked"
         :is-owner="isOwner"
         :repo="selectedRepo"

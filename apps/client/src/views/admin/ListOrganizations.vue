@@ -110,7 +110,7 @@ const createOrganization = async () => {
   newOrg.value = instanciateSchema({ schema: organizationSchema }, undefined)
 }
 
-const preUpdateOrganization = async ({ name, key, data }) => {
+const preUpdateOrganization = ({ name, key, data }) => {
   isUpdatingOrganization.value = {
     name,
     key,
