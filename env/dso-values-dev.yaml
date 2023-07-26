@@ -3,6 +3,8 @@ env: development
 server:
   container:
     image: dso-console/server:dev
+    env:
+      CI: "false"
     extraVolumes:
       - name: dev-workspace
         path: /app/apps/server/src
@@ -14,6 +16,8 @@ server:
 client:
   container:
     image: dso-console/client:dev
+    env:
+      CI: "false"
     extraVolumes:
       - name: dev-workspace
         path: /app/apps/client/src

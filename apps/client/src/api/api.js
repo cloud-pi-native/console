@@ -66,6 +66,11 @@ export const deleteRepo = async (projectId, repoId) => {
 }
 
 // Users
+export const getMatchingUsers = async (projectId, letters) => {
+  const response = await apiClient.get(`/projects/${projectId}/users/match?letters=${letters}`)
+  return response.data
+}
+
 export const addUser = async (projectId, data) => {
   const response = await apiClient.post(`/projects/${projectId}/users`, data)
   return response.data

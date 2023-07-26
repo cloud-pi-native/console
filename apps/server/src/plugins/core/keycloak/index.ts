@@ -1,4 +1,4 @@
-import { addMembers } from './permission.js'
+import { addMembers, removeMembers } from './permission.js'
 import { getProjectGroupByName } from './group.js'
 import { getkcClient } from './client.js'
 
@@ -14,6 +14,58 @@ export const createKeycloakProjectGroup = async (payload) => {
       })
     }
     await addMembers(kcClient, [owner.id], group.id)
+
+    return {
+      status: { result: 'OK' },
+      group,
+    }
+  } catch (error) {
+    return {
+      status: {
+        result: 'KO',
+        message: error.message,
+      },
+      error: JSON.stringify(error),
+    }
+  }
+}
+
+export const addKeycloakUserToProjectGroup = async (payload) => {
+  const kcClient = await getkcClient()
+  try {
+    const { organization, project, user } = payload.args
+    const projectName = `${organization}-${project}`
+    const group = await getProjectGroupByName(kcClient, projectName)
+    if (!group) {
+      throw new Error(`Le groupe keycloak ${projectName} n'existe pas`)
+    }
+    await addMembers(kcClient, [user.id], group.id)
+
+    return {
+      status: { result: 'OK' },
+      group,
+    }
+  } catch (error) {
+    return {
+      status: {
+        result: 'KO',
+        message: error.message,
+      },
+      error: JSON.stringify(error),
+    }
+  }
+}
+
+export const removeKeycloakUserFromProjectGroup = async (payload) => {
+  const kcClient = await getkcClient()
+  try {
+    const { organization, project, user } = payload.args
+    const projectName = `${organization}-${project}`
+    const group = await getProjectGroupByName(kcClient, projectName)
+    if (!group) {
+      throw new Error(`Le groupe keycloak ${projectName} n'existe pas`)
+    }
+    await removeMembers(kcClient, [user.id], group.id)
 
     return {
       status: { result: 'OK' },
