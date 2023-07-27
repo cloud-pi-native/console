@@ -39,8 +39,6 @@ export const deleteEnv = async (payload: HookPayload<DeleteEnvironmentExecArgs>)
     const { project, organization, environment, repositories } = payload.args
 
     const appProjectName = `${organization}-${project}-${environment}-project`
-    // const destNamespace = `${organization}-${project}-${environment}`
-    // await deleteApplicationProject({ appProjectName, destNamespace })
     await deleteApplicationProject({ appProjectName })
     for (const repo of repositories) {
       const applicationName = `${organization}-${project}-${repo.internalRepoName}-${environment}`

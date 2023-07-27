@@ -33,14 +33,14 @@ apiClient.interceptors.request.use(async function addAuthHeader (config) {
 apiClient.interceptors.response.use(function (response) {
   return response
 }, function (error) {
-  const response = error.response
+  const response = error?.response
   const isUnauthorized = response?.status === 401
   if (isUnauthorized) {
     const customError = new Error('Echec d\'identification')
     customError.httpCode = 401
     return Promise.reject(customError)
   }
-  if (error.code === 'ECONNABORTED' || error.message?.includes('Network Error') || (response?.status >= 500 && !error.message)) {
+  if (error?.code === 'ECONNABORTED' || error?.message?.includes('Network Error') || (response?.status >= 500 && !error?.message)) {
     const customError = new Error('Echec de réponse du serveur')
     return Promise.reject(customError)
   }
@@ -49,7 +49,7 @@ apiClient.interceptors.response.use(function (response) {
     router.push('/login')
     return Promise.reject(customError)
   }
-  const apiError = new Error(response?.data || response?.statusText || error.message)
+  const apiError = new Error(response?.data || response?.statusText || error?.message || error)
   apiError.statusCode = response?.status
   return Promise.reject(apiError)
 })

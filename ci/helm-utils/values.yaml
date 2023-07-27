@@ -1,0 +1,42 @@
+integration: false
+
+kubeconfig:
+
+keycloak:
+  enabled: true
+  container:
+    image: quay.io/keycloak/keycloak:19.0.2
+    port: 8080
+    command:
+      - /opt/keycloak/bin/kc.sh
+    args:
+      - start-dev
+      - --import-realm
+  service:
+    name: keycloak-service
+    port: 80
+    type: ClusterIP
+  ingress:
+    host: keycloak.local
+
+pgadmin:
+  enabled: true
+  container:
+    image: docker.io/dpage/pgadmin4:7.4
+    port: 80
+  service:
+    name: pgadmin-service
+    port: 80
+    type: ClusterIP
+  ingress:
+    host: pgadmin.local
+
+postgres:
+  enabled: false
+  container:
+    image: docker.io/postgres:15.3
+    port: 5432
+  service:
+    name: postgres-service
+    port: 5432
+    type: ClusterIP

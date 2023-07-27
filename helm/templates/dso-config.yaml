@@ -1,0 +1,14 @@
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: dso-config
+data:
+  PROJECTS_ROOT_DIR: {{ .Values.config.projectsRootDir }}
+  ARGOCD_URL: https://argo-cd.readthedocs.io
+  GITLAB_URL: https://gitlab.com
+  HARBOR_URL: https://goharbor.io
+  KEYCLOAK_URL: https://www.keycloak.org/
+  NEXUS_URL: https://sonatype.com/products/nexus-repository
+  SONARQUBE_URL: https://www.sonarqube.org
+  VAULT_URL: https://www.vaultproject.io

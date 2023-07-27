@@ -10,11 +10,16 @@ i=1
 
 # Get project directories
 PROJECT_DIR="$(git rev-parse --show-toplevel)"
-ENV_FILE="$PROJECT_DIR/env/.env"
 COMPOSE_FILE="$PROJECT_DIR/docker/docker-compose.dev.yml"
 
 # Default
 RESET_DB="false"
+
+# DB Values
+DB_NAME=dso-console-db
+DB_PORT=5432
+DB_USER=admin
+DB_PASS=admin
 
 # Declare script helper
 TEXT_HELPER="\nThis script aims to perform prisma migrations.
@@ -48,18 +53,15 @@ do
   esac
 done
 
-# export database env variables
-export $(grep -v '^#' $ENV_FILE | xargs)
 
 # Override database variables for local access
 export DB_URL="postgresql://${DB_USER}:${DB_PASS}@localhost:${DB_PORT}/${DB_NAME}?schema=public"
 
 # Start database container
-docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" up -d postgres
+docker compose -f "$COMPOSE_FILE" up -d postgres
 
-until [ "$(docker inspect -f {{.State.Running}} dso-console_postgres)" == "true" ]; do
-  sleep 3
-done
+sleep 3
+
 
 # Start prisma migration
 if [ "$RESET_DB" = "true" ]; then
@@ -68,4 +70,4 @@ fi
 pnpm --filter server run db:migrate
 
 # Stop database container
-docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" down -v
+docker compose -f "$COMPOSE_FILE" down -v

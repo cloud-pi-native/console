@@ -13,7 +13,7 @@ services:
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
-    command: start-dev --import-realm $KEYCLOAK_CODESPACE
+    command: start-dev --import-realm
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
       interval: 5s
@@ -27,9 +27,9 @@ services:
     image: docker.io/postgres:15.3
     container_name: dso-console_postgres
     environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: dso-console-db
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
     ports:
       - 5432:5432
     volumes:
@@ -74,9 +74,6 @@ services:
       - /app/node_modules/
       - ../apps/server:/app/apps/server
       - /app/apps/server/node_modules/
-    env_file:
-      - ../env/.env
-      - ../apps/server/env/.env
     environment:
       NODE_ENV: development
     networks:
@@ -98,9 +95,6 @@ services:
       - /app/node_modules/
       - ../apps/client:/app/apps/client
       - /app/apps/client/node_modules/
-    env_file:
-      - ../env/.env
-      - ../apps/client/env/.env
     environment:
       NODE_ENV: development
     networks:

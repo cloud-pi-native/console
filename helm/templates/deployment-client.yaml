@@ -1,0 +1,52 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ .Release.Name }}-client
+  name: {{ .Release.Name }}-client
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-client
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-client
+    spec:
+      {{- if and .Values.imageCredentials.username .Values.imageCredentials.password }}
+      imagePullSecrets:
+      - name: {{ .Release.Name }}-pullsecret
+      {{- end }}
+      containers:
+      - name: {{ .Release.Name }}-client
+        envFrom:
+        - configMapRef:
+            name: {{ .Release.Name }}-client-cm
+        imagePullPolicy: {{ .Values.client.container.imagePullPolicy }}
+        image: {{ .Values.client.container.image }}
+        ports:
+        - containerPort: {{ .Values.client.container.port }}
+        resources: {{- toYaml .Values.client.container.resources | nindent 10 }}
+        volumeMounts:
+        - name: env
+          mountPath: /env/.env
+        {{- range $volumeMount := .Values.client.container.extraVolumeMounts }}
+        - name: {{ $volumeMount.name }}
+          mountPath: {{ $volumeMount.mountPath }}
+        {{- end }}
+      volumes:
+      - name: env
+        configMap:
+          name: {{ $.Release.Name }}-client-cm
+      {{- range $volume := .Values.client.container.extraVolumes }}
+      - name: {{ $volume.name }}
+        {{- if eq $volume.type "hostPath" }}
+        hostPath:
+          path: {{ $volume.path }}
+        {{- end }}
+        {{- if eq $volume.type "configMap" }}
+        configMap:
+          name: {{ $volume.name }}
+        {{- end }}
+      {{- end }}

@@ -13,7 +13,13 @@ import { allOrganizations } from 'shared'
 
 describe('RepoForm.vue', () => {
   it('Should mount a new repo RepoForm', () => {
-    cy.intercept('POST', '/api/v1/ci-files', { 'gitlab-ci-dso': 'my generated file' })
+    cy.intercept('POST', '/api/v1/ci-files', {
+      'gitlab-ci-dso': 'gitlab-ci file',
+      node: 'node file',
+      vault: 'vault file',
+      rules: 'rules file',
+      docker: 'docker file',
+    })
     cy.intercept('GET', '/api/v1/organizations', allOrganizations)
     const pinia = createPinia()
 
@@ -74,7 +80,7 @@ describe('RepoForm.vue', () => {
       .getByDataTestid('copy-gitlab-ci-dso-ContentBtn').click()
       .window().then((win) => {
         win.navigator.clipboard.readText().then((text) => {
-          expect(text).to.eq('my generated file')
+          expect(text).to.eq('gitlab-ci file')
         })
       })
     cy.get('.fr-download__link').first()
@@ -88,6 +94,7 @@ describe('RepoForm.vue', () => {
         expect(text).to.match(/YAML – \d* bytes/)
       })
   })
+
   it('Should mount an update repo RepoForm', () => {
     cy.intercept('POST', '/api/v1/ci-files', { 'gitlab-ci-dso': 'my generated file' })
     cy.intercept('GET', '/api/v1/organizations', allOrganizations)

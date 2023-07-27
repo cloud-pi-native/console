@@ -1,0 +1,44 @@
+server:
+  container:
+    env:
+      INTEGRATION: "true"
+      KEYCLOAK_REDIRECT_URI: http://dso.local
+      KEYCLOAK_PROTOCOL: https
+      KEYCLOAK_CLIENT_ID:
+      KEYCLOAK_CLIENT_SECRET:
+      KEYCLOAK_DOMAIN:
+      KEYCLOAK_REALM:
+      ARGO_NAMESPACE:
+      ARGOCD_URL:
+      GITLAB_TOKEN:
+      GITLAB_URL:
+      HARBOR_ADMIN:
+      HARBOR_ADMIN_PASSWORD:
+      HARBOR_URL:
+      KEYCLOAK_ADMIN:
+      KEYCLOAK_ADMIN_PASSWORD:
+      KEYCLOAK_URL:
+      NEXUS_ADMIN:
+      NEXUS_ADMIN_PASSWORD:
+      NEXUS_URL:
+      PROJECTS_ROOT_DIR:
+      SONAR_API_TOKEN:
+      SONARQUBE_URL:
+      VAULT_TOKEN:
+      VAULT_URL:
+    extraVolumes:
+      - name: kubeconfig-integ-cm
+        type: configMap
+    extraVolumeMounts:
+      - name: kubeconfig-integ-cm
+        mountPath: /home/node/.kube/config
+
+client:
+  container:
+    env:
+      INTEGRATION: "true"
+      KEYCLOAK_REDIRECT_URI: http://dso.local
+      KEYCLOAK_PROTOCOL: https
+      KEYCLOAK_CLIENT_ID:
+      KEYCLOAK_REALM:
+      KEYCLOAK_DOMAIN:
