@@ -219,7 +219,7 @@ Cypress.Commands.add('deleteEnvironment', (project, environment) => {
     .type(environment)
     .getByDataTestid('deleteEnvironmentBtn').should('be.enabled')
     .click()
-  cy.wait('@deleteEnvironment').its('response.statusCode').should('eq', 200)
+  cy.wait('@deleteEnvironment').its('response.statusCode').should('eq', 204)
   cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
   cy.getByDataTestid(`environmentTile-${environment}`).should('not.exist')
 })

@@ -14,7 +14,7 @@ import {
   deleteEnvironment as deleteEnvironmentQuery,
 } from '@/queries/index.js'
 import { hooks } from '@/plugins/index.js'
-import { BadRequestError, DsoError, ForbiddenError, NotFoundError } from '@/utils/errors.js'
+import { BadRequestError, ForbiddenError, NotFoundError } from '@/utils/errors.js'
 import type { Cluster, Environment, Kubeconfig, Organization, Project, Role, User } from '@prisma/client'
 import {
   type AsyncReturnType,
@@ -23,9 +23,9 @@ import {
   unlockProjectIfNotFailed,
   filterOwners,
   hasPermissionInEnvironment,
-} from '@/utils/controller'
+} from '@/utils/controller.js'
 import { projectIsLockedInfo, ProjectRoles } from 'shared'
-import { gitlabUrl, harborUrl, projectRootDir } from '@/utils/env'
+import { gitlabUrl, harborUrl, projectRootDir } from '@/utils/env.js'
 
 // Fetch infos
 export const getEnvironmentInfosAndClusters = async (environmentId: string) => {
