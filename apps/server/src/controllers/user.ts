@@ -10,7 +10,7 @@ import { updateUserProjectRole } from '../queries/roles-queries.js'
 import { deletePermission } from '../queries/permission-queries.js'
 import { sendOk, sendCreated, sendNotFound, sendBadRequest, sendForbidden } from '../utils/response.js'
 import { addReqLogs } from '../utils/logger.js'
-import { AsyncReturnType, hasNotMinimumRoleInProject, unlockProjectIfNotFailed } from '../utils/controller.js'
+import { AsyncReturnType, checkInsufficientRoleInProject, unlockProjectIfNotFailed } from '../utils/controller.js'
 import { projectIsLockedInfo } from 'shared'
 
 // GET
@@ -20,8 +20,8 @@ export const getProjectUsersController = async (req, res) => {
 
   try {
     const users = await getProjectUsers(projectId)
-    const isNotProjectMember = hasNotMinimumRoleInProject(userId, { userList: users })
-    if (isNotProjectMember) throw new Error('Vous n\'êtes pas membre du projet')
+    const insufficientRoleErrorMessage = checkInsufficientRoleInProject(userId, { userList: users })
+    if (insufficientRoleErrorMessage) throw new Error(insufficientRoleErrorMessage)
 
     addReqLogs({
       req,
@@ -57,14 +57,14 @@ export const addUserToProjectController = async (req, res) => {
     if (!project) return sendBadRequest(res, 'Projet introuvable')
     if (project.locked) return sendForbidden(res, projectIsLockedInfo)
 
-    const isNotProjectOwner = hasNotMinimumRoleInProject(userId, { roles: project.roles, minRole: 'owner' })
-    if (isNotProjectOwner) return sendBadRequest(res, 'Vous n\'êtes pas souscripteur du projet')
+    const insufficientRoleErrorMessageRequestor = checkInsufficientRoleInProject(userId, { roles: project.roles, minRole: 'owner' })
+    if (insufficientRoleErrorMessageRequestor) return sendBadRequest(res, insufficientRoleErrorMessageRequestor)
 
     const userToAdd = await getUserByEmail(data.email)
     if (!userToAdd) return sendBadRequest(res, 'Utilisateur introuvable')
 
-    const isNotProjectMember = hasNotMinimumRoleInProject(userToAdd.id, { roles: project.roles, minRole: 'user' })
-    if (!isNotProjectMember) return sendBadRequest(res, 'L\'utilisateur est déjà membre du projet')
+    const insufficientRoleErrorMessageUserToAdd = checkInsufficientRoleInProject(userToAdd.id, { roles: project.roles, minRole: 'user' })
+    if (!insufficientRoleErrorMessageUserToAdd) return sendBadRequest(res, 'L\'utilisateur est déjà membre du projet')
 
     await lockProject(projectId)
     await addUserToProject({ project, user: userToAdd, role: 'user' })
@@ -154,8 +154,8 @@ export const updateUserProjectRoleController = async (req, res) => {
     if (!project) throw new Error('Projet introuvable')
     if (project.locked) return sendForbidden(res, projectIsLockedInfo)
 
-    const isNotProjectOwner = hasNotMinimumRoleInProject(userId, { roles: project.roles, minRole: 'owner' })
-    if (isNotProjectOwner) throw new Error('Vous n\'êtes pas souscripteur du projet')
+    const insufficientRoleErrorMessage = checkInsufficientRoleInProject(userId, { roles: project.roles, minRole: 'owner' })
+    if (insufficientRoleErrorMessage) throw new Error(insufficientRoleErrorMessage)
 
     if (project.roles.filter(userProject => userProject.userId === userId).length === 0) throw new Error('L\'utilisateur ne fait pas partie du projet')
 
@@ -197,11 +197,11 @@ export const removeUserFromProjectController = async (req, res) => {
     project = await getProjectInfos(projectId)
     if (!project) throw new Error('Projet introuvable')
 
-    const isNotProjectOwner = hasNotMinimumRoleInProject(userId, { roles: project.roles, minRole: 'owner' })
-    if (isNotProjectOwner) throw new Error('Vous n\'êtes pas souscripteur du projet')
+    const insufficientRoleErrorMessageRequestor = checkInsufficientRoleInProject(userId, { roles: project.roles, minRole: 'owner' })
+    if (insufficientRoleErrorMessageRequestor) throw new Error(insufficientRoleErrorMessageRequestor)
 
-    const isNotProjectMember = hasNotMinimumRoleInProject(userToRemoveId, { roles: project.roles })
-    if (isNotProjectMember) throw new Error('L\'utilisateur n\'est pas membre du projet')
+    const insufficientRoleErrorMessageUserToRemove = checkInsufficientRoleInProject(userToRemoveId, { roles: project.roles })
+    if (insufficientRoleErrorMessageUserToRemove) throw new Error('L\'utilisateur n\'est pas membre du projet')
 
     await lockProject(projectId)
     project.environments.forEach(async env => {

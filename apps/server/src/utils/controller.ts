@@ -52,34 +52,37 @@ export const getErrorMessage = (...fns: ErrorMessagePredicate[]) => {
 }
 
 /**
- * Returns boolean if userId has minimum role in project
- * @param {number} userId User Id to check role
+ * Vérifie si un utilisateur a le rôle suffisant dans un projet
+ * @param {number} userId Id du user dont il faut vérifier le rôle
  * @param {Object} SearchOptions
- * @param {string} SearchOptions.usersList - List of users, check ids match against userId
- * @param {string} SearchOptions.projectUsers - List of users and role got by project query including Users, will be filtered if minrole given. Will be assigned to usersList
- * @param {string} SearchOptions.minRole - Optionnal, Minimum role to have, 'user' or 'owner', undefined value equal 'user'
- * @return {boolean} is userId has sufficent permissions
+ * @param {string} SearchOptions.usersList - Liste d'utilisateurs, check si ids incluent userId
+ * @param {string?} SearchOptions.minRole - Optionnel, role minimum requis, 'user' ou  'owner'. Si `undefined` : 'user'
+ * @return {string} message d'erreur si rôle insuffisant / absence de rôle, sinon chaîne vide
  */
-export const hasNotMinimumRoleInProject = (userId: User['id'], { userList, roles, minRole }: SearchOptions) => {
+export const checkInsufficientRoleInProject = (userId: User['id'], { userList, roles, minRole }: SearchOptions) => {
   if (roles) {
     // if minRole is 'owner' filter and assign to userList
     if (minRole === 'owner') userList = roles.filter(userProject => userProject.role === 'owner').map(({ userId }) => ({ id: userId }))
     // else assign to userList
     else userList = roles.map(({ userId }) => ({ id: userId }))
   }
-  return userList.some(user => user.id === userId) ? '' : 'Vous n’avez pas les permissions suffisantes dans le projet'
+  return userList.some(user => user.id === userId)
+    ? ''
+    : 'Vous n’avez pas les permissions suffisantes dans le projet'
 }
 
-export const isClusterUnavailable = (clustersId: string[], authorizedClusters: { id: string }[]) => clustersId
+export const checkClusterUnavailable = (clustersId: string[], authorizedClusters: { id: string }[]) => clustersId
   .some(clusterId => !authorizedClusters
     .some(cluster => cluster.id === clusterId))
   ? 'Ce cluster n\'est pas disponible sur pour ce projet'
   : ''
 
-export const hasPermissionInEnvironment = async (userId: User['id'], permissions: Permission[], minLevel: Permission['level']) => {
+export const checkInsufficientPermissionInEnvironment = (userId: User['id'], permissions: Permission[], minLevel: Permission['level']) => {
   // get project by id, assign result to projectUsers
   const { level } = permissions.find(perm => perm.userId === userId)
-  return level > minLevel ? 'Vous n\'avez pas les droits suffisants pour requeter cet environnment' : ''
+  return level >= minLevel
+    ? ''
+    : 'Vous n\'avez pas les droits suffisants pour requêter cet environnment'
 }
 
 export const filterOwners = (roles: Role[]) => {

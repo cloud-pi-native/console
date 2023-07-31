@@ -18,11 +18,11 @@ import { BadRequestError, ForbiddenError, NotFoundError } from '@/utils/errors.j
 import type { Cluster, Environment, Kubeconfig, Organization, Project, Role, User } from '@prisma/client'
 import {
   type AsyncReturnType,
-  hasNotMinimumRoleInProject,
-  isClusterUnavailable,
+  checkInsufficientRoleInProject,
+  checkClusterUnavailable,
   unlockProjectIfNotFailed,
   filterOwners,
-  hasPermissionInEnvironment,
+  checkInsufficientPermissionInEnvironment,
 } from '@/utils/controller.js'
 import { projectIsLockedInfo, ProjectRoles } from 'shared'
 import { gitlabUrl, harborUrl, projectRootDir } from '@/utils/env.js'
@@ -50,12 +50,12 @@ type CheckEnvironmentParam = {
   envName: string,
 }
 
-export const checkGetEnvironment = (
+export const checkGetEnvironment = async (
   env: AsyncReturnType<typeof getEnvironmentInfos>,
   userId: string,
 ) => {
   const errorMessage = checkAuthorization(env.project, userId, 'user') ||
-    hasPermissionInEnvironment(userId, env.permissions, 3)
+    checkInsufficientPermissionInEnvironment(userId, env.permissions, 0)
   if (errorMessage) throw new ForbiddenError(errorMessage, { description: '', extras: { userId, projectId: env.project.id } })
 }
 
@@ -67,7 +67,7 @@ export const checkCreateEnvironment = ({
   envName,
 }: CheckEnvironmentParam) => {
   const errorMessage = checkAuthorization(project, userId, 'owner') ||
-    isClusterUnavailable(newClustersId, authorizedClusters) ||
+    checkClusterUnavailable(newClustersId, authorizedClusters) ||
     checkExistingEnvironment(project.environments, envName)
   if (errorMessage) throw new Error(errorMessage)
 }
@@ -82,7 +82,7 @@ export const checkUpdateEnvironment = (
 
   if (errorAuthorizationMessage) throw new BadRequestError(errorAuthorizationMessage, { description: '', extras: { userId, projectId: project.id } })
 
-  const errorContentMessage = isClusterUnavailable(newClustersId, authorizedClusters)
+  const errorContentMessage = checkClusterUnavailable(newClustersId, authorizedClusters)
   if (errorContentMessage) throw new BadRequestError(errorContentMessage, { description: '', extras: { userId, projectId: project.id } })
 }
 
@@ -101,7 +101,7 @@ export const checkAuthorization = (
 ) => {
   return project.locked
     ? projectIsLockedInfo
-    : hasNotMinimumRoleInProject(userId, { minRole, roles: project.roles })
+    : checkInsufficientRoleInProject(userId, { minRole, roles: project.roles })
 }
 
 export const checkExistingEnvironment = (environments: Environment[], envName: string) => {

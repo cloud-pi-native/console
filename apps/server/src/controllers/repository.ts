@@ -17,7 +17,7 @@ import { addReqLogs } from '../utils/logger.js'
 import { sendOk, sendCreated, sendUnprocessableContent, sendNotFound, sendBadRequest, sendForbidden } from '../utils/response.js'
 import { addLogs } from '../queries/log-queries.js'
 import { gitlabUrl, projectRootDir } from '../utils/env.js'
-import { AsyncReturnType, hasNotMinimumRoleInProject, unlockProjectIfNotFailed } from '../utils/controller.js'
+import { AsyncReturnType, checkInsufficientRoleInProject, unlockProjectIfNotFailed } from '../utils/controller.js'
 import { hooks } from '../plugins/index.js'
 import { projectIsLockedInfo } from 'shared'
 import { EnhancedFastifyRequest } from '@/types/index.js'
@@ -31,8 +31,8 @@ export const getRepositoryByIdController = async (req, res) => {
 
   try {
     const project = await getProjectInfosAndRepos(projectId)
-    const isNotProjectMember = hasNotMinimumRoleInProject(userId, { roles: project.roles })
-    if (isNotProjectMember) throw new Error('Vous n\'êtes pas membre du projet')
+    const insufficientRoleErrorMessage = checkInsufficientRoleInProject(userId, { roles: project.roles })
+    if (insufficientRoleErrorMessage) throw new Error(insufficientRoleErrorMessage)
 
     const repository = project.repositories.find(repo => repo.id === repositoryId)
     if (!repository) throw new Error('Dépôt introuvable')
@@ -67,8 +67,8 @@ export const getProjectRepositoriesController = async (req, res) => {
   try {
     const { roles, repositories } = await getProjectInfosAndRepos(projectId)
 
-    const isNotProjectMember = hasNotMinimumRoleInProject(userId, { roles })
-    if (isNotProjectMember) throw new Error('Vous n\'êtes pas membre du projet')
+    const insufficientRoleErrorMessage = checkInsufficientRoleInProject(userId, { roles })
+    if (insufficientRoleErrorMessage) throw new Error(insufficientRoleErrorMessage)
 
     addReqLogs({
       req,
@@ -128,8 +128,8 @@ export const createRepositoryController = async (req: EnhancedFastifyRequest<Cre
     if (!project) throw new Error('Le projet n\'existe pas')
     if (project.locked) return sendForbidden(res, projectIsLockedInfo)
 
-    const isNotProjectOwner = hasNotMinimumRoleInProject(user.id, { roles: project.roles, minRole: 'owner' })
-    if (isNotProjectOwner) return sendForbidden(res, 'Vous n\'êtes pas membre du projet')
+    const insufficientRoleErrorMessage = checkInsufficientRoleInProject(user.id, { roles: project.roles, minRole: 'owner' })
+    if (insufficientRoleErrorMessage) return sendForbidden(res, insufficientRoleErrorMessage)
 
     if (project.repositories.find(repo => repo.internalRepoName === data.internalRepoName)) return sendBadRequest(res, `Le nom du dépôt interne ${data.internalRepoName} existe déjà en base pour ce projet`)
 
@@ -210,8 +210,8 @@ export const updateRepositoryController = async (req: EnhancedFastifyRequest<Upd
     repo = await getRepositoryById(repositoryId)
     if (!repo) throw new Error('Dépôt introuvable')
 
-    const isNotProjectMember = hasNotMinimumRoleInProject(userId, { roles: project.roles })
-    if (isNotProjectMember) throw new Error('Vous n\'êtes pas membre du projet')
+    const insufficientRoleErrorMessage = checkInsufficientRoleInProject(userId, { roles: project.roles })
+    if (insufficientRoleErrorMessage) throw new Error(insufficientRoleErrorMessage)
 
     await lockProject(projectId)
 
@@ -275,8 +275,8 @@ export const deleteRepositoryController = async (req: EnhancedFastifyRequest<Del
   try {
     project = await getProjectInfos(projectId)
 
-    const isNotProjectOwner = hasNotMinimumRoleInProject(userId, { roles: project.roles, minRole: 'owner' })
-    if (isNotProjectOwner) return sendForbidden(res, 'Vous n\'êtes pas souscripteur du projet')
+    const insufficientRoleErrorMessage = checkInsufficientRoleInProject(userId, { roles: project.roles, minRole: 'owner' })
+    if (insufficientRoleErrorMessage) return sendForbidden(res, insufficientRoleErrorMessage)
 
     repo = await getRepositoryById(repositoryId)
     if (!repo) return sendNotFound(res, 'Dépôt introuvable')

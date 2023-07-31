@@ -5,13 +5,8 @@ import { addReqLogs } from '../utils/logger.js'
 import {
   sendOk,
   sendCreated,
-  sendNotFound,
   sendNoContent,
 } from '../utils/response.js'
-import {
-  hasPermissionInEnvironment,
-  hasNotMinimumRoleInProject,
-} from '../utils/controller.js'
 import {
   type DeleteEnvironmentDto,
   type InitializeEnvironmentDto,
@@ -27,14 +22,14 @@ import {
   createEnvironment,
   updateEnvironment,
   deleteEnvironment,
-  checkAuthorization,
   checkGetEnvironment,
 } from '@/business/environment.js'
 import {
   getProjectInfosAndClusters,
 } from '@/business/project.js'
-import { exclude } from '@/utils/queries-tools.js'
+
 // GET
+// TODO #541 : ce controller n'est pas utilisé
 export const getEnvironmentByIdController = async (req, res) => {
   const environmentId = req.params?.environmentId
   const userId = req.session?.user?.id
@@ -44,7 +39,7 @@ export const getEnvironmentByIdController = async (req, res) => {
   const env = await getEnvironmentInfos(environmentId)
 
   // appel business 2 : check pré-requis
-  checkGetEnvironment(env, userId)
+  await checkGetEnvironment(env, userId)
 
   // Nettoyage des clés
   delete env.project.roles
@@ -125,7 +120,7 @@ export const updateEnvironmentController = async (req: EnhancedFastifyRequest<Up
   await updateEnvironment(env, userId, newClustersId)
   addReqLogs({
     req,
-    description: 'Environnement mise à jour',
+    description: 'Environnement mis à jour avec succès',
     extras: {
       environmentId,
       projectId: env.project.id,

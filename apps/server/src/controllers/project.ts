@@ -39,7 +39,7 @@ import {
 import { getServices } from '../utils/services.js'
 import { hooks } from '../plugins/index.js'
 import { gitlabUrl, projectRootDir } from '../utils/env.js'
-import { type AsyncReturnType, hasNotMinimumRoleInProject, unlockProjectIfNotFailed } from '../utils/controller.js'
+import { type AsyncReturnType, checkInsufficientRoleInProject, unlockProjectIfNotFailed } from '../utils/controller.js'
 import type { PluginResult } from '@/plugins/hooks/hook.js'
 import type { CreateProjectExecArgs, UpdateProjectExecArgs } from '@/plugins/hooks/project.js'
 import type { EnhancedFastifyRequest } from '@/types/index.js'
@@ -138,13 +138,14 @@ export const createProjectController = async (req: EnhancedFastifyRequest<Create
         .join('; ')
       sendUnprocessableContent(res, reasons)
 
+      const description = 'Echec de la validation des prérequis de création du projet par les services externes'
       addReqLogs({
         req,
-        description: 'Echec de la validation des prérequis de création du projet par les services externes',
+        description,
         extras: {
           reasons,
         },
-        error: new Error('Failed to validate project creation'),
+        error: new Error(description),
       })
       addLogs('Create Project Validation', { reasons }, owner.id)
       return
@@ -156,8 +157,7 @@ export const createProjectController = async (req: EnhancedFastifyRequest<Create
 
     const projectSearch = await getProjectByNames({ name: data.name, organizationName: organization.name })
     if (projectSearch.length > 0) {
-      if (projectSearch[0].status === 'archived') return sendBadRequest(res, `"${data.name}" est archivé et n'est plus disponible`)
-      throw new BadRequestError(`"${data.name}" existe déjà`, { extras: {}, description: `"${data.name}" existe déjà` })
+      throw new BadRequestError(`"${data.name}" existe déjà`, { extras: {}, description: `Le projet "${data.name}" existe déjà` })
     }
 
     project = await initializeProject({ ...data, ownerId: requestor.id })
@@ -235,8 +235,8 @@ export const updateProjectController = async (req, res) => {
     if (!project) throw new Error('Projet introuvable')
     if (project.locked) return sendForbidden(res, projectIsLockedInfo)
 
-    const isNotProjectOwner = hasNotMinimumRoleInProject(userId, { roles: project.roles, minRole: 'owner' })
-    if (isNotProjectOwner) throw new Error('Vous n\'êtes pas membre du projet')
+    const insufficientRoleErrorMessage = checkInsufficientRoleInProject(userId, { roles: project.roles, minRole: 'owner' })
+    if (insufficientRoleErrorMessage) throw new Error(insufficientRoleErrorMessage)
 
     await updateProject(projectId, data)
     project = await getProjectInfos(projectId)
@@ -288,8 +288,8 @@ export const archiveProjectController = async (req, res) => {
     project = await getProjectInfosAndRepos(projectId)
     if (!project) throw new Error('Projet introuvable')
 
-    const isNotProjectOwner = hasNotMinimumRoleInProject(userId, { roles: project.roles, minRole: 'owner' })
-    if (isNotProjectOwner) throw new Error('Vous n\'êtes pas souscripteur du projet')
+    const insufficientRoleErrorMessage = checkInsufficientRoleInProject(userId, { roles: project.roles, minRole: 'owner' })
+    if (insufficientRoleErrorMessage) throw new Error(insufficientRoleErrorMessage)
 
     await lockProject(projectId)
 
