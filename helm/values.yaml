@@ -10,6 +10,8 @@ imageCredentials:
 globalEnv:
 
 config:
+  # whether or not helm should create the dso-config configmap
+  create: false
   projectsRootDir: forge
 
 ingress:

@@ -1,3 +1,4 @@
+{{- if .Values.config.create -}}
 ---
 kind: ConfigMap
 apiVersion: v1
@@ -12,3 +13,4 @@ data:
   NEXUS_URL: https://sonatype.com/products/nexus-repository
   SONARQUBE_URL: https://www.sonarqube.org
   VAULT_URL: https://www.vaultproject.io
+{{- end -}}
