@@ -1,5 +1,21 @@
 # Changelog
 
+## [5.3.0](https://github.com/cloud-pi-native/console/compare/v5.2.1...v5.3.0) (2023-08-01)
+
+
+### Features
+
+* :alien: synch controllers with plugin calls ([d0a271d](https://github.com/cloud-pi-native/console/commit/d0a271d188840d8682b6abe412ee8da4db7992b1))
+* :children_crossing: add confirm box for updating an organization ([5c3cd20](https://github.com/cloud-pi-native/console/commit/5c3cd207221a22ed5d93bdf8638b23c9849897f6))
+* :sparkles: lock and unlock projects according to their org status ([3b9444a](https://github.com/cloud-pi-native/console/commit/3b9444aeaa2fab76461946e9a4d00e8afe4a62f1))
+
+
+### Bug Fixes
+
+* :bug: create appropriate folders for server image ([3027fef](https://github.com/cloud-pi-native/console/commit/3027fef08ebc8a58e2e705645febaf40af7314f5))
+* :bug: fix missing extensions ([4cd4b21](https://github.com/cloud-pi-native/console/commit/4cd4b212e88d30b447d5674cf157ce71862fe14a))
+* :bug: pin pnpm version in dockerfiles ([b494a2f](https://github.com/cloud-pi-native/console/commit/b494a2f0d190e3da81f9765dded76187333e61af))
+
 ## [5.2.1](https://github.com/cloud-pi-native/console/compare/v5.2.0...v5.2.1) (2023-07-21)
 
 
