@@ -1,6 +1,7 @@
 env: production
 
 config:
+  create: true
   projectsRootDir: forge-mi/projects
 
 ingress:
