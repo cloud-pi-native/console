@@ -71,7 +71,6 @@ client:
     port: 8080
     imagePullPolicy: Always
     env: #hashmap of custom env
-      CI: "true"
     resources:
       requests:
         memory: "128Mi"
