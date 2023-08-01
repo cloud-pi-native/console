@@ -13,7 +13,7 @@
     "db:migrate": "prisma migrate dev --schema ./src/prisma/schema.prisma --name dso",
     "db:reset": "prisma migrate reset --schema ./src/prisma/schema.prisma",
     "db:wrapper": "sh ./migrate-db.sh",
-    "dev": "npm run db:migrate ; nodemon --exec 'vite-node src/server.ts'",
+    "dev": "npm run db:migrate && nodemon --exec 'vite-node src/server.ts'",
     "format": "eslint . --ext .js,.cjs,.ts --fix",
     "lint": "eslint . --ext .js,.cjs,.ts",
     "start": "npm run db:deploy && node dist/server.js",

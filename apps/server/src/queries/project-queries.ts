@@ -100,6 +100,7 @@ const baseProjectIncludes = {
   organization: true,
   roles: true,
   environments: true,
+  clusters: true,
 }
 export const getProjectInfos = async (id: Project['id']) => {
   return prisma.project.findUnique({
