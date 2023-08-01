@@ -1,7 +1,7 @@
 # Base stage
 FROM docker.io/node:18.16.1-bullseye-slim AS base
 
-RUN npm install --location=global pnpm
+RUN npm install --location=global pnpm@8.6.10
 WORKDIR /app
 RUN chown node:root /app
 COPY --chown=node:root pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
