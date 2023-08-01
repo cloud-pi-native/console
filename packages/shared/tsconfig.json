@@ -6,6 +6,9 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "declaration": true,
-    "declarationDir": "./types"
+    "declarationDir": "./types",
+    "lib": [
+      "ES2020"
+    ]
   }
 }

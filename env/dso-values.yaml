@@ -1,0 +1,48 @@
+env: production
+
+config:
+  create: true
+  projectsRootDir: forge-mi/projects
+
+ingress:
+  ingressClassName: traefik
+  hosts:
+    - dso.local
+  tls:
+    enabled: false
+
+server:
+  container:
+    image: dso-console/server:prod
+    imagePullPolicy: Never
+    dataConfigmap: server-data-cm
+    env:
+      CI: "true"
+      DEV_SETUP: "true"
+      KEYCLOAK_DOMAIN: keycloak-service
+
+client:
+  container:
+    image: dso-console/client:prod
+    imagePullPolicy: Never
+    env:
+      CI: "true"
+
+postgres:
+  pvc:
+    size: 1Gi
+
+keycloak:
+  domain: keycloak.local
+  realm: cloud-pi-native
+  admin: admin
+  adminPassword: admin
+  protocol: http
+  clientIdFrontend: console-frontend
+  clientIdBackend: console-backend
+  clientSecretBackend: client-secret-backend
+  redirectUri: http://dso.local # http://dso-client-service
+  sessionSecret: a-very-strong-secret-with-more-than-32-char
+  service:
+    hostname: keycloak-service
+    port: 80

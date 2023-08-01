@@ -1,6 +1,5 @@
 import {
   getRepositoryById,
-  getProjectRepositories,
   initializeRepository,
   updateRepositoryCreated,
   updateRepositoryFailed,
@@ -9,27 +8,18 @@ import {
   deleteRepository,
 } from '../queries/repository-queries.js'
 import {
-  getProjectById,
   getProjectInfos,
   getProjectInfosAndRepos,
   lockProject,
 } from '../queries/project-queries.js'
-import {
-  getRoleByUserIdAndProjectId,
-} from '../queries/roles-queries.js'
-import {
-  getEnvironmentsByProjectId,
-} from '../queries/environment-queries.js'
 import { exclude, filterObjectByKeys } from '../utils/queries-tools.js'
 import { addReqLogs } from '../utils/logger.js'
 import { sendOk, sendCreated, sendUnprocessableContent, sendNotFound, sendBadRequest, sendForbidden } from '../utils/response.js'
-import { getOrganizationById } from '../queries/organization-queries.js'
 import { addLogs } from '../queries/log-queries.js'
 import { gitlabUrl, projectRootDir } from '../utils/env.js'
-import { AsyncReturnType, hasRoleInProject, unlockProjectIfNotFailed } from '../utils/controller.js'
+import { AsyncReturnType, checkInsufficientRoleInProject, unlockProjectIfNotFailed } from '../utils/controller.js'
 import { hooks } from '../plugins/index.js'
 import { projectIsLockedInfo } from 'shared'
-import { CreateRepositoryExecArgs } from '@/plugins/hooks/repository.js'
 import { EnhancedFastifyRequest } from '@/types/index.js'
 import { CreateRepositoryDto, DeleteRepositoryDto, UpdateRepositoryDto } from 'shared/src/resources/repository/dto.js'
 
@@ -41,8 +31,8 @@ export const getRepositoryByIdController = async (req, res) => {
 
   try {
     const project = await getProjectInfosAndRepos(projectId)
-    const isProjectMember = await hasRoleInProject(userId, { roles: project.roles })
-    if (!isProjectMember) throw new Error('Vous n\'êtes pas membre du projet')
+    const insufficientRoleErrorMessage = checkInsufficientRoleInProject(userId, { roles: project.roles })
+    if (insufficientRoleErrorMessage) throw new Error(insufficientRoleErrorMessage)
 
     const repository = project.repositories.find(repo => repo.id === repositoryId)
     if (!repository) throw new Error('Dépôt introuvable')
@@ -77,8 +67,8 @@ export const getProjectRepositoriesController = async (req, res) => {
   try {
     const { roles, repositories } = await getProjectInfosAndRepos(projectId)
 
-    const isProjectMember = await hasRoleInProject(userId, { roles })
-    if (!isProjectMember) throw new Error('Vous n\'êtes pas membre du projet')
+    const insufficientRoleErrorMessage = checkInsufficientRoleInProject(userId, { roles })
+    if (insufficientRoleErrorMessage) throw new Error(insufficientRoleErrorMessage)
 
     addReqLogs({
       req,
@@ -116,9 +106,9 @@ export const createRepositoryController = async (req: EnhancedFastifyRequest<Cre
     const isValid = await hooks.createProject.validate({ owner: exclude(user, ['groups']) })
     if (isValid?.failed) {
       const reasons = Object.values(isValid)
-      // @ts-ignore
+        // @ts-ignore
         .filter(({ status }) => status?.result === 'KO')
-      // @ts-ignore
+        // @ts-ignore
         .map(({ status }) => status?.message)
         .join('; ')
       sendUnprocessableContent(res, reasons)
@@ -138,37 +128,14 @@ export const createRepositoryController = async (req: EnhancedFastifyRequest<Cre
     if (!project) throw new Error('Le projet n\'existe pas')
     if (project.locked) return sendForbidden(res, projectIsLockedInfo)
 
-    const isProjectOwner = await hasRoleInProject(user.id, { roles: project.roles, minRole: 'owner' })
-    if (!isProjectOwner) return sendForbidden(res, 'Vous n\'êtes pas membre du projet')
+    const insufficientRoleErrorMessage = checkInsufficientRoleInProject(user.id, { roles: project.roles, minRole: 'owner' })
+    if (insufficientRoleErrorMessage) return sendForbidden(res, insufficientRoleErrorMessage)
 
     if (project.repositories.find(repo => repo.internalRepoName === data.internalRepoName)) return sendBadRequest(res, `Le nom du dépôt interne ${data.internalRepoName} existe déjà en base pour ce projet`)
 
     await lockProject(projectId)
     repo = await initializeRepository(data)
 
-    addReqLogs({
-      req,
-      description: 'Dépôt créé avec succès',
-      extras: {
-        projectId,
-        repositoryId: repo.id,
-      },
-    })
-    sendCreated(res, repo)
-  } catch (error) {
-    const description = 'Echec de la création du dépôt'
-    addReqLogs({
-      req,
-      description,
-      extras: {
-        projectId,
-      },
-      error,
-    })
-    return sendBadRequest(res, description)
-  }
-
-  try {
     const environmentNames = project.environments?.map(env => env.name)
 
     const repoData = {
@@ -189,25 +156,28 @@ export const createRepositoryController = async (req: EnhancedFastifyRequest<Cre
     if (results.failed) throw new Error('Echec des services lors de la création du dépôt')
     await updateRepositoryCreated(repo.id)
     await unlockProjectIfNotFailed(projectId)
+
     addReqLogs({
       req,
-      description: 'Dépôt créé avec succès par les plugins',
+      description: 'Dépôt créé avec succès',
       extras: {
         projectId,
         repositoryId: repo.id,
       },
     })
+    sendCreated(res, repo)
   } catch (error) {
     await updateRepositoryFailed(repo.id)
-    const description = 'Echec de la création du dépôt par les plugins'
+    const description = 'Echec de la création du dépôt'
     addReqLogs({
       req,
       description,
       extras: {
         projectId,
-        repositoryId: repo.id,
       },
+      error,
     })
+    return sendBadRequest(res, description)
   }
 }
 
@@ -240,8 +210,8 @@ export const updateRepositoryController = async (req: EnhancedFastifyRequest<Upd
     repo = await getRepositoryById(repositoryId)
     if (!repo) throw new Error('Dépôt introuvable')
 
-    const isProjectMember = await hasRoleInProject(userId, { roles: project.roles })
-    if (!isProjectMember) throw new Error('Vous n\'êtes pas membre du projet')
+    const insufficientRoleErrorMessage = checkInsufficientRoleInProject(userId, { roles: project.roles })
+    if (insufficientRoleErrorMessage) throw new Error(insufficientRoleErrorMessage)
 
     await lockProject(projectId)
 
@@ -251,33 +221,7 @@ export const updateRepositoryController = async (req: EnhancedFastifyRequest<Upd
     }
 
     repo = await updateRepository(repositoryId, data)
-    const description = 'Dépôt mis à jour avec succès'
 
-    addReqLogs({
-      req,
-      description,
-      extras: {
-        projectId,
-        repositoryId,
-      },
-    })
-    sendOk(res, description)
-  } catch (error) {
-    const description = 'Echec de la mise à jour du dépôt'
-    addReqLogs({
-      req,
-      description,
-      extras: {
-        projectId,
-        repositoryId,
-      },
-      error,
-    })
-    return sendBadRequest(res, description)
-  }
-
-  // Process api call to external service
-  try {
     const repoData = {
       ...repo,
       project: project.name,
@@ -290,25 +234,33 @@ export const updateRepositoryController = async (req: EnhancedFastifyRequest<Upd
     // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
     await addLogs('Update Repository', results, userId)
     if (results.failed) throw new Error('Echec des services associés au dépôt')
+
     await updateRepositoryCreated(repo.id)
     await unlockProjectIfNotFailed(projectId)
+
+    const description = 'Dépôt mis à jour avec succès'
     addReqLogs({
       req,
-      description: 'Dépôt mis à jour avec succès par les plugins',
+      description,
       extras: {
         projectId,
-        repositoryId: repo.id,
+        repositoryId,
       },
     })
+    sendOk(res, description)
   } catch (error) {
+    await updateRepositoryFailed(repo.id)
+    const description = 'Echec de la mise à jour du dépôt'
     addReqLogs({
       req,
-      description: 'Echec de la mise à jour du dépôt par les plugins',
+      description,
       extras: {
-        repositoryId: repo.id,
+        projectId,
+        repositoryId,
       },
       error,
     })
+    return sendBadRequest(res, description)
   }
 }
 
@@ -323,8 +275,8 @@ export const deleteRepositoryController = async (req: EnhancedFastifyRequest<Del
   try {
     project = await getProjectInfos(projectId)
 
-    const isProjectOwner = await hasRoleInProject(userId, { roles: project.roles, minRole: 'owner' })
-    if (!isProjectOwner) return sendForbidden(res, 'Vous n\'êtes pas souscripteur du projet')
+    const insufficientRoleErrorMessage = checkInsufficientRoleInProject(userId, { roles: project.roles, minRole: 'owner' })
+    if (insufficientRoleErrorMessage) return sendForbidden(res, insufficientRoleErrorMessage)
 
     repo = await getRepositoryById(repositoryId)
     if (!repo) return sendNotFound(res, 'Dépôt introuvable')
@@ -332,32 +284,6 @@ export const deleteRepositoryController = async (req: EnhancedFastifyRequest<Del
     await lockProject(projectId)
     await updateRepositoryDeleting(repositoryId)
 
-    const description = 'Dépôt en cours de suppression'
-    addReqLogs({
-      req,
-      description,
-      extras: {
-        projectId,
-        repositoryId: repo.id,
-      },
-    })
-    sendOk(res, description)
-  } catch (error) {
-    const description = 'Echec de la suppression du dépôt'
-    addReqLogs({
-      req,
-      description,
-      extras: {
-        projectId,
-        repositoryId: repo.id,
-      },
-      error,
-    })
-    return sendBadRequest(res, description)
-  }
-
-  // Process api call to external service
-  try {
     const environmentNames = project.environments?.map(env => env.name)
 
     const repoData = {
@@ -376,16 +302,29 @@ export const deleteRepositoryController = async (req: EnhancedFastifyRequest<Del
     if (results.failed) throw new Error('Echec des opérations')
     await deleteRepository(repositoryId)
     await unlockProjectIfNotFailed(projectId)
-  } catch (error) {
-    await updateRepositoryFailed(repo.id)
+
+    const description = 'Dépôt en cours de suppression'
     addReqLogs({
       req,
-      description: 'Echec de la suppresion du dépôt par les plugins',
+      description,
+      extras: {
+        projectId,
+        repositoryId: repo.id,
+      },
+    })
+    sendOk(res, description)
+  } catch (error) {
+    await updateRepositoryFailed(repo.id)
+    const description = 'Echec de la suppression du dépôt'
+    addReqLogs({
+      req,
+      description,
       extras: {
         projectId,
         repositoryId: repo.id,
       },
       error,
     })
+    return sendBadRequest(res, description)
   }
 }

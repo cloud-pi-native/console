@@ -1,4 +1,3 @@
-imagePullPolicy: Always
 env: production
 
 imageCredentials:
@@ -10,32 +9,59 @@ imageCredentials:
 #hashmap of custom env applied on all pods
 globalEnv:
 
+config:
+  # whether or not helm should create the dso-config configmap
+  create: false
+  projectsRootDir: forge
+
+ingress:
+  enabled: true
+  ingressClassName:
+  hosts:
+    - server-host-to-replace
+  tls:
+    enabled: true
+    secretName:
+  annotations: {}
+  labels: {}
+
 server:
-  ingress:
-    # We strongly discourage expose api server
-    enabled: false
-    hosts: 
-      - server-host-to-replace
-    tls:
-      enabled: true
-      # optional secret used for ingress.spec.tls.secretName
-      secretName: 
-    annotations: {}
-    labels: {}
-  extra_ca:
-    name: # the configmap in namespace where certificates are stored
-    key: # the key to lookup
-  dso_config:
+  extraCa:
+    # the configmap in namespace where certificates are stored
+    name:
+    # the key to lookup
+    key:
+  dsoConfig:
     name: dso-config
   container:
-    env: #hashmap of custom env
+    #hashmap of custom env
+    env:
     image: ghcr.io/cloud-pi-native/console/server:5.2.1 # x-release-please-version
     port: 8080
-    node_env: production
-    data-configmap:
+    imagePullPolicy: Always
+    dataConfigmap:
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+    # extraVolumes:
+    #   - name: extra-vol
+    #     path: /host/path
+    #     type: hostPath
+    #   - name: extra-vol-cm
+    #     type: configMap
+    # extraVolumeMounts:
+    #   - name: extra-vol
+    #     mountPath: /volume/path
+    #   - name: extra-vol-cm
+    #     mountPath: /volume/cm/path
   service:
-    port: 80
     hostname: server
+    port: 80
+    type: ClusterIP
   # list of zips to download; basically curl url, unzip and stores it in plugins/external/<dir_name>
   plugins: []
 
@@ -43,43 +69,65 @@ client:
   container:
     image: ghcr.io/cloud-pi-native/console/client:5.2.1 # x-release-please-version
     port: 8080
+    imagePullPolicy: Always
     env: #hashmap of custom env
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+    # extraVolumes:
+    #   - name: extra-vol
+    #     path: /host/path
+    #     type: hostPath
+    #   - name: extra-vol-cm
+    #     type: configMap
+    # extraVolumeMounts:
+    #   - name: extra-vol
+    #     mountPath: /volume/path
+    #   - name: extra-vol-cm
+    #     mountPath: /volume/cm/path
   service:
-    port: 80
     hostname: client
-  ingress:
-    enabled: true
-    hosts:
-      - server-host-to-replace
-    tls:
-      enabled: true
-      # optional secret used for ingress.spec.tls.secretName
-      secretName: 
-    annotations: {}
-    labels: {}
+    port: 80
+    type: ClusterIP
 
 postgres:
   container:
-    env: #hashmap of custom env
+    image: docker.io/postgres:15.3
     port: 5432
-    db: yourdbname
-    user: youruser
-    pass: yourpass
+    imagePullPolicy: Always
+    env: #hashmap of custom env
+    db: dso-console-db
+    user: admin
+    pass: admin
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
   service:
     hostname: postgres
     port: 5432
+    type: ClusterIP
+  pvc:
+    size: 4Gi
 
 keycloak:
   domain:
   realm: yourkeycloakrealm
   admin:
-  admin_password:
-  client_id_frontend: console-frontend
-  client_id_backend: console-backend
-  client_secret_backend:
-  redirect_uri:
-  session_secret:
-
+  adminPassword:
+  protocol: https
+  clientIdFrontend: console-frontend
+  clientIdBackend: console-backend
+  clientSecretBackend:
+  redirectUri:
+  sessionSecret:
   container:
   # no deployment of keycloak just infos on how to connect other pods to it
   service:

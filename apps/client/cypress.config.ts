@@ -27,9 +27,6 @@ export default defineConfig({
     chromeWebSecurity: false,
     experimentalModifyObstructiveThirdPartyCode: false,
     experimentalWebKitSupport: false,
-    // setupNodeEvents (on) {
-    //   on('file:preprocessor', vitePreprocessor(fileURLToPath(import.meta.url)))
-    // },
     env: {
       argocdUrl,
       gitlabUrl,

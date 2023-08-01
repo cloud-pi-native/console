@@ -13,7 +13,7 @@ Cypress.Commands.add('kcLogin', (name, password = 'test') => {
       .get('input#username').type(name)
       .get('input#password').type(password)
       .get('input#kc-login').click()
-      .url().should('contain', `${Cypress.env('clientHost')}:${Cypress.env('clientPort')}`)
+      .url().should('contain', `${Cypress.env('clientHost')}`)
   }, {
     validate () {
       cy.visit('/')
@@ -169,12 +169,12 @@ Cypress.Commands.add('addEnvironment', (project, environments) => {
   cy.intercept('POST', '/api/v1/projects/*/environments').as('postEnvironment')
   cy.intercept('GET', '/api/v1/projects').as('getProjects')
 
-  cy.goToProjects()
-    .getByDataTestid(`projectTile-${project.name}`).click()
-    .getByDataTestid('menuEnvironments').click()
-    .url().should('contain', '/environments')
-
   environments.forEach((environment) => {
+    cy.goToProjects()
+      .getByDataTestid(`projectTile-${project.name}`).click()
+      .getByDataTestid('menuEnvironments').click()
+      .url().should('contain', '/environments')
+
     cy.getByDataTestid('addEnvironmentLink').click()
       .get('h1').should('contain', 'Ajouter un environnement au projet')
       .get('select#environment-name-select')
@@ -219,7 +219,7 @@ Cypress.Commands.add('deleteEnvironment', (project, environment) => {
     .type(environment)
     .getByDataTestid('deleteEnvironmentBtn').should('be.enabled')
     .click()
-  cy.wait('@deleteEnvironment').its('response.statusCode').should('eq', 200)
+  cy.wait('@deleteEnvironment').its('response.statusCode').should('eq', 204)
   cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
   cy.getByDataTestid(`environmentTile-${environment}`).should('not.exist')
 })

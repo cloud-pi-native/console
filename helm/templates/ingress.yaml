@@ -1,50 +1,51 @@
-{{ $containers := list "client" "server" }}
-{{- range $container := $containers -}}
-{{- with index $.Values $container }}
-
-{{- if .ingress.enabled -}}
-{{- $servicePort := .service.port -}}
+{{- if .Values.ingress.enabled -}}
+---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ $.Release.Name }}-{{ $container }}-ingress
+  name: {{ $.Release.Name }}-ingress
   labels:
-    app: 
     release: "{{ $.Release.Name }}"
   annotations:
-    {{- range $key, $value := .ingress.annotations }}
-      {{ $key }}: {{ $value | quote }}
+    {{- range $key, $value := .Values.ingress.annotations }}
+    {{ $key }}: {{ $value | quote }}
     {{- end }}
   labels:
-    {{- range $key, $value := .ingress.labels }}
-      {{ $key }}: {{ $value | quote }}
+    {{- range $key, $value := .labels }}
+    {{ $key }}: {{ $value | quote }}
     {{- end }}
 spec:
+  ingressClassName: {{ .Values.ingress.ingressClassName }}
   rules:
-    {{- range $host := .ingress.hosts }}
-    - host: {{ $host }}
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ $.Release.Name }}-{{ $container }}-service
-                port:
-                  number: {{ $servicePort }}
-    {{- end -}}
-{{- if .ingress.tls.enabled }}
+  {{- range $host := .Values.ingress.hosts }}
+  - host: {{ $host }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ $.Release.Name }}-client-service
+            port:
+              number: {{ $.Values.client.service.port }}
+      - path: /api/
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ $.Release.Name }}-server-service
+            port:
+              number: {{ $.Values.server.service.port }}
+  {{- end }}
+  {{- if .Values.ingress.tls.enabled }}
   tls:
-    - hosts:
-    {{- range $host := .ingress.hosts }}
-      - {{ $host }}
+  - hosts:
+    {{- range $host := .Values.ingress.hosts }}
+    - {{ $host }}
     {{- end }}
-{{- if .ingress.tls.secretName }}
-      secretName: {{ .ingress.tls.secretName }}
-{{- else }}
-      secretName: {{ $.Release.Name }}-{{ $container }}-secret
-{{- end -}}
-{{- end -}}
-{{- end -}}
-{{- end -}}
-{{- end -}}
+    {{- if .Values.ingress.tls.secretName }}
+    secretName: {{ .Values.ingress.tls.secretName }}
+    {{- else }}
+    secretName: {{ $.Release.Name }}-console-secret
+    {{- end }}
+  {{- end -}}
+{{- end }}

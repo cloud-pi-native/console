@@ -30,7 +30,14 @@ export const getEnvironmentInfos = (id: Environment['id']) => prisma.environment
           },
         },
         locked: true,
-        clusters: true,
+        clusters: {
+          select: {
+            id: true,
+            label: true,
+            privacy: true,
+            clusterResources: true,
+          },
+        },
       },
     },
     permissions: {
@@ -38,7 +45,14 @@ export const getEnvironmentInfos = (id: Environment['id']) => prisma.environment
         user: true,
       },
     },
-    clusters: true,
+    clusters: {
+      select: {
+        id: true,
+        label: true,
+        privacy: true,
+        clusterResources: true,
+      },
+    },
   },
 })
 

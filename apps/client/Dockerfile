@@ -1,7 +1,7 @@
 # Base stage
 FROM docker.io/node:18.16.1-bullseye-slim AS base
 
-RUN npm install --location=global pnpm
+RUN npm install --location=global pnpm@8.6.10
 WORKDIR /app
 RUN chown node:node /app
 COPY --chown=node:node pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
@@ -34,9 +34,7 @@ RUN pnpm --filter client run build
 FROM docker.io/bitnami/nginx:1.24.0 AS prod
 
 USER 0
-RUN apt update && apt install -y gettext-base
 COPY --chown=1001:0 --chmod=770 --from=build /app/apps/client/dist /opt/bitnami/nginx/html/
-COPY --chown=1001:0 --chmod=660 ./apps/client/nginx/default.conf.tpl /default.conf.tpl
 COPY --chown=1001:0 --chmod=660 ./apps/client/nginx/default.conf /opt/bitnami/nginx/conf/server_blocks/default.conf
 COPY --chown=1001:0 ./apps/client/nginx/entrypoint.sh /docker-entrypoint-initdb.d/load-env.sh
 USER 1001

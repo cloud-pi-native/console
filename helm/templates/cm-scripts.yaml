@@ -11,5 +11,5 @@ data:
 {{- range $i, $val := .Values.server.plugins }}
     wget {{ $val }} -O {{ $i }}.zip;
     unzip {{ $i }}.zip -d /plugins;
-{{- end -}}
-{{- end -}}
+{{- end }}
+{{- end }}

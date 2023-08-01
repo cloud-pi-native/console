@@ -8,7 +8,9 @@ import {
   isValid,
   instanciateSchema,
   organizationSchema,
+  sortArrByObjKeyAsc,
 } from 'shared'
+import { getRandomId } from '@gouvminint/vue-dsfr'
 
 const adminOrganizationStore = useAdminOrganizationStore()
 
@@ -16,6 +18,7 @@ const snackbarStore = useSnackbarStore()
 
 const allOrganizations = ref([])
 const newOrg = ref({})
+const tableKey = ref(getRandomId('table'))
 
 const title = 'Liste des organisations'
 const headers = [
@@ -29,12 +32,12 @@ const headers = [
 const rows = ref([])
 
 const isSyncingOrganizations = ref(false)
+const isUpdatingOrganization = ref(null)
 
 const isOrgAlreadyTaken = computed(() => allOrganizations.value.find(org => org.name === newOrg.value.name))
 
 const setRows = () => {
-  rows.value = allOrganizations.value
-    ?.sort((a, b) => a.name >= b.name ? 1 : -1)
+  rows.value = sortArrByObjKeyAsc(allOrganizations.value, 'name')
     ?.map(({ label, name, source, active, createdAt, updatedAt }) => ([
       {
         component: 'input',
@@ -44,7 +47,7 @@ const setRows = () => {
         onBlur: (event) => {
           const data = event.target.value
           if (data !== label) {
-            updateOrganization({ name, key: 'label', data })
+            preUpdateOrganization({ name, key: 'label', data })
           }
         },
       },
@@ -60,7 +63,7 @@ const setRows = () => {
         onClick: (event) => {
           const data = event.target.checked
           if (data !== active) {
-            updateOrganization({ name, key: 'active', data })
+            preUpdateOrganization({ name, key: 'active', data })
           }
         },
       },
@@ -107,6 +110,25 @@ const createOrganization = async () => {
   newOrg.value = instanciateSchema({ schema: organizationSchema }, undefined)
 }
 
+const preUpdateOrganization = ({ name, key, data }) => {
+  isUpdatingOrganization.value = {
+    name,
+    key,
+    data,
+  }
+}
+
+const confirmUpdateOrganization = async ({ name, key, data }) => {
+  isUpdatingOrganization.value = null
+  await updateOrganization({ name, key, data })
+}
+
+const cancelUpdateOrganization = async () => {
+  isUpdatingOrganization.value = null
+  await getAllOrganizations()
+  tableKey.value = getRandomId('table')
+}
+
 const updateOrganization = async ({ name, key, data }) => {
   const org = {
     name,
@@ -134,68 +156,112 @@ onMounted(async () => {
 </script>
 
 <template>
-  <DsfrTable
-    data-testid="tableAdministrationOrganizations"
-    :title="title"
-    :headers="headers"
-    :rows="rows"
-  />
-  <DsfrFieldset
-    legend="Ajouter une organisation"
-    hint="Assurez-vous que l'organisation que vous souhaitez créer ne se trouve pas déjà dans la liste, sous un autre nom."
-    data-testid="addOrgForm"
+  <div
+    v-if="isUpdatingOrganization"
+    class="danger-zone"
+    data-testid="confirmUpdateOrganizationZone"
   >
-    <DsfrInput
-      v-model="newOrg.label"
-      data-testid="orgLabelInput"
-      type="text"
-      label="Label de l'organisation"
-      label-visible
-      placeholder="Ministère de l'économie et des finances"
-      :is-invalid="(!!newOrg.label && isValid(organizationSchema, newOrg, 'email')) || isOrgAlreadyTaken"
-      class="fr-mb-2w"
-    />
-    <DsfrInput
-      v-model="newOrg.name"
-      data-testid="orgNameInput"
-      type="text"
-      label="Nom de l'organisation"
-      hint="Ce nom sera utilisé pour construire le namespace du projet. Il doit être en minuscule et ne pas faire plus de 10 caractères ni contenir de caractères spéciaux hormis le trait d'union '-'."
-      label-visible
-      placeholder="min-eco"
-      :is-invalid="(!!newOrg.label && isValid(organizationSchema, newOrg, 'email')) || isOrgAlreadyTaken"
-      class="fr-mb-2w"
-    />
+    <p
+      data-testid="updatedDataSummary"
+    >
+      Les données suivantes seront mises à jour pour l'organisation {{ isUpdatingOrganization.name }} :
+      <br>
+      <code>
+        {{ isUpdatingOrganization.key }} : {{ isUpdatingOrganization.data }}
+      </code>
+    </p>
     <DsfrAlert
-      v-if="isOrgAlreadyTaken"
-      data-testid="orgErrorInfo"
-      description="Une organisation portant ce nom existe déjà."
+      v-if="isUpdatingOrganization.key === 'active'
+        && isUpdatingOrganization.data === false"
+      data-testid="lockOrganizationAlert"
+      description="Les projets associés à cette organisation seront vérrouillés, jusqu'à la réactivation de l'organisation."
+      type="warning"
       small
-      type="error"
-      class="w-max fr-mb-2w"
     />
-    <DsfrButton
-      data-testid="addOrgBtn"
-      label="Ajouter l'organisation"
-      secondary
-      icon="ri-user-add-line"
-      :disabled="!newOrg.label || !newOrg.name || !isValid(organizationSchema, newOrg, 'label') || !isValid(organizationSchema, newOrg, 'name') || isOrgAlreadyTaken"
-      @click="createOrganization()"
-    />
-  </DsfrFieldset>
-
-  <DsfrFieldset
-    legend="Synchroniser les organisations"
-    hint="Cette opération mettra à jour la liste des organisations."
-    data-testid="syncOrgsForm"
+    <div
+      class="mt-8 flex gap-4"
+    >
+      <DsfrButton
+        label="Confirmer"
+        data-testid="confirmUpdateBtn"
+        primary
+        @click="confirmUpdateOrganization(isUpdatingOrganization)"
+      />
+      <DsfrButton
+        label="Annuler"
+        data-testid="cancelUpdateBtn"
+        secondary
+        @click="cancelUpdateOrganization()"
+      />
+    </div>
+  </div>
+  <div
+    v-show="!isUpdatingOrganization"
   >
-    <DsfrButton
-      data-testid="syncOrgsBtn"
-      label="Synchroniser les organisations"
-      primary
-      icon="ri-exchange-line"
-      :disabled="isSyncingOrganizations"
-      @click="syncOrganizations()"
+    <DsfrTable
+      :key="tableKey"
+      data-testid="tableAdministrationOrganizations"
+      :title="title"
+      :headers="headers"
+      :rows="rows"
     />
-  </DsfrFieldset>
+    <DsfrFieldset
+      legend="Ajouter une organisation"
+      hint="Assurez-vous que l'organisation que vous souhaitez créer ne se trouve pas déjà dans la liste, sous un autre nom."
+      data-testid="addOrgForm"
+    >
+      <DsfrInput
+        v-model="newOrg.label"
+        data-testid="orgLabelInput"
+        type="text"
+        label="Label de l'organisation"
+        label-visible
+        placeholder="Ministère de l'économie et des finances"
+        :is-invalid="(!!newOrg.label && isValid(organizationSchema, newOrg, 'email')) || isOrgAlreadyTaken"
+        class="fr-mb-2w"
+      />
+      <DsfrInput
+        v-model="newOrg.name"
+        data-testid="orgNameInput"
+        type="text"
+        label="Nom de l'organisation"
+        hint="Ce nom sera utilisé pour construire le namespace du projet. Il doit être en minuscule et ne pas faire plus de 10 caractères ni contenir de caractères spéciaux hormis le trait d'union '-'."
+        label-visible
+        placeholder="min-eco"
+        :is-invalid="(!!newOrg.label && isValid(organizationSchema, newOrg, 'email')) || isOrgAlreadyTaken"
+        class="fr-mb-2w"
+      />
+      <DsfrAlert
+        v-if="isOrgAlreadyTaken"
+        data-testid="orgErrorInfo"
+        description="Une organisation portant ce nom existe déjà."
+        small
+        type="error"
+        class="w-max fr-mb-2w"
+      />
+      <DsfrButton
+        data-testid="addOrgBtn"
+        label="Ajouter l'organisation"
+        secondary
+        icon="ri-user-add-line"
+        :disabled="!newOrg.label || !newOrg.name || !isValid(organizationSchema, newOrg, 'label') || !isValid(organizationSchema, newOrg, 'name') || isOrgAlreadyTaken"
+        @click="createOrganization()"
+      />
+    </DsfrFieldset>
+
+    <DsfrFieldset
+      legend="Synchroniser les organisations"
+      hint="Cette opération mettra à jour la liste des organisations."
+      data-testid="syncOrgsForm"
+    >
+      <DsfrButton
+        data-testid="syncOrgsBtn"
+        label="Synchroniser les organisations"
+        primary
+        icon="ri-exchange-line"
+        :disabled="isSyncingOrganizations"
+        @click="syncOrganizations()"
+      />
+    </DsfrFieldset>
+  </div>
 </template>

@@ -7,10 +7,11 @@ kind: Service
 metadata:
   name: {{ $.Release.Name }}-{{ $container }}-service
 spec:
+  type: {{ .service.type}}
   selector:
     app: {{ $.Release.Name }}-{{ $container }}
   ports:
   - port: {{ .service.port }}
     targetPort: {{ .container.port }}
-{{ end -}}
-{{ end -}}
+{{- end }}
+{{- end }}

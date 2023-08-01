@@ -54,3 +54,6 @@ build
 
 # plugins
 apps/server/src/plugins/external
+
+# integration helm values
+env/dso-values-int.yaml

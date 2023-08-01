@@ -4,7 +4,7 @@ import DsoSelectedProject from './DsoSelectedProject.vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 import EnvironmentForm from '@/components/EnvironmentForm.vue'
-import { allEnv, projectIsLockedInfo } from 'shared'
+import { allEnv, projectIsLockedInfo, sortArrByObjKeyAsc } from 'shared'
 import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
@@ -20,10 +20,10 @@ const environmentNames = computed(() => environments.value.map(env => env.title)
 const environments = ref([])
 const selectedEnvironment = ref({})
 const isNewEnvironmentForm = ref(false)
+const isUpdatingEnvironment = ref(false)
 
 const setEnvironmentsTiles = (project) => {
-  environments.value = project?.environments
-    ?.sort((a, b) => (a.name >= b.name ? 1 : -1))
+  environments.value = sortArrByObjKeyAsc(project?.environments, 'name')
     ?.map(environment => ({
       id: environment.id,
       title: environment.name,
@@ -38,7 +38,7 @@ const setSelectedEnvironment = (environment) => {
     return
   }
   selectedEnvironment.value = environment
-  selectedEnvironment.value.clustersId = selectedEnvironment.value.clusters.map(cluster => cluster.id)
+  selectedEnvironment.value.clustersId = selectedEnvironment.value.clusters?.map(cluster => cluster.id)
   cancel()
 }
 
@@ -52,34 +52,40 @@ const cancel = () => {
 }
 
 const addEnvironment = async (environment) => {
+  isUpdatingEnvironment.value = true
   if (!project.value.locked) {
-    cancel()
     try {
       await projectEnvironmentStore.addEnvironmentToProject(environment)
     } catch (error) {
       snackbarStore.setMessage(error?.message, 'error')
     }
   }
+  cancel()
+  isUpdatingEnvironment.value = false
 }
 
 const putEnvironment = async (environment) => {
+  isUpdatingEnvironment.value = true
   if (!project.value.locked) {
-    cancel()
     try {
       await projectEnvironmentStore.updateEnvironment(environment)
     } catch (error) {
       snackbarStore.setMessage(error?.message, 'error')
     }
   }
+  cancel()
+  isUpdatingEnvironment.value = false
 }
 
 const deleteEnvironment = async (environment) => {
+  isUpdatingEnvironment.value = true
   try {
     await projectEnvironmentStore.deleteEnvironment(environment.id)
   } catch (error) {
     snackbarStore.setMessage(error?.message, 'error')
   }
   setSelectedEnvironment({})
+  isUpdatingEnvironment.value = false
 }
 
 onMounted(() => {
@@ -115,6 +121,7 @@ watch(project, () => {
     <EnvironmentForm
       :environment="{projectId: project?.id}"
       :environment-names="environmentNames"
+      :is-updating-environment="isUpdatingEnvironment"
       :is-project-locked="project?.locked"
       :project-clusters="project?.clusters"
       @add-environment="(environment) => addEnvironment(environment)"
@@ -170,6 +177,7 @@ watch(project, () => {
         v-if="Object.keys(selectedEnvironment).length !== 0 && selectedEnvironment.id === environment.id"
         :environment="selectedEnvironment"
         :environment-names="environmentNames"
+        :is-updating-environment="isUpdatingEnvironment"
         :project-clusters="project?.clusters"
         :is-editable="false"
         :is-project-locked="project?.locked"

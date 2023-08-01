@@ -1,26 +1,27 @@
+---
 kind: ConfigMap
 apiVersion: v1
 metadata:
   name: {{ $.Release.Name }}-server-cm
 data:
-  {{- include "globalEnv" .Values | indent 2 }}
-  {{- include "containerEnv" .Values.server.container | indent 2 }}
+  NODE_ENV: {{ .Values.env }}
+  HOME: /home/node
+  {{- with .Values.keycloak }}
+  SESSION_SECRET: {{ .sessionSecret }}
+  KEYCLOAK_DOMAIN: {{ .domain }}
+  KEYCLOAK_REALM: {{ .realm }}
+  KEYCLOAK_PROTOCOL: {{ .protocol }}
+  KEYCLOAK_CLIENT_ID: {{ .clientIdBackend }}
+  KEYCLOAK_CLIENT_SECRET: {{ .clientSecretBackend }}
+  KEYCLOAK_REDIRECT_URI: {{ .redirectUri }}
+  {{- end }}
   SERVER_PORT: {{ .Values.server.container.port | quote }}
   {{- with .Values.postgres }}
   DB_HOST: {{ $.Release.Name }}-{{ .service.hostname }}-service
   DB_URL: postgresql://{{ .container.user }}:{{ .container.pass }}@{{ $.Release.Name }}-{{ .service.hostname }}-service:{{ .service.port }}/{{ .container.db }}?schema=public 
   {{- end }}
-  {{- with .Values.keycloak }}
-  SESSION_SECRET: {{ .session_secret }}
-  KEYCLOAK_DOMAIN: {{ .domain }}
-  KEYCLOAK_REALM: {{ .realm }}
-  KEYCLOAK_PROTOCOL: https
-  KEYCLOAK_CLIENT_ID: {{ .client_id_backend }}
-  KEYCLOAK_CLIENT_SECRET: {{ .client_secret_backend }}
-  KEYCLOAK_REDIRECT_URI: {{ .redirect_uri }}
-  {{- end }}
-  NODE_ENV: production
-  HOME: /home/node
-  {{- if .Values.server.extra_ca.name }}
+  {{- if .Values.server.extraCa.name }}
   NODE_EXTRA_CA_CERTS: /config/ca_certs
   {{- end }}
+  {{- include "globalEnv" .Values | indent 2 }}
+  {{- include "containerEnv" .Values.server.container | indent 2 }}

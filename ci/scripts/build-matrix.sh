@@ -28,7 +28,7 @@ unset MINOR_VERSION
 unset PATCH_VERSION
 
 # Declare script helper
-TEXT_HELPER="\nThis script aims to build matrix for CI/CD. It will parse the given docker-compose file and return a json object with images infos (name, tag, context, dockerfile and if it need to be build)
+TEXT_HELPER="\nThis script aims to build matrix for Github CI/CD. It will parse the given docker-compose file and return a json object with images infos (name, tag, context, dockerfile and if it need to be build)
 Following flags are available:
 
   -a    Create recursive tags, if it match 'x.x.x' it will create 'x.x' and 'x'.
@@ -55,8 +55,7 @@ print_help() {
 }
 
 # Parse options
-while getopts hacf:n:p:r:t: flag
-do
+while getopts hacf:n:p:r:t: flag; do
   case "${flag}" in
     a)
       RECURSIVE=true;;
@@ -105,7 +104,7 @@ MATRIX=$(cat "$COMPOSE_FILE" \
     --arg r "$REGISTRY" \
     --arg t "$TAGS" \
     '.services | to_entries | map({
-      image: (.value.image | split(":")[0]),
+      image: (.value.image),
       name: (.value.image | split(":")[0] | split("/")[-1]),
       build: (
         if .value.build then {
@@ -136,8 +135,8 @@ for t in $(echo $TAGS | tr "," "\n"); do
         'map(. |
           if .build != false then 
             .build.tags += [
-              ($r + $n + (.image | split("/")[-1]) + ":" + $major),
-              ($r + $n + (.image | split("/")[-1]) + ":" + $major + "." + $minor)
+              ($r + $n + (.image | split(":")[0] | split("/")[-1]) + ":" + $major),
+              ($r + $n + (.image | split(":")[0] | split("/")[-1]) + ":" + $major + "." + $minor)
             ]
           else
             .
@@ -153,7 +152,7 @@ for t in $(echo $TAGS | tr "," "\n"); do
       'map(. |
         if .build != false then
           .build.tags += [
-            ($r + $n + (.image | split("/")[-1]) + ":" + $t)
+            ($r + $n + (.image | split(":")[0] | split("/")[-1]) + ":" + $t)
           ]
         else
           .
@@ -183,7 +182,7 @@ MATRIX=$(echo "$MATRIX" \
     --arg t "$TAGS" \
     'map(. |
       if .build != false then 
-        .image = (.image  | split("/")[-1] + ":" + ($t | split(",")[0]))
+        .image = (.image | split(":")[0] | split("/")[-1] + ":" + ($t | split(",")[0]))
       else
         .
       end

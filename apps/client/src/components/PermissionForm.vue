@@ -36,6 +36,7 @@ const usersToLicence = computed(() =>
 const suggestions = computed(() => usersToLicence.value.map(user => user.email))
 
 const setPermissions = () => {
+  // TODO: (#536) change 'sort' to 'toSorted' with Nodejs v20
   permissions.value = environment.value.permissions.sort((a, b) => a.user?.email >= b.user?.email ? 1 : -1)
 }
 

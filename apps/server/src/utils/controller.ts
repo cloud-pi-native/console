@@ -4,7 +4,6 @@ import { getEnvironmentsByProjectId } from '../queries/environment-queries.js'
 import { getProjectRepositories } from '../queries/repository-queries.js'
 import { getProjectById, lockProject, unlockProject } from '../queries/project-queries.js'
 import type { Permission, Project, User, Role } from '@prisma/client'
-import prisma from '@/prisma.js'
 
 export const checkAdminGroup = (req, res, done) => {
   if (!req.session.user.groups?.includes(adminGroupPath)) {
@@ -13,7 +12,7 @@ export const checkAdminGroup = (req, res, done) => {
   done()
 }
 
-export const unlockProjectIfNotFailed = async (projectId) => {
+export const unlockProjectIfNotFailed = async (projectId: Project['id']) => {
   const ressources = [
     ...(await getEnvironmentsByProjectId(projectId))?.map(environment => environment.status),
     ...(await getProjectRepositories(projectId))?.map(repository => repository.status),
@@ -37,38 +36,53 @@ export type RequireOnlyOne<T, Keys extends keyof T = keyof T> =
 type IsAllowed = {
   userList: User[] | Pick<User, 'id'>[]
   roles: Role[]
-  projectId: Project['id']
   minRole?: ProjectRoles
 }
 
-type SearchOptions = RequireOnlyOne<IsAllowed, 'userList' | 'roles' | 'projectId'>
+type SearchOptions = RequireOnlyOne<IsAllowed, 'userList' | 'roles'>
+
+type ErrorMessagePredicate = () => string | undefined
+export const getErrorMessage = (...fns: ErrorMessagePredicate[]) => {
+  for (const f of fns) {
+    const error = f()
+    if (error) {
+      return error
+    }
+  }
+}
 
 /**
- * Returns boolean if userId has minimum role in project
- * @param {number} userId User Id to check role
+ * Vérifie si un utilisateur a le rôle suffisant dans un projet
+ * @param {number} userId Id du user dont il faut vérifier le rôle
  * @param {Object} SearchOptions
- * @param {string} SearchOptions.usersList - List of users, check ids match against userId
- * @param {string} SearchOptions.projectUsers - List of users and role got by project query including Users, will be filtered if minrole given. Will be assigned to usersList
- * @param {string} SearchOptions.projectId - Project id, used to get projectUsers
- * @param {string} SearchOptions.minRole - Optionnal, Minimum role to have, 'user' or 'owner', undefined value equal 'user'
- * @return {Promise<boolean>} is userId has sufficent permissions
+ * @param {string} SearchOptions.usersList - Liste d'utilisateurs, check si ids incluent userId
+ * @param {string?} SearchOptions.minRole - Optionnel, role minimum requis, 'user' ou  'owner'. Si `undefined` : 'user'
+ * @return {string} message d'erreur si rôle insuffisant / absence de rôle, sinon chaîne vide
  */
-export const hasRoleInProject = async (userId: User['id'], { userList, roles, projectId, minRole }: SearchOptions) => {
-  // get project by id, assign result to projectUsers
-  if (projectId) roles = await prisma.role.findMany({ where: { projectId } })
+export const checkInsufficientRoleInProject = (userId: User['id'], { userList, roles, minRole }: SearchOptions) => {
   if (roles) {
     // if minRole is 'owner' filter and assign to userList
     if (minRole === 'owner') userList = roles.filter(userProject => userProject.role === 'owner').map(({ userId }) => ({ id: userId }))
     // else assign to userList
     else userList = roles.map(({ userId }) => ({ id: userId }))
   }
-  return userList.findIndex(user => user.id === userId) > -1
+  return userList.some(user => user.id === userId)
+    ? ''
+    : 'Vous n’avez pas les permissions suffisantes dans le projet'
 }
 
-export const hasPermissionInEnvironment = async (userId: User['id'], permissions: Permission[], minLevel: Permission['level']) => {
+export const checkClusterUnavailable = (clustersId: string[], authorizedClusters: { id: string }[]) => clustersId
+  .some(clusterId => !authorizedClusters
+    .some(cluster => cluster.id === clusterId))
+  ? 'Ce cluster n\'est pas disponible sur pour ce projet'
+  : ''
+
+export const checkInsufficientPermissionInEnvironment = (userId: User['id'], permissions: Permission[], minLevel: Permission['level']) => {
   // get project by id, assign result to projectUsers
   const { level } = permissions.find(perm => perm.userId === userId)
-  return level > minLevel
+  return level >= minLevel
+    ? ''
+    : 'Vous n\'avez pas les droits suffisants pour requêter cet environnment'
 }
 
 export const filterOwners = (roles: Role[]) => {

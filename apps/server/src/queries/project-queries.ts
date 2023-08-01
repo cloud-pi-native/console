@@ -100,6 +100,7 @@ const baseProjectIncludes = {
   organization: true,
   roles: true,
   environments: true,
+  clusters: true,
 }
 export const getProjectInfos = async (id: Project['id']) => {
   return prisma.project.findUnique({
@@ -127,6 +128,17 @@ export const getProjectByNames = async ({ name, organizationName }: { name: Proj
     },
   })
   return res
+}
+
+export const getProjectByOrganizationId = async (organizationId: Organization['id']) => {
+  return prisma.project.findMany({
+    where: {
+      organizationId,
+      status: {
+        not: 'archived',
+      },
+    },
+  })
 }
 
 // CREATE

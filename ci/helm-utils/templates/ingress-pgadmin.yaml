@@ -1,0 +1,20 @@
+{{- if .Values.pgadmin.enabled -}}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.pgadmin.service.name }}
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: {{ .Values.pgadmin.ingress.host }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.pgadmin.service.name }}
+            port:
+              number: {{ .Values.pgadmin.service.port }}
+{{- end -}}

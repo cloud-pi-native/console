@@ -1,0 +1,23 @@
+env: development
+
+server:
+  container:
+    image: dso-console/server:dev
+    extraVolumes:
+      - name: dev-workspace
+        path: /app/apps/server/src
+        type: hostPath
+    extraVolumeMounts:
+      - name: dev-workspace
+        mountPath: /app/apps/server/src
+
+client:
+  container:
+    image: dso-console/client:dev
+    extraVolumes:
+      - name: dev-workspace
+        path: /app/apps/client/src
+        type: hostPath
+    extraVolumeMounts:
+      - name: dev-workspace
+        mountPath: /app/apps/client/src

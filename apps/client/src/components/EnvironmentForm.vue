@@ -4,6 +4,7 @@ import { environmentSchema, schemaValidator, instanciateSchema, allEnv, projectI
 import PermissionForm from './PermissionForm.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import MultiSelector from './MultiSelector.vue'
+import LoadingCt from './LoadingCt.vue'
 
 const props = defineProps({
   environment: {
@@ -29,6 +30,10 @@ const props = defineProps({
   projectClusters: {
     type: Array,
     default: () => [],
+  },
+  isUpdatingEnvironment: {
+    type: Boolean,
+    default: false,
   },
 })
 
@@ -117,49 +122,135 @@ onMounted(() => {
 </script>
 
 <template>
-  <h1
-    v-if="props.isEditable"
-    class="fr-h1"
+  <div
+    class="relative"
   >
-    Ajouter un environnement au projet
-  </h1>
-  <DsfrFieldset
-    :key="environment"
-    :legend="props.isEditable ? 'Informations de l\'environnement' : undefined"
-    :hint="props.isEditable ? 'Les champs munis d\'une astérisque (*) sont requis' : undefined"
-    data-testid="environmentFieldset"
-  >
-    <DsfrSelect
+    <h1
       v-if="props.isEditable"
-      v-model="localEnvironment.name"
-      select-id="environment-name-select"
-      label="Nom de l'environnement"
-      required="required"
-      :disabled="!props.isEditable"
-      :options="environmentOptions"
-      @update:model-value="updateEnvironment('name', $event)"
-    />
-  </DsfrFieldset>
-  <div class="fr-mb-2w">
-    <MultiSelector
-      :options="projectClusters"
-      :array="clustersLabel"
-      label="Nom du cluster"
-      description="Ajouter un cluster cible pour le déploiement de cet environnement."
-      @update="updateEnvironment('clustersId', $event)"
-    />
+      class="fr-h1"
+    >
+      Ajouter un environnement au projet
+    </h1>
+    <DsfrFieldset
+      :key="environment"
+      :legend="props.isEditable ? 'Informations de l\'environnement' : undefined"
+      :hint="props.isEditable ? 'Les champs munis d\'une astérisque (*) sont requis' : undefined"
+      data-testid="environmentFieldset"
+    >
+      <DsfrSelect
+        v-if="props.isEditable"
+        v-model="localEnvironment.name"
+        select-id="environment-name-select"
+        label="Nom de l'environnement"
+        required="required"
+        :disabled="!props.isEditable"
+        :options="environmentOptions"
+        @update:model-value="updateEnvironment('name', $event)"
+      />
+    </DsfrFieldset>
+    <div class="fr-mb-2w">
+      <MultiSelector
+        :options="projectClusters"
+        :array="clustersLabel"
+        :disabled="props.isProjectLocked"
+        label="Nom du cluster"
+        description="Ajouter un cluster cible pour le déploiement de cet environnement."
+        @update="updateEnvironment('clustersId', $event)"
+      />
+      <div
+        v-if="localEnvironment.id"
+        class="flex space-x-10 mt-5"
+      >
+        <DsfrButton
+          label="Enregistrer"
+          data-testid="putEnvironmentBtn"
+          :disabled="props.isProjectLocked"
+          :title="props.isProjectLocked ? projectIsLockedInfo : 'Enregistrer les changements'"
+          primary
+          icon="ri-upload-cloud-line"
+          @click="putEnvironment()"
+        />
+        <DsfrButton
+          label="Annuler"
+          data-testid="cancelEnvironmentBtn"
+          :disabled="props.isProjectLocked"
+          secondary
+          icon="ri-close-line"
+          @click="cancel()"
+        />
+      </div>
+    </div>
+    <div v-if="localEnvironment.id">
+      <PermissionForm
+        v-if="!isDeletingEnvironment"
+        :environment="localEnvironment"
+      />
+      <div
+        v-if="isOwner"
+        data-testid="deleteEnvironmentZone"
+        class="danger-zone"
+      >
+        <div class="flex justify-between items-center <md:flex-col">
+          <DsfrButton
+            v-show="!isDeletingEnvironment"
+            data-testid="showDeleteEnvironmentBtn"
+            :label="`Supprimer l'environnement ${localEnvironment.name}`"
+            secondary
+            icon="ri-delete-bin-7-line"
+            @click="isDeletingEnvironment = true"
+          />
+          <DsfrAlert
+            class="<md:mt-2"
+            description="La suppression d'un environnement est irréversible."
+            type="warning"
+            small
+          />
+        </div>
+        <div
+          v-if="isDeletingEnvironment"
+          class="fr-mt-4w"
+        >
+          <DsfrInput
+            v-model="environmentToDelete"
+            data-testid="deleteEnvironmentInput"
+            :label="`Veuillez taper '${localEnvironment.name}' pour confirmer la suppression de l'environnement`"
+            label-visible
+            :placeholder="localEnvironment.name"
+            class="fr-mb-2w"
+          />
+          <div
+            class="flex justify-between"
+          >
+            <DsfrButton
+              data-testid="deleteEnvironmentBtn"
+              :label="`Supprimer définitivement l'environnement ${localEnvironment.name}`"
+              :disabled="environmentToDelete !== localEnvironment.name"
+              :title="`Supprimer définitivement l'environnement ${localEnvironment.name}`"
+              secondary
+              icon="ri-delete-bin-7-line"
+              @click="$emit('deleteEnvironment', localEnvironment)"
+            />
+            <DsfrButton
+              label="Annuler"
+              primary
+              @click="isDeletingEnvironment = false"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
     <div
-      v-if="localEnvironment.id"
+      v-if="props.isEditable"
       class="flex space-x-10 mt-5"
     >
       <DsfrButton
-        label="Enregistrer"
-        data-testid="putEnvironmentBtn"
+        label="Ajouter l'environnement"
+        data-testid="addEnvironmentBtn"
         :disabled="props.isProjectLocked"
-        :title="props.isProjectLocked ? projectIsLockedInfo : 'Enregistrer les changements'"
+        :title="props.isProjectLocked ? projectIsLockedInfo : 'Ajouter l\'environnement'"
         primary
         icon="ri-upload-cloud-line"
-        @click="putEnvironment()"
+        @click="addEnvironment()"
       />
       <DsfrButton
         label="Annuler"
@@ -169,85 +260,9 @@ onMounted(() => {
         @click="cancel()"
       />
     </div>
-  </div>
-  <div v-if="localEnvironment.id">
-    <PermissionForm
-      v-if="!isDeletingEnvironment"
-      :environment="localEnvironment"
-    />
-    <div
-      v-if="isOwner"
-      data-testid="deleteEnvironmentZone"
-      class="danger-zone"
-    >
-      <div class="flex justify-between items-center <md:flex-col">
-        <DsfrButton
-          v-show="!isDeletingEnvironment"
-          data-testid="showDeleteEnvironmentBtn"
-          :label="`Supprimer l'environnement ${localEnvironment.name}`"
-          secondary
-          icon="ri-delete-bin-7-line"
-          @click="isDeletingEnvironment = true"
-        />
-        <DsfrAlert
-          class="<md:mt-2"
-          description="La suppression d'un environnement est irréversible."
-          type="warning"
-          small
-        />
-      </div>
-      <div
-        v-if="isDeletingEnvironment"
-        class="fr-mt-4w"
-      >
-        <DsfrInput
-          v-model="environmentToDelete"
-          data-testid="deleteEnvironmentInput"
-          :label="`Veuillez taper '${localEnvironment.name}' pour confirmer la suppression de l'environnement`"
-          label-visible
-          :placeholder="localEnvironment.name"
-          class="fr-mb-2w"
-        />
-        <div
-          class="flex justify-between"
-        >
-          <DsfrButton
-            data-testid="deleteEnvironmentBtn"
-            :label="`Supprimer définitivement l'environnement ${localEnvironment.name}`"
-            :disabled="environmentToDelete !== localEnvironment.name"
-            :title="`Supprimer définitivement l'environnement ${localEnvironment.name}`"
-            secondary
-            icon="ri-delete-bin-7-line"
-            @click="$emit('deleteEnvironment', localEnvironment)"
-          />
-          <DsfrButton
-            label="Annuler"
-            primary
-            @click="isDeletingEnvironment = false"
-          />
-        </div>
-      </div>
-    </div>
-  </div>
-  <div
-    v-if="props.isEditable"
-    class="flex space-x-10 mt-5"
-  >
-    <DsfrButton
-      label="Ajouter l'environnement"
-      data-testid="addEnvironmentBtn"
-      :disabled="props.isProjectLocked"
-      :title="props.isProjectLocked ? projectIsLockedInfo : 'Ajouter l\'environnement'"
-      primary
-      icon="ri-upload-cloud-line"
-      @click="addEnvironment()"
-    />
-    <DsfrButton
-      label="Annuler"
-      data-testid="cancelEnvironmentBtn"
-      secondary
-      icon="ri-close-line"
-      @click="cancel()"
+    <LoadingCt
+      :show-loader="props.isUpdatingEnvironment"
+      description="Opérations en cours sur l'environnement"
     />
   </div>
 </template>

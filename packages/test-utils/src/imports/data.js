@@ -323,6 +323,14 @@ export const data = {
   ],
   permission: [
     {
+      id: '1b5266b4-73b3-4c4e-95bd-cd54f0f22df4',
+      userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+      environmentId: '1c654f00-4798-4a80-929f-960ddb36774b',
+      level: 2,
+      createdAt: '2023-07-03T14:46:56.831Z',
+      updatedAt: '2023-07-03T14:46:56.831Z',
+    },
+    {
       id: '1b5266b4-73b3-4c4e-95bd-cd54f0f22df5',
       userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
       environmentId: 'bc06ace5-ddf6-4f00-97fa-872922baf078',
@@ -452,6 +460,13 @@ export const data = {
     },
   ],
   role: [
+    {
+      userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6566',
+      projectId: '83833faf-f654-40dd-bcd5-cf2e944fc702',
+      role: 'user',
+      createdAt: '2023-07-03T14:46:56.826Z',
+      updatedAt: '2023-07-03T14:46:56.826Z',
+    },
     {
       userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
       projectId: '22e7044f-8414-435d-9c4a-2df42a65034b',

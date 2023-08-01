@@ -1,6 +1,6 @@
 import * as dotenv from 'dotenv'
 
-dotenv.config()
+dotenv.config({ path: '/env/.env' })
 
 export const isDev = process.env.NODE_ENV === 'development'
 
@@ -29,6 +29,8 @@ export const keycloakRealm = process.env.KEYCLOAK_REALM
 export const keycloakClientId = process.env.KEYCLOAK_CLIENT_ID
 
 export const keycloakClientSecret = process.env.KEYCLOAK_CLIENT_SECRET
+
+export const keycloakRedirectUri = process.env.KEYCLOAK_REDIRECT_URI
 
 export const adminsUserId = process.env.ADMIN_KC_USER_ID ? process.env.ADMIN_KC_USER_ID.split(',') : []
 
