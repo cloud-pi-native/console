@@ -1,8 +1,8 @@
 import {
   getActiveOrganizations,
-} from '@/queries/index.js'
-import { addReqLogs } from '../utils/logger.js'
-import { sendOk, sendNotFound } from '../utils/response.js'
+} from '@/resources/queries-index.js'
+import { addReqLogs } from '@/utils/logger.js'
+import { sendOk, sendNotFound } from '@/utils/response.js'
 
 // GET
 export const getActiveOrganizationsController = async (req, res) => {

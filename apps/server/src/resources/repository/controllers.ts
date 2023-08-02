@@ -10,13 +10,13 @@ import {
   getProjectInfos,
   getProjectInfosAndRepos,
   lockProject,
-} from '@/queries/index.js'
-import { exclude, filterObjectByKeys } from '../utils/queries-tools.js'
-import { addReqLogs } from '../utils/logger.js'
-import { sendOk, sendCreated, sendUnprocessableContent, sendNotFound, sendBadRequest, sendForbidden } from '../utils/response.js'
-import { gitlabUrl, projectRootDir } from '../utils/env.js'
-import { AsyncReturnType, checkInsufficientRoleInProject, unlockProjectIfNotFailed } from '../utils/controller.js'
-import { hooks } from '../plugins/index.js'
+} from '@/resources/queries-index.js'
+import { exclude, filterObjectByKeys } from '@/utils/queries-tools.js'
+import { addReqLogs } from '@/utils/logger.js'
+import { sendOk, sendCreated, sendUnprocessableContent, sendNotFound, sendBadRequest, sendForbidden } from '@/utils/response.js'
+import { gitlabUrl, projectRootDir } from '@/utils/env.js'
+import { AsyncReturnType, checkInsufficientRoleInProject, unlockProjectIfNotFailed } from '@/utils/controller.js'
+import { hooks } from '@/plugins/index.js'
 import { projectIsLockedInfo } from 'shared'
 import { EnhancedFastifyRequest } from '@/types/index.js'
 import { CreateRepositoryDto, DeleteRepositoryDto, UpdateRepositoryDto } from 'shared/src/resources/repository/dto.js'

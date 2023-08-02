@@ -1,24 +1,18 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { dropTables, synchroniseModels } from './connect.js'
-import { _dropLogsTable } from './queries/log-queries.js'
-import { _dropRepositoriesTable } from './queries/repository-queries.js'
-import { _dropPermissionsTable } from './queries/permission-queries.js'
-import { _dropEnvironmentsTable } from './queries/environment-queries.js'
-import { _dropProjectsTable } from '@/resources/project/queries.js'
-import { _dropUsersTable } from './queries/user-queries.js'
-import { _dropRolesTable } from './queries/roles-queries.js'
-import { _dropOrganizationsTable } from './queries/organization-queries.js'
+import {
+  _dropLogsTable,
+  _dropRepositoriesTable,
+  _dropPermissionsTable,
+  _dropEnvironmentsTable,
+  _dropProjectsTable,
+  _dropUsersTable,
+  _dropRolesTable,
+  _dropOrganizationsTable
+} from '@/resources/queries-index.js'
 import app from './app.js'
 
-vi.mock('./queries/log-queries.js')
-vi.mock('./queries/repository-queries.js')
-vi.mock('./queries/permission-queries.js')
-vi.mock('./queries/environment-queries.js')
-vi.mock('@/resources/project/queries.js')
-vi.mock('./queries/user-queries.js')
-vi.mock('./queries/users-projects-queries.js')
-vi.mock('./queries/organization-queries.js')
-vi.mock('./queries/log-queries.js')
+vi.mock('@/resources/queries-index.js')
 vi.mock('./models/log.js', () => getModel('getLogModel'))
 vi.mock('./models/repository.js', () => getModel('getRepositoryModel'))
 vi.mock('./models/permission.js', () => getModel('getPermissionModel'))

@@ -4,15 +4,16 @@ import {
   updateActiveOrganization,
   updateLabelOrganization,
   getOrganizationByName,
-} from '../../queries/organization-queries.js'
-import { addLogs } from '../../queries/log-queries.js'
+  addLogs,
+  getProjectByOrganizationId,
+  lockProject,
+} from '@/resources/queries-index.js'
 import { organizationSchema, getUniqueListBy } from 'shared'
-import { addReqLogs } from '../../utils/logger.js'
-import { sendOk, sendCreated, sendNotFound, sendBadRequest } from '../../utils/response.js'
-import { hooks } from '../../plugins/index.js'
+import { addReqLogs } from '@/utils/logger.js'
+import { sendOk, sendCreated, sendNotFound, sendBadRequest } from '@/utils/response.js'
+import { hooks } from '@/plugins/index.js'
 import { HookPayload, PluginResult } from '@/plugins/hooks/hook.js'
 import { objectValues } from '@/utils/type.js'
-import { getProjectByOrganizationId, lockProject } from '@/resources/project/queries.js'
 import { unlockProjectIfNotFailed } from '@/utils/controller.js'
 
 // GET

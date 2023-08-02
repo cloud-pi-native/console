@@ -12,7 +12,7 @@ import {
   initializeEnvironment,
   updateEnvironmentDeleting,
   deleteEnvironment as deleteEnvironmentQuery,
-} from '@/queries/index.js'
+} from '@/resources/queries-index.js'
 import { hooks } from '@/plugins/index.js'
 import { BadRequestError, ForbiddenError, NotFoundError } from '@/utils/errors.js'
 import type { Cluster, Environment, Kubeconfig, Organization, Project, Role, User } from '@prisma/client'

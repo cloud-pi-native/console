@@ -1,5 +1,5 @@
 import { HookPayload, PluginResult } from '@/plugins/hooks/hook.js'
-import { vaultUrl, vaultToken } from '../../../utils/env.js'
+import { vaultUrl, vaultToken } from '@/utils/env.js'
 import { destroyVault, listVault, readVault, writeVault } from './secret.js'
 import { UpdateRepositoryExecArgs } from '@/plugins/hooks/repository.js'
 

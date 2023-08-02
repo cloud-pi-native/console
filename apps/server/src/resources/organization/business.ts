@@ -1,4 +1,4 @@
-import { getOrganizationById } from '@/queries/index.js'
+import { getOrganizationById } from '@/resources/queries-index.js'
 import { NotFoundError } from '@/utils/errors.js'
 
 export const getOrganizationInfos = async (organizationId: string) => {

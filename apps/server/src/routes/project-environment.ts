@@ -3,7 +3,7 @@ import {
   initializeEnvironmentController,
   updateEnvironmentController,
   deleteEnvironmentController,
-} from '../controllers/environment.js'
+} from '../resources/environment/controllers.js'
 
 const router = async (app, _opt) => {
   // Récupérer un environnement par son id

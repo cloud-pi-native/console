@@ -5,15 +5,18 @@ import {
   removeUserFromProject,
   getProjectInfos,
   updateProjectFailed,
-} from '../resources/project/queries.js'
-import { createUser, getUserByEmail, getMatchingUsers, getUserById } from '../queries/user-queries.js'
-import { updateUserProjectRole } from '../queries/roles-queries.js'
-import { deletePermission } from '../queries/permission-queries.js'
-import { sendOk, sendCreated, sendNotFound, sendBadRequest, sendForbidden, sendUnprocessableContent } from '../utils/response.js'
-import { addReqLogs } from '../utils/logger.js'
-import { AsyncReturnType, checkInsufficientRoleInProject, unlockProjectIfNotFailed } from '../utils/controller.js'
+  createUser,
+  getUserByEmail,
+  getMatchingUsers,
+  getUserById,
+  updateUserProjectRole,
+  deletePermission,
+  addLogs,
+} from '@/resources/queries-index.js'
+import { sendOk, sendCreated, sendNotFound, sendBadRequest, sendForbidden, sendUnprocessableContent } from '@/utils/response.js'
+import { addReqLogs } from '@/utils/logger.js'
+import { AsyncReturnType, checkInsufficientRoleInProject, unlockProjectIfNotFailed } from '@/utils/controller.js'
 import { projectIsLockedInfo } from 'shared'
-import { addLogs } from '@/queries/log-queries.js'
 import { hooks } from '@/plugins/index.js'
 import { PluginResult } from '@/plugins/hooks/hook.js'
 

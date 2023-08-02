@@ -3,12 +3,12 @@ import fastify from 'fastify'
 import fastifySession from '@fastify/session'
 import fastifyCookie from '@fastify/cookie'
 import fp from 'fastify-plugin'
-import { sessionConf } from '../../utils/keycloak.js'
-import { getConnection, closeConnections } from '../../connect.js'
+import { sessionConf } from '@/utils/keycloak.js'
+import { getConnection, closeConnections } from '@/connect.js'
 import projectRouter from './project.js'
 import { adminGroupPath } from 'shared'
 import { getRandomProject, getRandomUser, repeatFn } from 'test-utils'
-import { checkAdminGroup } from '../../utils/controller.js'
+import { checkAdminGroup } from '@/utils/controller.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 

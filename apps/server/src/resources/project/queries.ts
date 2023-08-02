@@ -1,5 +1,5 @@
 import prisma from '@/prisma.js'
-import { dbKeysExcluded, exclude } from '../../utils/queries-tools.js'
+import { dbKeysExcluded, exclude } from '@/utils/queries-tools.js'
 import type { Organization, Project, User, Role } from '@prisma/client'
 import { AsyncReturnType } from '@/utils/controller.js'
 

@@ -1,6 +1,6 @@
-import { addReqLogs } from '../../utils/logger.js'
-import { getAllProjects } from '../../resources/project/queries.js'
-import { sendOk, sendNotFound } from '../../utils/response.js'
+import { addReqLogs } from '@/utils/logger.js'
+import { getAllProjects } from '@/resources/project/queries.js'
+import { sendOk, sendNotFound } from '@/utils/response.js'
 
 export const getAllProjectsController = async (req, res) => {
   try {

@@ -1,8 +1,12 @@
 import { type ProjectRoles, adminGroupPath } from 'shared'
 import { sendForbidden } from './response.js'
-import { getEnvironmentsByProjectId } from '../queries/environment-queries.js'
-import { getProjectRepositories } from '../queries/repository-queries.js'
-import { getProjectById, lockProject, unlockProject } from '../resources/project/queries.js'
+import {
+  getEnvironmentsByProjectId,
+  getProjectRepositories,
+  getProjectById,
+  lockProject,
+  unlockProject,
+} from '@/resources/queries-index.js'
 import type { Permission, Project, User, Role } from '@prisma/client'
 
 export const checkAdminGroup = (req, res, done) => {

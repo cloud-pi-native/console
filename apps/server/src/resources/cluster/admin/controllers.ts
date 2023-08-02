@@ -9,7 +9,7 @@ import {
   getProjectsByClusterId,
   removeClusterFromProject,
   updateCluster,
-} from '@/queries/index.js'
+} from '@/resources/queries-index.js'
 import { hooks } from '@/plugins/index.js'
 import { EnhancedFastifyRequest } from '@/types/index.js'
 import { addReqLogs } from '@/utils/logger.js'

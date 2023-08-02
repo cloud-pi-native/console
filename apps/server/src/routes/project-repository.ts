@@ -4,7 +4,7 @@ import {
   createRepositoryController,
   updateRepositoryController,
   deleteRepositoryController,
-} from '../controllers/repository.js'
+} from '@/resources/repository/controllers.js'
 
 const router = async (app, _opt) => {
   // Récupérer un repository par son id

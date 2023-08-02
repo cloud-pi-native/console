@@ -1,4 +1,4 @@
-import { getOrCreateUser } from '@/queries/index.js'
+import { getOrCreateUser } from '@/resources/queries-index.js'
 import { User } from '@prisma/client'
 
 export type UserDto = Pick<User, 'email' | 'firstName' | 'lastName' | 'id'>
