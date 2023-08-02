@@ -1,5 +1,18 @@
 # Changelog
 
+## [5.4.0](https://github.com/cloud-pi-native/console/compare/v5.3.0...v5.4.0) (2023-08-02)
+
+
+### Features
+
+* :children_crossing: improve home page and update doc link ([038d982](https://github.com/cloud-pi-native/console/commit/038d982ead7bbfa70debdf902d5c46e8518c1e60))
+* :sparkles: add or remove a team member via keycloak ([0563d20](https://github.com/cloud-pi-native/console/commit/0563d20ca93a25decc7dbb5d945e2b738b0d575a))
+
+
+### Bug Fixes
+
+* :technologist: change domains for dev and int ([0de00ab](https://github.com/cloud-pi-native/console/commit/0de00abf78543bc769f80be2f0e59795cfefefa5))
+
 ## [5.3.0](https://github.com/cloud-pi-native/console/compare/v5.2.1...v5.3.0) (2023-08-01)
 
 
