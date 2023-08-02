@@ -9,7 +9,7 @@ Ce projet est construit avec [NodeJS](https://nodejs.org/), [VueJS](https://vuej
 
 ### Liste des services kubernetes
 
-| Nom du service | Github project                                                                  | Role                                      | Utilisé en production |
+| Nom du service | Github project                                                                  | Role                                      | Déployé en production |
 | -------------- | ------------------------------------------------------------------------------- | ----------------------------------------- | --------------------- |
 | __postgres__   | [Postgres](https://github.com/postgres/postgres)                                | Base de données de l'application          | Oui                   |
 | __pgadmin__    | [Pgadmin](https://github.com/pgadmin-org/pgadmin4)                              | Interface d'administration de Postgres    | -                     |
@@ -104,7 +104,7 @@ L'intégralité des commandes est disponibles dans le fichier [package.json](./p
 
 ### Accès aux services
 
-Les services sont disponibles via des nom de domaines ajouté dans le fichier `/etc/hosts` de votre système, l'ajout des domaines ce fait automatiquement lors de la commande `pnpm run kube:init`.
+Les services sont disponibles via des nom de domaines ajouté dans le fichier `/etc/hosts` de votre système, l'ajout des domaines se fait automatiquement lors de la commande `pnpm run kube:init`.
 
 | Service                                        | Url                     |
 | ---------------------------------------------- | ----------------------- |
@@ -113,7 +113,7 @@ Les services sont disponibles via des nom de domaines ajouté dans le fichier `/
 | Interface d'administration de base de données  | <http://pgadmin.local>  |
 | Interface d'administration du serveur keycloak | <http://keycloak.local> |
 
-*__Notes:__ :warning: Il est possible que le navigateur utilisé (particulière Brave ou Firefox) bloque les cookies utilisés entre le frontend et keycloak, il est nécessaire de désactiver les protection de ce type dans votre navigateur (ex: Brave Shield).*
+*__Notes:__ :warning: Il est possible que le navigateur utilisé (particulière Brave ou Firefox) bloque les cookies utilisés entre le frontend et keycloak, il est nécessaire de désactiver les protections de ce type dans votre navigateur (ex: Brave Shield).*
 
 ### Variables d'environnements
 
@@ -121,12 +121,12 @@ Un chart Helm utilitaire est installé pour déployer les services qui ne sont p
 - Keycloak
 - Pgadmin
 
-> *Ces services sont personnalisables [ici](./ci/helm/utils/values.yaml).*
+> *Ces services sont personnalisables [ici](./ci/helm-utils/values.yaml).*
 
 Différents fichiers de `values.yml` sont disponibles pour personnaliser le déploiement de l'application dans le cluster Kind:
-- Le fichier [env/dso-values-dev.yaml](./env/dso-values-dev.yaml) contient les variables de l'application pour le mode développement.
-- Le fichier [env/dso-values.yaml](./env/dso-values.yaml) contient les variables de l'application pour le mode production.
-- Le fichier [env/dso-values-int-example.yaml](./env/dso-values-int-example.yaml) contient les variables de l'application pour le mode intégration.
+- Le fichier [./env/dso-values-dev.yaml](./env/dso-values-dev.yaml) contient les variables de l'application pour le mode développement.
+- Le fichier [./env/dso-values.yaml](./env/dso-values.yaml) contient les variables de l'application pour le mode production.
+- Le fichier [./env/dso-values-int-example.yaml](./env/dso-values-int-example.yaml) contient les variables de l'application pour le mode intégration.
 
 *__Notes:__ Un fichier d'environnement `./env/.env` est disponible pour fournir le chemin d'accès vers la `kubeconfig` du cluster d'intégration.*
 

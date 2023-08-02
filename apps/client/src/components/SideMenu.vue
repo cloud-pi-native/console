@@ -257,7 +257,7 @@ onMounted(() => {
         <DsfrSideMenuLink
           data-testid="menuDoc"
           :active="routeName === 'Doc'"
-          to="/doc"
+          to="https://github.com/cloud-pi-native/documentation"
         >
           Documentation
         </DsfrSideMenuLink>

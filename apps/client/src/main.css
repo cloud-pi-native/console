@@ -1,6 +1,3 @@
-/* Imports */
-@import url("./markdown.css");
-
 @font-face {
   font-family: Marianne;
   src: url('@/assets/fonts/Marianne-Regular.otf');
@@ -82,4 +79,77 @@ body,
   @apply my-6;
 
   background-color: var(--background-default-grey);
+}
+
+.fr-h2 a {
+  --underline-img: none;
+}
+
+.fr-h2 a:hover {
+  --underline-img: linear-gradient(0deg, currentcolor, currentcolor);
+}
+
+.fr-h2 a:hover::after {
+  content: "#";
+  display: inline-flex;
+  margin-left: 4px;
+}
+
+.section-separator {
+  @apply my-10;
+
+  background-image: none;
+}
+
+.tile-button {
+  @apply h-full flex flex-col justify-start items-center;
+}
+
+.fr-share__title {
+  @apply mb-6;
+
+  font-size: 1.2rem;
+}
+
+.fr-btn--cloud-pi-native::before {
+  mask-image: url("/icons/government-fill-blue.svg");
+  mask-size: 100% 100%;
+}
+
+.fr-tabs__list {
+  @apply <md:flex <md:flex-col !<md:items-center;
+}
+
+.fr-tabs__list li {
+  @apply <md:my-1;
+}
+
+div.fr-tile__img {
+  @apply h-auto;
+}
+
+.fr-tile__img img {
+  @apply w-9;
+}
+
+.dso-landing-footer.fr-footer {
+  box-shadow: inset 0 2px 0 0 var(--border-plain-blue-france);
+}
+
+.dso-landing-footer .fr-footer__bottom {
+  display: none;
+}
+
+.fr-icon-clipboard-line.icon {
+  @apply cursor-pointer ml-2 p-1;
+
+  color: var(--text-action-high-blue-france);
+}
+
+.fr-icon-clipboard-line.icon:hover {
+  background-color: var(--hover);
+}
+
+.fr-icon-clipboard-line.icon:active {
+  background-color: var(--active);
 }
