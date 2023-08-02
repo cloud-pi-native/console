@@ -4,7 +4,7 @@ import {
   createProjectController,
   archiveProjectController,
   updateProjectController,
-} from '../controllers/project.js'
+} from '@/resources/project/controller.js'
 import projectEnvironmentRouter from './project-environment.js'
 import projectRepositoryRouter from './project-repository.js'
 import projectUserRouter from './project-user.js'

@@ -19,9 +19,9 @@ export const unlockProjectIfNotFailed = async (projectId: Project['id']) => {
     (await getProjectById(projectId))?.status,
   ]
   if (ressources.includes('failed')) {
-    await lockProject(projectId)
+    return lockProject(projectId)
   } else {
-    await unlockProject(projectId)
+    return unlockProject(projectId)
   }
 }
 

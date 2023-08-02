@@ -99,7 +99,7 @@ export const getProjectById = async (id: Project['id']) => {
 const baseProjectIncludes = {
   organization: true,
   roles: true,
-  environments: true,
+  environments: { include: { permissions: true } },
   clusters: true,
 }
 export const getProjectInfos = async (id: Project['id']) => {
