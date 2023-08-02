@@ -12,7 +12,6 @@ const DsoDashboard = () => import('@/views/projects/DsoDashboard.vue')
 const DsoServices = () => import('@/views/projects/DsoServices.vue')
 const DsoTeam = () => import('@/views/projects/DsoTeam.vue')
 const DsoRepos = () => import('@/views/projects/DsoRepos.vue')
-const DsoDoc = () => import('@/views/DsoDoc.vue')
 const ListUser = () => import('@/views/admin/ListUser.vue')
 const ListOrganizations = () => import('@/views/admin/ListOrganizations.vue')
 const ListProjects = () => import('@/views/admin/ListProjects.vue')
@@ -112,11 +111,6 @@ const routes = [
     path: '/admin/clusters',
     name: 'ListClusters',
     component: ListClusters,
-  },
-  {
-    path: '/doc',
-    name: 'Doc',
-    component: DsoDoc,
   },
 ]
 
