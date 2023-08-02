@@ -6,7 +6,6 @@ import {
   getClusterByEnvironmentId,
   getOrganizationById,
   getProjectByNames,
-  getProjectInfos,
   getProjectInfosAndRepos,
   getProjectInfos as getProjectInfosQuery,
   getPublicClusters,
@@ -28,7 +27,7 @@ import { CreateProjectDto, ProjectRoles, UpdateProjectDto, calcProjectNameMaxLen
 import { CreateProjectExecArgs, UpdateProjectExecArgs } from '@/plugins/hooks/project.js'
 import { filterObjectByKeys } from '@/utils/queries-tools.js'
 import { gitlabUrl, projectRootDir } from '@/utils/env.js'
-import { removeClustersFromEnvironmentBusiness } from '@/business/environment.js'
+import { removeClustersFromEnvironmentBusiness } from '../environment/business.js'
 
 // Fetch infos
 export const getProjectInfosAndClusters = async (projectId: string) => {

@@ -1,5 +1,5 @@
 export * from './cluster-queries.js'
-export * from './environment-queries.js'
+export * from '../resources/environment/queries.js'
 export * from './log-queries.js'
 export * from './organization-queries.js'
 export * from './permission-queries.js'
