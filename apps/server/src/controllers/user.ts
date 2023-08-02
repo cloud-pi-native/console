@@ -5,7 +5,7 @@ import {
   removeUserFromProject,
   getProjectInfos,
   updateProjectFailed,
-} from '../queries/project-queries.js'
+} from '../resources/project/queries.js'
 import { createUser, getUserByEmail, getMatchingUsers, getUserById } from '../queries/user-queries.js'
 import { updateUserProjectRole } from '../queries/roles-queries.js'
 import { deletePermission } from '../queries/permission-queries.js'

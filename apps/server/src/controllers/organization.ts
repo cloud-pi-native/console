@@ -1,6 +1,6 @@
 import {
   getActiveOrganizations,
-} from '../queries/organization-queries.js'
+} from '@/queries/index.js'
 import { addReqLogs } from '../utils/logger.js'
 import { sendOk, sendNotFound } from '../utils/response.js'
 
