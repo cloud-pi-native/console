@@ -1,12 +1,12 @@
 import {
   getUserById,
-} from '@/queries/index.js'
-import { addReqLogs } from '../utils/logger.js'
+} from '@/resources/queries-index.js'
+import { addReqLogs } from '@/utils/logger.js'
 import {
   sendOk,
   sendCreated,
   sendNoContent,
-} from '../utils/response.js'
+} from '@/utils/response.js'
 import {
   type DeleteEnvironmentDto,
   type InitializeEnvironmentDto,
@@ -23,10 +23,10 @@ import {
   updateEnvironment,
   deleteEnvironment,
   checkGetEnvironment,
-} from '@/business/environment.js'
+} from './business.js'
 import {
   getProjectInfosAndClusters,
-} from '@/resources/project/business.js'
+} from '../project/business.js'
 
 // GET
 // TODO #541 : ce controller n'est pas utilisé

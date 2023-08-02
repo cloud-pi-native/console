@@ -1,4 +1,4 @@
-import { dropTables } from '../../connect.js'
+import { dropTables } from '@/connect.js'
 import prisma from '@/prisma.js'
 import { objectEntries } from '@/utils/type.js'
 

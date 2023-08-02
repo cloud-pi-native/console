@@ -1,9 +1,9 @@
 import {
   getUsers,
-} from '../../queries/user-queries.js'
+} from '@/resources/queries-index.js'
 
-import { sendNotFound, sendOk } from '../../utils/response.js'
-import { addReqLogs } from '../../utils/logger.js'
+import { sendNotFound, sendOk } from '@/utils/response.js'
+import { addReqLogs } from '@/utils/logger.js'
 
 export const getUsersController = async (req, res) => {
   try {

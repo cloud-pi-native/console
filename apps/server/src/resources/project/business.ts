@@ -6,7 +6,6 @@ import {
   getClusterByEnvironmentId,
   getOrganizationById,
   getProjectByNames,
-  getProjectInfos,
   getProjectInfosAndRepos,
   getProjectInfos as getProjectInfosQuery,
   getPublicClusters,
@@ -16,8 +15,7 @@ import {
   updateProjectCreated,
   updateProject as updateProjectQuery,
   updateProjectServices,
-} from '@/queries/index.js'
-import { type UserDto, getUser } from '../../business/user.js'
+} from '@/resources/queries-index.js'
 import { getServices } from '@/utils/services.js'
 import { Organization, Project, User, Role } from '@prisma/client'
 import { AsyncReturnType, checkInsufficientPermissionInEnvironment, checkInsufficientRoleInProject, unlockProjectIfNotFailed } from '@/utils/controller.js'
@@ -28,7 +26,8 @@ import { CreateProjectDto, ProjectRoles, UpdateProjectDto, calcProjectNameMaxLen
 import { CreateProjectExecArgs, UpdateProjectExecArgs } from '@/plugins/hooks/project.js'
 import { filterObjectByKeys } from '@/utils/queries-tools.js'
 import { gitlabUrl, projectRootDir } from '@/utils/env.js'
-import { removeClustersFromEnvironmentBusiness } from '@/business/environment.js'
+import { removeClustersFromEnvironmentBusiness } from '../environment/business.js'
+import { type UserDto, getUser } from '@/resources/user/business.js'
 
 // Fetch infos
 export const getProjectInfosAndClusters = async (projectId: string) => {

@@ -4,16 +4,16 @@ import fastify from 'fastify'
 import fastifySession from '@fastify/session'
 import fastifyCookie from '@fastify/cookie'
 import fp from 'fastify-plugin'
-import { sessionConf } from '../../utils/keycloak'
-import { getConnection, closeConnections } from '../../connect.js'
+import { sessionConf } from '@/utils/keycloak'
+import { getConnection, closeConnections } from '@/connect.js'
 import organizationRouter from './organization.js'
 import { adminGroupPath, allOrganizations } from 'shared'
-import { fetchOrganizationsRes, filteredOrganizations } from '../../utils/mock-plugins.js'
-import { checkAdminGroup } from '../../utils/controller.js'
+import { fetchOrganizationsRes, filteredOrganizations } from '@/utils/mock-plugins.js'
+import { checkAdminGroup } from '@/utils/controller.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 
-vi.mock('../../plugins/index.js', async () => {
+vi.mock('@/plugins/index.js', async () => {
   return {
     hooks: {
       fetchOrganizations: { execute: () => fetchOrganizationsRes },

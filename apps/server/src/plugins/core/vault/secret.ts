@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { axiosOptions } from './index.js'
-import { projectRootDir } from '../../../utils/env.js'
+import { projectRootDir } from '@/utils/env.js'
 
 const projectDir = projectRootDir
 

@@ -1,6 +1,6 @@
-import { Cluster, Environment, Project, Role } from '@prisma/client'
+import { Environment, Project, Role } from '@prisma/client'
 import prisma from '@/prisma.js'
-import { getProjectById } from '../resources/project/queries.js'
+import { getProjectById } from '../project/queries.js'
 
 // SELECT
 export const getEnvironmentById = async (id: Environment['id']) => {

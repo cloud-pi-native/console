@@ -1,8 +1,8 @@
-import { addReqLogs } from '../../utils/logger.js'
+import { addReqLogs } from '@/utils/logger.js'
 import {
   sendOk,
   sendCreated,
-} from '../../utils/response.js'
+} from '@/utils/response.js'
 import {
   type CreateProjectDto,
   UpdateProjectDto,
@@ -19,6 +19,7 @@ import {
 // GET
 export const getUserProjectsController = async (req: EnhancedFastifyRequest<void>, res) => {
   const requestor = req.session?.user
+  delete requestor.groups
   // appel business 1 : récup données
   const projectsInfos = await getUserProjects(requestor)
   addReqLogs({
@@ -52,6 +53,7 @@ export const getProjectByIdController = async (req, res) => {
 // POST
 export const createProjectController = async (req: EnhancedFastifyRequest<CreateProjectDto>, res) => {
   const requestor = req.session?.user
+  delete requestor.groups
   const data = req.body
 
   const project = await createProject({ ...data }, requestor)

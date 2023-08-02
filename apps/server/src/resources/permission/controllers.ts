@@ -6,7 +6,7 @@ import {
   getPermissionByUserIdAndEnvironmentId,
   getRoleByUserIdAndProjectId,
   getSingleOwnerByProjectId,
-} from '@/queries/index.js'
+} from '@/resources/queries-index.js'
 import { addReqLogs } from '@/utils/logger.js'
 import { sendOk, sendCreated, sendNotFound, sendBadRequest, sendForbidden } from '@/utils/response.js'
 

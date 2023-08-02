@@ -1,5 +1,5 @@
 import type { AppProject } from '@kubernetes-models/argo-cd/argoproj.io/v1alpha1'
-import { argoNamespace } from '../../../utils/env.js'
+import { argoNamespace } from '@/utils/env.js'
 import { customK8sApi, patchOptions } from './init.js'
 
 export const getAppProject = async (appProjectName) => {

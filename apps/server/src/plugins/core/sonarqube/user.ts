@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { axiosOptions } from './index.js'
-import { generateRandomPassword } from '../../../utils/crypto.js'
+import { generateRandomPassword } from '@/utils/crypto.js'
 
 const axiosInstance = axios.create(axiosOptions)
 

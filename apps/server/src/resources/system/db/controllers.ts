@@ -1,6 +1,6 @@
-import { dumpDb } from '../../queries/index.js'
-import { sendNotFound, sendOk } from '../../utils/response.js'
-import { addReqLogs } from '../../utils/logger.js'
+import { dumpDb } from '@/resources/queries-index.js'
+import { sendNotFound, sendOk } from '@/utils/response.js'
+import { addReqLogs } from '@/utils/logger.js'
 import type { EnhancedFastifyRequest } from '@/types/index.js'
 import type { FastifyReply } from 'fastify'
 

@@ -3,7 +3,7 @@ import {
   harborUrl,
   harborUser as username,
   harborPassword as password,
-} from '../../../utils/env.js'
+} from '@/utils/env.js'
 import { createProject, deleteProject } from './project.js'
 import { addProjectGroupMember } from './permission.js'
 import { createRobot } from './robot.js'
