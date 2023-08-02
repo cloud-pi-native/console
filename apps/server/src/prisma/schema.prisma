@@ -12,6 +12,13 @@ enum ClusterPrivacy {
   dedicated
 }
 
+enum ProjectStatus {
+  initializing
+  created
+  failed
+  archived
+}
+
 model Environment {
   id        String   @id @default(uuid()) @db.Uuid
   name      String
@@ -65,7 +72,7 @@ model Project {
   name           String
   organizationId String       @db.Uuid
   description    String?
-  status         String
+  status         ProjectStatus
   locked         Boolean      @default(false)
   services       Json
   createdAt      DateTime     @default(now())

@@ -4,14 +4,11 @@ import {
   updatePermission,
   deletePermission,
   getPermissionByUserIdAndEnvironmentId,
-} from '../queries/permission-queries.js'
-import {
   getRoleByUserIdAndProjectId,
   getSingleOwnerByProjectId,
-} from '../queries/roles-queries.js'
-import { addReqLogs } from '../utils/logger.js'
-import { sendOk, sendCreated, sendNotFound, sendBadRequest, sendForbidden } from '../utils/response.js'
-// import hooksHandlers from '../plugins/index.js'
+} from '@/queries/index.js'
+import { addReqLogs } from '@/utils/logger.js'
+import { sendOk, sendCreated, sendNotFound, sendBadRequest, sendForbidden } from '@/utils/response.js'
 
 // GET
 export const getEnvironmentPermissionsController = async (req, res) => {

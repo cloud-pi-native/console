@@ -1,4 +1,5 @@
 import {
+  addLogs,
   getRepositoryById,
   initializeRepository,
   updateRepositoryCreated,
@@ -6,16 +7,13 @@ import {
   updateRepository,
   updateRepositoryDeleting,
   deleteRepository,
-} from '../queries/repository-queries.js'
-import {
   getProjectInfos,
   getProjectInfosAndRepos,
   lockProject,
-} from '../queries/project-queries.js'
+} from '@/queries/index.js'
 import { exclude, filterObjectByKeys } from '../utils/queries-tools.js'
 import { addReqLogs } from '../utils/logger.js'
 import { sendOk, sendCreated, sendUnprocessableContent, sendNotFound, sendBadRequest, sendForbidden } from '../utils/response.js'
-import { addLogs } from '../queries/log-queries.js'
 import { gitlabUrl, projectRootDir } from '../utils/env.js'
 import { AsyncReturnType, checkInsufficientRoleInProject, unlockProjectIfNotFailed } from '../utils/controller.js'
 import { hooks } from '../plugins/index.js'

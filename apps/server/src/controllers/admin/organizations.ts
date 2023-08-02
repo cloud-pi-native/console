@@ -12,7 +12,7 @@ import { sendOk, sendCreated, sendNotFound, sendBadRequest } from '../../utils/r
 import { hooks } from '../../plugins/index.js'
 import { HookPayload, PluginResult } from '@/plugins/hooks/hook.js'
 import { objectValues } from '@/utils/type.js'
-import { getProjectByOrganizationId, lockProject } from '@/queries/project-queries.js'
+import { getProjectByOrganizationId, lockProject } from '@/resources/project/queries.js'
 import { unlockProjectIfNotFailed } from '@/utils/controller.js'
 
 // GET

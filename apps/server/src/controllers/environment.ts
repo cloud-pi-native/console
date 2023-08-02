@@ -26,7 +26,7 @@ import {
 } from '@/business/environment.js'
 import {
   getProjectInfosAndClusters,
-} from '@/business/project.js'
+} from '@/resources/project/business.js'
 
 // GET
 // TODO #541 : ce controller n'est pas utilisé
