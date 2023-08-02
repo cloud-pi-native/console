@@ -2,25 +2,27 @@
 import { ref } from 'vue'
 
 const props = defineProps({
+  modelValue: {
+    type: String,
+    default: '',
+  },
   suggestions: {
     type: Array,
     required: true,
     default: () => [],
   },
-  value: {
-    type: String,
-    default: '',
-  },
 })
 
-const localValue = ref(props.value)
+const localValue = ref(props.modelValue)
 
-const emit = defineEmits(['updateValue'])
+const emit = defineEmits(['update:modelValue', 'selectSuggestion'])
 
 const updateValue = () => {
-  if (!props.suggestions.includes(localValue.value)) return
-  emit('updateValue', localValue.value)
-  localValue.value = ''
+  if (props.suggestions.find(suggestion => suggestion === localValue.value)) {
+    emit('selectSuggestion', localValue.value)
+    return
+  }
+  emit('update:modelValue', localValue.value)
 }
 
 </script>
@@ -29,8 +31,9 @@ const updateValue = () => {
     <DsfrInputGroup
       v-bind="$attrs"
       v-model="localValue"
+      :value="props.modelValue"
       list="suggestionList"
-      @blur="updateValue()"
+      @input="updateValue()"
     />
     <datalist
       id="suggestionList"

@@ -32,6 +32,7 @@
     "keycloak-js": "^22.0.0",
     "nanoid": "4.0.2",
     "oh-vue-icons": "^1.0.0-rc3",
+    "p-debounce": "^4.0.0",
     "pinia": "^2.1.4",
     "shared": "workspace:^",
     "typescript": "^5.1.6",

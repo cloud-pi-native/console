@@ -38,7 +38,8 @@
 - `project.locked: true` : toute opération de Create / Update sur le projet et ses ressource est interdite.
 
 ### Permissions d'environnement
-Trois niveaux de permissions différents, 
+
+Trois niveaux de permissions différents,
 | Valeur en base | Description dans le front | Niveaux       |
 | -------------- | ------------------------- | ------------- |
 | 0              | r                         | Lecture       |
@@ -73,6 +74,9 @@ delete('/projects/:projectId')
 ### Users
 
 ```js
+// Get user by letter match on email
+  get('/projects/:projectId/users/match?letters=abc')
+  
 // Add user to project
 post('/projects/:projectId/users')
   => body({ email, role })

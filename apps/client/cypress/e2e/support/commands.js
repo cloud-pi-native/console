@@ -231,10 +231,13 @@ Cypress.Commands.add('addPermission', (project, environment, userToLicence) => {
     .getByDataTestid('menuEnvironments').click()
     .getByDataTestid(`environmentTile-${environment}`)
     .click()
-    .getByDataTestid('permissionSuggestionInput').first()
-    .clear().type(userToLicence)
-    .getByDataTestid('permissionSuggestionInput').first().find('input').focus().blur({ force: true })
-    .wait('@postPermission')
+
+  cy.getByDataTestid('permissionSuggestionInput')
+    .find('input')
+    .clear()
+    .type(userToLicence)
+
+  cy.wait('@postPermission')
     .its('response.statusCode').should('eq', 201)
 })
 
@@ -267,7 +270,7 @@ Cypress.Commands.add('addProjectMember', (project, userEmail) => {
     .getByDataTestid('teamTable')
     .find('tbody > tr')
     .should('have.length', project.users.length)
-    .getByDataTestid('addUserInput').clear()
+    .getByDataTestid('addUserSuggestionInput').find('input').clear()
     .type(userEmail)
     .getByDataTestid('userErrorInfo')
     .should('not.exist')

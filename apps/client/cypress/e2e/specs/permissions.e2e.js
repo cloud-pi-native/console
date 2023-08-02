@@ -4,7 +4,7 @@ describe('Manage permissions for environment', () => {
   const project = getModelById('project', '011e7860-04d7-461f-912d-334c622d38b3')
   const owner = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
   const user0 = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6566')
-  // const user1 = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6567')
+  const user1 = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6567')
   const user2 = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6569')
 
   before(() => {
@@ -61,31 +61,30 @@ describe('Manage permissions for environment', () => {
           .should('contain', `Tous les membres du projet ${project.name} sont déjà accrédités.`)
       })
 
-    // TODO : décommenter avec #132
-    // cy.addProjectMember(project, user1.email)
+    cy.addProjectMember(project, user1.email)
 
-    // cy.goToProjects()
-    //   .getByDataTestid(`projectTile-${project.name}`).click()
-    //   .getByDataTestid('menuEnvironments').click()
-    //   .getByDataTestid(`environmentTile-${environment}`)
-    //   .click()
+    cy.goToProjects()
+      .getByDataTestid(`projectTile-${project.name}`).click()
+      .getByDataTestid('menuEnvironments').click()
+      .getByDataTestid(`environmentTile-${environment}`)
+      .click()
 
-    // cy.getByDataTestid('permissionSuggestionInput')
-    //   .should('be.enabled')
-    //   .getByDataTestid('newPermissionFieldset').within(() => {
-    //     cy.get('.fr-hint-text')
-    //       .should('contain', `Entrez l'e-mail d'un membre du projet ${project.name}. Ex : ${user1.email}`)
-    //   })
+    cy.getByDataTestid('permissionSuggestionInput')
+      .should('be.enabled')
+      .getByDataTestid('newPermissionFieldset').within(() => {
+        cy.get('.fr-hint-text')
+          .should('contain', `Entrez l'e-mail d'un membre du projet ${project.name}. Ex : ${user1.email}`)
+      })
 
-    // cy.get('[data-testid^="userPermissionLi-"]')
-    //   .should('have.length', 3)
-    //   .getByDataTestid('permissionSuggestionInput').first()
-    //   .should('be.visible')
-    //   .clear()
+    cy.get('[data-testid^="userPermissionLi-"]')
+      .should('have.length', 3)
+      .getByDataTestid('permissionSuggestionInput').find('input')
+      .should('be.visible')
+      .clear()
 
-    // cy.addPermission(project, environment, user1.email)
-    // cy.getByDataTestid(`userPermissionLi-${user1.email}`)
-    //   .should('exist')
+    cy.addPermission(project, environment, user1.email)
+    cy.getByDataTestid(`userPermissionLi-${user1.email}`)
+      .should('exist')
   })
 
   it.skip('Should update existing permissions', () => {

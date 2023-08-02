@@ -23,6 +23,17 @@ export const getUserInfos = async (id: User['id']) => {
   return usrWithKeysExcluded
 }
 
+export const getMatchingUsers = async (letters: string) => {
+  return prisma.user.findMany({
+    where: {
+      email: {
+        contains: letters,
+      },
+    },
+    take: 5,
+  })
+}
+
 export const getUserById = async (id: User['id']) => {
   return prisma.user.findUnique({ where: { id } })
 }

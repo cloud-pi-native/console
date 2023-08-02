@@ -1,12 +1,16 @@
+type DsoErrorData = {
+  description?: string
+  extras?: Record<string, any>
+}
 class DsoError extends Error {
   public description: string
   public extras: Record<string, string>
   public statusCode: number
 
-  constructor (message: string, data) {
+  constructor (message: string, data?: DsoErrorData) {
     super(message)
-    this.description = data.description
-    this.extras = data.extras
+    this.description = data.description || message
+    this.extras = data.extras || {}
   }
 }
 

@@ -1,6 +1,7 @@
 server:
   container:
     env:
+      CI: "false"
       INTEGRATION: "true"
       KEYCLOAK_REDIRECT_URI: http://console.dso.local
       KEYCLOAK_PROTOCOL: https
@@ -36,6 +37,7 @@ server:
 client:
   container:
     env:
+      CI: "false"
       INTEGRATION: "true"
       KEYCLOAK_REDIRECT_URI: http://console.dso.local
       KEYCLOAK_PROTOCOL: https

@@ -5,8 +5,12 @@ import { useProjectStore } from '@/stores/project.js'
 export const useProjectUserStore = defineStore('project-user', () => {
   const projectStore = useProjectStore()
 
-  const addUserToProject = async (newUser) => {
-    await api.addUser(projectStore.selectedProject.id, newUser)
+  const getMatchingUsers = async (letters) => {
+    return await api.getMatchingUsers(projectStore.selectedProject.id, letters)
+  }
+
+  const addUserToProject = async (user) => {
+    await api.addUser(projectStore.selectedProject.id, user)
     await projectStore.getUserProjects()
   }
 
@@ -16,6 +20,7 @@ export const useProjectUserStore = defineStore('project-user', () => {
   }
 
   return {
+    getMatchingUsers,
     addUserToProject,
     removeUserFromProject,
   }

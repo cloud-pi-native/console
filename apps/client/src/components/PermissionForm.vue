@@ -7,6 +7,7 @@ import { useProjectStore } from '@/stores/project.js'
 import { useProjectPermissionStore } from '@/stores/project-permission.js'
 import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+import { getRandomId } from '@gouvminint/vue-dsfr'
 
 const props = defineProps({
   environment: {
@@ -22,6 +23,8 @@ const snackbarStore = useSnackbarStore()
 const environment = ref(props.environment)
 const permissions = ref([])
 const permissionToUpdate = ref({})
+const userToLicence = ref('')
+const permissionSuggestionKey = ref(getRandomId('input'))
 
 const project = computed(() => projectStore.selectedProject)
 const owner = computed(() => projectStore.selectedProjectOwner)
@@ -49,6 +52,8 @@ const addPermission = async (userEmail) => {
       snackbarStore.setMessage(error?.message, 'error')
     }
   }
+  userToLicence.value = ''
+  permissionSuggestionKey.value = getRandomId('input')
 }
 
 const updatePermission = async () => {
@@ -169,12 +174,15 @@ onMounted(() => {
     :hint="usersToLicence.length ? `Entrez l'e-mail d'un membre du projet ${project.name}. Ex : ${usersToLicence[0].email}` : `Tous les membres du projet ${project.name} sont déjà accrédités.`"
   >
     <SuggestionInput
+      :key="permissionSuggestionKey"
+      v-model="userToLicence"
       data-testid="permissionSuggestionInput"
       :disabled="!isPermitted || !usersToLicence.length || project?.locked"
       :label="`E-mail de l'utilisateur à accréditer sur l'environnement de ${environment?.name}`"
+      label-visible
       placeholder="prenom.nom@interieur.gouv.fr"
       :suggestions="suggestions"
-      @update-value="addPermission($event)"
+      @select-suggestion="addPermission($event)"
     />
   </DsfrFieldset>
 </template>
