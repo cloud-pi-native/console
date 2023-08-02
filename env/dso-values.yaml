@@ -7,7 +7,7 @@ config:
 ingress:
   ingressClassName: traefik
   hosts:
-    - dso.local
+    - console.dso.local
   tls:
     enabled: false
 
@@ -33,7 +33,7 @@ postgres:
     size: 1Gi
 
 keycloak:
-  domain: keycloak.local
+  domain: keycloak.dso.local
   realm: cloud-pi-native
   admin: admin
   adminPassword: admin
@@ -41,7 +41,7 @@ keycloak:
   clientIdFrontend: console-frontend
   clientIdBackend: console-backend
   clientSecretBackend: client-secret-backend
-  redirectUri: http://dso.local # http://dso-client-service
+  redirectUri: http://console.dso.local # http://dso-client-service
   sessionSecret: a-very-strong-secret-with-more-than-32-char
   service:
     hostname: keycloak-service

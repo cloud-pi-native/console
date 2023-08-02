@@ -3,24 +3,18 @@ import { ref, computed, onMounted, watch } from 'vue'
 import DsoSelectedProject from './DsoSelectedProject.vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectUserStore } from '@/stores/project-user.js'
+import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { DsfrButton } from '@gouvminint/vue-dsfr'
-import { schemaValidator, isValid, instanciateSchema, userSchema } from 'shared'
+import { DsfrButton, getRandomId } from '@gouvminint/vue-dsfr'
+import { schemaValidator, userSchema } from 'shared'
+import SuggestionInput from '@/components/SuggestionInput.vue'
+import LoadingCt from '@/components/LoadingCt.vue'
+import pDebounce from 'p-debounce'
 
 const projectStore = useProjectStore()
 const projectUserStore = useProjectUserStore()
+const userStore = useUserStore()
 const snackbarStore = useSnackbarStore()
-
-const project = computed(() => projectStore.selectedProject)
-
-const isUserAlreadyInTeam = computed(() => {
-  const allUsers = project.value.roles
-  return !!allUsers?.find(role => role.user.email === newUser.value.email)
-})
-
-const owner = computed(() => projectStore.selectedProjectOwner)
-
-const newUser = ref({})
 
 const headers = [
   'E-mail',
@@ -28,7 +22,22 @@ const headers = [
   'Retirer du projet',
 ]
 
+const project = computed(() => projectStore.selectedProject)
+
+const isUserAlreadyInTeam = computed(() => {
+  const allUsers = project.value.roles
+  return !!allUsers?.find(role => role.user.email === newUserEmail.value)
+})
+
+const owner = computed(() => projectStore.selectedProjectOwner)
+const isOwner = computed(() => owner.value.id === userStore.userProfile.id)
+
+const newUserInputKey = ref(getRandomId('input'))
+const newUserEmail = ref('')
+const usersToAdd = ref([])
+const isUpdatingProjectMembers = ref(false)
 const rows = ref([])
+const lettersNotMatching = ref('')
 
 const setRows = () => {
   rows.value = []
@@ -53,8 +62,8 @@ const setRows = () => {
         'user',
         {
           cellAttrs: {
-            class: 'fr-fi-close-line !flex justify-center cursor-pointer fr-text-default--warning',
-            title: `retirer ${role.user.email} du projet`,
+            class: `fr-fi-close-line !flex justify-center ${isOwner.value ? 'cursor-pointer fr-text-default--warning' : 'disabled'}`,
+            title: isOwner.value ? `retirer ${role.user.email} du projet` : 'vous n\'avez pas les droits suffisants pour retirer un membre du projet',
             onClick: () => removeUserFromProject(role.user.id),
           },
         },
@@ -63,34 +72,46 @@ const setRows = () => {
   }
 }
 
-const addUserToProject = async () => {
-  // TODO : #66 : récupérer données keycloak de l'utilisateur via son e-mail
-  newUser.value.id = 'xxxxxx'
-  newUser.value.firstName = newUser.value.email.split('.')[0]
-  newUser.value.lastName = newUser.value.email.split('.')[1].split('@')[0]
+const retrieveUsersToAdd = pDebounce(async (letters) => {
+  // Ne pas lancer de requête à moins de 3 caractères tapés
+  if (letters.length < 3) return
+  // Ne pas relancer de requête à chaque lettre ajoutée si aucun user ne correspond aux premières lettres données
+  if (lettersNotMatching.value && letters.includes(lettersNotMatching.value) && !usersToAdd.value.length) return
+  usersToAdd.value = (await projectUserStore.getMatchingUsers(letters)).map(userToAdd => userToAdd.email)
+  // Stockage des lettres qui ne renvoient aucun résultat
+  if (!usersToAdd.value.length) {
+    lettersNotMatching.value = letters
+  }
+}, 300)
 
-  const keysToValidate = ['id', 'email', 'firstName', 'lastName']
-  const errorSchema = schemaValidator(userSchema, newUser.value, { keysToValidate })
+const addUserToProject = async (email) => {
+  isUpdatingProjectMembers.value = true
+  const keysToValidate = ['email']
+  const errorSchema = schemaValidator(userSchema, { email }, { keysToValidate })
   if (Object.keys(errorSchema).length || isUserAlreadyInTeam.value) return
   try {
-    await projectUserStore.addUserToProject(newUser.value)
+    await projectUserStore.addUserToProject({ email })
   } catch (error) {
     snackbarStore.setMessage(error?.message, 'error')
   }
 
-  newUser.value = instanciateSchema({ schema: userSchema }, undefined)
+  newUserEmail.value = ''
+  usersToAdd.value = []
+  newUserInputKey.value = getRandomId('input')
+  isUpdatingProjectMembers.value = false
 }
 
 const removeUserFromProject = async (userId) => {
+  isUpdatingProjectMembers.value = true
   try {
     await projectUserStore.removeUserFromProject(userId)
   } catch (error) {
     snackbarStore.setMessage(error?.message, 'error')
   }
+  isUpdatingProjectMembers.value = false
 }
 
 onMounted(async () => {
-  newUser.value = instanciateSchema({ schema: userSchema }, undefined)
   setRows()
 })
 
@@ -103,30 +124,28 @@ watch(project, () => {
 <template>
   <DsoSelectedProject />
 
-  <DsfrTable
-    data-testid="teamTable"
-    :title="`Membres du projet ${project?.name}`"
-    :headers="headers"
-    :rows="rows"
-  />
-
-  <!-- TODO : #66 suggest sur utilisateurs keycloak, ajout dans notre db si pas existant -->
-  <!-- TODO : enlever v-if avec #132 -->
   <div
-    v-if="false"
+    class="relative"
   >
-    <DsfrInput
-      v-model="newUser.email"
-      data-testid="addUserInput"
-      hint="Adresse e-mail associée au compte keycloak de l'utilisateur"
-      type="text"
-      label="Ajouter un utilisateur via son adresse e-mail"
+    <DsfrTable
+      data-testid="teamTable"
+      :title="`Membres du projet ${project?.name}`"
+      :headers="headers"
+      :rows="rows"
+    />
+
+    <SuggestionInput
+      :key="newUserInputKey"
+      v-model="newUserEmail"
+      data-testid="addUserSuggestionInput"
       :disabled="project?.locked"
+      label="Ajouter un utilisateur via son adresse e-mail"
       label-visible
+      hint="Adresse e-mail associée au compte keycloak de l'utilisateur"
       placeholder="prenom.nom@interieur.gouv.fr"
-      :is-valid="!!newUser.email && isValid(userSchema, newUser, 'email') && !isUserAlreadyInTeam"
-      :is-invalid="!!newUser.email && (!isValid(userSchema, newUser, 'email') || isUserAlreadyInTeam)"
-      class="fr-mb-2w"
+      :suggestions="usersToAdd"
+      @select-suggestion="$event => newUserEmail = $event"
+      @update:model-value="retrieveUsersToAdd($event)"
     />
     <DsfrAlert
       v-if="isUserAlreadyInTeam"
@@ -141,8 +160,12 @@ watch(project, () => {
       label="Ajouter l'utilisateur"
       secondary
       icon="ri-user-add-line"
-      :disabled="!!newUser.email && (!isValid(userSchema, newUser, 'email') || isUserAlreadyInTeam)"
-      @click="addUserToProject()"
+      :disabled="project.locked || !newUserEmail || isUserAlreadyInTeam"
+      @click="addUserToProject(newUserEmail)"
+    />
+    <LoadingCt
+      :show-loader="isUpdatingProjectMembers"
+      description="Mise à jour de l'équipe projet"
     />
   </div>
 </template>

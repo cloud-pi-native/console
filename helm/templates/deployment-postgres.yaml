@@ -7,6 +7,7 @@ metadata:
   name: {{ .Release.Name }}-postgres
 spec:
   replicas: 1
+  serviceName: {{ $.Release.Name }}-postgres-service
   selector:
     matchLabels:
       app: {{ .Release.Name }}-postgres

@@ -4,7 +4,6 @@ import {
 
 const router = async (app, _opt) => {
   // Récupérer des logs
-  // TODO logs
   await app.get('/', getAllLogsController)
 }
 
