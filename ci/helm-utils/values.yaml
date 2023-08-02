@@ -17,7 +17,7 @@ keycloak:
     port: 80
     type: ClusterIP
   ingress:
-    host: keycloak.local
+    host: keycloak.dso.local
 
 pgadmin:
   enabled: true
@@ -29,7 +29,7 @@ pgadmin:
     port: 80
     type: ClusterIP
   ingress:
-    host: pgadmin.local
+    host: pgadmin.dso.local
 
 postgres:
   enabled: false

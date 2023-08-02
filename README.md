@@ -108,10 +108,10 @@ Les services sont disponibles via des nom de domaines ajouté dans le fichier `/
 
 | Service                                        | Url                     |
 | ---------------------------------------------- | ----------------------- |
-| Interface graphique *- (client)*               | <http://dso.local>      |
-| Serveur *- (api)*                              | <http://dso.local/api>  |
-| Interface d'administration de base de données  | <http://pgadmin.local>  |
-| Interface d'administration du serveur keycloak | <http://keycloak.local> |
+| Interface graphique *- (client)*               | <http://console.dso.local>      |
+| Serveur *- (api)*                              | <http://console.dso.local/api>  |
+| Interface d'administration de base de données  | <http://pgadmin.dso.local>  |
+| Interface d'administration du serveur keycloak | <http://keycloak.dso.local> |
 
 *__Notes:__ :warning: Il est possible que le navigateur utilisé (particulière Brave ou Firefox) bloque les cookies utilisés entre le frontend et keycloak, il est nécessaire de désactiver les protections de ce type dans votre navigateur (ex: Brave Shield).*
 
