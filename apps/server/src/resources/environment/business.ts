@@ -118,42 +118,47 @@ export const createEnvironment = async (
   envName: string,
   newClustersId: string[],
 ) => {
-  await lockProject(project.id)
-  const projectOwners = filterOwners(project.roles)
-  const env = await initializeEnvironment({ projectId: project.id, name: envName, projectOwners })
+  let env
+  try {
+    await lockProject(project.id)
+    const projectOwners = filterOwners(project.roles)
+    env = await initializeEnvironment({ projectId: project.id, name: envName, projectOwners })
 
-  const registryHost = harborUrl.split('//')[1].split('/')[0]
-  const environmentName = env.name
-  const projectName = project.name
-  const organizationName = project.organization.name
-  const gitlabBaseURL = `${gitlabUrl}/${projectRootDir}/${organizationName}/${projectName}`
-  const repositories = env.project.repositories.map(({ internalRepoName }) => ({
-    url: `${gitlabBaseURL}/${internalRepoName}.git`,
-    internalRepoName,
-  }))
+    const registryHost = harborUrl.split('//')[1].split('/')[0]
+    const environmentName = env.name
+    const projectName = project.name
+    const organizationName = project.organization.name
+    const gitlabBaseURL = `${gitlabUrl}/${projectRootDir}/${organizationName}/${projectName}`
+    const repositories = env.project.repositories.map(({ internalRepoName }) => ({
+      url: `${gitlabBaseURL}/${internalRepoName}.git`,
+      internalRepoName,
+    }))
 
-  const envData = {
-    environment: environmentName,
-    project: projectName,
-    organization: organizationName,
-    repositories,
-    registryHost,
-    owner,
-  }
-  const results = await hooks.initializeEnvironment.execute(envData)
-  // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
-  await addLogs('Create Environment', results, userId)
-  if (results.failed) {
+    const envData = {
+      environment: environmentName,
+      project: projectName,
+      organization: organizationName,
+      repositories,
+      registryHost,
+      owner,
+    }
+    const results = await hooks.initializeEnvironment.execute(envData)
+    // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
+    await addLogs('Create Environment', results, userId)
+    if (results.failed) {
+      throw new Error('Echec services à la création de l\'environnement')
+    }
+
+    const clusters = await getClustersByIds(newClustersId)
+    await addClustersToEnvironmentBusiness(clusters, env.name, env.id, project.name, project.organization.name, userId, owner)
+
+    await updateEnvironmentCreated(env.id)
+    await unlockProjectIfNotFailed(project.id)
+    return env
+  } catch (error) {
     await updateEnvironmentFailed(env.id)
-    throw new Error('Echec services à la création de l\'environnement')
+    return error
   }
-
-  const clusters = await getClustersByIds(newClustersId)
-  await addClustersToEnvironmentBusiness(clusters, env.name, env.id, project.name, project.organization.name, userId, owner)
-
-  await updateEnvironmentCreated(env.id)
-  await unlockProjectIfNotFailed(project.id)
-  return env
 }
 
 export const updateEnvironment = async (
@@ -182,6 +187,7 @@ export const updateEnvironment = async (
     await unlockProjectIfNotFailed(env.project.id)
   } catch (error) {
     await updateEnvironmentFailed(env.id)
+    return error
   }
 }
 
@@ -189,42 +195,47 @@ export const deleteEnvironment = async (
   env: AsyncReturnType<typeof getEnvironmentInfos>,
   userId: string,
 ) => {
-  await updateEnvironmentDeleting(env.id)
-  await lockProject(env.project.id)
+  try {
+    await updateEnvironmentDeleting(env.id)
+    await lockProject(env.project.id)
 
-  // Retrait des clusters pour les environnements
-  const clustersToRemove = await getClustersByIds(
-    env.clusters
-      .map(({ id }) => id),
-  )
-  await removeClustersFromEnvironmentBusiness(clustersToRemove, env.name, env.id, env.project.name, env.project.organization.name, userId)
+    // Retrait des clusters pour les environnements
+    const clustersToRemove = await getClustersByIds(
+      env.clusters
+        .map(({ id }) => id),
+    )
+    await removeClustersFromEnvironmentBusiness(clustersToRemove, env.name, env.id, env.project.name, env.project.organization.name, userId)
 
-  const projectName = env.project.name
-  const organizationName = env.project.organization.name
-  const gitlabBaseURL = `${gitlabUrl}/${projectRootDir}/${organizationName}/${projectName}`
-  const repositories = env.project.repositories.map(({ internalRepoName }) => ({
-    url: `${gitlabBaseURL}/${internalRepoName}.git`,
-    internalRepoName,
-  }))
+    const projectName = env.project.name
+    const organizationName = env.project.organization.name
+    const gitlabBaseURL = `${gitlabUrl}/${projectRootDir}/${organizationName}/${projectName}`
+    const repositories = env.project.repositories.map(({ internalRepoName }) => ({
+      url: `${gitlabBaseURL}/${internalRepoName}.git`,
+      internalRepoName,
+    }))
 
-  const envData = {
-    environment: env.name,
-    project: projectName,
-    organization: organizationName,
-    repositories,
-  }
-  // TODO: Fix type
-  const results = await hooks.deleteEnvironment.execute(envData)
-  // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
-  await addLogs('Delete Environment', results, userId)
-  if (results.failed) {
+    const envData = {
+      environment: env.name,
+      project: projectName,
+      organization: organizationName,
+      repositories,
+    }
+    // TODO: Fix type
+    const results = await hooks.deleteEnvironment.execute(envData)
+    // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
+    await addLogs('Delete Environment', results, userId)
+    if (results.failed) {
+      await updateEnvironmentFailed(env.id)
+      throw new Error('Echec des services à la suppression de l\'environnement')
+    }
+
+    // mise à jour des status
+    await deleteEnvironmentQuery(env.id)
+    await unlockProjectIfNotFailed(env.project.id)
+  } catch (error) {
     await updateEnvironmentFailed(env.id)
-    throw new Error('Echec des services à la suppression de l\'environnement')
+    return error
   }
-
-  // mise à jour des status
-  await deleteEnvironmentQuery(env.id)
-  await unlockProjectIfNotFailed(env.project.id)
 }
 
 // Cluster Logic
