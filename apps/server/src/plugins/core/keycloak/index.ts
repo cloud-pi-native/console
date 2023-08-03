@@ -1,6 +1,28 @@
 import { addMembers, removeMembers } from './permission.js'
 import { getProjectGroupByName } from './group.js'
 import { getkcClient } from './client.js'
+import { getUserByEmail } from './user.js'
+
+export const retrieveKeycloakUserByEmail = async (payload) => {
+  const kcClient = await getkcClient()
+  try {
+    const { email } = payload.args
+    const user = await getUserByEmail(kcClient, email)
+
+    return {
+      status: { result: 'OK' },
+      user,
+    }
+  } catch (error) {
+    return {
+      status: {
+        result: 'KO',
+        message: error.message,
+      },
+      error: JSON.stringify(error),
+    }
+  }
+}
 
 export const createKeycloakProjectGroup = async (payload) => {
   const kcClient = await getkcClient()

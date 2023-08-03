@@ -97,8 +97,16 @@ export const addUserToProjectController = async (req, res) => {
     const insufficientRoleErrorMessageRequestor = checkInsufficientRoleInProject(userId, { roles: project.roles, minRole: 'owner' })
     if (insufficientRoleErrorMessageRequestor) return sendBadRequest(res, insufficientRoleErrorMessageRequestor)
 
-    const userToAdd = await getUserByEmail(data.email)
-    if (!userToAdd) return sendBadRequest(res, 'Utilisateur introuvable')
+    let userToAdd = await getUserByEmail(data.email)
+    // Retrieve user from keycloak if does not exist in db
+    if (!userToAdd) {
+      const results = await hooks.retrieveUserByEmail.execute(data.email)
+      await addLogs('Retrieve User By Email', results, userId)
+      const retrievedUser = results.plugins?.keycloak?.result?.user
+      if (!retrievedUser) return sendBadRequest(res, 'Utilisateur introuvable')
+      await createUser(retrievedUser)
+      userToAdd = await getUserByEmail(data.email)
+    }
 
     const insufficientRoleErrorMessageUserToAdd = checkInsufficientRoleInProject(userToAdd.id, { roles: project.roles, minRole: 'user' })
     if (!insufficientRoleErrorMessageUserToAdd) return sendBadRequest(res, 'L\'utilisateur est déjà membre du projet')
@@ -131,6 +139,7 @@ export const addUserToProjectController = async (req, res) => {
     }
 
     await lockProject(projectId)
+
     await addUserToProject({ project, user: userToAdd, role: 'user' })
 
     const results = await hooks.addUserToProject.execute(kcData)

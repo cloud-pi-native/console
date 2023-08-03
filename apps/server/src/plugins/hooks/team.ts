@@ -8,7 +8,9 @@ export type UpdateUserProjectRoleValidateArgs = void
 export type UpdateUserProjectRoleExecArgs = void
 export type RemoveUserFromProjectValidateArgs = ProjectBase & { user: UserModel }
 export type RemoveUserFromProjectExecArgs = ProjectBase & { user: UserModel }
+export type RetrieveUserByEmailArgs = Pick<UserModel, 'email'>
 
+export const retrieveUserByEmail: Hook<RetrieveUserByEmailArgs, RetrieveUserByEmailArgs> = createHook()
 export const addUserToProject: Hook<AddUserToProjectExecArgs, AddUserToProjectValidateArgs> = createHook()
 export const updateUserProjectRole: Hook<UpdateUserProjectRoleExecArgs, UpdateUserProjectRoleValidateArgs> = createHook()
 export const removeUserFromProject: Hook<RemoveUserFromProjectExecArgs, RemoveUserFromProjectValidateArgs> = createHook()
