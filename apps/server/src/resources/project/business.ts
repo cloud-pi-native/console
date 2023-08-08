@@ -12,6 +12,7 @@ import {
   getUserProjects as getUserProjectsQuery,
   initializeProject,
   lockProject,
+  removeClusterFromProject,
   updateProjectCreated,
   updateProjectFailed,
   updateProject as updateProjectQuery,
@@ -241,6 +242,12 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
       await deleteRepository(repo.id)
     }
     // -- fin - Suppression repositories --
+
+    // -- début - Retrait clusters --
+    for (const cluster of project.clusters) {
+      await removeClusterFromProject(cluster.id, project.id)
+    }
+    // -- fin - Retrait clusters --
 
     // -- début - Suppression projet --
     const results = await hooks.archiveProject.execute({

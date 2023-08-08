@@ -26,7 +26,7 @@ export const getAllClustersController = async (req, res) => {
         ...cluster,
         user: cluster.kubeconfig.user,
         cluster: cluster.kubeconfig.cluster,
-        projectsId: cluster.projects.map(({ id }) => id),
+        projectsId: cluster.projects.filter(project => project.status !== 'archived').map(({ id }) => id),
       }
       delete newCluster.projects
       delete newCluster.kubeconfig
