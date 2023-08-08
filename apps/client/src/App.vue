@@ -68,9 +68,14 @@ watch(label, (label) => {
     class="dso-footer"
     a11y-compliance="partiellement conforme"
     :logo-text="['Ministère', 'de l’Intérieur', 'et des Outre-Mer']"
+    mandatory-links="[]"
   >
     <template #description>
-      {{ appVersion }}
+      <a
+        :href="`https://github.com/cloud-pi-native/console/releases/tag/${appVersion}`"
+      >
+        {{ appVersion }}
+      </a>
     </template>
   </DsfrFooter>
 </template>
