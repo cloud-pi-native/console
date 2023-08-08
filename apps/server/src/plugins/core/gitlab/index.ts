@@ -1,5 +1,5 @@
 import type { HookPayload } from '@/plugins/hooks/hook.js'
-import { gitlabToken } from '../../../utils/env.js'
+import { gitlabToken } from '@/utils/env.js'
 import { createGroup, deleteGroup } from './group.js'
 import { addGroupMember } from './permission.js'
 import { createProject, createProjectMirror, deleteProject } from './project.js'

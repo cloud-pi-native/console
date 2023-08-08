@@ -2,7 +2,7 @@ import {
   getAllClustersController,
   createClusterController,
   updateClusterController,
-} from '../../controllers/admin/cluster.js'
+} from '@/resources/cluster/admin/controllers.js'
 
 const router = async (app, _opt) => {
   // Récupérer tous les clusters

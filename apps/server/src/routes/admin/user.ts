@@ -1,14 +1,8 @@
-// import {
-//   createUserController,
-// } from '../controllers/user.js'
 import {
   getUsersController,
-} from '../../controllers/admin/user.js'
+} from '@/resources/user/admin/controllers.js'
 
 const router = async (app, _opt) => {
-  // TODO : routes non utilisées
-  // await app.post('/', createUserController)
-
   // Récupérer tous les utilisateurs
   await app.get('/', getUsersController)
 }

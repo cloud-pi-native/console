@@ -4,7 +4,7 @@ import projectRouter from './project.js'
 import logRouter from './log.js'
 import dbRouter from './db.js'
 import clusterRouter from './cluster.js'
-import { checkAdminGroup } from '../../utils/controller.js'
+import { checkAdminGroup } from '@/utils/controller.js'
 
 const router = async (app, _opt) => {
   app.addHook('preHandler', checkAdminGroup)

@@ -1,5 +1,5 @@
 import axios, { type CreateAxiosDefaults } from 'axios'
-import { sonarqubeUrl, sonarqubeApiToken as username } from '../../../utils/env.js'
+import { sonarqubeUrl, sonarqubeApiToken as username } from '@/utils/env.js'
 
 export const axiosOptions: CreateAxiosDefaults = {
   baseURL: `${sonarqubeUrl}/api/`,

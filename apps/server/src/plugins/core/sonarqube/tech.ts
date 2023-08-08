@@ -1,5 +1,5 @@
 import axios from 'axios'
-import app from '../../../app.js'
+import app from '@/app.js'
 import { axiosOptions } from './index.js'
 
 const axiosInstance = axios.create(axiosOptions)

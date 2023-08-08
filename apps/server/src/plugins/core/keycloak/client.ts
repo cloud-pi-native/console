@@ -6,7 +6,7 @@ import {
   keycloakRealm,
   keycloakUser,
   keycloakToken,
-} from '../../../utils/env.js'
+} from '@/utils/env.js'
 
 export const getkcClient = async () => {
   const kcClient = new KcAdminClient({

@@ -1,6 +1,6 @@
 import {
   getAllProjectsController,
-} from '../../controllers/admin/project.js'
+} from '@/resources/project/admin/controllers.js'
 
 const router = async (app, _opt) => {
   // Récupérer tous les projets

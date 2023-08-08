@@ -1,6 +1,6 @@
 import { KubeConfig, CoreV1Api, CustomObjectsApi, PatchUtils } from '@kubernetes/client-node'
 import { addCluster, deleteEnv, deleteRepo, newEnv, newRepo, removeCluster } from './index.js'
-import { kubeconfigPath, kubeconfigCtx } from '../../../utils/env.js'
+import { kubeconfigPath, kubeconfigCtx } from '@/utils/env.js'
 import { RegisterFn } from '@/plugins/index.js'
 import { createCluster, deleteCluster } from './cluster.js'
 export const patchOptions = { headers: { 'Content-type': PatchUtils.PATCH_FORMAT_JSON_PATCH } }

@@ -4,7 +4,7 @@ import {
   removeUserFromProjectController,
   updateUserProjectRoleController,
   getMatchingUsersController,
-} from '../controllers/user.js'
+} from '@/resources/user/controllers.js'
 
 const router = async (app, _opt) => {
   // Récupérer les membres d'un projet

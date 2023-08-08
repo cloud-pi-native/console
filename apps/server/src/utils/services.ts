@@ -1,5 +1,5 @@
 import { harborUrl, nexusUrl, vaultUrl, argocdUrl, gitlabUrl, sonarqubeUrl, projectRootDir } from './env.js'
-import type { DsoProject } from '@/queries/project-queries.js'
+import type { DsoProject } from '@/resources/project/queries.js'
 
 export const allServices = {
   argocd: {

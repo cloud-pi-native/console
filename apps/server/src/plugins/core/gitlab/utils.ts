@@ -1,5 +1,5 @@
 import { Gitlab } from '@gitbeaker/rest'
-import { gitlabToken, gitlabUrl, projectRootDir } from '../../../utils/env.js'
+import { gitlabToken, gitlabUrl, projectRootDir } from '@/utils/env.js'
 
 export const api = new Gitlab({ token: gitlabToken, host: gitlabUrl })
 
