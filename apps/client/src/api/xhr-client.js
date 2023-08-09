@@ -4,7 +4,7 @@ import router from '@/router/index.js'
 
 export const apiClient = axios.create({
   baseURL: '/api/v1',
-  timeout: 5000,
+  timeout: 60000,
 })
 
 apiClient.interceptors.request.use(async function addAuthHeader (config) {
