@@ -103,9 +103,10 @@ export const addUserToProjectController = async (req, res) => {
     let userToAdd = await getUserByEmail(data.email)
     // Retrieve user from keycloak if does not exist in db
     if (!userToAdd) {
-      const results = await hooks.retrieveUserByEmail.execute(data.email)
+      const results = await hooks.retrieveUserByEmail.execute({ email: data.email })
       await addLogs('Retrieve User By Email', results, userId)
-      const retrievedUser = results.plugins?.keycloak?.result?.user
+      // @ts-ignore
+      const retrievedUser = results.keycloak?.user
       if (!retrievedUser) return sendBadRequest(res, 'Utilisateur introuvable')
       await createUser(retrievedUser)
       userToAdd = await getUserByEmail(data.email)

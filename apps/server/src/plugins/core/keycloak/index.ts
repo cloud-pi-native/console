@@ -7,7 +7,7 @@ export const retrieveKeycloakUserByEmail = async (payload) => {
   const kcClient = await getkcClient()
   try {
     const { email } = payload.args
-    const user = await getUserByEmail(kcClient, email)
+    const user = (await getUserByEmail(kcClient, email))[0]
 
     return {
       status: { result: 'OK' },
