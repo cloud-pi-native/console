@@ -48,6 +48,7 @@ export const getClustersWithProjectIdAndConfig = () => prisma.cluster.findMany({
             name: true,
           },
         },
+        status: true,
       },
     },
     clusterResources: true,

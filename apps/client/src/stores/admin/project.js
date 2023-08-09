@@ -6,7 +6,13 @@ export const useAdminProjectStore = defineStore('admin-project', () => {
     return api.getAllProjects()
   }
 
+  const getAllActiveProjects = async () => {
+    const allProjects = await getAllProjects()
+    return allProjects.filter(project => project.status !== 'archived')
+  }
+
   return {
     getAllProjects,
+    getAllActiveProjects,
   }
 })

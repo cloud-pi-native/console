@@ -5,6 +5,8 @@ describe('Administration clusters', () => {
   const cluster1 = getModelById('cluster', '32636a52-4dd1-430b-b08a-b2e5ed9d1789')
   const cluster2 = getModelById('cluster', 'aaaaaaaa-5b03-45d5-847b-149dec875680')
 
+  let allClusters
+
   beforeEach(() => {
     cy.intercept('GET', 'api/v1/admin/clusters').as('getAllClusters')
     cy.intercept('GET', '/api/v1/admin/projects').as('getAdminProjects')
@@ -12,7 +14,10 @@ describe('Administration clusters', () => {
     cy.kcLogin('tcolin')
     cy.visit('/admin/clusters')
     cy.url().should('contain', '/admin/clusters')
-    cy.wait('@getAllClusters').its('response.statusCode').should('eq', 200)
+    cy.wait('@getAllClusters').its('response').then(response => {
+      allClusters = response.body
+      cy.log(allClusters)
+    })
     cy.wait('@getAdminProjects').its('response.statusCode').should('eq', 200)
   })
 
@@ -47,6 +52,8 @@ describe('Administration clusters', () => {
   })
 
   it('Should display a dedicated cluster form', () => {
+    const cluster2Infos = allClusters.find(cluster => cluster.label === cluster2.label)
+
     cy.getByDataTestid(`clusterTile-${cluster2.label}`)
       .should('be.visible')
       .click()
@@ -68,7 +75,7 @@ describe('Administration clusters', () => {
     cy.get('#multi-select')
       .should('be.visible')
     cy.get('button.fr-tag')
-      .should('have.length', 4)
+      .should('have.length', cluster2Infos.projectsId?.length)
   })
 
   it('Should create a cluster', () => {
