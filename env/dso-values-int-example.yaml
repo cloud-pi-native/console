@@ -28,9 +28,14 @@ server:
       VAULT_TOKEN:
       VAULT_URL:
     extraVolumes:
+      - name: dev-workspace
+        path: /app/apps/server/src
+        type: hostPath
       - name: kubeconfig-integ-cm
         type: configMap
     extraVolumeMounts:
+      - name: dev-workspace
+        mountPath: /app/apps/server/src
       - name: kubeconfig-integ-cm
         mountPath: /home/node/.kube/config
 
@@ -44,3 +49,10 @@ client:
       KEYCLOAK_CLIENT_ID:
       KEYCLOAK_REALM:
       KEYCLOAK_DOMAIN:
+    extraVolumes:
+      - name: dev-workspace
+        path: /app/apps/client/src
+        type: hostPath
+    extraVolumeMounts:
+      - name: dev-workspace
+        mountPath: /app/apps/client/src
