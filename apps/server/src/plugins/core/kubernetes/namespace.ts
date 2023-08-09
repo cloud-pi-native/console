@@ -22,7 +22,7 @@ export const createKubeNamespace = async (payload: HookPayload<AddEnvironmentClu
         result: 'KO',
         message: 'Failed to create namespace',
       },
-      error,
+      error: JSON.stringify(error),
     }
   }
 }
@@ -45,7 +45,7 @@ export const deleteKubeNamespace = async (payload: HookPayload<RemoveEnvironment
         result: 'KO',
         message: 'Failed to delete namespace',
       },
-      error,
+      error: JSON.stringify(error),
     }
   }
 }

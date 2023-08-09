@@ -124,9 +124,7 @@ export const createProject = async (dataDto: CreateProjectDto['body'], requestor
       owner,
     }
 
-    // TODO: Fix type
     const results = await hooks.createProject.execute(projectData)
-    // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
     await addLogs('Create Project', results, owner.id)
     if (results.failed) throw new Error('Echec de la création du projet par les plugins')
 
@@ -135,11 +133,9 @@ export const createProject = async (dataDto: CreateProjectDto['body'], requestor
     const { gitlab, registry }: { gitlab: PluginResult, registry: PluginResult } = results
     const services = {
       gitlab: {
-        // @ts-ignore
         id: gitlab?.result?.group?.id,
       },
       registry: {
-        // @ts-ignore
         id: registry?.result?.project?.project_id,
       },
     }
@@ -212,7 +208,7 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
 
     // -- début - Suppression environnements --
     for (const env of project.environments) {
-      // Delete project namespaces in differents target clusters
+      // Supprimer le namespace du projet des différent clusters cibles
       const clusters = await getClusterByEnvironmentId(env.id)
       await removeClustersFromEnvironmentBusiness(clusters, env.name, env.id, project.name, project.organization.name, requestor.id)
       const envData = {
@@ -237,7 +233,6 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
         ...repo,
       })
       await addLogs('Delete Repository', result, requestor.id)
-      // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
       if (result.failed) throw new Error('Echec des services à la suppression de l\'environnement')
       await deleteRepository(repo.id)
     }
@@ -247,7 +242,7 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
     for (const cluster of project.clusters) {
       await removeClusterFromProject(cluster.id, project.id)
     }
-    // -- fin - Retrait clusters --
+    // -- fin - Retrait clusters cibles --
 
     // -- début - Suppression projet --
     const results = await hooks.archiveProject.execute({
@@ -256,7 +251,6 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
       status: 'archived',
     })
     await addLogs('Archive Project', results, requestor.id)
-    // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
     if (results.failed) throw new Error('Echec de la suppression du projet par les plugins')
     await archiveProjectQuery(projectId)
     // -- fin - Suppression projet --

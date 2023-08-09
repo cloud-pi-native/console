@@ -29,7 +29,7 @@ export const newEnv = async (payload: HookPayload<InitializeEnvironmentExecArgs>
         result: 'KO',
         message: 'Failed',
       },
-      error,
+      error: JSON.stringify(error),
     }
   }
 }
@@ -55,7 +55,7 @@ export const deleteEnv = async (payload: HookPayload<DeleteEnvironmentExecArgs>)
         result: 'KO',
         message: 'Failed',
       },
-      error,
+      error: JSON.stringify(error),
     }
   }
 }
@@ -94,7 +94,7 @@ export const newRepo = async (payload: HookPayload<CreateRepositoryExecArgs>): P
         result: 'KO',
         message: 'Failed',
       },
-      error,
+      error: JSON.stringify(error),
     }
   }
 }
@@ -125,7 +125,7 @@ export const deleteRepo = async (payload: HookPayload<DeleteRepositoryExecArgs>)
         result: 'KO',
         message: 'Failed',
       },
-      error,
+      error: JSON.stringify(error),
     }
   }
 }
@@ -149,7 +149,7 @@ export const addCluster = async (payload: HookPayload<AddEnvironmentClusterExecA
         result: 'KO',
         message: 'Failed',
       },
-      error,
+      error: JSON.stringify(error),
     }
   }
 }
@@ -172,7 +172,7 @@ export const removeCluster = async (payload: HookPayload<RemoveEnvironmentCluste
         result: 'KO',
         message: 'Failed',
       },
-      error,
+      error: JSON.stringify(error),
     }
   }
 }

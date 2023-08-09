@@ -29,7 +29,7 @@ export const createKubeSecret = async (payload: HookPayload<AddEnvironmentCluste
         result: 'KO',
         message: 'Failed to create docker config secret',
       },
-      error,
+      error: JSON.stringify(error),
     }
   }
 }

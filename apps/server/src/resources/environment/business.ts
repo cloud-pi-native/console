@@ -90,7 +90,7 @@ export const checkDeleteEnvironment = (
   project: { locked: boolean, roles: Role[], id: string },
   userId: string,
 ) => {
-  const errorMessage = checkAuthorization(project, userId, 'owner')
+  const errorMessage = checkInsufficientRoleInProject(userId, { minRole: 'owner', roles: project.roles })
   if (errorMessage) throw new ForbiddenError(errorMessage, { description: '', extras: { userId, projectId: project.id } })
 }
 
@@ -220,12 +220,9 @@ export const deleteEnvironment = async (
       organization: organizationName,
       repositories,
     }
-    // TODO: Fix type
     const results = await hooks.deleteEnvironment.execute(envData)
-    // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
     await addLogs('Delete Environment', results, userId)
     if (results.failed) {
-      await updateEnvironmentFailed(env.id)
       throw new Error('Echec des services à la suppression de l\'environnement')
     }
 
