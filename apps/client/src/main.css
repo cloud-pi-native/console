@@ -70,6 +70,10 @@ body,
   background-color: var(--background-alt-grey);
 }
 
+.danger-zone-btns {
+  @apply flex justify-between items-center gap-4 <md:flex-col;
+}
+
 .json-box.jv-container span.jv-item.jv-object,
 .json-box.jv-container span.jv-key {
   color: var(--text-default-grey);

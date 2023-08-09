@@ -20,7 +20,7 @@ import {
 export const getUserProjectsController = async (req: EnhancedFastifyRequest<void>, res) => {
   const requestor = req.session?.user
   delete requestor.groups
-  // appel business 1 : récup données
+
   const projectsInfos = await getUserProjects(requestor)
   addReqLogs({
     req,
@@ -36,7 +36,6 @@ export const getProjectByIdController = async (req, res) => {
   const projectId = req.params?.projectId
   const userId = req.session?.user?.id
 
-  // appel business 1 : récup données
   const project = await getProject(projectId, userId)
 
   addReqLogs({

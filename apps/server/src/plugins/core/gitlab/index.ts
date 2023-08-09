@@ -69,7 +69,7 @@ export const createDsoProject = async (payload: HookPayload<CreateProjectExecArg
         result: 'KO',
         message: error.message,
       },
-      error,
+      error: JSON.stringify(error),
     }
   }
 }

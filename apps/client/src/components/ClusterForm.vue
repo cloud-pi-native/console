@@ -283,7 +283,7 @@ watch(selectedContext, () => {
       data-testid="deleteClusterZone"
       class="danger-zone"
     >
-      <div class="flex justify-between items-center <md:flex-col">
+      <div class="danger-zone-btns">
         <DsfrButton
           v-show="!isDeletingCluster"
           data-testid="showDeleteClusterBtn"

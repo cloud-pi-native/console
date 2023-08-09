@@ -128,7 +128,7 @@ export const createNexusProject = async (payload): Promise<PluginResult> => {
         result: 'KO',
         message: 'Fail Create repositories',
       },
-      error,
+      error: JSON.stringify(error),
     }
   }
 }

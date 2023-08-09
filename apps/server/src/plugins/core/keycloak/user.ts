@@ -3,5 +3,5 @@ export const getUsers = async (kcClient) => {
 }
 
 export const getUserByEmail = async (kcClient, email) => {
-  return kcClient.users.find({ email })
+  return (await kcClient.users.find({ email }))[0]
 }
