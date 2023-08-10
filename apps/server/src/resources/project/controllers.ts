@@ -6,6 +6,7 @@ import {
 import {
   type CreateProjectDto,
   UpdateProjectDto,
+  ArchiveProjectDto,
 } from 'shared'
 import type { EnhancedFastifyRequest } from '@/types/index.js'
 import {
@@ -84,7 +85,7 @@ export const updateProjectController = async (req: EnhancedFastifyRequest<Update
 }
 
 // DELETE
-export const archiveProjectController = async (req, res) => {
+export const archiveProjectController = async (req: EnhancedFastifyRequest<ArchiveProjectDto>, res) => {
   const requestor = req.session?.user
   const projectId = req.params?.projectId
 

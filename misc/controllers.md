@@ -11,3 +11,19 @@ flowchart TD
     G -->|OK| H>send code 200, 201]
     G -->|catch| E
 ```
+
+## Principe
+
+### Controller
+
+- reçoit la requête
+- appelle la couche business
+- renvoie la réponse
+
+### Business
+
+- est appelé par le controller
+- appelle l'ORM pour les opérations en bdd
+- appelle éventuellement les plugins
+- gère les erreurs (try catch)
+- renvoie un résultat ou une erreur au controller

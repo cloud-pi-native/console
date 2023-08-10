@@ -6,7 +6,7 @@ export const getOrganizations = async () => {
   return prisma.organization.findMany()
 }
 
-export const getActiveOrganizations = async () => {
+export const getActiveOrganizationsQuery = async () => {
   return prisma.organization.findMany({
     where: { active: true },
   })
