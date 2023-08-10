@@ -1,25 +1,19 @@
+import { addReqLogs } from '@/utils/logger.js'
+import { sendOk } from '@/utils/response.js'
 import {
   getActiveOrganizations,
-} from '@/resources/queries-index.js'
-import { addReqLogs } from '@/utils/logger.js'
-import { sendOk, sendNotFound } from '@/utils/response.js'
+} from './business.js'
+import { EnhancedFastifyRequest } from '@/types/index.js'
 
 // GET
-export const getActiveOrganizationsController = async (req, res) => {
-  try {
-    const organizations = await getActiveOrganizations()
-    addReqLogs({
-      req,
-      description: 'Organisations récupérées avec succès',
-    })
-    sendOk(res, organizations)
-  } catch (error) {
-    const description = 'Echec de la récupération des organisations'
-    addReqLogs({
-      req,
-      description,
-      error,
-    })
-    sendNotFound(res, description)
-  }
+export const getActiveOrganizationsController = async (req: EnhancedFastifyRequest<void>, res) => {
+  const requestor = req.session?.user
+  delete requestor.groups
+
+  const organizations = await getActiveOrganizations(requestor)
+  addReqLogs({
+    req,
+    description: 'Organisations récupérées avec succès',
+  })
+  sendOk(res, organizations)
 }
