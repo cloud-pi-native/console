@@ -1,9 +1,10 @@
+import type { RegisterFn } from '@/plugins/index.js'
 import {
   createKeycloakEnvGroup, createKeycloakProjectGroup, deleteKeycloakEnvGroup, deleteKeycloakProjectGroup, addKeycloakUserToProjectGroup, removeKeycloakUserFromProjectGroup,
   retrieveKeycloakUserByEmail,
 } from './index.js'
 
-export const init = (register) => {
+export const init = (register: RegisterFn) => {
   register('keycloak', {
     retrieveUserByEmail: { main: retrieveKeycloakUserByEmail },
     createProject: { main: createKeycloakProjectGroup },

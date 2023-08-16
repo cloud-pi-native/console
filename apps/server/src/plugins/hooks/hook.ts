@@ -1,6 +1,10 @@
 import * as hooks from './index.js'
 
-export type PluginResult = Record<string, any> & { status: { result: 'OK', message?: string } | { result: 'KO', message: string } }
+export type DefaultArgs = Record<any, any>
+export type PluginResult = {
+  status: { result: 'OK', message?: string } | { result: 'KO', message: string },
+  [key: string]: any
+}
 
 export type HookPayload<Args> = {
   args: Args,
@@ -8,8 +12,8 @@ export type HookPayload<Args> = {
   plugins?: Record<string, PluginResult>
 }
 
-export type StepCall = <Args>(payload: HookPayload<Args>) => Promise<PluginResult>
-type HookStep = Record<string, StepCall>
+export type StepCall<Args> = (payload: HookPayload<Args>) => Promise<PluginResult>
+type HookStep = Record<string, StepCall<DefaultArgs>>
 export type HookStepsNames = 'check' | 'pre' | 'main' | 'post' | 'save' | 'revert'
 export type Hook<E, V> = {
   uniquePlugin?: string, // if plugin register on it no other one can register on it
@@ -19,7 +23,12 @@ export type Hook<E, V> = {
 export type HookList<E, V> = Record<keyof typeof hooks, Hook<E, V>>
 export type HookChoice = keyof typeof hooks | 'all'
 
-export type PluginsFunctions = Record<HookChoice, Partial<Record<HookStepsNames, StepCall>>>
+export type PluginsFunctions = Partial<Record<
+  HookChoice,
+  Partial<
+    Record<HookStepsNames, StepCall<DefaultArgs>>
+  >
+>>
 
 const executeStep = async <Args>(step: HookStep, payload: HookPayload<Args>) => {
   const names = Object.keys(step)
