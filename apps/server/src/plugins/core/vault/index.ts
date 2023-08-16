@@ -1,7 +1,8 @@
-import { HookPayload, PluginResult } from '@/plugins/hooks/hook.js'
 import { vaultUrl, vaultToken } from '@/utils/env.js'
+import type { StepCall } from '@/plugins/hooks/hook.js'
 import { destroyVault, listVault, readVault, writeVault } from './secret.js'
-import { UpdateRepositoryExecArgs } from '@/plugins/hooks/repository.js'
+import type { DeleteRepositoryExecArgs, UpdateRepositoryExecArgs } from '@/plugins/hooks/repository.js'
+import type { ArchiveProjectExecArgs } from '@/plugins/hooks/project.js'
 
 export const axiosOptions = {
   baseURL: `${vaultUrl}`,
@@ -38,7 +39,7 @@ export const writePayloadToVault = async (payload) => {
   }
 }
 
-export const archiveDsoProject = async (payload) => {
+export const archiveDsoProject: StepCall<ArchiveProjectExecArgs> = async (payload) => {
   const { organization, project } = payload.args
   try {
     const vaultPath = [organization, project].join('/')
@@ -64,7 +65,7 @@ export const archiveDsoProject = async (payload) => {
   }
 }
 
-export const updateRepository = async (payload:HookPayload<UpdateRepositoryExecArgs>):Promise<PluginResult> => {
+export const updateRepository: StepCall<UpdateRepositoryExecArgs> = async (payload) => {
   const { internalRepoName, organization, project, externalToken, externalRepoUrl, externalUserName } = payload.args
   try {
     const vaultPath = [organization, project, `${internalRepoName}-mirror`].join('/')
@@ -92,7 +93,7 @@ export const updateRepository = async (payload:HookPayload<UpdateRepositoryExecA
   }
 }
 
-export const deleteDsoRepository = async (payload) => {
+export const deleteDsoRepository: StepCall<DeleteRepositoryExecArgs> = async (payload) => {
   const { internalRepoName, organization, project } = payload.args
   try {
     const vaultPath = [organization, project, `${internalRepoName}-mirror`].join('/')
@@ -114,7 +115,7 @@ export const deleteDsoRepository = async (payload) => {
   }
 }
 
-export const getRegistrySecret = async (payload) => {
+export const getRegistrySecret: StepCall<any> = async (payload) => {
   const { organization, project } = payload.args
   try {
     const vaultPath = [organization, project, 'REGISTRY'].join('/')

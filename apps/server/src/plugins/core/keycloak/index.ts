@@ -1,9 +1,13 @@
+import type { StepCall } from '@/plugins/hooks/hook.js'
+import type { DeleteEnvironmentExecArgs, InitializeEnvironmentExecArgs } from '@/plugins/hooks/environment.js'
+import type { ArchiveProjectExecArgs, CreateProjectExecArgs } from '@/plugins/hooks/project.js'
+import type { AddUserToProjectExecArgs, RemoveUserFromProjectExecArgs, RetrieveUserByEmailArgs } from '@/plugins/hooks/team.js'
 import { addMembers, removeMembers } from './permission.js'
 import { getProjectGroupByName } from './group.js'
 import { getkcClient } from './client.js'
 import { getUserByEmail } from './user.js'
 
-export const retrieveKeycloakUserByEmail = async (payload) => {
+export const retrieveKeycloakUserByEmail: StepCall<RetrieveUserByEmailArgs> = async (payload) => {
   const kcClient = await getkcClient()
   try {
     const { email } = payload.args
@@ -24,7 +28,7 @@ export const retrieveKeycloakUserByEmail = async (payload) => {
   }
 }
 
-export const createKeycloakProjectGroup = async (payload) => {
+export const createKeycloakProjectGroup: StepCall<CreateProjectExecArgs> = async (payload) => {
   const kcClient = await getkcClient()
   try {
     const { organization, project, owner } = payload.args
@@ -52,7 +56,7 @@ export const createKeycloakProjectGroup = async (payload) => {
   }
 }
 
-export const addKeycloakUserToProjectGroup = async (payload) => {
+export const addKeycloakUserToProjectGroup: StepCall<AddUserToProjectExecArgs> = async (payload) => {
   const kcClient = await getkcClient()
   try {
     const { organization, project, user } = payload.args
@@ -78,7 +82,7 @@ export const addKeycloakUserToProjectGroup = async (payload) => {
   }
 }
 
-export const removeKeycloakUserFromProjectGroup = async (payload) => {
+export const removeKeycloakUserFromProjectGroup: StepCall<RemoveUserFromProjectExecArgs> = async (payload) => {
   const kcClient = await getkcClient()
   try {
     const { organization, project, user } = payload.args
@@ -104,7 +108,7 @@ export const removeKeycloakUserFromProjectGroup = async (payload) => {
   }
 }
 
-export const deleteKeycloakProjectGroup = async (payload) => {
+export const deleteKeycloakProjectGroup: StepCall<ArchiveProjectExecArgs> = async (payload) => {
   try {
     const kcClient = await getkcClient()
     const { organization, project } = payload.args
@@ -136,7 +140,7 @@ export const deleteKeycloakProjectGroup = async (payload) => {
   }
 }
 
-export const createKeycloakEnvGroup = async (payload) => {
+export const createKeycloakEnvGroup: StepCall<InitializeEnvironmentExecArgs> = async (payload) => {
   try {
     const kcClient = await getkcClient()
     const { organization, project, environment, owner } = payload.args
@@ -161,7 +165,7 @@ export const createKeycloakEnvGroup = async (payload) => {
       }
     }
     return {
-      status: { result: 'Already Exists' },
+      status: { result: 'OK', message: 'Already Exists' },
       group,
     }
   } catch (error) {
@@ -175,7 +179,7 @@ export const createKeycloakEnvGroup = async (payload) => {
   }
 }
 
-export const deleteKeycloakEnvGroup = async (payload) => {
+export const deleteKeycloakEnvGroup: StepCall<DeleteEnvironmentExecArgs> = async (payload) => {
   try {
     let message = 'Already missing'
     const kcClient = await getkcClient()
