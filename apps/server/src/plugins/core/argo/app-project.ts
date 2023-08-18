@@ -3,8 +3,12 @@ import { argoNamespace } from '@/utils/env.js'
 import { customK8sApi, patchOptions } from './init.js'
 
 export const getAppProject = async (appProjectName) => {
-  const appProjectList: { body: Record<string, any> } = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', argoNamespace, 'appprojects', undefined, undefined, undefined, `metadata.name=${appProjectName}`)
-  return appProjectList.body.items.find(appProject => appProject.metadata.name === appProjectName) as AppProject
+  try {
+    const appProjectList: { body: Record<string, any> } = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', argoNamespace, 'appprojects', undefined, undefined, undefined, `metadata.name=${appProjectName}`)
+    return appProjectList.body.items.find(appProject => appProject.metadata.name === appProjectName) as AppProject
+  } catch (error) {
+    return undefined
+  }
 }
 
 export const createApplicationProject = async ({ appProjectName, repositories, roGroup, rwGroup }) => {
