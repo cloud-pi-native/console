@@ -91,9 +91,13 @@ const getAllActiveProjects = async () => {
 }
 
 onMounted(async () => {
-  await adminClusterStore.getAllClusters()
-  setClusterTiles(clusters.value)
-  getAllActiveProjects()
+  try {
+    await adminClusterStore.getAllClusters()
+    setClusterTiles(clusters.value)
+    await getAllActiveProjects()
+  } catch (error) {
+    snackbarStore.setMessage(error?.message, 'error')
+  }
 })
 
 watch(clusters, () => {
