@@ -169,6 +169,7 @@ watch(project, () => {
         :repo="selectedRepo"
         @save="(repo) => saveRepo(repo)"
         @delete="(repoId) => deleteRepo(repoId)"
+        @cancel="cancel()"
       />
     </div>
   </div>
