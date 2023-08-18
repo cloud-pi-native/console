@@ -100,6 +100,7 @@ const prepareForDownload = async () => {
 
 const copyContent = async (key) => {
   try {
+    if (!window.isSecureContext) throw new Error('Clipboard ne peut être utilisé hors contexte sécurisé')
     await navigator.clipboard.writeText(generatedCI.value[key])
     snackbarStore.setMessage('Fichier copié', 'success')
   } catch (error) {

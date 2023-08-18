@@ -23,6 +23,7 @@ const rows = ref([])
 
 const copyContent = async (content) => {
   try {
+    if (!window.isSecureContext) throw new Error('Clipboard ne peut être utilisé hors contexte sécurisé')
     await navigator.clipboard.writeText(content)
     snackbarStore.setMessage('Donnée copié', 'success')
   } catch (error) {
