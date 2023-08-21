@@ -5,7 +5,7 @@ import { UserDto } from '../user/business.js'
 // TODO 539 : à supprimer ? n'est pas utilisé
 export const getOrganizationInfos = async (organizationId: string) => {
   const organization = await getOrganizationById(organizationId)
-  if (!organization) throw new NotFoundError('Organization introuvable')
+  if (!organization) throw new NotFoundError('Organization introuvable', undefined)
   return organization
 }
 

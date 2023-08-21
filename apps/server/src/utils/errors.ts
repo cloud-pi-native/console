@@ -9,8 +9,8 @@ class DsoError extends Error {
 
   constructor (message: string, data?: DsoErrorData) {
     super(message)
-    this.description = data.description || message
-    this.extras = data.extras || {}
+    this.description = data?.description || message
+    this.extras = data?.extras || {}
   }
 }
 
