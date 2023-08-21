@@ -1,6 +1,8 @@
 server:
   container:
     env:
+      KUBECONFIG_CTX:
+      KUBECONFIG_PATH: /home/node/.kube/config
       CI: "false"
       INTEGRATION: "true"
       KEYCLOAK_REDIRECT_URI: http://console.dso.local
