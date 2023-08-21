@@ -1,6 +1,3 @@
-import {
-  getUserById,
-} from '@/resources/queries-index.js'
 import { addReqLogs } from '@/utils/logger.js'
 import {
   sendOk,
@@ -23,10 +20,8 @@ import {
   updateEnvironment,
   deleteEnvironment,
   checkGetEnvironment,
+  getInitializeEnvironmentInfos,
 } from './business.js'
-import {
-  getProjectInfosAndClusters,
-} from '../project/business.js'
 
 // GET
 // TODO #541 : ce controller n'est pas utilisé
@@ -63,8 +58,7 @@ export const initializeEnvironmentController = async (req: EnhancedFastifyReques
   const newClustersId = req.body?.clustersId || []
 
   // appel business 1 : récup données
-  const owner = await getUserById(userId)
-  const { project, authorizedClusters } = await getProjectInfosAndClusters(projectId)
+  const { owner, project, authorizedClusters } = await getInitializeEnvironmentInfos(userId, projectId)
 
   // appel business 2 : check pré-requis
   checkCreateEnvironment({

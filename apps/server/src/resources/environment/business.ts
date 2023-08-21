@@ -12,6 +12,7 @@ import {
   initializeEnvironment,
   updateEnvironmentDeleting,
   deleteEnvironment as deleteEnvironmentQuery,
+  getUserById,
 } from '@/resources/queries-index.js'
 import { hooks } from '@/plugins/index.js'
 import { BadRequestError, ForbiddenError, NotFoundError } from '@/utils/errors.js'
@@ -26,6 +27,7 @@ import {
 } from '@/utils/controller.js'
 import { projectIsLockedInfo, ProjectRoles } from 'shared'
 import { gitlabUrl, harborUrl, projectRootDir } from '@/utils/env.js'
+import { getProjectInfosAndClusters } from '@/resources/project/business.js'
 
 // Fetch infos
 export const getEnvironmentInfosAndClusters = async (environmentId: string) => {
@@ -39,6 +41,12 @@ export const getEnvironmentInfos = async (environmentId: string) => {
   const env = await getEnvironmentInfosQuery(environmentId)
   if (!env) throw new NotFoundError('Environnement introuvable', undefined)
   return env
+}
+
+export const getInitializeEnvironmentInfos = async (userId: User['id'], projectId: Project['id']) => {
+  const owner = await getUserById(userId)
+  const { project, authorizedClusters } = await getProjectInfosAndClusters(projectId)
+  return { owner, project, authorizedClusters }
 }
 
 // Check logic

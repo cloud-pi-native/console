@@ -1,70 +1,30 @@
-import {
-  getOrganizations,
-  createOrganization,
-  updateActiveOrganization,
-  updateLabelOrganization,
-  getOrganizationByName,
-  addLogs,
-  getProjectByOrganizationId,
-  lockProject,
-} from '@/resources/queries-index.js'
-import { organizationSchema, getUniqueListBy } from 'shared'
 import { addReqLogs } from '@/utils/logger.js'
-import { sendOk, sendCreated, sendNotFound, sendBadRequest } from '@/utils/response.js'
-import { hooks } from '@/plugins/index.js'
-import { HookPayload, PluginResult } from '@/plugins/hooks/hook.js'
-import { objectValues } from '@/utils/type.js'
-import { unlockProjectIfNotFailed } from '@/utils/controller.js'
+import { sendOk, sendCreated } from '@/utils/response.js'
+import { createOrganizationBusiness, fetchOrganizationsBusiness, getAllOrganizationBusiness, updateOrganizationBusiness } from './business.js'
 
 // GET
 export const getAllOrganizationsController = async (req, res) => {
-  try {
-    const organizations = await getOrganizations()
-    addReqLogs({
-      req,
-      description: 'Organisations récupérées avec succès',
-    })
-    sendOk(res, organizations)
-  } catch (error) {
-    const description = 'Echec de la récupération des organisations'
-    addReqLogs({
-      req,
-      description,
-      error,
-    })
-    sendNotFound(res, description)
-  }
+  const organizations = await getAllOrganizationBusiness()
+  addReqLogs({
+    req,
+    description: 'Organisations récupérées avec succès',
+  })
+  sendOk(res, organizations)
 }
 
 // POST
 export const createOrganizationController = async (req, res) => {
   const data = req.body
+  const organization = await createOrganizationBusiness(data)
 
-  try {
-    await organizationSchema.validateAsync(data)
-
-    const isNameTaken = await getOrganizationByName(data.name)
-    if (isNameTaken) throw new Error('Cette organisation existe déjà')
-
-    const organization = await createOrganization(data)
-
-    addReqLogs({
-      req,
-      description: 'Organisation créée avec succès',
-      extras: {
-        organizationId: organization.id,
-      },
-    })
-    sendCreated(res, organization)
-  } catch (error) {
-    const description = 'Echec de la création de l\'organisation'
-    addReqLogs({
-      req,
-      description,
-      error,
-    })
-    sendBadRequest(res, description)
-  }
+  addReqLogs({
+    req,
+    description: 'Organisation créée avec succès',
+    extras: {
+      organizationId: organization.id,
+    },
+  })
+  sendCreated(res, organization)
 }
 
 // PUT
@@ -72,106 +32,26 @@ export const updateOrganizationController = async (req, res) => {
   const name = req.params.orgName
   const { active, label, source } = req.body
 
-  try {
-    let organization = await getOrganizationByName(name)
+  const organization = await updateOrganizationBusiness(name, active, label, source)
 
-    if (active !== undefined) {
-      await updateActiveOrganization({ name, active })
-      /** lock project if organization becomes inactive */
-      if (active === false) {
-        const projects = await getProjectByOrganizationId(organization.id)
-        for (const project of projects) {
-          await lockProject(project.id)
-        }
-      }
-      /** unlock project if organization becomes active and no resource is failed */
-      if (active === true) {
-        const projects = await getProjectByOrganizationId(organization.id)
-        for (const project of projects) {
-          await unlockProjectIfNotFailed(project.id)
-        }
-      }
-    }
-    if (label) {
-      await updateLabelOrganization({ name, label, source })
-    }
-    organization = await getOrganizationByName(name)
-
-    addReqLogs({
-      req,
-      description: 'Organisation mise à jour avec succès',
-      extras: {
-        organizationId: organization.id,
-      },
-    })
-    sendCreated(res, organization)
-  } catch (error) {
-    const description = 'Echec de la mise à jour de l\'organisation'
-    addReqLogs({
-      req,
-      description,
-      extras: {
-        organizationName: name,
-      },
-      error,
-    })
-    sendBadRequest(res, description)
-  }
+  addReqLogs({
+    req,
+    description: 'Organisation mise à jour avec succès',
+    extras: {
+      organizationId: organization.id,
+    },
+  })
+  sendCreated(res, organization)
 }
 
 export const fetchOrganizationsController = async (req, res) => {
-  const user = req.session.user
+  const userId = req.session.user.id
 
-  try {
-    let consoleOrganizations = await getOrganizations()
+  const consoleOrganizations = await fetchOrganizationsBusiness(userId)
 
-    // TODO: Fix define return in plugins dir
-    // @ts-ignore See TODO
-    type PluginOrganization = { name: string, label: string, source: string }
-    type FetchOrganizationsResult = PluginResult & { result: { organizations: PluginOrganization[] } }
-    const results = await hooks.fetchOrganizations.execute() as HookPayload<void> & Record<string, FetchOrganizationsResult>
-
-    // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
-    await addLogs('Fetch organizations', results, user.id)
-
-    // TODO: Fix type
-    // @ts-ignore See TODO
-    if (results.failed) throw new Error('Echec des services à la synchronisation des organisations')
-
-    /**
-    * Filter plugin results to get a single array of organizations with unique name
-    */
-    const externalOrganizations = getUniqueListBy(objectValues(results)
-      ?.reduce((acc: Record<string, any>[], value) => {
-        if (typeof value !== 'object' || !value.result.organizations?.length) return acc
-        return [...acc, ...value.result.organizations]
-      }, [])
-      ?.filter(externalOrg => externalOrg.name), 'name') as PluginOrganization[]
-
-    if (!externalOrganizations.length) throw new Error('Aucune organisation à synchroniser')
-
-    for (const externalOrg of externalOrganizations) {
-      await organizationSchema.validateAsync(externalOrg)
-      if (consoleOrganizations.find(consoleOrg => consoleOrg.name === externalOrg.name)) {
-        await updateLabelOrganization(externalOrg)
-      } else {
-        await createOrganization(externalOrg)
-      }
-    }
-
-    consoleOrganizations = await getOrganizations()
-    addReqLogs({
-      req,
-      description: 'Organisations synchronisées avec succès',
-    })
-    sendCreated(res, consoleOrganizations)
-  } catch (error) {
-    const description = error.message
-    addReqLogs({
-      req,
-      description,
-      error,
-    })
-    sendBadRequest(res, description)
-  }
+  addReqLogs({
+    req,
+    description: 'Organisations synchronisées avec succès',
+  })
+  sendCreated(res, consoleOrganizations)
 }
