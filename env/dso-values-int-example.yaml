@@ -37,7 +37,7 @@ server:
       - name: dev-workspace
         mountPath: /app/apps/server/src
       - name: kubeconfig-integ-cm
-        mountPath: /home/node/.kube/config
+        mountPath: /home/node/.kube/
 
 client:
   container:

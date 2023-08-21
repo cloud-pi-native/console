@@ -166,9 +166,13 @@ fi
 
 # Check for integration mode
 if [[ "$COMMAND" =~ "int" ]]; then
-  source ./env/.env
+  source ./env/.env.int
   INTEGRATION_ARGS="--values ./env/dso-values-int.yaml"
-  INTEGRATION_ARGS_UTILS="--set keycloak.enabled=false --set integration=true --set-file kubeconfig=$KUBECONFIG_PATH"
+  if [ -z "$DEV_KUBECONFIG_PATH" ]; then
+    printf "\n\n${red}[kind wrapper].${no_color} DEV_KUBECONFIG_PATH not defined in ./env/.env.int integration will certainly fail\nYou should also check you KUBECONFIG_CTX in ./env/dso-values-int.yaml\n\n"
+    exit 1
+  fi
+  INTEGRATION_ARGS_UTILS="--set keycloak.enabled=false --set integration=true --set-file kubeconfig=$DEV_KUBECONFIG_PATH"
 fi
 
 
