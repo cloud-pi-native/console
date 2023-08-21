@@ -27,7 +27,7 @@ export const newEnv: StepCall<InitializeEnvironmentExecArgs> = async (payload) =
     return {
       status: {
         result: 'KO',
-        message: 'Failed',
+        message: 'Can\'t create env',
       },
       error: JSON.stringify(error),
     }
