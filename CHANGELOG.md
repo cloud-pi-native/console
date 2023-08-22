@@ -1,5 +1,28 @@
 # Changelog
 
+## [5.5.0](https://github.com/cloud-pi-native/console/compare/v5.4.0...v5.5.0) (2023-08-22)
+
+
+### Features
+
+* :children_crossing: inform users that clipboard works only with https ([909c3b6](https://github.com/cloud-pi-native/console/commit/909c3b672bcae1401d2133c8fff94cdca91f61bc))
+* :sparkles: retrieve user from kc if does not exist in db ([3d4461a](https://github.com/cloud-pi-native/console/commit/3d4461ae7d82e6f64a1644921893d89f41e9a2d9))
+
+
+### Bug Fixes
+
+* :alien: sync controllers require bigger axios timeout ([5116bbd](https://github.com/cloud-pi-native/console/commit/5116bbdb8f49b73c920ac04421ca05ccabef902c))
+* :bento: update MultiSelector component ([9a44bb3](https://github.com/cloud-pi-native/console/commit/9a44bb35d8aa0da1aaf8f96a745c28f97f6ea53c))
+* :bug: filter archived project from cluster form ([50913f5](https://github.com/cloud-pi-native/console/commit/50913f57def7d8e3e36f63a5876e476e64884828))
+* :bug: fix types, add void and handle it ([110cfed](https://github.com/cloud-pi-native/console/commit/110cfedfcb2a58757b5ad47f96f6323cbe034550))
+* :bug: manage cancel emit on update repo form ([16df7b4](https://github.com/cloud-pi-native/console/commit/16df7b43d584fb1edfa5a01938356b04b785429b))
+* :bug: retrieve kc user bug fix ([aaf61c5](https://github.com/cloud-pi-native/console/commit/aaf61c51a288cd7998a5d3883cf467471b42c3cb))
+* :bug: various fixes around plugins and controllers ([6271c67](https://github.com/cloud-pi-native/console/commit/6271c67f3d8471ee6afc3409c5d753f7ade950f0))
+* :goal_net: allow deleting environment if not found ([a2dc7da](https://github.com/cloud-pi-native/console/commit/a2dc7daf96942121e9291063569ff9c6612bd345))
+* :lipstick: add icons ([ed1887b](https://github.com/cloud-pi-native/console/commit/ed1887baf6a65d0d58c6e399991a1419351c3883))
+* :rewind: fix bugs introduced during my vacations ([9ee467c](https://github.com/cloud-pi-native/console/commit/9ee467c69b590a4630dae19f42f2fc5c9321953e))
+* :technologist: fix import kubeconfig in integration ([51af3dd](https://github.com/cloud-pi-native/console/commit/51af3dd16128a6d4a1e676921937005e295acfc9))
+
 ## [5.4.0](https://github.com/cloud-pi-native/console/compare/v5.3.0...v5.4.0) (2023-08-02)
 
 
