@@ -15,8 +15,8 @@ export const createApplicationProject = async ({ appProjectName, repositories, r
     rwGroup,
     roGroup,
     sourceRepos,
-    resourceVersion: appProject ? appProject.metadata?.resourceVersion : '1',
-    destinations: appProject ? appProject.spec?.destinations : [],
+    ...appProject && { resourceVersion: appProject?.metadata?.resourceVersion },
+    ...appProject && { destinations: appProject?.spec?.destinations },
   })
 
   if (!appProject) {

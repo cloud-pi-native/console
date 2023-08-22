@@ -1,5 +1,5 @@
 import type { AddEnvironmentClusterExecArgs, DeleteEnvironmentExecArgs, InitializeEnvironmentExecArgs, RemoveEnvironmentClusterExecArgs } from '@/plugins/hooks/environment.js'
-import { addDestinationToApplicationProject, createApplicationProject, deleteApplicationProject, removeDestinationFromApplicationProject } from './app-project.js'
+import { addDestinationToApplicationProject, addRepoToApplicationProject, createApplicationProject, deleteApplicationProject, removeDestinationFromApplicationProject } from './app-project.js'
 import { createApplication, deleteApplication } from './applications.js'
 import type { PluginResult, StepCall } from '@/plugins/hooks/hook.js'
 import type { CreateRepositoryExecArgs, DeleteRepositoryExecArgs } from '@/plugins/hooks/repository.js'
@@ -74,12 +74,9 @@ export const newRepo: StepCall<CreateRepositoryExecArgs> = async (payload) => {
     const { project, organization, environments } = payload.args
 
     for (const env of environments) {
-      const roGroup = `/${organization}-${project}/${env}/RO`
-      const rwGroup = `/${organization}-${project}/${env}/RW`
       const namespace = `${organization}-${project}-${env}`
       const appProjectName = `${organization}-${project}-${env}-project`
       const applicationName = `${organization}-${project}-${repo.internalRepoName}-${env}`
-      await createApplicationProject({ appProjectName, roGroup, rwGroup, repositories: [] })
       await createApplication({ applicationName, appProjectName, namespace, repo })
     }
     return {
@@ -106,10 +103,8 @@ export const deleteRepo: StepCall<DeleteRepositoryExecArgs> = async (payload) =>
     const { project, organization, environments, internalRepoName, internalUrl } = payload.args
 
     for (const env of environments) {
-      const appProjectName = `${organization}-${project}-${env}-project`
       const applicationName = `${organization}-${project}-${internalRepoName}-${env}`
       await deleteApplication({ applicationName, repoUrl: internalUrl })
-      await deleteApplicationProject({ appProjectName })
     }
     return {
       status: {
