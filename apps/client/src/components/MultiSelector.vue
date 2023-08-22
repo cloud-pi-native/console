@@ -22,6 +22,14 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  noChoiceLabel: {
+    type: String,
+    default: 'Aucun choix disponible',
+  },
+  choiceLabel: {
+    type: String,
+    default: 'Veuillez choisir parmi les choix suivants',
+  },
 })
 
 const selectValue = ref(undefined)
@@ -70,11 +78,21 @@ const removeElementFromArray = (elementToDelete) => {
         {{ description }}
       </p>
       <option
+        v-if="!arrayOptions.length"
+        value=""
+        class="hidden"
+        disabled
+        selected
+      >
+        {{ props.noChoiceLabel }}
+      </option>
+      <option
+        v-if="arrayOptions.length"
         value=""
         class="hidden"
         disabled
       >
-        Sélectionnez une option
+        {{ props.choiceLabel }}
       </option>
       <option
         v-for="arrayOption of arrayOptions"
