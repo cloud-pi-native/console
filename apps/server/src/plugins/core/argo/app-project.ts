@@ -1,10 +1,10 @@
 import type { AppProject } from '@kubernetes-models/argo-cd/argoproj.io/v1alpha1'
-import { argoNamespace } from '../../../utils/env.js'
+import { argoNamespace } from '@/utils/env.js'
 import { customK8sApi, patchOptions } from './init.js'
 
-export const getAppProject = async (appProjectName) => {
-  const appProjectList: { body: Record<string, any> } = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', argoNamespace, 'appprojects', undefined, undefined, undefined, `metadata.name=${appProjectName}`)
-  return appProjectList.body.items.find(appProject => appProject.metadata.name === appProjectName) as AppProject
+export const getAppProject = async (appProjectName: string): Promise<AppProject | void> => {
+  const appProjectList = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', argoNamespace, 'appprojects', undefined, undefined, undefined, `metadata.name=${appProjectName}`) as { body: { items: AppProject[] } }
+  return appProjectList.body.items.find(appProject => appProject.metadata.name === appProjectName)
 }
 
 export const createApplicationProject = async ({ appProjectName, repositories, roGroup, rwGroup }) => {
@@ -15,11 +15,12 @@ export const createApplicationProject = async ({ appProjectName, repositories, r
     rwGroup,
     roGroup,
     sourceRepos,
-    resourceVersion: appProject?.metadata?.resourceVersion,
-    destinations: appProject?.spec?.destinations,
+    ...appProject && { resourceVersion: appProject?.metadata?.resourceVersion },
+    ...appProject && { destinations: appProject?.spec?.destinations },
   })
 
   if (!appProject) {
+    delete appProjectObject.metadata.resourceVersion
     await customK8sApi.createNamespacedCustomObject('argoproj.io', 'v1alpha1', argoNamespace, 'appprojects', appProjectObject)
     return
   }
@@ -35,7 +36,7 @@ export const deleteApplicationProject = async ({ appProjectName }) => {
 
 export const addRepoToApplicationProject = async ({ appProjectName, repoUrl }) => {
   const appProject = await getAppProject(appProjectName)
-  if (appProjectName) {
+  if (appProject) {
     const sourceRepos = appProject.spec.sourceRepos
     if (!sourceRepos.includes(repoUrl)) {
       sourceRepos.push(repoUrl)
@@ -59,7 +60,7 @@ export const removeRepoFromApplicationProject = async ({ appProjectName, repoUrl
 
 export const addDestinationToApplicationProject = async (appProjectName: string, newDestination: { name: string, namespace: string, server: string }) => {
   const appProject = await getAppProject(appProjectName)
-  if (appProjectName) {
+  if (appProject) {
     const destinations = appProject.spec.destinations
     if (!destinations.some(destination => destination.name === newDestination.name)) {
       destinations.push(newDestination)

@@ -1,11 +1,12 @@
 import axios from 'axios'
 import { axiosOptions } from './index.js'
-import { generateRandomPassword } from '../../../utils/crypto.js'
-import { PluginResult } from '@/plugins/hooks/hook.js'
+import { generateRandomPassword } from '@/utils/crypto.js'
+import type { StepCall } from '@/plugins/hooks/hook.js'
+import type { ArchiveProjectExecArgs, CreateProjectExecArgs } from '@/plugins/hooks/project.js'
 
 const axiosInstance = axios.create(axiosOptions)
 
-export const createNexusProject = async (payload): Promise<PluginResult> => {
+export const createNexusProject: StepCall<CreateProjectExecArgs> = async (payload) => {
   const { organization, project, owner } = payload.args
   const projectName = `${organization}-${project}`
   const res: any = {}
@@ -128,12 +129,12 @@ export const createNexusProject = async (payload): Promise<PluginResult> => {
         result: 'KO',
         message: 'Fail Create repositories',
       },
-      error,
+      error: JSON.stringify(error),
     }
   }
 }
 
-export const deleteNexusProject = async (payload) => {
+export const deleteNexusProject: StepCall<ArchiveProjectExecArgs> = async (payload) => {
   const { organization, project } = payload.args
   const projectName = `${organization}-${project}`
 

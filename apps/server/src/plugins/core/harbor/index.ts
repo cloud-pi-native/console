@@ -3,10 +3,12 @@ import {
   harborUrl,
   harborUser as username,
   harborPassword as password,
-} from '../../../utils/env.js'
+} from '@/utils/env.js'
 import { createProject, deleteProject } from './project.js'
 import { addProjectGroupMember } from './permission.js'
 import { createRobot } from './robot.js'
+import type { StepCall } from '@/plugins/hooks/hook.js'
+import type { ArchiveProjectExecArgs, CreateProjectExecArgs } from '@/plugins/hooks/project.js'
 
 export const axiosOptions = {
   baseURL: `${harborUrl}/api/v2.0/`,
@@ -46,7 +48,7 @@ export const check = async () => {
   }
 }
 
-export const createDsoProject = async (payload) => {
+export const createDsoProject: StepCall<CreateProjectExecArgs> = async (payload) => {
   try {
     const { project, organization } = payload.args
     const projectName = `${organization}-${project}`
@@ -97,7 +99,7 @@ export const createDsoProject = async (payload) => {
   }
 }
 
-export const archiveDsoProject = async (payload) => {
+export const archiveDsoProject: StepCall<ArchiveProjectExecArgs> = async (payload) => {
   try {
     const { project, organization } = payload.args
     const projectName = `${organization}-${project}`

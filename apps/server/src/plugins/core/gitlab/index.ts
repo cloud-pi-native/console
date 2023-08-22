@@ -1,5 +1,5 @@
-import type { HookPayload } from '@/plugins/hooks/hook.js'
-import { gitlabToken } from '../../../utils/env.js'
+import type { HookPayload, StepCall } from '@/plugins/hooks/hook.js'
+import { gitlabToken } from '@/utils/env.js'
 import { createGroup, deleteGroup } from './group.js'
 import { addGroupMember } from './permission.js'
 import { createProject, createProjectMirror, deleteProject } from './project.js'
@@ -7,7 +7,6 @@ import { setProjectTrigger } from './triggers.js'
 import { createUser, createUsername, getUser } from './user.js'
 import type { ArchiveProjectExecArgs, CreateProjectExecArgs } from '@/plugins/hooks/project.js'
 import type { CreateRepositoryExecArgs, DeleteRepositoryExecArgs } from '@/plugins/hooks/repository.js'
-import { PipelineTriggerTokenSchema } from '@gitbeaker/rest'
 import { User } from '@prisma/client'
 
 // Check
@@ -31,7 +30,7 @@ export const checkApi = async (payload: HookPayload<{ owner: User }>) => {
 }
 
 // Project
-export const createDsoProject = async (payload: HookPayload<CreateProjectExecArgs>) => {
+export const createDsoProject: StepCall<CreateProjectExecArgs> = async (payload) => {
   try {
     const { project, organization, owner } = payload.args
 
@@ -69,12 +68,12 @@ export const createDsoProject = async (payload: HookPayload<CreateProjectExecArg
         result: 'KO',
         message: error.message,
       },
-      error,
+      error: JSON.stringify(error),
     }
   }
 }
 
-export const archiveDsoProject = async (payload: HookPayload<ArchiveProjectExecArgs>) => {
+export const archiveDsoProject: StepCall<ArchiveProjectExecArgs> = async (payload) => {
   try {
     const { project, organization } = payload.args
 
@@ -98,7 +97,7 @@ export const archiveDsoProject = async (payload: HookPayload<ArchiveProjectExecA
 }
 
 // Repo
-export const createDsoRepository = async (payload: HookPayload<CreateRepositoryExecArgs>) => {
+export const createDsoRepository: StepCall<CreateRepositoryExecArgs> = async (payload) => {
   try {
     const { internalRepoName, externalRepoUrl, organization, project, externalUserName, externalToken, isPrivate } = payload.args
     const externalRepoUrn = externalRepoUrl.split(/:\/\/(.*)/s)[1] // Un urN ne contient pas le protocole
@@ -133,7 +132,7 @@ export const createDsoRepository = async (payload: HookPayload<CreateRepositoryE
   }
 }
 
-export const deleteDsoRepository = async (payload: HookPayload<DeleteRepositoryExecArgs>) => {
+export const deleteDsoRepository: StepCall<DeleteRepositoryExecArgs> = async (payload) => {
   try {
     const { internalRepoName, organization, project } = payload.args
     await deleteProject(internalRepoName, project, organization)

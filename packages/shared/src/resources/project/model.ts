@@ -5,7 +5,7 @@ export type ProjectModel = {
   id: string
   name: string
   status: typeof projectStatus[number]
-  organization: OrganizationModel['id']
+  organizationId: OrganizationModel['id']
   description: string
   locked: boolean
   services: object

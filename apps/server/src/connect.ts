@@ -18,7 +18,7 @@ import {
   _dropClusterTable,
   _dropPermissionsTable,
   _dropKubeconfigTable,
-} from './queries/index.js'
+} from './resources/queries-index.js'
 
 const DELAY_BEFORE_RETRY = isTest || isCI ? 1000 : 10000
 let closingConnections = false

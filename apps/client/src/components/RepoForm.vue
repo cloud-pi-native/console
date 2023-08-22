@@ -193,7 +193,7 @@ const cancel = (event) => {
       data-testid="deleteRepoZone"
       class="danger-zone"
     >
-      <div class="flex justify-between items-center <md:flex-col">
+      <div class="danger-zone-btns">
         <DsfrButton
           v-show="!isDeletingRepo"
           data-testid="showDeleteRepoBtn"

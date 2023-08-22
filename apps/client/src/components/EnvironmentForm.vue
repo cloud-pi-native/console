@@ -152,7 +152,9 @@ onMounted(() => {
       <MultiSelector
         :options="projectClusters"
         :array="clustersLabel"
-        :disabled="props.isProjectLocked"
+        :disabled="props.isProjectLocked || !projectClusters.length"
+        choice-label="Veuillez choisir un ou plusieurs cluster"
+        no-choice-label="Aucun cluster disponible pour ce projet"
         label="Nom du cluster"
         description="Ajouter un cluster cible pour le déploiement de cet environnement."
         @update="updateEnvironment('clustersId', $event)"
@@ -190,7 +192,7 @@ onMounted(() => {
         data-testid="deleteEnvironmentZone"
         class="danger-zone"
       >
-        <div class="flex justify-between items-center <md:flex-col">
+        <div class="danger-zone-btns">
           <DsfrButton
             v-show="!isDeletingEnvironment"
             data-testid="showDeleteEnvironmentBtn"

@@ -170,7 +170,7 @@ const getDynamicTitle = (locked, description) => {
       data-testid="archiveProjectZone"
       class="danger-zone"
     >
-      <div class="flex justify-between items-center <md:flex-col">
+      <div class="danger-zone-btns">
         <DsfrButton
           v-show="!isArchivingProject"
           data-testid="showArchiveProjectBtn"

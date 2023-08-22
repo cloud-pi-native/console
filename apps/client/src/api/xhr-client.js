@@ -4,7 +4,7 @@ import router from '@/router/index.js'
 
 export const apiClient = axios.create({
   baseURL: '/api/v1',
-  timeout: 5000,
+  timeout: 60000,
 })
 
 apiClient.interceptors.request.use(async function addAuthHeader (config) {
@@ -33,7 +33,7 @@ apiClient.interceptors.request.use(async function addAuthHeader (config) {
 apiClient.interceptors.response.use(function (response) {
   return response
 }, function (error) {
-  const response = error?.response
+  const response = error.response
   const isUnauthorized = response?.status === 401
   if (isUnauthorized) {
     const customError = new Error('Echec d\'identification')
@@ -49,7 +49,7 @@ apiClient.interceptors.response.use(function (response) {
     router.push('/login')
     return Promise.reject(customError)
   }
-  const apiError = new Error(response?.data || response?.statusText || error?.message || error)
+  const apiError = new Error(response?.data?.error || response?.data || response?.statusText || error?.message || error)
   apiError.statusCode = response?.status
   return Promise.reject(apiError)
 })

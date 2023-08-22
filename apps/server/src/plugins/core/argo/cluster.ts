@@ -1,11 +1,11 @@
 import { ClusterModel } from 'shared'
 import type { V1Secret } from '@kubernetes/client-node'
-import { HookPayload, PluginResult } from '@/plugins/hooks/hook.js'
+import { StepCall } from '@/plugins/hooks/hook.js'
 import { CreateClusterExecArgs, DeleteClusterExecArgs } from '@/plugins/hooks/index.js'
 import { k8sApi } from './init.js'
 import { argoNamespace } from '@/utils/env.js'
 
-export const createCluster = async (payload: HookPayload<CreateClusterExecArgs>): Promise<PluginResult> => {
+export const createCluster: StepCall<CreateClusterExecArgs> = async (payload) => {
   try {
     const cluster = payload.args
     await createClusterSecret(cluster)
@@ -26,7 +26,7 @@ export const createCluster = async (payload: HookPayload<CreateClusterExecArgs>)
   }
 }
 
-export const deleteCluster = async (payload: HookPayload<DeleteClusterExecArgs>): Promise<PluginResult> => {
+export const deleteCluster: StepCall<DeleteClusterExecArgs> = async (payload) => {
   try {
     const secretName = payload.args.secretName
     await deleteClusterSecret(secretName)

@@ -1,11 +1,11 @@
 import type { V1Namespace, CoreV1Api } from '@kubernetes/client-node'
 import { UserModel } from 'shared'
 import { createCoreV1Api } from './api.js'
-import { HookPayload } from '@/plugins/hooks/hook.js'
+import type { StepCall } from '@/plugins/hooks/hook.js'
 import type { AddEnvironmentClusterExecArgs, RemoveEnvironmentClusterExecArgs } from '@/plugins/hooks/index.js'
 
 // Plugins Functions
-export const createKubeNamespace = async (payload: HookPayload<AddEnvironmentClusterExecArgs>) => {
+export const createKubeNamespace: StepCall<AddEnvironmentClusterExecArgs> = async (payload) => {
   try {
     const { organization, project, environment, cluster, owner } = payload.args
     const nsObject = getNsObject(organization, project, environment, owner)
@@ -22,12 +22,12 @@ export const createKubeNamespace = async (payload: HookPayload<AddEnvironmentClu
         result: 'KO',
         message: 'Failed to create namespace',
       },
-      error,
+      error: JSON.stringify(error),
     }
   }
 }
 
-export const deleteKubeNamespace = async (payload: HookPayload<RemoveEnvironmentClusterExecArgs>) => {
+export const deleteKubeNamespace: StepCall<RemoveEnvironmentClusterExecArgs> = async (payload) => {
   try {
     const { organization, project, environment, cluster } = payload.args
 
@@ -45,7 +45,7 @@ export const deleteKubeNamespace = async (payload: HookPayload<RemoveEnvironment
         result: 'KO',
         message: 'Failed to delete namespace',
       },
-      error,
+      error: JSON.stringify(error),
     }
   }
 }

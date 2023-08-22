@@ -1,10 +1,10 @@
 import type { CoreV1Api, V1Secret } from '@kubernetes/client-node'
 import { createCoreV1Api } from './api.js'
-import { HookPayload } from '@/plugins/hooks/hook.js'
+import type { StepCall } from '@/plugins/hooks/hook.js'
 import type { AddEnvironmentClusterExecArgs } from '@/plugins/hooks/index.js'
 
 // Plugin Function
-export const createKubeSecret = async (payload: HookPayload<AddEnvironmentClusterExecArgs>) => {
+export const createKubeSecret: StepCall<AddEnvironmentClusterExecArgs> = async (payload) => {
   try {
     const { organization, project, environment, cluster } = payload.args
     // @ts-ignore
@@ -29,7 +29,7 @@ export const createKubeSecret = async (payload: HookPayload<AddEnvironmentCluste
         result: 'KO',
         message: 'Failed to create docker config secret',
       },
-      error,
+      error: JSON.stringify(error),
     }
   }
 }

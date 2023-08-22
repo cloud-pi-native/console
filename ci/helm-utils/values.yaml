@@ -1,6 +1,8 @@
 integration: false
 
-kubeconfig:
+kubeconfig: ""
+
+data: ""
 
 keycloak:
   enabled: true

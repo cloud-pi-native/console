@@ -1,4 +1,4 @@
-import { getDb } from '@/controllers/admin/db.js'
+import { getDb } from '@/resources/system/db/controllers.js'
 
 const router = async (app, _opt) => {
   await app.get('/', getDb)

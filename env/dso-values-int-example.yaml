@@ -1,6 +1,8 @@
 server:
   container:
     env:
+      KUBECONFIG_CTX:
+      KUBECONFIG_PATH: /home/node/.kube/config
       CI: "false"
       INTEGRATION: "true"
       KEYCLOAK_REDIRECT_URI: http://console.dso.local
@@ -28,11 +30,16 @@ server:
       VAULT_TOKEN:
       VAULT_URL:
     extraVolumes:
+      - name: dev-workspace
+        path: /app/apps/server/src
+        type: hostPath
       - name: kubeconfig-integ-cm
         type: configMap
     extraVolumeMounts:
+      - name: dev-workspace
+        mountPath: /app/apps/server/src
       - name: kubeconfig-integ-cm
-        mountPath: /home/node/.kube/config
+        mountPath: /home/node/.kube/
 
 client:
   container:
@@ -44,3 +51,10 @@ client:
       KEYCLOAK_CLIENT_ID:
       KEYCLOAK_REALM:
       KEYCLOAK_DOMAIN:
+    extraVolumes:
+      - name: dev-workspace
+        path: /app/apps/client/src
+        type: hostPath
+    extraVolumeMounts:
+      - name: dev-workspace
+        mountPath: /app/apps/client/src

@@ -244,6 +244,9 @@ watch(selectedContext, () => {
       <MultiSelector
         :options="allProjects.map(project => ({ id: project.id, name: `${project.organization.name} - ${project.name}` }))"
         :array="projectsName"
+        :disabled="!allProjects.length"
+        no-choice-label="Aucun projet disponible"
+        choice-label="Veuillez choisir les projets à associer"
         label="Nom des projets"
         description="Sélectionnez les projets autorisés à utiliser ce cluster."
         @update="updateValues('projectsId', $event)"
@@ -283,7 +286,7 @@ watch(selectedContext, () => {
       data-testid="deleteClusterZone"
       class="danger-zone"
     >
-      <div class="flex justify-between items-center <md:flex-col">
+      <div class="danger-zone-btns">
         <DsfrButton
           v-show="!isDeletingCluster"
           data-testid="showDeleteClusterBtn"

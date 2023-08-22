@@ -82,18 +82,22 @@ const removeCluster = async (clusterId) => {
   isUpdatingCluster.value = false
 }
 
-const getAllProjects = async () => {
+const getAllActiveProjects = async () => {
   try {
-    allProjects.value = await adminProjectStore.getAllProjects()
+    allProjects.value = await adminProjectStore.getAllActiveProjects()
   } catch (error) {
     snackbarStore.setMessage(error?.message, 'error')
   }
 }
 
 onMounted(async () => {
-  await adminClusterStore.getAllClusters()
-  setClusterTiles(clusters.value)
-  getAllProjects()
+  try {
+    await adminClusterStore.getAllClusters()
+    setClusterTiles(clusters.value)
+    await getAllActiveProjects()
+  } catch (error) {
+    snackbarStore.setMessage(error?.message, 'error')
+  }
 })
 
 watch(clusters, () => {

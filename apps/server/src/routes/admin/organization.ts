@@ -3,7 +3,7 @@ import {
   createOrganizationController,
   updateOrganizationController,
   fetchOrganizationsController,
-} from '../../controllers/admin/organizations.js'
+} from '@/resources/organization/admin/controllers.js'
 
 const router = async (app, _opt) => {
   // Récupérer toutes les organisations
