@@ -133,6 +133,7 @@ onMounted(() => {
               :active="routeName === 'Projects'"
               to="/projects"
             >
+              <v-icon name="ri-list-check" />&nbsp;
               Mes projets
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
@@ -143,6 +144,7 @@ onMounted(() => {
                 :active="routeName === 'Dashboard'"
                 :to="`/projects/${selectedProject?.id}/dashboard`"
               >
+                <v-icon name="ri-dashboard-line" />&nbsp;
                 Tableau de bord
               </DsfrSideMenuLink>
             </DsfrSideMenuListItem>
@@ -152,6 +154,7 @@ onMounted(() => {
                 :active="routeName === 'Services'"
                 :to="`/projects/${selectedProject?.id}/services`"
               >
+                <v-icon name="ri-flow-chart" />&nbsp;
                 Mes services
               </DsfrSideMenuLink>
             </DsfrSideMenuListItem>
@@ -161,7 +164,8 @@ onMounted(() => {
                 :active="routeName === 'Team'"
                 :to="`/projects/${selectedProject?.id}/team`"
               >
-                Gérer les droits
+                <v-icon name="ri-team-line" />&nbsp;
+                Équipe
               </DsfrSideMenuLink>
             </DsfrSideMenuListItem>
             <DsfrSideMenuListItem>
@@ -170,7 +174,8 @@ onMounted(() => {
                 :active="routeName === 'Repos'"
                 :to="`/projects/${selectedProject?.id}/repositories`"
               >
-                Dépôts synchronisés
+                <v-icon name="ri-git-branch-line" />&nbsp;
+                Dépôts
               </DsfrSideMenuLink>
             </DsfrSideMenuListItem>
             <DsfrSideMenuListItem>
@@ -179,7 +184,8 @@ onMounted(() => {
                 :active="routeName === 'Environments'"
                 :to="`/projects/${selectedProject?.id}/environments`"
               >
-                Environments du projet
+                <v-icon name="ri-microsoft-line" />&nbsp;
+                Environments
               </DsfrSideMenuLink>
             </DsfrSideMenuListItem>
           </div>
@@ -211,6 +217,7 @@ onMounted(() => {
               :active="routeName === 'ListUser'"
               to="/admin/users"
             >
+              <v-icon name="ri-folder-user-line" />&nbsp;
               Utilisateurs
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
@@ -220,6 +227,7 @@ onMounted(() => {
               :active="routeName === 'ListOrganizations'"
               to="/admin/organizations"
             >
+              <v-icon name="ri-building-line" />&nbsp;
               Organisations
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
@@ -229,6 +237,7 @@ onMounted(() => {
               :active="routeName === 'ListProjects'"
               to="/admin/projects"
             >
+              <v-icon name="ri-folders-line" />&nbsp;
               Projets
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
@@ -238,6 +247,7 @@ onMounted(() => {
               :active="routeName === 'ListLogs'"
               to="/admin/logs"
             >
+              <v-icon name="ri-newspaper-line" />&nbsp;
               Journaux
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
@@ -247,6 +257,7 @@ onMounted(() => {
               :active="routeName === 'ListClusters'"
               to="/admin/clusters"
             >
+              <v-icon name="ri-server-line" />&nbsp;
               Clusters
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
