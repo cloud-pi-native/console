@@ -211,7 +211,7 @@ onMounted(() => {
               :active="routeName === 'ListUser'"
               to="/admin/users"
             >
-              Liste des utilisateurs
+              Utilisateurs
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
           <DsfrSideMenuListItem>
@@ -220,7 +220,7 @@ onMounted(() => {
               :active="routeName === 'ListOrganizations'"
               to="/admin/organizations"
             >
-              Liste des organisations
+              Organisations
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
           <DsfrSideMenuListItem>
@@ -229,7 +229,7 @@ onMounted(() => {
               :active="routeName === 'ListProjects'"
               to="/admin/projects"
             >
-              Liste des projets
+              Projets
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
           <DsfrSideMenuListItem>
@@ -238,7 +238,7 @@ onMounted(() => {
               :active="routeName === 'ListLogs'"
               to="/admin/logs"
             >
-              Liste des logs
+              Journaux
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
           <DsfrSideMenuListItem>
@@ -247,7 +247,7 @@ onMounted(() => {
               :active="routeName === 'ListClusters'"
               to="/admin/clusters"
             >
-              Liste des clusters
+              Clusters
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
         </DsfrSideMenuList>
