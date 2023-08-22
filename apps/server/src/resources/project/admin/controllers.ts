@@ -1,23 +1,13 @@
 import { addReqLogs } from '@/utils/logger.js'
-import { getAllProjects } from '@/resources/project/queries.js'
-import { sendOk, sendNotFound } from '@/utils/response.js'
+import { sendOk } from '@/utils/response.js'
+import { getAllProjectsBusiness } from './business.js'
 
 export const getAllProjectsController = async (req, res) => {
-  try {
-    const allProjects = await getAllProjects()
+  const allProjects = await getAllProjectsBusiness()
 
-    addReqLogs({
-      req,
-      description: 'Ensemble des projets récupérés avec succès',
-    })
-    return sendOk(res, allProjects)
-  } catch (error) {
-    const description = 'Echec de la récupération de l\'ensemble des projets'
-    addReqLogs({
-      req,
-      description,
-      error,
-    })
-    sendNotFound(res, description)
-  }
+  addReqLogs({
+    req,
+    description: 'Ensemble des projets récupérés avec succès',
+  })
+  return sendOk(res, allProjects)
 }
