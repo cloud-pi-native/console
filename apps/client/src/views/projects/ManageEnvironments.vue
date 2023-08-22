@@ -186,5 +186,10 @@ watch(project, () => {
         @delete-environment="(environment) => deleteEnvironment(environment)"
       />
     </div>
+    <div
+      v-if="!environments.length"
+    >
+      <p>Aucun environnement déployé</p>
+    </div>
   </div>
 </template>

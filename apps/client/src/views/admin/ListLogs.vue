@@ -54,14 +54,14 @@ onMounted(async () => {
   <h1
     class="fr-h3"
   >
-    Logs des services associés à la chaîne DSO
+    Journaux des services associés à la chaîne DSO
   </h1>
   <div
     class="flex justify-between"
   >
     <DsfrAlert
       v-if="!isUpdating"
-      :description="!logsLength ? 'Aucun logs en base de donnée.' : `Total : ${logsLength} logs`"
+      :description="!logsLength ? 'Aucun événement à afficher' : `Total : ${logsLength} événements`"
       data-testid="logCountInfo"
       type="info"
       small
@@ -84,7 +84,7 @@ onMounted(async () => {
     :value="log"
     class="json-box"
     copyable
-    boxed
+    style="border: 1px solid #000;"
   />
   <div
     class="flex justify-between"

@@ -15,7 +15,7 @@ describe('Administration logs', () => {
   })
 
   it('Should display logs list, loggedIn as admin', () => {
-    cy.getByDataTestid('logCountInfo').should('contain', `Total : ${logCount} logs`)
+    cy.getByDataTestid('logCountInfo').should('contain', `Total : ${logCount} événements`)
     logs.forEach(log => {
       cy.getByDataTestid(`${log.id}-json`)
     })
