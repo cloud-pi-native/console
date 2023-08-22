@@ -2,6 +2,7 @@ import { ForbiddenError } from '@/utils/errors.js'
 import { Project, User, Environment, Permission } from '@prisma/client'
 import { checkAuthorization } from '@/resources/environment/business.js'
 import { deletePermission, getEnvironmentPermissions, getProjectInfos, getSingleOwnerByProjectId, setPermission, updatePermission } from '@/resources/queries-index.js'
+import { ProjectRoles } from 'shared'
 
 export enum Action {
   update = 'modifiée',
@@ -11,9 +12,10 @@ export enum Action {
 export const checkProjectRole = async (
   projectId: Project['id'],
   userId: User['id'],
+  role: ProjectRoles = 'user',
 ) => {
   const project = await getProjectInfos(projectId)
-  const errorMessage = checkAuthorization(project, userId, 'user')
+  const errorMessage = checkAuthorization(project, userId, role)
   if (errorMessage) throw new ForbiddenError(errorMessage, { description: '', extras: { userId, projectId: project.id } })
 }
 

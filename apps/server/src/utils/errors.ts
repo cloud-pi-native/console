@@ -34,6 +34,10 @@ class ConflictError extends DsoError {
   statusCode = 409
 }
 
+class UnprocessableContentError extends DsoError {
+  statusCode = 422
+}
+
 class TooManyRequestError extends DsoError {
   statusCode = 429
 }
@@ -49,6 +53,7 @@ export {
   ForbiddenError,
   NotFoundError,
   ConflictError,
+  UnprocessableContentError,
   TooManyRequestError,
   ServerError,
 }
