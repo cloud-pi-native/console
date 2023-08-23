@@ -1,32 +1,12 @@
 import { type ProjectRoles, adminGroupPath } from 'shared'
 import { sendForbidden } from './response.js'
-import {
-  getEnvironmentsByProjectId,
-  getProjectRepositories,
-  getProjectById,
-  lockProject,
-  unlockProject,
-} from '@/resources/queries-index.js'
-import type { Permission, Project, User, Role } from '@prisma/client'
+import type { Permission, User, Role } from '@prisma/client'
 
 export const checkAdminGroup = (req, res, done) => {
   if (!req.session.user.groups?.includes(adminGroupPath)) {
     sendForbidden(res, 'Vous n\'avez pas les droits administrateur')
   }
   done()
-}
-
-export const unlockProjectIfNotFailed = async (projectId: Project['id']) => {
-  const ressources = [
-    ...(await getEnvironmentsByProjectId(projectId))?.map(environment => environment.status),
-    ...(await getProjectRepositories(projectId))?.map(repository => repository.status),
-    (await getProjectById(projectId))?.status,
-  ]
-  if (ressources.includes('failed')) {
-    return lockProject(projectId)
-  } else {
-    return unlockProject(projectId)
-  }
 }
 
 export type RequireOnlyOne<T, Keys extends keyof T = keyof T> =
