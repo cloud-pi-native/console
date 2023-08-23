@@ -75,13 +75,20 @@ const getDynamicTitle = (locked, description) => {
         >
           {{ project?.description }}
         </p>
+        <p
+          v-else
+          data-testid="descriptionP"
+          class="disabled"
+        >
+          Aucune description pour le moment...
+        </p>
         <DsfrButton
           class="fr-mt-0"
           icon="ri-pencil-fill"
           data-testid="setDescriptionBtn"
           :title="getDynamicTitle(project?.locked, project?.description)"
           :disabled="project?.locked"
-          :icon-only="!!project?.description"
+          icon-only
           secondary
           @click="isEditingDescription = true"
         />

@@ -58,7 +58,7 @@ describe('Dashboard', () => {
       .goToProjects()
       .getByDataTestid(`projectTile-${projectToKeep.name}`).click()
       .getByDataTestid('menuDashboard').click()
-      .getByDataTestid('descriptionP').should('not.exist')
+      .getByDataTestid('descriptionP').should('have.class', 'disabled')
       .getByDataTestid('setDescriptionBtn').click()
       .getByDataTestid('descriptionInput').clear().type(description1)
       .getByDataTestid('saveDescriptionBtn').click()
@@ -73,7 +73,7 @@ describe('Dashboard', () => {
       .getByDataTestid('descriptionInput').clear()
       .getByDataTestid('saveDescriptionBtn').click()
       .wait('@updateProject').its('response.statusCode').should('eq', 200)
-      .getByDataTestid('descriptionP').should('not.exist')
+      .getByDataTestid('descriptionP').should('have.class', 'disabled')
   })
 
   it('Should not be able to archive a project if not owner', () => {

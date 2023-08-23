@@ -37,39 +37,47 @@ const isUpdatingOrganization = ref(null)
 const isOrgAlreadyTaken = computed(() => allOrganizations.value.find(org => org.name === newOrg.value.name))
 
 const setRows = () => {
-  rows.value = sortArrByObjKeyAsc(allOrganizations.value, 'name')
-    ?.map(({ label, name, source, active, createdAt, updatedAt }) => ([
-      {
-        component: 'input',
-        value: label,
-        class: 'fr-input fr-text-default--info',
-        'data-testid': `${name}-label-input`,
-        onBlur: (event) => {
-          const data = event.target.value
-          if (data !== label) {
-            preUpdateOrganization({ name, key: 'label', data })
-          }
+  rows.value = allOrganizations.value.length
+    ? sortArrByObjKeyAsc(allOrganizations.value, 'name')
+      ?.map(({ label, name, source, active, createdAt, updatedAt }) => ([
+        {
+          component: 'input',
+          value: label,
+          class: 'fr-input fr-text-default--info',
+          'data-testid': `${name}-label-input`,
+          onBlur: (event) => {
+            const data = event.target.value
+            if (data !== label) {
+              preUpdateOrganization({ name, key: 'label', data })
+            }
+          },
         },
-      },
-      name,
-      source,
-      {
-        component: 'input',
-        type: 'checkbox',
-        checked: active,
-        'data-testid': `${name}-active-cbx`,
-        class: 'fr-checkbox-group--sm',
-        title: active ? `Désactiver l'organisation ${name}` : `Réactiver l'organisation ${name}`,
-        onClick: (event) => {
-          const data = event.target.checked
-          if (data !== active) {
-            preUpdateOrganization({ name, key: 'active', data })
-          }
+        name,
+        source,
+        {
+          component: 'input',
+          type: 'checkbox',
+          checked: active,
+          'data-testid': `${name}-active-cbx`,
+          class: 'fr-checkbox-group--sm',
+          title: active ? `Désactiver l'organisation ${name}` : `Réactiver l'organisation ${name}`,
+          onClick: (event) => {
+            const data = event.target.checked
+            if (data !== active) {
+              preUpdateOrganization({ name, key: 'active', data })
+            }
+          },
         },
-      },
-      formatDate(createdAt),
-      formatDate(updatedAt),
-    ]))
+        formatDate(createdAt),
+        formatDate(updatedAt),
+      ]))
+    : [[{
+        text: 'Aucune organisation, veuillez en ajouter une.',
+        cellAttrs: {
+          colspan: headers.length,
+          align: 'center',
+        },
+      }]]
 }
 
 const getAllOrganizations = async () => {

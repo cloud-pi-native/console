@@ -27,28 +27,35 @@ const headers = [
 const rows = ref([])
 
 const setRows = () => {
-  rows.value = sortArrByObjKeyAsc(allProjects.value, 'name')
-    ?.map(({ organizationId, name, description, roles, status, locked, createdAt, updatedAt }) => ([
-      organizations.value?.find(org => org.id === organizationId).label,
-      name,
-      description ?? '',
-      roles[0].user.email,
-      {
-        component: 'v-icon',
-        name: statusDict.status[status].icon,
-        title: `Le projet ${name} est ${statusDict.status[status].wording}`,
-        fill: statusDict.status[status].color,
-      },
-      {
-        component: 'v-icon',
-        name: statusDict.locked[locked].icon,
-        title: `Le projet ${name} est ${statusDict.locked[locked].wording}`,
-        fill: statusDict.locked[locked].color,
-      },
-      formatDate(createdAt),
-      formatDate(updatedAt),
-    ]),
-    )
+  rows.value = allProjects.value.length
+    ? sortArrByObjKeyAsc(allProjects.value, 'name')
+      ?.map(({ organizationId, name, description, roles, status, locked, createdAt, updatedAt }) => ([
+        organizations.value?.find(org => org.id === organizationId).label,
+        name,
+        description ?? '',
+        roles[0].user.email,
+        {
+          component: 'v-icon',
+          name: statusDict.status[status].icon,
+          title: `Le projet ${name} est ${statusDict.status[status].wording}`,
+          fill: statusDict.status[status].color,
+        },
+        {
+          component: 'v-icon',
+          name: statusDict.locked[locked].icon,
+          title: `Le projet ${name} est ${statusDict.locked[locked].wording}`,
+          fill: statusDict.locked[locked].color,
+        },
+        formatDate(createdAt),
+        formatDate(updatedAt),
+      ]),
+      )
+    : [[{
+        text: 'Aucun projet existant',
+        cellAttrs: {
+          colspan: headers.length,
+        },
+      }]]
 }
 
 const getAllProjects = async () => {

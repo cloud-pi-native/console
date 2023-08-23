@@ -7,8 +7,6 @@ import { User } from '@prisma/client'
 export const getAllCleanedClusters = async () => {
   const clusters = await getClustersWithProjectIdAndConfig()
 
-  if (!clusters.length) throw new NotFoundError('Aucun cluster trouvé', undefined)
-
   const cleanedClusters = clusters.map(cluster => {
     const newCluster = {
       ...cluster,
