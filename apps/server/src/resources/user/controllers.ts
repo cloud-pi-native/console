@@ -1,55 +1,24 @@
-import {
-  getProjectUsers,
-  lockProject,
-  addUserToProject,
-  removeUserFromProject,
-  getProjectInfos,
-  updateProjectFailed,
-  createUser,
-  getUserByEmail,
-  getMatchingUsers,
-  getUserById,
-  updateUserProjectRole,
-  deletePermission,
-  addLogs,
-} from '@/resources/queries-index.js'
-import { sendOk, sendCreated, sendNotFound, sendBadRequest, sendForbidden, sendUnprocessableContent } from '@/utils/response.js'
+import { sendOk, sendCreated } from '@/utils/response.js'
 import { addReqLogs } from '@/utils/logger.js'
-import { AsyncReturnType, checkInsufficientRoleInProject, unlockProjectIfNotFailed } from '@/utils/controller.js'
-import { projectIsLockedInfo } from 'shared'
-import { hooks } from '@/plugins/index.js'
-import { PluginResult } from '@/plugins/hooks/hook.js'
+import { addUserToProjectBusiness, checkProjectLocked, checkProjectRole, getMatchingUsersBusiness, getProjectInfosBusiness, getProjectUsersBusiness, removeUserFromProjectBusiness, updateUserProjectRoleBusiness } from './business.js'
 
 // GET
 export const getProjectUsersController = async (req, res) => {
   const userId = req.session?.user?.id
   const projectId = req.params?.projectId
 
-  try {
-    const users = await getProjectUsers(projectId)
-    const insufficientRoleErrorMessage = checkInsufficientRoleInProject(userId, { userList: users })
-    if (insufficientRoleErrorMessage) throw new Error(insufficientRoleErrorMessage)
+  const users = await getProjectUsersBusiness(projectId)
 
-    addReqLogs({
-      req,
-      description: 'Membres du projet récupérés avec succès',
-      extras: {
-        projectId,
-      },
-    })
-    sendOk(res, users)
-  } catch (error) {
-    const description = 'Echec de la récupération des membres du projet'
-    addReqLogs({
-      req,
-      description,
-      extras: {
-        projectId,
-      },
-      error,
-    })
-    sendNotFound(res, description)
-  }
+  checkProjectRole(userId, { userList: users, minRole: 'user' })
+
+  addReqLogs({
+    req,
+    description: 'Membres du projet récupérés avec succès',
+    extras: {
+      projectId,
+    },
+  })
+  sendOk(res, users)
 }
 
 export const getMatchingUsersController = async (req, res) => {
@@ -57,33 +26,20 @@ export const getMatchingUsersController = async (req, res) => {
   const projectId = req.params?.projectId
   const { letters } = req.query
 
-  try {
-    const project = await getProjectInfos(projectId)
-    const insufficientRoleErrorMessage = checkInsufficientRoleInProject(userId, { roles: project.roles })
-    if (insufficientRoleErrorMessage) throw new Error(insufficientRoleErrorMessage)
+  const users = await getProjectUsersBusiness(projectId)
 
-    const usersMatching = await getMatchingUsers(letters)
+  checkProjectRole(userId, { userList: users, minRole: 'user' })
 
-    addReqLogs({
-      req,
-      description: 'Utilisateurs récupérés avec succès',
-      extras: {
-        projectId,
-      },
-    })
-    sendOk(res, usersMatching)
-  } catch (error) {
-    const description = 'Echec de la récupération des utilisateurs'
-    addReqLogs({
-      req,
-      description,
-      extras: {
-        projectId,
-      },
-      error,
-    })
-    sendNotFound(res, description)
-  }
+  const usersMatching = await getMatchingUsersBusiness(letters)
+
+  addReqLogs({
+    req,
+    description: 'Utilisateurs récupérés avec succès',
+    extras: {
+      projectId,
+    },
+  })
+  sendOk(res, usersMatching)
 }
 
 // CREATE
@@ -92,113 +48,24 @@ export const addUserToProjectController = async (req, res) => {
   const projectId = req.params?.projectId
   const data = req.body
 
-  try {
-    const project = await getProjectInfos(projectId)
-    if (!project) return sendBadRequest(res, 'Projet introuvable')
-    if (project.locked) return sendForbidden(res, projectIsLockedInfo)
+  const project = await getProjectInfosBusiness(projectId)
 
-    const insufficientRoleErrorMessageRequestor = checkInsufficientRoleInProject(userId, { roles: project.roles, minRole: 'owner' })
-    if (insufficientRoleErrorMessageRequestor) return sendBadRequest(res, insufficientRoleErrorMessageRequestor)
+  checkProjectRole(userId, { roles: project.roles, minRole: 'owner' })
 
-    let userToAdd = await getUserByEmail(data.email)
-    // Retrieve user from keycloak if does not exist in db
-    if (!userToAdd) {
-      const results = await hooks.retrieveUserByEmail.execute({ email: data.email })
-      await addLogs('Retrieve User By Email', results, userId)
-      // @ts-ignore
-      const retrievedUser = results.keycloak?.user
-      if (!retrievedUser) return sendBadRequest(res, 'Utilisateur introuvable')
-      await createUser(retrievedUser)
-      userToAdd = await getUserByEmail(data.email)
-    }
+  checkProjectLocked(project)
 
-    const insufficientRoleErrorMessageUserToAdd = checkInsufficientRoleInProject(userToAdd.id, { roles: project.roles, minRole: 'user' })
-    if (!insufficientRoleErrorMessageUserToAdd) return sendBadRequest(res, 'L\'utilisateur est déjà membre du projet')
+  const userToAdd = await addUserToProjectBusiness(project, data.email, userId)
 
-    const kcData = {
-      organization: project.organization.name,
-      project: project.name,
-      user: userToAdd,
-    }
-
-    const isValid = await hooks.addUserToProject.validate(kcData)
-    if (isValid?.failed) {
-      const reasons = Object.values(isValid)
-        .filter((plugin: PluginResult) => plugin?.status?.result === 'KO')
-        .map((plugin: PluginResult) => plugin.status.message)
-        .join('; ')
-      sendUnprocessableContent(res, reasons)
-
-      const description = 'Echec de la validation des prérequis de l\'ajout d\'un membre du projet par les services externes'
-      addReqLogs({
-        req,
-        description,
-        extras: {
-          reasons,
-        },
-        error: new Error(description),
-      })
-      addLogs('Add Project Member Validation', { reasons }, userToAdd.id)
-      return
-    }
-
-    await lockProject(projectId)
-
-    await addUserToProject({ project, user: userToAdd, role: 'user' })
-
-    const results = await hooks.addUserToProject.execute(kcData)
-    await addLogs('Add Project Member', results, userId)
-
-    await unlockProjectIfNotFailed(projectId)
-
-    const description = 'Utilisateur ajouté au projet avec succès'
-    addReqLogs({
-      req,
-      description,
-      extras: {
-        projectId,
-        userId: userToAdd.id,
-      },
-    })
-    sendCreated(res, description)
-  } catch (error) {
-    await updateProjectFailed(projectId)
-    const description = 'Echec de l\'ajout de l\'utilisateur au projet'
-    addReqLogs({
-      req,
-      description,
-      extras: {
-        projectId,
-      },
-      error,
-    })
-    return sendBadRequest(res, description)
-  }
-}
-
-export const createUserController = async (req, res) => {
-  const data = req.body
-
-  try {
-    const user = await createUser(data)
-
-    addReqLogs({
-      req,
-      description: 'Utilisateur créé avec succès',
-      extras: {
-        userId: user.id,
-      },
-    })
-    sendCreated(res, user)
-  } catch (error) {
-    const description = 'Echec de la création de l\'utilisateur'
-    addReqLogs({
-      req,
-      description,
-      error,
-    })
-    sendBadRequest(res, description)
-  }
+  const description = 'Utilisateur ajouté au projet avec succès'
+  addReqLogs({
+    req,
+    description,
+    extras: {
+      projectId,
+      userId: userToAdd.id,
+    },
+  })
+  sendCreated(res, description)
 }
 
 // PUT
@@ -208,42 +75,24 @@ export const updateUserProjectRoleController = async (req, res) => {
   const userToUpdateId = req.params?.userId
   const data = req.body
 
-  let project: AsyncReturnType<typeof getProjectInfos>
-  try {
-    project = await getProjectInfos(projectId)
-    if (!project) throw new Error('Projet introuvable')
-    if (project.locked) return sendForbidden(res, projectIsLockedInfo)
+  const project = await getProjectInfosBusiness(projectId)
 
-    const insufficientRoleErrorMessage = checkInsufficientRoleInProject(userId, { roles: project.roles, minRole: 'owner' })
-    if (insufficientRoleErrorMessage) throw new Error(insufficientRoleErrorMessage)
+  checkProjectRole(userId, { roles: project.roles, minRole: 'owner' })
 
-    if (project.roles.filter(userProject => userProject.userId === userId).length === 0) throw new Error('L\'utilisateur ne fait pas partie du projet')
+  checkProjectLocked(project)
 
-    await updateUserProjectRole(projectId, userToUpdateId, data.role)
+  await updateUserProjectRoleBusiness(userToUpdateId, project, data.role)
 
-    const description = 'Rôle de l\'utilisateur mis à jour avec succès'
-    addReqLogs({
-      req,
-      description,
-      extras: {
-        projectId,
-        userId: userToUpdateId,
-      },
-    })
-    sendOk(res, description)
-  } catch (error) {
-    const description = 'Echec de la mise à jour du rôle de l\'utilisateur'
-    addReqLogs({
-      req,
-      description,
-      extras: {
-        projectId,
-        userId: userToUpdateId,
-      },
-      error,
-    })
-    sendBadRequest(res, description)
-  }
+  const description = 'Rôle de l\'utilisateur mis à jour avec succès'
+  addReqLogs({
+    req,
+    description,
+    extras: {
+      projectId,
+      userId: userToUpdateId,
+    },
+  })
+  sendOk(res, description)
 }
 
 // DELETE
@@ -252,79 +101,22 @@ export const removeUserFromProjectController = async (req, res) => {
   const projectId = req.params?.projectId
   const userToRemoveId = req.params?.userId
 
-  try {
-    const project = await getProjectInfos(projectId)
-    if (!project) throw new Error('Projet introuvable')
+  const project = await getProjectInfosBusiness(projectId)
 
-    const userToRemove = await getUserById(userToRemoveId)
-    if (!userToRemove) throw new Error('L\'utilisateur n\'existe pas')
+  checkProjectRole(userId, { roles: project.roles, minRole: 'owner' })
 
-    const insufficientRoleErrorMessageRequestor = checkInsufficientRoleInProject(userId, { roles: project.roles, minRole: 'owner' })
-    if (insufficientRoleErrorMessageRequestor) throw new Error(insufficientRoleErrorMessageRequestor)
+  checkProjectLocked(project)
 
-    const insufficientRoleErrorMessageUserToRemove = checkInsufficientRoleInProject(userToRemoveId, { roles: project.roles })
-    if (insufficientRoleErrorMessageUserToRemove) throw new Error('L\'utilisateur n\'est pas membre du projet')
+  await removeUserFromProjectBusiness(userToRemoveId, project, userId)
 
-    const kcData = {
-      organization: project.organization.name,
-      project: project.name,
-      user: userToRemove,
-    }
-
-    const isValid = await hooks.removeUserFromProject.validate(kcData)
-    if (isValid?.failed) {
-      const reasons = Object.values(isValid)
-        .filter((plugin: PluginResult) => plugin?.status?.result === 'KO')
-        .map((plugin: PluginResult) => plugin.status.message)
-        .join('; ')
-      sendUnprocessableContent(res, reasons)
-
-      const description = 'Echec de la validation des prérequis de retrait du membre du projet par les services externes'
-      addReqLogs({
-        req,
-        description,
-        extras: {
-          reasons,
-        },
-        error: new Error(description),
-      })
-      addLogs('Remove User from Project Validation', { reasons }, userToRemoveId)
-      return
-    }
-
-    await lockProject(projectId)
-    project.environments.forEach(async env => {
-      await deletePermission(userToRemoveId, env.id)
-    })
-    await removeUserFromProject({ projectId: project.id, userId: userToRemoveId })
-
-    const results = await hooks.removeUserFromProject.execute(kcData)
-    await addLogs('Remove User from Project', results, userId)
-
-    await unlockProjectIfNotFailed(projectId)
-
-    const description = 'Utilisateur retiré du projet avec succès'
-    addReqLogs({
-      req,
-      description,
-      extras: {
-        projectId,
-        userId: userToRemoveId,
-      },
-    })
-    sendOk(res, description)
-  } catch (error) {
-    await updateProjectFailed(projectId)
-    const description = 'Echec du retrait du membre du projet'
-    addReqLogs({
-      req,
-      description,
-      extras: {
-        projectId,
-        userId: userToRemoveId,
-      },
-      error,
-    })
-    return sendForbidden(res, description)
-  }
+  const description = 'Utilisateur retiré du projet avec succès'
+  addReqLogs({
+    req,
+    description,
+    extras: {
+      projectId,
+      userId: userToRemoveId,
+    },
+  })
+  sendOk(res, description)
 }
