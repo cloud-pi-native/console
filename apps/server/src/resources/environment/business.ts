@@ -105,7 +105,7 @@ export const checkDeleteEnvironment = (
 export const checkAuthorization = (
   project: { locked: boolean, roles: Role[] },
   userId: string,
-  minRole: ProjectRoles,
+  minRole: ProjectRoles = 'user',
 ) => {
   return project.locked
     ? projectIsLockedInfo
