@@ -32,6 +32,14 @@ const showLogs = async (key) => {
   await getAllLogs({ offset: offset.value, limit: step })
 }
 
+const sliceLog = (log) => {
+  const slicedLog = { ...log }
+  delete slicedLog.action
+  delete slicedLog.createdAt
+  delete slicedLog.updatedAt
+  return slicedLog
+}
+
 const getAllLogs = async ({ offset, limit }, isDisplayingSuccess = true) => {
   isUpdating.value = true
   try {
@@ -77,15 +85,30 @@ onMounted(async () => {
     />
   </div>
 
-  <JsonViewer
+  <div
     v-for="log in logs"
     :key="log.id"
-    :data-testid="`${log.id}-json`"
-    :value="log"
-    class="json-box"
-    copyable
-    style="border: 1px solid #000;"
-  />
+    :class="`my-5 border-solid ${log.data?.failed ? 'border-red-100' : 'border-zinc-100'}`"
+  >
+    <div
+      class="flex flex-wrap justify-between"
+    >
+      <DsfrBadge
+        :label="log.action"
+        :type="log.data?.failed ? 'error' : 'success'"
+      />
+      <DsfrBadge
+        :label="(new Date(log.createdAt)).toLocaleString()"
+        no-icon
+      />
+    </div>
+    <JsonViewer
+      :data-testid="`${log.id}-json`"
+      :value="sliceLog(log)"
+      class="json-box !my-0"
+      copyable
+    />
+  </div>
   <div
     class="flex justify-between"
   >

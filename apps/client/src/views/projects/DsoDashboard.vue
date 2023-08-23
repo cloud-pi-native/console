@@ -88,7 +88,7 @@ const getDynamicTitle = (locked, description) => {
           data-testid="setDescriptionBtn"
           :title="getDynamicTitle(project?.locked, project?.description)"
           :disabled="project?.locked"
-          :icon-only="project?.description"
+          icon-only
           secondary
           @click="isEditingDescription = true"
         />
