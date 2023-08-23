@@ -1,26 +1,13 @@
-import {
-  getUsers,
-} from '@/resources/queries-index.js'
-
-import { sendNotFound, sendOk } from '@/utils/response.js'
+import { sendOk } from '@/utils/response.js'
 import { addReqLogs } from '@/utils/logger.js'
+import { getUsersBusiness } from './business.js'
 
 export const getUsersController = async (req, res) => {
-  try {
-    const users = await getUsers()
+  const users = await getUsersBusiness()
 
-    addReqLogs({
-      req,
-      description: 'Ensemble des utilisateurs récupérés avec succès',
-    })
-    sendOk(res, users)
-  } catch (error) {
-    const description = 'Echec de la récupération de l\'ensemble des utilisateurs'
-    addReqLogs({
-      req,
-      description,
-      error,
-    })
-    sendNotFound(res, error.message)
-  }
+  addReqLogs({
+    req,
+    description: 'Ensemble des utilisateurs récupérés avec succès',
+  })
+  sendOk(res, users)
 }
