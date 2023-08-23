@@ -1,1 +1,3 @@
-// TODO 539
+import { getUsers } from '../queries'
+
+export const getUsersBusiness = async () => getUsers()
