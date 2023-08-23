@@ -21,10 +21,10 @@ import {
   type AsyncReturnType,
   checkInsufficientRoleInProject,
   checkClusterUnavailable,
-  unlockProjectIfNotFailed,
   filterOwners,
   checkInsufficientPermissionInEnvironment,
 } from '@/utils/controller.js'
+import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { projectIsLockedInfo, ProjectRoles } from 'shared'
 import { gitlabUrl, harborUrl, projectRootDir } from '@/utils/env.js'
 import { getProjectInfosAndClusters } from '@/resources/project/business.js'

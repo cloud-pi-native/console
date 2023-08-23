@@ -3,7 +3,7 @@ import { BadRequestError, NotFoundError, UnprocessableContentError } from '@/uti
 import { Project, Repository, User } from '@prisma/client'
 import { gitlabUrl, projectRootDir } from '@/utils/env.js'
 import { hooks } from '@/plugins/index.js'
-import { unlockProjectIfNotFailed } from '@/utils/controller.js'
+import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { exclude } from '@/utils/queries-tools.js'
 import { CreateRepositoryDto, UpdateRepositoryDto } from 'shared/src/resources/repository/dto'
 
