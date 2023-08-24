@@ -8,8 +8,10 @@ import { sessionConf } from '../utils/keycloak.js'
 import { getConnection, closeConnections } from '../connect.js'
 import projectRepositoryRouter from './project-repository.js'
 import { projectIsLockedInfo } from 'shared'
+import prisma from '../__mocks__/prisma.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
+vi.mock('../prisma')
 
 const app = fastify({ logger: false })
   .register(fastifyCookie)
@@ -37,7 +39,7 @@ const getRequestor = () => {
   return requestor
 }
 
-describe.skip('Project routes', () => {
+describe('Project routes', () => {
   beforeAll(async () => {
     mockSession(app)
     await getConnection()
@@ -54,25 +56,28 @@ describe.skip('Project routes', () => {
   })
 
   // GET
-  describe('getRepositoryByIdController', () => {
+  describe.skip('getRepositoryByIdController', () => {
     it('Should get a repository by its id', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const repoToGet = randomDbSetup.project.repositories[0]
-      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
+      // const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
 
-      setRequestorId(owner.id)
+      prisma.repository.findFirst.mockResolvedValueOnce(repoToGet)
+
+      // setRequestorId(owner.id)
 
       const response = await app.inject()
         .get(`${randomDbSetup.project.id}/repositories/${repoToGet.id}`)
         .end()
 
+      expect(response.body).toStrictEqual(repoToGet)
       expect(response.statusCode).toEqual(200)
       expect(response.json()).toBeDefined()
-      expect(response.json()).toEqual(repoToGet)
+      // expect(response.json()).toEqual(repoToGet)
     })
   })
 
-  describe('getProjectRepositoriesController', () => {
+  describe.skip('getProjectRepositoriesController', () => {
     it('Should get repositories of a project', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
@@ -90,7 +95,7 @@ describe.skip('Project routes', () => {
   })
 
   // POST
-  describe('createRepositoryController', () => {
+  describe.skip('createRepositoryController', () => {
     it('Should create a repository', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const newRepository = getRandomRepo(randomDbSetup.project.id)
@@ -130,7 +135,7 @@ describe.skip('Project routes', () => {
   })
 
   // PUT
-  describe('updateRepositoryController', () => {
+  describe.skip('updateRepositoryController', () => {
     it('Should update a repository', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const repoToUpdate = randomDbSetup.project.repositories[2]
@@ -194,7 +199,7 @@ describe.skip('Project routes', () => {
   })
 
   // DELETE
-  describe('deleteRepositoryController', () => {
+  describe.skip('deleteRepositoryController', () => {
     it('Should delete a repository', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const repoToDelete = randomDbSetup.project.repositories[1]
