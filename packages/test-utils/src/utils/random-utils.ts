@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker'
 import { achievedStatus, projectRoles, logActions } from 'shared'
 import { repeatFn } from './func-utils.js'
-import { Cluster, Environment, Log, Organization, Permission, Project, Repository, User, UserProject } from './types.js'
+import { Cluster, Environment, Log, Organization, Permission, Project, Repository, User, Role } from './types.js'
 
 export const getRandomProjectName = () => {
   return faker.lorem.word()
@@ -63,11 +63,16 @@ export const getRandomUser = () => {
   } as User
 }
 
-export const getRandomUserProject = (userId = faker.string.uuid(), role = projectRoles[1]) => {
+export const getRandomRole = (
+  userId = faker.string.uuid(),
+  projectId = faker.string.uuid(),
+  role = projectRoles[1],
+) => {
   return {
-    id: userId,
+    userId,
     role,
-  } as UserProject
+    projectId,
+  } as Role
 }
 
 export const getRandomRepo = (projectId = faker.string.uuid(), createdAt = new Date(Date.now()), updatedAt = new Date(Date.now())) => {

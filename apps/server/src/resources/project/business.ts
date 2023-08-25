@@ -35,7 +35,7 @@ import { type UserDto, getUser } from '@/resources/user/business.js'
 // Fetch infos
 export const getProjectInfosAndClusters = async (projectId: string) => {
   const project = await getProjectInfosQuery(projectId)
-  const authorizedClusters = [...await getPublicClusters(), ...project.clusters]
+  const authorizedClusters = project.clusters ? [...await getPublicClusters(), ...project?.clusters] : [...await getPublicClusters()]
   return { project, authorizedClusters }
 }
 

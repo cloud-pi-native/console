@@ -6,7 +6,7 @@ import {
   getRandomRepo,
   getRandomEnv,
   getRandomPerm,
-  getRandomUserProject,
+  getRandomRole,
   getRandomCluster,
 } from './random-utils.js'
 import { repeatFn } from './func-utils.js'
@@ -25,7 +25,7 @@ export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = allEnv, or
 
   // Create Roles association table
   project.roles = users.map(user => ({
-    ...getRandomUserProject(user.id),
+    ...getRandomRole(user.id, project.id),
     user,
   }))
   project.roles[0].role = projectRoles[0]
@@ -47,6 +47,9 @@ export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = allEnv, or
   project.environments.forEach(env => {
     env.clusters = repeatFn(2)(getRandomCluster)
   })
+
+  // Create clusters
+  project.clusters = [getRandomCluster([project.id])]
 
   return {
     organization,
