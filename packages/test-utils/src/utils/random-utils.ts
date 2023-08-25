@@ -12,15 +12,13 @@ export const getRandomGitUrl = () => {
   return !url.startsWith('https://') ? 'https://' + url.split('://')[1] : url
 }
 
-export const getRandomOrganization = (name = 'mi', label = 'Ministère de l\'Intérieur', source = 'dso-console', createdAt = new Date(Date.now()), updatedAt = new Date(Date.now())) => {
+export const getRandomOrganization = (name = 'mi', label = 'Ministère de l\'Intérieur', source = 'dso-console') => {
   return {
     id: faker.string.uuid(),
     name,
     label,
     source,
     active: true,
-    createdAt,
-    updatedAt,
   } as Organization
 }
 
