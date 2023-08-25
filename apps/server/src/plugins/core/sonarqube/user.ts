@@ -19,7 +19,7 @@ export const createUser: StepCall<CreateProjectExecArgs> = async (payload) => {
     const user = users.users.find(u => u.login === username)
     const newPwd = generateRandomPassword(30)
     if (!user) {
-      const newUser = await axiosInstance({
+      await axiosInstance({
         url: 'users/create',
         method: 'post',
         params: {

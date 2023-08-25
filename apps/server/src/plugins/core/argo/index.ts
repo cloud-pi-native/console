@@ -1,5 +1,5 @@
 import type { AddEnvironmentClusterExecArgs, DeleteEnvironmentExecArgs, InitializeEnvironmentExecArgs, RemoveEnvironmentClusterExecArgs } from '@/plugins/hooks/environment.js'
-import { addDestinationToApplicationProject, addRepoToApplicationProject, createApplicationProject, deleteApplicationProject, removeDestinationFromApplicationProject } from './app-project.js'
+import { addDestinationToApplicationProject, createApplicationProject, deleteApplicationProject, removeDestinationFromApplicationProject } from './app-project.js'
 import { createApplication, deleteApplication } from './applications.js'
 import type { PluginResult, StepCall } from '@/plugins/hooks/hook.js'
 import type { CreateRepositoryExecArgs, DeleteRepositoryExecArgs } from '@/plugins/hooks/repository.js'

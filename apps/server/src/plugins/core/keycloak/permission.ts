@@ -1,5 +1,3 @@
-import { getGroups } from './group.js'
-
 /**
  * Function delete an array of userId from a groupId
  *

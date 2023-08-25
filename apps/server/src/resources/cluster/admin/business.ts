@@ -1,5 +1,5 @@
 import { addClusterToProjectWithIds, addLogs, createCluster, getClusterById, getClusterByLabel, getClustersWithProjectIdAndConfig, getProjectsByClusterId, removeClusterFromProject, updateCluster } from '@/resources/queries-index.js'
-import { BadRequestError, NotFoundError } from '@/utils/errors.js'
+import { BadRequestError } from '@/utils/errors.js'
 import { hooks } from '@/plugins/index.js'
 import { CreateClusterDto, UpdateClusterDto, clusterSchema } from 'shared'
 import { User } from '@prisma/client'
