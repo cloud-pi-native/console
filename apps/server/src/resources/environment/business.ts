@@ -58,7 +58,7 @@ type CheckEnvironmentParam = {
   envName: string,
 }
 
-export const checkGetEnvironment = async (
+export const checkGetEnvironment = (
   env: AsyncReturnType<typeof getEnvironmentInfos>,
   userId: string,
 ) => {
@@ -77,7 +77,7 @@ export const checkCreateEnvironment = ({
   const errorMessage = checkRoleAndLocked(project, userId, 'owner') ||
     checkClusterUnavailable(newClustersId, authorizedClusters) ||
     checkExistingEnvironment(project.environments, envName)
-  if (errorMessage) throw new Error(errorMessage)
+  if (errorMessage) throw new ForbiddenError(errorMessage, undefined)
 }
 
 export const checkUpdateEnvironment = (
@@ -116,18 +116,17 @@ export const createEnvironment = async (
   envName: string,
   newClustersId: string[],
 ) => {
-  let env
-  try {
-    await lockProject(project.id)
-    const projectOwners = filterOwners(project.roles)
-    env = await initializeEnvironment({ projectId: project.id, name: envName, projectOwners })
+  await lockProject(project.id)
+  const projectOwners = filterOwners(project.roles)
+  const env = await initializeEnvironment({ projectId: project.id, name: envName, projectOwners })
 
+  try {
     const registryHost = harborUrl.split('//')[1].split('/')[0]
     const environmentName = env.name
     const projectName = project.name
     const organizationName = project.organization.name
     const gitlabBaseURL = `${gitlabUrl}/${projectRootDir}/${organizationName}/${projectName}`
-    const repositories = env.project.repositories.map(({ internalRepoName }) => ({
+    const repositories = env.project.repositories?.map(({ internalRepoName }) => ({
       url: `${gitlabBaseURL}/${internalRepoName}.git`,
       internalRepoName,
     }))
@@ -155,7 +154,7 @@ export const createEnvironment = async (
     return env
   } catch (error) {
     await updateEnvironmentFailed(env.id)
-    return error
+    throw new BadRequestError(error.message, undefined)
   }
 }
 
