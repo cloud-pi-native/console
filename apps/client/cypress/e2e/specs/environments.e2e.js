@@ -1,4 +1,4 @@
-import { getModel, getModelById } from '../support/func.js'
+import { getModelById } from '../support/func.js'
 
 describe('Manage project environments', () => {
   const project0 = getModelById('project', '011e7860-04d7-461f-912d-334c622d38c5')
@@ -19,8 +19,6 @@ describe('Manage project environments', () => {
     cy.intercept('PUT', '/api/v1/projects/*/environments/*').as('putEnvironment')
     cy.intercept('GET', '/api/v1/projects').as('getProjects')
     cy.intercept('GET', '/api/v1/admin/projects').as('getAdminProjects')
-
-    let environments
 
     cy.kcLogin('tcolin')
     cy.visit('/')
