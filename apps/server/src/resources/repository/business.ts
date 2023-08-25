@@ -1,11 +1,24 @@
 import { addLogs, deleteRepository, getProjectInfos, getProjectInfosAndRepos, initializeRepository, lockProject, updateRepository, updateRepositoryCreated, updateRepositoryDeleting, updateRepositoryFailed } from '@/resources/queries-index.js'
-import { BadRequestError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
+import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import { Project, Repository, User } from '@prisma/client'
 import { gitlabUrl, projectRootDir } from '@/utils/env.js'
 import { hooks } from '@/plugins/index.js'
 import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { exclude } from '@/utils/queries-tools.js'
 import { CreateRepositoryDto, UpdateRepositoryDto } from 'shared/src/resources/repository/dto'
+import { checkAuthorization } from '../project/business.js'
+import { ProjectRoles } from 'shared'
+
+// TODO @claire_nollet attention, du coup je fais un truc bizarre
+export const checkProjectRoleDeletion = async (
+  projectId: Project['id'],
+  userId: User['id'],
+  role: ProjectRoles = 'user',
+) => {
+  const project = await getProjectInfos(projectId)
+  const errorMessage = checkAuthorization(project, userId, role)
+  if (errorMessage) throw new ForbiddenError(errorMessage, { description: '', extras: { userId, projectId: project.id } })
+}
 
 export const getRepositoryByIdBusiness = async (
   projectId: Project['id'],

@@ -4,7 +4,8 @@ import { sendOk, sendCreated } from '@/utils/response.js'
 import { EnhancedFastifyRequest } from '@/types/index.js'
 import { CreateRepositoryDto, DeleteRepositoryDto, UpdateRepositoryDto } from 'shared/src/resources/repository/dto.js'
 import { checkProjectRole } from '@/resources/permission/business.js'
-import { checkHookValidation, createRepositoryBusiness, deleteRepositoryBusiness, getProjectRepositoriesBusiness, getRepositoryByIdBusiness, updateRepositoryBusiness } from './business.js'
+// TODO @claire_nollet attention, du coup je fais un truc bizarre
+import { checkHookValidation, createRepositoryBusiness, deleteRepositoryBusiness, getProjectRepositoriesBusiness, getRepositoryByIdBusiness, updateRepositoryBusiness, checkProjectRoleDeletion } from './business.js'
 import { BadRequestError } from '@/utils/errors.js'
 
 // GET
@@ -119,7 +120,8 @@ export const deleteRepositoryController = async (req: EnhancedFastifyRequest<Del
   const repositoryId = req.params?.repositoryId
   const userId = req.session?.user?.id
 
-  await checkProjectRole(projectId, userId, 'owner')
+  // TODO @claire_nollet attention, du coup je fais un truc bizarre
+  await checkProjectRoleDeletion(projectId, userId, 'owner')
 
   await deleteRepositoryBusiness(projectId, repositoryId, userId)
 

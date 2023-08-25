@@ -1,6 +1,6 @@
 import type { HookPayload, StepCall } from '@/plugins/hooks/hook.js'
 import { gitlabToken } from '@/utils/env.js'
-import { createGroup, deleteGroup } from './group.js'
+import { createGroup, deleteGroup, getGroupId, setGroupVariable, setProjectVariable } from './group.js'
 import { addGroupMember } from './permission.js'
 import { createProject, createProjectMirror, deleteProject } from './project.js'
 import { setProjectTrigger } from './triggers.js'
@@ -33,13 +33,22 @@ export const checkApi = async (payload: HookPayload<{ owner: User }>) => {
 export const createDsoProject: StepCall<CreateProjectExecArgs> = async (payload) => {
   try {
     const { project, organization, owner } = payload.args
-
+    const { SONAR_TOKEN } = payload.sonarqube.vault.find(secret => secret.name === 'SONAR').data
     const group = await createGroup(project, organization)
     const user = await createUser(owner)
     const groupMember = await addGroupMember(group.id, user.id, 40)
     const internalMirrorRepoName = 'mirror'
     const mirror = await createProjectMirror(internalMirrorRepoName, project, organization)
     const triggerToken = await setProjectTrigger(mirror.id)
+
+    // Sonar vars saving in CI
+    const sonarVariable = await setGroupVariable(group.id, {
+      key: 'SONAR_TOKEN',
+      masked: true,
+      protected: false,
+      value: SONAR_TOKEN,
+      variable_type: 'env_var',
+    })
 
     return {
       status: {
@@ -51,6 +60,7 @@ export const createDsoProject: StepCall<CreateProjectExecArgs> = async (payload)
         user,
         groupMember,
         mirror,
+        sonarVariable,
       },
       vault: [{
         name: 'GITLAB',
@@ -102,8 +112,18 @@ export const createDsoRepository: StepCall<CreateRepositoryExecArgs> = async (pa
     const { internalRepoName, externalRepoUrl, organization, project, externalUserName, externalToken, isPrivate } = payload.args
     const externalRepoUrn = externalRepoUrl.split(/:\/\/(.*)/s)[1] // Un urN ne contient pas le protocole
     const internalMirrorRepoName = `${internalRepoName}-mirror`
-    const projectCreated = await createProject({ internalRepoName, externalRepoUrn, group: project, organization, externalUserName, externalToken, isPrivate })
-
+    const groupId = await getGroupId(project, organization)
+    if (!groupId) throw Error('Impossible de retrouver le namespace')
+    const projectCreated = await createProject({ groupId, internalRepoName, externalRepoUrn, externalUserName, externalToken, isPrivate })
+    const projectKey = `${organization}-${project}-${internalRepoName}`
+    await setProjectVariable(projectCreated.id, {
+      key: 'PROJECT_KEY',
+      masked: false,
+      protected: false,
+      value: projectKey,
+      variable_type: 'env_var',
+      environment_scope: '*',
+    })
     return {
       status: {
         result: 'OK',
