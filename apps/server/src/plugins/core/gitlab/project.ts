@@ -9,9 +9,7 @@ import { getGroupId } from './group.js'
  * @param {string} group - nom du projet DSO.
  * @param {string} organization - nom de l'organisation DSO.
  */
-export const createProject = async ({ internalRepoName, externalRepoUrn, group, organization, externalUserName, externalToken, isPrivate }) => {
-  const groupId = await getGroupId(group, organization)
-  if (!groupId) throw Error('Impossible de retrouver le namespace')
+export const createProject = async ({ groupId, internalRepoName, externalRepoUrn, externalUserName, externalToken, isPrivate }) => {
   const searchResults = await api.Projects.search(internalRepoName)
   if (searchResults.length) {
     const existingProject = searchResults.find(project => project.namespace.id === groupId && project.name === internalRepoName)

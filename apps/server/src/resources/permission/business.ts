@@ -9,6 +9,7 @@ export enum Action {
   delete = 'supprimée'
 }
 
+// TODO @claire_nollet attention, le getProjectInfos renvoi un message et bloque aussi la supression du repo
 export const checkProjectRole = async (
   projectId: Project['id'],
   userId: User['id'],

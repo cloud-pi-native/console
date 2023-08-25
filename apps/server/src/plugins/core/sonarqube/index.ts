@@ -1,5 +1,24 @@
 import axios, { type CreateAxiosDefaults } from 'axios'
 import { sonarqubeUrl, sonarqubeApiToken as username } from '@/utils/env.js'
+import { findGroupByName } from './group.js'
+import { adminGroupPath } from 'shared'
+
+const globalPermissions = [
+  'admin',
+  'profileadmin',
+  'gateadmin',
+  'scan',
+  'provisioning',
+]
+
+const projectPermissions = [
+  'admin',
+  'codeviewer',
+  'issueadmin',
+  'securityhotspotadmin',
+  'scan',
+  'user',
+]
 
 export const axiosOptions: CreateAxiosDefaults = {
   baseURL: `${sonarqubeUrl}/api/`,
@@ -12,26 +31,50 @@ export const axiosOptions: CreateAxiosDefaults = {
   },
 }
 
-const axiosInstance = axios.create(axiosOptions)
+export const axiosInstance = axios.create(axiosOptions)
 
 export const initSonar = async () => {
+  await setTemplatePermisions()
+  await createAdminGroup()
+  await setAdminPermisions()
+}
+
+const createAdminGroup = async () => {
+  const adminGroup = await findGroupByName(adminGroupPath)
+  if (!adminGroup) {
+    await axiosInstance({
+      method: 'post',
+      params: {
+        name: adminGroupPath,
+        description: 'DSO platform admins',
+      },
+      url: 'user_groups/create',
+    })
+  }
+}
+
+const setAdminPermisions = async () => {
+  for (const permission of globalPermissions) {
+    await axiosInstance({
+      method: 'post',
+      params: {
+        groupName: adminGroupPath,
+        permission,
+      },
+      url: 'permissions/add_group',
+    })
+  }
+}
+
+const setTemplatePermisions = async () => {
   await axiosInstance({
     method: 'post',
     params: { name: 'Forge Default' },
     url: 'permissions/create_template',
     validateStatus: (code) => [200, 400].includes(code),
   })
-  const permissions = [
-    'admin',
-    'codeviewer',
-    'issueadmin',
-    'securityhotspotadmin',
-    'scan',
-    'user',
-  ]
-  for (const permission of permissions) {
+  for (const permission of projectPermissions) {
     await axiosInstance({
-
       method: 'post',
       params: {
         templateName: 'Forge Default',

@@ -1,7 +1,9 @@
+import type { RegisterFn } from '@/plugins/index.js'
 import { getStatus } from './check.js'
 import { createUser, deleteUser } from './user.js'
+import { createDsoProjectGroup, deleteteDsoProjectGroup } from './group.js'
 import { initSonar } from './index.js'
-import type { RegisterFn } from '@/plugins/index.js'
+import { createDsoRepository, deleteDsoRepository } from './project.js'
 
 export const init = (register: RegisterFn) => {
   initSonar()
@@ -9,11 +11,19 @@ export const init = (register: RegisterFn) => {
   register('sonarqube', {
     createProject: {
       check: getStatus,
-      main: createUser,
+      pre: createUser,
+      main: createDsoProjectGroup,
     },
     archiveProject: {
       check: getStatus,
-      main: deleteUser,
+      pre: deleteUser,
+      main: deleteteDsoProjectGroup,
+    },
+    createRepository: {
+      main: createDsoRepository,
+    },
+    deleteRepository: {
+      main: deleteDsoRepository,
     },
   })
 }
