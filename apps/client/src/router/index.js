@@ -27,7 +27,7 @@ const routes = [
   {
     path: '/login',
     name: 'Login',
-    beforeEnter: async (to, from) => {
+    beforeEnter: async (_to, _from) => {
       const userStore = useUserStore()
       await userStore.login()
     },
@@ -36,7 +36,7 @@ const routes = [
   {
     path: '/logout',
     name: 'Logout',
-    beforeEnter: async (to, from) => {
+    beforeEnter: async (_to, _from) => {
       const userStore = useUserStore()
       await userStore.logout()
     },

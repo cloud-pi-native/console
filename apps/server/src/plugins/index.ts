@@ -30,7 +30,6 @@ const initPluginManager = async (app: FastifyInstance): PluginManager => {
 
         if (hook === 'all') {
           for (const hook of objectKeys(hooks)) {
-            const a = hooks[hook]
             if (!('uniquePlugin' in hooks[hook])) {
               hooks[hook][step][name] = fn
             }
@@ -55,7 +54,7 @@ const initPluginManager = async (app: FastifyInstance): PluginManager => {
   }
 }
 
-export const initCorePlugins = async <E, V>(pluginManager: Awaited<PluginManager>, app: FastifyInstance) => {
+export const initCorePlugins = async (pluginManager: Awaited<PluginManager>, _app: FastifyInstance) => {
   const { init: gitlabInit } = await import('./core/gitlab/init.js')
   const { init: harborInit } = await import('./core/harbor/init.js')
   const { init: keycloakInit } = await import('./core/keycloak/init.js')
@@ -75,7 +74,7 @@ export const initCorePlugins = async <E, V>(pluginManager: Awaited<PluginManager
   vaultInit(pluginManager.register)
 }
 
-export const initExternalPlugins = async <E, V>(pluginManager: Awaited<PluginManager>, app: FastifyInstance) => {
+export const initExternalPlugins = async (pluginManager: Awaited<PluginManager>, app: FastifyInstance) => {
   const __dirname = url.fileURLToPath(new URL('.', import.meta.url))
   try {
     const pluginDir = resolve(__dirname, 'external')
