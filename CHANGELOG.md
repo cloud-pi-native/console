@@ -1,5 +1,27 @@
 # Changelog
 
+## [5.6.0](https://github.com/cloud-pi-native/console/compare/v5.5.0...v5.6.0) (2023-08-28)
+
+
+### Features
+
+* :sparkles: better integration of sonarqube ([c0a0517](https://github.com/cloud-pi-native/console/commit/c0a05173a158b74d752aafaccdff58fc3b29c382))
+
+
+### Bug Fixes
+
+* :ambulance: preserve status colum in project ([febfaff](https://github.com/cloud-pi-native/console/commit/febfaff702d6a55210723ce213d603ad059ceaed))
+* :bug: optional paramater to call repeatFn ([a7925dc](https://github.com/cloud-pi-native/console/commit/a7925dcfbaaf1b1727e8cdede06bf9c24d89cad8))
+* :bug: pnpm lock ([a7925dc](https://github.com/cloud-pi-native/console/commit/a7925dcfbaaf1b1727e8cdede06bf9c24d89cad8))
+* :bug: run.sh js to ts reference ([a7925dc](https://github.com/cloud-pi-native/console/commit/a7925dcfbaaf1b1727e8cdede06bf9c24d89cad8))
+* :lipstick: fix padding ([907d424](https://github.com/cloud-pi-native/console/commit/907d424a94f2dfc7e7110882438130bdb5dc4cd8))
+* :lipstick: restyle logs interface ([fc362cf](https://github.com/cloud-pi-native/console/commit/fc362cf461c65f6e4e8e7b6b2d92c83a41844bdf))
+
+
+### Performance Improvements
+
+* :construction: skip failing test for merge ([a7925dc](https://github.com/cloud-pi-native/console/commit/a7925dcfbaaf1b1727e8cdede06bf9c24d89cad8))
+
 ## [5.5.0](https://github.com/cloud-pi-native/console/compare/v5.4.0...v5.5.0) (2023-08-22)
 
 
