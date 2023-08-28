@@ -12,6 +12,13 @@ enum ClusterPrivacy {
   dedicated
 }
 
+enum ProjectStatus {
+  initializing
+  created
+  failed
+  archived
+}
+
 model Environment {
   id        String   @id @default(uuid()) @db.Uuid
   name      String
@@ -61,16 +68,16 @@ model Permission {
 }
 
 model Project {
-  id             String       @id @unique @default(uuid()) @db.Uuid
+  id             String        @id @unique @default(uuid()) @db.Uuid
   name           String
-  organizationId String       @db.Uuid
+  organizationId String        @db.Uuid
   description    String?
-  status         String
-  locked         Boolean      @default(false)
+  status         ProjectStatus @default(initializing)
+  locked         Boolean       @default(false)
   services       Json
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  organization   Organization  @relation(fields: [organizationId], references: [id])
 
   environments Environment[]
   repositories Repository[]
