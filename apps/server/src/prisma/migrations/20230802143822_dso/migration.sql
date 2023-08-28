@@ -1,12 +1,10 @@
-/*
-  Warnings:
-
-  - Changed the type of `status` on the `Project` table. No cast exists, the column would be dropped and recreated, which cannot be done if there is data, since the column is required.
-
-*/
--- CreateEnum
 CREATE TYPE "ProjectStatus" AS ENUM ('initializing', 'created', 'failed', 'archived');
 
--- AlterTable
-ALTER TABLE "Project" DROP COLUMN "status",
-ADD COLUMN     "status" "ProjectStatus" NOT NULL;
+ALTER TABLE  public."Project" ALTER COLUMN status TYPE "ProjectStatus" USING 
+	case 
+		when status = 'created' then 'created'::"ProjectStatus"
+		when status = 'failed' then 'failed'::"ProjectStatus"
+		when status = 'archived' then 'archived'::"ProjectStatus"
+		else 'initializing'::"ProjectStatus"
+	end;
+ALTER TABLE  public."Project" ALTER COLUMN status SET DEFAULT 'initializing';
