@@ -1,14 +1,12 @@
-import axios from 'axios'
-import { axiosOptions } from './index.js'
+import { axiosInstance } from './index.js'
 import { generateRandomPassword } from '@/utils/crypto.js'
 import type { StepCall } from '@/plugins/hooks/hook.js'
 import type { ArchiveProjectExecArgs, CreateProjectExecArgs } from '@/plugins/hooks/project.js'
 
-const axiosInstance = axios.create(axiosOptions)
-
 export const createUser: StepCall<CreateProjectExecArgs> = async (payload) => {
-  const { project, organization, owner } = payload.args
+  const { project, organization } = payload.args
   const username = `${organization}-${project}`
+  const fakeEmail = `${project}@${organization}`
   try {
     const users = (await axiosInstance({
       url: 'users/search',
@@ -23,7 +21,7 @@ export const createUser: StepCall<CreateProjectExecArgs> = async (payload) => {
         url: 'users/create',
         method: 'post',
         params: {
-          email: owner.email,
+          email: fakeEmail,
           local: 'true',
           login: username,
           name: username,

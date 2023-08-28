@@ -1,6 +1,6 @@
 import { addReqLogs } from '@/utils/logger.js'
 import { sendOk, sendCreated } from '@/utils/response.js'
-import { Action, checkProjectRole, deletePermissionBusiness, getEnvironmentPermissionsBusiness, preventUpdatingOwnerPermission, setPermissionBusiness, updatePermissionBusiness } from './business.js'
+import { Action, deletePermissionBusiness, getEnvironmentPermissionsBusiness, preventUpdatingOwnerPermission, setPermissionBusiness, updatePermissionBusiness } from './business.js'
 import { checkGetEnvironment, getEnvironmentInfos } from '@/resources/environment/business.js'
 
 // GET
@@ -9,9 +9,7 @@ export const getEnvironmentPermissionsController = async (req, res) => {
   const environmentId = req.params?.environmentId
   const projectId = req.params?.projectId
 
-  await checkProjectRole(projectId, userId)
-
-  const permissions = await getEnvironmentPermissionsBusiness(environmentId)
+  const permissions = await getEnvironmentPermissionsBusiness(userId, projectId, environmentId)
 
   addReqLogs({
     req,
@@ -26,14 +24,12 @@ export const getEnvironmentPermissionsController = async (req, res) => {
 
 // POST
 export const setPermissionController = async (req, res) => {
-  const userId = req.session?.user?.id
+  const requestorId = req.session?.user?.id
   const environmentId = req.params?.environmentId
   const projectId = req.params?.projectId
   const data = req.body
 
-  await checkProjectRole(projectId, userId)
-
-  const permission = await setPermissionBusiness(data.userId, environmentId, data.level)
+  const permission = await setPermissionBusiness(projectId, requestorId, data.userId, environmentId, data.level)
 
   addReqLogs({
     req,
@@ -49,18 +45,18 @@ export const setPermissionController = async (req, res) => {
 
 // PUT
 export const updatePermissionController = async (req, res) => {
-  const userId = req.session?.user?.id
+  const requestorId = req.session?.user?.id
   const environmentId = req.params?.environmentId
   const projectId = req.params?.projectId
   const data = req.body
 
   const env = await getEnvironmentInfos(environmentId)
 
-  await checkGetEnvironment(env, userId)
+  await checkGetEnvironment(env, requestorId)
 
   await preventUpdatingOwnerPermission(projectId, data.userId)
 
-  const permission = await updatePermissionBusiness(data.userId, environmentId, parseInt(data.level))
+  const permission = await updatePermissionBusiness(projectId, requestorId, data.userId, environmentId, parseInt(data.level))
 
   addReqLogs({
     req,
