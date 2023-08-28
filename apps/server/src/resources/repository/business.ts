@@ -5,36 +5,50 @@ import { gitlabUrl, projectRootDir } from '@/utils/env.js'
 import { hooks } from '@/plugins/index.js'
 import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { exclude } from '@/utils/queries-tools.js'
-import { CreateRepositoryDto, UpdateRepositoryDto } from 'shared/src/resources/repository/dto'
-import { checkAuthorization } from '../project/business.js'
+import { CreateRepositoryDto, UpdateRepositoryDto } from 'shared/src/resources/repository/dto.js'
 import { ProjectRoles } from 'shared'
-
-// TODO @claire_nollet attention, du coup je fais un truc bizarre
-export const checkProjectRoleDeletion = async (
-  projectId: Project['id'],
-  userId: User['id'],
-  role: ProjectRoles = 'user',
-) => {
-  const project = await getProjectInfos(projectId)
-  const errorMessage = checkAuthorization(project, userId, role)
-  if (errorMessage) throw new ForbiddenError(errorMessage, { description: '', extras: { userId, projectId: project.id } })
-}
+import { checkInsufficientRoleInProject, checkRoleAndLocked } from '@/utils/controller.js'
 
 export const getRepositoryByIdBusiness = async (
+  userId: User['id'],
   projectId: Project['id'],
   repositoryId: Repository['id'],
 ) => {
-  const project = await getProjectInfosAndRepos(projectId)
+  const project = await getProjectAndcheckRole(userId, projectId)
   const repository = project.repositories?.find(repo => repo.id === repositoryId)
   if (!repository) throw new NotFoundError('Dépôt introuvable')
   return repository
 }
 
-export const getProjectRepositoriesBusiness = async (projectId: Project['id']) => {
-  const project = await getProjectInfosAndRepos(projectId)
+export const getProjectRepositoriesBusiness = async (
+  userId: User['id'],
+  projectId: Project['id'],
+) => {
+  const project = await getProjectAndcheckRole(userId, projectId)
   const repositories = project.repositories
   if (!repositories.length) throw new NotFoundError('Aucun dépôt associé à ce projet')
   return repositories
+}
+
+export const getProjectAndcheckRole = async (
+  userId: User['id'],
+  projectId: Project['id'],
+  minRole: ProjectRoles = 'user',
+) => {
+  const project = await getProjectInfosAndRepos(projectId)
+  const errorMessage = checkInsufficientRoleInProject(userId, { roles: project.roles, minRole })
+  if (errorMessage) throw new ForbiddenError(errorMessage, undefined)
+  return project
+}
+
+export const checkUpsertRepository = async (
+  userId: User['id'],
+  projectId: Project['id'],
+  minRole: ProjectRoles,
+) => {
+  const project = await getProjectInfos(projectId)
+  const errorMessage = checkRoleAndLocked(project, userId, minRole)
+  if (errorMessage) throw new ForbiddenError(errorMessage, undefined)
 }
 
 type KeycloakUser = {
@@ -140,8 +154,9 @@ export const deleteRepositoryBusiness = async (
   repositoryId: Repository['id'],
   userId: User['id'],
 ) => {
-  const project = await getProjectInfos(projectId)
-  const repo = await getRepositoryByIdBusiness(projectId, repositoryId)
+  const project = await getProjectAndcheckRole(userId, projectId)
+
+  const repo = await getRepositoryByIdBusiness(userId, projectId, repositoryId)
 
   await lockProject(project.id)
 

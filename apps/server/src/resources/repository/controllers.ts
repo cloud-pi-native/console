@@ -3,9 +3,7 @@ import { addReqLogs } from '@/utils/logger.js'
 import { sendOk, sendCreated } from '@/utils/response.js'
 import { EnhancedFastifyRequest } from '@/types/index.js'
 import { CreateRepositoryDto, DeleteRepositoryDto, UpdateRepositoryDto } from 'shared/src/resources/repository/dto.js'
-import { checkProjectRole } from '@/resources/permission/business.js'
-// TODO @claire_nollet attention, du coup je fais un truc bizarre
-import { checkHookValidation, createRepositoryBusiness, deleteRepositoryBusiness, getProjectRepositoriesBusiness, getRepositoryByIdBusiness, updateRepositoryBusiness, checkProjectRoleDeletion } from './business.js'
+import { checkHookValidation, createRepositoryBusiness, deleteRepositoryBusiness, getProjectRepositoriesBusiness, getRepositoryByIdBusiness, updateRepositoryBusiness, checkUpsertRepository } from './business.js'
 import { BadRequestError } from '@/utils/errors.js'
 
 // GET
@@ -14,9 +12,7 @@ export const getRepositoryByIdController = async (req, res) => {
   const repositoryId = req.params?.repositoryId
   const userId = req.session?.user?.id
 
-  await checkProjectRole(projectId, userId)
-
-  const repository = await getRepositoryByIdBusiness(projectId, userId)
+  const repository = await getRepositoryByIdBusiness(userId, projectId, userId)
 
   addReqLogs({
     req,
@@ -33,9 +29,7 @@ export const getProjectRepositoriesController = async (req, res) => {
   const projectId = req.params?.projectId
   const userId = req.session?.user?.id
 
-  await checkProjectRole(projectId, userId)
-
-  const repositories = await getProjectRepositoriesBusiness(projectId)
+  const repositories = await getProjectRepositoriesBusiness(userId, projectId)
 
   addReqLogs({
     req,
@@ -55,7 +49,7 @@ export const createRepositoryController = async (req: EnhancedFastifyRequest<Cre
   const projectId = req.params?.projectId
   data.projectId = projectId
 
-  await checkProjectRole(projectId, user.id, 'owner')
+  await checkUpsertRepository(user.id, projectId, 'owner')
 
   await checkHookValidation(user)
 
@@ -89,7 +83,7 @@ export const updateRepositoryController = async (req: EnhancedFastifyRequest<Upd
   const externalToken = data.externalToken
   delete data.externalToken
 
-  await checkProjectRole(projectId, userId, 'owner')
+  await checkUpsertRepository(userId, projectId, 'owner')
 
   if (data.isPrivate && !externalToken) throw new BadRequestError('Le token est requis', undefined)
   if (data.isPrivate && !data.externalUserName) throw new BadRequestError('Le nom d\'utilisateur est requis', undefined)
@@ -98,7 +92,7 @@ export const updateRepositoryController = async (req: EnhancedFastifyRequest<Upd
     data.externalUserName = ''
   }
 
-  await getRepositoryByIdBusiness(projectId, repositoryId)
+  await getRepositoryByIdBusiness(userId, projectId, repositoryId)
 
   await updateRepositoryBusiness(projectId, repositoryId, data, userId)
 
@@ -119,9 +113,6 @@ export const deleteRepositoryController = async (req: EnhancedFastifyRequest<Del
   const projectId = req.params?.projectId
   const repositoryId = req.params?.repositoryId
   const userId = req.session?.user?.id
-
-  // TODO @claire_nollet attention, du coup je fais un truc bizarre
-  await checkProjectRoleDeletion(projectId, userId, 'owner')
 
   await deleteRepositoryBusiness(projectId, repositoryId, userId)
 
