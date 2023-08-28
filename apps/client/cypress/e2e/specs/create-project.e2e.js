@@ -1,6 +1,12 @@
 import { getModelById } from '../support/func.js'
 
 describe('Create Project', () => {
+  const project = {
+    orgName: 'mi',
+    name: 'project01',
+    description: 'Application de prise de rendez-vous en préfécture.',
+  }
+
   beforeEach(() => {
     cy.kcLogin('test')
   })
@@ -10,11 +16,6 @@ describe('Create Project', () => {
     cy.intercept('GET', '/api/v1/projects').as('getProjects')
 
     const owner = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
-    const project = {
-      orgName: 'mi',
-      name: 'project01',
-      description: 'Application de prise de rendez-vous en préfécture.',
-    }
 
     cy.goToProjects()
       .getByDataTestid('createProjectLink').click()
@@ -35,5 +36,21 @@ describe('Create Project', () => {
     cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
 
     cy.assertCreateProjects([project.name])
+  })
+
+  it('Should not create a project if name is already taken', () => {
+    cy.intercept('POST', '/api/v1/projects').as('postProject')
+    cy.intercept('GET', '/api/v1/projects').as('getProjects')
+
+    cy.goToProjects()
+      .getByDataTestid('createProjectLink').click()
+      .get('select#organizationId-select').select(project.orgName)
+      .getByDataTestid('nameInput').find('input').type(`${project.name}`)
+    cy.getByDataTestid('createProjectBtn').should('be.enabled').click()
+
+    cy.wait('@postProject').its('response.statusCode').should('eq', 400)
+    cy.getByDataTestid('snackbar').within(() => {
+      cy.get('p').should('contain', `Le projet "${project.name}" existe déjà`)
+    })
   })
 })
