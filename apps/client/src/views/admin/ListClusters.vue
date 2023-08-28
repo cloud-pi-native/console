@@ -163,5 +163,10 @@ watch(clusters, () => {
         @cancel="cancel()"
       />
     </div>
+    <div
+      v-if="!clusterList.length"
+    >
+      <p>Aucun cluster enregistré</p>
+    </div>
   </div>
 </template>

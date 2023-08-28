@@ -104,6 +104,7 @@ if [ "$RUN_COMPONENT_TESTS" == "true" ]; then
   i=$(($i + 1))
 
   npm --prefix $PROJECT_DIR/packages/shared run build
+  npm --prefix $PROJECT_DIR/packages/test-utils run build
   npm --prefix $PROJECT_DIR/apps/client run cypress:run-ct
 fi
 
@@ -115,6 +116,7 @@ if [ "$RUN_E2E_TESTS" == "true" ]; then
   i=$(($i + 1))
 
   npm --prefix $PROJECT_DIR/packages/shared run build
+  npm --prefix $PROJECT_DIR/packages/test-utils run build
   npm --prefix $PROJECT_DIR/apps/server run db:wrapper
   npm run kube:init
   npm run kube:prod:build

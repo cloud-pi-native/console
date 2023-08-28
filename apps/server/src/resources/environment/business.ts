@@ -21,11 +21,11 @@ import {
   type AsyncReturnType,
   checkInsufficientRoleInProject,
   checkClusterUnavailable,
-  unlockProjectIfNotFailed,
   filterOwners,
   checkInsufficientPermissionInEnvironment,
+  checkRoleAndLocked,
 } from '@/utils/controller.js'
-import { projectIsLockedInfo, ProjectRoles } from 'shared'
+import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { gitlabUrl, harborUrl, projectRootDir } from '@/utils/env.js'
 import { getProjectInfosAndClusters } from '@/resources/project/business.js'
 
@@ -62,7 +62,7 @@ export const checkGetEnvironment = async (
   env: AsyncReturnType<typeof getEnvironmentInfos>,
   userId: string,
 ) => {
-  const errorMessage = checkAuthorization(env.project, userId, 'user') ||
+  const errorMessage = checkInsufficientRoleInProject(userId, { roles: env.project.roles }) ||
     checkInsufficientPermissionInEnvironment(userId, env.permissions, 0)
   if (errorMessage) throw new ForbiddenError(errorMessage, { description: '', extras: { userId, projectId: env.project.id } })
 }
@@ -74,7 +74,7 @@ export const checkCreateEnvironment = ({
   newClustersId,
   envName,
 }: CheckEnvironmentParam) => {
-  const errorMessage = checkAuthorization(project, userId, 'owner') ||
+  const errorMessage = checkRoleAndLocked(project, userId, 'owner') ||
     checkClusterUnavailable(newClustersId, authorizedClusters) ||
     checkExistingEnvironment(project.environments, envName)
   if (errorMessage) throw new Error(errorMessage)
@@ -86,7 +86,7 @@ export const checkUpdateEnvironment = (
   userId: string,
   newClustersId: string[],
 ) => {
-  const errorAuthorizationMessage = checkAuthorization(project, userId, 'owner')
+  const errorAuthorizationMessage = checkRoleAndLocked(project, userId, 'owner')
 
   if (errorAuthorizationMessage) throw new BadRequestError(errorAuthorizationMessage, { description: '', extras: { userId, projectId: project.id } })
 
@@ -100,16 +100,6 @@ export const checkDeleteEnvironment = (
 ) => {
   const errorMessage = checkInsufficientRoleInProject(userId, { minRole: 'owner', roles: project.roles })
   if (errorMessage) throw new ForbiddenError(errorMessage, { description: '', extras: { userId, projectId: project.id } })
-}
-
-export const checkAuthorization = (
-  project: { locked: boolean, roles: Role[] },
-  userId: string,
-  minRole: ProjectRoles,
-) => {
-  return project.locked
-    ? projectIsLockedInfo
-    : checkInsufficientRoleInProject(userId, { minRole, roles: project.roles })
 }
 
 export const checkExistingEnvironment = (environments: Environment[], envName: string) => {

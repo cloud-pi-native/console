@@ -19,12 +19,13 @@ import {
   updateProjectServices,
 } from '@/resources/queries-index.js'
 import { getServices } from '@/utils/services.js'
-import { Organization, Project, User, Role } from '@prisma/client'
-import { AsyncReturnType, checkInsufficientPermissionInEnvironment, checkInsufficientRoleInProject, unlockProjectIfNotFailed } from '@/utils/controller.js'
+import { Organization, Project, User } from '@prisma/client'
+import { AsyncReturnType, checkInsufficientPermissionInEnvironment, checkInsufficientRoleInProject } from '@/utils/controller.js'
+import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { BadRequestError, NotFoundError } from '@/utils/errors.js'
 import { hooks } from '@/plugins/index.js'
 import { PluginResult } from '@/plugins/hooks/hook.js'
-import { CreateProjectDto, ProjectRoles, UpdateProjectDto, calcProjectNameMaxLength, projectSchema } from 'shared'
+import { CreateProjectDto, UpdateProjectDto, calcProjectNameMaxLength, projectSchema } from 'shared'
 import { CreateProjectExecArgs, UpdateProjectExecArgs } from '@/plugins/hooks/project.js'
 import { filterObjectByKeys } from '@/utils/queries-tools.js'
 import { gitlabUrl, projectRootDir } from '@/utils/env.js'
@@ -75,14 +76,6 @@ export const checkCreateProject = async (
   if (projectSearch.length > 0) {
     throw new BadRequestError(`"${data.name}" existe déjà`, { extras: {}, description: `Le projet "${data.name}" existe déjà` })
   }
-}
-
-export const checkAuthorization = (
-  project: { locked: boolean, roles: Role[] },
-  userId: string,
-  minRole: ProjectRoles,
-) => {
-  return checkInsufficientRoleInProject(userId, { minRole, roles: project.roles })
 }
 
 const filterProject = (

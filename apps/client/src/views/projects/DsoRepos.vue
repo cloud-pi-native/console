@@ -172,5 +172,10 @@ watch(project, () => {
         @cancel="cancel()"
       />
     </div>
+    <div
+      v-if="!repos.length"
+    >
+      <p>Aucun dépôt synchronisé</p>
+    </div>
   </div>
 </template>

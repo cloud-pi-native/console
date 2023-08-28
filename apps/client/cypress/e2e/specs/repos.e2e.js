@@ -142,7 +142,7 @@ describe('Add repos into project', () => {
     cy.assertAddRepo(project, repos)
   })
 
-  it.skip('Should update a repo', () => {
+  it('Should update a repo', () => {
     cy.intercept('GET', '/api/v1/projects').as('getProjects')
     cy.intercept('PUT', '/api/v1/projects/*/repositories/*').as('putRepo')
     let repos
@@ -178,7 +178,7 @@ describe('Add repos into project', () => {
     })
   })
 
-  it.skip('Should generate a GitLab CI for a repo', () => {
+  it('Should generate a GitLab CI for a repo', () => {
     cy.intercept('POST', '/api/v1/projects/*/repositories').as('postRepo')
     cy.intercept('GET', '/api/v1/projects').as('getProjects')
 
@@ -228,7 +228,7 @@ describe('Add repos into project', () => {
     cy.assertAddRepo(project, [repo])
   })
 
-  it.skip('Should delete a repo', () => {
+  it('Should delete a repo', () => {
     const repos = [
       {
         internalRepoName: 'repo01',

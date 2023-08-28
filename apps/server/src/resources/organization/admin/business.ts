@@ -1,7 +1,7 @@
 import { hooks } from '@/plugins/index.js'
 import { HookPayload, PluginResult } from '@/plugins/hooks/hook.js'
 import { addLogs, createOrganization, getOrganizationByName, getOrganizations, getProjectByOrganizationId, lockProject, updateActiveOrganization, updateLabelOrganization } from '@/resources/queries-index.js'
-import { unlockProjectIfNotFailed } from '@/utils/controller.js'
+import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { BadRequestError, NotFoundError } from '@/utils/errors.js'
 import { objectValues } from '@/utils/type.js'
 import { Organization, User } from '@prisma/client'

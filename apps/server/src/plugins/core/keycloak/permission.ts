@@ -1,23 +1,9 @@
-import { getGroups } from './group.js'
+import KeycloakAdminClient from '@keycloak/keycloak-admin-client'
 
-/**
- * Function delete an array of userId from a groupId
- *
- * @param {Array<String>} usersId - An array of keycloak user ID
- * @param {String} groupId - A keycloak group ID
- * @return {Promise} Return a Promise
- */
-export const removeMembers = async (kcClient, usersId, groupId) => {
+export const removeMembers = async (kcClient: KeycloakAdminClient, usersId: string[], groupId: string) => {
   return Promise.all(usersId.map(userId => (kcClient.users.delFromGroup({ id: userId, groupId }))))
 }
 
-/**
- * Function add an array of userId to a groupId
- *
- * @param {Array<String>} usersId - An array of keycloak user ID
- * @param {String} groupId - A keycloak group ID
- * @return {Promise} Return a Promise
- */
-export const addMembers = async (kcClient, usersId, groupId) => {
+export const addMembers = async (kcClient: KeycloakAdminClient, usersId: string[], groupId: string) => {
   return Promise.all(usersId.map(userId => (kcClient.users.addToGroup({ id: userId, groupId }))))
 }

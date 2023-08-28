@@ -1,4 +1,4 @@
-import type { CreateUserOptions, ExpandedUserSchema, UserSchema } from '@gitbeaker/rest'
+import type { CreateUserOptions, UserSchema } from '@gitbeaker/rest'
 import { api } from './utils.js'
 
 export const createUsername = (email: string) => email.replace('@', '.')
@@ -44,10 +44,6 @@ export const createUser = async (user) => {
     return existingUser
   }
 
-  const userDefinition = {
-    ...userDefinitionBase,
-    // optionals options
-  }
   return api.Users.create({
     ...userDefinitionBase,
     admin: false,

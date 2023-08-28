@@ -1,32 +1,12 @@
-import { type ProjectRoles, adminGroupPath } from 'shared'
+import { type ProjectRoles, adminGroupPath, projectIsLockedInfo } from 'shared'
 import { sendForbidden } from './response.js'
-import {
-  getEnvironmentsByProjectId,
-  getProjectRepositories,
-  getProjectById,
-  lockProject,
-  unlockProject,
-} from '@/resources/queries-index.js'
-import type { Permission, Project, User, Role } from '@prisma/client'
+import type { Permission, User, Role } from '@prisma/client'
 
 export const checkAdminGroup = (req, res, done) => {
   if (!req.session.user.groups?.includes(adminGroupPath)) {
     sendForbidden(res, 'Vous n\'avez pas les droits administrateur')
   }
   done()
-}
-
-export const unlockProjectIfNotFailed = async (projectId: Project['id']) => {
-  const ressources = [
-    ...(await getEnvironmentsByProjectId(projectId))?.map(environment => environment.status),
-    ...(await getProjectRepositories(projectId))?.map(repository => repository.status),
-    (await getProjectById(projectId))?.status,
-  ]
-  if (ressources.includes('failed')) {
-    return lockProject(projectId)
-  } else {
-    return unlockProject(projectId)
-  }
 }
 
 export type RequireOnlyOne<T, Keys extends keyof T = keyof T> =
@@ -56,14 +36,23 @@ export const getErrorMessage = (...fns: ErrorMessagePredicate[]) => {
 }
 
 /**
- * Vérifie si un utilisateur a le rôle suffisant dans un projet
+ * Renvoie une erreur si le projet est verrouillé
+ */
+export const checkProjectLocked = (
+  project: { locked: boolean },
+): string => project.locked
+  ? projectIsLockedInfo
+  : ''
+
+/**
+ * Renvoie une erreur si l'utilisateur n'a pas le rôle suffisant dans un projet
  * @param {number} userId Id du user dont il faut vérifier le rôle
  * @param {Object} SearchOptions
  * @param {string} SearchOptions.usersList - Liste d'utilisateurs, check si ids incluent userId
  * @param {string?} SearchOptions.minRole - Optionnel, role minimum requis, 'user' ou  'owner'. Si `undefined` : 'user'
  * @return {string} message d'erreur si rôle insuffisant / absence de rôle, sinon chaîne vide
  */
-export const checkInsufficientRoleInProject = (userId: User['id'], { userList, roles, minRole }: SearchOptions) => {
+export const checkInsufficientRoleInProject = (userId: User['id'], { userList, roles, minRole }: SearchOptions): string => {
   if (roles) {
     // if minRole is 'owner' filter and assign to userList
     if (minRole === 'owner') userList = roles.filter(userProject => userProject.role === 'owner').map(({ userId }) => ({ id: userId }))
@@ -75,7 +64,13 @@ export const checkInsufficientRoleInProject = (userId: User['id'], { userList, r
     : 'Vous n’avez pas les permissions suffisantes dans le projet'
 }
 
-export const checkClusterUnavailable = (clustersId: string[], authorizedClusters: { id: string }[]) => clustersId
+export const checkRoleAndLocked = (
+  project: { locked: boolean, roles: Role[] },
+  userId: string,
+  minRole: ProjectRoles = 'user',
+): string => checkProjectLocked(project) ?? checkInsufficientRoleInProject(userId, { minRole, roles: project.roles })
+
+export const checkClusterUnavailable = (clustersId: string[], authorizedClusters: { id: string }[]): string => clustersId
   .some(clusterId => !authorizedClusters
     .some(cluster => cluster.id === clusterId))
   ? 'Ce cluster n\'est pas disponible sur pour ce projet'

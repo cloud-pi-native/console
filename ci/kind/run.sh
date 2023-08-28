@@ -180,7 +180,7 @@ fi
 if [[ "$COMMAND" =~ "dev" ]]; then
   printf "\n\n${red}[kind wrapper].${no_color} Deploy application in development mode\n\n"
 
-  helm upgrade --install --wait $INTEGRATION_ARGS_UTILS --set-file data="./packages/test-utils/src/imports/data.js" dso-utils ./ci/helm-utils
+  helm upgrade --install --wait $INTEGRATION_ARGS_UTILS --set-file data="./packages/test-utils/src/imports/data.ts" dso-utils ./ci/helm-utils
   helm upgrade \
     --install \
     --wait \
@@ -195,7 +195,7 @@ if [[ "$COMMAND" =~ "dev" ]]; then
 elif [[ "$COMMAND" =~ "prod" ]]; then
   printf "\n\n${red}[kind wrapper].${no_color} Deploy application in production mode\n\n"
 
-  helm upgrade --install --wait $INTEGRATION_ARGS_UTILS --set-file data="./packages/test-utils/src/imports/data.js" dso-utils ./ci/helm-utils
+  helm upgrade --install --wait $INTEGRATION_ARGS_UTILS --set-file data="./packages/test-utils/src/imports/data.ts" dso-utils ./ci/helm-utils
   helm upgrade \
     --install \
     --wait \

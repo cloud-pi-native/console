@@ -1,12 +1,19 @@
 import * as hooks from './index.js'
 
+export type SecretToVault = {
+  name: string,
+  data: { [key: string]: any }
+}
 export type DefaultArgs = Record<any, any>
 export type PluginResult = {
   status: { result: 'OK', message?: string } | { result: 'KO', message: string },
-  [key: string]: any
+  vault?: SecretToVault[]
+  [key: string]: any,
 }
 
 export type HookPayload<Args> = {
+  sonarqube?: PluginResult
+  vault?: PluginResult & Record<string, Record<string, unknown>>
   args: Args,
   failed: boolean,
   plugins?: Record<string, PluginResult>
