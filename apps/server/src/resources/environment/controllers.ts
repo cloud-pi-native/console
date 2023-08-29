@@ -34,7 +34,7 @@ export const getEnvironmentByIdController = async (req, res) => {
   const env = await getEnvironmentInfos(environmentId)
 
   // appel business 2 : check pré-requis
-  await checkGetEnvironment(env, userId)
+  checkGetEnvironment(env, userId)
 
   // Nettoyage des clés
   delete env.project.roles

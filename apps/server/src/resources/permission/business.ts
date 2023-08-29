@@ -1,6 +1,6 @@
 import { ForbiddenError } from '@/utils/errors.js'
 import { Project, User, Environment, Permission } from '@prisma/client'
-import { deletePermission, getEnvironmentPermissions, getProjectInfos, getProjectUsers, getSingleOwnerByProjectId, setPermission, updatePermission } from '@/resources/queries-index.js'
+import { deletePermission, getEnvironmentPermissions, getProjectInfos, getSingleOwnerByProjectId, setPermission, updatePermission } from '@/resources/queries-index.js'
 import { checkInsufficientRoleInProject, checkRoleAndLocked } from '@/utils/controller.js'
 
 export enum Action {
@@ -22,8 +22,8 @@ export const getEnvironmentPermissionsBusiness = async (
   projectId: Project['id'],
   environmentId: Environment['id'],
 ) => {
-  const userList = await getProjectUsers(projectId)
-  const errorMessage = checkInsufficientRoleInProject(userId, { userList })
+  const roles = (await getProjectInfos(projectId)).roles
+  const errorMessage = checkInsufficientRoleInProject(userId, { roles })
   if (errorMessage) throw new ForbiddenError(errorMessage, undefined)
   return getEnvironmentPermissions(environmentId)
 }

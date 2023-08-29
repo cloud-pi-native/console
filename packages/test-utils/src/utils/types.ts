@@ -8,13 +8,6 @@ export type Organization = {
     updatedAt?: Date,
 }
 
-export type UserProject = {
-  id: string,
-  role: string,
-  updatedAt?: Date,
-  createdAt?: Date,
-}
-
 export type Repository = {
   id: string,
   projectId: string,
@@ -36,6 +29,15 @@ export type User = {
   lastName: string,
   updatedAt?: Date,
   createdAt?: Date,
+}
+
+export type Role = {
+  userId: string,
+  projectId: string,
+  role: string,
+  updatedAt?: Date,
+  createdAt?: Date,
+  user?: User,
 }
 
 export type Permission = {
@@ -95,7 +97,8 @@ export type Project = {
   description: string,
   status: string,
   locked: boolean,
-  roles?: UserProject[],
+  roles?: Role[],
+  clusters?: Cluster[],
   repositories?: Repository[],
   environments?: Environment[],
   updatedAt?: Date,
