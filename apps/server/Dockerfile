@@ -9,7 +9,6 @@ COPY --chown=node:root apps/server/ ./apps/server/
 COPY --chown=node:root packages/shared/ ./packages/shared/
 COPY --chown=node:root packages/tsconfig/ ./packages/tsconfig/
 COPY --chown=node:root packages/test-utils/ ./packages/test-utils/
-COPY --chown=node:root patches/ ./patches/
 
 
 # Dev stage
@@ -18,6 +17,7 @@ FROM base AS dev
 USER node
 RUN pnpm install
 RUN pnpm --filter shared run build
+RUN pnpm --filter server run db:generate
 ENTRYPOINT [ "pnpm", "--filter", "server", "run", "dev" ]
 
 
