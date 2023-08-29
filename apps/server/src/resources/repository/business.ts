@@ -5,8 +5,8 @@ import { gitlabUrl, projectRootDir } from '@/utils/env.js'
 import { hooks } from '@/plugins/index.js'
 import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { exclude } from '@/utils/queries-tools.js'
-import { CreateRepositoryDto, UpdateRepositoryDto } from 'shared/src/resources/repository/dto.js'
-import { ProjectRoles } from 'shared'
+import { CreateRepositoryDto, UpdateRepositoryDto } from '@dso-console/shared/src/resources/repository/dto.js'
+import { ProjectRoles } from '@dso-console/shared'
 import { checkInsufficientRoleInProject, checkRoleAndLocked } from '@/utils/controller.js'
 
 export const getRepositoryByIdBusiness = async (

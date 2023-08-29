@@ -6,8 +6,8 @@ import fp from 'fastify-plugin'
 import { sessionConf } from '@/utils/keycloak.js'
 import { getConnection, closeConnections } from '@/connect.js'
 import logRouter from './log.js'
-import { adminGroupPath } from 'shared'
-import { User, getRandomLog, getRandomUser, repeatFn } from 'test-utils'
+import { adminGroupPath } from '@dso-console/shared'
+import { User, getRandomLog, getRandomUser, repeatFn } from '@dso-console/test-utils'
 import { checkAdminGroup } from '@/utils/controller.js'
 import prisma from '@/__mocks__/prisma.js'
 
@@ -24,8 +24,8 @@ const mockSessionPlugin = (app, opt, next) => {
       req.session = {
         user: {
           ...getRequestor(),
-          groups: [adminGroupPath]
-        }
+          groups: [adminGroupPath],
+        },
       }
     } else {
       req.session = { user: getRequestor() }
@@ -80,16 +80,16 @@ describe('Admin logs routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(200)
-      expect(response.json()).toMatchObject({total: logs.length, logs})
+      expect(response.json()).toMatchObject({ total: logs.length, logs })
     })
 
     it('Should return an error if retrieve logs failed', async () => {
-      prisma.$transaction.mockRejectedValue({statusCode: 500, message: 'Erreur de récupération des logs'})
-      
+      prisma.$transaction.mockRejectedValue({ statusCode: 500, message: 'Erreur de récupération des logs' })
+
       const response = await app.inject({ headers: { admin: 'admin' } })
         .get('?offset=0&limit=100')
         .end()
-      
+
       expect(response.statusCode).toEqual(500)
       expect(JSON.parse(response.body).message).toEqual('Erreur de récupération des logs')
     })

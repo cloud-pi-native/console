@@ -11,7 +11,7 @@ import {
   isValid,
   instanciateSchema,
   calcProjectNameMaxLength,
-} from 'shared'
+} from '@dso-console/shared'
 import router from '@/router/index.js'
 import LoadingCt from '@/components/LoadingCt.vue'
 

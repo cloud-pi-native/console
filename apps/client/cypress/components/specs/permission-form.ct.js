@@ -7,7 +7,7 @@ import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@/main.css'
 import * as icons from '@/icons.js'
 import PermissionForm from '@/components/PermissionForm.vue'
-import { createRandomDbSetup, getRandomUser, getRandomRole } from 'test-utils'
+import { createRandomDbSetup, getRandomUser, getRandomRole } from '@dso-console/test-utils'
 import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
 

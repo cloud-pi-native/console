@@ -7,7 +7,7 @@ import '@gouvminint/vue-dsfr/styles'
 import '@/main.css'
 import * as icons from '@/icons.js'
 import EnvironmentForm from '@/components/EnvironmentForm.vue'
-import { createRandomDbSetup } from 'test-utils'
+import { createRandomDbSetup } from '@dso-console/test-utils'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 describe('EnvironmentForm.vue', () => {

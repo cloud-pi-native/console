@@ -8,7 +8,7 @@ import {
   type DeleteEnvironmentDto,
   type InitializeEnvironmentDto,
   type UpdateEnvironmentDto,
-} from 'shared'
+} from '@dso-console/shared'
 import { EnhancedFastifyRequest } from '@/types/index.js'
 import {
   getEnvironmentInfos,

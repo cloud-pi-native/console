@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onBeforeMount, watch } from 'vue'
-import { clusterSchema, schemaValidator, isValid, instanciateSchema } from 'shared'
+import { clusterSchema, schemaValidator, isValid, instanciateSchema } from '@dso-console/shared'
 import { load } from 'js-yaml'
 import { JsonViewer } from 'vue3-json-viewer'
 import MultiSelector from './MultiSelector.vue'

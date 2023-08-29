@@ -1,6 +1,6 @@
 import { ClusterMix } from '@/types'
 import { CoreV1Api, KubeConfig, PatchUtils } from '@kubernetes/client-node'
-import { ClusterModel } from 'shared'
+import { ClusterModel } from '@dso-console/shared'
 
 export const patchOptions = { headers: { 'Content-type': PatchUtils.PATCH_FORMAT_JSON_PATCH } }
 

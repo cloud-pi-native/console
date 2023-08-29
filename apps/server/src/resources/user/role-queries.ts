@@ -1,4 +1,4 @@
-import type { ProjectRoles } from 'shared'
+import type { ProjectRoles } from '@dso-console/shared'
 import type { Project, User } from '@prisma/client'
 import prisma from '@/prisma.js'
 

@@ -7,9 +7,9 @@ import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@/main.css'
 import * as icons from '@/icons.js'
 import RepoForm from '@/components/RepoForm.vue'
-import { createRandomDbSetup } from 'test-utils'
+import { createRandomDbSetup } from '@dso-console/test-utils'
 import { useProjectStore } from '@/stores/project.js'
-import { allOrganizations } from 'shared'
+import { allOrganizations } from '@dso-console/shared'
 
 describe('RepoForm.vue', () => {
   it('Should mount a new repo RepoForm', () => {

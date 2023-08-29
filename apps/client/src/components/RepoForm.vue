@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { repoSchema, schemaValidator, isValid, instanciateSchema } from 'shared'
+import { repoSchema, schemaValidator, isValid, instanciateSchema } from '@dso-console/shared'
 import CIForm from './CIForm.vue'
 import LoadingCt from './LoadingCt.vue'
 

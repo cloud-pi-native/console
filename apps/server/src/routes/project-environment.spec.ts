@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
-import { createRandomDbSetup, getRandomEnv, getRandomUser, getRandomRole, User, getRandomPerm, getRandomLog } from 'test-utils'
+import { createRandomDbSetup, getRandomEnv, getRandomUser, getRandomRole, User, getRandomPerm, getRandomLog } from '@dso-console/test-utils'
 import fastify from 'fastify'
 import fastifySession from '@fastify/session'
 import fastifyCookie from '@fastify/cookie'
@@ -7,7 +7,7 @@ import fp from 'fastify-plugin'
 import { sessionConf } from '../utils/keycloak.js'
 import { getConnection, closeConnections } from '../connect.js'
 import projectEnvironmentRouter from './project-environment.js'
-import { projectIsLockedInfo } from 'shared'
+import { projectIsLockedInfo } from '@dso-console/shared'
 import prisma from '../__mocks__/prisma.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
@@ -66,9 +66,9 @@ describe('User routes', () => {
       const envInfos = {
         ...envToGet,
         project: projectInfos,
-        permissions: [getRandomPerm(envToGet.id, requestor)]
+        permissions: [getRandomPerm(envToGet.id, requestor)],
       }
-      
+
       prisma.environment.findUnique.mockResolvedValue(envInfos)
 
       const response = await app.inject()
@@ -82,7 +82,7 @@ describe('User routes', () => {
     it('Should not retreive an environment if not project member', async () => {
       const projectInfos = createRandomDbSetup({}).project
       const envToGet = projectInfos.environments[0]
-        const envInfos = {
+      const envInfos = {
         ...envToGet,
         project: projectInfos,
       }
@@ -92,7 +92,7 @@ describe('User routes', () => {
       const response = await app.inject()
         .get(`/${projectInfos.id}/environments/${envInfos.id}`)
         .end()
-      
+
       expect(response.statusCode).toEqual(403)
       expect(response.body).toBeDefined()
       expect(JSON.parse(response.body).message).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
@@ -106,7 +106,7 @@ describe('User routes', () => {
         ...envToGet,
         project: projectInfos,
       }
-      
+
       prisma.environment.findUnique.mockResolvedValueOnce(envInfos)
 
       const response = await app.inject()
@@ -126,9 +126,9 @@ describe('User routes', () => {
       projectInfos.roles = [...projectInfos.roles, getRandomRole(requestor.id, projectInfos.id, 'owner')]
       const logCreate = getRandomLog('Create Environment', requestor.id)
       const logAdd = getRandomLog('Add Cluster to Environment', requestor.id)
-      const envToAdd =  getRandomEnv('dev', projectInfos.id)
+      const envToAdd = getRandomEnv('dev', projectInfos.id)
       const envInfos = { ...envToAdd, project: projectInfos }
-      
+
       prisma.user.findUnique.mockResolvedValueOnce(requestor)
       prisma.project.findUnique.mockResolvedValue(projectInfos)
       prisma.cluster.findMany.mockResolvedValue(projectInfos.clusters)
@@ -152,7 +152,7 @@ describe('User routes', () => {
 
     it('Should not create an environment if not project member', async () => {
       const projectInfos = createRandomDbSetup({}).project
-      const envToAdd =  getRandomEnv('dev', projectInfos.id)
+      const envToAdd = getRandomEnv('dev', projectInfos.id)
 
       prisma.user.findUnique.mockResolvedValueOnce(requestor)
       prisma.project.findUnique.mockResolvedValue(projectInfos)
@@ -214,8 +214,8 @@ describe('User routes', () => {
       projectInfos.roles = [...projectInfos.roles, getRandomRole(requestor.id, projectInfos.id, 'owner')]
       const logRemove = getRandomLog('Remove Cluster from Environment', requestor.id)
       const logDelete = getRandomLog('Delete Environment', requestor.id)
-      const envToDelete =  {...projectInfos.environments[0], project: projectInfos}
-      
+      const envToDelete = { ...projectInfos.environments[0], project: projectInfos }
+
       prisma.environment.findUnique.mockResolvedValue(envToDelete)
       prisma.environment.update.mockReturnValue(envToDelete)
       prisma.project.update.mockResolvedValue(projectInfos)
@@ -234,14 +234,14 @@ describe('User routes', () => {
 
     it('Should not delete an environment if not project member', async () => {
       const projectInfos = createRandomDbSetup({ envs: ['dev'] }).project
-      const envToDelete =  {...projectInfos.environments[0], project: projectInfos}
-      
+      const envToDelete = { ...projectInfos.environments[0], project: projectInfos }
+
       prisma.environment.findUnique.mockResolvedValue(envToDelete)
 
       const response = await app.inject()
         .delete(`/${projectInfos.id}/environments/${envToDelete.id}`)
         .end()
-  
+
       expect(response.statusCode).toEqual(403)
       expect(response.body).toBeDefined()
       expect(JSON.parse(response.body).message).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
@@ -250,14 +250,14 @@ describe('User routes', () => {
     it('Should not delete an environment if not project owner', async () => {
       const projectInfos = createRandomDbSetup({ envs: ['dev'] }).project
       projectInfos.roles = [...projectInfos.roles, getRandomRole(requestor.id, projectInfos.id, 'user')]
-      const envToDelete =  {...projectInfos.environments[0], project: projectInfos}
-      
+      const envToDelete = { ...projectInfos.environments[0], project: projectInfos }
+
       prisma.environment.findUnique.mockResolvedValue(envToDelete)
 
       const response = await app.inject()
         .delete(`/${projectInfos.id}/environments/${envToDelete.id}`)
         .end()
-  
+
       expect(response.statusCode).toEqual(403)
       expect(response.body).toBeDefined()
       expect(JSON.parse(response.body).message).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
