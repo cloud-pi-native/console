@@ -82,6 +82,9 @@ importers:
         specifier: ^12.17.1
         version: 12.17.1
     devDependencies:
+      '@dso-console/eslint-config-base':
+        specifier: workspace:*
+        version: link:../../packages/eslintconfig
       '@dso-console/test-utils':
         specifier: workspace:*
         version: link:../../packages/test-utils
@@ -221,11 +224,14 @@ importers:
         specifier: ^1.1.4
         version: 1.1.4(typescript@5.1.6)(vitest@0.33.0)
     devDependencies:
+      '@dso-console/eslint-config-base':
+        specifier: workspace:*
+        version: link:../../packages/eslintconfig
       '@dso-console/test-utils':
         specifier: workspace:*
         version: link:../../packages/test-utils
       '@dso-console/tsconfig':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../packages/tsconfig
       '@faker-js/faker':
         specifier: ^8.0.2
@@ -330,8 +336,11 @@ importers:
         specifier: ^17.9.2
         version: 17.9.2
     devDependencies:
+      '@dso-console/eslint-config-base':
+        specifier: workspace:*
+        version: link:../eslintconfig
       '@dso-console/tsconfig':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../tsconfig
       '@faker-js/faker':
         specifier: ^8.0.2
@@ -400,8 +409,11 @@ importers:
         specifier: ^8.0.2
         version: 8.0.2
     devDependencies:
+      '@dso-console/eslint-config-base':
+        specifier: workspace:*
+        version: link:../eslintconfig
       '@dso-console/tsconfig':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../tsconfig
       '@types/node':
         specifier: ^18.16.19

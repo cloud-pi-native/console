@@ -19,7 +19,8 @@
     "@dso-console/shared": "workspace:*"
   },
   "devDependencies": {
-    "@dso-console/tsconfig": "workspace:^",
+    "@dso-console/tsconfig": "workspace:*",
+    "@dso-console/eslint-config-base": "workspace:*",
     "@types/node": "^18.16.19",
     "@typescript-eslint/eslint-plugin": "^6.1.0",
     "@typescript-eslint/parser": "^6.1.0",
