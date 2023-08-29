@@ -1,4 +1,4 @@
-import { ForbiddenError } from '@/utils/errors.js'
+import { BadRequestError, ForbiddenError } from '@/utils/errors.js'
 import { Project, User, Environment, Permission } from '@prisma/client'
 import { deletePermission, getEnvironmentPermissions, getProjectInfos, getSingleOwnerByProjectId, setPermission, updatePermission } from '@/resources/queries-index.js'
 import { checkInsufficientRoleInProject, checkRoleAndLocked } from '@/utils/controller.js'
@@ -38,6 +38,8 @@ export const setPermissionBusiness = async (
   const project = await getProjectInfos(projectId)
   const errorMessage = checkRoleAndLocked(project, requestorId)
   if (errorMessage) throw new ForbiddenError(errorMessage, undefined)
+  const isUserProjectMember = project.roles?.some(role => role?.userId === userId)
+  if (!isUserProjectMember) throw new BadRequestError('L\'utilisateur n\'est pas membre du projet', undefined)
   return setPermission({ userId, environmentId, level })
   // TODO chercher le nom de l'environnement associé et dériver les noms keycloak
   // if (data.level === 0) await removeMembers([data.userId], [permission.Environment.name])
