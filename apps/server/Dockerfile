@@ -15,7 +15,6 @@ FROM base AS dev
 USER node
 RUN pnpm install
 RUN pnpm --filter shared run build
-RUN pnpm --filter server run db:generate
 ENTRYPOINT [ "pnpm", "--filter", "server", "run", "dev" ]
 
 

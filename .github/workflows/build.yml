@@ -1,15 +1,58 @@
-name: Build and push image with branch sha
+name: Build
 
 on:
+  workflow_call:
+    inputs:
+      REGISTRY:
+        required: true
+        type: string
+      NAMESPACE:
+        required: true
+        type: string
+      PLATFORM:
+        required: true
+        type: string
+      TAG:
+        required: true
+        type: string
+    outputs:
+      matrix:
+        description: "Images matrix used by piepline"
+        value: ${{ jobs.matrix.outputs.build-matrix }}
   workflow_dispatch:
+    inputs:
+      REGISTRY:
+        required: true
+        type: string
+        default: ghcr.io
+      NAMESPACE:
+        required: true
+        type: string
+        default: cloud-pi-native/console
+      PLATFORM:
+        required: true
+        type: string
+        default: linux/amd64
 
 env:
-  REGISTRY: "ghcr.io"
-  NAMESPACE: "${{ github.repository }}"
-  PLATFORM: "linux/amd64"
-  TAG: "${{ github.sha }}"
+  TAG: ${{ inputs.TAG || github.sha }}
 
 jobs:
+  check-secrets:
+    name: Check if Sonar secrets are set
+    runs-on: ubuntu-latest
+    outputs:
+      run-scan: ${{ steps.check-secrets.outputs.run-scan }}
+    steps:
+      - name: Check secrets presence
+        id: check-secrets
+        run: |
+          if [ "$SONAR_HOST_URL" != "" ] && [ "$SONAR_TOKEN" != "" ] && [ "$SONAR_PROJECT_KEY" != "" ]; then
+            echo "run-scan=true" >> $GITHUB_OUTPUT
+          else
+            echo "run-scan=false" >> $GITHUB_OUTPUT
+          fi
+
   matrix:
     name: Generate matrix for build & scan
     runs-on: ubuntu-latest
@@ -18,11 +61,12 @@ jobs:
     steps:
       - name: Checks-out repository
         uses: actions/checkout@v3
+
       - name: Generate matrix for build
         id: build-matrix
         run: |
           echo 'BUILD_MATRIX<<EOF' >> $GITHUB_OUTPUT
-          ./ci/scripts/build-matrix.sh -f ./docker/docker-compose.prod.yml -c -p "${{ env.PLATFORM }}" -r "${{ env.REGISTRY }}" -t "${{ env.TAG }}" -n "${{ env.NAMESPACE }}" | jq '[.[] | select(.build != false)]' >> $GITHUB_OUTPUT
+          ./ci/scripts/build-matrix.sh -f ./docker/docker-compose.prod.yml -c -p "${{ inputs.PLATFORM }}" -r "${{ inputs.REGISTRY }}" -t "${{ inputs.TAG }}" -n "${{ inputs.NAMESPACE }}" | jq '[.[] | select(.build != false)]' >> $GITHUB_OUTPUT
           echo 'EOF' >> $GITHUB_OUTPUT
 
   build:
@@ -36,21 +80,26 @@ jobs:
     steps:
       - name: Checks-out repository
         uses: actions/checkout@v3
+
       - name: Get short git sha
         id: sha
         run: echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
       - name: Set up Docker buildx
         uses: docker/setup-buildx-action@v2
+
       - name: Set up QEMU (for multi platform build)
         uses: docker/setup-qemu-action@v2
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ${{ inputs.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           logout: true
-      - name: Build docker image
+
+      - name: Build and push docker image
         uses: docker/build-push-action@v3
         with:
           context: ${{ matrix.images.build.context }}
@@ -60,4 +109,4 @@ jobs:
           platforms: ${{ matrix.images.build.platforms }}
           push: true
           build-args: |
-            APP_VERSION="${{ steps.sha.outputs.SHORT_SHA }}"
+            APP_VERSION="${{ env.TAG }}"

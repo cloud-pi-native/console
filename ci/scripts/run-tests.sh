@@ -21,6 +21,7 @@ DOCKER_COMPOSE_VERSION="$(docker compose version)"
 RUN_UNIT_TESTS="false"
 RUN_COMPONENT_TESTS="false"
 RUN_E2E_TESTS="false"
+RUN_STATUS_CHECK="false"
 
 # Declare script helper
 TEXT_HELPER="\nThis script aims to run application tests.
@@ -29,6 +30,8 @@ Following flags are available:
   -c    Run component tests
 
   -e    Run e2e tests
+
+  -u    Run deployement status check
 
   -u    Run unit tests
   
@@ -39,13 +42,15 @@ print_help() {
 }
 
 # Parse options
-while getopts hceu flag
+while getopts hcesu flag
 do
   case "${flag}" in
     c)
       RUN_COMPONENT_TESTS=true;;
     e)
       RUN_E2E_TESTS=true;;
+    s)
+      RUN_STATUS_CHECK=true;;
     u)
       RUN_UNIT_TESTS=true;;
     h | *)
@@ -56,7 +61,7 @@ done
 
 
 # Script condition
-if [ "$RUN_UNIT_TESTS" == "false" ] && [ "$RUN_E2E_TESTS" == "false" ] && [ "$RUN_COMPONENT_TESTS" == "false" ]; then
+if [ "$RUN_UNIT_TESTS" == "false" ] && [ "$RUN_E2E_TESTS" == "false" ] && [ "$RUN_COMPONENT_TESTS" == "false" ] && [ "$RUN_STATUS_CHECK" == "false" ]; then
   printf "\nArgument(s) missing, you don't specify any kind of test to run.\n"
   print_help
   exit 0
@@ -85,7 +90,8 @@ printf "\nScript settings:
   -> docker-compose version: ${DOCKER_COMPOSE_VERSION}
   -> run unit tests: ${RUN_UNIT_TESTS}
   -> run component tests: ${RUN_COMPONENT_TESTS}
-  -> run e2e tests: ${RUN_E2E_TESTS}\n"
+  -> run e2e tests: ${RUN_E2E_TESTS}
+  -> run deploy status check: ${RUN_STATUS_CHECK}\n"
 
 
 cd "$PROJECT_DIR"
@@ -121,6 +127,30 @@ if [ "$RUN_E2E_TESTS" == "true" ]; then
   npm run kube:prod
   npm run kube:e2e-ci
 
+
+  printf "\n${red}${i}.${no_color} Remove resources\n"
+  i=$(($i + 1))
+
+  npm run kube:delete
+fi
+
+# Run e2e tests
+if [ "$RUN_STATUS_CHECK" == "true" ]; then
+  checkDockerRunning
+  
+  printf "\n${red}${i}.${no_color} Launch e2e tests\n"
+  i=$(($i + 1))
+
+  npm --prefix $PROJECT_DIR/packages/shared run build
+  npm --prefix $PROJECT_DIR/packages/test-utils run build
+  npm --prefix $PROJECT_DIR/apps/server run db:wrapper
+  npm run kube:init
+  npm run kube:prod:build
+  npm run kube:prod
+
+  for pod in $(kubectl get pod | tail --lines=+2 | awk '{print $1}'); do
+    printf "\n${red}Pod:${no_color} ${pod}\n${red}Status:${no_color} $(kubectl get pod/${pod} -o jsonpath='{.status.phase}')\n"
+  done
 
   printf "\n${red}${i}.${no_color} Remove resources\n"
   i=$(($i + 1))

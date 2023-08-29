@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+# set -e
 
 # Colorize terminal
 red='\e[0;31m'
@@ -8,7 +8,6 @@ no_color='\033[0m'
 
 # Get versions
 DOCKER_VERSION="$(docker --version)"
-KIND_VERSION="$(kind --version)"
 
 # Default
 SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
@@ -75,9 +74,9 @@ install_kind() {
     exit 0
   fi
 
-  if [ "$(uname)" = "x86_64" ]; then
+  if [ "$(uname -m)" = "x86_64" ]; then
     ARCH=amd64
-  elif [ "$(uname)" = "arm64" ] || [ "$(uname)" = "aarch64" ]; then
+  elif [ "$(uname -m)" = "arm64" ] || [ "$(uname -m)" = "aarch64" ]; then
     ARCH=arm64
   fi
 
@@ -85,7 +84,7 @@ install_kind() {
   chmod +x ./kind
   mv ./kind /usr/local/bin/kind
 
-  printf "\n\nkind version $(kind --version) installed\n\n"
+  printf "\n\n$(kind --version) installed\n\n"
 }
 
 if [ "$INSTALL_KIND" = "true" ] && [ -z "$(kind --version)" ]; then
@@ -204,7 +203,7 @@ elif [[ "$COMMAND" =~ "prod" ]]; then
     $HELM_RELEASE_NAME $HELM_DIRECTORY
 
   for i in $(kubectl get deploy -o name); do 
-    kubectl rollout status $i -w --timeout=150s; 
+    kubectl rollout status $i -w --timeout=150s
   done
 fi
 
