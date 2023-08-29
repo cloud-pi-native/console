@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
-import { User, getRandomUser, repeatFn } from 'test-utils'
+import { User, getRandomUser, repeatFn } from '@dso-console/test-utils'
 import fastify from 'fastify'
 import fastifySession from '@fastify/session'
 import fastifyCookie from '@fastify/cookie'
@@ -8,7 +8,7 @@ import { sessionConf } from '@/utils/keycloak.js'
 import { getConnection, closeConnections } from '@/connect.js'
 import adminUsersRouter from './user.js'
 import { checkAdminGroup } from '@/utils/controller.js'
-import { adminGroupPath } from 'shared'
+import { adminGroupPath } from '@dso-console/shared'
 import prisma from '@/__mocks__/prisma.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))

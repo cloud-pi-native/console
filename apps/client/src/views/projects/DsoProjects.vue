@@ -4,7 +4,7 @@ import { useProjectStore } from '@/stores/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import router from '@/router/index.js'
 import DsoSelectedProject from './DsoSelectedProject.vue'
-import { sortArrByObjKeyAsc } from 'shared'
+import { sortArrByObjKeyAsc } from '@dso-console/shared'
 
 const projectStore = useProjectStore()
 const snackbarStore = useSnackbarStore()

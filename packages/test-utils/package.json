@@ -1,5 +1,5 @@
 {
-  "name": "test-utils",
+  "name": "@dso-console/test-utils",
   "version": "1.0.0",
   "description": "",
   "type": "module",
@@ -16,7 +16,7 @@
   "types": "types/index.d.ts",
   "dependencies": {
     "@faker-js/faker": "^8.0.2",
-    "shared": "workspace:^"
+    "@dso-console/shared": "workspace:*"
   },
   "devDependencies": {
     "@dso-console/tsconfig": "workspace:^",

@@ -1,7 +1,7 @@
 import { addClusterToProjectWithIds, addLogs, createCluster, getClusterById, getClusterByLabel, getClustersWithProjectIdAndConfig, getProjectsByClusterId, removeClusterFromProject, updateCluster } from '@/resources/queries-index.js'
 import { BadRequestError } from '@/utils/errors.js'
 import { hooks } from '@/plugins/index.js'
-import { CreateClusterDto, UpdateClusterDto, clusterSchema } from 'shared'
+import { CreateClusterDto, UpdateClusterDto, clusterSchema } from '@dso-console/shared'
 import { User } from '@prisma/client'
 
 export const getAllCleanedClusters = async () => {

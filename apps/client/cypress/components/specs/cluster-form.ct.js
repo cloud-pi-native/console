@@ -7,7 +7,7 @@ import '@gouvminint/vue-dsfr/styles'
 import '@/main.css'
 import * as icons from '@/icons.js'
 import ClusterForm from '@/components/ClusterForm.vue'
-import { getRandomCluster, getRandomProject, repeatFn } from 'test-utils'
+import { getRandomCluster, getRandomProject, repeatFn } from '@dso-console/test-utils'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useAdminClusterStore } from '@/stores/admin/cluster.js'
 

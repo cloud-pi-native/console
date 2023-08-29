@@ -7,7 +7,7 @@ import {
   type CreateProjectDto,
   UpdateProjectDto,
   ArchiveProjectDto,
-} from 'shared'
+} from '@dso-console/shared'
 import type { EnhancedFastifyRequest } from '@/types/index.js'
 import {
   getUserProjects,

@@ -103,9 +103,7 @@ if [ "$RUN_COMPONENT_TESTS" == "true" ]; then
   printf "\n${red}${i}.${no_color} Launch component tests\n"
   i=$(($i + 1))
 
-  npm --prefix $PROJECT_DIR/packages/shared run build
-  npm --prefix $PROJECT_DIR/packages/test-utils run build
-  npm --prefix $PROJECT_DIR/apps/client run cypress:run-ct
+  npm run test:ct-ci
 fi
 
 # Run e2e tests

@@ -1,5 +1,5 @@
 import type { V1Namespace, CoreV1Api } from '@kubernetes/client-node'
-import { UserModel } from 'shared'
+import { UserModel } from '@dso-console/shared'
 import { createCoreV1Api } from './api.js'
 import type { StepCall } from '@/plugins/hooks/hook.js'
 import type { AddEnvironmentClusterExecArgs, RemoveEnvironmentClusterExecArgs } from '@/plugins/hooks/index.js'

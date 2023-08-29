@@ -7,7 +7,7 @@ import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@/main.css'
 import * as icons from '@/icons.js'
 import RangeInput from '@/components/RangeInput.vue'
-import { levels } from 'shared'
+import { levels } from '@dso-console/shared'
 
 describe('RangeInput.vue', () => {
   it('Should mount a RangeInput', () => {

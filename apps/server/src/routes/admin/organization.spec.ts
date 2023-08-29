@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
-import { User, getRandomOrganization, getRandomProject, getRandomUser } from 'test-utils'
+import { User, getRandomOrganization, getRandomProject, getRandomUser } from '@dso-console/test-utils'
 import fastify from 'fastify'
 import fastifySession from '@fastify/session'
 import fastifyCookie from '@fastify/cookie'
@@ -7,7 +7,7 @@ import fp from 'fastify-plugin'
 import { sessionConf } from '@/utils/keycloak.js'
 import { getConnection, closeConnections } from '@/connect.js'
 import organizationRouter from './organization.js'
-import { adminGroupPath, allOrganizations } from 'shared'
+import { adminGroupPath, allOrganizations } from '@dso-console/shared'
 import { fetchOrganizationsRes, filteredOrganizations } from '@/utils/mock-plugins.js'
 import { checkAdminGroup } from '@/utils/controller.js'
 import prisma from '@/__mocks__/prisma.js'
@@ -32,8 +32,8 @@ const mockSessionPlugin = (app, opt, next) => {
       req.session = {
         user: {
           ...getRequestor(),
-          groups: [adminGroupPath]
-        }
+          groups: [adminGroupPath],
+        },
       }
     } else {
       req.session = { user: getRequestor() }
@@ -92,7 +92,6 @@ describe('Organizations routes', () => {
     })
 
     it('Should return an error if retrieve organizations failed', async () => {
-
       prisma.organization.findMany.mockResolvedValue([])
 
       const response = await app.inject({ headers: { admin: 'admin' } })
@@ -141,9 +140,9 @@ describe('Organizations routes', () => {
       prisma.organization.findUnique.mockResolvedValue(null)
 
       const response = await app.inject({ headers: { admin: 'admin' } })
-      .post('/')
-      .body(organization)
-      .end()
+        .post('/')
+        .body(organization)
+        .end()
 
       expect(response.statusCode).toEqual(400)
       expect(JSON.parse(response.body).message).toEqual('"name" length must be less than or equal to 10 characters long')

@@ -1,5 +1,5 @@
 <script setup>
-import { statusDict } from 'shared'
+import { statusDict } from '@dso-console/shared'
 
 const props = defineProps({
   ressource: {

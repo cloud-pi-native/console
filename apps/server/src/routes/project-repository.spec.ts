@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
-import { User, createRandomDbSetup, getRandomLog, getRandomRepo, getRandomRole, getRandomUser } from 'test-utils'
+import { User, createRandomDbSetup, getRandomLog, getRandomRepo, getRandomRole, getRandomUser } from '@dso-console/test-utils'
 import fastify from 'fastify'
 import fastifySession from '@fastify/session'
 import fastifyCookie from '@fastify/cookie'
@@ -7,7 +7,7 @@ import fp from 'fastify-plugin'
 import { sessionConf } from '../utils/keycloak.js'
 import { getConnection, closeConnections } from '../connect.js'
 import projectRepositoryRouter from './project-repository.js'
-import { projectIsLockedInfo } from 'shared'
+import { projectIsLockedInfo } from '@dso-console/shared'
 import prisma from '../__mocks__/prisma.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
@@ -98,7 +98,7 @@ describe('Project routes', () => {
       const projectInfos = createRandomDbSetup({}).project
       projectInfos.roles = [...projectInfos.roles, getRandomRole(requestor.id, projectInfos.id, 'owner')]
       const newRepository = getRandomRepo(projectInfos.id)
-      
+
       prisma.project.findUnique.mockResolvedValue(projectInfos)
       prisma.project.update.mockResolvedValue(projectInfos)
       prisma.repository.create.mockReturnValue(newRepository)
@@ -119,7 +119,7 @@ describe('Project routes', () => {
     it('Should not create a repository if project locked', async () => {
       const projectInfos = createRandomDbSetup({}).project
       projectInfos.locked = true
-      
+
       prisma.project.findUnique.mockResolvedValue(projectInfos)
 
       const response = await app.inject()
@@ -227,7 +227,7 @@ describe('Project routes', () => {
       const response = await app.inject()
         .delete(`${projectInfos.id}/repositories/${repoToDelete.id}`)
         .end()
-      
+
       expect(response.statusCode).toEqual(200)
       expect(response.body).toBeDefined()
       expect(response.body).toEqual('Dépôt en cours de suppression')
