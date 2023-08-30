@@ -9,10 +9,10 @@ import projectRouter from './project.js'
 import { adminGroupPath } from 'shared'
 import { User, getRandomProject, getRandomUser, repeatFn } from 'test-utils'
 import { checkAdminGroup } from '@/utils/controller.js'
-import prisma from '../../__mocks__/prisma.js'
+import prisma from '@/__mocks__/prisma.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
-vi.mock('../../prisma.js')
+vi.mock('@/prisma.js')
 
 const app = fastify({ logger: false })
   .register(fastifyCookie)
@@ -73,7 +73,7 @@ describe('Admin projects routes', () => {
     it('Should retrieve all projects', async () => {
       const projects = repeatFn(2)(getRandomProject)
     
-      prisma.project.findMany.mockResolvedValueOnce(projects)
+      prisma.project.findMany.mockResolvedValue(projects)
 
       const response = await app.inject({ headers: { admin: 'admin' } })
         .get('/')
