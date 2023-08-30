@@ -10,7 +10,7 @@ import projectPermissionRouter from './project-permission.js'
 import prisma from '../__mocks__/prisma.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
-vi.mock('../prisma')
+vi.mock('../prisma.js')
 
 const app = fastify({ logger: false })
   .register(fastifyCookie)
