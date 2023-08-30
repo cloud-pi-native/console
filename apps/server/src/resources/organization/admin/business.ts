@@ -9,12 +9,16 @@ import { getUniqueListBy, organizationSchema } from 'shared'
 
 export const getAllOrganizationBusiness = async () => {
   const allOrganizations = await getOrganizations()
-  if (!allOrganizations.length) throw new NotFoundError('Aucune organisation trouvée', undefined)
+  if (!allOrganizations?.length) throw new NotFoundError('Aucune organisation trouvée', undefined)
   return allOrganizations
 }
 
 export const createOrganizationBusiness = async (data: Organization) => {
-  await organizationSchema.validateAsync(data)
+  try {
+    await organizationSchema.validateAsync(data)
+  } catch (error) {
+    throw new BadRequestError(error.message, undefined)
+  }
 
   const isNameTaken = await getOrganizationByName(data.name)
   if (isNameTaken) throw new BadRequestError('Cette organisation existe déjà', undefined)
