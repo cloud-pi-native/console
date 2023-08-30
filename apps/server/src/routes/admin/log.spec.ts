@@ -7,10 +7,12 @@ import { sessionConf } from '@/utils/keycloak.js'
 import { getConnection, closeConnections } from '@/connect.js'
 import logRouter from './log.js'
 import { adminGroupPath } from 'shared'
-import { getRandomLog, repeatFn } from 'test-utils'
+import { getRandomLog, getRandomUser, repeatFn } from 'test-utils'
 import { checkAdminGroup } from '@/utils/controller.js'
+import prisma from '../../__mocks__/prisma.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
+vi.mock('../../prisma.js')
 
 const app = fastify({ logger: false })
   .register(fastifyCookie)
@@ -19,9 +21,14 @@ const app = fastify({ logger: false })
 const mockSessionPlugin = (app, opt, next) => {
   app.addHook('onRequest', (req, res, next) => {
     if (req.headers.admin) {
-      req.session = { user: { groups: [adminGroupPath] } }
+      req.session = {
+        user: {
+          ...getRequestor(),
+          groups: [adminGroupPath]
+        }
+      }
     } else {
-      req.session = { user: {} }
+      req.session = { user: getRequestor() }
     }
     next()
   })
@@ -34,8 +41,19 @@ const mockSession = (app) => {
     .register(logRouter)
 }
 
-describe.skip('Admin logs routes', () => {
-  let Log
+let requestor: User
+
+const setRequestor = (user: User) => {
+  requestor = user
+}
+
+const getRequestor = () => {
+  return requestor
+}
+
+describe('Admin logs routes', () => {
+  const requestor = getRandomUser()
+  setRequestor(requestor)
 
   beforeAll(async () => {
     mockSession(app)
@@ -48,7 +66,6 @@ describe.skip('Admin logs routes', () => {
 
   afterEach(() => {
     vi.clearAllMocks()
-    Log.$clearQueue()
   })
 
   // GET
@@ -56,30 +73,30 @@ describe.skip('Admin logs routes', () => {
     it('Should retrieve all logs', async () => {
       const logs = repeatFn(5)(getRandomLog)
 
-      Log.$queueResult(logs)
+      prisma.$transaction.mockResolvedValue([logs.length, logs])
 
       const response = await app.inject({ headers: { admin: 'admin' } })
-        .get('/0/100')
+        .get('?offset=0&limit=100')
         .end()
 
       expect(response.statusCode).toEqual(200)
-      expect(JSON.stringify(response.json())).toMatchObject(JSON.stringify(logs))
+      expect(response.json()).toMatchObject({total: logs.length, logs})
     })
 
     it('Should return an error if retrieve logs failed', async () => {
-      Log.$queueFailure()
-
+      prisma.$transaction.mockRejectedValue({statusCode: 500, message: 'Erreur de récupération des logs'})
+      
       const response = await app.inject({ headers: { admin: 'admin' } })
-        .get('/0/100')
+        .get('?offset=0&limit=100')
         .end()
-
-      expect(response.statusCode).toEqual(404)
-      expect(response.body).toEqual('Echec de la récupération des logs')
+      
+      expect(response.statusCode).toEqual(500)
+      expect(JSON.parse(response.body).message).toEqual('Erreur de récupération des logs')
     })
 
     it('Should return an error if requestor is not admin', async () => {
       const response = await app.inject()
-        .get('/0/100')
+        .get('?offset=0&limit=100')
         .end()
 
       expect(response.statusCode).toEqual(403)
