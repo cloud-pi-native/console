@@ -9,10 +9,10 @@ import logRouter from './log.js'
 import { adminGroupPath } from 'shared'
 import { User, getRandomLog, getRandomUser, repeatFn } from 'test-utils'
 import { checkAdminGroup } from '@/utils/controller.js'
-import prisma from '../../__mocks__/prisma.js'
+import prisma from '@/__mocks__/prisma.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
-vi.mock('../../prisma.js')
+vi.mock('@/prisma.js')
 
 const app = fastify({ logger: false })
   .register(fastifyCookie)
