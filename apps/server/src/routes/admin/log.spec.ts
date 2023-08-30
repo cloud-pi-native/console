@@ -7,7 +7,7 @@ import { sessionConf } from '@/utils/keycloak.js'
 import { getConnection, closeConnections } from '@/connect.js'
 import logRouter from './log.js'
 import { adminGroupPath } from 'shared'
-import { getRandomLog, getRandomUser, repeatFn } from 'test-utils'
+import { User, getRandomLog, getRandomUser, repeatFn } from 'test-utils'
 import { checkAdminGroup } from '@/utils/controller.js'
 import prisma from '../../__mocks__/prisma.js'
 
