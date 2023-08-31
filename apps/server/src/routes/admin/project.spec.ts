@@ -7,10 +7,12 @@ import { sessionConf } from '@/utils/keycloak.js'
 import { getConnection, closeConnections } from '@/connect.js'
 import projectRouter from './project.js'
 import { adminGroupPath } from 'shared'
-import { getRandomProject, getRandomUser, repeatFn } from 'test-utils'
+import { User, getRandomProject, getRandomUser, repeatFn } from 'test-utils'
 import { checkAdminGroup } from '@/utils/controller.js'
+import prisma from '@/__mocks__/prisma.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
+vi.mock('@/prisma.js')
 
 const app = fastify({ logger: false })
   .register(fastifyCookie)
@@ -19,9 +21,14 @@ const app = fastify({ logger: false })
 const mockSessionPlugin = (app, opt, next) => {
   app.addHook('onRequest', (req, res, next) => {
     if (req.headers.admin) {
-      req.session = { user: { groups: [adminGroupPath] } }
+      req.session = {
+        user: {
+          ...getRequestor(),
+          groups: [adminGroupPath]
+        }
+      }
     } else {
-      req.session = { user: {} }
+      req.session = { user: getRequestor() }
     }
     next()
   })
@@ -34,7 +41,20 @@ const mockSession = (app) => {
     .register(projectRouter)
 }
 
-describe.skip('Admin projects routes', () => {
+let requestor: User
+
+const setRequestor = (user: User) => {
+  requestor = user
+}
+
+const getRequestor = () => {
+  return requestor
+}
+
+describe('Admin projects routes', () => {
+  const requestor = getRandomUser()
+  setRequestor(requestor)
+
   beforeAll(async () => {
     mockSession(app)
     await getConnection()
@@ -51,34 +71,29 @@ describe.skip('Admin projects routes', () => {
   // GET
   describe('getAllProjectsController', () => {
     it('Should retrieve all projects', async () => {
-      // TODO ???
-      const projects = repeatFn(2)(getRandomProject).map(project => Project.build(project))
-      const owner = getRandomUser()
-
-      // TODO ???
-      projects.forEach(_project => User.$queueResult(owner))
-
-      const projectsWithOwner = projects.map(project => ({
-        ...project.get({ plain: true }),
-        owner,
-      }),
-      )
+      const projects = repeatFn(2)(getRandomProject)
+    
+      prisma.project.findMany.mockResolvedValue(projects)
 
       const response = await app.inject({ headers: { admin: 'admin' } })
         .get('/')
         .end()
 
       expect(response.statusCode).toEqual(200)
-      expect(JSON.stringify(response.json())).toMatchObject(JSON.stringify(projectsWithOwner))
+      expect(response.json()).toMatchObject(projects)
     })
 
     it('Should return an error if retrieve projects failed', async () => {
+      const error = { statusCode: 500, message: 'Echec de la récupération de l\'ensemble des projets' }
+      
+      prisma.project.findMany.mockRejectedValue(error)
+      
       const response = await app.inject({ headers: { admin: 'admin' } })
         .get('/')
         .end()
 
-      expect(response.statusCode).toEqual(404)
-      expect(response.body).toEqual('Echec de la récupération de l\'ensemble des projets')
+      expect(response.statusCode).toEqual(500)
+      expect(JSON.parse(response.body).message).toEqual(error.message)
     })
 
     it('Should return an error if requestor is not admin', async () => {
