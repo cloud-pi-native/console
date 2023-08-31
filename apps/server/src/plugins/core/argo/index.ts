@@ -1,5 +1,5 @@
 import type { AddEnvironmentClusterExecArgs, DeleteEnvironmentExecArgs, InitializeEnvironmentExecArgs, RemoveEnvironmentClusterExecArgs } from '@/plugins/hooks/environment.js'
-import { addDestinationToApplicationProject, createApplicationProject, deleteApplicationProject, removeDestinationFromApplicationProject } from './app-project.js'
+import { addDestinationToApplicationProject, addRepoToApplicationProject, createApplicationProject, deleteApplicationProject, removeDestinationFromApplicationProject } from './app-project.js'
 import { createApplication, deleteApplication } from './applications.js'
 import type { PluginResult, StepCall } from '@/plugins/hooks/hook.js'
 import type { CreateRepositoryExecArgs, DeleteRepositoryExecArgs } from '@/plugins/hooks/repository.js'
@@ -69,7 +69,6 @@ const nothingStatus: PluginResult = {
 
 export const newRepo: StepCall<CreateRepositoryExecArgs> = async (payload) => {
   try {
-    if (!payload.args.isInfra) return nothingStatus
     const repo = { internalRepoName: payload.args.internalRepoName, url: payload.args.internalUrl }
     const { project, organization, environments } = payload.args
 
@@ -77,7 +76,11 @@ export const newRepo: StepCall<CreateRepositoryExecArgs> = async (payload) => {
       const namespace = `${organization}-${project}-${env}`
       const appProjectName = `${organization}-${project}-${env}-project`
       const applicationName = `${organization}-${project}-${repo.internalRepoName}-${env}`
-      await createApplication({ applicationName, appProjectName, namespace, repo })
+      if (payload.args.isInfra) {
+        await createApplication({ applicationName, appProjectName, namespace, repo })
+      } else {
+        await addRepoToApplicationProject({ appProjectName, repoUrl: repo.url })
+      }
     }
     return {
       status: {
