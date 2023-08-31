@@ -75,7 +75,7 @@ export const getRandomRole = (
   } as Role
 }
 
-export const getRandomRepo = (projectId = faker.string.uuid(), createdAt = new Date(Date.now()), updatedAt = new Date(Date.now())) => {
+export const getRandomRepo = (projectId = faker.string.uuid()) => {
   const repo: Repository = {
     id: faker.string.uuid(),
     projectId,
@@ -84,8 +84,6 @@ export const getRandomRepo = (projectId = faker.string.uuid(), createdAt = new D
     isPrivate: faker.datatype.boolean(),
     isInfra: faker.datatype.boolean(),
     status: faker.helpers.arrayElement(achievedStatus),
-    createdAt,
-    updatedAt,
   }
   if (repo.isPrivate) {
     repo.externalUserName = faker.internet.userName()

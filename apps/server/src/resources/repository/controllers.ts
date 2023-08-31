@@ -12,7 +12,7 @@ export const getRepositoryByIdController = async (req, res) => {
   const repositoryId = req.params?.repositoryId
   const userId = req.session?.user?.id
 
-  const repository = await getRepositoryByIdBusiness(userId, projectId, userId)
+  const repository = await getRepositoryByIdBusiness(userId, projectId, repositoryId)
 
   addReqLogs({
     req,
