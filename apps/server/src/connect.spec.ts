@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
-import { dropTables, synchroniseModels } from './connect.js'
+import { dropTables, getConnection } from './connect.js'
 import {
   _dropLogsTable,
   _dropRepositoriesTable,
@@ -11,6 +11,8 @@ import {
   _dropOrganizationsTable
 } from '@/resources/queries-index.js'
 import app from './app.js'
+import prisma from './__mocks__/prisma.js'
+import { PrismaClientInitializationError } from '@prisma/client/runtime/library.js'
 
 vi.mock('@/resources/queries-index.js')
 vi.mock('./models/log.js', () => getModel('getLogModel'))
@@ -22,6 +24,8 @@ vi.mock('./models/user.js', () => getModel('getUserModel'))
 vi.mock('./models/users-projects.js', () => getModel('getRolesModel'))
 vi.mock('./models/organization.js', () => getModel('getOrganizationModel'))
 vi.mock('./app.js')
+vi.mock('./prisma.js')
+
 
 function getModel(modelName) {
   return {
@@ -34,7 +38,7 @@ function getModel(modelName) {
   }
 }
 
-describe.skip('connect', () => {
+describe('connect', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -59,29 +63,28 @@ describe.skip('connect', () => {
     await dropTables()
 
     expect(_dropLogsTable.mock.calls).toHaveLength(1)
-    expect(app.log.error.mock.calls).toHaveLength(1)
+    expect(app.log.error.mock.calls).toHaveLength(2)
+    expect(app.log.error.mock.calls).toContainEqual(['Drop database tables failed.'])
   })
 
-  it('Should synchronise database with models without error', async () => {
-    await synchroniseModels()
+  it('Should connect to postgres', async () => {
+    await getConnection()
 
-    expect(getLogModel.mock.calls).toHaveLength(1)
-    expect(getOrganizationModel.mock.calls).toHaveLength(1)
-    expect(getUserModel.mock.calls).toHaveLength(1)
-    expect(getProjectModel.mock.calls).toHaveLength(1)
-    expect(getEnvironmentModel.mock.calls).toHaveLength(1)
-    expect(getPermissionModel.mock.calls).toHaveLength(1)
-    expect(getRepositoryModel.mock.calls).toHaveLength(1)
-    expect(getRolesModel.mock.calls).toHaveLength(1)
-    expect(app.log.info.mock.calls).toHaveLength(1)
+    expect(app.log.info.mock.calls).toHaveLength(2)
+    expect(app.log.info.mock.calls).toContainEqual(['Trying to connect to Postgres with: undefined'])
+    expect(app.log.info.mock.calls).toContainEqual(['Connected to Postgres!'])
   })
 
-  it('Should synchronise database with models with error', async () => {
-    getLogModel.mockRejectedValueOnce()
+  it('Should fail to connect once, then connect to postgres', async () => {
+    let errorToCatch = new PrismaClientInitializationError('Failed to connect', '2.19.0', 'P1001')
 
-    await synchroniseModels()
+    prisma.$connect.mockRejectedValueOnce(errorToCatch)
+    await getConnection()
 
-    expect(getLogModel.mock.calls).toHaveLength(1)
-    expect(app.log.error.mock.calls).toHaveLength(1)
+    expect(app.log.info.mock.calls).toHaveLength(6)
+    expect(app.log.info.mock.calls).toContainEqual(['Trying to connect to Postgres with: undefined'])
+    expect(app.log.info.mock.calls).toContainEqual(['Could not connect to Postgres: Failed to connect'])
+    expect(app.log.info.mock.calls).toContainEqual(['Retrying (4 tries left)'])
+    expect(app.log.info.mock.calls).toContainEqual(['Connected to Postgres!'])
   })
 })
