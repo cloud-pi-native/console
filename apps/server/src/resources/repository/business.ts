@@ -104,6 +104,7 @@ export const createRepositoryBusiness = async (
     const results = await hooks.createRepository.execute(repoData)
     await addLogs('Create Repository', results, userId)
     if (results.failed) throw new BadRequestError('Echec des services lors de la création du dépôt', undefined)
+
     await updateRepositoryCreated(repo.id)
     await unlockProjectIfNotFailed(projectId)
 
@@ -154,7 +155,7 @@ export const deleteRepositoryBusiness = async (
   repositoryId: Repository['id'],
   userId: User['id'],
 ) => {
-  const project = await getProjectAndcheckRole(userId, projectId)
+  const project = await getProjectAndcheckRole(userId, projectId, 'owner')
 
   const repo = await getRepositoryByIdBusiness(userId, projectId, repositoryId)
 
