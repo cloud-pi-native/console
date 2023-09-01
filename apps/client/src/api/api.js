@@ -81,6 +81,7 @@ export const updateUser = async (projectId, data) => {
   return response.data
 }
 
+// TODO : pas utilisé
 export const getUsers = async (projectId) => {
   const response = await apiClient.get(`/projects/${projectId}/users`)
   return response.data

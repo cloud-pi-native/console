@@ -7,6 +7,7 @@ import {
 } from '@/resources/user/controllers.js'
 
 const router = async (app, _opt) => {
+  // TODO : pas utilisé
   // Récupérer les membres d'un projet
   await app.get('/:projectId/users', getProjectUsersController)
 
