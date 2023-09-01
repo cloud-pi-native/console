@@ -99,7 +99,7 @@ export const removeUserFromProjectBusiness = async (
   if (!userToRemove) throw new Error('L\'utilisateur n\'existe pas')
 
   const insufficientRoleErrorMessageUserToRemove = checkInsufficientRoleInProject(userToRemoveId, { roles: project.roles })
-  if (insufficientRoleErrorMessageUserToRemove) throw new Error('L\'utilisateur n\'est pas membre du projet')
+  if (insufficientRoleErrorMessageUserToRemove) throw new BadRequestError('L\'utilisateur n\'est pas membre du projet')
 
   const kcData = {
     organization: project.organization.name,

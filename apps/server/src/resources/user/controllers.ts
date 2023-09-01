@@ -3,13 +3,14 @@ import { addReqLogs } from '@/utils/logger.js'
 import { addUserToProjectBusiness, checkProjectLocked, checkProjectRole, getMatchingUsersBusiness, getProjectInfosBusiness, getProjectUsersBusiness, removeUserFromProjectBusiness, updateUserProjectRoleBusiness } from './business.js'
 
 // GET
+// TODO : pas utilisé
 export const getProjectUsersController = async (req, res) => {
   const userId = req.session?.user?.id
   const projectId = req.params?.projectId
 
   const users = await getProjectUsersBusiness(projectId)
 
-  checkProjectRole(userId, { userList: users, minRole: 'user' })
+  await checkProjectRole(userId, { userList: users, minRole: 'user' })
 
   addReqLogs({
     req,
@@ -28,7 +29,7 @@ export const getMatchingUsersController = async (req, res) => {
 
   const users = await getProjectUsersBusiness(projectId)
 
-  checkProjectRole(userId, { userList: users, minRole: 'user' })
+  await checkProjectRole(userId, { userList: users, minRole: 'user' })
 
   const usersMatching = await getMatchingUsersBusiness(letters)
 
@@ -50,9 +51,9 @@ export const addUserToProjectController = async (req, res) => {
 
   const project = await getProjectInfosBusiness(projectId)
 
-  checkProjectRole(userId, { roles: project.roles, minRole: 'owner' })
+  await checkProjectRole(userId, { roles: project.roles, minRole: 'owner' })
 
-  checkProjectLocked(project)
+  await checkProjectLocked(project)
 
   const userToAdd = await addUserToProjectBusiness(project, data.email, userId)
 
@@ -77,9 +78,9 @@ export const updateUserProjectRoleController = async (req, res) => {
 
   const project = await getProjectInfosBusiness(projectId)
 
-  checkProjectRole(userId, { roles: project.roles, minRole: 'owner' })
+  await checkProjectRole(userId, { roles: project.roles, minRole: 'owner' })
 
-  checkProjectLocked(project)
+  await checkProjectLocked(project)
 
   await updateUserProjectRoleBusiness(userToUpdateId, project, data.role)
 
@@ -103,9 +104,9 @@ export const removeUserFromProjectController = async (req, res) => {
 
   const project = await getProjectInfosBusiness(projectId)
 
-  checkProjectRole(userId, { roles: project.roles, minRole: 'owner' })
+  await checkProjectRole(userId, { roles: project.roles, minRole: 'owner' })
 
-  checkProjectLocked(project)
+  await checkProjectLocked(project)
 
   await removeUserFromProjectBusiness(userToRemoveId, project, userId)
 
