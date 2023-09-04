@@ -58,9 +58,12 @@ export const checkInsufficientRoleInProject = (
 ): string => {
   if (roles) {
     // if minRole is 'owner' filter and assign to userList
-    if (minRole === 'owner') userList = roles.filter(role => role.role === 'owner').map(({ userId }) => ({ id: userId }))
     // else assign to userList
-    else userList = roles.map(({ userId }) => ({ id: userId }))
+    userList = minRole === 'owner'
+      ? roles
+        .filter(role => role.role === 'owner')
+        .map(({ userId }) => ({ id: userId }))
+      : roles.map(({ userId }) => ({ id: userId }))
   }
   return userList.some(user => user?.id === userId)
     ? ''
