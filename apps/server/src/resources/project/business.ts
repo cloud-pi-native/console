@@ -269,6 +269,7 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
     await archiveProjectQuery(projectId)
     // -- fin - Suppression projet --
   } catch (error) {
+    console.log(error)
     await updateProjectFailed(project.id)
     throw new Error(error?.message)
   }
