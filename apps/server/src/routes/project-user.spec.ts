@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
-import { createRandomDbSetup, getRandomLog, getRandomRole, getRandomUser } from 'test-utils'
+import { User, createRandomDbSetup, getRandomLog, getRandomRole, getRandomUser } from 'test-utils'
 import fastify from 'fastify'
 import fastifySession from '@fastify/session'
 import fastifyCookie from '@fastify/cookie'
@@ -7,7 +7,7 @@ import fp from 'fastify-plugin'
 import { sessionConf } from '../utils/keycloak.js'
 import { getConnection, closeConnections } from '../connect.js'
 import userRouter from './project-user.js'
-import { environmentSchema, projectIsLockedInfo } from 'shared'
+import { projectIsLockedInfo } from 'shared'
 import prisma from '../__mocks__/prisma.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))

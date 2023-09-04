@@ -1,5 +1,5 @@
 import prisma from '@/prisma.js'
-import { dbKeysExcluded, exclude } from '@/utils/queries-tools.js'
+import { exclude } from '@/utils/queries-tools.js'
 import type { Organization, Project, User, Role } from '@prisma/client'
 import { AsyncReturnType } from '@/utils/controller.js'
 
@@ -86,9 +86,7 @@ export const getUserProjects = async (user: User) => {
       },
     },
   })
-  const resWithKeysExcluded = exclude(res, dbKeysExcluded)
-
-  return resWithKeysExcluded
+  return res
 }
 
 export type DsoProject = AsyncReturnType<typeof getUserProjects>[0] & { services: any }

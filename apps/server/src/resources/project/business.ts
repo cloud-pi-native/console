@@ -22,10 +22,10 @@ import { getServices } from '@/utils/services.js'
 import { Organization, Project, User } from '@prisma/client'
 import { AsyncReturnType, checkInsufficientPermissionInEnvironment, checkInsufficientRoleInProject } from '@/utils/controller.js'
 import { unlockProjectIfNotFailed } from '@/utils/business.js'
-import { BadRequestError, NotFoundError } from '@/utils/errors.js'
+import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import { hooks } from '@/plugins/index.js'
 import { PluginResult } from '@/plugins/hooks/hook.js'
-import { CreateProjectDto, UpdateProjectDto, calcProjectNameMaxLength, projectSchema } from 'shared'
+import { CreateProjectDto, UpdateProjectDto, calcProjectNameMaxLength, projectIsLockedInfo, projectSchema } from 'shared'
 import { CreateProjectExecArgs, UpdateProjectExecArgs } from '@/plugins/hooks/project.js'
 import { filterObjectByKeys } from '@/utils/queries-tools.js'
 import { gitlabUrl, projectRootDir } from '@/utils/env.js'
@@ -45,7 +45,7 @@ export const getUserProjects = async (requestor: UserDto) => {
   const publicClusters = await getPublicClusters()
   return projects.map((project) => {
     project.clusters = project.clusters.concat(publicClusters)
-    if (Object.keys(project?.services).includes('registry')) {
+    if (project.services && Object.keys(project.services).includes('registry')) {
       return { ...project, services: getServices(project) }
     }
     return project
@@ -94,7 +94,8 @@ const filterProject = (
 export const getProject = async (projectId: string, userId: User['id']) => {
   const project = await getProjectInfosQuery(projectId)
   if (!project) throw new NotFoundError('Projet introuvable', undefined)
-  if (checkInsufficientRoleInProject(userId, { roles: project.roles, minRole: 'user' })) throw new BadRequestError('Vous ne faites pas partie de ce projet', { description: '', extras: { userId, projectId: project.id } })
+  const insufficientRoleErrorMessage = checkInsufficientRoleInProject(userId, { roles: project.roles, minRole: 'user' })
+  if (insufficientRoleErrorMessage) throw new ForbiddenError('Vous ne faites pas partie de ce projet', { description: '', extras: { userId, projectId: project.id } })
 
   return filterProject(userId, project)
 }
@@ -148,10 +149,11 @@ export const updateProject = async (data: UpdateProjectDto['body'], projectId: P
   // Pré-requis
   let project = await getProject(projectId, requestor.id)
   if (!project) throw new NotFoundError('Projet introuvable', undefined)
-  if (project.locked) throw new NotFoundError('Projet introuvable', undefined)
-
-  const insufficientRoleErrorMessage = checkInsufficientRoleInProject(requestor.id, { roles: project.roles, minRole: 'owner' })
-  if (insufficientRoleErrorMessage) throw new Error(insufficientRoleErrorMessage)
+  if (project.locked) throw new ForbiddenError(projectIsLockedInfo, undefined)
+  Object.keys(data).forEach(key => {
+    project[key] = data[key]
+  })
+  await projectSchema.validateAsync(project, { context: { projectNameMaxLength: calcProjectNameMaxLength(project.organization.name) } })
 
   // Actions
   try {
@@ -184,7 +186,7 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
   if (!project) throw new Error('Projet introuvable')
 
   const insufficientRoleErrorMessage = checkInsufficientRoleInProject(requestor.id, { roles: project.roles, minRole: 'owner' })
-  if (insufficientRoleErrorMessage) throw new Error(insufficientRoleErrorMessage)
+  if (insufficientRoleErrorMessage) throw new ForbiddenError(insufficientRoleErrorMessage)
 
   // Actions
   try {
@@ -212,7 +214,7 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
       }
       const resultsEnv = await hooks.deleteEnvironment.execute(envData)
       await addLogs('Delete Environments', resultsEnv, requestor.id)
-      if (resultsEnv.failed) throw new Error('Echec des services à la suppression de l\'environnement')
+      if (resultsEnv.failed) throw new UnprocessableContentError('Echec des services à la suppression de l\'environnement')
       await deleteEnvironment(env.id)
     }
     // -- fin - Suppression environnements --
@@ -226,7 +228,7 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
         ...repo,
       })
       await addLogs('Delete Repository', result, requestor.id)
-      if (result.failed) throw new Error('Echec des services à la suppression de l\'environnement')
+      if (result.failed) throw new UnprocessableContentError('Echec des services à la suppression de l\'environnement')
       await deleteRepository(repo.id)
     }
     // -- fin - Suppression repositories --
@@ -244,7 +246,7 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
       status: 'archived',
     })
     await addLogs('Archive Project', results, requestor.id)
-    if (results.failed) throw new Error('Echec de la suppression du projet par les plugins')
+    if (results.failed) throw new UnprocessableContentError('Echec de la suppression du projet par les plugins')
     await archiveProjectQuery(projectId)
     // -- fin - Suppression projet --
   } catch (error) {
