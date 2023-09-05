@@ -10,5 +10,4 @@ data:
   POSTGRES_PASSWORD: {{ .container.pass }}
   PGDATA: /var/lib/postgresql/data/pgdata
   {{- end }}
-  {{- include "globalEnv" $.Values | indent 2 }}
   {{- include "containerEnv" .Values.postgres.container | indent 2 }}

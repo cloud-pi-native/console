@@ -91,3 +91,10 @@ Create the name of the service account to use
 {{ $key }}: {{ $val | quote -}}
 {{ end -}}
 {{ end -}}
+
+{{- define "useGlobalCm" -}}
+{{ if .globalenv }}
+- configMapRef:
+    name: {{ .release }}-global-cm
+{{- end -}}
+{{ end -}}
