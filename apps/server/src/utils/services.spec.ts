@@ -1,17 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import { getServices } from './services.js'
 
-describe.skip('services', () => {
+describe('services', () => {
   it('Should return an object of services for a given project', () => {
     const project = {
       id: 'thisIsAnId',
       name: 'myProjectName',
       organization: 'myOrganization',
-      Organization: {
-        dataValues: {
-          name: 'myOrganization',
-        },
-      },
     }
 
     project.services = getServices(project)
@@ -19,7 +14,7 @@ describe.skip('services', () => {
     expect(Object.values(project.services).length).toEqual(6)
     expect(project).toHaveProperty('id', project.id)
     expect(project).toHaveProperty('name', project.name)
-    expect(project).toHaveProperty('organization', project.Organization.dataValues.name)
+    expect(project).toHaveProperty('organization', project.organization)
     Object.values(project.services).forEach(service => {
       expect(service).toHaveProperty('name')
       expect(service).toHaveProperty('title')

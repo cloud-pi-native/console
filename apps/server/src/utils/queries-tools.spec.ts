@@ -1,17 +1,35 @@
 import { describe, it, expect } from 'vitest'
-import { replaceNestedKeys } from './queries-tools.js'
+import { exclude, filterObjectByKeys } from './queries-tools.js'
 
-describe.skip('queries-tools', () => {
-  it('Should return an object with lowercase firrst lette on each nested keys', () => {
+describe('queries-tools', () => {
+    it('Should return a filtered object', () => {
+    const initial = {
+      id: 'thisIsAnId',
+      name: 'alsoKeepThisKey',
+      description: 'keepThisKey',
+    }
+    const desired = {
+      name: 'alsoKeepThisKey',
+      description: 'keepThisKey',
+    }
+
+    const transformed = filterObjectByKeys(initial, ['name', 'description'])
+
+    expect(transformed).toMatchObject(desired)
+    })
+  
+  it('Should return a filtered object', () => {
     const initial = {
       id: 'thisIsAnId',
       name: 'myProjectName',
-      Organization: {
+      organization: {
         name: 'myOrganization',
       },
-      _Underscore: 'test',
-      Environment: {
-        Permissions: [],
+      environment: {
+        permissions: {
+          password: 'secret',
+          id : 'notSecret',
+        },
       },
     }
     const desired = {
@@ -20,13 +38,14 @@ describe.skip('queries-tools', () => {
       organization: {
         name: 'myOrganization',
       },
-      _Underscore: 'test',
       environment: {
-        permissions: [],
+        permissions: {
+          id : 'notSecret',
+        },
       },
     }
 
-    const transformed = replaceNestedKeys(initial)
+    const transformed = exclude(initial, ['password'])
 
     expect(transformed).toMatchObject(desired)
   })
