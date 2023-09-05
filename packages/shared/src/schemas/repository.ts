@@ -1,7 +1,6 @@
 import Joi from 'joi'
 import { allStatus } from '../utils/const.js'
 
-// TODO : isInfra, isPrivate et status doivent être required, prévoir migration
 export const repoSchema = Joi.object({
   id: Joi.string()
     .uuid(),
@@ -20,10 +19,8 @@ export const repoSchema = Joi.object({
     .required(),
 
   isPrivate: Joi.boolean(),
-  // .required(),
 
   isInfra: Joi.boolean(),
-  // .required(),
 
   externalUserName: Joi.string()
     .pattern(/^[a-zA-Z0-9_-]+$/)
@@ -31,13 +28,12 @@ export const repoSchema = Joi.object({
     .when('isPrivate', { is: false, then: Joi.string().allow('', null) }),
 
   externalToken: Joi.string()
-    .pattern(/^[a-zA-Z0-9_-]+$/)
+    .pattern(/^[a-zA-Z0-9=_-]+$/)
     .when('isPrivate', { is: true, then: Joi.required() })
     .when('isPrivate', { is: false, then: Joi.string().allow('', null) }),
 
   status: Joi.string()
     .valid(...allStatus),
-  // .required(),
 
   projectId: Joi.string()
     .uuid()
