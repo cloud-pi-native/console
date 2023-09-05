@@ -3,7 +3,6 @@ import { projectStatus } from '../utils/const.js'
 
 export const descriptionMaxLength = 280
 
-// TODO : status et locked doivent être required, prévoir migration
 export const projectSchema = Joi.object({
   id: Joi.string()
     .uuid(),
@@ -35,4 +34,11 @@ export const projectSchema = Joi.object({
 
   updatedAt: Joi.date()
     .optional(),
+
+  // ProjectInfos
+  organization: Joi.object(),
+  roles: Joi.array(),
+  clusters: Joi.array(),
+  repositories: Joi.array(),
+  environments: Joi.array(),
 })

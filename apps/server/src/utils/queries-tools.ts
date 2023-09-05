@@ -1,4 +1,3 @@
-// export const dbKeysExcluded = { attributes: { exclude: ['updatedAt', 'createdAt'] } }
 export const dbKeysExcluded = ['updatedAt', 'createdAt']
 
 export const lowercaseFirstLetter = (string) =>
