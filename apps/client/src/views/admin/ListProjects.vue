@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { useAdminProjectStore } from '@/stores/admin/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { formatDate, statusDict, sortArrByObjKeyAsc } from 'shared'
+import { formatDate, statusDict, sortArrByObjKeyAsc } from '@dso-console/shared'
 import { useAdminOrganizationStore } from '@/stores/admin/organization.js'
 
 const adminProjectStore = useAdminProjectStore()

@@ -1,7 +1,7 @@
 import { sendOk } from '@/utils/response.js'
 import { addReqLogs } from '@/utils/logger.js'
 import type { EnhancedFastifyRequest } from '@/types/index.js'
-import type { AdminLogsGet } from 'shared'
+import type { AdminLogsGet } from '@dso-console/shared'
 import type { FastifyReply } from 'fastify'
 import { getAllLogsBusiness } from './business.js'
 

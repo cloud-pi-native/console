@@ -1,11 +1,11 @@
+import { getOrCreateUser, addLogs, addUserToProject, createUser, deletePermission, getMatchingUsers, getProjectInfos, getProjectUsers, getUserByEmail, getUserById, lockProject, removeUserFromProject, updateProjectFailed, updateUserProjectRole } from '@/resources/queries-index.js'
+import { User, Project } from '@prisma/client'
 import { hooks } from '@/plugins/index.js'
 import { PluginResult } from '@/plugins/hooks/hook.js'
-import { addLogs, addUserToProject, createUser, deletePermission, getMatchingUsers, getOrCreateUser, getProjectInfos, getProjectUsers, getUserByEmail, getUserById, lockProject, removeUserFromProject, updateProjectFailed, updateUserProjectRole } from '@/resources/queries-index.js'
 import { AsyncReturnType, checkInsufficientRoleInProject } from '@/utils/controller.js'
 import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { BadRequestError, ForbiddenError, UnprocessableContentError } from '@/utils/errors.js'
-import { Project, User } from '@prisma/client'
-import { ProjectRoles, projectIsLockedInfo } from 'shared'
+import { ProjectRoles, projectIsLockedInfo } from '@dso-console/shared'
 
 export type UserDto = Pick<User, 'email' | 'firstName' | 'lastName' | 'id'>
 export const getUser = async (user: UserDto) => {

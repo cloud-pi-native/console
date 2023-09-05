@@ -6,7 +6,7 @@ import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import RepoForm from '@/components/RepoForm.vue'
 import DsoSelectedProject from './DsoSelectedProject.vue'
-import { projectIsLockedInfo, sortArrByObjKeyAsc } from 'shared'
+import { projectIsLockedInfo, sortArrByObjKeyAsc } from '@dso-console/shared'
 
 const projectStore = useProjectStore()
 const projectRepositoryStore = useProjectRepositoryStore()

@@ -1,4 +1,4 @@
-import { type CreateClusterDto, type UpdateClusterDto } from 'shared'
+import { type CreateClusterDto, type UpdateClusterDto } from '@dso-console/shared'
 import { EnhancedFastifyRequest } from '@/types/index.js'
 import { addReqLogs } from '@/utils/logger.js'
 import { sendCreated, sendOk } from '@/utils/response.js'

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { createRandomDbSetup } from 'test-utils'
+import { createRandomDbSetup } from '@dso-console/test-utils'
 
 describe('Random utils', () => {
   it('Should create a random project for tests', () => {

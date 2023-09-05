@@ -1,5 +1,5 @@
 import { vi, describe, it, beforeAll, expect, afterEach, afterAll } from 'vitest'
-import { createRandomDbSetup } from 'test-utils'
+import { createRandomDbSetup } from '@dso-console/test-utils'
 import fastify from 'fastify'
 import fastifySession from '@fastify/session'
 import fastifyCookie from '@fastify/cookie'

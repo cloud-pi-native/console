@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
-import { User, createRandomDbSetup, getRandomCluster, getRandomProject, getRandomRole, getRandomUser } from 'test-utils'
+import { User, createRandomDbSetup, getRandomCluster, getRandomProject, getRandomRole, getRandomUser } from '@dso-console/test-utils'
 import fastify from 'fastify'
 import fastifySession from '@fastify/session'
 import fastifyCookie from '@fastify/cookie'
@@ -8,7 +8,7 @@ import { faker } from '@faker-js/faker'
 import { sessionConf } from '../utils/keycloak.js'
 import { getConnection, closeConnections } from '../connect.js'
 import projectRouter from './project.js'
-import { descriptionMaxLength, projectIsLockedInfo } from 'shared'
+import { descriptionMaxLength, projectIsLockedInfo } from '@dso-console/shared'
 import prisma from '../__mocks__/prisma.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
@@ -72,28 +72,28 @@ describe('Project routes', () => {
       prisma.cluster.findMany.mockResolvedValue(publicClusters)
 
       const response = await app.inject()
-      .get('/')
-      .end()
+        .get('/')
+        .end()
 
       expect(response.statusCode).toEqual(200)
       expect(response.json()).toBeDefined()
       expect(response.json()).toMatchObject(projects)
-      })
+    })
 
     it('Should return an error while get list of projects', async () => {
       const error = { statusCode: 500, message: 'Erreur de récupération de l\'utilisateur' }
-      
+
       prisma.user.upsert.mockRejectedValue(error)
 
-        const response = await app.inject()
-          .get('/')
-          .end()
+      const response = await app.inject()
+        .get('/')
+        .end()
 
-        expect(response.statusCode).toEqual(error.statusCode)
-        expect(response.body).toBeDefined()
-        expect(JSON.parse(response.body).message).toEqual(error.message)
-      })
+      expect(response.statusCode).toEqual(error.statusCode)
+      expect(response.body).toBeDefined()
+      expect(JSON.parse(response.body).message).toEqual(error.message)
     })
+  })
 
   describe('getProjectByIdController', () => {
     it('Should get a project by id', async () => {
@@ -125,7 +125,7 @@ describe('Project routes', () => {
       const project = createRandomDbSetup({}).project
 
       prisma.project.findUnique.mockResolvedValue(project)
-      
+
       const response = await app.inject()
         .get(`/${project.id}`)
         .end()
@@ -149,7 +149,6 @@ describe('Project routes', () => {
       prisma.project.update.mockResolvedValue(project)
       prisma.environment.findMany.mockResolvedValue([])
       prisma.repository.findMany.mockResolvedValue([])
-
 
       const response = await app.inject()
         .post('/')
@@ -182,7 +181,7 @@ describe('Project routes', () => {
     it('Should not create a project if name already exists', async () => {
       const project = getRandomProject()
       const organization = project.organization
-      
+
       prisma.user.upsert.mockResolvedValue(requestor)
       prisma.organization.findUnique.mockResolvedValue(organization)
       prisma.project.findMany.mockResolvedValue([project])
@@ -228,7 +227,7 @@ describe('Project routes', () => {
         .put(`/${project.id}`)
         .body({ description: 'nouvelle description' })
         .end()
-      
+
       expect(response.statusCode).toEqual(403)
       expect(JSON.parse(response.body).message).toEqual('Vous ne faites pas partie de ce projet')
     })

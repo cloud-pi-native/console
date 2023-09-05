@@ -39,15 +39,29 @@
     },
     "test": {
       "dependsOn": [
-        "^shared#build",
-        "^test-utils#build"
+        "^@dso-console/shared#build",
+        "^@dso-console/test-utils#build"
       ],
       "outputs": []
     },
     "test:cov": {
       "dependsOn": [
-        "^shared#build",
-        "^test-utils#build"
+        "^@dso-console/shared#build",
+        "^@dso-console/test-utils#build"
+      ],
+      "outputs": []
+    },
+    "test:ct": {
+      "dependsOn": [
+        "^@dso-console/shared#build",
+        "^@dso-console/test-utils#build"
+      ],
+      "outputs": []
+    },
+    "test:ct-ci": {
+      "dependsOn": [
+        "^@dso-console/shared#build",
+        "^@dso-console/test-utils#build"
       ],
       "outputs": []
     }

@@ -5,7 +5,7 @@ import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { BadRequestError, NotFoundError } from '@/utils/errors.js'
 import { objectValues } from '@/utils/type.js'
 import { Organization, User } from '@prisma/client'
-import { getUniqueListBy, organizationSchema } from 'shared'
+import { getUniqueListBy, organizationSchema } from '@dso-console/shared'
 
 export const getAllOrganizationBusiness = async () => {
   const allOrganizations = await getOrganizations()

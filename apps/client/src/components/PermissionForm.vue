@@ -2,7 +2,7 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import SuggestionInput from './SuggestionInput.vue'
 import RangeInput from './RangeInput.vue'
-import { levels, projectIsLockedInfo } from 'shared'
+import { levels, projectIsLockedInfo } from '@dso-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectPermissionStore } from '@/stores/project-permission.js'
 import { useUserStore } from '@/stores/user.js'

@@ -1,4 +1,4 @@
-import { type ProjectRoles, adminGroupPath, projectIsLockedInfo } from 'shared'
+import { type ProjectRoles, adminGroupPath, projectIsLockedInfo } from '@dso-console/shared'
 import { sendForbidden } from './response.js'
 import type { Permission, User, Role } from '@prisma/client'
 

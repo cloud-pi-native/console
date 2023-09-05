@@ -6,8 +6,8 @@ import fp from 'fastify-plugin'
 import { sessionConf } from '@/utils/keycloak.js'
 import { getConnection, closeConnections } from '@/connect.js'
 import projectRouter from './project.js'
-import { adminGroupPath } from 'shared'
-import { User, getRandomProject, getRandomUser, repeatFn } from 'test-utils'
+import { adminGroupPath } from '@dso-console/shared'
+import { User, getRandomProject, getRandomUser, repeatFn } from '@dso-console/test-utils'
 import { checkAdminGroup } from '@/utils/controller.js'
 import prisma from '@/__mocks__/prisma.js'
 
@@ -24,8 +24,8 @@ const mockSessionPlugin = (app, opt, next) => {
       req.session = {
         user: {
           ...getRequestor(),
-          groups: [adminGroupPath]
-        }
+          groups: [adminGroupPath],
+        },
       }
     } else {
       req.session = { user: getRequestor() }
@@ -72,7 +72,7 @@ describe('Admin projects routes', () => {
   describe('getAllProjectsController', () => {
     it('Should retrieve all projects', async () => {
       const projects = repeatFn(2)(getRandomProject)
-    
+
       prisma.project.findMany.mockResolvedValue(projects)
 
       const response = await app.inject({ headers: { admin: 'admin' } })
@@ -85,9 +85,9 @@ describe('Admin projects routes', () => {
 
     it('Should return an error if retrieve projects failed', async () => {
       const error = { statusCode: 500, message: 'Echec de la récupération de l\'ensemble des projets' }
-      
+
       prisma.project.findMany.mockRejectedValue(error)
-      
+
       const response = await app.inject({ headers: { admin: 'admin' } })
         .get('/')
         .end()

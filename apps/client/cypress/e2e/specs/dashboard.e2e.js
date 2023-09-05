@@ -1,5 +1,5 @@
 import { getModelById } from '../support/func.js'
-import { statusDict } from 'shared'
+import { statusDict } from '@dso-console/shared'
 
 describe('Dashboard', () => {
   const projectToArchive = getModelById('project', '9dabf3f9-6c86-4358-8598-65007d78df65')

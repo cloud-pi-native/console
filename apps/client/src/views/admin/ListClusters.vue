@@ -4,7 +4,7 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useAdminClusterStore } from '@/stores/admin/cluster.js'
 import { useAdminProjectStore } from '@/stores/admin/project.js'
 import ClusterForm from '@/components/ClusterForm.vue'
-import { sortArrByObjKeyAsc } from 'shared'
+import { sortArrByObjKeyAsc } from '@dso-console/shared'
 
 const adminClusterStore = useAdminClusterStore()
 const adminProjectStore = useAdminProjectStore()
