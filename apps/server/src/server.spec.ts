@@ -11,7 +11,7 @@ vi.mock('./utils/logger.js')
 vi.mock('./init/db/index.js', () => ({ initDb: vi.fn() }))
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 
-describe.skip('Server', () => {
+describe('Server', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -26,7 +26,7 @@ describe.skip('Server', () => {
 
   it('Should getConnection', async () => {
     await startServer().catch(err => console.warn(err))
-
+    
     expect(getConnection.mock.calls).toHaveLength(1)
     expect(initDb.mock.calls).toHaveLength(1)
     expect(app.listen.mock.calls).toHaveLength(1)

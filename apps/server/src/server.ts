@@ -36,7 +36,7 @@ export async function startServer () {
   try {
     const dataPath = (isProd || isInt)
       ? './init/db/imports/data.js'
-      : 'test-utils/src/imports/data.ts'
+      : '@dso-console/test-utils/src/imports/data.ts'
 
     await initializeDB(dataPath)
     if (isProd && !isDevSetup) {
