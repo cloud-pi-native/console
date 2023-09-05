@@ -25,7 +25,7 @@ const quickLinks = ref([{
   iconRight: true,
 }])
 
-const refreshProjects = () => {
+const refreshProjects = async () => {
   intervalId.value = window.setInterval(async () => {
     await projectStore.getUserProjects()
   }, 30_000)
@@ -35,10 +35,10 @@ onBeforeMount(() => {
   clearInterval(intervalId.value)
 })
 
-onMounted(() => {
+onMounted(async () => {
   if (isLoggedIn.value) {
-    userStore.setUserProfile()
-    refreshProjects()
+    await userStore.setUserProfile()
+    await refreshProjects()
   }
 })
 
