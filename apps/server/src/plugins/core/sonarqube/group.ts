@@ -28,6 +28,7 @@ export const createDsoProjectGroup: StepCall<CreateProjectExecArgs> = async (pay
       })
     }
     return {
+      // TODO #566 : retrieve token and display in front
       ...payload.sonarqube,
       status: {
         result: 'OK',
@@ -45,7 +46,7 @@ export const createDsoProjectGroup: StepCall<CreateProjectExecArgs> = async (pay
   }
 }
 
-export const deleteteDsoProjectGroup: StepCall<CreateProjectExecArgs> = async (payload) => {
+export const deleteDsoProjectGroup: StepCall<CreateProjectExecArgs> = async (payload) => {
   const { project, organization } = payload.args
   const groupName = `/${organization}-${project}`
   let message: string

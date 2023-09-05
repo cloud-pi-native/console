@@ -56,6 +56,7 @@ export const createDsoProject: StepCall<CreateProjectExecArgs> = async (payload)
     const projectCreated = await createProject(projectName)
     const projectMember = await addProjectGroupMember(projectName)
     const robot = await createRobot(projectName)
+    // TODO #566 : display in front
     const auth = `${robot.name}:${robot.secret}`
     const buff = Buffer.from(auth)
     const b64auth = buff.toString('base64')

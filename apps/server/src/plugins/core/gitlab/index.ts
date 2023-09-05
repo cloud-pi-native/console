@@ -40,6 +40,7 @@ export const createDsoProject: StepCall<CreateProjectExecArgs> = async (payload)
     const groupMember = await addGroupMember(group.id, user.id, 40)
     const internalMirrorRepoName = 'mirror'
     const mirror = await createProjectMirror(internalMirrorRepoName, project, organization)
+    // TODO #566 : display in front
     const triggerToken = await setProjectTrigger(mirror.id)
 
     // Sonar vars saving in CI
