@@ -1,14 +1,16 @@
 import { vi, describe, it, beforeAll, expect, afterEach, afterAll } from 'vitest'
-import { createRandomDbSetup } from '@dso-console/test-utils'
 import fastify from 'fastify'
 import fastifySession from '@fastify/session'
 import fastifyCookie from '@fastify/cookie'
 import fp from 'fastify-plugin'
 import { sessionConf } from '../utils/keycloak.js'
 import { getConnection, closeConnections } from '../connect.js'
-import userRouter from './service.js'
+import serviceRouter from './service.js'
+import prisma from '../__mocks__/prisma.js'
+import { User, getRandomUser } from '@dso-console/test-utils'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
+vi.mock('../prisma.js')
 
 const app = fastify({ logger: false })
   .register(fastifyCookie)
@@ -24,26 +26,26 @@ const mockSessionPlugin = (app, opt, next) => {
 
 const mockSession = (app) => {
   app.register(fp(mockSessionPlugin))
-    .register(userRouter)
+    .register(serviceRouter)
 }
 
-const requestor = {}
-const setRequestorId = (id) => {
-  requestor.id = id
+let requestor: User
+
+const setRequestor = (user: User) => {
+  requestor = user
 }
 
 const getRequestor = () => {
   return requestor
 }
 
-describe.skip('Service route', () => {
+describe('Service route', () => {
+  const requestor = getRandomUser()
+  setRequestor(requestor)
+
   beforeAll(async () => {
     mockSession(app)
     await getConnection()
-    global.fetch = vi.fn(() => Promise.resolve({
-      status: 200,
-      statusText: 'OK',
-    }))
   })
 
   afterAll(async () => {
@@ -56,12 +58,9 @@ describe.skip('Service route', () => {
 
   // GET
   describe('checkServicesHealthController', () => {
-    it('Should retrieve an OK service status', async () => {
-      const randomDbSetup = createRandomDbSetup({})
-      const requestor = randomDbSetup.project.users.find(user => user.role === 'owner')
-
-      setRequestorId(requestor.id)
-
+    it('Should retrieve an OK services status', async () => {
+      prisma.user.findUnique.mockResolvedValue(requestor)
+    
       const response = await app.inject()
         .get('/')
         .end()
@@ -104,6 +103,16 @@ describe.skip('Service route', () => {
         message: 'OK',
         code: 200,
       }])
+    })
+
+    it('Should not retrieve services status if not logged', async () => {
+      const response = await app.inject()
+        .get('/')
+        .end()
+
+      expect(response.statusCode).toEqual(403)
+      expect(response.body).toBeDefined()
+      expect(JSON.parse(response.body).message).toEqual('Vous n\'avez pas accès à cette information')
     })
   })
 })
