@@ -15,7 +15,6 @@ env:
   NODE_VERSION: "18.16.1"
   PNPM_VERSION: "8"
 
-
 jobs:
   path-filter:
     runs-on: ubuntu-latest
@@ -66,7 +65,7 @@ jobs:
 
   component-tests:
     uses: ./.github/workflows/tests-component.yml
-    # if: ${{ needs.path-filter.outputs.apps == 'true' }}
+    if: ${{ needs.path-filter.outputs.apps == 'true' }}
     needs:
       - path-filter
       - expose-vars
