@@ -1,3 +1,4 @@
+{{- $data := dict "globalenv" .Values.globalEnv "release" $.Release.Name -}}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -34,6 +35,8 @@ spec:
           mountPath: /script
         - name: plugins
           mountPath: /plugins
+        envFrom:
+{{- include "useGlobalCm" $data | indent 8 }}
       {{- end }}
       containers:
       - image: {{ .Values.server.container.image }}
@@ -46,19 +49,24 @@ spec:
             name: {{ .Values.server.dsoConfig.name }}
         - configMapRef:
             name: {{ $.Release.Name }}-server-cm
+        {{- include "useGlobalCm" $data | nindent 8 }}
         resources: {{- toYaml .Values.server.container.resources | nindent 10 }}
+        {{- if .Values.server.container.livenessProbe.enabled }}
         livenessProbe:
           httpGet:
             path: /healthz
             port: {{ .Values.server.container.port }}
           initialDelaySeconds: 5
           periodSeconds: 5
+        {{- end }}
+        {{- if .Values.server.container.startupProbe.enabled }}
         startupProbe:
           httpGet:
             path: /healthz
             port: {{ .Values.server.container.port }}
           failureThreshold: 10
           periodSeconds: 4
+        {{- end }}
         volumeMounts:
         {{- if .Values.server.container.dataConfigmap }}
         - name: imports

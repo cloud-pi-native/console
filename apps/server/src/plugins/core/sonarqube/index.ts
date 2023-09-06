@@ -1,7 +1,7 @@
 import axios, { type CreateAxiosDefaults } from 'axios'
 import { sonarqubeUrl, sonarqubeApiToken as username } from '@/utils/env.js'
 import { findGroupByName } from './group.js'
-import { adminGroupPath } from 'shared'
+import { adminGroupPath } from '@dso-console/shared'
 
 const globalPermissions = [
   'admin',
