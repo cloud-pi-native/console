@@ -4,6 +4,7 @@ import {
   createProjectController,
   archiveProjectController,
   updateProjectController,
+  getProjectSecretsController,
 } from '@/resources/project/controllers.js'
 import projectEnvironmentRouter from './project-environment.js'
 import projectRepositoryRouter from './project-repository.js'
@@ -25,6 +26,9 @@ const router = async (app, _opt) => {
 
   // Archiver un projet
   await app.delete('/:projectId', archiveProjectController)
+
+  // Récupérer les secrets d'un projet
+  await app.get('/:projectId/secrets', getProjectSecretsController)
 
   // Enregistrement du sous routeur environment
   await app.register(projectEnvironmentRouter)

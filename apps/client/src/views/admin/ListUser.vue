@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 import { useAdminUserStore } from '@/stores/admin/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { formatDate } from '@dso-console/shared'
+import { copyContent } from '@/utils/func.js'
 
 const adminUserStore = useAdminUserStore()
 
@@ -20,15 +21,6 @@ const headers = [
   'Modification',
 ]
 const rows = ref([])
-
-const copyContent = async (content) => {
-  try {
-    await navigator.clipboard.writeText(content)
-    snackbarStore.setMessage('Donnée copié', 'success')
-  } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
-  }
-}
 
 const getAllUsers = async () => {
   try {

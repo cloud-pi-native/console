@@ -26,7 +26,7 @@ import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentErr
 import { hooks } from '@/plugins/index.js'
 import { PluginResult } from '@/plugins/hooks/hook.js'
 import { CreateProjectDto, UpdateProjectDto, calcProjectNameMaxLength, projectIsLockedInfo, projectSchema } from '@dso-console/shared'
-import { CreateProjectExecArgs, UpdateProjectExecArgs } from '@/plugins/hooks/project.js'
+import { CreateProjectExecArgs, ProjectBase, UpdateProjectExecArgs } from '@/plugins/hooks/project.js'
 import { filterObjectByKeys } from '@/utils/queries-tools.js'
 import { gitlabUrl, projectRootDir } from '@/utils/env.js'
 import { removeClustersFromEnvironmentBusiness } from '../environment/business.js'
@@ -98,6 +98,25 @@ export const getProject = async (projectId: string, userId: User['id']) => {
   if (insufficientRoleErrorMessage) throw new ForbiddenError('Vous ne faites pas partie de ce projet', { description: '', extras: { userId, projectId: project.id } })
 
   return filterProject(userId, project)
+}
+
+export const getProjectSecrets = async (projectId: string, userId: User['id']) => {
+  const project = await getProjectInfosQuery(projectId)
+  if (!project) throw new NotFoundError('Projet introuvable', undefined)
+  const insufficientRoleErrorMessage = checkInsufficientRoleInProject(userId, { roles: project.roles, minRole: 'owner' })
+  if (insufficientRoleErrorMessage) throw new ForbiddenError(insufficientRoleErrorMessage, { description: '', extras: { userId, projectId: project.id } })
+
+  const projectData: ProjectBase = {
+    project: project.name,
+    organization: project.organization.name,
+  }
+
+  const results = await hooks.getProjectSecrets.execute(projectData)
+  await addLogs('Get Project Secrets', results, userId)
+  if (results?.failed) throw new Error('Echec de récupération des secrets du projet par les plugins')
+  const projectSecrets = results?.vault?.result
+
+  return projectSecrets
 }
 
 export const createProject = async (dataDto: CreateProjectDto['body'], requestor: UserDto) => {

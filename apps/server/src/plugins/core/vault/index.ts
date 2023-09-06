@@ -136,3 +136,29 @@ export const getRegistrySecret: StepCall<any> = async (payload) => {
     }
   }
 }
+
+export const getDsoProjectSecrets: StepCall<any> = async (payload) => {
+  const { organization, project } = payload.args
+  try {
+    const buildVaultPath = (service: string) => [organization, project, service.toUpperCase()].join('/')
+
+    return {
+      status: {
+        result: 'OK',
+      },
+      result: {
+        gitlab: await readVault(buildVaultPath('gitlab')),
+        // sonar: await readVault(buildVaultPath('sonar')),
+        // harbor: await readVault(buildVaultPath('registry')),
+      },
+    }
+  } catch (error) {
+    return {
+      status: {
+        result: 'KO',
+        message: error.message,
+      },
+      error: JSON.stringify(error),
+    }
+  }
+}

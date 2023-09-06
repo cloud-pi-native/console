@@ -76,6 +76,39 @@ describe('Dashboard', () => {
       .getByDataTestid('descriptionP').should('have.class', 'disabled')
   })
 
+  it('Should show project secrets', () => {
+    cy.intercept('GET', `/api/v1/projects/${projectCreated.id}/secrets`).as('getProjectSecrets')
+    cy.kcLogin('test')
+
+    cy.goToProjects()
+      .getByDataTestid(`projectTile-${projectCreated.name}`).click()
+      .getByDataTestid('menuDashboard').click()
+
+    cy.url().should('contain', 'dashboard')
+      .getByDataTestid('projectSecretsZone').should('not.exist')
+      .getByDataTestid('showSecretsBtn').click()
+
+    cy.wait('@getProjectSecrets').its('response.statusCode').should('eq', 200)
+    cy.getByDataTestid('snackbar').within(() => {
+      cy.get('p').should('contain', 'Secrets récupérés')
+    })
+
+    cy.getByDataTestid('projectSecretsZone').should('exist')
+    cy.getByDataTestid('noProjectSecretsP').should('contain', 'Aucun secret à afficher')
+  })
+
+  it('Should not be able to access project secrets if not owner', () => {
+    cy.kcLogin((user.firstName.slice(0, 1) + user.lastName).toLowerCase())
+
+    cy.goToProjects()
+      .getByDataTestid(`projectTile-${projectCreated.name}`).click()
+      .getByDataTestid('menuDashboard').click()
+
+    cy.url().should('contain', 'dashboard')
+      .getByDataTestid('projectSecretsZone').should('not.exist')
+      .getByDataTestid('showSecretsBtn').should('not.exist')
+  })
+
   it('Should not be able to archive a project if not owner', () => {
     cy.kcLogin((user.firstName.slice(0, 1) + user.lastName).toLowerCase())
 

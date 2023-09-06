@@ -38,6 +38,11 @@ export const archiveProject = async (projectId) => {
   return response.data
 }
 
+export const getProjectSecrets = async (projectId) => {
+  const response = await apiClient.get(`/projects/${projectId}/secrets`)
+  return response.data
+}
+
 // Services
 export const checkServicesHealth = async () => {
   const response = await apiClient.get('/services')
