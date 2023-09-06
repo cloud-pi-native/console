@@ -5,14 +5,13 @@ import { type FastifyInstance } from 'fastify/types/instance.js'
 import { objectEntries, objectKeys } from '@/utils/type.js'
 import * as hooks from './hooks/index.js'
 import { type PluginsFunctions } from './hooks/hook.js'
-const pluginsAuthorized = process.env.plugins.split(',')
+const disabledPlugins = process.env.plugins ? process.env.plugins.split(',') : []
 
 export type RegisterFn = (name: string, subscribedHooks: PluginsFunctions) => void
 export type PluginManager = Promise<{ hookList: typeof hooks, register: RegisterFn }>
 
 const initPluginManager = async (app: FastifyInstance): PluginManager => {
   const register: RegisterFn = (name: string, subscribedHooks: PluginsFunctions) => {
-    if (!pluginsAuthorized.includes(name)) return
     const message = []
     for (const [hook, steps] of objectEntries(subscribedHooks)) {
       if (!(hook in hooks) && hook !== 'all') {
@@ -57,23 +56,43 @@ const initPluginManager = async (app: FastifyInstance): PluginManager => {
 }
 
 export const initCorePlugins = async (pluginManager: Awaited<PluginManager>, _app: FastifyInstance) => {
-  const { init: gitlabInit } = await import('./core/gitlab/init.js')
-  const { init: harborInit } = await import('./core/harbor/init.js')
-  const { init: keycloakInit } = await import('./core/keycloak/init.js')
-  const { init: kubernetesInit } = await import('./core/kubernetes/init.js')
-  const { init: argoInit } = await import('./core/argo/init.js')
-  const { init: nexusInit } = await import('./core/nexus/init.js')
-  const { init: sonarqubeInit } = await import('./core/sonarqube/init.js')
-  const { init: vaultInit } = await import('./core/vault/init.js')
+  if (!disabledPlugins.includes('gitlab')) {
+    const { init: gitlabInit } = await import('./core/gitlab/init.js')
+    gitlabInit(pluginManager.register)
+  }
+  if (!disabledPlugins.includes('harbor')) {
+    const { init: harborInit } = await import('./core/harbor/init.js')
+    harborInit(pluginManager.register)
+  }
+  if (!disabledPlugins.includes('keycloak')) {
+    const { init: keycloakInit } = await import('./core/keycloak/init.js')
 
-  gitlabInit(pluginManager.register)
-  harborInit(pluginManager.register)
-  keycloakInit(pluginManager.register)
-  kubernetesInit(pluginManager.register)
-  argoInit(pluginManager.register)
-  nexusInit(pluginManager.register)
-  sonarqubeInit(pluginManager.register)
-  vaultInit(pluginManager.register)
+    keycloakInit(pluginManager.register)
+  }
+  if (!disabledPlugins.includes('kubernetes')) {
+    const { init: kubernetesInit } = await import('./core/kubernetes/init.js')
+
+    kubernetesInit(pluginManager.register)
+  }
+  if (!disabledPlugins.includes('argo')) {
+    const { init: argoInit } = await import('./core/argo/init.js')
+
+    argoInit(pluginManager.register)
+  }
+  if (!disabledPlugins.includes('nexus')) {
+    const { init: nexusInit } = await import('./core/nexus/init.js')
+
+    nexusInit(pluginManager.register)
+  }
+  if (!disabledPlugins.includes('sonar')) {
+    const { init: sonarqubeInit } = await import('./core/sonarqube/init.js')
+
+    sonarqubeInit(pluginManager.register)
+  }
+  if (!disabledPlugins.includes('vault')) {
+    const { init: vaultInit } = await import('./core/vault/init.js')
+    vaultInit(pluginManager.register)
+  }
 }
 
 export const initExternalPlugins = async (pluginManager: Awaited<PluginManager>, app: FastifyInstance) => {
