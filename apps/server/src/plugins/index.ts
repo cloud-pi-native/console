@@ -5,12 +5,14 @@ import { type FastifyInstance } from 'fastify/types/instance.js'
 import { objectEntries, objectKeys } from '@/utils/type.js'
 import * as hooks from './hooks/index.js'
 import { type PluginsFunctions } from './hooks/hook.js'
+const pluginsAuthorized = process.env.plugins.split(',')
 
 export type RegisterFn = (name: string, subscribedHooks: PluginsFunctions) => void
 export type PluginManager = Promise<{ hookList: typeof hooks, register: RegisterFn }>
 
 const initPluginManager = async (app: FastifyInstance): PluginManager => {
   const register: RegisterFn = (name: string, subscribedHooks: PluginsFunctions) => {
+    if (!pluginsAuthorized.includes(name)) return
     const message = []
     for (const [hook, steps] of objectEntries(subscribedHooks)) {
       if (!(hook in hooks) && hook !== 'all') {
