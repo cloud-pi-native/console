@@ -1,7 +1,7 @@
 import type { HookPayload, StepCall } from '@/plugins/hooks/hook.js'
 import { gitlabToken } from '@/utils/env.js'
 import { createGroup, deleteGroup, getGroupId, setGroupVariable, setProjectVariable } from './group.js'
-import { addGroupMember, removeGroupMember } from './permission.js'
+import { addGroupMember, getGroupMembers, removeGroupMember } from './permission.js'
 import { createProject, createProjectMirror, deleteProject } from './project.js'
 import { setProjectTrigger } from './triggers.js'
 import { createUser, createUsername, getUser } from './user.js'
@@ -181,9 +181,13 @@ export const addDsoGroupMember: StepCall<AddUserToProjectExecArgs> = async (payl
   try {
     const { organization, project, user } = payload.args
     const groupId = await getGroupId(project, organization)
+    if (!groupId) throw Error('Impossible de retrouver le namespace')
     const member = await createUser(user)
-    // @ts-ignore
-    const groupMember = await addGroupMember(groupId, member.id)
+    const groupMembers = await getGroupMembers(groupId)
+    let groupMember = groupMembers.find(groupMember => groupMember.id === member.id)
+    if (!groupMember) {
+      groupMember = await addGroupMember(groupId, member.id)
+    }
 
     return {
       status: {
@@ -210,10 +214,13 @@ export const removeDsoGroupMember: StepCall<AddUserToProjectExecArgs> = async (p
   try {
     const { organization, project, user } = payload.args
     const groupId = await getGroupId(project, organization)
-    // @ts-ignore
-    const member = await getUser({ email: user.email })
-    // @ts-ignore
-    await removeGroupMember(groupId, member.id)
+    if (!groupId) throw Error('Impossible de retrouver le namespace')
+    const member = await createUser(user)
+    const groupMembers = await getGroupMembers(groupId)
+    const groupMember = groupMembers.find(groupMember => groupMember.id === member.id)
+    if (groupMember) {
+      await removeGroupMember(groupId, groupMember.id)
+    }
 
     return {
       status: {
