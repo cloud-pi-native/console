@@ -58,6 +58,10 @@ server:
     #     mountPath: /volume/path
     #   - name: extra-vol-cm
     #     mountPath: /volume/cm/path
+    livenessProbe:
+      enabled: true
+    startupProbe:
+      enabled: true
   service:
     hostname: server
     port: 80
