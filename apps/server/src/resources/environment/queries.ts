@@ -119,7 +119,7 @@ export const initializeEnvironment = async ({ name, projectId, projectOwners, cl
       status: 'initializing',
       permissions: {
         createMany: {
-          data: projectOwners.map(({ userId }) => ({ userId, level: 2 })),
+          data: projectOwners.map(({ userId }) => ({ userId, level: 20 })),
         },
       },
     },
