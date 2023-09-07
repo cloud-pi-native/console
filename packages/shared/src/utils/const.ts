@@ -3,10 +3,11 @@ export const adminGroupPath = '/admin'
 export const projectIsLockedInfo = 'Le projet est verrouillé, pas d\'action possible'
 
 export const levels = [
-  'r',
-  'rw',
-  'rwd',
+  { label: 'r', value: 0 },
+  { label: 'rw', value: 10 },
+  { label: 'rwd', value: 20 },
 ] as const
+
 export type PermissionLevels = typeof levels[number]
 
 export const projectRoles = [

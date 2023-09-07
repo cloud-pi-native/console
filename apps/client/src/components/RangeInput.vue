@@ -53,17 +53,17 @@ defineEmits(['updateLevel'])
         min="0"
         :step="props.step"
         :max="props.levels.length - 1"
-        @input="$emit('updateLevel', $event.target?.value ?? 0)"
+        @input="$emit('updateLevel', props.levels[Number($event)].value+'' ?? 0)"
       >
       <datalist
         id="rangeList"
         class="range-list"
       >
         <option
-          v-for="lvl, i in props.levels"
-          :key="`${i}-level`"
-          :value="i"
-          :label="lvl"
+          v-for="lvl in props.levels"
+          :key="`${lvl.value}-level`"
+          :value="lvl.value"
+          :label="lvl.label"
         />
       </datalist>
     </div>
