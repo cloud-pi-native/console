@@ -111,7 +111,7 @@ const getAppProjectObject = ({ name, sourceRepos, roGroup, rwGroup, resourceVers
           name: 'rw-group',
           policies: [
             `p, proj:${name}:rw-group, applications, *, ${name}/*, allow`,
-            `p, proj:${name}:rw-group, applications, delete, ${name}/*, deny`,
+            `p, proj:${name}:rw-group, applications, delete, ${name}/*, allow`,
             `p, proj:${name}:rw-group, applications, create, ${name}/*, deny`,
           ],
         },
