@@ -45,4 +45,6 @@ export {
   RiFoldersLine,
   RiNewspaperLine,
   RiServerLine,
+  RiEyeLine,
+  RiEyeOffLine,
 } from 'oh-vue-icons/icons/ri/index.js'

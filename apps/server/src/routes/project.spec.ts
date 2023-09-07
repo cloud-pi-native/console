@@ -11,8 +11,45 @@ import projectRouter from './project.js'
 import { descriptionMaxLength, projectIsLockedInfo } from '@dso-console/shared'
 import prisma from '../__mocks__/prisma.js'
 
+const hookRes = {
+  failed: false,
+  args: {},
+  vault: {
+    result: {
+      gitlab: {
+        'token': 'myToken',
+      }
+    }
+  }
+}
+
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 vi.mock('../prisma.js')
+vi.mock('@/plugins/index.js', async () => {
+  return {
+    hooks: {
+      getProjectSecrets: {
+        execute: () => hookRes
+      },
+      updateProject: {
+        execute: () => ({
+          failed: false
+        }),
+        validate: () => ({
+          failed: false
+        })
+      },
+      createProject: {
+        execute: () => ({
+          failed: false
+        }),
+        validate: () => ({
+          failed: false
+        })
+      }
+    }
+  }
+})
 
 const app = fastify({ logger: false })
   .register(fastifyCookie)
@@ -133,6 +170,38 @@ describe('Project routes', () => {
       expect(response.statusCode).toEqual(403)
       expect(response.body).toBeDefined()
       expect(JSON.parse(response.body).message).toEqual('Vous ne faites pas partie de ce projet')
+    })
+  })
+
+  describe('getProjectSecretsController', () => {
+    it('Should get a project secrets', async () => {
+      const project = createRandomDbSetup({}).project
+      project.roles = [...project.roles, getRandomRole(requestor.id, project.id, 'owner')]
+
+      prisma.project.findUnique.mockResolvedValue(project)
+
+      const response = await app.inject()
+        .get(`/${project.id}/secrets`)
+        .end()
+
+      expect(response.statusCode).toEqual(200)
+      expect(response.json()).toBeDefined()
+      expect(response.json()).toMatchObject(hookRes?.vault?.result)
+    })
+
+    it('Should not retreive a project secrets when not project owner', async () => {
+      const project = createRandomDbSetup({}).project
+      project.roles = [...project.roles, getRandomRole(requestor.id, project.id)]
+
+      prisma.project.findUnique.mockResolvedValue(project)
+
+      const response = await app.inject()
+        .get(`/${project.id}/secrets`)
+        .end()
+
+      expect(response.statusCode).toEqual(403)
+      expect(response.body).toBeDefined()
+      expect(JSON.parse(response.body).message).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
     })
   })
 

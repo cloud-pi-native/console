@@ -1,5 +1,5 @@
 import { RegisterFn } from '@/plugins/index.js'
-import { archiveDsoProject, writePayloadToVault, getRegistrySecret, updateRepository, deleteDsoRepository } from './index.js'
+import { archiveDsoProject, writePayloadToVault, getRegistrySecret, updateRepository, deleteDsoRepository, getDsoProjectSecrets } from './index.js'
 
 export const init = (register: RegisterFn) => {
   register('vault', {
@@ -8,5 +8,6 @@ export const init = (register: RegisterFn) => {
     updateRepository: { main: updateRepository },
     deleteRepository: { main: deleteDsoRepository },
     addEnvironmentCluster: { pre: getRegistrySecret },
+    getProjectSecrets: { main: getDsoProjectSecrets },
   })
 }
