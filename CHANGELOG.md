@@ -1,5 +1,27 @@
 # Changelog
 
+## [5.7.0](https://github.com/cloud-pi-native/console/compare/v5.6.0...v5.7.0) (2023-09-07)
+
+
+### Features
+
+* :closed_lock_with_key: retrieve project secrets from vault and display it in front ([201435d](https://github.com/cloud-pi-native/console/commit/201435d18047400ec9fe4252b6be2c11dbd57068))
+* :closed_lock_with_key: retrieve project secrets from vault and display it in front ([201435d](https://github.com/cloud-pi-native/console/commit/201435d18047400ec9fe4252b6be2c11dbd57068))
+* :safety_vest: update password character support ([c82f35f](https://github.com/cloud-pi-native/console/commit/c82f35fb7f20ad06c0a63eb518407d17ddb88b51))
+* :sparkles: handle gitlab membership ([7ff68bd](https://github.com/cloud-pi-native/console/commit/7ff68bdf8f9a16562cfc00fbdb0c322b0f09943d))
+
+
+### Bug Fixes
+
+* :bug: change appproject policy ([e20b6c4](https://github.com/cloud-pi-native/console/commit/e20b6c431348b08bed7ea215a967c51d0e6187f0))
+* :bug: import new shared package ([ff0b0db](https://github.com/cloud-pi-native/console/commit/ff0b0db9dcc96c10b409b51bd4180c03b5b01478))
+
+
+### Reverts
+
+* :card_file_box: add missing default for projectStatus ([2263988](https://github.com/cloud-pi-native/console/commit/22639888442da48b097f936d0afb62652d262b02))
+* :card_file_box: add missing default for projectStatus ([5653165](https://github.com/cloud-pi-native/console/commit/565316504a1baa90d2c7c999c0ba6810151324f5))
+
 ## [5.6.0](https://github.com/cloud-pi-native/console/compare/v5.5.0...v5.6.0) (2023-08-28)
 
 
