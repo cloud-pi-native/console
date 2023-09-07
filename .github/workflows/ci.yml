@@ -95,7 +95,7 @@ jobs:
 
   scan-vuln:
     uses: ./.github/workflows/scan.yml
-    if: ${{ github.base_ref == 'main' }}
+    if: ${{ !github.event.pull_request.draft && github.base_ref == 'main' }}
 
   # Workaround for required status check in protection branches (see. https://github.com/orgs/community/discussions/13690)
   all-jobs-passed:
