@@ -1,4 +1,4 @@
-import { UserModel } from 'shared'
+import { UserModel } from '@dso-console/shared'
 import type { ProjectBase } from './project.js'
 import { type Hook, createHook } from './hook.js'
 

@@ -7,7 +7,7 @@ import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@/main.css'
 import * as icons from '@/icons.js'
 import PermissionForm from '@/components/PermissionForm.vue'
-import { createRandomDbSetup, getRandomUser, getRandomUserProject } from 'test-utils'
+import { createRandomDbSetup, getRandomUser, getRandomRole } from '@dso-console/test-utils'
 import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
 
@@ -24,7 +24,7 @@ describe('PermissionForm.vue', () => {
     userStore.userProfile = randomDbSetup.users[1]
 
     const userToLicence = {
-      ...getRandomUserProject(),
+      ...getRandomRole(),
       user: getRandomUser(),
     }
     projectStore.selectedProject.roles = [userToLicence, ...randomDbSetup.project.roles]

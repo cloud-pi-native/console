@@ -6,10 +6,7 @@ WORKDIR /app
 RUN chown node:root /app
 COPY --chown=node:root pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
 COPY --chown=node:root apps/server/ ./apps/server/
-COPY --chown=node:root packages/shared/ ./packages/shared/
-COPY --chown=node:root packages/tsconfig/ ./packages/tsconfig/
-COPY --chown=node:root packages/test-utils/ ./packages/test-utils/
-COPY --chown=node:root patches/ ./patches/
+COPY --chown=node:root packages/ ./packages/
 
 
 # Dev stage

@@ -5,16 +5,20 @@ import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { BadRequestError, NotFoundError } from '@/utils/errors.js'
 import { objectValues } from '@/utils/type.js'
 import { Organization, User } from '@prisma/client'
-import { getUniqueListBy, organizationSchema } from 'shared'
+import { getUniqueListBy, organizationSchema } from '@dso-console/shared'
 
 export const getAllOrganizationBusiness = async () => {
   const allOrganizations = await getOrganizations()
-  if (!allOrganizations.length) throw new NotFoundError('Aucune organisation trouvée', undefined)
+  if (!allOrganizations?.length) throw new NotFoundError('Aucune organisation trouvée', undefined)
   return allOrganizations
 }
 
 export const createOrganizationBusiness = async (data: Organization) => {
-  await organizationSchema.validateAsync(data)
+  try {
+    await organizationSchema.validateAsync(data)
+  } catch (error) {
+    throw new BadRequestError(error.message, undefined)
+  }
 
   const isNameTaken = await getOrganizationByName(data.name)
   if (isNameTaken) throw new BadRequestError('Cette organisation existe déjà', undefined)

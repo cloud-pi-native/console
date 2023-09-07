@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
-import { createRandomDbSetup, getRandomUser } from 'test-utils'
+import { User, createRandomDbSetup, getRandomCluster, getRandomProject, getRandomRole, getRandomUser } from '@dso-console/test-utils'
 import fastify from 'fastify'
 import fastifySession from '@fastify/session'
 import fastifyCookie from '@fastify/cookie'
@@ -8,9 +8,48 @@ import { faker } from '@faker-js/faker'
 import { sessionConf } from '../utils/keycloak.js'
 import { getConnection, closeConnections } from '../connect.js'
 import projectRouter from './project.js'
-import { descriptionMaxLength, projectIsLockedInfo } from 'shared'
+import { descriptionMaxLength, projectIsLockedInfo } from '@dso-console/shared'
+import prisma from '../__mocks__/prisma.js'
+
+const hookRes = {
+  failed: false,
+  args: {},
+  vault: {
+    result: {
+      gitlab: {
+        'token': 'myToken',
+      }
+    }
+  }
+}
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
+vi.mock('../prisma.js')
+vi.mock('@/plugins/index.js', async () => {
+  return {
+    hooks: {
+      getProjectSecrets: {
+        execute: () => hookRes
+      },
+      updateProject: {
+        execute: () => ({
+          failed: false
+        }),
+        validate: () => ({
+          failed: false
+        })
+      },
+      createProject: {
+        execute: () => ({
+          failed: false
+        }),
+        validate: () => ({
+          failed: false
+        })
+      }
+    }
+  }
+})
 
 const app = fastify({ logger: false })
   .register(fastifyCookie)
@@ -29,16 +68,20 @@ const mockSession = (app) => {
     .register(projectRouter)
 }
 
-const requestor = {}
-const setRequestorId = (id) => {
-  requestor.id = id
+let requestor: User
+
+const setRequestor = (user: User) => {
+  requestor = user
 }
 
 const getRequestor = () => {
   return requestor
 }
 
-describe.skip('Project routes', () => {
+describe('Project routes', () => {
+  const requestor = getRandomUser()
+  setRequestor(requestor)
+
   beforeAll(async () => {
     mockSession(app)
     await getConnection()
@@ -54,16 +97,16 @@ describe.skip('Project routes', () => {
 
   // GET
   describe('getUserProjectsController', () => {
-    it.skip('Should get list of a user\'s projects', async () => {
-      // TODO : user.getProjects is not a function
-      const randomDbSetups = [createRandomDbSetup({}), createRandomDbSetup({}), createRandomDbSetup({})]
-      const randomUser = getRandomUser()
-      randomDbSetups.forEach(setup => {
-        setup.project.users[0].id = randomUser.id
+    it('Should get list of a user\'s projects', async () => {
+      const projects = [createRandomDbSetup({}).project, createRandomDbSetup({}).project, createRandomDbSetup({}).project]
+      projects.forEach(project => {
+        project.roles[0].userId = requestor.id
       })
-      const projects = randomDbSetups.map(project => project)
+      const publicClusters = [getRandomCluster()]
 
-      setRequestorId(randomDbSetups[0].project.users[0].id)
+      prisma.user.upsert.mockResolvedValue(requestor)
+      prisma.project.findMany.mockResolvedValue(projects)
+      prisma.cluster.findMany.mockResolvedValue(publicClusters)
 
       const response = await app.inject()
         .get('/')
@@ -71,35 +114,38 @@ describe.skip('Project routes', () => {
 
       expect(response.statusCode).toEqual(200)
       expect(response.json()).toBeDefined()
-      expect(response.json()).toEqual(projects)
+      expect(response.json()).toMatchObject(projects)
     })
 
     it('Should return an error while get list of projects', async () => {
+      const error = { statusCode: 500, message: 'Erreur de récupération de l\'utilisateur' }
+
+      prisma.user.upsert.mockRejectedValue(error)
+
       const response = await app.inject()
         .get('/')
         .end()
 
-      expect(response.statusCode).toEqual(404)
-      expect(response.body.json).not.toBeDefined()
+      expect(response.statusCode).toEqual(error.statusCode)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Echec de la récupération des projets de l\'utilisateur')
+      expect(JSON.parse(response.body).message).toEqual(error.message)
     })
   })
 
   describe('getProjectByIdController', () => {
     it('Should get a project by id', async () => {
-      const randomDbSetup = createRandomDbSetup({})
-      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
+      const project = createRandomDbSetup({}).project
+      project.roles = [...project.roles, getRandomRole(requestor.id, project.id)]
 
-      setRequestorId(owner.id)
+      prisma.project.findUnique.mockResolvedValue(project)
 
       const response = await app.inject()
-        .get(`/${randomDbSetup.project.id}`)
+        .get(`/${project.id}`)
         .end()
 
       expect(response.statusCode).toEqual(200)
       expect(response.json()).toBeDefined()
-      expect(response.json()).toMatchObject(randomDbSetup.project)
+      expect(response.json()).toMatchObject(project)
     })
 
     it('Should not retreive a project when id is invalid', async () => {
@@ -108,119 +154,128 @@ describe.skip('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(404)
-      expect(response.body.json).not.toBeDefined()
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Echec de récupération du projet de l\'utilisateur')
+      expect(JSON.parse(response.body).message).toEqual('Projet introuvable')
     })
 
     it('Should not retreive a project when not project member', async () => {
-      const randomDbSetup = createRandomDbSetup({})
-      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
+      const project = createRandomDbSetup({}).project
 
-      setRequestorId(owner.id)
+      prisma.project.findUnique.mockResolvedValue(project)
 
       const response = await app.inject()
-        .get(`/${randomDbSetup.project.id}`)
+        .get(`/${project.id}`)
         .end()
 
-      expect(response.statusCode).toEqual(404)
-      expect(response.body.json).not.toBeDefined()
+      expect(response.statusCode).toEqual(403)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Echec de récupération du projet de l\'utilisateur')
+      expect(JSON.parse(response.body).message).toEqual('Vous ne faites pas partie de ce projet')
+    })
+  })
+
+  describe('getProjectSecretsController', () => {
+    it('Should get a project secrets', async () => {
+      const project = createRandomDbSetup({}).project
+      project.roles = [...project.roles, getRandomRole(requestor.id, project.id, 'owner')]
+
+      prisma.project.findUnique.mockResolvedValue(project)
+
+      const response = await app.inject()
+        .get(`/${project.id}/secrets`)
+        .end()
+
+      expect(response.statusCode).toEqual(200)
+      expect(response.json()).toBeDefined()
+      expect(response.json()).toMatchObject(hookRes?.vault?.result)
+    })
+
+    it('Should not retreive a project secrets when not project owner', async () => {
+      const project = createRandomDbSetup({}).project
+      project.roles = [...project.roles, getRandomRole(requestor.id, project.id)]
+
+      prisma.project.findUnique.mockResolvedValue(project)
+
+      const response = await app.inject()
+        .get(`/${project.id}/secrets`)
+        .end()
+
+      expect(response.statusCode).toEqual(403)
+      expect(response.body).toBeDefined()
+      expect(JSON.parse(response.body).message).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
     })
   })
 
   // POST
   describe('createProjectController', () => {
-    it.skip('Should create a project', async () => {
-      const randomDbSetup = createRandomDbSetup({})
-      delete randomDbSetup.project.id
-      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
+    it('Should create a project', async () => {
+      const project = getRandomProject()
+      const organization = project.organization
 
-      setRequestorId(owner.id)
+      prisma.user.upsert.mockResolvedValue(requestor)
+      prisma.organization.findUnique.mockResolvedValue(organization)
+      prisma.project.findMany.mockResolvedValue([])
+      prisma.project.create.mockResolvedValue(project)
+      prisma.project.update.mockResolvedValue(project)
+      prisma.environment.findMany.mockResolvedValue([])
+      prisma.repository.findMany.mockResolvedValue([])
 
       const response = await app.inject()
         .post('/')
-        .body(randomDbSetup.project)
+        .body(project)
         .end()
 
-      randomDbSetup.project.status = 'initializing'
-      randomDbSetup.project.locked = true
-      // TODO : user.addProject is not a function
-      // ok en local donc pb avec bibliothèque
       expect(response.statusCode).toEqual(201)
       expect(response.json()).toBeDefined()
-      expect(response.json()).toMatchObject(randomDbSetup.project)
+      expect(response.json()).toMatchObject(project)
     })
 
     it('Should not create a project if payload is invalid', async () => {
-      const removedKey = 'organization'
-      const randomDbSetup = createRandomDbSetup({})
-      delete randomDbSetup.project[removedKey]
+      const project = getRandomProject()
+      const organization = project.organization
+      delete project.name
+
+      prisma.user.upsert.mockResolvedValue(requestor)
+      prisma.organization.findUnique.mockResolvedValue(organization)
 
       const response = await app.inject()
         .post('/')
-        .body(randomDbSetup.project)
+        .body(project)
         .end()
 
-      expect(response.statusCode).toEqual(400)
+      expect(response.statusCode).toEqual(500)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Echec de la création du projet')
+      expect(JSON.parse(response.body).message).toEqual('"name" is required')
     })
 
     it('Should not create a project if name already exists', async () => {
-      const randomDbSetup = createRandomDbSetup({})
-      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
-      const newProject = randomDbSetup.project
-      delete newProject.id
-      delete newProject.users
-      delete newProject.repositories
-      delete newProject.environments
+      const project = getRandomProject()
+      const organization = project.organization
 
-      setRequestorId(owner.id)
+      prisma.user.upsert.mockResolvedValue(requestor)
+      prisma.organization.findUnique.mockResolvedValue(organization)
+      prisma.project.findMany.mockResolvedValue([project])
 
       const response = await app.inject()
         .post('/')
-        .body(newProject)
+        .body(project)
         .end()
 
       expect(response.statusCode).toEqual(400)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Echec de la création du projet')
-    })
-
-    it('Should not create a project if name exists in archives', async () => {
-      const randomDbSetup = createRandomDbSetup({})
-      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
-      const newProject = randomDbSetup.project
-      newProject.status = 'archived'
-      delete newProject.id
-      delete newProject.users
-      delete newProject.repositories
-      delete newProject.environments
-
-      setRequestorId(owner.id)
-
-      const response = await app.inject()
-        .post('/')
-        .body(newProject)
-        .end()
-
-      expect(response.statusCode).toEqual(400)
-      expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Echec de la création du projet')
+      expect(JSON.parse(response.body).message).toEqual(`"${project.name}" existe déjà`)
     })
   })
 
   // PUT
   describe('updateProjectController', () => {
     it('Should update a project description', async () => {
-      const randomDbSetup = createRandomDbSetup({})
-      // TODO ???
-      const project = Project.build(randomDbSetup.project)
-      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
+      const project = createRandomDbSetup({}).project
+      project.roles = [...project.roles, getRandomRole(requestor.id, project.id)]
 
-      setRequestorId(owner.id)
+      prisma.project.findUnique.mockResolvedValue(project)
+      prisma.project.update.mockResolvedValue(project)
+      prisma.environment.findMany.mockResolvedValue([])
+      prisma.repository.findMany.mockResolvedValue([])
 
       const response = await app.inject()
         .put(`/${project.id}`)
@@ -229,106 +284,100 @@ describe.skip('Project routes', () => {
 
       expect(response.statusCode).toEqual(200)
       expect(response.body).toBeDefined()
-      expect(response.body).toMatchObject(`${project.id}`)
+      expect(response.json()).toMatchObject(project)
     })
 
     it('Should not update a project description if requestor is not member', async () => {
-      const randomDbSetup = createRandomDbSetup({})
-      const randomUser = getRandomUser()
+      const project = createRandomDbSetup({}).project
 
-      setRequestorId(randomUser.id)
+      prisma.project.findUnique.mockResolvedValue(project)
 
       const response = await app.inject()
-        .put(`/${randomDbSetup.project.id}`)
+        .put(`/${project.id}`)
         .body({ description: 'nouvelle description' })
         .end()
 
-      expect(response.statusCode).toEqual(400)
-      expect(response.body).toEqual('Echec de la mise à jour du projet')
+      expect(response.statusCode).toEqual(403)
+      expect(JSON.parse(response.body).message).toEqual('Vous ne faites pas partie de ce projet')
     })
 
     it('Should not update a project description if description is invalid', async () => {
-      const randomDbSetup = createRandomDbSetup({})
-      // TODO ???
-      const project = Project.build(randomDbSetup.project)
-      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
+      const project = createRandomDbSetup({}).project
+      project.roles = [...project.roles, getRandomRole(requestor.id, project.id)]
 
-      setRequestorId(owner.id)
+      prisma.project.findUnique.mockResolvedValue(project)
 
       const response = await app.inject()
         .put(`/${project.id}`)
         .body({ description: faker.string.alpha(descriptionMaxLength + 1) })
         .end()
 
-      expect(response.statusCode).toEqual(400)
-      expect(response.body).toEqual('Echec de la mise à jour du projet')
+      expect(response.statusCode).toEqual(500)
+      expect(JSON.parse(response.body).message).toEqual('"description" length must be less than or equal to 280 characters long')
     })
 
     it('Should not update a project if locked', async () => {
-      const randomDbSetup = createRandomDbSetup({})
-      randomDbSetup.project.locked = true
-      const randomUser = getRandomUser()
+      const project = createRandomDbSetup({}).project
+      project.roles = [...project.roles, getRandomRole(requestor.id, project.id)]
+      project.locked = true
 
-      setRequestorId(randomUser.id)
+      prisma.project.findUnique.mockResolvedValue(project)
 
       const response = await app.inject()
-        .put(`/${randomDbSetup.project.id}`)
+        .put(`/${project.id}`)
         .body({ description: 'nouvelle description' })
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.body).toEqual(projectIsLockedInfo)
+      expect(JSON.parse(response.body).message).toEqual(projectIsLockedInfo)
     })
   })
 
   // DELETE
   describe('archiveProjectController', () => {
     it('Should archive a project', async () => {
-      const randomDbSetup = createRandomDbSetup({})
-      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
+      const project = createRandomDbSetup({}).project
+      project.roles = [...project.roles, getRandomRole(requestor.id, project.id, 'owner')]
+      project.environments = []
+      project.repositories = []
 
-      /// TODO ???
-      randomDbSetup.project.environments.forEach(environment => Permissions.$queueResult(environment.permissions))
-      randomDbSetup.project.repositories.forEach(repository => Repository.$queueResult(repository))
-      randomDbSetup.project.environments.forEach(environment => Environment.$queueResult(environment))
-      setRequestorId(owner.id)
+      prisma.project.findUnique.mockResolvedValue(project)
+      prisma.project.update.mockResolvedValue(project)
 
       const response = await app.inject()
-        .delete(`/${randomDbSetup.project.id}`)
+        .delete(`/${project.id}`)
         .end()
 
       expect(response.statusCode).toEqual(200)
       expect(response.body).toBeDefined()
-      expect(response.body).toMatchObject(`${randomDbSetup.project.id}`)
+      expect(response.body).toEqual(`${project.id}`)
     })
 
     it('Should not archive a project if requestor is not member', async () => {
-      const randomDbSetup = createRandomDbSetup({})
-      const randomUser = getRandomUser()
+      const project = createRandomDbSetup({}).project
 
-      setRequestorId(randomUser.id)
+      prisma.project.findUnique.mockResolvedValue(project)
 
       const response = await app.inject()
-        .delete(`/${randomDbSetup.project.id}`)
+        .delete(`/${project.id}`)
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.body).toEqual('Echec de la suppression du projet')
+      expect(JSON.parse(response.body).message).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
     })
 
     it('Should not archive a project if requestor is not owner', async () => {
-      const randomDbSetup = createRandomDbSetup({})
-      const requestor = randomDbSetup.project.users[0]
-      requestor.role = 'user'
+      const project = createRandomDbSetup({}).project
+      project.roles = [...project.roles, getRandomRole(requestor.id, project.id)]
 
-      setRequestorId(requestor.id)
+      prisma.project.findUnique.mockResolvedValue(project)
 
       const response = await app.inject()
-        .delete(`/${randomDbSetup.project.id}`)
+        .delete(`/${project.id}`)
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.body).toEqual('Echec de la suppression du projet')
+      expect(JSON.parse(response.body).message).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
     })
   })
 })

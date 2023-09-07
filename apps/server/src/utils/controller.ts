@@ -1,4 +1,4 @@
-import { type ProjectRoles, adminGroupPath, projectIsLockedInfo } from 'shared'
+import { type ProjectRoles, adminGroupPath, projectIsLockedInfo } from '@dso-console/shared'
 import { sendForbidden } from './response.js'
 import type { Permission, User, Role } from '@prisma/client'
 
@@ -52,14 +52,20 @@ export const checkProjectLocked = (
  * @param {string?} SearchOptions.minRole - Optionnel, role minimum requis, 'user' ou  'owner'. Si `undefined` : 'user'
  * @return {string} message d'erreur si rôle insuffisant / absence de rôle, sinon chaîne vide
  */
-export const checkInsufficientRoleInProject = (userId: User['id'], { userList, roles, minRole }: SearchOptions): string => {
+export const checkInsufficientRoleInProject = (
+  userId: User['id'],
+  { userList, roles, minRole }: SearchOptions,
+): string => {
   if (roles) {
     // if minRole is 'owner' filter and assign to userList
-    if (minRole === 'owner') userList = roles.filter(userProject => userProject.role === 'owner').map(({ userId }) => ({ id: userId }))
     // else assign to userList
-    else userList = roles.map(({ userId }) => ({ id: userId }))
+    userList = minRole === 'owner'
+      ? roles
+        .filter(role => role.role === 'owner')
+        .map(({ userId }) => ({ id: userId }))
+      : roles.map(({ userId }) => ({ id: userId }))
   }
-  return userList.some(user => user.id === userId)
+  return userList.some(user => user?.id === userId)
     ? ''
     : 'Vous n’avez pas les permissions suffisantes dans le projet'
 }
@@ -68,7 +74,7 @@ export const checkRoleAndLocked = (
   project: { locked: boolean, roles: Role[] },
   userId: string,
   minRole: ProjectRoles = 'user',
-): string => checkProjectLocked(project) ?? checkInsufficientRoleInProject(userId, { minRole, roles: project.roles })
+): string => checkProjectLocked(project) || checkInsufficientRoleInProject(userId, { minRole, roles: project.roles })
 
 export const checkClusterUnavailable = (clustersId: string[], authorizedClusters: { id: string }[]): string => clustersId
   .some(clusterId => !authorizedClusters
@@ -78,10 +84,10 @@ export const checkClusterUnavailable = (clustersId: string[], authorizedClusters
 
 export const checkInsufficientPermissionInEnvironment = (userId: User['id'], permissions: Permission[], minLevel: Permission['level']) => {
   // get project by id, assign result to projectUsers
-  const { level } = permissions.find(perm => perm.userId === userId)
+  const { level } = permissions.find(perm => perm.userId === userId) ?? { level: -1 }
   return level >= minLevel
     ? ''
-    : 'Vous n\'avez pas les droits suffisants pour requêter cet environnment'
+    : 'Vous n\'avez pas les droits suffisants pour requêter cet environnement'
 }
 
 export const filterOwners = (roles: Role[]) => {

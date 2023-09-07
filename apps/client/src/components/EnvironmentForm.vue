@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, onBeforeMount } from 'vue'
-import { environmentSchema, schemaValidator, instanciateSchema, allEnv, projectIsLockedInfo } from 'shared'
+import { environmentSchema, schemaValidator, instanciateSchema, allEnv, projectIsLockedInfo } from '@dso-console/shared'
 import PermissionForm from './PermissionForm.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import MultiSelector from './MultiSelector.vue'

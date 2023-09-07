@@ -9,8 +9,8 @@ import { Project } from '@prisma/client'
 
 export const unlockProjectIfNotFailed = async (projectId: Project['id']) => {
   const ressources = [
-    ...(await getEnvironmentsByProjectId(projectId))?.map(environment => environment.status),
-    ...(await getProjectRepositories(projectId))?.map(repository => repository.status),
+    ...(await getEnvironmentsByProjectId(projectId))?.map(environment => environment?.status),
+    ...(await getProjectRepositories(projectId))?.map(repository => repository?.status),
     (await getProjectById(projectId))?.status,
   ]
   if (ressources.includes('failed')) {

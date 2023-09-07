@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
-import { getRandomUser, repeatFn } from 'test-utils'
+import { User, getRandomUser, repeatFn } from '@dso-console/test-utils'
 import fastify from 'fastify'
 import fastifySession from '@fastify/session'
 import fastifyCookie from '@fastify/cookie'
@@ -8,9 +8,11 @@ import { sessionConf } from '@/utils/keycloak.js'
 import { getConnection, closeConnections } from '@/connect.js'
 import adminUsersRouter from './user.js'
 import { checkAdminGroup } from '@/utils/controller.js'
-import { adminGroupPath } from 'shared'
+import { adminGroupPath } from '@dso-console/shared'
+import prisma from '@/__mocks__/prisma.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
+vi.mock('@/prisma.js')
 
 const app = fastify({ logger: false })
   .register(fastifyCookie)
@@ -19,27 +21,42 @@ const app = fastify({ logger: false })
 const mockSessionPlugin = (app, opt, next) => {
   app.addHook('onRequest', (req, res, next) => {
     if (req.headers.admin) {
-      req.session = { user: { groups: [adminGroupPath] } }
+      req.session = {
+        user: {
+          ...getRequestor(),
+          groups: [adminGroupPath]
+        }
+      }
     } else {
-      req.session = { user: {} }
+      req.session = { user: getRequestor() }
     }
     next()
   })
   next()
 }
-
 const mockSession = (app) => {
   app.addHook('preHandler', checkAdminGroup)
     .register(fp(mockSessionPlugin))
     .register(adminUsersRouter)
 }
 
-describe.skip('Admin Users routes', () => {
-  let User
+let requestor: User
+
+const setRequestor = (user: User) => {
+  requestor = user
+}
+
+const getRequestor = () => {
+  return requestor
+}
+
+describe('Admin Users routes', () => {
+  const requestor = getRandomUser()
+  setRequestor(requestor)
+
   beforeAll(async () => {
     mockSession(app)
     await getConnection()
-    global.fetch = vi.fn(() => Promise.resolve())
   })
 
   afterAll(async () => {
@@ -48,7 +65,6 @@ describe.skip('Admin Users routes', () => {
 
   afterEach(() => {
     vi.clearAllMocks()
-    global.fetch = vi.fn(() => Promise.resolve({ json: async () => { } }))
   })
 
   // GET
@@ -57,7 +73,7 @@ describe.skip('Admin Users routes', () => {
       // Create users
       const users = repeatFn(5)(getRandomUser)
 
-      User.$queueResult(users)
+      prisma.user.findMany.mockResolvedValue(users)
 
       const response = await app.inject({ headers: { admin: 'admin' } })
         .get('/')
@@ -67,24 +83,22 @@ describe.skip('Admin Users routes', () => {
     })
 
     it('Should return an error if retrieve users failed', async () => {
-      User.$queueFailure(new Error('Erreur inexpliquable'))
+      const error = { statusCode: 500, message: 'Erreur de récupération des utilisateurs' }
+      
+      prisma.user.findMany.mockRejectedValue(error)
 
       const response = await app.inject({ headers: { admin: 'admin' } })
         .get('/')
         .end()
 
-      expect(response.statusCode).toEqual(404)
-      expect(response.body).toEqual('Erreur inexpliquable')
+      expect(response.statusCode).toEqual(500)
+      expect(JSON.parse(response.body).message).toEqual(error.message)
     })
     it('Should return an error if requestor is not admin', async () => {
-      // Create users
-      const users = repeatFn(5)(getRandomUser)
-
-      User.$queueResult(users)
-
       const response = await app.inject()
         .get('/')
         .end()
+      
       expect(response.statusCode).toEqual(403)
       expect(response.body).toEqual('Vous n\'avez pas les droits administrateur')
     })

@@ -2,6 +2,10 @@ env: development
 
 server:
   container:
+    livenessProbe:
+      enabled: false
+    startupProbe:
+      enabled: false
     image: dso-console/server:dev
     env:
       CI: "false"

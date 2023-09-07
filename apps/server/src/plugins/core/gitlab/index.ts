@@ -1,13 +1,14 @@
 import type { HookPayload, StepCall } from '@/plugins/hooks/hook.js'
 import { gitlabToken } from '@/utils/env.js'
 import { createGroup, deleteGroup, getGroupId, setGroupVariable, setProjectVariable } from './group.js'
-import { addGroupMember } from './permission.js'
+import { addGroupMember, getGroupMembers, removeGroupMember } from './permission.js'
 import { createProject, createProjectMirror, deleteProject } from './project.js'
 import { setProjectTrigger } from './triggers.js'
 import { createUser, createUsername, getUser } from './user.js'
 import type { ArchiveProjectExecArgs, CreateProjectExecArgs } from '@/plugins/hooks/project.js'
 import type { CreateRepositoryExecArgs, DeleteRepositoryExecArgs } from '@/plugins/hooks/repository.js'
 import { User } from '@prisma/client'
+import { AddUserToProjectExecArgs } from '@/plugins/hooks/team.js'
 
 // Check
 export const checkApi = async (payload: HookPayload<{ owner: User }>) => {
@@ -162,6 +163,72 @@ export const deleteDsoRepository: StepCall<DeleteRepositoryExecArgs> = async (pa
       status: {
         result: 'OK',
         message: 'Deleted',
+      },
+    }
+  } catch (error) {
+    return {
+      status: {
+        result: 'KO',
+        message: 'Failed',
+      },
+      error: JSON.stringify(error),
+    }
+  }
+}
+
+// Members
+export const addDsoGroupMember: StepCall<AddUserToProjectExecArgs> = async (payload) => {
+  try {
+    const { organization, project, user } = payload.args
+    const groupId = await getGroupId(project, organization)
+    if (!groupId) throw Error('Impossible de retrouver le namespace')
+    const member = await createUser(user)
+    const groupMembers = await getGroupMembers(groupId)
+    let groupMember = groupMembers.find(groupMember => groupMember.id === member.id)
+    if (!groupMember) {
+      groupMember = await addGroupMember(groupId, member.id)
+    }
+
+    return {
+      status: {
+        result: 'OK',
+        message: 'Created',
+      },
+      result: {
+        groupId,
+        groupMember,
+      },
+    }
+  } catch (error) {
+    return {
+      status: {
+        result: 'KO',
+        message: 'Failed',
+      },
+      error: JSON.stringify(error),
+    }
+  }
+}
+
+export const removeDsoGroupMember: StepCall<AddUserToProjectExecArgs> = async (payload) => {
+  try {
+    const { organization, project, user } = payload.args
+    const groupId = await getGroupId(project, organization)
+    if (!groupId) throw Error('Impossible de retrouver le namespace')
+    const member = await createUser(user)
+    const groupMembers = await getGroupMembers(groupId)
+    const groupMember = groupMembers.find(groupMember => groupMember.id === member.id)
+    if (groupMember) {
+      await removeGroupMember(groupId, groupMember.id)
+    }
+
+    return {
+      status: {
+        result: 'OK',
+        message: 'Deleted',
+      },
+      result: {
+        groupId,
       },
     }
   } catch (error) {

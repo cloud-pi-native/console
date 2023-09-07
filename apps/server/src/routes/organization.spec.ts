@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
-import { getRandomOrganization, getRandomUser, User } from 'test-utils'
+import { getRandomOrganization, getRandomUser, User } from '@dso-console/test-utils'
 import fastify from 'fastify'
 import fastifySession from '@fastify/session'
 import fastifyCookie from '@fastify/cookie'
@@ -10,7 +10,7 @@ import organizationRouter from './organization.js'
 import prisma from '../__mocks__/prisma.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
-vi.mock('../prisma')
+vi.mock('../prisma.js')
 
 const app = fastify({ logger: false })
   .register(fastifyCookie)
@@ -40,7 +40,6 @@ const getRequestor = () => {
 }
 
 describe('Organizations routes', () => {
-
   beforeAll(async () => {
     mockSession(app)
     await getConnection()
@@ -58,7 +57,7 @@ describe('Organizations routes', () => {
   describe('getActiveOrganizationsController', () => {
     const requestor = getRandomUser()
     setRequestor(requestor)
-    
+
     it('Should retrieve active organizations', async () => {
       const mockPublishedGet = getRandomOrganization()
 
@@ -83,7 +82,7 @@ describe('Organizations routes', () => {
       expect(JSON.parse(response.body).message).toBe('Veuillez vous connecter')
       expect(response.statusCode).toEqual(401)
     })
-    
+
     it('Should return an error if retrieve organizations failed', async () => {
       prisma.user.upsert.mockResolvedValueOnce(requestor)
       prisma.organization.findMany.mockImplementation(() => {

@@ -1,4 +1,4 @@
-import { ClusterModel } from 'shared'
+import { ClusterModel } from '@dso-console/shared'
 import type { V1Secret } from '@kubernetes/client-node'
 import { StepCall } from '@/plugins/hooks/hook.js'
 import { CreateClusterExecArgs, DeleteClusterExecArgs } from '@/plugins/hooks/index.js'

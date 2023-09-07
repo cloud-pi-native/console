@@ -38,6 +38,11 @@ export const archiveProject = async (projectId) => {
   return response.data
 }
 
+export const getProjectSecrets = async (projectId) => {
+  const response = await apiClient.get(`/projects/${projectId}/secrets`)
+  return response.data
+}
+
 // Services
 export const checkServicesHealth = async () => {
   const response = await apiClient.get('/services')
@@ -81,6 +86,7 @@ export const updateUser = async (projectId, data) => {
   return response.data
 }
 
+// TODO : pas utilisé
 export const getUsers = async (projectId) => {
   const response = await apiClient.get(`/projects/${projectId}/users`)
   return response.data

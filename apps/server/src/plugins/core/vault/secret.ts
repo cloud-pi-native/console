@@ -14,7 +14,7 @@ export const getToken = async () => {
   return tokenRes.data.auth.client_token
 }
 
-export const readVault = async (path) => {
+export const readVault = async (path: string) => {
   const token = await getToken()
   const response = await axios({
     ...axiosOptions,

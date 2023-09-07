@@ -1,4 +1,4 @@
-import { UserModel, ProjectModel } from 'shared'
+import { UserModel, ProjectModel } from '@dso-console/shared'
 import type { Organization } from './index.js'
 import { type Hook, createHook } from './hook.js'
 
@@ -14,3 +14,4 @@ export type ArchiveProjectExecArgs = ProjectBase & { status: ProjectModel['statu
 export const createProject: Hook<CreateProjectExecArgs, CreateProjectValidateArgs> = createHook()
 export const updateProject: Hook<UpdateProjectExecArgs, UpdateProjectValidateArgs> = createHook()
 export const archiveProject: Hook<ArchiveProjectExecArgs, ArchiveProjectValidateArgs> = createHook()
+export const getProjectSecrets: Hook<ProjectBase, ProjectBase> = createHook()

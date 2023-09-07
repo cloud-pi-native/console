@@ -9,7 +9,7 @@ import {
   instanciateSchema,
   organizationSchema,
   sortArrByObjKeyAsc,
-} from 'shared'
+} from '@dso-console/shared'
 import { getRandomId } from '@gouvminint/vue-dsfr'
 
 const adminOrganizationStore = useAdminOrganizationStore()

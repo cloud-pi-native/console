@@ -5,10 +5,10 @@ import { User } from '@prisma/client'
 import axios, { AxiosResponse } from 'axios'
 
 export const checkServicesHealthBusiness = async (requestorId: User['id']) => {
-  const user = getUserById(requestorId)
-  try {
-    if (!user) throw new ForbiddenError('Vous n\'avez pas accès à cette information')
+  const user = await getUserById(requestorId)
+  if (!user) throw new ForbiddenError('Vous n\'avez pas accès à cette information')
 
+  try {
     return await Promise.all(Object.values(allServices)
       .map(async service => {
         const urlParsed = new URL(service.url).toString()

@@ -1,4 +1,4 @@
-# Test CI/CD pipeline on the host machine
+# Test CI/CD pipeline on the host locally
 
 ## Prerequisite
 
@@ -10,19 +10,44 @@ curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
 
 ## Test CI/CD
 
-Go at the root level of the git project :
+Put this directory in your git project, then :
 
 ```sh
-# Go at the root level of the git project
-cd `git rev-parse --show-toplevel`
-
 # Start act
-sh "$(find . -d -name 'act')"/scripts/run-ci-locally.sh
+sh run-ci-locally.sh
 ```
 
 ## Results analysis
 
-After the CI as ended to run locally, artifacts are available in the folder `./artifacts/<date>/`. This folder can includes :
+Once the CI has finished running locally, artifacts are available in the folder `./artifacts/<date>/`.
 
-- A folder `e2e-report/` that contains if some tests has failed, API logs files generated during tests & screenshots made by Cypress.
-- A folder `vulnerability-report/` that contains if security issues are detected, all the description about it.
+## Local registry
+
+It is possible to start a local docker registry running on port `5555` by adding `-r` flag on script `run-ci-locally.sh`.
+For more details, see `./registry/docker-compose.registry.yml`.
+
+## Runner
+
+Runner docker image can be customized in `./runners/Dockerfile`, by default it provides :
+- docker
+- nodejs
+- act
+- github-cli
+- golang-go
+- helm
+- helm-docs
+- k9s
+- kind
+- krew
+- kubectl
+- kubectx
+- kubens
+- kustomize
+- minio-client
+- rclone
+- scw
+- terraform
+- trivy
+- vault
+- yq
+- tools for cypress

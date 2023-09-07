@@ -7,7 +7,7 @@ import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@/main.css'
 import * as icons from '@/icons.js'
 import SuggestionInput from '@/components/SuggestionInput.vue'
-import { createRandomDbSetup } from 'test-utils'
+import { createRandomDbSetup } from '@dso-console/test-utils'
 
 describe('SuggestionInput.vue', () => {
   it('Should mount a SuggestionInput', () => {

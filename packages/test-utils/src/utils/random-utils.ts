@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker'
-import { achievedStatus, projectRoles, logActions } from 'shared'
+import { achievedStatus, projectRoles, logActions } from '@dso-console/shared'
 import { repeatFn } from './func-utils.js'
-import { Cluster, Environment, Log, Organization, Permission, Project, Repository, User, UserProject } from './types.js'
+import { Cluster, Environment, Log, Organization, Permission, Project, Repository, User, Role } from './types.js'
 
 export const getRandomProjectName = () => {
   return faker.lorem.word()
@@ -63,14 +63,19 @@ export const getRandomUser = () => {
   } as User
 }
 
-export const getRandomUserProject = (userId = faker.string.uuid(), role = projectRoles[1]) => {
+export const getRandomRole = (
+  userId = faker.string.uuid(),
+  projectId = faker.string.uuid(),
+  role = projectRoles[1],
+) => {
   return {
-    id: userId,
+    userId,
     role,
-  } as UserProject
+    projectId,
+  } as Role
 }
 
-export const getRandomRepo = (projectId = faker.string.uuid(), createdAt = new Date(Date.now()), updatedAt = new Date(Date.now())) => {
+export const getRandomRepo = (projectId = faker.string.uuid()) => {
   const repo: Repository = {
     id: faker.string.uuid(),
     projectId,
@@ -79,8 +84,6 @@ export const getRandomRepo = (projectId = faker.string.uuid(), createdAt = new D
     isPrivate: faker.datatype.boolean(),
     isInfra: faker.datatype.boolean(),
     status: faker.helpers.arrayElement(achievedStatus),
-    createdAt,
-    updatedAt,
   }
   if (repo.isPrivate) {
     repo.externalUserName = faker.internet.userName()

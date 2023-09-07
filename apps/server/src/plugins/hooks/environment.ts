@@ -1,4 +1,4 @@
-import { UserModel } from 'shared'
+import { UserModel } from '@dso-console/shared'
 import { type Hook, createHook } from './hook.js'
 import type { Environment, Organization } from './index.js'
 import type { RepositoryForEnv } from './repository.js'

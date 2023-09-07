@@ -7,7 +7,7 @@ import {
   type CreateProjectDto,
   UpdateProjectDto,
   ArchiveProjectDto,
-} from 'shared'
+} from '@dso-console/shared'
 import type { EnhancedFastifyRequest } from '@/types/index.js'
 import {
   getUserProjects,
@@ -15,6 +15,7 @@ import {
   createProject,
   updateProject,
   archiveProject,
+  getProjectSecrets,
 } from './business.js'
 
 // GET
@@ -48,6 +49,23 @@ export const getProjectByIdController = async (req, res) => {
     },
   })
   sendOk(res, project)
+}
+
+export const getProjectSecretsController = async (req, res) => {
+  const projectId = req.params?.projectId
+  const userId = req.session?.user?.id
+
+  const projectSecrets = await getProjectSecrets(projectId, userId)
+
+  addReqLogs({
+    req,
+    description: 'Secrets du projet récupérés avec succès',
+    extras: {
+      projectId,
+      userId,
+    },
+  })
+  sendOk(res, projectSecrets)
 }
 
 // POST

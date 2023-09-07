@@ -3,11 +3,12 @@ import { ref, computed } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { descriptionMaxLength, projectIsLockedInfo } from 'shared'
+import { descriptionMaxLength, projectIsLockedInfo } from '@dso-console/shared'
 import DsoSelectedProject from './DsoSelectedProject.vue'
 import DsoBadge from '@/components/DsoBadge.vue'
 import router from '@/router/index.js'
 import LoadingCt from '@/components/LoadingCt.vue'
+import { copyContent } from '@/utils/func.js'
 
 const projectStore = useProjectStore()
 const userStore = useUserStore()
@@ -21,28 +22,30 @@ const description = ref(project?.value.description)
 const isEditingDescription = ref(false)
 const isArchivingProject = ref(false)
 const projectToArchive = ref('')
-const isUpdatingProject = ref(false)
+const isWaitingForResponse = ref(false)
+const isSecretShown = ref(false)
+const projectSecrets = ref({})
 
 const updateProject = async (projectId) => {
-  isUpdatingProject.value = true
+  isWaitingForResponse.value = true
   try {
     await projectStore.updateProject(projectId, { description: description.value })
     isEditingDescription.value = false
   } catch (error) {
     snackbarStore.setMessage(error?.message, 'error')
   }
-  isUpdatingProject.value = false
+  isWaitingForResponse.value = false
 }
 
 const archiveProject = async (projectId) => {
-  isUpdatingProject.value = true
+  isWaitingForResponse.value = true
   try {
     await projectStore.archiveProject(projectId)
     router.push('/projects')
   } catch (error) {
     snackbarStore.setMessage(error?.message, 'error')
   }
-  isUpdatingProject.value = false
+  isWaitingForResponse.value = false
 }
 
 const getDynamicTitle = (locked, description) => {
@@ -50,6 +53,32 @@ const getDynamicTitle = (locked, description) => {
   if (description) return 'Editer la description'
   return 'Ajouter une description'
 }
+
+const handleSecretDisplay = async () => {
+  isSecretShown.value = !isSecretShown.value
+  if (isSecretShown.value && !Object.keys(projectSecrets.value).length) {
+    isWaitingForResponse.value = true
+    try {
+      projectSecrets.value = await projectStore.getProjectSecrets(project.value.id)
+      snackbarStore.setMessage('Secrets récupérés')
+    } catch (error) {
+      snackbarStore.setMessage(error.message, 'error')
+    }
+    isWaitingForResponse.value = false
+  }
+}
+
+const getRows = (service) => {
+  return [Object.values(projectSecrets.value[service].data).map(value => ({
+    component: 'code',
+    text: value,
+    title: 'Copier la valeur',
+    class: 'fr-text-default--info text-xs cursor-pointer',
+    onClick: () => copyContent(value),
+  }),
+  )]
+}
+
 </script>
 
 <template>
@@ -173,6 +202,44 @@ const getDynamicTitle = (locked, description) => {
       />
     </div>
     <div
+      class="fr-mt-2w"
+    >
+      <DsfrButton
+        v-if="isOwner"
+        type="buttonType"
+        data-testid="showSecretsBtn"
+        :label="`${isSecretShown ? 'Cacher' : 'Afficher'} les secrets des services`"
+        secondary
+        :icon="isSecretShown ? 'ri-eye-off-line' : 'ri-eye-line'"
+        @click="handleSecretDisplay()"
+      />
+      <div
+        v-if="isSecretShown"
+        class="fr-mt-4w"
+        data-testid="projectSecretsZone"
+      >
+        <p
+          v-if="!Object.keys(projectSecrets).length"
+          data-testid="noProjectSecretsP"
+        >
+          Aucun secret à afficher
+        </p>
+        <div
+          v-for="service of Object.keys(projectSecrets)"
+          :key="service"
+        >
+          <h3 class="fr-mb-1w fr-mt-3w">
+            {{ service.toUpperCase() }}
+          </h3>
+          <DsfrTable
+            class="horizontal-table"
+            :headers="Object.keys(projectSecrets[service].data)"
+            :rows="getRows(service)"
+          />
+        </div>
+      </div>
+    </div>
+    <div
       v-if="isOwner"
       data-testid="archiveProjectZone"
       class="danger-zone"
@@ -225,8 +292,18 @@ const getDynamicTitle = (locked, description) => {
       </div>
     </div>
     <LoadingCt
-      :show-loader="isUpdatingProject"
-      description="Projet en cours de mise à jour"
+      :show-loader="isWaitingForResponse"
+      description="Opérations en cours"
     />
   </div>
 </template>
+
+<style>
+.horizontal-table table {
+  @apply flex flex-row;
+}
+
+.horizontal-table tr {
+  @apply flex flex-col;
+}
+</style>

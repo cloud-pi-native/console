@@ -43,6 +43,10 @@ export const useProjectStore = defineStore('project', () => {
     await getUserProjects()
   }
 
+  const getProjectSecrets = async (projectId) => {
+    return await api.getProjectSecrets(projectId)
+  }
+
   return {
     selectedProject,
     selectedProjectOwner,
@@ -53,5 +57,6 @@ export const useProjectStore = defineStore('project', () => {
     getUserProjects,
     createProject,
     archiveProject,
+    getProjectSecrets,
   }
 })

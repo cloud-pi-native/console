@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
-import { createRandomDbSetup, getRandomEnv } from 'test-utils'
+import { createRandomDbSetup, getRandomEnv, getRandomUser, getRandomRole, User, getRandomPerm, getRandomLog } from '@dso-console/test-utils'
 import fastify from 'fastify'
 import fastifySession from '@fastify/session'
 import fastifyCookie from '@fastify/cookie'
@@ -7,9 +7,11 @@ import fp from 'fastify-plugin'
 import { sessionConf } from '../utils/keycloak.js'
 import { getConnection, closeConnections } from '../connect.js'
 import projectEnvironmentRouter from './project-environment.js'
-import { projectIsLockedInfo } from 'shared'
+import { projectIsLockedInfo } from '@dso-console/shared'
+import prisma from '../__mocks__/prisma.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
+vi.mock('../prisma.js')
 
 const app = fastify({ logger: false })
   .register(fastifyCookie)
@@ -28,27 +30,23 @@ const mockSession = (app) => {
     .register(projectEnvironmentRouter)
 }
 
-const requestor = {}
-const setRequestorId = (id) => {
-  requestor.id = id
+let requestor: User
+
+const setRequestor = (user: User) => {
+  requestor = user
 }
 
 const getRequestor = () => {
   return requestor
 }
 
-describe.skip('User routes', () => {
-  let Role
-  let User
-  let Environment
-  let Permission
-  let Project
-  let Organization
+describe('User routes', () => {
+  const requestor = getRandomUser()
+  setRequestor(requestor)
 
   beforeAll(async () => {
     mockSession(app)
     await getConnection()
-    global.fetch = vi.fn(() => Promise.resolve())
   })
 
   afterAll(async () => {
@@ -57,236 +55,212 @@ describe.skip('User routes', () => {
 
   afterEach(() => {
     vi.clearAllMocks()
-    Project.$clearQueue()
-    Role.$clearQueue()
-    User.$clearQueue()
-    Environment.$clearQueue()
-    Permission.$clearQueue()
-    Organization.$clearQueue()
-    global.fetch = vi.fn(() => Promise.resolve({ json: async () => {} }))
   })
 
   // GET
   describe('getEnvironmentByIdController', () => {
     it('Should retreive an environment by its id', async () => {
-      const randomDbSetup = createRandomDbSetup({})
-      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
+      const projectInfos = createRandomDbSetup({}).project
+      projectInfos.roles = [...projectInfos.roles, getRandomRole(requestor.id, projectInfos.id, 'owner')]
+      const envToGet = projectInfos.environments[0]
+      const envInfos = {
+        ...envToGet,
+        project: projectInfos,
+        permissions: [getRandomPerm(envToGet.id, requestor)],
+      }
 
-      Environment.$queueResult(randomDbSetup.project.environments[0])
-      Role.$queueResult({ UserId: owner.id, role: 'owner' })
-      Permission.$queueResult(randomDbSetup.project.environments[0].permissions[0])
-      setRequestorId(owner.id)
+      prisma.environment.findUnique.mockResolvedValue(envInfos)
 
       const response = await app.inject()
-        .get(`/${randomDbSetup.project.id}/environments/${randomDbSetup.project.environments[0].id}`)
+        .get(`/${projectInfos.id}/environments/${envToGet.id}`)
         .end()
 
+      expect(response.body).toStrictEqual(JSON.stringify(envInfos))
       expect(response.statusCode).toEqual(200)
-      expect(response.json()).toBeDefined()
-      expect(response.json()).toEqual(randomDbSetup.project.environments[0])
     })
 
     it('Should not retreive an environment if not project member', async () => {
-      const randomDbSetup = createRandomDbSetup({})
-      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
+      const projectInfos = createRandomDbSetup({}).project
+      const envToGet = projectInfos.environments[0]
+      const envInfos = {
+        ...envToGet,
+        project: projectInfos,
+      }
 
-      Environment.$queueResult(randomDbSetup.project.environments[0])
-      Role.$queueResult(null)
-      setRequestorId(owner.id)
+      prisma.environment.findUnique.mockResolvedValue(envInfos)
 
       const response = await app.inject()
-        .get(`/${randomDbSetup.project.id}/environments/${randomDbSetup.project.environments[0].id}`)
+        .get(`/${projectInfos.id}/environments/${envInfos.id}`)
         .end()
 
-      expect(response.statusCode).toEqual(404)
+      expect(response.statusCode).toEqual(403)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Echec de la récupération de l\'environnement')
+      expect(JSON.parse(response.body).message).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
     })
 
     it('Should not retreive an environment if requestor has no permission', async () => {
-      const randomDbSetup = createRandomDbSetup({})
-      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
-      randomDbSetup.project.users[0].role = 'user'
+      const projectInfos = createRandomDbSetup({}).project
+      projectInfos.roles = [...projectInfos.roles, getRandomRole(requestor.id, projectInfos.id, 'owner')]
+      const envToGet = projectInfos.environments[0]
+      const envInfos = {
+        ...envToGet,
+        project: projectInfos,
+      }
 
-      Environment.$queueResult(randomDbSetup.project.environments[0])
-      Role.$queueResult({ UserId: owner.id, role: 'user' })
-      Permission.$queueResult(null)
-      setRequestorId(owner.id)
+      prisma.environment.findUnique.mockResolvedValueOnce(envInfos)
 
       const response = await app.inject()
-        .get(`/${randomDbSetup.project.id}/environments/${randomDbSetup.project.environments[0].id}`)
+        .get(`/${projectInfos.id}/environments/${envInfos.id}`)
         .end()
 
-      expect(response.statusCode).toEqual(404)
+      expect(response.statusCode).toEqual(403)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Echec de la récupération de l\'environnement')
+      expect(JSON.parse(response.body).message).toEqual('Vous n\'avez pas les droits suffisants pour requêter cet environnement')
     })
   })
 
   // POST
   describe('initializeEnvironmentController', () => {
     it('Should create an environment', async () => {
-      const randomDbSetup = createRandomDbSetup({})
-      const newEnvironment = getRandomEnv('dev', randomDbSetup.project.id)
-      delete newEnvironment.id
-      delete newEnvironment.status
-      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
+      const projectInfos = createRandomDbSetup({ envs: ['prod'] }).project
+      projectInfos.roles = [...projectInfos.roles, getRandomRole(requestor.id, projectInfos.id, 'owner')]
+      const logCreate = getRandomLog('Create Environment', requestor.id)
+      const logAdd = getRandomLog('Add Cluster to Environment', requestor.id)
+      const envToAdd = getRandomEnv('dev', projectInfos.id)
+      const envInfos = { ...envToAdd, project: projectInfos }
 
-      // getProjectById
-      Project.$queueResult(randomDbSetup.project)
-      // getOrganization
-      Organization.$queueResult(randomDbSetup.organization)
-      // getRequestorRole
-      Role.$queueResult({ UserId: owner.id, role: 'owner' })
-      User.$queueResult(owner)
-      // getExistingEnvironments
-      Environment.$queueResult(null)
-      // createEnvironment
-      Environment.$queueResult(newEnvironment)
-      // lockProject
-      setRequestorId(owner.id)
+      prisma.user.findUnique.mockResolvedValueOnce(requestor)
+      prisma.project.findUnique.mockResolvedValue(projectInfos)
+      prisma.cluster.findMany.mockResolvedValue(projectInfos.clusters)
+      prisma.project.update.mockResolvedValue(projectInfos)
+      prisma.environment.create.mockReturnValue(envInfos)
+      prisma.log.create.mockResolvedValueOnce(logCreate)
+      prisma.cluster.update.mockResolvedValueOnce(projectInfos.clusters)
+      prisma.log.create.mockResolvedValueOnce(logAdd)
+      prisma.environment.findMany.mockReturnValue([envInfos])
+      prisma.repository.findMany.mockReturnValue(projectInfos.repositories)
 
       const response = await app.inject()
-        .post(`/${randomDbSetup.project.id}/environments`)
-        .body(newEnvironment)
+        .post(`/${projectInfos.id}/environments`)
+        .body(envToAdd)
         .end()
 
       expect(response.statusCode).toEqual(201)
       expect(response.json()).toBeDefined()
-      expect(response.json()).toMatchObject(newEnvironment)
+      expect(response.json()).toMatchObject(envToAdd)
     })
 
     it('Should not create an environment if not project member', async () => {
-      const randomDbSetup = createRandomDbSetup({})
-      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
+      const projectInfos = createRandomDbSetup({}).project
+      const envToAdd = getRandomEnv('dev', projectInfos.id)
 
-      // getProjectById
-      Project.$queueResult(randomDbSetup.project)
-      // getOrganization
-      Organization.$queueResult(randomDbSetup.organization)
-      // getRequestorRole
-      Role.$queueResult(null)
-      User.$queueResult(null)
-
-      setRequestorId(owner.id)
+      prisma.user.findUnique.mockResolvedValueOnce(requestor)
+      prisma.project.findUnique.mockResolvedValue(projectInfos)
+      prisma.cluster.findMany.mockResolvedValue(projectInfos.clusters)
 
       const response = await app.inject()
-        .post(`/${randomDbSetup.project.id}/environments`)
-        .body({})
+        .post(`/${projectInfos.id}/environments`)
+        .body(envToAdd)
         .end()
 
       expect(response.statusCode).toEqual(403)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Vous n\'êtes pas membre du projet')
+      expect(JSON.parse(response.body).message).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
     })
 
     it('Should not create an environment if name already present', async () => {
-      const randomDbSetup = createRandomDbSetup({})
-      const newEnvironment = randomDbSetup.project.environments[0]
-      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
+      const projectInfos = createRandomDbSetup({}).project
+      projectInfos.roles = [...projectInfos.roles, getRandomRole(requestor.id, projectInfos.id, 'owner')]
+      const envToAdd = projectInfos.environments[0]
 
-      // getProjectById
-      Project.$queueResult(randomDbSetup.project)
-      // getOrganization
-      Organization.$queueResult(randomDbSetup.organization)
-      // getRequestorRole
-      Role.$queueResult({ UserId: owner.id, role: 'owner' })
-      // getExistingEnvironments
-      Environment.$queueResult(randomDbSetup.project.environments)
-      // createEnvironment
-      Environment.$queueResult(newEnvironment)
-      // lockProject
-      setRequestorId(owner.id)
+      prisma.user.findUnique.mockResolvedValueOnce(requestor)
+      prisma.project.findUnique.mockResolvedValue(projectInfos)
+      prisma.cluster.findMany.mockResolvedValue(projectInfos.clusters)
 
       const response = await app.inject()
-        .post(`/${randomDbSetup.project.id}/environments`)
-        .body(newEnvironment)
+        .post(`/${projectInfos.id}/environments`)
+        .body(envToAdd)
         .end()
 
-      expect(response.statusCode).toEqual(400)
+      expect(response.statusCode).toEqual(403)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual(`L'environnement ${newEnvironment.name} existe déjà pour ce projet`)
+      expect(JSON.parse(response.body).message).toEqual(`L'environnement ${envToAdd.name} existe déjà pour ce projet`)
     })
 
     it('Should not create an environment if project locked', async () => {
-      const randomDbSetup = createRandomDbSetup({})
-      randomDbSetup.project.locked = true
-      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
+      const projectInfos = createRandomDbSetup({}).project
+      projectInfos.locked = true
+      projectInfos.roles = [...projectInfos.roles, getRandomRole(requestor.id, projectInfos.id, 'owner')]
 
-      // getProjectById
-      Project.$queueResult(randomDbSetup.project)
-      setRequestorId(owner.id)
+      prisma.user.findUnique.mockResolvedValueOnce(requestor)
+      prisma.project.findUnique.mockResolvedValue(projectInfos)
+      prisma.cluster.findMany.mockResolvedValue(projectInfos.clusters)
 
       const response = await app.inject()
-        .post(`/${randomDbSetup.project.id}/environments`)
+        .post(`/${projectInfos.id}/environments`)
         .body({})
         .end()
 
       expect(response.statusCode).toEqual(403)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual(projectIsLockedInfo)
+      expect(JSON.parse(response.body).message).toEqual(projectIsLockedInfo)
     })
   })
 
   // DELETE
   describe('deleteEnvironmentController', () => {
     it('Should delete an environment', async () => {
-      const randomDbSetup = createRandomDbSetup({})
-      const environmentToDelete = randomDbSetup.project.environments[0]
-      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
+      const projectInfos = createRandomDbSetup({ envs: ['dev'] }).project
+      projectInfos.roles = [...projectInfos.roles, getRandomRole(requestor.id, projectInfos.id, 'owner')]
+      const logRemove = getRandomLog('Remove Cluster from Environment', requestor.id)
+      const logDelete = getRandomLog('Delete Environment', requestor.id)
+      const envToDelete = { ...projectInfos.environments[0], project: projectInfos }
 
-      // getRequestorRole
-      Role.$queueResult({ UserId: owner.id, role: 'owner' })
-      // deleteEnvironment
-      Environment.$queueResult(randomDbSetup.project.environments[0])
-      // getProjectById
-      Project.$queueResult(randomDbSetup.project)
-      // lockProject
-      setRequestorId(owner.id)
+      prisma.environment.findUnique.mockResolvedValue(envToDelete)
+      prisma.environment.update.mockReturnValue(envToDelete)
+      prisma.project.update.mockResolvedValue(projectInfos)
+      prisma.cluster.findMany.mockResolvedValue(projectInfos.clusters)
+      prisma.cluster.update.mockResolvedValueOnce(projectInfos.clusters)
+      prisma.log.create.mockResolvedValueOnce(logRemove)
+      prisma.log.create.mockResolvedValueOnce(logDelete)
+      prisma.environment.delete.mockReturnValue(envToDelete)
 
       const response = await app.inject()
-        .delete(`/${randomDbSetup.project.id}/environments/${environmentToDelete.id}`)
+        .delete(`/${projectInfos.id}/environments/${envToDelete.id}`)
         .end()
 
-      expect(response.statusCode).toEqual(200)
+      expect(response.statusCode).toEqual(204)
     })
 
     it('Should not delete an environment if not project member', async () => {
-      const randomDbSetup = createRandomDbSetup({})
-      const environmentToDelete = randomDbSetup.project.environments[0]
-      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
+      const projectInfos = createRandomDbSetup({ envs: ['dev'] }).project
+      const envToDelete = { ...projectInfos.environments[0], project: projectInfos }
 
-      // getRequestorRole
-      Role.$queueResult(null)
-      setRequestorId(owner.id)
+      prisma.environment.findUnique.mockResolvedValue(envToDelete)
 
       const response = await app.inject()
-        .delete(`/${randomDbSetup.project.id}/environments/${environmentToDelete.id}`)
+        .delete(`/${projectInfos.id}/environments/${envToDelete.id}`)
         .end()
 
       expect(response.statusCode).toEqual(403)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Vous n\'êtes pas membre du projet')
+      expect(JSON.parse(response.body).message).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
     })
 
     it('Should not delete an environment if not project owner', async () => {
-      const randomDbSetup = createRandomDbSetup({})
-      const environmentToDelete = randomDbSetup.project.environments[0]
-      const owner = randomDbSetup.project.users.find(user => user.role === 'owner')
-      const requestor = randomDbSetup.project.users[0]
-      requestor.role = 'user'
+      const projectInfos = createRandomDbSetup({ envs: ['dev'] }).project
+      projectInfos.roles = [...projectInfos.roles, getRandomRole(requestor.id, projectInfos.id, 'user')]
+      const envToDelete = { ...projectInfos.environments[0], project: projectInfos }
 
-      // getRequestorRole
-      Role.$queueResult({ UserId: requestor.id, role: requestor.role })
-      setRequestorId(owner.id)
+      prisma.environment.findUnique.mockResolvedValue(envToDelete)
 
       const response = await app.inject()
-        .delete(`/${randomDbSetup.project.id}/environments/${environmentToDelete.id}`)
+        .delete(`/${projectInfos.id}/environments/${envToDelete.id}`)
         .end()
 
       expect(response.statusCode).toEqual(403)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Vous n\'êtes pas souscripteur du projet')
+      expect(JSON.parse(response.body).message).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
     })
   })
 })

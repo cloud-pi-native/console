@@ -21,6 +21,8 @@ spec:
       containers:
       - name: {{ .Release.Name }}-client
         envFrom:
+{{- $data := dict "globalenv" .Values.globalEnv "release" $.Release.Name -}}
+{{- include "useGlobalCm" $data | indent 8 }}
         - configMapRef:
             name: {{ .Release.Name }}-client-cm
         imagePullPolicy: {{ .Values.client.container.imagePullPolicy }}

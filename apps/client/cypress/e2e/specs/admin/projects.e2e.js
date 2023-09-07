@@ -1,5 +1,5 @@
 import { getModel } from '../../support/func.js'
-import { statusDict, formatDate, sortArrByObjKeyAsc } from 'shared'
+import { statusDict, formatDate, sortArrByObjKeyAsc } from '@dso-console/shared'
 
 describe('Administration projects', () => {
   const organizations = getModel('organization')

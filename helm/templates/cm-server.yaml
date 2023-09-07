@@ -23,5 +23,4 @@ data:
   {{- if .Values.server.extraCa.name }}
   NODE_EXTRA_CA_CERTS: /config/ca_certs
   {{- end }}
-  {{- include "globalEnv" .Values | indent 2 }}
   {{- include "containerEnv" .Values.server.container | indent 2 }}

@@ -52,7 +52,7 @@ export const updatePermissionController = async (req, res) => {
 
   const env = await getEnvironmentInfos(environmentId)
 
-  await checkGetEnvironment(env, requestorId)
+  checkGetEnvironment(env, requestorId)
 
   await preventUpdatingOwnerPermission(projectId, data.userId)
 
@@ -79,7 +79,7 @@ export const deletePermissionController = async (req, res) => {
 
   const env = await getEnvironmentInfos(environmentId)
 
-  await checkGetEnvironment(env, requestorId)
+  checkGetEnvironment(env, requestorId)
 
   await preventUpdatingOwnerPermission(projectId, userId, Action.delete)
 

@@ -2,7 +2,7 @@ import { filterObjectByKeys } from '@/utils/queries-tools.js'
 import { addReqLogs } from '@/utils/logger.js'
 import { sendOk, sendCreated } from '@/utils/response.js'
 import { EnhancedFastifyRequest } from '@/types/index.js'
-import { CreateRepositoryDto, DeleteRepositoryDto, UpdateRepositoryDto } from 'shared/src/resources/repository/dto.js'
+import { CreateRepositoryDto, DeleteRepositoryDto, UpdateRepositoryDto } from '@dso-console/shared/src/resources/repository/dto.js'
 import { checkHookValidation, createRepositoryBusiness, deleteRepositoryBusiness, getProjectRepositoriesBusiness, getRepositoryByIdBusiness, updateRepositoryBusiness, checkUpsertRepository } from './business.js'
 import { BadRequestError } from '@/utils/errors.js'
 
@@ -12,7 +12,7 @@ export const getRepositoryByIdController = async (req, res) => {
   const repositoryId = req.params?.repositoryId
   const userId = req.session?.user?.id
 
-  const repository = await getRepositoryByIdBusiness(userId, projectId, userId)
+  const repository = await getRepositoryByIdBusiness(userId, projectId, repositoryId)
 
   addReqLogs({
     req,

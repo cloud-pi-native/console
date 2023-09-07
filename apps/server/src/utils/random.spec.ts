@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { createRandomDbSetup } from 'test-utils'
+import { createRandomDbSetup } from '@dso-console/test-utils'
 
 describe('Random utils', () => {
   it('Should create a random project for tests', () => {
@@ -21,7 +21,8 @@ describe('Random utils', () => {
           locked: expect.any(Boolean),
           roles: expect.arrayContaining([
             {
-              id: expect.any(String),
+              userId: expect.any(String),
+              projectId: expect.any(String),
               role: expect.any(String),
               user: expect.objectContaining({
                 id: expect.any(String),
@@ -31,7 +32,8 @@ describe('Random utils', () => {
               }),
             },
             {
-              id: expect.any(String),
+              userId: expect.any(String),
+              projectId: expect.any(String),
               role: expect.any(String),
               user: expect.objectContaining({
                 id: expect.any(String),
@@ -41,7 +43,8 @@ describe('Random utils', () => {
               }),
             },
             {
-              id: expect.any(String),
+              userId: expect.any(String),
+              projectId: expect.any(String),
               role: expect.any(String),
               user: expect.objectContaining({
                 id: expect.any(String),

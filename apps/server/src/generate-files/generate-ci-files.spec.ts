@@ -6,9 +6,10 @@ import fp from 'fastify-plugin'
 import { sessionConf } from '../utils/keycloak.js'
 import ciFilesRouter from '../routes/ci-files.js'
 import { closeConnections, getConnection } from '../connect.js'
-import { createRandomDbSetup } from 'test-utils'
+import { createRandomDbSetup } from '@dso-console/test-utils'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
+vi.mock('../prisma.js')
 
 const app = fastify({ logger: false })
   .register(fastifyCookie)
@@ -26,7 +27,7 @@ const mockSession = (app) => {
     .register(ciFilesRouter)
 }
 
-describe.skip('ciFiles routes', () => {
+describe('ciFiles routes', () => {
   beforeAll(async () => {
     mockSession(app)
     await getConnection()
