@@ -210,7 +210,14 @@ watch(selectedContext, () => {
       copyable
       boxed
     />
-    <div class="fr-mb-2w w-full">
+    <DsfrInput
+      v-model="localCluster.cluster.tlsServerName"
+      data-testid="tlsServerNameInput"
+      label="tlsServerName"
+      label-visible
+      :disabled="!isNewCluster"
+    />
+    <div class="fr-my-2w w-full">
       <DsfrInputGroup
         v-model="localCluster.label"
         data-testid="labelInput"

@@ -35,6 +35,8 @@ describe('ClusterForm.vue', () => {
     }
 
     cy.mount(ClusterForm, { extensions, props })
+    cy.getByDataTestid('tlsServerNameInput')
+      .type('tlsServerName')
     cy.getByDataTestid('labelInput')
       .find('input')
       .type('label')
@@ -77,6 +79,9 @@ describe('ClusterForm.vue', () => {
 
     cy.getByDataTestid('user-json').should('be.visible')
     cy.getByDataTestid('cluster-json').should('be.visible')
+    cy.getByDataTestid('tlsServerNameInput')
+      .should('have.value', props.cluster.cluster.tlsServerName)
+      .and('be.disabled')
     cy.getByDataTestid('labelInput')
       .find('input')
       .should('have.value', props.cluster.label)
