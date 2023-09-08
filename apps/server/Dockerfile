@@ -1,5 +1,5 @@
 # Base stage
-FROM docker.io/node:18.16.1-bullseye-slim AS base
+FROM docker.io/node:18.17.1-bullseye-slim AS base
 
 RUN npm install --location=global pnpm@8.6.10
 WORKDIR /app
@@ -27,7 +27,7 @@ RUN pnpm --filter server run build
 RUN pnpm --filter server --prod deploy build
 
 # Prod stage
-FROM docker.io/node:18.16.1-bullseye-slim AS prod
+FROM docker.io/node:18.17.1-bullseye-slim AS prod
 
 ARG APP_VERSION
 ENV APP_VERSION=$APP_VERSION

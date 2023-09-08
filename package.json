@@ -32,10 +32,10 @@
     "@commitlint/cli": "^17.6.6",
     "@commitlint/config-conventional": "^17.6.6",
     "husky": "^8.0.3",
-    "lint-staged": "^13.2.3",
+    "lint-staged": "^14.0.1",
     "turbo": "^1.10.8"
   },
   "volta": {
-    "node": "18.16.1"
+    "node": "18.17.1"
   }
 }
