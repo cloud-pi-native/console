@@ -82,7 +82,7 @@ export const createClusterSecret = async (cluster: ClusterModel) => {
     await k8sApi.readNamespacedSecret(cluster.secretName, argoNamespace)
     await k8sApi.replaceNamespacedSecret(cluster.secretName, argoNamespace, convertClusterToSecret(cluster))
   } catch (error) {
-    if (error.response.statusCode !== 404) throw error
+    if (error?.response?.statusCode !== 404) throw error
     await k8sApi.createNamespacedSecret(argoNamespace, convertClusterToSecret(cluster))
   }
 }
