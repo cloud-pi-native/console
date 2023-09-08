@@ -54,7 +54,8 @@ export const createDsoProject: StepCall<CreateProjectExecArgs> = async (payload)
     const projectName = `${organization}-${project}`
 
     const projectCreated = await createProject(projectName)
-    const projectMember = await addProjectGroupMember(projectName)
+    // give harbor project member Maintainer role (can scan images)
+    const projectMember = await addProjectGroupMember(projectName, 4)
     const robot = await createRobot(projectName)
     const auth = `${robot.name}:${robot.secret}`
     const buff = Buffer.from(auth)
