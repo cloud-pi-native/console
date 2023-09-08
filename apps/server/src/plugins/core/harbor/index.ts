@@ -54,6 +54,9 @@ export const createDsoProject: StepCall<CreateProjectExecArgs> = async (payload)
     const projectName = `${organization}-${project}`
 
     const projectCreated = await createProject(projectName)
+    // TODO : à revoir, pbmatique que maintainer puisse push des images
+    // // give harbor project member Maintainer role (can scan images)
+    // const projectMember = await addProjectGroupMember(projectName, 4)
     const projectMember = await addProjectGroupMember(projectName)
     const robot = await createRobot(projectName)
     const auth = `${robot.name}:${robot.secret}`
