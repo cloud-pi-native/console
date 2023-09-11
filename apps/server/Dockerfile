@@ -29,8 +29,6 @@ RUN pnpm --filter server --prod deploy build
 # Prod stage
 FROM docker.io/node:18.17.1-bullseye-slim AS prod
 
-RUN apt update
-RUN apt install curl openssl iputils-ping -y
 ARG APP_VERSION
 ENV APP_VERSION=$APP_VERSION
 RUN mkdir -p /home/node/logs && chmod 770 -R /home/node/logs \
@@ -38,7 +36,6 @@ RUN mkdir -p /home/node/logs && chmod 770 -R /home/node/logs \
 WORKDIR /app
 RUN chown node:root /app
 COPY --chown=node:root --from=build /app/build .
-RUN npm install --location=global pnpm@8.6.10
 RUN npm run db:generate
 USER node
 ENTRYPOINT ["npm", "start"]

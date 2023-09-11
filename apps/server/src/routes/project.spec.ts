@@ -17,10 +17,10 @@ const hookRes = {
   vault: {
     result: {
       gitlab: {
-        'token': 'myToken',
-      }
-    }
-  }
+        token: 'myToken',
+      },
+    },
+  },
 }
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
@@ -29,33 +29,33 @@ vi.mock('@/plugins/index.js', async () => {
   return {
     hooks: {
       getProjectSecrets: {
-        execute: () => hookRes
+        execute: () => hookRes,
       },
       updateProject: {
         execute: () => ({
-          failed: false
+          failed: false,
         }),
         validate: () => ({
-          failed: false
-        })
+          failed: false,
+        }),
       },
       createProject: {
         execute: () => ({
-          failed: false
+          failed: false,
         }),
         validate: () => ({
-          failed: false
-        })
+          failed: false,
+        }),
       },
       archiveProject: {
         execute: () => ({
-          failed: false
+          failed: false,
         }),
         validate: () => ({
-          failed: false
-        })
+          failed: false,
+        }),
       },
-    }
+    },
   }
 })
 
