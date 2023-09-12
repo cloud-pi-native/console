@@ -100,7 +100,7 @@ describe('Admin logs routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.body).toEqual('Vous n\'avez pas les droits administrateur')
+      expect(JSON.parse(response.body).message).toEqual('Vous n\'avez pas les droits administrateur')
     })
   })
 })

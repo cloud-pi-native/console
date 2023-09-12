@@ -46,7 +46,15 @@ vi.mock('@/plugins/index.js', async () => {
         validate: () => ({
           failed: false
         })
-      }
+      },
+      archiveProject: {
+        execute: () => ({
+          failed: false
+        }),
+        validate: () => ({
+          failed: false
+        })
+      },
     }
   }
 })

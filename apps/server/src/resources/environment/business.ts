@@ -15,7 +15,7 @@ import {
   getUserById,
 } from '@/resources/queries-index.js'
 import { hooks } from '@/plugins/index.js'
-import { BadRequestError, ForbiddenError, NotFoundError } from '@/utils/errors.js'
+import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import type { Cluster, Environment, Kubeconfig, Organization, Project, Role, User } from '@prisma/client'
 import {
   type AsyncReturnType,
@@ -143,7 +143,7 @@ export const createEnvironment = async (
     // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
     await addLogs('Create Environment', results, userId)
     if (results.failed) {
-      throw new Error('Echec services à la création de l\'environnement')
+      throw new UnprocessableContentError('Echec services à la création de l\'environnement')
     }
 
     const clusters = await getClustersByIds(newClustersId)
@@ -154,7 +154,7 @@ export const createEnvironment = async (
     return env
   } catch (error) {
     await updateEnvironmentFailed(env.id)
-    throw new BadRequestError(error.message, undefined)
+    throw new Error(error?.message)
   }
 }
 
@@ -184,7 +184,7 @@ export const updateEnvironment = async (
     await unlockProjectIfNotFailed(env.project.id)
   } catch (error) {
     await updateEnvironmentFailed(env.id)
-    return error
+    throw new Error(error?.message)
   }
 }
 
@@ -228,7 +228,7 @@ export const deleteEnvironment = async (
     await unlockProjectIfNotFailed(env.project.id)
   } catch (error) {
     await updateEnvironmentFailed(env.id)
-    return error
+    throw new Error(error?.message)
   }
 }
 
@@ -257,7 +257,7 @@ export const addClustersToEnvironmentBusiness = async (
     })
     // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
     await addLogs('Add Cluster to Environment', addClusterExecResult, userId)
-    if (addClusterExecResult.failed) throw new Error('Echec des services à l\'ajout de Clusters pour l\'environnement')
+    if (addClusterExecResult.failed) throw new UnprocessableContentError('Echec des services à l\'ajout de Clusters pour l\'environnement')
   }
 }
 
@@ -283,6 +283,6 @@ export const removeClustersFromEnvironmentBusiness = async (
     await removeClusterFromEnvironment(cluster.id, environmentId)
     // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
     await addLogs('Remove Cluster from Environment', addClusterExecResult, userId)
-    if (addClusterExecResult.failed) throw new Error('Echec des services à la suppression de Clusters pour l\'environnement')
+    if (addClusterExecResult.failed) throw new UnprocessableContentError('Echec des services à la suppression de Clusters pour l\'environnement')
   }
 }

@@ -17,7 +17,7 @@ export const createOrganizationBusiness = async (data: Organization) => {
   try {
     await organizationSchema.validateAsync(data)
   } catch (error) {
-    throw new BadRequestError(error.message, undefined)
+    throw new BadRequestError(error?.message)
   }
 
   const isNameTaken = await getOrganizationByName(data.name)
@@ -55,39 +55,39 @@ export const updateOrganizationBusiness = async (name: Organization['name'], act
 export const fetchOrganizationsBusiness = async (userId: User['id']) => {
   const consoleOrganizations = await getOrganizations()
 
-    // TODO: Fix define return in plugins dir
-    // @ts-ignore See TODO
-    type PluginOrganization = { name: string, label: string, source: string }
-    type FetchOrganizationsResult = PluginResult & { result: { organizations: PluginOrganization[] } }
-    const results = await hooks.fetchOrganizations.execute() as HookPayload<void> & Record<string, FetchOrganizationsResult>
+  // TODO: Fix define return in plugins dir
+  // @ts-ignore See TODO
+  type PluginOrganization = { name: string, label: string, source: string }
+  type FetchOrganizationsResult = PluginResult & { result: { organizations: PluginOrganization[] } }
+  const results = await hooks.fetchOrganizations.execute() as HookPayload<void> & Record<string, FetchOrganizationsResult>
 
-    // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
-    await addLogs('Fetch organizations', results, userId)
+  // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
+  await addLogs('Fetch organizations', results, userId)
 
-    // TODO: Fix type
-    // @ts-ignore See TODO
-    if (results.failed) throw new BadRequestError('Echec des services à la synchronisation des organisations', undefined)
+  // TODO: Fix type
+  // @ts-ignore See TODO
+  if (results.failed) throw new BadRequestError('Echec des services à la synchronisation des organisations', undefined)
 
-    /**
-    * Filter plugin results to get a single array of organizations with unique name
-    */
-    const externalOrganizations = getUniqueListBy(objectValues(results)
-      ?.reduce((acc: Record<string, any>[], value) => {
-        if (typeof value !== 'object' || !value.result.organizations?.length) return acc
-        return [...acc, ...value.result.organizations]
-      }, [])
-      ?.filter(externalOrg => externalOrg.name), 'name') as PluginOrganization[]
+  /**
+  * Filter plugin results to get a single array of organizations with unique name
+  */
+  const externalOrganizations = getUniqueListBy(objectValues(results)
+    ?.reduce((acc: Record<string, any>[], value) => {
+      if (typeof value !== 'object' || !value.result.organizations?.length) return acc
+      return [...acc, ...value.result.organizations]
+    }, [])
+    ?.filter(externalOrg => externalOrg.name), 'name') as PluginOrganization[]
 
-    if (!externalOrganizations.length) throw new NotFoundError('Aucune organisation à synchroniser', undefined)
+  if (!externalOrganizations.length) throw new NotFoundError('Aucune organisation à synchroniser', undefined)
 
-    for (const externalOrg of externalOrganizations) {
-      await organizationSchema.validateAsync(externalOrg)
-      if (consoleOrganizations.find(consoleOrg => consoleOrg.name === externalOrg.name)) {
-        await updateLabelOrganization(externalOrg)
-      } else {
-        await createOrganization(externalOrg)
-      }
+  for (const externalOrg of externalOrganizations) {
+    await organizationSchema.validateAsync(externalOrg)
+    if (consoleOrganizations.find(consoleOrg => consoleOrg.name === externalOrg.name)) {
+      await updateLabelOrganization(externalOrg)
+    } else {
+      await createOrganization(externalOrg)
     }
+  }
 
-    return getOrganizations()
+  return getOrganizations()
 }

@@ -65,9 +65,9 @@ export const checkHookValidation = async (
   const isValid = await hooks.createProject.validate({ owner: exclude(user, ['groups']) })
   if (isValid?.failed) {
     const reasons = Object.values(isValid)
-    // @ts-ignore
+      // @ts-ignore
       .filter(({ status }) => status?.result === 'KO')
-    // @ts-ignore
+      // @ts-ignore
       .map(({ status }) => status?.message)
       .join('; ')
     throw new UnprocessableContentError(reasons, undefined)
@@ -111,7 +111,7 @@ export const createRepositoryBusiness = async (
     return repo
   } catch (error) {
     await updateRepositoryFailed(repo.id)
-    throw new BadRequestError('Echec de la création du dépôt', undefined)
+    throw new Error('Echec de la création du dépôt')
   }
 }
 
@@ -146,7 +146,7 @@ export const updateRepositoryBusiness = async (
     return repo
   } catch (error) {
     await updateRepositoryFailed(repo.id)
-    throw new BadRequestError('Echec de la mise à jour du dépôt', undefined)
+    throw new Error('Echec de la mise à jour du dépôt')
   }
 }
 
@@ -182,6 +182,6 @@ export const deleteRepositoryBusiness = async (
     await unlockProjectIfNotFailed(projectId)
   } catch (error) {
     await updateRepositoryFailed(repo.id)
-    throw new BadRequestError('Echec de la mise à jour du dépôt', undefined)
+    throw new Error('Echec de la mise à jour du dépôt')
   }
 }

@@ -32,8 +32,7 @@ export const checkServicesHealthBusiness = async (requestorId: User['id']) => {
       }),
     )
   } catch (error) {
-    let description = 'Echec de la récupération de l\'état des services'
-    if (error.message.match(/^Failed to parse URL from/)) description = 'Url de service invalide'
-    throw new BadRequestError(description, undefined)
+    if (error.message.match(/^Failed to parse URL from/)) throw new BadRequestError('Url de service invalide')
+    throw new Error('Echec de la récupération de l\'état des services')
   }
 }
