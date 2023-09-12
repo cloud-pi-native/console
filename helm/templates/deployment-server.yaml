@@ -12,6 +12,10 @@ spec:
       app: {{ .Release.Name }}-server
   template:
     metadata:
+      annotations:
+        {{- include "checksumCm" (list $ "/cm-scripts.yaml") | nindent 8 }}
+        {{- include "checksumCm" (list $ "/cm-server.yaml") | nindent 8 }}
+        {{- include "checksumCm" (list $ "/cm-global.yaml") | nindent 8 }}
       labels:
         app: {{ .Release.Name }}-server
       name: {{ .Release.Name }}-server
@@ -36,7 +40,7 @@ spec:
         - name: plugins
           mountPath: /plugins
         envFrom:
-{{- include "useGlobalCm" $data | indent 8 }}
+      {{- include "useGlobalCm" $data | nindent 8 }}
       {{- end }}
       containers:
       - image: {{ .Values.server.container.image }}

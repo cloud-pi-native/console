@@ -13,6 +13,8 @@ spec:
       app: {{ .Release.Name }}-postgres
   template:
     metadata:
+      annotations:
+        {{- include "checksumCm" (list $ "/cm-postgres.yaml") | nindent 8 }}
       labels:
         app: {{ .Release.Name }}-postgres
     spec:
@@ -29,8 +31,6 @@ spec:
         envFrom:
         - configMapRef:
             name: {{ .Release.Name }}-postgres-cm
-{{- $data := dict "globalenv" .Values.globalEnv "release" $.Release.Name -}}
-{{- include "useGlobalCm" $data | indent 8 }}
         volumeMounts:
         - mountPath: /var/lib/postgresql/data
           name: {{ .Release.Name }}-db-storage

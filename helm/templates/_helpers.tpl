@@ -93,8 +93,17 @@ Create the name of the service account to use
 {{ end -}}
 
 {{- define "useGlobalCm" -}}
-{{ if .globalenv }}
+{{- if .globalenv -}}
 - configMapRef:
     name: {{ .release }}-global-cm
-{{- end -}}
 {{ end -}}
+{{- end }}
+
+{{- define "checksumCm" -}}
+{{- $ := index . 0 }}
+{{- $path := index . 1 }}
+{{- $cm := include (print $.Template.BasePath $path) $ | fromYaml -}}
+{{- if $cm -}}
+checksum/{{ $cm.metadata.name }}: {{ $cm.data | toYaml | sha256sum }}
+{{- end -}}
+{{- end -}}
