@@ -11,6 +11,9 @@ spec:
       app: {{ .Release.Name }}-client
   template:
     metadata:
+      annotations:
+        {{- include "checksumCm" (list $ "/cm-client.yaml") | nindent 8 }}
+        {{- include "checksumCm" (list $ "/cm-global.yaml") | nindent 8 }}
       labels:
         app: {{ .Release.Name }}-client
     spec:
@@ -21,8 +24,8 @@ spec:
       containers:
       - name: {{ .Release.Name }}-client
         envFrom:
-{{- $data := dict "globalenv" .Values.globalEnv "release" $.Release.Name -}}
-{{- include "useGlobalCm" $data | indent 8 }}
+        {{- $data := dict "globalenv" .Values.globalEnv "release" $.Release.Name -}}
+        {{- include "useGlobalCm" $data | nindent 8 -}}
         - configMapRef:
             name: {{ .Release.Name }}-client-cm
         imagePullPolicy: {{ .Values.client.container.imagePullPolicy }}
