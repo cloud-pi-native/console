@@ -11,6 +11,10 @@ export const clusterSchema = Joi.object({
     .pattern(/^[a-zA-Z0-9-]+$/)
     .max(50),
 
+  infos: Joi.string()
+    .max(200)
+    .optional(),
+
   secretName: Joi.string()
     .optional()
     .max(50),

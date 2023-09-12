@@ -116,6 +116,7 @@ model User {
 model Cluster {
   id               String         @id @unique @default(uuid()) @db.Uuid
   label            String         @unique @db.VarChar(50)
+  infos            String?        @db.VarChar(200)
   privacy          ClusterPrivacy @default(dedicated)
   secretName       String         @unique @default(uuid()) @db.VarChar(50)
   clusterResources Boolean        @default(false)

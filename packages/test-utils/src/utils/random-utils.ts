@@ -38,6 +38,7 @@ export const getRandomCluster = (projectsId = repeatFn(2)(faker.string.uuid)) =>
   return {
     id: faker.string.uuid(),
     label: faker.lorem.word(),
+    infos: faker.lorem.sentence(8),
     projectsId,
     user: {
       certData: 'userCAD',

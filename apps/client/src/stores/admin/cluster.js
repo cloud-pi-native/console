@@ -11,8 +11,8 @@ export const useAdminClusterStore = defineStore('admin-cluster', () => {
     return clusters.value
   }
 
-  const addCluster = async ({ label, cluster, user, projectsId, clusterResources, privacy }) => {
-    const res = await api.addCluster({ label, cluster, user, projectsId, clusterResources, privacy })
+  const addCluster = async ({ label, infos, cluster, user, projectsId, clusterResources, privacy }) => {
+    const res = await api.addCluster({ label, infos, cluster, user, projectsId, clusterResources, privacy })
     return res
   }
 

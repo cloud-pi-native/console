@@ -1,11 +1,11 @@
 export type Organization = {
-    id: string,
-    name: string,
-    label: string,
-    source: string,
-    active: boolean,
-    createdAt?: Date,
-    updatedAt?: Date,
+  id: string,
+  name: string,
+  label: string,
+  source: string,
+  active: boolean,
+  createdAt?: Date,
+  updatedAt?: Date,
 }
 
 export type Repository = {
@@ -53,6 +53,7 @@ export type Permission = {
 export type Cluster = {
   id: string,
   label: string,
+  infos?: string,
   projectsId: string[],
   user: {
     certData: string,

@@ -210,21 +210,39 @@ watch(selectedContext, () => {
       copyable
       boxed
     />
-    <div class="fr-mb-2w w-full">
-      <DsfrInputGroup
-        v-model="localCluster.label"
-        data-testid="labelInput"
-        type="text"
-        :disabled="!isNewCluster"
-        required="required"
-        :error-message="!!updatedValues.label && !isValid(clusterSchema, localCluster, 'label') ? 'Le nom du cluster ne doit contenir ni espaces ni caractères spéciaux': undefined"
-        label="Nom du cluster applicatif"
-        label-visible
-        hint="Nom du cluster applicatif utilisable lors des déploiements Argocd."
-        placeholder="erpc-ovh"
-        @update:model-value="updateValues('label', $event)"
-      />
-    </div>
+    <DsfrInputGroup
+      v-model="localCluster.cluster.tlsServerName"
+      data-testid="tlsServerNameInput"
+      label="Nom du serveur Transport Layer Security (TLS)"
+      label-visible
+      required="required"
+      hint="La valeur est extraite du kubeconfig téléversé."
+      :disabled="!isNewCluster"
+    />
+    <DsfrInputGroup
+      v-model="localCluster.label"
+      data-testid="labelInput"
+      type="text"
+      :disabled="!isNewCluster"
+      required="required"
+      :error-message="!!updatedValues.label && !isValid(clusterSchema, localCluster, 'label') ? 'Le nom du cluster ne doit contenir ni espaces ni caractères spéciaux': undefined"
+      label="Nom du cluster applicatif"
+      label-visible
+      hint="Nom du cluster applicatif utilisable lors des déploiements Argocd."
+      placeholder="erpc-ovh"
+      @update:model-value="updateValues('label', $event)"
+    />
+    <DsfrInputGroup
+      v-model="localCluster.infos"
+      data-testid="infosInput"
+      type="text"
+      is-textarea
+      :disabled="!isNewCluster"
+      label="Informations supplémentaires sur le cluster"
+      label-visible
+      hint="Facultatif : IP flottante du cluster Openstack ou autre précision."
+      @update:model-value="updateValues('infos', $event)"
+    />
     <DsfrCheckbox
       v-model="localCluster.clusterResources"
       data-testid="clusterResourcesCbx"
@@ -235,6 +253,7 @@ watch(selectedContext, () => {
     />
     <DsfrSelect
       v-model="localCluster.privacy"
+      required
       select-id="privacy-select"
       label="Confidentialité du cluster"
       :options="['dedicated', 'public']"
