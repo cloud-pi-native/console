@@ -9,7 +9,7 @@ export const createCoreV1Api = (cluster: ClusterMix) => {
   kc.loadFromClusterAndUser({
     // @ts-ignore mix Clusters types
     ...cluster.cluster,
-    skipTLSVerify: true,
+    skipTLSVerify: false,
   }, {
     // @ts-ignore mix Clusters types
     ...cluster.user,

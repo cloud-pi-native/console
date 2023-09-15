@@ -115,7 +115,7 @@ const retrieveUserAndCluster = (context) => {
      *
      */
     localCluster.value.cluster = jsonKConfig.value.clusters.find(cluster => cluster.name === context.cluster).cluster
-    localCluster.value.cluster.tlsServerName = prompt('c\'est quoi le servername', '')
+    localCluster.value.cluster.tlsServerName = localCluster.value.cluster.server.split('https://')[1].split(':')[0]
     localCluster.value.cluster.caData = localCluster.value.cluster['certificate-authority-data']
     delete localCluster.value.cluster['certificate-authority-data']
   } catch (error) {

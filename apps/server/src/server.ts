@@ -7,17 +7,6 @@ import { getConnection, closeConnections } from './connect.js'
 import { initDb } from './init/db/index.js'
 import { initCorePlugins, initExternalPlugins, initPluginManager } from './plugins/index.js'
 
-// Workaround because fetch isn't using http_proxy variables
-// See. https://github.com/gajus/global-agent/issues/52#issuecomment-1134525621
-if (process.env.HTTP_PROXY) {
-  const Undici = await import('undici')
-  const ProxyAgent = Undici.ProxyAgent
-  const setGlobalDispatcher = Undici.setGlobalDispatcher
-  setGlobalDispatcher(
-    new ProxyAgent(process.env.HTTP_PROXY),
-  )
-}
-
 await startServer()
 handleExit()
 
