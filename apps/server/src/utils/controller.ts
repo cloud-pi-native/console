@@ -1,10 +1,10 @@
 import { type ProjectRoles, adminGroupPath, projectIsLockedInfo } from '@dso-console/shared'
-import { sendForbidden } from './response.js'
 import type { Permission, User, Role } from '@prisma/client'
+import { ForbiddenError } from './errors.js'
 
 export const checkAdminGroup = (req, res, done) => {
   if (!req.session.user.groups?.includes(adminGroupPath)) {
-    sendForbidden(res, 'Vous n\'avez pas les droits administrateur')
+    throw new ForbiddenError('Vous n\'avez pas les droits administrateur')
   }
   done()
 }

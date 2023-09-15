@@ -157,7 +157,7 @@ export const createProject = async (dataDto: CreateProjectDto['body'], requestor
     return unlockProjectIfNotFailed(project.id)
   } catch (error) {
     await updateProjectFailed(project.id)
-    return error
+    throw new Error(error?.message)
   }
 }
 
@@ -195,14 +195,14 @@ export const updateProject = async (data: UpdateProjectDto['body'], projectId: P
     return unlockProjectIfNotFailed(project.id)
   } catch (error) {
     await updateProjectFailed(project.id)
-    return error
+    throw new Error(error?.message)
   }
 }
 
 export const archiveProject = async (projectId: Project['id'], requestor: UserDto) => {
   // Pré-requis
   const project = await getProjectInfosAndRepos(projectId)
-  if (!project) throw new Error('Projet introuvable')
+  if (!project) throw new NotFoundError('Projet introuvable')
 
   const insufficientRoleErrorMessage = checkInsufficientRoleInProject(requestor.id, { roles: project.roles, minRole: 'owner' })
   if (insufficientRoleErrorMessage) throw new ForbiddenError(insufficientRoleErrorMessage)
@@ -270,6 +270,6 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
     // -- fin - Suppression projet --
   } catch (error) {
     await updateProjectFailed(project.id)
-    return error
+    throw new Error(error?.message)
   }
 }

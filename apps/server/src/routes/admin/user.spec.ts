@@ -84,7 +84,7 @@ describe('Admin Users routes', () => {
 
     it('Should return an error if retrieve users failed', async () => {
       const error = { statusCode: 500, message: 'Erreur de récupération des utilisateurs' }
-      
+
       prisma.user.findMany.mockRejectedValue(error)
 
       const response = await app.inject({ headers: { admin: 'admin' } })
@@ -98,9 +98,9 @@ describe('Admin Users routes', () => {
       const response = await app.inject()
         .get('/')
         .end()
-      
+
       expect(response.statusCode).toEqual(403)
-      expect(response.body).toEqual('Vous n\'avez pas les droits administrateur')
+      expect(JSON.parse(response.body).message).toEqual('Vous n\'avez pas les droits administrateur')
     })
   })
 })

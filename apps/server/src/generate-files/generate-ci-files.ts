@@ -2,8 +2,8 @@ import * as fs from 'node:fs/promises'
 import Mustache from 'mustache'
 import path from 'node:path'
 
-import { addReqLogs } from '../utils/logger.js'
-import { sendCreated, sendServerError } from '../utils/response.js'
+import { addReqLogs } from '@/utils/logger.js'
+import { sendCreated } from '@/utils/response.js'
 
 export const generateCIFiles = async (req, res) => {
   const content: Record<string, any> = {}
@@ -60,6 +60,6 @@ export const generateCIFiles = async (req, res) => {
       description,
       error,
     })
-    return sendServerError(res, description)
+    throw new Error(error?.message)
   }
 }
