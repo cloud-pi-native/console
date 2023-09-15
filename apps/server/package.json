@@ -25,6 +25,8 @@
     "@fastify/cookie": "^9.0.4",
     "@fastify/helmet": "^11.0.0",
     "@fastify/session": "^10.4.0",
+    "@fastify/swagger": "^8.10.0",
+    "@fastify/swagger-ui": "^1.9.3",
     "@gitbeaker/rest": "^39.8.0",
     "@keycloak/keycloak-admin-client": "^22.0.0",
     "@kubernetes/client-node": "^0.18.1",

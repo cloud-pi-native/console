@@ -31,6 +31,8 @@ const refreshProjects = async () => {
   }, 30_000)
 }
 
+const getSwaggerUrl = () => window?.location?.origin + '/api/v1/documentation/static/index.html'
+
 onBeforeMount(() => {
   clearInterval(intervalId.value)
 })
@@ -71,11 +73,24 @@ watch(label, (label) => {
     mandatory-links="[]"
   >
     <template #description>
-      <a
-        :href="`https://github.com/cloud-pi-native/console/releases/tag/${appVersion}`"
+      <div
+        class="flex gap-2 justify-end"
       >
-        {{ appVersion }}
-      </a>
+        <a
+          data-testid="swaggerUrl"
+          :href="getSwaggerUrl()"
+          title="accéder au swagger"
+        >
+          swagger
+        </a>
+        <a
+          data-testid="appVersionUrl"
+          :href="`https://github.com/cloud-pi-native/console/releases/tag/${appVersion}`"
+          title="accéder au code source"
+        >
+          {{ appVersion }}
+        </a>
+      </div>
     </template>
   </DsfrFooter>
 </template>
