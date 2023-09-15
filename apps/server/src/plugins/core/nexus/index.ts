@@ -1,4 +1,8 @@
-import { nexusUrl, nexusUser, nexusPassword } from '@/utils/env.js'
+import { removeTrailingSlash } from '@dso-console/shared'
+
+export const nexusUrl = removeTrailingSlash(process.env.NEXUS_URL)
+const nexusUser = process.env.NEXUS_ADMIN
+const nexusPassword = process.env.NEXUS_ADMIN_PASSWORD
 
 export const axiosOptions = {
   baseURL: `${nexusUrl}/service/rest/v1/`,

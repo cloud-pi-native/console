@@ -18,19 +18,20 @@ import {
   updateProject as updateProjectQuery,
   updateProjectServices,
 } from '@/resources/queries-index.js'
-import { getServices } from '@/utils/services.js'
+import { hooks } from '@/plugins/index.js'
 import { Organization, Project, User } from '@prisma/client'
 import { AsyncReturnType, checkInsufficientPermissionInEnvironment, checkInsufficientRoleInProject } from '@/utils/controller.js'
 import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
-import { hooks } from '@/plugins/index.js'
 import { PluginResult } from '@/plugins/hooks/hook.js'
 import { CreateProjectDto, UpdateProjectDto, calcProjectNameMaxLength, projectIsLockedInfo, projectSchema } from '@dso-console/shared'
 import { CreateProjectExecArgs, ProjectBase, UpdateProjectExecArgs } from '@/plugins/hooks/project.js'
 import { filterObjectByKeys } from '@/utils/queries-tools.js'
-import { gitlabUrl, projectRootDir } from '@/utils/env.js'
+import { projectRootDir } from '@/utils/env.js'
 import { removeClustersFromEnvironmentBusiness } from '../environment/business.js'
 import { type UserDto, getUser } from '@/resources/user/business.js'
+import { gitlabUrl } from '@/plugins/core/gitlab/utils.js'
+import { getProjectServices } from '@/plugins/services.js'
 
 // Fetch infos
 export const getProjectInfosAndClusters = async (projectId: string) => {
@@ -46,7 +47,7 @@ export const getUserProjects = async (requestor: UserDto) => {
   return projects.map((project) => {
     project.clusters = project.clusters.concat(publicClusters)
     if (project.services && Object.keys(project.services).includes('registry')) {
-      return { ...project, services: getServices(project) }
+      return { ...project, services: getProjectServices({ project: project.name, organization: project.organization.name, services: project.services }) }
     }
     return project
   })
@@ -210,7 +211,7 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
   // Actions
   try {
     await lockProject(projectId)
-
+    // TODO generate gitlabBaseUrl in gitlab plugin and propagate it to other plugins
     const gitlabBaseURL = `${gitlabUrl}/${projectRootDir}/${project.organization.name}/${project.name}/`
     const repositories = project.repositories.map(repo => ({
       // TODO harmonize keys in plugins should be internalUrl

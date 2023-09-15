@@ -1,3 +1,9 @@
+import { removeTrailingSlash } from '@dso-console/shared'
+
+export const harborUrl = removeTrailingSlash(process.env.HARBOR_URL)
+export const harborUser = process.env.HARBOR_ADMIN
+export const harborPassword = process.env.HARBOR_ADMIN_PASSWORD
+
 export const getRobotPermissions = (projectName) => {
   return {
     name: 'ci',

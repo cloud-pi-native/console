@@ -6,12 +6,17 @@ import { objectEntries, objectKeys } from '@/utils/type.js'
 import * as hooks from './hooks/index.js'
 import { type PluginsFunctions } from './hooks/hook.js'
 import { disabledPlugins } from '@/utils/env.js'
+import { type ServiceInfos, servicesInfos } from './services.js'
 
-export type RegisterFn = (name: string, subscribedHooks: PluginsFunctions) => void
-export type PluginManager = Promise<{ hookList: typeof hooks, register: RegisterFn }>
+export type RegisterFn = (name: string, subscribedHooks: PluginsFunctions, serviceInfos: ServiceInfos | void) => void
+export type PluginManager = Promise<{
+  hookList: typeof hooks,
+  servicesInfos: Record<string, ServiceInfos>
+  register: RegisterFn
+}>
 
 const initPluginManager = async (app: FastifyInstance): PluginManager => {
-  const register: RegisterFn = (name: string, subscribedHooks: PluginsFunctions) => {
+  const register: RegisterFn = (name, subscribedHooks, serviceInfos) => {
     const message = []
     for (const [hook, steps] of objectEntries(subscribedHooks)) {
       if (!(hook in hooks) && hook !== 'all') {
@@ -46,11 +51,15 @@ const initPluginManager = async (app: FastifyInstance): PluginManager => {
         }
       }
     }
+    if (serviceInfos) {
+      servicesInfos[name] = serviceInfos
+    }
     app.log.warn(`Plugin ${name} registered at ${message.join(' ')}`)
   }
 
   return {
     hookList: hooks,
+    servicesInfos,
     register,
   }
 }

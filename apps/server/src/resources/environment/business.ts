@@ -26,8 +26,9 @@ import {
   checkRoleAndLocked,
 } from '@/utils/controller.js'
 import { unlockProjectIfNotFailed } from '@/utils/business.js'
-import { gitlabUrl, harborUrl, projectRootDir } from '@/utils/env.js'
+import { projectRootDir } from '@/utils/env.js'
 import { getProjectInfosAndClusters } from '@/resources/project/business.js'
+import { gitlabUrl } from '@/plugins/core/gitlab/utils.js'
 
 // Fetch infos
 export const getEnvironmentInfosAndClusters = async (environmentId: string) => {
@@ -121,7 +122,6 @@ export const createEnvironment = async (
   const env = await initializeEnvironment({ projectId: project.id, name: envName, projectOwners })
 
   try {
-    const registryHost = harborUrl.split('//')[1].split('/')[0]
     const environmentName = env.name
     const projectName = project.name
     const organizationName = project.organization.name
@@ -136,7 +136,6 @@ export const createEnvironment = async (
       project: projectName,
       organization: organizationName,
       repositories,
-      registryHost,
       owner,
     }
     const results = await hooks.initializeEnvironment.execute(envData)

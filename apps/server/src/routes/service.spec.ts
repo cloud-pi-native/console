@@ -67,42 +67,7 @@ describe('Service route', () => {
 
       expect(response.statusCode).toEqual(200)
       expect(response.body).toBeDefined()
-      expect(response.json()).toEqual([{
-        name: 'argocd',
-        status: 'success',
-        message: 'OK',
-        code: 200,
-      },
-      {
-        name: 'gitlab',
-        status: 'success',
-        message: 'OK',
-        code: 200,
-      },
-      {
-        name: 'nexus',
-        status: 'success',
-        message: 'OK',
-        code: 200,
-      },
-      {
-        name: 'registry',
-        status: 'success',
-        message: 'OK',
-        code: 200,
-      },
-      {
-        name: 'sonarqube',
-        status: 'success',
-        message: 'OK',
-        code: 200,
-      },
-      {
-        name: 'vault',
-        status: 'success',
-        message: 'OK',
-        code: 200,
-      }])
+      expect(response.json()).toEqual([])
     })
 
     it('Should not retrieve services status if not logged', async () => {

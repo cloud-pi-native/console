@@ -72,6 +72,6 @@
   },
   "optionalDependencies": {
     "@cypress/vue": "^6.0.0",
-    "cypress": "^13.1.0"
+    "cypress": "^13.2.0"
   }
 }

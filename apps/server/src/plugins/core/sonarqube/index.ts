@@ -1,7 +1,9 @@
 import axios, { type CreateAxiosDefaults } from 'axios'
-import { sonarqubeUrl, sonarqubeApiToken as username } from '@/utils/env.js'
 import { findGroupByName } from './group.js'
-import { adminGroupPath } from '@dso-console/shared'
+import { adminGroupPath, removeTrailingSlash } from '@dso-console/shared'
+
+export const sonarqubeUrl = removeTrailingSlash(process.env.SONARQUBE_URL)
+const username = process.env.SONAR_API_TOKEN
 
 const globalPermissions = [
   'admin',
