@@ -35,26 +35,6 @@ export const mockPlugins = process.env.MOCK_PLUGINS === 'true'
 export const projectRootDir = process.env.PROJECTS_ROOT_DIR
 export const disabledPlugins = process.env.DISABLED_PLUGINS ? process.env.DISABLED_PLUGINS.split(',') : []
 
-// gitlab plugin
-export const gitlabToken = process.env.GITLAB_TOKEN
-
-// nexus plugin
-export const nexusUser = process.env.NEXUS_ADMIN
-export const nexusPassword = process.env.NEXUS_ADMIN_PASSWORD
-
-// sonarqube plugin
-export const sonarqubeApiToken = process.env.SONAR_API_TOKEN
-
-// vault plugin
-export const vaultToken = process.env.VAULT_TOKEN
-
-// harbor plugin
-export const harborUser = process.env.HARBOR_ADMIN
-export const harborPassword = process.env.HARBOR_ADMIN_PASSWORD
-
 // kubernetes plugin
 export const kubeconfigCtx = process.env.KUBECONFIG_CTX
 export const kubeconfigPath = process.env.KUBECONFIG_PATH
-
-// argo plugin
-export const argoNamespace = process.env.ARGO_NAMESPACE
