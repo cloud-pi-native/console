@@ -8,7 +8,7 @@ export const apiClient = axios.create({
 })
 
 apiClient.interceptors.request.use(async function addAuthHeader (config) {
-  if (config.url?.startsWith('/version') || config.url?.startsWith('/login')) {
+  if (config.url?.startsWith('/api/v1/version') || config.url?.startsWith('/login')) {
     return config
   }
   const keycloak = getKeycloak()

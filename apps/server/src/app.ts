@@ -3,11 +3,14 @@ import helmet from '@fastify/helmet'
 import keycloak from 'fastify-keycloak-adapter'
 import fastifySession from '@fastify/session'
 import fastifyCookie from '@fastify/cookie'
+import fastifySwagger from '@fastify/swagger'
+import fastifySwaggerUi from '@fastify/swagger-ui'
 import { nanoid } from 'nanoid'
 import { apiRouter, miscRouter } from './routes/index.js'
 import { addReqLogs, loggerConf } from './utils/logger.js'
 import { DsoError } from './utils/errors.js'
 import { keycloakConf, sessionConf } from './utils/keycloak.js'
+import { isInt, isDev, isTest, keycloakRedirectUri } from './utils/env.js'
 
 export const apiPrefix = '/api/v1'
 
@@ -17,14 +20,36 @@ const fastifyConf = {
 }
 
 const app = fastify(fastifyConf)
-  .register(helmet)
+  .register(helmet, () => ({
+    contentSecurityPolicy: !(isInt || isDev || isTest),
+  }))
+  .register(fastifySwagger, {
+    swagger: {
+      info: {
+        title: 'API Console DSO',
+        description: 'Swagger des routes de la console DSO.',
+        version: '1.0.0',
+      },
+      host: keycloakRedirectUri.split('://')[1],
+      schemes: ['http', 'https'],
+      consumes: ['application/json'],
+      produces: ['application/json'],
+    },
+  })
+  .register(fastifySwaggerUi, {
+    routePrefix: `${apiPrefix}/documentation`,
+    uiConfig: {
+      docExpansion: 'list',
+      deepLinking: false,
+    },
+  })
   .register(fastifyCookie)
   .register(fastifySession, sessionConf)
   .register(keycloak, keycloakConf)
   .register(apiRouter, { prefix: apiPrefix })
-  .register(miscRouter)
+  .register(miscRouter, { prefix: apiPrefix })
   .addHook('onRoute', opts => {
-    if (opts.path === '/healthz') {
+    if (opts.path === '/api/v1/healthz') {
       opts.logLevel = 'silent'
     }
   })

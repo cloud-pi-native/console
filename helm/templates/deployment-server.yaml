@@ -58,7 +58,7 @@ spec:
         {{- if .Values.server.container.livenessProbe.enabled }}
         livenessProbe:
           httpGet:
-            path: /healthz
+            path: /api/v1/healthz
             port: {{ .Values.server.container.port }}
           initialDelaySeconds: 5
           periodSeconds: 5
@@ -66,7 +66,7 @@ spec:
         {{- if .Values.server.container.startupProbe.enabled }}
         startupProbe:
           httpGet:
-            path: /healthz
+            path: /api/v1/healthz
             port: {{ .Values.server.container.port }}
           failureThreshold: 10
           periodSeconds: 4

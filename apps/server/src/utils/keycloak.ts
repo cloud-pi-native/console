@@ -36,7 +36,7 @@ export const keycloakConf = {
   disableSessionPlugin: true,
   userPayloadMapper,
   retries: 5,
-  excludedPatterns: ['/version', '/healthz'],
+  excludedPatterns: ['/api/v1/version', '/api/v1/healthz', '/api/v1/documentation/**'],
 }
 
 export const sessionConf = {

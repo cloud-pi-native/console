@@ -11,9 +11,9 @@ vi.mock('@/utils/keycloak/keycloak.ts', () => ({
 
 describe('xhr-client', () => {
   describe('Request interceptor', () => {
-    it('Should return config if url = "/version"', async () => {
+    it('Should return config if url = "/api/v1/version"', async () => {
       const config = {
-        url: '/version',
+        url: '/api/v1/version',
       }
 
       const fullfiled = await xhrClient.apiClient.interceptors.request.handlers[0].fulfilled(config)
