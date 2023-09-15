@@ -5,7 +5,7 @@ import { type FastifyInstance } from 'fastify/types/instance.js'
 import { objectEntries, objectKeys } from '@/utils/type.js'
 import * as hooks from './hooks/index.js'
 import { type PluginsFunctions } from './hooks/hook.js'
-const disabledPlugins = process.env.plugins ? process.env.plugins.split(',') : []
+import { disabledPlugins } from '@/utils/env.js'
 
 export type RegisterFn = (name: string, subscribedHooks: PluginsFunctions) => void
 export type PluginManager = Promise<{ hookList: typeof hooks, register: RegisterFn }>
@@ -84,7 +84,7 @@ export const initCorePlugins = async (pluginManager: Awaited<PluginManager>, _ap
 
     nexusInit(pluginManager.register)
   }
-  if (!disabledPlugins.includes('sonar')) {
+  if (!disabledPlugins.includes('sonarqube')) {
     const { init: sonarqubeInit } = await import('./core/sonarqube/init.js')
 
     sonarqubeInit(pluginManager.register)
