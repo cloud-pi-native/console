@@ -1,58 +1,29 @@
-import { axiosInstance } from './index.js'
+import { api, axiosInstance } from './index.js'
 import { generateRandomPassword } from '@/utils/crypto.js'
 import type { StepCall } from '@/plugins/hooks/hook.js'
 import type { ArchiveProjectExecArgs, CreateProjectExecArgs } from '@/plugins/hooks/project.js'
 
 export const createUser: StepCall<CreateProjectExecArgs> = async (payload) => {
   const { project, organization } = payload.args
-  const username = `${organization}-${project}`
+  const login = `${organization}-${project}`
   const fakeEmail = `${project}@${organization}`
   try {
     const users = (await axiosInstance({
       url: 'users/search',
       params: {
-        q: username,
+        q: login,
       },
     }))?.data
-    const user = users.users.find(u => u.login === username)
+    const user = users.users.find(u => u.login === login)
     const newPwd = generateRandomPassword(30)
     if (!user) {
-      await axiosInstance({
-        url: 'users/create',
-        method: 'post',
-        params: {
-          email: fakeEmail,
-          local: 'true',
-          login: username,
-          name: username,
-          password: newPwd,
-        },
-      })
+      await api.users.create({ email: fakeEmail, local: true, login, name: login, password: newPwd })
     } else {
-      await axiosInstance({
-        url: 'users/change_password',
-        params: {
-          login: username,
-          password: newPwd,
-        },
-      })
+      await api.users.changePassword(login, newPwd)
     }
-    await axiosInstance({
-      url: 'user_tokens/revoke',
-      method: 'post',
-      params: {
-        login: username,
-        name: `Sonar Token for ${project}`,
-      },
-    })
-    const newToken = await axiosInstance({
-      url: 'user_tokens/generate',
-      method: 'post',
-      params: {
-        login: username,
-        name: `Sonar Token for ${project}`,
-      },
-    })
+    await api.userTokens.revoke(login, `Sonar Token for ${project}`)
+
+    const newToken = await api.userTokens.generate(login, `Sonar Token for ${project}`)
 
     return {
       status: {
@@ -62,7 +33,7 @@ export const createUser: StepCall<CreateProjectExecArgs> = async (payload) => {
       vault: [{
         name: 'SONAR',
         data: {
-          SONAR_USERNAME: username,
+          SONAR_USERNAME: login,
           SONAR_PASSWORD: newPwd,
           SONAR_TOKEN: newToken.data.token,
         },
@@ -79,37 +50,18 @@ export const createUser: StepCall<CreateProjectExecArgs> = async (payload) => {
   }
 }
 
-export const deleteUser: StepCall<ArchiveProjectExecArgs> = async (payload) => {
-  const { project, organization } = payload.args
-  const username = `${organization}-${project}`
+export const deleteDsoProject: StepCall<ArchiveProjectExecArgs> = async (payload) => {
   try {
-    const users = (await axiosInstance({
-      url: 'users/search',
-      params: {
-        q: username,
-      },
-    }))?.data
-    const user = users.users.find(u => u.login === username)
-    if (!user) {
-      return {
-        status: {
-          result: 'OK',
-          message: 'Already missing',
-        },
-      }
+    const { project, organization } = payload.args
+    const username = `${organization}-${project}`
+    const user = await api.users.search(username)
+    if (user) {
+      await api.users.delete(username)
     }
-    await axiosInstance({
-      url: 'users/deactivate',
-      params: {
-        login: username,
-        anonymize: true,
-      },
-      method: 'post',
-    })
     return {
       status: {
         result: 'OK',
-        message: 'User anonymized',
+        message: user ? 'User anonymized' : 'Already missing',
       },
     }
   } catch (error) {

@@ -44,10 +44,9 @@ export const archiveDsoProject: StepCall<ArchiveProjectExecArgs> = async (payloa
   try {
     const vaultPath = [organization, project].join('/')
     const allSecrets = await listVault(vaultPath)
-    const promisesDestroy = allSecrets.map(path => {
-      return destroyVault(`${vaultPath}/${path}`)
-    })
-    await Promise.all(promisesDestroy)
+    await Promise.all(allSecrets.map(path => {
+      return destroyVault(path)
+    }))
     return {
       status: {
         result: 'OK',

@@ -1,16 +1,23 @@
 import type { RegisterFn } from '@/plugins/index.js'
 import { createKubeSecret } from './secret.js'
 import { createKubeNamespace, deleteKubeNamespace } from './namespace.js'
+import { purgeAll } from './purge.js'
 
 export const init = (register: RegisterFn) => {
-  register('kubernetes', {
-    addEnvironmentCluster: {
+  register(
+    'kubernetes',
+    {
+      addEnvironmentCluster: {
       // check: checkInitializeEnvironment, // TODO implement check in controller
-      main: createKubeNamespace,
-      post: createKubeSecret,
+        main: createKubeNamespace,
+        post: createKubeSecret,
+      },
+      removeEnvironmentCluster: {
+        main: deleteKubeNamespace,
+      },
+      purgeAll: {
+        main: purgeAll,
+      },
     },
-    removeEnvironmentCluster: {
-      main: deleteKubeNamespace,
-    },
-  })
+  )
 }

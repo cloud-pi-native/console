@@ -1,37 +1,22 @@
 import type { CreateProjectExecArgs } from '@/plugins/hooks/index.js'
 import type { StepCall } from '@/plugins/hooks/hook.js'
-import type { AxiosResponse } from 'axios'
 import { axiosInstance } from './index.js'
-
-export type SonarGroup = {
-  id: string,
-  name: string,
-  description: string,
-  membersCount: number,
-  default: boolean
-}
+import { SonarGroup } from './lib/types.js'
 
 export const createDsoProjectGroup: StepCall<CreateProjectExecArgs> = async (payload) => {
   const { project, organization } = payload.args
   const groupName = `/${organization}-${project}`
 
   try {
-    let newGroup: undefined | AxiosResponse
     const group = await findGroupByName(groupName)
     if (!group) {
-      newGroup = await axiosInstance({
-        url: 'user_groups/create',
-        method: 'post',
-        params: {
-          name: groupName,
-        },
-      })
+      await createGroup(groupName)
     }
     return {
       ...payload.sonarqube,
       status: {
         result: 'OK',
-        message: `User ${newGroup ? 're' : ''}created`,
+        message: `User ${group ? '' : 're'}created`,
       },
     }
   } catch (error) {
@@ -44,6 +29,14 @@ export const createDsoProjectGroup: StepCall<CreateProjectExecArgs> = async (pay
     }
   }
 }
+
+export const createGroup = (groupName: string) => axiosInstance({
+  url: 'user_groups/create',
+  method: 'post',
+  params: {
+    name: groupName,
+  },
+})
 
 export const deleteteDsoProjectGroup: StepCall<CreateProjectExecArgs> = async (payload) => {
   const { project, organization } = payload.args

@@ -22,3 +22,7 @@ export const createCoreV1Api = (cluster: ClusterMix) => {
 export const createCoreV1Apis = (clusters: ClusterModel[]) => {
   return clusters.map(createCoreV1Api)
 }
+
+const localKc = new KubeConfig()
+localKc.loadFromCluster()
+export const localClient = localKc.makeApiClient(CoreV1Api)

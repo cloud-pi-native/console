@@ -2,7 +2,7 @@ import userRouter from './user.js'
 import organizationRouter from './organization.js'
 import projectRouter from './project.js'
 import logRouter from './log.js'
-import dbRouter from './db.js'
+import systemRouter from './system.js'
 import clusterRouter from './cluster.js'
 import { checkAdminGroup } from '@/utils/controller.js'
 
@@ -24,7 +24,7 @@ const router = async (app, _opt) => {
   await app.register(clusterRouter, { prefix: '/clusters' })
 
   // Enregistrement du sous routeur db
-  await app.register(dbRouter, { prefix: '/db' })
+  await app.register(systemRouter, { prefix: '/system' })
 }
 
 export default router

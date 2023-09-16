@@ -10,6 +10,7 @@ import {
 } from './index.js'
 import { getGroupRootId } from './utils.js'
 import { infos } from './infos.js'
+import { purgeAll } from './purge.js'
 
 export const init = (register: RegisterFn) => {
   getGroupRootId()
@@ -30,6 +31,7 @@ export const init = (register: RegisterFn) => {
         main: createDsoRepository,
       },
       deleteRepository: { main: deleteDsoRepository },
+      purgeAll: { main: purgeAll },
     },
     infos,
   )

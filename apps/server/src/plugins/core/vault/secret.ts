@@ -70,10 +70,10 @@ export const listVault = async (path: string) => {
     if (key.endsWith('/')) {
       const subSecrets = await listVault(`${path}/${key}`)
       subSecrets.forEach(secret => {
-        listSecretPath.push(`${key}${secret}`)
+        listSecretPath.push(`${path}/${key}${secret}`)
       })
     } else {
-      listSecretPath.push(key)
+      listSecretPath.push(`${path}/${key}`)
     }
   }
   return listSecretPath.flat(-1)

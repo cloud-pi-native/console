@@ -7,3 +7,4 @@ export type FetchOrganizationsExecArgs = void
 
 export const checkServices: Hook<CheckServicesExecArgs, CheckServicesValidateArgs> = createHook()
 export const fetchOrganizations: Hook<FetchOrganizationsExecArgs, FetchOrganizationsValidateArgs> = createHook(true)
+export const purgeAll: Hook<void, void> = createHook()

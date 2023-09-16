@@ -4,6 +4,7 @@ import { kubeconfigPath, kubeconfigCtx } from '@/utils/env.js'
 import type { RegisterFn } from '@/plugins/index.js'
 import { createCluster, deleteCluster } from './cluster.js'
 import { infos } from './infos.js'
+import { purgeAll } from './purge.js'
 export const patchOptions = { headers: { 'Content-type': PatchUtils.PATCH_FORMAT_JSON_PATCH } }
 export const argoNamespace = process.env.ARGO_NAMESPACE
 
@@ -35,6 +36,7 @@ export const init = (register: RegisterFn) => {
       // clusters
       createCluster: { main: createCluster },
       deleteCluster: { main: deleteCluster },
+      purgeAll: { main: purgeAll },
     },
     infos,
   )

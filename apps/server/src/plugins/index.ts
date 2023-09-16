@@ -16,12 +16,13 @@ export type PluginManager = Promise<{
 }>
 
 const initPluginManager = async (app: FastifyInstance): PluginManager => {
-  const register: RegisterFn = (name, subscribedHooks, serviceInfos) => {
+  const register: RegisterFn = (pluginName, subscribedHooks, serviceInfos) => {
+    if (process.env.UNSAFE !== 'true') delete subscribedHooks.purgeAll
     const message = []
     for (const [hook, steps] of objectEntries(subscribedHooks)) {
       if (!(hook in hooks) && hook !== 'all') {
         app.log.warn({
-          message: `Plugin ${name} tried to register on an unknown hook ${hook}`,
+          message: `Plugin ${pluginName} tried to register on an unknown hook ${hook}`,
         })
         continue
       }
@@ -29,32 +30,33 @@ const initPluginManager = async (app: FastifyInstance): PluginManager => {
       for (const [step, fn] of objectEntries(steps)) {
         if (hook === 'checkServices' && step !== 'check') {
           app.log.warn({
-            message: `Plugin ${name} tried to register on 'checkServices' hook at ${step} which is invalid`,
+            message: `Plugin ${pluginName} tried to register on 'checkServices' hook at ${step} which is invalid`,
           })
           continue
         }
 
         if (hook === 'all') {
           for (const hook of objectKeys(hooks)) {
+            if (process.env.UNSAFE === 'true' && hook === 'purgeAll') continue
             if (!('uniquePlugin' in hooks[hook])) {
-              hooks[hook][step][name] = fn
+              hooks[hook][step][pluginName] = fn
             }
           }
           message.push(`*:${step}`)
         } else {
-          if ('uniquePlugin' in hooks[hook] && hooks[hook]?.uniquePlugin !== '' && hooks[hook]?.uniquePlugin !== name) {
-            app.log.warn({ message: `Plugin ${name} cannot register on 'fetchOrganizations', hook is already registered on` })
+          if ('uniquePlugin' in hooks[hook] && hooks[hook]?.uniquePlugin !== '' && hooks[hook]?.uniquePlugin !== pluginName) {
+            app.log.warn({ message: `Plugin ${pluginName} cannot register on 'fetchOrganizations', hook is already registered on` })
             continue
           }
-          hooks[hook][step][name] = fn
+          hooks[hook][step][pluginName] = fn
           message.push(`${hook}:${step}`)
         }
       }
     }
     if (serviceInfos) {
-      servicesInfos[name] = serviceInfos
+      servicesInfos[pluginName] = serviceInfos
     }
-    app.log.warn(`Plugin ${name} registered at ${message.join(' ')}`)
+    app.log.warn(`Plugin ${pluginName} registered at ${message.join(' ')}`)
   }
 
   return {

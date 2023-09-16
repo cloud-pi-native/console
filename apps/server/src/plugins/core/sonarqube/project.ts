@@ -1,35 +1,7 @@
 import { CreateRepositoryExecArgs, DeleteRepositoryExecArgs } from '@/plugins/hooks/index.js'
 import { StepCall } from '@/plugins/hooks/hook.js'
 import { axiosInstance } from './index.js'
-
-export type Qualifiers =
-  'BRC' | // - Sub - projects
-  'DIR' | // - Directories
-  'FIL' | // - Files
-  'TRK' | // - Projects
-  'UTS' // - Test Files
-
-export type SonarProject = {
-  key: string // unique key name
-  name: string
-  qualifier: Qualifiers
-  visibility: 'private' | 'public'
-  lastAnalysisDate?: string
-  revision?: string
-}
-type SearchProjectRes = {
-  data: {
-    paging: {
-      total: number
-    },
-    components: SonarProject[]
-  }
-}
-type CreateProjectRes = {
-  data: {
-    project: SonarProject
-  }
-}
+import { CreateProjectRes, SearchProjectRes } from './lib/types.js'
 
 const robotPermissions = [
   'user',

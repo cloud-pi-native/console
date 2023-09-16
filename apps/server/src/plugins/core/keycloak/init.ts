@@ -4,6 +4,7 @@ import {
   retrieveKeycloakUserByEmail,
 } from './index.js'
 import { infos } from './infos.js'
+import { purgeAll } from './purge.js'
 
 export const init = (register: RegisterFn) => {
   register(
@@ -16,6 +17,7 @@ export const init = (register: RegisterFn) => {
       archiveProject: { main: deleteKeycloakProjectGroup },
       initializeEnvironment: { main: createKeycloakEnvGroup },
       deleteEnvironment: { main: deleteKeycloakEnvGroup },
+      purgeAll: { main: purgeAll },
     },
     infos,
   )

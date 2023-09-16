@@ -1,9 +1,12 @@
 import axios, { type CreateAxiosDefaults } from 'axios'
 import { findGroupByName } from './group.js'
 import { adminGroupPath, removeTrailingSlash } from '@dso-console/shared'
+import { SonarApi } from './lib/index.js'
 
 export const sonarqubeUrl = removeTrailingSlash(process.env.SONARQUBE_URL)
-const username = process.env.SONAR_API_TOKEN
+const token = process.env.SONAR_API_TOKEN
+
+export const api = new SonarApi(sonarqubeUrl, token)
 
 const globalPermissions = [
   'admin',
@@ -25,7 +28,7 @@ const projectPermissions = [
 export const axiosOptions: CreateAxiosDefaults = {
   baseURL: `${sonarqubeUrl}/api/`,
   auth: {
-    username,
+    username: token,
     password: undefined, // Token is used, so password is useless
   },
   headers: {
