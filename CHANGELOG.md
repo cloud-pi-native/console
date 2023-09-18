@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.8.1](https://github.com/cloud-pi-native/console/compare/v5.8.0...v5.8.1) (2023-09-18)
+
+
+### Bug Fixes
+
+* :ambulance: bad logic register plugins ([049040e](https://github.com/cloud-pi-native/console/commit/049040eafda26214afbc2118cb56542b133feca5))
+
 ## [5.8.0](https://github.com/cloud-pi-native/console/compare/v5.7.0...v5.8.0) (2023-09-18)
 
 
