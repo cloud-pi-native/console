@@ -1,8 +1,11 @@
 import { Gitlab } from '@gitbeaker/rest'
-import { gitlabToken, gitlabUrl, projectRootDir } from '@/utils/env.js'
+import { projectRootDir } from '@/utils/env.js'
+import { removeTrailingSlash } from '@dso-console/shared'
+
+export const gitlabUrl = removeTrailingSlash(process.env.GITLAB_URL)
+export const gitlabToken = process.env.GITLAB_TOKEN
 
 export const api = new Gitlab({ token: gitlabToken, host: gitlabUrl })
-
 let groupRootId: number
 
 export const getGroupRootId = async () => {

@@ -1,5 +1,4 @@
 import * as dotenv from 'dotenv'
-import { removeTrailingSlash } from '@dso-console/shared'
 
 dotenv.config({ path: '/env/.env' })
 
@@ -30,14 +29,6 @@ export const adminsUserId = process.env.ADMIN_KC_USER_ID ? process.env.ADMIN_KC_
 // keycloak plugin
 export const keycloakToken = process.env.KEYCLOAK_ADMIN_PASSWORD
 export const keycloakUser = process.env.KEYCLOAK_ADMIN
-
-// services url
-export const vaultUrl = removeTrailingSlash(process.env.VAULT_URL)
-export const nexusUrl = removeTrailingSlash(process.env.NEXUS_URL)
-export const gitlabUrl = removeTrailingSlash(process.env.GITLAB_URL)
-export const sonarqubeUrl = removeTrailingSlash(process.env.SONARQUBE_URL)
-export const harborUrl = removeTrailingSlash(process.env.HARBOR_URL)
-export const argocdUrl = removeTrailingSlash(process.env.ARGOCD_URL)
 
 // plugins
 export const mockPlugins = process.env.MOCK_PLUGINS === 'true'

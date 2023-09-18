@@ -1,9 +1,9 @@
 import axios from 'axios'
 import {
-  harborUrl,
   harborUser as username,
   harborPassword as password,
-} from '@/utils/env.js'
+  harborUrl,
+} from './utils.js'
 import { createProject, deleteProject } from './project.js'
 import { addProjectGroupMember } from './permission.js'
 import { createRobot } from './robot.js'

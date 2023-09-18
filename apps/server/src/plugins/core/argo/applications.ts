@@ -1,7 +1,6 @@
 import type { Application } from '@kubernetes-models/argo-cd/argoproj.io/v1alpha1'
-import { argoNamespace } from '@/utils/env.js'
 import { addRepoToApplicationProject, removeRepoFromApplicationProject } from './app-project.js'
-import { customK8sApi } from './init.js'
+import { argoNamespace, customK8sApi } from './init.js'
 
 export const createApplication = async ({ applicationName, namespace, repo, appProjectName }) => {
   const applications = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', argoNamespace, 'applications', undefined, undefined, undefined, `metadata.name=${applicationName}`)

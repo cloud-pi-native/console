@@ -1,13 +1,14 @@
 import { addLogs, deleteRepository, getProjectInfos, getProjectInfosAndRepos, initializeRepository, lockProject, updateRepository, updateRepositoryCreated, updateRepositoryDeleting, updateRepositoryFailed } from '@/resources/queries-index.js'
 import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import { Project, Repository, User } from '@prisma/client'
-import { gitlabUrl, projectRootDir } from '@/utils/env.js'
+import { projectRootDir } from '@/utils/env.js'
 import { hooks } from '@/plugins/index.js'
 import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { exclude } from '@/utils/queries-tools.js'
 import { CreateRepositoryDto, UpdateRepositoryDto } from '@dso-console/shared/src/resources/repository/dto.js'
 import { ProjectRoles } from '@dso-console/shared'
 import { checkInsufficientRoleInProject, checkRoleAndLocked } from '@/utils/controller.js'
+import { gitlabUrl } from '@/plugins/core/gitlab/utils.js'
 
 export const getRepositoryByIdBusiness = async (
   userId: User['id'],
