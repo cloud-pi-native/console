@@ -18,6 +18,7 @@ const props = defineProps({
       projectsId: [],
       clusterResources: false,
       privacy: 'dedicated',
+      infos: 'undefined',
     }),
   },
   isNewCluster: {
@@ -46,6 +47,11 @@ const errorSchema = computed(() => schemaValidator(clusterSchema, localCluster.v
 const isClusterValid = computed(() => Object.keys(errorSchema.value).length === 0)
 
 const updateValues = (key, value) => {
+  if (key === 'skipTLSVerify') {
+    localCluster.value.cluster.skipTLSVerify = value
+    updatedValues.value.cluster = true
+    return
+  }
   localCluster.value[key] = value
   updatedValues.value[key] = true
 
@@ -237,11 +243,18 @@ watch(selectedContext, () => {
       data-testid="infosInput"
       type="text"
       is-textarea
-      :disabled="!isNewCluster"
       label="Informations supplémentaires sur le cluster"
       label-visible
-      hint="Facultatif : IP flottante du cluster Openstack ou autre précision."
+      hint="Facultatif : Infos accessibles aux utilisateurs"
       @update:model-value="updateValues('infos', $event)"
+    />
+    <DsfrCheckbox
+      v-model="localCluster.cluster.skipTLSVerify"
+      data-testid="clusterSkipTLSVerifyCbx"
+      label="Ignorer le certificat TLS du server (risques potentiels de sécurité !)"
+      hint="Ignorer le certificat TLS présenté pour contacter l'API server Kubernetes"
+      name="isClusterSkipTlsVerify"
+      @update:model-value="updateValues('skipTLSVerify', $event)"
     />
     <DsfrCheckbox
       v-model="localCluster.clusterResources"

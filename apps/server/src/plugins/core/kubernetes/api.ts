@@ -6,15 +6,16 @@ export const patchOptions = { headers: { 'Content-type': PatchUtils.PATCH_FORMAT
 
 export const createCoreV1Api = (cluster: ClusterMix) => {
   const kc = new KubeConfig()
-  kc.loadFromClusterAndUser({
-    // @ts-ignore mix Clusters types
+  const clusterConfig = {
     ...cluster.cluster,
-    skipTLSVerify: false,
-  }, {
-    // @ts-ignore mix Clusters types
+    skipTLSVerify: cluster.cluster.skipTLSVerify ?? false,
+  }
+  const userConfig = {
     ...cluster.user,
     name: cluster.id,
-  })
+  }
+  if (cluster.cluster.skipTLSVerify) delete clusterConfig.caData
+  kc.loadFromClusterAndUser(clusterConfig, userConfig)
   return kc.makeApiClient(CoreV1Api)
 }
 

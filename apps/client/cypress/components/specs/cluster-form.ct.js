@@ -91,7 +91,6 @@ describe('ClusterForm.vue', () => {
     cy.getByDataTestid('infosInput')
       .find('textarea')
       .should('have.value', props.cluster.infos)
-      .and('be.disabled')
     cy.getByDataTestid('clusterResourcesCbx').find('input[type=checkbox]')
       .should(props.cluster.clusterResources ? 'be.checked' : 'not.be.checked')
     cy.get('#privacy-select')

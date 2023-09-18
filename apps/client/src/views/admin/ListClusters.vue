@@ -129,6 +129,7 @@ watch(clusters, () => {
       class="w-full"
       is-updating-cluster="isUpdatingCluster"
       @add="(cluster) => addCluster(cluster)"
+      @update="(cluster) => updateCluster(cluster)"
       @cancel="cancel()"
     />
   </div>
