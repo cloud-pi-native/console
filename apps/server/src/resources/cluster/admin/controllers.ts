@@ -53,5 +53,5 @@ export const updateClusterController = async (req: EnhancedFastifyRequest<Update
       clusterId: cluster.id,
     },
   })
-  sendCreated(res, cluster)
+  sendOk(res, cluster)
 }

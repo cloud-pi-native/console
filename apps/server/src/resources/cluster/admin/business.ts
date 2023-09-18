@@ -1,5 +1,5 @@
 import { addClusterToProjectWithIds, addLogs, createCluster, getClusterById, getClusterByLabel, getClustersWithProjectIdAndConfig, getProjectsByClusterId, removeClusterFromProject, updateCluster } from '@/resources/queries-index.js'
-import { BadRequestError } from '@/utils/errors.js'
+import { BadRequestError, NotFoundError } from '@/utils/errors.js'
 import { hooks } from '@/plugins/index.js'
 import { CreateClusterDto, UpdateClusterDto, clusterSchema } from '@dso-console/shared'
 import { User } from '@prisma/client'
@@ -63,8 +63,8 @@ export const updateClusterBusiness = async (data: UpdateClusterDto['body'], clus
   const dbCluster = await getClusterById(clusterId)
   const dbProjects = await getProjectsByClusterId(clusterId)
 
-  if (!dbCluster) throw new Error('Aucun cluster trouvé pour cet id')
-  if (data?.label && data.label !== dbCluster.label) throw new Error('Le label d\'un cluster ne peut être modifié')
+  if (!dbCluster) throw new NotFoundError('Aucun cluster trouvé pour cet id')
+  if (data?.label && data.label !== dbCluster.label) throw new BadRequestError('Le label d\'un cluster ne peut être modifié')
   const clusterData = structuredClone(data)
   const kubeConfig = {
     user: clusterData.user,

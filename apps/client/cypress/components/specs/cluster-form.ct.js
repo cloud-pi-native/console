@@ -35,6 +35,9 @@ describe('ClusterForm.vue', () => {
     }
 
     cy.mount(ClusterForm, { extensions, props })
+    cy.getByDataTestid('tlsServerNameInput')
+      .find('input')
+      .type('tlsServerName')
     cy.getByDataTestid('labelInput')
       .find('input')
       .type('label')
@@ -77,10 +80,17 @@ describe('ClusterForm.vue', () => {
 
     cy.getByDataTestid('user-json').should('be.visible')
     cy.getByDataTestid('cluster-json').should('be.visible')
+    cy.getByDataTestid('tlsServerNameInput')
+      .find('input')
+      .should('have.value', props.cluster.cluster.tlsServerName)
+      .and('be.disabled')
     cy.getByDataTestid('labelInput')
       .find('input')
       .should('have.value', props.cluster.label)
       .and('be.disabled')
+    cy.getByDataTestid('infosInput')
+      .find('textarea')
+      .should('have.value', props.cluster.infos)
     cy.getByDataTestid('clusterResourcesCbx').find('input[type=checkbox]')
       .should(props.cluster.clusterResources ? 'be.checked' : 'not.be.checked')
     cy.get('#privacy-select')

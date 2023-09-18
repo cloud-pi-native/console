@@ -42,10 +42,6 @@ class TooManyRequestError extends DsoError {
   statusCode = 429
 }
 
-class ServerError extends DsoError {
-  statusCode = 500
-}
-
 export {
   DsoError,
   BadRequestError,
@@ -55,5 +51,4 @@ export {
   ConflictError,
   UnprocessableContentError,
   TooManyRequestError,
-  ServerError,
 }

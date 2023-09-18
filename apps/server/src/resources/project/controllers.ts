@@ -24,6 +24,7 @@ export const getUserProjectsController = async (req: EnhancedFastifyRequest<void
   delete requestor.groups
 
   const projectsInfos = await getUserProjects(requestor)
+
   addReqLogs({
     req,
     description: 'Projets de l\'utilisateur récupérés avec succès',

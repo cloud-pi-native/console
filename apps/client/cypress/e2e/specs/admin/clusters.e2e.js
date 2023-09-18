@@ -40,6 +40,9 @@ describe('Administration clusters', () => {
       .find('input')
       .should('have.value', cluster1.label)
       .and('be.disabled')
+    cy.getByDataTestid('infosInput')
+      .find('textarea')
+      .should('have.value', '')
     cy.getByDataTestid('clusterResourcesCbx')
       .find('input')
       .should('not.be.checked')
@@ -65,6 +68,9 @@ describe('Administration clusters', () => {
       .find('input')
       .should('have.value', cluster2.label)
       .and('be.disabled')
+    cy.getByDataTestid('infosInput')
+      .find('textarea')
+      .should('have.value', cluster2.infos)
     cy.getByDataTestid('clusterResourcesCbx')
       .find('input')
       .should('not.be.checked')
@@ -83,6 +89,10 @@ describe('Administration clusters', () => {
     const newCluster = {
       label: 'newCluster',
       projects: ['dinum - beta-app'],
+      infos: 'Floating IP: 1.1.1.1',
+      cluster: {
+        tlsServerName: 'myTlsServerName',
+      },
     }
 
     cy.getByDataTestid('addClusterLink')
@@ -91,10 +101,18 @@ describe('Administration clusters', () => {
       .should('contain', 'Ajouter un cluster')
     cy.getByDataTestid('addClusterBtn')
       .should('be.disabled')
+    cy.getByDataTestid('tlsServerNameInput')
+      .find('input')
+      .should('have.value', '')
+      .type(newCluster.cluster.tlsServerName)
     cy.getByDataTestid('labelInput')
       .find('input')
       .clear()
       .type(newCluster.label)
+    cy.getByDataTestid('infosInput')
+      .find('textarea')
+      .clear()
+      .type(newCluster.infos)
     cy.getByDataTestid('clusterResourcesCbx')
       .find('input')
       .should('be.enabled')
@@ -120,10 +138,16 @@ describe('Administration clusters', () => {
       .should('contain', 'Mettre à jour le cluster')
     cy.get('div.json-box')
       .should('have.length', 2)
+    cy.getByDataTestid('tlsServerNameInput')
+      .find('input')
+      .should('have.value', newCluster.cluster.tlsServerName)
     cy.getByDataTestid('labelInput')
       .find('input')
       .should('have.value', newCluster.label)
       .and('be.disabled')
+    cy.getByDataTestid('infosInput')
+      .find('textarea')
+      .should('have.value', newCluster.infos)
     cy.getByDataTestid('clusterResourcesCbx')
       .find('input')
       .should('be.checked')

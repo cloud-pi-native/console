@@ -5,12 +5,18 @@ import { type FastifyInstance } from 'fastify/types/instance.js'
 import { objectEntries, objectKeys } from '@/utils/type.js'
 import * as hooks from './hooks/index.js'
 import { type PluginsFunctions } from './hooks/hook.js'
+import { disabledPlugins } from '@/utils/env.js'
+import { type ServiceInfos, servicesInfos } from './services.js'
 
-export type RegisterFn = (name: string, subscribedHooks: PluginsFunctions) => void
-export type PluginManager = Promise<{ hookList: typeof hooks, register: RegisterFn }>
+export type RegisterFn = (name: string, subscribedHooks: PluginsFunctions, serviceInfos: ServiceInfos | void) => void
+export type PluginManager = Promise<{
+  hookList: typeof hooks,
+  servicesInfos: Record<string, ServiceInfos>
+  register: RegisterFn
+}>
 
 const initPluginManager = async (app: FastifyInstance): PluginManager => {
-  const register: RegisterFn = (name: string, subscribedHooks: PluginsFunctions) => {
+  const register: RegisterFn = (name, subscribedHooks, serviceInfos) => {
     const message = []
     for (const [hook, steps] of objectEntries(subscribedHooks)) {
       if (!(hook in hooks) && hook !== 'all') {
@@ -45,33 +51,29 @@ const initPluginManager = async (app: FastifyInstance): PluginManager => {
         }
       }
     }
+    if (serviceInfos) {
+      servicesInfos[name] = serviceInfos
+    }
     app.log.warn(`Plugin ${name} registered at ${message.join(' ')}`)
   }
 
   return {
     hookList: hooks,
+    servicesInfos,
     register,
   }
 }
 
 export const initCorePlugins = async (pluginManager: Awaited<PluginManager>, _app: FastifyInstance) => {
-  const { init: gitlabInit } = await import('./core/gitlab/init.js')
-  const { init: harborInit } = await import('./core/harbor/init.js')
-  const { init: keycloakInit } = await import('./core/keycloak/init.js')
-  const { init: kubernetesInit } = await import('./core/kubernetes/init.js')
-  const { init: argoInit } = await import('./core/argo/init.js')
-  const { init: nexusInit } = await import('./core/nexus/init.js')
-  const { init: sonarqubeInit } = await import('./core/sonarqube/init.js')
-  const { init: vaultInit } = await import('./core/vault/init.js')
-
-  gitlabInit(pluginManager.register)
-  harborInit(pluginManager.register)
-  keycloakInit(pluginManager.register)
-  kubernetesInit(pluginManager.register)
-  argoInit(pluginManager.register)
-  nexusInit(pluginManager.register)
-  sonarqubeInit(pluginManager.register)
-  vaultInit(pluginManager.register)
+  const corePlugins = ['gitlab', 'harbor', 'keycloak', 'kubernetes', 'argo', 'nexus', 'sonarqube', 'vault']
+  const importPlugin = async (name: string) => {
+    if (!disabledPlugins.includes(name)) return
+    const { init } = await import(`./core/${name}/init.js`)
+    init(pluginManager.register)
+  }
+  for (const pluginName of corePlugins) {
+    await importPlugin(pluginName)
+  }
 }
 
 export const initExternalPlugins = async (pluginManager: Awaited<PluginManager>, app: FastifyInstance) => {

@@ -1,13 +1,14 @@
 import { addLogs, deleteRepository, getProjectInfos, getProjectInfosAndRepos, initializeRepository, lockProject, updateRepository, updateRepositoryCreated, updateRepositoryDeleting, updateRepositoryFailed } from '@/resources/queries-index.js'
 import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import { Project, Repository, User } from '@prisma/client'
-import { gitlabUrl, projectRootDir } from '@/utils/env.js'
+import { projectRootDir } from '@/utils/env.js'
 import { hooks } from '@/plugins/index.js'
 import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { exclude } from '@/utils/queries-tools.js'
 import { CreateRepositoryDto, UpdateRepositoryDto } from '@dso-console/shared/src/resources/repository/dto.js'
 import { ProjectRoles } from '@dso-console/shared'
 import { checkInsufficientRoleInProject, checkRoleAndLocked } from '@/utils/controller.js'
+import { gitlabUrl } from '@/plugins/core/gitlab/utils.js'
 
 export const getRepositoryByIdBusiness = async (
   userId: User['id'],
@@ -65,9 +66,9 @@ export const checkHookValidation = async (
   const isValid = await hooks.createProject.validate({ owner: exclude(user, ['groups']) })
   if (isValid?.failed) {
     const reasons = Object.values(isValid)
-    // @ts-ignore
+      // @ts-ignore
       .filter(({ status }) => status?.result === 'KO')
-    // @ts-ignore
+      // @ts-ignore
       .map(({ status }) => status?.message)
       .join('; ')
     throw new UnprocessableContentError(reasons, undefined)
@@ -111,7 +112,7 @@ export const createRepositoryBusiness = async (
     return repo
   } catch (error) {
     await updateRepositoryFailed(repo.id)
-    throw new BadRequestError('Echec de la création du dépôt', undefined)
+    throw new Error('Echec de la création du dépôt')
   }
 }
 
@@ -146,7 +147,7 @@ export const updateRepositoryBusiness = async (
     return repo
   } catch (error) {
     await updateRepositoryFailed(repo.id)
-    throw new BadRequestError('Echec de la mise à jour du dépôt', undefined)
+    throw new Error('Echec de la mise à jour du dépôt')
   }
 }
 
@@ -182,6 +183,6 @@ export const deleteRepositoryBusiness = async (
     await unlockProjectIfNotFailed(projectId)
   } catch (error) {
     await updateRepositoryFailed(repo.id)
-    throw new BadRequestError('Echec de la mise à jour du dépôt', undefined)
+    throw new Error('Echec de la mise à jour du dépôt')
   }
 }

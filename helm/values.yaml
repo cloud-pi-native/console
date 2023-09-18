@@ -6,7 +6,7 @@ imageCredentials:
   password:
   email:
 
-#hashmap of custom env applied on all pods
+#hashmap of custom env applied on all pods, except postgres use postgres.container.env
 globalEnv:
 
 config:
@@ -68,6 +68,8 @@ server:
     type: ClusterIP
   # list of zips to download; basically curl url, unzip and stores it in plugins/external/<dir_name>
   plugins: []
+  # csv list of plugins to disabled
+  disabledPlugins: ""
 
 client:
   container:

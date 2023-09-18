@@ -18,6 +18,7 @@ const props = defineProps({
       projectsId: [],
       clusterResources: false,
       privacy: 'dedicated',
+      infos: 'undefined',
     }),
   },
   isNewCluster: {
@@ -46,6 +47,11 @@ const errorSchema = computed(() => schemaValidator(clusterSchema, localCluster.v
 const isClusterValid = computed(() => Object.keys(errorSchema.value).length === 0)
 
 const updateValues = (key, value) => {
+  if (key === 'skipTLSVerify') {
+    localCluster.value.cluster.skipTLSVerify = value
+    updatedValues.value.cluster = true
+    return
+  }
   localCluster.value[key] = value
   updatedValues.value[key] = true
 
@@ -179,6 +185,7 @@ watch(selectedContext, () => {
       v-model="kubeconfig"
       label="Kubeconfig"
       data-testid="kubeconfig-upload"
+      :disabled="!isNewCluster"
       :error="kConfigError || (errorSchema.cluster?.match(/is required$/) || errorSchema.user?.match(/is required$/) ? 'Le kubeconfig semble incomplet.' : '')"
       hint="Uploadez le Kubeconfig du cluster."
       class="fr-mb-2w"
@@ -187,6 +194,7 @@ watch(selectedContext, () => {
     <DsfrSelect
       v-if="isMissingCurrentContext"
       v-model="selectedContext"
+      :disabled="!isNewCluster"
       select-id="selectedContextSelect"
       label="Context"
       description="Nous n'avons pas trouvé de current-context dans votre kubeconfig. Veuillez choisir un contexte."
@@ -208,21 +216,46 @@ watch(selectedContext, () => {
       copyable
       boxed
     />
-    <div class="fr-mb-2w w-full">
-      <DsfrInputGroup
-        v-model="localCluster.label"
-        data-testid="labelInput"
-        type="text"
-        :disabled="!isNewCluster"
-        required="required"
-        :error-message="!!updatedValues.label && !isValid(clusterSchema, localCluster, 'label') ? 'Le nom du cluster ne doit contenir ni espaces ni caractères spéciaux': undefined"
-        label="Nom du cluster applicatif"
-        label-visible
-        hint="Nom du cluster applicatif utilisable lors des déploiements Argocd."
-        placeholder="erpc-ovh"
-        @update:model-value="updateValues('label', $event)"
-      />
-    </div>
+    <DsfrInputGroup
+      v-model="localCluster.cluster.tlsServerName"
+      data-testid="tlsServerNameInput"
+      label="Nom du serveur Transport Layer Security (TLS)"
+      label-visible
+      required="required"
+      hint="La valeur est extraite du kubeconfig téléversé."
+      :disabled="!isNewCluster"
+    />
+    <DsfrInputGroup
+      v-model="localCluster.label"
+      data-testid="labelInput"
+      type="text"
+      :disabled="!isNewCluster"
+      required="required"
+      :error-message="!!updatedValues.label && !isValid(clusterSchema, localCluster, 'label') ? 'Le nom du cluster ne doit contenir ni espaces ni caractères spéciaux': undefined"
+      label="Nom du cluster applicatif"
+      label-visible
+      hint="Nom du cluster applicatif utilisable lors des déploiements Argocd."
+      placeholder="erpc-ovh"
+      @update:model-value="updateValues('label', $event)"
+    />
+    <DsfrInputGroup
+      v-model="localCluster.infos"
+      data-testid="infosInput"
+      type="text"
+      is-textarea
+      label="Informations supplémentaires sur le cluster"
+      label-visible
+      hint="Facultatif : Infos accessibles aux utilisateurs"
+      @update:model-value="updateValues('infos', $event)"
+    />
+    <DsfrCheckbox
+      v-model="localCluster.cluster.skipTLSVerify"
+      data-testid="clusterSkipTLSVerifyCbx"
+      label="Ignorer le certificat TLS du server (risques potentiels de sécurité !)"
+      hint="Ignorer le certificat TLS présenté pour contacter l'API server Kubernetes"
+      name="isClusterSkipTlsVerify"
+      @update:model-value="updateValues('skipTLSVerify', $event)"
+    />
     <DsfrCheckbox
       v-model="localCluster.clusterResources"
       data-testid="clusterResourcesCbx"
@@ -233,6 +266,7 @@ watch(selectedContext, () => {
     />
     <DsfrSelect
       v-model="localCluster.privacy"
+      required
       select-id="privacy-select"
       label="Confidentialité du cluster"
       :options="['dedicated', 'public']"

@@ -53,6 +53,7 @@ export const getClustersWithProjectIdAndConfig = () => prisma.cluster.findMany({
     },
     clusterResources: true,
     label: true,
+    infos: true,
     privacy: true,
     secretName: true,
     kubeconfig: true,

@@ -76,7 +76,7 @@ export const addUserToProjectBusiness = async (
     return userToAdd
   } catch (error) {
     await updateProjectFailed(project.id)
-    throw new BadRequestError('Echec d\'ajout de l\'utilisateur au projet', undefined)
+    throw new Error('Echec d\'ajout de l\'utilisateur au projet')
   }
 }
 
@@ -131,6 +131,6 @@ export const removeUserFromProjectBusiness = async (
     await unlockProjectIfNotFailed(project.id)
   } catch (error) {
     await updateProjectFailed(project.id)
-    throw new BadRequestError('Echec de retrait de l\'utilisateur du projet', undefined)
+    throw new Error('Echec de retrait de l\'utilisateur du projet')
   }
 }

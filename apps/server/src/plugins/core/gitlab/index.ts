@@ -1,5 +1,4 @@
 import type { HookPayload, StepCall } from '@/plugins/hooks/hook.js'
-import { gitlabToken } from '@/utils/env.js'
 import { createGroup, deleteGroup, getGroupId, setGroupVariable, setProjectVariable } from './group.js'
 import { addGroupMember, getGroupMembers, removeGroupMember } from './permission.js'
 import { createProject, createProjectMirror, deleteProject } from './project.js'
@@ -9,6 +8,7 @@ import type { ArchiveProjectExecArgs, CreateProjectExecArgs } from '@/plugins/ho
 import type { CreateRepositoryExecArgs, DeleteRepositoryExecArgs } from '@/plugins/hooks/repository.js'
 import { User } from '@prisma/client'
 import { AddUserToProjectExecArgs } from '@/plugins/hooks/team.js'
+import { gitlabToken } from './utils.js'
 
 // Check
 export const checkApi = async (payload: HookPayload<{ owner: User }>) => {

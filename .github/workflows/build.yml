@@ -22,14 +22,17 @@ on:
   workflow_dispatch:
     inputs:
       REGISTRY:
+        description: Target registry to push images
         required: true
         type: string
         default: ghcr.io
       NAMESPACE:
+        description: Target namespace to the given registry
         required: true
         type: string
         default: cloud-pi-native/console
       PLATFORM:
+        description: Target platforms to build images
         required: true
         type: string
         default: linux/amd64
@@ -38,21 +41,6 @@ env:
   TAG: ${{ inputs.TAG || github.sha }}
 
 jobs:
-  check-secrets:
-    name: Check if Sonar secrets are set
-    runs-on: ubuntu-latest
-    outputs:
-      run-scan: ${{ steps.check-secrets.outputs.run-scan }}
-    steps:
-      - name: Check secrets presence
-        id: check-secrets
-        run: |
-          if [ "$SONAR_HOST_URL" != "" ] && [ "$SONAR_TOKEN" != "" ] && [ "$SONAR_PROJECT_KEY" != "" ]; then
-            echo "run-scan=true" >> $GITHUB_OUTPUT
-          else
-            echo "run-scan=false" >> $GITHUB_OUTPUT
-          fi
-
   matrix:
     name: Generate matrix for build & scan
     runs-on: ubuntu-latest
@@ -66,7 +54,7 @@ jobs:
         id: build-matrix
         run: |
           echo 'BUILD_MATRIX<<EOF' >> $GITHUB_OUTPUT
-          ./ci/scripts/build-matrix.sh -f ./docker/docker-compose.prod.yml -c -p "${{ inputs.PLATFORM }}" -r "${{ inputs.REGISTRY }}" -t "${{ inputs.TAG }}" -n "${{ inputs.NAMESPACE }}" | jq '[.[] | select(.build != false)]' >> $GITHUB_OUTPUT
+          ./ci/scripts/build-matrix.sh -f ./docker/docker-compose.prod.yml -c -a -p "${{ inputs.PLATFORM }}" -r "${{ inputs.REGISTRY }}" -t "${{ env.TAG }}" -n "${{ inputs.NAMESPACE }}" | jq '[.[] | select(.build != false)]' >> $GITHUB_OUTPUT
           echo 'EOF' >> $GITHUB_OUTPUT
 
   build:
@@ -81,9 +69,9 @@ jobs:
       - name: Checks-out repository
         uses: actions/checkout@v3
 
-      - name: Get short git sha
-        id: sha
-        run: echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+      - name: Get first tag
+        id: split
+        run: echo "APP_VERSION=${TAG%*,}" >> $GITHUB_OUTPUT
 
       - name: Set up Docker buildx
         uses: docker/setup-buildx-action@v2
@@ -109,4 +97,4 @@ jobs:
           platforms: ${{ matrix.images.build.platforms }}
           push: true
           build-args: |
-            APP_VERSION="${{ env.TAG }}"
+            APP_VERSION=${{ steps.split.outputs.APP_VERSION }}

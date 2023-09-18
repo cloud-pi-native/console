@@ -224,6 +224,8 @@ describe('User routes', () => {
       prisma.log.create.mockResolvedValueOnce(logRemove)
       prisma.log.create.mockResolvedValueOnce(logDelete)
       prisma.environment.delete.mockReturnValue(envToDelete)
+      prisma.environment.findMany.mockReturnValue([])
+      prisma.repository.findMany.mockReturnValue([])
 
       const response = await app.inject()
         .delete(`/${projectInfos.id}/environments/${envToDelete.id}`)

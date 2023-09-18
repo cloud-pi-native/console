@@ -1,7 +1,8 @@
 import axios from 'axios'
 import { axiosOptions } from './index.js'
+import { Project } from '@/plugins/hooks/project.js'
 
-export const createProject = async (projectName) => {
+export const createProject = async (projectName: Project) => {
   try {
     const existingProject = await axios({
       ...axiosOptions,
@@ -19,6 +20,9 @@ export const createProject = async (projectName) => {
       method: 'post',
       data: {
         project_name: projectName,
+        metadata: {
+          auto_scan: 'true',
+        },
       },
     })
     const newProject = await axios({
@@ -30,7 +34,7 @@ export const createProject = async (projectName) => {
   }
 }
 
-const removeRepositories = async (projectName) => {
+const removeRepositories = async (projectName: Project) => {
   const repositories = await axios({
     ...axiosOptions,
     method: 'get',
@@ -59,7 +63,7 @@ const removeRepositories = async (projectName) => {
   }
 }
 
-export const deleteProject = async (projectName) => {
+export const deleteProject = async (projectName: Project) => {
   const project = await axios({
     ...axiosOptions,
     url: `projects/${projectName}`,

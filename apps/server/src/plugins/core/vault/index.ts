@@ -1,4 +1,4 @@
-import { vaultUrl, vaultToken } from '@/utils/env.js'
+import { vaultUrl, vaultToken } from './utils.js'
 import type { StepCall } from '@/plugins/hooks/hook.js'
 import { destroyVault, listVault, readVault, writeVault } from './secret.js'
 import type { DeleteRepositoryExecArgs, UpdateRepositoryExecArgs } from '@/plugins/hooks/repository.js'
@@ -142,12 +142,19 @@ export const getDsoProjectSecrets: StepCall<any> = async (payload) => {
   try {
     const buildVaultPath = (service: string) => [organization, project, service.toUpperCase()].join('/')
 
+    // TODO déplacer les secrets dans un dossier pour tout lister plutôt que de sélectionner dans le code
+    let gitlab
+    try {
+      gitlab = await readVault(buildVaultPath('gitlab'))
+    } catch (error) {
+      console.log('secret gitlab not found ...')
+    }
     return {
       status: {
         result: 'OK',
       },
       result: {
-        gitlab: await readVault(buildVaultPath('gitlab')),
+        gitlab,
         // sonar: await readVault(buildVaultPath('sonar')),
         // harbor: await readVault(buildVaultPath('registry')),
       },

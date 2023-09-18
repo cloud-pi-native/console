@@ -1083,6 +1083,7 @@ export const data = {
         cluster: {
           server: 'https://public.server:6443',
           tlsServerName: 'public.server',
+          skipTLSVerify: true,
         },
         user: {
           keyData: 'LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQotLS0tLUVORCBSU0EgUFJJVkFURSBLRVktLS0tLQo=',
@@ -1101,6 +1102,7 @@ export const data = {
       kubeconfig: {
         cluster: {
           server: 'https://nothere.cluster',
+          skipTLSVerify: false,
           tlsServerName: 'nothere.cluster',
         },
         user: {
@@ -1111,6 +1113,7 @@ export const data = {
     {
       id: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
       label: 'pas-top-cluster',
+      infos: 'Floating IP : 0.0.0.0',
       privacy: 'dedicated',
       secretName: '94d52618-7869-4192-b33e-85dd0959e815',
       clusterResources: false,

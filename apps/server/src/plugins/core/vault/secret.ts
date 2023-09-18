@@ -53,7 +53,7 @@ export const destroyVault = async (path) => {
   return response
 }
 
-export const listVault = async (path) => {
+export const listVault = async (path: string) => {
   const listSecretPath = []
   const token = await getToken()
   const response = await axios({

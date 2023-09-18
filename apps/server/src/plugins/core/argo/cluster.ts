@@ -2,8 +2,7 @@ import { ClusterModel } from '@dso-console/shared'
 import type { V1Secret } from '@kubernetes/client-node'
 import { StepCall } from '@/plugins/hooks/hook.js'
 import { CreateClusterExecArgs, DeleteClusterExecArgs } from '@/plugins/hooks/index.js'
-import { k8sApi } from './init.js'
-import { argoNamespace } from '@/utils/env.js'
+import { argoNamespace, k8sApi } from './init.js'
 
 export const createCluster: StepCall<CreateClusterExecArgs> = async (payload) => {
   try {
@@ -82,7 +81,7 @@ export const createClusterSecret = async (cluster: ClusterModel) => {
     await k8sApi.readNamespacedSecret(cluster.secretName, argoNamespace)
     await k8sApi.replaceNamespacedSecret(cluster.secretName, argoNamespace, convertClusterToSecret(cluster))
   } catch (error) {
-    if (error.response.statusCode !== 404) throw error
+    if (error?.response?.statusCode !== 404) throw error
     await k8sApi.createNamespacedSecret(argoNamespace, convertClusterToSecret(cluster))
   }
 }
