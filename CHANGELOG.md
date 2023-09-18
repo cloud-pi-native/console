@@ -1,5 +1,30 @@
 # Changelog
 
+## [5.8.0](https://github.com/cloud-pi-native/console/compare/v5.7.0...v5.8.0) (2023-09-18)
+
+
+### Features
+
+* :passport_control: update harbor project member role ([4419dd5](https://github.com/cloud-pi-native/console/commit/4419dd5f395f79a9eb99e8c0f305a7433ad84f7e))
+* :sparkles: add infos key for cluster ([25ab8b8](https://github.com/cloud-pi-native/console/commit/25ab8b8d821c37f4491bd8fea075bdc7fbfcfc93))
+* :sparkles: add tlsServerName input in cluster form ([4bdc01e](https://github.com/cloud-pi-native/console/commit/4bdc01ef9dd5b2041a34491e46b9759e5c6652f0))
+* :technologist: add images auto-scan to harbor settings ([507c6e6](https://github.com/cloud-pi-native/console/commit/507c6e6a541b19502084276db30cf834e586d955))
+
+
+### Bug Fixes
+
+* :alien: fetch does not support proxy natively ([20d531d](https://github.com/cloud-pi-native/console/commit/20d531d622e6fe9e2869e13db0d205b44ad602ce))
+* :art: can disble plugins by name, and some fixes ([f2bd397](https://github.com/cloud-pi-native/console/commit/f2bd397e0526d76d439ef8f38b5dcebdfbaa8ede))
+* :bug: clusters related bugs ([c2ba63e](https://github.com/cloud-pi-native/console/commit/c2ba63e94d87bdf1741e9a51e4522c3f77b354de))
+* :bug: now the admin can chosse skip tls api kube ([e09aa2a](https://github.com/cloud-pi-native/console/commit/e09aa2ac659e1439f59050c56256f530b9f8cae6))
+* :goal_net: throw error if catched in business ([1790ec2](https://github.com/cloud-pi-native/console/commit/1790ec274e965d5d62a0693937eec5ee765602e2))
+* :heavy_plus_sign: fix pnpm-lock file ([93aa64e](https://github.com/cloud-pi-native/console/commit/93aa64e146e11f30c8305f85d7ff03b696b0297b))
+
+
+### Reverts
+
+* :poop: comment harbor projet member role update ([63926ae](https://github.com/cloud-pi-native/console/commit/63926ae9c5a5fe6b9e6e8a2d0007f55d186b0f36))
+
 ## [5.7.0](https://github.com/cloud-pi-native/console/compare/v5.6.0...v5.7.0) (2023-09-07)
 
 
