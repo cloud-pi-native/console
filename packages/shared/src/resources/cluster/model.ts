@@ -4,8 +4,9 @@ export type ClusterModel = {
   id: string
   label: string
   user: Pick<User, 'username' | 'password' | 'token' | 'certData' | 'keyData'>
-  cluster: Pick<Cluster, 'name' | 'caData' | 'server' | 'tlsServerName'>
+  cluster: Omit<Cluster, 'caFile'>
   secretName: string
   clusterResources: boolean
   privacy: ClusterPrivacy
+  infos: string
 }
