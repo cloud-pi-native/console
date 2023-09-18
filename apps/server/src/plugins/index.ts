@@ -5,7 +5,7 @@ import { type FastifyInstance } from 'fastify/types/instance.js'
 import { objectEntries, objectKeys } from '@/utils/type.js'
 import * as hooks from './hooks/index.js'
 import { type PluginsFunctions } from './hooks/hook.js'
-import { disabledPlugins } from '@/utils/env.js'
+import { disabledPlugins, isProd } from '@/utils/env.js'
 import { type ServiceInfos, servicesInfos } from './services.js'
 
 export type RegisterFn = (name: string, subscribedHooks: PluginsFunctions, serviceInfos: ServiceInfos | void) => void
@@ -67,8 +67,8 @@ const initPluginManager = async (app: FastifyInstance): PluginManager => {
 export const initCorePlugins = async (pluginManager: Awaited<PluginManager>, _app: FastifyInstance) => {
   const corePlugins = ['gitlab', 'harbor', 'keycloak', 'kubernetes', 'argo', 'nexus', 'sonarqube', 'vault']
   const importPlugin = async (name: string) => {
-    if (!disabledPlugins.includes(name)) return
-    const { init } = await import(`./core/${name}/init.js`)
+    if (disabledPlugins.includes(name)) return
+    const { init } = await import(`./core/${name}/init.${isProd ? 'js' : 'ts'}`)
     init(pluginManager.register)
   }
   for (const pluginName of corePlugins) {
