@@ -68,6 +68,8 @@ server:
     type: ClusterIP
   # list of zips to download; basically curl url, unzip and stores it in plugins/external/<dir_name>
   plugins: []
+  # csv list of plugins to disabled
+  disabledPlugins: ""
 
 client:
   container:

@@ -60,7 +60,7 @@ describe('Service route', () => {
   describe('checkServicesHealthController', () => {
     it('Should retrieve an OK services status', async () => {
       prisma.user.findUnique.mockResolvedValue(requestor)
-    
+
       const response = await app.inject()
         .get('/')
         .end()
