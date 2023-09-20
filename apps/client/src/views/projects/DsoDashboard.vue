@@ -169,34 +169,34 @@ const getRows = (service) => {
       class="flex flex-col gap-4"
     >
       <DsoBadge
-        :ressource="{
+        :resource="{
           ...project,
-          ressourceKey: 'locked',
+          resourceKey: 'locked',
           wording: `Projet ${project?.name}`
         }"
       />
       <DsoBadge
-        :ressource="{
+        :resource="{
           ...project,
-          ressourceKey: 'status',
+          resourceKey: 'status',
           wording: `Projet ${project?.name}`
         }"
       />
       <DsoBadge
         v-for="environment in project?.environments"
         :key="environment?.id"
-        :ressource="{
+        :resource="{
           ...environment,
-          ressourceKey: 'status',
+          resourceKey: 'status',
           wording: `Environnement ${environment?.name}`
         }"
       />
       <DsoBadge
         v-for="repository in project?.repositories"
         :key="repository?.id"
-        :ressource="{
+        :resource="{
           ...repository,
-          ressourceKey: 'status',
+          resourceKey: 'status',
           wording: `Dépôt ${repository?.internalRepoName}`
         }"
       />
