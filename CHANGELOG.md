@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.8.2](https://github.com/cloud-pi-native/console/compare/v5.8.1...v5.8.2) (2023-09-20)
+
+
+### Bug Fixes
+
+* :wrench: handle no values for disabledPlugins ([d0d46a3](https://github.com/cloud-pi-native/console/commit/d0d46a38570db6f626f5879da180829216826fa8))
+
 ## [5.8.1](https://github.com/cloud-pi-native/console/compare/v5.8.0...v5.8.1) (2023-09-18)
 
 
