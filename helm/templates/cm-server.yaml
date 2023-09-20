@@ -6,7 +6,9 @@ metadata:
 data:
   NODE_ENV: {{ .Values.env }}
   HOME: /home/node
+  {{- if .Values.server.disabledPlugins -}}
   DISABLED_PLUGINS: {{ .Values.server.disabledPlugins }}
+  {{- end }}
   {{- with .Values.keycloak }}
   SESSION_SECRET: {{ .sessionSecret }}
   KEYCLOAK_DOMAIN: {{ .domain }}
