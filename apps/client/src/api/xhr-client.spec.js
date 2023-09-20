@@ -33,7 +33,7 @@ describe('xhr-client', () => {
     it('Should return an error if the request', async () => {
       const error = new Error('Request throw an error')
       let rejected
-      await xhrClient.apiClient.interceptors.request.handlers[0].rejected(error).catch(e => { rejected = e })
+      await xhrClient.apiClient.interceptors.request.handlers[0].rejected(error).catch(error => { rejected = error })
 
       expect(rejected).toEqual(error)
     })

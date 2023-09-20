@@ -1,12 +1,12 @@
-<script setup>
-import { useServiceStore } from '@/stores/services.js'
-import { ref, computed, onBeforeMount } from 'vue'
+<script  lang="ts" setup>
+import { useServiceStore, type Service, type ServicesHealth } from '@/stores/services.js'
+import { ref, computed, onBeforeMount, type Ref, type ComputedRef } from 'vue'
 
 const serviceStore = useServiceStore()
 
-const isUpdating = ref(true)
-const services = computed(() => serviceStore.services)
-const servicesHealth = computed(() => serviceStore.servicesHealth)
+const isUpdating: Ref<boolean> = ref(true)
+const services: ComputedRef<Array<Service>> = computed(() => serviceStore.services)
+const servicesHealth: ComputedRef<ServicesHealth> = computed(() => serviceStore.servicesHealth)
 
 const checkServicesHealth = async () => {
   isUpdating.value = true

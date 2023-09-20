@@ -1,4 +1,4 @@
-<script setup>
+<script lang="ts" setup>
 import { computed } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import DsoSelectedProject from './DsoSelectedProject.vue'

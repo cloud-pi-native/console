@@ -1,12 +1,9 @@
 import { defineStore } from 'pinia'
 import api from '@/api/index.js'
+import { UserModel } from '@dso-console/shared'
 
 export const useAdminUserStore = defineStore('admin-user', () => {
-  /**
-   * Get all users via api
-   * @returns list of users
-   */
-  const getAllUsers = async () => {
+  const getAllUsers = async (): Promise<Array<UserModel>> => {
     return api.getAllUsers()
   }
 

@@ -1,7 +1,8 @@
+import type { GenerateCIFilesDto, CreateProjectDto, ProjectModel, CreateRepositoryDto, UpdateRepositoryDto, RepositoryModel, UserModel, UpdateClusterDto, CreateClusterDto, ClusterModel, OrganizationModel, EnvironmentModel, UpdateEnvironmentDto, UpdateProjectDto, InitializeEnvironmentDto, AdminLogsGet, UpdateOrganizationDto, CreateOrganizationDto } from '@dso-console/shared'
 import { apiClient } from './xhr-client.js'
 
 // CIFiles
-export const generateCIFiles = async (data) => {
+export const generateCIFiles = async (data: GenerateCIFilesDto['body']) => {
   const response = await apiClient.post('/ci-files', data)
   return response.data
 }
@@ -13,7 +14,7 @@ export const getActiveOrganizations = async () => {
 }
 
 // Project
-export const createProject = async (data) => {
+export const createProject = async (data: CreateProjectDto['body']) => {
   const response = await apiClient.post('/projects', data)
   return response.data
 }
@@ -23,22 +24,22 @@ export const getUserProjects = async () => {
   return response.data
 }
 
-export const getUserProjectById = async (projectId) => {
+export const getUserProjectById = async (projectId: ProjectModel['id']) => {
   const response = await apiClient.get(`/projects/${projectId}`)
   return response.data
 }
 
-export const updateProject = async (projectId, data) => {
+export const updateProject = async (projectId: ProjectModel['id'], data: UpdateProjectDto['body']) => {
   const response = await apiClient.put(`/projects/${projectId}`, data)
   return response.data
 }
 
-export const archiveProject = async (projectId) => {
+export const archiveProject = async (projectId: ProjectModel['id']) => {
   const response = await apiClient.delete(`/projects/${projectId}`)
   return response.data
 }
 
-export const getProjectSecrets = async (projectId) => {
+export const getProjectSecrets = async (projectId: ProjectModel['id']) => {
   const response = await apiClient.get(`/projects/${projectId}/secrets`)
   return response.data
 }
@@ -50,86 +51,86 @@ export const checkServicesHealth = async () => {
 }
 
 // Repositories
-export const addRepo = async (projectId, data) => {
+export const addRepo = async (projectId: ProjectModel['id'], data: CreateRepositoryDto['body']) => {
   const response = await apiClient.post(`/projects/${projectId}/repositories`, data)
   return response.data
 }
 
-export const getRepos = async (projectId) => {
+export const getRepos = async (projectId: ProjectModel['id']) => {
   const response = await apiClient.get(`/projects/${projectId}/repositories`)
   return response.data
 }
 
-export const updateRepo = async (projectId, data) => {
+export const updateRepo = async (projectId: ProjectModel['id'], data: UpdateRepositoryDto['body']) => {
   const response = await apiClient.put(`/projects/${projectId}/repositories/${data.id}`, data)
   return response.data
 }
 
-export const deleteRepo = async (projectId, repoId) => {
+export const deleteRepo = async (projectId: ProjectModel['id'], repoId: RepositoryModel['id']) => {
   const response = await apiClient.delete(`/projects/${projectId}/repositories/${repoId}`)
   return response.data
 }
 
 // Users
-export const getMatchingUsers = async (projectId, letters) => {
+export const getMatchingUsers = async (projectId: ProjectModel['id'], letters: string) => {
   const response = await apiClient.get(`/projects/${projectId}/users/match?letters=${letters}`)
   return response.data
 }
 
-export const addUser = async (projectId, data) => {
+export const addUser = async (projectId: ProjectModel['id'], data) => {
   const response = await apiClient.post(`/projects/${projectId}/users`, data)
   return response.data
 }
 
-export const updateUser = async (projectId, data) => {
+export const updateUser = async (projectId: ProjectModel['id'], data) => {
   const response = await apiClient.put(`/projects/${projectId}/users/${data.id}`, data)
   return response.data
 }
 
 // TODO : pas utilisé
-export const getUsers = async (projectId) => {
+export const getUsers = async (projectId: ProjectModel['id']) => {
   const response = await apiClient.get(`/projects/${projectId}/users`)
   return response.data
 }
 
-export const removeUser = async (projectId, userId) => {
+export const removeUser = async (projectId: ProjectModel['id'], userId: UserModel['id']) => {
   const response = await apiClient.delete(`/projects/${projectId}/users/${userId}`)
   return response.data
 }
 
 // Environments
-export const addEnvironment = async (projectId, data) => {
+export const addEnvironment = async (projectId: ProjectModel['id'], data: InitializeEnvironmentDto['body']) => {
   const response = await apiClient.post(`/projects/${projectId}/environments`, data)
   return response.data
 }
 
-export const updateEnvironment = async (projectId, environmentId, data) => {
+export const updateEnvironment = async (projectId: ProjectModel['id'], environmentId: EnvironmentModel['id'], data: UpdateEnvironmentDto['body']) => {
   const response = await apiClient.put(`/projects/${projectId}/environments/${environmentId}`, data)
   return response.data
 }
 
-export const deleteEnvironment = async (projectId, environmentId) => {
+export const deleteEnvironment = async (projectId: ProjectModel['id'], environmentId: EnvironmentModel['id']) => {
   const response = await apiClient.delete(`/projects/${projectId}/environments/${environmentId}`)
   return response.data
 }
 
 // Permissions
-export const addPermission = async (projectId, environmentId, data) => {
+export const addPermission = async (projectId: ProjectModel['id'], environmentId: EnvironmentModel['id'], data) => {
   const response = await apiClient.post(`/projects/${projectId}/environments/${environmentId}/permissions`, data)
   return response.data
 }
 
-export const updatePermission = async (projectId, environmentId, data) => {
+export const updatePermission = async (projectId: ProjectModel['id'], environmentId: EnvironmentModel['id'], data) => {
   const response = await apiClient.put(`/projects/${projectId}/environments/${environmentId}/permissions`, data)
   return response.data
 }
 
-export const getPermissions = async (projectId, environmentId) => {
+export const getPermissions = async (projectId: ProjectModel['id'], environmentId: EnvironmentModel['id']) => {
   const response = await apiClient.get(`/projects/${projectId}/environments/${environmentId}/permissions`)
   return response.data
 }
 
-export const deletePermission = async (projectId, environmentId, userId) => {
+export const deletePermission = async (projectId: ProjectModel['id'], environmentId: EnvironmentModel['id'], userId: UserModel['id']) => {
   const response = await apiClient.delete(`/projects/${projectId}/environments/${environmentId}/permissions/${userId}`)
   return response.data
 }
@@ -146,12 +147,12 @@ export const getAllOrganizations = async () => {
   return response.data
 }
 
-export const createOrganization = async (data) => {
+export const createOrganization = async (data: CreateOrganizationDto['body']) => {
   const response = await apiClient.post('/admin/organizations', data)
   return response.data
 }
 
-export const updateOrganization = async (orgName, data) => {
+export const updateOrganization = async (orgName: OrganizationModel['name'], data: UpdateOrganizationDto['body']) => {
   const response = await apiClient.put(`/admin/organizations/${orgName}`, data)
   return response.data
 }
@@ -168,7 +169,7 @@ export const getAllProjects = async () => {
 }
 
 // Admin - Logs
-export const getAllLogs = async ({ offset, limit }) => {
+export const getAllLogs = async ({ offset, limit }: AdminLogsGet['query']) => {
   const response = await apiClient.get(`/admin/logs?offset=${offset}&limit=${limit}`)
   return response.data
 }
@@ -179,12 +180,12 @@ export const getAllClusters = async () => {
   return response.data
 }
 
-export const addCluster = async (data) => {
+export const addCluster = async (data: CreateClusterDto['body']) => {
   const response = await apiClient.post('/admin/clusters', data)
   return response.data
 }
 
-export const updateCluster = async (id, data) => {
-  const response = await apiClient.put(`/admin/clusters/${id}`, data)
+export const updateCluster = async (clusterId: ClusterModel['id'], data: UpdateClusterDto['body']) => {
+  const response = await apiClient.put(`/admin/clusters/${clusterId}`, data)
   return response.data
 }

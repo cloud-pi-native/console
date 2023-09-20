@@ -1,25 +1,23 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { type Ref, ref } from 'vue'
 import api from '@/api/index.js'
+import { type ProjectInfos, type UpdateProjectDto, type UserModel } from '@dso-console/shared'
 
 export const useProjectStore = defineStore('project', () => {
-  const selectedProject = ref(undefined)
-  const selectedProjectOwner = ref(undefined)
-  const projects = ref([])
+  const selectedProject: Ref<ProjectInfos | undefined> = ref(undefined)
+  const selectedProjectOwner: Ref<UserModel | undefined> = ref(undefined)
+  const projects: Ref<Array<ProjectInfos>> = ref([])
 
-  /**
-   * @param {string} project
-   */
-  const setSelectedProject = (id) => {
+  const setSelectedProject = (id: ProjectInfos['id']) => {
     selectedProject.value = projects.value.find(project => project.id === id)
-    setSelectedProjectOwner(selectedProject.value)
+    setSelectedProjectOwner(selectedProject.value?.roles)
   }
 
-  const setSelectedProjectOwner = (project) => {
-    selectedProjectOwner.value = project.roles.find(role => role.role === 'owner').user
+  const setSelectedProjectOwner = (roles: ProjectInfos['roles']) => {
+    selectedProjectOwner.value = roles?.find(role => role.role === 'owner')?.user
   }
 
-  const updateProject = async (projectId, data) => {
+  const updateProject = async (projectId: ProjectInfos['id'], data: UpdateProjectDto['body']) => {
     await api.updateProject(projectId, data)
     await getUserProjects()
   }
@@ -32,18 +30,18 @@ export const useProjectStore = defineStore('project', () => {
     }
   }
 
-  const createProject = async (project) => {
+  const createProject = async (project: ProjectInfos) => {
     await api.createProject(project)
     await getUserProjects()
   }
 
-  const archiveProject = async (projectId) => {
+  const archiveProject = async (projectId: ProjectInfos['id']) => {
     await api.archiveProject(projectId)
     selectedProject.value = undefined
     await getUserProjects()
   }
 
-  const getProjectSecrets = async (projectId) => {
+  const getProjectSecrets = async (projectId: ProjectInfos['id']) => {
     return await api.getProjectSecrets(projectId)
   }
 

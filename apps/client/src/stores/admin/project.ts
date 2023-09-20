@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import api from '@/api/index.js'
+import { ProjectInfos } from '@dso-console/shared'
 
 export const useAdminProjectStore = defineStore('admin-project', () => {
   const getAllProjects = async () => {
@@ -7,7 +8,7 @@ export const useAdminProjectStore = defineStore('admin-project', () => {
   }
 
   const getAllActiveProjects = async () => {
-    const allProjects = await getAllProjects()
+    const allProjects: Array<ProjectInfos> = await getAllProjects()
     return allProjects.filter(project => project.status !== 'archived')
   }
 

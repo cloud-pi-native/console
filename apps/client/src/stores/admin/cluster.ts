@@ -1,23 +1,23 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { Ref, ref } from 'vue'
 import api from '@/api/index.js'
+import { ClusterModel, CreateClusterDto, UpdateClusterDto } from '@dso-console/shared'
 
 export const useAdminClusterStore = defineStore('admin-cluster', () => {
-  const clusters = ref([])
-  const selectedCluster = ref(undefined)
+  const clusters: Ref<Array<ClusterModel | undefined>> = ref([])
 
   const getAllClusters = async () => {
     clusters.value = await api.getAllClusters()
     return clusters.value
   }
 
-  const addCluster = async ({ label, infos, cluster, user, projectsId, clusterResources, privacy }) => {
-    const res = await api.addCluster({ label, infos, cluster, user, projectsId, clusterResources, privacy })
+  const addCluster = async (cluster: CreateClusterDto['body']) => {
+    const res = await api.addCluster(cluster)
     return res
   }
 
-  const updateCluster = async ({ id, infos, cluster, user, projectsId, clusterResources, privacy }) => {
-    return api.updateCluster(id, { infos, cluster, user, projectsId, clusterResources, privacy })
+  const updateCluster = async (cluster: UpdateClusterDto['body']) => {
+    return api.updateCluster(cluster.id, cluster)
   }
 
   // const removeCluster = async ({ name, label, active }) => {
@@ -26,7 +26,6 @@ export const useAdminClusterStore = defineStore('admin-cluster', () => {
 
   return {
     clusters,
-    selectedCluster,
     getAllClusters,
     addCluster,
     updateCluster,

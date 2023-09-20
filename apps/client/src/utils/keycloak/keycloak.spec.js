@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
-import { getKeycloak, getUserProfile, keycloakInit, keycloakLogin, keycloakLogout } from './keycloak'
+import { getKeycloak, getUserProfile, keycloakInit, keycloakLogin, keycloakLogout } from './keycloak.js'
 
 const userToken = {
   email: 'test@test.com',
@@ -13,7 +13,7 @@ const userStored = {
   firstName: 'Jean',
   lastName: 'DUPOND',
 }
-const keycloak = await getKeycloak()
+const keycloak = getKeycloak()
 
 vi.mock('keycloak-js', () => {
   class Keycloak {
@@ -35,14 +35,14 @@ describe('keycloak-init', () => {
     vi.clearAllMocks()
   })
 
-  it('Should return Keycloak instance', async () => {
-    const keycloak = await getKeycloak()
+  it('Should return Keycloak instance', () => {
+    const keycloak = getKeycloak()
 
     expect(keycloak).toBeInstanceOf(Object)
   })
 
-  it('Should return keycloak user profile', async () => {
-    const keycloakUser = await getUserProfile()
+  it('Should return keycloak user profile', () => {
+    const keycloakUser = getUserProfile()
 
     expect(keycloakUser).toBeInstanceOf(Object)
     expect(keycloakUser).toMatchObject(userStored)

@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory, type RouteRecord, type RouteRecordNormalized } from 'vue-router'
 import { useUserStore } from '@/stores/user.js'
 import { useProjectStore } from '@/stores/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
@@ -20,10 +20,7 @@ const ListClusters = () => import('@/views/admin/ListClusters.vue')
 
 const MAIN_TITLE = 'Console Cloud π Native'
 
-/**
- * @type {import('vue-router').RouteRecord[]}
- */
-const routes = [
+const routes: Array<RouteRecord> = [
   {
     path: '/login',
     name: 'Login',
@@ -31,6 +28,8 @@ const routes = [
       const userStore = useUserStore()
       await userStore.login()
     },
+    // TODO
+    // @ts-ignore
     component: DsoProjects,
   },
   {
@@ -40,76 +39,106 @@ const routes = [
       const userStore = useUserStore()
       await userStore.logout()
     },
+    // TODO
+    // @ts-ignore
     component: DsoProjects,
   },
   {
     path: '/',
     name: 'Home',
+    // TODO
+    // @ts-ignore
     component: DsoHome,
   },
   {
     path: '/services-health',
     name: 'ServicesHealth',
+    // TODO
+    // @ts-ignore
     component: ServicesHealth,
   },
   {
     path: '/projects',
     name: 'Projects',
+    // TODO
+    // @ts-ignore
     component: DsoProjects,
   },
   {
     path: '/projects/create-project',
     name: 'CreateProject',
+    // TODO
+    // @ts-ignore
     component: CreateProject,
   },
   {
     path: '/projects/:id/dashboard',
     name: 'Dashboard',
+    // TODO
+    // @ts-ignore
     component: DsoDashboard,
   },
   {
     path: '/projects/:id/services',
     name: 'Services',
+    // TODO
+    // @ts-ignore
     component: DsoServices,
   },
   {
     path: '/projects/:id/team',
     name: 'Team',
+    // TODO
+    // @ts-ignore
     component: DsoTeam,
   },
   {
     path: '/projects/:id/repositories',
     name: 'Repos',
+    // TODO
+    // @ts-ignore
     component: DsoRepos,
   },
   {
     path: '/projects/:id/environments',
     name: 'Environments',
+    // TODO
+    // @ts-ignore
     component: ManageEnvironments,
   },
   {
     path: '/admin/users',
     name: 'ListUser',
+    // TODO
+    // @ts-ignore
     component: ListUser,
   },
   {
     path: '/admin/organizations',
     name: 'ListOrganizations',
+    // TODO
+    // @ts-ignore
     component: ListOrganizations,
   },
   {
     path: '/admin/projects',
     name: 'ListProjects',
+    // TODO
+    // @ts-ignore
     component: ListProjects,
   },
   {
     path: '/admin/logs',
     name: 'ListLogs',
+    // TODO
+    // @ts-ignore
     component: ListLogs,
   },
   {
     path: '/admin/clusters',
     name: 'ListClusters',
+    // TODO
+    // @ts-ignore
     component: ListClusters,
   },
 ]
@@ -137,7 +166,7 @@ router.beforeEach(async (to, _from, next) => {
   userStore.setIsLoggedIn()
 
   // Redirige sur la page login si le path le requiert et l'utilisateur n'est pas connecté
-  if (!validPath.includes(to.name) && !userStore.isLoggedIn) {
+  if (typeof (to.name) === 'string' && !validPath.includes(to.name) && !userStore.isLoggedIn) {
     return next('Login')
   }
 
@@ -162,7 +191,10 @@ router.beforeEach(async (to, _from, next) => {
     try {
       await projectStore.getUserProjects()
     } catch (error) {
-      snackbarStore.setMessage(error?.message, 'error')
+      if (error instanceof Error) {
+        snackbarStore.setMessage(error?.message, 'error')
+      }
+      snackbarStore.setMessage('Echec de récupération du projet', 'error')
     }
 
     const idStart = projectsPath.length

@@ -1,11 +1,28 @@
-<script setup>
-import { onMounted, ref } from 'vue'
+<script lang="ts" setup>
+import { onMounted, ref, type Ref } from 'vue'
 import { useUserStore } from '../stores/user.js'
 
 const userStore = useUserStore()
 
-const tabListName = 'benefitsTab'
-const tabTitles = [
+type TabTitle = {
+  title: string,
+  icon: string,
+}
+
+type MailType = {
+  to: string,
+  label: string,
+  address: string,
+}
+
+type KnowMoreBtn = {
+  label: string,
+  title: string,
+  onClick: any,
+}
+
+const tabListName: string = 'benefitsTab'
+const tabTitles: Array<TabTitle> = [
   {
     title: 'Qualité',
     icon: 'ri-award-fill',
@@ -19,26 +36,28 @@ const tabTitles = [
     icon: 'ri-shield-check-fill',
   },
 ]
-const tabContents = [
+const tabContents: Array<string> = [
   'Avec la mise en place progressive d\'une véritable usine logicielle DevSecOps ("DSO" pour "développement, sécurité et exploitation") soutenant l\'agilité pour concevoir des applications sécurisées et de qualité à partir du socle OpenShift, le ministère de l\'Intérieur se dote d\'une offre clé en main, fonctionnelle et technique, qui permet de produire et opérer des services numériques de haute qualité, sécurisés et ergonomiques qui répondent aux besoins des citoyens et des agents, tout en restant évolutifs et maintenables à moindre coût.',
   'Temps de déploiement < 2 heures pour une application existante, sans impact utilisateur ; < 15 minutes pour un environnement usine et < 5 jours pour le déploiement en autonomie d\'une nouvelle application d\'un langage « top3 », après demande initiale sur la console Cloud Native (incluant signature du conventionnement dématérialisé.',
   'L\'offre Cloud π Native permet d\'héberger des données sensibles jusqu\'au niveau Diffusion Restreinte (DR) en conformité avec le SecNumCloud. Elle intègre les règles de durcissement de Kubernetes en vigueur et la conformité à l\'état de l\'art (cf. SecNumCloud et guide NSA/CISA).',
 ]
 
-const mail = {
+const mail: MailType = {
   to: 'mailto:cloudpinative-relations@interieur.gouv.fr?subject=Question à propos de Cloud π Native',
   label: 'Nous écrire (cloudpinative-relations@interieur.gouv.fr)',
   address: 'cloudpinative-relations@interieur.gouv.fr',
 }
-const ghFormationUrl = 'https://github.com/cloud-pi-native/embarquement-autoformation'
+const ghFormationUrl: string = 'https://github.com/cloud-pi-native/embarquement-autoformation'
 
-const knowMoreBtn = ref({
+const knowMoreBtn: Ref<KnowMoreBtn> = ref({
   label: 'Contactez-nous pour en savoir plus',
   title: mail.address,
   onClick: () => setWindowLocation(mail.to),
 })
 
-const setWindowLocation = (to) => {
+const setWindowLocation = (to: string) => {
+  // TODO
+  // @ts-ignore
   window.location = to
 }
 

@@ -1,10 +1,23 @@
 import { defineStore } from 'pinia'
 import api from '@/api/index.js'
-import { ref } from 'vue'
+import { type Ref, ref } from 'vue'
+import { type ErrorTypes } from '@dso-console/shared'
+
+export type ServicesHealth = {
+  message: string,
+  status: ErrorTypes,
+} | Record<string, never>
+
+export type Service = {
+  name: string,
+  status: ErrorTypes,
+  message: string,
+  code: number,
+}
 
 export const useServiceStore = defineStore('service', () => {
-  const servicesHealth = ref({})
-  const services = ref([])
+  const servicesHealth: Ref<ServicesHealth> = ref({})
+  const services: Ref<Array<Service>> = ref([])
 
   const checkServicesHealth = async () => {
     servicesHealth.value = {

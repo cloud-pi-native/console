@@ -74,6 +74,7 @@ export const statusDict = {
       type: 'success',
       icon: 'ri-lock-unlock-fill',
       wording: 'déverrouillé',
+      animation: '',
       color: 'var(--success-425-625)',
     },
     true: {
@@ -81,6 +82,7 @@ export const statusDict = {
       type: 'warning',
       icon: 'ri-lock-fill',
       wording: 'verrouillé',
+      animation: '',
       color: 'var(--warning-425-625)',
     },
   },
@@ -90,6 +92,7 @@ export const statusDict = {
       type: 'success',
       icon: 'ri-check-fill',
       wording: 'opérations réussies',
+      animation: '',
       color: 'var(--success-425-625)',
     },
     failed: {
@@ -97,6 +100,7 @@ export const statusDict = {
       type: 'error',
       icon: 'ri-close-line',
       wording: 'opérations échouées',
+      animation: '',
       color: 'var(--error-425-625)',
     },
     initializing: {
@@ -108,9 +112,12 @@ export const statusDict = {
       color: 'var(--info-425-625)',
     },
     archived: {
+      testId: 'archived-badge',
+      type: 'info',
       icon: 'ri-archive-fill',
       wording: 'archivé',
+      animation: '',
       color: 'var(--text-mention-grey)',
     },
   },
-}
+} as const

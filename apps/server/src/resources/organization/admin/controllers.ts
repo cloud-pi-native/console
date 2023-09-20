@@ -1,6 +1,8 @@
 import { addReqLogs } from '@/utils/logger.js'
 import { sendOk, sendCreated } from '@/utils/response.js'
 import { createOrganizationBusiness, fetchOrganizationsBusiness, getAllOrganizationBusiness, updateOrganizationBusiness } from './business.js'
+import { EnhancedFastifyRequest } from '@/types/index.js'
+import { CreateOrganizationDto, UpdateOrganizationDto } from '@dso-console/shared'
 
 // GET
 export const getAllOrganizationsController = async (req, res) => {
@@ -13,7 +15,7 @@ export const getAllOrganizationsController = async (req, res) => {
 }
 
 // POST
-export const createOrganizationController = async (req, res) => {
+export const createOrganizationController = async (req: EnhancedFastifyRequest<CreateOrganizationDto>, res) => {
   const data = req.body
   const organization = await createOrganizationBusiness(data)
 
@@ -28,7 +30,7 @@ export const createOrganizationController = async (req, res) => {
 }
 
 // PUT
-export const updateOrganizationController = async (req, res) => {
+export const updateOrganizationController = async (req: EnhancedFastifyRequest<UpdateOrganizationDto>, res) => {
   const name = req.params.orgName
   const { active, label, source } = req.body
 

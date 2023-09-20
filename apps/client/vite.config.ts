@@ -38,4 +38,7 @@ export default defineConfig({
     },
     dedupe: ['vue', 'oh-vue-icons'],
   },
+  build: {
+    target: 'esnext',
+  },
 })

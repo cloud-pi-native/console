@@ -9,6 +9,7 @@ import {
   keycloakRealm,
   keycloakRedirectUri,
 } from '../env'
+import { type UserProfile } from '@dso-console/shared'
 
 export const keycloakInitOptions: KeycloakInitOptions = {
   onLoad: 'check-sso',
@@ -31,7 +32,7 @@ export const getKeycloak = () => {
   return keycloak
 }
 
-export const getUserProfile = async () => {
+export const getUserProfile = (): UserProfile => {
   try {
     const keycloak = getKeycloak()
     const { email, sub: id, given_name: firstName, family_name: lastName, groups } = keycloak.idTokenParsed as Record<string, string | string[]>
@@ -43,7 +44,8 @@ export const getUserProfile = async () => {
       groups,
     }
   } catch (error) {
-    return error
+    if (error instanceof Error) throw new Error(error.message)
+    throw new Error('échec de récupération du profil keycloak de l\'utilisateur')
   }
 }
 
@@ -54,7 +56,8 @@ export const keycloakInit = async () => {
     const keycloak = getKeycloak()
     await keycloak.init({ onLoad, flow, redirectUri })
   } catch (error) {
-    return error
+    if (error instanceof Error) throw new Error(error.message)
+    throw new Error('échec d\'initialisation du keycloak')
   }
 }
 
@@ -63,7 +66,8 @@ export const keycloakLogin = async () => {
     const keycloak = getKeycloak()
     await keycloak.login()
   } catch (error) {
-    return error
+    if (error instanceof Error) throw new Error(error.message)
+    throw new Error('échec de connexion au keycloak')
   }
 }
 
@@ -72,6 +76,7 @@ export const keycloakLogout = async () => {
     const keycloak = getKeycloak()
     await keycloak.logout()
   } catch (error) {
-    return error
+    if (error instanceof Error) throw new Error(error.message)
+    throw new Error('échec de déconnexion du keycloak')
   }
 }

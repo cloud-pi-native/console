@@ -1,17 +1,14 @@
 import { getKeycloak, getUserProfile, keycloakLogin, keycloakLogout } from '@/utils/keycloak/keycloak'
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
-import { adminGroupPath } from '@dso-console/shared'
+import { type Ref, ref } from 'vue'
+import { adminGroupPath, type UserProfile } from '@dso-console/shared'
 
 export const useUserStore = defineStore('user', () => {
-  const isLoggedIn = ref(undefined)
-  const isAdmin = ref(undefined)
+  const isLoggedIn: Ref<boolean | undefined> = ref(undefined)
+  const isAdmin: Ref<boolean | undefined> = ref(undefined)
 
-  const userProfile = ref({})
+  const userProfile: Ref<UserProfile | Record<string, never>> = ref({})
 
-  /**
-   * @param {boolean} isLoggedIn
-   */
   const setIsLoggedIn = () => {
     const keycloak = getKeycloak()
     isLoggedIn.value = keycloak.authenticated
@@ -20,8 +17,8 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  const setUserProfile = async () => {
-    userProfile.value = await getUserProfile()
+  const setUserProfile = () => {
+    userProfile.value = getUserProfile()
   }
 
   const login = async () => {

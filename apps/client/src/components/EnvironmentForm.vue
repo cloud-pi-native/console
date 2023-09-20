@@ -1,4 +1,4 @@
-<script setup>
+<script lang="ts" setup>
 import { ref, onMounted, onBeforeMount } from 'vue'
 import { environmentSchema, schemaValidator, instanciateSchema, allEnv, projectIsLockedInfo } from '@dso-console/shared'
 import PermissionForm from './PermissionForm.vue'

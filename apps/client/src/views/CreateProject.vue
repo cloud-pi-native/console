@@ -1,5 +1,5 @@
-<script setup>
-import { computed, onMounted, ref } from 'vue'
+<script lang="ts" setup>
+import { computed, onMounted, ref, type ComputedRef, type Ref } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
@@ -11,6 +11,8 @@ import {
   isValid,
   instanciateSchema,
   calcProjectNameMaxLength,
+  type UserProfile,
+  type ProjectInfos,
 } from '@dso-console/shared'
 import router from '@/router/index.js'
 import LoadingCt from '@/components/LoadingCt.vue'
@@ -20,35 +22,29 @@ const projectStore = useProjectStore()
 const userStore = useUserStore()
 const organizationStore = useOrganizationStore()
 
-const owner = computed(() => userStore.userProfile)
-const organizationName = computed(() => {
+const owner: ComputedRef<UserProfile | Record<string, never>> = computed(() => userStore.userProfile)
+const organizationName: ComputedRef<string> = computed(() => {
   const org = orgOptions?.value.find(org => org.id === project.value?.organizationId)
   return org?.value
 })
-const projectNameMaxLength = computed(() => {
+const projectNameMaxLength: ComputedRef<number> = computed(() => {
   return calcProjectNameMaxLength(organizationName?.value)
 })
-const remainingCharacters = computed(() => {
+const remainingCharacters: ComputedRef<number> = computed(() => {
   return projectNameMaxLength?.value - project.value?.name.length
 })
 
-/**
- * Defines a project
- *
- * @typedef {object} project
- * @property {string} organizationId
- * @property {string} name
- */
-const project = ref({
+// @ts-ignore
+const project: Ref<ProjectInfos> = ref({
   organizationId: undefined,
   name: '',
 })
 
-const isCreatingProject = ref(false)
+const isCreatingProject: Ref<boolean> = ref(false)
 
-const orgOptions = ref([])
+const orgOptions: Ref<Array<any>> = ref([])
 
-const updatedValues = ref({})
+const updatedValues: Ref<Record<any, any>> = ref({})
 
 const createProject = async () => {
   isCreatingProject.value = true
@@ -60,17 +56,22 @@ const createProject = async () => {
       await projectStore.createProject(project.value)
       router.push('/projects')
     } catch (error) {
-      snackbarStore.setMessage(error?.message, 'error')
+      if (error instanceof Error) {
+        snackbarStore.setMessage(error.message)
+        return
+      }
+      snackbarStore.setMessage('échec de création du projet')
     }
   }
   isCreatingProject.value = false
 }
 
-const updateProject = (key, value) => {
+const updateProject = (key: string, value: any) => {
   if (key === 'organizationId') {
     const org = orgOptions.value.find(org => org.value === value)
     project.value[key] = org.id
   } else {
+    // @ts-ignore
     project.value[key] = value
   }
   updatedValues.value[key] = true

@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { computed } from 'vue'
 import { statusDict, type ProjectModel } from '@dso-console/shared'
 
 type ResourceBase = {
@@ -23,23 +24,33 @@ export interface Props {
 }
 
 const props = defineProps<Props>()
+
+const global = computed(() => {
+  const type = props.resource.resourceKey
+  if (type === 'status') {
+    const status = props.resource[type]
+    return statusDict[type][status]
+  }
+  const locked = props.resource[type]
+  return statusDict[type][locked]
+})
+
 </script>
 
 <template>
-  {{ props.resource[props.resource.resourceKey] }}
   <div
     class="flex gap-2"
-    :data-testid="`${props.resource.id}-${statusDict[props.resource[props.resource.resourceKey]]?.testId}`"
+    :data-testid="`${resource.id}-${global.testId}`"
   >
     <v-icon
-      :name="statusDict[props.resource[props.resource.resourceKey]]?.icon"
-      :fill="statusDict[props.resource[props.resource.resourceKey]]?.color"
-      :animation="statusDict[props.resource[props.resource.resourceKey]]?.animation"
+      :name="global.icon"
+      :fill="global.color"
+      :animation="global.animation"
     />
     <span
-      :class="`uppercase font-bold fr-text-default--${statusDict[props.resource[props.resource.resourceKey]]?.type}`"
+      :class="`uppercase font-bold fr-text-default--${global.type}`"
     >
-      {{ props.resource.wording }} : {{ statusDict[props.resource[resource.resourceKey]]?.wording }}
+      {{ resource.wording }} : {{ global.wording }}
     </span>
   </div>
 </template>

@@ -12,11 +12,11 @@ const projectStore = useProjectStore()
 
 userStore.setIsLoggedIn()
 
-const isLoggedIn = ref(keycloak.authenticated)
-const label = ref(isLoggedIn.value ? 'Se déconnecter' : 'Se connecter')
-const to = ref(isLoggedIn.value ? '/logout' : '/login')
+const isLoggedIn: Ref<boolean | undefined> = ref(keycloak.authenticated)
+const label: Ref<string> = ref(isLoggedIn.value ? 'Se déconnecter' : 'Se connecter')
+const to: Ref<string> = ref(isLoggedIn.value ? '/logout' : '/login')
 const intervalId: Ref<number | undefined> = ref(undefined)
-const appVersion = process.env.APP_VERSION ? `v${process.env.APP_VERSION}` : 'v-dev'
+const appVersion: string = process.env.APP_VERSION ? `v${process.env.APP_VERSION}` : 'v-dev'
 
 const quickLinks = ref([{
   label,
@@ -44,7 +44,7 @@ onMounted(async () => {
   }
 })
 
-watch(label, (label) => {
+watch(label, (label: string) => {
   quickLinks.value[0].label = label
 })
 
