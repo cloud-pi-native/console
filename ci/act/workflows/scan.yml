@@ -1,23 +1,18 @@
-name: Scan application
+name: Vulnerability scan
 
 on:
-  pull_request:
-    types:
-      - opened
-      - reopened
-      - synchronize
-      - ready_for_review
-    branches:
-      - main
-  workflow_dispatch:
-
-env:
-  TRIVY_VERSION: "0.37.2"
+  workflow_call:
+    inputs:
+      NODE_VERSION:
+        required: false
+        type: string
+      PNPM_VERSION:
+        required: false
+        type: string
 
 jobs:
   matrix:
     name: Generate matrix for build & scan
-    if: ${{ !github.event.pull_request.draft && github.event.pull_request.base.ref == 'main' }}
     runs-on: ubuntu-latest
     outputs:
       build-matrix: ${{ steps.build-matrix.outputs.BUILD_MATRIX }}
@@ -25,12 +20,14 @@ jobs:
     steps:
       - name: Checks-out repository
         uses: actions/checkout@v3
+
       - name: Generate matrix for build
         id: build-matrix
         run: |
           echo 'BUILD_MATRIX<<EOF' >> $GITHUB_OUTPUT
           ./ci/scripts/build-matrix.sh -f ./docker/docker-compose.prod.yml -c | jq '[.[] | select(.build != false)]' >> $GITHUB_OUTPUT
           echo 'EOF' >> $GITHUB_OUTPUT
+
       - name: Generate matrix for scan
         id: scan-matrix
         run: |
@@ -49,23 +46,26 @@ jobs:
     steps:
       - name: Checks-out repository
         uses: actions/checkout@v3
+
       - name: Set up Docker buildx
         uses: docker/setup-buildx-action@v2
-        # with:
-        #   driver-opts: network=host
+
       - name: Set up QEMU (for multi platform build)
         uses: docker/setup-qemu-action@v2
+
       - name: Create image directory
         run: mkdir ./artifacts
+
       - name: Build docker image
-        run: |
-          docker buildx build \
-            --file ${{ matrix.images.build.dockerfile }} \
-            --target ${{ matrix.images.build.target }} \
-            --tag ${{ matrix.images.image }} \
-            --platform ${{ matrix.images.build.platforms }} \
-            --output type=docker,dest=./artifacts/${{ matrix.images.name }}.tar \
-            ${{ matrix.images.build.context }}
+        uses: docker/build-push-action@v3
+        with:
+          context: ${{ matrix.images.build.context }}
+          file: ${{ matrix.images.build.dockerfile }}
+          tags: ${{ matrix.images.image }}
+          target: ${{ matrix.images.build.target }}
+          platforms: ${{ matrix.images.build.platforms }}
+          outputs: type=docker,dest=./artifacts/${{ matrix.images.name }}.tar
+
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
@@ -86,31 +86,32 @@ jobs:
       - name: Set up Docker buildx
         if: ${{ matrix.images.build != false }}
         uses: docker/setup-buildx-action@v2
+
       - name: Download artifact
         if: ${{ matrix.images.build != false }}
         uses: actions/download-artifact@v3
         with:
           name: ${{ matrix.images.name }}
           path: ./artifacts
+
       - name: Load Docker image
         if: ${{ matrix.images.build != false }}
         run: docker load --input ./artifacts/${{ matrix.images.name }}.tar
+
       - name: Create security artifacts directory
         run: mkdir -p ./artifacts/vulnerability-report/images/
-      - name: Install Trivy
-        run: |
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v${{ env.TRIVY_VERSION }}
-      - name: Run Trivy vulnerability scanner on config files
-        run: |
-          trivy image \
-            --vuln-type os,library \
-            --ignore-unfixed \
-            --scanners vuln,secret,config \
-            --format json \
-            --output ./artifacts/vulnerability-report/images/${{ matrix.images.name }}.json \
-            --exit-code 1 \
-            ${{ matrix.images.image }}
+
+      - name: Run Trivy vulnerability scanner on images
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: "${{ matrix.images.image }}"
+          format: "json"
+          exit-code: "1"
+          vuln-type: "os,library"
+          ignore-unfixed: true
+          output: "./artifacts/vulnerability-report/images/${{ matrix.images.name }}.json"
         continue-on-error: true
+
       - name: Upload scan artifacts
         uses: actions/upload-artifact@v3
         with:
@@ -126,19 +127,21 @@ jobs:
     steps:
       - name: Checks-out repository
         uses: actions/checkout@v3
+
       - name: Create security artifacts directory
         run: mkdir -p ./artifacts/vulnerability-report/configs/
-      - name: Install Trivy
-        run: |
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v${{ env.TRIVY_VERSION }}
+
       - name: Run Trivy vulnerability scanner on config files
-        run: |
-          trivy config \
-            --format json \
-            --output ./artifacts/vulnerability-report/configs/config.json \
-            --exit-code 1 \
-            .
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-ref: "."
+          scan-type: "config"
+          format: "json"
+          exit-code: "1"
+          ignore-unfixed: true
+          output: "./artifacts/vulnerability-report/configs/config.json"
         continue-on-error: true
+
       - name: Upload scan artifacts
         uses: actions/upload-artifact@v3
         with:
@@ -156,11 +159,13 @@ jobs:
     steps:
       - name: Checks-out repository
         uses: actions/checkout@v3
+
       - name: Download artifact
         uses: actions/download-artifact@v3
         with:
           name: vulnerability-report
           path: ./artifacts/vulnerability-report
+
       - name: Build vulnerability report
         run: |
           ./ci/scripts/vuln-report.sh \
@@ -168,9 +173,17 @@ jobs:
             -o "./artifacts/vulnerability-issue.md" \
             -p "${{ github.repository }}" \
             -r "${{ github.run_id }}"
-      - name: Upload scan report
-        uses: actions/upload-artifact@v3
+          echo 'REPORT_BODY<<EOF' >> $GITHUB_ENV
+          cat ./artifacts/vulnerability-issue.md >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+
+      - name: Create security report issue
+        uses: imjohnbo/issue-bot@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: vulnerability-report
-          path: ./artifacts/vulnerability-issue.md
-          retention-days: 14
+          labels: "security"
+          title: "Vulnerability scan report"
+          pinned: false
+          close-previous: true
+          body: ${{ env.REPORT_BODY }}
