@@ -3,7 +3,7 @@ version: '3.9'
 services:
   keycloak:
     restart: always
-    image: quay.io/keycloak/keycloak:19.0.2
+    image: quay.io/keycloak/keycloak:22.0.1
     container_name: dso-console_keycloak
     ports:
       - 8090:8080
