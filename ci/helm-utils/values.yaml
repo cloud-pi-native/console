@@ -7,7 +7,7 @@ data: ""
 keycloak:
   enabled: true
   container:
-    image: quay.io/keycloak/keycloak:19.0.2
+    image: quay.io/keycloak/keycloak:22.0.1
     port: 8080
     command:
       - /opt/keycloak/bin/kc.sh
