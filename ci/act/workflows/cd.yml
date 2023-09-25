@@ -22,10 +22,10 @@ jobs:
         run: echo "Exposing env vars"
 
   release:
-    uses: ./.github/workflows/release.yml
+    uses: ./ci/act/workflows/release.yml
 
   build:
-    uses: ./.github/workflows/build.yml
+    uses: ./ci/act/workflows/build.yml
     if: ${{ needs.release.outputs.release-created == 'true' }}
     needs:
       - expose-vars

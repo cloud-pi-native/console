@@ -17,4 +17,13 @@ describe('Header', () => {
       .getByDataTestid('whoami-hint')
       .should('contain', `${user.firstName} ${user.lastName}`)
   })
+
+  it('Should display app version and swagger', () => {
+    cy.visit('/')
+    cy.getByDataTestid('swaggerUrl')
+      .should('have.attr', 'href', `${window?.location?.origin}/api/v1/documentation/static/index.html`)
+    cy.getByDataTestid('appVersionUrl')
+      .should('have.attr', 'href', 'https://github.com/cloud-pi-native/console/releases/tag/v-dev')
+      .and('contain', 'v-dev')
+  })
 })

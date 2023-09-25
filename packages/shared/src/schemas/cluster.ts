@@ -3,7 +3,8 @@ import Joi from 'joi'
 export const clusterSchema = Joi.object({
   id: Joi.string()
     .uuid()
-    .optional(),
+    .optional()
+    .allow(''),
 
   projectsId: Joi.array(),
 
@@ -12,11 +13,13 @@ export const clusterSchema = Joi.object({
     .max(50),
 
   infos: Joi.string()
-    .max(200)
-    .optional(),
+    .optional()
+    .allow('')
+    .max(200),
 
   secretName: Joi.string()
     .optional()
+    .allow('')
     .max(50),
 
   clusterResources: Joi.boolean(),
@@ -24,7 +27,33 @@ export const clusterSchema = Joi.object({
   privacy: Joi.string()
     .valid('public', 'dedicated'),
 
-  user: Joi.object(),
+  user: Joi.object({
+    username: Joi.string()
+      .optional(),
 
-  cluster: Joi.object(),
+    password: Joi.string()
+      .optional(),
+
+    keyData: Joi.string()
+      .optional(),
+
+    certData: Joi.string()
+      .optional(),
+
+    token: Joi.string()
+      .optional(),
+  }),
+
+  cluster: Joi.object({
+    server: Joi.string()
+      .optional(), // TODO: update e2e tests to make this not optional
+
+    tlsServerName: Joi.string(),
+
+    skipTLSVerify: Joi.boolean()
+      .optional(),
+
+    caData: Joi.string()
+      .optional(),
+  }),
 })

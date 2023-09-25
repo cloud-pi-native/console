@@ -1,0 +1,128 @@
+name: CI
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+    branches:
+      - "**"
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: "18.17.1"
+  PNPM_VERSION: "8"
+
+jobs:
+  path-filter:
+    runs-on: ubuntu-latest
+    if: ${{ !github.event.pull_request.draft }}
+    outputs:
+      apps: ${{ steps.filter.outputs.apps }}
+    steps:
+      - name: Check updated files paths
+        uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            apps:
+              - 'apps/**'
+              - 'packages/**'
+              - '.github/workflows**'
+
+  expose-vars:
+    runs-on: ubuntu-latest
+    if: ${{ !github.event.pull_request.draft }}
+    outputs:
+      NODE_VERSION: ${{ env.NODE_VERSION }}
+      PNPM_VERSION: ${{ env.PNPM_VERSION }}
+    steps:
+      - name: Exposing env vars
+        run: echo "Exposing env vars"
+
+  lint:
+    uses: ./ci/act/workflows/lint.yml
+    needs:
+      - expose-vars
+    with:
+      NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
+      PNPM_VERSION: ${{ needs.expose-vars.outputs.PNPM_VERSION }}
+
+  unit-tests:
+    uses: ./ci/act/workflows/tests-unit.yml
+    needs:
+      - expose-vars
+    with:
+      NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
+      PNPM_VERSION: ${{ needs.expose-vars.outputs.PNPM_VERSION }}
+    # secrets: inherit
+    secrets:
+      SONAR_HOST_URL: "${{ secrets.SONAR_HOST_URL }}"
+      SONAR_TOKEN: "${{ secrets.SONAR_TOKEN }}"
+      SONAR_PROJECT_KEY: "${{ secrets.SONAR_PROJECT_KEY }}"
+
+  component-tests:
+    uses: ./ci/act/workflows/tests-component.yml
+    if: ${{ needs.path-filter.outputs.apps == 'true' }}
+    needs:
+      - path-filter
+      - expose-vars
+    with:
+      NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
+      PNPM_VERSION: ${{ needs.expose-vars.outputs.PNPM_VERSION }}
+
+  e2e-tests:
+    uses: ./ci/act/workflows/tests-e2e.yml
+    if: ${{ needs.path-filter.outputs.apps == 'true' }}
+    needs:
+      - path-filter
+      - expose-vars
+    with:
+      NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
+      PNPM_VERSION: ${{ needs.expose-vars.outputs.PNPM_VERSION }}
+
+  deploy-tests:
+    uses: ./ci/act/workflows/tests-deploy.yml
+    if: ${{ needs.path-filter.outputs.apps != 'true' }}
+    needs:
+      - path-filter
+      - expose-vars
+    with:
+      NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
+      PNPM_VERSION: ${{ needs.expose-vars.outputs.PNPM_VERSION }}
+
+  scan-vuln:
+    uses: ./ci/act/workflows/scan.yml
+    if: ${{ !github.event.pull_request.draft && github.base_ref == 'main' }}
+
+  # Workaround for required status check in protection branches (see. https://github.com/orgs/community/discussions/13690)
+  all-jobs-passed:
+    name: Check jobs status
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs:
+      - path-filter
+      - expose-vars
+      - lint
+      - unit-tests
+      - component-tests
+      - e2e-tests
+      - deploy-tests
+      - scan-vuln
+    steps:
+      - name: Check status of all required jobs
+        run: |-
+          NEEDS_CONTEXT='${{ toJson(needs) }}'
+          JOB_IDS=$(echo "$NEEDS_CONTEXT" | jq -r 'keys[]')
+          for JOB_ID in $JOB_IDS; do
+            RESULT=$(echo "$NEEDS_CONTEXT" | jq -r ".[\"$JOB_ID\"].result")
+            echo "$JOB_ID job result: $RESULT"
+            if [[ $RESULT != "success" && $RESULT != "skipped" ]]; then
+              echo "***"
+              echo "Error: The $JOB_ID job did not pass."
+              exit 1
+            fi
+          done
+          echo "All jobs passed or were skipped."

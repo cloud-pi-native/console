@@ -3,9 +3,10 @@ import { sendOk } from '@/utils/response.js'
 import { checkServicesHealthBusiness } from './business.js'
 
 export const checkServicesHealthController = async (req, res) => {
-  const requestorId = req.session?.user?.id
+  const requestor = req.session?.user
+  delete requestor.groups
 
-  const serviceData = await checkServicesHealthBusiness(requestorId)
+  const serviceData = await checkServicesHealthBusiness(requestor)
   addReqLogs({
     req,
     description: 'Etats des services récupérés avec succès',
