@@ -18,7 +18,7 @@ const props = defineProps({
       projectsId: [],
       clusterResources: false,
       privacy: 'dedicated',
-      infos: 'undefined',
+      infos: '',
     }),
   },
   isNewCluster: {
@@ -52,6 +52,11 @@ const updateValues = (key, value) => {
     updatedValues.value.cluster = true
     return
   }
+  if (key === 'tlsServerName') {
+    localCluster.value.cluster.tlsServerName = value
+    updatedValues.value.cluster = true
+    return
+  }
   localCluster.value[key] = value
   updatedValues.value[key] = true
 
@@ -68,8 +73,8 @@ const updateValues = (key, value) => {
 
 const updateKubeconfig = (files) => {
   kConfigError.value = undefined
-  localCluster.value.cluster = undefined
-  localCluster.value.user = undefined
+  localCluster.value.cluster = {}
+  localCluster.value.user = {}
 
   try {
     const reader = new FileReader()
@@ -107,23 +112,38 @@ const retrieveUserAndCluster = (context) => {
      * @property {string} certData - client-certificate-data
      * @property {string} keyData - client-key-data
      */
-    localCluster.value.user = jsonKConfig.value.users.find(user => user.name === context.user).user
-    localCluster.value.user.certData = localCluster.value.user['client-certificate-data']
-    delete localCluster.value.user['client-certificate-data']
-    localCluster.value.user.keyData = localCluster.value.user['client-key-data']
-    delete localCluster.value.user['client-key-data']
+    const {
+      username,
+      password,
+      token,
+      'client-certificate-data': certData,
+      'client-key-data': keyData,
+    } = jsonKConfig.value.users.find(user => user.name === context.user).user
+    localCluster.value.user = {
+      ...username && password && { username, password },
+      ...token && { token },
+      ...certData && keyData && { certData, keyData },
+    }
     /**
      * Retrieve context cluster.
      * @typedef {Object} cluster
      * @property {string} server - server
      * @property {string} tlsServerName - sni
      * @property {string} caData - certificate-authority-data
+     * @property {string} skipTLSVerify - insecure-skip-tls-verify
      *
      */
-    localCluster.value.cluster = jsonKConfig.value.clusters.find(cluster => cluster.name === context.cluster).cluster
-    localCluster.value.cluster.tlsServerName = localCluster.value.cluster.server.split('https://')[1].split(':')[0]
-    localCluster.value.cluster.caData = localCluster.value.cluster['certificate-authority-data']
-    delete localCluster.value.cluster['certificate-authority-data']
+    const {
+      server,
+      'certificate-authority-data': caData,
+      'insecure-skip-tls-verify': skipTLSVerify,
+    } = jsonKConfig.value.clusters.find(cluster => cluster.name === context.cluster).cluster
+    localCluster.value.cluster = {
+      server,
+      tlsServerName: server.split('https://')[1].split(':')[0],
+      ...caData && { caData },
+      skipTLSVerify: skipTLSVerify || false,
+    }
   } catch (error) {
     kConfigError.value = error.message
     snackbarStore.setMessage(error.message, 'error')
@@ -224,6 +244,7 @@ watch(selectedContext, () => {
       required="required"
       hint="La valeur est extraite du kubeconfig téléversé."
       :disabled="!isNewCluster"
+      @update:model-value="updateValues('tlsServerName', $event)"
     />
     <DsfrInputGroup
       v-model="localCluster.label"
