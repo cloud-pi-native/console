@@ -1,5 +1,18 @@
 # Changelog
 
+## [5.9.0](https://github.com/cloud-pi-native/console/compare/v5.8.2...v5.9.0) (2023-09-25)
+
+
+### Features
+
+* :technologist: add swagger for server api ([abe15d2](https://github.com/cloud-pi-native/console/commit/abe15d2ceb93039ecd795389156f8730e5327841))
+
+
+### Bug Fixes
+
+* :ambulance: register cluster destination via kubeconfig ([0e8d310](https://github.com/cloud-pi-native/console/commit/0e8d3102267268c595d172808e30183dbe4b3aad))
+* :safety_vest: validate user schema before trying to insert it in db ([ab8e6ef](https://github.com/cloud-pi-native/console/commit/ab8e6efdb00ec29c6a9a1e0f89c58ffbc999c966))
+
 ## [5.8.2](https://github.com/cloud-pi-native/console/compare/v5.8.1...v5.8.2) (2023-09-20)
 
 
