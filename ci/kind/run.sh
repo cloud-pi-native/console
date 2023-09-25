@@ -143,6 +143,10 @@ if [[ "$COMMAND" =~ "create" ]]; then
 fi
 
 
+# Change kubeconfig context to kind
+kubectl config set-context kind-kind
+
+
 # Build and load images into cluster nodes
 if [[ "$COMMAND" =~ "build" ]]; then
   printf "\n\n${red}[kind wrapper].${no_color} Load images into cluster node\n\n"
