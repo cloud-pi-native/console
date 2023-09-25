@@ -16,7 +16,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       build-matrix: ${{ steps.build-matrix.outputs.BUILD_MATRIX }}
-      scan-matrix: ${{ steps.scan-matrix.outputs.SCAN_MATRIX }}
     steps:
       - name: Checks-out repository
         uses: actions/checkout@v3
@@ -24,16 +23,7 @@ jobs:
       - name: Generate matrix for build
         id: build-matrix
         run: |
-          echo 'BUILD_MATRIX<<EOF' >> $GITHUB_OUTPUT
-          ./ci/scripts/build-matrix.sh -f ./docker/docker-compose.prod.yml -c | jq '[.[] | select(.build != false)]' >> $GITHUB_OUTPUT
-          echo 'EOF' >> $GITHUB_OUTPUT
-
-      - name: Generate matrix for scan
-        id: scan-matrix
-        run: |
-          echo 'SCAN_MATRIX<<EOF' >> $GITHUB_OUTPUT
-          ./ci/scripts/build-matrix.sh -f ./docker/docker-compose.prod.yml -c >> $GITHUB_OUTPUT
-          echo 'EOF' >> $GITHUB_OUTPUT
+          echo "BUILD_MATRIX=$(jq -c . < ./ci/matrix.json)" >> $GITHUB_OUTPUT
 
   build:
     name: Build application
@@ -61,9 +51,8 @@ jobs:
         with:
           context: ${{ matrix.images.build.context }}
           file: ${{ matrix.images.build.dockerfile }}
-          tags: ${{ matrix.images.image }}
+          tags: ${{ matrix.images.name }}
           target: ${{ matrix.images.build.target }}
-          platforms: ${{ matrix.images.build.platforms }}
           outputs: type=docker,dest=./artifacts/${{ matrix.images.name }}.tar
 
       - name: Upload artifact
@@ -81,7 +70,7 @@ jobs:
       - build
     strategy:
       matrix:
-        images: ${{ fromJSON(needs.matrix.outputs.scan-matrix) }}
+        images: ${{ fromJSON(needs.matrix.outputs.build-matrix) }}
     steps:
       - name: Set up Docker buildx
         if: ${{ matrix.images.build != false }}
@@ -104,7 +93,7 @@ jobs:
       - name: Run Trivy vulnerability scanner on images
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: "${{ matrix.images.image }}"
+          image-ref: "${{ matrix.images.name }}"
           format: "json"
           exit-code: "1"
           vuln-type: "os,library"

@@ -1,0 +1,18 @@
+[
+  {
+    "name": "server",
+    "build": {
+      "context": "./",
+      "dockerfile": "./apps/server/Dockerfile",
+      "target": "prod"
+    }
+  },
+  {
+    "name": "client",
+    "build": {
+      "context": "./",
+      "dockerfile": "./apps/client/Dockerfile",
+      "target": "prod"
+    }
+  }
+]
