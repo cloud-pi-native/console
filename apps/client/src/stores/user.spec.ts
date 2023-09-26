@@ -25,11 +25,10 @@ vi.mock('keycloak-js', () => {
 
   return { default: Keycloak }
 })
+const keycloak = new Keycloak()
 
 describe('Counter Store', () => {
-  let keycloak
   beforeEach(() => {
-    keycloak = new Keycloak()
     // creates a fresh pinia and make it active so it's automatically picked
     // up by any useStore() call without having to pass it to it: `useStore(pinia)`
     setActivePinia(createPinia())
@@ -55,7 +54,7 @@ describe('Counter Store', () => {
     expect(userStore.isAdmin).toBeUndefined()
     expect(userStore.userProfile).toMatchObject({})
 
-    await userStore.setUserProfile()
+    userStore.setUserProfile()
 
     userStore.setIsLoggedIn()
 
@@ -68,7 +67,7 @@ describe('Counter Store', () => {
 
     expect(userStore.userProfile).toMatchObject({})
 
-    await userStore.setUserProfile()
+    userStore.setUserProfile()
 
     expect(userStore.userProfile).toMatchObject({
       email: 'michel.michel@test.com',

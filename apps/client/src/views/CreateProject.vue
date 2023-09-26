@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, onMounted, ref, type ComputedRef, type Ref } from 'vue'
+import { computed, onMounted, ref, type Ref } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
@@ -11,7 +11,6 @@ import {
   isValid,
   instanciateSchema,
   calcProjectNameMaxLength,
-  type UserProfile,
   type ProjectInfos,
 } from '@dso-console/shared'
 import router from '@/router/index.js'
@@ -22,15 +21,15 @@ const projectStore = useProjectStore()
 const userStore = useUserStore()
 const organizationStore = useOrganizationStore()
 
-const owner: ComputedRef<UserProfile | Record<string, never>> = computed(() => userStore.userProfile)
-const organizationName: ComputedRef<string> = computed(() => {
+const owner = computed(() => userStore.userProfile)
+const organizationName = computed(() => {
   const org = orgOptions?.value.find(org => org.id === project.value?.organizationId)
   return org?.value
 })
-const projectNameMaxLength: ComputedRef<number> = computed(() => {
+const projectNameMaxLength = computed(() => {
   return calcProjectNameMaxLength(organizationName?.value)
 })
-const remainingCharacters: ComputedRef<number> = computed(() => {
+const remainingCharacters = computed(() => {
   return projectNameMaxLength?.value - project.value?.name.length
 })
 
@@ -40,7 +39,7 @@ const project: Ref<ProjectInfos> = ref({
   name: '',
 })
 
-const isCreatingProject: Ref<boolean> = ref(false)
+const isCreatingProject = ref(false)
 
 const orgOptions: Ref<Array<any>> = ref([])
 

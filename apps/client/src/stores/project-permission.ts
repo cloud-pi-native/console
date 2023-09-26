@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import api from '@/api/index.js'
 import { useProjectStore } from '@/stores/project.js'
-import { EnvironmentModel, PermissionModel, UserModel } from '@dso-console/shared'
+import type { EnvironmentModel, PermissionModel, UserModel } from '@dso-console/shared'
 import { projectMissing } from '@/utils/const.js'
 
 export const useProjectPermissionStore = defineStore('project-permission', () => {

@@ -3,11 +3,9 @@ import { setActivePinia, createPinia } from 'pinia'
 import { apiClient } from '../../api/xhr-client.js'
 import { useAdminClusterStore } from './cluster.js'
 
-vi.spyOn(apiClient, 'get')
-vi.spyOn(apiClient, 'post')
-vi.spyOn(apiClient, 'put')
-vi.spyOn(apiClient, 'patch')
-vi.spyOn(apiClient, 'delete')
+const apiClientGet = vi.spyOn(apiClient, 'get')
+const apiClientPost = vi.spyOn(apiClient, 'post')
+const apiClientPut = vi.spyOn(apiClient, 'put')
 
 describe('Counter Store', () => {
   beforeEach(() => {
@@ -51,14 +49,14 @@ describe('Counter Store', () => {
         privacy: 'public',
       },
     ]
-    apiClient.get.mockReturnValueOnce(Promise.resolve({ data }))
+    apiClientGet.mockReturnValueOnce(Promise.resolve({ data }))
     const adminClusterStore = useAdminClusterStore()
 
     const res = await adminClusterStore.getAllClusters()
 
     expect(JSON.stringify(res)).toBe(JSON.stringify(data))
-    expect(apiClient.get).toHaveBeenCalledTimes(1)
-    expect(apiClient.get.mock.calls[0][0]).toBe('/admin/clusters')
+    expect(apiClientGet).toHaveBeenCalledTimes(1)
+    expect(apiClientGet.mock.calls[0][0]).toBe('/admin/clusters')
   })
 
   it('Should add cluster by api call', async () => {
@@ -80,14 +78,14 @@ describe('Counter Store', () => {
       clusterResources: true,
       privacy: 'dedicated',
     }
-    apiClient.post.mockReturnValueOnce(Promise.resolve({ data }))
+    apiClientPost.mockReturnValueOnce(Promise.resolve({ data }))
     const adminClusterStore = useAdminClusterStore()
 
     const res = await adminClusterStore.addCluster(data)
 
     expect(res).toBe(data)
-    expect(apiClient.post).toHaveBeenCalledTimes(1)
-    expect(apiClient.post.mock.calls[0][0]).toBe('/admin/clusters')
+    expect(apiClientPost).toHaveBeenCalledTimes(1)
+    expect(apiClientPost.mock.calls[0][0]).toBe('/admin/clusters')
   })
 
   it('Should update cluster by api call', async () => {
@@ -108,13 +106,13 @@ describe('Counter Store', () => {
       clusterResources: true,
       privacy: 'dedicated',
     }
-    apiClient.put.mockReturnValueOnce(Promise.resolve({ data }))
+    apiClientPut.mockReturnValueOnce(Promise.resolve({ data }))
     const adminClusterStore = useAdminClusterStore()
 
     const res = await adminClusterStore.updateCluster(data)
 
     expect(res).toBe(data)
-    expect(apiClient.put).toHaveBeenCalledTimes(1)
-    expect(apiClient.put.mock.calls[0][0]).toBe('/admin/clusters/1e4fdb28-f9ea-46d4-ad16-607c7f1aa8b6')
+    expect(apiClientPut).toHaveBeenCalledTimes(1)
+    expect(apiClientPut.mock.calls[0][0]).toBe('/admin/clusters/1e4fdb28-f9ea-46d4-ad16-607c7f1aa8b6')
   })
 })

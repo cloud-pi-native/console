@@ -1,5 +1,4 @@
 import type { KeycloakInitOptions, KeycloakConfig } from 'keycloak-js'
-
 import Keycloak from 'keycloak-js'
 
 import {

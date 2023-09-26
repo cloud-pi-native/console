@@ -1,5 +1,5 @@
 import { vi, describe, it, expect } from 'vitest'
-import * as xhrClient from './xhr-client.js'
+import { apiClient } from './xhr-client.js'
 
 vi.mock('@/utils/keycloak/keycloak.ts', () => ({
   getKeycloak: () => ({
@@ -16,7 +16,7 @@ describe('xhr-client', () => {
         url: '/api/v1/version',
       }
 
-      const fullfiled = await xhrClient.apiClient.interceptors.request.handlers[0].fulfilled(config)
+      const fullfiled = await apiClient.interceptors.request.handlers[0].fulfilled(config)
       expect(fullfiled).toMatchObject(config)
     })
 
@@ -26,14 +26,14 @@ describe('xhr-client', () => {
         headers: {},
       }
 
-      const fullfiled = await xhrClient.apiClient.interceptors.request.handlers[0].fulfilled(config)
+      const fullfiled = await apiClient.interceptors.request.handlers[0].fulfilled(config)
       expect(fullfiled.headers).toHaveProperty('Authorization', 'Bearer token')
     })
 
     it('Should return an error if the request', async () => {
       const error = new Error('Request throw an error')
       let rejected
-      await xhrClient.apiClient.interceptors.request.handlers[0].rejected(error).catch(error => { rejected = error })
+      await apiClient.interceptors.request.handlers[0].rejected(error).catch(error => { rejected = error })
 
       expect(rejected).toEqual(error)
     })
@@ -46,7 +46,7 @@ describe('xhr-client', () => {
         response: { status: 500, data: message },
       }
 
-      const rejectedRes = xhrClient.apiClient.interceptors.response.handlers[0].rejected(res)
+      const rejectedRes = apiClient.interceptors.response.handlers[0].rejected(res)
       expect(rejectedRes).rejects.toMatchObject(new Error(message))
     })
 
@@ -56,7 +56,7 @@ describe('xhr-client', () => {
         response: { status: 409, data: message },
       }
 
-      const rejectedRes = xhrClient.apiClient.interceptors.response.handlers[0].rejected(res)
+      const rejectedRes = apiClient.interceptors.response.handlers[0].rejected(res)
       expect(rejectedRes).rejects.toMatchObject(new Error(message))
     })
 
@@ -66,7 +66,7 @@ describe('xhr-client', () => {
         response: { status: 402, statusText },
       }
 
-      const rejectedRes = xhrClient.apiClient.interceptors.response.handlers[0].rejected(res)
+      const rejectedRes = apiClient.interceptors.response.handlers[0].rejected(res)
       expect(rejectedRes).rejects.toMatchObject(new Error(statusText))
     })
 
@@ -76,7 +76,7 @@ describe('xhr-client', () => {
         code: 'ECONNABORTED',
       }
 
-      const rejectedRes = xhrClient.apiClient.interceptors.response.handlers[0].rejected(res)
+      const rejectedRes = apiClient.interceptors.response.handlers[0].rejected(res)
       expect(rejectedRes).rejects.toMatchObject(new Error('Echec de réponse du serveur'))
     })
 
@@ -85,7 +85,7 @@ describe('xhr-client', () => {
         response: { status: 500 },
       }
 
-      const rejectedRes = xhrClient.apiClient.interceptors.response.handlers[0].rejected(res)
+      const rejectedRes = apiClient.interceptors.response.handlers[0].rejected(res)
       expect(rejectedRes).rejects.toMatchObject(new Error('Echec de réponse du serveur'))
     })
 
@@ -94,7 +94,7 @@ describe('xhr-client', () => {
         data: {},
       }
 
-      const fulfilled = await xhrClient.apiClient.interceptors.response.handlers[0].fulfilled(res)
+      const fulfilled = await apiClient.interceptors.response.handlers[0].fulfilled(res)
       expect(fulfilled).toMatchObject(res)
     })
 
@@ -104,7 +104,7 @@ describe('xhr-client', () => {
         response: { status: 401 },
       }
 
-      const rejectedRes = await xhrClient.apiClient.interceptors.response.handlers[0].rejected(res).catch(error => error)
+      const rejectedRes = await apiClient.interceptors.response.handlers[0].rejected(res).catch(error => error)
       expect(rejectedRes).toMatchObject(new Error(message))
     })
   })

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, computed, onBeforeMount, watch, type Ref, type ComputedRef } from 'vue'
+import { ref, computed, onBeforeMount, watch, type Ref } from 'vue'
 import { clusterSchema, schemaValidator, isValid, instanciateSchema } from '@dso-console/shared'
 import { load } from 'js-yaml'
 import { JsonViewer } from 'vue3-json-viewer'
@@ -38,8 +38,8 @@ const kubeconfig = ref()
 // const clusterToDelete = ref('')
 // const isDeletingCluster = ref(false)
 
-const errorSchema: ComputedRef<Record<string, any>> = computed(() => schemaValidator(clusterSchema, localCluster.value))
-const isClusterValid: ComputedRef<boolean> = computed(() => Object.keys(errorSchema.value).length === 0)
+const errorSchema = computed(() => schemaValidator(clusterSchema, localCluster.value))
+const isClusterValid = computed(() => Object.keys(errorSchema.value).length === 0)
 
 const updateValues = (key: string, value: any) => {
   if (key === 'skipTLSVerify') {

@@ -1,6 +1,6 @@
 describe('Services health', () => {
   it('Should not display services health if not loggedIn', () => {
-    cy.visit('/services')
+    cy.visit('/services-health')
       .url().should('contain', 'auth')
   })
   it('Should display services health, loggedIn', () => {

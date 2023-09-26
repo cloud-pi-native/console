@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import api from '@/api/index.js'
 import { useProjectStore } from '@/stores/project.js'
-import { EnvironmentModel, InitializeEnvironmentDto, UpdateEnvironmentDto } from '@dso-console/shared'
+import type { EnvironmentModel, InitializeEnvironmentDto, UpdateEnvironmentDto } from '@dso-console/shared'
 import { projectMissing } from '@/utils/const'
 
 export const useProjectEnvironmentStore = defineStore('project-environment', () => {

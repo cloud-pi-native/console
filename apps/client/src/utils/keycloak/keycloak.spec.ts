@@ -1,5 +1,6 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { getKeycloak, getUserProfile, keycloakInit, keycloakLogin, keycloakLogout } from './keycloak.js'
+// import type Keycloak from 'keycloak-js'
 
 const userToken = {
   email: 'test@test.com',
@@ -17,6 +18,11 @@ const keycloak = getKeycloak()
 
 vi.mock('keycloak-js', () => {
   class Keycloak {
+    idTokenParsed: Record<string, string>
+    init: () => void
+    login: () => void
+    logout: () => void
+
     constructor () {
       this.idTokenParsed = userToken
       this.init = vi.fn()
@@ -27,8 +33,9 @@ vi.mock('keycloak-js', () => {
   return { default: Keycloak }
 })
 
-vi.spyOn(keycloak, 'login')
-vi.spyOn(keycloak, 'logout')
+const mockedKeycloakInit = vi.spyOn(keycloak, 'init')
+const mockedKeycloakLogin = vi.spyOn(keycloak, 'login')
+const mockedKeycloakLogout = vi.spyOn(keycloak, 'logout')
 
 describe('keycloak-init', () => {
   beforeEach(() => {
@@ -51,16 +58,16 @@ describe('keycloak-init', () => {
   it('Should init keycloak', async () => {
     await keycloakInit()
 
-    expect(keycloak.init.mock.calls).toHaveLength(1)
+    expect(mockedKeycloakInit.mock.calls).toHaveLength(1)
   })
 
   it('Should throw an error if keycloak can\'t be initialize', async () => {
     const error = new Error('Failed to init keycloak')
     try {
-      keycloak.init.mockReturnValueOnce(Promise.reject(error))
+      mockedKeycloakInit.mockReturnValueOnce(Promise.reject(error))
       await keycloakInit()
     } catch (e) {
-      expect(keycloak.init.mock.calls).toHaveLength(1)
+      expect(mockedKeycloakInit.mock.calls).toHaveLength(1)
       expect(e).toEqual(error)
     }
   })
@@ -68,16 +75,16 @@ describe('keycloak-init', () => {
   it('Should start login process to keycloak', async () => {
     await keycloakLogin()
 
-    expect(keycloak.login.mock.calls).toHaveLength(1)
+    expect(mockedKeycloakLogin.mock.calls).toHaveLength(1)
   })
 
   it('Should throw an error if login process to keycloak failed', async () => {
     const error = new Error('Failed to start login process keycloak')
     try {
-      keycloak.login.mockReturnValueOnce(Promise.reject(error))
+      mockedKeycloakLogin.mockReturnValueOnce(Promise.reject(error))
       await keycloakLogin()
     } catch (e) {
-      expect(keycloak.login.mock.calls).toHaveLength(1)
+      expect(mockedKeycloakLogin.mock.calls).toHaveLength(1)
       expect(e).toEqual(error)
     }
   })
@@ -85,16 +92,16 @@ describe('keycloak-init', () => {
   it('Should start logout process to keycloak', async () => {
     await keycloakLogout()
 
-    expect(keycloak.logout.mock.calls).toHaveLength(1)
+    expect(mockedKeycloakLogout.mock.calls).toHaveLength(1)
   })
 
   it('Should throw an error if logout process to keycloak failed', async () => {
     const error = new Error('Failed to start logout process keycloak')
     try {
-      keycloak.logout.mockReturnValueOnce(Promise.reject(error))
+      mockedKeycloakLogout.mockReturnValueOnce(Promise.reject(error))
       await keycloakLogout()
     } catch (e) {
-      expect(keycloak.logout.mock.calls).toHaveLength(1)
+      expect(mockedKeycloakLogout.mock.calls).toHaveLength(1)
       expect(e).toEqual(error)
     }
   })

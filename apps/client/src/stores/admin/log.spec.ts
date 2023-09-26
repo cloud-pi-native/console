@@ -3,11 +3,7 @@ import { setActivePinia, createPinia } from 'pinia'
 import { apiClient } from '../../api/xhr-client.js'
 import { useAdminLogStore } from './log.js'
 
-vi.spyOn(apiClient, 'get')
-vi.spyOn(apiClient, 'post')
-vi.spyOn(apiClient, 'put')
-vi.spyOn(apiClient, 'patch')
-vi.spyOn(apiClient, 'delete')
+const apiClientGet = vi.spyOn(apiClient, 'get')
 
 describe('Counter Store', () => {
   beforeEach(() => {
@@ -24,14 +20,15 @@ describe('Counter Store', () => {
         { id: 'thisIsAnId', data: {}, action: 'Create Project', userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565' },
       ],
     }
-    apiClient.get.mockReturnValueOnce(Promise.resolve({ data }))
+    apiClientGet.mockReturnValueOnce(Promise.resolve({ data }))
     const adminLogStore = useAdminLogStore()
 
     await adminLogStore.getAllLogs({ offset: 5, limit: 10 })
 
+    // TODO: to fix
     expect(adminLogStore.total).toEqual(data.count)
     expect(adminLogStore.logs).toStrictEqual(data.logs)
-    expect(apiClient.get).toHaveBeenCalledTimes(1)
-    expect(apiClient.get.mock.calls[0][0]).toBe('/admin/logs?offset=5&limit=10')
+    expect(apiClientGet).toHaveBeenCalledTimes(1)
+    expect(apiClientGet.mock.calls[0][0]).toBe('/admin/logs?offset=5&limit=10')
   })
 })

@@ -1,9 +1,10 @@
-import { createRouter, createWebHistory, type RouteRecord, type RouteRecordNormalized } from 'vue-router'
+import { createRouter, createWebHistory, type RouteRecord } from 'vue-router'
 import { useUserStore } from '@/stores/user.js'
 import { useProjectStore } from '@/stores/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 import DsoHome from '@/views/DsoHome.vue'
+import NotFound from '@/views/NotFound.vue'
 const ServicesHealth = () => import('@/views/ServicesHealth.vue')
 const CreateProject = () => import('@/views/CreateProject.vue')
 const ManageEnvironments = () => import('@/views/projects/ManageEnvironments.vue')
@@ -49,6 +50,13 @@ const routes: Array<RouteRecord> = [
     // TODO
     // @ts-ignore
     component: DsoHome,
+  },
+  {
+    path: '/404',
+    name: 'NotFound',
+    // TODO
+    // @ts-ignore
+    component: NotFound,
   },
   {
     path: '/services-health',
@@ -160,7 +168,7 @@ router.beforeEach((to) => { // Cf. https://github.com/vueuse/head pour des trans
  * Redirect unlogged user to login view
  */
 router.beforeEach(async (to, _from, next) => {
-  const validPath = ['Login', 'Home', 'Doc']
+  const validPath = ['Login', 'Home', 'Doc', 'NotFound']
   const snackbarStore = useSnackbarStore()
   const userStore = useUserStore()
   userStore.setIsLoggedIn()
@@ -174,6 +182,11 @@ router.beforeEach(async (to, _from, next) => {
   if (to.path.match('^/admin/') && !userStore.isAdmin) {
     snackbarStore.setMessage('Vous ne possédez pas les droits administeurs', 'error')
     return next('/')
+  }
+
+  // Redirige vers une 404 si la page n'existe pas
+  if (to.name === undefined) {
+    return next('/404')
   }
 
   next()

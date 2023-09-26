@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, computed, type Ref, type ComputedRef } from 'vue'
+import { ref, computed, type Ref } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
@@ -14,7 +14,7 @@ const projectStore = useProjectStore()
 const userStore = useUserStore()
 const snackbarStore = useSnackbarStore()
 
-const project: ComputedRef<ProjectInfos | undefined> = computed(() => projectStore.selectedProject)
+const project = computed(() => projectStore.selectedProject)
 const owner = computed(() => projectStore.selectedProjectOwner)
 const isOwner = computed(() => owner?.value?.id === userStore.userProfile.id)
 

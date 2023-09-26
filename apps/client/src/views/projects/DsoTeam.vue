@@ -25,12 +25,12 @@ const headers = [
 const project = computed(() => projectStore.selectedProject)
 
 const isUserAlreadyInTeam = computed(() => {
-  const allUsers = project.value.roles
+  const allUsers = project.value?.roles
   return !!allUsers?.find(role => role.user.email === newUserEmail.value)
 })
 
 const owner = computed(() => projectStore.selectedProjectOwner)
-const isOwner = computed(() => owner.value.id === userStore.userProfile.id)
+const isOwner = computed(() => owner.value?.id === userStore.userProfile.id)
 
 const newUserInputKey = ref(getRandomId('input'))
 const newUserEmail = ref('')
@@ -42,11 +42,11 @@ const lettersNotMatching = ref('')
 const setRows = () => {
   rows.value = []
 
-  if (project.value.roles?.length) {
+  if (project.value?.roles?.length) {
     project.value.roles?.forEach(role => {
       if (role.role === 'owner') {
         rows.value.unshift([
-          owner.value.email,
+          owner.value?.email,
           'owner',
           {
             cellAttrs: {
@@ -72,7 +72,7 @@ const setRows = () => {
   }
 }
 
-const retrieveUsersToAdd = pDebounce(async (letters) => {
+const retrieveUsersToAdd = pDebounce(async (letters: string) => {
   // Ne pas lancer de requête à moins de 3 caractères tapés
   if (letters.length < 3) return
   // Ne pas relancer de requête à chaque lettre ajoutée si aucun user ne correspond aux premières lettres données
@@ -84,7 +84,7 @@ const retrieveUsersToAdd = pDebounce(async (letters) => {
   }
 }, 300)
 
-const addUserToProject = async (email) => {
+const addUserToProject = async (email: string) => {
   isUpdatingProjectMembers.value = true
   const keysToValidate = ['email']
   const errorSchema = schemaValidator(userSchema, { email }, { keysToValidate })
@@ -101,7 +101,7 @@ const addUserToProject = async (email) => {
   isUpdatingProjectMembers.value = false
 }
 
-const removeUserFromProject = async (userId) => {
+const removeUserFromProject = async (userId: string) => {
   isUpdatingProjectMembers.value = true
   try {
     await projectUserStore.removeUserFromProject(userId)
@@ -160,7 +160,7 @@ watch(project, () => {
       label="Ajouter l'utilisateur"
       secondary
       icon="ri-user-add-line"
-      :disabled="project.locked || !newUserEmail || isUserAlreadyInTeam"
+      :disabled="project?.locked || !newUserEmail || isUserAlreadyInTeam"
       @click="addUserToProject(newUserEmail)"
     />
     <LoadingCt

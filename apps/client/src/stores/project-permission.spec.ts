@@ -3,11 +3,9 @@ import { setActivePinia, createPinia } from 'pinia'
 import { apiClient } from '../api/xhr-client.js'
 import { useProjectPermissionStore } from './project-permission.js'
 
-vi.spyOn(apiClient, 'get')
-vi.spyOn(apiClient, 'post')
-vi.spyOn(apiClient, 'put')
-vi.spyOn(apiClient, 'patch')
-vi.spyOn(apiClient, 'delete')
+const apiClientPost = vi.spyOn(apiClient, 'post')
+const apiClientPut = vi.spyOn(apiClient, 'put')
+const apiClientDelete = vi.spyOn(apiClient, 'delete')
 
 vi.mock('./project.js', async () => ({
   useProjectStore: () => ({
@@ -25,32 +23,32 @@ describe('Counter Store', () => {
   })
 
   it('Should add a project environment by api call', async () => {
-    apiClient.post.mockReturnValueOnce(Promise.resolve({ data: {} }))
+    apiClientPost.mockReturnValueOnce(Promise.resolve({ data: {} }))
     const projectPermissionStore = useProjectPermissionStore()
 
     await projectPermissionStore.addPermission('environmentId', {})
 
-    expect(apiClient.post).toHaveBeenCalledTimes(1)
-    expect(apiClient.post.mock.calls[0][0]).toEqual('/projects/projectId/environments/environmentId/permissions')
+    expect(apiClientPost).toHaveBeenCalledTimes(1)
+    expect(apiClientPost.mock.calls[0][0]).toEqual('/projects/projectId/environments/environmentId/permissions')
   })
 
   it('Should add a project environment by api call', async () => {
-    apiClient.put.mockReturnValueOnce(Promise.resolve({ data: {} }))
+    apiClientPut.mockReturnValueOnce(Promise.resolve({ data: {} }))
     const projectPermissionStore = useProjectPermissionStore()
 
     await projectPermissionStore.updatePermission('environmentId', {})
 
-    expect(apiClient.put).toHaveBeenCalledTimes(1)
-    expect(apiClient.put.mock.calls[0][0]).toEqual('/projects/projectId/environments/environmentId/permissions')
+    expect(apiClientPut).toHaveBeenCalledTimes(1)
+    expect(apiClientPut.mock.calls[0][0]).toEqual('/projects/projectId/environments/environmentId/permissions')
   })
 
   it('Should delete a project environment by api call', async () => {
-    apiClient.delete.mockReturnValueOnce(Promise.resolve({ data: {} }))
+    apiClientDelete.mockReturnValueOnce(Promise.resolve({ data: {} }))
     const projectPermissionStore = useProjectPermissionStore()
 
     await projectPermissionStore.deletePermission('environmentId', 'userId')
 
-    expect(apiClient.delete).toHaveBeenCalledTimes(1)
-    expect(apiClient.delete.mock.calls[0][0]).toEqual('/projects/projectId/environments/environmentId/permissions/userId')
+    expect(apiClientDelete).toHaveBeenCalledTimes(1)
+    expect(apiClientDelete.mock.calls[0][0]).toEqual('/projects/projectId/environments/environmentId/permissions/userId')
   })
 })

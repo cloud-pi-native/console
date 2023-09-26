@@ -3,11 +3,10 @@ import { setActivePinia, createPinia } from 'pinia'
 import { apiClient } from '../api/xhr-client.js'
 import { useProjectStore } from './project.js'
 
-vi.spyOn(apiClient, 'get')
-vi.spyOn(apiClient, 'post')
-vi.spyOn(apiClient, 'put')
-vi.spyOn(apiClient, 'patch')
-vi.spyOn(apiClient, 'delete')
+const apiClientGet = vi.spyOn(apiClient, 'get')
+const apiClientPost = vi.spyOn(apiClient, 'post')
+const apiClientPut = vi.spyOn(apiClient, 'put')
+const apiClientDelete = vi.spyOn(apiClient, 'delete')
 
 describe('Project Store', () => {
   beforeEach(() => {
@@ -43,12 +42,12 @@ describe('Project Store', () => {
     expect(projectStore.projects).toEqual([])
 
     const projects = [{ id: 'projectId' }, { id: 'anotherProjectId' }]
-    apiClient.get.mockReturnValueOnce(Promise.resolve({ data: projects }))
+    apiClientGet.mockReturnValueOnce(Promise.resolve({ data: projects }))
 
     await projectStore.getUserProjects()
 
-    expect(apiClient.get).toHaveBeenCalledTimes(1)
-    expect(apiClient.get.mock.calls[0][0]).toBe('/projects')
+    expect(apiClientGet).toHaveBeenCalledTimes(1)
+    expect(apiClientGet.mock.calls[0][0]).toBe('/projects')
     expect(projectStore.projects).toMatchObject(projects)
   })
 
@@ -67,12 +66,12 @@ describe('Project Store', () => {
     projectStore.selectedProjectOwner = user
 
     const projects = [project, { id: 'anotherProjectId' }]
-    apiClient.get.mockReturnValueOnce(Promise.resolve({ data: projects }))
+    apiClientGet.mockReturnValueOnce(Promise.resolve({ data: projects }))
 
     await projectStore.getUserProjects()
 
-    expect(apiClient.get).toHaveBeenCalledTimes(1)
-    expect(apiClient.get.mock.calls[0][0]).toBe('/projects')
+    expect(apiClientGet).toHaveBeenCalledTimes(1)
+    expect(apiClientGet.mock.calls[0][0]).toBe('/projects')
     expect(projectStore.projects).toMatchObject(projects)
     expect(projectStore.selectedProject).toMatchObject(project)
   })
@@ -83,15 +82,15 @@ describe('Project Store', () => {
     expect(projectStore.projects).toEqual([])
 
     const project = { id: 'projectId' }
-    apiClient.post.mockReturnValueOnce(Promise.resolve({ data: project }))
-    apiClient.get.mockReturnValueOnce(Promise.resolve({ data: [project] }))
+    apiClientPost.mockReturnValueOnce(Promise.resolve({ data: project }))
+    apiClientGet.mockReturnValueOnce(Promise.resolve({ data: [project] }))
 
     await projectStore.createProject(project)
 
-    expect(apiClient.post).toHaveBeenCalledTimes(1)
-    expect(apiClient.post.mock.calls[0][0]).toBe('/projects')
-    expect(apiClient.get).toHaveBeenCalledTimes(1)
-    expect(apiClient.get.mock.calls[0][0]).toBe('/projects')
+    expect(apiClientPost).toHaveBeenCalledTimes(1)
+    expect(apiClientPost.mock.calls[0][0]).toBe('/projects')
+    expect(apiClientGet).toHaveBeenCalledTimes(1)
+    expect(apiClientGet.mock.calls[0][0]).toBe('/projects')
     expect(projectStore.projects).toMatchObject([project])
   })
 
@@ -101,15 +100,15 @@ describe('Project Store', () => {
     expect(projectStore.projects).toEqual([])
 
     const project = { id: 'projectId', description: 'Application de prise de rendez-vous en préfécture.' }
-    apiClient.put.mockReturnValueOnce(Promise.resolve({ data: project }))
-    apiClient.get.mockReturnValueOnce(Promise.resolve({ data: [] }))
+    apiClientPut.mockReturnValueOnce(Promise.resolve({ data: project }))
+    apiClientGet.mockReturnValueOnce(Promise.resolve({ data: [] }))
 
-    await projectStore.updateProject(project.id, { description: project.description })
+    await projectStore.updateProject(project.id, { organizationId: 'organizationId', name: 'projectName', description: project.description })
 
-    expect(apiClient.put).toHaveBeenCalledTimes(1)
-    expect(apiClient.put.mock.calls[0][0]).toBe('/projects/projectId')
-    expect(apiClient.get).toHaveBeenCalledTimes(1)
-    expect(apiClient.get.mock.calls[0][0]).toBe('/projects')
+    expect(apiClientPut).toHaveBeenCalledTimes(1)
+    expect(apiClientPut.mock.calls[0][0]).toBe('/projects/projectId')
+    expect(apiClientGet).toHaveBeenCalledTimes(1)
+    expect(apiClientGet.mock.calls[0][0]).toBe('/projects')
     expect(projectStore.projects).toEqual([])
   })
 
@@ -121,15 +120,15 @@ describe('Project Store', () => {
     expect(projectStore.projects).toEqual(projects)
 
     const project = { id: 'projectId' }
-    apiClient.delete.mockReturnValueOnce(Promise.resolve({ data: project }))
-    apiClient.get.mockReturnValueOnce(Promise.resolve({ data: [] }))
+    apiClientDelete.mockReturnValueOnce(Promise.resolve({ data: project }))
+    apiClientGet.mockReturnValueOnce(Promise.resolve({ data: [] }))
 
     await projectStore.archiveProject('projectId')
 
-    expect(apiClient.delete).toHaveBeenCalledTimes(1)
-    expect(apiClient.delete.mock.calls[0][0]).toBe('/projects/projectId')
-    expect(apiClient.get).toHaveBeenCalledTimes(1)
-    expect(apiClient.get.mock.calls[0][0]).toBe('/projects')
+    expect(apiClientDelete).toHaveBeenCalledTimes(1)
+    expect(apiClientDelete.mock.calls[0][0]).toBe('/projects/projectId')
+    expect(apiClientGet).toHaveBeenCalledTimes(1)
+    expect(apiClientGet.mock.calls[0][0]).toBe('/projects')
     expect(projectStore.projects).toEqual([])
   })
 })

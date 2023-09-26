@@ -3,11 +3,7 @@ import { setActivePinia, createPinia } from 'pinia'
 import { apiClient } from '../api/xhr-client.js'
 import { useCIFilesStore } from './ci-files.js'
 
-vi.spyOn(apiClient, 'get')
-vi.spyOn(apiClient, 'post')
-vi.spyOn(apiClient, 'put')
-vi.spyOn(apiClient, 'patch')
-vi.spyOn(apiClient, 'delete')
+const apiClientPost = vi.spyOn(apiClient, 'post')
 
 describe('Counter Store', () => {
   beforeEach(() => {
@@ -18,12 +14,12 @@ describe('Counter Store', () => {
   })
 
   it('Should get ci files by api call', async () => {
-    apiClient.post.mockReturnValueOnce(Promise.resolve({ data: {} }))
+    apiClientPost.mockReturnValueOnce(Promise.resolve({ data: {} }))
     const ciFilesStore = useCIFilesStore()
 
     await ciFilesStore.generateCIFiles({})
 
-    expect(apiClient.post).toHaveBeenCalledTimes(1)
-    expect(apiClient.post.mock.calls[0][0]).toBe('/ci-files')
+    expect(apiClientPost).toHaveBeenCalledTimes(1)
+    expect(apiClientPost.mock.calls[0][0]).toBe('/ci-files')
   })
 })

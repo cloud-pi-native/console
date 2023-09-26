@@ -3,11 +3,7 @@ import { setActivePinia, createPinia } from 'pinia'
 import { apiClient } from '../../api/xhr-client.js'
 import { useAdminProjectStore } from './project.js'
 
-vi.spyOn(apiClient, 'get')
-vi.spyOn(apiClient, 'post')
-vi.spyOn(apiClient, 'put')
-vi.spyOn(apiClient, 'patch')
-vi.spyOn(apiClient, 'delete')
+const apiClientGet = vi.spyOn(apiClient, 'get')
 
 describe('Counter Store', () => {
   beforeEach(() => {
@@ -23,13 +19,13 @@ describe('Counter Store', () => {
       { id: 'id2', name: 'project2' },
       { id: 'id3', name: 'project3' },
     ]
-    apiClient.get.mockReturnValueOnce(Promise.resolve({ data }))
+    apiClientGet.mockReturnValueOnce(Promise.resolve({ data }))
     const adminProjectStore = useAdminProjectStore()
 
     const res = await adminProjectStore.getAllProjects()
 
     expect(res).toBe(data)
-    expect(apiClient.get).toHaveBeenCalledTimes(1)
-    expect(apiClient.get.mock.calls[0][0]).toBe('/admin/projects')
+    expect(apiClientGet).toHaveBeenCalledTimes(1)
+    expect(apiClientGet.mock.calls[0][0]).toBe('/admin/projects')
   })
 })

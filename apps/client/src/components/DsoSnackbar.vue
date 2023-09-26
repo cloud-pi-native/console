@@ -1,15 +1,15 @@
 <script lang="ts" setup>
-import { computed, watch, type ComputedRef } from 'vue'
+import { computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const route = useRoute()
 const snackbarStore = useSnackbarStore()
 
-const routePath: ComputedRef<string> = computed(() => route.path)
-const message: ComputedRef<string> = computed(() => snackbarStore.message)
-const isOpen: ComputedRef<boolean> = computed(() => snackbarStore.isOpen)
-const type: ComputedRef<string> = computed(() => snackbarStore.type)
+const routePath = computed(() => route.path)
+const message = computed(() => snackbarStore.message)
+const isOpen = computed(() => snackbarStore.isOpen)
+const type = computed(() => snackbarStore.type)
 
 const closeSnackbar = () => {
   snackbarStore.hideMessage()

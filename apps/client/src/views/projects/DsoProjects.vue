@@ -1,15 +1,15 @@
 <script lang="ts" setup>
-import { onMounted, ref, watch, computed, type ComputedRef, type Ref } from 'vue'
+import { onMounted, ref, watch, computed, type Ref } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import router from '@/router/index.js'
 import DsoSelectedProject from './DsoSelectedProject.vue'
-import { sortArrByObjKeyAsc, type ProjectInfos } from '@dso-console/shared'
+import { sortArrByObjKeyAsc } from '@dso-console/shared'
 
 const projectStore = useProjectStore()
 const snackbarStore = useSnackbarStore()
 
-const projects: ComputedRef<Array<ProjectInfos>> = computed(() => projectStore.projects)
+const projects = computed(() => projectStore.projects)
 const projectList: Ref<Array<Record<any, any>>> = ref([])
 
 const setProjectList = (projects: Array<Record<any, any>>) => {
