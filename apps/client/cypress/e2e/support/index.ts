@@ -13,7 +13,7 @@
 // https://on.cypress.io/configuration
 // ***********************************************************
 
-import './commands.js'
+import './commands'
 
 Cypress.on('window:before:load', (win) => {
   let copyText

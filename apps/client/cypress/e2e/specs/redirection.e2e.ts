@@ -1,4 +1,4 @@
-import { getModelById } from '../support/func.js'
+import { getModelById } from '../support/func'
 
 const project = getModelById('project', '011e7860-04d7-461f-912d-334c622d38b3')
 const organization = getModelById('organization', project.organizationId)

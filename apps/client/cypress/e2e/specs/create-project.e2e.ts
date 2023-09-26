@@ -1,4 +1,4 @@
-import { getModelById } from '../support/func.js'
+import { getModelById } from '../support/func'
 
 describe('Create Project', () => {
   const project = {

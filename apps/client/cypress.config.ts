@@ -19,8 +19,8 @@ export default defineConfig({
   e2e: {
     baseUrl: `http://${clientHost}:${clientPort}`,
     fixturesFolder: 'cypress/e2e/fixtures',
-    specPattern: 'cypress/e2e/specs/**/*.{cy,e2e}.js',
-    supportFile: 'cypress/e2e/support/index.js',
+    specPattern: 'cypress/e2e/specs/**/*.{cy,e2e}.{j,t}s',
+    supportFile: 'cypress/e2e/support/index.ts',
     video: false,
     screenshotsFolder: 'cypress/e2e/screenshots',
     numTestsKeptInMemory: 1,
@@ -40,8 +40,8 @@ export default defineConfig({
   },
 
   component: {
-    specPattern: 'cypress/components/specs/**/*.{cy,ct}.js',
-    supportFile: 'cypress/components/support/index.js',
+    specPattern: 'cypress/components/specs/**/*.{cy,ct}.{j,t}s',
+    supportFile: 'cypress/components/support/index.ts',
     indexHtmlFile: 'cypress/components/support/component-index.html',
     video: false,
     screenshotsFolder: 'cypress/components/screenshots',

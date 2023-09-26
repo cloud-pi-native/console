@@ -1,4 +1,4 @@
-import { getModel } from '../../support/func.js'
+import { getModel } from '../../support/func'
 import { statusDict, formatDate, sortArrByObjKeyAsc } from '@dso-console/shared'
 
 describe('Administration projects', () => {

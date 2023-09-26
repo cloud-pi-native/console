@@ -1,4 +1,4 @@
-import { getModelById } from '../support/func.js'
+import { getModelById } from '../support/func'
 
 const user = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6567')
 
