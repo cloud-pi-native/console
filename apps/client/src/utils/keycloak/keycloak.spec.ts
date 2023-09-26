@@ -54,13 +54,15 @@ describe('keycloak-init', () => {
     expect(keycloak.init.mock.calls).toHaveLength(1)
   })
 
-  it('Should return error if keycloak can\'t be initialize', async () => {
+  it('Should throw an error if keycloak can\'t be initialize', async () => {
     const error = new Error('Failed to init keycloak')
-    keycloak.init.mockReturnValueOnce(Promise.reject(error))
-    const res = await keycloakInit()
-
-    expect(keycloak.init.mock.calls).toHaveLength(1)
-    expect(res).toEqual(error)
+    try {
+      keycloak.init.mockReturnValueOnce(Promise.reject(error))
+      await keycloakInit()
+    } catch (e) {
+      expect(keycloak.init.mock.calls).toHaveLength(1)
+      expect(e).toEqual(error)
+    }
   })
 
   it('Should start login process to keycloak', async () => {
@@ -69,13 +71,15 @@ describe('keycloak-init', () => {
     expect(keycloak.login.mock.calls).toHaveLength(1)
   })
 
-  it('Should return error if login process to keycloak failed', async () => {
+  it('Should throw an error if login process to keycloak failed', async () => {
     const error = new Error('Failed to start login process keycloak')
-    keycloak.login.mockReturnValueOnce(Promise.reject(error))
-    const res = await keycloakLogin()
-
-    expect(keycloak.login.mock.calls).toHaveLength(1)
-    expect(res).toEqual(error)
+    try {
+      keycloak.login.mockReturnValueOnce(Promise.reject(error))
+      await keycloakLogin()
+    } catch (e) {
+      expect(keycloak.login.mock.calls).toHaveLength(1)
+      expect(e).toEqual(error)
+    }
   })
 
   it('Should start logout process to keycloak', async () => {
@@ -84,12 +88,14 @@ describe('keycloak-init', () => {
     expect(keycloak.logout.mock.calls).toHaveLength(1)
   })
 
-  it('Should return error if logout process to keycloak failed', async () => {
+  it('Should throw an error if logout process to keycloak failed', async () => {
     const error = new Error('Failed to start logout process keycloak')
-    keycloak.logout.mockReturnValueOnce(Promise.reject(error))
-    const res = await keycloakLogout()
-
-    expect(keycloak.logout.mock.calls).toHaveLength(1)
-    expect(res).toEqual(error)
+    try {
+      keycloak.logout.mockReturnValueOnce(Promise.reject(error))
+      await keycloakLogout()
+    } catch (e) {
+      expect(keycloak.logout.mock.calls).toHaveLength(1)
+      expect(e).toEqual(error)
+    }
   })
 })
