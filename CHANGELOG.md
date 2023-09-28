@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.9.1](https://github.com/cloud-pi-native/console/compare/v5.9.0...v5.9.1) (2023-09-28)
+
+
+### Bug Fixes
+
+* :bug: fix not updated argocd cluster and not using insecure in config ([69e7a9a](https://github.com/cloud-pi-native/console/commit/69e7a9ac7a584d76ce047b8330356ce2387218d7))
+
 ## [5.9.0](https://github.com/cloud-pi-native/console/compare/v5.8.2...v5.9.0) (2023-09-25)
 
 
