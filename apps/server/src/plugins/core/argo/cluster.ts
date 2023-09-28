@@ -25,6 +25,8 @@ export const createCluster: StepCall<CreateClusterExecArgs> = async (payload) =>
   }
 }
 
+export const updateCluster = createCluster
+
 export const deleteCluster: StepCall<DeleteClusterExecArgs> = async (payload) => {
   try {
     const secretName = payload.args.secretName
@@ -55,6 +57,7 @@ const convertConfig = (cluster: ClusterModel) => ({
     ...cluster.user?.keyData && { keyData: cluster.user?.keyData },
     ...cluster.user?.certData && { certData: cluster.user?.certData },
     ...cluster.cluster?.caData && { caData: cluster.cluster?.caData },
+    ...cluster.cluster?.skipTLSVerify && { insecure: cluster.cluster.skipTLSVerify },
     serverName: cluster.cluster.tlsServerName,
   },
 })

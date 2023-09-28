@@ -75,6 +75,8 @@ export const updateClusterBusiness = async (data: UpdateClusterDto['body'], clus
   delete clusterData.cluster
   const cluster = await updateCluster(clusterId, clusterData, kubeConfig)
 
+  await hooks.updateCluster.execute({ ...cluster, user: { ...kubeConfig.user }, cluster: { ...kubeConfig.cluster } })
+
   if (data.projectsId) {
     for (const projectId of data.projectsId) {
       await addClusterToProjectWithIds(clusterId, projectId)
