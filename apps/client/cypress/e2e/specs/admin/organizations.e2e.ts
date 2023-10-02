@@ -78,6 +78,9 @@ describe('Administration organizations', () => {
   })
 
   it('Should update an organization loggedIn as admin', () => {
+    cy.intercept('PUT', '/api/v1/admin/organizations/*').as('putOrganization')
+    cy.intercept('GET', 'api/v1/admin/organizations').as('getAllOrganizations')
+
     const newLabel = 'Ministère de la chambre rouge'
 
     cy.getByDataTestid('confirmUpdateOrganizationZone')
@@ -99,6 +102,8 @@ describe('Administration organizations', () => {
       cy.getByDataTestid('confirmUpdateBtn')
         .click()
     })
+    cy.wait('@putOrganization')
+    cy.wait('@getAllOrganizations')
 
     cy.getByDataTestid('snackbar').should('contain', `Organisation ${newOrg.name} mise à jour`)
 
@@ -120,6 +125,8 @@ describe('Administration organizations', () => {
       cy.getByDataTestid('confirmUpdateBtn')
         .click()
     })
+    cy.wait('@putOrganization')
+    cy.wait('@getAllOrganizations')
 
     cy.getByDataTestid('snackbar').within(() => {
       cy.get('p').should('contain', `Organisation ${newOrg.name} mise à jour`)
