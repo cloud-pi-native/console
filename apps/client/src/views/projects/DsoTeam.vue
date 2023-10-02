@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, watch, type Ref, onBeforeMount } from 'vue'
 import DsoSelectedProject from './DsoSelectedProject.vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectUserStore } from '@/stores/project-user.js'
@@ -36,8 +36,9 @@ const newUserInputKey = ref(getRandomId('input'))
 const newUserEmail = ref('')
 const usersToAdd = ref([])
 const isUpdatingProjectMembers = ref(false)
-const rows = ref([])
+const rows: Ref<any[][] | never> = ref([])
 const lettersNotMatching = ref('')
+const tableKey = ref(getRandomId('table'))
 
 const setRows = () => {
   rows.value = []
@@ -51,7 +52,7 @@ const setRows = () => {
           {
             cellAttrs: {
               class: 'fr-fi-close-line !flex justify-center disabled',
-              title: `${owner.value.email} ne peut pas être retiré du projet`,
+              title: `${owner.value?.email} ne peut pas être retiré du projet`,
             },
           },
         ])
@@ -70,6 +71,7 @@ const setRows = () => {
       ])
     })
   }
+  tableKey.value = getRandomId('table')
 }
 
 const retrieveUsersToAdd = pDebounce(async (letters: string) => {
@@ -92,7 +94,11 @@ const addUserToProject = async (email: string) => {
   try {
     await projectUserStore.addUserToProject({ email })
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    if (error instanceof Error) {
+      snackbarStore.setMessage(error.message)
+      return
+    }
+    snackbarStore.setMessage('échec d\'ajout de l\'utilisateur au projet')
   }
 
   newUserEmail.value = ''
@@ -106,12 +112,16 @@ const removeUserFromProject = async (userId: string) => {
   try {
     await projectUserStore.removeUserFromProject(userId)
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    if (error instanceof Error) {
+      snackbarStore.setMessage(error.message)
+      return
+    }
+    snackbarStore.setMessage('échec de retrait de l\'utilisateur du projet')
   }
   isUpdatingProjectMembers.value = false
 }
 
-onMounted(async () => {
+onBeforeMount(() => {
   setRows()
 })
 
@@ -128,6 +138,7 @@ watch(project, () => {
     class="relative"
   >
     <DsfrTable
+      :key="tableKey"
       data-testid="teamTable"
       :title="`Membres du projet ${project?.name}`"
       :headers="headers"

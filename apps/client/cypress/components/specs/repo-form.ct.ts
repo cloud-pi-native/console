@@ -83,12 +83,12 @@ describe('RepoForm.vue', () => {
           expect(text).to.eq('gitlab-ci file')
         })
       })
-    cy.get('.fr-download__link').first()
+    cy.get('.fr-link--download').first()
       .find('span').should(($span) => {
         const text = $span.text()
         expect(text).to.match(/zip – \d* bytes/)
       })
-    cy.get('.fr-download__link').last()
+    cy.get('.fr-link--download').last()
       .find('span').should(($span) => {
         const text = $span.text()
         expect(text).to.match(/YAML – \d* bytes/)
