@@ -1,4 +1,4 @@
-<script setup>
+<script lang="ts" setup>
 import { useScheme } from '@gouvminint/vue-dsfr'
 import { computed, ref, watch, onMounted, watchEffect } from 'vue'
 import { useRoute } from 'vue-router'
@@ -26,7 +26,7 @@ const isExpanded = ref({
   administration: false,
 })
 
-function toggleExpand (key) {
+function toggleExpand (key: keyof typeof isExpanded.value) {
   isExpanded.value[key] = !isExpanded.value[key]
 }
 
@@ -46,6 +46,7 @@ watch(routePath, (routePath) => {
 })
 
 onMounted(() => {
+  // @ts-ignore
   const { setScheme } = useScheme()
 
   watchEffect(() => setScheme(isDarkScheme.value ? 'dark' : 'light'))

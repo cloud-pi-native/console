@@ -1,4 +1,4 @@
-<script setup>
+<script lang="ts" setup>
 import { ref, computed } from 'vue'
 import { repoSchema, schemaValidator, isValid, instanciateSchema } from '@dso-console/shared'
 import CIForm from './CIForm.vue'
@@ -38,7 +38,7 @@ const isDeletingRepo = ref(false)
 const errorSchema = computed(() => schemaValidator(repoSchema, localRepo.value))
 const isRepoValid = computed(() => Object.keys(errorSchema.value).length === 0)
 
-const updateRepo = (key, value) => {
+const updateRepo = (key: keyof typeof localRepo.value, value) => {
   localRepo.value[key] = value
   updatedValues.value[key] = true
 }

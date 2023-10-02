@@ -1,4 +1,4 @@
-<script setup>
+<script lang="ts" setup>
 import { computed, onMounted, ref } from 'vue'
 import { useAdminOrganizationStore } from '@/stores/admin/organization.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'

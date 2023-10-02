@@ -1,10 +1,10 @@
-<script setup>
+<script  lang="ts" setup>
 import { useServiceStore } from '@/stores/services.js'
-import { ref, computed, onBeforeMount } from 'vue'
+import { ref, computed, onBeforeMount, type Ref } from 'vue'
 
 const serviceStore = useServiceStore()
 
-const isUpdating = ref(true)
+const isUpdating: Ref<boolean> = ref(true)
 const services = computed(() => serviceStore.services)
 const servicesHealth = computed(() => serviceStore.servicesHealth)
 

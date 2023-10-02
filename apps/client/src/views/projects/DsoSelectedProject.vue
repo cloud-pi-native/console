@@ -1,4 +1,4 @@
-<script setup>
+<script lang="ts" setup>
 import { useProjectStore } from '@/stores/project.js'
 
 const projectStore = useProjectStore()
