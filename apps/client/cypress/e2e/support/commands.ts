@@ -326,12 +326,12 @@ Cypress.Commands.add('generateGitLabCI', (ciForms) => {
       .getByDataTestid('copy-rules-ContentBtn').should('exist')
       .getByDataTestid('copy-gitlab-ci-dso-ContentBtn').click()
     cy.assertClipboard(version)
-    cy.get('.fr-download__link').first().click()
+    cy.get('.fr-link--download').first().click()
       .find('span').should(($span) => {
         const text = $span.text()
         expect(text).to.match(/zip – \d* bytes/)
       })
-    cy.get('.fr-download__link').last().click()
+    cy.get('.fr-link--download').last().click()
       .find('span').should(($span) => {
         const text = $span.text()
         expect(text).to.match(/YAML – \d* bytes/)
