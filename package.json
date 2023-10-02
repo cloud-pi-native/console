@@ -29,11 +29,11 @@
     "test:e2e-ci": "npm run kube:prod:build; npm run kube:e2e-ci"
   },
   "devDependencies": {
-    "@commitlint/cli": "^17.6.6",
-    "@commitlint/config-conventional": "^17.6.6",
+    "@commitlint/cli": "^17.7.2",
+    "@commitlint/config-conventional": "^17.7.0",
     "husky": "^8.0.3",
     "lint-staged": "^14.0.1",
-    "turbo": "^1.10.8"
+    "turbo": "^1.10.14"
   },
   "volta": {
     "node": "18.17.1"
