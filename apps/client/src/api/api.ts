@@ -114,6 +114,12 @@ export const deleteEnvironment = async (projectId: ProjectModel['id'], environme
   return response.data
 }
 
+// Quotas
+export const getQuotas = async () => {
+  const response = await apiClient.get('/projects/environments/quotas')
+  return response.data
+}
+
 // Permissions
 export const addPermission = async (projectId: ProjectModel['id'], environmentId: EnvironmentModel['id'], data: CreatePermissionDto['body']) => {
   const response = await apiClient.post(`/projects/${projectId}/environments/${environmentId}/permissions`, data)

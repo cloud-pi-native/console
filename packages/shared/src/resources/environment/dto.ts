@@ -6,6 +6,7 @@ export type InitializeEnvironmentDto = {
   body: {
     name: EnvironmentModel['name'],
     projectId: ProjectModel['id'],
+    quotaId?: EnvironmentModel['quotaId'],
     clustersId: ClusterModel['id'][],
   }
   params: { projectId: ProjectModel['id'] }
