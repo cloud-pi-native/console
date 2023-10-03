@@ -1,4 +1,4 @@
-<script setup>
+<script lang="ts" setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useAdminClusterStore } from '@/stores/admin/cluster.js'

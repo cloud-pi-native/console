@@ -1,4 +1,4 @@
-<script setup>
+<script lang="ts" setup>
 import { ref, onMounted, watch, computed } from 'vue'
 import SuggestionInput from './SuggestionInput.vue'
 import RangeInput from './RangeInput.vue'
@@ -97,7 +97,6 @@ onMounted(() => {
   <DsfrFieldset
     data-testid="permissionsFieldset"
     :legend="`Droits des utilisateurs sur l'environnement de ${environment?.name}`"
-    class="full-fieldset"
     hint="Gérez les droits de lecture (r), écriture (w) et suppression (d) d'un membre du projet sur l'environnement sélectionné."
   >
     <DsfrAlert
@@ -107,12 +106,12 @@ onMounted(() => {
       small
       type="info"
     />
-    <ul class="flex flex-col gap-2 items-center w-full">
+    <ul class="flex flex-col gap-4 items-center w-full p-0">
       <li
         v-for="permission in permissions"
         :key="permission.id"
         :data-testid="`userPermissionLi-${permission.user?.email}`"
-        class="p-4 flex justify-between content-center items-end gap-2 md:flex-row flex-col w-full"
+        class="flex justify-between content-center lg:items-end gap-4 lg:flex-row flex-col w-full"
       >
         <div>
           <div
@@ -168,7 +167,6 @@ onMounted(() => {
     </ul>
   </DsfrFieldset>
   <DsfrFieldset
-    class="full-fieldset"
     data-testid="newPermissionFieldset"
     legend="Accréditer un membre du projet"
     :hint="usersToLicence.length ? `Entrez l'e-mail d'un membre du projet ${project.name}. Ex : ${usersToLicence[0].email}` : `Tous les membres du projet ${project.name} sont déjà accrédités.`"
@@ -186,9 +184,3 @@ onMounted(() => {
     />
   </DsfrFieldset>
 </template>
-
-<style>
-.full-fieldset div.fr-fieldset__element {
-  width: 70%;
-}
-</style>

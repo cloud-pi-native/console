@@ -1,5 +1,5 @@
-<script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+<script lang="ts" setup>
+import { ref, computed, watch, type Ref, onBeforeMount } from 'vue'
 import DsoSelectedProject from './DsoSelectedProject.vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectUserStore } from '@/stores/project-user.js'
@@ -25,33 +25,34 @@ const headers = [
 const project = computed(() => projectStore.selectedProject)
 
 const isUserAlreadyInTeam = computed(() => {
-  const allUsers = project.value.roles
+  const allUsers = project.value?.roles
   return !!allUsers?.find(role => role.user.email === newUserEmail.value)
 })
 
 const owner = computed(() => projectStore.selectedProjectOwner)
-const isOwner = computed(() => owner.value.id === userStore.userProfile.id)
+const isOwner = computed(() => owner.value?.id === userStore.userProfile.id)
 
 const newUserInputKey = ref(getRandomId('input'))
 const newUserEmail = ref('')
 const usersToAdd = ref([])
 const isUpdatingProjectMembers = ref(false)
-const rows = ref([])
+const rows: Ref<any[][] | never> = ref([])
 const lettersNotMatching = ref('')
+const tableKey = ref(getRandomId('table'))
 
 const setRows = () => {
   rows.value = []
 
-  if (project.value.roles?.length) {
+  if (project.value?.roles?.length) {
     project.value.roles?.forEach(role => {
       if (role.role === 'owner') {
         rows.value.unshift([
-          owner.value.email,
+          owner.value?.email,
           'owner',
           {
             cellAttrs: {
               class: 'fr-fi-close-line !flex justify-center disabled',
-              title: `${owner.value.email} ne peut pas être retiré du projet`,
+              title: `${owner.value?.email} ne peut pas être retiré du projet`,
             },
           },
         ])
@@ -70,9 +71,10 @@ const setRows = () => {
       ])
     })
   }
+  tableKey.value = getRandomId('table')
 }
 
-const retrieveUsersToAdd = pDebounce(async (letters) => {
+const retrieveUsersToAdd = pDebounce(async (letters: string) => {
   // Ne pas lancer de requête à moins de 3 caractères tapés
   if (letters.length < 3) return
   // Ne pas relancer de requête à chaque lettre ajoutée si aucun user ne correspond aux premières lettres données
@@ -84,7 +86,7 @@ const retrieveUsersToAdd = pDebounce(async (letters) => {
   }
 }, 300)
 
-const addUserToProject = async (email) => {
+const addUserToProject = async (email: string) => {
   isUpdatingProjectMembers.value = true
   const keysToValidate = ['email']
   const errorSchema = schemaValidator(userSchema, { email }, { keysToValidate })
@@ -92,7 +94,11 @@ const addUserToProject = async (email) => {
   try {
     await projectUserStore.addUserToProject({ email })
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    if (error instanceof Error) {
+      snackbarStore.setMessage(error.message)
+      return
+    }
+    snackbarStore.setMessage('échec d\'ajout de l\'utilisateur au projet')
   }
 
   newUserEmail.value = ''
@@ -101,17 +107,21 @@ const addUserToProject = async (email) => {
   isUpdatingProjectMembers.value = false
 }
 
-const removeUserFromProject = async (userId) => {
+const removeUserFromProject = async (userId: string) => {
   isUpdatingProjectMembers.value = true
   try {
     await projectUserStore.removeUserFromProject(userId)
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    if (error instanceof Error) {
+      snackbarStore.setMessage(error.message)
+      return
+    }
+    snackbarStore.setMessage('échec de retrait de l\'utilisateur du projet')
   }
   isUpdatingProjectMembers.value = false
 }
 
-onMounted(async () => {
+onBeforeMount(() => {
   setRows()
 })
 
@@ -128,6 +138,7 @@ watch(project, () => {
     class="relative"
   >
     <DsfrTable
+      :key="tableKey"
       data-testid="teamTable"
       :title="`Membres du projet ${project?.name}`"
       :headers="headers"
@@ -160,7 +171,7 @@ watch(project, () => {
       label="Ajouter l'utilisateur"
       secondary
       icon="ri-user-add-line"
-      :disabled="project.locked || !newUserEmail || isUserAlreadyInTeam"
+      :disabled="project?.locked || !newUserEmail || isUserAlreadyInTeam"
       @click="addUserToProject(newUserEmail)"
     />
     <LoadingCt

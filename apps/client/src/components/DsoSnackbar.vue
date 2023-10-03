@@ -1,4 +1,4 @@
-<script setup>
+<script lang="ts" setup>
 import { computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useSnackbarStore } from '@/stores/snackbar.js'

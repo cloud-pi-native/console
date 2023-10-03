@@ -1,5 +1,5 @@
-<script setup>
-import { ref, computed, onBeforeMount, watch } from 'vue'
+<script lang="ts" setup>
+import { ref, computed, onBeforeMount, watch, type Ref } from 'vue'
 import { clusterSchema, schemaValidator, isValid, instanciateSchema } from '@dso-console/shared'
 import { load } from 'js-yaml'
 import { JsonViewer } from 'vue3-json-viewer'
@@ -8,37 +8,32 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const snackbarStore = useSnackbarStore()
 
-const props = defineProps({
-  cluster: {
-    type: Object,
-    default: () => ({
-      label: '',
-      cluster: {},
-      user: {},
-      projectsId: [],
-      clusterResources: false,
-      privacy: 'dedicated',
-      infos: '',
-    }),
-  },
-  isNewCluster: {
-    type: Boolean,
-    default: true,
-  },
-  allProjects: {
-    type: Array,
-    default: () => [],
-  },
+const props = withDefaults(defineProps<{
+  isNewCluster: boolean
+  cluster: Record<string, any>
+  allProjects: Array<any>
+}>(), {
+  isNewCluster: true,
+  cluster: () => ({
+    label: '',
+    cluster: {},
+    user: {},
+    projectsId: [],
+    clusterResources: false,
+    privacy: 'dedicated',
+    infos: '',
+  }),
+  allProjects: () => [],
 })
 
-const projectsName = ref([])
-const jsonKConfig = ref({})
-const kConfigError = ref(undefined)
-const isMissingCurrentContext = ref(false)
+const projectsName: Ref<Array<string | never>> = ref([])
+const jsonKConfig: Ref<Record<any, any>> = ref({})
+const kConfigError: Ref<string | undefined> = ref(undefined)
+const isMissingCurrentContext: Ref<boolean> = ref(false)
 const contexts = ref([])
 const selectedContext = ref(undefined)
-const localCluster = ref({})
-const updatedValues = ref({})
+const localCluster: Ref<Record<string, any>> = ref({})
+const updatedValues: Ref<Record<string, any>> = ref({})
 const kubeconfig = ref()
 // const clusterToDelete = ref('')
 // const isDeletingCluster = ref(false)
@@ -46,7 +41,7 @@ const kubeconfig = ref()
 const errorSchema = computed(() => schemaValidator(clusterSchema, localCluster.value))
 const isClusterValid = computed(() => Object.keys(errorSchema.value).length === 0)
 
-const updateValues = (key, value) => {
+const updateValues = (key: string, value: any) => {
   if (key === 'skipTLSVerify') {
     localCluster.value.cluster.skipTLSVerify = value
     updatedValues.value.cluster = true
@@ -71,7 +66,7 @@ const updateValues = (key, value) => {
   }
 }
 
-const updateKubeconfig = (files) => {
+const updateKubeconfig = (files: Array<any>) => {
   kConfigError.value = undefined
   localCluster.value.cluster = {}
   localCluster.value.user = {}
@@ -80,7 +75,7 @@ const updateKubeconfig = (files) => {
     const reader = new FileReader()
     reader.onload = (evt) => {
       // Retrieve YAML kubeconfig, turn it to JSON object.
-      jsonKConfig.value = load(evt.target.result, 'utf8')
+      if (evt.target) jsonKConfig.value = load(evt.target.result, 'utf8')
       // Retrieve context.
       let context
       if (!jsonKConfig.value.contexts) throw new Error('Pas de contexts spécifiés dans le kubeconfig.')
@@ -96,22 +91,33 @@ const updateKubeconfig = (files) => {
     }
     reader.readAsText(files[0])
   } catch (error) {
-    kConfigError.value = error.message
-    snackbarStore.setMessage(error.message, 'error')
+    if (error instanceof Error) {
+      kConfigError.value = error.message
+      snackbarStore.setMessage(error.message, 'error')
+      return
+    }
+    snackbarStore.setMessage('échec de parsing du fichier uploadé')
   }
 }
 
-const retrieveUserAndCluster = (context) => {
+type ContextType = {
+  user: {
+    username: string,
+    password: string,
+    token: string,
+    certData: string,
+    keyData: string,
+  }
+  cluster: {
+    server: string,
+    tlsServerName: string,
+    caData: string,
+    skipTLSVerify: string,
+  }
+}
+
+const retrieveUserAndCluster = (context: ContextType) => {
   try {
-    /**
-     * Retrieve context user.
-     * @typedef {Object} user
-     * @property {string} username
-     * @property {string} password
-     * @property {string} token
-     * @property {string} certData - client-certificate-data
-     * @property {string} keyData - client-key-data
-     */
     const {
       username,
       password,
@@ -124,15 +130,6 @@ const retrieveUserAndCluster = (context) => {
       ...token && { token },
       ...certData && keyData && { certData, keyData },
     }
-    /**
-     * Retrieve context cluster.
-     * @typedef {Object} cluster
-     * @property {string} server - server
-     * @property {string} tlsServerName - sni
-     * @property {string} caData - certificate-authority-data
-     * @property {string} skipTLSVerify - insecure-skip-tls-verify
-     *
-     */
     const {
       server,
       'certificate-authority-data': caData,
@@ -145,12 +142,21 @@ const retrieveUserAndCluster = (context) => {
       skipTLSVerify: skipTLSVerify || false,
     }
   } catch (error) {
-    kConfigError.value = error.message
-    snackbarStore.setMessage(error.message, 'error')
+    if (error instanceof Error) {
+      kConfigError.value = error.message
+      snackbarStore.setMessage(error.message, 'error')
+      return
+    }
+    snackbarStore.setMessage('échec de parsing du fichier uploadé')
   }
 }
 
-const emit = defineEmits(['add', 'update', 'delete', 'cancel'])
+const emit = defineEmits<{
+  add: [value: typeof localCluster]
+  update: [value: typeof localCluster]
+  delete: [value: typeof localCluster['id']]
+  cancel: [value: null]
+}>()
 
 const addCluster = () => {
   updatedValues.value = instanciateSchema({ schema: clusterSchema }, true)
@@ -205,7 +211,6 @@ watch(selectedContext, () => {
       v-model="kubeconfig"
       label="Kubeconfig"
       data-testid="kubeconfig-upload"
-      :disabled="!isNewCluster"
       :error="kConfigError || (errorSchema.cluster?.match(/is required$/) || errorSchema.user?.match(/is required$/) ? 'Le kubeconfig semble incomplet.' : '')"
       hint="Uploadez le Kubeconfig du cluster."
       class="fr-mb-2w"
@@ -214,7 +219,6 @@ watch(selectedContext, () => {
     <DsfrSelect
       v-if="isMissingCurrentContext"
       v-model="selectedContext"
-      :disabled="!isNewCluster"
       select-id="selectedContextSelect"
       label="Context"
       description="Nous n'avons pas trouvé de current-context dans votre kubeconfig. Veuillez choisir un contexte."
@@ -243,7 +247,6 @@ watch(selectedContext, () => {
       label-visible
       required="required"
       hint="La valeur est extraite du kubeconfig téléversé."
-      :disabled="!isNewCluster"
       @update:model-value="updateValues('tlsServerName', $event)"
     />
     <DsfrInputGroup

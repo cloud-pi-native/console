@@ -1,5 +1,5 @@
-<script setup>
-import { computed, onMounted, ref } from 'vue'
+<script lang="ts" setup>
+import { computed, onBeforeMount, ref } from 'vue'
 import { useAdminOrganizationStore } from '@/stores/admin/organization.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import {
@@ -78,6 +78,7 @@ const setRows = () => {
           align: 'center',
         },
       }]]
+  tableKey.value = getRandomId('table')
 }
 
 const getAllOrganizations = async () => {
@@ -134,7 +135,6 @@ const confirmUpdateOrganization = async ({ name, key, data }) => {
 const cancelUpdateOrganization = async () => {
   isUpdatingOrganization.value = null
   await getAllOrganizations()
-  tableKey.value = getRandomId('table')
 }
 
 const updateOrganization = async ({ name, key, data }) => {
@@ -157,7 +157,7 @@ const updateOrganization = async ({ name, key, data }) => {
   }
 }
 
-onMounted(async () => {
+onBeforeMount(async () => {
   await getAllOrganizations()
   newOrg.value = instanciateSchema({ schema: organizationSchema }, undefined)
 })

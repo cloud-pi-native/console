@@ -1,10 +1,10 @@
 import { fileURLToPath } from 'node:url'
-import { mergeConfig } from 'vite'
+import { mergeConfig, type UserConfig } from 'vite'
 import { configDefaults, defineConfig } from 'vitest/config'
 import viteConfig from './vite.config'
 
 export default mergeConfig(
-  viteConfig,
+  viteConfig as UserConfig,
   defineConfig({
     test: {
       root: fileURLToPath(new URL('./', import.meta.url)),

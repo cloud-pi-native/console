@@ -1,4 +1,4 @@
-<script setup>
+<script lang="ts" setup>
 import { ref, onMounted, onBeforeMount } from 'vue'
 import { environmentSchema, schemaValidator, instanciateSchema, allEnv, projectIsLockedInfo } from '@dso-console/shared'
 import PermissionForm from './PermissionForm.vue'
@@ -133,7 +133,7 @@ onMounted(() => {
     </h1>
     <DsfrFieldset
       :key="environment"
-      :legend="props.isEditable ? 'Informations de l\'environnement' : undefined"
+      :legend="`Informations de l\'environnement ${localEnvironment.id ? `de ${localEnvironment.name}` : ''}`"
       :hint="props.isEditable ? 'Les champs munis d\'une astérisque (*) sont requis' : undefined"
       data-testid="environmentFieldset"
     >
@@ -147,41 +147,41 @@ onMounted(() => {
         :options="environmentOptions"
         @update:model-value="updateEnvironment('name', $event)"
       />
-    </DsfrFieldset>
-    <div class="fr-mb-2w">
-      <MultiSelector
-        :options="projectClusters"
-        :array="clustersLabel"
-        :disabled="props.isProjectLocked || !projectClusters.length"
-        choice-label="Veuillez choisir un ou plusieurs cluster"
-        no-choice-label="Aucun cluster disponible pour ce projet"
-        label="Nom du cluster"
-        description="Ajouter un cluster cible pour le déploiement de cet environnement."
-        @update="updateEnvironment('clustersId', $event)"
-      />
-      <div
-        v-if="localEnvironment.id"
-        class="flex space-x-10 mt-5"
-      >
-        <DsfrButton
-          label="Enregistrer"
-          data-testid="putEnvironmentBtn"
-          :disabled="props.isProjectLocked"
-          :title="props.isProjectLocked ? projectIsLockedInfo : 'Enregistrer les changements'"
-          primary
-          icon="ri-upload-cloud-line"
-          @click="putEnvironment()"
+      <div class="fr-mb-2w">
+        <MultiSelector
+          :options="projectClusters"
+          :array="clustersLabel"
+          :disabled="props.isProjectLocked || !projectClusters.length"
+          choice-label="Veuillez choisir un ou plusieurs cluster"
+          no-choice-label="Aucun cluster disponible pour ce projet"
+          label="Nom du cluster"
+          description="Ajouter un cluster cible pour le déploiement de cet environnement."
+          @update="updateEnvironment('clustersId', $event)"
         />
-        <DsfrButton
-          label="Annuler"
-          data-testid="cancelEnvironmentBtn"
-          :disabled="props.isProjectLocked"
-          secondary
-          icon="ri-close-line"
-          @click="cancel()"
-        />
+        <div
+          v-if="localEnvironment.id"
+          class="flex space-x-10 mt-5"
+        >
+          <DsfrButton
+            label="Enregistrer"
+            data-testid="putEnvironmentBtn"
+            :disabled="props.isProjectLocked"
+            :title="props.isProjectLocked ? projectIsLockedInfo : 'Enregistrer les changements'"
+            primary
+            icon="ri-upload-cloud-line"
+            @click="putEnvironment()"
+          />
+          <DsfrButton
+            label="Annuler"
+            data-testid="cancelEnvironmentBtn"
+            :disabled="props.isProjectLocked"
+            secondary
+            icon="ri-close-line"
+            @click="cancel()"
+          />
+        </div>
       </div>
-    </div>
+    </DsfrFieldset>
     <div v-if="localEnvironment.id">
       <PermissionForm
         v-if="!isDeletingEnvironment"

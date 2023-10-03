@@ -20,17 +20,16 @@ import 'uno.css'
 import 'virtual:unocss-devtools'
 import './main.css'
 
-(async () => {
-  try {
-    await keycloakInit()
-  } catch (e) {
-    console.log(e)
-  }
+try {
+  await keycloakInit()
+} catch (error) {
+  if (error instanceof Error) throw new Error(error.message)
+  throw new Error('échec d\'initialisation du keycloak')
+}
 
-  createApp(App)
-    .use(createPinia())
-    .use(router)
-    .use(VueDsfr, { icons: Object.values(icons) })
-    .use(JsonViewer)
-    .mount('#app')
-})()
+createApp(App)
+  .use(createPinia())
+  .use(router)
+  .use(VueDsfr, { icons: Object.values(icons) })
+  .use(JsonViewer)
+  .mount('#app')

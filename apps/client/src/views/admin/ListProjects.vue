@@ -1,9 +1,10 @@
-<script setup>
-import { onMounted, ref } from 'vue'
+<script lang="ts" setup>
+import { onBeforeMount, ref } from 'vue'
 import { useAdminProjectStore } from '@/stores/admin/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { formatDate, statusDict, sortArrByObjKeyAsc } from '@dso-console/shared'
 import { useAdminOrganizationStore } from '@/stores/admin/organization.js'
+import { getRandomId } from '@gouvminint/vue-dsfr'
 
 const adminProjectStore = useAdminProjectStore()
 const adminOrganizationStore = useAdminOrganizationStore()
@@ -25,6 +26,8 @@ const headers = [
   'Modification',
 ]
 const rows = ref([])
+
+const tableKey = ref(getRandomId('table'))
 
 const setRows = () => {
   rows.value = allProjects.value.length
@@ -56,6 +59,7 @@ const setRows = () => {
           colspan: headers.length,
         },
       }]]
+  tableKey.value = getRandomId('table')
 }
 
 const getAllProjects = async () => {
@@ -67,13 +71,14 @@ const getAllProjects = async () => {
   }
 }
 
-onMounted(async () => {
+onBeforeMount(async () => {
   organizations.value = await adminOrganizationStore.getAllOrganizations()
   await getAllProjects()
 })
 </script>
 <template>
   <DsfrTable
+    :key="tableKey"
     data-testid="tableAdministrationProjects"
     :title="title"
     :headers="headers"

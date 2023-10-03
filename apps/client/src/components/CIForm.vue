@@ -1,4 +1,4 @@
-<script setup>
+<script lang="ts" setup>
 import JSZip from 'jszip'
 import { ref, computed, onMounted, watch } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
@@ -62,7 +62,11 @@ const generateCI = async () => {
     generatedCI.value = await ciFilesStore.generateCIFiles(ciData.value)
     prepareForDownload()
   } catch (error) {
-    snackbarStore.setMessage(error?.message)
+    if (error instanceof Error) {
+      snackbarStore.setMessage(error.message)
+      return
+    }
+    snackbarStore.setMessage('échec de génération de la CI')
   }
 }
 

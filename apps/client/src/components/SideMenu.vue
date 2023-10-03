@@ -1,4 +1,4 @@
-<script setup>
+<script lang="ts" setup>
 import { useScheme } from '@gouvminint/vue-dsfr'
 import { computed, ref, watch, onMounted, watchEffect } from 'vue'
 import { useRoute } from 'vue-router'
@@ -26,7 +26,7 @@ const isExpanded = ref({
   administration: false,
 })
 
-function toggleExpand (key) {
+function toggleExpand (key: keyof typeof isExpanded.value) {
   isExpanded.value[key] = !isExpanded.value[key]
 }
 
@@ -46,6 +46,7 @@ watch(routePath, (routePath) => {
 })
 
 onMounted(() => {
+  // @ts-ignore
   const { setScheme } = useScheme()
 
   watchEffect(() => setScheme(isDarkScheme.value ? 'dark' : 'light'))
@@ -129,62 +130,68 @@ onMounted(() => {
         >
           <DsfrSideMenuListItem>
             <DsfrSideMenuLink
+              class="menu-link-icon"
               data-testid="menuMyProjects"
               :active="routeName === 'Projects'"
               to="/projects"
             >
-              <v-icon name="ri-list-check" />&nbsp;
+              <v-icon name="ri-list-check" />
               Mes projets
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
           <div v-if="selectedProject">
             <DsfrSideMenuListItem>
               <DsfrSideMenuLink
+                class="menu-link-icon"
                 data-testid="menuDashboard"
                 :active="routeName === 'Dashboard'"
                 :to="`/projects/${selectedProject?.id}/dashboard`"
               >
-                <v-icon name="ri-dashboard-line" />&nbsp;
+                <v-icon name="ri-dashboard-line" />
                 Tableau de bord
               </DsfrSideMenuLink>
             </DsfrSideMenuListItem>
             <DsfrSideMenuListItem>
               <DsfrSideMenuLink
+                class="menu-link-icon"
                 data-testid="menuServices"
                 :active="routeName === 'Services'"
                 :to="`/projects/${selectedProject?.id}/services`"
               >
-                <v-icon name="ri-flow-chart" />&nbsp;
+                <v-icon name="ri-flow-chart" />
                 Mes services
               </DsfrSideMenuLink>
             </DsfrSideMenuListItem>
             <DsfrSideMenuListItem>
               <DsfrSideMenuLink
+                class="menu-link-icon"
                 data-testid="menuTeam"
                 :active="routeName === 'Team'"
                 :to="`/projects/${selectedProject?.id}/team`"
               >
-                <v-icon name="ri-team-line" />&nbsp;
+                <v-icon name="ri-team-line" />
                 Équipe
               </DsfrSideMenuLink>
             </DsfrSideMenuListItem>
             <DsfrSideMenuListItem>
               <DsfrSideMenuLink
+                class="menu-link-icon"
                 data-testid="menuRepos"
                 :active="routeName === 'Repos'"
                 :to="`/projects/${selectedProject?.id}/repositories`"
               >
-                <v-icon name="ri-git-branch-line" />&nbsp;
+                <v-icon name="ri-git-branch-line" />
                 Dépôts
               </DsfrSideMenuLink>
             </DsfrSideMenuListItem>
             <DsfrSideMenuListItem>
               <DsfrSideMenuLink
+                class="menu-link-icon"
                 data-testid="menuEnvironments"
                 :active="routeName === 'Environments'"
                 :to="`/projects/${selectedProject?.id}/environments`"
               >
-                <v-icon name="ri-microsoft-line" />&nbsp;
+                <v-icon name="ri-microsoft-line" />
                 Environments
               </DsfrSideMenuLink>
             </DsfrSideMenuListItem>
@@ -213,51 +220,56 @@ onMounted(() => {
         >
           <DsfrSideMenuListItem>
             <DsfrSideMenuLink
+              class="menu-link-icon"
               data-testid="menuAdministrationUsers"
               :active="routeName === 'ListUser'"
               to="/admin/users"
             >
-              <v-icon name="ri-folder-user-line" />&nbsp;
+              <v-icon name="ri-folder-user-line" />
               Utilisateurs
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
           <DsfrSideMenuListItem>
             <DsfrSideMenuLink
+              class="menu-link-icon"
               data-testid="menuAdministrationOrganizations"
               :active="routeName === 'ListOrganizations'"
               to="/admin/organizations"
             >
-              <v-icon name="ri-building-line" />&nbsp;
+              <v-icon name="ri-building-line" />
               Organisations
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
           <DsfrSideMenuListItem>
             <DsfrSideMenuLink
+              class="menu-link-icon"
               data-testid="menuAdministrationProjects"
               :active="routeName === 'ListProjects'"
               to="/admin/projects"
             >
-              <v-icon name="ri-folders-line" />&nbsp;
+              <v-icon name="ri-folders-line" />
               Projets
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
           <DsfrSideMenuListItem>
             <DsfrSideMenuLink
+              class="menu-link-icon"
               data-testid="menuAdministrationLogs"
               :active="routeName === 'ListLogs'"
               to="/admin/logs"
             >
-              <v-icon name="ri-newspaper-line" />&nbsp;
+              <v-icon name="ri-newspaper-line" />
               Journaux
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
           <DsfrSideMenuListItem>
             <DsfrSideMenuLink
+              class="menu-link-icon"
               data-testid="menuAdministrationClusters"
               :active="routeName === 'ListClusters'"
               to="/admin/clusters"
             >
-              <v-icon name="ri-server-line" />&nbsp;
+              <v-icon name="ri-server-line" />
               Clusters
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
@@ -266,6 +278,7 @@ onMounted(() => {
 
       <DsfrSideMenuListItem>
         <DsfrSideMenuLink
+          class="menu-link-icon"
           data-testid="menuDoc"
           :active="routeName === 'Doc'"
           to="https://github.com/cloud-pi-native/documentation"
@@ -276,3 +289,9 @@ onMounted(() => {
     </DsfrSideMenuList>
   </DsfrSideMenu>
 </template>
+
+<style>
+.menu-link-icon {
+  @apply flex gap-2;
+}
+</style>
