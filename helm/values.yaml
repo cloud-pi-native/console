@@ -36,7 +36,7 @@ server:
   container:
     #hashmap of custom env
     env:
-    image: ghcr.io/cloud-pi-native/console/server:5.9.1 # x-release-please-version
+    image: ghcr.io/cloud-pi-native/console/server:5.10.0 # x-release-please-version
     port: 8080
     imagePullPolicy: Always
     dataConfigmap:
@@ -73,7 +73,7 @@ server:
 
 client:
   container:
-    image: ghcr.io/cloud-pi-native/console/client:5.9.1 # x-release-please-version
+    image: ghcr.io/cloud-pi-native/console/client:5.10.0 # x-release-please-version
     port: 8080
     imagePullPolicy: Always
     env: #hashmap of custom env
