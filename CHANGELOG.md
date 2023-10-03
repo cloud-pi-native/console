@@ -1,5 +1,13 @@
 # Changelog
 
+## [5.10.0](https://github.com/cloud-pi-native/console/compare/v5.9.1...v5.10.0) (2023-10-03)
+
+
+### Features
+
+* :iphone: more responsive sideMenu and permissionForm ([c840306](https://github.com/cloud-pi-native/console/commit/c8403067224b5ad90e34b8233a1830ceeec8b715))
+* :sparkles: enable admin cluster update ([f81008e](https://github.com/cloud-pi-native/console/commit/f81008e97c25bc73466b6257bd4cb2dc0bde9163))
+
 ## [5.9.1](https://github.com/cloud-pi-native/console/compare/v5.9.0...v5.9.1) (2023-09-28)
 
 
