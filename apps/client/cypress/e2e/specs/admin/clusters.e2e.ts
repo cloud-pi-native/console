@@ -7,6 +7,15 @@ describe('Administration clusters', () => {
 
   let allClusters
 
+  const newCluster = {
+    label: 'newCluster',
+    projects: ['dinum - beta-app'],
+    infos: 'Floating IP: 1.1.1.1',
+    cluster: {
+      tlsServerName: 'myTlsServerName',
+    },
+  }
+
   beforeEach(() => {
     cy.intercept('GET', 'api/v1/admin/clusters').as('getAllClusters')
     cy.intercept('GET', '/api/v1/admin/projects').as('getAdminProjects')
@@ -86,14 +95,6 @@ describe('Administration clusters', () => {
 
   it('Should create a cluster', () => {
     cy.intercept('POST', '/api/v1/admin/clusters').as('createCluster')
-    const newCluster = {
-      label: 'newCluster',
-      projects: ['dinum - beta-app'],
-      infos: 'Floating IP: 1.1.1.1',
-      cluster: {
-        tlsServerName: 'myTlsServerName',
-      },
-    }
 
     cy.getByDataTestid('addClusterLink')
       .click()
@@ -159,5 +160,43 @@ describe('Administration clusters', () => {
       .should('be.visible')
     cy.get('button.fr-tag')
       .should('have.length', newCluster.projects.length)
+  })
+
+  it('Should update a cluster', () => {
+    cy.intercept('PUT', '/api/v1/admin/clusters/*').as('updateCluster')
+
+    const updatedCLuster = {
+      label: 'updatedCluster',
+      infos: 'Floating IP: 2.2.2.2',
+      cluster: {
+        tlsServerName: 'updatedTlsServerName',
+      },
+    }
+
+    cy.getByDataTestid(`clusterTile-${newCluster.label}`)
+      .should('be.visible')
+      .click()
+
+    cy.getByDataTestid('tlsServerNameInput')
+      .find('input')
+      .clear()
+      .type(updatedCLuster.cluster.tlsServerName)
+    cy.getByDataTestid('labelInput')
+      .should('be.disabled')
+    cy.getByDataTestid('infosInput')
+      .find('textarea')
+      .clear()
+      .type(updatedCLuster.infos)
+    cy.getByDataTestid('clusterResourcesCbx')
+      .find('input')
+      .should('be.enabled')
+      .uncheck({ force: true })
+    cy.get('#privacy-select')
+      .select('public')
+    cy.getByDataTestid('updateClusterBtn')
+      .should('be.enabled')
+      .click()
+    cy.wait('@updateCluster')
+      .its('response.statusCode').should('eq', 200)
   })
 })

@@ -211,7 +211,6 @@ watch(selectedContext, () => {
       v-model="kubeconfig"
       label="Kubeconfig"
       data-testid="kubeconfig-upload"
-      :disabled="!isNewCluster"
       :error="kConfigError || (errorSchema.cluster?.match(/is required$/) || errorSchema.user?.match(/is required$/) ? 'Le kubeconfig semble incomplet.' : '')"
       hint="Uploadez le Kubeconfig du cluster."
       class="fr-mb-2w"
@@ -220,7 +219,6 @@ watch(selectedContext, () => {
     <DsfrSelect
       v-if="isMissingCurrentContext"
       v-model="selectedContext"
-      :disabled="!isNewCluster"
       select-id="selectedContextSelect"
       label="Context"
       description="Nous n'avons pas trouvé de current-context dans votre kubeconfig. Veuillez choisir un contexte."
@@ -249,7 +247,6 @@ watch(selectedContext, () => {
       label-visible
       required="required"
       hint="La valeur est extraite du kubeconfig téléversé."
-      :disabled="!isNewCluster"
       @update:model-value="updateValues('tlsServerName', $event)"
     />
     <DsfrInputGroup
