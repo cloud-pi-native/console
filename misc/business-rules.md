@@ -169,7 +169,7 @@ post('/', createOrganizationController)
 put('/:orgName', updateOrganizationController)
 
 // Synchronize organizations with plugins
-put('/sync/organizations', fetchOrganizationsController)
+put('/sync', fetchOrganizationsController)
 
 // Get all organizations
 get('/', getAllOrganizationsController)

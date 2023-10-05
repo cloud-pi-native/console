@@ -286,7 +286,7 @@ describe('Organizations routes', () => {
       prisma.organization.findMany.mockResolvedValueOnce(allOrganizations)
 
       const response = await app.inject({ headers: { admin: 'admin' } })
-        .put('sync/organizations')
+        .put('sync')
         .end()
 
       expect(response.statusCode).toEqual(201)
