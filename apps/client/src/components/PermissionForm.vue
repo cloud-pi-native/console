@@ -14,6 +14,10 @@ const props = defineProps({
     type: Object,
     default: () => {},
   },
+  environmentName: {
+    type: String,
+    default: '',
+  },
 })
 
 const projectStore = useProjectStore()
@@ -83,7 +87,7 @@ const getDynamicTitle = (locked, permission) => {
 
 watch(project, () => {
   environment.value = project.value.environments.find(env =>
-    env.name === environment.value.name,
+    env.id === environment.value.id,
   )
   setPermissions()
 })
@@ -96,13 +100,13 @@ onMounted(() => {
 <template>
   <DsfrFieldset
     data-testid="permissionsFieldset"
-    :legend="`Droits des utilisateurs sur l'environnement de ${environment?.name}`"
+    :legend="`Droits des utilisateurs sur l'environnement de ${props.environmentName}`"
     hint="Gérez les droits de lecture (r), écriture (w) et suppression (d) d'un membre du projet sur l'environnement sélectionné."
   >
     <DsfrAlert
       v-if="!isPermitted"
       data-testid="notPermittedAlert"
-      :description="`Vous n'avez aucun droit sur l'environnement de ${environment?.name}. Un membre possédant des droits sur cet environnement peut vous accréditer.`"
+      :description="`Vous n'avez aucun droit sur l'environnement de ${props.environmentName}. Un membre possédant des droits sur cet environnement peut vous accréditer.`"
       small
       type="info"
     />
@@ -176,7 +180,7 @@ onMounted(() => {
       v-model="userToLicence"
       data-testid="permissionSuggestionInput"
       :disabled="!isPermitted || !usersToLicence.length || project?.locked"
-      :label="`E-mail de l'utilisateur à accréditer sur l'environnement de ${environment?.name}`"
+      :label="`E-mail de l'utilisateur à accréditer sur l'environnement de ${props.environmentName}`"
       label-visible
       placeholder="prenom.nom@interieur.gouv.fr"
       :suggestions="suggestions"

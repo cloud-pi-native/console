@@ -4,9 +4,10 @@ import { EnvironmentModel } from './model.js'
 
 export type InitializeEnvironmentDto = {
   body: {
-    name: EnvironmentModel['name'],
     projectId: ProjectModel['id'],
     clustersId: ClusterModel['id'][],
+    quotaId?: EnvironmentModel['quotaId'],
+    dsoEnvironmentId?: EnvironmentModel['dsoEnvironmentId'],
   }
   params: { projectId: ProjectModel['id'] }
 }

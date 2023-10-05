@@ -1,4 +1,4 @@
-import { projectRoles, allOrganizations, allEnv } from '@dso-console/shared'
+import { projectRoles, allOrganizations } from '@dso-console/shared'
 import {
   getRandomOrganization,
   getRandomProject,
@@ -8,17 +8,23 @@ import {
   getRandomPerm,
   getRandomRole,
   getRandomCluster,
+  getRandomDsoEnvironment,
 } from './random-utils.js'
 import { repeatFn } from './func-utils.js'
 import { User } from './types.js'
 
-export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = allEnv, organizationName = allOrganizations[0].name }) => {
+const baseEnvironments = ['dev', 'staging', 'integration', 'prod']
+
+export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = baseEnvironments, organizationName = allOrganizations[0].name }) => {
   // Create organization
   const allOrganizationsWhereName = allOrganizations.find(org => org.name === organizationName)
   const organization = getRandomOrganization(allOrganizationsWhereName?.name, allOrganizationsWhereName?.label)
 
   // Create users
   const users: User[] = repeatFn(nbUsers)(getRandomUser)
+
+  // Create DsoEnvironments
+  const dsoEnvironments = baseEnvironments.map(baseEnvironment => getRandomDsoEnvironment(baseEnvironment))
 
   // Create project
   const project = getRandomProject(organization.id)
@@ -34,7 +40,9 @@ export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = allEnv, or
   project.repositories = repeatFn(nbRepo)(getRandomRepo, project.id)
 
   // Create environment
-  project.environments = envs.map(env => getRandomEnv(env, project.id))
+  project.environments = envs
+    .map(env => getRandomEnv(dsoEnvironments
+      .find(dsoEnvironment => dsoEnvironment.name === env).id, project.id))
 
   // Create permissions
   project.environments.forEach(env => {
@@ -54,6 +62,7 @@ export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = allEnv, or
   return {
     organization,
     users,
+    dsoEnvironments,
     project,
   }
 }

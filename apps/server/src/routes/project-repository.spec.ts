@@ -95,12 +95,16 @@ describe('Project routes', () => {
   // POST
   describe('createRepositoryController', () => {
     it('Should create a repository', async () => {
-      const projectInfos = createRandomDbSetup({}).project
+      const randomDbSetUp = createRandomDbSetup({})
+      const projectInfos = randomDbSetUp.project
       projectInfos.roles = [...projectInfos.roles, getRandomRole(requestor.id, projectInfos.id, 'owner')]
       const newRepository = getRandomRepo(projectInfos.id)
 
       prisma.project.findUnique.mockResolvedValue(projectInfos)
       prisma.project.update.mockResolvedValue(projectInfos)
+      randomDbSetUp.dsoEnvironments.forEach(dsoEnvironment => {
+        prisma.dsoEnvironment.findUnique.mockResolvedValueOnce(randomDbSetUp.dsoEnvironments?.find(dbSetUpdsoEnvironment => dbSetUpdsoEnvironment?.id === dsoEnvironment?.id))
+      })
       prisma.repository.create.mockReturnValue(newRepository)
       prisma.log.create.mockResolvedValue(getRandomLog('Create Repository', requestor.id))
       prisma.repository.update.mockResolvedValue(newRepository)
@@ -211,12 +215,16 @@ describe('Project routes', () => {
   // DELETE
   describe('deleteRepositoryController', () => {
     it('Should delete a repository', async () => {
-      const projectInfos = createRandomDbSetup({}).project
+      const randomDbSetUp = createRandomDbSetup({})
+      const projectInfos = randomDbSetUp.project
       projectInfos.roles = [...projectInfos.roles, getRandomRole(requestor.id, projectInfos.id, 'owner')]
       const repoToDelete = projectInfos.repositories[0]
 
       prisma.project.findUnique.mockResolvedValue(projectInfos)
       prisma.project.update.mockResolvedValue(projectInfos)
+      randomDbSetUp.dsoEnvironments.forEach(dsoEnvironment => {
+        prisma.dsoEnvironment.findUnique.mockResolvedValueOnce(randomDbSetUp.dsoEnvironments?.find(dbSetUpdsoEnvironment => dbSetUpdsoEnvironment?.id === dsoEnvironment?.id))
+      })
       prisma.repository.findUnique.mockResolvedValue(repoToDelete)
       prisma.repository.update.mockResolvedValue(repoToDelete)
       prisma.log.create.mockResolvedValue(getRandomLog('Delete Repository', requestor.id))

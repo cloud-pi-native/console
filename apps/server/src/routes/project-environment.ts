@@ -3,6 +3,8 @@ import {
   initializeEnvironmentController,
   updateEnvironmentController,
   deleteEnvironmentController,
+  getQuotasController,
+  getDsoEnvironmentController,
 } from '../resources/environment/controllers.js'
 
 const router = async (app, _opt) => {
@@ -17,6 +19,12 @@ const router = async (app, _opt) => {
 
   // Supprimer un environnement
   await app.delete('/:projectId/environments/:environmentId', deleteEnvironmentController)
+
+  // Récupérer les quotas disponibles
+  await app.get('/environments/quotas', getQuotasController)
+
+  // Récupérer les environnements DSO disponibles
+  await app.get('/environments/dso-environments', getDsoEnvironmentController)
 }
 
 export default router

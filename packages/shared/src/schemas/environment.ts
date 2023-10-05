@@ -1,17 +1,19 @@
 import Joi from 'joi'
-import { allEnv, projectStatus } from '../utils/const.js'
+import { projectStatus } from '../utils/const.js'
 
 export const environmentSchema = Joi.object({
   id: Joi.string()
     .uuid(),
 
-  name: Joi.string()
-    .valid(...allEnv)
-    .required(),
-
   projectId: Joi.string()
     .uuid()
     .required(),
+
+  quotaId: Joi.string()
+    .uuid(),
+
+  dsoEnvironmentId: Joi.string()
+    .uuid(),
 
   status: Joi.string()
     .valid(...projectStatus),

@@ -1,10 +1,10 @@
 <script lang="ts" setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, type Ref } from 'vue'
 import DsoSelectedProject from './DsoSelectedProject.vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 import EnvironmentForm from '@/components/EnvironmentForm.vue'
-import { allEnv, projectIsLockedInfo, sortArrByObjKeyAsc } from '@dso-console/shared'
+import { projectIsLockedInfo, sortArrByObjKeyAsc } from '@dso-console/shared'
 import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
@@ -15,31 +15,43 @@ const snackbarStore = useSnackbarStore()
 
 const project = computed(() => projectStore.selectedProject)
 const owner = computed(() => projectStore.selectedProjectOwner)
-const isOwner = computed(() => owner.value.id === userStore.userProfile.id)
+const isOwner = computed(() => owner.value?.id === userStore.userProfile.id)
+// @ts-ignore
 const environmentNames = computed(() => environments.value.map(env => env.title))
+
 const environments = ref([])
 const selectedEnvironment = ref({})
 const isNewEnvironmentForm = ref(false)
 const isUpdatingEnvironment = ref(false)
+const allDsoEnvironments: Ref<any[]> = ref([])
 
+const getEnvironmentName = (dsoEnvironmentId: string) => {
+  return allDsoEnvironments.value.find(dsoEnv => dsoEnv.id === dsoEnvironmentId).name
+}
+
+// @ts-ignore
 const setEnvironmentsTiles = (project) => {
+  // @ts-ignore
   environments.value = sortArrByObjKeyAsc(project?.environments, 'name')
     ?.map(environment => ({
       id: environment.id,
-      title: environment.name,
+      title: getEnvironmentName(environment.dsoEnvironmentId),
       data: environment,
       status: environment.status,
     }))
 }
 
+// @ts-ignore
 const setSelectedEnvironment = (environment) => {
+  // @ts-ignore
   if (selectedEnvironment.value.id === environment.id || ['deleting', 'initializing'].includes(environment?.status)) {
     selectedEnvironment.value = {}
     return
   }
   selectedEnvironment.value = environment
+  // @ts-ignore
   selectedEnvironment.value.clustersId = selectedEnvironment.value.clusters?.map(cluster => cluster.id)
-  cancel()
+  isNewEnvironmentForm.value = false
 }
 
 const showNewEnvironmentForm = () => {
@@ -49,14 +61,18 @@ const showNewEnvironmentForm = () => {
 
 const cancel = () => {
   isNewEnvironmentForm.value = false
+  selectedEnvironment.value = {}
 }
 
+// @ts-ignore
 const addEnvironment = async (environment) => {
   isUpdatingEnvironment.value = true
+  // @ts-ignore
   if (!project.value.locked) {
     try {
       await projectEnvironmentStore.addEnvironmentToProject(environment)
     } catch (error) {
+      // @ts-ignore
       snackbarStore.setMessage(error?.message, 'error')
     }
   }
@@ -64,12 +80,15 @@ const addEnvironment = async (environment) => {
   isUpdatingEnvironment.value = false
 }
 
+// @ts-ignore
 const putEnvironment = async (environment) => {
   isUpdatingEnvironment.value = true
+  // @ts-ignore
   if (!project.value.locked) {
     try {
       await projectEnvironmentStore.updateEnvironment(environment)
     } catch (error) {
+      // @ts-ignore
       snackbarStore.setMessage(error?.message, 'error')
     }
   }
@@ -77,18 +96,29 @@ const putEnvironment = async (environment) => {
   isUpdatingEnvironment.value = false
 }
 
+// @ts-ignore
 const deleteEnvironment = async (environment) => {
   isUpdatingEnvironment.value = true
   try {
     await projectEnvironmentStore.deleteEnvironment(environment.id)
   } catch (error) {
+    // @ts-ignore
     snackbarStore.setMessage(error?.message, 'error')
   }
   setSelectedEnvironment({})
   isUpdatingEnvironment.value = false
 }
 
-onMounted(() => {
+onMounted(async () => {
+  try {
+    allDsoEnvironments.value = await projectEnvironmentStore.getDsoEnvironments()
+  } catch (error) {
+    if (error instanceof Error) {
+      snackbarStore.setMessage(error.message)
+      return
+    }
+    snackbarStore.setMessage('échec de récupération des environnements DSO')
+  }
   setEnvironmentsTiles(project.value)
 })
 
@@ -100,7 +130,7 @@ watch(project, () => {
 <template>
   <DsoSelectedProject />
   <div
-    v-if="environmentNames.length !== allEnv.length"
+    v-if="environmentNames.length !== allDsoEnvironments.length"
     class="flex <md:flex-col-reverse items-center justify-between pb-5"
   >
     <DsfrButton
@@ -124,6 +154,7 @@ watch(project, () => {
       :is-updating-environment="isUpdatingEnvironment"
       :is-project-locked="project?.locked"
       :project-clusters="project?.clusters"
+      :all-dso-environments="allDsoEnvironments"
       @add-environment="(environment) => addEnvironment(environment)"
       @cancel="cancel()"
     />
@@ -177,6 +208,7 @@ watch(project, () => {
         v-if="Object.keys(selectedEnvironment).length !== 0 && selectedEnvironment.id === environment.id"
         :environment="selectedEnvironment"
         :environment-names="environmentNames"
+        :all-dso-environments="allDsoEnvironments"
         :is-updating-environment="isUpdatingEnvironment"
         :project-clusters="project?.clusters"
         :is-editable="false"
@@ -184,6 +216,7 @@ watch(project, () => {
         :is-owner="isOwner"
         @put-environment="(environment) => putEnvironment(environment)"
         @delete-environment="(environment) => deleteEnvironment(environment)"
+        @cancel="cancel()"
       />
     </div>
     <div

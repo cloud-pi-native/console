@@ -4,6 +4,7 @@ import {
   deleteEnvironment,
   deleteRepository,
   getClusterByEnvironmentId,
+  getDsoEnvironmentById,
   getOrganizationById,
   getProjectByNames,
   getProjectInfosAndRepos,
@@ -219,15 +220,20 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
       url: `${gitlabBaseURL}/${repo.internalRepoName}.git`,
       ...repo,
     }))
-    const environmentNames = project.environments.map(({ name }) => name)
+    const dsoEnvironmentIds = project.environments?.map(env => env.dsoEnvironmentId)
+    const environments = []
+    for (const dsoEnvironmentId of dsoEnvironmentIds) {
+      environments.push(await getDsoEnvironmentById(dsoEnvironmentId))
+    }
 
     // -- début - Suppression environnements --
     for (const env of project.environments) {
       // Supprimer le namespace du projet des différent clusters cibles
+      const environmentName = environments?.find(environment => env.dsoEnvironmentId === environment.id)?.name
       const clusters = await getClusterByEnvironmentId(env.id)
-      await removeClustersFromEnvironment(clusters, env.name, env.id, project.name, project.organization.name, requestor.id)
+      await removeClustersFromEnvironment(clusters, environmentName, env.id, project.name, project.organization.name, requestor.id)
       const envData = {
-        environment: env.name,
+        environment: environmentName,
         project: project.name,
         organization: project.organization.name,
         repositories,
@@ -242,7 +248,7 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
     // -- début - Suppression repositories --
     for (const repo of repositories) {
       const result = await hooks.deleteRepository.execute({
-        environments: environmentNames,
+        environments: environments?.map(environment => environment?.name),
         project: project.name,
         organization: project.organization.name,
         ...repo,

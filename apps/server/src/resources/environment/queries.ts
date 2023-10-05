@@ -1,4 +1,4 @@
-import { Environment, Project, Role } from '@prisma/client'
+import { DsoEnvironment, Environment, Project, Quota, Role } from '@prisma/client'
 import prisma from '@/prisma.js'
 import { getProjectById } from '../project/queries.js'
 
@@ -56,9 +56,9 @@ export const getEnvironmentInfos = (id: Environment['id']) => prisma.environment
   },
 })
 
-export const getEnvironment = async ({ projectId, name }: { projectId: Project['id'], name: Environment['name'] }) => {
+export const getEnvironment = async ({ projectId, dsoEnvironmentId }: { projectId: Project['id'], dsoEnvironmentId: Environment['dsoEnvironmentId'] }) => {
   return prisma.environment.findFirst({
-    where: { name, projectId },
+    where: { dsoEnvironmentId, projectId },
     include: { project: true },
   })
 }
@@ -75,8 +75,22 @@ export const getProjectByEnvironmentId = async (environmentId: Environment['id']
   return getProjectById(env.projectId)
 }
 
+export const getQuotas = async () => {
+  return prisma.quota.findMany()
+}
+
+export const getDsoEnvironments = async () => {
+  return prisma.dsoEnvironment.findMany()
+}
+
+export const getDsoEnvironmentById = async (id: DsoEnvironment['id']) => {
+  return prisma.dsoEnvironment.findUnique({
+    where: { id },
+  })
+}
+
 // INSERT
-export const initializeEnvironment = async ({ name, projectId, projectOwners }: { name: Environment['name'], projectId: Project['id'], projectOwners: Role[] }) => {
+export const initializeEnvironment = async ({ dsoEnvironmentId, projectId, projectOwners, quotaId }: { dsoEnvironmentId: Environment['dsoEnvironmentId'], projectId: Project['id'], projectOwners: Role[], quotaId: Quota['id'] }) => {
   return prisma.environment.create({
     data: {
       project: {
@@ -84,7 +98,16 @@ export const initializeEnvironment = async ({ name, projectId, projectOwners }: 
           id: projectId,
         },
       },
-      name,
+      dsoEnvironment: {
+        connect: {
+          id: dsoEnvironmentId,
+        },
+      },
+      quota: {
+        connect: {
+          id: quotaId,
+        },
+      },
       status: 'initializing',
       permissions: {
         createMany: {
@@ -128,6 +151,17 @@ export const updateEnvironmentFailed = async (id: Environment['id']) => {
   })
 }
 
+export const updateEnvironment = async ({ id, quotaId }: { id: Environment['id'], quotaId: Quota['id'] }) => {
+  return prisma.environment.update({
+    where: {
+      id,
+    },
+    data: {
+      quotaId,
+    },
+  })
+}
+
 // DELETE
 export const updateEnvironmentDeleting = async (id: Environment['id']) => {
   const doesEnvExist = await getEnvironmentById(id)
@@ -155,4 +189,12 @@ export const _dropEnvironmentsTable = async () => {
 
 export const _createEnvironment = async (data: Parameters<typeof prisma.environment.create>[0]['data']) => {
   await prisma.environment.create({ data })
+}
+
+export const _dropQuotaTable = async () => {
+  await prisma.quota.deleteMany({})
+}
+
+export const _dropDsoEnvironmentTable = async () => {
+  await prisma.dsoEnvironment.deleteMany({})
 }

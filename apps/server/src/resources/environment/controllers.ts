@@ -21,6 +21,8 @@ import {
   deleteEnvironment,
   checkGetEnvironment,
   getInitializeEnvironmentInfos,
+  getQuotas,
+  getDsoEnvironments,
 } from './business.js'
 
 // GET
@@ -50,6 +52,29 @@ export const getEnvironmentByIdController = async (req, res) => {
   sendOk(res, env)
 }
 
+// GET
+export const getDsoEnvironmentController = async (req, res) => {
+  const userId = req.session?.user?.id
+  const dsoEnvironments = await getDsoEnvironments(userId)
+
+  addReqLogs({
+    req,
+    description: 'Environnments DSO récupérés avec succès',
+  })
+  sendOk(res, dsoEnvironments)
+}
+
+export const getQuotasController = async (req, res) => {
+  const userId = req.session?.user?.id
+  const quotas = await getQuotas(userId)
+
+  addReqLogs({
+    req,
+    description: 'Quotas récupérés avec succès',
+  })
+  sendOk(res, quotas)
+}
+
 // POST
 export const initializeEnvironmentController = async (req: EnhancedFastifyRequest<InitializeEnvironmentDto>, res) => {
   const data = req.body
@@ -66,8 +91,7 @@ export const initializeEnvironmentController = async (req: EnhancedFastifyReques
     authorizedClusters,
     userId,
     newClustersId,
-    // @ts-ignore
-    envName: data.name,
+    dsoEnvironmentId: data.dsoEnvironmentId,
   })
 
   // TODO Joi
@@ -78,8 +102,9 @@ export const initializeEnvironmentController = async (req: EnhancedFastifyReques
     owner,
     userId,
     // @ts-ignore
-    data.name,
+    data.dsoEnvironmentId,
     newClustersId,
+    data.quotaId,
   )
 
   addReqLogs({
@@ -94,7 +119,7 @@ export const initializeEnvironmentController = async (req: EnhancedFastifyReques
 }
 
 export const updateEnvironmentController = async (req: EnhancedFastifyRequest<UpdateEnvironmentDto>, res) => {
-  const { clustersId: newClustersId } = req.body
+  const data = req.body
   const userId = req.session?.user?.id
   const { environmentId } = req.params
 
@@ -109,11 +134,11 @@ export const updateEnvironmentController = async (req: EnhancedFastifyRequest<Up
     },
     authorizedClusters,
     userId,
-    newClustersId,
+    data.clustersId,
   )
 
   // appel business 3 : update
-  await updateEnvironment(env, userId, newClustersId)
+  await updateEnvironment(env, userId, data.clustersId, data.quotaId)
   addReqLogs({
     req,
     description: 'Environnement mis à jour avec succès',

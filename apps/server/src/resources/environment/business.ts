@@ -13,10 +13,14 @@ import {
   updateEnvironmentDeleting,
   deleteEnvironment as deleteEnvironmentQuery,
   getUserById,
+  getQuotas as getQuotasQuery,
+  updateEnvironment as updateEnvironmentQuery,
+  getDsoEnvironments as getDsoEnvironmentsQuery,
+  getDsoEnvironmentById,
 } from '@/resources/queries-index.js'
 import { hooks } from '@/plugins/index.js'
-import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
-import type { Cluster, Environment, Kubeconfig, Organization, Project, Role, User } from '@prisma/client'
+import { BadRequestError, ForbiddenError, NotFoundError, UnauthorizedError, UnprocessableContentError } from '@/utils/errors.js'
+import type { Cluster, DsoEnvironment, Environment, Kubeconfig, Organization, Project, Role, User } from '@prisma/client'
 import {
   type AsyncReturnType,
   checkInsufficientRoleInProject,
@@ -50,13 +54,25 @@ export const getInitializeEnvironmentInfos = async (userId: User['id'], projectI
   return { owner, project, authorizedClusters }
 }
 
+export const getQuotas = async (userId: User['id']) => {
+  const user = await getUserById(userId)
+  if (!user) throw new UnauthorizedError('Vous n\'êtes pas connecté')
+  return getQuotasQuery()
+}
+
+export const getDsoEnvironments = async (userId: User['id']) => {
+  const user = await getUserById(userId)
+  if (!user) throw new UnauthorizedError('Vous n\'êtes pas connecté')
+  return getDsoEnvironmentsQuery()
+}
+
 // Check logic
 type CheckEnvironmentParam = {
   project: { locked: boolean, roles: Role[], id: string, environments: Environment[] },
   authorizedClusters: Cluster[],
   userId: string,
   newClustersId: string[],
-  envName: string,
+  dsoEnvironmentId: Environment['dsoEnvironmentId'],
 }
 
 export const checkGetEnvironment = (
@@ -73,11 +89,11 @@ export const checkCreateEnvironment = ({
   authorizedClusters,
   userId,
   newClustersId,
-  envName,
+  dsoEnvironmentId,
 }: CheckEnvironmentParam) => {
   const errorMessage = checkRoleAndLocked(project, userId, 'owner') ||
     checkClusterUnavailable(newClustersId, authorizedClusters) ||
-    checkExistingEnvironment(project.environments, envName)
+    checkExistingEnvironment(project.environments, dsoEnvironmentId)
   if (errorMessage) throw new ForbiddenError(errorMessage, undefined)
 }
 
@@ -103,9 +119,9 @@ export const checkDeleteEnvironment = (
   if (errorMessage) throw new ForbiddenError(errorMessage, { description: '', extras: { userId, projectId: project.id } })
 }
 
-export const checkExistingEnvironment = (environments: Environment[], envName: string) => {
-  if (environments?.find(env => env.name === envName)) {
-    return `L'environnement ${envName} existe déjà pour ce projet`
+export const checkExistingEnvironment = (environments: Environment[], dsoEnvironmentId: Environment['dsoEnvironmentId']) => {
+  if (environments?.find(env => env.dsoEnvironmentId === dsoEnvironmentId)) {
+    return 'L\'environnement choisi existe déjà pour ce projet'
   }
 }
 
@@ -114,15 +130,16 @@ export const createEnvironment = async (
   project: AsyncReturnType<typeof getProjectInfos>,
   owner: User,
   userId: string,
-  envName: string,
+  dsoEnvironmentId: Environment['dsoEnvironmentId'],
   newClustersId: string[],
+  quotaId: Environment['quotaId'],
 ) => {
   await lockProject(project.id)
   const projectOwners = filterOwners(project.roles)
-  const env = await initializeEnvironment({ projectId: project.id, name: envName, projectOwners })
+  const env = await initializeEnvironment({ projectId: project.id, quotaId, dsoEnvironmentId, projectOwners })
+  const environmentName = (await getDsoEnvironmentById(dsoEnvironmentId)).name
 
   try {
-    const environmentName = env.name
     const projectName = project.name
     const organizationName = project.organization.name
     const gitlabBaseURL = `${gitlabUrl}/${projectRootDir}/${organizationName}/${projectName}`
@@ -146,7 +163,7 @@ export const createEnvironment = async (
     }
 
     const clusters = await getClustersByIds(newClustersId)
-    await addClustersToEnvironment(clusters, env.name, env.id, project.name, project.organization.name, userId, owner)
+    await addClustersToEnvironment(clusters, environmentName, env.id, project.name, project.organization.name, userId, owner)
 
     await updateEnvironmentCreated(env.id)
     await unlockProjectIfNotFailed(project.id)
@@ -161,14 +178,16 @@ export const updateEnvironment = async (
   env: AsyncReturnType<typeof getEnvironmentInfos>,
   userId: string,
   newClustersId: string[],
+  quotaId?: string,
 ) => {
   try {
     await lockProject(env.project.id)
 
     // Premièrement, ajout des clusters sur les environnements
+    const environmentName = (await getDsoEnvironmentById(env.dsoEnvironmentId)).name
     const owner = env.project.roles[0].user
     const reallyNewClusters = await getClustersByIds(newClustersId.filter(newClusterId => !env.clusters.some(envCluster => envCluster.id === newClusterId)))
-    await addClustersToEnvironment(reallyNewClusters, env.name, env.id, env.project.name, env.project.organization.name, userId, owner)
+    await addClustersToEnvironment(reallyNewClusters, environmentName, env.id, env.project.name, env.project.organization.name, userId, owner)
 
     // Puis retrait des clusters pour les environnements
     const clustersToRemove = await getClustersByIds(
@@ -176,7 +195,12 @@ export const updateEnvironment = async (
         .filter(oldCluster => !newClustersId.includes(oldCluster.id))
         .map(({ id }) => id),
     )
-    await removeClustersFromEnvironment(clustersToRemove, env.name, env.id, env.project.name, env.project.organization.name, userId)
+    await removeClustersFromEnvironment(clustersToRemove, environmentName, env.id, env.project.name, env.project.organization.name, userId)
+
+    // Modification du quota
+    if (quotaId) {
+      await updateEnvironmentQuery({ id: env.id, quotaId })
+    }
 
     // mise à jour des status
     await updateEnvironmentCreated(env.id)
@@ -200,7 +224,8 @@ export const deleteEnvironment = async (
       env.clusters
         .map(({ id }) => id),
     )
-    await removeClustersFromEnvironment(clustersToRemove, env.name, env.id, env.project.name, env.project.organization.name, userId)
+    const environmentName = (await getDsoEnvironmentById(env.dsoEnvironmentId)).name
+    await removeClustersFromEnvironment(clustersToRemove, environmentName, env.id, env.project.name, env.project.organization.name, userId)
 
     const projectName = env.project.name
     const organizationName = env.project.organization.name
@@ -211,7 +236,7 @@ export const deleteEnvironment = async (
     }))
 
     const envData = {
-      environment: env.name,
+      environment: environmentName,
       project: projectName,
       organization: organizationName,
       repositories,
@@ -234,7 +259,7 @@ export const deleteEnvironment = async (
 // Cluster Logic
 export const addClustersToEnvironment = async (
   clusters: (Cluster & { kubeconfig: Kubeconfig })[],
-  environmentName: Environment['name'],
+  environmentName: DsoEnvironment['name'],
   environmentId: Environment['id'],
   project: Project['name'],
   organization: Organization['name'],
@@ -262,7 +287,7 @@ export const addClustersToEnvironment = async (
 
 export const removeClustersFromEnvironment = async (
   clusters: (Cluster & { kubeconfig: Kubeconfig })[],
-  environmentName: Environment['name'],
+  environmentName: DsoEnvironment['name'],
   environmentId: Environment['id'],
   project: Project['name'],
   organization: Organization['name'],

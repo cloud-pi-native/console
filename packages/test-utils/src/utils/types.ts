@@ -73,7 +73,8 @@ export type Cluster = {
 
 export type Environment = {
   id: string,
-  name: string,
+  dsoEnvironmentId?: string,
+  quotaId?: string,
   projectId: string,
   status: string,
   permissions?: Permission[],

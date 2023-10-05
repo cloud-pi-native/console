@@ -1,5 +1,3 @@
-import { allEnv } from './const.js'
-
 /**
  * @param {*} value Value wanted to be return as is
  * @returns {*} Value returned as is
@@ -9,10 +7,10 @@ export const identity = (value) => value
 export const getLongestStringOfArray = (array) => array.reduce((acc, curr) => acc.length < curr.length ? curr : acc, '')
 
 export const calcProjectNameMaxLength = (organizationName) => {
-  const longestEnvironmentName = getLongestStringOfArray(allEnv)
+  const longestEnvironmentName = 11
   return organizationName
-    ? 61 - longestEnvironmentName.length - organizationName.length
-    : 61 - longestEnvironmentName.length
+    ? 61 - longestEnvironmentName - organizationName.length
+    : 61 - longestEnvironmentName
 }
 
 export const getUniqueListBy = (arr, key) => [...new Map(arr.map(item => [item[key], item])).values()]

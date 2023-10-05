@@ -32,7 +32,8 @@ describe('Schemas utils', () => {
   it('Should validate a correct environment schema', () => {
     expect(schemaValidator(environmentSchema, {
       id: faker.string.uuid(),
-      name: 'dev',
+      dsoEnvironmentId: faker.string.uuid(),
+      quotaId: faker.string.uuid(),
       projectId: faker.string.uuid(),
       status: 'created',
     })).toStrictEqual({})

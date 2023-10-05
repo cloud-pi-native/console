@@ -59,14 +59,6 @@ export const logActions = [
   'Delete Environment',
 ]
 
-// ! Un environnement ne doit pas faire plus de 11 caractères
-export const allEnv = [
-  'dev',
-  'staging',
-  'integration',
-  'prod',
-] as const
-
 export const statusDict = {
   locked: {
     false: {

@@ -122,15 +122,17 @@ describe('User routes', () => {
   // POST
   describe('initializeEnvironmentController', () => {
     it('Should create an environment', async () => {
-      const projectInfos = createRandomDbSetup({ envs: ['prod'] }).project
+      const randomDbSetUp = createRandomDbSetup({ envs: ['prod'] })
+      const projectInfos = randomDbSetUp.project
       projectInfos.roles = [...projectInfos.roles, getRandomRole(requestor.id, projectInfos.id, 'owner')]
       const logCreate = getRandomLog('Create Environment', requestor.id)
       const logAdd = getRandomLog('Add Cluster to Environment', requestor.id)
-      const envToAdd = getRandomEnv('dev', projectInfos.id)
+      const envToAdd = getRandomEnv(randomDbSetUp.dsoEnvironments[0], projectInfos.id)
       const envInfos = { ...envToAdd, project: projectInfos }
 
       prisma.user.findUnique.mockResolvedValueOnce(requestor)
       prisma.project.findUnique.mockResolvedValue(projectInfos)
+      prisma.dsoEnvironment.findUnique.mockResolvedValue(randomDbSetUp.dsoEnvironments[0])
       prisma.cluster.findMany.mockResolvedValue(projectInfos.clusters)
       prisma.project.update.mockResolvedValue(projectInfos)
       prisma.environment.create.mockReturnValue(envInfos)
@@ -152,7 +154,7 @@ describe('User routes', () => {
 
     it('Should not create an environment if not project member', async () => {
       const projectInfos = createRandomDbSetup({}).project
-      const envToAdd = getRandomEnv('dev', projectInfos.id)
+      const envToAdd = getRandomEnv('thisIsAnId', projectInfos.id)
 
       prisma.user.findUnique.mockResolvedValueOnce(requestor)
       prisma.project.findUnique.mockResolvedValue(projectInfos)
@@ -184,7 +186,7 @@ describe('User routes', () => {
 
       expect(response.statusCode).toEqual(403)
       expect(response.body).toBeDefined()
-      expect(JSON.parse(response.body).message).toEqual(`L'environnement ${envToAdd.name} existe déjà pour ce projet`)
+      expect(JSON.parse(response.body).message).toEqual('L\'environnement choisi existe déjà pour ce projet')
     })
 
     it('Should not create an environment if project locked', async () => {
@@ -210,7 +212,8 @@ describe('User routes', () => {
   // DELETE
   describe('deleteEnvironmentController', () => {
     it('Should delete an environment', async () => {
-      const projectInfos = createRandomDbSetup({ envs: ['dev'] }).project
+      const randomDbSetUp = createRandomDbSetup({ envs: ['dev'] })
+      const projectInfos = randomDbSetUp.project
       projectInfos.roles = [...projectInfos.roles, getRandomRole(requestor.id, projectInfos.id, 'owner')]
       const logRemove = getRandomLog('Remove Cluster from Environment', requestor.id)
       const logDelete = getRandomLog('Delete Environment', requestor.id)
@@ -218,6 +221,7 @@ describe('User routes', () => {
 
       prisma.environment.findUnique.mockResolvedValue(envToDelete)
       prisma.environment.update.mockReturnValue(envToDelete)
+      prisma.dsoEnvironment.findUnique.mockResolvedValue(randomDbSetUp.dsoEnvironments.find(dsoEnvironment => dsoEnvironment.id === envToDelete.dsoEnvironmentId))
       prisma.project.update.mockResolvedValue(projectInfos)
       prisma.cluster.findMany.mockResolvedValue(projectInfos.clusters)
       prisma.cluster.update.mockResolvedValueOnce(projectInfos.clusters)

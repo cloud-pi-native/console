@@ -35,6 +35,7 @@ describe('PermissionForm.vue', () => {
 
     const props = {
       environment,
+      environmentName: randomDbSetup.dsoEnvironments.find(dsoEnvironment => dsoEnvironment.id === environment.dsoEnvironmentId).name,
     }
 
     const extensions = {
@@ -51,7 +52,7 @@ describe('PermissionForm.vue', () => {
     cy.mount(PermissionForm, { extensions, props })
 
     cy.getByDataTestid('permissionsFieldset')
-      .should('contain', `Droits des utilisateurs sur l'environnement de ${props.environment?.name}`)
+      .should('contain', `Droits des utilisateurs sur l'environnement de ${props.environmentName}`)
     cy.get('li')
       .should('have.length', props.environment.permissions.length)
 
@@ -87,7 +88,7 @@ describe('PermissionForm.vue', () => {
       .should('contain', 'Accréditer un membre du projet')
       .within(() => {
         cy.get('label')
-          .should('contain', `E-mail de l'utilisateur à accréditer sur l'environnement de ${props.environment?.name}`)
+          .should('contain', `E-mail de l'utilisateur à accréditer sur l'environnement de ${props.environmentName}`)
         cy.get('.fr-hint-text')
           .should('contain', `Entrez l'e-mail d'un membre du projet ${projectStore.selectedProject.name}. Ex : ${userToLicence.user.email}`)
         cy.get('datalist#suggestionList')
@@ -111,6 +112,7 @@ describe('PermissionForm.vue', () => {
 
     const props = {
       environment,
+      environmentName: randomDbSetup.dsoEnvironments.find(dsoEnvironment => dsoEnvironment.id === environment.dsoEnvironmentId).name,
     }
 
     const extensions = {
@@ -130,7 +132,7 @@ describe('PermissionForm.vue', () => {
       .should('contain', 'Accréditer un membre du projet')
       .within(() => {
         cy.get('label')
-          .should('contain', `E-mail de l'utilisateur à accréditer sur l'environnement de ${props.environment?.name}`)
+          .should('contain', `E-mail de l'utilisateur à accréditer sur l'environnement de ${props.environmentName}`)
         cy.get('.fr-hint-text')
           .should('contain', `Tous les membres du projet ${projectStore.selectedProject.name} sont déjà accrédités.`)
       })
@@ -150,6 +152,7 @@ describe('PermissionForm.vue', () => {
 
     const props = {
       environment,
+      environmentName: randomDbSetup.dsoEnvironments.find(dsoEnvironment => dsoEnvironment.id === environment.dsoEnvironmentId).name,
     }
 
     const extensions = {
@@ -166,6 +169,6 @@ describe('PermissionForm.vue', () => {
     cy.mount(PermissionForm, { extensions, props })
 
     cy.getByDataTestid('notPermittedAlert')
-      .should('contain', `Vous n'avez aucun droit sur l'environnement de ${props.environment?.name}. Un membre possédant des droits sur cet environnement peut vous accréditer.`)
+      .should('contain', `Vous n'avez aucun droit sur l'environnement de ${props.environmentName}. Un membre possédant des droits sur cet environnement peut vous accréditer.`)
   })
 })

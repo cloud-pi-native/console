@@ -13,7 +13,7 @@ export type RepositoryCreate = {
   environments: Environment[]
   internalRepoName: InternalRepoName
   externalUserName: ExternalUserName
-  externalToken: ExternalToken
+  externalToken?: ExternalToken
   externalRepoUrl: ExternalRepoUrl
   isPrivate: IsPrivate
   isInfra: IsInfra

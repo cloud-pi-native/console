@@ -1,4 +1,4 @@
-import { addLogs, deleteRepository as deleteRepositoryQuery, getProjectInfos, getProjectInfosAndRepos, initializeRepository, lockProject, updateRepository as updateRepositoryQuery, updateRepositoryCreated, updateRepositoryDeleting, updateRepositoryFailed } from '@/resources/queries-index.js'
+import { addLogs, deleteRepository as deleteRepositoryQuery, getProjectInfos, getProjectInfosAndRepos, initializeRepository, lockProject, updateRepository as updateRepositoryQuery, updateRepositoryCreated, updateRepositoryDeleting, updateRepositoryFailed, getDsoEnvironmentById } from '@/resources/queries-index.js'
 import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import { Project, Repository, User } from '@prisma/client'
 import { projectRootDir } from '@/utils/env.js'
@@ -91,7 +91,11 @@ export const createRepository = async (
   const repo = await initializeRepository(dbData)
 
   try {
-    const environmentNames = project.environments?.map(env => env.name)
+    const dsoEnvironmentIds = project.environments?.map(env => env.dsoEnvironmentId)
+    const environmentNames = []
+    for (const dsoEnvironmentId of dsoEnvironmentIds) {
+      environmentNames.push((await getDsoEnvironmentById(dsoEnvironmentId)).name)
+    }
 
     const repoData = {
       ...repo,
@@ -172,7 +176,11 @@ export const deleteRepository = async (
   await updateRepositoryDeleting(repositoryId)
 
   try {
-    const environmentNames = project.environments?.map(env => env.name)
+    const dsoEnvironmentIds = project.environments?.map(env => env.dsoEnvironmentId)
+    const environmentNames = []
+    for (const dsoEnvironmentId of dsoEnvironmentIds) {
+      environmentNames.push((await getDsoEnvironmentById(dsoEnvironmentId)).name)
+    }
 
     const repoData = {
       ...repo,
