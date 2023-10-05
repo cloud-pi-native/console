@@ -17,10 +17,11 @@ import {
   checkUpdateEnvironment,
   checkDeleteEnvironment,
   createEnvironment,
-  updateEnvironment,
+  updateEnvironmentBusiness,
   deleteEnvironment,
   checkGetEnvironment,
   getInitializeEnvironmentInfos,
+  getQuotasBusiness,
 } from './business.js'
 
 // GET
@@ -48,6 +49,17 @@ export const getEnvironmentByIdController = async (req, res) => {
     },
   })
   sendOk(res, env)
+}
+
+export const getQuotasController = async (req, res) => {
+  const userId = req.session?.user?.id
+  const quotas = await getQuotasBusiness(userId)
+
+  addReqLogs({
+    req,
+    description: 'Quotas récupérés avec succès',
+  })
+  sendOk(res, quotas)
 }
 
 // POST
@@ -78,6 +90,7 @@ export const initializeEnvironmentController = async (req: EnhancedFastifyReques
     userId,
     data.name,
     newClustersId,
+    data.quotaId,
   )
 
   addReqLogs({
@@ -92,7 +105,7 @@ export const initializeEnvironmentController = async (req: EnhancedFastifyReques
 }
 
 export const updateEnvironmentController = async (req: EnhancedFastifyRequest<UpdateEnvironmentDto>, res) => {
-  const { clustersId: newClustersId } = req.body
+  const data = req.body
   const userId = req.session?.user?.id
   const { environmentId } = req.params
 
@@ -107,11 +120,11 @@ export const updateEnvironmentController = async (req: EnhancedFastifyRequest<Up
     },
     authorizedClusters,
     userId,
-    newClustersId,
+    data.clustersId,
   )
 
   // appel business 3 : update
-  await updateEnvironment(env, userId, newClustersId)
+  await updateEnvironmentBusiness(env, userId, data.clustersId, data.quotaId)
   addReqLogs({
     req,
     description: 'Environnement mis à jour avec succès',
