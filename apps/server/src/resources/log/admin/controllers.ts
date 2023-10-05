@@ -3,11 +3,11 @@ import { addReqLogs } from '@/utils/logger.js'
 import type { EnhancedFastifyRequest } from '@/types/index.js'
 import type { AdminLogsGet } from '@dso-console/shared'
 import type { FastifyReply } from 'fastify'
-import { getAllLogsBusiness } from './business.js'
+import { getAllLogs } from './business.js'
 
 export const getAllLogsController = async (req: EnhancedFastifyRequest<AdminLogsGet>, res: FastifyReply) => {
   const { offset, limit } = req.query
-  const [total, logs] = await getAllLogsBusiness(offset, limit)
+  const [total, logs] = await getAllLogs(offset, limit)
 
   addReqLogs({
     req,

@@ -5,8 +5,8 @@ import { sendCreated, sendOk } from '@/utils/response.js'
 import {
   checkClusterProjectsId,
   getAllCleanedClusters,
-  createClusterBusiness,
-  updateClusterBusiness,
+  createCluster,
+  updateCluster,
 } from './business.js'
 
 // GET
@@ -27,7 +27,7 @@ export const createClusterController = async (req: EnhancedFastifyRequest<Create
 
   data.projectsId = checkClusterProjectsId(data)
 
-  const cluster = await createClusterBusiness(data, userId)
+  const cluster = await createCluster(data, userId)
 
   addReqLogs({
     req,
@@ -44,7 +44,7 @@ export const updateClusterController = async (req: EnhancedFastifyRequest<Update
   const data = req.body
   const clusterId = req.params?.clusterId
 
-  const cluster = await updateClusterBusiness(data, clusterId)
+  const cluster = await updateCluster(data, clusterId)
 
   addReqLogs({
     req,

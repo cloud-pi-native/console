@@ -1,4 +1,4 @@
-import { addClusterToProjectWithIds, addLogs, createCluster, getClusterById, getClusterByLabel, getClustersWithProjectIdAndConfig, getProjectsByClusterId, removeClusterFromProject, updateCluster } from '@/resources/queries-index.js'
+import { addClusterToProjectWithIds, addLogs, createCluster as createClusterQuery, getClusterById, getClusterByLabel, getClustersWithProjectIdAndConfig, getProjectsByClusterId, removeClusterFromProject, updateCluster as updateClusterQuery } from '@/resources/queries-index.js'
 import { BadRequestError, NotFoundError } from '@/utils/errors.js'
 import { hooks } from '@/plugins/index.js'
 import { CreateClusterDto, UpdateClusterDto, clusterSchema } from '@dso-console/shared'
@@ -29,7 +29,7 @@ export const checkClusterProjectsId = (data: CreateClusterDto['body']) => {
     : data.projectsId
 }
 
-export const createClusterBusiness = async (data: CreateClusterDto['body'], userId: User['id']) => {
+export const createCluster = async (data: CreateClusterDto['body'], userId: User['id']) => {
   await clusterSchema.validateAsync(data, { presence: 'required' })
 
   const isLabelTaken = await getClusterByLabel(data.label)
@@ -44,19 +44,20 @@ export const createClusterBusiness = async (data: CreateClusterDto['body'], user
   delete clusterData.projectsId
   delete clusterData.user
   delete clusterData.cluster
-  const cluster = await createCluster(clusterData, kubeConfig)
+  const cluster = await createClusterQuery(clusterData, kubeConfig)
 
   for (const projectId of data.projectsId) {
     await addClusterToProjectWithIds(cluster.id, projectId)
   }
 
   const results = await hooks.createCluster.execute({ ...cluster, user: data.user, cluster: data.cluster })
+  // @ts-ignore
   await addLogs('Create Cluster', results, userId)
 
   return cluster
 }
 
-export const updateClusterBusiness = async (data: UpdateClusterDto['body'], clusterId: UpdateClusterDto['body']['id']) => {
+export const updateCluster = async (data: UpdateClusterDto['body'], clusterId: UpdateClusterDto['body']['id']) => {
   if (data?.privacy === 'public') delete data.projectsId
 
   await clusterSchema.validateAsync(data, { presence: 'optional' })
@@ -73,7 +74,7 @@ export const updateClusterBusiness = async (data: UpdateClusterDto['body'], clus
   delete clusterData.projectsId
   delete clusterData.user
   delete clusterData.cluster
-  const cluster = await updateCluster(clusterId, clusterData, kubeConfig)
+  const cluster = await updateClusterQuery(clusterId, clusterData, kubeConfig)
 
   await hooks.updateCluster.execute({ ...cluster, user: { ...kubeConfig.user }, cluster: { ...kubeConfig.cluster } })
 

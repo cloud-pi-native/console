@@ -1,6 +1,6 @@
 import { addReqLogs } from '@/utils/logger.js'
 import { sendOk, sendCreated } from '@/utils/response.js'
-import { Action, deletePermissionBusiness, getEnvironmentPermissionsBusiness, preventUpdatingOwnerPermission, setPermissionBusiness, updatePermissionBusiness } from './business.js'
+import { Action, deletePermission, getEnvironmentPermissions, preventUpdatingOwnerPermission, setPermission, updatePermission } from './business.js'
 import { checkGetEnvironment, getEnvironmentInfos } from '@/resources/environment/business.js'
 
 // GET
@@ -9,7 +9,7 @@ export const getEnvironmentPermissionsController = async (req, res) => {
   const environmentId = req.params?.environmentId
   const projectId = req.params?.projectId
 
-  const permissions = await getEnvironmentPermissionsBusiness(userId, projectId, environmentId)
+  const permissions = await getEnvironmentPermissions(userId, projectId, environmentId)
 
   addReqLogs({
     req,
@@ -29,7 +29,7 @@ export const setPermissionController = async (req, res) => {
   const projectId = req.params?.projectId
   const data = req.body
 
-  const permission = await setPermissionBusiness(projectId, requestorId, data.userId, environmentId, data.level)
+  const permission = await setPermission(projectId, requestorId, data.userId, environmentId, data.level)
 
   addReqLogs({
     req,
@@ -56,7 +56,7 @@ export const updatePermissionController = async (req, res) => {
 
   await preventUpdatingOwnerPermission(projectId, data.userId)
 
-  const permission = await updatePermissionBusiness(projectId, requestorId, data.userId, environmentId, parseInt(data.level))
+  const permission = await updatePermission(projectId, requestorId, data.userId, environmentId, parseInt(data.level))
 
   addReqLogs({
     req,
@@ -83,7 +83,7 @@ export const deletePermissionController = async (req, res) => {
 
   await preventUpdatingOwnerPermission(projectId, userId, Action.delete)
 
-  const permission = await deletePermissionBusiness(userId, environmentId)
+  const permission = await deletePermission(userId, environmentId)
 
   addReqLogs({
     req,

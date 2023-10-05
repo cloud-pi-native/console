@@ -5,13 +5,14 @@ import axios, { AxiosResponse } from 'axios'
 import { type ServiceInfos, servicesInfos } from '@/plugins/services.js'
 import { userSchema } from '@dso-console/shared'
 
-export const checkServicesHealthBusiness = async (requestor: User) => {
+export const checkServicesHealth = async (requestor: User) => {
   await userSchema.validateAsync(requestor)
   const user = await getOrCreateUser(requestor)
   if (!user) throw new ForbiddenError('Vous n\'avez pas accès à cette information')
 
   try {
     return await Promise.all(Object.values(servicesInfos)
+      // @ts-ignore
       .filter(({ monitorUrl }) => monitorUrl)
       .map(async (service: ServiceInfos) => {
         if (!service.monitorUrl) return

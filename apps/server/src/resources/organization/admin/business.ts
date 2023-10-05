@@ -1,19 +1,19 @@
 import { hooks } from '@/plugins/index.js'
 import { HookPayload, PluginResult } from '@/plugins/hooks/hook.js'
-import { addLogs, createOrganization, getOrganizationByName, getOrganizations, getProjectByOrganizationId, lockProject, updateActiveOrganization, updateLabelOrganization } from '@/resources/queries-index.js'
+import { addLogs, createOrganization as createOrganizationQuery, getOrganizationByName, getOrganizations, getProjectByOrganizationId, lockProject, updateActiveOrganization, updateLabelOrganization } from '@/resources/queries-index.js'
 import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { BadRequestError, NotFoundError } from '@/utils/errors.js'
 import { objectValues } from '@/utils/type.js'
 import { Organization, User } from '@prisma/client'
 import { CreateOrganizationDto, getUniqueListBy, organizationSchema } from '@dso-console/shared'
 
-export const getAllOrganizationBusiness = async () => {
+export const getAllOrganization = async () => {
   const allOrganizations = await getOrganizations()
   if (!allOrganizations?.length) throw new NotFoundError('Aucune organisation trouvée', undefined)
   return allOrganizations
 }
 
-export const createOrganizationBusiness = async (data: CreateOrganizationDto['body']) => {
+export const createOrganization = async (data: CreateOrganizationDto['body']) => {
   try {
     await organizationSchema.validateAsync(data)
   } catch (error) {
@@ -23,10 +23,10 @@ export const createOrganizationBusiness = async (data: CreateOrganizationDto['bo
   const isNameTaken = await getOrganizationByName(data.name)
   if (isNameTaken) throw new BadRequestError('Cette organisation existe déjà', undefined)
 
-  return createOrganization(data)
+  return createOrganizationQuery(data)
 }
 
-export const updateOrganizationBusiness = async (name: Organization['name'], active: Organization['active'], label: Organization['label'], source: Organization['source']) => {
+export const updateOrganization = async (name: Organization['name'], active: Organization['active'], label: Organization['label'], source: Organization['source']) => {
   const organization = await getOrganizationByName(name)
 
   if (active !== undefined) {
@@ -52,7 +52,7 @@ export const updateOrganizationBusiness = async (name: Organization['name'], act
   return getOrganizationByName(name)
 }
 
-export const fetchOrganizationsBusiness = async (userId: User['id']) => {
+export const fetchOrganizations = async (userId: User['id']) => {
   const consoleOrganizations = await getOrganizations()
 
   // TODO: Fix define return in plugins dir

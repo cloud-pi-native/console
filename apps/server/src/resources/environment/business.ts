@@ -13,8 +13,8 @@ import {
   updateEnvironmentDeleting,
   deleteEnvironment as deleteEnvironmentQuery,
   getUserById,
-  getQuotas,
-  updateEnvironment,
+  getQuotas as getQuotasQuery,
+  updateEnvironment as updateEnvironmentQuery,
 } from '@/resources/queries-index.js'
 import { hooks } from '@/plugins/index.js'
 import { BadRequestError, ForbiddenError, NotFoundError, UnauthorizedError, UnprocessableContentError } from '@/utils/errors.js'
@@ -52,10 +52,10 @@ export const getInitializeEnvironmentInfos = async (userId: User['id'], projectI
   return { owner, project, authorizedClusters }
 }
 
-export const getQuotasBusiness = async (userId: User['id']) => {
+export const getQuotas = async (userId: User['id']) => {
   const user = await getUserById(userId)
   if (!user) throw new UnauthorizedError('Vous n\'êtes pas connecté')
-  return getQuotas()
+  return getQuotasQuery()
 }
 
 // Check logic
@@ -155,7 +155,7 @@ export const createEnvironment = async (
     }
 
     const clusters = await getClustersByIds(newClustersId)
-    await addClustersToEnvironmentBusiness(clusters, env.name, env.id, project.name, project.organization.name, userId, owner)
+    await addClustersToEnvironment(clusters, env.name, env.id, project.name, project.organization.name, userId, owner)
 
     await updateEnvironmentCreated(env.id)
     await unlockProjectIfNotFailed(project.id)
@@ -166,7 +166,7 @@ export const createEnvironment = async (
   }
 }
 
-export const updateEnvironmentBusiness = async (
+export const updateEnvironment = async (
   env: AsyncReturnType<typeof getEnvironmentInfos>,
   userId: string,
   newClustersId: string[],
@@ -178,7 +178,7 @@ export const updateEnvironmentBusiness = async (
     // Premièrement, ajout des clusters sur les environnements
     const owner = env.project.roles[0].user
     const reallyNewClusters = await getClustersByIds(newClustersId.filter(newClusterId => !env.clusters.some(envCluster => envCluster.id === newClusterId)))
-    await addClustersToEnvironmentBusiness(reallyNewClusters, env.name, env.id, env.project.name, env.project.organization.name, userId, owner)
+    await addClustersToEnvironment(reallyNewClusters, env.name, env.id, env.project.name, env.project.organization.name, userId, owner)
 
     // Puis retrait des clusters pour les environnements
     const clustersToRemove = await getClustersByIds(
@@ -186,11 +186,11 @@ export const updateEnvironmentBusiness = async (
         .filter(oldCluster => !newClustersId.includes(oldCluster.id))
         .map(({ id }) => id),
     )
-    await removeClustersFromEnvironmentBusiness(clustersToRemove, env.name, env.id, env.project.name, env.project.organization.name, userId)
+    await removeClustersFromEnvironment(clustersToRemove, env.name, env.id, env.project.name, env.project.organization.name, userId)
 
     // Modification du quota
     if (quotaId) {
-      await updateEnvironment({ id: env.id, quotaId })
+      await updateEnvironmentQuery({ id: env.id, quotaId })
     }
 
     // mise à jour des status
@@ -215,7 +215,7 @@ export const deleteEnvironment = async (
       env.clusters
         .map(({ id }) => id),
     )
-    await removeClustersFromEnvironmentBusiness(clustersToRemove, env.name, env.id, env.project.name, env.project.organization.name, userId)
+    await removeClustersFromEnvironment(clustersToRemove, env.name, env.id, env.project.name, env.project.organization.name, userId)
 
     const projectName = env.project.name
     const organizationName = env.project.organization.name
@@ -247,7 +247,7 @@ export const deleteEnvironment = async (
 }
 
 // Cluster Logic
-export const addClustersToEnvironmentBusiness = async (
+export const addClustersToEnvironment = async (
   clusters: (Cluster & { kubeconfig: Kubeconfig })[],
   environmentName: Environment['name'],
   environmentId: Environment['id'],
@@ -275,7 +275,7 @@ export const addClustersToEnvironmentBusiness = async (
   }
 }
 
-export const removeClustersFromEnvironmentBusiness = async (
+export const removeClustersFromEnvironment = async (
   clusters: (Cluster & { kubeconfig: Kubeconfig })[],
   environmentName: Environment['name'],
   environmentId: Environment['id'],

@@ -1,6 +1,6 @@
-import { getAllLogs } from '@/resources/queries-index.js'
+import { getAllLogs as getAllLogsQuery } from '@/resources/queries-index.js'
 import { AdminLogsGet } from '@dso-console/shared'
 
-export const getAllLogsBusiness = async (offset: AdminLogsGet['query']['offset'], limit: AdminLogsGet['query']['limit']) => {
-  return await getAllLogs({ offset, limit })
+export const getAllLogs = async (offset: AdminLogsGet['query']['offset'], limit: AdminLogsGet['query']['limit']) => {
+  return await getAllLogsQuery({ offset, limit })
 }

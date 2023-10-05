@@ -1,12 +1,12 @@
 import { addReqLogs } from '@/utils/logger.js'
 import { sendOk, sendCreated } from '@/utils/response.js'
-import { createOrganizationBusiness, fetchOrganizationsBusiness, getAllOrganizationBusiness, updateOrganizationBusiness } from './business.js'
+import { createOrganization, fetchOrganizations, getAllOrganization, updateOrganization } from './business.js'
 import { EnhancedFastifyRequest } from '@/types/index.js'
 import { CreateOrganizationDto, UpdateOrganizationDto } from '@dso-console/shared'
 
 // GET
 export const getAllOrganizationsController = async (req, res) => {
-  const organizations = await getAllOrganizationBusiness()
+  const organizations = await getAllOrganization()
   addReqLogs({
     req,
     description: 'Organisations récupérées avec succès',
@@ -17,7 +17,7 @@ export const getAllOrganizationsController = async (req, res) => {
 // POST
 export const createOrganizationController = async (req: EnhancedFastifyRequest<CreateOrganizationDto>, res) => {
   const data = req.body
-  const organization = await createOrganizationBusiness(data)
+  const organization = await createOrganization(data)
 
   addReqLogs({
     req,
@@ -34,7 +34,7 @@ export const updateOrganizationController = async (req: EnhancedFastifyRequest<U
   const name = req.params.orgName
   const { active, label, source } = req.body
 
-  const organization = await updateOrganizationBusiness(name, active, label, source)
+  const organization = await updateOrganization(name, active, label, source)
 
   addReqLogs({
     req,
@@ -49,7 +49,7 @@ export const updateOrganizationController = async (req: EnhancedFastifyRequest<U
 export const fetchOrganizationsController = async (req, res) => {
   const userId = req.session.user.id
 
-  const consoleOrganizations = await fetchOrganizationsBusiness(userId)
+  const consoleOrganizations = await fetchOrganizations(userId)
 
   addReqLogs({
     req,
