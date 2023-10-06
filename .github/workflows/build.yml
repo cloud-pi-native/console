@@ -106,6 +106,8 @@ jobs:
           provenance: false
           platforms: ${{ inputs.MULTIARCH && inputs.USE_QEMU && 'linux/amd64,linux/arm64' || (contains(runner.arch, 'ARM') && 'linux/arm64' || 'linux/amd64') }}
           outputs: type=image,name=${{ inputs.REGISTRY }}/${{ inputs.NAMESPACE }}/${{ matrix.images.name }},push-by-digest=true,name-canonical=true,push=true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           build-args: |
             APP_VERSION=${{ inputs.TAG || steps.short-sha.outputs.SHORT_SHA }}
 
@@ -127,18 +129,11 @@ jobs:
     name: Merge digest
     runs-on: ubuntu-latest
     needs:
+      - matrix
       - build
     strategy:
       matrix:
-        images:
-          - name: server
-            context: ./
-            dockerfile: ./apps/server/Dockerfile
-            target: prod
-          - name: client
-            context: ./
-            dockerfile: ./apps/client/Dockerfile
-            target: prod
+        images: ${{ fromJSON(needs.matrix.outputs.build-matrix) }}
     steps:
       - name: Download digests
         uses: actions/download-artifact@v3
