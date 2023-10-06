@@ -17,11 +17,11 @@ import {
   checkUpdateEnvironment,
   checkDeleteEnvironment,
   createEnvironment,
-  updateEnvironmentBusiness,
+  updateEnvironment,
   deleteEnvironment,
   checkGetEnvironment,
   getInitializeEnvironmentInfos,
-  getQuotasBusiness,
+  getQuotas,
 } from './business.js'
 
 // GET
@@ -53,7 +53,7 @@ export const getEnvironmentByIdController = async (req, res) => {
 
 export const getQuotasController = async (req, res) => {
   const userId = req.session?.user?.id
-  const quotas = await getQuotasBusiness(userId)
+  const quotas = await getQuotas(userId)
 
   addReqLogs({
     req,
@@ -78,6 +78,7 @@ export const initializeEnvironmentController = async (req: EnhancedFastifyReques
     authorizedClusters,
     userId,
     newClustersId,
+    // @ts-ignore
     envName: data.name,
   })
 
@@ -88,6 +89,7 @@ export const initializeEnvironmentController = async (req: EnhancedFastifyReques
     project,
     owner,
     userId,
+    // @ts-ignore
     data.name,
     newClustersId,
     data.quotaId,
@@ -124,7 +126,7 @@ export const updateEnvironmentController = async (req: EnhancedFastifyRequest<Up
   )
 
   // appel business 3 : update
-  await updateEnvironmentBusiness(env, userId, data.clustersId, data.quotaId)
+  await updateEnvironment(env, userId, data.clustersId, data.quotaId)
   addReqLogs({
     req,
     description: 'Environnement mis à jour avec succès',

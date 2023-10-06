@@ -28,7 +28,7 @@ import { CreateProjectDto, UpdateProjectDto, calcProjectNameMaxLength, projectIs
 import { CreateProjectExecArgs, ProjectBase, UpdateProjectExecArgs } from '@/plugins/hooks/project.js'
 import { filterObjectByKeys } from '@/utils/queries-tools.js'
 import { projectRootDir } from '@/utils/env.js'
-import { removeClustersFromEnvironmentBusiness } from '../environment/business.js'
+import { removeClustersFromEnvironment } from '../environment/business.js'
 import { type UserDto, getUser } from '@/resources/user/business.js'
 import { gitlabUrl } from '@/plugins/core/gitlab/utils.js'
 import { getProjectServices } from '@/plugins/services.js'
@@ -225,7 +225,7 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
     for (const env of project.environments) {
       // Supprimer le namespace du projet des différent clusters cibles
       const clusters = await getClusterByEnvironmentId(env.id)
-      await removeClustersFromEnvironmentBusiness(clusters, env.name, env.id, project.name, project.organization.name, requestor.id)
+      await removeClustersFromEnvironment(clusters, env.name, env.id, project.name, project.organization.name, requestor.id)
       const envData = {
         environment: env.name,
         project: project.name,

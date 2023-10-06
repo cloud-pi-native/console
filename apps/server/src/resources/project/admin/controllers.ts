@@ -1,9 +1,9 @@
 import { addReqLogs } from '@/utils/logger.js'
 import { sendOk } from '@/utils/response.js'
-import { getAllProjectsBusiness } from './business.js'
+import { getAllProjects } from './business.js'
 
 export const getAllProjectsController = async (req, res) => {
-  const allProjects = await getAllProjectsBusiness()
+  const allProjects = await getAllProjects()
 
   addReqLogs({
     req,

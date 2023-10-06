@@ -1,5 +1,5 @@
-import { getAllProjects } from '@/resources/queries-index.js'
+import { getAllProjects as getAllProjectsQuery } from '@/resources/queries-index.js'
 
-export const getAllProjectsBusiness = async () => {
-  return getAllProjects()
+export const getAllProjects = async () => {
+  return getAllProjectsQuery()
 }
