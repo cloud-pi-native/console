@@ -2,7 +2,7 @@ import { data } from '@dso-console/test-utils'
 
 export const getModel = (model) => data[model]
 
-export const getModelById = (model, id) => model === 'project'
+export const getModelById = (model: string, id: string) => model === 'project'
   ? getProjectById(id)
   : data[model].find(key => key.id === id)
 
@@ -27,7 +27,7 @@ export const getProjects = () => getModel('project')
       })),
   }))
 
-export const getProjectById = (id) => getProjects().find(project => project.id === id)
+export const getProjectById = (id: string) => getProjects().find(project => project.id === id)
 
-export const getUserProjects = (userId) => getProjects()
+export const getUserProjects = (userId: string) => getProjects()
   .filter(project => project.status !== 'archived' && project.users.find(user => user.id === userId))
