@@ -8,7 +8,14 @@ npm-debug.log
 # Lint
 .eslintrc.js
 .eslintrc.cjs
+.eslintrc.json
+.eslintignore
 .stylelintrc.js
+.stylelintrc.cjs
+
+# Cypress
+**/cypress.config.ts
+**/cypress
 
 # Tests
 .turbo/
