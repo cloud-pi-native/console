@@ -14,6 +14,10 @@ on:
 env:
   NODE_VERSION: "18.18.0"
   PNPM_VERSION: "8"
+  REGISTRY: "ghcr.io"
+  NAMESPACE: "${{ github.repository }}"
+  MULTI_ARCH: false
+  USE_QEMU: false
 
 jobs:
   path-filter:
@@ -22,6 +26,9 @@ jobs:
     outputs:
       apps: ${{ steps.filter.outputs.apps }}
     steps:
+      - name: Checks-out repository
+        uses: actions/checkout@v3
+
       - name: Check updated files paths
         uses: dorny/paths-filter@v2
         id: filter
@@ -38,6 +45,10 @@ jobs:
     outputs:
       NODE_VERSION: ${{ env.NODE_VERSION }}
       PNPM_VERSION: ${{ env.PNPM_VERSION }}
+      REGISTRY: ${{ env.REGISTRY }}
+      NAMESPACE: ${{ env.NAMESPACE }}
+      MULTI_ARCH: ${{ env.MULTI_ARCH }}
+      USE_QEMU: ${{ env.USE_QEMU }}
     steps:
       - name: Exposing env vars
         run: echo "Exposing env vars"
@@ -57,7 +68,6 @@ jobs:
     with:
       NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
       PNPM_VERSION: ${{ needs.expose-vars.outputs.PNPM_VERSION }}
-    # secrets: inherit
     secrets:
       SONAR_HOST_URL: "${{ secrets.SONAR_HOST_URL }}"
       SONAR_TOKEN: "${{ secrets.SONAR_TOKEN }}"
@@ -73,15 +83,28 @@ jobs:
       NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
       PNPM_VERSION: ${{ needs.expose-vars.outputs.PNPM_VERSION }}
 
+  build:
+    uses: ./.github/workflows/build.yml
+    needs:
+      - expose-vars
+    with:
+      REGISTRY: ${{ needs.expose-vars.outputs.REGISTRY }}
+      NAMESPACE: ${{ needs.expose-vars.outputs.NAMESPACE }}
+      TAG: pr-${{ github.event.pull_request.number || github.event.number }}
+      MULTI_ARCH: ${{ needs.expose-vars.outputs.MULTI_ARCH }}
+      USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU }}
+
   e2e-tests:
     uses: ./.github/workflows/tests-e2e.yml
     if: ${{ needs.path-filter.outputs.apps == 'true' }}
     needs:
       - path-filter
       - expose-vars
+      - build
     with:
       NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
       PNPM_VERSION: ${{ needs.expose-vars.outputs.PNPM_VERSION }}
+      TAG: pr-${{ github.event.pull_request.number || github.event.number }}
 
   deploy-tests:
     uses: ./.github/workflows/tests-deploy.yml
@@ -89,13 +112,22 @@ jobs:
     needs:
       - path-filter
       - expose-vars
+      - build
     with:
       NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
       PNPM_VERSION: ${{ needs.expose-vars.outputs.PNPM_VERSION }}
+      TAG: pr-${{ github.event.pull_request.number || github.event.number }}
 
   scan-vuln:
     uses: ./.github/workflows/scan.yml
     if: ${{ !github.event.pull_request.draft && github.base_ref == 'main' }}
+    needs:
+      - expose-vars
+      - build
+    with:
+      REGISTRY: ${{ needs.expose-vars.outputs.REGISTRY }}
+      NAMESPACE: ${{ needs.expose-vars.outputs.NAMESPACE }}
+      TAG: pr-${{ github.event.pull_request.number || github.event.number }}
 
   # Workaround for required status check in protection branches (see. https://github.com/orgs/community/discussions/13690)
   all-jobs-passed:
@@ -108,6 +140,7 @@ jobs:
       - lint
       - unit-tests
       - component-tests
+      - build
       - e2e-tests
       - deploy-tests
       - scan-vuln

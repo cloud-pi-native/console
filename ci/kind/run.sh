@@ -15,6 +15,7 @@ HELM_RELEASE_NAME="dso"
 HELM_DIRECTORY="./helm"
 INTEGRATION_ARG=""
 INTEGRATION_ARGS_UTILS=""
+CI_ARGS=""
 
 
 # Declare script helper
@@ -23,9 +24,11 @@ Following flags are available:
 
   -c    Command tu run. Multiple commands can be provided as a comma separated list.
         Available commands are :
-          build   - Build and push load into nodes docker compose images.
-          create  - Create local registry and kind cluster.
-          delete  - Delete local registry and kind cluster.
+          create  - Create kind cluster.
+          clean   - Delete images in kind cluster (keep only infra resources and ingress controller).
+          delete  - Delete kind cluster.
+          build   - Build, push and load docker images from compose file into cluster nodes.
+          load    - Load docker images from compose file into cluster nodes.
           dev     - Run application in development mode.
           prod    - Run application in production mode.
           int     - Run application in integration mode (need to combine with 'dev' or 'prod').
@@ -36,6 +39,8 @@ Following flags are available:
 
   -i    Install kind.
 
+  -t    Tag used to deploy application images.
+
   -h    Print script help.\n\n"
 
 print_help() {
@@ -43,7 +48,7 @@ print_help() {
 }
 
 # Parse options
-while getopts hc:d:f:ik: flag; do
+while getopts hc:d:f:ik:t: flag; do
   case "${flag}" in
     c)
       COMMAND=${OPTARG};;
@@ -55,6 +60,8 @@ while getopts hc:d:f:ik: flag; do
       INSTALL_KIND=true;;
     k)
       KUBECONFIG_PATH=${OPTARG};;
+    t)
+      TAG=${OPTARG};;
     h | *)
       print_help
       exit 0;;
@@ -149,11 +156,22 @@ kubectl config set-context kind-kind
 
 # Build and load images into cluster nodes
 if [[ "$COMMAND" =~ "build" ]]; then
+  printf "\n\n${red}[kind wrapper].${no_color} Build and load images into cluster node\n\n"
+
+  cd $(dirname "$COMPOSE_FILE") \
+    && docker buildx bake --file $(basename "$COMPOSE_FILE") --load \
+    && cd -
+  kind load docker-image $(cat "$COMPOSE_FILE" \
+    | docker run -i --rm mikefarah/yq -o t '.services | map(select(.build) | .image)')
+fi
+
+
+# Load images into cluster nodes
+if [[ "$COMMAND" =~ "load" ]]; then
   printf "\n\n${red}[kind wrapper].${no_color} Load images into cluster node\n\n"
 
-  docker compose --file $COMPOSE_FILE build
   kind load docker-image $(cat "$COMPOSE_FILE" \
-  | docker run -i --rm mikefarah/yq -o t '.services | map(select(.build) | .image)')
+    | docker run -i --rm mikefarah/yq -o t '.services | map(select(.build) | .image)')
 fi
 
 
@@ -203,6 +221,10 @@ if [[ "$COMMAND" =~ "dev" ]]; then
 elif [[ "$COMMAND" =~ "prod" ]]; then
   printf "\n\n${red}[kind wrapper].${no_color} Deploy application in production mode\n\n"
 
+  if [ ! -z "$TAG" ]; then
+    CI_ARGS="--set server.container.image=ghcr.io/cloud-pi-native/console/server:$TAG --set client.container.image=ghcr.io/cloud-pi-native/console/client:$TAG --set server.container.imagePullPolicy=Always --set client.container.imagePullPolicy=Always"
+  fi
+
   helm upgrade \
     --install \
     --wait $INTEGRATION_ARGS_UTILS \
@@ -214,6 +236,7 @@ elif [[ "$COMMAND" =~ "prod" ]]; then
     --wait \
     --values ./env/dso-values.yaml \
     $INTEGRATION_ARGS \
+    $CI_ARGS \
     $HELM_RELEASE_NAME $HELM_DIRECTORY
 
   for i in $(kubectl get deploy -o name); do 

@@ -10,9 +10,9 @@ COPY --chown=node:root packages/shared/package.json ./packages/shared/package.js
 COPY --chown=node:root packages/test-utils/package.json ./packages/test-utils/package.json
 COPY --chown=node:root packages/tsconfig/package.json ./packages/tsconfig/package.json
 RUN pnpm install --no-optional
+COPY --chown=node:root packages/ ./packages/
 RUN pnpm --filter shared run build
 COPY --chown=node:root apps/client/ ./apps/client/
-COPY --chown=node:root packages/ ./packages/
 ENTRYPOINT [ "pnpm", "--filter", "client", "run", "dev" ]
 
 

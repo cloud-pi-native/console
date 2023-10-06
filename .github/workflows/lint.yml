@@ -12,7 +12,7 @@ on:
 
 jobs:
   lint:
-    name: Setup project
+    name: Lint project codebase
     runs-on: ubuntu-latest
     steps:
       - name: Checks-out repository
@@ -32,11 +32,16 @@ jobs:
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Cache turbo files
+        uses: actions/cache@v3
+        with:
+          path: .turbo/cache
+          key: turbo-${{ runner.os }}-${{runner.arch }}-lint-${{ github.sha }}
+          restore-keys: |
+            turbo-${{ runner.os }}-${{runner.arch }}-lint-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Check lint error
-        run: pnpm run lint
+        run: pnpm run lint --cache-dir=.turbo/cache
