@@ -8,7 +8,7 @@ on:
 env:
   REGISTRY: "ghcr.io"
   NAMESPACE: "${{ github.repository }}"
-  MULTIARCH: true
+  MULTI_ARCH: true
   USE_QEMU: false
 
 jobs:
@@ -17,7 +17,7 @@ jobs:
     outputs:
       REGISTRY: ${{ env.REGISTRY }}
       NAMESPACE: ${{ env.NAMESPACE }}
-      MULTIARCH: ${{ env.MULTIARCH }}
+      MULTI_ARCH: ${{ env.MULTI_ARCH }}
       USE_QEMU: ${{ env.USE_QEMU }}
     steps:
       - name: Exposing env vars
@@ -39,5 +39,5 @@ jobs:
       MAJOR_TAG: ${{ needs.release.outputs.major-tag }}
       MINOR_TAG: ${{ needs.release.outputs.minor-tag }}
       PATCH_TAG: ${{ needs.release.outputs.patch-tag }}
-      MULTIARCH: ${{ needs.expose-vars.outputs.MULTIARCH }}
+      MULTI_ARCH: ${{ needs.expose-vars.outputs.MULTI_ARCH }}
       USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU }}

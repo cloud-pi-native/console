@@ -25,12 +25,6 @@ jobs:
       - name: Checks-out repository
         uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "${{ inputs.NODE_VERSION }}"
-          check-latest: true
-
       - name: Install pnpm
         uses: pnpm/action-setup@v2
         id: pnpm-install
@@ -38,21 +32,19 @@ jobs:
           version: "${{ inputs.PNPM_VERSION }}"
           run_install: false
 
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        run: |
-          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_ENV
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "${{ inputs.NODE_VERSION }}"
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
 
-      - name: Setup pnpm cache
+      - name: Cache Cypress Binary
+        id: cache-cypress-binary
         uses: actions/cache@v3
         with:
-          path: |
-            ${{ env.STORE_PATH }}
-            /home/runner/.cache/Cypress
-            $HOME/.cache/Cypress
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+          path: ~/.cache/Cypress
+          key: cypress-binary-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

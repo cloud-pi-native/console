@@ -15,6 +15,7 @@ HELM_RELEASE_NAME="dso"
 HELM_DIRECTORY="./helm"
 INTEGRATION_ARG=""
 INTEGRATION_ARGS_UTILS=""
+CI_ARGS=""
 
 
 # Declare script helper
@@ -23,9 +24,11 @@ Following flags are available:
 
   -c    Command tu run. Multiple commands can be provided as a comma separated list.
         Available commands are :
-          build   - Build and push load into nodes docker compose images.
-          create  - Create local registry and kind cluster.
-          delete  - Delete local registry and kind cluster.
+          create  - Create kind cluster.
+          clean   - Delete images in kind cluster (keep only infra resources and ingress controller).
+          delete  - Delete kind cluster.
+          build   - Build, push and load docker images from compose file into cluster nodes.
+          load    - Load docker images from compose file into cluster nodes.
           dev     - Run application in development mode.
           prod    - Run application in production mode.
           int     - Run application in integration mode (need to combine with 'dev' or 'prod').
@@ -36,6 +39,8 @@ Following flags are available:
 
   -i    Install kind.
 
+  -t    Tag used to deploy application images.
+
   -h    Print script help.\n\n"
 
 print_help() {
@@ -43,7 +48,7 @@ print_help() {
 }
 
 # Parse options
-while getopts hc:d:f:ik: flag; do
+while getopts hc:d:f:ik:t: flag; do
   case "${flag}" in
     c)
       COMMAND=${OPTARG};;
@@ -55,6 +60,8 @@ while getopts hc:d:f:ik: flag; do
       INSTALL_KIND=true;;
     k)
       KUBECONFIG_PATH=${OPTARG};;
+    t)
+      TAG=${OPTARG};;
     h | *)
       print_help
       exit 0;;
@@ -131,8 +138,8 @@ if [[ "$COMMAND" =~ "create" ]]; then
 
     printf "\n\n${red}[kind wrapper].${no_color} Install Traefik ingress controller\n\n"
 
-    helm repo add traefik https://traefik.github.io/charts && helm repo update
-    helm upgrade \
+    helm --kube-context kind-kind repo add traefik https://traefik.github.io/charts && helm repo update
+    helm --kube-context kind-kind upgrade \
       --install \
       --wait \
       --namespace traefik \
@@ -142,18 +149,24 @@ if [[ "$COMMAND" =~ "create" ]]; then
   fi
 fi
 
-
-# Change kubeconfig context to kind
-kubectl config set-context kind-kind
-
-
 # Build and load images into cluster nodes
 if [[ "$COMMAND" =~ "build" ]]; then
+  printf "\n\n${red}[kind wrapper].${no_color} Build and load images into cluster node\n\n"
+
+  cd $(dirname "$COMPOSE_FILE") \
+    && docker buildx bake --file $(basename "$COMPOSE_FILE") --load \
+    && cd -
+  kind load docker-image $(cat "$COMPOSE_FILE" \
+    | docker run -i --rm mikefarah/yq -o t '.services | map(select(.build) | .image)')
+fi
+
+
+# Load images into cluster nodes
+if [[ "$COMMAND" =~ "load" ]]; then
   printf "\n\n${red}[kind wrapper].${no_color} Load images into cluster node\n\n"
 
-  docker compose --file $COMPOSE_FILE build
   kind load docker-image $(cat "$COMPOSE_FILE" \
-  | docker run -i --rm mikefarah/yq -o t '.services | map(select(.build) | .image)')
+    | docker run -i --rm mikefarah/yq -o t '.services | map(select(.build) | .image)')
 fi
 
 
@@ -161,9 +174,9 @@ fi
 if [ "$COMMAND" = "clean" ]; then
   printf "\n\n${red}[kind wrapper].${no_color} Clean cluster resources\n\n"
 
-  helm uninstall $HELM_RELEASE_NAME
-  kubectl delete pvc/dso-db-storage-dso-postgres-0
-  helm uninstall dso-utils
+  helm --kube-context kind-kind uninstall $HELM_RELEASE_NAME
+  kubectl --context kind-kind delete pvc/dso-db-storage-dso-postgres-0
+  helm --kube-context kind-kind uninstall dso-utils
 fi
 
 
@@ -183,13 +196,13 @@ fi
 if [[ "$COMMAND" =~ "dev" ]]; then
   printf "\n\n${red}[kind wrapper].${no_color} Deploy application in development mode\n\n"
 
-  helm upgrade \
+  helm --kube-context kind-kind upgrade \
     --install \
     --wait $INTEGRATION_ARGS_UTILS \
     --set-file data="./packages/test-utils/src/imports/data.ts" \
     dso-utils ./ci/helm-utils
 
-  helm upgrade \
+  helm --kube-context kind-kind upgrade \
     --install \
     --wait \
     --values ./env/dso-values.yaml \
@@ -197,27 +210,32 @@ if [[ "$COMMAND" =~ "dev" ]]; then
     $INTEGRATION_ARGS \
     $HELM_RELEASE_NAME $HELM_DIRECTORY
 
-  for i in $(kubectl get deploy -o name); do 
-    kubectl rollout status $i -w --timeout=150s; 
+  for i in $(kubectl --context kind-kind  get deploy -o name); do 
+    kubectl --context kind-kind  rollout status $i -w --timeout=150s; 
   done
 elif [[ "$COMMAND" =~ "prod" ]]; then
   printf "\n\n${red}[kind wrapper].${no_color} Deploy application in production mode\n\n"
 
-  helm upgrade \
+  if [ ! -z "$TAG" ]; then
+    CI_ARGS="--set server.container.image=ghcr.io/cloud-pi-native/console/server:$TAG --set client.container.image=ghcr.io/cloud-pi-native/console/client:$TAG --set server.container.imagePullPolicy=Always --set client.container.imagePullPolicy=Always"
+  fi
+
+  helm --kube-context kind-kind upgrade \
     --install \
     --wait $INTEGRATION_ARGS_UTILS \
     --set-file data="./packages/test-utils/src/imports/data.ts" \
     dso-utils ./ci/helm-utils
 
-  helm upgrade \
+  helm --kube-context kind-kind upgrade \
     --install \
     --wait \
     --values ./env/dso-values.yaml \
     $INTEGRATION_ARGS \
+    $CI_ARGS \
     $HELM_RELEASE_NAME $HELM_DIRECTORY
 
-  for i in $(kubectl get deploy -o name); do 
-    kubectl rollout status $i -w --timeout=150s
+  for i in $(kubectl --context kind-kind get deploy -o name); do 
+    kubectl --context kind-kind  rollout status $i -w --timeout=150s
   done
 fi
 

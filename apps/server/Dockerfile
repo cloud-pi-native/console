@@ -1,41 +1,39 @@
 # Base stage
-FROM docker.io/node:18.18.0-bullseye-slim AS base
+FROM docker.io/node:18.18.0-bullseye-slim AS dev
 
-RUN npm install --location=global pnpm@8.6.10
 WORKDIR /app
-RUN chown node:root /app
-COPY --chown=node:root pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
-COPY --chown=node:root apps/server/ ./apps/server/
-COPY --chown=node:root packages/ ./packages/
-
-
-# Dev stage
-FROM base AS dev
-
-USER node
+RUN npm install --location=global pnpm@8.6.10
+COPY --chown=node:root package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
+COPY --chown=node:root apps/server/package.json ./apps/server/package.json
+COPY --chown=node:root packages/eslintconfig/package.json ./packages/eslintconfig/package.json
+COPY --chown=node:root packages/shared/package.json ./packages/shared/package.json
+COPY --chown=node:root packages/test-utils/package.json ./packages/test-utils/package.json
+COPY --chown=node:root packages/tsconfig/package.json ./packages/tsconfig/package.json
 RUN pnpm install
+COPY --chown=node:root packages/ ./packages/
 RUN pnpm --filter shared run build
+COPY --chown=node:root apps/server/ ./apps/server/
 ENTRYPOINT [ "pnpm", "--filter", "server", "run", "dev" ]
 
 
 # Build stage
-FROM base AS build
+FROM dev AS build
 
-RUN pnpm install
-RUN pnpm --filter shared run build
 RUN pnpm --filter server run build
 RUN pnpm --filter server --prod deploy build
+
 
 # Prod stage
 FROM docker.io/node:18.18.0-bullseye-slim AS prod
 
 ARG APP_VERSION
 ENV APP_VERSION=$APP_VERSION
+WORKDIR /app
 RUN mkdir -p /home/node/logs && chmod 770 -R /home/node/logs \
   && mkdir -p /home/node/.npm && chmod 770 -R /home/node/.npm
-WORKDIR /app
 RUN chown node:root /app
 COPY --chown=node:root --from=build /app/build .
 RUN npm run db:generate
 USER node
+EXPOSE 8080
 ENTRYPOINT ["npm", "start"]
