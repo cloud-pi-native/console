@@ -1,6 +1,6 @@
 {
-  "**/client/**/*.{js,ts,vue,cjs}": "eslint",
-  "**/client/**/*.{vue,css}": "stylelint",
-  "**/server/**/*.{js,cjs,ts}": "eslint",
-  "**/shared/**/*.{js,cjs,ts}": "eslint"
+  "**/client/**/*.{js,ts,vue,cjs}": "pnpm run format --filter client --",
+  "**/client/**/*.{vue,css}": "pnpm run format:style --filter client --",
+  "**/server/**/*.{js,cjs,ts}": "pnpm run format --filter server --",
+  "**/shared/**/*.{js,cjs,ts}": "pnpm run format --filter shared --"
 }
