@@ -138,8 +138,8 @@ if [[ "$COMMAND" =~ "create" ]]; then
 
     printf "\n\n${red}[kind wrapper].${no_color} Install Traefik ingress controller\n\n"
 
-    helm repo add traefik https://traefik.github.io/charts && helm repo update
-    helm upgrade \
+    helm --kube-context kind-kind repo add traefik https://traefik.github.io/charts && helm repo update
+    helm --kube-context kind-kind upgrade \
       --install \
       --wait \
       --namespace traefik \
@@ -148,11 +148,6 @@ if [[ "$COMMAND" =~ "create" ]]; then
       traefik traefik/traefik
   fi
 fi
-
-
-# Change kubeconfig context to kind
-kubectl config set-context kind-kind
-
 
 # Build and load images into cluster nodes
 if [[ "$COMMAND" =~ "build" ]]; then
@@ -179,9 +174,9 @@ fi
 if [ "$COMMAND" = "clean" ]; then
   printf "\n\n${red}[kind wrapper].${no_color} Clean cluster resources\n\n"
 
-  helm uninstall $HELM_RELEASE_NAME
-  kubectl delete pvc/dso-db-storage-dso-postgres-0
-  helm uninstall dso-utils
+  helm --kube-context kind-kind uninstall $HELM_RELEASE_NAME
+  kubectl --context kind-kind delete pvc/dso-db-storage-dso-postgres-0
+  helm --kube-context kind-kind uninstall dso-utils
 fi
 
 
@@ -201,13 +196,13 @@ fi
 if [[ "$COMMAND" =~ "dev" ]]; then
   printf "\n\n${red}[kind wrapper].${no_color} Deploy application in development mode\n\n"
 
-  helm upgrade \
+  helm --kube-context kind-kind upgrade \
     --install \
     --wait $INTEGRATION_ARGS_UTILS \
     --set-file data="./packages/test-utils/src/imports/data.ts" \
     dso-utils ./ci/helm-utils
 
-  helm upgrade \
+  helm --kube-context kind-kind upgrade \
     --install \
     --wait \
     --values ./env/dso-values.yaml \
@@ -215,8 +210,8 @@ if [[ "$COMMAND" =~ "dev" ]]; then
     $INTEGRATION_ARGS \
     $HELM_RELEASE_NAME $HELM_DIRECTORY
 
-  for i in $(kubectl get deploy -o name); do 
-    kubectl rollout status $i -w --timeout=150s; 
+  for i in $(kubectl --context kind-kind  get deploy -o name); do 
+    kubectl --context kind-kind  rollout status $i -w --timeout=150s; 
   done
 elif [[ "$COMMAND" =~ "prod" ]]; then
   printf "\n\n${red}[kind wrapper].${no_color} Deploy application in production mode\n\n"
@@ -225,13 +220,13 @@ elif [[ "$COMMAND" =~ "prod" ]]; then
     CI_ARGS="--set server.container.image=ghcr.io/cloud-pi-native/console/server:$TAG --set client.container.image=ghcr.io/cloud-pi-native/console/client:$TAG --set server.container.imagePullPolicy=Always --set client.container.imagePullPolicy=Always"
   fi
 
-  helm upgrade \
+  helm --kube-context kind-kind upgrade \
     --install \
     --wait $INTEGRATION_ARGS_UTILS \
     --set-file data="./packages/test-utils/src/imports/data.ts" \
     dso-utils ./ci/helm-utils
 
-  helm upgrade \
+  helm --kube-context kind-kind upgrade \
     --install \
     --wait \
     --values ./env/dso-values.yaml \
@@ -239,8 +234,8 @@ elif [[ "$COMMAND" =~ "prod" ]]; then
     $CI_ARGS \
     $HELM_RELEASE_NAME $HELM_DIRECTORY
 
-  for i in $(kubectl get deploy -o name); do 
-    kubectl rollout status $i -w --timeout=150s
+  for i in $(kubectl --context kind-kind get deploy -o name); do 
+    kubectl --context kind-kind  rollout status $i -w --timeout=150s
   done
 fi
 
