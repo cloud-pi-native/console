@@ -57,6 +57,9 @@ jobs:
       matrix:
         images: ${{ fromJSON(needs.matrix.outputs.build-matrix) }}
     steps:
+      - name: Checks-out repository
+        uses: actions/checkout@v3
+
       - name: Delete ${{ matrix.images.name }} image
         run: |
           ./ci/scripts/delete-image.sh \
