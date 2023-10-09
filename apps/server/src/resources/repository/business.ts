@@ -84,8 +84,11 @@ export const createRepository = async (
 
   if (project.repositories?.find(repo => repo.internalRepoName === data.internalRepoName)) throw new BadRequestError(`Le nom du dépôt interne ${data.internalRepoName} existe déjà en base pour ce projet`, undefined)
 
+  const dbData = { ...data }
+  delete dbData.externalToken
+
   await lockProject(projectId)
-  const repo = await initializeRepository(data)
+  const repo = await initializeRepository(dbData)
 
   try {
     const environmentNames = project.environments?.map(env => env.name)
@@ -103,6 +106,7 @@ export const createRepository = async (
     }
 
     const results = await hooks.createRepository.execute(repoData)
+    results.args.externalToken = 'information cachée'
     await addLogs('Create Repository', results, userId)
     if (results.failed) throw new BadRequestError('Echec des services lors de la création du dépôt', undefined)
 
@@ -126,18 +130,21 @@ export const updateRepository = async (
 
   await lockProject(project.id)
 
-  let repo = await updateRepositoryQuery(repositoryId, data)
+  const dbData = { ...data }
+  delete dbData.externalToken
+  let repo = await updateRepositoryQuery(repositoryId, dbData)
 
   try {
     const repoData = {
       ...repo,
       project: project.name,
       organization: project.organization.name,
+      externalToken: data.externalToken,
     }
     delete repoData?.isInfra
-    delete repoData?.internalRepoName
 
     const results = await hooks.updateRepository.execute(repoData)
+    results.args.externalToken = 'information cachée'
     await addLogs('Update Repository', results, userId)
     if (results.failed) throw new UnprocessableContentError('Echec des services associés au dépôt', undefined)
 

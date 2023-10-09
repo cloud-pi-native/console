@@ -91,7 +91,6 @@ model Repository {
   internalRepoName String
   externalRepoUrl  String
   externalUserName String?
-  externalToken    String?
   isInfra          Boolean  @default(false)
   isPrivate        Boolean  @default(false)
   status           String   @default("initializing")

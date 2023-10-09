@@ -79,13 +79,10 @@ export const updateRepositoryController = async (req: EnhancedFastifyRequest<Upd
     'externalUserName',
   ]
   const data: Partial<UpdateRepositoryDto['body']> = filterObjectByKeys(req.body, keysAllowedForUpdate)
-  // Do not save external token in db
-  const externalToken = data.externalToken
-  delete data.externalToken
 
   await checkUpsertRepository(userId, projectId, 'owner')
 
-  if (data.isPrivate && !externalToken) throw new BadRequestError('Le token est requis', undefined)
+  if (data.isPrivate && !data.externalToken) throw new BadRequestError('Le token est requis', undefined)
   if (data.isPrivate && !data.externalUserName) throw new BadRequestError('Le nom d\'utilisateur est requis', undefined)
   if (!data.isPrivate) {
     data.externalToken = undefined

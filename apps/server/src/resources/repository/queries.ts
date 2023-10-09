@@ -15,7 +15,7 @@ export const getInfraProjectRepositories = async (projectId: Project['id']) => {
 }
 
 type RepositoryCreate = Pick<Repository, 'projectId' | 'internalRepoName' | 'isInfra' | 'isPrivate' | 'externalRepoUrl'> &
-  Partial<Pick<Repository, 'externalUserName' | 'externalToken'>>
+  Partial<Pick<Repository, 'externalUserName'>>
 // CREATE
 export const initializeRepository = async ({ projectId, internalRepoName, externalRepoUrl, isInfra, isPrivate, externalUserName = '' }: RepositoryCreate) => {
   return prisma.repository.create({
@@ -24,7 +24,6 @@ export const initializeRepository = async ({ projectId, internalRepoName, extern
       internalRepoName,
       externalRepoUrl,
       externalUserName,
-      externalToken: '',
       isInfra,
       isPrivate,
       status: 'initializing',

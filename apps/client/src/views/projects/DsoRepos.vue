@@ -57,8 +57,11 @@ const cancel = () => {
 const saveRepo = async (repo) => {
   isUpsertingRepo.value = true
   try {
-    if (repo.id) return await projectRepositoryStore.updateRepo(repo)
-    await projectRepositoryStore.addRepoToProject(repo)
+    if (repo.id) {
+      await projectRepositoryStore.updateRepo(repo)
+    } else {
+      await projectRepositoryStore.addRepoToProject(repo)
+    }
   } catch (error) {
     snackbarStore.setMessage(error?.message, 'error')
   }
@@ -131,7 +134,7 @@ watch(project, () => {
           :title="repo.title"
           :description="['deleting', 'initializing'].includes(repo?.data?.status) ? 'Opérations en cours' : null"
           :data-testid="`repoTile-${repo.id}`"
-          :horizontal="selectedRepo.internalRepoName"
+          :horizontal="!!selectedRepo.internalRepoName"
           :disabled="['deleting', 'initializing'].includes(repo?.data?.status)"
           class="fr-mb-2w w-11/12"
           @click="setSelectedRepo(repo.data)"
