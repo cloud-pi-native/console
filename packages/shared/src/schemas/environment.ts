@@ -13,6 +13,9 @@ export const environmentSchema = Joi.object({
     .uuid()
     .required(),
 
+  quotaId: Joi.string()
+    .uuid(),
+
   status: Joi.string()
     .valid(...projectStatus),
   // .required(),

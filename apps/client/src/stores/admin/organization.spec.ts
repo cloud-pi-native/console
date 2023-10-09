@@ -66,6 +66,6 @@ describe('Counter Store', () => {
 
     expect(res).toBe(data)
     expect(apiClientPut).toHaveBeenCalledTimes(1)
-    expect(apiClientPut.mock.calls[0][0]).toBe('/admin/organizations/sync/organizations')
+    expect(apiClientPut.mock.calls[0][0]).toBe('/admin/organizations/sync')
   })
 })

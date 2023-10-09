@@ -3,7 +3,7 @@ import { addReqLogs } from '@/utils/logger.js'
 import { sendOk, sendCreated } from '@/utils/response.js'
 import { EnhancedFastifyRequest } from '@/types/index.js'
 import { CreateRepositoryDto, DeleteRepositoryDto, UpdateRepositoryDto } from '@dso-console/shared/src/resources/repository/dto.js'
-import { checkHookValidation, createRepositoryBusiness, deleteRepositoryBusiness, getProjectRepositoriesBusiness, getRepositoryByIdBusiness, updateRepositoryBusiness, checkUpsertRepository } from './business.js'
+import { checkHookValidation, createRepository, deleteRepository, getProjectRepositories, getRepositoryById, updateRepository, checkUpsertRepository } from './business.js'
 import { BadRequestError } from '@/utils/errors.js'
 
 // GET
@@ -12,7 +12,7 @@ export const getRepositoryByIdController = async (req, res) => {
   const repositoryId = req.params?.repositoryId
   const userId = req.session?.user?.id
 
-  const repository = await getRepositoryByIdBusiness(userId, projectId, repositoryId)
+  const repository = await getRepositoryById(userId, projectId, repositoryId)
 
   addReqLogs({
     req,
@@ -29,7 +29,7 @@ export const getProjectRepositoriesController = async (req, res) => {
   const projectId = req.params?.projectId
   const userId = req.session?.user?.id
 
-  const repositories = await getProjectRepositoriesBusiness(userId, projectId)
+  const repositories = await getProjectRepositories(userId, projectId)
 
   addReqLogs({
     req,
@@ -53,7 +53,7 @@ export const createRepositoryController = async (req: EnhancedFastifyRequest<Cre
 
   await checkHookValidation(user)
 
-  const repo = await createRepositoryBusiness(projectId, data, user.id)
+  const repo = await createRepository(projectId, data, user.id)
 
   addReqLogs({
     req,
@@ -92,9 +92,9 @@ export const updateRepositoryController = async (req: EnhancedFastifyRequest<Upd
     data.externalUserName = ''
   }
 
-  await getRepositoryByIdBusiness(userId, projectId, repositoryId)
+  await getRepositoryById(userId, projectId, repositoryId)
 
-  await updateRepositoryBusiness(projectId, repositoryId, data, userId)
+  await updateRepository(projectId, repositoryId, data, userId)
 
   const description = 'Dépôt mis à jour avec succès'
   addReqLogs({
@@ -114,7 +114,7 @@ export const deleteRepositoryController = async (req: EnhancedFastifyRequest<Del
   const repositoryId = req.params?.repositoryId
   const userId = req.session?.user?.id
 
-  await deleteRepositoryBusiness(projectId, repositoryId, userId)
+  await deleteRepository(projectId, repositoryId, userId)
 
   const description = 'Dépôt en cours de suppression'
   addReqLogs({

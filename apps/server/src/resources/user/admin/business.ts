@@ -1,3 +1,3 @@
-import { getUsers } from '../queries.js'
+import { getUsers as getUsersQuery } from '../queries.js'
 
-export const getUsersBusiness = async () => getUsers()
+export const getUsers = async () => getUsersQuery()

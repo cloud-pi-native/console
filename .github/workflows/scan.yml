@@ -3,12 +3,32 @@ name: Vulnerability scan
 on:
   workflow_call:
     inputs:
-      NODE_VERSION:
-        required: false
+      REGISTRY:
+        required: true
         type: string
-      PNPM_VERSION:
-        required: false
+      NAMESPACE:
+        required: true
         type: string
+      TAG:
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      REGISTRY:
+        description: Target registry to push images
+        required: true
+        type: string
+        default: ghcr.io
+      NAMESPACE:
+        description: Target namespace to the given registry
+        required: true
+        type: string
+        default: cloud-pi-native/console
+      TAG:
+        description: Tag used to scan images
+        required: true
+        type: string
+        default: latest
 
 jobs:
   matrix:
@@ -25,49 +45,11 @@ jobs:
         run: |
           echo "BUILD_MATRIX=$(jq -c . < ./ci/matrix.json)" >> $GITHUB_OUTPUT
 
-  build:
-    name: Build application
-    runs-on: ubuntu-latest
-    needs:
-      - matrix
-    strategy:
-      matrix:
-        images: ${{ fromJSON(needs.matrix.outputs.build-matrix) }}
-    steps:
-      - name: Checks-out repository
-        uses: actions/checkout@v3
-
-      - name: Set up Docker buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Set up QEMU (for multi platform build)
-        uses: docker/setup-qemu-action@v2
-
-      - name: Create image directory
-        run: mkdir ./artifacts
-
-      - name: Build docker image
-        uses: docker/build-push-action@v3
-        with:
-          context: ${{ matrix.images.build.context }}
-          file: ${{ matrix.images.build.dockerfile }}
-          tags: ${{ matrix.images.name }}
-          target: ${{ matrix.images.build.target }}
-          outputs: type=docker,dest=./artifacts/${{ matrix.images.name }}.tar
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ matrix.images.name }}
-          path: ./artifacts/${{ matrix.images.name }}.tar
-          retention-days: 1
-
   images-scan:
     name: Scan images vulnerabilities
     runs-on: ubuntu-latest
     needs:
       - matrix
-      - build
     strategy:
       matrix:
         images: ${{ fromJSON(needs.matrix.outputs.build-matrix) }}
@@ -75,17 +57,6 @@ jobs:
       - name: Set up Docker buildx
         if: ${{ matrix.images.build != false }}
         uses: docker/setup-buildx-action@v2
-
-      - name: Download artifact
-        if: ${{ matrix.images.build != false }}
-        uses: actions/download-artifact@v3
-        with:
-          name: ${{ matrix.images.name }}
-          path: ./artifacts
-
-      - name: Load Docker image
-        if: ${{ matrix.images.build != false }}
-        run: docker load --input ./artifacts/${{ matrix.images.name }}.tar
 
       - name: Create security artifacts directory
         run: mkdir -p ./artifacts/vulnerability-report/images/
@@ -93,7 +64,7 @@ jobs:
       - name: Run Trivy vulnerability scanner on images
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: "${{ matrix.images.name }}"
+          image-ref: "${{ inputs.REGISTRY }}/${{ inputs.NAMESPACE }}/${{ matrix.images.name }}:${{ inputs.TAG }}"
           format: "json"
           exit-code: "1"
           vuln-type: "os,library"

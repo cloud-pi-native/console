@@ -212,7 +212,7 @@ describe('Administration organizations', () => {
   })
 
   it('Should synchronize organizations from plugins', () => {
-    cy.intercept('PUT', '/api/v1/admin/organizations/sync/organizations').as('syncOrganizations')
+    cy.intercept('PUT', '/api/v1/admin/organizations/sync').as('syncOrganizations')
 
     cy.getByDataTestid('syncOrgsBtn')
       .click()

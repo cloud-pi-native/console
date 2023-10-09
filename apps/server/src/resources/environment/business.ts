@@ -13,9 +13,11 @@ import {
   updateEnvironmentDeleting,
   deleteEnvironment as deleteEnvironmentQuery,
   getUserById,
+  getQuotas as getQuotasQuery,
+  updateEnvironment as updateEnvironmentQuery,
 } from '@/resources/queries-index.js'
 import { hooks } from '@/plugins/index.js'
-import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
+import { BadRequestError, ForbiddenError, NotFoundError, UnauthorizedError, UnprocessableContentError } from '@/utils/errors.js'
 import type { Cluster, Environment, Kubeconfig, Organization, Project, Role, User } from '@prisma/client'
 import {
   type AsyncReturnType,
@@ -48,6 +50,12 @@ export const getInitializeEnvironmentInfos = async (userId: User['id'], projectI
   const owner = await getUserById(userId)
   const { project, authorizedClusters } = await getProjectInfosAndClusters(projectId)
   return { owner, project, authorizedClusters }
+}
+
+export const getQuotas = async (userId: User['id']) => {
+  const user = await getUserById(userId)
+  if (!user) throw new UnauthorizedError('Vous n\'êtes pas connecté')
+  return getQuotasQuery()
 }
 
 // Check logic
@@ -114,12 +122,13 @@ export const createEnvironment = async (
   project: AsyncReturnType<typeof getProjectInfos>,
   owner: User,
   userId: string,
-  envName: string,
+  envName: Environment['name'],
   newClustersId: string[],
+  quotaId: string,
 ) => {
   await lockProject(project.id)
   const projectOwners = filterOwners(project.roles)
-  const env = await initializeEnvironment({ projectId: project.id, name: envName, projectOwners })
+  const env = await initializeEnvironment({ projectId: project.id, quotaId, name: envName, projectOwners })
 
   try {
     const environmentName = env.name
@@ -146,7 +155,7 @@ export const createEnvironment = async (
     }
 
     const clusters = await getClustersByIds(newClustersId)
-    await addClustersToEnvironmentBusiness(clusters, env.name, env.id, project.name, project.organization.name, userId, owner)
+    await addClustersToEnvironment(clusters, env.name, env.id, project.name, project.organization.name, userId, owner)
 
     await updateEnvironmentCreated(env.id)
     await unlockProjectIfNotFailed(project.id)
@@ -161,6 +170,7 @@ export const updateEnvironment = async (
   env: AsyncReturnType<typeof getEnvironmentInfos>,
   userId: string,
   newClustersId: string[],
+  quotaId?: string,
 ) => {
   try {
     await lockProject(env.project.id)
@@ -168,7 +178,7 @@ export const updateEnvironment = async (
     // Premièrement, ajout des clusters sur les environnements
     const owner = env.project.roles[0].user
     const reallyNewClusters = await getClustersByIds(newClustersId.filter(newClusterId => !env.clusters.some(envCluster => envCluster.id === newClusterId)))
-    await addClustersToEnvironmentBusiness(reallyNewClusters, env.name, env.id, env.project.name, env.project.organization.name, userId, owner)
+    await addClustersToEnvironment(reallyNewClusters, env.name, env.id, env.project.name, env.project.organization.name, userId, owner)
 
     // Puis retrait des clusters pour les environnements
     const clustersToRemove = await getClustersByIds(
@@ -176,7 +186,12 @@ export const updateEnvironment = async (
         .filter(oldCluster => !newClustersId.includes(oldCluster.id))
         .map(({ id }) => id),
     )
-    await removeClustersFromEnvironmentBusiness(clustersToRemove, env.name, env.id, env.project.name, env.project.organization.name, userId)
+    await removeClustersFromEnvironment(clustersToRemove, env.name, env.id, env.project.name, env.project.organization.name, userId)
+
+    // Modification du quota
+    if (quotaId) {
+      await updateEnvironmentQuery({ id: env.id, quotaId })
+    }
 
     // mise à jour des status
     await updateEnvironmentCreated(env.id)
@@ -200,7 +215,7 @@ export const deleteEnvironment = async (
       env.clusters
         .map(({ id }) => id),
     )
-    await removeClustersFromEnvironmentBusiness(clustersToRemove, env.name, env.id, env.project.name, env.project.organization.name, userId)
+    await removeClustersFromEnvironment(clustersToRemove, env.name, env.id, env.project.name, env.project.organization.name, userId)
 
     const projectName = env.project.name
     const organizationName = env.project.organization.name
@@ -232,7 +247,7 @@ export const deleteEnvironment = async (
 }
 
 // Cluster Logic
-export const addClustersToEnvironmentBusiness = async (
+export const addClustersToEnvironment = async (
   clusters: (Cluster & { kubeconfig: Kubeconfig })[],
   environmentName: Environment['name'],
   environmentId: Environment['id'],
@@ -260,7 +275,7 @@ export const addClustersToEnvironmentBusiness = async (
   }
 }
 
-export const removeClustersFromEnvironmentBusiness = async (
+export const removeClustersFromEnvironment = async (
   clusters: (Cluster & { kubeconfig: Kubeconfig })[],
   environmentName: Environment['name'],
   environmentId: Environment['id'],

@@ -15,7 +15,7 @@ PROJECT_DIR="$(git rev-parse --show-toplevel)"
 NODE_VERSION="$(node --version)"
 NPM_VERSION="$(npm --version)"
 DOCKER_VERSION="$(docker --version)"
-DOCKER_COMPOSE_VERSION="$(docker compose version)"
+DOCKER_BUILDX_VERSION="$(docker buildx version)"
 
 # Default
 RUN_UNIT_TESTS="false"
@@ -31,7 +31,9 @@ Following flags are available:
 
   -e    Run e2e tests
 
-  -u    Run deployement status check
+  -s    Run deployement status check
+
+  -t    Tag used for docker images in e2e tests
 
   -u    Run unit tests
   
@@ -42,7 +44,7 @@ print_help() {
 }
 
 # Parse options
-while getopts hcesu flag
+while getopts hcest:u flag
 do
   case "${flag}" in
     c)
@@ -51,6 +53,8 @@ do
       RUN_E2E_TESTS=true;;
     s)
       RUN_STATUS_CHECK=true;;
+    t)
+      TAG=${OPTARG};;
     u)
       RUN_UNIT_TESTS=true;;
     h | *)
@@ -74,9 +78,9 @@ checkDockerRunning () {
   fi
 }
 
-checkComposePlugin () {
-  if [ ! "$DOCKER_COMPOSE_VERSION" ]; then
-    printf "\nThis script uses docker compose plugin, and it isn't installed - please install docker compose plugin and try again!\n"
+checkBuildxPlugin () {
+  if [ ! "$DOCKER_BUILDX_VERSION" ]; then
+    printf "\nThis script uses docker buildx plugin, and it isn't installed - please install docker buildx plugin and try again!\n"
     exit 1
   fi
 }
@@ -87,7 +91,7 @@ printf "\nScript settings:
   -> node version: ${NODE_VERSION}
   -> npm version: ${NPM_VERSION}
   -> docker version: ${DOCKER_VERSION}
-  -> docker-compose version: ${DOCKER_COMPOSE_VERSION}
+  -> docker buildx version: ${DOCKER_BUILDX_VERSION}
   -> run unit tests: ${RUN_UNIT_TESTS}
   -> run component tests: ${RUN_COMPONENT_TESTS}
   -> run e2e tests: ${RUN_E2E_TESTS}
@@ -98,7 +102,7 @@ cd "$PROJECT_DIR"
 
 # Run unit tests
 if [ "$RUN_UNIT_TESTS" == "true" ]; then
-  npm run test:cov
+  npm run test:cov -- --cache-dir=.turbo/cache
 fi
 
 
@@ -109,8 +113,9 @@ if [ "$RUN_COMPONENT_TESTS" == "true" ]; then
   printf "\n${red}${i}.${no_color} Launch component tests\n"
   i=$(($i + 1))
 
-  npm run test:ct-ci
+  npm run test:ct-ci -- --cache-dir=.turbo/cache
 fi
+
 
 # Run e2e tests
 if [ "$RUN_E2E_TESTS" == "true" ]; then
@@ -119,14 +124,9 @@ if [ "$RUN_E2E_TESTS" == "true" ]; then
   printf "\n${red}${i}.${no_color} Launch e2e tests\n"
   i=$(($i + 1))
 
-  npm --prefix $PROJECT_DIR/packages/shared run build
-  npm --prefix $PROJECT_DIR/packages/test-utils run build
-  npm --prefix $PROJECT_DIR/apps/server run db:wrapper
-  npm run kube:init
-  npm run kube:prod:build
-  npm run kube:prod
-  npm run kube:e2e-ci
-
+  ./ci/kind/run.sh -i -d console.dso.local,keycloak.dso.local,pgadmin.dso.local
+  ./ci/kind/run.sh -c create,prod -t $TAG
+  npm --prefix $PROJECT_DIR/apps/client run test:e2e-ci
 
   printf "\n${red}${i}.${no_color} Remove resources\n"
   i=$(($i + 1))
@@ -134,19 +134,16 @@ if [ "$RUN_E2E_TESTS" == "true" ]; then
   npm run kube:delete
 fi
 
-# Run e2e tests
+
+# Run deployment status check
 if [ "$RUN_STATUS_CHECK" == "true" ]; then
   checkDockerRunning
   
   printf "\n${red}${i}.${no_color} Launch e2e tests\n"
   i=$(($i + 1))
 
-  npm --prefix $PROJECT_DIR/packages/shared run build
-  npm --prefix $PROJECT_DIR/packages/test-utils run build
-  npm --prefix $PROJECT_DIR/apps/server run db:wrapper
-  npm run kube:init
-  npm run kube:prod:build
-  npm run kube:prod
+  ./ci/kind/run.sh -i -d console.dso.local,keycloak.dso.local,pgadmin.dso.local
+  ./ci/kind/run.sh -c create,prod -t $TAG
 
   for pod in $(kubectl get pod | tail --lines=+2 | awk '{print $1}'); do
     printf "\n${red}Pod:${no_color} ${pod}\n${red}Status:${no_color} $(kubectl get pod/${pod} -o jsonpath='{.status.phase}')\n"

@@ -12,11 +12,11 @@ const router = async (app, _opt) => {
   // Créer une organisation
   await app.post('/', createOrganizationController)
 
+  // Synchroniser les organisations via les plugins externes
+  await app.put('/sync', fetchOrganizationsController)
+
   // Mettre à jour une organisation
   await app.put('/:orgName', updateOrganizationController)
-
-  // Synchroniser les organisations via les plugins externes
-  await app.put('/sync/organizations', fetchOrganizationsController)
 }
 
 export default router

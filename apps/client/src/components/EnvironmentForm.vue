@@ -1,10 +1,13 @@
 <script lang="ts" setup>
-import { ref, onMounted, onBeforeMount } from 'vue'
+import { ref, onMounted, onBeforeMount, type Ref } from 'vue'
 import { environmentSchema, schemaValidator, instanciateSchema, allEnv, projectIsLockedInfo } from '@dso-console/shared'
 import PermissionForm from './PermissionForm.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 import MultiSelector from './MultiSelector.vue'
 import LoadingCt from './LoadingCt.vue'
+import RangeInput from './RangeInput.vue'
+import { getRandomId } from '@gouvminint/vue-dsfr'
 
 const props = defineProps({
   environment: {
@@ -38,6 +41,7 @@ const props = defineProps({
 })
 
 const snackbarStore = useSnackbarStore()
+const projectEnvironmentStore = useProjectEnvironmentStore()
 
 const clustersLabel = ref([])
 const localEnvironment = ref(props.environment)
@@ -45,6 +49,9 @@ const updatedValues = ref({})
 const environmentOptions = ref([])
 const environmentToDelete = ref('')
 const isDeletingEnvironment = ref(false)
+const quotas: Ref<Array<any>> = ref([])
+const inputKey = ref(getRandomId('input'))
+const quotaRange = ref(0)
 
 const setEnvironmentOptions = () => {
   const availableEnvironments = props.environmentNames.length
@@ -79,6 +86,15 @@ const emit = defineEmits([
   'cancel',
 ])
 
+// Restrict quota level choice according to selected environment
+const getQuotaLevels = () => {
+  return quotas.value.filter(quota => quota.allowedEnvs.includes(localEnvironment.value.name)).map(quota => quota.flavor + ' : ' + quota.compute)
+}
+
+const pickQuotas = (value: number) => {
+  localEnvironment.value.quotaId = quotas.value[value]?.id
+}
+
 const addEnvironment = () => {
   updatedValues.value = instanciateSchema({ schema: environmentSchema }, true)
   const errorSchema = schemaValidator(environmentSchema, localEnvironment.value)
@@ -102,17 +118,34 @@ const putEnvironment = () => {
   }
 }
 
-const cancel = (event) => {
-  emit('cancel', event)
+const cancel = () => {
+  emit('cancel')
 }
 
-onBeforeMount(() => {
+onBeforeMount(async () => {
   /**
     * Retrieve array of cluster ids from parent component, map it into array of cluster labels and pass it to child component.
     */
   localEnvironment.value = props.environment
   clustersLabel.value = localEnvironment.value.clustersId?.map(clusterId => props.projectClusters
     ?.find(projectCluster => projectCluster.id === clusterId).label)
+
+  // Retrieve quotas
+  try {
+    quotas.value = await projectEnvironmentStore.getQuotas()
+  } catch (error) {
+    if (error instanceof Error) {
+      return snackbarStore.setMessage(error.message)
+    }
+    snackbarStore.setMessage('Erreur de récupération des quotas')
+  }
+
+  // Set default quota to minimum
+  if (!localEnvironment.value.quotaId) {
+    localEnvironment.value.quotaId = quotas.value?.find(quota => quota?.flavor === 'micro').id
+  }
+  quotaRange.value = quotas.value.findIndex(quota => quota.id === localEnvironment.value.quotaId)
+  inputKey.value = getRandomId('input')
 })
 
 onMounted(() => {
@@ -148,6 +181,20 @@ onMounted(() => {
         @update:model-value="updateEnvironment('name', $event)"
       />
       <div class="fr-mb-2w">
+        <RangeInput
+          v-if="localEnvironment.name"
+          :key="inputKey"
+          data-testid="quotasLevelRange"
+          class="my-4"
+          label="Dimensionnement des ressources allouées à l'environnement"
+          :level="quotaRange"
+          :levels="getQuotaLevels()"
+          required="required"
+          @update-level="$event => pickQuotas($event)"
+        />
+        <p class="fr-hint-text">
+          Si votre projet nécessite d'avantage de ressources que celles proposées ci-dessus, contactez les administrateurs : <a href="mailto:cloudpinative@interieur.gouv.fr?subject=Demande de dépassement de quotas">cloudpinative@interieur.gouv.fr</a>.
+        </p>
         <MultiSelector
           :options="projectClusters"
           :array="clustersLabel"

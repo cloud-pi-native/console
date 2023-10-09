@@ -1,4 +1,4 @@
-import { Environment, Project, Role } from '@prisma/client'
+import { Environment, Project, Quota, Role } from '@prisma/client'
 import prisma from '@/prisma.js'
 import { getProjectById } from '../project/queries.js'
 
@@ -75,8 +75,12 @@ export const getProjectByEnvironmentId = async (environmentId: Environment['id']
   return getProjectById(env.projectId)
 }
 
+export const getQuotas = async () => {
+  return prisma.quota.findMany()
+}
+
 // INSERT
-export const initializeEnvironment = async ({ name, projectId, projectOwners }: { name: Environment['name'], projectId: Project['id'], projectOwners: Role[] }) => {
+export const initializeEnvironment = async ({ name, projectId, projectOwners, quotaId }: { name: Environment['name'], projectId: Project['id'], projectOwners: Role[], quotaId: Quota['id'] }) => {
   return prisma.environment.create({
     data: {
       project: {
@@ -85,6 +89,11 @@ export const initializeEnvironment = async ({ name, projectId, projectOwners }: 
         },
       },
       name,
+      quota: {
+        connect: {
+          id: quotaId,
+        },
+      },
       status: 'initializing',
       permissions: {
         createMany: {
@@ -124,6 +133,17 @@ export const updateEnvironmentFailed = async (id: Environment['id']) => {
     },
     data: {
       status: 'failed',
+    },
+  })
+}
+
+export const updateEnvironment = async ({ id, quotaId }: { id: Environment['id'], quotaId: Quota['id'] }) => {
+  return prisma.environment.update({
+    where: {
+      id,
+    },
+    data: {
+      quotaId,
     },
   })
 }

@@ -1,4 +1,4 @@
-import { addLogs, deleteRepository, getProjectInfos, getProjectInfosAndRepos, initializeRepository, lockProject, updateRepository, updateRepositoryCreated, updateRepositoryDeleting, updateRepositoryFailed } from '@/resources/queries-index.js'
+import { addLogs, deleteRepository as deleteRepositoryQuery, getProjectInfos, getProjectInfosAndRepos, initializeRepository, lockProject, updateRepository as updateRepositoryQuery, updateRepositoryCreated, updateRepositoryDeleting, updateRepositoryFailed } from '@/resources/queries-index.js'
 import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import { Project, Repository, User } from '@prisma/client'
 import { projectRootDir } from '@/utils/env.js'
@@ -10,7 +10,7 @@ import { ProjectRoles } from '@dso-console/shared'
 import { checkInsufficientRoleInProject, checkRoleAndLocked } from '@/utils/controller.js'
 import { gitlabUrl } from '@/plugins/core/gitlab/utils.js'
 
-export const getRepositoryByIdBusiness = async (
+export const getRepositoryById = async (
   userId: User['id'],
   projectId: Project['id'],
   repositoryId: Repository['id'],
@@ -21,7 +21,7 @@ export const getRepositoryByIdBusiness = async (
   return repository
 }
 
-export const getProjectRepositoriesBusiness = async (
+export const getProjectRepositories = async (
   userId: User['id'],
   projectId: Project['id'],
 ) => {
@@ -75,7 +75,7 @@ export const checkHookValidation = async (
   }
 }
 
-export const createRepositoryBusiness = async (
+export const createRepository = async (
   projectId: Project['id'],
   data: CreateRepositoryDto['body'],
   userId: User['id'],
@@ -116,7 +116,7 @@ export const createRepositoryBusiness = async (
   }
 }
 
-export const updateRepositoryBusiness = async (
+export const updateRepository = async (
   projectId: Project['id'],
   repositoryId: Repository['id'],
   data: Partial<UpdateRepositoryDto['body']>,
@@ -126,7 +126,7 @@ export const updateRepositoryBusiness = async (
 
   await lockProject(project.id)
 
-  let repo = await updateRepository(repositoryId, data)
+  let repo = await updateRepositoryQuery(repositoryId, data)
 
   try {
     const repoData = {
@@ -151,14 +151,14 @@ export const updateRepositoryBusiness = async (
   }
 }
 
-export const deleteRepositoryBusiness = async (
+export const deleteRepository = async (
   projectId: Project['id'],
   repositoryId: Repository['id'],
   userId: User['id'],
 ) => {
   const project = await getProjectAndcheckRole(userId, projectId, 'owner')
 
-  const repo = await getRepositoryByIdBusiness(userId, projectId, repositoryId)
+  const repo = await getRepositoryById(userId, projectId, repositoryId)
 
   await lockProject(project.id)
 
@@ -179,7 +179,7 @@ export const deleteRepositoryBusiness = async (
     const results = await hooks.deleteRepository.execute(repoData)
     await addLogs('Delete Repository', results, userId)
     if (results.failed) throw new UnprocessableContentError('Echec des opérations', undefined)
-    await deleteRepository(repositoryId)
+    await deleteRepositoryQuery(repositoryId)
     await unlockProjectIfNotFailed(projectId)
   } catch (error) {
     await updateRepositoryFailed(repo.id)

@@ -1,4 +1,4 @@
-import { getOrCreateUser, addLogs, addUserToProject, createUser, deletePermission, getMatchingUsers, getProjectInfos, getProjectUsers, getUserByEmail, getUserById, lockProject, removeUserFromProject, updateProjectFailed, updateUserProjectRole } from '@/resources/queries-index.js'
+import { getOrCreateUser, addLogs, addUserToProject as addUserToProjectQuery, createUser, deletePermission, getMatchingUsers as getMatchingUsersQuery, getProjectInfos as getProjectInfosQuery, getProjectUsers as getProjectUsersQuery, getUserByEmail, getUserById, lockProject, removeUserFromProject as removeUserFromProjectQuery, updateProjectFailed, updateUserProjectRole as updateUserProjectRoleQuery } from '@/resources/queries-index.js'
 import { User, Project } from '@prisma/client'
 import { hooks } from '@/plugins/index.js'
 import { PluginResult } from '@/plugins/hooks/hook.js'
@@ -22,13 +22,13 @@ export const checkProjectLocked = async (project: Project) => {
   if (project.locked) throw new ForbiddenError(projectIsLockedInfo, undefined)
 }
 
-export const getProjectInfosBusiness = async (projectId: Project['id']) => getProjectInfos(projectId)
+export const getProjectInfos = async (projectId: Project['id']) => getProjectInfosQuery(projectId)
 
-export const getProjectUsersBusiness = async (projectId: Project['id']) => getProjectUsers(projectId)
+export const getProjectUsers = async (projectId: Project['id']) => getProjectUsersQuery(projectId)
 
-export const getMatchingUsersBusiness = async (letters: string) => getMatchingUsers(letters)
+export const getMatchingUsers = async (letters: string) => getMatchingUsersQuery(letters)
 
-export const addUserToProjectBusiness = async (
+export const addUserToProject = async (
   project: AsyncReturnType<typeof getProjectInfos>,
   email: User['email'],
   userId: User['id'],
@@ -76,7 +76,7 @@ export const addUserToProjectBusiness = async (
   await lockProject(project.id)
 
   try {
-    await addUserToProject({ project, user: userToAdd, role: 'user' })
+    await addUserToProjectQuery({ project, user: userToAdd, role: 'user' })
 
     const results = await hooks.addUserToProject.execute(kcData)
     await addLogs('Add Project Member', results, userId)
@@ -89,17 +89,17 @@ export const addUserToProjectBusiness = async (
   }
 }
 
-export const updateUserProjectRoleBusiness = async (
+export const updateUserProjectRole = async (
   userToUpdateId: User['id'],
   project: AsyncReturnType<typeof getProjectInfos>,
   role: ProjectRoles,
 ) => {
   if (project.roles.filter(projectUser => projectUser.userId === userToUpdateId).length === 0) throw new BadRequestError('L\'utilisateur ne fait pas partie du projet', undefined)
 
-  await updateUserProjectRole(userToUpdateId, project.id, role)
+  await updateUserProjectRoleQuery(userToUpdateId, project.id, role)
 }
 
-export const removeUserFromProjectBusiness = async (
+export const removeUserFromProject = async (
   userToRemoveId: User['id'],
   project: AsyncReturnType<typeof getProjectInfos>,
   userId: User['id'],
@@ -132,7 +132,7 @@ export const removeUserFromProjectBusiness = async (
     project.environments.forEach(async env => {
       await deletePermission(userToRemoveId, env.id)
     })
-    await removeUserFromProject({ projectId: project.id, userId: userToRemoveId })
+    await removeUserFromProjectQuery({ projectId: project.id, userId: userToRemoveId })
 
     const results = await hooks.removeUserFromProject.execute(kcData)
     await addLogs('Remove User from Project', results, userId)
