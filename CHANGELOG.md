@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.11.0](https://github.com/cloud-pi-native/console/compare/v5.10.0...v5.11.0) (2023-10-09)
+
+
+### Features
+
+* :sparkles: add quotas selection for environment ([bb97f5f](https://github.com/cloud-pi-native/console/commit/bb97f5f17c5e7b497eccb655a6eb5da692f7df73))
+
 ## [5.10.0](https://github.com/cloud-pi-native/console/compare/v5.9.1...v5.10.0) (2023-10-03)
 
 
