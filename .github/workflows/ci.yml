@@ -91,8 +91,8 @@ jobs:
       REGISTRY: ${{ needs.expose-vars.outputs.REGISTRY }}
       NAMESPACE: ${{ needs.expose-vars.outputs.NAMESPACE }}
       TAG: pr-${{ github.event.pull_request.number || github.event.number }}
-      MULTI_ARCH: ${{ needs.expose-vars.outputs.MULTI_ARCH }}
-      USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU }}
+      MULTI_ARCH: ${{ needs.expose-vars.outputs.MULTI_ARCH == 'true' }}
+      USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU == 'true' }}
 
   e2e-tests:
     uses: ./.github/workflows/tests-e2e.yml

@@ -12,7 +12,7 @@ on:
 
 jobs:
   lint:
-    name: Lint project codebase
+    name: Lint codebase
     runs-on: ubuntu-latest
     steps:
       - name: Checks-out repository
