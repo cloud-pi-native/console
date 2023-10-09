@@ -33,7 +33,6 @@ defineEmits(['updateLevel'])
     <label
       v-if="props.label"
       for="range"
-      class="fr-label"
     >
       {{ label }}
       <span
@@ -53,7 +52,7 @@ defineEmits(['updateLevel'])
         min="0"
         :step="props.step"
         :max="props.levels.length - 1"
-        @input="$emit('updateLevel', $event.target?.value ?? 0)"
+        @update:model-value="$emit('updateLevel', $event)"
       >
       <datalist
         id="rangeList"
@@ -72,6 +71,8 @@ defineEmits(['updateLevel'])
 
 <style scoped>
 .range-input {
+  @apply md:w-30rem;
+
   appearance: auto;
 }
 
