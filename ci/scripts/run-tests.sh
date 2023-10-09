@@ -124,9 +124,11 @@ if [ "$RUN_E2E_TESTS" == "true" ]; then
   printf "\n${red}${i}.${no_color} Launch e2e tests\n"
   i=$(($i + 1))
 
+  npm --prefix $PROJECT_DIR/packages/shared run build
+  npm --prefix $PROJECT_DIR/packages/test-utils run build
   ./ci/kind/run.sh -i -d console.dso.local,keycloak.dso.local,pgadmin.dso.local
   ./ci/kind/run.sh -c create,prod -t $TAG
-  npm --prefix $PROJECT_DIR/apps/client run test:e2e-ci
+  CLIENT_HOST=console.dso.local CLIENT_PORT=80 npm --prefix $PROJECT_DIR/apps/client run test:e2e-ci
 
   printf "\n${red}${i}.${no_color} Remove resources\n"
   i=$(($i + 1))

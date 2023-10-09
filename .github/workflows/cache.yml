@@ -63,7 +63,7 @@ jobs:
       - name: Delete ${{ matrix.images.name }} image
         run: |
           ./ci/scripts/delete-image.sh \
-            -o "${{ github.event.repository.owner }}" \
+            -o "${{ github.event.repository.owner.name }}" \
             -i "${{ github.event.repository.name }}/${{ matrix.images.name }}" \
             -t "pr-${{ github.event.pull_request.number || github.event.number }}" \
             -g "${{ secrets.GITHUB_TOKEN }}"

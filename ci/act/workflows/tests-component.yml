@@ -45,6 +45,8 @@ jobs:
         with:
           path: ~/.cache/Cypress
           key: cypress-binary-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            cypress-binary-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

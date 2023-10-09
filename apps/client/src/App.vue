@@ -16,7 +16,7 @@ const isLoggedIn: Ref<boolean | undefined> = ref(keycloak.authenticated)
 const label: Ref<string> = ref(isLoggedIn.value ? 'Se déconnecter' : 'Se connecter')
 const to: Ref<string> = ref(isLoggedIn.value ? '/logout' : '/login')
 const intervalId: Ref<number | undefined> = ref(undefined)
-const appVersion: string = process.env.APP_VERSION ? `v${process.env.APP_VERSION}` : 'v-dev'
+const appVersion: string = process.env.APP_VERSION ? `v${process.env.APP_VERSION}` : 'vpr-dev'
 
 const quickLinks = ref([{
   label,
