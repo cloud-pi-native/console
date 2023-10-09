@@ -3,7 +3,6 @@ import { setActivePinia, createPinia } from 'pinia'
 import { apiClient } from '../api/xhr-client.js'
 import { useProjectEnvironmentStore } from './project-environment.js'
 
-const apiClientGet = vi.spyOn(apiClient, 'get')
 const apiClientPost = vi.spyOn(apiClient, 'post')
 const apiClientDelete = vi.spyOn(apiClient, 'delete')
 
@@ -20,16 +19,6 @@ describe('Counter Store', () => {
     // creates a fresh pinia and make it active so it's automatically picked
     // up by any useStore() call without having to pass it to it: `useStore(pinia)`
     setActivePinia(createPinia())
-  })
-
-  it('Should get environment quotas by api call', async () => {
-    apiClientGet.mockReturnValueOnce(Promise.resolve({ data: [] }))
-    const projectEnvironmentStore = useProjectEnvironmentStore()
-
-    await projectEnvironmentStore.getQuotas()
-
-    expect(apiClientGet).toHaveBeenCalledTimes(1)
-    expect(apiClientGet.mock.calls[0][0]).toEqual('/projects/environments/quotas')
   })
 
   it('Should add a project environment by api call', async () => {

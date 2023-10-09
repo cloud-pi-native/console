@@ -5,6 +5,5 @@ export type EnvironmentModel = {
   id: string
   name: typeof allEnv[number]
   projectId: ProjectModel['id']
-  quotaId: string
   status: typeof projectStatus[number]
 }

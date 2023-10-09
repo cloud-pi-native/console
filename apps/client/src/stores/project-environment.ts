@@ -25,14 +25,9 @@ export const useProjectEnvironmentStore = defineStore('project-environment', () 
     await projectStore.getUserProjects()
   }
 
-  const getQuotas = async () => {
-    return api.getQuotas()
-  }
-
   return {
     addEnvironmentToProject,
     updateEnvironment,
     deleteEnvironment,
-    getQuotas,
   }
 })
