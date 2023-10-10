@@ -1,19 +1,12 @@
 # Changelog
 
-## [5.11.0](https://github.com/cloud-pi-native/console/compare/v5.10.0...v5.11.0) (2023-10-10)
-
-
-### Features
-
-* :sparkles: add quotas selection for environment ([bb97f5f](https://github.com/cloud-pi-native/console/commit/bb97f5f17c5e7b497eccb655a6eb5da692f7df73))
-
+## [5.10.1](https://github.com/cloud-pi-native/console/compare/v5.10.0...v5.10.1) (2023-10-10)
 
 ### Bug Fixes
 
 * :ambulance: send internalRepoName to plugins on updateRepository hook ([2bde004](https://github.com/cloud-pi-native/console/commit/2bde0045592f2898975633c0c6f959311234f7f3))
 
 ## [5.10.0](https://github.com/cloud-pi-native/console/compare/v5.9.1...v5.10.0) (2023-10-03)
-
 
 ### Features
 
@@ -22,18 +15,15 @@
 
 ## [5.9.1](https://github.com/cloud-pi-native/console/compare/v5.9.0...v5.9.1) (2023-09-28)
 
-
 ### Bug Fixes
 
 * :bug: fix not updated argocd cluster and not using insecure in config ([69e7a9a](https://github.com/cloud-pi-native/console/commit/69e7a9ac7a584d76ce047b8330356ce2387218d7))
 
 ## [5.9.0](https://github.com/cloud-pi-native/console/compare/v5.8.2...v5.9.0) (2023-09-25)
 
-
 ### Features
 
 * :technologist: add swagger for server api ([abe15d2](https://github.com/cloud-pi-native/console/commit/abe15d2ceb93039ecd795389156f8730e5327841))
-
 
 ### Bug Fixes
 
@@ -42,13 +32,11 @@
 
 ## [5.8.2](https://github.com/cloud-pi-native/console/compare/v5.8.1...v5.8.2) (2023-09-20)
 
-
 ### Bug Fixes
 
 * :wrench: handle no values for disabledPlugins ([d0d46a3](https://github.com/cloud-pi-native/console/commit/d0d46a38570db6f626f5879da180829216826fa8))
 
 ## [5.8.1](https://github.com/cloud-pi-native/console/compare/v5.8.0...v5.8.1) (2023-09-18)
-
 
 ### Bug Fixes
 
@@ -56,14 +44,12 @@
 
 ## [5.8.0](https://github.com/cloud-pi-native/console/compare/v5.7.0...v5.8.0) (2023-09-18)
 
-
 ### Features
 
 * :passport_control: update harbor project member role ([4419dd5](https://github.com/cloud-pi-native/console/commit/4419dd5f395f79a9eb99e8c0f305a7433ad84f7e))
 * :sparkles: add infos key for cluster ([25ab8b8](https://github.com/cloud-pi-native/console/commit/25ab8b8d821c37f4491bd8fea075bdc7fbfcfc93))
 * :sparkles: add tlsServerName input in cluster form ([4bdc01e](https://github.com/cloud-pi-native/console/commit/4bdc01ef9dd5b2041a34491e46b9759e5c6652f0))
 * :technologist: add images auto-scan to harbor settings ([507c6e6](https://github.com/cloud-pi-native/console/commit/507c6e6a541b19502084276db30cf834e586d955))
-
 
 ### Bug Fixes
 
@@ -74,13 +60,11 @@
 * :goal_net: throw error if catched in business ([1790ec2](https://github.com/cloud-pi-native/console/commit/1790ec274e965d5d62a0693937eec5ee765602e2))
 * :heavy_plus_sign: fix pnpm-lock file ([93aa64e](https://github.com/cloud-pi-native/console/commit/93aa64e146e11f30c8305f85d7ff03b696b0297b))
 
-
 ### Reverts
 
 * :poop: comment harbor projet member role update ([63926ae](https://github.com/cloud-pi-native/console/commit/63926ae9c5a5fe6b9e6e8a2d0007f55d186b0f36))
 
 ## [5.7.0](https://github.com/cloud-pi-native/console/compare/v5.6.0...v5.7.0) (2023-09-07)
-
 
 ### Features
 
@@ -89,12 +73,10 @@
 * :safety_vest: update password character support ([c82f35f](https://github.com/cloud-pi-native/console/commit/c82f35fb7f20ad06c0a63eb518407d17ddb88b51))
 * :sparkles: handle gitlab membership ([7ff68bd](https://github.com/cloud-pi-native/console/commit/7ff68bdf8f9a16562cfc00fbdb0c322b0f09943d))
 
-
 ### Bug Fixes
 
 * :bug: change appproject policy ([e20b6c4](https://github.com/cloud-pi-native/console/commit/e20b6c431348b08bed7ea215a967c51d0e6187f0))
 * :bug: import new shared package ([ff0b0db](https://github.com/cloud-pi-native/console/commit/ff0b0db9dcc96c10b409b51bd4180c03b5b01478))
-
 
 ### Reverts
 
@@ -103,11 +85,9 @@
 
 ## [5.6.0](https://github.com/cloud-pi-native/console/compare/v5.5.0...v5.6.0) (2023-08-28)
 
-
 ### Features
 
 * :sparkles: better integration of sonarqube ([c0a0517](https://github.com/cloud-pi-native/console/commit/c0a05173a158b74d752aafaccdff58fc3b29c382))
-
 
 ### Bug Fixes
 
@@ -118,19 +98,16 @@
 * :lipstick: fix padding ([907d424](https://github.com/cloud-pi-native/console/commit/907d424a94f2dfc7e7110882438130bdb5dc4cd8))
 * :lipstick: restyle logs interface ([fc362cf](https://github.com/cloud-pi-native/console/commit/fc362cf461c65f6e4e8e7b6b2d92c83a41844bdf))
 
-
 ### Performance Improvements
 
 * :construction: skip failing test for merge ([a7925dc](https://github.com/cloud-pi-native/console/commit/a7925dcfbaaf1b1727e8cdede06bf9c24d89cad8))
 
 ## [5.5.0](https://github.com/cloud-pi-native/console/compare/v5.4.0...v5.5.0) (2023-08-22)
 
-
 ### Features
 
 * :children_crossing: inform users that clipboard works only with https ([909c3b6](https://github.com/cloud-pi-native/console/commit/909c3b672bcae1401d2133c8fff94cdca91f61bc))
 * :sparkles: retrieve user from kc if does not exist in db ([3d4461a](https://github.com/cloud-pi-native/console/commit/3d4461ae7d82e6f64a1644921893d89f41e9a2d9))
-
 
 ### Bug Fixes
 
@@ -148,12 +125,10 @@
 
 ## [5.4.0](https://github.com/cloud-pi-native/console/compare/v5.3.0...v5.4.0) (2023-08-02)
 
-
 ### Features
 
 * :children_crossing: improve home page and update doc link ([038d982](https://github.com/cloud-pi-native/console/commit/038d982ead7bbfa70debdf902d5c46e8518c1e60))
 * :sparkles: add or remove a team member via keycloak ([0563d20](https://github.com/cloud-pi-native/console/commit/0563d20ca93a25decc7dbb5d945e2b738b0d575a))
-
 
 ### Bug Fixes
 
@@ -161,13 +136,11 @@
 
 ## [5.3.0](https://github.com/cloud-pi-native/console/compare/v5.2.1...v5.3.0) (2023-08-01)
 
-
 ### Features
 
 * :alien: synch controllers with plugin calls ([d0a271d](https://github.com/cloud-pi-native/console/commit/d0a271d188840d8682b6abe412ee8da4db7992b1))
 * :children_crossing: add confirm box for updating an organization ([5c3cd20](https://github.com/cloud-pi-native/console/commit/5c3cd207221a22ed5d93bdf8638b23c9849897f6))
 * :sparkles: lock and unlock projects according to their org status ([3b9444a](https://github.com/cloud-pi-native/console/commit/3b9444aeaa2fab76461946e9a4d00e8afe4a62f1))
-
 
 ### Bug Fixes
 
@@ -177,19 +150,16 @@
 
 ## [5.2.1](https://github.com/cloud-pi-native/console/compare/v5.2.0...v5.2.1) (2023-07-21)
 
-
 ### Bug Fixes
 
 * :adhesive_bandage: update kaniko stage name in gitlab ci ([7a71712](https://github.com/cloud-pi-native/console/commit/7a71712075d7aed5aeeb00adb1d2ec51b6d717ab))
 
 ## [5.2.0](https://github.com/cloud-pi-native/console/compare/v5.1.0...v5.2.0) (2023-07-20)
 
-
 ### Features
 
 * :children_crossing: improve gitlab mirroring by using a single mirror repo ([914bbe4](https://github.com/cloud-pi-native/console/commit/914bbe4546a3e876a6cd8847523f18e95d688d44))
 * :sparkles: add id in admin user table ([d1ebcea](https://github.com/cloud-pi-native/console/commit/d1ebcea1768993b6ab31e5f45a6642ac3577cfc5))
-
 
 ### Bug Fixes
 
@@ -199,12 +169,10 @@
 
 ## [5.1.0](https://github.com/cloud-pi-native/console/compare/v5.0.0...v5.1.0) (2023-07-18)
 
-
 ### Features
 
 * :alien: add project infos for canel plugin ([a4516a1](https://github.com/cloud-pi-native/console/commit/a4516a14b2439dd3a74540168aee6daa586c7308))
 * :alien: add updateProject hook for description update for example ([7e97505](https://github.com/cloud-pi-native/console/commit/7e97505b5a75c3f6c680d5b1bb6f18a9e45b87b3))
-
 
 ### Bug Fixes
 
@@ -213,7 +181,6 @@
 * :bug: missing await before plugins hook and logs recording on archiveProject ([2515c62](https://github.com/cloud-pi-native/console/commit/2515c624afd1d89718a98085c5e41c1c996157b8))
 
 ## [5.0.0](https://github.com/cloud-pi-native/console/compare/v4.1.0...v5.0.0) (2023-07-13)
-
 
 ### ⚠ BREAKING CHANGES
 
@@ -226,7 +193,6 @@
 * :sparkles: always show ci form ([753d64b](https://github.com/cloud-pi-native/console/commit/753d64bc011701dcc9297097b1a0aec87cef6c03))
 * :tada: introduce multi-cluster deployment ([0e6c065](https://github.com/cloud-pi-native/console/commit/0e6c065d421c117050e00944ca68114414a05dc7))
 * :technologist: add config for codespace ([1ff7996](https://github.com/cloud-pi-native/console/commit/1ff79966454be7961ba80049be65815cfce1d4cf))
-
 
 ### Bug Fixes
 
@@ -242,18 +208,15 @@
 * :construction: in progress ([2150961](https://github.com/cloud-pi-native/console/commit/2150961433d0b097100ea62cf1fd7be49fbb4571))
 * :lipstick: more contrasted icon color for archived project ([790d276](https://github.com/cloud-pi-native/console/commit/790d2761d3f77756144172e3ccd80bcb0df4572d))
 
-
 ### Code Refactoring
 
 * :boom: migrate from sequelize to prisma ([37b065d](https://github.com/cloud-pi-native/console/commit/37b065d6cff844dfd1b9d2276831eddefa64a71e))
 
 ## [4.1.0](https://github.com/cloud-pi-native/console/compare/v4.0.0...v4.1.0) (2023-06-12)
 
-
 ### Features
 
 * :sparkles: add admin log page ([41058ee](https://github.com/cloud-pi-native/console/commit/41058ee51899d4ec351ae7adad10eb3fefa99f8b))
-
 
 ### Bug Fixes
 
@@ -262,7 +225,6 @@
 * :zap: gitlab, stabilize user search and lifecycle ([179c912](https://github.com/cloud-pi-native/console/commit/179c91269ecf04ff6a489a5d92f490b940446e70))
 
 ## [4.0.0](https://github.com/dnum-mi/dso-console/compare/v3.4.1...v4.0.0) (2023-06-08)
-
 
 ### ⚠ BREAKING CHANGES
 
@@ -281,7 +243,6 @@
 * :necktie: allow only one plugin to register on hook fetchOrganizations ([6ccd985](https://github.com/dnum-mi/dso-console/commit/6ccd9855fc8713043a9f24687cfe07d105540c91))
 * :sparkles: add project admin view ([b49ff96](https://github.com/dnum-mi/dso-console/commit/b49ff967853e31ca6cbcd8cd2ff78b299023788e))
 
-
 ### Bug Fixes
 
 * :art: temp fix labels, add check, refacto get ns ([a43f50c](https://github.com/dnum-mi/dso-console/commit/a43f50cb93b2453f025b9d4284f2b65b6134161a))
@@ -289,13 +250,11 @@
 * :bug: remove harbor repos before projects ([7239329](https://github.com/dnum-mi/dso-console/commit/72393297dcfaf44938e2814cccfd8366613ba75c))
 * :necktie: clarify business logic on status and locking ([8548d6e](https://github.com/dnum-mi/dso-console/commit/8548d6e0d654673789bdebba31237fa98a86788a))
 
-
 ### Code Refactoring
 
 * :boom: clarify business logic on status and locking ([8548d6e](https://github.com/dnum-mi/dso-console/commit/8548d6e0d654673789bdebba31237fa98a86788a))
 
 ## [3.4.1](https://github.com/dnum-mi/dso-console/compare/v3.4.0...v3.4.1) (2023-05-22)
-
 
 ### Bug Fixes
 
@@ -304,13 +263,11 @@
 
 ## [3.4.0](https://github.com/dnum-mi/dso-console/compare/v3.3.1...v3.4.0) (2023-05-15)
 
-
 ### Features
 
 * :alien: owner name is required to create Canel user ([e4aa5e9](https://github.com/dnum-mi/dso-console/commit/e4aa5e9662fb0494ef43b7f52140c9c11702613f))
 
 ## [3.3.1](https://github.com/dnum-mi/dso-console/compare/v3.3.0...v3.3.1) (2023-05-11)
-
 
 ### Bug Fixes
 
@@ -318,11 +275,9 @@
 
 ## [3.3.0](https://github.com/dnum-mi/dso-console/compare/v3.2.3...v3.3.0) (2023-05-11)
 
-
 ### Features
 
 * :sparkles: add organization page for admins ([5e6b7fa](https://github.com/dnum-mi/dso-console/commit/5e6b7fa252285b432ef5869aedf8881b642eff53))
-
 
 ### Bug Fixes
 
@@ -331,20 +286,17 @@
 
 ## [3.2.3](https://github.com/dnum-mi/dso-console/compare/v3.2.2...v3.2.3) (2023-05-09)
 
-
 ### Bug Fixes
 
 * :ambulance: keycloak group id, typo ([1aedf77](https://github.com/dnum-mi/dso-console/commit/1aedf77b4a74698bb1d52cbfe6863bd249a7eadb))
 
 ## [3.2.2](https://github.com/dnum-mi/dso-console/compare/v3.2.1...v3.2.2) (2023-05-09)
 
-
 ### Bug Fixes
 
 * :ambulance: missing ownerid at env init ([14696ff](https://github.com/dnum-mi/dso-console/commit/14696ffc24a2bfe5345b135e99f48502ba0d2fae))
 
 ## [3.2.1](https://github.com/dnum-mi/dso-console/compare/v3.2.0...v3.2.1) (2023-05-09)
-
 
 ### Bug Fixes
 
@@ -353,14 +305,12 @@
 
 ## [3.2.0](https://github.com/dnum-mi/dso-console/compare/v3.1.0...v3.2.0) (2023-05-05)
 
-
 ### Features
 
 * :lipstick: better ui for permission form ([56e0739](https://github.com/dnum-mi/dso-console/commit/56e0739d935d96c4eedd55807151f72f8fafcb6b))
 * :sparkles: add description field for a project ([e9d65ed](https://github.com/dnum-mi/dso-console/commit/e9d65eda3084ac46b48f8e7a4a7e78324cf8d351))
 * :sparkles: add download link for includes.zip ([0e067d1](https://github.com/dnum-mi/dso-console/commit/0e067d1965e39084d3f21191e27aa3b82948df17))
 * :sparkles: introduce users admin view ([34ffbf7](https://github.com/dnum-mi/dso-console/commit/34ffbf735c6d5e103a3814a0cd739242efc77240))
-
 
 ### Bug Fixes
 
@@ -372,13 +322,11 @@
 * :loud_sound: log database sync error ([3e73dac](https://github.com/dnum-mi/dso-console/commit/3e73dac0fc470051c5aaf410ebbbf28cafc9ee0e))
 * :wrench: update helm values ([16d3223](https://github.com/dnum-mi/dso-console/commit/16d32233c84001b8aa206a76b8ac3b772875cb64))
 
-
 ### Performance Improvements
 
 * :art: admin users no custom exception ([34ffbf7](https://github.com/dnum-mi/dso-console/commit/34ffbf735c6d5e103a3814a0cd739242efc77240))
 
 ## [3.1.0](https://github.com/dnum-mi/dso-console/compare/v3.0.0...v3.1.0) (2023-04-18)
-
 
 ### Features
 
@@ -386,14 +334,12 @@
 * :sparkles: add custom ca to server ([8583577](https://github.com/dnum-mi/dso-console/commit/85835775d1bf21dfadffe5094dc1a513d6782525))
 * :sparkles: introduce environment management page ([3e77a67](https://github.com/dnum-mi/dso-console/commit/3e77a679446853b981d9bf98f1bd62795ce5cf1d))
 
-
 ### Bug Fixes
 
 * :bug: fix git output url ([e3402b4](https://github.com/dnum-mi/dso-console/commit/e3402b44dddbd71805293305df181321af04dafe))
 * :bug: forget delete mirror repository secret ([f00aac7](https://github.com/dnum-mi/dso-console/commit/f00aac7f6315a1f27ee05ebaa6863feb466ac654))
 
 ## [3.0.0](https://github.com/dnum-mi/dso-console/compare/v2.3.0...v3.0.0) (2023-04-14)
-
 
 ### ⚠ BREAKING CHANGES
 
@@ -409,7 +355,6 @@
 * :loud_sound: add a short description for database logging ([4146f5a](https://github.com/dnum-mi/dso-console/commit/4146f5ae7048fa280a654b5471a32968af159b2f))
 * :technologist: do not drop database in integration dev ([521d503](https://github.com/dnum-mi/dso-console/commit/521d503cdf5e2c24f9e148bc6435db485e1252e7))
 
-
 ### Bug Fixes
 
 * :ambulance: add kaniko proxy ([1564b6f](https://github.com/dnum-mi/dso-console/commit/1564b6f7a696c13846799b38557b1003d2cb87c8))
@@ -420,13 +365,11 @@
 * :lipstick: make snackbar bakground -color adaptive to theme variations ([851a004](https://github.com/dnum-mi/dso-console/commit/851a004837eb901d02bbf65e20697e457ecde6e2))
 * :wrench: rename kubeconfig var ([61fdfbf](https://github.com/dnum-mi/dso-console/commit/61fdfbf3bb47b51225d2cf3c00b167c46ff1bedf))
 
-
 ### Code Refactoring
 
 * **api:** :building_construction: replace ansible with plugins ([59cd5fe](https://github.com/dnum-mi/dso-console/commit/59cd5fef0799ff3dd5df7ec42ef879647a6de78a))
 
 ## [2.3.0](https://github.com/dnum-mi/dso-console/compare/v2.2.1...v2.3.0) (2023-03-22)
-
 
 ### Features
 
@@ -436,18 +379,15 @@
 * :sparkles: build project services url in api ([2173f8a](https://github.com/dnum-mi/dso-console/commit/2173f8abade9848c83cc68e4a68da02982d4a887))
 * :sparkles: new page dedicated to services ([2febba2](https://github.com/dnum-mi/dso-console/commit/2febba22bbed8355d2ea516cd232f6c47ca1a212))
 
-
 ### Bug Fixes
 
 * :bug: fix container env ([f9fd457](https://github.com/dnum-mi/dso-console/commit/f9fd45715d94789e02d8c88991b02fe9831e4460))
 
 ## [2.2.1](https://github.com/dnum-mi/dso-console/compare/v2.2.0...v2.2.1) (2023-03-14)
 
-
 ### Bug Fixes
 
 * :bug: token should authorize "-" ([277f292](https://github.com/dnum-mi/dso-console/commit/277f29232fd5713c0a6e5c42f29ba257b71cdb75))
-
 
 ### Performance Improvements
 
@@ -455,11 +395,9 @@
 
 ## [2.2.0](https://github.com/dnum-mi/dso-console/compare/v2.1.1...v2.2.0) (2023-03-13)
 
-
 ### Features
 
 * :sparkles: display project and repositories statuses in dashboard and repo pages ([ba27167](https://github.com/dnum-mi/dso-console/commit/ba2716798e8d39e5470b6fe0e97acc3a54480612))
-
 
 ### Bug Fixes
 
@@ -467,20 +405,17 @@
 * :bug: do nothing when tile is disabled ([e09043c](https://github.com/dnum-mi/dso-console/commit/e09043c34a21315abd8c0c3d1570488057a3d1a6))
 * :bug: wrong key for project archived ([8e6b27b](https://github.com/dnum-mi/dso-console/commit/8e6b27b576e7ad28bde1b8a00b84acf366531993))
 
-
 ### Performance Improvements
 
 * :fire: no external token in database, no crypto needed ([0a3fb8c](https://github.com/dnum-mi/dso-console/commit/0a3fb8c5403215e1ae3d24fb8ea7cfcf43a8060f))
 
 ## [2.1.1](https://github.com/dnum-mi/dso-console/compare/v2.1.0...v2.1.1) (2023-02-27)
 
-
 ### Bug Fixes
 
 * :globe_with_meridians: translate error messages in french ([a2827c3](https://github.com/dnum-mi/dso-console/commit/a2827c3746aad94293de183725bd2e77ac34f525))
 
 ## [2.1.0](https://github.com/dnum-mi/dso-console/compare/v2.0.0...v2.1.0) (2023-02-27)
-
 
 ### Features
 
@@ -490,7 +425,6 @@
 * :necktie: add constraint for project name length ([f2d3975](https://github.com/dnum-mi/dso-console/commit/f2d3975f8cf5124142edc38a64f219ac9a223985))
 * :sparkles: add snackbar to handle errors ([0b5fa71](https://github.com/dnum-mi/dso-console/commit/0b5fa71b5d993fb7529f4fa2b74d78dacb0b33d3))
 * add active column on organization table, and client get only active: true ([de7b9d0](https://github.com/dnum-mi/dso-console/commit/de7b9d01bf878ee1cf298736e83410905390a5a3))
-
 
 ### Bug Fixes
 
@@ -505,13 +439,11 @@
 * :truck: rename generated gitlab ci file ([d3e637e](https://github.com/dnum-mi/dso-console/commit/d3e637e04ef008c5316b7e720a9fc905c0ab0000))
 * :wrench: update postgres image ([16e5d55](https://github.com/dnum-mi/dso-console/commit/16e5d557c52e149def7f7c216371ba23fc721bbf))
 
-
 ### Reverts
 
 * :rewind: rebase error ([728a704](https://github.com/dnum-mi/dso-console/commit/728a704522a3f5cfcc2dc5879671a83a051a82c6))
 
 ## [2.0.0](https://github.com/dnum-mi/dso-console/compare/v1.0.0...v2.0.0) (2023-02-22)
-
 
 ### ⚠ BREAKING CHANGES
 
@@ -572,7 +504,6 @@
 * **Helm:** :art: add env per container ([48b41cf](https://github.com/dnum-mi/dso-console/commit/48b41cfea037ce90812197990c54d2726fb75ac7))
 * **Helm:** :art: variabilize server imports ([0973646](https://github.com/dnum-mi/dso-console/commit/09736463d3011f96348f94cf3ad8cc69c9c0f07e))
 
-
 ### Bug Fixes
 
 * :alembic: changement du keycloak flow ([1af0d85](https://github.com/dnum-mi/dso-console/commit/1af0d8504766f3f0ebab92feff8f4795e4e1c67e))
@@ -629,25 +560,21 @@
 * :truck: fix generateCIFiles feature ([b547548](https://github.com/dnum-mi/dso-console/commit/b547548fbe70955c2131901509be0b929eb9b549))
 * :truck: rename folder for generating files ([b547548](https://github.com/dnum-mi/dso-console/commit/b547548fbe70955c2131901509be0b929eb9b549))
 
-
 ### Performance Improvements
 
 * :art: use map instead of forEach for array generation ([03c78fa](https://github.com/dnum-mi/dso-console/commit/03c78fa5f28bb86fad7e3e1b142a1c71d1639054))
 * :stethoscope: add health probes in templates ([d645f2e](https://github.com/dnum-mi/dso-console/commit/d645f2e35460ba92a67aeb0ea65ac9356ed36381))
-
 
 ### Reverts
 
 * :egg: hide environments and permissions feature waiting for playbooks ([edebee9](https://github.com/dnum-mi/dso-console/commit/edebee944905f5723518aaca0c37a51deeac80a6))
 * :rewind: hide snackbar for now ([6afe9e8](https://github.com/dnum-mi/dso-console/commit/6afe9e81bc5b32cb544456d7e697be66ea0349be))
 
-
 ### Code Refactoring
 
 * **database:** :card_file_box: new database model, queries, ([b547548](https://github.com/dnum-mi/dso-console/commit/b547548fbe70955c2131901509be0b929eb9b549))
 
 ## 1.0.0 (2022-12-16)
-
 
 ### Features
 
@@ -741,7 +668,6 @@
 * **projectInit:** :heavy_plus_sign: Add Stylelint ([21f33e0](https://github.com/dnum-mi/dso-console/commit/21f33e0554b04932a35ca723934c24bd93122513))
 * **projectInit:** :tada: Vite vue3 basic installation ([41aeb82](https://github.com/dnum-mi/dso-console/commit/41aeb824d02ba387bc8c842b07351fd55b221782))
 
-
 ### Bug Fixes
 
 * :alembic: edit code to run with new ansible directories ([8822d95](https://github.com/dnum-mi/dso-console/commit/8822d953e93db6f4ddc00383e7ad4a8c01e8cbaf))
@@ -808,7 +734,6 @@
 * update gitignore for all node_modules ([3988743](https://github.com/dnum-mi/dso-console/commit/39887438eceefe4b08b80ad056f2992baaf78494))
 * update implicit flow in  config keycloak ([06d2f77](https://github.com/dnum-mi/dso-console/commit/06d2f77fcc07db2de780867b0bda1f49294b349e))
 * update pnpm lock ([344261d](https://github.com/dnum-mi/dso-console/commit/344261d2e1b37e8df9eed0cca90ed8e21697d17a))
-
 
 ### Reverts
 
