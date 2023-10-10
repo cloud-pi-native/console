@@ -1,5 +1,17 @@
 # Changelog
 
+## [5.11.0](https://github.com/cloud-pi-native/console/compare/v5.10.0...v5.11.0) (2023-10-10)
+
+
+### Features
+
+* :sparkles: add quotas selection for environment ([bb97f5f](https://github.com/cloud-pi-native/console/commit/bb97f5f17c5e7b497eccb655a6eb5da692f7df73))
+
+
+### Bug Fixes
+
+* :ambulance: send internalRepoName to plugins on updateRepository hook ([2bde004](https://github.com/cloud-pi-native/console/commit/2bde0045592f2898975633c0c6f959311234f7f3))
+
 ## [5.10.0](https://github.com/cloud-pi-native/console/compare/v5.9.1...v5.10.0) (2023-10-03)
 
 
