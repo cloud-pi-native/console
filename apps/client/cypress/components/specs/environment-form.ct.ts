@@ -10,46 +10,16 @@ import EnvironmentForm from '@/components/EnvironmentForm.vue'
 import { createRandomDbSetup } from '@dso-console/test-utils'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
+import { getModel } from '../../e2e/support/func'
 
 describe('EnvironmentForm.vue', () => {
+  const stages = getModel('stage')
+
   it('Should mount a EnvironmentForm', () => {
     const randomDbSetup = createRandomDbSetup({ envs: [] })
 
     cy.intercept('GET', 'api/v1/projects/environments/quotas', {
-      body: [
-        {
-          id: '1b47ed30-c595-45a6-880d-22072c0650f0',
-          flavor: 'micro',
-          allowedEnvIds: randomDbSetup.dsoEnvironments.map(dsoEnvironment => dsoEnvironment.id),
-          compute: '2vcpu / 4Gb ram',
-          createdAt: '2023-07-03T14:46:56.758Z',
-          updatedAt: '2023-07-03T14:46:56.758Z',
-        },
-        {
-          id: '1b47ed30-c595-45a6-880d-22072c0650f1',
-          flavor: 'small',
-          allowedEnvIds: randomDbSetup.dsoEnvironments.map(dsoEnvironment => dsoEnvironment.id),
-          compute: '4vcpu / 8Gb ram',
-          createdAt: '2023-07-03T14:46:56.758Z',
-          updatedAt: '2023-07-03T14:46:56.758Z',
-        },
-        {
-          id: '1b47ed30-c595-45a6-880d-22072c0650f2',
-          flavor: 'medium',
-          allowedEnvIds: randomDbSetup.dsoEnvironments.map(dsoEnvironment => dsoEnvironment.id).slice(2),
-          compute: '6vcpu / 12Gb ram',
-          createdAt: '2023-07-03T14:46:56.758Z',
-          updatedAt: '2023-07-03T14:46:56.758Z',
-        },
-        {
-          id: '1b47ed30-c595-45a6-880d-22072c0650f3',
-          flavor: 'large',
-          allowedEnvIds: randomDbSetup.dsoEnvironments.map(dsoEnvironment => dsoEnvironment.id).slice(2),
-          compute: '8vcpu / 16Gb ram',
-          createdAt: '2023-07-03T14:46:56.758Z',
-          updatedAt: '2023-07-03T14:46:56.758Z',
-        },
-      ],
+      body: stages,
     }).as('getQuotas')
 
     const pinia = createPinia()
@@ -61,10 +31,10 @@ describe('EnvironmentForm.vue', () => {
     const props = {
       environment: {
         projectId: randomDbSetup.project.id,
-        dsoEnvironmentId: randomDbSetup.dsoEnvironments[0].id,
+        stageId: randomDbSetup.stages[0].id,
         quotaId: '1b47ed30-c595-45a6-880d-22072c0650f1',
       },
-      allDsoEnvironments: randomDbSetup.dsoEnvironments,
+      allStages: randomDbSetup.stages,
       isEditable: true,
 
     }
@@ -89,7 +59,7 @@ describe('EnvironmentForm.vue', () => {
     cy.get('h1').should('contain', 'Ajouter un environnement au projet')
     cy.getByDataTestid('environmentFieldset').should('have.length', 1)
     cy.get('select#environment-name-select')
-      .should('have.value', randomDbSetup.dsoEnvironments[0].name)
+      .should('have.value', randomDbSetup.stages[0].name)
     cy.getByDataTestid('quotasLevelRange')
       .find('input[type=range]')
       .should('have.value', 1)

@@ -1,5 +1,5 @@
 export const data = {
-  dsoEnvironment: [
+  stage: [
     {
       id: '6bfab904-0a67-42e6-a0b4-242fd50b9b0e',
       name: 'dev',
@@ -28,33 +28,33 @@ export const data = {
   quota: [
     {
       id: '7fd7e4ac-2638-4d8a-8a77-b823dd7de8ed',
-      flavor: 'micro',
-      allowedEnvs: ['6bfab904-0a67-42e6-a0b4-242fd50b9b0e', '46c5774e-58c1-41c2-b1d4-5a5bff51c1f0', 'c5afadb9-ede3-4f95-ac33-b6456a34e2bb', 'bd6efeab-ac03-4b22-858b-02e00c3ad8af'],
-      compute: '2vcpu / 4Gb ram',
+      name: 'micro',
+      compute: 2,
+      memory: 4,
       createdAt: '2023-07-03T14:46:56.758Z',
       updatedAt: '2023-07-03T14:46:56.758Z',
     },
     {
       id: '74b8e2e3-3c49-4d74-9cd2-06232ebcd5cf',
-      flavor: 'small',
-      allowedEnvs: ['6bfab904-0a67-42e6-a0b4-242fd50b9b0e', '46c5774e-58c1-41c2-b1d4-5a5bff51c1f0', 'c5afadb9-ede3-4f95-ac33-b6456a34e2bb', 'bd6efeab-ac03-4b22-858b-02e00c3ad8af'],
-      compute: '4vcpu / 8Gb ram',
+      name: 'small',
+      compute: 4,
+      memory: 8,
       createdAt: '2023-07-03T14:46:56.758Z',
       updatedAt: '2023-07-03T14:46:56.758Z',
     },
     {
       id: '88d180d1-7876-4c70-b6a1-81d61ef596b2',
-      flavor: 'medium',
-      allowedEnvs: ['c5afadb9-ede3-4f95-ac33-b6456a34e2bb', 'bd6efeab-ac03-4b22-858b-02e00c3ad8af'],
-      compute: '6vcpu / 12Gb ram',
+      name: 'medium',
+      compute: 6,
+      memory: 12,
       createdAt: '2023-07-03T14:46:56.758Z',
       updatedAt: '2023-07-03T14:46:56.758Z',
     },
     {
       id: 'deee42e2-afac-417c-85c5-c5ba25c69bbb',
-      flavor: 'large',
-      allowedEnvs: ['c5afadb9-ede3-4f95-ac33-b6456a34e2bb', 'bd6efeab-ac03-4b22-858b-02e00c3ad8af'],
-      compute: '8vcpu / 16Gb ram',
+      name: 'large',
+      compute: 8,
+      memory: 16,
       createdAt: '2023-07-03T14:46:56.758Z',
       updatedAt: '2023-07-03T14:46:56.758Z',
     },
@@ -86,6 +86,66 @@ export const data = {
       active: true,
       createdAt: '2023-07-03T14:46:56.765Z',
       updatedAt: '2023-07-03T14:46:56.765Z',
+    },
+  ],
+  cluster: [
+    {
+      id: '32636a52-4dd1-430b-b08a-b2e5ed9d1789',
+      label: 'public1',
+      privacy: 'public',
+      secretName: '3972ac09-6abc-4e49-83b6-d046da5260ec',
+      clusterResources: false,
+      createdAt: '2023-07-10T19:32:13.385Z',
+      updatedAt: '2023-07-10T19:32:13.385Z',
+      kubeconfig: {
+        cluster: {
+          server: 'https://public.server:6443',
+          tlsServerName: 'public.server',
+          skipTLSVerify: true,
+        },
+        user: {
+          keyData: 'LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQotLS0tLUVORCBSU0EgUFJJVkFURSBLRVktLS0tLQo=',
+          certData: 'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K',
+        },
+      },
+    },
+    {
+      id: '126ac57f-263c-4463-87bb-d4e9017056b2',
+      label: 'top-secret-cluster',
+      privacy: 'dedicated',
+      secretName: '59be2d50-58f9-42f3-95dc-b0c0518e3d8a',
+      clusterResources: true,
+      createdAt: '2023-07-10T19:49:31.691Z',
+      updatedAt: '2023-07-10T20:01:46.826Z',
+      kubeconfig: {
+        cluster: {
+          server: 'https://nothere.cluster',
+          skipTLSVerify: false,
+          tlsServerName: 'nothere.cluster',
+        },
+        user: {
+          token: 'nyan cat',
+        },
+      },
+    },
+    {
+      id: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
+      label: 'pas-top-cluster',
+      infos: 'Floating IP : 0.0.0.0',
+      privacy: 'dedicated',
+      secretName: '94d52618-7869-4192-b33e-85dd0959e815',
+      clusterResources: false,
+      createdAt: '2023-07-10T19:49:31.697Z',
+      updatedAt: '2023-07-10T20:01:46.833Z',
+      kubeconfig: {
+        cluster: {
+          server: 'https://pwned.cluster',
+          tlsServerName: 'pwned.cluster',
+        },
+        user: {
+          token: 'kirikou',
+        },
+      },
     },
   ],
   project: [
@@ -311,26 +371,32 @@ export const data = {
   environment: [
     {
       id: 'bc06ace5-ddf6-4f00-97fa-872922baf078',
-      dsoEnvironmentId: '6bfab904-0a67-42e6-a0b4-242fd50b9b0e',
+      name: 'dev',
+      stageId: '6bfab904-0a67-42e6-a0b4-242fd50b9b0e',
       projectId: '22e7044f-8414-435d-9c4a-2df42a65034b',
       quotaId: '7fd7e4ac-2638-4d8a-8a77-b823dd7de8ed',
+      clusterId: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
       status: 'created',
       createdAt: '2023-07-03T14:46:56.819Z',
       updatedAt: '2023-07-03T14:46:56.826Z',
     },
     {
       id: '95ef0d9b-945e-4af6-851c-4c6685ceff20',
-      dsoEnvironmentId: '46c5774e-58c1-41c2-b1d4-5a5bff51c1f0',
+      name: 'staging',
+      stageId: '46c5774e-58c1-41c2-b1d4-5a5bff51c1f0',
       projectId: '22e7044f-8414-435d-9c4a-2df42a65034b',
       quotaId: '7fd7e4ac-2638-4d8a-8a77-b823dd7de8ed',
+      clusterId: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
       status: 'created',
       createdAt: '2023-07-03T14:46:56.819Z',
       updatedAt: '2023-07-03T14:46:56.829Z',
     },
     {
       id: '8d4503eb-64c7-407e-89db-6ab80865071f',
-      dsoEnvironmentId: '6bfab904-0a67-42e6-a0b4-242fd50b9b0e',
+      name: 'dev',
+      stageId: '6bfab904-0a67-42e6-a0b4-242fd50b9b0e',
       projectId: '9dabf3f9-6c86-4358-8598-65007d78df65',
+      clusterId: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
       quotaId: '74b8e2e3-3c49-4d74-9cd2-06232ebcd5cf',
       status: 'created',
       createdAt: '2023-07-03T14:46:56.834Z',
@@ -338,32 +404,40 @@ export const data = {
     },
     {
       id: '3b0cf6c1-251b-4ec6-926f-b54ce1f82560',
-      dsoEnvironmentId: '46c5774e-58c1-41c2-b1d4-5a5bff51c1f0',
+      name: 'staging',
+      stageId: '46c5774e-58c1-41c2-b1d4-5a5bff51c1f0',
       projectId: '9dabf3f9-6c86-4358-8598-65007d78df65',
+      clusterId: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
       status: 'created',
       createdAt: '2023-07-03T14:46:56.834Z',
       updatedAt: '2023-07-03T14:46:56.859Z',
     },
     {
       id: '1b9f1053-fcf5-4053-a7b2-ff8a2c0c1921',
-      dsoEnvironmentId: '6bfab904-0a67-42e6-a0b4-242fd50b9b0e',
+      name: 'dev',
+      stageId: '6bfab904-0a67-42e6-a0b4-242fd50b9b0e',
       projectId: '011e7860-04d7-461f-912d-334c622d38b3',
+      clusterId: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
       status: 'created',
       createdAt: '2023-07-03T14:46:56.787Z',
       updatedAt: '2023-07-03T14:46:56.803Z',
     },
     {
       id: '1c654f00-4798-4a80-929f-960ddb37885a',
-      dsoEnvironmentId: 'c5afadb9-ede3-4f95-ac33-b6456a34e2bb',
+      name: 'integration',
+      stageId: 'c5afadb9-ede3-4f95-ac33-b6456a34e2bb',
       projectId: '011e7860-04d7-461f-912d-334c622d38b3',
+      clusterId: '126ac57f-263c-4463-87bb-d4e9017056b2',
       status: 'created',
       createdAt: '2023-07-03T14:46:56.788Z',
       updatedAt: '2023-07-03T14:46:56.803Z',
     },
     {
       id: '1c654f00-4798-4a80-929f-960ddb36774b',
-      dsoEnvironmentId: 'c5afadb9-ede3-4f95-ac33-b6456a34e2bb',
+      name: 'integration',
+      stageId: 'c5afadb9-ede3-4f95-ac33-b6456a34e2bb',
       projectId: '011e7860-04d7-461f-912d-334c622d38c5',
+      clusterId: '32636a52-4dd1-430b-b08a-b2e5ed9d1789',
       quotaId: 'deee42e2-afac-417c-85c5-c5ba25c69bbb',
       status: 'created',
       createdAt: '2023-07-03T14:46:56.788Z',
@@ -371,8 +445,10 @@ export const data = {
     },
     {
       id: '2805a1f5-0ca4-46a4-b3d7-5b649aee4a91',
-      dsoEnvironmentId: 'c5afadb9-ede3-4f95-ac33-b6456a34e2bb',
+      name: 'integration',
+      stageId: 'c5afadb9-ede3-4f95-ac33-b6456a34e2bb',
       projectId: '83833faf-f654-40dd-bcd5-cf2e944fc702',
+      clusterId: '32636a52-4dd1-430b-b08a-b2e5ed9d1789',
       status: 'created',
       createdAt: '2023-07-03T14:46:56.808Z',
       updatedAt: '2023-07-03T14:46:56.815Z',
@@ -1125,71 +1201,10 @@ export const data = {
       updatedAt: '2023-07-03T14:46:56.788Z',
     },
   ],
-  cluster: [
-    {
-      id: '32636a52-4dd1-430b-b08a-b2e5ed9d1789',
-      label: 'public1',
-      privacy: 'public',
-      secretName: '3972ac09-6abc-4e49-83b6-d046da5260ec',
-      clusterResources: false,
-      createdAt: '2023-07-10T19:32:13.385Z',
-      updatedAt: '2023-07-10T19:32:13.385Z',
-      kubeconfig: {
-        cluster: {
-          server: 'https://public.server:6443',
-          tlsServerName: 'public.server',
-          skipTLSVerify: true,
-        },
-        user: {
-          keyData: 'LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQotLS0tLUVORCBSU0EgUFJJVkFURSBLRVktLS0tLQo=',
-          certData: 'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K',
-        },
-      },
-    },
-    {
-      id: '126ac57f-263c-4463-87bb-d4e9017056b2',
-      label: 'top-secret-cluster',
-      privacy: 'dedicated',
-      secretName: '59be2d50-58f9-42f3-95dc-b0c0518e3d8a',
-      clusterResources: true,
-      createdAt: '2023-07-10T19:49:31.691Z',
-      updatedAt: '2023-07-10T20:01:46.826Z',
-      kubeconfig: {
-        cluster: {
-          server: 'https://nothere.cluster',
-          skipTLSVerify: false,
-          tlsServerName: 'nothere.cluster',
-        },
-        user: {
-          token: 'nyan cat',
-        },
-      },
-    },
-    {
-      id: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
-      label: 'pas-top-cluster',
-      infos: 'Floating IP : 0.0.0.0',
-      privacy: 'dedicated',
-      secretName: '94d52618-7869-4192-b33e-85dd0959e815',
-      clusterResources: false,
-      createdAt: '2023-07-10T19:49:31.697Z',
-      updatedAt: '2023-07-10T20:01:46.833Z',
-      kubeconfig: {
-        cluster: {
-          server: 'https://pwned.cluster',
-          tlsServerName: 'pwned.cluster',
-        },
-        user: {
-          token: 'kirikou',
-        },
-      },
-    },
-  ],
   associates: {
     cluster: [
       {
         id: '126ac57f-263c-4463-87bb-d4e9017056b2',
-        environments: [],
         projects: [
           {
             id: '83833faf-f654-40dd-bcd5-cf2e944fc702',
@@ -1201,7 +1216,6 @@ export const data = {
       },
       {
         id: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
-        environments: [],
         projects: [
           {
             id: '83833faf-f654-40dd-bcd5-cf2e944fc702',
@@ -1214,6 +1228,122 @@ export const data = {
           },
           {
             id: '22e7044f-8414-435d-9c4a-2df42a65034b',
+          },
+        ],
+      },
+    ],
+    quota: [
+      {
+        id: '7fd7e4ac-2638-4d8a-8a77-b823dd7de8ed',
+        stages: [
+          {
+            id: '6bfab904-0a67-42e6-a0b4-242fd50b9b0e',
+          },
+          {
+            id: '46c5774e-58c1-41c2-b1d4-5a5bff51c1f0',
+          },
+          {
+            id: 'c5afadb9-ede3-4f95-ac33-b6456a34e2bb',
+          },
+          {
+            id: 'bd6efeab-ac03-4b22-858b-02e00c3ad8af',
+          },
+        ],
+      },
+      {
+        id: '74b8e2e3-3c49-4d74-9cd2-06232ebcd5cf',
+        stages: [
+          {
+            id: '6bfab904-0a67-42e6-a0b4-242fd50b9b0e',
+          },
+          {
+            id: '46c5774e-58c1-41c2-b1d4-5a5bff51c1f0',
+          },
+          {
+            id: 'c5afadb9-ede3-4f95-ac33-b6456a34e2bb',
+          },
+          {
+            id: 'bd6efeab-ac03-4b22-858b-02e00c3ad8af',
+          },
+        ],
+      },
+      {
+        id: '88d180d1-7876-4c70-b6a1-81d61ef596b2',
+        stages: [
+          {
+            id: 'c5afadb9-ede3-4f95-ac33-b6456a34e2bb',
+          },
+          {
+            id: 'bd6efeab-ac03-4b22-858b-02e00c3ad8af',
+          },
+        ],
+      },
+      {
+        id: 'deee42e2-afac-417c-85c5-c5ba25c69bbb',
+        stages: [
+          {
+            id: 'c5afadb9-ede3-4f95-ac33-b6456a34e2bb',
+          },
+          {
+            id: 'bd6efeab-ac03-4b22-858b-02e00c3ad8af',
+          },
+        ],
+      },
+    ],
+    stage: [
+      {
+        id: '6bfab904-0a67-42e6-a0b4-242fd50b9b0e',
+        clusters: [
+          {
+            id: '32636a52-4dd1-430b-b08a-b2e5ed9d1789',
+          },
+          {
+            id: '126ac57f-263c-4463-87bb-d4e9017056b2',
+          },
+          {
+            id: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
+          },
+        ],
+      },
+      {
+        id: '46c5774e-58c1-41c2-b1d4-5a5bff51c1f0',
+        clusters: [
+          {
+            id: '32636a52-4dd1-430b-b08a-b2e5ed9d1789',
+          },
+          {
+            id: '126ac57f-263c-4463-87bb-d4e9017056b2',
+          },
+          {
+            id: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
+          },
+        ],
+      },
+      {
+        id: 'c5afadb9-ede3-4f95-ac33-b6456a34e2bb',
+        clusters: [
+          {
+            id: '32636a52-4dd1-430b-b08a-b2e5ed9d1789',
+          },
+          {
+            id: '126ac57f-263c-4463-87bb-d4e9017056b2',
+          },
+          {
+            id: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
+          },
+        ],
+      },
+      {
+        id: 'bd6efeab-ac03-4b22-858b-02e00c3ad8af',
+        clusters: [
+          {
+            id: '32636a52-4dd1-430b-b08a-b2e5ed9d1789',
+          },
+          {
+            id: '126ac57f-263c-4463-87bb-d4e9017056b2',
+          },
+          {
+            id: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
           },
         ],
       },

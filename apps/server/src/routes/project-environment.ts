@@ -4,7 +4,7 @@ import {
   updateEnvironmentController,
   deleteEnvironmentController,
   getQuotasController,
-  getDsoEnvironmentController,
+  getStageController,
 } from '../resources/environment/controllers.js'
 
 const router = async (app, _opt) => {
@@ -24,7 +24,7 @@ const router = async (app, _opt) => {
   await app.get('/environments/quotas', getQuotasController)
 
   // Récupérer les environnements DSO disponibles
-  await app.get('/environments/dso-environments', getDsoEnvironmentController)
+  await app.get('/environments/dso-environments', getStageController)
 }
 
 export default router

@@ -35,7 +35,7 @@ describe('PermissionForm.vue', () => {
 
     const props = {
       environment,
-      environmentName: randomDbSetup.dsoEnvironments.find(dsoEnvironment => dsoEnvironment.id === environment.dsoEnvironmentId).name,
+      environmentName: randomDbSetup.stages.find(stage => stage.id === environment.stageId).name,
     }
 
     const extensions = {
@@ -112,7 +112,7 @@ describe('PermissionForm.vue', () => {
 
     const props = {
       environment,
-      environmentName: randomDbSetup.dsoEnvironments.find(dsoEnvironment => dsoEnvironment.id === environment.dsoEnvironmentId).name,
+      environmentName: randomDbSetup.stages.find(stage => stage.id === environment.stageId).name,
     }
 
     const extensions = {
@@ -152,7 +152,7 @@ describe('PermissionForm.vue', () => {
 
     const props = {
       environment,
-      environmentName: randomDbSetup.dsoEnvironments.find(dsoEnvironment => dsoEnvironment.id === environment.dsoEnvironmentId).name,
+      environmentName: randomDbSetup.stages.find(stage => stage.id === environment.stageId).name,
     }
 
     const extensions = {

@@ -6,7 +6,7 @@ describe('Random utils', () => {
     const db = createRandomDbSetup({ nbUsers: 3, nbRepo: 1, envs: ['dev', 'prod'] })
     expect(db).toEqual(
       expect.objectContaining({
-        dsoEnvironments: expect.arrayContaining([
+        stages: expect.arrayContaining([
           {
             id: expect.any(String),
             name: expect.any(String),
@@ -76,7 +76,7 @@ describe('Random utils', () => {
           environments: expect.arrayContaining([
             {
               id: expect.any(String),
-              dsoEnvironmentId: expect.any(String),
+              stageId: expect.any(String),
               projectId: expect.any(String),
               quotaId: expect.any(String),
               status: expect.any(String),
@@ -85,7 +85,7 @@ describe('Random utils', () => {
             },
             {
               id: expect.any(String),
-              dsoEnvironmentId: expect.any(String),
+              stageId: expect.any(String),
               projectId: expect.any(String),
               quotaId: expect.any(String),
               status: expect.any(String),

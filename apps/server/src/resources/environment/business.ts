@@ -15,12 +15,12 @@ import {
   getUserById,
   getQuotas as getQuotasQuery,
   updateEnvironment as updateEnvironmentQuery,
-  getDsoEnvironments as getDsoEnvironmentsQuery,
-  getDsoEnvironmentById,
+  getStages as getStagesQuery,
+  getStageById,
 } from '@/resources/queries-index.js'
 import { hooks } from '@/plugins/index.js'
 import { BadRequestError, ForbiddenError, NotFoundError, UnauthorizedError, UnprocessableContentError } from '@/utils/errors.js'
-import type { Cluster, DsoEnvironment, Environment, Kubeconfig, Organization, Project, Role, User } from '@prisma/client'
+import type { Cluster, Stage, Environment, Kubeconfig, Organization, Project, Role, User } from '@prisma/client'
 import {
   type AsyncReturnType,
   checkInsufficientRoleInProject,
@@ -60,10 +60,10 @@ export const getQuotas = async (userId: User['id']) => {
   return getQuotasQuery()
 }
 
-export const getDsoEnvironments = async (userId: User['id']) => {
+export const getStages = async (userId: User['id']) => {
   const user = await getUserById(userId)
   if (!user) throw new UnauthorizedError('Vous n\'êtes pas connecté')
-  return getDsoEnvironmentsQuery()
+  return getStagesQuery()
 }
 
 // Check logic
@@ -72,7 +72,7 @@ type CheckEnvironmentParam = {
   authorizedClusters: Cluster[],
   userId: string,
   newClustersId: string[],
-  dsoEnvironmentId: Environment['dsoEnvironmentId'],
+  stageId: Environment['stageId'],
 }
 
 export const checkGetEnvironment = (
@@ -89,11 +89,11 @@ export const checkCreateEnvironment = ({
   authorizedClusters,
   userId,
   newClustersId,
-  dsoEnvironmentId,
+  stageId,
 }: CheckEnvironmentParam) => {
   const errorMessage = checkRoleAndLocked(project, userId, 'owner') ||
     checkClusterUnavailable(newClustersId, authorizedClusters) ||
-    checkExistingEnvironment(project.environments, dsoEnvironmentId)
+    checkExistingEnvironment(project.environments, stageId)
   if (errorMessage) throw new ForbiddenError(errorMessage, undefined)
 }
 
@@ -119,8 +119,8 @@ export const checkDeleteEnvironment = (
   if (errorMessage) throw new ForbiddenError(errorMessage, { description: '', extras: { userId, projectId: project.id } })
 }
 
-export const checkExistingEnvironment = (environments: Environment[], dsoEnvironmentId: Environment['dsoEnvironmentId']) => {
-  if (environments?.find(env => env.dsoEnvironmentId === dsoEnvironmentId)) {
+export const checkExistingEnvironment = (environments: Environment[], stageId: Environment['stageId']) => {
+  if (environments?.find(env => env.stageId === stageId)) {
     return 'L\'environnement choisi existe déjà pour ce projet'
   }
 }
@@ -130,14 +130,14 @@ export const createEnvironment = async (
   project: AsyncReturnType<typeof getProjectInfos>,
   owner: User,
   userId: string,
-  dsoEnvironmentId: Environment['dsoEnvironmentId'],
+  stageId: Environment['stageId'],
   newClustersId: string[],
   quotaId: Environment['quotaId'],
 ) => {
   await lockProject(project.id)
   const projectOwners = filterOwners(project.roles)
-  const env = await initializeEnvironment({ projectId: project.id, quotaId, dsoEnvironmentId, projectOwners })
-  const environmentName = (await getDsoEnvironmentById(dsoEnvironmentId)).name
+  const env = await initializeEnvironment({ projectId: project.id, quotaId, stageId, projectOwners })
+  const environmentName = (await getStageById(stageId)).name
 
   try {
     const projectName = project.name
@@ -184,7 +184,7 @@ export const updateEnvironment = async (
     await lockProject(env.project.id)
 
     // Premièrement, ajout des clusters sur les environnements
-    const environmentName = (await getDsoEnvironmentById(env.dsoEnvironmentId)).name
+    const environmentName = (await getStageById(env.stageId)).name
     const owner = env.project.roles[0].user
     const reallyNewClusters = await getClustersByIds(newClustersId.filter(newClusterId => !env.clusters.some(envCluster => envCluster.id === newClusterId)))
     await addClustersToEnvironment(reallyNewClusters, environmentName, env.id, env.project.name, env.project.organization.name, userId, owner)
@@ -224,7 +224,7 @@ export const deleteEnvironment = async (
       env.clusters
         .map(({ id }) => id),
     )
-    const environmentName = (await getDsoEnvironmentById(env.dsoEnvironmentId)).name
+    const environmentName = (await getStageById(env.stageId)).name
     await removeClustersFromEnvironment(clustersToRemove, environmentName, env.id, env.project.name, env.project.organization.name, userId)
 
     const projectName = env.project.name
@@ -259,7 +259,7 @@ export const deleteEnvironment = async (
 // Cluster Logic
 export const addClustersToEnvironment = async (
   clusters: (Cluster & { kubeconfig: Kubeconfig })[],
-  environmentName: DsoEnvironment['name'],
+  environmentName: Stage['name'],
   environmentId: Environment['id'],
   project: Project['name'],
   organization: Organization['name'],
@@ -287,7 +287,7 @@ export const addClustersToEnvironment = async (
 
 export const removeClustersFromEnvironment = async (
   clusters: (Cluster & { kubeconfig: Kubeconfig })[],
-  environmentName: DsoEnvironment['name'],
+  environmentName: Stage['name'],
   environmentId: Environment['id'],
   project: Project['name'],
   organization: Organization['name'],

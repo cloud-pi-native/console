@@ -94,17 +94,17 @@ export const getRandomRepo = (projectId = faker.string.uuid()) => {
   return repo
 }
 
-export const getRandomDsoEnvironment = (name: string) => {
+export const getRandomStage = (name: string) => {
   return {
     id: faker.string.uuid(),
     name,
   }
 }
 
-export const getRandomEnv = (dsoEnvironmentId = faker.string.uuid(), projectId = faker.string.uuid()) => {
+export const getRandomEnv = (stageId = faker.string.uuid(), projectId = faker.string.uuid()) => {
   return {
     id: faker.string.uuid(),
-    dsoEnvironmentId,
+    stageId,
     quotaId: faker.string.uuid(),
     projectId,
     status: faker.helpers.arrayElement(achievedStatus),

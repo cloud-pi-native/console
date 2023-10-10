@@ -23,11 +23,7 @@ const environments = ref([])
 const selectedEnvironment = ref({})
 const isNewEnvironmentForm = ref(false)
 const isUpdatingEnvironment = ref(false)
-const allDsoEnvironments: Ref<any[]> = ref([])
-
-const getEnvironmentName = (dsoEnvironmentId: string) => {
-  return allDsoEnvironments.value.find(dsoEnv => dsoEnv.id === dsoEnvironmentId).name
-}
+const allStages: Ref<any[]> = ref([])
 
 // @ts-ignore
 const setEnvironmentsTiles = (project) => {
@@ -35,7 +31,7 @@ const setEnvironmentsTiles = (project) => {
   environments.value = sortArrByObjKeyAsc(project?.environments, 'name')
     ?.map(environment => ({
       id: environment.id,
-      title: getEnvironmentName(environment.dsoEnvironmentId),
+      title: environment.name,
       data: environment,
       status: environment.status,
     }))
@@ -111,7 +107,7 @@ const deleteEnvironment = async (environment) => {
 
 onMounted(async () => {
   try {
-    allDsoEnvironments.value = await projectEnvironmentStore.getDsoEnvironments()
+    allStages.value = await projectEnvironmentStore.getStages()
   } catch (error) {
     if (error instanceof Error) {
       snackbarStore.setMessage(error.message)
@@ -130,7 +126,7 @@ watch(project, () => {
 <template>
   <DsoSelectedProject />
   <div
-    v-if="environmentNames.length !== allDsoEnvironments.length"
+    v-if="environmentNames.length !== allStages.length"
     class="flex <md:flex-col-reverse items-center justify-between pb-5"
   >
     <DsfrButton
@@ -154,7 +150,7 @@ watch(project, () => {
       :is-updating-environment="isUpdatingEnvironment"
       :is-project-locked="project?.locked"
       :project-clusters="project?.clusters"
-      :all-dso-environments="allDsoEnvironments"
+      :all-stages="allStages"
       @add-environment="(environment) => addEnvironment(environment)"
       @cancel="cancel()"
     />
@@ -208,7 +204,7 @@ watch(project, () => {
         v-if="Object.keys(selectedEnvironment).length !== 0 && selectedEnvironment.id === environment.id"
         :environment="selectedEnvironment"
         :environment-names="environmentNames"
-        :all-dso-environments="allDsoEnvironments"
+        :all-stages="allStages"
         :is-updating-environment="isUpdatingEnvironment"
         :project-clusters="project?.clusters"
         :is-editable="false"

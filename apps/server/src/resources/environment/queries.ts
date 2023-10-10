@@ -1,4 +1,4 @@
-import { DsoEnvironment, Environment, Project, Quota, Role } from '@prisma/client'
+import { Stage, Environment, Project, Quota, Role, Cluster } from '@prisma/client'
 import prisma from '@/prisma.js'
 import { getProjectById } from '../project/queries.js'
 
@@ -45,20 +45,12 @@ export const getEnvironmentInfos = (id: Environment['id']) => prisma.environment
         user: true,
       },
     },
-    clusters: {
-      select: {
-        id: true,
-        label: true,
-        privacy: true,
-        clusterResources: true,
-      },
-    },
   },
 })
 
-export const getEnvironment = async ({ projectId, dsoEnvironmentId }: { projectId: Project['id'], dsoEnvironmentId: Environment['dsoEnvironmentId'] }) => {
+export const getEnvironment = async ({ projectId, stageId }: { projectId: Project['id'], stageId: Environment['stageId'] }) => {
   return prisma.environment.findFirst({
-    where: { dsoEnvironmentId, projectId },
+    where: { stageId, projectId },
     include: { project: true },
   })
 }
@@ -79,33 +71,43 @@ export const getQuotas = async () => {
   return prisma.quota.findMany()
 }
 
-export const getDsoEnvironments = async () => {
-  return prisma.dsoEnvironment.findMany()
+export const getStages = async () => {
+  return prisma.stage.findMany({
+    include: {
+      clusters: true,
+    },
+  })
 }
 
-export const getDsoEnvironmentById = async (id: DsoEnvironment['id']) => {
-  return prisma.dsoEnvironment.findUnique({
+export const getStageById = async (id: Stage['id']) => {
+  return prisma.stage.findUnique({
     where: { id },
   })
 }
 
 // INSERT
-export const initializeEnvironment = async ({ dsoEnvironmentId, projectId, projectOwners, quotaId }: { dsoEnvironmentId: Environment['dsoEnvironmentId'], projectId: Project['id'], projectOwners: Role[], quotaId: Quota['id'] }) => {
+export const initializeEnvironment = async ({ name, stageId, projectId, projectOwners, quotaId, clusterId }: { name: Environment['name'], stageId: Environment['stageId'], projectId: Project['id'], projectOwners: Role[], quotaId: Quota['id'], clusterId: Cluster['id'] }) => {
   return prisma.environment.create({
     data: {
+      name,
       project: {
         connect: {
           id: projectId,
         },
       },
-      dsoEnvironment: {
+      stage: {
         connect: {
-          id: dsoEnvironmentId,
+          id: stageId,
         },
       },
       quota: {
         connect: {
           id: quotaId,
+        },
+      },
+      cluster: {
+        connect: {
+          id: clusterId,
         },
       },
       status: 'initializing',
@@ -195,6 +197,6 @@ export const _dropQuotaTable = async () => {
   await prisma.quota.deleteMany({})
 }
 
-export const _dropDsoEnvironmentTable = async () => {
-  await prisma.dsoEnvironment.deleteMany({})
+export const _dropStageTable = async () => {
+  await prisma.stage.deleteMany({})
 }

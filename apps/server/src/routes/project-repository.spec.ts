@@ -102,8 +102,8 @@ describe('Project routes', () => {
 
       prisma.project.findUnique.mockResolvedValue(projectInfos)
       prisma.project.update.mockResolvedValue(projectInfos)
-      randomDbSetUp.dsoEnvironments.forEach(dsoEnvironment => {
-        prisma.dsoEnvironment.findUnique.mockResolvedValueOnce(randomDbSetUp.dsoEnvironments?.find(dbSetUpdsoEnvironment => dbSetUpdsoEnvironment?.id === dsoEnvironment?.id))
+      randomDbSetUp.stages.forEach(stage => {
+        prisma.stage.findUnique.mockResolvedValueOnce(randomDbSetUp.stages?.find(dbSetUpstage => dbSetUpstage?.id === stage?.id))
       })
       prisma.repository.create.mockReturnValue(newRepository)
       prisma.log.create.mockResolvedValue(getRandomLog('Create Repository', requestor.id))
@@ -222,8 +222,8 @@ describe('Project routes', () => {
 
       prisma.project.findUnique.mockResolvedValue(projectInfos)
       prisma.project.update.mockResolvedValue(projectInfos)
-      randomDbSetUp.dsoEnvironments.forEach(dsoEnvironment => {
-        prisma.dsoEnvironment.findUnique.mockResolvedValueOnce(randomDbSetUp.dsoEnvironments?.find(dbSetUpdsoEnvironment => dbSetUpdsoEnvironment?.id === dsoEnvironment?.id))
+      randomDbSetUp.stages.forEach(stage => {
+        prisma.stage.findUnique.mockResolvedValueOnce(randomDbSetUp.stages?.find(dbSetUpstage => dbSetUpstage?.id === stage?.id))
       })
       prisma.repository.findUnique.mockResolvedValue(repoToDelete)
       prisma.repository.update.mockResolvedValue(repoToDelete)

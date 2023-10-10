@@ -9,8 +9,8 @@ describe('Manage project environments', () => {
   const cluster1 = getModelById('cluster', '32636a52-4dd1-430b-b08a-b2e5ed9d1789')
   const quotaMicro = getModelById('quota', '7fd7e4ac-2638-4d8a-8a77-b823dd7de8ed')
   const quotaSmall = getModelById('quota', '74b8e2e3-3c49-4d74-9cd2-06232ebcd5cf')
-  const dsoEnvironments = getModel('dsoEnvironment')
-  const project1FirstEnvironmentName = dsoEnvironments.find(dsoEnvironment => dsoEnvironment.id === project1.environments[0].dsoEnvironmentId).name
+  const stages = getModel('stage')
+  const project1FirstEnvironmentName = stages.find(stage => stage.id === project1.environments[0].stageId).name
 
   it('Should add environments to an existing project', () => {
     cy.kcLogin('test')
@@ -19,7 +19,7 @@ describe('Manage project environments', () => {
   })
 
   it('Should create an environment with minimum quota by default', () => {
-    cy.intercept('GET', '/api/v1/projects/environments/dso-environments').as('getDsoEnvironments')
+    cy.intercept('GET', '/api/v1/projects/environments/dso-environments').as('getStages')
     cy.intercept('POST', '/api/v1/projects/*/environments').as('postEnvironment')
     cy.intercept('GET', '/api/v1/projects').as('getProjects')
     const env = 'dev'
@@ -29,7 +29,7 @@ describe('Manage project environments', () => {
       .getByDataTestid(`projectTile-${project0.name}`).click()
       .getByDataTestid('menuEnvironments').click()
       .url().should('contain', '/environments')
-    cy.wait('@getDsoEnvironments').its('response.statusCode').should('eq', 200)
+    cy.wait('@getStages').its('response.statusCode').should('eq', 200)
 
     cy.getByDataTestid('addEnvironmentLink').click()
       .get('h1').should('contain', 'Ajouter un environnement au projet')
@@ -47,7 +47,7 @@ describe('Manage project environments', () => {
       expect(JSON.stringify(body)).equal(JSON.stringify({
         projectId: project0.id,
         quotaId: quotaMicro.id,
-        dsoEnvironmentId: dsoEnvironments.find(dsoEnvironment => dsoEnvironment.name === env).id,
+        stageId: stages.find(stage => stage.name === env).id,
       }))
     })
 
@@ -63,7 +63,7 @@ describe('Manage project environments', () => {
   })
 
   it('Should create an environment with defined quota', () => {
-    cy.intercept('GET', '/api/v1/projects/environments/dso-environments').as('getDsoEnvironments')
+    cy.intercept('GET', '/api/v1/projects/environments/dso-environments').as('getStages')
     cy.intercept('POST', '/api/v1/projects/*/environments').as('postEnvironment')
     cy.intercept('GET', '/api/v1/projects').as('getProjects')
     const env = 'dev'
@@ -73,7 +73,7 @@ describe('Manage project environments', () => {
       .getByDataTestid(`projectTile-${project0.name}`).click()
       .getByDataTestid('menuEnvironments').click()
       .url().should('contain', '/environments')
-    cy.wait('@getDsoEnvironments').its('response.statusCode').should('eq', 200)
+    cy.wait('@getStages').its('response.statusCode').should('eq', 200)
 
     cy.getByDataTestid('addEnvironmentLink').click()
       .get('h1').should('contain', 'Ajouter un environnement au projet')
@@ -102,7 +102,7 @@ describe('Manage project environments', () => {
       expect(JSON.stringify(body)).equal(JSON.stringify({
         projectId: project0.id,
         quotaId: quotaSmall.id,
-        dsoEnvironmentId: dsoEnvironments.find(dsoEnvironment => dsoEnvironment.name === env).id,
+        stageId: stages.find(stage => stage.name === env).id,
       }))
     })
 

@@ -16,7 +16,7 @@ describe('Dashboard', () => {
     email: user.email,
     isOwner: false,
   }]
-  const dsoEnvironments = getModel('dsoEnvironment')
+  const stages = getModel('stage')
 
   before(() => {
     cy.kcLogin('test')
@@ -44,7 +44,7 @@ describe('Dashboard', () => {
 
       project.environments?.forEach(environment => {
         cy.get(`[data-testid$="-${environment.status}-badge"]`)
-          .should('contain', `Environnement ${dsoEnvironments.find(dsoEnvironment => dsoEnvironment.id === environment.dsoEnvironmentId).name} : ${statusDict.status[environment.status]?.wording}`)
+          .should('contain', `Environnement ${stages.find(stage => stage.id === environment.stageId).name} : ${statusDict.status[environment.status]?.wording}`)
       })
     })
   })
@@ -122,9 +122,9 @@ describe('Dashboard', () => {
 
   it('Should archive project as owner without impacting other projects', () => {
     const projectToKeepEnvironmentNames = projectToKeep.environments
-      .map(environment => environment.dsoEnvironmentId)
-      .map(dsoEnvironmentId => dsoEnvironments
-        .find(dsoEnvironment => dsoEnvironment.id === dsoEnvironmentId)
+      .map(environment => environment.stageId)
+      .map(stageId => stages
+        .find(stage => stage.id === stageId)
         .name)
 
     cy.kcLogin('test')

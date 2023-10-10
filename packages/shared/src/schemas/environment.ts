@@ -12,7 +12,7 @@ export const environmentSchema = Joi.object({
   quotaId: Joi.string()
     .uuid(),
 
-  dsoEnvironmentId: Joi.string()
+  stageId: Joi.string()
     .uuid(),
 
   status: Joi.string()

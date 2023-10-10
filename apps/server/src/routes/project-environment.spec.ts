@@ -127,12 +127,12 @@ describe('User routes', () => {
       projectInfos.roles = [...projectInfos.roles, getRandomRole(requestor.id, projectInfos.id, 'owner')]
       const logCreate = getRandomLog('Create Environment', requestor.id)
       const logAdd = getRandomLog('Add Cluster to Environment', requestor.id)
-      const envToAdd = getRandomEnv(randomDbSetUp.dsoEnvironments[0], projectInfos.id)
+      const envToAdd = getRandomEnv(randomDbSetUp.stages[0], projectInfos.id)
       const envInfos = { ...envToAdd, project: projectInfos }
 
       prisma.user.findUnique.mockResolvedValueOnce(requestor)
       prisma.project.findUnique.mockResolvedValue(projectInfos)
-      prisma.dsoEnvironment.findUnique.mockResolvedValue(randomDbSetUp.dsoEnvironments[0])
+      prisma.stage.findUnique.mockResolvedValue(randomDbSetUp.stages[0])
       prisma.cluster.findMany.mockResolvedValue(projectInfos.clusters)
       prisma.project.update.mockResolvedValue(projectInfos)
       prisma.environment.create.mockReturnValue(envInfos)
@@ -221,7 +221,7 @@ describe('User routes', () => {
 
       prisma.environment.findUnique.mockResolvedValue(envToDelete)
       prisma.environment.update.mockReturnValue(envToDelete)
-      prisma.dsoEnvironment.findUnique.mockResolvedValue(randomDbSetUp.dsoEnvironments.find(dsoEnvironment => dsoEnvironment.id === envToDelete.dsoEnvironmentId))
+      prisma.stage.findUnique.mockResolvedValue(randomDbSetUp.stages.find(stage => stage.id === envToDelete.stageId))
       prisma.project.update.mockResolvedValue(projectInfos)
       prisma.cluster.findMany.mockResolvedValue(projectInfos.clusters)
       prisma.cluster.update.mockResolvedValueOnce(projectInfos.clusters)

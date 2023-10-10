@@ -19,7 +19,7 @@ import {
   _dropPermissionsTable,
   _dropKubeconfigTable,
   _dropQuotaTable,
-  _dropDsoEnvironmentTable,
+  _dropStageTable,
 } from './resources/queries-index.js'
 
 const DELAY_BEFORE_RETRY = isTest || isCI ? 1000 : 10000
@@ -78,7 +78,7 @@ export const dropTables = async () => {
     await _dropClusterTable()
     await _dropKubeconfigTable()
     await _dropQuotaTable()
-    await _dropDsoEnvironmentTable()
+    await _dropStageTable()
 
     app.log.info('All tables were droped successfully.')
   } catch (error) {

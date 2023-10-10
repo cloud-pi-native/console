@@ -29,8 +29,8 @@ export const useProjectEnvironmentStore = defineStore('project-environment', () 
     return api.getQuotas()
   }
 
-  const getDsoEnvironments = async () => {
-    return api.getDsoEnvironments()
+  const getStages = async () => {
+    return api.getStages()
   }
 
   return {
@@ -38,6 +38,6 @@ export const useProjectEnvironmentStore = defineStore('project-environment', () 
     updateEnvironment,
     deleteEnvironment,
     getQuotas,
-    getDsoEnvironments,
+    getStages,
   }
 })

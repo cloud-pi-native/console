@@ -22,7 +22,7 @@ import {
   checkGetEnvironment,
   getInitializeEnvironmentInfos,
   getQuotas,
-  getDsoEnvironments,
+  getStages,
 } from './business.js'
 
 // GET
@@ -53,15 +53,15 @@ export const getEnvironmentByIdController = async (req, res) => {
 }
 
 // GET
-export const getDsoEnvironmentController = async (req, res) => {
+export const getStageController = async (req, res) => {
   const userId = req.session?.user?.id
-  const dsoEnvironments = await getDsoEnvironments(userId)
+  const stages = await getStages(userId)
 
   addReqLogs({
     req,
     description: 'Environnments DSO récupérés avec succès',
   })
-  sendOk(res, dsoEnvironments)
+  sendOk(res, stages)
 }
 
 export const getQuotasController = async (req, res) => {
@@ -91,7 +91,7 @@ export const initializeEnvironmentController = async (req: EnhancedFastifyReques
     authorizedClusters,
     userId,
     newClustersId,
-    dsoEnvironmentId: data.dsoEnvironmentId,
+    stageId: data.stageId,
   })
 
   // TODO Joi
@@ -102,7 +102,7 @@ export const initializeEnvironmentController = async (req: EnhancedFastifyReques
     owner,
     userId,
     // @ts-ignore
-    data.dsoEnvironmentId,
+    data.stageId,
     newClustersId,
     data.quotaId,
   )

@@ -27,7 +27,7 @@ const projectToArchive = ref('')
 const isWaitingForResponse = ref(false)
 const isSecretShown = ref(false)
 const projectSecrets: Ref<Record<string, any>> = ref({})
-const allDsoEnvironments: Ref<Array<any>> = ref([])
+const allStages: Ref<Array<any>> = ref([])
 
 const updateProject = async (projectId: ProjectInfos['id']) => {
   isWaitingForResponse.value = true
@@ -99,7 +99,7 @@ const getRows = (service: string) => {
 
 onBeforeMount(async () => {
   try {
-    allDsoEnvironments.value = await projectEnvironmentStore.getDsoEnvironments()
+    allStages.value = await projectEnvironmentStore.getStages()
   } catch (error) {
     if (error instanceof Error) {
       snackbarStore.setMessage(error.message)
@@ -218,7 +218,7 @@ onBeforeMount(async () => {
         :resource="{
           ...environment,
           resourceKey: 'status',
-          wording: `Environnement ${allDsoEnvironments?.find(dsoEnvironment => dsoEnvironment?.id === environment?.dsoEnvironmentId)?.name}`
+          wording: `Environnement ${allStages?.find(stage => stage?.id === environment?.stageId)?.name}`
         }"
       />
       <DsoBadge

@@ -5,6 +5,6 @@ export type EnvironmentModel = {
   id: string
   projectId: ProjectModel['id']
   quotaId: string,
-  dsoEnvironmentId: string,
+  stageId: string,
   status: typeof projectStatus[number]
 }

@@ -7,7 +7,7 @@ export type InitializeEnvironmentDto = {
     projectId: ProjectModel['id'],
     clustersId: ClusterModel['id'][],
     quotaId?: EnvironmentModel['quotaId'],
-    dsoEnvironmentId?: EnvironmentModel['dsoEnvironmentId'],
+    stageId?: EnvironmentModel['stageId'],
   }
   params: { projectId: ProjectModel['id'] }
 }

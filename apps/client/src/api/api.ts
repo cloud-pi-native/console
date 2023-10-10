@@ -121,7 +121,7 @@ export const getQuotas = async () => {
 }
 
 // Dso Environments
-export const getDsoEnvironments = async () => {
+export const getStages = async () => {
   const response = await apiClient.get('/projects/environments/dso-environments')
   return response.data
 }

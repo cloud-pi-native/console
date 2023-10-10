@@ -18,7 +18,7 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
-  allDsoEnvironments: {
+  allStages: {
     type: Array,
     default: () => [],
   },
@@ -61,13 +61,13 @@ const quotaLevels = ref([])
 
 const setEnvironmentOptions = () => {
   const availableEnvironments = props.environmentNames.length
-    ? props.allDsoEnvironments
+    ? props.allStages
       .filter(dsoEnv => !props.environmentNames
         //  @ts-ignore
         .includes(dsoEnv.name))
     //  @ts-ignore
       .map(dsoEnv => dsoEnv.name)
-    : props.allDsoEnvironments
+    : props.allStages
       //  @ts-ignore
       .map(dsoEnv => dsoEnv.name)
   //  @ts-ignore
@@ -106,15 +106,17 @@ const emit = defineEmits([
 ])
 
 const getQuotaLevels = () => {
-  // @ts-ignore
-  quotaLevels.value = quotas.value
-    .filter(quota => quota.allowedEnvIds
-    // @ts-ignore
-      .map(allowedEnvId => props.allDsoEnvironments
-      // @ts-ignore
-        .find(dsoEnv => dsoEnv.id === allowedEnvId)?.name)
-      .includes(environmentName.value))
-    .map(quota => quota.flavor + ' : ' + quota.compute)
+  console.log(quotas.value)
+  // TODO
+  // // @ts-ignore
+  // quotaLevels.value = quotas.value
+  //   .filter(quota => quota.allowedEnvIds
+  //   // @ts-ignore
+  //     .map(allowedEnvId => props.allStages
+  //     // @ts-ignore
+  //       .find(dsoEnv => dsoEnv.id === allowedEnvId)?.name)
+  //     .includes(environmentName.value))
+  //   .map(quota => quota.name + ' : ' + quota.compute)
   inputKey.value = getRandomId('input')
 }
 
@@ -124,10 +126,10 @@ const pickQuotas = (value: number) => {
 
 const addEnvironment = () => {
   /**
-    * turn environmentName into corresponding dsoEnvironmentId
+    * turn environmentName into corresponding stageId
     */
   //  @ts-ignore
-  localEnvironment.value.dsoEnvironmentId = props.allDsoEnvironments.find(dsoEnv => dsoEnv.name === environmentName.value).id
+  localEnvironment.value.stageId = props.allStages.find(dsoEnv => dsoEnv.name === environmentName.value).id
   updatedValues.value = instanciateSchema({ schema: environmentSchema }, true)
   const errorSchema = schemaValidator(environmentSchema, localEnvironment.value)
 
@@ -166,11 +168,11 @@ onBeforeMount(async () => {
       ?.find(projectCluster => projectCluster.id === clusterId).label)
 
   /**
-    * Receive dsoEnvironmentId from parent component, turn it into environmentName.
+    * Receive stageId from parent component, turn it into environmentName.
     */
-  if (localEnvironment.value.dsoEnvironmentId) {
+  if (localEnvironment.value.stageId) {
     //  @ts-ignore
-    environmentName.value = props.allDsoEnvironments?.find(dsoEnv => dsoEnv.id === localEnvironment.value.dsoEnvironmentId)?.name
+    environmentName.value = props.allStages?.find(dsoEnv => dsoEnv.id === localEnvironment.value.stageId)?.name
   }
 
   // Retrieve quotas
@@ -185,7 +187,7 @@ onBeforeMount(async () => {
 
   // Set default quota to minimum
   if (!localEnvironment.value.quotaId) {
-    localEnvironment.value.quotaId = quotas.value?.find(quota => quota?.flavor === 'micro').id
+    localEnvironment.value.quotaId = quotas.value?.find(quota => quota?.name === 'micro').id
   }
   quotaRange.value = quotas.value.findIndex(quota => quota.id === localEnvironment.value.quotaId)
 

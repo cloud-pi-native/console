@@ -8,7 +8,7 @@ import {
   getRandomPerm,
   getRandomRole,
   getRandomCluster,
-  getRandomDsoEnvironment,
+  getRandomStage,
 } from './random-utils.js'
 import { repeatFn } from './func-utils.js'
 import { User } from './types.js'
@@ -23,8 +23,8 @@ export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = baseEnviro
   // Create users
   const users: User[] = repeatFn(nbUsers)(getRandomUser)
 
-  // Create DsoEnvironments
-  const dsoEnvironments = baseEnvironments.map(baseEnvironment => getRandomDsoEnvironment(baseEnvironment))
+  // Create Stages
+  const stages = baseEnvironments.map(baseEnvironment => getRandomStage(baseEnvironment))
 
   // Create project
   const project = getRandomProject(organization.id)
@@ -41,8 +41,8 @@ export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = baseEnviro
 
   // Create environment
   project.environments = envs
-    .map(env => getRandomEnv(dsoEnvironments
-      .find(dsoEnvironment => dsoEnvironment.name === env).id, project.id))
+    .map(env => getRandomEnv(stages
+      .find(stage => stage.name === env).id, project.id))
 
   // Create permissions
   project.environments.forEach(env => {
@@ -62,7 +62,7 @@ export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = baseEnviro
   return {
     organization,
     users,
-    dsoEnvironments,
+    stages,
     project,
   }
 }
