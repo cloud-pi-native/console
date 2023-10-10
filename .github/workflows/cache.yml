@@ -60,10 +60,16 @@ jobs:
       - name: Checks-out repository
         uses: actions/checkout@v3
 
+      - name: Get repository owner and name
+        id: image-infos
+        run: |
+          echo "ORG_NAME=$(echo '${{ github.repository }}' | cut -d "/" -f 1)" >> $GITHUB_OUTPUT
+          echo "REPO_NAME=$(echo '${{ github.repository }}' | cut -d "/" -f 2)" >> $GITHUB_OUTPUT
+
       - name: Delete ${{ matrix.images.name }} image
         run: |
           ./ci/scripts/delete-image.sh \
-            -o "${{ github.event.repository.owner.name }}" \
-            -i "${{ github.event.repository.name }}/${{ matrix.images.name }}" \
+            -o "${{ steps.image-infos.outputs.ORG_NAME }}" \
+            -i "${{ steps.image-infos.outputs.REPO_NAME }}/${{ matrix.images.name }}" \
             -t "pr-${{ github.event.pull_request.number || github.event.number }}" \
             -g "${{ secrets.GITHUB_TOKEN }}"
