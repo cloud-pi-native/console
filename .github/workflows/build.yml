@@ -17,13 +17,13 @@ on:
         type: string
       MAJOR_TAG:
         required: false
-        type: number
+        type: string
       MINOR_TAG:
         required: false
-        type: number
+        type: string
       PATCH_TAG:
         required: false
-        type: number
+        type: string
       USE_QEMU:
         required: true
         type: boolean

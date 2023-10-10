@@ -39,5 +39,5 @@ jobs:
       MAJOR_TAG: ${{ needs.release.outputs.major-tag }}
       MINOR_TAG: ${{ needs.release.outputs.minor-tag }}
       PATCH_TAG: ${{ needs.release.outputs.patch-tag }}
-      MULTI_ARCH: ${{ needs.expose-vars.outputs.MULTI_ARCH }}
-      USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU }}
+      MULTI_ARCH: ${{ needs.expose-vars.outputs.MULTI_ARCH == 'true' }}
+      USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU == 'true' }}
