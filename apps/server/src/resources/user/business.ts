@@ -69,7 +69,7 @@ export const addUserToProject = async (
       .filter((plugin: PluginResult) => plugin?.status?.result === 'KO')
       .map((plugin: PluginResult) => plugin.status.message)
       .join('; ')
-    addLogs('Add User to Project Validation', { reasons }, userId)
+    addLogs('Add User to Project Validation', { reasons, failed: true }, userId)
     throw new UnprocessableContentError(reasons, undefined)
   }
 
@@ -122,7 +122,7 @@ export const removeUserFromProject = async (
       .filter((plugin: PluginResult) => plugin?.status?.result === 'KO')
       .map((plugin: PluginResult) => plugin.status.message)
       .join('; ')
-    addLogs('Remove User from Project Validation', { reasons }, userId)
+    addLogs('Remove User from Project Validation', { reasons, failed: true }, userId)
     throw new UnprocessableContentError(reasons, undefined)
   }
 

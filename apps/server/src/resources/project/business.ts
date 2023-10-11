@@ -70,7 +70,7 @@ export const checkCreateProject = async (
 
     const message = 'Echec de la validation des prérequis de création du projet par les services externes'
 
-    addLogs('Create Project Validation', { reasons }, owner.id)
+    addLogs('Create Project Validation', { reasons, failed: true }, owner.id)
     throw new BadRequestError(message, { description: reasons })
   }
   const projectSearch = await getProjectByNames({ name: data.name, organizationName })

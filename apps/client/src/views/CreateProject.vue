@@ -56,10 +56,10 @@ const createProject = async () => {
       router.push('/projects')
     } catch (error) {
       if (error instanceof Error) {
-        snackbarStore.setMessage(error.message)
-        return
+        snackbarStore.setMessage(error.message, 'error')
+      } else {
+        snackbarStore.setMessage('échec de création du projet', 'error')
       }
-      snackbarStore.setMessage('échec de création du projet')
     }
   }
   isCreatingProject.value = false

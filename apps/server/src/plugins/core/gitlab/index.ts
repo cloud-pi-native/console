@@ -1,32 +1,42 @@
 import type { HookPayload, StepCall } from '@/plugins/hooks/hook.js'
+import type { ArchiveProjectExecArgs, CreateProjectExecArgs } from '@/plugins/hooks/project.js'
+import type { CreateRepositoryExecArgs, DeleteRepositoryExecArgs } from '@/plugins/hooks/repository.js'
+import { AddUserToProjectExecArgs } from '@/plugins/hooks/team.js'
+import { User } from '@prisma/client'
 import { createGroup, deleteGroup, getGroupId, setGroupVariable, setProjectVariable } from './group.js'
 import { addGroupMember, getGroupMembers, removeGroupMember } from './permission.js'
 import { createProject, createProjectMirror, deleteProject } from './project.js'
 import { setProjectTrigger } from './triggers.js'
 import { createUser, createUsername, getUser } from './user.js'
-import type { ArchiveProjectExecArgs, CreateProjectExecArgs } from '@/plugins/hooks/project.js'
-import type { CreateRepositoryExecArgs, DeleteRepositoryExecArgs } from '@/plugins/hooks/repository.js'
-import { User } from '@prisma/client'
-import { AddUserToProjectExecArgs } from '@/plugins/hooks/team.js'
 import { gitlabToken } from './utils.js'
 
 // Check
 export const checkApi = async (payload: HookPayload<{ owner: User }>) => {
-  const { owner } = payload.args
-  const user = await getUser({ ...owner, username: createUsername(owner.email) })
+  try {
+    const { owner } = payload.args
+    const user = await getUser({ ...owner, username: createUsername(owner.email) })
 
-  if (user?.id === 1) {
+    if (user?.id === 1) {
+      return {
+        status: {
+          result: 'KO',
+          message: 'Gitlab notify: User 1 (root) should not use Console',
+        },
+      }
+    }
+    return {
+      status: {
+        result: 'OK',
+      },
+    }
+  } catch (error) {
     return {
       status: {
         result: 'KO',
-        message: 'Gitlab notify: User 1 (root) should not use Console',
+        message: error.message,
       },
+      error: JSON.stringify(error),
     }
-  }
-  return {
-    status: {
-      result: 'OK',
-    },
   }
 }
 
