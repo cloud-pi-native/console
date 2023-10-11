@@ -7,59 +7,19 @@ datasource db {
   url      = env("DB_URL")
 }
 
-enum ClusterPrivacy {
-  public
-  dedicated
-}
-
-enum ProjectStatus {
-  initializing
-  created
-  failed
-  archived
-}
-
 model Environment {
-  id        String   @id @default(uuid()) @db.Uuid
-  name      String   @db.VarChar(11)
-  projectId String   @db.Uuid
-  quotaId   String?  @db.Uuid
-  stageId   String?  @db.Uuid
-  clusterId String?  @db.Uuid
-  status    String   @default("initializing")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  project Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  quota   Quota?   @relation(fields: [quotaId], references: [id])
-  stage   Stage?   @relation(fields: [stageId], references: [id])
-  cluster Cluster? @relation(fields: [clusterId], references: [id])
-
-  permissions Permission[]
-}
-
-model Stage {
-  id        String   @id @default(uuid()) @db.Uuid
-  name      String   @unique @db.VarChar(11)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  environment Environment[]
-  quotas      Quota[]
-  clusters    Cluster[]
-}
-
-model Quota {
-  id        String   @id @default(uuid()) @db.Uuid
-  name      String   @unique
-  compute   Int
-  memory    Int
-  isPublic  Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  environment Environment[]
-  stages      Stage[]
+  id                      String                 @id @default(uuid()) @db.Uuid
+  name                    String                 @db.VarChar(11)
+  projectId               String                 @db.Uuid
+  status                  String                 @default("initializing")
+  createdAt               DateTime               @default(now())
+  updatedAt               DateTime               @updatedAt
+  clusterId               String?                @db.Uuid
+  environmentQuotaStageId String?                @db.Uuid
+  cluster                 Cluster?               @relation(fields: [clusterId], references: [id])
+  environmentQuotaStage   EnvironmentQuotaStage? @relation(fields: [environmentQuotaStageId], references: [id], onDelete: Restrict)
+  project                 Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  permissions             Permission[]
 }
 
 model Log {
@@ -73,26 +33,25 @@ model Log {
 }
 
 model Organization {
-  id        String   @id @unique @default(uuid()) @db.Uuid
+  id        String    @id @unique @default(uuid()) @db.Uuid
   source    String
-  name      String   @unique
-  label     String   @unique
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  projects Project[]
+  name      String    @unique
+  label     String    @unique
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  projects  Project[]
 }
 
 model Permission {
   id            String      @id @unique @default(uuid()) @db.Uuid
   userId        String      @db.Uuid
   environmentId String      @db.Uuid
-  level         Int         @default(0) // TODO faire un enum 0,1,2 > voir 10, 20, 30
+  level         Int         @default(0)
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
-  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   environment   Environment @relation(fields: [environmentId], references: [id], onDelete: Cascade)
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, environmentId])
 }
@@ -107,12 +66,11 @@ model Project {
   services       Json
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
+  environments   Environment[]
   organization   Organization  @relation(fields: [organizationId], references: [id])
-
-  environments Environment[]
-  repositories Repository[]
-  roles        Role[]
-  clusters     Cluster[]
+  repositories   Repository[]
+  roles          Role[]
+  clusters       Cluster[]     @relation("ClusterToProject")
 }
 
 model Repository {
@@ -130,13 +88,12 @@ model Repository {
 }
 
 model User {
-  id        String   @id @default(uuid()) @db.Uuid
-  firstName String
-  lastName  String
-  email     String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  id          String       @id @default(uuid()) @db.Uuid
+  firstName   String
+  lastName    String
+  email       String       @unique
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
   logs        Log[]
   permissions Permission[]
   roles       Role[]
@@ -145,18 +102,17 @@ model User {
 model Cluster {
   id               String         @id @unique @default(uuid()) @db.Uuid
   label            String         @unique @db.VarChar(50)
-  infos            String?        @db.VarChar(200)
   privacy          ClusterPrivacy @default(dedicated)
   secretName       String         @unique @default(uuid()) @db.VarChar(50)
   clusterResources Boolean        @default(false)
   kubeConfigId     String         @unique @db.Uuid
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
-
-  kubeconfig   Kubeconfig    @relation(fields: [kubeConfigId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  environments Environment[]
-  projects     Project[]
-  stages       Stage[]
+  infos            String?        @db.VarChar(200)
+  kubeconfig       Kubeconfig     @relation(fields: [kubeConfigId], references: [id], onDelete: Cascade)
+  environments     Environment[]
+  projects         Project[]      @relation("ClusterToProject")
+  stages           Stage[]        @relation("ClusterToStage")
 }
 
 model Kubeconfig {
@@ -165,7 +121,7 @@ model Kubeconfig {
   cluster       Json
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  parentCluster Cluster? @relation()
+  parentCluster Cluster?
 }
 
 model Role {
@@ -174,9 +130,61 @@ model Role {
   role      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, projectId])
   @@unique([userId, projectId])
+}
+
+model Quota {
+  id         String       @id @unique @default(uuid()) @db.Uuid
+  memory     String       @db.VarChar
+  cpu        Float        @db.Real
+  name       String       @unique @db.VarChar
+  private    Boolean      @default(false)
+  quotaStage QuotaStage[]
+}
+
+model Stage {
+  id         String       @id @unique @default(uuid()) @db.Uuid
+  name       String       @unique @db.VarChar
+  quotaStage QuotaStage[]
+  clusters   Cluster[]    @relation("ClusterToStage")
+}
+
+model QuotaStage {
+  id                     String                  @id @unique @default(uuid()) @db.Uuid
+  quotaId                String                  @db.Uuid
+  stageId                String                  @db.Uuid
+  status                 QuotaStageStatus        @default(active)
+  environmentQuotaStages EnvironmentQuotaStage[]
+  quota                  Quota                   @relation(fields: [quotaId], references: [id], onDelete: Cascade)
+  stage                  Stage                   @relation(fields: [stageId], references: [id], onDelete: Cascade)
+
+  @@unique([quotaId, stageId])
+}
+
+model EnvironmentQuotaStage {
+  id           String        @id @unique @default(uuid()) @db.Uuid
+  quotaStageId String        @db.Uuid
+  environments Environment[]
+  quotaStage   QuotaStage    @relation(fields: [quotaStageId], references: [id])
+}
+
+enum ClusterPrivacy {
+  public
+  dedicated
+}
+
+enum ProjectStatus {
+  initializing
+  created
+  failed
+  archived
+}
+
+enum QuotaStageStatus {
+  active
+  pendingDelete
 }
