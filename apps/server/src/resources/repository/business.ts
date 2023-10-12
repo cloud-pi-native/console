@@ -1,4 +1,4 @@
-import { addLogs, deleteRepository as deleteRepositoryQuery, getProjectInfos, getProjectInfosAndRepos, initializeRepository, lockProject, updateRepository as updateRepositoryQuery, updateRepositoryCreated, updateRepositoryDeleting, updateRepositoryFailed, getStageById } from '@/resources/queries-index.js'
+import { addLogs, deleteRepository as deleteRepositoryQuery, getProjectInfos, getProjectInfosAndRepos, initializeRepository, lockProject, updateRepository as updateRepositoryQuery, updateRepositoryCreated, updateRepositoryDeleting, updateRepositoryFailed } from '@/resources/queries-index.js'
 import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import { Project, Repository, User } from '@prisma/client'
 import { projectRootDir } from '@/utils/env.js'
@@ -91,21 +91,16 @@ export const createRepository = async (
   const repo = await initializeRepository(dbData)
 
   try {
-    const stageIds = project.environments?.map(env => env.stageId)
-    const environmentNames = []
-    for (const stageId of stageIds) {
-      environmentNames.push((await getStageById(stageId)).name)
-    }
-
     const repoData = {
       ...repo,
       project: project.name,
       organization: project.organization.name,
-      environments: environmentNames,
+      environments: project.environments?.map(environment => environment.name),
       internalUrl: `${gitlabUrl}/${projectRootDir}/${project.organization.name}/${project.name}/${repo.internalRepoName}.git`,
     }
     if (data.isPrivate) {
       repoData.externalUserName = data.externalUserName
+      // @ts-ignore
       repoData.externalToken = data.externalToken
     }
 
@@ -176,18 +171,12 @@ export const deleteRepository = async (
   await updateRepositoryDeleting(repositoryId)
 
   try {
-    const stageIds = project.environments?.map(env => env.stageId)
-    const environmentNames = []
-    for (const stageId of stageIds) {
-      environmentNames.push((await getStageById(stageId)).name)
-    }
-
     const repoData = {
       ...repo,
       project: project.name,
       organization: project.organization.name,
       services: project.services,
-      environments: environmentNames,
+      environments: project.environments?.map(environment => environment.name),
       internalUrl: `${gitlabUrl}/${projectRootDir}/${project.organization.name}/${project.name}/${repo.internalRepoName}.git`,
     }
 

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, computed, watch, onMounted, type Ref } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import DsoSelectedProject from './DsoSelectedProject.vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
@@ -23,7 +23,6 @@ const environments = ref([])
 const selectedEnvironment = ref({})
 const isNewEnvironmentForm = ref(false)
 const isUpdatingEnvironment = ref(false)
-const allStages: Ref<any[]> = ref([])
 
 // @ts-ignore
 const setEnvironmentsTiles = (project) => {
@@ -45,8 +44,6 @@ const setSelectedEnvironment = (environment) => {
     return
   }
   selectedEnvironment.value = environment
-  // @ts-ignore
-  selectedEnvironment.value.clustersId = selectedEnvironment.value.clusters?.map(cluster => cluster.id)
   isNewEnvironmentForm.value = false
 }
 
@@ -106,15 +103,6 @@ const deleteEnvironment = async (environment) => {
 }
 
 onMounted(async () => {
-  try {
-    allStages.value = await projectEnvironmentStore.getStages()
-  } catch (error) {
-    if (error instanceof Error) {
-      snackbarStore.setMessage(error.message)
-      return
-    }
-    snackbarStore.setMessage('échec de récupération des environnements DSO')
-  }
   setEnvironmentsTiles(project.value)
 })
 
@@ -126,7 +114,6 @@ watch(project, () => {
 <template>
   <DsoSelectedProject />
   <div
-    v-if="environmentNames.length !== allStages.length"
     class="flex <md:flex-col-reverse items-center justify-between pb-5"
   >
     <DsfrButton
@@ -150,7 +137,6 @@ watch(project, () => {
       :is-updating-environment="isUpdatingEnvironment"
       :is-project-locked="project?.locked"
       :project-clusters="project?.clusters"
-      :all-stages="allStages"
       @add-environment="(environment) => addEnvironment(environment)"
       @cancel="cancel()"
     />
@@ -204,7 +190,6 @@ watch(project, () => {
         v-if="Object.keys(selectedEnvironment).length !== 0 && selectedEnvironment.id === environment.id"
         :environment="selectedEnvironment"
         :environment-names="environmentNames"
-        :all-stages="allStages"
         :is-updating-environment="isUpdatingEnvironment"
         :project-clusters="project?.clusters"
         :is-editable="false"
@@ -216,7 +201,7 @@ watch(project, () => {
       />
     </div>
     <div
-      v-if="!environments.length"
+      v-if="!environments.length && !isNewEnvironmentForm"
     >
       <p>Aucun environnement déployé</p>
     </div>

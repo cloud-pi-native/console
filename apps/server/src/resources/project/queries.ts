@@ -64,6 +64,7 @@ export const getUserProjects = async (user: User) => {
               user: true,
             },
           },
+          quotaStage: true,
         },
       },
       repositories: true,

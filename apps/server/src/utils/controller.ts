@@ -1,5 +1,5 @@
 import { type ProjectRoles, adminGroupPath, projectIsLockedInfo } from '@dso-console/shared'
-import type { Permission, User, Role } from '@prisma/client'
+import type { Permission, User, Role, Cluster } from '@prisma/client'
 import { ForbiddenError } from './errors.js'
 
 export const checkAdminGroup = (req, res, done) => {
@@ -76,11 +76,9 @@ export const checkRoleAndLocked = (
   minRole: ProjectRoles = 'user',
 ): string => checkProjectLocked(project) || checkInsufficientRoleInProject(userId, { minRole, roles: project.roles })
 
-export const checkClusterUnavailable = (clustersId: string[], authorizedClusters: { id: string }[]): string => clustersId
-  .some(clusterId => !authorizedClusters
-    .some(cluster => cluster.id === clusterId))
-  ? 'Ce cluster n\'est pas disponible sur pour ce projet'
-  : ''
+export const checkClusterUnavailable = (clusterId: Cluster['id'], authorizedClusterIds: Cluster['id'][]): string => authorizedClusterIds.some(authorizedClusterId => authorizedClusterId === clusterId)
+  ? ''
+  : 'Ce cluster n\'est pas disponible pour cette combinaison projet et stage'
 
 export const checkInsufficientPermissionInEnvironment = (userId: User['id'], permissions: Permission[], minLevel: Permission['level']) => {
   // get project by id, assign result to projectUsers

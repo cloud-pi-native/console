@@ -101,12 +101,32 @@ export const getRandomStage = (name: string) => {
   }
 }
 
-export const getRandomEnv = (stageId = faker.string.uuid(), projectId = faker.string.uuid()) => {
+export const getRandomQuota = (name: string = faker.lorem.word()) => {
   return {
     id: faker.string.uuid(),
+    name,
+    cpu: faker.number.int({ max: 18 }),
+    memory: faker.number.int({ max: 18 }) + 'Gi',
+    private: faker.datatype.boolean(),
+  }
+}
+
+export const getRandomQuotaStage = (quotaId: string, stageId: string, status: 'active' | 'pendingDelete' = faker.helpers.arrayElement(['active', 'pendingDelete'])) => {
+  return {
+    id: faker.string.uuid(),
+    quotaId,
     stageId,
-    quotaId: faker.string.uuid(),
+    status,
+  }
+}
+
+export const getRandomEnv = (name = faker.lorem.slug(1), projectId = faker.string.uuid(), quotaStageId = faker.string.uuid(), clusterId = faker.string.uuid()) => {
+  return {
+    id: faker.string.uuid(),
+    name,
     projectId,
+    quotaStageId,
+    clusterId,
     status: faker.helpers.arrayElement(achievedStatus),
   } as Environment
 }

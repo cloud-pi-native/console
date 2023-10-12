@@ -218,7 +218,7 @@ onBeforeMount(async () => {
         :resource="{
           ...environment,
           resourceKey: 'status',
-          wording: `Environnement ${allStages?.find(stage => stage?.id === environment?.stageId)?.name}`
+          wording: `Environnement ${environment?.name}`
         }"
       />
       <DsoBadge

@@ -3,8 +3,6 @@ import {
   archiveProject as archiveProjectQuery,
   deleteEnvironment,
   deleteRepository,
-  getClusterByEnvironmentId,
-  getStageById,
   getOrganizationById,
   getProjectByNames,
   getProjectInfosAndRepos,
@@ -29,7 +27,7 @@ import { CreateProjectDto, UpdateProjectDto, calcProjectNameMaxLength, projectIs
 import { CreateProjectExecArgs, ProjectBase, UpdateProjectExecArgs } from '@/plugins/hooks/project.js'
 import { filterObjectByKeys } from '@/utils/queries-tools.js'
 import { projectRootDir } from '@/utils/env.js'
-import { removeClustersFromEnvironment } from '../environment/business.js'
+import { removeClusterFromEnvironment } from '../environment/business.js'
 import { type UserDto, getUser } from '@/resources/user/business.js'
 import { gitlabUrl } from '@/plugins/core/gitlab/utils.js'
 import { getProjectServices } from '@/plugins/services.js'
@@ -37,8 +35,8 @@ import { getProjectServices } from '@/plugins/services.js'
 // Fetch infos
 export const getProjectInfosAndClusters = async (projectId: string) => {
   const project = await getProjectInfosQuery(projectId)
-  const authorizedClusters = project.clusters ? [...await getPublicClusters(), ...project?.clusters] : [...await getPublicClusters()]
-  return { project, authorizedClusters }
+  const projectClusters = project.clusters ? [...await getPublicClusters(), ...project.clusters] : [...await getPublicClusters()]
+  return { project, projectClusters }
 }
 
 export const getUserProjects = async (requestor: UserDto) => {
@@ -220,20 +218,14 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
       url: `${gitlabBaseURL}/${repo.internalRepoName}.git`,
       ...repo,
     }))
-    const stageIds = project.environments?.map(env => env.stageId)
-    const environments = []
-    for (const stageId of stageIds) {
-      environments.push(await getStageById(stageId))
-    }
 
     // -- début - Suppression environnements --
-    for (const env of project.environments) {
-      // Supprimer le namespace du projet des différent clusters cibles
-      const environmentName = environments?.find(environment => env.stageId === environment.id)?.name
-      const clusters = await getClusterByEnvironmentId(env.id)
-      await removeClustersFromEnvironment(clusters, environmentName, env.id, project.name, project.organization.name, requestor.id)
+    for (const environment of project.environments) {
+      // Supprimer le namespace du projet du cluster cible
+      await removeClusterFromEnvironment({ userId: requestor.id, project, environment })
+      // Supprimer l'environnement
       const envData = {
-        environment: environmentName,
+        environment: environment.name,
         project: project.name,
         organization: project.organization.name,
         repositories,
@@ -241,14 +233,14 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
       const resultsEnv = await hooks.deleteEnvironment.execute(envData)
       await addLogs('Delete Environments', resultsEnv, requestor.id)
       if (resultsEnv.failed) throw new UnprocessableContentError('Echec des services à la suppression de l\'environnement')
-      await deleteEnvironment(env.id)
+      await deleteEnvironment(environment.id)
     }
     // -- fin - Suppression environnements --
 
     // -- début - Suppression repositories --
     for (const repo of repositories) {
       const result = await hooks.deleteRepository.execute({
-        environments: environments?.map(environment => environment?.name),
+        environments: project.environments?.map(environment => environment?.name),
         project: project.name,
         organization: project.organization.name,
         ...repo,

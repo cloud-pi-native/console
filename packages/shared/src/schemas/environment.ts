@@ -5,28 +5,33 @@ export const environmentSchema = Joi.object({
   id: Joi.string()
     .uuid(),
 
+  name: Joi.string()
+    .required()
+    .pattern(/^[a-z0-9-]+$/)
+    .min(2)
+    .max(11),
+
   projectId: Joi.string()
     .uuid()
     .required(),
 
-  quotaId: Joi.string()
-    .uuid(),
+  quotaStageId: Joi.string()
+    .uuid()
+    .required(),
 
-  stageId: Joi.string()
-    .uuid(),
+  clusterId: Joi.string()
+    .uuid()
+    .required(),
 
   status: Joi.string()
     .valid(...projectStatus),
-  // .required(),
 
-  createdAt: Joi.date()
-    .optional(),
+  permissions: Joi.array(),
+
+  quotaStage: Joi.object(),
+
+  createdAt: Joi.date(),
 
   updatedAt: Joi.date(),
 
-  clustersId: Joi.array()
-    .optional(),
-
-  permissions: Joi.array()
-    .optional(),
 })

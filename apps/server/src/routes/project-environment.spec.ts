@@ -69,7 +69,7 @@ describe('User routes', () => {
         permissions: [getRandomPerm(envToGet.id, requestor)],
       }
 
-      prisma.environment.findUnique.mockResolvedValue(envInfos)
+      prisma.environment.findUnique.mockResolvedValueOnce(envInfos)
 
       const response = await app.inject()
         .get(`/${projectInfos.id}/environments/${envToGet.id}`)
@@ -87,7 +87,7 @@ describe('User routes', () => {
         project: projectInfos,
       }
 
-      prisma.environment.findUnique.mockResolvedValue(envInfos)
+      prisma.environment.findUnique.mockResolvedValueOnce(envInfos)
 
       const response = await app.inject()
         .get(`/${projectInfos.id}/environments/${envInfos.id}`)
@@ -125,21 +125,24 @@ describe('User routes', () => {
       const randomDbSetUp = createRandomDbSetup({ envs: ['prod'] })
       const projectInfos = randomDbSetUp.project
       projectInfos.roles = [...projectInfos.roles, getRandomRole(requestor.id, projectInfos.id, 'owner')]
+      const quotaStage = randomDbSetUp?.stages[0]?.quotaStage[0]
+      const envToAdd = getRandomEnv('int-0', projectInfos.id, quotaStage?.id, projectInfos?.clusters[0]?.id)
+      const envInfos = { ...envToAdd, project: projectInfos }
       const logCreate = getRandomLog('Create Environment', requestor.id)
       const logAdd = getRandomLog('Add Cluster to Environment', requestor.id)
-      const envToAdd = getRandomEnv(randomDbSetUp.stages[0], projectInfos.id)
-      const envInfos = { ...envToAdd, project: projectInfos }
 
       prisma.user.findUnique.mockResolvedValueOnce(requestor)
       prisma.project.findUnique.mockResolvedValue(projectInfos)
-      prisma.stage.findUnique.mockResolvedValue(randomDbSetUp.stages[0])
-      prisma.cluster.findMany.mockResolvedValue(projectInfos.clusters)
+      prisma.cluster.findMany.mockResolvedValue(projectInfos?.clusters)
+      prisma.quotaStage.findUnique.mockResolvedValue(quotaStage)
+      prisma.stage.findUnique.mockResolvedValue(randomDbSetUp?.stages[0])
       prisma.project.update.mockResolvedValue(projectInfos)
       prisma.environment.create.mockReturnValue(envInfos)
       prisma.log.create.mockResolvedValueOnce(logCreate)
-      prisma.cluster.update.mockResolvedValueOnce(projectInfos.clusters)
+      prisma.cluster.findUnique.mockResolvedValue(projectInfos?.clusters[0])
       prisma.log.create.mockResolvedValueOnce(logAdd)
-      prisma.environment.findMany.mockReturnValue([envInfos])
+      prisma.environment.update.mockReturnValue([envInfos])
+      prisma.environment.findMany.mockReturnValue(projectInfos.environments)
       prisma.repository.findMany.mockReturnValue(projectInfos.repositories)
 
       const response = await app.inject()
@@ -158,7 +161,7 @@ describe('User routes', () => {
 
       prisma.user.findUnique.mockResolvedValueOnce(requestor)
       prisma.project.findUnique.mockResolvedValue(projectInfos)
-      prisma.cluster.findMany.mockResolvedValue(projectInfos.clusters)
+      prisma.cluster.findMany.mockResolvedValue(projectInfos?.clusters)
 
       const response = await app.inject()
         .post(`/${projectInfos.id}/environments`)
@@ -170,7 +173,7 @@ describe('User routes', () => {
       expect(JSON.parse(response.body).message).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
     })
 
-    it('Should not create an environment if name already present', async () => {
+    it('Should not create an environment if name is already present', async () => {
       const projectInfos = createRandomDbSetup({}).project
       projectInfos.roles = [...projectInfos.roles, getRandomRole(requestor.id, projectInfos.id, 'owner')]
       const envToAdd = projectInfos.environments[0]
@@ -186,7 +189,50 @@ describe('User routes', () => {
 
       expect(response.statusCode).toEqual(403)
       expect(response.body).toBeDefined()
-      expect(JSON.parse(response.body).message).toEqual('L\'environnement choisi existe déjà pour ce projet')
+      expect(JSON.parse(response.body).message).toEqual('Un environnement avec le même nom et déployé sur le même cluster existe déjà pour ce projet.')
+    })
+
+    it('Should not create an environment if no cluster available', async () => {
+      const projectInfos = createRandomDbSetup({}).project
+      projectInfos.roles = [...projectInfos.roles, getRandomRole(requestor.id, projectInfos.id, 'owner')]
+      const envToAdd = getRandomEnv('thisIsAnId', projectInfos.id)
+
+      prisma.user.findUnique.mockResolvedValueOnce(requestor)
+      prisma.project.findUnique.mockResolvedValue(projectInfos)
+      prisma.cluster.findMany.mockResolvedValue(projectInfos.clusters)
+
+      const response = await app.inject()
+        .post(`/${projectInfos.id}/environments`)
+        .body(envToAdd)
+        .end()
+
+      expect(response.statusCode).toEqual(403)
+      expect(response.body).toBeDefined()
+      expect(JSON.parse(response.body).message).toEqual('Ce cluster n\'est pas disponible pour cette combinaison projet et stage')
+    })
+
+    it('Should not create an environment if quotaStage not active', async () => {
+      const randomDbSetUp = createRandomDbSetup({})
+      const projectInfos = randomDbSetUp.project
+      projectInfos.roles = [...projectInfos.roles, getRandomRole(requestor.id, projectInfos.id, 'owner')]
+      const quotaStage = randomDbSetUp?.stages[0]?.quotaStage[0]
+      quotaStage.status = 'pendingDelete'
+      const envToAdd = getRandomEnv('thisIsAnId', projectInfos.id, quotaStage?.id, projectInfos?.clusters[0]?.id)
+
+      prisma.user.findUnique.mockResolvedValueOnce(requestor)
+      prisma.project.findUnique.mockResolvedValue(projectInfos)
+      prisma.cluster.findMany.mockResolvedValue(projectInfos.clusters)
+      prisma.quotaStage.findUnique.mockResolvedValue(quotaStage)
+      prisma.stage.findUnique.mockResolvedValue(randomDbSetUp?.stages[0])
+
+      const response = await app.inject()
+        .post(`/${projectInfos.id}/environments`)
+        .body(envToAdd)
+        .end()
+
+      expect(response.statusCode).toEqual(403)
+      expect(response.body).toBeDefined()
+      expect(JSON.parse(response.body).message).toEqual('Cette association quota / stage n\'est plus disponible.')
     })
 
     it('Should not create an environment if project locked', async () => {
@@ -220,11 +266,10 @@ describe('User routes', () => {
       const envToDelete = { ...projectInfos.environments[0], project: projectInfos }
 
       prisma.environment.findUnique.mockResolvedValue(envToDelete)
+      prisma.project.findUnique.mockResolvedValue(projectInfos)
       prisma.environment.update.mockReturnValue(envToDelete)
-      prisma.stage.findUnique.mockResolvedValue(randomDbSetUp.stages.find(stage => stage.id === envToDelete.stageId))
       prisma.project.update.mockResolvedValue(projectInfos)
-      prisma.cluster.findMany.mockResolvedValue(projectInfos.clusters)
-      prisma.cluster.update.mockResolvedValueOnce(projectInfos.clusters)
+      prisma.cluster.findUnique.mockResolvedValue(projectInfos?.clusters[0])
       prisma.log.create.mockResolvedValueOnce(logRemove)
       prisma.log.create.mockResolvedValueOnce(logDelete)
       prisma.environment.delete.mockReturnValue(envToDelete)
@@ -243,6 +288,7 @@ describe('User routes', () => {
       const envToDelete = { ...projectInfos.environments[0], project: projectInfos }
 
       prisma.environment.findUnique.mockResolvedValue(envToDelete)
+      prisma.project.findUnique.mockResolvedValue(projectInfos)
 
       const response = await app.inject()
         .delete(`/${projectInfos.id}/environments/${envToDelete.id}`)
@@ -259,6 +305,7 @@ describe('User routes', () => {
       const envToDelete = { ...projectInfos.environments[0], project: projectInfos }
 
       prisma.environment.findUnique.mockResolvedValue(envToDelete)
+      prisma.project.findUnique.mockResolvedValue(projectInfos)
 
       const response = await app.inject()
         .delete(`/${projectInfos.id}/environments/${envToDelete.id}`)

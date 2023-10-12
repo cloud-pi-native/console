@@ -165,7 +165,7 @@ watch(clusters, () => {
       />
     </div>
     <div
-      v-if="!clusterList.length"
+      v-if="!clusterList.length && !isNewClusterForm"
     >
       <p>Aucun cluster enregistré</p>
     </div>

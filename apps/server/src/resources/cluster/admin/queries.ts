@@ -2,7 +2,12 @@ import type { Cluster, Environment, Kubeconfig, Project } from '@prisma/client'
 import prisma from '@/prisma.js'
 
 // prisma.cluster
-export const getClusterById = (id: Cluster['id']) => prisma.cluster.findUnique({ where: { id } })
+export const getClusterById = (id: Cluster['id']) => prisma.cluster.findUnique({
+  where: { id },
+  include: {
+    kubeconfig: true,
+  },
+})
 
 export const getClustersByIds = (clusterIds: Cluster['id'][]) => prisma.cluster.findMany({
   where: {
@@ -118,32 +123,6 @@ export const removeClusterFromProject = (id: Cluster['id'], projectId: Project['
     projects: {
       disconnect: {
         id: projectId,
-      },
-    },
-  },
-})
-
-export const addClusterToEnvironment = (id: Cluster['id'], environmentId: Environment['id']) => prisma.cluster.update({
-  where: {
-    id,
-  },
-  data: {
-    environments: {
-      connect: {
-        id: environmentId,
-      },
-    },
-  },
-})
-
-export const removeClusterFromEnvironment = (id: Cluster['id'], environmentId: Environment['id']) => prisma.cluster.update({
-  where: {
-    id,
-  },
-  data: {
-    environments: {
-      disconnect: {
-        id: environmentId,
       },
     },
   },

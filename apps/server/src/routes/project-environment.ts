@@ -24,7 +24,7 @@ const router = async (app, _opt) => {
   await app.get('/environments/quotas', getQuotasController)
 
   // Récupérer les environnements DSO disponibles
-  await app.get('/environments/dso-environments', getStageController)
+  await app.get('/environments/stages', getStageController)
 }
 
 export default router

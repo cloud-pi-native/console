@@ -14,9 +14,9 @@ model Environment {
   status       String       @default("initializing")
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
-  clusterId    String      @db.Uuid
+  clusterId    String       @db.Uuid
   quotaStageId String       @db.Uuid
-  cluster      Cluster     @relation(fields: [clusterId], references: [id])
+  cluster      Cluster      @relation(fields: [clusterId], references: [id])
   quotaStage   QuotaStage   @relation(fields: [quotaStageId], references: [id], onDelete: Restrict)
   project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
   permissions  Permission[]
@@ -142,7 +142,7 @@ model Quota {
   memory     String       @db.VarChar
   cpu        Float        @db.Real
   name       String       @unique @db.VarChar
-  private    Boolean      @default(false)
+  isPrivate  Boolean      @default(false)
   quotaStage QuotaStage[]
 }
 
@@ -158,7 +158,7 @@ model QuotaStage {
   quotaId      String           @db.Uuid
   stageId      String           @db.Uuid
   status       QuotaStageStatus @default(active)
-  environmentq Environment[]
+  environments Environment[]
   quota        Quota            @relation(fields: [quotaId], references: [id], onDelete: Cascade)
   stage        Stage            @relation(fields: [stageId], references: [id], onDelete: Cascade)
 

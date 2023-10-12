@@ -120,9 +120,9 @@ export const getQuotas = async () => {
   return response.data
 }
 
-// Dso Environments
+// Stages
 export const getStages = async () => {
-  const response = await apiClient.get('/projects/environments/dso-environments')
+  const response = await apiClient.get('/projects/environments/stages')
   return response.data
 }
 
