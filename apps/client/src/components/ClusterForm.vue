@@ -269,7 +269,7 @@ watch(selectedContext, () => {
       is-textarea
       label="Informations supplémentaires sur le cluster"
       label-visible
-      hint="Facultatif : Infos accessibles aux utilisateurs"
+      hint="Facultatif : Informations accessibles aux utilisateurs."
       @update:model-value="updateValues('infos', $event)"
     />
     <DsfrCheckbox

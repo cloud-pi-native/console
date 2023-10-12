@@ -1,64 +1,4 @@
 export const data = {
-  stage: [
-    {
-      id: '6bfab904-0a67-42e6-a0b4-242fd50b9b0e',
-      name: 'dev',
-      createdAt: '2023-07-03T14:46:56.758Z',
-      updatedAt: '2023-07-03T14:46:56.758Z',
-    },
-    {
-      id: '46c5774e-58c1-41c2-b1d4-5a5bff51c1f0',
-      name: 'staging',
-      createdAt: '2023-07-03T14:46:56.758Z',
-      updatedAt: '2023-07-03T14:46:56.758Z',
-    },
-    {
-      id: 'c5afadb9-ede3-4f95-ac33-b6456a34e2bb',
-      name: 'integration',
-      createdAt: '2023-07-03T14:46:56.758Z',
-      updatedAt: '2023-07-03T14:46:56.758Z',
-    },
-    {
-      id: 'bd6efeab-ac03-4b22-858b-02e00c3ad8af',
-      name: 'prod',
-      createdAt: '2023-07-03T14:46:56.758Z',
-      updatedAt: '2023-07-03T14:46:56.758Z',
-    },
-  ],
-  quota: [
-    {
-      id: '7fd7e4ac-2638-4d8a-8a77-b823dd7de8ed',
-      name: 'micro',
-      compute: 2,
-      memory: 4,
-      createdAt: '2023-07-03T14:46:56.758Z',
-      updatedAt: '2023-07-03T14:46:56.758Z',
-    },
-    {
-      id: '74b8e2e3-3c49-4d74-9cd2-06232ebcd5cf',
-      name: 'small',
-      compute: 4,
-      memory: 8,
-      createdAt: '2023-07-03T14:46:56.758Z',
-      updatedAt: '2023-07-03T14:46:56.758Z',
-    },
-    {
-      id: '88d180d1-7876-4c70-b6a1-81d61ef596b2',
-      name: 'medium',
-      compute: 6,
-      memory: 12,
-      createdAt: '2023-07-03T14:46:56.758Z',
-      updatedAt: '2023-07-03T14:46:56.758Z',
-    },
-    {
-      id: 'deee42e2-afac-417c-85c5-c5ba25c69bbb',
-      name: 'large',
-      compute: 8,
-      memory: 16,
-      createdAt: '2023-07-03T14:46:56.758Z',
-      updatedAt: '2023-07-03T14:46:56.758Z',
-    },
-  ],
   organization: [
     {
       id: '2368a61e-f243-42f6-b471-a85b056ee131',
@@ -95,6 +35,7 @@ export const data = {
       privacy: 'public',
       secretName: '3972ac09-6abc-4e49-83b6-d046da5260ec',
       clusterResources: false,
+      infos: 'Cluster public proposé par DSO',
       createdAt: '2023-07-10T19:32:13.385Z',
       updatedAt: '2023-07-10T19:32:13.385Z',
       kubeconfig: {
@@ -372,86 +313,82 @@ export const data = {
     {
       id: 'bc06ace5-ddf6-4f00-97fa-872922baf078',
       name: 'dev',
-      stageId: '6bfab904-0a67-42e6-a0b4-242fd50b9b0e',
       projectId: '22e7044f-8414-435d-9c4a-2df42a65034b',
-      quotaId: '7fd7e4ac-2638-4d8a-8a77-b823dd7de8ed',
-      clusterId: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
       status: 'created',
       createdAt: '2023-07-03T14:46:56.819Z',
       updatedAt: '2023-07-03T14:46:56.826Z',
+      clusterId: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
+      quotaStageId: '0530e9c9-b37d-4dec-93e6-1895f700e61c',
     },
     {
       id: '95ef0d9b-945e-4af6-851c-4c6685ceff20',
       name: 'staging',
-      stageId: '46c5774e-58c1-41c2-b1d4-5a5bff51c1f0',
       projectId: '22e7044f-8414-435d-9c4a-2df42a65034b',
-      quotaId: '7fd7e4ac-2638-4d8a-8a77-b823dd7de8ed',
-      clusterId: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
       status: 'created',
       createdAt: '2023-07-03T14:46:56.819Z',
       updatedAt: '2023-07-03T14:46:56.829Z',
+      clusterId: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
+      quotaStageId: '0530e9c9-b37d-4dec-93e6-1895f700e61c',
     },
     {
       id: '8d4503eb-64c7-407e-89db-6ab80865071f',
       name: 'dev',
-      stageId: '6bfab904-0a67-42e6-a0b4-242fd50b9b0e',
       projectId: '9dabf3f9-6c86-4358-8598-65007d78df65',
-      clusterId: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
-      quotaId: '74b8e2e3-3c49-4d74-9cd2-06232ebcd5cf',
       status: 'created',
       createdAt: '2023-07-03T14:46:56.834Z',
       updatedAt: '2023-07-03T14:46:56.855Z',
+      clusterId: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
+      quotaStageId: '0530e9c9-b37d-4dec-93e6-1895f700e61c',
     },
     {
       id: '3b0cf6c1-251b-4ec6-926f-b54ce1f82560',
       name: 'staging',
-      stageId: '46c5774e-58c1-41c2-b1d4-5a5bff51c1f0',
       projectId: '9dabf3f9-6c86-4358-8598-65007d78df65',
-      clusterId: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
       status: 'created',
       createdAt: '2023-07-03T14:46:56.834Z',
       updatedAt: '2023-07-03T14:46:56.859Z',
+      clusterId: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
+      quotaStageId: '0530e9c9-b37d-4dec-93e6-1895f700e61c',
     },
     {
       id: '1b9f1053-fcf5-4053-a7b2-ff8a2c0c1921',
       name: 'dev',
-      stageId: '6bfab904-0a67-42e6-a0b4-242fd50b9b0e',
       projectId: '011e7860-04d7-461f-912d-334c622d38b3',
-      clusterId: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
       status: 'created',
       createdAt: '2023-07-03T14:46:56.787Z',
       updatedAt: '2023-07-03T14:46:56.803Z',
+      clusterId: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
+      quotaStageId: '0530e9c9-b37d-4dec-93e6-1895f700e61c',
     },
     {
       id: '1c654f00-4798-4a80-929f-960ddb37885a',
       name: 'integration',
-      stageId: 'c5afadb9-ede3-4f95-ac33-b6456a34e2bb',
       projectId: '011e7860-04d7-461f-912d-334c622d38b3',
-      clusterId: '126ac57f-263c-4463-87bb-d4e9017056b2',
       status: 'created',
       createdAt: '2023-07-03T14:46:56.788Z',
       updatedAt: '2023-07-03T14:46:56.803Z',
+      clusterId: '126ac57f-263c-4463-87bb-d4e9017056b2',
+      quotaStageId: '0530e9c9-b37d-4dec-93e6-1895f700e61c',
     },
     {
       id: '1c654f00-4798-4a80-929f-960ddb36774b',
       name: 'integration',
-      stageId: 'c5afadb9-ede3-4f95-ac33-b6456a34e2bb',
       projectId: '011e7860-04d7-461f-912d-334c622d38c5',
-      clusterId: '32636a52-4dd1-430b-b08a-b2e5ed9d1789',
-      quotaId: 'deee42e2-afac-417c-85c5-c5ba25c69bbb',
       status: 'created',
       createdAt: '2023-07-03T14:46:56.788Z',
       updatedAt: '2023-07-03T14:46:56.803Z',
+      clusterId: '32636a52-4dd1-430b-b08a-b2e5ed9d1789',
+      quotaStageId: '0530e9c9-b37d-4dec-93e6-1895f700e61c',
     },
     {
       id: '2805a1f5-0ca4-46a4-b3d7-5b649aee4a91',
       name: 'integration',
-      stageId: 'c5afadb9-ede3-4f95-ac33-b6456a34e2bb',
       projectId: '83833faf-f654-40dd-bcd5-cf2e944fc702',
-      clusterId: '32636a52-4dd1-430b-b08a-b2e5ed9d1789',
       status: 'created',
       createdAt: '2023-07-03T14:46:56.808Z',
       updatedAt: '2023-07-03T14:46:56.815Z',
+      clusterId: '32636a52-4dd1-430b-b08a-b2e5ed9d1789',
+      quotaStageId: '0530e9c9-b37d-4dec-93e6-1895f700e61c',
     },
   ],
   permission: [
@@ -1228,122 +1165,6 @@ export const data = {
           },
           {
             id: '22e7044f-8414-435d-9c4a-2df42a65034b',
-          },
-        ],
-      },
-    ],
-    quota: [
-      {
-        id: '7fd7e4ac-2638-4d8a-8a77-b823dd7de8ed',
-        stages: [
-          {
-            id: '6bfab904-0a67-42e6-a0b4-242fd50b9b0e',
-          },
-          {
-            id: '46c5774e-58c1-41c2-b1d4-5a5bff51c1f0',
-          },
-          {
-            id: 'c5afadb9-ede3-4f95-ac33-b6456a34e2bb',
-          },
-          {
-            id: 'bd6efeab-ac03-4b22-858b-02e00c3ad8af',
-          },
-        ],
-      },
-      {
-        id: '74b8e2e3-3c49-4d74-9cd2-06232ebcd5cf',
-        stages: [
-          {
-            id: '6bfab904-0a67-42e6-a0b4-242fd50b9b0e',
-          },
-          {
-            id: '46c5774e-58c1-41c2-b1d4-5a5bff51c1f0',
-          },
-          {
-            id: 'c5afadb9-ede3-4f95-ac33-b6456a34e2bb',
-          },
-          {
-            id: 'bd6efeab-ac03-4b22-858b-02e00c3ad8af',
-          },
-        ],
-      },
-      {
-        id: '88d180d1-7876-4c70-b6a1-81d61ef596b2',
-        stages: [
-          {
-            id: 'c5afadb9-ede3-4f95-ac33-b6456a34e2bb',
-          },
-          {
-            id: 'bd6efeab-ac03-4b22-858b-02e00c3ad8af',
-          },
-        ],
-      },
-      {
-        id: 'deee42e2-afac-417c-85c5-c5ba25c69bbb',
-        stages: [
-          {
-            id: 'c5afadb9-ede3-4f95-ac33-b6456a34e2bb',
-          },
-          {
-            id: 'bd6efeab-ac03-4b22-858b-02e00c3ad8af',
-          },
-        ],
-      },
-    ],
-    stage: [
-      {
-        id: '6bfab904-0a67-42e6-a0b4-242fd50b9b0e',
-        clusters: [
-          {
-            id: '32636a52-4dd1-430b-b08a-b2e5ed9d1789',
-          },
-          {
-            id: '126ac57f-263c-4463-87bb-d4e9017056b2',
-          },
-          {
-            id: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
-          },
-        ],
-      },
-      {
-        id: '46c5774e-58c1-41c2-b1d4-5a5bff51c1f0',
-        clusters: [
-          {
-            id: '32636a52-4dd1-430b-b08a-b2e5ed9d1789',
-          },
-          {
-            id: '126ac57f-263c-4463-87bb-d4e9017056b2',
-          },
-          {
-            id: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
-          },
-        ],
-      },
-      {
-        id: 'c5afadb9-ede3-4f95-ac33-b6456a34e2bb',
-        clusters: [
-          {
-            id: '32636a52-4dd1-430b-b08a-b2e5ed9d1789',
-          },
-          {
-            id: '126ac57f-263c-4463-87bb-d4e9017056b2',
-          },
-          {
-            id: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
-          },
-        ],
-      },
-      {
-        id: 'bd6efeab-ac03-4b22-858b-02e00c3ad8af',
-        clusters: [
-          {
-            id: '32636a52-4dd1-430b-b08a-b2e5ed9d1789',
-          },
-          {
-            id: '126ac57f-263c-4463-87bb-d4e9017056b2',
-          },
-          {
-            id: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
           },
         ],
       },
