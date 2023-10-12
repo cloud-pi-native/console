@@ -18,6 +18,7 @@ DOCKER_VERSION="$(docker --version)"
 DOCKER_BUILDX_VERSION="$(docker buildx version)"
 
 # Default
+RUN_LINT="false"
 RUN_UNIT_TESTS="false"
 RUN_COMPONENT_TESTS="false"
 RUN_E2E_TESTS="false"
@@ -30,6 +31,8 @@ Following flags are available:
   -c    Run component tests
 
   -e    Run e2e tests
+
+  -e    Run lint
 
   -s    Run deployement status check
 
@@ -44,13 +47,15 @@ print_help() {
 }
 
 # Parse options
-while getopts hcest:u flag
+while getopts hcelst:u flag
 do
   case "${flag}" in
     c)
       RUN_COMPONENT_TESTS=true;;
     e)
       RUN_E2E_TESTS=true;;
+    l)
+      RUN_LINT=true;;
     s)
       RUN_STATUS_CHECK=true;;
     t)
@@ -65,7 +70,7 @@ done
 
 
 # Script condition
-if [ "$RUN_UNIT_TESTS" == "false" ] && [ "$RUN_E2E_TESTS" == "false" ] && [ "$RUN_COMPONENT_TESTS" == "false" ] && [ "$RUN_STATUS_CHECK" == "false" ]; then
+if [ "$RUN_LINT" == "false" ] && [ "$RUN_UNIT_TESTS" == "false" ] && [ "$RUN_E2E_TESTS" == "false" ] && [ "$RUN_COMPONENT_TESTS" == "false" ] && [ "$RUN_STATUS_CHECK" == "false" ]; then
   printf "\nArgument(s) missing, you don't specify any kind of test to run.\n"
   print_help
   exit 0
@@ -100,9 +105,15 @@ printf "\nScript settings:
 
 cd "$PROJECT_DIR"
 
+# Run lint
+if [ "$RUN_LINT" == "true" ]; then
+  npm run lint -- --cache-dir=.turbo/cache --log-order=stream
+fi
+
+
 # Run unit tests
 if [ "$RUN_UNIT_TESTS" == "true" ]; then
-  npm run test:cov -- --cache-dir=.turbo/cache
+  npm run test:cov -- --cache-dir=.turbo/cache --log-order=stream
 fi
 
 
@@ -113,7 +124,7 @@ if [ "$RUN_COMPONENT_TESTS" == "true" ]; then
   printf "\n${red}${i}.${no_color} Launch component tests\n"
   i=$(($i + 1))
 
-  npm run test:ct-ci -- --cache-dir=.turbo/cache
+  npm run test:ct-ci -- --cache-dir=.turbo/cache --log-order=stream
 fi
 
 
@@ -128,7 +139,7 @@ if [ "$RUN_E2E_TESTS" == "true" ]; then
   npm --prefix $PROJECT_DIR/packages/test-utils run build
   ./ci/kind/run.sh -i -d console.dso.local,keycloak.dso.local,pgadmin.dso.local
   ./ci/kind/run.sh -c create,prod -t $TAG
-  CLIENT_HOST=console.dso.local CLIENT_PORT=80 npm --prefix $PROJECT_DIR/apps/client run test:e2e-ci
+  npm run kube:e2e-ci -- --cache-dir=.turbo/cache --log-order=stream
 
   printf "\n${red}${i}.${no_color} Remove resources\n"
   i=$(($i + 1))
@@ -148,7 +159,7 @@ if [ "$RUN_STATUS_CHECK" == "true" ]; then
   ./ci/kind/run.sh -c create,prod -t $TAG
 
   for pod in $(kubectl get pod | tail --lines=+2 | awk '{print $1}'); do
-    printf "\n${red}Pod:${no_color} ${pod}\n${red}Status:${no_color} $(kubectl get pod/${pod} -o jsonpath='{.status.phase}')\n"
+    printf "\nPod: ${pod}\n${red}Status:${no_color} $(kubectl get pod/${pod} -o jsonpath='{.status.phase}')\n"
   done
 
   printf "\n${red}${i}.${no_color} Remove resources\n"

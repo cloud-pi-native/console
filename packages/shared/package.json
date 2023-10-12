@@ -16,7 +16,8 @@
     "lint": "eslint ./src",
     "test": "vitest run",
     "test:cov": "vitest run --coverage",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:e2e-ci": "echo 'check cache'"
   },
   "dependencies": {
     "joi": "^17.10.2"

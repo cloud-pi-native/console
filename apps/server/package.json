@@ -18,7 +18,8 @@
     "lint": "eslint . --ext .js,.cjs,.ts",
     "start": "npm run db:deploy && node dist/server.js",
     "test": "pnpm run db:generate ; vitest run",
-    "test:cov": "pnpm run db:generate ; vitest run --coverage"
+    "test:cov": "pnpm run db:generate ; vitest run --coverage",
+    "test:e2e-ci": "echo 'check cache'"
   },
   "dependencies": {
     "@dso-console/shared": "workspace:*",
