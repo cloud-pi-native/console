@@ -101,6 +101,23 @@ jobs:
           name: unit-tests-coverage
           path: ./coverage
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        id: pnpm-install
+        with:
+          version: "${{ inputs.PNPM_VERSION }}"
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "${{ inputs.NODE_VERSION }}"
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
       - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@master
         env:
@@ -111,7 +128,8 @@ jobs:
           args: >
             -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
             -Dsonar.sources=./apps,./packages
-            -Dsonar.typescript.lcov.reportPaths=./coverage/**/coverage/lcov.info
+            -Dsonar.javascript.node.maxspace=4096
+            -Dsonar.javascript.lcov.reportPaths=./coverage/**/coverage/lcov.info
             -Dsonar.coverage.exclusions=./**/*.spec.js,**/*.spec.ts,**/*.vue,**/assets/**,**/cypress/**
             -Dsonar.scm.provider=git
             -Dsonar.pullrequest.provider=github
