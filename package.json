@@ -15,7 +15,7 @@
     "kube:int": "ci/kind/run.sh -c create,dev,int",
     "kube:prod:build": "ci/kind/run.sh -c create,build -f docker/docker-compose.prod.yml",
     "kube:prod": "ci/kind/run.sh -c create,prod",
-    "kube:e2e": "turbo run test:e2e --filter=client --color",
+    "kube:e2e": "npm --prefix apps/client run test:e2e",
     "kube:e2e-ci": "turbo run test:e2e-ci --filter=client --color",
     "kube:clean": "ci/kind/run.sh -c clean",
     "kube:delete": "ci/kind/run.sh -c delete",
