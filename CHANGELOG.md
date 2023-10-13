@@ -1,5 +1,17 @@
 # Changelog
 
+## [5.11.0](https://github.com/cloud-pi-native/console/compare/v5.10.1...v5.11.0) (2023-10-13)
+
+
+### Features
+
+* :children_crossing: add default branch to sync in mirror pipeline ([45dbc01](https://github.com/cloud-pi-native/console/commit/45dbc01c4a95d04a201b2c5e198e3b192e1e5fe2))
+
+
+### Bug Fixes
+
+* :goal_net: add try catch in checkApi func ([baf38af](https://github.com/cloud-pi-native/console/commit/baf38af3f96fe227a934228d7875181e1407c8e9))
+
 ## [5.10.1](https://github.com/cloud-pi-native/console/compare/v5.10.0...v5.10.1) (2023-10-10)
 
 ### Bug Fixes
