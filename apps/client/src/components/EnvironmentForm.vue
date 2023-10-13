@@ -263,7 +263,7 @@ onMounted(() => {
       />
     </div>
     <LoadingCt
-      :show-loader="props.isUpdatingEnvironment"
+      v-if="props.isUpdatingEnvironment"
       description="Opérations en cours sur l'environnement"
     />
   </div>

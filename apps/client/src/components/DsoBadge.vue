@@ -40,17 +40,17 @@ const global = computed(() => {
 <template>
   <div
     class="flex gap-2"
-    :data-testid="`${resource.id}-${global.testId}`"
+    :data-testid="`${resource?.id}-${global?.testId}`"
   >
     <v-icon
-      :name="global.icon"
-      :fill="global.color"
-      :animation="global.animation"
+      :name="global?.icon"
+      :fill="global?.color"
+      :animation="global?.animation"
     />
     <span
-      :class="`uppercase font-bold fr-text-default--${global.type}`"
+      :class="`uppercase font-bold fr-text-default--${global?.type}`"
     >
-      {{ resource.wording }} : {{ global.wording }}
+      {{ resource?.wording }} : {{ global?.wording }}
     </span>
   </div>
 </template>
