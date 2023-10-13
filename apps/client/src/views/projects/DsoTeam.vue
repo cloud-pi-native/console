@@ -96,9 +96,9 @@ const addUserToProject = async (email: string) => {
   } catch (error) {
     if (error instanceof Error) {
       snackbarStore.setMessage(error.message)
-      return
+    } else {
+      snackbarStore.setMessage('échec d\'ajout de l\'utilisateur au projet')
     }
-    snackbarStore.setMessage('échec d\'ajout de l\'utilisateur au projet')
   }
 
   newUserEmail.value = ''
@@ -114,9 +114,9 @@ const removeUserFromProject = async (userId: string) => {
   } catch (error) {
     if (error instanceof Error) {
       snackbarStore.setMessage(error.message)
-      return
+    } else {
+      snackbarStore.setMessage('échec de retrait de l\'utilisateur du projet')
     }
-    snackbarStore.setMessage('échec de retrait de l\'utilisateur du projet')
   }
   isUpdatingProjectMembers.value = false
 }

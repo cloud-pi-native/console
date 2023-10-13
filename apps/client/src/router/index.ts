@@ -206,8 +206,9 @@ router.beforeEach(async (to, _from, next) => {
     } catch (error) {
       if (error instanceof Error) {
         snackbarStore.setMessage(error?.message, 'error')
+      } else {
+        snackbarStore.setMessage('Echec de récupération du projet', 'error')
       }
-      snackbarStore.setMessage('Echec de récupération du projet', 'error')
     }
 
     const idStart = projectsPath.length

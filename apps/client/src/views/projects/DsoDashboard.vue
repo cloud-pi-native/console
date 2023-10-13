@@ -35,9 +35,9 @@ const updateProject = async (projectId: ProjectInfos['id']) => {
   } catch (error) {
     if (error instanceof Error) {
       snackbarStore.setMessage(error.message)
-      return
+    } else {
+      snackbarStore.setMessage('échec de mise à jour du projet')
     }
-    snackbarStore.setMessage('échec de mise à jour du projet')
   }
   isWaitingForResponse.value = false
 }
@@ -50,9 +50,9 @@ const archiveProject = async (projectId: ProjectInfos['id']) => {
   } catch (error) {
     if (error instanceof Error) {
       snackbarStore.setMessage(error.message)
-      return
+    } else {
+      snackbarStore.setMessage('échec d\'archivage du projet')
     }
-    snackbarStore.setMessage('échec d\'archivage du projet')
   }
   isWaitingForResponse.value = false
 }
@@ -74,9 +74,9 @@ const handleSecretDisplay = async () => {
     } catch (error) {
       if (error instanceof Error) {
         snackbarStore.setMessage(error.message)
-        return
+      } else {
+        snackbarStore.setMessage('échec de récupération des secrets du projet')
       }
-      snackbarStore.setMessage('échec de récupération des secrets du projet')
     }
     isWaitingForResponse.value = false
   }

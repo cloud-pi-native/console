@@ -1,0 +1,49 @@
+name: "💡 Demande de fonctionnalité"
+description: Créer un ticket pour demander une nouvelle fonctionnalité.
+title: "💡 [REQUEST] - <title>"
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: "Description"
+      description: Veuillez saisir une brève explication de la fonctionnalité.
+      placeholder: Décrivez en quelques lignes la fonctionnalité désirée.
+    validations:
+      required: true
+
+  - type: textarea
+    id: implementation_pr
+    attributes:
+      label: "PRs liées"
+      description: Pull request qui répond à la fonctionnalité.
+      placeholder: "#Pull Request ID"
+    validations:
+      required: false
+
+  - type: textarea
+    id: reference_issues
+    attributes:
+      label: "Issues liées"
+      description: Issues associée à cette demande de fonctionnalité.
+      placeholder: "#Issues IDs"
+    validations:
+      required: false
+
+  - type: textarea
+    id: basic_example
+    attributes:
+      label: "Exemples simples"
+      description: Indiquez ici quelques exemples de base de votre fonctionnalité.
+      placeholder: Quelques mots sur votre demande de fonctionnalité.
+    validations:
+      required: false
+
+  - type: textarea
+    id: tech
+    attributes:
+      label: "Spécifications techniques"
+      description: Spcifiez les détails techniques liés à votre demande.
+      placeholder: Une description technique de la fonctionnalité.
+    validations:
+      required: false

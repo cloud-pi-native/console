@@ -1,10 +1,10 @@
 # This file is an example on how to use CI on Gitlab DSO platform, it is not yet functionnal with environnment
-# references for includes are at https://github.com/hexa-forge/gitlab-ci-catalog
+# references for includes are at https://github.com/cloud-pi-native/gitlab-ci-catalog
 stages:
   - read-secret
   - build-push
-  
-include: 
+
+include:
   - project: $CATALOG_PATH
     file: vault-ci.yml
     ref: main
