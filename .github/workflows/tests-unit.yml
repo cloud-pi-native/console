@@ -36,18 +36,31 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "${{ inputs.NODE_VERSION }}"
-          cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Get pnpm store directory
+        id: pnpm-store
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Cache node files
+        uses: actions/cache@v3
+        with:
+          path: |
+            ${{ steps.pnpm-store.outputs.STORE_PATH }}
+          key: node-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            node-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Cache turbo files
         uses: actions/cache@v3
         with:
           path: |
-            .turbo/cache
-            **/coverage
-          key: turbo-${{ runner.os }}-${{ runner.arch }}-unit-${{ github.sha }}
+            ./.turbo/cache
+            ./apps/**/coverage
+            ./packages/**/coverage
+          key: turbo-unit-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('apps/**/src/**','packages/**/src/**') }}
           restore-keys: |
-            turbo-${{ runner.os }}-${{ runner.arch }}-unit-
+            turbo-unit-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -62,8 +75,8 @@ jobs:
         with:
           name: unit-tests-coverage
           path: |
-            ./apps/**/coverage
-            ./packages/**/coverage
+            ./apps/**/coverage/lcov.info
+            ./packages/**/coverage/lcov.info
           retention-days: 1
 
   check-secrets:
@@ -112,8 +125,31 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "${{ inputs.NODE_VERSION }}"
-          cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Get pnpm store directory
+        id: pnpm-store
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Cache node files
+        uses: actions/cache@v3
+        with:
+          path: |
+            ${{ steps.pnpm-store.outputs.STORE_PATH }}
+          key: node-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            node-${{ runner.os }}-${{ runner.arch }}-
+
+      - name: Cache turbo files
+        uses: actions/cache@v3
+        with:
+          path: |
+            ./.turbo/cache
+            ./apps/**/coverage
+            ./packages/**/coverage
+          key: turbo-unit-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('apps/**/src/**','packages/**/src/**') }}
+          restore-keys: |
+            turbo-unit-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -127,10 +163,10 @@ jobs:
         with:
           args: >
             -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
-            -Dsonar.sources=./apps,./packages
+            -Dsonar.sources=apps,packages
             -Dsonar.javascript.node.maxspace=4096
-            -Dsonar.javascript.lcov.reportPaths=./coverage/**/coverage/lcov.info
-            -Dsonar.coverage.exclusions=./**/*.spec.js,**/*.spec.ts,**/*.vue,**/assets/**,**/cypress/**
+            -Dsonar.javascript.lcov.reportPaths=coverage/apps/server/coverage/lcov.info,coverage/apps/client/coverage/lcov.info,coverage/packages/shared/coverage/lcov.info
+            -Dsonar.coverage.exclusions=**/*.spec.js,**/*.spec.ts,**/*.vue,**/assets/**,**/cypress/**,**/packages/test-utils/**
             -Dsonar.scm.provider=git
             -Dsonar.pullrequest.provider=github
             -Dsonar.pullrequest.key=${{ github.event.number }}

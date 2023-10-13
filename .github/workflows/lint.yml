@@ -29,19 +29,33 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "${{ inputs.NODE_VERSION }}"
-          cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Get pnpm store directory
+        id: pnpm-store
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Cache node files
+        uses: actions/cache@v3
+        with:
+          path: |
+            ${{ steps.pnpm-store.outputs.STORE_PATH }}
+          key: node-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            node-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Cache turbo files
         uses: actions/cache@v3
         with:
-          path: .turbo/cache
-          key: turbo-${{ runner.os }}-${{runner.arch }}-lint-${{ github.sha }}
+          path: |
+            ./.turbo/cache
+          key: turbo-lint-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('apps/**/src/**','packages/**/src/**') }}
           restore-keys: |
-            turbo-${{ runner.os }}-${{runner.arch }}-lint-
+            turbo-lint-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Check lint error
-        run: pnpm run lint --cache-dir=.turbo/cache
+        run: |
+          ./ci/scripts/run-tests.sh -l

@@ -10,13 +10,6 @@
       ]
     },
     "clean:build": {},
-    "deploy": {
-      "dependsOn": [
-        "build",
-        "lint",
-        "test"
-      ]
-    },
     "dev": {
       "cache": false
     },
@@ -28,14 +21,6 @@
     },
     "lint": {
       "outputs": []
-    },
-    "start": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        "dist/**"
-      ]
     },
     "test": {
       "dependsOn": [
@@ -62,6 +47,23 @@
       "dependsOn": [
         "^@dso-console/shared#build",
         "^@dso-console/test-utils#build"
+      ],
+      "outputs": []
+    },
+    "client#test:e2e-ci": {
+      "dependsOn": [
+        "@dso-console/shared#test:e2e-ci",
+        "@dso-console/test-utils#test:e2e-ci",
+        "server#test:e2e-ci"
+      ],
+      "inputs": [
+        "src/**"
+      ],
+      "outputs": []
+    },
+    "test:e2e-ci": {
+      "inputs": [
+        "src/**"
       ],
       "outputs": []
     }

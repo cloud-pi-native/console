@@ -37,7 +37,7 @@ jobs:
             apps:
               - 'apps/**'
               - 'packages/**'
-              - '.github/workflows**'
+              - '.github/workflows/**'
 
   expose-vars:
     runs-on: ubuntu-latest

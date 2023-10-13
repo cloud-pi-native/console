@@ -39,15 +39,30 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "${{ inputs.NODE_VERSION }}"
-          cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
 
-      - name: Cache Cypress Binary
-        id: cache-cypress-binary
+      - name: Get pnpm store directory
+        id: pnpm-store
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Cache node files
         uses: actions/cache@v3
         with:
-          path: ~/.cache/Cypress
-          key: cypress-binary-${{ hashFiles('pnpm-lock.yaml') }}
+          path: |
+            ${{ steps.pnpm-store.outputs.STORE_PATH }}
+            /home/runner/.cache/Cypress
+          key: node-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            node-${{ runner.os }}-${{ runner.arch }}-
+
+      - name: Cache turbo files
+        uses: actions/cache@v3
+        with:
+          path: |
+            ./.turbo/cache
+          key: turbo-e2e-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('apps/**/src/**','packages/**/src/**') }}
+          restore-keys: |
+            turbo-e2e-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
