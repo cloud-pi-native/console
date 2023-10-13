@@ -81,8 +81,10 @@ Cypress.Commands.add('archiveProject', (project) => {
     .click()
 
   cy.url().should('match', /\/projects$/)
-    .wait('@getProjects').its('response.statusCode').should('eq', 200)
-    .getByDataTestid(`projectTile-${project.name}`)
+  cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
+  cy.getByDataTestid(`projectTile-${project.name}`)
+    .should('not.exist')
+  cy.getByDataTestid('archiveProjectZone')
     .should('not.exist')
 })
 

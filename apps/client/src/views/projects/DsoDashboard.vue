@@ -307,7 +307,7 @@ const getRows = (service: string) => {
       </div>
     </div>
     <LoadingCt
-      :show-loader="isWaitingForResponse"
+      v-if="isWaitingForResponse"
       description="Opérations en cours"
     />
   </div>

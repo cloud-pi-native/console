@@ -242,7 +242,7 @@ const cancel = (event) => {
       </div>
     </div>
     <LoadingCt
-      :show-loader="props.isUpsertingRepo"
+      v-if="props.isUpsertingRepo"
       description="Opérations en cours sur le dépôt"
     />
   </div>
