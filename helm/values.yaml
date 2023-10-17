@@ -120,8 +120,8 @@ postgres:
     hostname: postgres
     port: 5432
     type: ClusterIP
-    # unused if not type 'NodePort'
-    nodePort: 30432
+    # # unused if not type 'NodePort'
+    # nodePort: 30432
   pvc:
     size: 4Gi
 

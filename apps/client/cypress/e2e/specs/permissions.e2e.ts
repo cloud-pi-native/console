@@ -45,6 +45,7 @@ describe('Manage permissions for environment', () => {
   it('Should add permissions to an existing environment', () => {
     const environment = 'staging'
 
+    // TODO
     cy.assertAddEnvironment(project, [environment])
     cy.addPermission(project, environment, user0.email)
     cy.addPermission(project, environment, user2.email)
@@ -92,6 +93,7 @@ describe('Manage permissions for environment', () => {
     cy.intercept('PUT', `/api/v1/projects/${project.id}/environments/*/permissions`).as('putPermission')
     const environment = 'staging'
 
+    // TODO
     cy.assertAddEnvironment(project, [environment])
     cy.assertPermission(project, environment, [{ email: owner.email, isOwner: true }, { email: user0.email, isOwner: false }])
 
@@ -126,6 +128,7 @@ describe('Manage permissions for environment', () => {
     cy.intercept('DELETE', `/api/v1/projects/${project.id}/environments/*/permissions/${user2.id}`).as('deletePermission')
     const environment = 'staging'
 
+    // TODO
     cy.assertAddEnvironment(project, [environment])
     cy.assertPermission(project, environment, [{ email: owner.email, isOwner: true }, { email: user0.email, isOwner: false }, { email: user2.email, isOwner: false }])
 

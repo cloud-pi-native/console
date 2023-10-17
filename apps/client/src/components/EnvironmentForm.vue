@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref, onBeforeMount, type Ref, watch, computed } from 'vue'
-import { environmentSchema, schemaValidator, projectIsLockedInfo } from '@dso-console/shared'
+import { environmentSchema, schemaValidator, projectIsLockedInfo, isValid } from '@dso-console/shared'
 import PermissionForm from './PermissionForm.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
@@ -182,8 +182,6 @@ watch(quotaId, () => {
       :hint="props.isEditable ? 'Les champs munis d\'une astérisque (*) sont requis' : undefined"
       data-testid="environmentFieldset"
     >
-      <!-- TODO : contrainte min(2) max(11) regex /^[a-z0-9-]+$/ -->
-      <!-- TODO : contrainte project.id + cluster.id + name unique -->
       <DsfrInput
         v-model="localEnvironment.name"
         data-testid="environmentNameInput"
@@ -192,6 +190,7 @@ watch(quotaId, () => {
         label-visible
         required="required"
         hint="Ne doit pas contenir d'espace, doit être unique pour le projet et le cluster sélectionnés, être en minuscules et faire plus de 2 et moins de 11 caractères."
+        :error-message="!!localEnvironment.name && !isValid(environmentSchema, localEnvironment, 'name') ? 'Le nom de l\'environnment ne doit pas contenir d\'espace, doit être unique pour le projet et le cluster sélectionnés, être en minuscules et faire plus de 2 et moins de 11 caractères.': undefined"
         placeholder="integ-0"
         :disabled="!props.isEditable"
       />
@@ -217,6 +216,7 @@ watch(quotaId, () => {
         />
         <DsfrAlert
           v-if="stageId && !clusterOptions?.length"
+          data-testid="noClusterOptionAlert"
           description="Aucun cluster ne semble disponible pour votre projet et le stage choisi. Veuillez contacter les administrateurs."
           type="warning"
           small

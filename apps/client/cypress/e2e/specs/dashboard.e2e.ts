@@ -1,4 +1,4 @@
-import { getModel, getModelById } from '../support/func'
+import { getModelById } from '../support/func'
 import { statusDict } from '@dso-console/shared'
 
 describe('Dashboard', () => {
@@ -16,7 +16,6 @@ describe('Dashboard', () => {
     email: user.email,
     isOwner: false,
   }]
-  const stages = getModel('stage')
 
   before(() => {
     cy.kcLogin('test')
@@ -44,7 +43,7 @@ describe('Dashboard', () => {
 
       project.environments?.forEach(environment => {
         cy.get(`[data-testid$="-${environment.status}-badge"]`)
-          .should('contain', `Environnement ${stages.find(stage => stage.id === environment.stageId).name} : ${statusDict.status[environment.status]?.wording}`)
+          .should('contain', `Environnement ${environment.name} : ${statusDict.status[environment.status]?.wording}`)
       })
     })
   })
@@ -121,18 +120,12 @@ describe('Dashboard', () => {
   })
 
   it('Should archive project as owner without impacting other projects', () => {
-    const projectToKeepEnvironmentNames = projectToKeep.environments
-      .map(environment => environment.stageId)
-      .map(stageId => stages
-        .find(stage => stage.id === stageId)
-        .name)
-
     cy.kcLogin('test')
     cy.archiveProject(projectToArchive)
     cy.assertCreateProjects([projectToKeep.name, projectCreated.name, projectFailed.name])
     cy.assertAddRepo(projectToKeep, projectToKeep.repositories)
     cy.assertUsers(projectToKeep, [owner.email, user.email])
-    cy.assertAddEnvironment(projectToKeep, projectToKeepEnvironmentNames)
-    cy.assertPermission(projectToKeep, projectToKeepEnvironmentNames[0], permissions)
+    cy.assertAddEnvironment(projectToKeep, projectToKeep.environments, false)
+    cy.assertPermission(projectToKeep, projectToKeep.environments[0].name, permissions)
   })
 })

@@ -1,4 +1,126 @@
 export const data = {
+  quota: [
+    {
+      id: '5a57b62f-2465-4fb6-a853-5a751d099199',
+      cpu: 2,
+      memory: '4Gi',
+      name: 'small',
+      isPrivate: false,
+    },
+    {
+      id: '08770663-3b76-4af6-8978-9f75eda4faa7',
+      cpu: 4,
+      memory: '8Gi',
+      name: 'medium',
+      isPrivate: false,
+    },
+    {
+      id: 'b7b4d9bd-7a8f-4287-bb12-5ce2dadb4ff2',
+      cpu: 6,
+      memory: '12Gi',
+      name: 'large',
+      isPrivate: false,
+    },
+    {
+      id: '97b851e8-9067-4a3d-a0e8-c3a6820c49be',
+      cpu: 8,
+      memory: '16Gi',
+      name: 'xlarge',
+      isPrivate: false,
+    },
+  ],
+  stage: [
+    {
+      id: '4a9ad694-4c54-4a3c-9579-548bf4b7b1b9',
+      name: 'dev',
+    },
+    {
+      id: '38fa869d-6267-441d-af7f-e0548fd06b7e',
+      name: 'staging',
+    },
+    {
+      id: 'd434310e-7850-4d59-b47f-0772edf50582',
+      name: 'integration',
+    },
+    {
+      id: '9b3e9991-896d-4d90-bdc5-a34be8c06b8f',
+      name: 'prod',
+    },
+  ],
+  quotaStage: [
+    {
+      id: '0530e9c9-b37d-4dec-93e6-1895f700e61c',
+      quotaId: '5a57b62f-2465-4fb6-a853-5a751d099199',
+      stageId: '4a9ad694-4c54-4a3c-9579-548bf4b7b1b9',
+      status: 'active',
+    },
+    {
+      id: '0530e9c9-b37d-4dec-93e6-1895f700e62c',
+      quotaId: '08770663-3b76-4af6-8978-9f75eda4faa7',
+      stageId: '4a9ad694-4c54-4a3c-9579-548bf4b7b1b9',
+      status: 'active',
+    },
+    {
+      id: '0530e9c9-b37d-4dec-93e6-1895f700e63c',
+      quotaId: '5a57b62f-2465-4fb6-a853-5a751d099199',
+      stageId: '38fa869d-6267-441d-af7f-e0548fd06b7e',
+      status: 'active',
+    },
+    {
+      id: '0530e9c9-b37d-4dec-93e6-1895f700e64c',
+      quotaId: '08770663-3b76-4af6-8978-9f75eda4faa7',
+      stageId: '38fa869d-6267-441d-af7f-e0548fd06b7e',
+      status: 'active',
+    },
+    {
+      id: '0530e9c9-b37d-4dec-93e6-1895f700e65c',
+      quotaId: '5a57b62f-2465-4fb6-a853-5a751d099199',
+      stageId: 'd434310e-7850-4d59-b47f-0772edf50582',
+      status: 'active',
+    },
+    {
+      id: '0530e9c9-b37d-4dec-93e6-1895f700e66c',
+      quotaId: '08770663-3b76-4af6-8978-9f75eda4faa7',
+      stageId: 'd434310e-7850-4d59-b47f-0772edf50582',
+      status: 'active',
+    },
+    {
+      id: '0530e9c9-b37d-4dec-93e6-1895f700e71c',
+      quotaId: 'b7b4d9bd-7a8f-4287-bb12-5ce2dadb4ff2',
+      stageId: 'd434310e-7850-4d59-b47f-0772edf50582',
+      status: 'active',
+    },
+    {
+      id: '0530e9c9-b37d-4dec-93e6-1895f700e67c',
+      quotaId: '97b851e8-9067-4a3d-a0e8-c3a6820c49be',
+      stageId: 'd434310e-7850-4d59-b47f-0772edf50582',
+      status: 'active',
+    },
+    {
+      id: '0530e9c9-b37d-4dec-93e6-1895f700e68c',
+      quotaId: '5a57b62f-2465-4fb6-a853-5a751d099199',
+      stageId: '9b3e9991-896d-4d90-bdc5-a34be8c06b8f',
+      status: 'active',
+    },
+    {
+      id: '0530e9c9-b37d-4dec-93e6-1895f700e69c',
+      quotaId: '08770663-3b76-4af6-8978-9f75eda4faa7',
+      stageId: '9b3e9991-896d-4d90-bdc5-a34be8c06b8f',
+      status: 'active',
+    },
+    {
+      id: '0530e9c9-b37d-4dec-93e6-1895f700e70c',
+      quotaId: 'b7b4d9bd-7a8f-4287-bb12-5ce2dadb4ff2',
+      stageId: '9b3e9991-896d-4d90-bdc5-a34be8c06b8f',
+      status: 'active',
+    },
+    {
+      id: '0530e9c9-b37d-4dec-93e6-1895f700e60c',
+      quotaId: '97b851e8-9067-4a3d-a0e8-c3a6820c49be',
+      stageId: '9b3e9991-896d-4d90-bdc5-a34be8c06b8f',
+      status: 'active',
+    },
+  ],
   organization: [
     {
       id: '2368a61e-f243-42f6-b471-a85b056ee131',
@@ -1150,6 +1272,21 @@ export const data = {
             id: '011e7860-04d7-461f-912d-334c622d38b3',
           },
         ],
+        stages: [
+          {
+            id: '4a9ad694-4c54-4a3c-9579-548bf4b7b1b9',
+          },
+          {
+            id: '38fa869d-6267-441d-af7f-e0548fd06b7e',
+          },
+
+          {
+            id: 'd434310e-7850-4d59-b47f-0772edf50582',
+          },
+          {
+            id: '9b3e9991-896d-4d90-bdc5-a34be8c06b8f',
+          },
+        ],
       },
       {
         id: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
@@ -1165,6 +1302,21 @@ export const data = {
           },
           {
             id: '22e7044f-8414-435d-9c4a-2df42a65034b',
+          },
+        ],
+        stages: [
+          {
+            id: '4a9ad694-4c54-4a3c-9579-548bf4b7b1b9',
+          },
+          {
+            id: '38fa869d-6267-441d-af7f-e0548fd06b7e',
+          },
+
+          {
+            id: 'd434310e-7850-4d59-b47f-0772edf50582',
+          },
+          {
+            id: '9b3e9991-896d-4d90-bdc5-a34be8c06b8f',
           },
         ],
       },
