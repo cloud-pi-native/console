@@ -1,6 +1,7 @@
-import { CreateRepositoryExecArgs, DeleteRepositoryExecArgs } from '@/plugins/hooks/index.js'
+import { CreateRepositoryExecArgs, DeleteRepositoryExecArgs, Organization, Project, RepositoryCreate } from '@/plugins/hooks/index.js'
 import { StepCall } from '@/plugins/hooks/hook.js'
 import { axiosInstance } from './index.js'
+import { createHmac } from 'crypto'
 
 export type Qualifiers =
   'BRC' | // - Sub - projects
@@ -49,7 +50,7 @@ export const createDsoRepository: StepCall<CreateRepositoryExecArgs> = async (pa
   try {
     const { organization, project, internalRepoName } = payload.args
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const projectKey = `${organization}-${project}-${internalRepoName}`
+    const projectKey = generateProjectName(organization, project, internalRepoName)
     const login = `${organization}-${project}` // robot account
     const groupName = `/${organization}-${project}` // oidc group
     const { message, sonarProject } = await createProject(projectKey)
@@ -140,7 +141,7 @@ const createProject = async (projectKey: string) => {
 export const deleteDsoRepository: StepCall<DeleteRepositoryExecArgs> = async (payload) => {
   try {
     const { organization, project, internalRepoName } = payload.args
-    const projectKey = `${organization}-${project}-${internalRepoName}`
+    const projectKey = generateProjectName(organization, project, internalRepoName)
     const sonarProjectSearch = await axiosInstance({
       url: 'projects/search',
       method: 'get',
@@ -178,4 +179,12 @@ export const deleteDsoRepository: StepCall<DeleteRepositoryExecArgs> = async (pa
       error: JSON.stringify(error),
     }
   }
+}
+
+export const generateProjectName = (org: Organization, proj: Project, repo: RepositoryCreate['internalRepoName']) => {
+  const repoHash = createHmac('sha256', '')
+    .update(repo)
+    .digest('hex')
+    .slice(0, 4)
+  return `${org}-${proj}-${repo}-${repoHash}`
 }

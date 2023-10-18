@@ -1,4 +1,4 @@
-import type { CreateProjectExecArgs } from '@/plugins/hooks/index.js'
+import type { ArchiveProjectExecArgs, CreateProjectExecArgs } from '@/plugins/hooks/index.js'
 import type { StepCall } from '@/plugins/hooks/hook.js'
 import type { AxiosResponse } from 'axios'
 import { axiosInstance } from './index.js'
@@ -45,7 +45,7 @@ export const createDsoProjectGroup: StepCall<CreateProjectExecArgs> = async (pay
   }
 }
 
-export const deleteteDsoProjectGroup: StepCall<CreateProjectExecArgs> = async (payload) => {
+export const deleteteDsoProjectGroup: StepCall<ArchiveProjectExecArgs> = async (payload) => {
   const { project, organization } = payload.args
   const groupName = `/${organization}-${project}`
   let message: string

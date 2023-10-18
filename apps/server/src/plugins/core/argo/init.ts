@@ -1,5 +1,5 @@
 import { KubeConfig, CoreV1Api, CustomObjectsApi, PatchUtils } from '@kubernetes/client-node'
-import { addCluster, deleteEnv, deleteRepo, newEnv, newRepo, removeCluster } from './index.js'
+import { deleteEnv, deleteRepo, newEnv, newRepo } from './index.js'
 import { kubeconfigPath, kubeconfigCtx } from '@/utils/env.js'
 import type { RegisterFn } from '@/plugins/index.js'
 import { createCluster, deleteCluster, updateCluster } from './cluster.js'
@@ -27,8 +27,6 @@ export const init = (register: RegisterFn) => {
       // Envs
       initializeEnvironment: { post: newEnv },
       deleteEnvironment: { main: deleteEnv },
-      addEnvironmentCluster: { main: addCluster },
-      removeEnvironmentCluster: { main: removeCluster },
       // Repos
       createRepository: { main: newRepo },
       deleteRepository: { main: deleteRepo },
