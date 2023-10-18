@@ -51,7 +51,7 @@ describe('Administration clusters', () => {
       .and('be.disabled')
     cy.getByDataTestid('infosInput')
       .find('textarea')
-      .should('have.value', '')
+      .should('have.value', cluster1.infos)
     cy.getByDataTestid('clusterResourcesCbx')
       .find('input')
       .should('not.be.checked')

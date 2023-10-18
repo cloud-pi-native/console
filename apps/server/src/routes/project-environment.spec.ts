@@ -12,6 +12,32 @@ import prisma from '../__mocks__/prisma.js'
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 vi.mock('../prisma.js')
+vi.mock('@/plugins/index.js', async () => {
+  return {
+    hooks: {
+      initializeEnvironment: {
+        execute: () => ({
+          failed: false,
+        }),
+      },
+      addEnvironmentCluster: {
+        execute: () => ({
+          failed: false,
+        }),
+      },
+      deleteEnvironment: {
+        execute: () => ({
+          failed: false,
+        }),
+      },
+      removeEnvironmentCluster: {
+        execute: () => ({
+          failed: false,
+        }),
+      },
+    },
+  }
+})
 
 const app = fastify({ logger: false })
   .register(fastifyCookie)

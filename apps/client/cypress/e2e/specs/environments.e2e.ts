@@ -5,7 +5,6 @@ describe('Manage project environments', () => {
   const project1 = getModelById('project', '011e7860-04d7-461f-912d-334c622d38b3')
   const user = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6566')
   const clusterPublic = getModelById('cluster', '32636a52-4dd1-430b-b08a-b2e5ed9d1789')
-  const cluster = getModelById('cluster', '126ac57f-263c-4463-87bb-d4e9017056b2')
   const quotaSmall = getModelById('quota', '5a57b62f-2465-4fb6-a853-5a751d099199')
   const quotaMedium = getModelById('quota', '08770663-3b76-4af6-8978-9f75eda4faa7')
   const integrationStage = getModelById('stage', 'd434310e-7850-4d59-b47f-0772edf50582')
@@ -28,6 +27,8 @@ describe('Manage project environments', () => {
       cluster: clusterPublic,
     },
   ]
+  const project0withoutClusters = project0
+  project0withoutClusters.clusters = []
 
   it('Should add environments to an existing project', () => {
     cy.kcLogin('test')
@@ -35,11 +36,81 @@ describe('Manage project environments', () => {
     cy.assertAddEnvironment(project0, environments)
   })
 
-  // TODO
-  it('Should test environmentForm validation', () => {
+  it('Should not create an environment if project + cluster + name is already taken', () => {
     cy.kcLogin('test')
-    // cy.addEnvironment(project0, environments)
-    // cy.assertAddEnvironment(project0, environments)
+
+    cy.intercept('GET', '/api/v1/projects/environments/stages').as('getStages')
+    cy.intercept('GET', '/api/v1/projects/environments/quotas').as('getQuotas')
+    cy.intercept('POST', '/api/v1/projects/*/environments').as('postEnvironment')
+    cy.intercept('GET', '/api/v1/projects').as('getProjects')
+
+    cy.goToProjects()
+      .getByDataTestid(`projectTile-${project0?.name}`).click()
+      .getByDataTestid('menuEnvironments').click()
+      .url().should('contain', '/environments')
+
+    cy.getByDataTestid('addEnvironmentLink').click()
+    cy.wait('@getStages')
+    cy.wait('@getQuotas')
+    cy.get('h1').should('contain', 'Ajouter un environnement au projet')
+    cy.getByDataTestid('environmentNameInput')
+      .type('myenv')
+    cy.get('#stage-select')
+      .select(environments[1]?.stage?.id)
+    cy.get('#quota-select')
+      .select(environments[1]?.quota?.id)
+    cy.get('#cluster-select')
+      .select(environments[1]?.cluster?.id)
+    cy.getByDataTestid('addEnvironmentBtn')
+      .should('be.enabled')
+    cy.getByDataTestid('environmentNameInput')
+      .clear()
+      .type('Inc0rr3ct/N4-m3!')
+    cy.getByDataTestid('addEnvironmentBtn')
+      .should('be.disabled')
+    cy.getByDataTestid('environmentNameInput')
+      .clear()
+      .type(environments[1]?.name)
+    cy.getByDataTestid('addEnvironmentBtn')
+      .should('be.enabled')
+      .click()
+
+    cy.wait('@postEnvironment').its('response.statusCode').should('eq', 403)
+    cy.getByDataTestid('snackbar').within(() => {
+      cy.get('p').should('contain', 'Un environnement avec le même nom et déployé sur le même cluster existe déjà pour ce projet.')
+    })
+  })
+
+  it('Should handle cluster availability', () => {
+    cy.kcLogin('test')
+
+    cy.intercept('GET', '/api/v1/projects/environments/stages').as('getStages')
+    cy.intercept('GET', '/api/v1/projects/environments/quotas').as('getQuotas')
+    cy.intercept('GET', '/api/v1/projects', {
+      body: [project0withoutClusters],
+    }).as('getProjects')
+
+    cy.goToProjects()
+      .getByDataTestid(`projectTile-${project0?.name}`).click()
+      .getByDataTestid('menuEnvironments').click()
+      .url().should('contain', '/environments')
+
+    cy.getByDataTestid('addEnvironmentLink').click()
+    cy.wait('@getStages')
+    cy.wait('@getQuotas')
+    cy.get('h1').should('contain', 'Ajouter un environnement au projet')
+    cy.getByDataTestid('environmentNameInput')
+      .type('myenv')
+    cy.get('#stage-select')
+      .select(integrationStage?.id)
+    cy.get('#quota-select')
+      .select(quotaMedium?.id)
+    cy.get('#cluster-select')
+      .should('not.exist')
+    cy.getByDataTestid('noClusterOptionAlert')
+      .should('exist')
+    cy.getByDataTestid('addEnvironmentBtn')
+      .should('be.disabled')
   })
 
   it('Should update an environment quota', () => {
@@ -47,20 +118,6 @@ describe('Manage project environments', () => {
     cy.intercept('PUT', '/api/v1/projects/*/environments/*').as('putEnvironment')
     cy.intercept('GET', '/api/v1/projects').as('getProjects')
     cy.intercept('GET', '/api/v1/admin/projects').as('getAdminProjects')
-
-    cy.kcLogin('tcolin')
-    cy.visit('/')
-      .getByDataTestid('menuAdministrationBtn').click()
-      .getByDataTestid('menuAdministrationClusters').click()
-      .url().should('contain', '/admin/clusters')
-    cy.wait('@getAllClusters').its('response.statusCode').should('eq', 200)
-    cy.wait('@getAdminProjects').its('response.statusCode').should('eq', 200)
-    cy.getByDataTestid(`clusterTile-${cluster.label}`)
-      .click()
-    cy.get('#multi-select')
-      .select(`${project0.organization.name} - ${project0.name}`)
-      .getByDataTestid('updateClusterBtn')
-      .click()
 
     cy.kcLogin('test')
     cy.goToProjects()
@@ -70,8 +127,18 @@ describe('Manage project environments', () => {
     cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
 
     cy.getByDataTestid(`environmentTile-${project1FirstEnvironment?.name}`).click()
+    cy.getByDataTestid('environmentNameInput')
+      .should('have.value', project1FirstEnvironment?.name)
+      .and('be.disabled')
+    cy.get('#stage-select')
+      .should('have.value', project1FirstEnvironment?.stage?.id)
+      .and('be.disabled')
+    cy.get('#cluster-select')
+      .should('have.value', project1FirstEnvironment?.cluster?.id)
+      .and('be.disabled')
     cy.get('#quota-select')
       .should('have.value', project1FirstEnvironment?.quota?.id)
+      .and('be.enabled')
       .select(quotaSmall?.id)
     cy.getByDataTestid('putEnvironmentBtn').click()
 
@@ -80,8 +147,18 @@ describe('Manage project environments', () => {
 
     cy.reload()
     cy.getByDataTestid(`environmentTile-${project1FirstEnvironment?.name}`).click()
+    cy.getByDataTestid('environmentNameInput')
+      .should('have.value', project1FirstEnvironment?.name)
+      .and('be.disabled')
+    cy.get('#stage-select')
+      .should('have.value', project1FirstEnvironment?.stage?.id)
+      .and('be.disabled')
+    cy.get('#cluster-select')
+      .should('have.value', project1FirstEnvironment?.cluster?.id)
+      .and('be.disabled')
     cy.get('#quota-select')
       .should('have.value', quotaSmall?.id)
+      .and('be.enabled')
   })
 
   it('Should delete an environment', () => {

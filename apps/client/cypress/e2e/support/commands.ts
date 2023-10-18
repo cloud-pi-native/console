@@ -252,12 +252,12 @@ Cypress.Commands.add('deleteEnvironment', (project, environmentName) => {
   cy.getByDataTestid(`environmentTile-${environmentName}`).should('not.exist')
 })
 
-Cypress.Commands.add('addPermission', (project, environment, userToLicence) => {
+Cypress.Commands.add('addPermission', (project, environmentName, userToLicence) => {
   cy.intercept('POST', `/api/v1/projects/${project.id}/environments/*/permissions`).as('postPermission')
   cy.goToProjects()
     .getByDataTestid(`projectTile-${project.name}`).click()
     .getByDataTestid('menuEnvironments').click()
-    .getByDataTestid(`environmentTile-${environment}`)
+    .getByDataTestid(`environmentTile-${environmentName}`)
     .click()
 
   cy.getByDataTestid('permissionSuggestionInput')
@@ -269,11 +269,11 @@ Cypress.Commands.add('addPermission', (project, environment, userToLicence) => {
     .its('response.statusCode').should('eq', 201)
 })
 
-Cypress.Commands.add('assertPermission', (project, environment, permissions) => {
+Cypress.Commands.add('assertPermission', (project, environmentName, permissions) => {
   cy.goToProjects()
     .getByDataTestid(`projectTile-${project.name}`).click()
     .getByDataTestid('menuEnvironments').click()
-    .getByDataTestid(`environmentTile-${environment}`)
+    .getByDataTestid(`environmentTile-${environmentName}`)
     .click()
 
   permissions.forEach(permission => {
