@@ -25,7 +25,6 @@ type EnvironmentQuotaUpdate = {
   project: Project
   environment: Environment
   repositories: RepositoryForEnv[]
-  owner: UserModel
   quota: ResourceQuota
   cluster: ClusterMix
 }

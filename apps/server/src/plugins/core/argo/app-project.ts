@@ -61,31 +61,6 @@ export const removeRepoFromApplicationProject = async ({ appProjectName, repoUrl
   }
 }
 
-// export const addDestinationToApplicationProject = async (appProjectName: string, newDestination: { name: string, namespace: string, server: string }) => {
-//   const appProject = await getAppProject(appProjectName)
-//   if (appProject) {
-//     const destinations = appProject.spec.destinations
-//     if (!destinations.some(destination => destination.name === newDestination.name)) {
-//       destinations.push(newDestination)
-//       await customK8sApi.patchNamespacedCustomObject('argoproj.io', 'v1alpha1', argoNamespace, 'appprojects', appProjectName, [{ op: 'replace', path: '/spec/destinations', value: destinations }], undefined, undefined, undefined, patchOptions)
-//     }
-//     return
-//   }
-//   throw new Error(`appproject ${appProjectName} not found`)
-// }
-
-// export const removeDestinationFromApplicationProject = async (appProjectName: string, name: string) => {
-//   const appProject = await getAppProject(appProjectName)
-
-//   if (appProject) {
-//     const destinations = appProject.spec.destinations
-//     const newDestinations = destinations.filter(destination => destination.name !== name)
-//     await customK8sApi.patchNamespacedCustomObject('argoproj.io', 'v1alpha1', argoNamespace, 'appprojects', appProjectName, [{ op: 'replace', path: '/spec/destinations', value: newDestinations }], undefined, undefined, undefined, patchOptions)
-//     return
-//   }
-//   throw new Error(`appproject ${appProjectName} not found`)
-// }
-
 const getAppProjectObject = (
   { name, sourceRepos, roGroup, rwGroup, destination }:
   { name: string, sourceRepos, roGroup: string, rwGroup: string, destination: ArgoDestination },

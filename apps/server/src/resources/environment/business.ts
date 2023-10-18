@@ -244,7 +244,7 @@ export const updateEnvironment = async ({
 }: UpdateEnvironmentParam) => {
   try {
     let environment: Environment
-    const { user, project, quotaStage, quota } = await getInitializeEnvironmentInfos({
+    const { project, quotaStage, quota } = await getInitializeEnvironmentInfos({
       userId,
       projectId,
       quotaStageId,
@@ -279,7 +279,6 @@ export const updateEnvironment = async ({
         project: projectName,
         organization: organizationName,
         repositories,
-        owner: user,
         // @ts-ignore
         cluster: {
           ...cluster,
