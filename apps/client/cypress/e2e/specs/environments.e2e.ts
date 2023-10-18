@@ -11,6 +11,7 @@ describe('Manage project environments', () => {
   const stagingStage = getModelById('stage', '38fa869d-6267-441d-af7f-e0548fd06b7e')
   const project1FirstEnvironment = project1.environments[0]
   const project1EnvQuotaStage = getModelById('quotaStage', project1FirstEnvironment?.quotaStageId)
+  project1FirstEnvironment.cluster = getModelById('cluster', project1FirstEnvironment?.clusterId)
   project1FirstEnvironment.quota = getModelById('quota', project1EnvQuotaStage?.quotaId)
   project1FirstEnvironment.stage = getModelById('stage', project1EnvQuotaStage?.stageId)
   const environments = [

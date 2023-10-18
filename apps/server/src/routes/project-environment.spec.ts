@@ -149,8 +149,7 @@ describe('User routes', () => {
       const quotaStage = randomDbSetUp?.stages[0]?.quotaStage[0]
       const envToAdd = getRandomEnv('int-0', projectInfos.id, quotaStage?.id, projectInfos?.clusters[0]?.id)
       const envInfos = { ...envToAdd, project: projectInfos }
-      const logCreate = getRandomLog('Create Environment', requestor.id)
-      const logAdd = getRandomLog('Add Cluster to Environment', requestor.id)
+      const log = getRandomLog('Create Environment', requestor.id)
 
       prisma.user.findUnique.mockResolvedValueOnce(requestor)
       prisma.project.findUnique.mockResolvedValue(projectInfos)
@@ -159,9 +158,8 @@ describe('User routes', () => {
       prisma.stage.findUnique.mockResolvedValue(randomDbSetUp?.stages[0])
       prisma.project.update.mockResolvedValue(projectInfos)
       prisma.environment.create.mockReturnValue(envInfos)
-      prisma.log.create.mockResolvedValueOnce(logCreate)
       prisma.cluster.findUnique.mockResolvedValue(projectInfos?.clusters[0])
-      prisma.log.create.mockResolvedValueOnce(logAdd)
+      prisma.log.create.mockResolvedValueOnce(log)
       prisma.environment.update.mockReturnValue([envInfos])
       prisma.environment.findMany.mockReturnValue(projectInfos.environments)
       prisma.repository.findMany.mockReturnValue(projectInfos.repositories)
@@ -276,14 +274,49 @@ describe('User routes', () => {
     })
   })
 
+  // PUT
+  describe('updateEnvironmentController', () => {
+    it('Should update an environment\'s quotas', async () => {
+      const randomDbSetUp = createRandomDbSetup({ envs: ['dev'] })
+      const projectInfos = randomDbSetUp.project
+      projectInfos.roles = [...projectInfos.roles, getRandomRole(requestor.id, projectInfos.id, 'owner')]
+      const newQuotaStage = randomDbSetUp?.stages[0]?.quotaStage[0]
+      const envUpdated = getRandomEnv('int-0', projectInfos.id, newQuotaStage?.id, projectInfos?.clusters[0]?.id)
+      const envInfos = { ...envUpdated, project: projectInfos }
+      const log = getRandomLog('Update Environment', requestor.id)
+
+      prisma.user.findUnique.mockResolvedValueOnce(requestor)
+      prisma.project.findUnique.mockResolvedValue(projectInfos)
+      prisma.cluster.findMany.mockResolvedValue(projectInfos?.clusters)
+      prisma.quotaStage.findUnique.mockResolvedValue(newQuotaStage)
+      prisma.stage.findUnique.mockResolvedValue(randomDbSetUp?.stages[0])
+      prisma.project.update.mockResolvedValue(projectInfos)
+      prisma.environment.update.mockReturnValue(envInfos)
+      prisma.environment.findUnique.mockReturnValue(envInfos)
+      prisma.cluster.findUnique.mockResolvedValue(projectInfos?.clusters[0])
+      prisma.log.create.mockResolvedValueOnce(log)
+      prisma.environment.update.mockReturnValue([envInfos])
+      prisma.environment.findMany.mockReturnValue(projectInfos.environments)
+      prisma.repository.findMany.mockReturnValue(projectInfos.repositories)
+
+      const response = await app.inject()
+        .put(`/${projectInfos.id}/environments/${envUpdated.id}`)
+        .body(envUpdated)
+        .end()
+
+      expect(response.statusCode).toEqual(200)
+      expect(response.body).toBeDefined()
+      expect(response.json()).toEqual(envInfos)
+    })
+  })
+
   // DELETE
   describe('deleteEnvironmentController', () => {
     it('Should delete an environment', async () => {
       const randomDbSetUp = createRandomDbSetup({ envs: ['dev'] })
       const projectInfos = randomDbSetUp.project
       projectInfos.roles = [...projectInfos.roles, getRandomRole(requestor.id, projectInfos.id, 'owner')]
-      const logRemove = getRandomLog('Remove Cluster from Environment', requestor.id)
-      const logDelete = getRandomLog('Delete Environment', requestor.id)
+      const log = getRandomLog('Delete Environment', requestor.id)
       const envToDelete = { ...projectInfos.environments[0], project: projectInfos }
 
       prisma.environment.findUnique.mockResolvedValue(envToDelete)
@@ -291,8 +324,7 @@ describe('User routes', () => {
       prisma.environment.update.mockReturnValue(envToDelete)
       prisma.project.update.mockResolvedValue(projectInfos)
       prisma.cluster.findUnique.mockResolvedValue(projectInfos?.clusters[0])
-      prisma.log.create.mockResolvedValueOnce(logRemove)
-      prisma.log.create.mockResolvedValueOnce(logDelete)
+      prisma.log.create.mockResolvedValueOnce(log)
       prisma.environment.delete.mockReturnValue(envToDelete)
       prisma.environment.findMany.mockReturnValue([])
       prisma.repository.findMany.mockReturnValue([])

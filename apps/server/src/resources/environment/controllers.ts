@@ -81,6 +81,7 @@ export const updateEnvironmentController = async (req: EnhancedFastifyRequest<Up
     projectId,
     environmentId,
     quotaStageId: data.quotaStageId,
+    clusterId: data.clusterId,
   })
 
   addReqLogs({
@@ -88,7 +89,7 @@ export const updateEnvironmentController = async (req: EnhancedFastifyRequest<Up
     description: 'Environnement mis à jour avec succès',
     extras: {
       environmentId,
-      projectId: environment.project.id,
+      projectId: environment.projectId,
     },
   })
 

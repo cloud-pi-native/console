@@ -1,10 +1,10 @@
 import type { CoreV1Api, V1Secret } from '@kubernetes/client-node'
 import { createCoreV1Api } from './api.js'
 import type { StepCall } from '@/plugins/hooks/hook.js'
-import type { AddEnvironmentClusterExecArgs } from '@/plugins/hooks/index.js'
+import type { InitializeEnvironmentExecArgs } from '@/plugins/hooks/index.js'
 
 // Plugin Function
-export const createKubeSecret: StepCall<AddEnvironmentClusterExecArgs> = async (payload) => {
+export const createKubeSecret: StepCall<InitializeEnvironmentExecArgs> = async (payload) => {
   try {
     const { organization, project, environment, cluster } = payload.args
     // @ts-ignore
