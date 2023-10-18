@@ -9,7 +9,7 @@ Issues numéro:
 <!-- Veuillez essayer de limiter votre Pull Request à un seul type (correction de bogue, fonctionnalité, etc.). Soumettez plusieurs PRs si nécessaire. -->
 
 ## Quel est le comportement actuel ?
-<!-- Please describe the current behavior that you are modifying. -->
+<!-- Veuillez décrire le comportement actuel que vous modifiez. -->
 
 ## Quel est le nouveau comportement ?
 <!-- Veuillez décrire le comportement ou les changements apportés par cette PR. -->

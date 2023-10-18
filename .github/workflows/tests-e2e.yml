@@ -12,13 +12,6 @@ on:
       TAG:
         required: true
         type: string
-    secrets:
-      SONAR_HOST_URL:
-        required: false
-      SONAR_TOKEN:
-        required: false
-      SONAR_PROJECT_KEY:
-        required: false
 
 jobs:
   e2e-tests:
