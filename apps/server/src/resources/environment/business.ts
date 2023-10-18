@@ -193,12 +193,13 @@ export const createEnvironment = async (
     }))
     const cluster = await getClusterById(clusterId)
 
-    const envData = {
+    const results = await hooks.initializeEnvironment.execute({
       environment: name,
       project: projectName,
       organization: organizationName,
       repositories,
       owner: user,
+      // @ts-ignore
       cluster: {
         ...cluster,
         ...cluster.kubeconfig,
@@ -207,9 +208,7 @@ export const createEnvironment = async (
         memory: quota?.memory,
         cpu: quota?.cpu,
       },
-    }
-    // @ts-ignore
-    const results = await hooks.initializeEnvironment.execute(envData)
+    })
     // @ts-ignore
     await addLogs('Create Environment', results, userId)
     if (results.failed) {
@@ -233,6 +232,7 @@ export const createEnvironment = async (
     projectId: Project['id'],
     environmentId: Environment['id'],
     quotaStageId?: QuotaStage['id'],
+    clusterId?: Cluster['id'],
   }
 
 export const updateEnvironment = async ({
@@ -240,10 +240,15 @@ export const updateEnvironment = async ({
   projectId,
   environmentId,
   quotaStageId,
+  clusterId,
 }: UpdateEnvironmentParam) => {
   try {
-    const project = await getProjectInfos(projectId)
-    const quotaStage = await getQuotaStageById(quotaStageId)
+    let environment: Environment
+    const { user, project, quotaStage, quota } = await getInitializeEnvironmentInfos({
+      userId,
+      projectId,
+      quotaStageId,
+    })
 
     checkUpdateEnvironment({
       project,
@@ -256,13 +261,47 @@ export const updateEnvironment = async ({
     // Modification du quota
     if (quotaStage) {
       await updateEnvironmentQuery({ id: environmentId, quotaStageId: quotaStage.id })
+
+      environment = await getEnvironmentInfos(environmentId)
+
+      const projectName = project.name
+      const organizationName = project.organization.name
+      const gitlabBaseURL = `${gitlabUrl}/${projectRootDir}/${organizationName}/${projectName}`
+      // @ts-ignore
+      const repositories = environment.project.repositories?.map(({ internalRepoName }) => ({
+        url: `${gitlabBaseURL}/${internalRepoName}.git`,
+        internalRepoName,
+      }))
+      const cluster = await getClusterById(clusterId)
+
+      const results = await hooks.updateEnvironmentQuota.execute({
+        environment: environment.name,
+        project: projectName,
+        organization: organizationName,
+        repositories,
+        owner: user,
+        // @ts-ignore
+        cluster: {
+          ...cluster,
+          ...cluster.kubeconfig,
+        },
+        quota: {
+          memory: quota?.memory,
+          cpu: quota?.cpu,
+        },
+      })
+      // @ts-ignore
+      await addLogs('Update Environment Quotas', results, userId)
+      if (results.failed) {
+        throw new UnprocessableContentError('Echec services à la mise à jour des quotas pour l\'environnement')
+      }
     }
 
     // mise à jour des status
     await updateEnvironmentCreated(environmentId)
     await unlockProjectIfNotFailed(projectId)
 
-    const environment = await getEnvironmentInfos(environmentId)
+    environment = await getEnvironmentInfos(environmentId)
 
     return environment
   } catch (error) {
@@ -304,18 +343,17 @@ export const deleteEnvironment = async ({
     }))
     const cluster = await getClusterById(environment.clusterId)
 
-    const envData = {
+    const results = await hooks.deleteEnvironment.execute({
       environment: environment.name,
       project: projectName,
       organization: organizationName,
       repositories,
+      // @ts-ignore
       cluster: {
         ...cluster,
         ...cluster.kubeconfig,
       },
-    }
-    // @ts-ignore
-    const results = await hooks.deleteEnvironment.execute(envData)
+    })
     // @ts-ignore
     await addLogs('Delete Environment', results, userId)
     if (results.failed) {

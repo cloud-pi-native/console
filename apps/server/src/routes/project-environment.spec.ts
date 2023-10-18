@@ -20,6 +20,11 @@ vi.mock('@/plugins/index.js', async () => {
           failed: false,
         }),
       },
+      updateEnvironmentQuota: {
+        execute: () => ({
+          failed: false,
+        }),
+      },
       deleteEnvironment: {
         execute: () => ({
           failed: false,

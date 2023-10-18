@@ -7,7 +7,7 @@ export const init = (register: RegisterFn) => {
     archiveProject: { main: archiveDsoProject },
     updateRepository: { main: updateRepository },
     deleteRepository: { main: deleteDsoRepository },
-    addEnvironmentCluster: { pre: getRegistrySecret },
+    initializeEnvironment: { pre: getRegistrySecret },
     getProjectSecrets: { main: getDsoProjectSecrets },
   })
 }

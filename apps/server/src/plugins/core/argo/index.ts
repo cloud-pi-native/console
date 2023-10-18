@@ -3,6 +3,7 @@ import { ArgoDestination, addRepoToApplicationProject, createApplicationProject,
 import { createApplication, deleteApplication } from './applications.js'
 import type { PluginResult, StepCall } from '@/plugins/hooks/hook.js'
 import type { CreateRepositoryExecArgs, DeleteRepositoryExecArgs } from '@/plugins/hooks/repository.js'
+import { generateAppProjectName, generateApplicationName } from './utils.js'
 
 export const newEnv: StepCall<InitializeEnvironmentExecArgs> = async (payload) => {
   try {
@@ -15,11 +16,11 @@ export const newEnv: StepCall<InitializeEnvironmentExecArgs> = async (payload) =
       name: cluster.label,
       namespace: nsName,
     }
-    const appProjectName = `${organization}-${project}-${environment}-project`
+    const appProjectName = generateAppProjectName(organization, project, environment)
     const appProject = await createApplicationProject({ appProjectName, roGroup, rwGroup, repositories, destination })
 
     for (const repo of repositories) {
-      const applicationName = `${organization}-${project}-${repo.internalRepoName}-${environment}`
+      const applicationName = generateApplicationName(organization, project, environment, repo.internalRepoName)
       await addRepoToApplicationProject({ appProjectName, repoUrl: repo.url })
       await createApplication({ applicationName, appProject, destination, repo })
     }
@@ -43,10 +44,10 @@ export const deleteEnv: StepCall<DeleteEnvironmentExecArgs> = async (payload) =>
   try {
     const { project, organization, environment, repositories } = payload.args
 
-    const appProjectName = `${organization}-${project}-${environment}-project`
+    const appProjectName = generateAppProjectName(organization, project, environment)
     await deleteApplicationProject({ appProjectName })
     for (const repo of repositories) {
-      const applicationName = `${organization}-${project}-${repo.internalRepoName}-${environment}`
+      const applicationName = generateApplicationName(organization, project, environment, repo.internalRepoName)
       await deleteApplication({ applicationName, repoUrl: repo.url })
     }
     return {
@@ -78,8 +79,8 @@ export const newRepo: StepCall<CreateRepositoryExecArgs> = async (payload) => {
     const { project, organization, environments } = payload.args
 
     for (const env of environments) {
-      const appProjectName = `${organization}-${project}-${env}-project`
-      const applicationName = `${organization}-${project}-${repo.internalRepoName}-${env}`
+      const appProjectName = generateAppProjectName(organization, project, env)
+      const applicationName = generateApplicationName(organization, project, env, repo.internalRepoName)
       const appProject = await addRepoToApplicationProject({ appProjectName, repoUrl: repo.url })
       const destination: ArgoDestination = appProject.spec.destinations[0]
       if (payload.args.isInfra) {
@@ -110,7 +111,7 @@ export const deleteRepo: StepCall<DeleteRepositoryExecArgs> = async (payload) =>
     const { project, organization, environments, internalRepoName, internalUrl } = payload.args
 
     for (const env of environments) {
-      const applicationName = `${organization}-${project}-${internalRepoName}-${env}`
+      const applicationName = generateApplicationName(organization, project, env, internalRepoName)
       await deleteApplication({ applicationName, repoUrl: internalUrl })
     }
     return {
