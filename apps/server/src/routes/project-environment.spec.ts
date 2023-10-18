@@ -20,17 +20,7 @@ vi.mock('@/plugins/index.js', async () => {
           failed: false,
         }),
       },
-      addEnvironmentCluster: {
-        execute: () => ({
-          failed: false,
-        }),
-      },
       deleteEnvironment: {
-        execute: () => ({
-          failed: false,
-        }),
-      },
-      removeEnvironmentCluster: {
         execute: () => ({
           failed: false,
         }),

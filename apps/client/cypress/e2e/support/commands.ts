@@ -168,8 +168,8 @@ Cypress.Commands.add('deleteRepo', (project, repo) => {
 })
 
 Cypress.Commands.add('addEnvironment', (project, environments) => {
-  cy.intercept('GET', '/api/v1/projects/environments/stages').as('getStages')
-  cy.intercept('GET', '/api/v1/projects/environments/quotas').as('getQuotas')
+  cy.intercept('GET', 'api/v1/stages').as('getStages')
+  cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
   cy.intercept('POST', '/api/v1/projects/*/environments').as('postEnvironment')
   cy.intercept('GET', '/api/v1/projects').as('getProjects')
 
@@ -200,8 +200,8 @@ Cypress.Commands.add('addEnvironment', (project, environments) => {
 })
 
 Cypress.Commands.add('assertAddEnvironment', (project, environments, isDeepCheck = true) => {
-  cy.intercept('GET', '/api/v1/projects/environments/stages').as('getStages')
-  cy.intercept('GET', '/api/v1/projects/environments/quotas').as('getQuotas')
+  cy.intercept('GET', 'api/v1/stages').as('getStages')
+  cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
   cy.goToProjects()
     .getByDataTestid(`projectTile-${project.name}`).click()
     .getByDataTestid('menuEnvironments').click()

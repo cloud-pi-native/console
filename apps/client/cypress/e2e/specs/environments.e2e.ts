@@ -39,8 +39,8 @@ describe('Manage project environments', () => {
   it('Should not create an environment if project + cluster + name is already taken', () => {
     cy.kcLogin('test')
 
-    cy.intercept('GET', '/api/v1/projects/environments/stages').as('getStages')
-    cy.intercept('GET', '/api/v1/projects/environments/quotas').as('getQuotas')
+    cy.intercept('GET', 'api/v1/stages').as('getStages')
+    cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
     cy.intercept('POST', '/api/v1/projects/*/environments').as('postEnvironment')
     cy.intercept('GET', '/api/v1/projects').as('getProjects')
 
@@ -84,8 +84,8 @@ describe('Manage project environments', () => {
   it('Should handle cluster availability', () => {
     cy.kcLogin('test')
 
-    cy.intercept('GET', '/api/v1/projects/environments/stages').as('getStages')
-    cy.intercept('GET', '/api/v1/projects/environments/quotas').as('getQuotas')
+    cy.intercept('GET', 'api/v1/stages').as('getStages')
+    cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
     cy.intercept('GET', '/api/v1/projects', {
       body: [project0withoutClusters],
     }).as('getProjects')

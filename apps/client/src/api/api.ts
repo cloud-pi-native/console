@@ -116,13 +116,13 @@ export const deleteEnvironment = async (projectId: ProjectModel['id'], environme
 
 // Quotas
 export const getQuotas = async () => {
-  const response = await apiClient.get('/projects/environments/quotas')
+  const response = await apiClient.get('/quotas')
   return response.data
 }
 
 // Stages
 export const getStages = async () => {
-  const response = await apiClient.get('/projects/environments/stages')
+  const response = await apiClient.get('/stages')
   return response.data
 }
 

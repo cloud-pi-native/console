@@ -9,17 +9,16 @@ import {
   updateEnvironmentDeleting,
   deleteEnvironment as deleteEnvironmentQuery,
   getUserById,
-  getQuotas as getQuotasQuery,
   updateEnvironment as updateEnvironmentQuery,
-  getStages as getStagesQuery,
   getStageById,
   getClusterById,
   getProjectInfos,
   getQuotaStageById,
+  getQuotaById,
 } from '@/resources/queries-index.js'
 import { hooks } from '@/plugins/index.js'
-import { DsoError, ForbiddenError, NotFoundError, UnauthorizedError, UnprocessableContentError } from '@/utils/errors.js'
-import { type Cluster, type Environment, type Project, type Role, type User, type QuotaStage, Organization } from '@prisma/client'
+import { DsoError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
+import { type Cluster, type Environment, type Project, type Role, type User, type QuotaStage } from '@prisma/client'
 import {
   type AsyncReturnType,
   checkInsufficientRoleInProject,
@@ -47,18 +46,6 @@ export const getEnvironmentInfos = async (environmentId: string) => {
   return env
 }
 
-export const getQuotas = async (userId: User['id']) => {
-  const user = await getUserById(userId)
-  if (!user) throw new UnauthorizedError('Vous n\'êtes pas connecté')
-  return getQuotasQuery()
-}
-
-export const getStages = async (userId: User['id']) => {
-  const user = await getUserById(userId)
-  if (!user) throw new UnauthorizedError('Vous n\'êtes pas connecté')
-  return getStagesQuery()
-}
-
 type GetInitializeEnvironmentInfosParam = {
   userId: User['id'],
   projectId: Project['id'],
@@ -74,13 +61,14 @@ export const getInitializeEnvironmentInfos = async ({
     const user = await getUserById(userId)
     const { project, projectClusters } = await getProjectInfosAndClusters(projectId)
     const quotaStage = await getQuotaStageById(quotaStageId)
+    const quota = await getQuotaById(quotaStage?.quotaId)
     const stageClusters = (await getStageById(quotaStage?.stageId))?.clusters
     const authorizedClusters = projectClusters
       .filter(projectCluster => stageClusters
         ?.includes(projectCluster) ||
         projectCluster.privacy === 'public')
 
-    return { user, project, quotaStage, authorizedClusters }
+    return { user, project, quota, quotaStage, authorizedClusters }
   } catch (error) {
     throw new Error(error?.message)
   }
@@ -176,7 +164,7 @@ export const createEnvironment = async (
     clusterId,
     quotaStageId,
   }: CreateEnvironmentParam) => {
-  const { user, project, quotaStage, authorizedClusters } = await getInitializeEnvironmentInfos({
+  const { user, project, quotaStage, quota, authorizedClusters } = await getInitializeEnvironmentInfos({
     userId,
     projectId,
     quotaStageId,
@@ -203,6 +191,7 @@ export const createEnvironment = async (
       url: `${gitlabBaseURL}/${internalRepoName}.git`,
       internalRepoName,
     }))
+    const cluster = await getClusterById(clusterId)
 
     const envData = {
       environment: name,
@@ -210,31 +199,21 @@ export const createEnvironment = async (
       organization: organizationName,
       repositories,
       owner: user,
+      cluster: {
+        ...cluster,
+        ...cluster.kubeconfig,
+      },
+      quota: {
+        memory: quota?.memory,
+        cpu: quota?.cpu,
+      },
     }
+    // @ts-ignore
     const results = await hooks.initializeEnvironment.execute(envData)
     // @ts-ignore
     await addLogs('Create Environment', results, userId)
     if (results.failed) {
       throw new UnprocessableContentError('Echec services à la création de l\'environnement')
-    }
-
-    const cluster = await getClusterById(clusterId)
-
-    const addClusterExecResult = await hooks.addEnvironmentCluster.execute({
-      environment: name,
-      project: projectName,
-      organization: organizationName,
-      // @ts-ignore
-      cluster: {
-        ...cluster,
-        ...cluster.kubeconfig,
-      },
-      owner: user,
-    })
-    // @ts-ignore
-    await addLogs('Add Cluster to Environment', addClusterExecResult, userId)
-    if (addClusterExecResult.failed) {
-      throw new UnprocessableContentError('Echec des services à l\'ajout du cluster pour l\'environnement')
     }
 
     await updateEnvironmentCreated(environment.id)
@@ -315,9 +294,6 @@ export const deleteEnvironment = async ({
     await updateEnvironmentDeleting(environment.id)
     await lockProject(projectId)
 
-    // Retrait du cluster pour l'environnement
-    await removeClusterFromEnvironment({ userId, project, environment })
-
     // Suppression de l'environnement dans les services
     const projectName = project.name
     const organizationName = project.organization.name
@@ -326,13 +302,21 @@ export const deleteEnvironment = async ({
       url: `${gitlabBaseURL}/${internalRepoName}.git`,
       internalRepoName,
     }))
+    const cluster = await getClusterById(environment.clusterId)
+
     const envData = {
       environment: environment.name,
       project: projectName,
       organization: organizationName,
       repositories,
+      cluster: {
+        ...cluster,
+        ...cluster.kubeconfig,
+      },
     }
+    // @ts-ignore
     const results = await hooks.deleteEnvironment.execute(envData)
+    // @ts-ignore
     await addLogs('Delete Environment', results, userId)
     if (results.failed) {
       throw new Error('Echec des services à la suppression de l\'environnement')
@@ -348,35 +332,4 @@ export const deleteEnvironment = async ({
     }
     throw new Error(error?.message)
   }
-}
-
-type removeClusterFromEnvironmentParam = {
-  userId: User['id'],
-  project: {
-    id: Project['id'],
-    name: Project['name'],
-    organization: Organization
-  },
-  environment: Environment,
-}
-
-export const removeClusterFromEnvironment = async ({
-  userId,
-  project,
-  environment,
-}: removeClusterFromEnvironmentParam) => {
-  const cluster = await getClusterById(environment.clusterId)
-  const removeClusterExecResult = await hooks.removeEnvironmentCluster.execute({
-    environment: environment.name,
-    project: project.name,
-    organization: project.organization.name,
-    // @ts-ignore
-    cluster: {
-      ...cluster,
-      ...cluster.kubeconfig,
-    },
-  })
-  // @ts-ignore
-  await addLogs('Remove Cluster from Environment', removeClusterExecResult, userId)
-  if (removeClusterExecResult.failed) throw new UnprocessableContentError('Echec des services à la suppression de Clusters pour l\'environnement')
 }

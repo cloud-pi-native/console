@@ -14,7 +14,7 @@ vi.mock('./project.js', async () => ({
   }),
 }))
 
-describe('Counter Store', () => {
+describe('Environment Store', () => {
   beforeEach(() => {
     vi.resetAllMocks()
     // creates a fresh pinia and make it active so it's automatically picked
@@ -29,14 +29,24 @@ describe('Counter Store', () => {
     await projectEnvironmentStore.getQuotas()
 
     expect(apiClientGet).toHaveBeenCalledTimes(1)
-    expect(apiClientGet.mock.calls[0][0]).toEqual('/projects/environments/quotas')
+    expect(apiClientGet.mock.calls[0][0]).toEqual('/quotas')
+  })
+
+  it('Should get environment stages by api call', async () => {
+    apiClientGet.mockReturnValueOnce(Promise.resolve({ data: [] }))
+    const projectEnvironmentStore = useProjectEnvironmentStore()
+
+    await projectEnvironmentStore.getStages()
+
+    expect(apiClientGet).toHaveBeenCalledTimes(1)
+    expect(apiClientGet.mock.calls[0][0]).toEqual('/stages')
   })
 
   it('Should add a project environment by api call', async () => {
     apiClientPost.mockReturnValueOnce(Promise.resolve({ data: {} }))
     const projectEnvironmentStore = useProjectEnvironmentStore()
 
-    await projectEnvironmentStore.addEnvironmentToProject({ name: 'prod', projectId: 'projectId', clustersId: ['clusterId1', 'clusterId2'] })
+    await projectEnvironmentStore.addEnvironmentToProject({ name: 'prod', projectId: 'projectId', clusterId: 'clusterId1', quotaStageId: 'quotastage1' })
 
     expect(apiClientPost).toHaveBeenCalledTimes(1)
     expect(apiClientPost.mock.calls[0][0]).toEqual('/projects/projectId/environments')

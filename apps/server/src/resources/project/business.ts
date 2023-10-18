@@ -3,6 +3,7 @@ import {
   archiveProject as archiveProjectQuery,
   deleteEnvironment,
   deleteRepository,
+  getClusterById,
   getOrganizationById,
   getProjectByNames,
   getProjectInfosAndRepos,
@@ -27,7 +28,6 @@ import { CreateProjectDto, UpdateProjectDto, calcProjectNameMaxLength, projectIs
 import { CreateProjectExecArgs, ProjectBase, UpdateProjectExecArgs } from '@/plugins/hooks/project.js'
 import { filterObjectByKeys } from '@/utils/queries-tools.js'
 import { projectRootDir } from '@/utils/env.js'
-import { removeClusterFromEnvironment } from '../environment/business.js'
 import { type UserDto, getUser } from '@/resources/user/business.js'
 import { gitlabUrl } from '@/plugins/core/gitlab/utils.js'
 import { getProjectServices } from '@/plugins/services.js'
@@ -221,16 +221,22 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
 
     // -- début - Suppression environnements --
     for (const environment of project.environments) {
-      // Supprimer le namespace du projet du cluster cible
-      await removeClusterFromEnvironment({ userId: requestor.id, project, environment })
+      const cluster = await getClusterById(environment.clusterId)
+
       // Supprimer l'environnement
       const envData = {
         environment: environment.name,
         project: project.name,
         organization: project.organization.name,
         repositories,
+        cluster: {
+          ...cluster,
+          ...cluster.kubeconfig,
+        },
       }
+      // @ts-ignore
       const resultsEnv = await hooks.deleteEnvironment.execute(envData)
+      // @ts-ignore
       await addLogs('Delete Environments', resultsEnv, requestor.id)
       if (resultsEnv.failed) throw new UnprocessableContentError('Echec des services à la suppression de l\'environnement')
       await deleteEnvironment(environment.id)

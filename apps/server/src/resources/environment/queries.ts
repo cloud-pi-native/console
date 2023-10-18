@@ -1,4 +1,4 @@
-import { Stage, Environment, Project, Role, Cluster, QuotaStage } from '@prisma/client'
+import { Environment, Project, Role, Cluster, QuotaStage } from '@prisma/client'
 import prisma from '@/prisma.js'
 import { getProjectById } from '../project/queries.js'
 
@@ -59,39 +59,6 @@ export const getEnvironmentsByProjectId = async (projectId: Project['id']) => {
 export const getProjectByEnvironmentId = async (environmentId: Environment['id']) => {
   const env = await getEnvironmentById(environmentId)
   return getProjectById(env.projectId)
-}
-
-export const getQuotas = async () => {
-  return prisma.quota.findMany({
-    include: {
-      quotaStage: true,
-    },
-  })
-}
-
-export const getStages = async () => {
-  return prisma.stage.findMany({
-    include: {
-      clusters: true,
-      quotaStage: true,
-    },
-  })
-}
-
-export const getStageById = async (id: Stage['id']) => {
-  return prisma.stage.findUnique({
-    where: { id },
-    include: {
-      clusters: true,
-      quotaStage: true,
-    },
-  })
-}
-
-export const getQuotaStageById = async (id: QuotaStage['id']) => {
-  return prisma.quotaStage.findUnique({
-    where: { id },
-  })
 }
 
 // INSERT

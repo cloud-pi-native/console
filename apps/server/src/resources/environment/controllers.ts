@@ -16,8 +16,6 @@ import {
   updateEnvironment,
   deleteEnvironment,
   checkGetEnvironment,
-  getQuotas,
-  getStages,
 } from './business.js'
 
 // GET
@@ -45,29 +43,6 @@ export const getEnvironmentByIdController = async (req, res) => {
     },
   })
   sendOk(res, env)
-}
-
-// GET
-export const getStageController = async (req, res) => {
-  const userId = req.session?.user?.id
-  const stages = await getStages(userId)
-
-  addReqLogs({
-    req,
-    description: 'Stages récupérés avec succès',
-  })
-  sendOk(res, stages)
-}
-
-export const getQuotasController = async (req, res) => {
-  const userId = req.session?.user?.id
-  const quotas = await getQuotas(userId)
-
-  addReqLogs({
-    req,
-    description: 'Quotas récupérés avec succès',
-  })
-  sendOk(res, quotas)
 }
 
 // POST

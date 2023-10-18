@@ -15,10 +15,10 @@ describe('EnvironmentForm.vue', () => {
   it('Should mount a EnvironmentForm', () => {
     const randomDbSetup = createRandomDbSetup({ envs: [] })
 
-    cy.intercept('GET', 'api/v1/projects/environments/quotas', {
+    cy.intercept('GET', 'api/v1/quotas', {
       body: randomDbSetup.quotas,
     }).as('getQuotas')
-    cy.intercept('GET', 'api/v1/projects/environments/stages', {
+    cy.intercept('GET', 'api/v1/stages', {
       body: randomDbSetup.stages,
     }).as('getStages')
 
