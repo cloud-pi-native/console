@@ -2,6 +2,7 @@ import type { CoreV1Api, V1Secret } from '@kubernetes/client-node'
 import { createCoreV1Api } from './api.js'
 import type { StepCall } from '@/plugins/hooks/hook.js'
 import type { InitializeEnvironmentExecArgs } from '@/plugins/hooks/index.js'
+import { generateNamespaceName } from './namespace.js'
 
 // Plugin Function
 export const createKubeSecret: StepCall<InitializeEnvironmentExecArgs> = async (payload) => {
@@ -9,7 +10,7 @@ export const createKubeSecret: StepCall<InitializeEnvironmentExecArgs> = async (
     const { organization, project, environment, cluster } = payload.args
     // @ts-ignore
     const registrySecret = payload.vault.pullSecret.data
-    const nsName = `${organization}-${project}-${environment}`
+    const nsName = generateNamespaceName(organization, project, environment)
     const secret = getSecretObject(nsName, registrySecret)
     await createDockerConfigSecret(createCoreV1Api(cluster), secret)
 
