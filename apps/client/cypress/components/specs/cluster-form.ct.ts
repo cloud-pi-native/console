@@ -7,7 +7,7 @@ import '@gouvminint/vue-dsfr/styles'
 import '@/main.css'
 import * as icons from '@/icons.js'
 import ClusterForm from '@/components/ClusterForm.vue'
-import { getRandomCluster, getRandomProject, repeatFn } from '@dso-console/test-utils'
+import { getRandomCluster, getRandomProject, getRandomStage, repeatFn } from '@dso-console/test-utils'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useAdminClusterStore } from '@/stores/admin/cluster.js'
 
@@ -18,9 +18,11 @@ describe('ClusterForm.vue', () => {
     useSnackbarStore(pinia)
 
     const allProjects = repeatFn(5)(getRandomProject)
+    const allStages = repeatFn(4)(getRandomStage)
 
     const props = {
       allProjects,
+      allStages,
     }
 
     const extensions = {
@@ -45,8 +47,10 @@ describe('ClusterForm.vue', () => {
       .check({ force: true })
     cy.get('#privacy-select')
       .select('dedicated')
-    cy.get('#multi-select')
+    cy.get('#projects-select')
       .select(`${allProjects[0].organization.name} - ${allProjects[0].name}`)
+    cy.get('#stages-select')
+      .select(`${allStages[1].name}`)
     cy.getByDataTestid('addClusterBtn').should('be.enabled')
   })
 
@@ -57,7 +61,8 @@ describe('ClusterForm.vue', () => {
     const adminClusterStore = useAdminClusterStore(pinia)
 
     const allProjects = repeatFn(5)(getRandomProject)
-    adminClusterStore.clusters = [getRandomCluster([allProjects[0].id])]
+    const allStages = repeatFn(2)(getRandomStage)
+    adminClusterStore.clusters = [getRandomCluster([allProjects[0].id], [allStages[1].id])]
 
     const props = {
       cluster: adminClusterStore.clusters[0],
@@ -98,7 +103,10 @@ describe('ClusterForm.vue', () => {
       .should('have.value', props.cluster.privacy)
     cy.get('#privacy-select')
       .select('dedicated')
-    cy.get('[data-testid$="-tag"]').should('have.length', props.cluster.projectsId.length)
+    cy.get('[data-testid$="projects-select-tag"]')
+      .should('have.length', props.cluster.projectIds?.length)
+    cy.get('[data-testid$="stages-select-tag"]')
+      .should('have.length', props.cluster.stageIds?.length)
     cy.getByDataTestid('updateClusterBtn').should('be.enabled')
   })
 
@@ -127,9 +135,9 @@ describe('ClusterForm.vue', () => {
     cy.mount(ClusterForm, { extensions, props })
     cy.get('#privacy-select')
       .select('dedicated')
-    cy.get('#multi-select').should('be.visible')
+    cy.get('#projects-select').should('be.visible')
     cy.get('#privacy-select')
       .select('public')
-    cy.get('#multi-select').should('not.to.exist')
+    cy.get('#projects-select').should('not.to.exist')
   })
 })

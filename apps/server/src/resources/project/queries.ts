@@ -1,5 +1,5 @@
 import prisma from '@/prisma.js'
-import { exclude } from '@/utils/queries-tools.js'
+import { exclude } from '@dso-console/shared'
 import type { Organization, Project, User, Role } from '@prisma/client'
 import { AsyncReturnType } from '@/utils/controller.js'
 
@@ -64,7 +64,7 @@ export const getUserProjects = async (user: User) => {
               user: true,
             },
           },
-          clusters: true,
+          quotaStage: true,
         },
       },
       repositories: true,

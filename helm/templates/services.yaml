@@ -13,5 +13,6 @@ spec:
   ports:
   - port: {{ .service.port }}
     targetPort: {{ .container.port }}
+    nodePort: {{ .service.nodePort }}
 {{- end }}
 {{- end }}

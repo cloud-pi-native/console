@@ -19,7 +19,10 @@ export const getPermissionByUserIdAndEnvironmentId = async (userId: User['id'], 
 
 // CREATE
 export const setPermission = async ({ userId, environmentId, level }: { userId: User['id'], environmentId: Environment['id'], level: Permission['level'] }) => {
-  return prisma.permission.create({ data: { userId, environmentId, level } })
+  return prisma.permission.create({
+    data: { userId, environmentId, level },
+    include: { environment: true },
+  })
 }
 
 // UPDATE

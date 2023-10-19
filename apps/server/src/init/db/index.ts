@@ -2,7 +2,7 @@ import { dropTables } from '@/connect.js'
 import prisma from '@/prisma.js'
 import { objectEntries } from '@/utils/type.js'
 
-type Models = 'cluster' | 'environment' | 'log' | 'organization' | 'permission' | 'project' | 'repository' | 'role' | 'user'
+type Models = 'cluster' | 'environment' | 'log' | 'organization' | 'permission' | 'project' | 'repository' | 'role' | 'user' | 'stage' | 'quota'
 
 type Associates = Partial<Record<
   Models, {

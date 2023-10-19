@@ -1,8 +1,9 @@
 <script lang="ts" setup>
-import { ref, computed, type Ref } from 'vue'
+import { ref, computed, type Ref, onBeforeMount } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+import { useProjectEnvironmentStore } from '@/stores/project-environment'
 import { descriptionMaxLength, projectIsLockedInfo, type ProjectInfos } from '@dso-console/shared'
 import DsoSelectedProject from './DsoSelectedProject.vue'
 import DsoBadge from '@/components/DsoBadge.vue'
@@ -13,6 +14,7 @@ import { copyContent } from '@/utils/func.js'
 const projectStore = useProjectStore()
 const userStore = useUserStore()
 const snackbarStore = useSnackbarStore()
+const projectEnvironmentStore = useProjectEnvironmentStore()
 
 const project = computed(() => projectStore.selectedProject)
 const owner = computed(() => projectStore.selectedProjectOwner)
@@ -25,6 +27,7 @@ const projectToArchive = ref('')
 const isWaitingForResponse = ref(false)
 const isSecretShown = ref(false)
 const projectSecrets: Ref<Record<string, any>> = ref({})
+const allStages: Ref<Array<any>> = ref([])
 
 const updateProject = async (projectId: ProjectInfos['id']) => {
   isWaitingForResponse.value = true
@@ -83,7 +86,7 @@ const handleSecretDisplay = async () => {
 }
 
 const getRows = (service: string) => {
-  return [Object.values(projectSecrets.value[service].data).map(value => ({
+  return [Object.values(projectSecrets.value[service]).map(value => ({
     component: 'code',
     text: value,
     title: 'Copier la valeur',
@@ -93,6 +96,18 @@ const getRows = (service: string) => {
   }),
   )]
 }
+
+onBeforeMount(async () => {
+  try {
+    allStages.value = await projectEnvironmentStore.getStages()
+  } catch (error) {
+    if (error instanceof Error) {
+      snackbarStore.setMessage(error.message)
+      return
+    }
+    snackbarStore.setMessage('échec de récupération des environnements DSO')
+  }
+})
 
 </script>
 
@@ -244,11 +259,11 @@ const getRows = (service: string) => {
           :key="service"
         >
           <h3 class="fr-mb-1w fr-mt-3w">
-            {{ service.toUpperCase() }}
+            {{ service }}
           </h3>
           <DsfrTable
             class="horizontal-table"
-            :headers="Object.keys(projectSecrets[service].data)"
+            :headers="Object.keys(projectSecrets[service])"
             :rows="getRows(service)"
           />
         </div>

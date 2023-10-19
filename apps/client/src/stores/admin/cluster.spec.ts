@@ -20,7 +20,7 @@ describe('Counter Store', () => {
       {
         id: '1e4fdb28-f9ea-46d4-ad16-607c7f1aa8b6',
         label: 'cluster1',
-        projectsId: [
+        projectIds: [
           '22e7044f-8414-435d-9c4a-2df42a65034b',
         ],
         user: {
@@ -38,7 +38,7 @@ describe('Counter Store', () => {
       {
         id: '1e4fdb28-f9ea-46d4-ad16-607c7f1aa8b7',
         label: 'cluster2',
-        projectsId: [
+        projectIds: [
           '22e7044f-8414-435d-9c4a-2df42a65034b',
         ],
         user: {
@@ -63,7 +63,7 @@ describe('Counter Store', () => {
     const data = {
       id: '1e4fdb28-f9ea-46d4-ad16-607c7f1aa8b6',
       label: 'cluster1',
-      projectsId: [
+      projectIds: [
         '22e7044f-8414-435d-9c4a-2df42a65034b',
       ],
       user: {
@@ -91,7 +91,7 @@ describe('Counter Store', () => {
   it('Should update cluster by api call', async () => {
     const data = {
       id: '1e4fdb28-f9ea-46d4-ad16-607c7f1aa8b6',
-      projectsId: [
+      projectIds: [
         '22e7044f-8414-435d-9c4a-2df42a65034b',
       ],
       user: {

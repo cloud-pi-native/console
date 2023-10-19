@@ -16,7 +16,6 @@ describe('Dashboard', () => {
     email: user.email,
     isOwner: false,
   }]
-  const environmentNames = projectToKeep.environments.map(environment => environment.name)
 
   before(() => {
     cy.kcLogin('test')
@@ -126,7 +125,7 @@ describe('Dashboard', () => {
     cy.assertCreateProjects([projectToKeep.name, projectCreated.name, projectFailed.name])
     cy.assertAddRepo(projectToKeep, projectToKeep.repositories)
     cy.assertUsers(projectToKeep, [owner.email, user.email])
-    cy.assertAddEnvironment(projectToKeep, environmentNames)
-    cy.assertPermission(projectToKeep, environmentNames[0], permissions)
+    cy.assertAddEnvironment(projectToKeep, projectToKeep.environments, false)
+    cy.assertPermission(projectToKeep, projectToKeep.environments[0].name, permissions)
   })
 })

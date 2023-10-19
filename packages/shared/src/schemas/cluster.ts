@@ -6,7 +6,9 @@ export const clusterSchema = Joi.object({
     .optional()
     .allow(''),
 
-  projectsId: Joi.array(),
+  projectIds: Joi.array(),
+
+  stageIds: Joi.array(),
 
   label: Joi.string()
     .pattern(/^[a-zA-Z0-9-]+$/)

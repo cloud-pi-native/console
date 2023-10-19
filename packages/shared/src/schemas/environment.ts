@@ -1,30 +1,37 @@
 import Joi from 'joi'
-import { allEnv, projectStatus } from '../utils/const.js'
+import { projectStatus, longestEnvironmentName } from '../utils/const.js'
 
 export const environmentSchema = Joi.object({
   id: Joi.string()
     .uuid(),
 
   name: Joi.string()
-    .valid(...allEnv)
-    .required(),
+    .required()
+    .pattern(/^[a-z0-9-]+$/)
+    .min(2)
+    .max(longestEnvironmentName),
 
   projectId: Joi.string()
     .uuid()
     .required(),
 
+  quotaStageId: Joi.string()
+    .uuid()
+    .required(),
+
+  clusterId: Joi.string()
+    .uuid()
+    .required(),
+
   status: Joi.string()
     .valid(...projectStatus),
-  // .required(),
 
-  createdAt: Joi.date()
-    .optional(),
+  permissions: Joi.array(),
+
+  quotaStage: Joi.object(),
+
+  createdAt: Joi.date(),
 
   updatedAt: Joi.date(),
 
-  clustersId: Joi.array()
-    .optional(),
-
-  permissions: Joi.array()
-    .optional(),
 })

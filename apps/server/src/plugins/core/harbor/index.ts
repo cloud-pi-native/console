@@ -50,6 +50,7 @@ export const check = async () => {
 
 export const createDsoProject: StepCall<CreateProjectExecArgs> = async (payload) => {
   try {
+    if (!payload.vault) throw Error('no Vault available')
     const { project, organization } = payload.args
     const projectName = `${organization}-${project}`
 
@@ -71,6 +72,12 @@ export const createDsoProject: StepCall<CreateProjectExecArgs> = async (payload)
         },
       },
     })
+    await payload.vault.write('REGISTRY', {
+      TOKEN: robot.secret,
+      USERNAME: robot.name,
+      HOST: registryHost,
+      DOCKER_CONFIG: dockerConfigStr,
+    })
     return {
       status: {
         result: 'OK',
@@ -81,15 +88,6 @@ export const createDsoProject: StepCall<CreateProjectExecArgs> = async (payload)
         projectMember,
         robot,
       },
-      vault: [{
-        name: 'REGISTRY',
-        data: {
-          TOKEN: robot.secret,
-          USERNAME: robot.name,
-          HOST: registryHost,
-          DOCKER_CONFIG: dockerConfigStr,
-        },
-      }],
     }
   } catch (error) {
     return {

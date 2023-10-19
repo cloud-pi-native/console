@@ -12,15 +12,10 @@ import {
 import { EnhancedFastifyRequest } from '@/types/index.js'
 import {
   getEnvironmentInfos,
-  getEnvironmentInfosAndClusters,
-  checkCreateEnvironment,
-  checkUpdateEnvironment,
-  checkDeleteEnvironment,
   createEnvironment,
   updateEnvironment,
   deleteEnvironment,
   checkGetEnvironment,
-  getInitializeEnvironmentInfos,
 } from './business.js'
 
 // GET
@@ -55,76 +50,50 @@ export const initializeEnvironmentController = async (req: EnhancedFastifyReques
   const data = req.body
   const userId = req.session?.user?.id
   const projectId = req.params?.projectId
-  const newClustersId = req.body?.clustersId || []
 
-  // appel business 1 : récup données
-  const { owner, project, authorizedClusters } = await getInitializeEnvironmentInfos(userId, projectId)
-
-  // appel business 2 : check pré-requis
-  checkCreateEnvironment({
-    project,
-    authorizedClusters,
+  const environment = await createEnvironment({
     userId,
-    newClustersId,
-    // @ts-ignore
-    envName: data.name,
+    projectId,
+    name: data.name,
+    clusterId: data.clusterId,
+    quotaStageId: data.quotaStageId,
   })
-
-  // TODO Joi
-
-  // appel business 3 : create
-  const env = await createEnvironment(
-    project,
-    owner,
-    userId,
-    // @ts-ignore
-    data.name,
-    newClustersId,
-  )
 
   addReqLogs({
     req,
     description: 'Environnement et permissions créés avec succès',
     extras: {
-      environmentId: env.id,
+      environmentId: environment.id,
       projectId,
     },
   })
-  sendCreated(res, env)
+
+  sendCreated(res, environment)
 }
 
 export const updateEnvironmentController = async (req: EnhancedFastifyRequest<UpdateEnvironmentDto>, res) => {
-  const { clustersId: newClustersId } = req.body
+  const data = req.body
   const userId = req.session?.user?.id
-  const { environmentId } = req.params
+  const { projectId, environmentId } = req.params
 
-  // appel business 1 : récup données
-  const { env, authorizedClusters } = await getEnvironmentInfosAndClusters(environmentId)
-  // appel business 2 : check pré-requis
-  checkUpdateEnvironment(
-    {
-      locked: env.project.locked,
-      roles: env.project.roles,
-      id: env.project.id,
-    },
-    authorizedClusters,
+  const environment = await updateEnvironment({
     userId,
-    newClustersId,
-  )
+    projectId,
+    environmentId,
+    quotaStageId: data.quotaStageId,
+    clusterId: data.clusterId,
+  })
 
-  // appel business 3 : update
-  await updateEnvironment(env, userId, newClustersId)
   addReqLogs({
     req,
     description: 'Environnement mis à jour avec succès',
     extras: {
       environmentId,
-      projectId: env.project.id,
+      projectId: environment.projectId,
     },
   })
 
-  const envUpdated = await getEnvironmentInfos(environmentId)
-  sendOk(res, envUpdated)
+  sendOk(res, environment)
 }
 
 // DELETE
@@ -133,27 +102,20 @@ export const deleteEnvironmentController = async (req: EnhancedFastifyRequest<De
   const projectId = req.params?.projectId
   const userId = req.session?.user?.id
 
-  // appel business 1 : récup données
-  const env = await getEnvironmentInfos(environmentId)
-  // appel business 2 : check pré-requis
-  checkDeleteEnvironment(
-    {
-      locked: env.project.locked,
-      roles: env.project.roles,
-      id: env.project.id,
-    },
+  await deleteEnvironment({
     userId,
-  )
+    projectId,
+    environmentId,
+  })
 
-  // appel business 3 : update
-  await deleteEnvironment(env, userId)
   addReqLogs({
     req,
-    description: 'Statut de l\'environnement mis à jour avec succès, environnement en cours de suppression',
+    description: 'Environnement supprimé avec succès',
     extras: {
       environmentId,
       projectId,
     },
   })
+
   sendNoContent(res)
 }

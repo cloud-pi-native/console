@@ -3,8 +3,10 @@ import { removeTrailingSlash } from '@dso-console/shared'
 
 export const keycloakUrl = removeTrailingSlash(process.env.KEYCLOAK_URL)
 
-export const infos: ServiceInfos = {
+const infos: ServiceInfos = {
   monitorUrl: `${keycloakUrl}`,
   name: 'keycloak',
   title: 'Keycloak',
 }
+
+export default infos

@@ -4,7 +4,7 @@ import DsoSelectedProject from './DsoSelectedProject.vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 import EnvironmentForm from '@/components/EnvironmentForm.vue'
-import { allEnv, projectIsLockedInfo, sortArrByObjKeyAsc } from '@dso-console/shared'
+import { projectIsLockedInfo, sortArrByObjKeyAsc } from '@dso-console/shared'
 import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
@@ -15,14 +15,18 @@ const snackbarStore = useSnackbarStore()
 
 const project = computed(() => projectStore.selectedProject)
 const owner = computed(() => projectStore.selectedProjectOwner)
-const isOwner = computed(() => owner.value.id === userStore.userProfile.id)
+const isOwner = computed(() => owner.value?.id === userStore.userProfile.id)
+// @ts-ignore
 const environmentNames = computed(() => environments.value.map(env => env.title))
+
 const environments = ref([])
 const selectedEnvironment = ref({})
 const isNewEnvironmentForm = ref(false)
 const isUpdatingEnvironment = ref(false)
 
+// @ts-ignore
 const setEnvironmentsTiles = (project) => {
+  // @ts-ignore
   environments.value = sortArrByObjKeyAsc(project?.environments, 'name')
     ?.map(environment => ({
       id: environment.id,
@@ -32,14 +36,15 @@ const setEnvironmentsTiles = (project) => {
     }))
 }
 
+// @ts-ignore
 const setSelectedEnvironment = (environment) => {
+  // @ts-ignore
   if (selectedEnvironment.value.id === environment.id || ['deleting', 'initializing'].includes(environment?.status)) {
     selectedEnvironment.value = {}
     return
   }
   selectedEnvironment.value = environment
-  selectedEnvironment.value.clustersId = selectedEnvironment.value.clusters?.map(cluster => cluster.id)
-  cancel()
+  isNewEnvironmentForm.value = false
 }
 
 const showNewEnvironmentForm = () => {
@@ -49,14 +54,18 @@ const showNewEnvironmentForm = () => {
 
 const cancel = () => {
   isNewEnvironmentForm.value = false
+  selectedEnvironment.value = {}
 }
 
+// @ts-ignore
 const addEnvironment = async (environment) => {
   isUpdatingEnvironment.value = true
+  // @ts-ignore
   if (!project.value.locked) {
     try {
       await projectEnvironmentStore.addEnvironmentToProject(environment)
     } catch (error) {
+      // @ts-ignore
       snackbarStore.setMessage(error?.message, 'error')
     }
   }
@@ -64,12 +73,15 @@ const addEnvironment = async (environment) => {
   isUpdatingEnvironment.value = false
 }
 
+// @ts-ignore
 const putEnvironment = async (environment) => {
   isUpdatingEnvironment.value = true
+  // @ts-ignore
   if (!project.value.locked) {
     try {
       await projectEnvironmentStore.updateEnvironment(environment)
     } catch (error) {
+      // @ts-ignore
       snackbarStore.setMessage(error?.message, 'error')
     }
   }
@@ -77,11 +89,13 @@ const putEnvironment = async (environment) => {
   isUpdatingEnvironment.value = false
 }
 
+// @ts-ignore
 const deleteEnvironment = async (environment) => {
   isUpdatingEnvironment.value = true
   try {
     await projectEnvironmentStore.deleteEnvironment(environment.id)
   } catch (error) {
+    // @ts-ignore
     snackbarStore.setMessage(error?.message, 'error')
   }
   setSelectedEnvironment({})
@@ -100,7 +114,6 @@ watch(project, () => {
 <template>
   <DsoSelectedProject />
   <div
-    v-if="environmentNames.length !== allEnv.length"
     class="flex <md:flex-col-reverse items-center justify-between pb-5"
   >
     <DsfrButton
@@ -184,10 +197,11 @@ watch(project, () => {
         :is-owner="isOwner"
         @put-environment="(environment) => putEnvironment(environment)"
         @delete-environment="(environment) => deleteEnvironment(environment)"
+        @cancel="cancel()"
       />
     </div>
     <div
-      v-if="!environments.length"
+      v-if="!environments.length && !isNewEnvironmentForm"
     >
       <p>Aucun environnement déployé</p>
     </div>

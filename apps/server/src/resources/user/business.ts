@@ -38,6 +38,7 @@ export const addUserToProject = async (
   // Retrieve user from keycloak if does not exist in db
   if (!userToAdd) {
     const results = await hooks.retrieveUserByEmail.execute({ email })
+    // @ts-ignore
     await addLogs('Retrieve User By Email', results, userId)
     // @ts-ignore
     const retrievedUser = results.keycloak?.user
@@ -79,6 +80,7 @@ export const addUserToProject = async (
     await addUserToProjectQuery({ project, user: userToAdd, role: 'user' })
 
     const results = await hooks.addUserToProject.execute(kcData)
+    // @ts-ignore
     await addLogs('Add Project Member', results, userId)
 
     await unlockProjectIfNotFailed(project.id)
@@ -135,6 +137,7 @@ export const removeUserFromProject = async (
     await removeUserFromProjectQuery({ projectId: project.id, userId: userToRemoveId })
 
     const results = await hooks.removeUserFromProject.execute(kcData)
+    // @ts-ignore
     await addLogs('Remove User from Project', results, userId)
 
     await unlockProjectIfNotFailed(project.id)

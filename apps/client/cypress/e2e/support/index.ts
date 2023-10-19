@@ -124,7 +124,7 @@ declare global {
        */
       addEnvironment(
         project: Project,
-        environments: string[]
+        environments: any[]
       ): Chainable<JQuery<HTMLElement>>
 
       /**
@@ -135,7 +135,8 @@ declare global {
        */
       assertAddEnvironment(
         project: Project,
-        environments: string[]
+        environments: any[],
+        isDeepCheck?: boolean,
       ): Chainable<JQuery<HTMLElement>>
 
       /**

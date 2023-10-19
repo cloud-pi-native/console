@@ -1,7 +1,6 @@
 import { addReqLogs } from '@/utils/logger.js'
 import { sendOk, sendCreated } from '@/utils/response.js'
-import { Action, deletePermission, getEnvironmentPermissions, preventUpdatingOwnerPermission, setPermission, updatePermission } from './business.js'
-import { checkGetEnvironment, getEnvironmentInfos } from '@/resources/environment/business.js'
+import { deletePermission, getEnvironmentPermissions, setPermission, updatePermission } from './business.js'
 
 // GET
 export const getEnvironmentPermissionsController = async (req, res) => {
@@ -50,12 +49,6 @@ export const updatePermissionController = async (req, res) => {
   const projectId = req.params?.projectId
   const data = req.body
 
-  const env = await getEnvironmentInfos(environmentId)
-
-  checkGetEnvironment(env, requestorId)
-
-  await preventUpdatingOwnerPermission(projectId, data.userId)
-
   const permission = await updatePermission(projectId, requestorId, data.userId, environmentId, parseInt(data.level))
 
   addReqLogs({
@@ -77,13 +70,7 @@ export const deletePermissionController = async (req, res) => {
   const projectId = req.params?.projectId
   const userId = req.params?.userId
 
-  const env = await getEnvironmentInfos(environmentId)
-
-  checkGetEnvironment(env, requestorId)
-
-  await preventUpdatingOwnerPermission(projectId, userId, Action.delete)
-
-  const permission = await deletePermission(userId, environmentId)
+  const permission = await deletePermission(userId, environmentId, requestorId)
 
   addReqLogs({
     req,
