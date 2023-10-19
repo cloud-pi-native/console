@@ -77,9 +77,7 @@ const setClusterOptions = () => {
     // @ts-ignore
       ?.map(cluster => cluster.id)
     // @ts-ignore
-      ?.includes(projectCluster.id) ||
-      // @ts-ignore
-      projectCluster.privacy === 'public',
+      ?.includes(projectCluster.id),
     )
 
   clusterOptions.value = availableClusters.map(cluster => ({

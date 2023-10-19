@@ -36,6 +36,7 @@ import { gitlabUrl } from '@/plugins/core/gitlab/utils.js'
 export const getEnvironmentInfosAndClusters = async (environmentId: string) => {
   const env = await getEnvironmentInfosQuery(environmentId)
   if (!env) throw new NotFoundError('Environnement introuvable', undefined)
+  // @ts-ignore
   const authorizedClusters = [...await getPublicClusters(), ...env.project.clusters]
   return { env, authorizedClusters }
 }
@@ -65,8 +66,7 @@ export const getInitializeEnvironmentInfos = async ({
     const stageClusters = (await getStageById(quotaStage?.stageId))?.clusters
     const authorizedClusters = projectClusters
       .filter(projectCluster => stageClusters
-        ?.includes(projectCluster) ||
-        projectCluster.privacy === 'public')
+        ?.includes(projectCluster))
 
     return { user, project, quota, quotaStage, authorizedClusters }
   } catch (error) {
@@ -88,9 +88,11 @@ export const checkGetEnvironment = (
   env: AsyncReturnType<typeof getEnvironmentInfos>,
   userId: string,
 ) => {
+  // @ts-ignore
   const errorMessage = checkInsufficientRoleInProject(userId, { roles: env.project.roles }) ||
+  // @ts-ignore
     checkInsufficientPermissionInEnvironment(userId, env.permissions, 0)
-  if (errorMessage) throw new ForbiddenError(errorMessage, { description: '', extras: { userId, projectId: env.project.id } })
+  if (errorMessage) throw new ForbiddenError(errorMessage, { description: '', extras: { userId, projectId: env.projectId } })
 }
 
 export const checkCreateEnvironment = ({
