@@ -54,7 +54,8 @@ export type Cluster = {
   id: string,
   label: string,
   infos?: string,
-  projectsId: string[],
+  projectIds?: string[],
+  stageIs?: string[],
   user: {
     certData: string,
     keyData: string,

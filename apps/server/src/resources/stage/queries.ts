@@ -1,5 +1,5 @@
 import prisma from '@/prisma.js'
-import { Cluster, QuotaStage, Stage } from '@prisma/client'
+import { QuotaStage, Stage } from '@prisma/client'
 
 export const getStages = async () => {
   return prisma.stage.findMany({
@@ -31,18 +31,5 @@ export const getStageById = async (id: Stage['id']) => {
 export const getQuotaStageById = async (id: QuotaStage['id']) => {
   return prisma.quotaStage.findUnique({
     where: { id },
-  })
-}
-
-export const linkClusterToStages = async (clusterId: Cluster['id'], stageIds: Stage['id'][]) => {
-  return prisma.cluster.update({
-    where: {
-      id: clusterId,
-    },
-    data: {
-      stages: {
-        connect: stageIds.map(stageId => ({ id: stageId })),
-      },
-    },
   })
 }

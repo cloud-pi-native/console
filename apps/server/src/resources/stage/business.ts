@@ -13,7 +13,7 @@ export const getStages = async (userId: User['id']) => {
   return getStagesQuery()
 }
 
-export const linkClusterToStages = async (clusterId: Cluster['id'], stageIds: Stage['id'][], linkToAll: boolean) => {
+export const linkClusterToStages = async (clusterId: Cluster['id'], stageIds: Stage['id'][], linkToAll: boolean = false) => {
   if (linkToAll === true) {
     stageIds = await getAllStageIds()
   }

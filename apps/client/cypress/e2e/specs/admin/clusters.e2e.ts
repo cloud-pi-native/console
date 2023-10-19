@@ -4,12 +4,14 @@ describe('Administration clusters', () => {
   const clusters = getModel('cluster')
   const cluster1 = getModelById('cluster', '32636a52-4dd1-430b-b08a-b2e5ed9d1789')
   const cluster2 = getModelById('cluster', 'aaaaaaaa-5b03-45d5-847b-149dec875680')
+  const allStages = getModel('stage')
 
   let allClusters
 
   const newCluster = {
     label: 'newCluster',
     projects: ['dinum - beta-app'],
+    stages: allStages.map(stage => stage.name),
     infos: 'Floating IP: 1.1.1.1',
     cluster: {
       tlsServerName: 'myTlsServerName',
@@ -19,14 +21,25 @@ describe('Administration clusters', () => {
   beforeEach(() => {
     cy.intercept('GET', 'api/v1/admin/clusters').as('getAllClusters')
     cy.intercept('GET', '/api/v1/admin/projects').as('getAdminProjects')
+    cy.intercept('GET', '/api/v1/stages').as('getStages')
 
     cy.kcLogin('tcolin')
     cy.visit('/admin/clusters')
     cy.url().should('contain', '/admin/clusters')
     cy.wait('@getAllClusters').its('response').then(response => {
       allClusters = response.body
-      cy.log(allClusters)
+      cluster1.stages = allClusters
+        .find(cluster => cluster.id === cluster1.id)
+        ?.stageIds
+        ?.map(stageId => allStages
+          ?.find(stage => stage.id === stageId))
+      cluster2.stages = allClusters
+        .find(cluster => cluster.id === cluster2.id)
+        ?.stageIds
+        ?.map(stageId => allStages
+          ?.find(stage => stage.id === stageId))
     })
+    cy.wait('@getStages')
     cy.wait('@getAdminProjects').its('response.statusCode').should('eq', 200)
   })
 
@@ -59,8 +72,12 @@ describe('Administration clusters', () => {
     cy.get('#privacy-select')
       .should('have.value', 'public')
       .and('be.enabled')
-    cy.get('#multi-select')
+    cy.get('#projects-select')
       .should('not.exist')
+    cy.get('#stages-select')
+      .should('exist')
+    cy.get('[data-testid$="stages-select-tag"]')
+      .should('have.length', cluster1.stages?.length)
   })
 
   it('Should display a dedicated cluster form', () => {
@@ -87,10 +104,12 @@ describe('Administration clusters', () => {
     cy.get('#privacy-select')
       .should('have.value', 'dedicated')
       .and('be.enabled')
-    cy.get('#multi-select')
+    cy.get('#projects-select')
       .should('be.visible')
-    cy.get('button.fr-tag')
-      .should('have.length', cluster2Infos.projectsId?.length)
+    cy.get('[data-testid$="projects-select-tag"]')
+      .should('have.length', cluster2Infos.projectIds?.length)
+    cy.get('[data-testid$="stages-select-tag"]')
+      .should('have.length', cluster2.stages?.length)
   })
 
   it('Should create a cluster', () => {
@@ -121,11 +140,17 @@ describe('Administration clusters', () => {
     cy.get('#privacy-select')
       .select('dedicated')
     newCluster.projects.forEach(project => {
-      cy.get('#multi-select')
+      cy.get('#projects-select')
         .select(project)
     })
-    cy.get('button.fr-tag')
+    cy.get('[data-testid$="projects-select-tag"]')
       .should('have.length', newCluster.projects.length)
+    newCluster.stages.forEach(stage => {
+      cy.get('#stages-select')
+        .select(stage)
+    })
+    cy.get('[data-testid$="stages-select-tag"]')
+      .should('have.length', newCluster.stages.length)
     cy.getByDataTestid('addClusterBtn')
       .should('be.enabled')
       .click()
@@ -156,10 +181,14 @@ describe('Administration clusters', () => {
     cy.get('#privacy-select')
       .should('have.value', 'dedicated')
       .and('be.enabled')
-    cy.get('#multi-select')
+    cy.get('#projects-select')
       .should('be.visible')
-    cy.get('button.fr-tag')
+    cy.get('[data-testid$="projects-select-tag"]')
       .should('have.length', newCluster.projects.length)
+    cy.get('#stages-select')
+      .should('be.visible')
+    cy.get('[data-testid$="stages-select-tag"]')
+      .should('have.length', newCluster.stages.length)
   })
 
   it('Should update a cluster', () => {
@@ -193,6 +222,10 @@ describe('Administration clusters', () => {
       .uncheck({ force: true })
     cy.get('#privacy-select')
       .select('public')
+    cy.get(`[data-testid="${allStages[0].name}-stages-select-tag"]`)
+      .click()
+    cy.get('[data-testid$="stages-select-tag"]')
+      .should('have.length', newCluster.stages.length - 1)
     cy.getByDataTestid('updateClusterBtn')
       .should('be.enabled')
       .click()

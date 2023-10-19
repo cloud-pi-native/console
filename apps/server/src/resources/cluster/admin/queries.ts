@@ -1,4 +1,4 @@
-import type { Cluster, Environment, Kubeconfig, Project } from '@prisma/client'
+import type { Cluster, Environment, Kubeconfig, Project, Stage } from '@prisma/client'
 import prisma from '@/prisma.js'
 
 // prisma.cluster
@@ -44,6 +44,7 @@ export const getClusterByEnvironmentId = (id: Environment['id']) => prisma.clust
 export const getClustersWithProjectIdAndConfig = () => prisma.cluster.findMany({
   select: {
     id: true,
+    stages: true,
     projects: {
       select: {
         id: true,
@@ -74,6 +75,15 @@ export const getProjectsByClusterId = async (id: Cluster['id']) => (await prisma
   },
 })).projects
 
+export const getStagesByClusterId = async (id: Cluster['id']) => (await prisma.cluster.findUnique({
+  where: {
+    id,
+  },
+  select: {
+    stages: true,
+  },
+})).stages
+
 export const createCluster = (
   data: Omit<Cluster, 'id' | 'updatedAt' | 'createdAt' | 'kubeConfigId' | 'secretName'>,
   kubeconfig: Pick<Kubeconfig, 'user' | 'cluster'>,
@@ -102,15 +112,24 @@ export const updateCluster = (
   },
 })
 
-export const addClusterToProjectWithIds = (id: Cluster['id'], projectId: Project['id']) => prisma.cluster.update({
+export const linkClusterToProjects = (id: Cluster['id'], projectIds: Project['id'][]) => prisma.cluster.update({
   where: {
     id,
   },
   data: {
     projects: {
-      connect: {
-        id: projectId,
-      },
+      connect: projectIds.map(projectId => ({ id: projectId })),
+    },
+  },
+})
+
+export const linkClusterToStages = async (id: Cluster['id'], stageIds: Stage['id'][]) => prisma.cluster.update({
+  where: {
+    id,
+  },
+  data: {
+    stages: {
+      connect: stageIds.map(stageId => ({ id: stageId })),
     },
   },
 })
@@ -123,6 +142,19 @@ export const removeClusterFromProject = (id: Cluster['id'], projectId: Project['
     projects: {
       disconnect: {
         id: projectId,
+      },
+    },
+  },
+})
+
+export const removeClusterFromStage = (id: Cluster['id'], stageId: Stage['id']) => prisma.cluster.update({
+  where: {
+    id,
+  },
+  data: {
+    stages: {
+      disconnect: {
+        id: stageId,
       },
     },
   },

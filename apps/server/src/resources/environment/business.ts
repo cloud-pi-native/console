@@ -65,9 +65,8 @@ export const getInitializeEnvironmentInfos = async ({
     const quota = await getQuotaById(quotaStage?.quotaId)
     const stageClusters = (await getStageById(quotaStage?.stageId))?.clusters
     const authorizedClusters = projectClusters
-      .filter(projectCluster => stageClusters
-        ?.includes(projectCluster))
-
+      ?.filter(projectCluster => stageClusters
+        ?.find(stageCluster => stageCluster.id === projectCluster.id))
     return { user, project, quota, quotaStage, authorizedClusters }
   } catch (error) {
     throw new Error(error?.message)

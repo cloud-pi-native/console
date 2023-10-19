@@ -1,19 +1,22 @@
 <script lang="ts" setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, type Ref } from 'vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useAdminClusterStore } from '@/stores/admin/cluster.js'
 import { useAdminProjectStore } from '@/stores/admin/project.js'
 import ClusterForm from '@/components/ClusterForm.vue'
 import { sortArrByObjKeyAsc } from '@dso-console/shared'
+import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 
 const adminClusterStore = useAdminClusterStore()
 const adminProjectStore = useAdminProjectStore()
+const projectEnvironmentStore = useProjectEnvironmentStore()
 const snackbarStore = useSnackbarStore()
 
 const clusters = computed(() => adminClusterStore.clusters)
 const selectedCluster = ref({})
 const clusterList = ref([])
-const allProjects = ref([])
+const allProjects: Ref<any[]> = ref([])
+const allStages: Ref<any[]> = ref([])
 const isUpdatingCluster = ref(false)
 const isNewClusterForm = ref(false)
 
@@ -82,19 +85,12 @@ const removeCluster = async (clusterId) => {
   isUpdatingCluster.value = false
 }
 
-const getAllActiveProjects = async () => {
-  try {
-    allProjects.value = await adminProjectStore.getAllActiveProjects()
-  } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
-  }
-}
-
 onMounted(async () => {
   try {
     await adminClusterStore.getAllClusters()
     setClusterTiles(clusters.value)
-    await getAllActiveProjects()
+    allProjects.value = await adminProjectStore.getAllActiveProjects()
+    allStages.value = await projectEnvironmentStore.getStages()
   } catch (error) {
     snackbarStore.setMessage(error?.message, 'error')
   }
@@ -126,6 +122,7 @@ watch(clusters, () => {
   >
     <ClusterForm
       :all-projects="allProjects"
+      :all-stages="allStages"
       class="w-full"
       is-updating-cluster="isUpdatingCluster"
       @add="(cluster) => addCluster(cluster)"
@@ -156,6 +153,7 @@ watch(clusters, () => {
         v-if="Object.keys(selectedCluster).length && selectedCluster.id === cluster.id"
         :cluster="selectedCluster"
         :all-projects="allProjects"
+        :all-stages="allStages"
         is-updating-cluster="isUpdatingCluster"
         class="w-full"
         :is-new-cluster="false"
