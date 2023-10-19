@@ -3,6 +3,7 @@ import { BadRequestError, NotFoundError } from '@/utils/errors.js'
 import { hooks } from '@/plugins/index.js'
 import { CreateClusterDto, UpdateClusterDto, clusterSchema } from '@dso-console/shared'
 import { User } from '@prisma/client'
+import { linkClusterToStages } from '@/resources/stage/business'
 
 export const getAllCleanedClusters = async () => {
   const clusters = await getClustersWithProjectIdAndConfig()
@@ -50,6 +51,8 @@ export const createCluster = async (data: CreateClusterDto['body'], userId: User
     await addClusterToProjectWithIds(cluster.id, projectId)
   }
 
+  // TODO add choices in front to specify stages to associate to
+  await linkClusterToStages(cluster.id, [], true)
   const results = await hooks.createCluster.execute({ ...cluster, user: data.user, cluster: data.cluster })
   // @ts-ignore
   await addLogs('Create Cluster', results, userId)
