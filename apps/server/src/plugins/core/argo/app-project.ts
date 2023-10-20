@@ -11,7 +11,7 @@ export const getAppProject = async (appProjectName: string): Promise<AppProject 
 export const createApplicationProject = async (
   { appProjectName, repositories, roGroup, rwGroup, destination }:
   { appProjectName: string, repositories: any[], roGroup: string, rwGroup: string, destination: ArgoDestination },
-) => {
+): Promise<AppProject> => {
   const appProject = await getAppProject(appProjectName)
   const sourceRepos = repositories.map(repo => repo.url).flat()
   const appProjectObject = getAppProjectObject({
@@ -24,9 +24,9 @@ export const createApplicationProject = async (
 
   if (!appProject) {
     await customK8sApi.createNamespacedCustomObject('argoproj.io', 'v1alpha1', argoNamespace, 'appprojects', appProjectObject)
-    return
+  } else {
+    await customK8sApi.replaceNamespacedCustomObject('argoproj.io', 'v1alpha1', argoNamespace, 'appprojects', appProjectName, appProjectObject)
   }
-  await customK8sApi.replaceNamespacedCustomObject('argoproj.io', 'v1alpha1', argoNamespace, 'appprojects', appProjectName, appProjectObject)
   return appProjectObject
 }
 

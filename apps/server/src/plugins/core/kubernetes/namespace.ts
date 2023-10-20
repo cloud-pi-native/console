@@ -17,7 +17,7 @@ export const createKubeNamespace: StepCall<InitializeEnvironmentExecArgs> = asyn
     return {
       status: {
         result: 'OK',
-        mainMessage: 'Namespace up-to-date',
+        message: 'Namespace up-to-date',
       },
       nsName: nsObject.metadata.name,
     }
@@ -44,7 +44,7 @@ export const updateResourceQuota: StepCall<UpdateEnvironmentQuotaExecArgs> = asy
     return {
       status: {
         result: 'OK',
-        mainMessage: 'ResourceQuota updated',
+        message: 'ResourceQuota updated',
       },
     }
   } catch (error) {
@@ -62,12 +62,12 @@ export const deleteKubeNamespace: StepCall<DeleteEnvironmentExecArgs> = async (p
   try {
     const { organization, project, environment, cluster } = payload.args
 
-    const nsName = `${organization}-${project}-${environment}`
+    const nsName = generateNamespaceName(organization, project, environment)
     await deleteNamespace(createCoreV1Api(cluster), nsName)
     return {
       status: {
         result: 'OK',
-        mainMessage: 'Namespace deleted',
+        message: 'Namespace deleted',
       },
     }
   } catch (error) {

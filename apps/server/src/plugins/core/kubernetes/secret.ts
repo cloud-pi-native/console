@@ -7,11 +7,12 @@ import { generateNamespaceName } from './namespace.js'
 // Plugin Function
 export const createKubeSecret: StepCall<InitializeEnvironmentExecArgs> = async (payload) => {
   try {
+    if (!payload.vault) throw Error('no Vault available')
     const { organization, project, environment, cluster } = payload.args
-    // @ts-ignore
-    const registrySecret = payload.vault.pullSecret.data
+    const registrySecret = await payload.vault.read('REGISTRY')
+
     const nsName = generateNamespaceName(organization, project, environment)
-    const secret = getSecretObject(nsName, registrySecret)
+    const secret = getSecretObject(nsName, registrySecret.data)
     await createDockerConfigSecret(createCoreV1Api(cluster), secret)
 
     return {
