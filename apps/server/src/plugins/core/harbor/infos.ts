@@ -6,6 +6,6 @@ export const infos: ServiceInfos = {
   monitorUrl: `${harborUrl}`,
   to: ({ services }) => `${harborUrl}/harbor/projects/${services?.registry?.id}`,
   title: 'Harbor',
-  imgSrc: '/img/harbor.png',
+  imgSrc: '/img/harbor.svg',
   description: 'Harbor stocke, analyse et distribue vos images de conteneurs',
 }
