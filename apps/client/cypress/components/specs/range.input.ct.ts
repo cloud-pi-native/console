@@ -1,36 +1,20 @@
-import VueDsfr from '@gouvminint/vue-dsfr'
-import { createPinia } from 'pinia'
 import '@gouvminint/vue-dsfr/styles'
 import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@/main.css'
-import * as icons from '@/icons.js'
 import RangeInput from '@/components/RangeInput.vue'
 import { levels } from '@dso-console/shared'
 
 describe('RangeInput.vue', () => {
   it('Should mount a RangeInput', () => {
-    const pinia = createPinia()
-
     const props = {
       label: 'RangeInput CT test',
       level: 1,
       levels,
     }
 
-    const extensions = {
-      use: [
-        [
-          VueDsfr, { icons: Object.values(icons) },
-        ],
-      ],
-      global: {
-        plugins: [pinia],
-      },
-    }
-
-    cy.mount(RangeInput, { extensions, props })
+    cy.mount(RangeInput, { props })
 
     cy.get('label[for="range"]')
       .should('have.length', 1)

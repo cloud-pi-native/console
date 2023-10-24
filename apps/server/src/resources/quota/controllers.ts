@@ -4,8 +4,8 @@ import { getQuotas } from './business.js'
 
 // GET
 export const getQuotasController = async (req, res) => {
-  const userId = req.session?.user?.id
-  const quotas = await getQuotas(userId)
+  const user = req.session?.user
+  const quotas = await getQuotas(user)
 
   addReqLogs({
     req,

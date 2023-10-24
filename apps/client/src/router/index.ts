@@ -18,6 +18,7 @@ const ListOrganizations = () => import('@/views/admin/ListOrganizations.vue')
 const ListProjects = () => import('@/views/admin/ListProjects.vue')
 const ListLogs = () => import('@/views/admin/ListLogs.vue')
 const ListClusters = () => import('@/views/admin/ListClusters.vue')
+const ListQuotas = () => import('@/views/admin/ListQuotas.vue')
 
 const MAIN_TITLE = 'Console Cloud π Native'
 
@@ -148,6 +149,13 @@ const routes: Array<RouteRecord> = [
     // TODO
     // @ts-ignore
     component: ListClusters,
+  },
+  {
+    path: '/admin/quotas',
+    name: 'ListQuotas',
+    // TODO
+    // @ts-ignore
+    component: ListQuotas,
   },
 ]
 

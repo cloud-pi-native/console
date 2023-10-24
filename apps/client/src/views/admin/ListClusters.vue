@@ -75,7 +75,7 @@ const updateCluster = async (cluster) => {
 const removeCluster = async (clusterId) => {
   isUpdatingCluster.value = true
   try {
-    await adminClusterStore.removeCluster(clusterId)
+    // await adminClusterStore.removeCluster(clusterId)
     await adminClusterStore.getAllClusters()
   } catch (error) {
     snackbarStore.setMessage(error?.message, 'error')

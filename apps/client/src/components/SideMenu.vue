@@ -273,6 +273,17 @@ onMounted(() => {
               Clusters
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
+          <DsfrSideMenuListItem>
+            <DsfrSideMenuLink
+              class="menu-link-icon"
+              data-testid="menuAdministrationQuotas"
+              :active="routeName === 'ListQuotas'"
+              to="/admin/quotas"
+            >
+              <v-icon name="ri-sound-module-line" />
+              Quotas
+            </DsfrSideMenuLink>
+          </DsfrSideMenuListItem>
         </DsfrSideMenuList>
       </DsfrSideMenuListItem>
 

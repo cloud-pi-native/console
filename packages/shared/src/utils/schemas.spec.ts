@@ -8,6 +8,7 @@ import {
   projectSchema,
   userSchema,
   organizationSchema,
+  quotaSchema,
 } from '../index.js'
 import { descriptionMaxLength } from '../schemas/project.js'
 
@@ -84,6 +85,16 @@ describe('Schemas utils', () => {
       email: faker.internet.email(),
       firstName: faker.person.firstName(),
       lastName: faker.person.lastName(),
+    })).toStrictEqual({})
+  })
+
+  it('Should validate a correct quota schema', () => {
+    expect(schemaValidator(quotaSchema, {
+      id: faker.string.uuid(),
+      name: faker.lorem.word({ length: { min: 2, max: 10 } }),
+      memory: '12Gi',
+      cpu: faker.number.int({ min: 0 }),
+      isPrivate: faker.datatype.boolean(),
     })).toStrictEqual({})
   })
 

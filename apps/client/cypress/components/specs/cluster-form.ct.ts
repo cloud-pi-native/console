@@ -1,21 +1,25 @@
-import VueDsfr from '@gouvminint/vue-dsfr'
-import { createPinia } from 'pinia'
+import { Pinia, createPinia, setActivePinia } from 'pinia'
 import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@gouvminint/vue-dsfr/styles'
 import '@/main.css'
-import * as icons from '@/icons.js'
 import ClusterForm from '@/components/ClusterForm.vue'
 import { getRandomCluster, getRandomProject, getRandomStage, repeatFn } from '@dso-console/test-utils'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useAdminClusterStore } from '@/stores/admin/cluster.js'
 
 describe('ClusterForm.vue', () => {
-  it('Should mount a new cluster ClusterForm', () => {
-    const pinia = createPinia()
+  let pinia: Pinia
 
-    useSnackbarStore(pinia)
+  beforeEach(() => {
+    pinia = createPinia()
+
+    setActivePinia(pinia)
+  })
+
+  it('Should mount a new cluster ClusterForm', () => {
+    useSnackbarStore()
 
     const allProjects = repeatFn(5)(getRandomProject)
     const allStages = repeatFn(4)(getRandomStage)
@@ -25,18 +29,7 @@ describe('ClusterForm.vue', () => {
       allStages,
     }
 
-    const extensions = {
-      use: [
-        [
-          VueDsfr, { icons: Object.values(icons) },
-        ],
-      ],
-      global: {
-        plugins: [pinia],
-      },
-    }
-
-    cy.mount(ClusterForm, { extensions, props })
+    cy.mount(ClusterForm, { props })
     cy.getByDataTestid('tlsServerNameInput')
       .find('input')
       .type('tlsServerName')
@@ -55,10 +48,8 @@ describe('ClusterForm.vue', () => {
   })
 
   it('Should mount an update cluster ClusterForm', () => {
-    const pinia = createPinia()
-
-    useSnackbarStore(pinia)
-    const adminClusterStore = useAdminClusterStore(pinia)
+    useSnackbarStore()
+    const adminClusterStore = useAdminClusterStore()
 
     const allProjects = repeatFn(5)(getRandomProject)
     const allStages = repeatFn(2)(getRandomStage)
@@ -70,18 +61,7 @@ describe('ClusterForm.vue', () => {
       isNewCluster: false,
     }
 
-    const extensions = {
-      use: [
-        [
-          VueDsfr, { icons: Object.values(icons) },
-        ],
-      ],
-      global: {
-        plugins: [pinia],
-      },
-    }
-
-    cy.mount(ClusterForm, { extensions, props })
+    cy.mount(ClusterForm, { props })
 
     cy.getByDataTestid('user-json').should('be.visible')
     cy.getByDataTestid('cluster-json').should('be.visible')
@@ -111,9 +91,7 @@ describe('ClusterForm.vue', () => {
   })
 
   it('Should disable project selector when privacy is public', () => {
-    const pinia = createPinia()
-
-    useSnackbarStore(pinia)
+    useSnackbarStore()
 
     const allProjects = repeatFn(5)(getRandomProject)
 
@@ -121,18 +99,7 @@ describe('ClusterForm.vue', () => {
       allProjects,
     }
 
-    const extensions = {
-      use: [
-        [
-          VueDsfr, { icons: Object.values(icons) },
-        ],
-      ],
-      global: {
-        plugins: [pinia],
-      },
-    }
-
-    cy.mount(ClusterForm, { extensions, props })
+    cy.mount(ClusterForm, { props })
     cy.get('#privacy-select')
       .select('dedicated')
     cy.get('#projects-select').should('be.visible')

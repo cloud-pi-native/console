@@ -1,36 +1,20 @@
-import VueDsfr from '@gouvminint/vue-dsfr'
-import { createPinia } from 'pinia'
 import '@gouvminint/vue-dsfr/styles'
 import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@/main.css'
-import * as icons from '@/icons.js'
 import SuggestionInput from '@/components/SuggestionInput.vue'
 import { createRandomDbSetup } from '@dso-console/test-utils'
 
 describe('SuggestionInput.vue', () => {
   it('Should mount a SuggestionInput', () => {
-    const pinia = createPinia()
-
     const randomDbSetup = createRandomDbSetup({ nbUsers: 5 })
 
     const props = {
       suggestions: randomDbSetup.users.map(user => user.email),
     }
 
-    const extensions = {
-      use: [
-        [
-          VueDsfr, { icons: Object.values(icons) },
-        ],
-      ],
-      global: {
-        plugins: [pinia],
-      },
-    }
-
-    cy.mount(SuggestionInput, { extensions, props })
+    cy.mount(SuggestionInput, { props })
 
     cy.get('input[list="suggestionList"]')
       .should('have.length', 1)

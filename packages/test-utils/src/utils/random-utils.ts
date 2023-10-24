@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import { achievedStatus, projectRoles, logActions } from '@dso-console/shared'
+import { achievedStatus, projectRoles, logActions, ProjectRoles } from '@dso-console/shared'
 import { repeatFn } from './func-utils.js'
 import { Cluster, Environment, Log, Organization, Permission, Project, Repository, User, Role } from './types.js'
 
@@ -68,7 +68,7 @@ export const getRandomUser = () => {
 export const getRandomRole = (
   userId = faker.string.uuid(),
   projectId = faker.string.uuid(),
-  role = projectRoles[1],
+  role: ProjectRoles = projectRoles[1],
 ) => {
   return {
     userId,
@@ -108,7 +108,7 @@ export const getRandomQuota = (name: string = faker.lorem.word()) => {
     name,
     cpu: faker.number.int({ max: 18 }),
     memory: faker.number.int({ max: 18 }) + 'Gi',
-    private: faker.datatype.boolean(),
+    isPrivate: faker.datatype.boolean(),
   }
 }
 

@@ -1,26 +1,31 @@
-import VueDsfr from '@gouvminint/vue-dsfr'
-import { createPinia } from 'pinia'
 import '@gouvminint/vue-dsfr/styles'
 import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@/main.css'
-import * as icons from '@/icons.js'
 import PermissionForm from '@/components/PermissionForm.vue'
 import { createRandomDbSetup, getRandomUser, getRandomRole } from '@dso-console/test-utils'
 import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
+import { Pinia, createPinia, setActivePinia } from 'pinia'
 
 describe('PermissionForm.vue', () => {
-  it('Should mount a PermissionForm with users to licence', () => {
-    const pinia = createPinia()
+  let pinia: Pinia
 
+  beforeEach(() => {
+    pinia = createPinia()
+
+    setActivePinia(pinia)
+  })
+
+  it('Should mount a PermissionForm with users to licence', () => {
     const randomDbSetup = createRandomDbSetup({ nbUsers: 3, envs: ['dev'] })
-    const projectStore = useProjectStore(pinia)
-    const userStore = useUserStore(pinia)
+    const projectStore = useProjectStore()
+    const userStore = useUserStore()
 
     projectStore.selectedProject = randomDbSetup.project
-    projectStore.selectedProjectOwner = randomDbSetup.users[0]
+    const owner = randomDbSetup.project.roles?.find(role => role.role === 'owner')?.user
+    projectStore.selectedProjectOwner = owner
     userStore.userProfile = randomDbSetup.users[1]
 
     const userToLicence = {
@@ -30,25 +35,14 @@ describe('PermissionForm.vue', () => {
     projectStore.selectedProject.roles = [userToLicence, ...randomDbSetup.project.roles]
 
     const environment = projectStore.selectedProject?.environments[0]
-    const ownerPermission = environment.permissions.find(permission => permission.user.email === projectStore.selectedProjectOwner.email)
-    const userPermission = environment.permissions.find(permission => permission.user.email !== projectStore.selectedProjectOwner.email)
+    const ownerPermission = environment.permissions.find(permission => permission.user.email === owner.email)
+    const userPermission = environment.permissions.find(permission => permission.user.email !== owner.email)
 
     const props = {
       environment,
     }
 
-    const extensions = {
-      use: [
-        [
-          VueDsfr, { icons: Object.values(icons) },
-        ],
-      ],
-      global: {
-        plugins: [pinia],
-      },
-    }
-
-    cy.mount(PermissionForm, { extensions, props })
+    cy.mount(PermissionForm, { props })
 
     cy.getByDataTestid('permissionsFieldset')
       .should('contain', `Droits des utilisateurs sur l'environnement ${props.environment.name}`)
@@ -97,11 +91,9 @@ describe('PermissionForm.vue', () => {
       })
   })
   it('Should mount a PermissionForm with no user to licence', () => {
-    const pinia = createPinia()
-
     const randomDbSetup = createRandomDbSetup({ nbUsers: 3, envs: ['dev'] })
-    const projectStore = useProjectStore(pinia)
-    const userStore = useUserStore(pinia)
+    const projectStore = useProjectStore()
+    const userStore = useUserStore()
 
     projectStore.selectedProject = randomDbSetup.project
     projectStore.selectedProjectOwner = randomDbSetup.users[0]
@@ -113,18 +105,7 @@ describe('PermissionForm.vue', () => {
       environment,
     }
 
-    const extensions = {
-      use: [
-        [
-          VueDsfr, { icons: Object.values(icons) },
-        ],
-      ],
-      global: {
-        plugins: [pinia],
-      },
-    }
-
-    cy.mount(PermissionForm, { extensions, props })
+    cy.mount(PermissionForm, { props })
 
     cy.getByDataTestid('newPermissionFieldset')
       .should('contain', 'Accréditer un membre du projet')
@@ -135,12 +116,11 @@ describe('PermissionForm.vue', () => {
           .should('contain', `Tous les membres du projet ${projectStore.selectedProject.name} sont déjà accrédités.`)
       })
   })
-  it('Should mount a PermissionForm without permission for current user', () => {
-    const pinia = createPinia()
 
+  it('Should mount a PermissionForm without permission for current user', () => {
     const randomDbSetup = createRandomDbSetup({ nbUsers: 3, envs: ['dev'] })
-    const projectStore = useProjectStore(pinia)
-    const userStore = useUserStore(pinia)
+    const projectStore = useProjectStore()
+    const userStore = useUserStore()
 
     projectStore.selectedProject = randomDbSetup.project
     projectStore.selectedProjectOwner = randomDbSetup.users[0]
@@ -152,18 +132,7 @@ describe('PermissionForm.vue', () => {
       environment,
     }
 
-    const extensions = {
-      use: [
-        [
-          VueDsfr, { icons: Object.values(icons) },
-        ],
-      ],
-      global: {
-        plugins: [pinia],
-      },
-    }
-
-    cy.mount(PermissionForm, { extensions, props })
+    cy.mount(PermissionForm, { props })
 
     cy.getByDataTestid('notPermittedAlert')
       .should('contain', `Vous n'avez aucun droit sur l'environnement ${props.environment.name}. Un membre possédant des droits sur cet environnement peut vous accréditer.`)

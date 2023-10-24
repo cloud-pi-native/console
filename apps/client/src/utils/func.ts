@@ -1,8 +1,7 @@
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
-const snackbarStore = useSnackbarStore()
-
 export const copyContent = async (content: string):Promise<void> => {
+  const snackbarStore = useSnackbarStore()
   try {
     await navigator.clipboard.writeText(content)
     snackbarStore.setMessage('Donnée copié', 'success')

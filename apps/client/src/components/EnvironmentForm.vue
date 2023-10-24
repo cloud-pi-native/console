@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref, onBeforeMount, type Ref, watch, computed } from 'vue'
-import { environmentSchema, schemaValidator, projectIsLockedInfo, isValid, longestEnvironmentName } from '@dso-console/shared'
+import { environmentSchema, schemaValidator, projectIsLockedInfo, isValid, longestEnvironmentName, type QuotaStageModel } from '@dso-console/shared'
 import PermissionForm from './PermissionForm.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
@@ -88,21 +88,23 @@ const setClusterOptions = () => {
   }))
 }
 
+type QuotaOptionType = {
+    text: string,
+    value: string,
+  }
+
 const setQuotaOptions = () => {
   quotaOptions.value = stage.value?.quotaStage
-  // @ts-ignore
-    ?.map(qs => qs.quotaId)
-    // @ts-ignore
-    ?.map(quotaId => quotas.value
-      ?.find(quota => quota.id === quotaId),
-    )
-    // @ts-ignore
-    ?.map(quota => ({
-      text: quota.name + ' (' + quota.cpu + 'CPU, ' + quota.memory + ')',
-      value: quota.id,
-    }),
-    )
-
+    ?.reduce((acc: QuotaOptionType[], curr: QuotaStageModel) => {
+      const matchingQuota = quotas.value
+        ?.find(quota => quota.id === curr.quotaId)
+      return matchingQuota
+        ? [...acc, {
+            text: matchingQuota.name + ' (' + matchingQuota.cpu + 'CPU, ' + matchingQuota.memory + ')',
+            value: matchingQuota.id,
+          }]
+        : acc
+    }, [])
   inputKey.value = getRandomId('input')
 }
 
