@@ -54,7 +54,8 @@ export type Cluster = {
   id: string,
   label: string,
   infos?: string,
-  projectsId: string[],
+  projectIds?: string[],
+  stageIs?: string[],
   user: {
     certData: string,
     keyData: string,
@@ -75,9 +76,11 @@ export type Environment = {
   id: string,
   name: string,
   projectId: string,
+  clusterId: string,
+  quotaStageId: string,
   status: string,
   permissions?: Permission[],
-  clusters?: Cluster[],
+  cluster?: Cluster[],
   updatedAt?: Date,
   createdAt?: Date,
 }

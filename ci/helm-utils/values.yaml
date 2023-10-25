@@ -32,13 +32,3 @@ pgadmin:
     type: ClusterIP
   ingress:
     host: pgadmin.dso.local
-
-postgres:
-  enabled: false
-  container:
-    image: docker.io/postgres:15.3
-    port: 5432
-  service:
-    name: postgres-service
-    port: 5432
-    type: ClusterIP

@@ -6,6 +6,7 @@ describe('Manage permissions for environment', () => {
   const user0 = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6566')
   const user1 = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6567')
   const user2 = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6569')
+  const environment = project.environments?.find(environment => environment?.name === 'dev')
 
   before(() => {
     cy.kcLogin('test')
@@ -21,18 +22,16 @@ describe('Manage permissions for environment', () => {
   })
 
   it('Should not be able to update permissions if not permitted on environment', () => {
-    const environment = 'staging'
-
     cy.kcLogin((user0.firstName.slice(0, 1) + user0.lastName).toLowerCase())
       .goToProjects()
       .getByDataTestid(`projectTile-${project.name}`).click()
       .getByDataTestid('menuEnvironments').click()
-      .getByDataTestid(`environmentTile-${environment}`)
+      .getByDataTestid(`environmentTile-${environment?.name}`)
       .click()
       .url().should('contain', '/environments')
       .getByDataTestid('deleteEnvironmentZone').should('not.exist')
 
-    cy.assertPermission(project, environment, [{ email: owner.email, isOwner: true }])
+    cy.assertPermission(project, environment?.name, [{ email: owner.email, isOwner: true }])
 
     cy.getByDataTestid('permissionSuggestionInput').find('input')
       .should('be.disabled')
@@ -43,12 +42,10 @@ describe('Manage permissions for environment', () => {
   })
 
   it('Should add permissions to an existing environment', () => {
-    const environment = 'staging'
-
-    cy.assertAddEnvironment(project, [environment])
-    cy.addPermission(project, environment, user0.email)
-    cy.addPermission(project, environment, user2.email)
-    cy.assertPermission(project, environment, [
+    cy.assertAddEnvironment(project, [environment], false)
+    cy.addPermission(project, environment?.name, user0.email)
+    cy.addPermission(project, environment?.name, user2.email)
+    cy.assertPermission(project, environment?.name, [
       { email: owner.email, isOwner: true },
       { email: user0.email, isOwner: false },
       { email: user2.email, isOwner: false },
@@ -66,7 +63,7 @@ describe('Manage permissions for environment', () => {
     cy.goToProjects()
       .getByDataTestid(`projectTile-${project.name}`).click()
       .getByDataTestid('menuEnvironments').click()
-      .getByDataTestid(`environmentTile-${environment}`)
+      .getByDataTestid(`environmentTile-${environment?.name}`)
       .click()
 
     cy.getByDataTestid('permissionSuggestionInput')
@@ -82,43 +79,50 @@ describe('Manage permissions for environment', () => {
       .should('be.visible')
       .clear()
 
-    cy.addPermission(project, environment, user1.email)
+    cy.addPermission(project, environment?.name, user1.email)
     cy.getByDataTestid(`userPermissionLi-${user1.email}`)
       .should('exist')
   })
 
-  it.skip('Should update existing permissions', () => {
+  it('Should update existing permissions', () => {
     cy.kcLogin('test')
     cy.intercept('PUT', `/api/v1/projects/${project.id}/environments/*/permissions`).as('putPermission')
-    const environment = 'staging'
 
-    cy.assertAddEnvironment(project, [environment])
-    cy.assertPermission(project, environment, [{ email: owner.email, isOwner: true }, { email: user0.email, isOwner: false }])
+    cy.assertAddEnvironment(project, [environment], false)
+    cy.assertPermission(project, environment?.name, [{ email: owner.email, isOwner: true }, { email: user0.email, isOwner: false }])
 
     cy.getByDataTestid(`${user0.id}UpdatePermissionBtn`)
       .should('be.disabled')
 
-    // TODO : Interragir avec input[type=range]
-    // https://docs.cypress.io/api/commands/trigger#Interact-with-a-range-input-slider
     cy.getByDataTestid(`userPermissionLi-${user0.email}`).within(() => {
       cy.getByDataTestid('permissionLevelRange')
         .find('input[type=range]')
-        .invoke('val', 0)
-        .trigger('change')
+        .invoke('val', 2)
+        .trigger('input')
     })
     cy.getByDataTestid(`${user0.id}UpdatePermissionBtn`)
       .should('be.enabled')
       .click()
       .wait('@putPermission')
       .its('response.statusCode').should('eq', 200)
+
+    cy.reload()
+
+    cy.getByDataTestid(`environmentTile-${environment?.name}`)
+      .click()
+
+    cy.getByDataTestid(`userPermissionLi-${user0.email}`).within(() => {
+      cy.getByDataTestid('permissionLevelRange')
+        .find('input[type=range]')
+        .should('have.value', 2)
+    })
   })
 
   it('Should remove a permission', () => {
     cy.intercept('DELETE', `/api/v1/projects/${project.id}/environments/*/permissions/${user2.id}`).as('deletePermission')
-    const environment = 'staging'
 
-    cy.assertAddEnvironment(project, [environment])
-    cy.assertPermission(project, environment, [{ email: owner.email, isOwner: true }, { email: user0.email, isOwner: false }, { email: user2.email, isOwner: false }])
+    cy.assertAddEnvironment(project, [environment], false)
+    cy.assertPermission(project, environment?.name, [{ email: owner.email, isOwner: true }, { email: user0.email, isOwner: false }, { email: user2.email, isOwner: false }])
 
     cy.getByDataTestid('permissionSuggestionInput')
       .should('be.disabled')
@@ -149,7 +153,7 @@ describe('Manage permissions for environment', () => {
       .goToProjects()
       .getByDataTestid(`projectTile-${project.name}`).click()
       .getByDataTestid('menuEnvironments').click()
-      .getByDataTestid(`environmentTile-${environment}`)
+      .getByDataTestid(`environmentTile-${environment?.name}`)
       .click()
       .url().should('contain', '/environments')
     cy.getByDataTestid('notPermittedAlert')

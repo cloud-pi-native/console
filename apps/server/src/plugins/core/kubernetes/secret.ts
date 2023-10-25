@@ -1,16 +1,18 @@
 import type { CoreV1Api, V1Secret } from '@kubernetes/client-node'
 import { createCoreV1Api } from './api.js'
 import type { StepCall } from '@/plugins/hooks/hook.js'
-import type { AddEnvironmentClusterExecArgs } from '@/plugins/hooks/index.js'
+import type { EnvironmentCreateArgs } from '@/plugins/hooks/index.js'
+import { generateNamespaceName } from './namespace.js'
 
 // Plugin Function
-export const createKubeSecret: StepCall<AddEnvironmentClusterExecArgs> = async (payload) => {
+export const createKubeSecret: StepCall<EnvironmentCreateArgs> = async (payload) => {
   try {
+    if (!payload.vault) throw Error('no Vault available')
     const { organization, project, environment, cluster } = payload.args
-    // @ts-ignore
-    const registrySecret = payload.vault.pullSecret.data
-    const nsName = `${organization}-${project}-${environment}`
-    const secret = getSecretObject(nsName, registrySecret)
+    const registrySecret = await payload.vault.read('REGISTRY')
+
+    const nsName = generateNamespaceName(organization, project, environment)
+    const secret = getSecretObject(nsName, registrySecret.data)
     await createDockerConfigSecret(createCoreV1Api(cluster), secret)
 
     return {

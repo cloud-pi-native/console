@@ -29,11 +29,9 @@ async function initializeDB (path: string) {
 }
 
 export async function startServer () {
-  if ((isInt || isProd) && !isCI) { // execute only when in real prod env and local dev integration
-    const pluginManager = await initPluginManager(app)
-    await initCorePlugins(pluginManager, app)
-    await initExternalPlugins(pluginManager, app)
-  }
+  const pluginManager = await initPluginManager(app)
+  await initCorePlugins(pluginManager, app)
+  await initExternalPlugins(pluginManager, app)
 
   try {
     await getConnection()

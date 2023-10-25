@@ -3,18 +3,20 @@ import {
   createDsoProject,
   archiveDsoProject,
   createDsoRepository,
+  updateDsoRepository,
   deleteDsoRepository,
   addDsoGroupMember,
   removeDsoGroupMember,
   checkApi,
+  getDsoProjectSecrets,
 } from './index.js'
 import { getGroupRootId } from './utils.js'
-import { infos } from './infos.js'
+import infos from './infos.js'
 
 export const init = (register: RegisterFn) => {
   getGroupRootId()
   register(
-    'gitlab',
+    infos.name,
     {
       addUserToProject: { main: addDsoGroupMember },
       removeUserFromProject: { main: removeDsoGroupMember },
@@ -29,8 +31,9 @@ export const init = (register: RegisterFn) => {
         check: checkApi,
         main: createDsoRepository,
       },
+      updateRepository: { main: updateDsoRepository },
       deleteRepository: { main: deleteDsoRepository },
+      getProjectSecrets: { main: getDsoProjectSecrets },
     },
-    infos,
   )
 }

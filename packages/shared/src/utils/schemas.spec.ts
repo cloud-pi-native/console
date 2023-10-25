@@ -32,8 +32,10 @@ describe('Schemas utils', () => {
   it('Should validate a correct environment schema', () => {
     expect(schemaValidator(environmentSchema, {
       id: faker.string.uuid(),
-      name: 'dev',
+      name: faker.lorem.word({ length: { min: 2, max: 10 } }),
       projectId: faker.string.uuid(),
+      clusterId: faker.string.uuid(),
+      quotaStageId: faker.string.uuid(),
       status: 'created',
     })).toStrictEqual({})
   })
@@ -50,7 +52,7 @@ describe('Schemas utils', () => {
   it('Should validate a correct organization schema', () => {
     expect(schemaValidator(organizationSchema, {
       id: faker.string.uuid(),
-      name: faker.word.noun({ length: { min: 2, max: 10 } }),
+      name: faker.lorem.word({ length: { min: 2, max: 10 } }),
       label: faker.company.name(),
       active: faker.datatype.boolean(),
     })).toStrictEqual({})
@@ -59,8 +61,8 @@ describe('Schemas utils', () => {
   it('Should validate a correct organization schema with external data', () => {
     expect(schemaValidator(organizationSchema, {
       id: faker.string.uuid(),
-      source: faker.word.noun(),
-      name: faker.word.noun({ length: { min: 2, max: 10 } }),
+      source: faker.lorem.word(),
+      name: faker.lorem.word({ length: { min: 2, max: 10 } }),
       label: faker.company.name(),
       active: faker.datatype.boolean(),
     })).toStrictEqual({})
@@ -69,7 +71,7 @@ describe('Schemas utils', () => {
   it('Should validate a correct project schema', () => {
     expect(schemaValidator(projectSchema, {
       id: faker.string.uuid(),
-      name: faker.lorem.slug(1),
+      name: faker.lorem.word({ length: { min: 2, max: 10 } }),
       organizationId: faker.string.uuid(),
       status: 'created',
       locked: false,
@@ -89,7 +91,7 @@ describe('Schemas utils', () => {
     expect(schemaValidator(organizationSchema, {
       id: faker.string.uuid(),
       source: [],
-      name: faker.word.noun({ length: { min: 2, max: 10 } }),
+      name: faker.lorem.word({ length: { min: 2, max: 10 } }),
       label: faker.company.name(),
       active: faker.datatype.boolean(),
     })).toStrictEqual({ source: '"source" must be a string' })
@@ -120,7 +122,7 @@ describe('Schemas utils', () => {
   it('Should not validate a too long project name', () => {
     expect(schemaValidator(projectSchema, {
       id: faker.string.uuid(),
-      name: faker.lorem.slug(10),
+      name: faker.string.alpha({ length: 24, casing: 'lower' }),
       organizationId: faker.string.uuid(),
       status: 'created',
       locked: false,

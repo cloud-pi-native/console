@@ -52,3 +52,6 @@ dist
 
 # plugins
 apps/server/src/plugins/external
+
+# config
+packages/eslintconfig

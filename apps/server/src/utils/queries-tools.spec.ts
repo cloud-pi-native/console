@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { exclude, filterObjectByKeys } from './queries-tools.js'
+import { filterObjectByKeys } from './queries-tools.js'
+import { exclude } from '@dso-console/shared'
 
 describe('queries-tools', () => {
-    it('Should return a filtered object', () => {
+  it('Should return a filtered object', () => {
     const initial = {
       id: 'thisIsAnId',
       name: 'alsoKeepThisKey',
@@ -16,8 +17,8 @@ describe('queries-tools', () => {
     const transformed = filterObjectByKeys(initial, ['name', 'description'])
 
     expect(transformed).toMatchObject(desired)
-    })
-  
+  })
+
   it('Should return a filtered object', () => {
     const initial = {
       id: 'thisIsAnId',
@@ -28,7 +29,7 @@ describe('queries-tools', () => {
       environment: {
         permissions: {
           password: 'secret',
-          id : 'notSecret',
+          id: 'notSecret',
         },
       },
     }
@@ -40,7 +41,7 @@ describe('queries-tools', () => {
       },
       environment: {
         permissions: {
-          id : 'notSecret',
+          id: 'notSecret',
         },
       },
     }

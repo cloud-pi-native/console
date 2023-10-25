@@ -1,7 +1,7 @@
 import { ServiceInfos } from '@/plugins/services.js'
 import { sonarqubeUrl } from './index.js'
 
-export const infos: ServiceInfos = {
+const infos: ServiceInfos = {
   name: 'sonarqube',
   monitorUrl: `${sonarqubeUrl}`,
   to: () => `${sonarqubeUrl}/projects`,
@@ -9,3 +9,5 @@ export const infos: ServiceInfos = {
   imgSrc: '/img/sonarqube.svg',
   description: 'SonarQube permet à tous les développeurs d\'écrire un code plus propre et plus sûr',
 }
+
+export default infos

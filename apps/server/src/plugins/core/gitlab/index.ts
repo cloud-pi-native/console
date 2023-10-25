@@ -1,6 +1,6 @@
 import type { HookPayload, StepCall } from '@/plugins/hooks/hook.js'
 import type { ArchiveProjectExecArgs, CreateProjectExecArgs } from '@/plugins/hooks/project.js'
-import type { CreateRepositoryExecArgs, DeleteRepositoryExecArgs } from '@/plugins/hooks/repository.js'
+import type { CreateRepositoryExecArgs, DeleteRepositoryExecArgs, UpdateRepositoryExecArgs } from '@/plugins/hooks/repository.js'
 import { AddUserToProjectExecArgs } from '@/plugins/hooks/team.js'
 import { User } from '@prisma/client'
 import { createGroup, deleteGroup, getGroupId, setGroupVariable, setProjectVariable } from './group.js'
@@ -9,6 +9,7 @@ import { createProject, createProjectMirror, deleteProject } from './project.js'
 import { setProjectTrigger } from './triggers.js'
 import { createUser, createUsername, getUser } from './user.js'
 import { gitlabToken } from './utils.js'
+import { generateProjectKey } from '../sonarqube/project.js'
 
 // Check
 export const checkApi = async (payload: HookPayload<{ owner: User }>) => {
@@ -43,8 +44,8 @@ export const checkApi = async (payload: HookPayload<{ owner: User }>) => {
 // Project
 export const createDsoProject: StepCall<CreateProjectExecArgs> = async (payload) => {
   try {
+    if (!payload.vault) throw Error('no Vault available')
     const { project, organization, owner } = payload.args
-    const { SONAR_TOKEN } = payload.sonarqube.vault.find(secret => secret.name === 'SONAR').data
     const group = await createGroup(project, organization)
     const user = await createUser(owner)
     const groupMember = await addGroupMember(group.id, user.id, 40)
@@ -53,12 +54,21 @@ export const createDsoProject: StepCall<CreateProjectExecArgs> = async (payload)
     const triggerToken = await setProjectTrigger(mirror.id)
 
     // Sonar vars saving in CI
+    const sonarSecret = await payload.vault.read('SONAR')
+
     const sonarVariable = await setGroupVariable(group.id, {
       key: 'SONAR_TOKEN',
       masked: true,
       protected: false,
-      value: SONAR_TOKEN,
+      value: sonarSecret.data.SONAR_TOKEN,
       variable_type: 'env_var',
+    })
+
+    await payload.vault.write('GITLAB', {
+      ORGANIZATION_NAME: organization,
+      PROJECT_NAME: project,
+      GIT_MIRROR_PROJECT_ID: mirror.id,
+      GIT_MIRROR_TOKEN: triggerToken.token,
     })
 
     return {
@@ -73,15 +83,6 @@ export const createDsoProject: StepCall<CreateProjectExecArgs> = async (payload)
         mirror,
         sonarVariable,
       },
-      vault: [{
-        name: 'GITLAB',
-        data: {
-          ORGANIZATION_NAME: organization,
-          PROJECT_NAME: project,
-          GIT_MIRROR_PROJECT_ID: mirror.id,
-          GIT_MIRROR_TOKEN: triggerToken.token,
-        },
-      }],
     }
   } catch (error) {
     return {
@@ -120,13 +121,15 @@ export const archiveDsoProject: StepCall<ArchiveProjectExecArgs> = async (payloa
 // Repo
 export const createDsoRepository: StepCall<CreateRepositoryExecArgs> = async (payload) => {
   try {
+    if (!payload.vault) throw Error('no Vault available')
     const { internalRepoName, externalRepoUrl, organization, project, externalUserName, externalToken, isPrivate } = payload.args
     const externalRepoUrn = externalRepoUrl.split(/:\/\/(.*)/s)[1] // Un urN ne contient pas le protocole
     const internalMirrorRepoName = `${internalRepoName}-mirror`
     const groupId = await getGroupId(project, organization)
     if (!groupId) throw Error('Impossible de retrouver le namespace')
     const projectCreated = await createProject({ groupId, internalRepoName, externalRepoUrn, externalUserName, externalToken, isPrivate })
-    const projectKey = `${organization}-${project}-${internalRepoName}`
+    // TODO let sonarqube store this variable through an API
+    const projectKey = generateProjectKey(organization, project, internalRepoName)
     await setProjectVariable(projectCreated.id, {
       key: 'PROJECT_KEY',
       masked: false,
@@ -135,22 +138,20 @@ export const createDsoRepository: StepCall<CreateRepositoryExecArgs> = async (pa
       variable_type: 'env_var',
       environment_scope: '*',
     })
+
+    await payload.vault.write(internalMirrorRepoName, {
+      GIT_INPUT_URL: externalRepoUrn,
+      GIT_INPUT_USER: externalUserName,
+      GIT_INPUT_PASSWORD: externalToken,
+      GIT_OUTPUT_USER: 'root',
+      GIT_OUTPUT_PASSWORD: gitlabToken,
+      GIT_OUTPUT_URL: projectCreated.http_url_to_repo.split(/:\/\/(.*)/s)[1],
+    })
     return {
       status: {
         result: 'OK',
         message: 'Created',
       },
-      vault: [{
-        name: `${internalMirrorRepoName}`,
-        data: {
-          GIT_INPUT_URL: externalRepoUrn,
-          GIT_INPUT_USER: externalUserName,
-          GIT_INPUT_PASSWORD: externalToken,
-          GIT_OUTPUT_USER: 'root',
-          GIT_OUTPUT_PASSWORD: gitlabToken,
-          GIT_OUTPUT_URL: projectCreated.http_url_to_repo.split(/:\/\/(.*)/s)[1],
-        },
-      }],
     }
   } catch (error) {
     return {
@@ -163,11 +164,43 @@ export const createDsoRepository: StepCall<CreateRepositoryExecArgs> = async (pa
   }
 }
 
+export const updateDsoRepository: StepCall<UpdateRepositoryExecArgs> = async (payload) => {
+  const { internalRepoName, externalToken, externalRepoUrl, externalUserName } = payload.args
+  try {
+    if (!payload.vault) throw Error('no Vault available')
+    const vaultData = (await payload.vault.read(`${internalRepoName}-mirror`)).data
+
+    vaultData.GIT_INPUT_PASSWORD = externalToken
+    vaultData.GIT_INPUT_USER = externalUserName
+    vaultData.GIT_INPUT_URL = externalRepoUrl?.split(/:\/\/(.*)/s)[1] // Un urN ne contient pas le protocole
+
+    await payload.vault.write(`${internalRepoName}-mirror`, vaultData)
+
+    return {
+      status: {
+        result: 'OK',
+        message: 'Updated',
+      },
+    }
+  } catch (error) {
+    return {
+      status: {
+        result: 'KO',
+        message: 'Failed',
+      },
+      error: JSON.stringify(error),
+    }
+  }
+}
+
 export const deleteDsoRepository: StepCall<DeleteRepositoryExecArgs> = async (payload) => {
   try {
+    if (!payload.vault) throw Error('no Vault available')
     const { internalRepoName, organization, project } = payload.args
     await deleteProject(internalRepoName, project, organization)
-    deleteProject(`${internalRepoName}-mirror`, project, organization)
+    await deleteProject(`${internalRepoName}-mirror`, project, organization)
+    const internalMirrorRepoName = `${internalRepoName}-mirror`
+    await payload.vault.destroy(internalMirrorRepoName)
 
     return {
       status: {
@@ -246,6 +279,31 @@ export const removeDsoGroupMember: StepCall<AddUserToProjectExecArgs> = async (p
       status: {
         result: 'KO',
         message: 'Failed',
+      },
+      error: JSON.stringify(error),
+    }
+  }
+}
+
+export const getDsoProjectSecrets: StepCall<any> = async (payload) => {
+  try {
+    if (!payload.vault) throw Error('no Vault available')
+    // TODO déplacer les secrets dans un dossier pour tout lister plutôt que de sélectionner dans le code
+    const gitlab = (await payload.vault.read('GITLAB')).data
+    return {
+      status: {
+        result: 'OK',
+        message: 'secret retrieved',
+      },
+      secrets: {
+        ...gitlab,
+      },
+    }
+  } catch (error) {
+    return {
+      status: {
+        result: 'OK',
+        message: 'No secrets found for this project',
       },
       error: JSON.stringify(error),
     }

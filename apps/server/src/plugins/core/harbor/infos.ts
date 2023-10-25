@@ -1,7 +1,7 @@
 import type { ServiceInfos } from '@/plugins/services.js'
 import { harborUrl } from './utils.js'
 
-export const infos: ServiceInfos = {
+const infos: ServiceInfos = {
   name: 'registry',
   monitorUrl: `${harborUrl}`,
   to: ({ services }) => `${harborUrl}/harbor/projects/${services?.registry?.id}`,
@@ -9,3 +9,5 @@ export const infos: ServiceInfos = {
   imgSrc: '/img/harbor.svg',
   description: 'Harbor stocke, analyse et distribue vos images de conteneurs',
 }
+
+export default infos

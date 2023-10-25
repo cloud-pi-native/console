@@ -30,6 +30,10 @@ const props = defineProps({
     type: String,
     default: 'Veuillez choisir parmi les choix suivants',
   },
+  id: {
+    type: String,
+    default: 'multi-select',
+  },
 })
 
 const selectValue = ref(undefined)
@@ -64,8 +68,8 @@ const removeElementFromArray = (elementToDelete) => {
       {{ label }}
     </label>
     <select
-      id="multi-select"
-      name="multi-select"
+      :id="props.id"
+      :name="props.id"
       :disabled="props.disabled"
       :value="selectValue"
       class="fr-select"
@@ -110,7 +114,7 @@ const removeElementFromArray = (elementToDelete) => {
   >
     <DsfrTag
       :label="element"
-      :data-testid="`${element}-tag`"
+      :data-testid="`${element}-${props.id}-tag`"
       tag-name="button"
       :disabled="props.disabled"
       class="fr-tag--dismiss"

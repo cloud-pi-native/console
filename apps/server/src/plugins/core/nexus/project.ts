@@ -7,11 +7,12 @@ import type { ArchiveProjectExecArgs, CreateProjectExecArgs } from '@/plugins/ho
 const axiosInstance = axios.create(axiosOptions)
 
 export const createNexusProject: StepCall<CreateProjectExecArgs> = async (payload) => {
-  const { organization, project, owner } = payload.args
-  const projectName = `${organization}-${project}`
-  const res: any = {}
-
   try {
+    const { organization, project, owner } = payload.args
+    const projectName = `${organization}-${project}`
+    const res: any = {}
+
+    if (!payload.vault) throw Error('no Vault available')
     // create local repo maven
     for (const repVersion of ['release', 'snapshot']) {
       await axiosInstance({
@@ -113,13 +114,12 @@ export const createNexusProject: StepCall<CreateProjectExecArgs> = async (payloa
         roles: [`${projectName}-ID`],
       },
     })
-    res.vault = [{
-      name: 'NEXUS',
-      data: {
-        NEXUS_PASSWORD: newPwd,
-        NEXUS_USERNAME: projectName,
-      },
-    }]
+
+    await payload.vault.write('NEXUS', {
+      NEXUS_PASSWORD: newPwd,
+      NEXUS_USERNAME: projectName,
+    })
+
     res.user = newUser.data
     res.status = { result: 'OK', message: 'User Created' }
     return res

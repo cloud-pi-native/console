@@ -176,7 +176,7 @@ watch(project, () => {
       />
     </div>
     <div
-      v-if="!repos.length"
+      v-if="!repos.length && !isNewRepoForm"
     >
       <p>Aucun dépôt synchronisé</p>
     </div>

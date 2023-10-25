@@ -3,7 +3,7 @@ import { EnhancedFastifyRequest } from '@/types/index.js'
 import { addReqLogs } from '@/utils/logger.js'
 import { sendCreated, sendOk } from '@/utils/response.js'
 import {
-  checkClusterProjectsId,
+  checkClusterProjectIds,
   getAllCleanedClusters,
   createCluster,
   updateCluster,
@@ -25,7 +25,7 @@ export const createClusterController = async (req: EnhancedFastifyRequest<Create
   const data = req.body
   const userId = req.session?.user?.id
 
-  data.projectsId = checkClusterProjectsId(data)
+  data.projectIds = checkClusterProjectIds(data)
 
   const cluster = await createCluster(data, userId)
 

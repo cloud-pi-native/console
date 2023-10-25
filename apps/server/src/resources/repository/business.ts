@@ -4,9 +4,8 @@ import { Project, Repository, User } from '@prisma/client'
 import { projectRootDir } from '@/utils/env.js'
 import { hooks } from '@/plugins/index.js'
 import { unlockProjectIfNotFailed } from '@/utils/business.js'
-import { exclude } from '@/utils/queries-tools.js'
 import { CreateRepositoryDto, UpdateRepositoryDto } from '@dso-console/shared/src/resources/repository/dto.js'
-import { ProjectRoles } from '@dso-console/shared'
+import { ProjectRoles, exclude } from '@dso-console/shared'
 import { checkInsufficientRoleInProject, checkRoleAndLocked } from '@/utils/controller.js'
 import { gitlabUrl } from '@/plugins/core/gitlab/utils.js'
 
@@ -91,22 +90,22 @@ export const createRepository = async (
   const repo = await initializeRepository(dbData)
 
   try {
-    const environmentNames = project.environments?.map(env => env.name)
-
     const repoData = {
       ...repo,
       project: project.name,
       organization: project.organization.name,
-      environments: environmentNames,
+      environments: project.environments?.map(environment => environment.name),
       internalUrl: `${gitlabUrl}/${projectRootDir}/${project.organization.name}/${project.name}/${repo.internalRepoName}.git`,
     }
     if (data.isPrivate) {
       repoData.externalUserName = data.externalUserName
+      // @ts-ignore
       repoData.externalToken = data.externalToken
     }
 
     const results = await hooks.createRepository.execute(repoData)
     results.args.externalToken = 'information cachée'
+    // @ts-ignore
     await addLogs('Create Repository', results, userId)
     if (results.failed) throw new BadRequestError('Echec des services lors de la création du dépôt', undefined)
 
@@ -145,6 +144,7 @@ export const updateRepository = async (
 
     const results = await hooks.updateRepository.execute(repoData)
     results.args.externalToken = 'information cachée'
+    // @ts-ignore
     await addLogs('Update Repository', results, userId)
     if (results.failed) throw new UnprocessableContentError('Echec des services associés au dépôt', undefined)
 
@@ -172,18 +172,17 @@ export const deleteRepository = async (
   await updateRepositoryDeleting(repositoryId)
 
   try {
-    const environmentNames = project.environments?.map(env => env.name)
-
     const repoData = {
       ...repo,
       project: project.name,
       organization: project.organization.name,
       services: project.services,
-      environments: environmentNames,
+      environments: project.environments?.map(environment => environment.name),
       internalUrl: `${gitlabUrl}/${projectRootDir}/${project.organization.name}/${project.name}/${repo.internalRepoName}.git`,
     }
 
     const results = await hooks.deleteRepository.execute(repoData)
+    // @ts-ignore
     await addLogs('Delete Repository', results, userId)
     if (results.failed) throw new UnprocessableContentError('Echec des opérations', undefined)
     await deleteRepositoryQuery(repositoryId)

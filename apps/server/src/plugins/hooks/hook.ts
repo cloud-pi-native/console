@@ -1,3 +1,4 @@
+import { VaultProjectApi } from '../core/vault/class.js'
 import * as hooks from './index.js'
 
 export type SecretToVault = {
@@ -13,7 +14,7 @@ export type PluginResult = {
 
 export type HookPayload<Args> = {
   sonarqube?: PluginResult
-  vault?: PluginResult & Record<string, Record<string, unknown>>
+  vault?: VaultProjectApi
   args: Args,
   failed: boolean,
   plugins?: Record<string, PluginResult>
@@ -21,7 +22,7 @@ export type HookPayload<Args> = {
 
 export type StepCall<Args> = (payload: HookPayload<Args>) => Promise<PluginResult>
 type HookStep = Record<string, StepCall<DefaultArgs>>
-export type HookStepsNames = 'check' | 'pre' | 'main' | 'post' | 'save' | 'revert'
+export type HookStepsNames = 'check' | 'pre' | 'main' | 'post' | 'revert'
 export type Hook<E, V> = {
   uniquePlugin?: string, // if plugin register on it no other one can register on it
   execute: (args: E) => Promise<HookPayload<E>>,
@@ -53,19 +54,26 @@ export const createHook = <E, V>(unique = false) => {
   const pre: HookStep = {}
   const main: HookStep = {}
   const post: HookStep = {}
-  const save: HookStep = {}
   const revert: HookStep = {}
 
   const execute = async <E>(args: E) => {
     let payload: HookPayload<E> = { failed: false, args }
-    const steps = [pre, main, post, save]
+    let vault: void | VaultProjectApi
+    // @ts-ignore
+    if (args && args.organization && args.project) {
+      // @ts-ignore
+      vault = new VaultProjectApi(args.organization, args.project)
+    }
+    const steps = [pre, main, post]
     for (const step of steps) {
+      if (vault) payload.vault = vault
       payload = await executeStep(step, payload)
       if (payload.failed) {
         payload = await executeStep(revert, payload)
         break
       }
     }
+    delete payload.vault
     return payload
   }
 
@@ -78,7 +86,6 @@ export const createHook = <E, V>(unique = false) => {
     pre,
     main,
     post,
-    save,
     revert,
     execute,
     validate,
