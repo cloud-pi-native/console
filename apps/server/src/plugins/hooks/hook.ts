@@ -29,7 +29,7 @@ export type Hook<E, V> = {
   validate: (args: V) => Promise<HookPayload<V>>,
 } & Record<HookStepsNames, HookStep>
 export type HookList<E, V> = Record<keyof typeof hooks, Hook<E, V>>
-export type HookChoice = keyof typeof hooks | 'all'
+export type HookChoice = keyof typeof hooks
 
 export type PluginsFunctions = Partial<Record<
   HookChoice,
@@ -60,7 +60,7 @@ export const createHook = <E, V>(unique = false) => {
     let payload: HookPayload<E> = { failed: false, args }
     let vault: void | VaultProjectApi
     // @ts-ignore
-    if (args && args.organization && args.project) {
+    if (args?.organization && args?.project) {
       // @ts-ignore
       vault = new VaultProjectApi(args.organization, args.project)
     }

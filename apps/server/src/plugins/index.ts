@@ -2,7 +2,7 @@ import { readdirSync, existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import url from 'url'
 import { type FastifyInstance } from 'fastify/types/instance.js'
-import { objectEntries, objectKeys } from '@/utils/type.js'
+import { objectEntries } from '@/utils/type.js'
 import * as hooks from './hooks/index.js'
 import { type PluginsFunctions } from './hooks/hook.js'
 import { disabledPlugins, isCI, isInt, isProd } from '@/utils/env.js'
@@ -18,7 +18,7 @@ const initPluginManager = async (app: FastifyInstance): PluginManager => {
   const register: RegisterFn = (name, subscribedHooks) => {
     const message = []
     for (const [hook, steps] of objectEntries(subscribedHooks)) {
-      if (!(hook in hooks) && hook !== 'all') {
+      if (!(hook in hooks)) {
         app.log.warn({
           message: `Plugin ${name} tried to register on an unknown hook ${hook}`,
         })
@@ -33,21 +33,12 @@ const initPluginManager = async (app: FastifyInstance): PluginManager => {
           continue
         }
 
-        if (hook === 'all') {
-          for (const hook of objectKeys(hooks)) {
-            if (!('uniquePlugin' in hooks[hook])) {
-              hooks[hook][step][name] = fn
-            }
-          }
-          message.push(`*:${step}`)
-        } else {
-          if ('uniquePlugin' in hooks[hook] && hooks[hook]?.uniquePlugin !== '' && hooks[hook]?.uniquePlugin !== name) {
-            app.log.warn({ message: `Plugin ${name} cannot register on 'fetchOrganizations', hook is already registered on` })
-            continue
-          }
-          hooks[hook][step][name] = fn
-          message.push(`${hook}:${step}`)
+        if ('uniquePlugin' in hooks[hook] && hooks[hook]?.uniquePlugin !== '' && hooks[hook]?.uniquePlugin !== name) {
+          app.log.warn({ message: `Plugin ${name} cannot register on '${hook}', hook is already registered on by ${hooks[hook].uniquePlugin}` })
+          continue
         }
+        hooks[hook][step][name] = fn
+        message.push(`${hook}:${step}`)
       }
     }
     app.log.warn(`Plugin ${name} registered at ${message.join(' ')}`)
