@@ -1,5 +1,5 @@
 import type { HookPayload, StepCall } from '@/plugins/hooks/hook.js'
-import type { ArchiveProjectExecArgs, CreateProjectExecArgs } from '@/plugins/hooks/project.js'
+import type { ArchiveProjectExecArgs, CreateProjectExecArgs, ProjectBase } from '@/plugins/hooks/project.js'
 import type { CreateRepositoryExecArgs, DeleteRepositoryExecArgs, UpdateRepositoryExecArgs } from '@/plugins/hooks/repository.js'
 import { AddUserToProjectExecArgs } from '@/plugins/hooks/team.js'
 import { User } from '@prisma/client'
@@ -285,7 +285,7 @@ export const removeDsoGroupMember: StepCall<AddUserToProjectExecArgs> = async (p
   }
 }
 
-export const getDsoProjectSecrets: StepCall<any> = async (payload) => {
+export const getDsoProjectSecrets: StepCall<ProjectBase> = async (payload) => {
   try {
     if (!payload.vault) throw Error('no Vault available')
     // TODO déplacer les secrets dans un dossier pour tout lister plutôt que de sélectionner dans le code

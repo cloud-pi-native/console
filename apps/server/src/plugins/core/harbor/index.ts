@@ -8,7 +8,9 @@ import { createProject, deleteProject } from './project.js'
 import { addProjectGroupMember } from './permission.js'
 import { createRobot } from './robot.js'
 import type { StepCall } from '@/plugins/hooks/hook.js'
-import type { ArchiveProjectExecArgs, CreateProjectExecArgs } from '@/plugins/hooks/project.js'
+import type { ArchiveProjectExecArgs, CreateProjectExecArgs, ProjectBase } from '@/plugins/hooks/project.js'
+
+const registryHost = harborUrl.split('://')[1]
 
 export const axiosOptions = {
   baseURL: `${harborUrl}/api/v2.0/`,
@@ -63,7 +65,6 @@ export const createDsoProject: StepCall<CreateProjectExecArgs> = async (payload)
     const auth = `${robot.name}:${robot.secret}`
     const buff = Buffer.from(auth)
     const b64auth = buff.toString('base64')
-    const registryHost = harborUrl.split('://')[1]
     const dockerConfigStr = JSON.stringify({
       auths: {
         [registryHost]: {
@@ -121,5 +122,16 @@ export const archiveDsoProject: StepCall<ArchiveProjectExecArgs> = async (payloa
       },
       error: JSON.stringify(error),
     }
+  }
+}
+
+export const getProjectSecrets: StepCall<ProjectBase> = async ({ args }) => {
+  return {
+    status: {
+      result: 'OK',
+    },
+    secrets: {
+      'Registry base path': `${registryHost}/${args.organization}-${args.project}/`,
+    },
   }
 }
