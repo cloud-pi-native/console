@@ -60,7 +60,7 @@ export class VaultProjectApi {
     return await response.data.data
   }
 
-  public async write (path: string = '/', body: object) {
+  public async write (body: object, path: string = '/') {
     if (path.startsWith('/')) path = path.slice(1)
     const response = await this.axios.post(
       `/v1/forge-dso/data/${projectRootDir}/${this.basePath}/${path}`,

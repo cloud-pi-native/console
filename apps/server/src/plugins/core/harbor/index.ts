@@ -73,12 +73,12 @@ export const createDsoProject: StepCall<CreateProjectExecArgs> = async (payload)
         },
       },
     })
-    await payload.vault.write('REGISTRY', {
+    await payload.vault.write({
       TOKEN: robot.secret,
       USERNAME: robot.name,
       HOST: registryHost,
       DOCKER_CONFIG: dockerConfigStr,
-    })
+    }, 'REGISTRY')
     return {
       status: {
         result: 'OK',

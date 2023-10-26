@@ -64,12 +64,12 @@ export const createDsoProject: StepCall<CreateProjectExecArgs> = async (payload)
       variable_type: 'env_var',
     })
 
-    await payload.vault.write('GITLAB', {
+    await payload.vault.write({
       ORGANIZATION_NAME: organization,
       PROJECT_NAME: project,
       GIT_MIRROR_PROJECT_ID: mirror.id,
       GIT_MIRROR_TOKEN: triggerToken.token,
-    })
+    }, 'GITLAB')
 
     return {
       status: {
@@ -139,14 +139,14 @@ export const createDsoRepository: StepCall<CreateRepositoryExecArgs> = async (pa
       environment_scope: '*',
     })
 
-    await payload.vault.write(internalMirrorRepoName, {
+    await payload.vault.write({
       GIT_INPUT_URL: externalRepoUrn,
       GIT_INPUT_USER: externalUserName,
       GIT_INPUT_PASSWORD: externalToken,
       GIT_OUTPUT_USER: 'root',
       GIT_OUTPUT_PASSWORD: gitlabToken,
       GIT_OUTPUT_URL: projectCreated.http_url_to_repo.split(/:\/\/(.*)/s)[1],
-    })
+    }, internalMirrorRepoName)
     return {
       status: {
         result: 'OK',
@@ -174,7 +174,7 @@ export const updateDsoRepository: StepCall<UpdateRepositoryExecArgs> = async (pa
     vaultData.GIT_INPUT_USER = externalUserName
     vaultData.GIT_INPUT_URL = externalRepoUrl?.split(/:\/\/(.*)/s)[1] // Un urN ne contient pas le protocole
 
-    await payload.vault.write(`${internalRepoName}-mirror`, vaultData)
+    await payload.vault.write(vaultData, `${internalRepoName}-mirror`)
 
     return {
       status: {
