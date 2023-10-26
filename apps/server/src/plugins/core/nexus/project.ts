@@ -115,10 +115,10 @@ export const createNexusProject: StepCall<CreateProjectExecArgs> = async (payloa
       },
     })
 
-    await payload.vault.write('NEXUS', {
+    await payload.vault.write({
       NEXUS_PASSWORD: newPwd,
       NEXUS_USERNAME: projectName,
-    })
+    }, 'NEXUS')
 
     res.user = newUser.data
     res.status = { result: 'OK', message: 'User Created' }

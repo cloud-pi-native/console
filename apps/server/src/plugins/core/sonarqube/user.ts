@@ -55,11 +55,11 @@ export const createUser: StepCall<CreateProjectExecArgs> = async (payload) => {
       },
     })
 
-    await payload.vault.write('SONAR', {
+    await payload.vault.write({
       SONAR_USERNAME: username,
       SONAR_PASSWORD: newPwd,
       SONAR_TOKEN: newToken.data.token,
-    })
+    }, 'SONAR')
 
     return {
       status: {

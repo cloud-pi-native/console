@@ -26,11 +26,6 @@ type SearchProjectRes = {
     components: SonarProject[]
   }
 }
-type CreateProjectRes = {
-  data: {
-    project: SonarProject
-  }
-}
 
 const robotPermissions = [
   'user',
@@ -115,7 +110,7 @@ const createProject = async (projectKey: string, projectName: string) => {
         name: projectName,
         mainbranch: 'main',
       },
-    }) as CreateProjectRes
+    })
     let ensureExist = false
     while (!ensureExist) {
       const sonarProjectSearch = await axiosInstance({

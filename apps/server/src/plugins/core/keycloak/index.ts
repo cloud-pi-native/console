@@ -229,11 +229,10 @@ export const manageKeycloakPermission: StepCall<PermissionManageUserArgs> = asyn
     const projectName = `${organization}-${project}`
     const projectGroup = await getProjectGroupByName(kcClient, projectName)
     const subGroupName = `${environment}-${cluster.label}`
-    console.log({ projectGroup })
     if (!projectGroup) throw new Error(`Unable to find parent group '/${projectGroup}'`)
     const subGroupEnv = projectGroup.subGroups.find(subGrp => subGrp.name === subGroupName)
     const group = await getProjectGroupById(kcClient, subGroupEnv.id)
-    if (!group) throw new Error(`Unable to find parent subGroup '/${projectGroup}/${subGroupName}'`)
+    if (!group) throw new Error(`Unable to find parent subGroup '/${projectGroup.name}/${subGroupName}'`)
 
     const roGroup = group.subGroups.find(({ name }) => name === 'RO')
     const rwGroup = group.subGroups.find(({ name }) => name === 'RW')
@@ -248,7 +247,6 @@ export const manageKeycloakPermission: StepCall<PermissionManageUserArgs> = asyn
       status: { result: 'OK' },
     }
   } catch (error) {
-    console.log(error)
     return {
       status: {
         result: 'KO',
@@ -258,22 +256,3 @@ export const manageKeycloakPermission: StepCall<PermissionManageUserArgs> = asyn
     }
   }
 }
-
-// console.log(await manageKeycloakPermission({
-//   args: {
-//     cluster: {
-//       label: 'c7',
-//     },
-//     environment: 'test',
-//     organization: 'mia',
-//     project: 'test-keycloak',
-//     user: {
-//       email: 'atardif@adlere.fr',
-//       id: 'def1bc80-40ea-48d7-a119-ff06696635b6',
-//     },
-//     permissions: {
-//       ro: true,
-//       rw: true,
-//     }
-//   },
-// }))
