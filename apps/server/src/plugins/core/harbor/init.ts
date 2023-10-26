@@ -1,5 +1,5 @@
 import { RegisterFn } from '@/plugins/index.js'
-import { createDsoProject, archiveDsoProject } from './index.js'
+import { createDsoProject, archiveDsoProject, getProjectSecrets } from './index.js'
 import infos from './infos.js'
 
 export const init = (register: RegisterFn) => {
@@ -8,6 +8,7 @@ export const init = (register: RegisterFn) => {
     {
       createProject: { post: createDsoProject },
       archiveProject: { main: archiveDsoProject },
+      getProjectSecrets: { main: getProjectSecrets },
     },
   )
 }

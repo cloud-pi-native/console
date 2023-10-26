@@ -78,26 +78,18 @@ const importPlugin = async (pluginManager: Awaited<PluginManager>, name: string,
 
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url))
 
-export const initCorePlugins = async (pluginManager: Awaited<PluginManager>, _app: FastifyInstance) => {
-  const corePlugins = ['gitlab', 'harbor', 'keycloak', 'kubernetes', 'argo', 'nexus', 'sonarqube', 'vault']
-  for (const pluginName of corePlugins) {
-    const pluginDir = resolve(__dirname, `core/${pluginName}`)
-    await importPlugin(pluginManager, pluginName, pluginDir)
-  }
-}
-
-export const initExternalPlugins = async (pluginManager: Awaited<PluginManager>, app: FastifyInstance) => {
+export const initPlugins = async (pluginManager: Awaited<PluginManager>, app: FastifyInstance, baseDirName: string) => {
   try {
-    const pluginDir = resolve(__dirname, 'external')
+    const pluginDir = resolve(__dirname, baseDirName)
     if (!existsSync(pluginDir)) {
-      app.log.info(`Directory ${pluginDir} does not exist, skipping import of external plugins`)
+      app.log.info(`Directory ${pluginDir} does not exist, skipping import of plugins`)
       return
     }
     const plugins = readdirSync(pluginDir)
-    for (const pluginName of plugins) {
-      const pluginDir = resolve(__dirname, `external/${pluginName}`)
-      await importPlugin(pluginManager, pluginName, pluginDir)
-    }
+    await Promise.all(plugins.map(async pluginName => {
+      const pluginDir = resolve(__dirname, `${baseDirName}/${pluginName}`)
+      return importPlugin(pluginManager, pluginName, pluginDir)
+    }))
   } catch (err) {
     app.log.error(err)
   }
