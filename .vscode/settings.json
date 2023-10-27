@@ -56,7 +56,7 @@
     "projectInit"
   ],
   "sonarlint.connectedMode.project": {
-    "connectionId": "https://test-sonarqube.osc-secnum-fr1.scalingo.io",
-    "projectKey": "dso-console"
+    "connectionId": "https://sonarqube.fabrique-numerique.fr",
+    "projectKey": "cloud-pi-native_console_AYsa46O31ebDtzs-pYyZ"
   },
 }

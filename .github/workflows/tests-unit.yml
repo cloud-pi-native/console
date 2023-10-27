@@ -16,6 +16,7 @@ on:
         required: false
       SONAR_PROJECT_KEY:
         required: false
+  workflow_dispatch:
 
 jobs:
   unit-tests:
@@ -154,6 +155,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Set sonarqube args
+        id: sonar-args
+        run: |
+          echo "SONAR_ARGS_PR=-Dsonar.pullrequest.provider=github -Dsonar.pullrequest.key=${{ github.event.number }} -Dsonar.pullrequest.branch=${{ github.head_ref }} -Dsonar.pullrequest.base=${{ github.base_ref }} -Dsonar.pullrequest.github.repository=${{ github.repository }}" >> $GITHUB_OUTPUT
+          echo "SONAR_ARGS_BRANCH=-Dsonar.branch.name=${{ github.event.pull_request.head.ref }}" >> $GITHUB_OUTPUT
+
       - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@master
         env:
@@ -168,12 +175,7 @@ jobs:
             -Dsonar.javascript.lcov.reportPaths=coverage/apps/server/coverage/lcov.info,coverage/apps/client/coverage/lcov.info,coverage/packages/shared/coverage/lcov.info
             -Dsonar.coverage.exclusions=**/*.spec.js,**/*.spec.ts,**/*.vue,**/assets/**,**/cypress/**,**/packages/test-utils/**,apps/server/src/plugins/**
             -Dsonar.scm.provider=git
-            -Dsonar.pullrequest.provider=github
-            -Dsonar.pullrequest.key=${{ github.event.number }}
-            -Dsonar.pullrequest.branch=${{ github.head_ref }}
-            -Dsonar.pullrequest.base=${{ github.base_ref }}
-            -Dsonar.pullrequest.github.repository=${{ github.repository }}
-          # -Dsonar.branch.name=${{ github.event.pull_request.head.ref }}
+            ${{ github.event_name == 'pull_request' && steps.sonar-args.outputs.SONAR_ARGS_PR || steps.sonar-args.outputs.SONAR_ARGS_BRANCH }}
         continue-on-error: true
             
       - name: SonarQube Quality Gate check
