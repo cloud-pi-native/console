@@ -111,8 +111,6 @@ export const getProjectSecrets = async (projectId: string, userId: User['id']) =
   }
 
   const results = await hooks.getProjectSecrets.execute(projectData)
-  // @ts-ignore
-  await addLogs('Get Project Secrets', results, userId)
   if (results?.failed) throw new Error('Echec de récupération des secrets du projet par les plugins')
   const projectSecrets = Object.fromEntries(
     Object.entries(results)

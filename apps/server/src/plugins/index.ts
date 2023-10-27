@@ -62,7 +62,7 @@ const importPlugin = async (pluginManager: Awaited<PluginManager>, name: string,
       const { init } = await import(`${absolutePath}/init.${fileExtension}`)
       init(pluginManager.register)
     }
-    servicesInfos[name] = infos.default
+    servicesInfos[infos.default.name] = infos.default
   } catch (error) {
   }
 }
