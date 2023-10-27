@@ -53,7 +53,7 @@ jobs:
         with:
           path: |
             ./.turbo/cache
-          key: turbo-e2e-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('apps/**/src/**','packages/**/src/**') }}
+          key: turbo-e2e-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('apps/**/src/**','apps/client/cypress/**','packages/**/src/**') }}
           restore-keys: |
             turbo-e2e-${{ runner.os }}-${{ runner.arch }}-
 

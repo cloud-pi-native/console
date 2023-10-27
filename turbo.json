@@ -57,7 +57,11 @@
         "server#test:e2e-ci"
       ],
       "inputs": [
-        "src/**"
+        "src/**",
+        "cypress/components/specs/**",
+        "cypress/components/support/**",
+        "cypress/e2e/specs/**",
+        "cypress/e2e/support/**"
       ],
       "outputs": []
     },
