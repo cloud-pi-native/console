@@ -1,5 +1,25 @@
 # Changelog
 
+## [6.0.0](https://github.com/cloud-pi-native/console/compare/v5.11.0...v6.0.0) (2023-10-27)
+
+
+### ⚠ BREAKING CHANGES
+
+* :boom: environment management
+
+### Features
+
+* :boom: environment management ([b4f3793](https://github.com/cloud-pi-native/console/commit/b4f379315803aee1264192c16851af049fa661ee))
+* :sparkles: services secrets improvement ([40e3ddd](https://github.com/cloud-pi-native/console/commit/40e3ddd2acd7e000b03f5bfa5663533449d315bf))
+
+
+### Bug Fixes
+
+* :alien: change logo for svg ([aa8315b](https://github.com/cloud-pi-native/console/commit/aa8315b63617c8413a448499e2ab0e68c216faef))
+* :bug: add conditional chaining to avoid error in dsobadge ([56ad040](https://github.com/cloud-pi-native/console/commit/56ad0403242222f50ef8abe898b46c241d40b66d))
+* :bug: launch e2e test in open mode without turbo ([d3497d1](https://github.com/cloud-pi-native/console/commit/d3497d13e3862d7701cbbd2da65cb7a571032eb2))
+* :card_file_box: set all project status to failed for v6 release ([b689c35](https://github.com/cloud-pi-native/console/commit/b689c356f27e769b18aabab2f2510dd24354d95f))
+
 ## [5.11.0](https://github.com/cloud-pi-native/console/compare/v5.10.1...v5.11.0) (2023-10-13)
 
 
