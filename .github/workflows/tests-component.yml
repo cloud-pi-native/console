@@ -50,7 +50,7 @@ jobs:
         with:
           path: |
             ./.turbo/cache
-          key: turbo-component-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('apps/**/src/**','packages/**/src/**') }}
+          key: turbo-component-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('apps/**/src/**','apps/client/cypress/**','packages/**/src/**') }}
           restore-keys: |
             turbo-component-${{ runner.os }}-${{ runner.arch }}-
 
