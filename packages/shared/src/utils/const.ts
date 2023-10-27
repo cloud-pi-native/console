@@ -15,6 +15,8 @@ export const projectRoles = [
 ] as const
 export type ProjectRoles = typeof projectRoles[number]
 
+export const longestEnvironmentName = 11 as const
+
 // ! Une organisation ne doit pas faire plus de 19 caractères
 export const allOrganizations = [
   {
@@ -58,14 +60,6 @@ export const logActions = [
   'Delete Repository',
   'Delete Environment',
 ]
-
-// ! Un environnement ne doit pas faire plus de 11 caractères
-export const allEnv = [
-  'dev',
-  'staging',
-  'integration',
-  'prod',
-] as const
 
 export const statusDict = {
   locked: {

@@ -81,8 +81,10 @@ Cypress.Commands.add('archiveProject', (project) => {
     .click()
 
   cy.url().should('match', /\/projects$/)
-    .wait('@getProjects').its('response.statusCode').should('eq', 200)
-    .getByDataTestid(`projectTile-${project.name}`)
+  cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
+  cy.getByDataTestid(`projectTile-${project.name}`)
+    .should('not.exist')
+  cy.getByDataTestid('archiveProjectZone')
     .should('not.exist')
 })
 
@@ -166,46 +168,72 @@ Cypress.Commands.add('deleteRepo', (project, repo) => {
 })
 
 Cypress.Commands.add('addEnvironment', (project, environments) => {
+  cy.intercept('GET', 'api/v1/stages').as('getStages')
+  cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
   cy.intercept('POST', '/api/v1/projects/*/environments').as('postEnvironment')
   cy.intercept('GET', '/api/v1/projects').as('getProjects')
 
   environments.forEach((environment) => {
     cy.goToProjects()
-      .getByDataTestid(`projectTile-${project.name}`).click()
+      .getByDataTestid(`projectTile-${project?.name}`).click()
       .getByDataTestid('menuEnvironments').click()
       .url().should('contain', '/environments')
 
     cy.getByDataTestid('addEnvironmentLink').click()
-      .get('h1').should('contain', 'Ajouter un environnement au projet')
-      .get('select#environment-name-select')
-      .select(environment)
+    cy.wait('@getStages')
+    cy.wait('@getQuotas')
+    cy.get('h1').should('contain', 'Ajouter un environnement au projet')
+    cy.getByDataTestid('environmentNameInput')
+      .type(environment?.name)
+    cy.get('#stage-select')
+      .select(environment?.stage?.id)
+    cy.get('#quota-select')
+      .select(environment?.quota?.id)
+    cy.get('#cluster-select')
+      .select(environment?.cluster?.id)
 
     cy.getByDataTestid('addEnvironmentBtn').click()
     cy.wait('@postEnvironment').its('response.statusCode').should('eq', 201)
     cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
-    cy.getByDataTestid(`environmentTile-${environment}`).should('exist')
+    cy.getByDataTestid(`environmentTile-${environment?.name}`).should('exist')
   })
 })
 
-Cypress.Commands.add('assertAddEnvironment', (project, environments) => {
+Cypress.Commands.add('assertAddEnvironment', (project, environments, isDeepCheck = true) => {
+  cy.intercept('GET', 'api/v1/stages').as('getStages')
+  cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
   cy.goToProjects()
     .getByDataTestid(`projectTile-${project.name}`).click()
     .getByDataTestid('menuEnvironments').click()
 
-  environments.forEach((env) => {
-    cy.getByDataTestid(`environmentTile-${env}`)
+  environments.forEach((environment) => {
+    cy.getByDataTestid(`environmentTile-${environment.name}`)
       .should('exist')
+    if (isDeepCheck) {
+      cy.getByDataTestid(`environmentTile-${environment.name}`)
+        .click()
+      cy.wait('@getStages')
+      cy.wait('@getQuotas')
+      cy.getByDataTestid('environmentNameInput')
+        .should('have.value', environment?.name)
+      cy.get('#stage-select')
+        .should('have.value', environment?.stage?.id)
+      cy.get('#quota-select')
+        .should('have.value', environment?.quota?.id)
+      cy.get('#cluster-select')
+        .should('have.value', environment?.cluster?.id)
+    }
   })
 })
 
-Cypress.Commands.add('deleteEnvironment', (project, environment) => {
+Cypress.Commands.add('deleteEnvironment', (project, environmentName) => {
   cy.intercept('DELETE', '/api/v1/projects/*/environments/*').as('deleteEnvironment')
   cy.intercept('GET', '/api/v1/projects').as('getProjects')
 
   cy.goToProjects()
     .getByDataTestid(`projectTile-${project.name}`).click()
     .getByDataTestid('menuEnvironments').click()
-    .getByDataTestid(`environmentTile-${environment}`)
+    .getByDataTestid(`environmentTile-${environmentName}`)
     .click()
     .url().should('contain', '/environments')
     .getByDataTestid('permissionsFieldset').should('be.visible')
@@ -213,23 +241,23 @@ Cypress.Commands.add('deleteEnvironment', (project, environment) => {
     .getByDataTestid('deleteEnvironmentInput').should('be.visible')
     .getByDataTestid('permissionsFieldset').should('not.exist')
     .getByDataTestid('deleteEnvironmentInput')
-    .type(environment.slice(0, 2))
+    .type(environmentName.slice(0, 2))
     .getByDataTestid('deleteEnvironmentBtn').should('be.disabled')
     .getByDataTestid('deleteEnvironmentInput').clear()
-    .type(environment)
+    .type(environmentName)
     .getByDataTestid('deleteEnvironmentBtn').should('be.enabled')
     .click()
   cy.wait('@deleteEnvironment').its('response.statusCode').should('eq', 204)
   cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
-  cy.getByDataTestid(`environmentTile-${environment}`).should('not.exist')
+  cy.getByDataTestid(`environmentTile-${environmentName}`).should('not.exist')
 })
 
-Cypress.Commands.add('addPermission', (project, environment, userToLicence) => {
+Cypress.Commands.add('addPermission', (project, environmentName, userToLicence) => {
   cy.intercept('POST', `/api/v1/projects/${project.id}/environments/*/permissions`).as('postPermission')
   cy.goToProjects()
     .getByDataTestid(`projectTile-${project.name}`).click()
     .getByDataTestid('menuEnvironments').click()
-    .getByDataTestid(`environmentTile-${environment}`)
+    .getByDataTestid(`environmentTile-${environmentName}`)
     .click()
 
   cy.getByDataTestid('permissionSuggestionInput')
@@ -241,11 +269,11 @@ Cypress.Commands.add('addPermission', (project, environment, userToLicence) => {
     .its('response.statusCode').should('eq', 201)
 })
 
-Cypress.Commands.add('assertPermission', (project, environment, permissions) => {
+Cypress.Commands.add('assertPermission', (project, environmentName, permissions) => {
   cy.goToProjects()
     .getByDataTestid(`projectTile-${project.name}`).click()
     .getByDataTestid('menuEnvironments').click()
-    .getByDataTestid(`environmentTile-${environment}`)
+    .getByDataTestid(`environmentTile-${environmentName}`)
     .click()
 
   permissions.forEach(permission => {
@@ -366,7 +394,9 @@ Cypress.Commands.add('getByDataTestid', (dataTestid, timeout = 4_000) => {
 })
 
 Cypress.Commands.add('selectProject', (element) => {
-  cy.getByDataTestid('projectSelector').find('select').select(element)
+  cy.getByDataTestid('projectSelector')
+    ?.find('select')
+    ?.select(element)
 })
 
 Cypress.Commands.add('deleteIndexedDB', () => {

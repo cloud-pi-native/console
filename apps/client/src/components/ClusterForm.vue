@@ -12,21 +12,25 @@ const props = withDefaults(defineProps<{
   isNewCluster: boolean
   cluster: Record<string, any>
   allProjects: Array<any>
+  allStages: Array<any>
 }>(), {
   isNewCluster: true,
   cluster: () => ({
     label: '',
     cluster: {},
     user: {},
-    projectsId: [],
+    projectIds: [],
+    stageIds: [],
     clusterResources: false,
     privacy: 'dedicated',
     infos: '',
   }),
   allProjects: () => [],
+  allStages: () => [],
 })
 
 const projectsName: Ref<Array<string | never>> = ref([])
+const stageNames: Ref<Array<string | never>> = ref([])
 const jsonKConfig: Ref<Record<any, any>> = ref({})
 const kConfigError: Ref<string | undefined> = ref(undefined)
 const isMissingCurrentContext: Ref<boolean> = ref(false)
@@ -56,13 +60,21 @@ const updateValues = (key: string, value: any) => {
   updatedValues.value[key] = true
 
   // Retrieve array of project names from child component, map it into array of project ids.
-  if (key === 'projectsId') {
-    localCluster.value.projectsId = localCluster.value.projectsId
+  if (key === 'projectIds') {
+    localCluster.value.projectIds = localCluster.value.projectIds
+    // @ts-ignore
       .map(project => {
         const organization = project.split(' - ')[0]
         const projectName = project.split(' - ')[1]
         return props.allProjects?.find(pFromAll => pFromAll.organization.name === organization && pFromAll.name === projectName).id
       })
+  }
+
+  // Retrieve array of stage names from child component, map it into array of stage ids.
+  if (key === 'stageIds') {
+    localCluster.value.stageIds = localCluster.value.stageIds
+    // @ts-ignore
+      .map(stageName => props.allStages?.find(sFromAll => sFromAll.name === stageName)?.id)
   }
 }
 
@@ -155,7 +167,7 @@ const emit = defineEmits<{
   add: [value: typeof localCluster]
   update: [value: typeof localCluster]
   delete: [value: typeof localCluster['id']]
-  cancel: [value: null]
+  cancel: []
 }>()
 
 const addCluster = () => {
@@ -168,17 +180,21 @@ const updateCluster = () => {
   if (isClusterValid.value) emit('update', localCluster.value)
 }
 
-const cancel = (event) => {
-  emit('cancel', event)
+const cancel = () => {
+  emit('cancel')
 }
 
 onBeforeMount(() => {
   // Retrieve array of project ids from parent component, map it into array of project names and pass it to child component.
   localCluster.value = props.cluster
-  projectsName.value = localCluster.value.projectsId.map(projectId => {
+  projectsName.value = localCluster.value.projectIds.map(projectId => {
     const project = props.allProjects?.find(project => project.id === projectId)
     return `${project.organization.name} - ${project.name}`
   })
+
+  // Retrieve array of stage ids from parent component, map it into array of stage names and pass it to child component.
+  localCluster.value = props.cluster
+  stageNames.value = localCluster.value.stageIds?.map(stageId => props.allStages?.find(stage => stage.id === stageId)?.name)
 })
 
 watch(selectedContext, () => {
@@ -269,7 +285,7 @@ watch(selectedContext, () => {
       is-textarea
       label="Informations supplémentaires sur le cluster"
       label-visible
-      hint="Facultatif : Infos accessibles aux utilisateurs"
+      hint="Facultatif : Informations accessibles aux utilisateurs."
       @update:model-value="updateValues('infos', $event)"
     />
     <DsfrCheckbox
@@ -300,6 +316,7 @@ watch(selectedContext, () => {
       class="fr-mb-2w"
     >
       <MultiSelector
+        id="projects-select"
         :options="allProjects.map(project => ({ id: project.id, name: `${project.organization.name} - ${project.name}` }))"
         :array="projectsName"
         :disabled="!allProjects.length"
@@ -307,7 +324,22 @@ watch(selectedContext, () => {
         choice-label="Veuillez choisir les projets à associer"
         label="Nom des projets"
         description="Sélectionnez les projets autorisés à utiliser ce cluster."
-        @update="updateValues('projectsId', $event)"
+        @update="updateValues('projectIds', $event)"
+      />
+    </div>
+    <div
+      class="fr-mb-2w"
+    >
+      <MultiSelector
+        id="stages-select"
+        :options="allStages?.map(stage => ({ id: stage.id, name: `${stage.name}` }))"
+        :array="stageNames"
+        :disabled="!allStages?.length"
+        no-choice-label="Aucun stage disponible"
+        choice-label="Veuillez choisir les stages à associer"
+        label="Nom des stages"
+        description="Sélectionnez les stages autorisés à utiliser ce cluster."
+        @update="updateValues('stageIds', $event)"
       />
     </div>
     <div
@@ -326,6 +358,7 @@ watch(selectedContext, () => {
         v-else
         label="Mettre à jour le cluster"
         data-testid="updateClusterBtn"
+        :disabled="!isClusterValid"
         primary
         icon="ri-upload-cloud-line"
         @click="updateCluster()"

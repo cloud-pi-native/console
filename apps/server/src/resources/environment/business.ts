@@ -1,22 +1,24 @@
 import {
   addLogs,
-  addClusterToEnvironment,
-  removeClusterFromEnvironment,
   getEnvironmentInfos as getEnvironmentInfosQuery,
-  getClustersByIds,
   getPublicClusters,
   updateEnvironmentCreated,
   updateEnvironmentFailed,
   lockProject,
-  getProjectInfos,
   initializeEnvironment,
   updateEnvironmentDeleting,
   deleteEnvironment as deleteEnvironmentQuery,
   getUserById,
+  updateEnvironment as updateEnvironmentQuery,
+  getStageById,
+  getClusterById,
+  getProjectInfos,
+  getQuotaStageById,
+  getQuotaById,
 } from '@/resources/queries-index.js'
 import { hooks } from '@/plugins/index.js'
-import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
-import type { Cluster, Environment, Kubeconfig, Organization, Project, Role, User } from '@prisma/client'
+import { DsoError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
+import { type Cluster, type Environment, type Project, type Role, type User, type QuotaStage } from '@prisma/client'
 import {
   type AsyncReturnType,
   checkInsufficientRoleInProject,
@@ -34,6 +36,7 @@ import { gitlabUrl } from '@/plugins/core/gitlab/utils.js'
 export const getEnvironmentInfosAndClusters = async (environmentId: string) => {
   const env = await getEnvironmentInfosQuery(environmentId)
   if (!env) throw new NotFoundError('Environnement introuvable', undefined)
+  // @ts-ignore
   const authorizedClusters = [...await getPublicClusters(), ...env.project.clusters]
   return { env, authorizedClusters }
 }
@@ -44,244 +47,327 @@ export const getEnvironmentInfos = async (environmentId: string) => {
   return env
 }
 
-export const getInitializeEnvironmentInfos = async (userId: User['id'], projectId: Project['id']) => {
-  const owner = await getUserById(userId)
-  const { project, authorizedClusters } = await getProjectInfosAndClusters(projectId)
-  return { owner, project, authorizedClusters }
+type GetInitializeEnvironmentInfosParam = {
+  userId: User['id'],
+  projectId: Project['id'],
+  quotaStageId: QuotaStage['id'],
+}
+
+export const getInitializeEnvironmentInfos = async ({
+  userId,
+  projectId,
+  quotaStageId,
+}: GetInitializeEnvironmentInfosParam) => {
+  try {
+    const user = await getUserById(userId)
+    const { project, projectClusters } = await getProjectInfosAndClusters(projectId)
+    const quotaStage = await getQuotaStageById(quotaStageId)
+    const quota = await getQuotaById(quotaStage?.quotaId)
+    const stageClusters = (await getStageById(quotaStage?.stageId))?.clusters
+    const authorizedClusters = projectClusters
+      ?.filter(projectCluster => stageClusters
+        ?.find(stageCluster => stageCluster.id === projectCluster.id))
+    return { user, project, quota, quotaStage, authorizedClusters }
+  } catch (error) {
+    throw new Error(error?.message)
+  }
 }
 
 // Check logic
 type CheckEnvironmentParam = {
   project: { locked: boolean, roles: Role[], id: string, environments: Environment[] },
-  authorizedClusters: Cluster[],
-  userId: string,
-  newClustersId: string[],
-  envName: string,
+  userId: User['id'],
+  name: Environment['name'],
+  authorizedClusterIds: Cluster['id'][],
+  clusterId: Cluster['id'],
+  quotaStage: QuotaStage,
 }
 
 export const checkGetEnvironment = (
   env: AsyncReturnType<typeof getEnvironmentInfos>,
   userId: string,
 ) => {
+  // @ts-ignore
   const errorMessage = checkInsufficientRoleInProject(userId, { roles: env.project.roles }) ||
+  // @ts-ignore
     checkInsufficientPermissionInEnvironment(userId, env.permissions, 0)
-  if (errorMessage) throw new ForbiddenError(errorMessage, { description: '', extras: { userId, projectId: env.project.id } })
+  if (errorMessage) throw new ForbiddenError(errorMessage, { description: '', extras: { userId, projectId: env.projectId } })
 }
 
 export const checkCreateEnvironment = ({
   project,
-  authorizedClusters,
   userId,
-  newClustersId,
-  envName,
+  name,
+  authorizedClusterIds,
+  clusterId,
+  quotaStage,
 }: CheckEnvironmentParam) => {
   const errorMessage = checkRoleAndLocked(project, userId, 'owner') ||
-    checkClusterUnavailable(newClustersId, authorizedClusters) ||
-    checkExistingEnvironment(project.environments, envName)
+  checkExistingEnvironment(clusterId, name, project.environments) ||
+    checkClusterUnavailable(clusterId, authorizedClusterIds) ||
+    checkQuotaStageStatus(quotaStage)
   if (errorMessage) throw new ForbiddenError(errorMessage, undefined)
 }
 
-export const checkUpdateEnvironment = (
-  project: { locked: boolean, roles: Role[], id: string },
-  authorizedClusters: Pick<Cluster, 'id'>[],
-  userId: string,
-  newClustersId: string[],
-) => {
-  const errorAuthorizationMessage = checkRoleAndLocked(project, userId, 'owner')
-
-  if (errorAuthorizationMessage) throw new BadRequestError(errorAuthorizationMessage, { description: '', extras: { userId, projectId: project.id } })
-
-  const errorContentMessage = checkClusterUnavailable(newClustersId, authorizedClusters)
-  if (errorContentMessage) throw new BadRequestError(errorContentMessage, { description: '', extras: { userId, projectId: project.id } })
+type CheckUpdateEnvironmentParam = {
+  project: { locked: boolean, roles: Role[], id: string, environments: Environment[] },
+  userId: User['id'],
+  quotaStage?: QuotaStage,
 }
 
-export const checkDeleteEnvironment = (
+export const checkUpdateEnvironment = ({
+  project,
+  userId,
+  quotaStage,
+}: CheckUpdateEnvironmentParam) => {
+  const errorMessage = checkRoleAndLocked(project, userId, 'owner') ||
+    checkQuotaStageStatus(quotaStage)
+  if (errorMessage) throw new ForbiddenError(errorMessage, undefined)
+}
+
+type CheckDeleteEnvironmentParam = {
   project: { locked: boolean, roles: Role[], id: string },
   userId: string,
-) => {
+}
+
+export const checkDeleteEnvironment = ({
+  project,
+  userId,
+}: CheckDeleteEnvironmentParam) => {
   const errorMessage = checkInsufficientRoleInProject(userId, { minRole: 'owner', roles: project.roles })
   if (errorMessage) throw new ForbiddenError(errorMessage, { description: '', extras: { userId, projectId: project.id } })
 }
 
-export const checkExistingEnvironment = (environments: Environment[], envName: string) => {
-  if (environments?.find(env => env.name === envName)) {
-    return `L'environnement ${envName} existe déjà pour ce projet`
+export const checkExistingEnvironment = (clusterId: Cluster['id'], name: Environment['name'], environments: Environment[]) => {
+  if (environments?.find(env => env.clusterId === clusterId && env.name === name)) {
+    return 'Un environnement avec le même nom et déployé sur le même cluster existe déjà pour ce projet.'
   }
 }
 
+export const checkQuotaStageStatus = (quotaStage: QuotaStage) => {
+  if (quotaStage.status !== 'active') return 'Cette association quota / stage n\'est plus disponible.'
+}
+
 // Routes logic
+type CreateEnvironmentParam = {
+  userId: User['id'],
+  projectId: Project['id'],
+  name: Environment['name'],
+  clusterId: Environment['clusterId'],
+  quotaStageId: QuotaStage['id'],
+}
+
 export const createEnvironment = async (
-  project: AsyncReturnType<typeof getProjectInfos>,
-  owner: User,
-  userId: string,
-  envName: string,
-  newClustersId: string[],
-) => {
+  {
+    userId,
+    projectId,
+    name,
+    clusterId,
+    quotaStageId,
+  }: CreateEnvironmentParam) => {
+  const { user, project, quotaStage, quota, authorizedClusters } = await getInitializeEnvironmentInfos({
+    userId,
+    projectId,
+    quotaStageId,
+  })
+
+  checkCreateEnvironment({
+    project,
+    userId,
+    name,
+    authorizedClusterIds: authorizedClusters.map(authorizedCluster => authorizedCluster.id),
+    clusterId,
+    quotaStage,
+  })
+
   await lockProject(project.id)
   const projectOwners = filterOwners(project.roles)
-  const env = await initializeEnvironment({ projectId: project.id, name: envName, projectOwners })
+  const environment = await initializeEnvironment({ projectId: project.id, name, projectOwners, clusterId, quotaStageId })
 
   try {
-    const environmentName = env.name
     const projectName = project.name
     const organizationName = project.organization.name
     const gitlabBaseURL = `${gitlabUrl}/${projectRootDir}/${organizationName}/${projectName}`
-    const repositories = env.project.repositories?.map(({ internalRepoName }) => ({
+    const repositories = environment.project.repositories?.map(({ internalRepoName }) => ({
       url: `${gitlabBaseURL}/${internalRepoName}.git`,
       internalRepoName,
     }))
+    const cluster = await getClusterById(clusterId)
 
-    const envData = {
-      environment: environmentName,
+    const results = await hooks.initializeEnvironment.execute({
+      environment: name,
       project: projectName,
       organization: organizationName,
       repositories,
-      owner,
-    }
-    const results = await hooks.initializeEnvironment.execute(envData)
-    // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
+      owner: user,
+      // @ts-ignore
+      cluster: {
+        ...cluster,
+        ...cluster.kubeconfig,
+      },
+      quota: {
+        memory: quota?.memory,
+        cpu: quota?.cpu,
+      },
+    })
+    // @ts-ignore
     await addLogs('Create Environment', results, userId)
     if (results.failed) {
       throw new UnprocessableContentError('Echec services à la création de l\'environnement')
     }
 
-    const clusters = await getClustersByIds(newClustersId)
-    await addClustersToEnvironment(clusters, env.name, env.id, project.name, project.organization.name, userId, owner)
-
-    await updateEnvironmentCreated(env.id)
+    await updateEnvironmentCreated(environment.id)
     await unlockProjectIfNotFailed(project.id)
-    return env
+    return environment
   } catch (error) {
-    await updateEnvironmentFailed(env.id)
+    await updateEnvironmentFailed(environment.id)
+    if (error instanceof DsoError) {
+      throw error
+    }
     throw new Error(error?.message)
   }
 }
 
-export const updateEnvironment = async (
-  env: AsyncReturnType<typeof getEnvironmentInfos>,
-  userId: string,
-  newClustersId: string[],
-) => {
+  type UpdateEnvironmentParam = {
+    userId: User['id'],
+    projectId: Project['id'],
+    environmentId: Environment['id'],
+    quotaStageId?: QuotaStage['id'],
+    clusterId?: Cluster['id'],
+  }
+
+export const updateEnvironment = async ({
+  userId,
+  projectId,
+  environmentId,
+  quotaStageId,
+  clusterId,
+}: UpdateEnvironmentParam) => {
   try {
-    await lockProject(env.project.id)
+    let environment: Environment
+    const { project, quotaStage, quota } = await getInitializeEnvironmentInfos({
+      userId,
+      projectId,
+      quotaStageId,
+    })
 
-    // Premièrement, ajout des clusters sur les environnements
-    const owner = env.project.roles[0].user
-    const reallyNewClusters = await getClustersByIds(newClustersId.filter(newClusterId => !env.clusters.some(envCluster => envCluster.id === newClusterId)))
-    await addClustersToEnvironment(reallyNewClusters, env.name, env.id, env.project.name, env.project.organization.name, userId, owner)
+    checkUpdateEnvironment({
+      project,
+      userId,
+      quotaStage,
+    })
 
-    // Puis retrait des clusters pour les environnements
-    const clustersToRemove = await getClustersByIds(
-      env.clusters
-        .filter(oldCluster => !newClustersId.includes(oldCluster.id))
-        .map(({ id }) => id),
-    )
-    await removeClustersFromEnvironment(clustersToRemove, env.name, env.id, env.project.name, env.project.organization.name, userId)
+    await lockProject(projectId)
+
+    // Modification du quota
+    if (quotaStage) {
+      await updateEnvironmentQuery({ id: environmentId, quotaStageId: quotaStage.id })
+
+      environment = await getEnvironmentInfos(environmentId)
+
+      const projectName = project.name
+      const organizationName = project.organization.name
+      const gitlabBaseURL = `${gitlabUrl}/${projectRootDir}/${organizationName}/${projectName}`
+      // @ts-ignore
+      const repositories = environment.project.repositories?.map(({ internalRepoName }) => ({
+        url: `${gitlabBaseURL}/${internalRepoName}.git`,
+        internalRepoName,
+      }))
+      const cluster = await getClusterById(clusterId)
+
+      const results = await hooks.updateEnvironmentQuota.execute({
+        environment: environment.name,
+        project: projectName,
+        organization: organizationName,
+        repositories,
+        // @ts-ignore
+        cluster: {
+          ...cluster,
+          ...cluster.kubeconfig,
+        },
+        quota: {
+          memory: quota?.memory,
+          cpu: quota?.cpu,
+        },
+      })
+      // @ts-ignore
+      await addLogs('Update Environment Quotas', results, userId)
+      if (results.failed) {
+        throw new UnprocessableContentError('Echec services à la mise à jour des quotas pour l\'environnement')
+      }
+    }
 
     // mise à jour des status
-    await updateEnvironmentCreated(env.id)
-    await unlockProjectIfNotFailed(env.project.id)
+    await updateEnvironmentCreated(environmentId)
+    await unlockProjectIfNotFailed(projectId)
+
+    environment = await getEnvironmentInfos(environmentId)
+
+    return environment
   } catch (error) {
-    await updateEnvironmentFailed(env.id)
+    await updateEnvironmentFailed(environmentId)
+    if (error instanceof DsoError) {
+      throw error
+    }
     throw new Error(error?.message)
   }
 }
 
-export const deleteEnvironment = async (
-  env: AsyncReturnType<typeof getEnvironmentInfos>,
-  userId: string,
-) => {
+type DeleteEnvironmentParam = {
+  userId: User['id'],
+  projectId: Project['id'],
+  environmentId: Environment['id'],
+}
+
+export const deleteEnvironment = async ({
+  userId,
+  projectId,
+  environmentId,
+}: DeleteEnvironmentParam) => {
   try {
-    await updateEnvironmentDeleting(env.id)
-    await lockProject(env.project.id)
+    const environment = await getEnvironmentInfos(environmentId)
+    const project = await getProjectInfos(projectId)
 
-    // Retrait des clusters pour les environnements
-    const clustersToRemove = await getClustersByIds(
-      env.clusters
-        .map(({ id }) => id),
-    )
-    await removeClustersFromEnvironment(clustersToRemove, env.name, env.id, env.project.name, env.project.organization.name, userId)
+    checkDeleteEnvironment({ project, userId })
 
-    const projectName = env.project.name
-    const organizationName = env.project.organization.name
+    await updateEnvironmentDeleting(environment.id)
+    await lockProject(projectId)
+
+    // Suppression de l'environnement dans les services
+    const projectName = project.name
+    const organizationName = project.organization.name
     const gitlabBaseURL = `${gitlabUrl}/${projectRootDir}/${organizationName}/${projectName}`
-    const repositories = env.project.repositories.map(({ internalRepoName }) => ({
+    const repositories = environment.project.repositories.map(({ internalRepoName }) => ({
       url: `${gitlabBaseURL}/${internalRepoName}.git`,
       internalRepoName,
     }))
+    const cluster = await getClusterById(environment.clusterId)
 
-    const envData = {
-      environment: env.name,
+    const results = await hooks.deleteEnvironment.execute({
+      environment: environment.name,
       project: projectName,
       organization: organizationName,
       repositories,
-    }
-    const results = await hooks.deleteEnvironment.execute(envData)
+      // @ts-ignore
+      cluster: {
+        ...cluster,
+        ...cluster.kubeconfig,
+      },
+    })
+    // @ts-ignore
     await addLogs('Delete Environment', results, userId)
     if (results.failed) {
       throw new Error('Echec des services à la suppression de l\'environnement')
     }
 
     // mise à jour des status
-    await deleteEnvironmentQuery(env.id)
-    await unlockProjectIfNotFailed(env.project.id)
+    await deleteEnvironmentQuery(environmentId)
+    await unlockProjectIfNotFailed(projectId)
   } catch (error) {
-    await updateEnvironmentFailed(env.id)
+    await updateEnvironmentFailed(environmentId)
+    if (error instanceof DsoError) {
+      throw error
+    }
     throw new Error(error?.message)
-  }
-}
-
-// Cluster Logic
-export const addClustersToEnvironment = async (
-  clusters: (Cluster & { kubeconfig: Kubeconfig })[],
-  environmentName: Environment['name'],
-  environmentId: Environment['id'],
-  project: Project['name'],
-  organization: Organization['name'],
-  userId: User['id'],
-  owner: User,
-): Promise<void> => {
-  for (const cluster of clusters) {
-    await addClusterToEnvironment(cluster.id, environmentId)
-    const addClusterExecResult = await hooks.addEnvironmentCluster.execute({
-      environment: environmentName,
-      organization,
-      project,
-      // @ts-ignore mix Clusters types
-      cluster: {
-        ...cluster,
-        ...cluster.kubeconfig,
-      },
-      owner,
-    })
-    // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
-    await addLogs('Add Cluster to Environment', addClusterExecResult, userId)
-    if (addClusterExecResult.failed) throw new UnprocessableContentError('Echec des services à l\'ajout de Clusters pour l\'environnement')
-  }
-}
-
-export const removeClustersFromEnvironment = async (
-  clusters: (Cluster & { kubeconfig: Kubeconfig })[],
-  environmentName: Environment['name'],
-  environmentId: Environment['id'],
-  project: Project['name'],
-  organization: Organization['name'],
-  userId: User['id'],
-) => {
-  for (const cluster of clusters) {
-    const addClusterExecResult = await hooks.removeEnvironmentCluster.execute({
-      environment: environmentName,
-      organization,
-      project,
-      // @ts-ignore mix Clusters types
-      cluster: {
-        ...cluster,
-        ...cluster.kubeconfig,
-      },
-    })
-    await removeClusterFromEnvironment(cluster.id, environmentId)
-    // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
-    await addLogs('Remove Cluster from Environment', addClusterExecResult, userId)
-    if (addClusterExecResult.failed) throw new UnprocessableContentError('Echec des services à la suppression de Clusters pour l\'environnement')
   }
 }

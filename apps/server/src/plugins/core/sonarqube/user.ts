@@ -4,10 +4,11 @@ import type { StepCall } from '@/plugins/hooks/hook.js'
 import type { ArchiveProjectExecArgs, CreateProjectExecArgs } from '@/plugins/hooks/project.js'
 
 export const createUser: StepCall<CreateProjectExecArgs> = async (payload) => {
-  const { project, organization } = payload.args
-  const username = `${organization}-${project}`
-  const fakeEmail = `${project}@${organization}`
   try {
+    if (!payload.vault) throw Error('no Vault available')
+    const { project, organization } = payload.args
+    const username = `${organization}-${project}`
+    const fakeEmail = `${project}@${organization}`
     const users = (await axiosInstance({
       url: 'users/search',
       params: {
@@ -54,19 +55,17 @@ export const createUser: StepCall<CreateProjectExecArgs> = async (payload) => {
       },
     })
 
+    await payload.vault.write({
+      SONAR_USERNAME: username,
+      SONAR_PASSWORD: newPwd,
+      SONAR_TOKEN: newToken.data.token,
+    }, 'SONAR')
+
     return {
       status: {
         result: 'OK',
         message: `User ${user ? 're' : ''}created`,
       },
-      vault: [{
-        name: 'SONAR',
-        data: {
-          SONAR_USERNAME: username,
-          SONAR_PASSWORD: newPwd,
-          SONAR_TOKEN: newToken.data.token,
-        },
-      }],
     }
   } catch (error) {
     return {

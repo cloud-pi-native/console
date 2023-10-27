@@ -59,7 +59,7 @@ while getopts hc:d:f:ik:t: flag; do
     i)
       INSTALL_KIND=true;;
     k)
-      KUBECONFIG_PATH=${OPTARG};;
+      DEV_KUBECONFIG_PATH=${OPTARG};;
     t)
       TAG=${OPTARG};;
     h | *)

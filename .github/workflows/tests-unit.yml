@@ -166,7 +166,7 @@ jobs:
             -Dsonar.sources=apps,packages
             -Dsonar.javascript.node.maxspace=4096
             -Dsonar.javascript.lcov.reportPaths=coverage/apps/server/coverage/lcov.info,coverage/apps/client/coverage/lcov.info,coverage/packages/shared/coverage/lcov.info
-            -Dsonar.coverage.exclusions=**/*.spec.js,**/*.spec.ts,**/*.vue,**/assets/**,**/cypress/**,**/packages/test-utils/**
+            -Dsonar.coverage.exclusions=**/*.spec.js,**/*.spec.ts,**/*.vue,**/assets/**,**/cypress/**,**/packages/test-utils/**,apps/server/src/plugins/**
             -Dsonar.scm.provider=git
             -Dsonar.pullrequest.provider=github
             -Dsonar.pullrequest.key=${{ github.event.number }}

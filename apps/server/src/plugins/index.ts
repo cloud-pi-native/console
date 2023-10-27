@@ -2,13 +2,12 @@ import { readdirSync, existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import url from 'url'
 import { type FastifyInstance } from 'fastify/types/instance.js'
-import { objectEntries, objectKeys } from '@/utils/type.js'
+import { objectEntries } from '@/utils/type.js'
 import * as hooks from './hooks/index.js'
 import { type PluginsFunctions } from './hooks/hook.js'
-import { disabledPlugins, isProd } from '@/utils/env.js'
+import { disabledPlugins, isCI, isInt, isProd } from '@/utils/env.js'
 import { type ServiceInfos, servicesInfos } from './services.js'
-
-export type RegisterFn = (name: string, subscribedHooks: PluginsFunctions, serviceInfos: ServiceInfos | void) => void
+export type RegisterFn = (name: string, subscribedHooks: PluginsFunctions) => void
 export type PluginManager = Promise<{
   hookList: typeof hooks,
   servicesInfos: Record<string, ServiceInfos>
@@ -16,10 +15,10 @@ export type PluginManager = Promise<{
 }>
 
 const initPluginManager = async (app: FastifyInstance): PluginManager => {
-  const register: RegisterFn = (name, subscribedHooks, serviceInfos) => {
+  const register: RegisterFn = (name, subscribedHooks) => {
     const message = []
     for (const [hook, steps] of objectEntries(subscribedHooks)) {
-      if (!(hook in hooks) && hook !== 'all') {
+      if (!(hook in hooks)) {
         app.log.warn({
           message: `Plugin ${name} tried to register on an unknown hook ${hook}`,
         })
@@ -34,25 +33,13 @@ const initPluginManager = async (app: FastifyInstance): PluginManager => {
           continue
         }
 
-        if (hook === 'all') {
-          for (const hook of objectKeys(hooks)) {
-            if (!('uniquePlugin' in hooks[hook])) {
-              hooks[hook][step][name] = fn
-            }
-          }
-          message.push(`*:${step}`)
-        } else {
-          if ('uniquePlugin' in hooks[hook] && hooks[hook]?.uniquePlugin !== '' && hooks[hook]?.uniquePlugin !== name) {
-            app.log.warn({ message: `Plugin ${name} cannot register on 'fetchOrganizations', hook is already registered on` })
-            continue
-          }
-          hooks[hook][step][name] = fn
-          message.push(`${hook}:${step}`)
+        if ('uniquePlugin' in hooks[hook] && hooks[hook]?.uniquePlugin !== '' && hooks[hook]?.uniquePlugin !== name) {
+          app.log.warn({ message: `Plugin ${name} cannot register on '${hook}', hook is already registered on by ${hooks[hook].uniquePlugin}` })
+          continue
         }
+        hooks[hook][step][name] = fn
+        message.push(`${hook}:${step}`)
       }
-    }
-    if (serviceInfos) {
-      servicesInfos[name] = serviceInfos
     }
     app.log.warn(`Plugin ${name} registered at ${message.join(' ')}`)
   }
@@ -64,35 +51,36 @@ const initPluginManager = async (app: FastifyInstance): PluginManager => {
   }
 }
 
-export const initCorePlugins = async (pluginManager: Awaited<PluginManager>, _app: FastifyInstance) => {
-  const corePlugins = ['gitlab', 'harbor', 'keycloak', 'kubernetes', 'argo', 'nexus', 'sonarqube', 'vault']
-  const importPlugin = async (name: string) => {
-    if (disabledPlugins.includes(name)) return
-    const { init } = await import(`./core/${name}/init.${isProd ? 'js' : 'ts'}`)
-    init(pluginManager.register)
-  }
-  for (const pluginName of corePlugins) {
-    await importPlugin(pluginName)
+const fileExtension = isProd ? 'js' : 'ts'
+
+const importPlugin = async (pluginManager: Awaited<PluginManager>, name: string, absolutePath: string) => {
+  try {
+    const infos = await import(`${absolutePath}/infos.${fileExtension}`) as { default: ServiceInfos}
+    if (disabledPlugins.includes(infos.default.name)) return
+
+    if ((isInt || isProd) && !isCI) { // execute only when in real prod env and local dev integration
+      const { init } = await import(`${absolutePath}/init.${fileExtension}`)
+      init(pluginManager.register)
+    }
+    servicesInfos[infos.default.name] = infos.default
+  } catch (error) {
   }
 }
 
-export const initExternalPlugins = async (pluginManager: Awaited<PluginManager>, app: FastifyInstance) => {
-  const __dirname = url.fileURLToPath(new URL('.', import.meta.url))
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url))
+
+export const initPlugins = async (pluginManager: Awaited<PluginManager>, app: FastifyInstance, baseDirName: string) => {
   try {
-    const pluginDir = resolve(__dirname, 'external')
+    const pluginDir = resolve(__dirname, baseDirName)
     if (!existsSync(pluginDir)) {
-      app.log.info(`Directory ${pluginDir} does not exist, skipping import of external plugins`)
+      app.log.info(`Directory ${pluginDir} does not exist, skipping import of plugins`)
       return
     }
     const plugins = readdirSync(pluginDir)
-    for (const plugin of plugins) {
-      if (existsSync(resolve(__dirname, `external/${plugin}/init.js`))) {
-        const myPlugin = await import(`${pluginDir}/${plugin}/init.js`)
-        myPlugin.init(pluginManager.register)
-      } else {
-        app.log.warn(`ignoring ${plugin}, ${plugin}/init.js does not exist`)
-      }
-    }
+    await Promise.all(plugins.map(async pluginName => {
+      const pluginDir = resolve(__dirname, `${baseDirName}/${pluginName}`)
+      return importPlugin(pluginManager, pluginName, pluginDir)
+    }))
   } catch (err) {
     app.log.error(err)
   }

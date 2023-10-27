@@ -1,12 +1,15 @@
 import { type Hook, createHook } from './hook.js'
+import { UserModel } from '@dso-console/shared'
+import type { EnvironmentBase } from './index.js'
+import { Cluster } from '@prisma/client'
 
-export type SetPermissionValidateArgs = void
-export type SetPermissionExecArgs = void
-export type UpdatePermissionValidateArgs = void
-export type UpdatePermissionExecArgs = void
-export type DeletePermissionValidateArgs = void
-export type DeletePermissionExecArgs = void
+export type PermissionManageUserArgs = EnvironmentBase & {
+  user: UserModel
+  permissions: {
+    ro: boolean
+    rw: boolean
+  }
+  cluster: Cluster
+}
 
-export const setPermission: Hook<SetPermissionExecArgs, SetPermissionValidateArgs> = createHook()
-export const updatePermission: Hook<UpdatePermissionExecArgs, UpdatePermissionValidateArgs> = createHook()
-export const deletePermission: Hook<DeletePermissionExecArgs, DeletePermissionValidateArgs> = createHook()
+export const setEnvPermission: Hook<PermissionManageUserArgs, void> = createHook()

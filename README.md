@@ -106,12 +106,12 @@ L'intégralité des commandes est disponibles dans le fichier [package.json](./p
 
 Les services sont disponibles via des nom de domaines ajouté dans le fichier `/etc/hosts` de votre système, l'ajout des domaines se fait automatiquement lors de la commande `pnpm run kube:init`.
 
-| Service                                        | Url                     |
-| ---------------------------------------------- | ----------------------- |
-| Interface graphique *- (client)*               | <http://console.dso.local>      |
-| Serveur *- (api)*                              | <http://console.dso.local/api>  |
-| Interface d'administration de base de données  | <http://pgadmin.dso.local>  |
-| Interface d'administration du serveur keycloak | <http://keycloak.dso.local> |
+| Service                                        | Url                            |
+| ---------------------------------------------- | ------------------------------ |
+| Interface graphique *- (client)*               | <http://console.dso.local>     |
+| Serveur *- (api)*                              | <http://console.dso.local/api> |
+| Interface d'administration de base de données  | <http://pgadmin.dso.local>     |
+| Interface d'administration du serveur keycloak | <http://keycloak.dso.local>    |
 
 *__Notes:__ :warning: Il est possible que le navigateur utilisé (particulière Brave ou Firefox) bloque les cookies utilisés entre le frontend et keycloak, il est nécessaire de désactiver les protections de ce type dans votre navigateur (ex: Brave Shield).*
 
@@ -207,7 +207,7 @@ La gestion des dépendances est effectuée à l'aide de [pnpm](https://pnpm.io/)
 
 ## Conventions
 
-Cf. [Conventions - MIOM Fabrique Numérique](https://projets-ts-fabnum.netlify.app/conventions/nommage.html).
+Cf. [Conventions - MIOM Fabrique Numérique](https://docs.fabrique-numerique.fr/conventions/nommage.html).
 
 ## Contributions
 

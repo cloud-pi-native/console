@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url'
 import app from './app.js'
 import { getConnection, closeConnections } from './connect.js'
 import { initDb } from './init/db/index.js'
-import { initCorePlugins, initExternalPlugins, initPluginManager } from './plugins/index.js'
+import { initPluginManager, initPlugins } from './plugins/index.js'
 
 // Workaround because fetch isn't using http_proxy variables
 // See. https://github.com/gajus/global-agent/issues/52#issuecomment-1134525621
@@ -29,11 +29,9 @@ async function initializeDB (path: string) {
 }
 
 export async function startServer () {
-  if ((isInt || isProd) && !isCI) { // execute only when in real prod env and local dev integration
-    const pluginManager = await initPluginManager(app)
-    await initCorePlugins(pluginManager, app)
-    await initExternalPlugins(pluginManager, app)
-  }
+  const pluginManager = await initPluginManager(app)
+  await initPlugins(pluginManager, app, 'core')
+  await initPlugins(pluginManager, app, 'external')
 
   try {
     await getConnection()

@@ -10,8 +10,9 @@ export type AddUserDto = {
 
 export type UpdateUserDto = {
   body: {
+    id?: UserModel['id']
     email: UserModel['email']
     role: RoleModel['role']
   }
-  params: AddUserDto['params']
+  params: AddUserDto['params'] & { id: UserModel['id'] }
 }

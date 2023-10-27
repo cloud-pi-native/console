@@ -1,19 +1,21 @@
-import type { Application } from '@kubernetes-models/argo-cd/argoproj.io/v1alpha1'
-import { addRepoToApplicationProject, removeRepoFromApplicationProject } from './app-project.js'
+import type { AppProject, Application } from '@kubernetes-models/argo-cd/argoproj.io/v1alpha1'
+import { ArgoDestination, removeRepoFromApplicationProject } from './app-project.js'
 import { argoNamespace, customK8sApi } from './init.js'
 
-export const createApplication = async ({ applicationName, namespace, repo, appProjectName }) => {
+export const createApplication = async (
+  { applicationName, destination, repo, appProject }:
+  { applicationName: string, destination: ArgoDestination, repo: any, appProject: AppProject,},
+) => {
   const applications = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', argoNamespace, 'applications', undefined, undefined, undefined, `metadata.name=${applicationName}`)
   // @ts-ignore Les types de la lib ne semblent pas corrects
   const application = applications.body.items.find(app => app.metadata.name === applicationName)
   if (!application) {
     const result = await customK8sApi.createNamespacedCustomObject('argoproj.io', 'v1alpha1', argoNamespace, 'applications', getApplicationObject({
       name: applicationName,
-      destNamespace: namespace,
+      destination,
       repoURL: repo.url,
-      appProjectName,
+      appProjectName: appProject.metadata.name,
     }))
-    await addRepoToApplicationProject({ appProjectName, repoUrl: repo.url })
     return result.body
   }
   return application
@@ -30,7 +32,10 @@ export const deleteApplication = async ({ applicationName, repoUrl }) => {
   }
 }
 
-const getApplicationObject = ({ name, destNamespace, repoURL, appProjectName }) => {
+const getApplicationObject = (
+  { name, destination, repoURL, appProjectName }:
+  { name: string, destination: ArgoDestination, repoURL: string, appProjectName: string },
+): Application => {
   return {
     apiVersion: 'argoproj.io/v1alpha1',
     kind: 'Application',
@@ -39,13 +44,10 @@ const getApplicationObject = ({ name, destNamespace, repoURL, appProjectName }) 
       namespace: argoNamespace,
     },
     spec: {
-      destination: {
-        namespace: destNamespace,
-        server: 'https://kubernetes.default.svc',
-      },
+      destination,
       project: appProjectName,
       source: {
-        path: '.',
+        path: 'helm/',
         repoURL,
         targetRevision: 'HEAD',
       },

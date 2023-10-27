@@ -3,7 +3,7 @@ import {
   archiveProject as archiveProjectQuery,
   deleteEnvironment,
   deleteRepository,
-  getClusterByEnvironmentId,
+  getClusterById,
   getOrganizationById,
   getProjectByNames,
   getProjectInfosAndRepos,
@@ -24,20 +24,19 @@ import { AsyncReturnType, checkInsufficientPermissionInEnvironment, checkInsuffi
 import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import { PluginResult } from '@/plugins/hooks/hook.js'
-import { CreateProjectDto, UpdateProjectDto, calcProjectNameMaxLength, projectIsLockedInfo, projectSchema } from '@dso-console/shared'
+import { CreateProjectDto, UpdateProjectDto, calcProjectNameMaxLength, projectIsLockedInfo, projectSchema, exclude } from '@dso-console/shared'
 import { CreateProjectExecArgs, ProjectBase, UpdateProjectExecArgs } from '@/plugins/hooks/project.js'
 import { filterObjectByKeys } from '@/utils/queries-tools.js'
 import { projectRootDir } from '@/utils/env.js'
-import { removeClustersFromEnvironment } from '../environment/business.js'
 import { type UserDto, getUser } from '@/resources/user/business.js'
 import { gitlabUrl } from '@/plugins/core/gitlab/utils.js'
-import { getProjectServices } from '@/plugins/services.js'
+import { getProjectServices, servicesInfos } from '@/plugins/services.js'
 
 // Fetch infos
 export const getProjectInfosAndClusters = async (projectId: string) => {
   const project = await getProjectInfosQuery(projectId)
-  const authorizedClusters = project.clusters ? [...await getPublicClusters(), ...project?.clusters] : [...await getPublicClusters()]
-  return { project, authorizedClusters }
+  const projectClusters = project.clusters ? [...await getPublicClusters(), ...project.clusters] : [...await getPublicClusters()]
+  return { project, projectClusters }
 }
 
 export const getUserProjects = async (requestor: UserDto) => {
@@ -84,8 +83,7 @@ const filterProject = (
   project: AsyncReturnType<typeof getProjectInfosQuery>,
 ) => {
   if (!checkInsufficientRoleInProject(userId, { roles: project.roles, minRole: 'owner' })) return project
-  delete project.roles
-  delete project.clusters
+  project = exclude(project, ['roles', 'clusters'])
   // TODO définir les clés disponibles des environnements par niveau d'autorisation
   project.environments = project.environments.filter(env => !checkInsufficientPermissionInEnvironment(userId, env.permissions, 0))
   return project
@@ -113,9 +111,13 @@ export const getProjectSecrets = async (projectId: string, userId: User['id']) =
   }
 
   const results = await hooks.getProjectSecrets.execute(projectData)
-  await addLogs('Get Project Secrets', results, userId)
   if (results?.failed) throw new Error('Echec de récupération des secrets du projet par les plugins')
-  const projectSecrets = results?.vault?.result
+  const projectSecrets = Object.fromEntries(
+    Object.entries(results)
+      // @ts-ignore
+      .filter(([_key, value]) => value.secrets)
+      // @ts-ignore
+      .map(([key, value]) => [servicesInfos[key]?.title, value.secrets]))
 
   return projectSecrets
 }
@@ -139,6 +141,7 @@ export const createProject = async (dataDto: CreateProjectDto['body'], requestor
     }
 
     const results = await hooks.createProject.execute(projectData)
+    // @ts-ignore
     await addLogs('Create Project', results, owner.id)
     if (results.failed) throw new Error('Echec de la création du projet par les plugins')
 
@@ -189,6 +192,7 @@ export const updateProject = async (data: UpdateProjectDto['body'], projectId: P
     }
 
     const results = await hooks.updateProject.execute(projectData)
+    // @ts-ignore
     await addLogs('Update Project', results, requestor.id)
     if (results.failed) throw new Error('Echec de la mise à jour du projet par les plugins')
 
@@ -219,34 +223,40 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
       url: `${gitlabBaseURL}/${repo.internalRepoName}.git`,
       ...repo,
     }))
-    const environmentNames = project.environments.map(({ name }) => name)
 
     // -- début - Suppression environnements --
-    for (const env of project.environments) {
-      // Supprimer le namespace du projet des différent clusters cibles
-      const clusters = await getClusterByEnvironmentId(env.id)
-      await removeClustersFromEnvironment(clusters, env.name, env.id, project.name, project.organization.name, requestor.id)
+    for (const environment of project.environments) {
+      const cluster = await getClusterById(environment.clusterId)
+
+      // Supprimer l'environnement
       const envData = {
-        environment: env.name,
+        environment: environment.name,
         project: project.name,
         organization: project.organization.name,
         repositories,
+        cluster: {
+          ...cluster,
+          ...cluster.kubeconfig,
+        },
       }
+      // @ts-ignore
       const resultsEnv = await hooks.deleteEnvironment.execute(envData)
+      // @ts-ignore
       await addLogs('Delete Environments', resultsEnv, requestor.id)
       if (resultsEnv.failed) throw new UnprocessableContentError('Echec des services à la suppression de l\'environnement')
-      await deleteEnvironment(env.id)
+      await deleteEnvironment(environment.id)
     }
     // -- fin - Suppression environnements --
 
     // -- début - Suppression repositories --
     for (const repo of repositories) {
       const result = await hooks.deleteRepository.execute({
-        environments: environmentNames,
+        environments: project.environments?.map(environment => environment?.name),
         project: project.name,
         organization: project.organization.name,
         ...repo,
       })
+      // @ts-ignore
       await addLogs('Delete Repository', result, requestor.id)
       if (result.failed) throw new UnprocessableContentError('Echec des services à la suppression de l\'environnement')
       await deleteRepository(repo.id)
@@ -265,6 +275,7 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
       project: project.name,
       status: 'archived',
     })
+    // @ts-ignore
     await addLogs('Archive Project', results, requestor.id)
     if (results.failed) throw new UnprocessableContentError('Echec de la suppression du projet par les plugins')
     await archiveProjectQuery(projectId)

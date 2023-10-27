@@ -162,7 +162,7 @@ onMounted(async () => {
       @click="createProject()"
     />
     <LoadingCt
-      :show-loader="isCreatingProject"
+      v-if="isCreatingProject"
       description="Projet en cours de création"
     />
   </div>

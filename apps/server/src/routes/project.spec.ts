@@ -8,24 +8,45 @@ import { faker } from '@faker-js/faker'
 import { sessionConf } from '../utils/keycloak.js'
 import { getConnection, closeConnections } from '../connect.js'
 import projectRouter from './project.js'
-import { descriptionMaxLength, projectIsLockedInfo } from '@dso-console/shared'
+import { descriptionMaxLength, exclude, projectIsLockedInfo } from '@dso-console/shared'
 import prisma from '../__mocks__/prisma.js'
 
 const hookRes = {
   failed: false,
   args: {},
-  vault: {
-    result: {
-      gitlab: {
-        token: 'myToken',
-      },
+  gitlab: {
+    secrets: {
+      token: 'myToken',
+    },
+    status: {
+      failed: false,
+    },
+  },
+  harbor: {
+    secrets: {
+      token: 'myToken',
+    },
+    status: {
+      failed: false,
     },
   },
 }
 
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 vi.mock('../prisma.js')
-vi.mock('@/plugins/index.js', async () => {
+vi.mock('@/plugins/services.js', () => {
+  return {
+    servicesInfos: {
+      gitlab: {
+        title: 'Gitlab',
+      },
+      harbor: {
+        title: 'Harbor',
+      },
+    },
+  }
+})
+vi.mock('@/plugins/index.js', () => {
   return {
     hooks: {
       getProjectSecrets: {
@@ -153,7 +174,7 @@ describe('Project routes', () => {
 
       expect(response.statusCode).toEqual(200)
       expect(response.json()).toBeDefined()
-      expect(response.json()).toMatchObject(project)
+      expect(response.json()).toMatchObject({ ...exclude(project, ['roles', 'clusters']), environments: [] })
     })
 
     it('Should not retreive a project when id is invalid', async () => {
@@ -191,10 +212,9 @@ describe('Project routes', () => {
       const response = await app.inject()
         .get(`/${project.id}/secrets`)
         .end()
-
       expect(response.statusCode).toEqual(200)
       expect(response.json()).toBeDefined()
-      expect(response.json()).toMatchObject(hookRes?.vault?.result)
+      expect(response.json()).toMatchObject({ Gitlab: { token: 'myToken' }, Harbor: { token: 'myToken' } })
     })
 
     it('Should not retreive a project secrets when not project owner', async () => {

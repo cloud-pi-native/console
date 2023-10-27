@@ -1,9 +1,9 @@
 import { KubeConfig, CoreV1Api, CustomObjectsApi, PatchUtils } from '@kubernetes/client-node'
-import { addCluster, deleteEnv, deleteRepo, newEnv, newRepo, removeCluster } from './index.js'
+import { deleteEnv, deleteRepo, newEnv, newRepo } from './index.js'
 import { kubeconfigPath, kubeconfigCtx } from '@/utils/env.js'
 import type { RegisterFn } from '@/plugins/index.js'
 import { createCluster, deleteCluster, updateCluster } from './cluster.js'
-import { infos } from './infos.js'
+import infos from './infos.js'
 export const patchOptions = { headers: { 'Content-type': PatchUtils.PATCH_FORMAT_JSON_PATCH } }
 export const argoNamespace = process.env.ARGO_NAMESPACE
 
@@ -22,13 +22,11 @@ export const customK8sApi = kc.makeApiClient(CustomObjectsApi)
 
 export const init = (register: RegisterFn) => {
   register(
-    'argo',
+    infos.name,
     {
       // Envs
       initializeEnvironment: { post: newEnv },
       deleteEnvironment: { main: deleteEnv },
-      addEnvironmentCluster: { main: addCluster },
-      removeEnvironmentCluster: { main: removeCluster },
       // Repos
       createRepository: { main: newRepo },
       deleteRepository: { main: deleteRepo },
@@ -37,6 +35,5 @@ export const init = (register: RegisterFn) => {
       deleteCluster: { main: deleteCluster },
       updateCluster: { main: updateCluster },
     },
-    infos,
   )
 }

@@ -3,7 +3,7 @@ export type ServiceInfos = {
   name: string
   to?: ({ project, organization, services }: toUrlFnParamaters) => string
   monitorUrl?: string
-  title?: string
+  title: string
   imgSrc?: string
   description?: string
 }

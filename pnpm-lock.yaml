@@ -212,8 +212,8 @@ importers:
         specifier: ^4.23.2
         version: 4.23.2
       fastify-keycloak-adapter:
-        specifier: ^2.1.2
-        version: 2.1.2
+        specifier: ^2.1.3
+        version: 2.1.4
       mustache:
         specifier: ^4.2.0
         version: 4.2.0
@@ -1570,8 +1570,8 @@ packages:
       helmet: 7.0.0
     dev: false
 
-  /@fastify/jwt@7.2.1:
-    resolution: {integrity: sha512-CAEL8UxIIn1Baxm6GIjH7j5VNUqAijeBWF3dvxLQd+RNDYCBnVt0RtK3JV4WbfOaMsKQ0IhrxrekroWwhXYOpw==}
+  /@fastify/jwt@7.2.2:
+    resolution: {integrity: sha512-ZF0lyEjEIJnwqe0zjeSQkjfpAIrKdZfhTwUM+Z74NFEN+WodDi12cjABFPm2CrI8jtc4KInytSA74bN2jJ0MGQ==}
     dependencies:
       '@fastify/error': 3.3.0
       '@lukeed/ms': 2.0.1
@@ -3857,13 +3857,6 @@ packages:
     dev: false
     optional: true
 
-  /cookie@0.4.2:
-    resolution: {integrity: sha512-aSWTXFzaKWkvHO1Ny/s+ePFpvKsPnjc551iI41v3ny/ow6tBG5Vd+FuqGNhh1LxOmVzOlGUriIlOaokOvhaStA==}
-    engines: {node: '>= 0.6'}
-    requiresBuild: true
-    dev: false
-    optional: true
-
   /cookie@0.5.0:
     resolution: {integrity: sha512-YZ3GUyn/o8gfKJlnlX7g7xq4gyO6OSuhGPKaaGssGB2qgDUS0gPgtTvoyZLTt9Ab6dC4hfc9dV5arkvc/OCmrw==}
     engines: {node: '>= 0.6'}
@@ -5024,17 +5017,17 @@ packages:
       reusify: 1.0.4
     dev: false
 
-  /fastify-keycloak-adapter@2.1.2:
-    resolution: {integrity: sha512-q7f2MnuqFKMYKFa5XSL7iRpvCZ0Fhg8J710QRtSu/SfpzmIY6FsBcoeYUEkSp9Snf8bFXTN3JSeoExSNl1LMdQ==}
+  /fastify-keycloak-adapter@2.1.4:
+    resolution: {integrity: sha512-dmmMzpCcdTTHpIG2N5iPZbLxaTiTFCvWI7U79VKFZ38OvpGonRVXABXPOfZuVRJjil8crdJGlrjfT2ktcBUPvA==}
     dependencies:
       '@fastify/cookie': 9.1.0
-      '@fastify/jwt': 7.2.1
+      '@fastify/jwt': 7.2.2
       '@fastify/session': 10.5.0
       axios: 1.5.1
       axios-retry: 3.8.0
       fastify-plugin: 4.5.1
       fp-ts: 2.16.1
-      grant: 5.4.21
+      grant: 5.4.22
       io-ts: 2.2.20(fp-ts@2.16.1)
       qs: 6.11.2
       wildcard-match: 5.1.2
@@ -5479,15 +5472,15 @@ packages:
   /graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
 
-  /grant@5.4.21:
-    resolution: {integrity: sha512-QaoZudI9Gmh2W415gd71Iul6gpVH9sG1SkjfnGHtqYZopQDQ5PUVxRol5zFCrwGi9S0EbExbelHlZScgdChg2w==}
+  /grant@5.4.22:
+    resolution: {integrity: sha512-DEi+/JjXT84mmFYhSmv+SX14v+3Z7vuCIYAMwtdPCTXHMSLhWqSYqWAMXDUQZuV7yaJv2d84AYnkCFNooLKBsA==}
     engines: {node: '>=12.0.0'}
     dependencies:
       qs: 6.11.2
       request-compose: 2.1.6
       request-oauth: 1.0.1
     optionalDependencies:
-      cookie: 0.4.2
+      cookie: 0.5.0
       cookie-signature: 1.2.1
       jwk-to-pem: 2.0.5
       jws: 4.0.0

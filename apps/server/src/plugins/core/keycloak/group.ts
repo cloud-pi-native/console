@@ -9,3 +9,7 @@ export const getProjectGroupByName = async (kcClient: KeycloakAdminClient, name:
   const groupSearch = await kcClient.groups.find({ search: name })
   return groupSearch.find(grp => grp.name === name)
 }
+
+export const getProjectGroupById = async (kcClient: KeycloakAdminClient, id: GroupRepresentation['id']): Promise<GroupRepresentation | void> => {
+  return kcClient.groups.findOne({ id })
+}

@@ -175,7 +175,7 @@ watch(project, () => {
       @click="addUserToProject(newUserEmail)"
     />
     <LoadingCt
-      :show-loader="isUpdatingProjectMembers"
+      v-if="isUpdatingProjectMembers"
       description="Mise à jour de l'équipe projet"
     />
   </div>

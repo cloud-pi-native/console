@@ -4,13 +4,13 @@ import { createUser, deleteUser } from './user.js'
 import { createDsoProjectGroup, deleteteDsoProjectGroup } from './group.js'
 import { initSonar } from './index.js'
 import { createDsoRepository, deleteDsoRepository } from './project.js'
-import { infos } from './infos.js'
+import infos from './infos.js'
 
 export const init = (register: RegisterFn) => {
   initSonar()
   getStatus()
   register(
-    'sonarqube',
+    infos.name,
     {
       createProject: {
         check: getStatus,
@@ -29,6 +29,5 @@ export const init = (register: RegisterFn) => {
         main: deleteDsoRepository,
       },
     },
-    infos,
   )
 }

@@ -1,13 +1,9 @@
 import { RegisterFn } from '@/plugins/index.js'
-import { archiveDsoProject, writePayloadToVault, getRegistrySecret, updateRepository, deleteDsoRepository, getDsoProjectSecrets } from './index.js'
+import { archiveDsoProject } from './index.js'
+import infos from './infos.js'
 
 export const init = (register: RegisterFn) => {
-  register('vault', {
-    all: { save: writePayloadToVault },
-    archiveProject: { main: archiveDsoProject },
-    updateRepository: { main: updateRepository },
-    deleteRepository: { main: deleteDsoRepository },
-    addEnvironmentCluster: { pre: getRegistrySecret },
-    getProjectSecrets: { main: getDsoProjectSecrets },
+  register(infos.name, {
+    archiveProject: { main: archiveDsoProject }, // Destroy all secrets for project
   })
 }

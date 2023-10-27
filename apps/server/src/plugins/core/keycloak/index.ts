@@ -1,12 +1,13 @@
 import type { StepCall } from '@/plugins/hooks/hook.js'
-import type { DeleteEnvironmentExecArgs, InitializeEnvironmentExecArgs } from '@/plugins/hooks/environment.js'
+import type { EnvironmentCreateArgs, EnvironmentDeleteArgs } from '@/plugins/hooks/environment.js'
 import type { ArchiveProjectExecArgs, CreateProjectExecArgs } from '@/plugins/hooks/project.js'
 import type { AddUserToProjectExecArgs, RemoveUserFromProjectExecArgs, RetrieveUserByEmailArgs } from '@/plugins/hooks/team.js'
 import { addMembers, removeMembers } from './permission.js'
-import { getProjectGroupByName } from './group.js'
+import { getProjectGroupById, getProjectGroupByName } from './group.js'
 import { getkcClient } from './client.js'
 import { getUserByEmail } from './user.js'
 import { AsyncReturnType } from '@/utils/controller.js'
+import { PermissionManageUserArgs } from '@/plugins/hooks/permission.js'
 
 export const retrieveKeycloakUserByEmail: StepCall<RetrieveUserByEmailArgs> = async (payload) => {
   const kcClient = await getkcClient()
@@ -148,29 +149,31 @@ export const deleteKeycloakProjectGroup: StepCall<ArchiveProjectExecArgs> = asyn
   }
 }
 
-export const createKeycloakEnvGroup: StepCall<InitializeEnvironmentExecArgs> = async (payload) => {
+export const createKeycloakEnvGroup: StepCall<EnvironmentCreateArgs> = async (payload) => {
   try {
     const kcClient = await getkcClient()
-    const { organization, project, environment, owner } = payload.args
+    const { organization, project, environment, owner, cluster } = payload.args
+
     const projectName = `${organization}-${project}`
     const projectGroup = await getProjectGroupByName(kcClient, projectName)
+    const subGroupName = `${environment}-${cluster.label}`
     if (!projectGroup) throw Error(`Unable to find parent group '/${projectGroup}'`)
     let group = projectGroup.subGroups.find(subGrp => subGrp.name === environment)
     if (!group) {
-      group = await kcClient.groups.setOrCreateChild({
+      group = await kcClient.groups.createChildGroup({
         id: projectGroup.id,
       }, {
-        name: environment,
+        name: subGroupName,
       })
-      const roGroup = await kcClient.groups.setOrCreateChild({ id: group.id }, { name: 'RO' })
-      const rwGroup = await kcClient.groups.setOrCreateChild({ id: group.id }, { name: 'RW' })
+      const roGroup = await kcClient.groups.createChildGroup({ id: group.id }, { name: 'RO' })
+      const rwGroup = await kcClient.groups.createChildGroup({ id: group.id }, { name: 'RW' })
       await kcClient.users.addToGroup({ id: owner.id, groupId: roGroup.id })
       await kcClient.users.addToGroup({ id: owner.id, groupId: rwGroup.id })
       return {
         status: { result: 'OK' },
         group,
-        roGroup: `/${projectName}/${environment}/RO`,
-        rwGroup: `/${projectName}/${environment}/RW`,
+        roGroup: `/${projectName}/${subGroupName}/RO`,
+        rwGroup: `/${projectName}/${subGroupName}/RW`,
       }
     }
     return {
@@ -188,16 +191,17 @@ export const createKeycloakEnvGroup: StepCall<InitializeEnvironmentExecArgs> = a
   }
 }
 
-export const deleteKeycloakEnvGroup: StepCall<DeleteEnvironmentExecArgs> = async (payload) => {
+export const deleteKeycloakEnvGroup: StepCall<EnvironmentDeleteArgs> = async (payload) => {
   try {
     let message = 'Already missing'
     const kcClient = await getkcClient()
-    const { organization, project, environment } = payload.args
+    const { organization, project, environment, cluster } = payload.args
     const projectName = `${organization}-${project}`
     const projectGroupSearch = await kcClient.groups.find({ search: projectName })
     const projectGroup = projectGroupSearch?.find(grpRes => grpRes.name === projectName)
+    const subGroupName = `${environment}-${cluster.label}`
     if (projectGroup) {
-      const envGroup = projectGroup.subGroups.find(subGrp => subGrp.name === environment)
+      const envGroup = projectGroup.subGroups.find(subGrp => subGrp.name === subGroupName)
       if (envGroup) {
         await kcClient.groups.del({ id: envGroup.id })
         message = 'Deleted'
@@ -205,6 +209,42 @@ export const deleteKeycloakEnvGroup: StepCall<DeleteEnvironmentExecArgs> = async
     }
     return {
       status: { result: 'OK', message },
+    }
+  } catch (error) {
+    return {
+      status: {
+        result: 'KO',
+        message: 'Failed',
+      },
+      error: JSON.stringify(error),
+    }
+  }
+}
+
+export const manageKeycloakPermission: StepCall<PermissionManageUserArgs> = async (payload) => {
+  try {
+    const kcClient = await getkcClient()
+    const { organization, project, environment, user, cluster, permissions } = payload.args
+
+    const projectName = `${organization}-${project}`
+    const projectGroup = await getProjectGroupByName(kcClient, projectName)
+    const subGroupName = `${environment}-${cluster.label}`
+    if (!projectGroup) throw new Error(`Unable to find parent group '/${projectGroup}'`)
+    const subGroupEnv = projectGroup.subGroups.find(subGrp => subGrp.name === subGroupName)
+    const group = await getProjectGroupById(kcClient, subGroupEnv.id)
+    if (!group) throw new Error(`Unable to find parent subGroup '/${projectGroup.name}/${subGroupName}'`)
+
+    const roGroup = group.subGroups.find(({ name }) => name === 'RO')
+    const rwGroup = group.subGroups.find(({ name }) => name === 'RW')
+
+    if (permissions.ro) await kcClient.users.addToGroup({ id: user.id, groupId: roGroup.id })
+    else await kcClient.users.delFromGroup({ id: user.id, groupId: roGroup.id })
+
+    if (permissions.rw) await kcClient.users.addToGroup({ id: user.id, groupId: rwGroup.id })
+    else await kcClient.users.delFromGroup({ id: user.id, groupId: rwGroup.id })
+
+    return {
+      status: { result: 'OK' },
     }
   } catch (error) {
     return {

@@ -1,10 +1,11 @@
 <script lang="ts" setup>
-import { ref, onMounted, onBeforeMount } from 'vue'
-import { environmentSchema, schemaValidator, instanciateSchema, allEnv, projectIsLockedInfo } from '@dso-console/shared'
+import { ref, onBeforeMount, type Ref, watch, computed } from 'vue'
+import { environmentSchema, schemaValidator, projectIsLockedInfo, isValid, longestEnvironmentName } from '@dso-console/shared'
 import PermissionForm from './PermissionForm.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import MultiSelector from './MultiSelector.vue'
+import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 import LoadingCt from './LoadingCt.vue'
+import { getRandomId } from '@gouvminint/vue-dsfr'
 
 const props = defineProps({
   environment: {
@@ -37,41 +38,6 @@ const props = defineProps({
   },
 })
 
-const snackbarStore = useSnackbarStore()
-
-const clustersLabel = ref([])
-const localEnvironment = ref(props.environment)
-const updatedValues = ref({})
-const environmentOptions = ref([])
-const environmentToDelete = ref('')
-const isDeletingEnvironment = ref(false)
-
-const setEnvironmentOptions = () => {
-  const availableEnvironments = props.environmentNames.length
-    ? allEnv
-      .filter(env => !props.environmentNames
-        .includes(env))
-    : allEnv
-  environmentOptions.value = availableEnvironments.map(env => ({
-    text: env,
-    value: env,
-  }))
-}
-
-const updateEnvironment = (key, value) => {
-  localEnvironment.value[key] = value
-  updatedValues.value[key] = true
-
-  /**
-    * Retrieve array of cluster labels from child component, map it into array of cluster ids.
-    */
-  if (key === 'clustersId') {
-    localEnvironment.value.clustersId = localEnvironment.value.clustersId
-      .map(cluster => props.projectClusters
-        ?.find(projectCluster => projectCluster.label === cluster).id)
-  }
-}
-
 const emit = defineEmits([
   'addEnvironment',
   'putEnvironment',
@@ -79,11 +45,69 @@ const emit = defineEmits([
   'cancel',
 ])
 
-const addEnvironment = () => {
-  updatedValues.value = instanciateSchema({ schema: environmentSchema }, true)
-  const errorSchema = schemaValidator(environmentSchema, localEnvironment.value)
+const snackbarStore = useSnackbarStore()
+const projectEnvironmentStore = useProjectEnvironmentStore()
 
-  if (Object.keys(errorSchema).length === 0) {
+const localEnvironment = ref(props.environment)
+const environmentToDelete = ref('')
+const isDeletingEnvironment = ref(false)
+const quotas: Ref<Array<any>> = ref([])
+const allStages: Ref<Array<any>> = ref([])
+const inputKey = ref(getRandomId('input'))
+const stageId = ref(undefined)
+const quotaId = ref(undefined)
+const stageOptions: Ref<Array<any>> = ref([])
+const quotaOptions: Ref<Array<any>> = ref([])
+const clusterOptions: Ref<Array<any>> = ref([])
+
+const stage = computed(() => allStages.value.find(allStage => allStage.id === stageId.value))
+
+const errorSchema = computed(() => schemaValidator(environmentSchema, localEnvironment.value))
+
+const setEnvironmentOptions = () => {
+  stageOptions.value = allStages.value.map(stage => ({
+    text: stage.name,
+    value: stage.id,
+  }))
+}
+
+const setClusterOptions = () => {
+  const availableClusters = props.projectClusters
+    ?.filter(projectCluster => stage.value?.clusters
+    // @ts-ignore
+      ?.map(cluster => cluster.id)
+    // @ts-ignore
+      ?.includes(projectCluster.id),
+    )
+
+  clusterOptions.value = availableClusters.map(cluster => ({
+    // @ts-ignore
+    text: cluster.label,
+    // @ts-ignore
+    value: cluster.id,
+  }))
+}
+
+const setQuotaOptions = () => {
+  quotaOptions.value = stage.value?.quotaStage
+  // @ts-ignore
+    ?.map(qs => qs.quotaId)
+    // @ts-ignore
+    ?.map(quotaId => quotas.value
+      ?.find(quota => quota.id === quotaId),
+    )
+    // @ts-ignore
+    ?.map(quota => ({
+      text: quota.name + ' (' + quota.cpu + 'CPU, ' + quota.memory + ')',
+      value: quota.id,
+    }),
+    )
+
+  inputKey.value = getRandomId('input')
+}
+
+const addEnvironment = () => {
+  if (Object.keys(errorSchema.value).length === 0) {
     emit('addEnvironment', localEnvironment.value)
   } else {
     snackbarStore.setMessage(Object.values(errorSchema)[0])
@@ -91,32 +115,51 @@ const addEnvironment = () => {
 }
 
 const putEnvironment = () => {
-  delete localEnvironment.value.clusters
-  updatedValues.value = instanciateSchema({ schema: environmentSchema }, true)
-  const errorSchema = schemaValidator(environmentSchema, localEnvironment.value)
-
-  if (Object.keys(errorSchema).length === 0) {
+  if (Object.keys(errorSchema.value).length === 0) {
     emit('putEnvironment', localEnvironment.value)
   } else {
     snackbarStore.setMessage(Object.values(errorSchema)[0])
   }
 }
 
-const cancel = (event) => {
-  emit('cancel', event)
+const cancel = () => {
+  emit('cancel')
 }
 
-onBeforeMount(() => {
-  /**
-    * Retrieve array of cluster ids from parent component, map it into array of cluster labels and pass it to child component.
-    */
-  localEnvironment.value = props.environment
-  clustersLabel.value = localEnvironment.value.clustersId?.map(clusterId => props.projectClusters
-    ?.find(projectCluster => projectCluster.id === clusterId).label)
+onBeforeMount(async () => {
+  try {
+    quotas.value = await projectEnvironmentStore.getQuotas()
+    allStages.value = await projectEnvironmentStore.getStages()
+    setEnvironmentOptions()
+  } catch (error) {
+    if (error instanceof Error) {
+      return snackbarStore.setMessage(error.message)
+    }
+    snackbarStore.setMessage('Erreur de récupération des quotas')
+  }
+
+  // Receive quotaStage from parent component, retrieve stageId and quotaId
+  if (localEnvironment.value.quotaStage) {
+    stageId.value = localEnvironment.value.quotaStage.stageId
+    quotaId.value = localEnvironment.value.quotaStage.quotaId
+  }
+
+  // Restrict quota level choice according to selected environment
+  if (stageId.value) {
+    setQuotaOptions()
+    setClusterOptions()
+  }
 })
 
-onMounted(() => {
-  setEnvironmentOptions()
+watch(stageId, () => {
+  setQuotaOptions()
+  setClusterOptions()
+})
+
+watch(quotaId, () => {
+  // Turn stageId and quotaId into corresponding quotaStageId
+  // @ts-ignore
+  localEnvironment.value.quotaStageId = stage.value.quotaStage.find(qs => qs.quotaId === quotaId.value)?.id
 })
 
 </script>
@@ -133,30 +176,58 @@ onMounted(() => {
     </h1>
     <DsfrFieldset
       :key="environment"
-      :legend="`Informations de l\'environnement ${localEnvironment.id ? `de ${localEnvironment.name}` : ''}`"
+      :legend="`Informations de l\'environnement ${localEnvironment.name ?? ''}`"
       :hint="props.isEditable ? 'Les champs munis d\'une astérisque (*) sont requis' : undefined"
       data-testid="environmentFieldset"
     >
-      <DsfrSelect
-        v-if="props.isEditable"
+      <DsfrInput
         v-model="localEnvironment.name"
-        select-id="environment-name-select"
+        data-testid="environmentNameInput"
+        class="fr-my-2w"
         label="Nom de l'environnement"
+        label-visible
+        required="required"
+        :hint="`Ne doit pas contenir d'espace, doit être unique pour le projet et le cluster sélectionnés, être en minuscules et faire plus de 2 et moins de ${longestEnvironmentName} caractères.`"
+        :error-message="!!localEnvironment.name && !isValid(environmentSchema, localEnvironment, 'name') ? `Le nom de l\'environnment ne doit pas contenir d\'espace, doit être unique pour le projet et le cluster sélectionnés, être en minuscules et faire plus de 2 et moins de ${longestEnvironmentName} caractères.`: undefined"
+        placeholder="integ-0"
+        :disabled="!props.isEditable"
+      />
+      <DsfrSelect
+        v-model="stageId"
+        select-id="stage-select"
+        label="Stage"
+        description="Stage proposé par DSO, conditionne les quotas et les clusters disponibles pour l'environnement."
         required="required"
         :disabled="!props.isEditable"
-        :options="environmentOptions"
-        @update:model-value="updateEnvironment('name', $event)"
+        :options="stageOptions"
       />
       <div class="fr-mb-2w">
-        <MultiSelector
-          :options="projectClusters"
-          :array="clustersLabel"
-          :disabled="props.isProjectLocked || !projectClusters.length"
-          choice-label="Veuillez choisir un ou plusieurs cluster"
-          no-choice-label="Aucun cluster disponible pour ce projet"
-          label="Nom du cluster"
-          description="Ajouter un cluster cible pour le déploiement de cet environnement."
-          @update="updateEnvironment('clustersId', $event)"
+        <DsfrSelect
+          v-if="stageId"
+          :key="inputKey"
+          v-model="quotaId"
+          select-id="quota-select"
+          label="Dimensionnement des ressources allouées à l'environnement"
+          description="Si votre projet nécessite d'avantage de ressources que celles proposées ci-dessus, contactez les administrateurs."
+          required="required"
+          :options="quotaOptions"
+        />
+        <DsfrAlert
+          v-if="stageId && !clusterOptions?.length"
+          data-testid="noClusterOptionAlert"
+          description="Aucun cluster ne semble disponible pour votre projet et le stage choisi. Veuillez contacter les administrateurs."
+          type="warning"
+          small
+        />
+        <DsfrSelect
+          v-if="stageId && clusterOptions?.length"
+          v-model="localEnvironment.clusterId"
+          select-id="cluster-select"
+          label="Cluster"
+          :description="`Choix du cluster cible pour le déploiement de l\'environnement ${localEnvironment.name ? localEnvironment.name : 'en cours de création'}.`"
+          required="required"
+          :disabled="!props.isEditable"
+          :options="clusterOptions"
         />
         <div
           v-if="localEnvironment.id"
@@ -165,7 +236,7 @@ onMounted(() => {
           <DsfrButton
             label="Enregistrer"
             data-testid="putEnvironmentBtn"
-            :disabled="props.isProjectLocked"
+            :disabled="props.isProjectLocked || !!Object.keys(errorSchema).length"
             :title="props.isProjectLocked ? projectIsLockedInfo : 'Enregistrer les changements'"
             primary
             icon="ri-upload-cloud-line"
@@ -248,7 +319,7 @@ onMounted(() => {
       <DsfrButton
         label="Ajouter l'environnement"
         data-testid="addEnvironmentBtn"
-        :disabled="props.isProjectLocked"
+        :disabled="props.isProjectLocked || !!Object.keys(errorSchema).length"
         :title="props.isProjectLocked ? projectIsLockedInfo : 'Ajouter l\'environnement'"
         primary
         icon="ri-upload-cloud-line"
@@ -263,7 +334,7 @@ onMounted(() => {
       />
     </div>
     <LoadingCt
-      :show-loader="props.isUpdatingEnvironment"
+      v-if="props.isUpdatingEnvironment"
       description="Opérations en cours sur l'environnement"
     />
   </div>

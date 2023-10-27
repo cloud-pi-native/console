@@ -24,8 +24,8 @@ const mockSessionPlugin = (app, opt, next) => {
       req.session = {
         user: {
           ...getRequestor(),
-          groups: [adminGroupPath]
-        }
+          groups: [adminGroupPath],
+        },
       }
     } else {
       req.session = { user: getRequestor() }

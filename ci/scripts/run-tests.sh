@@ -32,7 +32,7 @@ Following flags are available:
 
   -e    Run e2e tests
 
-  -e    Run lint
+  -l    Run lint
 
   -s    Run deployement status check
 

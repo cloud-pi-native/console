@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useAdminLogStore } from '@/stores/admin/log.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+import { exclude } from '@dso-console/shared'
 import { JsonViewer } from 'vue3-json-viewer'
 
 const adminLogStore = useAdminLogStore()
@@ -33,11 +34,7 @@ const showLogs = async (key) => {
 }
 
 const sliceLog = (log) => {
-  const slicedLog = { ...log }
-  delete slicedLog.action
-  delete slicedLog.createdAt
-  delete slicedLog.updatedAt
-  return slicedLog
+  return exclude({ ...log }, ['action', 'createdAt', 'updatedAt'])
 }
 
 const getAllLogs = async ({ offset, limit }, isDisplayingSuccess = true) => {
