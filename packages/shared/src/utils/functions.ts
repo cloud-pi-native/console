@@ -8,7 +8,7 @@ export const identity = (value) => value
 
 export const getLongestStringOfArray = (array) => array.reduce((acc, curr) => acc.length < curr.length ? curr : acc, '')
 
-export const calcProjectNameMaxLength = (organizationName) => {
+export const calcProjectNameMaxLength = (organizationName: string) => {
   return organizationName
     ? 61 - longestEnvironmentName - organizationName.length
     : 61 - longestEnvironmentName
