@@ -28,6 +28,8 @@ RUN_STATUS_CHECK="false"
 TEXT_HELPER="\nThis script aims to run application tests.
 Following flags are available:
 
+  -b    (Optional) Browser used for e2e components and tests
+
   -c    Run component tests
 
   -e    Run e2e tests
@@ -36,7 +38,7 @@ Following flags are available:
 
   -s    Run deployement status check
 
-  -t    Tag used for docker images in e2e tests
+  -t    (Optional) Tag used for docker images in e2e tests
 
   -u    Run unit tests
   
@@ -47,9 +49,11 @@ print_help() {
 }
 
 # Parse options
-while getopts hcelst:u flag
+while getopts hb:celst:u flag
 do
   case "${flag}" in
+    b)
+      BROWSER=${OPTARG};;
     c)
       RUN_COMPONENT_TESTS=true;;
     e)
@@ -124,7 +128,9 @@ if [ "$RUN_COMPONENT_TESTS" == "true" ]; then
   printf "\n${red}${i}.${no_color} Launch component tests\n"
   i=$(($i + 1))
 
-  npm run test:ct-ci -- --cache-dir=.turbo/cache --log-order=stream
+  [[ -n "$BROWSER" ]] && BROWSER_ARGS="-- --browser $BROWSER"
+
+  npm run test:ct-ci -- --cache-dir=.turbo/cache --log-order=stream $BROWSER_ARGS
 fi
 
 
@@ -135,11 +141,14 @@ if [ "$RUN_E2E_TESTS" == "true" ]; then
   printf "\n${red}${i}.${no_color} Launch e2e tests\n"
   i=$(($i + 1))
 
+  [[ -n "$TAG" ]] && TAG_ARGS="-- -t $TAG"
+  [[ -n "$BROWSER" ]] && BROWSER_ARGS="-- --browser $BROWSER"
+
   npm --prefix $PROJECT_DIR/packages/shared run build
   npm --prefix $PROJECT_DIR/packages/test-utils run build
-  ./ci/kind/run.sh -i -d console.dso.local,keycloak.dso.local,pgadmin.dso.local
-  ./ci/kind/run.sh -c create,prod -t $TAG
-  npm run kube:e2e-ci -- --cache-dir=.turbo/cache --log-order=stream
+  npm run kube:init
+  npm run kube:prod $TAG_ARGS
+  npm run kube:e2e-ci -- --cache-dir=.turbo/cache --log-order=stream $BROWSER_ARGS
 
   printf "\n${red}${i}.${no_color} Remove resources\n"
   i=$(($i + 1))

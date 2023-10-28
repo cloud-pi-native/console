@@ -5,6 +5,15 @@ on:
     types:
       - closed
   workflow_dispatch:
+    inputs:
+      PR_NUMBER:
+        description: ID number of the pull request assiocited with the cache
+        required: false
+        type: number
+      BRANCH_NAME:
+        description: Branch name assiocited with the cache
+        required: false
+        type: string
 
 jobs:
   cleanup-cache:
@@ -19,7 +28,11 @@ jobs:
           gh extension install actions/gh-actions-cache
 
           REPO=${{ github.repository }}
-          BRANCH="refs/pull/${{ github.event.pull_request.number }}/merge"
+          if [ -n "${{ inputs.BRANCH_NAME }}" ]; then
+            BRANCH="${{ inputs.BRANCH_NAME }}"
+          else
+            BRANCH="refs/pull/${{ github.event.pull_request.number || inputs.PR_NUMBER }}/merge"
+          fi
 
           echo "Fetching list of cache key"
           cacheKeysForPR=$(gh actions-cache list -R $REPO -B $BRANCH -L 100 | cut -f 1 )
@@ -37,6 +50,7 @@ jobs:
   matrix:
     name: Generate matrix for build & scan
     runs-on: ubuntu-latest
+    if: ${{ github.event.pull_request.number || github.event.number }}
     outputs:
       build-matrix: ${{ steps.build-matrix.outputs.BUILD_MATRIX }}
     steps:

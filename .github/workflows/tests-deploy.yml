@@ -6,6 +6,13 @@ on:
       TAG:
         required: true
         type: string
+  workflow_dispatch:
+    inputs:
+      TAG:
+        description: Image tag used ti run tests
+        required: true
+        type: string
+        default: "latest"
 
 jobs:
   deploy-check:

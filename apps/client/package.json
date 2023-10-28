@@ -7,6 +7,7 @@
     "build": "run-s type-check build-only",
     "build-only": "vite build",
     "clean:build": "rimraf dist",
+    "cypress:install": "cypress install",
     "dev": "vite",
     "format": "eslint . --ext .js,.cjs,.ts,vue --fix",
     "format:style": "stylelint ./src/**/*.{css,vue} --fix",
