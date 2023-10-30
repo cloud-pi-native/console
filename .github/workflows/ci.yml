@@ -82,6 +82,7 @@ jobs:
     with:
       NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
       PNPM_VERSION: ${{ needs.expose-vars.outputs.PNPM_VERSION }}
+      BROWSERS: "${{ github.base_ref == 'main' && 'electron,firefox' || 'electron' }}"
 
   build:
     uses: ./.github/workflows/build.yml
@@ -105,6 +106,7 @@ jobs:
       NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
       PNPM_VERSION: ${{ needs.expose-vars.outputs.PNPM_VERSION }}
       TAG: pr-${{ github.event.pull_request.number || github.event.number }}
+      BROWSERS: "${{ github.base_ref == 'main' && 'electron,firefox' || 'electron' }}"
 
   deploy-tests:
     uses: ./.github/workflows/tests-deploy.yml

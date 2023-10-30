@@ -1,14 +1,14 @@
 import { defineConfig } from 'cypress'
 import viteConfig from './vite.config'
 
-const argocdUrl = process.env.ARGOCD_URL || 'https://argo-cd.readthedocs.io'
-const gitlabUrl = process.env.GITLAB_URL || 'https://gitlab.com'
-const harborUrl = process.env.HARBOR_URL || 'https://goharbor.io'
-const nexusUrl = process.env.NEXUS_URL || 'https://sonatype.com/products/nexus-repository'
-const sonarqubeUrl = process.env.SONARQUBE_URL || 'https://www.sonarqube.org'
-const vaultUrl = process.env.VAULT_URL || 'https://www.vaultproject.io'
-const clientHost = process.env.CLIENT_HOST || 'localhost'
-const clientPort = process.env.CLIENT_PORT || '8080'
+const argocdUrl = process.env.ARGOCD_URL ?? 'https://argo-cd.readthedocs.io'
+const gitlabUrl = process.env.GITLAB_URL ?? 'https://gitlab.com'
+const harborUrl = process.env.HARBOR_URL ?? 'https://goharbor.io'
+const nexusUrl = process.env.NEXUS_URL ?? 'https://sonatype.com/products/nexus-repository'
+const sonarqubeUrl = process.env.SONARQUBE_URL ?? 'https://www.sonarqube.org'
+const vaultUrl = process.env.VAULT_URL ?? 'https://www.vaultproject.io'
+const clientHost = process.env.CLIENT_HOST ?? 'localhost'
+const clientPort = process.env.CLIENT_PORT ?? '8080'
 
 // @ts-ignore server does exist!
 viteConfig.server.host = '127.0.0.1'

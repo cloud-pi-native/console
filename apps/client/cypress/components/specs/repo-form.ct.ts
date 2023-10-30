@@ -12,7 +12,7 @@ import { useProjectStore } from '@/stores/project.js'
 import { allOrganizations } from '@dso-console/shared'
 
 describe('RepoForm.vue', () => {
-  it('Should mount a new repo RepoForm', () => {
+  it('Should mount a new repo RepoForm', { browser: '!firefox' }, () => {
     cy.intercept('POST', '/api/v1/ci-files', {
       'gitlab-ci-dso': 'gitlab-ci file',
       node: 'node file',

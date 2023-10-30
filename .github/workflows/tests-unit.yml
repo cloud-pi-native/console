@@ -17,6 +17,17 @@ on:
       SONAR_PROJECT_KEY:
         required: false
   workflow_dispatch:
+    inputs:
+      NODE_VERSION:
+        description: Nodejs version used to run tests
+        required: true
+        type: string
+        default: "18.18.0"
+      PNPM_VERSION:
+        description: Pnpm version used to run tests
+        required: true
+        type: string
+        default: "8"
 
 jobs:
   unit-tests:
