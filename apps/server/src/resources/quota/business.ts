@@ -2,11 +2,16 @@ import { UnauthorizedError } from '@/utils/errors.js'
 import {
   getUserById,
   getQuotas as getQuotasQuery,
+  getAllQuotas,
 } from '../queries-index.js'
-import { User } from '@prisma/client'
+import { UserProfile, adminGroupPath } from '@dso-console/shared'
 
-export const getQuotas = async (userId: User['id']) => {
-  const user = await getUserById(userId)
+export const getQuotas = async (kcUser: UserProfile) => {
+  // @ts-ignore
+  const user = await getUserById(kcUser.id)
   if (!user) throw new UnauthorizedError('Vous n\'êtes pas connecté')
+  if (kcUser.groups?.includes(adminGroupPath)) {
+    return getAllQuotas()
+  }
   return getQuotasQuery()
 }

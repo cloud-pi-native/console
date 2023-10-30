@@ -17,5 +17,5 @@ export type RoleModel = {
   projectId: ProjectModel['id']
   role: string
   user: UserModel
-  project: ProjectModel
+  project?: ProjectModel
 }

@@ -1,4 +1,4 @@
-import type { GenerateCIFilesDto, CreateProjectDto, ProjectModel, CreateRepositoryDto, UpdateRepositoryDto, RepositoryModel, UserModel, UpdateClusterDto, CreateClusterDto, ClusterModel, OrganizationModel, EnvironmentModel, UpdateEnvironmentDto, UpdateProjectDto, InitializeEnvironmentDto, AdminLogsGet, UpdateOrganizationDto, CreateOrganizationDto, CreatePermissionDto, UpdatePermissionDto, AddUserDto, UpdateUserDto } from '@dso-console/shared'
+import type { GenerateCIFilesDto, CreateProjectDto, ProjectModel, CreateRepositoryDto, UpdateRepositoryDto, RepositoryModel, UserModel, UpdateClusterDto, CreateClusterDto, ClusterModel, OrganizationModel, EnvironmentModel, UpdateEnvironmentDto, UpdateProjectDto, InitializeEnvironmentDto, AdminLogsGet, UpdateOrganizationDto, CreateOrganizationDto, CreatePermissionDto, UpdatePermissionDto, AddUserDto, UpdateUserDto, CreateQuotaDto, DeleteQuotaDto, UpdateQuotaStageDto, UpdateQuotaPrivacyDto } from '@dso-console/shared'
 import { apiClient } from './xhr-client.js'
 
 // CIFiles
@@ -117,6 +117,31 @@ export const deleteEnvironment = async (projectId: ProjectModel['id'], environme
 // Quotas
 export const getQuotas = async () => {
   const response = await apiClient.get('/quotas')
+  return response.data
+}
+
+export const getAssociatedEnvironments = async (quotaId: DeleteQuotaDto['params']['quotaId']) => {
+  const response = await apiClient.get(`/admin/quotas/${quotaId}/environments`)
+  return response.data
+}
+
+export const addQuota = async (data: CreateQuotaDto['body']) => {
+  const response = await apiClient.post('/admin/quotas', data)
+  return response.data
+}
+
+export const updateQuotaPrivacy = async (quotaId: UpdateQuotaPrivacyDto['params']['quotaId'], data: UpdateQuotaPrivacyDto['body']) => {
+  const response = await apiClient.patch(`/admin/quotas/${quotaId}`, data)
+  return response.data
+}
+
+export const updateQuotaStage = async (data: UpdateQuotaStageDto['body']) => {
+  const response = await apiClient.put('/admin/quotas/quotastages', data)
+  return response.data
+}
+
+export const deleteQuota = async (quotaId: DeleteQuotaDto['params']['quotaId']) => {
+  const response = await apiClient.delete(`/admin/quotas/${quotaId}`)
   return response.data
 }
 

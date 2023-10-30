@@ -157,3 +157,11 @@ div.fr-tile__img {
 .fr-icon-clipboard-line.icon:active {
   background-color: var(--active);
 }
+
+.horizontal-table table {
+  @apply flex flex-row;
+}
+
+.horizontal-table tr {
+  @apply flex flex-col;
+}

@@ -327,13 +327,3 @@ onBeforeMount(async () => {
     />
   </div>
 </template>
-
-<style>
-.horizontal-table table {
-  @apply flex flex-row;
-}
-
-.horizontal-table tr {
-  @apply flex flex-col;
-}
-</style>
