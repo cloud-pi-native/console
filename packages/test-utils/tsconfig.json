@@ -9,7 +9,7 @@
     "declaration": true,
     "declarationDir": "./types",
     "lib": [
-      "ES2020"
+      "ESNext"
     ]
   }
 }

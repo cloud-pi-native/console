@@ -15,12 +15,8 @@ export const calcProjectNameMaxLength = (organizationName: string) => {
 }
 
 export const getUniqueListBy = (arr, key) => [...new Map(arr.map(item => [item[key], item])).values()]
-interface Keyable {
-  [key: string]: any
-}
 
-// TODO: (#536) change 'sort' to 'toSorted' with Nodejs v20
-export const sortArrByObjKeyAsc = (arr: Array<Keyable>, key: string) => arr?.slice()?.sort((a: object, b: object) => a[key] >= b[key] ? 1 : -1)
+export const sortArrByObjKeyAsc = (arr: Record<string, unknown>[], key: string) => arr?.toSorted((a: object, b: object) => a[key] >= b[key] ? 1 : -1)
 
 export const removeTrailingSlash = (url: string) => url?.endsWith('/')
   ? url?.slice(0, -1)

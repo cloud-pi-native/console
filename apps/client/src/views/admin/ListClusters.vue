@@ -75,6 +75,7 @@ const updateCluster = async (cluster) => {
 const removeCluster = async (clusterId) => {
   isUpdatingCluster.value = true
   try {
+    console.log({ clusterId })
     // await adminClusterStore.removeCluster(clusterId)
     await adminClusterStore.getAllClusters()
   } catch (error) {
