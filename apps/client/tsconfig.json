@@ -9,7 +9,7 @@
   ],
   "files": [],
   "compilerOptions": {
-    "module": "ES2022"
+    "module": "ESNext"
   },
   "references": [
     {

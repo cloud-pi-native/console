@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, watch, computed, type Ref } from 'vue'
 import SuggestionInput from './SuggestionInput.vue'
 import RangeInput from './RangeInput.vue'
-import { levels, projectIsLockedInfo, type PermissionModel } from '@dso-console/shared'
+import { levels, projectIsLockedInfo, type PermissionModel, type EnvironmentModel } from '@dso-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectPermissionStore } from '@/stores/project-permission.js'
 import { useUserStore } from '@/stores/user.js'
@@ -20,7 +20,7 @@ const projectStore = useProjectStore()
 const projectPermissionStore = useProjectPermissionStore()
 const userStore = useUserStore()
 const snackbarStore = useSnackbarStore()
-const environment = ref(props.environment)
+const environment: Ref<EnvironmentModel | Record<string, any> | undefined> = ref(props.environment)
 const permissions = ref([])
 const permissionToUpdate = ref({})
 const userToLicence = ref('')
@@ -40,9 +40,7 @@ const usersToLicence = computed(() =>
 const suggestions = computed(() => usersToLicence.value?.map(user => user.email))
 
 const setPermissions = () => {
-  // TODO: (#536) change 'sort' to 'toSorted' with Nodejs v20
-  // @ts-ignore
-  permissions.value = environment.value.permissions.sort((a, b) => a.user?.email >= b.user?.email ? 1 : -1)
+  permissions.value = environment.value?.permissions?.toSorted((a: PermissionModel, b: PermissionModel) => a?.user?.email >= b?.user?.email ? 1 : -1)
 }
 
 const addPermission = async (userEmail: string) => {
@@ -91,7 +89,7 @@ const getDynamicTitle = (locked: boolean, permission: PermissionModel) => {
 
 watch(project, () => {
   environment.value = project.value?.environments?.find(env =>
-    env.id === environment.value.id,
+    env.id === environment.value?.id,
   )
   setPermissions()
 })
