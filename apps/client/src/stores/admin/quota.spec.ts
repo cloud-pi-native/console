@@ -6,6 +6,7 @@ import { useAdminQuotaStore } from './quota.js'
 const apiClientGet = vi.spyOn(apiClient, 'get')
 const apiClientPost = vi.spyOn(apiClient, 'post')
 const apiClientPut = vi.spyOn(apiClient, 'put')
+const apiClientPatch = vi.spyOn(apiClient, 'patch')
 const apiClientDelete = vi.spyOn(apiClient, 'delete')
 
 describe('Quota Store', () => {
@@ -42,7 +43,7 @@ describe('Quota Store', () => {
     apiClientGet.mockReturnValueOnce(Promise.resolve({ data }))
     const adminQuotaStore = useAdminQuotaStore()
 
-    const res = await adminQuotaStore.getAssociatedEnvironments(quotaId)
+    const res = await adminQuotaStore.getQuotaAssociatedEnvironments(quotaId)
 
     expect(res).toBe(data)
     expect(apiClientGet).toHaveBeenCalledTimes(1)
@@ -67,7 +68,7 @@ describe('Quota Store', () => {
     expect(apiClientPost.mock.calls[0][0]).toBe('/admin/quotas')
   })
 
-  it('Should update a quota by api call', async () => {
+  it('Should update a quota stage association by api call', async () => {
     const quotaId = 'quotaId'
     const stageIds = ['stage1']
 
@@ -79,6 +80,19 @@ describe('Quota Store', () => {
     expect(res).toBe(1)
     expect(apiClientPut).toHaveBeenCalledTimes(1)
     expect(apiClientPut.mock.calls[0][0]).toBe('/admin/quotas/quotastages')
+  })
+
+  it('Should update a quota privacy by api call', async () => {
+    const quotaId = 'quotaId'
+
+    apiClientPatch.mockReturnValueOnce(Promise.resolve({ data: 1 }))
+    const adminQuotaStore = useAdminQuotaStore()
+
+    const res = await adminQuotaStore.updateQuotaPrivacy(quotaId, true)
+
+    expect(res).toBe(1)
+    expect(apiClientPatch).toHaveBeenCalledTimes(1)
+    expect(apiClientPatch.mock.calls[0][0]).toBe(`/admin/quotas/${quotaId}/privacy`)
   })
 
   it('Should delete a quota by api call', async () => {

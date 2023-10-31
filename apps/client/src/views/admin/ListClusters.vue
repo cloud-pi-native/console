@@ -53,7 +53,7 @@ const addCluster = async (cluster) => {
   cancel()
   try {
     await adminClusterStore.addCluster(cluster)
-    await adminClusterStore.getAllClusters()
+    await adminClusterStore.getClusters()
   } catch (error) {
     snackbarStore.setMessage(error?.message, 'error')
   }
@@ -64,7 +64,7 @@ const updateCluster = async (cluster) => {
   isUpdatingCluster.value = true
   try {
     await adminClusterStore.updateCluster(cluster)
-    await adminClusterStore.getAllClusters()
+    await adminClusterStore.getClusters()
   } catch (error) {
     snackbarStore.setMessage(error?.message, 'error')
   }
@@ -77,7 +77,7 @@ const removeCluster = async (clusterId) => {
   try {
     console.log({ clusterId })
     // await adminClusterStore.removeCluster(clusterId)
-    await adminClusterStore.getAllClusters()
+    await adminClusterStore.getClusters()
   } catch (error) {
     snackbarStore.setMessage(error?.message, 'error')
   }
@@ -88,7 +88,7 @@ const removeCluster = async (clusterId) => {
 
 onMounted(async () => {
   try {
-    await adminClusterStore.getAllClusters()
+    await adminClusterStore.getClusters()
     setClusterTiles(clusters.value)
     allProjects.value = await adminProjectStore.getAllActiveProjects()
     allStages.value = await projectEnvironmentStore.getStages()

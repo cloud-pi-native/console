@@ -40,6 +40,7 @@ describe('Manage project environments', () => {
   it('Should not create an environment if project + cluster + name is already taken', () => {
     cy.kcLogin('test')
 
+    cy.intercept('GET', 'api/v1/clusters').as('getClusters')
     cy.intercept('GET', 'api/v1/stages').as('getStages')
     cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
     cy.intercept('POST', '/api/v1/projects/*/environments').as('postEnvironment')
@@ -49,6 +50,7 @@ describe('Manage project environments', () => {
       .getByDataTestid(`projectTile-${project0?.name}`).click()
       .getByDataTestid('menuEnvironments').click()
       .url().should('contain', '/environments')
+    cy.wait('@getClusters')
 
     cy.getByDataTestid('addEnvironmentLink').click()
     cy.wait('@getStages')
@@ -85,8 +87,9 @@ describe('Manage project environments', () => {
   it('Should handle cluster availability', () => {
     cy.kcLogin('test')
 
-    cy.intercept('GET', 'api/v1/stages').as('getStages')
+    cy.intercept('GET', 'api/v1/clusters').as('getClusters')
     cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
+    cy.intercept('GET', 'api/v1/quotas').as('getStages')
     cy.intercept('GET', '/api/v1/projects', {
       body: [project0withoutClusters],
     }).as('getProjects')
@@ -95,10 +98,11 @@ describe('Manage project environments', () => {
       .getByDataTestid(`projectTile-${project0?.name}`).click()
       .getByDataTestid('menuEnvironments').click()
       .url().should('contain', '/environments')
+    cy.wait('@getClusters')
 
     cy.getByDataTestid('addEnvironmentLink').click()
-    cy.wait('@getStages')
     cy.wait('@getQuotas')
+    cy.wait('@getStages')
     cy.get('h1').should('contain', 'Ajouter un environnement au projet')
     cy.getByDataTestid('environmentNameInput')
       .type('myenv')
@@ -115,7 +119,8 @@ describe('Manage project environments', () => {
   })
 
   it('Should update an environment quota', () => {
-    cy.intercept('GET', 'api/v1/admin/clusters').as('getAllClusters')
+    cy.intercept('GET', 'api/v1/clusters').as('getClusters')
+    cy.intercept('GET', '/api/v1/stages').as('getStages')
     cy.intercept('PUT', '/api/v1/projects/*/environments/*').as('putEnvironment')
     cy.intercept('GET', '/api/v1/projects').as('getProjects')
     cy.intercept('GET', '/api/v1/admin/projects').as('getAdminProjects')
@@ -126,8 +131,10 @@ describe('Manage project environments', () => {
       .getByDataTestid('menuEnvironments').click()
       .url().should('contain', '/environments')
     cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
+    cy.wait('@getClusters').its('response.statusCode').should('eq', 200)
 
     cy.getByDataTestid(`environmentTile-${project1FirstEnvironment?.name}`).click()
+    cy.wait('@getStages')
     cy.getByDataTestid('environmentNameInput')
       .should('have.value', project1FirstEnvironment?.name)
       .and('be.disabled')
@@ -148,6 +155,7 @@ describe('Manage project environments', () => {
 
     cy.reload()
     cy.getByDataTestid(`environmentTile-${project1FirstEnvironment?.name}`).click()
+    cy.wait('@getStages')
     cy.getByDataTestid('environmentNameInput')
       .should('have.value', project1FirstEnvironment?.name)
       .and('be.disabled')
@@ -168,12 +176,16 @@ describe('Manage project environments', () => {
   })
 
   it('Should not be able to delete an environment if not owner', () => {
+    cy.intercept('GET', 'api/v1/clusters').as('getClusters')
+    cy.intercept('GET', '/api/v1/stages').as('getStages')
     cy.kcLogin((user.firstName.slice(0, 1) + user.lastName).toLowerCase())
       .goToProjects()
       .getByDataTestid(`projectTile-${project1.name}`).click()
       .getByDataTestid('menuEnvironments').click()
-      .getByDataTestid(`environmentTile-${project1FirstEnvironment?.name}`)
+    cy.wait('@getClusters')
+    cy.getByDataTestid(`environmentTile-${project1FirstEnvironment?.name}`)
       .click()
+    cy.wait('@getStages')
       .url().should('contain', '/environments')
       .getByDataTestid('deleteEnvironmentZone').should('not.exist')
   })

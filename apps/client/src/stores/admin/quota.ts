@@ -10,8 +10,8 @@ export const useAdminQuotaStore = defineStore('admin-quota', () => {
     quotas.value = await api.getQuotas()
   }
 
-  const getAssociatedEnvironments = async (quotaId: DeleteQuotaDto['params']['quotaId']) => {
-    const res = await api.getAssociatedEnvironments(quotaId)
+  const getQuotaAssociatedEnvironments = async (quotaId: DeleteQuotaDto['params']['quotaId']) => {
+    const res = await api.getQuotaAssociatedEnvironments(quotaId)
     return res
   }
 
@@ -38,7 +38,7 @@ export const useAdminQuotaStore = defineStore('admin-quota', () => {
   return {
     quotas,
     getAllQuotas,
-    getAssociatedEnvironments,
+    getQuotaAssociatedEnvironments,
     addQuota,
     updateQuotaPrivacy,
     updateQuotaStage,

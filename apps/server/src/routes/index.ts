@@ -4,6 +4,7 @@ import projectRouter from './project.js'
 import serviceRouter from './service.js'
 import projectQuotaRouter from './quota.js'
 import projectStageRouter from './stage.js'
+import projectClusterRouter from './cluster.js'
 import { sendOk } from '../utils/response.js'
 import adminRouter from './admin/index.js'
 
@@ -21,6 +22,7 @@ export const apiRouter = async (app, _opts) => {
   await app.register(ciFilesRouter, { prefix: '/ci-files' })
   await app.register(serviceRouter, { prefix: '/services' })
   await app.register(projectOrganizationRouter, { prefix: '/organizations' })
+  await app.register(projectClusterRouter, { prefix: '/clusters' })
   await app.register(projectQuotaRouter, { prefix: '/quotas' })
   await app.register(projectStageRouter, { prefix: '/stages' })
   await app.register(projectRouter, { prefix: '/projects' })

@@ -1,14 +1,14 @@
 import { EnhancedFastifyRequest } from '@/types'
 import { addReqLogs } from '@/utils/logger.js'
 import { sendCreated, sendNoContent, sendOk } from '@/utils/response.js'
-import { createQuota, deleteQuota, getAssociatedEnvironments, updateQuotaStage, updateQuotaPrivacy } from './business.js'
+import { createQuota, deleteQuota, getQuotaAssociatedEnvironments, updateQuotaStage, updateQuotaPrivacy } from './business.js'
 import { CreateQuotaDto, DeleteQuotaDto, UpdateQuotaPrivacyDto, UpdateQuotaStageDto } from '@dso-console/shared'
 
 // GET
-export const getAssociatedEnvironmentsController = async (req: EnhancedFastifyRequest<DeleteQuotaDto>, res) => {
+export const getQuotaAssociatedEnvironmentsController = async (req: EnhancedFastifyRequest<DeleteQuotaDto>, res) => {
   const quotaId = req.params.quotaId
 
-  const environments = await getAssociatedEnvironments(quotaId)
+  const environments = await getQuotaAssociatedEnvironments(quotaId)
 
   addReqLogs({
     req,

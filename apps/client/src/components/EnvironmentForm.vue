@@ -36,6 +36,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  allClusters: {
+    type: Array,
+    default: () => [],
+  },
 })
 
 const emit = defineEmits([
@@ -72,13 +76,24 @@ const setEnvironmentOptions = () => {
 }
 
 const setClusterOptions = () => {
-  const availableClusters = props.projectClusters
+  let availableClusters = props.projectClusters
     ?.filter(projectCluster => stage.value?.clusters
     // @ts-ignore
       ?.map(cluster => cluster.id)
     // @ts-ignore
       ?.includes(projectCluster.id),
     )
+
+  if (
+    localEnvironment.value.clusterId &&
+    !availableClusters
+      ?.find(availableCluster => availableCluster?.id === localEnvironment.value.clusterId)
+  ) {
+    availableClusters = [
+      ...availableClusters, props.allClusters
+        ?.find(cFromAll => cFromAll?.id === localEnvironment.value.clusterId),
+    ]
+  }
 
   clusterOptions.value = availableClusters.map(cluster => ({
     // @ts-ignore

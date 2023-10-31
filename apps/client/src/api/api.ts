@@ -1,4 +1,4 @@
-import type { GenerateCIFilesDto, CreateProjectDto, ProjectModel, CreateRepositoryDto, UpdateRepositoryDto, RepositoryModel, UserModel, UpdateClusterDto, CreateClusterDto, ClusterModel, OrganizationModel, EnvironmentModel, UpdateEnvironmentDto, UpdateProjectDto, InitializeEnvironmentDto, AdminLogsGet, UpdateOrganizationDto, CreateOrganizationDto, CreatePermissionDto, UpdatePermissionDto, AddUserDto, UpdateUserDto, CreateQuotaDto, DeleteQuotaDto, UpdateQuotaStageDto, UpdateQuotaPrivacyDto } from '@dso-console/shared'
+import type { GenerateCIFilesDto, CreateProjectDto, ProjectModel, CreateRepositoryDto, UpdateRepositoryDto, RepositoryModel, UserModel, UpdateClusterDto, CreateClusterDto, ClusterModel, OrganizationModel, EnvironmentModel, UpdateEnvironmentDto, UpdateProjectDto, InitializeEnvironmentDto, AdminLogsGet, UpdateOrganizationDto, CreateOrganizationDto, CreatePermissionDto, UpdatePermissionDto, AddUserDto, UpdateUserDto, CreateQuotaDto, DeleteQuotaDto, UpdateQuotaStageDto, UpdateQuotaPrivacyDto, DeleteStageDto, CreateStageDto, UpdateStageClustersDto } from '@dso-console/shared'
 import { apiClient } from './xhr-client.js'
 
 // CIFiles
@@ -120,7 +120,8 @@ export const getQuotas = async () => {
   return response.data
 }
 
-export const getAssociatedEnvironments = async (quotaId: DeleteQuotaDto['params']['quotaId']) => {
+// Admin - Quotas
+export const getQuotaAssociatedEnvironments = async (quotaId: DeleteQuotaDto['params']['quotaId']) => {
   const response = await apiClient.get(`/admin/quotas/${quotaId}/environments`)
   return response.data
 }
@@ -131,7 +132,7 @@ export const addQuota = async (data: CreateQuotaDto['body']) => {
 }
 
 export const updateQuotaPrivacy = async (quotaId: UpdateQuotaPrivacyDto['params']['quotaId'], data: UpdateQuotaPrivacyDto['body']) => {
-  const response = await apiClient.patch(`/admin/quotas/${quotaId}`, data)
+  const response = await apiClient.patch(`/admin/quotas/${quotaId}/privacy`, data)
   return response.data
 }
 
@@ -148,6 +149,27 @@ export const deleteQuota = async (quotaId: DeleteQuotaDto['params']['quotaId']) 
 // Stages
 export const getStages = async () => {
   const response = await apiClient.get('/stages')
+  return response.data
+}
+
+// Admin - Stages
+export const getStageAssociatedEnvironments = async (stageId: DeleteStageDto['params']['stageId']) => {
+  const response = await apiClient.get(`/admin/stages/${stageId}/environments`)
+  return response.data
+}
+
+export const addStage = async (data: CreateStageDto['body']) => {
+  const response = await apiClient.post('/admin/stages', data)
+  return response.data
+}
+
+export const updateStageClusters = async (stageId: UpdateStageClustersDto['params']['stageId'], data: UpdateStageClustersDto['body']) => {
+  const response = await apiClient.patch(`/admin/stages/${stageId}/clusters`, data)
+  return response.data
+}
+
+export const deleteStage = async (stageId: DeleteStageDto['params']['stageId']) => {
+  const response = await apiClient.delete(`/admin/stages/${stageId}`)
   return response.data
 }
 
@@ -211,12 +233,13 @@ export const getAllLogs = async ({ offset, limit }: AdminLogsGet['query']) => {
   return response.data
 }
 
-// Admin - Clusters
-export const getAllClusters = async () => {
-  const response = await apiClient.get('/admin/clusters')
+// Clusters
+export const getClusters = async () => {
+  const response = await apiClient.get('/clusters')
   return response.data
 }
 
+// Admin - Clusters
 export const addCluster = async (data: CreateClusterDto['body']) => {
   const response = await apiClient.post('/admin/clusters', data)
   return response.data

@@ -7,17 +7,20 @@ import EnvironmentForm from '@/components/EnvironmentForm.vue'
 import { projectIsLockedInfo, sortArrByObjKeyAsc } from '@dso-console/shared'
 import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+import { useAdminClusterStore } from '@/stores/admin/cluster'
 
 const projectStore = useProjectStore()
 const projectEnvironmentStore = useProjectEnvironmentStore()
 const userStore = useUserStore()
 const snackbarStore = useSnackbarStore()
+const adminClusterStore = useAdminClusterStore()
 
 const project = computed(() => projectStore.selectedProject)
 const owner = computed(() => projectStore.selectedProjectOwner)
 const isOwner = computed(() => owner.value?.id === userStore.userProfile.id)
 // @ts-ignore
 const environmentNames = computed(() => environments.value.map(env => env.title))
+const allClusters = computed(() => adminClusterStore.clusters)
 
 const environments = ref([])
 const selectedEnvironment = ref({})
@@ -102,7 +105,8 @@ const deleteEnvironment = async (environment) => {
   isUpdatingEnvironment.value = false
 }
 
-onMounted(() => {
+onMounted(async () => {
+  await adminClusterStore.getClusters()
   setEnvironmentsTiles(project.value)
 })
 
@@ -195,6 +199,7 @@ watch(project, () => {
         :is-editable="false"
         :is-project-locked="project?.locked"
         :is-owner="isOwner"
+        :all-clusters="allClusters"
         @put-environment="(environment) => putEnvironment(environment)"
         @delete-environment="(environment) => deleteEnvironment(environment)"
         @cancel="cancel()"

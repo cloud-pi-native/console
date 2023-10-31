@@ -48,4 +48,5 @@ export {
   RiEyeLine,
   RiEyeOffLine,
   RiSoundModuleLine,
+  RiStockLine,
 } from 'oh-vue-icons/icons/ri/index.js'

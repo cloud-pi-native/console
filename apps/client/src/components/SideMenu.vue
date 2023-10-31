@@ -284,6 +284,17 @@ onMounted(() => {
               Quotas
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
+          <DsfrSideMenuListItem>
+            <DsfrSideMenuLink
+              class="menu-link-icon"
+              data-testid="menuAdministrationStages"
+              :active="routeName === 'ListStages'"
+              to="/admin/stages"
+            >
+              <v-icon name="ri-stock-line" />
+              Stages
+            </DsfrSideMenuLink>
+          </DsfrSideMenuListItem>
         </DsfrSideMenuList>
       </DsfrSideMenuListItem>
 

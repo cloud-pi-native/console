@@ -73,6 +73,11 @@ export const getEnvironmentsByQuotaStageId = async (quotaStageId: Environment['q
     quotaStageId,
   },
   include: {
+    cluster: {
+      select: {
+        label: true,
+      },
+    },
     project: {
       select: {
         name: true,

@@ -80,7 +80,7 @@ export type Environment = {
   quotaStageId: string,
   status: string,
   permissions?: Permission[],
-  cluster?: Cluster[],
+  cluster?: Cluster,
   updatedAt?: Date,
   createdAt?: Date,
 }

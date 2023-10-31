@@ -1,5 +1,5 @@
 import {
-  getAssociatedEnvironmentsController,
+  getQuotaAssociatedEnvironmentsController,
   createQuotaController,
   deleteQuotaController,
   updateQuotaStageController,
@@ -8,16 +8,16 @@ import {
 
 const router = async (app, _opt) => {
   // Récupérer les environnements associés au quota
-  await app.get('/:quotaId/environments', getAssociatedEnvironmentsController)
+  await app.get('/:quotaId/environments', getQuotaAssociatedEnvironmentsController)
 
   // Créer un quota
   await app.post('/', createQuotaController)
 
-  // Modifier la confidentialité d'un quota
-  await app.patch('/:quotaId', updateQuotaPrivacyController)
-
   // Modifier une association quota / stage
   await app.put('/quotastages', updateQuotaStageController)
+
+  // Modifier la confidentialité d'un quota
+  await app.patch('/:quotaId/privacy', updateQuotaPrivacyController)
 
   // Supprimer un quota
   await app.delete('/:quotaId', deleteQuotaController)

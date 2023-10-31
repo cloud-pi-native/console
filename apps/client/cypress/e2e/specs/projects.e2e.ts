@@ -9,6 +9,7 @@ describe('Projects view', () => {
   it('Should display select and button to create project', () => {
     cy.kcLogin('test')
     cy.intercept('GET', 'api/v1/projects').as('getProjects')
+    cy.intercept('GET', '/api/v1/stages').as('getStages')
 
     cy.goToProjects()
       .wait('@getProjects').its('response').then(response => {
@@ -18,6 +19,7 @@ describe('Projects view', () => {
       })
       .getByDataTestid(`projectTile-${project.name}`).click()
       .url().should('contain', `projects/${project.id}/dashboard`)
+    cy.wait('@getStages')
       .getByDataTestid('currentProjectInfo')
       .should('contain', `Le projet courant est : ${project.name} (${organization.label})`)
   })
