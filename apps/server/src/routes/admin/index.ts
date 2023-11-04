@@ -3,6 +3,7 @@ import organizationRouter from './organization.js'
 import projectRouter from './project.js'
 import logRouter from './log.js'
 import dbRouter from './db.js'
+import pluginsRouter from './plugin.js'
 import clusterRouter from './cluster.js'
 import quotaRouter from './quota.js'
 import { checkAdminGroup } from '@/utils/controller.js'
@@ -29,6 +30,9 @@ const router = async (app, _opt) => {
 
   // Enregistrement du sous routeur quota
   await app.register(quotaRouter, { prefix: '/quotas' })
+
+  // Enregistrement du sous routeur plugins
+  await app.register(pluginsRouter, { prefix: '/plugins' })
 }
 
 export default router

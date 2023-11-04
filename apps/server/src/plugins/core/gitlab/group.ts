@@ -40,6 +40,13 @@ export const createGroup = async (name: string, organization: string) => {
   })
 }
 
+export const getGroupInfos = async (name: string, organization: string) => {
+  const searchResult = await api.Groups.search(name)
+  const parentId = await getOrganizationId(organization)
+  const existingGroup = searchResult.find(group => group.parent_id === parentId)
+  return existingGroup
+}
+
 export const deleteGroup = async (name: string, organization: string) => {
   const searchResult = await api.Groups.search(name)
   const parentId = await getOrganizationId(organization)

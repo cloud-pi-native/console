@@ -12,6 +12,7 @@ export type ArchiveProjectValidateArgs = ProjectBase
 export type ArchiveProjectExecArgs = ProjectBase & { status: ProjectModel['status'] }
 
 export const createProject: Hook<CreateProjectExecArgs, CreateProjectValidateArgs> = createHook()
+export const renewProjectTokens: Hook<ProjectBase, void> = createHook()
 export const updateProject: Hook<UpdateProjectExecArgs, UpdateProjectValidateArgs> = createHook()
 export const archiveProject: Hook<ArchiveProjectExecArgs, ArchiveProjectValidateArgs> = createHook()
 export const getProjectSecrets: Hook<ProjectBase, ProjectBase> = createHook()

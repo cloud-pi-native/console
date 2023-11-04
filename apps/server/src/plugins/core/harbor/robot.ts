@@ -11,6 +11,38 @@ export const createRobot = async (projectName) => {
   return rest.data
 }
 
+export const replaceRobot = async (projectName: string) => {
+  // const getRobot = await axios({
+  //   ...axiosOptions,
+  //   url: 'robots',
+  //   method: 'get',
+  //   params: {
+  //     name: projectName,
+  //   },
+  //   validateStatus: (code) => [200, 404].includes(code),
+  // })
+
+  // if (getRobot.status === 200) {
+  // }
+  const rest = await axios({
+    ...axiosOptions,
+    url: 'robots',
+    method: 'put',
+    data: getRobotPermissions(projectName),
+  })
+  return rest.data
+}
+
+export const getRobot = async (projectName) => {
+  const rest = await axios({
+    ...axiosOptions,
+    url: 'robots',
+    method: 'get',
+    data: getRobotPermissions(projectName),
+  })
+  return rest.data
+}
+
 const getRobotPermissions = (projectName) => {
   return {
     name: 'ci',

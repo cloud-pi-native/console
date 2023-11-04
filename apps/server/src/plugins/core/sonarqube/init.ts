@@ -17,6 +17,9 @@ export const init = (register: RegisterFn) => {
         pre: createUser,
         main: createDsoProjectGroup,
       },
+      renewProjectTokens: {
+        pre: createUser,
+      },
       archiveProject: {
         check: getStatus,
         pre: deleteUser,

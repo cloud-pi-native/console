@@ -134,6 +134,63 @@ export const createNexusProject: StepCall<CreateProjectExecArgs> = async (payloa
   }
 }
 
+export const renewProjectTokens: StepCall<CreateProjectExecArgs> = async (payload) => {
+  try {
+    const { organization, project, owner } = payload.args
+    const projectName = `${organization}-${project}`
+    const res: any = { status: {} }
+
+    if (!payload.vault) throw Error('no Vault available')
+
+    const getUser = await axiosInstance({
+      url: `/security/users?userId=${projectName}`,
+    })
+
+    const newPwd = generateRandomPassword(30)
+
+    if (getUser.data.length) {
+      await axiosInstance({
+        method: 'put',
+        url: `/security/users/${projectName}/change-password`,
+        data: newPwd,
+      })
+      res.status.message = 'Password Changed'
+    } else {
+      // createUser
+      await axiosInstance({
+        method: 'post',
+        url: '/security/users',
+        data: {
+          userId: `${projectName}`,
+          firstName: 'Monkey D.',
+          lastName: 'Luffy',
+          emailAddress: owner.email,
+          password: newPwd,
+          status: 'active',
+          roles: [`${projectName}-ID`],
+        },
+      })
+      res.status.message = 'User Created'
+    }
+
+    await payload.vault.write({
+      NEXUS_PASSWORD: newPwd,
+      NEXUS_USERNAME: projectName,
+    }, 'NEXUS')
+
+    res.status.result = 'OK'
+    return res
+  } catch (error) {
+    return {
+      status: {
+        result: 'KO',
+        message: 'Fail Update password',
+      },
+      error: JSON.stringify(error),
+    }
+  }
+}
+
 export const deleteNexusProject: StepCall<ArchiveProjectExecArgs> = async (payload) => {
   const { organization, project } = payload.args
   const projectName = `${organization}-${project}`

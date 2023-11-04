@@ -3,9 +3,9 @@ import type { ArchiveProjectExecArgs, CreateProjectExecArgs, ProjectBase } from 
 import type { CreateRepositoryExecArgs, DeleteRepositoryExecArgs, UpdateRepositoryExecArgs } from '@/plugins/hooks/repository.js'
 import { AddUserToProjectExecArgs } from '@/plugins/hooks/team.js'
 import { User } from '@prisma/client'
-import { createGroup, deleteGroup, getGroupId, setGroupVariable, setProjectVariable } from './group.js'
+import { createGroup, deleteGroup, getGroupId, getGroupInfos, setGroupVariable, setProjectVariable } from './group.js'
 import { addGroupMember, getGroupMembers, removeGroupMember } from './permission.js'
-import { createProject, createProjectMirror, deleteProject } from './project.js'
+import { createProject, createProjectMirror, deleteProject, getProjectInfos } from './project.js'
 import { setProjectTrigger } from './triggers.js'
 import { createUser, createUsername, getUser } from './user.js'
 import { gitlabToken } from './utils.js'
@@ -56,7 +56,7 @@ export const createDsoProject: StepCall<CreateProjectExecArgs> = async (payload)
     // Sonar vars saving in CI
     const sonarSecret = await payload.vault.read('SONAR')
 
-    const sonarVariable = await setGroupVariable(group.id, {
+    await setGroupVariable(group.id, {
       key: 'SONAR_TOKEN',
       masked: true,
       protected: false,
@@ -81,7 +81,54 @@ export const createDsoProject: StepCall<CreateProjectExecArgs> = async (payload)
         user,
         groupMember,
         mirror,
-        sonarVariable,
+      },
+    }
+  } catch (error) {
+    return {
+      status: {
+        result: 'KO',
+        message: error.message,
+      },
+      error: JSON.stringify(error),
+    }
+  }
+}
+
+export const renewDsoProjectTokens: StepCall<CreateProjectExecArgs> = async (payload) => {
+  try {
+    if (!payload.vault) throw Error('no Vault available')
+    const { project, organization } = payload.args
+    const group = await getGroupInfos(project, organization)
+    const internalMirrorRepoName = 'mirror'
+    const mirror = await getProjectInfos(internalMirrorRepoName, project, organization)
+    const triggerToken = await setProjectTrigger(mirror.id)
+
+    // Sonar vars saving in CI
+    const sonarSecret = await payload.vault.read('SONAR')
+
+    await setGroupVariable(group.id, {
+      key: 'SONAR_TOKEN',
+      masked: true,
+      protected: false,
+      value: sonarSecret.data.SONAR_TOKEN,
+      variable_type: 'env_var',
+    })
+
+    await payload.vault.write({
+      ORGANIZATION_NAME: organization,
+      PROJECT_NAME: project,
+      GIT_MIRROR_PROJECT_ID: mirror.id,
+      GIT_MIRROR_TOKEN: triggerToken.token,
+    }, 'GITLAB')
+
+    return {
+      status: {
+        result: 'OK',
+        message: 'Created',
+      },
+      result: {
+        group,
+        mirror,
       },
     }
   } catch (error) {
@@ -151,6 +198,41 @@ export const createDsoRepository: StepCall<CreateRepositoryExecArgs> = async (pa
       status: {
         result: 'OK',
         message: 'Created',
+      },
+    }
+  } catch (error) {
+    return {
+      status: {
+        result: 'KO',
+        message: error.message,
+      },
+      error: JSON.stringify(error),
+    }
+  }
+}
+
+export const renewDsoRepositoryTokens: StepCall<CreateRepositoryExecArgs> = async (payload) => {
+  try {
+    if (!payload.vault) throw Error('no Vault available')
+    const { internalRepoName, organization, project } = payload.args
+    const groupId = await getGroupId(project, organization)
+    if (!groupId) throw Error('Impossible de retrouver le namespace')
+    const projectInfos = await getProjectInfos(internalRepoName, project, organization)
+    // TODO let sonarqube store this variable through an API
+    const projectKey = generateProjectKey(organization, project, internalRepoName)
+    await setProjectVariable(projectInfos.id, {
+      key: 'PROJECT_KEY',
+      masked: false,
+      protected: false,
+      value: projectKey,
+      variable_type: 'env_var',
+      environment_scope: '*',
+    })
+
+    return {
+      status: {
+        result: 'OK',
+        message: 'Variables reset',
       },
     }
   } catch (error) {

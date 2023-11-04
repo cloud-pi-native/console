@@ -52,6 +52,14 @@ export const createProjectMirror = async (internalRepoName, group, organization)
   return project
 }
 
+export const getProjectInfos = async (internalRepoName, group, organization) => {
+  const groupId = await getGroupId(group, organization)
+  if (!groupId) throw Error('Impossible de retrouver le namespace')
+  const searchResults = await api.Projects.search(internalRepoName)
+  const existingProject = searchResults.find(project => project.namespace.id === groupId && project.name === internalRepoName)
+  return existingProject
+}
+
 /**
  * @param {string} internalRepoName - nom du dépôt.
  * @param {string} group - nom du projet DSO.

@@ -32,5 +32,6 @@ export type DeleteRepositoryValidateArgs = void
 export type DeleteRepositoryExecArgs = RepositoryDelete
 
 export const createRepository: Hook<CreateRepositoryExecArgs, CreateRepositoryValidateArgs> = createHook()
+export const renewRepositoryTokens: Hook<UpdateRepositoryExecArgs, void> = createHook()
 export const updateRepository: Hook<UpdateRepositoryExecArgs, UpdateRepositoryValidateArgs> = createHook()
 export const deleteRepository: Hook<DeleteRepositoryExecArgs, DeleteRepositoryValidateArgs> = createHook()

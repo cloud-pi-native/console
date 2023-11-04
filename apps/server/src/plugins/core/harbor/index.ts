@@ -101,6 +101,53 @@ export const createDsoProject: StepCall<CreateProjectExecArgs> = async (payload)
   }
 }
 
+export const renewDsoProject: StepCall<CreateProjectExecArgs> = async (payload) => {
+  try {
+    if (!payload.vault) throw Error('no Vault available')
+    const { project, organization } = payload.args
+    const projectName = `${organization}-${project}`
+
+    // const projectMember = await addProjectGroupMember(projectName, 4)
+    const robot = await createRobot(projectName)
+    const auth = `${robot.name}:${robot.secret}`
+    const buff = Buffer.from(auth)
+    const b64auth = buff.toString('base64')
+    const dockerConfigStr = JSON.stringify({
+      auths: {
+        [registryHost]: {
+          auth: b64auth,
+          email: '',
+        },
+      },
+    })
+    await payload.vault.write({
+      TOKEN: robot.secret,
+      USERNAME: robot.name,
+      HOST: registryHost,
+      DOCKER_CONFIG: dockerConfigStr,
+    }, 'REGISTRY')
+    return {
+      status: {
+        result: 'OK',
+        message: 'Created',
+      },
+      result: {
+        // project: projectCreated,
+        // projectMember,
+        robot,
+      },
+    }
+  } catch (error) {
+    return {
+      status: {
+        result: 'KO',
+        message: error.message,
+      },
+      error: JSON.stringify(error),
+    }
+  }
+}
+
 export const archiveDsoProject: StepCall<ArchiveProjectExecArgs> = async (payload) => {
   try {
     const { project, organization } = payload.args

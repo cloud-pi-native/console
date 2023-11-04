@@ -91,6 +91,56 @@ export const createDsoRepository: StepCall<CreateRepositoryExecArgs> = async (pa
   }
 }
 
+export const renewDsoRepositoryTokens: StepCall<CreateRepositoryExecArgs> = async (payload) => {
+  try {
+    const { organization, project, internalRepoName } = payload.args
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const projectName = generateProjectName(organization, project, internalRepoName)
+    const projectKey = generateProjectKey(organization, project, internalRepoName)
+    const login = `${organization}-${project}` // robot account
+    const groupName = `/${organization}-${project}` // oidc group
+    const { message, sonarProject } = await createProject(projectKey, projectName)
+
+    for (const permission of robotPermissions) {
+      await axiosInstance({
+        url: 'permissions/add_user',
+        method: 'post',
+        params: {
+          projectKey,
+          permission,
+          login,
+        },
+      })
+    }
+    for (const permission of groupPermissions) {
+      await axiosInstance({
+        url: 'permissions/add_group',
+        method: 'post',
+        params: {
+          projectKey,
+          permission,
+          groupName,
+        },
+      })
+    }
+    return {
+      status: {
+        result: 'OK',
+        message,
+      },
+      sonarProject,
+    }
+  } catch (error) {
+    return {
+      status: {
+        result: 'KO',
+        message: 'Failed to create Sonarqube Project',
+      },
+      error: JSON.stringify(error),
+    }
+  }
+}
+
 const createProject = async (projectKey: string, projectName: string) => {
   const sonarProjectSearch = await axiosInstance({
     url: 'projects/search',

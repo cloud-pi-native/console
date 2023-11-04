@@ -9,6 +9,7 @@ import {
   removeDsoGroupMember,
   checkApi,
   getDsoProjectSecrets,
+  renewDsoProjectTokens,
 } from './index.js'
 import { getGroupRootId } from './utils.js'
 import infos from './infos.js'
@@ -24,6 +25,9 @@ export const init = (register: RegisterFn) => {
         // @ts-ignore fix type for check step
         check: checkApi,
         main: createDsoProject,
+      },
+      renewProjectTokens: {
+        main: renewDsoProjectTokens,
       },
       archiveProject: { main: archiveDsoProject },
       createRepository: {

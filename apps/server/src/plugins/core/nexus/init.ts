@@ -7,6 +7,7 @@ export const init = (register: RegisterFn) => {
     infos.name,
     {
       createProject: { main: createNexusProject },
+      renewProjectTokens: { main: createNexusProject },
       archiveProject: { main: deleteNexusProject },
     },
   )
