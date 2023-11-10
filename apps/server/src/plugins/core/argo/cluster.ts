@@ -56,7 +56,7 @@ const convertConfig = (cluster: ClusterModel) => ({
   tlsClientConfig: {
     ...cluster.user?.keyData && { keyData: cluster.user?.keyData },
     ...cluster.user?.certData && { certData: cluster.user?.certData },
-    ...cluster.cluster?.caData && { caData: cluster.cluster?.caData },
+    ...(cluster.cluster?.caData && !cluster.cluster?.skipTLSVerify) && { caData: cluster.cluster?.caData },
     ...cluster.cluster?.skipTLSVerify && { insecure: cluster.cluster.skipTLSVerify },
     serverName: cluster.cluster.tlsServerName,
   },
