@@ -36,7 +36,7 @@ const setSelectedQuota = async (quota: QuotaModel) => {
   selectedQuota.value = quota
   isNewQuotaForm.value = false
   // @ts-ignore
-  await getAssociatedEnvironments(quota.id)
+  await getQuotaAssociatedEnvironments(quota.id)
 }
 
 const showNewQuotaForm = () => {
@@ -92,10 +92,10 @@ const deleteQuota = async (quotaId: DeleteQuotaDto['params']['quotaId']) => {
   isWaitingForResponse.value = false
 }
 
-const getAssociatedEnvironments = async (quotaId: DeleteQuotaDto['params']['quotaId']) => {
+const getQuotaAssociatedEnvironments = async (quotaId: DeleteQuotaDto['params']['quotaId']) => {
   isWaitingForResponse.value = true
   try {
-    associatedEnvironments.value = await adminQuotaStore.getAssociatedEnvironments(quotaId)
+    associatedEnvironments.value = await adminQuotaStore.getQuotaAssociatedEnvironments(quotaId)
   } catch (error) {
     snackbarStore.setMessage(error?.message, 'error')
   }
@@ -140,7 +140,7 @@ watch(quotas, () => {
       :all-stages="allStages"
       class="w-full"
       :is-new-quota="true"
-      is-updating-quota="isWaitingForResponse"
+      :is-updating-quota="isWaitingForResponse"
       @add="(quota: CreateQuotaDto['body']) => addQuota(quota)"
       @cancel="cancel()"
     />
@@ -168,7 +168,7 @@ watch(quotas, () => {
         v-if="Object.keys(selectedQuota).length && selectedQuota.id === quota.id"
         :all-stages="allStages"
         :quota="selectedQuota"
-        is-updating-quota="isWaitingForResponse"
+        :is-updating-quota="isWaitingForResponse"
         class="w-full"
         :is-new-quota="false"
         :associated-environments="associatedEnvironments"

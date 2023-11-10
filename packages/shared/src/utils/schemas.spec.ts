@@ -9,6 +9,7 @@ import {
   userSchema,
   organizationSchema,
   quotaSchema,
+  stageSchema,
 } from '../index.js'
 import { descriptionMaxLength } from '../schemas/project.js'
 
@@ -95,6 +96,13 @@ describe('Schemas utils', () => {
       memory: '12Gi',
       cpu: faker.number.int({ min: 0 }),
       isPrivate: faker.datatype.boolean(),
+    })).toStrictEqual({})
+  })
+
+  it('Should validate a correct stage schema', () => {
+    expect(schemaValidator(stageSchema, {
+      id: faker.string.uuid(),
+      name: faker.lorem.word({ length: { min: 2, max: 10 } }),
     })).toStrictEqual({})
   })
 

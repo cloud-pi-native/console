@@ -14,7 +14,7 @@ import {
 import { CreateQuotaDto, quotaSchema, DeleteQuotaDto, UpdateQuotaStageDto, UpdateQuotaPrivacyDto } from '@dso-console/shared'
 import { QuotaStage } from '@prisma/client'
 
-export const getAssociatedEnvironments = async (quotaId: DeleteQuotaDto['params']['quotaId']) => {
+export const getQuotaAssociatedEnvironments = async (quotaId: DeleteQuotaDto['params']['quotaId']) => {
   try {
     const quota = await getQuotaById(quotaId)
 
@@ -111,7 +111,7 @@ export const updateQuotaStage = async (data: UpdateQuotaStageDto['body']) => {
 
 export const deleteQuota = async (quotaId: DeleteQuotaDto['params']['quotaId']) => {
   try {
-    const environments = await getAssociatedEnvironments(quotaId)
+    const environments = await getQuotaAssociatedEnvironments(quotaId)
     if (environments.length) throw new BadRequestError('Impossible de supprimer le quota, des environnements en activité y ont souscrit', { extras: environments })
 
     await deleteQuotaQuery(quotaId)

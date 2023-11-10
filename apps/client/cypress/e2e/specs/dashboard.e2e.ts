@@ -24,6 +24,7 @@ describe('Dashboard', () => {
   })
 
   it('Should display project statuses', () => {
+    cy.intercept('GET', '/api/v1/stages').as('getStages')
     const projects = [projectCreated, projectFailed]
 
     cy.kcLogin('test')
@@ -31,6 +32,7 @@ describe('Dashboard', () => {
       cy.goToProjects()
         .getByDataTestid(`projectTile-${project.name}`).click()
         .getByDataTestid('menuDashboard').click()
+      cy.wait('@getStages')
         .getByDataTestid(`${project.id}-${project.status}-badge`)
         .should('contain', `Projet ${project.name} : ${statusDict.status[project.status]?.wording}`)
         .getByDataTestid(`${project.id}-${project.locked ? '' : 'un'}locked-badge`)
@@ -49,6 +51,7 @@ describe('Dashboard', () => {
   })
 
   it('Should add, display and edit description', () => {
+    cy.intercept('GET', '/api/v1/stages').as('getStages')
     cy.intercept('PUT', `/api/v1/projects/${projectToKeep.id}`).as('updateProject')
     const description1 = 'Application de prise de rendez-vous en préfécture.'
     const description2 = 'Application d\'organisation de tournois de pétanque interministériels.'
@@ -57,6 +60,7 @@ describe('Dashboard', () => {
       .goToProjects()
       .getByDataTestid(`projectTile-${projectToKeep.name}`).click()
       .getByDataTestid('menuDashboard').click()
+    cy.wait('@getStages')
       .getByDataTestid('descriptionP').should('have.class', 'disabled')
       .getByDataTestid('setDescriptionBtn').click()
       .getByDataTestid('descriptionInput').clear().type(description1)
@@ -76,6 +80,7 @@ describe('Dashboard', () => {
   })
 
   it('Should show project secrets', () => {
+    cy.intercept('GET', '/api/v1/stages').as('getStages')
     cy.intercept('GET', `/api/v1/projects/${projectCreated.id}/secrets`).as('getProjectSecrets')
     cy.kcLogin('test')
 
@@ -84,6 +89,7 @@ describe('Dashboard', () => {
       .getByDataTestid('menuDashboard').click()
 
     cy.url().should('contain', 'dashboard')
+    cy.wait('@getStages')
       .getByDataTestid('projectSecretsZone').should('not.exist')
       .getByDataTestid('showSecretsBtn').click()
 
@@ -97,6 +103,7 @@ describe('Dashboard', () => {
   })
 
   it('Should not be able to access project secrets if not owner', () => {
+    cy.intercept('GET', '/api/v1/stages').as('getStages')
     cy.kcLogin((user.firstName.slice(0, 1) + user.lastName).toLowerCase())
 
     cy.goToProjects()
@@ -104,11 +111,13 @@ describe('Dashboard', () => {
       .getByDataTestid('menuDashboard').click()
 
     cy.url().should('contain', 'dashboard')
+    cy.wait('@getStages')
       .getByDataTestid('projectSecretsZone').should('not.exist')
       .getByDataTestid('showSecretsBtn').should('not.exist')
   })
 
   it('Should not be able to archive a project if not owner', () => {
+    cy.intercept('GET', '/api/v1/stages').as('getStages')
     cy.kcLogin((user.firstName.slice(0, 1) + user.lastName).toLowerCase())
 
     cy.goToProjects()
@@ -116,6 +125,7 @@ describe('Dashboard', () => {
       .getByDataTestid('menuDashboard').click()
 
     cy.url().should('contain', 'dashboard')
+    cy.wait('@getStages')
       .getByDataTestid('archiveProjectZone').should('not.exist')
   })
 

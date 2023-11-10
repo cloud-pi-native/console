@@ -106,7 +106,7 @@ export const getRandomQuota = (name: string = faker.lorem.word()) => {
   return {
     id: faker.string.uuid(),
     name,
-    cpu: faker.number.int({ max: 18 }),
+    cpu: faker.number.int({ min: 1, max: 18 }),
     memory: faker.number.int({ max: 18 }) + 'Gi',
     isPrivate: faker.datatype.boolean(),
   }

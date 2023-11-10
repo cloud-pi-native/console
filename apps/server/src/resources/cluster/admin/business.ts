@@ -1,27 +1,9 @@
-import { linkClusterToProjects, addLogs, createCluster as createClusterQuery, getClusterById, getClusterByLabel, getClustersWithProjectIdAndConfig, getProjectsByClusterId, getStagesByClusterId, removeClusterFromProject, removeClusterFromStage, updateCluster as updateClusterQuery } from '@/resources/queries-index.js'
+import { linkClusterToProjects, addLogs, createCluster as createClusterQuery, getClusterById, getClusterByLabel, getProjectsByClusterId, getStagesByClusterId, removeClusterFromProject, removeClusterFromStage, updateCluster as updateClusterQuery } from '@/resources/queries-index.js'
 import { BadRequestError, NotFoundError } from '@/utils/errors.js'
 import { hooks } from '@/plugins/index.js'
 import { CreateClusterDto, UpdateClusterDto, clusterSchema, exclude } from '@dso-console/shared'
 import { User } from '@prisma/client'
 import { linkClusterToStages } from '@/resources/stage/business.js'
-
-export const getAllCleanedClusters = async () => {
-  const clusters = await getClustersWithProjectIdAndConfig()
-
-  const cleanedClusters = clusters.map(cluster => {
-    const newCluster = exclude({
-      ...cluster,
-      user: cluster.kubeconfig.user,
-      cluster: cluster.kubeconfig.cluster,
-      projectIds: cluster.projects.filter(project => project.status !== 'archived').map(({ id }) => id),
-      stageIds: cluster.stages.map(({ id }) => id) ?? [],
-    },
-    ['projects', 'stages', 'kubeconfig'])
-    return newCluster
-  })
-
-  return cleanedClusters
-}
 
 export const checkClusterProjectIds = (data: CreateClusterDto['body']) => {
   // si le cluster est dedicated, la clé projectIds doit être renseignée

@@ -6,8 +6,8 @@ import type { ClusterModel, CreateClusterDto, UpdateClusterDto } from '@dso-cons
 export const useAdminClusterStore = defineStore('admin-cluster', () => {
   const clusters: Ref<Array<ClusterModel | undefined>> = ref([])
 
-  const getAllClusters = async () => {
-    clusters.value = await api.getAllClusters()
+  const getClusters = async () => {
+    clusters.value = await api.getClusters()
     return clusters.value
   }
 
@@ -26,7 +26,7 @@ export const useAdminClusterStore = defineStore('admin-cluster', () => {
 
   return {
     clusters,
-    getAllClusters,
+    getClusters,
     addCluster,
     updateCluster,
     // removeCluster,

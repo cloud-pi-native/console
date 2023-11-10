@@ -4,21 +4,9 @@ import { addReqLogs } from '@/utils/logger.js'
 import { sendCreated, sendOk } from '@/utils/response.js'
 import {
   checkClusterProjectIds,
-  getAllCleanedClusters,
   createCluster,
   updateCluster,
 } from './business.js'
-
-// GET
-export const getAllClustersController = async (req, res) => {
-  const cleanedClusters = await getAllCleanedClusters()
-
-  addReqLogs({
-    req,
-    description: 'Clusters récupérés avec succès',
-  })
-  sendOk(res, cleanedClusters)
-}
 
 // POST
 export const createClusterController = async (req: EnhancedFastifyRequest<CreateClusterDto>, res) => {

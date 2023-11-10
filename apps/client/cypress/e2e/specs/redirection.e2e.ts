@@ -5,6 +5,7 @@ const organization = getModelById('organization', project.organizationId)
 
 describe('Redirection', () => {
   it('Should redirect to original page on reload', () => {
+    cy.intercept('GET', '/api/v1/stages').as('getStages')
     cy.intercept('GET', '/api/v1/projects').as('getProjects')
     cy.intercept('POST', '/realms/cloud-pi-native/protocol/openid-connect/token').as('postToken')
 
@@ -21,10 +22,12 @@ describe('Redirection', () => {
       cy.should('have.length', `${response.body.length}`)
       cy.getByDataTestid(`projectTile-${project.name}`).click()
       cy.url().should('contain', `/projects/${project.id}/dashboard`)
+      cy.wait('@getStages')
     })
     cy.reload()
     cy.wait('@postToken')
     cy.url().should('contain', `/projects/${project.id}/dashboard`)
+    cy.wait('@getStages')
     cy.wait('@getProjects').its('response').then(_response => {
       cy.getByDataTestid('currentProjectInfo')
       cy.should('contain', `Le projet courant est : ${project.name} (${organization.label})`)
@@ -32,6 +35,7 @@ describe('Redirection', () => {
   })
 
   it('Should redirect to login page if not logged in', () => {
+    cy.intercept('GET', '/api/v1/stages').as('getStages')
     cy.intercept('GET', '/api/v1/projects').as('getProjects')
     cy.intercept('POST', '/realms/cloud-pi-native/protocol/openid-connect/token').as('postToken')
     cy.intercept('GET', '/realms/cloud-pi-native/account').as('getAccount')
@@ -43,6 +47,7 @@ describe('Redirection', () => {
     cy.get('input#kc-login').click()
     cy.wait('@postToken')
     cy.url().should('contain', `/projects/${project.id}/dashboard`)
+    cy.wait('@getStages')
     cy.wait('@getProjects', { timeout: 5000 }).its('response').then(_response => {
       cy.getByDataTestid('currentProjectInfo')
       cy.should('contain', `Le projet courant est : ${project.name} (${organization.label})`)
