@@ -14,6 +14,12 @@ const checkServicesHealth = async () => {
   isUpdating.value = false
 }
 
+const typeMapping = {
+  0: 'success',
+  1: 'warning',
+  2: 'error',
+  3: 'info',
+}
 onBeforeMount(async () => {
   await checkServicesHealth()
 })
@@ -50,8 +56,8 @@ onBeforeMount(async () => {
       :data-testid="`${service.name}-info`"
       :title="service.name"
       class="pb-5 fr-mt-2w"
-      :description="service.message ? `${service.code} - ${service.message}` : `${service.code}`"
-      :type="service.status"
+      :description="service.message"
+      :type="typeMapping[service.status]"
     />
   </div>
 </template>

@@ -1,9 +1,10 @@
 import type { ServiceInfos } from '@/plugins/services.js'
 import { harborUrl } from './utils.js'
+import { monitor } from './monitor.js'
 
 const infos: ServiceInfos = {
   name: 'registry',
-  monitorUrl: `${harborUrl}`,
+  monitor: (currentDate, force) => monitor(harborUrl, currentDate, force),
   to: ({ services }) => `${harborUrl}/harbor/projects/${services?.registry?.id}`,
   title: 'Harbor',
   imgSrc: '/img/harbor.svg',

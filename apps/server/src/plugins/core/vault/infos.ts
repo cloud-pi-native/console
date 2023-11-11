@@ -1,9 +1,12 @@
 import { ServiceInfos } from '@/plugins/services.js'
 import { vaultUrl } from './utils.js'
+import { getMonitorObject, monitor } from '@/plugins/generic-monitor.js'
+
+const lastMonitor = getMonitorObject()
 
 const infos: ServiceInfos = {
   name: 'vault',
-  monitorUrl: `${vaultUrl}`,
+  monitor: (currentDate, force) => monitor(vaultUrl, currentDate, force, lastMonitor),
   // TODO wait for vault to be connected to oidc
   // to: ({ project, organization }) => `${vaultUrl}/ui/vault/secrets/forge-dso/list/${projectRootDir}/${organization}/${project}`,
   title: 'Vault',

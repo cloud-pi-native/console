@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import api from '@/api/index.js'
 import { type Ref, ref } from 'vue'
-import { type ErrorTypes } from '@dso-console/shared'
+import { type ErrorTypes, type MonitorResults } from '@dso-console/shared'
 
 export type ServicesHealth = {
   message: string,
@@ -17,7 +17,7 @@ export type Service = {
 
 export const useServiceStore = defineStore('service', () => {
   const servicesHealth: Ref<ServicesHealth> = ref({})
-  const services: Ref<Array<Service>> = ref([])
+  const services: Ref<MonitorResults> = ref([])
 
   const checkServicesHealth = async () => {
     servicesHealth.value = {
@@ -28,8 +28,7 @@ export const useServiceStore = defineStore('service', () => {
 
     services.value = await api.checkServicesHealth()
     servicesHealth.value = services.value
-      .map(service => service.code)
-      .find(code => code >= 400)
+      .find(service => service.status != 0)
       ? {
           message: 'Un ou plusieurs services dysfonctionnent',
           status: 'error',
