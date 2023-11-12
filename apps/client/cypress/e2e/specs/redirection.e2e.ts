@@ -53,4 +53,19 @@ describe('Redirection', () => {
       cy.should('contain', `Le projet courant est : ${project.name} (${organization.label})`)
     })
   })
+
+  it('Should redirect to home if trying to access login page while logged', () => {
+    cy.intercept('POST', '/realms/cloud-pi-native/protocol/openid-connect/token').as('postToken')
+    cy.intercept('GET', '/realms/cloud-pi-native/account').as('getAccount')
+
+    cy.visit('/login')
+    cy.url().should('not.contain', '/login')
+    cy.get('input#username').type('test')
+    cy.get('input#password').type('test')
+    cy.get('input#kc-login').click()
+    cy.wait('@postToken')
+    cy.url().should('contain', '/')
+    cy.get('h1').contains(' Cloud π Native ')
+      .should('exist')
+  })
 })

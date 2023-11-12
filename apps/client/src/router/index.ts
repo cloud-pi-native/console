@@ -194,6 +194,11 @@ router.beforeEach(async (to, _from, next) => {
     return next('Login')
   }
 
+  // Redirige sur l'accueil si le path est Login et que l'utilisateur est connecté
+  if (to.name === 'Login' && userStore.isLoggedIn) {
+    return next('/')
+  }
+
   // Redirige sur la page d'accueil si le path est admin et l'utilisateur n'est pas admin
   if (to.path.match('^/admin/') && !userStore.isAdmin) {
     snackbarStore.setMessage('Vous ne possédez pas les droits administeurs', 'error')
