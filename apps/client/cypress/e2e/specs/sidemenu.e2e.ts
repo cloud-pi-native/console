@@ -2,8 +2,8 @@ import { getModelById } from '../support/func'
 
 const project = getModelById('project', '011e7860-04d7-461f-912d-334c622d38b3')
 
-describe('Sidebar', () => {
-  it('Should display Sidebar, not loggedIn', () => {
+describe('Sidemenu', () => {
+  it('Should display Sidemenu, not loggedIn', () => {
     cy.visit('/')
       .getByDataTestid('mainMenu').should('be.visible')
       .getByDataTestid('menuProjectsList').should('not.exist')
@@ -12,7 +12,7 @@ describe('Sidebar', () => {
       .getByDataTestid('menuAdministrationList').should('not.exist')
       .getByDataTestid('menuAdministrationBtn').should('not.exist')
   })
-  it('Should display Sidebar, loggedIn, isNotAdmin', () => {
+  it('Should display Sidemenu, loggedIn, isNotAdmin', () => {
     cy.kcLogin('test')
 
     cy.visit('/')
@@ -40,7 +40,7 @@ describe('Sidebar', () => {
       .getByDataTestid('menuDoc').should('be.visible')
   })
 
-  it('Should display Sidebar, loggedIn, isAdmin', () => {
+  it('Should display Sidemenu, loggedIn, isAdmin', () => {
     cy.kcLogin('tcolin')
 
     cy.visit('/')

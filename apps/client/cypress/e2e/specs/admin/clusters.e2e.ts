@@ -19,14 +19,14 @@ describe('Administration clusters', () => {
   }
 
   beforeEach(() => {
-    cy.intercept('GET', 'api/v1/admin/clusters').as('getAllClusters')
+    cy.intercept('GET', 'api/v1/clusters').as('getClusters')
     cy.intercept('GET', '/api/v1/admin/projects').as('getAdminProjects')
     cy.intercept('GET', '/api/v1/stages').as('getStages')
 
     cy.kcLogin('tcolin')
     cy.visit('/admin/clusters')
     cy.url().should('contain', '/admin/clusters')
-    cy.wait('@getAllClusters').its('response').then(response => {
+    cy.wait('@getClusters').its('response').then(response => {
       allClusters = response.body
       cluster1.stages = allClusters
         .find(cluster => cluster.id === cluster1.id)

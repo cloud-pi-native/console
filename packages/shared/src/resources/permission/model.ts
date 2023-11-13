@@ -6,4 +6,5 @@ export type PermissionModel = {
   userId: UserModel['id']
   environmentId: EnvironmentModel['id']
   level: number
+  user?: UserModel
 }

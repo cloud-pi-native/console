@@ -1,18 +1,24 @@
-import VueDsfr from '@gouvminint/vue-dsfr'
-import { createPinia } from 'pinia'
+import { Pinia, createPinia, setActivePinia } from 'pinia'
 import '@gouvminint/vue-dsfr/styles'
 import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@/main.css'
-import * as icons from '@/icons.js'
 import RepoForm from '@/components/RepoForm.vue'
 import { createRandomDbSetup } from '@dso-console/test-utils'
 import { useProjectStore } from '@/stores/project.js'
 import { allOrganizations } from '@dso-console/shared'
 
 describe('RepoForm.vue', () => {
-  it('Should mount a new repo RepoForm', () => {
+  let pinia: Pinia
+
+  beforeEach(() => {
+    pinia = createPinia()
+
+    setActivePinia(pinia)
+  })
+
+  it('Should mount a new repo RepoForm', { browser: '!firefox' }, () => {
     cy.intercept('POST', '/api/v1/ci-files', {
       'gitlab-ci-dso': 'gitlab-ci file',
       node: 'node file',
@@ -21,7 +27,6 @@ describe('RepoForm.vue', () => {
       docker: 'docker file',
     })
     cy.intercept('GET', '/api/v1/organizations', allOrganizations)
-    const pinia = createPinia()
 
     const props = {
       repo: {
@@ -34,22 +39,11 @@ describe('RepoForm.vue', () => {
       },
     }
 
-    const extensions = {
-      use: [
-        [
-          VueDsfr, { icons: Object.values(icons) },
-        ],
-      ],
-      global: {
-        plugins: [pinia],
-      },
-    }
-
     const randomDbSetup = createRandomDbSetup({})
-    const projectStore = useProjectStore(pinia)
+    const projectStore = useProjectStore()
     projectStore.selectedProject = randomDbSetup.project
 
-    cy.mount(RepoForm, { extensions, props })
+    cy.mount(RepoForm, { props })
 
     cy.get('h1').should('contain', 'Ajouter un dépôt au projet')
       .getByDataTestid('repoFieldset').should('have.length', 1)
@@ -98,7 +92,6 @@ describe('RepoForm.vue', () => {
   it('Should mount an update repo RepoForm', () => {
     cy.intercept('POST', '/api/v1/ci-files', { 'gitlab-ci-dso': 'my generated file' })
     cy.intercept('GET', '/api/v1/organizations', allOrganizations)
-    const pinia = createPinia()
 
     const props = {
       repo: {
@@ -111,22 +104,11 @@ describe('RepoForm.vue', () => {
       },
     }
 
-    const extensions = {
-      use: [
-        [
-          VueDsfr, { icons: Object.values(icons) },
-        ],
-      ],
-      global: {
-        plugins: [pinia],
-      },
-    }
-
     const randomDbSetup = createRandomDbSetup({})
-    const projectStore = useProjectStore(pinia)
+    const projectStore = useProjectStore()
     projectStore.selectedProject = randomDbSetup.project
 
-    cy.mount(RepoForm, { extensions, props })
+    cy.mount(RepoForm, { props })
 
     cy.get('h1').should('contain', 'Modifier le dépôt')
       .getByDataTestid('repoFieldset').should('have.length', 1)

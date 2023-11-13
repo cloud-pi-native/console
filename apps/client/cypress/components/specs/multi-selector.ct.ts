@@ -1,10 +1,8 @@
-import VueDsfr from '@gouvminint/vue-dsfr'
 import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@gouvminint/vue-dsfr/styles'
 import '@/main.css'
-import * as icons from '@/icons.js'
 import MultiSelector from '@/components/MultiSelector.vue'
 
 describe('MultiSelector.vue', () => {
@@ -21,15 +19,7 @@ describe('MultiSelector.vue', () => {
       ],
     }
 
-    const extensions = {
-      use: [
-        [
-          VueDsfr, { icons: Object.values(icons) },
-        ],
-      ],
-    }
-
-    cy.mount(MultiSelector, { extensions, props })
+    cy.mount(MultiSelector, { props })
     cy.get('[data-testid$="-tag"]').should('not.exist')
     cy.get('option')
       .should('have.length', props.options.length + 1)

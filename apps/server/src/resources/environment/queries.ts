@@ -68,6 +68,34 @@ export const getProjectByEnvironmentId = async (environmentId: Environment['id']
   return getProjectById(env.projectId)
 }
 
+export const getEnvironmentsByQuotaStageId = async (quotaStageId: Environment['quotaStageId']) => prisma.environment.findMany({
+  where: {
+    quotaStageId,
+  },
+  include: {
+    cluster: {
+      select: {
+        label: true,
+      },
+    },
+    project: {
+      select: {
+        name: true,
+        roles: {
+          include: {
+            user: true,
+          },
+        },
+        organization: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    },
+  },
+})
+
 // INSERT
 export const initializeEnvironment = async ({ name, projectId, projectOwners, clusterId, quotaStageId }: { name: Environment['name'], projectId: Project['id'], projectOwners: Role[], clusterId: Cluster['id'], quotaStageId: QuotaStage['id'] }) => {
   return prisma.environment.create({

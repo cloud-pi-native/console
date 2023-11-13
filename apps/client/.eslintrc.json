@@ -17,7 +17,7 @@
     "vue/setup-compiler-macros": true,
     "cypress/globals": true,
     "browser": true,
-    "es2022": true
+    "es2023": true
   },
   "rules": {
     "vue/no-v-html": 0,

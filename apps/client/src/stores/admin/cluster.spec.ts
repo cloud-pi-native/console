@@ -52,11 +52,11 @@ describe('Counter Store', () => {
     apiClientGet.mockReturnValueOnce(Promise.resolve({ data }))
     const adminClusterStore = useAdminClusterStore()
 
-    const res = await adminClusterStore.getAllClusters()
+    const res = await adminClusterStore.getClusters()
 
     expect(JSON.stringify(res)).toBe(JSON.stringify(data))
     expect(apiClientGet).toHaveBeenCalledTimes(1)
-    expect(apiClientGet.mock.calls[0][0]).toBe('/admin/clusters')
+    expect(apiClientGet.mock.calls[0][0]).toBe('/clusters')
   })
 
   it('Should add cluster by api call', async () => {

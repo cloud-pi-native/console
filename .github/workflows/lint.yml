@@ -9,6 +9,18 @@ on:
       PNPM_VERSION:
         required: false
         type: string
+  workflow_dispatch:
+    inputs:
+      NODE_VERSION:
+        description: Nodejs version used to run tests
+        required: true
+        type: string
+        default: "18.18.0"
+      PNPM_VERSION:
+        description: Pnpm version used to run tests
+        required: true
+        type: string
+        default: "8"
 
 jobs:
   lint:

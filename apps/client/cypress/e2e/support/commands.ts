@@ -63,12 +63,14 @@ Cypress.Commands.add('assertCreateProjects', (names) => {
 
 Cypress.Commands.add('archiveProject', (project) => {
   cy.intercept('GET', '/api/v1/projects').as('getProjects')
+  cy.intercept('GET', '/api/v1/stages').as('getAllStages')
 
   cy.goToProjects()
     .getByDataTestid(`projectTile-${project.name}`).click()
     .getByDataTestid('menuDashboard').click()
 
   cy.url().should('contain', 'dashboard')
+  cy.wait('@getAllStages')
     .getByDataTestid('archiveProjectInput').should('not.exist')
     .getByDataTestid('archiveProjectZone').should('be.visible')
     .getByDataTestid('showArchiveProjectBtn').click()
@@ -170,6 +172,7 @@ Cypress.Commands.add('deleteRepo', (project, repo) => {
 Cypress.Commands.add('addEnvironment', (project, environments) => {
   cy.intercept('GET', 'api/v1/stages').as('getStages')
   cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
+  cy.intercept('GET', 'api/v1/clusters').as('getClusters')
   cy.intercept('POST', '/api/v1/projects/*/environments').as('postEnvironment')
   cy.intercept('GET', '/api/v1/projects').as('getProjects')
 
@@ -177,7 +180,8 @@ Cypress.Commands.add('addEnvironment', (project, environments) => {
     cy.goToProjects()
       .getByDataTestid(`projectTile-${project?.name}`).click()
       .getByDataTestid('menuEnvironments').click()
-      .url().should('contain', '/environments')
+    cy.url().should('contain', '/environments')
+    cy.wait('@getClusters')
 
     cy.getByDataTestid('addEnvironmentLink').click()
     cy.wait('@getStages')
@@ -200,11 +204,13 @@ Cypress.Commands.add('addEnvironment', (project, environments) => {
 })
 
 Cypress.Commands.add('assertAddEnvironment', (project, environments, isDeepCheck = true) => {
+  cy.intercept('GET', 'api/v1/clusters').as('getClusters')
   cy.intercept('GET', 'api/v1/stages').as('getStages')
   cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
   cy.goToProjects()
     .getByDataTestid(`projectTile-${project.name}`).click()
     .getByDataTestid('menuEnvironments').click()
+  cy.wait('@getClusters')
 
   environments.forEach((environment) => {
     cy.getByDataTestid(`environmentTile-${environment.name}`)
@@ -227,13 +233,15 @@ Cypress.Commands.add('assertAddEnvironment', (project, environments, isDeepCheck
 })
 
 Cypress.Commands.add('deleteEnvironment', (project, environmentName) => {
+  cy.intercept('GET', 'api/v1/clusters').as('getClusters')
   cy.intercept('DELETE', '/api/v1/projects/*/environments/*').as('deleteEnvironment')
   cy.intercept('GET', '/api/v1/projects').as('getProjects')
 
   cy.goToProjects()
     .getByDataTestid(`projectTile-${project.name}`).click()
     .getByDataTestid('menuEnvironments').click()
-    .getByDataTestid(`environmentTile-${environmentName}`)
+  cy.wait('@getClusters')
+  cy.getByDataTestid(`environmentTile-${environmentName}`)
     .click()
     .url().should('contain', '/environments')
     .getByDataTestid('permissionsFieldset').should('be.visible')
@@ -253,11 +261,14 @@ Cypress.Commands.add('deleteEnvironment', (project, environmentName) => {
 })
 
 Cypress.Commands.add('addPermission', (project, environmentName, userToLicence) => {
+  cy.intercept('GET', 'api/v1/clusters').as('getClusters')
   cy.intercept('POST', `/api/v1/projects/${project.id}/environments/*/permissions`).as('postPermission')
+
   cy.goToProjects()
     .getByDataTestid(`projectTile-${project.name}`).click()
     .getByDataTestid('menuEnvironments').click()
-    .getByDataTestid(`environmentTile-${environmentName}`)
+  cy.wait('@getClusters')
+  cy.getByDataTestid(`environmentTile-${environmentName}`)
     .click()
 
   cy.getByDataTestid('permissionSuggestionInput')
@@ -270,10 +281,13 @@ Cypress.Commands.add('addPermission', (project, environmentName, userToLicence) 
 })
 
 Cypress.Commands.add('assertPermission', (project, environmentName, permissions) => {
+  cy.intercept('GET', 'api/v1/clusters').as('getClusters')
+
   cy.goToProjects()
     .getByDataTestid(`projectTile-${project.name}`).click()
     .getByDataTestid('menuEnvironments').click()
-    .getByDataTestid(`environmentTile-${environmentName}`)
+  cy.wait('@getClusters')
+  cy.getByDataTestid(`environmentTile-${environmentName}`)
     .click()
 
   permissions.forEach(permission => {
@@ -291,6 +305,7 @@ Cypress.Commands.add('assertPermission', (project, environmentName, permissions)
 
 Cypress.Commands.add('addProjectMember', (project, userEmail) => {
   cy.intercept('POST', /\/api\/v1\/projects\/[\w-]{36}\/users$/).as('postUser')
+
   cy.goToProjects()
     .getByDataTestid(`projectTile-${project.name}`).click()
     .getByDataTestid('menuTeam').click()

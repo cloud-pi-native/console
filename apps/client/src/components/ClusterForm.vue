@@ -164,9 +164,9 @@ const retrieveUserAndCluster = (context: ContextType) => {
 }
 
 const emit = defineEmits<{
-  add: [value: typeof localCluster]
-  update: [value: typeof localCluster]
-  delete: [value: typeof localCluster['id']]
+  add: [value: typeof localCluster.value]
+  update: [value: typeof localCluster.value]
+  delete: [value: typeof localCluster.value['id']]
   cancel: []
 }>()
 

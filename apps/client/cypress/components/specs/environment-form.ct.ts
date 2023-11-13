@@ -1,17 +1,23 @@
-import VueDsfr from '@gouvminint/vue-dsfr'
-import { createPinia, setActivePinia } from 'pinia'
+import { Pinia, createPinia, setActivePinia } from 'pinia'
 import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@gouvminint/vue-dsfr/styles'
 import '@/main.css'
-import * as icons from '@/icons.js'
 import EnvironmentForm from '@/components/EnvironmentForm.vue'
 import { createRandomDbSetup } from '@dso-console/test-utils'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 
 describe('EnvironmentForm.vue', () => {
+  let pinia: Pinia
+
+  beforeEach(() => {
+    pinia = createPinia()
+
+    setActivePinia(pinia)
+  })
+
   it('Should mount a EnvironmentForm', () => {
     const randomDbSetup = createRandomDbSetup({ envs: [] })
 
@@ -22,11 +28,8 @@ describe('EnvironmentForm.vue', () => {
       body: randomDbSetup.stages,
     }).as('getStages')
 
-    const pinia = createPinia()
-    setActivePinia(pinia)
-
-    useSnackbarStore(pinia)
-    useProjectEnvironmentStore(pinia)
+    useSnackbarStore()
+    useProjectEnvironmentStore()
 
     const props = {
       environment: {
@@ -35,19 +38,8 @@ describe('EnvironmentForm.vue', () => {
       projectClusters: randomDbSetup.project.clusters,
     }
 
-    const extensions = {
-      use: [
-        [
-          VueDsfr, { icons: Object.values(icons) },
-        ],
-      ],
-      global: {
-        plugins: [pinia],
-      },
-    }
-
     // @ts-ignore
-    cy.mount(EnvironmentForm, { extensions, props })
+    cy.mount(EnvironmentForm, { props })
 
     cy.wait('@getQuotas').its('response').then($response => {
       expect($response.body.length).to.equal(4)

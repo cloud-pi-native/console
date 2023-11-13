@@ -48,9 +48,21 @@ export const createProjectMirror = async (internalRepoName, group, organization)
       namespaceId: groupId,
     },
   )
-  api.Commits.create(project.id, 'main', 'ci: :construction_worker: first mirror', mirrorFirstActions)
+  await api.Commits.create(project.id, 'main', 'ci: :construction_worker: first mirror', mirrorFirstActions)
   return project
 }
+
+export const createGroupToken = async (groupId: number, name: string) => api.GroupAccessTokens.create(
+  groupId,
+  name,
+  [
+    'write_repository',
+    'read_repository',
+  ],
+  {
+    expiresAt: '',
+  },
+)
 
 /**
  * @param {string} internalRepoName - nom du dépôt.

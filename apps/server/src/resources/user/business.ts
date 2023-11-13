@@ -131,9 +131,9 @@ export const removeUserFromProject = async (
   await lockProject(project.id)
 
   try {
-    project.environments.forEach(async env => {
-      await deletePermission(userToRemoveId, env.id)
-    })
+    for (const environment of project.environments) {
+      await deletePermission(userToRemoveId, environment.id)
+    }
     await removeUserFromProjectQuery({ projectId: project.id, userId: userToRemoveId })
 
     const results = await hooks.removeUserFromProject.execute(kcData)

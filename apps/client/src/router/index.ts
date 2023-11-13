@@ -18,6 +18,8 @@ const ListOrganizations = () => import('@/views/admin/ListOrganizations.vue')
 const ListProjects = () => import('@/views/admin/ListProjects.vue')
 const ListLogs = () => import('@/views/admin/ListLogs.vue')
 const ListClusters = () => import('@/views/admin/ListClusters.vue')
+const ListQuotas = () => import('@/views/admin/ListQuotas.vue')
+const ListStages = () => import('@/views/admin/ListStages.vue')
 
 const MAIN_TITLE = 'Console Cloud π Native'
 
@@ -149,6 +151,20 @@ const routes: Array<RouteRecord> = [
     // @ts-ignore
     component: ListClusters,
   },
+  {
+    path: '/admin/quotas',
+    name: 'ListQuotas',
+    // TODO
+    // @ts-ignore
+    component: ListQuotas,
+  },
+  {
+    path: '/admin/stages',
+    name: 'ListeStages',
+    // TODO
+    // @ts-ignore
+    component: ListStages,
+  },
 ]
 
 const router = createRouter({
@@ -176,6 +192,11 @@ router.beforeEach(async (to, _from, next) => {
   // Redirige sur la page login si le path le requiert et l'utilisateur n'est pas connecté
   if (typeof (to.name) === 'string' && !validPath.includes(to.name) && !userStore.isLoggedIn) {
     return next('Login')
+  }
+
+  // Redirige sur l'accueil si le path est Login et que l'utilisateur est connecté
+  if (to.name === 'Login' && userStore.isLoggedIn) {
+    return next('/')
   }
 
   // Redirige sur la page d'accueil si le path est admin et l'utilisateur n'est pas admin
