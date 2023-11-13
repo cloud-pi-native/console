@@ -19,6 +19,7 @@ const allProjects: Ref<any[]> = ref([])
 const allStages: Ref<any[]> = ref([])
 const isUpdatingCluster = ref(false)
 const isNewClusterForm = ref(false)
+const associatedEnvironments: Ref<any[]> = ref([])
 
 const setClusterTiles = (clusters) => {
   clusterList.value = sortArrByObjKeyAsc(clusters, 'label')
@@ -29,13 +30,24 @@ const setClusterTiles = (clusters) => {
     }))
 }
 
-const setSelectedCluster = (cluster) => {
+const setSelectedCluster = async (cluster) => {
   if (selectedCluster.value?.label === cluster.label) {
     selectedCluster.value = {}
     return
   }
   selectedCluster.value = cluster
   isNewClusterForm.value = false
+  await getClusterAssociatedEnvironments(cluster.id)
+}
+
+const getClusterAssociatedEnvironments = async (clusterId: string) => {
+  isUpdatingCluster.value = true
+  try {
+    associatedEnvironments.value = await adminClusterStore.getClusterAssociatedEnvironments(clusterId)
+  } catch (error) {
+    snackbarStore.setMessage(error?.message, 'error')
+  }
+  isUpdatingCluster.value = false
 }
 
 const showNewClusterForm = () => {
@@ -72,11 +84,10 @@ const updateCluster = async (cluster) => {
   isUpdatingCluster.value = false
 }
 
-const removeCluster = async (clusterId) => {
+const deleteCluster = async (clusterId: string) => {
   isUpdatingCluster.value = true
   try {
-    console.log({ clusterId })
-    // await adminClusterStore.removeCluster(clusterId)
+    await adminClusterStore.deleteCluster(clusterId)
     await adminClusterStore.getClusters()
   } catch (error) {
     snackbarStore.setMessage(error?.message, 'error')
@@ -155,11 +166,12 @@ watch(clusters, () => {
         :cluster="selectedCluster"
         :all-projects="allProjects"
         :all-stages="allStages"
+        :associated-environments="associatedEnvironments"
         is-updating-cluster="isUpdatingCluster"
         class="w-full"
         :is-new-cluster="false"
         @update="(cluster) => updateCluster(cluster)"
-        @delete="(clusterId) => removeCluster(clusterId)"
+        @delete="(clusterId) => deleteCluster(clusterId)"
         @cancel="cancel()"
       />
     </div>

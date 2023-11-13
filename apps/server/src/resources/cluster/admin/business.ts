@@ -1,5 +1,5 @@
-import { linkClusterToProjects, addLogs, createCluster as createClusterQuery, getClusterById, getClusterByLabel, getProjectsByClusterId, getStagesByClusterId, removeClusterFromProject, removeClusterFromStage, updateCluster as updateClusterQuery } from '@/resources/queries-index.js'
-import { BadRequestError, NotFoundError } from '@/utils/errors.js'
+import { linkClusterToProjects, addLogs, createCluster as createClusterQuery, getClusterById, getClusterByLabel, getProjectsByClusterId, getStagesByClusterId, removeClusterFromProject, removeClusterFromStage, updateCluster as updateClusterQuery, getClusterEnvironments, deleteCluster as deleteClusterQuery } from '@/resources/queries-index.js'
+import { BadRequestError, DsoError, NotFoundError } from '@/utils/errors.js'
 import { hooks } from '@/plugins/index.js'
 import { CreateClusterDto, UpdateClusterDto, clusterSchema, exclude } from '@dso-console/shared'
 import { User } from '@prisma/client'
@@ -10,6 +10,25 @@ export const checkClusterProjectIds = (data: CreateClusterDto['body']) => {
   return data.privacy === 'public' || !data.projectIds
     ? []
     : data.projectIds
+}
+
+export const getClusterAssociatedEnvironments = async (clusterId: string) => {
+  try {
+    const clusterEnvironments = (await getClusterEnvironments(clusterId))?.environments
+
+    const environments = clusterEnvironments?.map(environment => {
+      return ({
+        organization: environment?.project?.organization?.name,
+        project: environment?.project?.name,
+        name: environment?.name,
+        owner: environment?.project?.roles?.find(role => role?.role === 'owner')?.user?.email,
+      })
+    })
+
+    return environments
+  } catch (error) {
+    throw new Error(error?.message)
+  }
 }
 
 export const createCluster = async (data: CreateClusterDto['body'], userId: User['id']) => {
@@ -77,4 +96,24 @@ export const updateCluster = async (data: UpdateClusterDto['body'], clusterId: U
   }
 
   return cluster
+}
+
+export const deleteCluster = async (clusterId: string, userId: string) => {
+  try {
+    const environments = await getClusterAssociatedEnvironments(clusterId)
+    if (environments?.length) throw new BadRequestError('Impossible de supprimer le cluster, des environnements en activité y sont déployés', { extras: environments })
+
+    const cluster = await getClusterById(clusterId)
+
+    const results = await hooks.deleteCluster.execute({ secretName: cluster.secretName })
+    // @ts-ignore
+    await addLogs('Delete Cluster', results, userId)
+
+    await deleteClusterQuery(clusterId)
+  } catch (error) {
+    if (error instanceof DsoError) {
+      throw error
+    }
+    throw new Error(error?.message)
+  }
 }

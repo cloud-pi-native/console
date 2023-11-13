@@ -11,6 +11,11 @@ export const useAdminClusterStore = defineStore('admin-cluster', () => {
     return clusters.value
   }
 
+  const getClusterAssociatedEnvironments = async (clusterId: string) => {
+    const res = await api.getClusterAssociatedEnvironments(clusterId)
+    return res
+  }
+
   const addCluster = async (cluster: CreateClusterDto['body']) => {
     const res = await api.addCluster(cluster)
     return res
@@ -20,15 +25,16 @@ export const useAdminClusterStore = defineStore('admin-cluster', () => {
     return api.updateCluster(cluster.id, cluster)
   }
 
-  // const removeCluster = async ({ name, label, active }) => {
-  //   return api.removeCluster(name, { label, active, source: 'dso-console' })
-  // }
+  const deleteCluster = async (clusterId: string) => {
+    return api.deleteCluster(clusterId)
+  }
 
   return {
     clusters,
     getClusters,
+    getClusterAssociatedEnvironments,
     addCluster,
     updateCluster,
-    // removeCluster,
+    deleteCluster,
   }
 })

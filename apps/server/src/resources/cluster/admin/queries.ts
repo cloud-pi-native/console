@@ -9,6 +9,37 @@ export const getClusterById = (id: Cluster['id']) => prisma.cluster.findUnique({
   },
 })
 
+export const getClusterEnvironments = (id: Cluster['id']) => prisma.cluster.findUnique({
+  where: { id },
+  select: {
+    environments: {
+      select: {
+        name: true,
+        project: {
+          select: {
+            name: true,
+            organization: {
+              select: {
+                name: true,
+              },
+            },
+            roles: {
+              select: {
+                role: true,
+                user: {
+                  select: {
+                    email: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+})
+
 export const getClustersByIds = (clusterIds: Cluster['id'][]) => prisma.cluster.findMany({
   where: {
     id: {
@@ -157,6 +188,12 @@ export const removeClusterFromStage = (id: Cluster['id'], stageId: Stage['id']) 
         id: stageId,
       },
     },
+  },
+})
+
+export const deleteCluster = (id: Cluster['id']) => prisma.cluster.delete({
+  where: {
+    id,
   },
 })
 
