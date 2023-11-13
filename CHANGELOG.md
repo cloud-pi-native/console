@@ -1,5 +1,21 @@
 # Changelog
 
+## [6.1.0](https://github.com/cloud-pi-native/console/compare/v6.0.0...v6.1.0) (2023-11-13)
+
+
+### Features
+
+* :sparkles: add quota and stage management for admin ([80ce642](https://github.com/cloud-pi-native/console/commit/80ce642b69a5eaaf1b53c7d884b70889c4e71d9d))
+* :sparkles: add stage management for admin ([e133853](https://github.com/cloud-pi-native/console/commit/e13385347610014a4edcc0b2ff12252386328cb8))
+
+
+### Bug Fixes
+
+* :bug: add missing await in gitlab createProjectMirror ([f1bf907](https://github.com/cloud-pi-native/console/commit/f1bf9072b88abec3f08654720f64571aa421db34))
+* :bug: fix endless redirect on login if authenticated ([461c6bd](https://github.com/cloud-pi-native/console/commit/461c6bd385f44a551fe9af1027c6beca1e7fa9ec))
+* :bug: should not set caData if skipTLSVerify is true ([ccd66f8](https://github.com/cloud-pi-native/console/commit/ccd66f83be75850ffe47e87ff405fcf9cf136e3c))
+* :lock: root token is not used in new repo credential when synced ([c92ea8b](https://github.com/cloud-pi-native/console/commit/c92ea8b5ef95097b07c2bbda435ce433f5bba53d))
+
 ## [6.0.0](https://github.com/cloud-pi-native/console/compare/v5.11.0...v6.0.0) (2023-10-27)
 
 
