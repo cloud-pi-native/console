@@ -5,7 +5,7 @@ import { AddUserToProjectExecArgs } from '@/plugins/hooks/team.js'
 import { User } from '@prisma/client'
 import { createGroup, deleteGroup, getGroupId, setGroupVariable, setProjectVariable } from './group.js'
 import { addGroupMember, getGroupMembers, removeGroupMember } from './permission.js'
-import { createProject, createProjectMirror, deleteProject } from './project.js'
+import { createGroupToken, createProject, createProjectMirror, deleteProject } from './project.js'
 import { setProjectTrigger } from './triggers.js'
 import { createUser, createUsername, getUser } from './user.js'
 import { gitlabToken } from './utils.js'
@@ -52,7 +52,7 @@ export const createDsoProject: StepCall<CreateProjectExecArgs> = async (payload)
     const internalMirrorRepoName = 'mirror'
     const mirror = await createProjectMirror(internalMirrorRepoName, project, organization)
     const triggerToken = await setProjectTrigger(mirror.id)
-
+    const botMirrorToken = await createGroupToken(group.id, `${organization}-${project}-bot`)
     // Sonar vars saving in CI
     const sonarSecret = await payload.vault.read('SONAR')
 
@@ -70,6 +70,10 @@ export const createDsoProject: StepCall<CreateProjectExecArgs> = async (payload)
       GIT_MIRROR_PROJECT_ID: mirror.id,
       GIT_MIRROR_TOKEN: triggerToken.token,
     }, 'GITLAB')
+    await payload.vault.write({
+      MIRROR_USER: botMirrorToken.name,
+      MIRROR_TOKEN: botMirrorToken.token,
+    }, 'tech/GITLAB_MIRROR')
 
     return {
       status: {
@@ -139,14 +143,24 @@ export const createDsoRepository: StepCall<CreateRepositoryExecArgs> = async (pa
       environment_scope: '*',
     })
 
-    await payload.vault.write({
+    const mirrorSecretData = {
       GIT_INPUT_URL: externalRepoUrn,
       GIT_INPUT_USER: externalUserName,
       GIT_INPUT_PASSWORD: externalToken,
-      GIT_OUTPUT_USER: 'root',
-      GIT_OUTPUT_PASSWORD: gitlabToken,
       GIT_OUTPUT_URL: projectCreated.http_url_to_repo.split(/:\/\/(.*)/s)[1],
-    }, internalMirrorRepoName)
+      GIT_OUTPUT_USER: '',
+      GIT_OUTPUT_PASSWORD: '',
+    }
+    try {
+      const gitlabSecret = await payload.vault.read('tech/GITLAB_MIRROR')
+      mirrorSecretData.GIT_OUTPUT_USER = gitlabSecret.data.MIRROR_USER
+      mirrorSecretData.GIT_OUTPUT_PASSWORD = gitlabSecret.data.MIRROR_TOKEN
+    } catch (error) {
+      mirrorSecretData.GIT_OUTPUT_USER = 'root'
+      mirrorSecretData.GIT_OUTPUT_PASSWORD = gitlabToken
+    }
+    await payload.vault.write(mirrorSecretData, internalMirrorRepoName)
+
     return {
       status: {
         result: 'OK',

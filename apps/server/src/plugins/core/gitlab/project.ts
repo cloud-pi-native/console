@@ -52,6 +52,18 @@ export const createProjectMirror = async (internalRepoName, group, organization)
   return project
 }
 
+export const createGroupToken = async (groupId: number, name: string) => api.GroupAccessTokens.create(
+  groupId,
+  name,
+  [
+    'write_repository',
+    'read_repository',
+  ],
+  {
+    expiresAt: '',
+  },
+)
+
 /**
  * @param {string} internalRepoName - nom du dépôt.
  * @param {string} group - nom du projet DSO.
