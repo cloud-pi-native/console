@@ -170,7 +170,7 @@ jobs:
         id: sonar-args
         run: |
           echo "SONAR_ARGS_PR=-Dsonar.pullrequest.provider=github -Dsonar.pullrequest.key=${{ github.event.number }} -Dsonar.pullrequest.branch=${{ github.head_ref }} -Dsonar.pullrequest.base=${{ github.base_ref }} -Dsonar.pullrequest.github.repository=${{ github.repository }}" >> $GITHUB_OUTPUT
-          echo "SONAR_ARGS_BRANCH=-Dsonar.branch.name=${{ github.event.pull_request.head.ref }}" >> $GITHUB_OUTPUT
+          echo "SONAR_ARGS_BRANCH=-Dsonar.branch.name=${{ github.ref_name }}" >> $GITHUB_OUTPUT
 
       - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@master
