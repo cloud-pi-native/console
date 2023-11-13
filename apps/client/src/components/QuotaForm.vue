@@ -233,7 +233,7 @@ onBeforeMount(() => {
       >
         <DsfrInput
           v-model="quotaToDelete"
-          data-testid="deletQuotaInput"
+          data-testid="deleteQuotaInput"
           :label="`Veuillez taper '${localQuota.name}' pour confirmer la suppression du quota`"
           label-visible
           :placeholder="localQuota.name"

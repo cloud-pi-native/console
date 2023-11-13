@@ -240,6 +240,11 @@ export const getClusters = async () => {
 }
 
 // Admin - Clusters
+export const getClusterAssociatedEnvironments = async (clusterId: ClusterModel['id']) => {
+  const response = await apiClient.get(`/admin/clusters/${clusterId}/environments`)
+  return response.data
+}
+
 export const addCluster = async (data: CreateClusterDto['body']) => {
   const response = await apiClient.post('/admin/clusters', data)
   return response.data
@@ -247,5 +252,10 @@ export const addCluster = async (data: CreateClusterDto['body']) => {
 
 export const updateCluster = async (clusterId: ClusterModel['id'], data: UpdateClusterDto['body']) => {
   const response = await apiClient.put(`/admin/clusters/${clusterId}`, data)
+  return response.data
+}
+
+export const deleteCluster = async (clusterId: ClusterModel['id']) => {
+  const response = await apiClient.delete(`/admin/clusters/${clusterId}`)
   return response.data
 }

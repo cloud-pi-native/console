@@ -13,6 +13,7 @@ const props = withDefaults(defineProps<{
   cluster: Record<string, any>
   allProjects: Array<any>
   allStages: Array<any>
+  associatedEnvironments: Array<any>
 }>(), {
   isNewCluster: true,
   cluster: () => ({
@@ -27,6 +28,7 @@ const props = withDefaults(defineProps<{
   }),
   allProjects: () => [],
   allStages: () => [],
+  associatedEnvironments: () => [],
 })
 
 const projectsName: Ref<Array<string | never>> = ref([])
@@ -39,8 +41,8 @@ const selectedContext = ref(undefined)
 const localCluster: Ref<Record<string, any>> = ref({})
 const updatedValues: Ref<Record<string, any>> = ref({})
 const kubeconfig = ref()
-// const clusterToDelete = ref('')
-// const isDeletingCluster = ref(false)
+const clusterToDelete = ref('')
+const isDeletingCluster = ref(false)
 
 const errorSchema = computed(() => schemaValidator(clusterSchema, localCluster.value))
 const isClusterValid = computed(() => Object.keys(errorSchema.value).length === 0)
@@ -161,6 +163,27 @@ const retrieveUserAndCluster = (context: ContextType) => {
     }
     snackbarStore.setMessage('échec de parsing du fichier uploadé')
   }
+}
+
+type AssociatedEnvironment = {
+  organization: string,
+  project: string,
+  name: string,
+}
+const getRows = (associatedEnvironments: AssociatedEnvironment[]) => {
+  return associatedEnvironments
+    .map(associatedEnvironment => Object
+      .values(associatedEnvironment)
+      .map(value => ({
+        component: 'code',
+        text: value,
+        title: 'Copier la valeur',
+        class: 'fr-text-default--info text-xs cursor-pointer',
+        // @ts-ignore
+        onClick: () => copyContent(value),
+      }),
+      ),
+    )
 }
 
 const emit = defineEmits<{
@@ -371,9 +394,27 @@ watch(selectedContext, () => {
         @click="cancel()"
       />
     </div>
-    <!-- TODO: Activer la suppression de cluster -->
     <div
-      v-if="false"
+      v-if="props.associatedEnvironments.length"
+      class="fr-my-6w"
+      data-testid="associatedEnvironmentsZone"
+    >
+      <DsfrAlert
+        description="Le cluster ne peut être supprimé, car les environnements ci-dessous y sont déployés."
+        small
+      />
+      <div
+        class="flex flex-row flex-wrap gap-4 w-full"
+      >
+        <DsfrTable
+          data-testid="associatedEnvironmentsTable"
+          :headers="['Organisation', 'Projet', 'Nom', 'Souscripteur']"
+          :rows="getRows(props.associatedEnvironments)"
+        />
+      </div>
+    </div>
+    <div
+      v-if="localCluster.id && !props.associatedEnvironments.length"
       data-testid="deleteClusterZone"
       class="danger-zone"
     >
@@ -381,7 +422,7 @@ watch(selectedContext, () => {
         <DsfrButton
           v-show="!isDeletingCluster"
           data-testid="showDeleteClusterBtn"
-          :label="`Supprimer le cluster ${localCluster.name}`"
+          :label="`Supprimer le cluster ${localCluster.label}`"
           secondary
           icon="ri-delete-bin-7-line"
           @click="isDeletingCluster = true"
@@ -399,10 +440,10 @@ watch(selectedContext, () => {
       >
         <DsfrInput
           v-model="clusterToDelete"
-          data-testid="deletClusterInput"
-          :label="`Veuillez taper '${localCluster.name}' pour confirmer la suppression du cluster`"
+          data-testid="deleteClusterInput"
+          :label="`Veuillez taper '${localCluster.label}' pour confirmer la suppression du cluster`"
           label-visible
-          :placeholder="localCluster.name"
+          :placeholder="localCluster.label"
           class="fr-mb-2w"
         />
         <div
@@ -410,9 +451,9 @@ watch(selectedContext, () => {
         >
           <DsfrButton
             data-testid="deleteClusterBtn"
-            :label="`Supprimer définitivement le cluster ${localCluster.name}`"
-            :disabled="clusterToDelete !== localCluster.name"
-            :title="`Supprimer définitivement le cluster ${localCluster.name}`"
+            :label="`Supprimer définitivement le cluster ${localCluster.label}`"
+            :disabled="clusterToDelete !== localCluster.label"
+            :title="`Supprimer définitivement le cluster ${localCluster.label}`"
             secondary
             icon="ri-delete-bin-7-line"
             @click="$emit('delete', localCluster.id)"
