@@ -3,7 +3,7 @@ import { exclude } from '@dso-console/shared'
 import type { Organization, Project, User, Role } from '@prisma/client'
 import { AsyncReturnType } from '@/utils/controller.js'
 
-type ProjectUpdate = Partial<Pick<Project, 'description' >>
+type ProjectUpdate = Partial<Pick<Project, 'description'>>
 export const updateProject = async (id: Project['id'], data: ProjectUpdate) => {
   return prisma.project.update({ where: { id }, data: { ...data } })
 }
@@ -141,7 +141,7 @@ export const getProjectByOrganizationId = async (organizationId: Organization['i
 }
 
 // CREATE
-export const initializeProject = async ({ name, organizationId, description = '', ownerId }: { name: Project['name'], organizationId: Organization['id'], description: Project['description'], ownerId: User['id'] }) => {
+export const initializeProject = async ({ name, organizationId, description = '', ownerId }: { name: Project['name'], organizationId: Organization['id'], description?: Project['description'], ownerId: User['id'] }) => {
   return prisma.project.create({
     data: {
       name,

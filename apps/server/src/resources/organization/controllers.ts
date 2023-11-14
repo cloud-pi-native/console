@@ -3,10 +3,11 @@ import { sendOk } from '@/utils/response.js'
 import {
   getActiveOrganizations,
 } from './business.js'
-import { EnhancedFastifyRequest } from '@/types/index.js'
+import { FastifyRequestWithSession } from '@/types/index.js'
+import { RouteHandler } from 'fastify'
 
 // GET
-export const getActiveOrganizationsController = async (req: EnhancedFastifyRequest<void>, res) => {
+export const getActiveOrganizationsController: RouteHandler = async (req: FastifyRequestWithSession<void>, res) => {
   const requestor = req.session?.user
   delete requestor.groups
 

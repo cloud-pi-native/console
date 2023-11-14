@@ -7,11 +7,11 @@ export const useAdminOrganizationStore = defineStore('admin-organization', () =>
     return api.getAllOrganizations()
   }
 
-  const createOrganization = async (organization: CreateOrganizationDto['body']) => {
+  const createOrganization = async (organization: CreateOrganizationDto) => {
     return api.createOrganization({ ...organization, source: 'dso-console' })
   }
 
-  const updateOrganization = async (organization: UpdateOrganizationDto['body']) => {
+  const updateOrganization = async (organization: UpdateOrganizationDto & { name: CreateOrganizationDto['name'] }) => {
     return api.updateOrganization(organization.name, { ...organization, source: 'dso-console' })
   }
 

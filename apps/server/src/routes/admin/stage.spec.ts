@@ -1,68 +1,24 @@
-import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
-import fastify from 'fastify'
-import fastifySession from '@fastify/session'
-import fastifyCookie from '@fastify/cookie'
-import fp from 'fastify-plugin'
-import { sessionConf } from '@/utils/keycloak.js'
+import prisma from '../../__mocks__/prisma.js'
+import app, { getRequestor, setRequestor } from '../../__mocks__/app.js'
+import { vi, describe, it, expect, beforeAll, afterEach, afterAll, beforeEach } from 'vitest'
 import { getConnection, closeConnections } from '@/connect.js'
-import stageRouter from './stage.js'
 import { adminGroupPath } from '@dso-console/shared'
-import { User, getRandomCluster, getRandomEnv, getRandomQuota, getRandomQuotaStage, getRandomRole, getRandomStage, getRandomUser, repeatFn } from '@dso-console/test-utils'
-import { checkAdminGroup } from '@/utils/controller.js'
-import prisma from '@/__mocks__/prisma.js'
-
-// @ts-ignore
-vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
-vi.mock('@/prisma.js')
-
-const app = fastify({ logger: false })
-  .register(fastifyCookie)
-  .register(fastifySession, sessionConf)
-
-const mockSessionPlugin = (app, opt, next) => {
-  app.addHook('onRequest', (req, res, next) => {
-    if (req.headers.admin) {
-      req.session = {
-        user: {
-          ...getRequestor(),
-          groups: [adminGroupPath],
-        },
-      }
-    } else {
-      req.session = { user: getRequestor() }
-    }
-    next()
-  })
-  next()
-}
-
-const mockSession = (app) => {
-  app.addHook('preHandler', checkAdminGroup)
-    .register(fp(mockSessionPlugin))
-    .register(stageRouter)
-}
-
-let requestor: User
-
-const setRequestor = (user: User) => {
-  requestor = user
-}
-
-const getRequestor = () => {
-  return requestor
-}
+import { getRandomCluster, getRandomEnv, getRandomQuota, getRandomQuotaStage, getRandomRole, getRandomStage, getRandomUser, repeatFn } from '@dso-console/test-utils'
 
 describe('Admin stages routes', () => {
-  const requestor = getRandomUser()
-  setRequestor(requestor)
-
   beforeAll(async () => {
-    mockSession(app)
     await getConnection()
   })
 
   afterAll(async () => {
     return closeConnections()
+  })
+
+  beforeEach(() => {
+    const requestor = { ...getRandomUser(), groups: [adminGroupPath] }
+    setRequestor(requestor)
+
+    vi.clearAllMocks()
   })
 
   afterEach(() => {
@@ -88,7 +44,7 @@ describe('Admin stages routes', () => {
           name: 'mi',
         },
         roles: [
-          { ...getRandomRole(requestor.id, 'projectId', 'owner'), user: requestor },
+          { ...getRandomRole(getRequestor().id, 'projectId', 'owner'), user: getRequestor() },
         ],
       }
 
@@ -98,7 +54,7 @@ describe('Admin stages routes', () => {
 
       const response = await app.inject({ headers: { admin: 'admin' } })
       // @ts-ignore
-        .get(`/${stage.id}/environments`)
+        .get(`/api/v1/admin/stages/${stage.id}/environments`)
         .end()
 
       expect(response.statusCode).toEqual(200)
@@ -110,7 +66,7 @@ describe('Admin stages routes', () => {
         name: environments[0]?.name,
         quota: quota.name,
         cluster: cluster.label,
-        owner: requestor.email,
+        owner: getRequestor().email,
       }])
     })
   })
@@ -134,7 +90,7 @@ describe('Admin stages routes', () => {
 
       const response = await app.inject({ headers: { admin: 'admin' } })
       // @ts-ignore
-        .post('/')
+        .post('/api/v1/admin/stages')
         .body(stage)
         .end()
 
@@ -149,7 +105,7 @@ describe('Admin stages routes', () => {
 
       const response = await app.inject({ headers: { admin: 'admin' } })
       // @ts-ignore
-        .post('/')
+        .post('/api/v1/admin/stages')
         .body(stage)
         .end()
 
@@ -177,7 +133,7 @@ describe('Admin stages routes', () => {
 
       const response = await app.inject({ headers: { admin: 'admin' } })
       // @ts-ignore
-        .patch(`/${stage.id}/clusters`)
+        .patch(`/api/v1/admin/stages/${stage.id}/clusters`)
         .body({ clusterIds })
         .end()
 
@@ -205,7 +161,7 @@ describe('Admin stages routes', () => {
 
       const response = await app.inject({ headers: { admin: 'admin' } })
       // @ts-ignore
-        .put('/quotastages')
+        .put('/api/v1/admin/stages/quotastages')
         .body(data)
         .end()
 
@@ -227,7 +183,7 @@ describe('Admin stages routes', () => {
 
       const response = await app.inject({ headers: { admin: 'admin' } })
         // @ts-ignore
-        .put('/quotastages')
+        .put('/api/v1/admin/stages/quotastages')
         .body(data)
         .end()
 
@@ -249,7 +205,7 @@ describe('Admin stages routes', () => {
 
       const response = await app.inject({ headers: { admin: 'admin' } })
       // @ts-ignore
-        .delete(`/${stage.id}`)
+        .delete(`/api/v1/admin/stages/${stage.id}`)
         .end()
 
       expect(response.statusCode).toEqual(204)
@@ -269,7 +225,7 @@ describe('Admin stages routes', () => {
           name: 'mi',
         },
         roles: [
-          { ...getRandomRole(requestor.id, 'projectId', 'owner'), user: requestor },
+          { ...getRandomRole(getRequestor().id, 'projectId', 'owner'), user: getRequestor() },
         ],
       }
 
@@ -280,7 +236,7 @@ describe('Admin stages routes', () => {
 
       const response = await app.inject({ headers: { admin: 'admin' } })
       // @ts-ignore
-        .delete(`/${stage.id}`)
+        .delete(`/api/v1/admin/stages/${stage.id}`)
         .end()
 
       expect(response.statusCode).toEqual(400)

@@ -7,6 +7,7 @@ import projectStageRouter from './stage.js'
 import projectClusterRouter from './cluster.js'
 import { sendOk } from '../utils/response.js'
 import adminRouter from './admin/index.js'
+import type { FastifyInstance } from 'fastify'
 
 const version = process.env.APP_VERSION || 'dev'
 
@@ -18,7 +19,7 @@ const getHealth = async (_req, res) => {
   sendOk(res, 'OK')
 }
 
-export const apiRouter = async (app, _opts) => {
+export const apiRouter = async (app: FastifyInstance, _opts) => {
   await app.register(ciFilesRouter, { prefix: '/ci-files' })
   await app.register(serviceRouter, { prefix: '/services' })
   await app.register(projectOrganizationRouter, { prefix: '/organizations' })

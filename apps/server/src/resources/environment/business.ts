@@ -89,7 +89,7 @@ export const checkGetEnvironment = (
 ) => {
   // @ts-ignore
   const errorMessage = checkInsufficientRoleInProject(userId, { roles: env.project.roles }) ||
-  // @ts-ignore
+    // @ts-ignore
     checkInsufficientPermissionInEnvironment(userId, env.permissions, 0)
   if (errorMessage) throw new ForbiddenError(errorMessage, { description: '', extras: { userId, projectId: env.projectId } })
 }
@@ -103,7 +103,7 @@ export const checkCreateEnvironment = ({
   quotaStage,
 }: CheckEnvironmentParam) => {
   const errorMessage = checkRoleAndLocked(project, userId, 'owner') ||
-  checkExistingEnvironment(clusterId, name, project.environments) ||
+    checkExistingEnvironment(clusterId, name, project.environments) ||
     checkClusterUnavailable(clusterId, authorizedClusterIds) ||
     checkQuotaStageStatus(quotaStage)
   if (errorMessage) throw new ForbiddenError(errorMessage, undefined)
@@ -228,13 +228,13 @@ export const createEnvironment = async (
   }
 }
 
-  type UpdateEnvironmentParam = {
-    userId: User['id'],
-    projectId: Project['id'],
-    environmentId: Environment['id'],
-    quotaStageId?: QuotaStage['id'],
-    clusterId?: Cluster['id'],
-  }
+type UpdateEnvironmentParam = {
+  userId: User['id'],
+  projectId: Project['id'],
+  environmentId: Environment['id'],
+  quotaStageId?: QuotaStage['id'],
+  clusterId?: Cluster['id'],
+}
 
 export const updateEnvironment = async ({
   userId,

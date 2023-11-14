@@ -1,7 +1,4 @@
-export type OrganizationModel = {
-  id: string
-  name: string
-  source?: string
-  label: string
-  active: boolean
-}
+import { FromSchema } from 'json-schema-to-ts'
+import { organizationOpenApiSchema } from './index.js'
+
+export type OrganizationModel = FromSchema<typeof organizationOpenApiSchema>

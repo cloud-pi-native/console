@@ -1,61 +1,14 @@
-import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
-import { User, createRandomDbSetup, getRandomPerm, getRandomRole, getRandomUser } from '@dso-console/test-utils'
-import fastify from 'fastify'
-import fastifySession from '@fastify/session'
-import fastifyCookie from '@fastify/cookie'
-import fp from 'fastify-plugin'
-import { sessionConf } from '../utils/keycloak.js'
-import { getConnection, closeConnections } from '../connect.js'
-import projectPermissionRouter from './project-permission.js'
 import prisma from '../__mocks__/prisma.js'
-
-vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
-vi.mock('../prisma.js')
-vi.mock('@/plugins/index.js', async () => {
-  return {
-    hooks: {
-      setEnvPermission: {
-        execute: () => ({
-          failed: false,
-        }),
-      },
-    },
-  }
-})
-
-const app = fastify({ logger: false })
-  .register(fastifyCookie)
-  .register(fastifySession, sessionConf)
-
-const mockSessionPlugin = (app, opt, next) => {
-  app.addHook('onRequest', (req, res, next) => {
-    req.session = { user: getRequestor() }
-    next()
-  })
-  next()
-}
-
-const mockSession = (app) => {
-  app.register(fp(mockSessionPlugin))
-    .register(projectPermissionRouter)
-}
-
-let requestor: User
-
-const setRequestor = (user: User) => {
-  requestor = user
-}
-
-const getRequestor = () => {
-  return requestor
-}
+import app, { getRequestor, setRequestor } from '../__mocks__/app.js'
+import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
+import { createRandomDbSetup, getRandomPerm, getRandomRole, getRandomUser } from '@dso-console/test-utils'
+import { getConnection, closeConnections } from '../connect.js'
 
 describe('Permission routes', () => {
   const requestor = getRandomUser()
   setRequestor(requestor)
 
   beforeAll(async () => {
-    mockSession(app)
     await getConnection()
   })
 
@@ -71,17 +24,17 @@ describe('Permission routes', () => {
   describe('getEnvironmentPermissionsController', () => {
     it('Should retrieve permissions for an environment', async () => {
       const projectInfos = createRandomDbSetup({}).project
-      projectInfos.roles = [...projectInfos.roles, getRandomRole(requestor.id, projectInfos.id, 'owner')]
+      projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
       const environment = projectInfos.environments[0]
 
       prisma.project.findUnique.mockResolvedValue(projectInfos)
       prisma.permission.findMany.mockResolvedValue(environment.permissions)
 
       const response = await app.inject()
-        .get(`/${projectInfos.id}/environments/${environment.id}/permissions`)
+        .get(`/api/v1/projects/${projectInfos.id}/environments/${environment.id}/permissions`)
         .end()
 
-      expect(response.body).toStrictEqual(JSON.stringify(environment.permissions))
+      expect(response.json()).toStrictEqual(environment.permissions)
       expect(response.statusCode).toEqual(200)
     })
 
@@ -92,11 +45,11 @@ describe('Permission routes', () => {
       prisma.project.findUnique.mockResolvedValue(projectInfos)
 
       const response = await app.inject()
-        .get(`/${projectInfos.id}/environments/${environment.id}/permissions`)
+        .get(`/api/v1/projects/${projectInfos.id}/environments/${environment.id}/permissions`)
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(JSON.parse(response.body).message).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
+      expect(response.json().message).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
     })
   })
 
@@ -106,7 +59,7 @@ describe('Permission routes', () => {
       const projectInfos = createRandomDbSetup({}).project
       const newMember = getRandomUser()
       const newRole = getRandomRole(newMember.id, projectInfos.id)
-      projectInfos.roles = [...projectInfos.roles, getRandomRole(requestor.id, projectInfos.id, 'owner'), newRole]
+      projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner'), newRole]
       const environment = projectInfos.environments[0]
       const permissionToAdd = getRandomPerm(environment.id, newMember)
 
@@ -116,12 +69,12 @@ describe('Permission routes', () => {
       prisma.user.findUnique.mockResolvedValue(newMember)
 
       const response = await app.inject()
-        .post(`/${projectInfos.id}/environments/${environment.id}/permissions`)
+        .post(`/api/v1/projects/${projectInfos.id}/environments/${environment.id}/permissions`)
         .body(permissionToAdd)
         .end()
 
       expect(response.statusCode).toEqual(201)
-      expect(response.body).toStrictEqual(JSON.stringify(permissionToAdd))
+      expect(response.json()).toStrictEqual(permissionToAdd)
     })
 
     it('Should not set a permission if requestor is not project member', async () => {
@@ -133,30 +86,30 @@ describe('Permission routes', () => {
       prisma.project.findUnique.mockResolvedValue(projectInfos)
 
       const response = await app.inject()
-        .post(`/${projectInfos.id}/environments/${environment.id}/permissions`)
+        .post(`/api/v1/projects/${projectInfos.id}/environments/${environment.id}/permissions`)
         .body(permissionToAdd)
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(JSON.parse(response.body).message).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
+      expect(response.json().message).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
     })
 
     it('Should not set a permission if user is not project member', async () => {
       const projectInfos = createRandomDbSetup({}).project
       const newMember = getRandomUser()
-      projectInfos.roles = [...projectInfos.roles, getRandomRole(requestor.id, projectInfos.id, 'owner')]
+      projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
       const environment = projectInfos.environments[0]
       const permissionToAdd = getRandomPerm(environment.id, newMember)
 
       prisma.project.findUnique.mockResolvedValue(projectInfos)
 
       const response = await app.inject()
-        .post(`/${projectInfos.id}/environments/${environment.id}/permissions`)
+        .post(`/api/v1/projects/${projectInfos.id}/environments/${environment.id}/permissions`)
         .body(permissionToAdd)
         .end()
 
       expect(response.statusCode).toEqual(400)
-      expect(JSON.parse(response.body).message).toEqual('L\'utilisateur n\'est pas membre du projet')
+      expect(response.json().message).toEqual('L\'utilisateur n\'est pas membre du projet')
     })
   })
 
@@ -164,7 +117,7 @@ describe('Permission routes', () => {
   describe('updatePermissionController', () => {
     it('Should update a permission', async () => {
       const projectInfos = createRandomDbSetup({ envs: ['dev'] }).project
-      const requestorRole = { ...getRandomRole(requestor.id, projectInfos.id, 'owner'), user: requestor }
+      const requestorRole = { ...getRandomRole(getRequestor().id, projectInfos.id, 'owner'), user: requestor }
       projectInfos.roles = [...projectInfos.roles, requestorRole]
       const environment = projectInfos.environments[0]
       const requestorPermission = getRandomPerm(environment.id, requestor)
@@ -179,17 +132,17 @@ describe('Permission routes', () => {
       prisma.permission.update.mockResolvedValue(permissionToUpdate)
 
       const response = await app.inject()
-        .put(`/${projectInfos.id}/environments/${environment.id}/permissions`)
+        .put(`/api/v1/projects/${projectInfos.id}/environments/${environment.id}/permissions`)
         .body(permissionToUpdate)
         .end()
 
       expect(response.statusCode).toEqual(200)
-      expect(response.body).toStrictEqual(JSON.stringify(permissionToUpdate))
+      expect(response.json()).toStrictEqual(permissionToUpdate)
     })
 
     it('Should not update owner permission', async () => {
       const projectInfos = createRandomDbSetup({ envs: ['dev'] }).project
-      const requestorRole = { ...getRandomRole(requestor.id, projectInfos.id, 'owner'), user: requestor }
+      const requestorRole = { ...getRandomRole(getRequestor().id, projectInfos.id, 'owner'), user: requestor }
       projectInfos.roles = [...projectInfos.roles, requestorRole]
       const environment = projectInfos.environments[0]
       projectInfos.environments[0].permissions = [getRandomPerm(environment.id, requestor), ...environment.permissions]
@@ -199,18 +152,18 @@ describe('Permission routes', () => {
       prisma.role.findFirst.mockResolvedValue(requestorRole)
 
       const response = await app.inject()
-        .put(`/${projectInfos.id}/environments/${environment.id}/permissions`)
+        .put(`/api/v1/projects/${projectInfos.id}/environments/${environment.id}/permissions`)
         .body(permissionToUpdate)
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(JSON.parse(response.body).message).toStrictEqual('La permission du owner du projet ne peut être modifiée')
+      expect(response.json().message).toStrictEqual('La permission du owner du projet ne peut être modifiée')
     })
 
     it('Should not update a permission if not permitted on given environment', async () => {
       const projectInfos = createRandomDbSetup({ envs: ['dev'] }).project
-      projectInfos.roles = [...projectInfos.roles, getRandomRole(requestor.id, projectInfos.id, 'owner')]
-      const requestorRole = { ...getRandomRole(requestor.id, projectInfos.id, 'owner'), user: requestor }
+      projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
+      const requestorRole = { ...getRandomRole(getRequestor().id, projectInfos.id, 'owner'), user: requestor }
       const environment = projectInfos.environments[0]
       const environmentInfos = { ...environment, project: projectInfos }
       const permissionToUpdate = environment.permissions[0]
@@ -221,12 +174,12 @@ describe('Permission routes', () => {
       prisma.permission.findMany.mockResolvedValue([])
 
       const response = await app.inject()
-        .put(`/${projectInfos.id}/environments/${environment.id}/permissions`)
+        .put(`/api/v1/projects/${projectInfos.id}/environments/${environment.id}/permissions`)
         .body(permissionToUpdate)
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(JSON.parse(response.body).message).toStrictEqual('Vous n\'avez pas de droits sur cet environnement')
+      expect(response.json().message).toStrictEqual('Vous n\'avez pas de droits sur cet environnement')
     })
   })
 
@@ -234,7 +187,7 @@ describe('Permission routes', () => {
   describe('deletePermissionController', () => {
     it('Should delete a permission', async () => {
       const projectInfos = createRandomDbSetup({ envs: ['dev'] }).project
-      const requestorRole = { ...getRandomRole(requestor.id, projectInfos.id, 'owner'), user: requestor }
+      const requestorRole = { ...getRandomRole(getRequestor().id, projectInfos.id, 'owner'), user: requestor }
       projectInfos.roles = [...projectInfos.roles, requestorRole]
       const environment = projectInfos.environments[0]
       projectInfos.environments[0].permissions = [...environment.permissions, getRandomPerm(environment.id, requestor)]
@@ -244,22 +197,22 @@ describe('Permission routes', () => {
 
       prisma.environment.findUnique.mockResolvedValue(environmentInfos)
       prisma.project.findUnique.mockResolvedValue(projectInfos)
-      prisma.user.findUnique.mockResolvedValue(requestor)
+      prisma.user.findUnique.mockResolvedValue(getRequestor())
       prisma.role.findFirst.mockResolvedValue(requestorRole)
       prisma.permission.findMany.mockResolvedValue([requestorPermission])
       prisma.permission.deleteMany.mockResolvedValue(permissionToDelete)
 
       const response = await app.inject()
-        .delete(`/${projectInfos.id}/environments/${environment.id}/permissions/${permissionToDelete.userId}`)
+        .delete(`/api/v1/projects/${projectInfos.id}/environments/${environment.id}/permissions/${permissionToDelete.userId}`)
         .end()
 
       expect(response.statusCode).toEqual(200)
-      expect(response.body).toStrictEqual(JSON.stringify(permissionToDelete))
+      expect(response.json()).toStrictEqual(permissionToDelete)
     })
 
     it('Should not delete owner permission', async () => {
       const projectInfos = createRandomDbSetup({ envs: ['dev'] }).project
-      const requestorRole = { ...getRandomRole(requestor.id, projectInfos.id, 'owner'), user: requestor }
+      const requestorRole = { ...getRandomRole(getRequestor().id, projectInfos.id, 'owner'), user: requestor }
       projectInfos.roles = [...projectInfos.roles, requestorRole]
       const environment = projectInfos.environments[0]
       projectInfos.environments[0].permissions = [getRandomPerm(environment.id, requestor), ...environment.permissions]
@@ -270,16 +223,16 @@ describe('Permission routes', () => {
       prisma.role.findFirst.mockResolvedValue(requestorRole)
 
       const response = await app.inject()
-        .delete(`/${projectInfos.id}/environments/${environment.id}/permissions/${requestor.id}`)
+        .delete(`/api/v1/projects/${projectInfos.id}/environments/${environment.id}/permissions/${requestor.id}`)
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(JSON.parse(response.body).message).toStrictEqual('La permission du owner du projet ne peut être supprimée')
+      expect(response.json().message).toStrictEqual('La permission du owner du projet ne peut être supprimée')
     })
 
     it('Should not delete permission if not permitted on given environment', async () => {
       const projectInfos = createRandomDbSetup({ envs: ['dev'] }).project
-      const requestorRole = { ...getRandomRole(requestor.id, projectInfos.id, 'owner'), user: requestor }
+      const requestorRole = { ...getRandomRole(getRequestor().id, projectInfos.id, 'owner'), user: requestor }
       projectInfos.roles = [...projectInfos.roles, requestorRole]
       const environment = projectInfos.environments[0]
       const environmentInfos = { ...environment, project: projectInfos }
@@ -291,11 +244,11 @@ describe('Permission routes', () => {
       prisma.permission.findMany.mockResolvedValue([])
 
       const response = await app.inject()
-        .delete(`/${projectInfos.id}/environments/${environment.id}/permissions/${permissionToDelete.userId}`)
+        .delete(`/api/v1/projects/${projectInfos.id}/environments/${environment.id}/permissions/${permissionToDelete.userId}`)
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(JSON.parse(response.body).message).toStrictEqual('Vous n\'avez pas de droits sur cet environnement')
+      expect(response.json().message).toStrictEqual('Vous n\'avez pas de droits sur cet environnement')
     })
   })
 })

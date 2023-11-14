@@ -1,4 +1,9 @@
-import { createRouter, createWebHistory, type RouteRecord } from 'vue-router'
+import {
+  createRouter,
+  createWebHistory,
+  type RouteRecordRaw,
+} from 'vue-router'
+
 import { useUserStore } from '@/stores/user.js'
 import { useProjectStore } from '@/stores/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
@@ -23,7 +28,7 @@ const ListStages = () => import('@/views/admin/ListStages.vue')
 
 const MAIN_TITLE = 'Console Cloud π Native'
 
-const routes: Array<RouteRecord> = [
+const routes: Readonly<RouteRecordRaw[]> = [
   {
     path: '/login',
     name: 'Login',
@@ -190,7 +195,11 @@ router.beforeEach(async (to, _from, next) => {
   userStore.setIsLoggedIn()
 
   // Redirige sur la page login si le path le requiert et l'utilisateur n'est pas connecté
-  if (typeof (to.name) === 'string' && !validPath.includes(to.name) && !userStore.isLoggedIn) {
+  if (
+    typeof to.name === 'string' &&
+    !validPath.includes(to.name) &&
+    !userStore.isLoggedIn
+  ) {
     return next('Login')
   }
 
@@ -201,7 +210,10 @@ router.beforeEach(async (to, _from, next) => {
 
   // Redirige sur la page d'accueil si le path est admin et l'utilisateur n'est pas admin
   if (to.path.match('^/admin/') && !userStore.isAdmin) {
-    snackbarStore.setMessage('Vous ne possédez pas les droits administeurs', 'error')
+    snackbarStore.setMessage(
+      'Vous ne possédez pas les droits administeurs',
+      'error',
+    )
     return next('/')
   }
 
@@ -221,7 +233,11 @@ router.beforeEach(async (to, _from, next) => {
   const projectStore = useProjectStore()
   const projectsPath = '/projects/'
 
-  if (to.path.match('^/projects/') && to.name !== 'CreateProject' && projectStore.selectedProject === undefined) {
+  if (
+    to.path.match('^/projects/') &&
+    to.name !== 'CreateProject' &&
+    projectStore.selectedProject === undefined
+  ) {
     try {
       await projectStore.getUserProjects()
     } catch (error) {

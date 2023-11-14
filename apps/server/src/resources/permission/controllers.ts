@@ -1,9 +1,14 @@
 import { addReqLogs } from '@/utils/logger.js'
 import { sendOk, sendCreated } from '@/utils/response.js'
 import { deletePermission, getEnvironmentPermissions, setPermission, updatePermission } from './business.js'
+import { RouteHandler } from 'fastify'
+import { FastifyRequestWithSession } from '@/types/index.js'
+import { DeletePermissionParams, PermissionParams, UpdatePermissionDto } from '@dso-console/shared'
 
 // GET
-export const getEnvironmentPermissionsController = async (req, res) => {
+export const getEnvironmentPermissionsController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: PermissionParams
+}>, res) => {
   const userId = req.session?.user?.id
   const environmentId = req.params?.environmentId
   const projectId = req.params?.projectId
@@ -22,7 +27,10 @@ export const getEnvironmentPermissionsController = async (req, res) => {
 }
 
 // POST
-export const setPermissionController = async (req, res) => {
+export const setPermissionController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: PermissionParams
+  Body: UpdatePermissionDto
+}>, res) => {
   const requestorId = req.session?.user?.id
   const environmentId = req.params?.environmentId
   const projectId = req.params?.projectId
@@ -43,13 +51,16 @@ export const setPermissionController = async (req, res) => {
 }
 
 // PUT
-export const updatePermissionController = async (req, res) => {
+export const updatePermissionController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: PermissionParams
+  Body: UpdatePermissionDto
+}>, res) => {
   const requestorId = req.session?.user?.id
   const environmentId = req.params?.environmentId
   const projectId = req.params?.projectId
   const data = req.body
 
-  const permission = await updatePermission(projectId, requestorId, data.userId, environmentId, parseInt(data.level))
+  const permission = await updatePermission(projectId, requestorId, data.userId, environmentId, data.level)
 
   addReqLogs({
     req,
@@ -64,7 +75,9 @@ export const updatePermissionController = async (req, res) => {
 }
 
 // DELETE
-export const deletePermissionController = async (req, res) => {
+export const deletePermissionController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: DeletePermissionParams
+}>, res) => {
   const requestorId = req.session?.user?.id
   const environmentId = req.params?.environmentId
   const projectId = req.params?.projectId

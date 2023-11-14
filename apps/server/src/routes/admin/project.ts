@@ -1,10 +1,16 @@
 import {
   getAllProjectsController,
 } from '@/resources/project/admin/controllers.js'
+import { getAllProjectsSchema } from '@dso-console/shared'
+import { FastifyInstance } from 'fastify'
 
-const router = async (app, _opt) => {
+const router = async (app: FastifyInstance, _opt) => {
   // Récupérer tous les projets
-  await app.get('/', getAllProjectsController)
+  app.get('/',
+    {
+      schema: getAllProjectsSchema,
+    },
+    getAllProjectsController)
 }
 
 export default router

@@ -1,29 +1,10 @@
-import { EnvironmentModel } from '../environment'
-import { ProjectModel } from '../project'
-import { UserModel } from '../user'
+import { FromSchema } from 'json-schema-to-ts'
+import { deletePermissionSchema, setPermissionSchema, updatePermissionSchema } from './openApiSchema.js'
 
-export type CreatePermissionDto = {
-  body: {
-    level: number
-    userId: UserModel['id']
-  },
-  params: {
-    projectId: ProjectModel['id']
-    environmentId: EnvironmentModel['id']
-  }
-}
+export type SetPermissionDto = FromSchema<typeof setPermissionSchema['body']>
 
-export type UpdatePermissionDto = {
-  body: CreatePermissionDto['body']
-  params: CreatePermissionDto['params']
-}
+export type UpdatePermissionDto = FromSchema<typeof updatePermissionSchema['body']>
 
-export type DeletePermissionDto = {
-  params: Partial<CreatePermissionDto['params']> & {
-    userId: UserModel['id']
-  }
-}
+export type PermissionParams = FromSchema<typeof updatePermissionSchema['params']>
 
-export type GetPermissionsDto = {
-  params: CreatePermissionDto['params']
-}
+export type DeletePermissionParams = FromSchema<typeof deletePermissionSchema['params']>

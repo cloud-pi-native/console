@@ -1,14 +1,17 @@
+import type { RouteHandler } from 'fastify'
+
 import { addReqLogs } from '@/utils/logger.js'
 import {
   sendOk,
   sendCreated,
+  sendNoContent,
 } from '@/utils/response.js'
 import {
   type CreateProjectDto,
-  UpdateProjectDto,
-  ArchiveProjectDto,
+  type UpdateProjectDto,
+  type ProjectParams,
 } from '@dso-console/shared'
-import type { EnhancedFastifyRequest } from '@/types/index.js'
+import type { FastifyRequestWithSession } from '@/types/index.js'
 import {
   getUserProjects,
   getProject,
@@ -19,7 +22,7 @@ import {
 } from './business.js'
 
 // GET
-export const getUserProjectsController = async (req: EnhancedFastifyRequest<void>, res) => {
+export const getUserProjectsController: RouteHandler = async (req: FastifyRequestWithSession<void>, res) => {
   const requestor = req.session?.user
   delete requestor.groups
 
@@ -35,7 +38,9 @@ export const getUserProjectsController = async (req: EnhancedFastifyRequest<void
   sendOk(res, projectsInfos)
 }
 
-export const getProjectByIdController = async (req, res) => {
+export const getProjectByIdController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: ProjectParams,
+}>, res) => {
   const projectId = req.params?.projectId
   const userId = req.session?.user?.id
 
@@ -52,7 +57,9 @@ export const getProjectByIdController = async (req, res) => {
   sendOk(res, project)
 }
 
-export const getProjectSecretsController = async (req, res) => {
+export const getProjectSecretsController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: ProjectParams,
+}>, res) => {
   const projectId = req.params?.projectId
   const userId = req.session?.user?.id
 
@@ -70,12 +77,13 @@ export const getProjectSecretsController = async (req, res) => {
 }
 
 // POST
-export const createProjectController = async (req: EnhancedFastifyRequest<CreateProjectDto>, res) => {
+
+export const createProjectController: RouteHandler = async (req: FastifyRequestWithSession<{ Body: CreateProjectDto }>, res) => {
   const requestor = req.session?.user
   delete requestor.groups
   const data = req.body
 
-  const project = await createProject({ ...data }, requestor)
+  const project = await createProject(data, requestor)
   addReqLogs({
     req,
     description: 'Projet créé avec succès',
@@ -87,7 +95,10 @@ export const createProjectController = async (req: EnhancedFastifyRequest<Create
 }
 
 // UPDATE
-export const updateProjectController = async (req: EnhancedFastifyRequest<UpdateProjectDto>, res) => {
+export const updateProjectController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: ProjectParams,
+  Body: UpdateProjectDto
+}>, res) => {
   const requestor = req.session?.user
   const projectId = req.params?.projectId
   const data = req.body
@@ -104,7 +115,9 @@ export const updateProjectController = async (req: EnhancedFastifyRequest<Update
 }
 
 // DELETE
-export const archiveProjectController = async (req: EnhancedFastifyRequest<ArchiveProjectDto>, res) => {
+export const archiveProjectController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: ProjectParams
+}>, res) => {
   const requestor = req.session?.user
   const projectId = req.params?.projectId
 
@@ -117,5 +130,5 @@ export const archiveProjectController = async (req: EnhancedFastifyRequest<Archi
       projectId,
     },
   })
-  sendOk(res, projectId)
+  sendNoContent(res)
 }

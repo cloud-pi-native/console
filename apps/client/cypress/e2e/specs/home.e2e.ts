@@ -21,7 +21,7 @@ describe('Header', () => {
   it('Should display app version and swagger', () => {
     cy.visit('/')
     cy.getByDataTestid('swaggerUrl')
-      .should('have.attr', 'href', `${window?.location?.origin}/api/v1/documentation/static/index.html`)
+      .should('have.attr', 'href', `${window?.location?.origin}/api/v1/swagger-ui/static/index.html`)
     cy.getByDataTestid('appVersionUrl')
       .contains('vpr-')
       .invoke('attr', 'href')

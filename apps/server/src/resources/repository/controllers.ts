@@ -1,13 +1,18 @@
 import { filterObjectByKeys } from '@/utils/queries-tools.js'
 import { addReqLogs } from '@/utils/logger.js'
 import { sendOk, sendCreated } from '@/utils/response.js'
-import { EnhancedFastifyRequest } from '@/types/index.js'
-import { CreateRepositoryDto, DeleteRepositoryDto, UpdateRepositoryDto } from '@dso-console/shared/src/resources/repository/dto.js'
-import { checkHookValidation, createRepository, deleteRepository, getProjectRepositories, getRepositoryById, updateRepository, checkUpsertRepository } from './business.js'
+import { FastifyRequestWithSession } from '@/types/index.js'
+import {
+  type CreateRepositoryDto, type UpdateRepositoryDto, type RepositoryParams, type ProjectRepositoriesParams,
+} from '@dso-console/shared/src/resources/repository/dto.js'
+import { createRepository, deleteRepository, getProjectRepositories, getRepositoryById, updateRepository, checkUpsertRepository } from './business.js'
 import { BadRequestError } from '@/utils/errors.js'
+import { RouteHandler } from 'fastify'
 
 // GET
-export const getRepositoryByIdController = async (req, res) => {
+export const getRepositoryByIdController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: RepositoryParams
+}>, res) => {
   const projectId = req.params?.projectId
   const repositoryId = req.params?.repositoryId
   const userId = req.session?.user?.id
@@ -25,7 +30,9 @@ export const getRepositoryByIdController = async (req, res) => {
   sendOk(res, repository)
 }
 
-export const getProjectRepositoriesController = async (req, res) => {
+export const getProjectRepositoriesController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: ProjectRepositoriesParams
+}>, res) => {
   const projectId = req.params?.projectId
   const userId = req.session?.user?.id
 
@@ -43,15 +50,13 @@ export const getProjectRepositoriesController = async (req, res) => {
 }
 
 // CREATE
-export const createRepositoryController = async (req: EnhancedFastifyRequest<CreateRepositoryDto>, res) => {
+export const createRepositoryController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: ProjectRepositoriesParams
+  Body: CreateRepositoryDto
+}>, res) => {
   const data = req.body
   const user = req.session?.user
   const projectId = req.params?.projectId
-  data.projectId = projectId
-
-  await checkUpsertRepository(user.id, projectId, 'owner')
-
-  await checkHookValidation(user)
 
   const repo = await createRepository(projectId, data, user.id)
 
@@ -67,7 +72,10 @@ export const createRepositoryController = async (req: EnhancedFastifyRequest<Cre
 }
 
 // UPDATE
-export const updateRepositoryController = async (req: EnhancedFastifyRequest<UpdateRepositoryDto>, res) => {
+export const updateRepositoryController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: RepositoryParams
+  Body: UpdateRepositoryDto
+}>, res) => {
   const userId = req.session?.user?.id
   const projectId = req.params?.projectId
   const repositoryId = req.params?.repositoryId
@@ -78,7 +86,7 @@ export const updateRepositoryController = async (req: EnhancedFastifyRequest<Upd
     'externalToken',
     'externalUserName',
   ]
-  const data: Partial<UpdateRepositoryDto['body']> = filterObjectByKeys(req.body, keysAllowedForUpdate)
+  const data: Partial<UpdateRepositoryDto> = filterObjectByKeys(req.body, keysAllowedForUpdate)
 
   await checkUpsertRepository(userId, projectId, 'owner')
 
@@ -106,7 +114,9 @@ export const updateRepositoryController = async (req: EnhancedFastifyRequest<Upd
 }
 
 // DELETE
-export const deleteRepositoryController = async (req: EnhancedFastifyRequest<DeleteRepositoryDto>, res) => {
+export const deleteRepositoryController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: RepositoryParams
+}>, res) => {
   const projectId = req.params?.projectId
   const repositoryId = req.params?.repositoryId
   const userId = req.session?.user?.id

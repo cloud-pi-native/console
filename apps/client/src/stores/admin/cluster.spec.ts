@@ -55,7 +55,7 @@ describe('Cluster Store', () => {
 
     const res = await adminClusterStore.getClusters()
 
-    expect(JSON.stringify(res)).toBe(JSON.stringify(data))
+    expect(res).toEqual(data)
     expect(apiClientGet).toHaveBeenCalledTimes(1)
     expect(apiClientGet.mock.calls[0][0]).toBe('/clusters')
   })

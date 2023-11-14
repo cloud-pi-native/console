@@ -1,19 +1,8 @@
-import { OrganizationModel } from './model.js'
+import { FromSchema } from 'json-schema-to-ts'
+import { createOrganizationSchema, updateOrganizationSchema } from './openApiSchema.js'
 
-export type CreateOrganizationDto = {
-  body: {
-    name: OrganizationModel['name'],
-    label: OrganizationModel['label'],
-    source: OrganizationModel['source'],
-  }
-}
+export type CreateOrganizationDto = FromSchema<typeof createOrganizationSchema['body']>
 
-export type UpdateOrganizationDto = {
-  body: {
-    name: OrganizationModel['name'],
-    label: OrganizationModel['label'],
-    active: OrganizationModel['active'],
-    source: OrganizationModel['source'],
-  }
-  params: { orgName: OrganizationModel['name'] }
-}
+export type UpdateOrganizationDto = FromSchema<typeof updateOrganizationSchema['body']>
+
+export type OrganizationParams = FromSchema<typeof updateOrganizationSchema['params']>

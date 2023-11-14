@@ -1,10 +1,4 @@
-import { EnvironmentModel } from '../environment/model.js'
-import { UserModel } from '../user/index.js'
+import { FromSchema } from 'json-schema-to-ts'
+import { permissionOpenApiSchema } from './index.js'
 
-export type PermissionModel = {
-  id: string
-  userId: UserModel['id']
-  environmentId: EnvironmentModel['id']
-  level: number
-  user?: UserModel
-}
+export type PermissionModel = FromSchema<typeof permissionOpenApiSchema>

@@ -31,7 +31,7 @@ const refreshProjects = async () => {
   }, 30_000)
 }
 
-const getSwaggerUrl = () => window?.location?.origin + '/api/v1/documentation/static/index.html'
+const getSwaggerUrl = () => window?.location?.origin + '/api/v1/swagger-ui/static/index.html'
 
 onBeforeMount(() => {
   clearInterval(intervalId.value)

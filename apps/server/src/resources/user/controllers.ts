@@ -1,10 +1,15 @@
 import { sendOk, sendCreated } from '@/utils/response.js'
 import { addReqLogs } from '@/utils/logger.js'
 import { addUserToProject, checkProjectLocked, checkProjectRole, getMatchingUsers, getProjectInfos, getProjectUsers, removeUserFromProject, updateUserProjectRole } from './business.js'
+import { FastifyRequestWithSession } from '@/types/index.js'
+import { RouteHandler } from 'fastify'
+import type { UserParams, AddUserToProjectDto, RoleParams, LettersQuery, UpdateUserProjectRoleDto } from '@dso-console/shared'
 
 // GET
 // TODO : pas utilisé
-export const getProjectUsersController = async (req, res) => {
+export const getProjectUsersController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: UserParams
+}>, res) => {
   const userId = req.session?.user?.id
   const projectId = req.params?.projectId
 
@@ -22,7 +27,10 @@ export const getProjectUsersController = async (req, res) => {
   sendOk(res, users)
 }
 
-export const getMatchingUsersController = async (req, res) => {
+export const getMatchingUsersController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: UserParams
+  Querystring: LettersQuery
+}>, res) => {
   const userId = req.session?.user?.id
   const projectId = req.params?.projectId
   const { letters } = req.query
@@ -44,7 +52,10 @@ export const getMatchingUsersController = async (req, res) => {
 }
 
 // CREATE
-export const addUserToProjectController = async (req, res) => {
+export const addUserToProjectController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: UserParams
+  Body: AddUserToProjectDto
+}>, res) => {
   const userId = req.session?.user?.id
   const projectId = req.params?.projectId
   const data = req.body
@@ -70,7 +81,10 @@ export const addUserToProjectController = async (req, res) => {
 }
 
 // PUT
-export const updateUserProjectRoleController = async (req, res) => {
+export const updateUserProjectRoleController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: RoleParams
+  Body: UpdateUserProjectRoleDto
+}>, res) => {
   const userId = req.session?.user.id
   const projectId = req.params?.projectId
   const userToUpdateId = req.params?.userId
@@ -97,7 +111,9 @@ export const updateUserProjectRoleController = async (req, res) => {
 }
 
 // DELETE
-export const removeUserFromProjectController = async (req, res) => {
+export const removeUserFromProjectController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: RoleParams
+}>, res) => {
   const userId = req.session?.user?.id
   const projectId = req.params?.projectId
   const userToRemoveId = req.params?.userId
