@@ -22,7 +22,7 @@ on:
         description: Nodejs version used to run tests
         required: true
         type: string
-        default: "18.18.0"
+        default: "20.9.0"
       PNPM_VERSION:
         description: Pnpm version used to run tests
         required: true
@@ -185,6 +185,7 @@ jobs:
             -Dsonar.javascript.node.maxspace=4096
             -Dsonar.javascript.lcov.reportPaths=coverage/apps/server/coverage/lcov.info,coverage/apps/client/coverage/lcov.info,coverage/packages/shared/coverage/lcov.info
             -Dsonar.coverage.exclusions=**/*.spec.js,**/*.spec.ts,**/*.vue,**/assets/**,**/cypress/**,**/packages/test-utils/**,apps/server/src/plugins/**
+            -Dsonar.cpd.exclusions=**/*.spec.js,**/*.spec.ts,**/cypress/**
             -Dsonar.scm.provider=git
             ${{ github.event_name == 'pull_request' && steps.sonar-args.outputs.SONAR_ARGS_PR || steps.sonar-args.outputs.SONAR_ARGS_BRANCH }}
         continue-on-error: true
