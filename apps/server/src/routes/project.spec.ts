@@ -370,6 +370,7 @@ describe('Project routes', () => {
       project.repositories = []
 
       prisma.project.findUnique.mockResolvedValue(project)
+      prisma.role.findFirst.mockResolvedValue({ user: {} })
       prisma.project.update.mockResolvedValue(project)
 
       const response = await app.inject()
@@ -385,6 +386,7 @@ describe('Project routes', () => {
       const project = createRandomDbSetup({}).project
 
       prisma.project.findUnique.mockResolvedValue(project)
+      prisma.role.findFirst.mockResolvedValue({ user: {} })
 
       const response = await app.inject()
         .delete(`/${project.id}`)
@@ -399,6 +401,7 @@ describe('Project routes', () => {
       project.roles = [...project.roles, getRandomRole(requestor.id, project.id)]
 
       prisma.project.findUnique.mockResolvedValue(project)
+      prisma.role.findFirst.mockResolvedValue({ user: {} })
 
       const response = await app.inject()
         .delete(`/${project.id}`)

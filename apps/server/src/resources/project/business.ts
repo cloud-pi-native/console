@@ -9,6 +9,7 @@ import {
   getProjectInfosAndRepos,
   getProjectInfos as getProjectInfosQuery,
   getPublicClusters,
+  getSingleOwnerByProjectId,
   getUserProjects as getUserProjectsQuery,
   initializeProject,
   lockProject,
@@ -207,6 +208,8 @@ export const updateProject = async (data: UpdateProjectDto['body'], projectId: P
 export const archiveProject = async (projectId: Project['id'], requestor: UserDto) => {
   // Pré-requis
   const project = await getProjectInfosAndRepos(projectId)
+  const owner = await getSingleOwnerByProjectId(project.id)
+
   if (!project) throw new NotFoundError('Projet introuvable')
 
   const insufficientRoleErrorMessage = checkInsufficientRoleInProject(requestor.id, { roles: project.roles, minRole: 'owner' })
@@ -274,6 +277,7 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
       organization: project.organization.name,
       project: project.name,
       status: 'archived',
+      owner,
     })
     // @ts-ignore
     await addLogs('Archive Project', results, requestor.id)
