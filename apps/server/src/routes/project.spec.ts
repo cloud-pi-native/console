@@ -144,6 +144,7 @@ describe('Project routes', () => {
       prisma.project.update.mockResolvedValue(project)
       prisma.environment.findMany.mockResolvedValue([])
       prisma.repository.findMany.mockResolvedValue([])
+      prisma.project.findUnique.mockResolvedValue(project)
 
       const response = await app.inject()
         .post('/api/v1/projects')

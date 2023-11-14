@@ -31,6 +31,8 @@ import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { projectRootDir } from '@/utils/env.js'
 import { getProjectInfosAndClusters } from '@/resources/project/business.js'
 import { gitlabUrl } from '@/plugins/core/gitlab/utils.js'
+import { adminGroupPath } from '@dso-console/shared'
+import { KeycloakSession } from '@/types/index.js'
 
 // Fetch infos
 export const getEnvironmentInfosAndClusters = async (environmentId: string) => {
@@ -229,7 +231,7 @@ export const createEnvironment = async (
 }
 
 type UpdateEnvironmentParam = {
-  userId: User['id'],
+  user: KeycloakSession['session']['user'],
   projectId: Project['id'],
   environmentId: Environment['id'],
   quotaStageId?: QuotaStage['id'],
@@ -237,7 +239,7 @@ type UpdateEnvironmentParam = {
 }
 
 export const updateEnvironment = async ({
-  userId,
+  user,
   projectId,
   environmentId,
   quotaStageId,
@@ -246,16 +248,18 @@ export const updateEnvironment = async ({
   try {
     let environment: Environment
     const { project, quotaStage, quota } = await getInitializeEnvironmentInfos({
-      userId,
+      userId: user.id,
       projectId,
       quotaStageId,
     })
 
-    checkUpdateEnvironment({
-      project,
-      userId,
-      quotaStage,
-    })
+    if (!user.groups?.includes(adminGroupPath)) {
+      checkUpdateEnvironment({
+        project,
+        userId: user.id,
+        quotaStage,
+      })
+    }
 
     await lockProject(projectId)
 
@@ -291,7 +295,7 @@ export const updateEnvironment = async ({
         },
       })
       // @ts-ignore
-      await addLogs('Update Environment Quotas', results, userId)
+      await addLogs('Update Environment Quotas', results, user.id)
       if (results.failed) {
         throw new UnprocessableContentError('Echec services à la mise à jour des quotas pour l\'environnement')
       }

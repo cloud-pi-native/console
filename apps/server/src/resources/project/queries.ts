@@ -13,14 +13,40 @@ export const getAllProjects = async () => {
   return prisma.project.findMany({
     include: {
       roles: {
-        select: {
+        include: {
           user: true,
-        },
-        where: {
-          role: 'owner',
         },
       },
       organization: true,
+      environments: {
+        include: {
+          quotaStage: {
+            select: {
+              quota: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+              stage: {
+                select: {
+                  id: true,
+                  name: true,
+                  quotaStage: {
+                    select: {
+                      id: true,
+                      quotaId: true,
+                      stageId: true,
+                      status: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      repositories: true,
     },
   })
 }

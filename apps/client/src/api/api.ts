@@ -227,6 +227,11 @@ export const getAllProjects = async () => {
   return response.data
 }
 
+export const handleProjectLocking = async (projectId: string, lock: boolean) => {
+  const response = await apiClient.patch(`/admin/projects/${projectId}`, { lock })
+  return response.data
+}
+
 // Admin - Logs
 export const getAllLogs = async ({ offset, limit }: AdminLogsQuery) => {
   const response = await apiClient.get(`/admin/logs?offset=${offset}&limit=${limit}`)

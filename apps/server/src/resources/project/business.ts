@@ -5,6 +5,7 @@ import {
   deleteRepository,
   getClusterById,
   getOrganizationById,
+  getProjectById,
   getProjectByNames,
   getProjectInfosAndRepos,
   getProjectInfos as getProjectInfosQuery,
@@ -25,7 +26,7 @@ import { AsyncReturnType, checkInsufficientPermissionInEnvironment, checkInsuffi
 import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import { PluginResult } from '@/plugins/hooks/hook.js'
-import { CreateProjectDto, UpdateProjectDto, calcProjectNameMaxLength, projectIsLockedInfo, projectSchema, exclude } from '@dso-console/shared'
+import { CreateProjectDto, UpdateProjectDto, calcProjectNameMaxLength, projectIsLockedInfo, projectSchema, exclude, adminGroupPath } from '@dso-console/shared'
 import { CreateProjectExecArgs, ProjectBase, UpdateProjectExecArgs } from '@/plugins/hooks/project.js'
 import { filterObjectByKeys } from '@/utils/queries-tools.js'
 import { projectRootDir } from '@/utils/env.js'
@@ -159,7 +160,8 @@ export const createProject = async (dataDto: CreateProjectDto, requestor: UserDt
     }
     await updateProjectServices(project.id, services)
     await updateProjectCreated(project.id)
-    return unlockProjectIfNotFailed(project.id)
+    await unlockProjectIfNotFailed(project.id)
+    return getProjectById(project.id)
   } catch (error) {
     await updateProjectFailed(project.id)
     throw new Error(error?.message)
@@ -213,7 +215,8 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
   if (!project) throw new NotFoundError('Projet introuvable')
 
   const insufficientRoleErrorMessage = checkInsufficientRoleInProject(requestor.id, { roles: project.roles, minRole: 'owner' })
-  if (insufficientRoleErrorMessage) throw new ForbiddenError(insufficientRoleErrorMessage)
+  // @ts-ignore
+  if (insufficientRoleErrorMessage && !requestor.groups?.includes(adminGroupPath)) throw new ForbiddenError(insufficientRoleErrorMessage)
 
   // Actions
   try {
