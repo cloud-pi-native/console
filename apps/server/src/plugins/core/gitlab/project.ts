@@ -2,14 +2,11 @@ import * as fs from 'node:fs/promises'
 import path from 'node:path'
 import { api } from './utils.js'
 import { getGroupId } from './group.js'
+import { AccessTokenSchema, ProjectSchema } from '@gitbeaker/rest'
 
-/**
- * @param {string} internalRepoName - nom du dépôt.
- * @param {string} externalRepoUrn - url du dépôt.
- * @param {string} group - nom du projet DSO.
- * @param {string} organization - nom de l'organisation DSO.
- */
-export const createProject = async ({ groupId, internalRepoName, externalRepoUrn, externalUserName, externalToken, isPrivate }) => {
+export const createProject = async (
+  { groupId, internalRepoName, externalRepoUrn, externalUserName, externalToken, isPrivate }:
+  { groupId: number, internalRepoName: string, externalRepoUrn: string, externalUserName: string, externalToken: string, isPrivate: boolean }): Promise<ProjectSchema> => {
   const searchResults = await api.Projects.search(internalRepoName)
   if (searchResults.length) {
     const existingProject = searchResults.find(project => project.namespace.id === groupId && project.name === internalRepoName)
@@ -19,7 +16,7 @@ export const createProject = async ({ groupId, internalRepoName, externalRepoUrn
     ? `https://${externalUserName}:${externalToken}@${externalRepoUrn}`
     : `https://${externalRepoUrn}`
 
-  return await api.Projects.create(
+  return api.Projects.create(
     {
       name: internalRepoName,
       namespaceId: groupId,
@@ -34,7 +31,7 @@ export const createProject = async ({ groupId, internalRepoName, externalRepoUrn
  * @param {string} group - nom du projet DSO.
  * @param {string} organization - nom de l'organisation DSO.
  */
-export const createProjectMirror = async (internalRepoName, group, organization) => {
+export const createProjectMirror = async (internalRepoName: string, group: string, organization: string): Promise<ProjectSchema> => {
   const groupId = await getGroupId(group, organization)
   if (!groupId) throw Error('Impossible de retrouver le namespace')
   const searchResults = await api.Projects.search(internalRepoName)
@@ -52,7 +49,7 @@ export const createProjectMirror = async (internalRepoName, group, organization)
   return project
 }
 
-export const createGroupToken = async (groupId: number, name: string) => api.GroupAccessTokens.create(
+export const createGroupToken = async (groupId: number, name: string): Promise<AccessTokenSchema> => api.GroupAccessTokens.create(
   groupId,
   name,
   [
@@ -64,12 +61,7 @@ export const createGroupToken = async (groupId: number, name: string) => api.Gro
   },
 )
 
-/**
- * @param {string} internalRepoName - nom du dépôt.
- * @param {string} group - nom du projet DSO.
- * @param {string} organization - nom de l'organisation DSO.
- */
-export const deleteProject = async (internalRepoName, group, organization) => {
+export const deleteProject = async (internalRepoName: string, group: string, organization: string) => {
   const groupId = await getGroupId(group, organization)
   const searchResult = await api.Projects.search(internalRepoName)
   if (!searchResult.length) return

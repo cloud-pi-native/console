@@ -29,6 +29,7 @@
     "@fastify/swagger": "^8.12.0",
     "@fastify/swagger-ui": "^1.10.1",
     "@gitbeaker/rest": "^39.21.2",
+    "@gitbeaker/core": "^39.21.2",
     "@keycloak/keycloak-admin-client": "^22.0.5",
     "@kubernetes/client-node": "^0.19.0",
     "@prisma/client": "^5.5.2",
