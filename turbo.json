@@ -22,6 +22,9 @@
     "lint": {
       "outputs": []
     },
+    "db:generate": {
+      "outputs": []
+    },
     "test": {
       "dependsOn": [
         "^@dso-console/shared#build",

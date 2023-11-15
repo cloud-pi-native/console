@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       TAG:
-        description: Image tag used ti run tests
+        description: Image tag used to run tests
         required: true
         type: string
         default: "latest"

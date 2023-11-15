@@ -2,5 +2,8 @@
   "root": true,
   "extends": [
     "@dso-console/eslint-config-base"
+  ],
+  "ignorePatterns": [
+    "types/"
   ]
 }

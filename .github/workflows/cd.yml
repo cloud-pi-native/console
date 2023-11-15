@@ -10,6 +10,8 @@ env:
   NAMESPACE: "${{ github.repository }}"
   MULTI_ARCH: true
   USE_QEMU: false
+  NODE_VERSION: "20.9.0"
+  PNPM_VERSION: "8"
 
 jobs:
   expose-vars:
@@ -19,6 +21,8 @@ jobs:
       NAMESPACE: ${{ env.NAMESPACE }}
       MULTI_ARCH: ${{ env.MULTI_ARCH }}
       USE_QEMU: ${{ env.USE_QEMU }}
+      NODE_VERSION: ${{ env.NODE_VERSION }}
+      PNPM_VERSION: ${{ env.PNPM_VERSION }}
     steps:
       - name: Exposing env vars
         run: echo "Exposing env vars"
@@ -41,3 +45,16 @@ jobs:
       PATCH_TAG: ${{ needs.release.outputs.patch-tag }}
       MULTI_ARCH: ${{ needs.expose-vars.outputs.MULTI_ARCH == 'true' }}
       USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU == 'true' }}
+
+  npm-publish:
+    uses: ./.github/workflows/npm.yml
+    if: ${{ needs.release.outputs.release-created == 'true' }}
+    needs:
+      - expose-vars
+      - release
+    with:
+      MAJOR_TAG: ${{ needs.release.outputs.major-tag }}
+      MINOR_TAG: ${{ needs.release.outputs.minor-tag }}
+      PATCH_TAG: ${{ needs.release.outputs.patch-tag }}
+      PNPM_VERSION: ${{ needs.expose-vars.outputs.PNPM_VERSION }}
+      NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}

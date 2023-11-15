@@ -1,8 +1,9 @@
 {
-  "name": "client",
+  "name": "@dso-console/client",
   "version": "1.0.0",
   "description": "dso-portal client",
   "type": "module",
+  "private": false,
   "scripts": {
     "build": "run-s type-check build-only",
     "build-only": "vite build",
