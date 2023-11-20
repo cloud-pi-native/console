@@ -73,9 +73,9 @@ jobs:
       - name: Publish on npmjs.org
         run: |
           echo '//registry.npmjs.org/:_authToken=${npm_token}' >> .npmrc
-          pnpm publish --no-git-checks --access public \
-          --filter server
+          pnpm publish --no-git-checks --access public --force \
+          --filter server \
           --filter client \
-          --filter shared \
+          --filter shared
         env:
           npm_token: ${{secrets.NPM_TOKEN}}
