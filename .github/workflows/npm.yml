@@ -9,6 +9,27 @@ on:
       NODE_VERSION:
         required: true
         type: string
+        default: "20.9.0"
+      MAJOR_TAG:
+        type: string
+        description: "Major version tag"
+      MINOR_TAG:
+        type: string
+        description: "Minor version tag"
+      PATCH_TAG:
+        type: string
+        description: "Patch version tag"
+      PNPM_VERSION:
+        description: Pnpm version used to run tests
+        required: true
+        type: string
+        default: "8"
+  workflow_dispatch:
+    inputs:
+      NODE_VERSION:
+        required: true
+        type: string
+        default: "20.9.0"
       MAJOR_TAG:
         type: string
         description: "Major version tag"
@@ -45,10 +66,10 @@ jobs:
       - name: Prepare packages
         run: |
           pnpm run db:generate
-          export VERSION=\"${{ inputs.MAJOR_TAG }}.${{ inputs.MINOR_TAG }}.${{ inputs.PATCH_TAG }}\"
-          yq e -i '.version = $VERSION' apps/server/package.json
-          yq e -i '.version = $VERSION' apps/client/package.json
-          yq e -i '.version = $VERSION' packages/shared/package.json
+          export VERSION=${{ inputs.MAJOR_TAG }}.${{ inputs.MINOR_TAG }}.${{ inputs.PATCH_TAG }}
+          yq e -i ".version |= \"$VERSION\"" apps/server/package.json
+          yq e -i ".version |= \"$VERSION\"" apps/client/package.json
+          yq e -i ".version |= \"$VERSION\"" packages/shared/package.json
       - name: Publish on npmjs.org
         run: |
           echo '//registry.npmjs.org/:_authToken=${npm_token}' >> .npmrc
