@@ -1,12 +1,31 @@
 import { type CreateClusterDto, type UpdateClusterDto } from '@dso-console/shared'
 import { EnhancedFastifyRequest } from '@/types/index.js'
 import { addReqLogs } from '@/utils/logger.js'
-import { sendCreated, sendOk } from '@/utils/response.js'
+import { sendCreated, sendNoContent, sendOk } from '@/utils/response.js'
 import {
   checkClusterProjectIds,
   createCluster,
   updateCluster,
+  getClusterAssociatedEnvironments,
+  deleteCluster,
 } from './business.js'
+
+// GET
+export const getClusterAssociatedEnvironmentsController = async (req, res) => {
+  const clusterId = req.params.clusterId
+
+  const environments = await getClusterAssociatedEnvironments(clusterId)
+
+  addReqLogs({
+    req,
+    description: 'Environnements associés au cluster récupérés',
+    extras: {
+      clusterId,
+    },
+  })
+
+  sendOk(res, environments)
+}
 
 // POST
 export const createClusterController = async (req: EnhancedFastifyRequest<CreateClusterDto>, res) => {
@@ -42,4 +61,21 @@ export const updateClusterController = async (req: EnhancedFastifyRequest<Update
     },
   })
   sendOk(res, cluster)
+}
+
+// DELETE
+export const deleteClusterController = async (req, res) => {
+  const clusterId = req.params?.clusterId
+  const userId = req.session.user?.id
+
+  await deleteCluster(clusterId, userId)
+
+  addReqLogs({
+    req,
+    description: 'Cluster supprimé avec succès',
+    extras: {
+      clusterId,
+    },
+  })
+  sendNoContent(res)
 }

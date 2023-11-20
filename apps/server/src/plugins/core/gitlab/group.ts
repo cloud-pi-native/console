@@ -1,4 +1,4 @@
-import { ProjectVariableSchema, VariableSchema } from '@gitbeaker/rest'
+import { GroupSchema, ProjectVariableSchema, VariableSchema } from '@gitbeaker/rest'
 import { api, getGroupRootId } from './utils.js'
 
 export const getGroupId = async (name: string, organization: string): Promise<void | number> => {
@@ -24,7 +24,7 @@ const getOrganizationId = async (organization: string) => {
   return org.id
 }
 
-export const createGroup = async (name: string, organization: string) => {
+export const createGroup = async (name: string, organization: string): Promise<GroupSchema> => {
   const searchResult = await api.Groups.search(name)
   const parentId = await getOrganizationId(organization)
   const existingGroup = searchResult.find(group => group.parent_id === parentId)

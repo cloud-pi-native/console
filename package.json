@@ -1,13 +1,14 @@
 {
   "name": "dso-console",
   "version": "6.1.0",
-  "private": true,
+  "private": false,
   "type": "module",
   "scripts": {
     "build": "turbo run build --color",
     "dev": "npm run kube:dev:build; npm run kube:dev",
     "format": "turbo run format --color",
     "format:style": "turbo run format:style --color",
+    "db:generate": "turbo run db:generate",
     "int": "npm run kube:dev:build; npm run kube:int",
     "kube:init": "ci/kind/run.sh -i -d console.dso.local,keycloak.dso.local,pgadmin.dso.local",
     "kube:dev:build": "ci/kind/run.sh -c create,build -f docker/docker-compose.dev.yml",

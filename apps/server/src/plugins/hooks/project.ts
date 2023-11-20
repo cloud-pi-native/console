@@ -9,7 +9,7 @@ export type CreateProjectExecArgs = CreateProjectValidateArgs & ProjectBase & { 
 export type UpdateProjectValidateArgs = ProjectBase & { description: string, status: ProjectModel['status'] }
 export type UpdateProjectExecArgs = ProjectBase & { description: string, status: ProjectModel['status'] }
 export type ArchiveProjectValidateArgs = ProjectBase
-export type ArchiveProjectExecArgs = ProjectBase & { status: ProjectModel['status'] }
+export type ArchiveProjectExecArgs = ProjectBase & { status: ProjectModel['status'], owner: UserModel }
 
 export const createProject: Hook<CreateProjectExecArgs, CreateProjectValidateArgs> = createHook()
 export const updateProject: Hook<UpdateProjectExecArgs, UpdateProjectValidateArgs> = createHook()

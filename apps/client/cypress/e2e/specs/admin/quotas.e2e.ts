@@ -501,7 +501,7 @@ describe('Administration quotas', () => {
     cy.getByDataTestid('associatedEnvironmentsZone').should('not.exist')
     cy.getByDataTestid('deleteQuotaZone').should('exist')
     cy.getByDataTestid('showDeleteQuotaBtn').click()
-    cy.getByDataTestid('deletQuotaInput')
+    cy.getByDataTestid('deleteQuotaInput')
       .clear()
       .type(publicQuota.name)
     cy.getByDataTestid('deleteQuotaBtn')

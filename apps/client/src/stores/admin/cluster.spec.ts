@@ -6,8 +6,9 @@ import { useAdminClusterStore } from './cluster.js'
 const apiClientGet = vi.spyOn(apiClient, 'get')
 const apiClientPost = vi.spyOn(apiClient, 'post')
 const apiClientPut = vi.spyOn(apiClient, 'put')
+const apiClientDelete = vi.spyOn(apiClient, 'delete')
 
-describe('Counter Store', () => {
+describe('Cluster Store', () => {
   beforeEach(() => {
     vi.resetAllMocks()
     // creates a fresh pinia and make it active so it's automatically picked
@@ -57,6 +58,22 @@ describe('Counter Store', () => {
     expect(JSON.stringify(res)).toBe(JSON.stringify(data))
     expect(apiClientGet).toHaveBeenCalledTimes(1)
     expect(apiClientGet.mock.calls[0][0]).toBe('/clusters')
+  })
+
+  it('Should get cluster\'s associated environments by api call', async () => {
+    const clusterId = '1e4fdb28-f9ea-46d4-ad16-607c7f1aa8b6'
+    const data = {
+      environments: [],
+    }
+
+    apiClientGet.mockReturnValueOnce(Promise.resolve({ data }))
+    const adminClusterStore = useAdminClusterStore()
+
+    const res = await adminClusterStore.getClusterAssociatedEnvironments(clusterId)
+
+    expect(res).toBe(data)
+    expect(apiClientGet).toHaveBeenCalledTimes(1)
+    expect(apiClientGet.mock.calls[0][0]).toBe(`/admin/clusters/${clusterId}/environments`)
   })
 
   it('Should add cluster by api call', async () => {
@@ -114,5 +131,17 @@ describe('Counter Store', () => {
     expect(res).toBe(data)
     expect(apiClientPut).toHaveBeenCalledTimes(1)
     expect(apiClientPut.mock.calls[0][0]).toBe('/admin/clusters/1e4fdb28-f9ea-46d4-ad16-607c7f1aa8b6')
+  })
+
+  it('Should delete cluster by api call', async () => {
+    const clusterId = '1e4fdb28-f9ea-46d4-ad16-607c7f1aa8b6'
+
+    apiClientDelete.mockReturnValueOnce(Promise.resolve({}))
+    const adminClusterStore = useAdminClusterStore()
+
+    await adminClusterStore.deleteCluster(clusterId)
+
+    expect(apiClientDelete).toHaveBeenCalledTimes(1)
+    expect(apiClientDelete.mock.calls[0][0]).toBe(`/admin/clusters/${clusterId}`)
   })
 })
