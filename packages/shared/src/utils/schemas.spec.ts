@@ -128,6 +128,44 @@ describe('Schemas utils', () => {
     })).toStrictEqual({ externalToken: '"externalToken" is required' })
   })
 
+  it('Should not validate a repository schema with wrong internal repo name', () => {
+    expect(schemaValidator(repoSchema, {
+      id: faker.string.uuid(),
+      internalRepoName: '-candilib',
+      externalRepoUrl: 'https://github.com/LAB-MI/candilibV2.git',
+      isPrivate: false,
+      isInfra: false,
+      status: 'created',
+    })).toStrictEqual({ internalRepoName: '"internalRepoName" with value "-candilib" fails to match the required pattern: /^[a-z0-9]+[a-z0-9-]+[a-z0-9]+$/' })
+
+    expect(schemaValidator(repoSchema, {
+      id: faker.string.uuid(),
+      internalRepoName: 'candilib-',
+      externalRepoUrl: 'https://github.com/LAB-MI/candilibV2.git',
+      isPrivate: false,
+      isInfra: false,
+      status: 'created',
+    })).toStrictEqual({ internalRepoName: '"internalRepoName" with value "candilib-" fails to match the required pattern: /^[a-z0-9]+[a-z0-9-]+[a-z0-9]+$/' })
+
+    expect(schemaValidator(repoSchema, {
+      id: faker.string.uuid(),
+      internalRepoName: 'candiLib',
+      externalRepoUrl: 'https://github.com/LAB-MI/candilibV2.git',
+      isPrivate: false,
+      isInfra: false,
+      status: 'created',
+    })).toStrictEqual({ internalRepoName: '"internalRepoName" with value "candiLib" fails to match the required pattern: /^[a-z0-9]+[a-z0-9-]+[a-z0-9]+$/' })
+
+    expect(schemaValidator(repoSchema, {
+      id: faker.string.uuid(),
+      internalRepoName: 'candi-lib',
+      externalRepoUrl: 'https://github.com/LAB-MI/candilibV2.git',
+      isPrivate: false,
+      isInfra: false,
+      status: 'created',
+    })).toStrictEqual({})
+  })
+
   it('Should not validate a too short project name', () => {
     expect(schemaValidator(projectSchema, {
       id: faker.string.uuid(),
