@@ -1,5 +1,18 @@
 # Changelog
 
+## [6.2.0](https://github.com/cloud-pi-native/console/compare/v6.1.0...v6.2.0) (2023-11-20)
+
+
+### Features
+
+* :sparkles: delete cluster if no environment suscribed ([8edc50a](https://github.com/cloud-pi-native/console/commit/8edc50a85f266f1135b340d6df39a48ea7ac746b))
+
+
+### Bug Fixes
+
+* :alien: add owner in archiveProject hookpayload ([5c99183](https://github.com/cloud-pi-native/console/commit/5c99183f03afe0c20980c9649ce37788b833a351))
+* :bug: use argoCD regex for internalRepoName ([6c2ed3f](https://github.com/cloud-pi-native/console/commit/6c2ed3f682514b947e66547ce136d148b9e2d686))
+
 ## [6.1.0](https://github.com/cloud-pi-native/console/compare/v6.0.0...v6.1.0) (2023-11-13)
 
 
