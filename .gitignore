@@ -52,6 +52,9 @@ keycloak/data
 dist
 build
 
+#types
+apps/server/types/
+
 # plugins
 apps/server/src/plugins/external
 

@@ -5,7 +5,8 @@
   "exclude": [
     "**/*.spec.ts",
     "node_modules",
-    "dist"
+    "dist",
+    "__mocks__",
   ],
   "include": [
     "src/**/*.ts"
@@ -24,6 +25,8 @@
       {
         "transform": "typescript-transform-paths"
       }
-    ]
+    ],
+    "declaration": true,
+    "declarationDir": "./types"
   }
 }

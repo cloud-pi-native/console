@@ -6,7 +6,7 @@
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "types/index.d.ts",
-  "private": true,
+  "private": false,
   "scripts": {
     "build": "run-s clean:build compile",
     "clean:build": "rimraf dist types",

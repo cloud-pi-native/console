@@ -5,5 +5,6 @@
   "author": "",
   "keywords": [],
   "license": "ISC",
-  "main": "index.js"
+  "main": "index.js",
+  "private": false
 }
