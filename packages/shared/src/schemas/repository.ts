@@ -6,7 +6,7 @@ export const repoSchema = Joi.object({
     .uuid(),
 
   internalRepoName: Joi.string()
-    .pattern(/^[a-zA-Z0-9-]+$/)
+    .pattern(/^[a-z0-9]+[a-z0-9-]+[a-z0-9]+$/)
     .required(),
 
   externalRepoUrl: Joi.string()

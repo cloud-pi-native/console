@@ -84,7 +84,7 @@ const cancel = (event) => {
             type="text"
             required="required"
             :disabled="localRepo.id || props.isProjectLocked"
-            :error-message="!!updatedValues.internalRepoName && !isValid(repoSchema, localRepo, 'internalRepoName') ? 'Le nom du dépôt ne doit contenir ni espaces ni caractères spéciaux': undefined"
+            :error-message="!!updatedValues.internalRepoName && !isValid(repoSchema, localRepo, 'internalRepoName') ? 'Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique': undefined"
             label="Nom du dépôt Git interne"
             label-visible
             hint="Nom du dépôt Git créé dans le Gitlab interne de la plateforme"

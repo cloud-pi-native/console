@@ -40,7 +40,7 @@ describe('Add repos into project', () => {
       .getByDataTestid('internalRepoNameInput').find('input').clear().type('$%_>')
       .get('.fr-error-text')
       .should('have.length', 1)
-      .and('contain', 'Le nom du dépôt ne doit contenir ni espaces ni caractères spéciaux')
+      .and('contain', 'Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique')
       .getByDataTestid('addRepoBtn').should('be.disabled')
       .getByDataTestid('internalRepoNameInput').find('input').clear().type(repo.internalRepoName)
       .get('.fr-error-text')
