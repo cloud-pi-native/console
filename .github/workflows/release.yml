@@ -41,7 +41,25 @@ jobs:
             helm/Chart.yaml
             helm/values.yaml
           token: ${{ secrets.GITHUB_TOKEN }}
-      
+
+      - name: Edit packages versions
+        if: ${{ ! steps.release.outputs.release_created }}
+        run: |
+          export BRANCH=$(jq -r '.headBranchName' <<< '${{ steps.release.outputs.pr }}')
+          git fetch
+          git checkout "$BRANCH"
+          VERSION=$(jq -r .version package.json)
+          yq e -i ".version |= \"$VERSION\"" apps/server/package.json
+          yq e -i ".version |= \"$VERSION\"" apps/client/package.json
+          yq e -i ".version |= \"$VERSION\"" packages/shared/package.json
+          git add .
+          # Emulate the author of the existing commit (the bot).
+          git config user.email "$(git log -n 1 --format='%ae')"
+          git config user.name "$(git log -n 1 --format='%an')"
+          # Update the PR.
+          git commit --amend --no-edit
+          git push -f
+
       - name: Tag major and minor versions 
         if: ${{ steps.release.outputs.release_created }}
         run: |
