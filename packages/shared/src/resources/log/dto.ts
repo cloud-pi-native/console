@@ -1,6 +1,4 @@
-export type AdminLogsGet = {
-  query: {
+export type AdminLogsQuery = {
     offset: number
     limit: number
-  }
 }

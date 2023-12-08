@@ -2,7 +2,6 @@
 
 La console Cloud π Native est une application web ayant pour but de piloter des services web dans un cluster Kubernetes afin de fournir une platefome cloud lors du développement de produits numériques.
 
-
 ## Architecture
 
 Ce projet est construit avec [NodeJS](https://nodejs.org/), [VueJS](https://vuejs.org/), [Postgres](https://www.postgresql.org/) et construit sous forme d'images [Docker](https://www.docker.com/) pour être déployé via [Helm](https://helm.sh/) dans [Kubernetes](https://kubernetes.io/).
@@ -22,6 +21,7 @@ Ce projet est construit avec [NodeJS](https://nodejs.org/), [VueJS](https://vuej
 Le serveur est construit selon une architecture __core / plugins__ pour favoriser l'évolutivité et l'ajout de nouvelles fonctionnalités / la gestion de nouveaux services. Pour ce faire, les plugins s'enregistrent auprès de différents `hooks` (qui suivent le cycle de vie d'un projet au sein de l'application), ces derniers seront déclenchés par les contrôleurs de l'application.
 
 Plusieurs plugins sont nativement enregistrés auprès du serveur pour assurer le bon fonctionnement de la plateforme, à savoir :
+
 - [Argocd](https://argo-cd.readthedocs.io/en/stable/)
 - [Gitlab](https://about.gitlab.com/)
 - [Harbor](https://goharbor.io/)
@@ -118,12 +118,14 @@ Les services sont disponibles via des nom de domaines ajouté dans le fichier `/
 ### Variables d'environnements
 
 Un chart Helm utilitaire est installé pour déployer les services qui ne sont pas inclus dans le chart de la console :
+
 - Keycloak
 - Pgadmin
 
 > *Ces services sont personnalisables [ici](./ci/helm-utils/values.yaml).*
 
 Différents fichiers de `values.yml` sont disponibles pour personnaliser le déploiement de l'application dans le cluster Kind:
+
 - Le fichier [./env/dso-values-dev.yaml](./env/dso-values-dev.yaml) contient les variables de l'application pour le mode développement.
 - Le fichier [./env/dso-values.yaml](./env/dso-values.yaml) contient les variables de l'application pour le mode production.
 - Le fichier [./env/dso-values-int-example.yaml](./env/dso-values-int-example.yaml) contient les variables de l'application pour le mode intégration.
@@ -152,30 +154,31 @@ Ce dépôt utilise des fichiers docker-compose pour construire les images docker
 ## Configuration du Keycloak
 
 Pour pouvoir gérer les droits utilisateurs des services le pod `server` doit accéder aux groupes des users. Cela signifie modifier le clientScope `profile`:  
-* Onglet `Mappers`
-* `Add Mappers > By configuration > Group Membership`
-  * Name: `groups`
-  * Token Claim Name: `groups`
-  * Full group path: `off`
-  * Add to ID token: `on`
-  * Add to access token: `on`
-  * Add to userinfo: `off`
+
+- Onglet `Mappers`
+- `Add Mappers > By configuration > Group Membership`
+  - Name: `groups`
+  - Token Claim Name: `groups`
+  - Full group path: `off`
+  - Add to ID token: `on`
+  - Add to access token: `on`
+  - Add to userinfo: `off`
 
 > En environnement de dev l'import par défaut prévoit déjà cette modification.
 
 Les utilisateurs faisant parti du group `admin` ont également accès à l'interface administrateur de la console une fois connectés via un onglet supplémentaire `Administration` dans le menu latéral de l'application.
 
-
 ## Tableau des ressources, terminologie
+
 | Console Cloud Pi | Projet                       | Environnement | Dépots                                  | Utilisateur / membre |
 | ---------------- | ---------------------------- | ------------- | --------------------------------------- | -------------------- |
-| **Openshift**    |                              | Namespace     |                                         |                      |
-| **ArgoCD**       |                              |               | (infra) Secret, AppProject, Application |                      |
-| **Gitlab**       | Group                        |               | Repository (Dépôt)                      | User                 |
-| **Harbor**       | Project                      |               | Repository [1]                          |                      |
-| **Keycloak**     |                              | Group         |                                         | User / member        |
-| **Sonar**        | User                         |               |                                         |                      |
-| **Nexus**        | Repositories, role, user ... |               |                                         |                      |
+| __Openshift__    |                              | Namespace     |                                         |                      |
+| __ArgoCD__       |                              |               | (infra) Secret, AppProject, Application |                      |
+| __Gitlab__       | Group                        |               | Repository (Dépôt)                      | User                 |
+| __Harbor__       | Project                      |               | Repository [1]                          |                      |
+| __Keycloak__     |                              | Group         |                                         | User / member        |
+| __Sonar__        | User                         |               |                                         |                      |
+| __Nexus__        | Repositories, role, user ... |               |                                         |                      |
 
 [1] N'est pas crée par la console mais par le produit de la CI
 

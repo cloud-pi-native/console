@@ -1,4 +1,4 @@
-import { EnhancedFastifyRequest } from '@/types'
+import { FastifyRequestWithSession } from '@/types'
 export const loggerConf = {
   development: {
     transport: {
@@ -16,7 +16,7 @@ export const loggerConf = {
 }
 
 interface ReqLogsInput {
-  req: EnhancedFastifyRequest<any>;
+  req: FastifyRequestWithSession<any>;
   error?: string | Error;
   description: string;
   extras?: Record<string, string>

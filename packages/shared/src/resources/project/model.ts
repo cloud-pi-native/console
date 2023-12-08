@@ -1,21 +1,6 @@
-import { projectStatus } from '../../utils/index.js'
-import type { OrganizationModel } from '../organization/index.js'
-import { UserModel } from '../user/model.js'
+import { FromSchema } from 'json-schema-to-ts'
+import { projectOpenApiSchema, serviceOpenApiSchema } from './index.js'
 
-export type ProjectModel = {
-  id: string
-  name: string
-  status: typeof projectStatus[number]
-  organizationId: OrganizationModel['id']
-  description: string
-  locked: boolean
-  services: object
-}
+export type ProjectModel = FromSchema<typeof projectOpenApiSchema>
 
-export type RoleModel = {
-  userId: string
-  projectId: ProjectModel['id']
-  role: string
-  user: UserModel
-  project?: ProjectModel
-}
+export type ServiceModel = FromSchema<typeof serviceOpenApiSchema>

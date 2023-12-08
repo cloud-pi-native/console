@@ -1,10 +1,16 @@
+import { FastifyInstance } from 'fastify'
 import {
   getClustersController,
 } from '../resources/cluster/controllers.js'
+import { getClustersSchema } from '@dso-console/shared'
 
-const router = async (app, _opt) => {
+const router = async (app: FastifyInstance, _opt) => {
   // Récupérer les quotas disponibles
-  await app.get('/', getClustersController)
+  app.get('/',
+    {
+      schema: getClustersSchema,
+    },
+    getClustersController)
 }
 
 export default router

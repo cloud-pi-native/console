@@ -24,7 +24,9 @@ export const keycloakRealm = process.env.KEYCLOAK_REALM
 export const keycloakClientId = process.env.KEYCLOAK_CLIENT_ID
 export const keycloakClientSecret = process.env.KEYCLOAK_CLIENT_SECRET
 export const keycloakRedirectUri = process.env.KEYCLOAK_REDIRECT_URI
-export const adminsUserId = process.env.ADMIN_KC_USER_ID ? process.env.ADMIN_KC_USER_ID.split(',') : []
+export const adminsUserId = process.env.ADMIN_KC_USER_ID
+  ? process.env.ADMIN_KC_USER_ID.split(',')
+  : []
 
 // keycloak plugin
 export const keycloakToken = process.env.KEYCLOAK_ADMIN_PASSWORD
@@ -33,7 +35,9 @@ export const keycloakUser = process.env.KEYCLOAK_ADMIN
 // plugins
 export const mockPlugins = process.env.MOCK_PLUGINS === 'true'
 export const projectRootDir = process.env.PROJECTS_ROOT_DIR
-export const disabledPlugins = process.env.DISABLED_PLUGINS ? process.env.DISABLED_PLUGINS.split(',') : []
+export const disabledPlugins = process.env.DISABLED_PLUGINS
+  ? process.env.DISABLED_PLUGINS.split(',')
+  : []
 
 // gitlab plugin
 export const gitlabToken = process.env.GITLAB_TOKEN

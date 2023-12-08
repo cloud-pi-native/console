@@ -1,50 +1,26 @@
+import { FromSchema } from 'json-schema-to-ts'
 import { ProjectModel } from '../project'
+import { createRepositorySchema, updateRepositorySchema } from './openApiSchema.js'
 
-export type CreateRepositoryDto = {
-  body: {
-  projectId: string
-  internalRepoName: string
-  externalRepoUrl: string
-  externalUserName?: string
-  externalToken?: string
-  isInfra: boolean
-  isPrivate: boolean
-  },
-  params: {
-    projectId: string
-  }
-}
+export type CreateRepositoryDto = FromSchema<typeof createRepositorySchema['body']>
 
-export type UpdateRepositoryDto = {
-  body: Partial<CreateRepositoryDto['body']> & {
-    id: string
-  },
-  params: {
-    projectId: string
-    repositoryId: string
-  }
-}
+export type UpdateRepositoryDto = FromSchema<typeof updateRepositorySchema['body']>
 
-export type DeleteRepositoryDto = {
-  params: {
-    projectId: string
-    repositoryId: string
-  }
-}
+export type RepositoryParams = FromSchema<typeof updateRepositorySchema['params']>
+
+export type ProjectRepositoriesParams = FromSchema<typeof createRepositorySchema['params']>
 
 export type GenerateCIFilesDto = {
-  body: {
-    typeLanguage?: string,
-    isJava?: boolean,
-    isNode?: boolean,
-    isPython?: boolean,
-    projectName?: ProjectModel['name'],
-    internalRepoName?: string,
-    nodeVersion?: string,
-    nodeInstallCommand?: string,
-    nodeBuildCommand?: string,
-    workingDir?: string,
-    javaVersion?: string,
-    artefactDir?: string,
-  },
+  typeLanguage?: string,
+  isJava?: boolean,
+  isNode?: boolean,
+  isPython?: boolean,
+  projectName?: ProjectModel['name'],
+  internalRepoName?: string,
+  nodeVersion?: string,
+  nodeInstallCommand?: string,
+  nodeBuildCommand?: string,
+  workingDir?: string,
+  javaVersion?: string,
+  artefactDir?: string,
 }

@@ -1,9 +1,9 @@
-import { UserModel } from '@dso-console/shared'
 import { type Hook, createHook } from './hook.js'
 import type { Environment, Organization } from './index.js'
 import type { RepositoryForEnv } from './repository.js'
 import type { Project } from './project.js'
 import { ClusterMix } from '@/types/index.js'
+import { User } from '@prisma/client'
 
 export type ResourceQuota = {
   memory: string
@@ -19,7 +19,7 @@ export type EnvironmentBase = {
 export type EnvironmentCreateArgs = {
   repositories: RepositoryForEnv[]
   quota: ResourceQuota
-  owner: UserModel
+  owner: User
   cluster: ClusterMix
 } & EnvironmentBase
 

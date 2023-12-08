@@ -57,7 +57,7 @@ export const getUserProjects = async (requestor: UserDto) => {
 export const checkCreateProject = async (
   owner: User,
   organizationName: Organization['name'],
-  data: CreateProjectDto['body'],
+  data: CreateProjectDto,
 ) => {
   await projectSchema.validateAsync(data, { context: { projectNameMaxLength: calcProjectNameMaxLength(organizationName) } })
 
@@ -84,7 +84,7 @@ const filterProject = (
   project: AsyncReturnType<typeof getProjectInfosQuery>,
 ) => {
   if (!checkInsufficientRoleInProject(userId, { roles: project.roles, minRole: 'owner' })) return project
-  project = exclude(project, ['roles', 'clusters'])
+  project = exclude(project, ['clusters'])
   // TODO définir les clés disponibles des environnements par niveau d'autorisation
   project.environments = project.environments.filter(env => !checkInsufficientPermissionInEnvironment(userId, env.permissions, 0))
   return project
@@ -123,7 +123,7 @@ export const getProjectSecrets = async (projectId: string, userId: User['id']) =
   return projectSecrets
 }
 
-export const createProject = async (dataDto: CreateProjectDto['body'], requestor: UserDto) => {
+export const createProject = async (dataDto: CreateProjectDto, requestor: UserDto) => {
   // Pré-requis
   const owner = await getUser(requestor)
   const organization = await getOrganizationById(dataDto.organizationId)
@@ -166,7 +166,7 @@ export const createProject = async (dataDto: CreateProjectDto['body'], requestor
   }
 }
 
-export const updateProject = async (data: UpdateProjectDto['body'], projectId: Project['id'], requestor: UserDto) => {
+export const updateProject = async (data: UpdateProjectDto, projectId: Project['id'], requestor: UserDto) => {
   const keysAllowedForUpdate = ['description']
   const dataFiltered = filterObjectByKeys(data, keysAllowedForUpdate)
 
@@ -251,7 +251,7 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
     }
     // -- fin - Suppression environnements --
 
-    // -- début - Suppression repositories --
+    // #region Suppression repositories --
     for (const repo of repositories) {
       const result = await hooks.deleteRepository.execute({
         environments: project.environments?.map(environment => environment?.name),
@@ -264,7 +264,7 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
       if (result.failed) throw new UnprocessableContentError('Echec des services à la suppression de l\'environnement')
       await deleteRepository(repo.id)
     }
-    // -- fin - Suppression repositories --
+    // #endregion Suppression repositories --
 
     // -- début - Retrait clusters --
     for (const cluster of project.clusters) {

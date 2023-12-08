@@ -1,13 +1,8 @@
-import { ProjectModel } from '../project/index.js'
-import { ClusterModel } from './model.js'
+import { FromSchema } from 'json-schema-to-ts'
+import { createClusterSchema, updateClusterSchema } from './openApiSchema.js'
 
-type ClusterBodyDto = Omit<ClusterModel, 'secretName'> & {
-  projectIds?: ProjectModel['id'][]
-  stageIds?: string[]
-  infos: string
-}
-export type UpdateClusterDto = {
-  body: Partial<ClusterBodyDto> & { id: ClusterModel['id'], infos: string }
-  params: { clusterId: ClusterModel['id'] }
-}
-export type CreateClusterDto = { body: Omit<ClusterBodyDto, 'id'> }
+export type CreateClusterDto = FromSchema<typeof createClusterSchema['body']>
+
+export type UpdateClusterDto = FromSchema<typeof updateClusterSchema['body']>
+
+export type ClusterParams = FromSchema<typeof updateClusterSchema['params']>

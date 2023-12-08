@@ -1,5 +1,5 @@
-import { type CreateClusterDto, type UpdateClusterDto } from '@dso-console/shared'
-import { EnhancedFastifyRequest } from '@/types/index.js'
+import { type CreateClusterDto, type UpdateClusterDto, type ClusterParams } from '@dso-console/shared'
+import { FastifyRequestWithSession } from '@/types/index.js'
 import { addReqLogs } from '@/utils/logger.js'
 import { sendCreated, sendNoContent, sendOk } from '@/utils/response.js'
 import {
@@ -9,9 +9,12 @@ import {
   getClusterAssociatedEnvironments,
   deleteCluster,
 } from './business.js'
+import { RouteHandler } from 'fastify'
 
 // GET
-export const getClusterAssociatedEnvironmentsController = async (req, res) => {
+export const getClusterAssociatedEnvironmentsController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: ClusterParams
+}>, res) => {
   const clusterId = req.params.clusterId
 
   const environments = await getClusterAssociatedEnvironments(clusterId)
@@ -28,7 +31,9 @@ export const getClusterAssociatedEnvironmentsController = async (req, res) => {
 }
 
 // POST
-export const createClusterController = async (req: EnhancedFastifyRequest<CreateClusterDto>, res) => {
+export const createClusterController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Body: CreateClusterDto
+}>, res) => {
   const data = req.body
   const userId = req.session?.user?.id
 
@@ -47,7 +52,10 @@ export const createClusterController = async (req: EnhancedFastifyRequest<Create
 }
 
 // PUT
-export const updateClusterController = async (req: EnhancedFastifyRequest<UpdateClusterDto>, res) => {
+export const updateClusterController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: ClusterParams
+  Body: UpdateClusterDto
+}>, res) => {
   const data = req.body
   const clusterId = req.params?.clusterId
 
@@ -64,7 +72,9 @@ export const updateClusterController = async (req: EnhancedFastifyRequest<Update
 }
 
 // DELETE
-export const deleteClusterController = async (req, res) => {
+export const deleteClusterController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: ClusterParams
+}>, res) => {
   const clusterId = req.params?.clusterId
   const userId = req.session.user?.id
 

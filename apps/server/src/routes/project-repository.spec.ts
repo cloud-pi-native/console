@@ -1,51 +1,15 @@
-import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
-import { User, createRandomDbSetup, getRandomLog, getRandomRepo, getRandomRole, getRandomUser } from '@dso-console/test-utils'
-import fastify from 'fastify'
-import fastifySession from '@fastify/session'
-import fastifyCookie from '@fastify/cookie'
-import fp from 'fastify-plugin'
-import { sessionConf } from '../utils/keycloak.js'
-import { getConnection, closeConnections } from '../connect.js'
-import projectRepositoryRouter from './project-repository.js'
-import { projectIsLockedInfo } from '@dso-console/shared'
 import prisma from '../__mocks__/prisma.js'
-
-vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
-vi.mock('../prisma.js')
-
-const app = fastify({ logger: false })
-  .register(fastifyCookie)
-  .register(fastifySession, sessionConf)
-
-const mockSessionPlugin = (app, opt, next) => {
-  app.addHook('onRequest', (req, res, next) => {
-    req.session = { user: getRequestor() }
-    next()
-  })
-  next()
-}
-
-const mockSession = (app) => {
-  app.register(fp(mockSessionPlugin))
-    .register(projectRepositoryRouter)
-}
-
-let requestor: User
-
-const setRequestor = (user: User) => {
-  requestor = user
-}
-
-const getRequestor = () => {
-  return requestor
-}
+import app, { getRequestor, setRequestor } from '../__mocks__/app.js'
+import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
+import { createRandomDbSetup, getRandomLog, getRandomRepo, getRandomRole, getRandomUser } from '@dso-console/test-utils'
+import { getConnection, closeConnections } from '../connect.js'
+import { projectIsLockedInfo } from '@dso-console/shared'
 
 describe('Project routes', () => {
   const requestor = getRandomUser()
   setRequestor(requestor)
 
   beforeAll(async () => {
-    mockSession(app)
     await getConnection()
   })
 
@@ -61,13 +25,13 @@ describe('Project routes', () => {
   describe('getRepositoryByIdController', () => {
     it('Should get a repository by its id', async () => {
       const projectInfos = createRandomDbSetup({}).project
-      projectInfos.roles = [...projectInfos.roles, getRandomRole(requestor.id, projectInfos.id)]
+      projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id)]
       const repoToGet = projectInfos.repositories[0]
 
       prisma.project.findUnique.mockResolvedValueOnce(projectInfos)
 
       const response = await app.inject()
-        .get(`${projectInfos.id}/repositories/${repoToGet.id}`)
+        .get(`/api/v1/projects/${projectInfos.id}/repositories/${repoToGet.id}`)
         .end()
 
       expect(response.statusCode).toEqual(200)
@@ -78,12 +42,12 @@ describe('Project routes', () => {
   describe('getProjectRepositoriesController', () => {
     it('Should get repositories of a project', async () => {
       const projectInfos = createRandomDbSetup({}).project
-      projectInfos.roles = [...projectInfos.roles, getRandomRole(requestor.id, projectInfos.id)]
+      projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id)]
 
       prisma.project.findUnique.mockResolvedValue(projectInfos)
 
       const response = await app.inject()
-        .get(`${projectInfos.id}/repositories`)
+        .get(`/api/v1/projects/${projectInfos.id}/repositories`)
         .end()
 
       expect(response.statusCode).toEqual(200)
@@ -97,7 +61,7 @@ describe('Project routes', () => {
     it('Should create a repository', async () => {
       const randomDbSetUp = createRandomDbSetup({})
       const projectInfos = randomDbSetUp.project
-      projectInfos.roles = [...projectInfos.roles, getRandomRole(requestor.id, projectInfos.id, 'owner')]
+      projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
       const newRepository = getRandomRepo(projectInfos.id)
 
       prisma.project.findUnique.mockResolvedValue(projectInfos)
@@ -106,13 +70,13 @@ describe('Project routes', () => {
         prisma.stage.findUnique.mockResolvedValueOnce(randomDbSetUp.stages?.find(dbSetUpstage => dbSetUpstage?.id === stage?.id))
       })
       prisma.repository.create.mockReturnValue(newRepository)
-      prisma.log.create.mockResolvedValue(getRandomLog('Create Repository', requestor.id))
+      prisma.log.create.mockResolvedValue(getRandomLog('Create Repository', getRequestor().id))
       prisma.repository.update.mockResolvedValue(newRepository)
       prisma.environment.findMany.mockResolvedValue([])
       prisma.repository.findMany.mockResolvedValue(projectInfos.repositories)
 
       const response = await app.inject()
-        .post(`${projectInfos.id}/repositories`)
+        .post(`/api/v1/projects/${projectInfos.id}/repositories`)
         .body(newRepository)
         .end()
 
@@ -127,12 +91,12 @@ describe('Project routes', () => {
       prisma.project.findUnique.mockResolvedValue(projectInfos)
 
       const response = await app.inject()
-        .post(`${projectInfos.id}/repositories`)
-        .body({})
+        .post(`/api/v1/projects/${projectInfos.id}/repositories`)
+        .body(getRandomRepo(projectInfos.id))
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(JSON.parse(response.body).message).toEqual(projectIsLockedInfo)
+      expect(response.json().message).toEqual(projectIsLockedInfo)
     })
   })
 
@@ -140,7 +104,7 @@ describe('Project routes', () => {
   describe('updateRepositoryController', () => {
     it('Should update a repository', async () => {
       const projectInfos = createRandomDbSetup({}).project
-      projectInfos.roles = [...projectInfos.roles, getRandomRole(requestor.id, projectInfos.id, 'owner')]
+      projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
       const repoToUpdate = projectInfos.repositories[0]
       const updatedKeys = {
         externalRepoUrl: 'new',
@@ -157,12 +121,12 @@ describe('Project routes', () => {
       prisma.project.findUnique.mockResolvedValue(projectInfos)
       prisma.project.update.mockResolvedValue(projectInfos)
       prisma.repository.update.mockResolvedValue(repoUpdated)
-      prisma.log.create.mockResolvedValue(getRandomLog('Update Repository', requestor.id))
+      prisma.log.create.mockResolvedValue(getRandomLog('Update Repository', getRequestor().id))
       prisma.environment.findMany.mockResolvedValue([])
       prisma.repository.findMany.mockResolvedValue(projectInfos.repositories)
 
       const response = await app.inject()
-        .put(`${projectInfos.id}/repositories/${repoToUpdate.id}`)
+        .put(`/api/v1/projects/${projectInfos.id}/repositories/${repoToUpdate.id}`)
         .body(updatedKeys)
         .end()
 
@@ -173,7 +137,7 @@ describe('Project routes', () => {
 
     it('Should not update a repository if invalid keys', async () => {
       const projectInfos = createRandomDbSetup({}).project
-      projectInfos.roles = [...projectInfos.roles, getRandomRole(requestor.id, projectInfos.id, 'owner')]
+      projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
       const repoToUpdate = projectInfos.repositories[0]
       const updatedKeys = {
         isPrivate: true,
@@ -184,12 +148,12 @@ describe('Project routes', () => {
       prisma.project.findUnique.mockResolvedValue(projectInfos)
 
       const response = await app.inject()
-        .put(`${projectInfos.id}/repositories/${repoToUpdate.id}`)
+        .put(`/api/v1/projects/${projectInfos.id}/repositories/${repoToUpdate.id}`)
         .body(updatedKeys)
         .end()
 
       expect(response.statusCode).toEqual(400)
-      expect(JSON.parse(response.body).message).toEqual('Le token est requis')
+      expect(response.json().message).toEqual('Le token est requis')
     })
 
     it('Should not update a repository if project locked', async () => {
@@ -203,12 +167,12 @@ describe('Project routes', () => {
       prisma.project.findUnique.mockResolvedValue(projectInfos)
 
       const response = await app.inject()
-        .put(`${projectInfos.id}/repositories/${repoToUpdate.id}`)
+        .put(`/api/v1/projects/${projectInfos.id}/repositories/${repoToUpdate.id}`)
         .body(updatedKeys)
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(JSON.parse(response.body).message).toEqual(projectIsLockedInfo)
+      expect(response.json().message).toEqual(projectIsLockedInfo)
     })
   })
 
@@ -217,7 +181,7 @@ describe('Project routes', () => {
     it('Should delete a repository', async () => {
       const randomDbSetUp = createRandomDbSetup({})
       const projectInfos = randomDbSetUp.project
-      projectInfos.roles = [...projectInfos.roles, getRandomRole(requestor.id, projectInfos.id, 'owner')]
+      projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
       const repoToDelete = projectInfos.repositories[0]
 
       prisma.project.findUnique.mockResolvedValue(projectInfos)
@@ -227,13 +191,13 @@ describe('Project routes', () => {
       })
       prisma.repository.findUnique.mockResolvedValue(repoToDelete)
       prisma.repository.update.mockResolvedValue(repoToDelete)
-      prisma.log.create.mockResolvedValue(getRandomLog('Delete Repository', requestor.id))
+      prisma.log.create.mockResolvedValue(getRandomLog('Delete Repository', getRequestor().id))
       prisma.repository.delete.mockResolvedValue(repoToDelete)
       prisma.environment.findMany.mockResolvedValue([])
       prisma.repository.findMany.mockResolvedValue([])
 
       const response = await app.inject()
-        .delete(`${projectInfos.id}/repositories/${repoToDelete.id}`)
+        .delete(`/api/v1/projects/${projectInfos.id}/repositories/${repoToDelete.id}`)
         .end()
 
       expect(response.statusCode).toEqual(200)
@@ -243,17 +207,17 @@ describe('Project routes', () => {
 
     it('Should not delete a repository if not owner', async () => {
       const projectInfos = createRandomDbSetup({}).project
-      projectInfos.roles = [...projectInfos.roles, getRandomRole(requestor.id, projectInfos.id, 'user')]
+      projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'user')]
       const repoToDelete = projectInfos.repositories[0]
 
       prisma.project.findUnique.mockResolvedValue(projectInfos)
 
       const response = await app.inject()
-        .delete(`${projectInfos.id}/repositories/${repoToDelete.id}`)
+        .delete(`/api/v1/projects/${projectInfos.id}/repositories/${repoToDelete.id}`)
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(JSON.parse(response.body).message).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
+      expect(response.json().message).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
     })
   })
 })

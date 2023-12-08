@@ -7,13 +7,13 @@ import { projectMissing } from '@/utils/const.js'
 export const useProjectRepositoryStore = defineStore('project-repository', () => {
   const projectStore = useProjectStore()
 
-  const addRepoToProject = async (newRepo: CreateRepositoryDto['body']) => {
+  const addRepoToProject = async (newRepo: CreateRepositoryDto) => {
     if (!projectStore.selectedProject) throw new Error(projectMissing)
     await api.addRepo(projectStore.selectedProject.id, newRepo)
     await projectStore.getUserProjects()
   }
 
-  const updateRepo = async (repo: UpdateRepositoryDto['body']) => {
+  const updateRepo = async (repo: UpdateRepositoryDto) => {
     if (!projectStore.selectedProject) throw new Error(projectMissing)
     await api.updateRepo(projectStore.selectedProject.id, repo)
     await projectStore.getUserProjects()

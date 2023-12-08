@@ -1,11 +1,12 @@
 import { addReqLogs } from '@/utils/logger.js'
 import { sendOk, sendCreated } from '@/utils/response.js'
 import { createOrganization, fetchOrganizations, getAllOrganization, updateOrganization } from './business.js'
-import { EnhancedFastifyRequest } from '@/types/index.js'
-import { CreateOrganizationDto, UpdateOrganizationDto } from '@dso-console/shared'
+import { FastifyRequestWithSession } from '@/types/index.js'
+import { type CreateOrganizationDto, type UpdateOrganizationDto, type OrganizationParams } from '@dso-console/shared'
+import { RouteHandler } from 'fastify'
 
 // GET
-export const getAllOrganizationsController = async (req, res) => {
+export const getAllOrganizationsController: RouteHandler = async (req: FastifyRequestWithSession<void>, res) => {
   const organizations = await getAllOrganization()
   addReqLogs({
     req,
@@ -15,7 +16,9 @@ export const getAllOrganizationsController = async (req, res) => {
 }
 
 // POST
-export const createOrganizationController = async (req: EnhancedFastifyRequest<CreateOrganizationDto>, res) => {
+export const createOrganizationController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Body: CreateOrganizationDto
+}>, res) => {
   const data = req.body
   const organization = await createOrganization(data)
 
@@ -30,8 +33,11 @@ export const createOrganizationController = async (req: EnhancedFastifyRequest<C
 }
 
 // PUT
-export const updateOrganizationController = async (req: EnhancedFastifyRequest<UpdateOrganizationDto>, res) => {
-  const name = req.params.orgName
+export const updateOrganizationController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Body: UpdateOrganizationDto
+  Params: OrganizationParams
+}>, res) => {
+  const name = req.params?.orgName
   const { active, label, source } = req.body
 
   const organization = await updateOrganization(name, active, label, source)
@@ -46,7 +52,7 @@ export const updateOrganizationController = async (req: EnhancedFastifyRequest<U
   sendCreated(res, organization)
 }
 
-export const fetchOrganizationsController = async (req, res) => {
+export const fetchOrganizationsController: RouteHandler = async (req: FastifyRequestWithSession<void>, res) => {
   const userId = req.session.user.id
 
   const consoleOrganizations = await fetchOrganizations(userId)

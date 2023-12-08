@@ -1,8 +1,10 @@
 import { addReqLogs } from '@/utils/logger.js'
 import { sendOk } from '@/utils/response.js'
 import { getAllProjects } from './business.js'
+import { RouteHandler } from 'fastify'
+import { FastifyRequestWithSession } from '@/types/index.js'
 
-export const getAllProjectsController = async (req, res) => {
+export const getAllProjectsController: RouteHandler = async (req: FastifyRequestWithSession<void>, res) => {
   const allProjects = await getAllProjects()
 
   addReqLogs({

@@ -8,10 +8,10 @@ import {
   _dropProjectsTable,
   _dropUsersTable,
   _dropRolesTable,
-  _dropOrganizationsTable
+  _dropOrganizationsTable,
 } from '@/resources/queries-index.js'
-import app from './app.js'
 import prisma from './__mocks__/prisma.js'
+import app from './__mocks__/app.js'
 import { PrismaClientInitializationError } from '@prisma/client/runtime/library.js'
 
 vi.mock('@/resources/queries-index.js')
@@ -26,8 +26,7 @@ vi.mock('./models/organization.js', () => getModel('getOrganizationModel'))
 vi.mock('./app.js')
 vi.mock('./prisma.js')
 
-
-function getModel(modelName) {
+function getModel (modelName) {
   return {
     [modelName]: vi.fn(() => ({
       sync: vi.fn(),
@@ -76,12 +75,12 @@ describe('connect', () => {
   })
 
   it('Should fail to connect once, then connect to postgres', async () => {
-    let errorToCatch = new PrismaClientInitializationError('Failed to connect', '2.19.0', 'P1001')
+    const errorToCatch = new PrismaClientInitializationError('Failed to connect', '2.19.0', 'P1001')
 
     prisma.$connect.mockRejectedValueOnce(errorToCatch)
     await getConnection()
 
-    expect(app.log.info.mock.calls).toHaveLength(6)
+    expect(app.log.info.mock.calls).toHaveLength(5)
     expect(app.log.info.mock.calls).toContainEqual(['Trying to connect to Postgres with: undefined'])
     expect(app.log.info.mock.calls).toContainEqual(['Could not connect to Postgres: Failed to connect'])
     expect(app.log.info.mock.calls).toContainEqual(['Retrying (4 tries left)'])

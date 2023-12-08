@@ -1,12 +1,4 @@
-import { ClusterPrivacy, Cluster, User } from './misc.js'
+import { FromSchema } from 'json-schema-to-ts'
+import { clusterOpenApiSchema } from './index.js'
 
-export type ClusterModel = {
-  id: string
-  label: string
-  user: Pick<User, 'username' | 'password' | 'token' | 'certData' | 'keyData'>
-  cluster: Omit<Cluster, 'caFile'>
-  secretName: string
-  clusterResources: boolean
-  privacy: ClusterPrivacy
-  infos: string
-}
+export type ClusterModel = FromSchema<typeof clusterOpenApiSchema>

@@ -1,11 +1,11 @@
-import { addLogs, deleteRepository as deleteRepositoryQuery, getProjectInfos, getProjectInfosAndRepos, initializeRepository, lockProject, updateRepository as updateRepositoryQuery, updateRepositoryCreated, updateRepositoryDeleting, updateRepositoryFailed } from '@/resources/queries-index.js'
+import { addLogs, deleteRepository as deleteRepositoryQuery, getProjectInfos, getProjectInfosAndRepos, initializeRepository, lockProject, updateRepository as updateRepositoryQuery, updateRepositoryCreated, updateRepositoryDeleting, updateRepositoryFailed, getUserById } from '@/resources/queries-index.js'
 import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import { Project, Repository, User } from '@prisma/client'
 import { projectRootDir } from '@/utils/env.js'
 import { hooks } from '@/plugins/index.js'
 import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { CreateRepositoryDto, UpdateRepositoryDto } from '@dso-console/shared/src/resources/repository/dto.js'
-import { ProjectRoles, exclude } from '@dso-console/shared'
+import { ProjectRoles } from '@dso-console/shared'
 import { checkInsufficientRoleInProject, checkRoleAndLocked } from '@/utils/controller.js'
 import { gitlabUrl } from '@/plugins/core/gitlab/utils.js'
 
@@ -51,18 +51,10 @@ export const checkUpsertRepository = async (
   if (errorMessage) throw new ForbiddenError(errorMessage, undefined)
 }
 
-type KeycloakUser = {
-  id: User['id'],
-  firstName: User['firstName'],
-  lastName: User['lastName'],
-  email: User['email'],
-  groups?: Array<string>,
-}
-
 export const checkHookValidation = async (
-  user: KeycloakUser,
+  user: User,
 ) => {
-  const isValid = await hooks.createProject.validate({ owner: exclude(user, ['groups']) })
+  const isValid = await hooks.createProject.validate({ owner: user })
   if (isValid?.failed) {
     const reasons = Object.values(isValid)
       // @ts-ignore
@@ -76,17 +68,25 @@ export const checkHookValidation = async (
 
 export const createRepository = async (
   projectId: Project['id'],
-  data: CreateRepositoryDto['body'],
+  data: CreateRepositoryDto,
   userId: User['id'],
 ) => {
+  await checkUpsertRepository(userId, projectId, 'owner')
+
+  const user = await getUserById(userId)
+
+  await checkHookValidation(user)
+
   const project = await getProjectInfosAndRepos(projectId)
 
   if (project.repositories?.find(repo => repo.internalRepoName === data.internalRepoName)) throw new BadRequestError(`Le nom du dépôt interne ${data.internalRepoName} existe déjà en base pour ce projet`, undefined)
 
   const dbData = { ...data }
+  dbData.projectId = projectId
   delete dbData.externalToken
 
   await lockProject(projectId)
+  // @ts-ignore
   const repo = await initializeRepository(dbData)
 
   try {
@@ -122,7 +122,7 @@ export const createRepository = async (
 export const updateRepository = async (
   projectId: Project['id'],
   repositoryId: Repository['id'],
-  data: Partial<UpdateRepositoryDto['body']>,
+  data: Partial<UpdateRepositoryDto>,
   userId: User['id'],
 ) => {
   const project = await getProjectInfos(projectId)

@@ -1,11 +1,11 @@
-import { EnhancedFastifyRequest } from '@/types'
+import { FastifyRequestWithSession } from '@/types'
 import { addReqLogs } from '@/utils/logger.js'
 import { sendCreated, sendNoContent, sendOk } from '@/utils/response.js'
 import { createStage, getStageAssociatedEnvironments, deleteStage, updateStageClusters } from './business.js'
 import { CreateStageDto, DeleteStageDto, UpdateStageClustersDto } from '@dso-console/shared'
 
 // GET
-export const getStageAssociatedEnvironmentsController = async (req: EnhancedFastifyRequest<DeleteStageDto>, res) => {
+export const getStageAssociatedEnvironmentsController = async (req: FastifyRequestWithSession<DeleteStageDto>, res) => {
   const stageId = req.params.stageId
 
   const environments = await getStageAssociatedEnvironments(stageId)
@@ -22,7 +22,7 @@ export const getStageAssociatedEnvironmentsController = async (req: EnhancedFast
 }
 
 // POST
-export const createStageController = async (req: EnhancedFastifyRequest<CreateStageDto>, res) => {
+export const createStageController = async (req: FastifyRequestWithSession<CreateStageDto>, res) => {
   const data = req.body
 
   const stage = await createStage(data)
@@ -39,7 +39,7 @@ export const createStageController = async (req: EnhancedFastifyRequest<CreateSt
 }
 
 // PATCH
-export const updateStageClustersController = async (req: EnhancedFastifyRequest<UpdateStageClustersDto>, res) => {
+export const updateStageClustersController = async (req: FastifyRequestWithSession<UpdateStageClustersDto>, res) => {
   const stageId = req.params.stageId
   const clusterIds = req.body.clusterIds
 
@@ -57,7 +57,7 @@ export const updateStageClustersController = async (req: EnhancedFastifyRequest<
 }
 
 // DELETE
-export const deleteStageController = async (req: EnhancedFastifyRequest<DeleteStageDto>, res) => {
+export const deleteStageController = async (req: FastifyRequestWithSession<DeleteStageDto>, res) => {
   const stageId = req.params.stageId
 
   await deleteStage(stageId)

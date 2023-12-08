@@ -5,7 +5,7 @@ import { CreateClusterDto, UpdateClusterDto, clusterSchema, exclude } from '@dso
 import { User } from '@prisma/client'
 import { linkClusterToStages } from '@/resources/stage/business.js'
 
-export const checkClusterProjectIds = (data: CreateClusterDto['body']) => {
+export const checkClusterProjectIds = (data: CreateClusterDto) => {
   // si le cluster est dedicated, la clé projectIds doit être renseignée
   return data.privacy === 'public' || !data.projectIds
     ? []
@@ -31,7 +31,7 @@ export const getClusterAssociatedEnvironments = async (clusterId: string) => {
   }
 }
 
-export const createCluster = async (data: CreateClusterDto['body'], userId: User['id']) => {
+export const createCluster = async (data: CreateClusterDto, userId: User['id']) => {
   await clusterSchema.validateAsync(data, { presence: 'required' })
 
   const isLabelTaken = await getClusterByLabel(data.label)
@@ -56,7 +56,7 @@ export const createCluster = async (data: CreateClusterDto['body'], userId: User
   return cluster
 }
 
-export const updateCluster = async (data: UpdateClusterDto['body'], clusterId: UpdateClusterDto['body']['id']) => {
+export const updateCluster = async (data: UpdateClusterDto, clusterId: UpdateClusterDto['id']) => {
   if (data?.privacy === 'public') delete data.projectIds
 
   await clusterSchema.validateAsync(data, { presence: 'optional' })

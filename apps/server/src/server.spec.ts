@@ -1,6 +1,5 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
-import fp from 'fastify-plugin'
-import app from './app.js'
+import app from './__mocks__/app.js'
 import { startServer, handleExit, exitGracefully } from './server.js'
 import { getConnection, closeConnections } from './connect.js'
 import { initDb } from './init/db/index.js'
@@ -9,7 +8,6 @@ vi.mock('./app.js')
 vi.mock('./connect.js')
 vi.mock('./utils/logger.js')
 vi.mock('./init/db/index.js', () => ({ initDb: vi.fn() }))
-vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 
 describe('Server', () => {
   beforeEach(() => {
@@ -26,7 +24,7 @@ describe('Server', () => {
 
   it('Should getConnection', async () => {
     await startServer().catch(err => console.warn(err))
-    
+
     expect(getConnection.mock.calls).toHaveLength(1)
     expect(initDb.mock.calls).toHaveLength(1)
     expect(app.listen.mock.calls).toHaveLength(1)
@@ -51,7 +49,7 @@ describe('Server', () => {
     await startServer()
 
     expect(initDb.mock.calls).toHaveLength(1)
-    expect(app.log.info.mock.calls).toHaveLength(4)
+    expect(app.log.info.mock.calls).toHaveLength(3)
   })
 
   it('Should throw an error on initDb import', async () => {
@@ -66,28 +64,24 @@ describe('Server', () => {
     }
 
     expect(initDb.mock.calls).toHaveLength(1)
-    expect(app.log.info.mock.calls).toHaveLength(3)
+    expect(app.log.info.mock.calls).toHaveLength(2)
     expect(response).toMatchObject(error)
   })
 
   it('Should call closeConnections without parameter', async () => {
-    process.exit = vi.fn()
-
     await exitGracefully()
 
     expect(closeConnections.mock.calls).toHaveLength(1)
     expect(closeConnections.mock.calls[0]).toHaveLength(0)
-    expect(app.log.error.mock.calls).toHaveLength(2)
+    expect(app.log.error.mock.calls).toHaveLength(0)
   })
 
   it('Should log an error', async () => {
-    process.exit = vi.fn()
-
     await exitGracefully(new Error())
 
     expect(closeConnections.mock.calls).toHaveLength(1)
     expect(closeConnections.mock.calls[0]).toHaveLength(0)
-    expect(app.log.error.mock.calls).toHaveLength(3)
+    expect(app.log.error.mock.calls).toHaveLength(1)
     expect(app.log.error.mock.calls[0][0]).toBeInstanceOf(Error)
   })
 })
