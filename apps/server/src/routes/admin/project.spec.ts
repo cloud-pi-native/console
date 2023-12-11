@@ -1,7 +1,7 @@
 import prisma from '../../__mocks__/prisma.js'
 import app, { setRequestor } from '../../__mocks__/app.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll, beforeEach } from 'vitest'
-import { getConnection, closeConnections } from '@/connect.js'
+import { getConnection, closeConnections } from '../../connect.js'
 import { adminGroupPath } from '@dso-console/shared'
 import { getRandomProject, getRandomUser, repeatFn } from '@dso-console/test-utils'
 
@@ -63,6 +63,57 @@ describe('Admin projects routes', () => {
 
       expect(response.statusCode).toEqual(403)
       expect(response.json().message).toEqual('Vous n\'avez pas les droits administrateur')
+    })
+  })
+
+  // PATCH
+  describe('handleProjectLockingController', () => {
+    it('Should lock a project', async () => {
+      const project = getRandomProject()
+
+      // @ts-ignore
+      prisma.project.update.mockResolvedValue(project)
+
+      const response = await app.inject()
+        .patch(`/api/v1/admin/projects/${project.id}`)
+        .body({ lock: true })
+        .end()
+
+      expect(response.statusCode).toEqual(204)
+    })
+
+    it('Should unlock a project if not failed', async () => {
+      const project = getRandomProject()
+      project.status = 'created'
+
+      prisma.environment.findMany.mockResolvedValue([])
+      prisma.repository.findMany.mockResolvedValue([])
+      // @ts-ignore
+      prisma.project.update.mockResolvedValue(project)
+
+      const response = await app.inject()
+        .patch(`/api/v1/admin/projects/${project.id}`)
+        .body({ lock: false })
+        .end()
+
+      expect(response.statusCode).toEqual(204)
+    })
+
+    it('Should not unlock a project if failed', async () => {
+      const project = getRandomProject()
+      project.status = 'failed'
+
+      prisma.environment.findMany.mockResolvedValue([])
+      prisma.repository.findMany.mockResolvedValue([])
+      // @ts-ignore
+      prisma.project.update.mockResolvedValue(project)
+
+      const response = await app.inject()
+        .patch(`/api/v1/admin/projects/${project.id}`)
+        .body({ lock: false })
+        .end()
+
+      expect(response.statusCode).toEqual(204)
     })
   })
 })

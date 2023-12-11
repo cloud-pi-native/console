@@ -1,5 +1,6 @@
 import {
   getAllProjectsController,
+  handleProjectLockingController,
 } from '@/resources/project/admin/controllers.js'
 import { getAllProjectsSchema } from '@dso-console/shared'
 import { FastifyInstance } from 'fastify'
@@ -11,6 +12,9 @@ const router = async (app: FastifyInstance, _opt) => {
       schema: getAllProjectsSchema,
     },
     getAllProjectsController)
+
+  // (Dé)verrouiller un projet
+  app.patch('/:projectId', handleProjectLockingController)
 }
 
 export default router

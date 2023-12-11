@@ -1,6 +1,6 @@
 import { getModelById } from './func'
 
-const owner = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
+const defaultOwner = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
 
 Cypress.Commands.add('kcLogout', () => {
   cy.get('a.fr-btn').should('contain', 'Se déconnecter').click()
@@ -29,7 +29,7 @@ Cypress.Commands.add('goToProjects', () => {
     .url().should('contain', '/projects')
 })
 
-Cypress.Commands.add('createProject', (project) => {
+Cypress.Commands.add('createProject', (project, ownerEmail = defaultOwner.email) => {
   cy.intercept('POST', '/api/v1/projects').as('postProject')
   cy.intercept('GET', '/api/v1/projects').as('getProjects')
 
@@ -43,7 +43,7 @@ Cypress.Commands.add('createProject', (project) => {
     .getByDataTestid('createProjectLink').click()
     .get('h1').should('contain', 'Commander un espace projet')
     .get('[data-testid^="repoFieldset-"]').should('not.exist')
-    .get('p.fr-alert__description').should('contain', owner.email)
+    .get('p.fr-alert__description').should('contain', ownerEmail)
     .get('select#organizationId-select').select(newProject.orgName)
     .getByDataTestid('nameInput').find('input').clear().type(newProject.name)
     .getByDataTestid('nameInput').should('not.have.class', 'fr-input--error')

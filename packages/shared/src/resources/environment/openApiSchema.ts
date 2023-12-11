@@ -77,6 +77,20 @@ export const environmentOpenApiSchema = {
               type: 'array',
               items: {
                 type: 'object',
+                properties: {
+                  id: {
+                    type: 'string',
+                  },
+                  quotaId: {
+                    type: 'string',
+                  },
+                  stageId: {
+                    type: 'string',
+                  },
+                  status: {
+                    type: 'string',
+                  },
+                },
               },
             },
           },
@@ -98,6 +112,20 @@ export const environmentOpenApiSchema = {
               type: 'array',
               items: {
                 type: 'object',
+                properties: {
+                  id: {
+                    type: 'string',
+                  },
+                  quotaId: {
+                    type: 'string',
+                  },
+                  stageId: {
+                    type: 'string',
+                  },
+                  status: {
+                    type: 'string',
+                  },
+                },
               },
             },
           },

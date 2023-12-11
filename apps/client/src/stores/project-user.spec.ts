@@ -25,7 +25,7 @@ describe('Counter Store', () => {
     apiClientPost.mockReturnValueOnce(Promise.resolve({ data: {} }))
     const projectUserStore = useProjectUserStore()
 
-    await projectUserStore.addUserToProject({ id: 'userId', email: 'michel@test.com', firstName: 'Michel', lastName: 'MICHEL' })
+    await projectUserStore.addUserToProject('projectId', { id: 'userId', email: 'michel@test.com', firstName: 'Michel', lastName: 'MICHEL' })
 
     expect(apiClientPost).toHaveBeenCalledTimes(1)
     expect(apiClientPost.mock.calls[0][0]).toEqual('/projects/projectId/users')
@@ -35,7 +35,7 @@ describe('Counter Store', () => {
     apiClientDelete.mockReturnValueOnce(Promise.resolve({ data: {} }))
     const projectUserStore = useProjectUserStore()
 
-    await projectUserStore.removeUserFromProject('userId')
+    await projectUserStore.removeUserFromProject('projectId', 'userId')
 
     expect(apiClientDelete).toHaveBeenCalledTimes(1)
     expect(apiClientDelete.mock.calls[0][0]).toEqual('/projects/projectId/users/userId')

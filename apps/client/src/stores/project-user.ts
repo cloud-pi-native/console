@@ -1,26 +1,22 @@
 import { defineStore } from 'pinia'
 import api from '@/api/index.js'
 import { useProjectStore } from '@/stores/project.js'
-import type { UserModel } from '@dso-console/shared'
-import { projectMissing } from '@/utils/const.js'
+import type { AddUserDto, UserModel } from '@dso-console/shared'
 
 export const useProjectUserStore = defineStore('project-user', () => {
   const projectStore = useProjectStore()
 
-  const getMatchingUsers = async (letters: string) => {
-    if (!projectStore.selectedProject) throw new Error(projectMissing)
-    return await api.getMatchingUsers(projectStore.selectedProject.id, letters)
+  const getMatchingUsers = async (projectId: string, letters: string) => {
+    return await api.getMatchingUsers(projectId, letters)
   }
 
-  const addUserToProject = async (user: UserModel) => {
-    if (!projectStore.selectedProject) throw new Error(projectMissing)
-    await api.addUser(projectStore.selectedProject.id, user)
+  const addUserToProject = async (projectId: AddUserDto['params']['projectId'], user: AddUserDto['body']) => {
+    await api.addUser(projectId, user)
     await projectStore.getUserProjects()
   }
 
-  const removeUserFromProject = async (userId: UserModel['id']) => {
-    if (!projectStore.selectedProject) throw new Error(projectMissing)
-    await api.removeUser(projectStore.selectedProject.id, userId)
+  const removeUserFromProject = async (projectId: string, userId: UserModel['id']) => {
+    await api.removeUser(projectId, userId)
     await projectStore.getUserProjects()
   }
 

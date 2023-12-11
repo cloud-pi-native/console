@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import api from '@/api/index.js'
 import { useProjectStore } from '@/stores/project.js'
-import type { EnvironmentModel, InitializeEnvironmentDto, UpdateEnvironmentDto } from '@dso-console/shared'
+import type { EnvironmentModel, InitializeEnvironmentDto, ProjectModel, UpdateEnvironmentDto } from '@dso-console/shared'
 import { projectMissing } from '@/utils/const'
 
 export const useProjectEnvironmentStore = defineStore('project-environment', () => {
@@ -13,9 +13,9 @@ export const useProjectEnvironmentStore = defineStore('project-environment', () 
     await projectStore.getUserProjects()
   }
 
-  const updateEnvironment = async (environment: UpdateEnvironmentDto['body'] & { id: EnvironmentModel['id']}) => {
-    if (!projectStore.selectedProject) throw new Error(projectMissing)
-    await api.updateEnvironment(projectStore.selectedProject.id, environment.id, environment)
+  const updateEnvironment = async (environment: UpdateEnvironmentDto['body'], projectId: ProjectModel['id']) => {
+    // @ts-ignore
+    await api.updateEnvironment(projectId, environment?.id, environment)
     await projectStore.getUserProjects()
   }
 

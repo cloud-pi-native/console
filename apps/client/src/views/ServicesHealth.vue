@@ -37,7 +37,7 @@ onBeforeMount(async () => {
       secondary
       icon-only
       icon="ri-refresh-fill"
-      :disabled="isUpdating === true"
+      :disabled="!!isUpdating"
       @click="checkServicesHealth()"
     />
   </div>

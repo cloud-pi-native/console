@@ -83,11 +83,11 @@ export const updateEnvironmentController: RouteHandler = async (req: FastifyRequ
   Params: EnvironmentParams,
 }>, res) => {
   const data = req.body
-  const userId = req.session?.user?.id
+  const user = req.session?.user
   const { projectId, environmentId } = req.params
 
   const environment = await updateEnvironment({
-    userId,
+    user,
     projectId,
     environmentId,
     quotaStageId: data.quotaStageId,
