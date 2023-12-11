@@ -1,18 +1,12 @@
-import { ProjectModel, RoleModel } from '../project'
-import { UserModel } from '../user'
+import { FromSchema } from 'json-schema-to-ts'
+import { addUserToProjectSchema, getMatchingUsersSchema, getProjectUsersSchema, updateUserProjectRoleSchema } from './openApiSchema.js'
 
-export type AddUserDto = {
-  body: UserModel['email']
-  params: {
-    projectId: ProjectModel['id']
-  }
-}
+export type AddUserToProjectDto = FromSchema<typeof addUserToProjectSchema['body']>
 
-export type UpdateUserDto = {
-  body: {
-    id?: UserModel['id']
-    email: UserModel['email']
-    role: RoleModel['role']
-  }
-  params: AddUserDto['params'] & { id: UserModel['id'] }
-}
+export type UpdateUserProjectRoleDto = FromSchema<typeof updateUserProjectRoleSchema['body']>
+
+export type LettersQuery = FromSchema<typeof getMatchingUsersSchema['query']>
+
+export type UserParams = FromSchema<typeof getProjectUsersSchema['params']>
+
+export type RoleParams = FromSchema<typeof updateUserProjectRoleSchema['params']>

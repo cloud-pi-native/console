@@ -5,6 +5,7 @@ import {
   deleteRepository,
   getClusterById,
   getOrganizationById,
+  getProjectById,
   getProjectByNames,
   getProjectInfosAndRepos,
   getProjectInfos as getProjectInfosQuery,
@@ -25,7 +26,7 @@ import { AsyncReturnType, checkInsufficientPermissionInEnvironment, checkInsuffi
 import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import { PluginResult } from '@/plugins/hooks/hook.js'
-import { CreateProjectDto, UpdateProjectDto, calcProjectNameMaxLength, projectIsLockedInfo, projectSchema, exclude } from '@dso-console/shared'
+import { CreateProjectDto, UpdateProjectDto, calcProjectNameMaxLength, projectIsLockedInfo, projectSchema, exclude, adminGroupPath } from '@dso-console/shared'
 import { CreateProjectExecArgs, ProjectBase, UpdateProjectExecArgs } from '@/plugins/hooks/project.js'
 import { filterObjectByKeys } from '@/utils/queries-tools.js'
 import { projectRootDir } from '@/utils/env.js'
@@ -57,7 +58,7 @@ export const getUserProjects = async (requestor: UserDto) => {
 export const checkCreateProject = async (
   owner: User,
   organizationName: Organization['name'],
-  data: CreateProjectDto['body'],
+  data: CreateProjectDto,
 ) => {
   await projectSchema.validateAsync(data, { context: { projectNameMaxLength: calcProjectNameMaxLength(organizationName) } })
 
@@ -84,7 +85,7 @@ const filterProject = (
   project: AsyncReturnType<typeof getProjectInfosQuery>,
 ) => {
   if (!checkInsufficientRoleInProject(userId, { roles: project.roles, minRole: 'owner' })) return project
-  project = exclude(project, ['roles', 'clusters'])
+  project = exclude(project, ['clusters'])
   // TODO définir les clés disponibles des environnements par niveau d'autorisation
   project.environments = project.environments.filter(env => !checkInsufficientPermissionInEnvironment(userId, env.permissions, 0))
   return project
@@ -123,7 +124,7 @@ export const getProjectSecrets = async (projectId: string, userId: User['id']) =
   return projectSecrets
 }
 
-export const createProject = async (dataDto: CreateProjectDto['body'], requestor: UserDto) => {
+export const createProject = async (dataDto: CreateProjectDto, requestor: UserDto) => {
   // Pré-requis
   const owner = await getUser(requestor)
   const organization = await getOrganizationById(dataDto.organizationId)
@@ -159,14 +160,15 @@ export const createProject = async (dataDto: CreateProjectDto['body'], requestor
     }
     await updateProjectServices(project.id, services)
     await updateProjectCreated(project.id)
-    return unlockProjectIfNotFailed(project.id)
+    await unlockProjectIfNotFailed(project.id)
+    return getProjectById(project.id)
   } catch (error) {
     await updateProjectFailed(project.id)
     throw new Error(error?.message)
   }
 }
 
-export const updateProject = async (data: UpdateProjectDto['body'], projectId: Project['id'], requestor: UserDto) => {
+export const updateProject = async (data: UpdateProjectDto, projectId: Project['id'], requestor: UserDto) => {
   const keysAllowedForUpdate = ['description']
   const dataFiltered = filterObjectByKeys(data, keysAllowedForUpdate)
 
@@ -213,7 +215,8 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
   if (!project) throw new NotFoundError('Projet introuvable')
 
   const insufficientRoleErrorMessage = checkInsufficientRoleInProject(requestor.id, { roles: project.roles, minRole: 'owner' })
-  if (insufficientRoleErrorMessage) throw new ForbiddenError(insufficientRoleErrorMessage)
+  // @ts-ignore
+  if (insufficientRoleErrorMessage && !requestor.groups?.includes(adminGroupPath)) throw new ForbiddenError(insufficientRoleErrorMessage)
 
   // Actions
   try {
@@ -251,7 +254,7 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
     }
     // -- fin - Suppression environnements --
 
-    // -- début - Suppression repositories --
+    // #region Suppression repositories --
     for (const repo of repositories) {
       const result = await hooks.deleteRepository.execute({
         environments: project.environments?.map(environment => environment?.name),
@@ -264,7 +267,7 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
       if (result.failed) throw new UnprocessableContentError('Echec des services à la suppression de l\'environnement')
       await deleteRepository(repo.id)
     }
-    // -- fin - Suppression repositories --
+    // #endregion Suppression repositories --
 
     // -- début - Retrait clusters --
     for (const cluster of project.clusters) {

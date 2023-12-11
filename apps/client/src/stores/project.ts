@@ -17,7 +17,7 @@ export const useProjectStore = defineStore('project', () => {
     selectedProjectOwner.value = roles?.find(role => role.role === 'owner')?.user
   }
 
-  const updateProject = async (projectId: ProjectInfos['id'], data: UpdateProjectDto['body']) => {
+  const updateProject = async (projectId: ProjectInfos['id'], data: UpdateProjectDto) => {
     await api.updateProject(projectId, data)
     await getUserProjects()
   }

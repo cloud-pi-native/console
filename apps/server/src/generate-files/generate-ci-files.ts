@@ -4,10 +4,10 @@ import path from 'node:path'
 
 import { addReqLogs } from '@/utils/logger.js'
 import { sendCreated } from '@/utils/response.js'
-import { EnhancedFastifyRequest } from '@/types'
+import { FastifyRequestWithSession } from '@/types'
 import { GenerateCIFilesDto } from '@dso-console/shared'
 
-export const generateCIFiles = async (req: EnhancedFastifyRequest<GenerateCIFilesDto>, res) => {
+export const generateCIFiles = async (req: FastifyRequestWithSession<GenerateCIFilesDto>, res) => {
   const content: Record<string, any> = {}
   const data = req.body
 

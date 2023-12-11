@@ -1,22 +1,40 @@
+import { FastifyInstance } from 'fastify'
 import {
   getEnvironmentByIdController,
   initializeEnvironmentController,
   updateEnvironmentController,
   deleteEnvironmentController,
 } from '../resources/environment/controllers.js'
+import { getEnvironmentByIdSchema, initializeEnvironmentSchema, updateEnvironmentSchema, deleteEnvironmentSchema, type InitializeEnvironmentDto, type UpdateEnvironmentDto } from '@dso-console/shared'
 
-const router = async (app, _opt) => {
+const router = async (app: FastifyInstance, _opt) => {
   // Récupérer un environnement par son id
-  await app.get('/:projectId/environments/:environmentId', getEnvironmentByIdController)
+  app.get('/:projectId/environments/:environmentId',
+    {
+      schema: getEnvironmentByIdSchema,
+    },
+    getEnvironmentByIdController)
 
   // Créer un environnement
-  await app.post('/:projectId/environments', initializeEnvironmentController)
+  app.post<{ Body: InitializeEnvironmentDto }>('/:projectId/environments',
+    {
+      schema: initializeEnvironmentSchema,
+    },
+    initializeEnvironmentController)
 
   // Mettre à jour un environnement
-  await app.put('/:projectId/environments/:environmentId', updateEnvironmentController)
+  app.put<{ Body: UpdateEnvironmentDto }>('/:projectId/environments/:environmentId',
+    {
+      schema: updateEnvironmentSchema,
+    },
+    updateEnvironmentController)
 
   // Supprimer un environnement
-  await app.delete('/:projectId/environments/:environmentId', deleteEnvironmentController)
+  app.delete('/:projectId/environments/:environmentId',
+    {
+      schema: deleteEnvironmentSchema,
+    },
+    deleteEnvironmentController)
 }
 
 export default router

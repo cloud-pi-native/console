@@ -7,6 +7,7 @@ export default mergeConfig(
   viteConfig,
   defineConfig({
     test: {
+      reporters: ['default', 'hanging-process'],
       environment: 'node',
       testTimeout: 2000,
       watch: false,

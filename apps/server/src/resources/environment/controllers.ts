@@ -5,11 +5,12 @@ import {
   sendNoContent,
 } from '@/utils/response.js'
 import {
-  type DeleteEnvironmentDto,
   type InitializeEnvironmentDto,
   type UpdateEnvironmentDto,
+  type EnvironmentParams,
+  type InitializeEnvironmentParams,
 } from '@dso-console/shared'
-import { EnhancedFastifyRequest } from '@/types/index.js'
+import { FastifyRequestWithSession } from '@/types/index.js'
 import {
   getEnvironmentInfos,
   createEnvironment,
@@ -17,10 +18,13 @@ import {
   deleteEnvironment,
   checkGetEnvironment,
 } from './business.js'
+import { RouteHandler } from 'fastify'
 
 // GET
 // TODO #541 : ce controller n'est pas utilisé
-export const getEnvironmentByIdController = async (req, res) => {
+export const getEnvironmentByIdController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: EnvironmentParams,
+}>, res) => {
   const environmentId = req.params?.environmentId
   const userId = req.session?.user?.id
   const projectId = req.params?.projectId
@@ -46,7 +50,10 @@ export const getEnvironmentByIdController = async (req, res) => {
 }
 
 // POST
-export const initializeEnvironmentController = async (req: EnhancedFastifyRequest<InitializeEnvironmentDto>, res) => {
+export const initializeEnvironmentController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Body: InitializeEnvironmentDto,
+  Params: InitializeEnvironmentParams,
+}>, res) => {
   const data = req.body
   const userId = req.session?.user?.id
   const projectId = req.params?.projectId
@@ -71,13 +78,16 @@ export const initializeEnvironmentController = async (req: EnhancedFastifyReques
   sendCreated(res, environment)
 }
 
-export const updateEnvironmentController = async (req: EnhancedFastifyRequest<UpdateEnvironmentDto>, res) => {
+export const updateEnvironmentController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Body: UpdateEnvironmentDto,
+  Params: EnvironmentParams,
+}>, res) => {
   const data = req.body
-  const userId = req.session?.user?.id
+  const user = req.session?.user
   const { projectId, environmentId } = req.params
 
   const environment = await updateEnvironment({
-    userId,
+    user,
     projectId,
     environmentId,
     quotaStageId: data.quotaStageId,
@@ -97,7 +107,9 @@ export const updateEnvironmentController = async (req: EnhancedFastifyRequest<Up
 }
 
 // DELETE
-export const deleteEnvironmentController = async (req: EnhancedFastifyRequest<DeleteEnvironmentDto>, res) => {
+export const deleteEnvironmentController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: EnvironmentParams,
+}>, res) => {
   const environmentId = req.params?.environmentId
   const projectId = req.params?.projectId
   const userId = req.session?.user?.id

@@ -1,68 +1,24 @@
-import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
-import fastify from 'fastify'
-import fastifySession from '@fastify/session'
-import fastifyCookie from '@fastify/cookie'
-import fp from 'fastify-plugin'
-import { sessionConf } from '@/utils/keycloak.js'
-import { getConnection, closeConnections } from '@/connect.js'
-import clusterRouter from './cluster.js'
+import prisma from '../../__mocks__/prisma.js'
+import app, { getRequestor, setRequestor } from '../../__mocks__/app.js'
+import { vi, describe, it, expect, beforeAll, afterEach, afterAll, beforeEach } from 'vitest'
+import { getConnection, closeConnections } from '../../connect.js'
 import { adminGroupPath } from '@dso-console/shared'
-import { User, getRandomCluster, getRandomRole, getRandomUser } from '@dso-console/test-utils'
-import { checkAdminGroup } from '@/utils/controller.js'
-import prisma from '@/__mocks__/prisma.js'
-
-// @ts-ignore
-vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
-vi.mock('@/prisma.js')
-
-const app = fastify({ logger: false })
-  .register(fastifyCookie)
-  .register(fastifySession, sessionConf)
-
-const mockSessionPlugin = (app, opt, next) => {
-  app.addHook('onRequest', (req, res, next) => {
-    if (req.headers.admin) {
-      req.session = {
-        user: {
-          ...getRequestor(),
-          groups: [adminGroupPath],
-        },
-      }
-    } else {
-      req.session = { user: getRequestor() }
-    }
-    next()
-  })
-  next()
-}
-
-const mockSession = (app) => {
-  app.addHook('preHandler', checkAdminGroup)
-    .register(fp(mockSessionPlugin))
-    .register(clusterRouter)
-}
-
-let requestor: User
-
-const setRequestor = (user: User) => {
-  requestor = user
-}
-
-const getRequestor = () => {
-  return requestor
-}
+import { getRandomCluster, getRandomRole, getRandomUser } from '@dso-console/test-utils'
 
 describe('Admin clusters routes', () => {
-  const requestor = getRandomUser()
-  setRequestor(requestor)
-
   beforeAll(async () => {
-    mockSession(app)
     await getConnection()
   })
 
   afterAll(async () => {
     return closeConnections()
+  })
+
+  beforeEach(() => {
+    const requestor = { ...getRandomUser(), groups: [adminGroupPath] }
+    setRequestor(requestor)
+
+    vi.clearAllMocks()
   })
 
   afterEach(() => {
@@ -81,7 +37,7 @@ describe('Admin clusters routes', () => {
             name: 'mi',
           },
           roles: [
-            { ...getRandomRole(requestor.id, 'projectId', 'owner'), user: requestor },
+            { ...getRandomRole(getRequestor().id, 'projectId', 'owner'), user: getRequestor() },
           ],
         },
         name: 'dev-0',
@@ -89,9 +45,9 @@ describe('Admin clusters routes', () => {
 
       prisma.cluster.findUnique.mockResolvedValue(cluster)
 
-      const response = await app.inject({ headers: { admin: 'admin' } })
-      // @ts-ignore
-        .get(`/${cluster.id}/environments`)
+      const response = await app.inject()
+        // @ts-ignore
+        .get(`/api/v1/admin/clusters/${cluster.id}/environments`)
         .end()
 
       expect(response.statusCode).toEqual(200)
@@ -102,7 +58,7 @@ describe('Admin clusters routes', () => {
         project: cluster.environments[0]?.project?.name,
         // @ts-ignore
         name: cluster.environments[0]?.name,
-        owner: requestor.email,
+        owner: getRequestor().email,
       }])
     })
   })
@@ -116,9 +72,9 @@ describe('Admin clusters routes', () => {
       prisma.cluster.findUnique.mockResolvedValue(cluster)
       prisma.cluster.delete.mockResolvedValueOnce(1)
 
-      const response = await app.inject({ headers: { admin: 'admin' } })
-      // @ts-ignore
-        .delete(`/${cluster.id}`)
+      const response = await app.inject()
+        // @ts-ignore
+        .delete(`/api/v1/admin/clusters/${cluster.id}`)
         .end()
 
       expect(response.statusCode).toEqual(204)
@@ -134,7 +90,7 @@ describe('Admin clusters routes', () => {
             name: 'mi',
           },
           roles: [
-            { ...getRandomRole(requestor.id, 'projectId', 'owner'), user: requestor },
+            { ...getRandomRole(getRequestor().id, 'projectId', 'owner'), user: getRequestor() },
           ],
         },
         name: 'dev-0',
@@ -142,9 +98,9 @@ describe('Admin clusters routes', () => {
 
       prisma.cluster.findUnique.mockResolvedValue(cluster)
 
-      const response = await app.inject({ headers: { admin: 'admin' } })
-      // @ts-ignore
-        .delete(`/${cluster.id}`)
+      const response = await app.inject()
+        // @ts-ignore
+        .delete(`/api/v1/admin/clusters/${cluster.id}`)
         .end()
 
       expect(response.statusCode).toEqual(400)

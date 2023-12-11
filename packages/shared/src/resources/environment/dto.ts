@@ -1,23 +1,10 @@
-import { ClusterModel } from '../cluster/model.js'
-import { ProjectModel } from '../project/index.js'
-import { EnvironmentModel } from './model.js'
+import { FromSchema } from 'json-schema-to-ts'
+import { initializeEnvironmentSchema, updateEnvironmentSchema } from './openApiSchema.js'
 
-export type InitializeEnvironmentDto = {
-  body: {
-    name: EnvironmentModel['name'];
-    projectId: ProjectModel['id'];
-    clusterId: ClusterModel['id'];
-    quotaStageId: EnvironmentModel['quotaStageId'];
-    quotaStage?: any;
-  }
-  params: { projectId: ProjectModel['id'] }
-}
+export type InitializeEnvironmentDto = FromSchema<typeof initializeEnvironmentSchema['body']>
 
-export type UpdateEnvironmentDto = Partial<InitializeEnvironmentDto> & { params: { environmentId: EnvironmentModel['id'] } }
+export type UpdateEnvironmentDto = FromSchema<typeof updateEnvironmentSchema['body']>
 
-export type DeleteEnvironmentDto = {
-  params: {
-    projectId: ProjectModel['id'],
-    environmentId: EnvironmentModel['id'],
-  }
-}
+export type EnvironmentParams = FromSchema<typeof updateEnvironmentSchema['params']>
+
+export type InitializeEnvironmentParams = FromSchema<typeof initializeEnvironmentSchema['params']>

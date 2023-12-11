@@ -1,75 +1,25 @@
-import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
-import { User, getRandomOrganization, getRandomProject, getRandomUser } from '@dso-console/test-utils'
-import fastify from 'fastify'
-import fastifySession from '@fastify/session'
-import fastifyCookie from '@fastify/cookie'
-import fp from 'fastify-plugin'
-import { sessionConf } from '@/utils/keycloak.js'
+import prisma from '../../__mocks__/prisma.js'
+import app, { setRequestor } from '../../__mocks__/app.js'
+import { vi, describe, it, expect, beforeAll, afterEach, afterAll, beforeEach } from 'vitest'
+import { getRandomOrganization, getRandomProject, getRandomUser } from '@dso-console/test-utils'
 import { getConnection, closeConnections } from '@/connect.js'
-import organizationRouter from './organization.js'
 import { adminGroupPath, allOrganizations } from '@dso-console/shared'
-import { fetchOrganizationsRes, filteredOrganizations } from '@/utils/mock-plugins.js'
-import { checkAdminGroup } from '@/utils/controller.js'
-import prisma from '@/__mocks__/prisma.js'
-
-vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
-vi.mock('@/prisma.js')
-vi.mock('@/plugins/index.js', async () => {
-  return {
-    hooks: {
-      fetchOrganizations: { execute: () => fetchOrganizationsRes },
-    },
-  }
-})
-
-const app = fastify({ logger: false })
-  .register(fastifyCookie)
-  .register(fastifySession, sessionConf)
-
-const mockSessionPlugin = (app, opt, next) => {
-  app.addHook('onRequest', (req, res, next) => {
-    if (req.headers.admin) {
-      req.session = {
-        user: {
-          ...getRequestor(),
-          groups: [adminGroupPath],
-        },
-      }
-    } else {
-      req.session = { user: getRequestor() }
-    }
-    next()
-  })
-  next()
-}
-
-const mockSession = (app) => {
-  app.addHook('preHandler', checkAdminGroup)
-    .register(fp(mockSessionPlugin))
-    .register(organizationRouter)
-}
-
-let requestor: User
-
-const setRequestor = (user: User) => {
-  requestor = user
-}
-
-const getRequestor = () => {
-  return requestor
-}
+import { filteredOrganizations } from '@/utils/mock-plugins.js'
 
 describe('Organizations routes', () => {
-  const requestor = getRandomUser()
-  setRequestor(requestor)
-
   beforeAll(async () => {
-    mockSession(app)
     await getConnection()
   })
 
   afterAll(async () => {
     return closeConnections()
+  })
+
+  beforeEach(() => {
+    const requestor = { ...getRandomUser(), groups: [adminGroupPath] }
+    setRequestor(requestor)
+
+    vi.clearAllMocks()
   })
 
   afterEach(() => {
@@ -83,8 +33,8 @@ describe('Organizations routes', () => {
 
       prisma.organization.findMany.mockResolvedValue(organizations)
 
-      const response = await app.inject({ headers: { admin: 'admin' } })
-        .get('/')
+      const response = await app.inject()
+        .get('/api/v1/admin/organizations')
         .end()
 
       expect(response.statusCode).toEqual(200)
@@ -94,21 +44,24 @@ describe('Organizations routes', () => {
     it('Should return an error if retrieve organizations failed', async () => {
       prisma.organization.findMany.mockResolvedValue([])
 
-      const response = await app.inject({ headers: { admin: 'admin' } })
-        .get('/')
+      const response = await app.inject()
+        .get('/api/v1/admin/organizations')
         .end()
 
       expect(response.statusCode).toEqual(404)
-      expect(JSON.parse(response.body).message).toEqual('Aucune organisation trouvée')
+      expect(response.json().message).toEqual('Aucune organisation trouvée')
     })
 
     it('Should return an error if requestor is not admin', async () => {
+      const requestor = getRandomUser()
+      setRequestor(requestor)
+
       const response = await app.inject()
-        .get('/')
+        .get('/api/v1/admin/organizations')
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(JSON.parse(response.body).message).toEqual('Vous n\'avez pas les droits administrateur')
+      expect(response.json().message).toEqual('Vous n\'avez pas les droits administrateur')
     })
   })
 
@@ -117,13 +70,14 @@ describe('Organizations routes', () => {
       const organization = {
         name: 'my-org',
         label: 'Ministère de la bicyclette',
+        source: 'dso',
       }
 
       prisma.organization.findUnique.mockResolvedValue(null)
       prisma.organization.create.mockResolvedValue(organization)
 
-      const response = await app.inject({ headers: { admin: 'admin' } })
-        .post('/')
+      const response = await app.inject()
+        .post('/api/v1/admin/organizations')
         .body(organization)
         .end()
 
@@ -135,44 +89,49 @@ describe('Organizations routes', () => {
       const organization = {
         name: 'anticonstitutionnellement',
         label: 'Ministère de l\'anti-constitutionnalité',
+        source: 'dso',
       }
 
       prisma.organization.findUnique.mockResolvedValue(null)
 
-      const response = await app.inject({ headers: { admin: 'admin' } })
-        .post('/')
+      const response = await app.inject()
+        .post('/api/v1/admin/organizations')
         .body(organization)
         .end()
 
       expect(response.statusCode).toEqual(400)
-      expect(JSON.parse(response.body).message).toEqual('"name" length must be less than or equal to 10 characters long')
+      expect(response.json().message).toEqual('"name" length must be less than or equal to 10 characters long')
     })
 
     it('Should return an error if organization already exists', async () => {
       const organization = {
         name: 'my-org',
         label: 'Ministère de l\'italo-disco',
+        source: 'dso',
       }
 
       prisma.organization.findUnique.mockResolvedValue(organization)
 
-      const response = await app.inject({ headers: { admin: 'admin' } })
-        .post('/')
+      const response = await app.inject()
+        .post('/api/v1/admin/organizations')
         .body(organization)
         .end()
 
       expect(response.statusCode).toEqual(400)
-      expect(JSON.parse(response.body).message).toEqual('Cette organisation existe déjà')
+      expect(response.json().message).toEqual('Cette organisation existe déjà')
     })
 
     it('Should return an error if requestor is not admin', async () => {
+      const requestor = getRandomUser()
+      setRequestor(requestor)
+
       const response = await app.inject()
-        .post('/')
-        .body({})
+        .post('/api/v1/admin/organizations')
+        .body(getRandomOrganization())
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(JSON.parse(response.body).message).toEqual('Vous n\'avez pas les droits administrateur')
+      expect(response.json().message).toEqual('Vous n\'avez pas les droits administrateur')
     })
   })
 
@@ -195,8 +154,8 @@ describe('Organizations routes', () => {
       prisma.project.findMany.mockResolvedValue([])
       prisma.organization.findUnique.mockResolvedValueOnce(updatedOrg)
 
-      const response = await app.inject({ headers: { admin: 'admin' } })
-        .put('/m-disc')
+      const response = await app.inject()
+        .put('/api/v1/admin/organizations/m-disc')
         .body(data)
         .end()
 
@@ -221,8 +180,8 @@ describe('Organizations routes', () => {
       prisma.organization.update.mockResolvedValue(updatedOrg)
       prisma.organization.findUnique.mockResolvedValueOnce(updatedOrg)
 
-      const response = await app.inject({ headers: { admin: 'admin' } })
-        .put('/m-disc')
+      const response = await app.inject()
+        .put('/api/v1/admin/organizations/m-disc')
         .body(data)
         .end()
 
@@ -250,8 +209,8 @@ describe('Organizations routes', () => {
       prisma.project.update.mockResolvedValue(project)
       prisma.organization.findUnique.mockResolvedValueOnce(updatedOrg)
 
-      const response = await app.inject({ headers: { admin: 'admin' } })
-        .put('/m-disc')
+      const response = await app.inject()
+        .put('/api/v1/admin/organizations/m-disc')
         .body(data)
         .end()
 
@@ -260,13 +219,16 @@ describe('Organizations routes', () => {
     })
 
     it('Should return an error if requestor is not admin', async () => {
+      const requestor = getRandomUser()
+      setRequestor(requestor)
+
       const response = await app.inject()
-        .put('/m-disc')
+        .put('/api/v1/admin/organizations/m-disc')
         .body({})
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(JSON.parse(response.body).message).toEqual('Vous n\'avez pas les droits administrateur')
+      expect(response.json().message).toEqual('Vous n\'avez pas les droits administrateur')
     })
   })
 
@@ -285,12 +247,12 @@ describe('Organizations routes', () => {
       })
       prisma.organization.findMany.mockResolvedValueOnce(allOrganizations)
 
-      const response = await app.inject({ headers: { admin: 'admin' } })
-        .put('sync')
+      const response = await app.inject()
+        .put('/api/v1/admin/organizations/sync')
         .end()
 
       expect(response.statusCode).toEqual(201)
-      expect(response.body).toEqual(JSON.stringify(allOrganizations))
+      expect(response.json()).toEqual(allOrganizations)
     })
   })
 })

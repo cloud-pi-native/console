@@ -1,4 +1,3 @@
-import app from '../app.js'
 import {
   keycloakProtocol,
   keycloakDomain,
@@ -9,22 +8,13 @@ import {
   keycloakRedirectUri,
 } from './env.js'
 
-const userPayloadMapper = (userPayload) => {
-  const payload = {
-    id: userPayload.sub,
-    email: userPayload.email,
-    firstName: userPayload.given_name,
-    lastName: userPayload.family_name,
-  }
-  if (!userPayload.groups) {
-    app.log.warn('Le user payload de keycloak n\'envoie pas groups')
-    return payload
-  }
-  return {
-    ...payload,
-    groups: userPayload.groups,
-  }
-}
+const userPayloadMapper = (userPayload) => ({
+  id: userPayload.sub,
+  email: userPayload.email,
+  firstName: userPayload.given_name,
+  lastName: userPayload.family_name,
+  groups: userPayload.groups || [],
+})
 
 export const keycloakConf = {
   appOrigin: `${keycloakRedirectUri}`,
@@ -36,7 +26,7 @@ export const keycloakConf = {
   disableSessionPlugin: true,
   userPayloadMapper,
   retries: 5,
-  excludedPatterns: ['/api/v1/version', '/api/v1/healthz', '/api/v1/documentation/**'],
+  excludedPatterns: ['/api/v1/version', '/api/v1/healthz', '/api/v1/swagger-ui/**'],
 }
 
 export const sessionConf = {

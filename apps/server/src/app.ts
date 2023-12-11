@@ -1,4 +1,4 @@
-import fastify from 'fastify'
+import fastify, { FastifyInstance } from 'fastify'
 import helmet from '@fastify/helmet'
 import keycloak from 'fastify-keycloak-adapter'
 import fastifySession from '@fastify/session'
@@ -6,11 +6,25 @@ import fastifyCookie from '@fastify/cookie'
 import fastifySwagger from '@fastify/swagger'
 import fastifySwaggerUi from '@fastify/swagger-ui'
 import { nanoid } from 'nanoid'
+
+import {
+  clusterOpenApiSchema,
+  environmentOpenApiSchema,
+  organizationOpenApiSchema,
+  projectOpenApiSchema,
+  repositoryOpenApiSchema,
+  roleOpenApiSchema,
+  serviceOpenApiSchema,
+  userOpenApiSchema,
+  permissionOpenApiSchema,
+} from '@dso-console/shared'
+
 import { apiRouter, miscRouter } from './routes/index.js'
 import { addReqLogs, loggerConf } from './utils/logger.js'
 import { DsoError } from './utils/errors.js'
 import { keycloakConf, sessionConf } from './utils/keycloak.js'
 import { isInt, isDev, isTest, keycloakRedirectUri } from './utils/env.js'
+import { FastifyRequestWithSession } from './types/index.js'
 
 export const apiPrefix = '/api/v1'
 
@@ -19,7 +33,24 @@ const fastifyConf = {
   genReqId: () => nanoid(),
 }
 
-const app = fastify(fastifyConf)
+export const addSchemasToApp = (...schemas: unknown[]) => (app: FastifyInstance): FastifyInstance => {
+  schemas.forEach(schema => app.addSchema(schema))
+  return app
+}
+
+export const addAllSchemasToApp = addSchemasToApp(
+  organizationOpenApiSchema,
+  userOpenApiSchema,
+  serviceOpenApiSchema,
+  permissionOpenApiSchema,
+  environmentOpenApiSchema,
+  repositoryOpenApiSchema,
+  roleOpenApiSchema,
+  clusterOpenApiSchema,
+  projectOpenApiSchema,
+)
+
+const app: FastifyInstance = addAllSchemasToApp(fastify(fastifyConf))
   .register(helmet, () => ({
     contentSecurityPolicy: !(isInt || isDev || isTest),
   }))
@@ -35,9 +66,10 @@ const app = fastify(fastifyConf)
       consumes: ['application/json'],
       produces: ['application/json'],
     },
+    hideUntagged: true,
   })
   .register(fastifySwaggerUi, {
-    routePrefix: `${apiPrefix}/documentation`,
+    routePrefix: `${apiPrefix}/swagger-ui`,
     uiConfig: {
       docExpansion: 'list',
       deepLinking: false,
@@ -53,7 +85,7 @@ const app = fastify(fastifyConf)
       opts.logLevel = 'silent'
     }
   })
-  .setErrorHandler(function (error: DsoError | Error, req, reply) {
+  .setErrorHandler(function (error: DsoError | Error, req: FastifyRequestWithSession<void>, reply) {
     const isDsoError = error instanceof DsoError
 
     const statusCode = isDsoError ? error.statusCode : 500
@@ -66,5 +98,7 @@ const app = fastify(fastifyConf)
       error: isDsoError ? null : error,
     })
   })
+
+await app.ready()
 
 export default app

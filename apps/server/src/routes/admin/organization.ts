@@ -4,19 +4,37 @@ import {
   updateOrganizationController,
   fetchOrganizationsController,
 } from '@/resources/organization/admin/controllers.js'
+import { getAllOrganizationsSchema, createOrganizationSchema, fetchOrganizationsSchema, updateOrganizationSchema } from '@dso-console/shared'
+import { FastifyInstance } from 'fastify'
 
-const router = async (app, _opt) => {
+const router = async (app: FastifyInstance, _opt) => {
   // Récupérer toutes les organisations
-  await app.get('/', getAllOrganizationsController)
+  app.get('/',
+    {
+      schema: getAllOrganizationsSchema,
+    },
+    getAllOrganizationsController)
 
   // Créer une organisation
-  await app.post('/', createOrganizationController)
+  app.post('/',
+    {
+      schema: createOrganizationSchema,
+    },
+    createOrganizationController)
 
   // Synchroniser les organisations via les plugins externes
-  await app.put('/sync', fetchOrganizationsController)
+  app.put('/sync',
+    {
+      schema: fetchOrganizationsSchema,
+    },
+    fetchOrganizationsController)
 
   // Mettre à jour une organisation
-  await app.put('/:orgName', updateOrganizationController)
+  app.put('/:orgName',
+    {
+      schema: updateOrganizationSchema,
+    },
+    updateOrganizationController)
 }
 
 export default router

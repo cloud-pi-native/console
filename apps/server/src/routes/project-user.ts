@@ -5,23 +5,45 @@ import {
   updateUserProjectRoleController,
   getMatchingUsersController,
 } from '@/resources/user/controllers.js'
+import { addUserToProjectSchema, getMatchingUsersSchema, getProjectUsersSchema, removeUserFromProjectSchema, updateUserProjectRoleSchema } from '@dso-console/shared'
+import { FastifyInstance } from 'fastify'
 
-const router = async (app, _opt) => {
+const router = async (app: FastifyInstance, _opt) => {
   // TODO : pas utilisé
   // Récupérer les membres d'un projet
-  await app.get('/:projectId/users', getProjectUsersController)
+  app.get('/:projectId/users',
+    {
+      schema: getProjectUsersSchema,
+    },
+    getProjectUsersController)
 
   // Récupérer des utilisateurs par match
-  await app.get('/:projectId/users/match', getMatchingUsersController)
+  app.get('/:projectId/users/match',
+    {
+      schema: getMatchingUsersSchema,
+    },
+    getMatchingUsersController)
 
   // Ajouter un membre dans un projet
-  await app.post('/:projectId/users', addUserToProjectController)
+  app.post('/:projectId/users',
+    {
+      schema: addUserToProjectSchema,
+    },
+    addUserToProjectController)
 
   // Mettre à jour un membre d'un projet
-  await app.put('/:projectId/users/:userId', updateUserProjectRoleController)
+  app.put('/:projectId/users/:userId',
+    {
+      schema: updateUserProjectRoleSchema,
+    },
+    updateUserProjectRoleController)
 
   // Supprimer un membre d'un projet
-  await app.delete('/:projectId/users/:userId', removeUserFromProjectController)
+  app.delete('/:projectId/users/:userId',
+    {
+      schema: removeUserFromProjectSchema,
+    },
+    removeUserFromProjectController)
 }
 
 export default router

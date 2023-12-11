@@ -43,6 +43,8 @@ describe('Team view', () => {
   })
 
   it('Should add a team member', () => {
+    cy.intercept('POST', `api/v1/projects/${project.id}/users`).as('addUser')
+
     cy.goToProjects()
       .getByDataTestid(`projectTile-${project.name}`).click()
       .getByDataTestid('menuTeam').click()
@@ -67,6 +69,9 @@ describe('Team view', () => {
       .should('not.exist')
       .getByDataTestid('addUserBtn')
       .should('be.enabled').click()
+    cy.wait('@addUser')
+      .its('response.statusCode')
+      .should('eq', 201)
 
     cy.getByDataTestid('teamTable')
       .find('tbody > tr')
@@ -74,6 +79,8 @@ describe('Team view', () => {
   })
 
   it('Should remove a team member', () => {
+    cy.intercept('DELETE', `api/v1/projects/${project.id}/users/*`).as('removeUser')
+
     cy.goToProjects()
       .getByDataTestid(`projectTile-${project.name}`).click()
       .getByDataTestid('menuTeam').click()
@@ -83,7 +90,11 @@ describe('Team view', () => {
       .should('have.length', project.users.length + 1)
       .get(`td[title="retirer ${newMember.email} du projet"]`)
       .click()
-      .getByDataTestid('teamTable')
+    cy.wait('@removeUser')
+      .its('response.statusCode')
+      .should('eq', 200)
+
+    cy.getByDataTestid('teamTable')
       .find('tbody > tr')
       .should('have.length', project.users.length)
   })

@@ -1,11 +1,11 @@
-import { EnhancedFastifyRequest } from '@/types'
+import { FastifyRequestWithSession } from '@/types'
 import { addReqLogs } from '@/utils/logger.js'
 import { sendCreated, sendNoContent, sendOk } from '@/utils/response.js'
 import { createQuota, deleteQuota, getQuotaAssociatedEnvironments, updateQuotaStage, updateQuotaPrivacy } from './business.js'
 import { CreateQuotaDto, DeleteQuotaDto, UpdateQuotaPrivacyDto, UpdateQuotaStageDto } from '@dso-console/shared'
 
 // GET
-export const getQuotaAssociatedEnvironmentsController = async (req: EnhancedFastifyRequest<DeleteQuotaDto>, res) => {
+export const getQuotaAssociatedEnvironmentsController = async (req: FastifyRequestWithSession<DeleteQuotaDto>, res) => {
   const quotaId = req.params.quotaId
 
   const environments = await getQuotaAssociatedEnvironments(quotaId)
@@ -22,7 +22,7 @@ export const getQuotaAssociatedEnvironmentsController = async (req: EnhancedFast
 }
 
 // POST
-export const createQuotaController = async (req: EnhancedFastifyRequest<CreateQuotaDto>, res) => {
+export const createQuotaController = async (req: FastifyRequestWithSession<CreateQuotaDto>, res) => {
   const data = req.body
 
   const quota = await createQuota(data)
@@ -39,7 +39,7 @@ export const createQuotaController = async (req: EnhancedFastifyRequest<CreateQu
 }
 
 // PATCH
-export const updateQuotaPrivacyController = async (req: EnhancedFastifyRequest<UpdateQuotaPrivacyDto>, res) => {
+export const updateQuotaPrivacyController = async (req: FastifyRequestWithSession<UpdateQuotaPrivacyDto>, res) => {
   const quotaId = req.params.quotaId
   const isPrivate = req.body.isPrivate
 
@@ -57,7 +57,7 @@ export const updateQuotaPrivacyController = async (req: EnhancedFastifyRequest<U
 }
 
 // PUT
-export const updateQuotaStageController = async (req: EnhancedFastifyRequest<UpdateQuotaStageDto>, res) => {
+export const updateQuotaStageController = async (req: FastifyRequestWithSession<UpdateQuotaStageDto>, res) => {
   const data = req.body
 
   const quotaStages = await updateQuotaStage(data)
@@ -74,7 +74,7 @@ export const updateQuotaStageController = async (req: EnhancedFastifyRequest<Upd
 }
 
 // DELETE
-export const deleteQuotaController = async (req: EnhancedFastifyRequest<DeleteQuotaDto>, res) => {
+export const deleteQuotaController = async (req: FastifyRequestWithSession<DeleteQuotaDto>, res) => {
   const quotaId = req.params.quotaId
 
   await deleteQuota(quotaId)

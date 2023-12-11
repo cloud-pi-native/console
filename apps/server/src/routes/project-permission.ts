@@ -4,19 +4,37 @@ import {
   updatePermissionController,
   deletePermissionController,
 } from '@/resources/permission/controllers.js'
+import { deletePermissionSchema, getEnvironmentPermissionsSchema, setPermissionSchema, updatePermissionSchema } from '@dso-console/shared'
+import { FastifyInstance } from 'fastify'
 
-const router = async (app, _opt) => {
+const router = async (app: FastifyInstance, _opt) => {
   // Récupérer les permissions d'un environnement
-  await app.get('/:projectId/environments/:environmentId/permissions', getEnvironmentPermissionsController)
+  app.get('/:projectId/environments/:environmentId/permissions',
+    {
+      schema: getEnvironmentPermissionsSchema,
+    },
+    getEnvironmentPermissionsController)
 
   // Créer une permission
-  await app.post('/:projectId/environments/:environmentId/permissions', setPermissionController)
+  app.post('/:projectId/environments/:environmentId/permissions',
+    {
+      schema: setPermissionSchema,
+    },
+    setPermissionController)
 
   // Mettre à jour le level d'une permission
-  await app.put('/:projectId/environments/:environmentId/permissions', updatePermissionController)
+  app.put('/:projectId/environments/:environmentId/permissions',
+    {
+      schema: updatePermissionSchema,
+    },
+    updatePermissionController)
 
   // Supprimer une permission
-  await app.delete('/:projectId/environments/:environmentId/permissions/:userId', deletePermissionController)
+  app.delete('/:projectId/environments/:environmentId/permissions/:userId',
+    {
+      schema: deletePermissionSchema,
+    },
+    deletePermissionController)
 }
 
 export default router

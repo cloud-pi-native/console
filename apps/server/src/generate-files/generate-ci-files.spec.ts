@@ -1,37 +1,13 @@
+import app from '../__mocks__/app.js'
 import { vi, describe, it, expect, beforeAll, afterAll } from 'vitest'
-import fastify from 'fastify'
-import fastifySession from '@fastify/session'
-import fastifyCookie from '@fastify/cookie'
-import fp from 'fastify-plugin'
-import { sessionConf } from '../utils/keycloak.js'
-import ciFilesRouter from '../routes/ci-files.js'
 import { closeConnections, getConnection } from '../connect.js'
 import { createRandomDbSetup } from '@dso-console/test-utils'
 
-vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
 vi.mock('../prisma.js')
-
-const app = fastify({ logger: false })
-  .register(fastifyCookie)
-  .register(fastifySession, sessionConf)
-
-const mockSessionPlugin = (app, opt, next) => {
-  app.addHook('onRequest', (req, res, next) => {
-    next()
-  })
-  next()
-}
-
-const mockSession = (app) => {
-  app.register(fp(mockSessionPlugin))
-    .register(ciFilesRouter)
-}
 
 describe('ciFiles routes', () => {
   beforeAll(async () => {
-    mockSession(app)
     await getConnection()
-    global.fetch = vi.fn(() => Promise.resolve())
   })
 
   afterAll(async () => {
@@ -40,7 +16,6 @@ describe('ciFiles routes', () => {
 
   afterAll(async () => {
     vi.clearAllMocks()
-    global.fetch = vi.fn(() => Promise.resolve({ json: async () => { } }))
   })
 
   it('Should generate files for a node project', async () => {
@@ -56,7 +31,7 @@ describe('ciFiles routes', () => {
     }
 
     const response = await app.inject()
-      .post('/')
+      .post('/api/v1/ci-files')
       .body(ciData)
       .end()
 
@@ -78,7 +53,7 @@ describe('ciFiles routes', () => {
     }
 
     const response = await app.inject()
-      .post('/')
+      .post('/api/v1/ci-files')
       .body(ciData)
       .end()
 
@@ -98,7 +73,7 @@ describe('ciFiles routes', () => {
     }
 
     const response = await app.inject()
-      .post('/')
+      .post('/api/v1/ci-files')
       .body(ciData)
       .end()
 

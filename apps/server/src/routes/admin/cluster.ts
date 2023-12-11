@@ -4,19 +4,37 @@ import {
   updateClusterController,
   deleteClusterController,
 } from '@/resources/cluster/admin/controllers.js'
+import { createClusterSchema, getClusterAssociatedEnvironmentsSchema, updateClusterSchema, deleteClusterSchema } from '@dso-console/shared'
+import { FastifyInstance } from 'fastify'
 
-const router = async (app, _opt) => {
+const router = async (app: FastifyInstance, _opt) => {
   // Récupérer les environnements associés au cluster
-  await app.get('/:clusterId/environments', getClusterAssociatedEnvironmentsController)
+  app.get('/:clusterId/environments',
+    {
+      schema: getClusterAssociatedEnvironmentsSchema,
+    },
+    getClusterAssociatedEnvironmentsController)
 
   // Déclarer un nouveau cluster
-  await app.post('/', createClusterController)
+  app.post('/',
+    {
+      schema: createClusterSchema,
+    },
+    createClusterController)
 
   // Mettre à jour un cluster
-  await app.put('/:clusterId', updateClusterController)
+  app.put('/:clusterId',
+    {
+      schema: updateClusterSchema,
+    },
+    updateClusterController)
 
   // Supprimer un cluster
-  await app.delete('/:clusterId', deleteClusterController)
+  app.delete('/:clusterId',
+    {
+      schema: deleteClusterSchema,
+    },
+    deleteClusterController)
 }
 
 export default router

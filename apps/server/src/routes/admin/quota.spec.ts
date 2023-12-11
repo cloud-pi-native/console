@@ -1,68 +1,24 @@
-import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
-import fastify from 'fastify'
-import fastifySession from '@fastify/session'
-import fastifyCookie from '@fastify/cookie'
-import fp from 'fastify-plugin'
-import { sessionConf } from '@/utils/keycloak.js'
+import prisma from '../../__mocks__/prisma.js'
+import app, { getRequestor, setRequestor } from '../../__mocks__/app.js'
+import { vi, describe, it, expect, beforeAll, afterEach, afterAll, beforeEach } from 'vitest'
 import { getConnection, closeConnections } from '@/connect.js'
-import quotaRouter from './quota.js'
 import { adminGroupPath } from '@dso-console/shared'
-import { User, getRandomEnv, getRandomQuota, getRandomQuotaStage, getRandomRole, getRandomStage, getRandomUser, repeatFn } from '@dso-console/test-utils'
-import { checkAdminGroup } from '@/utils/controller.js'
-import prisma from '@/__mocks__/prisma.js'
-
-// @ts-ignore
-vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => vi.fn()) }))
-vi.mock('@/prisma.js')
-
-const app = fastify({ logger: false })
-  .register(fastifyCookie)
-  .register(fastifySession, sessionConf)
-
-const mockSessionPlugin = (app, opt, next) => {
-  app.addHook('onRequest', (req, res, next) => {
-    if (req.headers.admin) {
-      req.session = {
-        user: {
-          ...getRequestor(),
-          groups: [adminGroupPath],
-        },
-      }
-    } else {
-      req.session = { user: getRequestor() }
-    }
-    next()
-  })
-  next()
-}
-
-const mockSession = (app) => {
-  app.addHook('preHandler', checkAdminGroup)
-    .register(fp(mockSessionPlugin))
-    .register(quotaRouter)
-}
-
-let requestor: User
-
-const setRequestor = (user: User) => {
-  requestor = user
-}
-
-const getRequestor = () => {
-  return requestor
-}
+import { getRandomEnv, getRandomQuota, getRandomQuotaStage, getRandomRole, getRandomStage, getRandomUser, repeatFn } from '@dso-console/test-utils'
 
 describe('Admin quotas routes', () => {
-  const requestor = getRandomUser()
-  setRequestor(requestor)
-
   beforeAll(async () => {
-    mockSession(app)
     await getConnection()
   })
 
   afterAll(async () => {
     return closeConnections()
+  })
+
+  beforeEach(() => {
+    const requestor = { ...getRandomUser(), groups: [adminGroupPath] }
+    setRequestor(requestor)
+
+    vi.clearAllMocks()
   })
 
   afterEach(() => {
@@ -85,7 +41,7 @@ describe('Admin quotas routes', () => {
           name: 'mi',
         },
         roles: [
-          { ...getRandomRole(requestor.id, 'projectId', 'owner'), user: requestor },
+          { ...getRandomRole(getRequestor().id, 'projectId', 'owner'), user: getRequestor() },
         ],
       }
 
@@ -93,9 +49,9 @@ describe('Admin quotas routes', () => {
       prisma.stage.findUnique.mockResolvedValue({ id: 'stageId', name: 'dev' })
       prisma.environment.findMany.mockResolvedValue(environments)
 
-      const response = await app.inject({ headers: { admin: 'admin' } })
+      const response = await app.inject()
       // @ts-ignore
-        .get(`/${quota.id}/environments`)
+        .get(`/api/v1/admin/quotas/${quota.id}/environments`)
         .end()
 
       expect(response.statusCode).toEqual(200)
@@ -106,7 +62,7 @@ describe('Admin quotas routes', () => {
         project: environments[0]?.project?.name,
         name: environments[0]?.name,
         stage: 'dev',
-        owner: requestor.email,
+        owner: getRequestor().email,
       }])
     })
   })
@@ -123,9 +79,9 @@ describe('Admin quotas routes', () => {
       prisma.quota.create.mockResolvedValue(quota)
       prisma.quotaStage.createMany.mockResolvedValue(quotaStages)
 
-      const response = await app.inject({ headers: { admin: 'admin' } })
+      const response = await app.inject()
       // @ts-ignore
-        .post('/')
+        .post('/api/v1/admin/quotas')
         .body(quota)
         .end()
 
@@ -138,9 +94,9 @@ describe('Admin quotas routes', () => {
 
       prisma.quota.findUnique.mockResolvedValueOnce(quota)
 
-      const response = await app.inject({ headers: { admin: 'admin' } })
+      const response = await app.inject()
       // @ts-ignore
-        .post('/')
+        .post('/api/v1/admin/quotas')
         .body(quota)
         .end()
 
@@ -155,9 +111,9 @@ describe('Admin quotas routes', () => {
 
       prisma.quota.update.mockResolvedValueOnce(quota)
 
-      const response = await app.inject({ headers: { admin: 'admin' } })
+      const response = await app.inject()
       // @ts-ignore
-        .patch(`/${quota.id}/privacy`)
+        .patch(`/api/v1/admin/quotas/${quota.id}/privacy`)
         .body({ isPrivate: quota.isPrivate })
         .end()
 
@@ -182,9 +138,9 @@ describe('Admin quotas routes', () => {
       prisma.quotaStage.createMany.mockResolvedValue(1)
       prisma.quota.findUnique.mockResolvedValueOnce({ ...quota, quotaStage: newQuotaStage })
 
-      const response = await app.inject({ headers: { admin: 'admin' } })
+      const response = await app.inject()
       // @ts-ignore
-        .put('/quotastages')
+        .put('/api/v1/admin/quotas/quotastages')
         .body(data)
         .end()
 
@@ -204,9 +160,9 @@ describe('Admin quotas routes', () => {
       prisma.quota.findUnique.mockResolvedValueOnce({ ...quota, quotaStage: dbQuotaStage })
       prisma.quotaStage.delete.mockRejectedValueOnce({ message: 'Foreign key constraint failed on the field: `Environment_quotaStageId_fkey' })
 
-      const response = await app.inject({ headers: { admin: 'admin' } })
+      const response = await app.inject()
         // @ts-ignore
-        .put('/quotastages')
+        .put('/api/v1/admin/quotas/quotastages')
         .body(data)
         .end()
 
@@ -226,9 +182,9 @@ describe('Admin quotas routes', () => {
       prisma.environment.findMany.mockResolvedValue([])
       prisma.quota.delete.mockResolvedValueOnce(1)
 
-      const response = await app.inject({ headers: { admin: 'admin' } })
+      const response = await app.inject()
       // @ts-ignore
-        .delete(`/${quota.id}`)
+        .delete(`/api/v1/admin/quotas/${quota.id}`)
         .end()
 
       expect(response.statusCode).toEqual(204)
@@ -248,7 +204,7 @@ describe('Admin quotas routes', () => {
           name: 'mi',
         },
         roles: [
-          { ...getRandomRole(requestor.id, 'projectId', 'owner'), user: requestor },
+          { ...getRandomRole(getRequestor().id, 'projectId', 'owner'), user: getRequestor() },
         ],
       }
 
@@ -257,9 +213,9 @@ describe('Admin quotas routes', () => {
       prisma.environment.findMany.mockResolvedValue(environments)
       prisma.quota.delete.mockResolvedValueOnce(1)
 
-      const response = await app.inject({ headers: { admin: 'admin' } })
+      const response = await app.inject()
       // @ts-ignore
-        .delete(`/${quota.id}`)
+        .delete(`/api/v1/admin/quotas/${quota.id}`)
         .end()
 
       expect(response.statusCode).toEqual(400)

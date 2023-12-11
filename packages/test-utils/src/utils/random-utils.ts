@@ -28,7 +28,7 @@ export const getRandomProject = (organizationId = faker.string.uuid()) => {
     name: getRandomProjectName(),
     organizationId,
     organization: getRandomOrganization(),
-    description: faker.lorem.sentence(),
+    description: faker.lorem.sentence(8),
     status: faker.helpers.arrayElement(achievedStatus),
     locked: false,
   } as Project

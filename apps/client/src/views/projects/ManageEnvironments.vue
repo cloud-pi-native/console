@@ -82,7 +82,7 @@ const putEnvironment = async (environment) => {
   // @ts-ignore
   if (!project.value.locked) {
     try {
-      await projectEnvironmentStore.updateEnvironment(environment)
+      await projectEnvironmentStore.updateEnvironment(environment, project.value.id)
     } catch (error) {
       // @ts-ignore
       snackbarStore.setMessage(error?.message, 'error')

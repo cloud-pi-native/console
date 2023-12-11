@@ -219,16 +219,26 @@ watch(quotaId, () => {
         :options="stageOptions"
       />
       <div class="fr-mb-2w">
-        <DsfrSelect
+        <div
           v-if="stageId"
-          :key="inputKey"
-          v-model="quotaId"
-          select-id="quota-select"
-          label="Dimensionnement des ressources allouées à l'environnement"
-          description="Si votre projet nécessite d'avantage de ressources que celles proposées ci-dessus, contactez les administrateurs."
-          required="required"
-          :options="quotaOptions"
-        />
+          class="fr-my-2w"
+        >
+          <DsfrAlert
+            v-if="quotaId && !quotaOptions.find(quota => quota.value === quotaId)"
+            description="Vous disposez d'un quota privé pour cet environnement. Veuillez contacter un administrateur si vous souhaitez le modifier."
+            small
+          />
+          <DsfrSelect
+            v-else
+            :key="inputKey"
+            v-model="quotaId"
+            select-id="quota-select"
+            label="Dimensionnement des ressources allouées à l'environnement"
+            description="Si votre projet nécessite d'avantage de ressources que celles proposées ci-dessus, contactez les administrateurs."
+            required="required"
+            :options="quotaOptions"
+          />
+        </div>
         <DsfrAlert
           v-if="stageId && !clusterOptions?.length"
           data-testid="noClusterOptionAlert"

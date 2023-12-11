@@ -1,16 +1,24 @@
 import { sendOk, sendCreated } from '@/utils/response.js'
 import { addReqLogs } from '@/utils/logger.js'
 import { addUserToProject, checkProjectLocked, checkProjectRole, getMatchingUsers, getProjectInfos, getProjectUsers, removeUserFromProject, updateUserProjectRole } from './business.js'
+import { FastifyRequestWithSession } from '@/types/index.js'
+import { RouteHandler } from 'fastify'
+import type { UserParams, AddUserToProjectDto, RoleParams, LettersQuery, UpdateUserProjectRoleDto } from '@dso-console/shared'
+import { adminGroupPath } from '@dso-console/shared'
 
 // GET
 // TODO : pas utilisé
-export const getProjectUsersController = async (req, res) => {
-  const userId = req.session?.user?.id
+export const getProjectUsersController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: UserParams
+}>, res) => {
+  const user = req.session?.user
   const projectId = req.params?.projectId
 
   const users = await getProjectUsers(projectId)
 
-  await checkProjectRole(userId, { userList: users, minRole: 'user' })
+  if (!user.groups?.includes(adminGroupPath)) {
+    await checkProjectRole(user.id, { userList: users, minRole: 'user' })
+  }
 
   addReqLogs({
     req,
@@ -22,14 +30,19 @@ export const getProjectUsersController = async (req, res) => {
   sendOk(res, users)
 }
 
-export const getMatchingUsersController = async (req, res) => {
-  const userId = req.session?.user?.id
+export const getMatchingUsersController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: UserParams
+  Querystring: LettersQuery
+}>, res) => {
+  const user = req.session?.user
   const projectId = req.params?.projectId
   const { letters } = req.query
 
   const users = await getProjectUsers(projectId)
 
-  await checkProjectRole(userId, { userList: users, minRole: 'user' })
+  if (!user.groups?.includes(adminGroupPath)) {
+    await checkProjectRole(user.id, { userList: users, minRole: 'user' })
+  }
 
   const usersMatching = await getMatchingUsers(letters)
 
@@ -44,18 +57,23 @@ export const getMatchingUsersController = async (req, res) => {
 }
 
 // CREATE
-export const addUserToProjectController = async (req, res) => {
-  const userId = req.session?.user?.id
+export const addUserToProjectController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: UserParams
+  Body: AddUserToProjectDto
+}>, res) => {
+  const user = req.session?.user
   const projectId = req.params?.projectId
   const data = req.body
 
   const project = await getProjectInfos(projectId)
 
-  await checkProjectRole(userId, { roles: project.roles, minRole: 'owner' })
+  if (!user.groups?.includes(adminGroupPath)) {
+    await checkProjectRole(user.id, { roles: project.roles, minRole: 'owner' })
+  }
 
   await checkProjectLocked(project)
 
-  const userToAdd = await addUserToProject(project, data.email, userId)
+  const userToAdd = await addUserToProject(project, data.email, user.id)
 
   const description = 'Utilisateur ajouté au projet avec succès'
   addReqLogs({
@@ -70,15 +88,20 @@ export const addUserToProjectController = async (req, res) => {
 }
 
 // PUT
-export const updateUserProjectRoleController = async (req, res) => {
-  const userId = req.session?.user.id
+export const updateUserProjectRoleController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: RoleParams
+  Body: UpdateUserProjectRoleDto
+}>, res) => {
+  const user = req.session?.user
   const projectId = req.params?.projectId
   const userToUpdateId = req.params?.userId
   const data = req.body
 
   const project = await getProjectInfos(projectId)
 
-  await checkProjectRole(userId, { roles: project.roles, minRole: 'owner' })
+  if (!user.groups?.includes(adminGroupPath)) {
+    await checkProjectRole(user.id, { roles: project.roles, minRole: 'owner' })
+  }
 
   await checkProjectLocked(project)
 
@@ -97,18 +120,22 @@ export const updateUserProjectRoleController = async (req, res) => {
 }
 
 // DELETE
-export const removeUserFromProjectController = async (req, res) => {
-  const userId = req.session?.user?.id
+export const removeUserFromProjectController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: RoleParams
+}>, res) => {
+  const user = req.session?.user
   const projectId = req.params?.projectId
   const userToRemoveId = req.params?.userId
 
   const project = await getProjectInfos(projectId)
 
-  await checkProjectRole(userId, { roles: project.roles, minRole: 'owner' })
+  if (!user.groups?.includes(adminGroupPath)) {
+    await checkProjectRole(user.id, { roles: project.roles, minRole: 'owner' })
+  }
 
   await checkProjectLocked(project)
 
-  await removeUserFromProject(userToRemoveId, project, userId)
+  await removeUserFromProject(userToRemoveId, project, user.id)
 
   const description = 'Utilisateur retiré du projet avec succès'
   addReqLogs({

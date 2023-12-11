@@ -9,7 +9,7 @@ on:
       NODE_VERSION:
         required: true
         type: string
-        default: "20.9.0"
+        default: "20.10.0"
       MAJOR_TAG:
         type: string
         description: "Major version tag"
@@ -29,7 +29,7 @@ on:
       NODE_VERSION:
         required: true
         type: string
-        default: "20.9.0"
+        default: "20.10.0"
       MAJOR_TAG:
         type: string
         description: "Major version tag"
@@ -66,14 +66,10 @@ jobs:
       - name: Prepare packages
         run: |
           pnpm run db:generate
-          export VERSION=${{ inputs.MAJOR_TAG }}.${{ inputs.MINOR_TAG }}.${{ inputs.PATCH_TAG }}
-          yq e -i ".version |= \"$VERSION\"" apps/server/package.json
-          yq e -i ".version |= \"$VERSION\"" apps/client/package.json
-          yq e -i ".version |= \"$VERSION\"" packages/shared/package.json
+          echo '//registry.npmjs.org/:_authToken=${npm_token}' >> .npmrc
       - name: Publish on npmjs.org
         run: |
-          echo '//registry.npmjs.org/:_authToken=${npm_token}' >> .npmrc
-          pnpm publish --no-git-checks --access public --force \
+          pnpm publish --no-git-checks --access public \
           --filter server \
           --filter client \
           --filter shared

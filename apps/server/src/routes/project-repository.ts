@@ -5,22 +5,44 @@ import {
   updateRepositoryController,
   deleteRepositoryController,
 } from '@/resources/repository/controllers.js'
+import { createRepositorySchema, deleteRepositorySchema, getProjectRepositoriesSchema, getRepositoryByIdSchema, updateRepositorySchema } from '@dso-console/shared'
+import { FastifyInstance } from 'fastify'
 
-const router = async (app, _opt) => {
+const router = async (app: FastifyInstance, _opt) => {
   // Récupérer un repository par son id
-  await app.get('/:projectId/repositories/:repositoryId', getRepositoryByIdController)
+  app.get('/:projectId/repositories/:repositoryId',
+    {
+      schema: getRepositoryByIdSchema,
+    },
+    getRepositoryByIdController)
 
   // Récupérer tous les repositories d'un projet
-  await app.get('/:projectId/repositories', getProjectRepositoriesController)
+  app.get('/:projectId/repositories',
+    {
+      schema: getProjectRepositoriesSchema,
+    },
+    getProjectRepositoriesController)
 
   // Créer un repository
-  await app.post('/:projectId/repositories', createRepositoryController)
+  app.post('/:projectId/repositories',
+    {
+      schema: createRepositorySchema,
+    },
+    createRepositoryController)
 
   // Mettre à jour un repository
-  await app.put('/:projectId/repositories/:repositoryId', updateRepositoryController)
+  app.put('/:projectId/repositories/:repositoryId',
+    {
+      schema: updateRepositorySchema,
+    },
+    updateRepositoryController)
 
   // Supprimer un repository
-  await app.delete('/:projectId/repositories/:repositoryId', deleteRepositoryController)
+  app.delete('/:projectId/repositories/:repositoryId',
+    {
+      schema: deleteRepositorySchema,
+    },
+    deleteRepositoryController)
 }
 
 export default router

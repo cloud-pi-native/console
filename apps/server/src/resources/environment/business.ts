@@ -31,6 +31,8 @@ import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { projectRootDir } from '@/utils/env.js'
 import { getProjectInfosAndClusters } from '@/resources/project/business.js'
 import { gitlabUrl } from '@/plugins/core/gitlab/utils.js'
+import { adminGroupPath } from '@dso-console/shared'
+import { KeycloakSession } from '@/types/index.js'
 
 // Fetch infos
 export const getEnvironmentInfosAndClusters = async (environmentId: string) => {
@@ -89,7 +91,7 @@ export const checkGetEnvironment = (
 ) => {
   // @ts-ignore
   const errorMessage = checkInsufficientRoleInProject(userId, { roles: env.project.roles }) ||
-  // @ts-ignore
+    // @ts-ignore
     checkInsufficientPermissionInEnvironment(userId, env.permissions, 0)
   if (errorMessage) throw new ForbiddenError(errorMessage, { description: '', extras: { userId, projectId: env.projectId } })
 }
@@ -103,7 +105,7 @@ export const checkCreateEnvironment = ({
   quotaStage,
 }: CheckEnvironmentParam) => {
   const errorMessage = checkRoleAndLocked(project, userId, 'owner') ||
-  checkExistingEnvironment(clusterId, name, project.environments) ||
+    checkExistingEnvironment(clusterId, name, project.environments) ||
     checkClusterUnavailable(clusterId, authorizedClusterIds) ||
     checkQuotaStageStatus(quotaStage)
   if (errorMessage) throw new ForbiddenError(errorMessage, undefined)
@@ -228,16 +230,16 @@ export const createEnvironment = async (
   }
 }
 
-  type UpdateEnvironmentParam = {
-    userId: User['id'],
-    projectId: Project['id'],
-    environmentId: Environment['id'],
-    quotaStageId?: QuotaStage['id'],
-    clusterId?: Cluster['id'],
-  }
+type UpdateEnvironmentParam = {
+  user: KeycloakSession['session']['user'],
+  projectId: Project['id'],
+  environmentId: Environment['id'],
+  quotaStageId?: QuotaStage['id'],
+  clusterId?: Cluster['id'],
+}
 
 export const updateEnvironment = async ({
-  userId,
+  user,
   projectId,
   environmentId,
   quotaStageId,
@@ -246,16 +248,18 @@ export const updateEnvironment = async ({
   try {
     let environment: Environment
     const { project, quotaStage, quota } = await getInitializeEnvironmentInfos({
-      userId,
+      userId: user.id,
       projectId,
       quotaStageId,
     })
 
-    checkUpdateEnvironment({
-      project,
-      userId,
-      quotaStage,
-    })
+    if (!user.groups?.includes(adminGroupPath)) {
+      checkUpdateEnvironment({
+        project,
+        userId: user.id,
+        quotaStage,
+      })
+    }
 
     await lockProject(projectId)
 
@@ -291,7 +295,7 @@ export const updateEnvironment = async ({
         },
       })
       // @ts-ignore
-      await addLogs('Update Environment Quotas', results, userId)
+      await addLogs('Update Environment Quotas', results, user.id)
       if (results.failed) {
         throw new UnprocessableContentError('Echec services à la mise à jour des quotas pour l\'environnement')
       }

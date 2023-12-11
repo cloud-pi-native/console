@@ -1,3 +1,5 @@
+import { FastifyInstance } from 'fastify'
+
 import {
   getUserProjectsController,
   getProjectByIdController,
@@ -10,37 +12,74 @@ import projectEnvironmentRouter from './project-environment.js'
 import projectRepositoryRouter from './project-repository.js'
 import projectUserRouter from './project-user.js'
 import projectPermissionRouter from './project-permission.js'
+import {
+  getProjectByIdSchema,
+  getUserProjectsSchema,
+  createProjectSchema,
+  updateProjectSchema,
+  archiveProjectSchema,
+  CreateProjectDto,
+  UpdateProjectDto,
+  // getProjectSecretsSchema,
+} from '@dso-console/shared'
 
-const router = async (app, _opt) => {
+const router = async (app: FastifyInstance, _opt) => {
   // Récupérer tous les projets d'un user
-  await app.get('/', getUserProjectsController)
+  app.get(
+    '/',
+    {
+      schema: getUserProjectsSchema,
+    },
+    getUserProjectsController,
+  )
 
   // Récupérer un projet par son id
-  await app.get('/:projectId', getProjectByIdController)
-
-  // Créer un projet
-  await app.post('/', createProjectController)
-
-  // Mettre à jour un projet
-  await app.put('/:projectId', updateProjectController)
-
-  // Archiver un projet
-  await app.delete('/:projectId', archiveProjectController)
+  app.get('/:projectId',
+    {
+      schema: getProjectByIdSchema,
+    },
+    getProjectByIdController)
 
   // Récupérer les secrets d'un projet
-  await app.get('/:projectId/secrets', getProjectSecretsController)
+  app.get('/:projectId/secrets',
+    // TODO : pb schema, réponse inconnue (dépend des plugins)
+    // {
+    //   schema: getProjectSecretsSchema,
+    // },
+    getProjectSecretsController)
+
+  // Créer un projet
+  app.post<{ Body: CreateProjectDto }>('/',
+    {
+      schema: createProjectSchema,
+    },
+    createProjectController)
+
+  // Mettre à jour un projet
+  app.put<{ Body: UpdateProjectDto }>('/:projectId',
+    {
+      schema: updateProjectSchema,
+    },
+    updateProjectController)
+
+  // Archiver un projet
+  app.delete('/:projectId',
+    {
+      schema: archiveProjectSchema,
+    },
+    archiveProjectController)
 
   // Enregistrement du sous routeur environment
-  await app.register(projectEnvironmentRouter)
+  app.register(projectEnvironmentRouter)
 
   // Enregistrement du sous routeur repository
-  await app.register(projectRepositoryRouter)
+  app.register(projectRepositoryRouter)
 
   // Enregistrement du sous routeur user
-  await app.register(projectUserRouter)
+  app.register(projectUserRouter)
 
   // Enregistrement du sous routeur permission
-  await app.register(projectPermissionRouter)
+  app.register(projectPermissionRouter)
 }
 
 export default router
