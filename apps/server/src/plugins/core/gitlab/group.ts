@@ -43,7 +43,7 @@ export const createGroup = async (name: string, organization: string): Promise<G
 export const deleteGroup = async (name: string, organization: string) => {
   const searchResult = await api.Groups.search(name)
   const parentId = await getOrganizationId(organization)
-  const existingGroup = searchResult.find(group => group.parent_id === parentId)
+  const existingGroup = searchResult.find(group => group.name === name && group.parent_id === parentId)
   if (!existingGroup) {
     return
   }
