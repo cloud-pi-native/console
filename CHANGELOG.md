@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.3.0](https://github.com/cloud-pi-native/console/compare/v6.2.0...v6.3.0) (2023-12-11)
+
+
+### Features
+
+* :sparkles: add backoffice for admins ([fadfdfc](https://github.com/cloud-pi-native/console/commit/fadfdfc43c427261adc3e31dbb1907d6dcefc5cb))
+
+
+### Bug Fixes
+
+* :bug: fix gitlab group deletion ([12a35d0](https://github.com/cloud-pi-native/console/commit/12a35d08619fbeb231d4e7931fb7fdb51ef63fde))
+
 ## [6.2.0](https://github.com/cloud-pi-native/console/compare/v6.1.0...v6.2.0) (2023-11-20)
 
 
