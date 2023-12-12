@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.3.1](https://github.com/cloud-pi-native/console/compare/v6.3.0...v6.3.1) (2023-12-12)
+
+
+### Bug Fixes
+
+* :bug: missed limits ([ff5a9ee](https://github.com/cloud-pi-native/console/commit/ff5a9eef173ad263385b1294d9056da13edda6a5))
+
 ## [6.3.0](https://github.com/cloud-pi-native/console/compare/v6.2.0...v6.3.0) (2023-12-11)
 
 
