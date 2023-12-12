@@ -32,8 +32,10 @@ export const getQuotaObject = (nsName: string, quota: ResourceQuota): V1Resource
     },
     spec: {
       hard: {
-        cpu: String(quota.cpu),
-        memory: quota.memory,
+        'limits.cpu': String(quota.cpu),
+        'limits.memory': quota.memory,
+        'request.cpu': String(quota.cpu),
+        'request.memory': quota.memory,
       },
     },
   }
