@@ -1,4 +1,4 @@
-import { FastifyRequestWithSession } from '@/types'
+import { type FastifyRequestWithSession } from '@/types'
 export const loggerConf = {
   development: {
     transport: {

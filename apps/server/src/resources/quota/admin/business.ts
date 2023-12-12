@@ -11,10 +11,9 @@ import {
   deleteQuotaStage,
   updateQuotaPrivacy as updateQuotaPrivacyQuery,
 } from '@/resources/queries-index.js'
-import { CreateQuotaDto, quotaSchema, DeleteQuotaDto, UpdateQuotaStageDto, UpdateQuotaPrivacyDto } from '@dso-console/shared'
-import { QuotaStage } from '@prisma/client'
+import { type CreateQuotaDto, quotaSchema, type UpdateQuotaStageDto, type UpdateQuotaPrivacyDto, type QuotaParams, type QuotaStageModel } from '@dso-console/shared'
 
-export const getQuotaAssociatedEnvironments = async (quotaId: DeleteQuotaDto['params']['quotaId']) => {
+export const getQuotaAssociatedEnvironments = async (quotaId: QuotaParams['quotaId']) => {
   try {
     const quota = await getQuotaById(quotaId)
 
@@ -40,7 +39,7 @@ export const getQuotaAssociatedEnvironments = async (quotaId: DeleteQuotaDto['pa
   }
 }
 
-export const createQuota = async (data: CreateQuotaDto['body']) => {
+export const createQuota = async (data: CreateQuotaDto) => {
   try {
     await quotaSchema.validateAsync(data)
 
@@ -62,7 +61,7 @@ export const createQuota = async (data: CreateQuotaDto['body']) => {
   }
 }
 
-export const updateQuotaPrivacy = async (quotaId: UpdateQuotaPrivacyDto['params']['quotaId'], isPrivate: UpdateQuotaPrivacyDto['body']['isPrivate']) => {
+export const updateQuotaPrivacy = async (quotaId: QuotaParams['quotaId'], isPrivate: UpdateQuotaPrivacyDto['isPrivate']) => {
   try {
     return await updateQuotaPrivacyQuery(quotaId, isPrivate)
   } catch (error) {
@@ -70,9 +69,9 @@ export const updateQuotaPrivacy = async (quotaId: UpdateQuotaPrivacyDto['params'
   }
 }
 
-export const updateQuotaStage = async (data: UpdateQuotaStageDto['body']) => {
+export const updateQuotaStage = async (data: UpdateQuotaStageDto) => {
   try {
-    let quotaStages: QuotaStage[] = []
+    let quotaStages: QuotaStageModel[] = []
 
     // From quotaId and stageIds
     if (data.quotaId && data.stageIds) {
@@ -89,7 +88,7 @@ export const updateQuotaStage = async (data: UpdateQuotaStageDto['body']) => {
 
     // From stageId and quotaIds
     if (data.stageId && data.quotaIds) {
-    // Remove quotaStages
+      // Remove quotaStages
       const dbQuotaStages = (await getStageById(data.stageId)).quotaStage
       const quotaStagesToRemove = dbQuotaStages.filter(dbQuotaStage => !data.quotaIds.includes(dbQuotaStage.quotaId))
       for (const quotaStageToRemove of quotaStagesToRemove) {
@@ -109,7 +108,7 @@ export const updateQuotaStage = async (data: UpdateQuotaStageDto['body']) => {
   }
 }
 
-export const deleteQuota = async (quotaId: DeleteQuotaDto['params']['quotaId']) => {
+export const deleteQuota = async (quotaId: QuotaParams['quotaId']) => {
   try {
     const environments = await getQuotaAssociatedEnvironments(quotaId)
     if (environments.length) throw new BadRequestError('Impossible de supprimer le quota, des environnements en activité y ont souscrit', { extras: environments })

@@ -2,7 +2,7 @@ import {
   getUsersController,
 } from '@/resources/user/admin/controllers.js'
 import { getUsersSchema } from '@dso-console/shared'
-import { FastifyInstance } from 'fastify'
+import { type FastifyInstance } from 'fastify'
 
 const router = async (app: FastifyInstance, _opt) => {
   // Récupérer tous les utilisateurs

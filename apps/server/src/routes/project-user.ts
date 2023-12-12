@@ -6,7 +6,7 @@ import {
   getMatchingUsersController,
 } from '@/resources/user/controllers.js'
 import { addUserToProjectSchema, getMatchingUsersSchema, getProjectUsersSchema, removeUserFromProjectSchema, updateUserProjectRoleSchema } from '@dso-console/shared'
-import { FastifyInstance } from 'fastify'
+import { type FastifyInstance } from 'fastify'
 
 const router = async (app: FastifyInstance, _opt) => {
   // TODO : pas utilisé

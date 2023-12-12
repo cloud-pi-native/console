@@ -21,7 +21,7 @@ export const useAdminClusterStore = defineStore('admin-cluster', () => {
     return res
   }
 
-  const updateCluster = async (cluster: UpdateClusterDto) => {
+  const updateCluster = async (cluster: UpdateClusterDto & { id: string }) => {
     const { id, ...updateClusterData } = cluster
     return api.updateCluster(id, updateClusterData)
   }

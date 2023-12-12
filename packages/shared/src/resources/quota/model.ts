@@ -1,17 +1,6 @@
-export type QuotaModel = {
-  id?: string,
-  memory: string,
-  cpu: number,
-  name: string,
-  isPrivate?: boolean,
-}
+import { FromSchema } from 'json-schema-to-ts'
+import { quotaStageOpenApiSchema, quotaOpenApiSchema } from './index.js'
 
-export type QuotaStageModel = {
-  id?: string,
-  quotaId: QuotaModel['id'],
-  stageId: string,
-  status?: string,
-  environments?: any[],
-  quota?: QuotaModel[],
-  stage?: any[],
-}
+export type QuotaStageModel = FromSchema<typeof quotaStageOpenApiSchema>
+
+export type QuotaModel = FromSchema<typeof quotaOpenApiSchema>

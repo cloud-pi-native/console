@@ -1,9 +1,9 @@
 import { addReqLogs } from '@/utils/logger.js'
 import { sendOk, sendCreated } from '@/utils/response.js'
 import { createOrganization, fetchOrganizations, getAllOrganization, updateOrganization } from './business.js'
-import { FastifyRequestWithSession } from '@/types/index.js'
+import { type FastifyRequestWithSession } from '@/types/index.js'
 import { type CreateOrganizationDto, type UpdateOrganizationDto, type OrganizationParams } from '@dso-console/shared'
-import { RouteHandler } from 'fastify'
+import { type RouteHandler } from 'fastify'
 
 // GET
 export const getAllOrganizationsController: RouteHandler = async (req: FastifyRequestWithSession<void>, res) => {

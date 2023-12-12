@@ -10,7 +10,7 @@ import {
   type EnvironmentParams,
   type InitializeEnvironmentParams,
 } from '@dso-console/shared'
-import { FastifyRequestWithSession } from '@/types/index.js'
+import { type FastifyRequestWithSession } from '@/types/index.js'
 import {
   getEnvironmentInfos,
   createEnvironment,
@@ -18,7 +18,7 @@ import {
   deleteEnvironment,
   checkGetEnvironment,
 } from './business.js'
-import { RouteHandler } from 'fastify'
+import { type RouteHandler } from 'fastify'
 
 // GET
 // TODO #541 : ce controller n'est pas utilisé

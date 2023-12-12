@@ -3,7 +3,7 @@ import {
   handleProjectLockingController,
 } from '@/resources/project/admin/controllers.js'
 import { getAllProjectsSchema } from '@dso-console/shared'
-import { FastifyInstance } from 'fastify'
+import { type FastifyInstance } from 'fastify'
 
 const router = async (app: FastifyInstance, _opt) => {
   // Récupérer tous les projets

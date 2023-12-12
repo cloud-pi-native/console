@@ -1,13 +1,13 @@
 import { filterObjectByKeys } from '@/utils/queries-tools.js'
 import { addReqLogs } from '@/utils/logger.js'
 import { sendOk, sendCreated } from '@/utils/response.js'
-import { FastifyRequestWithSession } from '@/types/index.js'
+import { type FastifyRequestWithSession } from '@/types/index.js'
 import {
   type CreateRepositoryDto, type UpdateRepositoryDto, type RepositoryParams, type ProjectRepositoriesParams,
 } from '@dso-console/shared/src/resources/repository/dto.js'
 import { createRepository, deleteRepository, getProjectRepositories, getRepositoryById, updateRepository, checkUpsertRepository } from './business.js'
 import { BadRequestError } from '@/utils/errors.js'
-import { RouteHandler } from 'fastify'
+import { type RouteHandler } from 'fastify'
 
 // GET
 export const getRepositoryByIdController: RouteHandler = async (req: FastifyRequestWithSession<{

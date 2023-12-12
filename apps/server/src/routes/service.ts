@@ -1,7 +1,8 @@
 import { checkServicesHealthController } from '@/resources/service/controllers.js'
+import { type FastifyInstance } from 'fastify'
 
-const router = async (app, _opt) => {
-  await app.get('/', checkServicesHealthController)
+const router = async (app: FastifyInstance, _opt) => {
+  app.get('/', checkServicesHealthController)
 }
 
 export default router

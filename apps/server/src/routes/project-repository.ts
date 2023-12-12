@@ -6,7 +6,7 @@ import {
   deleteRepositoryController,
 } from '@/resources/repository/controllers.js'
 import { createRepositorySchema, deleteRepositorySchema, getProjectRepositoriesSchema, getRepositoryByIdSchema, updateRepositorySchema } from '@dso-console/shared'
-import { FastifyInstance } from 'fastify'
+import { type FastifyInstance } from 'fastify'
 
 const router = async (app: FastifyInstance, _opt) => {
   // Récupérer un repository par son id

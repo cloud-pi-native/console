@@ -4,7 +4,7 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useAdminStageStore } from '@/stores/admin/stage.js'
 import StageForm from '@/components/StageForm.vue'
 import { sortArrByObjKeyAsc } from '@dso-console/shared'
-import type { CreateStageDto, UpdateQuotaStageDto, DeleteStageDto, StageModel, UpdateStageClustersDto } from '@dso-console/shared'
+import type { CreateStageDto, UpdateQuotaStageDto, StageModel, UpdateStageClustersDto, StageParams } from '@dso-console/shared'
 import { useAdminQuotaStore } from '@/stores/admin/quota'
 import { useAdminClusterStore } from '@/stores/admin/cluster'
 
@@ -53,7 +53,7 @@ const cancel = () => {
   selectedStage.value = {}
 }
 
-const addStage = async (stage: CreateStageDto['body']) => {
+const addStage = async (stage: CreateStageDto) => {
   isWaitingForResponse.value = true
   cancel()
   try {
@@ -66,9 +66,9 @@ const addStage = async (stage: CreateStageDto['body']) => {
 }
 
 export type UpdateStageType = {
-  stageId: UpdateQuotaStageDto['body']['stageId'],
-  quotaIds?: UpdateQuotaStageDto['body']['quotaIds']
-  clusterIds?: UpdateStageClustersDto['body']['clusterIds']
+  stageId: UpdateQuotaStageDto['stageId'],
+  quotaIds?: UpdateQuotaStageDto['quotaIds']
+  clusterIds?: UpdateStageClustersDto['clusterIds']
 }
 
 const updateStage = async ({ stageId, quotaIds, clusterIds }: UpdateStageType) => {
@@ -84,7 +84,7 @@ const updateStage = async ({ stageId, quotaIds, clusterIds }: UpdateStageType) =
   isWaitingForResponse.value = false
 }
 
-const deleteStage = async (stageId: DeleteStageDto['params']['stageId']) => {
+const deleteStage = async (stageId: StageParams['stageId']) => {
   isWaitingForResponse.value = true
   cancel()
   try {
@@ -96,7 +96,7 @@ const deleteStage = async (stageId: DeleteStageDto['params']['stageId']) => {
   isWaitingForResponse.value = false
 }
 
-const getStageAssociatedEnvironments = async (stageId: DeleteStageDto['params']['stageId']) => {
+const getStageAssociatedEnvironments = async (stageId: StageParams['stageId']) => {
   isWaitingForResponse.value = true
   try {
     associatedEnvironments.value = await adminStageStore.getStageAssociatedEnvironments(stageId)
@@ -147,7 +147,7 @@ watch(stages, () => {
       class="w-full"
       :is-new-stage="true"
       :is-updating-stage="isWaitingForResponse"
-      @add="(stage: CreateStageDto['body']) => addStage(stage)"
+      @add="(stage: CreateStageDto) => addStage(stage)"
       @cancel="cancel()"
     />
   </div>
@@ -181,7 +181,7 @@ watch(stages, () => {
         :associated-environments="associatedEnvironments"
         @cancel="cancel()"
         @update="(stage: UpdateStageType) => updateStage(stage)"
-        @delete="(stageId: DeleteStageDto['params']['stageId']) => deleteStage(stageId)"
+        @delete="(stageId: StageParams['stageId']) => deleteStage(stageId)"
       />
     </div>
     <div

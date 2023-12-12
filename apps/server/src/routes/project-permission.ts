@@ -5,7 +5,7 @@ import {
   deletePermissionController,
 } from '@/resources/permission/controllers.js'
 import { deletePermissionSchema, getEnvironmentPermissionsSchema, setPermissionSchema, updatePermissionSchema } from '@dso-console/shared'
-import { FastifyInstance } from 'fastify'
+import { type FastifyInstance } from 'fastify'
 
 const router = async (app: FastifyInstance, _opt) => {
   // Récupérer les permissions d'un environnement

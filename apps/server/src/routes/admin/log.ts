@@ -1,10 +1,11 @@
 import {
   getAllLogsController,
 } from '@/resources/log/admin/controllers.js'
+import { type FastifyInstance } from 'fastify'
 
-const router = async (app, _opt) => {
+const router = async (app: FastifyInstance, _opt) => {
   // Récupérer des logs
-  await app.get('/', getAllLogsController)
+  app.get('/', getAllLogsController)
 }
 
 export default router

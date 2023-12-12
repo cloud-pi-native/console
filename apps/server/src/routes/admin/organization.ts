@@ -5,7 +5,7 @@ import {
   fetchOrganizationsController,
 } from '@/resources/organization/admin/controllers.js'
 import { getAllOrganizationsSchema, createOrganizationSchema, fetchOrganizationsSchema, updateOrganizationSchema } from '@dso-console/shared'
-import { FastifyInstance } from 'fastify'
+import { type FastifyInstance } from 'fastify'
 
 const router = async (app: FastifyInstance, _opt) => {
   // Récupérer toutes les organisations
