@@ -1,5 +1,163 @@
 # Changelog
 
+## [7.0.0](https://github.com/cloud-pi-native/console/compare/v6.3.1...v7.0.0) (2023-12-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* :boom: environment management
+* :boom: migrate from sequelize to prisma
+* :boom: clarify business logic on status and locking
+
+### Features
+
+* :alien: add hook to synchronize organizations ([6ccd985](https://github.com/cloud-pi-native/console/commit/6ccd9855fc8713043a9f24687cfe07d105540c91))
+* :alien: add hook to synchronize organizations ([6ccd985](https://github.com/cloud-pi-native/console/commit/6ccd9855fc8713043a9f24687cfe07d105540c91))
+* :alien: add keys to source organizations ([626c031](https://github.com/cloud-pi-native/console/commit/626c03135571199c3a1f1e72e19132bc651288a3))
+* :alien: add project infos for canel plugin ([a4516a1](https://github.com/cloud-pi-native/console/commit/a4516a14b2439dd3a74540168aee6daa586c7308))
+* :alien: add updateProject hook for description update for example ([7e97505](https://github.com/cloud-pi-native/console/commit/7e97505b5a75c3f6c680d5b1bb6f18a9e45b87b3))
+* :alien: owner name is required to create Canel user ([e4aa5e9](https://github.com/cloud-pi-native/console/commit/e4aa5e9662fb0494ef43b7f52140c9c11702613f))
+* :alien: synch controllers with plugin calls ([d0a271d](https://github.com/cloud-pi-native/console/commit/d0a271d188840d8682b6abe412ee8da4db7992b1))
+* :boom: environment management ([b4f3793](https://github.com/cloud-pi-native/console/commit/b4f379315803aee1264192c16851af049fa661ee))
+* :boom: if status: failed (aka plugins failed), project remains locked ([8548d6e](https://github.com/cloud-pi-native/console/commit/8548d6e0d654673789bdebba31237fa98a86788a))
+* :children_crossing: add confirm box for updating an organization ([5c3cd20](https://github.com/cloud-pi-native/console/commit/5c3cd207221a22ed5d93bdf8638b23c9849897f6))
+* :children_crossing: add default branch to sync in mirror pipeline ([45dbc01](https://github.com/cloud-pi-native/console/commit/45dbc01c4a95d04a201b2c5e198e3b192e1e5fe2))
+* :children_crossing: add organization to differenciate project ([5814d7e](https://github.com/cloud-pi-native/console/commit/5814d7e00b5a6a335a16059b62f7af456d3b4a58))
+* :children_crossing: improve gitlab mirroring by using a single mirror repo ([914bbe4](https://github.com/cloud-pi-native/console/commit/914bbe4546a3e876a6cd8847523f18e95d688d44))
+* :children_crossing: improve home page and update doc link ([038d982](https://github.com/cloud-pi-native/console/commit/038d982ead7bbfa70debdf902d5c46e8518c1e60))
+* :children_crossing: improve user experience on dso-console ([720b3c9](https://github.com/cloud-pi-native/console/commit/720b3c9570238453edeb9ceff11ba21f37c50c41))
+* :children_crossing: improve ux for danger zone ([720b3c9](https://github.com/cloud-pi-native/console/commit/720b3c9570238453edeb9ceff11ba21f37c50c41))
+* :children_crossing: improve UX on permission form ([fb72076](https://github.com/cloud-pi-native/console/commit/fb72076f16f79df456392fc7f9a7129ab1655832))
+* :children_crossing: inform users that clipboard works only with https ([909c3b6](https://github.com/cloud-pi-native/console/commit/909c3b672bcae1401d2133c8fff94cdca91f61bc))
+* :children_crossing: redirect to dashboard when selecting a project ([720b3c9](https://github.com/cloud-pi-native/console/commit/720b3c9570238453edeb9ceff11ba21f37c50c41))
+* :closed_lock_with_key: retrieve project secrets from vault and display it in front ([201435d](https://github.com/cloud-pi-native/console/commit/201435d18047400ec9fe4252b6be2c11dbd57068))
+* :closed_lock_with_key: retrieve project secrets from vault and display it in front ([201435d](https://github.com/cloud-pi-native/console/commit/201435d18047400ec9fe4252b6be2c11dbd57068))
+* :iphone: more responsive sideMenu and permissionForm ([c840306](https://github.com/cloud-pi-native/console/commit/c8403067224b5ad90e34b8233a1830ceeec8b715))
+* :necktie: allow only one plugin to register on hook fetchOrganizations ([6ccd985](https://github.com/cloud-pi-native/console/commit/6ccd9855fc8713043a9f24687cfe07d105540c91))
+* :passport_control: update harbor project member role ([4419dd5](https://github.com/cloud-pi-native/console/commit/4419dd5f395f79a9eb99e8c0f305a7433ad84f7e))
+* :safety_vest: update password character support ([c82f35f](https://github.com/cloud-pi-native/console/commit/c82f35fb7f20ad06c0a63eb518407d17ddb88b51))
+* :sparkles: add admin log page ([41058ee](https://github.com/cloud-pi-native/console/commit/41058ee51899d4ec351ae7adad10eb3fefa99f8b))
+* :sparkles: add backoffice for admins ([fadfdfc](https://github.com/cloud-pi-native/console/commit/fadfdfc43c427261adc3e31dbb1907d6dcefc5cb))
+* :sparkles: add id in admin user table ([d1ebcea](https://github.com/cloud-pi-native/console/commit/d1ebcea1768993b6ab31e5f45a6642ac3577cfc5))
+* :sparkles: add infos key for cluster ([25ab8b8](https://github.com/cloud-pi-native/console/commit/25ab8b8d821c37f4491bd8fea075bdc7fbfcfc93))
+* :sparkles: add or remove a team member via keycloak ([0563d20](https://github.com/cloud-pi-native/console/commit/0563d20ca93a25decc7dbb5d945e2b738b0d575a))
+* :sparkles: add project admin view ([b49ff96](https://github.com/cloud-pi-native/console/commit/b49ff967853e31ca6cbcd8cd2ff78b299023788e))
+* :sparkles: add quota and stage management for admin ([80ce642](https://github.com/cloud-pi-native/console/commit/80ce642b69a5eaaf1b53c7d884b70889c4e71d9d))
+* :sparkles: add quotas selection for environment ([bb97f5f](https://github.com/cloud-pi-native/console/commit/bb97f5f17c5e7b497eccb655a6eb5da692f7df73))
+* :sparkles: add stage management for admin ([e133853](https://github.com/cloud-pi-native/console/commit/e13385347610014a4edcc0b2ff12252386328cb8))
+* :sparkles: add tlsServerName input in cluster form ([4bdc01e](https://github.com/cloud-pi-native/console/commit/4bdc01ef9dd5b2041a34491e46b9759e5c6652f0))
+* :sparkles: allow updating repo ([27b59cf](https://github.com/cloud-pi-native/console/commit/27b59cfc5cacdf0e96b0fd22b090ce4ab038792d))
+* :sparkles: always show ci form ([753d64b](https://github.com/cloud-pi-native/console/commit/753d64bc011701dcc9297097b1a0aec87cef6c03))
+* :sparkles: better integration of sonarqube ([c0a0517](https://github.com/cloud-pi-native/console/commit/c0a05173a158b74d752aafaccdff58fc3b29c382))
+* :sparkles: delete cluster if no environment suscribed ([8edc50a](https://github.com/cloud-pi-native/console/commit/8edc50a85f266f1135b340d6df39a48ea7ac746b))
+* :sparkles: enable admin cluster update ([f81008e](https://github.com/cloud-pi-native/console/commit/f81008e97c25bc73466b6257bd4cb2dc0bde9163))
+* :sparkles: handle gitlab membership ([7ff68bd](https://github.com/cloud-pi-native/console/commit/7ff68bdf8f9a16562cfc00fbdb0c322b0f09943d))
+* :sparkles: lock and unlock projects according to their org status ([3b9444a](https://github.com/cloud-pi-native/console/commit/3b9444aeaa2fab76461946e9a4d00e8afe4a62f1))
+* :sparkles: retrieve user from kc if does not exist in db ([3d4461a](https://github.com/cloud-pi-native/console/commit/3d4461ae7d82e6f64a1644921893d89f41e9a2d9))
+* :sparkles: services secrets improvement ([40e3ddd](https://github.com/cloud-pi-native/console/commit/40e3ddd2acd7e000b03f5bfa5663533449d315bf))
+* :tada: introduce multi-cluster deployment ([0e6c065](https://github.com/cloud-pi-native/console/commit/0e6c065d421c117050e00944ca68114414a05dc7))
+* :technologist: add config for codespace ([1ff7996](https://github.com/cloud-pi-native/console/commit/1ff79966454be7961ba80049be65815cfce1d4cf))
+* :technologist: add images auto-scan to harbor settings ([507c6e6](https://github.com/cloud-pi-native/console/commit/507c6e6a541b19502084276db30cf834e586d955))
+* :technologist: add swagger for server api ([abe15d2](https://github.com/cloud-pi-native/console/commit/abe15d2ceb93039ecd795389156f8730e5327841))
+
+
+### Bug Fixes
+
+* :adhesive_bandage: update kaniko stage name in gitlab ci ([7a71712](https://github.com/cloud-pi-native/console/commit/7a71712075d7aed5aeeb00adb1d2ec51b6d717ab))
+* :alien: add owner in archiveProject hookpayload ([5c99183](https://github.com/cloud-pi-native/console/commit/5c99183f03afe0c20980c9649ce37788b833a351))
+* :alien: change gitlab api calls ([f04dc87](https://github.com/cloud-pi-native/console/commit/f04dc87208ca19ee2b06ff2c35535e51a72f84cd))
+* :alien: change logo for svg ([aa8315b](https://github.com/cloud-pi-native/console/commit/aa8315b63617c8413a448499e2ab0e68c216faef))
+* :alien: fetch does not support proxy natively ([20d531d](https://github.com/cloud-pi-native/console/commit/20d531d622e6fe9e2869e13db0d205b44ad602ce))
+* :alien: sync controllers require bigger axios timeout ([5116bbd](https://github.com/cloud-pi-native/console/commit/5116bbdb8f49b73c920ac04421ca05ccabef902c))
+* :ambulance: bad logic register plugins ([049040e](https://github.com/cloud-pi-native/console/commit/049040eafda26214afbc2118cb56542b133feca5))
+* :ambulance: preserve status colum in project ([febfaff](https://github.com/cloud-pi-native/console/commit/febfaff702d6a55210723ce213d603ad059ceaed))
+* :ambulance: register cluster destination via kubeconfig ([0e8d310](https://github.com/cloud-pi-native/console/commit/0e8d3102267268c595d172808e30183dbe4b3aad))
+* :ambulance: send internalRepoName to plugins on updateRepository hook ([2bde004](https://github.com/cloud-pi-native/console/commit/2bde0045592f2898975633c0c6f959311234f7f3))
+* :art: can disble plugins by name, and some fixes ([f2bd397](https://github.com/cloud-pi-native/console/commit/f2bd397e0526d76d439ef8f38b5dcebdfbaa8ede))
+* :art: change ns labels ([ae14d67](https://github.com/cloud-pi-native/console/commit/ae14d6736a3b3276b3406562709cf77e3aab0668))
+* :art: finish pr ([2150961](https://github.com/cloud-pi-native/console/commit/2150961433d0b097100ea62cf1fd7be49fbb4571))
+* :art: quote fixes ([2150961](https://github.com/cloud-pi-native/console/commit/2150961433d0b097100ea62cf1fd7be49fbb4571))
+* :art: temp fix labels, add check, refacto get ns ([a43f50c](https://github.com/cloud-pi-native/console/commit/a43f50cb93b2453f025b9d4284f2b65b6134161a))
+* :bento: update MultiSelector component ([9a44bb3](https://github.com/cloud-pi-native/console/commit/9a44bb35d8aa0da1aaf8f96a745c28f97f6ea53c))
+* :bug: add conditional chaining to avoid error in dsobadge ([56ad040](https://github.com/cloud-pi-native/console/commit/56ad0403242222f50ef8abe898b46c241d40b66d))
+* :bug: add missing await in gitlab createProjectMirror ([f1bf907](https://github.com/cloud-pi-native/console/commit/f1bf9072b88abec3f08654720f64571aa421db34))
+* :bug: add missing data to add argo cluster ([fc53f54](https://github.com/cloud-pi-native/console/commit/fc53f54d8f2d211857aa82c43589b9ee26e214b8))
+* :bug: add module on shared ([2150961](https://github.com/cloud-pi-native/console/commit/2150961433d0b097100ea62cf1fd7be49fbb4571))
+* :bug: change appproject policy ([e20b6c4](https://github.com/cloud-pi-native/console/commit/e20b6c431348b08bed7ea215a967c51d0e6187f0))
+* :bug: clusters related bugs ([c2ba63e](https://github.com/cloud-pi-native/console/commit/c2ba63e94d87bdf1741e9a51e4522c3f77b354de))
+* :bug: create appropriate folders for server image ([3027fef](https://github.com/cloud-pi-native/console/commit/3027fef08ebc8a58e2e705645febaf40af7314f5))
+* :bug: delete kube resources when deleting a project ([5e8cd51](https://github.com/cloud-pi-native/console/commit/5e8cd514edc8a0eb4f5d49208cb17b6da82f4fd7))
+* :bug: filter archived project from cluster form ([50913f5](https://github.com/cloud-pi-native/console/commit/50913f57def7d8e3e36f63a5876e476e64884828))
+* :bug: fix argo plugin ([b1dc1fb](https://github.com/cloud-pi-native/console/commit/b1dc1fb60ba89b534c3e3cd357b89a4e08b74838))
+* :bug: fix endless redirect on login if authenticated ([461c6bd](https://github.com/cloud-pi-native/console/commit/461c6bd385f44a551fe9af1027c6beca1e7fa9ec))
+* :bug: fix gitlab group deletion ([12a35d0](https://github.com/cloud-pi-native/console/commit/12a35d08619fbeb231d4e7931fb7fdb51ef63fde))
+* :bug: fix imports, change dependencies ([41f427f](https://github.com/cloud-pi-native/console/commit/41f427fe17daef7ef1b3c330ec5635338edfda59))
+* :bug: fix logs pagination bug ([7f3a990](https://github.com/cloud-pi-native/console/commit/7f3a99085f701d02367fab04f194dc0c0e85356d))
+* :bug: fix missing extensions ([4cd4b21](https://github.com/cloud-pi-native/console/commit/4cd4b212e88d30b447d5674cf157ce71862fe14a))
+* :bug: fix not updated argocd cluster and not using insecure in config ([69e7a9a](https://github.com/cloud-pi-native/console/commit/69e7a9ac7a584d76ce047b8330356ce2387218d7))
+* :bug: fix payload, fix check step ([ff76b27](https://github.com/cloud-pi-native/console/commit/ff76b2750352cbe7b2d49ff5fb6e4d3e424b328f))
+* :bug: fix projectLimit for gitlab plugin ([13fca89](https://github.com/cloud-pi-native/console/commit/13fca89f37a16b980dce7f16e87151510d6f0b63))
+* :bug: fix types, add void and handle it ([110cfed](https://github.com/cloud-pi-native/console/commit/110cfedfcb2a58757b5ad47f96f6323cbe034550))
+* :bug: forgot await in argo plugin ([f4504d4](https://github.com/cloud-pi-native/console/commit/f4504d4b1ccc999274c3267508c943f23fd8690b))
+* :bug: harbor, fix remove repos from unknown project ([8a18381](https://github.com/cloud-pi-native/console/commit/8a18381c2197634d90649a8520dd068a59e5369c))
+* :bug: import new shared package ([ff0b0db](https://github.com/cloud-pi-native/console/commit/ff0b0db9dcc96c10b409b51bd4180c03b5b01478))
+* :bug: launch e2e test in open mode without turbo ([d3497d1](https://github.com/cloud-pi-native/console/commit/d3497d13e3862d7701cbbd2da65cb7a571032eb2))
+* :bug: manage cancel emit on update repo form ([16df7b4](https://github.com/cloud-pi-native/console/commit/16df7b43d584fb1edfa5a01938356b04b785429b))
+* :bug: missed limits ([ffda747](https://github.com/cloud-pi-native/console/commit/ffda747422c7c1c4fe937842452fe6562b65f99d))
+* :bug: missed limits ([ff5a9ee](https://github.com/cloud-pi-native/console/commit/ff5a9eef173ad263385b1294d9056da13edda6a5))
+* :bug: missing await before plugins hook and logs recording on archiveProject ([e221341](https://github.com/cloud-pi-native/console/commit/e221341a7db27d67bfa40e4231d47de1e5e8648f))
+* :bug: missing await before plugins hook and logs recording on archiveProject ([2515c62](https://github.com/cloud-pi-native/console/commit/2515c624afd1d89718a98085c5e41c1c996157b8))
+* :bug: now the admin can chosse skip tls api kube ([e09aa2a](https://github.com/cloud-pi-native/console/commit/e09aa2ac659e1439f59050c56256f530b9f8cae6))
+* :bug: optional paramater to call repeatFn ([a7925dc](https://github.com/cloud-pi-native/console/commit/a7925dcfbaaf1b1727e8cdede06bf9c24d89cad8))
+* :bug: pin pnpm version in dockerfiles ([b494a2f](https://github.com/cloud-pi-native/console/commit/b494a2f0d190e3da81f9765dded76187333e61af))
+* :bug: pnpm lock ([a7925dc](https://github.com/cloud-pi-native/console/commit/a7925dcfbaaf1b1727e8cdede06bf9c24d89cad8))
+* :bug: remove harbor repos before projects ([7239329](https://github.com/cloud-pi-native/console/commit/72393297dcfaf44938e2814cccfd8366613ba75c))
+* :bug: retrieve also inactive orgs on admin project list page ([4b8977e](https://github.com/cloud-pi-native/console/commit/4b8977e01214295f3090ab16a92bde4b7d7a64f9))
+* :bug: retrieve kc user bug fix ([aaf61c5](https://github.com/cloud-pi-native/console/commit/aaf61c51a288cd7998a5d3883cf467471b42c3cb))
+* :bug: run.sh js to ts reference ([a7925dc](https://github.com/cloud-pi-native/console/commit/a7925dcfbaaf1b1727e8cdede06bf9c24d89cad8))
+* :bug: should not set caData if skipTLSVerify is true ([ccd66f8](https://github.com/cloud-pi-native/console/commit/ccd66f83be75850ffe47e87ff405fcf9cf136e3c))
+* :bug: test if external dir exists ([3276400](https://github.com/cloud-pi-native/console/commit/3276400a00b3435eb87e225e0e8deadd5a311b0d))
+* :bug: use argoCD regex for internalRepoName ([6c2ed3f](https://github.com/cloud-pi-native/console/commit/6c2ed3f682514b947e66547ce136d148b9e2d686))
+* :bug: various fixes around plugins and controllers ([6271c67](https://github.com/cloud-pi-native/console/commit/6271c67f3d8471ee6afc3409c5d753f7ade950f0))
+* :card_file_box: set all project status to failed for v6 release ([b689c35](https://github.com/cloud-pi-native/console/commit/b689c356f27e769b18aabab2f2510dd24354d95f))
+* :construction_worker: fix CI: tsconfig is needed ([2150961](https://github.com/cloud-pi-native/console/commit/2150961433d0b097100ea62cf1fd7be49fbb4571))
+* :construction: hooks payload send full owner object, bug getSingleOwnerByProjectId ([0e74895](https://github.com/cloud-pi-native/console/commit/0e74895695b42d4e13a645ef4005afbffec59b64))
+* :construction: in progress ([2150961](https://github.com/cloud-pi-native/console/commit/2150961433d0b097100ea62cf1fd7be49fbb4571))
+* :goal_net: add try catch in checkApi func ([baf38af](https://github.com/cloud-pi-native/console/commit/baf38af3f96fe227a934228d7875181e1407c8e9))
+* :goal_net: allow deleting environment if not found ([a2dc7da](https://github.com/cloud-pi-native/console/commit/a2dc7daf96942121e9291063569ff9c6612bd345))
+* :goal_net: throw error if catched in business ([1790ec2](https://github.com/cloud-pi-native/console/commit/1790ec274e965d5d62a0693937eec5ee765602e2))
+* :heavy_plus_sign: fix pnpm-lock file ([93aa64e](https://github.com/cloud-pi-native/console/commit/93aa64e146e11f30c8305f85d7ff03b696b0297b))
+* :lipstick: add icons ([ed1887b](https://github.com/cloud-pi-native/console/commit/ed1887baf6a65d0d58c6e399991a1419351c3883))
+* :lipstick: fix padding ([907d424](https://github.com/cloud-pi-native/console/commit/907d424a94f2dfc7e7110882438130bdb5dc4cd8))
+* :lipstick: more contrasted icon color for archived project ([790d276](https://github.com/cloud-pi-native/console/commit/790d2761d3f77756144172e3ccd80bcb0df4572d))
+* :lipstick: restyle logs interface ([fc362cf](https://github.com/cloud-pi-native/console/commit/fc362cf461c65f6e4e8e7b6b2d92c83a41844bdf))
+* :lock: root token is not used in new repo credential when synced ([c92ea8b](https://github.com/cloud-pi-native/console/commit/c92ea8b5ef95097b07c2bbda435ce433f5bba53d))
+* :necktie: clarify business logic on status and locking ([8548d6e](https://github.com/cloud-pi-native/console/commit/8548d6e0d654673789bdebba31237fa98a86788a))
+* :rewind: fix bugs introduced during my vacations ([9ee467c](https://github.com/cloud-pi-native/console/commit/9ee467c69b590a4630dae19f42f2fc5c9321953e))
+* :safety_vest: validate user schema before trying to insert it in db ([ab8e6ef](https://github.com/cloud-pi-native/console/commit/ab8e6efdb00ec29c6a9a1e0f89c58ffbc999c966))
+* :technologist: change domains for dev and int ([0de00ab](https://github.com/cloud-pi-native/console/commit/0de00abf78543bc769f80be2f0e59795cfefefa5))
+* :technologist: fix import kubeconfig in integration ([51af3dd](https://github.com/cloud-pi-native/console/commit/51af3dd16128a6d4a1e676921937005e295acfc9))
+* :wrench: handle no values for disabledPlugins ([d0d46a3](https://github.com/cloud-pi-native/console/commit/d0d46a38570db6f626f5879da180829216826fa8))
+* :zap: gitlab, stabilize user search and lifecycle ([179c912](https://github.com/cloud-pi-native/console/commit/179c91269ecf04ff6a489a5d92f490b940446e70))
+
+
+### Performance Improvements
+
+* :construction: skip failing test for merge ([a7925dc](https://github.com/cloud-pi-native/console/commit/a7925dcfbaaf1b1727e8cdede06bf9c24d89cad8))
+
+
+### Reverts
+
+* :card_file_box: add missing default for projectStatus ([2263988](https://github.com/cloud-pi-native/console/commit/22639888442da48b097f936d0afb62652d262b02))
+* :card_file_box: add missing default for projectStatus ([5653165](https://github.com/cloud-pi-native/console/commit/565316504a1baa90d2c7c999c0ba6810151324f5))
+* :poop: comment harbor projet member role update ([63926ae](https://github.com/cloud-pi-native/console/commit/63926ae9c5a5fe6b9e6e8a2d0007f55d186b0f36))
+
+
+### Code Refactoring
+
+* :boom: clarify business logic on status and locking ([8548d6e](https://github.com/cloud-pi-native/console/commit/8548d6e0d654673789bdebba31237fa98a86788a))
+* :boom: migrate from sequelize to prisma ([37b065d](https://github.com/cloud-pi-native/console/commit/37b065d6cff844dfd1b9d2276831eddefa64a71e))
+
 ## [6.3.1](https://github.com/cloud-pi-native/console/compare/v6.3.0...v6.3.1) (2023-12-12)
 
 
