@@ -7,4 +7,4 @@ export type UpdateOrganizationDto = FromSchema<typeof updateOrganizationSchema['
 
 export type OrganizationParams = FromSchema<typeof updateOrganizationSchema['params']>
 
-export type GetAllOrganizationsDto = Required<FromSchema<typeof getAllOrganizationsSchema['response']['200']>>
+export type GetAllOrganizationsDto = FromSchema<typeof getAllOrganizationsSchema['response']['200']>

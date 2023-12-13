@@ -42,12 +42,6 @@ export const projectOpenApiSchema = {
   $id: 'project',
   type: 'object',
   additionalProperties: false,
-  required: [
-    'id',
-    'status',
-    'locked',
-    // can't add properties from ...createProjectDto and $ref !
-  ],
   properties: {
     id: {
       type: 'string',
@@ -159,7 +153,15 @@ export const getAllProjectsSchema = {
   response: {
     200: {
       type: 'array',
-      items: projectOpenApiSchema,
+      items: {
+        ...projectOpenApiSchema,
+        required: [
+          'id',
+          'status',
+          'locked',
+          'name',
+        ],
+      },
     },
   },
 } as const

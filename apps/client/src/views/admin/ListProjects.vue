@@ -2,7 +2,7 @@
 import { onBeforeMount, ref, type Ref } from 'vue'
 import { useAdminProjectStore } from '@/stores/admin/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { formatDate, statusDict, sortArrByObjKeyAsc } from '@dso-console/shared'
+import { type AsyncReturnType, formatDate, statusDict, sortArrByObjKeyAsc } from '@dso-console/shared'
 import { useAdminOrganizationStore } from '@/stores/admin/organization.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 import { DsfrInputGroup, getRandomId } from '@gouvminint/vue-dsfr'
@@ -11,7 +11,6 @@ import TeamCt from '@/components/TeamCt.vue'
 import { useUserStore } from '@/stores/user.js'
 import { useProjectUserStore } from '@/stores/project-user'
 import { useAdminQuotaStore } from '@/stores/admin/quota'
-import { type AsyncReturnType } from '@dso-console/shared'
 
 const adminProjectStore = useAdminProjectStore()
 const adminOrganizationStore = useAdminOrganizationStore()
@@ -53,6 +52,8 @@ const environmentsCtKey = ref(getRandomId('environment'))
 const repositoriesCtKey = ref(getRandomId('repository'))
 const isArchivingProject = ref(false)
 const projectToArchive = ref('')
+const inputSearchText = ref('')
+const activeFilter = ref('Non archivés')
 
 const title = 'Liste des projets'
 const headers = [
@@ -71,32 +72,27 @@ const environmentsId = 'environmentsTable'
 
 type FilterMethods = Record<string, (row: Row) => boolean>
 const filterMethods: FilterMethods = {
-  Tout: () => true,
+  Tous: () => true,
   'Non archivés': (row) => row.status !== 'archived',
   Archivés: (row) => row.status === 'archived',
   Échoués: (row) => row.status === 'failed',
-  Verrouillés: (row) => row.locked,
+  Vérrouillés: (row) => row.locked,
 }
-const activeFilter = ref('Non archivés')
-
-const inputSearchText = ref('')
 
 const rowFilter = (rows: Row[]): Rows | EmptyRow => {
   const returnRows = rows.filter(row => {
     if (!filterMethods[activeFilter.value](row)) return false
     if (!inputSearchText.value) return true
     return row.rowData.some(data => {
-      try {
-        return data.toString().toLowerCase().includes(inputSearchText.value.toLocaleLowerCase())
-      } catch (error) {
-        console.log(error)
-        return false
+      if (typeof data === 'object') {
+        return data.text?.toString().toLowerCase().includes(inputSearchText.value.toLocaleLowerCase())
       }
+      return data.toString().toLowerCase().includes(inputSearchText.value.toLocaleLowerCase())
     })
   })
   if (!returnRows.length) {
     return [[{
-      text: 'Aucun projet existant',
+      text: 'Aucun projet trouvé',
       cellAttrs: {
         colspan: headers.length,
       },
@@ -352,7 +348,6 @@ onBeforeMount(async () => {
   >
     <div class="w-full flex gap-4 justify-end fr-mb-1w">
       <DsfrButton
-        v-if="!selectedProject"
         data-testid="refresh-btn"
         title="Rafraîchir la liste des projets"
         secondary
@@ -378,14 +373,16 @@ onBeforeMount(async () => {
     >
       <DsfrSelect
         v-model="activeFilter"
+        select-id="tableAdministrationProjectsFilter"
         label="Filtre rapide"
         :options="Object.keys(filterMethods)"
       />
       <DsfrInputGroup
         v-model="inputSearchText"
+        data-testid="tableAdministrationProjectsSearch"
         type="inputType"
         label-visible
-        placeholder="Recherche plein texte"
+        placeholder="Recherche textuelle"
         label="Recherche"
         class="flex-1 pl-4"
       />

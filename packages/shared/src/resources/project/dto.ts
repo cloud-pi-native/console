@@ -7,4 +7,4 @@ export type UpdateProjectDto = FromSchema<typeof updateProjectSchema['body']>
 
 export type ProjectParams = FromSchema<typeof updateProjectSchema['params']>
 
-export type GetAllProjectsDto = Required<FromSchema<typeof getAllProjectsSchema['response']['200']>>
+export type GetAllProjectsDto = FromSchema<typeof getAllProjectsSchema['response']['200']>
