@@ -5,7 +5,7 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 import { formatDate, statusDict, sortArrByObjKeyAsc } from '@dso-console/shared'
 import { useAdminOrganizationStore } from '@/stores/admin/organization.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
-import { getRandomId } from '@gouvminint/vue-dsfr'
+import { DsfrInputGroup, getRandomId } from '@gouvminint/vue-dsfr'
 import LoadingCt from '@/components/LoadingCt.vue'
 import TeamCt from '@/components/TeamCt.vue'
 import { useUserStore } from '@/stores/user.js'
@@ -20,9 +20,16 @@ const projectUserStore = useProjectUserStore()
 const adminQuotaStore = useAdminQuotaStore()
 const projectEnvironmentStore = useProjectEnvironmentStore()
 
+type Row = {
+  status: string
+  locked: boolean
+  rowData: any[]
+  rowAttrs: { class: string, title: string, onClick: () => void}
+}
+
 const allProjects = ref([])
 const organizations = ref([])
-const rows: Ref<unknown> = ref([])
+const rows: Ref<Row[]> = ref([])
 const environmentsRows: Ref<unknown> = ref([])
 const repositoriesRows: Ref<unknown> = ref([])
 const tableKey = ref(getRandomId('table'))
@@ -49,11 +56,40 @@ const membersId = 'membersTable'
 const repositoriesId = 'repositoriesTable'
 const environmentsId = 'environmentsTable'
 
+type FilterMethods = Record<string, (row: Row) => boolean>
+const filterMethods: FilterMethods = {
+  Tout: () => true,
+  'Non archivés': (row) => row.status !== 'archived',
+  Archivés: (row) => row.status === 'archived',
+  Échoués: (row) => row.status === 'failed',
+  Verrouillés: (row) => row.locked,
+}
+const activeFilter = ref('Non archivés')
+
+const inputSearchText = ref('')
+
+const rowFilter = (rows: Row[]) => {
+  return rows.filter(row => {
+    if (!filterMethods[activeFilter.value](row)) return false
+    if (!inputSearchText.value) return true
+    return row.rowData.some(data => {
+      try {
+        return data.toString().toLowerCase().includes(inputSearchText.value.toLocaleLowerCase())
+      } catch (error) {
+        console.log(error)
+        return false
+      }
+    })
+  })
+}
+
 const setRows = () => {
   rows.value = allProjects.value.length
     ? sortArrByObjKeyAsc(allProjects.value, 'name')
       ?.map(({ id, organizationId, name, description, roles, status, locked, createdAt, updatedAt }) => (
         {
+          status,
+          locked,
           rowAttrs: {
             onClick: () => {
               if (status === 'archived') return snackbarStore.setMessage('Le projet est archivé, pas d\'action possible', 'info')
@@ -296,6 +332,7 @@ onBeforeMount(async () => {
   >
     <div class="w-full flex gap-4 justify-end fr-mb-1w">
       <DsfrButton
+        v-if="!Object.keys(selectedProject)?.length"
         data-testid="refresh-btn"
         title="Rafraîchir la liste des projets"
         secondary
@@ -315,13 +352,31 @@ onBeforeMount(async () => {
         @click="() => selectedProject = {}"
       />
     </div>
+    <div
+      v-if="!Object.keys(selectedProject)?.length"
+      class="flex"
+    >
+      <DsfrSelect
+        v-model="activeFilter"
+        label="Filtre rapide"
+        :options="Object.keys(filterMethods)"
+      />
+      <DsfrInputGroup
+        v-model="inputSearchText"
+        type="inputType"
+        label-visible
+        placeholder="Recherche plein texte"
+        label="Recherche"
+        class="flex-1 pl-4"
+      />
+    </div>
     <DsfrTable
       v-if="!Object.keys(selectedProject)?.length"
       :key="tableKey"
       data-testid="tableAdministrationProjects"
       :title="title"
       :headers="headers"
-      :rows="rows"
+      :rows="rowFilter(rows)"
     />
     <div v-else>
       <DsfrCallout
