@@ -92,9 +92,6 @@ export const filterOwners = (roles: Role[]) => {
   return roles.filter(({ role }) => role === 'owner')
 }
 
-export type AsyncReturnType<T extends (...args: any) => Promise<any>> =
-  T extends (...args: any) => Promise<infer R> ? R : any
-
 export type ProjectInfos<T> = T & {
   services?: Record<string, object>
 }

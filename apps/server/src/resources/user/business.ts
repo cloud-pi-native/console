@@ -2,10 +2,10 @@ import { getOrCreateUser, addLogs, addUserToProject as addUserToProjectQuery, cr
 import { User, Project } from '@prisma/client'
 import { hooks } from '@/plugins/index.js'
 import { PluginResult } from '@/plugins/hooks/hook.js'
-import { AsyncReturnType, checkInsufficientRoleInProject } from '@/utils/controller.js'
+import { checkInsufficientRoleInProject } from '@/utils/controller.js'
 import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { BadRequestError, ForbiddenError, UnprocessableContentError } from '@/utils/errors.js'
-import { ProjectRoles, projectIsLockedInfo, userSchema } from '@dso-console/shared'
+import { AsyncReturnType, ProjectRoles, projectIsLockedInfo, userSchema } from '@dso-console/shared'
 
 export type UserDto = Pick<User, 'email' | 'firstName' | 'lastName' | 'id'>
 export const getUser = async (user: UserDto) => {

@@ -22,11 +22,20 @@ import {
 } from '@/resources/queries-index.js'
 import { hooks } from '@/plugins/index.js'
 import { Organization, Project, User } from '@prisma/client'
-import { AsyncReturnType, checkInsufficientPermissionInEnvironment, checkInsufficientRoleInProject } from '@/utils/controller.js'
+import { checkInsufficientPermissionInEnvironment, checkInsufficientRoleInProject } from '@/utils/controller.js'
 import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import { PluginResult } from '@/plugins/hooks/hook.js'
-import { CreateProjectDto, UpdateProjectDto, calcProjectNameMaxLength, projectIsLockedInfo, projectSchema, exclude, adminGroupPath } from '@dso-console/shared'
+import {
+  AsyncReturnType,
+  CreateProjectDto,
+  UpdateProjectDto,
+  calcProjectNameMaxLength,
+  projectIsLockedInfo,
+  projectSchema,
+  exclude,
+  adminGroupPath,
+} from '@dso-console/shared'
 import { CreateProjectExecArgs, ProjectBase, UpdateProjectExecArgs } from '@/plugins/hooks/project.js'
 import { filterObjectByKeys } from '@/utils/queries-tools.js'
 import { projectRootDir } from '@/utils/env.js'

@@ -20,7 +20,6 @@ import { hooks } from '@/plugins/index.js'
 import { DsoError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import { type Cluster, type Environment, type Project, type Role, type User, type QuotaStage } from '@prisma/client'
 import {
-  type AsyncReturnType,
   checkInsufficientRoleInProject,
   checkClusterUnavailable,
   filterOwners,
@@ -31,7 +30,7 @@ import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { projectRootDir } from '@/utils/env.js'
 import { getProjectInfosAndClusters } from '@/resources/project/business.js'
 import { gitlabUrl } from '@/plugins/core/gitlab/utils.js'
-import { adminGroupPath } from '@dso-console/shared'
+import { type AsyncReturnType, adminGroupPath } from '@dso-console/shared'
 import { KeycloakSession } from '@/types/index.js'
 
 // Fetch infos
