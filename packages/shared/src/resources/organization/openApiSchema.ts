@@ -13,6 +13,7 @@ const createOrganizationDto = {
 export const organizationOpenApiSchema = {
   $id: 'organization',
   type: 'object',
+  additionalProperties: false,
   properties: {
     id: {
       type: 'string',
