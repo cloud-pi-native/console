@@ -202,7 +202,7 @@ export const getAllUsers = async () => {
 
 // Admin - Organizations
 export const getAllOrganizations = async () => {
-  const response = await apiClient.get('/admin/organizations')
+  const response: { data: Required<GetAllOrganizationsDto> } = await apiClient.get('/admin/organizations')
   return response.data
 }
 
@@ -223,7 +223,7 @@ export const fetchOrganizations = async () => {
 
 // Admin - Projects
 export const getAllProjects = async () => {
-  const response = await apiClient.get('/admin/projects')
+  const response: { data: Required<GetAllProjectsDto> } = await apiClient.get('/admin/projects')
   return response.data
 }
 

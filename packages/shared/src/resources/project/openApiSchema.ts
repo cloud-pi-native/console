@@ -41,6 +41,15 @@ export const createProjectDto = {
 export const projectOpenApiSchema = {
   $id: 'project',
   type: 'object',
+  additionalProperties: false,
+  required: [
+    'id',
+    'status',
+    'locked',
+    'createdAt',
+    'updatedAt',
+    // can't add properties from ...createProjectDto and $ref !
+  ],
   properties: {
     id: {
       type: 'string',
