@@ -16,7 +16,7 @@ export const calcProjectNameMaxLength = (organizationName: string) => {
 
 export const getUniqueListBy = (arr, key) => [...new Map(arr.map(item => [item[key], item])).values()]
 
-export const sortArrByObjKeyAsc = (arr: Record<string, unknown>[], key: string) => arr?.toSorted((a: object, b: object) => a[key] >= b[key] ? 1 : -1)
+export const sortArrByObjKeyAsc = <T extends Array<Record<string, unknown>>>(arr: T, key: string): T => arr?.toSorted((a: object, b: object) => a[key] >= b[key] ? 1 : -1) as T
 
 export const removeTrailingSlash = (url: string) => url?.endsWith('/')
   ? url?.slice(0, -1)
@@ -44,4 +44,17 @@ export const exclude = <T>(result: T, keys: string[]): T => {
     newObj[key] = value
   })
   return newObj as any
+}
+
+export type AsyncReturnType<T extends (...args: any) => Promise<any>> =
+  T extends (...args: any) => Promise<infer R> ? R : any
+
+export const objectEntries = <Obj extends Record<string, unknown>>(obj: Obj): ([keyof Obj, Obj[keyof Obj]])[] => {
+  return Object.entries(obj) as ([keyof Obj, Obj[keyof Obj]])[]
+}
+export const objectKeys = <Obj extends Record<string, unknown>>(obj: Obj): (keyof Obj)[] => {
+  return Object.keys(obj) as (keyof Obj)[]
+}
+export const objectValues = <Obj extends Record<string, unknown>>(obj: Obj): (Obj[keyof Obj])[] => {
+  return Object.values(obj) as (Obj[keyof Obj])[]
 }

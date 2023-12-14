@@ -1,6 +1,10 @@
 import { getModel, getModelById } from '../../support/func'
 import { statusDict, formatDate, sortArrByObjKeyAsc, OrganizationModel, ProjectModel } from '@dso-console/shared'
 
+function checkTableRowsLength (length) {
+  if (!length) cy.get('tr:last-child>td:first-child').should('have.text', 'Aucun projet trouvé')
+  else cy.get('tr').should('have.length', length)
+}
 describe('Administration projects', () => {
   const admin = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6566')
   const organizations = getModel('organization') as OrganizationModel[]
@@ -28,6 +32,7 @@ describe('Administration projects', () => {
   })
 
   it('Should display projects table, loggedIn as admin', () => {
+    cy.get('select#tableAdministrationProjectsFilter').select('Tous')
     cy.getByDataTestid('tableAdministrationProjects').within(() => {
       projects.forEach((project, index: number) => {
         cy.get(`tbody tr:nth-of-type(${index + 1})`).within(() => {
@@ -42,6 +47,28 @@ describe('Administration projects', () => {
         })
       })
     })
+  })
+
+  it('Should display filtered projects, loggedIn as admin', () => {
+    const allProjectsLength = projects.length + 1
+    cy.get('select#tableAdministrationProjectsFilter').select('Tous')
+    cy.getByDataTestid('tableAdministrationProjects').within(() => checkTableRowsLength(allProjectsLength))
+
+    const allNonArchivedProjectsLength = projects.filter((project) => project.status !== 'archived').length + 1
+    cy.get('select#tableAdministrationProjectsFilter').select('Non archivés')
+    cy.getByDataTestid('tableAdministrationProjects').within(() => checkTableRowsLength(allNonArchivedProjectsLength))
+
+    const allArchivedProjectsLength = projects.filter((project) => project.status === 'archived').length + 1
+    cy.get('select#tableAdministrationProjectsFilter').select('Archivés')
+    cy.getByDataTestid('tableAdministrationProjects').within(() => checkTableRowsLength(allArchivedProjectsLength))
+
+    const allFailedProjectsLength = projects.filter((project) => project.status === 'failed').length + 1
+    cy.get('select#tableAdministrationProjectsFilter').select('Échoués')
+    cy.getByDataTestid('tableAdministrationProjects').within(() => checkTableRowsLength(allFailedProjectsLength))
+
+    const allLockedProjectsLength = projects.filter((project) => project.locked).length + 1
+    cy.get('select#tableAdministrationProjectsFilter').select('Vérrouillés')
+    cy.getByDataTestid('tableAdministrationProjects').within(() => checkTableRowsLength(allLockedProjectsLength))
   })
 
   it('Should lock and unlock a project, loggedIn as admin', () => {
@@ -83,7 +110,7 @@ describe('Administration projects', () => {
     cy.visit('/admin/projects')
     cy.url().should('contain', '/admin/projects')
     cy.wait('@getAllProjects')
-
+    cy.get('select#tableAdministrationProjectsFilter').select('Tous')
     cy.getByDataTestid('tableAdministrationProjects').within(() => {
       cy.get('tr').contains(projectName)
         .click()

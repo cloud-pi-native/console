@@ -1,4 +1,4 @@
-import type { GenerateCIFilesDto, CreateProjectDto, ProjectModel, CreateRepositoryDto, UpdateRepositoryDto, UpdateClusterDto, CreateClusterDto, EnvironmentModel, UpdateEnvironmentDto, UpdateProjectDto, InitializeEnvironmentDto, AdminLogsQuery, UpdateOrganizationDto, CreateOrganizationDto, SetPermissionDto, UpdatePermissionDto, CreateQuotaDto, UpdateQuotaStageDto, UpdateQuotaPrivacyDto, CreateStageDto, UpdateStageClustersDto, PermissionParams, DeletePermissionParams, RepositoryParams, ProjectParams, ClusterParams, QuotaParams, StageParams, AddUserToProjectDto, UpdateUserProjectRoleDto, UserParams, RoleParams, LettersQuery } from '@dso-console/shared'
+import type { GenerateCIFilesDto, CreateProjectDto, ProjectModel, CreateRepositoryDto, UpdateRepositoryDto, UpdateClusterDto, CreateClusterDto, EnvironmentModel, UpdateEnvironmentDto, UpdateProjectDto, InitializeEnvironmentDto, AdminLogsQuery, UpdateOrganizationDto, CreateOrganizationDto, SetPermissionDto, UpdatePermissionDto, CreateQuotaDto, UpdateQuotaStageDto, UpdateQuotaPrivacyDto, CreateStageDto, UpdateStageClustersDto, PermissionParams, DeletePermissionParams, RepositoryParams, ProjectParams, ClusterParams, QuotaParams, StageParams, AddUserToProjectDto, UpdateUserProjectRoleDto, UserParams, RoleParams, LettersQuery, GetAllOrganizationsDto, GetAllProjectsDto } from '@dso-console/shared'
 import { apiClient } from './xhr-client.js'
 
 // CIFiles
@@ -202,7 +202,7 @@ export const getAllUsers = async () => {
 
 // Admin - Organizations
 export const getAllOrganizations = async () => {
-  const response = await apiClient.get('/admin/organizations')
+  const response: { data: GetAllOrganizationsDto } = await apiClient.get('/admin/organizations')
   return response.data
 }
 
@@ -223,7 +223,7 @@ export const fetchOrganizations = async () => {
 
 // Admin - Projects
 export const getAllProjects = async () => {
-  const response = await apiClient.get('/admin/projects')
+  const response: { data: GetAllProjectsDto } = await apiClient.get('/admin/projects')
   return response.data
 }
 
