@@ -1,8 +1,8 @@
 import { sendOk, sendCreated } from '@/utils/response.js'
 import { addReqLogs } from '@/utils/logger.js'
 import { addUserToProject, checkProjectLocked, checkProjectRole, getMatchingUsers, getProjectInfos, getProjectUsers, removeUserFromProject, updateUserProjectRole } from './business.js'
-import { FastifyRequestWithSession } from '@/types/index.js'
-import { RouteHandler } from 'fastify'
+import { type FastifyRequestWithSession } from '@/types/index.js'
+import { type RouteHandler } from 'fastify'
 import type { UserParams, AddUserToProjectDto, RoleParams, LettersQuery, UpdateUserProjectRoleDto } from '@dso-console/shared'
 import { adminGroupPath } from '@dso-console/shared'
 

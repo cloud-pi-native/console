@@ -8,22 +8,44 @@ import {
   deleteStageController,
   updateStageClustersController,
 } from '@/resources/stage/admin/controllers.js'
+import { createStageSchema, deleteStageSchema, getStageAssociatedEnvironmentsSchema, updateQuotaStageSchema, updateStageClustersSchema } from '@dso-console/shared'
+import { type FastifyInstance } from 'fastify'
 
-const router = async (app, _opt) => {
+const router = async (app: FastifyInstance, _opt) => {
   // Récupérer les environnements associés au stage
-  await app.get('/:stageId/environments', getStageAssociatedEnvironmentsController)
+  app.get('/:stageId/environments',
+    {
+      schema: getStageAssociatedEnvironmentsSchema,
+    },
+    getStageAssociatedEnvironmentsController)
 
   // Créer un stage
-  await app.post('/', createStageController)
+  app.post('/',
+    {
+      schema: createStageSchema,
+    },
+    createStageController)
 
   // Modifier une association quota / stage
-  await app.put('/quotastages', updateQuotaStageController)
+  app.put('/quotastages',
+    {
+      schema: updateQuotaStageSchema,
+    },
+    updateQuotaStageController)
 
   // Modifier une association stage / clusters
-  await app.patch('/:stageId/clusters', updateStageClustersController)
+  app.patch('/:stageId/clusters',
+    {
+      schema: updateStageClustersSchema,
+    },
+    updateStageClustersController)
 
   // Supprimer un stage
-  await app.delete('/:stageId', deleteStageController)
+  app.delete('/:stageId',
+    {
+      schema: deleteStageSchema,
+    },
+    deleteStageController)
 }
 
 export default router

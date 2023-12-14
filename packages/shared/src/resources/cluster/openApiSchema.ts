@@ -1,3 +1,5 @@
+import { stageOpenApiSchema } from '../stage/openApiSchema.js'
+
 export const createClusterDto = {
   label: {
     type: 'string',
@@ -84,7 +86,10 @@ export const clusterOpenApiSchema = {
     },
     stages: {
       type: 'array',
-      // items: stageSchema,
+      items: {
+        type: stageOpenApiSchema.type,
+        properties: stageOpenApiSchema.properties,
+      },
     },
   },
 } as const

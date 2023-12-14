@@ -1,5 +1,5 @@
 import { type CreateClusterDto, type UpdateClusterDto, type ClusterParams } from '@dso-console/shared'
-import { FastifyRequestWithSession } from '@/types/index.js'
+import { type FastifyRequestWithSession } from '@/types/index.js'
 import { addReqLogs } from '@/utils/logger.js'
 import { sendCreated, sendNoContent, sendOk } from '@/utils/response.js'
 import {
@@ -9,7 +9,7 @@ import {
   getClusterAssociatedEnvironments,
   deleteCluster,
 } from './business.js'
-import { RouteHandler } from 'fastify'
+import { type RouteHandler } from 'fastify'
 
 // GET
 export const getClusterAssociatedEnvironmentsController: RouteHandler = async (req: FastifyRequestWithSession<{

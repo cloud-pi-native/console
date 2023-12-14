@@ -1,8 +1,8 @@
 import { addReqLogs } from '@/utils/logger.js'
 import { sendOk, sendCreated } from '@/utils/response.js'
 import { deletePermission, getEnvironmentPermissions, setPermission, updatePermission } from './business.js'
-import { RouteHandler } from 'fastify'
-import { FastifyRequestWithSession } from '@/types/index.js'
+import { type RouteHandler } from 'fastify'
+import { type FastifyRequestWithSession } from '@/types/index.js'
 import { DeletePermissionParams, PermissionParams, UpdatePermissionDto } from '@dso-console/shared'
 
 // GET

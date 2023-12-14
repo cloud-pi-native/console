@@ -1,10 +1,16 @@
+import { type FastifyInstance } from 'fastify'
 import {
   getQuotasController,
 } from '../resources/quota/controllers.js'
+import { getQuotasSchema } from '@dso-console/shared'
 
-const router = async (app, _opt) => {
+const router = async (app: FastifyInstance, _opt) => {
   // Récupérer les quotas disponibles
-  await app.get('/', getQuotasController)
+  app.get('/',
+    {
+      schema: getQuotasSchema,
+    },
+    getQuotasController)
 }
 
 export default router

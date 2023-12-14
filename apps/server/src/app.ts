@@ -17,6 +17,9 @@ import {
   serviceOpenApiSchema,
   userOpenApiSchema,
   permissionOpenApiSchema,
+  quotaStageOpenApiSchema,
+  quotaOpenApiSchema,
+  stageOpenApiSchema,
 } from '@dso-console/shared'
 
 import { apiRouter, miscRouter } from './routes/index.js'
@@ -24,7 +27,7 @@ import { addReqLogs, loggerConf } from './utils/logger.js'
 import { DsoError } from './utils/errors.js'
 import { keycloakConf, sessionConf } from './utils/keycloak.js'
 import { isInt, isDev, isTest, keycloakRedirectUri } from './utils/env.js'
-import { FastifyRequestWithSession } from './types/index.js'
+import { type FastifyRequestWithSession } from './types/index.js'
 
 export const apiPrefix = '/api/v1'
 
@@ -48,6 +51,9 @@ export const addAllSchemasToApp = addSchemasToApp(
   roleOpenApiSchema,
   clusterOpenApiSchema,
   projectOpenApiSchema,
+  quotaStageOpenApiSchema,
+  quotaOpenApiSchema,
+  stageOpenApiSchema,
 )
 
 const app: FastifyInstance = addAllSchemasToApp(fastify(fastifyConf))

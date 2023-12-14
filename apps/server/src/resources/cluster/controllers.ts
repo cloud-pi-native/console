@@ -1,8 +1,8 @@
 import { addReqLogs } from '@/utils/logger.js'
 import { getAllCleanedClusters } from './business.js'
 import { sendOk } from '@/utils/response.js'
-import { RouteHandler } from 'fastify'
-import { FastifyRequestWithSession } from '@/types/index.js'
+import { type RouteHandler } from 'fastify'
+import { type FastifyRequestWithSession } from '@/types/index.js'
 
 // GET
 export const getClustersController: RouteHandler = async (req: FastifyRequestWithSession<void>, res) => {

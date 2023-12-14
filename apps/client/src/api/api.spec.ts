@@ -8,11 +8,11 @@ import {
   createProject,
   archiveProject,
   addRepo,
-  addUser,
+  addUserToProject,
   removeUser,
   getUsers,
   getAllUsers,
-  updateUser,
+  updateUserProjectRole,
   getRepos,
   updateRepo,
   deleteRepo,
@@ -26,6 +26,7 @@ import {
   createOrganization,
   updateOrganization,
 } from './api.js'
+import type { UpdateUserProjectRoleDto } from '@dso-console/shared'
 
 const apiClientGet = vi.spyOn(apiClient, 'get')
 const apiClientPost = vi.spyOn(apiClient, 'post')
@@ -153,7 +154,7 @@ describe('API', () => {
       const projectId = 'thisIsAnId'
       apiClientPost.mockReturnValueOnce(Promise.resolve({ data: {} }))
 
-      await addUser(projectId, {})
+      await addUserToProject(projectId, { email: 'test@dso.fr' })
 
       expect(apiClientPost).toHaveBeenCalled()
       expect(apiClientPost).toHaveBeenCalledTimes(1)
@@ -161,15 +162,16 @@ describe('API', () => {
     })
 
     it('Should update an user in project', async () => {
-      const projectId = 'thisIsAnId'
-      const data = { id: 'thisIsAnId' }
+      const projectId = 'projectId'
+      const userId = 'userId'
+      const data: UpdateUserProjectRoleDto = { role: 'owner' }
       apiClientPut.mockReturnValueOnce(Promise.resolve({ data: {} }))
 
-      await updateUser(projectId, data)
+      await updateUserProjectRole(projectId, userId, data)
 
       expect(apiClientPut).toHaveBeenCalled()
       expect(apiClientPut).toHaveBeenCalledTimes(1)
-      expect(apiClientPut.mock.calls[0][0]).toBe(`/projects/${projectId}/users/${data.id}`)
+      expect(apiClientPut.mock.calls[0][0]).toBe(`/projects/${projectId}/users/${userId}`)
     })
 
     it('Should get users in project', async () => {
@@ -200,7 +202,7 @@ describe('API', () => {
       const projectId = 'thisIsAnId'
       apiClientPost.mockReturnValueOnce(Promise.resolve({ data: {} }))
 
-      await addEnvironment(projectId, { name: 'prod', projectId, clustersId: ['clusterId1'] })
+      await addEnvironment(projectId, { name: 'prod', projectId, clusterId: 'clusterId', quotaStageId: 'quotaStageId' })
 
       expect(apiClientPost).toHaveBeenCalled()
       expect(apiClientPost).toHaveBeenCalledTimes(1)
@@ -225,7 +227,7 @@ describe('API', () => {
       const environmentId = 'thisIsAnId'
       apiClientPost.mockReturnValueOnce(Promise.resolve({ data: {} }))
 
-      await addPermission(projectId, environmentId, {})
+      await addPermission(projectId, environmentId, { userId: 'userId', level: 0 })
 
       expect(apiClientPost).toHaveBeenCalled()
       expect(apiClientPost).toHaveBeenCalledTimes(1)

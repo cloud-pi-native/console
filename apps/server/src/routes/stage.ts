@@ -1,10 +1,16 @@
+import { type FastifyInstance } from 'fastify'
 import {
-  getStageController,
+  getStagesController,
 } from '../resources/stage/controllers.js'
+import { getStagesSchema } from '@dso-console/shared'
 
-const router = async (app, _opt) => {
+const router = async (app: FastifyInstance, _opt) => {
   // Récupérer les stages disponibles
-  await app.get('/', getStageController)
+  app.get('/',
+    {
+      schema: getStagesSchema,
+    },
+    getStagesController)
 }
 
 export default router

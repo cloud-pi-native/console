@@ -3,8 +3,8 @@ import { sendOk } from '@/utils/response.js'
 import {
   getActiveOrganizations,
 } from './business.js'
-import { FastifyRequestWithSession } from '@/types/index.js'
-import { RouteHandler } from 'fastify'
+import { type FastifyRequestWithSession } from '@/types/index.js'
+import { type RouteHandler } from 'fastify'
 
 // GET
 export const getActiveOrganizationsController: RouteHandler = async (req: FastifyRequestWithSession<void>, res) => {

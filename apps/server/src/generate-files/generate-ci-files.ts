@@ -4,7 +4,7 @@ import path from 'node:path'
 
 import { addReqLogs } from '@/utils/logger.js'
 import { sendCreated } from '@/utils/response.js'
-import { FastifyRequestWithSession } from '@/types'
+import { type FastifyRequestWithSession } from '@/types'
 import { GenerateCIFilesDto } from '@dso-console/shared'
 
 export const generateCIFiles = async (req: FastifyRequestWithSession<GenerateCIFilesDto>, res) => {

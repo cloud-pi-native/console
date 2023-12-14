@@ -1,4 +1,4 @@
-import type { GenerateCIFilesDto, CreateProjectDto, ProjectModel, CreateRepositoryDto, UpdateRepositoryDto, UserModel, UpdateClusterDto, CreateClusterDto, EnvironmentModel, UpdateEnvironmentDto, UpdateProjectDto, InitializeEnvironmentDto, AdminLogsQuery, UpdateOrganizationDto, CreateOrganizationDto, SetPermissionDto, UpdatePermissionDto, AddUserDto, UpdateUserDto, CreateQuotaDto, DeleteQuotaDto, UpdateQuotaStageDto, UpdateQuotaPrivacyDto, DeleteStageDto, CreateStageDto, UpdateStageClustersDto, PermissionParams, DeletePermissionParams, RepositoryParams, ProjectParams, ClusterParams } from '@dso-console/shared'
+import type { GenerateCIFilesDto, CreateProjectDto, ProjectModel, CreateRepositoryDto, UpdateRepositoryDto, UpdateClusterDto, CreateClusterDto, EnvironmentModel, UpdateEnvironmentDto, UpdateProjectDto, InitializeEnvironmentDto, AdminLogsQuery, UpdateOrganizationDto, CreateOrganizationDto, SetPermissionDto, UpdatePermissionDto, CreateQuotaDto, UpdateQuotaStageDto, UpdateQuotaPrivacyDto, CreateStageDto, UpdateStageClustersDto, PermissionParams, DeletePermissionParams, RepositoryParams, ProjectParams, ClusterParams, QuotaParams, StageParams, AddUserToProjectDto, UpdateUserProjectRoleDto, UserParams, RoleParams, LettersQuery } from '@dso-console/shared'
 import { apiClient } from './xhr-client.js'
 
 // CIFiles
@@ -72,28 +72,28 @@ export const deleteRepo = async (projectId: RepositoryParams['projectId'], repoI
 }
 
 // Users
-export const getMatchingUsers = async (projectId: ProjectModel['id'], letters: string) => {
+export const getMatchingUsers = async (projectId: UserParams['projectId'], letters: LettersQuery['letters']) => {
   const response = await apiClient.get(`/projects/${projectId}/users/match?letters=${letters}`)
   return response.data
 }
 
-export const addUser = async (projectId: ProjectModel['id'], data: AddUserDto['body']) => {
+export const addUserToProject = async (projectId: UserParams['projectId'], data: AddUserToProjectDto) => {
   const response = await apiClient.post(`/projects/${projectId}/users`, data)
   return response.data
 }
 
-export const updateUser = async (projectId: ProjectModel['id'], data: UpdateUserDto) => {
-  const response = await apiClient.put(`/projects/${projectId}/users/${data.id}`, data)
+export const updateUserProjectRole = async (projectId: RoleParams['projectId'], userId: RoleParams['userId'], data: UpdateUserProjectRoleDto) => {
+  const response = await apiClient.put(`/projects/${projectId}/users/${userId}`, data)
   return response.data
 }
 
 // TODO : pas utilisé
-export const getUsers = async (projectId: ProjectModel['id']) => {
+export const getUsers = async (projectId: UserParams['projectId']) => {
   const response = await apiClient.get(`/projects/${projectId}/users`)
   return response.data
 }
 
-export const removeUser = async (projectId: ProjectModel['id'], userId: UserModel['id']) => {
+export const removeUser = async (projectId: RoleParams['projectId'], userId: RoleParams['userId']) => {
   const response = await apiClient.delete(`/projects/${projectId}/users/${userId}`)
   return response.data
 }
@@ -121,7 +121,7 @@ export const getQuotas = async () => {
 }
 
 // Admin - Quotas
-export const getQuotaAssociatedEnvironments = async (quotaId: DeleteQuotaDto['params']['quotaId']) => {
+export const getQuotaAssociatedEnvironments = async (quotaId: QuotaParams['quotaId']) => {
   const response = await apiClient.get(`/admin/quotas/${quotaId}/environments`)
   return response.data
 }
@@ -131,7 +131,7 @@ export const addQuota = async (data: CreateQuotaDto) => {
   return response.data
 }
 
-export const updateQuotaPrivacy = async (quotaId: UpdateQuotaPrivacyDto['params']['quotaId'], data: UpdateQuotaPrivacyDto) => {
+export const updateQuotaPrivacy = async (quotaId: QuotaParams['quotaId'], data: UpdateQuotaPrivacyDto) => {
   const response = await apiClient.patch(`/admin/quotas/${quotaId}/privacy`, data)
   return response.data
 }
@@ -141,7 +141,7 @@ export const updateQuotaStage = async (data: UpdateQuotaStageDto) => {
   return response.data
 }
 
-export const deleteQuota = async (quotaId: DeleteQuotaDto['params']['quotaId']) => {
+export const deleteQuota = async (quotaId: QuotaParams['quotaId']) => {
   const response = await apiClient.delete(`/admin/quotas/${quotaId}`)
   return response.data
 }
@@ -153,7 +153,7 @@ export const getStages = async () => {
 }
 
 // Admin - Stages
-export const getStageAssociatedEnvironments = async (stageId: DeleteStageDto['params']['stageId']) => {
+export const getStageAssociatedEnvironments = async (stageId: StageParams['stageId']) => {
   const response = await apiClient.get(`/admin/stages/${stageId}/environments`)
   return response.data
 }
@@ -163,12 +163,12 @@ export const addStage = async (data: CreateStageDto) => {
   return response.data
 }
 
-export const updateStageClusters = async (stageId: UpdateStageClustersDto['params']['stageId'], data: UpdateStageClustersDto) => {
+export const updateStageClusters = async (stageId: StageParams['stageId'], data: UpdateStageClustersDto) => {
   const response = await apiClient.patch(`/admin/stages/${stageId}/clusters`, data)
   return response.data
 }
 
-export const deleteStage = async (stageId: DeleteStageDto['params']['stageId']) => {
+export const deleteStage = async (stageId: StageParams['stageId']) => {
   const response = await apiClient.delete(`/admin/stages/${stageId}`)
   return response.data
 }
