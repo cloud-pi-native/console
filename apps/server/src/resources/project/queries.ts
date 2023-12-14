@@ -108,6 +108,7 @@ export const getUserProjects = async (user: User) => {
           label: true,
           privacy: true,
           clusterResources: true,
+          infos: true,
         },
       },
     },

@@ -308,7 +308,7 @@ watch(selectedContext, () => {
       is-textarea
       label="Informations supplémentaires sur le cluster"
       label-visible
-      hint="Facultatif : Informations accessibles aux utilisateurs."
+      hint="Facultatif. Attention, ces informations seront visibles par les utilisateurs de la console à qui ce cluster est destiné (tous si cluster public, membres des projets concernés pour les clusters réservés)."
       @update:model-value="updateValues('infos', $event)"
     />
     <DsfrCheckbox

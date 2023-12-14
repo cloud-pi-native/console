@@ -68,14 +68,7 @@ const stage = computed(() => allStages.value.find(allStage => allStage.id === st
 
 const errorSchema = computed(() => schemaValidator(environmentSchema, localEnvironment.value))
 
-const setEnvironmentOptions = () => {
-  stageOptions.value = allStages.value.map(stage => ({
-    text: stage.name,
-    value: stage.id,
-  }))
-}
-
-const setClusterOptions = () => {
+const availableClusters = computed(() => {
   let availableClusters = props.projectClusters
     ?.filter(projectCluster => stage.value?.clusters
     // @ts-ignore
@@ -94,8 +87,20 @@ const setClusterOptions = () => {
         ?.find(cFromAll => cFromAll?.id === localEnvironment.value.clusterId),
     ]
   }
+  return availableClusters
+})
 
-  clusterOptions.value = availableClusters.map(cluster => ({
+const clusterInfos = computed(() => availableClusters.value.find(cluster => cluster.id === localEnvironment.value.clusterId)?.infos)
+
+const setEnvironmentOptions = () => {
+  stageOptions.value = allStages.value.map(stage => ({
+    text: stage.name,
+    value: stage.id,
+  }))
+}
+
+const setClusterOptions = () => {
+  clusterOptions.value = availableClusters.value.map(cluster => ({
     // @ts-ignore
     text: cluster.label,
     // @ts-ignore
@@ -255,6 +260,12 @@ watch(quotaId, () => {
           required="required"
           :disabled="!props.isEditable"
           :options="clusterOptions"
+        />
+        <DsfrAlert
+          v-if="clusterInfos"
+          data-testid="clusterInfos"
+          title="Informations du cluster"
+          :description="clusterInfos"
         />
         <div
           v-if="localEnvironment.id"
