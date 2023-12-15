@@ -102,7 +102,7 @@ export const updateQuotaStage = async (data: UpdateQuotaStageDto) => {
     return quotaStages
   } catch (error) {
     if (error.message.match(/Foreign key constraint failed on the field: `Environment_quotaStageId_fkey/)) {
-      throw new BadRequestError('L\'association quota / stage que vous souhaitez supprimer est actuellement utilisée. Vous pouvez demander aux souscripteurs concernés de changer le quota choisi pour leur environnement.')
+      throw new BadRequestError('L\'association quota / type d\'environnement que vous souhaitez supprimer est actuellement utilisée. Vous pouvez demander aux souscripteurs concernés de changer le quota choisi pour leur environnement.')
     }
     throw new Error(error?.message)
   }

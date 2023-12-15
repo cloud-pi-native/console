@@ -217,8 +217,8 @@ watch(quotaId, () => {
       <DsfrSelect
         v-model="stageId"
         select-id="stage-select"
-        label="Stage"
-        description="Stage proposé par DSO, conditionne les quotas et les clusters disponibles pour l'environnement."
+        label="Type d'environnement"
+        description="Type d'environnement proposé par DSO, conditionne les quotas et les clusters auxquels vous aurez accès pour créer votre environnement."
         required="required"
         :disabled="!props.isEditable"
         :options="stageOptions"
@@ -247,7 +247,7 @@ watch(quotaId, () => {
         <DsfrAlert
           v-if="stageId && !clusterOptions?.length"
           data-testid="noClusterOptionAlert"
-          description="Aucun cluster ne semble disponible pour votre projet et le stage choisi. Veuillez contacter les administrateurs."
+          description="Aucun cluster ne semble disponible pour votre projet et le type d'environnement choisi. Veuillez contacter les administrateurs."
           type="warning"
           small
         />

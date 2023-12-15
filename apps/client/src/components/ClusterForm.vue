@@ -358,10 +358,10 @@ watch(selectedContext, () => {
         :options="allStages?.map(stage => ({ id: stage.id, name: `${stage.name}` }))"
         :array="stageNames"
         :disabled="!allStages?.length"
-        no-choice-label="Aucun stage disponible"
-        choice-label="Veuillez choisir les stages à associer"
-        label="Nom des stages"
-        description="Sélectionnez les stages autorisés à utiliser ce cluster."
+        no-choice-label="Aucun type d'environnement disponible"
+        choice-label="Veuillez choisir les types d'environnement à associer"
+        label="Nom des types d'environnement"
+        description="Sélectionnez les types d'environnement autorisés à utiliser ce cluster."
         @update="updateValues('stageIds', $event)"
       />
     </div>

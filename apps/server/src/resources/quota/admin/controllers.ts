@@ -75,7 +75,7 @@ export const updateQuotaStageController: RouteHandler = async (req: FastifyReque
 
   addReqLogs({
     req,
-    description: 'Associations quota / stages mises à jour avec succès',
+    description: 'Associations quota / types d\'environnement mises à jour avec succès',
     extras: {
       quotaStages: quotaStages.length + '',
     },

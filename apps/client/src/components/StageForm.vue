@@ -116,10 +116,10 @@ onBeforeMount(() => {
   <div
     class="relative"
   >
-    <h1>Informations du stage <code v-if="localStage.name">{{ localStage.name }}</code></h1>
+    <h1>Informations du type d'environnement <code v-if="localStage.name">{{ localStage.name }}</code></h1>
     <DsfrInputGroup
       v-model="localStage.name"
-      label="Nom du stage"
+      label="Nom du type d'environnement"
       label-visible
       :required="true"
       data-testid="nameInput"
@@ -137,7 +137,7 @@ onBeforeMount(() => {
         no-choice-label="Aucun quota disponible"
         choice-label="Veuillez choisir les quotas à associer"
         label="Nom des quotas"
-        description="Sélectionnez les quotas autorisés à utiliser ce stage."
+        description="Sélectionnez les quotas autorisés à utiliser ce type d'environnement."
         @update="updateQuotas('quotaIds', $event)"
       />
     </div>
@@ -152,7 +152,7 @@ onBeforeMount(() => {
         no-choice-label="Aucun cluster disponible"
         choice-label="Veuillez choisir les clusters à associer"
         label="Nom des clusters"
-        description="Sélectionnez les clusters autorisés à utiliser ce stage."
+        description="Sélectionnez les clusters autorisés à utiliser ce type d'environnement."
         @update="updateClusters('clusterIds', $event)"
       />
     </div>
@@ -161,7 +161,7 @@ onBeforeMount(() => {
     >
       <DsfrButton
         v-if="isNewStage"
-        label="Ajouter le stage"
+        label="Ajouter le type d'environnement"
         data-testid="addStageBtn"
         :disabled="!isStageValid"
         primary
@@ -170,7 +170,7 @@ onBeforeMount(() => {
       />
       <DsfrButton
         v-else
-        label="Modifier le stage"
+        label="Modifier le type d'environnement"
         data-testid="updateStageBtn"
         :disabled="!isStageValid"
         primary
@@ -191,7 +191,7 @@ onBeforeMount(() => {
       data-testid="associatedEnvironmentsZone"
     >
       <DsfrAlert
-        description="Le stage ne peut être supprimé, car les environnements ci-dessous y ont souscrit."
+        description="Le type d'environnement ne peut être supprimé, car les environnements ci-dessous y ont souscrit."
         small
       />
       <div
@@ -213,14 +213,14 @@ onBeforeMount(() => {
         <DsfrButton
           v-show="!isDeletingStage"
           data-testid="showDeleteStageBtn"
-          :label="`Supprimer le stage ${localStage.name}`"
+          :label="`Supprimer le type d'environnement ${localStage.name}`"
           secondary
           icon="ri-delete-bin-7-line"
           @click="isDeletingStage = true"
         />
         <DsfrAlert
           class="<md:mt-2"
-          description="La suppression d'un stage est irréversible."
+          description="La suppression d'un type d'environnement est irréversible."
           type="warning"
           small
         />
@@ -232,7 +232,7 @@ onBeforeMount(() => {
         <DsfrInput
           v-model="stageToDelete"
           data-testid="deleteStageInput"
-          :label="`Veuillez taper '${localStage.name}' pour confirmer la suppression du stage`"
+          :label="`Veuillez taper '${localStage.name}' pour confirmer la suppression du type d'environnement`"
           label-visible
           :placeholder="localStage.name"
           class="fr-mb-2w"
@@ -242,9 +242,9 @@ onBeforeMount(() => {
         >
           <DsfrButton
             data-testid="deleteStageBtn"
-            :label="`Supprimer définitivement le stage ${localStage.name}`"
+            :label="`Supprimer définitivement le type d'environnement ${localStage.name}`"
             :disabled="stageToDelete !== localStage.name"
-            :title="`Supprimer définitivement le stage ${localStage.name}`"
+            :title="`Supprimer définitivement le type d'environnement ${localStage.name}`"
             secondary
             icon="ri-delete-bin-7-line"
             @click="$emit('delete', localStage.id)"
@@ -259,7 +259,7 @@ onBeforeMount(() => {
     </div>
     <LoadingCt
       v-if="props.isUpdatingStage"
-      description="Opérations en cours sur le stage"
+      description="Opérations en cours sur le type d'environnement"
     />
   </div>
 </template>

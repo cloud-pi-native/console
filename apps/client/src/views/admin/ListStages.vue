@@ -128,7 +128,7 @@ watch(stages, () => {
     class="flex <md:flex-col-reverse items-center justify-between pb-5"
   >
     <DsfrButton
-      label="Ajouter un nouveau stage"
+      label="Ajouter un nouveau type d'environnement"
       data-testid="addStageLink"
       tertiary
       title="Ajouter un stage"
@@ -187,7 +187,7 @@ watch(stages, () => {
     <div
       v-if="!stageList.length && !isNewStageForm"
     >
-      <p>Aucun stage enregistré</p>
+      <p>Aucun type d'environnement enregistré</p>
     </div>
   </div>
 </template>

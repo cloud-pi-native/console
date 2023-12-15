@@ -479,7 +479,7 @@ onBeforeMount(async () => {
           :id="environmentsId"
           :key="environmentsCtKey"
           :title="`Environnements du projet ${selectedProject.name}`"
-          :headers="['Nom', 'Stage', 'Quota', 'Statut', 'Reprovisionner']"
+          :headers="['Nom', 'Type d\'environnement', 'Quota', 'Statut', 'Reprovisionner']"
           :rows="environmentsRows"
         />
         <DsfrTable

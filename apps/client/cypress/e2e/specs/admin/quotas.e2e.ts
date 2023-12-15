@@ -460,7 +460,7 @@ describe('Administration quotas', () => {
       expect($response.statusCode).to.equal(400)
     })
     cy.getByDataTestid('snackbar').within(() => {
-      cy.get('p').should('contain', 'L\'association quota / stage que vous souhaitez supprimer est actuellement utilisée. Vous pouvez demander aux souscripteurs concernés de changer le quota choisi pour leur environnement.')
+      cy.get('p').should('contain', 'L\'association quota / type d\'environnement que vous souhaitez supprimer est actuellement utilisée. Vous pouvez demander aux souscripteurs concernés de changer le quota choisi pour leur environnement.')
     })
   })
 

@@ -44,7 +44,7 @@ export const createStage = async (data: CreateStageDto) => {
     await stageSchema.validateAsync(data)
 
     const isNameTaken = await getStageByName(data.name)
-    if (isNameTaken) throw new BadRequestError('Un stage portant ce nom existe déjà')
+    if (isNameTaken) throw new BadRequestError('Un type d\'environnement portant ce nom existe déjà')
 
     const stage = await createStageQuery(data)
 
