@@ -5,7 +5,7 @@ import {
 import { getStagesSchema } from '@dso-console/shared'
 
 const router = async (app: FastifyInstance, _opt) => {
-  // Récupérer les stages disponibles
+  // Récupérer les types d'environnement disponibles
   app.get('/',
     {
       schema: getStagesSchema,

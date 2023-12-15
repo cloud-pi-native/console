@@ -18,13 +18,13 @@ describe('StageForm.vue', () => {
     }
 
     cy.mount(StageForm, { props })
-    cy.get('h1').invoke('text').should('match', /^Informations du stage $/)
+    cy.get('h1').invoke('text').should('match', /^Informations du type d'environnement $/)
     cy.getByDataTestid('updateStageBtn').should('not.exist')
     cy.getByDataTestid('addStageBtn').should('be.visible').and('be.disabled')
     cy.getByDataTestid('nameInput')
       .find('input')
       .type('integ')
-    cy.get('h1').invoke('text').should('match', /^Informations du stage integ$/)
+    cy.get('h1').invoke('text').should('match', /^Informations du type d'environnement integ$/)
     cy.getByDataTestid('addStageBtn').should('be.enabled')
     cy.get('#quotas-select')
       .select(`${allQuotas[1].name}`)
@@ -54,7 +54,7 @@ describe('StageForm.vue', () => {
     }
 
     cy.mount(StageForm, { props })
-    cy.get('h1').invoke('text').should('contain', `Informations du stage ${stageToUpdate.name}`)
+    cy.get('h1').invoke('text').should('contain', `Informations du type d'environnement ${stageToUpdate.name}`)
     cy.getByDataTestid('addStageBtn').should('not.exist')
     cy.getByDataTestid('updateStageBtn').should('be.visible').and('be.enabled')
     cy.getByDataTestid('nameInput')
@@ -93,7 +93,7 @@ describe('StageForm.vue', () => {
     }
 
     cy.mount(StageForm, { props })
-    cy.get('h1').invoke('text').should('contain', `Informations du stage ${stageToUpdate.name}`)
+    cy.get('h1').invoke('text').should('contain', `Informations du type d'environnement ${stageToUpdate.name}`)
     cy.getByDataTestid('addStageBtn').should('not.exist')
     cy.getByDataTestid('updateStageBtn').should('be.visible').and('be.enabled')
     cy.getByDataTestid('nameInput')

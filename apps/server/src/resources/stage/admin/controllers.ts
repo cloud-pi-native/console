@@ -15,7 +15,7 @@ export const getStageAssociatedEnvironmentsController: RouteHandler = async (req
 
   addReqLogs({
     req,
-    description: 'Environnements associés au stage récupérés',
+    description: 'Environnements associés au type d\'environnement récupérés',
     extras: {
       stageId,
     },
@@ -34,7 +34,7 @@ export const createStageController: RouteHandler = async (req: FastifyRequestWit
 
   addReqLogs({
     req,
-    description: 'Stage créé avec succès',
+    description: 'Type d\'environnement créé avec succès',
     extras: {
       stageId: stage.id,
     },
@@ -55,7 +55,7 @@ export const updateStageClustersController: RouteHandler = async (req: FastifyRe
 
   addReqLogs({
     req,
-    description: 'Stage créé avec succès',
+    description: 'Type d\'environnement mis à jour avec succès',
     extras: {
       stageId,
     },
@@ -74,7 +74,7 @@ export const deleteStageController: RouteHandler = async (req: FastifyRequestWit
 
   addReqLogs({
     req,
-    description: 'Stage supprimé avec succès',
+    description: 'Type d\'environnement supprimé avec succès',
     extras: {
       stageId,
     },

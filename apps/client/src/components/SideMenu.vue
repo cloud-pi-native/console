@@ -292,7 +292,7 @@ onMounted(() => {
               to="/admin/stages"
             >
               <v-icon name="ri-stock-line" />
-              Stages
+              Types d'environnement
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
         </DsfrSideMenuList>

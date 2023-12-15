@@ -146,7 +146,7 @@ export const checkExistingEnvironment = (clusterId: Cluster['id'], name: Environ
 }
 
 export const checkQuotaStageStatus = (quotaStage: QuotaStage) => {
-  if (quotaStage.status !== 'active') return 'Cette association quota / stage n\'est plus disponible.'
+  if (quotaStage.status !== 'active') return 'Cette association quota / type d\'environnement n\'est plus disponible.'
 }
 
 // Routes logic
