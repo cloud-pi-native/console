@@ -8,6 +8,7 @@ import { projectIsLockedInfo, sortArrByObjKeyAsc } from '@dso-console/shared'
 import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useAdminClusterStore } from '@/stores/admin/cluster'
+import { handleError } from '@/utils/func.js'
 
 const projectStore = useProjectStore()
 const projectEnvironmentStore = useProjectEnvironmentStore()
@@ -68,8 +69,7 @@ const addEnvironment = async (environment) => {
     try {
       await projectEnvironmentStore.addEnvironmentToProject(environment)
     } catch (error) {
-      // @ts-ignore
-      snackbarStore.setMessage(error?.message, 'error')
+      handleError(error)
     }
   }
   cancel()
@@ -84,8 +84,7 @@ const putEnvironment = async (environment) => {
     try {
       await projectEnvironmentStore.updateEnvironment(environment, project.value.id)
     } catch (error) {
-      // @ts-ignore
-      snackbarStore.setMessage(error?.message, 'error')
+      handleError(error)
     }
   }
   cancel()
@@ -98,8 +97,7 @@ const deleteEnvironment = async (environment) => {
   try {
     await projectEnvironmentStore.deleteEnvironment(environment.id)
   } catch (error) {
-    // @ts-ignore
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
   setSelectedEnvironment({})
   isUpdatingEnvironment.value = false

@@ -15,6 +15,7 @@ import {
 } from '@dso-console/shared'
 import router from '@/router/index.js'
 import LoadingCt from '@/components/LoadingCt.vue'
+import { handleError } from '@/utils/func.js'
 
 const snackbarStore = useSnackbarStore()
 const projectStore = useProjectStore()
@@ -55,11 +56,7 @@ const createProject = async () => {
       await projectStore.createProject(project.value)
       router.push('/projects')
     } catch (error) {
-      if (error instanceof Error) {
-        snackbarStore.setMessage(error.message, 'error')
-      } else {
-        snackbarStore.setMessage('échec de création du projet', 'error')
-      }
+      handleError(error)
     }
   }
   isCreatingProject.value = false

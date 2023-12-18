@@ -6,6 +6,7 @@ import QuotaForm from '@/components/QuotaForm.vue'
 import { sortArrByObjKeyAsc } from '@dso-console/shared'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 import type { CreateQuotaDto, UpdateQuotaStageDto, QuotaModel, UpdateQuotaPrivacyDto, QuotaParams } from '@dso-console/shared'
+import { handleError } from '@/utils/func.js'
 
 const adminQuotaStore = useAdminQuotaStore()
 const projectEnvironmentStore = useProjectEnvironmentStore()
@@ -56,7 +57,7 @@ const addQuota = async (quota: CreateQuotaDto) => {
     await adminQuotaStore.addQuota(quota)
     await adminQuotaStore.getAllQuotas()
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
   isWaitingForResponse.value = false
 }
@@ -77,7 +78,7 @@ const updateQuota = async ({ quotaId, isPrivate, stageIds }: UpdateQuotaType) =>
     await adminQuotaStore.getAllQuotas()
     cancel()
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
   isWaitingForResponse.value = false
 }
@@ -89,7 +90,7 @@ const deleteQuota = async (quotaId: QuotaParams['quotaId']) => {
     await adminQuotaStore.deleteQuota(quotaId)
     await adminQuotaStore.getAllQuotas()
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
   isWaitingForResponse.value = false
 }
@@ -99,7 +100,7 @@ const getQuotaAssociatedEnvironments = async (quotaId: QuotaParams['quotaId']) =
   try {
     associatedEnvironments.value = await adminQuotaStore.getQuotaAssociatedEnvironments(quotaId)
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
   isWaitingForResponse.value = false
 }
@@ -110,7 +111,7 @@ onMounted(async () => {
     setQuotaTiles(quotas.value)
     allStages.value = await projectEnvironmentStore.getStages()
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
 })
 

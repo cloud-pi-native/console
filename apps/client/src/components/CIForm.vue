@@ -4,6 +4,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useCIFilesStore } from '@/stores/ci-files.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+import { handleError } from '@/utils/func.js'
 
 const props = defineProps({
   internalRepoName: {
@@ -62,11 +63,7 @@ const generateCI = async () => {
     generatedCI.value = await ciFilesStore.generateCIFiles(ciData.value)
     prepareForDownload()
   } catch (error) {
-    if (error instanceof Error) {
-      snackbarStore.setMessage(error.message)
-      return
-    }
-    snackbarStore.setMessage('échec de génération de la CI')
+    handleError(error)
   }
 }
 
@@ -107,12 +104,12 @@ const copyContent = async (key) => {
     await navigator.clipboard.writeText(generatedCI.value[key])
     snackbarStore.setMessage('Fichier copié', 'success')
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
 }
 
 onMounted(() => {
-  ciData.value.internalRepoName = internalRepoName
+  ciData.value.internalRepoName = internalRepoName.value
 })
 
 watch(internalRepoName, (internalRepoName) => {

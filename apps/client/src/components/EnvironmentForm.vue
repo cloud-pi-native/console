@@ -6,6 +6,7 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 import LoadingCt from './LoadingCt.vue'
 import { getRandomId } from '@gouvminint/vue-dsfr'
+import { handleError } from '@/utils/func.js'
 
 const props = defineProps({
   environment: {
@@ -154,10 +155,7 @@ onBeforeMount(async () => {
     allStages.value = await projectEnvironmentStore.getStages()
     setEnvironmentOptions()
   } catch (error) {
-    if (error instanceof Error) {
-      return snackbarStore.setMessage(error.message)
-    }
-    snackbarStore.setMessage('Erreur de récupération des quotas')
+    handleError(error)
   }
 
   // Receive quotaStage from parent component, retrieve stageId and quotaId

@@ -7,6 +7,7 @@ import { sortArrByObjKeyAsc } from '@dso-console/shared'
 import type { CreateStageDto, UpdateQuotaStageDto, StageModel, UpdateStageClustersDto, StageParams } from '@dso-console/shared'
 import { useAdminQuotaStore } from '@/stores/admin/quota'
 import { useAdminClusterStore } from '@/stores/admin/cluster'
+import { handleError } from '@/utils/func.js'
 
 const adminStageStore = useAdminStageStore()
 const adminQuotaStore = useAdminQuotaStore()
@@ -60,7 +61,7 @@ const addStage = async (stage: CreateStageDto) => {
     await adminStageStore.addStage(stage)
     await adminStageStore.getAllStages()
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
   isWaitingForResponse.value = false
 }
@@ -79,7 +80,7 @@ const updateStage = async ({ stageId, quotaIds, clusterIds }: UpdateStageType) =
     await adminStageStore.getAllStages()
     cancel()
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
   isWaitingForResponse.value = false
 }
@@ -91,7 +92,7 @@ const deleteStage = async (stageId: StageParams['stageId']) => {
     await adminStageStore.deleteStage(stageId)
     await adminStageStore.getAllStages()
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
   isWaitingForResponse.value = false
 }
@@ -101,7 +102,7 @@ const getStageAssociatedEnvironments = async (stageId: StageParams['stageId']) =
   try {
     associatedEnvironments.value = await adminStageStore.getStageAssociatedEnvironments(stageId)
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
   isWaitingForResponse.value = false
 }
@@ -113,7 +114,7 @@ onMounted(async () => {
     await adminStageStore.getAllStages()
     setStageTiles(stages.value)
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
 })
 

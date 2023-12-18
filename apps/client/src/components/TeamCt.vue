@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref, computed, type Ref, onBeforeMount } from 'vue'
 import { DsfrButton, getRandomId } from '@gouvminint/vue-dsfr'
-import { adminGroupPath, schemaValidator, userSchema } from '@dso-console/shared'
+import { adminGroupPath, schemaValidator, userSchema, type LettersQuery } from '@dso-console/shared'
 import SuggestionInput from '@/components/SuggestionInput.vue'
 import LoadingCt from '@/components/LoadingCt.vue'
 import pDebounce from 'p-debounce'
@@ -109,7 +109,7 @@ const setRows = () => {
   tableKey.value = getRandomId('table')
 }
 
-const retrieveUsersToAdd = pDebounce(async (letters: string) => {
+const retrieveUsersToAdd = pDebounce(async (letters: LettersQuery['letters']) => {
   // Ne pas lancer de requête à moins de 3 caractères tapés
   if (letters.length < 3) return
   // Ne pas relancer de requête à chaque lettre ajoutée si aucun user ne correspond aux premières lettres données

@@ -5,6 +5,7 @@ import { load } from 'js-yaml'
 import { JsonViewer } from 'vue3-json-viewer'
 import MultiSelector from './MultiSelector.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+import { handleError } from '@/utils/func.js'
 
 const snackbarStore = useSnackbarStore()
 
@@ -105,12 +106,9 @@ const updateKubeconfig = (files: Array<any>) => {
     }
     reader.readAsText(files[0])
   } catch (error) {
-    if (error instanceof Error) {
-      kConfigError.value = error.message
-      snackbarStore.setMessage(error.message, 'error')
-      return
-    }
-    snackbarStore.setMessage('échec de parsing du fichier uploadé')
+    handleError(error)
+    // @ts-ignore
+    kConfigError.value = error?.message
   }
 }
 
@@ -156,12 +154,9 @@ const retrieveUserAndCluster = (context: ContextType) => {
       skipTLSVerify: skipTLSVerify || false,
     }
   } catch (error) {
-    if (error instanceof Error) {
-      kConfigError.value = error.message
-      snackbarStore.setMessage(error.message, 'error')
-      return
-    }
-    snackbarStore.setMessage('échec de parsing du fichier uploadé')
+    handleError(error)
+    // @ts-ignore
+    kConfigError.value = error?.message
   }
 }
 
@@ -226,12 +221,14 @@ watch(selectedContext, () => {
     if (!context) throw new Error('Le contexte semble vide.')
     retrieveUserAndCluster(context)
   } catch (error) {
-    kConfigError.value = error.message
-    if (error.message === 'Cannot read properties of undefined (reading \'context\')') {
-      snackbarStore.setMessage('Le contexte semble vide.', 'error')
-      return
+    if (error instanceof Error) {
+      kConfigError.value = error.message
+      if (error.message === 'Cannot read properties of undefined (reading \'context\')') {
+        snackbarStore.setMessage('Le contexte semble vide.', 'error')
+        return
+      }
+      snackbarStore.setMessage(error.message, 'error')
     }
-    snackbarStore.setMessage(error.message, 'error')
   }
 })
 

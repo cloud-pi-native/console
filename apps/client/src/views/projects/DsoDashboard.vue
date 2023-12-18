@@ -9,7 +9,7 @@ import DsoSelectedProject from './DsoSelectedProject.vue'
 import DsoBadge from '@/components/DsoBadge.vue'
 import router from '@/router/index.js'
 import LoadingCt from '@/components/LoadingCt.vue'
-import { copyContent } from '@/utils/func.js'
+import { copyContent, handleError } from '@/utils/func.js'
 
 const projectStore = useProjectStore()
 const userStore = useUserStore()
@@ -36,11 +36,7 @@ const updateProject = async (projectId: ProjectInfos['id']) => {
     await projectStore.updateProject(projectId, { description: description.value })
     isEditingDescription.value = false
   } catch (error) {
-    if (error instanceof Error) {
-      snackbarStore.setMessage(error.message)
-    } else {
-      snackbarStore.setMessage('échec de mise à jour du projet')
-    }
+    handleError(error)
   }
   isWaitingForResponse.value = false
 }
@@ -51,11 +47,7 @@ const archiveProject = async (projectId: ProjectInfos['id']) => {
     await projectStore.archiveProject(projectId)
     router.push('/projects')
   } catch (error) {
-    if (error instanceof Error) {
-      snackbarStore.setMessage(error.message)
-    } else {
-      snackbarStore.setMessage('échec d\'archivage du projet')
-    }
+    handleError(error)
   }
   isWaitingForResponse.value = false
 }
@@ -75,11 +67,7 @@ const handleSecretDisplay = async () => {
       projectSecrets.value = await projectStore.getProjectSecrets(project.value.id)
       snackbarStore.setMessage('Secrets récupérés')
     } catch (error) {
-      if (error instanceof Error) {
-        snackbarStore.setMessage(error.message)
-      } else {
-        snackbarStore.setMessage('échec de récupération des secrets du projet')
-      }
+      handleError(error)
     }
     isWaitingForResponse.value = false
   }
@@ -101,11 +89,7 @@ onBeforeMount(async () => {
   try {
     allStages.value = await projectEnvironmentStore.getStages()
   } catch (error) {
-    if (error instanceof Error) {
-      snackbarStore.setMessage(error.message)
-      return
-    }
-    snackbarStore.setMessage('échec de récupération des environnements DSO')
+    handleError(error)
   }
 })
 
