@@ -1,6 +1,6 @@
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
-export const copyContent = async (content: string):Promise<void> => {
+export const copyContent = async (content: string): Promise<void> => {
   const snackbarStore = useSnackbarStore()
   try {
     await navigator.clipboard.writeText(content)
@@ -8,4 +8,10 @@ export const copyContent = async (content: string):Promise<void> => {
   } catch (error: any) {
     snackbarStore.setMessage(error?.message, 'error')
   }
+}
+
+export const handleError = (error: unknown) => {
+  const snackbarStore = useSnackbarStore()
+  if (error instanceof Error) return snackbarStore.setMessage(error?.message, 'error')
+  snackbarStore.setMessage('Une erreur inconnue est survenue.')
 }

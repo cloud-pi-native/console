@@ -3,7 +3,7 @@ import { onBeforeMount, ref, type Ref } from 'vue'
 import { useAdminUserStore } from '@/stores/admin/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { formatDate } from '@dso-console/shared'
-import { copyContent } from '@/utils/func.js'
+import { copyContent, handleError } from '@/utils/func.js'
 import { getRandomId } from '@gouvminint/vue-dsfr'
 
 const adminUserStore = useAdminUserStore()
@@ -29,11 +29,7 @@ const getAllUsers = async () => {
   try {
     allUsers.value = await adminUserStore.getAllUsers()
   } catch (error) {
-    if (error instanceof Error) {
-      snackbarStore.setMessage(error.message)
-      return
-    }
-    snackbarStore.setMessage('échec de récupération des utilisateurs')
+    handleError(error)
   }
 }
 

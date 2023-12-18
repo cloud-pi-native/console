@@ -11,6 +11,7 @@ import {
   sortArrByObjKeyAsc,
 } from '@dso-console/shared'
 import { getRandomId } from '@gouvminint/vue-dsfr'
+import { handleError } from '@/utils/func.js'
 
 const adminOrganizationStore = useAdminOrganizationStore()
 
@@ -86,7 +87,7 @@ const getAllOrganizations = async () => {
     allOrganizations.value = await adminOrganizationStore.getAllOrganizations()
     setRows()
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
 }
 
@@ -96,7 +97,7 @@ const syncOrganizations = async () => {
     await adminOrganizationStore.fetchOrganizations()
     getAllOrganizations()
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
   isSyncingOrganizations.value = false
 }
@@ -113,7 +114,7 @@ const createOrganization = async () => {
     snackbarStore.setMessage(`Organisation ${newOrg.value.name} créée`, 'success')
     await getAllOrganizations()
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
 
   newOrg.value = instanciateSchema({ schema: organizationSchema }, undefined)
@@ -153,7 +154,7 @@ const updateOrganization = async ({ name, key, data }) => {
     snackbarStore.setMessage(`Organisation ${name} mise à jour`, 'success')
     await getAllOrganizations()
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
 }
 

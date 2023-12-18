@@ -11,6 +11,7 @@ import TeamCt from '@/components/TeamCt.vue'
 import { useUserStore } from '@/stores/user.js'
 import { useProjectUserStore } from '@/stores/project-user'
 import { useAdminQuotaStore } from '@/stores/admin/quota'
+import { handleError } from '@/utils/func.js'
 
 const adminProjectStore = useAdminProjectStore()
 const adminOrganizationStore = useAdminOrganizationStore()
@@ -164,7 +165,7 @@ const getEnvironmentsRows = async () => {
                     }]
                   : acc
               }, []),
-            'onUpdate:model-value': (event) => updateEnvironmentQuota({ environmentId: id, quotaId: event }),
+            'onUpdate:model-value': (event: string) => updateEnvironmentQuota({ environmentId: id, quotaId: event }),
           },
           {
             component: 'v-icon',
@@ -237,7 +238,7 @@ const getAllProjects = async () => {
     setRows()
     if (selectedProject.value) selectProject(selectedProject.value.id)
   } catch (error) {
-    if (error instanceof Error) snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
   isWaitingForResponse.value = false
 }
@@ -257,7 +258,7 @@ const updateEnvironmentQuota = async ({ environmentId, quotaId }: {environmentId
     await projectEnvironmentStore.updateEnvironment(environment, selectedProject.value.id)
     await getAllProjects()
   } catch (error) {
-    if (error instanceof Error) snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
   isWaitingForResponse.value = false
 }
@@ -268,7 +269,7 @@ const handleProjectLocking = async (projectId: string, lock: boolean) => {
     await adminProjectStore.handleProjectLocking(projectId, lock)
     await getAllProjects()
   } catch (error) {
-    if (error instanceof Error) snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
   isWaitingForResponse.value = false
 }
@@ -280,7 +281,7 @@ const replayHooks = async ({ resource, resourceId }: {resource: string, resource
     console.log({ resource, resourceId })
     snackbarStore.setMessage('Cette fonctionnalité n\'est pas encore disponible.')
   } catch (error) {
-    if (error instanceof Error) snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
   isWaitingForResponse.value = false
 }
@@ -293,7 +294,7 @@ const archiveProject = async (projectId: string) => {
     await getAllProjects()
     selectedProject.value = undefined
   } catch (error) {
-    if (error instanceof Error) snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
   isWaitingForResponse.value = false
 }
@@ -305,11 +306,7 @@ const addUserToProject = async (email: string) => {
     await getAllProjects()
     teamCtKey.value = getRandomId('team')
   } catch (error) {
-    if (error instanceof Error) {
-      snackbarStore.setMessage(error.message)
-    } else {
-      snackbarStore.setMessage('échec d\'ajout de l\'utilisateur au projet')
-    }
+    handleError(error)
   }
   isWaitingForResponse.value = false
 }
@@ -327,11 +324,7 @@ const removeUserFromProject = async (userId: string) => {
     await getAllProjects()
     teamCtKey.value = getRandomId('team')
   } catch (error) {
-    if (error instanceof Error) {
-      snackbarStore.setMessage(error.message)
-    } else {
-      snackbarStore.setMessage('échec de retrait de l\'utilisateur du projet')
-    }
+    handleError(error)
   }
   isWaitingForResponse.value = false
 }

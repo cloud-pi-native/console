@@ -7,6 +7,7 @@ import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import TeamCt from '@/components/TeamCt.vue'
 import { getRandomId } from '@gouvminint/vue-dsfr'
+import { handleError } from '@/utils/func.js'
 
 const projectStore = useProjectStore()
 const projectUserStore = useProjectUserStore()
@@ -23,11 +24,7 @@ const addUserToProject = async (email: string) => {
   try {
     await projectUserStore.addUserToProject(project.value?.id, { email })
   } catch (error) {
-    if (error instanceof Error) {
-      snackbarStore.setMessage(error.message)
-    } else {
-      snackbarStore.setMessage('échec d\'ajout de l\'utilisateur au projet')
-    }
+    handleError(error)
   }
   teamCtKey.value = getRandomId('team')
   isUpdatingProjectMembers.value = false
@@ -43,11 +40,7 @@ const removeUserFromProject = async (userId: string) => {
   try {
     await projectUserStore.removeUserFromProject(project.value?.id, userId)
   } catch (error) {
-    if (error instanceof Error) {
-      snackbarStore.setMessage(error.message)
-    } else {
-      snackbarStore.setMessage('échec de retrait de l\'utilisateur du projet')
-    }
+    handleError(error)
   }
   teamCtKey.value = getRandomId('team')
   isUpdatingProjectMembers.value = false

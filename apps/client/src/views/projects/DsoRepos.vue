@@ -7,6 +7,7 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 import RepoForm from '@/components/RepoForm.vue'
 import DsoSelectedProject from './DsoSelectedProject.vue'
 import { projectIsLockedInfo, sortArrByObjKeyAsc } from '@dso-console/shared'
+import { handleError } from '@/utils/func.js'
 
 const projectStore = useProjectStore()
 const projectRepositoryStore = useProjectRepositoryStore()
@@ -63,7 +64,7 @@ const saveRepo = async (repo) => {
       await projectRepositoryStore.addRepoToProject(repo)
     }
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
   setReposTiles(project.value)
   cancel()
@@ -75,7 +76,7 @@ const deleteRepo = async (repoId) => {
   try {
     await projectRepositoryStore.deleteRepo(repoId)
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
   setReposTiles(project.value)
   selectedRepo.value = {}
