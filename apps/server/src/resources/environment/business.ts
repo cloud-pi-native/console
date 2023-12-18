@@ -18,7 +18,7 @@ import {
 } from '@/resources/queries-index.js'
 import { hooks } from '@/plugins/index.js'
 import { DsoError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
-import { type Cluster, type Environment, type Project, type Role, type User, type QuotaStage } from '@prisma/client'
+import type { Cluster, Environment, Project, Role, User, QuotaStage } from '@prisma/client'
 import {
   checkInsufficientRoleInProject,
   checkClusterUnavailable,

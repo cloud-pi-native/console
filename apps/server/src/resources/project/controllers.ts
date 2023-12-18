@@ -6,10 +6,10 @@ import {
   sendCreated,
   sendNoContent,
 } from '@/utils/response.js'
-import {
-  type CreateProjectDto,
-  type UpdateProjectDto,
-  type ProjectParams,
+import type {
+  CreateProjectDto,
+  UpdateProjectDto,
+  ProjectParams,
 } from '@dso-console/shared'
 import type { FastifyRequestWithSession } from '@/types/index.js'
 import {

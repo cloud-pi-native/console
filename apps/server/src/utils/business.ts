@@ -5,7 +5,7 @@ import {
   lockProject,
   unlockProject,
 } from '@/resources/queries-index.js'
-import { Project } from '@prisma/client'
+import type { Project } from '@prisma/client'
 
 export const unlockProjectIfNotFailed = async (projectId: Project['id']) => {
   const environmentStatuses = (await getEnvironmentsByProjectId(projectId))?.map(environment => environment?.status)

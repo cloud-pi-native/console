@@ -1,6 +1,6 @@
 import { BadRequestError, ForbiddenError } from '@/utils/errors.js'
 import { getOrCreateUser } from '../queries-index.js'
-import { User } from '@prisma/client'
+import type { User } from '@prisma/client'
 import axios, { AxiosResponse } from 'axios'
 import { type ServiceInfos, servicesInfos } from '@/plugins/services.js'
 import { userSchema } from '@dso-console/shared'

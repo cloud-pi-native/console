@@ -1,11 +1,11 @@
 import { hooks } from '@/plugins/index.js'
-import { HookPayload, PluginResult } from '@/plugins/hooks/hook.js'
+import type { HookPayload, PluginResult } from '@/plugins/hooks/hook.js'
 import { addLogs, createOrganization as createOrganizationQuery, getOrganizationByName, getOrganizations, getProjectByOrganizationId, lockProject, updateActiveOrganization, updateLabelOrganization } from '@/resources/queries-index.js'
 import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { BadRequestError, NotFoundError } from '@/utils/errors.js'
 import { objectValues } from '@/utils/type.js'
-import { Organization, User } from '@prisma/client'
-import { CreateOrganizationDto, getUniqueListBy, organizationSchema } from '@dso-console/shared'
+import type { Organization, User } from '@prisma/client'
+import { type CreateOrganizationDto, getUniqueListBy, organizationSchema } from '@dso-console/shared'
 
 export const getAllOrganization = async () => {
   const allOrganizations = await getOrganizations()
@@ -13,7 +13,7 @@ export const getAllOrganization = async () => {
   return allOrganizations
 }
 
-export const createOrganization = async (data: CreateOrganizationDto['body']) => {
+export const createOrganization = async (data: CreateOrganizationDto) => {
   try {
     await organizationSchema.validateAsync(data)
   } catch (error) {

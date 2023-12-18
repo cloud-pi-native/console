@@ -1,10 +1,10 @@
 import type { V1Namespace, CoreV1Api } from '@kubernetes/client-node'
-import { UserModel } from '@dso-console/shared'
 import { createCoreV1Api } from './api.js'
 import type { StepCall } from '@/plugins/hooks/hook.js'
 import type { Environment, EnvironmentCreateArgs, EnvironmentDeleteArgs, EnvironmentQuotaUpdateArgs, Organization, Project, ResourceQuota } from '@/plugins/hooks/index.js'
 import { createResourceQuota, findResourceQuota, replaceResourceQuota } from './quota.js'
 import { createHmac } from 'node:crypto'
+import type { User } from '@prisma/client'
 
 // Plugins Functions
 export const createKubeNamespace: StepCall<EnvironmentCreateArgs> = async (payload) => {
@@ -97,7 +97,7 @@ export const deleteNamespace = async (kc: CoreV1Api, nsName: string) => {
 }
 
 // Utils
-export const getNsObject = (organization: string, projet: string, environment: string, owner: UserModel) => {
+export const getNsObject = (organization: string, projet: string, environment: string, owner: User) => {
   return {
     metadata: {
       name: generateNamespaceName(organization, projet, environment),

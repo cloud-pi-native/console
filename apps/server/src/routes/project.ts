@@ -18,8 +18,6 @@ import {
   createProjectSchema,
   updateProjectSchema,
   archiveProjectSchema,
-  CreateProjectDto,
-  UpdateProjectDto,
   // getProjectSecretsSchema,
 } from '@dso-console/shared'
 
@@ -49,14 +47,14 @@ const router = async (app: FastifyInstance, _opt) => {
     getProjectSecretsController)
 
   // Créer un projet
-  app.post<{ Body: CreateProjectDto }>('/',
+  app.post('/',
     {
       schema: createProjectSchema,
     },
     createProjectController)
 
   // Mettre à jour un projet
-  app.put<{ Body: UpdateProjectDto }>('/:projectId',
+  app.put('/:projectId',
     {
       schema: updateProjectSchema,
     },
