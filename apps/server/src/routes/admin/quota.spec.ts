@@ -113,7 +113,7 @@ describe('Admin quotas routes', () => {
 
       const response = await app.inject()
         // @ts-ignore
-        .patch(`/api/v1/admin/quotas/${quota.id}/privacy`)
+        .put(`/api/v1/admin/quotas/${quota.id}/privacy`)
         .body({ isPrivate: quota.isPrivate })
         .end()
 

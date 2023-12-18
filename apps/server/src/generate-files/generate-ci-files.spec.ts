@@ -31,7 +31,7 @@ describe('ciFiles routes', () => {
     }
 
     const response = await app.inject()
-      .post('/api/v1/ci-files')
+      .put('/api/v1/ci-files')
       .body(ciData)
       .end()
 
@@ -53,7 +53,7 @@ describe('ciFiles routes', () => {
     }
 
     const response = await app.inject()
-      .post('/api/v1/ci-files')
+      .put('/api/v1/ci-files')
       .body(ciData)
       .end()
 
@@ -73,7 +73,7 @@ describe('ciFiles routes', () => {
     }
 
     const response = await app.inject()
-      .post('/api/v1/ci-files')
+      .put('/api/v1/ci-files')
       .body(ciData)
       .end()
 

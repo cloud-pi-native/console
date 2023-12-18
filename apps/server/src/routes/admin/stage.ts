@@ -34,7 +34,7 @@ const router = async (app: FastifyInstance, _opt) => {
     updateQuotaStageController)
 
   // Modifier une association stage / clusters
-  app.patch('/:stageId/clusters',
+  app.put('/:stageId/clusters',
     {
       schema: updateStageClustersSchema,
     },

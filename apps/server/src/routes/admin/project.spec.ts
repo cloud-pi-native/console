@@ -75,7 +75,7 @@ describe('Admin projects routes', () => {
       prisma.project.update.mockResolvedValue(project)
 
       const response = await app.inject()
-        .patch(`/api/v1/admin/projects/${project.id}`)
+        .put(`/api/v1/admin/projects/${project.id}/locking`)
         .body({ lock: true })
         .end()
 
@@ -92,7 +92,7 @@ describe('Admin projects routes', () => {
       prisma.project.update.mockResolvedValue(project)
 
       const response = await app.inject()
-        .patch(`/api/v1/admin/projects/${project.id}`)
+        .put(`/api/v1/admin/projects/${project.id}/locking`)
         .body({ lock: false })
         .end()
 
@@ -109,7 +109,7 @@ describe('Admin projects routes', () => {
       prisma.project.update.mockResolvedValue(project)
 
       const response = await app.inject()
-        .patch(`/api/v1/admin/projects/${project.id}`)
+        .put(`/api/v1/admin/projects/${project.id}/locking`)
         .body({ lock: false })
         .end()
 

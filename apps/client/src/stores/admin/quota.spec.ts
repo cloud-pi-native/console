@@ -6,7 +6,6 @@ import { useAdminQuotaStore } from './quota.js'
 const apiClientGet = vi.spyOn(apiClient, 'get')
 const apiClientPost = vi.spyOn(apiClient, 'post')
 const apiClientPut = vi.spyOn(apiClient, 'put')
-const apiClientPatch = vi.spyOn(apiClient, 'patch')
 const apiClientDelete = vi.spyOn(apiClient, 'delete')
 
 describe('Quota Store', () => {
@@ -85,14 +84,14 @@ describe('Quota Store', () => {
   it('Should update a quota privacy by api call', async () => {
     const quotaId = 'quotaId'
 
-    apiClientPatch.mockReturnValueOnce(Promise.resolve({ data: 1 }))
+    apiClientPut.mockReturnValueOnce(Promise.resolve({ data: 1 }))
     const adminQuotaStore = useAdminQuotaStore()
 
     const res = await adminQuotaStore.updateQuotaPrivacy(quotaId, true)
 
     expect(res).toBe(1)
-    expect(apiClientPatch).toHaveBeenCalledTimes(1)
-    expect(apiClientPatch.mock.calls[0][0]).toBe(`/admin/quotas/${quotaId}/privacy`)
+    expect(apiClientPut).toHaveBeenCalledTimes(1)
+    expect(apiClientPut.mock.calls[0][0]).toBe(`/admin/quotas/${quotaId}/privacy`)
   })
 
   it('Should delete a quota by api call', async () => {

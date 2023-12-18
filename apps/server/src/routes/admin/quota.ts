@@ -31,7 +31,7 @@ const router = async (app: FastifyInstance, _opt) => {
     updateQuotaStageController)
 
   // Modifier la confidentialité d'un quota
-  app.patch('/:quotaId/privacy',
+  app.put('/:quotaId/privacy',
     {
       schema: updateQuotaPrivacySchema,
     },

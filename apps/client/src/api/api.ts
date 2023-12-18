@@ -3,7 +3,7 @@ import { apiClient } from './xhr-client.js'
 
 // CIFiles
 export const generateCIFiles = async (data: GenerateCIFilesDto) => {
-  const response = await apiClient.post('/ci-files', data)
+  const response = await apiClient.put('/ci-files', data)
   return response.data
 }
 
@@ -132,7 +132,7 @@ export const addQuota = async (data: CreateQuotaDto) => {
 }
 
 export const updateQuotaPrivacy = async (quotaId: QuotaParams['quotaId'], data: UpdateQuotaPrivacyDto) => {
-  const response = await apiClient.patch(`/admin/quotas/${quotaId}/privacy`, data)
+  const response = await apiClient.put(`/admin/quotas/${quotaId}/privacy`, data)
   return response.data
 }
 
@@ -164,7 +164,7 @@ export const addStage = async (data: CreateStageDto) => {
 }
 
 export const updateStageClusters = async (stageId: StageParams['stageId'], data: UpdateStageClustersDto) => {
-  const response = await apiClient.patch(`/admin/stages/${stageId}/clusters`, data)
+  const response = await apiClient.put(`/admin/stages/${stageId}/clusters`, data)
   return response.data
 }
 
@@ -228,7 +228,7 @@ export const getAllProjects = async () => {
 }
 
 export const handleProjectLocking = async (projectId: string, lock: boolean) => {
-  const response = await apiClient.patch(`/admin/projects/${projectId}`, { lock })
+  const response = await apiClient.put(`/admin/projects/${projectId}/locking`, { lock })
   return response.data
 }
 

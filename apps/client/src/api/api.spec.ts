@@ -40,13 +40,13 @@ describe('API', () => {
   describe('Projects', () => {
     // CIFiles
     it('Should generate CI files', async () => {
-      apiClientPost.mockReturnValueOnce(Promise.resolve({ data: {} }))
+      apiClientPut.mockReturnValueOnce(Promise.resolve({ data: {} }))
 
       await generateCIFiles({})
 
-      expect(apiClientPost).toHaveBeenCalled()
-      expect(apiClientPost).toHaveBeenCalledTimes(1)
-      expect(apiClientPost.mock.calls[0][0]).toBe('/ci-files')
+      expect(apiClientPut).toHaveBeenCalled()
+      expect(apiClientPut).toHaveBeenCalledTimes(1)
+      expect(apiClientPut.mock.calls[0][0]).toBe('/ci-files')
     })
 
     // Project

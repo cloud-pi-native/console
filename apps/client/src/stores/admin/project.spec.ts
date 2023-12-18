@@ -5,7 +5,7 @@ import { useAdminProjectStore } from './project.js'
 
 const apiClientGet = vi.spyOn(apiClient, 'get')
 const apiClientDelete = vi.spyOn(apiClient, 'delete')
-const apiClientPatch = vi.spyOn(apiClient, 'patch')
+const apiClientPut = vi.spyOn(apiClient, 'put')
 
 describe('Counter Store', () => {
   beforeEach(() => {
@@ -49,14 +49,14 @@ describe('Counter Store', () => {
 
   it('Should lock or unlock a project', async () => {
     const project = { id: 'id1', name: 'project1', status: 'archived', locked: true }
-    apiClientPatch.mockReturnValueOnce(Promise.resolve({}))
+    apiClientPut.mockReturnValueOnce(Promise.resolve({}))
     const adminProjectStore = useAdminProjectStore()
 
     const res = await adminProjectStore.handleProjectLocking(project.id, project.locked)
 
     expect(res).toBe(undefined)
-    expect(apiClientPatch).toHaveBeenCalledTimes(1)
-    expect(apiClientPatch.mock.calls[0][0]).toBe(`/admin/projects/${project.id}`)
+    expect(apiClientPut).toHaveBeenCalledTimes(1)
+    expect(apiClientPut.mock.calls[0][0]).toBe(`/admin/projects/${project.id}/locking`)
   })
 
   it('Should archive a project by api call', async () => {

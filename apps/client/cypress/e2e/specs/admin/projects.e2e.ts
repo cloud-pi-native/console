@@ -75,7 +75,7 @@ describe('Administration projects', () => {
     const project = projects[0]
 
     cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
-    cy.intercept('PATCH', `api/v1/admin/projects/${project.id}`).as('handleProjectLocking')
+    cy.intercept('PUT', `api/v1/admin/projects/${project.id}/locking`).as('handleProjectLocking')
 
     cy.getByDataTestid('tableAdministrationProjects').within(() => {
       cy.get('tr').contains(project.name)

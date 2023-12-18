@@ -19,7 +19,7 @@ describe('RepoForm.vue', () => {
   })
 
   it('Should mount a new repo RepoForm', { browser: '!firefox' }, () => {
-    cy.intercept('POST', '/api/v1/ci-files', {
+    cy.intercept('PUT', '/api/v1/ci-files', {
       'gitlab-ci-dso': 'gitlab-ci file',
       node: 'node file',
       vault: 'vault file',
@@ -90,7 +90,7 @@ describe('RepoForm.vue', () => {
   })
 
   it('Should mount an update repo RepoForm', () => {
-    cy.intercept('POST', '/api/v1/ci-files', { 'gitlab-ci-dso': 'my generated file' })
+    cy.intercept('PUT', '/api/v1/ci-files', { 'gitlab-ci-dso': 'my generated file' })
     cy.intercept('GET', '/api/v1/organizations', allOrganizations)
 
     const props = {

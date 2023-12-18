@@ -157,7 +157,7 @@ describe('Administration stages', () => {
     const newCluster = allClusters?.find(cluster => cluster.privacy === 'public' && !stage.clusters?.find(stCluster => stCluster.id === cluster.id))
 
     cy.intercept('PUT', '/api/v1/admin/quotas/quotastages').as('updateQuotaStage')
-    cy.intercept('PATCH', '/api/v1/admin/stages/*/clusters').as('updateStageClusters')
+    cy.intercept('PUT', '/api/v1/admin/stages/*/clusters').as('updateStageClusters')
     cy.intercept('GET', 'api/v1/clusters').as('getClusters')
     cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
     cy.intercept('GET', 'api/v1/stages').as('getStages')

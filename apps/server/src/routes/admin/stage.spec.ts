@@ -133,7 +133,7 @@ describe('Admin stages routes', () => {
 
       const response = await app.inject({ headers: { admin: 'admin' } })
         // @ts-ignore
-        .patch(`/api/v1/admin/stages/${stage.id}/clusters`)
+        .put(`/api/v1/admin/stages/${stage.id}/clusters`)
         .body({ clusterIds })
         .end()
       expect(response.statusCode).toEqual(200)

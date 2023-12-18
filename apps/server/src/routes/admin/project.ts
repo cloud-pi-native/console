@@ -14,7 +14,7 @@ const router = async (app: FastifyInstance, _opt) => {
     getAllProjectsController)
 
   // (Dé)verrouiller un projet
-  app.patch('/:projectId', handleProjectLockingController)
+  app.put('/:projectId/locking', handleProjectLockingController)
 }
 
 export default router

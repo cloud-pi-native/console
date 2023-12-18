@@ -6,7 +6,6 @@ import { useAdminStageStore } from './stage.js'
 const apiClientGet = vi.spyOn(apiClient, 'get')
 const apiClientPost = vi.spyOn(apiClient, 'post')
 const apiClientPut = vi.spyOn(apiClient, 'put')
-const apiClientPatch = vi.spyOn(apiClient, 'patch')
 const apiClientDelete = vi.spyOn(apiClient, 'delete')
 
 describe('Quota Store', () => {
@@ -84,14 +83,14 @@ describe('Quota Store', () => {
     const stageId = 'stageId'
     const clusterIds = ['stage1']
 
-    apiClientPatch.mockReturnValueOnce(Promise.resolve({ data: 1 }))
+    apiClientPut.mockReturnValueOnce(Promise.resolve({ data: 1 }))
     const adminStageStore = useAdminStageStore()
 
     const res = await adminStageStore.updateStageClusters(stageId, clusterIds)
 
     expect(res).toBe(1)
-    expect(apiClientPatch).toHaveBeenCalledTimes(1)
-    expect(apiClientPatch.mock.calls[0][0]).toBe(`/admin/stages/${stageId}/clusters`)
+    expect(apiClientPut).toHaveBeenCalledTimes(1)
+    expect(apiClientPut.mock.calls[0][0]).toBe(`/admin/stages/${stageId}/clusters`)
   })
 
   it('Should delete a stage by api call', async () => {

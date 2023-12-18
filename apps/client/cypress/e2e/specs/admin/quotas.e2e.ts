@@ -311,7 +311,7 @@ describe('Administration quotas', () => {
     const newStage = allStages?.find(stage => !publicQuota.stages?.find(pqStage => pqStage.id === stage.id))
 
     cy.intercept('PUT', '/api/v1/admin/quotas/quotastages').as('updateQuotaStage')
-    cy.intercept('PATCH', '/api/v1/admin/quotas/*/privacy').as('updateQuotaPrivacy')
+    cy.intercept('PUT', '/api/v1/admin/quotas/*/privacy').as('updateQuotaPrivacy')
     cy.intercept('GET', 'api/v1/clusters').as('getClusters')
     cy.intercept('GET', 'api/v1/stages').as('getStages')
     cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
