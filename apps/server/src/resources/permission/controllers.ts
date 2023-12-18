@@ -3,7 +3,7 @@ import { sendOk, sendCreated } from '@/utils/response.js'
 import { deletePermission, getEnvironmentPermissions, setPermission, updatePermission } from './business.js'
 import { type RouteHandler } from 'fastify'
 import { type FastifyRequestWithSession } from '@/types/index.js'
-import { DeletePermissionParams, PermissionParams, UpdatePermissionDto } from '@dso-console/shared'
+import type { DeletePermissionParams, PermissionParams, UpdatePermissionDto } from '@dso-console/shared'
 
 // GET
 export const getEnvironmentPermissionsController: RouteHandler = async (req: FastifyRequestWithSession<{

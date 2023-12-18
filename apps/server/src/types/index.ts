@@ -1,6 +1,6 @@
-import { Cluster } from '@prisma/client'
-import { FastifyRequest } from 'fastify/types/request'
-import { ClusterModel } from '@dso-console/shared'
+import type { Cluster } from '@prisma/client'
+import type { FastifyRequest } from 'fastify/types/request'
+import type { ClusterModel } from '@dso-console/shared'
 
 export type KeycloakSession = {
   session?: {

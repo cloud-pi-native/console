@@ -1,4 +1,4 @@
-import { Environment, Project, Role, Cluster, QuotaStage } from '@prisma/client'
+import type { Environment, Project, Role, Cluster, QuotaStage } from '@prisma/client'
 import prisma from '@/prisma.js'
 import { getProjectById } from '../project/queries.js'
 

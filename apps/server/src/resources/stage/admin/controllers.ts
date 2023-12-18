@@ -2,7 +2,7 @@ import { type FastifyRequestWithSession } from '@/types'
 import { addReqLogs } from '@/utils/logger.js'
 import { sendCreated, sendNoContent, sendOk } from '@/utils/response.js'
 import { createStage, getStageAssociatedEnvironments, deleteStage, updateStageClusters } from './business.js'
-import { CreateStageDto, UpdateStageClustersDto, StageParams } from '@dso-console/shared'
+import type { CreateStageDto, UpdateStageClustersDto, StageParams } from '@dso-console/shared'
 import { type RouteHandler } from 'fastify'
 
 // GET

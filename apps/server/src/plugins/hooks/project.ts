@@ -1,7 +1,7 @@
 import { ProjectModel } from '@dso-console/shared'
 import type { Organization } from './index.js'
 import { type Hook, createHook } from './hook.js'
-import { User } from '@prisma/client'
+import type { User } from '@prisma/client'
 
 export type Project = string
 export type ProjectBase = { organization: Organization, project: Project }

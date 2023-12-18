@@ -1,5 +1,5 @@
 import { BadRequestError, ForbiddenError, UnprocessableContentError } from '@/utils/errors.js'
-import { Project, User, Environment, Permission } from '@prisma/client'
+import type { Project, User, Environment, Permission } from '@prisma/client'
 import { addLogs, deletePermission as deletePermissionQuery, getEnvironmentByIdWithCluster, getEnvironmentPermissions as getEnvironmentPermissionsQuery, getPermissionByUserIdAndEnvironmentId, getProjectInfos, getSingleOwnerByProjectId, getUserById, setPermission as setPermissionQuery, updatePermission as updatePermissionQuery } from '@/resources/queries-index.js'
 import { checkInsufficientRoleInProject, checkRoleAndLocked } from '@/utils/controller.js'
 import { hooks } from '@/plugins/index.js'

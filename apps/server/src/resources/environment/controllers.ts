@@ -4,11 +4,11 @@ import {
   sendCreated,
   sendNoContent,
 } from '@/utils/response.js'
-import {
-  type InitializeEnvironmentDto,
-  type UpdateEnvironmentDto,
-  type EnvironmentParams,
-  type InitializeEnvironmentParams,
+import type {
+  InitializeEnvironmentDto,
+  UpdateEnvironmentDto,
+  EnvironmentParams,
+  InitializeEnvironmentParams,
 } from '@dso-console/shared'
 import { type FastifyRequestWithSession } from '@/types/index.js'
 import {

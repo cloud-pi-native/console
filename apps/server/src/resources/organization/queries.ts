@@ -1,5 +1,5 @@
 import prisma from '@/prisma.js'
-import { Organization } from '@prisma/client'
+import type { Organization } from '@prisma/client'
 
 // SELECT
 export const getOrganizations = async () => {

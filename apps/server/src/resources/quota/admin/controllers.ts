@@ -2,7 +2,7 @@ import { type FastifyRequestWithSession } from '@/types'
 import { addReqLogs } from '@/utils/logger.js'
 import { sendCreated, sendNoContent, sendOk } from '@/utils/response.js'
 import { createQuota, deleteQuota, getQuotaAssociatedEnvironments, updateQuotaStage, updateQuotaPrivacy } from './business.js'
-import { CreateQuotaDto, QuotaParams, UpdateQuotaPrivacyDto, UpdateQuotaStageDto } from '@dso-console/shared'
+import type { CreateQuotaDto, QuotaParams, UpdateQuotaPrivacyDto, UpdateQuotaStageDto } from '@dso-console/shared'
 import { type RouteHandler } from 'fastify'
 
 // GET
