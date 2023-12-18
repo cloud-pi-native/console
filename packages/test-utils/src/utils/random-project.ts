@@ -7,10 +7,10 @@ import {
   getRandomEnv,
   getRandomPerm,
   getRandomRole,
-  getRandomCluster,
   getRandomStage,
   getRandomQuota,
   getRandomQuotaStage,
+  getRandomNonSensitiveCluster,
 } from './random-utils.js'
 import { repeatFn } from './func-utils.js'
 import { User } from './types.js'
@@ -36,7 +36,7 @@ export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = basicStage
   project.roles[0].role = projectRoles[0]
 
   // Create cluster
-  project.clusters = [getRandomCluster([project.id])]
+  project.clusters = [getRandomNonSensitiveCluster()]
 
   // Create stages
   const stages = basicStages.map(baseEnvironment => getRandomStage(baseEnvironment))

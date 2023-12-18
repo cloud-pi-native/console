@@ -8,7 +8,7 @@ export type ServiceInfos = {
   description?: string
 }
 
-export const servicesInfos = {}
+export const servicesInfos: Record<string, ServiceInfos> = {}
 
 export const getProjectServices = (projectInfos: toUrlFnParamaters) => Object.fromEntries(
   Object.entries(servicesInfos)

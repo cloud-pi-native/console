@@ -19,9 +19,7 @@ const adminClusterStore = useAdminClusterStore()
 const project = computed(() => projectStore.selectedProject)
 const owner = computed(() => projectStore.selectedProjectOwner)
 const isOwner = computed(() => owner.value?.id === userStore.userProfile.id)
-// @ts-ignore
 const environmentNames = computed(() => environments.value.map(env => env.title))
-const allClusters = computed(() => adminClusterStore.clusters)
 
 const environments = ref([])
 const selectedEnvironment = ref({})
@@ -37,6 +35,7 @@ const setEnvironmentsTiles = (project) => {
       title: environment.name,
       data: environment,
       status: environment.status,
+      cluster: environment.cluster,
     }))
 }
 
@@ -193,11 +192,10 @@ watch(project, () => {
         :environment="selectedEnvironment"
         :environment-names="environmentNames"
         :is-updating-environment="isUpdatingEnvironment"
-        :project-clusters="project?.clusters"
+        :project-clusters="[environment.cluster]"
         :is-editable="false"
         :is-project-locked="project?.locked"
         :is-owner="isOwner"
-        :all-clusters="allClusters"
         @put-environment="(environment) => putEnvironment(environment)"
         @delete-environment="(environment) => deleteEnvironment(environment)"
         @cancel="cancel()"

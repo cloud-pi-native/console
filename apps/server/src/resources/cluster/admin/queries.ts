@@ -55,6 +55,7 @@ export const getPublicClusters = () => prisma.cluster.findMany({
   where: {
     privacy: 'public',
   },
+  include: { stages: true },
 })
 
 export const getClusterByLabel = (label: Cluster['label']) => prisma.cluster.findUnique({ where: { label } })

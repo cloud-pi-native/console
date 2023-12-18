@@ -1,3 +1,5 @@
+import { NonSensitiveClusterModel } from '@dso-console/shared'
+
 export type Organization = {
   id: string,
   name: string,
@@ -55,7 +57,7 @@ export type Cluster = {
   label: string,
   infos?: string,
   projectIds?: string[],
-  stageIs?: string[],
+  stageIds?: string[],
   user: {
     certData: string,
     keyData: string,
@@ -102,7 +104,7 @@ export type Project = {
   status: string,
   locked: boolean,
   roles?: Role[],
-  clusters?: Cluster[],
+  clusters?: NonSensitiveClusterModel[],
   repositories?: Repository[],
   environments?: Environment[],
   updatedAt?: Date,

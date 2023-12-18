@@ -1,4 +1,4 @@
-import { ClusterModel } from '@dso-console/shared'
+import { SensitiveClusterModel } from '@dso-console/shared'
 import type { V1Secret } from '@kubernetes/client-node'
 import { StepCall } from '@/plugins/hooks/hook.js'
 import { CreateClusterExecArgs, DeleteClusterExecArgs } from '@/plugins/hooks/index.js'
@@ -49,7 +49,7 @@ export const deleteCluster: StepCall<DeleteClusterExecArgs> = async (payload) =>
 }
 
 // ...désolé
-const convertConfig = (cluster: ClusterModel) => ({
+const convertConfig = (cluster: SensitiveClusterModel) => ({
   ...cluster.user?.username && { username: cluster.user?.username },
   ...cluster.user?.password && { password: cluster.user?.password },
   ...cluster.user?.token && { bearerToken: cluster.user?.token },
@@ -62,7 +62,7 @@ const convertConfig = (cluster: ClusterModel) => ({
   },
 })
 
-const convertClusterToSecret = (cluster: ClusterModel): V1Secret => {
+const convertClusterToSecret = (cluster: SensitiveClusterModel): V1Secret => {
   return {
     apiVersion: 'v1',
     kind: 'Secret',
@@ -79,7 +79,7 @@ const convertClusterToSecret = (cluster: ClusterModel): V1Secret => {
   }
 }
 
-export const createClusterSecret = async (cluster: ClusterModel) => {
+export const createClusterSecret = async (cluster: SensitiveClusterModel) => {
   try {
     await k8sApi.readNamespacedSecret(cluster.secretName, argoNamespace)
     await k8sApi.replaceNamespacedSecret(cluster.secretName, argoNamespace, convertClusterToSecret(cluster))
@@ -89,7 +89,7 @@ export const createClusterSecret = async (cluster: ClusterModel) => {
   }
 }
 
-export const deleteClusterSecret = async (secretName: ClusterModel['secretName']) => {
+export const deleteClusterSecret = async (secretName: SensitiveClusterModel['secretName']) => {
   try {
     await k8sApi.deleteNamespacedSecret(secretName, argoNamespace)
   } catch (error) {

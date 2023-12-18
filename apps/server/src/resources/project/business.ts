@@ -33,8 +33,8 @@ import {
   calcProjectNameMaxLength,
   projectIsLockedInfo,
   projectSchema,
-  exclude,
   adminGroupPath,
+  objectEntries,
 } from '@dso-console/shared'
 import type { CreateProjectExecArgs, ProjectBase, UpdateProjectExecArgs } from '@/plugins/hooks/project.js'
 import { filterObjectByKeys } from '@/utils/queries-tools.js'
@@ -94,9 +94,13 @@ const filterProject = (
   project: AsyncReturnType<typeof getProjectInfosQuery>,
 ) => {
   if (!checkInsufficientRoleInProject(userId, { roles: project.roles, minRole: 'owner' })) return project
-  project = exclude(project, ['clusters'])
   // TODO définir les clés disponibles des environnements par niveau d'autorisation
   project.environments = project.environments.filter(env => !checkInsufficientPermissionInEnvironment(userId, env.permissions, 0))
+  project.clusters = project.clusters.map(cluster => ({
+    ...cluster,
+    stageIds: cluster?.stages.map(({ id }) => id) || [],
+  }))
+  console.log(project.clusters)
   return project
 }
 
@@ -124,13 +128,13 @@ export const getProjectSecrets = async (projectId: string, userId: User['id']) =
   const results = await hooks.getProjectSecrets.execute(projectData)
   if (results?.failed) throw new Error('Echec de récupération des secrets du projet par les plugins')
   const projectSecrets = Object.fromEntries(
-    Object.entries(results)
+    objectEntries(results)
       // @ts-ignore
       .filter(([_key, value]) => value.secrets)
       // @ts-ignore
       .map(([key, value]) => [servicesInfos[key]?.title, value.secrets]))
 
-  return projectSecrets
+  return projectSecrets as Record<string, Record<string, string>>
 }
 
 export const createProject = async (dataDto: CreateProjectDto, requestor: UserDto) => {

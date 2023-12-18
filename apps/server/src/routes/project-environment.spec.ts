@@ -39,6 +39,8 @@ describe('User routes', () => {
         .get(`/api/v1/projects/${projectInfos.id}/environments/${envToGet.id}`)
         .end()
 
+      delete envInfos.permissions
+      delete envInfos.project
       expect(response.json()).toStrictEqual(envInfos)
       expect(response.statusCode).toEqual(200)
     })
@@ -247,6 +249,7 @@ describe('User routes', () => {
         .body(envUpdated)
         .end()
 
+      delete envInfos.project
       expect(response.statusCode).toEqual(200)
       expect(response.body).toBeDefined()
       expect(response.json()).toEqual(envInfos)

@@ -53,7 +53,7 @@ const emit = defineEmits([
 const snackbarStore = useSnackbarStore()
 const projectEnvironmentStore = useProjectEnvironmentStore()
 
-const localEnvironment = ref(props.environment)
+const localEnvironment = (({ cluster: _cluster, ...environment }) => ref(environment))(props.environment)
 const environmentToDelete = ref('')
 const isDeletingEnvironment = ref(false)
 const quotas: Ref<Array<any>> = ref([])
@@ -70,25 +70,7 @@ const stage = computed(() => allStages.value.find(allStage => allStage.id === st
 const errorSchema = computed(() => schemaValidator(environmentSchema, localEnvironment.value))
 
 const availableClusters = computed(() => {
-  let availableClusters = props.projectClusters
-    ?.filter(projectCluster => stage.value?.clusters
-    // @ts-ignore
-      ?.map(cluster => cluster.id)
-    // @ts-ignore
-      ?.includes(projectCluster.id),
-    )
-
-  if (
-    localEnvironment.value.clusterId &&
-    !availableClusters
-      ?.find(availableCluster => availableCluster?.id === localEnvironment.value.clusterId)
-  ) {
-    availableClusters = [
-      ...availableClusters, props.allClusters
-        ?.find(cFromAll => cFromAll?.id === localEnvironment.value.clusterId),
-    ]
-  }
-  return availableClusters
+  return props.projectClusters.filter(cluster => cluster.stages.find(clusterStage => clusterStage.id === stage?.value?.id))
 })
 
 const clusterInfos = computed(() => availableClusters.value.find(cluster => cluster.id === localEnvironment.value.clusterId)?.infos)

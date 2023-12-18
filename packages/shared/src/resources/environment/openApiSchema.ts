@@ -1,3 +1,5 @@
+import { environmentOpenApiSchema } from '../../openApiSchemas/environment.js'
+
 export const initializeEnvironmentDto = {
   name: {
     type: 'string',
@@ -7,36 +9,6 @@ export const initializeEnvironmentDto = {
   },
   quotaStageId: {
     type: 'string',
-  },
-} as const
-
-export const environmentOpenApiSchema = {
-  $id: 'environment',
-  type: 'object',
-  properties: {
-    id: {
-      type: 'string',
-    },
-    ...initializeEnvironmentDto,
-    projectId: {
-      type: 'string',
-    },
-    status: {
-      type: 'string',
-    },
-    createdAt: {
-      type: 'string',
-    },
-    updatedAt: {
-      type: 'string',
-    },
-    permissions: {
-      type: 'array',
-      items: { $ref: 'permission#' },
-    },
-    cluster: { $ref: 'cluster#' },
-    project: { $ref: 'project#' },
-    quotaStage: { $ref: 'quotaStage#' },
   },
 } as const
 

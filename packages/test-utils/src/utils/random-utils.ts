@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker'
-import { achievedStatus, projectRoles, logActions, ProjectRoles } from '@dso-console/shared'
+import { achievedStatus, projectRoles, logActions, ProjectRoles, SensitiveClusterModel, NonSensitiveClusterModel } from '@dso-console/shared'
 import { repeatFn } from './func-utils.js'
-import { Cluster, Environment, Log, Organization, Permission, Project, Repository, User, Role } from './types.js'
+import { Environment, Log, Organization, Permission, Project, Repository, User, Role } from './types.js'
 
 export const getRandomProjectName = () => {
   return faker.lorem.word()
@@ -53,9 +53,18 @@ export const getRandomCluster = (projectIds = repeatFn(2)(faker.string.uuid), st
     privacy: faker.helpers.arrayElement(['public', 'dedicated']),
     clusterResources: faker.datatype.boolean(),
     secretName: faker.internet.password({ length: 50 }),
-  } as Cluster
+  } as SensitiveClusterModel
 }
 
+export const getRandomNonSensitiveCluster = (stageIds = repeatFn(2)(faker.string.uuid)) => {
+  return {
+    id: faker.string.uuid(),
+    label: faker.lorem.word(),
+    infos: faker.lorem.sentence(8),
+    stageIds,
+    privacy: faker.helpers.arrayElement(['public', 'dedicated']),
+  } as NonSensitiveClusterModel
+}
 export const getRandomUser = () => {
   return {
     id: faker.string.uuid(),

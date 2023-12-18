@@ -7,20 +7,7 @@ import fastifySwagger from '@fastify/swagger'
 import fastifySwaggerUi from '@fastify/swagger-ui'
 import { nanoid } from 'nanoid'
 
-import {
-  clusterOpenApiSchema,
-  environmentOpenApiSchema,
-  organizationOpenApiSchema,
-  projectOpenApiSchema,
-  repositoryOpenApiSchema,
-  roleOpenApiSchema,
-  serviceOpenApiSchema,
-  userOpenApiSchema,
-  permissionOpenApiSchema,
-  quotaStageOpenApiSchema,
-  quotaOpenApiSchema,
-  stageOpenApiSchema,
-} from '@dso-console/shared'
+import { openApiSchemas } from '@dso-console/shared'
 
 import { apiRouter, miscRouter } from './routes/index.js'
 import { addReqLogs, loggerConf } from './utils/logger.js'
@@ -36,25 +23,12 @@ const fastifyConf = {
   genReqId: () => nanoid(),
 }
 
-export const addSchemasToApp = (...schemas: unknown[]) => (app: FastifyInstance): FastifyInstance => {
-  schemas.forEach(schema => app.addSchema(schema))
+export const addSchemasToApp = (schemas: Record<string, unknown>) => (app: FastifyInstance): FastifyInstance => {
+  Object.values(schemas).forEach(schema => app.addSchema(schema))
   return app
 }
 
-export const addAllSchemasToApp = addSchemasToApp(
-  organizationOpenApiSchema,
-  userOpenApiSchema,
-  serviceOpenApiSchema,
-  permissionOpenApiSchema,
-  environmentOpenApiSchema,
-  repositoryOpenApiSchema,
-  roleOpenApiSchema,
-  clusterOpenApiSchema,
-  projectOpenApiSchema,
-  quotaStageOpenApiSchema,
-  quotaOpenApiSchema,
-  stageOpenApiSchema,
-)
+export const addAllSchemasToApp = addSchemasToApp(openApiSchemas)
 
 const app: FastifyInstance = addAllSchemasToApp(fastify(fastifyConf))
   .register(helmet, () => ({
@@ -86,6 +60,16 @@ const app: FastifyInstance = addAllSchemasToApp(fastify(fastifyConf))
   .register(keycloak, keycloakConf)
   .register(apiRouter, { prefix: apiPrefix })
   .register(miscRouter, { prefix: apiPrefix })
+  // .addHook('preSerialization', async (request, reply, payload) => {
+  //   payload?.forEach(project => {
+  //     project?.clusters?.forEach(element => {
+  //       console.log(element)
+  //     })
+  //   })
+  //   console.log(Object.keys(payload))
+
+  //   return { wrapped: payload, reply, request }
+  // })
   .addHook('onRoute', opts => {
     if (opts.path === '/api/v1/healthz') {
       opts.logLevel = 'silent'

@@ -1,31 +1,11 @@
+import { permissionOpenApiSchema } from '../../openApiSchemas/permission.js'
+
 export const setPermissionDto = {
   userId: {
     type: 'string',
   },
   level: {
     type: 'number',
-  },
-} as const
-
-export const permissionOpenApiSchema = {
-  $id: 'permission',
-  type: 'object',
-  properties: {
-    id: {
-      type: 'string',
-    },
-    ...setPermissionDto,
-    environmentId: {
-      type: 'string',
-    },
-    createdAt: {
-      type: 'string',
-    },
-    updatedAt: {
-      type: 'string',
-    },
-    environment: { $ref: 'environment#' },
-    user: { $ref: 'user#' },
   },
 } as const
 

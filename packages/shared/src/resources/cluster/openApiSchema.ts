@@ -1,97 +1,14 @@
-import { stageOpenApiSchema } from '../stage/openApiSchema.js'
+import { nonSensitiveClusterOpenApiSchema, sensitiveClusterOpenApiSchema } from '../../openApiSchemas/cluster.js'
 
 export const createClusterDto = {
-  label: {
-    type: 'string',
-  },
-  privacy: {
-    enum: ['public', 'dedicated'],
-  },
-  clusterResources: {
-    type: 'boolean',
-  },
-  infos: {
-    type: 'string',
-  },
-  cluster: {
-    type: 'object',
-    properties: {
-      caData: {
-        type: 'string',
-      },
-      server: {
-        type: 'string',
-      },
-      tlsServerName: {
-        type: 'string',
-      },
-    },
-  },
-  projectIds: {
-    type: 'array',
-    items: {
-      type: 'string',
-    },
-  },
-  stageIds: {
-    type: 'array',
-    items: {
-      type: 'string',
-    },
-  },
-  user: {
-    type: 'object',
-    properties: {
-      certData: {
-        type: 'string',
-      },
-      keyData: {
-        type: 'string',
-      },
-    },
-  },
-} as const
-
-export const clusterOpenApiSchema = {
-  $id: 'cluster',
-  type: 'object',
-  properties: {
-    id: {
-      type: 'string',
-    },
-    ...createClusterDto,
-    kubeConfigId: {
-      type: 'string',
-    },
-    secretName: {
-      type: 'string',
-    },
-    createdAt: {
-      type: 'string',
-    },
-    updatedAt: {
-      type: 'string',
-    },
-    kubeconfig: {
-      type: 'object',
-      // type: kubeconfigSchema,
-    },
-    projects: {
-      type: 'array',
-      items: { $ref: 'project#' },
-    },
-    environments: {
-      type: 'array',
-      items: { $ref: 'environment#' },
-    },
-    stages: {
-      type: 'array',
-      items: {
-        type: stageOpenApiSchema.type,
-        properties: stageOpenApiSchema.properties,
-      },
-    },
-  },
+  properties: sensitiveClusterOpenApiSchema.properties,
+  required: [
+    'label',
+    'privacy',
+    'clusterResources',
+    'cluster',
+    'user',
+  ],
 } as const
 
 const clusterParamsSchema = {
@@ -105,13 +22,13 @@ const clusterParamsSchema = {
 } as const
 
 export const getClustersSchema = {
-  description: 'Retrieve clusters',
+  description: 'Retrieve public clusters',
   tags: ['cluster'],
-  summary: 'Retrieve clusters with filtered informations',
+  summary: 'Retrieve public clusters with filtered informations',
   response: {
     200: {
       type: 'array',
-      items: clusterOpenApiSchema,
+      items: nonSensitiveClusterOpenApiSchema,
     },
   },
 } as const
@@ -120,6 +37,7 @@ export const getClusterAssociatedEnvironmentsSchema = {
   description: 'Retrieve environments associated to a cluster',
   tags: ['cluster', 'environment'],
   summary: 'Retrieve environments associated to a cluster, for admins only',
+  params: clusterParamsSchema,
   response: {
     200: {
       type: 'array',
@@ -151,12 +69,12 @@ export const createClusterSchema = {
   summary: 'Create a cluster, for admins only',
   body: {
     type: 'object',
-    properties: createClusterDto,
+    properties: createClusterDto.properties,
     required: ['label', 'privacy', 'clusterResources', 'infos', 'cluster', 'user'],
     // required: Object.keys(createClusterDto).filter(key => key !== 'projectIds' && key !== 'stageIds'),
   },
   response: {
-    201: clusterOpenApiSchema,
+    201: sensitiveClusterOpenApiSchema,
   },
 } as const
 
@@ -167,11 +85,11 @@ export const updateClusterSchema = {
   params: clusterParamsSchema,
   body: {
     type: 'object',
-    properties: createClusterDto,
+    properties: createClusterDto.properties,
     required: [], // Yes, nothing is required
   },
   response: {
-    200: clusterOpenApiSchema,
+    200: sensitiveClusterOpenApiSchema,
   },
 } as const
 

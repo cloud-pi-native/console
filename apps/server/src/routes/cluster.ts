@@ -5,7 +5,7 @@ import {
 import { getClustersSchema } from '@dso-console/shared'
 
 const router = async (app: FastifyInstance, _opt) => {
-  // Récupérer les quotas disponibles
+  // Récupérer les clusters publics
   app.get('/',
     {
       schema: getClustersSchema,

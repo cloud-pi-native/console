@@ -1,26 +1,74 @@
-export const serviceOpenApiSchema = {
-  $id: 'service',
-  type: 'object',
-  additionalProperties: {
-    type: 'object',
-    properties: {
-      name: {
-        type: 'string',
+import { nonSensitiveClusterOpenApiSchema } from '../../openApiSchemas/cluster.js'
+import { environmentOpenApiSchema } from '../../openApiSchemas/environment.js'
+import { organizationOpenApiSchema } from '../../openApiSchemas/organization.js'
+import { permissionOpenApiSchema } from '../../openApiSchemas/permission.js'
+import { projectOpenApiSchema } from '../../openApiSchemas/project.js'
+import { quotaOpenApiSchema, quotaStageOpenApiSchema } from '../../openApiSchemas/quota.js'
+import { repositoryOpenApiSchema } from '../../openApiSchemas/repository.js'
+import { stageOpenApiSchema } from '../../openApiSchemas/stage.js'
+import { roleOpenApiSchema, userOpenApiSchema } from '../../openApiSchemas/user.js'
+
+const clusterWithStages = {
+  ...nonSensitiveClusterOpenApiSchema,
+  properties: {
+    ...nonSensitiveClusterOpenApiSchema.properties,
+    stages: {
+      type: 'array',
+      items: { $ref: 'stage#' },
+    },
+  },
+}
+
+const fullProjectInfosSchema = {
+  ...projectOpenApiSchema,
+  properties: {
+    ...projectOpenApiSchema.properties,
+    clusters: {
+      type: 'array',
+      items: clusterWithStages,
+    },
+    services: { $ref: 'services#' },
+    environments: {
+      type: 'array',
+      items: {
+        ...environmentOpenApiSchema,
+        properties: {
+          ...environmentOpenApiSchema.properties,
+          permissions: {
+            type: 'array',
+            items: {
+              ...permissionOpenApiSchema,
+              properties: {
+                ...permissionOpenApiSchema.properties,
+                user: userOpenApiSchema,
+              },
+            },
+          },
+          cluster: clusterWithStages,
+          quotaStage: {
+            ...quotaStageOpenApiSchema,
+            properties: {
+              ...quotaStageOpenApiSchema.properties,
+              quota: quotaOpenApiSchema,
+              stage: stageOpenApiSchema,
+            },
+          },
+        },
       },
-      to: {
-        type: 'string',
-      },
-      monitorUrl: {
-        type: 'string',
-      },
-      title: {
-        type: 'string',
-      },
-      imgSrc: {
-        type: 'string',
-      },
-      description: {
-        type: 'string',
+    },
+    repositories: {
+      type: 'array',
+      items: repositoryOpenApiSchema,
+    },
+    organization: organizationOpenApiSchema,
+    roles: {
+      type: 'array',
+      items: {
+        ...roleOpenApiSchema,
+        properties: {
+          ...roleOpenApiSchema.properties,
+          user: { $ref: 'user#' },
+        },
       },
     },
   },
@@ -38,57 +86,35 @@ export const createProjectDto = {
   },
 } as const
 
-export const projectOpenApiSchema = {
-  $id: 'project',
-  type: 'object',
-  additionalProperties: false,
-  properties: {
-    id: {
-      type: 'string',
-    },
-    ...createProjectDto,
-    status: {
-      enum: ['initializing', 'created', 'failed', 'archived'],
-    },
-    locked: {
-      type: 'boolean',
-    },
-    createdAt: {
-      type: 'string',
-    },
-    updatedAt: {
-      type: 'string',
-    },
-    organization: { $ref: 'organization#' },
-    services: { $ref: 'service#' },
-    environments: {
-      type: 'array',
-      items: { $ref: 'environment#' },
-    },
-    repositories: {
-      type: 'array',
-      items: { $ref: 'repository#' },
-    },
-    roles: {
-      type: 'array',
-      items: { $ref: 'role#' },
-    },
-    clusters: {
-      type: 'array',
-      items: { $ref: 'cluster#' },
-    },
-  },
-} as const
-
 const projectParamsSchema = {
   type: 'object',
   properties: {
+    additionalProperties: false,
     projectId: {
       type: 'string',
     },
   },
   required: ['projectId'],
 } as const
+
+const projectSearchQuerySchema = {
+  type: 'object',
+  properties: {
+    additionalProperties: false,
+    projectName: {
+      type: 'string',
+    },
+    organizationName: {
+      type: 'string',
+    },
+  },
+  oneOf: [
+    {
+      required: ['projectName', 'organizationName'],
+    },
+    { required: [] },
+  ],
+}
 
 export const getUserProjectsSchema = {
   description: 'Retrieve a user\'s projects',
@@ -97,7 +123,7 @@ export const getUserProjectsSchema = {
   response: {
     200: {
       type: 'array',
-      items: projectOpenApiSchema,
+      items: fullProjectInfosSchema,
     },
   },
 } as const
@@ -108,7 +134,7 @@ export const getProjectByIdSchema = {
   summary: 'Retrieve a project by its id, with further informations',
   params: projectParamsSchema,
   response: {
-    200: projectOpenApiSchema,
+    200: fullProjectInfosSchema,
   },
 } as const
 
@@ -119,10 +145,9 @@ export const getProjectSecretsSchema = {
   params: projectParamsSchema,
   response: {
     200: {
-      example: 'La réponse dépend du plugin utilisé',
       type: 'object',
       patternProperties: {
-        '^.*$': {
+        '^.+$': {
           anyOf: [
             { type: 'string' },
             { type: 'null' },
@@ -150,18 +175,11 @@ export const getAllProjectsSchema = {
   description: 'Retrieve all projects',
   tags: ['project'],
   summary: 'Retrieve all projects, admin only',
+  query: projectSearchQuerySchema,
   response: {
     200: {
       type: 'array',
-      items: {
-        ...projectOpenApiSchema,
-        required: [
-          'id',
-          'status',
-          'locked',
-          'name',
-        ],
-      },
+      items: fullProjectInfosSchema,
     },
   },
 } as const
@@ -201,6 +219,32 @@ export const archiveProjectSchema = {
   tags: ['project'],
   summary: 'Archive a project',
   params: projectParamsSchema,
+  response: {
+    204: {},
+  },
+} as const
+
+export const patchProjectSchema = {
+  description: 'Lock / Unlock a project',
+  tags: ['project'],
+  summary: 'Lock / Unlock a project',
+  params: {
+    type: 'object',
+    properties: {
+      additionalProperties: false,
+      projectId: {
+        type: 'string',
+      },
+    },
+    required: ['projectId'],
+  },
+  body: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      lock: { type: 'boolean' },
+    },
+  },
   response: {
     204: {},
   },

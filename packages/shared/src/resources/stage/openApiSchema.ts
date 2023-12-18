@@ -1,19 +1,5 @@
-import { quotaStageOpenApiSchema } from '../quota/openApiSchema.js'
-
-export const stageOpenApiSchema = {
-  $id: 'stage',
-  type: 'object',
-  properties: {
-    ...quotaStageOpenApiSchema.properties.stage.properties,
-    quotaStage: {
-      type: 'array',
-      items: {
-        type: quotaStageOpenApiSchema.type,
-        properties: quotaStageOpenApiSchema.properties,
-      },
-    },
-  },
-} as const
+import { quotaStageOpenApiSchema } from '../../openApiSchemas/quota.js'
+import { stageOpenApiSchema } from '../../openApiSchemas/stage.js'
 
 const createStageDto = {
   name: stageOpenApiSchema.properties.name,
@@ -28,10 +14,6 @@ const createStageDto = {
     items: {
       type: 'string',
     },
-  },
-  clusters: {
-    type: 'array',
-    items: { $ref: 'cluster#' },
   },
 } as const
 
@@ -51,7 +33,16 @@ export const getStagesSchema = {
   response: {
     200: {
       type: 'array',
-      items: stageOpenApiSchema,
+      items: {
+        ...stageOpenApiSchema,
+        properties: {
+          ...stageOpenApiSchema.properties,
+          quotaStage: {
+            typre: 'array',
+            items: quotaStageOpenApiSchema,
+          },
+        },
+      },
     },
   },
 } as const
@@ -118,7 +109,10 @@ export const updateStageClustersSchema = {
     required: ['clusterIds'],
   },
   response: {
-    200: stageOpenApiSchema.properties.clusters,
+    200: {
+      type: 'array',
+      items: { $ref: 'sensitiveCluster#' },
+    },
   },
 } as const
 

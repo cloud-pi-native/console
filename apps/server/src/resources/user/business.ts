@@ -24,7 +24,10 @@ export const checkProjectLocked = async (project: Project) => {
 
 export const getProjectInfos = async (projectId: Project['id']) => getProjectInfosQuery(projectId)
 
-export const getProjectUsers = async (projectId: Project['id']) => getProjectUsersQuery(projectId)
+export const getProjectUsers = async (projectId: Project['id']) => {
+  const users = await getProjectUsersQuery(projectId)
+  return users.map(({ roles, ...keys }) => ({ role: roles[0], ...keys }))
+}
 
 export const getMatchingUsers = async (letters: string) => getMatchingUsersQuery(letters)
 

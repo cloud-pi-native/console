@@ -1,5 +1,5 @@
 import prisma from '@/prisma.js'
-import { exclude, type AsyncReturnType } from '@dso-console/shared'
+import { type AsyncReturnType } from '@dso-console/shared'
 import type { Organization, Project, User, Role } from '@prisma/client'
 
 type ProjectUpdate = Partial<Pick<Project, 'description'>>
@@ -52,6 +52,13 @@ export const getAllProjects = async () => {
 
 export const getProjectUsers = async (projectId: Project['id']) => {
   const res = await prisma.user.findMany({
+    where: {
+      roles: {
+        some: {
+          projectId,
+        },
+      },
+    },
     include: {
       roles: {
         where: {
@@ -60,9 +67,7 @@ export const getProjectUsers = async (projectId: Project['id']) => {
       },
     },
   })
-
-  const resWithKeysExcluded = exclude(res, ['role'])
-  return resWithKeysExcluded
+  return res
 }
 
 export const getUserProjects = async (user: User) => {
@@ -89,7 +94,22 @@ export const getUserProjects = async (user: User) => {
               user: true,
             },
           },
-          quotaStage: true,
+          quotaStage: {
+            include: {
+              quota: true,
+              stage: true,
+            },
+          },
+          cluster: {
+            select: {
+              id: true,
+              label: true,
+              privacy: true,
+              clusterResources: true,
+              infos: true,
+              stages: true,
+            },
+          },
         },
       },
       repositories: true,
@@ -108,6 +128,7 @@ export const getUserProjects = async (user: User) => {
           privacy: true,
           clusterResources: true,
           infos: true,
+          stages: true,
         },
       },
     },
@@ -124,13 +145,32 @@ export const getProjectById = async (id: Project['id']) => {
 const baseProjectIncludes = {
   organization: true,
   roles: true,
-  environments: { include: { permissions: true } },
+  environments: {
+    include: {
+      permissions: {
+        select: {
+          environmentId: true,
+          user: true,
+          id: true,
+          level: true,
+          userId: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
+    },
+  },
   clusters: true,
 }
 export const getProjectInfos = async (id: Project['id']) => {
   return prisma.project.findUnique({
     where: { id },
-    include: baseProjectIncludes,
+    include: {
+      ...baseProjectIncludes,
+      clusters: {
+        include: { stages: true },
+      },
+    },
   })
 }
 

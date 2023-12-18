@@ -1,5 +1,5 @@
 import { FromSchema } from 'json-schema-to-ts'
-import { projectOpenApiSchema, serviceOpenApiSchema } from './index.js'
+import { projectOpenApiSchema, serviceOpenApiSchema } from '../../openApiSchemas/project.js'
 
 export type ProjectModel = FromSchema<typeof projectOpenApiSchema>
 

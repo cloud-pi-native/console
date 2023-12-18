@@ -1,4 +1,5 @@
 import { FromSchema } from 'json-schema-to-ts'
-import { clusterOpenApiSchema } from './index.js'
+import { nonSensitiveClusterOpenApiSchema, sensitiveClusterOpenApiSchema } from '../../openApiSchemas/cluster'
 
-export type ClusterModel = FromSchema<typeof clusterOpenApiSchema>
+export type SensitiveClusterModel = FromSchema<typeof sensitiveClusterOpenApiSchema>
+export type NonSensitiveClusterModel = FromSchema<typeof nonSensitiveClusterOpenApiSchema>

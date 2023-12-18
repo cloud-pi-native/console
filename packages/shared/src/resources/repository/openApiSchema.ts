@@ -1,3 +1,5 @@
+import { repositoryOpenApiSchema } from '../../openApiSchemas/repository.js'
+
 export const createRepositoryDto = {
   internalRepoName: {
     type: 'string',
@@ -16,30 +18,6 @@ export const createRepositoryDto = {
   },
   isPrivate: {
     type: 'boolean',
-  },
-} as const
-
-export const repositoryOpenApiSchema = {
-  $id: 'repository',
-  type: 'object',
-  properties: {
-    id: {
-      type: 'string',
-    },
-    ...createRepositoryDto,
-    projectId: {
-      type: 'string',
-    },
-    status: {
-      type: 'string',
-    },
-    createdAt: {
-      type: 'string',
-    },
-    updatedAt: {
-      type: 'string',
-    },
-    project: { $ref: 'project#' },
   },
 } as const
 

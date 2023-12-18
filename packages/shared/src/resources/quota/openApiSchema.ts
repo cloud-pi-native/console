@@ -1,3 +1,5 @@
+import { quotaOpenApiSchema, quotaStageOpenApiSchema } from '../../openApiSchemas/quota.js'
+
 const createQuotaDto = {
   name: {
     type: 'string',
@@ -19,76 +21,6 @@ const createQuotaDto = {
   },
 } as const
 
-export const quotaStageOpenApiSchema = {
-  $id: 'quotaStage',
-  type: 'object',
-  properties: {
-    id: {
-      type: 'string',
-    },
-    status: {
-      type: 'string',
-    },
-    quotaId: {
-      type: 'string',
-    },
-    stageId: {
-      type: 'string',
-    },
-    environments: {
-      type: 'array',
-      items: { $ref: 'environment#' },
-    },
-    quota: {
-      type: 'object',
-      properties: {
-        id: {
-          type: 'string',
-        },
-        ...createQuotaDto,
-        quotaStage: {
-          type: 'array',
-          items: { $ref: 'quotaStage#' },
-        },
-      },
-    },
-    stage: {
-      type: 'object',
-      properties: {
-        id: {
-          type: 'string',
-        },
-        name: {
-          type: 'string',
-        },
-        clusters: {
-          type: 'array',
-          items: { $ref: 'cluster#' },
-        },
-        quotaStage: {
-          type: 'array',
-          items: { $ref: 'quotaStage#' },
-        },
-      },
-    },
-  },
-} as const
-
-export const quotaOpenApiSchema = {
-  $id: 'quota',
-  type: 'object',
-  properties: {
-    ...quotaStageOpenApiSchema.properties.quota.properties,
-    quotaStage: {
-      type: 'array',
-      items: {
-        type: quotaStageOpenApiSchema.type,
-        properties: quotaStageOpenApiSchema.properties,
-      },
-    },
-  },
-} as const
-
 export const quotaParamsSchema = {
   type: 'object',
   properties: {
@@ -105,7 +37,18 @@ export const getQuotasSchema = {
   response: {
     200: {
       type: 'array',
-      items: quotaOpenApiSchema,
+      items: {
+        ...quotaOpenApiSchema,
+        properties: {
+          ...quotaOpenApiSchema.properties,
+          quotaStage: {
+            type: 'array',
+            items: {
+              quotaStageOpenApiSchema,
+            },
+          },
+        },
+      },
     },
   },
 } as const

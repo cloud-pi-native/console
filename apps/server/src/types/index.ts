@@ -1,6 +1,6 @@
 import type { Cluster } from '@prisma/client'
 import type { FastifyRequest } from 'fastify/types/request'
-import type { ClusterModel } from '@dso-console/shared'
+import type { SensitiveClusterModel } from '@dso-console/shared'
 
 export type KeycloakSession = {
   session?: {
@@ -15,4 +15,4 @@ export type KeycloakSession = {
 }
 export type FastifyRequestWithSession<T> = FastifyRequest<T> & KeycloakSession
 
-export type ClusterMix = Cluster & ClusterModel
+export type ClusterMix = Cluster & SensitiveClusterModel

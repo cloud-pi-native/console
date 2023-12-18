@@ -34,6 +34,7 @@ describe('Permission routes', () => {
         .get(`/api/v1/projects/${projectInfos.id}/environments/${environment.id}/permissions`)
         .end()
 
+      environment.permissions = environment.permissions?.map(({ user: _user, ...keys }) => ({ ...keys }))
       expect(response.json()).toStrictEqual(environment.permissions)
       expect(response.statusCode).toEqual(200)
     })
@@ -73,6 +74,7 @@ describe('Permission routes', () => {
         .body(permissionToAdd)
         .end()
 
+      delete permissionToAdd.user
       expect(response.statusCode).toEqual(201)
       expect(response.json()).toStrictEqual(permissionToAdd)
     })
@@ -136,6 +138,7 @@ describe('Permission routes', () => {
         .body(permissionToUpdate)
         .end()
 
+      delete permissionToUpdate.user
       expect(response.statusCode).toEqual(200)
       expect(response.json()).toStrictEqual(permissionToUpdate)
     })

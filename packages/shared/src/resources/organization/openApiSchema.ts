@@ -1,3 +1,5 @@
+import { organizationOpenApiSchema } from '../../openApiSchemas/organization.js'
+
 const createOrganizationDto = {
   source: {
     type: 'string',
@@ -7,27 +9,6 @@ const createOrganizationDto = {
   },
   label: {
     type: 'string',
-  },
-} as const
-
-export const organizationOpenApiSchema = {
-  $id: 'organization',
-  type: 'object',
-  additionalProperties: false,
-  properties: {
-    id: {
-      type: 'string',
-    },
-    ...createOrganizationDto,
-    active: {
-      type: 'boolean',
-    },
-    createdAt: {
-      type: 'string',
-    },
-    updatedAt: {
-      type: 'string',
-    },
   },
 } as const
 
