@@ -65,7 +65,7 @@ const handleSecretDisplay = async () => {
     try {
       if (!project.value) throw new Error('Pas de projet sélectionné')
       projectSecrets.value = await projectStore.getProjectSecrets(project.value.id)
-      snackbarStore.setMessage('Secrets récupérés')
+      snackbarStore.setMessage('Secrets récupérés', 'info', 3000)
     } catch (error) {
       handleError(error)
     }
@@ -186,7 +186,7 @@ onBeforeMount(async () => {
         :resource="{
           ...project,
           resourceKey: 'locked',
-          wording: `Projet ${project?.name}`
+          wording: `Projet ${project?.name}`,
         }"
       />
       <DsoBadge

@@ -2,38 +2,50 @@ import { defineStore } from 'pinia'
 import { ref, type Ref } from 'vue'
 import { type ErrorTypes } from '@dso-console/shared'
 
+const defaultTimeout: number = 6000
+
+export interface MessageType {
+  timeout: number
+  text: string
+  type: ErrorTypes
+  timestamp: number
+  isDisplayed: boolean
+}
+
+export type MessagesType = Record<number, MessageType>
+
 export const useSnackbarStore = defineStore('snackbar', () => {
-  const defaultTimeout: number = 6000
-  const message: Ref<string | undefined> = ref(undefined)
-  const isOpen: Ref<boolean> = ref(false)
-  const type: Ref<ErrorTypes> = ref('info')
-  const timeoutId: Ref< ReturnType<typeof setTimeout> | undefined> = ref(undefined)
+  const messages: Ref<MessagesType> = ref({})
 
   const setMessage = (errorMessage: string, errorType: ErrorTypes = 'info', timeout: number = defaultTimeout) => {
-    if (timeoutId.value) {
-      clearTimeout(timeoutId.value)
-      timeoutId.value = undefined
+    const newMessage = {
+      timeout,
+      text: errorMessage,
+      type: errorType,
+      timestamp: (new Date()).valueOf(),
+      isDisplayed: true,
     }
-    if (errorType !== 'error') {
-      timeoutId.value = setTimeout(() => hideMessage(), timeout)
-    }
-    message.value = errorMessage
-    isOpen.value = true
-    type.value = errorType
+    messages.value[newMessage.timestamp] = newMessage
+    setTimeout(() => {
+      delete messages.value[newMessage.timestamp]
+    }, newMessage.timeout)
   }
 
-  const hideMessage = () => {
-    isOpen.value = false
-    clearTimeout(timeoutId.value)
-    timeoutId.value = undefined
+  const clearMessages = () => {
+    messages.value = {}
+  }
+
+  const hide = (message: MessageType) => {
+    message.isDisplayed = false
+    setTimeout(() => {
+      delete messages.value[message.timestamp]
+    }, message.timeout)
   }
 
   return {
-    message,
-    isOpen,
-    type,
-    timeoutId,
+    messages,
+    hide,
     setMessage,
-    hideMessage,
+    clearMessages,
   }
 })
