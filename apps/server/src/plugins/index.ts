@@ -64,6 +64,7 @@ const importPlugin = async (pluginManager: Awaited<PluginManager>, name: string,
     }
     servicesInfos[infos.default.name] = infos.default
   } catch (error) {
+    console.log(error)
   }
 }
 
