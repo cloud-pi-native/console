@@ -3,23 +3,23 @@
 # set -e
 
 # Colorize terminal
-red='\e[0;31m'
-no_color='\033[0m'
+export red='\e[0;31m'
+export no_color='\033[0m'
 
 # Get versions
-DOCKER_VERSION="$(docker --version)"
+export DOCKER_VERSION="$(docker --version)"
 
 # Default
-SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
-HELM_RELEASE_NAME="dso"
-HELM_DIRECTORY="./helm"
-INTEGRATION_ARG=""
-INTEGRATION_ARGS_UTILS=""
-CI_ARGS=""
+export SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+export HELM_RELEASE_NAME="dso"
+export HELM_DIRECTORY="./helm"
+export INTEGRATION_ARG=""
+export INTEGRATION_ARGS_UTILS=""
+export CI_ARGS=""
 
 
 # Declare script helper
-TEXT_HELPER="\nThis script aims to manage a local kubernetes cluster using Kind also known as Kubernetes in Docker.
+export TEXT_HELPER="\nThis script aims to manage a local kubernetes cluster using Kind also known as Kubernetes in Docker.
 Following flags are available:
 
   -c    Command tu run. Multiple commands can be provided as a comma separated list.
@@ -51,17 +51,17 @@ print_help() {
 while getopts hc:d:f:ik:t: flag; do
   case "${flag}" in
     c)
-      COMMAND=${OPTARG};;
+      export COMMAND=${OPTARG};;
     d)
-      DOMAINS=${OPTARG};;
+      export DOMAINS=${OPTARG};;
     f)
-      COMPOSE_FILE=${OPTARG};;
+      export COMPOSE_FILE=${OPTARG};;
     i)
-      INSTALL_KIND=true;;
+      export INSTALL_KIND=true;;
     k)
-      DEV_KUBECONFIG_PATH=${OPTARG};;
+      export DEV_KUBECONFIG_PATH=${OPTARG};;
     t)
-      TAG=${OPTARG};;
+      export TAG=${OPTARG};;
     h | *)
       print_help
       exit 0;;
@@ -73,18 +73,18 @@ done
 install_kind() {
   printf "\n\n${red}[kind wrapper].${no_color} Install kind...\n\n"
   if [ "$(uname)" = "Linux" ]; then
-    OS=linux
+    export OS=linux
   elif [ "$(uname)" = "Darwin" ]; then
-    OS=darwin
+    export OS=darwin
   else
     printf "\n\nNo installation available for your system, plese refer to the installation guide\n\n"
     exit 0
   fi
 
   if [ "$(uname -m)" = "x86_64" ]; then
-    ARCH=amd64
+    export ARCH=amd64
   elif [ "$(uname -m)" = "arm64" ] || [ "$(uname -m)" = "aarch64" ]; then
-    ARCH=arm64
+    export ARCH=arm64
   fi
 
   curl -Lo ./kind "https://kind.sigs.k8s.io/dl/v0.20.0/kind-$OS-$ARCH"
@@ -117,7 +117,7 @@ fi
 if [ ! -z "$DOMAINS" ]; then
   printf "\n\n${red}[kind wrapper].${no_color} Add services local domains to /etc/hosts\n\n"
 
-  FORMATED_DOMAINS="$(echo "$DOMAINS" | sed 's/,/\ /g')"
+  export FORMATED_DOMAINS="$(echo "$DOMAINS" | sed 's/,/\ /g')"
   if [ "$(grep -c "$FORMATED_DOMAINS" /etc/hosts)" -ge 1 ]; then
     printf "\n\n${red}[kind wrapper].${no_color} Services local domains already added to /etc/hosts\n\n"
   else
@@ -130,43 +130,22 @@ fi
 
 # Deploy cluster with trefik ingress controller
 if [[ "$COMMAND" =~ "create" ]]; then
-  if [ -z "$(kind get clusters | grep 'kind')" ]; then
-    printf "\n\n${red}[kind wrapper].${no_color} Create Kind cluster\n\n"
-
-    kind create cluster --config $SCRIPTPATH/configs/kind-config.yml
-
-
-    printf "\n\n${red}[kind wrapper].${no_color} Install Traefik ingress controller\n\n"
-
-    helm --kube-context kind-kind repo add traefik https://traefik.github.io/charts && helm repo update
-    helm --kube-context kind-kind upgrade \
-      --install \
-      --wait \
-      --namespace traefik \
-      --create-namespace \
-      --values $SCRIPTPATH/configs/traefik-values.yml \
-      traefik traefik/traefik
-  fi
+  source ./ci/kind/run-create.sh &
+  JOB_CREATE="$!"
 fi
 
 # Build and load images into cluster nodes
 if [[ "$COMMAND" =~ "build" ]]; then
-  printf "\n\n${red}[kind wrapper].${no_color} Build and load images into cluster node\n\n"
-
-  cd $(dirname "$COMPOSE_FILE") \
-    && docker buildx bake --file $(basename "$COMPOSE_FILE") --load \
-    && cd -
-  kind load docker-image $(cat "$COMPOSE_FILE" \
-    | docker run -i --rm mikefarah/yq -o t '.services | map(select(.build) | .image)')
+  source ./ci/kind/run-build.sh &
+  JOB_BUILD="$!"
 fi
 
 
 # Load images into cluster nodes
 if [[ "$COMMAND" =~ "load" ]]; then
-  printf "\n\n${red}[kind wrapper].${no_color} Load images into cluster node\n\n"
-
-  kind load docker-image $(cat "$COMPOSE_FILE" \
-    | docker run -i --rm mikefarah/yq -o t '.services | map(select(.build) | .image)')
+  wait $JOB_CREATE
+  source ./ci/kind/run-load.sh &
+  JOB_LOAD="$!"
 fi
 
 
@@ -182,18 +161,20 @@ fi
 
 # Check for integration mode
 if [[ "$COMMAND" =~ "int" ]]; then
+  wait $JOB_LOAD
   source ./env/.env.int
-  INTEGRATION_ARGS="--values ./env/dso-values-int.yaml"
+  export INTEGRATION_ARGS="--values ./env/dso-values-int.yaml"
   if [ -z "$DEV_KUBECONFIG_PATH" ]; then
     printf "\n\n${red}[kind wrapper].${no_color} DEV_KUBECONFIG_PATH not defined in ./env/.env.int integration will certainly fail\nYou should also check you KUBECONFIG_CTX in ./env/dso-values-int.yaml\n\n"
     exit 1
   fi
-  INTEGRATION_ARGS_UTILS="--set keycloak.enabled=false --set integration=true --set-file kubeconfig=$DEV_KUBECONFIG_PATH"
+  export INTEGRATION_ARGS_UTILS="--set keycloak.enabled=false --set integration=true --set-file kubeconfig=$DEV_KUBECONFIG_PATH"
 fi
 
 
 # Deploy application in dev or test mode
 if [[ "$COMMAND" =~ "dev" ]]; then
+  wait $JOB_LOAD
   printf "\n\n${red}[kind wrapper].${no_color} Deploy application in development mode\n\n"
 
   helm --kube-context kind-kind upgrade \
@@ -214,10 +195,11 @@ if [[ "$COMMAND" =~ "dev" ]]; then
     kubectl --context kind-kind  rollout status $i -w --timeout=150s; 
   done
 elif [[ "$COMMAND" =~ "prod" ]]; then
+  wait $JOB_LOAD
   printf "\n\n${red}[kind wrapper].${no_color} Deploy application in production mode\n\n"
 
   if [ ! -z "$TAG" ]; then
-    CI_ARGS="--set server.container.image=ghcr.io/cloud-pi-native/console/server:$TAG --set client.container.image=ghcr.io/cloud-pi-native/console/client:$TAG --set server.container.imagePullPolicy=Always --set client.container.imagePullPolicy=Always"
+    export CI_ARGS="--set server.container.image=ghcr.io/cloud-pi-native/console/server:$TAG --set client.container.image=ghcr.io/cloud-pi-native/console/client:$TAG --set server.container.imagePullPolicy=Always --set client.container.imagePullPolicy=Always"
   fi
 
   helm --kube-context kind-kind upgrade \
