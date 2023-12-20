@@ -1,5 +1,19 @@
 # Changelog
 
+## [6.4.0](https://github.com/cloud-pi-native/console/compare/v6.3.1...v6.4.0) (2023-12-20)
+
+
+### Features
+
+* :children_crossing: add filtering on admin projects view ([dc5412c](https://github.com/cloud-pi-native/console/commit/dc5412c1a80ce84cd563376a0b7f72da7926a858))
+* :sparkles: display cluster infos to users on environment form ([4afdf34](https://github.com/cloud-pi-native/console/commit/4afdf34fc40df7789a00fe6d159ee73370b94cb9))
+* :speech_balloon: translate stage in front for better understanding ([5a66479](https://github.com/cloud-pi-native/console/commit/5a6647980319524098a72fcbd2be6affbda3f3d0))
+
+
+### Bug Fixes
+
+* :art: refactor of admin project types and refs ([be0684f](https://github.com/cloud-pi-native/console/commit/be0684f378696a24304d7abecd6b90c0738e1785))
+
 ## [6.3.1](https://github.com/cloud-pi-native/console/compare/v6.3.0...v6.3.1) (2023-12-12)
 
 
