@@ -5,6 +5,7 @@ import { load } from 'js-yaml'
 import { JsonViewer } from 'vue3-json-viewer'
 import MultiSelector from './MultiSelector.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+import { handleError } from '@/utils/func.js'
 
 const snackbarStore = useSnackbarStore()
 
@@ -105,12 +106,9 @@ const updateKubeconfig = (files: Array<any>) => {
     }
     reader.readAsText(files[0])
   } catch (error) {
-    if (error instanceof Error) {
-      kConfigError.value = error.message
-      snackbarStore.setMessage(error.message, 'error')
-      return
-    }
-    snackbarStore.setMessage('échec de parsing du fichier uploadé')
+    handleError(error)
+    // @ts-ignore
+    kConfigError.value = error?.message
   }
 }
 
@@ -156,12 +154,9 @@ const retrieveUserAndCluster = (context: ContextType) => {
       skipTLSVerify: skipTLSVerify || false,
     }
   } catch (error) {
-    if (error instanceof Error) {
-      kConfigError.value = error.message
-      snackbarStore.setMessage(error.message, 'error')
-      return
-    }
-    snackbarStore.setMessage('échec de parsing du fichier uploadé')
+    handleError(error)
+    // @ts-ignore
+    kConfigError.value = error?.message
   }
 }
 
@@ -226,12 +221,14 @@ watch(selectedContext, () => {
     if (!context) throw new Error('Le contexte semble vide.')
     retrieveUserAndCluster(context)
   } catch (error) {
-    kConfigError.value = error.message
-    if (error.message === 'Cannot read properties of undefined (reading \'context\')') {
-      snackbarStore.setMessage('Le contexte semble vide.', 'error')
-      return
+    if (error instanceof Error) {
+      kConfigError.value = error.message
+      if (error.message === 'Cannot read properties of undefined (reading \'context\')') {
+        snackbarStore.setMessage('Le contexte semble vide.', 'error')
+        return
+      }
+      snackbarStore.setMessage(error.message, 'error')
     }
-    snackbarStore.setMessage(error.message, 'error')
   }
 })
 
@@ -308,7 +305,7 @@ watch(selectedContext, () => {
       is-textarea
       label="Informations supplémentaires sur le cluster"
       label-visible
-      hint="Facultatif : Informations accessibles aux utilisateurs."
+      hint="Facultatif. Attention, ces informations seront visibles par les utilisateurs de la console à qui ce cluster est destiné (tous si cluster public, membres des projets concernés pour les clusters réservés)."
       @update:model-value="updateValues('infos', $event)"
     />
     <DsfrCheckbox
@@ -358,10 +355,10 @@ watch(selectedContext, () => {
         :options="allStages?.map(stage => ({ id: stage.id, name: `${stage.name}` }))"
         :array="stageNames"
         :disabled="!allStages?.length"
-        no-choice-label="Aucun stage disponible"
-        choice-label="Veuillez choisir les stages à associer"
-        label="Nom des stages"
-        description="Sélectionnez les stages autorisés à utiliser ce cluster."
+        no-choice-label="Aucun type d'environnement disponible"
+        choice-label="Veuillez choisir les types d'environnement à associer"
+        label="Nom des types d'environnement"
+        description="Sélectionnez les types d'environnement autorisés à utiliser ce cluster."
         @update="updateValues('stageIds', $event)"
       />
     </div>

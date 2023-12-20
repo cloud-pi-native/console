@@ -2,7 +2,7 @@ import {
   getActiveOrganizationsController,
 } from '@/resources/organization/controllers.js'
 import { getActiveOrganizationsSchema } from '@dso-console/shared'
-import { FastifyInstance } from 'fastify'
+import { type FastifyInstance } from 'fastify'
 
 const router = async (app: FastifyInstance, _opt) => {
   app.get('/',

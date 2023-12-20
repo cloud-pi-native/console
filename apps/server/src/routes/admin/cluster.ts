@@ -5,7 +5,7 @@ import {
   deleteClusterController,
 } from '@/resources/cluster/admin/controllers.js'
 import { createClusterSchema, getClusterAssociatedEnvironmentsSchema, updateClusterSchema, deleteClusterSchema } from '@dso-console/shared'
-import { FastifyInstance } from 'fastify'
+import { type FastifyInstance } from 'fastify'
 
 const router = async (app: FastifyInstance, _opt) => {
   // Récupérer les environnements associés au cluster

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { type Ref, ref } from 'vue'
 import api from '@/api/index.js'
-import type { ClusterModel, CreateClusterDto, UpdateClusterDto } from '@dso-console/shared'
+import type { ClusterModel, ClusterParams, CreateClusterDto, UpdateClusterDto } from '@dso-console/shared'
 
 export const useAdminClusterStore = defineStore('admin-cluster', () => {
   const clusters: Ref<Array<ClusterModel | undefined>> = ref([])
@@ -11,7 +11,7 @@ export const useAdminClusterStore = defineStore('admin-cluster', () => {
     return clusters.value
   }
 
-  const getClusterAssociatedEnvironments = async (clusterId: string) => {
+  const getClusterAssociatedEnvironments = async (clusterId: ClusterParams['clusterId']) => {
     const res = await api.getClusterAssociatedEnvironments(clusterId)
     return res
   }
@@ -21,12 +21,12 @@ export const useAdminClusterStore = defineStore('admin-cluster', () => {
     return res
   }
 
-  const updateCluster = async (cluster: UpdateClusterDto) => {
+  const updateCluster = async (cluster: UpdateClusterDto & { id: ClusterParams['clusterId'] }) => {
     const { id, ...updateClusterData } = cluster
     return api.updateCluster(id, updateClusterData)
   }
 
-  const deleteCluster = async (clusterId: string) => {
+  const deleteCluster = async (clusterId: ClusterParams['clusterId']) => {
     return api.deleteCluster(clusterId)
   }
 

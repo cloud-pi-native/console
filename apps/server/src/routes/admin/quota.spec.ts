@@ -1,7 +1,7 @@
 import prisma from '../../__mocks__/prisma.js'
 import app, { getRequestor, setRequestor } from '../../__mocks__/app.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll, beforeEach } from 'vitest'
-import { getConnection, closeConnections } from '@/connect.js'
+import { getConnection, closeConnections } from '../../connect.js'
 import { adminGroupPath } from '@dso-console/shared'
 import { getRandomEnv, getRandomQuota, getRandomQuotaStage, getRandomRole, getRandomStage, getRandomUser, repeatFn } from '@dso-console/test-utils'
 
@@ -50,7 +50,7 @@ describe('Admin quotas routes', () => {
       prisma.environment.findMany.mockResolvedValue(environments)
 
       const response = await app.inject()
-      // @ts-ignore
+        // @ts-ignore
         .get(`/api/v1/admin/quotas/${quota.id}/environments`)
         .end()
 
@@ -80,7 +80,7 @@ describe('Admin quotas routes', () => {
       prisma.quotaStage.createMany.mockResolvedValue(quotaStages)
 
       const response = await app.inject()
-      // @ts-ignore
+        // @ts-ignore
         .post('/api/v1/admin/quotas')
         .body(quota)
         .end()
@@ -95,7 +95,7 @@ describe('Admin quotas routes', () => {
       prisma.quota.findUnique.mockResolvedValueOnce(quota)
 
       const response = await app.inject()
-      // @ts-ignore
+        // @ts-ignore
         .post('/api/v1/admin/quotas')
         .body(quota)
         .end()
@@ -112,7 +112,7 @@ describe('Admin quotas routes', () => {
       prisma.quota.update.mockResolvedValueOnce(quota)
 
       const response = await app.inject()
-      // @ts-ignore
+        // @ts-ignore
         .patch(`/api/v1/admin/quotas/${quota.id}/privacy`)
         .body({ isPrivate: quota.isPrivate })
         .end()
@@ -139,7 +139,7 @@ describe('Admin quotas routes', () => {
       prisma.quota.findUnique.mockResolvedValueOnce({ ...quota, quotaStage: newQuotaStage })
 
       const response = await app.inject()
-      // @ts-ignore
+        // @ts-ignore
         .put('/api/v1/admin/quotas/quotastages')
         .body(data)
         .end()
@@ -167,7 +167,7 @@ describe('Admin quotas routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(400)
-      expect(response.json().message).toEqual('L\'association quota / stage que vous souhaitez supprimer est actuellement utilisée. Vous pouvez demander aux souscripteurs concernés de changer le quota choisi pour leur environnement.')
+      expect(response.json().message).toEqual('L\'association quota / type d\'environnement que vous souhaitez supprimer est actuellement utilisée. Vous pouvez demander aux souscripteurs concernés de changer le quota choisi pour leur environnement.')
     })
   })
 
@@ -183,7 +183,7 @@ describe('Admin quotas routes', () => {
       prisma.quota.delete.mockResolvedValueOnce(1)
 
       const response = await app.inject()
-      // @ts-ignore
+        // @ts-ignore
         .delete(`/api/v1/admin/quotas/${quota.id}`)
         .end()
 
@@ -214,7 +214,7 @@ describe('Admin quotas routes', () => {
       prisma.quota.delete.mockResolvedValueOnce(1)
 
       const response = await app.inject()
-      // @ts-ignore
+        // @ts-ignore
         .delete(`/api/v1/admin/quotas/${quota.id}`)
         .end()
 

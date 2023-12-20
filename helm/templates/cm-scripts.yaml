@@ -10,6 +10,7 @@ data:
     cd /tmp
 {{- range $i, $val := .Values.server.plugins }}
     wget {{ $val }} -O {{ $i }}.zip;
-    unzip {{ $i }}.zip -d /plugins;
+    mkdir -p /plugins/{{ $i }}
+    unzip {{ $i }}.zip -d /plugins/{{ $i }};
 {{- end }}
 {{- end }}

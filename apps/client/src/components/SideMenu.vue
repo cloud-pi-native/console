@@ -292,7 +292,7 @@ onMounted(() => {
               to="/admin/stages"
             >
               <v-icon name="ri-stock-line" />
-              Stages
+              Types d'environnement
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
         </DsfrSideMenuList>
@@ -303,7 +303,7 @@ onMounted(() => {
           class="menu-link-icon"
           data-testid="menuDoc"
           :active="routeName === 'Doc'"
-          to="https://github.com/cloud-pi-native/documentation"
+          to="https://cloud-pi-native.fr"
         >
           Documentation
         </DsfrSideMenuLink>

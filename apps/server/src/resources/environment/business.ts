@@ -18,9 +18,8 @@ import {
 } from '@/resources/queries-index.js'
 import { hooks } from '@/plugins/index.js'
 import { DsoError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
-import { type Cluster, type Environment, type Project, type Role, type User, type QuotaStage } from '@prisma/client'
+import type { Cluster, Environment, Project, Role, User, QuotaStage } from '@prisma/client'
 import {
-  type AsyncReturnType,
   checkInsufficientRoleInProject,
   checkClusterUnavailable,
   filterOwners,
@@ -31,7 +30,7 @@ import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { projectRootDir } from '@/utils/env.js'
 import { getProjectInfosAndClusters } from '@/resources/project/business.js'
 import { gitlabUrl } from '@/plugins/core/gitlab/utils.js'
-import { adminGroupPath } from '@dso-console/shared'
+import { type AsyncReturnType, adminGroupPath } from '@dso-console/shared'
 import { KeycloakSession } from '@/types/index.js'
 
 // Fetch infos
@@ -147,7 +146,7 @@ export const checkExistingEnvironment = (clusterId: Cluster['id'], name: Environ
 }
 
 export const checkQuotaStageStatus = (quotaStage: QuotaStage) => {
-  if (quotaStage.status !== 'active') return 'Cette association quota / stage n\'est plus disponible.'
+  if (quotaStage.status !== 'active') return 'Cette association quota / type d\'environnement n\'est plus disponible.'
 }
 
 // Routes logic

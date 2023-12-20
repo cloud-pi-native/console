@@ -5,7 +5,8 @@ import { useAdminQuotaStore } from '@/stores/admin/quota.js'
 import QuotaForm from '@/components/QuotaForm.vue'
 import { sortArrByObjKeyAsc } from '@dso-console/shared'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
-import type { CreateQuotaDto, UpdateQuotaStageDto, DeleteQuotaDto, QuotaModel, UpdateQuotaPrivacyDto } from '@dso-console/shared'
+import type { CreateQuotaDto, UpdateQuotaStageDto, QuotaModel, UpdateQuotaPrivacyDto, QuotaParams } from '@dso-console/shared'
+import { handleError } from '@/utils/func.js'
 
 const adminQuotaStore = useAdminQuotaStore()
 const projectEnvironmentStore = useProjectEnvironmentStore()
@@ -49,55 +50,57 @@ const cancel = () => {
   selectedQuota.value = {}
 }
 
-const addQuota = async (quota: CreateQuotaDto['body']) => {
+const addQuota = async (quota: CreateQuotaDto) => {
   isWaitingForResponse.value = true
   cancel()
   try {
     await adminQuotaStore.addQuota(quota)
     await adminQuotaStore.getAllQuotas()
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
   isWaitingForResponse.value = false
 }
 
 export type UpdateQuotaType = {
-  quotaId: UpdateQuotaPrivacyDto['params']['quotaId'],
-  isPrivate?: UpdateQuotaPrivacyDto['body']['isPrivate'],
-  stageIds?: UpdateQuotaStageDto['body']['stageIds']
+  quotaId: QuotaParams['quotaId'],
+  isPrivate?: UpdateQuotaPrivacyDto['isPrivate'],
+  stageIds?: UpdateQuotaStageDto['stageIds']
 }
 
 const updateQuota = async ({ quotaId, isPrivate, stageIds }: UpdateQuotaType) => {
   isWaitingForResponse.value = true
   try {
-    await adminQuotaStore.updateQuotaPrivacy(quotaId, isPrivate)
+    if (isPrivate !== undefined) {
+      await adminQuotaStore.updateQuotaPrivacy(quotaId, isPrivate)
+    }
     await adminQuotaStore.updateQuotaStage(quotaId, stageIds)
     await adminQuotaStore.getAllQuotas()
     cancel()
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
   isWaitingForResponse.value = false
 }
 
-const deleteQuota = async (quotaId: DeleteQuotaDto['params']['quotaId']) => {
+const deleteQuota = async (quotaId: QuotaParams['quotaId']) => {
   isWaitingForResponse.value = true
   cancel()
   try {
     await adminQuotaStore.deleteQuota(quotaId)
     await adminQuotaStore.getAllQuotas()
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
   isWaitingForResponse.value = false
 }
 
-const getQuotaAssociatedEnvironments = async (quotaId: DeleteQuotaDto['params']['quotaId']) => {
+const getQuotaAssociatedEnvironments = async (quotaId: QuotaParams['quotaId']) => {
   isWaitingForResponse.value = true
   try {
     associatedEnvironments.value = await adminQuotaStore.getQuotaAssociatedEnvironments(quotaId)
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
   isWaitingForResponse.value = false
 }
@@ -108,7 +111,7 @@ onMounted(async () => {
     setQuotaTiles(quotas.value)
     allStages.value = await projectEnvironmentStore.getStages()
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
 })
 
@@ -141,7 +144,7 @@ watch(quotas, () => {
       class="w-full"
       :is-new-quota="true"
       :is-updating-quota="isWaitingForResponse"
-      @add="(quota: CreateQuotaDto['body']) => addQuota(quota)"
+      @add="(quota: CreateQuotaDto) => addQuota(quota)"
       @cancel="cancel()"
     />
   </div>
@@ -174,7 +177,7 @@ watch(quotas, () => {
         :associated-environments="associatedEnvironments"
         @cancel="cancel()"
         @update="(quota: UpdateQuotaType) => updateQuota(quota)"
-        @delete="(quotaId: DeleteQuotaDto['params']['quotaId']) => deleteQuota(quotaId)"
+        @delete="(quotaId: QuotaParams['quotaId']) => deleteQuota(quotaId)"
       />
     </div>
     <div

@@ -1,4 +1,4 @@
-export type StageModel = {
-  id?: string,
-  name: string,
-}
+import { FromSchema } from 'json-schema-to-ts'
+import { stageOpenApiSchema } from './openApiSchema.js'
+
+export type StageModel = FromSchema<typeof stageOpenApiSchema>

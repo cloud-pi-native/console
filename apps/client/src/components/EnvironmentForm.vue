@@ -6,6 +6,7 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 import LoadingCt from './LoadingCt.vue'
 import { getRandomId } from '@gouvminint/vue-dsfr'
+import { handleError } from '@/utils/func.js'
 
 const props = defineProps({
   environment: {
@@ -68,14 +69,7 @@ const stage = computed(() => allStages.value.find(allStage => allStage.id === st
 
 const errorSchema = computed(() => schemaValidator(environmentSchema, localEnvironment.value))
 
-const setEnvironmentOptions = () => {
-  stageOptions.value = allStages.value.map(stage => ({
-    text: stage.name,
-    value: stage.id,
-  }))
-}
-
-const setClusterOptions = () => {
+const availableClusters = computed(() => {
   let availableClusters = props.projectClusters
     ?.filter(projectCluster => stage.value?.clusters
     // @ts-ignore
@@ -94,8 +88,20 @@ const setClusterOptions = () => {
         ?.find(cFromAll => cFromAll?.id === localEnvironment.value.clusterId),
     ]
   }
+  return availableClusters
+})
 
-  clusterOptions.value = availableClusters.map(cluster => ({
+const clusterInfos = computed(() => availableClusters.value.find(cluster => cluster.id === localEnvironment.value.clusterId)?.infos)
+
+const setEnvironmentOptions = () => {
+  stageOptions.value = allStages.value.map(stage => ({
+    text: stage.name,
+    value: stage.id,
+  }))
+}
+
+const setClusterOptions = () => {
+  clusterOptions.value = availableClusters.value.map(cluster => ({
     // @ts-ignore
     text: cluster.label,
     // @ts-ignore
@@ -149,10 +155,7 @@ onBeforeMount(async () => {
     allStages.value = await projectEnvironmentStore.getStages()
     setEnvironmentOptions()
   } catch (error) {
-    if (error instanceof Error) {
-      return snackbarStore.setMessage(error.message)
-    }
-    snackbarStore.setMessage('Erreur de récupération des quotas')
+    handleError(error)
   }
 
   // Receive quotaStage from parent component, retrieve stageId and quotaId
@@ -212,8 +215,8 @@ watch(quotaId, () => {
       <DsfrSelect
         v-model="stageId"
         select-id="stage-select"
-        label="Stage"
-        description="Stage proposé par DSO, conditionne les quotas et les clusters disponibles pour l'environnement."
+        label="Type d'environnement"
+        description="Type d'environnement proposé par DSO, conditionne les quotas et les clusters auxquels vous aurez accès pour créer votre environnement."
         required="required"
         :disabled="!props.isEditable"
         :options="stageOptions"
@@ -242,7 +245,7 @@ watch(quotaId, () => {
         <DsfrAlert
           v-if="stageId && !clusterOptions?.length"
           data-testid="noClusterOptionAlert"
-          description="Aucun cluster ne semble disponible pour votre projet et le stage choisi. Veuillez contacter les administrateurs."
+          description="Aucun cluster ne semble disponible pour votre projet et le type d'environnement choisi. Veuillez contacter les administrateurs."
           type="warning"
           small
         />
@@ -255,6 +258,12 @@ watch(quotaId, () => {
           required="required"
           :disabled="!props.isEditable"
           :options="clusterOptions"
+        />
+        <DsfrAlert
+          v-if="clusterInfos"
+          data-testid="clusterInfos"
+          title="Informations du cluster"
+          :description="clusterInfos"
         />
         <div
           v-if="localEnvironment.id"

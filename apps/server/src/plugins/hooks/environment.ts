@@ -2,8 +2,8 @@ import { type Hook, createHook } from './hook.js'
 import type { Environment, Organization } from './index.js'
 import type { RepositoryForEnv } from './repository.js'
 import type { Project } from './project.js'
-import { ClusterMix } from '@/types/index.js'
-import { User } from '@prisma/client'
+import type { ClusterMix } from '@/types/index.js'
+import type { User } from '@prisma/client'
 
 export type ResourceQuota = {
   memory: string

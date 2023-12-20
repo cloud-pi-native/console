@@ -6,7 +6,7 @@ import { addMembers, removeMembers } from './permission.js'
 import { getProjectGroupById, getProjectGroupByName } from './group.js'
 import { getkcClient } from './client.js'
 import { getUserByEmail } from './user.js'
-import { AsyncReturnType } from '@/utils/controller.js'
+import { AsyncReturnType } from '@dso-console/shared'
 import { PermissionManageUserArgs } from '@/plugins/hooks/permission.js'
 
 export const retrieveKeycloakUserByEmail: StepCall<RetrieveUserByEmailArgs> = async (payload) => {

@@ -7,13 +7,13 @@ import { projectMissing } from '@/utils/const'
 export const useProjectEnvironmentStore = defineStore('project-environment', () => {
   const projectStore = useProjectStore()
 
-  const addEnvironmentToProject = async (newEnvironment: InitializeEnvironmentDto['body']) => {
+  const addEnvironmentToProject = async (newEnvironment: InitializeEnvironmentDto) => {
     if (!projectStore.selectedProject) throw new Error(projectMissing)
     await api.addEnvironment(projectStore.selectedProject.id, newEnvironment)
     await projectStore.getUserProjects()
   }
 
-  const updateEnvironment = async (environment: UpdateEnvironmentDto['body'], projectId: ProjectModel['id']) => {
+  const updateEnvironment = async (environment: UpdateEnvironmentDto, projectId: ProjectModel['id']) => {
     // @ts-ignore
     await api.updateEnvironment(projectId, environment?.id, environment)
     await projectStore.getUserProjects()

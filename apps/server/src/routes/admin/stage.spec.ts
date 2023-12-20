@@ -1,7 +1,7 @@
 import prisma from '../../__mocks__/prisma.js'
 import app, { getRequestor, setRequestor } from '../../__mocks__/app.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll, beforeEach } from 'vitest'
-import { getConnection, closeConnections } from '@/connect.js'
+import { getConnection, closeConnections } from '../../connect.js'
 import { adminGroupPath } from '@dso-console/shared'
 import { getRandomCluster, getRandomEnv, getRandomQuota, getRandomQuotaStage, getRandomRole, getRandomStage, getRandomUser, repeatFn } from '@dso-console/test-utils'
 
@@ -53,7 +53,7 @@ describe('Admin stages routes', () => {
       prisma.environment.findMany.mockResolvedValue(environments)
 
       const response = await app.inject({ headers: { admin: 'admin' } })
-      // @ts-ignore
+        // @ts-ignore
         .get(`/api/v1/admin/stages/${stage.id}/environments`)
         .end()
 
@@ -89,7 +89,7 @@ describe('Admin stages routes', () => {
       prisma.stage.update.mockResolvedValue(stage)
 
       const response = await app.inject({ headers: { admin: 'admin' } })
-      // @ts-ignore
+        // @ts-ignore
         .post('/api/v1/admin/stages')
         .body(stage)
         .end()
@@ -104,13 +104,13 @@ describe('Admin stages routes', () => {
       prisma.stage.findUnique.mockResolvedValueOnce(stage)
 
       const response = await app.inject({ headers: { admin: 'admin' } })
-      // @ts-ignore
+        // @ts-ignore
         .post('/api/v1/admin/stages')
         .body(stage)
         .end()
 
       expect(response.statusCode).toEqual(400)
-      expect(response.json().message).toEqual('Un stage portant ce nom existe déjà')
+      expect(response.json().message).toEqual('Un type d\'environnement portant ce nom existe déjà')
     })
   })
 
@@ -125,18 +125,17 @@ describe('Admin stages routes', () => {
       const clusterIds = newClusters.map(cluster => cluster.id)
 
       prisma.stage.findUnique.mockResolvedValueOnce(stage)
-      prisma.cluster.update.mockRejectedValue(1)
+      prisma.cluster.update.mockResolvedValue(1)
       prisma.stage.update.mockResolvedValue(1)
       // @ts-ignore
       stage.clusters = newClusters
       prisma.stage.findUnique.mockResolvedValueOnce(stage)
 
       const response = await app.inject({ headers: { admin: 'admin' } })
-      // @ts-ignore
+        // @ts-ignore
         .patch(`/api/v1/admin/stages/${stage.id}/clusters`)
         .body({ clusterIds })
         .end()
-
       expect(response.statusCode).toEqual(200)
       // @ts-ignore
       expect(response.json()).toEqual(stage.clusters)
@@ -160,7 +159,7 @@ describe('Admin stages routes', () => {
       prisma.stage.findUnique.mockResolvedValueOnce({ ...stage, quotaStage: newQuotaStage })
 
       const response = await app.inject({ headers: { admin: 'admin' } })
-      // @ts-ignore
+        // @ts-ignore
         .put('/api/v1/admin/stages/quotastages')
         .body(data)
         .end()
@@ -188,7 +187,7 @@ describe('Admin stages routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(400)
-      expect(response.json().message).toEqual('L\'association quota / stage que vous souhaitez supprimer est actuellement utilisée. Vous pouvez demander aux souscripteurs concernés de changer le quota choisi pour leur environnement.')
+      expect(response.json().message).toEqual('L\'association quota / type d\'environnement que vous souhaitez supprimer est actuellement utilisée. Vous pouvez demander aux souscripteurs concernés de changer le quota choisi pour leur environnement.')
     })
   })
 
@@ -204,7 +203,7 @@ describe('Admin stages routes', () => {
       prisma.stage.delete.mockResolvedValueOnce(1)
 
       const response = await app.inject({ headers: { admin: 'admin' } })
-      // @ts-ignore
+        // @ts-ignore
         .delete(`/api/v1/admin/stages/${stage.id}`)
         .end()
 
@@ -235,7 +234,7 @@ describe('Admin stages routes', () => {
       prisma.stage.delete.mockResolvedValueOnce(1)
 
       const response = await app.inject({ headers: { admin: 'admin' } })
-      // @ts-ignore
+        // @ts-ignore
         .delete(`/api/v1/admin/stages/${stage.id}`)
         .end()
 

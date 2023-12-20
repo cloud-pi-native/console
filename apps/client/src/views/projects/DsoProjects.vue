@@ -5,6 +5,7 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 import router from '@/router/index.js'
 import DsoSelectedProject from './DsoSelectedProject.vue'
 import { sortArrByObjKeyAsc } from '@dso-console/shared'
+import { handleError } from '@/utils/func.js'
 
 const projectStore = useProjectStore()
 const snackbarStore = useSnackbarStore()
@@ -26,11 +27,7 @@ const setSelectedProject = async (project: Record<any, any>) => {
   try {
     projectStore.setSelectedProject(project.id)
   } catch (error) {
-    if (error instanceof Error) {
-      snackbarStore.setMessage(error.message)
-      return
-    }
-    snackbarStore.setMessage('échec de la sélection du projet')
+    handleError(error)
   }
 }
 
@@ -42,11 +39,7 @@ onMounted(async () => {
   try {
     await projectStore.getUserProjects()
   } catch (error) {
-    if (error instanceof Error) {
-      snackbarStore.setMessage(error.message)
-      return
-    }
-    snackbarStore.setMessage('échec de récupération des projets')
+    handleError(error)
   }
 })
 

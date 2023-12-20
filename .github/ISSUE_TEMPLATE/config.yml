@@ -1,7 +1,7 @@
 blank_issues_enabled: true
 contact_links:
   - name: 📚 Documentation
-    url: https://github.com/cloud-pi-native/documentation
+    url: https://cloud-pi-native.fr
     about: Cet outil de suivi des problèmes n'est pas destiné aux problèmes de documentation. Veuillez ouvrir un ticket sur le dépôt de documentation.
   - name: 🚀 Déploiement
     url: https://github.com/cloud-pi-native/socle

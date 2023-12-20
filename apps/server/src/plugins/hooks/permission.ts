@@ -1,10 +1,9 @@
 import { type Hook, createHook } from './hook.js'
-import { UserModel } from '@dso-console/shared'
 import type { EnvironmentBase } from './index.js'
-import { Cluster } from '@prisma/client'
+import type { User, Cluster } from '@prisma/client'
 
 export type PermissionManageUserArgs = EnvironmentBase & {
-  user: UserModel
+  user: User
   permissions: {
     ro: boolean
     rw: boolean

@@ -4,9 +4,10 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useAdminStageStore } from '@/stores/admin/stage.js'
 import StageForm from '@/components/StageForm.vue'
 import { sortArrByObjKeyAsc } from '@dso-console/shared'
-import type { CreateStageDto, UpdateQuotaStageDto, DeleteStageDto, StageModel, UpdateStageClustersDto } from '@dso-console/shared'
+import type { CreateStageDto, UpdateQuotaStageDto, StageModel, UpdateStageClustersDto, StageParams } from '@dso-console/shared'
 import { useAdminQuotaStore } from '@/stores/admin/quota'
 import { useAdminClusterStore } from '@/stores/admin/cluster'
+import { handleError } from '@/utils/func.js'
 
 const adminStageStore = useAdminStageStore()
 const adminQuotaStore = useAdminQuotaStore()
@@ -53,22 +54,22 @@ const cancel = () => {
   selectedStage.value = {}
 }
 
-const addStage = async (stage: CreateStageDto['body']) => {
+const addStage = async (stage: CreateStageDto) => {
   isWaitingForResponse.value = true
   cancel()
   try {
     await adminStageStore.addStage(stage)
     await adminStageStore.getAllStages()
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
   isWaitingForResponse.value = false
 }
 
 export type UpdateStageType = {
-  stageId: UpdateQuotaStageDto['body']['stageId'],
-  quotaIds?: UpdateQuotaStageDto['body']['quotaIds']
-  clusterIds?: UpdateStageClustersDto['body']['clusterIds']
+  stageId: UpdateQuotaStageDto['stageId'],
+  quotaIds?: UpdateQuotaStageDto['quotaIds']
+  clusterIds?: UpdateStageClustersDto['clusterIds']
 }
 
 const updateStage = async ({ stageId, quotaIds, clusterIds }: UpdateStageType) => {
@@ -79,29 +80,29 @@ const updateStage = async ({ stageId, quotaIds, clusterIds }: UpdateStageType) =
     await adminStageStore.getAllStages()
     cancel()
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
   isWaitingForResponse.value = false
 }
 
-const deleteStage = async (stageId: DeleteStageDto['params']['stageId']) => {
+const deleteStage = async (stageId: StageParams['stageId']) => {
   isWaitingForResponse.value = true
   cancel()
   try {
     await adminStageStore.deleteStage(stageId)
     await adminStageStore.getAllStages()
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
   isWaitingForResponse.value = false
 }
 
-const getStageAssociatedEnvironments = async (stageId: DeleteStageDto['params']['stageId']) => {
+const getStageAssociatedEnvironments = async (stageId: StageParams['stageId']) => {
   isWaitingForResponse.value = true
   try {
     associatedEnvironments.value = await adminStageStore.getStageAssociatedEnvironments(stageId)
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
   isWaitingForResponse.value = false
 }
@@ -113,7 +114,7 @@ onMounted(async () => {
     await adminStageStore.getAllStages()
     setStageTiles(stages.value)
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
 })
 
@@ -128,7 +129,7 @@ watch(stages, () => {
     class="flex <md:flex-col-reverse items-center justify-between pb-5"
   >
     <DsfrButton
-      label="Ajouter un nouveau stage"
+      label="Ajouter un nouveau type d'environnement"
       data-testid="addStageLink"
       tertiary
       title="Ajouter un stage"
@@ -147,7 +148,7 @@ watch(stages, () => {
       class="w-full"
       :is-new-stage="true"
       :is-updating-stage="isWaitingForResponse"
-      @add="(stage: CreateStageDto['body']) => addStage(stage)"
+      @add="(stage: CreateStageDto) => addStage(stage)"
       @cancel="cancel()"
     />
   </div>
@@ -181,13 +182,13 @@ watch(stages, () => {
         :associated-environments="associatedEnvironments"
         @cancel="cancel()"
         @update="(stage: UpdateStageType) => updateStage(stage)"
-        @delete="(stageId: DeleteStageDto['params']['stageId']) => deleteStage(stageId)"
+        @delete="(stageId: StageParams['stageId']) => deleteStage(stageId)"
       />
     </div>
     <div
       v-if="!stageList.length && !isNewStageForm"
     >
-      <p>Aucun stage enregistré</p>
+      <p>Aucun type d'environnement enregistré</p>
     </div>
   </div>
 </template>

@@ -4,6 +4,7 @@ import { useAdminLogStore } from '@/stores/admin/log.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { exclude } from '@dso-console/shared'
 import { JsonViewer } from 'vue3-json-viewer'
+import { handleError } from '@/utils/func.js'
 
 const adminLogStore = useAdminLogStore()
 const snackbarStore = useSnackbarStore()
@@ -45,7 +46,7 @@ const getAllLogs = async ({ offset, limit }, isDisplayingSuccess = true) => {
       snackbarStore.setMessage('Logs récupérés avec succès', 'success')
     }
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
   isUpdating.value = false
 }

@@ -7,6 +7,7 @@ import {
 import { useUserStore } from '@/stores/user.js'
 import { useProjectStore } from '@/stores/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+import { handleError } from '@/utils/func.js'
 
 import DsoHome from '@/views/DsoHome.vue'
 import NotFound from '@/views/NotFound.vue'
@@ -242,11 +243,7 @@ router.beforeEach(async (to, _from, next) => {
     try {
       await projectStore.getUserProjects()
     } catch (error) {
-      if (error instanceof Error) {
-        snackbarStore.setMessage(error?.message, 'error')
-      } else {
-        snackbarStore.setMessage('Echec de récupération du projet', 'error')
-      }
+      handleError(error)
     }
 
     const idStart = projectsPath.length

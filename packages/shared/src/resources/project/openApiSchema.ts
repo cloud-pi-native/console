@@ -41,6 +41,7 @@ export const createProjectDto = {
 export const projectOpenApiSchema = {
   $id: 'project',
   type: 'object',
+  additionalProperties: false,
   properties: {
     id: {
       type: 'string',
@@ -152,7 +153,15 @@ export const getAllProjectsSchema = {
   response: {
     200: {
       type: 'array',
-      items: projectOpenApiSchema,
+      items: {
+        ...projectOpenApiSchema,
+        required: [
+          'id',
+          'status',
+          'locked',
+          'name',
+        ],
+      },
     },
   },
 } as const

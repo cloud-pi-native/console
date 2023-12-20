@@ -1,7 +1,6 @@
 import prisma from '@/prisma.js'
-import { exclude } from '@dso-console/shared'
+import { exclude, type AsyncReturnType } from '@dso-console/shared'
 import type { Organization, Project, User, Role } from '@prisma/client'
-import { AsyncReturnType } from '@/utils/controller.js'
 
 type ProjectUpdate = Partial<Pick<Project, 'description'>>
 export const updateProject = async (id: Project['id'], data: ProjectUpdate) => {
@@ -108,6 +107,7 @@ export const getUserProjects = async (user: User) => {
           label: true,
           privacy: true,
           clusterResources: true,
+          infos: true,
         },
       },
     },

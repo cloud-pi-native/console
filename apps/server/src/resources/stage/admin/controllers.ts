@@ -1,18 +1,21 @@
-import { FastifyRequestWithSession } from '@/types'
+import { type FastifyRequestWithSession } from '@/types'
 import { addReqLogs } from '@/utils/logger.js'
 import { sendCreated, sendNoContent, sendOk } from '@/utils/response.js'
 import { createStage, getStageAssociatedEnvironments, deleteStage, updateStageClusters } from './business.js'
-import { CreateStageDto, DeleteStageDto, UpdateStageClustersDto } from '@dso-console/shared'
+import type { CreateStageDto, UpdateStageClustersDto, StageParams } from '@dso-console/shared'
+import { type RouteHandler } from 'fastify'
 
 // GET
-export const getStageAssociatedEnvironmentsController = async (req: FastifyRequestWithSession<DeleteStageDto>, res) => {
+export const getStageAssociatedEnvironmentsController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: StageParams,
+}>, res) => {
   const stageId = req.params.stageId
 
   const environments = await getStageAssociatedEnvironments(stageId)
 
   addReqLogs({
     req,
-    description: 'Environnements associés au stage récupérés',
+    description: 'Environnements associés au type d\'environnement récupérés',
     extras: {
       stageId,
     },
@@ -22,14 +25,16 @@ export const getStageAssociatedEnvironmentsController = async (req: FastifyReque
 }
 
 // POST
-export const createStageController = async (req: FastifyRequestWithSession<CreateStageDto>, res) => {
+export const createStageController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Body: CreateStageDto,
+}>, res) => {
   const data = req.body
 
   const stage = await createStage(data)
 
   addReqLogs({
     req,
-    description: 'Stage créé avec succès',
+    description: 'Type d\'environnement créé avec succès',
     extras: {
       stageId: stage.id,
     },
@@ -39,7 +44,10 @@ export const createStageController = async (req: FastifyRequestWithSession<Creat
 }
 
 // PATCH
-export const updateStageClustersController = async (req: FastifyRequestWithSession<UpdateStageClustersDto>, res) => {
+export const updateStageClustersController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: StageParams,
+  Body: UpdateStageClustersDto,
+}>, res) => {
   const stageId = req.params.stageId
   const clusterIds = req.body.clusterIds
 
@@ -47,7 +55,7 @@ export const updateStageClustersController = async (req: FastifyRequestWithSessi
 
   addReqLogs({
     req,
-    description: 'Stage créé avec succès',
+    description: 'Type d\'environnement mis à jour avec succès',
     extras: {
       stageId,
     },
@@ -57,14 +65,16 @@ export const updateStageClustersController = async (req: FastifyRequestWithSessi
 }
 
 // DELETE
-export const deleteStageController = async (req: FastifyRequestWithSession<DeleteStageDto>, res) => {
+export const deleteStageController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: StageParams,
+}>, res) => {
   const stageId = req.params.stageId
 
   await deleteStage(stageId)
 
   addReqLogs({
     req,
-    description: 'Stage supprimé avec succès',
+    description: 'Type d\'environnement supprimé avec succès',
     extras: {
       stageId,
     },

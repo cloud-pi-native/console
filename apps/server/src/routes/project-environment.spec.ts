@@ -194,7 +194,7 @@ describe('User routes', () => {
 
       expect(response.statusCode).toEqual(403)
       expect(response.body).toBeDefined()
-      expect(response.json().message).toEqual('Cette association quota / stage n\'est plus disponible.')
+      expect(response.json().message).toEqual('Cette association quota / type d\'environnement n\'est plus disponible.')
     })
 
     it('Should not create an environment if project locked', async () => {

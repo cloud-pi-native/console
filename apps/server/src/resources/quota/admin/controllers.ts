@@ -1,11 +1,14 @@
-import { FastifyRequestWithSession } from '@/types'
+import { type FastifyRequestWithSession } from '@/types'
 import { addReqLogs } from '@/utils/logger.js'
 import { sendCreated, sendNoContent, sendOk } from '@/utils/response.js'
 import { createQuota, deleteQuota, getQuotaAssociatedEnvironments, updateQuotaStage, updateQuotaPrivacy } from './business.js'
-import { CreateQuotaDto, DeleteQuotaDto, UpdateQuotaPrivacyDto, UpdateQuotaStageDto } from '@dso-console/shared'
+import type { CreateQuotaDto, QuotaParams, UpdateQuotaPrivacyDto, UpdateQuotaStageDto } from '@dso-console/shared'
+import { type RouteHandler } from 'fastify'
 
 // GET
-export const getQuotaAssociatedEnvironmentsController = async (req: FastifyRequestWithSession<DeleteQuotaDto>, res) => {
+export const getQuotaAssociatedEnvironmentsController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: QuotaParams
+}>, res) => {
   const quotaId = req.params.quotaId
 
   const environments = await getQuotaAssociatedEnvironments(quotaId)
@@ -22,7 +25,9 @@ export const getQuotaAssociatedEnvironmentsController = async (req: FastifyReque
 }
 
 // POST
-export const createQuotaController = async (req: FastifyRequestWithSession<CreateQuotaDto>, res) => {
+export const createQuotaController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Body: CreateQuotaDto
+}>, res) => {
   const data = req.body
 
   const quota = await createQuota(data)
@@ -39,7 +44,10 @@ export const createQuotaController = async (req: FastifyRequestWithSession<Creat
 }
 
 // PATCH
-export const updateQuotaPrivacyController = async (req: FastifyRequestWithSession<UpdateQuotaPrivacyDto>, res) => {
+export const updateQuotaPrivacyController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: QuotaParams
+  Body: UpdateQuotaPrivacyDto
+}>, res) => {
   const quotaId = req.params.quotaId
   const isPrivate = req.body.isPrivate
 
@@ -57,14 +65,17 @@ export const updateQuotaPrivacyController = async (req: FastifyRequestWithSessio
 }
 
 // PUT
-export const updateQuotaStageController = async (req: FastifyRequestWithSession<UpdateQuotaStageDto>, res) => {
+export const updateQuotaStageController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: QuotaParams
+  Body: UpdateQuotaStageDto
+}>, res) => {
   const data = req.body
 
   const quotaStages = await updateQuotaStage(data)
 
   addReqLogs({
     req,
-    description: 'Associations quota / stages mises à jour avec succès',
+    description: 'Associations quota / types d\'environnement mises à jour avec succès',
     extras: {
       quotaStages: quotaStages.length + '',
     },
@@ -74,7 +85,9 @@ export const updateQuotaStageController = async (req: FastifyRequestWithSession<
 }
 
 // DELETE
-export const deleteQuotaController = async (req: FastifyRequestWithSession<DeleteQuotaDto>, res) => {
+export const deleteQuotaController: RouteHandler = async (req: FastifyRequestWithSession<{
+  Params: QuotaParams
+}>, res) => {
   const quotaId = req.params.quotaId
 
   await deleteQuota(quotaId)

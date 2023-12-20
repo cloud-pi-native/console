@@ -4,8 +4,9 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useAdminClusterStore } from '@/stores/admin/cluster.js'
 import { useAdminProjectStore } from '@/stores/admin/project.js'
 import ClusterForm from '@/components/ClusterForm.vue'
-import { sortArrByObjKeyAsc } from '@dso-console/shared'
+import { sortArrByObjKeyAsc, type CreateClusterDto, type UpdateClusterDto, type ClusterParams } from '@dso-console/shared'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
+import { handleError } from '@/utils/func.js'
 
 const adminClusterStore = useAdminClusterStore()
 const adminProjectStore = useAdminProjectStore()
@@ -45,7 +46,7 @@ const getClusterAssociatedEnvironments = async (clusterId: string) => {
   try {
     associatedEnvironments.value = await adminClusterStore.getClusterAssociatedEnvironments(clusterId)
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
   isUpdatingCluster.value = false
 }
@@ -60,37 +61,37 @@ const cancel = () => {
   selectedCluster.value = {}
 }
 
-const addCluster = async (cluster) => {
+const addCluster = async (cluster: CreateClusterDto) => {
   isUpdatingCluster.value = true
   cancel()
   try {
     await adminClusterStore.addCluster(cluster)
     await adminClusterStore.getClusters()
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
   isUpdatingCluster.value = false
 }
 
-const updateCluster = async (cluster) => {
+const updateCluster = async (cluster: UpdateClusterDto & { id: ClusterParams['clusterId'] }) => {
   isUpdatingCluster.value = true
   try {
     await adminClusterStore.updateCluster(cluster)
     await adminClusterStore.getClusters()
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
   cancel()
   isUpdatingCluster.value = false
 }
 
-const deleteCluster = async (clusterId: string) => {
+const deleteCluster = async (clusterId: ClusterParams['clusterId']) => {
   isUpdatingCluster.value = true
   try {
     await adminClusterStore.deleteCluster(clusterId)
     await adminClusterStore.getClusters()
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
   setClusterTiles(clusters.value)
   selectedCluster.value = {}
@@ -104,7 +105,7 @@ onMounted(async () => {
     allProjects.value = await adminProjectStore.getAllActiveProjects()
     allStages.value = await projectEnvironmentStore.getStages()
   } catch (error) {
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
 })
 

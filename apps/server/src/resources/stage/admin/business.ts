@@ -10,9 +10,9 @@ import {
   removeClusterFromStage,
   linkStageToQuotas,
 } from '@/resources/queries-index.js'
-import { DeleteStageDto, CreateStageDto, UpdateStageClustersDto, stageSchema } from '@dso-console/shared'
+import { type CreateStageDto, type StageParams, type UpdateStageClustersDto, stageSchema } from '@dso-console/shared'
 
-export const getStageAssociatedEnvironments = async (stageId: DeleteStageDto['params']['stageId']) => {
+export const getStageAssociatedEnvironments = async (stageId: StageParams['stageId']) => {
   try {
     const stage = await getStageById(stageId)
 
@@ -39,12 +39,12 @@ export const getStageAssociatedEnvironments = async (stageId: DeleteStageDto['pa
   }
 }
 
-export const createStage = async (data: CreateStageDto['body']) => {
+export const createStage = async (data: CreateStageDto) => {
   try {
     await stageSchema.validateAsync(data)
 
     const isNameTaken = await getStageByName(data.name)
-    if (isNameTaken) throw new BadRequestError('Un stage portant ce nom existe déjà')
+    if (isNameTaken) throw new BadRequestError('Un type d\'environnement portant ce nom existe déjà')
 
     const stage = await createStageQuery(data)
 
@@ -65,7 +65,7 @@ export const createStage = async (data: CreateStageDto['body']) => {
   }
 }
 
-export const updateStageClusters = async (stageId: UpdateStageClustersDto['params']['stageId'], clusterIds: UpdateStageClustersDto['body']['clusterIds']) => {
+export const updateStageClusters = async (stageId: StageParams['stageId'], clusterIds: UpdateStageClustersDto['clusterIds']) => {
   try {
     const dbClusters = (await getStageById(stageId)).clusters
 
@@ -84,7 +84,7 @@ export const updateStageClusters = async (stageId: UpdateStageClustersDto['param
   }
 }
 
-export const deleteStage = async (stageId: DeleteStageDto['params']['stageId']) => {
+export const deleteStage = async (stageId: StageParams['stageId']) => {
   try {
     const environments = await getStageAssociatedEnvironments(stageId)
     if (environments.length) throw new BadRequestError('Impossible de supprimer le stage, des environnements en activité y ont souscrit', { extras: environments })

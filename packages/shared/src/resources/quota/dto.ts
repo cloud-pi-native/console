@@ -1,35 +1,10 @@
-export type CreateQuotaDto = {
-  body: {
-    memory: string,
-    cpu: number,
-    name: string,
-    isPrivate?: boolean,
-    stageIds?: string[],
-    quotaStage?: Record<string, any>[],
-  },
-}
+import { FromSchema } from 'json-schema-to-ts'
+import { createQuotaSchema, getQuotaAssociatedEnvironmentsSchema, updateQuotaPrivacySchema, updateQuotaStageSchema } from './openApiSchema.js'
 
-export type UpdateQuotaPrivacyDto = {
-  body: {
-    isPrivate?: boolean,
-  },
-  params: {
-    quotaId: string,
-  }
-}
+export type QuotaParams = FromSchema<typeof getQuotaAssociatedEnvironmentsSchema['params']>
 
-export type UpdateQuotaStageDto = {
-  body: {
-    quotaId?: string,
-    stageId?: string,
-    quotaIds?: string[],
-    stageIds?: string[],
-    quotaStage?: Record<string, any>[],
-  },
-}
+export type CreateQuotaDto = FromSchema<typeof createQuotaSchema['body']>
 
-export type DeleteQuotaDto = {
-  params: {
-    quotaId: string,
-  }
-}
+export type UpdateQuotaPrivacyDto = FromSchema<typeof updateQuotaPrivacySchema['body']>
+
+export type UpdateQuotaStageDto = FromSchema<typeof updateQuotaStageSchema['body']>

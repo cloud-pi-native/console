@@ -1,8 +1,9 @@
 import { type ProjectRoles, adminGroupPath, projectIsLockedInfo } from '@dso-console/shared'
 import type { Permission, User, Role, Cluster } from '@prisma/client'
 import { ForbiddenError } from './errors.js'
+import type { FastifyRequestWithSession } from '@/types/index.js'
 
-export const checkAdminGroup = (req, res, done) => {
+export const checkAdminGroup = (req: FastifyRequestWithSession<unknown>, res, done) => {
   if (!req.session.user.groups?.includes(adminGroupPath)) {
     throw new ForbiddenError('Vous n\'avez pas les droits administrateur')
   }
@@ -91,9 +92,6 @@ export const checkInsufficientPermissionInEnvironment = (userId: User['id'], per
 export const filterOwners = (roles: Role[]) => {
   return roles.filter(({ role }) => role === 'owner')
 }
-
-export type AsyncReturnType<T extends (...args: any) => Promise<any>> =
-  T extends (...args: any) => Promise<infer R> ? R : any
 
 export type ProjectInfos<T> = T & {
   services?: Record<string, object>

@@ -151,10 +151,10 @@ onBeforeMount(() => {
         :options="allStages?.map(stage => ({ id: stage.id, name: `${stage.name}` }))"
         :array="stageNames"
         :disabled="!allStages?.length"
-        no-choice-label="Aucun stage disponible"
-        choice-label="Veuillez choisir les stages à associer"
-        label="Nom des stages"
-        description="Sélectionnez les stages autorisés à utiliser ce quota."
+        no-choice-label="Aucun type d'environnement disponible"
+        choice-label="Veuillez choisir les types d'environnement à associer"
+        label="Nom des types d'environnement"
+        description="Sélectionnez les types d'environnement autorisés à utiliser ce quota."
         @update="updateStages('stageIds', $event)"
       />
     </div>
@@ -201,7 +201,7 @@ onBeforeMount(() => {
       >
         <DsfrTable
           data-testid="associatedEnvironmentsTable"
-          :headers="['Organisation', 'Projet', 'Nom', 'Stage', 'Souscripteur']"
+          :headers="['Organisation', 'Projet', 'Nom', 'Type d\'environnement', 'Souscripteur']"
           :rows="getRows(props.associatedEnvironments)"
         />
       </div>

@@ -8,6 +8,7 @@ import { useProjectPermissionStore } from '@/stores/project-permission.js'
 import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { getRandomId } from '@gouvminint/vue-dsfr'
+import { handleError } from '@/utils/func.js'
 
 const props = defineProps({
   environment: {
@@ -50,8 +51,7 @@ const addPermission = async (userEmail: string) => {
       // @ts-ignore
       await projectPermissionStore.addPermission(environment.value.id, { userId, level: 0 })
     } catch (error) {
-      // @ts-ignore
-      snackbarStore.setMessage(error?.message, 'error')
+      handleError(error)
     }
   }
   userToLicence.value = ''
@@ -64,8 +64,7 @@ const updatePermission = async () => {
       // @ts-ignore
       await projectPermissionStore.updatePermission(environment.value.id, permissionToUpdate.value)
     } catch (error) {
-      // @ts-ignore
-      snackbarStore.setMessage(error?.message, 'error')
+      handleError(error)
     }
     permissionToUpdate.value = {}
   }
@@ -75,8 +74,7 @@ const deletePermission = async (userId: string) => {
   try {
     await projectPermissionStore.deletePermission(environment.value.id, userId)
   } catch (error) {
-    // @ts-ignore
-    snackbarStore.setMessage(error?.message, 'error')
+    handleError(error)
   }
 }
 

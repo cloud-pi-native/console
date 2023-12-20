@@ -13,6 +13,7 @@ const createOrganizationDto = {
 export const organizationOpenApiSchema = {
   $id: 'organization',
   type: 'object',
+  additionalProperties: false,
   properties: {
     id: {
       type: 'string',
@@ -84,10 +85,14 @@ export const createOrganizationSchema = {
     type: 'object',
     properties: createOrganizationDto,
     required: ['source', 'name', 'label'],
+    additionalProperties: false,
     // required: Object.keys(createOrganizationDto),
   },
   response: {
-    201: organizationOpenApiSchema,
+    201: {
+      ...organizationOpenApiSchema,
+      additionalProperties: false,
+    } as const,
   },
 } as const
 
