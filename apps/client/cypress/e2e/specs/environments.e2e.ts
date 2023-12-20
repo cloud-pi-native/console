@@ -43,7 +43,6 @@ describe('Manage project environments', () => {
   it('Should not create an environment if project + cluster + name is already taken', () => {
     cy.kcLogin('test')
 
-    cy.intercept('GET', 'api/v1/clusters').as('getClusters')
     cy.intercept('GET', 'api/v1/stages').as('getStages')
     cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
     cy.intercept('POST', '/api/v1/projects/*/environments').as('postEnvironment')
@@ -53,7 +52,6 @@ describe('Manage project environments', () => {
       .getByDataTestid(`projectTile-${project0?.name}`).click()
       .getByDataTestid('menuEnvironments').click()
       .url().should('contain', '/environments')
-    cy.wait('@getClusters')
 
     cy.getByDataTestid('addEnvironmentLink').click()
     cy.wait('@getStages')
@@ -90,7 +88,6 @@ describe('Manage project environments', () => {
   it('Should handle cluster availability', () => {
     cy.kcLogin('test')
 
-    cy.intercept('GET', 'api/v1/clusters').as('getClusters')
     cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
     cy.intercept('GET', 'api/v1/quotas').as('getStages')
     cy.intercept('GET', '/api/v1/projects', {
@@ -101,7 +98,6 @@ describe('Manage project environments', () => {
       .getByDataTestid(`projectTile-${project0?.name}`).click()
       .getByDataTestid('menuEnvironments').click()
       .url().should('contain', '/environments')
-    cy.wait('@getClusters')
 
     cy.getByDataTestid('addEnvironmentLink').click()
     cy.wait('@getQuotas')
@@ -124,7 +120,6 @@ describe('Manage project environments', () => {
   it('Should display cluster infos', () => {
     cy.kcLogin('test')
 
-    cy.intercept('GET', 'api/v1/clusters').as('getClusters')
     cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
     cy.intercept('GET', 'api/v1/quotas').as('getStages')
 
@@ -132,7 +127,6 @@ describe('Manage project environments', () => {
       .getByDataTestid(`projectTile-${project1?.name}`).click()
       .getByDataTestid('menuEnvironments').click()
       .url().should('contain', '/environments')
-    cy.wait('@getClusters')
 
     cy.getByDataTestid('addEnvironmentLink').click()
     cy.wait('@getQuotas')
@@ -161,7 +155,6 @@ describe('Manage project environments', () => {
   })
 
   it('Should update an environment quota', () => {
-    cy.intercept('GET', 'api/v1/clusters').as('getClusters')
     cy.intercept('GET', '/api/v1/stages').as('getStages')
     cy.intercept('PUT', '/api/v1/projects/*/environments/*').as('putEnvironment')
     cy.intercept('GET', '/api/v1/projects').as('getProjects')
@@ -173,7 +166,6 @@ describe('Manage project environments', () => {
       .getByDataTestid('menuEnvironments').click()
       .url().should('contain', '/environments')
     cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
-    cy.wait('@getClusters').its('response.statusCode').should('eq', 200)
 
     cy.getByDataTestid(`environmentTile-${project1FirstEnvironment?.name}`).click()
     cy.wait('@getStages')
@@ -196,6 +188,7 @@ describe('Manage project environments', () => {
     cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
 
     cy.reload()
+    cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
     cy.getByDataTestid(`environmentTile-${project1FirstEnvironment?.name}`).click()
     cy.wait('@getStages')
     cy.getByDataTestid('environmentNameInput')
@@ -224,7 +217,6 @@ describe('Manage project environments', () => {
       .goToProjects()
       .getByDataTestid(`projectTile-${project1.name}`).click()
       .getByDataTestid('menuEnvironments').click()
-    cy.wait('@getClusters')
     cy.getByDataTestid(`environmentTile-${project1FirstEnvironment?.name}`)
       .click()
     cy.wait('@getStages')

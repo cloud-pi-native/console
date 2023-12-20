@@ -68,6 +68,7 @@ export const sensitiveClusterOpenApiSchema = {
       },
       required: [
         'server',
+        'tlsServerName',
       ],
       additionalProperties: false,
     },

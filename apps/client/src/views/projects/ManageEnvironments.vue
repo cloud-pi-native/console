@@ -6,15 +6,11 @@ import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 import EnvironmentForm from '@/components/EnvironmentForm.vue'
 import { projectIsLockedInfo, sortArrByObjKeyAsc } from '@dso-console/shared'
 import { useUserStore } from '@/stores/user.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import { useAdminClusterStore } from '@/stores/admin/cluster'
 import { handleError } from '@/utils/func.js'
 
 const projectStore = useProjectStore()
 const projectEnvironmentStore = useProjectEnvironmentStore()
 const userStore = useUserStore()
-const snackbarStore = useSnackbarStore()
-const adminClusterStore = useAdminClusterStore()
 
 const project = computed(() => projectStore.selectedProject)
 const owner = computed(() => projectStore.selectedProjectOwner)
@@ -103,7 +99,6 @@ const deleteEnvironment = async (environment) => {
 }
 
 onMounted(async () => {
-  await adminClusterStore.getClusters()
   setEnvironmentsTiles(project.value)
 })
 

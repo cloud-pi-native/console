@@ -15,7 +15,9 @@ describe('Administration clusters', () => {
     infos: 'Floating IP: 1.1.1.1',
     cluster: {
       tlsServerName: 'myTlsServerName',
+      server: 'my.super.cluster',
     },
+    user: {},
   }
 
   beforeEach(() => {
