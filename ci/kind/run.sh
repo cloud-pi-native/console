@@ -143,9 +143,12 @@ fi
 
 # Load images into cluster nodes
 if [[ "$COMMAND" =~ "load" ]]; then
-  wait $JOB_CREATE
+  wait -f $JOB_CREATE $JOB_BUILD
   source ./ci/kind/run-load.sh &
   JOB_LOAD="$!"
+  if [[ "$COMMAND" == *load ]]; then
+    wait $JOB_LOAD
+  fi
 fi
 
 
@@ -174,7 +177,7 @@ fi
 
 # Deploy application in dev or test mode
 if [[ "$COMMAND" =~ "dev" ]]; then
-  wait $JOB_LOAD
+  wait $JOB_LOAD -f
   printf "\n\n${red}[kind wrapper].${no_color} Deploy application in development mode\n\n"
 
   helm --kube-context kind-kind upgrade \
