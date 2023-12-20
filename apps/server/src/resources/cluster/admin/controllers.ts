@@ -10,8 +10,26 @@ import {
   deleteCluster,
 } from './business.js'
 import { type RouteHandler } from 'fastify'
+import { getClustersWithProjectIdAndConfig } from './queries.js'
 
 // GET
+export const getAllClusters = async () => {
+  const clusters = await getClustersWithProjectIdAndConfig()
+  return clusters.map(cluster => {
+    const newCluster = {
+      ...cluster,
+      user: cluster.kubeconfig.user,
+      cluster: cluster.kubeconfig.cluster,
+      projectIds: cluster.projects.filter(project => project.status !== 'archived').map(({ id }) => id),
+      stageIds: cluster.stages.map(({ id }) => id) ?? [],
+      label: cluster.label,
+      clusterResources: cluster.clusterResources,
+    }
+    console.log(newCluster)
+    return newCluster
+  })
+}
+
 export const getClusterAssociatedEnvironmentsController: RouteHandler = async (req: FastifyRequestWithSession<{
   Params: ClusterParams
 }>, res) => {

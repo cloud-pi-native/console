@@ -60,16 +60,6 @@ const app: FastifyInstance = addAllSchemasToApp(fastify(fastifyConf))
   .register(keycloak, keycloakConf)
   .register(apiRouter, { prefix: apiPrefix })
   .register(miscRouter, { prefix: apiPrefix })
-  // .addHook('preSerialization', async (request, reply, payload) => {
-  //   payload?.forEach(project => {
-  //     project?.clusters?.forEach(element => {
-  //       console.log(element)
-  //     })
-  //   })
-  //   console.log(Object.keys(payload))
-
-  //   return { wrapped: payload, reply, request }
-  // })
   .addHook('onRoute', opts => {
     if (opts.path === '/api/v1/healthz') {
       opts.logLevel = 'silent'

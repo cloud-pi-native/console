@@ -224,6 +224,8 @@ export const fetchOrganizations = async () => {
 // Admin - Projects
 export const getAllProjects = async () => {
   const response: { data: GetAllProjectsDto } = await apiClient.get('/admin/projects')
+  console.log({ projects: response.data })
+
   return response.data
 }
 
@@ -241,6 +243,11 @@ export const getAllLogs = async ({ offset, limit }: AdminLogsQuery) => {
 // Clusters
 export const getClusters = async () => {
   const response = await apiClient.get('/clusters')
+  return response.data
+}
+
+export const getAdminClusters = async () => {
+  const response = await apiClient.get('/admin/clusters')
   return response.data
 }
 

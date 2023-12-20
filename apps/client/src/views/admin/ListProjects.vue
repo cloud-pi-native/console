@@ -146,46 +146,47 @@ const getEnvironmentsRows = async () => {
   await adminQuotaStore.getAllQuotas()
   environmentsRows.value = selectedProject.value.environments?.length
     ? sortArrByObjKeyAsc(selectedProject.value.environments, 'name')
-      ?.map(({ id, quotaStage, name, status }) => (
-        [
-          name,
-          quotaStage.stage.name,
+      ?.map((environment) => {
+        return [
+          environment.name,
+          environment.quotaStage.stage.name,
           {
             component: 'DsfrSelect',
-            modelValue: quotaStage.quota.id,
+            modelValue: environment.quotaStageId,
             selectId: 'quota-select',
-            options: quotaStage.stage.quotaStage
-              ?.reduce((acc, curr) => {
-                const matchingQuota = adminQuotaStore.quotas
-                  ?.find(quota => quota.id === curr.quotaId)
-                return matchingQuota
-                  ? [...acc, {
-                      text: matchingQuota.name + ' (' + matchingQuota.cpu + 'CPU, ' + matchingQuota.memory + ')',
-                      value: matchingQuota.id,
-                    }]
-                  : acc
-              }, []),
-            'onUpdate:model-value': (event: string) => updateEnvironmentQuota({ environmentId: id, quotaId: event }),
+            options: adminQuotaStore.quotas.filter(storeQuota => {
+              if (storeQuota.quotaStage.some(qs => qs.stageId === environment.quotaStage.stage.id)) return true
+              return false
+            }).map(storeQuota => {
+              const matchingQuotaStageId = storeQuota.quotaStage.find(qs => qs.stageId === environment.quotaStage.stage.id && qs.quotaId === storeQuota.id).id
+              console.log({ storeQuota })
+
+              return {
+                text: storeQuota.name + ' (' + storeQuota.cpu + 'CPU, ' + storeQuota.memory + ')',
+                value: matchingQuotaStageId,
+              }
+            }),
+            'onUpdate:model-value': (event: string) => updateEnvironmentQuota({ environmentId: environment.id, quotaStageId: event }),
           },
           {
             component: 'v-icon',
-            name: statusDict.status[status].icon,
-            title: `L'environnement ${name} est ${statusDict.status[status].wording}`,
+            name: statusDict.status[environment.status].icon,
+            title: `L'environnement ${environment.name} est ${statusDict.status[environment.status].wording}`,
             disabled: true,
-            fill: statusDict.status[status].color,
+            fill: statusDict.status[environment.status].color,
           },
           {
             component: 'v-icon',
             name: 'ri-refresh-fill',
-            // title: `Reprovisionner l'environnement ${name}`,
+            // title: `Reprovisionner l'environnement ${environment.name}`,
             title: 'Cette fonctionnalité n\'est pas encore disponible',
             cursor: 'pointer',
             fill: 'var(--warning-425-625)',
             class: 'cursor-not-allowed',
-            onClick: () => replayHooks({ resource: 'environment', resourceId: id }),
+            onClick: () => replayHooks({ resource: 'environment', resourceId: environment.id }),
           },
         ]
-      ),
+      },
       )
     : [[{
         text: 'Aucun environnement existant',
@@ -249,12 +250,12 @@ const selectProject = async (projectId: string) => {
   await getEnvironmentsRows()
 }
 
-const updateEnvironmentQuota = async ({ environmentId, quotaId }: {environmentId: string, quotaId: string}) => {
+const updateEnvironmentQuota = async ({ environmentId, quotaStageId }: {environmentId: string, quotaStageId: string}) => {
   if (!selectedProject.value) return
   isWaitingForResponse.value = true
   try {
     const environment = selectedProject.value?.environments.find(environment => environment.id === environmentId)
-    environment.quotaStageId = environment.quotaStage.stage.quotaStage.find(quotaStage => quotaStage.quotaId === quotaId)?.id
+    environment.quotaStageId = quotaStageId
     await projectEnvironmentStore.updateEnvironment(environment, selectedProject.value.id)
     await getAllProjects()
   } catch (error) {

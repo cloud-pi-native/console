@@ -33,6 +33,31 @@ export const getClustersSchema = {
   },
 } as const
 
+export const getAdminClustersSchema = {
+  description: 'Retrieve clusters as admin',
+  tags: ['cluster'],
+  summary: 'Retrieve all clusters with all informations',
+  response: {
+    200: {
+      type: 'array',
+      items: {
+        ...sensitiveClusterOpenApiSchema,
+        properties: {
+          ...sensitiveClusterOpenApiSchema.properties,
+          projectIds: {
+            type: 'array',
+            items: { type: 'string' },
+          },
+          stageIds: {
+            type: 'array',
+            items: { type: 'string' },
+          },
+        },
+      },
+    },
+  },
+} as const
+
 export const getClusterAssociatedEnvironmentsSchema = {
   description: 'Retrieve environments associated to a cluster',
   tags: ['cluster', 'environment'],

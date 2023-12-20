@@ -53,7 +53,7 @@ describe('Cluster Store', () => {
     apiClientGet.mockReturnValueOnce(Promise.resolve({ data }))
     const adminClusterStore = useAdminClusterStore()
 
-    const res = await adminClusterStore.getClusters()
+    const res = await adminClusterStore.getAdminClusters()
 
     expect(res).toEqual(data)
     expect(apiClientGet).toHaveBeenCalledTimes(1)

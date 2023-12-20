@@ -16,7 +16,7 @@ describe('Administration stages', () => {
   beforeEach(() => {
     cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
     cy.intercept('GET', '/api/v1/stages').as('getStages')
-    cy.intercept('GET', '/api/v1/clusters').as('getClusters')
+    cy.intercept('GET', '/api/v1/admin/clusters').as('getAdminClusters')
 
     cy.kcLogin('tcolin')
     cy.visit('/admin/stages')
@@ -26,7 +26,7 @@ describe('Administration stages', () => {
       stage1 = allStages.find(quota => quota.id === stage1.id)
     })
     cy.wait('@getQuotas')
-    cy.wait('@getClusters')
+    cy.wait('@getAdminClusters')
   })
 
   it('Should display stages list', () => {
@@ -40,7 +40,7 @@ describe('Administration stages', () => {
     cy.intercept('POST', '/api/v1/admin/stages').as('createStage')
     cy.intercept('GET', 'api/v1/stages').as('getStages')
     cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
-    cy.intercept('GET', 'api/v1/clusters').as('getClusters')
+    cy.intercept('GET', 'api/v1/admin/clusters').as('getAdminClusters')
     cy.intercept('GET', '/api/v1/projects').as('getProjects')
 
     // Create stage
@@ -109,7 +109,7 @@ describe('Administration stages', () => {
       .getByDataTestid(`projectTile-${project?.name}`).click()
       .getByDataTestid('menuEnvironments').click()
       .url().should('contain', '/environments')
-    cy.wait('@getClusters')
+    cy.wait('@getAdminClusters')
     cy.getByDataTestid('addEnvironmentLink').click()
     cy.wait('@getStages')
     cy.wait('@getQuotas')
@@ -158,7 +158,7 @@ describe('Administration stages', () => {
 
     cy.intercept('PUT', '/api/v1/admin/quotas/quotastages').as('updateQuotaStage')
     cy.intercept('PATCH', '/api/v1/admin/stages/*/clusters').as('updateStageClusters')
-    cy.intercept('GET', 'api/v1/clusters').as('getClusters')
+    cy.intercept('GET', 'api/v1/admin/clusters').as('getAdminClusters')
     cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
     cy.intercept('GET', 'api/v1/stages').as('getStages')
     cy.intercept('GET', '/api/v1/projects').as('getProjects')
@@ -224,7 +224,7 @@ describe('Administration stages', () => {
       .getByDataTestid(`projectTile-${project?.name}`).click()
       .getByDataTestid('menuEnvironments').click()
       .url().should('contain', '/environments')
-    cy.wait('@getClusters')
+    cy.wait('@getAdminClusters')
     cy.getByDataTestid('addEnvironmentLink').click()
     cy.wait('@getStages')
     cy.wait('@getQuotas')

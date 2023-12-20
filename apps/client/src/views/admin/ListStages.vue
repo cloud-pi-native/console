@@ -110,7 +110,7 @@ const getStageAssociatedEnvironments = async (stageId: StageParams['stageId']) =
 onMounted(async () => {
   try {
     await adminQuotaStore.getAllQuotas()
-    await adminClusterStore.getClusters()
+    await adminClusterStore.getAdminClusters()
     await adminStageStore.getAllStages()
     setStageTiles(stages.value)
   } catch (error) {

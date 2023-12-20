@@ -1,13 +1,21 @@
 import {
+  getAllClusters,
   getClusterAssociatedEnvironmentsController,
   createClusterController,
   updateClusterController,
   deleteClusterController,
 } from '@/resources/cluster/admin/controllers.js'
-import { createClusterSchema, getClusterAssociatedEnvironmentsSchema, updateClusterSchema, deleteClusterSchema } from '@dso-console/shared'
+import { createClusterSchema, getClusterAssociatedEnvironmentsSchema, getAdminClustersSchema, updateClusterSchema, deleteClusterSchema } from '@dso-console/shared'
 import { type FastifyInstance } from 'fastify'
 
 const router = async (app: FastifyInstance, _opt) => {
+  // récupérer tout les clusters sans filtres
+  app.get('/',
+    {
+      schema: getAdminClustersSchema,
+    },
+    getAllClusters)
+
   // Récupérer les environnements associés au cluster
   app.get('/:clusterId/environments',
     {

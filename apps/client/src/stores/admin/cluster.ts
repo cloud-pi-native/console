@@ -6,8 +6,8 @@ import type { SensitiveClusterModel, CreateClusterDto, UpdateClusterDto, Cluster
 export const useAdminClusterStore = defineStore('admin-cluster', () => {
   const clusters: Ref<Array<SensitiveClusterModel | undefined>> = ref([])
 
-  const getClusters = async () => {
-    clusters.value = await api.getClusters()
+  const getAdminClusters = async () => {
+    clusters.value = await api.getAdminClusters()
     return clusters.value
   }
 
@@ -32,7 +32,7 @@ export const useAdminClusterStore = defineStore('admin-cluster', () => {
 
   return {
     clusters,
-    getClusters,
+    getAdminClusters,
     getClusterAssociatedEnvironments,
     addCluster,
     updateCluster,

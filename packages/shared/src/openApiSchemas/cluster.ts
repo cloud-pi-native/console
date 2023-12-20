@@ -69,6 +69,7 @@ export const sensitiveClusterOpenApiSchema = {
       required: [
         'server',
       ],
+      additionalProperties: false,
     },
     user: {
       type: 'object',
@@ -79,7 +80,17 @@ export const sensitiveClusterOpenApiSchema = {
         keyData: {
           type: 'string',
         },
+        username: {
+          type: 'string',
+        },
+        password: {
+          type: 'string',
+        },
+        token: {
+          type: 'string',
+        },
       },
+      additionalProperties: false,
     },
   },
   additionalProperties: false,
