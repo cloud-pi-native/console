@@ -48,7 +48,7 @@ export const clusterSchema = Joi.object({
 
   cluster: Joi.object({
     server: Joi.string()
-      .optional(), // TODO: update e2e tests to make this not optional
+      .required(),
 
     tlsServerName: Joi.string(),
 

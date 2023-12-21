@@ -8,6 +8,7 @@ describe('Administration clusters', () => {
 
   let allClusters
 
+  const newKubeConfigYaml = 'apiVersion: v1\nclusters:\n- cluster:\n    insecure-skip-tls-verify: true\n    server: https://myTlsServerName:6443\n  name: myContext\ncontexts:\n- context:\n    cluster: myContext\n    user: admin\n  name: admin\ncurrent-context: admin\nkind: Config\npreferences: {}\nusers:\n- name: admin\n  user:\n    token: abc123'
   const newCluster = {
     label: 'newCluster',
     projects: ['dinum - beta-app'],
@@ -15,9 +16,11 @@ describe('Administration clusters', () => {
     infos: 'Floating IP: 1.1.1.1',
     cluster: {
       tlsServerName: 'myTlsServerName',
-      server: 'my.super.cluster',
+      server: 'https://myTlsServerName:6443',
     },
-    user: {},
+    user: {
+      token: 'abc123',
+    },
   }
 
   beforeEach(() => {
@@ -123,10 +126,11 @@ describe('Administration clusters', () => {
       .should('contain', 'Ajouter un cluster')
     cy.getByDataTestid('addClusterBtn')
       .should('be.disabled')
-    cy.getByDataTestid('tlsServerNameInput')
-      .find('input')
-      .should('have.value', '')
-      .type(newCluster.cluster.tlsServerName)
+    cy.getByDataTestid('kubeconfig-upload').find('input').selectFile({
+      contents: Cypress.Buffer.from(newKubeConfigYaml),
+      fileName: 'config',
+      lastModified: Date.now(),
+    })
     cy.getByDataTestid('labelInput')
       .find('input')
       .clear()

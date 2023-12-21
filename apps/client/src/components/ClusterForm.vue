@@ -130,28 +130,22 @@ type ContextType = {
 
 const retrieveUserAndCluster = (context: ContextType) => {
   try {
-    const {
-      username,
-      password,
-      token,
-      'client-certificate-data': certData,
-      'client-key-data': keyData,
-    } = jsonKConfig.value.users.find(user => user.name === context.user).user
+    const currentUser = jsonKConfig.value.users.find(user => user.name === context.user).user
+
     localCluster.value.user = {
-      ...username && password && { username, password },
-      ...token && { token },
-      ...certData && keyData && { certData, keyData },
+      ...currentUser?.username && { username: currentUser.username },
+      ...currentUser?.password && { password: currentUser.password },
+      ...currentUser?.token && { token: currentUser.token },
+      ...currentUser?.['client-certificate-data'] && { certData: currentUser['client-certificate-data'] },
+      ...currentUser?.['client-key-data'] && { keyData: currentUser['client-key-data'] },
     }
-    const {
-      server,
-      'certificate-authority-data': caData,
-      'insecure-skip-tls-verify': skipTLSVerify,
-    } = jsonKConfig.value.clusters.find(cluster => cluster.name === context.cluster).cluster
+
+    const currentCluster = jsonKConfig.value.clusters.find(cluster => cluster.name === context.cluster).cluster
     localCluster.value.cluster = {
-      server,
-      tlsServerName: server.split('https://')[1].split(':')[0],
-      ...caData && { caData },
-      skipTLSVerify: skipTLSVerify || false,
+      server: currentCluster.server,
+      tlsServerName: currentCluster.server.split('https://')[1].split(':')[0],
+      skipTLSVerify: currentCluster['insecure-skip-tls-verify'] || false,
+      ...currentCluster?.['certificate-authority-data'] && { caData: currentCluster['certificate-authority-data'] },
     }
   } catch (error) {
     handleError(error)

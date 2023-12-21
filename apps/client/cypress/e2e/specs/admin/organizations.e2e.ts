@@ -71,6 +71,7 @@ describe('Administration organizations', () => {
         .should('be.checked')
     })
 
+    cy.wait('@getAllOrganizations').its('response.statusCode').should('eq', 200)
     cy.visit('/projects/create-project')
       .get('select#organizationId-select')
       .select(newOrg.label)
@@ -199,12 +200,14 @@ describe('Administration organizations', () => {
     })
 
     cy.visit('/projects')
+      .wait('@getProjects')
     cy.getByDataTestid(`projectTile-${projectFailed.name}`)
       .click()
     cy.getByDataTestid(`${projectFailed.id}-locked-badge`)
       .should('exist')
 
     cy.visit('/projects')
+      .wait('@getProjects')
     cy.getByDataTestid(`projectTile-${projectSucceed.name}`)
       .click()
     cy.getByDataTestid(`${projectSucceed.id}-locked-badge`)
