@@ -1,4 +1,3 @@
-import { JSONSchema7 } from 'json-schema'
 import { SensitiveClusterModel, EnvironmentModel, OrganizationModel, ProjectModel, RepositoryModel, RoleModel } from '../resources/index.js'
 
 export type ErrorTypes = 'info' | 'warning' | 'error' | 'success'
@@ -17,18 +16,6 @@ export type ProjectInfos = ProjectModel & {
   clusters?: SensitiveClusterModel[],
   repositories?: RepositoryModel[],
   environments?: EnvironmentModel[],
-}
-
-export type RouteSchema = {
-  $id?: string
-  description: string
-  tags: readonly string[]
-  summary: string
-  example?: string
-  params?: JSONSchema7
-  query?: JSONSchema7
-  body?: JSONSchema7
-  response: Record<number, JSONSchema7>
 }
 
 export type Mutable<T> = {

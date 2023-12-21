@@ -1,9 +1,9 @@
 import prisma from '../__mocks__/prisma.js'
 import app, { getRequestor, setRequestor } from '../__mocks__/app.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
-import { createRandomDbSetup, getRandomLog, getRandomRole, getRandomUser } from '@dso-console/test-utils'
+import { User, createRandomDbSetup, getRandomLog, getRandomRole, getRandomUser } from '@dso-console/test-utils'
 import { getConnection, closeConnections } from '../connect.js'
-import { projectIsLockedInfo } from '@dso-console/shared'
+import { UserModel, projectIsLockedInfo } from '@dso-console/shared'
 
 describe('User routes', () => {
   const requestor = getRandomUser()
@@ -26,9 +26,13 @@ describe('User routes', () => {
     it('Should retrieve members of a project', async () => {
       const randomDbSetup = createRandomDbSetup({})
       randomDbSetup.project.roles = [...randomDbSetup.project.roles, getRandomRole(getRequestor().id, randomDbSetup.project.id)]
-      const users = [...randomDbSetup.users, getRequestor()]
+      const users: Required<UserModel>[] = [...randomDbSetup.users]
 
-      prisma.user.findMany.mockResolvedValue(users)
+      prisma.user.findMany.mockResolvedValue(users.map(user => ({
+        ...user,
+        createdAt: new Date(user.createdAt),
+        updatedAt: new Date(user.updatedAt),
+      })))
 
       const response = await app.inject()
         .get(`/api/v1/projects/${randomDbSetup.project.id}/users`)

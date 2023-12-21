@@ -8,8 +8,8 @@ import { getRandomCluster, getRandomEnv, getRandomQuota, getRandomQuotaStage, ge
 
 describe('StageForm.vue', () => {
   it('Should mount a new quota StageForm', () => {
-    const allQuotas = repeatFn(4)(getRandomQuota)
-    const allClusters = repeatFn(3)(getRandomCluster)
+    const allQuotas = repeatFn(4, getRandomQuota)
+    const allClusters = repeatFn(3, getRandomCluster)
 
     const props = {
       isNewStage: true,
@@ -36,8 +36,8 @@ describe('StageForm.vue', () => {
   })
 
   it('Should mount an update stage StageForm', () => {
-    const allQuotas = repeatFn(4)(getRandomQuota)
-    const allClusters = repeatFn(3)(getRandomCluster)
+    const allQuotas = repeatFn(4, getRandomQuota)
+    const allClusters = repeatFn(3, getRandomCluster)
     const stageToUpdate = getRandomStage()
     const quotaStage = getRandomQuotaStage(allQuotas[0].id, stageToUpdate.id, 'active')
     // @ts-ignore
@@ -77,8 +77,8 @@ describe('StageForm.vue', () => {
   })
 
   it('Should mount an update quotaForm without associatedEnvironments', () => {
-    const allQuotas = repeatFn(4)(getRandomQuota)
-    const allClusters = repeatFn(3)(getRandomCluster)
+    const allQuotas = repeatFn(4, getRandomQuota)
+    const allClusters = repeatFn(3, getRandomCluster)
     const stageToUpdate = getRandomStage()
     const quotaStage = getRandomQuotaStage(allQuotas[0].id, stageToUpdate.id, 'active')
     // @ts-ignore

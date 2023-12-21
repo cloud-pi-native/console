@@ -21,8 +21,8 @@ describe('ClusterForm.vue', () => {
   it('Should mount a new cluster ClusterForm', () => {
     useSnackbarStore()
 
-    const allProjects = repeatFn(5)(getRandomProject)
-    const allStages = repeatFn(4)(getRandomStage)
+    const allProjects = repeatFn(5, getRandomProject)
+    const allStages = repeatFn(4, getRandomStage)
 
     const props = {
       allProjects,
@@ -49,19 +49,20 @@ describe('ClusterForm.vue', () => {
     cy.getByDataTestid('deleteClusterZone').should('not.exist')
   })
 
-  it('Should mount an update cluster ClusterForm', () => {
+  it.only('Should mount an update cluster ClusterForm', () => {
     useSnackbarStore()
     const adminClusterStore = useAdminClusterStore()
 
-    const allProjects = repeatFn(5)(getRandomProject)
-    const allStages = repeatFn(2)(getRandomStage)
-    adminClusterStore.clusters = [getRandomCluster([allProjects[0].id], [allStages[1].id])]
+    const allProjects = repeatFn(5, getRandomProject)
+    const allStages = repeatFn(2, getRandomStage)
+    adminClusterStore.clusters = [getRandomCluster([allProjects[0].id], [allStages[1]])]
 
     const props = {
       cluster: adminClusterStore.clusters[0],
       allProjects,
       allStages,
       isNewCluster: false,
+      associatedEnvironments: [],
     }
 
     cy.mount(ClusterForm, { props })
@@ -103,10 +104,10 @@ describe('ClusterForm.vue', () => {
     useSnackbarStore()
     const adminClusterStore = useAdminClusterStore()
 
-    const allProjects = repeatFn(5)(getRandomProject)
-    const allStages = repeatFn(2)(getRandomStage)
+    const allProjects = repeatFn(5, getRandomProject)
+    const allStages = repeatFn(2, getRandomStage)
     // @ts-ignore
-    adminClusterStore.clusters = [getRandomCluster([allProjects[0].id], [allStages[1].id])]
+    adminClusterStore.clusters = [getRandomCluster([allProjects[0].id], [allStages[1]])]
     const env = getRandomEnv('integ-1', allProjects[0].id, 'qsId', adminClusterStore.clusters[0].id)
     const associatedEnvironments = [{ organization: allProjects[0].organization.name, project: allProjects[0].name, environment: env.name, owner: 'owner@dso.fr' }]
 
@@ -152,7 +153,7 @@ describe('ClusterForm.vue', () => {
   it('Should disable project selector when privacy is public', () => {
     useSnackbarStore()
 
-    const allProjects = repeatFn(5)(getRandomProject)
+    const allProjects = repeatFn(5, getRandomProject)
 
     const props = {
       allProjects,

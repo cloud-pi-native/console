@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import { achievedStatus, projectRoles, logActions, ProjectRoles, SensitiveClusterModel, NonSensitiveClusterModel } from '@dso-console/shared'
+import { achievedStatus, projectRoles, logActions, ProjectRoles, SensitiveClusterModel, NonSensitiveClusterModel, StageModel, QuotaModel, ProjectModel, UserModel } from '@dso-console/shared'
 import { repeatFn } from './func-utils.js'
 import { Environment, Log, Organization, Permission, Project, Repository, User, Role } from './types.js'
 
@@ -22,25 +22,25 @@ export const getRandomOrganization = (name = 'mi', label = 'Ministère de l\'Int
   } as Organization
 }
 
-export const getRandomProject = (organizationId = faker.string.uuid()) => {
+export const getRandomProject = (organizationId = faker.string.uuid()): Required<ProjectModel> => {
   return {
     id: faker.string.uuid(),
     name: getRandomProjectName(),
     organizationId,
     organization: getRandomOrganization(),
     description: faker.lorem.sentence(8),
+    // @ts-ignore
     status: faker.helpers.arrayElement(achievedStatus),
     locked: false,
-  } as Project
+  }
 }
 
-export const getRandomCluster = (projectIds = repeatFn(2)(faker.string.uuid), stageIds = repeatFn(2)(faker.string.uuid)) => {
+export const getRandomCluster = (projectIds = repeatFn(2, faker.string.uuid), stages = repeatFn(2, getRandomStage)): SensitiveClusterModel & { stages: StageModel[]} => {
   return {
     id: faker.string.uuid(),
     label: faker.lorem.word(),
     infos: faker.lorem.sentence(8),
     projectIds,
-    stageIds,
     user: {
       certData: 'userCAD',
       keyData: 'userCKD',
@@ -53,10 +53,11 @@ export const getRandomCluster = (projectIds = repeatFn(2)(faker.string.uuid), st
     privacy: faker.helpers.arrayElement(['public', 'dedicated']),
     clusterResources: faker.datatype.boolean(),
     secretName: faker.internet.password({ length: 50 }),
-  } as SensitiveClusterModel
+    stages,
+  }
 }
 
-export const getRandomNonSensitiveCluster = (stageIds = repeatFn(2)(faker.string.uuid)) => {
+export const getRandomNonSensitiveCluster = (stageIds = repeatFn(2, faker.string.uuid)) => {
   return {
     id: faker.string.uuid(),
     label: faker.lorem.word(),
@@ -65,13 +66,15 @@ export const getRandomNonSensitiveCluster = (stageIds = repeatFn(2)(faker.string
     privacy: faker.helpers.arrayElement(['public', 'dedicated']),
   } as NonSensitiveClusterModel
 }
-export const getRandomUser = () => {
+export const getRandomUser = (): Required<UserModel> => {
   return {
     id: faker.string.uuid(),
     email: faker.internet.email(),
     firstName: faker.person.firstName(),
     lastName: faker.person.lastName(),
-  } as User
+    createdAt: faker.string.numeric(10),
+    updatedAt: faker.string.numeric(10),
+  }
 }
 
 export const getRandomRole = (
@@ -104,14 +107,14 @@ export const getRandomRepo = (projectId = faker.string.uuid()) => {
   return repo
 }
 
-export const getRandomStage = (name: string = faker.lorem.word()) => {
+export const getRandomStage = (name: string = faker.lorem.word()): StageModel => {
   return {
     id: faker.string.uuid(),
     name,
   }
 }
 
-export const getRandomQuota = (name: string = faker.lorem.word()) => {
+export const getRandomQuota = (name: string = faker.lorem.word()): QuotaModel => {
   return {
     id: faker.string.uuid(),
     name,

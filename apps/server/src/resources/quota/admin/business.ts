@@ -52,7 +52,7 @@ export const createQuota = async (data: CreateQuotaDto) => {
       await linkQuotaToStages(quota.id, data.stageIds)
     }
 
-    return quota
+    return { ...quota, stageIds: data.stageIds }
   } catch (error) {
     if (error instanceof DsoError) {
       throw error

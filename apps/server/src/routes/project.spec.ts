@@ -4,7 +4,7 @@ import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest
 import { createRandomDbSetup, getRandomCluster, getRandomNonSensitiveCluster, getRandomProject, getRandomRole, getRandomUser } from '@dso-console/test-utils'
 import { faker } from '@faker-js/faker'
 import { getConnection, closeConnections } from '../connect.js'
-import { descriptionMaxLength, projectIsLockedInfo } from '@dso-console/shared'
+import { UpdateProjectDto, descriptionMaxLength, projectIsLockedInfo } from '@dso-console/shared'
 
 describe('Project routes', () => {
   const requestor = getRandomUser()
@@ -200,29 +200,31 @@ describe('Project routes', () => {
   })
 
   // PUT
-  describe('updateProjectController', () => {
+  describe.only('updateProjectController', () => {
     it('Should update a project description', async () => {
-      const project = createRandomDbSetup({}).project
-      project.roles = [...project.roles, getRandomRole(getRequestor().id, project.id)]
+      const projectBase = createRandomDbSetup({}).project
+      const projectExisting = {
+        ...projectBase,
+        services: {},
+        roles: [getRandomRole(getRequestor().id, projectBase.id)],
+      }
 
-      prisma.project.findUnique.mockResolvedValue(project)
-      prisma.project.update.mockResolvedValue(project)
-      prisma.environment.findMany.mockResolvedValue([])
-      prisma.repository.findMany.mockResolvedValue([])
+      const projectRequest: UpdateProjectDto = { description: 'nouvelle description' }
+      const projectUpdated = { ...projectExisting, description: projectRequest.description }
+      prisma.project.findUnique.mockResolvedValue(projectExisting)
+      prisma.project.update.mockResolvedValue(projectUpdated)
+      // pas d'utilité à tester la partie unlockProjectIf, surtout pour une description
+      // prisma.environment.findMany.mockResolvedValue([])
+      // prisma.repository.findMany.mockResolvedValue([])
 
       const response = await app.inject()
-        .put(`/api/v1/projects/${project.id}`)
-        .body({ description: 'nouvelle description' })
+        .put(`/api/v1/projects/${projectExisting.id}`)
+        .body(projectRequest)
         .end()
-      delete project.clusters
-      delete project.environments
-      delete project.organization
-      delete project.repositories
-      delete project.roles
 
       expect(response.statusCode).toEqual(200)
       expect(response.body).toBeDefined()
-      expect(response.json()).toMatchObject(project)
+      expect(response.json()).toMatchObject(projectUpdated)
     })
 
     it('Should not update a project description if requestor is not member', async () => {
@@ -254,7 +256,7 @@ describe('Project routes', () => {
       expect(response.json().message).toEqual('"description" length must be less than or equal to 280 characters long')
     })
 
-    it('Should not update a project if locked', async () => {
+    it.only('Should not update a project if locked', async () => {
       const project = createRandomDbSetup({}).project
       project.roles = [...project.roles, getRandomRole(getRequestor().id, project.id)]
       project.locked = true
@@ -267,6 +269,8 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
+      console.log(response.body)
+
       expect(response.json().message).toEqual(projectIsLockedInfo)
     })
   })

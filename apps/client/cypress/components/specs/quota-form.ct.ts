@@ -22,7 +22,7 @@ describe('QuotaForm.vue', () => {
     useSnackbarStore()
     useAdminQuotaStore()
 
-    const allStages = repeatFn(4)(getRandomStage)
+    const allStages = repeatFn(4, getRandomStage)
 
     const props = {
       isNewQuota: true,
@@ -56,8 +56,8 @@ describe('QuotaForm.vue', () => {
     useSnackbarStore()
     const adminQuotaStore = useAdminQuotaStore()
 
-    const allStages = repeatFn(2)(getRandomStage)
-    adminQuotaStore.quotas = repeatFn(4)(getRandomQuota)
+    const allStages = repeatFn(2, getRandomStage)
+    adminQuotaStore.quotas = repeatFn(4, getRandomQuota)
     const quotaToUpdate = adminQuotaStore.quotas[0]
     const quotaStage = getRandomQuotaStage(quotaToUpdate.id, allStages[0].id)
     quotaToUpdate.quotaStage = [quotaStage]
@@ -105,8 +105,8 @@ describe('QuotaForm.vue', () => {
     useSnackbarStore()
     const adminQuotaStore = useAdminQuotaStore()
 
-    const allStages = repeatFn(2)(getRandomStage)
-    adminQuotaStore.quotas = repeatFn(4)(getRandomQuota)
+    const allStages = repeatFn(2, getRandomStage)
+    adminQuotaStore.quotas = repeatFn(4, getRandomQuota)
     const quotaToUpdate = adminQuotaStore.quotas[0]
     const quotaStage = getRandomQuotaStage(quotaToUpdate.id, allStages[0].id)
     quotaToUpdate.quotaStage = [quotaStage]

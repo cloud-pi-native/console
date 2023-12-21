@@ -15,6 +15,7 @@ export const getProjectUsersController: RouteHandler = async (req: FastifyReques
   const projectId = req.params?.projectId
 
   const users = await getProjectUsers(projectId)
+  console.log(users)
 
   if (!user.groups?.includes(adminGroupPath)) {
     await checkProjectRole(user.id, { userList: users, minRole: 'user' })

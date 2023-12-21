@@ -100,7 +100,6 @@ const filterProject = (
     ...cluster,
     stageIds: cluster?.stages.map(({ id }) => id) || [],
   }))
-  console.log(project.clusters)
   return project
 }
 

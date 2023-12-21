@@ -57,7 +57,7 @@ describe('Cluster Store', () => {
 
     expect(res).toEqual(data)
     expect(apiClientGet).toHaveBeenCalledTimes(1)
-    expect(apiClientGet.mock.calls[0][0]).toBe('/clusters')
+    expect(apiClientGet.mock.calls[0][0]).toBe('/admin/clusters')
   })
 
   it('Should get cluster\'s associated environments by api call', async () => {

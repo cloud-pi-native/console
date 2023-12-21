@@ -1,4 +1,4 @@
-import { projectRoles, allOrganizations } from '@dso-console/shared'
+import { projectRoles, allOrganizations, UserModel } from '@dso-console/shared'
 import {
   getRandomOrganization,
   getRandomProject,
@@ -23,7 +23,7 @@ export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = basicStage
   const organization = getRandomOrganization(allOrganizationsWhereName?.name, allOrganizationsWhereName?.label)
 
   // Create users
-  const users: User[] = repeatFn(nbUsers)(getRandomUser)
+  const users: Required<UserModel>[] = repeatFn(nbUsers, getRandomUser)
 
   // Create project
   const project = getRandomProject(organization.id)
@@ -46,7 +46,7 @@ export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = basicStage
   })
 
   // Create quotas
-  const quotas = repeatFn(4)(getRandomQuota)
+  const quotas = repeatFn(4, getRandomQuota)
 
   // Associate stages and quotas
   stages.forEach(stage => {
@@ -59,7 +59,7 @@ export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = basicStage
   })
 
   // Create repositories
-  project.repositories = repeatFn(nbRepo)(getRandomRepo, project.id)
+  project.repositories = repeatFn(nbRepo, getRandomRepo, project.id)
 
   // Create environment
   project.environments = envs

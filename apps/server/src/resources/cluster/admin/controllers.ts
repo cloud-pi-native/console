@@ -25,7 +25,6 @@ export const getAllClusters = async () => {
       label: cluster.label,
       clusterResources: cluster.clusterResources,
     }
-    console.log(newCluster)
     return newCluster
   })
 }

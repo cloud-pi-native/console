@@ -95,7 +95,24 @@ export const createQuotaSchema = {
     required: ['name', 'memory', 'cpu'],
   },
   response: {
-    201: quotaOpenApiSchema,
+    201: {
+      ...quotaOpenApiSchema,
+      properties: {
+        ...quotaOpenApiSchema.properties,
+        stageIds: {
+          type: 'array',
+          items: { type: 'string' },
+        },
+      },
+      required: [
+        'stageIds',
+        'id',
+        'cpu',
+        'memory',
+        'name',
+        'isPrivate',
+      ],
+    },
   },
 } as const
 

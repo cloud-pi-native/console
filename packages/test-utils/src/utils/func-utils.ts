@@ -1,2 +1,8 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const repeatFn = (nb: number) => (fn: (optionalParam?: any) => any, optionalParam?: any) => Array.from({ length: nb }).map(() => fn(optionalParam))
+// export const repeatFn = <T>(nb: number) => (
+// fn: (optionalParam?: any) => T,
+// optionalParam?: any) => Array.from({ length: nb }).map(() => fn(optionalParam)) as Array<T>
+export const repeatFn = <T, P>(
+  nb: number,
+  fn: (optionalParam?: P) => T,
+  optionalParam?: P,
+) => Array.from({ length: nb }).map(() => fn(optionalParam))

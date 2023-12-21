@@ -2,8 +2,9 @@ import prisma from '../../__mocks__/prisma.js'
 import app, { getRequestor, setRequestor } from '../../__mocks__/app.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll, beforeEach } from 'vitest'
 import { getConnection, closeConnections } from '../../connect.js'
-import { adminGroupPath } from '@dso-console/shared'
+import { CreateStageDto, adminGroupPath } from '@dso-console/shared'
 import { getRandomCluster, getRandomEnv, getRandomQuota, getRandomQuotaStage, getRandomRole, getRandomStage, getRandomUser, repeatFn } from '@dso-console/test-utils'
+import { faker } from '@faker-js/faker'
 
 describe('Admin stages routes', () => {
   beforeAll(async () => {
@@ -30,7 +31,7 @@ describe('Admin stages routes', () => {
     it('Should retrieve a stage\'s associated environments', async () => {
       const stage = getRandomStage('myStage')
       const quota = getRandomQuota()
-      const cluster = getRandomCluster(['projectId'], [stage.id])
+      const cluster = getRandomCluster(['projectId'], [stage])
       // @ts-ignore
       stage.quotaStage = [getRandomQuotaStage(quota.id, stage.id)]
       // @ts-ignore
@@ -73,40 +74,49 @@ describe('Admin stages routes', () => {
 
   describe('createStageController', () => {
     it('Should create a stage', async () => {
-      const stage = getRandomStage('myStage')
-      // @ts-ignore
-      stage.quotaIds = ['quotaId1', 'quotaId2']
-      // @ts-ignore
-      const quotaStages = stage.quotaIds.map(quotaId => getRandomQuotaStage(quotaId, stage.id))
-      // @ts-ignore
-      stage.clusters = [getRandomCluster(['projectId'], [stage.id])]
-      // @ts-ignore
-      stage.clusterIds = stage.clusters.map(cluster => cluster.id)
+      const stageRequest: CreateStageDto = {
+        name: faker.lorem.word(8),
+        quotaIds: repeatFn(3, faker.string.uuid),
+        clusterIds: repeatFn(3, faker.string.uuid),
+      }
+      const newStageId = faker.string.uuid()
 
       prisma.stage.findUnique.mockResolvedValueOnce(null)
-      prisma.stage.create.mockResolvedValue(stage)
-      prisma.quotaStage.createMany.mockResolvedValue(quotaStages)
-      prisma.stage.update.mockResolvedValue(stage)
+      prisma.stage.create.mockResolvedValue({
+        id: newStageId,
+        name: stageRequest.name,
+      })
+      // we don't care of createMany return
+      // @ts-ignore
+      prisma.quotaStage.createMany.mockResolvedValue({})
+      // @ts-ignore
+      prisma.stage.update.mockResolvedValue({})
 
       const response = await app.inject({ headers: { admin: 'admin' } })
-        // @ts-ignore
         .post('/api/v1/admin/stages')
-        .body(stage)
+        .body(stageRequest)
         .end()
 
       expect(response.statusCode).toEqual(201)
-      expect(response.json()).toEqual(stage)
+      expect(response.json()).toEqual({ id: newStageId, name: stageRequest.name })
     })
 
     it('Should not create a stage if name is already taken', async () => {
-      const stage = getRandomStage('myStage')
+      const stageRequest: CreateStageDto = {
+        name: faker.lorem.word(8),
+        quotaIds: repeatFn(3, faker.string.uuid),
+        clusterIds: repeatFn(3, faker.string.uuid),
+      }
+      const newStageId = faker.string.uuid()
 
-      prisma.stage.findUnique.mockResolvedValueOnce(stage)
+      prisma.stage.findUnique.mockResolvedValueOnce({
+        id: newStageId,
+        name: stageRequest.name,
+      })
 
       const response = await app.inject({ headers: { admin: 'admin' } })
-        // @ts-ignore
         .post('/api/v1/admin/stages')
-        .body(stage)
+        .body(stageRequest)
         .end()
 
       expect(response.statusCode).toEqual(400)
@@ -117,8 +127,8 @@ describe('Admin stages routes', () => {
   describe('updateStageClustersController', () => {
     it('Should update a stage\'s allowed clusters', async () => {
       const stage = getRandomStage('myStage')
-      const dbClusters = [getRandomCluster(['projectId'], [stage.id])]
-      const newClusters = [getRandomCluster(['projectId'], [stage.id])]
+      const dbClusters = [getRandomCluster(['projectId'], [stage])]
+      const newClusters = [getRandomCluster(['projectId'], [stage])]
       // @ts-ignore
       stage.clusters = dbClusters
       // @ts-ignore
@@ -137,6 +147,7 @@ describe('Admin stages routes', () => {
         .body({ clusterIds })
         .end()
       expect(response.statusCode).toEqual(200)
+      stage.clusters = stage.clusters.map(({ stageIds: _stageIds, stages: _stages, ...cluster }) => (cluster))
       // @ts-ignore
       expect(response.json()).toEqual(stage.clusters)
     })
@@ -145,7 +156,7 @@ describe('Admin stages routes', () => {
   describe('updateQuotaStageController', () => {
     it('Should update a quotaStage association', async () => {
       const stage = getRandomStage('myStage')
-      const quotas = repeatFn(4)(getRandomQuota)
+      const quotas = repeatFn(4, getRandomQuota)
       const dbQuotaStage = [...quotas.map(quota => getRandomQuotaStage(quota.id, stage.id)).slice(1), getRandomQuotaStage(getRandomQuota().id, stage.id)]
       const newQuotaStage = quotas.map(quota => getRandomQuotaStage(quota.id, stage.id))
       const data = {
@@ -170,7 +181,7 @@ describe('Admin stages routes', () => {
 
     it('Should not remove a quotaStage association if an environment suscribed it', async () => {
       const stage = getRandomStage('myStage')
-      const quotas = repeatFn(4)(getRandomQuota)
+      const quotas = repeatFn(4, getRandomQuota)
       const dbQuotaStage = [...quotas.map(quota => getRandomQuotaStage(quota.id, stage.id)).slice(1), getRandomQuotaStage(getRandomQuota().id, stage.id)]
       const data = {
         stageId: stage.id,

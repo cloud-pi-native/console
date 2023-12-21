@@ -24,7 +24,7 @@ describe('Admin logs routes', () => {
   // GET
   describe('getAllLogsController', () => {
     it('Should retrieve all logs', async () => {
-      const logs = repeatFn(5)(getRandomLog)
+      const logs = repeatFn(5, getRandomLog)
 
       prisma.$transaction.mockResolvedValue([logs.length, logs])
 

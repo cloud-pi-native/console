@@ -29,7 +29,7 @@ describe('Admin Users routes', () => {
   describe('getUsersController', () => {
     it('Should retrieve users', async () => {
       // Create users
-      const users = repeatFn(5)(getRandomUser)
+      const users = repeatFn(5, getRandomUser)
 
       prisma.user.findMany.mockResolvedValue(users)
 

@@ -224,7 +224,6 @@ export const fetchOrganizations = async () => {
 // Admin - Projects
 export const getAllProjects = async () => {
   const response: { data: GetAllProjectsDto } = await apiClient.get('/admin/projects')
-  console.log({ projects: response.data })
 
   return response.data
 }

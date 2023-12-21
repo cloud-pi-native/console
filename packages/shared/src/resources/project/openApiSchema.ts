@@ -208,6 +208,7 @@ export const updateProjectSchema = {
     properties: {
       description: createProjectDto.description,
     },
+    additionalProperties: false,
   },
   response: {
     200: projectOpenApiSchema,

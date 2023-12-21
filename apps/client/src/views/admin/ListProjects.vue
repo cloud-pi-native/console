@@ -158,15 +158,12 @@ const getEnvironmentsRows = async () => {
               if (storeQuota.quotaStage.some(qs => qs.stageId === environment.quotaStage.stage.id)) return true
               return false
             }).map(storeQuota => {
-              const matchingQuotaStageId = storeQuota.quotaStage.find(qs => qs.stageId === environment.quotaStage.stage.id && qs.quotaId === storeQuota.id).id
-              console.log({ storeQuota })
-
               return {
                 text: storeQuota.name + ' (' + storeQuota.cpu + 'CPU, ' + storeQuota.memory + ')',
-                value: matchingQuotaStageId,
+                value: storeQuota.id,
               }
             }),
-            'onUpdate:model-value': (event: string) => updateEnvironmentQuota({ environmentId: environment.id, quotaStageId: event }),
+            'onUpdate:model-value': (event: string) => updateEnvironmentQuota({ environmentId: environment.id, quotaId: event }),
           },
           {
             component: 'v-icon',
@@ -250,12 +247,15 @@ const selectProject = async (projectId: string) => {
   await getEnvironmentsRows()
 }
 
-const updateEnvironmentQuota = async ({ environmentId, quotaStageId }: {environmentId: string, quotaStageId: string}) => {
+const updateEnvironmentQuota = async ({ environmentId, quotaId }: {environmentId: string, quotaId: string}) => {
   if (!selectedProject.value) return
   isWaitingForResponse.value = true
   try {
     const environment = selectedProject.value?.environments.find(environment => environment.id === environmentId)
-    environment.quotaStageId = quotaStageId
+    const matchingQuotaStageId = adminQuotaStore.quotas
+      .find(q => q.id === quotaId)?.quotaStage
+      .find(qs => qs.stageId === environment.quotaStage.stageid)?.id
+    environment.quotaStageId = matchingQuotaStageId
     await projectEnvironmentStore.updateEnvironment(environment, selectedProject.value.id)
     await getAllProjects()
   } catch (error) {
@@ -279,7 +279,6 @@ const replayHooks = async ({ resource, resourceId }: {resource: string, resource
   isWaitingForResponse.value = true
   try {
     // snackbarStore.setMessage(`Reprovisionnement de la ressource ${resource} ayant pour id ${resourceId}`)
-    console.log({ resource, resourceId })
     snackbarStore.setMessage('Cette fonctionnalité n\'est pas encore disponible.')
   } catch (error) {
     handleError(error)
@@ -313,7 +312,6 @@ const addUserToProject = async (email: string) => {
 }
 
 const updateUserRole = ({ userId, role }: { userId: string, role: string }) => {
-  console.log({ userId, role })
   snackbarStore.setMessage('Cette fonctionnalité n\'est pas encore disponible')
 }
 

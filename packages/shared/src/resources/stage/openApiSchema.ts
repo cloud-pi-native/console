@@ -1,3 +1,4 @@
+import { nonSensitiveClusterOpenApiSchema } from '../../openApiSchemas/cluster.js'
 import { quotaStageOpenApiSchema } from '../../openApiSchemas/quota.js'
 import { stageOpenApiSchema } from '../../openApiSchemas/stage.js'
 
@@ -37,8 +38,12 @@ export const getStagesSchema = {
         ...stageOpenApiSchema,
         properties: {
           ...stageOpenApiSchema.properties,
+          clusters: {
+            type: 'array',
+            items: nonSensitiveClusterOpenApiSchema,
+          },
           quotaStage: {
-            typre: 'array',
+            type: 'array',
             items: quotaStageOpenApiSchema,
           },
         },
@@ -89,7 +94,7 @@ export const createStageSchema = {
   body: {
     type: 'object',
     properties: createStageDto,
-    required: ['name'],
+    required: ['name', 'quotaIds', 'clusterIds'],
   },
   response: {
     200: stageOpenApiSchema,

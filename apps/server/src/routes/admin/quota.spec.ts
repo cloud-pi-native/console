@@ -125,7 +125,7 @@ describe('Admin quotas routes', () => {
   describe('updateQuotaStageController', () => {
     it('Should update a quotaStage association', async () => {
       const quota = getRandomQuota('myQuota')
-      const stages = repeatFn(4)(getRandomStage)
+      const stages = repeatFn(4, getRandomStage)
       const dbQuotaStage = [...stages.map(stage => getRandomQuotaStage(quota.id, stage.id)).slice(1), getRandomQuotaStage(quota.id, getRandomStage().id)]
       const newQuotaStage = stages.map(stage => getRandomQuotaStage(quota.id, stage.id))
       const data = {
@@ -150,7 +150,7 @@ describe('Admin quotas routes', () => {
 
     it('Should not remove a quotaStage association if an environment suscribed it', async () => {
       const quota = getRandomQuota('myQuota')
-      const stages = repeatFn(4)(getRandomStage)
+      const stages = repeatFn(4, getRandomStage)
       const dbQuotaStage = [...stages.map(stage => getRandomQuotaStage(quota.id, stage.id)), getRandomQuotaStage(quota.id, getRandomStage().id)]
       const data = {
         quotaId: quota.id,
