@@ -1,17 +1,26 @@
+import type { FastifyInstance } from 'fastify'
 import { addReqLogs } from '@/utils/logger.js'
 import { sendOk } from '@/utils/response.js'
 import { getStages } from './business.js'
-import { type RouteHandler } from 'fastify'
-import { type FastifyRequestWithSession } from '@/types/index.js'
 
-// GET
-export const getStagesController: RouteHandler = async (req: FastifyRequestWithSession<void>, res) => {
-  const userId = req.session?.user?.id
-  const stages = await getStages(userId)
+import { getStagesSchema } from '@dso-console/shared'
 
-  addReqLogs({
-    req,
-    description: 'Stages récupérés avec succès',
-  })
-  sendOk(res, stages)
+const router = async (app: FastifyInstance, _opt) => {
+  // Récupérer les types d'environnement disponibles
+  app.get('/',
+    {
+      schema: getStagesSchema,
+    },
+    async (req, res) => {
+      const userId = req.session.data.user.id
+      const stages = await getStages(userId)
+
+      addReqLogs({
+        req,
+        description: 'Stages récupérés avec succès',
+      })
+      sendOk(res, stages)
+    })
 }
+
+export default router

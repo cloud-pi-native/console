@@ -1,18 +1,18 @@
 import type { Cluster } from '@prisma/client'
-import type { FastifyRequest } from 'fastify/types/request'
 import type { ClusterModel } from '@dso-console/shared'
 
-export type KeycloakSession = {
-  session?: {
-    user?: {
-      id: string
-      firstName: string
-      lastName: string
-      email: string
-      groups: string[]
-    }
-  }
+export type UserDetails = {
+  id: string
+  firstName: string
+  lastName: string
+  email: string
+  groups: string[]
 }
-export type FastifyRequestWithSession<T> = FastifyRequest<T> & KeycloakSession
 
 export type ClusterMix = Cluster & ClusterModel
+
+declare module '@mgcrea/fastify-session' {
+  interface SessionData{
+    user: UserDetails
+  }
+}

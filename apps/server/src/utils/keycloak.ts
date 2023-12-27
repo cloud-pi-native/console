@@ -8,7 +8,14 @@ import {
   keycloakRedirectUri,
 } from './env.js'
 
-const userPayloadMapper = (userPayload) => ({
+type KeycloakPayload = {
+  sub: string
+  email: string
+  given_name: string
+  family_name: string
+  groups: string[]
+}
+const userPayloadMapper = (userPayload: KeycloakPayload) => ({
   id: userPayload.sub,
   email: userPayload.email,
   firstName: userPayload.given_name,
@@ -22,8 +29,8 @@ export const keycloakConf = {
   clientId: keycloakClientId,
   clientSecret: keycloakClientSecret,
   useHttps: keycloakProtocol === 'https',
-  disableCookiePlugin: true,
-  disableSessionPlugin: true,
+  disableCookiePlugin: false,
+  disableSessionPlugin: false,
   userPayloadMapper,
   retries: 5,
   excludedPatterns: ['/api/v1/version', '/api/v1/healthz', '/api/v1/swagger-ui/**'],

@@ -1,7 +1,7 @@
-import fastify, { FastifyInstance } from 'fastify'
+import fastify, { type FastifyInstance, type FastifyRequest } from 'fastify'
 import helmet from '@fastify/helmet'
 import keycloak from 'fastify-keycloak-adapter'
-import fastifySession from '@fastify/session'
+import fastifySession from '@mgcrea/fastify-session'
 import fastifyCookie from '@fastify/cookie'
 import fastifySwagger from '@fastify/swagger'
 import fastifySwaggerUi from '@fastify/swagger-ui'
@@ -22,12 +22,11 @@ import {
   stageOpenApiSchema,
 } from '@dso-console/shared'
 
-import { apiRouter, miscRouter } from './routes/index.js'
+import { apiRouter, miscRouter } from './resources/index.js'
 import { addReqLogs, loggerConf } from './utils/logger.js'
 import { DsoError } from './utils/errors.js'
 import { keycloakConf, sessionConf } from './utils/keycloak.js'
 import { isInt, isDev, isTest, keycloakRedirectUri } from './utils/env.js'
-import { type FastifyRequestWithSession } from './types/index.js'
 
 export const apiPrefix = '/api/v1'
 
@@ -91,7 +90,7 @@ const app: FastifyInstance = addAllSchemasToApp(fastify(fastifyConf))
       opts.logLevel = 'silent'
     }
   })
-  .setErrorHandler(function (error: DsoError | Error, req: FastifyRequestWithSession<void>, reply) {
+  .setErrorHandler(function (error: DsoError | Error, req: FastifyRequest, reply) {
     const isDsoError = error instanceof DsoError
 
     const statusCode = isDsoError ? error.statusCode : 500

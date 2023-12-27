@@ -1,4 +1,5 @@
-import { type FastifyRequestWithSession } from '@/types'
+import { FastifyRequest } from 'fastify'
+
 export const loggerConf = {
   development: {
     transport: {
@@ -16,7 +17,7 @@ export const loggerConf = {
 }
 
 interface ReqLogsInput {
-  req: FastifyRequestWithSession<any>;
+  req: FastifyRequest;
   error?: string | Error;
   description: string;
   extras?: Record<string, string>
@@ -29,8 +30,8 @@ export const addReqLogs = ({ req, error, description, extras }: ReqLogsInput) =>
   const logInfos = {
     file: frame.split(' ')[6].split(':')[0].split('src/')[1],
     function: frame.split(' ')[5].split('.')[1],
-    requestorId: req.session?.user?.id,
-    requestorGroups: req.session?.user?.groups,
+    requestorId: req.session?.data?.user?.id,
+    requestorGroups: req.session?.data?.user?.groups,
     description,
     ...extras,
   }

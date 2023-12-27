@@ -1,8 +1,8 @@
-import prisma from '../__mocks__/prisma.js'
-import app, { getRequestor, setRequestor } from '../__mocks__/app.js'
+import prisma from '../../__mocks__/prisma.js'
+import app, { getRequestor, setRequestor } from '../../__mocks__/app.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
 import { getRandomOrganization, getRandomUser } from '@dso-console/test-utils'
-import { getConnection, closeConnections } from '../connect.js'
+import { getConnection, closeConnections } from '../../connect.js'
 
 describe('Organizations routes', () => {
   beforeAll(async () => {

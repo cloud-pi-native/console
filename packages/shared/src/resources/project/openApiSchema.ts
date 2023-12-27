@@ -196,6 +196,22 @@ export const updateProjectSchema = {
   },
 } as const
 
+export const patchProjectSchema = {
+  description: 'Patch project (lock/unlock)',
+  tags: ['project'],
+  summary: 'Patch a project',
+  params: projectParamsSchema,
+  body: {
+    type: 'object',
+    properties: {
+      lock: { type: 'boolean' },
+    },
+  },
+  response: {
+    200: {},
+  },
+} as const
+
 export const archiveProjectSchema = {
   description: 'Archive a project',
   tags: ['project'],

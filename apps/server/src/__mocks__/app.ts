@@ -1,10 +1,10 @@
 import { vi } from 'vitest'
 import fastify from 'fastify'
 import fastifyCookie from '@fastify/cookie'
-import fastifySession from '@fastify/session'
+import fastifySession from '@mgcrea/fastify-session'
 import fp from 'fastify-plugin'
 import { addAllSchemasToApp, apiPrefix } from '@/app.js'
-import { apiRouter, miscRouter } from '@/routes/index.js'
+import { apiRouter, miscRouter } from '@/resources/index.js'
 import { sessionConf } from '@/utils/keycloak.js'
 import { User } from '@dso-console/test-utils'
 
@@ -129,7 +129,7 @@ export const getRequestor = () => {
 
 const mockSessionPlugin = (app, opt, next) => {
   app.addHook('onRequest', (req, res, next) => {
-    req.session = { user: getRequestor() }
+    req.session = { data: { user: getRequestor() } }
     next()
   })
   next()

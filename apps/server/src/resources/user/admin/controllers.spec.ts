@@ -1,8 +1,8 @@
-import prisma from '../../__mocks__/prisma.js'
-import app, { setRequestor } from '../../__mocks__/app.js'
+import prisma from '../../../__mocks__/prisma.js'
+import app, { setRequestor } from '../../../__mocks__/app.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll, beforeEach } from 'vitest'
 import { getRandomUser, repeatFn } from '@dso-console/test-utils'
-import { getConnection, closeConnections } from '../../connect.js'
+import { getConnection, closeConnections } from '../../../connect.js'
 import { adminGroupPath } from '@dso-console/shared'
 
 describe('Admin Users routes', () => {
