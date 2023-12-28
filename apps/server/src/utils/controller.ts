@@ -4,7 +4,7 @@ import { ForbiddenError } from './errors.js'
 import { FastifyRequest } from 'fastify'
 
 export const checkAdminGroup = (req: FastifyRequest, _res, done) => {
-  if (!req.session.data.user.groups?.includes(adminGroupPath)) {
+  if (!req.session.user.groups?.includes(adminGroupPath)) {
     throw new ForbiddenError('Vous n\'avez pas les droits administrateur')
   }
   done()

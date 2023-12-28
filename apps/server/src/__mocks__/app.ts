@@ -1,7 +1,7 @@
 import { vi } from 'vitest'
 import fastify from 'fastify'
 import fastifyCookie from '@fastify/cookie'
-import fastifySession from '@mgcrea/fastify-session'
+import fastifySession from '@fastify/session'
 import fp from 'fastify-plugin'
 import { addAllSchemasToApp, apiPrefix } from '@/app.js'
 import { apiRouter, miscRouter } from '@/resources/index.js'
@@ -129,7 +129,7 @@ export const getRequestor = () => {
 
 const mockSessionPlugin = (app, opt, next) => {
   app.addHook('onRequest', (req, res, next) => {
-    req.session = { data: { user: getRequestor() } }
+    req.session = { user: getRequestor() }
     next()
   })
   next()

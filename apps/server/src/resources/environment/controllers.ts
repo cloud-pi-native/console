@@ -30,7 +30,7 @@ const router = async (app: FastifyInstance, _opt) => {
     },
     async (req, res) => {
       const environmentId = req.params.environmentId
-      const userId = req.session.data.user.id
+      const userId = req.session.user.id
       const projectId = req.params.projectId
 
       // appel business 1 : récup données
@@ -63,7 +63,7 @@ const router = async (app: FastifyInstance, _opt) => {
   },
   async (req, res) => {
     const data = req.body
-    const userId = req.session.data.user.id
+    const userId = req.session.user.id
     const projectId = req.params.projectId
 
     const environment = await createEnvironment({
@@ -96,7 +96,7 @@ const router = async (app: FastifyInstance, _opt) => {
     },
     async (req, res) => {
       const data = req.body
-      const user = req.session.data.user
+      const user = req.session.user
       const { projectId, environmentId } = req.params
 
       const environment = await updateEnvironment({
@@ -129,7 +129,7 @@ const router = async (app: FastifyInstance, _opt) => {
     async (req, res) => {
       const environmentId = req.params.environmentId
       const projectId = req.params.projectId
-      const userId = req.session.data.user.id
+      const userId = req.session.user.id
 
       await deleteEnvironment({
         userId,

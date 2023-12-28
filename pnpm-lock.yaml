@@ -178,6 +178,9 @@ importers:
       '@fastify/helmet':
         specifier: ^11.1.1
         version: 11.1.1
+      '@fastify/session':
+        specifier: ^10.7.0
+        version: 10.7.0
       '@fastify/swagger':
         specifier: ^8.12.0
         version: 8.12.0
@@ -196,9 +199,6 @@ importers:
       '@kubernetes/client-node':
         specifier: ^0.20.0
         version: 0.20.0
-      '@mgcrea/fastify-session':
-        specifier: ^2.2.1
-        version: 2.2.1
       '@prisma/client':
         specifier: ^5.6.0
         version: 5.6.0(prisma@5.6.0)
@@ -1799,8 +1799,8 @@ packages:
       mime: 3.0.0
     dev: false
 
-  /@fastify/session@10.6.1:
-    resolution: {integrity: sha512-S8qonAVTyF1h9+b8Ht76DhrFRERUO3wGBPBXDt2BFnteuJjcnEJVSqhhvOv1CpnbpJjmsyfgBpTOLcPWRNmjyg==}
+  /@fastify/session@10.7.0:
+    resolution: {integrity: sha512-ECA75gnyaxcyIukgyO2NGT3XdbLReNl/pTKrrkRfDc6pVqNtdptwwfx9KXrIMOfsO4B3m84eF3wZ9GgnebiZ4w==}
     dependencies:
       fastify-plugin: 4.5.1
       safe-stable-stringify: 2.4.3
@@ -2098,14 +2098,6 @@ packages:
   /@lukeed/ms@2.0.1:
     resolution: {integrity: sha512-Xs/4RZltsAL7pkvaNStUQt7netTkyxrS0K+RILcVr3TRMS/ToOg4I6uNfhB9SlGsnWBym4U+EaXq0f0cEMNkHA==}
     engines: {node: '>=8'}
-    dev: false
-
-  /@mgcrea/fastify-session@2.2.1:
-    resolution: {integrity: sha512-6YX39E95Y+Ma8eT7MMS2YJZu0uRjJ+eHfouP3hB04lnKplgnfnpYO2YQpkfaT0YmU0XNZI6oWVqWTWVKDNSSIw==}
-    engines: {node: '>=14'}
-    dependencies:
-      fastify-plugin: 4.5.1
-      nanoid: 3.3.5
     dev: false
 
   /@nodelib/fs.scandir@2.1.5:
@@ -5777,7 +5769,7 @@ packages:
     dependencies:
       '@fastify/cookie': 9.2.0
       '@fastify/jwt': 7.2.4
-      '@fastify/session': 10.6.1
+      '@fastify/session': 10.7.0
       axios: 1.6.2
       axios-retry: 3.9.1
       fastify-plugin: 4.5.1
@@ -7552,12 +7544,6 @@ packages:
 
   /mustache@4.2.0:
     resolution: {integrity: sha512-71ippSywq5Yb7/tVYyGbkBggbU8H3u5Rz56fH60jGFgr8uHwxs+aSKeqmluIVzM0m0kB7xQjKS6qPfd0b2ZoqQ==}
-    hasBin: true
-    dev: false
-
-  /nanoid@3.3.5:
-    resolution: {integrity: sha512-nvgaJGpIANf4+VWJAaDGORQyMzhFkze8aXVdrHq+BaSvzfpOuponEysaVFKV/0Bca5V+3SBiDvRabEPbpalEBg==}
-    engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
     dev: false
 

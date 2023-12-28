@@ -18,7 +18,7 @@ const router = async (app: FastifyInstance, _opt) => {
     async (req, res) => {
       const projectId = req.params.projectId
       const repositoryId = req.params.repositoryId
-      const userId = req.session.data.user.id
+      const userId = req.session.user.id
 
       const repository = await getRepositoryById(userId, projectId, repositoryId)
 
@@ -42,7 +42,7 @@ const router = async (app: FastifyInstance, _opt) => {
     },
     async (req, res) => {
       const projectId = req.params.projectId
-      const userId = req.session.data.user.id
+      const userId = req.session.user.id
 
       const repositories = await getProjectRepositories(userId, projectId)
 
@@ -67,7 +67,7 @@ const router = async (app: FastifyInstance, _opt) => {
     },
     async (req, res) => {
       const data = req.body
-      const userId = req.session.data.user.id
+      const userId = req.session.user.id
       const projectId = req.params.projectId
 
       const repo = await createRepository(projectId, data, userId)
@@ -92,7 +92,7 @@ const router = async (app: FastifyInstance, _opt) => {
       schema: updateRepositorySchema,
     },
     async (req, res) => {
-      const userId = req.session.data.user.id
+      const userId = req.session.user.id
       const projectId = req.params.projectId
       const repositoryId = req.params.repositoryId
 
@@ -139,7 +139,7 @@ const router = async (app: FastifyInstance, _opt) => {
     async (req, res) => {
       const projectId = req.params.projectId
       const repositoryId = req.params.repositoryId
-      const userId = req.session.data.user.id
+      const userId = req.session.user.id
 
       await deleteRepository(projectId, repositoryId, userId)
 

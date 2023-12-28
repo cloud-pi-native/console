@@ -159,6 +159,7 @@ export const createQuotaSchema = {
 export const updateQuotaPrivacySchema = {
   description: 'Update a quota\'s privacy',
   tags: ['quota'],
+  params: quotaParamsSchema,
   summary: 'Update a quota\'s privacy, admin only',
   body: {
     type: 'object',

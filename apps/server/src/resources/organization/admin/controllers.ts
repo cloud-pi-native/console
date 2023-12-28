@@ -48,7 +48,7 @@ const router = async (app: FastifyInstance, _opt) => {
       schema: fetchOrganizationsSchema,
     },
     async (req: FastifyRequest, res) => {
-      const userId = req.session.data.user.id
+      const userId = req.session.user.id
 
       const consoleOrganizations = await fetchOrganizations(userId)
 

@@ -11,8 +11,8 @@ export type UserDetails = {
 
 export type ClusterMix = Cluster & ClusterModel
 
-declare module '@mgcrea/fastify-session' {
-  interface SessionData{
+declare module 'fastify' {
+  interface Session{
     user: UserDetails
   }
 }

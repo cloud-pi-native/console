@@ -13,7 +13,7 @@ const router = async (app: FastifyInstance, _opt) => {
       schema: getActiveOrganizationsSchema,
     },
     async (req, res) => {
-      const requestor = req.session.data.user
+      const requestor = req.session.user
       delete requestor.groups
 
       const organizations = await getActiveOrganizations(requestor)

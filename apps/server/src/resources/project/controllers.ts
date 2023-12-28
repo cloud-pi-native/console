@@ -36,7 +36,7 @@ const router = async (app: FastifyInstance, _opt) => {
       schema: getUserProjectsSchema,
     },
     async (req, res) => {
-      const requestor = req.session.data.user
+      const requestor = req.session.user
       delete requestor.groups
 
       const projectsInfos = await getUserProjects(requestor)
@@ -61,7 +61,7 @@ const router = async (app: FastifyInstance, _opt) => {
     },
     async (req, res) => {
       const projectId = req.params.projectId
-      const userId = req.session.data.user.id
+      const userId = req.session.user.id
 
       const project = await getProject(projectId, userId)
 
@@ -86,7 +86,7 @@ const router = async (app: FastifyInstance, _opt) => {
   // },
   async (req, res) => {
     const projectId = req.params.projectId
-    const userId = req.session.data.user.id
+    const userId = req.session.user.id
 
     const projectSecrets = await getProjectSecrets(projectId, userId)
 
@@ -109,7 +109,7 @@ const router = async (app: FastifyInstance, _opt) => {
       schema: createProjectSchema,
     },
     async (req, res) => {
-      const requestor = req.session.data.user
+      const requestor = req.session.user
       delete requestor.groups
       const data = req.body
 
@@ -133,7 +133,7 @@ const router = async (app: FastifyInstance, _opt) => {
     schema: updateProjectSchema,
   },
   async (req, res) => {
-    const requestor = req.session.data.user
+    const requestor = req.session.user
     const projectId = req.params.projectId
     const data = req.body
 
@@ -156,7 +156,7 @@ const router = async (app: FastifyInstance, _opt) => {
     schema: archiveProjectSchema,
   },
   async (req, res) => {
-    const requestor = req.session.data.user
+    const requestor = req.session.user
     const projectId = req.params.projectId
 
     await archiveProject(projectId, requestor)

@@ -15,7 +15,7 @@ const router = async (app: FastifyInstance, _opt) => {
       schema: getEnvironmentPermissionsSchema,
     },
     async (req, res) => {
-      const userId = req.session.data.user.id
+      const userId = req.session.user.id
       const environmentId = req.params.environmentId
       const projectId = req.params.projectId
 
@@ -41,7 +41,7 @@ const router = async (app: FastifyInstance, _opt) => {
       schema: setPermissionSchema,
     },
     async (req, res) => {
-      const requestorId = req.session.data.user?.id
+      const requestorId = req.session.user?.id
       const environmentId = req.params.environmentId
       const projectId = req.params.projectId
       const data = req.body
@@ -69,7 +69,7 @@ const router = async (app: FastifyInstance, _opt) => {
       schema: updatePermissionSchema,
     },
     async (req, res) => {
-      const requestorId = req.session.data.user.id
+      const requestorId = req.session.user.id
       const environmentId = req.params.environmentId
       const projectId = req.params.projectId
       const data = req.body
@@ -96,7 +96,7 @@ const router = async (app: FastifyInstance, _opt) => {
       schema: deletePermissionSchema,
     },
     async (req, res) => {
-      const requestorId = req.session.data.user.id
+      const requestorId = req.session.user.id
       const environmentId = req.params.environmentId
       const projectId = req.params.projectId
       const userId = req.params.userId

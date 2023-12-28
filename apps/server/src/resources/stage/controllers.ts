@@ -12,7 +12,7 @@ const router = async (app: FastifyInstance, _opt) => {
       schema: getStagesSchema,
     },
     async (req, res) => {
-      const userId = req.session.data.user.id
+      const userId = req.session.user.id
       const stages = await getStages(userId)
 
       addReqLogs({

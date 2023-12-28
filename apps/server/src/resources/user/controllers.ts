@@ -16,7 +16,7 @@ const router = async (app: FastifyInstance, _opt) => {
     schema: getProjectUsersSchema,
   },
   async (req, res) => {
-    const user = req.session.data.user
+    const user = req.session.user
     const projectId = req.params.projectId
 
     const users = await getProjectUsers(projectId)
@@ -44,7 +44,7 @@ const router = async (app: FastifyInstance, _opt) => {
     schema: getMatchingUsersSchema,
   },
   async (req, res) => {
-    const user = req.session.data.user
+    const user = req.session.user
     const projectId = req.params.projectId
     const { letters } = req.query
 
@@ -75,7 +75,7 @@ const router = async (app: FastifyInstance, _opt) => {
     schema: addUserToProjectSchema,
   },
   async (req, res) => {
-    const user = req.session.data.user
+    const user = req.session.user
     const projectId = req.params.projectId
     const data = req.body
 
@@ -110,7 +110,7 @@ const router = async (app: FastifyInstance, _opt) => {
     schema: updateUserProjectRoleSchema,
   },
   async (req, res) => {
-    const user = req.session.data.user
+    const user = req.session.user
     const projectId = req.params.projectId
     const userToUpdateId = req.params.userId
     const data = req.body
@@ -146,7 +146,7 @@ const router = async (app: FastifyInstance, _opt) => {
     schema: removeUserFromProjectSchema,
   },
   async (req, res) => {
-    const user = req.session.data.user
+    const user = req.session.user
     const projectId = req.params.projectId
     const userToRemoveId = req.params.userId
 

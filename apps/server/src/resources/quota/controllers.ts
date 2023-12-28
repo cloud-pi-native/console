@@ -12,7 +12,7 @@ const router = async (app: FastifyInstance, _opt) => {
       schema: getQuotasSchema,
     },
     async (req, res) => {
-      const user = req.session.data.user
+      const user = req.session.user
       const quotas = await getQuotas(user)
 
       addReqLogs({

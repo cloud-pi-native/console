@@ -1,7 +1,7 @@
 import fastify, { type FastifyInstance, type FastifyRequest } from 'fastify'
 import helmet from '@fastify/helmet'
 import keycloak from 'fastify-keycloak-adapter'
-import fastifySession from '@mgcrea/fastify-session'
+import fastifySession from '@fastify/session'
 import fastifyCookie from '@fastify/cookie'
 import fastifySwagger from '@fastify/swagger'
 import fastifySwaggerUi from '@fastify/swagger-ui'

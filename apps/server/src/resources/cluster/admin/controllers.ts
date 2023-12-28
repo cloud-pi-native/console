@@ -45,7 +45,7 @@ const router = async (app: FastifyInstance, _opt) => {
     },
     async (req, res) => {
       const data = req.body
-      const userId = req.session.data.user.id
+      const userId = req.session.user.id
 
       data.projectIds = checkClusterProjectIds(data)
 
@@ -95,7 +95,7 @@ const router = async (app: FastifyInstance, _opt) => {
     },
     async (req, res) => {
       const clusterId = req.params.clusterId
-      const userId = req.session.data.user.id
+      const userId = req.session.user.id
 
       await deleteCluster(clusterId, userId)
 

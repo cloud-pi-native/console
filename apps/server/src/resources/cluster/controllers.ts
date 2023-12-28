@@ -12,7 +12,7 @@ const router = async (app: FastifyInstance, _opt) => {
       schema: getClustersSchema,
     },
     async (req, res) => {
-      const user = req.session.data.user
+      const user = req.session.user
       const cleanedClusters = await getAllCleanedClusters(user)
 
       addReqLogs({

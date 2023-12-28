@@ -5,7 +5,7 @@ import type { FastifyInstance } from 'fastify'
 
 const router = async (app: FastifyInstance, _opt) => {
   app.get('/', async (req, res) => {
-    const requestor = req.session.data.user
+    const requestor = req.session.user
     delete requestor.groups
 
     const serviceData = await checkServicesHealth(requestor)
