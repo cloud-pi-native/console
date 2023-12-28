@@ -11,6 +11,7 @@ import { handleError } from '@/utils/func.js'
 
 import DsoHome from '@/views/DsoHome.vue'
 import NotFound from '@/views/NotFound.vue'
+import { useUsersStore } from '@/stores/users.js'
 const ServicesHealth = () => import('@/views/ServicesHealth.vue')
 const CreateProject = () => import('@/views/CreateProject.vue')
 const ManageEnvironments = () => import('@/views/projects/ManageEnvironments.vue')
@@ -75,10 +76,61 @@ const routes: Readonly<RouteRecordRaw[]> = [
   },
   {
     path: '/projects',
-    name: 'Projects',
     // TODO
     // @ts-ignore
-    component: DsoProjects,
+    children: [
+      {
+        path: '',
+        name: 'Projects',
+        component: DsoProjects,
+      },
+      {
+        path: ':id',
+        async beforeEnter (to) {
+          await Promise.all([
+            useUsersStore().getProjectUsers(to.params.id),
+            useProjectStore().getUserProjects(),
+          ])
+        },
+        children: [
+          {
+            path: 'dashboard',
+            name: 'Dashboard',
+            // TODO
+            // @ts-ignore
+            component: DsoDashboard,
+          },
+          {
+            path: 'services',
+            name: 'Services',
+            // TODO
+            // @ts-ignore
+            component: DsoServices,
+          },
+          {
+            path: 'team',
+            name: 'Team',
+            // TODO
+            // @ts-ignore
+            component: DsoTeam,
+          },
+          {
+            path: 'repositories',
+            name: 'Repos',
+            // TODO
+            // @ts-ignore
+            component: DsoRepos,
+          },
+          {
+            path: 'environments',
+            name: 'Environments',
+            // TODO
+            // @ts-ignore
+            component: ManageEnvironments,
+          },
+        ],
+      },
+    ],
   },
   {
     path: '/projects/create-project',
@@ -86,41 +138,6 @@ const routes: Readonly<RouteRecordRaw[]> = [
     // TODO
     // @ts-ignore
     component: CreateProject,
-  },
-  {
-    path: '/projects/:id/dashboard',
-    name: 'Dashboard',
-    // TODO
-    // @ts-ignore
-    component: DsoDashboard,
-  },
-  {
-    path: '/projects/:id/services',
-    name: 'Services',
-    // TODO
-    // @ts-ignore
-    component: DsoServices,
-  },
-  {
-    path: '/projects/:id/team',
-    name: 'Team',
-    // TODO
-    // @ts-ignore
-    component: DsoTeam,
-  },
-  {
-    path: '/projects/:id/repositories',
-    name: 'Repos',
-    // TODO
-    // @ts-ignore
-    component: DsoRepos,
-  },
-  {
-    path: '/projects/:id/environments',
-    name: 'Environments',
-    // TODO
-    // @ts-ignore
-    component: ManageEnvironments,
   },
   {
     path: '/admin/users',

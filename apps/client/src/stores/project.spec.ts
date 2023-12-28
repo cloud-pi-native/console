@@ -2,6 +2,7 @@ import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { apiClient } from '../api/xhr-client.js'
 import { useProjectStore } from './project.js'
+import { useUsersStore } from './users.js'
 
 const apiClientGet = vi.spyOn(apiClient, 'get')
 const apiClientPost = vi.spyOn(apiClient, 'post')
@@ -18,22 +19,23 @@ describe('Project Store', () => {
 
   it('Should set working project and its owner', async () => {
     const projectStore = useProjectStore()
+    const usersStore = useUsersStore()
     const user = { id: 'userId', firstName: 'Michel' }
+    usersStore.addUser(user)
     projectStore.projects = [{
       id: 'projectId',
       roles: [{
         role: 'owner',
+        userId: user.id,
         user,
       }],
     }]
 
     expect(projectStore.selectedProject).toBeUndefined()
-    expect(projectStore.selectedProjectOwner).toBeUndefined()
 
     projectStore.setSelectedProject('projectId')
 
     expect(projectStore.selectedProject).toMatchObject(projectStore.projects[0])
-    expect(projectStore.selectedProjectOwner).toMatchObject(user)
   })
 
   it('Should retrieve user\'s projects by api call', async () => {
@@ -63,7 +65,6 @@ describe('Project Store', () => {
     }
     projectStore.projects = [project]
     projectStore.selectedProject = project
-    projectStore.selectedProjectOwner = user
 
     const projects = [project, { id: 'anotherProjectId' }]
     apiClientGet.mockReturnValueOnce(Promise.resolve({ data: projects }))

@@ -78,6 +78,7 @@ export const projectOpenApiSchema = {
       items: { $ref: 'cluster#' },
     },
   },
+  required: ['id', 'organizationId', 'locked', 'status', 'name'],
 } as const
 
 const projectParamsSchema = {
@@ -97,7 +98,29 @@ export const getUserProjectsSchema = {
   response: {
     200: {
       type: 'array',
-      items: projectOpenApiSchema,
+      items: {
+        allOf: [
+          { $ref: 'project#' },
+          {
+            type: 'object',
+            properties: {
+              roles: {
+                type: 'array',
+                items: {
+                  allOf: [
+                    { $ref: 'role#' },
+                    {
+                      type: 'object',
+                      properties: {
+                        user: { $ref: 'user#' },
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          }],
+      },
     },
   },
 } as const
@@ -108,7 +131,7 @@ export const getProjectByIdSchema = {
   summary: 'Retrieve a project by its id, with further informations',
   params: projectParamsSchema,
   response: {
-    200: projectOpenApiSchema,
+    200: { $ref: 'project#' },
   },
 } as const
 
@@ -154,7 +177,54 @@ export const getAllProjectsSchema = {
     200: {
       type: 'array',
       items: {
-        ...projectOpenApiSchema,
+        allOf: [
+          { $ref: 'project#' },
+          {
+            type: 'object',
+            properties: {
+              roles: {
+                type: 'array',
+                items: {
+                  allOf: [
+                    { $ref: 'role#' },
+                    {
+                      type: 'object',
+                      properties: {
+                        user: { $ref: 'user#' },
+                      },
+                    },
+                  ],
+                },
+              },
+              environments: {
+                type: 'array',
+                items: {
+                  allOf: [
+                    { $ref: 'environment#' },
+                    {
+                      type: 'object',
+                      properties: {
+                        permissions: {
+                          type: 'array',
+                          items: {
+                            allOf: [
+                              { $ref: 'permission#' },
+                              {
+                                type: 'object',
+                                properties: {
+                                  user: { $ref: 'user#' },
+                                },
+                              },
+                            ],
+                          },
+                        },
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          }],
         required: [
           'id',
           'status',
@@ -185,9 +255,10 @@ export const createProjectSchema = {
     type: 'object',
     properties: createProjectDto,
     required: ['organizationId', 'name'],
+    additionalProperties: false,
   },
   response: {
-    201: projectOpenApiSchema,
+    201: { $ref: 'project#' },
   },
 } as const
 
@@ -203,7 +274,7 @@ export const updateProjectSchema = {
     },
   },
   response: {
-    200: projectOpenApiSchema,
+    200: { $ref: 'project#' },
   },
 } as const
 

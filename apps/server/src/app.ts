@@ -12,14 +12,12 @@ import {
   environmentOpenApiSchema,
   organizationOpenApiSchema,
   projectOpenApiSchema,
-  repositoryOpenApiSchema,
-  roleOpenApiSchema,
   serviceOpenApiSchema,
-  userOpenApiSchema,
   permissionOpenApiSchema,
   quotaStageOpenApiSchema,
   quotaOpenApiSchema,
   stageOpenApiSchema,
+  openApiSchemas,
 } from '@dso-console/shared'
 
 import { apiRouter, miscRouter } from './resources/index.js'
@@ -42,12 +40,12 @@ export const addSchemasToApp = (...schemas: unknown[]) => (app: FastifyInstance)
 
 export const addAllSchemasToApp = addSchemasToApp(
   organizationOpenApiSchema,
-  userOpenApiSchema,
+  openApiSchemas.userOpenApiSchema,
   serviceOpenApiSchema,
   permissionOpenApiSchema,
   environmentOpenApiSchema,
-  repositoryOpenApiSchema,
-  roleOpenApiSchema,
+  openApiSchemas.repositoryOpenApiSchema,
+  openApiSchemas.roleOpenApiSchema,
   clusterOpenApiSchema,
   projectOpenApiSchema,
   quotaStageOpenApiSchema,

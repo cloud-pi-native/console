@@ -1,5 +1,3 @@
-import { stageOpenApiSchema } from '../stage/openApiSchema.js'
-
 export const createClusterDto = {
   label: {
     type: 'string',
@@ -86,10 +84,7 @@ export const clusterOpenApiSchema = {
     },
     stages: {
       type: 'array',
-      items: {
-        type: stageOpenApiSchema.type,
-        properties: stageOpenApiSchema.properties,
-      },
+      items: { $ref: 'stage#' },
     },
   },
 } as const
@@ -111,7 +106,7 @@ export const getClustersSchema = {
   response: {
     200: {
       type: 'array',
-      items: clusterOpenApiSchema,
+      items: { $ref: 'cluster#' },
     },
   },
 } as const
@@ -157,7 +152,7 @@ export const createClusterSchema = {
     // required: Object.keys(createClusterDto).filter(key => key !== 'projectIds' && key !== 'stageIds'),
   },
   response: {
-    201: clusterOpenApiSchema,
+    201: { $ref: 'cluster#' },
   },
 } as const
 
@@ -169,10 +164,9 @@ export const updateClusterSchema = {
   body: {
     type: 'object',
     properties: createClusterDto,
-    required: [], // Yes, nothing is required
   },
   response: {
-    200: clusterOpenApiSchema,
+    200: { $ref: 'cluster#' },
   },
 } as const
 

@@ -8,6 +8,7 @@ import { createRandomDbSetup, getRandomUser, getRandomRole } from '@dso-console/
 import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
 import { Pinia, createPinia, setActivePinia } from 'pinia'
+import { useUsersStore } from '@/stores/users.js'
 
 describe('PermissionForm.vue', () => {
   let pinia: Pinia
@@ -22,16 +23,21 @@ describe('PermissionForm.vue', () => {
     const randomDbSetup = createRandomDbSetup({ nbUsers: 3, envs: ['dev'] })
     const projectStore = useProjectStore()
     const userStore = useUserStore()
+    const usersStore = useUsersStore()
+
+    let userToLicence = getRandomUser()
+    userToLicence = {
+      ...getRandomRole(userToLicence.id),
+      user: userToLicence,
+    }
+    usersStore.users = randomDbSetup.users.reduce((acc, curr) => {
+      return { ...acc, [curr.id]: curr }
+    }, {})
+    usersStore.users[userToLicence.userId] = userToLicence.user
 
     projectStore.selectedProject = randomDbSetup.project
     const owner = randomDbSetup.project.roles?.find(role => role.role === 'owner')?.user
-    projectStore.selectedProjectOwner = owner
     userStore.userProfile = randomDbSetup.users[1]
-
-    const userToLicence = {
-      ...getRandomRole(),
-      user: getRandomUser(),
-    }
     projectStore.selectedProject.roles = [userToLicence, ...randomDbSetup.project.roles]
 
     const environment = projectStore.selectedProject?.environments[0]
@@ -61,7 +67,7 @@ describe('PermissionForm.vue', () => {
           .and('be.disabled')
           .get('[data-testid$=UpdatePermissionBtn]')
           .should('be.disabled')
-          .and('have.attr', 'title', 'Les droits du owner ne peuvent être modifiés')
+          .and('have.attr', 'title', 'Les droits d\'un owner ne peuvent être modifiés')
       })
 
     cy.getByDataTestid(`userPermissionLi-${userPermission.user.email}`)
@@ -94,9 +100,12 @@ describe('PermissionForm.vue', () => {
     const randomDbSetup = createRandomDbSetup({ nbUsers: 3, envs: ['dev'] })
     const projectStore = useProjectStore()
     const userStore = useUserStore()
+    const usersStore = useUsersStore()
 
+    usersStore.users = randomDbSetup.users.reduce((acc, curr) => {
+      return { ...acc, [curr.id]: curr }
+    }, {})
     projectStore.selectedProject = randomDbSetup.project
-    projectStore.selectedProjectOwner = randomDbSetup.users[0]
     userStore.userProfile = randomDbSetup.users[1]
 
     const environment = projectStore.selectedProject?.environments[0]
@@ -121,9 +130,13 @@ describe('PermissionForm.vue', () => {
     const randomDbSetup = createRandomDbSetup({ nbUsers: 3, envs: ['dev'] })
     const projectStore = useProjectStore()
     const userStore = useUserStore()
+    const usersStore = useUsersStore()
+
+    usersStore.users = randomDbSetup.users.reduce((acc, curr) => {
+      return { ...acc, [curr.id]: curr }
+    }, {})
 
     projectStore.selectedProject = randomDbSetup.project
-    projectStore.selectedProjectOwner = randomDbSetup.users[0]
     userStore.userProfile = getRandomUser()
 
     const environment = projectStore.selectedProject?.environments[0]

@@ -7,10 +7,7 @@ export const stageOpenApiSchema = {
     ...quotaStageOpenApiSchema.properties.stage.properties,
     quotaStage: {
       type: 'array',
-      items: {
-        type: quotaStageOpenApiSchema.type,
-        properties: quotaStageOpenApiSchema.properties,
-      },
+      items: { $ref: 'quotaStage#' },
     },
   },
 } as const
@@ -51,7 +48,7 @@ export const getStagesSchema = {
   response: {
     200: {
       type: 'array',
-      items: stageOpenApiSchema,
+      items: { $ref: 'stage#' },
     },
   },
 } as const
@@ -101,7 +98,7 @@ export const createStageSchema = {
     required: ['name'],
   },
   response: {
-    200: stageOpenApiSchema,
+    200: { $ref: 'stage#' },
   },
 } as const
 
@@ -118,7 +115,12 @@ export const updateStageClustersSchema = {
     required: ['clusterIds'],
   },
   response: {
-    200: stageOpenApiSchema.properties.clusters,
+    200: {
+      type: 'array',
+      items: {
+        $ref: 'cluster#',
+      },
+    },
   },
 } as const
 

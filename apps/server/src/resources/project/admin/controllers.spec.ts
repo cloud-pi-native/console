@@ -29,6 +29,7 @@ describe('Admin projects routes', () => {
   // GET
   describe('getAllProjectsController', () => {
     it('Should retrieve all projects', async () => {
+      // TODO Données incomplètes ne représentant pas la réalité
       const projects = repeatFn(2)(getRandomProject)
 
       prisma.project.findMany.mockResolvedValue(projects)
