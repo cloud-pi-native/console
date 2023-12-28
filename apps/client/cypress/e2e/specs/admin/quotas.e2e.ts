@@ -119,10 +119,11 @@ describe('Administration quotas', () => {
     // Check quota availability for non admin user on environment form
     cy.kcLogin('test')
     cy.goToProjects()
+      .wait('@getProjects')
       .getByDataTestid(`projectTile-${project?.name}`).click()
       .getByDataTestid('menuEnvironments').click()
-      .url().should('contain', '/environments')
     cy.wait('@getClusters')
+    cy.url().should('contain', '/environments')
     cy.getByDataTestid('addEnvironmentLink').click()
     cy.wait('@getStages')
     cy.wait('@getQuotas')
@@ -141,10 +142,11 @@ describe('Administration quotas', () => {
     // Check quota availability for admin user on environment form
     cy.kcLogin('tcolin')
     cy.goToProjects()
+      .wait('@getProjects')
       .getByDataTestid(`projectTile-${project?.name}`).click()
       .getByDataTestid('menuEnvironments').click()
-      .url().should('contain', '/environments')
     cy.wait('@getClusters')
+    cy.url().should('contain', '/environments')
     cy.getByDataTestid('addEnvironmentLink').click()
     cy.wait('@getStages')
     cy.wait('@getQuotas')
@@ -275,6 +277,7 @@ describe('Administration quotas', () => {
     // Check quota unavailability for non admin user on environment form
     cy.kcLogin('test')
     cy.goToProjects()
+      .wait('@getProjects')
       .getByDataTestid(`projectTile-${project?.name}`).click()
       .getByDataTestid('menuEnvironments').click()
       .url().should('contain', '/environments')
@@ -292,6 +295,7 @@ describe('Administration quotas', () => {
     // Check quota availability for admin user on environment form
     cy.kcLogin('tcolin')
     cy.goToProjects()
+      .wait('@getProjects')
       .getByDataTestid(`projectTile-${project?.name}`).click()
       .getByDataTestid('menuEnvironments').click()
       .url().should('contain', '/environments')
@@ -388,6 +392,7 @@ describe('Administration quotas', () => {
     // Check quota unavailability for non admin user on environment form
     cy.kcLogin('test')
     cy.goToProjects()
+      .wait('@getProjects')
       .getByDataTestid(`projectTile-${project?.name}`).click()
       .getByDataTestid('menuEnvironments').click()
       .url().should('contain', '/environments')
@@ -405,6 +410,7 @@ describe('Administration quotas', () => {
     // Check quota availability for admin user on environment form
     cy.kcLogin('tcolin')
     cy.goToProjects()
+      .wait('@getProjects')
       .getByDataTestid(`projectTile-${project?.name}`).click()
       .getByDataTestid('menuEnvironments').click()
       .url().should('contain', '/environments')

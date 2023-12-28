@@ -5,17 +5,20 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 import { type AsyncReturnType, formatDate, statusDict, sortArrByObjKeyAsc } from '@dso-console/shared'
 import { useAdminOrganizationStore } from '@/stores/admin/organization.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
-import { DsfrInputGroup, getRandomId } from '@gouvminint/vue-dsfr'
-import LoadingCt from '@/components/LoadingCt.vue'
-import TeamCt from '@/components/TeamCt.vue'
+import { getRandomId } from '@gouvminint/vue-dsfr'
 import { useUserStore } from '@/stores/user.js'
+import { useUsersStore } from '@/stores/users.js'
 import { useProjectUserStore } from '@/stores/project-user'
 import { useAdminQuotaStore } from '@/stores/admin/quota'
 import { handleError } from '@/utils/func.js'
 
+import LoadingCt from '@/components/LoadingCt.vue'
+import TeamCt from '@/components/TeamCt.vue'
+
 const adminProjectStore = useAdminProjectStore()
 const adminOrganizationStore = useAdminOrganizationStore()
 const userStore = useUserStore()
+const usersStore = useUsersStore()
 const snackbarStore = useSnackbarStore()
 const projectUserStore = useProjectUserStore()
 const adminQuotaStore = useAdminQuotaStore()
@@ -309,9 +312,9 @@ const archiveProject = async (projectId: string) => {
 const addUserToProject = async (email: string) => {
   isWaitingForResponse.value = true
   try {
-    await projectUserStore.addUserToProject(selectedProject.value?.id, { email })
-    await getAllProjects()
+    const newRoles = await projectUserStore.addUserToProject(selectedProject.value?.id, { email })
     teamCtKey.value = getRandomId('team')
+    selectedProject.value.roles = newRoles
   } catch (error) {
     handleError(error)
   }
@@ -327,8 +330,10 @@ const removeUserFromProject = async (userId: string) => {
   if (!selectedProject.value) return
   isWaitingForResponse.value = true
   try {
-    if (selectedProject.value.id) await projectUserStore.removeUserFromProject(selectedProject.value.id, userId)
-    await getAllProjects()
+    if (selectedProject.value.id) {
+      const newRoles = await projectUserStore.removeUserFromProject(selectedProject.value.id, userId)
+      selectedProject.value.roles = newRoles
+    }
     teamCtKey.value = getRandomId('team')
   } catch (error) {
     handleError(error)
@@ -530,9 +535,10 @@ onBeforeMount(async () => {
           :id="membersId"
           :key="teamCtKey"
           :user-profile="userStore.userProfile"
-          :project="{id: selectedProject.id, name: selectedProject.name, roles: selectedProject?.roles }"
-          :owner="selectedProject.roles?.find(role => role.role === 'owner').user"
+          :project="{id: selectedProject.id, name: selectedProject.name }"
+          :roles="selectedProject.roles.map(({user, ...role}) => role)"
           :is-updating-project-members="isWaitingForResponse"
+          :known-users="usersStore.users"
           @add-member="(email) => addUserToProject(email)"
           @update-role="({ userId, role}) => updateUserRole({ userId, role})"
           @remove-member="(userId) => removeUserFromProject(userId)"

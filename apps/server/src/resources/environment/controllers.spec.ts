@@ -250,9 +250,15 @@ describe('User routes', () => {
         .body(envUpdated)
         .end()
 
+      delete envInfos.project
+      delete envInfos.cluster
+      delete envInfos.permissions
+      // oui c'est degueu mais c'est le seul moyen que j'ai trouvé pour simuler la serialization de fastify
+      const responseJson = response.json()
+      delete responseJson.project
       expect(response.statusCode).toEqual(200)
       expect(response.body).toBeDefined()
-      expect(response.json()).toEqual(envInfos)
+      expect(responseJson).toEqual(envInfos)
     })
   })
 

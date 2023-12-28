@@ -32,7 +32,7 @@ describe('Manage permissions for environment', () => {
       .getByDataTestid(`environmentTile-${environment?.name}`)
       .click()
       .url().should('contain', '/environments')
-      .getByDataTestid('deleteEnvironmentZone').should('not.exist')
+    cy.getByDataTestid('deleteEnvironmentZone').should('not.exist')
 
     cy.assertPermission(project, environment?.name, [{ email: owner.email, isOwner: true }])
 

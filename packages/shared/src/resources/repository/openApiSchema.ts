@@ -19,30 +19,6 @@ export const createRepositoryDto = {
   },
 } as const
 
-export const repositoryOpenApiSchema = {
-  $id: 'repository',
-  type: 'object',
-  properties: {
-    id: {
-      type: 'string',
-    },
-    ...createRepositoryDto,
-    projectId: {
-      type: 'string',
-    },
-    status: {
-      type: 'string',
-    },
-    createdAt: {
-      type: 'string',
-    },
-    updatedAt: {
-      type: 'string',
-    },
-    project: { $ref: 'project#' },
-  },
-} as const
-
 const projectRepositoriesParams = {
   type: 'object',
   properties: {
@@ -72,7 +48,7 @@ export const getRepositoryByIdSchema = {
   summary: 'Retrieve a repository by its id',
   params: repositoryParams,
   response: {
-    200: repositoryOpenApiSchema,
+    200: { $ref: 'repository#' },
   },
 } as const
 
@@ -84,7 +60,7 @@ export const getProjectRepositoriesSchema = {
   response: {
     200: {
       type: 'array',
-      items: repositoryOpenApiSchema,
+      items: { $ref: 'repository#' },
     },
   },
 } as const
@@ -102,7 +78,7 @@ export const createRepositorySchema = {
   response: {
     200: {
       type: 'array',
-      items: repositoryOpenApiSchema,
+      items: { $ref: 'repository#' },
     },
   },
 } as const
@@ -120,12 +96,11 @@ export const updateRepositorySchema = {
       externalToken: createRepositoryDto.externalToken,
       externalUserName: createRepositoryDto.externalUserName,
     },
-    required: [], // Yes, nothing is required
   },
   response: {
     200: {
       type: 'array',
-      items: repositoryOpenApiSchema,
+      items: { $ref: 'repository#' },
     },
   },
 } as const
@@ -137,8 +112,7 @@ export const deleteRepositorySchema = {
   params: repositoryParams,
   response: {
     200: {
-      type: 'array',
-      items: repositoryOpenApiSchema,
+      type: 'string',
     },
   },
 } as const

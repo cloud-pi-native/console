@@ -50,7 +50,9 @@ export const projectStatus = [
 export const achievedStatus = [
   'created',
   'failed',
-]
+] as const
+
+export type AchievedStatus = typeof achievedStatus[number]
 
 export const logActions = [
   'Create Project',

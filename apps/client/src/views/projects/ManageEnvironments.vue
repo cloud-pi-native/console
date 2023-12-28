@@ -15,8 +15,7 @@ const userStore = useUserStore()
 const adminClusterStore = useAdminClusterStore()
 
 const project = computed(() => projectStore.selectedProject)
-const owner = computed(() => projectStore.selectedProjectOwner)
-const isOwner = computed(() => owner.value?.id === userStore.userProfile.id)
+const isOwner = computed(() => project.value?.roles.some(role => role.userId === userStore.userProfile.id && role.role === 'owner'))
 // @ts-ignore
 const environmentNames = computed(() => environments.value.map(env => env.title))
 const allClusters = computed(() => adminClusterStore.clusters)

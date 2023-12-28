@@ -98,9 +98,11 @@ describe('Manage project environments', () => {
     }).as('getProjects')
 
     cy.goToProjects()
-      .getByDataTestid(`projectTile-${project0?.name}`).click()
-      .getByDataTestid('menuEnvironments').click()
-      .url().should('contain', '/environments')
+      .getByDataTestid(`projectTile-${project0?.name}`)
+      .click()
+    cy.getByDataTestid('menuEnvironments')
+      .click()
+    cy.url().should('contain', '/environments')
     cy.wait('@getClusters')
 
     cy.getByDataTestid('addEnvironmentLink').click()

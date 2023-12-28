@@ -106,6 +106,7 @@ describe('Administration stages', () => {
     // Check stage availability on environment form
     cy.kcLogin('tcolin')
     cy.goToProjects()
+      .wait('@getProjects')
       .getByDataTestid(`projectTile-${project?.name}`).click()
       .getByDataTestid('menuEnvironments').click()
       .url().should('contain', '/environments')
@@ -221,6 +222,7 @@ describe('Administration stages', () => {
     // Check stage availability on environment form
     cy.kcLogin('tcolin')
     cy.goToProjects()
+      .wait('@getProjects')
       .getByDataTestid(`projectTile-${project?.name}`).click()
       .getByDataTestid('menuEnvironments').click()
       .url().should('contain', '/environments')

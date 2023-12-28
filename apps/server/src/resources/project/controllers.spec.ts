@@ -209,6 +209,11 @@ describe('Project routes', () => {
         .body({ description: 'nouvelle description' })
         .end()
 
+      delete project.clusters
+      delete project.environments
+      delete project.organization
+      delete project.repositories
+      delete project.roles
       expect(response.statusCode).toEqual(200)
       expect(response.body).toBeDefined()
       expect(response.json()).toMatchObject(project)

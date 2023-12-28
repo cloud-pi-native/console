@@ -30,6 +30,7 @@
     "@gouvminint/vue-dsfr": "^5.0.0",
     "@vue/tsconfig": "^0.4.0",
     "axios": "^1.6.0",
+    "json-schema-to-ts": "^2.9.2",
     "js-yaml": "^4.1.0",
     "jszip": "^3.10.1",
     "keycloak-js": "^22.0.5",

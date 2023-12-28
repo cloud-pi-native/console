@@ -8,14 +8,15 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 import TeamCt from '@/components/TeamCt.vue'
 import { getRandomId } from '@gouvminint/vue-dsfr'
 import { handleError } from '@/utils/func.js'
+import { useUsersStore } from '@/stores/users.js'
 
 const projectStore = useProjectStore()
 const projectUserStore = useProjectUserStore()
 const userStore = useUserStore()
+const usersStore = useUsersStore()
 const snackbarStore = useSnackbarStore()
 
 const project = computed(() => projectStore.selectedProject)
-const owner = computed(() => projectStore.selectedProjectOwner)
 const isUpdatingProjectMembers = ref(false)
 const teamCtKey = ref(getRandomId('team'))
 
@@ -54,8 +55,9 @@ const removeUserFromProject = async (userId: string) => {
   <TeamCt
     :key="teamCtKey"
     :user-profile="userStore.userProfile"
-    :project="{id: project?.id, name: project?.name, roles: project?.roles }"
-    :owner="owner"
+    :project="{id: project?.id, name: project?.name }"
+    :known-users="usersStore.users"
+    :roles="project.roles"
     :is-updating-project-members="isUpdatingProjectMembers"
     @add-member="(email) => addUserToProject(email)"
     @update-role="({ userId, role}) => updateUserRole({ userId, role})"

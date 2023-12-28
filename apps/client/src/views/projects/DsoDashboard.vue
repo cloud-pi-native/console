@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, computed, type Ref, onBeforeMount } from 'vue'
+import { ref, computed, onBeforeMount } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
@@ -17,17 +17,16 @@ const snackbarStore = useSnackbarStore()
 const projectEnvironmentStore = useProjectEnvironmentStore()
 
 const project = computed(() => projectStore.selectedProject)
-const owner = computed(() => projectStore.selectedProjectOwner)
-const isOwner = computed(() => owner?.value?.id === userStore.userProfile.id)
+const isOwner = computed(() => project.value?.roles.some(role => role.userId === userStore.userProfile.id && role.role === 'owner'))
 
-const description: Ref<string | undefined> = ref(project.value ? project.value.description : undefined)
+const description = ref<string | undefined>(project.value ? project.value.description : undefined)
 const isEditingDescription = ref(false)
 const isArchivingProject = ref(false)
 const projectToArchive = ref('')
 const isWaitingForResponse = ref(false)
 const isSecretShown = ref(false)
-const projectSecrets: Ref<Record<string, any>> = ref({})
-const allStages: Ref<Array<any>> = ref([])
+const projectSecrets = ref<Record<string, any>>({})
+const allStages = ref<Array<any>>([])
 
 const updateProject = async (projectId: ProjectInfos['id']) => {
   isWaitingForResponse.value = true
@@ -92,7 +91,6 @@ onBeforeMount(async () => {
     handleError(error)
   }
 })
-
 </script>
 
 <template>

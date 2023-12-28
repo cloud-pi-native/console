@@ -1,7 +1,16 @@
 <script lang="ts" setup>
-import { ref, computed, type Ref, onBeforeMount } from 'vue'
+import { ref, computed, onMounted, watch, type Ref } from 'vue'
 import { DsfrButton, getRandomId } from '@gouvminint/vue-dsfr'
-import { adminGroupPath, schemaValidator, userSchema, type LettersQuery } from '@dso-console/shared'
+import {
+  adminGroupPath,
+  schemaValidator,
+  userSchema,
+  type LettersQuery,
+  type UserProfile,
+  type UserModel,
+  type RoleModel,
+  type ProjectModel,
+} from '@dso-console/shared'
 import SuggestionInput from '@/components/SuggestionInput.vue'
 import LoadingCt from '@/components/LoadingCt.vue'
 import pDebounce from 'p-debounce'
@@ -17,63 +26,57 @@ const headers = [
   'Retirer du projet',
 ]
 
-const props = defineProps({
-  userProfile: {
-    type: Object,
-    default: () => ({}),
-  },
-  project: {
-    type: Object,
-    default: () => ({}),
-  },
-  owner: {
-    type: Object,
-    default: () => ({}),
-  },
-  isUpdatingProjectMembers: {
-    type: Boolean,
-    default: false,
-  },
+const props = withDefaults(
+  defineProps<{
+    userProfile: UserProfile
+    project: Pick<ProjectModel, 'id' | 'locked' | 'name'>
+    roles: Array<RoleModel>
+    isUpdatingProjectMembers?: boolean
+    knownUsers: Record<string, Required<UserModel>>
+  }>(),
+  {},
+)
+
+const isUserAlreadyInTeam = computed(() => {
+  return !!props.roles?.find(role => props.knownUsers[role.userId]?.email === newUserEmail.value)
 })
 
-const isUserAlreadyInTeam = computed(() => !!props.project.roles?.find(role => role.user.email === newUserEmail.value))
-
-const isOwnerOrAdmin = ref(props.owner?.id === props.userProfile?.id ||
-  props.userProfile.groups?.includes(adminGroupPath))
+const isOwnerOrAdmin = ref(props.roles.some(role => (role.userId === props.userProfile.id && role.role === 'owner') ||
+  props.userProfile.groups?.includes(adminGroupPath)))
 const newUserInputKey = ref(getRandomId('input'))
 const newUserEmail = ref('')
-const usersToAdd = ref([])
-const rows: Ref<any[][]> = ref([])
+const usersToAdd: Ref<string[]> = ref([])
+const rows = ref<any[][]>([])
 const lettersNotMatching = ref('')
 const tableKey = ref(getRandomId('table'))
 
 const setRows = () => {
   rows.value = []
 
-  if (props.project.roles?.length) {
-    props.project.roles?.forEach(role => {
+  if (props.roles?.length) {
+    props.roles.forEach(role => {
       if (role.role === 'owner') {
         rows.value.unshift([
           {
             component: 'code',
-            text: role.user.id,
+            text: role.userId,
             title: 'Copier l\'id',
             class: 'fr-text-default--info text-xs cursor-pointer',
-            onClick: () => copyContent(role.user.id),
+            onClick: () => copyContent(role.userId),
           },
-          props.owner?.email,
+          props.knownUsers[role.userId].email,
           {
             component: 'DsfrSelect',
             modelValue: role.role,
             selectId: 'role-select',
             options: ['owner', 'user'],
             disabled: true,
-            'onUpdate:model-value': ($event: string) => updateUserRole(role.user.id, $event),
+            'onUpdate:model-value': ($event: string) => updateUserRole(role.userId, $event),
           },
           {
             cellAttrs: {
               class: 'fr-fi-close-line !flex justify-center disabled',
-              title: `${props.owner?.email} ne peut pas être retiré(e) du projet`,
+              title: `${props.knownUsers[role.userId].email} ne peut pas être retiré(e) du projet`,
             },
           },
         ])
@@ -82,25 +85,25 @@ const setRows = () => {
       rows.value.push([
         {
           component: 'code',
-          text: role.user.id,
+          text: role.userId,
           title: 'Copier l\'id',
           class: 'fr-text-default--info text-xs cursor-pointer',
-          onClick: () => copyContent(role.user.id),
+          onClick: () => copyContent(role.userId),
         },
-        role.user.email,
+        props.knownUsers[role.userId].email,
         {
           component: 'DsfrSelect',
           modelValue: role.role,
           selectId: 'role-select',
           options: ['owner', 'user'],
           disabled: true,
-          'onUpdate:model-value': ($event: string) => updateUserRole(role.user.id, $event),
+          'onUpdate:model-value': ($event: string) => updateUserRole(role.userId, $event),
         },
         {
           cellAttrs: {
             class: `fr-fi-close-line !flex justify-center ${isOwnerOrAdmin.value ? 'cursor-pointer fr-text-default--warning' : 'disabled'}`,
-            title: isOwnerOrAdmin.value ? `retirer ${role.user.email} du projet` : 'vous n\'avez pas les droits suffisants pour retirer un membre du projet',
-            onClick: () => removeUserFromProject(role.user.id),
+            title: isOwnerOrAdmin.value ? `retirer ${props.knownUsers[role.userId].email} du projet` : 'vous n\'avez pas les droits suffisants pour retirer un membre du projet',
+            onClick: () => removeUserFromProject(role.userId),
           },
         },
       ])
@@ -147,10 +150,10 @@ const removeUserFromProject = async (userId: string) => {
   emit('removeMember', userId)
 }
 
-onBeforeMount(() => {
+onMounted(() => {
   setRows()
 })
-
+watch(() => props.roles, setRows)
 </script>
 
 <template>
@@ -168,7 +171,6 @@ onBeforeMount(() => {
         :headers="headers"
         :rows="rows"
       />
-
       <SuggestionInput
         :key="newUserInputKey"
         v-model="newUserEmail"

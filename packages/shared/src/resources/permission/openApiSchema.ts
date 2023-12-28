@@ -50,7 +50,7 @@ export const getEnvironmentPermissionsSchema = {
   response: {
     200: {
       type: 'array',
-      items: permissionOpenApiSchema,
+      items: { $ref: 'permission#' },
     },
   },
 } as const
@@ -67,7 +67,7 @@ export const setPermissionSchema = {
     // required: Object.keys(setPermissionDto),
   },
   response: {
-    201: permissionOpenApiSchema,
+    201: { $ref: 'permission#' },
   },
 } as const
 
@@ -81,7 +81,7 @@ export const updatePermissionSchema = {
     properties: setPermissionDto,
   },
   response: {
-    200: permissionOpenApiSchema,
+    200: { $ref: 'permission#' },
   },
 } as const
 
