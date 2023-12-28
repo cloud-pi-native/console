@@ -10,9 +10,10 @@ import {
   removeClusterFromStage,
   linkStageToQuotas,
 } from '@/resources/queries-index.js'
-import { type CreateStageDto, type StageParams, type UpdateStageClustersDto, stageSchema } from '@dso-console/shared'
+import { type CreateStageDto, type UpdateStageClustersDto, stageSchema } from '@dso-console/shared'
+import { Stage } from '@prisma/client'
 
-export const getStageAssociatedEnvironments = async (stageId: StageParams['stageId']) => {
+export const getStageAssociatedEnvironments = async (stageId: Stage['id']) => {
   try {
     const stage = await getStageById(stageId)
 
@@ -65,7 +66,7 @@ export const createStage = async (data: CreateStageDto) => {
   }
 }
 
-export const updateStageClusters = async (stageId: StageParams['stageId'], clusterIds: UpdateStageClustersDto['clusterIds']) => {
+export const updateStageClusters = async (stageId: Stage['id'], clusterIds: UpdateStageClustersDto['clusterIds']) => {
   try {
     const dbClusters = (await getStageById(stageId)).clusters
 
@@ -84,7 +85,7 @@ export const updateStageClusters = async (stageId: StageParams['stageId'], clust
   }
 }
 
-export const deleteStage = async (stageId: StageParams['stageId']) => {
+export const deleteStage = async (stageId: Stage['id']) => {
   try {
     const environments = await getStageAssociatedEnvironments(stageId)
     if (environments.length) throw new BadRequestError('Impossible de supprimer le stage, des environnements en activité y ont souscrit', { extras: environments })

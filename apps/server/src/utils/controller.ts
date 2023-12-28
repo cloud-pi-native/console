@@ -1,9 +1,9 @@
 import { type ProjectRoles, adminGroupPath, projectIsLockedInfo } from '@dso-console/shared'
 import type { Permission, User, Role, Cluster } from '@prisma/client'
 import { ForbiddenError } from './errors.js'
-import type { FastifyRequestWithSession } from '@/types/index.js'
+import { FastifyRequest } from 'fastify'
 
-export const checkAdminGroup = (req: FastifyRequestWithSession<unknown>, res, done) => {
+export const checkAdminGroup = (req: FastifyRequest, _res, done) => {
   if (!req.session.user.groups?.includes(adminGroupPath)) {
     throw new ForbiddenError('Vous n\'avez pas les droits administrateur')
   }

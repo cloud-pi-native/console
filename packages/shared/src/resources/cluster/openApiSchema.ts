@@ -118,6 +118,7 @@ export const getClustersSchema = {
 
 export const getClusterAssociatedEnvironmentsSchema = {
   description: 'Retrieve environments associated to a cluster',
+  params: clusterParamsSchema,
   tags: ['cluster', 'environment'],
   summary: 'Retrieve environments associated to a cluster, for admins only',
   response: {

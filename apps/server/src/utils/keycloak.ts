@@ -8,7 +8,14 @@ import {
   keycloakRedirectUri,
 } from './env.js'
 
-const userPayloadMapper = (userPayload) => ({
+type KeycloakPayload = {
+  sub: string
+  email: string
+  given_name: string
+  family_name: string
+  groups: string[]
+}
+const userPayloadMapper = (userPayload: KeycloakPayload) => ({
   id: userPayload.sub,
   email: userPayload.email,
   firstName: userPayload.given_name,

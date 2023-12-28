@@ -1,9 +1,10 @@
 import { linkClusterToProjects, addLogs, createCluster as createClusterQuery, getClusterById, getClusterByLabel, getProjectsByClusterId, getStagesByClusterId, removeClusterFromProject, removeClusterFromStage, updateCluster as updateClusterQuery, getClusterEnvironments, deleteCluster as deleteClusterQuery } from '@/resources/queries-index.js'
 import { BadRequestError, DsoError, NotFoundError } from '@/utils/errors.js'
 import { hooks } from '@/plugins/index.js'
-import { type CreateClusterDto, type UpdateClusterDto, clusterSchema, exclude } from '@dso-console/shared'
-import { type User } from '@prisma/client'
+import { type CreateClusterDto, clusterSchema, updateClusterSchema } from '@dso-console/shared'
+import { Cluster, type User } from '@prisma/client'
 import { linkClusterToStages } from '@/resources/stage/business.js'
+import { FromSchema } from 'json-schema-to-ts'
 
 export const checkClusterProjectIds = (data: CreateClusterDto) => {
   // si le cluster est dedicated, la clé projectIds doit être renseignée
@@ -37,26 +38,30 @@ export const createCluster = async (data: CreateClusterDto, userId: User['id']) 
   const isLabelTaken = await getClusterByLabel(data.label)
   if (isLabelTaken) throw new BadRequestError('Ce label existe déjà pour un autre cluster', undefined)
 
-  // TODO check if secretName is available with validation plugins
-  const kubeConfig = {
-    user: data.user,
-    cluster: data.cluster,
-  }
-  const clusterData = exclude(structuredClone(data), ['projectIds', 'stageIds', 'user', 'cluster'])
-  const cluster = await createClusterQuery(clusterData, kubeConfig)
+  const {
+    projectIds,
+    stageIds,
+    user,
+    cluster,
+    ...clusterData
+  } = data
 
-  await linkClusterToProjects(cluster.id, data.projectIds)
+  // @ts-ignore
+  const clusterCreated = await createClusterQuery(clusterData, { user, cluster })
 
-  await linkClusterToStages(cluster.id, data.stageIds)
+  await linkClusterToProjects(clusterCreated.id, projectIds)
 
-  const results = await hooks.createCluster.execute({ ...cluster, user: data.user, cluster: data.cluster })
+  await linkClusterToStages(clusterCreated.id, stageIds)
+
+  // @ts-ignore
+  const results = await hooks.createCluster.execute({ ...clusterCreated, user, cluster })
   // @ts-ignore
   await addLogs('Create Cluster', results, userId)
 
-  return cluster
+  return clusterCreated
 }
 
-export const updateCluster = async (data: UpdateClusterDto, clusterId: UpdateClusterDto['id']) => {
+export const updateCluster = async (data: FromSchema<typeof updateClusterSchema['body']>, clusterId: Cluster['id']) => {
   if (data?.privacy === 'public') delete data.projectIds
 
   await clusterSchema.validateAsync(data, { presence: 'optional' })
@@ -68,37 +73,46 @@ export const updateCluster = async (data: UpdateClusterDto, clusterId: UpdateClu
     user: data.user,
     cluster: data.cluster,
   }
-  const clusterData = exclude(structuredClone(data), ['projectIds', 'stageIds', 'user', 'cluster'])
-  const cluster = await updateClusterQuery(clusterId, clusterData, kubeConfig)
+  const {
+    projectIds,
+    stageIds,
+    user,
+    cluster,
+    ...clusterData
+  } = data
 
+  // @ts-ignore
+  const clusterUpdated = await updateClusterQuery(clusterId, clusterData, { user, cluster })
+
+  // @ts-ignore
   await hooks.updateCluster.execute({ ...cluster, user: { ...kubeConfig.user }, cluster: { ...kubeConfig.cluster } })
 
-  if (data.projectIds) {
-    await linkClusterToProjects(clusterId, data.projectIds)
+  if (projectIds) {
+    await linkClusterToProjects(clusterId, projectIds)
 
     const dbProjects = await getProjectsByClusterId(clusterId)
     for (const project of dbProjects) {
-      if (!data.projectIds.includes(project.id)) {
-        await removeClusterFromProject(cluster.id, project.id)
+      if (!projectIds.includes(project.id)) {
+        await removeClusterFromProject(clusterUpdated.id, project.id)
       }
     }
   }
 
-  if (data.stageIds) {
-    await linkClusterToStages(clusterId, data.stageIds)
+  if (stageIds) {
+    await linkClusterToStages(clusterId, stageIds)
 
     const dbStages = await getStagesByClusterId(clusterId)
     for (const stage of dbStages) {
-      if (!data.stageIds.includes(stage.id)) {
-        await removeClusterFromStage(cluster.id, stage.id)
+      if (!stageIds.includes(stage.id)) {
+        await removeClusterFromStage(clusterUpdated.id, stage.id)
       }
     }
   }
 
-  return cluster
+  return clusterUpdated
 }
 
-export const deleteCluster = async (clusterId: string, userId: string) => {
+export const deleteCluster = async (clusterId: Cluster['id'], userId: User['id']) => {
   try {
     const environments = await getClusterAssociatedEnvironments(clusterId)
     if (environments?.length) throw new BadRequestError('Impossible de supprimer le cluster, des environnements en activité y sont déployés', { extras: environments })

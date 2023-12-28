@@ -4,7 +4,7 @@ import fastifyCookie from '@fastify/cookie'
 import fastifySession from '@fastify/session'
 import fp from 'fastify-plugin'
 import { addAllSchemasToApp, apiPrefix } from '@/app.js'
-import { apiRouter, miscRouter } from '@/routes/index.js'
+import { apiRouter, miscRouter } from '@/resources/index.js'
 import { sessionConf } from '@/utils/keycloak.js'
 import { User } from '@dso-console/test-utils'
 

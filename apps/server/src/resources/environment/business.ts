@@ -31,7 +31,7 @@ import { projectRootDir } from '@/utils/env.js'
 import { getProjectInfosAndClusters } from '@/resources/project/business.js'
 import { gitlabUrl } from '@/plugins/core/gitlab/utils.js'
 import { type AsyncReturnType, adminGroupPath } from '@dso-console/shared'
-import { KeycloakSession } from '@/types/index.js'
+import type { UserDetails } from '@/types/index.js'
 
 // Fetch infos
 export const getEnvironmentInfosAndClusters = async (environmentId: string) => {
@@ -230,7 +230,7 @@ export const createEnvironment = async (
 }
 
 type UpdateEnvironmentParam = {
-  user: KeycloakSession['session']['user'],
+  user: UserDetails,
   projectId: Project['id'],
   environmentId: Environment['id'],
   quotaStageId?: QuotaStage['id'],

@@ -1,15 +1,25 @@
 import { sendOk } from '@/utils/response.js'
 import { addReqLogs } from '@/utils/logger.js'
 import { getUsers } from './business.js'
-import { type RouteHandler } from 'fastify'
-import { type FastifyRequestWithSession } from '@/types/index.js'
+import type { FastifyInstance } from 'fastify'
 
-export const getUsersController: RouteHandler = async (req: FastifyRequestWithSession<void>, res) => {
-  const users = await getUsers()
+import { getUsersSchema } from '@dso-console/shared'
 
-  addReqLogs({
-    req,
-    description: 'Ensemble des utilisateurs récupérés avec succès',
-  })
-  sendOk(res, users)
+const router = async (app: FastifyInstance, _opt) => {
+  // Récupérer tous les utilisateurs
+  app.get('/',
+    {
+      schema: getUsersSchema,
+    },
+    async (req, res) => {
+      const users = await getUsers()
+
+      addReqLogs({
+        req,
+        description: 'Ensemble des utilisateurs récupérés avec succès',
+      })
+      sendOk(res, users)
+    })
 }
+
+export default router

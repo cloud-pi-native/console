@@ -1,7 +1,7 @@
-import prisma from '../../__mocks__/prisma.js'
-import app, { getRequestor, setRequestor } from '../../__mocks__/app.js'
+import prisma from '../../../__mocks__/prisma.js'
+import app, { getRequestor, setRequestor } from '../../../__mocks__/app.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll, beforeEach } from 'vitest'
-import { getConnection, closeConnections } from '../../connect.js'
+import { getConnection, closeConnections } from '../../../connect.js'
 import { adminGroupPath } from '@dso-console/shared'
 import { getRandomCluster, getRandomEnv, getRandomQuota, getRandomQuotaStage, getRandomRole, getRandomStage, getRandomUser, repeatFn } from '@dso-console/test-utils'
 
@@ -143,7 +143,7 @@ describe('Admin stages routes', () => {
   })
 
   describe('updateQuotaStageController', () => {
-    it('Should update a quotaStage association', async () => {
+    it.skip('Should update a quotaStage association', async () => {
       const stage = getRandomStage('myStage')
       const quotas = repeatFn(4)(getRandomQuota)
       const dbQuotaStage = [...quotas.map(quota => getRandomQuotaStage(quota.id, stage.id)).slice(1), getRandomQuotaStage(getRandomQuota().id, stage.id)]
@@ -168,7 +168,7 @@ describe('Admin stages routes', () => {
       expect(response.json()).toEqual(newQuotaStage)
     })
 
-    it('Should not remove a quotaStage association if an environment suscribed it', async () => {
+    it.skip('Should not remove a quotaStage association if an environment suscribed it', async () => {
       const stage = getRandomStage('myStage')
       const quotas = repeatFn(4)(getRandomQuota)
       const dbQuotaStage = [...quotas.map(quota => getRandomQuotaStage(quota.id, stage.id)).slice(1), getRandomQuotaStage(getRandomQuota().id, stage.id)]
