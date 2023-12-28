@@ -221,9 +221,6 @@ export const getRolesByProjectId = async (projectId: Project['id']) => {
     where: {
       projectId,
     },
-    include: {
-      user: true,
-    },
   })
 }
 

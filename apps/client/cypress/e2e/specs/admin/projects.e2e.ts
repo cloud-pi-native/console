@@ -243,6 +243,7 @@ describe('Administration projects', () => {
     cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
     cy.intercept('DELETE', `api/v1/projects/${project.id}/users/${user.id}`).as('removeUser')
     cy.intercept('POST', `api/v1/projects/${project.id}/users`).as('addUser')
+    cy.intercept('GET', `api/v1/projects/${project.id}/users/match?letters=*`).as('getMatchingUsers')
 
     cy.getByDataTestid('tableAdministrationProjects').within(() => {
       cy.get('tr').contains(project.name)
@@ -262,6 +263,9 @@ describe('Administration projects', () => {
       .find('input')
       .clear()
       .type(user.email)
+      .blur()
+    cy.wait('@getMatchingUsers')
+
     cy.getByDataTestid('addUserBtn')
       .click()
     cy.wait('@addUser')

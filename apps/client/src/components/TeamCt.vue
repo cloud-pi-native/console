@@ -44,7 +44,7 @@ const isUserAlreadyInTeam = computed(() => {
 const isOwnerOrAdmin = ref(props.roles.some(role => (role.userId === props.userProfile.id && role.role === 'owner') ||
   props.userProfile.groups?.includes(adminGroupPath)))
 const newUserInputKey = ref(getRandomId('input'))
-const newUserEmail = ref('')
+const newUserEmail = ref<string>('')
 const usersToAdd: Ref<string[]> = ref([])
 const rows = ref<any[][]>([])
 const lettersNotMatching = ref('')

@@ -19,6 +19,8 @@ describe('Team view', () => {
   })
 
   it('Should not add a non-existing team member', () => {
+    cy.intercept('GET', `api/v1/projects/${project.id}/users/match?letters=*`).as('getMatchingUsers')
+
     cy.goToProjects()
       .getByDataTestid(`projectTile-${project.name}`).click()
       .getByDataTestid('menuTeam').click()
@@ -30,6 +32,8 @@ describe('Team view', () => {
     cy.getByDataTestid('addUserSuggestionInput').find('input')
       .clear()
       .type('jenexistepas@criseexistentielle.com')
+      .blur()
+    cy.wait('@getMatchingUsers')
     cy.getByDataTestid('addUserBtn')
       .should('be.enabled').click()
 
@@ -44,6 +48,7 @@ describe('Team view', () => {
 
   it('Should add a team member', () => {
     cy.intercept('POST', `api/v1/projects/${project.id}/users`).as('addUser')
+    cy.intercept('GET', `api/v1/projects/${project.id}/users/match?letters=*`).as('getMatchingUsers')
 
     cy.goToProjects()
     cy.getByDataTestid(`projectTile-${project.name}`).click()
@@ -56,6 +61,8 @@ describe('Team view', () => {
     cy.getByDataTestid('addUserSuggestionInput').find('input')
       .clear()
       .type('test@test.com')
+      .blur()
+    cy.wait('@getMatchingUsers')
     cy.getByDataTestid('userErrorInfo')
       .should('contain', 'L\'utilisateur associé à cette adresse e-mail fait déjà partie du projet.')
     cy.getByDataTestid('addUserBtn')
@@ -66,6 +73,8 @@ describe('Team view', () => {
     cy.getByDataTestid('addUserSuggestionInput').find('input')
       .clear()
       .type(newMember.email)
+      .blur()
+    cy.wait('@getMatchingUsers')
     cy.getByDataTestid('userErrorInfo')
       .should('not.exist')
     cy.getByDataTestid('addUserBtn')

@@ -51,7 +51,6 @@ const removeUserFromProject = async (userId: string) => {
 
 <template>
   <DsoSelectedProject />
-
   <TeamCt
     :key="teamCtKey"
     :user-profile="userStore.userProfile"

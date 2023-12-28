@@ -312,6 +312,7 @@ Cypress.Commands.add('assertPermission', (project, environmentName, permissions)
 
 Cypress.Commands.add('addProjectMember', (project, userEmail) => {
   cy.intercept('POST', /\/api\/v1\/projects\/[\w-]{36}\/users$/).as('postUser')
+  cy.intercept('GET', `api/v1/projects/${project.id}/users/match?letters=*`).as('getMatchingUsers')
 
   cy.goToProjects()
     .getByDataTestid(`projectTile-${project.name}`).click()
@@ -322,7 +323,10 @@ Cypress.Commands.add('addProjectMember', (project, userEmail) => {
     .should('have.length', project.users.length)
     .getByDataTestid('addUserSuggestionInput').find('input').clear()
     .type(userEmail)
-    .getByDataTestid('userErrorInfo')
+    .blur()
+  cy.wait('@getMatchingUsers')
+
+  cy.getByDataTestid('userErrorInfo')
     .should('not.exist')
     .getByDataTestid('addUserBtn')
     .should('be.enabled').click()

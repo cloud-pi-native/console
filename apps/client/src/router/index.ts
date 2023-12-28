@@ -88,8 +88,8 @@ const routes: Readonly<RouteRecordRaw[]> = [
         path: ':id',
         async beforeEnter (to) {
           await Promise.all([
-            useUsersStore().getProjectUsers(to.params.id),
             useProjectStore().getUserProjects(),
+            useUsersStore().getProjectUsers(to.params.id),
           ])
         },
         children: [
