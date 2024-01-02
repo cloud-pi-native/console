@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch, type Ref } from 'vue'
-import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useAdminStageStore } from '@/stores/admin/stage.js'
 import StageForm from '@/components/StageForm.vue'
 import { sortArrByObjKeyAsc } from '@dso-console/shared'
@@ -12,7 +11,6 @@ import { handleError } from '@/utils/func.js'
 const adminStageStore = useAdminStageStore()
 const adminQuotaStore = useAdminQuotaStore()
 const adminClusterStore = useAdminClusterStore()
-const snackbarStore = useSnackbarStore()
 
 const selectedStage: Ref<StageModel | Record<string, never>> = ref({})
 const stageList: Ref<any[]> = ref([])

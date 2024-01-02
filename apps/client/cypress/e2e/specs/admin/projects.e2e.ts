@@ -270,4 +270,18 @@ describe('Administration projects', () => {
     cy.get(`td[title="retirer ${user.email} du projet"]`)
       .should('exist')
   })
+
+  it('Should download projects informations, loggedIn as admin', () => {
+    cy.visit('/admin/projects')
+    cy.url().should('contain', '/admin/projects')
+    cy.get('.fr-link--download').should('not.exist')
+    cy.getByDataTestid('download-btn')
+      .click()
+    cy.get('.fr-link--download').should('exist')
+      .click()
+      .find('span').should(($span) => {
+        const text = $span.text()
+        expect(text).to.match(/CSV – \d* bytes/)
+      })
+  })
 })

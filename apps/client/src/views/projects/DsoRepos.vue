@@ -3,7 +3,6 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectRepositoryStore } from '@/stores/project-repository.js'
 import { useUserStore } from '@/stores/user.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
 import RepoForm from '@/components/RepoForm.vue'
 import DsoSelectedProject from './DsoSelectedProject.vue'
 import { projectIsLockedInfo, sortArrByObjKeyAsc } from '@dso-console/shared'
@@ -12,7 +11,6 @@ import { handleError } from '@/utils/func.js'
 const projectStore = useProjectStore()
 const projectRepositoryStore = useProjectRepositoryStore()
 const userStore = useUserStore()
-const snackbarStore = useSnackbarStore()
 
 /**
  * @returns {string}

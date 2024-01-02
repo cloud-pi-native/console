@@ -231,6 +231,7 @@ watch(internalRepoName, (internalRepoName) => {
               :size="file.size"
               :href="file.href"
               :title="file.title"
+              :download="file.title"
             />
             <DsfrButton
               secondary

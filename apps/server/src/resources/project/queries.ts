@@ -143,6 +143,7 @@ export const getProjectInfosAndRepos = async (id: Project['id']) => {
     },
   })
 }
+
 export const getProjectByNames = async ({ name, organizationName }: { name: Project['name'], organizationName: Organization['name'] }) => {
   const res = await prisma.project.findMany({
     where: {
@@ -161,6 +162,56 @@ export const getProjectByOrganizationId = async (organizationId: Organization['i
       organizationId,
       status: {
         not: 'archived',
+      },
+    },
+  })
+}
+
+export const getAllProjectsDataForExport = async () => {
+  return prisma.project.findMany({
+    select: {
+      name: true,
+      description: true,
+      createdAt: true,
+      updatedAt: true,
+      organization: {
+        select: {
+          label: true,
+        },
+      },
+      environments: {
+        select: {
+          name: true,
+          quotaStage: {
+            select: {
+              quota: {
+                select: {
+                  name: true,
+                },
+              },
+              stage: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+          cluster: {
+            select: {
+              label: true,
+            },
+          },
+        },
+      },
+      roles: {
+        select: {
+          role: true,
+          user: {
+            select: {
+              email: true,
+            },
+          },
+        },
       },
     },
   })

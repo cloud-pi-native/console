@@ -50,4 +50,5 @@ export {
   RiSoundModuleLine,
   RiStockLine,
   RiArrowGoBackLine,
+  RiFileDownloadLine,
 } from 'oh-vue-icons/icons/ri/index.js'

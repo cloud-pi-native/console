@@ -1,9 +1,9 @@
 import { addReqLogs } from '@/utils/logger.js'
 import { FastifyRequest, type FastifyInstance } from 'fastify'
 import { sendNoContent, sendOk } from '@/utils/response.js'
-import { getAllProjects, handleProjectLocking } from './business.js'
+import { getAllProjects, handleProjectLocking, generateProjectsData } from './business.js'
 
-import { getAllProjectsSchema, patchProjectSchema } from '@dso-console/shared'
+import { getAllProjectsSchema, patchProjectSchema, generateProjectsDataSchema } from '@dso-console/shared'
 import { FromSchema } from 'json-schema-to-ts'
 
 const router = async (app: FastifyInstance, _opt) => {
@@ -20,6 +20,21 @@ const router = async (app: FastifyInstance, _opt) => {
         description: 'Ensemble des projets récupérés avec succès',
       })
       return sendOk(res, allProjects)
+    })
+
+  // Récupérer les données de tous les projets pour export
+  app.get('/data',
+    {
+      schema: generateProjectsDataSchema,
+    },
+    async (req: FastifyRequest, res) => {
+      const generatedProjectsData = await generateProjectsData()
+
+      addReqLogs({
+        req,
+        description: 'Données des projets rassemblées pour export',
+      })
+      return sendOk(res, generatedProjectsData)
     })
 
   // (Dé)verrouiller un projet

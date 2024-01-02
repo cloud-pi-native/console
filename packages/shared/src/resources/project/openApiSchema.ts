@@ -166,6 +166,17 @@ export const getAllProjectsSchema = {
   },
 } as const
 
+export const generateProjectsDataSchema = {
+  description: 'Retrieve all projects data for download as CSV file',
+  tags: ['project'],
+  summary: 'Retrieve all projects data for download as CSV file, admin only',
+  response: {
+    200: {
+      type: 'string',
+    },
+  },
+} as const
+
 export const createProjectSchema = {
   description: 'Create a new project',
   tags: ['project'],

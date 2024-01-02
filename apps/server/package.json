@@ -16,6 +16,7 @@
     "dotenv": "^16.3.1",
     "fastify": "^4.24.3",
     "fastify-keycloak-adapter": "^2.1.6",
+    "json-2-csv": "^5.0.1",
     "json-schema-to-ts": "^2.9.2",
     "mustache": "^4.2.0",
     "nanoid": "5.0.2",

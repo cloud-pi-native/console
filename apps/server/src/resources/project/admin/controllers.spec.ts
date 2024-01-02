@@ -4,6 +4,7 @@ import { vi, describe, it, expect, beforeAll, afterEach, afterAll, beforeEach } 
 import { getConnection, closeConnections } from '../../../connect.js'
 import { adminGroupPath } from '@dso-console/shared'
 import { getRandomProject, getRandomUser, repeatFn } from '@dso-console/test-utils'
+import { json2csv } from 'json-2-csv'
 
 describe('Admin projects routes', () => {
   beforeAll(async () => {
@@ -63,6 +64,23 @@ describe('Admin projects routes', () => {
 
       expect(response.statusCode).toEqual(403)
       expect(response.json().message).toEqual('Vous n\'avez pas les droits administrateur')
+    })
+  })
+
+  describe('generateProjectsDataController', () => {
+    it('Should retrieve all projects data for download', async () => {
+      const projects = repeatFn(2)(getRandomProject)
+
+      prisma.project.findMany.mockResolvedValue(projects)
+
+      const response = await app.inject()
+        .get('/api/v1/admin/projects/data')
+        .end()
+
+      expect(response.statusCode).toEqual(200)
+      expect(response.body).toEqual(json2csv(projects, {
+        emptyFieldValue: '',
+      }))
     })
   })
 

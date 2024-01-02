@@ -1,14 +1,11 @@
 <script lang="ts" setup>
 import { onBeforeMount, ref, type Ref } from 'vue'
 import { useAdminUserStore } from '@/stores/admin/user.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
 import { formatDate } from '@dso-console/shared'
 import { copyContent, handleError } from '@/utils/func.js'
 import { getRandomId } from '@gouvminint/vue-dsfr'
 
 const adminUserStore = useAdminUserStore()
-
-const snackbarStore = useSnackbarStore()
 
 const allUsers: Ref<any[]> = ref([])
 

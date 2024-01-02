@@ -19,10 +19,15 @@ export const useAdminProjectStore = defineStore('admin-project', () => {
     return api.archiveProject(projectId)
   }
 
+  const generateProjectsData = async () => {
+    return api.generateProjectsData()
+  }
+
   return {
     getAllProjects,
     getAllActiveProjects,
     handleProjectLocking,
     archiveProject,
+    generateProjectsData,
   }
 })

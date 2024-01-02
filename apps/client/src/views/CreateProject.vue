@@ -2,7 +2,6 @@
 import { computed, onMounted, ref, type Ref } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useOrganizationStore } from '@/stores/organization.js'
 import {
   descriptionMaxLength,
@@ -17,7 +16,6 @@ import router from '@/router/index.js'
 import LoadingCt from '@/components/LoadingCt.vue'
 import { handleError } from '@/utils/func.js'
 
-const snackbarStore = useSnackbarStore()
 const projectStore = useProjectStore()
 const userStore = useUserStore()
 const organizationStore = useOrganizationStore()

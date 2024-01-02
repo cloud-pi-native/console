@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch, type Ref } from 'vue'
-import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useAdminClusterStore } from '@/stores/admin/cluster.js'
 import { useAdminProjectStore } from '@/stores/admin/project.js'
 import ClusterForm from '@/components/ClusterForm.vue'
@@ -11,7 +10,6 @@ import { handleError } from '@/utils/func.js'
 const adminClusterStore = useAdminClusterStore()
 const adminProjectStore = useAdminProjectStore()
 const projectEnvironmentStore = useProjectEnvironmentStore()
-const snackbarStore = useSnackbarStore()
 
 const clusters = computed(() => adminClusterStore.clusters)
 const selectedCluster = ref({})
