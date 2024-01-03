@@ -231,7 +231,6 @@ router.beforeEach(async (to, _from, next) => {
  * On reload on projects views, retrieve projectId from url and send it to store
  */
 router.beforeEach(async (to, _from, next) => {
-  const snackbarStore = useSnackbarStore()
   const projectStore = useProjectStore()
   const projectsPath = '/projects/'
 

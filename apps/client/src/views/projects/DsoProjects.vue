@@ -1,14 +1,12 @@
 <script lang="ts" setup>
 import { onMounted, ref, watch, computed, type Ref } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
 import router from '@/router/index.js'
 import DsoSelectedProject from './DsoSelectedProject.vue'
 import { sortArrByObjKeyAsc } from '@dso-console/shared'
 import { handleError } from '@/utils/func.js'
 
 const projectStore = useProjectStore()
-const snackbarStore = useSnackbarStore()
 
 const projects = computed(() => projectStore.projects)
 const projectList: Ref<Array<Record<any, any>>> = ref([])

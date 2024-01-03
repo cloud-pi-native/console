@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch, type Ref } from 'vue'
-import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useAdminQuotaStore } from '@/stores/admin/quota.js'
 import QuotaForm from '@/components/QuotaForm.vue'
 import { sortArrByObjKeyAsc } from '@dso-console/shared'
@@ -10,7 +9,6 @@ import { handleError } from '@/utils/func.js'
 
 const adminQuotaStore = useAdminQuotaStore()
 const projectEnvironmentStore = useProjectEnvironmentStore()
-const snackbarStore = useSnackbarStore()
 
 const quotas = computed(() => adminQuotaStore.quotas)
 const selectedQuota: Ref<QuotaModel | Record<string, never>> = ref({})

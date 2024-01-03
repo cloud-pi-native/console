@@ -40,6 +40,12 @@ type EnvironnementRows = EnvironnementRow[] | EmptyRow
 type RepositoryRow = [string, Component, Component] | [[{ text: string; cellAttrs: { colspan: number } }]]
 type RepositoryRows = RepositoryRow[] | EmptyRow
 
+type FileForDownload = File & {
+  href?: string,
+  format?: string,
+  title?: string,
+}
+
 const allProjects: Ref<AsyncReturnType<typeof adminProjectStore.getAllProjects>> = ref([])
 const organizations: Ref<AsyncReturnType<typeof adminOrganizationStore.getAllOrganizations>> = ref([])
 const rows: Ref<Rows> = ref([])
@@ -55,6 +61,7 @@ const isArchivingProject = ref(false)
 const projectToArchive = ref('')
 const inputSearchText = ref('')
 const activeFilter = ref('Non archivés')
+const file: Ref<undefined | FileForDownload> = ref(undefined)
 
 const title = 'Liste des projets'
 const headers = [
@@ -329,6 +336,25 @@ const removeUserFromProject = async (userId: string) => {
   isWaitingForResponse.value = false
 }
 
+const generateProjectsDataFile = async () => {
+  try {
+    file.value = new File([await adminProjectStore.generateProjectsData()], 'dso-projects.csv', {
+      type: 'text/csv;charset=utf-8',
+    })
+    const url = URL.createObjectURL(file.value)
+
+    file.value = {
+      ...file.value,
+      href: url,
+      size: `${file.value.size} bytes`,
+      format: 'CSV',
+      title: 'dso-projects.csv',
+    }
+  } catch (error) {
+    handleError(error)
+  }
+}
+
 onBeforeMount(async () => {
   organizations.value = await adminOrganizationStore.getAllOrganizations()
   await getAllProjects()
@@ -340,6 +366,24 @@ onBeforeMount(async () => {
     class="relative"
   >
     <div class="w-full flex gap-4 justify-end fr-mb-1w">
+      <DsfrButton
+        v-if="!selectedProject && !file"
+        data-testid="download-btn"
+        title="Exporter les données de tous les projets"
+        secondary
+        icon-only
+        icon="ri-file-download-line"
+        :disabled="!!isWaitingForResponse"
+        @click="generateProjectsDataFile()"
+      />
+      <DsfrFileDownload
+        v-if="!selectedProject && file"
+        :format="file.format"
+        :size="file.size"
+        :href="file.href"
+        :title="file.title"
+        :download="file.title"
+      />
       <DsfrButton
         data-testid="refresh-btn"
         title="Rafraîchir la liste des projets"

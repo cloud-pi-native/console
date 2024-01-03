@@ -6,7 +6,6 @@ import { levels, projectIsLockedInfo, type PermissionModel, type EnvironmentMode
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectPermissionStore } from '@/stores/project-permission.js'
 import { useUserStore } from '@/stores/user.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
 import { getRandomId } from '@gouvminint/vue-dsfr'
 import { handleError } from '@/utils/func.js'
 
@@ -20,7 +19,6 @@ const props = defineProps({
 const projectStore = useProjectStore()
 const projectPermissionStore = useProjectPermissionStore()
 const userStore = useUserStore()
-const snackbarStore = useSnackbarStore()
 const environment: Ref<EnvironmentModel | Record<string, any> | undefined> = ref(props.environment)
 const permissions = ref([])
 const permissionToUpdate = ref({})
