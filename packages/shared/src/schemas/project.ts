@@ -8,7 +8,7 @@ export const projectSchema = Joi.object({
     .uuid(),
 
   name: Joi.string()
-    .pattern(/^[a-z0-9-]+$/)
+    .pattern(/^[a-z0-9]+$/)
     .min(2)
     .max(Joi.ref('$projectNameMaxLength'))
     .required(),

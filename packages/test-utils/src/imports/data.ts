@@ -214,7 +214,7 @@ export const data = {
   project: [
     {
       id: '22e7044f-8414-435d-9c4a-2df42a65034b',
-      name: 'beta-app',
+      name: 'betaapp',
       organizationId: '2368a61e-f243-42f6-b471-a85b056ee131',
       description: null,
       status: 'created',
@@ -232,7 +232,7 @@ export const data = {
     },
     {
       id: '9dabf3f9-6c86-4358-8598-65007d78df65',
-      name: 'project-to-archive',
+      name: 'projecttoarchive',
       organizationId: '2368a61e-f243-42f6-b471-a85b056ee131',
       description: null,
       status: 'created',
@@ -286,7 +286,7 @@ export const data = {
     },
     {
       id: '83833faf-f654-40dd-bcd5-cf2e944fc702',
-      name: 'psij-failed',
+      name: 'psijfailed',
       organizationId: 'b644c07f-193c-47ed-ae10-b88a8f63d20b',
       description: "Application de transmission d'informations entre agents de la PS et de l'IJ.",
       status: 'failed',

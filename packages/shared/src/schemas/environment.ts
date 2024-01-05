@@ -7,7 +7,7 @@ export const environmentSchema = Joi.object({
 
   name: Joi.string()
     .required()
-    .pattern(/^[a-z0-9-]+$/)
+    .pattern(/^[a-z0-9]+$/)
     .min(2)
     .max(longestEnvironmentName),
 

@@ -5,6 +5,7 @@ export const stageSchema = Joi.object({
     .uuid(),
 
   name: Joi.string()
+    .pattern(/^[a-zA-Z0-9]+$/)
     .required(),
 
   quotaIds: Joi.array()
