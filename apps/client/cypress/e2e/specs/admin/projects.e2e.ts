@@ -103,7 +103,7 @@ describe('Administration projects', () => {
     cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
     cy.intercept('DELETE', 'api/v1/projects/*').as('archiveProject')
 
-    const projectName = 'admin-archive'
+    const projectName = 'adminarchive'
 
     cy.createProject({ name: projectName }, admin?.email)
 
@@ -144,7 +144,7 @@ describe('Administration projects', () => {
   })
 
   it('Should update an environment quota, loggedIn as admin', () => {
-    const project = projects.find(project => project.name === 'beta-app')
+    const project = projects.find(project => project.name === 'betaapp')
     const privateQuota = {
       id: '',
       name: 'XXXXLprivate',
@@ -236,7 +236,7 @@ describe('Administration projects', () => {
   })
 
   it('Should remove and add a user from a project, loggedIn as admin', () => {
-    const project = projects.find(project => project.name === 'beta-app')
+    const project = projects.find(project => project.name === 'betaapp')
     const user = project.roles.find(role => role.role !== 'owner')?.user
 
     cy.intercept('GET', 'api/v1/admin/projects').as('getAllProjects')

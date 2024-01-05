@@ -121,6 +121,7 @@ onBeforeMount(() => {
       v-model="localStage.name"
       label="Nom du type d'environnement"
       label-visible
+      hint="Ne doit pas contenir d'espace, de trait d'union, ni de caractères spéciaux."
       :required="true"
       data-testid="nameInput"
       :disabled="!isNewStage"

@@ -62,7 +62,7 @@ describe('EnvironmentForm.vue', () => {
     cy.getByDataTestid('cancelEnvironmentBtn').should('be.enabled')
 
     cy.getByDataTestid('environmentNameInput')
-      .clear().type('prod-0')
+      .clear().type('prod0')
     cy.get('select#stage-select > option')
       .should('have.length', randomDbSetup.stages.length + 1)
     cy.get('select#stage-select')

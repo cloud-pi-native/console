@@ -207,9 +207,9 @@ watch(quotaId, () => {
         label="Nom de l'environnement"
         label-visible
         required="required"
-        :hint="`Ne doit pas contenir d'espace, doit être unique pour le projet et le cluster sélectionnés, être en minuscules et faire plus de 2 et moins de ${longestEnvironmentName} caractères.`"
+        :hint="`Ne doit pas contenir d'espace ni de trait d'union, doit être unique pour le projet et le cluster sélectionnés, être en minuscules et faire plus de 2 et moins de ${longestEnvironmentName} caractères.`"
         :error-message="!!localEnvironment.name && !isValid(environmentSchema, localEnvironment, 'name') ? `Le nom de l\'environnment ne doit pas contenir d\'espace, doit être unique pour le projet et le cluster sélectionnés, être en minuscules et faire plus de 2 et moins de ${longestEnvironmentName} caractères.`: undefined"
-        placeholder="integ-0"
+        placeholder="integ0"
         :disabled="!props.isEditable"
       />
       <DsfrSelect
