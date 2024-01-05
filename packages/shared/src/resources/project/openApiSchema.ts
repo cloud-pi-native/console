@@ -91,10 +91,18 @@ const projectParamsSchema = {
   required: ['projectId'],
 } as const
 
-export const getUserProjectsSchema = {
+export const getProjectsSchema = {
   description: 'Retrieve a user\'s projects',
   tags: ['project'],
   summary: 'Retrieve a user\'s projects with further informations',
+  query: {
+    type: 'object',
+    properties: {
+      filter: {
+        enum: ['admin', 'user', ''],
+      },
+    },
+  },
   response: {
     200: {
       type: 'array',
@@ -106,17 +114,7 @@ export const getUserProjectsSchema = {
             properties: {
               roles: {
                 type: 'array',
-                items: {
-                  allOf: [
-                    { $ref: 'role#' },
-                    {
-                      type: 'object',
-                      properties: {
-                        user: { $ref: 'user#' },
-                      },
-                    },
-                  ],
-                },
+                items: { $ref: 'role#' },
               },
             },
           }],

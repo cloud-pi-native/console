@@ -8,6 +8,7 @@ import projectClusterRouter from './cluster/controllers.js'
 import { sendOk } from '../utils/response.js'
 import adminRouter from './index-admin.js'
 import type { FastifyInstance } from 'fastify'
+import { usersRouter } from './user/controllers.js'
 
 const version = process.env.APP_VERSION || 'dev'
 
@@ -28,6 +29,7 @@ export const apiRouter = async (app: FastifyInstance, _opts) => {
   await app.register(projectStageRouter, { prefix: '/stages' })
   await app.register(projectRouter, { prefix: '/projects' })
   await app.register(adminRouter, { prefix: '/admin' })
+  await app.register(usersRouter, { prefix: '/users' })
 }
 
 export const miscRouter = async (app, _opts) => {

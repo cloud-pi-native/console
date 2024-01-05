@@ -11,11 +11,7 @@ export const updateProject = async (id: Project['id'], data: ProjectUpdate) => {
 export const getAllProjects = async () => {
   return prisma.project.findMany({
     include: {
-      roles: {
-        include: {
-          user: true,
-        },
-      },
+      roles: true,
       organization: true,
       environments: {
         include: {

@@ -1,70 +1,70 @@
 import type { FastifyInstance } from 'fastify'
 import { sendOk, sendCreated } from '@/utils/response.js'
 import { addReqLogs } from '@/utils/logger.js'
-import { addUserToProject, checkProjectLocked, checkProjectRole, getMatchingUsers, getProjectInfos, getProjectUsers, removeUserFromProject, updateUserProjectRole } from './business.js'
-import { adminGroupPath, addUserToProjectSchema, getMatchingUsersSchema, getProjectUsersSchema, removeUserFromProjectSchema, updateUserProjectRoleSchema } from '@dso-console/shared'
+import { addUserToProject, checkProjectLocked, checkProjectRole, getMatchingUsers, getProjectInfos, getProjectUsers, getSpecificUsers, removeUserFromProject, updateUserProjectRole } from './business.js'
+import { adminGroupPath, addUserToProjectSchema, getMatchingUsersSchema, getProjectUsersSchema, removeUserFromProjectSchema, updateUserProjectRoleSchema, getSpecificUsersSchema } from '@dso-console/shared'
 
 import { FromSchema } from 'json-schema-to-ts'
 
-const router = async (app: FastifyInstance, _opt) => {
+const projectUsersRouter = async (app: FastifyInstance, _opt) => {
   // TODO : pas utilisé
   // Récupérer les membres d'un projet
   app.get<{
-  Params: FromSchema<typeof getProjectUsersSchema['params']>
-}>('/:projectId/users',
-  {
-    schema: getProjectUsersSchema,
-  },
-  async (req, res) => {
-    const user = req.session.user
-    const projectId = req.params.projectId
+    Params: FromSchema<typeof getProjectUsersSchema['params']>
+  }>('/:projectId/users',
+    {
+      schema: getProjectUsersSchema,
+    },
+    async (req, res) => {
+      const user = req.session.user
+      const projectId = req.params.projectId
 
-    const users = await getProjectUsers(projectId)
+      const users = await getProjectUsers(projectId)
 
-    if (!user.groups?.includes(adminGroupPath)) {
-      await checkProjectRole(user.id, { userList: users, minRole: 'user' })
-    }
+      if (!user.groups?.includes(adminGroupPath)) {
+        await checkProjectRole(user.id, { userList: users, minRole: 'user' })
+      }
 
-    addReqLogs({
-      req,
-      description: 'Membres du projet récupérés avec succès',
-      extras: {
-        projectId,
-      },
+      addReqLogs({
+        req,
+        description: 'Membres du projet récupérés avec succès',
+        extras: {
+          projectId,
+        },
+      })
+      sendOk(res, users)
     })
-    sendOk(res, users)
-  })
 
   // Récupérer des utilisateurs par match
   app.get<{
-  Params: FromSchema<typeof getMatchingUsersSchema['params']>
-  Querystring: FromSchema<typeof getMatchingUsersSchema['query']>
-}>('/:projectId/users/match',
-  {
-    schema: getMatchingUsersSchema,
-  },
-  async (req, res) => {
-    const user = req.session.user
-    const projectId = req.params.projectId
-    const { letters } = req.query
+    Params: FromSchema<typeof getMatchingUsersSchema['params']>
+    Querystring: FromSchema<typeof getMatchingUsersSchema['query']>
+  }>('/:projectId/users/match',
+    {
+      schema: getMatchingUsersSchema,
+    },
+    async (req, res) => {
+      const user = req.session.user
+      const projectId = req.params.projectId
+      const { letters } = req.query
 
-    const users = await getProjectUsers(projectId)
+      const users = await getProjectUsers(projectId)
 
-    if (!user.groups?.includes(adminGroupPath)) {
-      await checkProjectRole(user.id, { userList: users, minRole: 'user' })
-    }
+      if (!user.groups?.includes(adminGroupPath)) {
+        await checkProjectRole(user.id, { userList: users, minRole: 'user' })
+      }
 
-    const usersMatching = await getMatchingUsers(letters)
+      const usersMatching = await getMatchingUsers(letters)
 
-    addReqLogs({
-      req,
-      description: 'Utilisateurs récupérés avec succès',
-      extras: {
-        projectId,
-      },
+      addReqLogs({
+        req,
+        description: 'Utilisateurs récupérés avec succès',
+        extras: {
+          projectId,
+        },
+      })
+      sendOk(res, usersMatching)
     })
-    sendOk(res, usersMatching)
-  })
 
   // Ajouter un membre dans un projet
   app.post<{
@@ -173,4 +173,26 @@ const router = async (app: FastifyInstance, _opt) => {
   })
 }
 
-export default router
+const usersRouter = async (app: FastifyInstance, _opt) => {
+  app.get<{
+    Querystring: FromSchema<typeof getSpecificUsersSchema['query']>
+  }>('/',
+    {
+      schema: getSpecificUsersSchema,
+    },
+    async (req, res) => {
+      const usersIds = req.query.ids.split(',')
+      const users = await getSpecificUsers(usersIds)
+
+      addReqLogs({
+        req,
+        description: 'Utilisateurs récupérés avec succès',
+        // extras: {
+        //   usersIds: usersIds.join(','),
+        // },
+      })
+      res.status(200).send(users)
+    })
+}
+
+export { projectUsersRouter, usersRouter }

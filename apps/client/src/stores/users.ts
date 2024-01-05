@@ -26,10 +26,15 @@ export const useUsersStore = defineStore('users', () => {
     addUsers(usersToAdd)
   }
 
+  const getUsers = async (usersIds: string[]) => {
+    const usersToAdd = await usersApi.getUsers(usersIds)
+    addUsers(usersToAdd)
+  }
   return {
     users,
     addUser,
     addUsers,
+    getUsers,
     getProjectUsers,
   }
 })

@@ -7,8 +7,18 @@ export const createProject = async (data: CreateProjectDto) => {
   return response.data
 }
 
-export const getUserProjects = async (): Promise<Required<ProjectInfos>[]> => {
-  const response = await apiClient.get('/projects')
+type GetProjectsOptions = {
+  filter: 'user' | 'admin'
+  limit: number
+  skip: number
+}
+export const getProjects = async (options: GetProjectsOptions): Promise<Required<ProjectInfos>[]> => {
+  const opts = {
+    filter: options.filter,
+    // limit: `${options.limit}`,
+    // skip: `${options.skip}`,
+  }
+  const response = await apiClient.get(`/projects?${new URLSearchParams(opts).toString()}`)
   return response.data
 }
 
@@ -31,11 +41,11 @@ export const getProjectSecrets = async (projectId: ProjectParams['projectId']) =
   return response.data
 }
 
-// Admin - Projects
-export const getAllProjects = async (): Promise<GetAllProjectsOutputDto> => {
-  const response = await apiClient.get('/admin/projects')
-  return response.data
-}
+// // Admin - Projects
+// export const getAllProjects = async (): Promise<GetAllProjectsOutputDto> => {
+//   const response = await apiClient.get('/admin/projects')
+//   return response.data
+// }
 
 export const handleProjectLocking = async (projectId: string, lock: boolean) => {
   const response = await apiClient.patch(`/admin/projects/${projectId}`, { lock })

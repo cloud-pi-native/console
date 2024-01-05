@@ -1,4 +1,4 @@
-import { getOrCreateUser, addLogs, addUserToProject as addUserToProjectQuery, createUser, deletePermission, getMatchingUsers as getMatchingUsersQuery, getProjectInfos as getProjectInfosQuery, getProjectUsers as getProjectUsersQuery, getUserByEmail, getUserById, lockProject, removeUserFromProject as removeUserFromProjectQuery, updateProjectFailed, updateUserProjectRole as updateUserProjectRoleQuery, getRolesByProjectId } from '@/resources/queries-index.js'
+import { getOrCreateUser, addLogs, addUserToProject as addUserToProjectQuery, createUser, deletePermission, getMatchingUsers as getMatchingUsersQuery, getProjectInfos as getProjectInfosQuery, getProjectUsers as getProjectUsersQuery, getUserByEmail, getUserById, lockProject, removeUserFromProject as removeUserFromProjectQuery, updateProjectFailed, updateUserProjectRole as updateUserProjectRoleQuery, getRolesByProjectId, getUsersByIds } from '@/resources/queries-index.js'
 import type { User, Project } from '@prisma/client'
 import { hooks } from '@/plugins/index.js'
 import { type PluginResult } from '@/plugins/hooks/hook.js'
@@ -25,6 +25,8 @@ export const checkProjectLocked = async (project: Project) => {
 export const getProjectInfos = async (projectId: Project['id']) => getProjectInfosQuery(projectId)
 
 export const getProjectUsers = async (projectId: Project['id']) => getProjectUsersQuery(projectId)
+
+export const getSpecificUsers = async (ids: User['id'][]) => getUsersByIds(ids)
 
 export const getMatchingUsers = async (letters: string) => getMatchingUsersQuery(letters)
 

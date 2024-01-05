@@ -34,6 +34,28 @@ export const getUsersSchema = {
     },
   },
 } as const
+
+export const getSpecificUsersSchema = {
+  description: 'Retrieve some users',
+  tags: ['user'],
+  summary: 'Retrieve some users',
+  query: {
+    type: 'object',
+    properties: {
+      ids: {
+        type: 'string',
+      },
+    },
+    required: ['ids'],
+  },
+  response: {
+    200: {
+      type: 'array',
+      items: { $ref: 'user#' },
+    },
+  },
+} as const
+
 export const getProjectUsersSchema = {
   description: 'Retrieve a project\'s users',
   tags: ['user'],
@@ -85,17 +107,7 @@ export const addUserToProjectSchema = {
   response: {
     201: {
       type: 'array',
-      items: {
-        allOf: [
-          { $ref: 'role#' },
-          {
-            type: 'object',
-            properties: {
-              user: { $ref: 'user#' },
-            },
-          },
-        ],
-      },
+      items: { $ref: 'role#' },
     },
   },
 } as const

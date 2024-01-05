@@ -1,11 +1,13 @@
 <script lang="ts" setup>
-import { onBeforeMount, ref, type Ref } from 'vue'
-import { useAdminProjectStore } from '@/stores/admin/project.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
+import { onBeforeMount, ref } from 'vue'
+
+import { getRandomId } from '@gouvminint/vue-dsfr'
 import { type AsyncReturnType, formatDate, statusDict, sortArrByObjKeyAsc } from '@dso-console/shared'
+
+import { useProjectStore } from '@/stores/project.js'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useAdminOrganizationStore } from '@/stores/admin/organization.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
-import { getRandomId } from '@gouvminint/vue-dsfr'
 import { useUserStore } from '@/stores/user.js'
 import { useUsersStore } from '@/stores/users.js'
 import { useProjectUserStore } from '@/stores/project-user'
@@ -15,7 +17,7 @@ import { handleError } from '@/utils/func.js'
 import LoadingCt from '@/components/LoadingCt.vue'
 import TeamCt from '@/components/TeamCt.vue'
 
-const adminProjectStore = useAdminProjectStore()
+const projectStore = useProjectStore()
 const adminOrganizationStore = useAdminOrganizationStore()
 const userStore = useUserStore()
 const usersStore = useUsersStore()
@@ -44,18 +46,17 @@ type RepositoryRow = [string, Component, Component] | [[{ text: string; cellAttr
 type RepositoryRows = RepositoryRow[] | EmptyRow
 
 type FileForDownload = File & {
-  href?: string,
-  format?: string,
-  title?: string,
+  href?: string
+  format?: string
+  title?: string
 }
 
-const allProjects: Ref<AsyncReturnType<typeof adminProjectStore.getAllProjects>> = ref([])
-const organizations: Ref<AsyncReturnType<typeof adminOrganizationStore.getAllOrganizations>> = ref([])
-const rows: Ref<Rows> = ref([])
-const environmentsRows: Ref<EnvironnementRows > = ref([])
-const repositoriesRows: Ref<RepositoryRows> = ref([])
+const organizations = ref<AsyncReturnType<typeof adminOrganizationStore.getAllOrganizations>>([])
+const rows = ref<Rows>([])
+const environmentsRows = ref<EnvironnementRows>([])
+const repositoriesRows = ref<RepositoryRows>([])
 const tableKey = ref(getRandomId('table'))
-const selectedProject: Ref<typeof allProjects['value'][0] | undefined> = ref()
+const selectedProject = ref<typeof projectStore.projects.value[0] | undefined>()
 const isWaitingForResponse = ref(false)
 const teamCtKey = ref(getRandomId('team'))
 const environmentsCtKey = ref(getRandomId('environment'))
@@ -64,7 +65,7 @@ const isArchivingProject = ref(false)
 const projectToArchive = ref('')
 const inputSearchText = ref('')
 const activeFilter = ref('Non archivés')
-const file: Ref<undefined | FileForDownload> = ref(undefined)
+const file = ref<FileForDownload | undefined>(undefined)
 
 const title = 'Liste des projets'
 const headers = [
@@ -113,7 +114,7 @@ const rowFilter = (rows: Row[]): Rows | EmptyRow => {
 }
 
 const setRows = () => {
-  rows.value = sortArrByObjKeyAsc(allProjects.value, 'name')
+  rows.value = sortArrByObjKeyAsc(projectStore.projects, 'name')
     ?.map(({ id, organizationId, name, description, roles, status, locked, createdAt, updatedAt }) => (
       {
         status,
@@ -130,7 +131,7 @@ const setRows = () => {
           organizations.value?.find(org => org.id === organizationId)?.label,
           name,
           description ?? '',
-          roles?.find(role => role.role === 'owner')?.user?.email,
+          usersStore.users[roles?.find(role => role.role === 'owner')?.userId]?.email ?? '',
           {
             component: 'v-icon',
             name: statusDict.status[status].icon,
@@ -244,7 +245,7 @@ const getRepositoriesRows = () => {
 const getAllProjects = async () => {
   isWaitingForResponse.value = true
   try {
-    allProjects.value = await adminProjectStore.getAllProjects()
+    await projectStore.getAllProjects()
     setRows()
     if (selectedProject.value) selectProject(selectedProject.value.id)
   } catch (error) {
@@ -254,7 +255,7 @@ const getAllProjects = async () => {
 }
 
 const selectProject = async (projectId: string) => {
-  selectedProject.value = allProjects.value?.find(project => project.id === projectId)
+  selectedProject.value = projectStore.projects?.find(project => project.id === projectId)
   getRepositoriesRows()
   await getEnvironmentsRows()
 }

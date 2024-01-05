@@ -1,7 +1,9 @@
 import { defineStore } from 'pinia'
+
+import type { AddUserToProjectDto, RoleParams, UserModel, UserParams } from '@dso-console/shared'
+
 import api from '@/api/index.js'
 import { useProjectStore } from '@/stores/project.js'
-import type { AddUserToProjectDto, RoleParams, UserModel, UserParams } from '@dso-console/shared'
 import { useUsersStore } from './users.js'
 
 export const useProjectUserStore = defineStore('project-user', () => {
@@ -16,9 +18,6 @@ export const useProjectUserStore = defineStore('project-user', () => {
 
   const addUserToProject = async (projectId: UserParams['projectId'], user: AddUserToProjectDto) => {
     const newRoles = await api.addUserToProject(projectId, user)
-    newRoles.forEach(role => {
-      usersStore.addUser(role.user)
-    })
     projectStore.updateProjectRoles(projectId, newRoles)
     return newRoles
   }

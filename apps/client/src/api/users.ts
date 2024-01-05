@@ -1,9 +1,14 @@
-import type { AddUserToProjectDto, AddUserToProjectOutput, LettersQuery, RoleParams, UpdateUserProjectRoleDto, UserModel, UserParams } from '@dso-console/shared'
+import type { AddUserToProjectDto, AddUserToProjectOutputDto, LettersQuery, RoleParams, UpdateUserProjectRoleDto, UserModel, UserParams } from '@dso-console/shared'
 import { apiClient } from './xhr-client.js'
 
 // Admin - Users
 export const getAllUsers = async () => {
   const response = await apiClient.get('/admin/users')
+  return response.data
+}
+
+export const getUsers = async (ids: string[]) => {
+  const response = await apiClient.get(`/users?ids=${ids.join(',')}`)
   return response.data
 }
 
@@ -13,12 +18,12 @@ export const getMatchingUsers = async (projectId: UserParams['projectId'], lette
   return response.data
 }
 
-export const addUserToProject = async (projectId: UserParams['projectId'], data: AddUserToProjectDto): Promise<AddUserToProjectOutput> => {
+export const addUserToProject = async (projectId: UserParams['projectId'], data: AddUserToProjectDto): Promise<AddUserToProjectOutputDto> => {
   const response = await apiClient.post(`/projects/${projectId}/users`, data)
   return response.data
 }
 
-export const updateUserProjectRole = async (projectId: RoleParams['projectId'], userId: RoleParams['userId'], data: UpdateUserProjectRoleDto): Promise<AddUserToProjectOutput> => {
+export const updateUserProjectRole = async (projectId: RoleParams['projectId'], userId: RoleParams['userId'], data: UpdateUserProjectRoleDto): Promise<AddUserToProjectOutputDto> => {
   const response = await apiClient.put(`/projects/${projectId}/users/${userId}`, data)
   return response.data
 }
@@ -28,7 +33,7 @@ export const getProjectUsers = async (projectId: UserParams['projectId']): Promi
   return response.data
 }
 
-export const removeUser = async (projectId: RoleParams['projectId'], userId: RoleParams['userId']): Promise<AddUserToProjectOutput> => {
+export const removeUser = async (projectId: RoleParams['projectId'], userId: RoleParams['userId']): Promise<AddUserToProjectOutputDto> => {
   const response = await apiClient.delete(`/projects/${projectId}/users/${userId}`)
   return response.data
 }

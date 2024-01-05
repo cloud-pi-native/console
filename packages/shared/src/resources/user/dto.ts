@@ -2,7 +2,7 @@ import { FromSchema } from 'json-schema-to-ts'
 import { addUserToProjectSchema, getMatchingUsersSchema, getProjectUsersSchema, updateUserProjectRoleSchema } from './openApiSchema.js'
 
 export type AddUserToProjectDto = FromSchema<typeof addUserToProjectSchema['body']>
-export type AddUserToProjectOutput = FromSchema<typeof addUserToProjectSchema['response']['201']>
+export type AddUserToProjectOutputDto = FromSchema<typeof addUserToProjectSchema['response']['201']>
 
 export type UpdateUserProjectRoleDto = FromSchema<typeof updateUserProjectRoleSchema['body']>
 

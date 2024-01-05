@@ -39,6 +39,16 @@ export const getUserById = async (id: User['id']) => {
   return prisma.user.findUnique({ where: { id } })
 }
 
+export const getUsersByIds = async (ids: User['id'][]) => {
+  return prisma.user.findMany({
+    where: {
+      id: {
+        in: ids,
+      },
+    },
+  })
+}
+
 export const getOrCreateUser = async (user: Parameters<typeof prisma.user.upsert>[0]['create']) => prisma.user.upsert({
   where: { id: user.id },
   update: user,

@@ -14,13 +14,14 @@ import {
   archiveProject,
   getProjectSecrets,
 } from './business.js'
+import { getAllProjects } from './admin/business.js'
 import projectEnvironmentRouter from '../environment/controllers.js'
 import projectRepositoryRouter from '../repository/controllers.js'
-import projectUserRouter from '../user/controllers.js'
+import { projectUsersRouter } from '../user/controllers.js'
 import projectPermissionRouter from '../permission/controllers.js'
 import {
   getProjectByIdSchema,
-  getUserProjectsSchema,
+  getProjectsSchema,
   createProjectSchema,
   updateProjectSchema,
   archiveProjectSchema,
@@ -30,16 +31,23 @@ import { FromSchema } from 'json-schema-to-ts'
 
 const router = async (app: FastifyInstance, _opt) => {
   // Récupérer tous les projets d'un user
-  app.get(
+  app.get<{
+    Reply: {
+      200: FromSchema<typeof getProjectsSchema.response[200]>
+    },
+    Querystring: FromSchema<typeof getProjectsSchema.query>
+  }>(
     '/',
     {
-      schema: getUserProjectsSchema,
+      schema: getProjectsSchema,
     },
-    async (req, res) => {
+    async (req, _res) => {
       const requestor = req.session.user
-      delete requestor.groups
+      const { filter } = req.query
 
-      const projectsInfos = await getUserProjects(requestor)
+      const projectsInfos = req.session.user.groups.includes('/admin') && filter === 'admin'
+        ? await getAllProjects(requestor)
+        : await getUserProjects(requestor)
 
       addReqLogs({
         req,
@@ -48,7 +56,7 @@ const router = async (app: FastifyInstance, _opt) => {
           userId: requestor.id,
         },
       })
-      sendOk(res, projectsInfos)
+      return { 200: projectsInfos }
     },
   )
 
@@ -178,7 +186,7 @@ const router = async (app: FastifyInstance, _opt) => {
   app.register(projectRepositoryRouter)
 
   // Enregistrement du sous routeur user
-  app.register(projectUserRouter)
+  app.register(projectUsersRouter)
 
   // Enregistrement du sous routeur permission
   app.register(projectPermissionRouter)

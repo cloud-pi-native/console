@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { onMounted, ref, watch, computed, type Ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import router from '@/router/index.js'
 import DsoSelectedProject from './DsoSelectedProject.vue'
@@ -8,8 +8,7 @@ import { handleError } from '@/utils/func.js'
 
 const projectStore = useProjectStore()
 
-const projects = computed(() => projectStore.projects)
-const projectList: Ref<Array<Record<any, any>>> = ref([])
+const projectList = ref<Record<string, any>[]>([])
 
 const setProjectList = (projects: Array<Record<any, any>>) => {
   projectList.value = sortArrByObjKeyAsc(projects, 'name')
@@ -41,10 +40,9 @@ onMounted(async () => {
   }
 })
 
-watch(projects, (projects) => {
+watch(() => projectStore.userProjects, (projects) => {
   setProjectList(projects)
 })
-
 </script>
 
 <template>

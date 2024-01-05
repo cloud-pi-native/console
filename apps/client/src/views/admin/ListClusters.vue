@@ -1,20 +1,22 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch, type Ref } from 'vue'
-import { useAdminClusterStore } from '@/stores/admin/cluster.js'
-import { useAdminProjectStore } from '@/stores/admin/project.js'
-import ClusterForm from '@/components/ClusterForm.vue'
+
 import { sortArrByObjKeyAsc, type CreateClusterDto, type UpdateClusterDto, type ClusterParams } from '@dso-console/shared'
-import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
+
 import { handleError } from '@/utils/func.js'
+import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
+import { useAdminClusterStore } from '@/stores/admin/cluster.js'
+import { useProjectStore } from '@/stores/project.js'
+import ClusterForm from '@/components/ClusterForm.vue'
 
 const adminClusterStore = useAdminClusterStore()
-const adminProjectStore = useAdminProjectStore()
+const projectStore = useProjectStore()
 const projectEnvironmentStore = useProjectEnvironmentStore()
 
 const clusters = computed(() => adminClusterStore.clusters)
 const selectedCluster = ref({})
 const clusterList = ref([])
-const allProjects: Ref<any[]> = ref([])
+
 const allStages: Ref<any[]> = ref([])
 const isUpdatingCluster = ref(false)
 const isNewClusterForm = ref(false)
@@ -100,7 +102,6 @@ onMounted(async () => {
   try {
     await adminClusterStore.getClusters()
     setClusterTiles(clusters.value)
-    allProjects.value = await adminProjectStore.getAllActiveProjects()
     allStages.value = await projectEnvironmentStore.getStages()
   } catch (error) {
     handleError(error)
@@ -132,7 +133,7 @@ watch(clusters, () => {
     class="my-5 pb-10 border-grey-900 border-y-1"
   >
     <ClusterForm
-      :all-projects="allProjects"
+      :all-projects="projectStore.activeProjects"
       :all-stages="allStages"
       class="w-full"
       is-updating-cluster="isUpdatingCluster"
@@ -163,7 +164,7 @@ watch(clusters, () => {
       <ClusterForm
         v-if="Object.keys(selectedCluster).length && selectedCluster.id === cluster.id"
         :cluster="selectedCluster"
-        :all-projects="allProjects"
+        :all-projects="projectStore.activeProjects"
         :all-stages="allStages"
         :associated-environments="associatedEnvironments"
         is-updating-cluster="isUpdatingCluster"

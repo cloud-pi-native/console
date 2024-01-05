@@ -42,6 +42,7 @@ import { projectRootDir } from '@/utils/env.js'
 import { type UserDto, getUser } from '@/resources/user/business.js'
 import { gitlabUrl } from '@/plugins/core/gitlab/utils.js'
 import { getProjectServices, servicesInfos } from '@/plugins/services.js'
+import { UserDetails } from '@/types/index.js'
 
 // Fetch infos
 export const getProjectInfosAndClusters = async (projectId: string) => {
@@ -50,7 +51,8 @@ export const getProjectInfosAndClusters = async (projectId: string) => {
   return { project, projectClusters }
 }
 
-export const getUserProjects = async (requestor: UserDto) => {
+export const getUserProjects = async (requestor: UserDetails) => {
+  delete requestor.groups
   const user = await getUser(requestor)
   const projects = await getUserProjectsQuery(user)
   const publicClusters = await getPublicClusters()
