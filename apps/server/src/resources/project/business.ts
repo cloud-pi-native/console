@@ -9,6 +9,7 @@ import {
   getProjectByNames,
   getProjectInfosAndRepos,
   getProjectInfos as getProjectInfosQuery,
+  getProjectPartialEnvironments,
   getPublicClusters,
   getSingleOwnerByProjectId,
   getUserProjects as getUserProjectsQuery,
@@ -240,12 +241,14 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
     }))
 
     // -- début - Suppression environnements --
+    let environments = await getProjectPartialEnvironments({ projectId })
     for (const environment of project.environments) {
       const cluster = await getClusterById(environment.clusterId)
 
       // Supprimer l'environnement
       const envData = {
         environment: environment.name,
+        environments,
         project: project.name,
         organization: project.organization.name,
         repositories,
@@ -260,6 +263,7 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
       await addLogs('Delete Environments', resultsEnv, requestor.id)
       if (resultsEnv.failed) throw new UnprocessableContentError('Echec des services à la suppression de l\'environnement')
       await deleteEnvironment(environment.id)
+      environments = environments.toSpliced(environments.findIndex(partialEnvironment => partialEnvironment.name === environment.name), 1)
     }
     // -- fin - Suppression environnements --
 

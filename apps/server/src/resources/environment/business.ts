@@ -15,6 +15,7 @@ import {
   getProjectInfos,
   getQuotaStageById,
   getQuotaById,
+  getProjectPartialEnvironments,
 } from '@/resources/queries-index.js'
 import { hooks } from '@/plugins/index.js'
 import { DsoError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
@@ -194,9 +195,11 @@ export const createEnvironment = async (
       internalRepoName,
     }))
     const cluster = await getClusterById(clusterId)
+    const environments = await getProjectPartialEnvironments({ projectId })
 
     const results = await hooks.initializeEnvironment.execute({
       environment: name,
+      environments,
       project: projectName,
       organization: organizationName,
       repositories,
@@ -345,9 +348,11 @@ export const deleteEnvironment = async ({
       internalRepoName,
     }))
     const cluster = await getClusterById(environment.clusterId)
+    const environments = await getProjectPartialEnvironments({ projectId })
 
     const results = await hooks.deleteEnvironment.execute({
       environment: environment.name,
+      environments,
       project: projectName,
       organization: organizationName,
       repositories,
