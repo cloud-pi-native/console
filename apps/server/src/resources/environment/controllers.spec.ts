@@ -93,6 +93,9 @@ describe('User routes', () => {
       const envToAdd = getRandomEnv('int-0', projectInfos.id, quotaStage?.id, projectInfos?.clusters[0]?.id)
       const envInfos = { ...envToAdd, project: projectInfos }
       const log = getRandomLog('Create Environment', requestor.id)
+      projectInfos.environments?.forEach(environment => {
+        environment.quotaStage = { stage: { name: 'dev' } }
+      })
 
       prisma.user.findUnique.mockResolvedValueOnce(getRequestor())
       prisma.project.findUnique.mockResolvedValue(projectInfos)
@@ -102,9 +105,9 @@ describe('User routes', () => {
       prisma.project.update.mockResolvedValue(projectInfos)
       prisma.environment.create.mockReturnValue(envInfos)
       prisma.cluster.findUnique.mockResolvedValue(projectInfos?.clusters[0])
+      prisma.environment.findMany.mockResolvedValue(projectInfos.environments)
       prisma.log.create.mockResolvedValueOnce(log)
       prisma.environment.update.mockReturnValue([envInfos])
-      prisma.environment.findMany.mockReturnValue(projectInfos.environments)
       prisma.repository.findMany.mockReturnValue(projectInfos.repositories)
 
       const response = await app.inject()

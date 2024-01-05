@@ -18,7 +18,6 @@ import type { FastifyInstance } from 'fastify'
 
 import { FromSchema } from 'json-schema-to-ts'
 
-// DELETE
 const router = async (app: FastifyInstance, _opt) => {
   // Récupérer un environnement par son id
   // TODO #541 : ce controller n'est pas utilisé
@@ -55,36 +54,36 @@ const router = async (app: FastifyInstance, _opt) => {
 
   // Créer un environnement
   app.post<{
-  Body: FromSchema<typeof initializeEnvironmentSchema['body']>,
-  Params: FromSchema<typeof initializeEnvironmentSchema['params']>,
-}>('/:projectId/environments',
-  {
-    schema: initializeEnvironmentSchema,
-  },
-  async (req, res) => {
-    const data = req.body
-    const userId = req.session.user.id
-    const projectId = req.params.projectId
+    Body: FromSchema<typeof initializeEnvironmentSchema['body']>,
+    Params: FromSchema<typeof initializeEnvironmentSchema['params']>,
+  }>('/:projectId/environments',
+    {
+      schema: initializeEnvironmentSchema,
+    },
+    async (req, res) => {
+      const data = req.body
+      const userId = req.session.user.id
+      const projectId = req.params.projectId
 
-    const environment = await createEnvironment({
-      userId,
-      projectId,
-      name: data.name,
-      clusterId: data.clusterId,
-      quotaStageId: data.quotaStageId,
-    })
-
-    addReqLogs({
-      req,
-      description: 'Environnement et permissions créés avec succès',
-      extras: {
-        environmentId: environment.id,
+      const environment = await createEnvironment({
+        userId,
         projectId,
-      },
-    })
+        name: data.name,
+        clusterId: data.clusterId,
+        quotaStageId: data.quotaStageId,
+      })
 
-    sendCreated(res, environment)
-  })
+      addReqLogs({
+        req,
+        description: 'Environnement et permissions créés avec succès',
+        extras: {
+          environmentId: environment.id,
+          projectId,
+        },
+      })
+
+      sendCreated(res, environment)
+    })
 
   // Mettre à jour un environnement
   app.put<{

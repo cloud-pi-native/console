@@ -1,5 +1,5 @@
 import { type Hook, createHook } from './hook.js'
-import type { Environment, Organization } from './index.js'
+import type { Environment, Organization, PartialEnvironment } from './index.js'
 import type { RepositoryForEnv } from './repository.js'
 import type { Project } from './project.js'
 import type { ClusterMix } from '@/types/index.js'
@@ -14,6 +14,7 @@ export type EnvironmentBase = {
   organization: Organization
   project: Project
   environment: Environment
+  environments?: PartialEnvironment[]
 }
 
 export type EnvironmentCreateArgs = {
