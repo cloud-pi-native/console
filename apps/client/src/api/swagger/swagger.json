@@ -1,0 +1,4781 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "API Console DSO",
+    "description": "Swagger des routes de la console DSO.",
+    "version": "1.0.0"
+  },
+  "definitions": {
+    "organization": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string"
+        }
+      }
+    },
+    "user": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string"
+        },
+        "logs": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "permissions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/permission"
+          }
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/role"
+          }
+        }
+      }
+    },
+    "service": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "monitorUrl": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "imgSrc": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "permission": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "level": {
+          "type": "number"
+        },
+        "environmentId": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string"
+        },
+        "environment": {
+          "$ref": "#/definitions/environment"
+        },
+        "user": {
+          "$ref": "#/definitions/user"
+        }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "clusterId": {
+          "type": "string"
+        },
+        "quotaStageId": {
+          "type": "string"
+        },
+        "projectId": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string"
+        },
+        "permissions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/permission"
+          }
+        },
+        "cluster": {
+          "$ref": "#/definitions/cluster"
+        },
+        "project": {
+          "$ref": "#/definitions/project"
+        },
+        "quotaStage": {
+          "$ref": "#/definitions/quotaStage"
+        }
+      }
+    },
+    "repository": {
+      "type": "object",
+      "title": "repository",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "internalRepoName": {
+          "type": "string"
+        },
+        "externalRepoUrl": {
+          "type": "string"
+        },
+        "externalUserName": {
+          "type": "string"
+        },
+        "externalToken": {
+          "type": "string"
+        },
+        "isInfra": {
+          "type": "boolean"
+        },
+        "isPrivate": {
+          "type": "boolean"
+        },
+        "projectId": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string"
+        },
+        "project": {
+          "$ref": "#/definitions/project"
+        }
+      }
+    },
+    "role": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "projectId": {
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "owner",
+            "user"
+          ]
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string"
+        },
+        "project": {
+          "$ref": "#/definitions/project"
+        },
+        "user": {
+          "$ref": "#/definitions/user"
+        }
+      }
+    },
+    "cluster": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "privacy": {
+          "enum": [
+            "public",
+            "dedicated"
+          ]
+        },
+        "clusterResources": {
+          "type": "boolean"
+        },
+        "infos": {
+          "type": "string"
+        },
+        "cluster": {
+          "type": "object",
+          "properties": {
+            "caData": {
+              "type": "string"
+            },
+            "server": {
+              "type": "string"
+            },
+            "tlsServerName": {
+              "type": "string"
+            }
+          }
+        },
+        "projectIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "stageIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "user": {
+          "type": "object",
+          "properties": {
+            "certData": {
+              "type": "string"
+            },
+            "keyData": {
+              "type": "string"
+            }
+          }
+        },
+        "kubeConfigId": {
+          "type": "string"
+        },
+        "secretName": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string"
+        },
+        "kubeconfig": {
+          "type": "object"
+        },
+        "projects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/project"
+          }
+        },
+        "environments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/environment"
+          }
+        },
+        "stages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "clusters": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/cluster"
+                }
+              },
+              "quotaStage": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "quotaId": {
+                      "type": "string"
+                    },
+                    "stageId": {
+                      "type": "string"
+                    },
+                    "environments": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/definitions/environment"
+                      }
+                    },
+                    "quota": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "memory": {
+                          "type": "string"
+                        },
+                        "cpu": {
+                          "type": "number"
+                        },
+                        "isPrivate": {
+                          "type": "boolean"
+                        },
+                        "stageIds": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "quotaStage": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/definitions/quotaStage"
+                          }
+                        }
+                      }
+                    },
+                    "stage": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "clusters": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/definitions/cluster"
+                          }
+                        },
+                        "quotaStage": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/definitions/quotaStage"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "organizationId": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "initializing",
+            "created",
+            "failed",
+            "archived"
+          ]
+        },
+        "locked": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string"
+        },
+        "organization": {
+          "$ref": "#/definitions/organization"
+        },
+        "services": {
+          "$ref": "#/definitions/service"
+        },
+        "environments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/environment"
+          }
+        },
+        "repositories": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/repository"
+          }
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/role"
+          }
+        },
+        "clusters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cluster"
+          }
+        }
+      }
+    },
+    "quotaStage": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "quotaId": {
+          "type": "string"
+        },
+        "stageId": {
+          "type": "string"
+        },
+        "environments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/environment"
+          }
+        },
+        "quota": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "memory": {
+              "type": "string"
+            },
+            "cpu": {
+              "type": "number"
+            },
+            "isPrivate": {
+              "type": "boolean"
+            },
+            "stageIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "quotaStage": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/quotaStage"
+              }
+            }
+          }
+        },
+        "stage": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "clusters": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/cluster"
+              }
+            },
+            "quotaStage": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/quotaStage"
+              }
+            }
+          }
+        }
+      }
+    },
+    "quota": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "memory": {
+          "type": "string"
+        },
+        "cpu": {
+          "type": "number"
+        },
+        "isPrivate": {
+          "type": "boolean"
+        },
+        "stageIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "quotaStage": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "quotaId": {
+                "type": "string"
+              },
+              "stageId": {
+                "type": "string"
+              },
+              "environments": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/environment"
+                }
+              },
+              "quota": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "memory": {
+                    "type": "string"
+                  },
+                  "cpu": {
+                    "type": "number"
+                  },
+                  "isPrivate": {
+                    "type": "boolean"
+                  },
+                  "stageIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "quotaStage": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/quotaStage"
+                    }
+                  }
+                }
+              },
+              "stage": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "clusters": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/cluster"
+                    }
+                  },
+                  "quotaStage": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/quotaStage"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "stage": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "clusters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cluster"
+          }
+        },
+        "quotaStage": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "quotaId": {
+                "type": "string"
+              },
+              "stageId": {
+                "type": "string"
+              },
+              "environments": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/environment"
+                }
+              },
+              "quota": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "memory": {
+                    "type": "string"
+                  },
+                  "cpu": {
+                    "type": "number"
+                  },
+                  "isPrivate": {
+                    "type": "boolean"
+                  },
+                  "stageIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "quotaStage": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/quotaStage"
+                    }
+                  }
+                }
+              },
+              "stage": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "clusters": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/cluster"
+                    }
+                  },
+                  "quotaStage": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/quotaStage"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/api/v1/ci-files/": {
+      "post": {
+        "summary": "Generate CI Files for a given technology",
+        "description": "Generate CI Files for a given technology",
+        "tags": [
+          "repository"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "typeLanguage": {
+                  "type": "string"
+                },
+                "isJava": {
+                  "type": "boolean"
+                },
+                "isNode": {
+                  "type": "boolean"
+                },
+                "isPython": {
+                  "type": "boolean"
+                },
+                "projectName": {
+                  "type": "string"
+                },
+                "internalRepoName": {
+                  "type": "string"
+                },
+                "nodeVersion": {
+                  "type": "string"
+                },
+                "nodeInstallCommand": {
+                  "type": "string"
+                },
+                "nodeBuildCommand": {
+                  "type": "string"
+                },
+                "workingDir": {
+                  "type": "string"
+                },
+                "javaVersion": {
+                  "type": "string"
+                },
+                "artefactDir": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$id": "repository",
+                "type": "object",
+                "title": "repository",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "internalRepoName": {
+                    "type": "string"
+                  },
+                  "externalRepoUrl": {
+                    "type": "string"
+                  },
+                  "externalUserName": {
+                    "type": "string"
+                  },
+                  "externalToken": {
+                    "type": "string"
+                  },
+                  "isInfra": {
+                    "type": "boolean"
+                  },
+                  "isPrivate": {
+                    "type": "boolean"
+                  },
+                  "projectId": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "createdAt": {
+                    "type": "string"
+                  },
+                  "updatedAt": {
+                    "type": "string"
+                  },
+                  "project": {
+                    "$ref": "#/definitions/project"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/organizations/": {
+      "get": {
+        "summary": "Retrieve active organizations",
+        "description": "Retrieve active organizations",
+        "tags": [
+          "organization"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$id": "organization",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "source": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "label": {
+                    "type": "string"
+                  },
+                  "active": {
+                    "type": "boolean"
+                  },
+                  "createdAt": {
+                    "type": "string"
+                  },
+                  "updatedAt": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/clusters/": {
+      "get": {
+        "summary": "Retrieve clusters with filtered informations",
+        "description": "Retrieve clusters",
+        "tags": [
+          "cluster"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$id": "cluster",
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "label": {
+                    "type": "string"
+                  },
+                  "privacy": {
+                    "enum": [
+                      "public",
+                      "dedicated"
+                    ]
+                  },
+                  "clusterResources": {
+                    "type": "boolean"
+                  },
+                  "infos": {
+                    "type": "string"
+                  },
+                  "cluster": {
+                    "type": "object",
+                    "properties": {
+                      "caData": {
+                        "type": "string"
+                      },
+                      "server": {
+                        "type": "string"
+                      },
+                      "tlsServerName": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "projectIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "stageIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "user": {
+                    "type": "object",
+                    "properties": {
+                      "certData": {
+                        "type": "string"
+                      },
+                      "keyData": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "kubeConfigId": {
+                    "type": "string"
+                  },
+                  "secretName": {
+                    "type": "string"
+                  },
+                  "createdAt": {
+                    "type": "string"
+                  },
+                  "updatedAt": {
+                    "type": "string"
+                  },
+                  "kubeconfig": {
+                    "type": "object"
+                  },
+                  "projects": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/project"
+                    }
+                  },
+                  "environments": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/environment"
+                    }
+                  },
+                  "stages": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "clusters": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/definitions/cluster"
+                          }
+                        },
+                        "quotaStage": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "status": {
+                                "type": "string"
+                              },
+                              "quotaId": {
+                                "type": "string"
+                              },
+                              "stageId": {
+                                "type": "string"
+                              },
+                              "environments": {
+                                "type": "array",
+                                "items": {
+                                  "$ref": "#/definitions/environment"
+                                }
+                              },
+                              "quota": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "memory": {
+                                    "type": "string"
+                                  },
+                                  "cpu": {
+                                    "type": "number"
+                                  },
+                                  "isPrivate": {
+                                    "type": "boolean"
+                                  },
+                                  "stageIds": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "quotaStage": {
+                                    "type": "array",
+                                    "items": {
+                                      "$ref": "#/definitions/quotaStage"
+                                    }
+                                  }
+                                }
+                              },
+                              "stage": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "clusters": {
+                                    "type": "array",
+                                    "items": {
+                                      "$ref": "#/definitions/cluster"
+                                    }
+                                  },
+                                  "quotaStage": {
+                                    "type": "array",
+                                    "items": {
+                                      "$ref": "#/definitions/quotaStage"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quotas/": {
+      "get": {
+        "summary": "Retrieve quotas, unfiltered list for admin",
+        "description": "Retrieve quotas",
+        "tags": [
+          "quota"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$id": "quota",
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "memory": {
+                    "type": "string"
+                  },
+                  "cpu": {
+                    "type": "number"
+                  },
+                  "isPrivate": {
+                    "type": "boolean"
+                  },
+                  "stageIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "quotaStage": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string"
+                        },
+                        "quotaId": {
+                          "type": "string"
+                        },
+                        "stageId": {
+                          "type": "string"
+                        },
+                        "environments": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/definitions/environment"
+                          }
+                        },
+                        "quota": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "memory": {
+                              "type": "string"
+                            },
+                            "cpu": {
+                              "type": "number"
+                            },
+                            "isPrivate": {
+                              "type": "boolean"
+                            },
+                            "stageIds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "quotaStage": {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/definitions/quotaStage"
+                              }
+                            }
+                          }
+                        },
+                        "stage": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "clusters": {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/definitions/cluster"
+                              }
+                            },
+                            "quotaStage": {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/definitions/quotaStage"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/stages/": {
+      "get": {
+        "summary": "Retrieve stages, unfiltered list for admin",
+        "description": "Retrieve stages",
+        "tags": [
+          "stage"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$id": "stage",
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "clusters": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/cluster"
+                    }
+                  },
+                  "quotaStage": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string"
+                        },
+                        "quotaId": {
+                          "type": "string"
+                        },
+                        "stageId": {
+                          "type": "string"
+                        },
+                        "environments": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/definitions/environment"
+                          }
+                        },
+                        "quota": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "memory": {
+                              "type": "string"
+                            },
+                            "cpu": {
+                              "type": "number"
+                            },
+                            "isPrivate": {
+                              "type": "boolean"
+                            },
+                            "stageIds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "quotaStage": {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/definitions/quotaStage"
+                              }
+                            }
+                          }
+                        },
+                        "stage": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "clusters": {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/definitions/cluster"
+                              }
+                            },
+                            "quotaStage": {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/definitions/quotaStage"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/": {
+      "get": {
+        "summary": "Retrieve a user's projects with further informations",
+        "description": "Retrieve a user's projects",
+        "tags": [
+          "project"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$id": "project",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "organizationId": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "enum": [
+                      "initializing",
+                      "created",
+                      "failed",
+                      "archived"
+                    ]
+                  },
+                  "locked": {
+                    "type": "boolean"
+                  },
+                  "createdAt": {
+                    "type": "string"
+                  },
+                  "updatedAt": {
+                    "type": "string"
+                  },
+                  "organization": {
+                    "$ref": "#/definitions/organization"
+                  },
+                  "services": {
+                    "$ref": "#/definitions/service"
+                  },
+                  "environments": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/environment"
+                    }
+                  },
+                  "repositories": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/repository"
+                    }
+                  },
+                  "roles": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/role"
+                    }
+                  },
+                  "clusters": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/cluster"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new project",
+        "description": "Create a new project",
+        "tags": [
+          "project"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "organizationId": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "organizationId",
+                "name"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "schema": {
+              "$id": "todo.com",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "organizationId": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "status": {
+                  "enum": [
+                    "initializing",
+                    "created",
+                    "failed",
+                    "archived"
+                  ]
+                },
+                "locked": {
+                  "type": "boolean"
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "type": "string"
+                },
+                "organization": {
+                  "$ref": "#/definitions/organization"
+                },
+                "services": {
+                  "$ref": "#/definitions/service"
+                },
+                "environments": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/environment"
+                  }
+                },
+                "repositories": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/repository"
+                  }
+                },
+                "roles": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/role"
+                  }
+                },
+                "clusters": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/cluster"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{projectId}": {
+      "get": {
+        "summary": "Retrieve a project by its id, with further informations",
+        "description": "Retrieve a project by its id",
+        "tags": [
+          "project"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "projectId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "$id": "todo.com",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "organizationId": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "status": {
+                  "enum": [
+                    "initializing",
+                    "created",
+                    "failed",
+                    "archived"
+                  ]
+                },
+                "locked": {
+                  "type": "boolean"
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "type": "string"
+                },
+                "organization": {
+                  "$ref": "#/definitions/organization"
+                },
+                "services": {
+                  "$ref": "#/definitions/service"
+                },
+                "environments": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/environment"
+                  }
+                },
+                "repositories": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/repository"
+                  }
+                },
+                "roles": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/role"
+                  }
+                },
+                "clusters": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/cluster"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a project",
+        "description": "Update project",
+        "tags": [
+          "project"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "description": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "projectId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "$id": "todo.com",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "organizationId": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "status": {
+                  "enum": [
+                    "initializing",
+                    "created",
+                    "failed",
+                    "archived"
+                  ]
+                },
+                "locked": {
+                  "type": "boolean"
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "type": "string"
+                },
+                "organization": {
+                  "$ref": "#/definitions/organization"
+                },
+                "services": {
+                  "$ref": "#/definitions/service"
+                },
+                "environments": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/environment"
+                  }
+                },
+                "repositories": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/repository"
+                  }
+                },
+                "roles": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/role"
+                  }
+                },
+                "clusters": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/cluster"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Archive a project",
+        "description": "Archive a project",
+        "tags": [
+          "project"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "projectId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Default Response",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{projectId}/environments/{environmentId}": {
+      "get": {
+        "summary": "Retrieve an environment by its id",
+        "description": "Retrieve an environment by its id",
+        "tags": [
+          "environment"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "projectId"
+          },
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "environmentId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "$id": "todo.com",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "clusterId": {
+                  "type": "string"
+                },
+                "quotaStageId": {
+                  "type": "string"
+                },
+                "projectId": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "type": "string"
+                },
+                "permissions": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/permission"
+                  }
+                },
+                "cluster": {
+                  "$ref": "#/definitions/cluster"
+                },
+                "project": {
+                  "$ref": "#/definitions/project"
+                },
+                "quotaStage": {
+                  "$ref": "#/definitions/quotaStage"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update an environment",
+        "description": "Update an environment",
+        "tags": [
+          "environment"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "quotaStageId": {
+                  "type": "string"
+                },
+                "clusterId": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "projectId"
+          },
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "environmentId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "$id": "todo.com",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "clusterId": {
+                  "type": "string"
+                },
+                "quotaStageId": {
+                  "type": "string"
+                },
+                "projectId": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "type": "string"
+                },
+                "permissions": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/permission"
+                  }
+                },
+                "cluster": {
+                  "$ref": "#/definitions/cluster"
+                },
+                "project": {
+                  "$ref": "#/definitions/project"
+                },
+                "quotaStage": {
+                  "$ref": "#/definitions/quotaStage"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Archive an environment",
+        "description": "Archive an environment",
+        "tags": [
+          "environment"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "projectId"
+          },
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "environmentId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Default Response",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{projectId}/environments": {
+      "post": {
+        "summary": "Create a new environment",
+        "description": "Create a new environment",
+        "tags": [
+          "environment"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "clusterId": {
+                  "type": "string"
+                },
+                "quotaStageId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "clusterId",
+                "quotaStageId"
+              ]
+            }
+          },
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "projectId"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "schema": {
+              "$id": "todo.com",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "clusterId": {
+                  "type": "string"
+                },
+                "quotaStageId": {
+                  "type": "string"
+                },
+                "projectId": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "type": "string"
+                },
+                "permissions": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/permission"
+                  }
+                },
+                "cluster": {
+                  "$ref": "#/definitions/cluster"
+                },
+                "project": {
+                  "$ref": "#/definitions/project"
+                },
+                "quotaStage": {
+                  "$ref": "#/definitions/quotaStage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{projectId}/repositories/{repositoryId}": {
+      "get": {
+        "summary": "Retrieve a repository by its id",
+        "description": "Retrieve a repository by its id",
+        "tags": [
+          "repository"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "projectId"
+          },
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "repositoryId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "$id": "todo.com",
+              "type": "object",
+              "title": "repository",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "internalRepoName": {
+                  "type": "string"
+                },
+                "externalRepoUrl": {
+                  "type": "string"
+                },
+                "externalUserName": {
+                  "type": "string"
+                },
+                "externalToken": {
+                  "type": "string"
+                },
+                "isInfra": {
+                  "type": "boolean"
+                },
+                "isPrivate": {
+                  "type": "boolean"
+                },
+                "projectId": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "type": "string"
+                },
+                "project": {
+                  "$ref": "#/definitions/project"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a repository",
+        "description": "Update a repository",
+        "tags": [
+          "repository"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "externalRepoUrl": {
+                  "type": "string"
+                },
+                "isPrivate": {
+                  "type": "boolean"
+                },
+                "externalToken": {
+                  "type": "string"
+                },
+                "externalUserName": {
+                  "type": "string"
+                }
+              },
+              "required": []
+            }
+          },
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "projectId"
+          },
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "repositoryId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$id": "repository",
+                "type": "object",
+                "title": "repository",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "internalRepoName": {
+                    "type": "string"
+                  },
+                  "externalRepoUrl": {
+                    "type": "string"
+                  },
+                  "externalUserName": {
+                    "type": "string"
+                  },
+                  "externalToken": {
+                    "type": "string"
+                  },
+                  "isInfra": {
+                    "type": "boolean"
+                  },
+                  "isPrivate": {
+                    "type": "boolean"
+                  },
+                  "projectId": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "createdAt": {
+                    "type": "string"
+                  },
+                  "updatedAt": {
+                    "type": "string"
+                  },
+                  "project": {
+                    "$ref": "#/definitions/project"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a repository",
+        "description": "Delete a repository",
+        "tags": [
+          "repository"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "projectId"
+          },
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "repositoryId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$id": "repository",
+                "type": "object",
+                "title": "repository",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "internalRepoName": {
+                    "type": "string"
+                  },
+                  "externalRepoUrl": {
+                    "type": "string"
+                  },
+                  "externalUserName": {
+                    "type": "string"
+                  },
+                  "externalToken": {
+                    "type": "string"
+                  },
+                  "isInfra": {
+                    "type": "boolean"
+                  },
+                  "isPrivate": {
+                    "type": "boolean"
+                  },
+                  "projectId": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "createdAt": {
+                    "type": "string"
+                  },
+                  "updatedAt": {
+                    "type": "string"
+                  },
+                  "project": {
+                    "$ref": "#/definitions/project"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{projectId}/repositories": {
+      "get": {
+        "summary": "Retrieve a project's repositories",
+        "description": "Retrieve a project's repositories",
+        "tags": [
+          "repository"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "projectId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$id": "repository",
+                "type": "object",
+                "title": "repository",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "internalRepoName": {
+                    "type": "string"
+                  },
+                  "externalRepoUrl": {
+                    "type": "string"
+                  },
+                  "externalUserName": {
+                    "type": "string"
+                  },
+                  "externalToken": {
+                    "type": "string"
+                  },
+                  "isInfra": {
+                    "type": "boolean"
+                  },
+                  "isPrivate": {
+                    "type": "boolean"
+                  },
+                  "projectId": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "createdAt": {
+                    "type": "string"
+                  },
+                  "updatedAt": {
+                    "type": "string"
+                  },
+                  "project": {
+                    "$ref": "#/definitions/project"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a repository",
+        "description": "Create a repository",
+        "tags": [
+          "repository"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "internalRepoName": {
+                  "type": "string"
+                },
+                "externalRepoUrl": {
+                  "type": "string"
+                },
+                "externalUserName": {
+                  "type": "string"
+                },
+                "externalToken": {
+                  "type": "string"
+                },
+                "isInfra": {
+                  "type": "boolean"
+                },
+                "isPrivate": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "internalRepoName",
+                "externalRepoUrl"
+              ]
+            }
+          },
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "projectId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$id": "repository",
+                "type": "object",
+                "title": "repository",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "internalRepoName": {
+                    "type": "string"
+                  },
+                  "externalRepoUrl": {
+                    "type": "string"
+                  },
+                  "externalUserName": {
+                    "type": "string"
+                  },
+                  "externalToken": {
+                    "type": "string"
+                  },
+                  "isInfra": {
+                    "type": "boolean"
+                  },
+                  "isPrivate": {
+                    "type": "boolean"
+                  },
+                  "projectId": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "createdAt": {
+                    "type": "string"
+                  },
+                  "updatedAt": {
+                    "type": "string"
+                  },
+                  "project": {
+                    "$ref": "#/definitions/project"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{projectId}/users": {
+      "get": {
+        "summary": "Retrieve a project's users",
+        "description": "Retrieve a project's users",
+        "tags": [
+          "user"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "projectId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$id": "user",
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "firstName": {
+                    "type": "string"
+                  },
+                  "lastName": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "createdAt": {
+                    "type": "string"
+                  },
+                  "updatedAt": {
+                    "type": "string"
+                  },
+                  "logs": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    }
+                  },
+                  "permissions": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/permission"
+                    }
+                  },
+                  "roles": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/role"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Add user to a project team",
+        "description": "Add user to a project team",
+        "tags": [
+          "user"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "email"
+              ]
+            }
+          },
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "projectId"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{projectId}/users/match": {
+      "get": {
+        "summary": "Retrieve users whose email matches given letters",
+        "description": "Retrieve users whose email matches given letters",
+        "tags": [
+          "user"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "required": true,
+            "in": "query",
+            "name": "letters"
+          },
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "projectId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$id": "user",
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "firstName": {
+                    "type": "string"
+                  },
+                  "lastName": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "createdAt": {
+                    "type": "string"
+                  },
+                  "updatedAt": {
+                    "type": "string"
+                  },
+                  "logs": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    }
+                  },
+                  "permissions": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/permission"
+                    }
+                  },
+                  "roles": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/role"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{projectId}/users/{userId}": {
+      "put": {
+        "summary": "Update user role in a project team",
+        "description": "Update user role in a project team",
+        "tags": [
+          "user"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "role": {
+                  "enum": [
+                    "owner",
+                    "user"
+                  ]
+                }
+              },
+              "required": []
+            }
+          },
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "projectId"
+          },
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "userId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Remove user from a project team",
+        "description": "Remove user from a project team",
+        "tags": [
+          "user"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "projectId"
+          },
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "userId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{projectId}/environments/{environmentId}/permissions": {
+      "get": {
+        "summary": "Retrieve permissions for a given environment",
+        "description": "Retrieve permissions for a given environment",
+        "tags": [
+          "permission"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "projectId"
+          },
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "environmentId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$id": "permission",
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "userId": {
+                    "type": "string"
+                  },
+                  "level": {
+                    "type": "number"
+                  },
+                  "environmentId": {
+                    "type": "string"
+                  },
+                  "createdAt": {
+                    "type": "string"
+                  },
+                  "updatedAt": {
+                    "type": "string"
+                  },
+                  "environment": {
+                    "$ref": "#/definitions/environment"
+                  },
+                  "user": {
+                    "$ref": "#/definitions/user"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new permission",
+        "description": "Create a new permission",
+        "tags": [
+          "permission"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "type": "string"
+                },
+                "level": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "userId",
+                "level"
+              ]
+            }
+          },
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "projectId"
+          },
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "environmentId"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "schema": {
+              "$id": "todo.com",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "userId": {
+                  "type": "string"
+                },
+                "level": {
+                  "type": "number"
+                },
+                "environmentId": {
+                  "type": "string"
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "type": "string"
+                },
+                "environment": {
+                  "$ref": "#/definitions/environment"
+                },
+                "user": {
+                  "$ref": "#/definitions/user"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a permission",
+        "description": "Update a permission",
+        "tags": [
+          "permission"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "type": "string"
+                },
+                "level": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "projectId"
+          },
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "environmentId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "$id": "todo.com",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "userId": {
+                  "type": "string"
+                },
+                "level": {
+                  "type": "number"
+                },
+                "environmentId": {
+                  "type": "string"
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "type": "string"
+                },
+                "environment": {
+                  "$ref": "#/definitions/environment"
+                },
+                "user": {
+                  "$ref": "#/definitions/user"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{projectId}/environments/{environmentId}/permissions/{userId}": {
+      "delete": {
+        "summary": "Archive a permission",
+        "description": "Archive a permission",
+        "tags": [
+          "permission"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "projectId"
+          },
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "environmentId"
+          },
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "userId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Default Response",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/users/": {
+      "get": {
+        "summary": "Retrieve all users, admin only",
+        "description": "Retrieve all users",
+        "tags": [
+          "user"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$id": "user",
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "firstName": {
+                    "type": "string"
+                  },
+                  "lastName": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "createdAt": {
+                    "type": "string"
+                  },
+                  "updatedAt": {
+                    "type": "string"
+                  },
+                  "logs": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    }
+                  },
+                  "permissions": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/permission"
+                    }
+                  },
+                  "roles": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/role"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/organizations/": {
+      "get": {
+        "summary": "Retrieve all organizations, admin only",
+        "description": "Retrieve all organizations",
+        "tags": [
+          "organization"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$id": "organization",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "source": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "label": {
+                    "type": "string"
+                  },
+                  "active": {
+                    "type": "boolean"
+                  },
+                  "createdAt": {
+                    "type": "string"
+                  },
+                  "updatedAt": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new organization",
+        "description": "Create a new organization",
+        "tags": [
+          "organization"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "source": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "source",
+                "name",
+                "label"
+              ],
+              "additionalProperties": false
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "schema": {
+              "$id": "todo.com",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "source": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "active": {
+                  "type": "boolean"
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/organizations/sync": {
+      "put": {
+        "summary": "Update an organization",
+        "description": "Update an organization",
+        "tags": [
+          "organization"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$id": "organization",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "source": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "label": {
+                    "type": "string"
+                  },
+                  "active": {
+                    "type": "boolean"
+                  },
+                  "createdAt": {
+                    "type": "string"
+                  },
+                  "updatedAt": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/organizations/{orgName}": {
+      "put": {
+        "summary": "Update an organization",
+        "description": "Update an organization",
+        "tags": [
+          "organization"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "source": {
+                  "type": "string"
+                },
+                "active": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "orgName"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "$id": "todo.com",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "source": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "active": {
+                  "type": "boolean"
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/projects/": {
+      "get": {
+        "summary": "Retrieve all projects, admin only",
+        "description": "Retrieve all projects",
+        "tags": [
+          "project"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$id": "project",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "organizationId": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "enum": [
+                      "initializing",
+                      "created",
+                      "failed",
+                      "archived"
+                    ]
+                  },
+                  "locked": {
+                    "type": "boolean"
+                  },
+                  "createdAt": {
+                    "type": "string"
+                  },
+                  "updatedAt": {
+                    "type": "string"
+                  },
+                  "organization": {
+                    "$ref": "#/definitions/organization"
+                  },
+                  "services": {
+                    "$ref": "#/definitions/service"
+                  },
+                  "environments": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/environment"
+                    }
+                  },
+                  "repositories": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/repository"
+                    }
+                  },
+                  "roles": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/role"
+                    }
+                  },
+                  "clusters": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/cluster"
+                    }
+                  }
+                },
+                "required": [
+                  "id",
+                  "status",
+                  "locked",
+                  "name"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/projects/data": {
+      "get": {
+        "summary": "Retrieve all projects data for download as CSV file, admin only",
+        "description": "Retrieve all projects data for download as CSV file",
+        "tags": [
+          "project"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/projects/{projectId}": {
+      "patch": {
+        "summary": "Patch a project",
+        "description": "Patch project (lock/unlock)",
+        "tags": [
+          "project"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "lock": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "projectId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/clusters/{clusterId}/environments": {
+      "get": {
+        "summary": "Retrieve environments associated to a cluster, for admins only",
+        "description": "Retrieve environments associated to a cluster",
+        "tags": [
+          "cluster",
+          "environment"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "clusterId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "organization": {
+                    "type": "string"
+                  },
+                  "project": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "owner": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/clusters/": {
+      "post": {
+        "summary": "Create a cluster, for admins only",
+        "description": "Create a cluster",
+        "tags": [
+          "cluster"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "privacy": {
+                  "enum": [
+                    "public",
+                    "dedicated"
+                  ]
+                },
+                "clusterResources": {
+                  "type": "boolean"
+                },
+                "infos": {
+                  "type": "string"
+                },
+                "cluster": {
+                  "type": "object",
+                  "properties": {
+                    "caData": {
+                      "type": "string"
+                    },
+                    "server": {
+                      "type": "string"
+                    },
+                    "tlsServerName": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "projectIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "stageIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "user": {
+                  "type": "object",
+                  "properties": {
+                    "certData": {
+                      "type": "string"
+                    },
+                    "keyData": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "required": [
+                "label",
+                "privacy",
+                "clusterResources",
+                "infos",
+                "cluster",
+                "user"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "schema": {
+              "$id": "todo.com",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "privacy": {
+                  "enum": [
+                    "public",
+                    "dedicated"
+                  ]
+                },
+                "clusterResources": {
+                  "type": "boolean"
+                },
+                "infos": {
+                  "type": "string"
+                },
+                "cluster": {
+                  "type": "object",
+                  "properties": {
+                    "caData": {
+                      "type": "string"
+                    },
+                    "server": {
+                      "type": "string"
+                    },
+                    "tlsServerName": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "projectIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "stageIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "user": {
+                  "type": "object",
+                  "properties": {
+                    "certData": {
+                      "type": "string"
+                    },
+                    "keyData": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "kubeConfigId": {
+                  "type": "string"
+                },
+                "secretName": {
+                  "type": "string"
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "type": "string"
+                },
+                "kubeconfig": {
+                  "type": "object"
+                },
+                "projects": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/project"
+                  }
+                },
+                "environments": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/environment"
+                  }
+                },
+                "stages": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "clusters": {
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/definitions/cluster"
+                        }
+                      },
+                      "quotaStage": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "status": {
+                              "type": "string"
+                            },
+                            "quotaId": {
+                              "type": "string"
+                            },
+                            "stageId": {
+                              "type": "string"
+                            },
+                            "environments": {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/definitions/environment"
+                              }
+                            },
+                            "quota": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "type": "string"
+                                },
+                                "memory": {
+                                  "type": "string"
+                                },
+                                "cpu": {
+                                  "type": "number"
+                                },
+                                "isPrivate": {
+                                  "type": "boolean"
+                                },
+                                "stageIds": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
+                                },
+                                "quotaStage": {
+                                  "type": "array",
+                                  "items": {
+                                    "$ref": "#/definitions/quotaStage"
+                                  }
+                                }
+                              }
+                            },
+                            "stage": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "type": "string"
+                                },
+                                "clusters": {
+                                  "type": "array",
+                                  "items": {
+                                    "$ref": "#/definitions/cluster"
+                                  }
+                                },
+                                "quotaStage": {
+                                  "type": "array",
+                                  "items": {
+                                    "$ref": "#/definitions/quotaStage"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/clusters/{clusterId}": {
+      "put": {
+        "summary": "Update a cluster, for admins only",
+        "description": "Update a cluster",
+        "tags": [
+          "cluster"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "privacy": {
+                  "enum": [
+                    "public",
+                    "dedicated"
+                  ]
+                },
+                "clusterResources": {
+                  "type": "boolean"
+                },
+                "infos": {
+                  "type": "string"
+                },
+                "cluster": {
+                  "type": "object",
+                  "properties": {
+                    "caData": {
+                      "type": "string"
+                    },
+                    "server": {
+                      "type": "string"
+                    },
+                    "tlsServerName": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "projectIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "stageIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "user": {
+                  "type": "object",
+                  "properties": {
+                    "certData": {
+                      "type": "string"
+                    },
+                    "keyData": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "required": []
+            }
+          },
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "clusterId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "$id": "todo.com",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "privacy": {
+                  "enum": [
+                    "public",
+                    "dedicated"
+                  ]
+                },
+                "clusterResources": {
+                  "type": "boolean"
+                },
+                "infos": {
+                  "type": "string"
+                },
+                "cluster": {
+                  "type": "object",
+                  "properties": {
+                    "caData": {
+                      "type": "string"
+                    },
+                    "server": {
+                      "type": "string"
+                    },
+                    "tlsServerName": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "projectIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "stageIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "user": {
+                  "type": "object",
+                  "properties": {
+                    "certData": {
+                      "type": "string"
+                    },
+                    "keyData": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "kubeConfigId": {
+                  "type": "string"
+                },
+                "secretName": {
+                  "type": "string"
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "type": "string"
+                },
+                "kubeconfig": {
+                  "type": "object"
+                },
+                "projects": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/project"
+                  }
+                },
+                "environments": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/environment"
+                  }
+                },
+                "stages": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "clusters": {
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/definitions/cluster"
+                        }
+                      },
+                      "quotaStage": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "status": {
+                              "type": "string"
+                            },
+                            "quotaId": {
+                              "type": "string"
+                            },
+                            "stageId": {
+                              "type": "string"
+                            },
+                            "environments": {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/definitions/environment"
+                              }
+                            },
+                            "quota": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "type": "string"
+                                },
+                                "memory": {
+                                  "type": "string"
+                                },
+                                "cpu": {
+                                  "type": "number"
+                                },
+                                "isPrivate": {
+                                  "type": "boolean"
+                                },
+                                "stageIds": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
+                                },
+                                "quotaStage": {
+                                  "type": "array",
+                                  "items": {
+                                    "$ref": "#/definitions/quotaStage"
+                                  }
+                                }
+                              }
+                            },
+                            "stage": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "type": "string"
+                                },
+                                "clusters": {
+                                  "type": "array",
+                                  "items": {
+                                    "$ref": "#/definitions/cluster"
+                                  }
+                                },
+                                "quotaStage": {
+                                  "type": "array",
+                                  "items": {
+                                    "$ref": "#/definitions/quotaStage"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a cluster, for admins only",
+        "description": "Delete a cluster",
+        "tags": [
+          "cluster"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "clusterId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Default Response",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/quotas/{quotaId}/environments": {
+      "get": {
+        "summary": "Retrieve a quota's associated environmentsn admin only",
+        "description": "Retrieve a quota's associated environments",
+        "tags": [
+          "quota",
+          "environment"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "quotaId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "organization": {
+                    "type": "string"
+                  },
+                  "project": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "stage": {
+                    "type": "string"
+                  },
+                  "owner": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/quotas/": {
+      "post": {
+        "summary": "Create a quota, admin only",
+        "description": "Create a quota",
+        "tags": [
+          "quota"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "memory": {
+                  "type": "string"
+                },
+                "cpu": {
+                  "type": "number"
+                },
+                "isPrivate": {
+                  "type": "boolean"
+                },
+                "stageIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "name",
+                "memory",
+                "cpu"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "schema": {
+              "$id": "todo.com",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "memory": {
+                  "type": "string"
+                },
+                "cpu": {
+                  "type": "number"
+                },
+                "isPrivate": {
+                  "type": "boolean"
+                },
+                "stageIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "quotaStage": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "status": {
+                        "type": "string"
+                      },
+                      "quotaId": {
+                        "type": "string"
+                      },
+                      "stageId": {
+                        "type": "string"
+                      },
+                      "environments": {
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/definitions/environment"
+                        }
+                      },
+                      "quota": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "memory": {
+                            "type": "string"
+                          },
+                          "cpu": {
+                            "type": "number"
+                          },
+                          "isPrivate": {
+                            "type": "boolean"
+                          },
+                          "stageIds": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "quotaStage": {
+                            "type": "array",
+                            "items": {
+                              "$ref": "#/definitions/quotaStage"
+                            }
+                          }
+                        }
+                      },
+                      "stage": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "clusters": {
+                            "type": "array",
+                            "items": {
+                              "$ref": "#/definitions/cluster"
+                            }
+                          },
+                          "quotaStage": {
+                            "type": "array",
+                            "items": {
+                              "$ref": "#/definitions/quotaStage"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/quotas/quotastages": {
+      "put": {
+        "summary": "Update a quota's association with stages, admin only",
+        "description": "Update a quota's association with stages",
+        "tags": [
+          "quota",
+          "stage"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "quotaId": {
+                  "type": "string"
+                },
+                "stageIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "quotaIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "stageId": {
+                  "type": "string"
+                }
+              },
+              "required": []
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$id": "quotaStage",
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "quotaId": {
+                    "type": "string"
+                  },
+                  "stageId": {
+                    "type": "string"
+                  },
+                  "environments": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/environment"
+                    }
+                  },
+                  "quota": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "memory": {
+                        "type": "string"
+                      },
+                      "cpu": {
+                        "type": "number"
+                      },
+                      "isPrivate": {
+                        "type": "boolean"
+                      },
+                      "stageIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "quotaStage": {
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/definitions/quotaStage"
+                        }
+                      }
+                    }
+                  },
+                  "stage": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "clusters": {
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/definitions/cluster"
+                        }
+                      },
+                      "quotaStage": {
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/definitions/quotaStage"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/quotas/{quotaId}/privacy": {
+      "patch": {
+        "summary": "Update a quota's privacy, admin only",
+        "description": "Update a quota's privacy",
+        "tags": [
+          "quota"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "isPrivate": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "isPrivate"
+              ]
+            }
+          },
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "quotaId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "$id": "todo.com",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "memory": {
+                  "type": "string"
+                },
+                "cpu": {
+                  "type": "number"
+                },
+                "isPrivate": {
+                  "type": "boolean"
+                },
+                "stageIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "quotaStage": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "status": {
+                        "type": "string"
+                      },
+                      "quotaId": {
+                        "type": "string"
+                      },
+                      "stageId": {
+                        "type": "string"
+                      },
+                      "environments": {
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/definitions/environment"
+                        }
+                      },
+                      "quota": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "memory": {
+                            "type": "string"
+                          },
+                          "cpu": {
+                            "type": "number"
+                          },
+                          "isPrivate": {
+                            "type": "boolean"
+                          },
+                          "stageIds": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "quotaStage": {
+                            "type": "array",
+                            "items": {
+                              "$ref": "#/definitions/quotaStage"
+                            }
+                          }
+                        }
+                      },
+                      "stage": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "clusters": {
+                            "type": "array",
+                            "items": {
+                              "$ref": "#/definitions/cluster"
+                            }
+                          },
+                          "quotaStage": {
+                            "type": "array",
+                            "items": {
+                              "$ref": "#/definitions/quotaStage"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/quotas/{quotaId}": {
+      "delete": {
+        "summary": "Delete a quota, admin only",
+        "description": "Delete a quota",
+        "tags": [
+          "quota"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "quotaId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Default Response",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/stages/{stageId}/environments": {
+      "get": {
+        "summary": "Retrieve a stage's associated environments, admin only",
+        "description": "Retrieve a stage's associated environments",
+        "tags": [
+          "stage",
+          "environment"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "stageId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "organization": {
+                    "type": "string"
+                  },
+                  "project": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "quota": {
+                    "type": "string"
+                  },
+                  "cluster": {
+                    "type": "string"
+                  },
+                  "owner": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/stages/": {
+      "post": {
+        "summary": "Create a stage, admin only",
+        "description": "Create a stage",
+        "tags": [
+          "stage"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "quotaIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "clusterIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "clusters": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/cluster"
+                  }
+                }
+              },
+              "required": [
+                "name"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "$id": "todo.com",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "clusters": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/cluster"
+                  }
+                },
+                "quotaStage": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "status": {
+                        "type": "string"
+                      },
+                      "quotaId": {
+                        "type": "string"
+                      },
+                      "stageId": {
+                        "type": "string"
+                      },
+                      "environments": {
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/definitions/environment"
+                        }
+                      },
+                      "quota": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "memory": {
+                            "type": "string"
+                          },
+                          "cpu": {
+                            "type": "number"
+                          },
+                          "isPrivate": {
+                            "type": "boolean"
+                          },
+                          "stageIds": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "quotaStage": {
+                            "type": "array",
+                            "items": {
+                              "$ref": "#/definitions/quotaStage"
+                            }
+                          }
+                        }
+                      },
+                      "stage": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "clusters": {
+                            "type": "array",
+                            "items": {
+                              "$ref": "#/definitions/cluster"
+                            }
+                          },
+                          "quotaStage": {
+                            "type": "array",
+                            "items": {
+                              "$ref": "#/definitions/quotaStage"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/stages/{stageId}/clusters": {
+      "patch": {
+        "summary": "Update a stage's associated clusters, admin only",
+        "description": "Update a stage's associated clusters",
+        "tags": [
+          "stage"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "clusterIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "clusterIds"
+              ]
+            }
+          },
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "stageId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/cluster"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/stages/{stageId}": {
+      "delete": {
+        "summary": "Delete a stage, admin only",
+        "description": "Delete a stage",
+        "tags": [
+          "stage"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "required": true,
+            "in": "path",
+            "name": "stageId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Default Response",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        }
+      }
+    }
+  },
+  "host": "http://localhost:8080",
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ]
+}

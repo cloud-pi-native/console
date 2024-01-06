@@ -2,12 +2,19 @@ import axios, { type AxiosInstance, type AxiosResponse, type InternalAxiosReques
 import { getKeycloak } from '@/utils/keycloak/keycloak'
 import router from '@/router/index.js'
 
-export const apiClient: AxiosInstance = axios.create({
+import { Api } from './swagger/Api.js'
+
+type CustomError = Error & {
+  httpCode?: number,
+  statusCode?: number,
+}
+
+const apiClient: AxiosInstance = axios.create({
   baseURL: '/api/v1',
   timeout: 60000,
 })
 
-apiClient.interceptors.request.use(async function addAuthHeader (config: InternalAxiosRequestConfig) {
+async function beforeRequestHandler (config: InternalAxiosRequestConfig) {
   if (config.url?.startsWith('/api/v1/version') || config.url?.startsWith('/login')) {
     return config
   }
@@ -26,18 +33,17 @@ apiClient.interceptors.request.use(async function addAuthHeader (config: Interna
     })
   }
   return config
-}, function (error) {
-  return Promise.reject(error)
-})
-
-export type CustomError = Error & {
-  httpCode?: number,
-  statusCode?: number,
 }
 
-apiClient.interceptors.response.use(function (response: AxiosResponse): AxiosResponse {
+function errorRequestHandler (error: any) {
+  return Promise.reject(error)
+}
+
+function validResponseHandler (response: AxiosResponse): AxiosResponse {
   return response
-}, function (error): Promise<never> {
+}
+
+function wrongResponseHandler (error: any): Promise<never> {
   const response = error.response
   const isUnauthorized: boolean = response?.status === 401
   if (isUnauthorized) {
@@ -57,4 +63,18 @@ apiClient.interceptors.response.use(function (response: AxiosResponse): AxiosRes
   const apiError: CustomError = new Error(response?.data?.error || response?.data || response?.statusText || error?.message || error)
   apiError.statusCode = response?.status
   return Promise.reject(apiError)
+}
+
+apiClient.interceptors.request.use(beforeRequestHandler, errorRequestHandler)
+
+apiClient.interceptors.response.use(validResponseHandler, wrongResponseHandler)
+
+const apiClientV2 = new Api({
+  baseURL: '/api/v1',
+  timeout: 60000,
 })
+apiClientV2.instance.interceptors.request.use(beforeRequestHandler, errorRequestHandler)
+
+apiClientV2.instance.interceptors.response.use(validResponseHandler, wrongResponseHandler)
+
+export { apiClient, apiClientV2 }
