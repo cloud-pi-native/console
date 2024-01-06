@@ -1,3 +1,18 @@
+const generateCIFilesDto = {
+  typeLanguage: { type: 'string' },
+  isJava: { type: 'boolean' },
+  isNode: { type: 'boolean' },
+  isPython: { type: 'boolean' },
+  projectName: { type: 'string' },
+  internalRepoName: { type: 'string' },
+  nodeVersion: { type: 'string' },
+  nodeInstallCommand: { type: 'string' },
+  nodeBuildCommand: { type: 'string' },
+  workingDir: { type: 'string' },
+  javaVersion: { type: 'string' },
+  artefactDir: { type: 'string' },
+} as const
+
 export const createRepositoryDto = {
   internalRepoName: {
     type: 'string',
@@ -16,6 +31,31 @@ export const createRepositoryDto = {
   },
   isPrivate: {
     type: 'boolean',
+  },
+} as const
+
+export const repositoryOpenApiSchema = {
+  $id: 'repository',
+  type: 'object',
+  title: 'repository',
+  properties: {
+    id: {
+      type: 'string',
+    },
+    ...createRepositoryDto,
+    projectId: {
+      type: 'string',
+    },
+    status: {
+      type: 'string',
+    },
+    createdAt: {
+      type: 'string',
+    },
+    updatedAt: {
+      type: 'string',
+    },
+    project: { $ref: 'project#' },
   },
 } as const
 
@@ -79,6 +119,22 @@ export const createRepositorySchema = {
     200: {
       type: 'array',
       items: { $ref: 'repository#' },
+    },
+  },
+} as const
+
+export const generateCIFilesSchema = {
+  description: 'Generate CI Files for a given technology',
+  tags: ['repository'],
+  summary: 'Generate CI Files for a given technology',
+  body: {
+    type: 'object',
+    properties: generateCIFilesDto,
+  },
+  response: {
+    200: {
+      type: 'array',
+      items: repositoryOpenApiSchema,
     },
   },
 } as const
