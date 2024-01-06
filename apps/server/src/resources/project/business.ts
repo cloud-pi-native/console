@@ -58,7 +58,7 @@ export const getUserProjects = async (requestor: UserDto) => {
   return projects.map((project) => {
     project.clusters = project.clusters.concat(publicClusters)
     if (project.services && Object.keys(project.services).includes('registry')) {
-      return { ...project, services: getProjectServices({ project: project.name, organization: project.organization.name, services: project.services }) }
+      return { ...project, services: getProjectServices({ project: project.name, organization: project.organization.name, services: project.services, environments: project.environments, clusters: project.clusters }) }
     }
     return project
   })
