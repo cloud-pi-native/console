@@ -1,4 +1,4 @@
-import { isDev, isTest, isCI, isProd, isDevSetup, port, isInt } from './utils/env.js'
+import { isDev, isTest, isCI, isProd, isDevSetup, port, isInt, onlyGenerateSwagger } from './utils/env.js'
 import { rm } from 'node:fs/promises'
 import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
@@ -6,6 +6,7 @@ import app from './app.js'
 import { getConnection, closeConnections } from './connect.js'
 import { initDb } from './init/db/index.js'
 import { initPm } from './plugins.js'
+import { writeFileSync } from 'node:fs'
 
 // Workaround because fetch isn't using http_proxy variables
 // See. https://github.com/gajus/global-agent/issues/52#issuecomment-1134525621
@@ -17,9 +18,6 @@ if (process.env.HTTP_PROXY) {
     new ProxyAgent(process.env.HTTP_PROXY),
   )
 }
-
-await startServer()
-handleExit()
 
 async function initializeDB (path: string) {
   app.log.info('Starting init DB...')
@@ -61,12 +59,7 @@ export async function startServer () {
     }
   }
 
-  try {
-    await app.listen({ host: '0.0.0.0', port: +(port ?? 8080) })
-  } catch (error) {
-    app.log.error(error)
-    process.exit(1)
-  }
+  startFastify()
   app.log.debug({ isDev, isTest, isCI, isDevSetup, isProd })
 
   process.on('unhandledRejection', (err: Error) => {
@@ -90,4 +83,23 @@ export async function exitGracefully (error: Error) {
   await closeConnections()
   app.log.info('Exiting...')
   process.exit(error instanceof Error ? 1 : 0)
+}
+
+export const startFastify = async () => {
+  try {
+    await app.listen({ host: '0.0.0.0', port: Number.isNaN(+port) ? 8080 : +port })
+  } catch (error) {
+    app.log.error(error)
+    process.exit(1)
+  }
+}
+
+if (onlyGenerateSwagger) {
+  startFastify()
+  app.log.info('Generating swagger JSON file...')
+  writeFileSync('../../apps/client/src/api/swagger/swagger.json', JSON.stringify(app.swagger(), null, 2))
+  process.exit(0)
+} else {
+  await startServer()
+  handleExit()
 }

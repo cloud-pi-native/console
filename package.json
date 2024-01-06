@@ -31,6 +31,7 @@
     "test:cov": "turbo run test:cov --color --no-daemon",
     "test:ct": "turbo run test:ct --color --no-daemon",
     "test:ct-ci": "turbo run test:ct-ci --color --no-daemon",
+    "swagger:generate": "npm --prefix apps/server run swagger:generate && npm --prefix apps/client run swagger:generate",
     "test:e2e": "npm run kube:dev:build; npm run kube:dev; npm run kube:e2e",
     "test:e2e-ci": "npm run kube:prod:build; npm run kube:prod; npm run kube:e2e-ci"
   },

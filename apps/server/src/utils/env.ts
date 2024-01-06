@@ -13,6 +13,8 @@ export const isDevSetup = process.env.DEV_SETUP === 'true'
 
 // app
 export const port = process.env.SERVER_PORT
+// start only Fastify web server, no Database connector, no hooks, no keycloak, used for front api lib generator
+export const onlyGenerateSwagger = process.env.ONLY_GENERATE_SWAGGER === 'true'
 
 // db
 export const dbUrl = process.env.DB_URL

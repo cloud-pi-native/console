@@ -25,7 +25,7 @@ import { apiRouter, miscRouter } from './resources/index.js'
 import { addReqLogs, loggerConf } from './utils/logger.js'
 import { DsoError } from './utils/errors.js'
 import { keycloakConf, sessionConf } from './utils/keycloak.js'
-import { isInt, isDev, isTest, keycloakRedirectUri } from './utils/env.js'
+import { isInt, isDev, isTest, keycloakRedirectUri, onlyGenerateSwagger } from './utils/env.js'
 
 export const apiPrefix = '/api/v1'
 
@@ -64,12 +64,18 @@ const app: FastifyInstance = addAllSchemasToApp(fastify(fastifyConf))
       info: {
         title: 'API Console DSO',
         description: 'Swagger des routes de la console DSO.',
+        // TODO binder la version npm içi
         version: '1.0.0',
       },
       host: keycloakRedirectUri?.includes('://') ? keycloakRedirectUri.split('://')[1] : 'localhost',
       schemes: ['http', 'https'],
       consumes: ['application/json'],
       produces: ['application/json'],
+    },
+    refResolver: {
+      buildLocalReference (json: { $id: string }, _baseUri, _fragment, i): string {
+        return json.$id || `my-fragment-${i}`
+      },
     },
     hideUntagged: true,
   })
@@ -82,8 +88,10 @@ const app: FastifyInstance = addAllSchemasToApp(fastify(fastifyConf))
   })
   .register(fastifyCookie)
   .register(fastifySession, sessionConf)
-  .register(keycloak, keycloakConf)
-  .register(apiRouter, { prefix: apiPrefix })
+
+if (!onlyGenerateSwagger) app.register(keycloak, keycloakConf)
+
+app.register(apiRouter, { prefix: apiPrefix })
   .register(miscRouter, { prefix: apiPrefix })
   .addHook('onRoute', opts => {
     if (opts.path === '/api/v1/healthz') {
