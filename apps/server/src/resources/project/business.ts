@@ -5,8 +5,8 @@ import {
   deleteRepository,
   getClusterById,
   getOrganizationById,
-  getProjectById,
   getProjectByNames,
+  getProjectInfos,
   getProjectInfosAndRepos,
   getProjectInfos as getProjectInfosQuery,
   getProjectPartialEnvironments,
@@ -22,7 +22,7 @@ import {
   updateProjectServices,
 } from '@/resources/queries-index.js'
 import { hooks } from '@/plugins/index.js'
-import type { Organization, Project, User } from '@prisma/client'
+import type { Cluster, Environment, Organization, Project, User } from '@prisma/client'
 import { checkInsufficientPermissionInEnvironment, checkInsufficientRoleInProject } from '@/utils/controller.js'
 import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
@@ -51,16 +51,24 @@ export const getProjectInfosAndClusters = async (projectId: string) => {
   return { project, projectClusters }
 }
 
+const projectServices = (project: Project & { organization: Organization, environments: Environment[], clusters: Pick<Cluster, 'id' | 'infos' | 'label' | 'privacy' | 'clusterResources'>[]}) => getProjectServices({
+  project: project.name,
+  organization: project.organization.name,
+  services: project.services,
+  environments: project.environments,
+  clusters: project.clusters,
+})
+
 export const getUserProjects = async (requestor: UserDto) => {
   const user = await getUser(requestor)
   const projects = await getUserProjectsQuery(user)
   const publicClusters = await getPublicClusters()
   return projects.map((project) => {
     project.clusters = project.clusters.concat(publicClusters)
-    if (project.services && Object.keys(project.services).includes('registry')) {
-      return { ...project, services: getProjectServices({ project: project.name, organization: project.organization.name, services: project.services, environments: project.environments, clusters: project.clusters }) }
+    return {
+      ...project,
+      externalServices: projectServices(project),
     }
-    return project
   })
 }
 
@@ -171,7 +179,11 @@ export const createProject = async (dataDto: CreateProjectDto, requestor: UserDt
     await updateProjectServices(project.id, services)
     await updateProjectCreated(project.id)
     await unlockProjectIfNotFailed(project.id)
-    return getProjectById(project.id)
+    const publicClusters = await getPublicClusters()
+    const projectInfos = await getProjectInfos(project.id)
+    projectInfos.clusters = projectInfos.clusters.concat(publicClusters)
+
+    return { ...projectInfos, externalServices: projectServices(projectInfos) }
   } catch (error) {
     await updateProjectFailed(project.id)
     throw new Error(error?.message)

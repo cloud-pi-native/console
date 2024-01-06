@@ -6,9 +6,7 @@ import DsoSelectedProject from './DsoSelectedProject.vue'
 const projectStore = useProjectStore()
 
 // @ts-ignore
-const projectServices = Object.values(computed(() => projectStore.selectedProject?.services).value)
-// @ts-ignore
-  .map(value => ({ ...value, id: value?.name }))
+const projectServices = computed(() => projectStore.selectedProject.externalServices.map(value => ({ ...value, id: value?.title })))
 
 </script>
 
