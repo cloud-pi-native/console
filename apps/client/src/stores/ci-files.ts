@@ -1,12 +1,8 @@
 import { defineStore } from 'pinia'
-import api from '@/api/index.js'
-import type { GenerateCIFilesDto } from '@dso-console/shared'
+import { apiClient } from '@/api/xhr-client.js'
 
 export const useCIFilesStore = defineStore('ciFiles', () => {
-  const generateCIFiles = async (ciData: GenerateCIFilesDto) => {
-    const response = await api.generateCIFiles(ciData)
-    return response
-  }
+  const generateCIFiles = async (ciData: Parameters<typeof apiClient.v1CiFilesCreate>[0]) => (await apiClient.v1CiFilesCreate(ciData)).data
 
   return {
     generateCIFiles,

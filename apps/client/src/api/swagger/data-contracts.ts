@@ -9,6 +9,8 @@
  * ---------------------------------------------------------------
  */
 
+type UtilRequiredKeys<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
+
 export interface Organization {
   id?: string;
   source?: string;
@@ -26,12 +28,16 @@ export interface User {
   email?: string;
   createdAt?: string;
   updatedAt?: string;
-  logs?: object[];
-  permissions?: Permission[];
-  roles?: Role[];
 }
 
-export type Service = Record<
+export interface ToService {
+  to: string;
+  title: string;
+  imgSrc: string;
+  description: string;
+}
+
+export type MonitorService = Record<
   string,
   {
     name?: string;
@@ -69,7 +75,6 @@ export interface Environment {
   quotaStage?: QuotaStage;
 }
 
-/** repository */
 export interface Repository {
   id?: string;
   internalRepoName?: string;
@@ -82,17 +87,14 @@ export interface Repository {
   status?: string;
   createdAt?: string;
   updatedAt?: string;
-  project?: Project;
 }
 
 export interface Role {
-  userId?: string;
-  projectId?: string;
-  role?: "owner" | "user";
+  userId: string;
+  projectId: string;
+  role: "owner" | "user";
   createdAt?: string;
   updatedAt?: string;
-  project?: Project;
-  user?: User;
 }
 
 export interface Cluster {
@@ -119,46 +121,20 @@ export interface Cluster {
   kubeconfig?: object;
   projects?: Project[];
   environments?: Environment[];
-  stages?: {
-    id?: string;
-    name?: string;
-    clusters?: Cluster[];
-    quotaStage?: {
-      id?: string;
-      status?: string;
-      quotaId?: string;
-      stageId?: string;
-      environments?: Environment[];
-      quota?: {
-        id?: string;
-        name?: string;
-        memory?: string;
-        cpu?: number;
-        isPrivate?: boolean;
-        stageIds?: string[];
-        quotaStage?: QuotaStage[];
-      };
-      stage?: {
-        id?: string;
-        name?: string;
-        clusters?: Cluster[];
-        quotaStage?: QuotaStage[];
-      };
-    }[];
-  }[];
+  stages?: Stage[];
 }
 
 export interface Project {
-  id?: string;
-  name?: string;
-  organizationId?: string;
+  id: string;
+  name: string;
+  organizationId: string;
   description?: string;
-  status?: "initializing" | "created" | "failed" | "archived";
-  locked?: boolean;
+  status: "initializing" | "created" | "failed" | "archived";
+  locked: boolean;
   createdAt?: string;
   updatedAt?: string;
   organization?: Organization;
-  services?: Service;
+  externalServices?: ToService[];
   environments?: Environment[];
   repositories?: Repository[];
   roles?: Role[];
@@ -195,54 +171,12 @@ export interface Quota {
   cpu?: number;
   isPrivate?: boolean;
   stageIds?: string[];
-  quotaStage?: {
-    id?: string;
-    status?: string;
-    quotaId?: string;
-    stageId?: string;
-    environments?: Environment[];
-    quota?: {
-      id?: string;
-      name?: string;
-      memory?: string;
-      cpu?: number;
-      isPrivate?: boolean;
-      stageIds?: string[];
-      quotaStage?: QuotaStage[];
-    };
-    stage?: {
-      id?: string;
-      name?: string;
-      clusters?: Cluster[];
-      quotaStage?: QuotaStage[];
-    };
-  }[];
+  quotaStage?: QuotaStage[];
 }
 
 export interface Stage {
   id?: string;
   name?: string;
   clusters?: Cluster[];
-  quotaStage?: {
-    id?: string;
-    status?: string;
-    quotaId?: string;
-    stageId?: string;
-    environments?: Environment[];
-    quota?: {
-      id?: string;
-      name?: string;
-      memory?: string;
-      cpu?: number;
-      isPrivate?: boolean;
-      stageIds?: string[];
-      quotaStage?: QuotaStage[];
-    };
-    stage?: {
-      id?: string;
-      name?: string;
-      clusters?: Cluster[];
-      quotaStage?: QuotaStage[];
-    };
-  }[];
+  quotaStage?: QuotaStage[];
 }

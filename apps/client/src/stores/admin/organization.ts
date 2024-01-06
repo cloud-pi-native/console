@@ -1,22 +1,22 @@
 import { defineStore } from 'pinia'
-import api from '@/api/index.js'
+import { apiClient } from '@/api/xhr-client.js'
 import type { CreateOrganizationDto, UpdateOrganizationDto } from '@dso-console/shared'
 
 export const useAdminOrganizationStore = defineStore('admin-organization', () => {
   const getAllOrganizations = async () => {
-    return api.getAllOrganizations()
+    return (await apiClient.v1AdminOrganizationsList()).data
   }
 
   const createOrganization = async (organization: CreateOrganizationDto) => {
-    return api.createOrganization({ ...organization, source: 'dso-console' })
+    return (await apiClient.v1AdminOrganizationsCreate({ ...organization, source: 'dso-console' })).data
   }
 
   const updateOrganization = async (organization: UpdateOrganizationDto & { name: CreateOrganizationDto['name'] }) => {
-    return api.updateOrganization(organization.name, { ...organization, source: 'dso-console' })
+    return (await apiClient.v1AdminOrganizationsUpdate(organization.name, { ...organization, source: 'dso-console' })).data
   }
 
   const fetchOrganizations = async () => {
-    return api.fetchOrganizations()
+    return (await apiClient.v1AdminOrganizationsSyncUpdate()).data
   }
 
   return {

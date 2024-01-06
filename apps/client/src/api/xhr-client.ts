@@ -1,4 +1,4 @@
-import axios, { type AxiosInstance, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios'
+import { type AxiosResponse, type InternalAxiosRequestConfig } from 'axios'
 import { getKeycloak } from '@/utils/keycloak/keycloak'
 import router from '@/router/index.js'
 
@@ -9,10 +9,14 @@ type CustomError = Error & {
   statusCode?: number,
 }
 
-const apiClient: AxiosInstance = axios.create({
+const apiClient = new Api({
   baseURL: '/api/v1',
   timeout: 60000,
 })
+
+apiClient.instance.interceptors.request.use(beforeRequestHandler, errorRequestHandler)
+
+apiClient.instance.interceptors.response.use(validResponseHandler, wrongResponseHandler)
 
 async function beforeRequestHandler (config: InternalAxiosRequestConfig) {
   if (config.url?.startsWith('/api/v1/version') || config.url?.startsWith('/login')) {
@@ -65,16 +69,4 @@ function wrongResponseHandler (error: any): Promise<never> {
   return Promise.reject(apiError)
 }
 
-apiClient.interceptors.request.use(beforeRequestHandler, errorRequestHandler)
-
-apiClient.interceptors.response.use(validResponseHandler, wrongResponseHandler)
-
-const apiClientV2 = new Api({
-  baseURL: '/api/v1',
-  timeout: 60000,
-})
-apiClientV2.instance.interceptors.request.use(beforeRequestHandler, errorRequestHandler)
-
-apiClientV2.instance.interceptors.response.use(validResponseHandler, wrongResponseHandler)
-
-export { apiClient, apiClientV2 }
+export { apiClient }

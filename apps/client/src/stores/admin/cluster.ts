@@ -1,33 +1,32 @@
 import { defineStore } from 'pinia'
-import { type Ref, ref } from 'vue'
-import api from '@/api/index.js'
+import { ref } from 'vue'
+import { apiClient } from '@/api/xhr-client.js'
 import type { ClusterModel, ClusterParams, CreateClusterDto, UpdateClusterDto } from '@dso-console/shared'
 
 export const useAdminClusterStore = defineStore('admin-cluster', () => {
-  const clusters: Ref<Array<ClusterModel | undefined>> = ref([])
+  const clusters = ref<ClusterModel[]>([])
 
   const getClusters = async () => {
-    clusters.value = await api.getClusters()
+    // @ts-ignore
+    clusters.value = (await apiClient.v1ClustersList()).data
     return clusters.value
   }
 
   const getClusterAssociatedEnvironments = async (clusterId: ClusterParams['clusterId']) => {
-    const res = await api.getClusterAssociatedEnvironments(clusterId)
-    return res
+    return (await apiClient.v1AdminClustersEnvironmentsDetail(clusterId)).data
   }
 
   const addCluster = async (cluster: CreateClusterDto) => {
-    const res = await api.addCluster(cluster)
-    return res
+    return (await apiClient.v1AdminClustersCreate(cluster)).data
   }
 
   const updateCluster = async (cluster: UpdateClusterDto & { id: ClusterParams['clusterId'] }) => {
     const { id, ...updateClusterData } = cluster
-    return api.updateCluster(id, updateClusterData)
+    return (await apiClient.v1AdminClustersUpdate(id, updateClusterData)).data
   }
 
   const deleteCluster = async (clusterId: ClusterParams['clusterId']) => {
-    return api.deleteCluster(clusterId)
+    return (await apiClient.v1AdminClustersDelete(clusterId)).data
   }
 
   return {

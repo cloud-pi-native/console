@@ -59,4 +59,8 @@
     "connectionId": "https://sonarqube.fabrique-numerique.fr",
     "projectKey": "cloud-pi-native_console_AYsa46O31ebDtzs-pYyZ"
   },
+  "json.schemas": [{
+      "url": "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v2.0/schema.json",
+      "fileMatch": ["swagger.json"]
+  }]
 }

@@ -30,6 +30,7 @@ import { isInt, isDev, isTest, keycloakRedirectUri, onlyGenerateSwagger } from '
 export const apiPrefix = '/api/v1'
 
 const fastifyConf = {
+  // @ts-ignore
   logger: loggerConf[process.env.NODE_ENV] ?? true,
   genReqId: () => nanoid(),
 }
@@ -89,6 +90,7 @@ const app: FastifyInstance = addAllSchemasToApp(fastify(fastifyConf))
   .register(fastifyCookie)
   .register(fastifySession, sessionConf)
 
+// @ts-ignore
 if (!onlyGenerateSwagger) app.register(keycloak, keycloakConf)
 
 app.register(apiRouter, { prefix: apiPrefix })
@@ -108,7 +110,7 @@ app.register(apiRouter, { prefix: apiPrefix })
       req,
       description,
       ...(isDsoError ? { extras: error.extras } : {}),
-      error: isDsoError ? null : error,
+      error: isDsoError ? undefined : error,
     })
   })
 

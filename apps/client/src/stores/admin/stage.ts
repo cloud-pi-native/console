@@ -1,38 +1,34 @@
 import { defineStore } from 'pinia'
-import { type Ref, ref } from 'vue'
-import api from '@/api/index.js'
-import type { CreateStageDto, StageModel, StageParams, UpdateQuotaStageDto, UpdateStageClustersDto } from '@dso-console/shared'
+import { ref } from 'vue'
+import { apiClient } from '@/api/xhr-client.js'
+import type { CreateStageDto, StageModel, UpdateQuotaStageDto, UpdateStageClustersDto } from '@dso-console/shared'
 
 export const useAdminStageStore = defineStore('admin-stage', () => {
-  const stages: Ref<Array<StageModel>> = ref([])
+  const stages = ref<StageModel[]>([])
 
   const getAllStages = async () => {
-    stages.value = await api.getStages()
+    // @ts-ignore
+    stages.value = (await apiClient.v1StagesList()).data
   }
 
-  const getStageAssociatedEnvironments = async (stageId: StageParams['stageId']) => {
-    const res = await api.getStageAssociatedEnvironments(stageId)
-    return res
+  const getStageAssociatedEnvironments = async (stageId: string) => {
+    return (await apiClient.v1AdminStagesEnvironmentsDetail(stageId)).data
   }
 
   const addStage = async (stage: CreateStageDto) => {
-    const res = await api.addStage(stage)
-    return res
+    return (await apiClient.v1AdminStagesCreate(stage)).data
   }
 
-  const updateQuotaStage = async (stageId: StageParams['stageId'], quotaIds: UpdateQuotaStageDto['quotaIds']) => {
-    const res = await api.updateQuotaStage({ stageId, quotaIds })
-    return res
+  const updateQuotaStage = async (stageId: string, quotaIds: UpdateQuotaStageDto['quotaIds']) => {
+    return (await apiClient.v1AdminQuotasQuotastagesUpdate({ stageId, quotaIds })).data
   }
 
-  const updateStageClusters = async (stageId: StageParams['stageId'], clusterIds: UpdateStageClustersDto['clusterIds']) => {
-    const res = await api.updateStageClusters(stageId, { clusterIds })
-    return res
+  const updateStageClusters = async (stageId: string, clusterIds: UpdateStageClustersDto['clusterIds']) => {
+    return (await apiClient.v1AdminStagesClustersPartialUpdate(stageId, { clusterIds })).data
   }
 
-  const deleteStage = async (stageId: StageParams['stageId']) => {
-    const res = await api.deleteStage(stageId)
-    return res
+  const deleteStage = async (stageId: string) => {
+    return (await apiClient.v1AdminStagesDelete(stageId)).data
   }
 
   return {

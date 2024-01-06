@@ -35,6 +35,7 @@
     },
     "user": {
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "id": {
           "type": "string"
@@ -53,28 +54,34 @@
         },
         "updatedAt": {
           "type": "string"
-        },
-        "logs": {
-          "type": "array",
-          "items": {
-            "type": "object"
-          }
-        },
-        "permissions": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/permission"
-          }
-        },
-        "roles": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/role"
-          }
         }
       }
     },
-    "service": {
+    "toService": {
+      "type": "object",
+      "properties": {
+        "to": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "imgSrc": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "to",
+        "title",
+        "imgSrc",
+        "description"
+      ]
+    },
+    "monitorService": {
       "type": "object",
       "additionalProperties": {
         "type": "object",
@@ -175,7 +182,7 @@
     },
     "repository": {
       "type": "object",
-      "title": "repository",
+      "additionalProperties": false,
       "properties": {
         "id": {
           "type": "string"
@@ -209,14 +216,12 @@
         },
         "updatedAt": {
           "type": "string"
-        },
-        "project": {
-          "$ref": "#/definitions/project"
         }
       }
     },
     "role": {
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "userId": {
           "type": "string"
@@ -235,14 +240,13 @@
         },
         "updatedAt": {
           "type": "string"
-        },
-        "project": {
-          "$ref": "#/definitions/project"
-        },
-        "user": {
-          "$ref": "#/definitions/user"
         }
-      }
+      },
+      "required": [
+        "userId",
+        "projectId",
+        "role"
+      ]
     },
     "cluster": {
       "type": "object",
@@ -332,102 +336,7 @@
         "stages": {
           "type": "array",
           "items": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string"
-              },
-              "name": {
-                "type": "string"
-              },
-              "clusters": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/definitions/cluster"
-                }
-              },
-              "quotaStage": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string"
-                    },
-                    "status": {
-                      "type": "string"
-                    },
-                    "quotaId": {
-                      "type": "string"
-                    },
-                    "stageId": {
-                      "type": "string"
-                    },
-                    "environments": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/definitions/environment"
-                      }
-                    },
-                    "quota": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "memory": {
-                          "type": "string"
-                        },
-                        "cpu": {
-                          "type": "number"
-                        },
-                        "isPrivate": {
-                          "type": "boolean"
-                        },
-                        "stageIds": {
-                          "type": "array",
-                          "items": {
-                            "type": "string"
-                          }
-                        },
-                        "quotaStage": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/definitions/quotaStage"
-                          }
-                        }
-                      }
-                    },
-                    "stage": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "clusters": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/definitions/cluster"
-                          }
-                        },
-                        "quotaStage": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/definitions/quotaStage"
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
+            "$ref": "#/definitions/stage"
           }
         }
       }
@@ -468,8 +377,11 @@
         "organization": {
           "$ref": "#/definitions/organization"
         },
-        "services": {
-          "$ref": "#/definitions/service"
+        "externalServices": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/toService"
+          }
         },
         "environments": {
           "type": "array",
@@ -495,7 +407,14 @@
             "$ref": "#/definitions/cluster"
           }
         }
-      }
+      },
+      "required": [
+        "id",
+        "organizationId",
+        "locked",
+        "status",
+        "name"
+      ]
     },
     "quotaStage": {
       "type": "object",
@@ -602,82 +521,7 @@
         "quotaStage": {
           "type": "array",
           "items": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string"
-              },
-              "status": {
-                "type": "string"
-              },
-              "quotaId": {
-                "type": "string"
-              },
-              "stageId": {
-                "type": "string"
-              },
-              "environments": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/definitions/environment"
-                }
-              },
-              "quota": {
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "name": {
-                    "type": "string"
-                  },
-                  "memory": {
-                    "type": "string"
-                  },
-                  "cpu": {
-                    "type": "number"
-                  },
-                  "isPrivate": {
-                    "type": "boolean"
-                  },
-                  "stageIds": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  },
-                  "quotaStage": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/definitions/quotaStage"
-                    }
-                  }
-                }
-              },
-              "stage": {
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "name": {
-                    "type": "string"
-                  },
-                  "clusters": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/definitions/cluster"
-                    }
-                  },
-                  "quotaStage": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/definitions/quotaStage"
-                    }
-                  }
-                }
-              }
-            }
+            "$ref": "#/definitions/quotaStage"
           }
         }
       }
@@ -700,195 +544,13 @@
         "quotaStage": {
           "type": "array",
           "items": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string"
-              },
-              "status": {
-                "type": "string"
-              },
-              "quotaId": {
-                "type": "string"
-              },
-              "stageId": {
-                "type": "string"
-              },
-              "environments": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/definitions/environment"
-                }
-              },
-              "quota": {
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "name": {
-                    "type": "string"
-                  },
-                  "memory": {
-                    "type": "string"
-                  },
-                  "cpu": {
-                    "type": "number"
-                  },
-                  "isPrivate": {
-                    "type": "boolean"
-                  },
-                  "stageIds": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  },
-                  "quotaStage": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/definitions/quotaStage"
-                    }
-                  }
-                }
-              },
-              "stage": {
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "name": {
-                    "type": "string"
-                  },
-                  "clusters": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/definitions/cluster"
-                    }
-                  },
-                  "quotaStage": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/definitions/quotaStage"
-                    }
-                  }
-                }
-              }
-            }
+            "$ref": "#/definitions/quotaStage"
           }
         }
       }
     }
   },
   "paths": {
-    "/api/v1/ci-files/": {
-      "post": {
-        "summary": "Generate CI Files for a given technology",
-        "description": "Generate CI Files for a given technology",
-        "tags": [
-          "repository"
-        ],
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "typeLanguage": {
-                  "type": "string"
-                },
-                "isJava": {
-                  "type": "boolean"
-                },
-                "isNode": {
-                  "type": "boolean"
-                },
-                "isPython": {
-                  "type": "boolean"
-                },
-                "projectName": {
-                  "type": "string"
-                },
-                "internalRepoName": {
-                  "type": "string"
-                },
-                "nodeVersion": {
-                  "type": "string"
-                },
-                "nodeInstallCommand": {
-                  "type": "string"
-                },
-                "nodeBuildCommand": {
-                  "type": "string"
-                },
-                "workingDir": {
-                  "type": "string"
-                },
-                "javaVersion": {
-                  "type": "string"
-                },
-                "artefactDir": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response",
-            "schema": {
-              "type": "array",
-              "items": {
-                "$id": "repository",
-                "type": "object",
-                "title": "repository",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "internalRepoName": {
-                    "type": "string"
-                  },
-                  "externalRepoUrl": {
-                    "type": "string"
-                  },
-                  "externalUserName": {
-                    "type": "string"
-                  },
-                  "externalToken": {
-                    "type": "string"
-                  },
-                  "isInfra": {
-                    "type": "boolean"
-                  },
-                  "isPrivate": {
-                    "type": "boolean"
-                  },
-                  "projectId": {
-                    "type": "string"
-                  },
-                  "status": {
-                    "type": "string"
-                  },
-                  "createdAt": {
-                    "type": "string"
-                  },
-                  "updatedAt": {
-                    "type": "string"
-                  },
-                  "project": {
-                    "$ref": "#/definitions/project"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/organizations/": {
       "get": {
         "summary": "Retrieve active organizations",
@@ -902,32 +564,7 @@
             "schema": {
               "type": "array",
               "items": {
-                "$id": "organization",
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "source": {
-                    "type": "string"
-                  },
-                  "name": {
-                    "type": "string"
-                  },
-                  "label": {
-                    "type": "string"
-                  },
-                  "active": {
-                    "type": "boolean"
-                  },
-                  "createdAt": {
-                    "type": "string"
-                  },
-                  "updatedAt": {
-                    "type": "string"
-                  }
-                }
+                "$ref": "#/definitions/organization"
               }
             }
           }
@@ -947,193 +584,7 @@
             "schema": {
               "type": "array",
               "items": {
-                "$id": "cluster",
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "label": {
-                    "type": "string"
-                  },
-                  "privacy": {
-                    "enum": [
-                      "public",
-                      "dedicated"
-                    ]
-                  },
-                  "clusterResources": {
-                    "type": "boolean"
-                  },
-                  "infos": {
-                    "type": "string"
-                  },
-                  "cluster": {
-                    "type": "object",
-                    "properties": {
-                      "caData": {
-                        "type": "string"
-                      },
-                      "server": {
-                        "type": "string"
-                      },
-                      "tlsServerName": {
-                        "type": "string"
-                      }
-                    }
-                  },
-                  "projectIds": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  },
-                  "stageIds": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  },
-                  "user": {
-                    "type": "object",
-                    "properties": {
-                      "certData": {
-                        "type": "string"
-                      },
-                      "keyData": {
-                        "type": "string"
-                      }
-                    }
-                  },
-                  "kubeConfigId": {
-                    "type": "string"
-                  },
-                  "secretName": {
-                    "type": "string"
-                  },
-                  "createdAt": {
-                    "type": "string"
-                  },
-                  "updatedAt": {
-                    "type": "string"
-                  },
-                  "kubeconfig": {
-                    "type": "object"
-                  },
-                  "projects": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/definitions/project"
-                    }
-                  },
-                  "environments": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/definitions/environment"
-                    }
-                  },
-                  "stages": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "clusters": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/definitions/cluster"
-                          }
-                        },
-                        "quotaStage": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "id": {
-                                "type": "string"
-                              },
-                              "status": {
-                                "type": "string"
-                              },
-                              "quotaId": {
-                                "type": "string"
-                              },
-                              "stageId": {
-                                "type": "string"
-                              },
-                              "environments": {
-                                "type": "array",
-                                "items": {
-                                  "$ref": "#/definitions/environment"
-                                }
-                              },
-                              "quota": {
-                                "type": "object",
-                                "properties": {
-                                  "id": {
-                                    "type": "string"
-                                  },
-                                  "name": {
-                                    "type": "string"
-                                  },
-                                  "memory": {
-                                    "type": "string"
-                                  },
-                                  "cpu": {
-                                    "type": "number"
-                                  },
-                                  "isPrivate": {
-                                    "type": "boolean"
-                                  },
-                                  "stageIds": {
-                                    "type": "array",
-                                    "items": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "quotaStage": {
-                                    "type": "array",
-                                    "items": {
-                                      "$ref": "#/definitions/quotaStage"
-                                    }
-                                  }
-                                }
-                              },
-                              "stage": {
-                                "type": "object",
-                                "properties": {
-                                  "id": {
-                                    "type": "string"
-                                  },
-                                  "name": {
-                                    "type": "string"
-                                  },
-                                  "clusters": {
-                                    "type": "array",
-                                    "items": {
-                                      "$ref": "#/definitions/cluster"
-                                    }
-                                  },
-                                  "quotaStage": {
-                                    "type": "array",
-                                    "items": {
-                                      "$ref": "#/definitions/quotaStage"
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
+                "$ref": "#/definitions/cluster"
               }
             }
           }
@@ -1153,112 +604,7 @@
             "schema": {
               "type": "array",
               "items": {
-                "$id": "quota",
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "name": {
-                    "type": "string"
-                  },
-                  "memory": {
-                    "type": "string"
-                  },
-                  "cpu": {
-                    "type": "number"
-                  },
-                  "isPrivate": {
-                    "type": "boolean"
-                  },
-                  "stageIds": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  },
-                  "quotaStage": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "status": {
-                          "type": "string"
-                        },
-                        "quotaId": {
-                          "type": "string"
-                        },
-                        "stageId": {
-                          "type": "string"
-                        },
-                        "environments": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/definitions/environment"
-                          }
-                        },
-                        "quota": {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "string"
-                            },
-                            "name": {
-                              "type": "string"
-                            },
-                            "memory": {
-                              "type": "string"
-                            },
-                            "cpu": {
-                              "type": "number"
-                            },
-                            "isPrivate": {
-                              "type": "boolean"
-                            },
-                            "stageIds": {
-                              "type": "array",
-                              "items": {
-                                "type": "string"
-                              }
-                            },
-                            "quotaStage": {
-                              "type": "array",
-                              "items": {
-                                "$ref": "#/definitions/quotaStage"
-                              }
-                            }
-                          }
-                        },
-                        "stage": {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "string"
-                            },
-                            "name": {
-                              "type": "string"
-                            },
-                            "clusters": {
-                              "type": "array",
-                              "items": {
-                                "$ref": "#/definitions/cluster"
-                              }
-                            },
-                            "quotaStage": {
-                              "type": "array",
-                              "items": {
-                                "$ref": "#/definitions/quotaStage"
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
+                "$ref": "#/definitions/quota"
               }
             }
           }
@@ -1278,103 +624,7 @@
             "schema": {
               "type": "array",
               "items": {
-                "$id": "stage",
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "name": {
-                    "type": "string"
-                  },
-                  "clusters": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/definitions/cluster"
-                    }
-                  },
-                  "quotaStage": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "status": {
-                          "type": "string"
-                        },
-                        "quotaId": {
-                          "type": "string"
-                        },
-                        "stageId": {
-                          "type": "string"
-                        },
-                        "environments": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/definitions/environment"
-                          }
-                        },
-                        "quota": {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "string"
-                            },
-                            "name": {
-                              "type": "string"
-                            },
-                            "memory": {
-                              "type": "string"
-                            },
-                            "cpu": {
-                              "type": "number"
-                            },
-                            "isPrivate": {
-                              "type": "boolean"
-                            },
-                            "stageIds": {
-                              "type": "array",
-                              "items": {
-                                "type": "string"
-                              }
-                            },
-                            "quotaStage": {
-                              "type": "array",
-                              "items": {
-                                "$ref": "#/definitions/quotaStage"
-                              }
-                            }
-                          }
-                        },
-                        "stage": {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "string"
-                            },
-                            "name": {
-                              "type": "string"
-                            },
-                            "clusters": {
-                              "type": "array",
-                              "items": {
-                                "$ref": "#/definitions/cluster"
-                              }
-                            },
-                            "quotaStage": {
-                              "type": "array",
-                              "items": {
-                                "$ref": "#/definitions/quotaStage"
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
+                "$ref": "#/definitions/stage"
               }
             }
           }
@@ -1394,70 +644,34 @@
             "schema": {
               "type": "array",
               "items": {
-                "$id": "project",
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                  "id": {
-                    "type": "string"
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/project"
                   },
-                  "name": {
-                    "type": "string"
-                  },
-                  "organizationId": {
-                    "type": "string"
-                  },
-                  "description": {
-                    "type": "string"
-                  },
-                  "status": {
-                    "enum": [
-                      "initializing",
-                      "created",
-                      "failed",
-                      "archived"
-                    ]
-                  },
-                  "locked": {
-                    "type": "boolean"
-                  },
-                  "createdAt": {
-                    "type": "string"
-                  },
-                  "updatedAt": {
-                    "type": "string"
-                  },
-                  "organization": {
-                    "$ref": "#/definitions/organization"
-                  },
-                  "services": {
-                    "$ref": "#/definitions/service"
-                  },
-                  "environments": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/definitions/environment"
-                    }
-                  },
-                  "repositories": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/definitions/repository"
-                    }
-                  },
-                  "roles": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/definitions/role"
-                    }
-                  },
-                  "clusters": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/definitions/cluster"
+                  {
+                    "type": "object",
+                    "properties": {
+                      "roles": {
+                        "type": "array",
+                        "items": {
+                          "allOf": [
+                            {
+                              "$ref": "#/definitions/role"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "user": {
+                                  "$ref": "#/definitions/user"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
                     }
                   }
-                }
+                ]
               }
             }
           }
@@ -1489,7 +703,8 @@
               "required": [
                 "organizationId",
                 "name"
-              ]
+              ],
+              "additionalProperties": false
             }
           }
         ],
@@ -1497,70 +712,7 @@
           "201": {
             "description": "Default Response",
             "schema": {
-              "$id": "todo.com",
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "name": {
-                  "type": "string"
-                },
-                "organizationId": {
-                  "type": "string"
-                },
-                "description": {
-                  "type": "string"
-                },
-                "status": {
-                  "enum": [
-                    "initializing",
-                    "created",
-                    "failed",
-                    "archived"
-                  ]
-                },
-                "locked": {
-                  "type": "boolean"
-                },
-                "createdAt": {
-                  "type": "string"
-                },
-                "updatedAt": {
-                  "type": "string"
-                },
-                "organization": {
-                  "$ref": "#/definitions/organization"
-                },
-                "services": {
-                  "$ref": "#/definitions/service"
-                },
-                "environments": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/environment"
-                  }
-                },
-                "repositories": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/repository"
-                  }
-                },
-                "roles": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/role"
-                  }
-                },
-                "clusters": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/cluster"
-                  }
-                }
-              }
+              "$ref": "#/definitions/project"
             }
           }
         }
@@ -1585,70 +737,7 @@
           "200": {
             "description": "Default Response",
             "schema": {
-              "$id": "todo.com",
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "name": {
-                  "type": "string"
-                },
-                "organizationId": {
-                  "type": "string"
-                },
-                "description": {
-                  "type": "string"
-                },
-                "status": {
-                  "enum": [
-                    "initializing",
-                    "created",
-                    "failed",
-                    "archived"
-                  ]
-                },
-                "locked": {
-                  "type": "boolean"
-                },
-                "createdAt": {
-                  "type": "string"
-                },
-                "updatedAt": {
-                  "type": "string"
-                },
-                "organization": {
-                  "$ref": "#/definitions/organization"
-                },
-                "services": {
-                  "$ref": "#/definitions/service"
-                },
-                "environments": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/environment"
-                  }
-                },
-                "repositories": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/repository"
-                  }
-                },
-                "roles": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/role"
-                  }
-                },
-                "clusters": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/cluster"
-                  }
-                }
-              }
+              "$ref": "#/definitions/project"
             }
           }
         }
@@ -1683,70 +772,7 @@
           "200": {
             "description": "Default Response",
             "schema": {
-              "$id": "todo.com",
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "name": {
-                  "type": "string"
-                },
-                "organizationId": {
-                  "type": "string"
-                },
-                "description": {
-                  "type": "string"
-                },
-                "status": {
-                  "enum": [
-                    "initializing",
-                    "created",
-                    "failed",
-                    "archived"
-                  ]
-                },
-                "locked": {
-                  "type": "boolean"
-                },
-                "createdAt": {
-                  "type": "string"
-                },
-                "updatedAt": {
-                  "type": "string"
-                },
-                "organization": {
-                  "$ref": "#/definitions/organization"
-                },
-                "services": {
-                  "$ref": "#/definitions/service"
-                },
-                "environments": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/environment"
-                  }
-                },
-                "repositories": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/repository"
-                  }
-                },
-                "roles": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/role"
-                  }
-                },
-                "clusters": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/cluster"
-                  }
-                }
-              }
+              "$ref": "#/definitions/project"
             }
           }
         }
@@ -1801,49 +827,7 @@
           "200": {
             "description": "Default Response",
             "schema": {
-              "$id": "todo.com",
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "name": {
-                  "type": "string"
-                },
-                "clusterId": {
-                  "type": "string"
-                },
-                "quotaStageId": {
-                  "type": "string"
-                },
-                "projectId": {
-                  "type": "string"
-                },
-                "status": {
-                  "type": "string"
-                },
-                "createdAt": {
-                  "type": "string"
-                },
-                "updatedAt": {
-                  "type": "string"
-                },
-                "permissions": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/permission"
-                  }
-                },
-                "cluster": {
-                  "$ref": "#/definitions/cluster"
-                },
-                "project": {
-                  "$ref": "#/definitions/project"
-                },
-                "quotaStage": {
-                  "$ref": "#/definitions/quotaStage"
-                }
-              }
+              "$ref": "#/definitions/environment"
             }
           }
         }
@@ -1887,49 +871,7 @@
           "200": {
             "description": "Default Response",
             "schema": {
-              "$id": "todo.com",
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "name": {
-                  "type": "string"
-                },
-                "clusterId": {
-                  "type": "string"
-                },
-                "quotaStageId": {
-                  "type": "string"
-                },
-                "projectId": {
-                  "type": "string"
-                },
-                "status": {
-                  "type": "string"
-                },
-                "createdAt": {
-                  "type": "string"
-                },
-                "updatedAt": {
-                  "type": "string"
-                },
-                "permissions": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/permission"
-                  }
-                },
-                "cluster": {
-                  "$ref": "#/definitions/cluster"
-                },
-                "project": {
-                  "$ref": "#/definitions/project"
-                },
-                "quotaStage": {
-                  "$ref": "#/definitions/quotaStage"
-                }
-              }
+              "$ref": "#/definitions/environment"
             }
           }
         }
@@ -2007,49 +949,7 @@
           "201": {
             "description": "Default Response",
             "schema": {
-              "$id": "todo.com",
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "name": {
-                  "type": "string"
-                },
-                "clusterId": {
-                  "type": "string"
-                },
-                "quotaStageId": {
-                  "type": "string"
-                },
-                "projectId": {
-                  "type": "string"
-                },
-                "status": {
-                  "type": "string"
-                },
-                "createdAt": {
-                  "type": "string"
-                },
-                "updatedAt": {
-                  "type": "string"
-                },
-                "permissions": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/permission"
-                  }
-                },
-                "cluster": {
-                  "$ref": "#/definitions/cluster"
-                },
-                "project": {
-                  "$ref": "#/definitions/project"
-                },
-                "quotaStage": {
-                  "$ref": "#/definitions/quotaStage"
-                }
-              }
+              "$ref": "#/definitions/environment"
             }
           }
         }
@@ -2080,47 +980,7 @@
           "200": {
             "description": "Default Response",
             "schema": {
-              "$id": "todo.com",
-              "type": "object",
-              "title": "repository",
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "internalRepoName": {
-                  "type": "string"
-                },
-                "externalRepoUrl": {
-                  "type": "string"
-                },
-                "externalUserName": {
-                  "type": "string"
-                },
-                "externalToken": {
-                  "type": "string"
-                },
-                "isInfra": {
-                  "type": "boolean"
-                },
-                "isPrivate": {
-                  "type": "boolean"
-                },
-                "projectId": {
-                  "type": "string"
-                },
-                "status": {
-                  "type": "string"
-                },
-                "createdAt": {
-                  "type": "string"
-                },
-                "updatedAt": {
-                  "type": "string"
-                },
-                "project": {
-                  "$ref": "#/definitions/project"
-                }
-              }
+              "$ref": "#/definitions/repository"
             }
           }
         }
@@ -2150,8 +1010,7 @@
                 "externalUserName": {
                   "type": "string"
                 }
-              },
-              "required": []
+              }
             }
           },
           {
@@ -2173,47 +1032,7 @@
             "schema": {
               "type": "array",
               "items": {
-                "$id": "repository",
-                "type": "object",
-                "title": "repository",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "internalRepoName": {
-                    "type": "string"
-                  },
-                  "externalRepoUrl": {
-                    "type": "string"
-                  },
-                  "externalUserName": {
-                    "type": "string"
-                  },
-                  "externalToken": {
-                    "type": "string"
-                  },
-                  "isInfra": {
-                    "type": "boolean"
-                  },
-                  "isPrivate": {
-                    "type": "boolean"
-                  },
-                  "projectId": {
-                    "type": "string"
-                  },
-                  "status": {
-                    "type": "string"
-                  },
-                  "createdAt": {
-                    "type": "string"
-                  },
-                  "updatedAt": {
-                    "type": "string"
-                  },
-                  "project": {
-                    "$ref": "#/definitions/project"
-                  }
-                }
+                "$ref": "#/definitions/repository"
               }
             }
           }
@@ -2243,50 +1062,7 @@
           "200": {
             "description": "Default Response",
             "schema": {
-              "type": "array",
-              "items": {
-                "$id": "repository",
-                "type": "object",
-                "title": "repository",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "internalRepoName": {
-                    "type": "string"
-                  },
-                  "externalRepoUrl": {
-                    "type": "string"
-                  },
-                  "externalUserName": {
-                    "type": "string"
-                  },
-                  "externalToken": {
-                    "type": "string"
-                  },
-                  "isInfra": {
-                    "type": "boolean"
-                  },
-                  "isPrivate": {
-                    "type": "boolean"
-                  },
-                  "projectId": {
-                    "type": "string"
-                  },
-                  "status": {
-                    "type": "string"
-                  },
-                  "createdAt": {
-                    "type": "string"
-                  },
-                  "updatedAt": {
-                    "type": "string"
-                  },
-                  "project": {
-                    "$ref": "#/definitions/project"
-                  }
-                }
-              }
+              "type": "string"
             }
           }
         }
@@ -2313,47 +1089,7 @@
             "schema": {
               "type": "array",
               "items": {
-                "$id": "repository",
-                "type": "object",
-                "title": "repository",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "internalRepoName": {
-                    "type": "string"
-                  },
-                  "externalRepoUrl": {
-                    "type": "string"
-                  },
-                  "externalUserName": {
-                    "type": "string"
-                  },
-                  "externalToken": {
-                    "type": "string"
-                  },
-                  "isInfra": {
-                    "type": "boolean"
-                  },
-                  "isPrivate": {
-                    "type": "boolean"
-                  },
-                  "projectId": {
-                    "type": "string"
-                  },
-                  "status": {
-                    "type": "string"
-                  },
-                  "createdAt": {
-                    "type": "string"
-                  },
-                  "updatedAt": {
-                    "type": "string"
-                  },
-                  "project": {
-                    "$ref": "#/definitions/project"
-                  }
-                }
+                "$ref": "#/definitions/repository"
               }
             }
           }
@@ -2410,47 +1146,7 @@
             "schema": {
               "type": "array",
               "items": {
-                "$id": "repository",
-                "type": "object",
-                "title": "repository",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "internalRepoName": {
-                    "type": "string"
-                  },
-                  "externalRepoUrl": {
-                    "type": "string"
-                  },
-                  "externalUserName": {
-                    "type": "string"
-                  },
-                  "externalToken": {
-                    "type": "string"
-                  },
-                  "isInfra": {
-                    "type": "boolean"
-                  },
-                  "isPrivate": {
-                    "type": "boolean"
-                  },
-                  "projectId": {
-                    "type": "string"
-                  },
-                  "status": {
-                    "type": "string"
-                  },
-                  "createdAt": {
-                    "type": "string"
-                  },
-                  "updatedAt": {
-                    "type": "string"
-                  },
-                  "project": {
-                    "$ref": "#/definitions/project"
-                  }
-                }
+                "$ref": "#/definitions/repository"
               }
             }
           }
@@ -2478,46 +1174,7 @@
             "schema": {
               "type": "array",
               "items": {
-                "$id": "user",
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "firstName": {
-                    "type": "string"
-                  },
-                  "lastName": {
-                    "type": "string"
-                  },
-                  "email": {
-                    "type": "string"
-                  },
-                  "createdAt": {
-                    "type": "string"
-                  },
-                  "updatedAt": {
-                    "type": "string"
-                  },
-                  "logs": {
-                    "type": "array",
-                    "items": {
-                      "type": "object"
-                    }
-                  },
-                  "permissions": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/definitions/permission"
-                    }
-                  },
-                  "roles": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/definitions/role"
-                    }
-                  }
-                }
+                "$ref": "#/definitions/user"
               }
             }
           }
@@ -2540,6 +1197,7 @@
                   "type": "string"
                 }
               },
+              "additionalProperties": false,
               "required": [
                 "email"
               ]
@@ -2556,7 +1214,22 @@
           "201": {
             "description": "Default Response",
             "schema": {
-              "type": "string"
+              "type": "array",
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/role"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "user": {
+                        "$ref": "#/definitions/user"
+                      }
+                    }
+                  }
+                ]
+              }
             }
           }
         }
@@ -2589,46 +1262,7 @@
             "schema": {
               "type": "array",
               "items": {
-                "$id": "user",
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "firstName": {
-                    "type": "string"
-                  },
-                  "lastName": {
-                    "type": "string"
-                  },
-                  "email": {
-                    "type": "string"
-                  },
-                  "createdAt": {
-                    "type": "string"
-                  },
-                  "updatedAt": {
-                    "type": "string"
-                  },
-                  "logs": {
-                    "type": "array",
-                    "items": {
-                      "type": "object"
-                    }
-                  },
-                  "permissions": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/definitions/permission"
-                    }
-                  },
-                  "roles": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/definitions/role"
-                    }
-                  }
-                }
+                "$ref": "#/definitions/user"
               }
             }
           }
@@ -2655,8 +1289,7 @@
                     "user"
                   ]
                 }
-              },
-              "required": []
+              }
             }
           },
           {
@@ -2676,7 +1309,10 @@
           "200": {
             "description": "Default Response",
             "schema": {
-              "type": "string"
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/role"
+              }
             }
           }
         }
@@ -2705,7 +1341,10 @@
           "200": {
             "description": "Default Response",
             "schema": {
-              "type": "string"
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/role"
+              }
             }
           }
         }
@@ -2738,34 +1377,7 @@
             "schema": {
               "type": "array",
               "items": {
-                "$id": "permission",
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "userId": {
-                    "type": "string"
-                  },
-                  "level": {
-                    "type": "number"
-                  },
-                  "environmentId": {
-                    "type": "string"
-                  },
-                  "createdAt": {
-                    "type": "string"
-                  },
-                  "updatedAt": {
-                    "type": "string"
-                  },
-                  "environment": {
-                    "$ref": "#/definitions/environment"
-                  },
-                  "user": {
-                    "$ref": "#/definitions/user"
-                  }
-                }
+                "$ref": "#/definitions/permission"
               }
             }
           }
@@ -2814,34 +1426,7 @@
           "201": {
             "description": "Default Response",
             "schema": {
-              "$id": "todo.com",
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "userId": {
-                  "type": "string"
-                },
-                "level": {
-                  "type": "number"
-                },
-                "environmentId": {
-                  "type": "string"
-                },
-                "createdAt": {
-                  "type": "string"
-                },
-                "updatedAt": {
-                  "type": "string"
-                },
-                "environment": {
-                  "$ref": "#/definitions/environment"
-                },
-                "user": {
-                  "$ref": "#/definitions/user"
-                }
-              }
+              "$ref": "#/definitions/permission"
             }
           }
         }
@@ -2885,34 +1470,7 @@
           "200": {
             "description": "Default Response",
             "schema": {
-              "$id": "todo.com",
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "userId": {
-                  "type": "string"
-                },
-                "level": {
-                  "type": "number"
-                },
-                "environmentId": {
-                  "type": "string"
-                },
-                "createdAt": {
-                  "type": "string"
-                },
-                "updatedAt": {
-                  "type": "string"
-                },
-                "environment": {
-                  "$ref": "#/definitions/environment"
-                },
-                "user": {
-                  "$ref": "#/definitions/user"
-                }
-              }
+              "$ref": "#/definitions/permission"
             }
           }
         }
@@ -2969,46 +1527,7 @@
             "schema": {
               "type": "array",
               "items": {
-                "$id": "user",
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "firstName": {
-                    "type": "string"
-                  },
-                  "lastName": {
-                    "type": "string"
-                  },
-                  "email": {
-                    "type": "string"
-                  },
-                  "createdAt": {
-                    "type": "string"
-                  },
-                  "updatedAt": {
-                    "type": "string"
-                  },
-                  "logs": {
-                    "type": "array",
-                    "items": {
-                      "type": "object"
-                    }
-                  },
-                  "permissions": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/definitions/permission"
-                    }
-                  },
-                  "roles": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/definitions/role"
-                    }
-                  }
-                }
+                "$ref": "#/definitions/user"
               }
             }
           }
@@ -3028,32 +1547,7 @@
             "schema": {
               "type": "array",
               "items": {
-                "$id": "organization",
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "source": {
-                    "type": "string"
-                  },
-                  "name": {
-                    "type": "string"
-                  },
-                  "label": {
-                    "type": "string"
-                  },
-                  "active": {
-                    "type": "boolean"
-                  },
-                  "createdAt": {
-                    "type": "string"
-                  },
-                  "updatedAt": {
-                    "type": "string"
-                  }
-                }
+                "$ref": "#/definitions/organization"
               }
             }
           }
@@ -3095,32 +1589,7 @@
           "201": {
             "description": "Default Response",
             "schema": {
-              "$id": "todo.com",
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "source": {
-                  "type": "string"
-                },
-                "name": {
-                  "type": "string"
-                },
-                "label": {
-                  "type": "string"
-                },
-                "active": {
-                  "type": "boolean"
-                },
-                "createdAt": {
-                  "type": "string"
-                },
-                "updatedAt": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/organization"
             }
           }
         }
@@ -3139,32 +1608,7 @@
             "schema": {
               "type": "array",
               "items": {
-                "$id": "organization",
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "source": {
-                    "type": "string"
-                  },
-                  "name": {
-                    "type": "string"
-                  },
-                  "label": {
-                    "type": "string"
-                  },
-                  "active": {
-                    "type": "boolean"
-                  },
-                  "createdAt": {
-                    "type": "string"
-                  },
-                  "updatedAt": {
-                    "type": "string"
-                  }
-                }
+                "$ref": "#/definitions/organization"
               }
             }
           }
@@ -3208,32 +1652,7 @@
           "200": {
             "description": "Default Response",
             "schema": {
-              "$id": "todo.com",
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "source": {
-                  "type": "string"
-                },
-                "name": {
-                  "type": "string"
-                },
-                "label": {
-                  "type": "string"
-                },
-                "active": {
-                  "type": "boolean"
-                },
-                "createdAt": {
-                  "type": "string"
-                },
-                "updatedAt": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/organization"
             }
           }
         }
@@ -3252,76 +1671,74 @@
             "schema": {
               "type": "array",
               "items": {
-                "$id": "project",
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                  "id": {
-                    "type": "string"
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/project"
                   },
-                  "name": {
-                    "type": "string"
-                  },
-                  "organizationId": {
-                    "type": "string"
-                  },
-                  "description": {
-                    "type": "string"
-                  },
-                  "status": {
-                    "enum": [
-                      "initializing",
-                      "created",
-                      "failed",
-                      "archived"
-                    ]
-                  },
-                  "locked": {
-                    "type": "boolean"
-                  },
-                  "createdAt": {
-                    "type": "string"
-                  },
-                  "updatedAt": {
-                    "type": "string"
-                  },
-                  "organization": {
-                    "$ref": "#/definitions/organization"
-                  },
-                  "services": {
-                    "$ref": "#/definitions/service"
-                  },
-                  "environments": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/definitions/environment"
-                    }
-                  },
-                  "repositories": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/definitions/repository"
-                    }
-                  },
-                  "roles": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/definitions/role"
-                    }
-                  },
-                  "clusters": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/definitions/cluster"
+                  {
+                    "type": "object",
+                    "properties": {
+                      "roles": {
+                        "type": "array",
+                        "items": {
+                          "allOf": [
+                            {
+                              "$ref": "#/definitions/role"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "user": {
+                                  "$ref": "#/definitions/user"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      "environments": {
+                        "type": "array",
+                        "items": {
+                          "allOf": [
+                            {
+                              "$ref": "#/definitions/environment"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "permissions": {
+                                  "type": "array",
+                                  "items": {
+                                    "allOf": [
+                                      {
+                                        "$ref": "#/definitions/permission"
+                                      },
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "user": {
+                                            "$ref": "#/definitions/user"
+                                          }
+                                        }
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
                     }
                   }
-                },
+                ],
                 "required": [
                   "id",
                   "status",
                   "locked",
                   "name"
-                ]
+                ],
+                "type": "object"
               }
             }
           }
@@ -3508,193 +1925,7 @@
           "201": {
             "description": "Default Response",
             "schema": {
-              "$id": "todo.com",
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "label": {
-                  "type": "string"
-                },
-                "privacy": {
-                  "enum": [
-                    "public",
-                    "dedicated"
-                  ]
-                },
-                "clusterResources": {
-                  "type": "boolean"
-                },
-                "infos": {
-                  "type": "string"
-                },
-                "cluster": {
-                  "type": "object",
-                  "properties": {
-                    "caData": {
-                      "type": "string"
-                    },
-                    "server": {
-                      "type": "string"
-                    },
-                    "tlsServerName": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "projectIds": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                "stageIds": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                "user": {
-                  "type": "object",
-                  "properties": {
-                    "certData": {
-                      "type": "string"
-                    },
-                    "keyData": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "kubeConfigId": {
-                  "type": "string"
-                },
-                "secretName": {
-                  "type": "string"
-                },
-                "createdAt": {
-                  "type": "string"
-                },
-                "updatedAt": {
-                  "type": "string"
-                },
-                "kubeconfig": {
-                  "type": "object"
-                },
-                "projects": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/project"
-                  }
-                },
-                "environments": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/environment"
-                  }
-                },
-                "stages": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "type": "string"
-                      },
-                      "name": {
-                        "type": "string"
-                      },
-                      "clusters": {
-                        "type": "array",
-                        "items": {
-                          "$ref": "#/definitions/cluster"
-                        }
-                      },
-                      "quotaStage": {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "string"
-                            },
-                            "status": {
-                              "type": "string"
-                            },
-                            "quotaId": {
-                              "type": "string"
-                            },
-                            "stageId": {
-                              "type": "string"
-                            },
-                            "environments": {
-                              "type": "array",
-                              "items": {
-                                "$ref": "#/definitions/environment"
-                              }
-                            },
-                            "quota": {
-                              "type": "object",
-                              "properties": {
-                                "id": {
-                                  "type": "string"
-                                },
-                                "name": {
-                                  "type": "string"
-                                },
-                                "memory": {
-                                  "type": "string"
-                                },
-                                "cpu": {
-                                  "type": "number"
-                                },
-                                "isPrivate": {
-                                  "type": "boolean"
-                                },
-                                "stageIds": {
-                                  "type": "array",
-                                  "items": {
-                                    "type": "string"
-                                  }
-                                },
-                                "quotaStage": {
-                                  "type": "array",
-                                  "items": {
-                                    "$ref": "#/definitions/quotaStage"
-                                  }
-                                }
-                              }
-                            },
-                            "stage": {
-                              "type": "object",
-                              "properties": {
-                                "id": {
-                                  "type": "string"
-                                },
-                                "name": {
-                                  "type": "string"
-                                },
-                                "clusters": {
-                                  "type": "array",
-                                  "items": {
-                                    "$ref": "#/definitions/cluster"
-                                  }
-                                },
-                                "quotaStage": {
-                                  "type": "array",
-                                  "items": {
-                                    "$ref": "#/definitions/quotaStage"
-                                  }
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
+              "$ref": "#/definitions/cluster"
             }
           }
         }
@@ -3766,8 +1997,7 @@
                     }
                   }
                 }
-              },
-              "required": []
+              }
             }
           },
           {
@@ -3781,193 +2011,7 @@
           "200": {
             "description": "Default Response",
             "schema": {
-              "$id": "todo.com",
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "label": {
-                  "type": "string"
-                },
-                "privacy": {
-                  "enum": [
-                    "public",
-                    "dedicated"
-                  ]
-                },
-                "clusterResources": {
-                  "type": "boolean"
-                },
-                "infos": {
-                  "type": "string"
-                },
-                "cluster": {
-                  "type": "object",
-                  "properties": {
-                    "caData": {
-                      "type": "string"
-                    },
-                    "server": {
-                      "type": "string"
-                    },
-                    "tlsServerName": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "projectIds": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                "stageIds": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                "user": {
-                  "type": "object",
-                  "properties": {
-                    "certData": {
-                      "type": "string"
-                    },
-                    "keyData": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "kubeConfigId": {
-                  "type": "string"
-                },
-                "secretName": {
-                  "type": "string"
-                },
-                "createdAt": {
-                  "type": "string"
-                },
-                "updatedAt": {
-                  "type": "string"
-                },
-                "kubeconfig": {
-                  "type": "object"
-                },
-                "projects": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/project"
-                  }
-                },
-                "environments": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/environment"
-                  }
-                },
-                "stages": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "type": "string"
-                      },
-                      "name": {
-                        "type": "string"
-                      },
-                      "clusters": {
-                        "type": "array",
-                        "items": {
-                          "$ref": "#/definitions/cluster"
-                        }
-                      },
-                      "quotaStage": {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "string"
-                            },
-                            "status": {
-                              "type": "string"
-                            },
-                            "quotaId": {
-                              "type": "string"
-                            },
-                            "stageId": {
-                              "type": "string"
-                            },
-                            "environments": {
-                              "type": "array",
-                              "items": {
-                                "$ref": "#/definitions/environment"
-                              }
-                            },
-                            "quota": {
-                              "type": "object",
-                              "properties": {
-                                "id": {
-                                  "type": "string"
-                                },
-                                "name": {
-                                  "type": "string"
-                                },
-                                "memory": {
-                                  "type": "string"
-                                },
-                                "cpu": {
-                                  "type": "number"
-                                },
-                                "isPrivate": {
-                                  "type": "boolean"
-                                },
-                                "stageIds": {
-                                  "type": "array",
-                                  "items": {
-                                    "type": "string"
-                                  }
-                                },
-                                "quotaStage": {
-                                  "type": "array",
-                                  "items": {
-                                    "$ref": "#/definitions/quotaStage"
-                                  }
-                                }
-                              }
-                            },
-                            "stage": {
-                              "type": "object",
-                              "properties": {
-                                "id": {
-                                  "type": "string"
-                                },
-                                "name": {
-                                  "type": "string"
-                                },
-                                "clusters": {
-                                  "type": "array",
-                                  "items": {
-                                    "$ref": "#/definitions/cluster"
-                                  }
-                                },
-                                "quotaStage": {
-                                  "type": "array",
-                                  "items": {
-                                    "$ref": "#/definitions/quotaStage"
-                                  }
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
+              "$ref": "#/definitions/cluster"
             }
           }
         }
@@ -4088,112 +2132,7 @@
           "201": {
             "description": "Default Response",
             "schema": {
-              "$id": "todo.com",
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "name": {
-                  "type": "string"
-                },
-                "memory": {
-                  "type": "string"
-                },
-                "cpu": {
-                  "type": "number"
-                },
-                "isPrivate": {
-                  "type": "boolean"
-                },
-                "stageIds": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                "quotaStage": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "type": "string"
-                      },
-                      "status": {
-                        "type": "string"
-                      },
-                      "quotaId": {
-                        "type": "string"
-                      },
-                      "stageId": {
-                        "type": "string"
-                      },
-                      "environments": {
-                        "type": "array",
-                        "items": {
-                          "$ref": "#/definitions/environment"
-                        }
-                      },
-                      "quota": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "string"
-                          },
-                          "name": {
-                            "type": "string"
-                          },
-                          "memory": {
-                            "type": "string"
-                          },
-                          "cpu": {
-                            "type": "number"
-                          },
-                          "isPrivate": {
-                            "type": "boolean"
-                          },
-                          "stageIds": {
-                            "type": "array",
-                            "items": {
-                              "type": "string"
-                            }
-                          },
-                          "quotaStage": {
-                            "type": "array",
-                            "items": {
-                              "$ref": "#/definitions/quotaStage"
-                            }
-                          }
-                        }
-                      },
-                      "stage": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "string"
-                          },
-                          "name": {
-                            "type": "string"
-                          },
-                          "clusters": {
-                            "type": "array",
-                            "items": {
-                              "$ref": "#/definitions/cluster"
-                            }
-                          },
-                          "quotaStage": {
-                            "type": "array",
-                            "items": {
-                              "$ref": "#/definitions/quotaStage"
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
+              "$ref": "#/definitions/quota"
             }
           }
         }
@@ -4232,8 +2171,7 @@
                 "stageId": {
                   "type": "string"
                 }
-              },
-              "required": []
+              }
             }
           }
         ],
@@ -4243,83 +2181,7 @@
             "schema": {
               "type": "array",
               "items": {
-                "$id": "quotaStage",
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "status": {
-                    "type": "string"
-                  },
-                  "quotaId": {
-                    "type": "string"
-                  },
-                  "stageId": {
-                    "type": "string"
-                  },
-                  "environments": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/definitions/environment"
-                    }
-                  },
-                  "quota": {
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "type": "string"
-                      },
-                      "name": {
-                        "type": "string"
-                      },
-                      "memory": {
-                        "type": "string"
-                      },
-                      "cpu": {
-                        "type": "number"
-                      },
-                      "isPrivate": {
-                        "type": "boolean"
-                      },
-                      "stageIds": {
-                        "type": "array",
-                        "items": {
-                          "type": "string"
-                        }
-                      },
-                      "quotaStage": {
-                        "type": "array",
-                        "items": {
-                          "$ref": "#/definitions/quotaStage"
-                        }
-                      }
-                    }
-                  },
-                  "stage": {
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "type": "string"
-                      },
-                      "name": {
-                        "type": "string"
-                      },
-                      "clusters": {
-                        "type": "array",
-                        "items": {
-                          "$ref": "#/definitions/cluster"
-                        }
-                      },
-                      "quotaStage": {
-                        "type": "array",
-                        "items": {
-                          "$ref": "#/definitions/quotaStage"
-                        }
-                      }
-                    }
-                  }
-                }
+                "$ref": "#/definitions/quotaStage"
               }
             }
           }
@@ -4360,112 +2222,7 @@
           "200": {
             "description": "Default Response",
             "schema": {
-              "$id": "todo.com",
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "name": {
-                  "type": "string"
-                },
-                "memory": {
-                  "type": "string"
-                },
-                "cpu": {
-                  "type": "number"
-                },
-                "isPrivate": {
-                  "type": "boolean"
-                },
-                "stageIds": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                "quotaStage": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "type": "string"
-                      },
-                      "status": {
-                        "type": "string"
-                      },
-                      "quotaId": {
-                        "type": "string"
-                      },
-                      "stageId": {
-                        "type": "string"
-                      },
-                      "environments": {
-                        "type": "array",
-                        "items": {
-                          "$ref": "#/definitions/environment"
-                        }
-                      },
-                      "quota": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "string"
-                          },
-                          "name": {
-                            "type": "string"
-                          },
-                          "memory": {
-                            "type": "string"
-                          },
-                          "cpu": {
-                            "type": "number"
-                          },
-                          "isPrivate": {
-                            "type": "boolean"
-                          },
-                          "stageIds": {
-                            "type": "array",
-                            "items": {
-                              "type": "string"
-                            }
-                          },
-                          "quotaStage": {
-                            "type": "array",
-                            "items": {
-                              "$ref": "#/definitions/quotaStage"
-                            }
-                          }
-                        }
-                      },
-                      "stage": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "string"
-                          },
-                          "name": {
-                            "type": "string"
-                          },
-                          "clusters": {
-                            "type": "array",
-                            "items": {
-                              "$ref": "#/definitions/cluster"
-                            }
-                          },
-                          "quotaStage": {
-                            "type": "array",
-                            "items": {
-                              "$ref": "#/definitions/quotaStage"
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
+              "$ref": "#/definitions/quota"
             }
           }
         }
@@ -4592,103 +2349,7 @@
           "200": {
             "description": "Default Response",
             "schema": {
-              "$id": "todo.com",
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "name": {
-                  "type": "string"
-                },
-                "clusters": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/cluster"
-                  }
-                },
-                "quotaStage": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "type": "string"
-                      },
-                      "status": {
-                        "type": "string"
-                      },
-                      "quotaId": {
-                        "type": "string"
-                      },
-                      "stageId": {
-                        "type": "string"
-                      },
-                      "environments": {
-                        "type": "array",
-                        "items": {
-                          "$ref": "#/definitions/environment"
-                        }
-                      },
-                      "quota": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "string"
-                          },
-                          "name": {
-                            "type": "string"
-                          },
-                          "memory": {
-                            "type": "string"
-                          },
-                          "cpu": {
-                            "type": "number"
-                          },
-                          "isPrivate": {
-                            "type": "boolean"
-                          },
-                          "stageIds": {
-                            "type": "array",
-                            "items": {
-                              "type": "string"
-                            }
-                          },
-                          "quotaStage": {
-                            "type": "array",
-                            "items": {
-                              "$ref": "#/definitions/quotaStage"
-                            }
-                          }
-                        }
-                      },
-                      "stage": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "string"
-                          },
-                          "name": {
-                            "type": "string"
-                          },
-                          "clusters": {
-                            "type": "array",
-                            "items": {
-                              "$ref": "#/definitions/cluster"
-                            }
-                          },
-                          "quotaStage": {
-                            "type": "array",
-                            "items": {
-                              "$ref": "#/definitions/quotaStage"
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
+              "$ref": "#/definitions/stage"
             }
           }
         }
@@ -4767,7 +2428,7 @@
       }
     }
   },
-  "host": "http://localhost:8080",
+  "host": "localhost:8080",
   "schemes": [
     "http",
     "https"

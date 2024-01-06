@@ -87,6 +87,7 @@ export async function exitGracefully (error: Error) {
 
 export const startFastify = async () => {
   try {
+    // @ts-ignore
     await app.listen({ host: '0.0.0.0', port: Number.isNaN(+port) ? 8080 : +port })
   } catch (error) {
     app.log.error(error)

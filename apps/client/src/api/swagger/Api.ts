@@ -15,64 +15,16 @@ import {
   Organization,
   Permission,
   Project,
+  Quota,
   QuotaStage,
   Repository,
   Role,
-  Service,
+  Stage,
   User,
 } from "./data-contracts";
 import { ContentType, HttpClient, RequestParams } from "./http-client";
 
 export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType> {
-  /**
-   * @description Generate CI Files for a given technology
-   *
-   * @tags repository
-   * @name V1CiFilesCreate
-   * @summary Generate CI Files for a given technology
-   * @request POST:/api/v1/ci-files/
-   */
-  v1CiFilesCreate = (
-    body: {
-      typeLanguage?: string;
-      isJava?: boolean;
-      isNode?: boolean;
-      isPython?: boolean;
-      projectName?: string;
-      internalRepoName?: string;
-      nodeVersion?: string;
-      nodeInstallCommand?: string;
-      nodeBuildCommand?: string;
-      workingDir?: string;
-      javaVersion?: string;
-      artefactDir?: string;
-    },
-    params: RequestParams = {},
-  ) =>
-    this.request<
-      {
-        id?: string;
-        internalRepoName?: string;
-        externalRepoUrl?: string;
-        externalUserName?: string;
-        externalToken?: string;
-        isInfra?: boolean;
-        isPrivate?: boolean;
-        projectId?: string;
-        status?: string;
-        createdAt?: string;
-        updatedAt?: string;
-        project?: Project;
-      }[],
-      any
-    >({
-      path: `/api/v1/ci-files/`,
-      method: "POST",
-      body: body,
-      type: ContentType.Json,
-      format: "json",
-      ...params,
-    });
   /**
    * @description Retrieve active organizations
    *
@@ -82,18 +34,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v1/organizations/
    */
   v1OrganizationsList = (params: RequestParams = {}) =>
-    this.request<
-      {
-        id?: string;
-        source?: string;
-        name?: string;
-        label?: string;
-        active?: boolean;
-        createdAt?: string;
-        updatedAt?: string;
-      }[],
-      any
-    >({
+    this.request<Organization[], any>({
       path: `/api/v1/organizations/`,
       method: "GET",
       format: "json",
@@ -108,61 +49,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v1/clusters/
    */
   v1ClustersList = (params: RequestParams = {}) =>
-    this.request<
-      {
-        id?: string;
-        label?: string;
-        privacy?: "public" | "dedicated";
-        clusterResources?: boolean;
-        infos?: string;
-        cluster?: {
-          caData?: string;
-          server?: string;
-          tlsServerName?: string;
-        };
-        projectIds?: string[];
-        stageIds?: string[];
-        user?: {
-          certData?: string;
-          keyData?: string;
-        };
-        kubeConfigId?: string;
-        secretName?: string;
-        createdAt?: string;
-        updatedAt?: string;
-        kubeconfig?: object;
-        projects?: Project[];
-        environments?: Environment[];
-        stages?: {
-          id?: string;
-          name?: string;
-          clusters?: Cluster[];
-          quotaStage?: {
-            id?: string;
-            status?: string;
-            quotaId?: string;
-            stageId?: string;
-            environments?: Environment[];
-            quota?: {
-              id?: string;
-              name?: string;
-              memory?: string;
-              cpu?: number;
-              isPrivate?: boolean;
-              stageIds?: string[];
-              quotaStage?: QuotaStage[];
-            };
-            stage?: {
-              id?: string;
-              name?: string;
-              clusters?: Cluster[];
-              quotaStage?: QuotaStage[];
-            };
-          }[];
-        }[];
-      }[],
-      any
-    >({
+    this.request<Cluster[], any>({
       path: `/api/v1/clusters/`,
       method: "GET",
       format: "json",
@@ -177,39 +64,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v1/quotas/
    */
   v1QuotasList = (params: RequestParams = {}) =>
-    this.request<
-      {
-        id?: string;
-        name?: string;
-        memory?: string;
-        cpu?: number;
-        isPrivate?: boolean;
-        stageIds?: string[];
-        quotaStage?: {
-          id?: string;
-          status?: string;
-          quotaId?: string;
-          stageId?: string;
-          environments?: Environment[];
-          quota?: {
-            id?: string;
-            name?: string;
-            memory?: string;
-            cpu?: number;
-            isPrivate?: boolean;
-            stageIds?: string[];
-            quotaStage?: QuotaStage[];
-          };
-          stage?: {
-            id?: string;
-            name?: string;
-            clusters?: Cluster[];
-            quotaStage?: QuotaStage[];
-          };
-        }[];
-      }[],
-      any
-    >({
+    this.request<Quota[], any>({
       path: `/api/v1/quotas/`,
       method: "GET",
       format: "json",
@@ -224,36 +79,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v1/stages/
    */
   v1StagesList = (params: RequestParams = {}) =>
-    this.request<
-      {
-        id?: string;
-        name?: string;
-        clusters?: Cluster[];
-        quotaStage?: {
-          id?: string;
-          status?: string;
-          quotaId?: string;
-          stageId?: string;
-          environments?: Environment[];
-          quota?: {
-            id?: string;
-            name?: string;
-            memory?: string;
-            cpu?: number;
-            isPrivate?: boolean;
-            stageIds?: string[];
-            quotaStage?: QuotaStage[];
-          };
-          stage?: {
-            id?: string;
-            name?: string;
-            clusters?: Cluster[];
-            quotaStage?: QuotaStage[];
-          };
-        }[];
-      }[],
-      any
-    >({
+    this.request<Stage[], any>({
       path: `/api/v1/stages/`,
       method: "GET",
       format: "json",
@@ -269,22 +95,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    */
   v1ProjectsList = (params: RequestParams = {}) =>
     this.request<
-      {
-        id?: string;
-        name?: string;
-        organizationId?: string;
-        description?: string;
-        status?: "initializing" | "created" | "failed" | "archived";
-        locked?: boolean;
-        createdAt?: string;
-        updatedAt?: string;
-        organization?: Organization;
-        services?: Service;
-        environments?: Environment[];
-        repositories?: Repository[];
-        roles?: Role[];
-        clusters?: Cluster[];
-      }[],
+      (Project & {
+        roles?: (Role & {
+          user?: User;
+        })[];
+      })[],
       any
     >({
       path: `/api/v1/projects/`,
@@ -308,25 +123,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
     },
     params: RequestParams = {},
   ) =>
-    this.request<
-      {
-        id?: string;
-        name?: string;
-        organizationId?: string;
-        description?: string;
-        status?: "initializing" | "created" | "failed" | "archived";
-        locked?: boolean;
-        createdAt?: string;
-        updatedAt?: string;
-        organization?: Organization;
-        services?: Service;
-        environments?: Environment[];
-        repositories?: Repository[];
-        roles?: Role[];
-        clusters?: Cluster[];
-      },
-      any
-    >({
+    this.request<Project, any>({
       path: `/api/v1/projects/`,
       method: "POST",
       body: body,
@@ -343,25 +140,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v1/projects/{projectId}
    */
   v1ProjectsDetail = (projectId: string, params: RequestParams = {}) =>
-    this.request<
-      {
-        id?: string;
-        name?: string;
-        organizationId?: string;
-        description?: string;
-        status?: "initializing" | "created" | "failed" | "archived";
-        locked?: boolean;
-        createdAt?: string;
-        updatedAt?: string;
-        organization?: Organization;
-        services?: Service;
-        environments?: Environment[];
-        repositories?: Repository[];
-        roles?: Role[];
-        clusters?: Cluster[];
-      },
-      any
-    >({
+    this.request<Project, any>({
       path: `/api/v1/projects/${projectId}`,
       method: "GET",
       format: "json",
@@ -382,25 +161,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
     },
     params: RequestParams = {},
   ) =>
-    this.request<
-      {
-        id?: string;
-        name?: string;
-        organizationId?: string;
-        description?: string;
-        status?: "initializing" | "created" | "failed" | "archived";
-        locked?: boolean;
-        createdAt?: string;
-        updatedAt?: string;
-        organization?: Organization;
-        services?: Service;
-        environments?: Environment[];
-        repositories?: Repository[];
-        roles?: Role[];
-        clusters?: Cluster[];
-      },
-      any
-    >({
+    this.request<Project, any>({
       path: `/api/v1/projects/${projectId}`,
       method: "PUT",
       body: body,
@@ -432,23 +193,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v1/projects/{projectId}/environments/{environmentId}
    */
   v1ProjectsEnvironmentsDetail = (projectId: string, environmentId: string, params: RequestParams = {}) =>
-    this.request<
-      {
-        id?: string;
-        name?: string;
-        clusterId?: string;
-        quotaStageId?: string;
-        projectId?: string;
-        status?: string;
-        createdAt?: string;
-        updatedAt?: string;
-        permissions?: Permission[];
-        cluster?: Cluster;
-        project?: Project;
-        quotaStage?: QuotaStage;
-      },
-      any
-    >({
+    this.request<Environment, any>({
       path: `/api/v1/projects/${projectId}/environments/${environmentId}`,
       method: "GET",
       format: "json",
@@ -471,23 +216,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
     },
     params: RequestParams = {},
   ) =>
-    this.request<
-      {
-        id?: string;
-        name?: string;
-        clusterId?: string;
-        quotaStageId?: string;
-        projectId?: string;
-        status?: string;
-        createdAt?: string;
-        updatedAt?: string;
-        permissions?: Permission[];
-        cluster?: Cluster;
-        project?: Project;
-        quotaStage?: QuotaStage;
-      },
-      any
-    >({
+    this.request<Environment, any>({
       path: `/api/v1/projects/${projectId}/environments/${environmentId}`,
       method: "PUT",
       body: body,
@@ -527,23 +256,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
     },
     params: RequestParams = {},
   ) =>
-    this.request<
-      {
-        id?: string;
-        name?: string;
-        clusterId?: string;
-        quotaStageId?: string;
-        projectId?: string;
-        status?: string;
-        createdAt?: string;
-        updatedAt?: string;
-        permissions?: Permission[];
-        cluster?: Cluster;
-        project?: Project;
-        quotaStage?: QuotaStage;
-      },
-      any
-    >({
+    this.request<Environment, any>({
       path: `/api/v1/projects/${projectId}/environments`,
       method: "POST",
       body: body,
@@ -560,23 +273,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v1/projects/{projectId}/repositories/{repositoryId}
    */
   v1ProjectsRepositoriesDetail = (projectId: string, repositoryId: string, params: RequestParams = {}) =>
-    this.request<
-      {
-        id?: string;
-        internalRepoName?: string;
-        externalRepoUrl?: string;
-        externalUserName?: string;
-        externalToken?: string;
-        isInfra?: boolean;
-        isPrivate?: boolean;
-        projectId?: string;
-        status?: string;
-        createdAt?: string;
-        updatedAt?: string;
-        project?: Project;
-      },
-      any
-    >({
+    this.request<Repository, any>({
       path: `/api/v1/projects/${projectId}/repositories/${repositoryId}`,
       method: "GET",
       format: "json",
@@ -601,23 +298,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
     },
     params: RequestParams = {},
   ) =>
-    this.request<
-      {
-        id?: string;
-        internalRepoName?: string;
-        externalRepoUrl?: string;
-        externalUserName?: string;
-        externalToken?: string;
-        isInfra?: boolean;
-        isPrivate?: boolean;
-        projectId?: string;
-        status?: string;
-        createdAt?: string;
-        updatedAt?: string;
-        project?: Project;
-      }[],
-      any
-    >({
+    this.request<Repository[], any>({
       path: `/api/v1/projects/${projectId}/repositories/${repositoryId}`,
       method: "PUT",
       body: body,
@@ -634,23 +315,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request DELETE:/api/v1/projects/{projectId}/repositories/{repositoryId}
    */
   v1ProjectsRepositoriesDelete = (projectId: string, repositoryId: string, params: RequestParams = {}) =>
-    this.request<
-      {
-        id?: string;
-        internalRepoName?: string;
-        externalRepoUrl?: string;
-        externalUserName?: string;
-        externalToken?: string;
-        isInfra?: boolean;
-        isPrivate?: boolean;
-        projectId?: string;
-        status?: string;
-        createdAt?: string;
-        updatedAt?: string;
-        project?: Project;
-      }[],
-      any
-    >({
+    this.request<string, any>({
       path: `/api/v1/projects/${projectId}/repositories/${repositoryId}`,
       method: "DELETE",
       format: "json",
@@ -667,23 +332,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @duplicate
    */
   v1ProjectsRepositoriesDetail2 = (projectId: string, params: RequestParams = {}) =>
-    this.request<
-      {
-        id?: string;
-        internalRepoName?: string;
-        externalRepoUrl?: string;
-        externalUserName?: string;
-        externalToken?: string;
-        isInfra?: boolean;
-        isPrivate?: boolean;
-        projectId?: string;
-        status?: string;
-        createdAt?: string;
-        updatedAt?: string;
-        project?: Project;
-      }[],
-      any
-    >({
+    this.request<Repository[], any>({
       path: `/api/v1/projects/${projectId}/repositories`,
       method: "GET",
       format: "json",
@@ -709,23 +358,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
     },
     params: RequestParams = {},
   ) =>
-    this.request<
-      {
-        id?: string;
-        internalRepoName?: string;
-        externalRepoUrl?: string;
-        externalUserName?: string;
-        externalToken?: string;
-        isInfra?: boolean;
-        isPrivate?: boolean;
-        projectId?: string;
-        status?: string;
-        createdAt?: string;
-        updatedAt?: string;
-        project?: Project;
-      }[],
-      any
-    >({
+    this.request<Repository[], any>({
       path: `/api/v1/projects/${projectId}/repositories`,
       method: "POST",
       body: body,
@@ -742,20 +375,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v1/projects/{projectId}/users
    */
   v1ProjectsUsersDetail = (projectId: string, params: RequestParams = {}) =>
-    this.request<
-      {
-        id?: string;
-        firstName?: string;
-        lastName?: string;
-        email?: string;
-        createdAt?: string;
-        updatedAt?: string;
-        logs?: object[];
-        permissions?: Permission[];
-        roles?: Role[];
-      }[],
-      any
-    >({
+    this.request<User[], any>({
       path: `/api/v1/projects/${projectId}/users`,
       method: "GET",
       format: "json",
@@ -776,7 +396,12 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
     },
     params: RequestParams = {},
   ) =>
-    this.request<string, any>({
+    this.request<
+      (Role & {
+        user?: User;
+      })[],
+      any
+    >({
       path: `/api/v1/projects/${projectId}/users`,
       method: "POST",
       body: body,
@@ -799,20 +424,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
     },
     params: RequestParams = {},
   ) =>
-    this.request<
-      {
-        id?: string;
-        firstName?: string;
-        lastName?: string;
-        email?: string;
-        createdAt?: string;
-        updatedAt?: string;
-        logs?: object[];
-        permissions?: Permission[];
-        roles?: Role[];
-      }[],
-      any
-    >({
+    this.request<User[], any>({
       path: `/api/v1/projects/${projectId}/users/match`,
       method: "GET",
       query: query,
@@ -835,7 +447,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
     },
     params: RequestParams = {},
   ) =>
-    this.request<string, any>({
+    this.request<Role[], any>({
       path: `/api/v1/projects/${projectId}/users/${userId}`,
       method: "PUT",
       body: body,
@@ -852,7 +464,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request DELETE:/api/v1/projects/{projectId}/users/{userId}
    */
   v1ProjectsUsersDelete = (projectId: string, userId: string, params: RequestParams = {}) =>
-    this.request<string, any>({
+    this.request<Role[], any>({
       path: `/api/v1/projects/${projectId}/users/${userId}`,
       method: "DELETE",
       format: "json",
@@ -867,19 +479,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v1/projects/{projectId}/environments/{environmentId}/permissions
    */
   v1ProjectsEnvironmentsPermissionsDetail = (projectId: string, environmentId: string, params: RequestParams = {}) =>
-    this.request<
-      {
-        id?: string;
-        userId?: string;
-        level?: number;
-        environmentId?: string;
-        createdAt?: string;
-        updatedAt?: string;
-        environment?: Environment;
-        user?: User;
-      }[],
-      any
-    >({
+    this.request<Permission[], any>({
       path: `/api/v1/projects/${projectId}/environments/${environmentId}/permissions`,
       method: "GET",
       format: "json",
@@ -902,19 +502,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
     },
     params: RequestParams = {},
   ) =>
-    this.request<
-      {
-        id?: string;
-        userId?: string;
-        level?: number;
-        environmentId?: string;
-        createdAt?: string;
-        updatedAt?: string;
-        environment?: Environment;
-        user?: User;
-      },
-      any
-    >({
+    this.request<Permission, any>({
       path: `/api/v1/projects/${projectId}/environments/${environmentId}/permissions`,
       method: "POST",
       body: body,
@@ -939,19 +527,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
     },
     params: RequestParams = {},
   ) =>
-    this.request<
-      {
-        id?: string;
-        userId?: string;
-        level?: number;
-        environmentId?: string;
-        createdAt?: string;
-        updatedAt?: string;
-        environment?: Environment;
-        user?: User;
-      },
-      any
-    >({
+    this.request<Permission, any>({
       path: `/api/v1/projects/${projectId}/environments/${environmentId}/permissions`,
       method: "PUT",
       body: body,
@@ -988,20 +564,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v1/admin/users/
    */
   v1AdminUsersList = (params: RequestParams = {}) =>
-    this.request<
-      {
-        id?: string;
-        firstName?: string;
-        lastName?: string;
-        email?: string;
-        createdAt?: string;
-        updatedAt?: string;
-        logs?: object[];
-        permissions?: Permission[];
-        roles?: Role[];
-      }[],
-      any
-    >({
+    this.request<User[], any>({
       path: `/api/v1/admin/users/`,
       method: "GET",
       format: "json",
@@ -1016,18 +579,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v1/admin/organizations/
    */
   v1AdminOrganizationsList = (params: RequestParams = {}) =>
-    this.request<
-      {
-        id?: string;
-        source?: string;
-        name?: string;
-        label?: string;
-        active?: boolean;
-        createdAt?: string;
-        updatedAt?: string;
-      }[],
-      any
-    >({
+    this.request<Organization[], any>({
       path: `/api/v1/admin/organizations/`,
       method: "GET",
       format: "json",
@@ -1049,18 +601,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
     },
     params: RequestParams = {},
   ) =>
-    this.request<
-      {
-        id?: string;
-        source?: string;
-        name?: string;
-        label?: string;
-        active?: boolean;
-        createdAt?: string;
-        updatedAt?: string;
-      },
-      any
-    >({
+    this.request<Organization, any>({
       path: `/api/v1/admin/organizations/`,
       method: "POST",
       body: body,
@@ -1077,18 +618,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request PUT:/api/v1/admin/organizations/sync
    */
   v1AdminOrganizationsSyncUpdate = (params: RequestParams = {}) =>
-    this.request<
-      {
-        id?: string;
-        source?: string;
-        name?: string;
-        label?: string;
-        active?: boolean;
-        createdAt?: string;
-        updatedAt?: string;
-      }[],
-      any
-    >({
+    this.request<Organization[], any>({
       path: `/api/v1/admin/organizations/sync`,
       method: "PUT",
       format: "json",
@@ -1111,18 +641,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
     },
     params: RequestParams = {},
   ) =>
-    this.request<
-      {
-        id?: string;
-        source?: string;
-        name?: string;
-        label?: string;
-        active?: boolean;
-        createdAt?: string;
-        updatedAt?: string;
-      },
-      any
-    >({
+    this.request<Organization, any>({
       path: `/api/v1/admin/organizations/${orgName}`,
       method: "PUT",
       body: body,
@@ -1140,22 +659,16 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    */
   v1AdminProjectsList = (params: RequestParams = {}) =>
     this.request<
-      {
-        id: string;
-        name: string;
-        organizationId?: string;
-        description?: string;
-        status: "initializing" | "created" | "failed" | "archived";
-        locked: boolean;
-        createdAt?: string;
-        updatedAt?: string;
-        organization?: Organization;
-        services?: Service;
-        environments?: Environment[];
-        repositories?: Repository[];
-        roles?: Role[];
-        clusters?: Cluster[];
-      }[],
+      (UtilRequiredKeys<Project, "id" | "name" | "status" | "locked"> & {
+        roles?: (Role & {
+          user?: User;
+        })[];
+        environments?: (Environment & {
+          permissions?: (Permission & {
+            user?: User;
+          })[];
+        })[];
+      })[],
       any
     >({
       path: `/api/v1/admin/projects/`,
@@ -1252,61 +765,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
     },
     params: RequestParams = {},
   ) =>
-    this.request<
-      {
-        id?: string;
-        label?: string;
-        privacy?: "public" | "dedicated";
-        clusterResources?: boolean;
-        infos?: string;
-        cluster?: {
-          caData?: string;
-          server?: string;
-          tlsServerName?: string;
-        };
-        projectIds?: string[];
-        stageIds?: string[];
-        user?: {
-          certData?: string;
-          keyData?: string;
-        };
-        kubeConfigId?: string;
-        secretName?: string;
-        createdAt?: string;
-        updatedAt?: string;
-        kubeconfig?: object;
-        projects?: Project[];
-        environments?: Environment[];
-        stages?: {
-          id?: string;
-          name?: string;
-          clusters?: Cluster[];
-          quotaStage?: {
-            id?: string;
-            status?: string;
-            quotaId?: string;
-            stageId?: string;
-            environments?: Environment[];
-            quota?: {
-              id?: string;
-              name?: string;
-              memory?: string;
-              cpu?: number;
-              isPrivate?: boolean;
-              stageIds?: string[];
-              quotaStage?: QuotaStage[];
-            };
-            stage?: {
-              id?: string;
-              name?: string;
-              clusters?: Cluster[];
-              quotaStage?: QuotaStage[];
-            };
-          }[];
-        }[];
-      },
-      any
-    >({
+    this.request<Cluster, any>({
       path: `/api/v1/admin/clusters/`,
       method: "POST",
       body: body,
@@ -1343,61 +802,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
     },
     params: RequestParams = {},
   ) =>
-    this.request<
-      {
-        id?: string;
-        label?: string;
-        privacy?: "public" | "dedicated";
-        clusterResources?: boolean;
-        infos?: string;
-        cluster?: {
-          caData?: string;
-          server?: string;
-          tlsServerName?: string;
-        };
-        projectIds?: string[];
-        stageIds?: string[];
-        user?: {
-          certData?: string;
-          keyData?: string;
-        };
-        kubeConfigId?: string;
-        secretName?: string;
-        createdAt?: string;
-        updatedAt?: string;
-        kubeconfig?: object;
-        projects?: Project[];
-        environments?: Environment[];
-        stages?: {
-          id?: string;
-          name?: string;
-          clusters?: Cluster[];
-          quotaStage?: {
-            id?: string;
-            status?: string;
-            quotaId?: string;
-            stageId?: string;
-            environments?: Environment[];
-            quota?: {
-              id?: string;
-              name?: string;
-              memory?: string;
-              cpu?: number;
-              isPrivate?: boolean;
-              stageIds?: string[];
-              quotaStage?: QuotaStage[];
-            };
-            stage?: {
-              id?: string;
-              name?: string;
-              clusters?: Cluster[];
-              quotaStage?: QuotaStage[];
-            };
-          }[];
-        }[];
-      },
-      any
-    >({
+    this.request<Cluster, any>({
       path: `/api/v1/admin/clusters/${clusterId}`,
       method: "PUT",
       body: body,
@@ -1462,39 +867,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
     },
     params: RequestParams = {},
   ) =>
-    this.request<
-      {
-        id?: string;
-        name?: string;
-        memory?: string;
-        cpu?: number;
-        isPrivate?: boolean;
-        stageIds?: string[];
-        quotaStage?: {
-          id?: string;
-          status?: string;
-          quotaId?: string;
-          stageId?: string;
-          environments?: Environment[];
-          quota?: {
-            id?: string;
-            name?: string;
-            memory?: string;
-            cpu?: number;
-            isPrivate?: boolean;
-            stageIds?: string[];
-            quotaStage?: QuotaStage[];
-          };
-          stage?: {
-            id?: string;
-            name?: string;
-            clusters?: Cluster[];
-            quotaStage?: QuotaStage[];
-          };
-        }[];
-      },
-      any
-    >({
+    this.request<Quota, any>({
       path: `/api/v1/admin/quotas/`,
       method: "POST",
       body: body,
@@ -1519,31 +892,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
     },
     params: RequestParams = {},
   ) =>
-    this.request<
-      {
-        id?: string;
-        status?: string;
-        quotaId?: string;
-        stageId?: string;
-        environments?: Environment[];
-        quota?: {
-          id?: string;
-          name?: string;
-          memory?: string;
-          cpu?: number;
-          isPrivate?: boolean;
-          stageIds?: string[];
-          quotaStage?: QuotaStage[];
-        };
-        stage?: {
-          id?: string;
-          name?: string;
-          clusters?: Cluster[];
-          quotaStage?: QuotaStage[];
-        };
-      }[],
-      any
-    >({
+    this.request<QuotaStage[], any>({
       path: `/api/v1/admin/quotas/quotastages`,
       method: "PUT",
       body: body,
@@ -1566,39 +915,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
     },
     params: RequestParams = {},
   ) =>
-    this.request<
-      {
-        id?: string;
-        name?: string;
-        memory?: string;
-        cpu?: number;
-        isPrivate?: boolean;
-        stageIds?: string[];
-        quotaStage?: {
-          id?: string;
-          status?: string;
-          quotaId?: string;
-          stageId?: string;
-          environments?: Environment[];
-          quota?: {
-            id?: string;
-            name?: string;
-            memory?: string;
-            cpu?: number;
-            isPrivate?: boolean;
-            stageIds?: string[];
-            quotaStage?: QuotaStage[];
-          };
-          stage?: {
-            id?: string;
-            name?: string;
-            clusters?: Cluster[];
-            quotaStage?: QuotaStage[];
-          };
-        }[];
-      },
-      any
-    >({
+    this.request<Quota, any>({
       path: `/api/v1/admin/quotas/${quotaId}/privacy`,
       method: "PATCH",
       body: body,
@@ -1663,36 +980,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
     },
     params: RequestParams = {},
   ) =>
-    this.request<
-      {
-        id?: string;
-        name?: string;
-        clusters?: Cluster[];
-        quotaStage?: {
-          id?: string;
-          status?: string;
-          quotaId?: string;
-          stageId?: string;
-          environments?: Environment[];
-          quota?: {
-            id?: string;
-            name?: string;
-            memory?: string;
-            cpu?: number;
-            isPrivate?: boolean;
-            stageIds?: string[];
-            quotaStage?: QuotaStage[];
-          };
-          stage?: {
-            id?: string;
-            name?: string;
-            clusters?: Cluster[];
-            quotaStage?: QuotaStage[];
-          };
-        }[];
-      },
-      any
-    >({
+    this.request<Stage, any>({
       path: `/api/v1/admin/stages/`,
       method: "POST",
       body: body,
