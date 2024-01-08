@@ -20,7 +20,7 @@ import {
 } from '@/resources/queries-index.js'
 import { hooks } from '@/plugins/index.js'
 import { DsoError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
-import type { Cluster, Environment, Project, Role, User, QuotaStage } from '@prisma/client'
+import type { Cluster, Environment, Project, Role, User, QuotaStage, Stage, Kubeconfig, Organization } from '@prisma/client'
 import {
   checkInsufficientRoleInProject,
   checkClusterUnavailable,
@@ -34,6 +34,8 @@ import { getProjectInfosAndClusters } from '@/resources/project/business.js'
 import { gitlabUrl } from '@/plugins/core/gitlab/utils.js'
 import { type AsyncReturnType, adminGroupPath } from '@dso-console/shared'
 import type { UserDetails } from '@/types/index.js'
+import { EnvironmentDeleteArgs } from '@/plugins/hooks/environment.js'
+import { RepositoryForEnv } from '@/plugins/hooks/repository.js'
 
 // Fetch infos
 export const getEnvironmentInfosAndClusters = async (environmentId: string) => {
@@ -214,6 +216,7 @@ export const createEnvironment = async (
         memory: quota?.memory,
         cpu: quota?.cpu,
       },
+      roles: project.roles,
     })
     // @ts-ignore
     await addLogs('Create Environment', results, userId)
@@ -276,7 +279,7 @@ export const updateEnvironment = async ({
       const organizationName = project.organization.name
       const gitlabBaseURL = `${gitlabUrl}/${projectRootDir}/${organizationName}/${projectName}`
       // @ts-ignore
-      const repositories = environment.project.repositories?.map(({ internalRepoName }) => ({
+      const repositories = project.repositories.map(({ internalRepoName }) => ({
         url: `${gitlabBaseURL}/${internalRepoName}.git`,
         internalRepoName,
       }))
@@ -296,6 +299,8 @@ export const updateEnvironment = async ({
           memory: quota?.memory,
           cpu: quota?.cpu,
         },
+        roles: project.roles,
+        environments: project.environments.map(env => ({ ...env, stage: env.quotaStage.stage.name })),
       })
       // @ts-ignore
       await addLogs('Update Environment Quotas', results, user.id)
@@ -347,25 +352,15 @@ export const deleteEnvironment = async ({
       internalRepoName,
     }))
     const cluster = await getClusterById(environment.clusterId)
-    const environments = await getProjectPartialEnvironments({ projectId })
 
-    const results = await hooks.deleteEnvironment.execute({
-      environment: environment.name,
-      environments,
-      project: projectName,
-      organization: organizationName,
+    await deleteEnvironments(
+      [environment.id],
+      project.environments.map(env => ({ ...env, stage: env.quotaStage.stage.name })),
+      project,
       repositories,
-      // @ts-ignore
-      cluster: {
-        ...cluster,
-        ...cluster.kubeconfig,
-      },
-    })
-    // @ts-ignore
-    await addLogs('Delete Environment', results, userId)
-    if (results.failed) {
-      throw new Error('Echec des services à la suppression de l\'environnement')
-    }
+      [cluster],
+      userId,
+    )
 
     // mise à jour des status
     await deleteEnvironmentQuery(environmentId)
@@ -377,4 +372,54 @@ export const deleteEnvironment = async ({
     }
     throw new Error(error?.message)
   }
+}
+
+/**
+ * @param {Array<Cluster & { kubeconfig: Kubeconfig }>} clusters - You can pass an empty array if you want.
+ */
+export const deleteEnvironments = async (
+  envIdsToDelete: Environment['id'][],
+  allEnvironments: Array<Environment & { stage: Stage['name'], clusterId: Cluster['id'] }>,
+  project: {
+    name: Project['name'],
+    organization: { name: Organization['name'] }
+    roles: Array<Role & { user: User }>
+  },
+  repositories: RepositoryForEnv[],
+  clusters: Array<Cluster & { kubeconfig: Kubeconfig }>,
+  requestorId: User['id'],
+) => {
+  if (envIdsToDelete.length === 0) return
+
+  const [envId, ...nextEnvIdsToDelete] = envIdsToDelete
+
+  const environment = allEnvironments.find(({ id }) => id === envId)
+  let cluster: Cluster & { kubeconfig: Kubeconfig } = clusters.find(({ id }) => environment.clusterId === id)
+  if (!cluster) {
+    cluster = await getClusterById(environment.clusterId)
+    clusters.push(cluster)
+  }
+
+  // Supprimer l'environnement
+  const envData: EnvironmentDeleteArgs = {
+    environment: environment.name,
+    environments: allEnvironments,
+    project: project.name,
+    organization: project.organization.name,
+    repositories,
+    // @ts-ignore
+    cluster: {
+      ...cluster,
+      ...cluster.kubeconfig,
+    },
+    roles: project.roles,
+  }
+  // @ts-ignore
+  const resultsEnv = await hooks.deleteEnvironment.execute(envData)
+  // @ts-ignore
+  await addLogs('Delete Environments', resultsEnv, requestorId)
+  if (resultsEnv.failed) throw new UnprocessableContentError('Echec des services à la suppression de l\'environnement')
+  await deleteEnvironmentQuery(environment.id)
+  allEnvironments.splice(allEnvironments.findIndex(env => env.id === envId), 1)
+  return deleteEnvironments(nextEnvIdsToDelete, allEnvironments, project, repositories, clusters, requestorId)
 }

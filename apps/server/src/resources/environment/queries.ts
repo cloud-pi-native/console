@@ -1,6 +1,5 @@
 import type { Environment, Project, Role, Cluster, QuotaStage } from '@prisma/client'
 import prisma from '@/prisma.js'
-import { getProjectById } from '../project/queries.js'
 
 // SELECT
 export const getEnvironmentById = async (id: Environment['id']) => {
@@ -63,11 +62,6 @@ export const getEnvironmentByIdWithCluster = async (id: Environment['id']) => {
   })
 }
 
-export const getProjectByEnvironmentId = async (environmentId: Environment['id']) => {
-  const env = await getEnvironmentById(environmentId)
-  return getProjectById(env.projectId)
-}
-
 export const getEnvironmentsByQuotaStageId = async (quotaStageId: Environment['quotaStageId']) => prisma.environment.findMany({
   where: {
     quotaStageId,
@@ -114,9 +108,9 @@ export const getProjectPartialEnvironments = async ({ projectId }) => {
       },
     },
   })
-  return environments?.map(environment =>
+  return environments.map(environment =>
     ({
-      environment: environment.name,
+      name: environment.name,
       stage: environment.quotaStage.stage.name,
     }),
   )

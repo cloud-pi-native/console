@@ -9,7 +9,7 @@ export type UserDetails = {
   groups: string[]
 }
 
-export type ClusterMix = Cluster & ClusterModel
+export type ClusterMix = Omit<Cluster & ClusterModel, 'createdAt' | 'updatedAt'>
 
 declare module 'fastify' {
   interface Session{

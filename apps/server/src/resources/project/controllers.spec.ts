@@ -1,7 +1,7 @@
 import prisma from '../../__mocks__/prisma.js'
 import app, { getRequestor, setRequestor } from '../../__mocks__/app.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
-import { createRandomDbSetup, getRandomCluster, getRandomProject, getRandomRole, getRandomUser } from '@dso-console/test-utils'
+import { createRandomDbSetup, getRandomProject, getRandomRole, getRandomUser } from '@dso-console/test-utils'
 import { faker } from '@faker-js/faker'
 import { getConnection, closeConnections } from '../../connect.js'
 import { descriptionMaxLength, exclude, projectIsLockedInfo } from '@dso-console/shared'
@@ -257,6 +257,7 @@ describe('Project routes', () => {
 
       prisma.project.findUnique.mockResolvedValue(project)
       prisma.role.findFirst.mockResolvedValue({ user: {} })
+      prisma.environment.findMany.mockResolvedValue([])
       prisma.project.update.mockResolvedValue(project)
 
       const response = await app.inject()

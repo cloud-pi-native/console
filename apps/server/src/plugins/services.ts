@@ -1,12 +1,18 @@
-import { Cluster, Environment } from '@prisma/client'
+import { Cluster, Environment, QuotaStage, Stage } from '@prisma/client'
 
 type ToUrlObject = { to: string, title?: string, description?: string, imgSrc?: string }
 type ToServices = Required<ToUrlObject>
-type ToUrlFnParamaters = { project: string, organization: string, services: any, clusters: Omit<Cluster, 'secretName' | 'kubeConfigId' | 'createdAt' | 'updatedAt'>[], environments: Environment[] }
+type ToUrlFnProject = {
+  project: string,
+  organization: string,
+  services: any,
+  clusters: Omit<Cluster, 'secretName' | 'kubeConfigId' | 'createdAt' | 'updatedAt'>[]
+  environments: Array<Environment & { quotaStage: QuotaStage & { stage: Stage } }>
+}
 type ToUrlFnResponse = ToUrlObject | ToUrlObject[] | string | void
 export type ServiceInfos = {
   name: string
-  to?: ({ project, organization, services, clusters, environments }: ToUrlFnParamaters) => ToUrlFnResponse
+  to?: ({ project, organization, services, clusters, environments }: ToUrlFnProject) => ToUrlFnResponse
   monitorUrl?: string
   title: string
   imgSrc?: string
@@ -15,7 +21,7 @@ export type ServiceInfos = {
 
 export const servicesInfos: Record<string, ServiceInfos> = {}
 
-export const getProjectServices = (projectInfos: ToUrlFnParamaters): ToServices[] => {
+export const getProjectServices = (projectInfos: ToUrlFnProject): ToServices[] => {
   return Object.values(servicesInfos) // get services registered
     .filter(serviceInfos => serviceInfos.to) // select only those with a `to` function
     .map(serviceInfos => { // key of service in servicesInfos, its values

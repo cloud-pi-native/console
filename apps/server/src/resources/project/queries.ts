@@ -92,7 +92,11 @@ export const getUserProjects = async (user: User) => {
       environments: {
         include: {
           permissions: true,
-          quotaStage: true,
+          quotaStage: {
+            include: {
+              stage: true,
+            },
+          },
         },
       },
       repositories: true,
@@ -122,8 +126,17 @@ export const getProjectById = async (id: Project['id']) => {
 
 const baseProjectIncludes = {
   organization: true,
-  roles: true,
-  environments: { include: { permissions: true } },
+  roles: {
+    include: { user: true },
+  },
+  environments: {
+    include: {
+      permissions: true,
+      quotaStage: {
+        include: { stage: true },
+      },
+    },
+  },
   clusters: true,
 }
 export const getProjectInfos = async (id: Project['id']) => {

@@ -3,7 +3,7 @@ import type { Environment, Organization, PartialEnvironment } from './index.js'
 import type { RepositoryForEnv } from './repository.js'
 import type { Project } from './project.js'
 import type { ClusterMix } from '@/types/index.js'
-import type { User } from '@prisma/client'
+import type { Role, User } from '@prisma/client'
 
 export type ResourceQuota = {
   memory: string
@@ -14,7 +14,8 @@ export type EnvironmentBase = {
   organization: Organization
   project: Project
   environment: Environment
-  environments?: PartialEnvironment[]
+  environments: PartialEnvironment[]
+  roles: Array<Role & { user: User }>
 }
 
 export type EnvironmentCreateArgs = {

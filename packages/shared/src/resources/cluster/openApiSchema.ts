@@ -53,6 +53,7 @@ export const createClusterDto = {
 export const clusterOpenApiSchema = {
   $id: 'cluster',
   type: 'object',
+  additionalProperties: false,
   properties: {
     id: {
       type: 'string',

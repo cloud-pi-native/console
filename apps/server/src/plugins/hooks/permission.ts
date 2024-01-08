@@ -2,7 +2,7 @@ import { type Hook, createHook } from './hook.js'
 import type { EnvironmentBase } from './index.js'
 import type { User, Cluster } from '@prisma/client'
 
-export type PermissionManageUserArgs = EnvironmentBase & {
+export type PermissionManageUserArgs = Omit<EnvironmentBase, 'roles' | 'environments'> & {
   user: User
   permissions: {
     ro: boolean

@@ -1,15 +1,12 @@
 import {
   addLogs,
   archiveProject as archiveProjectQuery,
-  deleteEnvironment,
   deleteRepository,
-  getClusterById,
   getOrganizationById,
   getProjectByNames,
   getProjectInfos,
   getProjectInfosAndRepos,
   getProjectInfos as getProjectInfosQuery,
-  getProjectPartialEnvironments,
   getPublicClusters,
   getSingleOwnerByProjectId,
   getUserProjects as getUserProjectsQuery,
@@ -22,7 +19,7 @@ import {
   updateProjectServices,
 } from '@/resources/queries-index.js'
 import { hooks } from '@/plugins/index.js'
-import type { Cluster, Environment, Organization, Project, User } from '@prisma/client'
+import type { Cluster, Environment, Organization, Project, QuotaStage, Stage, User } from '@prisma/client'
 import { checkInsufficientPermissionInEnvironment, checkInsufficientRoleInProject } from '@/utils/controller.js'
 import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
@@ -43,15 +40,16 @@ import { projectRootDir } from '@/utils/env.js'
 import { type UserDto, getUser } from '@/resources/user/business.js'
 import { gitlabUrl } from '@/plugins/core/gitlab/utils.js'
 import { getProjectServices, servicesInfos } from '@/plugins/services.js'
+import { deleteEnvironments } from '../environment/business.js'
 
 // Fetch infos
 export const getProjectInfosAndClusters = async (projectId: string) => {
-  const project = await getProjectInfosQuery(projectId)
+  const project = await getProjectInfosAndRepos(projectId)
   const projectClusters = project.clusters ? [...await getPublicClusters(), ...project.clusters] : [...await getPublicClusters()]
   return { project, projectClusters }
 }
 
-const projectServices = (project: Project & { organization: Organization, environments: Environment[], clusters: Pick<Cluster, 'id' | 'infos' | 'label' | 'privacy' | 'clusterResources'>[]}) => getProjectServices({
+const projectServices = (project: Project & { organization: Organization, clusters: Pick<Cluster, 'id' | 'infos' | 'label' | 'privacy' | 'clusterResources'>[], environments: Array<Environment & { quotaStage: QuotaStage & { stage: Stage } }> }) => getProjectServices({
   project: project.name,
   organization: project.organization.name,
   services: project.services,
@@ -63,11 +61,14 @@ export const getUserProjects = async (requestor: UserDto) => {
   const user = await getUser(requestor)
   const projects = await getUserProjectsQuery(user)
   const publicClusters = await getPublicClusters()
-  return projects.map((project) => {
-    project.clusters = project.clusters.concat(publicClusters)
+  return projects.map(({
+    services, // remove services from returned object as it may be sensitive
+    ...infos
+  }) => {
+    infos.clusters = infos.clusters.concat(publicClusters)
     return {
-      ...project,
-      externalServices: projectServices(project),
+      ...infos,
+      externalServices: projectServices({ ...infos, services }), // but pass it to constitue externalServices
     }
   })
 }
@@ -180,10 +181,10 @@ export const createProject = async (dataDto: CreateProjectDto, requestor: UserDt
     await updateProjectCreated(project.id)
     await unlockProjectIfNotFailed(project.id)
     const publicClusters = await getPublicClusters()
-    const projectInfos = await getProjectInfos(project.id)
+    const { services: servicesInfos, ...projectInfos } = await getProjectInfos(project.id)
     projectInfos.clusters = projectInfos.clusters.concat(publicClusters)
 
-    return { ...projectInfos, externalServices: projectServices(projectInfos) }
+    return { ...projectInfos, externalServices: projectServices({ ...projectInfos, services: servicesInfos }) }
   } catch (error) {
     await updateProjectFailed(project.id)
     throw new Error(error?.message)
@@ -253,29 +254,15 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
     }))
 
     // -- début - Suppression environnements --
-    let environments = await getProjectPartialEnvironments({ projectId })
-    for (const environment of project.environments) {
-      const cluster = await getClusterById(environment.clusterId)
-
-      // Supprimer l'environnement
-      const envData = {
-        environment: environment.name,
-        environments,
-        project: project.name,
-        organization: project.organization.name,
+    if (project.environments.length > 0) {
+      await deleteEnvironments(
+        project.environments.map(({ id }) => id),
+        project.environments.map(env => ({ ...env, stage: env.quotaStage.stage.name })),
+        project,
         repositories,
-        cluster: {
-          ...cluster,
-          ...cluster.kubeconfig,
-        },
-      }
-      // @ts-ignore
-      const resultsEnv = await hooks.deleteEnvironment.execute(envData)
-      // @ts-ignore
-      await addLogs('Delete Environments', resultsEnv, requestor.id)
-      if (resultsEnv.failed) throw new UnprocessableContentError('Echec des services à la suppression de l\'environnement')
-      await deleteEnvironment(environment.id)
-      environments = environments.toSpliced(environments.findIndex(partialEnvironment => partialEnvironment.name === environment.name), 1)
+        [], // clusters are found by function
+        requestor.id,
+      )
     }
     // -- fin - Suppression environnements --
 

@@ -226,6 +226,7 @@ describe('User routes', () => {
       const randomDbSetUp = createRandomDbSetup({ envs: ['dev'] })
       const projectInfos = randomDbSetUp.project
       projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
+      projectInfos.environments = projectInfos.environments?.map(env => ({ ...env, quotaStage: { id: 'id', stage: { name: 'dev' } } }))
       const newQuotaStage = randomDbSetUp?.stages[0]?.quotaStage[0]
       const envUpdated = getRandomEnv('int-0', projectInfos.id, newQuotaStage?.id, projectInfos?.clusters[0]?.id)
       const envInfos = { ...envUpdated, project: projectInfos }
@@ -270,6 +271,7 @@ describe('User routes', () => {
       projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
       const log = getRandomLog('Delete Environment', requestor.id)
       const envToDelete = { ...projectInfos.environments[0], project: projectInfos }
+      projectInfos.environments = projectInfos.environments?.map(env => ({ ...env, quotaStage: { id: 'id', stage: { name: 'dev' } } }))
 
       prisma.environment.findUnique.mockResolvedValue(envToDelete)
       prisma.project.findUnique.mockResolvedValue(projectInfos)
@@ -291,6 +293,7 @@ describe('User routes', () => {
     it('Should not delete an environment if not project member', async () => {
       const projectInfos = createRandomDbSetup({ envs: ['dev'] }).project
       const envToDelete = { ...projectInfos.environments[0], project: projectInfos }
+      projectInfos.environments = projectInfos.environments?.map(env => ({ ...env, quotaStage: { id: 'id', stage: { name: 'dev' } } }))
 
       prisma.environment.findUnique.mockResolvedValue(envToDelete)
       prisma.project.findUnique.mockResolvedValue(projectInfos)
@@ -307,6 +310,7 @@ describe('User routes', () => {
     it('Should not delete an environment if not project owner', async () => {
       const projectInfos = createRandomDbSetup({ envs: ['dev'] }).project
       projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'user')]
+      projectInfos.environments = projectInfos.environments?.map(env => ({ ...env, quotaStage: { id: 'id', stage: { name: 'dev' } } }))
       const envToDelete = { ...projectInfos.environments[0], project: projectInfos }
 
       prisma.environment.findUnique.mockResolvedValue(envToDelete)
