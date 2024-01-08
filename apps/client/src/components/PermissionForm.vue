@@ -34,8 +34,6 @@ const projectMembers = computed(() => project.value?.roles?.map(role => usersSto
 const permittedUsersId = computed(() => permissions.value.map(permission => permission.userId))
 const isPermitted = computed(() => permittedUsersId.value.includes(userStore.userProfile.id))
 const usersToLicence = computed(() => {
-  console.log(project.value?.roles)
-
   return projectMembers.value?.filter(projectMember =>
     !permittedUsersId.value.includes(projectMember?.id))
 })

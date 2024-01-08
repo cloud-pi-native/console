@@ -3,7 +3,6 @@ import { apiClient } from './xhr-client.js'
 import {
   generateCIFiles,
   getActiveOrganizations,
-
   addRepo,
   getRepos,
   updateRepo,

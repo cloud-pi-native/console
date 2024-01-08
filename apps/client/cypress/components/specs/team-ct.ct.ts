@@ -93,8 +93,6 @@ describe('TeamCt.vue', () => {
 
     cy.intercept('GET', `api/v1/projects/${randomDbSetup.project.id}/users/match?letters=*`, { body: [newUser] })
 
-    console.log(user)
-
     const props = {
       userProfile: {
         ...user,
