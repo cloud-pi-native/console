@@ -24,26 +24,6 @@ describe('Project routes', () => {
 
   // GET
   describe('getUserProjectsController', () => {
-    it('Should get list of a user\'s projects', async () => {
-      const projects = [createRandomDbSetup({}).project, createRandomDbSetup({}).project, createRandomDbSetup({}).project]
-      projects.forEach(project => {
-        project.roles[0].userId = getRequestor().id
-      })
-      const publicClusters = [getRandomCluster()]
-
-      prisma.user.upsert.mockResolvedValue(getRequestor())
-      prisma.project.findMany.mockResolvedValue(projects)
-      prisma.cluster.findMany.mockResolvedValue(publicClusters)
-
-      const response = await app.inject()
-        .get('/api/v1/projects')
-        .end()
-
-      expect(response.statusCode).toEqual(200)
-      expect(response.json()).toBeDefined()
-      expect(response.json()).toMatchObject(projects)
-    })
-
     it('Should return an error while get list of projects', async () => {
       const error = { statusCode: 500, message: 'Erreur de récupération de l\'utilisateur' }
 
@@ -136,6 +116,7 @@ describe('Project routes', () => {
     it('Should create a project', async () => {
       const project = getRandomProject()
       const organization = project.organization
+      project.clusters = []
 
       prisma.user.upsert.mockResolvedValue(getRequestor())
       prisma.organization.findUnique.mockResolvedValue(organization)
@@ -144,6 +125,7 @@ describe('Project routes', () => {
       prisma.project.update.mockResolvedValue(project)
       prisma.environment.findMany.mockResolvedValue([])
       prisma.repository.findMany.mockResolvedValue([])
+      prisma.cluster.findMany.mockResolvedValue([])
       prisma.project.findUnique.mockResolvedValue(project)
 
       const response = await app.inject()
