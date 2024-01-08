@@ -1,4 +1,4 @@
 import { FromSchema } from 'json-schema-to-ts'
-import { repositoryOpenApiSchema } from './index.js'
+import { repositoryOpenApiSchema } from '../../openApiSchemas/repository.js'
 
 export type RepositoryModel = FromSchema<typeof repositoryOpenApiSchema>

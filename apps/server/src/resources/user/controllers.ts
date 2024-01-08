@@ -87,18 +87,18 @@ const router = async (app: FastifyInstance, _opt) => {
 
     await checkProjectLocked(project)
 
-    const userToAdd = await addUserToProject(project, data.email, user.id)
-
+    const newRoles = await addUserToProject(project, data.email, user.id)
     const description = 'Utilisateur ajouté au projet avec succès'
+
     addReqLogs({
       req,
       description,
       extras: {
         projectId,
-        userId: userToAdd.id,
+        email: data.email,
       },
     })
-    sendCreated(res, description)
+    sendCreated(res, newRoles)
   })
 
   // Mettre à jour un membre d'un projet
@@ -123,7 +123,7 @@ const router = async (app: FastifyInstance, _opt) => {
 
     await checkProjectLocked(project)
 
-    await updateUserProjectRole(userToUpdateId, project, data.role)
+    const newRoles = await updateUserProjectRole(userToUpdateId, project, data.role)
 
     const description = 'Rôle de l\'utilisateur mis à jour avec succès'
     addReqLogs({
@@ -134,7 +134,7 @@ const router = async (app: FastifyInstance, _opt) => {
         userId: userToUpdateId,
       },
     })
-    sendOk(res, description)
+    sendOk(res, newRoles)
   },
 )
 
@@ -158,7 +158,7 @@ const router = async (app: FastifyInstance, _opt) => {
 
     await checkProjectLocked(project)
 
-    await removeUserFromProject(userToRemoveId, project, user.id)
+    const newRoles = await removeUserFromProject(userToRemoveId, project, user.id)
 
     const description = 'Utilisateur retiré du projet avec succès'
     addReqLogs({
@@ -169,7 +169,7 @@ const router = async (app: FastifyInstance, _opt) => {
         userId: userToRemoveId,
       },
     })
-    sendOk(res, description)
+    sendOk(res, newRoles)
   })
 }
 

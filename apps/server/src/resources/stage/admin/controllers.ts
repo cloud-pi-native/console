@@ -37,59 +37,51 @@ const router = async (app: FastifyInstance, _opt) => {
 
   // Créer un stage
   app.post<{
-  Body: FromSchema<typeof createStageSchema['body']>,
-}>('/',
-  {
-    schema: createStageSchema,
-  },
-  async (req, res) => {
-    const data = req.body
+    Body: FromSchema<typeof createStageSchema['body']>,
+  }>('/',
+    {
+      schema: createStageSchema,
+    },
+    async (req, res) => {
+      const data = req.body
 
-    const stage = await createStage(data)
+      const stage = await createStage(data)
 
-    addReqLogs({
-      req,
-      description: 'Type d\'environnement créé avec succès',
-      extras: {
-        stageId: stage.id,
-      },
+      addReqLogs({
+        req,
+        description: 'Type d\'environnement créé avec succès',
+        extras: {
+          stageId: stage.id,
+        },
+      })
+
+      sendCreated(res, stage)
     })
-
-    sendCreated(res, stage)
-  })
-
-  // ce endpoint est dupliquer de quota, tout d'abord il ne devrait pas exister et surtout n'y avoir qu'un seul point d'entrée
-  // // Modifier une association quota / stage
-  // app.put('/quotastages',
-  //   {
-  //     schema: updateQuotaStageSchema,
-  //   },
-  //   updateQuotaStageController)
 
   // Modifier une association stage / clusters
   app.patch<{
-  Params: FromSchema<typeof updateStageClustersSchema['params']>,
-  Body: FromSchema<typeof updateStageClustersSchema['body']>,
-}>('/:stageId/clusters',
-  {
-    schema: updateStageClustersSchema,
-  },
-  async (req, res) => {
-    const stageId = req.params.stageId
-    const clusterIds = req.body.clusterIds
+    Params: FromSchema<typeof updateStageClustersSchema['params']>,
+    Body: FromSchema<typeof updateStageClustersSchema['body']>,
+  }>('/:stageId/clusters',
+    {
+      schema: updateStageClustersSchema,
+    },
+    async (req, res) => {
+      const stageId = req.params.stageId
+      const clusterIds = req.body.clusterIds
 
-    const stage = await updateStageClusters(stageId, clusterIds)
+      const stage = await updateStageClusters(stageId, clusterIds)
 
-    addReqLogs({
-      req,
-      description: 'Type d\'environnement mis à jour avec succès',
-      extras: {
-        stageId,
-      },
+      addReqLogs({
+        req,
+        description: 'Type d\'environnement mis à jour avec succès',
+        extras: {
+          stageId,
+        },
+      })
+
+      sendOk(res, stage)
     })
-
-    sendOk(res, stage)
-  })
 
   // Supprimer un stage
   app.delete<{

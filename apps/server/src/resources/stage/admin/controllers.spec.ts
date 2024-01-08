@@ -143,7 +143,7 @@ describe('Admin stages routes', () => {
   })
 
   describe('updateQuotaStageController', () => {
-    it.skip('Should update a quotaStage association', async () => {
+    it('Should update a quotaStage association', async () => {
       const stage = getRandomStage('myStage')
       const quotas = repeatFn(4)(getRandomQuota)
       const dbQuotaStage = [...quotas.map(quota => getRandomQuotaStage(quota.id, stage.id)).slice(1), getRandomQuotaStage(getRandomQuota().id, stage.id)]
@@ -160,7 +160,7 @@ describe('Admin stages routes', () => {
 
       const response = await app.inject({ headers: { admin: 'admin' } })
         // @ts-ignore
-        .put('/api/v1/admin/stages/quotastages')
+        .put('/api/v1/admin/quotas/quotastages')
         .body(data)
         .end()
 
@@ -168,7 +168,7 @@ describe('Admin stages routes', () => {
       expect(response.json()).toEqual(newQuotaStage)
     })
 
-    it.skip('Should not remove a quotaStage association if an environment suscribed it', async () => {
+    it('Should not remove a quotaStage association if an environment suscribed it', async () => {
       const stage = getRandomStage('myStage')
       const quotas = repeatFn(4)(getRandomQuota)
       const dbQuotaStage = [...quotas.map(quota => getRandomQuotaStage(quota.id, stage.id)).slice(1), getRandomQuotaStage(getRandomQuota().id, stage.id)]
@@ -182,7 +182,7 @@ describe('Admin stages routes', () => {
 
       const response = await app.inject({ headers: { admin: 'admin' } })
         // @ts-ignore
-        .put('/api/v1/admin/stages/quotastages')
+        .put('/api/v1/admin/quotas/quotastages')
         .body(data)
         .end()
 

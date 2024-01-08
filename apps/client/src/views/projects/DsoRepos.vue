@@ -16,8 +16,7 @@ const userStore = useUserStore()
  * @returns {string}
  */
 const project = computed(() => projectStore.selectedProject)
-const owner = computed(() => projectStore.selectedProjectOwner)
-const isOwner = computed(() => userStore.userProfile.id === owner.value.id)
+const isOwner = computed(() => project.value?.roles.some(role => role.userId === userStore.userProfile.id && role.role === 'owner'))
 
 const repos = ref([])
 const selectedRepo = ref({})

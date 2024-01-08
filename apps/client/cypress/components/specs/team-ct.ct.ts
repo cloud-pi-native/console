@@ -5,8 +5,9 @@ import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@/main.css'
 import TeamCt from '@/components/TeamCt.vue'
-import { createRandomDbSetup, getRandomUser } from '@dso-console/test-utils'
+import { createRandomDbSetup, getRandomUser, toUsersStore } from '@dso-console/test-utils'
 import { useProjectStore } from '@/stores/project.js'
+import { useUsersStore } from '@/stores/users.js'
 
 describe('TeamCt.vue', () => {
   let pinia: Pinia
@@ -19,6 +20,7 @@ describe('TeamCt.vue', () => {
 
   it('Should mount a TeamCt for owner', () => {
     useProjectStore()
+    useUsersStore()
     const randomDbSetup = createRandomDbSetup({ nbUsers: 4 })
     const owner = randomDbSetup.project.roles.find(role => role.role === 'owner')?.user
     const newUser = getRandomUser()
@@ -31,7 +33,8 @@ describe('TeamCt.vue', () => {
         groups: [],
       },
       project: randomDbSetup.project,
-      owner,
+      roles: randomDbSetup.project.roles,
+      knownUsers: toUsersStore(randomDbSetup.users),
     }
 
     cy.mount(TeamCt, { props })
@@ -63,7 +66,8 @@ describe('TeamCt.vue', () => {
         groups: ['/admin'],
       },
       project: randomDbSetup.project,
-      owner,
+      roles: randomDbSetup.project.roles,
+      knownUsers: toUsersStore(randomDbSetup.users),
     }
 
     cy.mount(TeamCt, { props })
@@ -95,7 +99,8 @@ describe('TeamCt.vue', () => {
         groups: [],
       },
       project: randomDbSetup.project,
-      owner,
+      roles: randomDbSetup.project.roles,
+      knownUsers: toUsersStore(randomDbSetup.users),
     }
 
     cy.mount(TeamCt, { props })

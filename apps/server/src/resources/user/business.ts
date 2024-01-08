@@ -1,4 +1,4 @@
-import { getOrCreateUser, addLogs, addUserToProject as addUserToProjectQuery, createUser, deletePermission, getMatchingUsers as getMatchingUsersQuery, getProjectInfos as getProjectInfosQuery, getProjectUsers as getProjectUsersQuery, getUserByEmail, getUserById, lockProject, removeUserFromProject as removeUserFromProjectQuery, updateProjectFailed, updateUserProjectRole as updateUserProjectRoleQuery } from '@/resources/queries-index.js'
+import { getOrCreateUser, addLogs, addUserToProject as addUserToProjectQuery, createUser, deletePermission, getMatchingUsers as getMatchingUsersQuery, getProjectInfos as getProjectInfosQuery, getProjectUsers as getProjectUsersQuery, getUserByEmail, getUserById, lockProject, removeUserFromProject as removeUserFromProjectQuery, updateProjectFailed, updateUserProjectRole as updateUserProjectRoleQuery, getRolesByProjectId } from '@/resources/queries-index.js'
 import type { User, Project } from '@prisma/client'
 import { hooks } from '@/plugins/index.js'
 import { type PluginResult } from '@/plugins/hooks/hook.js'
@@ -84,7 +84,7 @@ export const addUserToProject = async (
     await addLogs('Add Project Member', results, userId)
 
     await unlockProjectIfNotFailed(project.id)
-    return userToAdd
+    return getRolesByProjectId(project.id)
   } catch (error) {
     await updateProjectFailed(project.id)
     throw new Error('Echec d\'ajout de l\'utilisateur au projet')
@@ -99,6 +99,7 @@ export const updateUserProjectRole = async (
   if (project.roles.filter(projectUser => projectUser.userId === userToUpdateId).length === 0) throw new BadRequestError('L\'utilisateur ne fait pas partie du projet', undefined)
 
   await updateUserProjectRoleQuery(userToUpdateId, project.id, role)
+  return getRolesByProjectId(project.id)
 }
 
 export const removeUserFromProject = async (
@@ -141,6 +142,7 @@ export const removeUserFromProject = async (
     await addLogs('Remove User from Project', results, userId)
 
     await unlockProjectIfNotFailed(project.id)
+    return getRolesByProjectId(project.id)
   } catch (error) {
     await updateProjectFailed(project.id)
     throw new Error('Echec de retrait de l\'utilisateur du projet')

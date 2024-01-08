@@ -52,6 +52,13 @@ export const getAllProjects = async () => {
 
 export const getProjectUsers = async (projectId: Project['id']) => {
   const res = await prisma.user.findMany({
+    where: {
+      roles: {
+        some: {
+          projectId,
+        },
+      },
+    },
     include: {
       roles: {
         where: {
@@ -84,20 +91,12 @@ export const getUserProjects = async (user: User) => {
       organization: true,
       environments: {
         include: {
-          permissions: {
-            include: {
-              user: true,
-            },
-          },
+          permissions: true,
           quotaStage: true,
         },
       },
       repositories: true,
-      roles: {
-        include: {
-          user: true,
-        },
-      },
+      roles: true,
       clusters: {
         where: {
           privacy: 'dedicated',
@@ -213,6 +212,17 @@ export const getAllProjectsDataForExport = async () => {
           },
         },
       },
+    },
+  })
+}
+
+export const getRolesByProjectId = async (projectId: Project['id']) => {
+  return prisma.role.findMany({
+    where: {
+      projectId,
+    },
+    include: {
+      user: true,
     },
   })
 }

@@ -1,63 +1,4 @@
-export const userOpenApiSchema = {
-  $id: 'user',
-  type: 'object',
-  properties: {
-    id: {
-      type: 'string',
-    },
-    firstName: {
-      type: 'string',
-    },
-    lastName: {
-      type: 'string',
-    },
-    email: {
-      type: 'string',
-    },
-    createdAt: {
-      type: 'string',
-    },
-    updatedAt: {
-      type: 'string',
-    },
-    logs: {
-      type: 'array',
-      items: { type: 'object' },
-    },
-    permissions: {
-      type: 'array',
-      items: { $ref: 'permission#' },
-    },
-    roles: {
-      type: 'array',
-      items: { $ref: 'role#' },
-    },
-  },
-} as const
-
-export const roleOpenApiSchema = {
-  $id: 'role',
-  type: 'object',
-  properties: {
-    userId: {
-      type: 'string',
-    },
-    projectId: {
-      type: 'string',
-    },
-    role: {
-      enum: ['owner', 'user'],
-    },
-    createdAt: {
-      type: 'string',
-    },
-    updatedAt: {
-      type: 'string',
-    },
-    project: { $ref: 'project#' },
-    user: { $ref: 'user#' },
-  },
-} as const
+import { roleOpenApiSchema, userOpenApiSchema } from '../../openApiSchemas/user.js'
 
 const userParamsSchema = {
   type: 'object',
@@ -89,7 +30,7 @@ export const getUsersSchema = {
   response: {
     200: {
       type: 'array',
-      items: userOpenApiSchema,
+      items: { $ref: 'user#' },
     },
   },
 } as const
@@ -101,7 +42,7 @@ export const getProjectUsersSchema = {
   response: {
     200: {
       type: 'array',
-      items: userOpenApiSchema,
+      items: { $ref: 'user#' },
     },
   },
 } as const
@@ -123,7 +64,7 @@ export const getMatchingUsersSchema = {
   response: {
     200: {
       type: 'array',
-      items: userOpenApiSchema,
+      items: { $ref: 'user#' },
     },
   },
 } as const
@@ -138,11 +79,23 @@ export const addUserToProjectSchema = {
     properties: {
       email: userOpenApiSchema.properties.email,
     },
+    additionalProperties: false,
     required: ['email'],
   },
   response: {
     201: {
-      type: 'string',
+      type: 'array',
+      items: {
+        allOf: [
+          { $ref: 'role#' },
+          {
+            type: 'object',
+            properties: {
+              user: { $ref: 'user#' },
+            },
+          },
+        ],
+      },
     },
   },
 } as const
@@ -157,11 +110,11 @@ export const updateUserProjectRoleSchema = {
     properties: {
       role: roleOpenApiSchema.properties.role,
     },
-    required: [],
   },
   response: {
     200: {
-      type: 'string',
+      type: 'array',
+      items: { $ref: 'role#' },
     },
   },
 } as const
@@ -173,7 +126,8 @@ export const removeUserFromProjectSchema = {
   params: roleParamsSchema,
   response: {
     200: {
-      type: 'string',
+      type: 'array',
+      items: { $ref: 'role#' },
     },
   },
 } as const

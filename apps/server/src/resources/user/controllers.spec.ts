@@ -67,6 +67,8 @@ describe('User routes', () => {
       prisma.project.update.mockResolvedValue(projectInfos)
       prisma.environment.findMany.mockResolvedValue([])
       prisma.repository.findMany.mockResolvedValue([])
+      prisma.role.findMany.mockResolvedValue(projectInfos.roles)
+      delete projectInfos.roles[0].user
 
       const response = await app.inject()
         .post(`/api/v1/projects/${projectInfos.id}/users`)
@@ -75,7 +77,7 @@ describe('User routes', () => {
 
       expect(response.statusCode).toEqual(201)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Utilisateur ajouté au projet avec succès')
+      expect(response.json()).toMatchObject(projectInfos.roles)
     })
 
     it('Should not add an user if email already present', async () => {
@@ -140,6 +142,8 @@ describe('User routes', () => {
 
       prisma.project.findUnique.mockResolvedValue(projectInfos)
       prisma.role.update.mockResolvedValue(userUpdated)
+      prisma.role.findMany.mockResolvedValue(projectInfos.roles)
+      delete projectInfos.roles[0].user
 
       const response = await app.inject()
         .put(`/api/v1/projects/${projectInfos.id}/users/${userToUpdate.userId}`)
@@ -148,7 +152,7 @@ describe('User routes', () => {
 
       expect(response.statusCode).toEqual(200)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Rôle de l\'utilisateur mis à jour avec succès')
+      expect(response.json()).toEqual(projectInfos.roles)
     })
 
     it('Should not update a project member\'s role if project locked', async () => {
@@ -184,6 +188,8 @@ describe('User routes', () => {
       prisma.role.delete.mockResolvedValue(userToRemove)
       prisma.environment.findMany.mockResolvedValue([])
       prisma.repository.findMany.mockResolvedValue([])
+      prisma.role.findMany.mockResolvedValue(projectInfos.roles)
+      delete projectInfos.roles[0].user
 
       const response = await app.inject()
         .delete(`/api/v1/projects/${projectInfos.id}/users/${userToRemove.userId}`)
@@ -191,7 +197,7 @@ describe('User routes', () => {
 
       expect(response.statusCode).toEqual(200)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Utilisateur retiré du projet avec succès')
+      expect(response.json()).toEqual(projectInfos.roles)
     })
 
     it('Should not remove an user if project is missing', async () => {

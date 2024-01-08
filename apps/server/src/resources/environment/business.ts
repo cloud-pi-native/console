@@ -16,6 +16,7 @@ import {
   getQuotaStageById,
   getQuotaById,
   getProjectPartialEnvironments,
+  getEnvironmentById,
 } from '@/resources/queries-index.js'
 import { hooks } from '@/plugins/index.js'
 import { DsoError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
@@ -307,9 +308,7 @@ export const updateEnvironment = async ({
     await updateEnvironmentCreated(environmentId)
     await unlockProjectIfNotFailed(projectId)
 
-    environment = await getEnvironmentInfos(environmentId)
-
-    return environment
+    return getEnvironmentById(environmentId)
   } catch (error) {
     await updateEnvironmentFailed(environmentId)
     if (error instanceof DsoError) {

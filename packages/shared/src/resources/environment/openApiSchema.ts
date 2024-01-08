@@ -59,7 +59,7 @@ export const getEnvironmentByIdSchema = {
   summary: 'Retrieve an environment by its id',
   params: environmentParamsSchema,
   response: {
-    200: environmentOpenApiSchema,
+    200: { $ref: 'environment#' },
   },
 } as const
 
@@ -84,7 +84,7 @@ export const initializeEnvironmentSchema = {
     // required: Object.keys(initializeEnvironmentDto),
   },
   response: {
-    201: environmentOpenApiSchema,
+    201: { $ref: 'environment#' },
   },
 } as const
 
@@ -101,7 +101,7 @@ export const updateEnvironmentSchema = {
     },
   },
   response: {
-    200: environmentOpenApiSchema,
+    200: { $ref: 'environment#' },
   },
 } as const
 

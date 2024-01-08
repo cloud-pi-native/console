@@ -23,10 +23,13 @@ Cypress.Commands.add('kcLogin', (name, password = 'test') => {
 })
 
 Cypress.Commands.add('goToProjects', () => {
+  cy.intercept('GET', 'api/v1/projects').as('getProjects')
+
   cy.visit('/')
     .getByDataTestid('menuProjectsBtn').click()
-    .getByDataTestid('menuMyProjects').click()
-    .url().should('contain', '/projects')
+  cy.getByDataTestid('menuMyProjects').click()
+  cy.wait('@getProjects')
+  cy.url().should('contain', '/projects')
 })
 
 Cypress.Commands.add('createProject', (project, ownerEmail = defaultOwner.email) => {
@@ -178,8 +181,10 @@ Cypress.Commands.add('addEnvironment', (project, environments) => {
 
   environments.forEach((environment) => {
     cy.goToProjects()
-      .getByDataTestid(`projectTile-${project?.name}`).click()
-      .getByDataTestid('menuEnvironments').click()
+      .getByDataTestid(`projectTile-${project?.name}`)
+      .click()
+    cy.getByDataTestid('menuEnvironments')
+      .click()
     cy.url().should('contain', '/environments')
     cy.wait('@getClusters')
 
@@ -208,8 +213,10 @@ Cypress.Commands.add('assertAddEnvironment', (project, environments, isDeepCheck
   cy.intercept('GET', 'api/v1/stages').as('getStages')
   cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
   cy.goToProjects()
-    .getByDataTestid(`projectTile-${project.name}`).click()
-    .getByDataTestid('menuEnvironments').click()
+    .getByDataTestid(`projectTile-${project.name}`)
+    .click()
+  cy.getByDataTestid('menuEnvironments')
+    .click()
   cy.wait('@getClusters')
 
   environments.forEach((environment) => {

@@ -10,6 +10,15 @@ vi.mock('./project.js', async () => ({
   useProjectStore: () => ({
     selectedProject: { id: 'projectId' },
     getUserProjects: vi.fn(),
+    updateProjectRoles: vi.fn(),
+  }),
+}))
+
+vi.mock('./users.js', async () => ({
+  useUsersStore: () => ({
+    users: {},
+    getProjectUsers: vi.fn(),
+    addUser: vi.fn(),
   }),
 }))
 
@@ -22,10 +31,10 @@ describe('Counter Store', () => {
   })
 
   it('Should add a user to project by api call', async () => {
-    apiClientPost.mockReturnValueOnce(Promise.resolve({ data: {} }))
+    apiClientPost.mockReturnValueOnce(Promise.resolve({ data: [{ projectId: 'projectId', role: 'user', id: 'a', user: { id: 'b', email: 'michel@test.com' } }] }))
     const projectUserStore = useProjectUserStore()
 
-    await projectUserStore.addUserToProject('projectId', { id: 'userId', email: 'michel@test.com', firstName: 'Michel', lastName: 'MICHEL' })
+    await projectUserStore.addUserToProject('projectId', { email: 'michel@test.com' })
 
     expect(apiClientPost).toHaveBeenCalledTimes(1)
     expect(apiClientPost.mock.calls[0][0]).toEqual('/projects/projectId/users')
