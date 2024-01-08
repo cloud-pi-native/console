@@ -39,7 +39,7 @@ const router = async (app: FastifyInstance, _opt) => {
       checkGetEnvironment(env, userId)
 
       // Nettoyage des clés
-      delete env.project.roles
+      delete env.project
 
       addReqLogs({
         req,

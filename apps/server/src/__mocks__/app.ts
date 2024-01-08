@@ -20,6 +20,7 @@ vi.mock('@/plugins/services.js', () => {
         title: 'Harbor',
       },
     },
+    getProjectServices: () => [],
   }
 })
 vi.mock('../plugins/index.js', () => {
@@ -141,7 +142,11 @@ const app = addAllSchemasToApp(fastify({ logger: false }))
   .register(fp(mockSessionPlugin))
   .register(miscRouter, { prefix: apiPrefix })
   .register(apiRouter, { prefix: apiPrefix })
-
+  // useful to debug fastify error
+  // .addHook('onError', (req, res, err, done) => {
+  //   console.log(err)
+  //   done()
+  // })
 await app.ready()
 
 vi.spyOn(app, 'listen')

@@ -1,5 +1,5 @@
-export const serviceOpenApiSchema = {
-  $id: 'service',
+export const monitorServicesOpenApiSchema = {
+  $id: 'monitorService',
   type: 'object',
   additionalProperties: {
     type: 'object',
@@ -24,6 +24,28 @@ export const serviceOpenApiSchema = {
       },
     },
   },
+} as const
+
+export const toServiceOpenApiSchema = {
+  $id: 'toService',
+  type: 'object',
+  properties: {
+    to: {
+      type: 'string',
+    },
+    title: {
+      type: 'string',
+    },
+    imgSrc: {
+      type: 'string',
+    },
+    description: {
+      type:
+        'string',
+    },
+  },
+  additionalProperties: false,
+  required: ['to', 'title', 'imgSrc', 'description'],
 } as const
 
 export const createProjectDto = {
@@ -60,7 +82,10 @@ export const projectOpenApiSchema = {
       type: 'string',
     },
     organization: { $ref: 'organization#' },
-    services: { $ref: 'service#' },
+    externalServices: {
+      type: 'array',
+      items: { $ref: 'toService#' },
+    },
     environments: {
       type: 'array',
       items: { $ref: 'environment#' },
