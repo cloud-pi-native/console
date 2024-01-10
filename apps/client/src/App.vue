@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import SideMenu from './components/SideMenu.vue'
-import DsoSnackbar from './components/DsoSnackbar.vue'
-import { ref, onMounted, watch, onBeforeMount, type Ref } from 'vue'
 import { getKeycloak } from './utils/keycloak/keycloak'
 import { useUserStore } from './stores/user.js'
 import { useProjectStore } from './stores/project.js'
@@ -12,10 +9,10 @@ const projectStore = useProjectStore()
 
 userStore.setIsLoggedIn()
 
-const isLoggedIn: Ref<boolean | undefined> = ref(keycloak.authenticated)
-const label: Ref<string> = ref(isLoggedIn.value ? 'Se déconnecter' : 'Se connecter')
-const to: Ref<string> = ref(isLoggedIn.value ? '/logout' : '/login')
-const intervalId: Ref<number | undefined> = ref(undefined)
+const isLoggedIn = ref<boolean | undefined>(keycloak.authenticated)
+const label = ref(isLoggedIn.value ? 'Se déconnecter' : 'Se connecter')
+const to = ref(isLoggedIn.value ? '/logout' : '/login')
+const intervalId = ref<number>()
 const appVersion: string = process.env.APP_VERSION ? `v${process.env.APP_VERSION}` : 'vpr-dev'
 
 const quickLinks = ref([{

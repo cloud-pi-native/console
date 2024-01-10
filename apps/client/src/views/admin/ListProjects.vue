@@ -12,9 +12,6 @@ import { useProjectUserStore } from '@/stores/project-user'
 import { useAdminQuotaStore } from '@/stores/admin/quota'
 import { handleError } from '@/utils/func.js'
 
-import LoadingCt from '@/components/LoadingCt.vue'
-import TeamCt from '@/components/TeamCt.vue'
-
 const adminProjectStore = useAdminProjectStore()
 const adminOrganizationStore = useAdminOrganizationStore()
 const userStore = useUserStore()

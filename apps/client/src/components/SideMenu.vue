@@ -1,7 +1,4 @@
 <script lang="ts" setup>
-import { useScheme } from '@gouvminint/vue-dsfr'
-import { computed, ref, watch, onMounted, watchEffect } from 'vue'
-import { useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user.js'
 import { useProjectStore } from '@/stores/project.js'
 
@@ -15,10 +12,14 @@ const isLoggedIn = computed(() => userStore.isLoggedIn)
 const isAdmin = computed(() => userStore.isAdmin)
 const selectedProject = computed(() => projectStore.selectedProject)
 
-const isDarkPrefered = window.matchMedia(
-  '(prefers-color-scheme: dark)',
-).matches
-const isDarkScheme = ref(isDarkPrefered)
+const isDarkScheme = ref<boolean>()
+const selectedScheme = computed<string | undefined>(() =>
+  isDarkScheme.value === undefined
+    ? undefined
+    : isDarkScheme.value
+      ? 'dark'
+      : 'light',
+)
 
 const isExpanded = ref({
   mainMenu: false,
@@ -49,9 +50,8 @@ onMounted(() => {
   // @ts-ignore
   const { setScheme } = useScheme()
 
-  watchEffect(() => setScheme(isDarkScheme.value ? 'dark' : 'light'))
+  watchEffect(() => setScheme(selectedScheme.value))
 })
-
 </script>
 
 <template>

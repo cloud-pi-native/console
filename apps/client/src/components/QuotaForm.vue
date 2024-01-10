@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { computed, onBeforeMount, ref } from 'vue'
-import MultiSelector from './MultiSelector.vue'
 import { quotaSchema, schemaValidator } from '@dso-console/shared'
 import { copyContent } from '@/utils/func.js'
 import type { UpdateQuotaType } from '@/views/admin/ListQuotas.vue'

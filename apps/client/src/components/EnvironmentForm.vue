@@ -1,10 +1,8 @@
 <script lang="ts" setup>
 import { ref, onBeforeMount, type Ref, watch, computed } from 'vue'
 import { environmentSchema, schemaValidator, projectIsLockedInfo, isValid, longestEnvironmentName, type QuotaStageModel } from '@dso-console/shared'
-import PermissionForm from './PermissionForm.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
-import LoadingCt from './LoadingCt.vue'
 import { getRandomId } from '@gouvminint/vue-dsfr'
 import { handleError } from '@/utils/func.js'
 

@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch, type Ref } from 'vue'
 import { useAdminStageStore } from '@/stores/admin/stage.js'
-import StageForm from '@/components/StageForm.vue'
 import { sortArrByObjKeyAsc } from '@dso-console/shared'
 import type { CreateStageDto, UpdateQuotaStageDto, StageModel, UpdateStageClustersDto, StageParams } from '@dso-console/shared'
 import { useAdminQuotaStore } from '@/stores/admin/quota'

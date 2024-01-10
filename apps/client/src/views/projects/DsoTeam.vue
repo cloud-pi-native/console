@@ -1,11 +1,9 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
-import DsoSelectedProject from './DsoSelectedProject.vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectUserStore } from '@/stores/project-user.js'
 import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import TeamCt from '@/components/TeamCt.vue'
 import { getRandomId } from '@gouvminint/vue-dsfr'
 import { handleError } from '@/utils/func.js'
 import { useUsersStore } from '@/stores/users.js'
