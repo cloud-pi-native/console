@@ -75,6 +75,7 @@ const routes: Readonly<RouteRecordRaw[]> = [
     component: ServicesHealth,
   },
   {
+    name: 'ParentProjects',
     path: '/projects',
     // TODO
     // @ts-ignore
@@ -86,6 +87,7 @@ const routes: Readonly<RouteRecordRaw[]> = [
       },
       {
         path: ':id',
+        name: 'Project',
         async beforeEnter (to) {
           await Promise.all([
             useUsersStore().getProjectUsers(to.params.id),

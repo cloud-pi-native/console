@@ -4,11 +4,7 @@ import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@gouvminint/vue-dsfr/styles'
 import 'vue3-json-viewer/dist/index.css'
 
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
 import { keycloakInit } from './utils/keycloak/keycloak'
-
-import VueDsfr from '@gouvminint/vue-dsfr'
 
 import App from './App.vue'
 import router from './router/index'
@@ -16,9 +12,9 @@ import * as icons from './icons'
 import JsonViewer from 'vue3-json-viewer'
 
 import 'virtual:uno.css'
-import 'uno.css'
 import 'virtual:unocss-devtools'
 import './main.css'
+import { DsfrSelect } from '@gouvminint/vue-dsfr'
 
 try {
   await keycloakInit()
@@ -27,9 +23,12 @@ try {
   throw new Error('échec d\'initialisation du keycloak')
 }
 
+addIcons(...Object.values(icons))
+
 createApp(App)
   .use(createPinia())
   .use(router)
-  .use(VueDsfr, { icons: Object.values(icons) })
+  .component('VIcon', OhVueIcon)
+  .component('DsfrSelect', DsfrSelect)
   .use(JsonViewer)
   .mount('#app')

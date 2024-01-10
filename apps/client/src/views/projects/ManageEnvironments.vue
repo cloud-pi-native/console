@@ -1,9 +1,7 @@
 <script lang="ts" setup>
 import { ref, computed, watch, onMounted } from 'vue'
-import DsoSelectedProject from './DsoSelectedProject.vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
-import EnvironmentForm from '@/components/EnvironmentForm.vue'
 import { projectIsLockedInfo, sortArrByObjKeyAsc } from '@dso-console/shared'
 import { useUserStore } from '@/stores/user.js'
 import { useAdminClusterStore } from '@/stores/admin/cluster'
