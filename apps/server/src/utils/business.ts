@@ -8,7 +8,7 @@ import {
   unlockProject,
   addLogs,
 } from '@/resources/queries-index.js'
-import type { Project, User } from '@prisma/client'
+import type { Log, Project, User } from '@prisma/client'
 import { BadRequestError } from './errors.js'
 
 export const unlockProjectIfNotFailed = async (projectId: Project['id']) => {
@@ -27,7 +27,7 @@ export const unlockProjectIfNotFailed = async (projectId: Project['id']) => {
   }
 }
 
-export const checkCreateProject = async (owner: User, resource: 'Project' | 'Repository') => {
+export const checkCreateProject = async (owner: User, resource: 'Project' | 'Repository', requestId: Log['requestId']) => {
   const pluginsResults = await hooks.createProject.validate({ owner })
   if (pluginsResults?.failed) {
     const reasons = Object.values(pluginsResults)
@@ -36,7 +36,7 @@ export const checkCreateProject = async (owner: User, resource: 'Project' | 'Rep
       .join('; ')
 
     // @ts-ignore
-    await addLogs(`Create ${resource} Validation`, pluginsResults, owner.id)
+    await addLogs(`Create ${resource} Validation`, pluginsResults, owner.id, requestId)
 
     const message = 'Echec de la validation des prérequis par les services externes'
     throw new BadRequestError(message, { description: reasons })

@@ -71,6 +71,7 @@ const router = async (app: FastifyInstance, _opt) => {
         name: data.name,
         clusterId: data.clusterId,
         quotaStageId: data.quotaStageId,
+        requestId: req.id,
       })
 
       addReqLogs({
@@ -104,6 +105,7 @@ const router = async (app: FastifyInstance, _opt) => {
         environmentId,
         quotaStageId: data.quotaStageId,
         clusterId: data.clusterId,
+        requestId: req.id,
       })
 
       addReqLogs({
@@ -134,6 +136,7 @@ const router = async (app: FastifyInstance, _opt) => {
         userId,
         projectId,
         environmentId,
+        requestId: req.id,
       })
 
       addReqLogs({

@@ -20,7 +20,7 @@ import {
 } from '@/resources/queries-index.js'
 import { hooks } from '@/plugins/index.js'
 import { DsoError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
-import type { Cluster, Environment, Project, Role, User, QuotaStage } from '@prisma/client'
+import type { Cluster, Environment, Project, Role, User, QuotaStage, Log } from '@prisma/client'
 import {
   checkInsufficientRoleInProject,
   checkClusterUnavailable,
@@ -158,6 +158,7 @@ type CreateEnvironmentParam = {
   name: Environment['name'],
   clusterId: Environment['clusterId'],
   quotaStageId: QuotaStage['id'],
+  requestId: Log['requestId']
 }
 
 export const createEnvironment = async (
@@ -167,6 +168,7 @@ export const createEnvironment = async (
     name,
     clusterId,
     quotaStageId,
+    requestId,
   }: CreateEnvironmentParam) => {
   const { user, project, quotaStage, quota, authorizedClusters } = await getInitializeEnvironmentInfos({
     userId,
@@ -216,7 +218,7 @@ export const createEnvironment = async (
       },
     })
     // @ts-ignore
-    await addLogs('Create Environment', results, userId)
+    await addLogs('Create Environment', results, userId, requestId)
     if (results.failed) {
       throw new UnprocessableContentError('Echec services à la création de l\'environnement')
     }
@@ -239,6 +241,7 @@ type UpdateEnvironmentParam = {
   environmentId: Environment['id'],
   quotaStageId?: QuotaStage['id'],
   clusterId?: Cluster['id'],
+  requestId: Log['requestId'],
 }
 
 export const updateEnvironment = async ({
@@ -247,6 +250,7 @@ export const updateEnvironment = async ({
   environmentId,
   quotaStageId,
   clusterId,
+  requestId,
 }: UpdateEnvironmentParam) => {
   try {
     let environment: Environment
@@ -298,7 +302,7 @@ export const updateEnvironment = async ({
         },
       })
       // @ts-ignore
-      await addLogs('Update Environment Quotas', results, user.id)
+      await addLogs('Update Environment Quotas', results, user.id, requestId)
       if (results.failed) {
         throw new UnprocessableContentError('Echec services à la mise à jour des quotas pour l\'environnement')
       }
@@ -322,12 +326,14 @@ type DeleteEnvironmentParam = {
   userId: User['id'],
   projectId: Project['id'],
   environmentId: Environment['id'],
+  requestId: Log['requestId'],
 }
 
 export const deleteEnvironment = async ({
   userId,
   projectId,
   environmentId,
+  requestId,
 }: DeleteEnvironmentParam) => {
   try {
     const environment = await getEnvironmentInfos(environmentId)
@@ -362,7 +368,7 @@ export const deleteEnvironment = async ({
       },
     })
     // @ts-ignore
-    await addLogs('Delete Environment', results, userId)
+    await addLogs('Delete Environment', results, userId, requestId)
     if (results.failed) {
       throw new Error('Echec des services à la suppression de l\'environnement')
     }

@@ -1,6 +1,6 @@
 import { addLogs, deleteRepository as deleteRepositoryQuery, getProjectInfos, getProjectInfosAndRepos, initializeRepository, lockProject, updateRepository as updateRepositoryQuery, updateRepositoryCreated, updateRepositoryDeleting, updateRepositoryFailed, getUserById } from '@/resources/queries-index.js'
 import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
-import type { Project, Repository, User } from '@prisma/client'
+import type { Log, Project, Repository, User } from '@prisma/client'
 import { projectRootDir } from '@/utils/env.js'
 import { hooks } from '@/plugins/index.js'
 import { unlockProjectIfNotFailed, checkCreateProject as checkCreateRepositoryPlugins } from '@/utils/business.js'
@@ -54,12 +54,13 @@ export const createRepository = async (
   projectId: Project['id'],
   data: CreateRepositoryDto,
   userId: User['id'],
+  requestId: Log['requestId'],
 ) => {
   await checkUpsertRepository(userId, projectId, 'owner')
 
   const user = await getUserById(userId)
 
-  await checkCreateRepositoryPlugins(user, 'Repository')
+  await checkCreateRepositoryPlugins(user, 'Repository', requestId)
 
   const project = await getProjectInfosAndRepos(projectId)
 
@@ -90,7 +91,7 @@ export const createRepository = async (
     const results = await hooks.createRepository.execute(repoData)
     results.args.externalToken = 'information cachée'
     // @ts-ignore
-    await addLogs('Create Repository', results, userId)
+    await addLogs('Create Repository', results, userId, requestId)
     if (results.failed) throw new BadRequestError('Echec des services lors de la création du dépôt', undefined)
 
     await updateRepositoryCreated(repo.id)
@@ -108,6 +109,7 @@ export const updateRepository = async (
   repositoryId: Repository['id'],
   data: Partial<UpdateRepositoryDto>,
   userId: User['id'],
+  requestId: Log['requestId'],
 ) => {
   const project = await getProjectInfos(projectId)
 
@@ -129,7 +131,7 @@ export const updateRepository = async (
     const results = await hooks.updateRepository.execute(repoData)
     results.args.externalToken = 'information cachée'
     // @ts-ignore
-    await addLogs('Update Repository', results, userId)
+    await addLogs('Update Repository', results, userId, requestId)
     if (results.failed) throw new UnprocessableContentError('Echec des services associés au dépôt', undefined)
 
     repo = await updateRepositoryCreated(repo.id)
@@ -146,6 +148,7 @@ export const deleteRepository = async (
   projectId: Project['id'],
   repositoryId: Repository['id'],
   userId: User['id'],
+  requestId: Log['requestId'],
 ) => {
   const project = await getProjectAndcheckRole(userId, projectId, 'owner')
 
@@ -167,7 +170,7 @@ export const deleteRepository = async (
 
     const results = await hooks.deleteRepository.execute(repoData)
     // @ts-ignore
-    await addLogs('Delete Repository', results, userId)
+    await addLogs('Delete Repository', results, userId, requestId)
     if (results.failed) throw new UnprocessableContentError('Echec des opérations', undefined)
     await deleteRepositoryQuery(repositoryId)
     await unlockProjectIfNotFailed(projectId)
