@@ -4,7 +4,7 @@ import { hooks } from '@/plugins/index.js'
 import { type PluginResult } from '@/plugins/hooks/hook.js'
 import { checkInsufficientRoleInProject } from '@/utils/controller.js'
 import { unlockProjectIfNotFailed } from '@/utils/business.js'
-import { BadRequestError, ForbiddenError, UnprocessableContentError } from '@/utils/errors.js'
+import { BadRequestError, ForbiddenError } from '@/utils/errors.js'
 import { type AsyncReturnType, type ProjectRoles, projectIsLockedInfo, userSchema } from '@dso-console/shared'
 
 export type UserDto = Pick<User, 'email' | 'firstName' | 'lastName' | 'id'>
@@ -64,14 +64,18 @@ export const addUserToProject = async (
     user: userToAdd,
   }
 
-  const isValid = await hooks.addUserToProject.validate(kcData)
-  if (isValid?.failed) {
-    const reasons = Object.values(isValid)
+  const pluginsResults = await hooks.addUserToProject.validate(kcData)
+  if (pluginsResults?.failed) {
+    const reasons = Object.values(pluginsResults)
       .filter((plugin: PluginResult) => plugin?.status?.result === 'KO')
       .map((plugin: PluginResult) => plugin.status.message)
       .join('; ')
-    addLogs('Add User to Project Validation', { reasons, failed: true }, userId)
-    throw new UnprocessableContentError(reasons, undefined)
+
+    // @ts-ignore
+    await addLogs('Add User to Project Validation', pluginsResults, userId)
+
+    const message = 'Echec de la validation des prérequis par les services externes'
+    throw new BadRequestError(message, { description: reasons })
   }
 
   await lockProject(project.id)
@@ -119,14 +123,18 @@ export const removeUserFromProject = async (
     user: userToRemove,
   }
 
-  const isValid = await hooks.removeUserFromProject.validate(kcData)
-  if (isValid?.failed) {
-    const reasons = Object.values(isValid)
+  const pluginsResults = await hooks.removeUserFromProject.validate(kcData)
+  if (pluginsResults?.failed) {
+    const reasons = Object.values(pluginsResults)
       .filter((plugin: PluginResult) => plugin?.status?.result === 'KO')
       .map((plugin: PluginResult) => plugin.status.message)
       .join('; ')
-    addLogs('Remove User from Project Validation', { reasons, failed: true }, userId)
-    throw new UnprocessableContentError(reasons, undefined)
+
+    // @ts-ignore
+    await addLogs('Remove User from Project Validation', pluginsResults, userId)
+
+    const message = 'Echec de la validation des prérequis par les services externes'
+    throw new BadRequestError(message, { description: reasons })
   }
 
   await lockProject(project.id)

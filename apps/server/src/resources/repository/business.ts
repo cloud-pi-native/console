@@ -3,7 +3,7 @@ import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentErr
 import type { Project, Repository, User } from '@prisma/client'
 import { projectRootDir } from '@/utils/env.js'
 import { hooks } from '@/plugins/index.js'
-import { unlockProjectIfNotFailed } from '@/utils/business.js'
+import { unlockProjectIfNotFailed, checkCreateProject as checkCreateRepositoryPlugins } from '@/utils/business.js'
 import type { CreateRepositoryDto, UpdateRepositoryDto, ProjectRoles } from '@dso-console/shared'
 import { checkInsufficientRoleInProject, checkRoleAndLocked } from '@/utils/controller.js'
 import { gitlabUrl } from '@/plugins/core/gitlab/utils.js'
@@ -50,21 +50,6 @@ export const checkUpsertRepository = async (
   if (errorMessage) throw new ForbiddenError(errorMessage, undefined)
 }
 
-export const checkHookValidation = async (
-  user: User,
-) => {
-  const isValid = await hooks.createProject.validate({ owner: user })
-  if (isValid?.failed) {
-    const reasons = Object.values(isValid)
-      // @ts-ignore
-      .filter(({ status }) => status?.result === 'KO')
-      // @ts-ignore
-      .map(({ status }) => status?.message)
-      .join('; ')
-    throw new UnprocessableContentError(reasons, undefined)
-  }
-}
-
 export const createRepository = async (
   projectId: Project['id'],
   data: CreateRepositoryDto,
@@ -74,7 +59,7 @@ export const createRepository = async (
 
   const user = await getUserById(userId)
 
-  await checkHookValidation(user)
+  await checkCreateRepositoryPlugins(user, 'Repository')
 
   const project = await getProjectInfosAndRepos(projectId)
 

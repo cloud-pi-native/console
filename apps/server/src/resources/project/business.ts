@@ -24,7 +24,7 @@ import {
 import { hooks } from '@/plugins/index.js'
 import type { Cluster, Environment, Organization, Project, User } from '@prisma/client'
 import { checkInsufficientPermissionInEnvironment, checkInsufficientRoleInProject } from '@/utils/controller.js'
-import { unlockProjectIfNotFailed } from '@/utils/business.js'
+import { unlockProjectIfNotFailed, checkCreateProject as checkCreateProjectPlugins } from '@/utils/business.js'
 import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import { type PluginResult } from '@/plugins/hooks/hook.js'
 import {
@@ -51,7 +51,7 @@ export const getProjectInfosAndClusters = async (projectId: string) => {
   return { project, projectClusters }
 }
 
-const projectServices = (project: Project & { organization: Organization, environments: Environment[], clusters: Pick<Cluster, 'id' | 'infos' | 'label' | 'privacy' | 'clusterResources'>[]}) => getProjectServices({
+const projectServices = (project: Project & { organization: Organization, environments: Environment[], clusters: Pick<Cluster, 'id' | 'infos' | 'label' | 'privacy' | 'clusterResources'>[] }) => getProjectServices({
   project: project.name,
   organization: project.organization.name,
   services: project.services,
@@ -80,18 +80,8 @@ export const checkCreateProject = async (
 ) => {
   await projectSchema.validateAsync(data, { context: { projectNameMaxLength: calcProjectNameMaxLength(organizationName) } })
 
-  const pluginsResults = await hooks.createProject.validate({ owner })
-  if (pluginsResults?.failed) {
-    const reasons = Object.values(pluginsResults)
-      .filter((plugin: PluginResult) => plugin?.status?.result === 'KO')
-      .map((plugin: PluginResult) => plugin.status.message)
-      .join('; ')
+  await checkCreateProjectPlugins(owner, 'Project')
 
-    const message = 'Echec de la validation des prérequis de création du projet par les services externes'
-
-    addLogs('Create Project Validation', { reasons, failed: true }, owner.id)
-    throw new BadRequestError(message, { description: reasons })
-  }
   const projectSearch = await getProjectByNames({ name: data.name, organizationName })
   if (projectSearch.length > 0) {
     throw new BadRequestError(`"${data.name}" existe déjà`, { extras: {}, description: `Le projet "${data.name}" existe déjà` })
@@ -275,7 +265,7 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
       await addLogs('Delete Environments', resultsEnv, requestor.id)
       if (resultsEnv.failed) throw new UnprocessableContentError('Echec des services à la suppression de l\'environnement')
       await deleteEnvironment(environment.id)
-      environments = environments.toSpliced(environments.findIndex(partialEnvironment => partialEnvironment.name === environment.name), 1)
+      environments = environments.toSpliced(environments.findIndex(partialEnvironment => partialEnvironment.environment === environment.name), 1)
     }
     // -- fin - Suppression environnements --
 
