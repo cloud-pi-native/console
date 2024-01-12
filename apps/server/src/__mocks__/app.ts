@@ -10,20 +10,9 @@ import { User } from '@dso-console/test-utils'
 
 global.process.exit = vi.fn()
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => { vi.fn() }) }))
-vi.mock('@/plugins/services.js', () => {
-  return {
-    servicesInfos: {
-      gitlab: {
-        title: 'Gitlab',
-      },
-      harbor: {
-        title: 'Harbor',
-      },
-    },
-    getProjectServices: () => [],
-  }
-})
-vi.mock('../plugins/index.js', () => {
+
+vi.mock('@dso-console/hooks', async () => {
+  const hooks = await vi.importActual('@dso-console/hooks')
   const hookTemplate = {
     execute: () => ({
       args: {},
@@ -33,30 +22,40 @@ vi.mock('../plugins/index.js', () => {
       failed: false,
     }),
   }
+
   return {
-    initPluginManager: async () => vi.fn(),
-    initPlugins: async () => vi.fn(),
-    importPlugin: async () => vi.fn(),
+    ...hooks,
+    services: {
+      getForProject: () => { },
+      getStatus: () => [],
+    },
+    PluginApi: class { },
+    servicesInfos: {
+      gitlab: { title: 'Gitlab' },
+      harbor: { title: 'Harbor' },
+    },
     hooks: {
       // projects
       getProjectSecrets: {
         execute: () => ({
           failed: false,
           args: {},
-          gitlab: {
-            secrets: {
-              token: 'myToken',
+          results: {
+            gitlab: {
+              secrets: {
+                token: 'myToken',
+              },
+              status: {
+                failed: false,
+              },
             },
-            status: {
-              failed: false,
-            },
-          },
-          harbor: {
-            secrets: {
-              token: 'myToken',
-            },
-            status: {
-              failed: false,
+            harbor: {
+              secrets: {
+                token: 'myToken',
+              },
+              status: {
+                failed: false,
+              },
             },
           },
         }),

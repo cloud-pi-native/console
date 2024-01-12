@@ -1,5 +1,5 @@
 import { FromSchema } from 'json-schema-to-ts'
-import { ProjectModel } from '../project'
+import { ProjectModel } from '../project/model.js'
 import { createRepositorySchema, updateRepositorySchema } from './openApiSchema.js'
 
 export type CreateRepositoryDto = FromSchema<typeof createRepositorySchema['body']>

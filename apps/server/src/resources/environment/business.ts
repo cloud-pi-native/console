@@ -18,8 +18,8 @@ import {
   getProjectPartialEnvironments,
   getEnvironmentById,
 } from '@/resources/queries-index.js'
-import { hooks } from '@/plugins/index.js'
 import { BadRequestError, DsoError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
+import { hooks } from '@dso-console/hooks'
 import type { Cluster, Environment, Project, Role, User, QuotaStage, Log } from '@prisma/client'
 import {
   checkInsufficientRoleInProject,
@@ -31,8 +31,8 @@ import {
 import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { projectRootDir } from '@/utils/env.js'
 import { getProjectInfosAndClusters } from '@/resources/project/business.js'
-import { gitlabUrl } from '@/plugins/core/gitlab/utils.js'
 import { type AsyncReturnType, adminGroupPath, environmentSchema } from '@dso-console/shared'
+// impor} from '@/plugins/core/gitlab/utils.js'
 import type { UserDetails } from '@/types/index.js'
 
 // Fetch infos
@@ -203,7 +203,7 @@ export const createEnvironment = async (
   try {
     const projectName = project.name
     const organizationName = project.organization.name
-    const gitlabBaseURL = `${gitlabUrl}/${projectRootDir}/${organizationName}/${projectName}`
+    const gitlabBaseURL = `/${projectRootDir}/${organizationName}/${projectName}`
     const repositories = environment.project.repositories?.map(({ internalRepoName }) => ({
       url: `${gitlabBaseURL}/${internalRepoName}.git`,
       internalRepoName,
@@ -289,7 +289,7 @@ export const updateEnvironment = async ({
 
       const projectName = project.name
       const organizationName = project.organization.name
-      const gitlabBaseURL = `${gitlabUrl}/${projectRootDir}/${organizationName}/${projectName}`
+      const gitlabBaseURL = `/${projectRootDir}/${organizationName}/${projectName}`
       // @ts-ignore
       const repositories = environment.project.repositories?.map(({ internalRepoName }) => ({
         url: `${gitlabBaseURL}/${internalRepoName}.git`,
@@ -358,7 +358,7 @@ export const deleteEnvironment = async ({
     // Suppression de l'environnement dans les services
     const projectName = project.name
     const organizationName = project.organization.name
-    const gitlabBaseURL = `${gitlabUrl}/${projectRootDir}/${organizationName}/${projectName}`
+    const gitlabBaseURL = `/${projectRootDir}/${organizationName}/${projectName}`
     const repositories = environment.project.repositories.map(({ internalRepoName }) => ({
       url: `${gitlabBaseURL}/${internalRepoName}.git`,
       internalRepoName,
