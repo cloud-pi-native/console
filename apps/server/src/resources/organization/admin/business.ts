@@ -1,11 +1,9 @@
-import { hooks } from '@/plugins/index.js'
-import type { HookPayload, PluginResult } from '@/plugins/hooks/hook.js'
+import { type HookPayload, type PluginResult, hooks } from '@dso-console/hooks'
 import { addLogs, createOrganization as createOrganizationQuery, getOrganizationByName, getOrganizations, getProjectByOrganizationId, lockProject, updateActiveOrganization, updateLabelOrganization } from '@/resources/queries-index.js'
 import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { BadRequestError, NotFoundError } from '@/utils/errors.js'
-import { objectValues } from '@/utils/type.js'
 import type { Log, Organization, User } from '@prisma/client'
-import { type CreateOrganizationDto, getUniqueListBy, organizationSchema } from '@dso-console/shared'
+import { type CreateOrganizationDto, getUniqueListBy, organizationSchema, objectValues } from '@dso-console/shared'
 
 export const getAllOrganization = async () => {
   const allOrganizations = await getOrganizations()

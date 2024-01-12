@@ -58,3 +58,10 @@ export const objectKeys = <Obj extends Record<string, unknown>>(obj: Obj): (keyo
 export const objectValues = <Obj extends Record<string, unknown>>(obj: Obj): (Obj[keyof Obj])[] => {
   return Object.values(obj) as (Obj[keyof Obj])[]
 }
+
+export const requiredEnv = (envName: string): string => {
+  const envValue = process.env[envName]
+  if (envValue) return envValue
+
+  throw Error(`env: ${envName} is not defined !`)
+}

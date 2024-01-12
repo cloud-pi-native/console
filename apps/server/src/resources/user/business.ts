@@ -1,7 +1,6 @@
 import { getOrCreateUser, addLogs, addUserToProject as addUserToProjectQuery, createUser, deletePermission, getMatchingUsers as getMatchingUsersQuery, getProjectInfos as getProjectInfosQuery, getProjectUsers as getProjectUsersQuery, getUserByEmail, getUserById, lockProject, removeUserFromProject as removeUserFromProjectQuery, updateProjectFailed, updateUserProjectRole as updateUserProjectRoleQuery, getRolesByProjectId } from '@/resources/queries-index.js'
 import type { User, Project, Log } from '@prisma/client'
-import { hooks } from '@/plugins/index.js'
-import { type PluginResult } from '@/plugins/hooks/hook.js'
+import { hooks, type PluginResult } from '@dso-console/hooks'
 import { checkInsufficientRoleInProject } from '@/utils/controller.js'
 import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { BadRequestError, ForbiddenError } from '@/utils/errors.js'

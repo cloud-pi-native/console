@@ -28,14 +28,32 @@
     "test": {
       "dependsOn": [
         "^@dso-console/shared#build",
-        "^@dso-console/test-utils#build"
+        "^@dso-console/test-utils#build",
+        "^@dso-console/hooks#build",
+        "^@dso-console/argo-plugin#build",
+        "^@dso-console/gitlab-plugin#build",
+        "^@dso-console/harbor-plugin#build",
+        "^@dso-console/keycloak-plugin#build",
+        "^@dso-console/kubernetes-plugin#build",
+        "^@dso-console/nexus-plugin#build",
+        "^@dso-console/sonarqube-plugin#build",
+        "^@dso-console/vault-plugin#build"
       ],
       "outputs": []
     },
     "test:cov": {
       "dependsOn": [
         "^@dso-console/shared#build",
-        "^@dso-console/test-utils#build"
+        "^@dso-console/test-utils#build",
+        "^@dso-console/hooks#build",
+        "^@dso-console/argo-plugin#build",
+        "^@dso-console/gitlab-plugin#build",
+        "^@dso-console/harbor-plugin#build",
+        "^@dso-console/keycloak-plugin#build",
+        "^@dso-console/kubernetes-plugin#build",
+        "^@dso-console/nexus-plugin#build",
+        "^@dso-console/sonarqube-plugin#build",
+        "^@dso-console/vault-plugin#build"
       ],
       "outputs": []
     },

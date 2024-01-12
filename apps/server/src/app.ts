@@ -66,7 +66,7 @@ const app: FastifyInstance = addAllSchemasToApp(fastify(fastifyConf))
         description: 'Swagger des routes de la console DSO.',
         version: '1.0.0',
       },
-      host: keycloakRedirectUri.split('://')[1],
+      host: keycloakRedirectUri?.includes('://') ? keycloakRedirectUri.split('://')[1] : 'localhost',
       schemes: ['http', 'https'],
       consumes: ['application/json'],
       produces: ['application/json'],
