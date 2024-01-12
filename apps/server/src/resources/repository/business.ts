@@ -1,12 +1,12 @@
 import { addLogs, deleteRepository as deleteRepositoryQuery, getProjectInfos, getProjectInfosAndRepos, initializeRepository, lockProject, updateRepository as updateRepositoryQuery, updateRepositoryCreated, updateRepositoryDeleting, updateRepositoryFailed, getUserById } from '@/resources/queries-index.js'
 import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import type { Log, Project, Repository, User } from '@prisma/client'
-import { projectRootDir } from '@/utils/env.js'
-import { hooks } from '@/plugins/index.js'
+import { projectRootDir, gitlabUrl } from '@/utils/env.js'
 import { unlockProjectIfNotFailed, checkCreateProject as checkCreateRepositoryPlugins } from '@/utils/business.js'
 import { type CreateRepositoryDto, type UpdateRepositoryDto, type ProjectRoles, repoSchema } from '@dso-console/shared'
+// TODO remove gitlabUrl
+import { hooks } from '@dso-console/hooks'
 import { checkInsufficientRoleInProject, checkRoleAndLocked } from '@/utils/controller.js'
-import { gitlabUrl } from '@/plugins/core/gitlab/utils.js'
 
 export const getRepositoryById = async (
   userId: User['id'],

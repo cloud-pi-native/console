@@ -1,8 +1,8 @@
 import { linkClusterToProjects, addLogs, createCluster as createClusterQuery, getClusterById, getClusterByLabel, getProjectsByClusterId, getStagesByClusterId, removeClusterFromProject, removeClusterFromStage, updateCluster as updateClusterQuery, getClusterEnvironments, deleteCluster as deleteClusterQuery } from '@/resources/queries-index.js'
 import { BadRequestError, DsoError, NotFoundError } from '@/utils/errors.js'
-import { hooks } from '@/plugins/index.js'
-import { type CreateClusterDto, type updateClusterSchema, clusterSchema } from '@dso-console/shared'
 import type { Cluster, Log, User } from '@prisma/client'
+import { hooks } from '@dso-console/hooks'
+import { type CreateClusterDto, clusterSchema, updateClusterSchema } from '@dso-console/shared'
 import { linkClusterToStages } from '@/resources/stage/business.js'
 import { FromSchema } from 'json-schema-to-ts'
 
