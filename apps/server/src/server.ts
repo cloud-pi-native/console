@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url'
 import app from './app.js'
 import { getConnection, closeConnections } from './connect.js'
 import { initDb } from './init/db/index.js'
-import { initPluginManager, initPlugins } from './plugins/index.js'
+import { initPm } from './plugins.js'
 
 // Workaround because fetch isn't using http_proxy variables
 // See. https://github.com/gajus/global-agent/issues/52#issuecomment-1134525621
@@ -29,16 +29,14 @@ async function initializeDB (path: string) {
 }
 
 export async function startServer () {
-  const pluginManager = await initPluginManager(app)
-  await initPlugins(pluginManager, app, 'core')
-  await initPlugins(pluginManager, app, 'external')
-
   try {
     await getConnection()
   } catch (error) {
     app.log.error(error.message)
     throw error
   }
+
+  initPm()
 
   app.log.info('Reading init database file')
 
@@ -64,7 +62,7 @@ export async function startServer () {
   }
 
   try {
-    await app.listen({ host: '0.0.0.0', port: +port })
+    await app.listen({ host: '0.0.0.0', port: +port || 8080 })
   } catch (error) {
     app.log.error(error)
     process.exit(1)

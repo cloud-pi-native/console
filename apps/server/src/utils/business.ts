@@ -1,5 +1,4 @@
-import { PluginResult } from '@/plugins/hooks/hook.js'
-import { hooks } from '@/plugins/index.js'
+import { type PluginResult, hooks } from '@dso-console/hooks'
 import {
   getEnvironmentsByProjectId,
   getProjectRepositories,

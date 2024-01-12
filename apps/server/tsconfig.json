@@ -10,7 +10,7 @@
   ],
   "include": [
     "src/**/*.ts"
-    // "*.ts"
+, "../../packages/hooks/src/utils/crypto.spec.ts"    // "*.ts"
   ],
   "compilerOptions": {
     "rootDir": "./src", /* Specify the root folder within your source files. */

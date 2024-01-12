@@ -21,12 +21,12 @@ import {
   updateProject as updateProjectQuery,
   updateProjectServices,
 } from '@/resources/queries-index.js'
-import { hooks } from '@/plugins/index.js'
 import type { Cluster, Environment, Log, Organization, Project, User } from '@prisma/client'
+import { hooks, services, servicesInfos } from '@dso-console/hooks'
+import type { PluginResult, CreateProjectExecArgs, ProjectBase, UpdateProjectExecArgs } from '@dso-console/hooks'
 import { checkInsufficientPermissionInEnvironment, checkInsufficientRoleInProject } from '@/utils/controller.js'
 import { unlockProjectIfNotFailed, checkCreateProject as checkCreateProjectPlugins } from '@/utils/business.js'
 import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
-import { type PluginResult } from '@/plugins/hooks/hook.js'
 import {
   type AsyncReturnType,
   type CreateProjectDto,
@@ -37,12 +37,9 @@ import {
   exclude,
   adminGroupPath,
 } from '@dso-console/shared'
-import type { CreateProjectExecArgs, ProjectBase, UpdateProjectExecArgs } from '@/plugins/hooks/project.js'
 import { filterObjectByKeys } from '@/utils/queries-tools.js'
-import { projectRootDir } from '@/utils/env.js'
+import { projectRootDir, gitlabUrl } from '@/utils/env.js'
 import { type UserDto, getUser } from '@/resources/user/business.js'
-import { gitlabUrl } from '@/plugins/core/gitlab/utils.js'
-import { getProjectServices, servicesInfos } from '@/plugins/services.js'
 
 // Fetch infos
 export const getProjectInfosAndClusters = async (projectId: string) => {
@@ -51,7 +48,7 @@ export const getProjectInfosAndClusters = async (projectId: string) => {
   return { project, projectClusters }
 }
 
-const projectServices = (project: Project & { organization: Organization, environments: Environment[], clusters: Pick<Cluster, 'id' | 'infos' | 'label' | 'privacy' | 'clusterResources'>[] }) => getProjectServices({
+const projectServices = (project: Project & { organization: Organization, environments: Environment[], clusters: Pick<Cluster, 'id' | 'infos' | 'label' | 'privacy' | 'clusterResources'>[] }) => services.getForProject({
   project: project.name,
   organization: project.organization.name,
   services: project.services,
@@ -124,10 +121,8 @@ export const getProjectSecrets = async (projectId: string, userId: User['id']) =
   const results = await hooks.getProjectSecrets.execute(projectData)
   if (results?.failed) throw new Error('Echec de récupération des secrets du projet par les plugins')
   const projectSecrets = Object.fromEntries(
-    Object.entries(results)
-      // @ts-ignore
+    Object.entries(results.results)
       .filter(([_key, value]) => value.secrets)
-      // @ts-ignore
       .map(([key, value]) => [servicesInfos[key]?.title, value.secrets]))
 
   return projectSecrets

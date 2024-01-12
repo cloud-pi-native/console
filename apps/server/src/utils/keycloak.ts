@@ -24,7 +24,7 @@ const userPayloadMapper = (userPayload: KeycloakPayload) => ({
 })
 
 export const keycloakConf = {
-  appOrigin: `${keycloakRedirectUri}`,
+  appOrigin: keycloakRedirectUri || 'http://localhost',
   keycloakSubdomain: `${keycloakDomain}/realms/${keycloakRealm}`,
   clientId: keycloakClientId,
   clientSecret: keycloakClientSecret,

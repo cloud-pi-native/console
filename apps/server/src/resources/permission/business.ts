@@ -2,7 +2,7 @@ import { BadRequestError, ForbiddenError, UnprocessableContentError } from '@/ut
 import type { Project, User, Environment, Permission, Log } from '@prisma/client'
 import { addLogs, deletePermission as deletePermissionQuery, getEnvironmentByIdWithCluster, getEnvironmentPermissions as getEnvironmentPermissionsQuery, getPermissionByUserIdAndEnvironmentId, getProjectInfos, getSingleOwnerByProjectId, getUserById, setPermission as setPermissionQuery, updatePermission as updatePermissionQuery } from '@/resources/queries-index.js'
 import { checkInsufficientRoleInProject, checkRoleAndLocked } from '@/utils/controller.js'
-import { hooks } from '@/plugins/index.js'
+import { hooks } from '@dso-console/hooks'
 
 export enum Action {
   update = 'modifiée',

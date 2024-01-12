@@ -1,28 +1,32 @@
 export const monitorServicesOpenApiSchema = {
   $id: 'monitorService',
-  type: 'object',
-  additionalProperties: {
+  type: 'array',
+  items: {
     type: 'object',
     properties: {
       name: {
         type: 'string',
+        description: 'Name of the service',
       },
-      to: {
-        type: 'string',
+      lastUpdateTimestamp: {
+        type: 'integer',
+        description: 'timestamp of last check, expressed in miliseconds since the epoch',
       },
-      monitorUrl: {
-        type: 'string',
+      interval: {
+        type: 'integer',
+        description: 'Normal interval between two checks, in miliseconds',
       },
-      title: {
+      message: {
         type: 'string',
+        description: 'Message returned by the monitoring service',
       },
-      imgSrc: {
+      status: {
         type: 'string',
-      },
-      description: {
-        type: 'string',
+        description: 'Status of last check check, could be either, OK / WARNING / ERROR / UNKNOW',
+        enum: ['OK', 'Dégradé', 'En échec', 'Inconnu'],
       },
     },
+    required: ['lastUpdateTimestamp', 'interval', 'message', 'status', 'name'],
   },
 } as const
 
@@ -326,5 +330,14 @@ export const archiveProjectSchema = {
   params: projectParamsSchema,
   response: {
     204: {},
+  },
+} as const
+
+export const getServiceHealthSchema = {
+  description: 'Get services status',
+  tags: ['services'],
+  summary: 'Get services status',
+  response: {
+    200: { $ref: 'monitorService#' },
   },
 } as const
