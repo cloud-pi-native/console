@@ -24,12 +24,13 @@ export const getAllLogs = async ({ offset = 0, limit = 5 }: { offset?: number, l
 }
 
 // CREATE
-export const addLogs = async (action: Log['action'], data: Log['data'], userId: User['id']) => {
+export const addLogs = async (action: Log['action'], data: Log['data'], userId: User['id'], requestId: string = '') => {
   return prisma.log.create({
     data: {
       action,
       userId,
       data,
+      requestId,
     },
   })
 }

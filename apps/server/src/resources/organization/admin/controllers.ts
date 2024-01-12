@@ -50,7 +50,7 @@ const router = async (app: FastifyInstance, _opt) => {
     async (req: FastifyRequest, res) => {
       const userId = req.session.user.id
 
-      const consoleOrganizations = await fetchOrganizations(userId)
+      const consoleOrganizations = await fetchOrganizations(userId, req.id)
 
       addReqLogs({
         req,

@@ -22,7 +22,7 @@ import {
   updateProjectServices,
 } from '@/resources/queries-index.js'
 import { hooks } from '@/plugins/index.js'
-import type { Cluster, Environment, Organization, Project, User } from '@prisma/client'
+import type { Cluster, Environment, Log, Organization, Project, User } from '@prisma/client'
 import { checkInsufficientPermissionInEnvironment, checkInsufficientRoleInProject } from '@/utils/controller.js'
 import { unlockProjectIfNotFailed, checkCreateProject as checkCreateProjectPlugins } from '@/utils/business.js'
 import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
@@ -77,10 +77,11 @@ export const checkCreateProject = async (
   owner: User,
   organizationName: Organization['name'],
   data: CreateProjectDto,
+  requestId: Log['requestId'],
 ) => {
   await projectSchema.validateAsync(data, { context: { projectNameMaxLength: calcProjectNameMaxLength(organizationName) } })
 
-  await checkCreateProjectPlugins(owner, 'Project')
+  await checkCreateProjectPlugins(owner, 'Project', requestId)
 
   const projectSearch = await getProjectByNames({ name: data.name, organizationName })
   if (projectSearch.length > 0) {
@@ -132,11 +133,11 @@ export const getProjectSecrets = async (projectId: string, userId: User['id']) =
   return projectSecrets
 }
 
-export const createProject = async (dataDto: CreateProjectDto, requestor: UserDto) => {
+export const createProject = async (dataDto: CreateProjectDto, requestor: UserDto, requestId: Log['requestId']) => {
   // Pré-requis
   const owner = await getUser(requestor)
   const organization = await getOrganizationById(dataDto.organizationId)
-  await checkCreateProject(owner, organization.name, dataDto)
+  await checkCreateProject(owner, organization.name, dataDto, requestId)
 
   // Actions
   const project = await initializeProject({ ...dataDto, ownerId: requestor.id })
@@ -152,7 +153,7 @@ export const createProject = async (dataDto: CreateProjectDto, requestor: UserDt
 
     const results = await hooks.createProject.execute(projectData)
     // @ts-ignore
-    await addLogs('Create Project', results, owner.id)
+    await addLogs('Create Project', results, owner.id, requestId)
     if (results.failed) throw new Error('Echec de la création du projet par les plugins')
 
     // enregistrement des ids GitLab et Harbor
@@ -180,7 +181,7 @@ export const createProject = async (dataDto: CreateProjectDto, requestor: UserDt
   }
 }
 
-export const updateProject = async (data: UpdateProjectDto, projectId: Project['id'], requestor: UserDto) => {
+export const updateProject = async (data: UpdateProjectDto, projectId: Project['id'], requestor: UserDto, requestId: Log['requestId']) => {
   const keysAllowedForUpdate = ['description']
   const dataFiltered = filterObjectByKeys(data, keysAllowedForUpdate)
 
@@ -208,7 +209,7 @@ export const updateProject = async (data: UpdateProjectDto, projectId: Project['
 
     const results = await hooks.updateProject.execute(projectData)
     // @ts-ignore
-    await addLogs('Update Project', results, requestor.id)
+    await addLogs('Update Project', results, requestor.id, requestId)
     if (results.failed) throw new Error('Echec de la mise à jour du projet par les plugins')
 
     await updateProjectCreated(project.id)
@@ -219,7 +220,7 @@ export const updateProject = async (data: UpdateProjectDto, projectId: Project['
   }
 }
 
-export const archiveProject = async (projectId: Project['id'], requestor: UserDto) => {
+export const archiveProject = async (projectId: Project['id'], requestor: UserDto, requestId: Log['requestId']) => {
   // Pré-requis
   const project = await getProjectInfosAndRepos(projectId)
   const owner = await getSingleOwnerByProjectId(project.id)
@@ -262,7 +263,7 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
       // @ts-ignore
       const resultsEnv = await hooks.deleteEnvironment.execute(envData)
       // @ts-ignore
-      await addLogs('Delete Environments', resultsEnv, requestor.id)
+      await addLogs('Delete Environments', resultsEnv, requestor.id, requestId)
       if (resultsEnv.failed) throw new UnprocessableContentError('Echec des services à la suppression de l\'environnement')
       await deleteEnvironment(environment.id)
       environments = environments.toSpliced(environments.findIndex(partialEnvironment => partialEnvironment.environment === environment.name), 1)
@@ -278,7 +279,7 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
         ...repo,
       })
       // @ts-ignore
-      await addLogs('Delete Repository', result, requestor.id)
+      await addLogs('Delete Repository', result, requestor.id, requestId)
       if (result.failed) throw new UnprocessableContentError('Echec des services à la suppression de l\'environnement')
       await deleteRepository(repo.id)
     }
@@ -298,7 +299,7 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
       owner,
     })
     // @ts-ignore
-    await addLogs('Archive Project', results, requestor.id)
+    await addLogs('Archive Project', results, requestor.id, requestId)
     if (results.failed) throw new UnprocessableContentError('Echec de la suppression du projet par les plugins')
     await archiveProjectQuery(projectId)
     // -- fin - Suppression projet --

@@ -49,7 +49,7 @@ const router = async (app: FastifyInstance, _opt) => {
 
       data.projectIds = checkClusterProjectIds(data)
 
-      const cluster = await createCluster(data, userId)
+      const cluster = await createCluster(data, userId, req.id)
 
       addReqLogs({
         req,
@@ -65,25 +65,26 @@ const router = async (app: FastifyInstance, _opt) => {
   app.put<{
     Params: FromSchema<typeof updateClusterSchema['params']>,
     Body: FromSchema<typeof updateClusterSchema['body']>,
-}>('/:clusterId',
-  {
-    schema: updateClusterSchema,
-  },
-  async (req, res) => {
-    const data = req.body
-    const clusterId = req.params.clusterId
+  }>('/:clusterId',
+    {
+      schema: updateClusterSchema,
+    },
+    async (req, res) => {
+      const data = req.body
+      const userId = req.session.user.id
+      const clusterId = req.params.clusterId
 
-    const cluster = await updateCluster(data, clusterId)
+      const cluster = await updateCluster(data, clusterId, userId, req.id)
 
-    addReqLogs({
-      req,
-      description: 'Cluster mis à jour avec succès',
-      extras: {
-        clusterId: cluster.id,
-      },
+      addReqLogs({
+        req,
+        description: 'Cluster mis à jour avec succès',
+        extras: {
+          clusterId: cluster.id,
+        },
+      })
+      sendOk(res, cluster)
     })
-    sendOk(res, cluster)
-  })
 
   // DELETE
   // Supprimer un cluster
@@ -97,7 +98,7 @@ const router = async (app: FastifyInstance, _opt) => {
       const clusterId = req.params.clusterId
       const userId = req.session.user.id
 
-      await deleteCluster(clusterId, userId)
+      await deleteCluster(clusterId, userId, req.id)
 
       addReqLogs({
         req,

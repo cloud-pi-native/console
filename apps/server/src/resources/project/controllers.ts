@@ -77,28 +77,28 @@ const router = async (app: FastifyInstance, _opt) => {
 
   // Récupérer les secrets d'un projet
   app.get<{
-  Params: ProjectParams,
-}>('/:projectId/secrets',
-  // TODO : pb schema, réponse inconnue (dépend des plugins)
-  // {
-  //   schema: getProjectSecretsSchema,
-  // },
-  async (req, res) => {
-    const projectId = req.params.projectId
-    const userId = req.session.user.id
+    Params: ProjectParams,
+  }>('/:projectId/secrets',
+    // TODO : pb schema, réponse inconnue (dépend des plugins)
+    // {
+    //   schema: getProjectSecretsSchema,
+    // },
+    async (req, res) => {
+      const projectId = req.params.projectId
+      const userId = req.session.user.id
 
-    const projectSecrets = await getProjectSecrets(projectId, userId)
+      const projectSecrets = await getProjectSecrets(projectId, userId)
 
-    addReqLogs({
-      req,
-      description: 'Secrets du projet récupérés avec succès',
-      extras: {
-        projectId,
-        userId,
-      },
+      addReqLogs({
+        req,
+        description: 'Secrets du projet récupérés avec succès',
+        extras: {
+          projectId,
+          userId,
+        },
+      })
+      sendOk(res, projectSecrets)
     })
-    sendOk(res, projectSecrets)
-  })
 
   // Créer un projet
   app.post<{
@@ -112,7 +112,7 @@ const router = async (app: FastifyInstance, _opt) => {
       delete requestor.groups
       const data = req.body
 
-      const project = await createProject(data, requestor)
+      const project = await createProject(data, requestor, req.id)
       addReqLogs({
         req,
         description: 'Projet créé avec succès',
@@ -125,50 +125,50 @@ const router = async (app: FastifyInstance, _opt) => {
 
   // Mettre à jour un projet
   app.put<{
-  Params: FromSchema<typeof updateProjectSchema['params']>,
-  Body: FromSchema<typeof updateProjectSchema['body']>
-}>('/:projectId',
-  {
-    schema: updateProjectSchema,
-  },
-  async (req, res) => {
-    const requestor = req.session.user
-    const projectId = req.params.projectId
-    const data = req.body
+    Params: FromSchema<typeof updateProjectSchema['params']>,
+    Body: FromSchema<typeof updateProjectSchema['body']>
+  }>('/:projectId',
+    {
+      schema: updateProjectSchema,
+    },
+    async (req, res) => {
+      const requestor = req.session.user
+      const projectId = req.params.projectId
+      const data = req.body
 
-    const project = await updateProject(data, projectId, requestor)
-    addReqLogs({
-      req,
-      description: 'Projet mis à jour avec succès',
-      extras: {
-        projectId,
-      },
+      const project = await updateProject(data, projectId, requestor, req.id)
+      addReqLogs({
+        req,
+        description: 'Projet mis à jour avec succès',
+        extras: {
+          projectId,
+        },
+      })
+      sendOk(res, project)
     })
-    sendOk(res, project)
-  })
 
   // Archiver un projet
   app.delete<{
-  Params: FromSchema<typeof archiveProjectSchema['params']>
-}>('/:projectId',
-  {
-    schema: archiveProjectSchema,
-  },
-  async (req, res) => {
-    const requestor = req.session.user
-    const projectId = req.params.projectId
+    Params: FromSchema<typeof archiveProjectSchema['params']>
+  }>('/:projectId',
+    {
+      schema: archiveProjectSchema,
+    },
+    async (req, res) => {
+      const requestor = req.session.user
+      const projectId = req.params.projectId
 
-    await archiveProject(projectId, requestor)
+      await archiveProject(projectId, requestor, req.id)
 
-    addReqLogs({
-      req,
-      description: 'Projet en cours de suppression',
-      extras: {
-        projectId,
-      },
+      addReqLogs({
+        req,
+        description: 'Projet en cours de suppression',
+        extras: {
+          projectId,
+        },
+      })
+      sendNoContent(res)
     })
-    sendNoContent(res)
-  })
 
   // Enregistrement du sous routeur environment
   app.register(projectEnvironmentRouter)

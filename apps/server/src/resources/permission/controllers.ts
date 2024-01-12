@@ -46,7 +46,7 @@ const router = async (app: FastifyInstance, _opt) => {
       const projectId = req.params.projectId
       const data = req.body
 
-      const permission = await setPermission(projectId, requestorId, data.userId, environmentId, data.level)
+      const permission = await setPermission(projectId, requestorId, data.userId, environmentId, data.level, req.id)
 
       addReqLogs({
         req,
@@ -74,7 +74,7 @@ const router = async (app: FastifyInstance, _opt) => {
       const projectId = req.params.projectId
       const data = req.body
 
-      const permission = await updatePermission(projectId, requestorId, data.userId, environmentId, data.level)
+      const permission = await updatePermission(projectId, requestorId, data.userId, environmentId, data.level, req.id)
 
       addReqLogs({
         req,
@@ -101,7 +101,7 @@ const router = async (app: FastifyInstance, _opt) => {
       const projectId = req.params.projectId
       const userId = req.params.userId
 
-      const permission = await deletePermission(userId, environmentId, requestorId)
+      const permission = await deletePermission(userId, environmentId, requestorId, req.id)
 
       addReqLogs({
         req,

@@ -70,7 +70,7 @@ const router = async (app: FastifyInstance, _opt) => {
       const userId = req.session.user.id
       const projectId = req.params.projectId
 
-      const repo = await createRepository(projectId, data, userId)
+      const repo = await createRepository(projectId, data, userId, req.id)
 
       addReqLogs({
         req,
@@ -115,7 +115,7 @@ const router = async (app: FastifyInstance, _opt) => {
 
       await getRepositoryById(userId, projectId, repositoryId)
 
-      await updateRepository(projectId, repositoryId, data, userId)
+      await updateRepository(projectId, repositoryId, data, userId, req.id)
 
       const description = 'Dépôt mis à jour avec succès'
       addReqLogs({
@@ -141,7 +141,7 @@ const router = async (app: FastifyInstance, _opt) => {
       const repositoryId = req.params.repositoryId
       const userId = req.session.user.id
 
-      await deleteRepository(projectId, repositoryId, userId)
+      await deleteRepository(projectId, repositoryId, userId, req.id)
 
       const description = 'Dépôt en cours de suppression'
       addReqLogs({
