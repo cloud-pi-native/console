@@ -38,6 +38,12 @@
     "lint-staged": "^15.0.2",
     "turbo": "^1.10.16"
   },
+  "pnpm": {
+    "patchedDependencies": {
+      "fastify-keycloak-adapter@2.1.6": "patches/fastify-keycloak-adapter@2.1.6.patch"
+    },
+    "allowNonAppliedPatches": true
+  },
   "volta": {
     "node": "20.10.0"
   }
