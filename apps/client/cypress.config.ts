@@ -40,7 +40,7 @@ export default defineConfig({
   },
 
   component: {
-    specPattern: 'cypress/components/specs/**/*.{cy,ct}.{j,t}s',
+    specPattern: '{cypress/components/specs,src/components}/**/*.{cy,ct}.{j,t}s',
     supportFile: 'cypress/components/support/index.ts',
     indexHtmlFile: 'cypress/components/support/component-index.html',
     video: false,

@@ -1,10 +1,23 @@
 <script lang="ts" setup>
-import { ref, onBeforeMount, type Ref, watch, computed } from 'vue'
+import { ref, onBeforeMount, watch, computed } from 'vue'
+import { getRandomId } from '@gouvminint/vue-dsfr'
 import { environmentSchema, schemaValidator, projectIsLockedInfo, isValid, longestEnvironmentName, type QuotaStageModel } from '@dso-console/shared'
+
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
-import { getRandomId } from '@gouvminint/vue-dsfr'
 import { handleError } from '@/utils/func.js'
+
+type Cluster = {
+  id: string
+  label: string
+  infos: string
+}
+
+type Stage = {
+  id: string
+  name: string
+  clusters: Cluster[]
+}
 
 const props = defineProps({
   environment: {
@@ -54,39 +67,40 @@ const projectEnvironmentStore = useProjectEnvironmentStore()
 const localEnvironment = ref(props.environment)
 const environmentToDelete = ref('')
 const isDeletingEnvironment = ref(false)
-const quotas: Ref<Array<any>> = ref([])
-const allStages: Ref<Array<any>> = ref([])
+const quotas = ref([])
+const allStages = ref<Stage[]>([])
 const inputKey = ref(getRandomId('input'))
-const stageId = ref(undefined)
-const quotaId = ref(undefined)
-const stageOptions: Ref<Array<any>> = ref([])
-const quotaOptions: Ref<Array<any>> = ref([])
-const clusterOptions: Ref<Array<any>> = ref([])
+const stageId = ref<string>()
+const quotaId = ref<string>()
+const stageOptions = ref([])
+const quotaOptions = ref([])
+const clusterOptions = ref([])
 
 const stage = computed(() => allStages.value.find(allStage => allStage.id === stageId.value))
 
 const errorSchema = computed(() => schemaValidator(environmentSchema, localEnvironment.value))
 
 const availableClusters = computed(() => {
-  let availableClusters = props.projectClusters
-    ?.filter(projectCluster => stage.value?.clusters
-    // @ts-ignore
-      ?.map(cluster => cluster.id)
-    // @ts-ignore
-      ?.includes(projectCluster.id),
+  let clusters = props.projectClusters
+    ?.filter(
+      projectCluster => stage.value?.clusters
+        // @ts-ignore
+        ?.map(cluster => cluster.id)
+        // @ts-ignore
+        ?.includes(projectCluster.id),
     )
 
   if (
     localEnvironment.value.clusterId &&
-    !availableClusters
+    !clusters
       ?.find(availableCluster => availableCluster?.id === localEnvironment.value.clusterId)
   ) {
-    availableClusters = [
-      ...availableClusters, props.allClusters
+    clusters = [
+      ...clusters, props.allClusters
         ?.find(cFromAll => cFromAll?.id === localEnvironment.value.clusterId),
     ]
   }
-  return availableClusters
+  return clusters
 })
 
 const clusterInfos = computed(() => availableClusters.value.find(cluster => cluster.id === localEnvironment.value.clusterId)?.infos)

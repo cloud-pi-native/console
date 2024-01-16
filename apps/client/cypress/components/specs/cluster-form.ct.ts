@@ -1,13 +1,18 @@
-import { Pinia, createPinia, setActivePinia } from 'pinia'
+import { type Pinia, createPinia, setActivePinia } from 'pinia'
+import { getRandomCluster, getRandomEnv, getRandomProject, getRandomStage, repeatFn } from '@dso-console/test-utils'
+
 import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@gouvminint/vue-dsfr/styles'
 import '@/main.css'
+
 import ClusterForm from '@/components/ClusterForm.vue'
-import { getRandomCluster, getRandomEnv, getRandomProject, getRandomStage, repeatFn } from '@dso-console/test-utils'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useAdminClusterStore } from '@/stores/admin/cluster.js'
+
+const repeatFn5Times = repeatFn(5)
+const get5RandomProjects = () => repeatFn5Times(getRandomProject)
 
 describe('ClusterForm.vue', () => {
   let pinia: Pinia
@@ -21,7 +26,7 @@ describe('ClusterForm.vue', () => {
   it('Should mount a new cluster ClusterForm', () => {
     useSnackbarStore()
 
-    const allProjects = repeatFn(5)(getRandomProject)
+    const allProjects = get5RandomProjects()
     const allStages = repeatFn(4)(getRandomStage)
 
     const props = {
@@ -53,7 +58,7 @@ describe('ClusterForm.vue', () => {
     useSnackbarStore()
     const adminClusterStore = useAdminClusterStore()
 
-    const allProjects = repeatFn(5)(getRandomProject)
+    const allProjects = get5RandomProjects()
     const allStages = repeatFn(2)(getRandomStage)
     adminClusterStore.clusters = [getRandomCluster([allProjects[0].id], [allStages[1].id])]
 
@@ -103,7 +108,7 @@ describe('ClusterForm.vue', () => {
     useSnackbarStore()
     const adminClusterStore = useAdminClusterStore()
 
-    const allProjects = repeatFn(5)(getRandomProject)
+    const allProjects = get5RandomProjects()
     const allStages = repeatFn(2)(getRandomStage)
     // @ts-ignore
     adminClusterStore.clusters = [getRandomCluster([allProjects[0].id], [allStages[1].id])]
@@ -152,7 +157,7 @@ describe('ClusterForm.vue', () => {
   it('Should disable project selector when privacy is public', () => {
     useSnackbarStore()
 
-    const allProjects = repeatFn(5)(getRandomProject)
+    const allProjects = get5RandomProjects()
 
     const props = {
       allProjects,
