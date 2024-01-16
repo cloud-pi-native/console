@@ -16,24 +16,24 @@
   },
   "types": "types/index.d.ts",
   "dependencies": {
-    "@faker-js/faker": "^8.2.0",
+    "@faker-js/faker": "^8.3.1",
     "@dso-console/shared": "workspace:*"
   },
   "devDependencies": {
     "@dso-console/tsconfig": "workspace:*",
     "@dso-console/eslint-config-base": "workspace:*",
-    "@types/node": "^20.8.9",
-    "@typescript-eslint/eslint-plugin": "^6.9.1",
-    "@typescript-eslint/parser": "^6.9.1",
-    "eslint": "^8.52.0",
+    "@types/node": "^20.11.4",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0",
+    "eslint": "^8.56.0",
     "eslint-config-standard": "^17.1.0",
-    "eslint-plugin-import": "^2.29.0",
-    "eslint-plugin-n": "^16.2.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-n": "^16.6.2",
     "eslint-plugin-promise": "^6.1.1",
     "npm-run-all": "^4.1.5",
     "rimraf": "^5.0.5",
-    "ts-patch": "^3.0.2",
-    "typescript": "^5.2.2",
+    "ts-patch": "^3.1.2",
+    "typescript": "^5.3.3",
     "typescript-transform-paths": "^3.4.6"
   }
 }

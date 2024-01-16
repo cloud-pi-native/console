@@ -20,7 +20,6 @@ module.exports = {
         ],
       },
     ],
-    'declaration-block-trailing-semicolon': null,
     'no-descending-specificity': null,
     'selector-class-pattern': '^((sm|md|lg|xl|2xl):)?[a-z][-_/a-z0-9]*$'
   },
