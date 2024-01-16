@@ -14,11 +14,9 @@ const selectedProject = computed(() => projectStore.selectedProject)
 
 const isDarkScheme = ref<boolean>()
 const selectedScheme = computed<string | undefined>(() =>
-  isDarkScheme.value === undefined
-    ? undefined
-    : isDarkScheme.value
-      ? 'dark'
-      : 'light',
+  isDarkScheme.value
+    ? 'dark'
+    : 'light',
 )
 
 const isExpanded = ref({
@@ -48,7 +46,9 @@ watch(routePath, (routePath) => {
 
 onMounted(() => {
   // @ts-ignore
-  const { setScheme } = useScheme()
+  const { scheme, setScheme } = useScheme()
+
+  isDarkScheme.value = scheme.value === 'dark'
 
   watchEffect(() => setScheme(selectedScheme.value))
 })
