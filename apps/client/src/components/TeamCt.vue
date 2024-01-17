@@ -11,8 +11,6 @@ import {
   type RoleModel,
   type ProjectModel,
 } from '@dso-console/shared'
-import SuggestionInput from '@/components/SuggestionInput.vue'
-import LoadingCt from '@/components/LoadingCt.vue'
 import pDebounce from 'p-debounce'
 import { useProjectUserStore } from '@/stores/project-user'
 import { copyContent } from '@/utils/func.js'

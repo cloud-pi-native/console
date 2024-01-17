@@ -13,7 +13,6 @@ import {
   type ProjectInfos,
 } from '@dso-console/shared'
 import router from '@/router/index.js'
-import LoadingCt from '@/components/LoadingCt.vue'
 import { handleError } from '@/utils/func.js'
 
 const projectStore = useProjectStore()

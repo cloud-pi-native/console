@@ -1,7 +1,5 @@
 <script lang="ts" setup>
 import { ref, onMounted, watch, computed, type Ref } from 'vue'
-import SuggestionInput from './SuggestionInput.vue'
-import RangeInput from './RangeInput.vue'
 import { levels, projectIsLockedInfo, type PermissionModel, type EnvironmentModel, type UserModel, type ProjectInfos } from '@dso-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectPermissionStore } from '@/stores/project-permission.js'

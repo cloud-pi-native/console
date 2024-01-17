@@ -3,7 +3,6 @@ import { ref, computed, onBeforeMount, watch, type Ref } from 'vue'
 import { clusterSchema, schemaValidator, isValid, instanciateSchema } from '@dso-console/shared'
 import { load } from 'js-yaml'
 import { JsonViewer } from 'vue3-json-viewer'
-import MultiSelector from './MultiSelector.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { handleError } from '@/utils/func.js'
 

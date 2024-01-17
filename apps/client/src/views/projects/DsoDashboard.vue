@@ -5,10 +5,7 @@ import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment'
 import { descriptionMaxLength, projectIsLockedInfo, type ProjectInfos } from '@dso-console/shared'
-import DsoSelectedProject from './DsoSelectedProject.vue'
-import DsoBadge from '@/components/DsoBadge.vue'
 import router from '@/router/index.js'
-import LoadingCt from '@/components/LoadingCt.vue'
 import { copyContent, handleError } from '@/utils/func.js'
 
 const projectStore = useProjectStore()

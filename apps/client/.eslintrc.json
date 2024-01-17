@@ -3,7 +3,8 @@
   "extends": [
     "@dso-console/eslint-config-base",
     "plugin:vue/vue3-recommended",
-    "@vue/eslint-config-typescript"
+    "@vue/eslint-config-typescript",
+    "./.eslintrc-auto-import.json"
   ],
   "plugins": [
     "vue",

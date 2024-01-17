@@ -1,13 +1,15 @@
-import { Pinia, createPinia, setActivePinia } from 'pinia'
+import { type Pinia, createPinia, setActivePinia } from 'pinia'
+import { createRandomDbSetup } from '@dso-console/test-utils'
+import { allOrganizations } from '@dso-console/shared'
+
 import '@gouvminint/vue-dsfr/styles'
 import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@/main.css'
-import RepoForm from '@/components/RepoForm.vue'
-import { createRandomDbSetup } from '@dso-console/test-utils'
+
+import RepoForm from './RepoForm.vue'
 import { useProjectStore } from '@/stores/project.js'
-import { allOrganizations } from '@dso-console/shared'
 
 describe('RepoForm.vue', () => {
   let pinia: Pinia

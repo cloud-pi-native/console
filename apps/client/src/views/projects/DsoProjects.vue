@@ -2,7 +2,6 @@
 import { onMounted, ref, watch, computed, type Ref } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import router from '@/router/index.js'
-import DsoSelectedProject from './DsoSelectedProject.vue'
 import { sortArrByObjKeyAsc } from '@dso-console/shared'
 import { handleError } from '@/utils/func.js'
 

@@ -2,7 +2,6 @@
 import { ref, computed, onMounted, watch, type Ref } from 'vue'
 import { useAdminClusterStore } from '@/stores/admin/cluster.js'
 import { useAdminProjectStore } from '@/stores/admin/project.js'
-import ClusterForm from '@/components/ClusterForm.vue'
 import { sortArrByObjKeyAsc, type CreateClusterDto, type UpdateClusterDto, type ClusterParams } from '@dso-console/shared'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 import { handleError } from '@/utils/func.js'
