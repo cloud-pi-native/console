@@ -32,11 +32,11 @@
     "test:e2e-ci": "npm run kube:prod:build; npm run kube:prod; npm run kube:e2e-ci"
   },
   "devDependencies": {
-    "@commitlint/cli": "^18.2.0",
-    "@commitlint/config-conventional": "^18.1.0",
+    "@commitlint/cli": "^18.4.4",
+    "@commitlint/config-conventional": "^18.4.4",
     "husky": "^8.0.3",
-    "lint-staged": "^15.0.2",
-    "turbo": "^1.10.16"
+    "lint-staged": "^15.2.0",
+    "turbo": "^1.11.3"
   },
   "pnpm": {
     "patchedDependencies": {
