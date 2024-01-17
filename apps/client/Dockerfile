@@ -4,6 +4,7 @@ FROM docker.io/node:20.10.0-bullseye-slim AS dev
 WORKDIR /app
 RUN npm install --location=global pnpm@8.6.10
 COPY --chown=node:root package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
+COPY --chown=node:root patches ./patches
 COPY --chown=node:root apps/client/package.json ./apps/client/package.json
 COPY --chown=node:root packages/eslintconfig/package.json ./packages/eslintconfig/package.json
 COPY --chown=node:root packages/shared/package.json ./packages/shared/package.json
