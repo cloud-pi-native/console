@@ -365,9 +365,9 @@ export const deleteEnvironment = async ({
     }))
     const cluster = await getClusterById(environment.clusterId)
     const environments = await getProjectPartialEnvironments({ projectId })
-
     const results = await hooks.deleteEnvironment.execute({
       environment: environment.name,
+      stage: environment.quotaStage.stage.name,
       environments,
       project: projectName,
       organization: organizationName,

@@ -96,7 +96,7 @@ describe('User routes', () => {
       projectInfos.environments?.forEach(environment => {
         environment.quotaStage = { stage: { name: 'dev' } }
         environment.cluster = {
-          label: projectInfos.clusters[0].label
+          label: projectInfos.clusters[0].label,
         }
       })
 
@@ -285,7 +285,7 @@ describe('User routes', () => {
       const projectInfos = randomDbSetUp.project
       projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
       const log = getRandomLog('Delete Environment', requestor.id)
-      const envToDelete = { ...projectInfos.environments[0], project: projectInfos }
+      const envToDelete = { ...projectInfos.environments[0], project: projectInfos, quotaStage: { stage: { name: 'dev' } } }
 
       prisma.environment.findUnique.mockResolvedValue(envToDelete)
       prisma.project.findUnique.mockResolvedValue(projectInfos)
