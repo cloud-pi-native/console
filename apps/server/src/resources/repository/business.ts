@@ -4,7 +4,7 @@ import type { Log, Project, Repository, User } from '@prisma/client'
 import { projectRootDir } from '@/utils/env.js'
 import { hooks } from '@/plugins/index.js'
 import { unlockProjectIfNotFailed, checkCreateProject as checkCreateRepositoryPlugins } from '@/utils/business.js'
-import type { CreateRepositoryDto, UpdateRepositoryDto, ProjectRoles } from '@dso-console/shared'
+import { type CreateRepositoryDto, type UpdateRepositoryDto, type ProjectRoles, repoSchema } from '@dso-console/shared'
 import { checkInsufficientRoleInProject, checkRoleAndLocked } from '@/utils/controller.js'
 import { gitlabUrl } from '@/plugins/core/gitlab/utils.js'
 
@@ -56,6 +56,12 @@ export const createRepository = async (
   userId: User['id'],
   requestId: Log['requestId'],
 ) => {
+  try {
+    await repoSchema.validateAsync(data)
+  } catch (error) {
+    throw new BadRequestError(error.message)
+  }
+
   await checkUpsertRepository(userId, projectId, 'owner')
 
   const user = await getUserById(userId)

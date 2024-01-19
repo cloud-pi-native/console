@@ -19,7 +19,7 @@ import {
   getEnvironmentById,
 } from '@/resources/queries-index.js'
 import { hooks } from '@/plugins/index.js'
-import { DsoError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
+import { BadRequestError, DsoError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import type { Cluster, Environment, Project, Role, User, QuotaStage, Log } from '@prisma/client'
 import {
   checkInsufficientRoleInProject,
@@ -32,7 +32,7 @@ import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { projectRootDir } from '@/utils/env.js'
 import { getProjectInfosAndClusters } from '@/resources/project/business.js'
 import { gitlabUrl } from '@/plugins/core/gitlab/utils.js'
-import { type AsyncReturnType, adminGroupPath } from '@dso-console/shared'
+import { type AsyncReturnType, adminGroupPath, environmentSchema } from '@dso-console/shared'
 import type { UserDetails } from '@/types/index.js'
 
 // Fetch infos
@@ -170,6 +170,17 @@ export const createEnvironment = async (
     quotaStageId,
     requestId,
   }: CreateEnvironmentParam) => {
+  try {
+    await environmentSchema.validateAsync({
+      name,
+      projectId,
+      clusterId,
+      quotaStageId,
+    })
+  } catch (error) {
+    throw new BadRequestError(error.message)
+  }
+
   const { user, project, quotaStage, quota, authorizedClusters } = await getInitializeEnvironmentInfos({
     userId,
     projectId,

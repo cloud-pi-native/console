@@ -98,6 +98,20 @@ describe('Project routes', () => {
       expect(response.statusCode).toEqual(403)
       expect(response.json().message).toEqual(projectIsLockedInfo)
     })
+
+    it('Should not create a repository with bad internalRepoName', async () => {
+      const projectInfos = createRandomDbSetup({}).project
+      const newRepository = getRandomRepo(projectInfos.id)
+      newRepository.internalRepoName = '^%!!dhrez'
+
+      const response = await app.inject()
+        .post(`/api/v1/projects/${projectInfos.id}/repositories`)
+        .body(newRepository)
+        .end()
+
+      expect(response.statusCode).toEqual(400)
+      expect(response.json().message).toEqual('"internalRepoName" with value "^%!!dhrez" fails to match the required pattern: /^[a-z0-9]+[a-z0-9-]+[a-z0-9]+$/')
+    })
   })
 
   // PUT
