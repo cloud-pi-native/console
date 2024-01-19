@@ -90,7 +90,7 @@ describe('User routes', () => {
       const projectInfos = randomDbSetUp.project
       projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
       const quotaStage = randomDbSetUp?.stages[0]?.quotaStage[0]
-      const envToAdd = getRandomEnv('int-0', projectInfos.id, quotaStage?.id, projectInfos?.clusters[0]?.id)
+      const envToAdd = getRandomEnv('int0', projectInfos.id, quotaStage?.id, projectInfos?.clusters[0]?.id)
       const envInfos = { ...envToAdd, project: projectInfos }
       const log = getRandomLog('Create Environment', requestor.id)
       projectInfos.environments?.forEach(environment => {
@@ -122,7 +122,7 @@ describe('User routes', () => {
 
     it('Should not create an environment if not project member', async () => {
       const projectInfos = createRandomDbSetup({}).project
-      const envToAdd = getRandomEnv('thisIsAnId', projectInfos.id)
+      const envToAdd = getRandomEnv('recette', projectInfos.id)
 
       prisma.user.findUnique.mockResolvedValueOnce(getRequestor())
       prisma.project.findUnique.mockResolvedValue(projectInfos)
@@ -160,7 +160,7 @@ describe('User routes', () => {
     it('Should not create an environment if no cluster available', async () => {
       const projectInfos = createRandomDbSetup({}).project
       projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
-      const envToAdd = getRandomEnv('thisIsAnId', projectInfos.id)
+      const envToAdd = getRandomEnv('develop', projectInfos.id)
 
       prisma.user.findUnique.mockResolvedValueOnce(getRequestor())
       prisma.project.findUnique.mockResolvedValue(projectInfos)
@@ -182,7 +182,7 @@ describe('User routes', () => {
       projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
       const quotaStage = randomDbSetUp?.stages[0]?.quotaStage[0]
       quotaStage.status = 'pendingDelete'
-      const envToAdd = getRandomEnv('thisIsAnId', projectInfos.id, quotaStage?.id, projectInfos?.clusters[0]?.id)
+      const envToAdd = getRandomEnv('integ', projectInfos.id, quotaStage?.id, projectInfos?.clusters[0]?.id)
 
       prisma.user.findUnique.mockResolvedValueOnce(getRequestor())
       prisma.project.findUnique.mockResolvedValue(projectInfos)
@@ -217,6 +217,19 @@ describe('User routes', () => {
       expect(response.statusCode).toEqual(403)
       expect(response.body).toBeDefined()
       expect(response.json().message).toEqual(projectIsLockedInfo)
+    })
+
+    it('Should not create an environment with bad name', async () => {
+      const projectInfos = createRandomDbSetup({}).project
+      const newEnvironment = getRandomEnv('^fpekfk', projectInfos.id)
+
+      const response = await app.inject()
+        .post(`/api/v1/projects/${projectInfos.id}/environments`)
+        .body(newEnvironment)
+        .end()
+
+      expect(response.statusCode).toEqual(400)
+      expect(response.json().message).toEqual('"name" with value "^fpekfk" fails to match the required pattern: /^[a-z0-9]+$/')
     })
   })
 
