@@ -4,7 +4,6 @@ import { useAdminQuotaStore } from '@/stores/admin/quota.js'
 import { sortArrByObjKeyAsc } from '@dso-console/shared'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 import type { CreateQuotaDto, UpdateQuotaStageDto, QuotaModel, UpdateQuotaPrivacyDto, QuotaParams } from '@dso-console/shared'
-import { handleError } from '@/utils/func.js'
 
 const adminQuotaStore = useAdminQuotaStore()
 const projectEnvironmentStore = useProjectEnvironmentStore()
@@ -50,12 +49,8 @@ const cancel = () => {
 const addQuota = async (quota: CreateQuotaDto) => {
   isWaitingForResponse.value = true
   cancel()
-  try {
-    await adminQuotaStore.addQuota(quota)
-    await adminQuotaStore.getAllQuotas()
-  } catch (error) {
-    handleError(error)
-  }
+  await adminQuotaStore.addQuota(quota)
+  await adminQuotaStore.getAllQuotas()
   isWaitingForResponse.value = false
 }
 
@@ -67,49 +62,33 @@ export type UpdateQuotaType = {
 
 const updateQuota = async ({ quotaId, isPrivate, stageIds }: UpdateQuotaType) => {
   isWaitingForResponse.value = true
-  try {
-    if (isPrivate !== undefined) {
-      await adminQuotaStore.updateQuotaPrivacy(quotaId, isPrivate)
-    }
-    await adminQuotaStore.updateQuotaStage(quotaId, stageIds)
-    await adminQuotaStore.getAllQuotas()
-    cancel()
-  } catch (error) {
-    handleError(error)
+  if (isPrivate !== undefined) {
+    await adminQuotaStore.updateQuotaPrivacy(quotaId, isPrivate)
   }
+  await adminQuotaStore.updateQuotaStage(quotaId, stageIds)
+  await adminQuotaStore.getAllQuotas()
+  cancel()
   isWaitingForResponse.value = false
 }
 
 const deleteQuota = async (quotaId: QuotaParams['quotaId']) => {
   isWaitingForResponse.value = true
   cancel()
-  try {
-    await adminQuotaStore.deleteQuota(quotaId)
-    await adminQuotaStore.getAllQuotas()
-  } catch (error) {
-    handleError(error)
-  }
+  await adminQuotaStore.deleteQuota(quotaId)
+  await adminQuotaStore.getAllQuotas()
   isWaitingForResponse.value = false
 }
 
 const getQuotaAssociatedEnvironments = async (quotaId: QuotaParams['quotaId']) => {
   isWaitingForResponse.value = true
-  try {
-    associatedEnvironments.value = await adminQuotaStore.getQuotaAssociatedEnvironments(quotaId)
-  } catch (error) {
-    handleError(error)
-  }
+  associatedEnvironments.value = await adminQuotaStore.getQuotaAssociatedEnvironments(quotaId)
   isWaitingForResponse.value = false
 }
 
 onMounted(async () => {
-  try {
-    await adminQuotaStore.getAllQuotas()
-    setQuotaTiles(quotas.value)
-    allStages.value = await projectEnvironmentStore.getStages()
-  } catch (error) {
-    handleError(error)
-  }
+  await adminQuotaStore.getAllQuotas()
+  setQuotaTiles(quotas.value)
+  allStages.value = await projectEnvironmentStore.getStages()
 })
 
 watch(quotas, () => {

@@ -4,7 +4,6 @@ import { useProjectStore } from '@/stores/project.js'
 import { useProjectRepositoryStore } from '@/stores/project-repository.js'
 import { useUserStore } from '@/stores/user.js'
 import { projectIsLockedInfo, sortArrByObjKeyAsc } from '@dso-console/shared'
-import { handleError } from '@/utils/func.js'
 
 const projectStore = useProjectStore()
 const projectRepositoryStore = useProjectRepositoryStore()
@@ -52,14 +51,10 @@ const cancel = () => {
 
 const saveRepo = async (repo) => {
   isUpsertingRepo.value = true
-  try {
-    if (repo.id) {
-      await projectRepositoryStore.updateRepo(repo)
-    } else {
-      await projectRepositoryStore.addRepoToProject(repo)
-    }
-  } catch (error) {
-    handleError(error)
+  if (repo.id) {
+    await projectRepositoryStore.updateRepo(repo)
+  } else {
+    await projectRepositoryStore.addRepoToProject(repo)
   }
   setReposTiles(project.value)
   cancel()
@@ -68,11 +63,7 @@ const saveRepo = async (repo) => {
 
 const deleteRepo = async (repoId) => {
   isUpsertingRepo.value = true
-  try {
-    await projectRepositoryStore.deleteRepo(repoId)
-  } catch (error) {
-    handleError(error)
-  }
+  await projectRepositoryStore.deleteRepo(repoId)
   setReposTiles(project.value)
   selectedRepo.value = {}
   isUpsertingRepo.value = false

@@ -4,7 +4,6 @@ import { clusterSchema, schemaValidator, isValid, instanciateSchema } from '@dso
 import { load } from 'js-yaml'
 import { JsonViewer } from 'vue3-json-viewer'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { handleError } from '@/utils/func.js'
 
 const snackbarStore = useSnackbarStore()
 
@@ -105,7 +104,6 @@ const updateKubeconfig = (files: Array<any>) => {
     }
     reader.readAsText(files[0])
   } catch (error) {
-    handleError(error)
     // @ts-ignore
     kConfigError.value = error?.message
   }
@@ -153,7 +151,6 @@ const retrieveUserAndCluster = (context: ContextType) => {
       skipTLSVerify: skipTLSVerify || false,
     }
   } catch (error) {
-    handleError(error)
     // @ts-ignore
     kConfigError.value = error?.message
   }

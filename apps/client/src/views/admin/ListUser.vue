@@ -2,7 +2,7 @@
 import { onBeforeMount, ref, type Ref } from 'vue'
 import { useAdminUserStore } from '@/stores/admin/user.js'
 import { formatDate } from '@dso-console/shared'
-import { copyContent, handleError } from '@/utils/func.js'
+import { copyContent } from '@/utils/func.js'
 import { getRandomId } from '@gouvminint/vue-dsfr'
 
 const adminUserStore = useAdminUserStore()
@@ -23,11 +23,7 @@ const rows: Ref<any[][]> = ref([])
 const tableKey = ref(getRandomId('table'))
 
 const getAllUsers = async () => {
-  try {
-    allUsers.value = await adminUserStore.getAllUsers()
-  } catch (error) {
-    handleError(error)
-  }
+  allUsers.value = await adminUserStore.getAllUsers()
 }
 
 onBeforeMount(async () => {

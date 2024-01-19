@@ -6,7 +6,7 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment'
 import { descriptionMaxLength, projectIsLockedInfo, type ProjectInfos } from '@dso-console/shared'
 import router from '@/router/index.js'
-import { copyContent, handleError } from '@/utils/func.js'
+import { copyContent } from '@/utils/func.js'
 
 const projectStore = useProjectStore()
 const userStore = useUserStore()
@@ -27,24 +27,16 @@ const allStages = ref<Array<any>>([])
 
 const updateProject = async (projectId: ProjectInfos['id']) => {
   isWaitingForResponse.value = true
-  try {
-    // @ts-ignore
-    await projectStore.updateProject(projectId, { description: description.value })
-    isEditingDescription.value = false
-  } catch (error) {
-    handleError(error)
-  }
+  // @ts-ignore
+  await projectStore.updateProject(projectId, { description: description.value })
+  isEditingDescription.value = false
   isWaitingForResponse.value = false
 }
 
 const archiveProject = async (projectId: ProjectInfos['id']) => {
   isWaitingForResponse.value = true
-  try {
-    await projectStore.archiveProject(projectId)
-    router.push('/projects')
-  } catch (error) {
-    handleError(error)
-  }
+  await projectStore.archiveProject(projectId)
+  router.push('/projects')
   isWaitingForResponse.value = false
 }
 
@@ -58,13 +50,9 @@ const handleSecretDisplay = async () => {
   isSecretShown.value = !isSecretShown.value
   if (isSecretShown.value && !Object.keys(projectSecrets.value).length) {
     isWaitingForResponse.value = true
-    try {
-      if (!project.value) throw new Error('Pas de projet sélectionné')
-      projectSecrets.value = await projectStore.getProjectSecrets(project.value.id)
-      snackbarStore.setMessage('Secrets récupérés')
-    } catch (error) {
-      handleError(error)
-    }
+    if (!project.value) throw new Error('Pas de projet sélectionné')
+    projectSecrets.value = await projectStore.getProjectSecrets(project.value.id)
+    snackbarStore.setMessage('Secrets récupérés')
     isWaitingForResponse.value = false
   }
 }
@@ -82,11 +70,7 @@ const getRows = (service: string) => {
 }
 
 onBeforeMount(async () => {
-  try {
-    allStages.value = await projectEnvironmentStore.getStages()
-  } catch (error) {
-    handleError(error)
-  }
+  allStages.value = await projectEnvironmentStore.getStages()
 })
 </script>
 

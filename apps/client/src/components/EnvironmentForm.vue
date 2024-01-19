@@ -5,7 +5,6 @@ import { environmentSchema, schemaValidator, projectIsLockedInfo, isValid, longe
 
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
-import { handleError } from '@/utils/func.js'
 
 type Cluster = {
   id: string
@@ -162,13 +161,9 @@ const cancel = () => {
 }
 
 onBeforeMount(async () => {
-  try {
-    quotas.value = await projectEnvironmentStore.getQuotas()
-    allStages.value = await projectEnvironmentStore.getStages()
-    setEnvironmentOptions()
-  } catch (error) {
-    handleError(error)
-  }
+  quotas.value = await projectEnvironmentStore.getQuotas()
+  allStages.value = await projectEnvironmentStore.getStages()
+  setEnvironmentOptions()
 
   // Receive quotaStage from parent component, retrieve stageId and quotaId
   if (localEnvironment.value.quotaStage) {

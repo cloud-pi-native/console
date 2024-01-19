@@ -2,10 +2,12 @@
 import { getKeycloak } from './utils/keycloak/keycloak'
 import { useUserStore } from './stores/user.js'
 import { useProjectStore } from './stores/project.js'
+import { useSnackbarStore } from './stores/snackbar.js'
 
 const keycloak = getKeycloak()
 const userStore = useUserStore()
 const projectStore = useProjectStore()
+const snackbarStore = useSnackbarStore()
 
 userStore.setIsLoggedIn()
 
@@ -41,6 +43,12 @@ onMounted(async () => {
   }
 })
 
+onErrorCaptured((error) => {
+  if (error instanceof Error) return snackbarStore.setMessage(error?.message, 'error')
+  snackbarStore.setMessage('Une erreur inconnue est survenue.')
+  return false
+})
+
 watch(label, (label: string) => {
   quickLinks.value[0].label = label
 })
@@ -67,7 +75,7 @@ watch(label, (label: string) => {
     class="dso-footer"
     a11y-compliance="partiellement conforme"
     :logo-text="['Ministère', 'de l’Intérieur', 'et des Outre-Mer']"
-    mandatory-links="[]"
+    :mandatory-links="[]"
   >
     <template #description>
       <div

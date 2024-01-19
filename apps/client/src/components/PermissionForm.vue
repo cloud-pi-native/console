@@ -5,7 +5,6 @@ import { useProjectStore } from '@/stores/project.js'
 import { useProjectPermissionStore } from '@/stores/project-permission.js'
 import { useUserStore } from '@/stores/user.js'
 import { getRandomId } from '@gouvminint/vue-dsfr'
-import { handleError } from '@/utils/func.js'
 import { useUsersStore } from '@/stores/users.js'
 
 const props = defineProps({
@@ -44,12 +43,8 @@ const setPermissions = () => {
 const addPermission = async (userEmail: string) => {
   if (!project.value?.locked) {
     const userId = usersToLicence.value?.find(user => user.email === userEmail)?.id
-    try {
-      // @ts-ignore
-      await projectPermissionStore.addPermission(environment.value.id, { userId, level: 0 })
-    } catch (error) {
-      handleError(error)
-    }
+    // @ts-ignore
+    await projectPermissionStore.addPermission(environment.value.id, { userId, level: 0 })
   }
   userToLicence.value = ''
   permissionSuggestionKey.value = getRandomId('input')
@@ -57,22 +52,14 @@ const addPermission = async (userEmail: string) => {
 
 const updatePermission = async () => {
   if (!project.value?.locked) {
-    try {
-      // @ts-ignore
-      await projectPermissionStore.updatePermission(environment.value.id, permissionToUpdate.value)
-    } catch (error) {
-      handleError(error)
-    }
+    // @ts-ignore
+    await projectPermissionStore.updatePermission(environment.value.id, permissionToUpdate.value)
     permissionToUpdate.value = {}
   }
 }
 
 const deletePermission = async (userId: string) => {
-  try {
-    await projectPermissionStore.deletePermission(environment.value.id, userId)
-  } catch (error) {
-    handleError(error)
-  }
+  await projectPermissionStore.deletePermission(environment.value.id, userId)
 }
 
 const getDynamicTitle = (locked: boolean, permission: PermissionModel) => {

@@ -3,7 +3,6 @@ import { onMounted, ref, watch, computed, type Ref } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import router from '@/router/index.js'
 import { sortArrByObjKeyAsc } from '@dso-console/shared'
-import { handleError } from '@/utils/func.js'
 
 const projectStore = useProjectStore()
 
@@ -21,11 +20,7 @@ const setProjectList = (projects: Array<Record<any, any>>) => {
 }
 
 const setSelectedProject = async (project: Record<any, any>) => {
-  try {
-    projectStore.setSelectedProject(project.id)
-  } catch (error) {
-    handleError(error)
-  }
+  projectStore.setSelectedProject(project.id)
 }
 
 const goToCreateProject = () => {
@@ -33,11 +28,7 @@ const goToCreateProject = () => {
 }
 
 onMounted(async () => {
-  try {
-    await projectStore.getUserProjects()
-  } catch (error) {
-    handleError(error)
-  }
+  await projectStore.getUserProjects()
 })
 
 watch(projects, (projects) => {
