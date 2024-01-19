@@ -4,7 +4,6 @@ import { useAdminClusterStore } from '@/stores/admin/cluster.js'
 import { useAdminProjectStore } from '@/stores/admin/project.js'
 import { sortArrByObjKeyAsc, type CreateClusterDto, type UpdateClusterDto, type ClusterParams } from '@dso-console/shared'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
-import { handleError } from '@/utils/func.js'
 
 const adminClusterStore = useAdminClusterStore()
 const adminProjectStore = useAdminProjectStore()
@@ -40,11 +39,7 @@ const setSelectedCluster = async (cluster) => {
 
 const getClusterAssociatedEnvironments = async (clusterId: string) => {
   isUpdatingCluster.value = true
-  try {
-    associatedEnvironments.value = await adminClusterStore.getClusterAssociatedEnvironments(clusterId)
-  } catch (error) {
-    handleError(error)
-  }
+  associatedEnvironments.value = await adminClusterStore.getClusterAssociatedEnvironments(clusterId)
   isUpdatingCluster.value = false
 }
 
@@ -61,49 +56,33 @@ const cancel = () => {
 const addCluster = async (cluster: CreateClusterDto) => {
   isUpdatingCluster.value = true
   cancel()
-  try {
-    await adminClusterStore.addCluster(cluster)
-    await adminClusterStore.getClusters()
-  } catch (error) {
-    handleError(error)
-  }
+  await adminClusterStore.addCluster(cluster)
+  await adminClusterStore.getClusters()
   isUpdatingCluster.value = false
 }
 
 const updateCluster = async (cluster: UpdateClusterDto & { id: ClusterParams['clusterId'] }) => {
   isUpdatingCluster.value = true
-  try {
-    await adminClusterStore.updateCluster(cluster)
-    await adminClusterStore.getClusters()
-  } catch (error) {
-    handleError(error)
-  }
+  await adminClusterStore.updateCluster(cluster)
+  await adminClusterStore.getClusters()
   cancel()
   isUpdatingCluster.value = false
 }
 
 const deleteCluster = async (clusterId: ClusterParams['clusterId']) => {
   isUpdatingCluster.value = true
-  try {
-    await adminClusterStore.deleteCluster(clusterId)
-    await adminClusterStore.getClusters()
-  } catch (error) {
-    handleError(error)
-  }
+  await adminClusterStore.deleteCluster(clusterId)
+  await adminClusterStore.getClusters()
   setClusterTiles(clusters.value)
   selectedCluster.value = {}
   isUpdatingCluster.value = false
 }
 
 onMounted(async () => {
-  try {
-    await adminClusterStore.getClusters()
-    setClusterTiles(clusters.value)
-    allProjects.value = await adminProjectStore.getAllActiveProjects()
-    allStages.value = await projectEnvironmentStore.getStages()
-  } catch (error) {
-    handleError(error)
-  }
+  await adminClusterStore.getClusters()
+  setClusterTiles(clusters.value)
+  allProjects.value = await adminProjectStore.getAllActiveProjects()
+  allStages.value = await projectEnvironmentStore.getStages()
 })
 
 watch(clusters, () => {

@@ -4,7 +4,6 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useCIFilesStore } from '@/stores/ci-files.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { handleError } from '@/utils/func.js'
 
 const props = defineProps({
   internalRepoName: {
@@ -59,12 +58,8 @@ const files = ref([])
 const zipDir = ref({})
 
 const generateCI = async () => {
-  try {
-    generatedCI.value = await ciFilesStore.generateCIFiles(ciData.value)
-    prepareForDownload()
-  } catch (error) {
-    handleError(error)
-  }
+  generatedCI.value = await ciFilesStore.generateCIFiles(ciData.value)
+  prepareForDownload()
 }
 
 const prepareForDownload = async () => {
@@ -100,12 +95,8 @@ const prepareForDownload = async () => {
 }
 
 const copyContent = async (key) => {
-  try {
-    await navigator.clipboard.writeText(generatedCI.value[key])
-    snackbarStore.setMessage('Fichier copié', 'success')
-  } catch (error) {
-    handleError(error)
-  }
+  await navigator.clipboard.writeText(generatedCI.value[key])
+  snackbarStore.setMessage('Fichier copié', 'success')
 }
 
 onMounted(() => {

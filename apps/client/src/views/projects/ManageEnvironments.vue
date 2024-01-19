@@ -5,7 +5,6 @@ import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 import { projectIsLockedInfo, sortArrByObjKeyAsc } from '@dso-console/shared'
 import { useUserStore } from '@/stores/user.js'
 import { useAdminClusterStore } from '@/stores/admin/cluster'
-import { handleError } from '@/utils/func.js'
 
 const projectStore = useProjectStore()
 const projectEnvironmentStore = useProjectEnvironmentStore()
@@ -61,11 +60,7 @@ const addEnvironment = async (environment) => {
   isUpdatingEnvironment.value = true
   // @ts-ignore
   if (!project.value.locked) {
-    try {
-      await projectEnvironmentStore.addEnvironmentToProject(environment)
-    } catch (error) {
-      handleError(error)
-    }
+    await projectEnvironmentStore.addEnvironmentToProject(environment)
   }
   cancel()
   isUpdatingEnvironment.value = false
@@ -76,11 +71,7 @@ const putEnvironment = async (environment) => {
   isUpdatingEnvironment.value = true
   // @ts-ignore
   if (!project.value.locked) {
-    try {
-      await projectEnvironmentStore.updateEnvironment(environment, project.value.id)
-    } catch (error) {
-      handleError(error)
-    }
+    await projectEnvironmentStore.updateEnvironment(environment, project.value.id)
   }
   cancel()
   isUpdatingEnvironment.value = false
@@ -89,11 +80,7 @@ const putEnvironment = async (environment) => {
 // @ts-ignore
 const deleteEnvironment = async (environment) => {
   isUpdatingEnvironment.value = true
-  try {
-    await projectEnvironmentStore.deleteEnvironment(environment.id)
-  } catch (error) {
-    handleError(error)
-  }
+  await projectEnvironmentStore.deleteEnvironment(environment.id)
   setSelectedEnvironment({})
   isUpdatingEnvironment.value = false
 }

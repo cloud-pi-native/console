@@ -5,7 +5,6 @@ import { sortArrByObjKeyAsc } from '@dso-console/shared'
 import type { CreateStageDto, UpdateQuotaStageDto, StageModel, UpdateStageClustersDto, StageParams } from '@dso-console/shared'
 import { useAdminQuotaStore } from '@/stores/admin/quota'
 import { useAdminClusterStore } from '@/stores/admin/cluster'
-import { handleError } from '@/utils/func.js'
 
 const adminStageStore = useAdminStageStore()
 const adminQuotaStore = useAdminQuotaStore()
@@ -54,12 +53,8 @@ const cancel = () => {
 const addStage = async (stage: CreateStageDto) => {
   isWaitingForResponse.value = true
   cancel()
-  try {
-    await adminStageStore.addStage(stage)
-    await adminStageStore.getAllStages()
-  } catch (error) {
-    handleError(error)
-  }
+  await adminStageStore.addStage(stage)
+  await adminStageStore.getAllStages()
   isWaitingForResponse.value = false
 }
 
@@ -71,48 +66,32 @@ export type UpdateStageType = {
 
 const updateStage = async ({ stageId, quotaIds, clusterIds }: UpdateStageType) => {
   isWaitingForResponse.value = true
-  try {
-    await adminStageStore.updateQuotaStage(stageId, quotaIds)
-    await adminStageStore.updateStageClusters(stageId, clusterIds)
-    await adminStageStore.getAllStages()
-    cancel()
-  } catch (error) {
-    handleError(error)
-  }
+  await adminStageStore.updateQuotaStage(stageId, quotaIds)
+  await adminStageStore.updateStageClusters(stageId, clusterIds)
+  await adminStageStore.getAllStages()
+  cancel()
   isWaitingForResponse.value = false
 }
 
 const deleteStage = async (stageId: StageParams['stageId']) => {
   isWaitingForResponse.value = true
   cancel()
-  try {
-    await adminStageStore.deleteStage(stageId)
-    await adminStageStore.getAllStages()
-  } catch (error) {
-    handleError(error)
-  }
+  await adminStageStore.deleteStage(stageId)
+  await adminStageStore.getAllStages()
   isWaitingForResponse.value = false
 }
 
 const getStageAssociatedEnvironments = async (stageId: StageParams['stageId']) => {
   isWaitingForResponse.value = true
-  try {
-    associatedEnvironments.value = await adminStageStore.getStageAssociatedEnvironments(stageId)
-  } catch (error) {
-    handleError(error)
-  }
+  associatedEnvironments.value = await adminStageStore.getStageAssociatedEnvironments(stageId)
   isWaitingForResponse.value = false
 }
 
 onMounted(async () => {
-  try {
-    await adminQuotaStore.getAllQuotas()
-    await adminClusterStore.getClusters()
-    await adminStageStore.getAllStages()
-    setStageTiles(stages.value)
-  } catch (error) {
-    handleError(error)
-  }
+  await adminQuotaStore.getAllQuotas()
+  await adminClusterStore.getClusters()
+  await adminStageStore.getAllStages()
+  setStageTiles(stages.value)
 })
 
 watch(stages, () => {

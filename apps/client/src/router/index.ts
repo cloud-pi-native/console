@@ -7,7 +7,6 @@ import {
 import { useUserStore } from '@/stores/user.js'
 import { useProjectStore } from '@/stores/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { handleError } from '@/utils/func.js'
 
 import DsoHome from '@/views/DsoHome.vue'
 import NotFound from '@/views/NotFound.vue'
@@ -258,11 +257,7 @@ router.beforeEach(async (to, _from, next) => {
     to.name !== 'CreateProject' &&
     projectStore.selectedProject === undefined
   ) {
-    try {
-      await projectStore.getUserProjects()
-    } catch (error) {
-      handleError(error)
-    }
+    await projectStore.getUserProjects()
 
     const idStart = projectsPath.length
     const projectId = to.path.slice(idStart, idStart + 36)

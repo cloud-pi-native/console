@@ -5,7 +5,6 @@ import { useProjectUserStore } from '@/stores/project-user.js'
 import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { getRandomId } from '@gouvminint/vue-dsfr'
-import { handleError } from '@/utils/func.js'
 import { useUsersStore } from '@/stores/users.js'
 
 const projectStore = useProjectStore()
@@ -20,11 +19,7 @@ const teamCtKey = ref(getRandomId('team'))
 
 const addUserToProject = async (email: string) => {
   isUpdatingProjectMembers.value = true
-  try {
-    await projectUserStore.addUserToProject(project.value?.id, { email })
-  } catch (error) {
-    handleError(error)
-  }
+  await projectUserStore.addUserToProject(project.value?.id, { email })
   teamCtKey.value = getRandomId('team')
   isUpdatingProjectMembers.value = false
 }
@@ -36,11 +31,7 @@ const updateUserRole = ({ userId, role }: { userId: string, role: string }) => {
 
 const removeUserFromProject = async (userId: string) => {
   isUpdatingProjectMembers.value = true
-  try {
-    await projectUserStore.removeUserFromProject(project.value?.id, userId)
-  } catch (error) {
-    handleError(error)
-  }
+  await projectUserStore.removeUserFromProject(project.value?.id, userId)
   teamCtKey.value = getRandomId('team')
   isUpdatingProjectMembers.value = false
 }

@@ -13,7 +13,6 @@ import {
   type ProjectInfos,
 } from '@dso-console/shared'
 import router from '@/router/index.js'
-import { handleError } from '@/utils/func.js'
 
 const projectStore = useProjectStore()
 const userStore = useUserStore()
@@ -49,12 +48,8 @@ const createProject = async () => {
   const keysToValidate = ['organizationId', 'name']
   const errorSchema = schemaValidator(projectSchema, project.value, { keysToValidate, context: { projectNameMaxLength: projectNameMaxLength.value } })
   if (Object.keys(errorSchema).length === 0) {
-    try {
-      await projectStore.createProject(project.value)
-      router.push('/projects')
-    } catch (error) {
-      handleError(error)
-    }
+    await projectStore.createProject(project.value)
+    router.push('/projects')
   }
   isCreatingProject.value = false
 }
