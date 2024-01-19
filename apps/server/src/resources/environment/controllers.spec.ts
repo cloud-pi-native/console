@@ -95,6 +95,9 @@ describe('User routes', () => {
       const log = getRandomLog('Create Environment', requestor.id)
       projectInfos.environments?.forEach(environment => {
         environment.quotaStage = { stage: { name: 'dev' } }
+        environment.cluster = {
+          label: projectInfos.clusters[0].label
+        }
       })
 
       prisma.user.findUnique.mockResolvedValueOnce(getRequestor())

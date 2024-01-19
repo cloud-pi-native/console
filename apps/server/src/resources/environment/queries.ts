@@ -112,12 +112,18 @@ export const getProjectPartialEnvironments = async ({ projectId }) => {
           },
         },
       },
+      cluster: {
+        select: {
+          label: true,
+        },
+      },
     },
   })
   return environments?.map(environment =>
     ({
       environment: environment.name,
       stage: environment.quotaStage.stage.name,
+      clusterLabel: environment.cluster.label,
     }),
   )
 }
