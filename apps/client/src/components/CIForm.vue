@@ -52,10 +52,10 @@ const typeLanguages = ref([
   },
 ])
 
-const expandedId = ref(undefined)
-const generatedCI = ref(undefined)
-const files = ref([])
-const zipDir = ref({})
+const expandedId = ref<string | undefined>(undefined)
+const generatedCI = ref<Record<string, any>>({})
+const files = ref<{ key: string; href: string; size: string; format: string; title: string; }[]>([])
+const zipDir = ref<{ href: string; size: string; download: string; format: string; title: string; } | Record<string, never>>({})
 
 const generateCI = async () => {
   generatedCI.value = await ciFilesStore.generateCIFiles(ciData.value)
@@ -74,7 +74,6 @@ const prepareForDownload = async () => {
     })
     zip.file(filename, file)
     const url = URL.createObjectURL(file)
-    window.URL.revokeObjectURL(file)
 
     return {
       key,
@@ -91,10 +90,9 @@ const prepareForDownload = async () => {
   zipDir.value.format = 'zip'
   zipDir.value.title = 'Télécharger tous les fichiers'
   zipDir.value.download = 'includes.zip'
-  window.URL.revokeObjectURL(zipBlob)
 }
 
-const copyContent = async (key) => {
+const copyContent = async (key: string) => {
   await navigator.clipboard.writeText(generatedCI.value[key])
   snackbarStore.setMessage('Fichier copié', 'success')
 }
@@ -192,7 +190,7 @@ watch(internalRepoName, (internalRepoName) => {
     />
 
     <div
-      v-if="generatedCI"
+      v-if="Object.keys(generatedCI).length"
       data-testid="generatedCI"
     >
       <div

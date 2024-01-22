@@ -17,6 +17,7 @@ export const useProjectUserStore = defineStore('project-user', () => {
   const addUserToProject = async (projectId: UserParams['projectId'], user: AddUserToProjectDto) => {
     const newRoles = await api.addUserToProject(projectId, user)
     newRoles.forEach(role => {
+      // @ts-ignore
       usersStore.addUser(role.user)
     })
     projectStore.updateProjectRoles(projectId, newRoles)

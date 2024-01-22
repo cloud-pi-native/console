@@ -133,7 +133,7 @@ onMounted(() => {
             label="Niveau de droits"
             :level="permission.level"
             :levels="levels"
-            required="required"
+            required
             :disabled="ownersIds.includes(permission.userId) || !isPermitted || project?.locked"
             @update-level="(event) => {
               permissionToUpdate.userId = permission.userId

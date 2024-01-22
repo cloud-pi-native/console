@@ -7,12 +7,14 @@ export const useAdminProjectStore = defineStore('admin-project', () => {
   const getAllProjects = async () => {
     const allProjects = await api.getAllProjects()
     // TODO retirer la clé user de cette réponse d'api ?
+    // @ts-ignore
     allProjects.forEach(project => project.roles.forEach(({ user }) => usersStore.addUser(user)))
     return allProjects
   }
 
   const getAllActiveProjects = async () => {
     const allProjects = await getAllProjects()
+    // @ts-ignore
     return allProjects.filter(project => project.status !== 'archived')
   }
 

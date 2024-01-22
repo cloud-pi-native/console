@@ -113,7 +113,7 @@ onMounted(async () => {
             v-model="project.name"
             data-testid="nameInput"
             type="text"
-            required="required"
+            :required="true"
             :error-message="!!updatedValues.name && !isValid(projectSchema, project, 'name', { projectNameMaxLength }) ? `Le nom du projet doit être en minuscule, ne pas contenir d\'espace ni de trait d'union, faire plus de 2 et moins de ${projectNameMaxLength} caractères.`: undefined"
             label="Nom du projet"
             label-visible

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import api from '@/api/index.js'
 import { useProjectStore } from '@/stores/project.js'
-import type { CreateRepositoryDto, RepositoryModel, UpdateRepositoryDto } from '@dso-console/shared'
+import type { CreateRepositoryDto, RepositoryParams, UpdateRepositoryDto } from '@dso-console/shared'
 import { projectMissing } from '@/utils/const.js'
 
 export const useProjectRepositoryStore = defineStore('project-repository', () => {
@@ -19,7 +19,7 @@ export const useProjectRepositoryStore = defineStore('project-repository', () =>
     await projectStore.getUserProjects()
   }
 
-  const deleteRepo = async (repoId: RepositoryModel['id']) => {
+  const deleteRepo = async (repoId: RepositoryParams['repositoryId']) => {
     if (!projectStore.selectedProject) throw new Error(projectMissing)
     await api.deleteRepo(projectStore.selectedProject.id, repoId)
     await projectStore.getUserProjects()

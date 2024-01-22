@@ -34,7 +34,7 @@ export const getKeycloak = () => {
 export const getUserProfile = (): UserProfile => {
   try {
     const keycloak = getKeycloak()
-    const { email, sub: id, given_name: firstName, family_name: lastName, groups } = keycloak.idTokenParsed as Record<string, string | string[]>
+    const { email, sub: id, given_name: firstName, family_name: lastName, groups } = keycloak.idTokenParsed as { email: string, sub: string, given_name: string, firstName: string, family_name: string, lastName: string, groups: string[] }
     return {
       email,
       id,
