@@ -13,9 +13,9 @@
 // https://on.cypress.io/configuration
 // ***********************************************************
 
-import type { Project, Repository, CiForm } from '../../types'
+import type { Project, Repository, CiForm } from '../../types.js'
 // import type { Project } from '@dso-console/test-utils'
-import './commands'
+import './commands.js'
 
 Cypress.on('window:before:load', (win) => {
   let copyText

@@ -24,13 +24,6 @@ export default defineConfig({
         ws: true,
       },
     },
-    fs: {
-      allow: [
-        './',
-        '../../packages',
-        '../../node_modules',
-      ],
-    },
   },
   define: {
     'process.env': process.env,
@@ -39,10 +32,15 @@ export default defineConfig({
     vue(),
     AutoImport({
       imports: [
+        // @ts-ignore
         'vue',
+        // @ts-ignore
         'vue-router',
+        // @ts-ignore
         'pinia',
+        // @ts-ignore
         vueDsfrAutoimportPreset,
+        // @ts-ignore
         ohVueIconAutoimportPreset,
       ],
       vueTemplate: true,

@@ -1,23 +1,18 @@
 {
+  "extends": "../tsconfig.json",
   "compilerOptions": {
-    "target": "ES2020",
-    "lib": [
-      "es5",
-      "dom"
-    ],
     "types": [
       "cypress",
       "node"
     ],
-    "jsx": "preserve",
     "paths": {
       "@/*": [
         "../src/*"
       ]
-    }
+    },
   },
   "include": [
     "**/*.ts",
-    "../cypress.d.ts"
-  ]
+  ],
+  "exclude": []
 }

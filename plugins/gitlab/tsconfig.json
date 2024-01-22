@@ -10,8 +10,6 @@
     "lib": [
       "ESNext"
     ],
-    "strict": true,
-    "noImplicitAny": true
   },
   "include": [
     "./src/**/*.ts",
