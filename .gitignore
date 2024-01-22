@@ -53,6 +53,7 @@ dist
 build
 auto-imports.d.ts
 components.d.ts
+*.tsbuildinfo
 
 #types
 apps/server/types/

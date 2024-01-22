@@ -9,6 +9,17 @@
     "declarationDir": "./types",
     "lib": [
       "ESNext"
-    ]
-  }
+    ],
+    "strict": false,
+    "alwaysStrict": false,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "noUnusedLocals": false
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "coverage"
+  ]
 }

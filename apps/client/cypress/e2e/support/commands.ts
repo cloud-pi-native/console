@@ -1,4 +1,4 @@
-import { getModelById } from './func'
+import { getModelById } from './func.js'
 
 const defaultOwner = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
 

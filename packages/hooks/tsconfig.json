@@ -1,8 +1,8 @@
 {
+  "extends": [
+    "@dso-console/tsconfig/tsconfig.base.json"
+  ],
   "compilerOptions": {
-    "moduleResolution": "NodeNext",
-    "module": "NodeNext",
-    "preserveSymlinks": true,
     "esModuleInterop": true,
     "outDir": "./dist",
     "rootDir": "./src",
@@ -11,10 +11,6 @@
     "lib": [
       "ESNext"
     ],
-    "strict": true,
-    "alwaysStrict": true,
-    "noImplicitAny": true,
-    "baseUrl": "./src/"
   },
   "include": [
     "./src/**/*.ts"

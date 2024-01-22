@@ -1,5 +1,7 @@
+import path from 'node:path'
 import { defineConfig } from 'cypress'
-import viteConfig from './vite.config'
+import vitePreprocessor from 'cypress-vite'
+import viteConfig from './vite.config.js'
 
 const argocdUrl = process.env.ARGOCD_URL ?? 'https://argo-cd.readthedocs.io'
 const gitlabUrl = process.env.GITLAB_URL ?? 'https://gitlab.com'
@@ -10,13 +12,22 @@ const vaultUrl = process.env.VAULT_URL ?? 'https://www.vaultproject.io'
 const clientHost = process.env.CLIENT_HOST ?? 'localhost'
 const clientPort = process.env.CLIENT_PORT ?? '8080'
 
-// @ts-ignore server does exist!
-viteConfig.server.host = '127.0.0.1'
-// @ts-ignore server does exist!
-viteConfig.server.port = 9000
+if (viteConfig.server) {
+  viteConfig.server.host = '127.0.0.1'
+  viteConfig.server.port = 9000
+}
 
 export default defineConfig({
   e2e: {
+    setupNodeEvents (on) {
+      on(
+        'file:preprocessor',
+        vitePreprocessor({
+          configFile: path.resolve('./vite.config.ts'),
+          mode: 'development',
+        }),
+      )
+    },
     baseUrl: `http://${clientHost}:${clientPort}`,
     fixturesFolder: 'cypress/e2e/fixtures',
     specPattern: 'cypress/e2e/specs/**/*.{cy,e2e}.{j,t}s',
@@ -40,7 +51,7 @@ export default defineConfig({
   },
 
   component: {
-    specPattern: '{cypress/components/specs,src/components}/**/*.{cy,ct}.{j,t}s',
+    specPattern: 'cypress/components/specs/**/*.{cy,ct}.{j,t}s',
     supportFile: 'cypress/components/support/index.ts',
     indexHtmlFile: 'cypress/components/support/component-index.html',
     video: false,

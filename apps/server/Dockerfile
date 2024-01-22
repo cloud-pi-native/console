@@ -3,8 +3,6 @@ FROM docker.io/node:20.11.0-bullseye-slim AS dev
 
 WORKDIR /app
 RUN npm install --ignore-scripts --location=global pnpm@8.14.1
-RUN mkdir /plugins
-VOLUME [ "/plugins" ]
 
 COPY --chown=node:root package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc turbo.json ./
 COPY --chown=node:root patches ./patches
@@ -25,9 +23,9 @@ COPY --chown=node:root plugins/nexus/package.json ./plugins/nexus/package.json
 COPY --chown=node:root plugins/sonarqube/package.json ./plugins/sonarqube/package.json
 COPY --chown=node:root plugins/vault/package.json ./plugins/vault/package.json
 
-RUN pnpm install
-COPY --chown=node:root packages/ ./packages/
+RUN pnpm install --frozen-lockfile
 COPY --chown=node:root plugins/ ./plugins/
+COPY --chown=node:root packages/ ./packages/
 RUN pnpm run build
 
 COPY --chown=node:root apps/server/ ./apps/server/

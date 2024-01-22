@@ -1,4 +1,4 @@
-import { getModelById, getModel } from '../../support/func'
+import { getModelById, getModel } from '../../support/func.js'
 
 describe('Administration clusters', () => {
   const clusters = getModel('cluster')

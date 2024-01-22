@@ -4,11 +4,13 @@
   "private": false,
   "type": "module",
   "scripts": {
-    "build": "turbo run build --color",
+    "build": "turbo run build --color --no-daemon",
+    "clean:build": "turbo run clean:build --no-daemon",
+    "compile": "turbo run compile --no-daemon",
     "dev": "npm run kube:dev:build; npm run kube:dev",
-    "format": "turbo run format --color",
-    "format:style": "turbo run format:style --color",
-    "db:generate": "turbo run db:generate",
+    "format": "turbo run format --color --no-daemon",
+    "format:style": "turbo run format:style --color --no-daemon",
+    "db:generate": "turbo run db:generate --no-daemon",
     "int": "npm run kube:dev:build; npm run kube:int",
     "kube:init": "ci/kind/run.sh -i -d console.dso.local,keycloak.dso.local,pgadmin.dso.local",
     "kube:dev:build": "ci/kind/run.sh -c create,build,load -f docker/docker-compose.dev.yml",
@@ -19,15 +21,15 @@
     "kube:prod:load": "ci/kind/run.sh -c create,load -f docker/docker-compose.prod.yml",
     "kube:prod": "ci/kind/run.sh -c create,prod",
     "kube:e2e": "npm --prefix apps/client run test:e2e",
-    "kube:e2e-ci": "turbo run test:e2e-ci --filter=client --color",
+    "kube:e2e-ci": "turbo run test:e2e-ci --filter=client --color --no-daemon",
     "kube:clean": "ci/kind/run.sh -c clean",
     "kube:delete": "ci/kind/run.sh -c delete",
-    "lint": "turbo run lint --color",
+    "lint": "turbo run lint --color --no-daemon",
     "prepare": "husky install",
-    "test": "turbo run test --concurrency 1 --color",
-    "test:cov": "turbo run test:cov --color",
-    "test:ct": "turbo run test:ct --color",
-    "test:ct-ci": "turbo run test:ct-ci --color",
+    "test": "turbo run test --concurrency 1 --color --no-daemon",
+    "test:cov": "turbo run test:cov --color --no-daemon",
+    "test:ct": "turbo run test:ct --color --no-daemon",
+    "test:ct-ci": "turbo run test:ct-ci --color --no-daemon",
     "test:e2e": "npm run kube:dev:build; npm run kube:dev; npm run kube:e2e",
     "test:e2e-ci": "npm run kube:prod:build; npm run kube:prod; npm run kube:e2e-ci"
   },
@@ -40,7 +42,8 @@
   },
   "pnpm": {
     "patchedDependencies": {
-      "fastify-keycloak-adapter@2.1.6": "patches/fastify-keycloak-adapter@2.1.6.patch"
+      "fastify-keycloak-adapter@2.1.6": "patches/fastify-keycloak-adapter@2.1.6.patch",
+      "fastify-keycloak-adapter@2.1.9": "patches/fastify-keycloak-adapter@2.1.9.patch"
     },
     "allowNonAppliedPatches": true
   },
