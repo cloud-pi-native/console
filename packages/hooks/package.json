@@ -22,7 +22,6 @@
     "npm-run-all": "^4.1.5",
     "rimraf": "^5.0.5",
     "ts-algebra": "^1.2.2",
-    "ts-patch": "3.0.2",
     "typescript": "^5.2.2",
     "typescript-transform-paths": "^3.4.6",
     "undici-types": "^6.3.0"
@@ -34,7 +33,7 @@
   "scripts": {
     "build": "run-s clean:build compile",
     "clean:build": "rimraf dist types",
-    "compile": "tspc  --declaration",
+    "compile": "tsc",
     "dev": "nodemon --watch src --ext .ts --exec 'npm run compile'",
     "format": "eslint ./src --ext .js,.cjs,.ts --fix",
     "lint": "eslint ./src",
@@ -42,8 +41,5 @@
   },
   "type": "module",
   "types": "types/index.d.ts",
-  "version": "6.4.0",
-  "exports": {
-    ".": "./dist/index.js"
-  }
+  "version": "6.4.0"
 }

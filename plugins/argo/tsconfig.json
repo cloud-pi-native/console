@@ -13,6 +13,5 @@
     "strict": false,
     "alwaysStrict": false,
     "noImplicitAny": false,
-    "esModuleInterop": true
   }
 }

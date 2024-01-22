@@ -9,7 +9,7 @@
   "scripts": {
     "build": "run-s clean:build compile",
     "clean:build": "rimraf dist types",
-    "compile": "tspc --declaration || exit 0",
+    "compile": "tsc",
     "format": "eslint ./src --ext .js,.cjs,.ts --fix",
     "lint": "eslint ./src",
     "test:e2e-ci": "echo 'check cache'"

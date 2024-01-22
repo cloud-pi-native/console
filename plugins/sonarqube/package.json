@@ -3,7 +3,7 @@
     "@dso-console/shared": "workspace:*",
     "@dso-console/hooks": "workspace:*",
     "@keycloak/keycloak-admin-client": "^23.0.1",
-    "axios": "^1.6.2",
+    "axios": "1.6.4",
     "vitest-mock-extended": "^1.3.1"
   },
   "description": "",
@@ -23,7 +23,6 @@
     "nodemon": "^3.0.1",
     "npm-run-all": "^4.1.5",
     "rimraf": "^5.0.5",
-    "ts-patch": "3.0.2",
     "typescript": "^5.2.2",
     "typescript-transform-paths": "^3.4.6",
     "vite": "^4.5.0",
@@ -36,15 +35,12 @@
   "scripts": {
     "build": "run-s clean:build compile",
     "clean:build": "rimraf dist types",
-    "compile": "tspc --declaration",
+    "compile": "tsc",
     "dev": "nodemon --watch src --ext .ts --exec 'npm run compile'",
     "format": "eslint ./src --ext .js,.cjs,.ts --fix",
     "lint": "eslint ./src"
   },
   "type": "module",
   "types": "types/index.d.ts",
-  "version": "6.4.0",
-  "exports": {
-    ".": "./dist/index.js"
-  }
+  "version": "6.4.0"
 }

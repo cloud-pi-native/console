@@ -1,5 +1,5 @@
-import { getModel, getModelById } from '../../support/func'
 import { statusDict, formatDate, sortArrByObjKeyAsc, OrganizationModel, ProjectModel } from '@dso-console/shared'
+import { getModel, getModelById } from '../../support/func.js'
 
 function checkTableRowsLength (length) {
   if (!length) cy.get('tr:last-child>td:first-child').should('have.text', 'Aucun projet trouvé')

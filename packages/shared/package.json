@@ -21,7 +21,6 @@
     "nodemon": "^3.0.2",
     "npm-run-all": "^4.1.5",
     "rimraf": "^5.0.5",
-    "ts-patch": "3.1.2",
     "typescript": "^5.3.3",
     "typescript-transform-paths": "^3.4.6",
     "vite": "^4.5.1",
@@ -34,7 +33,7 @@
   "scripts": {
     "build": "run-s clean:build compile",
     "clean:build": "rimraf dist types",
-    "compile": "tspc --declaration || exit 0",
+    "compile": "tsc",
     "dev": "nodemon --watch src --ext .ts --exec 'npm run compile'",
     "format": "eslint ./src --ext .js,.cjs,.ts --fix",
     "lint": "eslint ./src",

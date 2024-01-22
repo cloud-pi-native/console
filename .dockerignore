@@ -19,7 +19,7 @@ npm-debug.log
 
 # Tests
 .turbo/
-coverage
+coverage/
 
 # Docker
 **/Dockerfile

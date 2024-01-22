@@ -10,6 +10,8 @@
     "lib": [
       "ESNext"
     ],
-    "strict": false
+    "strict": false,
+    "alwaysStrict": false,
+    "noImplicitAny": false
   }
 }
