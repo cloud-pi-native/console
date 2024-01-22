@@ -1,7 +1,7 @@
 import { mount } from '@cypress/vue'
 import VueDsfr from '@gouvminint/vue-dsfr'
 
-import * as icons from '@/icons'
+import * as icons from '@/icons.js'
 
 import 'virtual:uno.css'
 import 'uno.css'

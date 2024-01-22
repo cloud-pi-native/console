@@ -1,4 +1,4 @@
-import { getModel, getProjectById } from '../../support/func'
+import { getModel, getProjectById } from '../../support/func.js'
 
 describe('Administration organizations', () => {
   const organizations = getModel('organization').map(({ id, label, name, active }) => ({

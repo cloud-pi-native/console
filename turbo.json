@@ -9,7 +9,16 @@
         "dist/**"
       ]
     },
-    "clean:build": {},
+    "clean:build": {
+      "dependsOn": [
+        "^clean:build"
+      ]
+    },
+    "compile": {
+      "dependsOn": [
+        "^compile"
+      ]
+    },
     "dev": {
       "cache": false
     },

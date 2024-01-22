@@ -1,4 +1,5 @@
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client'
+// @ts-ignore
 import GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation'
 
 export const getGroups = async (kcClient: KeycloakAdminClient) => {
