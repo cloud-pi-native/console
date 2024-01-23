@@ -1,4 +1,4 @@
-import { type HookPayload, type PluginResult, hooks } from '@dso-console/hooks'
+import { type PluginResult, hooks } from '@dso-console/hooks'
 import { addLogs, createOrganization as createOrganizationQuery, getOrganizationByName, getOrganizations, getProjectByOrganizationId, lockProject, updateActiveOrganization, updateLabelOrganization } from '@/resources/queries-index.js'
 import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { BadRequestError, NotFoundError } from '@/utils/errors.js'
@@ -57,7 +57,7 @@ export const fetchOrganizations = async (userId: User['id'], requestId: Log['req
   // @ts-ignore See TODO
   type PluginOrganization = { name: string, label: string, source: string }
   type FetchOrganizationsResult = PluginResult & { result: { organizations: PluginOrganization[] } }
-  const results = await hooks.fetchOrganizations.execute() as HookPayload<void> & Record<string, FetchOrganizationsResult>
+  const results = await hooks.fetchOrganizations.execute() as { results: Record<string, FetchOrganizationsResult> }
 
   // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
   await addLogs('Fetch organizations', results, userId, requestId)
@@ -69,7 +69,7 @@ export const fetchOrganizations = async (userId: User['id'], requestId: Log['req
   /**
   * Filter plugin results to get a single array of organizations with unique name
   */
-  const externalOrganizations = getUniqueListBy(objectValues(results)
+  const externalOrganizations = getUniqueListBy(objectValues(results.results)
     ?.reduce((acc: Record<string, any>[], value) => {
       if (typeof value !== 'object' || !value.result.organizations?.length) return acc
       return [...acc, ...value.result.organizations]

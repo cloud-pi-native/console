@@ -14,7 +14,6 @@
 // ***********************************************************
 
 import type { Project, Repository, CiForm } from '../../types.js'
-// import type { Project } from '@dso-console/test-utils'
 import './commands.js'
 
 Cypress.on('window:before:load', (win) => {
