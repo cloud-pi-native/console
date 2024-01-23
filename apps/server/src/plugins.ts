@@ -33,8 +33,8 @@ export const initPm = () => {
         const module = await import(moduleAbsPath) as {plugin: Plugin}
         pm.register(module.plugin)
       } catch (error) {
-        console.log(`Could not import module ${moduleAbsPath}`)
-        console.log(error.stack)
+        console.error(`Could not import module ${moduleAbsPath}`)
+        console.error(error.stack)
       }
     })
 

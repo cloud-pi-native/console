@@ -4,7 +4,7 @@ import axios from 'axios'
 const monitor = async (instance: Monitor): Promise<MonitorInfos> => {
   instance.lastStatus.lastUpdateTimestamp = (new Date()).getTime()
   try {
-    const res = await axios.get(requiredEnv('KEYCLOAK_URL'), {
+    const res = await axios.get(requiredEnv('ARGOCD_URL'), {
       validateStatus: (res) => res === 200,
     })
     if (res.status === 200) { // 200 only means api responds
