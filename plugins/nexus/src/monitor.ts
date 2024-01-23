@@ -1,6 +1,6 @@
 import { type MonitorInfos, MonitorStatus, Monitor } from '@dso-console/shared'
 import axios from 'axios'
-import { getConfig } from './functions.js'
+import { getAxiosOptions } from './functions.js'
 
 const coreComponents = [
   'Blob Stores Ready',
@@ -26,15 +26,17 @@ type NexusRes = Record<string, {
 const monitor = async (instance: Monitor): Promise<MonitorInfos> => {
   instance.lastStatus.lastUpdateTimestamp = (new Date()).getTime()
   try {
-    const baseUrl = `${getConfig().url}/service/rest/v1`
-    const status = await axios.get(`${baseUrl}/status`, {
+    const status = await axios.get('/status', {
       validateStatus: () => true,
+      ...getAxiosOptions(),
     })
-    const statusCheck = await axios.get(`${baseUrl}/status/check`, {
+    const statusCheck = await axios.get('/status/check', {
       validateStatus: (res) => [200, 503].includes(res),
+      ...getAxiosOptions(),
     })
-    const statusWritable = await axios.get(`${baseUrl}/status/writable`, {
+    const statusWritable = await axios.get('/status/writable', {
       validateStatus: (res) => [200, 503].includes(res),
+      ...getAxiosOptions(),
     })
     if (status.status === 503 || statusWritable.status === 503) {
       instance.lastStatus.status = MonitorStatus.ERROR
@@ -51,6 +53,7 @@ const monitor = async (instance: Monitor): Promise<MonitorInfos> => {
       if (auxComponents.some(name => !data[name].healthy)) {
         instance.lastStatus.status = MonitorStatus.ERROR
         instance.lastStatus.message = 'Le service est potentiellement dégradé'
+        instance.lastStatus.cause = data
         return instance.lastStatus
       }
     }
@@ -60,6 +63,7 @@ const monitor = async (instance: Monitor): Promise<MonitorInfos> => {
   } catch (error) {
     instance.lastStatus.message = 'Erreur lors la requête'
     instance.lastStatus.status = MonitorStatus.UNKNOW
+    instance.lastStatus.cause = error
   }
   return instance.lastStatus
 }

@@ -1,5 +1,6 @@
-import { type MonitorInfos, MonitorStatus, requiredEnv, Monitor } from '@dso-console/shared'
+import { type MonitorInfos, MonitorStatus, Monitor } from '@dso-console/shared'
 import axios from 'axios'
+import { getConfig } from './utils.js'
 
 enum HealthStatus {
   healthy = 'healthy',
@@ -14,7 +15,7 @@ const coreComponents = ['core', 'database', 'portal', 'registry', 'registryctl']
 const monitor = async (instance: Monitor): Promise<MonitorInfos> => {
   instance.lastStatus.lastUpdateTimestamp = (new Date()).getTime()
   try {
-    const res = await axios.get(`${requiredEnv('HARBOR_URL')}/api/v2.0/health`, {
+    const res = await axios.get(`${getConfig().url}/api/v2.0/health`, {
       validateStatus: (res) => res === 200,
     })
     if (res.status === 200) { // 200 only means api responds
@@ -44,6 +45,7 @@ const monitor = async (instance: Monitor): Promise<MonitorInfos> => {
   } catch (error) {
     instance.lastStatus.message = 'Erreur lors la requête'
     instance.lastStatus.status = MonitorStatus.UNKNOW
+    instance.lastStatus.cause = error
   }
   return instance.lastStatus
 }

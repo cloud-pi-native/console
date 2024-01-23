@@ -1,5 +1,6 @@
-import { type MonitorInfos, MonitorStatus, requiredEnv, Monitor, removeTrailingSlash } from '@dso-console/shared'
+import { type MonitorInfos, MonitorStatus, Monitor } from '@dso-console/shared'
 import axios from 'axios'
+import { getAxiosOptions } from './tech.js'
 
 const statusMap = {
   GREEN: MonitorStatus.OK,
@@ -19,8 +20,9 @@ type SonarRes = {
 const monitor = async (instance: Monitor): Promise<MonitorInfos> => {
   instance.lastStatus.lastUpdateTimestamp = (new Date()).getTime()
   try {
-    const res = await axios.get(`${removeTrailingSlash(requiredEnv('SONAR_URL'))}/api/system/health`, {
+    const res = await axios.get('/system/health', {
       validateStatus: (res) => res === 200,
+      ...getAxiosOptions(),
     })
     const data = res.data as SonarRes
 
@@ -30,6 +32,7 @@ const monitor = async (instance: Monitor): Promise<MonitorInfos> => {
   } catch (error) {
     instance.lastStatus.message = 'Erreur lors la requête'
     instance.lastStatus.status = MonitorStatus.UNKNOW
+    instance.lastStatus.cause = error
   }
   return instance.lastStatus
 }

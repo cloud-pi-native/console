@@ -1,3 +1,4 @@
+import { removeTrailingSlash } from '@dso-console/shared'
 import * as dotenv from 'dotenv'
 
 dotenv.config({ path: '/env/.env' })
@@ -34,4 +35,4 @@ export const projectRootDir = process.env.PROJECTS_ROOT_DIR
 export const pluginsDir = process.env.PLUGINS_DIR ?? '/plugins'
 
 // gitlab plugin
-export const gitlabUrl = process.env.GITLAB_URL
+export const gitlabUrl = removeTrailingSlash(process.env.GITLAB_URL)

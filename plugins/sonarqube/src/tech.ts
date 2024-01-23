@@ -13,7 +13,7 @@ export const getConfig = (): Required<typeof config> => {
   // @ts-ignore
   return config
 }
-const getAxiosOptions = () => {
+export const getAxiosOptions = () => {
   return {
     baseURL: `${getConfig().url}/api/`,
     auth: {
