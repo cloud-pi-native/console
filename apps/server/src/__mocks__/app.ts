@@ -28,6 +28,7 @@ vi.mock('@dso-console/hooks', async () => {
     services: {
       getForProject: () => { },
       getStatus: () => [],
+      refreshStatus: async () => [],
     },
     PluginApi: class { },
     servicesInfos: {

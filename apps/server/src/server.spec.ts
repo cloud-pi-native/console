@@ -9,7 +9,7 @@ vi.mock('./connect.js')
 vi.mock('./utils/logger.js')
 vi.mock('./init/db/index.js', () => ({ initDb: vi.fn() }))
 
-describe.skip('Server', () => {
+describe('Server', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
