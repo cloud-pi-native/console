@@ -17,7 +17,7 @@ type VaultRes = {
 const monitor = async (instance: Monitor): Promise<MonitorInfos> => {
   instance.lastStatus.lastUpdateTimestamp = (new Date()).getTime()
   try {
-    const res = await axios.get(`${requiredEnv('VAULT_URL')}/v1/sys/health`, {
+    const res = await axios.get(`${requiredEnv('VAULT_URL')}v1/sys/health`, {
       headers: {
         'X-Vault-Token': requiredEnv('VAULT_TOKEN'),
       },
@@ -34,6 +34,8 @@ const monitor = async (instance: Monitor): Promise<MonitorInfos> => {
   } catch (error) {
     instance.lastStatus.message = 'Error lors la requete'
     instance.lastStatus.status = MonitorStatus.UNKNOW
+    instance.lastStatus.cause = error
+    // test
   }
   return instance.lastStatus
 }

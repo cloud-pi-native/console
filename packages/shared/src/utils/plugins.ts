@@ -10,6 +10,7 @@ export type MonitorInfos = {
   interval: number,
   message: string,
   status: MonitorStatus,
+  cause?: any // should be deserved to admins only
 }
 export class Monitor {
   private intervalTime: number
@@ -25,6 +26,7 @@ export class Monitor {
       lastUpdateTimestamp: (new Date()).getTime(),
       message: 'En attente de démarrage',
       status: MonitorStatus.UNKNOW,
+      cause: 'App just started',
     }
   }
 
