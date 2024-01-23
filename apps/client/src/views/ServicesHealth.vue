@@ -43,6 +43,7 @@ onBeforeMount(async () => {
   </div>
   <div
     class="md:grid md:grid-cols-3 md:gap-3 items-center justify-between"
+    data-testid="box-info"
   >
     <DsfrAlert
       v-for="service in services"

@@ -8,11 +8,13 @@
     "ExtractPropTypes": true,
     "ExtractPublicPropTypes": true,
     "InjectionKey": true,
+    "OhVueIcon": true,
     "PropType": true,
     "Ref": true,
     "VNode": true,
     "WritableComputedRef": true,
     "acceptHMRUpdate": true,
+    "addIcons": true,
     "computed": true,
     "createApp": true,
     "createPinia": true,
@@ -81,8 +83,6 @@
     "watch": true,
     "watchEffect": true,
     "watchPostEffect": true,
-    "watchSyncEffect": true,
-    "OhVueIcon": true,
-    "addIcons": true
+    "watchSyncEffect": true
   }
 }
