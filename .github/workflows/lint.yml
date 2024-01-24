@@ -61,7 +61,7 @@ jobs:
         with:
           path: |
             ./.turbo/cache
-          key: turbo-lint-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('apps/**/src/**','packages/**/src/**') }}
+          key: turbo-lint-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('apps/**/src/**','packages/**/src/**','plugins/**/src/**') }}
           restore-keys: |
             turbo-lint-${{ runner.os }}-${{ runner.arch }}-
 
