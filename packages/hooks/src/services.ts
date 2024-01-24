@@ -47,7 +47,7 @@ export const services = {
     }, [] as Array<MonitorInfos & { name: string}>)
   },
   refreshStatus: (): Array<Promise<MonitorInfos>> => {
-    // @ts-ignore sisi je t'assure
+    // @ts-ignore obligé d'ignore TS ne comprend pas l'interet du filter
     return Object.values(servicesInfos)
       .filter(servicesInfos => servicesInfos.monitor)
       .map(serviceInfos => serviceInfos.monitor?.refresh())
