@@ -99,7 +99,7 @@ jobs:
         with:
           path: |
             ./.turbo/cache
-          key: turbo-component-${{ runner.os }}-${{ runner.arch }}-${{ matrix.browsers }}-${{ hashFiles('apps/**/src/**','apps/client/cypress/**','packages/**/src/**') }}
+          key: turbo-component-${{ runner.os }}-${{ runner.arch }}-${{ matrix.browsers }}-${{ hashFiles('apps/**/src/**','apps/client/cypress/**','packages/**/src/**','plugins/**/src/**') }}
           restore-keys: |
             turbo-component-${{ runner.os }}-${{ runner.arch }}-${{ matrix.browsers }}-
             turbo-component-${{ runner.os }}-${{ runner.arch }}-
