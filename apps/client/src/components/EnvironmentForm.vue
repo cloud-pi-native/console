@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref, onBeforeMount, watch, computed } from 'vue'
 import { getRandomId } from '@gouvminint/vue-dsfr'
-import { environmentSchema, schemaValidator, projectIsLockedInfo, isValid, longestEnvironmentName, type QuotaStageModel } from '@dso-console/shared'
+import { environmentSchema, schemaValidator, projectIsLockedInfo, isValid, longestEnvironmentName, type QuotaStageModel, type QuotaModel } from '@dso-console/shared'
 
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
@@ -16,7 +16,13 @@ type Stage = {
   id: string
   name: string
   clusters: Cluster[]
+  quotaStage: QuotaStageModel[]
 }
+
+type OptionType = {
+    text: string,
+    value: string,
+  }
 
 const props = defineProps({
   environment: {
@@ -66,24 +72,24 @@ const projectEnvironmentStore = useProjectEnvironmentStore()
 const localEnvironment = ref(props.environment)
 const environmentToDelete = ref('')
 const isDeletingEnvironment = ref(false)
-const quotas = ref([])
+const quotas = ref<QuotaModel[]>([])
 const allStages = ref<Stage[]>([])
 const inputKey = ref(getRandomId('input'))
 const stageId = ref<string>()
 const quotaId = ref<string>()
-const stageOptions = ref([])
-const quotaOptions = ref([])
-const clusterOptions = ref([])
+const stageOptions = ref<OptionType[]>([])
+const quotaOptions = ref<OptionType[]>([])
+const clusterOptions = ref<OptionType[]>([])
 
 const stage = computed(() => allStages.value.find(allStage => allStage.id === stageId.value))
 
 const errorSchema = computed(() => schemaValidator(environmentSchema, localEnvironment.value))
 
-const availableClusters = computed(() => {
+// @ts-ignore
+const availableClusters: ComputedRef<Cluster[]> = computed(() => {
   let clusters = props.projectClusters
     ?.filter(
       projectCluster => stage.value?.clusters
-        // @ts-ignore
         ?.map(cluster => cluster.id)
         // @ts-ignore
         ?.includes(projectCluster.id),
@@ -92,10 +98,12 @@ const availableClusters = computed(() => {
   if (
     localEnvironment.value.clusterId &&
     !clusters
+    // @ts-ignore
       ?.find(availableCluster => availableCluster?.id === localEnvironment.value.clusterId)
   ) {
     clusters = [
       ...clusters, props.allClusters
+      // @ts-ignore
         ?.find(cFromAll => cFromAll?.id === localEnvironment.value.clusterId),
     ]
   }
@@ -120,24 +128,23 @@ const setClusterOptions = () => {
   }))
 }
 
-type QuotaOptionType = {
-    text: string,
-    value: string,
-  }
-
 const setQuotaOptions = () => {
-  quotaOptions.value = stage.value?.quotaStage
-    ?.reduce((acc: QuotaOptionType[], curr: QuotaStageModel) => {
-      const matchingQuota = quotas.value
-        ?.find(quota => quota.id === curr.quotaId)
-      return matchingQuota
-        ? [...acc, {
-            text: matchingQuota.name + ' (' + matchingQuota.cpu + 'CPU, ' + matchingQuota.memory + ')',
-            value: matchingQuota.id,
-          }]
-        : acc
-    }, [])
-  inputKey.value = getRandomId('input')
+  if (stage.value) {
+    // @ts-ignore
+    quotaOptions.value = stage.value.quotaStage
+    // @ts-ignore
+      .reduce((acc: OptionType[], curr: QuotaStageModel) => {
+        const matchingQuota = quotas.value
+          ?.find(quota => quota.id === curr.quotaId)
+        return matchingQuota
+          ? [...acc, {
+              text: matchingQuota.name + ' (' + matchingQuota.cpu + 'CPU, ' + matchingQuota.memory + ')',
+              value: matchingQuota.id,
+            }]
+          : acc
+      }, [])
+    inputKey.value = getRandomId('input')
+  }
 }
 
 const addEnvironment = () => {
@@ -185,8 +192,7 @@ watch(stageId, () => {
 
 watch(quotaId, () => {
   // Turn stageId and quotaId into corresponding quotaStageId
-  // @ts-ignore
-  localEnvironment.value.quotaStageId = stage.value.quotaStage.find(qs => qs.quotaId === quotaId.value)?.id
+  localEnvironment.value.quotaStageId = stage.value?.quotaStage.find(qs => qs.quotaId === quotaId.value)?.id
 })
 
 </script>
@@ -202,7 +208,6 @@ watch(quotaId, () => {
       Ajouter un environnement au projet
     </h1>
     <DsfrFieldset
-      :key="environment"
       :legend="`Informations de l\'environnement ${localEnvironment.name ?? ''}`"
       :hint="props.isEditable ? 'Les champs munis d\'une astérisque (*) sont requis' : undefined"
       data-testid="environmentFieldset"
@@ -213,7 +218,7 @@ watch(quotaId, () => {
         class="fr-my-2w"
         label="Nom de l'environnement"
         label-visible
-        required="required"
+        :required="true"
         :hint="`Ne doit pas contenir d'espace ni de trait d'union, doit être unique pour le projet et le cluster sélectionnés, être en minuscules et faire plus de 2 et moins de ${longestEnvironmentName} caractères.`"
         :error-message="!!localEnvironment.name && !isValid(environmentSchema, localEnvironment, 'name') ? `Le nom de l\'environnment ne doit pas contenir d\'espace, doit être unique pour le projet et le cluster sélectionnés, être en minuscules et faire plus de 2 et moins de ${longestEnvironmentName} caractères.`: undefined"
         placeholder="integ0"
@@ -224,7 +229,7 @@ watch(quotaId, () => {
         select-id="stage-select"
         label="Type d'environnement"
         description="Type d'environnement proposé par DSO, conditionne les quotas et les clusters auxquels vous aurez accès pour créer votre environnement."
-        required="required"
+        required
         :disabled="!props.isEditable"
         :options="stageOptions"
       />
@@ -245,7 +250,7 @@ watch(quotaId, () => {
             select-id="quota-select"
             label="Dimensionnement des ressources allouées à l'environnement"
             description="Si votre projet nécessite d'avantage de ressources que celles proposées ci-dessus, contactez les administrateurs."
-            required="required"
+            required
             :options="quotaOptions"
           />
         </div>
@@ -262,7 +267,7 @@ watch(quotaId, () => {
           select-id="cluster-select"
           label="Cluster"
           :description="`Choix du cluster cible pour le déploiement de l\'environnement ${localEnvironment.name ? localEnvironment.name : 'en cours de création'}.`"
-          required="required"
+          required
           :disabled="!props.isEditable"
           :options="clusterOptions"
         />

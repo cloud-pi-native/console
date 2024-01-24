@@ -1,13 +1,12 @@
 <script lang="ts" setup>
-import { onMounted, ref, watch, computed, type Ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import router from '@/router/index.js'
 import { sortArrByObjKeyAsc } from '@dso-console/shared'
 
 const projectStore = useProjectStore()
 
-const projects = computed(() => projectStore.projects)
-const projectList: Ref<Array<Record<any, any>>> = ref([])
+const projectList = ref<Array<Record<any, any>>>([])
 
 const setProjectList = (projects: Array<Record<any, any>>) => {
   projectList.value = sortArrByObjKeyAsc(projects, 'name')
@@ -27,12 +26,12 @@ const goToCreateProject = () => {
   router.push('projects/create-project')
 }
 
-onMounted(async () => {
-  await projectStore.getUserProjects()
+onMounted(() => {
+  setProjectList(projectStore.projects)
 })
 
-watch(projects, (projects) => {
-  setProjectList(projects)
+watch(projectStore.projects, () => {
+  setProjectList(projectStore.projects)
 })
 
 </script>

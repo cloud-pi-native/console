@@ -24,22 +24,15 @@ const quickLinks = ref([{
   iconRight: true,
 }])
 
-const refreshProjects = async () => {
-  intervalId.value = window.setInterval(async () => {
-    await projectStore.getUserProjects()
-  }, 30_000)
-}
-
 const getSwaggerUrl = () => window?.location?.origin + '/api/v1/swagger-ui/static/index.html'
 
 onBeforeMount(() => {
   clearInterval(intervalId.value)
 })
 
-onMounted(async () => {
+onMounted(() => {
   if (isLoggedIn.value) {
-    await userStore.setUserProfile()
-    await refreshProjects()
+    userStore.setUserProfile()
   }
 })
 
