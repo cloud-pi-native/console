@@ -15,7 +15,7 @@ export type MonitorInfos = {
 export class Monitor {
   private intervalTime: number
   public monitorFn: (instance: any) => Promise<MonitorInfos>
-  private monitorInterval: NodeJS.Timeout | undefined
+  private intervalID: NodeJS.Timeout | undefined
   public lastStatus: MonitorInfos
 
   constructor (callback: (instance: Monitor) => Promise<MonitorInfos>, interval: number = 5 * 60 * 1000) {
@@ -24,15 +24,15 @@ export class Monitor {
     this.lastStatus = {
       interval: this.intervalTime,
       lastUpdateTimestamp: (new Date()).getTime(),
-      message: 'En attente de démarrage',
+      message: 'En attente d\'une première vérification',
       status: MonitorStatus.UNKNOW,
       cause: 'App just started',
     }
   }
 
-  refresh = async () => {
-    // TODO détruire l'ancien interval
-    this.monitorInterval = setInterval(this.monitorFn, this.intervalTime)
+  async refresh () {
+    if (this.intervalID) clearInterval(this.intervalID)
+    this.intervalID = setInterval(() => this.monitorFn(this), this.intervalTime)
     return this.monitorFn(this)
   }
 }
