@@ -9,7 +9,7 @@ on:
       NODE_VERSION:
         required: true
         type: string
-        default: "20.10.0"
+        default: "20.11.0"
       MAJOR_TAG:
         type: string
         description: "Major version tag"
@@ -29,7 +29,7 @@ on:
       NODE_VERSION:
         required: true
         type: string
-        default: "20.10.0"
+        default: "20.11.0"
       MAJOR_TAG:
         type: string
         description: "Major version tag"
