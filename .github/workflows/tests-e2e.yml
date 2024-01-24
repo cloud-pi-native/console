@@ -107,7 +107,7 @@ jobs:
         with:
           path: |
             ./.turbo/cache
-          key: turbo-e2e-${{ runner.os }}-${{ runner.arch }}-${{ matrix.browsers }}-${{ hashFiles('apps/**/src/**','apps/client/cypress/**','packages/**/src/**') }}
+          key: turbo-e2e-${{ runner.os }}-${{ runner.arch }}-${{ matrix.browsers }}-${{ hashFiles('apps/**/src/**','apps/client/cypress/**','packages/**/src/**','plugins/**/src/**') }}
           restore-keys: |
             turbo-e2e-${{ runner.os }}-${{ runner.arch }}-${{ matrix.browsers }}-
             turbo-e2e-${{ runner.os }}-${{ runner.arch }}-
