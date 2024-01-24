@@ -9,7 +9,6 @@ const coreComponents = [
 ]
 const auxComponents = [
   'Blob Stores Quota',
-  'Available CPUs',
   'File Descriptors',
   'Lifecycle Phase',
   'NuGet V2 repositories',

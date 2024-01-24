@@ -6,7 +6,6 @@
   },
   "description": "",
   "devDependencies": {
-    "vitest-mock-extended": "^1.3.1",
     "@dso-console/eslint-config-base": "workspace:*",
     "@dso-console/tsconfig": "workspace:*",
     "@types/node": "^20.8.9",

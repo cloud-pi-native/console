@@ -51,6 +51,7 @@ const pluginManager = (options: PluginManagerOptions): PluginManager => {
     if (plugin.monitor && config.mockMonitoring) {
       plugin.monitor.monitorFn = async (instance: Monitor) => instance.lastStatus
     }
+    if (plugin.monitor) plugin.monitor.refresh()
     servicesInfos[plugin.infos.name] = {
       ...plugin.infos,
       monitor: plugin.monitor,
@@ -70,7 +71,7 @@ const pluginManager = (options: PluginManagerOptions): PluginManager => {
           // @ts-ignore
           hooks[hook].apis[name] = functions.api
         }
-        for (const [step, fn] of objectEntries(functions?.steps || {})) {
+        for (const [step, fn] of objectEntries(functions?.steps ?? {})) {
           if (fn === undefined) continue
           if (hook === 'checkServices' && step !== 'check') {
             console.warn({
