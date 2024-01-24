@@ -33,6 +33,7 @@ export type EnvironmentQuotaUpdateArgs = {
 export type EnvironmentDeleteArgs = {
   repositories: RepositoryForEnv[]
   cluster: ClusterMix
+  stage: string
 } & EnvironmentBase
 
 export const initializeEnvironment: Hook<EnvironmentCreateArgs, void> = createHook()

@@ -45,7 +45,15 @@ export const getEnvironmentInfos = (id: Environment['id']) => prisma.environment
         user: true,
       },
     },
-    quotaStage: true,
+    quotaStage: {
+      select: {
+        stage: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    },
   },
 })
 
