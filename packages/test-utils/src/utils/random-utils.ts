@@ -88,7 +88,7 @@ export const getRandomRepo = (projectId = faker.string.uuid()) => {
     status: faker.helpers.arrayElement(achievedStatus),
   }
   if (repo.isPrivate) {
-    repo.externalUserName = faker.internet.userName()
+    repo.externalUserName = faker.person.firstName()
     repo.externalToken = faker.internet.password({ length: 25 })
   }
 
