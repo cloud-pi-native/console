@@ -50,8 +50,8 @@ const saveRepo = () => {
   emit('save', localRepo.value)
 }
 
-const cancel = (event) => {
-  emit('cancel', event)
+const cancel = () => {
+  emit('cancel')
 }
 
 </script>
@@ -171,7 +171,7 @@ const cancel = (event) => {
       class="flex space-x-10 mt-5"
     >
       <DsfrButton
-        :label="localRepo.id ? 'Modifier le dépôt' : 'Ajouter le dépôt'"
+        :label="localRepo.id ? 'Enregistrer' : 'Ajouter le dépôt'"
         :data-testid="localRepo.id ? 'updateRepoBtn' : 'addRepoBtn'"
         :disabled="!isRepoValid"
         primary

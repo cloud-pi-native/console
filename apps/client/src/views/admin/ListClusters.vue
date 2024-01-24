@@ -96,6 +96,7 @@ watch(clusters, () => {
     class="flex <md:flex-col-reverse items-center justify-between pb-5"
   >
     <DsfrButton
+      v-if="!Object.keys(selectedCluster).length && !isNewClusterForm"
       label="Ajouter un nouveau cluster"
       data-testid="addClusterLink"
       tertiary
@@ -104,6 +105,19 @@ watch(clusters, () => {
       icon="ri-add-line"
       @click="showNewClusterForm()"
     />
+    <div
+      v-else
+      class="w-full flex justify-end"
+    >
+      <DsfrButton
+        title="Revenir à la liste des clusters"
+        data-testid="goBackBtn"
+        secondary
+        icon-only
+        icon="ri-arrow-go-back-line"
+        @click="() => cancel()"
+      />
+    </div>
   </div>
   <div
     v-if="isNewClusterForm"
@@ -120,6 +134,7 @@ watch(clusters, () => {
     />
   </div>
   <div
+    v-else
     :class="{
       'md:grid md:grid-cols-3 md:gap-3 items-center justify-between': !selectedCluster?.label,
     }"
@@ -129,7 +144,9 @@ watch(clusters, () => {
       :key="cluster.id"
       class="fr-mt-2v fr-mb-4w w-full"
     >
-      <div>
+      <div
+        v-show="!Object.keys(selectedCluster).length"
+      >
         <DsfrTile
           :title="cluster.title"
           :data-testid="`clusterTile-${cluster.title}`"

@@ -85,6 +85,7 @@ watch(project, () => {
     class="flex <md:flex-col-reverse items-center justify-between pb-5"
   >
     <DsfrButton
+      v-if="!Object.keys(selectedRepo).length && !isNewRepoForm"
       label="Ajouter un nouveau dépôt"
       data-testid="addRepoLink"
       tertiary
@@ -94,6 +95,19 @@ watch(project, () => {
       icon="ri-add-line"
       @click="showNewRepoForm()"
     />
+    <div
+      v-else
+      class="w-full flex justify-end"
+    >
+      <DsfrButton
+        title="Revenir à la liste des dépôts"
+        data-testid="goBackBtn"
+        secondary
+        icon-only
+        icon="ri-arrow-go-back-line"
+        @click="() => cancel()"
+      />
+    </div>
   </div>
   <div
     v-if="isNewRepoForm"
@@ -107,6 +121,7 @@ watch(project, () => {
     />
   </div>
   <div
+    v-else
     :class="{
       'md:grid md:grid-cols-3 md:gap-3 items-center justify-between': !selectedRepo.internalRepoName,
     }"
@@ -116,7 +131,9 @@ watch(project, () => {
       :key="repo.id"
       class="fr-mt-2v fr-mb-4w"
     >
-      <div>
+      <div
+        v-show="!Object.keys(selectedRepo).length"
+      >
         <DsfrTile
           :title="repo.title"
           :description="['deleting', 'initializing'].includes(repo?.data?.status) ? 'Opérations en cours' : null"

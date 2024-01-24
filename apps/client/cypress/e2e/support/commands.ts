@@ -235,6 +235,8 @@ Cypress.Commands.add('assertAddEnvironment', (project, environments, isDeepCheck
         .should('have.value', environment?.quota?.id)
       cy.get('#cluster-select')
         .should('have.value', environment?.cluster?.id)
+      cy.getByDataTestid('goBackBtn')
+        .click()
     }
   })
 })

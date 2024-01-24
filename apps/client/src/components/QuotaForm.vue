@@ -171,7 +171,7 @@ onBeforeMount(() => {
       />
       <DsfrButton
         v-else
-        label="Modifier le quota"
+        label="Enregistrer"
         data-testid="updateQuotaBtn"
         :disabled="!isQuotaValid"
         primary

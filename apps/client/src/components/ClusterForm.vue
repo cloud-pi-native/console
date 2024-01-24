@@ -374,7 +374,7 @@ watch(selectedContext, () => {
       />
       <DsfrButton
         v-else
-        label="Mettre à jour le cluster"
+        label="Enregistrer"
         data-testid="updateClusterBtn"
         :disabled="!isClusterValid"
         primary
