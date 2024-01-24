@@ -70,7 +70,7 @@ jobs:
             ./.turbo/cache
             ./apps/**/coverage
             ./packages/**/coverage
-          key: turbo-unit-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('apps/**/src/**','packages/**/src/**') }}
+          key: turbo-unit-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('apps/**/src/**','packages/**/src/**','plugins/**/src/**') }}
           restore-keys: |
             turbo-unit-${{ runner.os }}-${{ runner.arch }}-
 
