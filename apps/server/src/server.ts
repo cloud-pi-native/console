@@ -62,7 +62,7 @@ export async function startServer () {
   }
 
   try {
-    await app.listen({ host: '0.0.0.0', port: +port || 8080 })
+    await app.listen({ host: '0.0.0.0', port: +(port ?? 8080) })
   } catch (error) {
     app.log.error(error)
     process.exit(1)
