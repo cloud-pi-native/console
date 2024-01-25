@@ -1,5 +1,24 @@
 # Changelog
 
+## [6.5.0](https://github.com/cloud-pi-native/console/compare/v6.4.0...v6.5.0) (2024-01-25)
+
+
+### Features
+
+* :children_crossing: better ux for forms in tiles ([da68243](https://github.com/cloud-pi-native/console/commit/da68243a91865732db46b9ae610a82eeec5c9bf2))
+* :loud_sound: add payload and full hook response in validation hooks ([adabb02](https://github.com/cloud-pi-native/console/commit/adabb02fd0b8028b1fcdf1113744234a925d72ce))
+* :loud_sound: add reqId in db logs ([2b7f22b](https://github.com/cloud-pi-native/console/commit/2b7f22b7e24748dc37c8623bbda3e914ed7cae00))
+* :sparkles: add project environments to hook payload ([7aa8117](https://github.com/cloud-pi-native/console/commit/7aa81179ac95afdddf711e1a0a4b3c3a45a35c5a))
+* :sparkles: disallow hyphen on project, environment and stage ([f9b05ee](https://github.com/cloud-pi-native/console/commit/f9b05eefee41f7d514d749a0ac3fa1c1d063f051))
+* :sparkles: download projects data button for admins ([cb38e75](https://github.com/cloud-pi-native/console/commit/cb38e7573314ba0980c4161d1a77a9e83fddb236))
+* :sparkles: to fn, more infos, multi tiles ([8c4de83](https://github.com/cloud-pi-native/console/commit/8c4de83cf3b4bc0e335292d437ddf7d22305ff93))
+
+
+### Bug Fixes
+
+* :goal_net: validate schema before creating repo or env ([23535c3](https://github.com/cloud-pi-native/console/commit/23535c3e0c9923df0cc8adb5fb646dc2dd21fb7c))
+* :pushpin: pin axios version to avoid vite error ([88c6d30](https://github.com/cloud-pi-native/console/commit/88c6d30b5ab14cd9ca899fdf7cfcd17faa067903))
+
 ## [6.4.0](https://github.com/cloud-pi-native/console/compare/v6.3.1...v6.4.0) (2023-12-20)
 
 
