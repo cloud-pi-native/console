@@ -1,6 +1,6 @@
 {
   "name": "@dso-console/client",
-  "version": "6.5.0",
+  "version": "6.5.1",
   "description": "dso-portal client",
   "type": "module",
   "private": false,
