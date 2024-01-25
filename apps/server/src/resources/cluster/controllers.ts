@@ -1,17 +1,26 @@
 import { addReqLogs } from '@/utils/logger.js'
 import { getAllCleanedClusters } from './business.js'
 import { sendOk } from '@/utils/response.js'
-import { type RouteHandler } from 'fastify'
-import { type FastifyRequestWithSession } from '@/types/index.js'
+import type { FastifyInstance } from 'fastify'
 
-// GET
-export const getClustersController: RouteHandler = async (req: FastifyRequestWithSession<void>, res) => {
-  const user = req.session?.user
-  const cleanedClusters = await getAllCleanedClusters(user)
+import { getClustersSchema } from '@dso-console/shared'
 
-  addReqLogs({
-    req,
-    description: 'Clusters récupérés avec succès',
-  })
-  sendOk(res, cleanedClusters)
+const router = async (app: FastifyInstance, _opt) => {
+  // Récupérer les quotas disponibles
+  app.get('/',
+    {
+      schema: getClustersSchema,
+    },
+    async (req, res) => {
+      const user = req.session.user
+      const cleanedClusters = await getAllCleanedClusters(user)
+
+      addReqLogs({
+        req,
+        description: 'Clusters récupérés avec succès',
+      })
+      sendOk(res, cleanedClusters)
+    })
 }
+
+export default router

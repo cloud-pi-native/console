@@ -1,14 +1,11 @@
 <script lang="ts" setup>
 import { ref, onMounted, watch, computed, type Ref } from 'vue'
-import SuggestionInput from './SuggestionInput.vue'
-import RangeInput from './RangeInput.vue'
-import { levels, projectIsLockedInfo, type PermissionModel, type EnvironmentModel } from '@dso-console/shared'
+import { levels, projectIsLockedInfo, type PermissionModel, type EnvironmentModel, type UserModel, type ProjectInfos } from '@dso-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectPermissionStore } from '@/stores/project-permission.js'
 import { useUserStore } from '@/stores/user.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
 import { getRandomId } from '@gouvminint/vue-dsfr'
-import { handleError } from '@/utils/func.js'
+import { useUsersStore } from '@/stores/users.js'
 
 const props = defineProps({
   environment: {
@@ -20,39 +17,34 @@ const props = defineProps({
 const projectStore = useProjectStore()
 const projectPermissionStore = useProjectPermissionStore()
 const userStore = useUserStore()
-const snackbarStore = useSnackbarStore()
+const usersStore = useUsersStore()
 const environment: Ref<EnvironmentModel | Record<string, any> | undefined> = ref(props.environment)
-const permissions = ref([])
+const permissions: Ref<PermissionModel[]> = ref([])
 const permissionToUpdate = ref({})
-const userToLicence = ref('')
+const userToLicence: Ref<string> = ref('')
 const permissionSuggestionKey = ref(getRandomId('input'))
 
-const project = computed(() => projectStore.selectedProject)
-const owner = computed(() => projectStore.selectedProjectOwner)
-const projectMembers = computed(() => project.value?.roles?.map(role => role.user))
+const project = computed(() => projectStore.selectedProject) as Ref<ProjectInfos>
+const ownersIds: Ref<UserModel['id'][]> = computed(() => project.value.roles.filter(({ role }) => role === 'owner').map(({ userId }) => userId))
+const projectMembers = computed(() => project.value?.roles?.map(role => usersStore.users[role.userId]))
 // @ts-ignore
 const permittedUsersId = computed(() => permissions.value.map(permission => permission.userId))
 const isPermitted = computed(() => permittedUsersId.value.includes(userStore.userProfile.id))
-const usersToLicence = computed(() =>
-  projectMembers.value?.filter(projectMember =>
-    !permittedUsersId.value.includes(projectMember.id),
-  ),
-)
+const usersToLicence = computed(() => {
+  return projectMembers.value?.filter(projectMember =>
+    !permittedUsersId.value.includes(projectMember?.id))
+})
 const suggestions = computed(() => usersToLicence.value?.map(user => user.email))
 
 const setPermissions = () => {
-  permissions.value = environment.value?.permissions?.toSorted((a: PermissionModel, b: PermissionModel) => a?.user?.email >= b?.user?.email ? 1 : -1)
+  permissions.value = environment.value?.permissions?.toSorted((a: PermissionModel, b: PermissionModel) => a?.userId >= b?.userId ? 1 : -1)
 }
 
 const addPermission = async (userEmail: string) => {
   if (!project.value?.locked) {
     const userId = usersToLicence.value?.find(user => user.email === userEmail)?.id
-    try {
-      // @ts-ignore
-      await projectPermissionStore.addPermission(environment.value.id, { userId, level: 0 })
-    } catch (error) {
-      handleError(error)
-    }
+    // @ts-ignore
+    await projectPermissionStore.addPermission(environment.value.id, { userId, level: 0 })
   }
   userToLicence.value = ''
   permissionSuggestionKey.value = getRandomId('input')
@@ -60,29 +52,21 @@ const addPermission = async (userEmail: string) => {
 
 const updatePermission = async () => {
   if (!project.value?.locked) {
-    try {
-      // @ts-ignore
-      await projectPermissionStore.updatePermission(environment.value.id, permissionToUpdate.value)
-    } catch (error) {
-      handleError(error)
-    }
+    // @ts-ignore
+    await projectPermissionStore.updatePermission(environment.value.id, permissionToUpdate.value)
     permissionToUpdate.value = {}
   }
 }
 
 const deletePermission = async (userId: string) => {
-  try {
-    await projectPermissionStore.deletePermission(environment.value.id, userId)
-  } catch (error) {
-    handleError(error)
-  }
+  await projectPermissionStore.deletePermission(environment.value.id, userId)
 }
 
 const getDynamicTitle = (locked: boolean, permission: PermissionModel) => {
   if (locked) return projectIsLockedInfo
-  if (permission.userId === owner.value?.id) return 'Les droits du owner ne peuvent être modifiés'
+  if (ownersIds.value.includes(permission.userId)) return 'Les droits d\'un owner ne peuvent être modifiés'
   // @ts-ignore
-  return `Modifier les droits de ${permission.user.email}`
+  return `Modifier les droits de ${usersStore.users[permission.userId]?.email}`
 }
 
 watch(project, () => {
@@ -114,7 +98,7 @@ onMounted(() => {
       <li
         v-for="permission in permissions"
         :key="permission.id"
-        :data-testid="`userPermissionLi-${permission.user?.email}`"
+        :data-testid="`userPermissionLi-${usersStore.users[permission.userId]?.email}`"
         class="flex justify-between content-center lg:items-end gap-4 lg:flex-row flex-col w-full"
       >
         <div>
@@ -122,20 +106,20 @@ onMounted(() => {
             class="flex gap-2"
           >
             <v-icon
-              :name="permission.userId === owner?.id ? 'ri-user-star-fill' : 'ri-user-fill'"
+              :name="ownersIds.includes(permission.userId) ? 'ri-user-star-fill' : 'ri-user-fill'"
               fill="var(--text-title-blue-france)"
             />
             <p
               class="fr-text-title--blue-france"
               data-testid="userEmail"
             >
-              {{ permission.user.email }}
+              {{ usersStore.users[permission.userId]?.email }}
             </p>
           </div>
           <DsfrButton
             data-testid="deletePermissionBtn"
-            :disabled="permission.userId === owner?.id || !isPermitted"
-            :title="permission.userId === owner?.id ? `Les droits du owner ne peuvent être supprimés`: `Supprimer les droits de ${permission.user.email}`"
+            :disabled="ownersIds.includes(permission.userId)|| !isPermitted"
+            :title="ownersIds.includes(permission.userId) ? `Les droits du owner ne peuvent être supprimés`: `Supprimer les droits de ${usersStore.users[permission.userId].email}`"
             label="Supprimer la permission"
             class="my-4"
             secondary
@@ -149,8 +133,8 @@ onMounted(() => {
             label="Niveau de droits"
             :level="permission.level"
             :levels="levels"
-            required="required"
-            :disabled="permission.userId === owner?.id || !isPermitted || project?.locked"
+            required
+            :disabled="ownersIds.includes(permission.userId) || !isPermitted || project?.locked"
             @update-level="(event) => {
               permissionToUpdate.userId = permission.userId
               permissionToUpdate.level = event
@@ -158,7 +142,7 @@ onMounted(() => {
           />
           <DsfrButton
             :data-testid="`${permission.userId}UpdatePermissionBtn`"
-            :disabled="permission.userId === owner?.id || !isPermitted || permissionToUpdate.userId !== permission.userId || project?.locked"
+            :disabled="ownersIds.includes(permission.userId) || !isPermitted || permissionToUpdate.userId !== permission.userId || project?.locked"
             :title="getDynamicTitle(project?.locked, permission)"
             label="Confirmer la modification"
             class="my-4"

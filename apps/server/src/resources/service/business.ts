@@ -1,11 +1,11 @@
 import { BadRequestError, ForbiddenError } from '@/utils/errors.js'
 import { getOrCreateUser } from '../queries-index.js'
-import type { User } from '@prisma/client'
 import axios, { AxiosResponse } from 'axios'
 import { type ServiceInfos, servicesInfos } from '@/plugins/services.js'
 import { userSchema } from '@dso-console/shared'
+import { UserDetails } from '@/types/index.js'
 
-export const checkServicesHealth = async (requestor: User) => {
+export const checkServicesHealth = async (requestor: UserDetails) => {
   await userSchema.validateAsync(requestor)
   const user = await getOrCreateUser(requestor)
   if (!user) throw new ForbiddenError('Vous n\'avez pas accès à cette information')

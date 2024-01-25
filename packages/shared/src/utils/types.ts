@@ -3,16 +3,16 @@ import { ClusterModel, EnvironmentModel, OrganizationModel, ProjectModel, Reposi
 export type ErrorTypes = 'info' | 'warning' | 'error' | 'success'
 
 export type UserProfile = {
-  email: string | string[],
-  id: string | string[],
-  firstName: string | string[],
-  lastName: string | string[],
-  groups: string | string[],
+  email: string,
+  id: string,
+  firstName: string,
+  lastName: string,
+  groups: string[],
 }
 
-export type ProjectInfos = ProjectModel & {
+export type ProjectInfos = Omit<ProjectModel, 'roles'> & {
   organization?: OrganizationModel[],
-  roles?: RoleModel[],
+  roles: RoleModel[],
   clusters?: ClusterModel[],
   repositories?: RepositoryModel[],
   environments?: EnvironmentModel[],

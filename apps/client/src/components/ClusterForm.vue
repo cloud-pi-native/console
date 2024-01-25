@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-import { ref, computed, onBeforeMount, watch, type Ref } from 'vue'
+import { ref, computed, onBeforeMount, watch } from 'vue'
 import { clusterSchema, schemaValidator, isValid, instanciateSchema } from '@dso-console/shared'
+// @ts-ignore
 import { load } from 'js-yaml'
+// @ts-ignore
 import { JsonViewer } from 'vue3-json-viewer'
-import MultiSelector from './MultiSelector.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { handleError } from '@/utils/func.js'
 
 const snackbarStore = useSnackbarStore()
 
@@ -32,20 +32,20 @@ const props = withDefaults(defineProps<{
   associatedEnvironments: () => [],
 })
 
-const projectsName: Ref<Array<string | never>> = ref([])
-const stageNames: Ref<Array<string | never>> = ref([])
-const jsonKConfig: Ref<Record<any, any>> = ref({})
-const kConfigError: Ref<string | undefined> = ref(undefined)
-const isMissingCurrentContext: Ref<boolean> = ref(false)
+const projectsName = ref<Array<string>>([])
+const stageNames = ref<Array<string>>([])
+const jsonKConfig = ref<Record<any, any>>({})
+const kConfigError = ref<string | undefined>(undefined)
+const isMissingCurrentContext = ref<boolean>(false)
 const contexts = ref([])
-const selectedContext = ref(undefined)
-const localCluster: Ref<Record<string, any>> = ref({})
-const updatedValues: Ref<Record<string, any>> = ref({})
+const selectedContext = ref('')
+const localCluster = ref<Record<string, any>>({})
+const updatedValues = ref<Record<string, any>>({})
 const kubeconfig = ref()
 const clusterToDelete = ref('')
 const isDeletingCluster = ref(false)
 
-const errorSchema = computed(() => schemaValidator(clusterSchema, localCluster.value))
+const errorSchema: ComputedRef<Record<string, any>> = computed(() => schemaValidator(clusterSchema, localCluster.value))
 const isClusterValid = computed(() => Object.keys(errorSchema.value).length === 0)
 
 const updateValues = (key: string, value: any) => {
@@ -81,7 +81,7 @@ const updateValues = (key: string, value: any) => {
   }
 }
 
-const updateKubeconfig = (files: Array<any>) => {
+const updateKubeconfig = (files: FileList) => {
   kConfigError.value = undefined
   localCluster.value.cluster = {}
   localCluster.value.user = {}
@@ -95,18 +95,17 @@ const updateKubeconfig = (files: Array<any>) => {
       let context
       if (!jsonKConfig.value.contexts) throw new Error('Pas de contexts spécifiés dans le kubeconfig.')
       if (jsonKConfig.value['current-context']) {
-        context = jsonKConfig.value.contexts.find(ctx => ctx.name === jsonKConfig.value['current-context']).context
+        context = jsonKConfig.value.contexts.find((ctx: Record<string, any>) => ctx.name === jsonKConfig.value['current-context']).context
         isMissingCurrentContext.value = false
         retrieveUserAndCluster(context)
       } else {
-        contexts.value = jsonKConfig.value.contexts.map(context => context.name)
+        contexts.value = jsonKConfig.value.contexts.map((context: Record<string, any>) => context.name)
         isMissingCurrentContext.value = true
         snackbarStore.setMessage('Pas de current-context. Choisissez un contexte.')
       }
     }
     reader.readAsText(files[0])
   } catch (error) {
-    handleError(error)
     // @ts-ignore
     kConfigError.value = error?.message
   }
@@ -136,7 +135,7 @@ const retrieveUserAndCluster = (context: ContextType) => {
       token,
       'client-certificate-data': certData,
       'client-key-data': keyData,
-    } = jsonKConfig.value.users.find(user => user.name === context.user).user
+    } = jsonKConfig.value.users.find((user: Record<string, any>) => user.name === context.user).user
     localCluster.value.user = {
       ...username && password && { username, password },
       ...token && { token },
@@ -146,7 +145,7 @@ const retrieveUserAndCluster = (context: ContextType) => {
       server,
       'certificate-authority-data': caData,
       'insecure-skip-tls-verify': skipTLSVerify,
-    } = jsonKConfig.value.clusters.find(cluster => cluster.name === context.cluster).cluster
+    } = jsonKConfig.value.clusters.find((cluster: Record<string, any>) => cluster.name === context.cluster).cluster
     localCluster.value.cluster = {
       server,
       tlsServerName: server.split('https://')[1].split(':')[0],
@@ -154,7 +153,6 @@ const retrieveUserAndCluster = (context: ContextType) => {
       skipTLSVerify: skipTLSVerify || false,
     }
   } catch (error) {
-    handleError(error)
     // @ts-ignore
     kConfigError.value = error?.message
   }
@@ -205,19 +203,19 @@ const cancel = () => {
 onBeforeMount(() => {
   // Retrieve array of project ids from parent component, map it into array of project names and pass it to child component.
   localCluster.value = props.cluster
-  projectsName.value = localCluster.value.projectIds.map(projectId => {
+  projectsName.value = localCluster.value.projectIds.map((projectId: string) => {
     const project = props.allProjects?.find(project => project.id === projectId)
     return `${project.organization.name} - ${project.name}`
   })
 
   // Retrieve array of stage ids from parent component, map it into array of stage names and pass it to child component.
   localCluster.value = props.cluster
-  stageNames.value = localCluster.value.stageIds?.map(stageId => props.allStages?.find(stage => stage.id === stageId)?.name)
+  stageNames.value = localCluster.value.stageIds?.map((stageId: string) => props.allStages?.find(stage => stage.id === stageId)?.name)
 })
 
 watch(selectedContext, () => {
   try {
-    const context = jsonKConfig.value.contexts.find(ctx => ctx.name === jsonKConfig.value[selectedContext]).context
+    const context = jsonKConfig.value.contexts.find((ctx: Record<string, any>) => ctx.name === jsonKConfig.value[selectedContext.value]).context
     if (!context) throw new Error('Le contexte semble vide.')
     retrieveUserAndCluster(context)
   } catch (error) {
@@ -281,7 +279,7 @@ watch(selectedContext, () => {
       data-testid="tlsServerNameInput"
       label="Nom du serveur Transport Layer Security (TLS)"
       label-visible
-      required="required"
+      :required="true"
       hint="La valeur est extraite du kubeconfig téléversé."
       @update:model-value="updateValues('tlsServerName', $event)"
     />
@@ -290,7 +288,7 @@ watch(selectedContext, () => {
       data-testid="labelInput"
       type="text"
       :disabled="!isNewCluster"
-      required="required"
+      :required="true"
       :error-message="!!updatedValues.label && !isValid(clusterSchema, localCluster, 'label') ? 'Le nom du cluster ne doit contenir ni espaces ni caractères spéciaux': undefined"
       label="Nom du cluster applicatif"
       label-visible
@@ -376,7 +374,7 @@ watch(selectedContext, () => {
       />
       <DsfrButton
         v-else
-        label="Mettre à jour le cluster"
+        label="Enregistrer"
         data-testid="updateClusterBtn"
         :disabled="!isClusterValid"
         primary
@@ -404,6 +402,7 @@ watch(selectedContext, () => {
         class="flex flex-row flex-wrap gap-4 w-full"
       >
         <DsfrTable
+          title="Environnements déployés sur le cluster"
           data-testid="associatedEnvironmentsTable"
           :headers="['Organisation', 'Projet', 'Nom', 'Souscripteur']"
           :rows="getRows(props.associatedEnvironments)"

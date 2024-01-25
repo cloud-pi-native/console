@@ -1,21 +1,20 @@
 <script setup lang="ts">
-import SideMenu from './components/SideMenu.vue'
-import DsoSnackbar from './components/DsoSnackbar.vue'
-import { ref, onMounted, watch, onBeforeMount, type Ref } from 'vue'
 import { getKeycloak } from './utils/keycloak/keycloak'
 import { useUserStore } from './stores/user.js'
 import { useProjectStore } from './stores/project.js'
+import { useSnackbarStore } from './stores/snackbar.js'
 
 const keycloak = getKeycloak()
 const userStore = useUserStore()
 const projectStore = useProjectStore()
+const snackbarStore = useSnackbarStore()
 
 userStore.setIsLoggedIn()
 
-const isLoggedIn: Ref<boolean | undefined> = ref(keycloak.authenticated)
-const label: Ref<string> = ref(isLoggedIn.value ? 'Se déconnecter' : 'Se connecter')
-const to: Ref<string> = ref(isLoggedIn.value ? '/logout' : '/login')
-const intervalId: Ref<number | undefined> = ref(undefined)
+const isLoggedIn = ref<boolean | undefined>(keycloak.authenticated)
+const label = ref(isLoggedIn.value ? 'Se déconnecter' : 'Se connecter')
+const to = ref(isLoggedIn.value ? '/logout' : '/login')
+const intervalId = ref<number>()
 const appVersion: string = process.env.APP_VERSION ? `v${process.env.APP_VERSION}` : 'vpr-dev'
 
 const quickLinks = ref([{
@@ -25,23 +24,22 @@ const quickLinks = ref([{
   iconRight: true,
 }])
 
-const refreshProjects = async () => {
-  intervalId.value = window.setInterval(async () => {
-    await projectStore.getUserProjects()
-  }, 30_000)
-}
-
 const getSwaggerUrl = () => window?.location?.origin + '/api/v1/swagger-ui/static/index.html'
 
 onBeforeMount(() => {
   clearInterval(intervalId.value)
 })
 
-onMounted(async () => {
+onMounted(() => {
   if (isLoggedIn.value) {
-    await userStore.setUserProfile()
-    await refreshProjects()
+    userStore.setUserProfile()
   }
+})
+
+onErrorCaptured((error) => {
+  if (error instanceof Error) return snackbarStore.setMessage(error?.message, 'error')
+  snackbarStore.setMessage('Une erreur inconnue est survenue.')
+  return false
 })
 
 watch(label, (label: string) => {
@@ -70,7 +68,7 @@ watch(label, (label: string) => {
     class="dso-footer"
     a11y-compliance="partiellement conforme"
     :logo-text="['Ministère', 'de l’Intérieur', 'et des Outre-Mer']"
-    mandatory-links="[]"
+    :mandatory-links="[]"
   >
     <template #description>
       <div

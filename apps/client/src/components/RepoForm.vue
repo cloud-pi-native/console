@@ -1,8 +1,6 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
 import { repoSchema, schemaValidator, isValid, instanciateSchema } from '@dso-console/shared'
-import CIForm from './CIForm.vue'
-import LoadingCt from './LoadingCt.vue'
 
 const props = defineProps({
   repo: {
@@ -52,8 +50,8 @@ const saveRepo = () => {
   emit('save', localRepo.value)
 }
 
-const cancel = (event) => {
-  emit('cancel', event)
+const cancel = () => {
+  emit('cancel')
 }
 
 </script>
@@ -82,7 +80,7 @@ const cancel = (event) => {
             v-model="localRepo.internalRepoName"
             data-testid="internalRepoNameInput"
             type="text"
-            required="required"
+            :required="true"
             :disabled="localRepo.id || props.isProjectLocked"
             :error-message="!!updatedValues.internalRepoName && !isValid(repoSchema, localRepo, 'internalRepoName') ? 'Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique': undefined"
             label="Nom du dépôt Git interne"
@@ -97,7 +95,7 @@ const cancel = (event) => {
             v-model="localRepo.externalRepoUrl"
             data-testid="externalRepoUrlInput"
             type="text"
-            required="required"
+            :required="true"
             :disabled="props.isProjectLocked"
             :error-message="!!updatedValues.externalRepoUrl && !isValid(repoSchema, localRepo, 'externalRepoUrl') ? 'L\'url du dépôt doit commencer par https et se terminer par .git': undefined"
             label="Url du dépôt Git externe"
@@ -125,7 +123,7 @@ const cancel = (event) => {
               v-model="localRepo.externalUserName"
               data-testid="externalUserNameInput"
               type="text"
-              :required="localRepo.isPrivate ? 'required' : false"
+              :required="localRepo.isPrivate"
               :disabled="props.isProjectLocked"
               :error-message="!!updatedValues.externalUserName && !isValid(repoSchema, localRepo, 'externalUserName') ? 'Le nom du propriétaire du token est obligatoire en cas de dépôt privé et ne doit contenir ni espaces ni caractères spéciaux': undefined"
               autocomplete="name"
@@ -142,7 +140,7 @@ const cancel = (event) => {
               v-model="localRepo.externalToken"
               data-testid="externalTokenInput"
               type="text"
-              :required="localRepo.isPrivate ? 'required' : false"
+              :required="localRepo.isPrivate"
               :disabled="props.isProjectLocked"
               :error-message="!!updatedValues.externalToken && !isValid(repoSchema, localRepo, 'externalToken') ? 'Le token d\'accès au dépôt est obligatoire en cas de dépôt privé et ne doit contenir ni espaces ni caractères spéciaux': undefined"
               label="Token d'accès au dépôt Git externe"
@@ -173,7 +171,7 @@ const cancel = (event) => {
       class="flex space-x-10 mt-5"
     >
       <DsfrButton
-        :label="localRepo.id ? 'Modifier le dépôt' : 'Ajouter le dépôt'"
+        :label="localRepo.id ? 'Enregistrer' : 'Ajouter le dépôt'"
         :data-testid="localRepo.id ? 'updateRepoBtn' : 'addRepoBtn'"
         :disabled="!isRepoValid"
         primary

@@ -1,17 +1,12 @@
 <script lang="ts" setup>
-import { onMounted, ref, watch, computed, type Ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
 import router from '@/router/index.js'
-import DsoSelectedProject from './DsoSelectedProject.vue'
 import { sortArrByObjKeyAsc } from '@dso-console/shared'
-import { handleError } from '@/utils/func.js'
 
 const projectStore = useProjectStore()
-const snackbarStore = useSnackbarStore()
 
-const projects = computed(() => projectStore.projects)
-const projectList: Ref<Array<Record<any, any>>> = ref([])
+const projectList = ref<Array<Record<any, any>>>([])
 
 const setProjectList = (projects: Array<Record<any, any>>) => {
   projectList.value = sortArrByObjKeyAsc(projects, 'name')
@@ -24,27 +19,19 @@ const setProjectList = (projects: Array<Record<any, any>>) => {
 }
 
 const setSelectedProject = async (project: Record<any, any>) => {
-  try {
-    projectStore.setSelectedProject(project.id)
-  } catch (error) {
-    handleError(error)
-  }
+  projectStore.setSelectedProject(project.id)
 }
 
 const goToCreateProject = () => {
   router.push('projects/create-project')
 }
 
-onMounted(async () => {
-  try {
-    await projectStore.getUserProjects()
-  } catch (error) {
-    handleError(error)
-  }
+onMounted(() => {
+  setProjectList(projectStore.projects)
 })
 
-watch(projects, (projects) => {
-  setProjectList(projects)
+watch(projectStore.projects, () => {
+  setProjectList(projectStore.projects)
 })
 
 </script>

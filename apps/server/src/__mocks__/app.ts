@@ -4,7 +4,7 @@ import fastifyCookie from '@fastify/cookie'
 import fastifySession from '@fastify/session'
 import fp from 'fastify-plugin'
 import { addAllSchemasToApp, apiPrefix } from '@/app.js'
-import { apiRouter, miscRouter } from '@/routes/index.js'
+import { apiRouter, miscRouter } from '@/resources/index.js'
 import { sessionConf } from '@/utils/keycloak.js'
 import { User } from '@dso-console/test-utils'
 
@@ -20,6 +20,7 @@ vi.mock('@/plugins/services.js', () => {
         title: 'Harbor',
       },
     },
+    getProjectServices: () => [],
   }
 })
 vi.mock('../plugins/index.js', () => {
@@ -141,7 +142,11 @@ const app = addAllSchemasToApp(fastify({ logger: false }))
   .register(fp(mockSessionPlugin))
   .register(miscRouter, { prefix: apiPrefix })
   .register(apiRouter, { prefix: apiPrefix })
-
+  // useful to debug fastify error
+  // .addHook('onError', (req, res, err, done) => {
+  //   console.log(err)
+  //   done()
+  // })
 await app.ready()
 
 vi.spyOn(app, 'listen')

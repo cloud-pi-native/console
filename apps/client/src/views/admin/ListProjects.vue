@@ -5,17 +5,16 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 import { type AsyncReturnType, formatDate, statusDict, sortArrByObjKeyAsc } from '@dso-console/shared'
 import { useAdminOrganizationStore } from '@/stores/admin/organization.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
-import { DsfrInputGroup, getRandomId } from '@gouvminint/vue-dsfr'
-import LoadingCt from '@/components/LoadingCt.vue'
-import TeamCt from '@/components/TeamCt.vue'
+import { getRandomId } from '@gouvminint/vue-dsfr'
 import { useUserStore } from '@/stores/user.js'
+import { useUsersStore } from '@/stores/users.js'
 import { useProjectUserStore } from '@/stores/project-user'
 import { useAdminQuotaStore } from '@/stores/admin/quota'
-import { handleError } from '@/utils/func.js'
 
 const adminProjectStore = useAdminProjectStore()
 const adminOrganizationStore = useAdminOrganizationStore()
 const userStore = useUserStore()
+const usersStore = useUsersStore()
 const snackbarStore = useSnackbarStore()
 const projectUserStore = useProjectUserStore()
 const adminQuotaStore = useAdminQuotaStore()
@@ -40,6 +39,12 @@ type EnvironnementRows = EnvironnementRow[] | EmptyRow
 type RepositoryRow = [string, Component, Component] | [[{ text: string; cellAttrs: { colspan: number } }]]
 type RepositoryRows = RepositoryRow[] | EmptyRow
 
+type FileForDownload = File & {
+  href?: string,
+  format?: string,
+  title?: string,
+}
+
 const allProjects: Ref<AsyncReturnType<typeof adminProjectStore.getAllProjects>> = ref([])
 const organizations: Ref<AsyncReturnType<typeof adminOrganizationStore.getAllOrganizations>> = ref([])
 const rows: Ref<Rows> = ref([])
@@ -55,6 +60,7 @@ const isArchivingProject = ref(false)
 const projectToArchive = ref('')
 const inputSearchText = ref('')
 const activeFilter = ref('Non archivés')
+const file: Ref<undefined | FileForDownload> = ref(undefined)
 
 const title = 'Liste des projets'
 const headers = [
@@ -233,13 +239,9 @@ const getRepositoriesRows = () => {
 
 const getAllProjects = async () => {
   isWaitingForResponse.value = true
-  try {
-    allProjects.value = await adminProjectStore.getAllProjects()
-    setRows()
-    if (selectedProject.value) selectProject(selectedProject.value.id)
-  } catch (error) {
-    handleError(error)
-  }
+  allProjects.value = await adminProjectStore.getAllProjects()
+  setRows()
+  if (selectedProject.value) selectProject(selectedProject.value.id)
   isWaitingForResponse.value = false
 }
 
@@ -252,62 +254,42 @@ const selectProject = async (projectId: string) => {
 const updateEnvironmentQuota = async ({ environmentId, quotaId }: {environmentId: string, quotaId: string}) => {
   if (!selectedProject.value) return
   isWaitingForResponse.value = true
-  try {
-    const environment = selectedProject.value?.environments.find(environment => environment.id === environmentId)
-    environment.quotaStageId = environment.quotaStage.stage.quotaStage.find(quotaStage => quotaStage.quotaId === quotaId)?.id
-    await projectEnvironmentStore.updateEnvironment(environment, selectedProject.value.id)
-    await getAllProjects()
-  } catch (error) {
-    handleError(error)
-  }
+  const environment = selectedProject.value?.environments.find(environment => environment.id === environmentId)
+  environment.quotaStageId = environment.quotaStage.stage.quotaStage.find(quotaStage => quotaStage.quotaId === quotaId)?.id
+  await projectEnvironmentStore.updateEnvironment(environment, selectedProject.value.id)
+  await getAllProjects()
   isWaitingForResponse.value = false
 }
 
 const handleProjectLocking = async (projectId: string, lock: boolean) => {
   isWaitingForResponse.value = true
-  try {
-    await adminProjectStore.handleProjectLocking(projectId, lock)
-    await getAllProjects()
-  } catch (error) {
-    handleError(error)
-  }
+  await adminProjectStore.handleProjectLocking(projectId, lock)
+  await getAllProjects()
   isWaitingForResponse.value = false
 }
 
 const replayHooks = async ({ resource, resourceId }: {resource: string, resourceId: string}) => {
   isWaitingForResponse.value = true
-  try {
-    // snackbarStore.setMessage(`Reprovisionnement de la ressource ${resource} ayant pour id ${resourceId}`)
-    console.log({ resource, resourceId })
-    snackbarStore.setMessage('Cette fonctionnalité n\'est pas encore disponible.')
-  } catch (error) {
-    handleError(error)
-  }
+  // snackbarStore.setMessage(`Reprovisionnement de la ressource ${resource} ayant pour id ${resourceId}`)
+  console.log({ resource, resourceId })
+  snackbarStore.setMessage('Cette fonctionnalité n\'est pas encore disponible.')
   isWaitingForResponse.value = false
 }
 
 const archiveProject = async (projectId: string) => {
   if (!selectedProject.value) return
   isWaitingForResponse.value = true
-  try {
-    await adminProjectStore.archiveProject(projectId)
-    await getAllProjects()
-    selectedProject.value = undefined
-  } catch (error) {
-    handleError(error)
-  }
+  await adminProjectStore.archiveProject(projectId)
+  await getAllProjects()
+  selectedProject.value = undefined
   isWaitingForResponse.value = false
 }
 
 const addUserToProject = async (email: string) => {
   isWaitingForResponse.value = true
-  try {
-    await projectUserStore.addUserToProject(selectedProject.value?.id, { email })
-    await getAllProjects()
-    teamCtKey.value = getRandomId('team')
-  } catch (error) {
-    handleError(error)
-  }
+  const newRoles = await projectUserStore.addUserToProject(selectedProject.value?.id, { email })
+  teamCtKey.value = getRandomId('team')
+  selectedProject.value.roles = newRoles
   isWaitingForResponse.value = false
 }
 
@@ -319,14 +301,27 @@ const updateUserRole = ({ userId, role }: { userId: string, role: string }) => {
 const removeUserFromProject = async (userId: string) => {
   if (!selectedProject.value) return
   isWaitingForResponse.value = true
-  try {
-    if (selectedProject.value.id) await projectUserStore.removeUserFromProject(selectedProject.value.id, userId)
-    await getAllProjects()
-    teamCtKey.value = getRandomId('team')
-  } catch (error) {
-    handleError(error)
+  if (selectedProject.value.id) {
+    const newRoles = await projectUserStore.removeUserFromProject(selectedProject.value.id, userId)
+    selectedProject.value.roles = newRoles
   }
+  teamCtKey.value = getRandomId('team')
   isWaitingForResponse.value = false
+}
+
+const generateProjectsDataFile = async () => {
+  file.value = new File([await adminProjectStore.generateProjectsData()], 'dso-projects.csv', {
+    type: 'text/csv;charset=utf-8',
+  })
+  const url = URL.createObjectURL(file.value)
+
+  file.value = {
+    ...file.value,
+    href: url,
+    size: `${file.value.size} bytes`,
+    format: 'CSV',
+    title: 'dso-projects.csv',
+  }
 }
 
 onBeforeMount(async () => {
@@ -341,6 +336,24 @@ onBeforeMount(async () => {
   >
     <div class="w-full flex gap-4 justify-end fr-mb-1w">
       <DsfrButton
+        v-if="!selectedProject && !file"
+        data-testid="download-btn"
+        title="Exporter les données de tous les projets"
+        secondary
+        icon-only
+        icon="ri-file-download-line"
+        :disabled="!!isWaitingForResponse"
+        @click="generateProjectsDataFile()"
+      />
+      <DsfrFileDownload
+        v-if="!selectedProject && file"
+        :format="file.format"
+        :size="file.size"
+        :href="file.href"
+        :title="file.title"
+        :download="file.title"
+      />
+      <DsfrButton
         data-testid="refresh-btn"
         title="Rafraîchir la liste des projets"
         secondary
@@ -354,6 +367,7 @@ onBeforeMount(async () => {
       <DsfrButton
         v-if="selectedProject"
         title="Revenir à la liste des projets"
+        data-testid="goBackBtn"
         secondary
         icon-only
         icon="ri-arrow-go-back-line"
@@ -486,9 +500,10 @@ onBeforeMount(async () => {
           :id="membersId"
           :key="teamCtKey"
           :user-profile="userStore.userProfile"
-          :project="{id: selectedProject.id, name: selectedProject.name, roles: selectedProject?.roles }"
-          :owner="selectedProject.roles?.find(role => role.role === 'owner').user"
+          :project="{id: selectedProject.id, name: selectedProject.name }"
+          :roles="selectedProject.roles.map(({user, ...role}) => role)"
           :is-updating-project-members="isWaitingForResponse"
+          :known-users="usersStore.users"
           @add-member="(email) => addUserToProject(email)"
           @update-role="({ userId, role}) => updateUserRole({ userId, role})"
           @remove-member="(userId) => removeUserFromProject(userId)"

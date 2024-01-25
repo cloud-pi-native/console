@@ -1,9 +1,10 @@
 # Base stage
-FROM docker.io/node:20.10.0-bullseye-slim AS dev
+FROM docker.io/node:20.11.0-bullseye-slim AS dev
 
 WORKDIR /app
-RUN npm install --location=global pnpm@8.6.10
+RUN npm install --ignore-scripts --location=global pnpm@8.14.1
 COPY --chown=node:root package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
+COPY --chown=node:root patches ./patches
 COPY --chown=node:root apps/server/package.json ./apps/server/package.json
 COPY --chown=node:root packages/eslintconfig/package.json ./packages/eslintconfig/package.json
 COPY --chown=node:root packages/shared/package.json ./packages/shared/package.json
@@ -24,7 +25,7 @@ RUN pnpm --filter server --prod deploy build
 
 
 # Prod stage
-FROM docker.io/node:20.10.0-bullseye-slim AS prod
+FROM docker.io/node:20.11.0-bullseye-slim AS prod
 
 ARG APP_VERSION
 ENV APP_VERSION=$APP_VERSION

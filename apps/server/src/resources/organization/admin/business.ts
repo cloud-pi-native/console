@@ -4,7 +4,7 @@ import { addLogs, createOrganization as createOrganizationQuery, getOrganization
 import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { BadRequestError, NotFoundError } from '@/utils/errors.js'
 import { objectValues } from '@/utils/type.js'
-import type { Organization, User } from '@prisma/client'
+import type { Log, Organization, User } from '@prisma/client'
 import { type CreateOrganizationDto, getUniqueListBy, organizationSchema } from '@dso-console/shared'
 
 export const getAllOrganization = async () => {
@@ -52,7 +52,7 @@ export const updateOrganization = async (name: Organization['name'], active: Org
   return getOrganizationByName(name)
 }
 
-export const fetchOrganizations = async (userId: User['id']) => {
+export const fetchOrganizations = async (userId: User['id'], requestId: Log['requestId']) => {
   const consoleOrganizations = await getOrganizations()
 
   // TODO: Fix define return in plugins dir
@@ -62,7 +62,7 @@ export const fetchOrganizations = async (userId: User['id']) => {
   const results = await hooks.fetchOrganizations.execute() as HookPayload<void> & Record<string, FetchOrganizationsResult>
 
   // @ts-ignore TODO fix types HookPayload and Prisma.JsonObject
-  await addLogs('Fetch organizations', results, userId)
+  await addLogs('Fetch organizations', results, userId, requestId)
 
   // TODO: Fix type
   // @ts-ignore See TODO

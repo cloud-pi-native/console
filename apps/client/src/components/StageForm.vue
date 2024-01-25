@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { computed, onBeforeMount, ref } from 'vue'
-import MultiSelector from './MultiSelector.vue'
 import { stageSchema, schemaValidator } from '@dso-console/shared'
 import { copyContent } from '@/utils/func.js'
 import type { UpdateStageType } from '@/views/admin/ListStages.vue'
@@ -121,6 +120,7 @@ onBeforeMount(() => {
       v-model="localStage.name"
       label="Nom du type d'environnement"
       label-visible
+      hint="Ne doit pas contenir d'espace, de trait d'union, ni de caractères spéciaux."
       :required="true"
       data-testid="nameInput"
       :disabled="!isNewStage"
@@ -170,7 +170,7 @@ onBeforeMount(() => {
       />
       <DsfrButton
         v-else
-        label="Modifier le type d'environnement"
+        label="Enregistrer"
         data-testid="updateStageBtn"
         :disabled="!isStageValid"
         primary

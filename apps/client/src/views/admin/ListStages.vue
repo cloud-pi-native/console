@@ -1,18 +1,14 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch, type Ref } from 'vue'
-import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useAdminStageStore } from '@/stores/admin/stage.js'
-import StageForm from '@/components/StageForm.vue'
 import { sortArrByObjKeyAsc } from '@dso-console/shared'
 import type { CreateStageDto, UpdateQuotaStageDto, StageModel, UpdateStageClustersDto, StageParams } from '@dso-console/shared'
 import { useAdminQuotaStore } from '@/stores/admin/quota'
 import { useAdminClusterStore } from '@/stores/admin/cluster'
-import { handleError } from '@/utils/func.js'
 
 const adminStageStore = useAdminStageStore()
 const adminQuotaStore = useAdminQuotaStore()
 const adminClusterStore = useAdminClusterStore()
-const snackbarStore = useSnackbarStore()
 
 const selectedStage: Ref<StageModel | Record<string, never>> = ref({})
 const stageList: Ref<any[]> = ref([])
@@ -57,12 +53,8 @@ const cancel = () => {
 const addStage = async (stage: CreateStageDto) => {
   isWaitingForResponse.value = true
   cancel()
-  try {
-    await adminStageStore.addStage(stage)
-    await adminStageStore.getAllStages()
-  } catch (error) {
-    handleError(error)
-  }
+  await adminStageStore.addStage(stage)
+  await adminStageStore.getAllStages()
   isWaitingForResponse.value = false
 }
 
@@ -74,48 +66,32 @@ export type UpdateStageType = {
 
 const updateStage = async ({ stageId, quotaIds, clusterIds }: UpdateStageType) => {
   isWaitingForResponse.value = true
-  try {
-    await adminStageStore.updateQuotaStage(stageId, quotaIds)
-    await adminStageStore.updateStageClusters(stageId, clusterIds)
-    await adminStageStore.getAllStages()
-    cancel()
-  } catch (error) {
-    handleError(error)
-  }
+  await adminStageStore.updateQuotaStage(stageId, quotaIds)
+  await adminStageStore.updateStageClusters(stageId, clusterIds)
+  await adminStageStore.getAllStages()
+  cancel()
   isWaitingForResponse.value = false
 }
 
 const deleteStage = async (stageId: StageParams['stageId']) => {
   isWaitingForResponse.value = true
   cancel()
-  try {
-    await adminStageStore.deleteStage(stageId)
-    await adminStageStore.getAllStages()
-  } catch (error) {
-    handleError(error)
-  }
+  await adminStageStore.deleteStage(stageId)
+  await adminStageStore.getAllStages()
   isWaitingForResponse.value = false
 }
 
 const getStageAssociatedEnvironments = async (stageId: StageParams['stageId']) => {
   isWaitingForResponse.value = true
-  try {
-    associatedEnvironments.value = await adminStageStore.getStageAssociatedEnvironments(stageId)
-  } catch (error) {
-    handleError(error)
-  }
+  associatedEnvironments.value = await adminStageStore.getStageAssociatedEnvironments(stageId)
   isWaitingForResponse.value = false
 }
 
 onMounted(async () => {
-  try {
-    await adminQuotaStore.getAllQuotas()
-    await adminClusterStore.getClusters()
-    await adminStageStore.getAllStages()
-    setStageTiles(stages.value)
-  } catch (error) {
-    handleError(error)
-  }
+  await adminQuotaStore.getAllQuotas()
+  await adminClusterStore.getClusters()
+  await adminStageStore.getAllStages()
+  setStageTiles(stages.value)
 })
 
 watch(stages, () => {
@@ -129,6 +105,7 @@ watch(stages, () => {
     class="flex <md:flex-col-reverse items-center justify-between pb-5"
   >
     <DsfrButton
+      v-if="!Object.keys(selectedStage).length && !isNewStageForm"
       label="Ajouter un nouveau type d'environnement"
       data-testid="addStageLink"
       tertiary
@@ -137,6 +114,19 @@ watch(stages, () => {
       icon="ri-add-line"
       @click="showNewStageForm()"
     />
+    <div
+      v-else
+      class="w-full flex justify-end"
+    >
+      <DsfrButton
+        title="Revenir à la liste des types d'environnement"
+        data-testid="goBackBtn"
+        secondary
+        icon-only
+        icon="ri-arrow-go-back-line"
+        @click="() => cancel()"
+      />
+    </div>
   </div>
   <div
     v-if="isNewStageForm"
@@ -153,6 +143,7 @@ watch(stages, () => {
     />
   </div>
   <div
+    v-else
     :class="{
       'md:grid md:grid-cols-3 md:gap-3 items-center justify-between': !selectedStage?.name,
     }"
@@ -162,7 +153,9 @@ watch(stages, () => {
       :key="stage.id"
       class="fr-mt-2v fr-mb-4w w-full"
     >
-      <div>
+      <div
+        v-show="!Object.keys(selectedStage).length"
+      >
         <DsfrTile
           :title="stage.title"
           :data-testid="`stageTile-${stage.title}`"

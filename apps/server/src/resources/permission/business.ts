@@ -1,5 +1,5 @@
 import { BadRequestError, ForbiddenError, UnprocessableContentError } from '@/utils/errors.js'
-import type { Project, User, Environment, Permission } from '@prisma/client'
+import type { Project, User, Environment, Permission, Log } from '@prisma/client'
 import { addLogs, deletePermission as deletePermissionQuery, getEnvironmentByIdWithCluster, getEnvironmentPermissions as getEnvironmentPermissionsQuery, getPermissionByUserIdAndEnvironmentId, getProjectInfos, getSingleOwnerByProjectId, getUserById, setPermission as setPermissionQuery, updatePermission as updatePermissionQuery } from '@/resources/queries-index.js'
 import { checkInsufficientRoleInProject, checkRoleAndLocked } from '@/utils/controller.js'
 import { hooks } from '@/plugins/index.js'
@@ -35,6 +35,7 @@ export const setPermission = async (
   userId: User['id'],
   environmentId: Environment['id'],
   level: Permission['level'],
+  requestId: Log['requestId'],
 ) => {
   const project = await getProjectInfos(projectId)
   const errorMessage = checkRoleAndLocked(project, requestorId)
@@ -56,7 +57,7 @@ export const setPermission = async (
     user,
   })
   // @ts-ignore
-  await addLogs('Update Permission', results, userId)
+  await addLogs('Update Permission', results, userId, requestId)
   if (results.failed) {
     throw new UnprocessableContentError('Echec à la création de la permission')
   }
@@ -69,6 +70,7 @@ export const updatePermission = async (
   userId: User['id'],
   environmentId: Environment['id'],
   level: Permission['level'],
+  requestId: Log['requestId'],
 ) => {
   const project = await getProjectInfos(projectId)
   await preventUpdatingOwnerPermission(projectId, userId)
@@ -91,7 +93,7 @@ export const updatePermission = async (
     user,
   })
   // @ts-ignore
-  await addLogs('Update Permission', results, userId)
+  await addLogs('Update Permission', results, userId, requestId)
   if (results.failed) {
     throw new UnprocessableContentError('Echec à l\'application de la permission')
   }
@@ -102,6 +104,7 @@ export const deletePermission = async (
   userId: User['id'],
   environmentId: Environment['id'],
   requestorId: Environment['id'],
+  requestId: Log['requestId'],
 ) => {
   const environment = await getEnvironmentByIdWithCluster(environmentId)
   const project = await getProjectInfos(environment.projectId)
@@ -121,7 +124,7 @@ export const deletePermission = async (
     user,
   })
   // @ts-ignore
-  await addLogs('Delete Permission', results, userId)
+  await addLogs('Delete Permission', results, userId, requestId)
   if (results.failed) {
     throw new UnprocessableContentError('Echec à la suppression de la permission')
   }

@@ -9,7 +9,7 @@ on:
       NODE_VERSION:
         required: true
         type: string
-        default: "20.10.0"
+        default: "20.11.0"
       MAJOR_TAG:
         type: string
         description: "Major version tag"
@@ -29,7 +29,7 @@ on:
       NODE_VERSION:
         required: true
         type: string
-        default: "20.10.0"
+        default: "20.11.0"
       MAJOR_TAG:
         type: string
         description: "Major version tag"
@@ -52,26 +52,28 @@ jobs:
     steps:
       - name: Checks-out repository
         uses: actions/checkout@v3
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: "${{ inputs.NODE_VERSION }}"
           registry-url: https://registry.npmjs.org/
+
       - name: Install pnpm
         uses: pnpm/action-setup@v2
         id: pnpm-install
         with:
           version: "${{ inputs.PNPM_VERSION }}"
           run_install: true
+
       - name: Prepare packages
         run: |
           pnpm run db:generate
-          echo '//registry.npmjs.org/:_authToken=${npm_token}' >> .npmrc
+          echo '//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}' >> .npmrc
+
       - name: Publish on npmjs.org
         run: |
           pnpm publish --no-git-checks --access public \
-          --filter server \
-          --filter client \
-          --filter shared
-        env:
-          npm_token: ${{secrets.NPM_TOKEN}}
+            --filter server \
+            --filter client \
+            --filter shared

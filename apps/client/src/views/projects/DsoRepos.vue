@@ -3,23 +3,17 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectRepositoryStore } from '@/stores/project-repository.js'
 import { useUserStore } from '@/stores/user.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import RepoForm from '@/components/RepoForm.vue'
-import DsoSelectedProject from './DsoSelectedProject.vue'
 import { projectIsLockedInfo, sortArrByObjKeyAsc } from '@dso-console/shared'
-import { handleError } from '@/utils/func.js'
 
 const projectStore = useProjectStore()
 const projectRepositoryStore = useProjectRepositoryStore()
 const userStore = useUserStore()
-const snackbarStore = useSnackbarStore()
 
 /**
  * @returns {string}
  */
 const project = computed(() => projectStore.selectedProject)
-const owner = computed(() => projectStore.selectedProjectOwner)
-const isOwner = computed(() => userStore.userProfile.id === owner.value.id)
+const isOwner = computed(() => project.value?.roles.some(role => role.userId === userStore.userProfile.id && role.role === 'owner'))
 
 const repos = ref([])
 const selectedRepo = ref({})
@@ -57,14 +51,10 @@ const cancel = () => {
 
 const saveRepo = async (repo) => {
   isUpsertingRepo.value = true
-  try {
-    if (repo.id) {
-      await projectRepositoryStore.updateRepo(repo)
-    } else {
-      await projectRepositoryStore.addRepoToProject(repo)
-    }
-  } catch (error) {
-    handleError(error)
+  if (repo.id) {
+    await projectRepositoryStore.updateRepo(repo)
+  } else {
+    await projectRepositoryStore.addRepoToProject(repo)
   }
   setReposTiles(project.value)
   cancel()
@@ -73,11 +63,7 @@ const saveRepo = async (repo) => {
 
 const deleteRepo = async (repoId) => {
   isUpsertingRepo.value = true
-  try {
-    await projectRepositoryStore.deleteRepo(repoId)
-  } catch (error) {
-    handleError(error)
-  }
+  await projectRepositoryStore.deleteRepo(repoId)
   setReposTiles(project.value)
   selectedRepo.value = {}
   isUpsertingRepo.value = false
@@ -99,6 +85,7 @@ watch(project, () => {
     class="flex <md:flex-col-reverse items-center justify-between pb-5"
   >
     <DsfrButton
+      v-if="!Object.keys(selectedRepo).length && !isNewRepoForm"
       label="Ajouter un nouveau dépôt"
       data-testid="addRepoLink"
       tertiary
@@ -108,6 +95,19 @@ watch(project, () => {
       icon="ri-add-line"
       @click="showNewRepoForm()"
     />
+    <div
+      v-else
+      class="w-full flex justify-end"
+    >
+      <DsfrButton
+        title="Revenir à la liste des dépôts"
+        data-testid="goBackBtn"
+        secondary
+        icon-only
+        icon="ri-arrow-go-back-line"
+        @click="() => cancel()"
+      />
+    </div>
   </div>
   <div
     v-if="isNewRepoForm"
@@ -121,6 +121,7 @@ watch(project, () => {
     />
   </div>
   <div
+    v-else
     :class="{
       'md:grid md:grid-cols-3 md:gap-3 items-center justify-between': !selectedRepo.internalRepoName,
     }"
@@ -130,7 +131,9 @@ watch(project, () => {
       :key="repo.id"
       class="fr-mt-2v fr-mb-4w"
     >
-      <div>
+      <div
+        v-show="!Object.keys(selectedRepo).length"
+      >
         <DsfrTile
           :title="repo.title"
           :description="['deleting', 'initializing'].includes(repo?.data?.status) ? 'Opérations en cours' : null"

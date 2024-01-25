@@ -1,13 +1,20 @@
 import { defineStore } from 'pinia'
 import api from '@/api/index.js'
+import { useUsersStore } from '../users.js'
 
 export const useAdminProjectStore = defineStore('admin-project', () => {
+  const usersStore = useUsersStore()
   const getAllProjects = async () => {
-    return api.getAllProjects()
+    const allProjects = await api.getAllProjects()
+    // TODO retirer la clé user de cette réponse d'api ?
+    // @ts-ignore
+    allProjects.forEach(project => project.roles.forEach(({ user }) => usersStore.addUser(user)))
+    return allProjects
   }
 
   const getAllActiveProjects = async () => {
     const allProjects = await getAllProjects()
+    // @ts-ignore
     return allProjects.filter(project => project.status !== 'archived')
   }
 
@@ -19,10 +26,15 @@ export const useAdminProjectStore = defineStore('admin-project', () => {
     return api.archiveProject(projectId)
   }
 
+  const generateProjectsData = async () => {
+    return api.generateProjectsData()
+  }
+
   return {
     getAllProjects,
     getAllActiveProjects,
     handleProjectLocking,
     archiveProject,
+    generateProjectsData,
   }
 })

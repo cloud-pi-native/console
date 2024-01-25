@@ -9,9 +9,3 @@ export const copyContent = async (content: string): Promise<void> => {
     snackbarStore.setMessage(error?.message, 'error')
   }
 }
-
-export const handleError = (error: unknown) => {
-  const snackbarStore = useSnackbarStore()
-  if (error instanceof Error) return snackbarStore.setMessage(error?.message, 'error')
-  snackbarStore.setMessage('Une erreur inconnue est survenue.')
-}

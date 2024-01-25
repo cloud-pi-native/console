@@ -17,9 +17,9 @@ describe('Counter Store', () => {
 
   it('Should get project list by api call', async () => {
     const data = [
-      { id: 'id1', name: 'project1', status: 'archived' },
-      { id: 'id2', name: 'project2', status: 'created' },
-      { id: 'id3', name: 'project3', status: 'created' },
+      { id: 'id1', name: 'project1', status: 'archived', roles: [{ user: { id: '1' } }] },
+      { id: 'id2', name: 'project2', status: 'created', roles: [{ user: { id: '1' } }] },
+      { id: 'id3', name: 'project3', status: 'created', roles: [{ user: { id: '1' } }] },
     ]
     apiClientGet.mockReturnValueOnce(Promise.resolve({ data }))
     const adminProjectStore = useAdminProjectStore()
@@ -33,9 +33,9 @@ describe('Counter Store', () => {
 
   it('Should get active project list by api call', async () => {
     const data = [
-      { id: 'id1', name: 'project1', status: 'archived' },
-      { id: 'id2', name: 'project2', status: 'created' },
-      { id: 'id3', name: 'project3', status: 'created' },
+      { id: 'id1', name: 'project1', status: 'archived', roles: [{ user: { id: '1' } }] },
+      { id: 'id2', name: 'project2', status: 'created', roles: [{ user: { id: '1' } }] },
+      { id: 'id3', name: 'project3', status: 'created', roles: [{ user: { id: '1' } }] },
     ]
     apiClientGet.mockReturnValueOnce(Promise.resolve({ data }))
     const adminProjectStore = useAdminProjectStore()

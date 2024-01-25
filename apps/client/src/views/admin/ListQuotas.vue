@@ -1,16 +1,12 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch, type Ref } from 'vue'
-import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useAdminQuotaStore } from '@/stores/admin/quota.js'
-import QuotaForm from '@/components/QuotaForm.vue'
 import { sortArrByObjKeyAsc } from '@dso-console/shared'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 import type { CreateQuotaDto, UpdateQuotaStageDto, QuotaModel, UpdateQuotaPrivacyDto, QuotaParams } from '@dso-console/shared'
-import { handleError } from '@/utils/func.js'
 
 const adminQuotaStore = useAdminQuotaStore()
 const projectEnvironmentStore = useProjectEnvironmentStore()
-const snackbarStore = useSnackbarStore()
 
 const quotas = computed(() => adminQuotaStore.quotas)
 const selectedQuota: Ref<QuotaModel | Record<string, never>> = ref({})
@@ -53,12 +49,8 @@ const cancel = () => {
 const addQuota = async (quota: CreateQuotaDto) => {
   isWaitingForResponse.value = true
   cancel()
-  try {
-    await adminQuotaStore.addQuota(quota)
-    await adminQuotaStore.getAllQuotas()
-  } catch (error) {
-    handleError(error)
-  }
+  await adminQuotaStore.addQuota(quota)
+  await adminQuotaStore.getAllQuotas()
   isWaitingForResponse.value = false
 }
 
@@ -70,49 +62,33 @@ export type UpdateQuotaType = {
 
 const updateQuota = async ({ quotaId, isPrivate, stageIds }: UpdateQuotaType) => {
   isWaitingForResponse.value = true
-  try {
-    if (isPrivate !== undefined) {
-      await adminQuotaStore.updateQuotaPrivacy(quotaId, isPrivate)
-    }
-    await adminQuotaStore.updateQuotaStage(quotaId, stageIds)
-    await adminQuotaStore.getAllQuotas()
-    cancel()
-  } catch (error) {
-    handleError(error)
+  if (isPrivate !== undefined) {
+    await adminQuotaStore.updateQuotaPrivacy(quotaId, isPrivate)
   }
+  await adminQuotaStore.updateQuotaStage(quotaId, stageIds)
+  await adminQuotaStore.getAllQuotas()
+  cancel()
   isWaitingForResponse.value = false
 }
 
 const deleteQuota = async (quotaId: QuotaParams['quotaId']) => {
   isWaitingForResponse.value = true
   cancel()
-  try {
-    await adminQuotaStore.deleteQuota(quotaId)
-    await adminQuotaStore.getAllQuotas()
-  } catch (error) {
-    handleError(error)
-  }
+  await adminQuotaStore.deleteQuota(quotaId)
+  await adminQuotaStore.getAllQuotas()
   isWaitingForResponse.value = false
 }
 
 const getQuotaAssociatedEnvironments = async (quotaId: QuotaParams['quotaId']) => {
   isWaitingForResponse.value = true
-  try {
-    associatedEnvironments.value = await adminQuotaStore.getQuotaAssociatedEnvironments(quotaId)
-  } catch (error) {
-    handleError(error)
-  }
+  associatedEnvironments.value = await adminQuotaStore.getQuotaAssociatedEnvironments(quotaId)
   isWaitingForResponse.value = false
 }
 
 onMounted(async () => {
-  try {
-    await adminQuotaStore.getAllQuotas()
-    setQuotaTiles(quotas.value)
-    allStages.value = await projectEnvironmentStore.getStages()
-  } catch (error) {
-    handleError(error)
-  }
+  await adminQuotaStore.getAllQuotas()
+  setQuotaTiles(quotas.value)
+  allStages.value = await projectEnvironmentStore.getStages()
 })
 
 watch(quotas, () => {
@@ -126,6 +102,7 @@ watch(quotas, () => {
     class="flex <md:flex-col-reverse items-center justify-between pb-5"
   >
     <DsfrButton
+      v-if="!Object.keys(selectedQuota).length && !isNewQuotaForm"
       label="Ajouter un nouveau quota"
       data-testid="addQuotaLink"
       tertiary
@@ -134,6 +111,19 @@ watch(quotas, () => {
       icon="ri-add-line"
       @click="showNewQuotaForm()"
     />
+    <div
+      v-else
+      class="w-full flex justify-end"
+    >
+      <DsfrButton
+        title="Revenir à la liste des quotas"
+        data-testid="goBackBtn"
+        secondary
+        icon-only
+        icon="ri-arrow-go-back-line"
+        @click="() => cancel()"
+      />
+    </div>
   </div>
   <div
     v-if="isNewQuotaForm"
@@ -149,6 +139,7 @@ watch(quotas, () => {
     />
   </div>
   <div
+    v-else
     :class="{
       'md:grid md:grid-cols-3 md:gap-3 items-center justify-between': !selectedQuota?.name,
     }"
@@ -158,7 +149,9 @@ watch(quotas, () => {
       :key="quota.id"
       class="fr-mt-2v fr-mb-4w w-full"
     >
-      <div>
+      <div
+        v-show="!Object.keys(selectedQuota).length"
+      >
         <DsfrTile
           :title="quota.title"
           :data-testid="`quotaTile-${quota.title}`"

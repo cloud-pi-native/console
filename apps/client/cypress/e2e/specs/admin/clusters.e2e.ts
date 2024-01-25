@@ -10,7 +10,7 @@ describe('Administration clusters', () => {
 
   const newCluster = {
     label: 'newCluster',
-    projects: ['dinum - beta-app'],
+    projects: ['dinum - betaapp'],
     stages: allStages.map(stage => stage.name),
     infos: 'Floating IP: 1.1.1.1',
     cluster: {

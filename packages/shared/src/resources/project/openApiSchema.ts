@@ -1,5 +1,5 @@
-export const serviceOpenApiSchema = {
-  $id: 'service',
+export const monitorServicesOpenApiSchema = {
+  $id: 'monitorService',
   type: 'object',
   additionalProperties: {
     type: 'object',
@@ -24,6 +24,28 @@ export const serviceOpenApiSchema = {
       },
     },
   },
+} as const
+
+export const toServiceOpenApiSchema = {
+  $id: 'toService',
+  type: 'object',
+  properties: {
+    to: {
+      type: 'string',
+    },
+    title: {
+      type: 'string',
+    },
+    imgSrc: {
+      type: 'string',
+    },
+    description: {
+      type:
+        'string',
+    },
+  },
+  additionalProperties: false,
+  required: ['to', 'title', 'imgSrc', 'description'],
 } as const
 
 export const createProjectDto = {
@@ -60,7 +82,10 @@ export const projectOpenApiSchema = {
       type: 'string',
     },
     organization: { $ref: 'organization#' },
-    services: { $ref: 'service#' },
+    externalServices: {
+      type: 'array',
+      items: { $ref: 'toService#' },
+    },
     environments: {
       type: 'array',
       items: { $ref: 'environment#' },
@@ -78,6 +103,7 @@ export const projectOpenApiSchema = {
       items: { $ref: 'cluster#' },
     },
   },
+  required: ['id', 'organizationId', 'locked', 'status', 'name'],
 } as const
 
 const projectParamsSchema = {
@@ -97,7 +123,29 @@ export const getUserProjectsSchema = {
   response: {
     200: {
       type: 'array',
-      items: projectOpenApiSchema,
+      items: {
+        allOf: [
+          { $ref: 'project#' },
+          {
+            type: 'object',
+            properties: {
+              roles: {
+                type: 'array',
+                items: {
+                  allOf: [
+                    { $ref: 'role#' },
+                    {
+                      type: 'object',
+                      properties: {
+                        user: { $ref: 'user#' },
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          }],
+      },
     },
   },
 } as const
@@ -108,7 +156,7 @@ export const getProjectByIdSchema = {
   summary: 'Retrieve a project by its id, with further informations',
   params: projectParamsSchema,
   response: {
-    200: projectOpenApiSchema,
+    200: { $ref: 'project#' },
   },
 } as const
 
@@ -154,7 +202,54 @@ export const getAllProjectsSchema = {
     200: {
       type: 'array',
       items: {
-        ...projectOpenApiSchema,
+        allOf: [
+          { $ref: 'project#' },
+          {
+            type: 'object',
+            properties: {
+              roles: {
+                type: 'array',
+                items: {
+                  allOf: [
+                    { $ref: 'role#' },
+                    {
+                      type: 'object',
+                      properties: {
+                        user: { $ref: 'user#' },
+                      },
+                    },
+                  ],
+                },
+              },
+              environments: {
+                type: 'array',
+                items: {
+                  allOf: [
+                    { $ref: 'environment#' },
+                    {
+                      type: 'object',
+                      properties: {
+                        permissions: {
+                          type: 'array',
+                          items: {
+                            allOf: [
+                              { $ref: 'permission#' },
+                              {
+                                type: 'object',
+                                properties: {
+                                  user: { $ref: 'user#' },
+                                },
+                              },
+                            ],
+                          },
+                        },
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          }],
         required: [
           'id',
           'status',
@@ -162,6 +257,17 @@ export const getAllProjectsSchema = {
           'name',
         ],
       },
+    },
+  },
+} as const
+
+export const generateProjectsDataSchema = {
+  description: 'Retrieve all projects data for download as CSV file',
+  tags: ['project'],
+  summary: 'Retrieve all projects data for download as CSV file, admin only',
+  response: {
+    200: {
+      type: 'string',
     },
   },
 } as const
@@ -174,9 +280,10 @@ export const createProjectSchema = {
     type: 'object',
     properties: createProjectDto,
     required: ['organizationId', 'name'],
+    additionalProperties: false,
   },
   response: {
-    201: projectOpenApiSchema,
+    201: { $ref: 'project#' },
   },
 } as const
 
@@ -192,7 +299,23 @@ export const updateProjectSchema = {
     },
   },
   response: {
-    200: projectOpenApiSchema,
+    200: { $ref: 'project#' },
+  },
+} as const
+
+export const patchProjectSchema = {
+  description: 'Patch project (lock/unlock)',
+  tags: ['project'],
+  summary: 'Patch a project',
+  params: projectParamsSchema,
+  body: {
+    type: 'object',
+    properties: {
+      lock: { type: 'boolean' },
+    },
+  },
+  response: {
+    200: {},
   },
 } as const
 

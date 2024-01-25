@@ -7,10 +7,11 @@ import {
 import { useUserStore } from '@/stores/user.js'
 import { useProjectStore } from '@/stores/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { handleError } from '@/utils/func.js'
 
 import DsoHome from '@/views/DsoHome.vue'
 import NotFound from '@/views/NotFound.vue'
+import { useUsersStore } from '@/stores/users.js'
+import { uuid } from '@/utils/regex.js'
 const ServicesHealth = () => import('@/views/ServicesHealth.vue')
 const CreateProject = () => import('@/views/CreateProject.vue')
 const ManageEnvironments = () => import('@/views/projects/ManageEnvironments.vue')
@@ -37,8 +38,6 @@ const routes: Readonly<RouteRecordRaw[]> = [
       const userStore = useUserStore()
       await userStore.login()
     },
-    // TODO
-    // @ts-ignore
     component: DsoProjects,
   },
   {
@@ -48,134 +47,123 @@ const routes: Readonly<RouteRecordRaw[]> = [
       const userStore = useUserStore()
       await userStore.logout()
     },
-    // TODO
-    // @ts-ignore
     component: DsoProjects,
   },
   {
     path: '/',
     name: 'Home',
-    // TODO
-    // @ts-ignore
     component: DsoHome,
   },
   {
     path: '/404',
     name: 'NotFound',
-    // TODO
-    // @ts-ignore
     component: NotFound,
   },
   {
     path: '/services-health',
     name: 'ServicesHealth',
-    // TODO
-    // @ts-ignore
     component: ServicesHealth,
   },
   {
+    name: 'ParentProjects',
     path: '/projects',
-    name: 'Projects',
-    // TODO
-    // @ts-ignore
-    component: DsoProjects,
+    children: [
+      {
+        path: '',
+        name: 'Projects',
+        component: DsoProjects,
+      },
+      {
+        path: ':id',
+        name: 'Project',
+        async beforeEnter (to, _from, next) {
+          if (typeof to.params.id !== 'string' || !to.params.id.match(uuid)) {
+            return next('/projects')
+          }
+          await Promise.all([
+            useUsersStore().getProjectUsers(to.params.id),
+            useProjectStore().setSelectedProject(to.params.id),
+          ])
+          return next()
+        },
+        children: [
+          {
+            path: 'dashboard',
+            name: 'Dashboard',
+            component: DsoDashboard,
+          },
+          {
+            path: 'services',
+            name: 'Services',
+            component: DsoServices,
+          },
+          {
+            path: 'team',
+            name: 'Team',
+            component: DsoTeam,
+          },
+          {
+            path: 'repositories',
+            name: 'Repos',
+            component: DsoRepos,
+          },
+          {
+            path: 'environments',
+            name: 'Environments',
+            component: ManageEnvironments,
+          },
+        ],
+      },
+    ],
+    async beforeEnter () {
+      await useProjectStore().getUserProjects()
+    },
   },
   {
     path: '/projects/create-project',
     name: 'CreateProject',
-    // TODO
-    // @ts-ignore
     component: CreateProject,
-  },
-  {
-    path: '/projects/:id/dashboard',
-    name: 'Dashboard',
-    // TODO
-    // @ts-ignore
-    component: DsoDashboard,
-  },
-  {
-    path: '/projects/:id/services',
-    name: 'Services',
-    // TODO
-    // @ts-ignore
-    component: DsoServices,
-  },
-  {
-    path: '/projects/:id/team',
-    name: 'Team',
-    // TODO
-    // @ts-ignore
-    component: DsoTeam,
-  },
-  {
-    path: '/projects/:id/repositories',
-    name: 'Repos',
-    // TODO
-    // @ts-ignore
-    component: DsoRepos,
-  },
-  {
-    path: '/projects/:id/environments',
-    name: 'Environments',
-    // TODO
-    // @ts-ignore
-    component: ManageEnvironments,
   },
   {
     path: '/admin/users',
     name: 'ListUser',
-    // TODO
-    // @ts-ignore
     component: ListUser,
   },
   {
     path: '/admin/organizations',
     name: 'ListOrganizations',
-    // TODO
-    // @ts-ignore
     component: ListOrganizations,
   },
   {
     path: '/admin/projects',
     name: 'ListProjects',
-    // TODO
-    // @ts-ignore
     component: ListProjects,
   },
   {
     path: '/admin/logs',
     name: 'ListLogs',
-    // TODO
-    // @ts-ignore
     component: ListLogs,
   },
   {
     path: '/admin/clusters',
     name: 'ListClusters',
-    // TODO
-    // @ts-ignore
     component: ListClusters,
   },
   {
     path: '/admin/quotas',
     name: 'ListQuotas',
-    // TODO
-    // @ts-ignore
     component: ListQuotas,
   },
   {
     path: '/admin/stages',
     name: 'ListeStages',
-    // TODO
-    // @ts-ignore
     component: ListStages,
   },
 ]
 
 const router = createRouter({
   history: createWebHistory(import.meta.env?.BASE_URL || ''),
-  scrollBehavior: (to) => { if (to.hash) return ({ el: to.hash }) },
+  scrollBehavior: (to) => { if (to.hash && !to.hash.match(/^#state=/)) return ({ el: to.hash }) },
   routes,
 })
 
@@ -202,7 +190,7 @@ router.beforeEach(async (to, _from, next) => {
     !validPath.includes(to.name) &&
     !userStore.isLoggedIn
   ) {
-    return next('Login')
+    return next('/login')
   }
 
   // Redirige sur l'accueil si le path est Login et que l'utilisateur est connecté
@@ -224,32 +212,6 @@ router.beforeEach(async (to, _from, next) => {
     return next('/404')
   }
 
-  next()
-})
-
-/**
- * On reload on projects views, retrieve projectId from url and send it to store
- */
-router.beforeEach(async (to, _from, next) => {
-  const snackbarStore = useSnackbarStore()
-  const projectStore = useProjectStore()
-  const projectsPath = '/projects/'
-
-  if (
-    to.path.match('^/projects/') &&
-    to.name !== 'CreateProject' &&
-    projectStore.selectedProject === undefined
-  ) {
-    try {
-      await projectStore.getUserProjects()
-    } catch (error) {
-      handleError(error)
-    }
-
-    const idStart = projectsPath.length
-    const projectId = to.path.slice(idStart, idStart + 36)
-    projectStore.setSelectedProject(projectId)
-  }
   next()
 })
 

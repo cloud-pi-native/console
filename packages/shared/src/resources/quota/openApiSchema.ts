@@ -81,10 +81,7 @@ export const quotaOpenApiSchema = {
     ...quotaStageOpenApiSchema.properties.quota.properties,
     quotaStage: {
       type: 'array',
-      items: {
-        type: quotaStageOpenApiSchema.type,
-        properties: quotaStageOpenApiSchema.properties,
-      },
+      items: { $ref: 'quotaStage#' },
     },
   },
 } as const
@@ -105,7 +102,7 @@ export const getQuotasSchema = {
   response: {
     200: {
       type: 'array',
-      items: quotaOpenApiSchema,
+      items: { $ref: 'quota#' },
     },
   },
 } as const
@@ -152,13 +149,14 @@ export const createQuotaSchema = {
     required: ['name', 'memory', 'cpu'],
   },
   response: {
-    201: quotaOpenApiSchema,
+    201: { $ref: 'quota#' },
   },
 } as const
 
 export const updateQuotaPrivacySchema = {
   description: 'Update a quota\'s privacy',
   tags: ['quota'],
+  params: quotaParamsSchema,
   summary: 'Update a quota\'s privacy, admin only',
   body: {
     type: 'object',
@@ -168,7 +166,7 @@ export const updateQuotaPrivacySchema = {
     required: ['isPrivate'],
   },
   response: {
-    200: quotaOpenApiSchema,
+    200: { $ref: 'quota#' },
   },
 } as const
 
@@ -189,12 +187,11 @@ export const updateQuotaStageSchema = {
       },
       stageId: quotaStageOpenApiSchema.properties.quotaId,
     },
-    required: [],
   },
   response: {
     200: {
       type: 'array',
-      items: quotaStageOpenApiSchema,
+      items: { $ref: 'quotaStage#' },
     },
   },
 } as const

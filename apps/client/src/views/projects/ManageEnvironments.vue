@@ -1,24 +1,18 @@
 <script lang="ts" setup>
 import { ref, computed, watch, onMounted } from 'vue'
-import DsoSelectedProject from './DsoSelectedProject.vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
-import EnvironmentForm from '@/components/EnvironmentForm.vue'
 import { projectIsLockedInfo, sortArrByObjKeyAsc } from '@dso-console/shared'
 import { useUserStore } from '@/stores/user.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useAdminClusterStore } from '@/stores/admin/cluster'
-import { handleError } from '@/utils/func.js'
 
 const projectStore = useProjectStore()
 const projectEnvironmentStore = useProjectEnvironmentStore()
 const userStore = useUserStore()
-const snackbarStore = useSnackbarStore()
 const adminClusterStore = useAdminClusterStore()
 
 const project = computed(() => projectStore.selectedProject)
-const owner = computed(() => projectStore.selectedProjectOwner)
-const isOwner = computed(() => owner.value?.id === userStore.userProfile.id)
+const isOwner = computed(() => project.value?.roles.some(role => role.userId === userStore.userProfile.id && role.role === 'owner'))
 // @ts-ignore
 const environmentNames = computed(() => environments.value.map(env => env.title))
 const allClusters = computed(() => adminClusterStore.clusters)
@@ -66,11 +60,7 @@ const addEnvironment = async (environment) => {
   isUpdatingEnvironment.value = true
   // @ts-ignore
   if (!project.value.locked) {
-    try {
-      await projectEnvironmentStore.addEnvironmentToProject(environment)
-    } catch (error) {
-      handleError(error)
-    }
+    await projectEnvironmentStore.addEnvironmentToProject(environment)
   }
   cancel()
   isUpdatingEnvironment.value = false
@@ -81,11 +71,7 @@ const putEnvironment = async (environment) => {
   isUpdatingEnvironment.value = true
   // @ts-ignore
   if (!project.value.locked) {
-    try {
-      await projectEnvironmentStore.updateEnvironment(environment, project.value.id)
-    } catch (error) {
-      handleError(error)
-    }
+    await projectEnvironmentStore.updateEnvironment(environment, project.value.id)
   }
   cancel()
   isUpdatingEnvironment.value = false
@@ -94,11 +80,7 @@ const putEnvironment = async (environment) => {
 // @ts-ignore
 const deleteEnvironment = async (environment) => {
   isUpdatingEnvironment.value = true
-  try {
-    await projectEnvironmentStore.deleteEnvironment(environment.id)
-  } catch (error) {
-    handleError(error)
-  }
+  await projectEnvironmentStore.deleteEnvironment(environment.id)
   setSelectedEnvironment({})
   isUpdatingEnvironment.value = false
 }
@@ -119,6 +101,7 @@ watch(project, () => {
     class="flex <md:flex-col-reverse items-center justify-between pb-5"
   >
     <DsfrButton
+      v-if="!Object.keys(selectedEnvironment).length && !isNewEnvironmentForm"
       label="Ajouter un nouvel environnement"
       data-testid="addEnvironmentLink"
       tertiary
@@ -128,6 +111,19 @@ watch(project, () => {
       icon="ri-add-line"
       @click="showNewEnvironmentForm()"
     />
+    <div
+      v-else
+      class="w-full flex justify-end"
+    >
+      <DsfrButton
+        title="Revenir à la liste des environnements"
+        data-testid="goBackBtn"
+        secondary
+        icon-only
+        icon="ri-arrow-go-back-line"
+        @click="() => cancel()"
+      />
+    </div>
   </div>
   <div
     v-if="isNewEnvironmentForm"
@@ -144,6 +140,7 @@ watch(project, () => {
     />
   </div>
   <div
+    v-else
     :class="{
       'md:grid md:grid-cols-3 md:gap-3 items-center justify-between': !selectedEnvironment.id,
     }"
@@ -153,7 +150,9 @@ watch(project, () => {
       :key="environment.id"
       class="fr-mt-2v fr-mb-4w"
     >
-      <div>
+      <div
+        v-show="!Object.keys(selectedEnvironment).length"
+      >
         <DsfrTile
           :title="environment.title"
           :description="['deleting', 'initializing'].includes(environment.status) ? 'Opérations en cours' : null"

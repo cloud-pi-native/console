@@ -2,7 +2,6 @@
 import { computed, onMounted, ref, type Ref } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useOrganizationStore } from '@/stores/organization.js'
 import {
   descriptionMaxLength,
@@ -14,10 +13,7 @@ import {
   type ProjectInfos,
 } from '@dso-console/shared'
 import router from '@/router/index.js'
-import LoadingCt from '@/components/LoadingCt.vue'
-import { handleError } from '@/utils/func.js'
 
-const snackbarStore = useSnackbarStore()
 const projectStore = useProjectStore()
 const userStore = useUserStore()
 const organizationStore = useOrganizationStore()
@@ -52,12 +48,8 @@ const createProject = async () => {
   const keysToValidate = ['organizationId', 'name']
   const errorSchema = schemaValidator(projectSchema, project.value, { keysToValidate, context: { projectNameMaxLength: projectNameMaxLength.value } })
   if (Object.keys(errorSchema).length === 0) {
-    try {
-      await projectStore.createProject(project.value)
-      router.push('/projects')
-    } catch (error) {
-      handleError(error)
-    }
+    await projectStore.createProject(project.value)
+    router.push('/projects')
   }
   isCreatingProject.value = false
 }
@@ -121,8 +113,8 @@ onMounted(async () => {
             v-model="project.name"
             data-testid="nameInput"
             type="text"
-            required="required"
-            :error-message="!!updatedValues.name && !isValid(projectSchema, project, 'name', { projectNameMaxLength }) ? `Le nom du projet doit être en minuscule, ne pas contenir d\'espace, faire plus de 2 et moins de ${projectNameMaxLength} caractères.`: undefined"
+            :required="true"
+            :error-message="!!updatedValues.name && !isValid(projectSchema, project, 'name', { projectNameMaxLength }) ? `Le nom du projet doit être en minuscule, ne pas contenir d\'espace ni de trait d'union, faire plus de 2 et moins de ${projectNameMaxLength} caractères.`: undefined"
             label="Nom du projet"
             label-visible
             :hint="`Nom du projet dans l'offre Cloud π Native. Ne doit pas contenir d'espace, doit être unique pour l'organisation, doit être en minuscules, doit faire plus de 2 et moins de ${projectNameMaxLength} caractères.`"

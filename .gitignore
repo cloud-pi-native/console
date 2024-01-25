@@ -51,6 +51,8 @@ keycloak/data
 # dist
 dist
 build
+auto-imports.d.ts
+components.d.ts
 
 #types
 apps/server/types/

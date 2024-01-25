@@ -11,7 +11,6 @@ import {
   sortArrByObjKeyAsc,
 } from '@dso-console/shared'
 import { getRandomId } from '@gouvminint/vue-dsfr'
-import { handleError } from '@/utils/func.js'
 
 const adminOrganizationStore = useAdminOrganizationStore()
 
@@ -83,22 +82,14 @@ const setRows = () => {
 }
 
 const getAllOrganizations = async () => {
-  try {
-    allOrganizations.value = await adminOrganizationStore.getAllOrganizations()
-    setRows()
-  } catch (error) {
-    handleError(error)
-  }
+  allOrganizations.value = await adminOrganizationStore.getAllOrganizations()
+  setRows()
 }
 
 const syncOrganizations = async () => {
   isSyncingOrganizations.value = true
-  try {
-    await adminOrganizationStore.fetchOrganizations()
-    getAllOrganizations()
-  } catch (error) {
-    handleError(error)
-  }
+  await adminOrganizationStore.fetchOrganizations()
+  getAllOrganizations()
   isSyncingOrganizations.value = false
 }
 
@@ -109,13 +100,9 @@ const createOrganization = async () => {
     snackbarStore.setMessage(Object.values(errorSchema)[0])
     return
   }
-  try {
-    await adminOrganizationStore.createOrganization(newOrg.value)
-    snackbarStore.setMessage(`Organisation ${newOrg.value.name} créée`, 'success')
-    await getAllOrganizations()
-  } catch (error) {
-    handleError(error)
-  }
+  await adminOrganizationStore.createOrganization(newOrg.value)
+  snackbarStore.setMessage(`Organisation ${newOrg.value.name} créée`, 'success')
+  await getAllOrganizations()
 
   newOrg.value = instanciateSchema({ schema: organizationSchema }, undefined)
 }
@@ -149,13 +136,9 @@ const updateOrganization = async ({ name, key, data }) => {
     snackbarStore.setMessage(Object.values(errorSchema)[0])
     return
   }
-  try {
-    await adminOrganizationStore.updateOrganization(org)
-    snackbarStore.setMessage(`Organisation ${name} mise à jour`, 'success')
-    await getAllOrganizations()
-  } catch (error) {
-    handleError(error)
-  }
+  await adminOrganizationStore.updateOrganization(org)
+  snackbarStore.setMessage(`Organisation ${name} mise à jour`, 'success')
+  await getAllOrganizations()
 }
 
 onBeforeMount(async () => {

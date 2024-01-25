@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import { achievedStatus, projectRoles, logActions, ProjectRoles } from '@dso-console/shared'
+import { achievedStatus, projectRoles, logActions, type ProjectRoles, type AchievedStatus } from '@dso-console/shared'
 import { repeatFn } from './func-utils.js'
 import { Cluster, Environment, Log, Organization, Permission, Project, Repository, User, Role } from './types.js'
 
@@ -31,7 +31,7 @@ export const getRandomProject = (organizationId = faker.string.uuid()) => {
     description: faker.lorem.sentence(8),
     status: faker.helpers.arrayElement(achievedStatus),
     locked: false,
-  } as Project
+  } as Project & { status: AchievedStatus}
 }
 
 export const getRandomCluster = (projectIds = repeatFn(2)(faker.string.uuid), stageIds = repeatFn(2)(faker.string.uuid)) => {
@@ -78,7 +78,7 @@ export const getRandomRole = (
 }
 
 export const getRandomRepo = (projectId = faker.string.uuid()) => {
-  const repo: Repository = {
+  const repo: Repository & { status: AchievedStatus} = {
     id: faker.string.uuid(),
     projectId,
     internalRepoName: faker.lorem.word(),
@@ -88,7 +88,7 @@ export const getRandomRepo = (projectId = faker.string.uuid()) => {
     status: faker.helpers.arrayElement(achievedStatus),
   }
   if (repo.isPrivate) {
-    repo.externalUserName = faker.internet.userName()
+    repo.externalUserName = faker.person.firstName()
     repo.externalToken = faker.internet.password({ length: 25 })
   }
 
@@ -129,7 +129,7 @@ export const getRandomEnv = (name = faker.lorem.slug(1), projectId = faker.strin
     quotaStageId,
     clusterId,
     status: faker.helpers.arrayElement(achievedStatus),
-  } as Environment
+  } as Environment & { status: AchievedStatus }
 }
 
 export const getRandomPerm = (environmentId = faker.string.uuid(), user = getRandomUser()) => {

@@ -2,7 +2,7 @@
   // Format
   "editor.wordWrap": "on",
   "editor.codeActionsOnSave": {
-    "source.fixAll": true,
+    "source.fixAll": "explicit"
   },
   "eslint.packageManager": "pnpm",
   "eslint.enable": true,
@@ -34,6 +34,7 @@
   "scss.validate": false,
   // JS
   "javascript.preferences.importModuleSpecifierEnding": "js",
+  "typescript.preferences.importModuleSpecifierEnding": "js",
   "javascript.preferences.quoteStyle": "single",
   "[javascript]": {
     "editor.defaultFormatter": "dbaeumer.vscode-eslint",

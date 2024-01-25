@@ -1,15 +1,12 @@
 <script lang="ts" setup>
-import { ref, computed, type Ref, onBeforeMount } from 'vue'
+import { ref, computed, onBeforeMount } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment'
 import { descriptionMaxLength, projectIsLockedInfo, type ProjectInfos } from '@dso-console/shared'
-import DsoSelectedProject from './DsoSelectedProject.vue'
-import DsoBadge from '@/components/DsoBadge.vue'
 import router from '@/router/index.js'
-import LoadingCt from '@/components/LoadingCt.vue'
-import { copyContent, handleError } from '@/utils/func.js'
+import { copyContent } from '@/utils/func.js'
 
 const projectStore = useProjectStore()
 const userStore = useUserStore()
@@ -17,38 +14,29 @@ const snackbarStore = useSnackbarStore()
 const projectEnvironmentStore = useProjectEnvironmentStore()
 
 const project = computed(() => projectStore.selectedProject)
-const owner = computed(() => projectStore.selectedProjectOwner)
-const isOwner = computed(() => owner?.value?.id === userStore.userProfile.id)
+const isOwner = computed(() => project.value?.roles.some(role => role.userId === userStore.userProfile.id && role.role === 'owner'))
 
-const description: Ref<string | undefined> = ref(project.value ? project.value.description : undefined)
+const description = ref<string | undefined>(project.value ? project.value.description : undefined)
 const isEditingDescription = ref(false)
 const isArchivingProject = ref(false)
 const projectToArchive = ref('')
 const isWaitingForResponse = ref(false)
 const isSecretShown = ref(false)
-const projectSecrets: Ref<Record<string, any>> = ref({})
-const allStages: Ref<Array<any>> = ref([])
+const projectSecrets = ref<Record<string, any>>({})
+const allStages = ref<Array<any>>([])
 
 const updateProject = async (projectId: ProjectInfos['id']) => {
   isWaitingForResponse.value = true
-  try {
-    // @ts-ignore
-    await projectStore.updateProject(projectId, { description: description.value })
-    isEditingDescription.value = false
-  } catch (error) {
-    handleError(error)
-  }
+  // @ts-ignore
+  await projectStore.updateProject(projectId, { description: description.value })
+  isEditingDescription.value = false
   isWaitingForResponse.value = false
 }
 
 const archiveProject = async (projectId: ProjectInfos['id']) => {
   isWaitingForResponse.value = true
-  try {
-    await projectStore.archiveProject(projectId)
-    router.push('/projects')
-  } catch (error) {
-    handleError(error)
-  }
+  await projectStore.archiveProject(projectId)
+  router.push('/projects')
   isWaitingForResponse.value = false
 }
 
@@ -62,13 +50,9 @@ const handleSecretDisplay = async () => {
   isSecretShown.value = !isSecretShown.value
   if (isSecretShown.value && !Object.keys(projectSecrets.value).length) {
     isWaitingForResponse.value = true
-    try {
-      if (!project.value) throw new Error('Pas de projet sélectionné')
-      projectSecrets.value = await projectStore.getProjectSecrets(project.value.id)
-      snackbarStore.setMessage('Secrets récupérés')
-    } catch (error) {
-      handleError(error)
-    }
+    if (!project.value) throw new Error('Pas de projet sélectionné')
+    projectSecrets.value = await projectStore.getProjectSecrets(project.value.id)
+    snackbarStore.setMessage('Secrets récupérés')
     isWaitingForResponse.value = false
   }
 }
@@ -86,13 +70,8 @@ const getRows = (service: string) => {
 }
 
 onBeforeMount(async () => {
-  try {
-    allStages.value = await projectEnvironmentStore.getStages()
-  } catch (error) {
-    handleError(error)
-  }
+  allStages.value = await projectEnvironmentStore.getStages()
 })
-
 </script>
 
 <template>

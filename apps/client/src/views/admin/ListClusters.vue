@@ -1,17 +1,13 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch, type Ref } from 'vue'
-import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useAdminClusterStore } from '@/stores/admin/cluster.js'
 import { useAdminProjectStore } from '@/stores/admin/project.js'
-import ClusterForm from '@/components/ClusterForm.vue'
 import { sortArrByObjKeyAsc, type CreateClusterDto, type UpdateClusterDto, type ClusterParams } from '@dso-console/shared'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
-import { handleError } from '@/utils/func.js'
 
 const adminClusterStore = useAdminClusterStore()
 const adminProjectStore = useAdminProjectStore()
 const projectEnvironmentStore = useProjectEnvironmentStore()
-const snackbarStore = useSnackbarStore()
 
 const clusters = computed(() => adminClusterStore.clusters)
 const selectedCluster = ref({})
@@ -43,11 +39,7 @@ const setSelectedCluster = async (cluster) => {
 
 const getClusterAssociatedEnvironments = async (clusterId: string) => {
   isUpdatingCluster.value = true
-  try {
-    associatedEnvironments.value = await adminClusterStore.getClusterAssociatedEnvironments(clusterId)
-  } catch (error) {
-    handleError(error)
-  }
+  associatedEnvironments.value = await adminClusterStore.getClusterAssociatedEnvironments(clusterId)
   isUpdatingCluster.value = false
 }
 
@@ -64,49 +56,33 @@ const cancel = () => {
 const addCluster = async (cluster: CreateClusterDto) => {
   isUpdatingCluster.value = true
   cancel()
-  try {
-    await adminClusterStore.addCluster(cluster)
-    await adminClusterStore.getClusters()
-  } catch (error) {
-    handleError(error)
-  }
+  await adminClusterStore.addCluster(cluster)
+  await adminClusterStore.getClusters()
   isUpdatingCluster.value = false
 }
 
 const updateCluster = async (cluster: UpdateClusterDto & { id: ClusterParams['clusterId'] }) => {
   isUpdatingCluster.value = true
-  try {
-    await adminClusterStore.updateCluster(cluster)
-    await adminClusterStore.getClusters()
-  } catch (error) {
-    handleError(error)
-  }
+  await adminClusterStore.updateCluster(cluster)
+  await adminClusterStore.getClusters()
   cancel()
   isUpdatingCluster.value = false
 }
 
 const deleteCluster = async (clusterId: ClusterParams['clusterId']) => {
   isUpdatingCluster.value = true
-  try {
-    await adminClusterStore.deleteCluster(clusterId)
-    await adminClusterStore.getClusters()
-  } catch (error) {
-    handleError(error)
-  }
+  await adminClusterStore.deleteCluster(clusterId)
+  await adminClusterStore.getClusters()
   setClusterTiles(clusters.value)
   selectedCluster.value = {}
   isUpdatingCluster.value = false
 }
 
 onMounted(async () => {
-  try {
-    await adminClusterStore.getClusters()
-    setClusterTiles(clusters.value)
-    allProjects.value = await adminProjectStore.getAllActiveProjects()
-    allStages.value = await projectEnvironmentStore.getStages()
-  } catch (error) {
-    handleError(error)
-  }
+  await adminClusterStore.getClusters()
+  setClusterTiles(clusters.value)
+  allProjects.value = await adminProjectStore.getAllActiveProjects()
+  allStages.value = await projectEnvironmentStore.getStages()
 })
 
 watch(clusters, () => {
@@ -120,6 +96,7 @@ watch(clusters, () => {
     class="flex <md:flex-col-reverse items-center justify-between pb-5"
   >
     <DsfrButton
+      v-if="!Object.keys(selectedCluster).length && !isNewClusterForm"
       label="Ajouter un nouveau cluster"
       data-testid="addClusterLink"
       tertiary
@@ -128,6 +105,19 @@ watch(clusters, () => {
       icon="ri-add-line"
       @click="showNewClusterForm()"
     />
+    <div
+      v-else
+      class="w-full flex justify-end"
+    >
+      <DsfrButton
+        title="Revenir à la liste des clusters"
+        data-testid="goBackBtn"
+        secondary
+        icon-only
+        icon="ri-arrow-go-back-line"
+        @click="() => cancel()"
+      />
+    </div>
   </div>
   <div
     v-if="isNewClusterForm"
@@ -144,6 +134,7 @@ watch(clusters, () => {
     />
   </div>
   <div
+    v-else
     :class="{
       'md:grid md:grid-cols-3 md:gap-3 items-center justify-between': !selectedCluster?.label,
     }"
@@ -153,7 +144,9 @@ watch(clusters, () => {
       :key="cluster.id"
       class="fr-mt-2v fr-mb-4w w-full"
     >
-      <div>
+      <div
+        v-show="!Object.keys(selectedCluster).length"
+      >
         <DsfrTile
           :title="cluster.title"
           :data-testid="`clusterTile-${cluster.title}`"

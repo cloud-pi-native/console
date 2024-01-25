@@ -15,10 +15,12 @@ import {
   getProjectInfos,
   getQuotaStageById,
   getQuotaById,
+  getProjectPartialEnvironments,
+  getEnvironmentById,
 } from '@/resources/queries-index.js'
 import { hooks } from '@/plugins/index.js'
-import { DsoError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
-import type { Cluster, Environment, Project, Role, User, QuotaStage } from '@prisma/client'
+import { BadRequestError, DsoError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
+import type { Cluster, Environment, Project, Role, User, QuotaStage, Log } from '@prisma/client'
 import {
   checkInsufficientRoleInProject,
   checkClusterUnavailable,
@@ -30,8 +32,8 @@ import { unlockProjectIfNotFailed } from '@/utils/business.js'
 import { projectRootDir } from '@/utils/env.js'
 import { getProjectInfosAndClusters } from '@/resources/project/business.js'
 import { gitlabUrl } from '@/plugins/core/gitlab/utils.js'
-import { type AsyncReturnType, adminGroupPath } from '@dso-console/shared'
-import { KeycloakSession } from '@/types/index.js'
+import { type AsyncReturnType, adminGroupPath, environmentSchema } from '@dso-console/shared'
+import type { UserDetails } from '@/types/index.js'
 
 // Fetch infos
 export const getEnvironmentInfosAndClusters = async (environmentId: string) => {
@@ -156,6 +158,7 @@ type CreateEnvironmentParam = {
   name: Environment['name'],
   clusterId: Environment['clusterId'],
   quotaStageId: QuotaStage['id'],
+  requestId: Log['requestId']
 }
 
 export const createEnvironment = async (
@@ -165,7 +168,19 @@ export const createEnvironment = async (
     name,
     clusterId,
     quotaStageId,
+    requestId,
   }: CreateEnvironmentParam) => {
+  try {
+    await environmentSchema.validateAsync({
+      name,
+      projectId,
+      clusterId,
+      quotaStageId,
+    })
+  } catch (error) {
+    throw new BadRequestError(error.message)
+  }
+
   const { user, project, quotaStage, quota, authorizedClusters } = await getInitializeEnvironmentInfos({
     userId,
     projectId,
@@ -194,9 +209,11 @@ export const createEnvironment = async (
       internalRepoName,
     }))
     const cluster = await getClusterById(clusterId)
+    const environments = await getProjectPartialEnvironments({ projectId })
 
     const results = await hooks.initializeEnvironment.execute({
       environment: name,
+      environments,
       project: projectName,
       organization: organizationName,
       repositories,
@@ -212,7 +229,7 @@ export const createEnvironment = async (
       },
     })
     // @ts-ignore
-    await addLogs('Create Environment', results, userId)
+    await addLogs('Create Environment', results, userId, requestId)
     if (results.failed) {
       throw new UnprocessableContentError('Echec services à la création de l\'environnement')
     }
@@ -230,11 +247,12 @@ export const createEnvironment = async (
 }
 
 type UpdateEnvironmentParam = {
-  user: KeycloakSession['session']['user'],
+  user: UserDetails,
   projectId: Project['id'],
   environmentId: Environment['id'],
   quotaStageId?: QuotaStage['id'],
   clusterId?: Cluster['id'],
+  requestId: Log['requestId'],
 }
 
 export const updateEnvironment = async ({
@@ -243,6 +261,7 @@ export const updateEnvironment = async ({
   environmentId,
   quotaStageId,
   clusterId,
+  requestId,
 }: UpdateEnvironmentParam) => {
   try {
     let environment: Environment
@@ -294,7 +313,7 @@ export const updateEnvironment = async ({
         },
       })
       // @ts-ignore
-      await addLogs('Update Environment Quotas', results, user.id)
+      await addLogs('Update Environment Quotas', results, user.id, requestId)
       if (results.failed) {
         throw new UnprocessableContentError('Echec services à la mise à jour des quotas pour l\'environnement')
       }
@@ -304,9 +323,7 @@ export const updateEnvironment = async ({
     await updateEnvironmentCreated(environmentId)
     await unlockProjectIfNotFailed(projectId)
 
-    environment = await getEnvironmentInfos(environmentId)
-
-    return environment
+    return getEnvironmentById(environmentId)
   } catch (error) {
     await updateEnvironmentFailed(environmentId)
     if (error instanceof DsoError) {
@@ -320,12 +337,14 @@ type DeleteEnvironmentParam = {
   userId: User['id'],
   projectId: Project['id'],
   environmentId: Environment['id'],
+  requestId: Log['requestId'],
 }
 
 export const deleteEnvironment = async ({
   userId,
   projectId,
   environmentId,
+  requestId,
 }: DeleteEnvironmentParam) => {
   try {
     const environment = await getEnvironmentInfos(environmentId)
@@ -345,9 +364,11 @@ export const deleteEnvironment = async ({
       internalRepoName,
     }))
     const cluster = await getClusterById(environment.clusterId)
-
+    const environments = await getProjectPartialEnvironments({ projectId })
     const results = await hooks.deleteEnvironment.execute({
       environment: environment.name,
+      stage: environment.quotaStage.stage.name,
+      environments,
       project: projectName,
       organization: organizationName,
       repositories,
@@ -358,7 +379,7 @@ export const deleteEnvironment = async ({
       },
     })
     // @ts-ignore
-    await addLogs('Delete Environment', results, userId)
+    await addLogs('Delete Environment', results, userId, requestId)
     if (results.failed) {
       throw new Error('Echec des services à la suppression de l\'environnement')
     }

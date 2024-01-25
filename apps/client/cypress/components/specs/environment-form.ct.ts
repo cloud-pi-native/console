@@ -1,11 +1,13 @@
-import { Pinia, createPinia, setActivePinia } from 'pinia'
+import { type Pinia, createPinia, setActivePinia } from 'pinia'
+import { createRandomDbSetup } from '@dso-console/test-utils'
+
 import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@gouvminint/vue-dsfr/styles'
 import '@/main.css'
+
 import EnvironmentForm from '@/components/EnvironmentForm.vue'
-import { createRandomDbSetup } from '@dso-console/test-utils'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 
@@ -62,7 +64,7 @@ describe('EnvironmentForm.vue', () => {
     cy.getByDataTestid('cancelEnvironmentBtn').should('be.enabled')
 
     cy.getByDataTestid('environmentNameInput')
-      .clear().type('prod-0')
+      .clear().type('prod0')
     cy.get('select#stage-select > option')
       .should('have.length', randomDbSetup.stages.length + 1)
     cy.get('select#stage-select')

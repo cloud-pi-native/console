@@ -1,4 +1,4 @@
-import fastify, { FastifyInstance } from 'fastify'
+import fastify, { type FastifyInstance, type FastifyRequest } from 'fastify'
 import helmet from '@fastify/helmet'
 import keycloak from 'fastify-keycloak-adapter'
 import fastifySession from '@fastify/session'
@@ -12,22 +12,20 @@ import {
   environmentOpenApiSchema,
   organizationOpenApiSchema,
   projectOpenApiSchema,
-  repositoryOpenApiSchema,
-  roleOpenApiSchema,
-  serviceOpenApiSchema,
-  userOpenApiSchema,
   permissionOpenApiSchema,
   quotaStageOpenApiSchema,
   quotaOpenApiSchema,
   stageOpenApiSchema,
+  openApiSchemas,
+  toServiceOpenApiSchema,
+  monitorServicesOpenApiSchema,
 } from '@dso-console/shared'
 
-import { apiRouter, miscRouter } from './routes/index.js'
+import { apiRouter, miscRouter } from './resources/index.js'
 import { addReqLogs, loggerConf } from './utils/logger.js'
 import { DsoError } from './utils/errors.js'
 import { keycloakConf, sessionConf } from './utils/keycloak.js'
 import { isInt, isDev, isTest, keycloakRedirectUri } from './utils/env.js'
-import { type FastifyRequestWithSession } from './types/index.js'
 
 export const apiPrefix = '/api/v1'
 
@@ -43,12 +41,13 @@ export const addSchemasToApp = (...schemas: unknown[]) => (app: FastifyInstance)
 
 export const addAllSchemasToApp = addSchemasToApp(
   organizationOpenApiSchema,
-  userOpenApiSchema,
-  serviceOpenApiSchema,
+  openApiSchemas.userOpenApiSchema,
+  toServiceOpenApiSchema,
+  monitorServicesOpenApiSchema,
   permissionOpenApiSchema,
   environmentOpenApiSchema,
-  repositoryOpenApiSchema,
-  roleOpenApiSchema,
+  openApiSchemas.repositoryOpenApiSchema,
+  openApiSchemas.roleOpenApiSchema,
   clusterOpenApiSchema,
   projectOpenApiSchema,
   quotaStageOpenApiSchema,
@@ -91,7 +90,7 @@ const app: FastifyInstance = addAllSchemasToApp(fastify(fastifyConf))
       opts.logLevel = 'silent'
     }
   })
-  .setErrorHandler(function (error: DsoError | Error, req: FastifyRequestWithSession<void>, reply) {
+  .setErrorHandler(function (error: DsoError | Error, req: FastifyRequest, reply) {
     const isDsoError = error instanceof DsoError
 
     const statusCode = isDsoError ? error.statusCode : 500

@@ -9,6 +9,7 @@ export * from './permission.js'
 export type Organization = string
 export type Environment = string
 export type Environments = Environment[]
+export type PartialEnvironment = { environment: string, stage: string, clusterLabel: string }
 export type InternalRepoName = string
 export type ExternalRepoUrl = string
 export type ExternalUserName = string

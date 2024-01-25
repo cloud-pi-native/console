@@ -1,20 +1,14 @@
 import { defineStore } from 'pinia'
 import { type Ref, ref } from 'vue'
 import api from '@/api/index.js'
-import type { ProjectInfos, ProjectParams, UpdateProjectDto, UserModel } from '@dso-console/shared'
+import type { CreateProjectDto, ProjectInfos, ProjectParams, UpdateProjectDto, ProjectModel, RoleModel } from '@dso-console/shared'
 
 export const useProjectStore = defineStore('project', () => {
   const selectedProject: Ref<ProjectInfos | undefined> = ref(undefined)
-  const selectedProjectOwner: Ref<UserModel | undefined> = ref(undefined)
   const projects: Ref<Array<ProjectInfos>> = ref([])
 
   const setSelectedProject = (id: ProjectParams['projectId']) => {
     selectedProject.value = projects.value.find(project => project.id === id)
-    setSelectedProjectOwner(selectedProject.value?.roles)
-  }
-
-  const setSelectedProjectOwner = (roles: ProjectInfos['roles']) => {
-    selectedProjectOwner.value = roles?.find(role => role.role === 'owner')?.user
   }
 
   const updateProject = async (projectId: ProjectParams['projectId'], data: UpdateProjectDto) => {
@@ -30,7 +24,7 @@ export const useProjectStore = defineStore('project', () => {
     }
   }
 
-  const createProject = async (project: ProjectInfos) => {
+  const createProject = async (project: CreateProjectDto) => {
     await api.createProject(project)
     await getUserProjects()
   }
@@ -45,16 +39,21 @@ export const useProjectStore = defineStore('project', () => {
     return await api.getProjectSecrets(projectId)
   }
 
+  const updateProjectRoles = (projectId: ProjectModel['id'], roles: RoleModel[]) => {
+    const project = projects.value.find(project => project.id === projectId)
+    if (!project) return
+    project.roles = roles
+  }
+
   return {
     selectedProject,
-    selectedProjectOwner,
     projects,
     setSelectedProject,
-    setSelectedProjectOwner,
     updateProject,
     getUserProjects,
     createProject,
     archiveProject,
     getProjectSecrets,
+    updateProjectRoles,
   }
 })

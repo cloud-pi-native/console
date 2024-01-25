@@ -19,13 +19,13 @@ describe('Manage project environments', () => {
   project1FirstEnvironment.stage = getModelById('stage', project1EnvQuotaStage?.stageId)
   const environments = [
     {
-      name: 'integ-test',
+      name: 'integtest',
       stage: integrationStage,
       quota: quotaSmall,
       cluster: clusterPublic,
     },
     {
-      name: 'stage-test',
+      name: 'stagetest',
       stage: stagingStage,
       quota: quotaMedium,
       cluster: clusterPublic,
@@ -98,9 +98,11 @@ describe('Manage project environments', () => {
     }).as('getProjects')
 
     cy.goToProjects()
-      .getByDataTestid(`projectTile-${project0?.name}`).click()
-      .getByDataTestid('menuEnvironments').click()
-      .url().should('contain', '/environments')
+      .getByDataTestid(`projectTile-${project0?.name}`)
+      .click()
+    cy.getByDataTestid('menuEnvironments')
+      .click()
+    cy.url().should('contain', '/environments')
     cy.wait('@getClusters')
 
     cy.getByDataTestid('addEnvironmentLink').click()

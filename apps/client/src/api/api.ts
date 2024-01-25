@@ -1,4 +1,4 @@
-import type { GenerateCIFilesDto, CreateProjectDto, ProjectModel, CreateRepositoryDto, UpdateRepositoryDto, UpdateClusterDto, CreateClusterDto, EnvironmentModel, UpdateEnvironmentDto, UpdateProjectDto, InitializeEnvironmentDto, AdminLogsQuery, UpdateOrganizationDto, CreateOrganizationDto, SetPermissionDto, UpdatePermissionDto, CreateQuotaDto, UpdateQuotaStageDto, UpdateQuotaPrivacyDto, CreateStageDto, UpdateStageClustersDto, PermissionParams, DeletePermissionParams, RepositoryParams, ProjectParams, ClusterParams, QuotaParams, StageParams, AddUserToProjectDto, UpdateUserProjectRoleDto, UserParams, RoleParams, LettersQuery, GetAllOrganizationsDto, GetAllProjectsDto } from '@dso-console/shared'
+import type { GenerateCIFilesDto, ProjectModel, CreateRepositoryDto, UpdateRepositoryDto, UpdateClusterDto, CreateClusterDto, EnvironmentModel, UpdateEnvironmentDto, InitializeEnvironmentDto, AdminLogsQuery, UpdateOrganizationDto, CreateOrganizationDto, SetPermissionDto, UpdatePermissionDto, CreateQuotaDto, UpdateQuotaStageDto, UpdateQuotaPrivacyDto, CreateStageDto, UpdateStageClustersDto, PermissionParams, DeletePermissionParams, RepositoryParams, ClusterParams, QuotaParams, StageParams, GetAllOrganizationsDto } from '@dso-console/shared'
 import { apiClient } from './xhr-client.js'
 
 // CIFiles
@@ -10,37 +10,6 @@ export const generateCIFiles = async (data: GenerateCIFilesDto) => {
 // Organizations
 export const getActiveOrganizations = async () => {
   const response = await apiClient.get('/organizations')
-  return response.data
-}
-
-// Project
-export const createProject = async (data: CreateProjectDto) => {
-  const response = await apiClient.post('/projects', data)
-  return response.data
-}
-
-export const getUserProjects = async () => {
-  const response = await apiClient.get('/projects')
-  return response.data
-}
-
-export const getUserProjectById = async (projectId: ProjectParams['projectId']) => {
-  const response = await apiClient.get(`/projects/${projectId}`)
-  return response.data
-}
-
-export const updateProject = async (projectId: ProjectParams['projectId'], data: UpdateProjectDto) => {
-  const response = await apiClient.put(`/projects/${projectId}`, data)
-  return response.data
-}
-
-export const archiveProject = async (projectId: ProjectParams['projectId']) => {
-  const response = await apiClient.delete(`/projects/${projectId}`)
-  return response.data
-}
-
-export const getProjectSecrets = async (projectId: ProjectParams['projectId']) => {
-  const response = await apiClient.get(`/projects/${projectId}/secrets`)
   return response.data
 }
 
@@ -68,33 +37,6 @@ export const updateRepo = async (projectId: RepositoryParams['projectId'], data:
 
 export const deleteRepo = async (projectId: RepositoryParams['projectId'], repoId: RepositoryParams['repositoryId']) => {
   const response = await apiClient.delete(`/projects/${projectId}/repositories/${repoId}`)
-  return response.data
-}
-
-// Users
-export const getMatchingUsers = async (projectId: UserParams['projectId'], letters: LettersQuery['letters']) => {
-  const response = await apiClient.get(`/projects/${projectId}/users/match?letters=${letters}`)
-  return response.data
-}
-
-export const addUserToProject = async (projectId: UserParams['projectId'], data: AddUserToProjectDto) => {
-  const response = await apiClient.post(`/projects/${projectId}/users`, data)
-  return response.data
-}
-
-export const updateUserProjectRole = async (projectId: RoleParams['projectId'], userId: RoleParams['userId'], data: UpdateUserProjectRoleDto) => {
-  const response = await apiClient.put(`/projects/${projectId}/users/${userId}`, data)
-  return response.data
-}
-
-// TODO : pas utilisé
-export const getUsers = async (projectId: UserParams['projectId']) => {
-  const response = await apiClient.get(`/projects/${projectId}/users`)
-  return response.data
-}
-
-export const removeUser = async (projectId: RoleParams['projectId'], userId: RoleParams['userId']) => {
-  const response = await apiClient.delete(`/projects/${projectId}/users/${userId}`)
   return response.data
 }
 
@@ -194,12 +136,6 @@ export const deletePermission = async (projectId: DeletePermissionParams['projec
   return response.data
 }
 
-// Admin - Users
-export const getAllUsers = async () => {
-  const response = await apiClient.get('/admin/users')
-  return response.data
-}
-
 // Admin - Organizations
 export const getAllOrganizations = async () => {
   const response: { data: GetAllOrganizationsDto } = await apiClient.get('/admin/organizations')
@@ -218,17 +154,6 @@ export const updateOrganization = async (orgName: CreateOrganizationDto['name'],
 
 export const fetchOrganizations = async () => {
   const response = await apiClient.put('/admin/organizations/sync')
-  return response.data
-}
-
-// Admin - Projects
-export const getAllProjects = async () => {
-  const response: { data: GetAllProjectsDto } = await apiClient.get('/admin/projects')
-  return response.data
-}
-
-export const handleProjectLocking = async (projectId: string, lock: boolean) => {
-  const response = await apiClient.patch(`/admin/projects/${projectId}`, { lock })
   return response.data
 }
 

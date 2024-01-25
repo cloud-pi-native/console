@@ -48,7 +48,7 @@ export const getActiveOrganizationsSchema = {
   response: {
     200: {
       type: 'array',
-      items: organizationOpenApiSchema,
+      items: { $ref: 'organization#' },
     },
   },
 } as const
@@ -60,7 +60,7 @@ export const getAllOrganizationsSchema = {
   response: {
     200: {
       type: 'array',
-      items: organizationOpenApiSchema,
+      items: { $ref: 'organization#' },
     },
   },
 } as const
@@ -72,7 +72,7 @@ export const fetchOrganizationsSchema = {
   response: {
     200: {
       type: 'array',
-      items: organizationOpenApiSchema,
+      items: { $ref: 'organization#' },
     },
   },
 } as const
@@ -89,10 +89,7 @@ export const createOrganizationSchema = {
     // required: Object.keys(createOrganizationDto),
   },
   response: {
-    201: {
-      ...organizationOpenApiSchema,
-      additionalProperties: false,
-    } as const,
+    201: { $ref: 'organization#' },
   },
 } as const
 
@@ -110,6 +107,6 @@ export const updateOrganizationSchema = {
     },
   },
   response: {
-    200: organizationOpenApiSchema,
+    200: { $ref: 'organization#' },
   },
 } as const

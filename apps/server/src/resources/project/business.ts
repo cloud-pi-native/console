@@ -5,10 +5,11 @@ import {
   deleteRepository,
   getClusterById,
   getOrganizationById,
-  getProjectById,
   getProjectByNames,
+  getProjectInfos,
   getProjectInfosAndRepos,
   getProjectInfos as getProjectInfosQuery,
+  getProjectPartialEnvironments,
   getPublicClusters,
   getSingleOwnerByProjectId,
   getUserProjects as getUserProjectsQuery,
@@ -21,9 +22,9 @@ import {
   updateProjectServices,
 } from '@/resources/queries-index.js'
 import { hooks } from '@/plugins/index.js'
-import type { Organization, Project, User } from '@prisma/client'
+import type { Cluster, Environment, Log, Organization, Project, User } from '@prisma/client'
 import { checkInsufficientPermissionInEnvironment, checkInsufficientRoleInProject } from '@/utils/controller.js'
-import { unlockProjectIfNotFailed } from '@/utils/business.js'
+import { unlockProjectIfNotFailed, checkCreateProject as checkCreateProjectPlugins } from '@/utils/business.js'
 import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import { type PluginResult } from '@/plugins/hooks/hook.js'
 import {
@@ -50,16 +51,24 @@ export const getProjectInfosAndClusters = async (projectId: string) => {
   return { project, projectClusters }
 }
 
+const projectServices = (project: Project & { organization: Organization, environments: Environment[], clusters: Pick<Cluster, 'id' | 'infos' | 'label' | 'privacy' | 'clusterResources'>[] }) => getProjectServices({
+  project: project.name,
+  organization: project.organization.name,
+  services: project.services,
+  environments: project.environments,
+  clusters: project.clusters,
+})
+
 export const getUserProjects = async (requestor: UserDto) => {
   const user = await getUser(requestor)
   const projects = await getUserProjectsQuery(user)
   const publicClusters = await getPublicClusters()
   return projects.map((project) => {
     project.clusters = project.clusters.concat(publicClusters)
-    if (project.services && Object.keys(project.services).includes('registry')) {
-      return { ...project, services: getProjectServices({ project: project.name, organization: project.organization.name, services: project.services }) }
+    return {
+      ...project,
+      externalServices: projectServices(project),
     }
-    return project
   })
 }
 
@@ -68,21 +77,12 @@ export const checkCreateProject = async (
   owner: User,
   organizationName: Organization['name'],
   data: CreateProjectDto,
+  requestId: Log['requestId'],
 ) => {
   await projectSchema.validateAsync(data, { context: { projectNameMaxLength: calcProjectNameMaxLength(organizationName) } })
 
-  const pluginsResults = await hooks.createProject.validate({ owner })
-  if (pluginsResults?.failed) {
-    const reasons = Object.values(pluginsResults)
-      .filter((plugin: PluginResult) => plugin?.status?.result === 'KO')
-      .map((plugin: PluginResult) => plugin.status.message)
-      .join('; ')
+  await checkCreateProjectPlugins(owner, 'Project', requestId)
 
-    const message = 'Echec de la validation des prérequis de création du projet par les services externes'
-
-    addLogs('Create Project Validation', { reasons, failed: true }, owner.id)
-    throw new BadRequestError(message, { description: reasons })
-  }
   const projectSearch = await getProjectByNames({ name: data.name, organizationName })
   if (projectSearch.length > 0) {
     throw new BadRequestError(`"${data.name}" existe déjà`, { extras: {}, description: `Le projet "${data.name}" existe déjà` })
@@ -133,11 +133,11 @@ export const getProjectSecrets = async (projectId: string, userId: User['id']) =
   return projectSecrets
 }
 
-export const createProject = async (dataDto: CreateProjectDto, requestor: UserDto) => {
+export const createProject = async (dataDto: CreateProjectDto, requestor: UserDto, requestId: Log['requestId']) => {
   // Pré-requis
   const owner = await getUser(requestor)
   const organization = await getOrganizationById(dataDto.organizationId)
-  await checkCreateProject(owner, organization.name, dataDto)
+  await checkCreateProject(owner, organization.name, dataDto, requestId)
 
   // Actions
   const project = await initializeProject({ ...dataDto, ownerId: requestor.id })
@@ -153,7 +153,7 @@ export const createProject = async (dataDto: CreateProjectDto, requestor: UserDt
 
     const results = await hooks.createProject.execute(projectData)
     // @ts-ignore
-    await addLogs('Create Project', results, owner.id)
+    await addLogs('Create Project', results, owner.id, requestId)
     if (results.failed) throw new Error('Echec de la création du projet par les plugins')
 
     // enregistrement des ids GitLab et Harbor
@@ -170,14 +170,18 @@ export const createProject = async (dataDto: CreateProjectDto, requestor: UserDt
     await updateProjectServices(project.id, services)
     await updateProjectCreated(project.id)
     await unlockProjectIfNotFailed(project.id)
-    return getProjectById(project.id)
+    const publicClusters = await getPublicClusters()
+    const projectInfos = await getProjectInfos(project.id)
+    projectInfos.clusters = projectInfos.clusters.concat(publicClusters)
+
+    return { ...projectInfos, externalServices: projectServices(projectInfos) }
   } catch (error) {
     await updateProjectFailed(project.id)
     throw new Error(error?.message)
   }
 }
 
-export const updateProject = async (data: UpdateProjectDto, projectId: Project['id'], requestor: UserDto) => {
+export const updateProject = async (data: UpdateProjectDto, projectId: Project['id'], requestor: UserDto, requestId: Log['requestId']) => {
   const keysAllowedForUpdate = ['description']
   const dataFiltered = filterObjectByKeys(data, keysAllowedForUpdate)
 
@@ -205,7 +209,7 @@ export const updateProject = async (data: UpdateProjectDto, projectId: Project['
 
     const results = await hooks.updateProject.execute(projectData)
     // @ts-ignore
-    await addLogs('Update Project', results, requestor.id)
+    await addLogs('Update Project', results, requestor.id, requestId)
     if (results.failed) throw new Error('Echec de la mise à jour du projet par les plugins')
 
     await updateProjectCreated(project.id)
@@ -216,7 +220,7 @@ export const updateProject = async (data: UpdateProjectDto, projectId: Project['
   }
 }
 
-export const archiveProject = async (projectId: Project['id'], requestor: UserDto) => {
+export const archiveProject = async (projectId: Project['id'], requestor: UserDto, requestId: Log['requestId']) => {
   // Pré-requis
   const project = await getProjectInfosAndRepos(projectId)
   const owner = await getSingleOwnerByProjectId(project.id)
@@ -240,12 +244,14 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
     }))
 
     // -- début - Suppression environnements --
+    let environments = await getProjectPartialEnvironments({ projectId })
     for (const environment of project.environments) {
       const cluster = await getClusterById(environment.clusterId)
 
       // Supprimer l'environnement
       const envData = {
         environment: environment.name,
+        environments,
         project: project.name,
         organization: project.organization.name,
         repositories,
@@ -257,9 +263,10 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
       // @ts-ignore
       const resultsEnv = await hooks.deleteEnvironment.execute(envData)
       // @ts-ignore
-      await addLogs('Delete Environments', resultsEnv, requestor.id)
+      await addLogs('Delete Environments', resultsEnv, requestor.id, requestId)
       if (resultsEnv.failed) throw new UnprocessableContentError('Echec des services à la suppression de l\'environnement')
       await deleteEnvironment(environment.id)
+      environments = environments.toSpliced(environments.findIndex(partialEnvironment => partialEnvironment.environment === environment.name), 1)
     }
     // -- fin - Suppression environnements --
 
@@ -272,7 +279,7 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
         ...repo,
       })
       // @ts-ignore
-      await addLogs('Delete Repository', result, requestor.id)
+      await addLogs('Delete Repository', result, requestor.id, requestId)
       if (result.failed) throw new UnprocessableContentError('Echec des services à la suppression de l\'environnement')
       await deleteRepository(repo.id)
     }
@@ -292,7 +299,7 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
       owner,
     })
     // @ts-ignore
-    await addLogs('Archive Project', results, requestor.id)
+    await addLogs('Archive Project', results, requestor.id, requestId)
     if (results.failed) throw new UnprocessableContentError('Echec de la suppression du projet par les plugins')
     await archiveProjectQuery(projectId)
     // -- fin - Suppression projet --
