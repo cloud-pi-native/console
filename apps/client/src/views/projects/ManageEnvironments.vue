@@ -101,6 +101,7 @@ watch(project, () => {
     class="flex <md:flex-col-reverse items-center justify-between pb-5"
   >
     <DsfrButton
+      v-if="!Object.keys(selectedEnvironment).length && !isNewEnvironmentForm"
       label="Ajouter un nouvel environnement"
       data-testid="addEnvironmentLink"
       tertiary
@@ -110,6 +111,19 @@ watch(project, () => {
       icon="ri-add-line"
       @click="showNewEnvironmentForm()"
     />
+    <div
+      v-else
+      class="w-full flex justify-end"
+    >
+      <DsfrButton
+        title="Revenir à la liste des environnements"
+        data-testid="goBackBtn"
+        secondary
+        icon-only
+        icon="ri-arrow-go-back-line"
+        @click="() => cancel()"
+      />
+    </div>
   </div>
   <div
     v-if="isNewEnvironmentForm"
@@ -126,6 +140,7 @@ watch(project, () => {
     />
   </div>
   <div
+    v-else
     :class="{
       'md:grid md:grid-cols-3 md:gap-3 items-center justify-between': !selectedEnvironment.id,
     }"
@@ -135,7 +150,9 @@ watch(project, () => {
       :key="environment.id"
       class="fr-mt-2v fr-mb-4w"
     >
-      <div>
+      <div
+        v-show="!Object.keys(selectedEnvironment).length"
+      >
         <DsfrTile
           :title="environment.title"
           :description="['deleting', 'initializing'].includes(environment.status) ? 'Opérations en cours' : null"

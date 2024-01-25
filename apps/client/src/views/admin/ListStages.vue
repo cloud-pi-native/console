@@ -105,6 +105,7 @@ watch(stages, () => {
     class="flex <md:flex-col-reverse items-center justify-between pb-5"
   >
     <DsfrButton
+      v-if="!Object.keys(selectedStage).length && !isNewStageForm"
       label="Ajouter un nouveau type d'environnement"
       data-testid="addStageLink"
       tertiary
@@ -113,6 +114,19 @@ watch(stages, () => {
       icon="ri-add-line"
       @click="showNewStageForm()"
     />
+    <div
+      v-else
+      class="w-full flex justify-end"
+    >
+      <DsfrButton
+        title="Revenir à la liste des types d'environnement"
+        data-testid="goBackBtn"
+        secondary
+        icon-only
+        icon="ri-arrow-go-back-line"
+        @click="() => cancel()"
+      />
+    </div>
   </div>
   <div
     v-if="isNewStageForm"
@@ -129,6 +143,7 @@ watch(stages, () => {
     />
   </div>
   <div
+    v-else
     :class="{
       'md:grid md:grid-cols-3 md:gap-3 items-center justify-between': !selectedStage?.name,
     }"
@@ -138,7 +153,9 @@ watch(stages, () => {
       :key="stage.id"
       class="fr-mt-2v fr-mb-4w w-full"
     >
-      <div>
+      <div
+        v-show="!Object.keys(selectedStage).length"
+      >
         <DsfrTile
           :title="stage.title"
           :data-testid="`stageTile-${stage.title}`"

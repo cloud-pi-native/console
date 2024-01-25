@@ -170,7 +170,7 @@ onBeforeMount(() => {
       />
       <DsfrButton
         v-else
-        label="Modifier le type d'environnement"
+        label="Enregistrer"
         data-testid="updateStageBtn"
         :disabled="!isStageValid"
         primary

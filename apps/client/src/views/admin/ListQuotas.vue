@@ -102,6 +102,7 @@ watch(quotas, () => {
     class="flex <md:flex-col-reverse items-center justify-between pb-5"
   >
     <DsfrButton
+      v-if="!Object.keys(selectedQuota).length && !isNewQuotaForm"
       label="Ajouter un nouveau quota"
       data-testid="addQuotaLink"
       tertiary
@@ -110,6 +111,19 @@ watch(quotas, () => {
       icon="ri-add-line"
       @click="showNewQuotaForm()"
     />
+    <div
+      v-else
+      class="w-full flex justify-end"
+    >
+      <DsfrButton
+        title="Revenir à la liste des quotas"
+        data-testid="goBackBtn"
+        secondary
+        icon-only
+        icon="ri-arrow-go-back-line"
+        @click="() => cancel()"
+      />
+    </div>
   </div>
   <div
     v-if="isNewQuotaForm"
@@ -125,6 +139,7 @@ watch(quotas, () => {
     />
   </div>
   <div
+    v-else
     :class="{
       'md:grid md:grid-cols-3 md:gap-3 items-center justify-between': !selectedQuota?.name,
     }"
@@ -134,7 +149,9 @@ watch(quotas, () => {
       :key="quota.id"
       class="fr-mt-2v fr-mb-4w w-full"
     >
-      <div>
+      <div
+        v-show="!Object.keys(selectedQuota).length"
+      >
         <DsfrTile
           :title="quota.title"
           :data-testid="`quotaTile-${quota.title}`"

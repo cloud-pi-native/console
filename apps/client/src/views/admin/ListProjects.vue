@@ -367,6 +367,7 @@ onBeforeMount(async () => {
       <DsfrButton
         v-if="selectedProject"
         title="Revenir à la liste des projets"
+        data-testid="goBackBtn"
         secondary
         icon-only
         icon="ri-arrow-go-back-line"
