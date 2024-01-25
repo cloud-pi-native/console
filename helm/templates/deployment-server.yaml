@@ -29,7 +29,7 @@ spec:
       {{- end }}
       {{- if  .Values.server.plugins }}
       initContainers:
-      - image: busybox
+      - image: praqma/network-multitool:alpine-minimal
         name: fetch-plugins
         command:
         - sh
