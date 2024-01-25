@@ -5,15 +5,16 @@ import { sortArrByObjKeyAsc } from '@dso-console/shared'
 import type { CreateStageDto, UpdateQuotaStageDto, StageModel, UpdateStageClustersDto, StageParams } from '@dso-console/shared'
 import { useAdminQuotaStore } from '@/stores/admin/quota'
 import { useAdminClusterStore } from '@/stores/admin/cluster'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const adminStageStore = useAdminStageStore()
 const adminQuotaStore = useAdminQuotaStore()
 const adminClusterStore = useAdminClusterStore()
+const snackbarStore = useSnackbarStore()
 
 const selectedStage: Ref<StageModel | Record<string, never>> = ref({})
 const stageList: Ref<any[]> = ref([])
 const associatedEnvironments: Ref<any[]> = ref([])
-const isWaitingForResponse = ref(false)
 const isNewStageForm = ref(false)
 
 const stages = computed(() => adminStageStore.stages)
@@ -51,11 +52,11 @@ const cancel = () => {
 }
 
 const addStage = async (stage: CreateStageDto) => {
-  isWaitingForResponse.value = true
+  snackbarStore.isWaitingForResponse = true
   cancel()
   await adminStageStore.addStage(stage)
   await adminStageStore.getAllStages()
-  isWaitingForResponse.value = false
+  snackbarStore.isWaitingForResponse = false
 }
 
 export type UpdateStageType = {
@@ -65,26 +66,30 @@ export type UpdateStageType = {
 }
 
 const updateStage = async ({ stageId, quotaIds, clusterIds }: UpdateStageType) => {
-  isWaitingForResponse.value = true
-  await adminStageStore.updateQuotaStage(stageId, quotaIds)
-  await adminStageStore.updateStageClusters(stageId, clusterIds)
+  snackbarStore.isWaitingForResponse = true
+  if (quotaIds) {
+    await adminStageStore.updateQuotaStage(stageId, quotaIds)
+  }
+  if (clusterIds) {
+    await adminStageStore.updateStageClusters(stageId, clusterIds)
+  }
   await adminStageStore.getAllStages()
   cancel()
-  isWaitingForResponse.value = false
+  snackbarStore.isWaitingForResponse = false
 }
 
 const deleteStage = async (stageId: StageParams['stageId']) => {
-  isWaitingForResponse.value = true
+  snackbarStore.isWaitingForResponse = true
   cancel()
   await adminStageStore.deleteStage(stageId)
   await adminStageStore.getAllStages()
-  isWaitingForResponse.value = false
+  snackbarStore.isWaitingForResponse = false
 }
 
 const getStageAssociatedEnvironments = async (stageId: StageParams['stageId']) => {
-  isWaitingForResponse.value = true
+  snackbarStore.isWaitingForResponse = true
   associatedEnvironments.value = await adminStageStore.getStageAssociatedEnvironments(stageId)
-  isWaitingForResponse.value = false
+  snackbarStore.isWaitingForResponse = false
 }
 
 onMounted(async () => {
@@ -137,7 +142,6 @@ watch(stages, () => {
       :all-clusters="allClusters"
       class="w-full"
       :is-new-stage="true"
-      :is-updating-stage="isWaitingForResponse"
       @add="(stage: CreateStageDto) => addStage(stage)"
       @cancel="cancel()"
     />
@@ -169,7 +173,6 @@ watch(stages, () => {
         :all-quotas="allQuotas"
         :all-clusters="allClusters"
         :stage="selectedStage"
-        :is-updating-stage="isWaitingForResponse"
         class="w-full"
         :is-new-stage="false"
         :associated-environments="associatedEnvironments"

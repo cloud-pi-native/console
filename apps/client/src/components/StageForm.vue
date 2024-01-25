@@ -3,6 +3,7 @@ import { computed, onBeforeMount, ref } from 'vue'
 import { stageSchema, schemaValidator } from '@dso-console/shared'
 import { copyContent } from '@/utils/func.js'
 import type { UpdateStageType } from '@/views/admin/ListStages.vue'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = defineProps({
   isNewStage: {
@@ -24,10 +25,6 @@ const props = defineProps({
   associatedEnvironments: {
     type: Array,
     default: () => [],
-  },
-  isUpdatingStage: {
-    type: Boolean,
-    default: false,
   },
 })
 
@@ -258,7 +255,7 @@ onBeforeMount(() => {
       </div>
     </div>
     <LoadingCt
-      v-if="props.isUpdatingStage"
+      v-if="useSnackbarStore().isWaitingForResponse"
       description="Opérations en cours sur le type d'environnement"
     />
   </div>

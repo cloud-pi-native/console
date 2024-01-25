@@ -1,3 +1,4 @@
+import { Pinia, createPinia, setActivePinia } from 'pinia'
 import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
@@ -5,9 +6,18 @@ import '@gouvminint/vue-dsfr/styles'
 import '@/main.css'
 import StageForm from '@/components/StageForm.vue'
 import { getRandomCluster, getRandomEnv, getRandomQuota, getRandomQuotaStage, getRandomStage, repeatFn } from '@dso-console/test-utils'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 
 describe('StageForm.vue', () => {
+  let pinia: Pinia
+
+  beforeEach(() => {
+    pinia = createPinia()
+
+    setActivePinia(pinia)
+  })
   it('Should mount a new quota StageForm', () => {
+    useSnackbarStore()
     const allQuotas = repeatFn(4)(getRandomQuota)
     const allClusters = repeatFn(3)(getRandomCluster)
 
@@ -36,6 +46,7 @@ describe('StageForm.vue', () => {
   })
 
   it('Should mount an update stage StageForm', () => {
+    useSnackbarStore()
     const allQuotas = repeatFn(4)(getRandomQuota)
     const allClusters = repeatFn(3)(getRandomCluster)
     const stageToUpdate = getRandomStage()
@@ -77,6 +88,7 @@ describe('StageForm.vue', () => {
   })
 
   it('Should mount an update quotaForm without associatedEnvironments', () => {
+    useSnackbarStore()
     const allQuotas = repeatFn(4)(getRandomQuota)
     const allClusters = repeatFn(3)(getRandomCluster)
     const stageToUpdate = getRandomStage()

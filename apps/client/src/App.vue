@@ -37,8 +37,12 @@ onMounted(() => {
 })
 
 onErrorCaptured((error) => {
-  if (error instanceof Error) return snackbarStore.setMessage(error?.message, 'error')
-  snackbarStore.setMessage('Une erreur inconnue est survenue.')
+  if (error instanceof Error) {
+    snackbarStore.setMessage(error?.message, 'error')
+  } else {
+    snackbarStore.setMessage('Une erreur inconnue est survenue.')
+  }
+  snackbarStore.isWaitingForResponse = false
   return false
 })
 

@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
 import { repoSchema, schemaValidator, isValid, instanciateSchema } from '@dso-console/shared'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = defineProps({
   repo: {
@@ -19,10 +20,6 @@ const props = defineProps({
     default: false,
   },
   isProjectLocked: {
-    type: Boolean,
-    default: false,
-  },
-  isUpsertingRepo: {
     type: Boolean,
     default: false,
   },
@@ -240,7 +237,7 @@ const cancel = () => {
       </div>
     </div>
     <LoadingCt
-      v-if="props.isUpsertingRepo"
+      v-if="useSnackbarStore().isWaitingForResponse"
       description="Opérations en cours sur le dépôt"
     />
   </div>

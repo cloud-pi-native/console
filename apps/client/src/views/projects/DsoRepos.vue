@@ -4,10 +4,12 @@ import { useProjectStore } from '@/stores/project.js'
 import { useProjectRepositoryStore } from '@/stores/project-repository.js'
 import { useUserStore } from '@/stores/user.js'
 import { projectIsLockedInfo, sortArrByObjKeyAsc } from '@dso-console/shared'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const projectStore = useProjectStore()
 const projectRepositoryStore = useProjectRepositoryStore()
 const userStore = useUserStore()
+const snackbarStore = useSnackbarStore()
 
 /**
  * @returns {string}
@@ -18,7 +20,6 @@ const isOwner = computed(() => project.value?.roles.some(role => role.userId ===
 const repos = ref([])
 const selectedRepo = ref({})
 const isNewRepoForm = ref(false)
-const isUpsertingRepo = ref(false)
 
 const setReposTiles = (project) => {
   repos.value = sortArrByObjKeyAsc(project?.repositories, 'internalRepoName')
@@ -50,7 +51,7 @@ const cancel = () => {
 }
 
 const saveRepo = async (repo) => {
-  isUpsertingRepo.value = true
+  snackbarStore.isWaitingForResponse = true
   if (repo.id) {
     await projectRepositoryStore.updateRepo(repo)
   } else {
@@ -58,15 +59,15 @@ const saveRepo = async (repo) => {
   }
   setReposTiles(project.value)
   cancel()
-  isUpsertingRepo.value = false
+  snackbarStore.isWaitingForResponse = false
 }
 
 const deleteRepo = async (repoId) => {
-  isUpsertingRepo.value = true
+  snackbarStore.isWaitingForResponse = true
   await projectRepositoryStore.deleteRepo(repoId)
   setReposTiles(project.value)
   selectedRepo.value = {}
-  isUpsertingRepo.value = false
+  snackbarStore.isWaitingForResponse = false
 }
 
 onMounted(() => {
@@ -115,7 +116,6 @@ watch(project, () => {
   >
     <RepoForm
       :is-project-locked="project?.locked"
-      :is-upserting-repo="isUpsertingRepo"
       @save="(repo) => saveRepo(repo)"
       @cancel="cancel()"
     />
@@ -170,7 +170,6 @@ watch(project, () => {
       </div>
       <RepoForm
         v-if="Object.keys(selectedRepo).length && selectedRepo.internalRepoName === repo.id && selectedRepo.status !== 'deleting'"
-        :is-upserting-repo="isUpsertingRepo"
         :is-project-locked="project?.locked"
         :is-owner="isOwner"
         :repo="selectedRepo"
