@@ -3,6 +3,7 @@ import { computed, onBeforeMount, ref } from 'vue'
 import { quotaSchema, schemaValidator } from '@dso-console/shared'
 import { copyContent } from '@/utils/func.js'
 import type { UpdateQuotaType } from '@/views/admin/ListQuotas.vue'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = defineProps({
   isNewQuota: {
@@ -20,10 +21,6 @@ const props = defineProps({
   associatedEnvironments: {
     type: Array,
     default: () => [],
-  },
-  isUpdatingQuota: {
-    type: Boolean,
-    default: false,
   },
 })
 
@@ -259,7 +256,7 @@ onBeforeMount(() => {
       </div>
     </div>
     <LoadingCt
-      v-if="props.isUpdatingQuota"
+      v-if="useSnackbarStore().isWaitingForResponse"
       description="Opérations en cours sur le quota"
     />
   </div>

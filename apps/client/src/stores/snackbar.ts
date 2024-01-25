@@ -7,7 +7,8 @@ export const useSnackbarStore = defineStore('snackbar', () => {
   const message: Ref<string | undefined> = ref(undefined)
   const isOpen: Ref<boolean> = ref(false)
   const type: Ref<ErrorTypes> = ref('info')
-  const timeoutId: Ref< ReturnType<typeof setTimeout> | undefined> = ref(undefined)
+  const timeoutId: Ref<ReturnType<typeof setTimeout> | undefined> = ref(undefined)
+  const isWaitingForResponse = ref<boolean>(false)
 
   const setMessage = (errorMessage: string, errorType: ErrorTypes = 'info', timeout: number = defaultTimeout) => {
     if (timeoutId.value) {
@@ -33,6 +34,7 @@ export const useSnackbarStore = defineStore('snackbar', () => {
     isOpen,
     type,
     timeoutId,
+    isWaitingForResponse,
     setMessage,
     hideMessage,
   }

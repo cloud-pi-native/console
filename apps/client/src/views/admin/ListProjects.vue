@@ -52,7 +52,6 @@ const environmentsRows: Ref<EnvironnementRows > = ref([])
 const repositoriesRows: Ref<RepositoryRows> = ref([])
 const tableKey = ref(getRandomId('table'))
 const selectedProject: Ref<typeof allProjects['value'][0] | undefined> = ref()
-const isWaitingForResponse = ref(false)
 const teamCtKey = ref(getRandomId('team'))
 const environmentsCtKey = ref(getRandomId('environment'))
 const repositoriesCtKey = ref(getRandomId('repository'))
@@ -238,11 +237,11 @@ const getRepositoriesRows = () => {
 }
 
 const getAllProjects = async () => {
-  isWaitingForResponse.value = true
+  snackbarStore.isWaitingForResponse = true
   allProjects.value = await adminProjectStore.getAllProjects()
   setRows()
   if (selectedProject.value) selectProject(selectedProject.value.id)
-  isWaitingForResponse.value = false
+  snackbarStore.isWaitingForResponse = false
 }
 
 const selectProject = async (projectId: string) => {
@@ -253,44 +252,44 @@ const selectProject = async (projectId: string) => {
 
 const updateEnvironmentQuota = async ({ environmentId, quotaId }: {environmentId: string, quotaId: string}) => {
   if (!selectedProject.value) return
-  isWaitingForResponse.value = true
+  snackbarStore.isWaitingForResponse = true
   const environment = selectedProject.value?.environments.find(environment => environment.id === environmentId)
   environment.quotaStageId = environment.quotaStage.stage.quotaStage.find(quotaStage => quotaStage.quotaId === quotaId)?.id
   await projectEnvironmentStore.updateEnvironment(environment, selectedProject.value.id)
   await getAllProjects()
-  isWaitingForResponse.value = false
+  snackbarStore.isWaitingForResponse = false
 }
 
 const handleProjectLocking = async (projectId: string, lock: boolean) => {
-  isWaitingForResponse.value = true
+  snackbarStore.isWaitingForResponse = true
   await adminProjectStore.handleProjectLocking(projectId, lock)
   await getAllProjects()
-  isWaitingForResponse.value = false
+  snackbarStore.isWaitingForResponse = false
 }
 
 const replayHooks = async ({ resource, resourceId }: {resource: string, resourceId: string}) => {
-  isWaitingForResponse.value = true
+  snackbarStore.isWaitingForResponse = true
   // snackbarStore.setMessage(`Reprovisionnement de la ressource ${resource} ayant pour id ${resourceId}`)
   console.log({ resource, resourceId })
   snackbarStore.setMessage('Cette fonctionnalité n\'est pas encore disponible.')
-  isWaitingForResponse.value = false
+  snackbarStore.isWaitingForResponse = false
 }
 
 const archiveProject = async (projectId: string) => {
   if (!selectedProject.value) return
-  isWaitingForResponse.value = true
+  snackbarStore.isWaitingForResponse = true
   await adminProjectStore.archiveProject(projectId)
   await getAllProjects()
   selectedProject.value = undefined
-  isWaitingForResponse.value = false
+  snackbarStore.isWaitingForResponse = false
 }
 
 const addUserToProject = async (email: string) => {
-  isWaitingForResponse.value = true
+  snackbarStore.isWaitingForResponse = true
   const newRoles = await projectUserStore.addUserToProject(selectedProject.value?.id, { email })
   teamCtKey.value = getRandomId('team')
   selectedProject.value.roles = newRoles
-  isWaitingForResponse.value = false
+  snackbarStore.isWaitingForResponse = false
 }
 
 const updateUserRole = ({ userId, role }: { userId: string, role: string }) => {
@@ -300,13 +299,13 @@ const updateUserRole = ({ userId, role }: { userId: string, role: string }) => {
 
 const removeUserFromProject = async (userId: string) => {
   if (!selectedProject.value) return
-  isWaitingForResponse.value = true
+  snackbarStore.isWaitingForResponse = true
   if (selectedProject.value.id) {
     const newRoles = await projectUserStore.removeUserFromProject(selectedProject.value.id, userId)
     selectedProject.value.roles = newRoles
   }
   teamCtKey.value = getRandomId('team')
-  isWaitingForResponse.value = false
+  snackbarStore.isWaitingForResponse = false
 }
 
 const generateProjectsDataFile = async () => {
@@ -342,7 +341,7 @@ onBeforeMount(async () => {
         secondary
         icon-only
         icon="ri-file-download-line"
-        :disabled="!!isWaitingForResponse"
+        :disabled="snackbarStore.isWaitingForResponse"
         @click="generateProjectsDataFile()"
       />
       <DsfrFileDownload
@@ -359,7 +358,7 @@ onBeforeMount(async () => {
         secondary
         icon-only
         icon="ri-refresh-fill"
-        :disabled="!!isWaitingForResponse"
+        :disabled="snackbarStore.isWaitingForResponse"
         @click="async() => {
           await getAllProjects()
         }"
@@ -511,7 +510,7 @@ onBeforeMount(async () => {
       </div>
     </div>
     <LoadingCt
-      v-if="isWaitingForResponse"
+      v-if="snackbarStore.isWaitingForResponse"
       description="Opérations en cours"
     />
   </div>

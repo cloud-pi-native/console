@@ -4,16 +4,17 @@ import { useAdminQuotaStore } from '@/stores/admin/quota.js'
 import { sortArrByObjKeyAsc } from '@dso-console/shared'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 import type { CreateQuotaDto, UpdateQuotaStageDto, QuotaModel, UpdateQuotaPrivacyDto, QuotaParams } from '@dso-console/shared'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const adminQuotaStore = useAdminQuotaStore()
 const projectEnvironmentStore = useProjectEnvironmentStore()
+const snackbarStore = useSnackbarStore()
 
 const quotas = computed(() => adminQuotaStore.quotas)
 const selectedQuota: Ref<QuotaModel | Record<string, never>> = ref({})
 const quotaList: Ref<any[]> = ref([])
 const allStages: Ref<any[]> = ref([])
 const associatedEnvironments: Ref<any[]> = ref([])
-const isWaitingForResponse = ref(false)
 const isNewQuotaForm = ref(false)
 
 const setQuotaTiles = (quotas: QuotaModel[]) => {
@@ -47,11 +48,11 @@ const cancel = () => {
 }
 
 const addQuota = async (quota: CreateQuotaDto) => {
-  isWaitingForResponse.value = true
+  snackbarStore.isWaitingForResponse = true
   cancel()
   await adminQuotaStore.addQuota(quota)
   await adminQuotaStore.getAllQuotas()
-  isWaitingForResponse.value = false
+  snackbarStore.isWaitingForResponse = false
 }
 
 export type UpdateQuotaType = {
@@ -61,28 +62,28 @@ export type UpdateQuotaType = {
 }
 
 const updateQuota = async ({ quotaId, isPrivate, stageIds }: UpdateQuotaType) => {
-  isWaitingForResponse.value = true
+  snackbarStore.isWaitingForResponse = true
   if (isPrivate !== undefined) {
     await adminQuotaStore.updateQuotaPrivacy(quotaId, isPrivate)
   }
   await adminQuotaStore.updateQuotaStage(quotaId, stageIds)
   await adminQuotaStore.getAllQuotas()
   cancel()
-  isWaitingForResponse.value = false
+  snackbarStore.isWaitingForResponse = false
 }
 
 const deleteQuota = async (quotaId: QuotaParams['quotaId']) => {
-  isWaitingForResponse.value = true
+  snackbarStore.isWaitingForResponse = true
   cancel()
   await adminQuotaStore.deleteQuota(quotaId)
   await adminQuotaStore.getAllQuotas()
-  isWaitingForResponse.value = false
+  snackbarStore.isWaitingForResponse = false
 }
 
 const getQuotaAssociatedEnvironments = async (quotaId: QuotaParams['quotaId']) => {
-  isWaitingForResponse.value = true
+  snackbarStore.isWaitingForResponse = true
   associatedEnvironments.value = await adminQuotaStore.getQuotaAssociatedEnvironments(quotaId)
-  isWaitingForResponse.value = false
+  snackbarStore.isWaitingForResponse = false
 }
 
 onMounted(async () => {
@@ -133,7 +134,6 @@ watch(quotas, () => {
       :all-stages="allStages"
       class="w-full"
       :is-new-quota="true"
-      :is-updating-quota="isWaitingForResponse"
       @add="(quota: CreateQuotaDto) => addQuota(quota)"
       @cancel="cancel()"
     />
@@ -164,7 +164,6 @@ watch(quotas, () => {
         v-if="Object.keys(selectedQuota).length && selectedQuota.id === quota.id"
         :all-stages="allStages"
         :quota="selectedQuota"
-        :is-updating-quota="isWaitingForResponse"
         class="w-full"
         :is-new-quota="false"
         :associated-environments="associatedEnvironments"

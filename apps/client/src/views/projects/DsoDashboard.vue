@@ -20,24 +20,23 @@ const description = ref<string | undefined>(project.value ? project.value.descri
 const isEditingDescription = ref(false)
 const isArchivingProject = ref(false)
 const projectToArchive = ref('')
-const isWaitingForResponse = ref(false)
 const isSecretShown = ref(false)
 const projectSecrets = ref<Record<string, any>>({})
 const allStages = ref<Array<any>>([])
 
 const updateProject = async (projectId: ProjectInfos['id']) => {
-  isWaitingForResponse.value = true
+  snackbarStore.isWaitingForResponse = true
   // @ts-ignore
   await projectStore.updateProject(projectId, { description: description.value })
   isEditingDescription.value = false
-  isWaitingForResponse.value = false
+  snackbarStore.isWaitingForResponse = false
 }
 
 const archiveProject = async (projectId: ProjectInfos['id']) => {
-  isWaitingForResponse.value = true
+  snackbarStore.isWaitingForResponse = true
   await projectStore.archiveProject(projectId)
   router.push('/projects')
-  isWaitingForResponse.value = false
+  snackbarStore.isWaitingForResponse = false
 }
 
 const getDynamicTitle = (locked: ProjectInfos['locked'], description: ProjectInfos['description']) => {
@@ -49,11 +48,11 @@ const getDynamicTitle = (locked: ProjectInfos['locked'], description: ProjectInf
 const handleSecretDisplay = async () => {
   isSecretShown.value = !isSecretShown.value
   if (isSecretShown.value && !Object.keys(projectSecrets.value).length) {
-    isWaitingForResponse.value = true
+    snackbarStore.isWaitingForResponse = true
     if (!project.value) throw new Error('Pas de projet sélectionné')
     projectSecrets.value = await projectStore.getProjectSecrets(project.value.id)
     snackbarStore.setMessage('Secrets récupérés')
-    isWaitingForResponse.value = false
+    snackbarStore.isWaitingForResponse = false
   }
 }
 
@@ -285,7 +284,7 @@ onBeforeMount(async () => {
       </div>
     </div>
     <LoadingCt
-      v-if="isWaitingForResponse"
+      v-if="snackbarStore.isWaitingForResponse"
       description="Opérations en cours"
     />
   </div>

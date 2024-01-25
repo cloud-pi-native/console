@@ -13,12 +13,13 @@ import {
   type ProjectInfos,
 } from '@dso-console/shared'
 import router from '@/router/index.js'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const projectStore = useProjectStore()
 const userStore = useUserStore()
 const organizationStore = useOrganizationStore()
+const snackbarStore = useSnackbarStore()
 
-const owner = computed(() => userStore.userProfile)
 const organizationName = computed(() => {
   const org = orgOptions?.value.find(org => org.id === project.value?.organizationId)
   return org?.value
@@ -36,14 +37,12 @@ const project: Ref<ProjectInfos> = ref({
   name: '',
 })
 
-const isCreatingProject = ref(false)
-
 const orgOptions: Ref<Array<any>> = ref([])
 
 const updatedValues: Ref<Record<any, any>> = ref({})
 
 const createProject = async () => {
-  isCreatingProject.value = true
+  snackbarStore.isWaitingForResponse = true
   updatedValues.value = instanciateSchema({ schema: projectSchema }, true)
   const keysToValidate = ['organizationId', 'name']
   const errorSchema = schemaValidator(projectSchema, project.value, { keysToValidate, context: { projectNameMaxLength: projectNameMaxLength.value } })
@@ -51,7 +50,7 @@ const createProject = async () => {
     await projectStore.createProject(project.value)
     router.push('/projects')
   }
-  isCreatingProject.value = false
+  snackbarStore.isWaitingForResponse = false
 }
 
 const updateProject = (key: string, value: any) => {
@@ -90,7 +89,7 @@ onMounted(async () => {
     >
       <DsfrAlert
         type="info"
-        :description="`L'adresse e-mail du souscripteur associé au projet sera : ${owner.email}`"
+        :description="`L'adresse e-mail du souscripteur associé au projet sera : ${userStore.userProfile?.email}`"
         small
         class="fr-mb-2w"
       />
@@ -151,7 +150,7 @@ onMounted(async () => {
       @click="createProject()"
     />
     <LoadingCt
-      v-if="isCreatingProject"
+      v-if="snackbarStore.isWaitingForResponse"
       description="Projet en cours de création"
     />
   </div>
