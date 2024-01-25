@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.5.1](https://github.com/cloud-pi-native/console/compare/v6.5.0...v6.5.1) (2024-01-25)
+
+
+### Bug Fixes
+
+* :bug: share loadingct display knowledge ([8520a5c](https://github.com/cloud-pi-native/console/commit/8520a5c827d05316e9dedc59dd90a92fb3f513d4))
+
 ## [6.5.0](https://github.com/cloud-pi-native/console/compare/v6.4.0...v6.5.0) (2024-01-25)
 
 
