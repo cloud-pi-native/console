@@ -5,11 +5,13 @@ import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 import { projectIsLockedInfo, sortArrByObjKeyAsc } from '@dso-console/shared'
 import { useUserStore } from '@/stores/user.js'
 import { useAdminClusterStore } from '@/stores/admin/cluster'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const projectStore = useProjectStore()
 const projectEnvironmentStore = useProjectEnvironmentStore()
 const userStore = useUserStore()
 const adminClusterStore = useAdminClusterStore()
+const snackbarStore = useSnackbarStore()
 
 const project = computed(() => projectStore.selectedProject)
 const isOwner = computed(() => project.value?.roles.some(role => role.userId === userStore.userProfile.id && role.role === 'owner'))
@@ -20,7 +22,6 @@ const allClusters = computed(() => adminClusterStore.clusters)
 const environments = ref([])
 const selectedEnvironment = ref({})
 const isNewEnvironmentForm = ref(false)
-const isUpdatingEnvironment = ref(false)
 
 // @ts-ignore
 const setEnvironmentsTiles = (project) => {
@@ -57,32 +58,32 @@ const cancel = () => {
 
 // @ts-ignore
 const addEnvironment = async (environment) => {
-  isUpdatingEnvironment.value = true
+  snackbarStore.isWaitingForResponse = true
   // @ts-ignore
   if (!project.value.locked) {
     await projectEnvironmentStore.addEnvironmentToProject(environment)
   }
   cancel()
-  isUpdatingEnvironment.value = false
+  snackbarStore.isWaitingForResponse = false
 }
 
 // @ts-ignore
 const putEnvironment = async (environment) => {
-  isUpdatingEnvironment.value = true
+  snackbarStore.isWaitingForResponse = true
   // @ts-ignore
   if (!project.value.locked) {
     await projectEnvironmentStore.updateEnvironment(environment, project.value.id)
   }
   cancel()
-  isUpdatingEnvironment.value = false
+  snackbarStore.isWaitingForResponse = false
 }
 
 // @ts-ignore
 const deleteEnvironment = async (environment) => {
-  isUpdatingEnvironment.value = true
+  snackbarStore.isWaitingForResponse = true
   await projectEnvironmentStore.deleteEnvironment(environment.id)
   setSelectedEnvironment({})
-  isUpdatingEnvironment.value = false
+  snackbarStore.isWaitingForResponse = false
 }
 
 onMounted(async () => {
@@ -132,7 +133,6 @@ watch(project, () => {
     <EnvironmentForm
       :environment="{projectId: project?.id}"
       :environment-names="environmentNames"
-      :is-updating-environment="isUpdatingEnvironment"
       :is-project-locked="project?.locked"
       :project-clusters="project?.clusters"
       @add-environment="(environment) => addEnvironment(environment)"
@@ -191,7 +191,6 @@ watch(project, () => {
         v-if="Object.keys(selectedEnvironment).length !== 0 && selectedEnvironment.id === environment.id"
         :environment="selectedEnvironment"
         :environment-names="environmentNames"
-        :is-updating-environment="isUpdatingEnvironment"
         :project-clusters="project?.clusters"
         :is-editable="false"
         :is-project-locked="project?.locked"

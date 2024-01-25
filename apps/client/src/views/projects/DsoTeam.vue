@@ -14,14 +14,13 @@ const usersStore = useUsersStore()
 const snackbarStore = useSnackbarStore()
 
 const project = computed(() => projectStore.selectedProject)
-const isUpdatingProjectMembers = ref(false)
 const teamCtKey = ref(getRandomId('team'))
 
 const addUserToProject = async (email: string) => {
-  isUpdatingProjectMembers.value = true
+  snackbarStore.isWaitingForResponse = true
   await projectUserStore.addUserToProject(project.value?.id, { email })
   teamCtKey.value = getRandomId('team')
-  isUpdatingProjectMembers.value = false
+  snackbarStore.isWaitingForResponse = false
 }
 
 const updateUserRole = ({ userId, role }: { userId: string, role: string }) => {
@@ -30,10 +29,10 @@ const updateUserRole = ({ userId, role }: { userId: string, role: string }) => {
 }
 
 const removeUserFromProject = async (userId: string) => {
-  isUpdatingProjectMembers.value = true
+  snackbarStore.isWaitingForResponse = true
   await projectUserStore.removeUserFromProject(project.value?.id, userId)
   teamCtKey.value = getRandomId('team')
-  isUpdatingProjectMembers.value = false
+  snackbarStore.isWaitingForResponse = false
 }
 
 </script>
@@ -47,7 +46,6 @@ const removeUserFromProject = async (userId: string) => {
     :project="{id: project?.id, name: project?.name }"
     :known-users="usersStore.users"
     :roles="project.roles"
-    :is-updating-project-members="isUpdatingProjectMembers"
     @add-member="(email) => addUserToProject(email)"
     @update-role="({ userId, role}) => updateUserRole({ userId, role})"
     @remove-member="(userId) => removeUserFromProject(userId)"

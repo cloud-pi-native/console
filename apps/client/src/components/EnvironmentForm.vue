@@ -49,10 +49,6 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
-  isUpdatingEnvironment: {
-    type: Boolean,
-    default: false,
-  },
   allClusters: {
     type: Array,
     default: () => [],
@@ -382,7 +378,7 @@ watch(quotaId, () => {
       />
     </div>
     <LoadingCt
-      v-if="props.isUpdatingEnvironment"
+      v-if="snackbarStore.isWaitingForResponse"
       description="Opérations en cours sur l'environnement"
     />
   </div>

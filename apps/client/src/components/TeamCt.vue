@@ -14,6 +14,7 @@ import {
 import pDebounce from 'p-debounce'
 import { useProjectUserStore } from '@/stores/project-user'
 import { copyContent } from '@/utils/func.js'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const projectUserStore = useProjectUserStore()
 
@@ -29,7 +30,6 @@ const props = withDefaults(
     userProfile: UserProfile
     project: Pick<ProjectModel, 'id' | 'locked' | 'name'>
     roles: Array<RoleModel>
-    isUpdatingProjectMembers?: boolean
     knownUsers: Record<string, Required<UserModel>>
   }>(),
   {},
@@ -200,7 +200,7 @@ watch(() => props.roles, setRows)
       />
     </div>
     <LoadingCt
-      v-if="isUpdatingProjectMembers"
+      v-if="useSnackbarStore().isWaitingForResponse"
       description="Mise à jour de l'équipe projet"
     />
   </div>
