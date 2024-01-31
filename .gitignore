@@ -63,3 +63,7 @@ apps/server/src/plugins/external
 
 # integration helm values
 env/dso-values-int.yaml
+env/kind-values.yml
+
+# tmp dev files
+ci/kind/configs/rendered

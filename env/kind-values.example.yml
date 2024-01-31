@@ -1,0 +1,9 @@
+# Copy me to custom-values.yml
+# Override ci/kind/configs/cluster/values.yaml for kind bootstrap
+db:
+  expose: false
+  hostPort: 5432
+
+plugins:
+  mount: false
+  localDir: "/path/to/my/external/plugins/dir"
