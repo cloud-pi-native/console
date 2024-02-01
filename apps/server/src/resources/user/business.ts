@@ -1,4 +1,4 @@
-import { getOrCreateUser, addLogs, addUserToProject as addUserToProjectQuery, createUser, deletePermission, getMatchingUsers as getMatchingUsersQuery, getProjectInfos as getProjectInfosQuery, getProjectUsers as getProjectUsersQuery, getUserByEmail, getUserById, lockProject, removeUserFromProject as removeUserFromProjectQuery, updateProjectFailed, updateUserProjectRole as updateUserProjectRoleQuery, getRolesByProjectId } from '@/resources/queries-index.js'
+import { getOrCreateUser, addLogs, addUserToProject as addUserToProjectQuery, createUser, deletePermission, getMatchingUsers as getMatchingUsersQuery, getProjectInfos as getProjectInfosQuery, getProjectUsers as getProjectUsersQuery, getUserByEmail, getUserById, lockProject, removeUserFromProject as removeUserFromProjectQuery, updateUserProjectRole as updateUserProjectRoleQuery, getRolesByProjectId } from '@/resources/queries-index.js'
 import type { User, Project, Log } from '@prisma/client'
 import { hooks, type PluginResult } from '@dso-console/hooks'
 import { checkInsufficientRoleInProject } from '@/utils/controller.js'
@@ -90,7 +90,7 @@ export const addUserToProject = async (
     await unlockProjectIfNotFailed(project.id)
     return getRolesByProjectId(project.id)
   } catch (error) {
-    await updateProjectFailed(project.id)
+    await unlockProjectIfNotFailed(project.id)
     throw new Error('Echec d\'ajout de l\'utilisateur au projet')
   }
 }
@@ -153,7 +153,7 @@ export const removeUserFromProject = async (
     await unlockProjectIfNotFailed(project.id)
     return getRolesByProjectId(project.id)
   } catch (error) {
-    await updateProjectFailed(project.id)
+    await unlockProjectIfNotFailed(project.id)
     throw new Error('Echec de retrait de l\'utilisateur du projet')
   }
 }
