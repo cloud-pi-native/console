@@ -75,4 +75,7 @@ export default defineConfig({
   build: {
     target: 'ESNext',
   },
+  optimizeDeps: {
+    entries: ['./cypress/**/*'],
+  },
 })
