@@ -1,4 +1,6 @@
 if [ -z "$(kind get clusters | grep 'kind')" ]; then
+  [[ -d "$SCRIPTPATH/configs/rendered" ]] || mkdir -p "$SCRIPTPATH/configs/rendered/"
+
   # Prepare kind config
   if [[ -f "$SCRIPTPATH/../../env/kind-values.yml" ]]; then
     helm template dev $SCRIPTPATH/configs/cluster \
@@ -7,12 +9,9 @@ if [ -z "$(kind get clusters | grep 'kind')" ]; then
     helm template dev $SCRIPTPATH/configs/cluster > $SCRIPTPATH/configs/rendered/kind-config.yml
   fi
 
-  whereis helm
-  
   printf "\n\n${red}[kind wrapper].${no_color} Create Kind cluster\n\n"
 
   kind create cluster --config $SCRIPTPATH/configs/rendered/kind-config.yml
-
 
   printf "\n\n${red}[kind wrapper].${no_color} Install Traefik ingress controller\n\n"
 
