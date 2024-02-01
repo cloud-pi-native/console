@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { getKeycloak } from './utils/keycloak/keycloak'
 import { useUserStore } from './stores/user.js'
-import { useProjectStore } from './stores/project.js'
 import { useSnackbarStore } from './stores/snackbar.js'
 
 const keycloak = getKeycloak()
 const userStore = useUserStore()
-const projectStore = useProjectStore()
 const snackbarStore = useSnackbarStore()
 
 userStore.setIsLoggedIn()
