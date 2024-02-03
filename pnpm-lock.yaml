@@ -193,34 +193,34 @@ importers:
   apps/server:
     dependencies:
       '@dso-console/argo-plugin':
-        specifier: workspace:^6.4.0
+        specifier: workspace:*
         version: link:../../plugins/argo
       '@dso-console/gitlab-plugin':
-        specifier: workspace:^6.4.0
+        specifier: workspace:*
         version: link:../../plugins/gitlab
       '@dso-console/harbor-plugin':
-        specifier: workspace:^6.4.0
+        specifier: workspace:*
         version: link:../../plugins/harbor
       '@dso-console/hooks':
-        specifier: workspace:^6.4.0
+        specifier: workspace:*
         version: link:../../packages/hooks
       '@dso-console/keycloak-plugin':
-        specifier: workspace:^6.4.0
+        specifier: workspace:*
         version: link:../../plugins/keycloak
       '@dso-console/kubernetes-plugin':
-        specifier: workspace:^6.4.0
+        specifier: workspace:*
         version: link:../../plugins/kubernetes
       '@dso-console/nexus-plugin':
-        specifier: workspace:^6.4.0
+        specifier: workspace:*
         version: link:../../plugins/nexus
       '@dso-console/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@dso-console/sonarqube-plugin':
-        specifier: workspace:^6.4.0
+        specifier: workspace:*
         version: link:../../plugins/sonarqube
       '@dso-console/vault-plugin':
-        specifier: workspace:^6.4.0
+        specifier: workspace:*
         version: link:../../plugins/vault
       '@fastify/cookie':
         specifier: ^9.3.1

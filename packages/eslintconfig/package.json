@@ -1,6 +1,6 @@
 {
   "name": "@dso-console/eslint-config-base",
-  "version": "1.0.0",
+  "version": "6.5.1",
   "license": "ISC",
   "main": "index.js",
   "dependencies": {
