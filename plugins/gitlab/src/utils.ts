@@ -30,8 +30,10 @@ export const getApi = (): IGitlab => {
   if (!api) {
     const gitlabUrl = removeTrailingSlash(requiredEnv('GITLAB_URL'))
     const gitlabToken = requiredEnv('GITLAB_TOKEN')
+    // @ts-ignore
     api = new Gitlab({ token: gitlabToken, host: gitlabUrl })
   }
+  // @ts-ignore
   return api
 }
 
