@@ -11,12 +11,14 @@ export const createProject = async (
   const searchResults = await api.Projects.search(internalRepoName)
   if (searchResults.length) {
     const existingProject = searchResults.find(project => project.namespace.id === groupId && project.name === internalRepoName)
+    // @ts-ignore
     if (existingProject) return existingProject
   }
   const externalRepoUrl = isPrivate
     ? `https://${externalUserName}:${externalToken ?? ''}@${externalRepoUrn}`
     : `https://${externalRepoUrn}`
 
+  // @ts-ignore
   return api.Projects.create(
     {
       name: internalRepoName,
@@ -39,6 +41,7 @@ export const createProjectMirror = async (internalRepoName: string, group: strin
   const searchResults = await api.Projects.search(internalRepoName)
   if (searchResults.length) {
     const existingProject = searchResults.find(project => project.namespace.id === groupId && project.name === internalRepoName)
+    // @ts-ignore
     if (existingProject) return existingProject
   }
   const project = await api.Projects.create(
@@ -48,6 +51,7 @@ export const createProjectMirror = async (internalRepoName: string, group: strin
     },
   )
   await api.Commits.create(project.id, 'main', 'ci: :construction_worker: first mirror', mirrorFirstActions)
+  // @ts-ignore
   return project
 }
 
