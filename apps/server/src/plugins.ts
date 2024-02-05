@@ -11,7 +11,7 @@ import { plugin as vault } from '@dso-console/vault-plugin'
 import { pluginManagerOptions } from './utils/plugins.js'
 import { pluginsDir } from './utils/env.js'
 
-export const initPm = () => {
+export const initPm = async () => {
   const pm = pluginManager(pluginManagerOptions)
   pm.register(argo)
   pm.register(gitlab)
@@ -25,18 +25,17 @@ export const initPm = () => {
   if (!statSync(pluginsDir, {
     throwIfNoEntry: false,
   })) return pm
-  readdirSync(pluginsDir)
-    .forEach(async dirName => {
-      const moduleAbsPath = `${pluginsDir}/${dirName}`
-      try {
-        statSync(`${moduleAbsPath}/package.json`)
-        const module = await import(moduleAbsPath) as {plugin: Plugin}
-        pm.register(module.plugin)
-      } catch (error) {
-        console.error(`Could not import module ${moduleAbsPath}`)
-        console.error(error.stack)
-      }
-    })
+  for (const dirName of readdirSync(pluginsDir)) {
+    const moduleAbsPath = `${pluginsDir}/${dirName}`
+    try {
+      statSync(`${moduleAbsPath}/package.json`)
+      const module = await import(moduleAbsPath) as {plugin: Plugin}
+      pm.register(module.plugin)
+    } catch (error) {
+      console.error(`Could not import module ${moduleAbsPath}`)
+      console.error(error.stack)
+    }
+  }
 
   return pm
 }
