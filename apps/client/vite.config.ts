@@ -77,7 +77,9 @@ export default defineConfig({
   },
   optimizeDeps: {
     entries: [
-      './cypress/**/*',
+      './cypress/components/specs/environment-form.ct.ts',
+    ],
+    include: [
       'oh-vue-icons',
       'jszip',
     ],
