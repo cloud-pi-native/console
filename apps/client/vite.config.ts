@@ -76,6 +76,10 @@ export default defineConfig({
     target: 'ESNext',
   },
   optimizeDeps: {
-    entries: ['./cypress/**/*'],
+    entries: [
+      './cypress/**/*',
+      'oh-vue-icons',
+      'jszip',
+    ],
   },
 })
