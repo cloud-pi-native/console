@@ -2,9 +2,8 @@
   // Format
   "editor.wordWrap": "on",
   "editor.codeActionsOnSave": {
-    "source.fixAll": "explicit"
+    "source.fixAll": true
   },
-  "eslint.packageManager": "pnpm",
   "eslint.enable": true,
   "eslint.validate": [
     "vue",
