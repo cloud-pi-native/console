@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { computed, onBeforeMount, ref } from 'vue'
-import { quotaSchema, schemaValidator } from '@dso-console/shared'
+import { QuotaSchema, SharedZodError, instanciateSchema } from '@dso-console/shared'
 import { copyContent } from '@/utils/func.js'
 import type { UpdateQuotaType } from '@/views/admin/ListQuotas.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
@@ -12,7 +12,7 @@ const props = defineProps({
   },
   quota: {
     type: Object,
-    default: () => ({}),
+    default: () => ({ ...instanciateSchema(QuotaSchema, undefined), isPrivate: false }),
   },
   allStages: {
     type: Array,
@@ -29,8 +29,16 @@ const stageNames = ref([])
 const isDeletingQuota = ref(false)
 const quotaToDelete = ref('')
 
-const errorSchema = computed(() => schemaValidator(quotaSchema, localQuota.value))
-const isQuotaValid = computed(() => Object.keys(errorSchema.value).length === 0)
+const errorSchema = computed<SharedZodError | undefined>(() => {
+  let schemaValidation
+  if (localQuota.value.id) {
+    schemaValidation = QuotaSchema.safeParse(localQuota.value)
+  } else {
+    schemaValidation = QuotaSchema.omit({ id: true }).safeParse(localQuota.value)
+  }
+  return schemaValidation.success ? undefined : schemaValidation.error
+})
+const isQuotaValid = computed(() => !errorSchema.value)
 
 const updateStages = (key: string, value: any) => {
   localQuota.value[key] = value
@@ -48,7 +56,6 @@ const emit = defineEmits<{
 }>()
 
 const addQuota = () => {
-  localQuota.value.cpu = parseFloat(localQuota.value.cpu)
   if (isQuotaValid.value) emit('add', localQuota.value)
 }
 
@@ -130,6 +137,7 @@ onBeforeMount(() => {
       data-testid="cpuInput"
       :disabled="!isNewQuota"
       placeholder="2"
+      @update:model-value="(value) => localQuota.cpu = parseFloat(value)"
     />
     <DsfrCheckbox
       v-model="localQuota.isPrivate"

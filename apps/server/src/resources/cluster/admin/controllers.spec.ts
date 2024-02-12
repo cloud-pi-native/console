@@ -5,7 +5,7 @@ import { getConnection, closeConnections } from '../../../connect.js'
 import { adminGroupPath } from '@dso-console/shared'
 import { getRandomCluster, getRandomRole, getRandomUser } from '@dso-console/test-utils'
 
-describe('Admin clusters routes', () => {
+describe('Admin cluster routes', () => {
   beforeAll(async () => {
     await getConnection()
   })

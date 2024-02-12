@@ -11,7 +11,8 @@ import {
   deleteQuotaStage,
   updateQuotaPrivacy as updateQuotaPrivacyQuery,
 } from '@/resources/queries-index.js'
-import { type CreateQuotaDto, quotaSchema, type UpdateQuotaStageDto, type UpdateQuotaPrivacyDto, type QuotaParams, type QuotaStageModel } from '@dso-console/shared'
+import { type CreateQuotaDto, QuotaSchema, type UpdateQuotaStageDto, type UpdateQuotaPrivacyDto, type QuotaParams, type QuotaStageModel } from '@dso-console/shared'
+import { validateSchema } from '@/utils/business.js'
 
 export const getQuotaAssociatedEnvironments = async (quotaId: QuotaParams['quotaId']) => {
   try {
@@ -41,7 +42,8 @@ export const getQuotaAssociatedEnvironments = async (quotaId: QuotaParams['quota
 
 export const createQuota = async (data: CreateQuotaDto) => {
   try {
-    await quotaSchema.validateAsync(data)
+    const schemaValidation = QuotaSchema.omit({ id: true }).safeParse(data)
+    validateSchema(schemaValidation)
 
     const isNameTaken = await getQuotaByName(data.name)
     if (isNameTaken) throw new BadRequestError('Un quota portant ce nom existe déjà')

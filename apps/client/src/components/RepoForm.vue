@@ -1,16 +1,16 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
-import { repoSchema, schemaValidator, isValid, instanciateSchema } from '@dso-console/shared'
+import { SharedZodError, RepoBusinessSchema, CreateRepoSchema, CreateRepoBusinessSchema, instanciateSchema } from '@dso-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = defineProps({
   repo: {
     type: Object,
     default: () => ({
-      internalRepoName: '',
-      externalRepoUrl: '',
-      externalUserName: '',
-      externalToken: '',
+      internalRepoName: undefined,
+      externalRepoUrl: undefined,
+      externalUserName: undefined,
+      externalToken: undefined,
       isInfra: false,
       isPrivate: false,
     }),
@@ -26,22 +26,35 @@ const props = defineProps({
 })
 
 const localRepo = ref(props.repo)
-const updatedValues = ref({})
+const updatedValues = ref<Record<keyof typeof localRepo.value, boolean>>({})
 const repoToDelete = ref('')
 const isDeletingRepo = ref(false)
 
-const errorSchema = computed(() => schemaValidator(repoSchema, localRepo.value))
-const isRepoValid = computed(() => Object.keys(errorSchema.value).length === 0)
+const errorSchema = computed<SharedZodError | undefined>(() => {
+  let schemaValidation
+  if (localRepo.value.id) {
+    schemaValidation = RepoBusinessSchema.safeParse(localRepo.value)
+  } else {
+    schemaValidation = CreateRepoBusinessSchema.safeParse(localRepo.value)
+  }
+  return schemaValidation.success ? undefined : schemaValidation.error
+})
+const isRepoValid = computed(() => !errorSchema.value)
 
-const updateRepo = (key: keyof typeof localRepo.value, value) => {
+const updateRepo = (key: keyof typeof localRepo.value, value: unknown) => {
   localRepo.value[key] = value
   updatedValues.value[key] = true
+
+  if (key === 'isPrivate') {
+    localRepo.value.externalUserName = undefined
+    localRepo.value.externalToken = undefined
+  }
 }
 
 const emit = defineEmits(['save', 'delete', 'cancel'])
 
 const saveRepo = () => {
-  updatedValues.value = instanciateSchema({ schema: repoSchema }, true)
+  updatedValues.value = instanciateSchema(CreateRepoSchema, true)
 
   if (!isRepoValid.value) return
   emit('save', localRepo.value)
@@ -68,7 +81,6 @@ const cancel = () => {
       hint="Les champs munis d\'une astérisque (*) sont requis"
     >
       <DsfrFieldset
-        :key="repo"
         data-testid="repoFieldset"
         legend="Dépôt Git"
       >
@@ -79,7 +91,7 @@ const cancel = () => {
             type="text"
             :required="true"
             :disabled="localRepo.id || props.isProjectLocked"
-            :error-message="!!updatedValues.internalRepoName && !isValid(repoSchema, localRepo, 'internalRepoName') ? 'Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique': undefined"
+            :error-message="!!updatedValues.internalRepoName && !CreateRepoSchema.pick({internalRepoName: true}).safeParse({internalRepoName: localRepo.internalRepoName}).success ? 'Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique': undefined"
             label="Nom du dépôt Git interne"
             label-visible
             hint="Nom du dépôt Git créé dans le Gitlab interne de la plateforme"
@@ -94,7 +106,7 @@ const cancel = () => {
             type="text"
             :required="true"
             :disabled="props.isProjectLocked"
-            :error-message="!!updatedValues.externalRepoUrl && !isValid(repoSchema, localRepo, 'externalRepoUrl') ? 'L\'url du dépôt doit commencer par https et se terminer par .git': undefined"
+            :error-message="!!updatedValues.externalRepoUrl && !CreateRepoSchema.pick({externalRepoUrl: true}).safeParse({externalRepoUrl: localRepo.externalRepoUrl}).success ? 'L\'url du dépôt doit commencer par https et se terminer par .git': undefined"
             label="Url du dépôt Git externe"
             label-visible
             hint="Url du dépôt Git qui servira de source pour la synchronisation"
@@ -122,7 +134,7 @@ const cancel = () => {
               type="text"
               :required="localRepo.isPrivate"
               :disabled="props.isProjectLocked"
-              :error-message="!!updatedValues.externalUserName && !isValid(repoSchema, localRepo, 'externalUserName') ? 'Le nom du propriétaire du token est obligatoire en cas de dépôt privé et ne doit contenir ni espaces ni caractères spéciaux': undefined"
+              :error-message="!!updatedValues.externalUserName && !CreateRepoSchema.pick({externalUserName: true}).safeParse({externalUserName: localRepo.externalUserName}).success ? 'Le nom du propriétaire du token est obligatoire en cas de dépôt privé et ne doit contenir ni espaces ni caractères spéciaux': undefined"
               autocomplete="name"
               label="Nom d'utilisateur"
               label-visible
@@ -139,7 +151,7 @@ const cancel = () => {
               type="text"
               :required="localRepo.isPrivate"
               :disabled="props.isProjectLocked"
-              :error-message="!!updatedValues.externalToken && !isValid(repoSchema, localRepo, 'externalToken') ? 'Le token d\'accès au dépôt est obligatoire en cas de dépôt privé et ne doit contenir ni espaces ni caractères spéciaux': undefined"
+              :error-message="!!updatedValues.externalToken && !CreateRepoSchema.pick({externalToken: true}).safeParse({externalToken: localRepo.externalToken}).success ? 'Le token d\'accès au dépôt est obligatoire en cas de dépôt privé et ne doit contenir ni espaces ni caractères spéciaux': undefined"
               label="Token d'accès au dépôt Git externe"
               label-visible
               hint="Token d'accès permettant le clone du dépôt par la chaîne DevSecOps"

@@ -1,4 +1,6 @@
+import type { Log, Project, User } from '@prisma/client'
 import { type PluginResult, hooks } from '@dso-console/hooks'
+import { type SharedSafeParseReturnType, parseZodError } from '@dso-console/shared'
 import {
   getEnvironmentsByProjectId,
   getProjectRepositories,
@@ -7,7 +9,6 @@ import {
   unlockProject,
   addLogs,
 } from '@/resources/queries-index.js'
-import type { Log, Project, User } from '@prisma/client'
 import { BadRequestError } from './errors.js'
 
 export const unlockProjectIfNotFailed = async (projectId: Project['id']) => {
@@ -40,4 +41,8 @@ export const checkCreateProject = async (owner: User, resource: 'Project' | 'Rep
     const message = 'Echec de la validation des prérequis par les services externes'
     throw new BadRequestError(message, { description: reasons })
   }
+}
+
+export const validateSchema = (schemaValidation: SharedSafeParseReturnType) => {
+  if (!schemaValidation.success) throw new BadRequestError(parseZodError(schemaValidation.error))
 }

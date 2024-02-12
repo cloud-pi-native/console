@@ -10,8 +10,9 @@ import {
   removeClusterFromStage,
   linkStageToQuotas,
 } from '@/resources/queries-index.js'
-import { type CreateStageDto, type UpdateStageClustersDto, stageSchema } from '@dso-console/shared'
+import { type CreateStageDto, type UpdateStageClustersDto, StageSchema } from '@dso-console/shared'
 import { Stage } from '@prisma/client'
+import { validateSchema } from '@/utils/business.js'
 
 export const getStageAssociatedEnvironments = async (stageId: Stage['id']) => {
   try {
@@ -42,7 +43,8 @@ export const getStageAssociatedEnvironments = async (stageId: Stage['id']) => {
 
 export const createStage = async (data: CreateStageDto) => {
   try {
-    await stageSchema.validateAsync(data)
+    const schemaValidation = StageSchema.omit({ id: true }).safeParse(data)
+    validateSchema(schemaValidation)
 
     const isNameTaken = await getStageByName(data.name)
     if (isNameTaken) throw new BadRequestError('Un type d\'environnement portant ce nom existe déjà')

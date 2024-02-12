@@ -3,13 +3,13 @@ import { ref, computed, onMounted, watch, type Ref } from 'vue'
 import { DsfrButton, getRandomId } from '@gouvminint/vue-dsfr'
 import {
   adminGroupPath,
-  schemaValidator,
-  userSchema,
+  UserSchema,
   type LettersQuery,
   type UserProfile,
   type UserModel,
   type RoleModel,
   type ProjectModel,
+  parseZodError,
 } from '@dso-console/shared'
 import pDebounce from 'p-debounce'
 import { useProjectUserStore } from '@/stores/project-user'
@@ -34,6 +34,8 @@ const props = withDefaults(
   }>(),
   {},
 )
+
+const snackbarStore = useSnackbarStore()
 
 const isUserAlreadyInTeam = computed(() => {
   return !!props.roles?.find(role => props.knownUsers[role.userId]?.email === newUserEmail.value)
@@ -130,9 +132,10 @@ const emit = defineEmits<{
 }>()
 
 const addUserToProject = async (email: string) => {
-  const keysToValidate = ['email']
-  const errorSchema = schemaValidator(userSchema, { email }, { keysToValidate })
-  if (Object.keys(errorSchema).length || isUserAlreadyInTeam.value) return
+  const validationSchema = UserSchema.pick({ email: true }).safeParse({ email })
+  if (!validationSchema.success) return snackbarStore.setMessage(parseZodError(validationSchema.error))
+  if (isUserAlreadyInTeam.value) return snackbarStore.setMessage('L\'utilisateur semble déjà faire partie du projet')
+
   emit('addMember', email)
 
   newUserEmail.value = ''

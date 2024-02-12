@@ -2,6 +2,7 @@ import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { apiClient } from '../../api/xhr-client.js'
 import { useAdminClusterStore } from './cluster.js'
+import { ClusterPrivacy } from '@dso-console/shared'
 
 const apiClientGet = vi.spyOn(apiClient, 'get')
 const apiClientPost = vi.spyOn(apiClient, 'post')
@@ -34,7 +35,7 @@ describe('Cluster Store', () => {
           tlsServerName: 'coucou.com',
         },
         clusterResources: true,
-        privacy: 'dedicated',
+        privacy: ClusterPrivacy.DEDICATED,
       },
       {
         id: '1e4fdb28-f9ea-46d4-ad16-607c7f1aa8b7',
@@ -93,7 +94,7 @@ describe('Cluster Store', () => {
         tlsServerName: 'coucou.com',
       },
       clusterResources: true,
-      privacy: 'dedicated',
+      privacy: ClusterPrivacy.DEDICATED,
     }
     apiClientPost.mockReturnValueOnce(Promise.resolve({ data }))
     const adminClusterStore = useAdminClusterStore()
@@ -121,7 +122,7 @@ describe('Cluster Store', () => {
         tlsServerName: 'coucou.com',
       },
       clusterResources: true,
-      privacy: 'dedicated',
+      privacy: ClusterPrivacy.DEDICATED,
     }
     apiClientPut.mockReturnValueOnce(Promise.resolve({ data }))
     const adminClusterStore = useAdminClusterStore()

@@ -1,5 +1,6 @@
 import type { Project, Repository } from '@prisma/client'
 import prisma from '@/prisma.js'
+import { AllStatus } from '@dso-console/shared'
 
 // SELECT
 export const getRepositoryById = async (id: Repository['id']) => {
@@ -26,7 +27,7 @@ export const initializeRepository = async ({ projectId, internalRepoName, extern
       externalUserName,
       isInfra,
       isPrivate,
-      status: 'initializing',
+      status: AllStatus.INITIALIZING,
     },
   })
 }
@@ -41,7 +42,7 @@ export const updateRepositoryFailed = async (id: Repository['id']) => {
 }
 
 export const updateRepository = async (id: Repository['id'], infos: Partial<Repository>) => {
-  return prisma.repository.update({ where: { id }, data: { ...infos, status: 'initializing' } })
+  return prisma.repository.update({ where: { id }, data: { ...infos, status: AllStatus.INITIALIZING } })
 }
 
 // DELETE

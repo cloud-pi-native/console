@@ -1,47 +1,46 @@
-import Joi from 'joi'
-import { allStatus } from '../utils/const.js'
+import { z } from 'zod'
+// import { AllStatus } from '../index.js'
 
-export const repoSchema = Joi.object({
-  id: Joi.string()
-    .uuid(),
-
-  internalRepoName: Joi.string()
-    .pattern(/^[a-z0-9]+[a-z0-9-]+[a-z0-9]+$/)
-    .required(),
-
-  externalRepoUrl: Joi.string()
-    .uri({
-      scheme: [
-        'https',
-      ],
-    })
-    .pattern(/^https:\/\/.*\.git$/)
-    .required(),
-
-  isPrivate: Joi.boolean(),
-
-  isInfra: Joi.boolean(),
-
-  externalUserName: Joi.string()
-    .pattern(/^[a-zA-Z0-9_-]+$/)
-    .when('isPrivate', { is: true, then: Joi.required() })
-    .when('isPrivate', { is: false, then: Joi.string().allow('', null) }),
-
-  externalToken: Joi.string()
-    .pattern(/^[a-zA-Z0-9=_-]+$/)
-    .when('isPrivate', { is: true, then: Joi.required() })
-    .when('isPrivate', { is: false, then: Joi.string().allow('', null) }),
-
-  status: Joi.string()
-    .valid(...allStatus),
-
-  projectId: Joi.string()
-    .uuid()
+export const CreateRepoSchema = z.object({
+  internalRepoName: z.string()
+    .regex(/^[a-z0-9]+[a-z0-9-]+[a-z0-9]+$/, { message: 'failed regex test' })
+    .min(2, { message: 'must be at least 2 character long' })
+    .max(20, { message: 'must not exceed 20 characters' }),
+  externalRepoUrl: z.string()
+    .url()
+    .regex(/^https:\/\/.*\.git$/, { message: 'failed regex test' }),
+  isPrivate: z.boolean(),
+  isInfra: z.boolean(),
+  externalUserName: z.string()
+    .regex(/^[a-zA-Z0-9_-]+$/)
     .optional(),
-
-  createdAt: Joi.date()
-    .optional(),
-
-  updatedAt: Joi.date()
+  externalToken: z.string()
+    .regex(/^[a-zA-Z0-9=_-]+$/)
     .optional(),
 })
+
+const UpdateRepoSchema = z.object({
+  id: z.string()
+    .uuid(),
+  status: z.string(),
+  projectId: z.string()
+    .uuid(),
+})
+
+const RepoSchema = UpdateRepoSchema.merge(CreateRepoSchema)
+
+export const CreateRepoBusinessSchema = CreateRepoSchema.refine(
+  ({ isPrivate, externalToken, externalUserName }) =>
+    (isPrivate && externalToken && externalUserName) ||
+    (!isPrivate && !externalToken && !externalUserName),
+  { message: 'Si le dépôt est privé, vous devez renseignez les nom de propriétaire et token associés.' },
+)
+
+export const RepoBusinessSchema = RepoSchema.refine(
+  ({ isPrivate, externalToken, externalUserName }) =>
+    (isPrivate && externalToken && externalUserName) ||
+    (!isPrivate && !externalToken && !externalUserName),
+  { message: 'Si le dépôt est privé, vous devez renseignez les nom de propriétaire et token associés.' },
+)
+
+export type Repo = Zod.infer<typeof RepoSchema>
