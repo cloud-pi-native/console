@@ -1,6 +1,7 @@
 import type { Environment, Project, Role, Cluster, QuotaStage } from '@prisma/client'
 import prisma from '@/prisma.js'
 import { getProjectById } from '../project/queries.js'
+import { AllStatus } from '@dso-console/shared'
 
 // SELECT
 export const getEnvironmentById = async (id: Environment['id']) => {
@@ -73,6 +74,7 @@ export const getEnvironmentByIdWithCluster = async (id: Environment['id']) => {
 
 export const getProjectByEnvironmentId = async (environmentId: Environment['id']) => {
   const env = await getEnvironmentById(environmentId)
+  if (!env) return
   return getProjectById(env.projectId)
 }
 
@@ -156,7 +158,7 @@ export const initializeEnvironment = async ({ name, projectId, projectOwners, cl
           id: clusterId,
         },
       },
-      status: 'initializing',
+      status: AllStatus.INITIALIZING,
       permissions: {
         createMany: {
           data: projectOwners.map(({ userId }) => ({ userId, level: 2 })),

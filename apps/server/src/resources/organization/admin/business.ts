@@ -1,9 +1,9 @@
 import { type PluginResult, hooks } from '@dso-console/hooks'
 import { addLogs, createOrganization as createOrganizationQuery, getOrganizationByName, getOrganizations, getProjectByOrganizationId, lockProject, updateActiveOrganization, updateLabelOrganization } from '@/resources/queries-index.js'
-import { unlockProjectIfNotFailed } from '@/utils/business.js'
+import { unlockProjectIfNotFailed, validateSchema } from '@/utils/business.js'
 import { BadRequestError, NotFoundError } from '@/utils/errors.js'
 import type { Log, Organization, User } from '@prisma/client'
-import { type CreateOrganizationDto, getUniqueListBy, organizationSchema, objectValues } from '@dso-console/shared'
+import { type CreateOrganizationDto, getUniqueListBy, OrganizationSchema, objectValues } from '@dso-console/shared'
 
 export const getAllOrganization = async () => {
   const allOrganizations = await getOrganizations()
@@ -12,11 +12,8 @@ export const getAllOrganization = async () => {
 }
 
 export const createOrganization = async (data: CreateOrganizationDto) => {
-  try {
-    await organizationSchema.validateAsync(data)
-  } catch (error) {
-    throw new BadRequestError(error?.message)
-  }
+  const schemaValidation = OrganizationSchema.omit({ id: true, active: true }).safeParse(data)
+  validateSchema(schemaValidation)
 
   const isNameTaken = await getOrganizationByName(data.name)
   if (isNameTaken) throw new BadRequestError('Cette organisation existe déjà', undefined)
@@ -79,7 +76,8 @@ export const fetchOrganizations = async (userId: User['id'], requestId: Log['req
   if (!externalOrganizations.length) throw new NotFoundError('Aucune organisation à synchroniser', undefined)
 
   for (const externalOrg of externalOrganizations) {
-    await organizationSchema.validateAsync(externalOrg)
+    const schemaValidation = OrganizationSchema.omit({ id: true, active: true }).safeParse(externalOrg)
+    validateSchema(schemaValidation)
     if (consoleOrganizations.find(consoleOrg => consoleOrg.name === externalOrg.name)) {
       await updateLabelOrganization(externalOrg)
     } else {

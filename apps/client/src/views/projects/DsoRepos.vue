@@ -3,7 +3,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectRepositoryStore } from '@/stores/project-repository.js'
 import { useUserStore } from '@/stores/user.js'
-import { projectIsLockedInfo, sortArrByObjKeyAsc } from '@dso-console/shared'
+import { AllStatus, projectIsLockedInfo, sortArrByObjKeyAsc } from '@dso-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const projectStore = useProjectStore()
@@ -32,7 +32,7 @@ const setReposTiles = (project) => {
 }
 
 const setSelectedRepo = (repo) => {
-  if (selectedRepo.value.internalRepoName === repo.internalRepoName || ['deleting', 'initializing'].includes(repo?.status)) {
+  if (selectedRepo.value.internalRepoName === repo.internalRepoName || [AllStatus.DELETING, AllStatus.INITIALIZING].includes(repo?.status)) {
     selectedRepo.value = {}
     return
   }
@@ -136,15 +136,15 @@ watch(project, () => {
       >
         <DsfrTile
           :title="repo.title"
-          :description="['deleting', 'initializing'].includes(repo?.data?.status) ? 'Opérations en cours' : null"
+          :description="[AllStatus.DELETING, AllStatus.INITIALIZING].includes(repo?.data?.status) ? 'Opérations en cours' : null"
           :data-testid="`repoTile-${repo.id}`"
           :horizontal="!!selectedRepo.internalRepoName"
-          :disabled="['deleting', 'initializing'].includes(repo?.data?.status)"
+          :disabled="[AllStatus.DELETING, AllStatus.INITIALIZING].includes(repo?.data?.status)"
           class="fr-mb-2w w-11/12"
           @click="setSelectedRepo(repo.data)"
         />
         <DsfrBadge
-          v-if="repo?.data?.status === 'initializing'"
+          v-if="repo?.data?.status === AllStatus.INITIALIZING"
           :data-testid="`${repo?.data?.internalRepoName}-${repo?.data?.status}-badge`"
           type="info"
           label="Dépôt en cours de création"

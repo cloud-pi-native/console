@@ -5,7 +5,7 @@ import { getRandomUser, repeatFn } from '@dso-console/test-utils'
 import { getConnection, closeConnections } from '../../../connect.js'
 import { adminGroupPath } from '@dso-console/shared'
 
-describe('Admin Users routes', () => {
+describe('Admin user routes', () => {
   beforeAll(async () => {
     await getConnection()
   })

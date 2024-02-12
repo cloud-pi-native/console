@@ -2,8 +2,8 @@ import { addLogs, deleteRepository as deleteRepositoryQuery, getProjectInfos, ge
 import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import type { Log, Project, Repository, User } from '@prisma/client'
 import { projectRootDir, gitlabUrl } from '@/utils/env.js'
-import { unlockProjectIfNotFailed, checkCreateProject as checkCreateRepositoryPlugins } from '@/utils/business.js'
-import { type CreateRepositoryDto, type UpdateRepositoryDto, type ProjectRoles, repoSchema } from '@dso-console/shared'
+import { unlockProjectIfNotFailed, checkCreateProject as checkCreateRepositoryPlugins, validateSchema } from '@/utils/business.js'
+import { type CreateRepositoryDto, type UpdateRepositoryDto, type ProjectRoles, CreateRepoBusinessSchema } from '@dso-console/shared'
 // TODO remove gitlabUrl
 import { hooks } from '@dso-console/hooks'
 import { checkInsufficientRoleInProject, checkRoleAndLocked } from '@/utils/controller.js'
@@ -56,30 +56,22 @@ export const createRepository = async (
   userId: User['id'],
   requestId: Log['requestId'],
 ) => {
-  try {
-    await repoSchema.validateAsync(data)
-  } catch (error) {
-    throw new BadRequestError(error.message)
-  }
+  const schemaValidation = CreateRepoBusinessSchema.safeParse({ ...data, projectId })
+  validateSchema(schemaValidation)
 
   await checkUpsertRepository(userId, projectId, 'owner')
-
   const user = await getUserById(userId)
 
   await checkCreateRepositoryPlugins(user, 'Repository', requestId)
-
   const project = await getProjectInfosAndRepos(projectId)
 
-  if (project.repositories?.find(repo => repo.internalRepoName === data.internalRepoName)) throw new BadRequestError(`Le nom du dépôt interne ${data.internalRepoName} existe déjà en base pour ce projet`, undefined)
-
-  const dbData = { ...data }
-  dbData.projectId = projectId
+  if (project?.repositories?.find(repo => repo.internalRepoName === data.internalRepoName)) throw new BadRequestError(`Le nom du dépôt interne ${data.internalRepoName} existe déjà en base pour ce projet`, undefined)
+  const dbData = { ...data, projectId, isInfra: !!data.isInfra, isPrivate: !!data.isPrivate }
   delete dbData.externalToken
 
   await lockProject(projectId)
-  // @ts-ignore
-  const repo = await initializeRepository(dbData)
 
+  const repo = await initializeRepository(dbData)
   try {
     const repoData = {
       ...repo,

@@ -5,7 +5,7 @@ import { createRandomDbSetup, getRandomEnv, getRandomUser, getRandomRole, getRan
 import { getConnection, closeConnections } from '../../connect.js'
 import { projectIsLockedInfo } from '@dso-console/shared'
 
-describe('User routes', () => {
+describe('Environment routes', () => {
   const requestor = getRandomUser()
   setRequestor(requestor)
 
@@ -232,7 +232,7 @@ describe('User routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(400)
-      expect(response.json().message).toEqual('"name" with value "^fpekfk" fails to match the required pattern: /^[a-z0-9]+$/')
+      expect(response.json().message).toEqual('Validation error: Invalid at "name"')
     })
   })
 

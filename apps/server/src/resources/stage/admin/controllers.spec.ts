@@ -4,8 +4,9 @@ import { vi, describe, it, expect, beforeAll, afterEach, afterAll, beforeEach } 
 import { getConnection, closeConnections } from '../../../connect.js'
 import { adminGroupPath } from '@dso-console/shared'
 import { getRandomCluster, getRandomEnv, getRandomQuota, getRandomQuotaStage, getRandomRole, getRandomStage, getRandomUser, repeatFn } from '@dso-console/test-utils'
+import { faker } from '@faker-js/faker'
 
-describe('Admin stages routes', () => {
+describe('Admin stage routes', () => {
   beforeAll(async () => {
     await getConnection()
   })
@@ -75,7 +76,7 @@ describe('Admin stages routes', () => {
     it('Should create a stage', async () => {
       const stage = getRandomStage('myStage')
       // @ts-ignore
-      stage.quotaIds = ['quotaId1', 'quotaId2']
+      stage.quotaIds = [faker.string.uuid(), faker.string.uuid()]
       // @ts-ignore
       const quotaStages = stage.quotaIds.map(quotaId => getRandomQuotaStage(quotaId, stage.id))
       // @ts-ignore
