@@ -1,25 +1,18 @@
-import Joi from 'joi'
+import { z } from 'zod'
 
-export const organizationSchema = Joi.object({
-  id: Joi.string()
+export const OrganizationSchema = z.object({
+  id: z.string()
     .uuid(),
-
-  source: Joi.string(),
-
-  name: Joi.string()
+  source: z.string()
+    .max(60)
+    .optional(),
+  name: z.string()
+    .regex(/^[a-z-]*$/)
     .min(2)
-    .max(10)
-    .pattern(/^[a-z-]*$/)
-    .required(),
-
-  label: Joi.string()
-    .required(),
-
-  active: Joi.boolean(),
-
-  createdAt: Joi.date()
-    .optional(),
-
-  updatedAt: Joi.date()
-    .optional(),
+    .max(10),
+  label: z.string()
+    .max(60),
+  active: z.boolean(),
 })
+
+export type Organization = Zod.infer<typeof OrganizationSchema>

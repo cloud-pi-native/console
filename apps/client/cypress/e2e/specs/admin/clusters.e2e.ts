@@ -1,3 +1,4 @@
+import { ClusterPrivacy } from '@dso-console/shared'
 import { getModelById, getModel } from '../../support/func.js'
 
 describe('Administration clusters', () => {
@@ -102,7 +103,7 @@ describe('Administration clusters', () => {
       .should('not.be.checked')
       .and('be.enabled')
     cy.get('#privacy-select')
-      .should('have.value', 'dedicated')
+      .should('have.value', ClusterPrivacy.DEDICATED)
       .and('be.enabled')
     cy.get('#projects-select')
       .should('be.visible')
@@ -138,7 +139,7 @@ describe('Administration clusters', () => {
       .should('be.enabled')
       .check({ force: true })
     cy.get('#privacy-select')
-      .select('dedicated')
+      .select(ClusterPrivacy.DEDICATED)
     newCluster.projects.forEach(project => {
       cy.get('#projects-select')
         .select(project)
@@ -179,7 +180,7 @@ describe('Administration clusters', () => {
       .should('be.checked')
       .and('be.enabled')
     cy.get('#privacy-select')
-      .should('have.value', 'dedicated')
+      .should('have.value', ClusterPrivacy.DEDICATED)
       .and('be.enabled')
     cy.get('#projects-select')
       .should('be.visible')

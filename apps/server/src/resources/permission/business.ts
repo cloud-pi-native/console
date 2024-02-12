@@ -3,6 +3,8 @@ import type { Project, User, Environment, Permission, Log } from '@prisma/client
 import { addLogs, deletePermission as deletePermissionQuery, getEnvironmentByIdWithCluster, getEnvironmentPermissions as getEnvironmentPermissionsQuery, getPermissionByUserIdAndEnvironmentId, getProjectInfos, getSingleOwnerByProjectId, getUserById, setPermission as setPermissionQuery, updatePermission as updatePermissionQuery } from '@/resources/queries-index.js'
 import { checkInsufficientRoleInProject, checkRoleAndLocked } from '@/utils/controller.js'
 import { hooks } from '@dso-console/hooks'
+import { PermissionSchema } from '@dso-console/shared'
+import { validateSchema } from '@/utils/business.js'
 
 export enum Action {
   update = 'modifiée',
@@ -23,7 +25,7 @@ export const getEnvironmentPermissions = async (
   projectId: Project['id'],
   environmentId: Environment['id'],
 ) => {
-  const roles = (await getProjectInfos(projectId)).roles
+  const roles = (await getProjectInfos(projectId))?.roles
   const errorMessage = checkInsufficientRoleInProject(userId, { roles })
   if (errorMessage) throw new ForbiddenError(errorMessage, undefined)
   return getEnvironmentPermissionsQuery(environmentId)
@@ -38,13 +40,20 @@ export const setPermission = async (
   requestId: Log['requestId'],
 ) => {
   const project = await getProjectInfos(projectId)
+
   const errorMessage = checkRoleAndLocked(project, requestorId)
   if (errorMessage) throw new ForbiddenError(errorMessage, undefined)
+
   const isUserProjectMember = project.roles?.some(role => role?.userId === userId)
   if (!isUserProjectMember) throw new BadRequestError('L\'utilisateur n\'est pas membre du projet', undefined)
+
+  const schemaValidation = PermissionSchema.omit({ id: true }).safeParse({ userId, environmentId, level })
+  validateSchema(schemaValidation)
+
   const permission = await setPermissionQuery({ userId, environmentId, level })
   const environment = await getEnvironmentByIdWithCluster(permission.environmentId)
   const user = await getUserById(userId)
+
   const results = await hooks.setEnvPermission.execute({
     environment: environment.name,
     cluster: environment.cluster,
@@ -73,14 +82,22 @@ export const updatePermission = async (
   requestId: Log['requestId'],
 ) => {
   const project = await getProjectInfos(projectId)
+
   await preventUpdatingOwnerPermission(projectId, userId)
+
   const errorMessage = checkRoleAndLocked(project, requestorId)
   if (errorMessage) throw new ForbiddenError(errorMessage)
+
   const requestorPermission = await getPermissionByUserIdAndEnvironmentId(requestorId, environmentId)
   if (!requestorPermission?.length) throw new ForbiddenError('Vous n\'avez pas de droits sur cet environnement')
+
+  const schemaValidation = PermissionSchema.omit({ id: true }).safeParse({ userId, environmentId, level })
+  validateSchema(schemaValidation)
+
   const permission = await updatePermissionQuery({ userId, environmentId, level })
   const environment = await getEnvironmentByIdWithCluster(permission.environmentId)
   const user = await getUserById(userId)
+
   const results = await hooks.setEnvPermission.execute({
     environment: environment.name,
     cluster: environment.cluster,

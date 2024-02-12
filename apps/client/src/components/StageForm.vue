@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { computed, onBeforeMount, ref } from 'vue'
-import { stageSchema, schemaValidator } from '@dso-console/shared'
+import { SharedZodError, StageSchema } from '@dso-console/shared'
 import { copyContent } from '@/utils/func.js'
 import type { UpdateStageType } from '@/views/admin/ListStages.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
@@ -34,8 +34,16 @@ const clusterNames = ref([])
 const isDeletingStage = ref(false)
 const stageToDelete = ref('')
 
-const errorSchema = computed(() => schemaValidator(stageSchema, localStage.value))
-const isStageValid = computed(() => Object.keys(errorSchema.value).length === 0)
+const errorSchema = computed<SharedZodError | undefined>(() => {
+  let schemaValidation
+  if (localStage.value.id) {
+    schemaValidation = StageSchema.safeParse(localStage.value)
+  } else {
+    schemaValidation = StageSchema.omit({ id: true }).safeParse(localStage.value)
+  }
+  return schemaValidation.success ? undefined : schemaValidation.error
+})
+const isStageValid = computed(() => !errorSchema.value)
 
 const updateClusters = (key: string, value: any) => {
   localStage.value[key] = value

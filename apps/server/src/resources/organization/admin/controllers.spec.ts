@@ -6,7 +6,7 @@ import { getConnection, closeConnections } from '../../../connect.js'
 import { adminGroupPath, allOrganizations } from '@dso-console/shared'
 import { filteredOrganizations } from '../../../utils/mock-plugins.js'
 
-describe('Organizations routes', () => {
+describe('Admin organization routes', () => {
   beforeAll(async () => {
     await getConnection()
   })
@@ -100,7 +100,7 @@ describe('Organizations routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(400)
-      expect(response.json().message).toEqual('"name" length must be less than or equal to 10 characters long')
+      expect(response.json().message).toEqual('Validation error: String must contain at most 10 character(s) at "name"')
     })
 
     it('Should return an error if organization already exists', async () => {

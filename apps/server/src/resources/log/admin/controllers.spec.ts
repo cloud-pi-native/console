@@ -5,7 +5,7 @@ import { getConnection, closeConnections } from '../../../connect.js'
 import { adminGroupPath } from '@dso-console/shared'
 import { getRandomLog, getRandomUser, repeatFn } from '@dso-console/test-utils'
 
-describe('Admin logs routes', () => {
+describe('Admin log routes', () => {
   const requestor = { ...getRandomUser(), groups: [adminGroupPath] }
   setRequestor(requestor)
 

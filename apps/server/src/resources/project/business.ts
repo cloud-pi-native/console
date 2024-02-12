@@ -25,15 +25,15 @@ import type { Cluster, Environment, Log, Organization, Project, User } from '@pr
 import { hooks, services, servicesInfos } from '@dso-console/hooks'
 import type { PluginResult, CreateProjectExecArgs, ProjectBase, UpdateProjectExecArgs } from '@dso-console/hooks'
 import { checkInsufficientPermissionInEnvironment, checkInsufficientRoleInProject } from '@/utils/controller.js'
-import { unlockProjectIfNotFailed, checkCreateProject as checkCreateProjectPlugins } from '@/utils/business.js'
+import { unlockProjectIfNotFailed, checkCreateProject as checkCreateProjectPlugins, validateSchema } from '@/utils/business.js'
 import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import {
   type AsyncReturnType,
   type CreateProjectDto,
   type UpdateProjectDto,
-  calcProjectNameMaxLength,
+  // calcProjectNameMaxLength,
   projectIsLockedInfo,
-  projectSchema,
+  ProjectSchema,
   exclude,
   adminGroupPath,
 } from '@dso-console/shared'
@@ -76,7 +76,8 @@ export const checkCreateProject = async (
   data: CreateProjectDto,
   requestId: Log['requestId'],
 ) => {
-  await projectSchema.validateAsync(data, { context: { projectNameMaxLength: calcProjectNameMaxLength(organizationName) } })
+  const schemaValidation = ProjectSchema.omit({ id: true, organizationId: true, status: true, locked: true }).safeParse(data)
+  validateSchema(schemaValidation)
 
   await checkCreateProjectPlugins(owner, 'Project', requestId)
 
@@ -187,7 +188,9 @@ export const updateProject = async (data: UpdateProjectDto, projectId: Project['
   Object.keys(data).forEach(key => {
     project[key] = data[key]
   })
-  await projectSchema.validateAsync(project, { context: { projectNameMaxLength: calcProjectNameMaxLength(project.organization.name) } })
+
+  const schemaValidation = ProjectSchema.pick({ description: true }).safeParse(data)
+  validateSchema(schemaValidation)
 
   // Actions
   try {

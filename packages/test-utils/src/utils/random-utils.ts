@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import { achievedStatus, projectRoles, logActions, type ProjectRoles, type AchievedStatus } from '@dso-console/shared'
+import { achievedStatus, projectRoles, logActions, type ProjectRoles, type AchievedStatus, ClusterPrivacy } from '@dso-console/shared'
 import { repeatFn } from './func-utils.js'
 import { Cluster, Environment, Log, Organization, Permission, Project, Repository, User, Role } from './types.js'
 
@@ -50,7 +50,7 @@ export const getRandomCluster = (projectIds = repeatFn(2)(faker.string.uuid), st
       server: 'https://coucou.com:5000',
       tlsServerName: 'coucou.com',
     },
-    privacy: faker.helpers.arrayElement(['public', 'dedicated']),
+    privacy: faker.helpers.arrayElement(Object.values(ClusterPrivacy)),
     clusterResources: faker.datatype.boolean(),
     secretName: faker.internet.password({ length: 50 }),
   } as Cluster
@@ -137,7 +137,7 @@ export const getRandomPerm = (environmentId = faker.string.uuid(), user = getRan
     id: faker.string.uuid(),
     environmentId,
     userId: user.id,
-    level: faker.number.int({ min: 0, max: 1 }),
+    level: faker.number.int({ min: 0, max: 2 }),
     user,
   } as Permission
 }

@@ -6,7 +6,7 @@ import { adminGroupPath } from '@dso-console/shared'
 import { getRandomProject, getRandomUser, repeatFn } from '@dso-console/test-utils'
 import { json2csv } from 'json-2-csv'
 
-describe('Admin projects routes', () => {
+describe('Admin project routes', () => {
   beforeAll(async () => {
     await getConnection()
   })

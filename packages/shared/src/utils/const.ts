@@ -38,7 +38,7 @@ export const allStatus = [
   'created',
   'failed',
   'deleting',
-]
+] as const
 
 export const projectStatus = [
   'initializing',
@@ -53,6 +53,18 @@ export const achievedStatus = [
 ] as const
 
 export type AchievedStatus = typeof achievedStatus[number]
+
+export enum ClusterPrivacy {
+  PUBLIC = 'public',
+  DEDICATED = 'dedicated',
+}
+
+export enum AllStatus {
+  INITIALIZING = 'initializing',
+  CREATED = 'created',
+  FAILED = 'failed',
+  DELETING = 'deleting',
+}
 
 export const logActions = [
   'Create Project',

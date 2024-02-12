@@ -1,31 +1,16 @@
-import Joi from 'joi'
+import { z } from 'zod'
 
-export const quotaSchema = Joi.object({
-  id: Joi.string()
+export const QuotaSchema = z.object({
+  id: z.string()
     .uuid(),
-
-  memory: Joi.string()
-    .required(),
-
-  cpu: Joi.number()
-    .positive()
-    .required(),
-
-  name: Joi.string()
-    .required(),
-
-  isPrivate: Joi.boolean()
-    .optional(),
-
-  stageIds: Joi.array()
-    .optional(),
-
-  quotaStage: Joi.array()
-    .optional(),
-
-  createdAt: Joi.date()
-    .optional(),
-
-  updatedAt: Joi.date()
-    .optional(),
+  name: z.string()
+    .min(1),
+  memory: z.string()
+    .min(1),
+  cpu: z.number()
+    .positive(),
+  isPrivate: z.boolean(),
+  stageIds: z.string().uuid().array().optional(),
 })
+
+export type Quota = Zod.infer<typeof QuotaSchema>

@@ -1,5 +1,5 @@
 import prisma from '@/prisma.js'
-import { exclude, type AsyncReturnType } from '@dso-console/shared'
+import { exclude, type AsyncReturnType, ClusterPrivacy, AllStatus } from '@dso-console/shared'
 import type { Organization, Project, User, Role } from '@prisma/client'
 
 type ProjectUpdate = Partial<Pick<Project, 'description'>>
@@ -99,7 +99,7 @@ export const getUserProjects = async (user: User) => {
       roles: true,
       clusters: {
         where: {
-          privacy: 'dedicated',
+          privacy: ClusterPrivacy.DEDICATED,
         },
         select: {
           id: true,
@@ -234,7 +234,7 @@ export const initializeProject = async ({ name, organizationId, description = ''
       name,
       organizationId,
       description,
-      status: 'initializing',
+      status: AllStatus.INITIALIZING,
       locked: true,
       services: {},
       roles: {
@@ -294,6 +294,7 @@ export const removeUserFromProject = async ({ projectId, userId }: { projectId: 
 }
 
 export const updateProjectServices = async (id: Project['id'], services: Project['services']) => {
+  // @ts-ignore
   return prisma.project.update({ where: { id }, data: { services } })
 }
 
@@ -302,7 +303,7 @@ export const archiveProject = async (id: Project['id']) => {
   return prisma.project.update({
     where: { id },
     data: {
-      name: `${project.name}_${Date.now()}_archived`,
+      name: `${project?.name}_${Date.now()}_archived`,
       status: 'archived',
       locked: true,
     },

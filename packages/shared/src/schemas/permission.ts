@@ -1,27 +1,16 @@
-import Joi from 'joi'
+import { z } from 'zod'
 
-export const permissionSchema = Joi.object({
-  id: Joi.string()
-    .uuid()
-    .required(),
-
-  userId: Joi.string()
-    .uuid()
-    .required(),
-
-  environmentId: Joi.string()
-    .uuid()
-    .required(),
-
-  level: Joi.number()
-    .integer()
-    .min(0)
+export const PermissionSchema = z.object({
+  id: z.string()
+    .uuid(),
+  userId: z.string()
+    .uuid(),
+  environmentId: z.string()
+    .uuid(),
+  level: z.number()
+    .int()
+    .nonnegative()
     .max(2),
-  // .required(),
-
-  createdAt: Joi.date()
-    .optional(),
-
-  updatedAt: Joi.date()
-    .optional(),
 })
+
+export type Permission = Zod.infer<typeof PermissionSchema>

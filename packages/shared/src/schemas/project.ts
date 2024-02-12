@@ -1,44 +1,31 @@
-import Joi from 'joi'
+import { z } from 'zod'
 import { projectStatus } from '../utils/const.js'
 
 export const descriptionMaxLength = 280
+export const projectNameMaxLength = 20
 
-export const projectSchema = Joi.object({
-  id: Joi.string()
+export const ProjectSchema = z.object({
+  id: z.string()
     .uuid(),
-
-  name: Joi.string()
-    .pattern(/^[a-z0-9]+$/)
+  name: z.string()
+    .regex(/^[a-z0-9]+$/)
     .min(2)
-    .max(Joi.ref('$projectNameMaxLength'))
-    .required(),
-
-  description: Joi.string().allow('')
-    .max(descriptionMaxLength),
-
-  organizationId: Joi.string()
-    .uuid()
-    .required(),
-
-  services: Joi.object(),
-
-  status: Joi.string()
-    .valid(...projectStatus),
-  // .required(),
-
-  locked: Joi.boolean(),
-  // .required(),
-
-  createdAt: Joi.date()
+    .max(projectNameMaxLength),
+  description: z.string()
+    .max(descriptionMaxLength)
     .optional(),
-
-  updatedAt: Joi.date()
-    .optional(),
+  organizationId: z.string()
+    .uuid(),
+  status: z.enum(projectStatus),
+  locked: z.boolean(),
 
   // ProjectInfos
-  organization: Joi.object(),
-  roles: Joi.array(),
-  clusters: Joi.array(),
-  repositories: Joi.array(),
-  environments: Joi.array(),
+  services: z.object({}).optional(),
+  organization: z.object({}).optional(),
+  roles: z.object({}).array().optional(),
+  clusters: z.object({}).array().optional(),
+  repositories: z.object({}).array().optional(),
+  environments: z.object({}).array().optional(),
 })
+
+export type Project = Zod.infer<typeof ProjectSchema>
