@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { getAxiosOptions } from './functions.js'
 
-export const createRobot = async (projectName) => {
+export const createRobot = async (projectName: string) => {
   const rest = await axios({
     ...getAxiosOptions(),
     url: 'robots',
@@ -11,7 +11,7 @@ export const createRobot = async (projectName) => {
   return rest.data
 }
 
-const getRobotPermissions = (projectName) => {
+const getRobotPermissions = (projectName: string) => {
   return {
     name: 'ci',
     duration: -1,

@@ -6,7 +6,7 @@ export class VaultProjectApi extends PluginApi {
   private token: string | undefined = undefined
   private axios: AxiosInstance
   private basePath: string
-  private projectRootDir: string
+  private projectRootDir: string | undefined
 
   constructor (organizationName: string, projectName: string) {
     super()

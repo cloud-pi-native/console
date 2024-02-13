@@ -1,6 +1,12 @@
 import { type CreateRepositoryExecArgs, type DeleteRepositoryExecArgs, type Organization, type Project, type RepositoryCreate, type StepCall, generateProjectKey } from '@dso-console/hooks'
 import { getAxiosInstance } from './tech.js'
 
+export type SonarPaging = {
+  pageIndex: number,
+  pageSize: number,
+  total: number
+}
+
 export type Qualifiers =
   'BRC' | // - Sub - projects
   'DIR' | // - Directories
@@ -15,14 +21,6 @@ export type SonarProject = {
   visibility: 'private' | 'public'
   lastAnalysisDate?: string
   revision?: string
-}
-type SearchProjectRes = {
-  data: {
-    paging: {
-      total: number
-    },
-    components: SonarProject[]
-  }
 }
 
 const robotPermissions = [
@@ -92,16 +90,16 @@ export const createDsoRepository: StepCall<CreateRepositoryExecArgs> = async (pa
 
 const createProject = async (projectKey: string, projectName: string) => {
   const axiosInstance = getAxiosInstance()
-  const sonarProjectSearch = await axiosInstance({
+  const sonarProjectSearch: { paging: SonarPaging, components: SonarProject[] } = (await axiosInstance({
     url: 'projects/search',
     method: 'get',
     params: {
       projects: projectKey,
     },
-  }) as SearchProjectRes
+  }))?.data
 
-  if (!sonarProjectSearch.data.paging.total) { // Project missing
-    const sonarProjectCreate = await axiosInstance({
+  if (!sonarProjectSearch.paging.total) { // Project missing
+    const sonarProjectCreate = (await axiosInstance({
       url: 'projects/create',
       method: 'post',
       params: {
@@ -110,25 +108,25 @@ const createProject = async (projectKey: string, projectName: string) => {
         name: projectName,
         mainbranch: 'main',
       },
-    })
+    }))?.data
     let ensureExist = false
     while (!ensureExist) {
-      const sonarProjectSearch = await axiosInstance({
+      const sonarProjectSearch: { paging: SonarPaging, components: SonarProject[] } = (await axiosInstance({
         url: 'projects/search',
         method: 'get',
         params: {
           projects: projectKey,
         },
-      }) as SearchProjectRes
-      if (sonarProjectSearch.data.paging.total) ensureExist = true
+      }))?.data
+      if (sonarProjectSearch.paging.total) ensureExist = true
     }
     return {
-      sonarProject: sonarProjectCreate.data.project,
+      sonarProject: sonarProjectCreate.project,
       message: 'Project created',
     }
   } else {
     return {
-      sonarProject: sonarProjectSearch.data.components[0],
+      sonarProject: sonarProjectSearch.components[0],
       message: 'Project already exists',
     }
   }
@@ -139,17 +137,17 @@ export const deleteDsoRepository: StepCall<DeleteRepositoryExecArgs> = async (pa
   try {
     const { organization, project, internalRepoName } = payload.args
     const projectKey = generateProjectKey(organization, project, internalRepoName)
-    const sonarProjectSearch = await axiosInstance({
+    const sonarProjectSearch: { paging: SonarPaging, components: SonarProject[] } = (await axiosInstance({
       url: 'projects/search',
       method: 'get',
       params: {
         project: projectKey,
       },
-    }) as SearchProjectRes
+    }))?.data
 
     let message: string
 
-    if (sonarProjectSearch.data.components.length) { // Project exists
+    if (sonarProjectSearch.components.length) { // Project exists
       await axiosInstance({
         url: 'projects/delete',
         method: 'post',
