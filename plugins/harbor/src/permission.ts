@@ -8,7 +8,7 @@ import { getAxiosOptions } from './functions.js'
  * @returns {Promise}
  */
 export const addProjectGroupMember = async (projectName: string, accessLevel = 3) => {
-  const members = (await axios({
+  const members: Record<string, string | number>[] = (await axios({
     ...getAxiosOptions(),
     url: `projects/${projectName}/members`,
     method: 'get',

@@ -25,7 +25,7 @@ export const getOrCreateChildGroup = async (kcClient: KeycloakAdminClient, paren
   }
 
   const existingGroup = await kcClient.groups.findOne({ id: parentId })
-  const matchingGroup = existingGroup.subGroups.find(({ name: groupName }) => groupName === name) as Required<GroupRepresentation> | undefined
+  const matchingGroup = existingGroup?.subGroups?.find(({ name: groupName }) => groupName === name) as Required<GroupRepresentation> | undefined
   if (!matchingGroup) {
     const newGroup = await kcClient.groups.createChildGroup({ id: parentId }, { name })
     return {

@@ -63,7 +63,7 @@ export const addRepoToApplicationProject = async ({ appProjectName, repoUrl }: {
 export const removeRepoFromApplicationProject = async ({ appProjectName, repoUrl }: { appProjectName: string, repoUrl: string }) => {
   const appProject = await getAppProject(appProjectName)
   if (appProject) {
-    const sourceRepos = appProject.spec.sourceRepos
+    const sourceRepos: string[] = appProject.spec.sourceRepos
     const newSourceRepos = sourceRepos ? sourceRepos.filter(url => url !== repoUrl) : []
     const customK8sApi = getCustomK8sApi()
 

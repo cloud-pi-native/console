@@ -1,6 +1,23 @@
 import type { StepCall, ArchiveProjectExecArgs, CreateProjectExecArgs } from '@dso-console/hooks'
 import { generateRandomPassword } from '@dso-console/hooks'
 import { getAxiosInstance } from './tech.js'
+import type { SonarPaging } from './project.js'
+
+export type SonarUser = {
+  login: string,
+  name: string,
+  active: boolean,
+  email: string,
+  groups: string[],
+  tokensCount: number,
+  local: boolean,
+  externalIdentity: string,
+  externalProvider: string,
+  avatar: string,
+  lastConnectionDate: Date,
+  managed: boolean,
+  sonarLintLastConnectionDate: Date
+}
 
 export const createUser: StepCall<CreateProjectExecArgs> = async (payload) => {
   const axiosInstance = getAxiosInstance()
@@ -11,7 +28,7 @@ export const createUser: StepCall<CreateProjectExecArgs> = async (payload) => {
     const { project, organization } = payload.args
     const username = `${organization}-${project}`
     const fakeEmail = `${project}@${organization}`
-    const users = (await axiosInstance({
+    const users: { paging: SonarPaging, users: SonarUser[] } = (await axiosInstance({
       url: 'users/search',
       params: {
         q: username,
@@ -88,7 +105,7 @@ export const deleteUser: StepCall<ArchiveProjectExecArgs> = async (payload) => {
   const { project, organization } = payload.args
   const username = `${organization}-${project}`
   try {
-    const users = (await axiosInstance({
+    const users: { paging: SonarPaging, users: SonarUser[] } = (await axiosInstance({
       url: 'users/search',
       params: {
         q: username,
