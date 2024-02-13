@@ -1,6 +1,7 @@
 import type { ArchiveProjectExecArgs, CreateProjectExecArgs, StepCall } from '@dso-console/hooks'
 import type { AxiosResponse } from 'axios'
 import { getAxiosInstance } from './tech.js'
+import type { SonarPaging } from './project.js'
 
 export type SonarGroup = {
   id: string,
@@ -52,7 +53,7 @@ export const deleteteDsoProjectGroup: StepCall<ArchiveProjectExecArgs> = async (
   const groupName = `/${organization}-${project}`
   let message: string
   try {
-    const groupsSearch = (await axiosInstance({
+    const groupsSearch: { paging: SonarPaging, groups: SonarGroup[] } = (await axiosInstance({
       url: 'user_groups/search',
       params: {
         q: groupName,
@@ -90,7 +91,7 @@ export const deleteteDsoProjectGroup: StepCall<ArchiveProjectExecArgs> = async (
 
 export const findGroupByName = async (name: string): Promise<void | SonarGroup> => {
   const axiosInstance = getAxiosInstance()
-  const groupsSearch = (await axiosInstance({
+  const groupsSearch: { paging: SonarPaging, groups: SonarGroup[] } = (await axiosInstance({
     url: 'user_groups/search',
     params: {
       q: name,

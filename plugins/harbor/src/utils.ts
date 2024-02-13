@@ -11,12 +11,12 @@ export const getConfig = ():Required<typeof config> => {
   config.url = config.url ?? removeTrailingSlash(requiredEnv('HARBOR_URL'))
   config.user = config.user ?? requiredEnv('HARBOR_ADMIN')
   config.password = config.password ?? requiredEnv('HARBOR_ADMIN_PASSWORD')
-  config.host = config.host ?? config.url.split('://')[1]
+  config.host = config.host ?? config?.url?.split('://')[1]
   // @ts-ignore
   return config
 }
 
-export const getRobotPermissions = (projectName) => {
+export const getRobotPermissions = (projectName: string) => {
   return {
     name: 'ci',
     duration: -1,

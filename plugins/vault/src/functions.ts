@@ -19,7 +19,7 @@ export const archiveDsoProject: StepCall<ArchiveProjectExecArgs> = async (payloa
     return {
       status: {
         result: 'KO',
-        message: error.message,
+        message: error instanceof Error ? error.message : 'An unexpected error has occurred',
       },
       error: JSON.stringify(error),
     }
