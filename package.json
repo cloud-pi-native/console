@@ -44,7 +44,8 @@
   "pnpm": {
     "patchedDependencies": {
       "fastify-keycloak-adapter@2.1.6": "patches/fastify-keycloak-adapter@2.1.6.patch",
-      "fastify-keycloak-adapter@2.1.9": "patches/fastify-keycloak-adapter@2.1.9.patch"
+      "fastify-keycloak-adapter@2.1.9": "patches/fastify-keycloak-adapter@2.1.9.patch",
+      "fastify-keycloak-adapter@2.1.10": "patches/fastify-keycloak-adapter@2.1.10.patch"
     },
     "allowNonAppliedPatches": true
   },
