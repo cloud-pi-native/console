@@ -9,7 +9,6 @@
     "declarationDir": "./types",
     "lib": [
       "ESNext"
-    ],
-    "strict": false,
+    ]
   },
 }
