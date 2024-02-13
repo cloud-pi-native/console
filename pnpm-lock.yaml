@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 patchedDependencies:
+  fastify-keycloak-adapter@2.1.10:
+    hash: qjewfyoi7oset3qdolqxdxv4be
+    path: patches/fastify-keycloak-adapter@2.1.10.patch
   fastify-keycloak-adapter@2.1.6:
     hash: gxsavfdb7hgyg2knxzubgtywe4
     path: patches/fastify-keycloak-adapter@2.1.6.patch
@@ -263,7 +266,7 @@ importers:
         version: 4.26.0
       fastify-keycloak-adapter:
         specifier: ^2.1.10
-        version: 2.1.10
+        version: 2.1.10(patch_hash=qjewfyoi7oset3qdolqxdxv4be)
       json-2-csv:
         specifier: ^5.0.1
         version: 5.0.1
@@ -6172,7 +6175,7 @@ packages:
       reusify: 1.0.4
     dev: false
 
-  /fastify-keycloak-adapter@2.1.10:
+  /fastify-keycloak-adapter@2.1.10(patch_hash=qjewfyoi7oset3qdolqxdxv4be):
     resolution: {integrity: sha512-hGIPO/sfLKOfJvU+sOLZbM8DGcn8ZHUPrNP+rx2bNB92fXawyt0vc8Mp6BGJK24C371apZfLQsbwcvMPyQsdFA==}
     dependencies:
       '@fastify/cookie': 9.3.1
@@ -6189,6 +6192,7 @@ packages:
     transitivePeerDependencies:
       - debug
     dev: false
+    patched: true
 
   /fastify-plugin@4.5.1:
     resolution: {integrity: sha512-stRHYGeuqpEZTL1Ef0Ovr2ltazUT9g844X5z/zEBFLG8RYlpDiOCIG+ATvYEp+/zmc7sN29mcIMp8gvYplYPIQ==}
