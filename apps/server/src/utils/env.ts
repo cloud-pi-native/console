@@ -1,7 +1,17 @@
 import { removeTrailingSlash } from '@dso-console/shared'
 import * as dotenv from 'dotenv'
 
-dotenv.config({ path: '/env/.env' })
+if (process.env.DOCKER !== 'true') {
+  dotenv.config({ path: '.env' })
+}
+
+if (process.env.INTEGRATION === 'true') {
+  const envInteg = dotenv.config({ path: '.env.integ' })
+  process.env = {
+    ...process.env,
+    ...(envInteg?.parsed ?? {}),
+  }
+}
 
 // application mode
 export const isDev = process.env.NODE_ENV === 'development'

@@ -25,3 +25,6 @@ coverage/
 **/Dockerfile
 .dockerignore
 docker/
+
+# Env
+.env*

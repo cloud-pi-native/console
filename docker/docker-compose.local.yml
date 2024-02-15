@@ -9,6 +9,7 @@ services:
       - 8090:8080
     volumes:
       - ../keycloak/realms:/opt/keycloak/data/import
+      - ../keycloak/data/local:/opt/keycloak/data/h2
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
@@ -27,63 +28,44 @@ services:
     restart: always
     image: docker.io/postgres:15.3
     container_name: dso-console_postgres
-    ports:
-      - 8081:80
     environment:
       POSTGRES_DB: dso-console-db
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
+    ports:
+      - 5432:5432
+    volumes:
+      - dso-postgres-data-local:/var/lib/postgresql/data
     networks:
       - dso-network
     attach: false
 
-  server:
+  pgadmin:
     restart: always
-    build:
-      context: ..
-      dockerfile: apps/server/Dockerfile
-      target: prod
-    image: dso-console/server:prod
-    container_name: dso-console_server
-    user: root
+    image: docker.io/dpage/pgadmin4:7.4
+    container_name: dso-console_pgadmin
     depends_on:
       postgres:
         condition: service_started
-      keycloak:
-        condition: service_healthy
-    ports:
-      - 4000:8080
-      - 9229:9229
     volumes:
-      - ../packages/test-utils/src/imports/data.ts:/app/dist/init/db/imports/data.js
-    env_file:
-      - ../apps/server/.env.docker
+      - ../db/pgadmin/config/servers-docker.json:/pgadmin4/servers.json
+      - dso-pgadmin-data-local:/var/lib/pgadmin
+    ports:
+      - 8081:80
     environment:
-      NODE_ENV: production
-      CI: "true"
-      DEV_SETUP: "true"
+      PGADMIN_DEFAULT_EMAIL: admin@dso.fr
+      PGADMIN_DEFAULT_PASSWORD: admin
     networks:
       - dso-network
-
-  client:
-    build:
-      context: ..
-      dockerfile: apps/client/Dockerfile
-      target: prod
-    image: dso-console/client:prod
-    container_name: dso-console_client
-    depends_on:
-      server:
-        condition: service_started
-    ports:
-      - 8080:8080
-    volumes:
-      - ../apps/client/nginx/default.docker.conf:/opt/bitnami/nginx/conf/server_blocks/default.conf
-    env_file:
-      - ../apps/client/.env.docker
-    networks:
-      - dso-network
+    attach: false
 
 networks:
   dso-network:
-    name: dso-network
+    driver: bridge
+    # driver_opts:
+    # com.docker.network.driver.mtu: 1450
+
+volumes:
+  dso-keycloak-data-local:
+  dso-pgadmin-data-local:
+  dso-postgres-data-local:

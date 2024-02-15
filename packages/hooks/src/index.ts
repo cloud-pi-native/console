@@ -90,7 +90,9 @@ const pluginManager = (options: PluginManagerOptions): PluginManager => {
         }
       }
     }
-    console.warn(`Plugin ${name} registered${message.length ? ' at ' : ''}${message.join(' ')}`)
+    if (process.env.NODE_ENV !== 'test') {
+      console.warn(`Plugin ${name} registered${message.length ? ' at ' : ''}${message.join(' ')}`)
+    }
   }
 
   const unregister: UnregisterFn = (name) => {

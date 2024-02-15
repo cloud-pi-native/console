@@ -33,86 +33,100 @@ export const getClusterAssociatedEnvironments = async (clusterId: string) => {
 }
 
 export const createCluster = async (data: CreateClusterDto, userId: User['id'], requestId: Log['requestId']) => {
-  await clusterSchema.validateAsync(data, { presence: 'required' })
+  try {
+    await clusterSchema.validateAsync(data, { presence: 'required' })
 
-  const isLabelTaken = await getClusterByLabel(data.label)
-  if (isLabelTaken) throw new BadRequestError('Ce label existe déjà pour un autre cluster', undefined)
+    const isLabelTaken = await getClusterByLabel(data.label)
+    if (isLabelTaken) throw new BadRequestError('Ce label existe déjà pour un autre cluster', undefined)
 
-  const {
-    projectIds,
-    stageIds,
-    user,
-    cluster,
-    ...clusterData
-  } = data
+    const {
+      projectIds,
+      stageIds,
+      user,
+      cluster,
+      ...clusterData
+    } = data
 
-  // @ts-ignore
-  const clusterCreated = await createClusterQuery(clusterData, { user, cluster })
+    // @ts-ignore
+    const clusterCreated = await createClusterQuery(clusterData, { user, cluster })
 
-  await linkClusterToProjects(clusterCreated.id, projectIds)
+    await linkClusterToProjects(clusterCreated.id, projectIds)
 
-  await linkClusterToStages(clusterCreated.id, stageIds)
+    await linkClusterToStages(clusterCreated.id, stageIds)
 
-  // @ts-ignore
-  const results = await hooks.createCluster.execute({ ...clusterCreated, user, cluster })
-  // @ts-ignore
-  await addLogs('Create Cluster', results, userId, requestId)
+    // @ts-ignore
+    const results = await hooks.createCluster.execute({ ...clusterCreated, user, cluster })
+    // @ts-ignore
+    await addLogs('Create Cluster', results, userId, requestId)
 
-  return clusterCreated
+    return clusterCreated
+  } catch (error) {
+    if (error instanceof DsoError) {
+      throw error
+    }
+    throw new Error(error?.message)
+  }
 }
 
 export const updateCluster = async (data: FromSchema<typeof updateClusterSchema['body']>, clusterId: Cluster['id'], userId: User['id'], requestId: Log['requestId']) => {
-  if (data?.privacy === 'public') delete data.projectIds
+  try {
+    if (data?.privacy === 'public') delete data.projectIds
 
-  await clusterSchema.validateAsync(data, { presence: 'optional' })
-  const dbCluster = await getClusterById(clusterId)
-  if (!dbCluster) throw new NotFoundError('Aucun cluster trouvé pour cet id')
-  if (data?.label && data.label !== dbCluster.label) throw new BadRequestError('Le label d\'un cluster ne peut être modifié')
+    await clusterSchema.validateAsync(data, { presence: 'optional' })
+    const dbCluster = await getClusterById(clusterId)
+    if (!dbCluster) throw new NotFoundError('Aucun cluster trouvé pour cet id')
+    if (data?.label && data.label !== dbCluster.label) throw new BadRequestError('Le label d\'un cluster ne peut être modifié')
 
-  const kubeConfig = {
-    user: data.user,
-    cluster: data.cluster,
-  }
-  const {
-    projectIds,
-    stageIds,
-    user,
-    cluster,
-    ...clusterData
-  } = data
+    const kubeConfig = {
+      user: data.user,
+      cluster: data.cluster,
+    }
+    const {
+      projectIds,
+      stageIds,
+      user,
+      cluster,
+      ...clusterData
+    } = data
 
-  // @ts-ignore
-  const clusterUpdated = await updateClusterQuery(clusterId, clusterData, { user, cluster })
+    // @ts-ignore
+    const clusterUpdated = await updateClusterQuery(clusterId, clusterData, { user, cluster })
 
-  // @ts-ignore
-  const results = await hooks.updateCluster.execute({ ...cluster, user: { ...kubeConfig.user }, cluster: { ...kubeConfig.cluster } })
+    // @ts-ignore
+    const results = await hooks.updateCluster.execute({ ...cluster, user: { ...kubeConfig.user }, cluster: { ...kubeConfig.cluster } })
 
-  // @ts-ignore
-  await addLogs('Update Cluster', results, userId, requestId)
+    // @ts-ignore
+    await addLogs('Update Cluster', results, userId, requestId)
 
-  if (projectIds) {
-    await linkClusterToProjects(clusterId, projectIds)
+    if (projectIds) {
+      await linkClusterToProjects(clusterId, projectIds)
 
-    const dbProjects = await getProjectsByClusterId(clusterId)
-    for (const project of dbProjects) {
-      if (!projectIds.includes(project.id)) {
-        await removeClusterFromProject(clusterUpdated.id, project.id)
+      const dbProjects = await getProjectsByClusterId(clusterId)
+      for (const project of dbProjects) {
+        if (!projectIds.includes(project.id)) {
+          await removeClusterFromProject(clusterUpdated.id, project.id)
+        }
       }
     }
-  }
 
-  if (stageIds) {
-    await linkClusterToStages(clusterId, stageIds)
+    if (stageIds) {
+      await linkClusterToStages(clusterId, stageIds)
 
-    const dbStages = await getStagesByClusterId(clusterId)
-    for (const stage of dbStages) {
-      if (!stageIds.includes(stage.id)) {
-        await removeClusterFromStage(clusterUpdated.id, stage.id)
+      const dbStages = await getStagesByClusterId(clusterId)
+      for (const stage of dbStages) {
+        if (!stageIds.includes(stage.id)) {
+          await removeClusterFromStage(clusterUpdated.id, stage.id)
+        }
       }
     }
-  }
 
-  return clusterUpdated
+    return clusterUpdated
+  } catch (error) {
+    if (error instanceof DsoError) {
+      throw error
+    }
+    throw new Error(error?.message)
+  }
 }
 
 export const deleteCluster = async (clusterId: Cluster['id'], userId: User['id'], requestId: Log['requestId']) => {

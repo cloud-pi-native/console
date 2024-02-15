@@ -2,7 +2,7 @@
   // Format
   "editor.wordWrap": "on",
   "editor.codeActionsOnSave": {
-    "source.fixAll": true
+    "source.fixAll": "explicit"
   },
   "eslint.enable": true,
   "eslint.validate": [
