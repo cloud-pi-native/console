@@ -1,4 +1,7 @@
-import { getConfig, getCustomK8sApi, patchOptions } from './utils.js'
+import { PatchUtils } from '@kubernetes/client-node'
+import { getConfig, getCustomK8sApi } from './utils.js'
+
+const patchOptions = { headers: { 'Content-type': PatchUtils.PATCH_FORMAT_JSON_PATCH } }
 
 export type ArgoDestination = {
   namespace?: string

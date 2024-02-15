@@ -8,13 +8,13 @@ Ce projet est construit avec [NodeJS](https://nodejs.org/), [VueJS](https://vuej
 
 ### Liste des services kubernetes
 
-| Nom du service | Github project                                                                  | Role                                      | Déployé en production |
-| -------------- | ------------------------------------------------------------------------------- | ----------------------------------------- | --------------------- |
-| __postgres__   | [Postgres](https://github.com/postgres/postgres)                                | Base de données de l'application          | Oui                   |
-| __pgadmin__    | [Pgadmin](https://github.com/pgadmin-org/pgadmin4)                              | Interface d'administration de Postgres    | -                     |
-| __server__     | [NodeJS](https://github.com/nodejs/node)                                        | API de l'application                      | Oui                   |
-| __client__     | [VueJS](https://github.com/vuejs/vue) / [Nginx](https://github.com/nginx/nginx) | Interface graphique de l'application      | Oui                   |
-| __keycloak__   | [Keycloak](https://github.com/keycloak/keycloak)                                | Gestionnaire d'authentification / d'accès | -                     |
+| Nom du service | Github project                                                                  | Role                                      | Déployé le Helm Chart de production |
+| -------------- | ------------------------------------------------------------------------------- | ----------------------------------------- | ----------------------------------- |
+| __postgres__   | [Postgres](https://github.com/postgres/postgres)                                | Base de données de l'application          | Oui                                 |
+| __pgadmin__    | [Pgadmin](https://github.com/pgadmin-org/pgadmin4)                              | Interface d'administration de Postgres    | -                                   |
+| __server__     | [NodeJS](https://github.com/nodejs/node)                                        | API de l'application                      | Oui                                 |
+| __client__     | [VueJS](https://github.com/vuejs/vue) / [Nginx](https://github.com/nginx/nginx) | Interface graphique de l'application      | Oui                                 |
+| __keycloak__   | [Keycloak](https://github.com/keycloak/keycloak)                                | Gestionnaire d'authentification / d'accès | -                                   |
 
 ### API
 
@@ -42,6 +42,8 @@ Le développement s'effectue directement dans un cluster Kubernetes à l'aide de
 Liste des outils utilisés par le projet à installer sur son ordinateur :
 
 - [Docker](https://docs.docker.com/get-docker/) *- moteur d'exécution de conteneur*
+  - [Plugin compose](https://github.com/docker/compose) *- define and run multi-container applications with Docker*
+  - [Plugin buildx](https://github.com/docker/buildx) *- Docker CLI plugin for extended build capabilities with BuildKit*
 - [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) *- kubernetes dans Docker*
 - [Kubectl](https://kubernetes.io/fr/docs/tasks/tools/install-kubectl/) *- interface en ligne de commande pour kubernetes*
 - [Helm](https://helm.sh/docs/intro/install/) *- gestionnaire de paquets kubernetes*
@@ -52,7 +54,7 @@ Liste des outils utilisés par le projet à installer sur son ordinateur :
 
 ### Lancer l'application
 
-Lancez les commandes suivantes dans votre terminal :
+Lancez les commandes suivantes dans votre terminal pour installer le projet :
 
 ```shell
 # Cloner le projet
@@ -66,15 +68,115 @@ pnpm install
 
 # Copier les fichiers d'environnement exemples
 ./ci/scripts/init-env.sh
+```
 
+#### Développement
+
+L'application peut se lancer de plusieurs manières, à savoir :
+
+__Local :__
+
+```shell
+# Lancer keycloak, postgres et pgadmin dans des conteneurs
+pnpm run dev
+
+# Lancer le serveur
+pnpm --filter server run dev
+
+# Lancer le client
+pnpm --filter client run dev
+
+# Supprimer les conteneurs keycloak, postgres et pgadmin
+pnpm run dev:clean
+
+# Supprimer les conteneurs keycloak, postgres et pgadmin (supprime les volumes docker)
+pnpm run dev:delete
+```
+
+__Docker :__
+
+```shell
+# Lancer l'application
+pnpm run docker:dev
+
+# Supprimer les conteneurs
+pnpm run docker:dev:clean
+
+# Supprimer les conteneurs (supprime les volumes docker)
+pnpm run docker:dev:delete
+```
+
+__Kubernetes :__
+
+```shell
+# Initialiser Kind (ajoute des noms de domaines dans /etc/hosts, le mot de passe sera demandé)
+pnpm run kube:init
+
+# Lancer l'application
+pnpm run kube:dev
+
+# Supprimer les ressources applicatives sans supprimer le cluster Kind
+pnpm run kube:clean
+
+# Supprimer entièrement le cluster et ses ressources
+pnpm run kube:delete
+```
+
+#### Intégration
+
+L'application peut se lancer de plusieurs manières, à savoir :
+
+__Local :__
+
+```shell
+# Lancer keycloak, postgres et pgadmin dans des conteneurs
+pnpm run integ
+
+# Lancer le serveur
+pnpm --filter server run integ
+
+# Lancer le client
+pnpm --filter client run integ
+
+# Supprimer les conteneurs keycloak, postgres et pgadmin
+pnpm run integ:clean
+
+# Supprimer les conteneurs keycloak, postgres et pgadmin (supprime les volumes docker)
+pnpm run integ:delete
+```
+
+__Docker :__
+
+```shell
+# Lancer l'application
+pnpm run docker:integ
+
+# Supprimer les conteneurs
+pnpm run docker:integ:clean
+
+# Supprimer les conteneurs (supprime les volumes docker)
+pnpm run docker:integ:delete
+```
+
+__Kubernetes :__
+
+```shell
 # Initialiser Kind (ajoute des noms de domaines dans /etc/hosts, le mot de passe sera demandé)
 pnpm run kube:init
 
 # Lancer l'application en mode développement
-pnpm run dev
+pnpm run kube:integ
+
+# Supprimer les ressources applicatives sans supprimer le cluster Kind
+pnpm run kube:clean
+
+# Supprimer entièrement le cluster et ses ressources
+pnpm run kube:delete
 ```
 
-Les commandes de test de l'application :
+#### Utilitaires
+
+Les commandes utilitaires de l'application :
 
 ```shell
 # Lancer la vérification syntaxique
@@ -90,32 +192,28 @@ pnpm run test:ct
 pnpm run test:e2e
 ```
 
-Les commandes de suppression des ressources :
-
-```shell
-# Supprimer les ressources applicatives sans supprimer le cluster Kind
-pnpm run kube:clean
-
-# Supprimer entièrement le cluster et ses ressources
-pnpm run kube:delete
-```
-
 L'intégralité des commandes est disponibles dans le fichier [package.json](./package.json) à la racine du projet, vous pouvez lancer ces dernières à l'aide de la commande `pnpm run <le_nom_du_script>`.
 
 ### Accès aux services
 
 Les services sont disponibles via des nom de domaines ajouté dans le fichier `/etc/hosts` de votre système, l'ajout des domaines se fait automatiquement lors de la commande `pnpm run kube:init`.
 
-| Service                                        | Url                            |
-| ---------------------------------------------- | ------------------------------ |
-| Interface graphique *- (client)*               | <http://console.dso.local>     |
-| Serveur *- (api)*                              | <http://console.dso.local/api> |
-| Interface d'administration de base de données  | <http://pgadmin.dso.local>     |
-| Interface d'administration du serveur keycloak | <http://keycloak.dso.local>    |
+| Service                                        | Url (kubernetes)               | Url (local/docker)      |
+| ---------------------------------------------- | ------------------------------ | ----------------------- |
+| Interface graphique *- (client)*               | <http://console.dso.local>     | <http://localhost:8080> |
+| Serveur *- (api)*                              | <http://console.dso.local/api> | <http://localhost:4000> |
+| Interface d'administration de base de données  | <http://pgadmin.dso.local>     | <http://localhost:8081> |
+| Interface d'administration du serveur keycloak | <http://keycloak.dso.local>    | <http://localhost:8090> |
 
 *__Notes:__ :warning: Il est possible que le navigateur utilisé (particulière Brave ou Firefox) bloque les cookies utilisés entre le frontend et keycloak, il est nécessaire de désactiver les protections de ce type dans votre navigateur (ex: Brave Shield).*
 
 ### Variables d'environnements
+
+__Local / Docker:__
+
+Les variables d'environnements sont gérées localement via des fichiers `.env` (local) / `.env.docker` (docker) dans les dossiers `./apps/server` et `./apps/client`, aux précédents fichiers s'ajoute un fichier `.env.integ` utilisé pour le mode intégration (local et docker).
+
+__Kubernetes :__
 
 Un chart Helm utilitaire est installé pour déployer les services qui ne sont pas inclus dans le chart de la console :
 
@@ -192,20 +290,30 @@ La gestion des dépendances est effectuée à l'aide de [pnpm](https://pnpm.io/)
 *Schema de l'architecture du monorepo :*
 
 ```shell
+./
 ├── apps
-│   ├── client/
-│   └── server/
+│   ├── client
+│   └── server
 ├── packages
-│   ├── test-utils/
-│   ├── tsconfig/
-│   └── shared/
-├── node_modules/
+│   ├── eslintconfig
+│   ├── hooks
+│   ├── shared
+│   ├── test-utils
+│   └── tsconfig
+├── plugins
+│   ├── argo
+│   ├── gitlab
+│   ├── harbor
+│   ├── keycloak
+│   ├── kubernetes
+│   ├── nexus
+│   ├── sonarqube
+│   └── vault
 ├── package.json
 ├── pnpm-lock.yaml
 ├── pnpm-workspace.yaml
 ├── turbo.json
-├── README.md
- ...
+└── README.md
 ```
 
 ## Conventions

@@ -76,11 +76,14 @@
     "db:wrapper": "sh ./migrate-db.sh",
     "dev": "npm run db:migrate && nodemon --exec 'vite-node src/server.ts'",
     "format": "eslint . --ext .js,.cjs,.ts --fix",
+    "integ": "export INTEGRATION=true; npm run db:migrate && nodemon --exec 'vite-node src/server.ts'",
+    "kube:e2e-ci": "echo 'check cache'",
     "lint": "eslint . --ext .js,.cjs,.ts",
     "start": "npm run db:deploy && node dist/server.js",
     "test": "pnpm run db:generate ; vitest run",
     "test:cov": "pnpm run db:generate ; vitest run --coverage",
-    "test:e2e-ci": "echo 'check cache'"
+    "test:e2e": "npm run dev",
+    "test:e2e-ci": "npm run start"
   },
   "type": "module",
   "types": "./types/plugins/index.d.ts",
