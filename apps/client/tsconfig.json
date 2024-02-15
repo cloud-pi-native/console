@@ -28,12 +28,7 @@
     "isolatedModules": true,
     "skipLibCheck": true
   },
-  "vueCompilerOptions": {
-    "plugins": [
-      "@vue-macros/volar/define-models",
-      "@vue-macros/volar/define-slots"
-    ]
-  },
+  "vueCompilerOptions": {},
   "exclude": [
     "dist",
     "node_modules",

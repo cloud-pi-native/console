@@ -3,7 +3,7 @@
 ROOT_DIR=/opt/bitnami/nginx/html
 
 populate () {
-  KEY=$(echo "$1" | tr '[:upper:]' '[:lower:]' | sed 's/_/-/g')
+  KEY=$(echo "dso-$1" | tr '[:upper:]' '[:lower:]' | sed 's/_/-/g')
   VALUE=$(eval "echo \${$1}")
   sed -i 's|'${KEY}'|'${VALUE}'|g' $2
 }
