@@ -1,7 +1,5 @@
-import { CoreV1Api, KubeConfig, PatchUtils } from '@kubernetes/client-node'
+import { CoreV1Api, KubeConfig } from '@kubernetes/client-node'
 import { type ClusterObject } from '@dso-console/hooks'
-
-export const patchOptions = { headers: { 'Content-type': PatchUtils.PATCH_FORMAT_JSON_PATCH } }
 
 export const createCoreV1Api = (cluster: ClusterObject) => {
   const kc = new KubeConfig()

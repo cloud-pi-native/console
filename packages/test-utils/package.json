@@ -11,6 +11,7 @@
     "clean:build": "rimraf dist types",
     "compile": "tsc",
     "format": "eslint ./src --ext .js,.cjs,.ts --fix",
+    "kube:e2e-ci": "echo 'check cache'",
     "lint": "eslint ./src",
     "test:e2e-ci": "echo 'check cache'"
   },

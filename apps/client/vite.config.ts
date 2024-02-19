@@ -1,16 +1,36 @@
+import * as dotenv from 'dotenv'
 import { fileURLToPath, URL } from 'url'
 import { defineConfig } from 'vite'
 import UnoCSS from 'unocss/vite'
 import vue from '@vitejs/plugin-vue'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
+import { configDefaults } from 'vitest/config'
 import {
   vueDsfrAutoimportPreset,
   ohVueIconAutoimportPreset,
   vueDsfrComponentResolver,
 } from '@gouvminint/vue-dsfr'
 
-import { serverHost, serverPort, clientPort } from './src/utils/env.js'
+if (process.env.DOCKER !== 'true') {
+  dotenv.config({ path: '.env' })
+}
+
+if (process.env.INTEGRATION === 'true') {
+  const envInteg = dotenv.config({ path: '.env.integ' })
+  process.env = {
+    ...process.env,
+    ...(envInteg?.parsed ?? {}),
+  }
+}
+
+const serverHost = process.env.SERVER_HOST ?? 'localhost'
+const serverPort = process.env.SERVER_PORT ?? 4000
+const clientPort = process.env.CLIENT_PORT ?? 8080
+
+const define = process.env.NODE_ENV === 'production'
+  ? {}
+  : { 'process.env': process.env }
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -25,9 +45,7 @@ export default defineConfig({
       },
     },
   },
-  define: {
-    'process.env': process.env,
-  },
+  define,
   plugins: [
     vue(),
     AutoImport({
@@ -65,7 +83,7 @@ export default defineConfig({
     }),
     UnoCSS(),
   ],
-  base: process.env.BASE_URL ?? '/',
+  base: '/',
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
@@ -83,5 +101,17 @@ export default defineConfig({
       'oh-vue-icons',
       'jszip',
     ],
+  },
+  test: {
+    root: fileURLToPath(new URL('./', import.meta.url)),
+    environment: 'jsdom',
+    exclude: [...configDefaults.exclude, 'e2e/*'],
+    testTimeout: 2000,
+    watch: false,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+      exclude: ['**/*.spec.js'],
+    },
   },
 })

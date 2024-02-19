@@ -70,7 +70,7 @@ describe('connect', () => {
     await getConnection()
 
     expect(app.log.info.mock.calls).toHaveLength(2)
-    expect(app.log.info.mock.calls).toContainEqual(['Trying to connect to Postgres with: undefined'])
+    expect(app.log.info.mock.calls).toContainEqual([`Trying to connect to Postgres with: ${process.env.DB_URL}`])
     expect(app.log.info.mock.calls).toContainEqual(['Connected to Postgres!'])
   })
 
@@ -81,7 +81,7 @@ describe('connect', () => {
     await getConnection()
 
     expect(app.log.info.mock.calls).toHaveLength(5)
-    expect(app.log.info.mock.calls).toContainEqual(['Trying to connect to Postgres with: undefined'])
+    expect(app.log.info.mock.calls).toContainEqual([`Trying to connect to Postgres with: ${process.env.DB_URL}`])
     expect(app.log.info.mock.calls).toContainEqual(['Could not connect to Postgres: Failed to connect'])
     expect(app.log.info.mock.calls).toContainEqual(['Retrying (4 tries left)'])
     expect(app.log.info.mock.calls).toContainEqual(['Connected to Postgres!'])

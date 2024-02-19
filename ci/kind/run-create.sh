@@ -3,10 +3,12 @@ if [ -z "$(kind get clusters | grep 'kind')" ]; then
 
   # Prepare kind config
   if [[ -f "$SCRIPTPATH/../../env/kind-values.yml" ]]; then
-    helm template dev $SCRIPTPATH/configs/cluster \
-    --values $SCRIPTPATH/../../env/kind-values.yml > $SCRIPTPATH/configs/rendered/kind-config.yml
+    KIND_CONFIG="$(helm template dev $SCRIPTPATH/configs/cluster \
+      --values $SCRIPTPATH/../../env/kind-values.yml)"
+    echo "$KIND_CONFIG" > $SCRIPTPATH/configs/rendered/kind-config.yml
   else
-    helm template dev $SCRIPTPATH/configs/cluster > $SCRIPTPATH/configs/rendered/kind-config.yml
+    KIND_CONFIG="$(helm template dev $SCRIPTPATH/configs/cluster)"
+    echo "$KIND_CONFIG" > $SCRIPTPATH/configs/rendered/kind-config.yml
   fi
 
   printf "\n\n${red}[kind wrapper].${no_color} Create Kind cluster\n\n"

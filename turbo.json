@@ -76,8 +76,20 @@
     "test:ct-ci": {
       "dependsOn": [
         "^@dso-console/shared#build",
-        "^@dso-console/test-utils#build",
-        "^@dso-console/client#build"
+        "^@dso-console/test-utils#build"
+      ],
+      "outputs": []
+    },
+    "test:e2e": {
+      "dependsOn": [
+        "^@dso-console/shared#build",
+        "^@dso-console/test-utils#build"
+      ],
+      "outputs": []
+    },
+    "test:e2e-ci": {
+      "inputs": [
+        "src/**"
       ],
       "outputs": []
     },
@@ -96,9 +108,24 @@
       ],
       "outputs": []
     },
-    "test:e2e-ci": {
+    "kube:e2e-ci": {
       "inputs": [
         "src/**"
+      ],
+      "outputs": []
+    },
+    "client#kube:e2e-ci": {
+      "dependsOn": [
+        "@dso-console/shared#kube:e2e-ci",
+        "@dso-console/test-utils#kube:e2e-ci",
+        "server#kube:e2e-ci"
+      ],
+      "inputs": [
+        "src/**",
+        "cypress/components/specs/**",
+        "cypress/components/support/**",
+        "cypress/e2e/specs/**",
+        "cypress/e2e/support/**"
       ],
       "outputs": []
     }

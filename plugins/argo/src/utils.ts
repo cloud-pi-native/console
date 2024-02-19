@@ -1,4 +1,4 @@
-import { KubeConfig, CoreV1Api, CustomObjectsApi, PatchUtils } from '@kubernetes/client-node'
+import { KubeConfig, CoreV1Api, CustomObjectsApi } from '@kubernetes/client-node'
 import type { Environment, Organization, Project, RepositoryForEnv } from '@dso-console/hooks'
 import { removeTrailingSlash, requiredEnv } from '@dso-console/shared'
 import { createHmac } from 'crypto'
@@ -60,5 +60,3 @@ export const getCustomK8sApi = (): CustomObjectsApi => {
   customK8sApi = customK8sApi ?? getClient().makeApiClient(CustomObjectsApi)
   return customK8sApi
 }
-
-export const patchOptions = { headers: { 'Content-type': PatchUtils.PATCH_FORMAT_JSON_PATCH } }

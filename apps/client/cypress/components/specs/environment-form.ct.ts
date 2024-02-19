@@ -11,6 +11,9 @@ import EnvironmentForm from '@/components/EnvironmentForm.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 
+process.env.NODE_ENV = 'test'
+process.env.CT = 'true'
+
 describe('EnvironmentForm.vue', () => {
   let pinia: Pinia
 

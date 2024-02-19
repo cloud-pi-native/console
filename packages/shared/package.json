@@ -36,6 +36,7 @@
     "compile": "tsc",
     "dev": "nodemon --watch src --ext .ts --exec 'npm run compile'",
     "format": "eslint ./src --ext .js,.cjs,.ts --fix",
+    "kube:e2e-ci": "echo 'check cache'",
     "lint": "eslint ./src",
     "test": "vitest run",
     "test:cov": "vitest run --coverage",
