@@ -5,7 +5,7 @@ import { type UserDetails } from '@/types/index.js'
 import { services } from '@dso-console/hooks'
 import { validateSchema } from '@/utils/business.js'
 
-export const checkServicesHealth = async (requestor: UserDetails) => {
+export const checkServicesHealth = async (requestor: Omit<UserDetails, 'groups'>) => {
   const schemaValidation = UserSchema.safeParse(requestor)
   validateSchema(schemaValidation)
   const user = await getOrCreateUser(requestor)

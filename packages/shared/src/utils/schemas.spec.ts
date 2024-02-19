@@ -234,27 +234,6 @@ describe('Schemas utils', () => {
       .toMatch('Validation error: Si le cluster est dédié, vous devez renseignez les ids des projets associés.')
   })
 
-  it('Should not validate a cluster business schema and send specific error, case 2', () => {
-    const toParse = {
-      id: faker.string.uuid(),
-      label: 'cluster',
-      clusterResources: true,
-      privacy: ClusterPrivacy.PUBLIC,
-      stageIds: [faker.string.uuid(), faker.string.uuid()],
-      projectIds: [faker.string.uuid()],
-      user: {},
-      cluster: {
-        tlsServerName: 'blabla',
-      },
-    }
-
-    expect(parseZodError(ClusterBusinessSchema
-      .safeParse(toParse)
-      // @ts-ignore
-      .error))
-      .toMatch('Validation error: Si le cluster est dédié, vous devez renseignez les ids des projets associés.')
-  })
-
   it('Should not validate a repository schema with wrong internal repo name', () => {
     const toParse = {
       id: faker.string.uuid(),

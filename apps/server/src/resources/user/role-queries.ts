@@ -11,7 +11,7 @@ export const getSingleOwnerByProjectId = async (projectId: Project['id']) => {
   return (await prisma.role.findFirst({
     select: { user: true },
     where: { role: 'owner', projectId },
-  })).user
+  }))?.user
 }
 
 // UPDATE
@@ -50,7 +50,9 @@ export const _createRole = async (data: Parameters<typeof prisma.role.upsert>[0]
     update: data,
     where: {
       userId_projectId: {
+        // @ts-ignore
         projectId: data.projectId,
+        // @ts-ignore
         userId: data.userId,
       },
     },

@@ -104,7 +104,7 @@ export const getProjectsByClusterId = async (id: Cluster['id']) => (await prisma
   select: {
     projects: true,
   },
-})).projects
+}))?.projects
 
 export const getStagesByClusterId = async (id: Cluster['id']) => (await prisma.cluster.findUnique({
   where: {
@@ -113,7 +113,7 @@ export const getStagesByClusterId = async (id: Cluster['id']) => (await prisma.c
   select: {
     stages: true,
   },
-})).stages
+}))?.stages
 
 export const createCluster = (
   data: Omit<Cluster, 'id' | 'updatedAt' | 'createdAt' | 'kubeConfigId' | 'secretName'>,
@@ -122,6 +122,7 @@ export const createCluster = (
   data: {
     ...data,
     kubeconfig: {
+      // @ts-ignore
       create: kubeconfig,
     },
   },
@@ -138,6 +139,7 @@ export const updateCluster = (
   data: {
     ...data,
     kubeconfig: {
+      // @ts-ignore
       update: kubeconfig,
     },
   },
