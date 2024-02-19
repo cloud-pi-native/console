@@ -65,6 +65,7 @@ describe('Repository routes', () => {
       const newRepository = getRandomRepo(projectInfos.id)
 
       prisma.project.findUnique.mockResolvedValue(projectInfos)
+      prisma.user.findUnique.mockResolvedValue(requestor)
       prisma.project.update.mockResolvedValue(projectInfos)
       randomDbSetUp.stages.forEach(stage => {
         prisma.stage.findUnique.mockResolvedValueOnce(randomDbSetUp.stages?.find(dbSetUpstage => dbSetUpstage?.id === stage?.id))

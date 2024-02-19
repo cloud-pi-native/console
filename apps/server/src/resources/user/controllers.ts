@@ -5,6 +5,7 @@ import { addUserToProject, checkProjectLocked, checkProjectRole, getMatchingUser
 import { adminGroupPath, addUserToProjectSchema, getMatchingUsersSchema, getProjectUsersSchema, removeUserFromProjectSchema, updateUserProjectRoleSchema } from '@dso-console/shared'
 
 import { FromSchema } from 'json-schema-to-ts'
+import { BadRequestError } from '@/utils/errors.js'
 
 const router = async (app: FastifyInstance, _opt) => {
   // TODO : pas utilisé
@@ -80,6 +81,7 @@ const router = async (app: FastifyInstance, _opt) => {
       const data = req.body
 
       const project = await getProjectInfos(projectId)
+      if (!project) throw new BadRequestError(`Le projet ayant pour id ${projectId} n'existe pas`)
 
       if (!user.groups?.includes(adminGroupPath)) {
         await checkProjectRole(user.id, { roles: project.roles, minRole: 'owner' })
@@ -116,6 +118,7 @@ const router = async (app: FastifyInstance, _opt) => {
       const data = req.body
 
       const project = await getProjectInfos(projectId)
+      if (!project) throw new BadRequestError(`Le projet ayant pour id ${projectId} n'existe pas`)
 
       if (!user.groups?.includes(adminGroupPath)) {
         await checkProjectRole(user.id, { roles: project.roles, minRole: 'owner' })
@@ -151,6 +154,7 @@ const router = async (app: FastifyInstance, _opt) => {
       const userToRemoveId = req.params.userId
 
       const project = await getProjectInfos(projectId)
+      if (!project) throw new BadRequestError(`Le projet ayant pour id ${projectId} n'existe pas`)
 
       if (!user.groups?.includes(adminGroupPath)) {
         await checkProjectRole(user.id, { roles: project.roles, minRole: 'owner' })

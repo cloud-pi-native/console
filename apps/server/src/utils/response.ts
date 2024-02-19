@@ -1,4 +1,5 @@
 import type { FastifyReply } from 'fastify'
+// @ts-ignore
 import type { FastifyReplyType } from 'fastify/types/type-provider'
 
 const sendRes = (res: FastifyReply, status: number, data: FastifyReplyType = undefined) => res.status(status).send(data)

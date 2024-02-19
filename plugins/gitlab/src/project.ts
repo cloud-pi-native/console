@@ -6,7 +6,7 @@ import { AccessTokenSchema, ProjectSchema } from '@gitbeaker/rest'
 
 export const createProject = async (
   { groupId, internalRepoName, externalRepoUrn, externalUserName, externalToken, isPrivate }:
-    { groupId: number, internalRepoName: string, externalRepoUrn: string, externalUserName: string, externalToken: string | undefined, isPrivate: boolean }): Promise<ProjectSchema> => {
+    { groupId: number, internalRepoName: string, externalRepoUrn: string, externalUserName: string | undefined, externalToken: string | undefined, isPrivate: boolean }): Promise<ProjectSchema> => {
   const api = getApi()
   const searchResults = await api.Projects.search(internalRepoName)
   if (searchResults.length) {

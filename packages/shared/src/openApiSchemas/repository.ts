@@ -14,6 +14,7 @@ export const repositoryOpenApiSchema = {
     },
     externalUserName: {
       type: 'string',
+      nullable: true,
     },
     externalToken: {
       type: 'string',
