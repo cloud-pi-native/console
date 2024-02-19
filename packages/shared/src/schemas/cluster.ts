@@ -12,8 +12,8 @@ const CreateClusterSchema = z.object({
     .max(50)
     .optional(),
   clusterResources: z.boolean(),
-  // privacy: z.nativeEnum(ClusterPrivacy),
   privacy: z.string(),
+  // privacy: z.nativeEnum(ClusterPrivacy),
   projectIds: z.string()
     .uuid()
     .array()
@@ -54,14 +54,14 @@ export const ClusterSchema = UpdateClusterSchema.merge(CreateClusterSchema)
 export const CreateClusterBusinessSchema = CreateClusterSchema.refine(
   ({ privacy, projectIds }) =>
     !!(privacy === ClusterPrivacy.DEDICATED && projectIds?.length) ||
-      !!(privacy === ClusterPrivacy.PUBLIC && !projectIds?.length),
+      privacy === ClusterPrivacy.PUBLIC,
   { message: 'Si le cluster est dédié, vous devez renseignez les ids des projets associés.' },
 )
 
 export const ClusterBusinessSchema = ClusterSchema.refine(
   ({ privacy, projectIds }) =>
     !!(privacy === ClusterPrivacy.DEDICATED && projectIds?.length) ||
-      !!(privacy === ClusterPrivacy.PUBLIC && !projectIds?.length),
+      privacy === ClusterPrivacy.PUBLIC,
   { message: 'Si le cluster est dédié, vous devez renseignez les ids des projets associés.' },
 )
 

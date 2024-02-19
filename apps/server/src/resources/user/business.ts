@@ -24,7 +24,13 @@ export const checkProjectLocked = async (project: Project) => {
 
 export const getProjectInfos = async (projectId: Project['id']) => getProjectInfosQuery(projectId)
 
-export const getProjectUsers = async (projectId: Project['id']) => getProjectUsersQuery(projectId)
+export const getProjectUsers = async (projectId: Project['id']) => {
+  try {
+    return getProjectUsersQuery(projectId)
+  } catch (error) {
+    throw new BadRequestError(`Le projet ayant pour id ${projectId} n'existe pas`)
+  }
+}
 
 export const getMatchingUsers = async (letters: string) => getMatchingUsersQuery(letters)
 
@@ -34,6 +40,8 @@ export const addUserToProject = async (
   userId: User['id'],
   requestId: Log['requestId'],
 ) => {
+  if (!project) throw new BadRequestError('Le projet n\'existe pas')
+
   let userToAdd = await getUserByEmail(email)
 
   // Retrieve user from keycloak if does not exist in db
@@ -55,6 +63,7 @@ export const addUserToProject = async (
     validateSchema(schemaValidation)
     await createUser(retrievedUser)
     userToAdd = await getUserByEmail(email)
+    if (!userToAdd) throw new BadRequestError('L\'utilisateur n\'existe pas')
   }
 
   const insufficientRoleErrorMessageUserToAdd = checkInsufficientRoleInProject(userToAdd.id, { roles: project.roles, minRole: 'user' })
@@ -68,7 +77,7 @@ export const addUserToProject = async (
 
   const pluginsResults = await hooks.addUserToProject.validate(kcData)
   if (pluginsResults?.failed) {
-    const reasons = Object.values(pluginsResults)
+    const reasons = Object.values(pluginsResults.results)
       .filter((plugin: PluginResult) => plugin?.status?.result === 'KO')
       .map((plugin: PluginResult) => plugin.status.message)
       .join('; ')
@@ -102,6 +111,8 @@ export const updateUserProjectRole = async (
   project: AsyncReturnType<typeof getProjectInfos>,
   role: ProjectRoles,
 ) => {
+  if (!project) throw new BadRequestError('Le projet n\'existe pas')
+
   if (project.roles.filter(projectUser => projectUser.userId === userToUpdateId).length === 0) throw new BadRequestError('L\'utilisateur ne fait pas partie du projet', undefined)
 
   await updateUserProjectRoleQuery(userToUpdateId, project.id, role)
@@ -114,6 +125,8 @@ export const removeUserFromProject = async (
   userId: User['id'],
   requestId: Log['requestId'],
 ) => {
+  if (!project) throw new BadRequestError('Le projet n\'existe pas')
+
   const userToRemove = await getUserById(userToRemoveId)
   if (!userToRemove) throw new Error('L\'utilisateur n\'existe pas')
 
@@ -128,7 +141,7 @@ export const removeUserFromProject = async (
 
   const pluginsResults = await hooks.removeUserFromProject.validate(kcData)
   if (pluginsResults?.failed) {
-    const reasons = Object.values(pluginsResults)
+    const reasons = Object.values(pluginsResults.results)
       .filter((plugin: PluginResult) => plugin?.status?.result === 'KO')
       .map((plugin: PluginResult) => plugin.status.message)
       .join('; ')

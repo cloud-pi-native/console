@@ -5,6 +5,7 @@ import type { CreateOrganizationDto, UpdateOrganizationDto, OrganizationParams }
 import type { FastifyRequest, FastifyInstance } from 'fastify'
 
 import { getAllOrganizationsSchema, createOrganizationSchema, fetchOrganizationsSchema, updateOrganizationSchema } from '@dso-console/shared'
+import { BadRequestError } from '@/utils/errors.js'
 
 const router = async (app: FastifyInstance, _opt) => {
   // Récupérer toutes les organisations
@@ -73,6 +74,7 @@ const router = async (app: FastifyInstance, _opt) => {
       const { active, label, source } = req.body
 
       const organization = await updateOrganization(name, active, label, source)
+      if (!organization) throw new BadRequestError('L\'organisation n\'existe pas')
 
       addReqLogs({
         req,

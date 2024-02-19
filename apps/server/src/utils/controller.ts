@@ -66,7 +66,7 @@ export const checkInsufficientRoleInProject = (
         .map(({ userId }) => ({ id: userId }))
       : roles.map(({ userId }) => ({ id: userId }))
   }
-  return userList.some(user => user?.id === userId)
+  return userList?.some(user => user?.id === userId)
     ? ''
     : 'Vous n’avez pas les permissions suffisantes dans le projet'
 }
