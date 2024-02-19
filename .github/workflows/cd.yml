@@ -8,8 +8,7 @@ on:
 env:
   REGISTRY: "ghcr.io"
   NAMESPACE: "${{ github.repository }}"
-  # TODO : remettre à true quand runner restaurés
-  MULTI_ARCH: false
+  MULTI_ARCH: true
   USE_QEMU: false
   NODE_VERSION: "20.11.0"
   PNPM_VERSION: "8"
