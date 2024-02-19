@@ -1,3 +1,5 @@
+import { ClusterPrivacy } from '@dso-console/shared'
+
 export * from './cluster.js'
 export * from './environment.js'
 export * from './project.js'
@@ -52,7 +54,7 @@ export interface KubeCluster {
 export type ClusterObject = {
   id: string;
   label: string;
-  privacy: 'public' | 'dedicated';
+  privacy: ClusterPrivacy;
   secretName: string;
   clusterResources: boolean;
   infos: string;

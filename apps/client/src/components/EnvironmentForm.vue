@@ -1,8 +1,7 @@
 <script lang="ts" setup>
 import { ref, onBeforeMount, watch, computed } from 'vue'
 import { getRandomId } from '@gouvminint/vue-dsfr'
-import { environmentSchema, schemaValidator, projectIsLockedInfo, isValid, longestEnvironmentName, type QuotaStageModel, type QuotaModel } from '@dso-console/shared'
-
+import { EnvironmentSchema, projectIsLockedInfo, longestEnvironmentName, type QuotaStageModel, type QuotaModel, type SharedZodError, parseZodError } from '@dso-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 
@@ -79,7 +78,15 @@ const clusterOptions = ref<OptionType[]>([])
 
 const stage = computed(() => allStages.value.find(allStage => allStage.id === stageId.value))
 
-const errorSchema = computed(() => schemaValidator(environmentSchema, localEnvironment.value))
+const errorSchema = computed<SharedZodError | undefined>(() => {
+  let schemaValidation
+  if (localEnvironment.value.id) {
+    schemaValidation = EnvironmentSchema.safeParse(localEnvironment.value)
+  } else {
+    schemaValidation = EnvironmentSchema.omit({ id: true, status: true, permissions: true }).safeParse(localEnvironment.value)
+  }
+  return schemaValidation.success ? undefined : schemaValidation.error
+})
 
 // @ts-ignore
 const availableClusters: ComputedRef<Cluster[]> = computed(() => {
@@ -144,18 +151,18 @@ const setQuotaOptions = () => {
 }
 
 const addEnvironment = () => {
-  if (Object.keys(errorSchema.value).length === 0) {
+  if (!errorSchema.value) {
     emit('addEnvironment', localEnvironment.value)
   } else {
-    snackbarStore.setMessage(Object.values(errorSchema)[0])
+    snackbarStore.setMessage(parseZodError(errorSchema.value))
   }
 }
 
 const putEnvironment = () => {
-  if (Object.keys(errorSchema.value).length === 0) {
+  if (!errorSchema.value) {
     emit('putEnvironment', localEnvironment.value)
   } else {
-    snackbarStore.setMessage(Object.values(errorSchema)[0])
+    snackbarStore.setMessage(parseZodError(errorSchema.value))
   }
 }
 
@@ -216,7 +223,7 @@ watch(quotaId, () => {
         label-visible
         :required="true"
         :hint="`Ne doit pas contenir d'espace ni de trait d'union, doit être unique pour le projet et le cluster sélectionnés, être en minuscules et faire plus de 2 et moins de ${longestEnvironmentName} caractères.`"
-        :error-message="!!localEnvironment.name && !isValid(environmentSchema, localEnvironment, 'name') ? `Le nom de l\'environnment ne doit pas contenir d\'espace, doit être unique pour le projet et le cluster sélectionnés, être en minuscules et faire plus de 2 et moins de ${longestEnvironmentName} caractères.`: undefined"
+        :error-message="!!localEnvironment.name && !EnvironmentSchema.pick({name: true}).safeParse({name: localEnvironment.name}).success ? `Le nom de l\'environnment ne doit pas contenir d\'espace, doit être unique pour le projet et le cluster sélectionnés, être en minuscules et faire plus de 2 et moins de ${longestEnvironmentName} caractères.`: undefined"
         placeholder="integ0"
         :disabled="!props.isEditable"
       />
@@ -280,7 +287,7 @@ watch(quotaId, () => {
           <DsfrButton
             label="Enregistrer"
             data-testid="putEnvironmentBtn"
-            :disabled="props.isProjectLocked || !!Object.keys(errorSchema).length"
+            :disabled="props.isProjectLocked || !!errorSchema"
             :title="props.isProjectLocked ? projectIsLockedInfo : 'Enregistrer les changements'"
             primary
             icon="ri-upload-cloud-line"
@@ -363,7 +370,7 @@ watch(quotaId, () => {
       <DsfrButton
         label="Ajouter l'environnement"
         data-testid="addEnvironmentBtn"
-        :disabled="props.isProjectLocked || !!Object.keys(errorSchema).length"
+        :disabled="props.isProjectLocked || !!errorSchema"
         :title="props.isProjectLocked ? projectIsLockedInfo : 'Ajouter l\'environnement'"
         primary
         icon="ri-upload-cloud-line"

@@ -18,7 +18,7 @@ import {
   getProjectPartialEnvironments,
   getEnvironmentById,
 } from '@/resources/queries-index.js'
-import { BadRequestError, DsoError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
+import { DsoError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import { hooks } from '@dso-console/hooks'
 import type { Cluster, Environment, Project, Role, User, QuotaStage, Log } from '@prisma/client'
 import {
@@ -28,10 +28,10 @@ import {
   checkInsufficientPermissionInEnvironment,
   checkRoleAndLocked,
 } from '@/utils/controller.js'
-import { unlockProjectIfNotFailed } from '@/utils/business.js'
+import { unlockProjectIfNotFailed, validateSchema } from '@/utils/business.js'
 import { projectRootDir, gitlabUrl } from '@/utils/env.js'
 import { getProjectInfosAndClusters } from '@/resources/project/business.js'
-import { type AsyncReturnType, adminGroupPath, environmentSchema } from '@dso-console/shared'
+import { type AsyncReturnType, adminGroupPath, EnvironmentSchema } from '@dso-console/shared'
 import type { UserDetails } from '@/types/index.js'
 
 // Fetch infos
@@ -169,16 +169,20 @@ export const createEnvironment = async (
     quotaStageId,
     requestId,
   }: CreateEnvironmentParam) => {
-  try {
-    await environmentSchema.validateAsync({
+  const schemaValidation = EnvironmentSchema
+    .omit({
+      id: true,
+      status: true,
+      permissions: true,
+      quotaStage: true,
+    })
+    .safeParse({
       name,
       projectId,
       clusterId,
       quotaStageId,
     })
-  } catch (error) {
-    throw new BadRequestError(error.message)
-  }
+  validateSchema(schemaValidation)
 
   const { user, project, quotaStage, quota, authorizedClusters } = await getInitializeEnvironmentInfos({
     userId,

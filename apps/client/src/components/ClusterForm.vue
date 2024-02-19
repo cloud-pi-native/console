@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref, computed, onBeforeMount, watch } from 'vue'
-import { clusterSchema, schemaValidator, isValid, instanciateSchema } from '@dso-console/shared'
+import { ClusterPrivacy, ClusterSchema, CreateClusterBusinessSchema, SharedZodError, ClusterBusinessSchema, instanciateSchema } from '@dso-console/shared'
 // @ts-ignore
 import { load } from 'js-yaml'
 // @ts-ignore
@@ -24,7 +24,7 @@ const props = withDefaults(defineProps<{
     projectIds: [],
     stageIds: [],
     clusterResources: false,
-    privacy: 'dedicated',
+    privacy: ClusterPrivacy.DEDICATED,
     infos: '',
   }),
   allProjects: () => [],
@@ -45,8 +45,16 @@ const kubeconfig = ref()
 const clusterToDelete = ref('')
 const isDeletingCluster = ref(false)
 
-const errorSchema: ComputedRef<Record<string, any>> = computed(() => schemaValidator(clusterSchema, localCluster.value))
-const isClusterValid = computed(() => Object.keys(errorSchema.value).length === 0)
+const errorSchema = computed<SharedZodError | undefined>(() => {
+  let schemaValidation
+  if (localCluster.value.id) {
+    schemaValidation = ClusterBusinessSchema.safeParse(localCluster.value)
+  } else {
+    schemaValidation = CreateClusterBusinessSchema.safeParse(localCluster.value)
+  }
+  return schemaValidation.success ? undefined : schemaValidation.error
+})
+const isClusterValid = computed(() => !errorSchema.value)
 
 const updateValues = (key: string, value: any) => {
   if (key === 'skipTLSVerify') {
@@ -58,6 +66,9 @@ const updateValues = (key: string, value: any) => {
     localCluster.value.cluster.tlsServerName = value
     updatedValues.value.cluster = true
     return
+  }
+  if (key === 'privacy') {
+    localCluster.value.projectIds = []
   }
   localCluster.value[key] = value
   updatedValues.value[key] = true
@@ -187,12 +198,12 @@ const emit = defineEmits<{
 }>()
 
 const addCluster = () => {
-  updatedValues.value = instanciateSchema({ schema: clusterSchema }, true)
+  updatedValues.value = instanciateSchema(ClusterSchema, true)
   if (isClusterValid.value) emit('add', localCluster.value)
 }
 
 const updateCluster = () => {
-  updatedValues.value = instanciateSchema({ schema: clusterSchema }, true)
+  updatedValues.value = instanciateSchema(ClusterSchema, true)
   if (isClusterValid.value) emit('update', localCluster.value)
 }
 
@@ -245,7 +256,7 @@ watch(selectedContext, () => {
       v-model="kubeconfig"
       label="Kubeconfig"
       data-testid="kubeconfig-upload"
-      :error="kConfigError || (errorSchema.cluster?.match(/is required$/) || errorSchema.user?.match(/is required$/) ? 'Le kubeconfig semble incomplet.' : '')"
+      :error="kConfigError"
       hint="Uploadez le Kubeconfig du cluster."
       class="fr-mb-2w"
       @change="updateKubeconfig($event)"
@@ -289,7 +300,7 @@ watch(selectedContext, () => {
       type="text"
       :disabled="!isNewCluster"
       :required="true"
-      :error-message="!!updatedValues.label && !isValid(clusterSchema, localCluster, 'label') ? 'Le nom du cluster ne doit contenir ni espaces ni caractères spéciaux': undefined"
+      :error-message="!!updatedValues.label && !ClusterSchema.pick({label: true}).safeParse({label: localCluster.label}).success ? 'Le nom du cluster ne doit contenir ni espaces ni caractères spéciaux': undefined"
       label="Nom du cluster applicatif"
       label-visible
       hint="Nom du cluster applicatif utilisable lors des déploiements Argocd."
@@ -327,10 +338,11 @@ watch(selectedContext, () => {
       required
       select-id="privacy-select"
       label="Confidentialité du cluster"
-      :options="['dedicated', 'public']"
+      :options="Object.values(ClusterPrivacy)"
+      @update:model-value="updateValues('privacy', $event)"
     />
     <div
-      v-if="localCluster.privacy === 'dedicated'"
+      v-if="localCluster.privacy === ClusterPrivacy.DEDICATED"
       class="fr-mb-2w"
     >
       <MultiSelector

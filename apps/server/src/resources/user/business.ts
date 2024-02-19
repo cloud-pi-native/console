@@ -2,13 +2,14 @@ import { getOrCreateUser, addLogs, addUserToProject as addUserToProjectQuery, cr
 import type { User, Project, Log } from '@prisma/client'
 import { hooks, type PluginResult } from '@dso-console/hooks'
 import { checkInsufficientRoleInProject } from '@/utils/controller.js'
-import { unlockProjectIfNotFailed } from '@/utils/business.js'
+import { unlockProjectIfNotFailed, validateSchema } from '@/utils/business.js'
 import { BadRequestError, ForbiddenError } from '@/utils/errors.js'
-import { type AsyncReturnType, type ProjectRoles, projectIsLockedInfo, userSchema } from '@dso-console/shared'
+import { type AsyncReturnType, type ProjectRoles, projectIsLockedInfo, UserSchema } from '@dso-console/shared'
 
 export type UserDto = Pick<User, 'email' | 'firstName' | 'lastName' | 'id'>
 export const getUser = async (user: UserDto) => {
-  await userSchema.validateAsync(user)
+  const schemaValidation = UserSchema.safeParse(user)
+  validateSchema(schemaValidation)
   return getOrCreateUser(user)
 }
 
@@ -46,11 +47,12 @@ export const addUserToProject = async (
 
     // keep only keys allowed in model
     const userFromModel = {}
-    Object.keys(userSchema.describe().keys).forEach(modelKey => {
+    Object.keys(UserSchema._type).forEach(modelKey => {
       userFromModel[modelKey] = retrievedUser[modelKey]
     })
 
-    await userSchema.validateAsync(userFromModel)
+    const schemaValidation = UserSchema.safeParse(userFromModel)
+    validateSchema(schemaValidation)
     await createUser(retrievedUser)
     userToAdd = await getUserByEmail(email)
   }

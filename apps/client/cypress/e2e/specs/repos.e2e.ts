@@ -10,7 +10,7 @@ describe('Add repos into project', () => {
     cy.createProject(project)
 
     cy.getByDataTestid('menuMyProjects').click()
-      .getByDataTestid(`projectTile-${project.name}`).click()
+    cy.getByDataTestid(`projectTile-${project.name}`).click()
   })
 
   beforeEach(() => {

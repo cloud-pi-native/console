@@ -10,6 +10,7 @@ import '@/main.css'
 import ClusterForm from '@/components/ClusterForm.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useAdminClusterStore } from '@/stores/admin/cluster.js'
+import { ClusterPrivacy } from '@dso-console/shared'
 
 const repeatFn5Times = repeatFn(5)
 const get5RandomProjects = () => repeatFn5Times(getRandomProject)
@@ -44,7 +45,7 @@ describe('ClusterForm.vue', () => {
     cy.getByDataTestid('clusterResourcesCbx').find('input[type=checkbox]')
       .check({ force: true })
     cy.get('#privacy-select')
-      .select('dedicated')
+      .select(ClusterPrivacy.DEDICATED)
     cy.get('#projects-select')
       .select(`${allProjects[0].organization.name} - ${allProjects[0].name}`)
     cy.get('#stages-select')
@@ -90,7 +91,7 @@ describe('ClusterForm.vue', () => {
     cy.get('#privacy-select')
       .should('have.value', props.cluster.privacy)
     cy.get('#privacy-select')
-      .select('dedicated')
+      .select(ClusterPrivacy.DEDICATED)
     cy.get('[data-testid$="projects-select-tag"]')
       .should('have.length', props.cluster.projectIds?.length)
     cy.get('[data-testid$="stages-select-tag"]')
@@ -144,7 +145,7 @@ describe('ClusterForm.vue', () => {
     cy.get('#privacy-select')
       .should('have.value', props.cluster.privacy)
     cy.get('#privacy-select')
-      .select('dedicated')
+      .select(ClusterPrivacy.DEDICATED)
     cy.get('[data-testid$="projects-select-tag"]')
       .should('have.length', props.cluster.projectIds?.length)
     cy.get('[data-testid$="stages-select-tag"]')
@@ -165,7 +166,7 @@ describe('ClusterForm.vue', () => {
 
     cy.mount(ClusterForm, { props })
     cy.get('#privacy-select')
-      .select('dedicated')
+      .select(ClusterPrivacy.DEDICATED)
     cy.get('#projects-select').should('be.visible')
     cy.get('#privacy-select')
       .select('public')

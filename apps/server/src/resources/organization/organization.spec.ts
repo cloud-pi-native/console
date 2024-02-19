@@ -4,7 +4,7 @@ import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest
 import { getRandomOrganization, getRandomUser } from '@dso-console/test-utils'
 import { getConnection, closeConnections } from '../../connect.js'
 
-describe('Organizations routes', () => {
+describe('Organization routes', () => {
   beforeAll(async () => {
     await getConnection()
   })

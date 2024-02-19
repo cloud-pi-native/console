@@ -5,7 +5,7 @@ import { createRandomDbSetup, getRandomLog, getRandomRepo, getRandomRole, getRan
 import { getConnection, closeConnections } from '../../connect.js'
 import { projectIsLockedInfo } from '@dso-console/shared'
 
-describe('Project routes', () => {
+describe('Repository routes', () => {
   const requestor = getRandomUser()
   setRequestor(requestor)
 
@@ -110,7 +110,7 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(400)
-      expect(response.json().message).toEqual('"internalRepoName" with value "^%!!dhrez" fails to match the required pattern: /^[a-z0-9]+[a-z0-9-]+[a-z0-9]+$/')
+      expect(response.json().message).toEqual('Validation error: failed regex test at "internalRepoName"')
     })
   })
 
