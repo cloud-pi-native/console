@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { type Ref, ref } from 'vue'
 import api from '@/api/index.js'
-import type { CreateStageDto, StageModel, StageParams, UpdateQuotaStageDto, UpdateStageClustersDto } from '@dso-console/shared'
+import type { CreateStageDto, StageModel, StageParams, UpdateQuotaStageDto, UpdateStageClustersDto } from '@cpn-console/shared'
 
 export const useAdminStageStore = defineStore('admin-stage', () => {
   const stages: Ref<Array<StageModel>> = ref([])

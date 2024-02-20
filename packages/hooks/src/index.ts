@@ -1,7 +1,7 @@
 import { PluginApi, objectEntries } from './utils/utils.js'
 import * as hooks from './hooks/index.js'
 import { type ServiceInfos, servicesInfos } from './services.js'
-import { Monitor } from '@dso-console/shared'
+import { Monitor } from '@cpn-console/shared'
 import { HookStepsNames, StepCall } from './hooks/hook.js'
 
 export type HookChoice = keyof typeof hooks

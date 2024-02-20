@@ -1,4 +1,4 @@
-import { type MonitorInfos, MonitorStatus, Monitor } from '@dso-console/shared'
+import { type MonitorInfos, MonitorStatus, Monitor } from '@cpn-console/shared'
 import axios from 'axios'
 import { getAxiosOptions } from './functions.js'
 
@@ -18,8 +18,8 @@ const auxComponents = [
 ]
 
 type NexusRes = Record<string, {
-    'healthy': boolean,
-    'message': string,
+  'healthy': boolean,
+  'message': string,
 }>
 
 const monitor = async (instance: Monitor): Promise<MonitorInfos> => {

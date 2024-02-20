@@ -1,9 +1,9 @@
 import prisma from '../../../__mocks__/prisma.js'
 import app, { setRequestor } from '../../../__mocks__/app.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll, beforeEach } from 'vitest'
-import { getRandomOrganization, getRandomProject, getRandomUser } from '@dso-console/test-utils'
+import { getRandomOrganization, getRandomProject, getRandomUser } from '@cpn-console/test-utils'
 import { getConnection, closeConnections } from '../../../connect.js'
-import { adminGroupPath, allOrganizations } from '@dso-console/shared'
+import { adminGroupPath, allOrganizations } from '@cpn-console/shared'
 import { filteredOrganizations } from '../../../utils/mock-plugins.js'
 
 describe('Admin organization routes', () => {

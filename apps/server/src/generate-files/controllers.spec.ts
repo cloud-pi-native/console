@@ -1,7 +1,7 @@
 import app from '../__mocks__/app.js'
 import { vi, describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { closeConnections, getConnection } from '../connect.js'
-import { createRandomDbSetup } from '@dso-console/test-utils'
+import { createRandomDbSetup } from '@cpn-console/test-utils'
 
 vi.mock('../prisma.js')
 

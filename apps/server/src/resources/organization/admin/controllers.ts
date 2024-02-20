@@ -1,10 +1,9 @@
 import { addReqLogs } from '@/utils/logger.js'
 import { sendOk, sendCreated } from '@/utils/response.js'
 import { createOrganization, fetchOrganizations, getAllOrganization, updateOrganization } from './business.js'
-import type { CreateOrganizationDto, UpdateOrganizationDto, OrganizationParams } from '@dso-console/shared'
+import type { CreateOrganizationDto, UpdateOrganizationDto, OrganizationParams } from '@cpn-console/shared'
 import type { FastifyRequest, FastifyInstance } from 'fastify'
-
-import { getAllOrganizationsSchema, createOrganizationSchema, fetchOrganizationsSchema, updateOrganizationSchema } from '@dso-console/shared'
+import { getAllOrganizationsSchema, createOrganizationSchema, fetchOrganizationsSchema, updateOrganizationSchema } from '@cpn-console/shared'
 import { BadRequestError } from '@/utils/errors.js'
 
 const router = async (app: FastifyInstance, _opt) => {
@@ -28,8 +27,8 @@ const router = async (app: FastifyInstance, _opt) => {
       schema: createOrganizationSchema,
     },
     async (req: FastifyRequest<{
-  Body: CreateOrganizationDto
-}>, res) => {
+      Body: CreateOrganizationDto
+    }>, res) => {
       const data = req.body
       const organization = await createOrganization(data)
 
@@ -67,9 +66,9 @@ const router = async (app: FastifyInstance, _opt) => {
     },
 
     async (req: FastifyRequest<{
-  Body: UpdateOrganizationDto
-  Params: OrganizationParams
-}>, res) => {
+      Body: UpdateOrganizationDto
+      Params: OrganizationParams
+    }>, res) => {
       const name = req.params.orgName
       const { active, label, source } = req.body
 

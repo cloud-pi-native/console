@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch, type Ref } from 'vue'
 import { useAdminQuotaStore } from '@/stores/admin/quota.js'
-import { sortArrByObjKeyAsc } from '@dso-console/shared'
+import { sortArrByObjKeyAsc } from '@cpn-console/shared'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
-import type { CreateQuotaDto, UpdateQuotaStageDto, QuotaModel, UpdateQuotaPrivacyDto, QuotaParams } from '@dso-console/shared'
+import type { CreateQuotaDto, UpdateQuotaStageDto, QuotaModel, UpdateQuotaPrivacyDto, QuotaParams } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const adminQuotaStore = useAdminQuotaStore()

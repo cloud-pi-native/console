@@ -1,4 +1,4 @@
-import { type ProjectRoles, adminGroupPath, projectIsLockedInfo } from '@dso-console/shared'
+import { type ProjectRoles, adminGroupPath, projectIsLockedInfo } from '@cpn-console/shared'
 import type { Permission, User, Role, Cluster } from '@prisma/client'
 import { ForbiddenError } from './errors.js'
 import { FastifyRequest } from 'fastify'

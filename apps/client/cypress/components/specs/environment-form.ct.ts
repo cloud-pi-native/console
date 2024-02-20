@@ -1,5 +1,5 @@
 import { type Pinia, createPinia, setActivePinia } from 'pinia'
-import { createRandomDbSetup } from '@dso-console/test-utils'
+import { createRandomDbSetup } from '@cpn-console/test-utils'
 
 import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'

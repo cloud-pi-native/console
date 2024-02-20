@@ -1,11 +1,11 @@
 import { Secret } from 'kubernetes-models/v1'
 import { CoreV1Api, V1ObjectMeta } from '@kubernetes/client-node'
 import { createCoreV1Api } from './api.js'
-import type { StepCall, EnvironmentCreateArgs } from '@dso-console/hooks'
+import type { StepCall, EnvironmentCreateArgs } from '@cpn-console/hooks'
 import { generateNamespaceName } from './namespace.js'
 
 export type WithMetaType<CR extends object> = CR & {
-    metadata: V1ObjectMeta & Required<Pick<V1ObjectMeta, 'name' | 'namespace'>>
+  metadata: V1ObjectMeta & Required<Pick<V1ObjectMeta, 'name' | 'namespace'>>
 };
 // Plugin Function
 export const createKubeSecret: StepCall<EnvironmentCreateArgs> = async (payload) => {

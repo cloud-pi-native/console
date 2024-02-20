@@ -1,4 +1,4 @@
-import { type CreateRepositoryExecArgs, type DeleteRepositoryExecArgs, type Organization, type Project, type RepositoryCreate, type StepCall, generateProjectKey } from '@dso-console/hooks'
+import { type CreateRepositoryExecArgs, type DeleteRepositoryExecArgs, type Organization, type Project, type RepositoryCreate, type StepCall, generateProjectKey } from '@cpn-console/hooks'
 import { getAxiosInstance } from './tech.js'
 
 export type SonarPaging = {

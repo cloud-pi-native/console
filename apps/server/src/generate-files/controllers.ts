@@ -4,13 +4,13 @@ import path from 'node:path'
 
 import { addReqLogs } from '@/utils/logger.js'
 import { sendCreated } from '@/utils/response.js'
-import { type GenerateCIFilesDto } from '@dso-console/shared'
+import { type GenerateCIFilesDto } from '@cpn-console/shared'
 
 import { type FastifyInstance } from 'fastify'
 
 const router = async (app: FastifyInstance, _opt) => {
   app.post<{
-  Body: GenerateCIFilesDto,
+    Body: GenerateCIFilesDto,
   }>('/', async (req, res) => {
     const content: Record<string, any> = {}
     const data = req.body

@@ -1,5 +1,5 @@
 import { users as usersApi } from '@/api/index.js'
-import type { ProjectParams, UserModel } from '@dso-console/shared'
+import type { ProjectParams, UserModel } from '@cpn-console/shared'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 

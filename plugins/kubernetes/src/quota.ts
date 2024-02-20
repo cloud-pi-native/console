@@ -1,4 +1,4 @@
-import type { ResourceQuotaType } from '@dso-console/hooks'
+import type { ResourceQuotaType } from '@cpn-console/hooks'
 import { CoreV1Api } from '@kubernetes/client-node'
 import { ResourceQuota } from 'kubernetes-models/v1'
 

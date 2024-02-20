@@ -1,1 +1,1 @@
-/// <reference types="@dso-console/vault-plugin/types/index.d.ts" />
+/// <reference types="@cpn-console/vault-plugin/types/index.d.ts" />

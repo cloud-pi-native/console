@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import api from '@/api/index.js'
 import { useProjectStore } from '@/stores/project.js'
-import type { AddUserToProjectDto, RoleParams, UserModel, UserParams } from '@dso-console/shared'
+import type { AddUserToProjectDto, RoleParams, UserModel, UserParams } from '@cpn-console/shared'
 import { useUsersStore } from './users.js'
 
 export const useProjectUserStore = defineStore('project-user', () => {

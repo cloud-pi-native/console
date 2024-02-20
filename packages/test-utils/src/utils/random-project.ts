@@ -1,4 +1,4 @@
-import { projectRoles, allOrganizations } from '@dso-console/shared'
+import { projectRoles, allOrganizations } from '@cpn-console/shared'
 import {
   getRandomOrganization,
   getRandomProject,

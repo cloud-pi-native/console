@@ -1,11 +1,18 @@
 <script lang="ts" setup>
 import { ref, computed, onBeforeMount, watch } from 'vue'
-import { ClusterPrivacy, ClusterSchema, CreateClusterBusinessSchema, SharedZodError, ClusterBusinessSchema, instanciateSchema } from '@dso-console/shared'
+import { ClusterPrivacy, ClusterSchema, CreateClusterBusinessSchema, SharedZodError, ClusterBusinessSchema, instanciateSchema } from '@cpn-console/shared'
 // @ts-ignore
 import { load } from 'js-yaml'
 // @ts-ignore
 import { JsonViewer } from 'vue3-json-viewer'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+
+type AssociatedEnvironment = {
+  organization: string,
+  project: string,
+  name: string,
+  owner: string,
+}
 
 const snackbarStore = useSnackbarStore()
 
@@ -14,7 +21,7 @@ const props = withDefaults(defineProps<{
   cluster: Record<string, any>
   allProjects: Array<any>
   allStages: Array<any>
-  associatedEnvironments: Array<any>
+  associatedEnvironments: AssociatedEnvironment[]
 }>(), {
   isNewCluster: true,
   cluster: () => ({
@@ -169,11 +176,6 @@ const retrieveUserAndCluster = (context: ContextType) => {
   }
 }
 
-type AssociatedEnvironment = {
-  organization: string,
-  project: string,
-  name: string,
-}
 const getRows = (associatedEnvironments: AssociatedEnvironment[]) => {
   return associatedEnvironments
     .map(associatedEnvironment => Object
@@ -220,7 +222,6 @@ onBeforeMount(() => {
   })
 
   // Retrieve array of stage ids from parent component, map it into array of stage names and pass it to child component.
-  localCluster.value = props.cluster
   stageNames.value = localCluster.value.stageIds?.map((stageId: string) => props.allStages?.find(stage => stage.id === stageId)?.name)
 })
 

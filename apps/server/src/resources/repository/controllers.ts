@@ -5,7 +5,7 @@ import { addReqLogs } from '@/utils/logger.js'
 import { sendOk, sendCreated } from '@/utils/response.js'
 import { createRepository, deleteRepository, getProjectRepositories, getRepositoryById, updateRepository, checkUpsertRepository } from './business.js'
 import { BadRequestError } from '@/utils/errors.js'
-import { createRepositorySchema, deleteRepositorySchema, getProjectRepositoriesSchema, getRepositoryByIdSchema, updateRepositorySchema } from '@dso-console/shared'
+import { createRepositorySchema, deleteRepositorySchema, getProjectRepositoriesSchema, getRepositoryByIdSchema, updateRepositorySchema } from '@cpn-console/shared'
 
 const router = async (app: FastifyInstance, _opt) => {
   // Récupérer un repository par son id

@@ -1,5 +1,5 @@
-import type { StepCall, ArchiveProjectExecArgs, CreateProjectExecArgs } from '@dso-console/hooks'
-import { generateRandomPassword } from '@dso-console/hooks'
+import type { StepCall, ArchiveProjectExecArgs, CreateProjectExecArgs } from '@cpn-console/hooks'
+import { generateRandomPassword } from '@cpn-console/hooks'
 import { getAxiosInstance } from './tech.js'
 import type { SonarPaging } from './project.js'
 

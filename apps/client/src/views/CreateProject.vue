@@ -10,7 +10,7 @@ import {
   parseZodError,
   instanciateSchema,
   projectNameMaxLength,
-} from '@dso-console/shared'
+} from '@cpn-console/shared'
 import router from '@/router/index.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 

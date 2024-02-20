@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch, type Ref } from 'vue'
 import { useAdminStageStore } from '@/stores/admin/stage.js'
-import { sortArrByObjKeyAsc } from '@dso-console/shared'
-import type { CreateStageDto, UpdateQuotaStageDto, StageModel, UpdateStageClustersDto, StageParams } from '@dso-console/shared'
+import { sortArrByObjKeyAsc } from '@cpn-console/shared'
+import type { CreateStageDto, UpdateQuotaStageDto, StageModel, UpdateStageClustersDto, StageParams } from '@cpn-console/shared'
 import { useAdminQuotaStore } from '@/stores/admin/quota'
 import { useAdminClusterStore } from '@/stores/admin/cluster'
 import { useSnackbarStore } from '@/stores/snackbar.js'

@@ -1,6 +1,3 @@
-# This workflow will run tests using node and then publish a package to GitHub Packages when a release is created
-# For more information see: https://docs.github.com/en/actions/publishing-packages/publishing-nodejs-packages
-
 name: Publish npm
 
 on:
@@ -9,71 +6,150 @@ on:
       NODE_VERSION:
         required: true
         type: string
-        default: "20.11.0"
-      MAJOR_TAG:
-        type: string
-        description: "Major version tag"
-      MINOR_TAG:
-        type: string
-        description: "Minor version tag"
-      PATCH_TAG:
-        type: string
-        description: "Patch version tag"
       PNPM_VERSION:
-        description: Pnpm version used to run tests
         required: true
         type: string
-        default: "8"
+      PUBLISH_APPS:
+        required: true
+        type: boolean
+      PUBLISH_PACKAGES:
+        required: true
+        type: boolean
+      PUBLISH_PLUGINS:
+        required: true
+        type: boolean
   workflow_dispatch:
     inputs:
       NODE_VERSION:
+        description: Nodejs version used
         required: true
         type: string
         default: "20.11.0"
-      MAJOR_TAG:
-        type: string
-        description: "Major version tag"
-      MINOR_TAG:
-        type: string
-        description: "Minor version tag"
-      PATCH_TAG:
-        type: string
-        description: "Patch version tag"
       PNPM_VERSION:
-        description: Pnpm version used to run tests
+        description: Pnpm version used
         required: true
         type: string
         default: "8"
+      PUBLISH_APPS:
+        description: Publish apps modules
+        required: true
+        type: boolean
+        default: false
+      PUBLISH_PACKAGES:
+        description: Publish packages modules
+        required: true
+        type: boolean
+        default: false
+      PUBLISH_PLUGINS:
+        description: Publish plugins modules
+        required: true
+        type: boolean
+        default: true
 
 jobs:
-  publish-npm:
-    name: Pubish on npm
+  matrix:
+    name: Generate matrix
+    if: ${{ inputs.PUBLISH_APPS || inputs.PUBLISH_PACKAGES || inputs.PUBLISH_PLUGINS }}
     runs-on: ubuntu-latest
+    outputs:
+      publish-matrix: ${{ steps.packages-matrix.outputs.PUBLISH_MATRIX }}
     steps:
       - name: Checks-out repository
         uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - name: Generate matrix
+        id: packages-matrix
+        run: |
+          PUBLISH_MATRIX="[]"
+          APPS_MATRIX="$(jq -c '.apps' < ./ci/matrix-npm.json)"
+          PACKAGES_MATRIX="$(jq -c '.packages' < ./ci/matrix-npm.json)"
+          PLUGINS_MATRIX="$(jq -c '.plugins' < ./ci/matrix-npm.json)"
+          if [ "${{ inputs.PUBLISH_APPS }}" = "true" ]; then
+            PUBLISH_MATRIX="$(jq -n -c --argjson acc "$PUBLISH_MATRIX" --argjson cur "$APPS_MATRIX" '$acc + $cur')"
+          fi
+          if [ "${{ inputs.PUBLISH_PACKAGES }}" = "true" ]; then
+            PUBLISH_MATRIX="$(jq -n -c --argjson acc "$PUBLISH_MATRIX" --argjson cur "$PACKAGES_MATRIX" '$acc + $cur')"
+          fi
+          if [ "${{ inputs.PUBLISH_PLUGINS }}" = "true" ]; then
+            PUBLISH_MATRIX="$(jq -n -c --argjson acc "$PUBLISH_MATRIX" --argjson cur "$PLUGINS_MATRIX" '$acc + $cur')"
+          fi
+          echo "PUBLISH_MATRIX=$PUBLISH_MATRIX" >> $GITHUB_OUTPUT
+
+  publish-npm:
+    name: Pubish on npm
+    if: ${{ inputs.PUBLISH_APPS || inputs.PUBLISH_PACKAGES || inputs.PUBLISH_PLUGINS }}
+    runs-on: ubuntu-latest
+    needs:
+      - matrix
+    strategy:
+      matrix:
+        modules: ${{ fromJSON(needs.matrix.outputs.publish-matrix) }}
+    steps:
+      - name: Checks-out repository
+        uses: actions/checkout@v3
         with:
-          node-version: "${{ inputs.NODE_VERSION }}"
-          registry-url: https://registry.npmjs.org/
+          ref: ${{ github.event.ref }}
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
         id: pnpm-install
         with:
           version: "${{ inputs.PNPM_VERSION }}"
-          run_install: true
+          run_install: false
 
-      - name: Prepare packages
+      - name: Check for new package version
+        id: check-version
         run: |
-          pnpm run db:generate
-          echo '//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}' >> .npmrc
+          PACKAGE_VERSION=$(jq -cr '.version' < ${{ matrix.modules.path }}/package.json)
 
-      - name: Publish on npmjs.org
+          if [ "$(curl -s -o /dev/null -I -w %{http_code} https://registry.npmjs.org/${{ matrix.modules.name }})" = 404 ]; then
+            REMOTE=false
+          else
+            REMOTE=$(pnpm view ${{ matrix.modules.name }} --json | jq --arg v "$PACKAGE_VERSION" 'any(.versions[] == $v; .)')
+          fi
+
+          if [ "$REMOTE" = "true" ]; then
+            echo "Package ${{ matrix.modules.name }} - version $PACKAGE_VERSION already exists"
+          else
+            echo "Package ${{ matrix.modules.name }} - version $PACKAGE_VERSION does not exist"
+          fi
+
+          echo "REMOTE=$REMOTE" >> $GITHUB_OUTPUT
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
+        with:
+          node-version: "${{ inputs.NODE_VERSION }}"
+          registry-url: 'https://registry.npmjs.org'
+          always-auth: true
+
+      - name: Get pnpm store directory
+        if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
+        id: pnpm-store
         run: |
-          pnpm publish --no-git-checks --access public \
-            --filter server \
-            --filter client \
-            --filter shared
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Cache node files
+        if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
+        uses: actions/cache@v3
+        with:
+          path: |
+            ${{ steps.pnpm-store.outputs.STORE_PATH }}
+          key: node-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            node-${{ runner.os }}-${{ runner.arch }}-
+
+      - name: Install dependencies
+        if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
+        run: pnpm install --frozen-lockfile
+
+      - name: Publish packages
+        if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
+        run: |
+          # This line use turbo to handle build dependency graph
+          pnpm run build --filter ${{ matrix.modules.name }}
+          # This line use pnpm to publish without turbo
+          pnpm --filter ${{ matrix.modules.name }} publish --no-git-checks --report-summary
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

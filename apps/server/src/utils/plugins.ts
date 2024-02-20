@@ -1,4 +1,4 @@
-import type { PluginManagerOptions } from '@dso-console/hooks'
+import type { PluginManagerOptions } from '@cpn-console/hooks'
 import { isCI, isInt, isProd } from './env.js'
 
 export const pluginManagerOptions: PluginManagerOptions = {

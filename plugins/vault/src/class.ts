@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios'
-import { PluginApi } from '@dso-console/hooks'
-import { removeTrailingSlash, requiredEnv } from '@dso-console/shared'
+import { PluginApi } from '@cpn-console/hooks'
+import { removeTrailingSlash, requiredEnv } from '@cpn-console/shared'
 
 export class VaultProjectApi extends PluginApi {
   private token: string | undefined = undefined

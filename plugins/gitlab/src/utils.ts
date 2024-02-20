@@ -1,6 +1,6 @@
 import { Gitlab } from '@gitbeaker/rest'
 import { Gitlab as IGitlab } from '@gitbeaker/core'
-import { removeTrailingSlash, requiredEnv } from '@dso-console/shared'
+import { removeTrailingSlash, requiredEnv } from '@cpn-console/shared'
 
 let api: IGitlab | undefined
 

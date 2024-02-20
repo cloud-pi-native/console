@@ -1,6 +1,6 @@
 {
   "root": true,
   "extends": [
-    "@dso-console/eslint-config-base"
+    "@cpn-console/eslint-config"
   ]
 }

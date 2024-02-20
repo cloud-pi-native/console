@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { getAxiosOptions } from './functions.js'
-import { Project } from '@dso-console/hooks'
+import { Project } from '@cpn-console/hooks'
 
 export const createProject = async (projectName: Project) => {
   try {

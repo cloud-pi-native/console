@@ -5,7 +5,7 @@ import {
   sendCreated,
   sendNoContent,
 } from '@/utils/response.js'
-import type { ProjectParams } from '@dso-console/shared'
+import type { ProjectParams } from '@cpn-console/shared'
 import {
   getUserProjects,
   getProject,
@@ -25,7 +25,7 @@ import {
   updateProjectSchema,
   archiveProjectSchema,
   // getProjectSecretsSchema,
-} from '@dso-console/shared'
+} from '@cpn-console/shared'
 import { FromSchema } from 'json-schema-to-ts'
 
 const router = async (app: FastifyInstance, _opt) => {

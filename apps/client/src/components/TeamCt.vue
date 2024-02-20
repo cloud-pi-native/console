@@ -10,7 +10,7 @@ import {
   type RoleModel,
   type ProjectModel,
   parseZodError,
-} from '@dso-console/shared'
+} from '@cpn-console/shared'
 import pDebounce from 'p-debounce'
 import { useProjectUserStore } from '@/stores/project-user'
 import { copyContent } from '@/utils/func.js'

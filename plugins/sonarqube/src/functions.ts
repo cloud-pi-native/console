@@ -1,5 +1,5 @@
 import { findGroupByName } from './group.js'
-import { adminGroupPath } from '@dso-console/shared'
+import { adminGroupPath } from '@cpn-console/shared'
 import { getAxiosInstance } from './tech.js'
 
 const globalPermissions = [
