@@ -8,7 +8,7 @@ import {
   deleteStageSchema,
   getStageAssociatedEnvironmentsSchema,
   updateStageClustersSchema,
-} from '@dso-console/shared'
+} from '@cpn-console/shared'
 
 const router = async (app: FastifyInstance, _opt) => {
   // Récupérer les environnements associés au stage

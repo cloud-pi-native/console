@@ -1,6 +1,6 @@
 import type { Project, Repository } from '@prisma/client'
 import prisma from '@/prisma.js'
-import { AllStatus } from '@dso-console/shared'
+import { AllStatus } from '@cpn-console/shared'
 
 // SELECT
 export const getRepositoryById = async (id: Repository['id']) => {

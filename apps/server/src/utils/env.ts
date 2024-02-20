@@ -1,4 +1,4 @@
-import { removeTrailingSlash } from '@dso-console/shared'
+import { removeTrailingSlash } from '@cpn-console/shared'
 import * as dotenv from 'dotenv'
 
 if (process.env.DOCKER !== 'true') {

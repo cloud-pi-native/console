@@ -5,7 +5,7 @@ import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@gouvminint/vue-dsfr/styles'
 import '@/main.css'
 import StageForm from '@/components/StageForm.vue'
-import { getRandomCluster, getRandomEnv, getRandomQuota, getRandomQuotaStage, getRandomStage, repeatFn } from '@dso-console/test-utils'
+import { getRandomCluster, getRandomEnv, getRandomQuota, getRandomQuotaStage, getRandomStage, repeatFn } from '@cpn-console/test-utils'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 describe('StageForm.vue', () => {

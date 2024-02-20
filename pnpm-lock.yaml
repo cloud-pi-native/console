@@ -37,8 +37,8 @@ importers:
 
   apps/client:
     dependencies:
-      '@dso-console/shared':
-        specifier: workspace:*
+      '@cpn-console/shared':
+        specifier: workspace:^
         version: link:../../packages/shared
       '@gouvfr/dsfr':
         specifier: ^1.11.0
@@ -99,11 +99,11 @@ importers:
         specifier: ^1.5.0
         version: 1.5.0(vite@5.0.12)
     devDependencies:
-      '@dso-console/eslint-config-base':
-        specifier: workspace:*
+      '@cpn-console/eslint-config':
+        specifier: workspace:^
         version: link:../../packages/eslintconfig
-      '@dso-console/test-utils':
-        specifier: workspace:*
+      '@cpn-console/test-utils':
+        specifier: workspace:^
         version: link:../../packages/test-utils
       '@faker-js/faker':
         specifier: ^8.4.0
@@ -195,35 +195,35 @@ importers:
 
   apps/server:
     dependencies:
-      '@dso-console/argo-plugin':
-        specifier: workspace:^6.4.0
-        version: link:../../plugins/argo
-      '@dso-console/gitlab-plugin':
-        specifier: workspace:^6.4.0
+      '@cpn-console/argocd-plugin':
+        specifier: workspace:^
+        version: link:../../plugins/argocd
+      '@cpn-console/gitlab-plugin':
+        specifier: workspace:^
         version: link:../../plugins/gitlab
-      '@dso-console/harbor-plugin':
-        specifier: workspace:^6.4.0
+      '@cpn-console/harbor-plugin':
+        specifier: workspace:^
         version: link:../../plugins/harbor
-      '@dso-console/hooks':
-        specifier: workspace:^6.4.0
+      '@cpn-console/hooks':
+        specifier: workspace:^
         version: link:../../packages/hooks
-      '@dso-console/keycloak-plugin':
-        specifier: workspace:^6.4.0
+      '@cpn-console/keycloak-plugin':
+        specifier: workspace:^
         version: link:../../plugins/keycloak
-      '@dso-console/kubernetes-plugin':
-        specifier: workspace:^6.4.0
+      '@cpn-console/kubernetes-plugin':
+        specifier: workspace:^
         version: link:../../plugins/kubernetes
-      '@dso-console/nexus-plugin':
-        specifier: workspace:^6.4.0
+      '@cpn-console/nexus-plugin':
+        specifier: workspace:^
         version: link:../../plugins/nexus
-      '@dso-console/shared':
-        specifier: workspace:*
+      '@cpn-console/shared':
+        specifier: workspace:^
         version: link:../../packages/shared
-      '@dso-console/sonarqube-plugin':
-        specifier: workspace:^6.4.0
+      '@cpn-console/sonarqube-plugin':
+        specifier: workspace:^
         version: link:../../plugins/sonarqube
-      '@dso-console/vault-plugin':
-        specifier: workspace:^6.4.0
+      '@cpn-console/vault-plugin':
+        specifier: workspace:^
         version: link:../../plugins/vault
       '@fastify/cookie':
         specifier: ^9.3.1
@@ -295,14 +295,14 @@ importers:
         specifier: ^1.3.1
         version: 1.3.1(typescript@5.3.3)(vitest@0.34.6)
     devDependencies:
-      '@dso-console/eslint-config-base':
-        specifier: workspace:*
+      '@cpn-console/eslint-config':
+        specifier: workspace:^
         version: link:../../packages/eslintconfig
-      '@dso-console/test-utils':
-        specifier: workspace:*
+      '@cpn-console/test-utils':
+        specifier: workspace:^
         version: link:../../packages/test-utils
-      '@dso-console/tsconfig':
-        specifier: workspace:*
+      '@cpn-console/ts-config':
+        specifier: workspace:^
         version: link:../../packages/tsconfig
       '@faker-js/faker':
         specifier: ^8.4.0
@@ -400,8 +400,8 @@ importers:
 
   packages/hooks:
     dependencies:
-      '@dso-console/shared':
-        specifier: workspace:*
+      '@cpn-console/shared':
+        specifier: workspace:^
         version: link:../shared
       json-schema:
         specifier: ^0.4.0
@@ -410,11 +410,11 @@ importers:
         specifier: ^1.3.1
         version: 1.3.1(typescript@5.3.3)(vitest@0.34.6)
     devDependencies:
-      '@dso-console/eslint-config-base':
-        specifier: workspace:*
+      '@cpn-console/eslint-config':
+        specifier: workspace:^
         version: link:../eslintconfig
-      '@dso-console/tsconfig':
-        specifier: workspace:*
+      '@cpn-console/ts-config':
+        specifier: workspace:^
         version: link:../tsconfig
       '@types/json-schema':
         specifier: ^7.0.15
@@ -470,9 +470,6 @@ importers:
 
   packages/shared:
     dependencies:
-      joi:
-        specifier: ^17.12.1
-        version: 17.12.1
       json-schema-to-ts:
         specifier: ^3.0.0
         version: 3.0.0
@@ -483,11 +480,11 @@ importers:
         specifier: ^3.0.2
         version: 3.0.2(zod@3.22.4)
     devDependencies:
-      '@dso-console/eslint-config-base':
-        specifier: workspace:*
+      '@cpn-console/eslint-config':
+        specifier: workspace:^
         version: link:../eslintconfig
-      '@dso-console/tsconfig':
-        specifier: workspace:*
+      '@cpn-console/ts-config':
+        specifier: workspace:^
         version: link:../tsconfig
       '@faker-js/faker':
         specifier: ^8.4.0
@@ -546,18 +543,18 @@ importers:
 
   packages/test-utils:
     dependencies:
-      '@dso-console/shared':
-        specifier: workspace:*
+      '@cpn-console/shared':
+        specifier: workspace:^
         version: link:../shared
       '@faker-js/faker':
         specifier: ^8.4.0
         version: 8.4.0
     devDependencies:
-      '@dso-console/eslint-config-base':
-        specifier: workspace:*
+      '@cpn-console/eslint-config':
+        specifier: workspace:^
         version: link:../eslintconfig
-      '@dso-console/tsconfig':
-        specifier: workspace:*
+      '@cpn-console/ts-config':
+        specifier: workspace:^
         version: link:../tsconfig
       '@types/node':
         specifier: ^20.11.16
@@ -601,13 +598,13 @@ importers:
 
   packages/tsconfig: {}
 
-  plugins/argo:
+  plugins/argocd:
     dependencies:
-      '@dso-console/hooks':
-        specifier: workspace:*
+      '@cpn-console/hooks':
+        specifier: workspace:^
         version: link:../../packages/hooks
-      '@dso-console/shared':
-        specifier: workspace:*
+      '@cpn-console/shared':
+        specifier: workspace:^
         version: link:../../packages/shared
       '@himenon/argocd-typescript-openapi':
         specifier: ^1.2.1
@@ -628,11 +625,11 @@ importers:
         specifier: ^4.3.1
         version: 4.3.1
     devDependencies:
-      '@dso-console/eslint-config-base':
-        specifier: workspace:*
+      '@cpn-console/eslint-config':
+        specifier: workspace:^
         version: link:../../packages/eslintconfig
-      '@dso-console/tsconfig':
-        specifier: workspace:*
+      '@cpn-console/ts-config':
+        specifier: workspace:^
         version: link:../../packages/tsconfig
       '@faker-js/faker':
         specifier: ^8.2.0
@@ -688,11 +685,11 @@ importers:
 
   plugins/gitlab:
     dependencies:
-      '@dso-console/hooks':
-        specifier: workspace:*
+      '@cpn-console/hooks':
+        specifier: workspace:^
         version: link:../../packages/hooks
-      '@dso-console/shared':
-        specifier: workspace:*
+      '@cpn-console/shared':
+        specifier: workspace:^
         version: link:../../packages/shared
       '@gitbeaker/core':
         specifier: ^39.30.0
@@ -704,14 +701,14 @@ importers:
         specifier: 1.6.4
         version: 1.6.4
     devDependencies:
-      '@dso-console/eslint-config-base':
-        specifier: workspace:*
+      '@cpn-console/eslint-config':
+        specifier: workspace:^
         version: link:../../packages/eslintconfig
-      '@dso-console/tsconfig':
-        specifier: workspace:*
+      '@cpn-console/ts-config':
+        specifier: workspace:^
         version: link:../../packages/tsconfig
-      '@dso-console/vault-plugin':
-        specifier: workspace:*
+      '@cpn-console/vault-plugin':
+        specifier: workspace:^
         version: link:../vault
       '@types/node':
         specifier: ^20.8.9
@@ -764,21 +761,21 @@ importers:
 
   plugins/harbor:
     dependencies:
-      '@dso-console/hooks':
-        specifier: workspace:*
+      '@cpn-console/hooks':
+        specifier: workspace:^
         version: link:../../packages/hooks
-      '@dso-console/shared':
-        specifier: workspace:*
+      '@cpn-console/shared':
+        specifier: workspace:^
         version: link:../../packages/shared
       axios:
         specifier: 1.6.4
         version: 1.6.4
     devDependencies:
-      '@dso-console/eslint-config-base':
-        specifier: workspace:*
+      '@cpn-console/eslint-config':
+        specifier: workspace:^
         version: link:../../packages/eslintconfig
-      '@dso-console/tsconfig':
-        specifier: workspace:*
+      '@cpn-console/ts-config':
+        specifier: workspace:^
         version: link:../../packages/tsconfig
       '@types/node':
         specifier: ^20.8.9
@@ -831,11 +828,11 @@ importers:
 
   plugins/keycloak:
     dependencies:
-      '@dso-console/hooks':
-        specifier: workspace:*
+      '@cpn-console/hooks':
+        specifier: workspace:^
         version: link:../../packages/hooks
-      '@dso-console/shared':
-        specifier: workspace:*
+      '@cpn-console/shared':
+        specifier: workspace:^
         version: link:../../packages/shared
       '@keycloak/keycloak-admin-client':
         specifier: ^23.0.1
@@ -844,11 +841,11 @@ importers:
         specifier: 1.6.4
         version: 1.6.4
     devDependencies:
-      '@dso-console/eslint-config-base':
-        specifier: workspace:*
+      '@cpn-console/eslint-config':
+        specifier: workspace:^
         version: link:../../packages/eslintconfig
-      '@dso-console/tsconfig':
-        specifier: workspace:*
+      '@cpn-console/ts-config':
+        specifier: workspace:^
         version: link:../../packages/tsconfig
       '@types/node':
         specifier: ^20.8.9
@@ -901,11 +898,11 @@ importers:
 
   plugins/kubernetes:
     dependencies:
-      '@dso-console/hooks':
-        specifier: workspace:*
+      '@cpn-console/hooks':
+        specifier: workspace:^
         version: link:../../packages/hooks
-      '@dso-console/shared':
-        specifier: workspace:*
+      '@cpn-console/shared':
+        specifier: workspace:^
         version: link:../../packages/shared
       '@keycloak/keycloak-admin-client':
         specifier: ^23.0.1
@@ -923,11 +920,11 @@ importers:
         specifier: ^4.3.1
         version: 4.3.1
     devDependencies:
-      '@dso-console/eslint-config-base':
-        specifier: workspace:*
+      '@cpn-console/eslint-config':
+        specifier: workspace:^
         version: link:../../packages/eslintconfig
-      '@dso-console/tsconfig':
-        specifier: workspace:*
+      '@cpn-console/ts-config':
+        specifier: workspace:^
         version: link:../../packages/tsconfig
       '@faker-js/faker':
         specifier: ^8.2.0
@@ -983,21 +980,21 @@ importers:
 
   plugins/nexus:
     dependencies:
-      '@dso-console/hooks':
-        specifier: workspace:*
+      '@cpn-console/hooks':
+        specifier: workspace:^
         version: link:../../packages/hooks
-      '@dso-console/shared':
-        specifier: workspace:*
+      '@cpn-console/shared':
+        specifier: workspace:^
         version: link:../../packages/shared
       axios:
         specifier: 1.6.4
         version: 1.6.4
     devDependencies:
-      '@dso-console/eslint-config-base':
-        specifier: workspace:*
+      '@cpn-console/eslint-config':
+        specifier: workspace:^
         version: link:../../packages/eslintconfig
-      '@dso-console/tsconfig':
-        specifier: workspace:*
+      '@cpn-console/ts-config':
+        specifier: workspace:^
         version: link:../../packages/tsconfig
       '@types/node':
         specifier: ^20.8.9
@@ -1050,11 +1047,11 @@ importers:
 
   plugins/sonarqube:
     dependencies:
-      '@dso-console/hooks':
-        specifier: workspace:*
+      '@cpn-console/hooks':
+        specifier: workspace:^
         version: link:../../packages/hooks
-      '@dso-console/shared':
-        specifier: workspace:*
+      '@cpn-console/shared':
+        specifier: workspace:^
         version: link:../../packages/shared
       '@keycloak/keycloak-admin-client':
         specifier: ^23.0.1
@@ -1063,11 +1060,11 @@ importers:
         specifier: 1.6.4
         version: 1.6.4
     devDependencies:
-      '@dso-console/eslint-config-base':
-        specifier: workspace:*
+      '@cpn-console/eslint-config':
+        specifier: workspace:^
         version: link:../../packages/eslintconfig
-      '@dso-console/tsconfig':
-        specifier: workspace:*
+      '@cpn-console/ts-config':
+        specifier: workspace:^
         version: link:../../packages/tsconfig
       '@faker-js/faker':
         specifier: ^8.2.0
@@ -1123,11 +1120,11 @@ importers:
 
   plugins/vault:
     dependencies:
-      '@dso-console/hooks':
-        specifier: workspace:*
+      '@cpn-console/hooks':
+        specifier: workspace:^
         version: link:../../packages/hooks
-      '@dso-console/shared':
-        specifier: workspace:*
+      '@cpn-console/shared':
+        specifier: workspace:^
         version: link:../../packages/shared
       '@keycloak/keycloak-admin-client':
         specifier: ^23.0.1
@@ -1139,11 +1136,11 @@ importers:
         specifier: 1.6.4
         version: 1.6.4
     devDependencies:
-      '@dso-console/eslint-config-base':
-        specifier: workspace:*
+      '@cpn-console/eslint-config':
+        specifier: workspace:^
         version: link:../../packages/eslintconfig
-      '@dso-console/tsconfig':
-        specifier: workspace:*
+      '@cpn-console/ts-config':
+        specifier: workspace:^
         version: link:../../packages/tsconfig
       '@faker-js/faker':
         specifier: ^8.2.0
@@ -2908,11 +2905,13 @@ packages:
 
   /@hapi/hoek@9.3.0:
     resolution: {integrity: sha512-/c6rf4UJlmHlC9b5BaNvzAcFv7HZ2QHaV0D4/HNlBdvFnvQq8RI4kYdhyPCl7Xj+oWvTWQ8ujhqS53LIgAe6KQ==}
+    dev: true
 
   /@hapi/topo@5.1.0:
     resolution: {integrity: sha512-foQZKJig7Ob0BMAYBfcJk8d77QtOe7Wo4ox7ff1lQYoNNAb6jwcY1ncdoy2e9wQZzvNy7ODZCYJkK8kzmcAnAg==}
     dependencies:
       '@hapi/hoek': 9.3.0
+    dev: true
 
   /@himenon/argocd-typescript-openapi@1.2.2:
     resolution: {integrity: sha512-xS8HAzhRSQXqMfD779EgbZmPcgkaNW8Hf2anrwvvPYb9Tt0vP9CtzOqj+8GYSOUQqgcRFejmCR9WoAgZJamB1g==}
@@ -3265,12 +3264,15 @@ packages:
     resolution: {integrity: sha512-IqO/DUQHUkPeixNQ8n0JA6102hT9CmaljNTPmQ1u8MEhBo/R4Q8eKLN/vGZxuebwOroDB4cbpjheD4+/sKFK4Q==}
     dependencies:
       '@hapi/hoek': 9.3.0
+    dev: true
 
   /@sideway/formula@3.0.1:
     resolution: {integrity: sha512-/poHZJJVjx3L+zVD6g9KgHfYnb443oi7wLu/XKojDviHy6HOEOA6z1Trk5aR1dGcmPenJEgb2sK2I80LeS3MIg==}
+    dev: true
 
   /@sideway/pinpoint@2.0.0:
     resolution: {integrity: sha512-RNiOoTPkptFtSVzQevY/yWtZwf/RxyVnPy/OcA9HBM3MlGDnBEYL5B41H0MTn0Uec8Hi+2qUtTfG2WWZBmMejQ==}
+    dev: true
 
   /@sinclair/typebox@0.27.8:
     resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
@@ -7233,6 +7235,7 @@ packages:
       '@sideway/address': 4.1.5
       '@sideway/formula': 3.0.1
       '@sideway/pinpoint': 2.0.0
+    dev: true
 
   /jose@4.15.4:
     resolution: {integrity: sha512-W+oqK4H+r5sITxfxpSU+MMdr/YSWGvgZMQDIsNoBDGGy4i7GBPTtvFKibQzW06n3U3TqHjhvBJsirShsEJ6eeQ==}

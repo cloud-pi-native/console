@@ -1,7 +1,7 @@
 import type { Environment, Project, Role, Cluster, QuotaStage } from '@prisma/client'
 import prisma from '@/prisma.js'
 import { getProjectById } from '../project/queries.js'
-import { AllStatus } from '@dso-console/shared'
+import { AllStatus } from '@cpn-console/shared'
 
 // SELECT
 export const getEnvironmentById = async (id: Environment['id']) => {

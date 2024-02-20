@@ -1,6 +1,6 @@
 import type { Project, User } from '@prisma/client'
-import { type PluginResult, hooks } from '@dso-console/hooks'
-import { type SharedSafeParseReturnType, parseZodError } from '@dso-console/shared'
+import { type PluginResult, hooks } from '@cpn-console/hooks'
+import { type SharedSafeParseReturnType, parseZodError } from '@cpn-console/shared'
 import {
   getEnvironmentsByProjectId,
   getProjectRepositories,

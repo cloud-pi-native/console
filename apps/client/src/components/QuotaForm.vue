@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { computed, onBeforeMount, ref } from 'vue'
-import { QuotaSchema, SharedZodError, instanciateSchema } from '@dso-console/shared'
+import { QuotaSchema, SharedZodError, instanciateSchema } from '@cpn-console/shared'
 import { copyContent } from '@/utils/func.js'
 import type { UpdateQuotaType } from '@/views/admin/ListQuotas.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'

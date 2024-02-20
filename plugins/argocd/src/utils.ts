@@ -1,6 +1,6 @@
 import { KubeConfig, CoreV1Api, CustomObjectsApi } from '@kubernetes/client-node'
-import type { Environment, Organization, Project, RepositoryForEnv } from '@dso-console/hooks'
-import { removeTrailingSlash, requiredEnv } from '@dso-console/shared'
+import type { Environment, Organization, Project, RepositoryForEnv } from '@cpn-console/hooks'
+import { removeTrailingSlash, requiredEnv } from '@cpn-console/shared'
 import { createHmac } from 'crypto'
 
 export const generateAppProjectName = (org: Organization, proj: Project, env: Environment) => {

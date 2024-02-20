@@ -2,8 +2,8 @@ import prisma from '../../../__mocks__/prisma.js'
 import app, { getRequestor, setRequestor } from '../../../__mocks__/app.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll, beforeEach } from 'vitest'
 import { getConnection, closeConnections } from '../../../connect.js'
-import { adminGroupPath } from '@dso-console/shared'
-import { getRandomCluster, getRandomRole, getRandomUser } from '@dso-console/test-utils'
+import { adminGroupPath } from '@cpn-console/shared'
+import { getRandomCluster, getRandomRole, getRandomUser } from '@cpn-console/test-utils'
 
 describe('Admin cluster routes', () => {
   beforeAll(async () => {

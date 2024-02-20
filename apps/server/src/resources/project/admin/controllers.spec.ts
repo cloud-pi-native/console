@@ -2,8 +2,8 @@ import prisma from '../../../__mocks__/prisma.js'
 import app, { setRequestor } from '../../../__mocks__/app.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll, beforeEach } from 'vitest'
 import { getConnection, closeConnections } from '../../../connect.js'
-import { adminGroupPath } from '@dso-console/shared'
-import { getRandomProject, getRandomUser, repeatFn } from '@dso-console/test-utils'
+import { adminGroupPath } from '@cpn-console/shared'
+import { getRandomProject, getRandomUser, repeatFn } from '@cpn-console/test-utils'
 import { json2csv } from 'json-2-csv'
 
 describe('Admin project routes', () => {

@@ -1,9 +1,9 @@
 import prisma from '../../__mocks__/prisma.js'
 import app, { getRequestor, setRequestor } from '../../__mocks__/app.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
-import { createRandomDbSetup, getRandomLog, getRandomRepo, getRandomRole, getRandomUser } from '@dso-console/test-utils'
+import { createRandomDbSetup, getRandomLog, getRandomRepo, getRandomRole, getRandomUser } from '@cpn-console/test-utils'
 import { getConnection, closeConnections } from '../../connect.js'
-import { projectIsLockedInfo } from '@dso-console/shared'
+import { projectIsLockedInfo } from '@cpn-console/shared'
 
 describe('Repository routes', () => {
   const requestor = getRandomUser()

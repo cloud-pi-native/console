@@ -9,7 +9,7 @@ import {
   SharedZodError,
   parseZodError,
   instanciateSchema,
-} from '@dso-console/shared'
+} from '@cpn-console/shared'
 import { getRandomId } from '@gouvminint/vue-dsfr'
 
 const adminOrganizationStore = useAdminOrganizationStore()

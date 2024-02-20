@@ -11,7 +11,7 @@ import {
   deleteQuotaStage,
   updateQuotaPrivacy as updateQuotaPrivacyQuery,
 } from '@/resources/queries-index.js'
-import { type CreateQuotaDto, QuotaSchema, type UpdateQuotaStageDto, type UpdateQuotaPrivacyDto, type QuotaParams, type QuotaStageModel } from '@dso-console/shared'
+import { type CreateQuotaDto, QuotaSchema, type UpdateQuotaStageDto, type UpdateQuotaPrivacyDto, type QuotaParams, type QuotaStageModel } from '@cpn-console/shared'
 import { validateSchema } from '@/utils/business.js'
 
 export const getQuotaAssociatedEnvironments = async (quotaId: QuotaParams['quotaId']) => {

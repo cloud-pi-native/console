@@ -3,7 +3,7 @@ import { addReqLogs } from '@/utils/logger.js'
 import { sendOk } from '@/utils/response.js'
 import { getStages } from './business.js'
 
-import { getStagesSchema } from '@dso-console/shared'
+import { getStagesSchema } from '@cpn-console/shared'
 
 const router = async (app: FastifyInstance, _opt) => {
   // Récupérer les types d'environnement disponibles

@@ -1,4 +1,4 @@
-import type { ProjectBase, StepCall } from '@dso-console/hooks'
+import type { ProjectBase, StepCall } from '@cpn-console/hooks'
 
 export const getProjectSecrets: StepCall<ProjectBase> = async () => {
   return {

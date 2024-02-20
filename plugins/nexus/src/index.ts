@@ -1,4 +1,4 @@
-import type { Plugin } from '@dso-console/hooks'
+import type { Plugin } from '@cpn-console/hooks'
 import { createNexusProject, deleteNexusProject } from './project.js'
 import infos from './infos.js'
 import monitor from './monitor.js'

@@ -3,9 +3,9 @@ import { BadRequestError, ForbiddenError, NotFoundError, UnauthorizedError, Unpr
 import type { Project, Repository, User } from '@prisma/client'
 import { projectRootDir, gitlabUrl } from '@/utils/env.js'
 import { unlockProjectIfNotFailed, checkCreateProject as checkCreateRepositoryPlugins, validateSchema } from '@/utils/business.js'
-import { type CreateRepositoryDto, type ProjectRoles, CreateRepoBusinessSchema, type UpdateRepositoryDto } from '@dso-console/shared'
+import { type CreateRepositoryDto, type UpdateRepositoryDto, type ProjectRoles, CreateRepoBusinessSchema } from '@cpn-console/shared'
 // TODO remove gitlabUrl
-import { hooks } from '@dso-console/hooks'
+import { hooks } from '@cpn-console/hooks'
 import { checkInsufficientRoleInProject, checkRoleAndLocked } from '@/utils/controller.js'
 
 export const getRepositoryById = async (

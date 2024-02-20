@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { type Ref, ref } from 'vue'
 import api from '@/api/index.js'
-import type { CreateQuotaDto, QuotaModel, UpdateQuotaStageDto, UpdateQuotaPrivacyDto, QuotaParams } from '@dso-console/shared'
+import type { CreateQuotaDto, QuotaModel, UpdateQuotaStageDto, UpdateQuotaPrivacyDto, QuotaParams } from '@cpn-console/shared'
 
 export const useAdminQuotaStore = defineStore('admin-quota', () => {
   const quotas: Ref<Array<QuotaModel>> = ref([])

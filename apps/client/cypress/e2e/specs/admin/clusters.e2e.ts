@@ -1,4 +1,4 @@
-import { ClusterPrivacy } from '@dso-console/shared'
+import { ClusterPrivacy } from '@cpn-console/shared'
 import { getModelById, getModel } from '../../support/func.js'
 
 describe('Administration clusters', () => {

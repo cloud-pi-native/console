@@ -1,4 +1,4 @@
-import { statusDict, formatDate, sortArrByObjKeyAsc, OrganizationModel, ProjectModel } from '@dso-console/shared'
+import { statusDict, formatDate, sortArrByObjKeyAsc, OrganizationModel, ProjectModel } from '@cpn-console/shared'
 import { getModel, getModelById } from '../../support/func.js'
 
 function checkTableRowsLength (length) {

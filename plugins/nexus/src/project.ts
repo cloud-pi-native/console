@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { getAxiosOptions } from './functions.js'
-import type { StepCall, ArchiveProjectExecArgs, CreateProjectExecArgs } from '@dso-console/hooks'
-import { generateRandomPassword } from '@dso-console/hooks'
+import type { StepCall, ArchiveProjectExecArgs, CreateProjectExecArgs } from '@cpn-console/hooks'
+import { generateRandomPassword } from '@cpn-console/hooks'
 
 const getAxiosInstance = () => axios.create(getAxiosOptions())
 
