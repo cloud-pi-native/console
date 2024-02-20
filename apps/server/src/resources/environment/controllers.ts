@@ -6,7 +6,7 @@ import {
 } from '@/utils/response.js'
 import {
   getEnvironmentByIdSchema, initializeEnvironmentSchema, updateEnvironmentSchema, deleteEnvironmentSchema,
-} from '@dso-console/shared'
+} from '@cpn-console/shared'
 import {
   getEnvironmentInfos,
   createEnvironment,

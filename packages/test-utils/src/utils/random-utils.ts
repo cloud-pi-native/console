@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import { achievedStatus, projectRoles, logActions, type ProjectRoles, type AchievedStatus, ClusterPrivacy } from '@dso-console/shared'
+import { achievedStatus, projectRoles, logActions, type ProjectRoles, type AchievedStatus, ClusterPrivacy } from '@cpn-console/shared'
 import { repeatFn } from './func-utils.js'
 import { Cluster, Environment, Log, Organization, Permission, Project, Repository, User, Role } from './types.js'
 
@@ -31,15 +31,15 @@ export const getRandomProject = (organizationId = faker.string.uuid()) => {
     description: faker.lorem.sentence(8),
     status: faker.helpers.arrayElement(achievedStatus),
     locked: false,
-  } as Project & { status: AchievedStatus}
+  } as Project & { status: AchievedStatus }
 }
 
-export const getRandomCluster = (projectIds = repeatFn(2)(faker.string.uuid), stageIds = repeatFn(2)(faker.string.uuid)) => {
+export const getRandomCluster = (projectIds: string[] = repeatFn(2)(faker.string.uuid), stageIds: string[] = repeatFn(2)(faker.string.uuid), privacy: ClusterPrivacy = faker.helpers.arrayElement(Object.values(ClusterPrivacy))) => {
   return {
     id: faker.string.uuid(),
     label: faker.lorem.word(),
     infos: faker.lorem.sentence(8),
-    projectIds,
+    projectIds: privacy === ClusterPrivacy.DEDICATED ? projectIds : [],
     stageIds,
     user: {
       certData: 'userCAD',
@@ -50,7 +50,7 @@ export const getRandomCluster = (projectIds = repeatFn(2)(faker.string.uuid), st
       server: 'https://coucou.com:5000',
       tlsServerName: 'coucou.com',
     },
-    privacy: faker.helpers.arrayElement(Object.values(ClusterPrivacy)),
+    privacy,
     clusterResources: faker.datatype.boolean(),
     secretName: faker.internet.password({ length: 50 }),
   } as Cluster
@@ -78,7 +78,7 @@ export const getRandomRole = (
 }
 
 export const getRandomRepo = (projectId = faker.string.uuid()) => {
-  const repo: Repository & { status: AchievedStatus} = {
+  const repo: Repository & { status: AchievedStatus } = {
     id: faker.string.uuid(),
     projectId,
     internalRepoName: faker.lorem.word(),

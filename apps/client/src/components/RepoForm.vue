@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
-import { SharedZodError, RepoBusinessSchema, CreateRepoSchema, CreateRepoBusinessSchema, instanciateSchema } from '@dso-console/shared'
+import { SharedZodError, RepoBusinessSchema, CreateRepoSchema, CreateRepoBusinessSchema, instanciateSchema } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = defineProps({

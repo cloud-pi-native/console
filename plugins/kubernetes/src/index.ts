@@ -1,4 +1,4 @@
-import type { Plugin } from '@dso-console/hooks'
+import type { Plugin } from '@cpn-console/hooks'
 import { createKubeSecret } from './secret.js'
 import { createKubeNamespace, deleteKubeNamespace, updateResourceQuota } from './namespace.js'
 import infos from './infos.js'

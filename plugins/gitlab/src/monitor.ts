@@ -1,11 +1,11 @@
-import { type MonitorInfos, MonitorStatus, requiredEnv, Monitor } from '@dso-console/shared'
+import { type MonitorInfos, MonitorStatus, requiredEnv, Monitor } from '@cpn-console/shared'
 import axios from 'axios'
 
 enum HealthStatus {
   failed = 'failed',
   ok = 'ok',
 }
-type GitlabRes = Record<string, {status: HealthStatus, labels: Record<string, string>}>
+type GitlabRes = Record<string, { status: HealthStatus, labels: Record<string, string> }>
 const coreComponents = ['gitaly_check', 'master_check', 'db_check', 'sessions_check']
 
 const monitor = async (instance: Monitor): Promise<MonitorInfos> => {

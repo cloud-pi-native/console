@@ -1,4 +1,4 @@
-import { removeTrailingSlash, requiredEnv } from '@dso-console/shared'
+import { removeTrailingSlash, requiredEnv } from '@cpn-console/shared'
 
 const config: {
   url?: string
@@ -7,7 +7,7 @@ const config: {
   host?: string
 } = {}
 
-export const getConfig = ():Required<typeof config> => {
+export const getConfig = (): Required<typeof config> => {
   config.url = config.url ?? removeTrailingSlash(requiredEnv('HARBOR_URL'))
   config.user = config.user ?? requiredEnv('HARBOR_ADMIN')
   config.password = config.password ?? requiredEnv('HARBOR_ADMIN_PASSWORD')

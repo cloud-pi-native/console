@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import api from '@/api/index.js'
 import { useProjectStore } from '@/stores/project.js'
-import type { PermissionParams, SetPermissionDto, UpdatePermissionDto, DeletePermissionParams } from '@dso-console/shared'
+import type { PermissionParams, SetPermissionDto, UpdatePermissionDto, DeletePermissionParams } from '@cpn-console/shared'
 import { projectMissing } from '@/utils/const.js'
 
 export const useProjectPermissionStore = defineStore('project-permission', () => {

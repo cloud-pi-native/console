@@ -45,7 +45,7 @@ jobs:
     outputs:
       browsers: ${{ steps.build-matrix.outputs.BROWSERS }}
     steps:
-      - name: Generate matrix for build
+      - name: Generate matrix
         id: build-matrix
         run: |
           BROWSERS=$(echo "\"${{ inputs.BROWSERS }}\"" | jq -c 'split(",")')

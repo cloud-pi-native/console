@@ -3,7 +3,7 @@ import { addReqLogs } from '@/utils/logger.js'
 import { getUsers } from './business.js'
 import type { FastifyInstance } from 'fastify'
 
-import { getUsersSchema } from '@dso-console/shared'
+import { getUsersSchema } from '@cpn-console/shared'
 
 const router = async (app: FastifyInstance, _opt) => {
   // Récupérer tous les utilisateurs

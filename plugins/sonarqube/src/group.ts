@@ -1,4 +1,4 @@
-import type { ArchiveProjectExecArgs, CreateProjectExecArgs, StepCall } from '@dso-console/hooks'
+import type { ArchiveProjectExecArgs, CreateProjectExecArgs, StepCall } from '@cpn-console/hooks'
 import type { AxiosResponse } from 'axios'
 import { getAxiosInstance } from './tech.js'
 import type { SonarPaging } from './project.js'

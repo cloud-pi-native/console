@@ -49,9 +49,10 @@ jobs:
           git fetch
           git checkout "$BRANCH"
           VERSION=$(jq -r .version package.json)
-          yq e -i ".version |= \"$VERSION\"" apps/server/package.json
-          yq e -i ".version |= \"$VERSION\"" apps/client/package.json
-          yq e -i ".version |= \"$VERSION\"" packages/shared/package.json
+          for pkg in $(jq -r '.app | map(.path + "/package.json") | .[]' < ./ci/matrix-npm.json); do
+            yq e -i ".version |= \"$VERSION\"" $pkg
+            yq e -i ".publishConfig.tag |= \"latest\"" $pkg
+          done
           git add .
           # Emulate the author of the existing commit (the bot).
           git config user.email "$(git log -n 1 --format='%ae')"

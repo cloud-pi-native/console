@@ -1,4 +1,4 @@
-import type { Plugin } from '@dso-console/hooks'
+import type { Plugin } from '@cpn-console/hooks'
 import { getStatus } from './check.js'
 import { createUser, deleteUser } from './user.js'
 import { createDsoProjectGroup, deleteteDsoProjectGroup } from './group.js'
@@ -36,7 +36,7 @@ export const plugin: Plugin = {
   monitor,
 }
 
-declare module '@dso-console/hooks' {
+declare module '@cpn-console/hooks' {
   interface HookPayloadResults {
     sonarqube: Record<string, any>
   }

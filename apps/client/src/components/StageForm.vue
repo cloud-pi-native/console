@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { computed, onBeforeMount, ref } from 'vue'
-import { SharedZodError, StageSchema } from '@dso-console/shared'
+import { SharedZodError, StageSchema } from '@cpn-console/shared'
 import { copyContent } from '@/utils/func.js'
 import type { UpdateStageType } from '@/views/admin/ListStages.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'

@@ -12,7 +12,7 @@ on:
 
 jobs:
   matrix:
-    name: Generate matrix for build & scan
+    name: Generate matrix
     runs-on: ubuntu-latest
     outputs:
       build-matrix: ${{ steps.build-matrix.outputs.BUILD_MATRIX }}
@@ -21,14 +21,14 @@ jobs:
       - name: Checks-out repository
         uses: actions/checkout@v3
 
-      - name: Generate matrix for build
+      - name: Generate matrix
         id: build-matrix
         run: |
           echo 'BUILD_MATRIX<<EOF' >> $GITHUB_OUTPUT
           ./ci/scripts/build-matrix.sh -f ./docker/docker-compose.prod.yml -c | jq '[.[] | select(.build != false)]' >> $GITHUB_OUTPUT
           echo 'EOF' >> $GITHUB_OUTPUT
 
-      - name: Generate matrix for scan
+      - name: Generate matrix
         id: scan-matrix
         run: |
           echo 'SCAN_MATRIX<<EOF' >> $GITHUB_OUTPUT

@@ -1,4 +1,4 @@
-import { type MonitorInfos, MonitorStatus, requiredEnv, Monitor } from '@dso-console/shared'
+import { type MonitorInfos, MonitorStatus, requiredEnv, Monitor } from '@cpn-console/shared'
 import axios from 'axios'
 
 const vaultStatusCode = [200, 429, 472, 473, 501, 503]

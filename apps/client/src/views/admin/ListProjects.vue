@@ -2,7 +2,7 @@
 import { onBeforeMount, ref, type Ref } from 'vue'
 import { useAdminProjectStore } from '@/stores/admin/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { type AsyncReturnType, formatDate, statusDict, sortArrByObjKeyAsc } from '@dso-console/shared'
+import { type AsyncReturnType, formatDate, statusDict, sortArrByObjKeyAsc } from '@cpn-console/shared'
 import { useAdminOrganizationStore } from '@/stores/admin/organization.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 import { getRandomId } from '@gouvminint/vue-dsfr'

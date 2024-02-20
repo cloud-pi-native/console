@@ -43,7 +43,7 @@ export async function startServer () {
   try {
     const dataPath = (isProd || isInt)
       ? './init/db/imports/data.js'
-      : '@dso-console/test-utils/src/imports/data.ts'
+      : '@cpn-console/test-utils/src/imports/data.ts'
     await initializeDB(dataPath)
     if (isProd && !isDevSetup) {
       app.log.info('Cleaning up imported data file...')

@@ -53,8 +53,8 @@ jobs:
       - expose-vars
       - release
     with:
-      MAJOR_TAG: ${{ needs.release.outputs.major-tag }}
-      MINOR_TAG: ${{ needs.release.outputs.minor-tag }}
-      PATCH_TAG: ${{ needs.release.outputs.patch-tag }}
       PNPM_VERSION: ${{ needs.expose-vars.outputs.PNPM_VERSION }}
       NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
+      PUBLISH_APPS: false
+      PUBLISH_PACKAGES: false
+      PUBLISH_PLUGINS: false

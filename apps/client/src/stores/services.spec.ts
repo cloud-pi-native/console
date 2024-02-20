@@ -2,7 +2,7 @@ import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { apiClient } from '../api/xhr-client.js'
 import { useServiceStore } from './services.js'
-import type { MonitorServiceModel } from '@dso-console/shared'
+import type { MonitorServiceModel } from '@cpn-console/shared'
 
 const apiClientGet = vi.spyOn(apiClient, 'get')
 

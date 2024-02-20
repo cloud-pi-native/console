@@ -1,4 +1,4 @@
-import { ClusterPrivacy } from '@dso-console/shared'
+import { ClusterPrivacy } from '@cpn-console/shared'
 
 export * from './cluster.js'
 export * from './environment.js'
@@ -37,18 +37,18 @@ export type EnvironmentObject = {
 }
 
 export interface KubeUser {
-    readonly certData?: string;
-    readonly keyData?: string;
-    readonly token?: string;
-    readonly username?: string;
-    readonly password?: string;
+  readonly certData?: string;
+  readonly keyData?: string;
+  readonly token?: string;
+  readonly username?: string;
+  readonly password?: string;
 }
 
 export interface KubeCluster {
-    readonly caData?: string;
-    readonly server: string;
-    readonly skipTLSVerify?: boolean;
-    readonly tlsServerName?: string;
+  readonly caData?: string;
+  readonly server: string;
+  readonly skipTLSVerify?: boolean;
+  readonly tlsServerName?: string;
 }
 
 export type ClusterObject = {

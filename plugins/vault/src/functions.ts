@@ -1,4 +1,4 @@
-import type { StepCall, ArchiveProjectExecArgs } from '@dso-console/hooks'
+import type { StepCall, ArchiveProjectExecArgs } from '@cpn-console/hooks'
 
 export const archiveDsoProject: StepCall<ArchiveProjectExecArgs> = async (payload) => {
   try {

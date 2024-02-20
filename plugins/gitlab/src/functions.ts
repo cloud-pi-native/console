@@ -1,5 +1,5 @@
-import type { StepCall, AddUserToProjectExecArgs, ArchiveProjectExecArgs, CreateProjectExecArgs, CreateProjectValidateArgs, CreateRepositoryExecArgs, DeleteRepositoryExecArgs, ProjectBase, UpdateRepositoryExecArgs } from '@dso-console/hooks'
-import { generateProjectKey } from '@dso-console/hooks'
+import type { StepCall, AddUserToProjectExecArgs, ArchiveProjectExecArgs, CreateProjectExecArgs, CreateProjectValidateArgs, CreateRepositoryExecArgs, DeleteRepositoryExecArgs, ProjectBase, UpdateRepositoryExecArgs } from '@cpn-console/hooks'
+import { generateProjectKey } from '@cpn-console/hooks'
 import { createGroup, deleteGroup, getGroupId, setGroupVariable, setProjectVariable } from './group.js'
 import { addGroupMember, getGroupMembers, removeGroupMember } from './permission.js'
 import { createGroupToken, createProject, createProjectMirror, deleteProject } from './project.js'

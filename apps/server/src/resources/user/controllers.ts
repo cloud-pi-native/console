@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify'
 import { sendOk, sendCreated } from '@/utils/response.js'
 import { addReqLogs } from '@/utils/logger.js'
 import { addUserToProject, checkProjectLocked, checkProjectRole, getMatchingUsers, getProjectInfos, getProjectUsers, removeUserFromProject, updateUserProjectRole } from './business.js'
-import { adminGroupPath, addUserToProjectSchema, getMatchingUsersSchema, getProjectUsersSchema, removeUserFromProjectSchema, updateUserProjectRoleSchema } from '@dso-console/shared'
+import { adminGroupPath, addUserToProjectSchema, getMatchingUsersSchema, getProjectUsersSchema, removeUserFromProjectSchema, updateUserProjectRoleSchema } from '@cpn-console/shared'
 
 import { FromSchema } from 'json-schema-to-ts'
 import { BadRequestError } from '@/utils/errors.js'

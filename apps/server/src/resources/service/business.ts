@@ -1,8 +1,8 @@
 import { ForbiddenError } from '@/utils/errors.js'
 import { getOrCreateUser } from '../queries-index.js'
-import { UserSchema } from '@dso-console/shared'
+import { UserSchema } from '@cpn-console/shared'
 import { type UserDetails } from '@/types/index.js'
-import { services } from '@dso-console/hooks'
+import { services } from '@cpn-console/hooks'
 import { validateSchema } from '@/utils/business.js'
 
 export const checkServicesHealth = async (requestor: Omit<UserDetails, 'groups'>) => {

@@ -1,4 +1,4 @@
-import { Monitor, MonitorInfos } from '@dso-console/shared'
+import { Monitor, MonitorInfos } from '@cpn-console/shared'
 import type { EnvironmentObject, ClusterObject } from './hooks/index.js'
 
 type ToUrlObject = { to: string, title?: string, description?: string, imgSrc?: string }

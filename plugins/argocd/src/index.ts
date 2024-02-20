@@ -1,4 +1,4 @@
-import { type Plugin } from '@dso-console/hooks'
+import { type Plugin } from '@cpn-console/hooks'
 import { deleteEnv, deleteRepo, newEnv, newRepo } from './functions.js'
 import { createCluster, deleteCluster, updateCluster } from './cluster.js'
 import infos from './infos.js'

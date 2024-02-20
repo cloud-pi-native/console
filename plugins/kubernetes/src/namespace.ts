@@ -1,7 +1,7 @@
 import { Namespace } from 'kubernetes-models/v1'
 import { CoreV1Api } from '@kubernetes/client-node'
 import { createCoreV1Api } from './api.js'
-import type { StepCall, Environment, EnvironmentCreateArgs, EnvironmentDeleteArgs, EnvironmentQuotaUpdateArgs, Organization, Project, ResourceQuotaType, UserObject } from '@dso-console/hooks'
+import type { StepCall, Environment, EnvironmentCreateArgs, EnvironmentDeleteArgs, EnvironmentQuotaUpdateArgs, Organization, Project, ResourceQuotaType, UserObject } from '@cpn-console/hooks'
 import { createResourceQuota, findResourceQuota, replaceResourceQuota } from './quota.js'
 import { createHmac } from 'node:crypto'
 

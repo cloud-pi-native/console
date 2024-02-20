@@ -1,4 +1,4 @@
-import { removeTrailingSlash, requiredEnv } from '@dso-console/shared'
+import { removeTrailingSlash, requiredEnv } from '@cpn-console/shared'
 
 const config: {
   url?: string
@@ -14,14 +14,14 @@ export const getConfig = (): Required<typeof config> => {
   return config
 }
 export let axiosOptions: {
-    baseURL: string
-    auth: {
-        username: string;
-        password: string;
-    };
-    headers: {
-        Accept: string;
-    };
+  baseURL: string
+  auth: {
+    username: string;
+    password: string;
+  };
+  headers: {
+    Accept: string;
+  };
 }
 
 export const getAxiosOptions = (): Required<typeof axiosOptions> => {

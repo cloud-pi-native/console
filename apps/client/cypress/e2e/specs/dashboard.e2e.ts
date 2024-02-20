@@ -1,4 +1,4 @@
-import { statusDict } from '@dso-console/shared'
+import { statusDict } from '@cpn-console/shared'
 import { getModelById } from '../support/func.js'
 
 describe('Dashboard', () => {

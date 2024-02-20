@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useAdminLogStore } from '@/stores/admin/log.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { exclude } from '@dso-console/shared'
+import { exclude } from '@cpn-console/shared'
 import { JsonViewer } from 'vue3-json-viewer'
 
 const adminLogStore = useAdminLogStore()

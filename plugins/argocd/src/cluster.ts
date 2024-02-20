@@ -1,5 +1,5 @@
 import type { V1Secret } from '@kubernetes/client-node'
-import type { StepCall, ClusterObject, CreateClusterExecArgs, DeleteClusterExecArgs } from '@dso-console/hooks'
+import type { StepCall, ClusterObject, CreateClusterExecArgs, DeleteClusterExecArgs } from '@cpn-console/hooks'
 import { getConfig, getK8sApi } from './utils.js'
 
 export const createCluster: StepCall<CreateClusterExecArgs> = async (payload) => {

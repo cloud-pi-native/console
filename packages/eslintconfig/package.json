@@ -1,8 +1,10 @@
 {
-  "name": "@dso-console/eslint-config-base",
+  "name": "@cpn-console/eslint-config",
+  "description": "",
   "version": "1.0.0",
-  "license": "ISC",
+  "private": false,
   "main": "index.js",
+  "module": "index.js",
   "dependencies": {
     "@typescript-eslint/eslint-plugin": "^6.9.1",
     "@typescript-eslint/parser": "^6.9.1",
@@ -11,5 +13,10 @@
     "eslint-plugin-import": "^2.29.0",
     "eslint-plugin-n": "^16.2.0",
     "eslint-plugin-promise": "^6.1.1"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public",
+    "tag": "latest"
   }
 }

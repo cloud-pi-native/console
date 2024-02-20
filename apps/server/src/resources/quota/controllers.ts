@@ -3,7 +3,7 @@ import { sendOk } from '@/utils/response.js'
 import { getQuotas } from './business.js'
 import type { FastifyInstance } from 'fastify'
 
-import { getQuotasSchema } from '@dso-console/shared'
+import { getQuotasSchema } from '@cpn-console/shared'
 
 const router = async (app: FastifyInstance, _opt) => {
   // Récupérer les quotas disponibles

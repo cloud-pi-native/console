@@ -32,7 +32,7 @@ on:
 
 jobs:
   matrix:
-    name: Generate matrix for build & scan
+    name: Generate matrix
     runs-on: ubuntu-latest
     outputs:
       build-matrix: ${{ steps.build-matrix.outputs.BUILD_MATRIX }}
@@ -40,10 +40,10 @@ jobs:
       - name: Checks-out repository
         uses: actions/checkout@v3
 
-      - name: Generate matrix for build
+      - name: Generate matrix
         id: build-matrix
         run: |
-          echo "BUILD_MATRIX=$(jq -c . < ./ci/matrix.json)" >> $GITHUB_OUTPUT
+          echo "BUILD_MATRIX=$(jq -c . < ./ci/matrix-docker.json)" >> $GITHUB_OUTPUT
 
   images-scan:
     name: Scan images vulnerabilities

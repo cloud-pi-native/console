@@ -9,7 +9,7 @@ import {
 } from './business.js'
 import type { FastifyInstance } from 'fastify'
 
-import { createClusterSchema, getClusterAssociatedEnvironmentsSchema, updateClusterSchema, deleteClusterSchema } from '@dso-console/shared'
+import { createClusterSchema, getClusterAssociatedEnvironmentsSchema, updateClusterSchema, deleteClusterSchema } from '@cpn-console/shared'
 import { FromSchema } from 'json-schema-to-ts'
 import '@/types/index.js'
 

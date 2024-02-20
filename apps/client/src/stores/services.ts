@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import api from '@/api/index.js'
 import { type Ref, ref } from 'vue'
-import { type MonitorServiceModel, MonitorStatus } from '@dso-console/shared'
+import { type MonitorServiceModel, MonitorStatus } from '@cpn-console/shared'
 import type { DsfrAlertType } from '@gouvminint/vue-dsfr'
 
 export type ServicesHealth = {
