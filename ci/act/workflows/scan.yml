@@ -19,7 +19,7 @@ jobs:
       scan-matrix: ${{ steps.scan-matrix.outputs.SCAN_MATRIX }}
     steps:
       - name: Checks-out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Generate matrix
         id: build-matrix
@@ -45,13 +45,13 @@ jobs:
         images: ${{ fromJSON(needs.matrix.outputs.build-matrix) }}
     steps:
       - name: Checks-out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Docker buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
       - name: Set up QEMU (for multi platform build)
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3
 
       - name: Create image directory
         run: mkdir ./artifacts
@@ -67,7 +67,7 @@ jobs:
           outputs: type=docker,dest=./artifacts/${{ matrix.images.name }}.tar
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.images.name }}
           path: ./artifacts/${{ matrix.images.name }}.tar
@@ -85,11 +85,11 @@ jobs:
     steps:
       - name: Set up Docker buildx
         if: ${{ matrix.images.build != false }}
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
       - name: Download artifact
         if: ${{ matrix.images.build != false }}
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ matrix.images.name }}
           path: ./artifacts
@@ -113,7 +113,7 @@ jobs:
         continue-on-error: true
 
       - name: Upload scan artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: vulnerability-report
           path: ./artifacts/vulnerability-report/
@@ -126,7 +126,7 @@ jobs:
       - matrix
     steps:
       - name: Checks-out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Create security artifacts directory
         run: mkdir -p ./artifacts/vulnerability-report/configs/
@@ -143,7 +143,7 @@ jobs:
         continue-on-error: true
 
       - name: Upload scan artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: vulnerability-report
           path: ./artifacts/vulnerability-report/
@@ -158,10 +158,10 @@ jobs:
       - config-scan
     steps:
       - name: Checks-out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: vulnerability-report
           path: ./artifacts/vulnerability-report

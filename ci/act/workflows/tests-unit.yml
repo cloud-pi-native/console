@@ -23,17 +23,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checks-out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v3
         id: pnpm-install
         with:
           version: "${{ inputs.PNPM_VERSION }}"
           run_install: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: "${{ inputs.NODE_VERSION }}"
           cache: pnpm
@@ -48,7 +48,7 @@ jobs:
           ./ci/scripts/run-tests.sh -u
 
       - name: Upload vitest coverage artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: unit-tests-coverage
           path: |
@@ -82,12 +82,12 @@ jobs:
     if: ${{ needs.check-secrets.outputs.run-scan == 'true' }}
     steps:
       - name: Checks-out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: unit-tests-coverage
           path: ./coverage

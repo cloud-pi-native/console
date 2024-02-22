@@ -1,0 +1,11 @@
+{
+  "packages": {
+    ".": {
+      "package-name": "console",
+      "extra-files": [
+        "helm/Chart.yaml",
+        "helm/values.yaml"
+      ]
+    }
+  }
+}
