@@ -1,5 +1,5 @@
 import prisma from '@/prisma.js'
-import { exclude, type AsyncReturnType, ClusterPrivacy, AllStatus } from '@dso-console/shared'
+import { exclude, type AsyncReturnType, ClusterPrivacy, AllStatus } from '@cpn-console/shared'
 import type { Organization, Project, User, Role } from '@prisma/client'
 
 type ProjectUpdate = Partial<Pick<Project, 'description'>>

@@ -1,4 +1,4 @@
-import { ServiceInfos } from '@dso-console/hooks'
+import { ServiceInfos } from '@cpn-console/hooks'
 import { getConfig } from './tech.js'
 
 const infos: ServiceInfos = {

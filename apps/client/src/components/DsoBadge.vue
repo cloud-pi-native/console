@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { computed } from 'vue'
-import { statusDict, type ProjectModel } from '@dso-console/shared'
+import { statusDict, type ProjectModel } from '@cpn-console/shared'
 
 type ResourceBase = {
   id: ProjectModel['id'],

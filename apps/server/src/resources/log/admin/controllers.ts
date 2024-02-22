@@ -1,6 +1,6 @@
 import { sendOk } from '@/utils/response.js'
 import { addReqLogs } from '@/utils/logger.js'
-import type { AdminLogsQuery } from '@dso-console/shared'
+import type { AdminLogsQuery } from '@cpn-console/shared'
 import type { FastifyRequest, FastifyInstance } from 'fastify'
 import { getAllLogs } from './business.js'
 

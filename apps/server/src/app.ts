@@ -19,7 +19,7 @@ import {
   openApiSchemas,
   toServiceOpenApiSchema,
   monitorServicesOpenApiSchema,
-} from '@dso-console/shared'
+} from '@cpn-console/shared'
 
 import { apiRouter, miscRouter } from './resources/index.js'
 import { addReqLogs, loggerConf } from './utils/logger.js'

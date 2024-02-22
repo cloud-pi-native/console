@@ -3,7 +3,7 @@ import { sendOk, sendCreated } from '@/utils/response.js'
 import { deletePermission, getEnvironmentPermissions, setPermission, updatePermission } from './business.js'
 import type { FastifyInstance } from 'fastify'
 
-import { deletePermissionSchema, getEnvironmentPermissionsSchema, setPermissionSchema, updatePermissionSchema } from '@dso-console/shared'
+import { deletePermissionSchema, getEnvironmentPermissionsSchema, setPermissionSchema, updatePermissionSchema } from '@cpn-console/shared'
 import { FromSchema } from 'json-schema-to-ts'
 
 const router = async (app: FastifyInstance, _opt) => {

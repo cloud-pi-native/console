@@ -19,7 +19,7 @@ import {
   getEnvironmentById,
 } from '@/resources/queries-index.js'
 import { DsoError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
-import { hooks } from '@dso-console/hooks'
+import { hooks } from '@cpn-console/hooks'
 import type { Cluster, Environment, Project, Role, User, QuotaStage, Log } from '@prisma/client'
 import {
   checkInsufficientRoleInProject,
@@ -31,7 +31,7 @@ import {
 import { unlockProjectIfNotFailed, validateSchema } from '@/utils/business.js'
 import { projectRootDir, gitlabUrl } from '@/utils/env.js'
 import { getProjectInfosAndClusters } from '@/resources/project/business.js'
-import { type AsyncReturnType, adminGroupPath, EnvironmentSchema } from '@dso-console/shared'
+import { type AsyncReturnType, adminGroupPath, EnvironmentSchema } from '@cpn-console/shared'
 import type { UserDetails } from '@/types/index.js'
 
 // Fetch infos

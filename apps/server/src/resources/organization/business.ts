@@ -1,7 +1,7 @@
 import { getOrCreateUser, getActiveOrganizationsQuery, getOrganizationById } from '@/resources/queries-index.js'
 import { UserDetails } from '@/types/index.js'
 import { NotFoundError, UnauthorizedError } from '@/utils/errors.js'
-import { UserSchema } from '@dso-console/shared'
+import { UserSchema } from '@cpn-console/shared'
 import { validateSchema } from '@/utils/business.js'
 
 // TODO 539 : à supprimer ? n'est pas utilisé

@@ -2,7 +2,7 @@ import { addReqLogs } from '@/utils/logger.js'
 import { sendOk } from '@/utils/response.js'
 import { checkServicesHealth } from './business.js'
 import type { FastifyInstance } from 'fastify'
-import { getServiceHealthSchema } from '@dso-console/shared'
+import { getServiceHealthSchema } from '@cpn-console/shared'
 import type { UserDetails } from '@/types/index.js'
 
 const router = async (app: FastifyInstance, _opt) => {

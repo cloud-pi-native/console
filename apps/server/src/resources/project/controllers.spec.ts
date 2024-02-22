@@ -1,10 +1,10 @@
 import prisma from '../../__mocks__/prisma.js'
 import app, { getRequestor, setRequestor } from '../../__mocks__/app.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
-import { createRandomDbSetup, getRandomProject, getRandomRole, getRandomUser } from '@dso-console/test-utils'
+import { createRandomDbSetup, getRandomProject, getRandomRole, getRandomUser } from '@cpn-console/test-utils'
 import { faker } from '@faker-js/faker'
 import { getConnection, closeConnections } from '../../connect.js'
-import { descriptionMaxLength, exclude, projectIsLockedInfo } from '@dso-console/shared'
+import { descriptionMaxLength, exclude, projectIsLockedInfo } from '@cpn-console/shared'
 
 describe('Project routes', () => {
   const requestor = getRandomUser()

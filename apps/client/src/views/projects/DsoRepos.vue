@@ -3,7 +3,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectRepositoryStore } from '@/stores/project-repository.js'
 import { useUserStore } from '@/stores/user.js'
-import { AllStatus, projectIsLockedInfo, sortArrByObjKeyAsc } from '@dso-console/shared'
+import { AllStatus, projectIsLockedInfo, sortArrByObjKeyAsc } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const projectStore = useProjectStore()

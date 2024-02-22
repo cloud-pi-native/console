@@ -1,4 +1,4 @@
-import { type ServiceInfos } from '@dso-console/hooks'
+import { type ServiceInfos } from '@cpn-console/hooks'
 import { getConfig } from './utils.js'
 
 const infos: ServiceInfos = {

@@ -1,14 +1,33 @@
 {
+  "name": "@cpn-console/shared",
+  "description": "",
+  "version": "1.0.0",
+  "private": false,
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "types/index.d.ts",
+  "scripts": {
+    "build": "run-s clean:build compile",
+    "clean:build": "rimraf dist types",
+    "compile": "tsc",
+    "dev": "nodemon --watch src --ext .ts --exec 'pnpm run compile'",
+    "format": "eslint ./src --ext .js,.cjs,.ts --fix",
+    "kube:e2e-ci": "echo 'check cache'",
+    "lint": "eslint ./src",
+    "test": "vitest run",
+    "test:cov": "vitest run --coverage",
+    "test:e2e-ci": "echo 'check cache'",
+    "test:watch": "vitest"
+  },
   "dependencies": {
-    "joi": "^17.12.1",
     "json-schema-to-ts": "^3.0.0",
     "zod": "^3.22.4",
     "zod-validation-error": "^3.0.2"
   },
-  "description": "",
   "devDependencies": {
-    "@dso-console/eslint-config-base": "workspace:*",
-    "@dso-console/tsconfig": "workspace:*",
+    "@cpn-console/eslint-config": "workspace:^",
+    "@cpn-console/ts-config": "workspace:^",
     "@faker-js/faker": "^8.4.0",
     "@kubernetes/client-node": "^0.20.0",
     "@types/node": "^20.11.16",
@@ -28,24 +47,13 @@
     "vite": "^5.0.12",
     "vitest": "^1.2.2"
   },
-  "main": "dist/index.js",
-  "module": "dist/index.js",
-  "name": "@dso-console/shared",
-  "private": false,
-  "scripts": {
-    "build": "run-s clean:build compile",
-    "clean:build": "rimraf dist types",
-    "compile": "tsc",
-    "dev": "nodemon --watch src --ext .ts --exec 'npm run compile'",
-    "format": "eslint ./src --ext .js,.cjs,.ts --fix",
-    "kube:e2e-ci": "echo 'check cache'",
-    "lint": "eslint ./src",
-    "test": "vitest run",
-    "test:cov": "vitest run --coverage",
-    "test:e2e-ci": "echo 'check cache'",
-    "test:watch": "vitest"
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public",
+    "tag": "latest"
   },
-  "type": "module",
-  "types": "types/index.d.ts",
-  "version": "6.5.1"
+  "files": [
+    "dist",
+    "types"
+  ]
 }

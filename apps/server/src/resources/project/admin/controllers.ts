@@ -3,7 +3,7 @@ import { FastifyRequest, type FastifyInstance } from 'fastify'
 import { sendNoContent, sendOk } from '@/utils/response.js'
 import { getAllProjects, handleProjectLocking, generateProjectsData } from './business.js'
 
-import { getAllProjectsSchema, patchProjectSchema, generateProjectsDataSchema } from '@dso-console/shared'
+import { getAllProjectsSchema, patchProjectSchema, generateProjectsDataSchema } from '@cpn-console/shared'
 import { FromSchema } from 'json-schema-to-ts'
 
 const router = async (app: FastifyInstance, _opt) => {

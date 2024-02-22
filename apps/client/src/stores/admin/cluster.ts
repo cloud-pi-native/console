@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { type Ref, ref } from 'vue'
 import api from '@/api/index.js'
-import type { ClusterModel, ClusterParams, CreateClusterDto, UpdateClusterDto } from '@dso-console/shared'
+import type { ClusterModel, ClusterParams, CreateClusterDto, UpdateClusterDto } from '@cpn-console/shared'
 
 export const useAdminClusterStore = defineStore('admin-cluster', () => {
   const clusters: Ref<Array<ClusterModel | undefined>> = ref([])

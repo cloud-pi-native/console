@@ -6,13 +6,13 @@ import fp from 'fastify-plugin'
 import { addAllSchemasToApp, apiPrefix } from '@/app.js'
 import { apiRouter, miscRouter } from '@/resources/index.js'
 import { sessionConf } from '@/utils/keycloak.js'
-import { User } from '@dso-console/test-utils'
+import { User } from '@cpn-console/test-utils'
 
 global.process.exit = vi.fn()
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => { vi.fn() }) }))
 
-vi.mock('@dso-console/hooks', async () => {
-  const hooks = await vi.importActual('@dso-console/hooks')
+vi.mock('@cpn-console/hooks', async () => {
+  const hooks = await vi.importActual('@cpn-console/hooks')
   const hookTemplate = {
     execute: () => ({
       args: {},
@@ -144,11 +144,11 @@ const app = addAllSchemasToApp(fastify({ logger: false }))
   .register(fp(mockSessionPlugin))
   .register(miscRouter, { prefix: apiPrefix })
   .register(apiRouter, { prefix: apiPrefix })
-  // useful to debug fastify error
-  // .addHook('onError', (req, res, err, done) => {
-  //   console.log(err)
-  //   done()
-  // })
+// useful to debug fastify error
+// .addHook('onError', (req, res, err, done) => {
+//   console.log(err)
+//   done()
+// })
 await app.ready()
 
 vi.spyOn(app, 'listen')

@@ -5,7 +5,7 @@ import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@gouvminint/vue-dsfr/styles'
 import '@/main.css'
 import QuotaForm from '@/components/QuotaForm.vue'
-import { getRandomEnv, getRandomQuota, getRandomQuotaStage, getRandomStage, repeatFn } from '@dso-console/test-utils'
+import { getRandomEnv, getRandomQuota, getRandomQuotaStage, getRandomStage, repeatFn } from '@cpn-console/test-utils'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useAdminQuotaStore } from '@/stores/admin/quota.js'
 

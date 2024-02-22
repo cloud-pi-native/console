@@ -1,4 +1,4 @@
-import { type MonitorInfos, MonitorStatus, Monitor } from '@dso-console/shared'
+import { type MonitorInfos, MonitorStatus, Monitor } from '@cpn-console/shared'
 import axios from 'axios'
 import { getAxiosOptions } from './tech.js'
 

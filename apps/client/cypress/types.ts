@@ -1,4 +1,4 @@
-import { ProjectInfos, RepositoryModel } from '@dso-console/shared'
+import { ProjectInfos, RepositoryModel } from '@cpn-console/shared'
 
 export type Project = Partial<Pick<ProjectInfos, 'name' | 'id' | 'description' | 'locked' | 'organization'>>
 

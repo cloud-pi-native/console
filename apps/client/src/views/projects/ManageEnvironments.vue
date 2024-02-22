@@ -2,7 +2,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
-import { projectIsLockedInfo, sortArrByObjKeyAsc, AllStatus } from '@dso-console/shared'
+import { projectIsLockedInfo, sortArrByObjKeyAsc, AllStatus } from '@cpn-console/shared'
 import { useUserStore } from '@/stores/user.js'
 import { useAdminClusterStore } from '@/stores/admin/cluster'
 import { useSnackbarStore } from '@/stores/snackbar.js'

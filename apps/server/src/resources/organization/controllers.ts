@@ -5,7 +5,7 @@ import {
 } from './business.js'
 import type { FastifyInstance } from 'fastify'
 
-import { getActiveOrganizationsSchema } from '@dso-console/shared'
+import { getActiveOrganizationsSchema } from '@cpn-console/shared'
 
 const router = async (app: FastifyInstance, _opt) => {
   app.get('/',

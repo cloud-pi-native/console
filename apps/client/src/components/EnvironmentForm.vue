@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref, onBeforeMount, watch, computed } from 'vue'
 import { getRandomId } from '@gouvminint/vue-dsfr'
-import { EnvironmentSchema, projectIsLockedInfo, longestEnvironmentName, type QuotaStageModel, type QuotaModel, type SharedZodError, parseZodError } from '@dso-console/shared'
+import { EnvironmentSchema, projectIsLockedInfo, longestEnvironmentName, type QuotaStageModel, type QuotaModel, type SharedZodError, parseZodError } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 

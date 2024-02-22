@@ -1,11 +1,12 @@
 {
-  "name": "@dso-console/test-utils",
-  "version": "1.0.0",
+  "name": "@cpn-console/test-utils",
   "description": "",
+  "version": "1.0.0",
+  "private": false,
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
-  "private": false,
+  "types": "types/index.d.ts",
   "scripts": {
     "build": "run-s clean:build compile",
     "clean:build": "rimraf dist types",
@@ -15,14 +16,13 @@
     "lint": "eslint ./src",
     "test:e2e-ci": "echo 'check cache'"
   },
-  "types": "types/index.d.ts",
   "dependencies": {
     "@faker-js/faker": "^8.4.0",
-    "@dso-console/shared": "workspace:*"
+    "@cpn-console/shared": "workspace:^"
   },
   "devDependencies": {
-    "@dso-console/tsconfig": "workspace:*",
-    "@dso-console/eslint-config-base": "workspace:*",
+    "@cpn-console/ts-config": "workspace:^",
+    "@cpn-console/eslint-config": "workspace:^",
     "@types/node": "^20.11.16",
     "@typescript-eslint/eslint-plugin": "^6.20.0",
     "@typescript-eslint/parser": "^6.20.0",
@@ -36,5 +36,14 @@
     "ts-patch": "^3.1.2",
     "typescript": "^5.3.3",
     "typescript-transform-paths": "^3.4.6"
-  }
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public",
+    "tag": "latest"
+  },
+  "files": [
+    "dist",
+    "types"
+  ]
 }

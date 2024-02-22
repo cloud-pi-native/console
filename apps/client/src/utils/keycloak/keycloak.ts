@@ -8,7 +8,7 @@ import {
   keycloakRealm,
   keycloakRedirectUri,
 } from '../env'
-import { type UserProfile } from '@dso-console/shared'
+import { type UserProfile } from '@cpn-console/shared'
 
 export const keycloakInitOptions: KeycloakInitOptions = {
   onLoad: 'check-sso',

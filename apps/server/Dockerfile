@@ -14,7 +14,7 @@ COPY --chown=node:root packages/hooks/package.json ./packages/hooks/package.json
 COPY --chown=node:root packages/test-utils/package.json ./packages/test-utils/package.json
 COPY --chown=node:root packages/tsconfig/package.json ./packages/tsconfig/package.json
 
-COPY --chown=node:root plugins/argo/package.json ./plugins/argo/package.json
+COPY --chown=node:root plugins/argocd/package.json ./plugins/argocd/package.json
 COPY --chown=node:root plugins/gitlab/package.json ./plugins/gitlab/package.json
 COPY --chown=node:root plugins/harbor/package.json ./plugins/harbor/package.json
 COPY --chown=node:root plugins/keycloak/package.json ./plugins/keycloak/package.json

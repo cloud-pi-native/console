@@ -19,6 +19,9 @@
         "^compile"
       ]
     },
+    "db:generate": {
+      "outputs": []
+    },
     "dev": {
       "cache": false
     },
@@ -31,59 +34,56 @@
     "lint": {
       "outputs": []
     },
-    "db:generate": {
-      "outputs": []
-    },
     "test": {
       "dependsOn": [
-        "^@dso-console/shared#build",
-        "^@dso-console/test-utils#build",
-        "^@dso-console/hooks#build",
-        "^@dso-console/argo-plugin#build",
-        "^@dso-console/gitlab-plugin#build",
-        "^@dso-console/harbor-plugin#build",
-        "^@dso-console/keycloak-plugin#build",
-        "^@dso-console/kubernetes-plugin#build",
-        "^@dso-console/nexus-plugin#build",
-        "^@dso-console/sonarqube-plugin#build",
-        "^@dso-console/vault-plugin#build"
+        "^@cpn-console/shared#build",
+        "^@cpn-console/test-utils#build",
+        "^@cpn-console/hooks#build",
+        "^@cpn-console/argocd-plugin#build",
+        "^@cpn-console/gitlab-plugin#build",
+        "^@cpn-console/harbor-plugin#build",
+        "^@cpn-console/keycloak-plugin#build",
+        "^@cpn-console/kubernetes-plugin#build",
+        "^@cpn-console/nexus-plugin#build",
+        "^@cpn-console/sonarqube-plugin#build",
+        "^@cpn-console/vault-plugin#build"
       ],
       "outputs": []
     },
     "test:cov": {
       "dependsOn": [
-        "^@dso-console/shared#build",
-        "^@dso-console/test-utils#build",
-        "^@dso-console/hooks#build",
-        "^@dso-console/argo-plugin#build",
-        "^@dso-console/gitlab-plugin#build",
-        "^@dso-console/harbor-plugin#build",
-        "^@dso-console/keycloak-plugin#build",
-        "^@dso-console/kubernetes-plugin#build",
-        "^@dso-console/nexus-plugin#build",
-        "^@dso-console/sonarqube-plugin#build",
-        "^@dso-console/vault-plugin#build"
+        "^@cpn-console/shared#build",
+        "^@cpn-console/test-utils#build",
+        "^@cpn-console/hooks#build",
+        "^@cpn-console/argocd-plugin#build",
+        "^@cpn-console/gitlab-plugin#build",
+        "^@cpn-console/harbor-plugin#build",
+        "^@cpn-console/keycloak-plugin#build",
+        "^@cpn-console/kubernetes-plugin#build",
+        "^@cpn-console/nexus-plugin#build",
+        "^@cpn-console/sonarqube-plugin#build",
+        "^@cpn-console/vault-plugin#build"
       ],
       "outputs": []
     },
     "test:ct": {
       "dependsOn": [
-        "^@dso-console/shared#build",
-        "^@dso-console/test-utils#build"
+        "^@cpn-console/shared#build",
+        "^@cpn-console/test-utils#build"
       ],
       "outputs": []
     },
     "test:ct-ci": {
       "dependsOn": [
-        "^@dso-console/shared#build",
-        "^@dso-console/test-utils#build"
+        "^@cpn-console/shared#build",
+        "^@cpn-console/test-utils#build"
       ],
       "outputs": []
     },
     "test:e2e": {
       "dependsOn": [
-        "^@dso-console/shared#build",
-        "^@dso-console/test-utils#build"
+        "^@cpn-console/shared#build",
+        "^@cpn-console/test-utils#build"
       ],
       "outputs": []
     },
@@ -95,8 +95,8 @@
     },
     "client#test:e2e-ci": {
       "dependsOn": [
-        "@dso-console/shared#test:e2e-ci",
-        "@dso-console/test-utils#test:e2e-ci",
+        "@cpn-console/shared#test:e2e-ci",
+        "@cpn-console/test-utils#test:e2e-ci",
         "server#test:e2e-ci"
       ],
       "inputs": [
@@ -116,8 +116,8 @@
     },
     "client#kube:e2e-ci": {
       "dependsOn": [
-        "@dso-console/shared#kube:e2e-ci",
-        "@dso-console/test-utils#kube:e2e-ci",
+        "@cpn-console/shared#kube:e2e-ci",
+        "@cpn-console/test-utils#kube:e2e-ci",
         "server#kube:e2e-ci"
       ],
       "inputs": [

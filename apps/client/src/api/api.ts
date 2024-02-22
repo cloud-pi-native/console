@@ -1,4 +1,4 @@
-import type { GenerateCIFilesDto, ProjectModel, CreateRepositoryDto, UpdateRepositoryDto, UpdateClusterDto, CreateClusterDto, EnvironmentModel, UpdateEnvironmentDto, InitializeEnvironmentDto, AdminLogsQuery, UpdateOrganizationDto, CreateOrganizationDto, SetPermissionDto, UpdatePermissionDto, CreateQuotaDto, UpdateQuotaStageDto, UpdateQuotaPrivacyDto, CreateStageDto, UpdateStageClustersDto, PermissionParams, DeletePermissionParams, RepositoryParams, ClusterParams, QuotaParams, StageParams, GetAllOrganizationsDto } from '@dso-console/shared'
+import type { GenerateCIFilesDto, ProjectModel, CreateRepositoryDto, UpdateRepositoryDto, UpdateClusterDto, CreateClusterDto, EnvironmentModel, UpdateEnvironmentDto, InitializeEnvironmentDto, AdminLogsQuery, UpdateOrganizationDto, CreateOrganizationDto, SetPermissionDto, UpdatePermissionDto, CreateQuotaDto, UpdateQuotaStageDto, UpdateQuotaPrivacyDto, CreateStageDto, UpdateStageClustersDto, PermissionParams, DeletePermissionParams, RepositoryParams, ClusterParams, QuotaParams, StageParams, GetAllOrganizationsDto } from '@cpn-console/shared'
 import { apiClient } from './xhr-client.js'
 
 // CIFiles

@@ -1,4 +1,4 @@
-import type { EnvironmentCreateArgs, EnvironmentDeleteArgs, PluginResult, StepCall, CreateRepositoryExecArgs, DeleteRepositoryExecArgs } from '@dso-console/hooks'
+import type { EnvironmentCreateArgs, EnvironmentDeleteArgs, PluginResult, StepCall, CreateRepositoryExecArgs, DeleteRepositoryExecArgs } from '@cpn-console/hooks'
 import { ArgoDestination, addRepoToApplicationProject, createApplicationProject, deleteApplicationProject } from './app-project.js'
 import { createApplication, deleteApplication } from './applications.js'
 import { generateAppProjectName, generateApplicationName } from './utils.js'
@@ -79,7 +79,7 @@ export const newRepo: StepCall<CreateRepositoryExecArgs> = async (payload) => {
     for (const env of environments) {
       const appProjectName = generateAppProjectName(organization, project, env)
       const applicationName = generateApplicationName(organization, project, env, repo.internalRepoName)
-      const appProject = await addRepoToApplicationProject({ appProjectName, repoUrl: repo.url }) as AppProject & { metadata: { name: string }}
+      const appProject = await addRepoToApplicationProject({ appProjectName, repoUrl: repo.url }) as AppProject & { metadata: { name: string } }
       // @ts-ignore
       const destination: ArgoDestination = appProject.spec.destinations[0]
       if (payload.args.isInfra) {

@@ -1,5 +1,5 @@
 import type { Cluster } from '@prisma/client'
-import type { ClusterModel } from '@dso-console/shared'
+import type { ClusterModel } from '@cpn-console/shared'
 
 export type UserDetails = {
   id: string
@@ -12,7 +12,7 @@ export type UserDetails = {
 export type ClusterMix = Cluster & ClusterModel
 
 declare module 'fastify' {
-  interface Session{
+  interface Session {
     user: UserDetails
   }
 }

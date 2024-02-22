@@ -2,7 +2,7 @@ import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { apiClient } from '../../api/xhr-client.js'
 import { useAdminClusterStore } from './cluster.js'
-import { ClusterPrivacy } from '@dso-console/shared'
+import { ClusterPrivacy } from '@cpn-console/shared'
 
 const apiClientGet = vi.spyOn(apiClient, 'get')
 const apiClientPost = vi.spyOn(apiClient, 'post')

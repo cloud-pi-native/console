@@ -1,5 +1,5 @@
 import { CoreV1Api, KubeConfig } from '@kubernetes/client-node'
-import { type ClusterObject } from '@dso-console/hooks'
+import { type ClusterObject } from '@cpn-console/hooks'
 
 export const createCoreV1Api = (cluster: ClusterObject) => {
   const kc = new KubeConfig()

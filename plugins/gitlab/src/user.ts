@@ -1,6 +1,6 @@
 import type { CreateUserOptions, UserSchema } from '@gitbeaker/rest'
 import { getApi } from './utils.js'
-import { UserObject } from '@dso-console/hooks'
+import { UserObject } from '@cpn-console/hooks'
 
 export const createUsername = (email: string) => email.replace('@', '.')
 

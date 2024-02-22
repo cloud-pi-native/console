@@ -1,9 +1,9 @@
-import type { StepCall, EnvironmentCreateArgs, EnvironmentDeleteArgs, ArchiveProjectExecArgs, CreateProjectExecArgs, AddUserToProjectExecArgs, RemoveUserFromProjectExecArgs, RetrieveUserByEmailArgs, PermissionManageUserArgs } from '@dso-console/hooks'
+import type { StepCall, EnvironmentCreateArgs, EnvironmentDeleteArgs, ArchiveProjectExecArgs, CreateProjectExecArgs, AddUserToProjectExecArgs, RemoveUserFromProjectExecArgs, RetrieveUserByEmailArgs, PermissionManageUserArgs } from '@cpn-console/hooks'
 import { addMembers, removeMembers } from './permission.js'
 import { getOrCreateChildGroup, getOrCreateProjectGroup, getProjectGroupByName } from './group.js'
 import { getkcClient } from './client.js'
 import { getUserByEmail } from './user.js'
-import { AsyncReturnType } from '@dso-console/shared'
+import { AsyncReturnType } from '@cpn-console/shared'
 
 export const retrieveKeycloakUserByEmail: StepCall<RetrieveUserByEmailArgs> = async (payload) => {
   const kcClient = await getkcClient()

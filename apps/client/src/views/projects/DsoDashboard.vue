@@ -4,7 +4,7 @@ import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment'
-import { descriptionMaxLength, projectIsLockedInfo, type ProjectInfos } from '@dso-console/shared'
+import { descriptionMaxLength, projectIsLockedInfo, type ProjectInfos } from '@cpn-console/shared'
 import router from '@/router/index.js'
 import { copyContent } from '@/utils/func.js'
 

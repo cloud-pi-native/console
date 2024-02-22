@@ -10,7 +10,7 @@ import {
   removeClusterFromStage,
   linkStageToQuotas,
 } from '@/resources/queries-index.js'
-import { type CreateStageDto, type UpdateStageClustersDto, StageSchema } from '@dso-console/shared'
+import { type CreateStageDto, type UpdateStageClustersDto, StageSchema } from '@cpn-console/shared'
 import { Stage } from '@prisma/client'
 import { validateSchema } from '@/utils/business.js'
 

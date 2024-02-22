@@ -8,7 +8,7 @@ import {
   getProjectUsers,
 } from './users.js'
 
-import type { UpdateUserProjectRoleDto } from '@dso-console/shared'
+import type { UpdateUserProjectRoleDto } from '@cpn-console/shared'
 
 const apiClientGet = vi.spyOn(apiClient, 'get')
 const apiClientPost = vi.spyOn(apiClient, 'post')

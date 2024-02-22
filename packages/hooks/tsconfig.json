@@ -1,6 +1,6 @@
 {
   "extends": [
-    "@dso-console/tsconfig/tsconfig.base.json"
+    "@cpn-console/ts-config/tsconfig.base.json"
   ],
   "compilerOptions": {
     "esModuleInterop": true,

@@ -2,14 +2,14 @@ import { getConfig } from './utils.js'
 import { createProject, deleteProject } from './project.js'
 import { addProjectGroupMember } from './permission.js'
 import { createRobot } from './robot.js'
-import type { StepCall, ArchiveProjectExecArgs, CreateProjectExecArgs, ProjectBase } from '@dso-console/hooks'
+import type { StepCall, ArchiveProjectExecArgs, CreateProjectExecArgs, ProjectBase } from '@cpn-console/hooks'
 
-export let axiosOptions:{
-    baseURL: string;
-    auth: {
-        username: string;
-        password: string;
-    };
+export let axiosOptions: {
+  baseURL: string;
+  auth: {
+    username: string;
+    password: string;
+  };
 } | undefined
 
 export const getAxiosOptions = (): typeof axiosOptions => {

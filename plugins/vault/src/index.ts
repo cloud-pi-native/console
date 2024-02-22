@@ -1,7 +1,7 @@
 import type {
   DefaultArgs,
   Plugin,
-} from '@dso-console/hooks'
+} from '@cpn-console/hooks'
 import { archiveDsoProject } from './functions.js'
 import infos from './infos.js'
 import monitor from './monitor.js'
@@ -32,7 +32,7 @@ export const plugin: Plugin = {
   monitor,
 }
 
-declare module '@dso-console/hooks' {
+declare module '@cpn-console/hooks' {
   interface HookPayloadApis<Args extends DefaultArgs> {
     vault: Args extends { organization: string, project: string }
     ? VaultProjectApi

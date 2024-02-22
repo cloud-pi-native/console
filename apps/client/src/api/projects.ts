@@ -1,4 +1,4 @@
-import type { CreateProjectDto, GetAllProjectsOutputDto, ProjectInfos, ProjectParams, UpdateProjectDto } from '@dso-console/shared'
+import type { CreateProjectDto, GetAllProjectsOutputDto, ProjectInfos, ProjectParams, UpdateProjectDto } from '@cpn-console/shared'
 import { apiClient } from './xhr-client.js'
 
 // Project

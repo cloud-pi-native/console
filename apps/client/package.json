@@ -1,9 +1,9 @@
 {
-  "name": "@dso-console/client",
-  "version": "6.5.1",
+  "name": "@cpn-console/client",
   "description": "dso-portal client",
-  "type": "module",
+  "version": "6.5.1",
   "private": false,
+  "type": "module",
   "scripts": {
     "build": "run-s clean:build type-check build-only",
     "build-only": "vite --mode=production build",
@@ -28,7 +28,7 @@
     "type-check": "vue-tsc --noEmit -p tsconfig.json || exit 0"
   },
   "dependencies": {
-    "@dso-console/shared": "workspace:*",
+    "@cpn-console/shared": "workspace:^",
     "@gouvfr/dsfr": "^1.11.0",
     "@gouvminint/vue-dsfr": "^5.8.0",
     "@vue/tsconfig": "^0.5.1",
@@ -47,8 +47,8 @@
     "vue3-json-viewer": "^2.2.2"
   },
   "devDependencies": {
-    "@dso-console/eslint-config-base": "workspace:*",
-    "@dso-console/test-utils": "workspace:*",
+    "@cpn-console/eslint-config": "workspace:^",
+    "@cpn-console/test-utils": "workspace:^",
     "@rushstack/eslint-patch": "^1.7.2",
     "@types/jsdom": "^21.1.6",
     "@types/node": "^20.11.16",
@@ -84,5 +84,10 @@
     "@cypress/vue": "^6.0.0",
     "cypress": "^13.6.4",
     "cypress-vite": "^1.5.0"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public",
+    "tag": "latest"
   }
 }

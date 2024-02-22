@@ -3,7 +3,7 @@ import { getAllCleanedClusters } from './business.js'
 import { sendOk } from '@/utils/response.js'
 import type { FastifyInstance } from 'fastify'
 
-import { getClustersSchema } from '@dso-console/shared'
+import { getClustersSchema } from '@cpn-console/shared'
 
 const router = async (app: FastifyInstance, _opt) => {
   // Récupérer les quotas disponibles

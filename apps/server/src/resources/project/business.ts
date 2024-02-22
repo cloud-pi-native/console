@@ -22,8 +22,8 @@ import {
   updateProjectServices,
 } from '@/resources/queries-index.js'
 import type { Cluster, Environment, Log, Organization, Project, User } from '@prisma/client'
-import { hooks, services, servicesInfos } from '@dso-console/hooks'
-import type { PluginResult, CreateProjectExecArgs, ProjectBase, UpdateProjectExecArgs } from '@dso-console/hooks'
+import { hooks, services, servicesInfos } from '@cpn-console/hooks'
+import type { PluginResult, CreateProjectExecArgs, ProjectBase, UpdateProjectExecArgs } from '@cpn-console/hooks'
 import { checkInsufficientPermissionInEnvironment, checkInsufficientRoleInProject } from '@/utils/controller.js'
 import { unlockProjectIfNotFailed, checkCreateProject as checkCreateProjectPlugins, validateSchema } from '@/utils/business.js'
 import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
@@ -36,7 +36,7 @@ import {
   ProjectSchema,
   exclude,
   adminGroupPath,
-} from '@dso-console/shared'
+} from '@cpn-console/shared'
 import { filterObjectByKeys } from '@/utils/queries-tools.js'
 import { projectRootDir, gitlabUrl } from '@/utils/env.js'
 import { type UserDto, getUser } from '@/resources/user/business.js'
