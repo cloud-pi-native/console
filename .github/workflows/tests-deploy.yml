@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checks-out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Run deployment status check
         run: |

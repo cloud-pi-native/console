@@ -55,7 +55,7 @@ jobs:
       publish-matrix: ${{ steps.packages-matrix.outputs.PUBLISH_MATRIX }}
     steps:
       - name: Checks-out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Generate matrix
         id: packages-matrix
@@ -86,12 +86,12 @@ jobs:
         modules: ${{ fromJSON(needs.matrix.outputs.publish-matrix) }}
     steps:
       - name: Checks-out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.event.ref }}
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v3
         id: pnpm-install
         with:
           version: "${{ inputs.PNPM_VERSION }}"
@@ -117,7 +117,7 @@ jobs:
           echo "REMOTE=$REMOTE" >> $GITHUB_OUTPUT
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
         with:
           node-version: "${{ inputs.NODE_VERSION }}"
@@ -132,7 +132,7 @@ jobs:
 
       - name: Cache node files
         if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ${{ steps.pnpm-store.outputs.STORE_PATH }}
