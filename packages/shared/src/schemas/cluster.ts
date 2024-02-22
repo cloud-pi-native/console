@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { ClusterPrivacy } from '../index.js'
+import { ClusterPrivacy } from '../utils/const.js'
 
 const CreateClusterSchema = z.object({
   label: z.string()
@@ -12,8 +12,7 @@ const CreateClusterSchema = z.object({
     .max(50)
     .optional(),
   clusterResources: z.boolean(),
-  privacy: z.string(),
-  // privacy: z.nativeEnum(ClusterPrivacy),
+  privacy: z.nativeEnum(ClusterPrivacy),
   projectIds: z.string()
     .uuid()
     .array()
