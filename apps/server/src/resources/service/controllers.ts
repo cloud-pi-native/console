@@ -3,14 +3,16 @@ import { sendOk } from '@/utils/response.js'
 import { checkServicesHealth } from './business.js'
 import type { FastifyInstance } from 'fastify'
 import { getServiceHealthSchema } from '@dso-console/shared'
+import type { UserDetails } from '@/types/index.js'
 
 const router = async (app: FastifyInstance, _opt) => {
   app.get('/',
     {
       schema: getServiceHealthSchema,
     }, async (req, res) => {
-      const requestor = req.session.user
-      delete requestor.groups
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { groups, ...rest } = req.session.user
+      const requestor: Omit<UserDetails, 'groups'> = { ...rest }
 
       const serviceData = await checkServicesHealth(requestor)
       addReqLogs({

@@ -1,4 +1,4 @@
-import type { Log, Project, User } from '@prisma/client'
+import type { Project, User } from '@prisma/client'
 import { type PluginResult, hooks } from '@dso-console/hooks'
 import { type SharedSafeParseReturnType, parseZodError } from '@dso-console/shared'
 import {
@@ -27,15 +27,14 @@ export const unlockProjectIfNotFailed = async (projectId: Project['id']) => {
   }
 }
 
-export const checkCreateProject = async (owner: User, resource: 'Project' | 'Repository', requestId: Log['requestId']) => {
+export const checkCreateProject = async (owner: User, resource: 'Project' | 'Repository', requestId: string) => {
   const pluginsResults = await hooks.createProject.validate({ owner })
   if (pluginsResults?.failed) {
-    const reasons = Object.values(pluginsResults)
+    const reasons = Object.values(pluginsResults.results)
       .filter((plugin: PluginResult) => plugin?.status?.result === 'KO')
       .map((plugin: PluginResult) => plugin.status.message)
       .join('; ')
 
-    // @ts-ignore
     await addLogs(`Create ${resource} Validation`, pluginsResults, owner.id, requestId)
 
     const message = 'Echec de la validation des prérequis par les services externes'

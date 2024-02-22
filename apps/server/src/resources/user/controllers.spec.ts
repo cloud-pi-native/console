@@ -107,9 +107,9 @@ describe('User routes', () => {
         .body({ email: getRandomUser().email })
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(400)
       expect(response.body).toBeDefined()
-      expect(response.json().message).toEqual('Cannot read properties of null (reading \'roles\')')
+      expect(response.json().message).toEqual('Le projet ayant pour id missingProjectId n\'existe pas')
     })
 
     it('Should not add an user if project is locked', async () => {
@@ -207,9 +207,9 @@ describe('User routes', () => {
         .delete('/api/v1/projects/missingProjectId/users/userId')
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(400)
       expect(response.body).toBeDefined()
-      expect(response.json().message).toEqual('Cannot read properties of null (reading \'roles\')')
+      expect(response.json().message).toEqual('Le projet ayant pour id missingProjectId n\'existe pas')
     })
 
     it('Should not remove an user if requestor is not member himself', async () => {

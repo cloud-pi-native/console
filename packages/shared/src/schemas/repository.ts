@@ -23,6 +23,7 @@ const UpdateRepoSchema = z.object({
   id: z.string()
     .uuid(),
   status: z.string(),
+  // status: z.nativeEnum(AllStatus),
   projectId: z.string()
     .uuid(),
 })
@@ -32,14 +33,14 @@ const RepoSchema = UpdateRepoSchema.merge(CreateRepoSchema)
 export const CreateRepoBusinessSchema = CreateRepoSchema.refine(
   ({ isPrivate, externalToken, externalUserName }) =>
     (isPrivate && externalToken && externalUserName) ||
-    (!isPrivate && !externalToken && !externalUserName),
+    !isPrivate,
   { message: 'Si le dépôt est privé, vous devez renseignez les nom de propriétaire et token associés.' },
 )
 
 export const RepoBusinessSchema = RepoSchema.refine(
   ({ isPrivate, externalToken, externalUserName }) =>
     (isPrivate && externalToken && externalUserName) ||
-    (!isPrivate && !externalToken && !externalUserName),
+    !isPrivate,
   { message: 'Si le dépôt est privé, vous devez renseignez les nom de propriétaire et token associés.' },
 )
 
