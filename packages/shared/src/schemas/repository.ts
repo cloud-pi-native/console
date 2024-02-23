@@ -1,5 +1,5 @@
 import { z } from 'zod'
-// import { AllStatus } from '../index.js'
+import { AllStatus } from '../utils/const.js'
 
 export const CreateRepoSchema = z.object({
   internalRepoName: z.string()
@@ -22,8 +22,7 @@ export const CreateRepoSchema = z.object({
 const UpdateRepoSchema = z.object({
   id: z.string()
     .uuid(),
-  status: z.string(),
-  // status: z.nativeEnum(AllStatus),
+  status: z.nativeEnum(AllStatus),
   projectId: z.string()
     .uuid(),
 })
