@@ -10,15 +10,15 @@ L'objectif est que le server soit totalement agnostique des actions des plugins 
 
 ## Développement de plugin
 
-Cette section est dédié à tous ceux voulant améliorer les corePlugins ou en crée de nouveaux.
+Cette section est dédiée à tous ceux voulant améliorer les corePlugins ou en créer de nouveaux.
 
-Pour commencer je vous conseille d'aller regarder le (../../plugins/vault)[plugin vault]
+Pour commencer je vous conseille d'aller regarder le [plugin vault](../../plugins/vault)
 
 ### Interface
 
 Tout paquet existant devrait avoir un export nommé `plugin` et de type `Plugin`.
 
-Ce typage vous assurera de bien fournir toutes les clés nécessaire au bon fonctionnement du plugin :
+Ce typage vous assurera de bien fournir toutes les clés nécessaires au bon fonctionnement du plugin :
 
 ```ts
 // index.ts
@@ -69,8 +69,8 @@ const to3 = () => ['url', 'url1', 'url2']
 
 ### Monitoring
 
-Pour offrir un (et un seul) service de monitoring sommaire de l'outil que le plugin manipule vous pouvez créer une instance de la classe `Monitor` et l'initialiser avec une fonction dont vous aurez seul la maitrise.
-Cette fonction sera éxécuté par un setInterval toutes les 5 min ou selon le temps en miliseconds que vous aurez fourni :
+Pour offrir un (et un seul) service de monitoring sommaire de l'outil que le plugin manipule, vous pouvez créer une instance de la classe `Monitor` et l'initialiser avec une fonction dont vous aurez seul la maîtrise.
+Cette fonction sera éxécutée par un `setInterval` toutes les 5 min ou selon le temps en miliseconds que vous aurez fourni :
 
 ```ts
 // monitor.ts
@@ -99,7 +99,7 @@ export default new Monitor(monitor)
 
 ### SubscribedHooks
 
-Pour informer le plugin manager sur quels hooks vous voulez éxecutez une fonction vous devez fournir un objet qui aura cette structure :
+Pour informer le plugin manager sur quels hooks vous voulez exécuter une fonction, vous devez fournir un objet qui aura cette structure :
 
 ```ts
   subscribedHooks: {
@@ -117,14 +117,14 @@ Pour informer le plugin manager sur quels hooks vous voulez éxecutez une foncti
 
 ### Fonctions (StepCalls)
 
-Pensez à typer vos fonctions comme suit pour TS soit capable de vous notifier si associer un mauvais payload à un hook.
+Pensez à typer vos fonctions comme suit pour que TS soit capable de vous notifier si vous avez associé un mauvais payload à un hook.
 
-**Vos fonctions ne doivent pas non plus lever d'exceptions non gérés.**
-**Et elles doivent toute retourner un status !**
+**Vos fonctions ne doivent pas non plus lever d'exceptions non gérées.**
+**Et elles doivent toutes retourner un statut !**
 
 Vous pouvez aussi retourner des clés supplémentaires. Ces clés sont accessibles par tous les plugins dans `payload.results[nom_du_plugin]`.
 
-Attention chaque fonction écrase le resultat de la step d'avant :
+Attention, chaque fonction écrase le résultat de la step d'avant :
 
 ```ts
 export const createDsoProjectFirst: StepCall<CreateProjectExecArgs> = async (payload) => {
@@ -203,13 +203,14 @@ export class ClusterApi extends PluginApi {}
 
 ### Dépendances entre les plugins
 
-La section précédente est bien sympathique mais en l'état plugin n'a aucune conscience des apis des autres plugins.
+La section précédente est bien sympathique mais en l'état, le plugin n'a aucune conscience des apis des autres plugins.
 
 > Disclaimer: Les plugins peuvent se parler entre eux mais attention ils ne s'importent jamais les uns les autres. C'est le Plugin Manager qui est en charge de fournir tous les objets nécessaires et de faire passe plat.
 
 Pour y arriver il va falloir deux étapes
 
 1) Le plugin qui expose l'api doit faire un `declare module` :
+
 ```ts
 // index.ts
 declare module '@cpn-console/hooks' {
@@ -221,7 +222,8 @@ declare module '@cpn-console/hooks' {
 }
 ```
 
-2) Le module l'utilisant doit importer les types :
+1) Le module l'utilisant doit importer les types :
+
 ```json
 // package.json
 {
