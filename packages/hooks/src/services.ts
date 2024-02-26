@@ -29,6 +29,16 @@ export const services = {
           title: serviceInfos.title ?? '',
         }])
       } // ensure each keys are presents if some are missing, use the properties of the plugin or empty string
+      if (Array.isArray(toResponse)) {
+        toResponse.forEach(serviceInfo =>
+          acc.push({
+            to: serviceInfo.to,
+            description: serviceInfo.description || serviceInfos.description || '',
+            imgSrc: serviceInfo.imgSrc || serviceInfos.imgSrc || '',
+            title: serviceInfo.title || serviceInfos.title || '',
+          }),
+        )
+      }
       if (toResponse instanceof Object && 'to' in toResponse) {
         return acc.concat([{
           to: toResponse.to,
