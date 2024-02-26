@@ -69,3 +69,5 @@ env/kind-values.yml
 
 # tmp dev files
 ci/kind/configs/rendered
+
+external-plugins
