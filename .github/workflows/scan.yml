@@ -75,7 +75,7 @@ jobs:
       - name: Upload scan artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: vulnerability-report
+          name: vulnerability-report-images
           path: ./artifacts/vulnerability-report/
           retention-days: 14
 
@@ -105,7 +105,7 @@ jobs:
       - name: Upload scan artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: vulnerability-report
+          name: vulnerability-report-config
           path: ./artifacts/vulnerability-report/
           retention-days: 14
 
@@ -123,8 +123,9 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: vulnerability-report
+          pattern: vulnerability-report-*
           path: ./artifacts/vulnerability-report
+          merge-multiple: true
 
       - name: Build vulnerability report
         run: |
