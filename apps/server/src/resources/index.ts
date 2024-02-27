@@ -1,36 +1,29 @@
-import ciFilesRouter from '../generate-files/controllers.js'
-import projectOrganizationRouter from './organization/controllers.js'
-import projectRouter from './project/controllers.js'
-import serviceRouter from './service/controllers.js'
-import projectQuotaRouter from './quota/controllers.js'
-import projectStageRouter from './stage/controllers.js'
-import projectClusterRouter from './cluster/controllers.js'
-import { sendOk } from '../utils/response.js'
-import adminRouter from './index-admin.js'
-import type { FastifyInstance } from 'fastify'
+import { type FastifyInstance } from 'fastify'
+import { clusterRouter } from './cluster/router.js'
+import { environmentRouter } from './environment/router.js'
+import { filesRouter } from '../generate-files/router.js'
+import { organizationRouter } from './organization/router.js'
+import { permissionRouter } from './permission/router.js'
+import { projectRouter } from './project/router.js'
+import { quotaRouter } from './quota/router.js'
+import { repositoryRouter } from './repository/router.js'
+import { serviceRouter } from './service/router.js'
+import { stageRouter } from './stage/router.js'
+import { systemRouter } from './system/router.js'
+import { userRouter } from './user/router.js'
+import { serverInstance } from '@/app.js'
 
-const version = process.env.APP_VERSION || 'dev'
-
-const getVersion = async (_req, res) => {
-  sendOk(res, version)
-}
-
-const getHealth = async (_req, res) => {
-  sendOk(res, 'OK')
-}
-
-export const apiRouter = async (app: FastifyInstance, _opts) => {
-  await app.register(ciFilesRouter, { prefix: '/ci-files' })
-  await app.register(serviceRouter, { prefix: '/services' })
-  await app.register(projectOrganizationRouter, { prefix: '/organizations' })
-  await app.register(projectClusterRouter, { prefix: '/clusters' })
-  await app.register(projectQuotaRouter, { prefix: '/quotas' })
-  await app.register(projectStageRouter, { prefix: '/stages' })
-  await app.register(projectRouter, { prefix: '/projects' })
-  await app.register(adminRouter, { prefix: '/admin' })
-}
-
-export const miscRouter = async (app, _opts) => {
-  await app.get('/version', getVersion)
-  await app.get('/healthz', getHealth)
+export const apiRouter = () => async (app: FastifyInstance) => {
+  await app.register(serverInstance.plugin(clusterRouter()))
+  await app.register(serverInstance.plugin(environmentRouter()))
+  await app.register(serverInstance.plugin(filesRouter()))
+  await app.register(serverInstance.plugin(organizationRouter()))
+  await app.register(serverInstance.plugin(permissionRouter()))
+  await app.register(serverInstance.plugin(projectRouter()))
+  await app.register(serverInstance.plugin(quotaRouter()))
+  await app.register(serverInstance.plugin(repositoryRouter()))
+  await app.register(serverInstance.plugin(serviceRouter()))
+  await app.register(serverInstance.plugin(stageRouter()))
+  await app.register(serverInstance.plugin(systemRouter()))
+  await app.register(serverInstance.plugin(userRouter()))
 }

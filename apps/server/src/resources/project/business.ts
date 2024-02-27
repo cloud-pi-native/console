@@ -87,7 +87,7 @@ export const checkCreateProject = async (
 
   const projectSearch = await getProjectByNames({ name: data.name, organizationName })
   if (projectSearch.length > 0) {
-    throw new BadRequestError(`"${data.name}" existe déjà`, { extras: {}, description: `Le projet "${data.name}" existe déjà` })
+    throw new BadRequestError(`Le projet "${data.name}" existe déjà`, { extras: {}, description: `Le projet "${data.name}" existe déjà` })
   }
 }
 

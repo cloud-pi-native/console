@@ -1,9 +1,12 @@
 import prisma from '../../../__mocks__/prisma.js'
-import app, { getRequestor, setRequestor } from '../../../__mocks__/app.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll, beforeEach } from 'vitest'
 import { getConnection, closeConnections } from '../../../connect.js'
 import { adminGroupPath } from '@cpn-console/shared'
 import { getRandomCluster, getRandomRole, getRandomUser } from '@cpn-console/test-utils'
+import { getRequestor, setRequestor } from '../../../utils/mocks.js'
+import app from '../../../app.js'
+
+vi.mock('fastify-keycloak-adapter', (await import('../../../utils/mocks.js')).mockSessionPlugin)
 
 describe('Admin cluster routes', () => {
   beforeAll(async () => {
@@ -104,7 +107,7 @@ describe('Admin cluster routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(400)
-      expect(response.json().message).toEqual('Impossible de supprimer le cluster, des environnements en activité y sont déployés')
+      expect(JSON.parse(response.body).error).toEqual('Impossible de supprimer le cluster, des environnements en activité y sont déployés')
     })
   })
 })

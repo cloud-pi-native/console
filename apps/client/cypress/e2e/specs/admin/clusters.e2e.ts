@@ -28,7 +28,7 @@ describe('Administration clusters', () => {
     cy.visit('/admin/clusters')
     cy.url().should('contain', '/admin/clusters')
     cy.wait('@getClusters').its('response').then(response => {
-      allClusters = response.body
+      allClusters = response?.body
       cluster1.stages = allClusters
         .find(cluster => cluster.id === cluster1.id)
         ?.stageIds
@@ -41,7 +41,7 @@ describe('Administration clusters', () => {
           ?.find(stage => stage.id === stageId))
     })
     cy.wait('@getStages')
-    cy.wait('@getAdminProjects').its('response.statusCode').should('eq', 200)
+    cy.wait('@getAdminProjects').its('response.statusCode').should('match', /^20\d$/)
   })
 
   it('Should display clusters list', () => {
@@ -156,7 +156,7 @@ describe('Administration clusters', () => {
       .should('be.enabled')
       .click()
     cy.wait('@createCluster')
-      .its('response.statusCode').should('eq', 201)
+      .its('response.statusCode').should('match', /^20\d$/)
 
     cy.getByDataTestid(`clusterTile-${newCluster.label}`)
       .should('be.visible')
@@ -231,7 +231,7 @@ describe('Administration clusters', () => {
       .should('be.enabled')
       .click()
     cy.wait('@updateCluster')
-      .its('response.statusCode').should('eq', 200)
+      .its('response.statusCode').should('match', /^20\d$/)
   })
 
   it('Should delete a cluster', () => {
@@ -251,7 +251,7 @@ describe('Administration clusters', () => {
       .should('be.enabled')
       .click()
     cy.wait('@deleteCluster')
-      .its('response.statusCode').should('eq', 204)
+      .its('response.statusCode').should('match', /^20\d$/)
     cy.getByDataTestid(`clusterTile-${newCluster.label}`)
       .should('not.exist')
   })

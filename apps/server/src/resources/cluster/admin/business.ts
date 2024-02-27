@@ -1,13 +1,12 @@
 import { linkClusterToProjects, addLogs, createCluster as createClusterQuery, getClusterById, getClusterByLabel, getProjectsByClusterId, getStagesByClusterId, removeClusterFromProject, removeClusterFromStage, updateCluster as updateClusterQuery, getClusterEnvironments, deleteCluster as deleteClusterQuery } from '@/resources/queries-index.js'
 import { BadRequestError, DsoError, NotFoundError } from '@/utils/errors.js'
-import type { Cluster, Log, User } from '@prisma/client'
+import type { Log, User } from '@prisma/client'
 import { hooks } from '@cpn-console/hooks'
-import { type CreateClusterDto, updateClusterSchema, CreateClusterBusinessSchema, ClusterBusinessSchema, ClusterPrivacy } from '@cpn-console/shared'
+import { type Cluster, CreateClusterBusinessSchema, ClusterPrivacy } from '@cpn-console/shared'
 import { linkClusterToStages } from '@/resources/stage/business.js'
-import { FromSchema } from 'json-schema-to-ts'
 import { validateSchema } from '@/utils/business.js'
 
-export const checkClusterProjectIds = (data: CreateClusterDto) => {
+export const checkClusterProjectIds = (data: Omit<Cluster, 'id'> & { id?: Cluster['id']}) => {
   // si le cluster est dedicated, la clé projectIds doit être renseignée
   return data.privacy === ClusterPrivacy.PUBLIC || !data.projectIds
     ? []
@@ -18,12 +17,14 @@ export const getClusterAssociatedEnvironments = async (clusterId: string) => {
   try {
     const clusterEnvironments = (await getClusterEnvironments(clusterId))?.environments
 
-    const environments = clusterEnvironments?.map(environment => {
+    if (!clusterEnvironments) throw new NotFoundError('Aucun environnement associé à ce cluster')
+
+    const environments = clusterEnvironments.map(environment => {
       return ({
-        organization: environment?.project?.organization?.name,
-        project: environment?.project?.name,
-        name: environment?.name,
-        owner: environment?.project?.roles?.find(role => role?.role === 'owner')?.user?.email,
+        organization: environment.project?.organization?.name,
+        project: environment.project?.name,
+        name: environment.name,
+        owner: environment.project?.roles?.find(role => role?.role === 'owner')?.user?.email,
       })
     })
 
@@ -33,7 +34,7 @@ export const getClusterAssociatedEnvironments = async (clusterId: string) => {
   }
 }
 
-export const createCluster = async (data: CreateClusterDto, userId: User['id'], requestId: Log['requestId']) => {
+export const createCluster = async (data: Omit<Cluster, 'id'>, userId: User['id'], requestId: Log['requestId']) => {
   try {
     const schemaValidation = CreateClusterBusinessSchema.safeParse(data)
     validateSchema(schemaValidation)
@@ -42,7 +43,7 @@ export const createCluster = async (data: CreateClusterDto, userId: User['id'], 
     if (isLabelTaken) throw new BadRequestError('Ce label existe déjà pour un autre cluster', undefined)
 
     const {
-      projectIds,
+      projectIds = [],
       stageIds,
       user,
       cluster,
@@ -52,13 +53,11 @@ export const createCluster = async (data: CreateClusterDto, userId: User['id'], 
     // @ts-ignore
     const clusterCreated = await createClusterQuery(clusterData, { user, cluster })
 
-    if (data.privacy === ClusterPrivacy.DEDICATED && projectIds) {
+    if (data.privacy === ClusterPrivacy.DEDICATED) {
       await linkClusterToProjects(clusterCreated.id, projectIds)
     }
 
-    if (stageIds) {
-      await linkClusterToStages(clusterCreated.id, stageIds)
-    }
+    await linkClusterToStages(clusterCreated.id, stageIds)
 
     // @ts-ignore
     const results = await hooks.createCluster.execute({ ...clusterCreated, user, cluster })
@@ -74,16 +73,9 @@ export const createCluster = async (data: CreateClusterDto, userId: User['id'], 
   }
 }
 
-export const updateCluster = async (data: FromSchema<typeof updateClusterSchema['body']>, clusterId: Cluster['id'], userId: User['id'], requestId: Log['requestId']) => {
+export const updateCluster = async (data: Omit<Cluster, 'id'>, clusterId: Cluster['id'], userId: User['id'], requestId: Log['requestId']) => {
   try {
     if (data?.privacy === ClusterPrivacy.PUBLIC) delete data.projectIds
-
-    const schemaValidation = ClusterBusinessSchema.safeParse({ ...data, id: clusterId })
-    validateSchema(schemaValidation)
-
-    const dbCluster = await getClusterById(clusterId)
-    if (!dbCluster) throw new NotFoundError('Aucun cluster trouvé pour cet id')
-    if (data?.label && data.label !== dbCluster.label) throw new BadRequestError('Le label d\'un cluster ne peut être modifié')
 
     const kubeConfig = {
       user: data.user,
@@ -97,38 +89,40 @@ export const updateCluster = async (data: FromSchema<typeof updateClusterSchema[
       ...clusterData
     } = data
 
-    // @ts-ignore
     const clusterUpdated = await updateClusterQuery(clusterId, clusterData, { user, cluster })
 
     // @ts-ignore
     const results = await hooks.updateCluster.execute({ ...cluster, user: { ...kubeConfig.user }, cluster: { ...kubeConfig.cluster } })
-
     // @ts-ignore
     await addLogs('Update Cluster', results, userId, requestId)
 
     if (projectIds || data.privacy === ClusterPrivacy.PUBLIC) {
       const dbProjects = await getProjectsByClusterId(clusterId)
-
       if (projectIds) {
         await linkClusterToProjects(clusterId, projectIds)
       }
+      for (const project of dbProjects || []) {
+        if (!projectIds?.includes(project.id)) {
+          await removeClusterFromProject(clusterUpdated.id, project.id)
+        }
 
-      if (dbProjects) {
-        for (const project of dbProjects) {
-          if (!projectIds?.includes(project.id)) {
-            await removeClusterFromProject(clusterUpdated.id, project.id)
+        if (dbProjects) {
+          for (const project of dbProjects) {
+            if (!projectIds?.includes(project.id)) {
+              await removeClusterFromProject(clusterUpdated.id, project.id)
+            }
           }
         }
-      }
 
-      if (stageIds) {
-        await linkClusterToStages(clusterId, stageIds)
+        if (stageIds) {
+          await linkClusterToStages(clusterId, stageIds)
 
-        const dbStages = await getStagesByClusterId(clusterId)
-        if (dbStages) {
-          for (const stage of dbStages) {
-            if (!stageIds.includes(stage.id)) {
-              await removeClusterFromStage(clusterUpdated.id, stage.id)
+          const dbStages = await getStagesByClusterId(clusterId)
+          if (dbStages) {
+            for (const stage of dbStages) {
+              if (!stageIds.includes(stage.id)) {
+                await removeClusterFromStage(clusterUpdated.id, stage.id)
+              }
             }
           }
         }

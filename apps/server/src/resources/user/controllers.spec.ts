@@ -1,9 +1,12 @@
 import prisma from '../../__mocks__/prisma.js'
-import app, { getRequestor, setRequestor } from '../../__mocks__/app.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
 import { createRandomDbSetup, getRandomLog, getRandomRole, getRandomUser } from '@cpn-console/test-utils'
 import { getConnection, closeConnections } from '../../connect.js'
 import { projectIsLockedInfo } from '@cpn-console/shared'
+import { getRequestor, setRequestor } from '../../utils/mocks.js'
+import app from '../../app.js'
+
+vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
 
 describe('User routes', () => {
   const requestor = getRandomUser()
@@ -50,7 +53,7 @@ describe('User routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.json().message).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
+      expect(JSON.parse(response.body).error).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
     })
   })
 
@@ -96,20 +99,20 @@ describe('User routes', () => {
 
       expect(response.statusCode).toEqual(400)
       expect(response.body).toBeDefined()
-      expect(response.json().message).toEqual('L\'utilisateur est déjà membre du projet')
+      expect(JSON.parse(response.body).error).toEqual('L\'utilisateur est déjà membre du projet')
     })
 
     it('Should not add an user if project is missing', async () => {
       prisma.project.findUnique.mockResolvedValue(null)
 
       const response = await app.inject()
-        .post('/api/v1/projects/missingProjectId/users')
+        .post('/api/v1/projects/b7b4d9bd-7a8f-4287-bb12-5ce2dadb4bb5/users')
         .body({ email: getRandomUser().email })
         .end()
 
       expect(response.statusCode).toEqual(400)
       expect(response.body).toBeDefined()
-      expect(response.json().message).toEqual('Le projet ayant pour id missingProjectId n\'existe pas')
+      expect(JSON.parse(response.body).error).toEqual('Le projet ayant pour id b7b4d9bd-7a8f-4287-bb12-5ce2dadb4bb5 n\'existe pas')
     })
 
     it('Should not add an user if project is locked', async () => {
@@ -126,8 +129,7 @@ describe('User routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.body).toBeDefined()
-      expect(response.json().message).toEqual(projectIsLockedInfo)
+      expect(JSON.parse(response.body).error).toEqual(projectIsLockedInfo)
     })
   })
 
@@ -165,13 +167,12 @@ describe('User routes', () => {
       prisma.project.findUnique.mockResolvedValue(projectInfos)
 
       const response = await app.inject()
-        .put(`/api/v1/projects/${projectInfos.id}/users/thisIsAnId`)
+        .put(`/api/v1/projects/${projectInfos.id}/users/b7b4d9bd-7a8f-4287-bb12-5ce2dadb4bb5`)
         .body(userUpdated)
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.body).toBeDefined()
-      expect(response.json().message).toEqual(projectIsLockedInfo)
+      expect(JSON.parse(response.body).error).toEqual(projectIsLockedInfo)
     })
   })
 
@@ -206,12 +207,12 @@ describe('User routes', () => {
       prisma.project.findUnique.mockResolvedValue(null)
 
       const response = await app.inject()
-        .delete('/api/v1/projects/missingProjectId/users/userId')
+        .delete('/api/v1/projects/b7b4d9bd-7a8f-4287-bb12-5ce2dadb4bb5/users/b7b4d9bd-7a8f-4287-bb12-5ce2dadb4bb5')
         .end()
 
       expect(response.statusCode).toEqual(400)
       expect(response.body).toBeDefined()
-      expect(response.json().message).toEqual('Le projet ayant pour id missingProjectId n\'existe pas')
+      expect(JSON.parse(response.body).error).toEqual('Le projet ayant pour id b7b4d9bd-7a8f-4287-bb12-5ce2dadb4bb5 n\'existe pas')
     })
 
     it('Should not remove an user if requestor is not member himself', async () => {
@@ -220,11 +221,10 @@ describe('User routes', () => {
       prisma.project.findUnique.mockResolvedValue(projectInfos)
 
       const response = await app.inject()
-        .delete(`/api/v1/projects/${projectInfos.id}/users/thisIsAnId`)
+        .delete(`/api/v1/projects/${projectInfos.id}/users/b7b4d9bd-7a8f-4287-bb12-5ce2dadb4bb5`)
         .end()
-
       expect(response.statusCode).toEqual(403)
-      expect(response.json().message).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
+      expect(JSON.parse(response.body).error).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
     })
 
     it('Should not remove an user if user is not member', async () => {
@@ -241,7 +241,7 @@ describe('User routes', () => {
 
       expect(response.statusCode).toEqual(400)
       expect(response.body).toBeDefined()
-      expect(response.json().message).toEqual('L\'utilisateur n\'est pas membre du projet')
+      expect(JSON.parse(response.body).error).toEqual('L\'utilisateur n\'est pas membre du projet')
     })
   })
 })

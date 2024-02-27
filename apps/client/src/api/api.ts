@@ -153,7 +153,7 @@ export const updateOrganization = async (orgName: CreateOrganizationDto['name'],
 }
 
 export const fetchOrganizations = async () => {
-  const response = await apiClient.put('/admin/organizations/sync')
+  const response = await apiClient.get('/admin/organizations/sync')
   return response.data
 }
 

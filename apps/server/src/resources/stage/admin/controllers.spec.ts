@@ -1,10 +1,13 @@
 import prisma from '../../../__mocks__/prisma.js'
-import app, { getRequestor, setRequestor } from '../../../__mocks__/app.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll, beforeEach } from 'vitest'
 import { getConnection, closeConnections } from '../../../connect.js'
 import { adminGroupPath } from '@cpn-console/shared'
 import { getRandomCluster, getRandomEnv, getRandomQuota, getRandomQuotaStage, getRandomRole, getRandomStage, getRandomUser, repeatFn } from '@cpn-console/test-utils'
 import { faker } from '@faker-js/faker'
+import { getRequestor, setRequestor } from '../../../utils/mocks.js'
+import app from '../../../app.js'
+
+vi.mock('fastify-keycloak-adapter', (await import('../../../utils/mocks.js')).mockSessionPlugin)
 
 describe('Admin stage routes', () => {
   beforeAll(async () => {
@@ -111,7 +114,7 @@ describe('Admin stage routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(400)
-      expect(response.json().message).toEqual('Un type d\'environnement portant ce nom existe déjà')
+      expect(JSON.parse(response.body).error).toEqual('Un type d\'environnement portant ce nom existe déjà')
     })
   })
 
@@ -188,7 +191,7 @@ describe('Admin stage routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(400)
-      expect(response.json().message).toEqual('L\'association quota / type d\'environnement que vous souhaitez supprimer est actuellement utilisée. Vous pouvez demander aux souscripteurs concernés de changer le quota choisi pour leur environnement.')
+      expect(JSON.parse(response.body).error).toEqual('L\'association quota / type d\'environnement que vous souhaitez supprimer est actuellement utilisée. Vous pouvez demander aux souscripteurs concernés de changer le quota choisi pour leur environnement.')
     })
   })
 
@@ -240,7 +243,7 @@ describe('Admin stage routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(400)
-      expect(response.json().message).toEqual('Impossible de supprimer le stage, des environnements en activité y ont souscrit')
+      expect(JSON.parse(response.body).error).toEqual('Impossible de supprimer le stage, des environnements en activité y ont souscrit')
     })
   })
 })
