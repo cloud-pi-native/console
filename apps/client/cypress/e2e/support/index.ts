@@ -17,13 +17,13 @@ import type { Project, Repository, CiForm } from '../../types.js'
 import './commands.js'
 
 Cypress.on('window:before:load', (win) => {
-  let copyText
+  let copyText: string
   if (!win.navigator.clipboard) {
     // @ts-ignore
     win.navigator.clipboard = {}
   }
   Object.setPrototypeOf(win.navigator.clipboard, {
-    writeText: async (text) => (copyText = text),
+    writeText: async (text: string) => (copyText = text),
     readText: async () => copyText,
   })
 })

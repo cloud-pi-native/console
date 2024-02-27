@@ -1,8 +1,9 @@
-import app from '../__mocks__/app.js'
 import { vi, describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { closeConnections, getConnection } from '../connect.js'
 import { createRandomDbSetup } from '@cpn-console/test-utils'
+import app from '../app.js'
 
+vi.mock('fastify-keycloak-adapter', (await import('../utils/mocks.js')).mockSessionPlugin)
 vi.mock('../prisma.js')
 
 describe('ciFiles routes', () => {
@@ -22,7 +23,8 @@ describe('ciFiles routes', () => {
     const randomDbSetup = createRandomDbSetup({})
     const ciData = {
       projectName: randomDbSetup.project.name,
-      internalRepoName: randomDbSetup.project.repositories[0].internalRepoName,
+      internalRepoName:
+        randomDbSetup.project.repositories[0].internalRepoName,
       typeLanguage: 'node',
       nodeVersion: '18.1.1',
       nodeInstallCommand: 'npm install',

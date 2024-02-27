@@ -255,6 +255,15 @@ importers:
       '@prisma/client':
         specifier: ^5.10.2
         version: 5.10.2(prisma@5.10.2)
+      '@ts-rest/core':
+        specifier: ^3.33.0
+        version: 3.33.0(zod@3.22.4)
+      '@ts-rest/fastify':
+        specifier: ^3.33.0
+        version: 3.33.0(fastify@4.26.1)(zod@3.22.4)
+      '@ts-rest/open-api':
+        specifier: ^3.33.0
+        version: 3.33.0(zod@3.22.4)
       axios:
         specifier: 1.6.7
         version: 1.6.7(debug@4.3.4)
@@ -470,6 +479,9 @@ importers:
 
   packages/shared:
     dependencies:
+      '@ts-rest/core':
+        specifier: 3.33.0
+        version: 3.33.0(zod@3.22.4)
       json-schema-to-ts:
         specifier: ^3.0.0
         version: 3.0.0
@@ -1207,6 +1219,17 @@ packages:
       '@jridgewell/gen-mapping': 0.3.3
       '@jridgewell/trace-mapping': 0.3.22
     dev: true
+
+  /@anatine/zod-openapi@1.14.2(openapi3-ts@2.0.2)(zod@3.22.4):
+    resolution: {integrity: sha512-q0qHfnuNYVKu0Swrnnvfj9971AEyW7c8v9jCOZGCl5ZbyGMNG4RPyJkRcMi/JC8CRfdOe0IDfNm1nNsi2avprg==}
+    peerDependencies:
+      openapi3-ts: ^2.0.0 || ^3.0.0
+      zod: ^3.20.0
+    dependencies:
+      openapi3-ts: 2.0.2
+      ts-deepmerge: 6.2.1
+      zod: 3.22.4
+    dev: false
 
   /@antfu/install-pkg@0.1.1:
     resolution: {integrity: sha512-LyB/8+bSfa0DFGC06zpCEfs89/XoWZwws5ygEa5D+Xsm3OfI+aXQ86VgVG7Acyef+rSZ5HE7J8rrxzrQeM3PjQ==}
@@ -3692,6 +3715,40 @@ packages:
     dependencies:
       '@smithy/util-buffer-from': 2.1.1
       tslib: 2.6.2
+    dev: false
+
+  /@ts-rest/core@3.33.0(zod@3.22.4):
+    resolution: {integrity: sha512-EUV+VmHWXrtvjBcGURrAuW29ajKhteGGgbf//KcrEhq0pYuENJfxfg4mx23OXVOliuceY/kSXO4HiEYs9jH79g==}
+    peerDependencies:
+      zod: ^3.22.3
+    peerDependenciesMeta:
+      zod:
+        optional: true
+    dependencies:
+      zod: 3.22.4
+    dev: false
+
+  /@ts-rest/fastify@3.33.0(fastify@4.26.1)(zod@3.22.4):
+    resolution: {integrity: sha512-2T33bBSyrDWNoGlpZwkmxipZ/oilVx01Ct41b6CUOkmUIocS71l2sInKDH4OxB0tiPQe4ptBKGxc7FDYPuRkBw==}
+    peerDependencies:
+      fastify: ^4.0.0
+      zod: ^3.22.3
+    peerDependenciesMeta:
+      zod:
+        optional: true
+    dependencies:
+      fastify: 4.26.1
+      zod: 3.22.4
+    dev: false
+
+  /@ts-rest/open-api@3.33.0(zod@3.22.4):
+    resolution: {integrity: sha512-ZUhOWy7oIo9D53W4/DuJuum6RtwSrcxr7VrNTKOeUlq+uvx8yzW/cxaZEh/SrHnzXhOegWj+lWRCH32MS/CaNA==}
+    peerDependencies:
+      zod: ^3.22.3
+    dependencies:
+      '@anatine/zod-openapi': 1.14.2(openapi3-ts@2.0.2)(zod@3.22.4)
+      openapi3-ts: 2.0.2
+      zod: 3.22.4
     dev: false
 
   /@types/caseless@0.12.5:
@@ -8775,6 +8832,12 @@ packages:
     resolution: {integrity: sha512-N4YtSYJqghVu4iek2ZUvcN/0aqH1kRDuNqzcycDxhOUpg7GdvLa2F3DgS6yBNhInhv2r/6I0Flkn7CqL8+nIcw==}
     dev: false
 
+  /openapi3-ts@2.0.2:
+    resolution: {integrity: sha512-TxhYBMoqx9frXyOgnRHufjQfPXomTIHYKhSKJ6jHfj13kS8OEIhvmE8CTuQyKtjjWttAjX5DPxM1vmalEpo8Qw==}
+    dependencies:
+      yaml: 1.10.2
+    dev: false
+
   /openid-client@5.6.4:
     resolution: {integrity: sha512-T1h3B10BRPKfcObdBklX639tVz+xh34O7GjofqrqiAQdm7eHsQ00ih18x6wuJ/E6FxdtS2u3FmUGPDeEcMwzNA==}
     requiresBuild: true
@@ -10330,6 +10393,11 @@ packages:
     dependencies:
       typescript: 5.3.3
 
+  /ts-deepmerge@6.2.1:
+    resolution: {integrity: sha512-8CYSLazCyj0DJDpPIxOFzJG46r93uh6EynYjuey+bxcLltBeqZL7DMfaE5ZPzZNFlav7wx+2TDa/mBl8gkTYzw==}
+    engines: {node: '>=14.13.1'}
+    dev: false
+
   /ts-essentials@9.4.1(typescript@5.3.3):
     resolution: {integrity: sha512-oke0rI2EN9pzHsesdmrOrnqv1eQODmJpd/noJjwj2ZPC3Z4N2wbjrOEqnsEgmvlO2+4fBb0a794DCna2elEVIQ==}
     peerDependencies:
@@ -11452,6 +11520,11 @@ packages:
 
   /yallist@4.0.0:
     resolution: {integrity: sha512-3wdGidZyq5PB084XLES5TpOSRA3wjXAlIWMhum2kRcv/41Sn2emQ0dycQW4uZXLejwKvg6EsvbdlVL+FYEct7A==}
+
+  /yaml@1.10.2:
+    resolution: {integrity: sha512-r3vXyErRCYJ7wg28yvBY5VSoAF8ZvlcW9/BwUzEtUsjvX/DKs24dIkuwjtuprwJJHsbyUbLApepYTR1BN4uHrg==}
+    engines: {node: '>= 6'}
+    dev: false
 
   /yaml@2.3.4:
     resolution: {integrity: sha512-8aAvwVUSHpfEqTQ4w/KMlf3HcRdt50E5ODIQJBw1fQ5RL34xabzxtUlzTXVqc4rkZsPbvrXKWnABCD7kWSmocA==}

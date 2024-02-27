@@ -2,7 +2,6 @@ import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { apiClient } from './xhr-client.js'
 import {
   getUserProjects,
-  getUserProjectById,
   createProject,
   archiveProject,
 
@@ -26,17 +25,6 @@ describe('API', () => {
       expect(apiClientGet).toHaveBeenCalled()
       expect(apiClientGet).toHaveBeenCalledTimes(1)
       expect(apiClientGet.mock.calls[0][0]).toBe('/projects')
-    })
-
-    it('Should get a project', async () => {
-      const projectId = 'thisIsAnId'
-      apiClientGet.mockReturnValueOnce(Promise.resolve({ data: {} }))
-
-      await getUserProjectById(projectId)
-
-      expect(apiClientGet).toHaveBeenCalled()
-      expect(apiClientGet).toHaveBeenCalledTimes(1)
-      expect(apiClientGet.mock.calls[0][0]).toBe(`/projects/${projectId}`)
     })
 
     it('Should create a project', async () => {

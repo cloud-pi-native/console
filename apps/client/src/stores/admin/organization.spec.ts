@@ -59,13 +59,13 @@ describe('Counter Store', () => {
       { name: 'name2', label: 'label', source: 'source1', active: false },
       { name: 'name3', label: 'label', source: 'source2', active: false },
     ]
-    apiClientPut.mockReturnValueOnce(Promise.resolve({ data }))
+    apiClientGet.mockReturnValueOnce(Promise.resolve({ data }))
     const adminOrganizationStore = useAdminOrganizationStore()
 
     const res = await adminOrganizationStore.fetchOrganizations()
 
     expect(res).toBe(data)
-    expect(apiClientPut).toHaveBeenCalledTimes(1)
-    expect(apiClientPut.mock.calls[0][0]).toBe('/admin/organizations/sync')
+    expect(apiClientGet).toHaveBeenCalledTimes(1)
+    expect(apiClientGet.mock.calls[0][0]).toBe('/admin/organizations/sync')
   })
 })

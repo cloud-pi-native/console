@@ -11,9 +11,10 @@ import {
   _dropOrganizationsTable,
 } from '@/resources/queries-index.js'
 import prisma from './__mocks__/prisma.js'
-import app from './__mocks__/app.js'
+import app from './app.js'
 import { PrismaClientInitializationError } from '@prisma/client/runtime/library.js'
 
+vi.mock('fastify-keycloak-adapter', (await import('./utils/mocks.js')).mockSessionPlugin)
 vi.mock('@/resources/queries-index.js')
 vi.mock('./models/log.js', () => getModel('getLogModel'))
 vi.mock('./models/repository.js', () => getModel('getRepositoryModel'))
@@ -23,8 +24,13 @@ vi.mock('./models/project.js', () => getModel('getProjectModel'))
 vi.mock('./models/user.js', () => getModel('getUserModel'))
 vi.mock('./models/users-projects.js', () => getModel('getRolesModel'))
 vi.mock('./models/organization.js', () => getModel('getOrganizationModel'))
-vi.mock('./app.js')
 vi.mock('./prisma.js')
+
+vi.spyOn(app, 'listen')
+vi.spyOn(app.log, 'info')
+vi.spyOn(app.log, 'warn')
+vi.spyOn(app.log, 'error')
+vi.spyOn(app.log, 'debug')
 
 function getModel (modelName) {
   return {

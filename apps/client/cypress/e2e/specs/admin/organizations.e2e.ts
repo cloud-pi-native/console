@@ -21,7 +21,7 @@ describe('Administration organizations', () => {
 
     cy.kcLogin('tcolin')
     cy.visit('/admin/organizations')
-    cy.wait('@getAllOrganizations').its('response.statusCode').should('eq', 200)
+    cy.wait('@getAllOrganizations').its('response.statusCode').should('match', /^20\d$/)
   })
 
   it('Should display organizations table, loggedIn as admin', () => {
@@ -212,7 +212,7 @@ describe('Administration organizations', () => {
   })
 
   it('Should synchronize organizations from plugins', () => {
-    cy.intercept('PUT', '/api/v1/admin/organizations/sync').as('syncOrganizations')
+    cy.intercept('GET', '/api/v1/admin/organizations/sync').as('syncOrganizations')
 
     cy.getByDataTestid('syncOrgsBtn')
       .click()

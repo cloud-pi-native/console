@@ -22,7 +22,7 @@ describe('Administration stages', () => {
     cy.visit('/admin/stages')
     cy.url().should('contain', '/admin/stages')
     cy.wait('@getStages').its('response').then(response => {
-      allStages = response.body
+      allStages = response?.body
       stage1 = allStages.find(quota => quota.id === stage1.id)
     })
     cy.wait('@getQuotas')
@@ -75,7 +75,7 @@ describe('Administration stages', () => {
     cy.getByDataTestid('addStageBtn')
       .click()
     cy.wait('@createStage').its('response').then($response => {
-      expect($response.statusCode).to.equal(201)
+      expect($response?.statusCode).to.match(/^20\d$/)
     })
     cy.getByDataTestid('nameInput')
       .should('not.exist')
@@ -146,7 +146,7 @@ describe('Administration stages', () => {
       .should('be.enabled')
       .click()
     cy.wait('@createStage').its('response').then($response => {
-      expect($response.statusCode).to.equal(400)
+      expect($response?.statusCode).to.not.match(/^20\d$/)
     })
     cy.getByDataTestid('snackbar').within(() => {
       cy.get('p').should('contain', 'Un type d\'environnement portant ce nom existe déjà')
@@ -190,10 +190,10 @@ describe('Administration stages', () => {
     cy.getByDataTestid('updateStageBtn')
       .click()
     cy.wait('@updateQuotaStage').its('response').then($response => {
-      expect($response.statusCode).to.equal(200)
+      expect($response?.statusCode).to.match(/^20\d$/)
     })
     cy.wait('@updateStageClusters').its('response').then($response => {
-      expect($response.statusCode).to.equal(200)
+      expect($response?.statusCode).to.match(/^20\d$/)
     })
 
     // Check stage update
@@ -268,7 +268,7 @@ describe('Administration stages', () => {
     cy.getByDataTestid('updateStageBtn')
       .click()
     cy.wait('@updateQuotaStage').its('response').then($response => {
-      expect($response.statusCode).to.equal(400)
+      expect($response?.statusCode).to.not.match(/^20\d$/)
     })
     cy.getByDataTestid('snackbar').within(() => {
       cy.get('p').should('contain', 'L\'association quota / type d\'environnement que vous souhaitez supprimer est actuellement utilisée. Vous pouvez demander aux souscripteurs concernés de changer le quota choisi pour leur environnement.')

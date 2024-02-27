@@ -1,9 +1,9 @@
+import { UserProfile, adminGroupPath, exclude } from '@cpn-console/shared'
 import { UnauthorizedError } from '@/utils/errors.js'
 import {
   getUserById,
   getClustersWithProjectIdAndConfig,
 } from '../queries-index.js'
-import { UserProfile, adminGroupPath, exclude } from '@cpn-console/shared'
 
 export const getAllCleanedClusters = async (kcUser: UserProfile) => {
   // @ts-ignore

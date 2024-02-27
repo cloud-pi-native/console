@@ -1,13 +1,21 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
-import app from './__mocks__/app.js'
 import { startServer, handleExit, exitGracefully } from './server.js'
 import { getConnection, closeConnections } from './connect.js'
 import { initDb } from './init/db/index.js'
+import app from './app.js'
 
-vi.mock('./app.js')
+process.exit = vi.fn()
+
+vi.mock('fastify-keycloak-adapter', (await import('./utils/mocks.js')).mockSessionPlugin)
 vi.mock('./connect.js')
 vi.mock('./utils/logger.js')
 vi.mock('./init/db/index.js', () => ({ initDb: vi.fn() }))
+
+vi.spyOn(app, 'listen')
+vi.spyOn(app.log, 'info')
+vi.spyOn(app.log, 'warn')
+vi.spyOn(app.log, 'error')
+vi.spyOn(app.log, 'debug')
 
 describe('Server', () => {
   beforeEach(() => {

@@ -2,8 +2,8 @@ import { addLogs, deleteRepository as deleteRepositoryQuery, getProjectInfos, ge
 import { BadRequestError, ForbiddenError, NotFoundError, UnauthorizedError, UnprocessableContentError } from '@/utils/errors.js'
 import type { Project, Repository, User } from '@prisma/client'
 import { projectRootDir, gitlabUrl } from '@/utils/env.js'
-import { unlockProjectIfNotFailed, checkCreateProject as checkCreateRepositoryPlugins, validateSchema } from '@/utils/business.js'
-import { type CreateRepositoryDto, type UpdateRepositoryDto, type ProjectRoles, CreateRepoBusinessSchema } from '@cpn-console/shared'
+import { unlockProjectIfNotFailed, checkCreateProject as checkCreateRepositoryPlugins } from '@/utils/business.js'
+import { type CreateRepositoryDto, type UpdateRepositoryDto, type ProjectRoles } from '@cpn-console/shared'
 // TODO remove gitlabUrl
 import { hooks } from '@cpn-console/hooks'
 import { checkInsufficientRoleInProject, checkRoleAndLocked } from '@/utils/controller.js'
@@ -58,9 +58,6 @@ export const createRepository = async (
   userId: User['id'],
   requestId: string,
 ) => {
-  const schemaValidation = CreateRepoBusinessSchema.safeParse({ ...data, projectId })
-  validateSchema(schemaValidation)
-
   await checkUpsertRepository(userId, projectId, 'owner')
   const user = await getUserById(userId)
   if (!user) throw new UnauthorizedError('Veuillez vous identifier')

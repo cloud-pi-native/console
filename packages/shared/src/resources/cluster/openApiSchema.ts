@@ -1,4 +1,4 @@
-import { ClusterPrivacy } from '../../index.js'
+import { ClusterPrivacy } from '../../utils/const.js'
 
 export const createClusterDto = {
   label: {

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
-import { SharedZodError, RepoBusinessSchema, CreateRepoSchema, CreateRepoBusinessSchema, instanciateSchema } from '@cpn-console/shared'
+import { SharedZodError, RepoBusinessSchema, RepoSchema, CreateRepoBusinessSchema, instanciateSchema } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = defineProps({
@@ -54,7 +54,7 @@ const updateRepo = (key: keyof typeof localRepo.value, value: unknown) => {
 const emit = defineEmits(['save', 'delete', 'cancel'])
 
 const saveRepo = () => {
-  updatedValues.value = instanciateSchema(CreateRepoSchema, true)
+  updatedValues.value = instanciateSchema(RepoSchema.omit({ id: true, projectId: true, status: true }), true)
 
   if (!isRepoValid.value) return
   emit('save', localRepo.value)
@@ -91,7 +91,7 @@ const cancel = () => {
             type="text"
             :required="true"
             :disabled="localRepo.id || props.isProjectLocked"
-            :error-message="!!updatedValues.internalRepoName && !CreateRepoSchema.pick({internalRepoName: true}).safeParse({internalRepoName: localRepo.internalRepoName}).success ? 'Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique': undefined"
+            :error-message="!!updatedValues.internalRepoName && !RepoSchema.pick({internalRepoName: true}).safeParse({internalRepoName: localRepo.internalRepoName}).success ? 'Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique': undefined"
             label="Nom du dépôt Git interne"
             label-visible
             hint="Nom du dépôt Git créé dans le Gitlab interne de la plateforme"
@@ -106,7 +106,7 @@ const cancel = () => {
             type="text"
             :required="true"
             :disabled="props.isProjectLocked"
-            :error-message="!!updatedValues.externalRepoUrl && !CreateRepoSchema.pick({externalRepoUrl: true}).safeParse({externalRepoUrl: localRepo.externalRepoUrl}).success ? 'L\'url du dépôt doit commencer par https et se terminer par .git': undefined"
+            :error-message="!!updatedValues.externalRepoUrl && !RepoSchema.pick({externalRepoUrl: true}).safeParse({externalRepoUrl: localRepo.externalRepoUrl}).success ? 'L\'url du dépôt doit commencer par https et se terminer par .git': undefined"
             label="Url du dépôt Git externe"
             label-visible
             hint="Url du dépôt Git qui servira de source pour la synchronisation"
@@ -134,8 +134,7 @@ const cancel = () => {
               type="text"
               :required="localRepo.isPrivate"
               :disabled="props.isProjectLocked"
-              :error-message="!!updatedValues.externalUserName && !CreateRepoSchema.pick({externalUserName: true}).safeParse({externalUserName: localRepo.externalUserName}).success ? 'Le nom du propriétaire du token est obligatoire en cas de dépôt privé et ne doit contenir ni espaces ni caractères spéciaux': undefined"
-              autocomplete="name"
+              :error-message="!!updatedValues.externalUserName && !RepoSchema.pick({externalUserName: true}).safeParse({externalUserName: localRepo.externalUserName}).success ? 'Le nom du propriétaire du token est obligatoire en cas de dépôt privé et ne doit contenir ni espaces ni caractères spéciaux': undefined"
               label="Nom d'utilisateur"
               label-visible
               hint="Nom de l'utilisateur propriétaire du token"
@@ -151,7 +150,7 @@ const cancel = () => {
               type="text"
               :required="localRepo.isPrivate"
               :disabled="props.isProjectLocked"
-              :error-message="!!updatedValues.externalToken && !CreateRepoSchema.pick({externalToken: true}).safeParse({externalToken: localRepo.externalToken}).success ? 'Le token d\'accès au dépôt est obligatoire en cas de dépôt privé et ne doit contenir ni espaces ni caractères spéciaux': undefined"
+              :error-message="!!updatedValues.externalToken && !RepoSchema.pick({externalToken: true}).safeParse({externalToken: localRepo.externalToken}).success ? 'Le token d\'accès au dépôt est obligatoire en cas de dépôt privé et ne doit contenir ni espaces ni caractères spéciaux': undefined"
               label="Token d'accès au dépôt Git externe"
               label-visible
               hint="Token d'accès permettant le clone du dépôt par la chaîne DevSecOps"

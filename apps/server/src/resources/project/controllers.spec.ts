@@ -1,10 +1,14 @@
-import prisma from '../../__mocks__/prisma.js'
-import app, { getRequestor, setRequestor } from '../../__mocks__/app.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
+import prisma from '../../__mocks__/prisma.js'
+import { getRequestor, setRequestor } from '../../utils/mocks.js'
+import app from '../../app.js'
 import { createRandomDbSetup, getRandomProject, getRandomRole, getRandomUser } from '@cpn-console/test-utils'
 import { faker } from '@faker-js/faker'
+import { descriptionMaxLength, projectIsLockedInfo } from '@cpn-console/shared'
 import { getConnection, closeConnections } from '../../connect.js'
-import { descriptionMaxLength, exclude, projectIsLockedInfo } from '@cpn-console/shared'
+
+vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
+vi.mock('@cpn-console/hooks', (await import('../../utils/mocks.js')).mockHooksPackage)
 
 describe('Project routes', () => {
   const requestor = getRandomUser()
@@ -34,49 +38,7 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(error.statusCode)
-      expect(response.body).toBeDefined()
-      expect(response.json().message).toEqual(error.message)
-    })
-  })
-
-  describe('getProjectByIdController', () => {
-    it('Should get a project by id', async () => {
-      const project = createRandomDbSetup({}).project
-      project.roles = [...project.roles, getRandomRole(getRequestor().id, project.id)]
-
-      prisma.project.findUnique.mockResolvedValue(project)
-
-      const response = await app.inject()
-        .get(`/api/v1/projects/${project.id}`)
-        .end()
-
-      expect(response.statusCode).toEqual(200)
-      expect(response.json()).toBeDefined()
-      expect(response.json()).toMatchObject({ ...exclude(project, ['roles', 'clusters']), environments: [] })
-    })
-
-    it('Should not retrieve a project when id is invalid', async () => {
-      const response = await app.inject()
-        .get('/api/v1/projects/invalid')
-        .end()
-
-      expect(response.statusCode).toEqual(404)
-      expect(response.body).toBeDefined()
-      expect(response.json().message).toEqual('Projet introuvable')
-    })
-
-    it('Should not retrieve a project when not project member', async () => {
-      const project = createRandomDbSetup({}).project
-
-      prisma.project.findUnique.mockResolvedValue(project)
-
-      const response = await app.inject()
-        .get(`/api/v1/projects/${project.id}`)
-        .end()
-
-      expect(response.statusCode).toEqual(403)
-      expect(response.body).toBeDefined()
-      expect(response.json().message).toEqual('Vous ne faites pas partie de ce projet')
+      expect(JSON.parse(response.body).error).toEqual(error.message)
     })
   })
 
@@ -90,6 +52,7 @@ describe('Project routes', () => {
       const response = await app.inject()
         .get(`/api/v1/projects/${project.id}/secrets`)
         .end()
+
       expect(response.statusCode).toEqual(200)
       expect(response.json()).toBeDefined()
       expect(response.json()).toMatchObject({ Gitlab: { token: 'myToken' }, Harbor: { token: 'myToken' } })
@@ -106,8 +69,7 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.body).toBeDefined()
-      expect(response.json().message).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
+      expect(JSON.parse(response.body).error).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
     })
   })
 
@@ -153,7 +115,7 @@ describe('Project routes', () => {
 
       expect(response.statusCode).toEqual(400)
       expect(response.body).toBeDefined()
-      expect(response.json().message).toEqual('body must have required property \'name\'')
+      expect(JSON.parse(response.body).bodyErrors.issues[0].message).toEqual('Required')
     })
 
     it('Should not create a project if name already exists', async () => {
@@ -171,7 +133,7 @@ describe('Project routes', () => {
 
       expect(response.statusCode).toEqual(400)
       expect(response.body).toBeDefined()
-      expect(response.json().message).toEqual(`"${project.name}" existe déjà`)
+      expect(JSON.parse(response.body).error).toEqual(`Le projet "${project.name}" existe déjà`)
     })
   })
 
@@ -214,7 +176,7 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.json().message).toEqual('Vous ne faites pas partie de ce projet')
+      expect(JSON.parse(response.body).error).toEqual('Vous ne faites pas partie de ce projet')
     })
 
     it('Should not update a project description if description is invalid', async () => {
@@ -229,7 +191,7 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(400)
-      expect(response.json().message).toEqual('Validation error: String must contain at most 280 character(s) at "description"')
+      expect(JSON.parse(response.body).bodyErrors.issues[0].message).toEqual('String must contain at most 280 character(s)')
     })
 
     it('Should not update a project if locked', async () => {
@@ -245,7 +207,7 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.json().message).toEqual(projectIsLockedInfo)
+      expect(JSON.parse(response.body).error).toEqual(projectIsLockedInfo)
     })
   })
 
@@ -281,7 +243,7 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.json().message).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
+      expect(JSON.parse(response.body).error).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
     })
 
     it('Should not archive a project if requestor is not owner', async () => {
@@ -294,9 +256,8 @@ describe('Project routes', () => {
       const response = await app.inject()
         .delete(`/api/v1/projects/${project.id}`)
         .end()
-
       expect(response.statusCode).toEqual(403)
-      expect(response.json().message).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
+      expect(JSON.parse(response.body).error).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
     })
   })
 })

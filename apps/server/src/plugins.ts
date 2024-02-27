@@ -1,4 +1,4 @@
-import { readdirSync, statSync } from 'fs'
+import { readdirSync, statSync } from 'node:fs'
 import { type Plugin, pluginManager } from '@cpn-console/hooks'
 import { plugin as argo } from '@cpn-console/argocd-plugin'
 import { plugin as gitlab } from '@cpn-console/gitlab-plugin'
