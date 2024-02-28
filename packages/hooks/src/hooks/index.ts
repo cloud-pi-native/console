@@ -1,16 +1,8 @@
-import { ClusterPrivacy } from '@cpn-console/shared'
-
-export * from './cluster.js'
-export * from './environment.js'
-export * from './project.js'
-export * from './team.js'
-export * from './misc.js'
-export * from './repository.js'
-export * from './permission.js'
+export * from './hook-cluster.js'
+export * from './hook-misc.js'
+export * from './hook-project.js'
 
 export type Organization = string
-export type Environment = string
-export type Environments = Environment[]
 export type PartialEnvironment = { environment: string, stage: string, clusterLabel: string }
 export type InternalRepoName = string
 export type ExternalRepoUrl = string
@@ -29,7 +21,6 @@ export type EnvironmentObject = {
   id: string;
   name: string;
   projectId: string;
-  status: string;
   createdAt: Date;
   updatedAt: Date;
   clusterId: string;
@@ -54,10 +45,10 @@ export interface KubeCluster {
 export type ClusterObject = {
   id: string;
   label: string;
-  privacy: ClusterPrivacy;
+  privacy: 'public' | 'dedicated';
   secretName: string;
   clusterResources: boolean;
-  infos: string;
+  infos: string | null;
   cluster: KubeCluster;
   user: KubeUser
 }

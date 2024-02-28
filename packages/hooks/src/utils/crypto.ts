@@ -1,5 +1,5 @@
 import crypto, { createHmac } from 'node:crypto'
-import { Organization, Project, RepositoryCreate } from '../hooks/index.js'
+import { Organization, Project } from '../hooks/index.js'
 
 export const generateRandomPassword = (length = 24) => {
   const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@-_#*'
@@ -8,7 +8,7 @@ export const generateRandomPassword = (length = 24) => {
     .join('')
 }
 
-export const generateProjectKey = (org: Organization, proj: Project, repo: RepositoryCreate['internalRepoName']) => {
+export const generateProjectKey = (org: Organization, proj: Project['name'], repo: Project['repositories'][0]['internalRepoName']) => {
   const repoHash = createHmac('sha256', '')
     .update(repo)
     .digest('hex')
