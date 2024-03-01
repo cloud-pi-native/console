@@ -37,6 +37,7 @@ jobs:
             apps:
               - 'apps/**'
               - 'packages/**'
+              - 'plugins/**'
               - '.github/workflows/**'
 
   expose-vars:
