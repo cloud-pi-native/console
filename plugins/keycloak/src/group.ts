@@ -1,6 +1,5 @@
-import KeycloakAdminClient from '@keycloak/keycloak-admin-client'
-// @ts-ignore
-import GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation'
+import type KeycloakAdminClient from '@keycloak/keycloak-admin-client'
+import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation.js'
 
 export const getGroups = async (kcClient: KeycloakAdminClient) => {
   return kcClient.groups.find()
