@@ -51,7 +51,7 @@ services:
       - 4000:8080
       - 9229:9229
     volumes:
-      - ${KUBECONFIG_HOST_PATH}:${KUBECONFIG_PATH}
+      - ${KUBECONFIG_HOST_PATH}:${KUBECONFIG_PATH:-/home/node/.kube/config}
       - ${EXTERNAL_PLUGINS_DIR_HOST_PATH}:/plugins
     env_file:
       - ../apps/server/.env.docker
@@ -78,7 +78,7 @@ services:
             - node_modules/
         - action: sync
           path: ../plugins
-          target: /plugins
+          target: /app/plugins
           ignore:
             - node_modules/
         - action: rebuild
