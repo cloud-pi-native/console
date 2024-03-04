@@ -4,7 +4,7 @@ import { hooks, type PluginResult } from '@cpn-console/hooks'
 import { checkInsufficientRoleInProject } from '@/utils/controller.js'
 import { unlockProjectIfNotFailed, validateSchema } from '@/utils/business.js'
 import { BadRequestError, ForbiddenError } from '@/utils/errors.js'
-import { type AsyncReturnType, type ProjectRoles, projectIsLockedInfo, UserSchema } from '@cpn-console/shared'
+import { type AsyncReturnType, type ProjectRoles, projectIsLockedInfo, UserSchema, instanciateSchema } from '@cpn-console/shared'
 
 export type UserDto = Pick<User, 'email' | 'firstName' | 'lastName' | 'id'>
 export const getUser = async (user: UserDto) => {
@@ -49,13 +49,13 @@ export const addUserToProject = async (
     const results = await hooks.retrieveUserByEmail.execute({ email })
     // @ts-ignore
     await addLogs('Retrieve User By Email', results, userId, requestId)
-    // @ts-ignore
-    const retrievedUser = results.keycloak?.user
+
+    const retrievedUser = results.results.keycloak?.user
     if (!retrievedUser) throw new BadRequestError('Utilisateur introuvable', undefined)
 
     // keep only keys allowed in model
-    const userFromModel = {}
-    Object.keys(UserSchema._type).forEach(modelKey => {
+    const userFromModel = instanciateSchema(UserSchema, undefined)
+    Object.keys(userFromModel).forEach(modelKey => {
       userFromModel[modelKey] = retrievedUser[modelKey]
     })
 
