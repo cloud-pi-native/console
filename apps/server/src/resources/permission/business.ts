@@ -1,6 +1,6 @@
 import { BadRequestError, ForbiddenError, UnprocessableContentError } from '@/utils/errors.js'
 import type { Project, User, Environment, Permission, Log } from '@prisma/client'
-import { addLogs, deletePermission as deletePermissionQuery, getEnvironmentByIdWithCluster, getEnvironmentPermissions as getEnvironmentPermissionsQuery, getPermissionByUserIdAndEnvironmentId, getProjectInfos, getSingleOwnerByProjectId, getUserById, setPermission as setPermissionQuery, updatePermission as updatePermissionQuery } from '@/resources/queries-index.js'
+import { addLogs, deletePermission as deletePermissionQuery, getEnvironmentByIdWithCluster, getEnvironmentPermissions as getEnvironmentPermissionsQuery, getPermissionByUserIdAndEnvironmentId, getProjectInfos, getQuotaStageById, getSingleOwnerByProjectId, getStageById, getUserById, setPermission as setPermissionQuery, updatePermission as updatePermissionQuery } from '@/resources/queries-index.js'
 import { checkInsufficientRoleInProject, checkRoleAndLocked } from '@/utils/controller.js'
 import { hooks } from '@cpn-console/hooks'
 import { PermissionSchema } from '@cpn-console/shared'
@@ -40,6 +40,7 @@ export const setPermission = async (
   requestId: Log['requestId'],
 ) => {
   const project = await getProjectInfos(projectId)
+  if (!project) throw new BadRequestError('Le projet n\'existe pas')
 
   const errorMessage = checkRoleAndLocked(project, requestorId)
   if (errorMessage) throw new ForbiddenError(errorMessage, undefined)
@@ -52,10 +53,17 @@ export const setPermission = async (
 
   const permission = await setPermissionQuery({ userId, environmentId, level })
   const environment = await getEnvironmentByIdWithCluster(permission.environmentId)
+  if (!environment) throw new BadRequestError('L\'environnement n\'existe pas')
+  const stageId = (await getQuotaStageById(environment.quotaStageId))?.stageId
+  if (!stageId) throw new BadRequestError('L\'association quota stage n\'existe pas')
+  const stage = await getStageById(stageId)
+  if (!stage) throw new BadRequestError('Le type d\'environnement n\'existe pas')
   const user = await getUserById(userId)
+  if (!user) throw new BadRequestError('L\'utilisateur n\'existe pas')
 
   const results = await hooks.setEnvPermission.execute({
     environment: environment.name,
+    stage: stage.name,
     cluster: environment.cluster,
     organization: project.organization.name,
     permissions: {
@@ -82,6 +90,7 @@ export const updatePermission = async (
   requestId: Log['requestId'],
 ) => {
   const project = await getProjectInfos(projectId)
+  if (!project) throw new BadRequestError('Le projet n\'existe pas')
 
   await preventUpdatingOwnerPermission(projectId, userId)
 
@@ -96,10 +105,17 @@ export const updatePermission = async (
 
   const permission = await updatePermissionQuery({ userId, environmentId, level })
   const environment = await getEnvironmentByIdWithCluster(permission.environmentId)
+  if (!environment) throw new BadRequestError('L\'environnement n\'existe pas')
+  const stageId = (await getQuotaStageById(environment.quotaStageId))?.stageId
+  if (!stageId) throw new BadRequestError('L\'association quota stage n\'existe pas')
+  const stage = await getStageById(stageId)
+  if (!stage) throw new BadRequestError('Le type d\'environnement n\'existe pas')
   const user = await getUserById(userId)
+  if (!user) throw new BadRequestError('L\'utilisateur n\'existe pas')
 
   const results = await hooks.setEnvPermission.execute({
     environment: environment.name,
+    stage: stage.name,
     cluster: environment.cluster,
     organization: project.organization.name,
     permissions: {
