@@ -1,21 +1,33 @@
-import axios from 'axios'
-import { getAxiosOptions } from './functions.js'
+import { getApi } from './utils.js'
+import { type Robot } from './api/Api.js'
 
-export const createRobot = async (projectName: string) => {
-  const rest = await axios({
-    ...getAxiosOptions(),
-    url: 'robots',
-    method: 'post',
-    data: getRobotPermissions(projectName),
+export const createCiRobot = async (projectName: string) => {
+  const api = getApi()
+  const robot = await api.robots.createRobot({
+    ...getRobotPermissions(projectName),
   })
-  return rest.data
+  return robot.data
+}
+export const regenerateCiRobot = async (projectName: string) => {
+  const api = getApi()
+  const ciRobot = await getCiRobot(projectName)
+  if (ciRobot?.id) await api.projects.deleteRobotV1(projectName, ciRobot.id)
+  return createCiRobot(projectName)
+}
+
+export const getCiRobot = async (projectName: string) => getRobotByName(projectName, `robot$${projectName}+ci`)
+
+export const getRobotByName = async (project: string | number, robotName: string): Promise<Robot | undefined> => {
+  const api = getApi()
+  const listRobots = await api.projects.listRobotV1(String(project))
+  return listRobots.data.find(({ name }) => name === robotName)
 }
 
 const getRobotPermissions = (projectName: string) => {
   return {
     name: 'ci',
     duration: -1,
-    description: null,
+    description: 'robot for ci builds',
     disable: false,
     level: 'project',
     permissions: [{
