@@ -110,6 +110,7 @@ export const updateUserProjectRoleSchema = {
     properties: {
       role: roleOpenApiSchema.properties.role,
     },
+    required: ['role'],
   },
   response: {
     200: {

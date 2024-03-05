@@ -1,5 +1,5 @@
 import prisma from '@/prisma.js'
-import { exclude, type AsyncReturnType, ClusterPrivacy, AllStatus } from '@cpn-console/shared'
+import { type AsyncReturnType, ClusterPrivacy, AllStatus } from '@cpn-console/shared'
 import type { Organization, Project, User, Role } from '@prisma/client'
 
 type ProjectUpdate = Partial<Pick<Project, 'description'>>
@@ -59,17 +59,8 @@ export const getProjectUsers = async (projectId: Project['id']) => {
         },
       },
     },
-    include: {
-      roles: {
-        where: {
-          projectId,
-        },
-      },
-    },
   })
-
-  const resWithKeysExcluded = exclude(res, ['role'])
-  return resWithKeysExcluded
+  return res
 }
 
 export const getUserProjects = async (user: User) => {

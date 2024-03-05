@@ -93,6 +93,7 @@ export const quotaParamsSchema = {
       type: 'string',
     },
   },
+  required: ['quotaId'],
 } as const
 
 export const getQuotasSchema = {

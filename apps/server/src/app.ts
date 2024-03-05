@@ -30,6 +30,7 @@ import { isInt, isDev, isTest, keycloakRedirectUri } from './utils/env.js'
 export const apiPrefix = '/api/v1'
 
 const fastifyConf = {
+  // @ts-ignore
   logger: loggerConf[process.env.NODE_ENV] ?? true,
   genReqId: () => nanoid(),
 }
@@ -82,6 +83,7 @@ const app: FastifyInstance = addAllSchemasToApp(fastify(fastifyConf))
   })
   .register(fastifyCookie)
   .register(fastifySession, sessionConf)
+  // @ts-ignore
   .register(keycloak, keycloakConf)
   .register(apiRouter, { prefix: apiPrefix })
   .register(miscRouter, { prefix: apiPrefix })
@@ -100,6 +102,7 @@ const app: FastifyInstance = addAllSchemasToApp(fastify(fastifyConf))
       req,
       description,
       ...(isDsoError ? { extras: error.extras } : {}),
+      // @ts-ignore
       error: isDsoError ? null : error,
     })
   })
