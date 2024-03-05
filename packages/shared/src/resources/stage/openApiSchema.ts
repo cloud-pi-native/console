@@ -39,6 +39,7 @@ export const stageParamsSchema = {
       type: 'string',
     },
   },
+  required: ['stageId'],
 } as const
 
 export const getStagesSchema = {

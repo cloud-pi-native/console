@@ -11,7 +11,9 @@ import {
   getProjectInfos as getProjectInfosQuery,
   getProjectPartialEnvironments,
   getPublicClusters,
+  getQuotaStageById,
   getSingleOwnerByProjectId,
+  getStageById,
   getUserProjects as getUserProjectsQuery,
   initializeProject,
   lockProject,
@@ -44,6 +46,7 @@ import { type UserDto, getUser } from '@/resources/user/business.js'
 // Fetch infos
 export const getProjectInfosAndClusters = async (projectId: string) => {
   const project = await getProjectInfosQuery(projectId)
+  if (!project) throw new NotFoundError('Projet introuvable')
   const projectClusters = project.clusters ? [...await getPublicClusters(), ...project.clusters] : [...await getPublicClusters()]
   return { project, projectClusters }
 }
@@ -53,6 +56,7 @@ const projectServices = (project: Project & { organization: Organization, enviro
   organization: project.organization.name,
   services: project.services,
   environments: project.environments,
+  // @ts-ignore
   clusters: project.clusters,
 })
 
@@ -74,7 +78,7 @@ export const checkCreateProject = async (
   owner: User,
   organizationName: Organization['name'],
   data: CreateProjectDto,
-  requestId: Log['requestId'],
+  requestId: string,
 ) => {
   const schemaValidation = ProjectSchema.omit({ id: true, organizationId: true, status: true, locked: true }).safeParse(data)
   validateSchema(schemaValidation)
@@ -91,10 +95,13 @@ const filterProject = (
   userId: User['id'],
   project: AsyncReturnType<typeof getProjectInfosQuery>,
 ) => {
+  if (!project) throw new NotFoundError('Projet introuvable')
   if (!checkInsufficientRoleInProject(userId, { roles: project.roles, minRole: 'owner' })) return project
+  // @ts-ignore
   project = exclude(project, ['clusters'])
   // TODO définir les clés disponibles des environnements par niveau d'autorisation
-  project.environments = project.environments.filter(env => !checkInsufficientPermissionInEnvironment(userId, env.permissions, 0))
+  // @ts-ignore
+  project.environments = project?.environments?.filter(env => !checkInsufficientPermissionInEnvironment(userId, env.permissions, 0))
   return project
 }
 
@@ -123,16 +130,19 @@ export const getProjectSecrets = async (projectId: string, userId: User['id']) =
   if (results?.failed) throw new Error('Echec de récupération des secrets du projet par les plugins')
   const projectSecrets = Object.fromEntries(
     Object.entries(results.results)
+      // @ts-ignore
       .filter(([_key, value]) => value.secrets)
+      // @ts-ignore
       .map(([key, value]) => [servicesInfos[key]?.title, value.secrets]))
 
   return projectSecrets
 }
 
-export const createProject = async (dataDto: CreateProjectDto, requestor: UserDto, requestId: Log['requestId']) => {
+export const createProject = async (dataDto: CreateProjectDto, requestor: UserDto, requestId: string) => {
   // Pré-requis
   const owner = await getUser(requestor)
   const organization = await getOrganizationById(dataDto.organizationId)
+  if (!organization) throw new NotFoundError('Organisation introuvable')
   await checkCreateProject(owner, organization.name, dataDto, requestId)
 
   // Actions
@@ -142,7 +152,7 @@ export const createProject = async (dataDto: CreateProjectDto, requestor: UserDt
     await lockProject(project.id)
     const projectData: CreateProjectExecArgs = {
       project: project.name,
-      description: project.description === '' ? null : project.description,
+      description: !project.description ? undefined : project.description,
       organization: organization.name,
       owner,
     }
@@ -168,6 +178,7 @@ export const createProject = async (dataDto: CreateProjectDto, requestor: UserDt
     await unlockProjectIfNotFailed(project.id)
     const publicClusters = await getPublicClusters()
     const projectInfos = await getProjectInfos(project.id)
+    if (!projectInfos) throw new NotFoundError('Projet introuvable')
     projectInfos.clusters = projectInfos.clusters.concat(publicClusters)
 
     return { ...projectInfos, externalServices: projectServices(projectInfos) }
@@ -183,9 +194,10 @@ export const updateProject = async (data: UpdateProjectDto, projectId: Project['
 
   // Pré-requis
   let project = await getProject(projectId, requestor.id)
-  if (!project) throw new NotFoundError('Projet introuvable', undefined)
-  if (project.locked) throw new ForbiddenError(projectIsLockedInfo, undefined)
+  if (!project) throw new NotFoundError('Projet introuvable')
+  if (project.locked) throw new ForbiddenError(projectIsLockedInfo)
   Object.keys(data).forEach(key => {
+    // @ts-ignore
     project[key] = data[key]
   })
 
@@ -197,10 +209,13 @@ export const updateProject = async (data: UpdateProjectDto, projectId: Project['
     await lockProject(project.id)
     await updateProjectQuery(projectId, dataFiltered)
     project = await getProjectInfosQuery(projectId)
+    if (!project) throw new NotFoundError('Projet introuvable')
 
     const projectData: UpdateProjectExecArgs = {
       project: project.name,
-      description: project.description === '' ? null : project.description,
+      description: !project.description
+        ? undefined
+        : project.description,
       status: project.status,
       organization: project.organization.name,
     }
@@ -213,7 +228,7 @@ export const updateProject = async (data: UpdateProjectDto, projectId: Project['
     await updateProjectCreated(project.id)
     return unlockProjectIfNotFailed(project.id)
   } catch (error) {
-    await updateProjectFailed(project.id)
+    await updateProjectFailed(projectId)
     throw new Error(error?.message)
   }
 }
@@ -221,9 +236,10 @@ export const updateProject = async (data: UpdateProjectDto, projectId: Project['
 export const archiveProject = async (projectId: Project['id'], requestor: UserDto, requestId: Log['requestId']) => {
   // Pré-requis
   const project = await getProjectInfosAndRepos(projectId)
-  const owner = await getSingleOwnerByProjectId(project.id)
-
   if (!project) throw new NotFoundError('Projet introuvable')
+
+  const owner = await getSingleOwnerByProjectId(project.id)
+  if (!owner) throw new NotFoundError('Souscripteur introuvable')
 
   const insufficientRoleErrorMessage = checkInsufficientRoleInProject(requestor.id, { roles: project.roles, minRole: 'owner' })
   // @ts-ignore
@@ -245,10 +261,16 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
     let environments = await getProjectPartialEnvironments({ projectId })
     for (const environment of project.environments) {
       const cluster = await getClusterById(environment.clusterId)
+      if (!cluster) throw new NotFoundError('Cluster introuvable')
+      const quotaStage = await getQuotaStageById(environment.quotaStageId)
+      if (!quotaStage) throw new NotFoundError('Association Quota - Type d\'environnement introuvable')
+      const stage = await getStageById(quotaStage.stageId)
+      if (!stage) throw new NotFoundError('Type d\'environnement introuvable')
 
       // Supprimer l'environnement
       const envData = {
         environment: environment.name,
+        stage: stage.name,
         environments,
         project: project.name,
         organization: project.organization.name,
@@ -270,6 +292,7 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
 
     // #region Suppression repositories --
     for (const repo of repositories) {
+      // @ts-ignore
       const result = await hooks.deleteRepository.execute({
         environments: project.environments?.map(environment => environment?.name),
         project: project.name,

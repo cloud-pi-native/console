@@ -1,4 +1,4 @@
-import { BadRequestError, ForbiddenError, UnprocessableContentError } from '@/utils/errors.js'
+import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import type { Project, User, Environment, Permission, Log } from '@prisma/client'
 import { addLogs, deletePermission as deletePermissionQuery, getEnvironmentByIdWithCluster, getEnvironmentPermissions as getEnvironmentPermissionsQuery, getPermissionByUserIdAndEnvironmentId, getProjectInfos, getQuotaStageById, getSingleOwnerByProjectId, getStageById, getUserById, setPermission as setPermissionQuery, updatePermission as updatePermissionQuery } from '@/resources/queries-index.js'
 import { checkInsufficientRoleInProject, checkRoleAndLocked } from '@/utils/controller.js'
@@ -17,7 +17,7 @@ export const preventUpdatingOwnerPermission = async (
   action: Action = Action.update,
 ) => {
   const owner = await getSingleOwnerByProjectId(projectId)
-  if (userId === owner.id) throw new ForbiddenError(`La permission du owner du projet ne peut être ${action}`)
+  if (userId === owner?.id) throw new ForbiddenError(`La permission du owner du projet ne peut être ${action}`)
 }
 
 export const getEnvironmentPermissions = async (
@@ -26,6 +26,7 @@ export const getEnvironmentPermissions = async (
   environmentId: Environment['id'],
 ) => {
   const roles = (await getProjectInfos(projectId))?.roles
+  // @ts-ignore
   const errorMessage = checkInsufficientRoleInProject(userId, { roles })
   if (errorMessage) throw new ForbiddenError(errorMessage, undefined)
   return getEnvironmentPermissionsQuery(environmentId)
@@ -64,6 +65,7 @@ export const setPermission = async (
   const results = await hooks.setEnvPermission.execute({
     environment: environment.name,
     stage: stage.name,
+    // @ts-ignore
     cluster: environment.cluster,
     organization: project.organization.name,
     permissions: {
@@ -116,6 +118,7 @@ export const updatePermission = async (
   const results = await hooks.setEnvPermission.execute({
     environment: environment.name,
     stage: stage.name,
+    // @ts-ignore
     cluster: environment.cluster,
     organization: project.organization.name,
     permissions: {
@@ -140,13 +143,17 @@ export const deletePermission = async (
   requestId: Log['requestId'],
 ) => {
   const environment = await getEnvironmentByIdWithCluster(environmentId)
+  if (!environment) throw new NotFoundError('Environnement introuvable')
   const project = await getProjectInfos(environment.projectId)
+  if (!project) throw new NotFoundError('Projet introuvable')
   await preventUpdatingOwnerPermission(project.id, userId, Action.delete)
   const requestorPermission = await getPermissionByUserIdAndEnvironmentId(requestorId, environmentId)
   if (!requestorPermission?.length) throw new ForbiddenError('Vous n\'avez pas de droits sur cet environnement')
   const user = await getUserById(userId)
+  if (!user) throw new NotFoundError('Utilisateur introuvable')
   const results = await hooks.setEnvPermission.execute({
     environment: environment.name,
+    // @ts-ignore
     cluster: environment.cluster,
     organization: project.organization.name,
     permissions: {

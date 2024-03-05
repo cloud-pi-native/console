@@ -317,6 +317,7 @@ export const patchProjectSchema = {
     properties: {
       lock: { type: 'boolean' },
     },
+    required: ['lock'],
   },
   response: {
     200: {},

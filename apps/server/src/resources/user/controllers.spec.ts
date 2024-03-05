@@ -159,12 +159,14 @@ describe('User routes', () => {
       const projectInfos = createRandomDbSetup({}).project
       projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
       projectInfos.locked = true
+      const userToUpdate = projectInfos.roles[0]
+      const userUpdated = { ...userToUpdate, role: 'user' }
 
       prisma.project.findUnique.mockResolvedValue(projectInfos)
 
       const response = await app.inject()
         .put(`/api/v1/projects/${projectInfos.id}/users/thisIsAnId`)
-        .body({})
+        .body(userUpdated)
         .end()
 
       expect(response.statusCode).toEqual(403)

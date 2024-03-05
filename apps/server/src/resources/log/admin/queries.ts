@@ -1,4 +1,4 @@
-import type { Log, User } from '@prisma/client'
+import type { Log, Prisma, User } from '@prisma/client'
 import prisma from '@/prisma.js'
 
 // SELECT
@@ -29,7 +29,7 @@ export const addLogs = async (action: Log['action'], data: Log['data'], userId: 
     data: {
       action,
       userId,
-      data,
+      data: data as Prisma.JsonObject,
       requestId,
     },
   })
