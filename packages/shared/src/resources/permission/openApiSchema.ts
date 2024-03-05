@@ -79,6 +79,7 @@ export const updatePermissionSchema = {
   body: {
     type: 'object',
     properties: setPermissionDto,
+    required: ['userId', 'level'],
   },
   response: {
     200: { $ref: 'permission#' },

@@ -37,6 +37,7 @@ const router = async (app: FastifyInstance, _opt) => {
     },
     async (req, res) => {
       const requestor = req.session.user
+      // @ts-ignore
       delete requestor.groups
 
       const projectsInfos = await getUserProjects(requestor)
@@ -109,18 +110,21 @@ const router = async (app: FastifyInstance, _opt) => {
     },
     async (req, res) => {
       const requestor = req.session.user
+      // @ts-ignore
       delete requestor.groups
       const data = req.body
 
       const project = await createProject(data, requestor, req.id)
-      addReqLogs({
-        req,
-        description: 'Projet créé avec succès',
-        extras: {
-          projectId: project.id,
-        },
-      })
-      sendCreated(res, project)
+      if (project.id) {
+        addReqLogs({
+          req,
+          description: 'Projet créé avec succès',
+          extras: {
+            projectId: project.id,
+          },
+        })
+        sendCreated(res, project)
+      }
     })
 
   // Mettre à jour un projet

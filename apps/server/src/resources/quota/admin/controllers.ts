@@ -69,7 +69,7 @@ const router = async (app: FastifyInstance, _opt) => {
         req,
         description: 'Associations quota / types d\'environnement mises à jour avec succès',
         extras: {
-          quotaStages: quotaStages.length + '',
+          quotaStages: quotaStages?.length + '',
         },
       })
 
