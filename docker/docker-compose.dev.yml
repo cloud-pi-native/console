@@ -98,7 +98,7 @@ services:
             - node_modules/
         - action: sync
           path: ../plugins
-          target: /plugins
+          target: /app/plugins
           ignore:
             - node_modules/
         - action: rebuild
