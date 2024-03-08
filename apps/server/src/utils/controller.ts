@@ -24,7 +24,7 @@ type IsAllowed = {
   minRole?: ProjectRoles
 }
 
-type SearchOptions = RequireOnlyOne<IsAllowed, 'userList' | 'roles'>
+export type SearchOptions = RequireOnlyOne<IsAllowed, 'userList' | 'roles'>
 
 type ErrorMessagePredicate = () => string | undefined
 export const getErrorMessage = (...fns: ErrorMessagePredicate[]) => {

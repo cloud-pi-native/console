@@ -55,16 +55,3 @@ export const deletePermissionById = async (permissionId: Permission['id']) => {
 export const _dropPermissionsTable = async () => {
   await prisma.permission.deleteMany({})
 }
-
-export const _createPermission = async (data: Parameters<typeof prisma.permission.upsert>[0]['create']) => {
-  await prisma.permission.upsert({
-    create: data,
-    update: data,
-    where: {
-      userId_environmentId: {
-        environmentId: data.environmentId,
-        userId: data.userId,
-      },
-    },
-  })
-}

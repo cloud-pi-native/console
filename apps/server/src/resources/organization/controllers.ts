@@ -4,7 +4,6 @@ import {
   getActiveOrganizations,
 } from './business.js'
 import type { FastifyInstance } from 'fastify'
-
 import { getActiveOrganizationsSchema } from '@cpn-console/shared'
 
 const router = async (app: FastifyInstance, _opt) => {
@@ -14,6 +13,7 @@ const router = async (app: FastifyInstance, _opt) => {
     },
     async (req, res) => {
       const requestor = req.session.user
+      // @ts-ignore
       delete requestor.groups
 
       const organizations = await getActiveOrganizations(requestor)

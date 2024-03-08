@@ -4,54 +4,17 @@ import {
   sendCreated,
   sendNoContent,
 } from '@/utils/response.js'
+import { initializeEnvironmentSchema, updateEnvironmentSchema, deleteEnvironmentSchema } from '@cpn-console/shared'
 import {
-  getEnvironmentByIdSchema, initializeEnvironmentSchema, updateEnvironmentSchema, deleteEnvironmentSchema,
-} from '@cpn-console/shared'
-import {
-  getEnvironmentInfos,
   createEnvironment,
   updateEnvironment,
   deleteEnvironment,
-  checkGetEnvironment,
 } from './business.js'
 import type { FastifyInstance } from 'fastify'
 
 import { FromSchema } from 'json-schema-to-ts'
 
 const router = async (app: FastifyInstance, _opt) => {
-  // Récupérer un environnement par son id
-  // TODO #541 : ce controller n'est pas utilisé
-  app.get<{
-    Params: FromSchema<typeof getEnvironmentByIdSchema['params']>,
-  }>('/:projectId/environments/:environmentId',
-    {
-      schema: getEnvironmentByIdSchema,
-    },
-    async (req, res) => {
-      const environmentId = req.params.environmentId
-      const userId = req.session.user.id
-      const projectId = req.params.projectId
-
-      // appel business 1 : récup données
-      const env = await getEnvironmentInfos(environmentId)
-
-      // appel business 2 : check pré-requis
-      checkGetEnvironment(env, userId)
-
-      // Nettoyage des clés
-      delete env.project
-
-      addReqLogs({
-        req,
-        description: 'Environnement récupéré avec succès',
-        extras: {
-          environmentId,
-          projectId,
-        },
-      })
-      sendOk(res, env)
-    })
-
   // Créer un environnement
   app.post<{
     Body: FromSchema<typeof initializeEnvironmentSchema['body']>,
@@ -108,16 +71,17 @@ const router = async (app: FastifyInstance, _opt) => {
         requestId: req.id,
       })
 
-      addReqLogs({
-        req,
-        description: 'Environnement mis à jour avec succès',
-        extras: {
-          environmentId,
-          projectId: environment.projectId,
-        },
-      })
-
-      sendOk(res, environment)
+      if (environment) {
+        addReqLogs({
+          req,
+          description: 'Environnement mis à jour avec succès',
+          extras: {
+            environmentId,
+            projectId: environment.projectId,
+          },
+        })
+        sendOk(res, environment)
+      }
     })
 
   // Supprimer un environnement

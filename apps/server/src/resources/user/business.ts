@@ -1,9 +1,9 @@
 import { getOrCreateUser, addLogs, addUserToProject as addUserToProjectQuery, createUser, deletePermission, getMatchingUsers as getMatchingUsersQuery, getProjectInfos as getProjectInfosQuery, getProjectUsers as getProjectUsersQuery, getUserByEmail, getUserById, lockProject, removeUserFromProject as removeUserFromProjectQuery, updateUserProjectRole as updateUserProjectRoleQuery, getRolesByProjectId } from '@/resources/queries-index.js'
 import type { User, Project, Log } from '@prisma/client'
 import { hooks, type PluginResult } from '@cpn-console/hooks'
-import { checkInsufficientRoleInProject } from '@/utils/controller.js'
+import { type SearchOptions, checkInsufficientRoleInProject } from '@/utils/controller.js'
 import { unlockProjectIfNotFailed, validateSchema } from '@/utils/business.js'
-import { BadRequestError, ForbiddenError } from '@/utils/errors.js'
+import { BadRequestError, ForbiddenError, NotFoundError } from '@/utils/errors.js'
 import { type AsyncReturnType, type ProjectRoles, projectIsLockedInfo, UserSchema, instanciateSchema } from '@cpn-console/shared'
 
 export type UserDto = Pick<User, 'email' | 'firstName' | 'lastName' | 'id'>
@@ -13,7 +13,8 @@ export const getUser = async (user: UserDto) => {
   return getOrCreateUser(user)
 }
 
-export const checkProjectRole = async (userId: User['id'], { userList = undefined, roles = undefined, minRole }) => {
+export const checkProjectRole = async (userId: User['id'], { userList = undefined, roles = undefined, minRole }: SearchOptions) => {
+  // @ts-ignore
   const insufficientRoleErrorMessage = checkInsufficientRoleInProject(userId, { userList, minRole, roles })
   if (insufficientRoleErrorMessage) throw new ForbiddenError(insufficientRoleErrorMessage, undefined)
 }
@@ -24,13 +25,7 @@ export const checkProjectLocked = async (project: Project) => {
 
 export const getProjectInfos = async (projectId: Project['id']) => getProjectInfosQuery(projectId)
 
-export const getProjectUsers = async (projectId: Project['id']) => {
-  try {
-    return getProjectUsersQuery(projectId)
-  } catch (error) {
-    throw new BadRequestError(`Le projet ayant pour id ${projectId} n'existe pas`)
-  }
-}
+export const getProjectUsers = async (projectId: Project['id']) => getProjectUsersQuery(projectId)
 
 export const getMatchingUsers = async (letters: string) => getMatchingUsersQuery(letters)
 
@@ -51,7 +46,7 @@ export const addUserToProject = async (
     await addLogs('Retrieve User By Email', results, userId, requestId)
 
     const retrievedUser = results.results.keycloak?.user
-    if (!retrievedUser) throw new BadRequestError('Utilisateur introuvable', undefined)
+    if (!retrievedUser) throw new NotFoundError('Utilisateur introuvable', undefined)
 
     // keep only keys allowed in model
     const userFromModel = instanciateSchema(UserSchema, undefined)

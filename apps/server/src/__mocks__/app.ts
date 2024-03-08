@@ -24,6 +24,7 @@ vi.mock('@cpn-console/hooks', async () => {
   }
 
   return {
+    // @ts-ignore
     ...hooks,
     services: {
       getForProject: () => { },

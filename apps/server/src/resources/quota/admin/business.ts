@@ -1,4 +1,4 @@
-import { BadRequestError, DsoError } from '@/utils/errors.js'
+import { BadRequestError, DsoError, NotFoundError } from '@/utils/errors.js'
 import {
   getQuotaByName,
   createQuota as createQuotaQuery,
@@ -17,24 +17,46 @@ import { validateSchema } from '@/utils/business.js'
 export const getQuotaAssociatedEnvironments = async (quotaId: QuotaParams['quotaId']) => {
   try {
     const quota = await getQuotaById(quotaId)
+    if (!quota) throw new NotFoundError('Quota introuvable')
 
-    let environments = []
+    let environments: {
+      project: {
+        name: string,
+        organization: {
+          name: string,
+        },
+        roles: {
+          role: string,
+          user: {
+            email: string,
+          }
+        }[],
+      },
+      name: string,
+      stage?: string,
+    }[] = []
     for (const quotaStage of quota.quotaStage) {
       const stage = await getStageById(quotaStage.stageId)
       environments = [...environments, ...(await getEnvironmentsByQuotaStageId(quotaStage.id))
-        .map(environment => ({ ...environment, stage: stage.name }))]
+        .map(environment => ({ ...environment, stage: stage?.name }))]
     }
-    environments = environments.map(environment => {
-      return ({
+    const mappedEnvironments: {
+      project?: string,
+      organization?: string,
+      name?: string,
+      stage?: string,
+      owner?: string,
+    }[] = environments.map(environment => {
+      return {
         organization: environment?.project?.organization?.name,
         project: environment?.project?.name,
         name: environment?.name,
         stage: environment?.stage,
         owner: environment?.project?.roles?.find(role => role?.role === 'owner')?.user?.email,
-      })
+      }
     })
 
-    return environments
+    return mappedEnvironments
   } catch (error) {
     throw new Error(error?.message)
   }
@@ -73,32 +95,36 @@ export const updateQuotaPrivacy = async (quotaId: QuotaParams['quotaId'], isPriv
 
 export const updateQuotaStage = async (data: UpdateQuotaStageDto) => {
   try {
-    let quotaStages: QuotaStageModel[] = []
+    let quotaStages: QuotaStageModel[] | undefined = []
 
     // From quotaId and stageIds
     if (data.quotaId && data.stageIds) {
       // Remove quotaStages
-      const dbQuotaStages = (await getQuotaById(data.quotaId)).quotaStage
-      const quotaStagesToRemove = dbQuotaStages.filter(dbQuotaStage => !data.stageIds.includes(dbQuotaStage.stageId))
-      for (const quotaStageToRemove of quotaStagesToRemove) {
-        await deleteQuotaStage(quotaStageToRemove.id)
+      const dbQuotaStages = (await getQuotaById(data.quotaId))?.quotaStage
+      const quotaStagesToRemove = dbQuotaStages?.filter(dbQuotaStage => !data.stageIds?.includes(dbQuotaStage.stageId))
+      if (quotaStagesToRemove) {
+        for (const quotaStageToRemove of quotaStagesToRemove) {
+          await deleteQuotaStage(quotaStageToRemove.id)
+        }
       }
       // Create quotaStages
       await linkQuotaToStages(data.quotaId, data.stageIds)
-      quotaStages = (await getQuotaById(data.quotaId)).quotaStage
+      quotaStages = (await getQuotaById(data.quotaId))?.quotaStage
     }
 
     // From stageId and quotaIds
     if (data.stageId && data.quotaIds) {
       // Remove quotaStages
-      const dbQuotaStages = (await getStageById(data.stageId)).quotaStage
-      const quotaStagesToRemove = dbQuotaStages.filter(dbQuotaStage => !data.quotaIds.includes(dbQuotaStage.quotaId))
-      for (const quotaStageToRemove of quotaStagesToRemove) {
-        await deleteQuotaStage(quotaStageToRemove.id)
+      const dbQuotaStages = (await getStageById(data.stageId))?.quotaStage
+      const quotaStagesToRemove = dbQuotaStages?.filter(dbQuotaStage => !data.quotaIds?.includes(dbQuotaStage.quotaId))
+      if (quotaStagesToRemove) {
+        for (const quotaStageToRemove of quotaStagesToRemove) {
+          await deleteQuotaStage(quotaStageToRemove.id)
+        }
       }
       // Create quotaStages
       await linkStageToQuotas(data.stageId, data.quotaIds)
-      quotaStages = (await getStageById(data.stageId)).quotaStage
+      quotaStages = (await getStageById(data.stageId))?.quotaStage
     }
 
     return quotaStages

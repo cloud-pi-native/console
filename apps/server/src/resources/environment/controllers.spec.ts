@@ -1,7 +1,7 @@
 import prisma from '../../__mocks__/prisma.js'
 import app, { getRequestor, setRequestor } from '../../__mocks__/app.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
-import { createRandomDbSetup, getRandomEnv, getRandomUser, getRandomRole, getRandomPerm, getRandomLog } from '@cpn-console/test-utils'
+import { createRandomDbSetup, getRandomEnv, getRandomUser, getRandomRole, getRandomLog } from '@cpn-console/test-utils'
 import { getConnection, closeConnections } from '../../connect.js'
 import { projectIsLockedInfo } from '@cpn-console/shared'
 
@@ -21,68 +21,6 @@ describe('Environment routes', () => {
     vi.clearAllMocks()
   })
 
-  // GET
-  describe('getEnvironmentByIdController', () => {
-    it('Should retrieve an environment by its id', async () => {
-      const projectInfos = createRandomDbSetup({}).project
-      projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
-      const envToGet = projectInfos.environments[0]
-      const envInfos = {
-        ...envToGet,
-        project: projectInfos,
-        permissions: [getRandomPerm(envToGet.id, requestor)],
-      }
-
-      prisma.environment.findUnique.mockResolvedValueOnce(envInfos)
-
-      const response = await app.inject()
-        .get(`/api/v1/projects/${projectInfos.id}/environments/${envToGet.id}`)
-        .end()
-
-      expect(response.json()).toStrictEqual(envInfos)
-      expect(response.statusCode).toEqual(200)
-    })
-
-    it('Should not retrieve an environment if not project member', async () => {
-      const projectInfos = createRandomDbSetup({}).project
-      const envToGet = projectInfos.environments[0]
-      const envInfos = {
-        ...envToGet,
-        project: projectInfos,
-      }
-
-      prisma.environment.findUnique.mockResolvedValueOnce(envInfos)
-
-      const response = await app.inject()
-        .get(`/api/v1/projects/${projectInfos.id}/environments/${envInfos.id}`)
-        .end()
-
-      expect(response.statusCode).toEqual(403)
-      expect(response.body).toBeDefined()
-      expect(response.json().message).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
-    })
-
-    it('Should not retrieve an environment if requestor has no permission', async () => {
-      const projectInfos = createRandomDbSetup({}).project
-      projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
-      const envToGet = projectInfos.environments[0]
-      const envInfos = {
-        ...envToGet,
-        project: projectInfos,
-      }
-
-      prisma.environment.findUnique.mockResolvedValueOnce(envInfos)
-
-      const response = await app.inject()
-        .get(`/api/v1/projects/${projectInfos.id}/environments/${envInfos.id}`)
-        .end()
-
-      expect(response.statusCode).toEqual(403)
-      expect(response.body).toBeDefined()
-      expect(response.json().message).toEqual('Vous n\'avez pas les droits suffisants pour requêter cet environnement')
-    })
-  })
-
   // POST
   describe('initializeEnvironmentController', () => {
     it('Should create an environment', async () => {
@@ -90,6 +28,7 @@ describe('Environment routes', () => {
       const projectInfos = randomDbSetUp.project
       projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
       const quotaStage = randomDbSetUp?.stages[0]?.quotaStage[0]
+      const quota = randomDbSetUp.quotas.find(quota => quotaStage.quotaId === quota.id)
       const envToAdd = getRandomEnv('int0', projectInfos.id, quotaStage?.id, projectInfos?.clusters[0]?.id)
       const envInfos = { ...envToAdd, project: projectInfos }
       const log = getRandomLog('Create Environment', requestor.id)
@@ -104,6 +43,7 @@ describe('Environment routes', () => {
       prisma.project.findUnique.mockResolvedValue(projectInfos)
       prisma.cluster.findMany.mockResolvedValue(projectInfos?.clusters)
       prisma.quotaStage.findUnique.mockResolvedValue(quotaStage)
+      prisma.quota.findUnique.mockResolvedValue(quota)
       prisma.stage.findUnique.mockResolvedValue(randomDbSetUp?.stages[0])
       prisma.project.update.mockResolvedValue(projectInfos)
       prisma.environment.create.mockReturnValue(envInfos)
@@ -124,12 +64,17 @@ describe('Environment routes', () => {
     })
 
     it('Should not create an environment if not project member', async () => {
-      const projectInfos = createRandomDbSetup({}).project
+      const randomDbSetUp = createRandomDbSetup({})
+      const projectInfos = randomDbSetUp.project
       const envToAdd = getRandomEnv('recette', projectInfos.id)
+      const quotaStage = randomDbSetUp?.stages[0]?.quotaStage[0]
+      const quota = randomDbSetUp.quotas.find(quota => quotaStage.quotaId === quota.id)
 
       prisma.user.findUnique.mockResolvedValueOnce(getRequestor())
       prisma.project.findUnique.mockResolvedValue(projectInfos)
       prisma.cluster.findMany.mockResolvedValue(projectInfos?.clusters)
+      prisma.quotaStage.findUnique.mockResolvedValue(quotaStage)
+      prisma.quota.findUnique.mockResolvedValue(quota)
 
       const response = await app.inject()
         .post(`/api/v1/projects/${projectInfos.id}/environments`)
@@ -142,13 +87,18 @@ describe('Environment routes', () => {
     })
 
     it('Should not create an environment if name is already present', async () => {
-      const projectInfos = createRandomDbSetup({}).project
+      const randomDbSetUp = createRandomDbSetup({})
+      const projectInfos = randomDbSetUp.project
       projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
       const envToAdd = projectInfos.environments[0]
+      const quotaStage = randomDbSetUp?.stages[0]?.quotaStage[0]
+      const quota = randomDbSetUp.quotas.find(quota => quotaStage.quotaId === quota.id)
 
       prisma.user.findUnique.mockResolvedValueOnce(getRequestor())
       prisma.project.findUnique.mockResolvedValue(projectInfos)
       prisma.cluster.findMany.mockResolvedValue(projectInfos.clusters)
+      prisma.quotaStage.findUnique.mockResolvedValue(quotaStage)
+      prisma.quota.findUnique.mockResolvedValue(quota)
 
       const response = await app.inject()
         .post(`/api/v1/projects/${projectInfos.id}/environments`)
@@ -161,13 +111,18 @@ describe('Environment routes', () => {
     })
 
     it('Should not create an environment if no cluster available', async () => {
-      const projectInfos = createRandomDbSetup({}).project
+      const randomDbSetUp = createRandomDbSetup({})
+      const projectInfos = randomDbSetUp.project
       projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
       const envToAdd = getRandomEnv('develop', projectInfos.id)
+      const quotaStage = randomDbSetUp?.stages[0]?.quotaStage[0]
+      const quota = randomDbSetUp.quotas.find(quota => quotaStage.quotaId === quota.id)
 
       prisma.user.findUnique.mockResolvedValueOnce(getRequestor())
       prisma.project.findUnique.mockResolvedValue(projectInfos)
       prisma.cluster.findMany.mockResolvedValue(projectInfos.clusters)
+      prisma.quotaStage.findUnique.mockResolvedValue(quotaStage)
+      prisma.quota.findUnique.mockResolvedValue(quota)
 
       const response = await app.inject()
         .post(`/api/v1/projects/${projectInfos.id}/environments`)
@@ -185,12 +140,14 @@ describe('Environment routes', () => {
       projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
       const quotaStage = randomDbSetUp?.stages[0]?.quotaStage[0]
       quotaStage.status = 'pendingDelete'
+      const quota = randomDbSetUp.quotas.find(quota => quotaStage.quotaId === quota.id)
       const envToAdd = getRandomEnv('integ', projectInfos.id, quotaStage?.id, projectInfos?.clusters[0]?.id)
 
       prisma.user.findUnique.mockResolvedValueOnce(getRequestor())
       prisma.project.findUnique.mockResolvedValue(projectInfos)
       prisma.cluster.findMany.mockResolvedValue(projectInfos.clusters)
       prisma.quotaStage.findUnique.mockResolvedValue(quotaStage)
+      prisma.quota.findUnique.mockResolvedValue(quota)
       prisma.stage.findUnique.mockResolvedValue(randomDbSetUp?.stages[0])
 
       const response = await app.inject()
@@ -204,13 +161,18 @@ describe('Environment routes', () => {
     })
 
     it('Should not create an environment if project locked', async () => {
-      const projectInfos = createRandomDbSetup({}).project
+      const randomDbSetUp = createRandomDbSetup({})
+      const projectInfos = randomDbSetUp.project
       projectInfos.locked = true
       projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
+      const quotaStage = randomDbSetUp?.stages[0]?.quotaStage[0]
+      const quota = randomDbSetUp.quotas.find(quota => quotaStage.quotaId === quota.id)
 
       prisma.user.findUnique.mockResolvedValueOnce(getRequestor())
       prisma.project.findUnique.mockResolvedValue(projectInfos)
       prisma.cluster.findMany.mockResolvedValue(projectInfos.clusters)
+      prisma.quotaStage.findUnique.mockResolvedValue(quotaStage)
+      prisma.quota.findUnique.mockResolvedValue(quota)
 
       const response = await app.inject()
         .post(`/api/v1/projects/${projectInfos.id}/environments`)
@@ -243,6 +205,7 @@ describe('Environment routes', () => {
       const projectInfos = randomDbSetUp.project
       projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
       const newQuotaStage = randomDbSetUp?.stages[0]?.quotaStage[0]
+      const quota = randomDbSetUp.quotas.find(quota => newQuotaStage.quotaId === quota.id)
       const envUpdated = getRandomEnv('int-0', projectInfos.id, newQuotaStage?.id, projectInfos?.clusters[0]?.id)
       const envInfos = { ...envUpdated, project: projectInfos }
       const log = getRandomLog('Update Environment', requestor.id)
@@ -251,6 +214,7 @@ describe('Environment routes', () => {
       prisma.project.findUnique.mockResolvedValue(projectInfos)
       prisma.cluster.findMany.mockResolvedValue(projectInfos?.clusters)
       prisma.quotaStage.findUnique.mockResolvedValue(newQuotaStage)
+      prisma.quota.findUnique.mockResolvedValue(quota)
       prisma.stage.findUnique.mockResolvedValue(randomDbSetUp?.stages[0])
       prisma.project.update.mockResolvedValue(projectInfos)
       prisma.environment.update.mockReturnValue(envInfos)

@@ -52,11 +52,13 @@ export const createCluster = async (data: CreateClusterDto, userId: User['id'], 
     // @ts-ignore
     const clusterCreated = await createClusterQuery(clusterData, { user, cluster })
 
-    if (data.privacy === ClusterPrivacy.DEDICATED) {
+    if (data.privacy === ClusterPrivacy.DEDICATED && projectIds) {
       await linkClusterToProjects(clusterCreated.id, projectIds)
     }
 
-    await linkClusterToStages(clusterCreated.id, stageIds)
+    if (stageIds) {
+      await linkClusterToStages(clusterCreated.id, stageIds)
+    }
 
     // @ts-ignore
     const results = await hooks.createCluster.execute({ ...clusterCreated, user, cluster })
@@ -111,9 +113,11 @@ export const updateCluster = async (data: FromSchema<typeof updateClusterSchema[
         await linkClusterToProjects(clusterId, projectIds)
       }
 
-      for (const project of dbProjects) {
-        if (!projectIds?.includes(project.id)) {
-          await removeClusterFromProject(clusterUpdated.id, project.id)
+      if (dbProjects) {
+        for (const project of dbProjects) {
+          if (!projectIds?.includes(project.id)) {
+            await removeClusterFromProject(clusterUpdated.id, project.id)
+          }
         }
       }
 
@@ -121,9 +125,11 @@ export const updateCluster = async (data: FromSchema<typeof updateClusterSchema[
         await linkClusterToStages(clusterId, stageIds)
 
         const dbStages = await getStagesByClusterId(clusterId)
-        for (const stage of dbStages) {
-          if (!stageIds.includes(stage.id)) {
-            await removeClusterFromStage(clusterUpdated.id, stage.id)
+        if (dbStages) {
+          for (const stage of dbStages) {
+            if (!stageIds.includes(stage.id)) {
+              await removeClusterFromStage(clusterUpdated.id, stage.id)
+            }
           }
         }
       }
@@ -143,6 +149,7 @@ export const deleteCluster = async (clusterId: Cluster['id'], userId: User['id']
     if (environments?.length) throw new BadRequestError('Impossible de supprimer le cluster, des environnements en activité y sont déployés', { extras: environments })
 
     const cluster = await getClusterById(clusterId)
+    if (!cluster) throw new NotFoundError('Cluster introuvable')
 
     const results = await hooks.deleteCluster.execute({ secretName: cluster.secretName })
     // @ts-ignore
