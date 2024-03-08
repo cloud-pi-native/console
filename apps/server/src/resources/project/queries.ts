@@ -218,6 +218,64 @@ export const getRolesByProjectId = async (projectId: Project['id']) => {
   })
 }
 
+export const getHookProjectInfos = async (id: Project['id']) => await prisma.project.findUniqueOrThrow({
+  where: {
+    id,
+  },
+  select: {
+    id: true,
+    name: true,
+    status: true,
+    description: true,
+    organization: {
+      select: {
+        id: true,
+        label: true,
+        name: true,
+      },
+    },
+    roles: {
+      select: {
+        user: true,
+        role: true,
+        userId: true,
+      },
+    },
+    clusters: {
+      select: {
+        id: true,
+        infos: true,
+        label: true,
+        privacy: true,
+        secretName: true,
+        kubeconfig: true,
+        clusterResources: true,
+      },
+    },
+    environments: {
+      include: {
+        permissions: true,
+        quotaStage: {
+          include: {
+            quota: true,
+            stage: true,
+          },
+        },
+      },
+    },
+    repositories: {
+      select: {
+        id: true,
+        externalRepoUrl: true,
+        isInfra: true,
+        isPrivate: true,
+        status: true,
+        internalRepoName: true,
+      },
+    },
+  },
+})
+
 // CREATE
 export const initializeProject = async ({ name, organizationId, description = '', ownerId }: { name: Project['name'], organizationId: Organization['id'], description?: Project['description'], ownerId: User['id'] }) => {
   return prisma.project.create({
@@ -225,8 +283,8 @@ export const initializeProject = async ({ name, organizationId, description = ''
       name,
       organizationId,
       description,
-      status: AllStatus.INITIALIZING,
-      locked: true,
+      status: AllStatus.CREATED,
+      locked: false,
       services: {},
       roles: {
         create: {

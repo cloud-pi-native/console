@@ -1,5 +1,6 @@
-import type { Log, Prisma, User } from '@prisma/client'
+import type { Log, User } from '@prisma/client'
 import prisma from '@/prisma.js'
+import { exclude } from '@cpn-console/shared'
 
 // SELECT
 export const getAllLogsForUser = async (user: User, offset = 0) => {
@@ -24,12 +25,13 @@ export const getAllLogs = async ({ offset = 0, limit = 5 }: { offset?: number, l
 }
 
 // CREATE
-export const addLogs = async (action: Log['action'], data: Log['data'], userId: User['id'], requestId: string = '') => {
+export const addLogs = async (action: Log['action'], data: Record<string, any>, userId: User['id'], requestId: string = '') => {
+  if (data?.args) delete data?.args
   return prisma.log.create({
     data: {
       action,
       userId,
-      data: data as Prisma.JsonObject,
+      data: exclude(data, ['cluster', 'user', 'newCreds']),
       requestId,
     },
   })

@@ -1,6 +1,5 @@
 import {
   addLogs,
-  archiveProject as archiveProjectQuery,
   deleteEnvironment,
   deleteRepository,
   getClusterById,
@@ -18,16 +17,14 @@ import {
   initializeProject,
   lockProject,
   removeClusterFromProject,
-  updateProjectCreated,
-  updateProjectFailed,
   updateProject as updateProjectQuery,
   updateProjectServices,
 } from '@/resources/queries-index.js'
 import type { Cluster, Environment, Log, Organization, Project, User } from '@prisma/client'
-import { hooks, services, servicesInfos } from '@cpn-console/hooks'
-import type { PluginResult, CreateProjectExecArgs, ProjectBase, UpdateProjectExecArgs } from '@cpn-console/hooks'
+import { hook } from '@/utils/hook-wrapper.js'
+import { type PluginResult, services, servicesInfos } from '@cpn-console/hooks'
 import { checkInsufficientPermissionInEnvironment, checkInsufficientRoleInProject } from '@/utils/controller.js'
-import { unlockProjectIfNotFailed, checkCreateProject as checkCreateProjectPlugins, validateSchema } from '@/utils/business.js'
+import { validateSchema } from '@/utils/business.js'
 import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import {
   type AsyncReturnType,
@@ -75,15 +72,11 @@ export const getUserProjects = async (requestor: UserDto) => {
 
 // Check logic
 export const checkCreateProject = async (
-  owner: User,
   organizationName: Organization['name'],
   data: CreateProjectDto,
-  requestId: string,
 ) => {
   const schemaValidation = ProjectSchema.omit({ id: true, organizationId: true, status: true, locked: true }).safeParse(data)
   validateSchema(schemaValidation)
-
-  await checkCreateProjectPlugins(owner, 'Project', requestId)
 
   const projectSearch = await getProjectByNames({ name: data.name, organizationName })
   if (projectSearch.length > 0) {
@@ -121,21 +114,17 @@ export const getProjectSecrets = async (projectId: string, userId: User['id']) =
   const insufficientRoleErrorMessage = checkInsufficientRoleInProject(userId, { roles: project.roles, minRole: 'owner' })
   if (insufficientRoleErrorMessage) throw new ForbiddenError(insufficientRoleErrorMessage, { description: '', extras: { userId, projectId: project.id } })
 
-  const projectData: ProjectBase = {
-    project: project.name,
-    organization: project.organization.name,
+  const results = await hook.project.getSecrets(project.id)
+  if (results.failed) {
+    throw new Error('Echec de récupération des secrets du projet par les plugins')
   }
 
-  const results = await hooks.getProjectSecrets.execute(projectData)
-  if (results?.failed) throw new Error('Echec de récupération des secrets du projet par les plugins')
-  const projectSecrets = Object.fromEntries(
+  return Object.fromEntries(
     Object.entries(results.results)
       // @ts-ignore
       .filter(([_key, value]) => value.secrets)
       // @ts-ignore
       .map(([key, value]) => [servicesInfos[key]?.title, value.secrets]))
-
-  return projectSecrets
 }
 
 export const createProject = async (dataDto: CreateProjectDto, requestor: UserDto, requestId: string) => {
@@ -143,25 +132,18 @@ export const createProject = async (dataDto: CreateProjectDto, requestor: UserDt
   const owner = await getUser(requestor)
   const organization = await getOrganizationById(dataDto.organizationId)
   if (!organization) throw new NotFoundError('Organisation introuvable')
-  await checkCreateProject(owner, organization.name, dataDto, requestId)
+  await checkCreateProject(organization.name, dataDto)
 
   // Actions
   const project = await initializeProject({ ...dataDto, ownerId: requestor.id })
 
   try {
-    await lockProject(project.id)
-    const projectData: CreateProjectExecArgs = {
-      project: project.name,
-      description: !project.description ? undefined : project.description,
-      organization: organization.name,
-      owner,
-    }
-
-    const results = await hooks.createProject.execute(projectData)
+    const { results } = await hook.project.upsert(project.id)
     // @ts-ignore
     await addLogs('Create Project', results, owner.id, requestId)
-    if (results.failed) throw new Error('Echec de la création du projet par les plugins')
-
+    if (results.failed) {
+      throw new Error('Echec de la création du projet par les plugins')
+    }
     // enregistrement des ids GitLab et Harbor
     // @ts-ignore
     const { gitlab, registry }: { gitlab: PluginResult, registry: PluginResult } = results
@@ -174,8 +156,6 @@ export const createProject = async (dataDto: CreateProjectDto, requestor: UserDt
       },
     }
     await updateProjectServices(project.id, services)
-    await updateProjectCreated(project.id)
-    await unlockProjectIfNotFailed(project.id)
     const publicClusters = await getPublicClusters()
     const projectInfos = await getProjectInfos(project.id)
     if (!projectInfos) throw new NotFoundError('Projet introuvable')
@@ -183,7 +163,6 @@ export const createProject = async (dataDto: CreateProjectDto, requestor: UserDt
 
     return { ...projectInfos, externalServices: projectServices(projectInfos) }
   } catch (error) {
-    await updateProjectFailed(project.id)
     throw new Error(error?.message)
   }
 }
@@ -206,29 +185,18 @@ export const updateProject = async (data: UpdateProjectDto, projectId: Project['
 
   // Actions
   try {
-    await lockProject(project.id)
     await updateProjectQuery(projectId, dataFiltered)
     project = await getProjectInfosQuery(projectId)
     if (!project) throw new NotFoundError('Projet introuvable')
 
-    const projectData: UpdateProjectExecArgs = {
-      project: project.name,
-      description: !project.description
-        ? undefined
-        : project.description,
-      status: project.status,
-      organization: project.organization.name,
-    }
-
-    const results = await hooks.updateProject.execute(projectData)
+    const { results } = await hook.project.upsert(project.id)
     // @ts-ignore
     await addLogs('Update Project', results, requestor.id, requestId)
-    if (results.failed) throw new Error('Echec de la mise à jour du projet par les plugins')
-
-    await updateProjectCreated(project.id)
-    return unlockProjectIfNotFailed(project.id)
+    if (results.failed) {
+      throw new Error('Echec de la mise à jour du projet par les plugins')
+    }
+    return project
   } catch (error) {
-    await updateProjectFailed(projectId)
     throw new Error(error?.message)
   }
 }
@@ -268,23 +236,12 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
       if (!stage) throw new NotFoundError('Type d\'environnement introuvable')
 
       // Supprimer l'environnement
-      const envData = {
-        environment: environment.name,
-        stage: stage.name,
-        environments,
-        project: project.name,
-        organization: project.organization.name,
-        repositories,
-        cluster: {
-          ...cluster,
-          ...cluster.kubeconfig,
-        },
+      const { results } = await hook.project.upsert(project.id)
+      // @ts-ignore
+      await addLogs('Delete Environments', results, requestor.id, requestId)
+      if (results.failed) {
+        throw new UnprocessableContentError('Echec des services à la suppression de l\'environnement')
       }
-      // @ts-ignore
-      const resultsEnv = await hooks.deleteEnvironment.execute(envData)
-      // @ts-ignore
-      await addLogs('Delete Environments', resultsEnv, requestor.id, requestId)
-      if (resultsEnv.failed) throw new UnprocessableContentError('Echec des services à la suppression de l\'environnement')
       await deleteEnvironment(environment.id)
       environments = environments.toSpliced(environments.findIndex(partialEnvironment => partialEnvironment.environment === environment.name), 1)
     }
@@ -292,16 +249,12 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
 
     // #region Suppression repositories --
     for (const repo of repositories) {
+      const { results } = await hook.project.upsert(project.id)
       // @ts-ignore
-      const result = await hooks.deleteRepository.execute({
-        environments: project.environments?.map(environment => environment?.name),
-        project: project.name,
-        organization: project.organization.name,
-        ...repo,
-      })
-      // @ts-ignore
-      await addLogs('Delete Repository', result, requestor.id, requestId)
-      if (result.failed) throw new UnprocessableContentError('Echec des services à la suppression de l\'environnement')
+      await addLogs('Delete Repository', results, requestor.id, requestId)
+      if (results.failed) {
+        throw new UnprocessableContentError('Echec des services à la suppression de l\'environnement')
+      }
       await deleteRepository(repo.id)
     }
     // #endregion Suppression repositories --
@@ -313,19 +266,14 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
     // -- fin - Retrait clusters cibles --
 
     // -- début - Suppression projet --
-    const results = await hooks.archiveProject.execute({
-      organization: project.organization.name,
-      project: project.name,
-      status: 'archived',
-      owner,
-    })
+    const { results } = await hook.project.delete(project.id)
     // @ts-ignore
     await addLogs('Archive Project', results, requestor.id, requestId)
-    if (results.failed) throw new UnprocessableContentError('Echec de la suppression du projet par les plugins')
-    await archiveProjectQuery(projectId)
+    if (results.failed) {
+      throw new UnprocessableContentError('Echec de la suppression du projet par les plugins')
+    }
     // -- fin - Suppression projet --
   } catch (error) {
-    await updateProjectFailed(project.id)
     throw new Error(error?.message)
   }
 }

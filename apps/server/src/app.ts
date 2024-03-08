@@ -47,8 +47,7 @@ const app = fastify(fastifyConf)
       req,
       message,
       ...(isDsoError ? { extras: error.extras } : {}),
-      // @ts-ignore
-      error: isDsoError ? null : error,
+      error: isDsoError ? undefined : error,
     })
   })
 

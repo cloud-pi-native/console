@@ -11,10 +11,6 @@ export const getProjectRepositories = async (projectId: Project['id']) => {
   return prisma.repository.findMany({ where: { projectId } })
 }
 
-export const getInfraProjectRepositories = async (projectId: Project['id']) => {
-  return prisma.repository.findMany({ where: { projectId, isInfra: true } })
-}
-
 type RepositoryCreate = Pick<Repository, 'projectId' | 'internalRepoName' | 'isInfra' | 'isPrivate' | 'externalRepoUrl'> &
   Partial<Pick<Repository, 'externalUserName'>>
 // CREATE
@@ -27,31 +23,17 @@ export const initializeRepository = async ({ projectId, internalRepoName, extern
       externalUserName,
       isInfra,
       isPrivate,
-      status: AllStatus.INITIALIZING,
+      status: AllStatus.CREATED,
     },
   })
 }
 
 // UPDATE
-export const updateRepositoryCreated = async (id: Repository['id']) => {
-  return prisma.repository.update({ where: { id }, data: { status: 'created' } })
-}
-
-export const updateRepositoryFailed = async (id: Repository['id']) => {
-  return prisma.repository.update({ where: { id }, data: { status: 'failed' } })
-}
-
 export const updateRepository = async (id: Repository['id'], infos: Partial<Repository>) => {
-  return prisma.repository.update({ where: { id }, data: { ...infos, status: AllStatus.INITIALIZING } })
+  return prisma.repository.update({ where: { id }, data: { ...infos } })
 }
 
 // DELETE
-export const updateRepositoryDeleting = async (id: Repository['id']) => {
-  const doesRepoExist = await getRepositoryById(id)
-  if (!doesRepoExist) throw new Error('Le dépôt interne demandé n\'existe pas en base pour ce projet')
-  return prisma.repository.update({ where: { id }, data: { status: 'deleting' } })
-}
-
 export const deleteRepository = async (id: Repository['id']) => {
   const doesRepoExist = await getRepositoryById(id)
   if (!doesRepoExist) throw new Error('Le dépôt interne demandé n\'existe pas en base pour ce projet')

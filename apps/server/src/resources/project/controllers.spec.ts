@@ -9,6 +9,7 @@ import { getConnection, closeConnections } from '../../connect.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
 vi.mock('@cpn-console/hooks', (await import('../../utils/mocks.js')).mockHooksPackage)
+vi.mock('../../utils/hook-wrapper.js', (await import('../../utils/mocks.js')).mockHookWrapper)
 
 describe('Project routes', () => {
   const requestor = getRandomUser()

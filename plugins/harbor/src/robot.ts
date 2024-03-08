@@ -8,6 +8,7 @@ export const createCiRobot = async (projectName: string) => {
   })
   return robot.data
 }
+
 export const regenerateCiRobot = async (projectName: string) => {
   const api = getApi()
   const ciRobot = await getCiRobot(projectName)

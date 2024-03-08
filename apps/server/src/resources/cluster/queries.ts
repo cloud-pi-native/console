@@ -9,6 +9,13 @@ export const getClusterById = (id: Cluster['id']) => prisma.cluster.findUnique({
   },
 })
 
+export const getClusterByIdOrThrow = (id: Cluster['id']) => prisma.cluster.findUniqueOrThrow({
+  where: { id },
+  include: {
+    kubeconfig: true,
+  },
+})
+
 export const getClusterEnvironments = (id: Cluster['id']) => prisma.cluster.findUnique({
   where: { id },
   select: {
@@ -54,6 +61,21 @@ export const getClustersByIds = (clusterIds: Cluster['id'][]) => prisma.cluster.
 export const getPublicClusters = () => prisma.cluster.findMany({
   where: {
     privacy: 'public',
+  },
+})
+
+export const getHookPublicClusters = async () => await prisma.cluster.findMany({
+  where: {
+    privacy: 'public',
+  },
+  select: {
+    id: true,
+    infos: true,
+    label: true,
+    privacy: true,
+    secretName: true,
+    kubeconfig: true,
+    clusterResources: true,
   },
 })
 

@@ -7,6 +7,7 @@ import { getRequestor, setRequestor } from '../../utils/mocks.js'
 import app from '../../app.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
+vi.mock('../../utils/hook-wrapper.js', (await import('../../utils/mocks.js')).mockHookWrapper)
 
 describe('Environment routes', () => {
   const requestor = getRandomUser()
@@ -217,14 +218,11 @@ describe('Environment routes', () => {
       prisma.quotaStage.findUnique.mockResolvedValue(newQuotaStage)
       prisma.quota.findUnique.mockResolvedValue(quota)
       prisma.stage.findUnique.mockResolvedValue(randomDbSetUp?.stages[0])
-      prisma.project.update.mockResolvedValue(projectInfos)
       prisma.environment.update.mockReturnValue(envInfos)
       prisma.environment.findUnique.mockReturnValue(envInfos)
       prisma.cluster.findUnique.mockResolvedValue(projectInfos?.clusters[0])
       prisma.log.create.mockResolvedValueOnce(log)
-      prisma.environment.update.mockReturnValue([envInfos])
-      prisma.environment.findMany.mockReturnValue(projectInfos.environments)
-      prisma.repository.findMany.mockReturnValue(projectInfos.repositories)
+      prisma.environment.update.mockReturnValue(envInfos)
 
       const response = await app.inject()
         .put(`/api/v1/projects/${projectInfos.id}/environments/${envUpdated.id}`)

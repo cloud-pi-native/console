@@ -1,10 +1,10 @@
-import { getOrCreateUser, addLogs, addUserToProject as addUserToProjectQuery, createUser, deletePermission, getMatchingUsers as getMatchingUsersQuery, getProjectInfos as getProjectInfosQuery, getProjectUsers as getProjectUsersQuery, getUserByEmail, getUserById, lockProject, removeUserFromProject as removeUserFromProjectQuery, updateUserProjectRole as updateUserProjectRoleQuery, getRolesByProjectId } from '@/resources/queries-index.js'
+import { getOrCreateUser, addLogs, addUserToProject as addUserToProjectQuery, createUser, deletePermission, getMatchingUsers as getMatchingUsersQuery, getProjectInfos as getProjectInfosQuery, getProjectUsers as getProjectUsersQuery, getUserByEmail, getUserById, removeUserFromProject as removeUserFromProjectQuery, updateUserProjectRole as updateUserProjectRoleQuery, getRolesByProjectId } from '@/resources/queries-index.js'
 import type { User, Project, Log } from '@prisma/client'
-import { hooks, type PluginResult } from '@cpn-console/hooks'
+import { hook } from '@/utils/hook-wrapper.js'
 import { type SearchOptions, checkInsufficientRoleInProject } from '@/utils/controller.js'
-import { unlockProjectIfNotFailed, validateSchema } from '@/utils/business.js'
+import { validateSchema } from '@/utils/business.js'
 import { BadRequestError, ForbiddenError, NotFoundError } from '@/utils/errors.js'
-import { type AsyncReturnType, type ProjectRoles, projectIsLockedInfo, UserSchema, instanciateSchema } from '@cpn-console/shared'
+import { type AsyncReturnType, projectIsLockedInfo, UserSchema, instanciateSchema, ProjectRoles } from '@cpn-console/shared'
 
 export type UserDto = Pick<User, 'email' | 'firstName' | 'lastName' | 'id'>
 export const getUser = async (user: UserDto) => {
@@ -41,7 +41,7 @@ export const addUserToProject = async (
 
   // Retrieve user from keycloak if does not exist in db
   if (!userToAdd) {
-    const results = await hooks.retrieveUserByEmail.execute({ email })
+    const results = await hook.misc.retrieveUserByEmail(email)
     // @ts-ignore
     await addLogs('Retrieve User By Email', results, userId, requestId)
 
@@ -64,39 +64,15 @@ export const addUserToProject = async (
   const insufficientRoleErrorMessageUserToAdd = checkInsufficientRoleInProject(userToAdd.id, { roles: project.roles, minRole: 'user' })
   if (!insufficientRoleErrorMessageUserToAdd) throw new BadRequestError('L\'utilisateur est déjà membre du projet', undefined)
 
-  const kcData = {
-    organization: project.organization.name,
-    project: project.name,
-    user: userToAdd,
-  }
-
-  const pluginsResults = await hooks.addUserToProject.validate(kcData)
-  if (pluginsResults?.failed) {
-    const reasons = Object.values(pluginsResults.results)
-      .filter((plugin: PluginResult) => plugin?.status?.result === 'KO')
-      .map((plugin: PluginResult) => plugin.status.message)
-      .join('; ')
-
-    // @ts-ignore
-    await addLogs('Add User to Project Validation', pluginsResults, userId, requestId)
-
-    const message = 'Echec de la validation des prérequis par les services externes'
-    throw new BadRequestError(message, { description: reasons })
-  }
-
-  await lockProject(project.id)
-
   try {
     await addUserToProjectQuery({ project, user: userToAdd, role: 'user' })
 
-    const results = await hooks.addUserToProject.execute(kcData)
+    const results = await hook.project.upsert(project.id)
     // @ts-ignore
     await addLogs('Add Project Member', results, userId, requestId)
 
-    await unlockProjectIfNotFailed(project.id)
     return getRolesByProjectId(project.id)
   } catch (error) {
-    await unlockProjectIfNotFailed(project.id)
     throw new Error('Echec d\'ajout de l\'utilisateur au projet')
   }
 }
@@ -128,42 +104,18 @@ export const removeUserFromProject = async (
   const insufficientRoleErrorMessageUserToRemove = checkInsufficientRoleInProject(userToRemoveId, { roles: project.roles })
   if (insufficientRoleErrorMessageUserToRemove) throw new BadRequestError('L\'utilisateur n\'est pas membre du projet')
 
-  const kcData = {
-    organization: project.organization.name,
-    project: project.name,
-    user: userToRemove,
-  }
-
-  const pluginsResults = await hooks.removeUserFromProject.validate(kcData)
-  if (pluginsResults?.failed) {
-    const reasons = Object.values(pluginsResults.results)
-      .filter((plugin: PluginResult) => plugin?.status?.result === 'KO')
-      .map((plugin: PluginResult) => plugin.status.message)
-      .join('; ')
-
-    // @ts-ignore
-    await addLogs('Remove User from Project Validation', pluginsResults, userId, requestId)
-
-    const message = 'Echec de la validation des prérequis par les services externes'
-    throw new BadRequestError(message, { description: reasons })
-  }
-
-  await lockProject(project.id)
-
   try {
     for (const environment of project.environments) {
       await deletePermission(userToRemoveId, environment.id)
     }
     await removeUserFromProjectQuery({ projectId: project.id, userId: userToRemoveId })
 
-    const results = await hooks.removeUserFromProject.execute(kcData)
+    const { results } = await hook.project.upsert(project.id)
     // @ts-ignore
     await addLogs('Remove User from Project', results, userId, requestId)
 
-    await unlockProjectIfNotFailed(project.id)
     return getRolesByProjectId(project.id)
   } catch (error) {
-    await unlockProjectIfNotFailed(project.id)
     throw new Error('Echec de retrait de l\'utilisateur du projet')
   }
 }

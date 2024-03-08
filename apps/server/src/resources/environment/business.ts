@@ -2,11 +2,7 @@ import {
   addLogs,
   getEnvironmentInfos as getEnvironmentInfosQuery,
   getPublicClusters,
-  updateEnvironmentCreated,
-  updateEnvironmentFailed,
-  lockProject,
   initializeEnvironment,
-  updateEnvironmentDeleting,
   deleteEnvironment as deleteEnvironmentQuery,
   getUserById,
   updateEnvironment as updateEnvironmentQuery,
@@ -15,11 +11,9 @@ import {
   getProjectInfos,
   getQuotaStageById,
   getQuotaById,
-  getProjectPartialEnvironments,
-  getEnvironmentById,
 } from '@/resources/queries-index.js'
 import { BadRequestError, DsoError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
-import { hooks } from '@cpn-console/hooks'
+import { hook } from '@/utils/hook-wrapper.js'
 import type { Cluster, Environment, Project, Role, User, QuotaStage, Log } from '@prisma/client'
 import {
   checkInsufficientRoleInProject,
@@ -27,8 +21,7 @@ import {
   filterOwners,
   checkRoleAndLocked,
 } from '@/utils/controller.js'
-import { unlockProjectIfNotFailed, validateSchema } from '@/utils/business.js'
-import { projectRootDir, gitlabUrl } from '@/utils/env.js'
+import { validateSchema } from '@/utils/business.js'
 import { getProjectInfosAndClusters } from '@/resources/project/business.js'
 import { adminGroupPath, EnvironmentSchema } from '@cpn-console/shared'
 import type { UserDetails } from '@/types/index.js'
@@ -192,50 +185,22 @@ export const createEnvironment = async (
     quotaStage,
   })
 
-  await lockProject(project.id)
   const projectOwners = filterOwners(project.roles)
   const environment = await initializeEnvironment({ projectId: project.id, name, projectOwners, clusterId, quotaStageId })
 
   try {
-    const projectName = project.name
-    const organizationName = project.organization.name
-    const gitlabBaseURL = `${gitlabUrl}/${projectRootDir}/${organizationName}/${projectName}`
-    const repositories = environment.project.repositories?.map(({ internalRepoName }) => ({
-      url: `${gitlabBaseURL}/${internalRepoName}.git`,
-      internalRepoName,
-    }))
     const cluster = await getClusterById(clusterId)
     if (!cluster) throw new NotFoundError('Cluster introuvable')
-    const environments = await getProjectPartialEnvironments({ projectId })
 
-    const results = await hooks.initializeEnvironment.execute({
-      environment: name,
-      environments,
-      project: projectName,
-      organization: organizationName,
-      repositories,
-      owner: user,
-      // @ts-ignore
-      cluster: {
-        ...cluster,
-        ...cluster.kubeconfig,
-      },
-      quota: {
-        memory: quota.memory,
-        cpu: quota.cpu,
-      },
-    })
+    const { results } = await hook.project.upsert(project.id)
     // @ts-ignore
     await addLogs('Create Environment', results, userId, requestId)
     if (results.failed) {
       throw new UnprocessableContentError('Echec services à la création de l\'environnement')
     }
 
-    await updateEnvironmentCreated(environment.id)
-    await unlockProjectIfNotFailed(project.id)
     return environment
   } catch (error) {
-    await updateEnvironmentFailed(environment.id)
     if (error instanceof DsoError) {
       throw error
     }
@@ -261,7 +226,6 @@ export const updateEnvironment = async ({
   requestId,
 }: UpdateEnvironmentParam) => {
   try {
-    let environment: Environment
     const { project, quotaStage, quota } = await getInitializeEnvironmentInfos({
       userId: user.id,
       projectId,
@@ -279,40 +243,13 @@ export const updateEnvironment = async ({
       })
     }
 
-    await lockProject(projectId)
-
     // Modification du quota
+    const env = await updateEnvironmentQuery({ id: environmentId, quotaStageId: quotaStage.id })
     if (quotaStage) {
-      await updateEnvironmentQuery({ id: environmentId, quotaStageId: quotaStage.id })
-
-      environment = await getEnvironmentInfos(environmentId)
-
-      const projectName = project.name
-      const organizationName = project.organization.name
-      const gitlabBaseURL = `/${projectRootDir}/${organizationName}/${projectName}`
-      // @ts-ignore
-      const repositories = environment.project.repositories?.map(({ internalRepoName }) => ({
-        url: `${gitlabBaseURL}/${internalRepoName}.git`,
-        internalRepoName,
-      }))
       const cluster = await getClusterById(clusterId)
       if (!cluster) throw new NotFoundError('Cluster introuvable')
 
-      const results = await hooks.updateEnvironmentQuota.execute({
-        environment: environment.name,
-        project: projectName,
-        organization: organizationName,
-        repositories,
-        // @ts-ignore
-        cluster: {
-          ...cluster,
-          ...cluster.kubeconfig,
-        },
-        quota: {
-          memory: quota.memory,
-          cpu: quota.cpu,
-        },
-      })
+      const { results } = await hook.project.upsert(project.id)
       // @ts-ignore
       await addLogs('Update Environment Quotas', results, user.id, requestId)
       if (results.failed) {
@@ -320,13 +257,8 @@ export const updateEnvironment = async ({
       }
     }
 
-    // mise à jour des status
-    await updateEnvironmentCreated(environmentId)
-    await unlockProjectIfNotFailed(projectId)
-
-    return getEnvironmentById(environmentId)
+    return env
   } catch (error) {
-    await updateEnvironmentFailed(environmentId)
     if (error instanceof DsoError) {
       throw error
     }
@@ -354,44 +286,18 @@ export const deleteEnvironment = async ({
 
     checkDeleteEnvironment({ project, userId })
 
-    await updateEnvironmentDeleting(environment.id)
-    await lockProject(projectId)
+    await deleteEnvironmentQuery(environment.id)
 
     // Suppression de l'environnement dans les services
-    const projectName = project.name
-    const organizationName = project.organization.name
-    const gitlabBaseURL = `/${projectRootDir}/${organizationName}/${projectName}`
-    const repositories = environment.project.repositories.map(({ internalRepoName }) => ({
-      url: `${gitlabBaseURL}/${internalRepoName}.git`,
-      internalRepoName,
-    }))
     const cluster = await getClusterById(environment.clusterId)
     if (!cluster) throw new NotFoundError('Cluster introuvable')
-    const environments = await getProjectPartialEnvironments({ projectId })
-    const results = await hooks.deleteEnvironment.execute({
-      environment: environment.name,
-      stage: environment.quotaStage.stage.name,
-      environments,
-      project: projectName,
-      organization: organizationName,
-      repositories,
-      // @ts-ignore
-      cluster: {
-        ...cluster,
-        ...cluster.kubeconfig,
-      },
-    })
+    const { results } = await hook.project.upsert(project.id)
     // @ts-ignore
     await addLogs('Delete Environment', results, userId, requestId)
     if (results.failed) {
       throw new Error('Echec des services à la suppression de l\'environnement')
     }
-
-    // mise à jour des status
-    await deleteEnvironmentQuery(environmentId)
-    await unlockProjectIfNotFailed(projectId)
   } catch (error) {
-    await updateEnvironmentFailed(environmentId)
     if (error instanceof DsoError) {
       throw error
     }
