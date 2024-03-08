@@ -15,6 +15,7 @@
     "db:reset": "prisma migrate reset --schema ./src/prisma/schema.prisma",
     "db:wrapper": "sh ./migrate-db.sh",
     "dev": "pnpm run db:migrate && nodemon --exec 'vite-node src/server.ts'",
+    "debug": "pnpm run db:migrate && nodemon --exec 'NODE_OPTIONS=\"--inspect-brk=0.0.0.0\" vite-node src/server.ts'",
     "format": "eslint . --ext .js,.cjs,.ts --fix",
     "integ": "export INTEGRATION=true; pnpm run db:migrate && nodemon --exec 'vite-node src/server.ts'",
     "kube:e2e-ci": "echo 'check cache'",
