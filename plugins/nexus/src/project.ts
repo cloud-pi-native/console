@@ -1,14 +1,17 @@
-import axios from 'axios'
-import { getAxiosOptions } from './functions.js'
-import type { StepCall, ArchiveProjectExecArgs, CreateProjectExecArgs } from '@cpn-console/hooks'
+import axios, { AxiosInstance } from 'axios'
+import type { StepCall, Project } from '@cpn-console/hooks'
 import { generateRandomPassword, parseError } from '@cpn-console/hooks'
+import { getAxiosOptions } from './functions.js'
 
 const getAxiosInstance = () => axios.create(getAxiosOptions())
 
-export const createNexusProject: StepCall<CreateProjectExecArgs> = async (payload) => {
+export const createNexusProject: StepCall<Project> = async (payload) => {
   const axiosInstance = getAxiosInstance()
   try {
-    const { organization, project, owner } = payload.args
+    // const { organization, project, owner } = payload.project
+    const organization = payload.args.organization.name
+    const project = payload.args.name
+    const owner = payload.args.users[0]
     const projectName = `${organization}-${project}`
     const res: any = {}
 
@@ -91,6 +94,10 @@ export const createNexusProject: StepCall<CreateProjectExecArgs> = async (payloa
       validateStatus: (code) => [200, 400].includes(code),
     })
 
+    const vaultNexusSecret = await payload.apis.vault.read('NEXUS', { throwIfNoEntry: false })
+    let currentPwd: string = vaultNexusSecret?.NEXUS_PASSWORD
+
+    const newPwd = generateRandomPassword(30)
     const getUser = await axiosInstance({
       url: `/security/users?userId=${projectName}`,
     }) as { data: { userId: string }[] }
@@ -98,34 +105,56 @@ export const createNexusProject: StepCall<CreateProjectExecArgs> = async (payloa
     if (user) {
       res.user = getUser.data[0]
       res.status = { result: 'OK', message: 'User already exist' }
-      return res
+      if (!vaultNexusSecret) {
+        await axiosInstance({
+          method: 'put',
+          url: `/security/users/${projectName}/change-password`,
+          data: newPwd,
+        })
+        currentPwd = newPwd
+      }
+    } else {
+    // createUser
+      await axiosInstance({
+        method: 'post',
+        url: '/security/users',
+        data: {
+          userId: projectName,
+          firstName: 'Monkey D.',
+          lastName: 'Luffy',
+          emailAddress: owner.email,
+          password: newPwd,
+          status: 'active',
+          roles: [`${projectName}-ID`],
+        },
+      })
+      currentPwd = newPwd
     }
 
-    const newPwd = generateRandomPassword(30)
-    // createUser
-    const newUser = await axiosInstance({
-      method: 'post',
-      url: '/security/users',
-      data: {
-        userId: `${projectName}`,
-        firstName: 'Monkey D.',
-        lastName: 'Luffy',
-        emailAddress: owner.email,
-        password: newPwd,
-        status: 'active',
-        roles: [`${projectName}-ID`],
-      },
-    })
+    if (!getUser.data.length || (getUser.data.length && !vaultNexusSecret)) { // conditions précédentes, si non existent ou si modp a dû être changé
+      await payload.apis.vault.write({
+        NEXUS_PASSWORD: currentPwd,
+        NEXUS_USERNAME: projectName,
+      }, 'NEXUS')
+    }
+    // await payload.apis.gitlab.setGitlabGroupVariable({
+    //   key: 'NEXUS_USERNAME',
+    //   masked: false,
+    //   protected: false,
+    //   variable_type: 'env_var',
+    //   value: projectName,
+    // })
+    // await payload.apis.gitlab.setGitlabGroupVariable({
+    //   key: 'NEXUS_PASSWORD',
+    //   masked: true,
+    //   protected: false,
+    //   variable_type: 'env_var',
+    //   value: currentPwd,
+    // })
 
-    // @ts-ignore to delete when in own plugin
-    await payload.apis.vault.write({
-      NEXUS_PASSWORD: newPwd,
-      NEXUS_USERNAME: projectName,
-    }, 'NEXUS')
-
-    res.user = newUser.data
-    res.status = { result: 'OK', message: 'User Created' }
-    return res
+    return {
+      status: { result: 'OK', message: 'Up-to-date' },
+    }
   } catch (error) {
     return {
       error: parseError(error),
@@ -137,51 +166,28 @@ export const createNexusProject: StepCall<CreateProjectExecArgs> = async (payloa
   }
 }
 
-export const deleteNexusProject: StepCall<ArchiveProjectExecArgs> = async (payload) => {
+export const deleteNexusProject: StepCall<Project> = async ({ args: project }) => {
   const axiosInstance = getAxiosInstance()
-
-  const { organization, project } = payload.args
-  const projectName = `${organization}-${project}`
-
+  const projectName = `${project.organization.name}-${project.name}`
   try {
-    // delete local repo maven snapshot
-    for (const repVersion of ['release', 'snapshot']) {
+    await Promise.all([
+      // delete local repo maven snapshot
+      await deleteIfExists(`/repositories/${projectName}-repository-release`, axiosInstance),
+      await deleteIfExists(`/repositories/${projectName}-repository-snapshot`, axiosInstance),
+      await deleteIfExists(`/repositories/${projectName}-repository-group`, axiosInstance),
+      // delete privileges
+      await deleteIfExists(`/security/privileges/${projectName}-privilege-snapshot`, axiosInstance),
+      await deleteIfExists(`/security/privileges/${projectName}-privilege-release`, axiosInstance),
+      await deleteIfExists(`/security/privileges/${projectName}-privilege-group`, axiosInstance),
+      // delete role
+      await deleteIfExists(`/security/roles/${projectName}-ID`, axiosInstance),
+      // delete user
       await axiosInstance({
         method: 'delete',
-        url: `/repositories/${projectName}-repository-${repVersion}`,
+        url: `/security/users/${projectName}`,
         validateStatus: code => code === 404 || code < 300,
-      })
-    }
-
-    // delete maven group
-    await axiosInstance({
-      method: 'delete',
-      url: `/repositories/${projectName}-repository-group`,
-      validateStatus: code => code === 404 || code < 300,
-    })
-
-    // delete privileges
-    for (const privilege of ['snapshot', 'release', 'group']) {
-      await axiosInstance({
-        method: 'delete',
-        url: `/security/privileges/${projectName}-privilege-${privilege}`,
-        validateStatus: code => code === 404 || code < 300,
-      })
-    }
-
-    // delete role
-    await axiosInstance({
-      method: 'delete',
-      url: `/security/roles/${projectName}-ID`,
-      validateStatus: code => code === 404 || code < 300,
-    })
-
-    // delete user
-    await axiosInstance({
-      method: 'delete',
-      url: `/security/users/${projectName}`,
-      validateStatus: code => code === 404 || code < 300,
-    })
+      }),
+    ])
 
     return {
       status: {
@@ -198,5 +204,21 @@ export const deleteNexusProject: StepCall<ArchiveProjectExecArgs> = async (paylo
         message: error.message,
       },
     }
+  }
+}
+
+const deleteIfExists = async (url: string, axiosInstance: AxiosInstance) => {
+  const res = await axiosInstance({
+    method: 'get',
+    url,
+    validateStatus: code => code === 404 || code < 300,
+  })
+  if (res.status === 404) {
+    // delete maven group
+    await axiosInstance({
+      method: 'delete',
+      url,
+      validateStatus: code => code === 404 || code < 300,
+    })
   }
 }
