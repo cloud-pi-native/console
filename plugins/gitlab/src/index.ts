@@ -1,18 +1,16 @@
-import type { Plugin } from '@cpn-console/hooks'
+import type { Plugin, Project, DefaultArgs } from '@cpn-console/hooks'
 import {
-  createDsoProject,
-  archiveDsoProject,
-  createDsoRepository,
-  updateDsoRepository,
-  deleteDsoRepository,
-  addDsoGroupMember,
-  removeDsoGroupMember,
   checkApi,
   getDsoProjectSecrets,
+  deleteDsoProject,
+  upsertDsoProject,
 } from './functions.js'
 import { getGroupRootId } from './utils.js'
 import infos from './infos.js'
 import monitor from './monitor.js'
+import { GitlabProjectApi } from './class.js'
+
+const onlyApi = { api: (project: Project) => new GitlabProjectApi(project) }
 
 const start = () => {
   getGroupRootId()
@@ -21,24 +19,27 @@ const start = () => {
 export const plugin: Plugin = {
   infos,
   subscribedHooks: {
-    addUserToProject: { steps: { main: addDsoGroupMember } },
-    removeUserFromProject: { steps: { main: removeDsoGroupMember } },
-    createProject: {
+    deleteProject: {
+      ...onlyApi,
+      steps: { main: deleteDsoProject },
+    },
+    upsertProject: {
+      ...onlyApi,
       steps: {
         check: checkApi,
-        main: createDsoProject,
+        main: upsertDsoProject,
       },
     },
-    archiveProject: { steps: { main: archiveDsoProject } },
-    createRepository: {
-      steps: {
-        main: createDsoRepository,
-      },
-    },
-    updateRepository: { steps: { main: updateDsoRepository } },
-    deleteRepository: { steps: { main: deleteDsoRepository } },
     getProjectSecrets: { steps: { main: getDsoProjectSecrets } },
   },
   monitor,
   start,
+}
+
+declare module '@cpn-console/hooks' {
+  interface HookPayloadApis<Args extends DefaultArgs> {
+    gitlab: Args extends Project
+    ? GitlabProjectApi
+    : undefined
+  }
 }
