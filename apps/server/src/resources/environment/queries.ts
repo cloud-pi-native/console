@@ -68,7 +68,13 @@ export const getEnvironmentsByProjectId = async (projectId: Project['id']) => {
 export const getEnvironmentByIdWithCluster = async (id: Environment['id']) => {
   return prisma.environment.findUnique({
     where: { id },
-    include: { cluster: true },
+    include: {
+      cluster: {
+        include: {
+          kubeconfig: true,
+        },
+      },
+    },
   })
 }
 

@@ -66,7 +66,10 @@ export const setPermission = async (
     environment: environment.name,
     stage: stage.name,
     // @ts-ignore
-    cluster: environment.cluster,
+    cluster: {
+      ...environment.cluster,
+      ...environment.cluster?.kubeconfig,
+    },
     organization: project.organization.name,
     permissions: {
       ro: level >= 0,
@@ -119,7 +122,10 @@ export const updatePermission = async (
     environment: environment.name,
     stage: stage.name,
     // @ts-ignore
-    cluster: environment.cluster,
+    cluster: {
+      ...environment.cluster,
+      ...environment.cluster?.kubeconfig,
+    },
     organization: project.organization.name,
     permissions: {
       ro: level >= 0,
@@ -154,7 +160,10 @@ export const deletePermission = async (
   const results = await hooks.setEnvPermission.execute({
     environment: environment.name,
     // @ts-ignore
-    cluster: environment.cluster,
+    cluster: {
+      ...environment.cluster,
+      ...environment.cluster?.kubeconfig,
+    },
     organization: project.organization.name,
     permissions: {
       ro: false,
