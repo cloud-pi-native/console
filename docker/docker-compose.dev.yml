@@ -47,7 +47,7 @@ services:
     depends_on:
       - postgres
     volumes:
-      - ../db/pgadmin/config/servers.json:/pgadmin4/servers.json
+      - ../db/pgadmin/config/servers-docker.json:/pgadmin4/servers.json
       - dso-pgadmin-data-dev:/var/lib/pgadmin
     ports:
       - 8081:80
@@ -66,6 +66,7 @@ services:
       target: dev
     image: dso-console/server:dev
     container_name: dso-console_server
+    command: ["dev"] # use "debug" to run debug mode
     depends_on:
       keycloak:
         condition: service_healthy

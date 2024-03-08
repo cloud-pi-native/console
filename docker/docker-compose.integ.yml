@@ -44,6 +44,7 @@ services:
       target: dev
     image: dso-console/server:dev
     container_name: dso-console_server
+    command: ["dev"] # use "debug" to run debug mode
     depends_on:
       postgres:
         condition: service_started
