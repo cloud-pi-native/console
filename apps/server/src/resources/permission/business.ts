@@ -2,7 +2,7 @@ import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentErr
 import type { Project, User, Environment, Permission, Log } from '@prisma/client'
 import { addLogs, deletePermission as deletePermissionQuery, getEnvironmentByIdWithCluster, getEnvironmentPermissions as getEnvironmentPermissionsQuery, getPermissionByUserIdAndEnvironmentId, getProjectInfos, getQuotaStageById, getSingleOwnerByProjectId, getStageById, getUserById, setPermission as setPermissionQuery, updatePermission as updatePermissionQuery } from '@/resources/queries-index.js'
 import { checkInsufficientRoleInProject, checkRoleAndLocked } from '@/utils/controller.js'
-import { hooks } from '@cpn-console/hooks'
+import { hook } from '@/utils/hook-wrapper.js'
 import { PermissionSchema } from '@cpn-console/shared'
 import { validateSchema } from '@/utils/business.js'
 
@@ -62,22 +62,7 @@ export const setPermission = async (
   const user = await getUserById(userId)
   if (!user) throw new BadRequestError('L\'utilisateur n\'existe pas')
 
-  const results = await hooks.setEnvPermission.execute({
-    environment: environment.name,
-    stage: stage.name,
-    // @ts-ignore
-    cluster: {
-      ...environment.cluster,
-      ...environment.cluster?.kubeconfig,
-    },
-    organization: project.organization.name,
-    permissions: {
-      ro: level >= 0,
-      rw: level >= 1,
-    },
-    project: project.name,
-    user,
-  })
+  const { results } = await hook.project.upsert(project.id)
   // @ts-ignore
   await addLogs('Update Permission', results, userId, requestId)
   if (results.failed) {
@@ -118,22 +103,7 @@ export const updatePermission = async (
   const user = await getUserById(userId)
   if (!user) throw new BadRequestError('L\'utilisateur n\'existe pas')
 
-  const results = await hooks.setEnvPermission.execute({
-    environment: environment.name,
-    stage: stage.name,
-    // @ts-ignore
-    cluster: {
-      ...environment.cluster,
-      ...environment.cluster?.kubeconfig,
-    },
-    organization: project.organization.name,
-    permissions: {
-      ro: level >= 0,
-      rw: level >= 1,
-    },
-    project: project.name,
-    user,
-  })
+  const { results } = await hook.project.upsert(project.id)
   // @ts-ignore
   await addLogs('Update Permission', results, userId, requestId)
   if (results.failed) {
@@ -157,21 +127,7 @@ export const deletePermission = async (
   if (!requestorPermission?.length) throw new ForbiddenError('Vous n\'avez pas de droits sur cet environnement')
   const user = await getUserById(userId)
   if (!user) throw new NotFoundError('Utilisateur introuvable')
-  const results = await hooks.setEnvPermission.execute({
-    environment: environment.name,
-    // @ts-ignore
-    cluster: {
-      ...environment.cluster,
-      ...environment.cluster?.kubeconfig,
-    },
-    organization: project.organization.name,
-    permissions: {
-      ro: false,
-      rw: false,
-    },
-    project: project.name,
-    user,
-  })
+  const { results } = await hook.project.upsert(project.id)
   // @ts-ignore
   await addLogs('Delete Permission', results, userId, requestId)
   if (results.failed) {

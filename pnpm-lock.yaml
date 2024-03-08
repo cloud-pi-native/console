@@ -640,6 +640,15 @@ importers:
       '@cpn-console/eslint-config':
         specifier: workspace:^
         version: link:../../packages/eslintconfig
+      '@cpn-console/gitlab-plugin':
+        specifier: workspace:^
+        version: link:../gitlab
+      '@cpn-console/keycloak-plugin':
+        specifier: workspace:^
+        version: link:../keycloak
+      '@cpn-console/kubernetes-plugin':
+        specifier: workspace:^
+        version: link:../kubernetes
       '@cpn-console/ts-config':
         specifier: workspace:^
         version: link:../../packages/tsconfig

@@ -7,6 +7,7 @@ import { getRequestor, setRequestor } from '../../utils/mocks.js'
 import app from '../../app.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
+vi.mock('../../utils/hook-wrapper.js', (await import('../../utils/mocks.js')).mockHookWrapper)
 
 describe('User routes', () => {
   const requestor = getRandomUser()
