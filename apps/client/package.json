@@ -1,13 +1,13 @@
 {
-  "name": "@dso-console/client",
+  "name": "@cpn-console/client",
   "version": "6.5.2",
   "description": "dso-portal client",
   "private": false,
   "type": "module",
   "scripts": {
-    "build": "run-s clean:build type-check build-only",
+    "build": "run-s type-check build-only",
     "build-only": "vite --mode=production build",
-    "clean:build": "rimraf dist",
+    "build:clean": "rimraf dist",
     "cypress:install": "cypress install",
     "dev": "vite --mode=development",
     "format": "eslint . --ext .js,.cjs,.ts,vue --fix",

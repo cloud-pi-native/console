@@ -8,9 +8,8 @@
   "module": "dist/index.js",
   "types": "types/index.d.ts",
   "scripts": {
-    "build": "run-s clean:build compile",
-    "clean:build": "rimraf dist types",
-    "compile": "tsc",
+    "build": "tsc",
+    "build:clean": "rimraf dist types",
     "dev": "nodemon --watch src --ext .ts --exec 'pnpm run compile'",
     "format": "eslint ./src --ext .js,.cjs,.ts --fix",
     "lint": "eslint ./src"

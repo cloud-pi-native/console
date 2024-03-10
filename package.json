@@ -5,8 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "turbo run build --color --no-daemon",
-    "clean:build": "turbo run clean:build --no-daemon",
-    "compile": "turbo run compile --no-daemon",
+    "build:clean": "turbo run build:clean --no-daemon",
     "dev": "docker compose -f ./docker/docker-compose.local.yml up -d && echo '\nStart server and client with commands:\n\n  pnpm --filter server run dev\n  pnpm --filter client run dev\n\nMake sure you provide env variables in `.env` files.'",
     "dev:clean": "docker compose -f ./docker/docker-compose.local.yml down",
     "dev:delete": "docker compose -f ./docker/docker-compose.local.yml down -v",
