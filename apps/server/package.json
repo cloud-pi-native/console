@@ -5,9 +5,8 @@
   "type": "module",
   "types": "./types/plugins/index.d.ts",
   "scripts": {
-    "build": "run-s clean:build compile",
-    "clean:build": "rimraf dist types",
-    "compile": "tspc || exit 0",
+    "build": "tspc || exit 0",
+    "build:clean": "rimraf dist types",
     "db:deploy": "prisma migrate deploy --schema ./src/prisma/schema.prisma",
     "db:diff": "prisma migrate diff --schema ./src/prisma/schema.prisma",
     "db:generate": "prisma generate --schema ./src/prisma/schema.prisma",
@@ -94,5 +93,9 @@
     "registry": "https://registry.npmjs.org/",
     "access": "public",
     "tag": "latest"
-  }
+  },
+  "files": [
+    "dist",
+    "src"
+  ]
 }

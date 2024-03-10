@@ -9,14 +9,9 @@
         "dist/**"
       ]
     },
-    "clean:build": {
+    "build:clean": {
       "dependsOn": [
-        "^clean:build"
-      ]
-    },
-    "compile": {
-      "dependsOn": [
-        "^compile"
+        "^build:clean"
       ]
     },
     "db:generate": {
