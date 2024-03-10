@@ -103,7 +103,7 @@ services:
           ignore:
             - node_modules/
         - action: rebuild
-          path: package.json
+          path: ../apps/server/package.json
     networks:
       - dso-network
     attach: true
@@ -138,6 +138,8 @@ services:
           target: /app/packages/shared
           ignore:
             - node_modules/
+        - action: rebuild
+          path: ../apps/client/package.json
     networks:
       - dso-network
     attach: true
