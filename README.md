@@ -68,6 +68,9 @@ pnpm install
 
 # Copier les fichiers d'environnement exemples
 ./ci/scripts/init-env.sh
+
+# Construire les paquets applicatifs
+pnpm build
 ```
 
 #### Développement
