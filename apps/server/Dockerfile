@@ -26,7 +26,6 @@ COPY --chown=node:root plugins/vault/package.json ./plugins/vault/package.json
 RUN pnpm install --frozen-lockfile
 COPY --chown=node:root plugins/ ./plugins/
 COPY --chown=node:root packages/ ./packages/
-RUN pnpm run build
 
 COPY --chown=node:root apps/server/ ./apps/server/
 ENTRYPOINT [ "pnpm", "--filter", "server", "run" ]
@@ -36,6 +35,7 @@ CMD [ "dev" ]
 # Build stage
 FROM dev AS build
 
+RUN pnpm run build
 RUN pnpm --filter server run build
 RUN pnpm --filter server --prod deploy build
 
