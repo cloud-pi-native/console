@@ -44,6 +44,7 @@ services:
       target: dev
     image: dso-console/server:dev
     container_name: dso-console_server
+    command: ["dev"] # use "debug" to run debug mode
     depends_on:
       postgres:
         condition: service_started
@@ -82,7 +83,7 @@ services:
           ignore:
             - node_modules/
         - action: rebuild
-          path: package.json
+          path: ../apps/server/package.json
     networks:
       - dso-network
     attach: true
@@ -119,7 +120,7 @@ services:
           ignore:
             - node_modules/
         - action: rebuild
-          path: package.json
+          path: ../apps/client/package.json
     networks:
       - dso-network
     attach: true

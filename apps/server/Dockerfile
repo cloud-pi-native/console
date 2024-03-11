@@ -29,7 +29,8 @@ COPY --chown=node:root packages/ ./packages/
 RUN pnpm run build
 
 COPY --chown=node:root apps/server/ ./apps/server/
-ENTRYPOINT [ "pnpm", "--filter", "server", "run", "dev" ]
+ENTRYPOINT [ "pnpm", "--filter", "server", "run" ]
+CMD [ "dev" ]
 
 
 # Build stage
@@ -44,12 +45,11 @@ FROM docker.io/node:20.11.0-bullseye-slim AS prod
 
 ARG APP_VERSION
 ENV APP_VERSION=$APP_VERSION
-RUN mkdir /plugins
 VOLUME [ "/plugins" ]
 WORKDIR /app
 RUN mkdir -p /home/node/logs && chmod 770 -R /home/node/logs \
-  && mkdir -p /home/node/.npm && chmod 770 -R /home/node/.npm
-RUN chown node:root /app
+  && mkdir -p /home/node/.npm && chmod 770 -R /home/node/.npm \
+  && chown node:root /app
 COPY --chown=node:root --from=build /app/build .
 RUN npm run db:generate
 USER node

@@ -106,6 +106,8 @@ pnpm run docker:dev:clean
 pnpm run docker:dev:delete
 ```
 
+> Pour lancer le debugger nodejs sur le serveur, dans les fichiers `docker-compose` remplacer la directive  `command: ["dev"]` par `command: ["debug"]`.
+
 __Kubernetes :__
 
 ```shell

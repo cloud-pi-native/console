@@ -10,7 +10,8 @@
       "request": "attach",
       "port": 9229,
       "address": "127.0.0.1",
-      "localRoot": "${workspaceFolder}",
+      "restart": true,
+      "localRoot": "${workspaceFolder}/apps/server",
       "remoteRoot": "/app/apps/server",
       "skipFiles": [
         "<node_internals>/**",

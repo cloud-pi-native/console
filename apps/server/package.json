@@ -5,9 +5,8 @@
   "type": "module",
   "types": "./types/plugins/index.d.ts",
   "scripts": {
-    "build": "run-s clean:build compile",
-    "clean:build": "rimraf dist types",
-    "compile": "tspc || exit 0",
+    "build": "tspc || exit 0",
+    "build:clean": "rimraf dist types",
     "db:deploy": "prisma migrate deploy --schema ./src/prisma/schema.prisma",
     "db:diff": "prisma migrate diff --schema ./src/prisma/schema.prisma",
     "db:generate": "prisma generate --schema ./src/prisma/schema.prisma",
@@ -15,6 +14,7 @@
     "db:reset": "prisma migrate reset --schema ./src/prisma/schema.prisma",
     "db:wrapper": "sh ./migrate-db.sh",
     "dev": "pnpm run db:migrate && nodemon --exec 'vite-node src/server.ts'",
+    "debug": "pnpm run db:migrate && nodemon --exec 'NODE_OPTIONS=\"--inspect-brk=0.0.0.0\" vite-node src/server.ts'",
     "format": "eslint . --ext .js,.cjs,.ts --fix",
     "integ": "export INTEGRATION=true; pnpm run db:migrate && nodemon --exec 'vite-node src/server.ts'",
     "kube:e2e-ci": "echo 'check cache'",
@@ -93,5 +93,9 @@
     "registry": "https://registry.npmjs.org/",
     "access": "public",
     "tag": "latest"
-  }
+  },
+  "files": [
+    "dist",
+    "src"
+  ]
 }
