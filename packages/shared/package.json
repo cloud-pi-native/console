@@ -10,7 +10,7 @@
   "scripts": {
     "build": "tsc",
     "build:clean": "rimraf dist types",
-    "dev": "nodemon --watch src --ext .ts --exec 'pnpm run compile'",
+    "dev": "nodemon --watch src --ext .ts --exec 'pnpm run build'",
     "format": "eslint ./src --ext .js,.cjs,.ts --fix",
     "kube:e2e-ci": "echo 'check cache'",
     "lint": "eslint ./src",
