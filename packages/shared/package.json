@@ -9,7 +9,7 @@
   "types": "types/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "build:clean": "rimraf dist types",
+    "build:clean": "rimraf ./dist ./types ./tsconfig.tsbuildinfo",
     "dev": "nodemon --watch src --ext .ts --exec 'pnpm run build'",
     "format": "eslint ./src --ext .js,.cjs,.ts --fix",
     "kube:e2e-ci": "echo 'check cache'",

@@ -6,7 +6,7 @@
   "types": "./types/plugins/index.d.ts",
   "scripts": {
     "build": "tspc || exit 0",
-    "build:clean": "rimraf dist types",
+    "build:clean": "rimraf ./dist ./types ./tsconfig.tsbuildinfo",
     "db:deploy": "prisma migrate deploy --schema ./src/prisma/schema.prisma",
     "db:diff": "prisma migrate diff --schema ./src/prisma/schema.prisma",
     "db:generate": "prisma generate --schema ./src/prisma/schema.prisma",
