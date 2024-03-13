@@ -93,7 +93,7 @@ export const createNexusProject: StepCall<CreateProjectExecArgs> = async (payloa
 
     const getUser = await axiosInstance({
       url: `/security/users?userId=${projectName}`,
-    })
+    }) as { data: { userId: string }[] }
     const user = getUser.data.find(user => user.userId === projectName)
     if (user) {
       res.user = getUser.data[0]
