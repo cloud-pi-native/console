@@ -93,7 +93,8 @@ export const createNexusProject: StepCall<CreateProjectExecArgs> = async (payloa
     const getUser = await axiosInstance({
       url: `/security/users?userId=${projectName}`,
     })
-    if (getUser.data.length) {
+    const user = getUser.data.find(user => user.userId === projectName)
+    if (user) {
       res.user = getUser.data[0]
       res.status = { result: 'OK', message: 'User already exist' }
       return res
