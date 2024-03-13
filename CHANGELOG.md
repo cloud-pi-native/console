@@ -1,5 +1,13 @@
 # Changelog
 
+## [6.5.2](https://github.com/cloud-pi-native/console/compare/v6.5.1...v6.5.2) (2024-03-13)
+
+
+### Bug Fixes
+
+* :bug: missing check in search group ([7fb65c1](https://github.com/cloud-pi-native/console/commit/7fb65c12754eea955c7ba942329cf5bfa612f8b7))
+* :bug: missing check nexus find user ([e0f1674](https://github.com/cloud-pi-native/console/commit/e0f167424df8e0c01619a0da38bf3e5723014ee1))
+
 ## [6.5.1](https://github.com/cloud-pi-native/console/compare/v6.5.0...v6.5.1) (2024-01-25)
 
 

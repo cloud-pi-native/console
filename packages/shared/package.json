@@ -45,5 +45,5 @@
   },
   "type": "module",
   "types": "types/index.d.ts",
-  "version": "6.5.1"
+  "version": "6.5.2"
 }

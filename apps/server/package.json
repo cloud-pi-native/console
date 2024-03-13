@@ -76,5 +76,5 @@
   },
   "type": "module",
   "types": "./types/plugins/index.d.ts",
-  "version": "6.5.1"
+  "version": "6.5.2"
 }
