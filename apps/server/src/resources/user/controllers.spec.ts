@@ -1,9 +1,9 @@
 import prisma from '../../__mocks__/prisma.js'
 import app, { getRequestor, setRequestor } from '../../__mocks__/app.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
-import { createRandomDbSetup, getRandomLog, getRandomRole, getRandomUser } from '@dso-console/test-utils'
+import { createRandomDbSetup, getRandomLog, getRandomRole, getRandomUser } from '@cpn-console/test-utils'
 import { getConnection, closeConnections } from '../../connect.js'
-import { projectIsLockedInfo } from '@dso-console/shared'
+import { projectIsLockedInfo } from '@cpn-console/shared'
 
 describe('User routes', () => {
   const requestor = getRandomUser()
@@ -107,9 +107,9 @@ describe('User routes', () => {
         .body({ email: getRandomUser().email })
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(400)
       expect(response.body).toBeDefined()
-      expect(response.json().message).toEqual('Cannot read properties of null (reading \'roles\')')
+      expect(response.json().message).toEqual('Le projet ayant pour id missingProjectId n\'existe pas')
     })
 
     it('Should not add an user if project is locked', async () => {
@@ -159,12 +159,14 @@ describe('User routes', () => {
       const projectInfos = createRandomDbSetup({}).project
       projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
       projectInfos.locked = true
+      const userToUpdate = projectInfos.roles[0]
+      const userUpdated = { ...userToUpdate, role: 'user' }
 
       prisma.project.findUnique.mockResolvedValue(projectInfos)
 
       const response = await app.inject()
         .put(`/api/v1/projects/${projectInfos.id}/users/thisIsAnId`)
-        .body({})
+        .body(userUpdated)
         .end()
 
       expect(response.statusCode).toEqual(403)
@@ -207,9 +209,9 @@ describe('User routes', () => {
         .delete('/api/v1/projects/missingProjectId/users/userId')
         .end()
 
-      expect(response.statusCode).toEqual(500)
+      expect(response.statusCode).toEqual(400)
       expect(response.body).toBeDefined()
-      expect(response.json().message).toEqual('Cannot read properties of null (reading \'roles\')')
+      expect(response.json().message).toEqual('Le projet ayant pour id missingProjectId n\'existe pas')
     })
 
     it('Should not remove an user if requestor is not member himself', async () => {

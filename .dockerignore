@@ -19,9 +19,12 @@ npm-debug.log
 
 # Tests
 .turbo/
-coverage
+coverage/
 
 # Docker
 **/Dockerfile
 .dockerignore
 docker/
+
+# Env
+.env*

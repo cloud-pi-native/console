@@ -1,5 +1,5 @@
 import { type Pinia, createPinia, setActivePinia } from 'pinia'
-import { getRandomCluster, getRandomEnv, getRandomProject, getRandomStage, repeatFn } from '@dso-console/test-utils'
+import { getRandomCluster, getRandomEnv, getRandomProject, getRandomStage, repeatFn } from '@cpn-console/test-utils'
 
 import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
@@ -9,10 +9,7 @@ import '@/main.css'
 
 import ClusterForm from '@/components/ClusterForm.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { useAdminClusterStore } from '@/stores/admin/cluster.js'
-
-const repeatFn5Times = repeatFn(5)
-const get5RandomProjects = () => repeatFn5Times(getRandomProject)
+import { ClusterPrivacy } from '@cpn-console/shared'
 
 describe('ClusterForm.vue', () => {
   let pinia: Pinia
@@ -26,12 +23,13 @@ describe('ClusterForm.vue', () => {
   it('Should mount a new cluster ClusterForm', () => {
     useSnackbarStore()
 
-    const allProjects = get5RandomProjects()
+    const allProjects = repeatFn(5)(getRandomProject)
     const allStages = repeatFn(4)(getRandomStage)
 
     const props = {
       allProjects,
       allStages,
+      associatedEnvironments: [],
     }
 
     cy.mount(ClusterForm, { props })
@@ -44,7 +42,7 @@ describe('ClusterForm.vue', () => {
     cy.getByDataTestid('clusterResourcesCbx').find('input[type=checkbox]')
       .check({ force: true })
     cy.get('#privacy-select')
-      .select('dedicated')
+      .select(ClusterPrivacy.DEDICATED)
     cy.get('#projects-select')
       .select(`${allProjects[0].organization.name} - ${allProjects[0].name}`)
     cy.get('#stages-select')
@@ -56,17 +54,15 @@ describe('ClusterForm.vue', () => {
 
   it('Should mount an update cluster ClusterForm', () => {
     useSnackbarStore()
-    const adminClusterStore = useAdminClusterStore()
-
-    const allProjects = get5RandomProjects()
+    const allProjects = repeatFn(5)(getRandomProject)
     const allStages = repeatFn(2)(getRandomStage)
-    adminClusterStore.clusters = [getRandomCluster([allProjects[0].id], [allStages[1].id])]
 
     const props = {
-      cluster: adminClusterStore.clusters[0],
+      cluster: getRandomCluster([allProjects[0].id], [allStages[1].id], ClusterPrivacy.DEDICATED),
       allProjects,
       allStages,
       isNewCluster: false,
+      associatedEnvironments: [],
     }
 
     cy.mount(ClusterForm, { props })
@@ -89,8 +85,6 @@ describe('ClusterForm.vue', () => {
       .should(props.cluster.clusterResources ? 'be.checked' : 'not.be.checked')
     cy.get('#privacy-select')
       .should('have.value', props.cluster.privacy)
-    cy.get('#privacy-select')
-      .select('dedicated')
     cy.get('[data-testid$="projects-select-tag"]')
       .should('have.length', props.cluster.projectIds?.length)
     cy.get('[data-testid$="stages-select-tag"]')
@@ -106,17 +100,14 @@ describe('ClusterForm.vue', () => {
 
   it('Should mount an update cluster ClusterForm with associated environments', () => {
     useSnackbarStore()
-    const adminClusterStore = useAdminClusterStore()
-
-    const allProjects = get5RandomProjects()
+    const allProjects = repeatFn(5)(getRandomProject)
     const allStages = repeatFn(2)(getRandomStage)
-    // @ts-ignore
-    adminClusterStore.clusters = [getRandomCluster([allProjects[0].id], [allStages[1].id])]
-    const env = getRandomEnv('integ-1', allProjects[0].id, 'qsId', adminClusterStore.clusters[0].id)
-    const associatedEnvironments = [{ organization: allProjects[0].organization.name, project: allProjects[0].name, environment: env.name, owner: 'owner@dso.fr' }]
+    const cluster = getRandomCluster([allProjects[0].id], [allStages[1].id], ClusterPrivacy.DEDICATED)
+    const env = getRandomEnv('integ-1', allProjects[0].id, 'qsId', cluster.id)
+    const associatedEnvironments = [{ organization: allProjects[0].organization.name, project: allProjects[0].name, name: env.name, owner: 'owner@dso.fr' }]
 
     const props = {
-      cluster: adminClusterStore.clusters[0],
+      cluster,
       allProjects,
       allStages,
       isNewCluster: false,
@@ -143,8 +134,6 @@ describe('ClusterForm.vue', () => {
       .should(props.cluster.clusterResources ? 'be.checked' : 'not.be.checked')
     cy.get('#privacy-select')
       .should('have.value', props.cluster.privacy)
-    cy.get('#privacy-select')
-      .select('dedicated')
     cy.get('[data-testid$="projects-select-tag"]')
       .should('have.length', props.cluster.projectIds?.length)
     cy.get('[data-testid$="stages-select-tag"]')
@@ -157,15 +146,16 @@ describe('ClusterForm.vue', () => {
   it('Should disable project selector when privacy is public', () => {
     useSnackbarStore()
 
-    const allProjects = get5RandomProjects()
+    const allProjects = repeatFn(5)(getRandomProject)
 
     const props = {
       allProjects,
+      associatedEnvironments: [],
     }
 
     cy.mount(ClusterForm, { props })
     cy.get('#privacy-select')
-      .select('dedicated')
+      .select(ClusterPrivacy.DEDICATED)
     cy.get('#projects-select').should('be.visible')
     cy.get('#privacy-select')
       .select('public')

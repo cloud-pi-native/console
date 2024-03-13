@@ -2,10 +2,10 @@ import prisma from '../../../__mocks__/prisma.js'
 import app, { setRequestor } from '../../../__mocks__/app.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
 import { getConnection, closeConnections } from '../../../connect.js'
-import { adminGroupPath } from '@dso-console/shared'
-import { getRandomLog, getRandomUser, repeatFn } from '@dso-console/test-utils'
+import { adminGroupPath } from '@cpn-console/shared'
+import { getRandomLog, getRandomUser, repeatFn } from '@cpn-console/test-utils'
 
-describe('Admin logs routes', () => {
+describe('Admin log routes', () => {
   const requestor = { ...getRandomUser(), groups: [adminGroupPath] }
   setRequestor(requestor)
 

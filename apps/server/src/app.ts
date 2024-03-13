@@ -19,7 +19,7 @@ import {
   openApiSchemas,
   toServiceOpenApiSchema,
   monitorServicesOpenApiSchema,
-} from '@dso-console/shared'
+} from '@cpn-console/shared'
 
 import { apiRouter, miscRouter } from './resources/index.js'
 import { addReqLogs, loggerConf } from './utils/logger.js'
@@ -30,6 +30,7 @@ import { isInt, isDev, isTest, keycloakRedirectUri } from './utils/env.js'
 export const apiPrefix = '/api/v1'
 
 const fastifyConf = {
+  // @ts-ignore
   logger: loggerConf[process.env.NODE_ENV] ?? true,
   genReqId: () => nanoid(),
 }
@@ -66,7 +67,7 @@ const app: FastifyInstance = addAllSchemasToApp(fastify(fastifyConf))
         description: 'Swagger des routes de la console DSO.',
         version: '1.0.0',
       },
-      host: keycloakRedirectUri.split('://')[1],
+      host: keycloakRedirectUri?.includes('://') ? keycloakRedirectUri.split('://')[1] : 'localhost',
       schemes: ['http', 'https'],
       consumes: ['application/json'],
       produces: ['application/json'],
@@ -82,6 +83,7 @@ const app: FastifyInstance = addAllSchemasToApp(fastify(fastifyConf))
   })
   .register(fastifyCookie)
   .register(fastifySession, sessionConf)
+  // @ts-ignore
   .register(keycloak, keycloakConf)
   .register(apiRouter, { prefix: apiPrefix })
   .register(miscRouter, { prefix: apiPrefix })
@@ -100,6 +102,7 @@ const app: FastifyInstance = addAllSchemasToApp(fastify(fastifyConf))
       req,
       description,
       ...(isDsoError ? { extras: error.extras } : {}),
+      // @ts-ignore
       error: isDsoError ? null : error,
     })
   })

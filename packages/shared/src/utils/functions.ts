@@ -4,9 +4,9 @@ import { longestEnvironmentName } from './const.js'
  * @param {*} value Value wanted to be return as is
  * @returns {*} Value returned as is
  */
-export const identity = (value) => value
+export const identity = (value: unknown) => value
 
-export const getLongestStringOfArray = (array) => array.reduce((acc, curr) => acc.length < curr.length ? curr : acc, '')
+export const getLongestStringOfArray = (array: Array<string>) => array.reduce((acc, curr) => acc.length < curr.length ? curr : acc, '')
 
 export const calcProjectNameMaxLength = (organizationName: string) => {
   return organizationName
@@ -14,19 +14,18 @@ export const calcProjectNameMaxLength = (organizationName: string) => {
     : 61 - longestEnvironmentName
 }
 
-export const getUniqueListBy = (arr, key) => [...new Map(arr.map(item => [item[key], item])).values()]
+export const getUniqueListBy = (arr: Array<Record<string, unknown>>, key: string | number) => [...new Map(arr.map(item => [item[key], item])).values()]
 
-export const sortArrByObjKeyAsc = <T extends Array<Record<string, unknown>>>(arr: T, key: string): T => arr?.toSorted((a: object, b: object) => a[key] >= b[key] ? 1 : -1) as T
+export const sortArrByObjKeyAsc = <T extends Array<Record<string, string | number>>>(arr: T, key: string): T => arr?.toSorted((a: Record<string, string | number>, b: Record<string, string | number>) => a[key] >= b[key] ? 1 : -1) as T
 
-export const removeTrailingSlash = (url: string) => url?.endsWith('/')
+export const removeTrailingSlash = (url: string | undefined) => url?.endsWith('/')
   ? url?.slice(0, -1)
   : url
 
 // Exclude keys from an object
-export const exclude = <T>(result: T, keys: string[]): T => {
-  // @ts-ignore
+export const exclude = (result: object, keys: string[]): object => {
   if (Array.isArray(result)) return result.map(item => exclude(item, keys))
-  const newObj = {}
+  const newObj: Record<string, unknown> = {}
   Object.entries(result).forEach(([key, value]) => {
     if (keys.includes(key)) return
     if (Array.isArray(value) && typeof value[0] === 'string') {
@@ -43,7 +42,7 @@ export const exclude = <T>(result: T, keys: string[]): T => {
     }
     newObj[key] = value
   })
-  return newObj as any
+  return newObj
 }
 
 export type AsyncReturnType<T extends (...args: any) => Promise<any>> =
@@ -57,4 +56,11 @@ export const objectKeys = <Obj extends Record<string, unknown>>(obj: Obj): (keyo
 }
 export const objectValues = <Obj extends Record<string, unknown>>(obj: Obj): (Obj[keyof Obj])[] => {
   return Object.values(obj) as (Obj[keyof Obj])[]
+}
+
+export const requiredEnv = (envName: string): string => {
+  const envValue = process.env[envName]
+  if (envValue) return envValue
+
+  throw Error(`env: ${envName} is not defined !`)
 }

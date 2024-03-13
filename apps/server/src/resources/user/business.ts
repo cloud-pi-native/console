@@ -1,19 +1,20 @@
-import { getOrCreateUser, addLogs, addUserToProject as addUserToProjectQuery, createUser, deletePermission, getMatchingUsers as getMatchingUsersQuery, getProjectInfos as getProjectInfosQuery, getProjectUsers as getProjectUsersQuery, getUserByEmail, getUserById, lockProject, removeUserFromProject as removeUserFromProjectQuery, updateProjectFailed, updateUserProjectRole as updateUserProjectRoleQuery, getRolesByProjectId } from '@/resources/queries-index.js'
+import { getOrCreateUser, addLogs, addUserToProject as addUserToProjectQuery, createUser, deletePermission, getMatchingUsers as getMatchingUsersQuery, getProjectInfos as getProjectInfosQuery, getProjectUsers as getProjectUsersQuery, getUserByEmail, getUserById, lockProject, removeUserFromProject as removeUserFromProjectQuery, updateUserProjectRole as updateUserProjectRoleQuery, getRolesByProjectId } from '@/resources/queries-index.js'
 import type { User, Project, Log } from '@prisma/client'
-import { hooks } from '@/plugins/index.js'
-import { type PluginResult } from '@/plugins/hooks/hook.js'
-import { checkInsufficientRoleInProject } from '@/utils/controller.js'
-import { unlockProjectIfNotFailed } from '@/utils/business.js'
-import { BadRequestError, ForbiddenError } from '@/utils/errors.js'
-import { type AsyncReturnType, type ProjectRoles, projectIsLockedInfo, userSchema } from '@dso-console/shared'
+import { hooks, type PluginResult } from '@cpn-console/hooks'
+import { type SearchOptions, checkInsufficientRoleInProject } from '@/utils/controller.js'
+import { unlockProjectIfNotFailed, validateSchema } from '@/utils/business.js'
+import { BadRequestError, ForbiddenError, NotFoundError } from '@/utils/errors.js'
+import { type AsyncReturnType, type ProjectRoles, projectIsLockedInfo, UserSchema, instanciateSchema } from '@cpn-console/shared'
 
 export type UserDto = Pick<User, 'email' | 'firstName' | 'lastName' | 'id'>
 export const getUser = async (user: UserDto) => {
-  await userSchema.validateAsync(user)
+  const schemaValidation = UserSchema.safeParse(user)
+  validateSchema(schemaValidation)
   return getOrCreateUser(user)
 }
 
-export const checkProjectRole = async (userId: User['id'], { userList = undefined, roles = undefined, minRole }) => {
+export const checkProjectRole = async (userId: User['id'], { userList = undefined, roles = undefined, minRole }: SearchOptions) => {
+  // @ts-ignore
   const insufficientRoleErrorMessage = checkInsufficientRoleInProject(userId, { userList, minRole, roles })
   if (insufficientRoleErrorMessage) throw new ForbiddenError(insufficientRoleErrorMessage, undefined)
 }
@@ -34,6 +35,8 @@ export const addUserToProject = async (
   userId: User['id'],
   requestId: Log['requestId'],
 ) => {
+  if (!project) throw new BadRequestError('Le projet n\'existe pas')
+
   let userToAdd = await getUserByEmail(email)
 
   // Retrieve user from keycloak if does not exist in db
@@ -41,19 +44,21 @@ export const addUserToProject = async (
     const results = await hooks.retrieveUserByEmail.execute({ email })
     // @ts-ignore
     await addLogs('Retrieve User By Email', results, userId, requestId)
-    // @ts-ignore
-    const retrievedUser = results.keycloak?.user
-    if (!retrievedUser) throw new BadRequestError('Utilisateur introuvable', undefined)
+
+    const retrievedUser = results.results.keycloak?.user
+    if (!retrievedUser) throw new NotFoundError('Utilisateur introuvable', undefined)
 
     // keep only keys allowed in model
-    const userFromModel = {}
-    Object.keys(userSchema.describe().keys).forEach(modelKey => {
+    const userFromModel = instanciateSchema(UserSchema, undefined)
+    Object.keys(userFromModel).forEach(modelKey => {
       userFromModel[modelKey] = retrievedUser[modelKey]
     })
 
-    await userSchema.validateAsync(userFromModel)
+    const schemaValidation = UserSchema.safeParse(userFromModel)
+    validateSchema(schemaValidation)
     await createUser(retrievedUser)
     userToAdd = await getUserByEmail(email)
+    if (!userToAdd) throw new BadRequestError('L\'utilisateur n\'existe pas')
   }
 
   const insufficientRoleErrorMessageUserToAdd = checkInsufficientRoleInProject(userToAdd.id, { roles: project.roles, minRole: 'user' })
@@ -67,7 +72,7 @@ export const addUserToProject = async (
 
   const pluginsResults = await hooks.addUserToProject.validate(kcData)
   if (pluginsResults?.failed) {
-    const reasons = Object.values(pluginsResults)
+    const reasons = Object.values(pluginsResults.results)
       .filter((plugin: PluginResult) => plugin?.status?.result === 'KO')
       .map((plugin: PluginResult) => plugin.status.message)
       .join('; ')
@@ -91,7 +96,7 @@ export const addUserToProject = async (
     await unlockProjectIfNotFailed(project.id)
     return getRolesByProjectId(project.id)
   } catch (error) {
-    await updateProjectFailed(project.id)
+    await unlockProjectIfNotFailed(project.id)
     throw new Error('Echec d\'ajout de l\'utilisateur au projet')
   }
 }
@@ -101,6 +106,8 @@ export const updateUserProjectRole = async (
   project: AsyncReturnType<typeof getProjectInfos>,
   role: ProjectRoles,
 ) => {
+  if (!project) throw new BadRequestError('Le projet n\'existe pas')
+
   if (project.roles.filter(projectUser => projectUser.userId === userToUpdateId).length === 0) throw new BadRequestError('L\'utilisateur ne fait pas partie du projet', undefined)
 
   await updateUserProjectRoleQuery(userToUpdateId, project.id, role)
@@ -113,6 +120,8 @@ export const removeUserFromProject = async (
   userId: User['id'],
   requestId: Log['requestId'],
 ) => {
+  if (!project) throw new BadRequestError('Le projet n\'existe pas')
+
   const userToRemove = await getUserById(userToRemoveId)
   if (!userToRemove) throw new Error('L\'utilisateur n\'existe pas')
 
@@ -127,7 +136,7 @@ export const removeUserFromProject = async (
 
   const pluginsResults = await hooks.removeUserFromProject.validate(kcData)
   if (pluginsResults?.failed) {
-    const reasons = Object.values(pluginsResults)
+    const reasons = Object.values(pluginsResults.results)
       .filter((plugin: PluginResult) => plugin?.status?.result === 'KO')
       .map((plugin: PluginResult) => plugin.status.message)
       .join('; ')
@@ -154,7 +163,7 @@ export const removeUserFromProject = async (
     await unlockProjectIfNotFailed(project.id)
     return getRolesByProjectId(project.id)
   } catch (error) {
-    await updateProjectFailed(project.id)
+    await unlockProjectIfNotFailed(project.id)
     throw new Error('Echec de retrait de l\'utilisateur du projet')
   }
 }

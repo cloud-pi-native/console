@@ -8,8 +8,7 @@ on:
 env:
   REGISTRY: "ghcr.io"
   NAMESPACE: "${{ github.repository }}"
-  # TODO : remettre à true quand runner restaurés
-  MULTI_ARCH: false
+  MULTI_ARCH: true
   USE_QEMU: false
   NODE_VERSION: "20.11.0"
   PNPM_VERSION: "8"
@@ -54,8 +53,8 @@ jobs:
       - expose-vars
       - release
     with:
-      MAJOR_TAG: ${{ needs.release.outputs.major-tag }}
-      MINOR_TAG: ${{ needs.release.outputs.minor-tag }}
-      PATCH_TAG: ${{ needs.release.outputs.patch-tag }}
       PNPM_VERSION: ${{ needs.expose-vars.outputs.PNPM_VERSION }}
       NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
+      PUBLISH_APPS: false
+      PUBLISH_PACKAGES: false
+      PUBLISH_PLUGINS: false

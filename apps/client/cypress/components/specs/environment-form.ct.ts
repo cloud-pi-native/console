@@ -1,5 +1,5 @@
 import { type Pinia, createPinia, setActivePinia } from 'pinia'
-import { createRandomDbSetup } from '@dso-console/test-utils'
+import { createRandomDbSetup } from '@cpn-console/test-utils'
 
 import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
@@ -10,6 +10,9 @@ import '@/main.css'
 import EnvironmentForm from '@/components/EnvironmentForm.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
+
+process.env.NODE_ENV = 'test'
+process.env.CT = 'true'
 
 describe('EnvironmentForm.vue', () => {
   let pinia: Pinia

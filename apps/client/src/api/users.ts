@@ -1,4 +1,4 @@
-import type { AddUserToProjectDto, AddUserToProjectOutputDto, LettersQuery, RoleParams, UpdateUserProjectRoleDto, UserModel, UserParams } from '@dso-console/shared'
+import type { AddUserToProjectDto, AddUserToProjectOutputDto, LettersQuery, RoleParams, UpdateUserProjectRoleDto, UserModel, UserParams } from '@cpn-console/shared'
 import { apiClient } from './xhr-client.js'
 
 // Admin - Users

@@ -1,0 +1,71 @@
+version: '3.9'
+
+services:
+  keycloak:
+    restart: always
+    image: quay.io/keycloak/keycloak:22.0.1
+    container_name: dso-console_keycloak
+    ports:
+      - 8090:8080
+    volumes:
+      - ../keycloak/realms:/opt/keycloak/data/import
+      - ../keycloak/data/local:/opt/keycloak/data/h2
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: true
+    command: start-dev --import-realm
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080;echo -e \"GET /health/ready HTTP/1.1\r\nhost: http://localhost\r\nConnection: close\r\n\r\n\" >&3;grep \"HTTP/1.1 200 OK\" <&3"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - dso-network
+    attach: false
+
+  postgres:
+    restart: always
+    image: docker.io/postgres:15.3
+    container_name: dso-console_postgres
+    environment:
+      POSTGRES_DB: dso-console-db
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    ports:
+      - 5432:5432
+    volumes:
+      - dso-postgres-data-local:/var/lib/postgresql/data
+    networks:
+      - dso-network
+    attach: false
+
+  pgadmin:
+    restart: always
+    image: docker.io/dpage/pgadmin4:7.4
+    container_name: dso-console_pgadmin
+    depends_on:
+      postgres:
+        condition: service_started
+    volumes:
+      - ../db/pgadmin/config/servers-docker.json:/pgadmin4/servers.json
+      - dso-pgadmin-data-local:/var/lib/pgadmin
+    ports:
+      - 8081:80
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@dso.fr
+      PGADMIN_DEFAULT_PASSWORD: admin
+    networks:
+      - dso-network
+    attach: false
+
+networks:
+  dso-network:
+    driver: bridge
+    # driver_opts:
+    # com.docker.network.driver.mtu: 1450
+
+volumes:
+  dso-keycloak-data-local:
+  dso-pgadmin-data-local:
+  dso-postgres-data-local:

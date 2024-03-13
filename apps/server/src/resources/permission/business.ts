@@ -1,8 +1,10 @@
-import { BadRequestError, ForbiddenError, UnprocessableContentError } from '@/utils/errors.js'
+import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import type { Project, User, Environment, Permission, Log } from '@prisma/client'
-import { addLogs, deletePermission as deletePermissionQuery, getEnvironmentByIdWithCluster, getEnvironmentPermissions as getEnvironmentPermissionsQuery, getPermissionByUserIdAndEnvironmentId, getProjectInfos, getSingleOwnerByProjectId, getUserById, setPermission as setPermissionQuery, updatePermission as updatePermissionQuery } from '@/resources/queries-index.js'
+import { addLogs, deletePermission as deletePermissionQuery, getEnvironmentByIdWithCluster, getEnvironmentPermissions as getEnvironmentPermissionsQuery, getPermissionByUserIdAndEnvironmentId, getProjectInfos, getQuotaStageById, getSingleOwnerByProjectId, getStageById, getUserById, setPermission as setPermissionQuery, updatePermission as updatePermissionQuery } from '@/resources/queries-index.js'
 import { checkInsufficientRoleInProject, checkRoleAndLocked } from '@/utils/controller.js'
-import { hooks } from '@/plugins/index.js'
+import { hooks } from '@cpn-console/hooks'
+import { PermissionSchema } from '@cpn-console/shared'
+import { validateSchema } from '@/utils/business.js'
 
 export enum Action {
   update = 'modifiée',
@@ -15,7 +17,7 @@ export const preventUpdatingOwnerPermission = async (
   action: Action = Action.update,
 ) => {
   const owner = await getSingleOwnerByProjectId(projectId)
-  if (userId === owner.id) throw new ForbiddenError(`La permission du owner du projet ne peut être ${action}`)
+  if (userId === owner?.id) throw new ForbiddenError(`La permission du owner du projet ne peut être ${action}`)
 }
 
 export const getEnvironmentPermissions = async (
@@ -23,7 +25,8 @@ export const getEnvironmentPermissions = async (
   projectId: Project['id'],
   environmentId: Environment['id'],
 ) => {
-  const roles = (await getProjectInfos(projectId)).roles
+  const roles = (await getProjectInfos(projectId))?.roles
+  // @ts-ignore
   const errorMessage = checkInsufficientRoleInProject(userId, { roles })
   if (errorMessage) throw new ForbiddenError(errorMessage, undefined)
   return getEnvironmentPermissionsQuery(environmentId)
@@ -38,16 +41,35 @@ export const setPermission = async (
   requestId: Log['requestId'],
 ) => {
   const project = await getProjectInfos(projectId)
+  if (!project) throw new BadRequestError('Le projet n\'existe pas')
+
   const errorMessage = checkRoleAndLocked(project, requestorId)
   if (errorMessage) throw new ForbiddenError(errorMessage, undefined)
+
   const isUserProjectMember = project.roles?.some(role => role?.userId === userId)
   if (!isUserProjectMember) throw new BadRequestError('L\'utilisateur n\'est pas membre du projet', undefined)
+
+  const schemaValidation = PermissionSchema.omit({ id: true }).safeParse({ userId, environmentId, level })
+  validateSchema(schemaValidation)
+
   const permission = await setPermissionQuery({ userId, environmentId, level })
   const environment = await getEnvironmentByIdWithCluster(permission.environmentId)
+  if (!environment) throw new BadRequestError('L\'environnement n\'existe pas')
+  const stageId = (await getQuotaStageById(environment.quotaStageId))?.stageId
+  if (!stageId) throw new BadRequestError('L\'association quota stage n\'existe pas')
+  const stage = await getStageById(stageId)
+  if (!stage) throw new BadRequestError('Le type d\'environnement n\'existe pas')
   const user = await getUserById(userId)
+  if (!user) throw new BadRequestError('L\'utilisateur n\'existe pas')
+
   const results = await hooks.setEnvPermission.execute({
     environment: environment.name,
-    cluster: environment.cluster,
+    stage: stage.name,
+    // @ts-ignore
+    cluster: {
+      ...environment.cluster,
+      ...environment.cluster?.kubeconfig,
+    },
     organization: project.organization.name,
     permissions: {
       ro: level >= 0,
@@ -73,17 +95,37 @@ export const updatePermission = async (
   requestId: Log['requestId'],
 ) => {
   const project = await getProjectInfos(projectId)
+  if (!project) throw new BadRequestError('Le projet n\'existe pas')
+
   await preventUpdatingOwnerPermission(projectId, userId)
+
   const errorMessage = checkRoleAndLocked(project, requestorId)
   if (errorMessage) throw new ForbiddenError(errorMessage)
+
   const requestorPermission = await getPermissionByUserIdAndEnvironmentId(requestorId, environmentId)
   if (!requestorPermission?.length) throw new ForbiddenError('Vous n\'avez pas de droits sur cet environnement')
+
+  const schemaValidation = PermissionSchema.omit({ id: true }).safeParse({ userId, environmentId, level })
+  validateSchema(schemaValidation)
+
   const permission = await updatePermissionQuery({ userId, environmentId, level })
   const environment = await getEnvironmentByIdWithCluster(permission.environmentId)
+  if (!environment) throw new BadRequestError('L\'environnement n\'existe pas')
+  const stageId = (await getQuotaStageById(environment.quotaStageId))?.stageId
+  if (!stageId) throw new BadRequestError('L\'association quota stage n\'existe pas')
+  const stage = await getStageById(stageId)
+  if (!stage) throw new BadRequestError('Le type d\'environnement n\'existe pas')
   const user = await getUserById(userId)
+  if (!user) throw new BadRequestError('L\'utilisateur n\'existe pas')
+
   const results = await hooks.setEnvPermission.execute({
     environment: environment.name,
-    cluster: environment.cluster,
+    stage: stage.name,
+    // @ts-ignore
+    cluster: {
+      ...environment.cluster,
+      ...environment.cluster?.kubeconfig,
+    },
     organization: project.organization.name,
     permissions: {
       ro: level >= 0,
@@ -107,14 +149,21 @@ export const deletePermission = async (
   requestId: Log['requestId'],
 ) => {
   const environment = await getEnvironmentByIdWithCluster(environmentId)
+  if (!environment) throw new NotFoundError('Environnement introuvable')
   const project = await getProjectInfos(environment.projectId)
+  if (!project) throw new NotFoundError('Projet introuvable')
   await preventUpdatingOwnerPermission(project.id, userId, Action.delete)
   const requestorPermission = await getPermissionByUserIdAndEnvironmentId(requestorId, environmentId)
   if (!requestorPermission?.length) throw new ForbiddenError('Vous n\'avez pas de droits sur cet environnement')
   const user = await getUserById(userId)
+  if (!user) throw new NotFoundError('Utilisateur introuvable')
   const results = await hooks.setEnvPermission.execute({
     environment: environment.name,
-    cluster: environment.cluster,
+    // @ts-ignore
+    cluster: {
+      ...environment.cluster,
+      ...environment.cluster?.kubeconfig,
+    },
     organization: project.organization.name,
     permissions: {
       ro: false,

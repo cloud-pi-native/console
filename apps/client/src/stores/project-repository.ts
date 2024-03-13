@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import api from '@/api/index.js'
 import { useProjectStore } from '@/stores/project.js'
-import type { CreateRepositoryDto, RepositoryParams, UpdateRepositoryDto } from '@dso-console/shared'
+import type { CreateRepositoryDto, RepositoryParams, UpdateRepositoryDto } from '@cpn-console/shared'
 import { projectMissing } from '@/utils/const.js'
 
 export const useProjectRepositoryStore = defineStore('project-repository', () => {

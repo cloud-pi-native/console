@@ -1,7 +1,7 @@
 import prisma from '../../__mocks__/prisma.js'
 import app, { getRequestor, setRequestor } from '../../__mocks__/app.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
-import { createRandomDbSetup, getRandomPerm, getRandomRole, getRandomUser } from '@dso-console/test-utils'
+import { createRandomDbSetup, getRandomPerm, getRandomRole, getRandomUser } from '@cpn-console/test-utils'
 import { getConnection, closeConnections } from '../../connect.js'
 
 describe('Permission routes', () => {
@@ -56,7 +56,8 @@ describe('Permission routes', () => {
   // POST
   describe('setPermissionController', () => {
     it('Should set a permission', async () => {
-      const projectInfos = createRandomDbSetup({}).project
+      const dbSetup = createRandomDbSetup({})
+      const projectInfos = dbSetup.project
       const newMember = getRandomUser()
       const newRole = getRandomRole(newMember.id, projectInfos.id)
       projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner'), newRole]
@@ -66,6 +67,8 @@ describe('Permission routes', () => {
       prisma.project.findUnique.mockResolvedValue(projectInfos)
       prisma.permission.create.mockResolvedValue(permissionToAdd)
       prisma.environment.findUnique.mockResolvedValue(environment)
+      prisma.quotaStage.findUnique.mockResolvedValue(dbSetup.stages[0].quotaStage[0])
+      prisma.stage.findUnique.mockResolvedValue(dbSetup.stages[0])
       prisma.user.findUnique.mockResolvedValue(newMember)
 
       const response = await app.inject()
@@ -116,7 +119,8 @@ describe('Permission routes', () => {
   // PUT
   describe('updatePermissionController', () => {
     it('Should update a permission', async () => {
-      const projectInfos = createRandomDbSetup({ envs: ['dev'] }).project
+      const dbSetup = createRandomDbSetup({ envs: ['dev'] })
+      const projectInfos = dbSetup.project
       const requestorRole = { ...getRandomRole(getRequestor().id, projectInfos.id, 'owner'), user: requestor }
       projectInfos.roles = [...projectInfos.roles, requestorRole]
       const environment = projectInfos.environments[0]
@@ -126,6 +130,9 @@ describe('Permission routes', () => {
       const permissionToUpdate = environment.permissions[0]
 
       prisma.environment.findUnique.mockResolvedValue(environmentInfos)
+      prisma.quotaStage.findUnique.mockResolvedValue(dbSetup.stages[0].quotaStage[0])
+      prisma.stage.findUnique.mockResolvedValue(dbSetup.stages[0])
+      prisma.user.findUnique.mockResolvedValue(permissionToUpdate.user)
       prisma.role.findFirst.mockResolvedValue(requestorRole)
       prisma.project.findUnique.mockResolvedValue(projectInfos)
       prisma.permission.findMany.mockResolvedValue([requestorPermission])

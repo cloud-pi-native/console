@@ -1,7 +1,8 @@
 import { getOrCreateUser, getActiveOrganizationsQuery, getOrganizationById } from '@/resources/queries-index.js'
 import { UserDetails } from '@/types/index.js'
 import { NotFoundError, UnauthorizedError } from '@/utils/errors.js'
-import { userSchema } from '@dso-console/shared'
+import { UserSchema } from '@cpn-console/shared'
+import { validateSchema } from '@/utils/business.js'
 
 // TODO 539 : à supprimer ? n'est pas utilisé
 export const getOrganizationInfos = async (organizationId: string) => {
@@ -11,7 +12,8 @@ export const getOrganizationInfos = async (organizationId: string) => {
 }
 
 export const getActiveOrganizations = async (requestor: UserDetails) => {
-  await userSchema.validateAsync(requestor)
+  const schemaValidation = UserSchema.safeParse(requestor)
+  validateSchema(schemaValidation)
   const user = await getOrCreateUser(requestor)
   if (!user) throw new UnauthorizedError('Veuillez vous connecter')
   const organizations = await getActiveOrganizationsQuery()

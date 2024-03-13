@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { type Ref, ref } from 'vue'
 import api from '@/api/index.js'
-import type { AdminLogsQuery, LogModel } from '@dso-console/shared'
+import type { AdminLogsQuery, LogModel } from '@cpn-console/shared'
 
 export const useAdminLogStore = defineStore('admin-log', () => {
   const logs: Ref<Array<LogModel | undefined>> = ref([])

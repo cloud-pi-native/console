@@ -2,7 +2,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
-import { projectIsLockedInfo, sortArrByObjKeyAsc } from '@dso-console/shared'
+import { projectIsLockedInfo, sortArrByObjKeyAsc, AllStatus } from '@cpn-console/shared'
 import { useUserStore } from '@/stores/user.js'
 import { useAdminClusterStore } from '@/stores/admin/cluster'
 import { useSnackbarStore } from '@/stores/snackbar.js'
@@ -38,7 +38,7 @@ const setEnvironmentsTiles = (project) => {
 // @ts-ignore
 const setSelectedEnvironment = (environment) => {
   // @ts-ignore
-  if (selectedEnvironment.value.id === environment.id || ['deleting', 'initializing'].includes(environment?.status)) {
+  if (selectedEnvironment.value.id === environment.id || [AllStatus.DELETING, AllStatus.INITIALIZING].includes(environment?.status)) {
     selectedEnvironment.value = {}
     return
   }
@@ -155,15 +155,15 @@ watch(project, () => {
       >
         <DsfrTile
           :title="environment.title"
-          :description="['deleting', 'initializing'].includes(environment.status) ? 'Opérations en cours' : null"
+          :description="[AllStatus.DELETING, AllStatus.INITIALIZING].includes(environment.status) ? 'Opérations en cours' : null"
           :data-testid="`environmentTile-${environment.title}`"
           :horizontal="!!selectedEnvironment.id"
-          :disabled="['deleting', 'initializing'].includes(environment.status)"
+          :disabled="[AllStatus.DELETING, AllStatus.INITIALIZING].includes(environment.status)"
           class="fr-mb-2w w-11/12"
           @click="setSelectedEnvironment(environment.data)"
         />
         <DsfrBadge
-          v-if="environment.data?.status === 'initializing'"
+          v-if="environment.data?.status === AllStatus.INITIALIZING"
           :data-testid="`${environment.title}-${environment.data?.status}-badge`"
           type="info"
           label="Environnement en cours de création"

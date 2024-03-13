@@ -1,9 +1,11 @@
+import { ClusterPrivacy } from '../../index.js'
+
 export const createClusterDto = {
   label: {
     type: 'string',
   },
   privacy: {
-    enum: ['public', 'dedicated'],
+    enum: Object.values(ClusterPrivacy),
   },
   clusterResources: {
     type: 'boolean',

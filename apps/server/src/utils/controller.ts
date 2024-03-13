@@ -1,4 +1,4 @@
-import { type ProjectRoles, adminGroupPath, projectIsLockedInfo } from '@dso-console/shared'
+import { type ProjectRoles, adminGroupPath, projectIsLockedInfo } from '@cpn-console/shared'
 import type { Permission, User, Role, Cluster } from '@prisma/client'
 import { ForbiddenError } from './errors.js'
 import { FastifyRequest } from 'fastify'
@@ -24,7 +24,7 @@ type IsAllowed = {
   minRole?: ProjectRoles
 }
 
-type SearchOptions = RequireOnlyOne<IsAllowed, 'userList' | 'roles'>
+export type SearchOptions = RequireOnlyOne<IsAllowed, 'userList' | 'roles'>
 
 type ErrorMessagePredicate = () => string | undefined
 export const getErrorMessage = (...fns: ErrorMessagePredicate[]) => {
@@ -66,7 +66,7 @@ export const checkInsufficientRoleInProject = (
         .map(({ userId }) => ({ id: userId }))
       : roles.map(({ userId }) => ({ id: userId }))
   }
-  return userList.some(user => user?.id === userId)
+  return userList?.some(user => user?.id === userId)
     ? ''
     : 'Vous n’avez pas les permissions suffisantes dans le projet'
 }

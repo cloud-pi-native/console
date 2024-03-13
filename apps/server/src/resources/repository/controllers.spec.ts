@@ -1,11 +1,11 @@
 import prisma from '../../__mocks__/prisma.js'
 import app, { getRequestor, setRequestor } from '../../__mocks__/app.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
-import { createRandomDbSetup, getRandomLog, getRandomRepo, getRandomRole, getRandomUser } from '@dso-console/test-utils'
+import { createRandomDbSetup, getRandomLog, getRandomRepo, getRandomRole, getRandomUser } from '@cpn-console/test-utils'
 import { getConnection, closeConnections } from '../../connect.js'
-import { projectIsLockedInfo } from '@dso-console/shared'
+import { projectIsLockedInfo } from '@cpn-console/shared'
 
-describe('Project routes', () => {
+describe('Repository routes', () => {
   const requestor = getRandomUser()
   setRequestor(requestor)
 
@@ -65,6 +65,7 @@ describe('Project routes', () => {
       const newRepository = getRandomRepo(projectInfos.id)
 
       prisma.project.findUnique.mockResolvedValue(projectInfos)
+      prisma.user.findUnique.mockResolvedValue(requestor)
       prisma.project.update.mockResolvedValue(projectInfos)
       randomDbSetUp.stages.forEach(stage => {
         prisma.stage.findUnique.mockResolvedValueOnce(randomDbSetUp.stages?.find(dbSetUpstage => dbSetUpstage?.id === stage?.id))
@@ -110,7 +111,7 @@ describe('Project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(400)
-      expect(response.json().message).toEqual('"internalRepoName" with value "^%!!dhrez" fails to match the required pattern: /^[a-z0-9]+[a-z0-9-]+[a-z0-9]+$/')
+      expect(response.json().message).toEqual('Validation error: failed regex test at "internalRepoName"')
     })
   })
 

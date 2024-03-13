@@ -9,18 +9,20 @@ services:
       - 8090:8080
     volumes:
       - ../keycloak/realms:/opt/keycloak/data/import
-      - ../keycloak/data:/opt/keycloak/data/h2
+      - ../keycloak/data/dev:/opt/keycloak/data/h2
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: true
     command: start-dev --import-realm
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080;echo -e \"GET /health/ready HTTP/1.1\r\nhost: http://localhost\r\nConnection: close\r\n\r\n\" >&3;grep \"HTTP/1.1 200 OK\" <&3"]
       interval: 5s
       timeout: 5s
       retries: 10
     networks:
       - dso-network
+    attach: false
 
   postgres:
     restart: always
@@ -33,9 +35,10 @@ services:
     ports:
       - 5432:5432
     volumes:
-      - dso-postgres-data:/var/lib/postgresql/data
+      - dso-postgres-data-dev:/var/lib/postgresql/data
     networks:
       - dso-network
+    attach: false
 
   pgadmin:
     restart: always
@@ -44,8 +47,8 @@ services:
     depends_on:
       - postgres
     volumes:
-      - dso-pgadmin-data:/var/lib/pgadmin
-      - ../db/pgadmin/config/servers.json:/pgadmin4/servers.json
+      - ../db/pgadmin/config/servers-docker.json:/pgadmin4/servers.json
+      - dso-pgadmin-data-dev:/var/lib/pgadmin
     ports:
       - 8081:80
     environment:
@@ -53,6 +56,7 @@ services:
       PGADMIN_DEFAULT_PASSWORD: admin
     networks:
       - dso-network
+    attach: false
 
   server:
     restart: always
@@ -62,22 +66,47 @@ services:
       target: dev
     image: dso-console/server:dev
     container_name: dso-console_server
+    command: ["dev"] # use "debug" to run debug mode
     depends_on:
       keycloak:
         condition: service_healthy
       postgres:
         condition: service_started
     ports:
-      - 4000:4000
+      - 4000:8080
       - 9229:9229
-    volumes:
-      - /app/node_modules/
-      - ../apps/server:/app/apps/server
-      - /app/apps/server/node_modules/
-    environment:
-      NODE_ENV: development
+    env_file:
+      - ../apps/server/.env.docker
+    develop:
+      watch:
+        - action: sync
+          path: ../apps/server
+          target: /app/apps/server
+          ignore:
+            - node_modules/
+            - .env
+            - .env.docker
+            - .env.integ
+        - action: sync
+          path: ../packages/shared
+          target: /app/packages/shared
+          ignore:
+            - node_modules/
+        - action: sync
+          path: ../packages/hooks
+          target: /app/packages/hooks
+          ignore:
+            - node_modules/
+        - action: sync
+          path: ../plugins
+          target: /app/plugins
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: ../apps/server/package.json
     networks:
       - dso-network
+    attach: true
 
   client:
     restart: always
@@ -88,17 +117,32 @@ services:
     image: dso-console/client:dev
     container_name: dso-console_client
     depends_on:
-      - server
+      server:
+        condition: service_started
     ports:
       - 8080:8080
-    volumes:
-      - /app/node_modules/
-      - ../apps/client:/app/apps/client
-      - /app/apps/client/node_modules/
-    environment:
-      NODE_ENV: development
+    env_file:
+      - ../apps/client/.env.docker
+    develop:
+      watch:
+        - action: sync
+          path: ../apps/client
+          target: /app/apps/client
+          ignore:
+            - node_modules/
+            - .env
+            - .env.docker
+            - .env.integ
+        - action: sync
+          path: ../packages/shared
+          target: /app/packages/shared
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: ../apps/client/package.json
     networks:
       - dso-network
+    attach: true
 
 networks:
   dso-network:
@@ -107,6 +151,5 @@ networks:
     # com.docker.network.driver.mtu: 1450
 
 volumes:
-  dso-keycloak-data:
-  dso-pgadmin-data:
-  dso-postgres-data:
+  dso-pgadmin-data-dev:
+  dso-postgres-data-dev:

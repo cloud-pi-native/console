@@ -4,12 +4,12 @@ import { useAdminOrganizationStore } from '@/stores/admin/organization.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import {
   formatDate,
-  schemaValidator,
-  isValid,
-  instanciateSchema,
-  organizationSchema,
+  OrganizationSchema,
   sortArrByObjKeyAsc,
-} from '@dso-console/shared'
+  SharedZodError,
+  parseZodError,
+  instanciateSchema,
+} from '@cpn-console/shared'
 import { getRandomId } from '@gouvminint/vue-dsfr'
 
 const adminOrganizationStore = useAdminOrganizationStore()
@@ -17,7 +17,7 @@ const adminOrganizationStore = useAdminOrganizationStore()
 const snackbarStore = useSnackbarStore()
 
 const allOrganizations = ref([])
-const newOrg = ref({})
+const newOrg = ref(instanciateSchema(OrganizationSchema, undefined))
 const tableKey = ref(getRandomId('table'))
 
 const title = 'Liste des organisations'
@@ -32,9 +32,14 @@ const headers = [
 const rows = ref([])
 
 const isSyncingOrganizations = ref(false)
-const isUpdatingOrganization = ref(null)
+const isUpdatingOrganization = ref<null | { name: string, key: string, data: unknown }>(null)
 
 const isOrgAlreadyTaken = computed(() => allOrganizations.value.find(org => org.name === newOrg.value.name))
+
+const errorSchema = computed<SharedZodError | undefined>(() => {
+  const schemaValidation = OrganizationSchema.pick({ label: true, name: true }).safeParse(newOrg.value)
+  return schemaValidation.success ? undefined : schemaValidation.error
+})
 
 const setRows = () => {
   rows.value = allOrganizations.value.length
@@ -94,20 +99,22 @@ const syncOrganizations = async () => {
 }
 
 const createOrganization = async () => {
-  const keysToValidate = ['label', 'name']
-  const errorSchema = schemaValidator(organizationSchema, newOrg.value, { keysToValidate })
-  if (Object.keys(errorSchema).length || isOrgAlreadyTaken.value) {
-    snackbarStore.setMessage(Object.values(errorSchema)[0])
+  if (isOrgAlreadyTaken.value) {
+    snackbarStore.setMessage('Une organisation portant ce nom existe déjà.', 'error')
+    return
+  }
+  if (errorSchema.value) {
+    snackbarStore.setMessage(parseZodError(errorSchema.value))
     return
   }
   await adminOrganizationStore.createOrganization(newOrg.value)
   snackbarStore.setMessage(`Organisation ${newOrg.value.name} créée`, 'success')
   await getAllOrganizations()
 
-  newOrg.value = instanciateSchema({ schema: organizationSchema }, undefined)
+  newOrg.value = instanciateSchema(OrganizationSchema, undefined)
 }
 
-const preUpdateOrganization = ({ name, key, data }) => {
+const preUpdateOrganization = ({ name, key, data }: {name: string, key: string, data: unknown }) => {
   isUpdatingOrganization.value = {
     name,
     key,
@@ -115,7 +122,7 @@ const preUpdateOrganization = ({ name, key, data }) => {
   }
 }
 
-const confirmUpdateOrganization = async ({ name, key, data }) => {
+const confirmUpdateOrganization = async ({ name, key, data }: {name: string, key: string, data: unknown }) => {
   isUpdatingOrganization.value = null
   await updateOrganization({ name, key, data })
 }
@@ -125,15 +132,24 @@ const cancelUpdateOrganization = async () => {
   await getAllOrganizations()
 }
 
-const updateOrganization = async ({ name, key, data }) => {
+const updateOrganization = async ({ name, key, data }: {name: string, key: string, data: unknown }) => {
   const org = {
     name,
     [key]: data,
   }
-  const keysToValidate = ['name', key]
-  const errorSchema = schemaValidator(organizationSchema, org, { keysToValidate })
-  if (Object.keys(errorSchema).length || isOrgAlreadyTaken.value) {
-    snackbarStore.setMessage(Object.values(errorSchema)[0])
+
+  const schemaValidation = OrganizationSchema
+    .pick({
+      name: true,
+      [key]: true,
+    }).safeParse(org)
+
+  if (isOrgAlreadyTaken.value) {
+    snackbarStore.setMessage('Une organisation portant ce nom existe déjà.', 'error')
+    return
+  }
+  if (!schemaValidation.success) {
+    snackbarStore.setMessage(parseZodError(schemaValidation.error))
     return
   }
   await adminOrganizationStore.updateOrganization(org)
@@ -143,7 +159,7 @@ const updateOrganization = async ({ name, key, data }) => {
 
 onBeforeMount(async () => {
   await getAllOrganizations()
-  newOrg.value = instanciateSchema({ schema: organizationSchema }, undefined)
+  newOrg.value = instanciateSchema(OrganizationSchema, undefined)
 })
 </script>
 
@@ -209,7 +225,7 @@ onBeforeMount(async () => {
         label="Label de l'organisation"
         label-visible
         placeholder="Ministère de l'économie et des finances"
-        :is-invalid="(!!newOrg.label && isValid(organizationSchema, newOrg, 'email')) || isOrgAlreadyTaken"
+        :is-invalid="(!!newOrg.label && !OrganizationSchema.pick({label: true}).safeParse({label: newOrg.label}).success) || isOrgAlreadyTaken"
         class="fr-mb-2w"
       />
       <DsfrInput
@@ -220,7 +236,7 @@ onBeforeMount(async () => {
         hint="Ce nom sera utilisé pour construire le namespace du projet. Il doit être en minuscule et ne pas faire plus de 10 caractères ni contenir de caractères spéciaux hormis le trait d'union '-'."
         label-visible
         placeholder="min-eco"
-        :is-invalid="(!!newOrg.label && isValid(organizationSchema, newOrg, 'email')) || isOrgAlreadyTaken"
+        :is-invalid="(!!newOrg.name && !OrganizationSchema.pick({name: true}).safeParse({name: newOrg.name}).success) || isOrgAlreadyTaken"
         class="fr-mb-2w"
       />
       <DsfrAlert
@@ -236,7 +252,7 @@ onBeforeMount(async () => {
         label="Ajouter l'organisation"
         secondary
         icon="ri-user-add-line"
-        :disabled="!newOrg.label || !newOrg.name || !isValid(organizationSchema, newOrg, 'label') || !isValid(organizationSchema, newOrg, 'name') || isOrgAlreadyTaken"
+        :disabled="!!errorSchema || isOrgAlreadyTaken"
         @click="createOrganization()"
       />
     </DsfrFieldset>

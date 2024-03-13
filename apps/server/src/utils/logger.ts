@@ -25,11 +25,11 @@ interface ReqLogsInput {
 
 export const addReqLogs = ({ req, error, description, extras }: ReqLogsInput) => {
   const e = new Error()
-  const frame = e.stack.split('\n')[2]
+  const frame = e.stack?.split('\n')[2]
 
   const logInfos = {
-    file: frame.split(' ')[6].split(':')[0].split('src/')[1],
-    function: frame.split(' ')[5].split('.')[1],
+    file: frame?.split(' ')[6].split(':')[0].split('src/')[1],
+    function: frame?.split(' ')[5].split('.')[1],
     requestorId: req.session?.user?.id,
     requestorGroups: req.session?.user?.groups,
     description,

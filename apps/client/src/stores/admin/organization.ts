@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import api from '@/api/index.js'
-import type { CreateOrganizationDto, UpdateOrganizationDto } from '@dso-console/shared'
+import type { CreateOrganizationDto, UpdateOrganizationDto } from '@cpn-console/shared'
 
 export const useAdminOrganizationStore = defineStore('admin-organization', () => {
   const getAllOrganizations = async () => {

@@ -5,7 +5,7 @@ import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@/main.css'
 import TeamCt from '@/components/TeamCt.vue'
-import { createRandomDbSetup, getRandomUser, toUsersStore } from '@dso-console/test-utils'
+import { createRandomDbSetup, getRandomUser, toUsersStore } from '@cpn-console/test-utils'
 import { useProjectStore } from '@/stores/project.js'
 import { useUsersStore } from '@/stores/users.js'
 

@@ -1,0 +1,68 @@
+{
+  "apps": [
+    {
+      "name": "@cpn-console/server",
+      "path": "./apps/server"
+    },
+    {
+      "name": "@cpn-console/client",
+      "path": "./apps/client"
+    }
+  ],
+  "packages": [
+    {
+      "name": "@cpn-console/shared",
+      "path": "./packages/shared"
+    },
+    {
+      "name": "@cpn-console/hooks",
+      "path": "./packages/hooks"
+    },
+    {
+      "name": "@cpn-console/test-utils",
+      "path": "./packages/test-utils"
+    },
+    {
+      "name": "@cpn-console/eslint-config",
+      "path": "./packages/eslintconfig"
+    },
+    {
+      "name": "@cpn-console/ts-config",
+      "path": "./packages/tsconfig"
+    }
+  ],
+  "plugins": [
+    {
+      "name": "@cpn-console/argocd-plugin",
+      "path": "./plugins/argocd"
+    },
+    {
+      "name": "@cpn-console/gitlab-plugin",
+      "path": "./plugins/gitlab"
+    },
+    {
+      "name": "@cpn-console/harbor-plugin",
+      "path": "./plugins/harbor"
+    },
+    {
+      "name": "@cpn-console/keycloak-plugin",
+      "path": "./plugins/keycloak"
+    },
+    {
+      "name": "@cpn-console/kubernetes-plugin",
+      "path": "./plugins/kubernetes"
+    },
+    {
+      "name": "@cpn-console/nexus-plugin",
+      "path": "./plugins/nexus"
+    },
+    {
+      "name": "@cpn-console/sonarqube-plugin",
+      "path": "./plugins/sonarqube"
+    },
+    {
+      "name": "@cpn-console/vault-plugin",
+      "path": "./plugins/vault"
+    }
+  ]
+}

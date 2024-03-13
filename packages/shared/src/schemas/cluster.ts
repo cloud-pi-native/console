@@ -1,61 +1,67 @@
-import Joi from 'joi'
+import { z } from 'zod'
+import { ClusterPrivacy } from '../utils/const.js'
 
-export const clusterSchema = Joi.object({
-  id: Joi.string()
+const CreateClusterSchema = z.object({
+  label: z.string()
+    .regex(/^[a-zA-Z0-9-]+$/)
+    .max(50),
+  infos: z.string()
+    .max(200)
+    .optional(),
+  secretName: z.string()
+    .max(50)
+    .optional(),
+  clusterResources: z.boolean(),
+  privacy: z.nativeEnum(ClusterPrivacy),
+  projectIds: z.string()
     .uuid()
-    .optional()
-    .allow(''),
-
-  projectIds: Joi.array(),
-
-  stageIds: Joi.array(),
-
-  label: Joi.string()
-    .pattern(/^[a-zA-Z0-9-]+$/)
-    .max(50),
-
-  infos: Joi.string()
-    .optional()
-    .allow('')
-    .max(200),
-
-  secretName: Joi.string()
-    .optional()
-    .allow('')
-    .max(50),
-
-  clusterResources: Joi.boolean(),
-
-  privacy: Joi.string()
-    .valid('public', 'dedicated'),
-
-  user: Joi.object({
-    username: Joi.string()
+    .array()
+    .optional(),
+  stageIds: z.string()
+    .uuid()
+    .array(),
+  user: z.object({
+    username: z.string()
       .optional(),
-
-    password: Joi.string()
+    password: z.string()
       .optional(),
-
-    keyData: Joi.string()
+    keyData: z.string()
       .optional(),
-
-    certData: Joi.string()
+    certData: z.string()
       .optional(),
-
-    token: Joi.string()
+    token: z.string()
       .optional(),
   }),
-
-  cluster: Joi.object({
-    server: Joi.string()
-      .optional(), // TODO: update e2e tests to make this not optional
-
-    tlsServerName: Joi.string(),
-
-    skipTLSVerify: Joi.boolean()
+  cluster: z.object({
+    server: z.string()
       .optional(),
-
-    caData: Joi.string()
+    tlsServerName: z.string(),
+    skipTLSVerify: z.boolean()
+      .optional(),
+    caData: z.string()
       .optional(),
   }),
 })
+
+const UpdateClusterSchema = z.object({
+  id: z.string()
+    .uuid(),
+})
+
+export const ClusterSchema = UpdateClusterSchema.merge(CreateClusterSchema)
+
+export const CreateClusterBusinessSchema = CreateClusterSchema.refine(
+  ({ privacy, projectIds }) =>
+    !!(privacy === ClusterPrivacy.DEDICATED && projectIds?.length) ||
+      privacy === ClusterPrivacy.PUBLIC,
+  { message: 'Si le cluster est dédié, vous devez renseignez les ids des projets associés.' },
+)
+
+export const ClusterBusinessSchema = ClusterSchema.refine(
+  ({ privacy, projectIds }) =>
+    !!(privacy === ClusterPrivacy.DEDICATED && projectIds?.length) ||
+      privacy === ClusterPrivacy.PUBLIC,
+  { message: 'Si le cluster est dédié, vous devez renseignez les ids des projets associés.' },
+)
+
+export type Cluster = Zod.infer<typeof ClusterSchema>

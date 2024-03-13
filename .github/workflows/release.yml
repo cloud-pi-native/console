@@ -27,19 +27,13 @@ jobs:
       patch-tag: ${{ steps.release.outputs.patch }}
     steps:
       - name: Checks-out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Pre release new version
-        uses: google-github-actions/release-please-action@v3
+        uses: google-github-actions/release-please-action@v4
         id: release
         with:
-          package-name: console
-          release-type: node
-          default-branch: main
-          group-pull-request-title-pattern: release v${version}
-          extra-files: |
-            helm/Chart.yaml
-            helm/values.yaml
+          target-branch: main
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Edit packages versions
@@ -49,9 +43,10 @@ jobs:
           git fetch
           git checkout "$BRANCH"
           VERSION=$(jq -r .version package.json)
-          yq e -i ".version |= \"$VERSION\"" apps/server/package.json
-          yq e -i ".version |= \"$VERSION\"" apps/client/package.json
-          yq e -i ".version |= \"$VERSION\"" packages/shared/package.json
+          for pkg in $(jq -r '.app | map(.path + "/package.json") | .[]' < ./ci/matrix-npm.json); do
+            yq e -i ".version |= \"$VERSION\"" $pkg
+            yq e -i ".publishConfig.tag |= \"latest\"" $pkg
+          done
           git add .
           # Emulate the author of the existing commit (the bot).
           git config user.email "$(git log -n 1 --format='%ae')"

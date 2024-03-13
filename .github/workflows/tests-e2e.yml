@@ -45,7 +45,7 @@ jobs:
     outputs:
       browsers: ${{ steps.build-matrix.outputs.BROWSERS }}
     steps:
-      - name: Generate matrix for build
+      - name: Generate matrix
         id: build-matrix
         run: |
           BROWSERS=$(echo "\"${{ inputs.BROWSERS }}\"" | jq -c 'split(",")')
@@ -61,17 +61,17 @@ jobs:
         browsers: ${{ fromJson(needs.matrix.outputs.browsers) }}
     steps:
       - name: Checks-out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v3
         id: pnpm-install
         with:
           version: "${{ inputs.PNPM_VERSION }}"
           run_install: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: "${{ inputs.NODE_VERSION }}"
 
@@ -93,7 +93,7 @@ jobs:
           echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
       - name: Cache node files
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ${{ steps.pnpm-store.outputs.STORE_PATH }}
@@ -103,11 +103,11 @@ jobs:
             node-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Cache turbo files
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ./.turbo/cache
-          key: turbo-e2e-${{ runner.os }}-${{ runner.arch }}-${{ matrix.browsers }}-${{ hashFiles('apps/**/src/**','apps/client/cypress/**','packages/**/src/**') }}
+          key: turbo-e2e-${{ runner.os }}-${{ runner.arch }}-${{ matrix.browsers }}-${{ hashFiles('apps/**/src/**','apps/client/cypress/**','packages/**/src/**','plugins/**/src/**') }}
           restore-keys: |
             turbo-e2e-${{ runner.os }}-${{ runner.arch }}-${{ matrix.browsers }}-
             turbo-e2e-${{ runner.os }}-${{ runner.arch }}-
@@ -122,7 +122,7 @@ jobs:
 
       - name: Upload cypress artifacts
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: cypress-report
           path: ./apps/client/cypress/e2e/screenshots/

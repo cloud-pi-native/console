@@ -1,6 +1,7 @@
 import type { Environment, Project, Role, Cluster, QuotaStage } from '@prisma/client'
 import prisma from '@/prisma.js'
 import { getProjectById } from '../project/queries.js'
+import { AllStatus } from '@cpn-console/shared'
 
 // SELECT
 export const getEnvironmentById = async (id: Environment['id']) => {
@@ -67,12 +68,19 @@ export const getEnvironmentsByProjectId = async (projectId: Project['id']) => {
 export const getEnvironmentByIdWithCluster = async (id: Environment['id']) => {
   return prisma.environment.findUnique({
     where: { id },
-    include: { cluster: true },
+    include: {
+      cluster: {
+        include: {
+          kubeconfig: true,
+        },
+      },
+    },
   })
 }
 
 export const getProjectByEnvironmentId = async (environmentId: Environment['id']) => {
   const env = await getEnvironmentById(environmentId)
+  if (!env) return
   return getProjectById(env.projectId)
 }
 
@@ -156,7 +164,7 @@ export const initializeEnvironment = async ({ name, projectId, projectOwners, cl
           id: clusterId,
         },
       },
-      status: 'initializing',
+      status: AllStatus.INITIALIZING,
       permissions: {
         createMany: {
           data: projectOwners.map(({ userId }) => ({ userId, level: 2 })),

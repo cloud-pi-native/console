@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { createRandomDbSetup } from '@dso-console/test-utils'
+import { createRandomDbSetup } from '@cpn-console/test-utils'
 
 describe('Random utils', () => {
   // TODO

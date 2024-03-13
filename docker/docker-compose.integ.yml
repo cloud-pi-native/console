@@ -1,0 +1,136 @@
+version: '3.9'
+
+services:
+  postgres:
+    restart: always
+    image: docker.io/postgres:15.3
+    container_name: dso-console_postgres
+    environment:
+      POSTGRES_DB: dso-console-db
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    ports:
+      - 5432:5432
+    volumes:
+      - dso-postgres-data-integ:/var/lib/postgresql/data
+    networks:
+      - dso-network
+    attach: false
+
+  pgadmin:
+    restart: always
+    image: docker.io/dpage/pgadmin4:7.4
+    container_name: dso-console_pgadmin
+    depends_on:
+      postgres:
+        condition: service_started
+    volumes:
+      - ../db/pgadmin/config/servers-docker.json:/pgadmin4/servers.json
+      - dso-pgadmin-data-integ:/var/lib/pgadmin
+    ports:
+      - 8081:80
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@dso.fr
+      PGADMIN_DEFAULT_PASSWORD: admin
+    networks:
+      - dso-network
+    attach: false
+
+  server:
+    restart: always
+    build:
+      context: ..
+      dockerfile: apps/server/Dockerfile
+      target: dev
+    image: dso-console/server:dev
+    container_name: dso-console_server
+    command: ["dev"] # use "debug" to run debug mode
+    depends_on:
+      postgres:
+        condition: service_started
+    ports:
+      - 4000:8080
+      - 9229:9229
+    volumes:
+      - ${KUBECONFIG_HOST_PATH}:${KUBECONFIG_PATH:-/home/node/.kube/config}
+      - ${EXTERNAL_PLUGINS_DIR_HOST_PATH}:/plugins
+    env_file:
+      - ../apps/server/.env.docker
+      - ../apps/server/.env.integ
+    develop:
+      watch:
+        - action: sync
+          path: ../apps/server
+          target: /app/apps/server
+          ignore:
+            - node_modules/
+            - .env
+            - .env.docker
+            - .env.integ
+        - action: sync
+          path: ../packages/shared
+          target: /app/packages/shared
+          ignore:
+            - node_modules/
+        - action: sync
+          path: ../packages/hooks
+          target: /app/packages/hooks
+          ignore:
+            - node_modules/
+        - action: sync
+          path: ../plugins
+          target: /app/plugins
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: ../apps/server/package.json
+    networks:
+      - dso-network
+    attach: true
+
+  client:
+    restart: always
+    build:
+      context: ..
+      dockerfile: apps/client/Dockerfile
+      target: dev
+    image: dso-console/client:dev
+    container_name: dso-console_client
+    depends_on:
+      server:
+        condition: service_started
+    ports:
+      - 8080:8080
+    env_file:
+      - ../apps/client/.env.docker
+      - ../apps/client/.env.integ
+    develop:
+      watch:
+        - action: sync
+          path: ../apps/client
+          target: /app/apps/client
+          ignore:
+            - node_modules/
+            - .env
+            - .env.docker
+            - .env.integ
+        - action: sync
+          path: ../packages/shared
+          target: /app/packages/shared
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: ../apps/client/package.json
+    networks:
+      - dso-network
+    attach: true
+
+networks:
+  dso-network:
+    driver: bridge
+    # driver_opts:
+    # com.docker.network.driver.mtu: 1450
+
+volumes:
+  dso-pgadmin-data-integ:
+  dso-postgres-data-integ:

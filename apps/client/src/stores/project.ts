@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { type Ref, ref } from 'vue'
 import api from '@/api/index.js'
-import type { CreateProjectDto, ProjectInfos, ProjectParams, UpdateProjectDto, ProjectModel, RoleModel } from '@dso-console/shared'
+import type { CreateProjectDto, ProjectInfos, ProjectParams, UpdateProjectDto, ProjectModel, RoleModel } from '@cpn-console/shared'
 
 export const useProjectStore = defineStore('project', () => {
   const selectedProject: Ref<ProjectInfos | undefined> = ref(undefined)

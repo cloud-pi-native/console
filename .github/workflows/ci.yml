@@ -27,16 +27,17 @@ jobs:
       apps: ${{ steps.filter.outputs.apps }}
     steps:
       - name: Checks-out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Check updated files paths
-        uses: dorny/paths-filter@v2
+        uses: dorny/paths-filter@v3
         id: filter
         with:
           filters: |
             apps:
               - 'apps/**'
               - 'packages/**'
+              - 'plugins/**'
               - '.github/workflows/**'
 
   expose-vars:

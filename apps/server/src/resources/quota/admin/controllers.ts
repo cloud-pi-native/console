@@ -3,7 +3,7 @@ import { sendCreated, sendNoContent, sendOk } from '@/utils/response.js'
 import { createQuota, deleteQuota, getQuotaAssociatedEnvironments, updateQuotaStage, updateQuotaPrivacy } from './business.js'
 import type { FastifyInstance } from 'fastify'
 
-import { createQuotaSchema, deleteQuotaSchema, getQuotaAssociatedEnvironmentsSchema, updateQuotaPrivacySchema, updateQuotaStageSchema } from '@dso-console/shared'
+import { createQuotaSchema, deleteQuotaSchema, getQuotaAssociatedEnvironmentsSchema, updateQuotaPrivacySchema, updateQuotaStageSchema } from '@cpn-console/shared'
 import { FromSchema } from 'json-schema-to-ts'
 
 const router = async (app: FastifyInstance, _opt) => {
@@ -69,7 +69,7 @@ const router = async (app: FastifyInstance, _opt) => {
         req,
         description: 'Associations quota / types d\'environnement mises à jour avec succès',
         extras: {
-          quotaStages: quotaStages.length + '',
+          quotaStages: quotaStages?.length + '',
         },
       })
 

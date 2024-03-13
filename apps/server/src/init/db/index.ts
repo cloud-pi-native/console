@@ -1,6 +1,6 @@
 import { dropTables } from '@/connect.js'
 import prisma from '@/prisma.js'
-import { objectEntries } from '@/utils/type.js'
+import { objectEntries } from '@cpn-console/shared'
 
 type Models = 'cluster' | 'environment' | 'log' | 'organization' | 'permission' | 'project' | 'repository' | 'role' | 'user' | 'stage' | 'quota'
 

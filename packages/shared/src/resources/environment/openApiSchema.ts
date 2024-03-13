@@ -53,16 +53,6 @@ const environmentParamsSchema = {
   required: ['projectId', 'environmentId'],
 } as const
 
-export const getEnvironmentByIdSchema = {
-  description: 'Retrieve an environment by its id',
-  tags: ['environment'],
-  summary: 'Retrieve an environment by its id',
-  params: environmentParamsSchema,
-  response: {
-    200: { $ref: 'environment#' },
-  },
-} as const
-
 // TODO : typage perdu dans DTO avec required dynamique, IIFE pas appliquable
 export const initializeEnvironmentSchema = {
   description: 'Create a new environment',
@@ -99,6 +89,7 @@ export const updateEnvironmentSchema = {
       quotaStageId: initializeEnvironmentDto.quotaStageId,
       clusterId: initializeEnvironmentDto.clusterId,
     },
+    required: ['quotaStageId', 'clusterId'],
   },
   response: {
     200: { $ref: 'environment#' },

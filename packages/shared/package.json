@@ -1,49 +1,58 @@
 {
-  "dependencies": {
-    "joi": "^17.11.1",
-    "json-schema-to-ts": "^2.12.0"
-  },
+  "name": "@cpn-console/shared",
   "description": "",
-  "devDependencies": {
-    "@dso-console/eslint-config-base": "workspace:*",
-    "@dso-console/tsconfig": "workspace:*",
-    "@faker-js/faker": "^8.3.1",
-    "@kubernetes/client-node": "^0.20.0",
-    "@types/node": "^20.11.4",
-    "@typescript-eslint/eslint-plugin": "^6.19.0",
-    "@typescript-eslint/parser": "^6.19.0",
-    "@vitest/coverage-v8": "^1.2.0",
-    "eslint": "^8.56.0",
-    "eslint-config-standard": "^17.1.0",
-    "eslint-plugin-import": "^2.29.1",
-    "eslint-plugin-n": "^16.6.2",
-    "eslint-plugin-promise": "^6.1.1",
-    "nodemon": "^3.0.2",
-    "npm-run-all": "^4.1.5",
-    "rimraf": "^5.0.5",
-    "ts-patch": "3.1.2",
-    "typescript": "^5.3.3",
-    "typescript-transform-paths": "^3.4.6",
-    "vite": "^4.5.1",
-    "vitest": "^1.2.0"
-  },
+  "version": "1.0.0",
+  "private": false,
+  "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
-  "name": "@dso-console/shared",
-  "private": false,
+  "types": "types/index.d.ts",
   "scripts": {
-    "build": "run-s clean:build compile",
-    "clean:build": "rimraf dist types",
-    "compile": "tspc --declaration || exit 0",
-    "dev": "nodemon --watch src --ext .ts --exec 'npm run compile'",
+    "build": "tsc",
+    "build:clean": "rimraf ./dist ./types ./tsconfig.tsbuildinfo",
+    "dev": "nodemon --watch src --ext .ts --exec 'pnpm run build'",
     "format": "eslint ./src --ext .js,.cjs,.ts --fix",
+    "kube:e2e-ci": "echo 'check cache'",
     "lint": "eslint ./src",
     "test": "vitest run",
     "test:cov": "vitest run --coverage",
     "test:e2e-ci": "echo 'check cache'",
     "test:watch": "vitest"
   },
-  "type": "module",
-  "types": "types/index.d.ts",
-  "version": "6.5.2"
+  "dependencies": {
+    "json-schema-to-ts": "^3.0.0",
+    "zod": "^3.22.4",
+    "zod-validation-error": "^3.0.2"
+  },
+  "devDependencies": {
+    "@cpn-console/eslint-config": "workspace:^",
+    "@cpn-console/ts-config": "workspace:^",
+    "@faker-js/faker": "^8.4.0",
+    "@kubernetes/client-node": "^0.20.0",
+    "@types/node": "^20.11.16",
+    "@typescript-eslint/eslint-plugin": "^6.20.0",
+    "@typescript-eslint/parser": "^6.20.0",
+    "@vitest/coverage-v8": "^1.2.2",
+    "eslint": "^8.56.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-n": "^16.6.2",
+    "eslint-plugin-promise": "^6.1.1",
+    "nodemon": "^3.0.3",
+    "npm-run-all": "^4.1.5",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.3.3",
+    "typescript-transform-paths": "^3.4.6",
+    "vite": "^5.0.12",
+    "vitest": "^1.2.2"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public",
+    "tag": "latest"
+  },
+  "files": [
+    "dist",
+    "types"
+  ]
 }

@@ -2,7 +2,7 @@
 import { ref, watch } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import router from '@/router/index.js'
-import { sortArrByObjKeyAsc } from '@dso-console/shared'
+import { sortArrByObjKeyAsc } from '@cpn-console/shared'
 
 const projectStore = useProjectStore()
 

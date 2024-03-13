@@ -1,16 +1,41 @@
 version: '3.9'
 
 services:
+  keycloak:
+    restart: always
+    image: quay.io/keycloak/keycloak:22.0.1
+    container_name: dso-console_keycloak
+    ports:
+      - 8090:8080
+    volumes:
+      - ../keycloak/realms:/opt/keycloak/data/import
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: true
+    command: start-dev --import-realm
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080;echo -e \"GET /health/ready HTTP/1.1\r\nhost: http://localhost\r\nConnection: close\r\n\r\n\" >&3;grep \"HTTP/1.1 200 OK\" <&3"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - dso-network
+    attach: false
+
   postgres:
     restart: always
     image: docker.io/postgres:15.3
     container_name: dso-console_postgres
+    ports:
+      - 8081:80
     environment:
       POSTGRES_DB: dso-console-db
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
     networks:
       - dso-network
+    attach: false
 
   server:
     restart: always
@@ -20,13 +45,23 @@ services:
       target: prod
     image: dso-console/server:prod
     container_name: dso-console_server
+    user: root
     depends_on:
       postgres:
         condition: service_started
+      keycloak:
+        condition: service_healthy
     ports:
-      - 4000:4000
-    # volumes:
-    #   - ../apps/server/env/.env:/env/.env
+      - 4000:8080
+      - 9229:9229
+    volumes:
+      - ../packages/test-utils/src/imports/data.ts:/app/dist/init/db/imports/data.js
+    env_file:
+      - ../apps/server/.env.docker
+    environment:
+      NODE_ENV: production
+      CI: "true"
+      DEV_SETUP: "true"
     networks:
       - dso-network
 
@@ -42,8 +77,10 @@ services:
         condition: service_started
     ports:
       - 8080:8080
-    # volumes:
-    #   - ../apps/client/env/.env:/env/.env
+    volumes:
+      - ../apps/client/nginx/default.docker.conf:/opt/bitnami/nginx/conf/server_blocks/default.conf
+    env_file:
+      - ../apps/client/.env.docker
     networks:
       - dso-network
 

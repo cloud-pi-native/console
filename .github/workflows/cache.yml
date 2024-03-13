@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Clean cache for closed branch
         run: |
@@ -48,19 +48,19 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   matrix:
-    name: Generate matrix for build & scan
+    name: Generate matrix
     runs-on: ubuntu-latest
     if: ${{ github.event.pull_request.number || github.event.number }}
     outputs:
       build-matrix: ${{ steps.build-matrix.outputs.BUILD_MATRIX }}
     steps:
       - name: Checks-out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Generate matrix for build
+      - name: Generate matrix
         id: build-matrix
         run: |
-          echo "BUILD_MATRIX=$(jq -c . < ./ci/matrix.json)" >> $GITHUB_OUTPUT
+          echo "BUILD_MATRIX=$(jq -c . < ./ci/matrix-docker.json)" >> $GITHUB_OUTPUT
 
   cleanup-image:
     name: Delete image from ghcr.io
@@ -72,7 +72,7 @@ jobs:
         images: ${{ fromJSON(needs.matrix.outputs.build-matrix) }}
     steps:
       - name: Checks-out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Get repository owner and name
         id: image-infos

@@ -1,4 +1,4 @@
-import { data } from '@dso-console/test-utils'
+import { data } from '@cpn-console/test-utils'
 
 export const getModel = (model) => data[model]
 

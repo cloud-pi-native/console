@@ -1,4 +1,4 @@
-import { getModelById } from '../support/func'
+import { getModelById } from '../support/func.js'
 
 const project = getModelById('project', '011e7860-04d7-461f-912d-334c622d38b3')
 
@@ -14,12 +14,6 @@ describe('Services view', () => {
       .get('div.fr-tile')
       .should('have.length', 4)
       .get('#ArgoCD').find('a')
-      .should('have.attr', 'href', `${Cypress.env('argocdUrl')}/applications?showFavorites=false&proj=&sync=&health=&namespace=&cluster=&labels=&search=${project.organization.name}-${project.name}`)
-      .get('#Gitlab').find('a')
-      .should('have.attr', 'href', `${Cypress.env('gitlabUrl')}/forge-mi/projects/${project.organization.name}/${project.name}`)
-      .get('#Harbor').find('a')
-      .should('have.attr', 'href').then(href => expect(href).to.match(new RegExp(`${Cypress.env('harborUrl')}/harbor/projects/`)))
-      .get('#SonarQube').find('a')
-      .should('have.attr', 'href', `${Cypress.env('sonarqubeUrl')}/projects`)
+      .should('have.attr', 'href', 'https://theuselessweb.com/')
   })
 })

@@ -1,32 +1,34 @@
 {
   "extends": [
-    "@dso-console/tsconfig/tsconfig.base.json"
+    "@cpn-console/ts-config/tsconfig.base.json"
   ],
   "exclude": [
     "**/*.spec.ts",
     "node_modules",
     "dist",
     "__mocks__",
+    "coverage"
   ],
   "include": [
-    "src/**/*.ts"
-    // "*.ts"
+    "src/**/*.ts",
   ],
   "compilerOptions": {
-    "rootDir": "./src", /* Specify the root folder within your source files. */
-    "baseUrl": "./", /* Specify the base directory to resolve non-relative module names. */
-    "paths": {
-      "@/*": [
-        "./src/*"
-      ]
-    }, /* Specify a set of entries that re-map imports to additional lookup locations. */
-    "outDir": "./dist", /* Specify an output folder for all emitted files. */
+    "rootDir": "./src",
+    "outDir": "./dist",
     "plugins": [
       {
         "transform": "typescript-transform-paths"
       }
     ],
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    },
     "declaration": true,
-    "declarationDir": "./types"
+    "declarationDir": "./types",
+    "strict": false,
+    "alwaysStrict": false,
+    "noImplicitAny": false
   }
 }

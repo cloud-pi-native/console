@@ -1,0 +1,15 @@
+{
+  "extends": [
+    "@cpn-console/ts-config/tsconfig.base.json"
+  ],
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "declaration": true,
+    "declarationDir": "./types",
+    "lib": [
+      "ESNext"
+    ],
+    "strict": false
+  }
+}

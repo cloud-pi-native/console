@@ -10,31 +10,60 @@ import {
   removeClusterFromStage,
   linkStageToQuotas,
 } from '@/resources/queries-index.js'
-import { type CreateStageDto, type UpdateStageClustersDto, stageSchema } from '@dso-console/shared'
-import { Stage } from '@prisma/client'
+import { type CreateStageDto, type UpdateStageClustersDto, StageSchema } from '@cpn-console/shared'
+import type { Stage } from '@prisma/client'
+import { validateSchema } from '@/utils/business.js'
 
 export const getStageAssociatedEnvironments = async (stageId: Stage['id']) => {
   try {
     const stage = await getStageById(stageId)
+    if (!stage) throw new BadRequestError(`Le stage ${stageId} n'existe pas`)
 
-    let environments = []
+    let environments: {
+      project: {
+        name: string,
+        organization: {
+          name: string,
+        },
+        roles: {
+          role: string,
+          user: {
+            email: string,
+          }
+        }[],
+      },
+      name: string,
+      cluster: {
+        label: string,
+      },
+      quota?: string,
+    }[] = []
+
     for (const quotaStage of stage.quotaStage) {
       const quota = await getQuotaById(quotaStage.quotaId)
       environments = [...environments, ...(await getEnvironmentsByQuotaStageId(quotaStage.id))
-        .map(environment => ({ ...environment, quota: quota.name }))]
+        .map(environment => ({ ...environment, quota: quota?.name }))]
     }
-    environments = environments.map(environment => {
-      return ({
+
+    const mappedEnvironments: {
+      project?: string,
+      organization?: string,
+      name?: string,
+      quota?: string,
+      cluster?: string,
+      owner?: string,
+    }[] = environments.map(environment => {
+      return {
         organization: environment?.project?.organization?.name,
         project: environment?.project?.name,
         name: environment?.name,
         quota: environment?.quota,
         cluster: environment?.cluster?.label,
         owner: environment?.project?.roles?.find(role => role?.role === 'owner')?.user?.email,
-      })
+      }
     })
 
-    return environments
+    return mappedEnvironments
   } catch (error) {
     throw new Error(error?.message)
   }
@@ -42,7 +71,8 @@ export const getStageAssociatedEnvironments = async (stageId: Stage['id']) => {
 
 export const createStage = async (data: CreateStageDto) => {
   try {
-    await stageSchema.validateAsync(data)
+    const schemaValidation = StageSchema.omit({ id: true }).safeParse(data)
+    validateSchema(schemaValidation)
 
     const isNameTaken = await getStageByName(data.name)
     if (isNameTaken) throw new BadRequestError('Un type d\'environnement portant ce nom existe déjà')
@@ -68,16 +98,17 @@ export const createStage = async (data: CreateStageDto) => {
 
 export const updateStageClusters = async (stageId: Stage['id'], clusterIds: UpdateStageClustersDto['clusterIds']) => {
   try {
-    const dbClusters = (await getStageById(stageId)).clusters
-
     // Remove clusters
-    const clustersToRemove = dbClusters.filter(dbCluster => !clusterIds.includes(dbCluster.id))
-    for (const clusterToRemove of clustersToRemove) {
-      await removeClusterFromStage(clusterToRemove.id, stageId)
+    const dbClusters = (await getStageById(stageId))?.clusters
+    if (dbClusters?.length) {
+      const clustersToRemove = dbClusters.filter(dbCluster => !clusterIds.includes(dbCluster.id))
+      for (const clusterToRemove of clustersToRemove) {
+        await removeClusterFromStage(clusterToRemove.id, stageId)
+      }
     }
     // Add clusters
     await linkStageToClusters(stageId, clusterIds)
-    const clusters = (await getStageById(stageId)).clusters
+    const clusters = (await getStageById(stageId))?.clusters
 
     return clusters
   } catch (error) {

@@ -78,7 +78,7 @@ spec:
         {{- end }}
         {{- if and .Values.server.plugins (len .Values.server.plugins) }}
         - name: plugins
-          mountPath: /app/dist/plugins/external
+          mountPath: /plugins
         {{- end }}
         {{- range $volumeMount := .Values.server.container.extraVolumeMounts }}
         - name: {{ $volumeMount.name }}

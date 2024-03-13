@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { onBeforeMount, ref, type Ref } from 'vue'
 import { useAdminUserStore } from '@/stores/admin/user.js'
-import { formatDate } from '@dso-console/shared'
+import { formatDate } from '@cpn-console/shared'
 import { copyContent } from '@/utils/func.js'
 import { getRandomId } from '@gouvminint/vue-dsfr'
 

@@ -1,5 +1,5 @@
 <script  lang="ts" setup>
-import { useServiceStore } from '@/stores/services.js'
+import { useServiceStore, alertTypeMapper } from '@/stores/services.js'
 import { ref, computed, onBeforeMount, type Ref } from 'vue'
 
 const serviceStore = useServiceStore()
@@ -43,6 +43,7 @@ onBeforeMount(async () => {
   </div>
   <div
     class="md:grid md:grid-cols-3 md:gap-3 items-center justify-between"
+    data-testid="box-info"
   >
     <DsfrAlert
       v-for="service in services"
@@ -50,8 +51,8 @@ onBeforeMount(async () => {
       :data-testid="`${service.name}-info`"
       :title="service.name"
       class="pb-5 fr-mt-2w"
-      :description="service.message ? `${service.code} - ${service.message}` : `${service.code}`"
-      :type="service.status"
+      :description="service.message"
+      :type="alertTypeMapper[service.status]"
     />
   </div>
 </template>

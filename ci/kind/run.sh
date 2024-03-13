@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# set -e
+set -e
+set -o pipefail
 
 # Colorize terminal
 export red='\e[0;31m'
@@ -144,7 +145,7 @@ fi
 # Load images into cluster nodes
 if [[ "$COMMAND" =~ "load" ]]; then
   wait $JOB_CREATE
-  wait -f $JOB_CREATE $JOB_BUILD
+  wait $JOB_BUILD
   source ./ci/kind/run-load.sh &
   JOB_LOAD="$!"
   if [[ "$COMMAND" == *load ]]; then
@@ -178,7 +179,7 @@ fi
 
 # Deploy application in dev or test mode
 if [[ "$COMMAND" =~ "dev" ]]; then
-  wait $JOB_LOAD -f
+  wait $JOB_LOAD
   printf "\n\n${red}[kind wrapper].${no_color} Deploy application in development mode\n\n"
 
   helm --kube-context kind-kind upgrade \

@@ -3,7 +3,7 @@ import {
   getUserById,
   getClustersWithProjectIdAndConfig,
 } from '../queries-index.js'
-import { UserProfile, adminGroupPath, exclude } from '@dso-console/shared'
+import { UserProfile, adminGroupPath, exclude } from '@cpn-console/shared'
 
 export const getAllCleanedClusters = async (kcUser: UserProfile) => {
   // @ts-ignore

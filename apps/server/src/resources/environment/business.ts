@@ -18,21 +18,19 @@ import {
   getProjectPartialEnvironments,
   getEnvironmentById,
 } from '@/resources/queries-index.js'
-import { hooks } from '@/plugins/index.js'
 import { BadRequestError, DsoError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
+import { hooks } from '@cpn-console/hooks'
 import type { Cluster, Environment, Project, Role, User, QuotaStage, Log } from '@prisma/client'
 import {
   checkInsufficientRoleInProject,
   checkClusterUnavailable,
   filterOwners,
-  checkInsufficientPermissionInEnvironment,
   checkRoleAndLocked,
 } from '@/utils/controller.js'
-import { unlockProjectIfNotFailed } from '@/utils/business.js'
-import { projectRootDir } from '@/utils/env.js'
+import { unlockProjectIfNotFailed, validateSchema } from '@/utils/business.js'
+import { projectRootDir, gitlabUrl } from '@/utils/env.js'
 import { getProjectInfosAndClusters } from '@/resources/project/business.js'
-import { gitlabUrl } from '@/plugins/core/gitlab/utils.js'
-import { type AsyncReturnType, adminGroupPath, environmentSchema } from '@dso-console/shared'
+import { adminGroupPath, EnvironmentSchema } from '@cpn-console/shared'
 import type { UserDetails } from '@/types/index.js'
 
 // Fetch infos
@@ -65,7 +63,8 @@ export const getInitializeEnvironmentInfos = async ({
     const user = await getUserById(userId)
     const { project, projectClusters } = await getProjectInfosAndClusters(projectId)
     const quotaStage = await getQuotaStageById(quotaStageId)
-    const quota = await getQuotaById(quotaStage?.quotaId)
+    if (!quotaStage) throw new BadRequestError('L\'association quota stage demandée n\'existe pas')
+    const quota = await getQuotaById(quotaStage.quotaId)
     const stageClusters = (await getStageById(quotaStage?.stageId))?.clusters
     const authorizedClusters = projectClusters
       ?.filter(projectCluster => stageClusters
@@ -86,17 +85,6 @@ type CheckEnvironmentParam = {
   quotaStage: QuotaStage,
 }
 
-export const checkGetEnvironment = (
-  env: AsyncReturnType<typeof getEnvironmentInfos>,
-  userId: string,
-) => {
-  // @ts-ignore
-  const errorMessage = checkInsufficientRoleInProject(userId, { roles: env.project.roles }) ||
-    // @ts-ignore
-    checkInsufficientPermissionInEnvironment(userId, env.permissions, 0)
-  if (errorMessage) throw new ForbiddenError(errorMessage, { description: '', extras: { userId, projectId: env.projectId } })
-}
-
 export const checkCreateEnvironment = ({
   project,
   userId,
@@ -115,7 +103,7 @@ export const checkCreateEnvironment = ({
 type CheckUpdateEnvironmentParam = {
   project: { locked: boolean, roles: Role[], id: string, environments: Environment[] },
   userId: User['id'],
-  quotaStage?: QuotaStage,
+  quotaStage: QuotaStage,
 }
 
 export const checkUpdateEnvironment = ({
@@ -170,22 +158,30 @@ export const createEnvironment = async (
     quotaStageId,
     requestId,
   }: CreateEnvironmentParam) => {
-  try {
-    await environmentSchema.validateAsync({
+  const schemaValidation = EnvironmentSchema
+    .omit({
+      id: true,
+      status: true,
+      permissions: true,
+      quotaStage: true,
+    })
+    .safeParse({
       name,
       projectId,
       clusterId,
       quotaStageId,
     })
-  } catch (error) {
-    throw new BadRequestError(error.message)
-  }
+  validateSchema(schemaValidation)
 
   const { user, project, quotaStage, quota, authorizedClusters } = await getInitializeEnvironmentInfos({
     userId,
     projectId,
     quotaStageId,
   })
+
+  if (!project) throw new NotFoundError('Projet introuvable')
+  if (!user) throw new NotFoundError('Utilisateur introuvable')
+  if (!quota) throw new NotFoundError('Quota introuvable')
 
   checkCreateEnvironment({
     project,
@@ -209,6 +205,7 @@ export const createEnvironment = async (
       internalRepoName,
     }))
     const cluster = await getClusterById(clusterId)
+    if (!cluster) throw new NotFoundError('Cluster introuvable')
     const environments = await getProjectPartialEnvironments({ projectId })
 
     const results = await hooks.initializeEnvironment.execute({
@@ -224,8 +221,8 @@ export const createEnvironment = async (
         ...cluster.kubeconfig,
       },
       quota: {
-        memory: quota?.memory,
-        cpu: quota?.cpu,
+        memory: quota.memory,
+        cpu: quota.cpu,
       },
     })
     // @ts-ignore
@@ -250,8 +247,8 @@ type UpdateEnvironmentParam = {
   user: UserDetails,
   projectId: Project['id'],
   environmentId: Environment['id'],
-  quotaStageId?: QuotaStage['id'],
-  clusterId?: Cluster['id'],
+  quotaStageId: QuotaStage['id'],
+  clusterId: Cluster['id'],
   requestId: Log['requestId'],
 }
 
@@ -271,6 +268,9 @@ export const updateEnvironment = async ({
       quotaStageId,
     })
 
+    if (!project) throw new NotFoundError('Projet introuvable')
+    if (!quota) throw new NotFoundError('Quota introuvable')
+
     if (!user.groups?.includes(adminGroupPath)) {
       checkUpdateEnvironment({
         project,
@@ -289,13 +289,14 @@ export const updateEnvironment = async ({
 
       const projectName = project.name
       const organizationName = project.organization.name
-      const gitlabBaseURL = `${gitlabUrl}/${projectRootDir}/${organizationName}/${projectName}`
+      const gitlabBaseURL = `/${projectRootDir}/${organizationName}/${projectName}`
       // @ts-ignore
       const repositories = environment.project.repositories?.map(({ internalRepoName }) => ({
         url: `${gitlabBaseURL}/${internalRepoName}.git`,
         internalRepoName,
       }))
       const cluster = await getClusterById(clusterId)
+      if (!cluster) throw new NotFoundError('Cluster introuvable')
 
       const results = await hooks.updateEnvironmentQuota.execute({
         environment: environment.name,
@@ -308,8 +309,8 @@ export const updateEnvironment = async ({
           ...cluster.kubeconfig,
         },
         quota: {
-          memory: quota?.memory,
-          cpu: quota?.cpu,
+          memory: quota.memory,
+          cpu: quota.cpu,
         },
       })
       // @ts-ignore
@@ -349,6 +350,7 @@ export const deleteEnvironment = async ({
   try {
     const environment = await getEnvironmentInfos(environmentId)
     const project = await getProjectInfos(projectId)
+    if (!project) throw new NotFoundError('Projet introuvable')
 
     checkDeleteEnvironment({ project, userId })
 
@@ -358,12 +360,13 @@ export const deleteEnvironment = async ({
     // Suppression de l'environnement dans les services
     const projectName = project.name
     const organizationName = project.organization.name
-    const gitlabBaseURL = `${gitlabUrl}/${projectRootDir}/${organizationName}/${projectName}`
+    const gitlabBaseURL = `/${projectRootDir}/${organizationName}/${projectName}`
     const repositories = environment.project.repositories.map(({ internalRepoName }) => ({
       url: `${gitlabBaseURL}/${internalRepoName}.git`,
       internalRepoName,
     }))
     const cluster = await getClusterById(environment.clusterId)
+    if (!cluster) throw new NotFoundError('Cluster introuvable')
     const environments = await getProjectPartialEnvironments({ projectId })
     const results = await hooks.deleteEnvironment.execute({
       environment: environment.name,

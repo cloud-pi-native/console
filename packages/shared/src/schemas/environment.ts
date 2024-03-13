@@ -1,37 +1,23 @@
-import Joi from 'joi'
-import { projectStatus, longestEnvironmentName } from '../utils/const.js'
+import { z } from 'zod'
 
-export const environmentSchema = Joi.object({
-  id: Joi.string()
+import { allStatus, longestEnvironmentName } from '../utils/const.js'
+import { PermissionSchema } from './permission.js'
+
+export const EnvironmentSchema = z.object({
+  id: z.string()
     .uuid(),
-
-  name: Joi.string()
-    .required()
-    .pattern(/^[a-z0-9]+$/)
+  name: z.string()
+    .regex(/^[a-z0-9]+$/)
     .min(2)
     .max(longestEnvironmentName),
-
-  projectId: Joi.string()
-    .uuid()
-    .required(),
-
-  quotaStageId: Joi.string()
-    .uuid()
-    .required(),
-
-  clusterId: Joi.string()
-    .uuid()
-    .required(),
-
-  status: Joi.string()
-    .valid(...projectStatus),
-
-  permissions: Joi.array(),
-
-  quotaStage: Joi.object(),
-
-  createdAt: Joi.date(),
-
-  updatedAt: Joi.date(),
-
+  projectId: z.string()
+    .uuid(),
+  quotaStageId: z.string()
+    .uuid(),
+  clusterId: z.string()
+    .uuid(),
+  status: z.enum(allStatus),
+  permissions: z.lazy(() => PermissionSchema.array()),
 })
+
+export type Environment = Zod.infer<typeof EnvironmentSchema>

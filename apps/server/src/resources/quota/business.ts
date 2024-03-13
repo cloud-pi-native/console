@@ -4,7 +4,7 @@ import {
   getQuotas as getQuotasQuery,
   getAllQuotas,
 } from '../queries-index.js'
-import { UserProfile, adminGroupPath } from '@dso-console/shared'
+import { UserProfile, adminGroupPath } from '@cpn-console/shared'
 
 export const getQuotas = async (kcUser: UserProfile) => {
   // @ts-ignore

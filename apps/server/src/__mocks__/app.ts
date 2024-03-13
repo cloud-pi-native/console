@@ -6,24 +6,13 @@ import fp from 'fastify-plugin'
 import { addAllSchemasToApp, apiPrefix } from '@/app.js'
 import { apiRouter, miscRouter } from '@/resources/index.js'
 import { sessionConf } from '@/utils/keycloak.js'
-import { User } from '@dso-console/test-utils'
+import { User } from '@cpn-console/test-utils'
 
 global.process.exit = vi.fn()
 vi.mock('fastify-keycloak-adapter', () => ({ default: fp(async () => { vi.fn() }) }))
-vi.mock('@/plugins/services.js', () => {
-  return {
-    servicesInfos: {
-      gitlab: {
-        title: 'Gitlab',
-      },
-      harbor: {
-        title: 'Harbor',
-      },
-    },
-    getProjectServices: () => [],
-  }
-})
-vi.mock('../plugins/index.js', () => {
+
+vi.mock('@cpn-console/hooks', async () => {
+  const hooks = await vi.importActual('@cpn-console/hooks')
   const hookTemplate = {
     execute: () => ({
       args: {},
@@ -33,30 +22,42 @@ vi.mock('../plugins/index.js', () => {
       failed: false,
     }),
   }
+
   return {
-    initPluginManager: async () => vi.fn(),
-    initPlugins: async () => vi.fn(),
-    importPlugin: async () => vi.fn(),
+    // @ts-ignore
+    ...hooks,
+    services: {
+      getForProject: () => { },
+      getStatus: () => [],
+      refreshStatus: async () => [],
+    },
+    PluginApi: class { },
+    servicesInfos: {
+      gitlab: { title: 'Gitlab' },
+      harbor: { title: 'Harbor' },
+    },
     hooks: {
       // projects
       getProjectSecrets: {
         execute: () => ({
           failed: false,
           args: {},
-          gitlab: {
-            secrets: {
-              token: 'myToken',
+          results: {
+            gitlab: {
+              secrets: {
+                token: 'myToken',
+              },
+              status: {
+                failed: false,
+              },
             },
-            status: {
-              failed: false,
-            },
-          },
-          harbor: {
-            secrets: {
-              token: 'myToken',
-            },
-            status: {
-              failed: false,
+            harbor: {
+              secrets: {
+                token: 'myToken',
+              },
+              status: {
+                failed: false,
+              },
             },
           },
         }),
@@ -87,29 +88,31 @@ vi.mock('../plugins/index.js', () => {
       fetchOrganizations: {
         execute: () => ({
           args: undefined,
-          canel: {
-            status: {
-              result: 'OK',
-              message: 'Retrieved',
-            },
-            result: {
-              organizations: [
-                {
-                  name: 'genat',
-                  label: 'MI - gendaremerie nationale',
-                  source: 'canel',
-                },
-                {
-                  name: 'mas',
-                  label: 'ministère affaires sociaux',
-                  source: 'canel',
-                },
-                {
-                  name: 'genat',
-                  label: 'ministère affaires sociaux',
-                  source: 'canel',
-                },
-              ],
+          results: {
+            canel: {
+              status: {
+                result: 'OK',
+                message: 'Retrieved',
+              },
+              result: {
+                organizations: [
+                  {
+                    name: 'genat',
+                    label: 'MI - gendaremerie nationale',
+                    source: 'canel',
+                  },
+                  {
+                    name: 'mas',
+                    label: 'ministère affaires sociaux',
+                    source: 'canel',
+                  },
+                  {
+                    name: 'genat',
+                    label: 'ministère affaires sociaux',
+                    source: 'canel',
+                  },
+                ],
+              },
             },
           },
         }),
@@ -142,11 +145,11 @@ const app = addAllSchemasToApp(fastify({ logger: false }))
   .register(fp(mockSessionPlugin))
   .register(miscRouter, { prefix: apiPrefix })
   .register(apiRouter, { prefix: apiPrefix })
-  // useful to debug fastify error
-  // .addHook('onError', (req, res, err, done) => {
-  //   console.log(err)
-  //   done()
-  // })
+// useful to debug fastify error
+// .addHook('onError', (req, res, err, done) => {
+//   console.log(err)
+//   done()
+// })
 await app.ready()
 
 vi.spyOn(app, 'listen')

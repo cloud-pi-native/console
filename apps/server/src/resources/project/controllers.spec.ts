@@ -1,10 +1,10 @@
 import prisma from '../../__mocks__/prisma.js'
 import app, { getRequestor, setRequestor } from '../../__mocks__/app.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
-import { createRandomDbSetup, getRandomCluster, getRandomProject, getRandomRole, getRandomUser } from '@dso-console/test-utils'
+import { createRandomDbSetup, getRandomProject, getRandomRole, getRandomUser } from '@cpn-console/test-utils'
 import { faker } from '@faker-js/faker'
 import { getConnection, closeConnections } from '../../connect.js'
-import { descriptionMaxLength, exclude, projectIsLockedInfo } from '@dso-console/shared'
+import { descriptionMaxLength, exclude, projectIsLockedInfo } from '@cpn-console/shared'
 
 describe('Project routes', () => {
   const requestor = getRandomUser()
@@ -196,8 +196,10 @@ describe('Project routes', () => {
       delete project.organization
       delete project.repositories
       delete project.roles
+
       expect(response.statusCode).toEqual(200)
       expect(response.body).toBeDefined()
+
       expect(response.json()).toMatchObject(project)
     })
 
@@ -226,8 +228,8 @@ describe('Project routes', () => {
         .body({ description: faker.string.alpha(descriptionMaxLength + 1) })
         .end()
 
-      expect(response.statusCode).toEqual(500)
-      expect(response.json().message).toEqual('"description" length must be less than or equal to 280 characters long')
+      expect(response.statusCode).toEqual(400)
+      expect(response.json().message).toEqual('Validation error: String must contain at most 280 character(s) at "description"')
     })
 
     it('Should not update a project if locked', async () => {

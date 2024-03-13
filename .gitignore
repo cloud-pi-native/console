@@ -17,7 +17,9 @@ node_modules
 .env.test
 .env.prod
 .env.int
+.env.integ
 .env.codespace
+.env.docker
 
 # cypress
 screenshots
@@ -53,6 +55,7 @@ dist
 build
 auto-imports.d.ts
 components.d.ts
+*.tsbuildinfo
 
 #types
 apps/server/types/
@@ -62,3 +65,9 @@ apps/server/src/plugins/external
 
 # integration helm values
 env/dso-values-int.yaml
+env/kind-values.yml
+
+# tmp dev files
+ci/kind/configs/rendered
+
+external-plugins

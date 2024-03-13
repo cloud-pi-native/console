@@ -2,7 +2,7 @@ import prisma from '../../__mocks__/prisma.js'
 import app, { getRequestor, setRequestor } from '../../__mocks__/app.js'
 import { vi, describe, it, beforeAll, expect, afterEach, afterAll } from 'vitest'
 import { getConnection, closeConnections } from '../../connect.js'
-import { getRandomUser } from '@dso-console/test-utils'
+import { getRandomUser } from '@cpn-console/test-utils'
 
 describe('Service route', () => {
   const requestor = getRandomUser()

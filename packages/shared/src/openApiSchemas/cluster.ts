@@ -1,3 +1,5 @@
+import { ClusterPrivacy } from '../index.js'
+
 export const nonSensitiveClusterOpenApiSchema = {
   $id: 'nonSensitiveCluster',
   type: 'object',
@@ -12,7 +14,7 @@ export const nonSensitiveClusterOpenApiSchema = {
       type: 'string',
     },
     privacy: {
-      enum: ['public', 'dedicated'],
+      enum: Object.values(ClusterPrivacy),
     },
   },
   required: [

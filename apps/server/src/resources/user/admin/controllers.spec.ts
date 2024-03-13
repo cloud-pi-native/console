@@ -1,11 +1,11 @@
 import prisma from '../../../__mocks__/prisma.js'
 import app, { setRequestor } from '../../../__mocks__/app.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll, beforeEach } from 'vitest'
-import { getRandomUser, repeatFn } from '@dso-console/test-utils'
+import { getRandomUser, repeatFn } from '@cpn-console/test-utils'
 import { getConnection, closeConnections } from '../../../connect.js'
-import { adminGroupPath } from '@dso-console/shared'
+import { adminGroupPath } from '@cpn-console/shared'
 
-describe('Admin Users routes', () => {
+describe('Admin user routes', () => {
   beforeAll(async () => {
     await getConnection()
   })

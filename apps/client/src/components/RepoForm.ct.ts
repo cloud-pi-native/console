@@ -1,6 +1,6 @@
 import { type Pinia, createPinia, setActivePinia } from 'pinia'
-import { createRandomDbSetup } from '@dso-console/test-utils'
-import { allOrganizations } from '@dso-console/shared'
+import { createRandomDbSetup } from '@cpn-console/test-utils'
+import { allOrganizations } from '@cpn-console/shared'
 
 import '@gouvminint/vue-dsfr/styles'
 import '@gouvfr/dsfr/dist/dsfr.min.css'
