@@ -1,6 +1,6 @@
 {
   "name": "dso-console",
-  "version": "6.5.2",
+  "version": "7.0.0",
   "private": true,
   "type": "module",
   "scripts": {
