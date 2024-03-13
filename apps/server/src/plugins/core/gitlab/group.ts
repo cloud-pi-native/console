@@ -27,7 +27,7 @@ const getOrganizationId = async (organization: string) => {
 export const createGroup = async (name: string, organization: string): Promise<GroupSchema> => {
   const searchResult = await api.Groups.search(name)
   const parentId = await getOrganizationId(organization)
-  const existingGroup = searchResult.find(group => group.parent_id === parentId)
+  const existingGroup = searchResult.find(group => group.parent_id === parentId && name === group.name)
   if (existingGroup) {
     return existingGroup
   }
