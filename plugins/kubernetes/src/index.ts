@@ -1,21 +1,35 @@
-import type { Plugin } from '@cpn-console/hooks'
-import { createKubeSecret } from './secret.js'
-import { createKubeNamespace, deleteKubeNamespace, updateResourceQuota } from './namespace.js'
+import { Project, type Plugin, DefaultArgs } from '@cpn-console/hooks'
+// import { createKubeSecret } from './secret.js'
+// import { createKubeNamespace, deleteKubeNamespace, updateResourceQuota } from './namespace.js'
 import infos from './infos.js'
 import { getProjectSecrets } from './misc.js'
+import { deleteNamespaces, createNamespaces } from './namespace.js'
+import { KubernetesProjectApi } from './class.js'
 
 export const plugin: Plugin = {
   infos,
   subscribedHooks: {
-    initializeEnvironment: {
+    upsertProject: {
+      api: (args) => new KubernetesProjectApi(args),
       steps: {
-        // check: checkInitializeEnvironment, // TODO implement check in controller
-        main: createKubeNamespace,
-        post: createKubeSecret,
+        pre: createNamespaces,
+        // post: mettreCeQuiFautDedans,
       },
     },
-    deleteEnvironment: { steps: { main: deleteKubeNamespace } },
-    updateEnvironmentQuota: { steps: { main: updateResourceQuota } },
+    deleteProject: {
+      api: (args) => new KubernetesProjectApi(args),
+      steps: {
+        post: deleteNamespaces,
+      },
+    },
     getProjectSecrets: { steps: { main: getProjectSecrets } },
   },
+}
+
+declare module '@cpn-console/hooks' {
+  interface HookPayloadApis<Args extends DefaultArgs> {
+    kubernetes: Args extends (Project)
+    ? KubernetesProjectApi<Args>
+    : undefined
+  }
 }
