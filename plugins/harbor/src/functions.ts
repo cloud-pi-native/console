@@ -4,6 +4,7 @@ import { addProjectGroupMember } from './permission.js'
 import { createCiRobot, getCiRobot, regenerateCiRobot } from './robot.js'
 import { type StepCall, type Project, type ProjectLite, parseError } from '@cpn-console/hooks'
 import { RobotCreated } from './api/Api.js'
+import { getSecretObject } from './kubeSecret.js'
 
 type VaultRegistrySecret = {
   // {"auths":{"registry-host.com":{"auth":"<the TOKEN>","email":""}}},
@@ -44,15 +45,23 @@ export const createDsoProject: StepCall<Project> = async (payload) => {
     const oidcGroup = await payload.apis.keycloak.getProjectGroupPath()
     await addProjectGroupMember(projectName, oidcGroup)
     const robot = await getCiRobot(projectName)
-    const vaultRegistrySecret = await payload.apis.vault.read('REGISTRY', { throwIfNoEntry: false }) as VaultRegistrySecret | undefined
+    const vaultRegistrySecret = await payload.apis.vault.read('REGISTRY', { throwIfNoEntry: false }) as { data: VaultRegistrySecret } | undefined
     const creds: VaultRegistrySecret = !vaultRegistrySecret
       ? robot
         ? toVaultSecret(await createCiRobot(projectName) as Required<RobotCreated>)
         : toVaultSecret(await regenerateCiRobot(projectName) as Required<RobotCreated>)
-      : vaultRegistrySecret
+      : vaultRegistrySecret.data
 
     vaultApi.write(creds, 'REGISTRY')
     await payload.apis.vault.write(creds, 'REGISTRY')
+
+    await payload.apis.kubernetes.applyResourcesInAllEnvNamespaces({
+      group: '',
+      name: 'registry-pull-secret',
+      plural: 'secrets',
+      version: 'v1',
+      body: getSecretObject({ DOCKER_CONFIG: creds.DOCKER_CONFIG }),
+    })
     return {
       status: {
         result: 'OK',

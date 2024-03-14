@@ -21,7 +21,8 @@
     "@kubernetes-models/argo-cd": "^2.4.0",
     "@kubernetes/client-node": "^0.20.0",
     "axios": "1.6.7",
-    "kubernetes-models": "^4.3.1"
+    "kubernetes-models": "^4.3.1",
+    "request": "^2.88.2"
   },
   "devDependencies": {
     "@cpn-console/eslint-config": "workspace:^",
