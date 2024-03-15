@@ -145,7 +145,7 @@ jobs:
       - name: Upload digest
         uses: actions/upload-artifact@v4
         with:
-          name: digests-${{ matrix.images.name }}
+          name: digests-${{ matrix.images.name }}-${{ inputs.MULTI_ARCH && inputs.USE_QEMU && 'multiarch' || (contains(runner.arch, 'ARM') && 'arm64' || 'amd64') }}
           path: /tmp/digests/${{ matrix.images.name }}/*
           if-no-files-found: error
           retention-days: 1
@@ -160,11 +160,12 @@ jobs:
       matrix:
         images: ${{ fromJSON(needs.matrix.outputs.build-matrix) }}
     steps:
-      - name: Download digests
+      - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: digests-${{ matrix.images.name }}
+          pattern: digests-${{ matrix.images.name }}-*
           path: /tmp/digests/${{ matrix.images.name }}
+          merge-multiple: true
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
