@@ -1,8 +1,8 @@
 import type { V1Secret } from '@kubernetes/client-node'
-import { type StepCall, type ClusterObject, type CreateClusterExecArgs, type DeleteClusterExecArgs, parseError } from '@cpn-console/hooks'
+import { type StepCall, type ClusterObject, parseError } from '@cpn-console/hooks'
 import { getConfig, getK8sApi } from './utils.js'
 
-export const createCluster: StepCall<CreateClusterExecArgs> = async (payload) => {
+export const upsertCluster: StepCall<ClusterObject> = async (payload) => {
   try {
     const cluster = payload.args
     await createClusterSecret(cluster)
@@ -23,9 +23,7 @@ export const createCluster: StepCall<CreateClusterExecArgs> = async (payload) =>
   }
 }
 
-export const updateCluster = createCluster
-
-export const deleteCluster: StepCall<DeleteClusterExecArgs> = async (payload) => {
+export const deleteCluster: StepCall<ClusterObject> = async (payload) => {
   try {
     const secretName = payload.args.secretName
     await deleteClusterSecret(secretName)
@@ -77,7 +75,7 @@ const convertClusterToSecret = (cluster: ClusterObject): V1Secret => {
   }
 }
 
-export const createClusterSecret = async (cluster: ClusterObject) => {
+const createClusterSecret = async (cluster: ClusterObject) => {
   const k8sApi = getK8sApi()
   try {
     await k8sApi.readNamespacedSecret(cluster.secretName, getConfig().namespace)
