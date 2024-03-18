@@ -3,19 +3,19 @@ import type { Environment, Organization, Project, RepositoryForEnv } from '@cpn-
 import { removeTrailingSlash, requiredEnv } from '@cpn-console/shared'
 import { createHmac } from 'crypto'
 
-export const generateAppProjectName = (org: Organization, proj: Project, env: Environment) => {
-  const envHash = createHmac('sha256', '')
+const createEnvHash = (env: Environment) =>
+  createHmac('sha256', '')
     .update(env)
     .digest('hex')
     .slice(0, 4)
+
+export const generateAppProjectName = (org: Organization, proj: Project, env: Environment) => {
+  const envHash = createEnvHash(env)
   return `${org}-${proj}-${env}-${envHash}`
 }
 
 export const generateApplicationName = (org: Organization, proj: Project, env: Environment, repo: RepositoryForEnv['internalRepoName']) => {
-  const envHash = createHmac('sha256', '')
-    .update(env)
-    .digest('hex')
-    .slice(0, 4)
+  const envHash = createEnvHash(env)
   return `${org}-${proj}-${env}-${repo}-${envHash}`
 }
 
@@ -33,8 +33,8 @@ export const getConfig = (): Required<typeof config> => {
 }
 
 const getClient = () => {
-  const kubeconfigCtx = requiredEnv('KUBECONFIG_CTX')
-  const kubeconfigPath = requiredEnv('KUBECONFIG_PATH')
+  const kubeconfigCtx = process.env.KUBECONFIG_CTX
+  const kubeconfigPath = process.env.KUBECONFIG_PATH
   const kc = new KubeConfig()
   if (kubeconfigPath) {
     kc.loadFromFile(kubeconfigPath)
@@ -42,9 +42,8 @@ const getClient = () => {
       kc.setCurrentContext(kubeconfigCtx)
     }
     return kc
-  } else {
-    kc.loadFromCluster()
   }
+  kc.loadFromCluster()
   return kc
 }
 
