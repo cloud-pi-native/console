@@ -1,5 +1,5 @@
 import type { StepCall, ArchiveProjectExecArgs, CreateProjectExecArgs } from '@cpn-console/hooks'
-import { generateRandomPassword } from '@cpn-console/hooks'
+import { generateRandomPassword, parseError } from '@cpn-console/hooks'
 import { getAxiosInstance } from './tech.js'
 import type { SonarPaging } from './project.js'
 
@@ -89,12 +89,12 @@ export const createUser: StepCall<CreateProjectExecArgs> = async (payload) => {
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         // @ts-ignore prévoir une fonction générique
         message: error.message,
       },
-      error: JSON.stringify(error),
     }
   }
 }
@@ -136,11 +136,11 @@ export const deleteUser: StepCall<ArchiveProjectExecArgs> = async (payload) => {
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         message: 'Failed',
       },
-      error: JSON.stringify(error),
     }
   }
 }

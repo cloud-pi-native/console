@@ -1,4 +1,4 @@
-import { type PluginResult } from '@cpn-console/hooks'
+import { parseError, type PluginResult } from '@cpn-console/hooks'
 import { getAxiosInstance } from './tech.js'
 
 let status: PluginResult
@@ -33,6 +33,7 @@ export const check = async (): Promise<PluginResult> => {
     return res
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         // @ts-ignore prévoir une fonction générique

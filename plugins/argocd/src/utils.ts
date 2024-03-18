@@ -33,8 +33,8 @@ export const getConfig = (): Required<typeof config> => {
 }
 
 const getClient = () => {
-  const kubeconfigCtx = requiredEnv('KUBECONFIG_CTX')
-  const kubeconfigPath = requiredEnv('KUBECONFIG_PATH')
+  const kubeconfigCtx = process.env.KUBECONFIG_CTX
+  const kubeconfigPath = process.env.KUBECONFIG_PATH
   const kc = new KubeConfig()
   if (kubeconfigPath) {
     kc.loadFromFile(kubeconfigPath)

@@ -1,5 +1,5 @@
 import type { StepCall, AddUserToProjectExecArgs, ArchiveProjectExecArgs, CreateProjectExecArgs, CreateProjectValidateArgs, CreateRepositoryExecArgs, DeleteRepositoryExecArgs, ProjectBase, UpdateRepositoryExecArgs } from '@cpn-console/hooks'
-import { generateProjectKey } from '@cpn-console/hooks'
+import { generateProjectKey, parseError } from '@cpn-console/hooks'
 import { createGroup, deleteGroup, getGroupId, setGroupVariable, setProjectVariable } from './group.js'
 import { addGroupMember, getGroupMembers, removeGroupMember } from './permission.js'
 import { createGroupToken, createProject, createProjectMirror, deleteProject } from './project.js'
@@ -29,12 +29,12 @@ export const checkApi: StepCall<CreateProjectValidateArgs> = async (payload) => 
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         // @ts-ignore prévoir une fonction générique
         message: error.message,
       },
-      error: JSON.stringify(error),
     }
   }
 }
@@ -87,12 +87,12 @@ export const createDsoProject: StepCall<CreateProjectExecArgs> = async (payload)
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         // @ts-ignore prévoir une fonction générique
         message: error.message,
       },
-      error: JSON.stringify(error),
     }
   }
 }
@@ -111,11 +111,11 @@ export const archiveDsoProject: StepCall<ArchiveProjectExecArgs> = async (payloa
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         message: 'Failed',
       },
-      error: JSON.stringify(error),
     }
   }
 }
@@ -166,12 +166,12 @@ export const createDsoRepository: StepCall<CreateRepositoryExecArgs> = async (pa
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         // @ts-ignore prévoir une fonction générique
         message: error.message,
       },
-      error: JSON.stringify(error),
     }
   }
 }
@@ -195,11 +195,11 @@ export const updateDsoRepository: StepCall<UpdateRepositoryExecArgs> = async (pa
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         message: 'Failed',
       },
-      error: JSON.stringify(error),
     }
   }
 }
@@ -220,11 +220,11 @@ export const deleteDsoRepository: StepCall<DeleteRepositoryExecArgs> = async (pa
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         message: 'Failed',
       },
-      error: JSON.stringify(error),
     }
   }
 }
@@ -254,11 +254,11 @@ export const addDsoGroupMember: StepCall<AddUserToProjectExecArgs> = async (payl
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         message: 'Failed',
       },
-      error: JSON.stringify(error),
     }
   }
 }
@@ -286,11 +286,11 @@ export const removeDsoGroupMember: StepCall<AddUserToProjectExecArgs> = async (p
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         message: 'Failed',
       },
-      error: JSON.stringify(error),
     }
   }
 }
@@ -310,11 +310,11 @@ export const getDsoProjectSecrets: StepCall<ProjectBase> = async (payload) => {
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'OK',
         message: 'No secrets found for this project',
       },
-      error: JSON.stringify(error),
     }
   }
 }

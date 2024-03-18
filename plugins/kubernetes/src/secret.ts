@@ -1,7 +1,7 @@
 import { Secret } from 'kubernetes-models/v1'
 import { CoreV1Api, V1ObjectMeta } from '@kubernetes/client-node'
 import { createCoreV1Api } from './api.js'
-import type { StepCall, EnvironmentCreateArgs } from '@cpn-console/hooks'
+import { type StepCall, type EnvironmentCreateArgs, parseError } from '@cpn-console/hooks'
 import { generateNamespaceName } from './namespace.js'
 
 export type WithMetaType<CR extends object> = CR & {
@@ -30,13 +30,13 @@ export const createKubeSecret: StepCall<EnvironmentCreateArgs> = async (payload)
     }
   } catch (error) {
     return {
+      error: parseError(error),
       // @ts-ignore
       ...payload.results.kubernetes,
       status: {
         result: 'KO',
         message: 'Failed to create docker config secret',
       },
-      error: JSON.stringify(error),
     }
   }
 }
