@@ -1,0 +1,52 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: appset-project
+spec:
+  destinations:
+    - name: "*"
+      namespace: "*"
+      server: "*"
+  sourceRepos:
+    - "*"
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: appset-example
+spec:
+  goTemplate: true
+  generators:
+    - git:
+        repoURL: https://gitlab.apps.c7.numerique-interieur.com/forge-mi/projects/infra/mla/local.git
+        revision: HEAD
+        files:
+          - path: "**/values.yaml" # project/cluster/environment/values.yaml
+  template:
+    metadata:
+      name: "{{ index .path.segments 0 }}-{{ index .path.segments 1 }}-{{ index .path.segments 2 }}-root"
+      namespace: "{{ .argocd.namespace }}"
+      labels:
+        app.kubernetes.io/managed-by: dso-console
+        dso/organization: mla
+        dso/projet: "{{ index .path.segments 0 }}"
+        dso/environment: "{{ index .path.segments 2 }}"
+    spec:
+      project: appset-project
+      sources:
+        - repoURL: https://github.com/cloud-pi-native/console.git
+          targetRevision: feat/1003-ajouter-les-fichiers-yaml-pour-application-argo # FIXME head ou tag
+          path: helm-charts-internal/dso-env
+          helm:
+            valueFiles:
+              - "$values/{{ .path.path }}/{{ .path.filename }}"
+        - repoURL: https://gitlab.apps.c7.numerique-interieur.com/forge-mi/projects/infra/mla/local.git
+          targetRevision: HEAD
+          ref: values
+      destination:
+        name: "{{ index .path.segments 1 }}"
+        namespace: "{{ .argocd.namespace }}"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true

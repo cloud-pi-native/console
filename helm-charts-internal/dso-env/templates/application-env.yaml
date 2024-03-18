@@ -1,0 +1,29 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ .Values.argocd.project }}-env
+  namespace: {{ .Values.argocd.namespace }}
+  labels:
+    app.kubernetes.io/managed-by: dso-console
+    {{- .Values.commonLabels | toYaml | nindent 4 }}
+spec:
+  project: {{ .Values.argocd.project }}-env
+  sources:
+    - repoURL: https://github.com/cloud-pi-native/console.git
+      targetRevision: feat/1003-ajouter-les-fichiers-yaml-pour-application-argo
+      path: helm-charts-internal/dso-ns-resources
+      helm:
+        valueFiles:
+          - $values/{{ .Values.environment.valueFilePath }}
+    - repoURL: {{ .Values.environment.valueFileRepository }}
+      targetRevision: {{ .Values.environment.valueFileRevision }}
+      ref: values
+  destination:
+    name: {{ .Values.application.destination.name }}
+    namespace: {{ .Values.application.destination.namespace }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false

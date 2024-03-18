@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.application.destination.namespace }}
+  labels:
+    app.kubernetes.io/managed-by: dso-console
+    {{- .Values.commonLabels | toYaml | nindent 4 }}

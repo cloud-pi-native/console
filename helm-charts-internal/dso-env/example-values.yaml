@@ -1,0 +1,24 @@
+commonLabels:
+  dso/organization: mla
+  dso/projet: jmn
+argocd:
+  project: mla-demo-dev-6293
+  namespace: dso-argocd
+environment:
+  name: dev
+  valueFileRevision: HEAD
+  valueFilePath: dev-values.yaml
+  roGroup: /project/environment/RO
+  rwGroup: /project/environment/RW
+application:
+  gitlabGroup: https://gitlab.apps.c7.numerique-interieur.com/forge-mi/projects/mla/demo
+  quota:
+    cpu: 2
+    memory: 4Gi
+  destination:
+    name: c7
+    namespace: app1
+  repositories:
+    - repoURL: https://gitlab.apps.c7.numerique-interieur.com/forge-mi/projects/mk/quota-tester/quota-explorer.git
+      targetRevision: main
+      path: '.'
