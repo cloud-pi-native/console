@@ -1,0 +1,6 @@
+apiVersion: v2
+name: dso-app
+description: A Helm chart to create an ArgoCD Application pointing to the DSO console repository that must be deployed.
+type: application
+version: 1.0.0
+appVersion: 1.0.0

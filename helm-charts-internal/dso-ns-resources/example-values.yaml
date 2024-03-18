@@ -1,0 +1,10 @@
+commonLabels:
+  dso/environment: dev
+  dso/organization: mla
+  dso/projet: jmn
+application:
+  namespace: jmn-dev
+  quota:
+    cpu: 2
+    memory: 4Gi
+

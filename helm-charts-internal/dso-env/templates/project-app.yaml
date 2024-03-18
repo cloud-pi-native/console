@@ -1,0 +1,39 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: dso-console
+    {{- .Values.commonLabels | toYaml | nindent 4 }}
+  name: {{ .Values.argocd.project }}-app
+  namespace: {{ .Values.argocd.namespace }}
+spec:
+  destinations:
+  - name: {{ .Values.application.destination.name }}
+    namespace: {{ .Values.application.destination.namespace }}
+  namespaceResourceBlacklist:
+  - group: v1
+    kind: ResourceQuota
+  namespaceResourceWhitelist:
+  - group: '*'
+    kind: '*'
+  roles:
+  - description: read-only group
+    groups:
+    - {{ .Values.environment.roGroup }}
+    name: ro-group
+    policies:
+    - p, proj:{{ .Values.argocd.project }}-app:ro-group, applications, get, {{ .Values.argocd.project }}-app/*,
+      allow
+  - description: read-write group
+    groups:
+    - {{ .Values.environment.rwGroup }}
+    name: rw-group
+    policies:
+    - p, proj:{{ .Values.argocd.project }}-app:rw-group, applications, *, {{ .Values.argocd.project }}-app/*,
+      allow
+    - p, proj:{{ .Values.argocd.project }}-app:rw-group, applications, delete, {{ .Values.argocd.project }}-app/*,
+      allow
+    - p, proj:{{ .Values.argocd.project }}-app:rw-group, applications, create, {{ .Values.argocd.project }}-app/*,
+      deny
+  sourceRepos:
+    - {{ .Values.application.gitlabGroup }}/*
