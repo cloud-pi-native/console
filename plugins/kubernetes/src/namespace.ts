@@ -1,7 +1,7 @@
 import { Namespace } from 'kubernetes-models/v1'
 import { CoreV1Api } from '@kubernetes/client-node'
 import { createCoreV1Api } from './api.js'
-import type { StepCall, Environment, EnvironmentCreateArgs, EnvironmentDeleteArgs, EnvironmentQuotaUpdateArgs, Organization, Project, ResourceQuotaType, UserObject } from '@cpn-console/hooks'
+import { type StepCall, type Environment, type EnvironmentCreateArgs, type EnvironmentDeleteArgs, type EnvironmentQuotaUpdateArgs, type Organization, type Project, type ResourceQuotaType, type UserObject, parseError } from '@cpn-console/hooks'
 import { createResourceQuota, findResourceQuota, replaceResourceQuota } from './quota.js'
 import { createHmac } from 'node:crypto'
 
@@ -24,11 +24,11 @@ export const createKubeNamespace: StepCall<EnvironmentCreateArgs> = async (paylo
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         message: 'Failed to create namespace or resourcequota',
       },
-      error: JSON.stringify(error),
     }
   }
 }
@@ -50,11 +50,11 @@ export const updateResourceQuota: StepCall<EnvironmentQuotaUpdateArgs> = async (
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         message: 'Failed to update ResourceQuota',
       },
-      error: JSON.stringify(error),
     }
   }
 }
@@ -73,11 +73,11 @@ export const deleteKubeNamespace: StepCall<EnvironmentDeleteArgs> = async (paylo
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         message: 'Failed to delete namespace',
       },
-      error: JSON.stringify(error),
     }
   }
 }

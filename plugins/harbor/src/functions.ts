@@ -2,7 +2,7 @@ import { getConfig } from './utils.js'
 import { createProject, deleteProject } from './project.js'
 import { addProjectGroupMember } from './permission.js'
 import { createRobot } from './robot.js'
-import type { StepCall, ArchiveProjectExecArgs, CreateProjectExecArgs, ProjectBase } from '@cpn-console/hooks'
+import { type StepCall, type ArchiveProjectExecArgs, type CreateProjectExecArgs, type ProjectBase, parseError } from '@cpn-console/hooks'
 
 export let axiosOptions: {
   baseURL: string;
@@ -69,12 +69,12 @@ export const createDsoProject: StepCall<CreateProjectExecArgs> = async (payload)
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         // @ts-ignore prévoir une fonction générique
         message: error.message,
       },
-      error: JSON.stringify(error),
     }
   }
 }
@@ -94,12 +94,12 @@ export const archiveDsoProject: StepCall<ArchiveProjectExecArgs> = async (payloa
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         // @ts-ignore prévoir une fonction générique
         message: error.message,
       },
-      error: JSON.stringify(error),
     }
   }
 }

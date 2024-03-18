@@ -3,6 +3,7 @@ import * as hooks from './hooks/index.js'
 import { type ServiceInfos, servicesInfos } from './services.js'
 import { Monitor } from '@cpn-console/shared'
 import { HookStepsNames, StepCall } from './hooks/hook.js'
+export * from './utils/logger.js'
 
 export type HookChoice = keyof typeof hooks
 
