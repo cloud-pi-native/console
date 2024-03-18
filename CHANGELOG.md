@@ -1,5 +1,15 @@
 # Changelog
 
+## [7.0.1](https://github.com/cloud-pi-native/console/compare/v7.0.0...v7.0.1) (2024-03-18)
+
+
+### Bug Fixes
+
+* :bug: add a common error parser for logs ([2391439](https://github.com/cloud-pi-native/console/commit/2391439ef6147119863278bd69ac01797b368f76))
+* :bug: add a common error parser for logs ([b6f28d7](https://github.com/cloud-pi-native/console/commit/b6f28d738c03c3c023d16cf658de8cdc384aa6df))
+* :bug: correctly handle external plugins init ([91e5d7f](https://github.com/cloud-pi-native/console/commit/91e5d7f27f90c1e249ed9e295b05400f06565c2d))
+* :green_heart: fix ci-cd build and release ([a036562](https://github.com/cloud-pi-native/console/commit/a036562f005ba0550c4bf25248227aee02357371))
+
 ## [7.0.0](https://github.com/cloud-pi-native/console/compare/console-v6.5.1...console-v7.0.0) (2024-03-13)
 
 
