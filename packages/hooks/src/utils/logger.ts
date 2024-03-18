@@ -7,5 +7,5 @@ export const parseError = (error: unknown) => {
       enumerable: true,
     })
   }
-  console.log(JSON.stringify(error))
+  return JSON.stringify(error)
 }
