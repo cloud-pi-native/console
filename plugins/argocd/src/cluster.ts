@@ -1,5 +1,5 @@
 import type { V1Secret } from '@kubernetes/client-node'
-import type { StepCall, ClusterObject, CreateClusterExecArgs, DeleteClusterExecArgs } from '@cpn-console/hooks'
+import { type StepCall, type ClusterObject, type CreateClusterExecArgs, type DeleteClusterExecArgs, parseError } from '@cpn-console/hooks'
 import { getConfig, getK8sApi } from './utils.js'
 
 export const createCluster: StepCall<CreateClusterExecArgs> = async (payload) => {
@@ -14,11 +14,11 @@ export const createCluster: StepCall<CreateClusterExecArgs> = async (payload) =>
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         message: 'Failed create/update cluster secret',
       },
-      error: JSON.stringify(error),
     }
   }
 }
@@ -37,11 +37,11 @@ export const deleteCluster: StepCall<DeleteClusterExecArgs> = async (payload) =>
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         message: 'Failed to delete cluster secret',
       },
-      error: JSON.stringify(error),
     }
   }
 }

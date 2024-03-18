@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { getAxiosOptions } from './functions.js'
 import type { StepCall, ArchiveProjectExecArgs, CreateProjectExecArgs } from '@cpn-console/hooks'
-import { generateRandomPassword } from '@cpn-console/hooks'
+import { generateRandomPassword, parseError } from '@cpn-console/hooks'
 
 const getAxiosInstance = () => axios.create(getAxiosOptions())
 
@@ -128,11 +128,11 @@ export const createNexusProject: StepCall<CreateProjectExecArgs> = async (payloa
     return res
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         message: 'Fail Create repositories',
       },
-      error: JSON.stringify(error),
     }
   }
 }
@@ -191,6 +191,7 @@ export const deleteNexusProject: StepCall<ArchiveProjectExecArgs> = async (paylo
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         // @ts-ignore prévoir une fonction générique

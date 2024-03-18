@@ -1,4 +1,4 @@
-import type { StepCall, EnvironmentCreateArgs, EnvironmentDeleteArgs, ArchiveProjectExecArgs, CreateProjectExecArgs, AddUserToProjectExecArgs, RemoveUserFromProjectExecArgs, RetrieveUserByEmailArgs, PermissionManageUserArgs } from '@cpn-console/hooks'
+import { type StepCall, type EnvironmentCreateArgs, type EnvironmentDeleteArgs, type ArchiveProjectExecArgs, type CreateProjectExecArgs, type AddUserToProjectExecArgs, type RemoveUserFromProjectExecArgs, type RetrieveUserByEmailArgs, type PermissionManageUserArgs, parseError } from '@cpn-console/hooks'
 import { addMembers, removeMembers } from './permission.js'
 import { getOrCreateChildGroup, getOrCreateProjectGroup, getProjectGroupByName } from './group.js'
 import { getkcClient } from './client.js'
@@ -17,12 +17,12 @@ export const retrieveKeycloakUserByEmail: StepCall<RetrieveUserByEmailArgs> = as
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         // @ts-ignore prévoir une fonction générique
         message: error.message,
       },
-      error: JSON.stringify(error),
     }
   }
 }
@@ -53,12 +53,12 @@ export const createKeycloakProjectGroup: StepCall<CreateProjectExecArgs> = async
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         // @ts-ignore prévoir une fonction générique
         message: error.message,
       },
-      error: JSON.stringify(error),
     }
   }
 }
@@ -81,12 +81,12 @@ export const addKeycloakUserToProjectGroup: StepCall<AddUserToProjectExecArgs> =
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         // @ts-ignore prévoir une fonction générique
         message: error.message,
       },
-      error: JSON.stringify(error),
     }
   }
 }
@@ -109,12 +109,12 @@ export const removeKeycloakUserFromProjectGroup: StepCall<RemoveUserFromProjectE
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         // @ts-ignore prévoir une fonction générique
         message: error.message,
       },
-      error: JSON.stringify(error),
     }
   }
 }
@@ -142,12 +142,12 @@ export const deleteKeycloakProjectGroup: StepCall<ArchiveProjectExecArgs> = asyn
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         // @ts-ignore prévoir une fonction générique
         message: error.message,
       },
-      error: JSON.stringify(error),
     }
   }
 }
@@ -172,11 +172,11 @@ export const createKeycloakEnvGroup: StepCall<EnvironmentCreateArgs> = async (pa
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         message: 'Failed',
       },
-      error: JSON.stringify(error),
     }
   }
 }
@@ -203,11 +203,11 @@ export const deleteKeycloakEnvGroup: StepCall<EnvironmentDeleteArgs> = async (pa
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         message: 'Failed',
       },
-      error: JSON.stringify(error),
     }
   }
 }
@@ -238,11 +238,11 @@ export const manageKeycloakPermission: StepCall<PermissionManageUserArgs> = asyn
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         message: 'Failed',
       },
-      error: JSON.stringify(error),
     }
   }
 }

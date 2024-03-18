@@ -1,4 +1,4 @@
-import type { ArchiveProjectExecArgs, CreateProjectExecArgs, StepCall } from '@cpn-console/hooks'
+import { parseError, type ArchiveProjectExecArgs, type CreateProjectExecArgs, type StepCall } from '@cpn-console/hooks'
 import type { AxiosResponse } from 'axios'
 import { getAxiosInstance } from './tech.js'
 import type { SonarPaging } from './project.js'
@@ -37,12 +37,12 @@ export const createDsoProjectGroup: StepCall<CreateProjectExecArgs> = async (pay
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         // @ts-ignore prévoir une fonction générique
         message: error.message,
       },
-      error: JSON.stringify(error),
     }
   }
 }
@@ -79,12 +79,12 @@ export const deleteteDsoProjectGroup: StepCall<ArchiveProjectExecArgs> = async (
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         // @ts-ignore prévoir une fonction générique
         message: error.message,
       },
-      error: JSON.stringify(error),
     }
   }
 }

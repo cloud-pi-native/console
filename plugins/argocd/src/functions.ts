@@ -1,4 +1,4 @@
-import type { EnvironmentCreateArgs, EnvironmentDeleteArgs, PluginResult, StepCall, CreateRepositoryExecArgs, DeleteRepositoryExecArgs } from '@cpn-console/hooks'
+import { type EnvironmentCreateArgs, type EnvironmentDeleteArgs, type PluginResult, type StepCall, type CreateRepositoryExecArgs, type DeleteRepositoryExecArgs, parseError } from '@cpn-console/hooks'
 import { ArgoDestination, addRepoToApplicationProject, createApplicationProject, deleteApplicationProject } from './app-project.js'
 import { createApplication, deleteApplication } from './applications.js'
 import { generateAppProjectName, generateApplicationName } from './utils.js'
@@ -29,11 +29,11 @@ export const newEnv: StepCall<EnvironmentCreateArgs> = async (payload) => {
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         message: 'Can\'t create env',
       },
-      error: JSON.stringify(error),
     }
   }
 }
@@ -55,11 +55,11 @@ export const deleteEnv: StepCall<EnvironmentDeleteArgs> = async (payload) => {
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         message: 'Failed',
       },
-      error: JSON.stringify(error),
     }
   }
 }
@@ -94,11 +94,11 @@ export const newRepo: StepCall<CreateRepositoryExecArgs> = async (payload) => {
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         message: 'Failed',
       },
-      error: JSON.stringify(error),
     }
   }
 }
@@ -121,11 +121,11 @@ export const deleteRepo: StepCall<DeleteRepositoryExecArgs> = async (payload) =>
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         message: 'Failed',
       },
-      error: JSON.stringify(error),
     }
   }
 }

@@ -2,6 +2,7 @@
   "packages": {
     ".": {
       "package-name": "console",
+      "include-component-in-tag": false,
       "extra-files": [
         "helm/Chart.yaml",
         "helm/values.yaml"

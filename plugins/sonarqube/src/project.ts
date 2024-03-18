@@ -1,4 +1,4 @@
-import { type CreateRepositoryExecArgs, type DeleteRepositoryExecArgs, type Organization, type Project, type RepositoryCreate, type StepCall, generateProjectKey } from '@cpn-console/hooks'
+import { type CreateRepositoryExecArgs, type DeleteRepositoryExecArgs, type Organization, type Project, type RepositoryCreate, type StepCall, generateProjectKey, parseError } from '@cpn-console/hooks'
 import { getAxiosInstance } from './tech.js'
 
 export type SonarPaging = {
@@ -79,11 +79,11 @@ export const createDsoRepository: StepCall<CreateRepositoryExecArgs> = async (pa
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         message: 'Failed to create Sonarqube Project',
       },
-      error: JSON.stringify(error),
     }
   }
 }
@@ -167,11 +167,11 @@ export const deleteDsoRepository: StepCall<DeleteRepositoryExecArgs> = async (pa
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'OK',
         message: 'Failed to delete Sonarqube Project',
       },
-      error: JSON.stringify(error),
     }
   }
 }

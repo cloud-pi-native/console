@@ -1,4 +1,4 @@
-import type { StepCall, ArchiveProjectExecArgs } from '@cpn-console/hooks'
+import { type StepCall, type ArchiveProjectExecArgs, parseError } from '@cpn-console/hooks'
 
 export const archiveDsoProject: StepCall<ArchiveProjectExecArgs> = async (payload) => {
   try {
@@ -17,11 +17,11 @@ export const archiveDsoProject: StepCall<ArchiveProjectExecArgs> = async (payloa
     }
   } catch (error) {
     return {
+      error: parseError(error),
       status: {
         result: 'KO',
         message: error instanceof Error ? error.message : 'An unexpected error has occurred',
       },
-      error: JSON.stringify(error),
     }
   }
 }
