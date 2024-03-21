@@ -83,7 +83,7 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
   if (localEnvironment.value.id) {
     schemaValidation = EnvironmentSchema.safeParse(localEnvironment.value)
   } else {
-    schemaValidation = EnvironmentSchema.omit({ id: true, status: true, permissions: true }).safeParse(localEnvironment.value)
+    schemaValidation = EnvironmentSchema.omit({ id: true, permissions: true }).safeParse(localEnvironment.value)
   }
   return schemaValidation.success ? undefined : schemaValidation.error
 })

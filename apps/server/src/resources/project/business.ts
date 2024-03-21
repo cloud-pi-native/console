@@ -1,28 +1,24 @@
 import {
   addLogs,
-  deleteEnvironment,
-  deleteRepository,
-  getClusterById,
+  deleteAllEnvironmentForProject,
+  deleteAllRepositoryForProject,
+  deleteAllRoleNonOwnerForProject,
   getOrganizationById,
   getProjectByNames,
   getProjectInfos,
   getProjectInfosAndRepos,
   getProjectInfos as getProjectInfosQuery,
-  getProjectPartialEnvironments,
   getPublicClusters,
-  getQuotaStageById,
   getSingleOwnerByProjectId,
-  getStageById,
   getUserProjects as getUserProjectsQuery,
   initializeProject,
   lockProject,
   removeClusterFromProject,
   updateProject as updateProjectQuery,
-  updateProjectServices,
 } from '@/resources/queries-index.js'
 import type { Cluster, Environment, Log, Organization, Project, User } from '@prisma/client'
 import { hook } from '@/utils/hook-wrapper.js'
-import { type PluginResult, services, servicesInfos } from '@cpn-console/hooks'
+import { services, servicesInfos } from '@cpn-console/hooks'
 import { checkInsufficientPermissionInEnvironment, checkInsufficientRoleInProject } from '@/utils/controller.js'
 import { validateSchema } from '@/utils/business.js'
 import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
@@ -37,7 +33,6 @@ import {
   adminGroupPath,
 } from '@cpn-console/shared'
 import { filterObjectByKeys } from '@/utils/queries-tools.js'
-import { projectRootDir, gitlabUrl } from '@/utils/env.js'
 import { type UserDto, getUser } from '@/resources/user/business.js'
 
 // Fetch infos
@@ -144,18 +139,7 @@ export const createProject = async (dataDto: CreateProjectDto, requestor: UserDt
     if (results.failed) {
       throw new Error('Echec de la création du projet par les plugins')
     }
-    // enregistrement des ids GitLab et Harbor
-    // @ts-ignore
-    const { gitlab, registry }: { gitlab: PluginResult, registry: PluginResult } = results
-    const services = {
-      gitlab: {
-        id: gitlab?.result?.group?.id,
-      },
-      registry: {
-        id: registry?.result?.project?.project_id,
-      },
-    }
-    await updateProjectServices(project.id, services)
+
     const publicClusters = await getPublicClusters()
     const projectInfos = await getProjectInfos(project.id)
     if (!projectInfos) throw new NotFoundError('Projet introuvable')
@@ -172,7 +156,7 @@ export const updateProject = async (data: UpdateProjectDto, projectId: Project['
   const dataFiltered = filterObjectByKeys(data, keysAllowedForUpdate)
 
   // Pré-requis
-  let project = await getProject(projectId, requestor.id)
+  const project = await getProject(projectId, requestor.id)
   if (!project) throw new NotFoundError('Projet introuvable')
   if (project.locked) throw new ForbiddenError(projectIsLockedInfo)
   Object.keys(data).forEach(key => {
@@ -186,8 +170,6 @@ export const updateProject = async (data: UpdateProjectDto, projectId: Project['
   // Actions
   try {
     await updateProjectQuery(projectId, dataFiltered)
-    project = await getProjectInfosQuery(projectId)
-    if (!project) throw new NotFoundError('Projet introuvable')
 
     const { results } = await hook.project.upsert(project.id)
     // @ts-ignore
@@ -195,7 +177,7 @@ export const updateProject = async (data: UpdateProjectDto, projectId: Project['
     if (results.failed) {
       throw new Error('Echec de la mise à jour du projet par les plugins')
     }
-    return project
+    return getProjectInfosQuery(projectId)
   } catch (error) {
     throw new Error(error?.message)
   }
@@ -215,55 +197,20 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
 
   // Actions
   try {
-    await lockProject(projectId)
-    // TODO generate gitlabBaseUrl in gitlab plugin and propagate it to other plugins
-    const gitlabBaseURL = `${gitlabUrl}/${projectRootDir}/${project.organization.name}/${project.name}/`
-    const repositories = project.repositories.map(repo => ({
-      // TODO harmonize keys in plugins should be internalUrl
-      internalUrl: `${gitlabBaseURL}/${repo.internalRepoName}.git`,
-      url: `${gitlabBaseURL}/${repo.internalRepoName}.git`,
-      ...repo,
-    }))
+    // Empty the project first
+    await Promise.all([
+      lockProject(projectId),
+      deleteAllRepositoryForProject(projectId),
+      deleteAllEnvironmentForProject(projectId),
+      deleteAllRoleNonOwnerForProject(projectId),
+    ])
 
-    // -- début - Suppression environnements --
-    let environments = await getProjectPartialEnvironments({ projectId })
-    for (const environment of project.environments) {
-      const cluster = await getClusterById(environment.clusterId)
-      if (!cluster) throw new NotFoundError('Cluster introuvable')
-      const quotaStage = await getQuotaStageById(environment.quotaStageId)
-      if (!quotaStage) throw new NotFoundError('Association Quota - Type d\'environnement introuvable')
-      const stage = await getStageById(quotaStage.stageId)
-      if (!stage) throw new NotFoundError('Type d\'environnement introuvable')
-
-      // Supprimer l'environnement
-      const { results } = await hook.project.upsert(project.id)
-      // @ts-ignore
-      await addLogs('Delete Environments', results, requestor.id, requestId)
-      if (results.failed) {
-        throw new UnprocessableContentError('Echec des services à la suppression de l\'environnement')
-      }
-      await deleteEnvironment(environment.id)
-      environments = environments.toSpliced(environments.findIndex(partialEnvironment => partialEnvironment.environment === environment.name), 1)
+    const { results: upsertResults } = await hook.project.upsert(project.id)
+    // @ts-ignore
+    await addLogs('Delete all project resources', upsertResults, requestor.id, requestId)
+    if (upsertResults.failed) {
+      throw new UnprocessableContentError('Echec de la suppression des ressources du projet par les plugins')
     }
-    // -- fin - Suppression environnements --
-
-    // #region Suppression repositories --
-    for (const repo of repositories) {
-      const { results } = await hook.project.upsert(project.id)
-      // @ts-ignore
-      await addLogs('Delete Repository', results, requestor.id, requestId)
-      if (results.failed) {
-        throw new UnprocessableContentError('Echec des services à la suppression de l\'environnement')
-      }
-      await deleteRepository(repo.id)
-    }
-    // #endregion Suppression repositories --
-
-    // -- début - Retrait clusters --
-    for (const cluster of project.clusters) {
-      await removeClusterFromProject(cluster.id, project.id)
-    }
-    // -- fin - Retrait clusters cibles --
 
     // -- début - Suppression projet --
     const { results } = await hook.project.delete(project.id)
@@ -272,6 +219,13 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
     if (results.failed) {
       throw new UnprocessableContentError('Echec de la suppression du projet par les plugins')
     }
+
+    // -- début - Retrait clusters --
+    for (const cluster of project.clusters) {
+      await removeClusterFromProject(cluster.id, project.id)
+    }
+    // -- fin - Retrait clusters cibles --
+
     // -- fin - Suppression projet --
   } catch (error) {
     throw new Error(error?.message)

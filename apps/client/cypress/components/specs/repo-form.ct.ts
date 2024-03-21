@@ -101,7 +101,6 @@ describe('RepoForm.vue', () => {
       repo: {
         id: '83833faf-f654-40dd-bcd5-cf2e944fc504',
         projectId: '83833faf-f654-40dd-bcd5-cf2e944fc500',
-        status: 'created',
         internalRepoName: 'candilib',
         externalRepoUrl: 'https://github.com/LAB-MI/candilibV2.git',
         isPrivate: true,

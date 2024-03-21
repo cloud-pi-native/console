@@ -30,6 +30,15 @@ export const useAdminClusterStore = defineStore('admin-cluster', () => {
     return api.deleteCluster(clusterId)
   }
 
+  const getClusterById = async (clusterId: Required<ClusterModel['id']>) => {
+    const cluster = clusters.value.find(c => c === clusterId)
+    if (!cluster) {
+      await getClusters()
+      return clusters.value.find(c => c === clusterId)
+    }
+    return cluster
+  }
+
   return {
     clusters,
     getClusters,
@@ -37,5 +46,6 @@ export const useAdminClusterStore = defineStore('admin-cluster', () => {
     addCluster,
     updateCluster,
     deleteCluster,
+    getClusterById,
   }
 })

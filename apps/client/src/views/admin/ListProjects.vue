@@ -2,7 +2,7 @@
 import { onBeforeMount, ref, type Ref } from 'vue'
 import { useAdminProjectStore } from '@/stores/admin/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { type AsyncReturnType, formatDate, statusDict, sortArrByObjKeyAsc } from '@cpn-console/shared'
+import { type AsyncReturnType, formatDate, statusDict, sortArrByObjKeyAsc, AllStatus, ProjectModel } from '@cpn-console/shared'
 import { useAdminOrganizationStore } from '@/stores/admin/organization.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 import { getRandomId } from '@gouvminint/vue-dsfr'
@@ -51,7 +51,7 @@ const rows: Ref<Rows> = ref([])
 const environmentsRows: Ref<EnvironnementRows > = ref([])
 const repositoriesRows: Ref<RepositoryRows> = ref([])
 const tableKey = ref(getRandomId('table'))
-const selectedProject: Ref<typeof allProjects['value'][0] | undefined> = ref()
+const selectedProject: Ref<ProjectModel | undefined> = ref()
 const teamCtKey = ref(getRandomId('team'))
 const environmentsCtKey = ref(getRandomId('environment'))
 const repositoriesCtKey = ref(getRandomId('repository'))
@@ -81,7 +81,7 @@ const filterMethods: FilterMethods = {
   Tous: () => true,
   'Non archivés': (row) => row.status !== 'archived',
   Archivés: (row) => row.status === 'archived',
-  Échoués: (row) => row.status === 'failed',
+  Échoués: (row) => row.status === AllStatus.FAILED,
   Vérrouillés: (row) => row.locked,
 }
 
@@ -151,7 +151,7 @@ const getEnvironmentsRows = async () => {
   await adminQuotaStore.getAllQuotas()
   environmentsRows.value = selectedProject.value.environments?.length
     ? sortArrByObjKeyAsc(selectedProject.value.environments, 'name')
-      ?.map(({ id, quotaStage, name, status }) => (
+      ?.map(({ id, quotaStage, name }) => (
         [
           name,
           quotaStage.stage.name,
@@ -172,23 +172,6 @@ const getEnvironmentsRows = async () => {
               }, []),
             'onUpdate:model-value': (event: string) => updateEnvironmentQuota({ environmentId: id, quotaId: event }),
           },
-          {
-            component: 'v-icon',
-            name: statusDict.status[status].icon,
-            title: `L'environnement ${name} est ${statusDict.status[status].wording}`,
-            disabled: true,
-            fill: statusDict.status[status].color,
-          },
-          {
-            component: 'v-icon',
-            name: 'ri-refresh-fill',
-            // title: `Reprovisionner l'environnement ${name}`,
-            title: 'Cette fonctionnalité n\'est pas encore disponible',
-            cursor: 'pointer',
-            fill: 'var(--warning-425-625)',
-            class: 'cursor-not-allowed',
-            onClick: () => replayHooks({ resource: 'environment', resourceId: id }),
-          },
         ]
       ),
       )
@@ -205,25 +188,10 @@ const getRepositoriesRows = () => {
   if (!selectedProject.value) return
   repositoriesRows.value = selectedProject.value.repositories?.length
     ? sortArrByObjKeyAsc(selectedProject.value.repositories, 'internalRepoName')
-      ?.map(({ id, internalRepoName, status }) => (
+      ?.map(({ internalRepoName, isInfra }) => (
         [
           internalRepoName,
-          {
-            component: 'v-icon',
-            name: statusDict.status[status].icon,
-            title: `Le dépôt ${internalRepoName} est ${statusDict.status[status].wording}`,
-            fill: statusDict.status[status].color,
-          },
-          {
-            component: 'v-icon',
-            name: 'ri-refresh-fill',
-            // title: `Reprovisionner le dépôt ${internalRepoName}`,
-            title: 'Cette fonctionnalité n\'est pas encore disponible',
-            cursor: 'pointer',
-            fill: 'var(--warning-425-625)',
-            class: 'cursor-not-allowed',
-            onClick: () => replayHooks({ resource: 'repository', resourceId: id }),
-          },
+          isInfra ? 'Infra' : 'Applicatif',
         ]
       ),
       )
@@ -466,15 +434,15 @@ onBeforeMount(async () => {
         :nav-items="[
           {
             to: `#${environmentsId}`,
-            text: '#Environnements du projet'
+            text: '#Environnements'
           },
           {
             to: `#${repositoriesId}`,
-            text: '#Dépôts du projet'
+            text: '#Dépôts'
           },
           {
             to: `#${membersId}`,
-            text: '#Membres du projet'
+            text: '#Membres'
           },
         ]"
       />
@@ -484,15 +452,15 @@ onBeforeMount(async () => {
         <DsfrTable
           :id="environmentsId"
           :key="environmentsCtKey"
-          :title="`Environnements du projet ${selectedProject.name}`"
-          :headers="['Nom', 'Type d\'environnement', 'Quota', 'Statut', 'Reprovisionner']"
+          title="Environnements"
+          :headers="['Nom', 'Type d\'environnement', 'Quota']"
           :rows="environmentsRows"
         />
         <DsfrTable
           :id="repositoriesId"
           :key="repositoriesCtKey"
-          :title="`Dépôts du projet ${selectedProject.name}`"
-          :headers="['Nom', 'Statut', 'Reprovisionner']"
+          :title="`Dépôts`"
+          :headers="['Nom', 'Type']"
           :rows="repositoriesRows"
         />
         <TeamCt

@@ -19,7 +19,6 @@ describe('Schemas utils', () => {
       isPrivate: true,
       isInfra: false,
       externalUserName: 'claire-nlet_',
-      status: 'created',
     }
     expect(RepoBusinessSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
   })
@@ -31,7 +30,6 @@ describe('Schemas utils', () => {
       projectId: faker.string.uuid(),
       clusterId: faker.string.uuid(),
       quotaStageId: faker.string.uuid(),
-      status: 'created',
     }
     expect(EnvironmentSchema.omit({ permissions: true }).safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
   })
@@ -43,7 +41,6 @@ describe('Schemas utils', () => {
       projectId: faker.string.uuid(),
       clusterId: faker.string.uuid(),
       quotaStageId: faker.string.uuid(),
-      status: 'created',
       permissions: [{
         id: faker.string.uuid(),
         environmentId: faker.string.uuid(),
@@ -160,7 +157,6 @@ describe('Schemas utils', () => {
       externalToken: 'myToken',
       isPrivate: true,
       isInfra: false,
-      status: 'created',
     }
     expect(RepoBusinessSchema
       .safeParse(toParse))
@@ -176,7 +172,6 @@ describe('Schemas utils', () => {
       isPrivate: true,
       isInfra: false,
       externalUserName: 'clairenlet',
-      status: 'created',
     }
     expect(parseZodError(RepoBusinessSchema
       .safeParse(toParse)
@@ -252,7 +247,6 @@ describe('Schemas utils', () => {
       externalRepoUrl: 'https://github.com/LAB-MI/candilibV2.git',
       isPrivate: false,
       isInfra: false,
-      status: 'created',
     }
 
     expect(parseZodError(RepoBusinessSchema
@@ -354,7 +348,6 @@ describe('Schemas utils', () => {
       isInfra: true,
       externalUserName: true,
       projectId: true,
-      status: true,
     })
   })
 
@@ -367,7 +360,6 @@ describe('Schemas utils', () => {
       isInfra: undefined,
       externalUserName: undefined,
       projectId: undefined,
-      status: undefined,
     })
   })
 
@@ -380,7 +372,6 @@ describe('Schemas utils', () => {
       isInfra: 'test',
       externalUserName: 'test',
       projectId: 'test',
-      status: 'test',
     })
   })
 })

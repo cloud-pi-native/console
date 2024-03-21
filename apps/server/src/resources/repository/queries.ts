@@ -1,6 +1,5 @@
 import type { Project, Repository } from '@prisma/client'
 import prisma from '@/prisma.js'
-import { AllStatus } from '@cpn-console/shared'
 
 // SELECT
 export const getRepositoryById = async (id: Repository['id']) => {
@@ -23,7 +22,6 @@ export const initializeRepository = async ({ projectId, internalRepoName, extern
       externalUserName,
       isInfra,
       isPrivate,
-      status: AllStatus.CREATED,
     },
   })
 }
@@ -38,6 +36,10 @@ export const deleteRepository = async (id: Repository['id']) => {
   const doesRepoExist = await getRepositoryById(id)
   if (!doesRepoExist) throw new Error('Le dépôt interne demandé n\'existe pas en base pour ce projet')
   return prisma.repository.delete({ where: { id } })
+}
+
+export const deleteAllRepositoryForProject = async (id: Project['id']) => {
+  return prisma.repository.deleteMany({ where: { projectId: id } })
 }
 
 // TECH

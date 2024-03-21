@@ -82,16 +82,6 @@ describe('Add repos into project', () => {
       .getByDataTestid('addRepoBtn').should('be.enabled')
   })
 
-  it('Should display repositories statuses', () => {
-    const repos = projectWithFailedRepo.repositories
-
-    cy.assertAddRepo(projectWithFailedRepo, repos)
-      .getByDataTestid(`${repos.find(repo => repo.status === 'created').internalRepoName}-created-badge`)
-      .should('contain', 'Dépôt correctement déployé')
-      .getByDataTestid(`${repos.find(repo => repo.status === 'failed').internalRepoName}-failed-badge`)
-      .should('contain', 'Echec des opérations')
-  })
-
   it('Should add an external public repo', () => {
     const repos = [{
       internalRepoName: 'repo01',

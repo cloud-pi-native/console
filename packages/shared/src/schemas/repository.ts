@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import { AllStatus } from '../utils/const.js'
 import { ErrorSchema } from './utils.js'
 
 export const RepoSchema = z.object({
@@ -21,12 +20,11 @@ export const RepoSchema = z.object({
   externalToken: z.string()
     .regex(/^[a-zA-Z0-9=_-]+$/)
     .optional(),
-  status: z.nativeEnum(AllStatus),
   projectId: z.string()
     .uuid(),
 })
 
-export const CreateRepoBusinessSchema = RepoSchema.omit({ id: true, status: true, projectId: true }).refine(
+export const CreateRepoBusinessSchema = RepoSchema.omit({ id: true, projectId: true }).refine(
   ({ isPrivate, externalToken, externalUserName }) =>
     (isPrivate && externalToken && externalUserName) ||
     !isPrivate,
@@ -47,7 +45,7 @@ export const CreateRepoSchema = {
     projectId: z.string()
       .uuid(),
   }),
-  body: RepoSchema.omit({ id: true, projectId: true, status: true }),
+  body: RepoSchema.omit({ id: true, projectId: true }),
   responses: {
     201: RepoSchema,
     400: ErrorSchema,

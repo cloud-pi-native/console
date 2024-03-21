@@ -37,16 +37,6 @@ describe('Dashboard', () => {
         .should('contain', `Projet ${project.name} : ${statusDict.status[project.status]?.wording}`)
         .getByDataTestid(`${project.id}-${project.locked ? '' : 'un'}locked-badge`)
         .should('contain', `Projet ${project.name} : ${statusDict.locked[project.locked]?.wording}`)
-
-      project.repositories?.forEach(repository => {
-        cy.get(`[data-testid$="-${repository.status}-badge"]`)
-          .should('contain', `Dépôt ${repository.internalRepoName} : ${statusDict.status[repository.status]?.wording}`)
-      })
-
-      project.environments?.forEach(environment => {
-        cy.get(`[data-testid$="-${environment.status}-badge"]`)
-          .should('contain', `Environnement ${environment.name} : ${statusDict.status[environment.status]?.wording}`)
-      })
     })
   })
 

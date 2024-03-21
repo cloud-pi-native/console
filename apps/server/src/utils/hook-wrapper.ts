@@ -1,8 +1,8 @@
-import type { ClusterObject, KubeCluster, KubeUser, RepoCreds, Repository, Project as ProjectPayload } from '@cpn-console/hooks'
+import type { ClusterObject, KubeCluster, KubeUser, RepoCreds, Repository, Project as ProjectPayload, PluginResult } from '@cpn-console/hooks'
 import type { Cluster, Project } from '@prisma/client'
 import { hooks } from '@cpn-console/hooks'
 import { AsyncReturnType } from '@cpn-console/shared'
-import { archiveProject, getClusterByIdOrThrow, getHookProjectInfos, getHookPublicClusters, updateProjectCreated, updateProjectFailed } from '@/resources/queries-index.js'
+import { archiveProject, getClusterByIdOrThrow, getHookProjectInfos, getHookPublicClusters, updateProjectCreated, updateProjectFailed, updateProjectServices } from '@/resources/queries-index.js'
 
 type ReposCreds = Record<Repository['internalRepoName'], RepoCreds>
 
@@ -20,6 +20,18 @@ export const hook = {
         ...project,
         clusters: [...project.clusters, ...publicClusters],
       }, reposCreds))
+
+      // @ts-ignore
+      const { registry }: { registry: PluginResult } = results.results
+      if (registry) {
+        const services = {
+          registry: {
+            id: registry?.result?.project?.project_id,
+          },
+        }
+        await updateProjectServices(project.id, services)
+      }
+
       return {
         results,
         project: results.failed
