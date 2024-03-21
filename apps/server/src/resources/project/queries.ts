@@ -1,6 +1,6 @@
 import prisma from '@/prisma.js'
-import { type AsyncReturnType, ClusterPrivacy, AllStatus } from '@cpn-console/shared'
-import type { Organization, Project, User, Role } from '@prisma/client'
+import { type AsyncReturnType, ClusterPrivacy } from '@cpn-console/shared'
+import { type Organization, type Project, type User, type Role, ProjectStatus } from '@prisma/client'
 
 type ProjectUpdate = Partial<Pick<Project, 'description'>>
 export const updateProject = async (id: Project['id'], data: ProjectUpdate) => {
@@ -72,7 +72,7 @@ export const getUserProjects = async (user: User) => {
         },
       },
       status: {
-        not: 'archived',
+        not: ProjectStatus.archived,
       },
     },
     orderBy: {
@@ -151,7 +151,7 @@ export const getProjectByOrganizationId = async (organizationId: Organization['i
     where: {
       organizationId,
       status: {
-        not: 'archived',
+        not: ProjectStatus.archived,
       },
     },
   })
@@ -269,7 +269,6 @@ export const getHookProjectInfos = async (id: Project['id']) => await prisma.pro
         externalRepoUrl: true,
         isInfra: true,
         isPrivate: true,
-        status: true,
         internalRepoName: true,
       },
     },
@@ -283,7 +282,7 @@ export const initializeProject = async ({ name, organizationId, description = ''
       name,
       organizationId,
       description,
-      status: AllStatus.CREATED,
+      status: ProjectStatus.created,
       locked: false,
       services: {},
       roles: {
@@ -306,11 +305,11 @@ export const unlockProject = async (id: Project['id']) => {
 }
 
 export const updateProjectCreated = async (id: Project['id']) => {
-  return prisma.project.update({ where: { id }, data: { status: 'created' } })
+  return prisma.project.update({ where: { id }, data: { status: ProjectStatus.created } })
 }
 
 export const updateProjectFailed = async (id: Project['id']) => {
-  return prisma.project.update({ where: { id }, data: { status: 'failed' } })
+  return prisma.project.update({ where: { id }, data: { status: ProjectStatus.failed } })
 }
 
 export const addUserToProject = async ({ project, user, role }: { project: Project, user: User, role: Role['role'] }) => {
@@ -353,7 +352,7 @@ export const archiveProject = async (id: Project['id']) => {
     where: { id },
     data: {
       name: `${project?.name}_${Date.now()}_archived`,
-      status: 'archived',
+      status: ProjectStatus.archived,
       locked: true,
     },
   })

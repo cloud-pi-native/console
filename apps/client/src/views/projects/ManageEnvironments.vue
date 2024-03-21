@@ -2,7 +2,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
-import { projectIsLockedInfo, sortArrByObjKeyAsc, AllStatus } from '@cpn-console/shared'
+import { projectIsLockedInfo, sortArrByObjKeyAsc } from '@cpn-console/shared'
 import { useUserStore } from '@/stores/user.js'
 import { useAdminClusterStore } from '@/stores/admin/cluster'
 import { useSnackbarStore } from '@/stores/snackbar.js'
@@ -31,14 +31,13 @@ const setEnvironmentsTiles = (project) => {
       id: environment.id,
       title: environment.name,
       data: environment,
-      status: environment.status,
     }))
 }
 
 // @ts-ignore
 const setSelectedEnvironment = (environment) => {
   // @ts-ignore
-  if (selectedEnvironment.value.id === environment.id || [AllStatus.DELETING, AllStatus.INITIALIZING].includes(environment?.status)) {
+  if (selectedEnvironment.value.id === environment.id) {
     selectedEnvironment.value = {}
     return
   }
@@ -155,36 +154,12 @@ watch(project, () => {
       >
         <DsfrTile
           :title="environment.title"
-          :description="[AllStatus.DELETING, AllStatus.INITIALIZING].includes(environment.status) ? 'Opérations en cours' : null"
+          :description="null"
           :data-testid="`environmentTile-${environment.title}`"
           :horizontal="!!selectedEnvironment.id"
-          :disabled="[AllStatus.DELETING, AllStatus.INITIALIZING].includes(environment.status)"
+          :disabled="false"
           class="fr-mb-2w w-11/12"
           @click="setSelectedEnvironment(environment.data)"
-        />
-        <DsfrBadge
-          v-if="environment.data?.status === AllStatus.INITIALIZING"
-          :data-testid="`${environment.title}-${environment.data?.status}-badge`"
-          type="info"
-          label="Environnement en cours de création"
-        />
-        <DsfrBadge
-          v-else-if="environment.data?.status === 'deleting'"
-          :data-testid="`${environment.title}-${environment.data?.status}-badge`"
-          type="info"
-          label="Environnement en cours de suppression"
-        />
-        <DsfrBadge
-          v-else-if="environment.data?.status === 'failed'"
-          :data-testid="`${environment.title}-${environment.data?.status}-badge`"
-          type="error"
-          label="Echec des opérations"
-        />
-        <DsfrBadge
-          v-else
-          :data-testid="`${environment.title}-${environment.data?.status}-badge`"
-          type="success"
-          label="Environnement correctement déployé"
         />
       </div>
       <EnvironmentForm

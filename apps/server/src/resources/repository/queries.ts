@@ -1,6 +1,5 @@
 import type { Project, Repository } from '@prisma/client'
 import prisma from '@/prisma.js'
-import { AllStatus } from '@cpn-console/shared'
 
 // SELECT
 export const getRepositoryById = async (id: Repository['id']) => {
@@ -23,7 +22,6 @@ export const initializeRepository = async ({ projectId, internalRepoName, extern
       externalUserName,
       isInfra,
       isPrivate,
-      status: AllStatus.CREATED,
     },
   })
 }
