@@ -19,16 +19,18 @@ export const createNamespaces: StepCall<Project> = async (payload) => {
 
     for (const cluster of project.clusters) {
       const kubeClient = createCoreV1Api(cluster)
-      const projectNamespaces = await kubeClient.listNamespace(undefined, undefined, undefined, undefined, getNamespaceSelectors(project))
-      for (const namespace of projectNamespaces.body.items) {
-        const { 'dso/environment': environmentName } = namespace.metadata?.labels as { 'dso/organization': string, 'dso/projet': string, environment: string, 'dso/environment': string }
-        const nsName = namespace.metadata?.name as string
+      const projectNamespaces = await kubeClient?.listNamespace(undefined, undefined, undefined, undefined, getNamespaceSelectors(project))
+      if (projectNamespaces?.body.items) {
+        for (const namespace of projectNamespaces.body.items) {
+          const { 'dso/environment': environmentName } = namespace.metadata?.labels as { 'dso/organization': string, 'dso/projet': string, environment: string, 'dso/environment': string }
+          const nsName = namespace.metadata?.name as string
 
-        const envsForCluster = project.environments.filter(env => env.clusterId === cluster.id)
+          const envsForCluster = project.environments.filter(env => env.clusterId === cluster.id)
 
-        if (!envsForCluster.find(env => env.name === environmentName)) {
-          console.log(`Le namespace ${namespace.metadata?.name} n'a plus rien à faire là, suppression`)
-          kubeClient.deleteNamespace(nsName)
+          if (!envsForCluster.find(env => env.name === environmentName)) {
+            console.log(`Le namespace ${namespace.metadata?.name} n'a plus rien à faire là, suppression`)
+            kubeClient?.deleteNamespace(nsName)
+          }
         }
       }
     }
@@ -55,12 +57,14 @@ export const deleteNamespaces: StepCall<Project> = async (payload) => {
 
     for (const cluster of project.clusters) {
       const kubeClient = createCoreV1Api(cluster)
-      const projectNamespaces = await kubeClient.listNamespace(undefined, undefined, undefined, undefined, getNamespaceSelectors(project))
-      for (const namespace of projectNamespaces.body.items) {
-        console.log(`Le namespace ${namespace.metadata?.name} n'a plus rien à faire là, suppression`)
-        console.log(namespace.metadata?.labels)
-        const nsName = namespace.metadata?.name as string
-        kubeClient.deleteNamespace(nsName)
+      const projectNamespaces = await kubeClient?.listNamespace(undefined, undefined, undefined, undefined, getNamespaceSelectors(project))
+      if (projectNamespaces?.body.items) {
+        for (const namespace of projectNamespaces.body.items) {
+          console.log(`Le namespace ${namespace.metadata?.name} n'a plus rien à faire là, suppression`)
+          console.log(namespace.metadata?.labels)
+          const nsName = namespace.metadata?.name as string
+          kubeClient?.deleteNamespace(nsName)
+        }
       }
     }
     return {
