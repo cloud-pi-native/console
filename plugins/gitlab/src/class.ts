@@ -1,9 +1,10 @@
 import { PluginApi, Project, RepoCreds } from '@cpn-console/hooks'
 import { getApi, getConfig, infraAppsRepoName, internalMirrorRepoName } from './utils.js'
-import { AccessTokenScopes, GroupSchema, GroupStatisticsSchema, MemberSchema, ProjectVariableSchema, VariableSchema } from '@gitbeaker/rest'
+import { AccessTokenScopes, CommitAction, GroupSchema, GroupStatisticsSchema, MemberSchema, ProjectVariableSchema, RepositoryFileExpandedSchema, RepositoryTreeSchema, VariableSchema } from '@gitbeaker/rest'
 import { getOrganizationId } from './group.js'
 import { AccessLevel, Gitlab } from '@gitbeaker/core'
 import { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
+import { createHash } from 'node:crypto'
 
 type setVariableResult = 'created' | 'updated' | 'already up-to-date'
 type AccessLevelAllowed = AccessLevel.NO_ACCESS | AccessLevel.MINIMAL_ACCESS | AccessLevel.GUEST | AccessLevel.REPORTER | AccessLevel.DEVELOPER | AccessLevel.MAINTAINER | AccessLevel.OWNER
@@ -77,6 +78,15 @@ export class GitlabProjectApi extends PluginApi {
     return creds
   }
 
+  public async getProjectId (projectName: string) {
+    const pathProjectName = `${getConfig().projectsRootDir}/${this.project.organization.name}/${this.project.name}/${projectName}`
+    const projects = (await this.api.Projects.search(projectName)).filter(p => p.path_with_namespace === pathProjectName)
+    if (projects.length !== 1) {
+      throw new Error('Gitlab project "' + pathProjectName + '" not found')
+    }
+    return projects[0].id
+  }
+
   public async getProjectToken (tokenName: string) {
     const group = await this.getProjectGroup()
     if (!group) throw new Error('Unable to retrieve gitlab project group')
@@ -128,11 +138,14 @@ export class GitlabProjectApi extends PluginApi {
 
   public async createEmptyRepository (repoName: string) {
     const group = await this.getOrCreateProjectGroup()
-    return this.api.Projects.create({
+    const project = await this.api.Projects.create({
       name: repoName,
       path: repoName,
       namespaceId: group.id,
     })
+    // Dépôt tout juste créé, zéro branche => pas d'erreur (filesTree undefined)
+    await this.api.Commits.create(project.id, 'main', 'ci: 🌱 First commit', [])
+    return project
   }
 
   public async createCloneRepository (repoName: string, externalRepoUrn: string, creds?: RepoCreds) {
@@ -148,6 +161,59 @@ export class GitlabProjectApi extends PluginApi {
       ciConfigPath: '.gitlab-ci-dso.yml',
       importUrl: url,
     })
+  }
+
+  /**
+   * Fonction pour commit un fichier dans un repo en mode "create or update"
+   * @param repoId
+   * @param content
+   * @param filePath
+   * @param branch
+   */
+  public async commit (
+    repoId: number,
+    fileContent: string,
+    filePath: string,
+    branch: string = 'main',
+    comment: string = 'ci: :robot_face: Update file content',
+  ): Promise<boolean> {
+    let filesTree: RepositoryTreeSchema[] | undefined
+    let action: CommitAction['action'] | undefined
+    let actualFile: RepositoryFileExpandedSchema | undefined
+
+    const branches = await this.api.Branches.all(repoId)
+    if (!branches.length) {
+      action = 'create'
+    } else {
+      // TODO pagination
+      filesTree = await this.api.Repositories.allRepositoryTrees(repoId, { path: '/', ref: branch, recursive: true })
+      console.log(filesTree)
+    }
+    if (filesTree?.find(f => f.path === filePath)) {
+      actualFile = await this.api.RepositoryFiles.show(repoId, filePath, branch)
+      const newContentDigest = createHash('sha256').update(fileContent).digest('hex')
+      if (actualFile && actualFile.content_sha256 === newContentDigest) {
+        console.log('Already up-to-date')
+      } else {
+        console.log('Update needed')
+        action = 'update'
+      }
+    } else {
+      console.log('File does not exist')
+      action = 'create'
+    }
+    if (action) {
+      const commitActions: CommitAction[] = [
+        {
+          action,
+          filePath,
+          content: fileContent,
+        },
+      ]
+      await this.api.Commits.create(repoId, branch, comment, commitActions)
+      return true
+    }
+    return false
   }
 
   public async deleteRepository (repoId: number) {
