@@ -32,30 +32,38 @@ type ResourceParams ={
 }
 
 class KubernetesNamespace {
-  nsObject: V1NamespacePopulated
-  coreV1Api: CoreV1Api
-  anyObjectApi: AnyObjectsApi
+  nsObject: V1NamespacePopulated | undefined
+  coreV1Api: CoreV1Api | undefined
+  anyObjectApi: AnyObjectsApi | undefined
 
   constructor (organizationName: string, projectName: string, environmentName: string, owner: UserObject, cluster: ClusterObject) {
     this.coreV1Api = createCoreV1Api(cluster)
-    this.anyObjectApi = createCustomObjectApi(cluster)
-    this.nsObject = getNsObject(organizationName, projectName, environmentName, owner, cluster.zone.slug)
+    if (this.coreV1Api) {
+      this.anyObjectApi = createCustomObjectApi(cluster)
+      this.nsObject = getNsObject(organizationName, projectName, environmentName, owner, cluster.zone.slug)
+    }
   }
 
   public async create () {
-    const ns = await this.coreV1Api.createNamespace(this.nsObject) as { body: V1NamespacePopulated }
-    this.nsObject = ns.body
+    if (this.nsObject) {
+      const ns = await this.coreV1Api?.createNamespace(this.nsObject) as { body: V1NamespacePopulated }
+      this.nsObject = ns.body
+    }
     return this.nsObject
   }
 
   public async delete () {
-    return this.coreV1Api.deleteNamespace(this.nsObject.metadata.name)
+    if (this.nsObject) {
+      return this.coreV1Api?.deleteNamespace(this.nsObject.metadata.name)
+    }
   }
 
   public async getFromCluster () {
     try {
-      const ns = await this.coreV1Api.readNamespace(this.nsObject.metadata?.name) as { body: V1NamespacePopulated }
-      this.nsObject = ns.body
+      if (this.nsObject) {
+        const ns = await this.coreV1Api?.readNamespace(this.nsObject.metadata?.name) as { body: V1NamespacePopulated }
+        this.nsObject = ns.body
+      }
       return this.nsObject
     } catch (error) {
       return undefined
@@ -68,34 +76,38 @@ class KubernetesNamespace {
   }
 
   public async createOrPatchRessource (r: ResourceParams) {
-    const nsName = this.nsObject.metadata.name
-    const objToCreate = structuredClone(r.body)
-    objToCreate.metadata.namespace = nsName
-    objToCreate.metadata.name = r.name
+    if (this.nsObject) {
+      const nsName = this.nsObject.metadata.name
+      const objToCreate = structuredClone(r.body)
+      objToCreate.metadata.namespace = nsName
+      objToCreate.metadata.name = r.name
 
-    // ajout des labels
-    if (!objToCreate.metadata.labels) objToCreate.metadata.labels = { 'app.kubernetes.io/managed-by': 'dso-console' }
-    else objToCreate.metadata.labels['app.kubernetes.io/managed-by'] = 'dso-console'
+      // ajout des labels
+      if (!objToCreate.metadata.labels) objToCreate.metadata.labels = { 'app.kubernetes.io/managed-by': 'dso-console' }
+      else objToCreate.metadata.labels['app.kubernetes.io/managed-by'] = 'dso-console'
 
-    try {
-      await this.anyObjectApi.getNamespacedCustomObject(r.group, r.version, nsName, r.plural, r.name)
-      await this.anyObjectApi.deleteNamespacedCustomObject(r.group, r.version, nsName, r.plural, r.name)
-    } catch (error) {
+      try {
+        await this.anyObjectApi?.getNamespacedCustomObject(r.group, r.version, nsName, r.plural, r.name)
+        await this.anyObjectApi?.deleteNamespacedCustomObject(r.group, r.version, nsName, r.plural, r.name)
+      } catch (error) {
+      }
+      return this.anyObjectApi?.createNamespacedCustomObject(r.group, r.version, nsName, r.plural, objToCreate)
     }
-    return this.anyObjectApi.createNamespacedCustomObject(r.group, r.version, nsName, r.plural, objToCreate)
   }
 
   public async setQuota (quota: ResourceQuotaType) {
-    const resourceQuotaName = 'dso-quota'
-    const nsName = this.nsObject.metadata.name
-    const quotaObject = getQuotaObject(nsName, quota)
-    try {
-      await this.coreV1Api.readNamespacedResourceQuota(resourceQuotaName, this.nsObject.metadata.name)
-      // @ts-ignore
-      await this.coreV1Api.replaceNamespacedResourceQuota(resourceQuotaName, nsName, quotaObject)
-    } catch (error) {
-      // @ts-ignore
-      return this.coreV1Api.createNamespacedResourceQuota(nsName, quotaObject)
+    if (this.nsObject) {
+      const resourceQuotaName = 'dso-quota'
+      const nsName = this.nsObject.metadata.name
+      const quotaObject = getQuotaObject(nsName, quota)
+      try {
+        await this.coreV1Api?.readNamespacedResourceQuota(resourceQuotaName, this.nsObject.metadata.name)
+        // @ts-ignore
+        await this.coreV1Api?.replaceNamespacedResourceQuota(resourceQuotaName, nsName, quotaObject)
+      } catch (error) {
+        // @ts-ignore
+        return this.coreV1Api?.createNamespacedResourceQuota(nsName, quotaObject)
+      }
     }
   }
 }

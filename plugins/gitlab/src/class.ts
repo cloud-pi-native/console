@@ -1,12 +1,15 @@
 import { PluginApi, Project, RepoCreds } from '@cpn-console/hooks'
-import { getApi, getConfig, infraAppsRepoName, internalMirrorRepoName } from './utils.js'
-import { AccessTokenScopes, GroupSchema, GroupStatisticsSchema, MemberSchema, ProjectVariableSchema, VariableSchema } from '@gitbeaker/rest'
+import { getApi, getConfig, getGroupRootId, infraAppsRepoName, internalMirrorRepoName } from './utils.js'
+import { AccessTokenScopes, CommitAction, GroupSchema, GroupStatisticsSchema, MemberSchema, ProjectVariableSchema, RepositoryFileExpandedSchema, RepositoryTreeSchema, VariableSchema } from '@gitbeaker/rest'
 import { getOrganizationId } from './group.js'
 import { AccessLevel, Gitlab } from '@gitbeaker/core'
 import { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
+import { createHash } from 'node:crypto'
 
 type setVariableResult = 'created' | 'updated' | 'already up-to-date'
 type AccessLevelAllowed = AccessLevel.NO_ACCESS | AccessLevel.MINIMAL_ACCESS | AccessLevel.GUEST | AccessLevel.REPORTER | AccessLevel.DEVELOPER | AccessLevel.MAINTAINER | AccessLevel.OWNER
+const infraGroupName = 'Infra'
+const infraGroupPath = 'infra'
 
 type GitlabMirrorSecret = {
   MIRROR_USER: string,
@@ -43,6 +46,32 @@ export class GitlabProjectApi extends PluginApi {
     })
   }
 
+  // Group Infra
+  public async getOrCreateInfraGroup (): Promise<GroupSchema> {
+    const rootId = await getGroupRootId()
+    // Get or create projects_root_dir/infra group
+    const searchResult = await this.api.Groups.search(infraGroupName)
+    const existingParentGroup = searchResult.find(group => group.parent_id === rootId && group.name === infraGroupName)
+    const infraParentGroup = existingParentGroup || await this.api.Groups.create(infraGroupName, infraGroupPath, {
+      parentId: rootId,
+      projectCreationLevel: 'maintainer',
+      subgroupCreationLevel: 'owner',
+      defaultBranchProtection: 0,
+      description: 'Group of all organization infrastructure groups.',
+    })
+    // Get or create projects_root_dir/infra/<organization> group
+    const organizationName = this.project.organization.name
+    const existingGroup = searchResult.find(group => group.parent_id === infraParentGroup.id && group.name === organizationName)
+    if (existingGroup) return existingGroup
+    return this.api.Groups.create(organizationName, organizationName, {
+      parentId: infraParentGroup.id,
+      projectCreationLevel: 'maintainer',
+      subgroupCreationLevel: 'owner',
+      defaultBranchProtection: 0,
+      description: 'Group that hosts infrastructure-as-code repositories for all zones of this organization (ArgoCD pull targets).',
+    })
+  }
+
   public async getProjectGroup (): Promise<GroupSchema | undefined> {
     if (this.gitlabGroup) return this.gitlabGroup
     const parentId = await getOrganizationId(this.project.organization.name)
@@ -75,6 +104,30 @@ export class GitlabProjectApi extends PluginApi {
     creds.MIRROR_USER = newToken.name
     await vaultApi.write(creds, 'tech/GITLAB_MIRROR')
     return creds
+  }
+
+  public async getProjectId (projectName: string) {
+    const pathProjectName = `${getConfig().projectsRootDir}/${this.project.organization.name}/${this.project.name}/${projectName}`
+    const projects = (await this.api.Projects.search(projectName)).filter(p => p.path_with_namespace === pathProjectName)
+    if (projects.length !== 1) {
+      throw new Error('Gitlab project "' + pathProjectName + '" not found')
+    }
+    return projects[0].id
+  }
+
+  public async getProjectById (projectId: number) {
+    return this.api.Projects.show(projectId)
+  }
+
+  public async getOrCreateInfraProject (zone: string) {
+    const infraGroup = await this.getOrCreateInfraGroup()
+    // Get or create projects_root_dir/infra/organization/zone
+    const infraProjects = await this.api.Groups.allProjects(infraGroup.id)
+    return infraProjects.find(repo => repo.name === zone) || await this.createEmptyRepository(
+      zone,
+      'Repository hosting deployment files for this zone of the parent organization.',
+      infraGroup.id,
+    )
   }
 
   public async getProjectToken (tokenName: string) {
@@ -127,13 +180,17 @@ export class GitlabProjectApi extends PluginApi {
     return this.api.Groups.allProjects(group.id)
   }
 
-  public async createEmptyRepository (repoName: string) {
-    const group = await this.getOrCreateProjectGroup()
-    return this.api.Projects.create({
+  public async createEmptyRepository (repoName: string, description?: string | undefined, groupId?: number | undefined) {
+    const namespaceId = groupId || (await this.getOrCreateProjectGroup()).id
+    const project = await this.api.Projects.create({
       name: repoName,
       path: repoName,
-      namespaceId: group.id,
+      namespaceId,
+      description,
     })
+    // Dépôt tout juste créé, zéro branche => pas d'erreur (filesTree undefined)
+    await this.api.Commits.create(project.id, 'main', 'ci: 🌱 First commit', [])
+    return project
   }
 
   public async createCloneRepository (repoName: string, externalRepoUrn: string, creds?: RepoCreds) {
@@ -149,6 +206,89 @@ export class GitlabProjectApi extends PluginApi {
       ciConfigPath: '.gitlab-ci-dso.yml',
       importUrl: url,
     })
+  }
+
+  /**
+   * Fonction pour commit un fichier dans un repo en mode "create or update"
+   * @param repoId
+   * @param content
+   * @param filePath
+   * @param branch
+   */
+  public async commitCreateOrUpdate (
+    repoId: number,
+    fileContent: string,
+    filePath: string,
+    branch: string = 'main',
+    comment: string = 'ci: :robot_face: Update file content',
+  ): Promise<boolean> {
+    let filesTree: RepositoryTreeSchema[] | undefined
+    let action: CommitAction['action'] | undefined
+    let actualFile: RepositoryFileExpandedSchema | undefined
+
+    const branches = await this.api.Branches.all(repoId)
+    if (!branches.length) {
+      action = 'create'
+    } else {
+      filesTree = await this.listFiles(repoId, '/', branch)
+      console.log(filesTree)
+    }
+    if (filesTree?.find(f => f.path === filePath)) {
+      actualFile = await this.api.RepositoryFiles.show(repoId, filePath, branch)
+      const newContentDigest = createHash('sha256').update(fileContent).digest('hex')
+      if (actualFile && actualFile.content_sha256 === newContentDigest) {
+        console.log('Already up-to-date')
+      } else {
+        console.log('Update needed')
+        action = 'update'
+      }
+    } else {
+      console.log('File does not exist')
+      action = 'create'
+    }
+    if (action) {
+      const commitActions: CommitAction[] = [
+        {
+          action,
+          filePath,
+          content: fileContent,
+        },
+      ]
+      await this.api.Commits.create(repoId, branch, comment, commitActions)
+      return true
+    }
+    return false
+  }
+
+  /**
+   * Fonction pour supprimer une liste de fichiers d'un repo
+   * @param repoId
+   * @param files
+   * @param branch
+   * @param comment
+   */
+  public async commitDelete (
+    repoId: number,
+    files: string[],
+    branch: string = 'main',
+    comment: string = 'ci: :robot_face: Delete files',
+  ): Promise<boolean> {
+    if (files.length) {
+      const commitActions: CommitAction[] = files.map(filePath => {
+        return {
+          action: 'delete',
+          filePath,
+        }
+      })
+      console.log(commitActions)
+      await this.api.Commits.create(repoId, branch, comment, commitActions)
+      return true
+    }
+    return false
+  }
+
+  public async listFiles (repoId: number, path: string = '/', branch: string = 'main') {
+    return this.api.Repositories.allRepositoryTrees(repoId, { path, ref: branch, recursive: true, perPage: 1000 })
   }
 
   public async deleteRepository (repoId: number) {

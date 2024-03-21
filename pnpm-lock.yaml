@@ -627,9 +627,15 @@ importers:
       '@kubernetes/client-node':
         specifier: ^0.20.0
         version: 0.20.0
+      '@types/js-yaml':
+        specifier: 4.0.9
+        version: 4.0.9
       axios:
         specifier: 1.6.7
         version: 1.6.7(debug@4.3.4)
+      js-yaml:
+        specifier: 4.1.0
+        version: 4.1.0
       kubernetes-models:
         specifier: ^4.3.1
         version: 4.3.1
@@ -712,12 +718,21 @@ importers:
       '@gitbeaker/core':
         specifier: ^40.0.1
         version: 40.0.1
+      '@gitbeaker/requester-utils':
+        specifier: ^40.0.1
+        version: 40.0.1
       '@gitbeaker/rest':
         specifier: ^40.0.1
         version: 40.0.1
+      '@types/js-yaml':
+        specifier: 4.0.9
+        version: 4.0.9
       axios:
         specifier: 1.6.4
         version: 1.6.4
+      js-yaml:
+        specifier: 4.1.0
+        version: 4.1.0
     devDependencies:
       '@cpn-console/eslint-config':
         specifier: workspace:^
