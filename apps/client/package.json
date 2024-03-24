@@ -32,6 +32,7 @@
     "@gouvfr/dsfr": "^1.11.0",
     "@gouvminint/vue-dsfr": "^5.8.0",
     "@vue/tsconfig": "^0.5.1",
+    "@iconify-json/ri": "^1.1.20",
     "axios": "1.6.7",
     "dotenv": "^16.4.1",
     "json-schema-to-ts": "^3.0.0",
