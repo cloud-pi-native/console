@@ -6,7 +6,7 @@ import '@/main.css'
 import PaginationCt from '@/components/PaginationCt.vue'
 
 describe('PaginationCt.vue', () => {
-  it('Should mount a MultiSelector, first page', () => {
+  it('Should mount a PaginationCt, first page', () => {
     const props = {
       length: 15,
       step: 2,
@@ -14,14 +14,14 @@ describe('PaginationCt.vue', () => {
     }
 
     cy.mount(PaginationCt, { props })
-    cy.getByDataTestid('positionInfo').should('contain', `0 - ${props.step} sur ${props.length}`)
-    cy.getByDataTestid('seeFirstLogsBtn').should('be.disabled')
-    cy.getByDataTestid('seePreviousLogsBtn').should('be.disabled')
-    cy.getByDataTestid('seeNextLogsBtn').should('be.enabled')
-    cy.getByDataTestid('seeLastLogsBtn').should('be.enabled')
+    cy.getByDataTestid('positionInfo').should('contain', `1 - 2 sur ${props.length}`)
+    cy.getByDataTestid('seeFirstPageBtn').should('be.disabled')
+    cy.getByDataTestid('seePreviousPageBtn').should('be.disabled')
+    cy.getByDataTestid('seeNextPageBtn').should('be.enabled')
+    cy.getByDataTestid('seeLastPageBtn').should('be.enabled')
   })
 
-  it('Should mount a MultiSelector, page 1', () => {
+  it('Should mount a PaginationCt, page 1', () => {
     const props = {
       length: 20,
       step: 5,
@@ -29,14 +29,14 @@ describe('PaginationCt.vue', () => {
     }
 
     cy.mount(PaginationCt, { props })
-    cy.getByDataTestid('positionInfo').should('contain', `${props.step} - ${props.step * 2} sur ${props.length}`)
-    cy.getByDataTestid('seeFirstLogsBtn').should('be.enabled')
-    cy.getByDataTestid('seePreviousLogsBtn').should('be.enabled')
-    cy.getByDataTestid('seeNextLogsBtn').should('be.enabled')
-    cy.getByDataTestid('seeLastLogsBtn').should('be.enabled')
+    cy.getByDataTestid('positionInfo').should('contain', `6 - 10 sur ${props.length}`)
+    cy.getByDataTestid('seeFirstPageBtn').should('be.enabled')
+    cy.getByDataTestid('seePreviousPageBtn').should('be.enabled')
+    cy.getByDataTestid('seeNextPageBtn').should('be.enabled')
+    cy.getByDataTestid('seeLastPageBtn').should('be.enabled')
   })
 
-  it('Should mount a MultiSelector, last page', () => {
+  it('Should mount a PaginationCt, last page', () => {
     const props = {
       length: 43,
       step: 10,
@@ -44,10 +44,10 @@ describe('PaginationCt.vue', () => {
     }
 
     cy.mount(PaginationCt, { props })
-    cy.getByDataTestid('positionInfo').should('contain', `40 - ${props.length} sur ${props.length}`)
-    cy.getByDataTestid('seeFirstLogsBtn').should('be.enabled')
-    cy.getByDataTestid('seePreviousLogsBtn').should('be.enabled')
-    cy.getByDataTestid('seeNextLogsBtn').should('be.disabled')
-    cy.getByDataTestid('seeLastLogsBtn').should('be.disabled')
+    cy.getByDataTestid('positionInfo').should('contain', `41 - 43 sur ${props.length}`)
+    cy.getByDataTestid('seeFirstPageBtn').should('be.enabled')
+    cy.getByDataTestid('seePreviousPageBtn').should('be.enabled')
+    cy.getByDataTestid('seeNextPageBtn').should('be.disabled')
+    cy.getByDataTestid('seeLastPageBtn').should('be.disabled')
   })
 })

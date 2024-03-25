@@ -38,14 +38,14 @@ const emit = defineEmits(['setPage'])
         class="i-ri-arrow-left-double-fill icon-btn fr-btn"
         title="Voir la première page"
         :disabled="props.isUpdating || props.page <= 0"
-        data-testid="seeFirstLogsBtn"
+        data-testid="seeFirstPageBtn"
         @click="emit('setPage', 0)"
       />
       <button
         class="i-ri-arrow-drop-left-line icon-btn fr-btn"
         title="Voir la page précédente"
         :disabled="props.isUpdating || props.page <= 0"
-        data-testid="seePreviousLogsBtn"
+        data-testid="seePreviousPageBtn"
         @click="emit('setPage', Math.max(props.page - 1, 0))"
       />
     </div>
@@ -53,7 +53,7 @@ const emit = defineEmits(['setPage'])
       class="flex items-center"
       data-testid="positionInfo"
     >
-      {{ currentStart + ' - ' + Math.min(currentStart + props.step, props.length) + ' sur ' + props.length }}
+      {{ (currentStart + 1) + ' - ' + Math.min(currentStart + props.step, props.length) + ' sur ' + props.length }}
     </p>
     <div
       class="flex gap-2"
@@ -62,14 +62,14 @@ const emit = defineEmits(['setPage'])
         class="i-ri-arrow-drop-right-line icon-btn fr-btn"
         title="Voir la page suivante"
         :disabled="props.isUpdating || props.page >= maxPage"
-        data-testid="seeNextLogsBtn"
+        data-testid="seeNextPageBtn"
         @click="emit('setPage', Math.min(maxPage, page + 1))"
       />
       <button
         class="i-ri-arrow-right-double-line icon-btn fr-btn"
         title="Voir la dernière page"
         :disabled="props.isUpdating || props.page >= maxPage"
-        data-testid="seeLastLogsBtn"
+        data-testid="seeLastPageBtn"
         @click="emit('setPage', maxPage)"
       />
     </div>
