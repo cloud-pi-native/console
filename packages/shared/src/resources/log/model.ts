@@ -8,7 +8,8 @@ export type LogModel = {
   data: {
     [x:string]: any
     failed?: boolean
+    totalExecutionTime?: number
   }
-  totalExecutiontime?: number
   createdAt: string
+  updatedAt: string
 }

@@ -4,7 +4,7 @@ import api from '@/api/index.js'
 import type { AdminLogsQuery, LogModel } from '@cpn-console/shared'
 
 export const useAdminLogStore = defineStore('admin-log', () => {
-  const logs: Ref<Array<LogModel | undefined>> = ref([])
+  const logs: Ref<Array<LogModel>> = ref([])
   const count: Ref<number | undefined> = ref(undefined)
 
   const getAllLogs = async ({ offset, limit }: AdminLogsQuery = { offset: 0, limit: 100 }) => {

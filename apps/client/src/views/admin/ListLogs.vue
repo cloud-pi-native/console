@@ -2,44 +2,41 @@
 import { ref, computed, onMounted } from 'vue'
 import { useAdminLogStore } from '@/stores/admin/log.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { exclude } from '@cpn-console/shared'
+import { LogModel } from '@cpn-console/shared'
 import { JsonViewer } from 'vue3-json-viewer'
 
 const adminLogStore = useAdminLogStore()
 const snackbarStore = useSnackbarStore()
 
-const step = 5
+const step = 10
 const isUpdating = ref(true)
-const offset = ref(0)
+const page = ref(0)
+const hideLogs = ref(false)
+const hideLogDetails = ref(true)
 
 const logs = computed(() => adminLogStore.logs)
 const logsLength = computed(() => adminLogStore.count)
 
-const showLogs = async (key) => {
-  if (key === 'first' ||
-    (key === 'previous' &&
-    offset.value <= step)
-  ) {
-    offset.value = 0
-  } else if (key === 'previous') {
-    offset.value -= step
-  } else if (key === 'last' ||
-    (key === 'next' &&
-      offset.value >= logsLength.value - step)) {
-    offset.value = logsLength.value - step
-  } else {
-    offset.value += step
-  }
-  await getAllLogs({ offset: offset.value, limit: step })
+const showLogs = async (index: number) => {
+  page.value = index
+  await getAllLogs({ offset: index * step, limit: step })
 }
 
-const sliceLog = (log) => {
-  return exclude({ ...log }, ['action', 'createdAt', 'updatedAt'])
+type LogModelSliced = Omit<LogModel['data'], 'totalExecutiontime'>
+const sliceLog = (log: LogModel): LogModelSliced => {
+  const {
+    data: {
+      totalExecutionTime: _t,
+      ...logSliced
+    },
+  } = log
+  if (!logSliced.failed) delete logSliced.failed
+  return logSliced
 }
 
-const getAllLogs = async ({ offset, limit }, isDisplayingSuccess = true) => {
+const getAllLogs = async ({ offset, limit }: { offset: number, limit: number }, isDisplayingSuccess = true) => {
   isUpdating.value = true
-  logs.value = await adminLogStore.getAllLogs({ offset, limit })
+  await adminLogStore.getAllLogs({ offset, limit })
   if (isDisplayingSuccess) {
     snackbarStore.setMessage('Logs récupérés avec succès', 'success')
   }
@@ -47,7 +44,7 @@ const getAllLogs = async ({ offset, limit }, isDisplayingSuccess = true) => {
 }
 
 onMounted(async () => {
-  await getAllLogs({ offset: offset.value, limit: step }, false)
+  await getAllLogs({ offset: 0, limit: step }, false)
 })
 
 </script>
@@ -58,7 +55,7 @@ onMounted(async () => {
     Journaux des services associés à la chaîne DSO
   </h1>
   <div
-    class="flex justify-between"
+    class="flex justify-between py-4"
   >
     <DsfrAlert
       v-if="!isUpdating"
@@ -67,17 +64,43 @@ onMounted(async () => {
       type="info"
       small
     />
-    <DsfrButton
-      data-testid="refresh-btn"
-      title="Renouveler l'appel"
-      secondary
-      icon-only
-      icon="ri-refresh-fill"
-      :disabled="isUpdating === true"
-      @click="getAllLogs({ offset, limit: step })"
-    />
+    <div
+      class="flex gap-2"
+    >
+      <DsfrButton
+        data-testid="logsDetailsBtn"
+        :title="hideLogDetails ? 'Afficher les logs en entier': 'Masquer les clés non essentielles des logs'"
+        secondary
+        icon-only
+        :icon="hideLogDetails ? 'ri-filter-off-fill' : 'ri-filter-fill'"
+        @click="hideLogDetails = !hideLogDetails"
+      />
+      <DsfrButton
+        data-testid="showLogsBtn"
+        :title="hideLogs ? 'Afficher les logs': 'Masquer les logs'"
+        secondary
+        icon-only
+        :icon="hideLogs ? 'ri-eye-off-fill' : 'ri-eye-fill'"
+        @click="hideLogs = !hideLogs"
+      />
+      <DsfrButton
+        data-testid="refreshBtn"
+        title="Renouveler l'appel"
+        secondary
+        icon-only
+        icon="ri-refresh-fill"
+        :disabled="isUpdating"
+        @click="showLogs(page)"
+      />
+    </div>
   </div>
-
+  <PaginationCt
+    :length="logsLength"
+    :is-updating="isUpdating"
+    :page="page"
+    :step="step"
+    @set-page="showLogs($event)"
+  />
   <div
     v-for="log in logs"
     :key="log.id"
@@ -90,62 +113,55 @@ onMounted(async () => {
         :label="log.action"
         :type="log.data?.failed ? 'error' : 'success'"
       />
-      <DsfrBadge
-        :label="(new Date(log.createdAt)).toLocaleString()"
-        no-icon
-      />
+      <div
+        class="flex gap-2"
+      >
+        <DsfrBadge
+          v-if="log?.data?.totalExecutionTime"
+          :label="log.data.totalExecutionTime + ' ms'"
+          no-icon
+        />
+        <DsfrBadge
+          :label="(new Date(log.createdAt)).toLocaleString()"
+          no-icon
+        />
+      </div>
     </div>
     <JsonViewer
+      v-if="!hideLogs"
       :data-testid="`${log.id}-json`"
-      :value="sliceLog(log)"
+      :value="hideLogDetails ? sliceLog(log) : log"
       class="json-box !my-0"
       copyable
     />
-  </div>
-  <div
-    class="flex justify-between"
-  >
     <div
-      class="flex gap-2"
+      style="display: none;"
+      class="flex flex-wrap justify-between"
     >
-      <DsfrButton
-        title="voir les premiers logs"
-        secondary
-        icon-only
-        :disabled="isUpdating === true || offset <= 0"
-        icon="ri-arrow-drop-left-fill"
-        @click="showLogs('first')"
+      <DsfrBadge
+        :label="'Log ID: ' + log.id"
+        type="new"
+        no-icon
       />
-      <DsfrButton
-        title="voir les logs précédents"
-        secondary
-        icon-only
-        :disabled="isUpdating === true || offset <= 0"
-        icon="ri-arrow-drop-left-line"
-        @click="showLogs('previous')"
+      <DsfrBadge
+        :label="'user ID: ' + log.userId"
+        type="new"
+        no-icon
       />
-    </div>
-    <div
-      class="flex gap-2"
-    >
-      <DsfrButton
-        title="voir les logs suivants"
-        secondary
-        icon-only
-        :disabled="isUpdating === true || offset >= logsLength - step"
-        icon="ri-arrow-drop-right-line"
-        @click="showLogs('next')"
-      />
-      <DsfrButton
-        title="voir les derniers logs"
-        secondary
-        icon-only
-        :disabled="isUpdating === true || offset >= logsLength - step"
-        icon="ri-arrow-drop-right-fill"
-        @click="showLogs('last')"
+      <DsfrBadge
+        :label="'Request ID: ' + log.requestId"
+        type="new"
+        no-icon
       />
     </div>
   </div>
+  <PaginationCt
+    :length="logsLength"
+    :is-updating="isUpdating"
+    :page="page"
+    :step="step"
+    @set-page="showLogs($event)"
+  />
 </template>
 
 <style>

@@ -729,7 +729,7 @@ export const data = {
   ],
   log: [
     {
-      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1233',
+      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1220',
       data: {
         argo: {
           status: {
@@ -788,7 +788,7 @@ export const data = {
       updatedAt: '2023-07-03T14:46:56.809Z',
     },
     {
-      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1234',
+      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1221',
       data: {
         argo: {
           status: {
@@ -847,7 +847,7 @@ export const data = {
       updatedAt: '2023-07-03T14:46:56.819Z',
     },
     {
-      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1235',
+      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1222',
       data: {
         argo: {
           status: {
@@ -911,7 +911,7 @@ export const data = {
       updatedAt: '2023-07-03T14:46:56.819Z',
     },
     {
-      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1236',
+      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1223',
       data: {
         argo: {
           status: {
@@ -975,7 +975,7 @@ export const data = {
       updatedAt: '2023-07-03T14:46:56.788Z',
     },
     {
-      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1237',
+      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1224',
       data: {
         args: {
           id: '1e4fdb28-f9ea-46d4-ad16-607c7f1aa8b6',
@@ -1121,7 +1121,7 @@ export const data = {
       updatedAt: '2023-07-03T14:46:56.788Z',
     },
     {
-      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1238',
+      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1225',
       data: {
         args: {
           id: '1e4fdb28-f9ea-46d4-ad16-607c7f1aa8b6',
@@ -1184,7 +1184,892 @@ export const data = {
       updatedAt: '2023-07-03T14:46:56.788Z',
     },
     {
+      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1226',
+      data: {
+        argo: {
+          status: {
+            result: 'OK',
+          },
+        },
+        args: {
+          owner: {
+            id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+            email: 'claire.nollet@interieur.gouv.fr',
+            lastName: 'Nollet',
+            createdAt: '2023-06-08T14:57:58.401Z',
+            firstName: 'Claire',
+            updatedAt: '2023-06-08T14:57:58.401Z',
+          },
+          project: 'int-2',
+          repository: [],
+          environment: 'staging',
+          organization: 'mi',
+          registryHost: 'blabla.com',
+        },
+        vault: {
+          status: {
+            result: 'OK',
+          },
+          pullSecret: {
+            data: {
+              HOST: 'blabla.com',
+              TOKEN: 'token',
+              USERNAME: 'robot$mi-int-2+ci',
+              DOCKER_CONFIG: '{"auths":{"blabla.com":{"auth":"token","email":""}}}',
+            },
+            metadata: {
+              version: 1,
+              destroyed: false,
+              created_time: '2023-06-08T15:14:56.087835715Z',
+              deletion_time: '',
+              custom_metadata: null,
+            },
+          },
+        },
+        keycloak: {
+          group: {
+            id: '6ce9c548-d0f6-490b-b32d-6e62c20e5eff',
+          },
+          status: {
+            result: 'OK',
+          },
+          roGroup: '/mi-int-2/staging/RO',
+          rwGroup: '/mi-int-2/staging/RW',
+        },
+      },
+      action: 'create Project',
+      userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+      createdAt: '2023-07-03T14:46:56.788Z',
+      updatedAt: '2023-07-03T14:46:56.788Z',
+    },
+    {
+      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1227',
+      data: {
+        argo: {
+          status: {
+            result: 'KO',
+          },
+        },
+        args: {
+          owner: {
+            id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+            email: 'claire.nollet@interieur.gouv.fr',
+            lastName: 'Nollet',
+            createdAt: '2023-06-08T14:57:58.401Z',
+            firstName: 'Claire',
+            updatedAt: '2023-06-08T14:57:58.401Z',
+          },
+          project: 'int-2',
+          repository: [],
+          environment: 'staging',
+          organization: 'mi',
+          registryHost: 'blabla.com',
+        },
+        vault: {
+          status: {
+            result: 'OK',
+          },
+          pullSecret: {
+            data: {
+              HOST: 'blabla.com',
+              TOKEN: 'token',
+              USERNAME: 'robot$mi-int-2+ci',
+              DOCKER_CONFIG: '{"auths":{"blabla.com":{"auth":"token","email":""}}}',
+            },
+            metadata: {
+              version: 1,
+              destroyed: false,
+              created_time: '2023-06-08T15:14:56.087835715Z',
+              deletion_time: '',
+              custom_metadata: null,
+            },
+          },
+        },
+        keycloak: {
+          group: {
+            id: '6ce9c548-d0f6-490b-b32d-6e62c20e5eff',
+          },
+          status: {
+            result: 'OK',
+          },
+          roGroup: '/mi-int-2/staging/RO',
+          rwGroup: '/mi-int-2/staging/RW',
+        },
+      },
+      action: 'create Project',
+      userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+      createdAt: '2023-07-03T14:46:56.788Z',
+      updatedAt: '2023-07-03T14:46:56.788Z',
+    },
+    {
+      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1228',
+      data: {
+        argo: {
+          status: {
+            result: 'OK',
+          },
+        },
+        args: {
+          owner: {
+            id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+            email: 'claire.nollet@interieur.gouv.fr',
+            lastName: 'Nollet',
+            createdAt: '2023-06-08T14:57:58.401Z',
+            firstName: 'Claire',
+            updatedAt: '2023-06-08T14:57:58.401Z',
+          },
+          project: 'int-2',
+          repository: [],
+          environment: 'staging',
+          organization: 'mi',
+          registryHost: 'blabla.com',
+        },
+        vault: {
+          status: {
+            result: 'OK',
+          },
+          pullSecret: {
+            data: {
+              HOST: 'blabla.com',
+              TOKEN: 'token',
+              USERNAME: 'robot$mi-int-2+ci',
+              DOCKER_CONFIG: '{"auths":{"blabla.com":{"auth":"token","email":""}}}',
+            },
+            metadata: {
+              version: 1,
+              destroyed: false,
+              created_time: '2023-06-08T15:14:56.087835715Z',
+              deletion_time: '',
+              custom_metadata: null,
+            },
+          },
+        },
+        keycloak: {
+          group: {
+            id: '6ce9c548-d0f6-490b-b32d-6e62c20e5eff',
+          },
+          status: {
+            result: 'OK',
+          },
+          roGroup: '/mi-int-2/staging/RO',
+          rwGroup: '/mi-int-2/staging/RW',
+        },
+      },
+      action: 'create Project',
+      userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+      createdAt: '2023-07-03T14:46:56.788Z',
+      updatedAt: '2023-07-03T14:46:56.788Z',
+    },
+    {
+      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1229',
+      data: {
+        argo: {
+          status: {
+            result: 'KO',
+          },
+        },
+        args: {
+          owner: {
+            id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+            email: 'claire.nollet@interieur.gouv.fr',
+            lastName: 'Nollet',
+            createdAt: '2023-06-08T14:57:58.401Z',
+            firstName: 'Claire',
+            updatedAt: '2023-06-08T14:57:58.401Z',
+          },
+          project: 'int-2',
+          repository: [],
+          environment: 'staging',
+          organization: 'mi',
+          registryHost: 'blabla.com',
+        },
+        vault: {
+          status: {
+            result: 'OK',
+          },
+          pullSecret: {
+            data: {
+              HOST: 'blabla.com',
+              TOKEN: 'token',
+              USERNAME: 'robot$mi-int-2+ci',
+              DOCKER_CONFIG: '{"auths":{"blabla.com":{"auth":"token","email":""}}}',
+            },
+            metadata: {
+              version: 1,
+              destroyed: false,
+              created_time: '2023-06-08T15:14:56.087835715Z',
+              deletion_time: '',
+              custom_metadata: null,
+            },
+          },
+        },
+        keycloak: {
+          group: {
+            id: '6ce9c548-d0f6-490b-b32d-6e62c20e5eff',
+          },
+          status: {
+            result: 'OK',
+          },
+          roGroup: '/mi-int-2/staging/RO',
+          rwGroup: '/mi-int-2/staging/RW',
+        },
+      },
+      action: 'create Project',
+      userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+      createdAt: '2023-07-03T14:46:56.788Z',
+      updatedAt: '2023-07-03T14:46:56.788Z',
+    },
+    {
+      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1230',
+      data: {
+        argo: {
+          status: {
+            result: 'OK',
+          },
+        },
+        args: {
+          owner: {
+            id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+            email: 'claire.nollet@interieur.gouv.fr',
+            lastName: 'Nollet',
+            createdAt: '2023-06-08T14:57:58.401Z',
+            firstName: 'Claire',
+            updatedAt: '2023-06-08T14:57:58.401Z',
+          },
+          project: 'int-2',
+          repository: [],
+          environment: 'staging',
+          organization: 'mi',
+          registryHost: 'blabla.com',
+        },
+        vault: {
+          status: {
+            result: 'OK',
+          },
+          pullSecret: {
+            data: {
+              HOST: 'blabla.com',
+              TOKEN: 'token',
+              USERNAME: 'robot$mi-int-2+ci',
+              DOCKER_CONFIG: '{"auths":{"blabla.com":{"auth":"token","email":""}}}',
+            },
+            metadata: {
+              version: 1,
+              destroyed: false,
+              created_time: '2023-06-08T15:14:56.087835715Z',
+              deletion_time: '',
+              custom_metadata: null,
+            },
+          },
+        },
+        keycloak: {
+          group: {
+            id: '6ce9c548-d0f6-490b-b32d-6e62c20e5eff',
+          },
+          status: {
+            result: 'OK',
+          },
+          roGroup: '/mi-int-2/staging/RO',
+          rwGroup: '/mi-int-2/staging/RW',
+        },
+      },
+      action: 'create Project',
+      userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+      createdAt: '2023-07-03T14:46:56.788Z',
+      updatedAt: '2023-07-03T14:46:56.788Z',
+    },
+    {
+      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1231',
+      data: {
+        argo: {
+          status: {
+            result: 'OK',
+          },
+        },
+        args: {
+          owner: {
+            id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+            email: 'claire.nollet@interieur.gouv.fr',
+            lastName: 'Nollet',
+            createdAt: '2023-06-08T14:57:58.401Z',
+            firstName: 'Claire',
+            updatedAt: '2023-06-08T14:57:58.401Z',
+          },
+          project: 'int-2',
+          repository: [],
+          environment: 'staging',
+          organization: 'mi',
+          registryHost: 'blabla.com',
+        },
+        vault: {
+          status: {
+            result: 'OK',
+          },
+          pullSecret: {
+            data: {
+              HOST: 'blabla.com',
+              TOKEN: 'token',
+              USERNAME: 'robot$mi-int-2+ci',
+              DOCKER_CONFIG: '{"auths":{"blabla.com":{"auth":"token","email":""}}}',
+            },
+            metadata: {
+              version: 1,
+              destroyed: false,
+              created_time: '2023-06-08T15:14:56.087835715Z',
+              deletion_time: '',
+              custom_metadata: null,
+            },
+          },
+        },
+        keycloak: {
+          group: {
+            id: '6ce9c548-d0f6-490b-b32d-6e62c20e5eff',
+          },
+          status: {
+            result: 'OK',
+          },
+          roGroup: '/mi-int-2/staging/RO',
+          rwGroup: '/mi-int-2/staging/RW',
+        },
+      },
+      action: 'create Project',
+      userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+      createdAt: '2023-07-03T14:46:56.788Z',
+      updatedAt: '2023-07-03T14:46:56.788Z',
+    },
+    {
       id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1232',
+      data: {
+        argo: {
+          status: {
+            result: 'OK',
+          },
+        },
+        args: {
+          owner: {
+            id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+            email: 'claire.nollet@interieur.gouv.fr',
+            lastName: 'Nollet',
+            createdAt: '2023-06-08T14:57:58.401Z',
+            firstName: 'Claire',
+            updatedAt: '2023-06-08T14:57:58.401Z',
+          },
+          project: 'int-2',
+          repository: [],
+          environment: 'staging',
+          organization: 'mi',
+          registryHost: 'blabla.com',
+        },
+        vault: {
+          status: {
+            result: 'OK',
+          },
+          pullSecret: {
+            data: {
+              HOST: 'blabla.com',
+              TOKEN: 'token',
+              USERNAME: 'robot$mi-int-2+ci',
+              DOCKER_CONFIG: '{"auths":{"blabla.com":{"auth":"token","email":""}}}',
+            },
+            metadata: {
+              version: 1,
+              destroyed: false,
+              created_time: '2023-06-08T15:14:56.087835715Z',
+              deletion_time: '',
+              custom_metadata: null,
+            },
+          },
+        },
+        keycloak: {
+          group: {
+            id: '6ce9c548-d0f6-490b-b32d-6e62c20e5eff',
+          },
+          status: {
+            result: 'OK',
+          },
+          roGroup: '/mi-int-2/staging/RO',
+          rwGroup: '/mi-int-2/staging/RW',
+        },
+      },
+      action: 'create Project',
+      userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+      createdAt: '2023-07-03T14:46:56.788Z',
+      updatedAt: '2023-07-03T14:46:56.788Z',
+    },
+    {
+      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1233',
+      data: {
+        argo: {
+          status: {
+            result: 'OK',
+          },
+        },
+        args: {
+          owner: {
+            id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+            email: 'claire.nollet@interieur.gouv.fr',
+            lastName: 'Nollet',
+            createdAt: '2023-06-08T14:57:58.401Z',
+            firstName: 'Claire',
+            updatedAt: '2023-06-08T14:57:58.401Z',
+          },
+          project: 'int-2',
+          repository: [],
+          environment: 'staging',
+          organization: 'mi',
+          registryHost: 'blabla.com',
+        },
+        vault: {
+          status: {
+            result: 'OK',
+          },
+          pullSecret: {
+            data: {
+              HOST: 'blabla.com',
+              TOKEN: 'token',
+              USERNAME: 'robot$mi-int-2+ci',
+              DOCKER_CONFIG: '{"auths":{"blabla.com":{"auth":"token","email":""}}}',
+            },
+            metadata: {
+              version: 1,
+              destroyed: false,
+              created_time: '2023-06-08T15:14:56.087835715Z',
+              deletion_time: '',
+              custom_metadata: null,
+            },
+          },
+        },
+        keycloak: {
+          group: {
+            id: '6ce9c548-d0f6-490b-b32d-6e62c20e5eff',
+          },
+          status: {
+            result: 'OK',
+          },
+          roGroup: '/mi-int-2/staging/RO',
+          rwGroup: '/mi-int-2/staging/RW',
+        },
+      },
+      action: 'create Project',
+      userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+      createdAt: '2023-07-03T14:46:56.788Z',
+      updatedAt: '2023-07-03T14:46:56.788Z',
+    },
+    {
+      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1234',
+      data: {
+        argo: {
+          status: {
+            result: 'OK',
+          },
+        },
+        args: {
+          owner: {
+            id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+            email: 'claire.nollet@interieur.gouv.fr',
+            lastName: 'Nollet',
+            createdAt: '2023-06-08T14:57:58.401Z',
+            firstName: 'Claire',
+            updatedAt: '2023-06-08T14:57:58.401Z',
+          },
+          project: 'int-2',
+          repository: [],
+          environment: 'staging',
+          organization: 'mi',
+          registryHost: 'blabla.com',
+        },
+        vault: {
+          status: {
+            result: 'OK',
+          },
+          pullSecret: {
+            data: {
+              HOST: 'blabla.com',
+              TOKEN: 'token',
+              USERNAME: 'robot$mi-int-2+ci',
+              DOCKER_CONFIG: '{"auths":{"blabla.com":{"auth":"token","email":""}}}',
+            },
+            metadata: {
+              version: 1,
+              destroyed: false,
+              created_time: '2023-06-08T15:14:56.087835715Z',
+              deletion_time: '',
+              custom_metadata: null,
+            },
+          },
+        },
+        keycloak: {
+          group: {
+            id: '6ce9c548-d0f6-490b-b32d-6e62c20e5eff',
+          },
+          status: {
+            result: 'OK',
+          },
+          roGroup: '/mi-int-2/staging/RO',
+          rwGroup: '/mi-int-2/staging/RW',
+        },
+      },
+      action: 'create Project',
+      userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+      createdAt: '2023-07-03T14:46:56.788Z',
+      updatedAt: '2023-07-03T14:46:56.788Z',
+    },
+    {
+      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1235',
+      data: {
+        argo: {
+          status: {
+            result: 'OK',
+          },
+        },
+        args: {
+          owner: {
+            id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+            email: 'claire.nollet@interieur.gouv.fr',
+            lastName: 'Nollet',
+            createdAt: '2023-06-08T14:57:58.401Z',
+            firstName: 'Claire',
+            updatedAt: '2023-06-08T14:57:58.401Z',
+          },
+          project: 'int-2',
+          repository: [],
+          environment: 'staging',
+          organization: 'mi',
+          registryHost: 'blabla.com',
+        },
+        vault: {
+          status: {
+            result: 'OK',
+          },
+          pullSecret: {
+            data: {
+              HOST: 'blabla.com',
+              TOKEN: 'token',
+              USERNAME: 'robot$mi-int-2+ci',
+              DOCKER_CONFIG: '{"auths":{"blabla.com":{"auth":"token","email":""}}}',
+            },
+            metadata: {
+              version: 1,
+              destroyed: false,
+              created_time: '2023-06-08T15:14:56.087835715Z',
+              deletion_time: '',
+              custom_metadata: null,
+            },
+          },
+        },
+        keycloak: {
+          group: {
+            id: '6ce9c548-d0f6-490b-b32d-6e62c20e5eff',
+          },
+          status: {
+            result: 'OK',
+          },
+          roGroup: '/mi-int-2/staging/RO',
+          rwGroup: '/mi-int-2/staging/RW',
+        },
+      },
+      action: 'create Project',
+      userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+      createdAt: '2023-07-03T14:46:56.788Z',
+      updatedAt: '2023-07-03T14:46:56.788Z',
+    },
+    {
+      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1236',
+      data: {
+        argo: {
+          status: {
+            result: 'OK',
+          },
+        },
+        args: {
+          owner: {
+            id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+            email: 'claire.nollet@interieur.gouv.fr',
+            lastName: 'Nollet',
+            createdAt: '2023-06-08T14:57:58.401Z',
+            firstName: 'Claire',
+            updatedAt: '2023-06-08T14:57:58.401Z',
+          },
+          project: 'int-2',
+          repository: [],
+          environment: 'staging',
+          organization: 'mi',
+          registryHost: 'blabla.com',
+        },
+        vault: {
+          status: {
+            result: 'OK',
+          },
+          pullSecret: {
+            data: {
+              HOST: 'blabla.com',
+              TOKEN: 'token',
+              USERNAME: 'robot$mi-int-2+ci',
+              DOCKER_CONFIG: '{"auths":{"blabla.com":{"auth":"token","email":""}}}',
+            },
+            metadata: {
+              version: 1,
+              destroyed: false,
+              created_time: '2023-06-08T15:14:56.087835715Z',
+              deletion_time: '',
+              custom_metadata: null,
+            },
+          },
+        },
+        keycloak: {
+          group: {
+            id: '6ce9c548-d0f6-490b-b32d-6e62c20e5eff',
+          },
+          status: {
+            result: 'OK',
+          },
+          roGroup: '/mi-int-2/staging/RO',
+          rwGroup: '/mi-int-2/staging/RW',
+        },
+      },
+      action: 'create Project',
+      userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+      createdAt: '2023-07-03T14:46:56.788Z',
+      updatedAt: '2023-07-03T14:46:56.788Z',
+    },
+    {
+      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1237',
+      data: {
+        argo: {
+          status: {
+            result: 'OK',
+          },
+        },
+        args: {
+          owner: {
+            id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+            email: 'claire.nollet@interieur.gouv.fr',
+            lastName: 'Nollet',
+            createdAt: '2023-06-08T14:57:58.401Z',
+            firstName: 'Claire',
+            updatedAt: '2023-06-08T14:57:58.401Z',
+          },
+          project: 'int-2',
+          repository: [],
+          environment: 'staging',
+          organization: 'mi',
+          registryHost: 'blabla.com',
+        },
+        vault: {
+          status: {
+            result: 'OK',
+          },
+          pullSecret: {
+            data: {
+              HOST: 'blabla.com',
+              TOKEN: 'token',
+              USERNAME: 'robot$mi-int-2+ci',
+              DOCKER_CONFIG: '{"auths":{"blabla.com":{"auth":"token","email":""}}}',
+            },
+            metadata: {
+              version: 1,
+              destroyed: false,
+              created_time: '2023-06-08T15:14:56.087835715Z',
+              deletion_time: '',
+              custom_metadata: null,
+            },
+          },
+        },
+        keycloak: {
+          group: {
+            id: '6ce9c548-d0f6-490b-b32d-6e62c20e5eff',
+          },
+          status: {
+            result: 'OK',
+          },
+          roGroup: '/mi-int-2/staging/RO',
+          rwGroup: '/mi-int-2/staging/RW',
+        },
+      },
+      action: 'create Project',
+      userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+      createdAt: '2023-07-03T14:46:56.788Z',
+      updatedAt: '2023-07-03T14:46:56.788Z',
+    },
+    {
+      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1238',
+      data: {
+        argo: {
+          status: {
+            result: 'OK',
+          },
+        },
+        args: {
+          owner: {
+            id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+            email: 'claire.nollet@interieur.gouv.fr',
+            lastName: 'Nollet',
+            createdAt: '2023-06-08T14:57:58.401Z',
+            firstName: 'Claire',
+            updatedAt: '2023-06-08T14:57:58.401Z',
+          },
+          project: 'int-2',
+          repository: [],
+          environment: 'staging',
+          organization: 'mi',
+          registryHost: 'blabla.com',
+        },
+        vault: {
+          status: {
+            result: 'OK',
+          },
+          pullSecret: {
+            data: {
+              HOST: 'blabla.com',
+              TOKEN: 'token',
+              USERNAME: 'robot$mi-int-2+ci',
+              DOCKER_CONFIG: '{"auths":{"blabla.com":{"auth":"token","email":""}}}',
+            },
+            metadata: {
+              version: 1,
+              destroyed: false,
+              created_time: '2023-06-08T15:14:56.087835715Z',
+              deletion_time: '',
+              custom_metadata: null,
+            },
+          },
+        },
+        keycloak: {
+          group: {
+            id: '6ce9c548-d0f6-490b-b32d-6e62c20e5eff',
+          },
+          status: {
+            result: 'OK',
+          },
+          roGroup: '/mi-int-2/staging/RO',
+          rwGroup: '/mi-int-2/staging/RW',
+        },
+      },
+      action: 'create Project',
+      userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+      createdAt: '2023-07-03T14:46:56.788Z',
+      updatedAt: '2023-07-03T14:46:56.788Z',
+    },
+    {
+      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1239',
+      data: {
+        argo: {
+          status: {
+            result: 'OK',
+          },
+        },
+        args: {
+          owner: {
+            id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+            email: 'claire.nollet@interieur.gouv.fr',
+            lastName: 'Nollet',
+            createdAt: '2023-06-08T14:57:58.401Z',
+            firstName: 'Claire',
+            updatedAt: '2023-06-08T14:57:58.401Z',
+          },
+          project: 'int-2',
+          repository: [],
+          environment: 'staging',
+          organization: 'mi',
+          registryHost: 'blabla.com',
+        },
+        vault: {
+          status: {
+            result: 'OK',
+          },
+          pullSecret: {
+            data: {
+              HOST: 'blabla.com',
+              TOKEN: 'token',
+              USERNAME: 'robot$mi-int-2+ci',
+              DOCKER_CONFIG: '{"auths":{"blabla.com":{"auth":"token","email":""}}}',
+            },
+            metadata: {
+              version: 1,
+              destroyed: false,
+              created_time: '2023-06-08T15:14:56.087835715Z',
+              deletion_time: '',
+              custom_metadata: null,
+            },
+          },
+        },
+        keycloak: {
+          group: {
+            id: '6ce9c548-d0f6-490b-b32d-6e62c20e5eff',
+          },
+          status: {
+            result: 'OK',
+          },
+          roGroup: '/mi-int-2/staging/RO',
+          rwGroup: '/mi-int-2/staging/RW',
+        },
+      },
+      action: 'create Project',
+      userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+      createdAt: '2023-07-03T14:46:56.788Z',
+      updatedAt: '2023-07-03T14:46:56.788Z',
+    },
+    {
+      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1240',
+      data: {
+        argo: {
+          status: {
+            result: 'OK',
+          },
+        },
+        args: {
+          owner: {
+            id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+            email: 'claire.nollet@interieur.gouv.fr',
+            lastName: 'Nollet',
+            createdAt: '2023-06-08T14:57:58.401Z',
+            firstName: 'Claire',
+            updatedAt: '2023-06-08T14:57:58.401Z',
+          },
+          project: 'int-2',
+          repository: [],
+          environment: 'staging',
+          organization: 'mi',
+          registryHost: 'blabla.com',
+        },
+        vault: {
+          status: {
+            result: 'OK',
+          },
+          pullSecret: {
+            data: {
+              HOST: 'blabla.com',
+              TOKEN: 'token',
+              USERNAME: 'robot$mi-int-2+ci',
+              DOCKER_CONFIG: '{"auths":{"blabla.com":{"auth":"token","email":""}}}',
+            },
+            metadata: {
+              version: 1,
+              destroyed: false,
+              created_time: '2023-06-08T15:14:56.087835715Z',
+              deletion_time: '',
+              custom_metadata: null,
+            },
+          },
+        },
+        keycloak: {
+          group: {
+            id: '6ce9c548-d0f6-490b-b32d-6e62c20e5eff',
+          },
+          status: {
+            result: 'OK',
+          },
+          roGroup: '/mi-int-2/staging/RO',
+          rwGroup: '/mi-int-2/staging/RW',
+        },
+      },
+      action: 'create Project',
+      userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+      createdAt: '2023-07-03T14:46:56.788Z',
+      updatedAt: '2023-07-03T14:46:56.788Z',
+    },
+    {
+      id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1241',
       data: {
         argo: {
           status: {
