@@ -19,15 +19,15 @@ export class KeycloakProjectApi extends PluginApi {
   }
 
   public async getProjectGroupPath (): Promise<string> {
-    return `/${this.organizationName}/${this.projectName}`
+    return `/${this.organizationName}-${this.projectName}`
   }
 
   public async getEnvGroup (environment: string): Promise<KeycloakEnv> {
     return {
-      path: `/${this.organizationName}/${this.projectName}/${environment}`,
+      path: `/${this.organizationName}-${this.projectName}/${environment}`,
       subgroups: {
-        RO: `/${this.organizationName}/${this.projectName}/${environment}/RO`,
-        RW: `/${this.organizationName}/${this.projectName}/${environment}/RW`,
+        RO: `/${this.organizationName}-${this.projectName}/${environment}/RO`,
+        RW: `/${this.organizationName}-${this.projectName}/${environment}/RW`,
       },
     }
   }
