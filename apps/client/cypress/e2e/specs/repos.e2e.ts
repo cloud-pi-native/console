@@ -1,8 +1,5 @@
-import { getModelById } from '../support/func.js'
-
 describe('Add repos into project', () => {
   const project = { name: 'project10' }
-  const projectWithFailedRepo = getModelById('project', '83833faf-f654-40dd-bcd5-cf2e944fc702')
 
   before(() => {
     cy.kcLogin('test')

@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useAdminLogStore } from '@/stores/admin/log.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { exclude, LogModel } from '@cpn-console/shared'
+import { LogModel } from '@cpn-console/shared'
 import { JsonViewer } from 'vue3-json-viewer'
 
 const adminLogStore = useAdminLogStore()
@@ -22,10 +22,16 @@ const showLogs = async (index: number) => {
   await getAllLogs({ offset: index * step, limit: step })
 }
 
-const sliceLog = (log: LogModel) => {
-  const sliced = exclude(log, ['action', 'createdAt', 'updatedAt', 'totalExecutionTime'])
-  if (!sliced.data.failed) delete sliced.data.failed
-  return sliced
+type LogModelSliced = Omit<LogModel['data'], 'totalExecutiontime'>
+const sliceLog = (log: LogModel): LogModelSliced => {
+  const {
+    data: {
+      totalExecutionTime: _t,
+      ...logSliced
+    },
+  } = log
+  if (!logSliced.failed) delete logSliced.failed
+  return logSliced
 }
 
 const getAllLogs = async ({ offset, limit }: { offset: number, limit: number }, isDisplayingSuccess = true) => {
