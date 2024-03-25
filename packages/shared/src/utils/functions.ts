@@ -23,9 +23,11 @@ export const removeTrailingSlash = (url: string | undefined) => url?.endsWith('/
   : url
 
 // Exclude keys from an object
-export const exclude = (result: object, keys: string[]): object => {
+export const exclude = <T>(result: T, keys: string[]): T => {
+  // @ts-ignore
   if (Array.isArray(result)) return result.map(item => exclude(item, keys))
   const newObj: Record<string, unknown> = {}
+  // @ts-ignore
   Object.entries(result).forEach(([key, value]) => {
     if (keys.includes(key)) return
     if (Array.isArray(value) && typeof value[0] === 'string') {
@@ -42,6 +44,7 @@ export const exclude = (result: object, keys: string[]): object => {
     }
     newObj[key] = value
   })
+  // @ts-ignore
   return newObj
 }
 

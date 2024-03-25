@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { allStatus, longestEnvironmentName } from '../utils/const.js'
+import { longestEnvironmentName } from '../utils/const.js'
 import { PermissionSchema } from './permission.js'
 import { ErrorSchema } from './utils.js'
 
@@ -16,7 +16,6 @@ export const EnvironmentSchema = z.object({
     .uuid(),
   clusterId: z.string()
     .uuid(),
-  status: z.enum(allStatus),
   permissions: z.lazy(() => PermissionSchema.array()),
 })
 
@@ -27,7 +26,7 @@ export const CreateEnvironmentSchema = {
     projectId: z.string()
       .uuid(),
   }),
-  body: EnvironmentSchema.omit({ id: true, status: true, permissions: true }),
+  body: EnvironmentSchema.omit({ id: true, permissions: true }),
   responses: {
     201: EnvironmentSchema,
     400: ErrorSchema,

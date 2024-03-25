@@ -1,6 +1,6 @@
 import prisma from '@/prisma.js'
-import { type AsyncReturnType, ClusterPrivacy, AllStatus } from '@cpn-console/shared'
-import type { Organization, Project, User, Role } from '@prisma/client'
+import { type AsyncReturnType, ClusterPrivacy } from '@cpn-console/shared'
+import { type Organization, type Project, type User, type Role, ProjectStatus } from '@prisma/client'
 
 type ProjectUpdate = Partial<Pick<Project, 'description'>>
 export const updateProject = async (id: Project['id'], data: ProjectUpdate) => {
@@ -72,7 +72,7 @@ export const getUserProjects = async (user: User) => {
         },
       },
       status: {
-        not: 'archived',
+        not: ProjectStatus.archived,
       },
     },
     orderBy: {
@@ -151,7 +151,7 @@ export const getProjectByOrganizationId = async (organizationId: Organization['i
     where: {
       organizationId,
       status: {
-        not: 'archived',
+        not: ProjectStatus.archived,
       },
     },
   })
@@ -218,6 +218,63 @@ export const getRolesByProjectId = async (projectId: Project['id']) => {
   })
 }
 
+export const getHookProjectInfos = async (id: Project['id']) => await prisma.project.findUniqueOrThrow({
+  where: {
+    id,
+  },
+  select: {
+    id: true,
+    name: true,
+    status: true,
+    description: true,
+    organization: {
+      select: {
+        id: true,
+        label: true,
+        name: true,
+      },
+    },
+    roles: {
+      select: {
+        user: true,
+        role: true,
+        userId: true,
+      },
+    },
+    clusters: {
+      select: {
+        id: true,
+        infos: true,
+        label: true,
+        privacy: true,
+        secretName: true,
+        kubeconfig: true,
+        clusterResources: true,
+      },
+    },
+    environments: {
+      include: {
+        permissions: true,
+        quotaStage: {
+          include: {
+            quota: true,
+            stage: true,
+          },
+        },
+      },
+    },
+    repositories: {
+      select: {
+        id: true,
+        externalRepoUrl: true,
+        isInfra: true,
+        isPrivate: true,
+        internalRepoName: true,
+      },
+    },
+  },
+})
+
 // CREATE
 export const initializeProject = async ({ name, organizationId, description = '', ownerId }: { name: Project['name'], organizationId: Organization['id'], description?: Project['description'], ownerId: User['id'] }) => {
   return prisma.project.create({
@@ -225,8 +282,8 @@ export const initializeProject = async ({ name, organizationId, description = ''
       name,
       organizationId,
       description,
-      status: AllStatus.INITIALIZING,
-      locked: true,
+      status: ProjectStatus.created,
+      locked: false,
       services: {},
       roles: {
         create: {
@@ -248,11 +305,11 @@ export const unlockProject = async (id: Project['id']) => {
 }
 
 export const updateProjectCreated = async (id: Project['id']) => {
-  return prisma.project.update({ where: { id }, data: { status: 'created' } })
+  return prisma.project.update({ where: { id }, data: { status: ProjectStatus.created } })
 }
 
 export const updateProjectFailed = async (id: Project['id']) => {
-  return prisma.project.update({ where: { id }, data: { status: 'failed' } })
+  return prisma.project.update({ where: { id }, data: { status: ProjectStatus.failed } })
 }
 
 export const addUserToProject = async ({ project, user, role }: { project: Project, user: User, role: Role['role'] }) => {
@@ -295,7 +352,7 @@ export const archiveProject = async (id: Project['id']) => {
     where: { id },
     data: {
       name: `${project?.name}_${Date.now()}_archived`,
-      status: 'archived',
+      status: ProjectStatus.archived,
       locked: true,
     },
   })

@@ -7,6 +7,7 @@ import { getRequestor, setRequestor } from '../../utils/mocks.js'
 import app from '../../app.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
+vi.mock('../../utils/hook-wrapper.js', (await import('../../utils/mocks.js')).mockHookWrapper)
 
 describe('Repository routes', () => {
   const requestor = getRandomUser()
@@ -69,15 +70,11 @@ describe('Repository routes', () => {
 
       prisma.project.findUnique.mockResolvedValue(projectInfos)
       prisma.user.findUnique.mockResolvedValue(requestor)
-      prisma.project.update.mockResolvedValue(projectInfos)
       randomDbSetUp.stages.forEach(stage => {
         prisma.stage.findUnique.mockResolvedValueOnce(randomDbSetUp.stages?.find(dbSetUpstage => dbSetUpstage?.id === stage?.id))
       })
       prisma.repository.create.mockReturnValue(newRepository)
       prisma.log.create.mockResolvedValue(getRandomLog('Create Repository', getRequestor().id))
-      prisma.repository.update.mockResolvedValue(newRepository)
-      prisma.environment.findMany.mockResolvedValue([])
-      prisma.repository.findMany.mockResolvedValue(projectInfos.repositories)
 
       const response = await app.inject()
         .post(`/api/v1/projects/${projectInfos.id}/repositories`)

@@ -8,7 +8,7 @@ export type PluginResult = {
 }
 
 export interface HookPayloadResults {
-  [x:string]: PluginResult
+  [x: string]: PluginResult
 }
 // @ts-ignore
 export interface HookPayloadApis<Args extends DefaultArgs> { // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -19,10 +19,10 @@ export interface HookPayload<Args extends DefaultArgs> {
   args: Args,
   failed: boolean | string[],
   results: HookPayloadResults
-  apis: HookPayloadApis<Args>
+  apis: HookPayloadApis<Args>,
 }
 
-export type HookResult<Args extends DefaultArgs> = Omit<HookPayload<Args>, 'apis'>
+export type HookResult<Args extends DefaultArgs> = Omit<HookPayload<Args>, 'apis'> & { totalExecutionTime: number }
 
 export type StepCall<Args extends DefaultArgs> = (payload: HookPayload<Args>) => Promise<PluginResult>
 type HookStep = Record<string, StepCall<DefaultArgs>>
@@ -35,9 +35,21 @@ export type Hook<E extends DefaultArgs, V extends DefaultArgs> = {
 } & Record<HookStepsNames, HookStep>
 export type HookList<E extends DefaultArgs, V extends DefaultArgs> = Record<keyof typeof hooks, Hook<E, V>>
 
-const executeStep = async <Args extends DefaultArgs>(step: HookStep, payload: HookPayload<Args>) => {
+const executeStep = async <Args extends DefaultArgs>(step: HookStep, payload: HookPayload<Args>, stepName: string) => {
   const names = Object.keys(step)
-  const fns = names.map(name => step[name](payload))
+  const fns = names.map(async name => {
+    if (payload.results[name]?.executionTime) {
+      payload.results[name].executionTime[stepName] = Date.now()
+    } else {
+      payload.results[name] = {
+        status: { result: 'OK' },
+        executionTime: { [stepName]: Date.now() },
+      }
+    }
+    const fnResult = await step[name](payload)
+    payload.results[name].executionTime[stepName] = Date.now() - payload.results[name].executionTime[stepName]
+    return fnResult
+  })
   const results = await Promise.all(fns)
   names.forEach((name, index) => {
     if (results[index].status.result === 'KO') {
@@ -45,7 +57,7 @@ const executeStep = async <Args extends DefaultArgs>(step: HookStep, payload: Ho
         ? [...payload.failed, name]
         : [name]
     }
-    payload.results[name] = results[index]
+    payload.results[name] = { ...results[index], executionTime: payload.results[name].executionTime }
   })
   return payload
 }
@@ -59,6 +71,7 @@ export const createHook = <E extends DefaultArgs, V extends DefaultArgs>(unique 
   const apis: Record<string, (args: E| V) => PluginApi> = {
   }
   const execute = async (args: E): Promise<HookResult<E>> => {
+    const startTime = Date.now()
     const payloadApis: HookPayloadApis<E | V> = {}
     Object.entries(apis).forEach(([pluginName, apiFn]) => {
       payloadApis[pluginName] = apiFn(args)
@@ -71,10 +84,10 @@ export const createHook = <E extends DefaultArgs, V extends DefaultArgs>(unique 
     }
 
     const steps = [pre, main, post]
-    for (const step of steps) {
-      payload = await executeStep(step, payload)
+    for (const [key, step] of Object.entries(steps)) {
+      payload = await executeStep(step, payload, key)
       if (payload.failed) {
-        payload = await executeStep(revert, payload)
+        payload = await executeStep(revert, payload, 'revert')
         break
       }
     }
@@ -82,21 +95,24 @@ export const createHook = <E extends DefaultArgs, V extends DefaultArgs>(unique 
       args: payload.args,
       results: payload.results,
       failed: payload.failed,
+      totalExecutionTime: Date.now() - startTime,
     }
   }
 
   const validate = async (args: V): Promise<HookResult<V>> => {
+    const startTime = Date.now()
     const payloadApis: HookPayloadApis<E | V> = {}
     Object.entries(apis).forEach(([pluginName, apiFn]) => {
       payloadApis[pluginName] = apiFn(args)
     })
     const payload: HookPayload<V> = { failed: false, args, results: {}, apis: payloadApis }
 
-    const result = await executeStep(check, payload)
+    const result = await executeStep(check, payload, 'validate')
     return {
       args: result.args,
       results: result.results,
       failed: result.failed,
+      totalExecutionTime: Date.now() - startTime,
     }
   }
   const hook: Hook<E, V> = {

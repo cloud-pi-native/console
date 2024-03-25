@@ -1,5 +1,7 @@
 import fp from 'fastify-plugin'
 import { User } from '@cpn-console/test-utils'
+import { Project, Cluster, Repository } from '@prisma/client'
+import { RepoCreds } from '@cpn-console/hooks'
 
 let requestor: User
 
@@ -71,28 +73,13 @@ export const mockHooksPackage = () => {
           },
         }),
       },
-      createProject: hookTemplate,
-      updateProject: hookTemplate,
-      archiveProject: hookTemplate,
-      // repos
-      updateRepository: hookTemplate,
-      createRepository: hookTemplate,
-      deleteRepository: hookTemplate,
-      // envs
-      initializeEnvironment: hookTemplate,
-      updateEnvironmentQuota: hookTemplate,
-      deleteEnvironment: hookTemplate,
-      // users
-      retrieveUserByEmail: hookTemplate,
-      addUserToProject: hookTemplate,
-      updateUserProjectRole: hookTemplate,
-      removeUserFromProject: hookTemplate,
-      // permissions
-      setEnvPermission: hookTemplate,
+      upsertProject: hookTemplate,
+      deleteProject: hookTemplate,
       // clusters
-      createCluster: hookTemplate,
-      updateCluster: hookTemplate,
+      upsertCluster: hookTemplate,
       deleteCluster: hookTemplate,
+      // misc
+      retrieveUserByEmail: hookTemplate,
       // organizations
       fetchOrganizations: {
         execute: () => ({
@@ -173,3 +160,99 @@ export const filteredOrganizations = [
     source: 'canel',
   },
 ]
+
+// MOCK de l'objet Hook
+const resultsBase = {
+  failed: false,
+  args: {
+    repositories: [],
+  },
+  results: {},
+}
+
+const resultsFetch = {
+  failed: false,
+  args: {},
+  results: {
+    canel: {
+      status: {
+        result: 'OK',
+        message: 'Retrieved',
+      },
+      result: {
+        organizations: [
+          {
+            name: 'genat',
+            label: 'MI - gendaremerie nationale',
+            source: 'canel',
+          },
+          {
+            name: 'mas',
+            label: 'ministère affaires sociaux',
+            source: 'canel',
+          },
+          {
+            name: 'genat',
+            label: 'ministère affaires sociaux',
+            source: 'canel',
+          },
+        ],
+      },
+    },
+  },
+}
+
+const secretsResult = {
+  failed: false,
+  args: {},
+  results: {
+    gitlab: {
+      secrets: {
+        token: 'myToken',
+      },
+      status: {
+        failed: false,
+      },
+    },
+    harbor: {
+      secrets: {
+        token: 'myToken',
+      },
+      status: {
+        failed: false,
+      },
+    },
+  },
+}
+
+type ReposCreds = Record<Repository['internalRepoName'], RepoCreds>
+export const mockHookWrapper = () => ({
+  hook: {
+    misc: {
+      fetchOrganizations: () => resultsFetch,
+      retrieveUserByEmail: (_email: string) => resultsBase,
+      checkServices: () => resultsBase,
+    },
+    project: {
+      upsert: async (_projectId: Project['id'], _reposCreds?: ReposCreds) => {
+        return {
+          results: structuredClone(resultsBase),
+          project: {},
+        }
+      },
+      delete: async (_projectId: Project['id']) => {
+        return {
+          results: structuredClone(resultsBase),
+          project: {},
+        }
+      },
+      getSecrets: async (_projectId: Project['id']) => {
+        return secretsResult
+      },
+    },
+    cluster: {
+      upsert: async (_clusterId: Cluster['id']) => resultsBase,
+      delete: async (_clusterId: Cluster['id']) => resultsBase,
+    },
+  },
+})

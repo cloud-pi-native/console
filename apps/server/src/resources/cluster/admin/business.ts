@@ -1,8 +1,8 @@
 import { linkClusterToProjects, addLogs, createCluster as createClusterQuery, getClusterById, getClusterByLabel, getProjectsByClusterId, getStagesByClusterId, removeClusterFromProject, removeClusterFromStage, updateCluster as updateClusterQuery, getClusterEnvironments, deleteCluster as deleteClusterQuery } from '@/resources/queries-index.js'
 import { BadRequestError, DsoError, NotFoundError } from '@/utils/errors.js'
 import type { Log, User } from '@prisma/client'
-import { hooks } from '@cpn-console/hooks'
-import { type Cluster, CreateClusterBusinessSchema, ClusterPrivacy } from '@cpn-console/shared'
+import { hook } from '@/utils/hook-wrapper.js'
+import { type Cluster, CreateClusterBusinessSchema, ClusterBusinessSchema, ClusterPrivacy } from '@cpn-console/shared'
 import { linkClusterToStages } from '@/resources/stage/business.js'
 import { validateSchema } from '@/utils/business.js'
 
@@ -59,8 +59,7 @@ export const createCluster = async (data: Omit<Cluster, 'id'>, userId: User['id'
 
     await linkClusterToStages(clusterCreated.id, stageIds)
 
-    // @ts-ignore
-    const results = await hooks.createCluster.execute({ ...clusterCreated, user, cluster })
+    const results = await hook.cluster.upsert(clusterCreated.id)
     // @ts-ignore
     await addLogs('Create Cluster', results, userId, requestId)
 
@@ -77,10 +76,13 @@ export const updateCluster = async (data: Omit<Cluster, 'id'>, clusterId: Cluste
   try {
     if (data?.privacy === ClusterPrivacy.PUBLIC) delete data.projectIds
 
-    const kubeConfig = {
-      user: data.user,
-      cluster: data.cluster,
-    }
+    const schemaValidation = ClusterBusinessSchema.safeParse({ ...data, id: clusterId })
+    validateSchema(schemaValidation)
+
+    const dbCluster = await getClusterById(clusterId)
+    if (!dbCluster) throw new NotFoundError('Aucun cluster trouvé pour cet id')
+    if (data?.label && data.label !== dbCluster.label) throw new BadRequestError('Le label d\'un cluster ne peut être modifié')
+
     const {
       projectIds,
       stageIds,
@@ -92,7 +94,8 @@ export const updateCluster = async (data: Omit<Cluster, 'id'>, clusterId: Cluste
     const clusterUpdated = await updateClusterQuery(clusterId, clusterData, { user, cluster })
 
     // @ts-ignore
-    const results = await hooks.updateCluster.execute({ ...cluster, user: { ...kubeConfig.user }, cluster: { ...kubeConfig.cluster } })
+    const results = await hook.cluster.upsert(clusterId)
+
     // @ts-ignore
     await addLogs('Update Cluster', results, userId, requestId)
 
@@ -143,9 +146,10 @@ export const deleteCluster = async (clusterId: Cluster['id'], userId: User['id']
     if (environments?.length) throw new BadRequestError('Impossible de supprimer le cluster, des environnements en activité y sont déployés', { extras: environments })
 
     const cluster = await getClusterById(clusterId)
-    if (!cluster) throw new NotFoundError('Cluster introuvable')
-
-    const results = await hooks.deleteCluster.execute({ secretName: cluster.secretName })
+    if (!cluster) {
+      throw new NotFoundError('Cluster introuvable')
+    }
+    const results = await hook.cluster.delete(cluster.id)
     // @ts-ignore
     await addLogs('Delete Cluster', results, userId, requestId)
 

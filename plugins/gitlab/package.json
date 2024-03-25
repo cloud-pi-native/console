@@ -1,7 +1,7 @@
 {
   "name": "@cpn-console/gitlab-plugin",
   "description": "",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": false,
   "type": "module",
   "main": "dist/index.js",
@@ -18,8 +18,8 @@
     "@cpn-console/shared": "workspace:^",
     "@cpn-console/hooks": "workspace:^",
     "axios": "1.6.4",
-    "@gitbeaker/core": "^39.30.0",
-    "@gitbeaker/rest": "^39.30.0"
+    "@gitbeaker/core": "^40.0.1",
+    "@gitbeaker/rest": "^40.0.1"
   },
   "devDependencies": {
     "@cpn-console/eslint-config": "workspace:^",

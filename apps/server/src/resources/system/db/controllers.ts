@@ -9,7 +9,7 @@ const router = async (app: FastifyInstance, _opt) => {
     const db = await getDb()
     addReqLogs({
       req,
-      description: 'Export de la BDD avec succès',
+      message: 'Export de la BDD avec succès',
     })
     sendOk(res, db)
   })

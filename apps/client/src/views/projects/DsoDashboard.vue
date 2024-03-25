@@ -174,24 +174,6 @@ onBeforeMount(async () => {
           wording: `Projet ${project?.name}`
         }"
       />
-      <DsoBadge
-        v-for="environment in project?.environments"
-        :key="environment?.id"
-        :resource="{
-          ...environment,
-          resourceKey: 'status',
-          wording: `Environnement ${environment?.name}`
-        }"
-      />
-      <DsoBadge
-        v-for="repository in project?.repositories"
-        :key="repository?.id"
-        :resource="{
-          ...repository,
-          resourceKey: 'status',
-          wording: `Dépôt ${repository?.internalRepoName}`
-        }"
-      />
     </div>
     <div
       class="fr-mt-2w"

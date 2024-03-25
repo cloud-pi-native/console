@@ -54,7 +54,7 @@ const updateRepo = (key: keyof typeof localRepo.value, value: unknown) => {
 const emit = defineEmits(['save', 'delete', 'cancel'])
 
 const saveRepo = () => {
-  updatedValues.value = instanciateSchema(RepoSchema.omit({ id: true, projectId: true, status: true }), true)
+  updatedValues.value = instanciateSchema(RepoSchema.omit({ id: true, projectId: true }), true)
 
   if (!isRepoValid.value) return
   emit('save', localRepo.value)

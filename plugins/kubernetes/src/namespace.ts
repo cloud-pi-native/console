@@ -1,51 +1,41 @@
 import { Namespace } from 'kubernetes-models/v1'
-import { CoreV1Api } from '@kubernetes/client-node'
 import { createCoreV1Api } from './api.js'
-import { type StepCall, type Environment, type EnvironmentCreateArgs, type EnvironmentDeleteArgs, type EnvironmentQuotaUpdateArgs, type Organization, type Project, type ResourceQuotaType, type UserObject, parseError } from '@cpn-console/hooks'
-import { createResourceQuota, findResourceQuota, replaceResourceQuota } from './quota.js'
+import { type StepCall, type Project, type UserObject, parseError } from '@cpn-console/hooks'
 import { createHmac } from 'node:crypto'
+import { V1NamespacePopulated } from './class.js'
 
-type NamespaceProvided = Required<Namespace> & { metadata: Required<Namespace['metadata']> }
+export type NamespaceProvided = Required<Namespace> & { metadata: Required<Namespace['metadata']> }
 
-// Plugins Functions
-export const createKubeNamespace: StepCall<EnvironmentCreateArgs> = async (payload) => {
+const getNamespaceSelectors = (project: Project) => `dso/organization=${project.organization.name},dso/projet=${project.name},app.kubernetes.io/managed-by=dso-console`
+
+export const createNamespaces: StepCall<Project> = async (payload) => {
   try {
-    const { organization, project, environment, cluster, owner, quota } = payload.args
-    const nsObject = getNsObject(organization, project, environment, owner)
-    const kubeClient = createCoreV1Api(cluster)
-    await createNamespace(kubeClient, nsObject, quota)
+    const project = payload.args
+    const kubeApi = payload.apis.kubernetes
 
+    await kubeApi.getAllNamespaceFromClusterOrCreate()
+
+    await Promise.all(project.environments.map(env => kubeApi.namespaces[env.name].setQuota(env.quota)))
+
+    for (const cluster of project.clusters) {
+      const kubeClient = createCoreV1Api(cluster)
+      const projectNamespaces = await kubeClient.listNamespace(undefined, undefined, undefined, undefined, getNamespaceSelectors(project))
+      for (const namespace of projectNamespaces.body.items) {
+        const { 'dso/environment': environmentName } = namespace.metadata?.labels as { 'dso/organization': string, 'dso/projet': string, environment: string, 'dso/environment': string }
+        const nsName = namespace.metadata?.name as string
+
+        const envsForCluster = project.environments.filter(env => env.clusterId === cluster.id)
+
+        if (!envsForCluster.find(env => env.name === environmentName)) {
+          console.log(`Le namespace ${namespace.metadata?.name} n'a plus rien à faire là, suppression`)
+          kubeClient.deleteNamespace(nsName)
+        }
+      }
+    }
     return {
       status: {
         result: 'OK',
-        message: 'Namespace up-to-date',
-      },
-      nsName: nsObject.metadata.name,
-    }
-  } catch (error) {
-    return {
-      error: parseError(error),
-      status: {
-        result: 'KO',
-        message: 'Failed to create namespace or resourcequota',
-      },
-    }
-  }
-}
-
-export const updateResourceQuota: StepCall<EnvironmentQuotaUpdateArgs> = async (payload) => {
-  try {
-    const { organization, project, environment, cluster, quota } = payload.args
-    const nsName = generateNamespaceName(organization, project, environment)
-    const kubeClient = createCoreV1Api(cluster)
-    const existingQuota = await findResourceQuota(kubeClient, nsName)
-    if (!existingQuota) await createResourceQuota(kubeClient, nsName, quota)
-    else await replaceResourceQuota(kubeClient, nsName, quota)
-
-    return {
-      status: {
-        result: 'OK',
-        message: 'ResourceQuota updated',
+        message: 'Namespaces and quotas up-to-date',
       },
     }
   } catch (error) {
@@ -53,22 +43,30 @@ export const updateResourceQuota: StepCall<EnvironmentQuotaUpdateArgs> = async (
       error: parseError(error),
       status: {
         result: 'KO',
-        message: 'Failed to update ResourceQuota',
+        message: 'Failed to create/update namespace or resourcequota',
       },
     }
   }
 }
 
-export const deleteKubeNamespace: StepCall<EnvironmentDeleteArgs> = async (payload) => {
+export const deleteNamespaces: StepCall<Project> = async (payload) => {
   try {
-    const { organization, project, environment, cluster } = payload.args
+    const project = payload.args
 
-    const nsName = generateNamespaceName(organization, project, environment)
-    await deleteNamespace(createCoreV1Api(cluster), nsName)
+    for (const cluster of project.clusters) {
+      const kubeClient = createCoreV1Api(cluster)
+      const projectNamespaces = await kubeClient.listNamespace(undefined, undefined, undefined, undefined, getNamespaceSelectors(project))
+      for (const namespace of projectNamespaces.body.items) {
+        console.log(`Le namespace ${namespace.metadata?.name} n'a plus rien à faire là, suppression`)
+        console.log(namespace.metadata?.labels)
+        const nsName = namespace.metadata?.name as string
+        kubeClient.deleteNamespace(nsName)
+      }
+    }
     return {
       status: {
         result: 'OK',
-        message: 'Namespace deleted',
+        message: 'Namespaces deleted',
       },
     }
   } catch (error) {
@@ -76,36 +74,21 @@ export const deleteKubeNamespace: StepCall<EnvironmentDeleteArgs> = async (paylo
       error: parseError(error),
       status: {
         result: 'KO',
-        message: 'Failed to delete namespace',
+        message: 'Failed to delete namespaces',
       },
     }
   }
-}
-
-// API
-export const createNamespace = async (kc: CoreV1Api, nsObject: NamespaceProvided, quota: ResourceQuotaType) => {
-  const nsName = nsObject.metadata.name
-  const ns = await kc.listNamespace(undefined, undefined, undefined, `metadata.name=${nsName}`)
-  if (!ns.body.items.length) {
-    // @ts-ignore
-    await kc.createNamespace(nsObject)
-    await createResourceQuota(kc, nsName, quota)
-  }
-}
-
-export const deleteNamespace = async (kc: CoreV1Api, nsName: string) => {
-  const ns = await kc.listNamespace(undefined, undefined, undefined, `metadata.name=${nsName}`)
-  if (ns.body.items.length) await kc.deleteNamespace(nsName)
 }
 
 // Utils
-export const getNsObject = (organization: string, projet: string, environment: string, owner: UserObject): NamespaceProvided => {
+export const getNsObject = (organization: string, project: string, environment: string, owner: UserObject): V1NamespacePopulated => {
   const nsObject = new Namespace({
     metadata: {
-      name: generateNamespaceName(organization, projet, environment),
+      name: generateNamespaceName(organization, project, environment),
       labels: {
         'dso/organization': organization,
-        'dso/projet': projet,
+        'dso/projet': project,
+        'dso/project': project,
         'dso/environment': environment,
         'dso/owner.id': owner.id,
         'app.kubernetes.io/managed-by': 'dso-console',
@@ -114,10 +97,10 @@ export const getNsObject = (organization: string, projet: string, environment: s
       },
     },
   })
-  return nsObject as NamespaceProvided
+  return nsObject as V1NamespacePopulated
 }
 
-export const generateNamespaceName = (org: Organization, proj: Project, env: Environment) => {
+export const generateNamespaceName = (org: string, proj: string, env: string) => {
   const envHash = createHmac('sha256', '')
     .update(env)
     .digest('hex')
