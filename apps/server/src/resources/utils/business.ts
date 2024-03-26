@@ -1,9 +1,8 @@
-import { adminGroupPath } from '@cpn-console/shared'
-import { getUserById } from '../queries-index.js'
 import type { FastifyRequest } from 'fastify'
-import { addReqLogs } from '@/utils/logger.js'
 import { User } from '@prisma/client'
-// import { validateSchema } from '@/utils/business.js'
+import { adminGroupPath } from '@cpn-console/shared'
+import { addReqLogs } from '@/utils/logger.js'
+import { getUserById } from '../queries-index.js'
 
 interface ErrorResponse {
   status: 401

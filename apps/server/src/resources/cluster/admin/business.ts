@@ -1,10 +1,10 @@
-import { linkClusterToProjects, addLogs, createCluster as createClusterQuery, getClusterById, getClusterByLabel, getProjectsByClusterId, getStagesByClusterId, removeClusterFromProject, removeClusterFromStage, updateCluster as updateClusterQuery, getClusterEnvironments, deleteCluster as deleteClusterQuery } from '@/resources/queries-index.js'
-import { BadRequestError, DsoError, NotFoundError } from '@/utils/errors.js'
-import type { Log, User } from '@prisma/client'
-import { hook } from '@/utils/hook-wrapper.js'
-import { type Cluster, CreateClusterBusinessSchema, ClusterBusinessSchema, ClusterPrivacy } from '@cpn-console/shared'
+import type { User } from '@prisma/client'
+import { ClusterBusinessSchema, ClusterPrivacy, CreateClusterBusinessSchema, type Cluster } from '@cpn-console/shared'
+import { addLogs, createCluster as createClusterQuery, deleteCluster as deleteClusterQuery, getClusterById, getClusterByLabel, getClusterEnvironments, getProjectsByClusterId, getStagesByClusterId, linkClusterToProjects, removeClusterFromProject, removeClusterFromStage, updateCluster as updateClusterQuery } from '@/resources/queries-index.js'
 import { linkClusterToStages } from '@/resources/stage/business.js'
 import { validateSchema } from '@/utils/business.js'
+import { BadRequestError, DsoError, NotFoundError } from '@/utils/errors.js'
+import { hook } from '@/utils/hook-wrapper.js'
 
 export const checkClusterProjectIds = (data: Omit<Cluster, 'id'> & { id?: Cluster['id']}) => {
   // si le cluster est dedicated, la clé projectIds doit être renseignée
@@ -34,7 +34,7 @@ export const getClusterAssociatedEnvironments = async (clusterId: string) => {
   }
 }
 
-export const createCluster = async (data: Omit<Cluster, 'id'>, userId: User['id'], requestId: Log['requestId']) => {
+export const createCluster = async (data: Omit<Cluster, 'id'>, userId: User['id'], requestId: string) => {
   try {
     const schemaValidation = CreateClusterBusinessSchema.safeParse(data)
     validateSchema(schemaValidation)
@@ -60,7 +60,7 @@ export const createCluster = async (data: Omit<Cluster, 'id'>, userId: User['id'
     await linkClusterToStages(clusterCreated.id, stageIds)
 
     const results = await hook.cluster.upsert(clusterCreated.id)
-    // @ts-ignore
+
     await addLogs('Create Cluster', results, userId, requestId)
 
     return clusterCreated
@@ -72,7 +72,7 @@ export const createCluster = async (data: Omit<Cluster, 'id'>, userId: User['id'
   }
 }
 
-export const updateCluster = async (data: Omit<Cluster, 'id'>, clusterId: Cluster['id'], userId: User['id'], requestId: Log['requestId']) => {
+export const updateCluster = async (data: Partial<Cluster>, clusterId: Cluster['id'], userId: User['id'], requestId: string) => {
   try {
     if (data?.privacy === ClusterPrivacy.PUBLIC) delete data.projectIds
 
@@ -91,12 +91,11 @@ export const updateCluster = async (data: Omit<Cluster, 'id'>, clusterId: Cluste
       ...clusterData
     } = data
 
+    // @ts-ignore
     const clusterUpdated = await updateClusterQuery(clusterId, clusterData, { user, cluster })
 
-    // @ts-ignore
     const results = await hook.cluster.upsert(clusterId)
 
-    // @ts-ignore
     await addLogs('Update Cluster', results, userId, requestId)
 
     if (projectIds || data.privacy === ClusterPrivacy.PUBLIC) {
@@ -140,7 +139,7 @@ export const updateCluster = async (data: Omit<Cluster, 'id'>, clusterId: Cluste
   }
 }
 
-export const deleteCluster = async (clusterId: Cluster['id'], userId: User['id'], requestId: Log['requestId']) => {
+export const deleteCluster = async (clusterId: Cluster['id'], userId: User['id'], requestId: string) => {
   try {
     const environments = await getClusterAssociatedEnvironments(clusterId)
     if (environments?.length) throw new BadRequestError('Impossible de supprimer le cluster, des environnements en activité y sont déployés', { extras: environments })
@@ -150,7 +149,7 @@ export const deleteCluster = async (clusterId: Cluster['id'], userId: User['id']
       throw new NotFoundError('Cluster introuvable')
     }
     const results = await hook.cluster.delete(cluster.id)
-    // @ts-ignore
+
     await addLogs('Delete Cluster', results, userId, requestId)
 
     await deleteClusterQuery(clusterId)

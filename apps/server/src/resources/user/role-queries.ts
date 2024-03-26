@@ -1,5 +1,5 @@
-import type { ProjectRoles } from '@cpn-console/shared'
 import type { Project, User } from '@prisma/client'
+import type { ProjectRoles } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
 
 // SELECT

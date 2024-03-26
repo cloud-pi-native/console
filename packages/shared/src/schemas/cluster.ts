@@ -1,10 +1,10 @@
 import { z } from 'zod'
 import { ClusterPrivacy } from '../utils/const.js'
-import { ErrorSchema } from './utils.js'
 import { EnvironmentSchema } from './environment.js'
 import { OrganizationSchema } from './organization.js'
 import { ProjectSchema } from './project.js'
 import { UserSchema } from './user.js'
+import { ErrorSchema } from './utils.js'
 
 export const ClusterSchema = z.object({
   id: z.string()

@@ -1,10 +1,10 @@
-import { getOrCreateUser, addLogs, addUserToProject as addUserToProjectQuery, createUser, deletePermission, getMatchingUsers as getMatchingUsersQuery, getProjectInfos as getProjectInfosQuery, getProjectUsers as getProjectUsersQuery, getUserByEmail, getUserById, removeUserFromProject as removeUserFromProjectQuery, updateUserProjectRole as updateUserProjectRoleQuery, getRolesByProjectId } from '@/resources/queries-index.js'
-import type { User, Project, Log } from '@prisma/client'
-import { hook } from '@/utils/hook-wrapper.js'
-import { type SearchOptions, checkInsufficientRoleInProject } from '@/utils/controller.js'
+import type { Project, User } from '@prisma/client'
+import { ProjectRoles, UserSchema, instanciateSchema, projectIsLockedInfo, type AsyncReturnType } from '@cpn-console/shared'
+import { addLogs, addUserToProject as addUserToProjectQuery, createUser, deletePermission, getMatchingUsers as getMatchingUsersQuery, getOrCreateUser, getProjectInfos as getProjectInfosQuery, getProjectUsers as getProjectUsersQuery, getRolesByProjectId, getUserByEmail, getUserById, removeUserFromProject as removeUserFromProjectQuery, updateUserProjectRole as updateUserProjectRoleQuery } from '@/resources/queries-index.js'
 import { validateSchema } from '@/utils/business.js'
+import { checkInsufficientRoleInProject, type SearchOptions } from '@/utils/controller.js'
 import { BadRequestError, ForbiddenError, NotFoundError } from '@/utils/errors.js'
-import { type AsyncReturnType, projectIsLockedInfo, UserSchema, instanciateSchema, ProjectRoles } from '@cpn-console/shared'
+import { hook } from '@/utils/hook-wrapper.js'
 
 export type UserDto = Pick<User, 'email' | 'firstName' | 'lastName' | 'id'>
 export const getUser = async (user: UserDto) => {
@@ -33,7 +33,7 @@ export const addUserToProject = async (
   project: AsyncReturnType<typeof getProjectInfos>,
   email: User['email'],
   userId: User['id'],
-  requestId: Log['requestId'],
+  requestId: string,
 ) => {
   if (!project) throw new BadRequestError('Le projet n\'existe pas')
 
@@ -42,7 +42,7 @@ export const addUserToProject = async (
   // Retrieve user from keycloak if does not exist in db
   if (!userToAdd) {
     const results = await hook.misc.retrieveUserByEmail(email)
-    // @ts-ignore
+
     await addLogs('Retrieve User By Email', results, userId, requestId)
 
     const retrievedUser = results.results.keycloak?.user
@@ -68,7 +68,6 @@ export const addUserToProject = async (
     await addUserToProjectQuery({ project, user: userToAdd, role: 'user' })
 
     const results = await hook.project.upsert(project.id)
-    // @ts-ignore
     await addLogs('Add Project Member', results, userId, requestId)
 
     return getRolesByProjectId(project.id)
@@ -94,7 +93,7 @@ export const removeUserFromProject = async (
   userToRemoveId: User['id'],
   project: AsyncReturnType<typeof getProjectInfos>,
   userId: User['id'],
-  requestId: Log['requestId'],
+  requestId: string,
 ) => {
   if (!project) throw new BadRequestError('Le projet n\'existe pas')
 
@@ -111,7 +110,6 @@ export const removeUserFromProject = async (
     await removeUserFromProjectQuery({ projectId: project.id, userId: userToRemoveId })
 
     const { results } = await hook.project.upsert(project.id)
-    // @ts-ignore
     await addLogs('Remove User from Project', results, userId, requestId)
 
     return getRolesByProjectId(project.id)

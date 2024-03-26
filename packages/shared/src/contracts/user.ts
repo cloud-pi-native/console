@@ -1,8 +1,8 @@
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
-  GetProjectUsersSchema,
-  GetMatchingUsersSchema,
   CreateUserRoleInProjectSchema,
+  GetMatchingUsersSchema,
+  GetProjectUsersSchema,
   UpdateUserRoleInProjectSchema,
 } from '../schemas/index.js'
 

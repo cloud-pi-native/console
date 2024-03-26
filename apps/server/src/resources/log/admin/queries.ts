@@ -1,6 +1,6 @@
 import type { Log, User } from '@prisma/client'
-import prisma from '@/prisma.js'
 import { exclude } from '@cpn-console/shared'
+import prisma from '@/prisma.js'
 
 // SELECT
 export const getAllLogsForUser = async (user: User, offset = 0) => {

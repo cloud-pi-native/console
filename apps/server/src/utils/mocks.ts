@@ -1,6 +1,6 @@
 import fp from 'fastify-plugin'
-import { User } from '@cpn-console/test-utils'
 import { Project, Cluster, Repository } from '@prisma/client'
+import { User } from '@cpn-console/test-utils'
 import { RepoCreds } from '@cpn-console/hooks'
 
 let requestor: User

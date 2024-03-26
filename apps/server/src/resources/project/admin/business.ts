@@ -1,7 +1,7 @@
 import { json2csv } from 'json-2-csv'
+import type { Project } from '@prisma/client'
 import { getAllProjects as getAllProjectsQuery, lockProject, getAllProjectsDataForExport, unlockProject } from '@/resources/queries-index.js'
 import { BadRequestError } from '@/utils/errors.js'
-import type { Project } from '@prisma/client'
 
 export const getAllProjects = async () => {
   return getAllProjectsQuery()

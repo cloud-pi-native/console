@@ -1,10 +1,10 @@
-import prisma from '../../../__mocks__/prisma.js'
-import { vi, describe, it, expect, beforeAll, afterEach, afterAll, beforeEach } from 'vitest'
-import { getConnection, closeConnections } from '../../../connect.js'
 import { adminGroupPath } from '@cpn-console/shared'
 import { getRandomCluster, getRandomRole, getRandomUser } from '@cpn-console/test-utils'
-import { getRequestor, setRequestor } from '../../../utils/mocks.js'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import prisma from '../../../__mocks__/prisma.js'
 import app from '../../../app.js'
+import { closeConnections, getConnection } from '../../../connect.js'
+import { getRequestor, setRequestor } from '../../../utils/mocks.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../../utils/mocks.js')).mockSessionPlugin)
 vi.mock('../../../utils/hook-wrapper.js', (await import('../../../utils/mocks.js')).mockHookWrapper)

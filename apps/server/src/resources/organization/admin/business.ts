@@ -1,9 +1,9 @@
-import { hook } from '@/utils/hook-wrapper.js'
-import { addLogs, createOrganization as createOrganizationQuery, getOrganizationByName, getOrganizations, getProjectByOrganizationId, lockProject, unlockProject, updateActiveOrganization, updateLabelOrganization } from '@/resources/queries-index.js'
-import { validateSchema } from '@/utils/business.js'
-import { BadRequestError, NotFoundError } from '@/utils/errors.js'
 import type { Organization, User } from '@prisma/client'
 import { type CreateOrganizationDto, getUniqueListBy, OrganizationSchema, objectValues } from '@cpn-console/shared'
+import { addLogs, createOrganization as createOrganizationQuery, getOrganizationByName, getOrganizations, getProjectByOrganizationId, lockProject, unlockProject, updateActiveOrganization, updateLabelOrganization } from '@/resources/queries-index.js'
+import { hook } from '@/utils/hook-wrapper.js'
+import { validateSchema } from '@/utils/business.js'
+import { BadRequestError, NotFoundError } from '@/utils/errors.js'
 
 export const getAllOrganization = async () => {
   const allOrganizations = await getOrganizations()
