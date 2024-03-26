@@ -1,4 +1,5 @@
 import type { Cluster, Environment, Organization, Project, User } from '@prisma/client'
+import type { KeycloakPayload } from 'fastify-keycloak-adapter'
 import {
   ProjectSchema,
   adminGroupPath,
@@ -30,7 +31,7 @@ import {
 import { getUser, type UserDto } from '@/resources/user/business.js'
 import { validateSchema } from '@/utils/business.js'
 import { checkInsufficientPermissionInEnvironment, checkInsufficientRoleInProject } from '@/utils/controller.js'
-import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
+import { BadRequestError, DsoError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
 import { filterObjectByKeys } from '@/utils/queries-tools.js'
 
@@ -182,7 +183,31 @@ export const updateProject = async (data: UpdateProjectDto, projectId: Project['
   }
 }
 
-export const archiveProject = async (projectId: Project['id'], requestor: UserDto, requestId: string) => {
+export const replayHooks = async (projectId: Project['id'], requestor: KeycloakPayload, requestId: string) => {
+  try {
+    // Pré-requis
+    const project = await getProjectInfosQuery(projectId)
+    if (!project) throw new NotFoundError('Projet introuvable')
+
+    if (!requestor.groups?.includes(adminGroupPath)) {
+      const insufficientRoleErrorMessage = checkInsufficientRoleInProject(requestor.id, { roles: project.roles, minRole: 'user' })
+      if (insufficientRoleErrorMessage) throw new ForbiddenError(insufficientRoleErrorMessage)
+    }
+
+    // Actions
+    const { results } = await hook.project.upsert(project.id)
+
+    await addLogs('Replay hooks for Project', results, requestor.id, requestId)
+    if (results.failed) {
+      throw new Error('Echec du reprovisionnement du projet par les plugins')
+    }
+  } catch (error) {
+    if (error instanceof DsoError) throw error
+    throw new Error(error?.message)
+  }
+}
+
+export const archiveProject = async (projectId: Project['id'], requestor: KeycloakPayload, requestId: string) => {
   // Pré-requis
   const project = await getProjectInfosAndRepos(projectId)
   if (!project) throw new NotFoundError('Projet introuvable')
@@ -190,9 +215,10 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
   const owner = await getSingleOwnerByProjectId(project.id)
   if (!owner) throw new NotFoundError('Souscripteur introuvable')
 
-  const insufficientRoleErrorMessage = checkInsufficientRoleInProject(requestor.id, { roles: project.roles, minRole: 'owner' })
-  // @ts-ignore
-  if (insufficientRoleErrorMessage && !requestor.groups?.includes(adminGroupPath)) throw new ForbiddenError(insufficientRoleErrorMessage)
+  if (!requestor.groups?.includes(adminGroupPath)) {
+    const insufficientRoleErrorMessage = checkInsufficientRoleInProject(requestor.id, { roles: project.roles, minRole: 'owner' })
+    if (insufficientRoleErrorMessage) throw new ForbiddenError(insufficientRoleErrorMessage)
+  }
 
   // Actions
   try {
@@ -227,6 +253,7 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
 
     // -- fin - Suppression projet --
   } catch (error) {
+    if (error instanceof DsoError) throw error
     throw new Error(error?.message)
   }
 }

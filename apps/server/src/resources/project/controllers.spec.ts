@@ -13,6 +13,7 @@ vi.mock('../../utils/hook-wrapper.js', (await import('../../utils/mocks.js')).mo
 
 describe('Project routes', () => {
   const requestor = getRandomUser()
+  requestor.groups = []
   setRequestor(requestor)
 
   beforeAll(async () => {
@@ -212,6 +213,35 @@ describe('Project routes', () => {
     })
   })
 
+  describe('replayHooksController', () => {
+    it('Should replay hooks for a project', async () => {
+      const project = createRandomDbSetup({}).project
+      project.roles = [...project.roles, getRandomRole(getRequestor().id, project.id, 'user')]
+
+      prisma.project.findUnique.mockResolvedValue(project)
+
+      const response = await app.inject()
+        .put(`/api/v1/projects/${project.id}/hooks`)
+        .end()
+
+      expect(response.statusCode).toEqual(204)
+    })
+
+    it('Should not replay hooks for a project if requestor is not member nor admin', async () => {
+      const randomDbSetup = createRandomDbSetup({})
+      const project = randomDbSetup.project
+
+      prisma.project.findUnique.mockResolvedValue(project)
+
+      const response = await app.inject()
+        .put(`/api/v1/projects/${project.id}/hooks`)
+        .end()
+
+      expect(response.statusCode).toEqual(403)
+      expect(JSON.parse(response.body).error).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
+    })
+  })
+
   // DELETE
   describe('archiveProjectController', () => {
     it('Should archive a project', async () => {
@@ -257,6 +287,7 @@ describe('Project routes', () => {
       const response = await app.inject()
         .delete(`/api/v1/projects/${project.id}`)
         .end()
+
       expect(response.statusCode).toEqual(403)
       expect(JSON.parse(response.body).error).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
     })

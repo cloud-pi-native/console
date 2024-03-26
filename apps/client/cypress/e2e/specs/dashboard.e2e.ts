@@ -92,6 +92,25 @@ describe('Dashboard', () => {
     cy.getByDataTestid('noProjectSecretsP').should('contain', 'Aucun secret à afficher')
   })
 
+  it('Should replay hooks for project', () => {
+    cy.intercept('GET', '/api/v1/stages').as('getStages')
+    cy.intercept('PUT', `/api/v1/projects/${projectCreated.id}/hooks`).as('replayHooks')
+    cy.kcLogin('test')
+
+    cy.goToProjects()
+      .getByDataTestid(`projectTile-${projectCreated.name}`).click()
+      .getByDataTestid('menuDashboard').click()
+
+    cy.url().should('contain', 'dashboard')
+    cy.wait('@getStages')
+    cy.getByDataTestid('replayHooksBtn').click()
+
+    cy.wait('@replayHooks').its('response.statusCode').should('match', /^20\d$/)
+    cy.getByDataTestid('snackbar').within(() => {
+      cy.get('p').should('contain', 'Le projet a été reprovisionné avec succès')
+    })
+  })
+
   it('Should not be able to access project secrets if not owner', () => {
     cy.intercept('GET', '/api/v1/stages').as('getStages')
     cy.kcLogin((user.firstName.slice(0, 1) + user.lastName).toLowerCase())

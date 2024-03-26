@@ -10,6 +10,7 @@ import { useUserStore } from '@/stores/user.js'
 import { useUsersStore } from '@/stores/users.js'
 import { useProjectUserStore } from '@/stores/project-user'
 import { useAdminQuotaStore } from '@/stores/admin/quota'
+import { useProjectStore } from '@/stores/project.js'
 
 const adminProjectStore = useAdminProjectStore()
 const adminOrganizationStore = useAdminOrganizationStore()
@@ -235,11 +236,11 @@ const handleProjectLocking = async (projectId: string, lock: boolean) => {
   snackbarStore.isWaitingForResponse = false
 }
 
-const replayHooks = async ({ resource, resourceId }: {resource: string, resourceId: string}) => {
+const replayHooks = async (projectId: string) => {
   snackbarStore.isWaitingForResponse = true
-  // snackbarStore.setMessage(`Reprovisionnement de la ressource ${resource} ayant pour id ${resourceId}`)
-  console.log({ resource, resourceId })
-  snackbarStore.setMessage('Cette fonctionnalité n\'est pas encore disponible.')
+  await useProjectStore().replayHooksForProject(projectId)
+  await getAllProjects()
+  snackbarStore.setMessage(`Le projet ayant pour id ${projectId} a été reprovisionné avec succès`, 'success')
   snackbarStore.isWaitingForResponse = false
 }
 
@@ -376,12 +377,11 @@ onBeforeMount(async () => {
       />
       <div class="w-full flex gap-4 fr-mb-2w">
         <DsfrButton
+          data-testid="replayHooksBtn"
           label="Reprovisionner le projet"
-          title="Cette fonctionnalité n'est pas encore disponible"
           icon="ri-refresh-fill"
           secondary
-          disabled
-          @click="replayHooks({resource: 'project', resourceId: selectedProject.id})"
+          @click="replayHooks(selectedProject.id)"
         />
         <DsfrButton
           data-testid="handleProjectLockingBtn"

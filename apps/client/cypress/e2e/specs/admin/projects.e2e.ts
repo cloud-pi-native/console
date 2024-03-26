@@ -71,6 +71,29 @@ describe('Administration projects', () => {
     cy.getByDataTestid('tableAdministrationProjects').within(() => checkTableRowsLength(allLockedProjectsLength))
   })
 
+  it('Should replay hooks for a project, loggedIn as admin', () => {
+    const project = projects[0]
+
+    cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
+    cy.intercept('PUT', `/api/v1/projects/${project.id}/hooks`).as('replayHooks')
+
+    cy.getByDataTestid('tableAdministrationProjects').within(() => {
+      cy.get('tr').contains(project.name)
+        .click()
+    })
+    cy.wait('@getQuotas')
+    cy.get('.fr-callout__title')
+      .should('contain', project.name)
+    cy.getByDataTestid('replayHooksBtn')
+      .should('contain', 'Reprovisionner le projet')
+      .click()
+
+    cy.wait('@replayHooks').its('response.statusCode').should('match', /^20\d$/)
+    cy.getByDataTestid('snackbar').within(() => {
+      cy.get('p').should('contain', `Le projet ayant pour id ${project.id} a été reprovisionné avec succès`)
+    })
+  })
+
   it('Should lock and unlock a project, loggedIn as admin', () => {
     const project = projects[0]
 

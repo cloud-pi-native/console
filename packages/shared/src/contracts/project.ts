@@ -4,6 +4,7 @@ import {
   GetProjectsSchema,
   GetProjectSecretsSchema,
   UpdateProjectSchema,
+  ReplayHooksForProjectSchema,
   ArchiveProjectSchema,
   PatchProjectSchema,
 } from '../schemas/index.js'
@@ -44,6 +45,16 @@ export const projectContract = contractInstance.router({
     pathParams: UpdateProjectSchema.params,
     body: UpdateProjectSchema.body,
     responses: UpdateProjectSchema.responses,
+  },
+
+  replayHooksForProject: {
+    method: 'PUT',
+    path: `${apiPrefix}/projects/:projectId/hooks`,
+    summary: 'Replay hooks for project',
+    description: 'Replay hooks for a project.',
+    body: null,
+    pathParams: ReplayHooksForProjectSchema.params,
+    responses: ReplayHooksForProjectSchema.responses,
   },
 
   archiveProject: {
