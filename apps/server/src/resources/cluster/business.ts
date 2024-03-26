@@ -1,5 +1,5 @@
-import { UserProfile, adminGroupPath, exclude } from '@cpn-console/shared'
 import { UnauthorizedError } from '@/utils/errors.js'
+import { UserProfile, adminGroupPath, exclude } from '@cpn-console/shared'
 import {
   getClustersWithProjectIdAndConfig,
   getUserById,
