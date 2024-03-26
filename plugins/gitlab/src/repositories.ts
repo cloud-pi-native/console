@@ -3,7 +3,7 @@ import type { GitlabProjectApi } from './class.js'
 import { provisionMirror } from './project.js'
 import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
 import { CondensedProjectSchema, ProjectSchema } from '@gitbeaker/rest'
-import { internalMirrorRepoName, shallowEqual } from './utils.js'
+import { infraAppsRepoName, internalMirrorRepoName, shallowEqual } from './utils.js'
 
 type ProjectMirrorCreds = {
   botAccount: string
@@ -26,6 +26,11 @@ export const ensureRepositories = async (gitlabApi: GitlabProjectApi, project: P
     ...project.repositories.map(repo => ensureRepositoryExists(gitlabRepositories, repo, gitlabApi, projectMirrorCreds, vaultApi)),
   ]
 
+  if (!gitlabRepositories.find(repo => repo.name === infraAppsRepoName)) {
+    promises.push(
+      gitlabApi.createEmptyRepository(infraAppsRepoName),
+    )
+  }
   if (!gitlabRepositories.find(repo => repo.name === internalMirrorRepoName)) {
     promises.push(
       gitlabApi.createEmptyRepository(internalMirrorRepoName)

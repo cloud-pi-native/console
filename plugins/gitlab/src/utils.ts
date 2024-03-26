@@ -51,6 +51,7 @@ export const getConfig = (): {
   return config
 }
 
+export const infraAppsRepoName = 'infra-apps'
 export const internalMirrorRepoName = 'mirror'
 
 export const shallowEqual = (object1: Record<string, unknown>, object2: Record<string, unknown>) => {

@@ -1,5 +1,5 @@
 import { PluginApi, Project, RepoCreds } from '@cpn-console/hooks'
-import { getApi, getConfig, internalMirrorRepoName } from './utils.js'
+import { getApi, getConfig, infraAppsRepoName, internalMirrorRepoName } from './utils.js'
 import { AccessTokenScopes, GroupSchema, GroupStatisticsSchema, MemberSchema, ProjectVariableSchema, VariableSchema } from '@gitbeaker/rest'
 import { getOrganizationId } from './group.js'
 import { AccessLevel, Gitlab } from '@gitbeaker/core'
@@ -17,7 +17,7 @@ export class GitlabProjectApi extends PluginApi {
   private api: Gitlab<false>
   private project: Project
   private gitlabGroup: GroupSchema & { statistics: GroupStatisticsSchema } | undefined
-  private specialRepositories: string[] = [internalMirrorRepoName]
+  private specialRepositories: string[] = [infraAppsRepoName, internalMirrorRepoName]
   // private organizationGroup: GroupSchema & { statistics: GroupStatisticsSchema } | undefined
 
   constructor (project: Project) {
