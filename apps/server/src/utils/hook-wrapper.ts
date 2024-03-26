@@ -1,5 +1,5 @@
-import type { ClusterObject, KubeCluster, KubeUser, RepoCreds, Repository, Project as ProjectPayload, PluginResult } from '@cpn-console/hooks'
 import type { Cluster, Project } from '@prisma/client'
+import type { ClusterObject, KubeCluster, KubeUser, PluginResult, Project as ProjectPayload, RepoCreds, Repository } from '@cpn-console/hooks'
 import { hooks } from '@cpn-console/hooks'
 import { AsyncReturnType } from '@cpn-console/shared'
 import { archiveProject, getClusterByIdOrThrow, getHookProjectInfos, getHookPublicClusters, updateProjectCreated, updateProjectFailed, updateProjectServices } from '@/resources/queries-index.js'

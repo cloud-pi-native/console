@@ -1,9 +1,9 @@
-import { addLogs, deleteRepository as deleteRepositoryQuery, getProjectInfos, getProjectInfosAndRepos, initializeRepository, updateRepository as updateRepositoryQuery, getUserById } from '@/resources/queries-index.js'
-import { BadRequestError, ForbiddenError, NotFoundError, UnauthorizedError, UnprocessableContentError } from '@/utils/errors.js'
 import type { Project, Repository, User } from '@prisma/client'
-import { type CreateRepositoryDto, type UpdateRepositoryDto, type ProjectRoles } from '@cpn-console/shared'
-import { hook } from '@/utils/hook-wrapper.js'
+import { type CreateRepositoryDto, type ProjectRoles, type UpdateRepositoryDto } from '@cpn-console/shared'
+import { addLogs, deleteRepository as deleteRepositoryQuery, getProjectInfos, getProjectInfosAndRepos, getUserById, initializeRepository, updateRepository as updateRepositoryQuery } from '@/resources/queries-index.js'
 import { checkInsufficientRoleInProject, checkRoleAndLocked } from '@/utils/controller.js'
+import { BadRequestError, ForbiddenError, NotFoundError, UnauthorizedError, UnprocessableContentError } from '@/utils/errors.js'
+import { hook } from '@/utils/hook-wrapper.js'
 
 export const getRepositoryById = async (
   userId: User['id'],
@@ -78,7 +78,6 @@ export const createRepository = async (
       : undefined,
     )
 
-    // @ts-ignore
     await addLogs('Create Repository', results, userId, requestId)
     if (results.failed) {
       throw new BadRequestError('Echec des services lors de la création du dépôt', undefined)
@@ -112,7 +111,6 @@ export const updateRepository = async (
       },
     })
 
-    // @ts-ignore
     await addLogs('Update Repository', results, userId, requestId)
     if (results.failed) {
       throw new UnprocessableContentError('Echec des services associés au dépôt', undefined)
@@ -135,7 +133,7 @@ export const deleteRepository = async (
   try {
     await deleteRepositoryQuery(repositoryId)
     const { results } = await hook.project.upsert(project.id)
-    // @ts-ignore
+
     await addLogs('Delete Repository', results, userId, requestId)
     if (results.failed) {
       throw new UnprocessableContentError('Echec des opérations', undefined)

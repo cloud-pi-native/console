@@ -1,9 +1,9 @@
+import { organizationContract } from '@cpn-console/shared'
+import { serverInstance } from '@/app.js'
 import { addReqLogs } from '@/utils/logger.js'
 import {
   getActiveOrganizations,
 } from './business.js'
-import { serverInstance } from '@/app.js'
-import { organizationContract } from '@cpn-console/shared'
 
 export const organizationRouter = () => serverInstance.router(organizationContract, {
   getOrganizations: async ({ request: req }) => {

@@ -1,3 +1,14 @@
+import type { Cluster, Environment, Organization, Project, User } from '@prisma/client'
+import {
+  ProjectSchema,
+  adminGroupPath,
+  exclude,
+  projectIsLockedInfo,
+  type AsyncReturnType,
+  type CreateProjectDto,
+  type UpdateProjectDto,
+} from '@cpn-console/shared'
+import { services, servicesInfos } from '@cpn-console/hooks'
 import {
   addLogs,
   deleteAllEnvironmentForProject,
@@ -16,24 +27,12 @@ import {
   removeClusterFromProject,
   updateProject as updateProjectQuery,
 } from '@/resources/queries-index.js'
-import type { Cluster, Environment, Log, Organization, Project, User } from '@prisma/client'
-import { hook } from '@/utils/hook-wrapper.js'
-import { services, servicesInfos } from '@cpn-console/hooks'
-import { checkInsufficientPermissionInEnvironment, checkInsufficientRoleInProject } from '@/utils/controller.js'
+import { getUser, type UserDto } from '@/resources/user/business.js'
 import { validateSchema } from '@/utils/business.js'
+import { checkInsufficientPermissionInEnvironment, checkInsufficientRoleInProject } from '@/utils/controller.js'
 import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
-import {
-  type AsyncReturnType,
-  type CreateProjectDto,
-  type UpdateProjectDto,
-  // calcProjectNameMaxLength,
-  projectIsLockedInfo,
-  ProjectSchema,
-  exclude,
-  adminGroupPath,
-} from '@cpn-console/shared'
+import { hook } from '@/utils/hook-wrapper.js'
 import { filterObjectByKeys } from '@/utils/queries-tools.js'
-import { type UserDto, getUser } from '@/resources/user/business.js'
 
 // Fetch infos
 export const getProjectInfosAndClusters = async (projectId: string) => {
@@ -134,7 +133,7 @@ export const createProject = async (dataDto: CreateProjectDto, requestor: UserDt
 
   try {
     const { results } = await hook.project.upsert(project.id)
-    // @ts-ignore
+
     await addLogs('Create Project', results, owner.id, requestId)
     if (results.failed) {
       throw new Error('Echec de la création du projet par les plugins')
@@ -151,7 +150,7 @@ export const createProject = async (dataDto: CreateProjectDto, requestor: UserDt
   }
 }
 
-export const updateProject = async (data: UpdateProjectDto, projectId: Project['id'], requestor: UserDto, requestId: Log['requestId']) => {
+export const updateProject = async (data: UpdateProjectDto, projectId: Project['id'], requestor: UserDto, requestId: string) => {
   const keysAllowedForUpdate = ['description']
   const dataFiltered = filterObjectByKeys(data, keysAllowedForUpdate)
 
@@ -172,7 +171,7 @@ export const updateProject = async (data: UpdateProjectDto, projectId: Project['
     await updateProjectQuery(projectId, dataFiltered)
 
     const { results } = await hook.project.upsert(project.id)
-    // @ts-ignore
+
     await addLogs('Update Project', results, requestor.id, requestId)
     if (results.failed) {
       throw new Error('Echec de la mise à jour du projet par les plugins')
@@ -183,7 +182,7 @@ export const updateProject = async (data: UpdateProjectDto, projectId: Project['
   }
 }
 
-export const archiveProject = async (projectId: Project['id'], requestor: UserDto, requestId: Log['requestId']) => {
+export const archiveProject = async (projectId: Project['id'], requestor: UserDto, requestId: string) => {
   // Pré-requis
   const project = await getProjectInfosAndRepos(projectId)
   if (!project) throw new NotFoundError('Projet introuvable')
@@ -206,7 +205,7 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
     ])
 
     const { results: upsertResults } = await hook.project.upsert(project.id)
-    // @ts-ignore
+
     await addLogs('Delete all project resources', upsertResults, requestor.id, requestId)
     if (upsertResults.failed) {
       throw new UnprocessableContentError('Echec de la suppression des ressources du projet par les plugins')
@@ -214,7 +213,7 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDt
 
     // -- début - Suppression projet --
     const { results } = await hook.project.delete(project.id)
-    // @ts-ignore
+
     await addLogs('Archive Project', results, requestor.id, requestId)
     if (results.failed) {
       throw new UnprocessableContentError('Echec de la suppression du projet par les plugins')

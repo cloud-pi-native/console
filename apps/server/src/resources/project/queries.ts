@@ -1,6 +1,6 @@
+import { ProjectStatus, type Organization, type Project, type Role, type User } from '@prisma/client'
+import { ClusterPrivacy, type AsyncReturnType } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
-import { type AsyncReturnType, ClusterPrivacy } from '@cpn-console/shared'
-import { type Organization, type Project, type User, type Role, ProjectStatus } from '@prisma/client'
 
 type ProjectUpdate = Partial<Pick<Project, 'description'>>
 export const updateProject = async (id: Project['id'], data: ProjectUpdate) => {

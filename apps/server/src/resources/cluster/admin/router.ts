@@ -1,14 +1,14 @@
 import { serverInstance } from '@/app.js'
-import { type Cluster, clusterAdminContract } from '@cpn-console/shared'
+import '@/types/index.js'
 import { addReqLogs } from '@/utils/logger.js'
+import { clusterAdminContract, type Cluster } from '@cpn-console/shared'
 import {
   checkClusterProjectIds,
   createCluster,
-  updateCluster,
-  getClusterAssociatedEnvironments,
   deleteCluster,
+  getClusterAssociatedEnvironments,
+  updateCluster,
 } from './business.js'
-import '@/types/index.js'
 
 export const clusterAdminRouter = () => serverInstance.router(clusterAdminContract, {
   createCluster: async ({ request: req, body: data }) => {

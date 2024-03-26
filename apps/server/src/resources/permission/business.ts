@@ -1,10 +1,10 @@
-import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
-import type { Project, User, Environment, Permission, Log } from '@prisma/client'
-import { addLogs, deletePermission as deletePermissionQuery, getEnvironmentByIdWithCluster, getEnvironmentPermissions as getEnvironmentPermissionsQuery, getPermissionByUserIdAndEnvironmentId, getProjectInfos, getQuotaStageById, getSingleOwnerByProjectId, getStageById, getUserById, setPermission as setPermissionQuery, updatePermission as updatePermissionQuery } from '@/resources/queries-index.js'
-import { checkInsufficientRoleInProject, checkRoleAndLocked } from '@/utils/controller.js'
-import { hook } from '@/utils/hook-wrapper.js'
+import type { Environment, Permission, Project, User } from '@prisma/client'
 import { PermissionSchema } from '@cpn-console/shared'
+import { addLogs, deletePermission as deletePermissionQuery, getEnvironmentByIdWithCluster, getEnvironmentPermissions as getEnvironmentPermissionsQuery, getPermissionByUserIdAndEnvironmentId, getProjectInfos, getQuotaStageById, getSingleOwnerByProjectId, getStageById, getUserById, setPermission as setPermissionQuery, updatePermission as updatePermissionQuery } from '@/resources/queries-index.js'
 import { validateSchema } from '@/utils/business.js'
+import { checkInsufficientRoleInProject, checkRoleAndLocked } from '@/utils/controller.js'
+import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
+import { hook } from '@/utils/hook-wrapper.js'
 
 export enum Action {
   update = 'modifiée',
@@ -38,7 +38,7 @@ export const setPermission = async (
   userId: User['id'],
   environmentId: Environment['id'],
   level: Permission['level'],
-  requestId: Log['requestId'],
+  requestId: string,
 ) => {
   const project = await getProjectInfos(projectId)
   if (!project) throw new BadRequestError('Le projet n\'existe pas')
@@ -63,7 +63,7 @@ export const setPermission = async (
   if (!user) throw new BadRequestError('L\'utilisateur n\'existe pas')
 
   const { results } = await hook.project.upsert(project.id)
-  // @ts-ignore
+
   await addLogs('Update Permission', results, userId, requestId)
   if (results.failed) {
     throw new UnprocessableContentError('Echec à la création de la permission')
@@ -77,7 +77,7 @@ export const updatePermission = async (
   userId: User['id'],
   environmentId: Environment['id'],
   level: Permission['level'],
-  requestId: Log['requestId'],
+  requestId: string,
 ) => {
   const project = await getProjectInfos(projectId)
   if (!project) throw new BadRequestError('Le projet n\'existe pas')
@@ -104,7 +104,7 @@ export const updatePermission = async (
   if (!user) throw new BadRequestError('L\'utilisateur n\'existe pas')
 
   const { results } = await hook.project.upsert(project.id)
-  // @ts-ignore
+
   await addLogs('Update Permission', results, userId, requestId)
   if (results.failed) {
     throw new UnprocessableContentError('Echec à l\'application de la permission')
@@ -116,7 +116,7 @@ export const deletePermission = async (
   userId: User['id'],
   environmentId: Environment['id'],
   requestorId: Environment['id'],
-  requestId: Log['requestId'],
+  requestId: string,
 ) => {
   const environment = await getEnvironmentByIdWithCluster(environmentId)
   if (!environment) throw new NotFoundError('Environnement introuvable')
@@ -128,7 +128,7 @@ export const deletePermission = async (
   const user = await getUserById(userId)
   if (!user) throw new NotFoundError('Utilisateur introuvable')
   const { results } = await hook.project.upsert(project.id)
-  // @ts-ignore
+
   await addLogs('Delete Permission', results, userId, requestId)
   if (results.failed) {
     throw new UnprocessableContentError('Echec à la suppression de la permission')

@@ -1,36 +1,36 @@
+import type { Cluster, Environment, Project, QuotaStage, Role, User } from '@prisma/client'
+import { EnvironmentSchema, adminGroupPath } from '@cpn-console/shared'
+import { getProjectInfosAndClusters } from '@/resources/project/business.js'
 import {
   addLogs,
-  getEnvironmentInfos as getEnvironmentInfosQuery,
-  getPublicClusters,
-  initializeEnvironment,
   deleteEnvironment as deleteEnvironmentQuery,
-  getUserById,
-  updateEnvironment as updateEnvironmentQuery,
-  getStageById,
   getClusterById,
+  getEnvironmentInfos as getEnvironmentInfosQuery,
   getProjectInfos,
-  getQuotaStageById,
+  getPublicClusters,
   getQuotaById,
+  getQuotaStageById,
+  getStageById,
+  getUserById,
+  initializeEnvironment,
+  updateEnvironment as updateEnvironmentQuery,
 } from '@/resources/queries-index.js'
+import type { UserDetails } from '@/types/index.js'
+import { validateSchema } from '@/utils/business.js'
+import {
+  checkClusterUnavailable,
+  checkInsufficientRoleInProject,
+  checkRoleAndLocked,
+  filterOwners,
+} from '@/utils/controller.js'
 import { BadRequestError, DsoError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
-import type { Cluster, Environment, Project, Role, User, QuotaStage, Log } from '@prisma/client'
-import {
-  checkInsufficientRoleInProject,
-  checkClusterUnavailable,
-  filterOwners,
-  checkRoleAndLocked,
-} from '@/utils/controller.js'
-import { validateSchema } from '@/utils/business.js'
-import { getProjectInfosAndClusters } from '@/resources/project/business.js'
-import { adminGroupPath, EnvironmentSchema } from '@cpn-console/shared'
-import type { UserDetails } from '@/types/index.js'
 
 // Fetch infos
 export const getEnvironmentInfosAndClusters = async (environmentId: string) => {
   const env = await getEnvironmentInfosQuery(environmentId)
   if (!env) throw new NotFoundError('Environnement introuvable', undefined)
-  // @ts-ignore
+
   const authorizedClusters = [...await getPublicClusters(), ...env.project.clusters]
   return { env, authorizedClusters }
 }
@@ -139,7 +139,7 @@ type CreateEnvironmentParam = {
   name: Environment['name'],
   clusterId: Environment['clusterId'],
   quotaStageId: QuotaStage['id'],
-  requestId: Log['requestId']
+  requestId: string
 }
 
 export const createEnvironment = async (
@@ -193,7 +193,7 @@ export const createEnvironment = async (
     if (!cluster) throw new NotFoundError('Cluster introuvable')
 
     const { results } = await hook.project.upsert(project.id)
-    // @ts-ignore
+
     await addLogs('Create Environment', results, userId, requestId)
     if (results.failed) {
       throw new UnprocessableContentError('Echec services à la création de l\'environnement')
@@ -214,7 +214,7 @@ type UpdateEnvironmentParam = {
   environmentId: Environment['id'],
   quotaStageId: QuotaStage['id'],
   clusterId: Cluster['id'],
-  requestId: Log['requestId'],
+  requestId: string,
 }
 
 export const updateEnvironment = async ({
@@ -250,7 +250,7 @@ export const updateEnvironment = async ({
       if (!cluster) throw new NotFoundError('Cluster introuvable')
 
       const { results } = await hook.project.upsert(project.id)
-      // @ts-ignore
+
       await addLogs('Update Environment Quotas', results, user.id, requestId)
       if (results.failed) {
         throw new UnprocessableContentError('Echec services à la mise à jour des quotas pour l\'environnement')
@@ -270,7 +270,7 @@ type DeleteEnvironmentParam = {
   userId: User['id'],
   projectId: Project['id'],
   environmentId: Environment['id'],
-  requestId: Log['requestId'],
+  requestId: string,
 }
 
 export const deleteEnvironment = async ({
@@ -292,7 +292,7 @@ export const deleteEnvironment = async ({
     const cluster = await getClusterById(environment.clusterId)
     if (!cluster) throw new NotFoundError('Cluster introuvable')
     const { results } = await hook.project.upsert(project.id)
-    // @ts-ignore
+
     await addLogs('Delete Environment', results, userId, requestId)
     if (results.failed) {
       throw new Error('Echec des services à la suppression de l\'environnement')

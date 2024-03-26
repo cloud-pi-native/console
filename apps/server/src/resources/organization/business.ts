@@ -1,15 +1,8 @@
-import { getOrCreateUser, getActiveOrganizationsQuery, getOrganizationById } from '@/resources/queries-index.js'
+import { getOrCreateUser, getActiveOrganizationsQuery } from '@/resources/queries-index.js'
 import { UserDetails } from '@/types/index.js'
 import { NotFoundError, UnauthorizedError } from '@/utils/errors.js'
 import { UserSchema } from '@cpn-console/shared'
 import { validateSchema } from '@/utils/business.js'
-
-// TODO 539 : à supprimer ? n'est pas utilisé
-export const getOrganizationInfos = async (organizationId: string) => {
-  const organization = await getOrganizationById(organizationId)
-  if (!organization) throw new NotFoundError('Organization introuvable', undefined)
-  return organization
-}
 
 export const getActiveOrganizations = async (requestor: UserDetails) => {
   const schemaValidation = UserSchema.safeParse(requestor)

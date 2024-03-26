@@ -1,5 +1,5 @@
-import prisma from '@/prisma.js'
 import type { Quota, QuotaStage, Stage } from '@prisma/client'
+import prisma from '@/prisma.js'
 
 export const getQuotas = async () => {
   return prisma.quota.findMany({
