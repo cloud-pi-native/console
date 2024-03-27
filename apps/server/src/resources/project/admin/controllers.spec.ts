@@ -1,10 +1,13 @@
-import prisma from '../../../__mocks__/prisma.js'
-import app, { setRequestor } from '../../../__mocks__/app.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll, beforeEach } from 'vitest'
+import prisma from '../../../__mocks__/prisma.js'
+import { setRequestor } from '../../../utils/mocks.js'
+import app from '../../../app.js'
 import { getConnection, closeConnections } from '../../../connect.js'
 import { adminGroupPath } from '@cpn-console/shared'
 import { getRandomProject, getRandomUser, repeatFn } from '@cpn-console/test-utils'
 import { json2csv } from 'json-2-csv'
+
+vi.mock('fastify-keycloak-adapter', (await import('../../../utils/mocks.js')).mockSessionPlugin)
 
 describe('Admin project routes', () => {
   beforeAll(async () => {
@@ -51,7 +54,7 @@ describe('Admin project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(500)
-      expect(response.json().message).toEqual(error.message)
+      expect(JSON.parse(response.body).error).toEqual(error.message)
     })
 
     it('Should return an error if requestor is not admin', async () => {
@@ -63,7 +66,7 @@ describe('Admin project routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.json().message).toEqual('Vous n\'avez pas les droits administrateur')
+      expect(JSON.parse(response.body).error).toEqual('Vous n\'avez pas les droits administrateur')
     })
   })
 
@@ -97,7 +100,7 @@ describe('Admin project routes', () => {
         .body({ lock: true })
         .end()
 
-      expect(response.statusCode).toEqual(204)
+      expect(response.statusCode).toEqual(200)
     })
 
     it('Should unlock a project if not failed', async () => {
@@ -114,7 +117,7 @@ describe('Admin project routes', () => {
         .body({ lock: false })
         .end()
 
-      expect(response.statusCode).toEqual(204)
+      expect(response.statusCode).toEqual(200)
     })
 
     it('Should not unlock a project if failed', async () => {
@@ -131,7 +134,7 @@ describe('Admin project routes', () => {
         .body({ lock: false })
         .end()
 
-      expect(response.statusCode).toEqual(204)
+      expect(response.statusCode).toEqual(200)
     })
   })
 })

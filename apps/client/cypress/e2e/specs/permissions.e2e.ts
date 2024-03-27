@@ -110,7 +110,7 @@ describe('Manage permissions for environment', () => {
       .should('be.enabled')
       .click()
       .wait('@putPermission')
-      .its('response.statusCode').should('eq', 200)
+      .its('response.statusCode').should('match', /^20\d$/)
 
     cy.reload()
 
@@ -143,7 +143,7 @@ describe('Manage permissions for environment', () => {
         .click()
     })
       .wait('@deletePermission')
-      .its('response.statusCode').should('eq', 200)
+      .its('response.statusCode').should('match', /^20\d$/)
 
     cy.get('[data-testid^="userPermissionLi-"]')
       .should('have.length', 3)

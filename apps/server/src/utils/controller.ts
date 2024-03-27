@@ -1,7 +1,7 @@
-import { type ProjectRoles, adminGroupPath, projectIsLockedInfo } from '@cpn-console/shared'
 import type { Permission, User, Role, Cluster } from '@prisma/client'
-import { ForbiddenError } from './errors.js'
 import { FastifyRequest } from 'fastify'
+import { type ProjectRoles, adminGroupPath, projectIsLockedInfo } from '@cpn-console/shared'
+import { ForbiddenError } from './errors.js'
 
 export const checkAdminGroup = (req: FastifyRequest, _res, done) => {
   if (!req.session.user.groups?.includes(adminGroupPath)) {

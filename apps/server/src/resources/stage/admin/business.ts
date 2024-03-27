@@ -1,3 +1,5 @@
+import type { Stage } from '@prisma/client'
+import { type CreateStageDto, type UpdateStageClustersDto, StageSchema } from '@cpn-console/shared'
 import { BadRequestError, DsoError } from '@/utils/errors.js'
 import {
   getStageByName,
@@ -10,8 +12,6 @@ import {
   removeClusterFromStage,
   linkStageToQuotas,
 } from '@/resources/queries-index.js'
-import { type CreateStageDto, type UpdateStageClustersDto, StageSchema } from '@cpn-console/shared'
-import type { Stage } from '@prisma/client'
 import { validateSchema } from '@/utils/business.js'
 
 export const getStageAssociatedEnvironments = async (stageId: Stage['id']) => {

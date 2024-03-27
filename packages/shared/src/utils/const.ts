@@ -60,7 +60,6 @@ export enum ClusterPrivacy {
 }
 
 export enum AllStatus {
-  INITIALIZING = 'initializing',
   CREATED = 'created',
   FAILED = 'failed',
   DELETING = 'deleting',

@@ -1,5 +1,5 @@
-import type { ProjectRoles } from '@cpn-console/shared'
 import type { Project, User } from '@prisma/client'
+import type { ProjectRoles } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
 
 // SELECT
@@ -39,6 +39,18 @@ export const deleteRoleByUserIdAndProjectId = async (userId: User['id'], project
   })
 }
 
+export const deleteAllRoleNonOwnerForProject = async (id: Project['id']) => {
+  return prisma.role.deleteMany({
+    where: {
+      AND: {
+        role: {
+          not: 'owner',
+        },
+        projectId: id,
+      },
+    },
+  })
+}
 // TECH
 export const _dropRolesTable = async () => {
   await prisma.role.deleteMany({})

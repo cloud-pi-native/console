@@ -1,30 +1,40 @@
-import type { Plugin } from '@cpn-console/hooks'
+import type {
+  DefaultArgs,
+  Plugin,
+  Project,
+  ProjectLite,
+} from '@cpn-console/hooks'
 import {
-  createKeycloakEnvGroup,
-  createKeycloakProjectGroup,
-  deleteKeycloakEnvGroup,
-  deleteKeycloakProjectGroup,
-  addKeycloakUserToProjectGroup,
-  removeKeycloakUserFromProjectGroup,
+  upsertProject,
+  deleteProject,
   retrieveKeycloakUserByEmail,
-  manageKeycloakPermission,
 } from './functions.js'
 import infos from './infos.js'
 import monitor from './monitor.js'
 import { start } from './client.js'
+import { KeycloakProjectApi } from './class.js'
 
 export const plugin: Plugin = {
   infos,
   subscribedHooks: {
+    deleteProject: {
+      api: (project) => new KeycloakProjectApi(project.organization.name, project.name),
+      steps: { post: deleteProject },
+    },
+    upsertProject: {
+      api: (project) => new KeycloakProjectApi(project.organization.name, project.name),
+      steps: { main: upsertProject },
+    },
     retrieveUserByEmail: { steps: { main: retrieveKeycloakUserByEmail } },
-    createProject: { steps: { main: createKeycloakProjectGroup } },
-    addUserToProject: { steps: { main: addKeycloakUserToProjectGroup } },
-    removeUserFromProject: { steps: { main: removeKeycloakUserFromProjectGroup } },
-    archiveProject: { steps: { main: deleteKeycloakProjectGroup } },
-    initializeEnvironment: { steps: { main: createKeycloakEnvGroup } },
-    deleteEnvironment: { steps: { main: deleteKeycloakEnvGroup } },
-    setEnvPermission: { steps: { main: manageKeycloakPermission } },
   },
   monitor,
   start,
+}
+
+declare module '@cpn-console/hooks' {
+  interface HookPayloadApis<Args extends DefaultArgs> {
+    keycloak: Args extends (ProjectLite | Project)
+    ? KeycloakProjectApi
+    : undefined
+  }
 }

@@ -1,9 +1,12 @@
 import prisma from '../../../__mocks__/prisma.js'
-import app, { setRequestor } from '../../../__mocks__/app.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
 import { getConnection, closeConnections } from '../../../connect.js'
 import { adminGroupPath } from '@cpn-console/shared'
 import { getRandomLog, getRandomUser, repeatFn } from '@cpn-console/test-utils'
+import { setRequestor } from '../../../utils/mocks.js'
+import app from '../../../app.js'
+
+vi.mock('fastify-keycloak-adapter', (await import('../../../utils/mocks.js')).mockSessionPlugin)
 
 describe('Admin log routes', () => {
   const requestor = { ...getRandomUser(), groups: [adminGroupPath] }
@@ -44,7 +47,7 @@ describe('Admin log routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(500)
-      expect(response.json().message).toEqual('Erreur de récupération des logs')
+      expect(JSON.parse(response.body).error).toEqual('Erreur de récupération des logs')
     })
 
     it('Should return an error if requestor is not admin', async () => {
@@ -55,7 +58,7 @@ describe('Admin log routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.json().message).toEqual('Vous n\'avez pas les droits administrateur')
+      expect(JSON.parse(response.body).error).toEqual('Vous n\'avez pas les droits administrateur')
     })
   })
 })

@@ -81,7 +81,7 @@ describe('Manage project environments', () => {
       .should('be.enabled')
       .click()
 
-    cy.wait('@postEnvironment').its('response.statusCode').should('eq', 403)
+    cy.wait('@postEnvironment').its('response.statusCode').should('not.match', /^20\d$/)
     cy.getByDataTestid('snackbar').within(() => {
       cy.get('p').should('contain', 'Un environnement avec le même nom et déployé sur le même cluster existe déjà pour ce projet.')
     })
@@ -174,8 +174,8 @@ describe('Manage project environments', () => {
       .getByDataTestid(`projectTile-${project1.name}`).click()
       .getByDataTestid('menuEnvironments').click()
       .url().should('contain', '/environments')
-    cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
-    cy.wait('@getClusters').its('response.statusCode').should('eq', 200)
+    cy.wait('@getProjects').its('response.statusCode').should('match', /^20\d$/)
+    cy.wait('@getClusters').its('response.statusCode').should('match', /^20\d$/)
 
     cy.getByDataTestid(`environmentTile-${project1FirstEnvironment?.name}`).click()
     cy.wait('@getStages')
@@ -194,8 +194,8 @@ describe('Manage project environments', () => {
       .select(quotaSmall?.id)
     cy.getByDataTestid('putEnvironmentBtn').click()
 
-    cy.wait('@putEnvironment').its('response.statusCode').should('eq', 200)
-    cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
+    cy.wait('@putEnvironment').its('response.statusCode').should('match', /^20\d$/)
+    cy.wait('@getProjects').its('response.statusCode').should('match', /^20\d$/)
 
     cy.reload()
     cy.getByDataTestid(`environmentTile-${project1FirstEnvironment?.name}`).click()

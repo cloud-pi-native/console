@@ -12,13 +12,13 @@ export const getUserProjects = async (): Promise<Required<ProjectInfos>[]> => {
   return response.data
 }
 
-export const getUserProjectById = async (projectId: ProjectParams['projectId']) => {
-  const response = await apiClient.get(`/projects/${projectId}`)
+export const updateProject = async (projectId: ProjectParams['projectId'], data: UpdateProjectDto) => { // TODO: Promise<ProjectOutputDto>
+  const response = await apiClient.put(`/projects/${projectId}`, data)
   return response.data
 }
 
-export const updateProject = async (projectId: ProjectParams['projectId'], data: UpdateProjectDto) => { // TODO: Promise<ProjectOutputDto>
-  const response = await apiClient.put(`/projects/${projectId}`, data)
+export const replayHooks = async (projectId: ProjectParams['projectId']) => {
+  const response = await apiClient.put(`/projects/${projectId}/hooks`)
   return response.data
 }
 

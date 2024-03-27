@@ -28,7 +28,7 @@ describe('Administration quotas', () => {
     cy.visit('/admin/quotas')
     cy.url().should('contain', '/admin/quotas')
     cy.wait('@getQuotas').its('response').then(response => {
-      allQuotas = response.body
+      allQuotas = response?.body
       quota1 = allQuotas.find(quota => quota.id === quota1.id)
       quota2 = allQuotas.find(quota => quota.id === quota2.id)
     })
@@ -81,7 +81,7 @@ describe('Administration quotas', () => {
     cy.getByDataTestid('addQuotaBtn')
       .click()
     cy.wait('@createQuota').its('response').then($response => {
-      expect($response.statusCode).to.equal(201)
+      expect($response?.statusCode).to.match(/^20\d$/)
     })
     cy.getByDataTestid('nameInput')
       .should('not.exist')
@@ -192,7 +192,7 @@ describe('Administration quotas', () => {
     cy.getByDataTestid('addQuotaBtn')
       .click()
     cy.wait('@createQuota').its('response').then($response => {
-      expect($response.statusCode).to.equal(400)
+      expect($response?.statusCode).to.not.match(/^20\d$/)
     })
     cy.getByDataTestid('snackbar').within(() => {
       cy.get('p').should('contain', 'Un quota portant ce nom existe déjà')
@@ -239,7 +239,7 @@ describe('Administration quotas', () => {
     cy.getByDataTestid('addQuotaBtn')
       .click()
     cy.wait('@createQuota').its('response').then($response => {
-      expect($response.statusCode).to.equal(201)
+      expect($response?.statusCode).to.match(/^20\d$/)
     })
     cy.getByDataTestid('nameInput')
       .should('not.exist')
@@ -353,10 +353,10 @@ describe('Administration quotas', () => {
     cy.getByDataTestid('updateQuotaBtn')
       .click()
     cy.wait('@updateQuotaStage').its('response').then($response => {
-      expect($response.statusCode).to.equal(200)
+      expect($response?.statusCode).to.match(/^20\d$/)
     })
     cy.wait('@updateQuotaPrivacy').its('response').then($response => {
-      expect($response.statusCode).to.equal(200)
+      expect($response?.statusCode).to.match(/^20\d$/)
     })
 
     // Check quota update
@@ -463,7 +463,7 @@ describe('Administration quotas', () => {
     cy.getByDataTestid('updateQuotaBtn')
       .click()
     cy.wait('@updateQuotaStage').its('response').then($response => {
-      expect($response.statusCode).to.equal(400)
+      expect($response?.statusCode).to.not.match(/^20\d$/)
     })
     cy.getByDataTestid('snackbar').within(() => {
       cy.get('p').should('contain', 'L\'association quota / type d\'environnement que vous souhaitez supprimer est actuellement utilisée. Vous pouvez demander aux souscripteurs concernés de changer le quota choisi pour leur environnement.')

@@ -1,84 +1,15 @@
 import * as fs from 'node:fs/promises'
 import path from 'node:path'
 import { getApi } from './utils.js'
-import { getGroupId } from './group.js'
-import { AccessTokenSchema, ProjectSchema } from '@gitbeaker/rest'
-
-export const createProject = async (
-  { groupId, internalRepoName, externalRepoUrn, externalUserName, externalToken, isPrivate }:
-    { groupId: number, internalRepoName: string, externalRepoUrn: string, externalUserName: string | undefined, externalToken: string | undefined, isPrivate: boolean }): Promise<ProjectSchema> => {
-  const api = getApi()
-  const searchResults = await api.Projects.search(internalRepoName)
-  if (searchResults.length) {
-    const existingProject = searchResults.find(project => project.namespace.id === groupId && project.name === internalRepoName)
-    // @ts-ignore
-    if (existingProject) return existingProject
-  }
-  const externalRepoUrl = isPrivate
-    ? `https://${externalUserName}:${externalToken ?? ''}@${externalRepoUrn}`
-    : `https://${externalRepoUrn}`
-
-  // @ts-ignore
-  return api.Projects.create(
-    {
-      name: internalRepoName,
-      namespaceId: groupId,
-      ciConfigPath: '.gitlab-ci-dso.yml',
-      importUrl: externalRepoUrl,
-    },
-  )
-}
 
 /**
  * @param {string} internalRepoName - nom du dépôt.
  * @param {string} group - nom du projet DSO.
  * @param {string} organization - nom de l'organisation DSO.
  */
-export const createProjectMirror = async (internalRepoName: string, group: string, organization: string): Promise<ProjectSchema> => {
-  const groupId = await getGroupId(group, organization)
+export const provisionMirror = async (repoId: number) => {
   const api = getApi()
-  if (!groupId) throw Error('Impossible de retrouver le namespace')
-  const searchResults = await api.Projects.search(internalRepoName)
-  if (searchResults.length) {
-    const existingProject = searchResults.find(project => project.namespace.id === groupId && project.name === internalRepoName)
-    // @ts-ignore
-    if (existingProject) return existingProject
-  }
-  const project = await api.Projects.create(
-    {
-      name: internalRepoName,
-      namespaceId: groupId,
-    },
-  )
-  await api.Commits.create(project.id, 'main', 'ci: :construction_worker: first mirror', mirrorFirstActions)
-  // @ts-ignore
-  return project
-}
-
-export const createGroupToken = async (groupId: number, name: string): Promise<AccessTokenSchema> => {
-  const api = getApi()
-  return api.GroupAccessTokens.create(
-    groupId,
-    name,
-    [
-      'write_repository',
-      'read_repository',
-    ],
-    {
-      expiresAt: '',
-    },
-  )
-}
-
-export const deleteProject = async (internalRepoName: string, group: string, organization: string) => {
-  const api = getApi()
-  const groupId = await getGroupId(group, organization)
-  const searchResult = await api.Projects.search(internalRepoName)
-  if (!searchResult.length) return
-  const existingProject = searchResult
-    .find(project => project.name === internalRepoName && project.namespace.id === groupId)
-  if (!existingProject) return
-  return api.Projects.remove(existingProject.id)
+  await api.Commits.create(repoId, 'main', 'ci: :construction_worker: first mirror', mirrorFirstActions)
 }
 
 const baseDir = path.resolve(import.meta.url, '../../files/').split(':')[1]

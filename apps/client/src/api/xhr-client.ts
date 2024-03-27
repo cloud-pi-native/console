@@ -38,6 +38,11 @@ export type CustomError = Error & {
 apiClient.interceptors.response.use(function (response: AxiosResponse): AxiosResponse {
   return response
 }, function (error): Promise<never> {
+  if (!error) {
+    const customError: CustomError = new Error('Erreur inconnue')
+    customError.httpCode = 500
+    return Promise.reject(customError)
+  }
   const response = error.response
   const isUnauthorized: boolean = response?.status === 401
   if (isUnauthorized) {
@@ -45,7 +50,7 @@ apiClient.interceptors.response.use(function (response: AxiosResponse): AxiosRes
     customError.httpCode = 401
     return Promise.reject(customError)
   }
-  if (error?.code === 'ECONNABORTED' || error?.message?.includes('Network Error') || (response?.status >= 500 && !error?.message)) {
+  if (error.code === 'ECONNABORTED' || error.message?.includes('Network Error') || (response?.status >= 500 && !error.message)) {
     const customError: CustomError = new Error('Echec de réponse du serveur')
     return Promise.reject(customError)
   }
@@ -54,7 +59,7 @@ apiClient.interceptors.response.use(function (response: AxiosResponse): AxiosRes
     router.push('/login')
     return Promise.reject(customError)
   }
-  const apiError: CustomError = new Error(response?.data?.error || response?.data || response?.statusText || error?.message || error)
-  apiError.statusCode = response?.status
+  const apiError: CustomError = new Error(response?.data?.error || response?.data || response?.statusText || error.message || error)
+  apiError.statusCode = response?.status ?? 500
   return Promise.reject(apiError)
 })

@@ -1,35 +1,33 @@
 import { type MonitorInfos, MonitorStatus, Monitor } from '@cpn-console/shared'
-import axios from 'axios'
-import { getConfig } from './utils.js'
+import { getApi } from './utils.js'
 
 enum HealthStatus {
   healthy = 'healthy',
   unhealthy = 'unhealthy',
-}
-type HarborRes = {
-  status: HealthStatus,
-  components: Array<{ name: string, status: HealthStatus }>
 }
 const coreComponents = ['core', 'database', 'portal', 'registry', 'registryctl']
 
 const monitor = async (instance: Monitor): Promise<MonitorInfos> => {
   instance.lastStatus.lastUpdateTimestamp = (new Date()).getTime()
   try {
-    const res = await axios.get(`${getConfig().url}/api/v2.0/health`, {
+    const res = await getApi().health.getHealth({
       validateStatus: (res) => res === 200,
     })
     if (res.status === 200) { // 200 only means api responds
-      const data = res.data as HarborRes
+      const data = res.data
       if (data.status === HealthStatus.healthy) {
         instance.lastStatus.status = MonitorStatus.OK
         instance.lastStatus.message = MonitorStatus.OK
         return instance.lastStatus
       }
       const failedCoreComponents = data.components
-        .filter(component =>
-          component.status === HealthStatus.unhealthy &&
-          coreComponents.includes(component.name),
-        )
+        ? data.components
+          .filter(component =>
+            component.status === HealthStatus.unhealthy &&
+            component.name &&
+            coreComponents.includes(component.name),
+          )
+        : []
 
       if (failedCoreComponents.length > 0) {
         instance.lastStatus.status = MonitorStatus.ERROR

@@ -1,5 +1,5 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest'
-import { setActivePinia, createPinia } from 'pinia'
+import { createPinia, setActivePinia } from 'pinia'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { apiClient } from '../../api/xhr-client.js'
 import { useAdminLogStore } from './log.js'
 
@@ -25,8 +25,7 @@ describe('Counter Store', () => {
 
     await adminLogStore.getAllLogs({ offset: 5, limit: 10 })
 
-    // TODO: to fix
-    expect(adminLogStore.total).toEqual(data.count)
+    expect(adminLogStore.count).toEqual(data.total)
     expect(adminLogStore.logs).toStrictEqual(data.logs)
     expect(apiClientGet).toHaveBeenCalledTimes(1)
     expect(apiClientGet.mock.calls[0][0]).toBe('/admin/logs?offset=5&limit=10')

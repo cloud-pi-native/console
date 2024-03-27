@@ -1,9 +1,8 @@
 import { KubeConfig, CoreV1Api, CustomObjectsApi } from '@kubernetes/client-node'
-import type { Environment, Organization, Project, RepositoryForEnv } from '@cpn-console/hooks'
 import { removeTrailingSlash, requiredEnv } from '@cpn-console/shared'
 import { createHmac } from 'crypto'
 
-export const generateAppProjectName = (org: Organization, proj: Project, env: Environment) => {
+export const generateAppProjectName = (org: string, proj: string, env: string) => {
   const envHash = createHmac('sha256', '')
     .update(env)
     .digest('hex')
@@ -11,7 +10,7 @@ export const generateAppProjectName = (org: Organization, proj: Project, env: En
   return `${org}-${proj}-${env}-${envHash}`
 }
 
-export const generateApplicationName = (org: Organization, proj: Project, env: Environment, repo: RepositoryForEnv['internalRepoName']) => {
+export const generateApplicationName = (org: string, proj: string, env: string, repo: string) => {
   const envHash = createHmac('sha256', '')
     .update(env)
     .digest('hex')

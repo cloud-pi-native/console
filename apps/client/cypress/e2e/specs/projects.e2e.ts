@@ -13,9 +13,9 @@ describe('Projects view', () => {
 
     cy.goToProjects()
       .wait('@getProjects').its('response').then(response => {
-        cy.log(response.body.length)
+        cy.log(response?.body.length)
           .get('[data-testid^="projectTile-"]')
-          .should('have.length', `${response.body.length}`)
+          .should('have.length', `${response?.body.length}`)
       })
       .getByDataTestid(`projectTile-${project.name}`).click()
       .url().should('contain', `projects/${project.id}/dashboard`)
@@ -28,7 +28,7 @@ describe('Projects view', () => {
     cy.intercept('GET', 'api/v1/projects').as('getProjects')
     cy.goToProjects()
       .wait('@getProjects').its('response').then(response => {
-        cy.log(response.body.length)
+        cy.log(response?.body.length)
           .get('[data-testid^="projectTile-"]')
           .should('have.length', `${secondUserProjects.length}`)
       })

@@ -1,7 +1,7 @@
-import { defineStore } from 'pinia'
-import { type Ref, ref } from 'vue'
 import api from '@/api/index.js'
-import type { CreateProjectDto, ProjectInfos, ProjectParams, UpdateProjectDto, ProjectModel, RoleModel } from '@cpn-console/shared'
+import type { CreateProjectDto, ProjectInfos, ProjectModel, ProjectParams, RoleModel, UpdateProjectDto } from '@cpn-console/shared'
+import { defineStore } from 'pinia'
+import { ref, type Ref } from 'vue'
 
 export const useProjectStore = defineStore('project', () => {
   const selectedProject: Ref<ProjectInfos | undefined> = ref(undefined)
@@ -29,6 +29,10 @@ export const useProjectStore = defineStore('project', () => {
     await getUserProjects()
   }
 
+  const replayHooksForProject = async (projectId: string) => {
+    return api.replayHooks(projectId)
+  }
+
   const archiveProject = async (projectId: ProjectParams['projectId']) => {
     await api.archiveProject(projectId)
     selectedProject.value = undefined
@@ -52,6 +56,7 @@ export const useProjectStore = defineStore('project', () => {
     updateProject,
     getUserProjects,
     createProject,
+    replayHooksForProject,
     archiveProject,
     getProjectSecrets,
     updateProjectRoles,

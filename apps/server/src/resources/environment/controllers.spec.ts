@@ -1,9 +1,13 @@
 import prisma from '../../__mocks__/prisma.js'
-import app, { getRequestor, setRequestor } from '../../__mocks__/app.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
 import { createRandomDbSetup, getRandomEnv, getRandomUser, getRandomRole, getRandomLog } from '@cpn-console/test-utils'
 import { getConnection, closeConnections } from '../../connect.js'
 import { projectIsLockedInfo } from '@cpn-console/shared'
+import { getRequestor, setRequestor } from '../../utils/mocks.js'
+import app from '../../app.js'
+
+vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
+vi.mock('../../utils/hook-wrapper.js', (await import('../../utils/mocks.js')).mockHookWrapper)
 
 describe('Environment routes', () => {
   const requestor = getRandomUser()
@@ -82,8 +86,7 @@ describe('Environment routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.body).toBeDefined()
-      expect(response.json().message).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
+      expect(JSON.parse(response.body).error).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
     })
 
     it('Should not create an environment if name is already present', async () => {
@@ -107,7 +110,7 @@ describe('Environment routes', () => {
 
       expect(response.statusCode).toEqual(403)
       expect(response.body).toBeDefined()
-      expect(response.json().message).toEqual('Un environnement avec le même nom et déployé sur le même cluster existe déjà pour ce projet.')
+      expect(JSON.parse(response.body).error).toEqual('Un environnement avec le même nom et déployé sur le même cluster existe déjà pour ce projet.')
     })
 
     it('Should not create an environment if no cluster available', async () => {
@@ -131,7 +134,7 @@ describe('Environment routes', () => {
 
       expect(response.statusCode).toEqual(403)
       expect(response.body).toBeDefined()
-      expect(response.json().message).toEqual('Ce cluster n\'est pas disponible pour cette combinaison projet et stage')
+      expect(JSON.parse(response.body).error).toEqual('Ce cluster n\'est pas disponible pour cette combinaison projet et stage')
     })
 
     it('Should not create an environment if quotaStage not active', async () => {
@@ -157,7 +160,7 @@ describe('Environment routes', () => {
 
       expect(response.statusCode).toEqual(403)
       expect(response.body).toBeDefined()
-      expect(response.json().message).toEqual('Cette association quota / type d\'environnement n\'est plus disponible.')
+      expect(JSON.parse(response.body).error).toEqual('Cette association quota / type d\'environnement n\'est plus disponible.')
     })
 
     it('Should not create an environment if project locked', async () => {
@@ -180,8 +183,7 @@ describe('Environment routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.body).toBeDefined()
-      expect(response.json().message).toEqual(projectIsLockedInfo)
+      expect(JSON.parse(response.body).error).toEqual(projectIsLockedInfo)
     })
 
     it('Should not create an environment with bad name', async () => {
@@ -194,7 +196,7 @@ describe('Environment routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(400)
-      expect(response.json().message).toEqual('Validation error: Invalid at "name"')
+      expect(JSON.parse(response.body).bodyErrors.issues[0].message).toEqual('Invalid')
     })
   })
 
@@ -206,7 +208,7 @@ describe('Environment routes', () => {
       projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
       const newQuotaStage = randomDbSetUp?.stages[0]?.quotaStage[0]
       const quota = randomDbSetUp.quotas.find(quota => newQuotaStage.quotaId === quota.id)
-      const envUpdated = getRandomEnv('int-0', projectInfos.id, newQuotaStage?.id, projectInfos?.clusters[0]?.id)
+      const envUpdated = getRandomEnv('int0', projectInfos.id, newQuotaStage?.id, projectInfos?.clusters[0]?.id)
       const envInfos = { ...envUpdated, project: projectInfos }
       const log = getRandomLog('Update Environment', requestor.id)
 
@@ -216,14 +218,11 @@ describe('Environment routes', () => {
       prisma.quotaStage.findUnique.mockResolvedValue(newQuotaStage)
       prisma.quota.findUnique.mockResolvedValue(quota)
       prisma.stage.findUnique.mockResolvedValue(randomDbSetUp?.stages[0])
-      prisma.project.update.mockResolvedValue(projectInfos)
       prisma.environment.update.mockReturnValue(envInfos)
       prisma.environment.findUnique.mockReturnValue(envInfos)
       prisma.cluster.findUnique.mockResolvedValue(projectInfos?.clusters[0])
       prisma.log.create.mockResolvedValueOnce(log)
-      prisma.environment.update.mockReturnValue([envInfos])
-      prisma.environment.findMany.mockReturnValue(projectInfos.environments)
-      prisma.repository.findMany.mockReturnValue(projectInfos.repositories)
+      prisma.environment.update.mockReturnValue(envInfos)
 
       const response = await app.inject()
         .put(`/api/v1/projects/${projectInfos.id}/environments/${envUpdated.id}`)
@@ -233,6 +232,7 @@ describe('Environment routes', () => {
       delete envInfos.project
       delete envInfos.cluster
       delete envInfos.permissions
+
       // oui c'est degueu mais c'est le seul moyen que j'ai trouvé pour simuler la serialization de fastify
       const responseJson = response.json()
       delete responseJson.project
@@ -280,8 +280,7 @@ describe('Environment routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.body).toBeDefined()
-      expect(response.json().message).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
+      expect(JSON.parse(response.body).error).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
     })
 
     it('Should not delete an environment if not project owner', async () => {
@@ -297,8 +296,7 @@ describe('Environment routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.body).toBeDefined()
-      expect(response.json().message).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
+      expect(JSON.parse(response.body).error).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
     })
   })
 })

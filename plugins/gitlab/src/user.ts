@@ -25,7 +25,7 @@ export const getUser = async (user: { email: string, username: string, id: strin
     allUsers.find(gitlabUser => gitlabUser.username === user.username)
 }
 
-export const createUser = async (user: UserObject) => {
+export const upsertUser = async (user: UserObject) => {
   const api = getApi()
   const username = createUsername(user.email)
   const existingUser = await getUser({ ...user, username })

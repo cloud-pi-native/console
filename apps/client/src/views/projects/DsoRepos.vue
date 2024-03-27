@@ -3,7 +3,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectRepositoryStore } from '@/stores/project-repository.js'
 import { useUserStore } from '@/stores/user.js'
-import { AllStatus, projectIsLockedInfo, sortArrByObjKeyAsc } from '@cpn-console/shared'
+import { projectIsLockedInfo, sortArrByObjKeyAsc } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const projectStore = useProjectStore()
@@ -27,12 +27,11 @@ const setReposTiles = (project) => {
       id: repo.internalRepoName,
       title: repo.internalRepoName,
       data: repo,
-      status: repo.status,
     }))
 }
 
 const setSelectedRepo = (repo) => {
-  if (selectedRepo.value.internalRepoName === repo.internalRepoName || [AllStatus.DELETING, AllStatus.INITIALIZING].includes(repo?.status)) {
+  if (selectedRepo.value.internalRepoName === repo.internalRepoName) {
     selectedRepo.value = {}
     return
   }
@@ -136,40 +135,14 @@ watch(project, () => {
       >
         <DsfrTile
           :title="repo.title"
-          :description="[AllStatus.DELETING, AllStatus.INITIALIZING].includes(repo?.data?.status) ? 'Opérations en cours' : null"
           :data-testid="`repoTile-${repo.id}`"
           :horizontal="!!selectedRepo.internalRepoName"
-          :disabled="[AllStatus.DELETING, AllStatus.INITIALIZING].includes(repo?.data?.status)"
           class="fr-mb-2w w-11/12"
           @click="setSelectedRepo(repo.data)"
         />
-        <DsfrBadge
-          v-if="repo?.data?.status === AllStatus.INITIALIZING"
-          :data-testid="`${repo?.data?.internalRepoName}-${repo?.data?.status}-badge`"
-          type="info"
-          label="Dépôt en cours de création"
-        />
-        <DsfrBadge
-          v-else-if="repo?.data?.status === 'deleting'"
-          :data-testid="`${repo?.data?.internalRepoName}-${repo?.data?.status}-badge`"
-          type="info"
-          label="Dépôt en cours de suppression"
-        />
-        <DsfrBadge
-          v-else-if="repo?.data?.status === 'failed'"
-          :data-testid="`${repo?.data?.internalRepoName}-${repo?.data?.status}-badge`"
-          type="error"
-          label="Echec des opérations"
-        />
-        <DsfrBadge
-          v-else
-          :data-testid="`${repo?.data?.internalRepoName}-${repo?.data?.status}-badge`"
-          type="success"
-          label="Dépôt correctement déployé"
-        />
       </div>
       <RepoForm
-        v-if="Object.keys(selectedRepo).length && selectedRepo.internalRepoName === repo.id && selectedRepo.status !== 'deleting'"
+        v-if="Object.keys(selectedRepo).length && selectedRepo.internalRepoName === repo.id"
         :is-project-locked="project?.locked"
         :is-owner="isOwner"
         :repo="selectedRepo"

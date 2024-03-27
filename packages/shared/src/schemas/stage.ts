@@ -1,4 +1,7 @@
 import { z } from 'zod'
+import { ErrorSchema } from './utils.js'
+import { EnvironmentSchema } from './environment.js'
+import { ClusterSchema } from './cluster.js'
 
 export const StageSchema = z.object({
   id: z.string()
@@ -12,3 +15,58 @@ export const StageSchema = z.object({
 })
 
 export type Stage = Zod.infer<typeof StageSchema>
+
+export const CreateStageSchema = {
+  body: StageSchema.omit({ id: true }),
+  responses: {
+    201: StageSchema,
+    400: ErrorSchema,
+    401: ErrorSchema,
+    500: ErrorSchema,
+  },
+}
+
+export const GetStagesSchema = {
+  responses: {
+    200: z.array(StageSchema),
+    500: ErrorSchema,
+  },
+}
+
+export const GetStageEnvironmentsSchema = {
+  params: z.object({
+    stageId: z.string()
+      .uuid(),
+  }),
+  responses: {
+    200: z.array(EnvironmentSchema),
+    500: ErrorSchema,
+  },
+}
+
+export const UpdateStageClustersSchema = {
+  params: z.object({
+    stageId: z.string()
+      .uuid(),
+  }),
+  body: z.object({
+    clusterIds: z.array(
+      z.string()
+        .uuid()),
+  }),
+  responses: {
+    200: z.array(ClusterSchema),
+    500: ErrorSchema,
+  },
+}
+
+export const DeleteStageSchema = {
+  params: z.object({
+    stageId: z.string()
+      .uuid(),
+  }),
+  responses: {
+    204: null,
+    500: ErrorSchema,
+  },
+}

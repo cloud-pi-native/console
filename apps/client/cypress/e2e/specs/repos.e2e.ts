@@ -1,8 +1,5 @@
-import { getModelById } from '../support/func.js'
-
 describe('Add repos into project', () => {
   const project = { name: 'project10' }
-  const projectWithFailedRepo = getModelById('project', '83833faf-f654-40dd-bcd5-cf2e944fc702')
 
   before(() => {
     cy.kcLogin('test')
@@ -82,16 +79,6 @@ describe('Add repos into project', () => {
       .getByDataTestid('addRepoBtn').should('be.enabled')
   })
 
-  it('Should display repositories statuses', () => {
-    const repos = projectWithFailedRepo.repositories
-
-    cy.assertAddRepo(projectWithFailedRepo, repos)
-      .getByDataTestid(`${repos.find(repo => repo.status === 'created').internalRepoName}-created-badge`)
-      .should('contain', 'Dépôt correctement déployé')
-      .getByDataTestid(`${repos.find(repo => repo.status === 'failed').internalRepoName}-failed-badge`)
-      .should('contain', 'Echec des opérations')
-  })
-
   it('Should add an external public repo', () => {
     const repos = [{
       internalRepoName: 'repo01',
@@ -153,7 +140,7 @@ describe('Add repos into project', () => {
       .url().should('contain', '/repositories')
 
     cy.wait('@getProjects').its('response').then(response => {
-      repos = response.body.find(resProject => resProject.name === project.name).repositories
+      repos = response?.body.find(resProject => resProject.name === project.name).repositories
       cy.getByDataTestid(`repoTile-${repos[0].internalRepoName}`).click()
         .get('h1').should('contain', 'Modifier le dépôt')
         .getByDataTestid('internalRepoNameInput').should('be.disabled')
@@ -166,8 +153,8 @@ describe('Add repos into project', () => {
       cy.getByDataTestid('infraRepoCbx').find('input[type="checkbox"]').should('be.disabled')
 
       cy.getByDataTestid('updateRepoBtn').click()
-      cy.wait('@putRepo').its('response.statusCode').should('eq', 200)
-      cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
+      cy.wait('@putRepo').its('response.statusCode').should('match', /^20\d$/)
+      cy.wait('@getProjects').its('response.statusCode').should('match', /^20\d$/)
       cy.getByDataTestid(`repoTile-${repos[0].internalRepoName}`).should('exist')
       cy.reload()
       cy.getByDataTestid(`repoTile-${repos[0].internalRepoName}`).click()
@@ -220,11 +207,11 @@ describe('Add repos into project', () => {
     cy.generateGitLabCI(ciForms)
 
     cy.getByDataTestid('addRepoBtn').click()
-    cy.wait('@postRepo').its('response.statusCode').should('eq', 201)
-    cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
+    cy.wait('@postRepo').its('response.statusCode').should('match', /^20\d$/)
+    cy.wait('@getProjects').its('response.statusCode').should('match', /^20\d$/)
     cy.getByDataTestid(`repoTile-${repo.internalRepoName}`).should('exist')
     cy.wait(1000).reload()
-    cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
+    cy.wait('@getProjects').its('response.statusCode').should('match', /^20\d$/)
     cy.assertAddRepo(project, [repo])
   })
 

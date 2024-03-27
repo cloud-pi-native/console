@@ -17,36 +17,30 @@ export const loggerConf = {
 }
 
 interface ReqLogsInput {
-  req: FastifyRequest;
-  error?: string | Error;
-  description: string;
-  extras?: Record<string, string>
+  req: FastifyRequest
+  message: string
+  infos?: Record<string, unknown>
+  error?: Record<string, unknown> | string | Error
 }
 
-export const addReqLogs = ({ req, error, description, extras }: ReqLogsInput) => {
-  const e = new Error()
-  const frame = e.stack?.split('\n')[2]
-
+export const addReqLogs = ({ req, error, message, infos }: ReqLogsInput) => {
   const logInfos = {
-    file: frame?.split(' ')[6].split(':')[0].split('src/')[1],
-    function: frame?.split(' ')[5].split('.')[1],
-    requestorId: req.session?.user?.id,
-    requestorGroups: req.session?.user?.groups,
-    description,
-    ...extras,
+    description: message,
+    reqId: req.id,
+    infos,
   }
 
   if (error) {
-    req.log.error({
+    const errorInfos = {
       ...logInfos,
       error: {
-        message: typeof error === 'string' ? error : error?.message,
+        message: typeof error === 'string' ? error : error?.message || 'unexpected error',
         trace: error instanceof Error && error?.stack,
       },
-    },
-    'request processing')
+    }
+    req.log.error(errorInfos, 'processing request')
     return
   }
 
-  req.log.info(logInfos, 'request processing')
+  req.log.info(logInfos, 'processing request')
 }

@@ -1,7 +1,6 @@
 import type { Environment, Project, Role, Cluster, QuotaStage } from '@prisma/client'
 import prisma from '@/prisma.js'
 import { getProjectById } from '../project/queries.js'
-import { AllStatus } from '@cpn-console/shared'
 
 // SELECT
 export const getEnvironmentById = async (id: Environment['id']) => {
@@ -164,7 +163,6 @@ export const initializeEnvironment = async ({ name, projectId, projectOwners, cl
           id: clusterId,
         },
       },
-      status: AllStatus.INITIALIZING,
       permissions: {
         createMany: {
           data: projectOwners.map(({ userId }) => ({ userId, level: 2 })),
@@ -185,28 +183,6 @@ export const initializeEnvironment = async ({ name, projectId, projectOwners, cl
   })
 }
 
-export const updateEnvironmentCreated = async (id: Environment['id']) => {
-  return prisma.environment.update({
-    where: {
-      id,
-    },
-    data: {
-      status: 'created',
-    },
-  })
-}
-
-export const updateEnvironmentFailed = async (id: Environment['id']) => {
-  return prisma.environment.update({
-    where: {
-      id,
-    },
-    data: {
-      status: 'failed',
-    },
-  })
-}
-
 export const updateEnvironment = async ({ id, quotaStageId }: { id: Environment['id'], quotaStageId: QuotaStage['id'] }) => {
   return prisma.environment.update({
     where: {
@@ -219,20 +195,15 @@ export const updateEnvironment = async ({ id, quotaStageId }: { id: Environment[
 }
 
 // DELETE
-export const updateEnvironmentDeleting = async (id: Environment['id']) => {
-  return prisma.environment.update({
-    where: {
-      id,
-    },
-    data: {
-      status: 'deleting',
-    },
-  })
-}
-
 export const deleteEnvironment = async (id: Environment['id']) => prisma.environment.delete({
   where: {
     id,
+  },
+})
+
+export const deleteAllEnvironmentForProject = async (id: Project['id']) => prisma.environment.deleteMany({
+  where: {
+    projectId: id,
   },
 })
 

@@ -1,6 +1,6 @@
-import { type StepCall, type ArchiveProjectExecArgs, parseError } from '@cpn-console/hooks'
+import { type StepCall, type Project, parseError } from '@cpn-console/hooks'
 
-export const archiveDsoProject: StepCall<ArchiveProjectExecArgs> = async (payload) => {
+export const archiveDsoProject: StepCall<Project> = async (payload) => {
   try {
     if (!payload.apis.vault) throw Error('no Vault available')
     const allSecrets = await payload.apis.vault.list('/')

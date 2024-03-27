@@ -1,10 +1,13 @@
 import prisma from '../../../__mocks__/prisma.js'
-import app, { setRequestor } from '../../../__mocks__/app.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll, beforeEach } from 'vitest'
 import { getRandomOrganization, getRandomProject, getRandomUser } from '@cpn-console/test-utils'
 import { getConnection, closeConnections } from '../../../connect.js'
 import { adminGroupPath, allOrganizations } from '@cpn-console/shared'
-import { filteredOrganizations } from '../../../utils/mock-plugins.js'
+import { filteredOrganizations, setRequestor } from '../../../utils/mocks.js'
+import app from '../../../app.js'
+
+vi.mock('fastify-keycloak-adapter', (await import('../../../utils/mocks.js')).mockSessionPlugin)
+vi.mock('@cpn-console/hooks', (await import('../../../utils/mocks.js')).mockHooksPackage)
 
 describe('Admin organization routes', () => {
   beforeAll(async () => {
@@ -49,7 +52,7 @@ describe('Admin organization routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(404)
-      expect(response.json().message).toEqual('Aucune organisation trouvée')
+      expect(JSON.parse(response.body).error).toEqual('Aucune organisation trouvée')
     })
 
     it('Should return an error if requestor is not admin', async () => {
@@ -61,7 +64,7 @@ describe('Admin organization routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.json().message).toEqual('Vous n\'avez pas les droits administrateur')
+      expect(JSON.parse(response.body).error).toEqual('Vous n\'avez pas les droits administrateur')
     })
   })
 
@@ -100,7 +103,7 @@ describe('Admin organization routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(400)
-      expect(response.json().message).toEqual('Validation error: String must contain at most 10 character(s) at "name"')
+      expect(JSON.parse(response.body).bodyErrors.issues[0].message).toEqual('String must contain at most 10 character(s)')
     })
 
     it('Should return an error if organization already exists', async () => {
@@ -118,7 +121,7 @@ describe('Admin organization routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(400)
-      expect(response.json().message).toEqual('Cette organisation existe déjà')
+      expect(JSON.parse(response.body).error).toEqual('Cette organisation existe déjà')
     })
 
     it('Should return an error if requestor is not admin', async () => {
@@ -131,7 +134,7 @@ describe('Admin organization routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.json().message).toEqual('Vous n\'avez pas les droits administrateur')
+      expect(JSON.parse(response.body).error).toEqual('Vous n\'avez pas les droits administrateur')
     })
   })
 
@@ -159,7 +162,7 @@ describe('Admin organization routes', () => {
         .body(data)
         .end()
 
-      expect(response.statusCode).toEqual(201)
+      expect(response.statusCode).toEqual(200)
       expect(response.json()).toMatchObject(updatedOrg)
     })
 
@@ -185,7 +188,7 @@ describe('Admin organization routes', () => {
         .body(data)
         .end()
 
-      expect(response.statusCode).toEqual(201)
+      expect(response.statusCode).toEqual(200)
       expect(response.json()).toMatchObject(updatedOrg)
     })
 
@@ -214,7 +217,7 @@ describe('Admin organization routes', () => {
         .body(data)
         .end()
 
-      expect(response.statusCode).toEqual(201)
+      expect(response.statusCode).toEqual(200)
       expect(response.json()).toMatchObject(updatedOrg)
     })
 
@@ -228,7 +231,7 @@ describe('Admin organization routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.json().message).toEqual('Vous n\'avez pas les droits administrateur')
+      expect(JSON.parse(response.body).error).toEqual('Vous n\'avez pas les droits administrateur')
     })
   })
 
@@ -248,10 +251,10 @@ describe('Admin organization routes', () => {
       prisma.organization.findMany.mockResolvedValueOnce(allOrganizations)
 
       const response = await app.inject()
-        .put('/api/v1/admin/organizations/sync')
+        .get('/api/v1/admin/organizations/sync')
         .end()
 
-      expect(response.statusCode).toEqual(201)
+      expect(response.statusCode).toEqual(200)
       expect(response.json()).toEqual(allOrganizations)
     })
   })

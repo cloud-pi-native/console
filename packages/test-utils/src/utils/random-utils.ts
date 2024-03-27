@@ -78,14 +78,13 @@ export const getRandomRole = (
 }
 
 export const getRandomRepo = (projectId = faker.string.uuid()) => {
-  const repo: Repository & { status: AchievedStatus } = {
+  const repo: Repository = {
     id: faker.string.uuid(),
     projectId,
     internalRepoName: faker.lorem.word(),
     externalRepoUrl: getRandomGitUrl(),
     isPrivate: faker.datatype.boolean(),
     isInfra: faker.datatype.boolean(),
-    status: faker.helpers.arrayElement(achievedStatus),
   }
   if (repo.isPrivate) {
     repo.externalUserName = faker.person.firstName()
@@ -128,8 +127,7 @@ export const getRandomEnv = (name = faker.lorem.slug(1), projectId = faker.strin
     projectId,
     quotaStageId,
     clusterId,
-    status: faker.helpers.arrayElement(achievedStatus),
-  } as Environment & { status: AchievedStatus }
+  } as Environment
 }
 
 export const getRandomPerm = (environmentId = faker.string.uuid(), user = getRandomUser()) => {

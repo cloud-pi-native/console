@@ -1,61 +1,67 @@
 import { getConfig } from './utils.js'
 import { createProject, deleteProject } from './project.js'
 import { addProjectGroupMember } from './permission.js'
-import { createRobot } from './robot.js'
-import { type StepCall, type ArchiveProjectExecArgs, type CreateProjectExecArgs, type ProjectBase, parseError } from '@cpn-console/hooks'
+import { createCiRobot, getCiRobot, regenerateCiRobot } from './robot.js'
+import { type StepCall, type Project, type ProjectLite, parseError } from '@cpn-console/hooks'
+import { RobotCreated } from './api/Api.js'
+import { getSecretObject } from './kubeSecret.js'
 
-export let axiosOptions: {
-  baseURL: string;
-  auth: {
-    username: string;
-    password: string;
-  };
-} | undefined
-
-export const getAxiosOptions = (): typeof axiosOptions => {
-  if (!axiosOptions) {
-    axiosOptions = {
-      baseURL: `${getConfig().url}/api/v2.0/`,
-      auth: {
-        username: getConfig().user,
-        password: getConfig().password,
-      },
-    }
-  }
-  return axiosOptions
+type VaultRegistrySecret = {
+  // {"auths":{"registry-host.com":{"auth":"<the TOKEN>","email":""}}},
+  DOCKER_CONFIG: string
+  // registry-host.com,
+  HOST: string
+  TOKEN: string,
+  // robot$<project-name>+ci
+  USERNAME: string
 }
 
-export const createDsoProject: StepCall<CreateProjectExecArgs> = async (payload) => {
-  try {
-    // @ts-ignore to delete when in own plugin
-    if (!payload.apis.vault) throw Error('no Vault available')
-    const { project, organization } = payload.args
-    const projectName = `${organization}-${project}`
-
-    const projectCreated = await createProject(projectName)
-    // TODO : à revoir, pbmatique que maintainer puisse push des images
-    // // give harbor project member Maintainer role (can scan images)
-    // const projectMember = await addProjectGroupMember(projectName, 4)
-    const projectMember = await addProjectGroupMember(projectName)
-    const robot = await createRobot(projectName)
-    const auth = `${robot.name}:${robot.secret}`
-    const buff = Buffer.from(auth)
-    const b64auth = buff.toString('base64')
-    const dockerConfigStr = JSON.stringify({
+const toVaultSecret = (robot: Required<RobotCreated>): VaultRegistrySecret => {
+  const auth = `${robot.name}:${robot.secret}`
+  const buff = Buffer.from(auth)
+  const b64auth = buff.toString('base64')
+  return {
+    DOCKER_CONFIG: JSON.stringify({
       auths: {
         [getConfig().host]: {
           auth: b64auth,
           email: '',
         },
       },
+    }),
+    HOST: getConfig().host,
+    TOKEN: robot.secret,
+    USERNAME: robot.name,
+  }
+}
+
+export const createDsoProject: StepCall<Project> = async (payload) => {
+  try {
+    const project = payload.args
+    const projectName = `${project.organization.name}-${project.name}`
+    const vaultApi = payload.apis.vault
+
+    const projectCreated = await createProject(projectName)
+    const oidcGroup = await payload.apis.keycloak.getProjectGroupPath()
+    await addProjectGroupMember(projectName, oidcGroup)
+    const robot = await getCiRobot(projectName)
+    const vaultRegistrySecret = await payload.apis.vault.read('REGISTRY', { throwIfNoEntry: false }) as { data: VaultRegistrySecret } | undefined
+    const creds: VaultRegistrySecret = !vaultRegistrySecret
+      ? robot
+        ? toVaultSecret(await createCiRobot(projectName) as Required<RobotCreated>)
+        : toVaultSecret(await regenerateCiRobot(projectName) as Required<RobotCreated>)
+      : vaultRegistrySecret.data
+
+    vaultApi.write(creds, 'REGISTRY')
+    await payload.apis.vault.write(creds, 'REGISTRY')
+
+    await payload.apis.kubernetes.applyResourcesInAllEnvNamespaces({
+      group: '',
+      name: 'registry-pull-secret',
+      plural: 'secrets',
+      version: 'v1',
+      body: getSecretObject({ DOCKER_CONFIG: creds.DOCKER_CONFIG }),
     })
-    // @ts-ignore to delete when in own plugin
-    await payload.apis.vault.write({
-      TOKEN: robot.secret,
-      USERNAME: robot.name,
-      HOST: getConfig().host,
-      DOCKER_CONFIG: dockerConfigStr,
-    }, 'REGISTRY')
     return {
       status: {
         result: 'OK',
@@ -63,8 +69,6 @@ export const createDsoProject: StepCall<CreateProjectExecArgs> = async (payload)
       },
       result: {
         project: projectCreated,
-        projectMember,
-        robot,
       },
     }
   } catch (error) {
@@ -79,10 +83,10 @@ export const createDsoProject: StepCall<CreateProjectExecArgs> = async (payload)
   }
 }
 
-export const archiveDsoProject: StepCall<ArchiveProjectExecArgs> = async (payload) => {
+export const deleteDsoProject: StepCall<Project> = async (payload) => {
   try {
-    const { project, organization } = payload.args
-    const projectName = `${organization}-${project}`
+    const project = payload.args
+    const projectName = `${project.organization.name}-${project.name}`
 
     await deleteProject(projectName)
 
@@ -104,13 +108,13 @@ export const archiveDsoProject: StepCall<ArchiveProjectExecArgs> = async (payloa
   }
 }
 
-export const getProjectSecrets: StepCall<ProjectBase> = async ({ args }) => {
+export const getProjectSecrets: StepCall<ProjectLite> = async ({ args: project }) => {
   return {
     status: {
       result: 'OK',
     },
     secrets: {
-      'Registry base path': `${getConfig().host}/${args.organization}-${args.project}/`,
+      'Registry base path': `${getConfig().host}/${project.organization.name}-${project.name}/`,
     },
   }
 }

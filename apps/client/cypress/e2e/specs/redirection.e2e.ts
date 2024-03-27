@@ -19,7 +19,7 @@ describe('Redirection', () => {
     cy.url().should('match', /projects#state=/)
     cy.wait('@getProjects').its('response').then(response => {
       cy.get('[data-testid^="projectTile-"]')
-      cy.should('have.length', `${response.body.length}`)
+      cy.should('have.length', `${response?.body.length}`)
       cy.getByDataTestid(`projectTile-${project.name}`).click()
       cy.url().should('contain', `/projects/${project.id}/dashboard`)
       cy.wait('@getStages')

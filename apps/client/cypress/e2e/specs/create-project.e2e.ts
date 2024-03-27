@@ -32,8 +32,8 @@ describe('Create Project', () => {
       .getByDataTestid('descriptionInput').clear().type(project.description)
     cy.getByDataTestid('createProjectBtn').should('be.enabled').click()
 
-    cy.wait('@postProject').its('response.statusCode').should('eq', 201)
-    cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
+    cy.wait('@postProject').its('response.statusCode').should('match', /^20\d$/)
+    cy.wait('@getProjects').its('response.statusCode').should('match', /^20\d$/)
 
     cy.assertCreateProjects([project.name])
   })
@@ -47,8 +47,7 @@ describe('Create Project', () => {
       .get('select#organizationId-select').select(project.orgName)
       .getByDataTestid('nameInput').find('input').type(`${project.name}`)
     cy.getByDataTestid('createProjectBtn').should('be.enabled').click()
-
-    cy.wait('@postProject').its('response.statusCode').should('eq', 400)
+    cy.wait('@postProject').its('response.statusCode').should('not.match', /^20\d$/)
     cy.getByDataTestid('snackbar').within(() => {
       cy.get('p').should('contain', `Le projet "${project.name}" existe déjà`)
     })

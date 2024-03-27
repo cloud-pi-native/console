@@ -1,4 +1,4 @@
-export * from '@/resources/cluster/admin/queries.js'
+export * from '@/resources/cluster/queries.js'
 export * from '@/resources/environment/queries.js'
 export * from '@/resources/log/admin/queries.js'
 export * from '@/resources/organization/queries.js'

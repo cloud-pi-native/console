@@ -10,7 +10,6 @@ export default mergeConfig(
       reporters: ['default', 'hanging-process'],
       environment: 'node',
       testTimeout: 2000,
-      watch: false,
       coverage: {
         provider: 'v8',
         reporter: ['text', 'lcov'],

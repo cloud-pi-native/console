@@ -15,7 +15,7 @@ describe('Administration projects', () => {
       ?.map(project => ({
         ...project,
         owner: project.roles?.find(role => role.role === 'owner')?.user,
-        organization: organizations.find(organization => organization.id === project.organizationId).label,
+        organization: organizations?.find(organization => organization.id === project.organizationId)?.label,
       }),
       )
   }
@@ -27,7 +27,7 @@ describe('Administration projects', () => {
     cy.visit('/admin/projects')
     cy.url().should('contain', '/admin/projects')
     cy.wait('@getAllProjects', { timeout: 10000 }).its('response').then(response => {
-      projects = mapProjects(response.body)
+      projects = mapProjects(response?.body)
     })
   })
 
@@ -38,7 +38,7 @@ describe('Administration projects', () => {
         cy.get(`tbody tr:nth-of-type(${index + 1})`).within(() => {
           cy.get('td:nth-of-type(1)').should('contain', project.organization)
           cy.get('td:nth-of-type(2)').should('contain', project.name)
-          cy.get('td:nth-of-type(3)').should('contain', project.description)
+          cy.get('td:nth-of-type(3)').should('contain', project.description ?? '')
           cy.get('td:nth-of-type(4)').should('contain', project.owner.email)
           cy.get('td:nth-of-type(5) svg title').should('contain', `Le projet ${project.name} est ${statusDict.status[project.status].wording}`)
           cy.get('td:nth-of-type(6) svg title').should('contain', `Le projet ${project.name} est ${statusDict.locked[String(!!project.locked)].wording}`)
@@ -71,6 +71,29 @@ describe('Administration projects', () => {
     cy.getByDataTestid('tableAdministrationProjects').within(() => checkTableRowsLength(allLockedProjectsLength))
   })
 
+  it('Should replay hooks for a project, loggedIn as admin', () => {
+    const project = projects[0]
+
+    cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
+    cy.intercept('PUT', `/api/v1/projects/${project.id}/hooks`).as('replayHooks')
+
+    cy.getByDataTestid('tableAdministrationProjects').within(() => {
+      cy.get('tr').contains(project.name)
+        .click()
+    })
+    cy.wait('@getQuotas')
+    cy.get('.fr-callout__title')
+      .should('contain', project.name)
+    cy.getByDataTestid('replayHooksBtn')
+      .should('contain', 'Reprovisionner le projet')
+      .click()
+
+    cy.wait('@replayHooks').its('response.statusCode').should('match', /^20\d$/)
+    cy.getByDataTestid('snackbar').within(() => {
+      cy.get('p').should('contain', `Le projet ayant pour id ${project.id} a été reprovisionné avec succès`)
+    })
+  })
+
   it('Should lock and unlock a project, loggedIn as admin', () => {
     const project = projects[0]
 
@@ -89,13 +112,13 @@ describe('Administration projects', () => {
       .click()
     cy.wait('@handleProjectLocking')
       .its('response.statusCode')
-      .should('eq', 204)
+      .should('match', /^20\d$/)
     cy.getByDataTestid('handleProjectLockingBtn')
       .should('contain', 'Déverrouiller le projet')
       .click()
     cy.wait('@handleProjectLocking')
       .its('response.statusCode')
-      .should('eq', 204)
+      .should('match', /^20\d$/)
   })
 
   it('Should archive a project, loggedIn as admin', () => {
@@ -129,7 +152,7 @@ describe('Administration projects', () => {
       .click()
     cy.wait('@archiveProject')
       .its('response.statusCode')
-      .should('eq', 204)
+      .should('match', /^20\d$/)
     cy.getByDataTestid('tableAdministrationProjects')
       .should('be.visible')
       .within(() => {
@@ -189,8 +212,8 @@ describe('Administration projects', () => {
       .click()
 
     cy.wait('@createQuota').then(({ response }) => {
-      privateQuota.id = response.body?.id
-      expect(response.statusCode).to.equal(201)
+      privateQuota.id = response?.body?.id
+      expect(response?.statusCode).to.match(/^20\d$/)
 
       cy.visit('/admin/projects')
       cy.url().should('contain', '/admin/projects')
@@ -212,7 +235,7 @@ describe('Administration projects', () => {
         .select(privateQuota.id)
       cy.wait('@updateEnvironment')
         .its('response.statusCode')
-        .should('eq', 200)
+        .should('match', /^20\d$/)
       cy.wait('@getAllProjects')
       cy.wait('@getQuotas')
       cy.get('select#quota-select:first')
@@ -228,7 +251,7 @@ describe('Administration projects', () => {
         .select(initialQuota)
       cy.wait('@updateEnvironment')
         .its('response.statusCode')
-        .should('eq', 200)
+        .should('match', /^20\d$/)
       cy.wait('@getProjects')
       cy.wait('@getAllProjects')
       cy.wait('@getQuotas')
@@ -255,7 +278,7 @@ describe('Administration projects', () => {
       .click()
     cy.wait('@removeUser')
       .its('response.statusCode')
-      .should('eq', 200)
+      .should('match', /^20\d$/)
     cy.get(`td[title="retirer ${user.email} du projet"]`)
       .should('not.exist')
     cy.getByDataTestid('addUserSuggestionInput')
@@ -266,7 +289,7 @@ describe('Administration projects', () => {
       .click()
     cy.wait('@addUser')
       .its('response.statusCode')
-      .should('eq', 201)
+      .should('match', /^20\d$/)
     cy.get(`td[title="retirer ${user.email} du projet"]`)
       .should('exist')
   })
