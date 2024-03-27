@@ -32,6 +32,13 @@ const updateProject = async (projectId: ProjectInfos['id']) => {
   snackbarStore.isWaitingForResponse = false
 }
 
+const replayHooks = async (projectId: ProjectInfos['id']) => {
+  snackbarStore.isWaitingForResponse = true
+  await useProjectStore().replayHooksForProject(projectId)
+  snackbarStore.setMessage('Le projet a été reprovisionné avec succès', 'success')
+  snackbarStore.isWaitingForResponse = false
+}
+
 const archiveProject = async (projectId: ProjectInfos['id']) => {
   snackbarStore.isWaitingForResponse = true
   await projectStore.archiveProject(projectId)
@@ -173,6 +180,17 @@ onBeforeMount(async () => {
           resourceKey: 'status',
           wording: `Projet ${project?.name}`
         }"
+      />
+    </div>
+    <div
+      class="fr-mt-2w"
+    >
+      <DsfrButton
+        data-testid="replayHooksBtn"
+        label="Reprovisionner le projet"
+        icon="ri-refresh-fill"
+        secondary
+        @click="replayHooks(project?.id ?? '')"
       />
     </div>
     <div

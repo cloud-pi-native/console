@@ -5,6 +5,7 @@ import {
   updateProject,
   archiveProject,
   getProjectSecrets,
+  replayHooks,
 } from './business.js'
 import { projectContract } from '@cpn-console/shared'
 import { serverInstance } from '@/app.js'
@@ -95,6 +96,26 @@ export const projectRouter = () => serverInstance.router(projectContract, {
     return {
       status: 200,
       body: project,
+    }
+  },
+
+  // Reprovisionner un projet
+  replayHooksForProject: async ({ request: req, params }) => {
+    const requestor = req.session.user
+    const projectId = params.projectId
+
+    await replayHooks(projectId, requestor, req.id)
+
+    addReqLogs({
+      req,
+      message: 'Projet reprovisionné avec succès',
+      infos: {
+        projectId,
+      },
+    })
+    return {
+      status: 204,
+      body: null,
     }
   },
 

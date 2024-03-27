@@ -71,6 +71,17 @@ export const UpdateProjectSchema = {
   },
 }
 
+export const ReplayHooksForProjectSchema = {
+  params: z.object({
+    projectId: z.string()
+      .uuid(),
+  }),
+  responses: {
+    204: null,
+    500: ErrorSchema,
+  },
+}
+
 export const PatchProjectSchema = {
   params: z.object({
     projectId: z.string()

@@ -17,6 +17,11 @@ export const updateProject = async (projectId: ProjectParams['projectId'], data:
   return response.data
 }
 
+export const replayHooks = async (projectId: ProjectParams['projectId']) => {
+  const response = await apiClient.put(`/projects/${projectId}/hooks`)
+  return response.data
+}
+
 export const archiveProject = async (projectId: ProjectParams['projectId']): Promise<void> => { // TODO: Promise<ProjectOutputDto | null> ou pas ?
   await apiClient.delete(`/projects/${projectId}`)
 }
