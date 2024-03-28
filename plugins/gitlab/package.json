@@ -19,7 +19,10 @@
     "@cpn-console/hooks": "workspace:^",
     "axios": "1.6.4",
     "@gitbeaker/core": "^40.0.1",
-    "@gitbeaker/rest": "^40.0.1"
+    "@gitbeaker/rest": "^40.0.1",
+    "@gitbeaker/requester-utils": "^40.0.1",
+    "js-yaml": "4.1.0",
+    "@types/js-yaml": "4.0.9"
   },
   "devDependencies": {
     "@cpn-console/eslint-config": "workspace:^",
