@@ -1,0 +1,14 @@
+commonLabels:
+  dso/environment: dev
+  dso/organization: mla
+  dso/projet: guestbook
+argocd:
+  project: mla-demo-dev-6293
+  namespace: dso-argocd
+application:
+  namespace: mla-demo-dev-6293
+  clusterName: c7
+  repositories:
+    - repoURL: https://gitlab.apps.c7.numerique-interieur.com/forge-mi/projects/mk/quota-tester/quota-explorer.git
+      targetRevision: main
+      path: '.'

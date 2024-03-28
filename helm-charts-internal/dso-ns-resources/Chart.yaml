@@ -1,0 +1,5 @@
+apiVersion: v2
+name: app-resources
+description: A Helm chart to create all the necessary resources for deploying applications by the DSO console (namespace, secrets, quota, ...).
+version: 1.0.0
+appVersion: 1.0.0
