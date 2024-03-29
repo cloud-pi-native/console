@@ -34,11 +34,22 @@ export const getRandomProject = (organizationId = faker.string.uuid()) => {
   } as Project & { status: AchievedStatus }
 }
 
-export const getRandomCluster = (projectIds: string[] = repeatFn(2)(faker.string.uuid), stageIds: string[] = repeatFn(2)(faker.string.uuid), privacy: ClusterPrivacy = faker.helpers.arrayElement(Object.values(ClusterPrivacy))) => {
+export const getRandomZone = () => ({
+  id: faker.string.uuid(),
+  slug: faker.lorem.word(),
+  label: faker.lorem.word(),
+  description: faker.lorem.sentence(8),
+})
+
+export const getRandomCluster = (
+  { projectIds = repeatFn(2)(faker.string.uuid), stageIds = repeatFn(2)(faker.string.uuid), privacy = faker.helpers.arrayElement(Object.values(ClusterPrivacy)), zoneId = faker.string.uuid() }:
+    { projectIds?: string[], stageIds?: string[], privacy?: ClusterPrivacy, zoneId?: string },
+) => {
   return {
     id: faker.string.uuid(),
     label: faker.lorem.word(),
     infos: faker.lorem.sentence(8),
+    zoneId,
     projectIds: privacy === ClusterPrivacy.DEDICATED ? projectIds : [],
     stageIds,
     user: {

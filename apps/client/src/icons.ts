@@ -25,6 +25,7 @@ export {
   RiFilterOffFill,
   RiFlagLine,
   RiFlowChart,
+  RiFocus3Line,
   RiFolderUserLine,
   RiFoldersLine,
   RiGift2Fill,

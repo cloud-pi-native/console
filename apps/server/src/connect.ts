@@ -20,6 +20,7 @@ import {
   _dropKubeconfigTable,
   _dropQuotaTable,
   _dropStageTable,
+  _dropZoneTable,
 } from './resources/queries-index.js'
 
 const DELAY_BEFORE_RETRY = isTest || isCI ? 1000 : 10000
@@ -79,6 +80,7 @@ export const dropTables = async () => {
     await _dropKubeconfigTable()
     await _dropQuotaTable()
     await _dropStageTable()
+    await _dropZoneTable()
 
     app.log.info('All tables were droped successfully.')
   } catch (error) {

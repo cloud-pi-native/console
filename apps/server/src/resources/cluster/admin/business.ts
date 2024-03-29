@@ -1,12 +1,12 @@
 import type { User } from '@prisma/client'
 import { ClusterBusinessSchema, ClusterPrivacy, CreateClusterBusinessSchema, type Cluster } from '@cpn-console/shared'
-import { addLogs, createCluster as createClusterQuery, deleteCluster as deleteClusterQuery, getClusterById, getClusterByLabel, getClusterEnvironments, getProjectsByClusterId, getStagesByClusterId, linkClusterToProjects, removeClusterFromProject, removeClusterFromStage, updateCluster as updateClusterQuery } from '@/resources/queries-index.js'
+import { addLogs, createCluster as createClusterQuery, deleteCluster as deleteClusterQuery, getClusterById, getClusterByLabel, getClusterEnvironments, getProjectsByClusterId, getStagesByClusterId, linkClusterToProjects, linkZoneToClusters, removeClusterFromProject, removeClusterFromStage, updateCluster as updateClusterQuery } from '@/resources/queries-index.js'
 import { linkClusterToStages } from '@/resources/stage/business.js'
 import { validateSchema } from '@/utils/business.js'
 import { BadRequestError, DsoError, NotFoundError } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
 
-export const checkClusterProjectIds = (data: Omit<Cluster, 'id'> & { id?: Cluster['id']}) => {
+export const checkClusterProjectIds = (data: Omit<Cluster, 'id'> & { id?: Cluster['id'] }) => {
   // si le cluster est dedicated, la clé projectIds doit être renseignée
   return data.privacy === ClusterPrivacy.PUBLIC || !data.projectIds
     ? []
@@ -47,17 +47,20 @@ export const createCluster = async (data: Omit<Cluster, 'id'>, userId: User['id'
       stageIds,
       user,
       cluster,
+      zoneId,
       ...clusterData
     } = data
 
     // @ts-ignore
-    const clusterCreated = await createClusterQuery(clusterData, { user, cluster })
+    const clusterCreated = await createClusterQuery(clusterData, { user, cluster }, zoneId)
 
     if (data.privacy === ClusterPrivacy.DEDICATED) {
       await linkClusterToProjects(clusterCreated.id, projectIds)
     }
 
-    await linkClusterToStages(clusterCreated.id, stageIds)
+    if (stageIds?.length) {
+      await linkClusterToStages(clusterCreated.id, stageIds)
+    }
 
     const results = await hook.cluster.upsert(clusterCreated.id)
 
@@ -88,15 +91,15 @@ export const updateCluster = async (data: Partial<Cluster>, clusterId: Cluster['
       stageIds,
       user,
       cluster,
+      zoneId,
       ...clusterData
     } = data
 
     // @ts-ignore
     const clusterUpdated = await updateClusterQuery(clusterId, clusterData, { user, cluster })
-
-    const results = await hook.cluster.upsert(clusterId)
-
-    await addLogs('Update Cluster', results, userId, requestId)
+    if (zoneId) {
+      await linkZoneToClusters(zoneId, [clusterId])
+    }
 
     if (projectIds || data.privacy === ClusterPrivacy.PUBLIC) {
       const dbProjects = await getProjectsByClusterId(clusterId)
@@ -130,6 +133,11 @@ export const updateCluster = async (data: Partial<Cluster>, clusterId: Cluster['
         }
       }
     }
+
+    const results = await hook.cluster.upsert(clusterId)
+
+    await addLogs('Update Cluster', results, userId, requestId)
+
     return clusterUpdated
   } catch (error) {
     if (error instanceof DsoError) {

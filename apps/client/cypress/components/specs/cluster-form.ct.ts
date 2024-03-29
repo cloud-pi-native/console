@@ -1,5 +1,5 @@
 import { type Pinia, createPinia, setActivePinia } from 'pinia'
-import { getRandomCluster, getRandomEnv, getRandomProject, getRandomStage, repeatFn } from '@cpn-console/test-utils'
+import { getRandomCluster, getRandomEnv, getRandomProject, getRandomStage, getRandomZone, repeatFn } from '@cpn-console/test-utils'
 
 import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
@@ -25,10 +25,12 @@ describe('ClusterForm.vue', () => {
 
     const allProjects = repeatFn(5)(getRandomProject)
     const allStages = repeatFn(4)(getRandomStage)
+    const allZones = repeatFn(3)(getRandomZone)
 
     const props = {
       allProjects,
       allStages,
+      allZones,
       associatedEnvironments: [],
     }
 
@@ -43,6 +45,8 @@ describe('ClusterForm.vue', () => {
       .check({ force: true })
     cy.get('#privacy-select')
       .select(ClusterPrivacy.DEDICATED)
+    cy.get('#zone-select')
+      .select(1)
     cy.get('#projects-select')
       .select(`${allProjects[0].organization.name} - ${allProjects[0].name}`)
     cy.get('#stages-select')
@@ -56,11 +60,13 @@ describe('ClusterForm.vue', () => {
     useSnackbarStore()
     const allProjects = repeatFn(5)(getRandomProject)
     const allStages = repeatFn(2)(getRandomStage)
+    const allZones = repeatFn(1)(getRandomZone)
 
     const props = {
-      cluster: getRandomCluster([allProjects[0].id], [allStages[1].id], ClusterPrivacy.DEDICATED),
+      cluster: getRandomCluster({ projectIds: [allProjects[0].id], stageIds: [allStages[1].id], privacy: ClusterPrivacy.DEDICATED, zoneId: allZones[0].id }),
       allProjects,
       allStages,
+      allZones,
       isNewCluster: false,
       associatedEnvironments: [],
     }
@@ -85,6 +91,9 @@ describe('ClusterForm.vue', () => {
       .should(props.cluster.clusterResources ? 'be.checked' : 'not.be.checked')
     cy.get('#privacy-select')
       .should('have.value', props.cluster.privacy)
+    cy.get('#zone-select')
+      .should('have.value', props.cluster.zoneId)
+      .and('be.enabled')
     cy.get('[data-testid$="projects-select-tag"]')
       .should('have.length', props.cluster.projectIds?.length)
     cy.get('[data-testid$="stages-select-tag"]')
@@ -102,7 +111,9 @@ describe('ClusterForm.vue', () => {
     useSnackbarStore()
     const allProjects = repeatFn(5)(getRandomProject)
     const allStages = repeatFn(2)(getRandomStage)
-    const cluster = getRandomCluster([allProjects[0].id], [allStages[1].id], ClusterPrivacy.DEDICATED)
+    const allZones = repeatFn(2)(getRandomZone)
+
+    const cluster = getRandomCluster({ projectIds: [allProjects[0].id], stageIds: [allStages[1].id], privacy: ClusterPrivacy.DEDICATED, zoneId: allZones[0].id })
     const env = getRandomEnv('integ-1', allProjects[0].id, 'qsId', cluster.id)
     const associatedEnvironments = [{ organization: allProjects[0].organization.name, project: allProjects[0].name, name: env.name, owner: 'owner@dso.fr' }]
 
@@ -110,6 +121,7 @@ describe('ClusterForm.vue', () => {
       cluster,
       allProjects,
       allStages,
+      allZones,
       isNewCluster: false,
       associatedEnvironments,
     }
@@ -134,6 +146,9 @@ describe('ClusterForm.vue', () => {
       .should(props.cluster.clusterResources ? 'be.checked' : 'not.be.checked')
     cy.get('#privacy-select')
       .should('have.value', props.cluster.privacy)
+    cy.get('#zone-select')
+      .should('have.value', props.cluster.zoneId)
+      .and('be.enabled')
     cy.get('[data-testid$="projects-select-tag"]')
       .should('have.length', props.cluster.projectIds?.length)
     cy.get('[data-testid$="stages-select-tag"]')

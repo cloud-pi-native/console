@@ -11,6 +11,7 @@ import {
   getRandomStage,
   getRandomQuota,
   getRandomQuotaStage,
+  getRandomZone,
 } from './random-utils.js'
 import { repeatFn } from './func-utils.js'
 import { User } from './types.js'
@@ -35,8 +36,11 @@ export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = basicStage
   }))
   project.roles[0].role = projectRoles[0]
 
+  // Create zone
+  const zones = [getRandomZone()]
+
   // Create cluster
-  project.clusters = [getRandomCluster([project.id])]
+  project.clusters = [getRandomCluster({ projectIds: [project.id], zoneId: zones[0].id })]
 
   // Create stages
   const stages = basicStages.map(baseEnvironment => getRandomStage(baseEnvironment))
@@ -77,6 +81,7 @@ export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = basicStage
     organization,
     users,
     stages,
+    zones,
     quotas,
     project,
   }
