@@ -134,7 +134,7 @@ const cancel = () => {
               type="text"
               :required="localRepo.isPrivate"
               :disabled="props.isProjectLocked"
-              :error-message="!!updatedValues.externalUserName && !RepoSchema.pick({externalUserName: true}).safeParse({externalUserName: localRepo.externalUserName}).success ? 'Le nom du propriétaire du token est obligatoire en cas de dépôt privé et ne doit contenir ni espaces ni caractères spéciaux': undefined"
+              :error-message="!!updatedValues.externalUserName && !RepoSchema.pick({externalUserName: true}).safeParse({externalUserName: localRepo.externalUserName}).success ? 'Le nom du propriétaire du token est obligatoire en cas de dépôt privé': undefined"
               label="Nom d'utilisateur"
               label-visible
               hint="Nom de l'utilisateur propriétaire du token"
@@ -150,7 +150,6 @@ const cancel = () => {
               type="text"
               :required="localRepo.isPrivate"
               :disabled="props.isProjectLocked"
-              :error-message="!!updatedValues.externalToken && !RepoSchema.pick({externalToken: true}).safeParse({externalToken: localRepo.externalToken}).success ? 'Le token d\'accès au dépôt est obligatoire en cas de dépôt privé et ne doit contenir ni espaces ni caractères spéciaux': undefined"
               label="Token d'accès au dépôt Git externe"
               label-visible
               hint="Token d'accès permettant le clone du dépôt par la chaîne DevSecOps"
