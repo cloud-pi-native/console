@@ -14,19 +14,23 @@ export const ClusterSchema = z.object({
     .max(50),
   infos: z.string()
     .max(200)
-    .optional(),
+    .optional()
+    .nullable(),
   secretName: z.string()
     .max(50)
     .optional(),
   clusterResources: z.boolean(),
   privacy: z.nativeEnum(ClusterPrivacy),
+  zoneId: z.string()
+    .uuid(),
   projectIds: z.string()
     .uuid()
     .array()
     .optional(),
   stageIds: z.string()
     .uuid()
-    .array(),
+    .array()
+    .optional(),
   user: z.object({
     username: z.string()
       .optional(),
@@ -38,7 +42,8 @@ export const ClusterSchema = z.object({
       .optional(),
     token: z.string()
       .optional(),
-  }),
+  })
+    .optional(),
   cluster: z.object({
     server: z.string()
       .optional(),
@@ -47,20 +52,21 @@ export const ClusterSchema = z.object({
       .optional(),
     caData: z.string()
       .optional(),
-  }),
+  })
+    .optional(),
 })
 
 export const CreateClusterBusinessSchema = ClusterSchema.omit({ id: true }).refine(
   ({ privacy, projectIds }) =>
     !!(privacy === ClusterPrivacy.DEDICATED && projectIds?.length) ||
-      privacy === ClusterPrivacy.PUBLIC,
+    privacy === ClusterPrivacy.PUBLIC,
   { message: 'Si le cluster est dédié, vous devez renseignez les ids des projets associés.' },
 )
 
 export const ClusterBusinessSchema = ClusterSchema.refine(
   ({ privacy, projectIds }) =>
     !!(privacy === ClusterPrivacy.DEDICATED && projectIds?.length) ||
-      privacy === ClusterPrivacy.PUBLIC,
+    privacy === ClusterPrivacy.PUBLIC,
   { message: 'Si le cluster est dédié, vous devez renseignez les ids des projets associés.' },
 )
 

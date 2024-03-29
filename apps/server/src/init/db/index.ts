@@ -2,7 +2,7 @@ import { dropTables } from '@/connect.js'
 import prisma from '@/prisma.js'
 import { objectEntries } from '@cpn-console/shared'
 
-type Models = 'cluster' | 'environment' | 'log' | 'organization' | 'permission' | 'project' | 'repository' | 'role' | 'user' | 'stage' | 'quota'
+type Models = 'zone' | 'cluster' | 'environment' | 'log' | 'organization' | 'permission' | 'project' | 'repository' | 'role' | 'user' | 'stage' | 'quota'
 
 type Associates = Partial<Record<
   Models, {
@@ -23,6 +23,13 @@ export const initDb = async (data: Imports) => {
       try {
         // Format for one-to-one relation
         value = Object.fromEntries(Object.entries(value).map(([key, value]) => {
+          if (key === 'zoneId') {
+            return ['zone', {
+              connect: {
+                id: value,
+              },
+            }]
+          }
           return [key, !Object.keys(prisma).includes(key) || model === key
             ? value
             : { create: value }]

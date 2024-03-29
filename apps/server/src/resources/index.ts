@@ -11,6 +11,7 @@ import { serviceRouter } from './service/router.js'
 import { stageRouter } from './stage/router.js'
 import { systemRouter } from './system/router.js'
 import { userRouter } from './user/router.js'
+import { zoneRouter } from './zone/router.js'
 import { serverInstance } from '@/app.js'
 
 export const apiRouter = () => async (app: FastifyInstance) => {
@@ -26,4 +27,5 @@ export const apiRouter = () => async (app: FastifyInstance) => {
   await app.register(serverInstance.plugin(stageRouter()))
   await app.register(serverInstance.plugin(systemRouter()))
   await app.register(serverInstance.plugin(userRouter()))
+  await app.register(serverInstance.plugin(zoneRouter()))
 }

@@ -150,6 +150,24 @@ export const data = {
       updatedAt: '2023-07-03T14:46:56.765Z',
     },
   ],
+  zone: [
+    {
+      id: 'a66c4230-eba6-41f1-aae5-bb1e4f90cce1',
+      slug: 'pr',
+      label: 'Zone privée',
+      description: 'Cette zone de déploiement est privée.',
+      createdAt: '2023-07-10T19:32:13.385Z',
+      updatedAt: '2023-07-10T19:32:13.385Z',
+    },
+    {
+      id: 'a66c4230-eba6-41f1-aae5-bb1e4f90cce2',
+      slug: 'pub',
+      label: 'Zone publique',
+      description: 'Cette zone de déploiement est publique.',
+      createdAt: '2023-07-10T19:32:13.385Z',
+      updatedAt: '2023-07-10T19:32:13.385Z',
+    },
+  ],
   cluster: [
     {
       id: '32636a52-4dd1-430b-b08a-b2e5ed9d1789',
@@ -158,6 +176,7 @@ export const data = {
       secretName: '3972ac09-6abc-4e49-83b6-d046da5260ec',
       clusterResources: false,
       infos: 'Cluster public proposé par DSO',
+      zoneId: 'a66c4230-eba6-41f1-aae5-bb1e4f90cce2',
       createdAt: '2023-07-10T19:32:13.385Z',
       updatedAt: '2023-07-10T19:32:13.385Z',
       kubeconfig: {
@@ -178,6 +197,7 @@ export const data = {
       privacy: 'dedicated',
       secretName: '59be2d50-58f9-42f3-95dc-b0c0518e3d8a',
       clusterResources: true,
+      zoneId: 'a66c4230-eba6-41f1-aae5-bb1e4f90cce2',
       createdAt: '2023-07-10T19:49:31.691Z',
       updatedAt: '2023-07-10T20:01:46.826Z',
       kubeconfig: {
@@ -198,6 +218,7 @@ export const data = {
       privacy: 'dedicated',
       secretName: '94d52618-7869-4192-b33e-85dd0959e815',
       clusterResources: false,
+      zoneId: 'a66c4230-eba6-41f1-aae5-bb1e4f90cce2',
       createdAt: '2023-07-10T19:49:31.697Z',
       updatedAt: '2023-07-10T20:01:46.833Z',
       kubeconfig: {

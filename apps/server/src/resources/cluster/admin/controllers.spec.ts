@@ -32,7 +32,7 @@ describe('Admin cluster routes', () => {
   // GET
   describe('getClusterAssociatedEnvironmentsController', () => {
     it('Should retrieve a cluster\'s associated environments', async () => {
-      const cluster = getRandomCluster()
+      const cluster = getRandomCluster({})
       // @ts-ignore
       cluster.environments = [{
         project: {
@@ -69,7 +69,7 @@ describe('Admin cluster routes', () => {
 
   describe('deleteClusterController', () => {
     it('Should delete a cluster', async () => {
-      const cluster = getRandomCluster()
+      const cluster = getRandomCluster({})
       // @ts-ignore
       cluster.environments = []
 
@@ -85,7 +85,7 @@ describe('Admin cluster routes', () => {
     })
 
     it('Should not delete a cluster if environments suscribed it', async () => {
-      const cluster = getRandomCluster()
+      const cluster = getRandomCluster({})
       // @ts-ignore
       cluster.environments = [{
         project: {
