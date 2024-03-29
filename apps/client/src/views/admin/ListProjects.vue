@@ -1,16 +1,15 @@
 <script lang="ts" setup>
 import { onBeforeMount, ref, type Ref } from 'vue'
+import { getRandomId } from '@gouvminint/vue-dsfr'
+import { type AsyncReturnType, formatDate, statusDict, sortArrByObjKeyAsc, AllStatus, ProjectModel } from '@cpn-console/shared'
 import { useAdminProjectStore } from '@/stores/admin/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { type AsyncReturnType, formatDate, statusDict, sortArrByObjKeyAsc, AllStatus, ProjectModel } from '@cpn-console/shared'
 import { useAdminOrganizationStore } from '@/stores/admin/organization.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
-import { getRandomId } from '@gouvminint/vue-dsfr'
 import { useUserStore } from '@/stores/user.js'
 import { useUsersStore } from '@/stores/users.js'
-import { useProjectUserStore } from '@/stores/project-user'
-import { useAdminQuotaStore } from '@/stores/admin/quota'
-import { useProjectStore } from '@/stores/project.js'
+import { useProjectUserStore } from '@/stores/project-user.js'
+import { useAdminQuotaStore } from '@/stores/admin/quota.js'
 
 const adminProjectStore = useAdminProjectStore()
 const adminOrganizationStore = useAdminOrganizationStore()
@@ -220,9 +219,10 @@ const selectProject = async (projectId: string) => {
 }
 
 const updateEnvironmentQuota = async ({ environmentId, quotaId }: {environmentId: string, quotaId: string}) => {
-  if (!selectedProject.value) return
+  if (!selectedProject.value?.environments) return
   snackbarStore.isWaitingForResponse = true
-  const environment = selectedProject.value?.environments.find(environment => environment.id === environmentId)
+  const environment = selectedProject.value.environments.find(environment => environment.id === environmentId)
+  if (!environment) return
   environment.quotaStageId = environment.quotaStage.stage.quotaStage.find(quotaStage => quotaStage.quotaId === quotaId)?.id
   await projectEnvironmentStore.updateEnvironment(environment, selectedProject.value.id)
   await getAllProjects()
@@ -238,7 +238,7 @@ const handleProjectLocking = async (projectId: string, lock: boolean) => {
 
 const replayHooks = async (projectId: string) => {
   snackbarStore.isWaitingForResponse = true
-  await useProjectStore().replayHooksForProject(projectId)
+  await adminProjectStore.replayHooksForProject(projectId)
   await getAllProjects()
   snackbarStore.setMessage(`Le projet ayant pour id ${projectId} a été reprovisionné avec succès`, 'success')
   snackbarStore.isWaitingForResponse = false
@@ -255,9 +255,11 @@ const archiveProject = async (projectId: string) => {
 
 const addUserToProject = async (email: string) => {
   snackbarStore.isWaitingForResponse = true
-  const newRoles = await projectUserStore.addUserToProject(selectedProject.value?.id, { email })
+  if (selectedProject.value) {
+    const newRoles = await projectUserStore.addUserToProject(selectedProject.value.id, { email })
+    selectedProject.value.roles = newRoles
+  }
   teamCtKey.value = getRandomId('team')
-  selectedProject.value.roles = newRoles
   snackbarStore.isWaitingForResponse = false
 }
 
@@ -468,8 +470,7 @@ onBeforeMount(async () => {
           :key="teamCtKey"
           :user-profile="userStore.userProfile"
           :project="{id: selectedProject.id, name: selectedProject.name }"
-          :roles="selectedProject.roles.map(({user, ...role}) => role)"
-          :is-updating-project-members="isWaitingForResponse"
+          :roles="selectedProject.roles?.map(({user, ...role}) => role)"
           :known-users="usersStore.users"
           @add-member="(email) => addUserToProject(email)"
           @update-role="({ userId, role}) => updateUserRole({ userId, role})"
