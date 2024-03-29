@@ -18,7 +18,7 @@ describe('Schemas utils', () => {
       externalToken: 'eddddsqsq-_',
       isPrivate: true,
       isInfra: false,
-      externalUserName: 'claire-nlet_',
+      externalUserName: 'clai+re-nlet_',
     }
     expect(RepoBusinessSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
   })

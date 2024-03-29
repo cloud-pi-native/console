@@ -105,7 +105,7 @@ describe('RepoForm.vue', () => {
         externalRepoUrl: 'https://github.com/LAB-MI/candilibV2.git',
         isPrivate: true,
         isInfra: false,
-        externalUserName: 'clairenlet',
+        externalUserName: 'claire+nlet',
       },
     }
 

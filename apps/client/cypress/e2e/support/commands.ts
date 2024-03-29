@@ -99,7 +99,7 @@ Cypress.Commands.add('addRepos', (project, repos) => {
 
   const newRepo = (repo) => ({
     internalRepoName: 'console',
-    externalUserName: 'this-is-tobi',
+    externalUserName: 'this-is+tobi',
     externalRepoUrl: 'https://github.com/cloud-pi-native/console.git',
     isInfra: false,
     isPrivate: false,

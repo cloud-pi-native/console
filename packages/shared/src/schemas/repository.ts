@@ -14,11 +14,9 @@ export const RepoSchema = z.object({
   isPrivate: z.boolean(),
   isInfra: z.boolean(),
   externalUserName: z.string()
-    .regex(/^[a-zA-Z0-9_-]+$/)
     .optional()
     .nullable(),
   externalToken: z.string()
-    .regex(/^[a-zA-Z0-9=_-]+$/)
     .optional(),
   projectId: z.string()
     .uuid(),
