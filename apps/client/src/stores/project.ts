@@ -30,7 +30,8 @@ export const useProjectStore = defineStore('project', () => {
   }
 
   const replayHooksForProject = async (projectId: string) => {
-    return api.replayHooks(projectId)
+    await api.replayHooks(projectId)
+    await getUserProjects()
   }
 
   const archiveProject = async (projectId: ProjectParams['projectId']) => {

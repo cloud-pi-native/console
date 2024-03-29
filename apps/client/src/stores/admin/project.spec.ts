@@ -6,6 +6,7 @@ import { useAdminProjectStore } from './project.js'
 const apiClientGet = vi.spyOn(apiClient, 'get')
 const apiClientDelete = vi.spyOn(apiClient, 'delete')
 const apiClientPatch = vi.spyOn(apiClient, 'patch')
+const apiClientPut = vi.spyOn(apiClient, 'put')
 
 describe('Counter Store', () => {
   beforeEach(() => {
@@ -57,6 +58,18 @@ describe('Counter Store', () => {
     expect(res).toBe(undefined)
     expect(apiClientPatch).toHaveBeenCalledTimes(1)
     expect(apiClientPatch.mock.calls[0][0]).toBe(`/admin/projects/${project.id}`)
+  })
+
+  it('Should replay hooks for project by api call', async () => {
+    const adminProjectStore = useAdminProjectStore()
+
+    const project = { id: 'projectId' }
+    apiClientPut.mockReturnValueOnce(Promise.resolve({ data: project }))
+
+    await adminProjectStore.replayHooksForProject(project.id)
+
+    expect(apiClientPut).toHaveBeenCalledTimes(1)
+    expect(apiClientPut.mock.calls[0][0]).toBe(`/projects/${project.id}/hooks`)
   })
 
   it('Should archive a project by api call', async () => {

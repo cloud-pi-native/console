@@ -22,6 +22,10 @@ export const useAdminProjectStore = defineStore('admin-project', () => {
     return api.handleProjectLocking(projectId, lock)
   }
 
+  const replayHooksForProject = async (projectId: string) => {
+    await api.replayHooks(projectId)
+  }
+
   const archiveProject = async (projectId: string) => {
     return api.archiveProject(projectId)
   }
@@ -34,6 +38,7 @@ export const useAdminProjectStore = defineStore('admin-project', () => {
     getAllProjects,
     getAllActiveProjects,
     handleProjectLocking,
+    replayHooksForProject,
     archiveProject,
     generateProjectsData,
   }
