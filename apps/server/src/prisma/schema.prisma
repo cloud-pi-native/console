@@ -43,6 +43,16 @@ model Organization {
   projects  Project[]
 }
 
+model Zone {
+  id          String    @id @unique @default(uuid()) @db.Uuid
+  slug        String    @unique @db.VarChar(10)
+  label       String    @db.VarChar(50)
+  description String?   @db.VarChar(200)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  clusters    Cluster[]
+}
+
 model Permission {
   id            String      @id @unique @default(uuid()) @db.Uuid
   userId        String      @db.Uuid
@@ -104,10 +114,12 @@ model Cluster {
   privacy          ClusterPrivacy @default(dedicated)
   secretName       String         @unique @default(uuid()) @db.VarChar(50)
   clusterResources Boolean        @default(false)
+  zoneId           String         @db.Uuid
   kubeConfigId     String         @unique @db.Uuid
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
   infos            String?        @db.VarChar(200)
+  zone             Zone           @relation(fields: [zoneId], references: [id])
   kubeconfig       Kubeconfig     @relation(fields: [kubeConfigId], references: [id], onDelete: Cascade)
   environments     Environment[]
   projects         Project[]      @relation("ClusterToProject")

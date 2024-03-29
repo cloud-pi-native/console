@@ -295,6 +295,17 @@ onMounted(() => {
               Types d'environnement
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
+          <DsfrSideMenuListItem>
+            <DsfrSideMenuLink
+              class="menu-link-icon"
+              data-testid="menuAdministrationZones"
+              :active="routeName === 'ListZones'"
+              to="/admin/zones"
+            >
+              <v-icon name="ri-focus-3-line" />
+              Zones
+            </DsfrSideMenuLink>
+          </DsfrSideMenuListItem>
         </DsfrSideMenuList>
       </DsfrSideMenuListItem>
 

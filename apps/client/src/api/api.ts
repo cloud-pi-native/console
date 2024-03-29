@@ -189,3 +189,24 @@ export const deleteCluster = async (clusterId: ClusterParams['clusterId']) => {
   const response = await apiClient.delete(`/admin/clusters/${clusterId}`)
   return response.data
 }
+
+// Admin - Zones
+export const getZones = async () => {
+  const response = await apiClient.get('/zones')
+  return response.data
+}
+
+export const createZone = async (data) => {
+  const response = await apiClient.post('/admin/zones', data)
+  return response.data
+}
+
+export const updateZone = async (zoneId, data) => {
+  const response = await apiClient.put(`/admin/zones/${zoneId}`, data)
+  return response.data
+}
+
+export const deleteZone = async (zoneId) => {
+  const response = await apiClient.delete(`/admin/zones/${zoneId}`)
+  return response.data
+}

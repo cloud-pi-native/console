@@ -9,6 +9,7 @@ import {
   _dropRepositoriesTable,
   _dropRolesTable,
   _dropUsersTable,
+  _dropZoneTable,
 } from '@/resources/queries-index.js'
 import prisma from './__mocks__/prisma.js'
 import app from './app.js'
@@ -24,6 +25,7 @@ vi.mock('./models/project.js', () => getModel('getProjectModel'))
 vi.mock('./models/user.js', () => getModel('getUserModel'))
 vi.mock('./models/users-projects.js', () => getModel('getRolesModel'))
 vi.mock('./models/organization.js', () => getModel('getOrganizationModel'))
+vi.mock('./models/zone.js', () => getModel('getZoneModel'))
 vi.mock('./prisma.js')
 
 vi.spyOn(app, 'listen')
@@ -59,6 +61,7 @@ describe('connect', () => {
     expect(_dropUsersTable.mock.calls).toHaveLength(1)
     expect(_dropRolesTable.mock.calls).toHaveLength(1)
     expect(_dropOrganizationsTable.mock.calls).toHaveLength(1)
+    expect(_dropZoneTable.mock.calls).toHaveLength(1)
     expect(app.log.info.mock.calls).toHaveLength(1)
   })
 
