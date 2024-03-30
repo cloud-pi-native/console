@@ -3,7 +3,7 @@ import { adminGroupPath } from '@cpn-console/shared'
 import { VaultSonarSecret, getAxiosInstance } from './tech.js'
 import { Project, StepCall, generateProjectKey, parseError } from '@cpn-console/hooks'
 import { SonarUser, ensureUserExists } from './user.js'
-import { SonarPaging, createDsoRepository, deleteDsoRepository, ensureRepositoryConfiguration, findSonarProjectsForDsoProjects } from './project.js'
+import { SonarPaging, createDsoRepository, deleteDsoRepository, ensureRepositoryConfiguration, files, findSonarProjectsForDsoProjects } from './project.js'
 import { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
 
 const globalPermissions = [
@@ -155,31 +155,48 @@ export const setVariables: StepCall<Project> = async (payload) => {
         name: organizationName,
       },
     } = project
+    const { gitlab: gitlabApi } = payload.apis
 
+    const sonarSecret = await payload.apis.vault.read('SONAR')
     await Promise.all([
       // Sonar vars saving in CI (repositories)
-      ...payload.args.repositories.map(async repo => {
+      ...project.repositories.map(async repo => {
         const projectKey = generateProjectKey(organizationName, projectName, repo.internalRepoName)
-        await payload.apis.gitlab.setGitlabRepoVariable(repo.internalRepoName, {
-          key: 'PROJECT_KEY',
-          masked: false,
-          protected: false,
-          value: projectKey,
-          variable_type: 'env_var',
-          environment_scope: '*',
-        })
-      }),
+        return [
+          await gitlabApi.setGitlabRepoVariable(repo.internalRepoName, {
+            key: 'PROJECT_KEY',
+            masked: false,
+            protected: false,
+            value: projectKey,
+            variable_type: 'env_var',
+            environment_scope: '*',
+          }),
+          await gitlabApi.setGitlabRepoVariable(repo.internalRepoName, {
+            key: 'PROJECT_NAME',
+            masked: false,
+            protected: false,
+            value: `${organizationName}-${projectName}-${repo.internalRepoName}`,
+            variable_type: 'env_var',
+            environment_scope: '*',
+          }),
+          await gitlabApi.setGitlabRepoVariable(repo.internalRepoName, {
+            variable_type: 'file',
+            key: 'SONAR_PROJECT_PROPERTIES',
+            masked: false,
+            protected: false,
+            value: files['sonar-project.properties'](projectKey),
+            environment_scope: '*',
+          }),
+        ]
+      }).flat(),
       // Sonar vars saving in CI (group)
-      async () => {
-        const sonarSecret = await payload.apis.vault.read('SONAR')
-        await payload.apis.gitlab.setGitlabGroupVariable({
-          key: 'SONAR_TOKEN',
-          masked: true,
-          protected: false,
-          value: sonarSecret.data.SONAR_TOKEN,
-          variable_type: 'env_var',
-        })
-      },
+      await gitlabApi.setGitlabGroupVariable({
+        key: 'SONAR_TOKEN',
+        masked: true,
+        protected: false,
+        value: sonarSecret.data.SONAR_TOKEN,
+        variable_type: 'env_var',
+      }),
     ])
 
     return { status: { result: 'OK' } }

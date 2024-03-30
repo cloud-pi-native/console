@@ -152,3 +152,7 @@ export const findSonarProjectsForDsoProjects = async (organizationName: string, 
 
   return foundProjectKeys
 }
+
+export const files = {
+  'sonar-project.properties': (key: string) => `sonar.projectKey=${key}\nsonar.qualitygate.wait=true\n`,
+}
