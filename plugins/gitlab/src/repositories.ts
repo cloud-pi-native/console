@@ -57,13 +57,6 @@ const ensureRepositoryExists = async (
     gitlabRepository = await gitlabApi.createCloneRepository(repository.internalRepoName, externalRepoUrn, repository.newCreds) // TODO
   }
 
-  if (!repository.isPrivate) {
-    if (currentVaultCreds) {
-      await vaultApi.destroy(vaultCredsPath)
-    }
-    return
-  }
-
   const internalRepoUrl = await gitlabApi.getRepoUrl(repository.internalRepoName)
 
   const gitlabSecret = await vaultApi.read('tech/GITLAB_MIRROR', { throwIfNoEntry: false })
