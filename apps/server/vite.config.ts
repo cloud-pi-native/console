@@ -12,7 +12,7 @@ export default defineConfig({
   },
   test: {
     poolMatchGlobs: [
-      ['**/resources/**/*.spec.ts', 'child_process'],
+      ['**/resources/**/*.spec.ts', 'forks'],
     ],
   },
 })
