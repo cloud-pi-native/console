@@ -13,11 +13,12 @@ export default mergeConfig(
       coverage: {
         provider: 'v8',
         reporter: ['text', 'lcov'],
-        exclude: ['**/*.spec.ts'],
+        exclude: ['**/*.spec.ts', '**/mocks.ts', '**/types/'],
       },
       setupFiles: ['./vitest-init.ts'],
       exclude: [...configDefaults.exclude, 'e2e/*'],
       root: fileURLToPath(new URL('./', import.meta.url)),
+      pool: 'forks',
     },
   }),
 )
