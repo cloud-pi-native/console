@@ -94,10 +94,10 @@ importers:
     optionalDependencies:
       '@cypress/vue':
         specifier: ^6.0.0
-        version: 6.0.0(cypress@13.6.4)(vue@3.4.15)
+        version: 6.0.0(cypress@13.7.1)(vue@3.4.15)
       cypress:
-        specifier: ^13.6.4
-        version: 13.6.4
+        specifier: ^13.7.1
+        version: 13.7.1
       cypress-vite:
         specifier: ^1.5.0
         version: 1.5.0(vite@5.0.12)
@@ -2367,7 +2367,7 @@ packages:
     dev: false
     optional: true
 
-  /@cypress/vue@6.0.0(cypress@13.6.4)(vue@3.4.15):
+  /@cypress/vue@6.0.0(cypress@13.7.1)(vue@3.4.15):
     resolution: {integrity: sha512-KMfRw8y/kXn/RJqaDdFnYnW7YLk47313UE3Yip+sLDjILJ2kA0WEiEa6MYKe58v8TNRtwcRpUH5xAYVNs1N6/A==}
     engines: {node: '>=8'}
     requiresBuild: true
@@ -2379,7 +2379,7 @@ packages:
       '@cypress/webpack-dev-server':
         optional: true
     dependencies:
-      cypress: 13.6.4
+      cypress: 13.7.1
       vue: 3.4.15(typescript@5.3.3)
     dev: false
     optional: true
@@ -5751,8 +5751,8 @@ packages:
     dev: false
     optional: true
 
-  /cypress@13.6.4:
-    resolution: {integrity: sha512-pYJjCfDYB+hoOoZuhysbbYhEmNW7DEDsqn+ToCLwuVowxUXppIWRr7qk4TVRIU471ksfzyZcH+mkoF0CQUKnpw==}
+  /cypress@13.7.1:
+    resolution: {integrity: sha512-4u/rpFNxOFCoFX/Z5h+uwlkBO4mWzAjveURi3vqdSu56HPvVdyGTxGw4XKGWt399Y1JwIn9E1L9uMXQpc0o55w==}
     engines: {node: ^16.0.0 || ^18.0.0 || >=20.0.0}
     hasBin: true
     requiresBuild: true
