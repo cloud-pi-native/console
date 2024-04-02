@@ -1,5 +1,29 @@
 # Changelog
 
+## [8.0.0](https://github.com/cloud-pi-native/console/compare/v7.0.1...v8.0.0) (2024-04-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* :sparkles: simplify hooks for idempotency
+
+### Features
+
+* :safety_vest: allow + sign for repo externalUserName ([4a695ef](https://github.com/cloud-pi-native/console/commit/4a695eff71ea6a03f839d19d2e2526180ea5161b))
+* :sparkles: add replay hooks button for project ([9147231](https://github.com/cloud-pi-native/console/commit/91472317ebd112b4f360d859d25d8793c89eb331))
+* :sparkles: add sonar properties var file to gitlab ([0462a36](https://github.com/cloud-pi-native/console/commit/0462a364b54e66639ade6997f6f4c48e9fe305c6))
+* :sparkles: simplify hooks for idempotency ([aac0a2d](https://github.com/cloud-pi-native/console/commit/aac0a2d331acd4e86531591de99cc944584f7684))
+* 🚧 création du repo infra-apps à la création du projet ([17007f7](https://github.com/cloud-pi-native/console/commit/17007f7eb0bb8c9ba612cf70536236b428b801da))
+
+
+### Bug Fixes
+
+* :ambulance: gitlab plugin deleted public repo secret ([46002b0](https://github.com/cloud-pi-native/console/commit/46002b007e9dfd69ce5daeee33cfd61164e0ed8e))
+* :ambulance: gitlab plugin deleted public repo secret ([353f43e](https://github.com/cloud-pi-native/console/commit/353f43eba74d5d0b0a95ace2ee65d9c51c0685b7))
+* :bug: reload user projects after hooks replay ([ae57ed0](https://github.com/cloud-pi-native/console/commit/ae57ed017dac4e5601cdf80a02598967bf75364b))
+* :lipstick: improve logs ui ([ec6ecb2](https://github.com/cloud-pi-native/console/commit/ec6ecb283f0c7c37589c02e194f1b101e9dc10c2))
+* :zap: manage hook concurrency execution ([6af135f](https://github.com/cloud-pi-native/console/commit/6af135f0548d232ef5bd190375057da0968d8f94))
+
 ## [7.0.1](https://github.com/cloud-pi-native/console/compare/v7.0.0...v7.0.1) (2024-03-18)
 
 
