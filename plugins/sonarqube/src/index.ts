@@ -4,7 +4,7 @@ import { deleteProject, initSonar, setVariables, upsertProject } from './functio
 import infos from './infos.js'
 import monitor from './monitor.js'
 
-export const start = (_options: unknown) => {
+const start = (_options: unknown) => {
   initSonar()
   getStatus()
 }
