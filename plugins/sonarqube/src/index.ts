@@ -1,13 +1,10 @@
 import type { Plugin } from '@cpn-console/hooks'
 import { getStatus } from './check.js'
-import { createUser, deleteUser } from './user.js'
-import { createDsoProjectGroup, deleteteDsoProjectGroup } from './group.js'
-import { initSonar } from './functions.js'
-import { createDsoRepository, deleteDsoRepository } from './project.js'
+import { deleteProject, initSonar, setVariables, upsertProject } from './functions.js'
 import infos from './infos.js'
 import monitor from './monitor.js'
 
-export const start = (_options: unknown) => {
+const start = (_options: unknown) => {
   initSonar()
   getStatus()
 }
@@ -15,29 +12,18 @@ export const start = (_options: unknown) => {
 export const plugin: Plugin = {
   infos,
   subscribedHooks: {
-    createProject: {
+    upsertProject: {
       steps: {
-        check: getStatus,
-        pre: createUser,
-        main: createDsoProjectGroup,
+        main: upsertProject,
+        post: setVariables,
       },
     },
-    archiveProject: {
+    deleteProject: {
       steps: {
-        check: getStatus,
-        pre: deleteUser,
-        main: deleteteDsoProjectGroup,
+        main: deleteProject,
       },
     },
-    createRepository: { steps: { main: createDsoRepository } },
-    deleteRepository: { steps: { main: deleteDsoRepository } },
   },
   start,
   monitor,
-}
-
-declare module '@cpn-console/hooks' {
-  interface HookPayloadResults {
-    sonarqube: Record<string, any>
-  }
 }

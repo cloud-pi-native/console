@@ -1,5 +1,5 @@
-import prisma from './prisma.js'
 import { setTimeout } from 'node:timers/promises'
+import prisma from './prisma.js'
 import app from './app.js'
 import {
   isTest,

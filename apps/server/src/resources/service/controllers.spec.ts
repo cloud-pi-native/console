@@ -1,8 +1,11 @@
 import prisma from '../../__mocks__/prisma.js'
-import app, { getRequestor, setRequestor } from '../../__mocks__/app.js'
 import { vi, describe, it, beforeAll, expect, afterEach, afterAll } from 'vitest'
 import { getConnection, closeConnections } from '../../connect.js'
 import { getRandomUser } from '@cpn-console/test-utils'
+import { getRequestor, setRequestor } from '../../utils/mocks.js'
+import app from '../../app.js'
+
+vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
 
 describe('Service route', () => {
   const requestor = getRandomUser()
@@ -41,7 +44,7 @@ describe('Service route', () => {
 
       expect(response.statusCode).toEqual(403)
       expect(response.body).toBeDefined()
-      expect(response.json().message).toEqual('Vous n\'avez pas accès à cette information')
+      expect(JSON.parse(response.body).error).toEqual('Vous n\'avez pas accès à cette information')
     })
   })
 })

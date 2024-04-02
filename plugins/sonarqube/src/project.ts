@@ -1,4 +1,4 @@
-import { type CreateRepositoryExecArgs, type DeleteRepositoryExecArgs, type Organization, type Project, type RepositoryCreate, type StepCall, generateProjectKey, parseError } from '@cpn-console/hooks'
+import { generateProjectKey } from '@cpn-console/hooks'
 import { getAxiosInstance } from './tech.js'
 
 export type SonarPaging = {
@@ -37,145 +37,122 @@ const groupPermissions = [
   'scan',
 ]
 
-export const createDsoRepository: StepCall<CreateRepositoryExecArgs> = async (payload) => {
-  const axiosInstance = getAxiosInstance()
-  try {
-    const { organization, project, internalRepoName } = payload.args
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const projectName = generateProjectName(organization, project, internalRepoName)
-    const projectKey = generateProjectKey(organization, project, internalRepoName)
-    const login = `${organization}-${project}` // robot account
-    const groupName = `/${organization}-${project}` // oidc group
-    const { message, sonarProject } = await createProject(projectKey, projectName)
-
-    for (const permission of robotPermissions) {
-      await axiosInstance({
-        url: 'permissions/add_user',
-        method: 'post',
-        params: {
-          projectKey,
-          permission,
-          login,
-        },
-      })
-    }
-    for (const permission of groupPermissions) {
-      await axiosInstance({
-        url: 'permissions/add_group',
-        method: 'post',
-        params: {
-          projectKey,
-          permission,
-          groupName,
-        },
-      })
-    }
-    return {
-      status: {
-        result: 'OK',
-        message,
-      },
-      sonarProject,
-    }
-  } catch (error) {
-    return {
-      error: parseError(error),
-      status: {
-        result: 'KO',
-        message: 'Failed to create Sonarqube Project',
-      },
-    }
-  }
+export const createDsoRepository = async (organizationName: string, projectName: string, internalRepoName: string, sonarProjectKey?: string) => {
+  const sonarProjectName = `${organizationName}-${projectName}-${internalRepoName}`
+  if (!sonarProjectKey) sonarProjectKey = generateProjectKey(organizationName, projectName, internalRepoName)
+  return createProject(sonarProjectKey, sonarProjectName)
 }
 
-const createProject = async (projectKey: string, projectName: string) => {
+export const ensureRepositoryConfiguration = async (projectKey: string, login: string, groupName: string) => {
   const axiosInstance = getAxiosInstance()
-  const sonarProjectSearch: { paging: SonarPaging, components: SonarProject[] } = (await axiosInstance({
-    url: 'projects/search',
-    method: 'get',
-    params: {
-      projects: projectKey,
-    },
-  }))?.data
 
-  if (!sonarProjectSearch.paging.total) { // Project missing
-    const sonarProjectCreate = (await axiosInstance({
-      url: 'projects/create',
+  for (const permission of robotPermissions) {
+    await axiosInstance({
+      url: 'permissions/add_user',
       method: 'post',
       params: {
-        project: projectKey,
-        visibility: 'private',
-        name: projectName,
-        mainbranch: 'main',
+        projectKey,
+        permission,
+        login,
       },
-    }))?.data
-    let ensureExist = false
-    while (!ensureExist) {
-      const sonarProjectSearch: { paging: SonarPaging, components: SonarProject[] } = (await axiosInstance({
-        url: 'projects/search',
-        method: 'get',
-        params: {
-          projects: projectKey,
-        },
-      }))?.data
-      if (sonarProjectSearch.paging.total) ensureExist = true
-    }
-    return {
-      sonarProject: sonarProjectCreate.project,
-      message: 'Project created',
-    }
-  } else {
-    return {
-      sonarProject: sonarProjectSearch.components[0],
-      message: 'Project already exists',
-    }
+    })
   }
-}
-
-export const deleteDsoRepository: StepCall<DeleteRepositoryExecArgs> = async (payload) => {
-  const axiosInstance = getAxiosInstance()
-  try {
-    const { organization, project, internalRepoName } = payload.args
-    const projectKey = generateProjectKey(organization, project, internalRepoName)
-    const sonarProjectSearch: { paging: SonarPaging, components: SonarProject[] } = (await axiosInstance({
-      url: 'projects/search',
-      method: 'get',
+  for (const permission of groupPermissions) {
+    await axiosInstance({
+      url: 'permissions/add_group',
+      method: 'post',
       params: {
-        project: projectKey,
+        projectKey,
+        permission,
+        groupName,
       },
-    }))?.data
-
-    let message: string
-
-    if (sonarProjectSearch.components.length) { // Project exists
-      await axiosInstance({
-        url: 'projects/delete',
-        method: 'post',
-        params: {
-          project: projectKey,
-        },
-      })
-      message = 'Project deleted'
-    } else {
-      message = 'Project already missing'
-    }
-    return {
-      status: {
-        result: 'OK',
-        message,
-      },
-    }
-  } catch (error) {
-    return {
-      error: parseError(error),
-      status: {
-        result: 'OK',
-        message: 'Failed to delete Sonarqube Project',
-      },
-    }
+    })
   }
 }
 
-export const generateProjectName = (org: Organization, proj: Project, repo: RepositoryCreate['internalRepoName']) => {
-  return `${org}-${proj}-${repo}`
+export const createProject = async (projectKey: string, projectName: string) => getAxiosInstance()({
+  url: 'projects/create',
+  method: 'post',
+  params: {
+    project: projectKey,
+    visibility: 'private',
+    name: projectName,
+    mainbranch: 'main',
+  },
+})
+
+export const deleteDsoRepository = async (projectKey: string) => {
+  const axiosInstance = getAxiosInstance()
+
+  await axiosInstance({
+    url: 'projects/delete',
+    method: 'post',
+    params: {
+      project: projectKey,
+    },
+  })
+}
+
+type SonarProjectResult = {
+  organization: string
+  project: string,
+  repository: string,
+  key: string,
+}
+
+const filterProjectsOwning = (repos: { key: string }[], organizationName: string, projectName: string): SonarProjectResult[] => repos.reduce((acc, repo) => {
+  let isOrphan = true
+
+  const sonarKey = repo.key as string
+  const keyElements = sonarKey.split('-')
+  const organization = keyElements.shift() as string
+  keyElements.pop()
+  for (let i = keyElements.length - 1; i > 0; i--) {
+    const project = keyElements.slice(0, i).join('-')
+    const repository = keyElements.slice(i).join('-')
+    const keyComputed = generateProjectKey(organization, project, repository)
+    if (keyComputed === sonarKey) {
+      if (project === projectName && organization === organizationName) {
+        acc.push({
+          organization,
+          project,
+          repository,
+          key: sonarKey,
+        })
+      }
+      isOrphan = false
+    }
+  }
+  if (isOrphan) {
+    console.warn('/!\\ Orphan Project:', sonarKey)
+  }
+  return acc
+}, [] as SonarProjectResult[])
+
+export const findSonarProjectsForDsoProjects = async (organizationName: string, projectName: string) => {
+  const axiosInstance = getAxiosInstance()
+  let foundProjectKeys: SonarProjectResult[] = []
+  const baseSearch = `${organizationName}-${projectName}`
+
+  let page = 0
+  const pageSize = 100
+  let total = 0
+  do {
+    page++
+    const similarProjects = await axiosInstance.get('projects/search', {
+      params: {
+        q: baseSearch,
+        p: page,
+        ps: pageSize,
+      },
+    })
+    total = similarProjects.data.paging.total
+    foundProjectKeys = [...foundProjectKeys, ...filterProjectsOwning(similarProjects.data.components, organizationName, projectName)]
+  } while (page * pageSize < total)
+
+  return foundProjectKeys
+}
+
+export const files = {
+  'sonar-project.properties': (key: string) => `sonar.projectKey=${key}\nsonar.qualitygate.wait=true\n`,
 }

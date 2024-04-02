@@ -1,6 +1,6 @@
-import type { StepCall, ArchiveProjectExecArgs, CreateProjectExecArgs } from '@cpn-console/hooks'
-import { generateRandomPassword, parseError } from '@cpn-console/hooks'
-import { getAxiosInstance } from './tech.js'
+// import type { StepCall, ArchiveProjectExecArgs } from '@cpn-console/hooks'
+import { generateRandomPassword } from '@cpn-console/hooks'
+import { VaultSonarSecret, getAxiosInstance } from './tech.js'
 import type { SonarPaging } from './project.js'
 
 export type SonarUser = {
@@ -19,128 +19,70 @@ export type SonarUser = {
   sonarLintLastConnectionDate: Date
 }
 
-export const createUser: StepCall<CreateProjectExecArgs> = async (payload) => {
+export const createUser = async (username: string, projectName: string, organizationName: string) => {
   const axiosInstance = getAxiosInstance()
+  const fakeEmail = `${projectName}@${organizationName}`
 
-  try {
-    // @ts-ignore to delete when in own plugin
-    if (!payload.apis.vault) throw Error('no Vault available')
-    const { project, organization } = payload.args
-    const username = `${organization}-${project}`
-    const fakeEmail = `${project}@${organization}`
-    const users: { paging: SonarPaging, users: SonarUser[] } = (await axiosInstance({
-      url: 'users/search',
-      params: {
-        q: username,
-      },
-    }))?.data
-    const user = users.users.find(u => u.login === username)
-    const newPwd = generateRandomPassword(30)
-    if (!user) {
-      await axiosInstance({
-        url: 'users/create',
-        method: 'post',
-        params: {
-          email: fakeEmail,
-          local: 'true',
-          login: username,
-          name: username,
-          password: newPwd,
-        },
-      })
-    } else {
-      await axiosInstance({
-        url: 'users/change_password',
-        params: {
-          login: username,
-          password: newPwd,
-        },
-      })
-    }
-    await axiosInstance({
-      url: 'user_tokens/revoke',
-      method: 'post',
-      params: {
-        login: username,
-        name: `Sonar Token for ${project}`,
-      },
-    })
-    const newToken = await axiosInstance({
-      url: 'user_tokens/generate',
-      method: 'post',
-      params: {
-        login: username,
-        name: `Sonar Token for ${project}`,
-      },
-    })
-
-    // @ts-ignore to delete when in own plugin
-    await payload.apis.vault.write({
-      SONAR_USERNAME: username,
-      SONAR_PASSWORD: newPwd,
-      SONAR_TOKEN: newToken.data.token,
-    }, 'SONAR')
-
-    return {
-      status: {
-        result: 'OK',
-        message: `User ${user ? 're' : ''}created`,
-      },
-    }
-  } catch (error) {
-    return {
-      error: parseError(error),
-      status: {
-        result: 'KO',
-        // @ts-ignore prévoir une fonction générique
-        message: error.message,
-      },
-    }
-  }
+  const newPwd = generateRandomPassword(30)
+  await axiosInstance({
+    url: 'users/create',
+    method: 'post',
+    params: {
+      email: fakeEmail,
+      local: 'true',
+      login: username,
+      name: username,
+      password: newPwd,
+    },
+  })
+  return newPwd
 }
 
-export const deleteUser: StepCall<ArchiveProjectExecArgs> = async (payload) => {
+export const changeToken = async (username: string) => {
   const axiosInstance = getAxiosInstance()
+  await axiosInstance({
+    url: 'user_tokens/revoke',
+    method: 'post',
+    params: {
+      login: username,
+      name: `Sonar Token for ${username}`,
+    },
+  })
+  const newToken = await axiosInstance({
+    url: 'user_tokens/generate',
+    method: 'post',
+    params: {
+      login: username,
+      name: `Sonar Token for ${username}`,
+    },
+  })
+  return newToken.data.token
+}
 
-  const { project, organization } = payload.args
-  const username = `${organization}-${project}`
-  try {
-    const users: { paging: SonarPaging, users: SonarUser[] } = (await axiosInstance({
-      url: 'users/search',
-      params: {
-        q: username,
-      },
-    }))?.data
-    const user = users.users.find(u => u.login === username)
-    if (!user) {
-      return {
-        status: {
-          result: 'OK',
-          message: 'Already missing',
-        },
-      }
-    }
-    await axiosInstance({
-      url: 'users/deactivate',
-      params: {
-        login: username,
-        anonymize: true,
-      },
-      method: 'post',
-    })
+export const getUser = async (username: string): Promise<SonarUser | undefined> => {
+  const axiosInstance = getAxiosInstance()
+  const users: { paging: SonarPaging, users: SonarUser[] } = (await axiosInstance({
+    url: 'users/search',
+    params: {
+      q: username,
+    },
+  }))?.data
+  return users.users.find(u => u.login === username)
+}
+
+export const ensureUserExists = async (username: string, projectName: string, organizationName: string, vaultUserSecret: VaultSonarSecret | undefined): Promise<VaultSonarSecret | undefined> => {
+  const user = await getUser(username)
+  if (!user) {
     return {
-      status: {
-        result: 'OK',
-        message: 'User anonymized',
-      },
+      SONAR_PASSWORD: await createUser(username, projectName, organizationName),
+      SONAR_TOKEN: await changeToken(username),
+      SONAR_USERNAME: username,
     }
-  } catch (error) {
+  } else if (!vaultUserSecret) {
     return {
-      error: parseError(error),
-      status: {
-        result: 'KO',
-        message: 'Failed',
-      },
+      SONAR_PASSWORD: 'not initialized',
+      SONAR_TOKEN: await changeToken(username),
+      SONAR_USERNAME: username,
     }
   }
 }

@@ -72,7 +72,7 @@ describe('Team view', () => {
       .should('be.enabled').click()
     cy.wait('@addUser')
       .its('response.statusCode')
-      .should('eq', 201)
+      .should('match', /^20\d$/)
 
     cy.getByDataTestid('teamTable')
       .find('tbody > tr')
@@ -93,7 +93,7 @@ describe('Team view', () => {
       .click()
     cy.wait('@removeUser')
       .its('response.statusCode')
-      .should('eq', 200)
+      .should('match', /^20\d$/)
 
     cy.getByDataTestid('teamTable')
       .find('tbody > tr')

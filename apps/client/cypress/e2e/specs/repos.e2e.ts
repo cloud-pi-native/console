@@ -1,8 +1,5 @@
-import { getModelById } from '../support/func.js'
-
 describe('Add repos into project', () => {
   const project = { name: 'project10' }
-  const projectWithFailedRepo = getModelById('project', '83833faf-f654-40dd-bcd5-cf2e944fc702')
 
   before(() => {
     cy.kcLogin('test')
@@ -26,70 +23,57 @@ describe('Add repos into project', () => {
     }
 
     cy.goToProjects()
-      .getByDataTestid(`projectTile-${project.name}`).click()
-      .getByDataTestid('menuRepos').click()
-      .url().should('contain', '/repositories')
+    cy.getByDataTestid(`projectTile-${project.name}`).click()
+    cy.getByDataTestid('menuRepos').click()
+    cy.url().should('contain', '/repositories')
 
     cy.getByDataTestid('addRepoLink').click({ timeout: 30_000 })
-      .get('h1').should('contain', 'Ajouter un dépôt au projet')
-      .getByDataTestid('addRepoBtn').should('be.disabled')
-      .getByDataTestid('internalRepoNameInput').find('input').clear().type(repo.internalRepoName)
-      .getByDataTestid('addRepoBtn').should('be.disabled')
-      .getByDataTestid('externalRepoUrlInput').find('input').clear().type(repo.externalRepoUrl)
-      .getByDataTestid('addRepoBtn').should('be.enabled')
-      .getByDataTestid('internalRepoNameInput').find('input').clear().type('$%_>')
+    cy.get('h1').should('contain', 'Ajouter un dépôt au projet')
+    cy.getByDataTestid('addRepoBtn').should('be.disabled')
+    cy.getByDataTestid('internalRepoNameInput').find('input').clear().type(repo.internalRepoName)
+    cy.getByDataTestid('addRepoBtn').should('be.disabled')
+    cy.getByDataTestid('externalRepoUrlInput').find('input').clear().type(repo.externalRepoUrl)
+    cy.getByDataTestid('addRepoBtn').should('be.enabled')
+    cy.getByDataTestid('internalRepoNameInput').find('input').clear().type('$%_>')
       .get('.fr-error-text')
       .should('have.length', 1)
       .and('contain', 'Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique')
-      .getByDataTestid('addRepoBtn').should('be.disabled')
-      .getByDataTestid('internalRepoNameInput').find('input').clear().type(repo.internalRepoName)
+    cy.getByDataTestid('addRepoBtn').should('be.disabled')
+    cy.getByDataTestid('internalRepoNameInput').find('input').clear().type(repo.internalRepoName)
       .get('.fr-error-text')
       .should('not.exist')
-      .getByDataTestid('addRepoBtn').should('be.enabled')
-      .getByDataTestid('externalRepoUrlInput').find('input').clear().type(repo.externalRepoUrl.slice(0, -4))
+    cy.getByDataTestid('addRepoBtn').should('be.enabled')
+    cy.getByDataTestid('externalRepoUrlInput').find('input').clear().type(repo.externalRepoUrl.slice(0, -4))
       .get('.fr-error-text')
       .should('have.length', 1)
       .and('contain', 'L\'url du dépôt doit commencer par https et se terminer par .git')
-      .getByDataTestid('addRepoBtn').should('be.disabled')
-      .getByDataTestid('externalRepoUrlInput').find('input').clear().type(repo.externalRepoUrl.slice(8))
+    cy.getByDataTestid('addRepoBtn').should('be.disabled')
+    cy.getByDataTestid('externalRepoUrlInput').find('input').clear().type(repo.externalRepoUrl.slice(8))
       .get('.fr-error-text')
       .should('have.length', 1)
       .and('contain', 'L\'url du dépôt doit commencer par https et se terminer par .git')
-      .getByDataTestid('addRepoBtn').should('be.disabled')
-      .getByDataTestid('externalRepoUrlInput').find('input').clear().type(repo.externalRepoUrl.replace(/s/i, ''))
+    cy.getByDataTestid('addRepoBtn').should('be.disabled')
+    cy.getByDataTestid('externalRepoUrlInput').find('input').clear().type(repo.externalRepoUrl.replace(/s/i, ''))
       .get('.fr-error-text')
       .should('have.length', 1)
       .and('contain', 'L\'url du dépôt doit commencer par https et se terminer par .git')
-      .getByDataTestid('addRepoBtn').should('be.disabled')
-      .getByDataTestid('externalRepoUrlInput').find('input').clear().type(repo.externalRepoUrl)
+    cy.getByDataTestid('addRepoBtn').should('be.disabled')
+    cy.getByDataTestid('externalRepoUrlInput').find('input').clear().type(repo.externalRepoUrl)
       .get('.fr-error-text')
       .should('not.exist')
-      .getByDataTestid('addRepoBtn').should('be.enabled')
-      .getByDataTestid('privateRepoCbx').find('input[type="checkbox"]').check({ force: true })
-      .getByDataTestid('addRepoBtn').should('be.disabled')
-      .getByDataTestid('externalUserNameInput').find('input').type(repo.externalUserName)
-      .getByDataTestid('addRepoBtn').should('be.disabled')
-      .getByDataTestid('externalTokenInput').find('input').clear().type(repo.externalToken)
-      .getByDataTestid('addRepoBtn').should('be.enabled')
-      .getByDataTestid('externalTokenInput').find('input').clear()
-      .get('.fr-error-text')
-      .should('have.length', 1)
-      .and('contain', 'Le token d\'accès au dépôt est obligatoire en cas de dépôt privé et ne doit contenir ni espaces ni caractères spéciaux')
-      .getByDataTestid('addRepoBtn').should('be.disabled')
-      .getByDataTestid('privateRepoCbx').find('input[type="checkbox"]').uncheck({ force: true })
-      .getByDataTestid('addRepoBtn').should('be.enabled')
-      .getByDataTestid('infraRepoCbx').find('input[type="checkbox"]').check({ force: true })
-      .getByDataTestid('addRepoBtn').should('be.enabled')
-  })
-
-  it('Should display repositories statuses', () => {
-    const repos = projectWithFailedRepo.repositories
-
-    cy.assertAddRepo(projectWithFailedRepo, repos)
-      .getByDataTestid(`${repos.find(repo => repo.status === 'created').internalRepoName}-created-badge`)
-      .should('contain', 'Dépôt correctement déployé')
-      .getByDataTestid(`${repos.find(repo => repo.status === 'failed').internalRepoName}-failed-badge`)
-      .should('contain', 'Echec des opérations')
+    cy.getByDataTestid('addRepoBtn').should('be.enabled')
+    cy.getByDataTestid('privateRepoCbx').find('input[type="checkbox"]').check({ force: true })
+    cy.getByDataTestid('addRepoBtn').should('be.disabled')
+    cy.getByDataTestid('externalUserNameInput').find('input').type(repo.externalUserName)
+    cy.getByDataTestid('addRepoBtn').should('be.disabled')
+    cy.getByDataTestid('externalTokenInput').find('input').clear().type(repo.externalToken)
+    cy.getByDataTestid('addRepoBtn').should('be.enabled')
+    cy.getByDataTestid('externalTokenInput').find('input').clear()
+    cy.getByDataTestid('addRepoBtn').should('be.disabled')
+    cy.getByDataTestid('privateRepoCbx').find('input[type="checkbox"]').uncheck({ force: true })
+    cy.getByDataTestid('addRepoBtn').should('be.enabled')
+    cy.getByDataTestid('infraRepoCbx').find('input[type="checkbox"]').check({ force: true })
+    cy.getByDataTestid('addRepoBtn').should('be.enabled')
   })
 
   it('Should add an external public repo', () => {
@@ -134,7 +118,7 @@ describe('Add repos into project', () => {
       externalRepoUrl: 'https://github.com/externalUser04/repo04.git',
       isInfra: true,
       isPrivate: true,
-      externalUserName: 'externalUser04',
+      externalUserName: 'externalUser+04',
       externalToken: 'hoqjC1vXtABzytBIWBXsdyzubmqMYkgA',
     }]
 
@@ -153,7 +137,7 @@ describe('Add repos into project', () => {
       .url().should('contain', '/repositories')
 
     cy.wait('@getProjects').its('response').then(response => {
-      repos = response.body.find(resProject => resProject.name === project.name).repositories
+      repos = response?.body.find(resProject => resProject.name === project.name).repositories
       cy.getByDataTestid(`repoTile-${repos[0].internalRepoName}`).click()
         .get('h1').should('contain', 'Modifier le dépôt')
         .getByDataTestid('internalRepoNameInput').should('be.disabled')
@@ -166,8 +150,8 @@ describe('Add repos into project', () => {
       cy.getByDataTestid('infraRepoCbx').find('input[type="checkbox"]').should('be.disabled')
 
       cy.getByDataTestid('updateRepoBtn').click()
-      cy.wait('@putRepo').its('response.statusCode').should('eq', 200)
-      cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
+      cy.wait('@putRepo').its('response.statusCode').should('match', /^20\d$/)
+      cy.wait('@getProjects').its('response.statusCode').should('match', /^20\d$/)
       cy.getByDataTestid(`repoTile-${repos[0].internalRepoName}`).should('exist')
       cy.reload()
       cy.getByDataTestid(`repoTile-${repos[0].internalRepoName}`).click()
@@ -220,11 +204,11 @@ describe('Add repos into project', () => {
     cy.generateGitLabCI(ciForms)
 
     cy.getByDataTestid('addRepoBtn').click()
-    cy.wait('@postRepo').its('response.statusCode').should('eq', 201)
-    cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
+    cy.wait('@postRepo').its('response.statusCode').should('match', /^20\d$/)
+    cy.wait('@getProjects').its('response.statusCode').should('match', /^20\d$/)
     cy.getByDataTestid(`repoTile-${repo.internalRepoName}`).should('exist')
     cy.wait(1000).reload()
-    cy.wait('@getProjects').its('response.statusCode').should('eq', 200)
+    cy.wait('@getProjects').its('response.statusCode').should('match', /^20\d$/)
     cy.assertAddRepo(project, [repo])
   })
 

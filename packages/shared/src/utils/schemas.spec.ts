@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ClusterBusinessSchema, ClusterPrivacy, EnvironmentSchema, OrganizationSchema, PermissionSchema, ProjectSchema, QuotaSchema, RepoBusinessSchema, CreateRepoSchema, StageSchema, UserSchema, descriptionMaxLength, instanciateSchema, parseZodError } from '../index.js'
+import { ClusterBusinessSchema, ClusterPrivacy, EnvironmentSchema, OrganizationSchema, PermissionSchema, ProjectSchema, QuotaSchema, RepoBusinessSchema, RepoSchema, QuotaStageSchema, StageSchema, UserSchema, descriptionMaxLength, instanciateSchema, parseZodError } from '../index.js'
 import { faker } from '@faker-js/faker'
 import { ZodError } from 'zod'
 
@@ -18,8 +18,7 @@ describe('Schemas utils', () => {
       externalToken: 'eddddsqsq-_',
       isPrivate: true,
       isInfra: false,
-      externalUserName: 'claire-nlet_',
-      status: 'created',
+      externalUserName: 'clai+re-nlet_',
     }
     expect(RepoBusinessSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
   })
@@ -31,7 +30,6 @@ describe('Schemas utils', () => {
       projectId: faker.string.uuid(),
       clusterId: faker.string.uuid(),
       quotaStageId: faker.string.uuid(),
-      status: 'created',
     }
     expect(EnvironmentSchema.omit({ permissions: true }).safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
   })
@@ -43,7 +41,6 @@ describe('Schemas utils', () => {
       projectId: faker.string.uuid(),
       clusterId: faker.string.uuid(),
       quotaStageId: faker.string.uuid(),
-      status: 'created',
       permissions: [{
         id: faker.string.uuid(),
         environmentId: faker.string.uuid(),
@@ -125,6 +122,16 @@ describe('Schemas utils', () => {
     expect(StageSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
   })
 
+  it('Should validate a correct quotaStage schema', () => {
+    const toParse = {
+      id: faker.string.uuid(),
+      quotaId: faker.string.uuid(),
+      stageId: faker.string.uuid(),
+      status: faker.lorem.word(),
+    }
+    expect(QuotaStageSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
+  })
+
   it('Should not validate an organization schema with wrong external data', () => {
     const toParse = {
       id: faker.string.uuid(),
@@ -150,7 +157,6 @@ describe('Schemas utils', () => {
       externalToken: 'myToken',
       isPrivate: true,
       isInfra: false,
-      status: 'created',
     }
     expect(RepoBusinessSchema
       .safeParse(toParse))
@@ -166,7 +172,6 @@ describe('Schemas utils', () => {
       isPrivate: true,
       isInfra: false,
       externalUserName: 'clairenlet',
-      status: 'created',
     }
     expect(parseZodError(RepoBusinessSchema
       .safeParse(toParse)
@@ -242,7 +247,6 @@ describe('Schemas utils', () => {
       externalRepoUrl: 'https://github.com/LAB-MI/candilibV2.git',
       isPrivate: false,
       isInfra: false,
-      status: 'created',
     }
 
     expect(parseZodError(RepoBusinessSchema
@@ -320,7 +324,7 @@ describe('Schemas utils', () => {
 
   it('Should validate a single key with given schema', () => {
     const toParse = { internalRepoName: 'candilib' }
-    expect(CreateRepoSchema
+    expect(RepoSchema
       .pick({ internalRepoName: true })
       .safeParse(toParse))
       .toStrictEqual({ data: toParse, success: true })
@@ -328,7 +332,7 @@ describe('Schemas utils', () => {
 
   it('Should not validate a single key with given schema', () => {
     const toParse = { internalRepoName: 'candi lib' }
-    expect(CreateRepoSchema
+    expect(RepoSchema
       .pick({ internalRepoName: true })
       .safeParse(toParse)
       // @ts-ignore
@@ -336,35 +340,38 @@ describe('Schemas utils', () => {
   })
 
   it('Should return truthy schema', () => {
-    expect(instanciateSchema(CreateRepoSchema, true)).toStrictEqual({
+    expect(instanciateSchema(RepoSchema.omit({ id: true }), true)).toStrictEqual({
       internalRepoName: true,
       externalRepoUrl: true,
       externalToken: true,
       isPrivate: true,
       isInfra: true,
       externalUserName: true,
+      projectId: true,
     })
   })
 
   it('Should return undefined schema', () => {
-    expect(instanciateSchema(CreateRepoSchema, undefined)).toStrictEqual({
+    expect(instanciateSchema(RepoSchema.omit({ id: true }), undefined)).toStrictEqual({
       internalRepoName: undefined,
       externalRepoUrl: undefined,
       externalToken: undefined,
       isPrivate: undefined,
       isInfra: undefined,
       externalUserName: undefined,
+      projectId: undefined,
     })
   })
 
   it('Should return string schema', () => {
-    expect(instanciateSchema(CreateRepoSchema, 'test')).toStrictEqual({
+    expect(instanciateSchema(RepoSchema.omit({ id: true }), 'test')).toStrictEqual({
       internalRepoName: 'test',
       externalRepoUrl: 'test',
       externalToken: 'test',
       isPrivate: 'test',
       isInfra: 'test',
       externalUserName: 'test',
+      projectId: 'test',
     })
   })
 })

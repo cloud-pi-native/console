@@ -1,5 +1,5 @@
-import prisma from '@/prisma.js'
 import type { Environment, Permission, User } from '@prisma/client'
+import prisma from '@/prisma.js'
 
 // GET
 export const getEnvironmentPermissions = async (environmentId: Environment['id']) => {

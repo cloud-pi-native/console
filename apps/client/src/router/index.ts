@@ -156,7 +156,7 @@ const routes: Readonly<RouteRecordRaw[]> = [
   },
   {
     path: '/admin/stages',
-    name: 'ListeStages',
+    name: 'ListStages',
     component: ListStages,
   },
 ]

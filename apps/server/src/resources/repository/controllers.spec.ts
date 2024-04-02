@@ -1,9 +1,13 @@
 import prisma from '../../__mocks__/prisma.js'
-import app, { getRequestor, setRequestor } from '../../__mocks__/app.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
 import { createRandomDbSetup, getRandomLog, getRandomRepo, getRandomRole, getRandomUser } from '@cpn-console/test-utils'
 import { getConnection, closeConnections } from '../../connect.js'
 import { projectIsLockedInfo } from '@cpn-console/shared'
+import { getRequestor, setRequestor } from '../../utils/mocks.js'
+import app from '../../app.js'
+
+vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
+vi.mock('../../utils/hook-wrapper.js', (await import('../../utils/mocks.js')).mockHookWrapper)
 
 describe('Repository routes', () => {
   const requestor = getRandomUser()
@@ -66,15 +70,11 @@ describe('Repository routes', () => {
 
       prisma.project.findUnique.mockResolvedValue(projectInfos)
       prisma.user.findUnique.mockResolvedValue(requestor)
-      prisma.project.update.mockResolvedValue(projectInfos)
       randomDbSetUp.stages.forEach(stage => {
         prisma.stage.findUnique.mockResolvedValueOnce(randomDbSetUp.stages?.find(dbSetUpstage => dbSetUpstage?.id === stage?.id))
       })
       prisma.repository.create.mockReturnValue(newRepository)
       prisma.log.create.mockResolvedValue(getRandomLog('Create Repository', getRequestor().id))
-      prisma.repository.update.mockResolvedValue(newRepository)
-      prisma.environment.findMany.mockResolvedValue([])
-      prisma.repository.findMany.mockResolvedValue(projectInfos.repositories)
 
       const response = await app.inject()
         .post(`/api/v1/projects/${projectInfos.id}/repositories`)
@@ -97,7 +97,7 @@ describe('Repository routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.json().message).toEqual(projectIsLockedInfo)
+      expect(JSON.parse(response.body).error).toEqual(projectIsLockedInfo)
     })
 
     it('Should not create a repository with bad internalRepoName', async () => {
@@ -111,7 +111,7 @@ describe('Repository routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(400)
-      expect(response.json().message).toEqual('Validation error: failed regex test at "internalRepoName"')
+      expect(JSON.parse(response.body).bodyErrors.issues[0].message).toEqual('failed regex test')
     })
   })
 
@@ -122,7 +122,7 @@ describe('Repository routes', () => {
       projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
       const repoToUpdate = projectInfos.repositories[0]
       const updatedKeys = {
-        externalRepoUrl: 'new',
+        externalRepoUrl: 'https://coucou.git',
         isPrivate: true,
         externalToken: 'new',
         externalUserName: 'new',
@@ -147,7 +147,7 @@ describe('Repository routes', () => {
 
       expect(response.statusCode).toEqual(200)
       expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Dépôt mis à jour avec succès')
+      expect(JSON.parse(response.body)).toEqual(repoUpdated)
     })
 
     it('Should not update a repository if invalid keys', async () => {
@@ -156,7 +156,7 @@ describe('Repository routes', () => {
       const repoToUpdate = projectInfos.repositories[0]
       const updatedKeys = {
         isPrivate: true,
-        externalRepoUrl: 'new',
+        externalRepoUrl: 'https://coucou.git',
         externalToken: undefined,
       }
 
@@ -168,7 +168,8 @@ describe('Repository routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(400)
-      expect(response.json().message).toEqual('Le token est requis')
+
+      expect(JSON.parse(response.body).error).toEqual('Le token est requis')
     })
 
     it('Should not update a repository if project locked', async () => {
@@ -187,7 +188,7 @@ describe('Repository routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.json().message).toEqual(projectIsLockedInfo)
+      expect(JSON.parse(response.body).error).toEqual(projectIsLockedInfo)
     })
   })
 
@@ -215,9 +216,7 @@ describe('Repository routes', () => {
         .delete(`/api/v1/projects/${projectInfos.id}/repositories/${repoToDelete.id}`)
         .end()
 
-      expect(response.statusCode).toEqual(200)
-      expect(response.body).toBeDefined()
-      expect(response.body).toEqual('Dépôt en cours de suppression')
+      expect(response.statusCode).toEqual(204)
     })
 
     it('Should not delete a repository if not owner', async () => {
@@ -232,7 +231,7 @@ describe('Repository routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.json().message).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
+      expect(JSON.parse(response.body).error).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
     })
   })
 })

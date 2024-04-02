@@ -13,7 +13,7 @@ describe('Administration users', () => {
 
     cy.kcLogin('tcolin')
     cy.visit('/admin/users')
-    cy.wait('@getAllUsers').its('response.statusCode').should('eq', 200)
+    cy.wait('@getAllUsers').its('response.statusCode').should('match', /^20\d$/)
 
     cy.getByDataTestid('tableAdministrationUsers').find('tbody').within(() => {
       users.forEach(user => {

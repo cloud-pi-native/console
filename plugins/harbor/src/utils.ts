@@ -1,19 +1,34 @@
 import { removeTrailingSlash, requiredEnv } from '@cpn-console/shared'
+import { Api } from './api/Api.js'
 
 const config: {
   url?: string
-  user?: string
-  password?: string
   host?: string
 } = {}
 
 export const getConfig = (): Required<typeof config> => {
   config.url = config.url ?? removeTrailingSlash(requiredEnv('HARBOR_URL'))
-  config.user = config.user ?? requiredEnv('HARBOR_ADMIN')
-  config.password = config.password ?? requiredEnv('HARBOR_ADMIN_PASSWORD')
   config.host = config.host ?? config?.url?.split('://')[1]
   // @ts-ignore
   return config
+}
+
+const getApiConfig = () => {
+  return {
+    auth: {
+      username: requiredEnv('HARBOR_ADMIN'),
+      password: requiredEnv('HARBOR_ADMIN_PASSWORD'),
+    },
+    baseURL: `${getConfig().url}/api/v2.0/`,
+  }
+}
+
+export let api: Api<ReturnType<typeof getApiConfig>> | undefined
+
+export const getApi = (): Api<ReturnType<typeof getApiConfig>> => {
+  if (api) return api
+  api = new Api(getApiConfig())
+  return api
 }
 
 export const getRobotPermissions = (projectName: string) => {

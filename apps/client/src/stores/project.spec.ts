@@ -113,6 +113,24 @@ describe('Project Store', () => {
     expect(projectStore.projects).toEqual([])
   })
 
+  it('Should replay hooks for project by api call', async () => {
+    const projectStore = useProjectStore()
+
+    expect(projectStore.projects).toEqual([])
+
+    const project = { id: 'projectId' }
+    apiClientPut.mockReturnValueOnce(Promise.resolve({ data: project }))
+    apiClientGet.mockReturnValueOnce(Promise.resolve({ data: [] }))
+
+    await projectStore.replayHooksForProject(project.id)
+
+    expect(apiClientPut).toHaveBeenCalledTimes(1)
+    expect(apiClientPut.mock.calls[0][0]).toBe(`/projects/${project.id}/hooks`)
+    expect(apiClientGet).toHaveBeenCalledTimes(1)
+    expect(apiClientGet.mock.calls[0][0]).toBe('/projects')
+    expect(projectStore.projects).toEqual([])
+  })
+
   it('Should archive a project by api call', async () => {
     const projectStore = useProjectStore()
     const projects = [{ id: 'projectId' }]

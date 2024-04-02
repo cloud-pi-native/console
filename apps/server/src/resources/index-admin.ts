@@ -1,39 +1,21 @@
-import clusterRouter from './cluster/admin/controllers.js'
-import dbRouter from './system/db/controllers.js'
-import logRouter from './log/admin/controllers.js'
-import organizationRouter from './organization/admin/controllers.js'
-import projectRouter from './project/admin/controllers.js'
-import quotaRouter from './quota/admin/controllers.js'
-import stageRouter from './stage/admin/controllers.js'
-import userRouter from './user/admin/controllers.js'
-import { checkAdminGroup } from '@/utils/controller.js'
 import { type FastifyInstance } from 'fastify'
+import { clusterAdminRouter } from './cluster/admin/router.js'
+import { logAdminRouter } from './log/admin/router.js'
+import { organizationAdminRouter } from './organization/admin/router.js'
+import { projectAdminRouter } from './project/admin/router.js'
+import { quotaAdminRouter } from './quota/admin/router.js'
+import { stageAdminRouter } from './stage/admin/router.js'
+import { userAdminRouter } from './user/admin/router.js'
+import { serverInstance } from '@/app.js'
+import { checkAdminGroup } from '@/utils/controller.js'
 
-const router = async (app: FastifyInstance, _opt) => {
+export const apiRouterAdmin = () => async (app: FastifyInstance) => {
   app.addHook('preHandler', checkAdminGroup)
-  // Enregistrement du sous routeur user
-  app.register(userRouter, { prefix: '/users' })
-
-  // Enregistrement du sous routeur organization
-  app.register(organizationRouter, { prefix: '/organizations' })
-
-  // Enregistrement du sous routeur project
-  app.register(projectRouter, { prefix: '/projects' })
-
-  // Enregistrement du sous routeur logs
-  app.register(logRouter, { prefix: '/logs' })
-
-  // Enregistrement du sous routeur cluster
-  app.register(clusterRouter, { prefix: '/clusters' })
-
-  // Enregistrement du sous routeur db
-  app.register(dbRouter, { prefix: '/db' })
-
-  // Enregistrement du sous routeur quota
-  app.register(quotaRouter, { prefix: '/quotas' })
-
-  // Enregistrement du sous routeur stage
-  app.register(stageRouter, { prefix: '/stages' })
+  await app.register(serverInstance.plugin(clusterAdminRouter()))
+  await app.register(serverInstance.plugin(logAdminRouter()))
+  await app.register(serverInstance.plugin(organizationAdminRouter()))
+  await app.register(serverInstance.plugin(projectAdminRouter()))
+  await app.register(serverInstance.plugin(quotaAdminRouter()))
+  await app.register(serverInstance.plugin(stageAdminRouter()))
+  await app.register(serverInstance.plugin(userAdminRouter()))
 }
-
-export default router

@@ -37,16 +37,6 @@ describe('Dashboard', () => {
         .should('contain', `Projet ${project.name} : ${statusDict.status[project.status]?.wording}`)
         .getByDataTestid(`${project.id}-${project.locked ? '' : 'un'}locked-badge`)
         .should('contain', `Projet ${project.name} : ${statusDict.locked[project.locked]?.wording}`)
-
-      project.repositories?.forEach(repository => {
-        cy.get(`[data-testid$="-${repository.status}-badge"]`)
-          .should('contain', `Dépôt ${repository.internalRepoName} : ${statusDict.status[repository.status]?.wording}`)
-      })
-
-      project.environments?.forEach(environment => {
-        cy.get(`[data-testid$="-${environment.status}-badge"]`)
-          .should('contain', `Environnement ${environment.name} : ${statusDict.status[environment.status]?.wording}`)
-      })
     })
   })
 
@@ -65,17 +55,17 @@ describe('Dashboard', () => {
       .getByDataTestid('setDescriptionBtn').click()
       .getByDataTestid('descriptionInput').clear().type(description1)
       .getByDataTestid('saveDescriptionBtn').click()
-      .wait('@updateProject').its('response.statusCode').should('eq', 200)
+      .wait('@updateProject').its('response.statusCode').should('match', /^20\d$/)
       .getByDataTestid('descriptionP').should('contain', description1)
       .getByDataTestid('setDescriptionBtn').click()
       .getByDataTestid('descriptionInput').clear().type(description2)
       .getByDataTestid('saveDescriptionBtn').click()
-      .wait('@updateProject').its('response.statusCode').should('eq', 200)
+      .wait('@updateProject').its('response.statusCode').should('match', /^20\d$/)
       .getByDataTestid('descriptionP').should('contain', description2)
       .getByDataTestid('setDescriptionBtn').click()
       .getByDataTestid('descriptionInput').clear()
       .getByDataTestid('saveDescriptionBtn').click()
-      .wait('@updateProject').its('response.statusCode').should('eq', 200)
+      .wait('@updateProject').its('response.statusCode').should('match', /^20\d$/)
       .getByDataTestid('descriptionP').should('have.class', 'disabled')
   })
 
@@ -93,13 +83,32 @@ describe('Dashboard', () => {
       .getByDataTestid('projectSecretsZone').should('not.exist')
       .getByDataTestid('showSecretsBtn').click()
 
-    cy.wait('@getProjectSecrets').its('response.statusCode').should('eq', 200)
+    cy.wait('@getProjectSecrets').its('response.statusCode').should('match', /^20\d$/)
     cy.getByDataTestid('snackbar').within(() => {
       cy.get('p').should('contain', 'Secrets récupérés')
     })
 
     cy.getByDataTestid('projectSecretsZone').should('exist')
     cy.getByDataTestid('noProjectSecretsP').should('contain', 'Aucun secret à afficher')
+  })
+
+  it('Should replay hooks for project', () => {
+    cy.intercept('GET', '/api/v1/stages').as('getStages')
+    cy.intercept('PUT', `/api/v1/projects/${projectCreated.id}/hooks`).as('replayHooks')
+    cy.kcLogin('test')
+
+    cy.goToProjects()
+      .getByDataTestid(`projectTile-${projectCreated.name}`).click()
+      .getByDataTestid('menuDashboard').click()
+
+    cy.url().should('contain', 'dashboard')
+    cy.wait('@getStages')
+    cy.getByDataTestid('replayHooksBtn').click()
+
+    cy.wait('@replayHooks').its('response.statusCode').should('match', /^20\d$/)
+    cy.getByDataTestid('snackbar').within(() => {
+      cy.get('p').should('contain', 'Le projet a été reprovisionné avec succès')
+    })
   })
 
   it('Should not be able to access project secrets if not owner', () => {

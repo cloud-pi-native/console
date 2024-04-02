@@ -1,7 +1,9 @@
 import { z } from 'zod'
-import { AllStatus } from '../utils/const.js'
+import { ErrorSchema } from './utils.js'
 
-export const CreateRepoSchema = z.object({
+export const RepoSchema = z.object({
+  id: z.string()
+    .uuid(),
   internalRepoName: z.string()
     .regex(/^[a-z0-9]+[a-z0-9-]+[a-z0-9]+$/, { message: 'failed regex test' })
     .min(2, { message: 'must be at least 2 character long' })
@@ -12,24 +14,15 @@ export const CreateRepoSchema = z.object({
   isPrivate: z.boolean(),
   isInfra: z.boolean(),
   externalUserName: z.string()
-    .regex(/^[a-zA-Z0-9_-]+$/)
-    .optional(),
+    .optional()
+    .nullable(),
   externalToken: z.string()
-    .regex(/^[a-zA-Z0-9=_-]+$/)
     .optional(),
-})
-
-const UpdateRepoSchema = z.object({
-  id: z.string()
-    .uuid(),
-  status: z.nativeEnum(AllStatus),
   projectId: z.string()
     .uuid(),
 })
 
-const RepoSchema = UpdateRepoSchema.merge(CreateRepoSchema)
-
-export const CreateRepoBusinessSchema = CreateRepoSchema.refine(
+export const CreateRepoBusinessSchema = RepoSchema.omit({ id: true, projectId: true }).refine(
   ({ isPrivate, externalToken, externalUserName }) =>
     (isPrivate && externalToken && externalUserName) ||
     !isPrivate,
@@ -44,3 +37,71 @@ export const RepoBusinessSchema = RepoSchema.refine(
 )
 
 export type Repo = Zod.infer<typeof RepoSchema>
+
+export const CreateRepoSchema = {
+  params: z.object({
+    projectId: z.string()
+      .uuid(),
+  }),
+  body: RepoSchema.omit({ id: true, projectId: true }),
+  responses: {
+    201: RepoSchema,
+    400: ErrorSchema,
+    401: ErrorSchema,
+    403: ErrorSchema,
+    500: ErrorSchema,
+  },
+}
+
+export const GetReposSchema = {
+  params: z.object({
+    projectId: z.string()
+      .uuid(),
+  }),
+  responses: {
+    200: z.array(RepoSchema),
+    500: ErrorSchema,
+  },
+}
+
+export const GetRepoByIdSchema = {
+  params: z.object({
+    projectId: z.string()
+      .uuid(),
+    repositoryId: z.string()
+      .uuid(),
+  }),
+  responses: {
+    200: RepoSchema,
+    401: ErrorSchema,
+    404: ErrorSchema,
+    500: ErrorSchema,
+  },
+}
+
+export const UpdateRepoSchema = {
+  params: z.object({
+    projectId: z.string()
+      .uuid(),
+    repositoryId: z.string()
+      .uuid(),
+  }),
+  body: RepoSchema.partial(),
+  responses: {
+    200: RepoSchema,
+    500: ErrorSchema,
+  },
+}
+
+export const DeleteRepoSchema = {
+  params: z.object({
+    projectId: z.string()
+      .uuid(),
+    repositoryId: z.string()
+      .uuid(),
+  }),
+  responses: {
+    204: null,
+    500: ErrorSchema,
+  },
+}

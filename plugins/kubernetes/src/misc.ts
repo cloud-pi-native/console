@@ -1,6 +1,6 @@
-import type { ProjectBase, StepCall } from '@cpn-console/hooks'
+import type { ProjectLite, StepCall } from '@cpn-console/hooks'
 
-export const getProjectSecrets: StepCall<ProjectBase> = async () => {
+export const getProjectSecrets: StepCall<ProjectLite> = async () => {
   return {
     status: {
       result: 'OK',

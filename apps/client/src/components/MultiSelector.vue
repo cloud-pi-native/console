@@ -115,7 +115,6 @@ const removeElementFromArray = (elementToDelete) => {
     <DsfrTag
       :label="element"
       :data-testid="`${element}-${props.id}-tag`"
-      tag-name="button"
       :disabled="props.disabled"
       class="fr-tag--dismiss"
       @click="(event) => removeElementFromArray(event.target.outerText)"

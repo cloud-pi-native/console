@@ -4,17 +4,17 @@
 
 ### Formulaire de commande d'un espace projet
 
-| Champ                 | Type   | Description                         |
-| --------------------- | ------ | ----------------------------------- |
-| Nom de l'organisation | string | obligatoire                         |
-| Nom du projet         | string | obligatoire, regex([a-z0-9-]{2,53}) |
+| Champ                 | Type   | Description                           |
+| --------------------- | ------ | ------------------------------------- |
+| Nom de l'organisation | string | obligatoire                           |
+| Nom du projet         | string | obligatoire, `regex([a-z0-9-]{2,53})` |
 
 ### Formulaire de synchronisation d'un dépôt
 
 | Champ                                           | Type    | Description                               |
 | ----------------------------------------------- | ------- | ----------------------------------------- |
-| Nom du dépôt Git interne                        | string  | obligatoire, regex([a-z0-9-]{2,53})       |
-| Url du dépôt Git externe                        | string  | obligatoire, regex(^<https://)>             |
+| Nom du dépôt Git interne                        | string  | obligatoire, `regex([a-z0-9-]{2,53})`     |
+| Url du dépôt Git externe                        | string  | obligatoire, `regex(^https://)`           |
 | Dépôt externe privé                             | boolean | obligatoire                               |
 | Nom d'utilisateur lié au token du dépôt externe | string  | obligatoire si le dépôt externe est privé |
 | Token d'accès au dépôt externe                  | string  | obligatoire si le dépôt externe est privé |
@@ -42,152 +42,13 @@
 Trois niveaux de permissions différents,
 | Valeur en base | Description dans le front | Niveaux       |
 | -------------- | ------------------------- | ------------- |
-| 0              | r                         | Lecture       |
-| 1              | rw                        | + Ecriture    |
-| 2              | rwd                       | + Suppression |
+| 0              | r                         | Lecture       |
+| 1              | rw                        | + Ecriture    |
+| 2              | rwd                       | + Suppression |
 
-## Point d'api
+## Points d'API
 
-### Projects
-
-```js
-// Create project
-post('/projects')
-  => body({ name, organization })
-
-// Get user projects
-get('/projects')
-
-// Get user project
-get('/projects/:projectId')
-
-// Get project owner
-get('/projects/:projectId/owner')
-
-// Update project
-put('/projects/:projectId')
-
-// Delete project
-delete('/projects/:projectId')
-```
-
-### Users
-
-```js
-// Get user by letter match on email
-  get('/projects/:projectId/users/match?letters=abc')
-  
-// Add user to project
-post('/projects/:projectId/users')
-  => body({ email, role })
-
-// Update user role in project team
-put('/projects/:projectId/users/:userId')
-  => body({ role })
-
-// Get project users
-get('/projects/:projectId/users')
-
-// Remove user from project team
-delete('/projects/:projectId/users/:userId')
-```
-
-### Repositories
-
-```js
-// Add repository in project
-post('/projects/:projectId/repositories')
-  => body({ internalRepoName, externalRepoUrl, _externalUserName, _externalToken, isInfra, isPrivate })
-
-// Update project repository
-put('/projects/:projectId/repositories/:repositoryId')
-  => body({ externalRepoUrl, _externalUserName, _externalToken, isPrivate })
-
-// Get project repositories
-get('/projects/:projectId/repositories')
-
-// Get repository by id
-get('/:projectId/repositories/:repositoryId')
-
-// Delete project repository
-delete('/projects/:projectId/repositories/:repositoryId')
-```
-
-### Environments
-
-```js
-// Add environment in project
-post('/projects/:projectId/environments')
-  => body({ name })
-
-// Get project environments
-get('/projects/:projectId/environments')
-
-// Delete project environment
-delete('/projects/:projectId/environments/:environmentId')
-```
-
-### Permissions
-
-```js
-// Add permission in environment (add or update => upsert)
-post('/projects/:projectId/environments/:environmentId/permissions')
-  => body({ userId, level })
-
-// Update permission in environment (add or update => upsert)
-put('/projects/:projectId/environments/:environmentId/permissions')
-  => body({ userId, level })
-
-// Get environment permissions
-get('/projects/:projectId/environments/:environmentId/permissions')
-
-// Delete environment permission
-delete('/projects/:projectId/environments/:environmentId/permissions/:userId')
-```
-
-### Organizations
-
-```js
-// Get active organizations
-get('/', getActiveOrganizationsController)
-```
-
-### Services
-
-```js
-// Check services health
-get('/', checkServicesHealthController)
-```
-
-### ADMIN Organizations
-
-```js
-// Create an organization
-post('/', createOrganizationController)
-
-// Update an organization
-put('/:orgName', updateOrganizationController)
-
-// Synchronize organizations with plugins
-put('/sync', fetchOrganizationsController)
-
-// Get all organizations
-get('/', getAllOrganizationsController)
-```
-
-### ADMIN Projects
-
-```js
-// Get all projects
-get('/', getAllProjectsController)
-```
-
-### ADMIN Users
-
-```js
-// Get all users
-get('/', getUsersController)
-```
+voir swagger : <http://localhost:8080/api/v1/swagger-ui/static/index.html>
 
 ---
 
@@ -196,9 +57,6 @@ get('/', getUsersController)
 ### Admin
 
 - Lister chacune des tables
-- Import / Export de données depuis des fichiers (csv, json ...)
-- Possibilité pour un admin de modifier des ressources sans faire parti du projet
-- Possibilité d'unlock un projet / rejouer les plugins pour un projet ou une ressource
 - Mise en place d'une table d'historisation des status des projets
 - Mettre en place un point d'api pour gérer l'équipe d'admin (création/suppression)
 - Possibilité de réexecuter dans keycloak les droits présents dans la DB (synchro DB - keycloak)

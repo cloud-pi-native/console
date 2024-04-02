@@ -1,8 +1,12 @@
 import prisma from '../../__mocks__/prisma.js'
-import app, { getRequestor, setRequestor } from '../../__mocks__/app.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
 import { createRandomDbSetup, getRandomPerm, getRandomRole, getRandomUser } from '@cpn-console/test-utils'
 import { getConnection, closeConnections } from '../../connect.js'
+import { getRequestor, setRequestor } from '../../utils/mocks.js'
+import app from '../../app.js'
+
+vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
+vi.mock('../../utils/hook-wrapper.js', (await import('../../utils/mocks.js')).mockHookWrapper)
 
 describe('Permission routes', () => {
   const requestor = getRandomUser()
@@ -49,7 +53,7 @@ describe('Permission routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.json().message).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
+      expect(JSON.parse(response.body).error).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
     })
   })
 
@@ -94,7 +98,7 @@ describe('Permission routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.json().message).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
+      expect(JSON.parse(response.body).error).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
     })
 
     it('Should not set a permission if user is not project member', async () => {
@@ -112,7 +116,7 @@ describe('Permission routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(400)
-      expect(response.json().message).toEqual('L\'utilisateur n\'est pas membre du projet')
+      expect(JSON.parse(response.body).error).toEqual('L\'utilisateur n\'est pas membre du projet')
     })
   })
 
@@ -164,7 +168,7 @@ describe('Permission routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.json().message).toStrictEqual('La permission du owner du projet ne peut être modifiée')
+      expect(JSON.parse(response.body).error).toStrictEqual('La permission du owner du projet ne peut être modifiée')
     })
 
     it('Should not update a permission if not permitted on given environment', async () => {
@@ -186,7 +190,7 @@ describe('Permission routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.json().message).toStrictEqual('Vous n\'avez pas de droits sur cet environnement')
+      expect(JSON.parse(response.body).error).toStrictEqual('Vous n\'avez pas de droits sur cet environnement')
     })
   })
 
@@ -213,8 +217,7 @@ describe('Permission routes', () => {
         .delete(`/api/v1/projects/${projectInfos.id}/environments/${environment.id}/permissions/${permissionToDelete.userId}`)
         .end()
 
-      expect(response.statusCode).toEqual(200)
-      expect(response.json()).toStrictEqual(permissionToDelete)
+      expect(response.statusCode).toEqual(204)
     })
 
     it('Should not delete owner permission', async () => {
@@ -234,7 +237,7 @@ describe('Permission routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.json().message).toStrictEqual('La permission du owner du projet ne peut être supprimée')
+      expect(JSON.parse(response.body).error).toStrictEqual('La permission du owner du projet ne peut être supprimée')
     })
 
     it('Should not delete permission if not permitted on given environment', async () => {
@@ -255,7 +258,7 @@ describe('Permission routes', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(response.json().message).toStrictEqual('Vous n\'avez pas de droits sur cet environnement')
+      expect(JSON.parse(response.body).error).toStrictEqual('Vous n\'avez pas de droits sur cet environnement')
     })
   })
 })

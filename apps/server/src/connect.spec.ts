@@ -1,19 +1,20 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest'
-import { dropTables, getConnection } from './connect.js'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { PrismaClientInitializationError } from '@prisma/client/runtime/library.js'
 import {
-  _dropLogsTable,
-  _dropRepositoriesTable,
-  _dropPermissionsTable,
   _dropEnvironmentsTable,
-  _dropProjectsTable,
-  _dropUsersTable,
-  _dropRolesTable,
+  _dropLogsTable,
   _dropOrganizationsTable,
+  _dropPermissionsTable,
+  _dropProjectsTable,
+  _dropRepositoriesTable,
+  _dropRolesTable,
+  _dropUsersTable,
 } from '@/resources/queries-index.js'
 import prisma from './__mocks__/prisma.js'
-import app from './__mocks__/app.js'
-import { PrismaClientInitializationError } from '@prisma/client/runtime/library.js'
+import app from './app.js'
+import { dropTables, getConnection } from './connect.js'
 
+vi.mock('fastify-keycloak-adapter', (await import('./utils/mocks.js')).mockSessionPlugin)
 vi.mock('@/resources/queries-index.js')
 vi.mock('./models/log.js', () => getModel('getLogModel'))
 vi.mock('./models/repository.js', () => getModel('getRepositoryModel'))
@@ -23,8 +24,13 @@ vi.mock('./models/project.js', () => getModel('getProjectModel'))
 vi.mock('./models/user.js', () => getModel('getUserModel'))
 vi.mock('./models/users-projects.js', () => getModel('getRolesModel'))
 vi.mock('./models/organization.js', () => getModel('getOrganizationModel'))
-vi.mock('./app.js')
 vi.mock('./prisma.js')
+
+vi.spyOn(app, 'listen')
+vi.spyOn(app.log, 'info')
+vi.spyOn(app.log, 'warn')
+vi.spyOn(app.log, 'error')
+vi.spyOn(app.log, 'debug')
 
 function getModel (modelName) {
   return {

@@ -1,9 +1,9 @@
-import { hooks } from '@cpn-console/hooks'
-import { addLogs, createOrganization as createOrganizationQuery, getOrganizationByName, getOrganizations, getProjectByOrganizationId, lockProject, updateActiveOrganization, updateLabelOrganization } from '@/resources/queries-index.js'
-import { unlockProjectIfNotFailed, validateSchema } from '@/utils/business.js'
-import { BadRequestError, NotFoundError } from '@/utils/errors.js'
 import type { Organization, User } from '@prisma/client'
 import { type CreateOrganizationDto, getUniqueListBy, OrganizationSchema, objectValues } from '@cpn-console/shared'
+import { addLogs, createOrganization as createOrganizationQuery, getOrganizationByName, getOrganizations, getProjectByOrganizationId, lockProject, unlockProject, updateActiveOrganization, updateLabelOrganization } from '@/resources/queries-index.js'
+import { hook } from '@/utils/hook-wrapper.js'
+import { validateSchema } from '@/utils/business.js'
+import { BadRequestError, NotFoundError } from '@/utils/errors.js'
 
 export const getAllOrganization = async () => {
   const allOrganizations = await getOrganizations()
@@ -38,7 +38,7 @@ export const updateOrganization = async (name: Organization['name'], active?: Or
     if (active === true) {
       const projects = await getProjectByOrganizationId(organization.id)
       for (const project of projects) {
-        await unlockProjectIfNotFailed(project.id)
+        await unlockProject(project.id)
       }
     }
   }
@@ -52,11 +52,13 @@ export const fetchOrganizations = async (userId: User['id'], requestId: string) 
   const consoleOrganizations = await getOrganizations()
 
   type PluginOrganization = { name: string, label: string, source: string }
-  const results = await hooks.fetchOrganizations.execute({})
+  const results = await hook.misc.fetchOrganizations()
 
   await addLogs('Fetch organizations', results, userId, requestId)
 
-  if (results.failed) throw new BadRequestError('Echec des services à la synchronisation des organisations', undefined)
+  if (results.failed) {
+    throw new BadRequestError('Echec des services à la synchronisation des organisations', undefined)
+  }
 
   /**
   * Filter plugin results to get a single array of organizations with unique name

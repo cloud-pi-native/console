@@ -1,15 +1,15 @@
 <script lang="ts" setup>
 import { onBeforeMount, ref, type Ref } from 'vue'
+import { getRandomId } from '@gouvminint/vue-dsfr'
+import { type AsyncReturnType, formatDate, statusDict, sortArrByObjKeyAsc, AllStatus, ProjectModel } from '@cpn-console/shared'
 import { useAdminProjectStore } from '@/stores/admin/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { type AsyncReturnType, formatDate, statusDict, sortArrByObjKeyAsc } from '@cpn-console/shared'
 import { useAdminOrganizationStore } from '@/stores/admin/organization.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
-import { getRandomId } from '@gouvminint/vue-dsfr'
 import { useUserStore } from '@/stores/user.js'
 import { useUsersStore } from '@/stores/users.js'
-import { useProjectUserStore } from '@/stores/project-user'
-import { useAdminQuotaStore } from '@/stores/admin/quota'
+import { useProjectUserStore } from '@/stores/project-user.js'
+import { useAdminQuotaStore } from '@/stores/admin/quota.js'
 
 const adminProjectStore = useAdminProjectStore()
 const adminOrganizationStore = useAdminOrganizationStore()
@@ -51,7 +51,7 @@ const rows: Ref<Rows> = ref([])
 const environmentsRows: Ref<EnvironnementRows > = ref([])
 const repositoriesRows: Ref<RepositoryRows> = ref([])
 const tableKey = ref(getRandomId('table'))
-const selectedProject: Ref<typeof allProjects['value'][0] | undefined> = ref()
+const selectedProject: Ref<ProjectModel | undefined> = ref()
 const teamCtKey = ref(getRandomId('team'))
 const environmentsCtKey = ref(getRandomId('environment'))
 const repositoriesCtKey = ref(getRandomId('repository'))
@@ -81,7 +81,7 @@ const filterMethods: FilterMethods = {
   Tous: () => true,
   'Non archivés': (row) => row.status !== 'archived',
   Archivés: (row) => row.status === 'archived',
-  Échoués: (row) => row.status === 'failed',
+  Échoués: (row) => row.status === AllStatus.FAILED,
   Vérrouillés: (row) => row.locked,
 }
 
@@ -151,7 +151,7 @@ const getEnvironmentsRows = async () => {
   await adminQuotaStore.getAllQuotas()
   environmentsRows.value = selectedProject.value.environments?.length
     ? sortArrByObjKeyAsc(selectedProject.value.environments, 'name')
-      ?.map(({ id, quotaStage, name, status }) => (
+      ?.map(({ id, quotaStage, name }) => (
         [
           name,
           quotaStage.stage.name,
@@ -172,23 +172,6 @@ const getEnvironmentsRows = async () => {
               }, []),
             'onUpdate:model-value': (event: string) => updateEnvironmentQuota({ environmentId: id, quotaId: event }),
           },
-          {
-            component: 'v-icon',
-            name: statusDict.status[status].icon,
-            title: `L'environnement ${name} est ${statusDict.status[status].wording}`,
-            disabled: true,
-            fill: statusDict.status[status].color,
-          },
-          {
-            component: 'v-icon',
-            name: 'ri-refresh-fill',
-            // title: `Reprovisionner l'environnement ${name}`,
-            title: 'Cette fonctionnalité n\'est pas encore disponible',
-            cursor: 'pointer',
-            fill: 'var(--warning-425-625)',
-            class: 'cursor-not-allowed',
-            onClick: () => replayHooks({ resource: 'environment', resourceId: id }),
-          },
         ]
       ),
       )
@@ -205,25 +188,10 @@ const getRepositoriesRows = () => {
   if (!selectedProject.value) return
   repositoriesRows.value = selectedProject.value.repositories?.length
     ? sortArrByObjKeyAsc(selectedProject.value.repositories, 'internalRepoName')
-      ?.map(({ id, internalRepoName, status }) => (
+      ?.map(({ internalRepoName, isInfra }) => (
         [
           internalRepoName,
-          {
-            component: 'v-icon',
-            name: statusDict.status[status].icon,
-            title: `Le dépôt ${internalRepoName} est ${statusDict.status[status].wording}`,
-            fill: statusDict.status[status].color,
-          },
-          {
-            component: 'v-icon',
-            name: 'ri-refresh-fill',
-            // title: `Reprovisionner le dépôt ${internalRepoName}`,
-            title: 'Cette fonctionnalité n\'est pas encore disponible',
-            cursor: 'pointer',
-            fill: 'var(--warning-425-625)',
-            class: 'cursor-not-allowed',
-            onClick: () => replayHooks({ resource: 'repository', resourceId: id }),
-          },
+          isInfra ? 'Infra' : 'Applicatif',
         ]
       ),
       )
@@ -251,9 +219,10 @@ const selectProject = async (projectId: string) => {
 }
 
 const updateEnvironmentQuota = async ({ environmentId, quotaId }: {environmentId: string, quotaId: string}) => {
-  if (!selectedProject.value) return
+  if (!selectedProject.value?.environments) return
   snackbarStore.isWaitingForResponse = true
-  const environment = selectedProject.value?.environments.find(environment => environment.id === environmentId)
+  const environment = selectedProject.value.environments.find(environment => environment.id === environmentId)
+  if (!environment) return
   environment.quotaStageId = environment.quotaStage.stage.quotaStage.find(quotaStage => quotaStage.quotaId === quotaId)?.id
   await projectEnvironmentStore.updateEnvironment(environment, selectedProject.value.id)
   await getAllProjects()
@@ -267,11 +236,11 @@ const handleProjectLocking = async (projectId: string, lock: boolean) => {
   snackbarStore.isWaitingForResponse = false
 }
 
-const replayHooks = async ({ resource, resourceId }: {resource: string, resourceId: string}) => {
+const replayHooks = async (projectId: string) => {
   snackbarStore.isWaitingForResponse = true
-  // snackbarStore.setMessage(`Reprovisionnement de la ressource ${resource} ayant pour id ${resourceId}`)
-  console.log({ resource, resourceId })
-  snackbarStore.setMessage('Cette fonctionnalité n\'est pas encore disponible.')
+  await adminProjectStore.replayHooksForProject(projectId)
+  await getAllProjects()
+  snackbarStore.setMessage(`Le projet ayant pour id ${projectId} a été reprovisionné avec succès`, 'success')
   snackbarStore.isWaitingForResponse = false
 }
 
@@ -286,9 +255,11 @@ const archiveProject = async (projectId: string) => {
 
 const addUserToProject = async (email: string) => {
   snackbarStore.isWaitingForResponse = true
-  const newRoles = await projectUserStore.addUserToProject(selectedProject.value?.id, { email })
+  if (selectedProject.value) {
+    const newRoles = await projectUserStore.addUserToProject(selectedProject.value.id, { email })
+    selectedProject.value.roles = newRoles
+  }
   teamCtKey.value = getRandomId('team')
-  selectedProject.value.roles = newRoles
   snackbarStore.isWaitingForResponse = false
 }
 
@@ -408,12 +379,11 @@ onBeforeMount(async () => {
       />
       <div class="w-full flex gap-4 fr-mb-2w">
         <DsfrButton
+          data-testid="replayHooksBtn"
           label="Reprovisionner le projet"
-          title="Cette fonctionnalité n'est pas encore disponible"
           icon="ri-refresh-fill"
           secondary
-          disabled
-          @click="replayHooks({resource: 'project', resourceId: selectedProject.id})"
+          @click="replayHooks(selectedProject.id)"
         />
         <DsfrButton
           data-testid="handleProjectLockingBtn"
@@ -466,15 +436,15 @@ onBeforeMount(async () => {
         :nav-items="[
           {
             to: `#${environmentsId}`,
-            text: '#Environnements du projet'
+            text: '#Environnements'
           },
           {
             to: `#${repositoriesId}`,
-            text: '#Dépôts du projet'
+            text: '#Dépôts'
           },
           {
             to: `#${membersId}`,
-            text: '#Membres du projet'
+            text: '#Membres'
           },
         ]"
       />
@@ -484,15 +454,15 @@ onBeforeMount(async () => {
         <DsfrTable
           :id="environmentsId"
           :key="environmentsCtKey"
-          :title="`Environnements du projet ${selectedProject.name}`"
-          :headers="['Nom', 'Type d\'environnement', 'Quota', 'Statut', 'Reprovisionner']"
+          title="Environnements"
+          :headers="['Nom', 'Type d\'environnement', 'Quota']"
           :rows="environmentsRows"
         />
         <DsfrTable
           :id="repositoriesId"
           :key="repositoriesCtKey"
-          :title="`Dépôts du projet ${selectedProject.name}`"
-          :headers="['Nom', 'Statut', 'Reprovisionner']"
+          :title="`Dépôts`"
+          :headers="['Nom', 'Type']"
           :rows="repositoriesRows"
         />
         <TeamCt
@@ -500,8 +470,7 @@ onBeforeMount(async () => {
           :key="teamCtKey"
           :user-profile="userStore.userProfile"
           :project="{id: selectedProject.id, name: selectedProject.name }"
-          :roles="selectedProject.roles.map(({user, ...role}) => role)"
-          :is-updating-project-members="isWaitingForResponse"
+          :roles="selectedProject.roles?.map(({user, ...role}) => role)"
           :known-users="usersStore.users"
           @add-member="(email) => addUserToProject(email)"
           @update-role="({ userId, role}) => updateUserRole({ userId, role})"

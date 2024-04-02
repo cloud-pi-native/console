@@ -1,6 +1,10 @@
 import axios, { AxiosInstance } from 'axios'
-import { PluginApi } from '@cpn-console/hooks'
+import { PluginApi, ProjectLite } from '@cpn-console/hooks'
 import { removeTrailingSlash, requiredEnv } from '@cpn-console/shared'
+
+type readOptions = {
+  throwIfNoEntry: boolean
+}
 
 export class VaultProjectApi extends PluginApi {
   private token: string | undefined = undefined
@@ -8,9 +12,9 @@ export class VaultProjectApi extends PluginApi {
   private basePath: string
   private projectRootDir: string | undefined
 
-  constructor (organizationName: string, projectName: string) {
+  constructor (project: ProjectLite) {
     super()
-    this.basePath = `${organizationName}/${projectName}`
+    this.basePath = `${project.organization.name}/${project.name}`
     this.projectRootDir = removeTrailingSlash(requiredEnv('PROJECTS_ROOT_DIR'))
     this.axios = axios.create({
       baseURL: requiredEnv('VAULT_URL'),
@@ -53,11 +57,14 @@ export class VaultProjectApi extends PluginApi {
     return listSecretPath.flat()
   }
 
-  public async read (path: string = '/') {
+  public async read (path: string = '/', options: readOptions = { throwIfNoEntry: true }) {
     if (path.startsWith('/')) path = path.slice(1)
     const response = await this.axios.get(
       `/v1/forge-dso/data/${this.projectRootDir}/${this.basePath}/${path}`,
-      { headers: { 'X-Vault-Token': await this.getToken() } },
+      {
+        headers: { 'X-Vault-Token': await this.getToken() },
+        validateStatus: (status) => (options.throwIfNoEntry ? [200] : [200, 404]).includes(status),
+      },
     )
     return await response.data.data
   }

@@ -6,8 +6,8 @@ import monitor from './monitor.js'
 export const plugin: Plugin = {
   infos,
   subscribedHooks: {
-    createProject: { steps: { main: createNexusProject } },
-    archiveProject: { steps: { main: deleteNexusProject } },
+    upsertProject: { steps: { main: createNexusProject } },
+    deleteProject: { steps: { main: deleteNexusProject } },
   },
   monitor,
 }

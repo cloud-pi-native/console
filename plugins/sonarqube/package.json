@@ -1,7 +1,7 @@
 {
   "name": "@cpn-console/sonarqube-plugin",
   "description": "",
-  "version": "1.0.0",
+  "version": "2.0.1",
   "private": false,
   "type": "module",
   "main": "dist/index.js",
@@ -22,7 +22,10 @@
   },
   "devDependencies": {
     "@cpn-console/eslint-config": "workspace:^",
+    "@cpn-console/gitlab-plugin": "workspace:^",
+    "@cpn-console/keycloak-plugin": "workspace:^",
     "@cpn-console/ts-config": "workspace:^",
+    "@cpn-console/vault-plugin": "workspace:^",
     "@faker-js/faker": "^8.4.1",
     "@types/node": "^20.11.20",
     "@typescript-eslint/eslint-plugin": "^7.0.2",
