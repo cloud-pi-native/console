@@ -2,6 +2,7 @@ import fp from 'fastify-plugin'
 import { Project, Cluster, Repository } from '@prisma/client'
 import { User } from '@cpn-console/test-utils'
 import { RepoCreds } from '@cpn-console/hooks'
+import { genericProxy } from './proxy.js'
 
 let requestor: User
 
@@ -226,33 +227,40 @@ const secretsResult = {
 }
 
 type ReposCreds = Record<Repository['internalRepoName'], RepoCreds>
+
+const misc = {
+  fetchOrganizations: async () => resultsFetch,
+  retrieveUserByEmail: async (_email: string) => resultsBase,
+  checkServices: async () => resultsBase,
+}
+
+const project = {
+  upsert: async (_projectId: Project['id'], _reposCreds?: ReposCreds) => {
+    return {
+      results: structuredClone(resultsBase),
+      project: {},
+    }
+  },
+  delete: async (_projectId: Project['id']) => {
+    return {
+      results: structuredClone(resultsBase),
+      project: {},
+    }
+  },
+  getSecrets: async (_projectId: Project['id']) => {
+    return secretsResult
+  },
+}
+
+const cluster = {
+  upsert: async (_clusterId: Cluster['id']) => resultsBase,
+  delete: async (_clusterId: Cluster['id']) => resultsBase,
+}
+
 export const mockHookWrapper = () => ({
   hook: {
-    misc: {
-      fetchOrganizations: () => resultsFetch,
-      retrieveUserByEmail: (_email: string) => resultsBase,
-      checkServices: () => resultsBase,
-    },
-    project: {
-      upsert: async (_projectId: Project['id'], _reposCreds?: ReposCreds) => {
-        return {
-          results: structuredClone(resultsBase),
-          project: {},
-        }
-      },
-      delete: async (_projectId: Project['id']) => {
-        return {
-          results: structuredClone(resultsBase),
-          project: {},
-        }
-      },
-      getSecrets: async (_projectId: Project['id']) => {
-        return secretsResult
-      },
-    },
-    cluster: {
-      upsert: async (_clusterId: Cluster['id']) => resultsBase,
-      delete: async (_clusterId: Cluster['id']) => resultsBase,
-    },
+    misc: genericProxy(misc, { checkServices: [], fetchOrganizations: [], retrieveUserByEmail: [] }),
+    project: genericProxy(project, { delete: ['upsert'], upsert: ['delete'], getSecrets: ['delete'] }),
+    cluster: genericProxy(cluster, { delete: ['upsert'], upsert: ['delete'] }),
   },
 })

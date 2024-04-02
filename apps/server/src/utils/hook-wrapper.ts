@@ -3,81 +3,89 @@ import type { ClusterObject, KubeCluster, KubeUser, PluginResult, Project as Pro
 import { hooks } from '@cpn-console/hooks'
 import { AsyncReturnType } from '@cpn-console/shared'
 import { archiveProject, getClusterByIdOrThrow, getHookProjectInfos, getHookPublicClusters, updateProjectCreated, updateProjectFailed, updateProjectServices } from '@/resources/queries-index.js'
+import { genericProxy } from './proxy.js'
 
 type ReposCreds = Record<Repository['internalRepoName'], RepoCreds>
+type ProjectInfos = AsyncReturnType<typeof getHookProjectInfos>
 
-export const hook = {
-  misc: {
-    fetchOrganizations: () => hooks.fetchOrganizations.execute({}),
-    retrieveUserByEmail: (email: string) => hooks.retrieveUserByEmail.execute({ email }),
-    checkServices: () => hooks.checkServices.execute({}),
+const project = {
+  upsert: async (projectId: Project['id'], reposCreds?: ReposCreds) => {
+    const project = await getHookProjectInfos(projectId)
+    const publicClusters = await getHookPublicClusters()
+    const results = await hooks.upsertProject.execute(transformToHookProject({
+      ...project,
+      clusters: [...project.clusters, ...publicClusters],
+    }, reposCreds))
+
+    // @ts-ignore
+    const { registry }: { registry: PluginResult } = results.results
+    if (registry) {
+      const services = {
+        registry: {
+          id: registry?.result?.project?.project_id,
+        },
+      }
+      await updateProjectServices(project.id, services)
+    }
+
+    return {
+      results,
+      project: results.failed
+        ? (await updateProjectFailed(projectId))
+        : (await updateProjectCreated(projectId)),
+    }
   },
-  project: {
-    upsert: async (projectId: Project['id'], reposCreds?: ReposCreds) => {
-      const project = await getHookProjectInfos(projectId)
-      const publicClusters = await getHookPublicClusters()
-      const results = await hooks.upsertProject.execute(transformToHookProject({
-        ...project,
-        clusters: [...project.clusters, ...publicClusters],
-      }, reposCreds))
+  delete: async (projectId: Project['id']) => {
+    const project = await getHookProjectInfos(projectId)
+    const publicClusters = await getHookPublicClusters()
 
-      // @ts-ignore
-      const { registry }: { registry: PluginResult } = results.results
-      if (registry) {
-        const services = {
-          registry: {
-            id: registry?.result?.project?.project_id,
-          },
-        }
-        await updateProjectServices(project.id, services)
-      }
-
-      return {
-        results,
-        project: results.failed
-          ? (await updateProjectFailed(projectId))
-          : (await updateProjectCreated(projectId)),
-      }
-    },
-    delete: async (projectId: Project['id']) => {
-      const project = await getHookProjectInfos(projectId)
-      const publicClusters = await getHookPublicClusters()
-
-      const results = await hooks.deleteProject.execute(transformToHookProject({
-        ...project,
-        clusters: [...project.clusters, ...publicClusters],
-      }))
-      return {
-        results,
-        project: results.failed
-          ? (await updateProjectFailed(projectId))
-          : (await archiveProject(projectId)),
-      }
-    },
-    getSecrets: async (projectId: Project['id']) => {
-      const project = await getHookProjectInfos(projectId)
-      return hooks.getProjectSecrets.execute(project)
-    },
+    const results = await hooks.deleteProject.execute(transformToHookProject({
+      ...project,
+      clusters: [...project.clusters, ...publicClusters],
+    }))
+    return {
+      results,
+      project: results.failed
+        ? (await updateProjectFailed(projectId))
+        : (await archiveProject(projectId)),
+    }
   },
-  cluster: {
-    upsert: async (clusterId: Cluster['id']) => {
-      const cluster = await getClusterByIdOrThrow(clusterId)
-      return hooks.upsertCluster.execute({
-        ...cluster.kubeconfig as unknown as ClusterObject,
-        ...cluster,
-      })
-    },
-    delete: async (clusterId: Cluster['id']) => {
-      const cluster = await getClusterByIdOrThrow(clusterId)
-      return hooks.deleteCluster.execute({
-        ...cluster.kubeconfig as unknown as ClusterObject,
-        ...cluster,
-      })
-    },
+  getSecrets: async (projectId: Project['id']) => {
+    const project = await getHookProjectInfos(projectId)
+    return hooks.getProjectSecrets.execute(project)
   },
 }
 
-export const transformToHookProject = (project: AsyncReturnType<typeof getHookProjectInfos>, reposCreds: ReposCreds = {}): ProjectPayload => ({
+const cluster = {
+  upsert: async (clusterId: Cluster['id']) => {
+    const cluster = await getClusterByIdOrThrow(clusterId)
+    return hooks.upsertCluster.execute({
+      ...cluster.kubeconfig as unknown as ClusterObject,
+      ...cluster,
+    })
+  },
+  delete: async (clusterId: Cluster['id']) => {
+    const cluster = await getClusterByIdOrThrow(clusterId)
+    return hooks.deleteCluster.execute({
+      ...cluster.kubeconfig as unknown as ClusterObject,
+      ...cluster,
+    })
+  },
+}
+
+const misc = {
+  fetchOrganizations: () => hooks.fetchOrganizations.execute({}),
+  retrieveUserByEmail: (email: string) => hooks.retrieveUserByEmail.execute({ email }),
+  checkServices: () => hooks.checkServices.execute({}),
+}
+
+export const hook = {
+  misc: genericProxy(misc),
+  project: genericProxy(project, { upsert: ['delete'], delete: ['upsert'], getSecrets: ['delete'] }),
+  cluster: genericProxy(cluster, { delete: ['upsert'], upsert: ['delete'] }),
+}
+
+const transformToHookProject = (project: ProjectInfos, reposCreds: ReposCreds = {}): ProjectPayload => ({
   ...project,
   users: project.roles.map(role => role.user),
   roles: project.roles.map(role => ({ role: role.role as 'owner' | 'user', userId: role.userId })),
