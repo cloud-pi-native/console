@@ -83,7 +83,7 @@
   },
   "optionalDependencies": {
     "@cypress/vue": "^6.0.0",
-    "cypress": "^13.6.4",
+    "cypress": "^13.7.1",
     "cypress-vite": "^1.5.0"
   },
   "publishConfig": {
