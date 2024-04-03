@@ -15,6 +15,9 @@ spec:
     metadata:
       annotations:
         {{- include "checksumCm" (list $ "/cm-postgres.yaml") | nindent 8 }}
+        {{- if .Values.postgres.container.annotations }}
+        {{- .Values.postgres.container.annotations | toYaml | nindent 8 }}
+        {{- end }}
       labels:
         app: {{ .Release.Name }}-postgres
     spec:
