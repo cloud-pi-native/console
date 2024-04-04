@@ -105,6 +105,7 @@ postgres:
     image: docker.io/postgres:15.3
     port: 5432
     imagePullPolicy: Always
+    annotations: {}
     env: #hashmap of custom env
     db: dso-console-db
     user: admin
