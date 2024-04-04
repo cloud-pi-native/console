@@ -1,16 +1,17 @@
-import { filterObjectByKeys } from '@/utils/queries-tools.js'
+import { repositoryContract } from '@cpn-console/shared'
+import { serverInstance } from '@/app.js'
+import { BadRequestError } from '@/utils/errors.js'
 import { addReqLogs } from '@/utils/logger.js'
+import { filterObjectByKeys } from '@/utils/queries-tools.js'
 import {
+  checkUpsertRepository,
   createRepository,
   deleteRepository,
   getProjectRepositories,
   getRepositoryById,
+  syncRepository,
   updateRepository,
-  checkUpsertRepository,
 } from './business.js'
-import { BadRequestError } from '@/utils/errors.js'
-import { repositoryContract } from '@cpn-console/shared'
-import { serverInstance } from '@/app.js'
 
 export const repositoryRouter = () => serverInstance.router(repositoryContract, {
 
@@ -54,6 +55,19 @@ export const repositoryRouter = () => serverInstance.router(repositoryContract, 
     return {
       status: 200,
       body: repositories,
+    }
+  },
+
+  // Synchroniser un repository
+  syncRepository: async ({ request: req, params }) => {
+    const userId = req.session.user.id
+    const { projectId, repositoryId, branchName } = params
+
+    await syncRepository(projectId, repositoryId, userId, branchName, req.id)
+
+    return {
+      body: null,
+      status: 204,
     }
   },
 

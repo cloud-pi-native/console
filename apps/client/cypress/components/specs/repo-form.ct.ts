@@ -115,7 +115,7 @@ describe('RepoForm.vue', () => {
 
     cy.mount(RepoForm, { props })
 
-    cy.get('h1').should('contain', 'Modifier le dépôt')
+    cy.get('h2').should('contain', 'Modifier le dépôt')
     cy.getByDataTestid('repoFieldset').should('have.length', 1)
     cy.getByDataTestid('internalRepoNameInput').find('input').should('have.value', props.repo.internalRepoName)
       .and('be.disabled')

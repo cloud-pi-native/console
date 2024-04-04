@@ -1,4 +1,4 @@
-import type { CreateRepositoryBody, UpdateRepositoryBody, RepositoryParams } from '@cpn-console/shared'
+import type { CreateRepositoryBody, UpdateRepositoryBody, SyncRepositoryParams, RepositoryParams } from '@cpn-console/shared'
 import { apiClient } from './xhr-client.js'
 
 export const addRepo = async (projectId: RepositoryParams['projectId'], data: CreateRepositoryBody) => {
@@ -9,6 +9,11 @@ export const addRepo = async (projectId: RepositoryParams['projectId'], data: Cr
 export const getRepos = async (projectId: RepositoryParams['projectId']) => {
   const response = await apiClient.Repositories.getRepositories({ params: { projectId } })
   if (response.status === 200) return response.body
+}
+
+export const syncRepository = async (projectId: SyncRepositoryParams['projectId'], repositoryId: SyncRepositoryParams['repositoryId'], branchName: SyncRepositoryParams['branchName']) => {
+  const response = await apiClient.Repositories.syncRepository({ params: { projectId, repositoryId, branchName } })
+  return response.body
 }
 
 export const updateRepo = async (projectId: RepositoryParams['projectId'], repositoryId: RepositoryParams['repositoryId'], data: UpdateRepositoryBody) => {

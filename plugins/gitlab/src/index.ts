@@ -1,16 +1,17 @@
-import type { Plugin, Project, DefaultArgs } from '@cpn-console/hooks'
+import type { Plugin, Project, DefaultArgs, UniqueRepo } from '@cpn-console/hooks'
 import {
   checkApi,
   getDsoProjectSecrets,
   deleteDsoProject,
   upsertDsoProject,
+  syncRepository,
 } from './functions.js'
 import { getGroupRootId } from './utils.js'
 import infos from './infos.js'
 import monitor from './monitor.js'
 import { GitlabProjectApi } from './class.js'
 
-const onlyApi = { api: (project: Project) => new GitlabProjectApi(project) }
+const onlyApi = { api: (project: Project | UniqueRepo) => new GitlabProjectApi(project) }
 
 const start = () => {
   getGroupRootId()
@@ -31,6 +32,12 @@ export const plugin: Plugin = {
       },
     },
     getProjectSecrets: { steps: { main: getDsoProjectSecrets } },
+    syncRepository: {
+      ...onlyApi,
+      steps: {
+        main: syncRepository,
+      },
+    },
   },
   monitor,
   start,
@@ -38,7 +45,7 @@ export const plugin: Plugin = {
 
 declare module '@cpn-console/hooks' {
   interface HookPayloadApis<Args extends DefaultArgs> {
-    gitlab: Args extends Project
+    gitlab: Args extends Project | UniqueRepo
     ? GitlabProjectApi
     : undefined
   }

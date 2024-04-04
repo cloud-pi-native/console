@@ -2,7 +2,7 @@ import type { Project, Repository, User } from '@prisma/client'
 import { type CreateRepositoryBody, type ProjectRoles, type UpdateRepositoryBody } from '@cpn-console/shared'
 import { addLogs, deleteRepository as deleteRepositoryQuery, getProjectInfos, getProjectInfosAndRepos, getUserById, initializeRepository, updateRepository as updateRepositoryQuery } from '@/resources/queries-index.js'
 import { checkInsufficientRoleInProject, checkRoleAndLocked } from '@/utils/controller.js'
-import { BadRequestError, ForbiddenError, NotFoundError, UnauthorizedError, UnprocessableContentError } from '@/utils/errors.js'
+import { BadRequestError, DsoError, ForbiddenError, NotFoundError, UnauthorizedError, UnprocessableContentError } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
 
 export const getRepositoryById = async (
@@ -36,6 +36,28 @@ export const getProjectAndcheckRole = async (
   const errorMessage = checkInsufficientRoleInProject(userId, { roles: project.roles, minRole })
   if (errorMessage) throw new ForbiddenError(errorMessage, undefined)
   return project
+}
+
+export const syncRepository = async (
+  projectId: Project['id'],
+  repositoryId: Repository['id'],
+  userId: User['id'],
+  branchName: string,
+  requestId: string,
+) => {
+  try {
+    await getProjectAndcheckRole(userId, projectId)
+
+    const { results } = await hook.misc.syncRepository(repositoryId, { branchName })
+
+    await addLogs('Sync Repository', results, userId, requestId)
+    if (results.failed) {
+      throw new UnprocessableContentError('Echec des opérations', undefined)
+    }
+  } catch (error) {
+    if (error instanceof DsoError) throw error
+    throw new Error('Echec de la synchronisation du dépôt')
+  }
 }
 
 export const checkUpsertRepository = async (
@@ -85,6 +107,7 @@ export const createRepository = async (
 
     return repo
   } catch (error) {
+    if (error instanceof DsoError) throw error
     throw new Error('Echec de la création du dépôt')
   }
 }
@@ -118,6 +141,7 @@ export const updateRepository = async (
 
     return repo
   } catch (error) {
+    if (error instanceof DsoError) throw error
     throw new Error('Echec de la mise à jour du dépôt')
   }
 }
@@ -139,6 +163,7 @@ export const deleteRepository = async (
       throw new UnprocessableContentError('Echec des opérations', undefined)
     }
   } catch (error) {
+    if (error instanceof DsoError) throw error
     throw new Error('Echec de la mise à jour du dépôt')
   }
 }

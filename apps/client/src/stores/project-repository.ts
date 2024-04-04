@@ -1,11 +1,16 @@
 import { defineStore } from 'pinia'
+import type { CreateRepositoryBody, UpdateRepositoryBody, RepositoryParams } from '@cpn-console/shared'
 import api from '@/api/index.js'
 import { useProjectStore } from '@/stores/project.js'
-import type { CreateRepositoryBody, UpdateRepositoryBody, RepositoryParams } from '@cpn-console/shared'
 import { projectMissing } from '@/utils/const.js'
 
 export const useProjectRepositoryStore = defineStore('project-repository', () => {
   const projectStore = useProjectStore()
+
+  const syncRepository = async (repoId: string, branchName: string) => {
+    if (!projectStore.selectedProject) throw new Error(projectMissing)
+    await api.syncRepository(projectStore.selectedProject.id, repoId, branchName)
+  }
 
   const addRepoToProject = async (newRepo: CreateRepositoryBody) => {
     if (!projectStore.selectedProject) throw new Error(projectMissing)
@@ -29,5 +34,6 @@ export const useProjectRepositoryStore = defineStore('project-repository', () =>
     addRepoToProject,
     updateRepo,
     deleteRepo,
+    syncRepository,
   }
 })
