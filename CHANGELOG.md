@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.0.1](https://github.com/cloud-pi-native/console/compare/v8.0.0...v8.0.1) (2024-04-04)
+
+
+### Bug Fixes
+
+* :ambulance: change kubernetes logic ([3679c22](https://github.com/cloud-pi-native/console/commit/3679c2221c961b4887e1191229edaacd6e34649b))
+
 ## [8.0.0](https://github.com/cloud-pi-native/console/compare/v7.0.1...v8.0.0) (2024-04-02)
 
 
