@@ -79,10 +79,10 @@ class KubernetesNamespace {
 
     try {
       await this.anyObjectApi.getNamespacedCustomObject(r.group, r.version, nsName, r.plural, r.name)
-      return await this.anyObjectApi.replaceNamespacedCustomObject(r.group, r.version, nsName, r.plural, r.name, objToCreate)
+      await this.anyObjectApi.deleteNamespacedCustomObject(r.group, r.version, nsName, r.plural, r.name)
     } catch (error) {
-      return this.anyObjectApi.createNamespacedCustomObject(r.group, r.version, nsName, r.plural, objToCreate)
     }
+    return this.anyObjectApi.createNamespacedCustomObject(r.group, r.version, nsName, r.plural, objToCreate)
   }
 
   public async setQuota (quota: ResourceQuotaType) {
