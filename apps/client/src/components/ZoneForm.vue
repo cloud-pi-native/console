@@ -92,7 +92,7 @@ onBeforeMount(() => {
       :required="true"
       data-testid="slugInput"
       :disabled="!props.isNewZone"
-      placeholder="dr"
+      placeholder="pub"
     />
     <DsfrInputGroup
       v-model="localZone.label"
@@ -101,7 +101,7 @@ onBeforeMount(() => {
       hint="Nom complet de la zone, présenté aux utilisateurs."
       :required="true"
       data-testid="labelInput"
-      placeholder="Diffusion restreinte"
+      placeholder="Zone Publique"
     />
     <DsfrInputGroup
       v-model="localZone.description"
