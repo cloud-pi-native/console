@@ -26,7 +26,7 @@ CREATE UNIQUE INDEX "Zone_slug_key" ON "Zone"("slug");
 INSERT INTO "Zone"
     (id, "slug", "label", "description", "updatedAt")
 VALUES
-    ('a66c4230-eba6-41f1-aae5-bb1e4f90cce0', 'default', 'default', 'Zone par défault', CURRENT_TIMESTAMP);
+    ('a66c4230-eba6-41f1-aae5-bb1e4f90cce0', 'default', 'Zone Défaut', 'Zone par défaut, à changer', CURRENT_TIMESTAMP);
 
 -- Set default zoneId for current clusters
 UPDATE "Cluster"
