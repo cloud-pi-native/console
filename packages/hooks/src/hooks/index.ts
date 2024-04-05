@@ -42,6 +42,11 @@ export interface KubeCluster {
   readonly tlsServerName?: string;
 }
 
+export type ZoneObject = {
+  id: string
+  slug: string
+}
+
 export type ClusterObject = {
   id: string;
   label: string;
@@ -51,4 +56,5 @@ export type ClusterObject = {
   infos: string | null;
   cluster: KubeCluster;
   user: KubeUser
+  zone: ZoneObject
 }

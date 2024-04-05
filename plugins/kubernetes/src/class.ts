@@ -39,7 +39,7 @@ class KubernetesNamespace {
   constructor (organizationName: string, projectName: string, environmentName: string, owner: UserObject, cluster: ClusterObject) {
     this.coreV1Api = createCoreV1Api(cluster)
     this.anyObjectApi = createCustomObjectApi(cluster)
-    this.nsObject = getNsObject(organizationName, projectName, environmentName, owner)
+    this.nsObject = getNsObject(organizationName, projectName, environmentName, owner, cluster.zone.slug)
   }
 
   public async create () {

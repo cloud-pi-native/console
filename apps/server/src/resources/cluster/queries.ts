@@ -76,6 +76,12 @@ export const getHookPublicClusters = async () => await prisma.cluster.findMany({
     secretName: true,
     kubeconfig: true,
     clusterResources: true,
+    zone: {
+      select: {
+        id: true,
+        slug: true,
+      },
+    },
   },
 })
 

@@ -64,7 +64,10 @@ const convertClusterToSecret = (cluster: ClusterObject): V1Secret => {
     kind: 'Secret',
     metadata: {
       name: cluster.secretName,
-      labels: { 'argocd.argoproj.io/secret-type': 'cluster' },
+      labels: {
+        'argocd.argoproj.io/secret-type': 'cluster',
+        'dso/zone': cluster.zone.slug,
+      },
     },
     data: {
       name: btoa(cluster.label),

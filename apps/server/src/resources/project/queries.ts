@@ -250,6 +250,12 @@ export const getHookProjectInfos = async (id: Project['id']) => await prisma.pro
         secretName: true,
         kubeconfig: true,
         clusterResources: true,
+        zone: {
+          select: {
+            id: true,
+            slug: true,
+          },
+        },
       },
     },
     environments: {

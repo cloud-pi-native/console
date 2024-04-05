@@ -81,7 +81,7 @@ export const deleteNamespaces: StepCall<Project> = async (payload) => {
 }
 
 // Utils
-export const getNsObject = (organization: string, project: string, environment: string, owner: UserObject): V1NamespacePopulated => {
+export const getNsObject = (organization: string, project: string, environment: string, owner: UserObject, zone: string): V1NamespacePopulated => {
   const nsObject = new Namespace({
     metadata: {
       name: generateNamespaceName(organization, project, environment),
@@ -92,6 +92,7 @@ export const getNsObject = (organization: string, project: string, environment: 
         'dso/environment': environment,
         'dso/owner.id': owner.id,
         'app.kubernetes.io/managed-by': 'dso-console',
+        'dso/zone': zone,
         // 'dso/owner.firstName': owner.firstName, // deactivate, need time to find a way to validate/transform specials chars
         // 'dso/owner.lastName': owner.lastName,
       },
