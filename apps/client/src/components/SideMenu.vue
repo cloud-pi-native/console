@@ -99,9 +99,7 @@ onMounted(() => {
         </DsfrSideMenuLink>
       </DsfrSideMenuListItem>
       <!-- Onglet Projet -->
-      <DsfrSideMenuListItem
-        v-if="isLoggedIn"
-      >
+      <DsfrSideMenuListItem>
         <DsfrSideMenuLink
           data-testid="menuServicesHealth"
           :active="routeName === 'ServicesHealth'"
