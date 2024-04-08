@@ -32,6 +32,7 @@ export const getAllCleanedClusters = async (kcUser: UserProfile) => {
       label: cluster.label,
       projectIds: cluster.projects.filter(project => project.status !== 'archived').map(({ id }) => id),
       stageIds: cluster.stages.map(({ id }) => id) ?? [],
+      zoneId: cluster.zoneId,
     },
     ['projects', 'stages', 'kubeconfig'])
     return newCluster

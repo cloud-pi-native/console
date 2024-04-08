@@ -98,6 +98,7 @@ export const getUserProjects = async (user: User) => {
           privacy: true,
           clusterResources: true,
           infos: true,
+          zoneId: true,
         },
       },
     },
@@ -250,6 +251,12 @@ export const getHookProjectInfos = async (id: Project['id']) => await prisma.pro
         secretName: true,
         kubeconfig: true,
         clusterResources: true,
+        zone: {
+          select: {
+            id: true,
+            slug: true,
+          },
+        },
       },
     },
     environments: {

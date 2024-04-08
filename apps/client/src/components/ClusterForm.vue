@@ -21,6 +21,7 @@ const props = withDefaults(defineProps<{
   cluster: Record<string, any>
   allProjects: Array<any>
   allStages: Array<any>
+  allZones: Array<any>
   associatedEnvironments: AssociatedEnvironment[]
 }>(), {
   isNewCluster: true,
@@ -34,6 +35,7 @@ const props = withDefaults(defineProps<{
     privacy: ClusterPrivacy.DEDICATED,
     infos: '',
   }),
+  allZones: () => [],
   allProjects: () => [],
   allStages: () => [],
   associatedEnvironments: () => [],
@@ -62,6 +64,7 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
   return schemaValidation.success ? undefined : schemaValidation.error
 })
 const isClusterValid = computed(() => !errorSchema.value)
+const chosenZoneDescription = computed(() => props.allZones.find(zone => zone.id === localCluster.value.zoneId)?.description)
 
 const updateValues = (key: string, value: any) => {
   if (key === 'skipTLSVerify') {
@@ -216,7 +219,7 @@ const cancel = () => {
 onBeforeMount(() => {
   // Retrieve array of project ids from parent component, map it into array of project names and pass it to child component.
   localCluster.value = props.cluster
-  projectsName.value = localCluster.value.projectIds.map((projectId: string) => {
+  projectsName.value = localCluster.value.projectIds?.map((projectId: string) => {
     const project = props.allProjects?.find(project => project.id === projectId)
     return `${project.organization.name} - ${project.name}`
   })
@@ -335,6 +338,22 @@ watch(selectedContext, () => {
       @update:model-value="updateValues('clusterResources', $event)"
     />
     <DsfrSelect
+      v-model="localCluster.zoneId"
+      required
+      select-id="zone-select"
+      label="Zone associée"
+      hint="Sélectionnez la zone associée à ce cluster."
+      :options="props.allZones?.map(zone => ({ value: zone.id, text: zone.label }))"
+      @update:model-value="updateValues('zoneId', $event)"
+    />
+    <DsfrAlert
+      v-if="chosenZoneDescription"
+      data-testid="chosenZoneDescription"
+      class="my-4"
+      :description="chosenZoneDescription"
+      small
+    />
+    <DsfrSelect
       v-model="localCluster.privacy"
       required
       select-id="privacy-select"
@@ -348,9 +367,9 @@ watch(selectedContext, () => {
     >
       <MultiSelector
         id="projects-select"
-        :options="allProjects.map(project => ({ id: project.id, name: `${project.organization.name} - ${project.name}` }))"
+        :options="props.allProjects.map(project => ({ id: project.id, name: `${project.organization.name} - ${project.name}` }))"
         :array="projectsName"
-        :disabled="!allProjects.length"
+        :disabled="!props.allProjects.length"
         no-choice-label="Aucun projet disponible"
         choice-label="Veuillez choisir les projets à associer"
         label="Nom des projets"
@@ -363,9 +382,9 @@ watch(selectedContext, () => {
     >
       <MultiSelector
         id="stages-select"
-        :options="allStages?.map(stage => ({ id: stage.id, name: `${stage.name}` }))"
+        :options="props.allStages?.map(stage => ({ id: stage.id, name: `${stage.name}` }))"
         :array="stageNames"
-        :disabled="!allStages?.length"
+        :disabled="!props.allStages?.length"
         no-choice-label="Aucun type d'environnement disponible"
         choice-label="Veuillez choisir les types d'environnement à associer"
         label="Nom des types d'environnement"

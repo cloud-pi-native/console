@@ -27,6 +27,7 @@ const ListLogs = () => import('@/views/admin/ListLogs.vue')
 const ListClusters = () => import('@/views/admin/ListClusters.vue')
 const ListQuotas = () => import('@/views/admin/ListQuotas.vue')
 const ListStages = () => import('@/views/admin/ListStages.vue')
+const ListZones = () => import('@/views/admin/ListZones.vue')
 
 const MAIN_TITLE = 'Console Cloud π Native'
 
@@ -158,6 +159,11 @@ const routes: Readonly<RouteRecordRaw[]> = [
     path: '/admin/stages',
     name: 'ListStages',
     component: ListStages,
+  },
+  {
+    path: '/admin/zones',
+    name: 'ListZones',
+    component: ListZones,
   },
 ]
 

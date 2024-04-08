@@ -34,7 +34,7 @@ describe('Admin stage routes', () => {
     it('Should retrieve a stage\'s associated environments', async () => {
       const stage = getRandomStage('myStage')
       const quota = getRandomQuota()
-      const cluster = getRandomCluster(['projectId'], [stage.id])
+      const cluster = getRandomCluster({ projectIds: ['projectId'], stageIds: [stage.id] })
       // @ts-ignore
       stage.quotaStage = [getRandomQuotaStage(quota.id, stage.id)]
       // @ts-ignore
@@ -83,7 +83,7 @@ describe('Admin stage routes', () => {
       // @ts-ignore
       const quotaStages = stage.quotaIds.map(quotaId => getRandomQuotaStage(quotaId, stage.id))
       // @ts-ignore
-      stage.clusters = [getRandomCluster(['projectId'], [stage.id])]
+      stage.clusters = [getRandomCluster({ projectIds: ['projectId'], stageIds: [stage.id] })]
       // @ts-ignore
       stage.clusterIds = stage.clusters.map(cluster => cluster.id)
 
@@ -121,8 +121,8 @@ describe('Admin stage routes', () => {
   describe('updateStageClustersController', () => {
     it('Should update a stage\'s allowed clusters', async () => {
       const stage = getRandomStage('myStage')
-      const dbClusters = [getRandomCluster(['projectId'], [stage.id])]
-      const newClusters = [getRandomCluster(['projectId'], [stage.id])]
+      const dbClusters = [getRandomCluster({ projectIds: ['projectId'], stageIds: [stage.id] })]
+      const newClusters = [getRandomCluster({ projectIds: ['projectId'], stageIds: [stage.id] })]
       // @ts-ignore
       stage.clusters = dbClusters
       // @ts-ignore

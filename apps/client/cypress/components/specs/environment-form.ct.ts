@@ -10,6 +10,7 @@ import '@/main.css'
 import EnvironmentForm from '@/components/EnvironmentForm.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
+import { useZoneStore } from '@/stores/zone.js'
 
 process.env.NODE_ENV = 'test'
 process.env.CT = 'true'
@@ -25,6 +26,7 @@ describe('EnvironmentForm.vue', () => {
 
   it('Should mount a EnvironmentForm', () => {
     const randomDbSetup = createRandomDbSetup({ envs: [] })
+    const zones = randomDbSetup.zones
 
     cy.intercept('GET', 'api/v1/quotas', {
       body: randomDbSetup.quotas,
@@ -32,9 +34,14 @@ describe('EnvironmentForm.vue', () => {
     cy.intercept('GET', 'api/v1/stages', {
       body: randomDbSetup.stages,
     }).as('getStages')
+    cy.intercept('GET', 'api/v1/zones', {
+      body: zones,
+    }).as('getStages')
 
     useSnackbarStore()
     useProjectEnvironmentStore()
+    const zoneStore = useZoneStore()
+    zoneStore.zones = zones
 
     const props = {
       environment: {
@@ -57,6 +64,8 @@ describe('EnvironmentForm.vue', () => {
     cy.getByDataTestid('environmentFieldset').should('have.length', 1)
     cy.getByDataTestid('environmentNameInput')
       .should('have.value', '')
+    cy.get('select#zone-select')
+      .should('have.value', null)
     cy.get('select#stage-select')
       .should('have.value', null)
     cy.get('select#quota-select')
@@ -68,6 +77,10 @@ describe('EnvironmentForm.vue', () => {
 
     cy.getByDataTestid('environmentNameInput')
       .clear().type('prod0')
+    cy.get('select#zone-select > option')
+      .should('have.length', zoneStore.zones.length + 1)
+    cy.get('select#zone-select')
+      .select(1)
     cy.get('select#stage-select > option')
       .should('have.length', randomDbSetup.stages.length + 1)
     cy.get('select#stage-select')

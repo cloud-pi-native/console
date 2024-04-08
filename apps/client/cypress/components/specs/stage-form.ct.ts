@@ -19,7 +19,7 @@ describe('StageForm.vue', () => {
   it('Should mount a new quota StageForm', () => {
     useSnackbarStore()
     const allQuotas = repeatFn(4)(getRandomQuota)
-    const allClusters = repeatFn(3)(getRandomCluster)
+    const allClusters = [getRandomCluster({}), getRandomCluster({})]
 
     const props = {
       isNewStage: true,
@@ -48,7 +48,7 @@ describe('StageForm.vue', () => {
   it('Should mount an update stage StageForm', () => {
     useSnackbarStore()
     const allQuotas = repeatFn(4)(getRandomQuota)
-    const allClusters = repeatFn(3)(getRandomCluster)
+    const allClusters = [getRandomCluster({}), getRandomCluster({})]
     const stageToUpdate = getRandomStage()
     const quotaStage = getRandomQuotaStage(allQuotas[0].id, stageToUpdate.id, 'active')
     // @ts-ignore
@@ -90,7 +90,7 @@ describe('StageForm.vue', () => {
   it('Should mount an update quotaForm without associatedEnvironments', () => {
     useSnackbarStore()
     const allQuotas = repeatFn(4)(getRandomQuota)
-    const allClusters = repeatFn(3)(getRandomCluster)
+    const allClusters = [getRandomCluster({}), getRandomCluster({})]
     const stageToUpdate = getRandomStage()
     const quotaStage = getRandomQuotaStage(allQuotas[0].id, stageToUpdate.id, 'active')
     // @ts-ignore

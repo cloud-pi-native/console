@@ -64,9 +64,16 @@ const removeElementFromArray = (elementToDelete) => {
   >
     <label
       class="fr-label"
+      :for="props.id"
     >
-      {{ label }}
+      {{ props.label }}
     </label>
+    <p
+      v-if="props.description"
+      class="fr-hint-text"
+    >
+      {{ props.description }}
+    </p>
     <select
       :id="props.id"
       :name="props.id"
@@ -75,12 +82,6 @@ const removeElementFromArray = (elementToDelete) => {
       class="fr-select"
       @change="addElementToArray($event.target.value)"
     >
-      <p
-        v-if="description"
-        class="fr-hint-text"
-      >
-        {{ description }}
-      </p>
       <option
         v-if="!arrayOptions.length"
         value=""
@@ -121,3 +122,13 @@ const removeElementFromArray = (elementToDelete) => {
     />
   </div>
 </template>
+
+<style scoped>
+.fr-tag--dismiss {
+  @apply cursor-pointer;
+}
+
+.fr-tag--dismiss:disabled {
+  @apply cursor-not-allowed;
+}
+</style>

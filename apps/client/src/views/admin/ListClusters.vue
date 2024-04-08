@@ -1,15 +1,18 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch, type Ref } from 'vue'
+import { sortArrByObjKeyAsc, type CreateClusterDto, type UpdateClusterDto, type ClusterParams } from '@cpn-console/shared'
 import { useAdminClusterStore } from '@/stores/admin/cluster.js'
 import { useAdminProjectStore } from '@/stores/admin/project.js'
-import { sortArrByObjKeyAsc, type CreateClusterDto, type UpdateClusterDto, type ClusterParams } from '@cpn-console/shared'
+import { useZoneStore } from '@/stores/zone.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 
 const adminClusterStore = useAdminClusterStore()
 const adminProjectStore = useAdminProjectStore()
+const zoneStore = useZoneStore()
 const projectEnvironmentStore = useProjectEnvironmentStore()
 
 const clusters = computed(() => adminClusterStore.clusters)
+const allZones = computed(() => zoneStore.zones)
 const selectedCluster = ref({})
 const clusterList = ref([])
 const allProjects: Ref<any[]> = ref([])
@@ -81,6 +84,7 @@ const deleteCluster = async (clusterId: ClusterParams['clusterId']) => {
 onMounted(async () => {
   await adminClusterStore.getClusters()
   setClusterTiles(clusters.value)
+  await zoneStore.getAllZones()
   allProjects.value = await adminProjectStore.getAllActiveProjects()
   allStages.value = await projectEnvironmentStore.getStages()
 })
@@ -124,6 +128,7 @@ watch(clusters, () => {
     class="my-5 pb-10 border-grey-900 border-y-1"
   >
     <ClusterForm
+      :all-zones="allZones"
       :all-projects="allProjects"
       :all-stages="allStages"
       class="w-full"
@@ -158,6 +163,7 @@ watch(clusters, () => {
       <ClusterForm
         v-if="Object.keys(selectedCluster).length && selectedCluster.id === cluster.id"
         :cluster="selectedCluster"
+        :all-zones="allZones"
         :all-projects="allProjects"
         :all-stages="allStages"
         :associated-environments="associatedEnvironments"

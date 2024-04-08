@@ -4,6 +4,7 @@ import { getRandomId } from '@gouvminint/vue-dsfr'
 import { EnvironmentSchema, projectIsLockedInfo, longestEnvironmentName, type QuotaStageModel, type QuotaModel, type SharedZodError, parseZodError } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
+import { useZoneStore } from '@/stores/zone.js'
 
 type Cluster = {
   id: string
@@ -63,6 +64,7 @@ const emit = defineEmits([
 
 const snackbarStore = useSnackbarStore()
 const projectEnvironmentStore = useProjectEnvironmentStore()
+const zoneStore = useZoneStore()
 
 const localEnvironment = ref(props.environment)
 const environmentToDelete = ref('')
@@ -70,13 +72,17 @@ const isDeletingEnvironment = ref(false)
 const quotas = ref<QuotaModel[]>([])
 const allStages = ref<Stage[]>([])
 const inputKey = ref(getRandomId('input'))
+const zoneId = ref<string>()
 const stageId = ref<string>()
 const quotaId = ref<string>()
+const zoneOptions = ref<OptionType[]>([])
 const stageOptions = ref<OptionType[]>([])
 const quotaOptions = ref<OptionType[]>([])
 const clusterOptions = ref<OptionType[]>([])
 
 const stage = computed(() => allStages.value.find(allStage => allStage.id === stageId.value))
+const zones = computed(() => zoneStore.zones)
+const chosenZoneDescription = computed(() => zones.value?.find(zone => zone.id === zoneId.value)?.description)
 
 const errorSchema = computed<SharedZodError | undefined>(() => {
   let schemaValidation
@@ -96,6 +102,9 @@ const availableClusters: ComputedRef<Cluster[]> = computed(() => {
         ?.map(cluster => cluster.id)
         // @ts-ignore
         ?.includes(projectCluster.id),
+    )
+    ?.filter(
+      availableCluster => availableCluster.zoneId === zoneId.value,
     )
 
   if (
@@ -119,6 +128,13 @@ const setEnvironmentOptions = () => {
   stageOptions.value = allStages.value.map(stage => ({
     text: stage.name,
     value: stage.id,
+  }))
+}
+
+const setZoneOptions = () => {
+  zoneOptions.value = zones.value?.map(zone => ({
+    text: zone.label,
+    value: zone.id,
   }))
 }
 
@@ -173,7 +189,9 @@ const cancel = () => {
 onBeforeMount(async () => {
   quotas.value = await projectEnvironmentStore.getQuotas()
   allStages.value = await projectEnvironmentStore.getStages()
+  await zoneStore.getAllZones()
   setEnvironmentOptions()
+  setZoneOptions()
 
   // Receive quotaStage from parent component, retrieve stageId and quotaId
   if (localEnvironment.value.quotaStage) {
@@ -188,9 +206,17 @@ onBeforeMount(async () => {
   }
 })
 
+onMounted(() => {
+  zoneId.value = props.allClusters?.find(cluster => cluster.id === localEnvironment.value.clusterId)?.zoneId
+})
+
+watch(zoneId, () => {
+  if (zoneId.value && stageId.value) setClusterOptions()
+})
+
 watch(stageId, () => {
   setQuotaOptions()
-  setClusterOptions()
+  if (zoneId.value && stageId.value) setClusterOptions()
 })
 
 watch(quotaId, () => {
@@ -228,6 +254,22 @@ watch(quotaId, () => {
         :disabled="!props.isEditable"
       />
       <DsfrSelect
+        v-model="zoneId"
+        select-id="zone-select"
+        label="Zone"
+        :description="`Choix de la zone cible pour le déploiement de l\'environnement ${localEnvironment.name ? localEnvironment.name : 'en cours de création'}.`"
+        required
+        :disabled="!props.isEditable"
+        :options="zoneOptions"
+      />
+      <DsfrAlert
+        v-if="chosenZoneDescription"
+        data-testid="chosenZoneDescription"
+        class="my-4"
+        title="À propos de la zone"
+        :description="chosenZoneDescription"
+      />
+      <DsfrSelect
         v-model="stageId"
         select-id="stage-select"
         label="Type d'environnement"
@@ -258,14 +300,14 @@ watch(quotaId, () => {
           />
         </div>
         <DsfrAlert
-          v-if="stageId && !clusterOptions?.length"
+          v-if="stageId && zoneId && !clusterOptions?.length"
           data-testid="noClusterOptionAlert"
-          description="Aucun cluster ne semble disponible pour votre projet et le type d'environnement choisi. Veuillez contacter les administrateurs."
+          description="Aucun cluster ne semble disponible pour votre projet, la zone et le type d'environnement choisis. Veuillez contacter les administrateurs."
           type="warning"
           small
         />
         <DsfrSelect
-          v-if="stageId && clusterOptions?.length"
+          v-if="stageId && zoneId && clusterOptions?.length"
           v-model="localEnvironment.clusterId"
           select-id="cluster-select"
           label="Cluster"
@@ -277,7 +319,7 @@ watch(quotaId, () => {
         <DsfrAlert
           v-if="clusterInfos"
           data-testid="clusterInfos"
-          title="Informations du cluster"
+          title="À propos du cluster"
           :description="clusterInfos"
         />
         <div
