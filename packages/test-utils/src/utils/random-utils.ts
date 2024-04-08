@@ -36,8 +36,8 @@ export const getRandomProject = (organizationId = faker.string.uuid()) => {
 
 export const getRandomZone = () => ({
   id: faker.string.uuid(),
-  slug: faker.lorem.word(),
-  label: faker.lorem.word(),
+  slug: faker.lorem.word({ length: { min: 1, max: 10 } }),
+  label: faker.lorem.word({ length: { min: 1, max: 50 } }),
   description: faker.lorem.sentence(8),
 })
 
@@ -105,7 +105,7 @@ export const getRandomRepo = (projectId = faker.string.uuid()) => {
   return repo
 }
 
-export const getRandomStage = (name: string = faker.lorem.word()) => {
+export const getRandomStage = (name: string = faker.lorem.word({ length: { min: 2, max: 20 } })) => {
   return {
     id: faker.string.uuid(),
     name,
