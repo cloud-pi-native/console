@@ -1,4 +1,22 @@
 export const data = {
+  zone: [
+    {
+      id: 'a66c4230-eba6-41f1-aae5-bb1e4f90cce1',
+      slug: 'pr',
+      label: 'Zone privée',
+      description: 'Cette zone de déploiement est privée.',
+      createdAt: '2023-07-10T19:32:13.385Z',
+      updatedAt: '2023-07-10T19:32:13.385Z',
+    },
+    {
+      id: 'a66c4230-eba6-41f1-aae5-bb1e4f90cce2',
+      slug: 'pub',
+      label: 'publique',
+      description: 'Zone de diffusion ouverte.',
+      createdAt: '2023-07-10T19:32:13.385Z',
+      updatedAt: '2023-07-10T19:32:13.385Z',
+    },
+  ],
   quota: [
     {
       id: '5a57b62f-2465-4fb6-a853-5a751d099199',
@@ -150,22 +168,39 @@ export const data = {
       updatedAt: '2023-07-03T14:46:56.765Z',
     },
   ],
-  zone: [
+  kubeconfig: [
     {
-      id: 'a66c4230-eba6-41f1-aae5-bb1e4f90cce1',
-      slug: 'pr',
-      label: 'Zone privée',
-      description: 'Cette zone de déploiement est privée.',
-      createdAt: '2023-07-10T19:32:13.385Z',
-      updatedAt: '2023-07-10T19:32:13.385Z',
+      id: '2a88634a-0a60-459c-bf68-c4ffb12430a2',
+      cluster: {
+        server: 'https://public.server:6443',
+        tlsServerName: 'public.server',
+        skipTLSVerify: true,
+      },
+      user: {
+        keyData: 'LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQotLS0tLUVORCBSU0EgUFJJVkFURSBLRVktLS0tLQo=',
+        certData: 'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K',
+      },
     },
     {
-      id: 'a66c4230-eba6-41f1-aae5-bb1e4f90cce2',
-      slug: 'pub',
-      label: 'Zone publique',
-      description: 'Cette zone de déploiement est publique.',
-      createdAt: '2023-07-10T19:32:13.385Z',
-      updatedAt: '2023-07-10T19:32:13.385Z',
+      id: '0e88f000-07e6-4781-a69d-0963489387f7',
+      cluster: {
+        server: 'https://nothere.cluster',
+        skipTLSVerify: false,
+        tlsServerName: 'nothere.cluster',
+      },
+      user: {
+        token: 'nyan cat',
+      },
+    },
+    {
+      id: 'b5662039-a62b-483e-ba54-b12c6f966c96',
+      cluster: {
+        server: 'https://pwned.cluster',
+        tlsServerName: 'pwned.cluster',
+      },
+      user: {
+        token: 'kirikou',
+      },
     },
   ],
   cluster: [
@@ -179,17 +214,7 @@ export const data = {
       zoneId: 'a66c4230-eba6-41f1-aae5-bb1e4f90cce2',
       createdAt: '2023-07-10T19:32:13.385Z',
       updatedAt: '2023-07-10T19:32:13.385Z',
-      kubeconfig: {
-        cluster: {
-          server: 'https://public.server:6443',
-          tlsServerName: 'public.server',
-          skipTLSVerify: true,
-        },
-        user: {
-          keyData: 'LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQotLS0tLUVORCBSU0EgUFJJVkFURSBLRVktLS0tLQo=',
-          certData: 'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K',
-        },
-      },
+      kubeConfigId: '2a88634a-0a60-459c-bf68-c4ffb12430a2',
     },
     {
       id: '126ac57f-263c-4463-87bb-d4e9017056b2',
@@ -200,16 +225,7 @@ export const data = {
       zoneId: 'a66c4230-eba6-41f1-aae5-bb1e4f90cce2',
       createdAt: '2023-07-10T19:49:31.691Z',
       updatedAt: '2023-07-10T20:01:46.826Z',
-      kubeconfig: {
-        cluster: {
-          server: 'https://nothere.cluster',
-          skipTLSVerify: false,
-          tlsServerName: 'nothere.cluster',
-        },
-        user: {
-          token: 'nyan cat',
-        },
-      },
+      kubeConfigId: '0e88f000-07e6-4781-a69d-0963489387f7',
     },
     {
       id: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
@@ -221,15 +237,7 @@ export const data = {
       zoneId: 'a66c4230-eba6-41f1-aae5-bb1e4f90cce2',
       createdAt: '2023-07-10T19:49:31.697Z',
       updatedAt: '2023-07-10T20:01:46.833Z',
-      kubeconfig: {
-        cluster: {
-          server: 'https://pwned.cluster',
-          tlsServerName: 'pwned.cluster',
-        },
-        user: {
-          token: 'kirikou',
-        },
-      },
+      kubeConfigId: 'b5662039-a62b-483e-ba54-b12c6f966c96',
     },
   ],
   project: [
