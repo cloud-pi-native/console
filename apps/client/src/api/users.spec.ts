@@ -10,10 +10,11 @@ import {
 
 import type { UpdateUserProjectRoleDto } from '@cpn-console/shared'
 
-const apiClientGet = vi.spyOn(apiClient, 'get')
-const apiClientPost = vi.spyOn(apiClient, 'post')
-const apiClientPut = vi.spyOn(apiClient, 'put')
-const apiClientDelete = vi.spyOn(apiClient, 'delete')
+const apiClientGetAdmin = vi.spyOn(apiClient.UsersAdmin, 'getAllUsers')
+const apiClientGet = vi.spyOn(apiClient.Users, 'getProjectUsers')
+const apiClientPost = vi.spyOn(apiClient.Users, 'createUserRoleInProject')
+const apiClientPut = vi.spyOn(apiClient.Users, 'updateUserRoleInProject')
+const apiClientDelete = vi.spyOn(apiClient.Users, 'deleteUserRoleInProject')
 
 describe('API', () => {
   beforeEach(() => {
@@ -23,62 +24,57 @@ describe('API', () => {
     // Users
     it('Should add an user in project', async () => {
       const projectId = 'thisIsAnId'
-      apiClientPost.mockReturnValueOnce(Promise.resolve({ data: {} }))
+      apiClientPost.mockReturnValueOnce(Promise.resolve({ status: 200, body: {} }))
 
       await addUserToProject(projectId, { email: 'test@dso.fr' })
 
       expect(apiClientPost).toHaveBeenCalled()
       expect(apiClientPost).toHaveBeenCalledTimes(1)
-      expect(apiClientPost.mock.calls[0][0]).toBe(`/projects/${projectId}/users`)
     })
 
     it('Should update an user in project', async () => {
       const projectId = 'projectId'
       const userId = 'userId'
       const data: UpdateUserProjectRoleDto = { role: 'owner' }
-      apiClientPut.mockReturnValueOnce(Promise.resolve({ data: {} }))
+      apiClientPut.mockReturnValueOnce(Promise.resolve({ status: 200, body: {} }))
 
       await updateUserProjectRole(projectId, userId, data)
 
       expect(apiClientPut).toHaveBeenCalled()
       expect(apiClientPut).toHaveBeenCalledTimes(1)
-      expect(apiClientPut.mock.calls[0][0]).toBe(`/projects/${projectId}/users/${userId}`)
     })
 
     it('Should get users in project', async () => {
       const projectId = 'thisIsAnId'
-      apiClientGet.mockReturnValueOnce(Promise.resolve({ data: {} }))
+      apiClientGet.mockReturnValueOnce(Promise.resolve({ status: 200, body: {} }))
 
       await getProjectUsers(projectId)
 
       expect(apiClientGet).toHaveBeenCalled()
       expect(apiClientGet).toHaveBeenCalledTimes(1)
-      expect(apiClientGet.mock.calls[0][0]).toBe(`/projects/${projectId}/users`)
     })
 
     it('Should remove an user in project', async () => {
       const projectId = 'thisIsAnId'
       const userId = 'anOtherId'
-      apiClientDelete.mockReturnValueOnce(Promise.resolve({ data: {} }))
+      apiClientDelete.mockReturnValueOnce(Promise.resolve({ status: 200, body: {} }))
 
       await removeUser(projectId, userId)
 
-      expect(apiClient.delete).toHaveBeenCalled()
-      expect(apiClient.delete).toHaveBeenCalledTimes(1)
-      expect(apiClientDelete.mock.calls[0][0]).toBe(`/projects/${projectId}/users/${userId}`)
+      expect(apiClientDelete).toHaveBeenCalled()
+      expect(apiClientDelete).toHaveBeenCalledTimes(1)
     })
 
     // Admin
     describe('Admin', () => {
       // Users
       it('Should get all users', async () => {
-        apiClientGet.mockReturnValueOnce(Promise.resolve({ data: {} }))
+        apiClientGetAdmin.mockReturnValueOnce(Promise.resolve({ status: 200, body: {} }))
 
         await getAllUsers()
 
-        expect(apiClientGet).toHaveBeenCalled()
-        expect(apiClientGet).toHaveBeenCalledTimes(1)
-        expect(apiClientGet.mock.calls[0][0]).toBe('/admin/users')
+        expect(apiClientGetAdmin).toHaveBeenCalled()
+        expect(apiClientGetAdmin).toHaveBeenCalledTimes(1)
       })
     })
   })

@@ -3,8 +3,8 @@ import { setActivePinia, createPinia } from 'pinia'
 import { apiClient } from '../api/xhr-client.js'
 import { useProjectRepositoryStore } from './project-repository.js'
 
-const apiClientPost = vi.spyOn(apiClient, 'post')
-const apiClientDelete = vi.spyOn(apiClient, 'delete')
+const apiClientPost = vi.spyOn(apiClient.Repositories, 'createRepository')
+const apiClientDelete = vi.spyOn(apiClient.Repositories, 'deleteRepository')
 
 vi.mock('./project.js', async () => ({
   useProjectStore: () => ({
@@ -13,7 +13,7 @@ vi.mock('./project.js', async () => ({
   }),
 }))
 
-describe('Counter Store', () => {
+describe('Repository Store', () => {
   beforeEach(() => {
     vi.resetAllMocks()
     // creates a fresh pinia and make it active so it's automatically picked
@@ -22,7 +22,7 @@ describe('Counter Store', () => {
   })
 
   it('Should add a project repository by api call', async () => {
-    apiClientPost.mockReturnValueOnce(Promise.resolve({ data: {} }))
+    apiClientPost.mockReturnValueOnce(Promise.resolve({ status: 200, body: {} }))
     const projectRepositoryStore = useProjectRepositoryStore()
 
     const repo = {
@@ -35,16 +35,14 @@ describe('Counter Store', () => {
     await projectRepositoryStore.addRepoToProject(repo)
 
     expect(apiClientPost).toHaveBeenCalledTimes(1)
-    expect(apiClientPost.mock.calls[0][0]).toEqual('/projects/projectId/repositories')
   })
 
   it('Should delete a project repository by api call', async () => {
-    apiClientDelete.mockReturnValueOnce(Promise.resolve({ data: {} }))
+    apiClientDelete.mockReturnValueOnce(Promise.resolve({ status: 200, body: {} }))
     const projectRepositoryStore = useProjectRepositoryStore()
 
     await projectRepositoryStore.deleteRepo('repositoryId')
 
     expect(apiClientDelete).toHaveBeenCalledTimes(1)
-    expect(apiClientDelete.mock.calls[0][0]).toEqual('/projects/projectId/repositories/repositoryId')
   })
 })

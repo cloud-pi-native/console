@@ -47,7 +47,7 @@
     "@keycloak/keycloak-admin-client": "^23.0.7",
     "@kubernetes/client-node": "^0.20.0",
     "@prisma/client": "^5.10.2",
-    "@ts-rest/core": "^3.33.0",
+    "@ts-rest/core": "^3.41.2",
     "@ts-rest/fastify": "^3.33.0",
     "@ts-rest/open-api": "^3.33.0",
     "axios": "1.6.7",

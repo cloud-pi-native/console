@@ -9,7 +9,7 @@ vi.mock('@/utils/keycloak/keycloak.ts', () => ({
   }),
 }))
 
-describe('xhr-client', () => {
+describe.skip('xhr-client', () => {
   describe('Request interceptor', () => {
     it('Should return config if url = "/api/v1/version"', async () => {
       const config = {

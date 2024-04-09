@@ -53,7 +53,6 @@ export const userContract = contractInstance.router({
     path: `${apiPrefix}/projects/:projectId/users/:userId`,
     pathParams: UpdateUserRoleInProjectSchema.params,
     body: null,
-    contentType: 'application/json',
     summary: 'Delete user role in project',
     description: 'Delete user role in project.',
     responses: UpdateUserRoleInProjectSchema.responses,

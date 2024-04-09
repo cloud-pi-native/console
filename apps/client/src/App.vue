@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { apiPrefix } from '@cpn-console/shared'
 import { getKeycloak } from './utils/keycloak/keycloak'
 import { useUserStore } from './stores/user.js'
 import { useSnackbarStore } from './stores/snackbar.js'
@@ -22,7 +23,7 @@ const quickLinks = ref([{
   iconRight: true,
 }])
 
-const getSwaggerUrl = () => window?.location?.origin + '/api/v1/swagger-ui/static/index.html'
+const getSwaggerUrl = () => window?.location?.origin + `${apiPrefix}/swagger-ui/static/index.html`
 
 onBeforeMount(() => {
   clearInterval(intervalId.value)
@@ -38,7 +39,7 @@ onErrorCaptured((error) => {
   if (error instanceof Error) {
     snackbarStore.setMessage(error?.message, 'error')
   } else {
-    snackbarStore.setMessage('Une erreur inconnue est survenue.')
+    snackbarStore.setMessage('Une erreur inconnue est survenue.', 'error')
   }
   snackbarStore.isWaitingForResponse = false
   return false

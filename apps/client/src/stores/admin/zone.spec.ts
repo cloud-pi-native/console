@@ -3,9 +3,9 @@ import { setActivePinia, createPinia } from 'pinia'
 import { apiClient } from '../../api/xhr-client.js'
 import { useAdminZoneStore } from './zone.js'
 
-const apiClientPost = vi.spyOn(apiClient, 'post')
-const apiClientPut = vi.spyOn(apiClient, 'put')
-const apiClientDelete = vi.spyOn(apiClient, 'delete')
+const apiClientPost = vi.spyOn(apiClient.ZonesAdmin, 'createZone')
+const apiClientPut = vi.spyOn(apiClient.ZonesAdmin, 'updateZone')
+const apiClientDelete = vi.spyOn(apiClient.ZonesAdmin, 'deleteZone')
 
 describe('Admin zone Store', () => {
   beforeEach(() => {
@@ -23,10 +23,9 @@ describe('Admin zone Store', () => {
     const zone = { label: 'Zone à défendre', slug: 'zad' }
     apiClientPost.mockReturnValueOnce(Promise.resolve({ data: zone }))
 
-    await adminZoneStore.createZone()
+    await adminZoneStore.createZone(zone)
 
     expect(apiClientPost).toHaveBeenCalledTimes(1)
-    expect(apiClientPost.mock.calls[0][0]).toBe('/admin/zones')
   })
 
   it('Should update a zone', async () => {
@@ -38,7 +37,6 @@ describe('Admin zone Store', () => {
     await adminZoneStore.updateZone(zone.id, zone)
 
     expect(apiClientPut).toHaveBeenCalledTimes(1)
-    expect(apiClientPut.mock.calls[0][0]).toBe(`/admin/zones/${zone.id}`)
   })
 
   it('Should delete a zone', async () => {
@@ -50,6 +48,5 @@ describe('Admin zone Store', () => {
     await adminZoneStore.deleteZone(zoneId)
 
     expect(apiClientDelete).toHaveBeenCalledTimes(1)
-    expect(apiClientDelete.mock.calls[0][0]).toBe(`/admin/zones/${zoneId}`)
   })
 })

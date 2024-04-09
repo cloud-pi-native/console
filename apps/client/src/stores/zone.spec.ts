@@ -3,7 +3,7 @@ import { setActivePinia, createPinia } from 'pinia'
 import { apiClient } from '../api/xhr-client.js'
 import { useZoneStore } from './zone.js'
 
-const apiClientGet = vi.spyOn(apiClient, 'get')
+const apiClientGet = vi.spyOn(apiClient.Zones, 'getZones')
 
 describe('Zone Store', () => {
   beforeEach(() => {
@@ -21,12 +21,11 @@ describe('Zone Store', () => {
     expect(zoneStore.zones).toEqual([])
 
     const zones = [{ id: 'zoneId' }, { id: 'anotherZoneId' }]
-    apiClientGet.mockReturnValueOnce(Promise.resolve({ data: zones }))
+    apiClientGet.mockReturnValueOnce(Promise.resolve({ status: 200, body: zones }))
 
     await zoneStore.getAllZones()
 
     expect(apiClientGet).toHaveBeenCalledTimes(1)
-    expect(apiClientGet.mock.calls[0][0]).toBe('/zones')
     expect(zoneStore.zones).toMatchObject(zones)
   })
 })

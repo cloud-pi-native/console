@@ -49,6 +49,9 @@ importers:
       '@iconify-json/ri':
         specifier: ^1.1.20
         version: 1.1.20
+      '@ts-rest/core':
+        specifier: ^3.41.2
+        version: 3.41.2(zod@3.22.4)
       '@vue/tsconfig':
         specifier: ^0.5.1
         version: 0.5.1
@@ -259,8 +262,8 @@ importers:
         specifier: ^5.10.2
         version: 5.10.2(prisma@5.10.2)
       '@ts-rest/core':
-        specifier: ^3.33.0
-        version: 3.33.0(zod@3.22.4)
+        specifier: ^3.41.2
+        version: 3.41.2(zod@3.22.4)
       '@ts-rest/fastify':
         specifier: ^3.33.0
         version: 3.36.0(fastify@4.26.1)(zod@3.22.4)
@@ -483,8 +486,8 @@ importers:
   packages/shared:
     dependencies:
       '@ts-rest/core':
-        specifier: 3.33.0
-        version: 3.33.0(zod@3.22.4)
+        specifier: ^3.41.2
+        version: 3.41.2(zod@3.22.4)
       json-schema-to-ts:
         specifier: ^3.0.0
         version: 3.0.0
@@ -3780,8 +3783,8 @@ packages:
       tslib: 2.6.2
     dev: false
 
-  /@ts-rest/core@3.33.0(zod@3.22.4):
-    resolution: {integrity: sha512-EUV+VmHWXrtvjBcGURrAuW29ajKhteGGgbf//KcrEhq0pYuENJfxfg4mx23OXVOliuceY/kSXO4HiEYs9jH79g==}
+  /@ts-rest/core@3.41.2(zod@3.22.4):
+    resolution: {integrity: sha512-k2lhN4mGTzCTyIAfgmxivEkRG8PRn8RZxdmy4JBLYSYLrXeQOKvpNn0v89fX5VIj1m+ykC/im6HR5YzzzmXtmQ==}
     peerDependencies:
       zod: ^3.22.3
     peerDependenciesMeta:

@@ -313,6 +313,7 @@ onMounted(() => {
           data-testid="menuDoc"
           :active="routeName === 'Doc'"
           to="https://cloud-pi-native.fr"
+          target="_blank"
         >
           Documentation
         </DsfrSideMenuLink>

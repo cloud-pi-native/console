@@ -14,7 +14,8 @@ export const ProjectSchema = z.object({
     .max(projectNameMaxLength),
   description: z.string()
     .max(descriptionMaxLength)
-    .optional(),
+    .optional()
+    .nullable(),
   organizationId: z.string()
     .uuid(),
   status: z.enum(projectStatus),

@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "json-schema-to-ts": "^3.0.0",
-    "@ts-rest/core": "3.33.0",
+    "@ts-rest/core": "^3.41.2",
     "zod": "^3.22.4",
     "zod-validation-error": "^3.0.2"
   },
