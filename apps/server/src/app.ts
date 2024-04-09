@@ -7,7 +7,7 @@ import fastifySwagger from '@fastify/swagger'
 import fastifySwaggerUi from '@fastify/swagger-ui'
 import { initServer } from '@ts-rest/fastify'
 import { generateOpenApi } from '@ts-rest/open-api'
-import { getContract } from '@cpn-console/shared'
+import { apiPrefix, getContract } from '@cpn-console/shared'
 import { isInt, isDev, isTest } from './utils/env.js'
 import { fastifyConf, swaggerUiConf, swaggerConf } from './utils/fastify.js'
 import { apiRouter } from './resources/index.js'
@@ -33,7 +33,7 @@ const app = fastify(fastifyConf)
   .register(apiRouter())
   .register(apiRouterAdmin())
   .addHook('onRoute', opts => {
-    if (opts.path === '/api/v1/healthz') {
+    if (opts.path === `${apiPrefix}/healthz`) {
       opts.logLevel = 'silent'
     }
   })

@@ -1,3 +1,4 @@
+import { apiPrefix } from '@cpn-console/shared'
 import {
   keycloakProtocol,
   keycloakDomain,
@@ -33,7 +34,7 @@ export const keycloakConf = {
   disableSessionPlugin: true,
   userPayloadMapper,
   retries: 5,
-  excludedPatterns: ['/api/v1/version', '/api/v1/healthz', '/api/v1/swagger-ui/**', '/api/v1/services'],
+  excludedPatterns: [`${apiPrefix}/version`, `${apiPrefix}/healthz`, `${apiPrefix}/swagger-ui/**`, `${apiPrefix}/services`],
 }
 
 export const sessionConf = {
