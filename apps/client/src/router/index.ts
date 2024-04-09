@@ -185,7 +185,7 @@ router.beforeEach((to) => { // Cf. https://github.com/vueuse/head pour des trans
  * Redirect unlogged user to login view
  */
 router.beforeEach(async (to, _from, next) => {
-  const validPath = ['Login', 'Home', 'Doc', 'NotFound']
+  const validPath = ['Login', 'Home', 'Doc', 'NotFound', 'ServicesHealth']
   const snackbarStore = useSnackbarStore()
   const userStore = useUserStore()
   userStore.setIsLoggedIn()
