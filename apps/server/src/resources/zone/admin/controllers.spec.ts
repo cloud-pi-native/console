@@ -33,6 +33,7 @@ describe('Admin zone routes', () => {
     it('Should create a new zone', async () => {
       const zone = { label: 'Zone à Défendre', slug: 'zad' }
 
+      prisma.zone.findUnique.mockResolvedValue(null)
       prisma.zone.create.mockResolvedValue(zone)
 
       const response = await app.inject()
@@ -47,6 +48,7 @@ describe('Admin zone routes', () => {
     it('Should create a new zone with associated clusters', async () => {
       const zone = { label: 'Zone à Défendre', slug: 'zad', clusterIds: [getRandomCluster({}).id] }
 
+      prisma.zone.findUnique.mockResolvedValue(null)
       prisma.zone.create.mockResolvedValue(zone)
       prisma.zone.update.mockResolvedValue(zone)
 
@@ -57,6 +59,20 @@ describe('Admin zone routes', () => {
 
       expect(response.statusCode).toEqual(201)
       expect(response.json()).toEqual(zone)
+    })
+
+    it('Should not create a a zone if slug is already taken', async () => {
+      const zone = { label: 'Zone à Défendre', slug: 'zad', clusterIds: [getRandomCluster({}).id] }
+
+      prisma.zone.findUnique.mockResolvedValue(zone)
+
+      const response = await app.inject()
+        .post('/api/v1/admin/zones')
+        .body(zone)
+        .end()
+
+      expect(response.statusCode).toEqual(400)
+      expect(JSON.parse(response.body).error).toEqual(`Une zone portant le nom ${zone.slug} existe déjà.`)
     })
   })
 
