@@ -11,6 +11,12 @@ export const getZoneById = async (zoneId) => prisma.zone.findUnique({
   },
 })
 
+export const getZoneBySlug = async (slug: string) => prisma.zone.findUnique({
+  where: {
+    slug,
+  },
+})
+
 // CREATE
 export const createZone = async ({ slug, label, description }) => {
   return prisma.zone.create({
