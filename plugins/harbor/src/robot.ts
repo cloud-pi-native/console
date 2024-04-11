@@ -76,21 +76,6 @@ const getRobotPermissions = (projectName: string) => {
       }, {
         resource: 'scan',
         action: 'stop',
-      }, {
-        resource: 'helm-chart',
-        action: 'read',
-      }, {
-        resource: 'helm-chart-version',
-        action: 'create',
-      }, {
-        resource: 'helm-chart-version',
-        action: 'delete',
-      }, {
-        resource: 'helm-chart-version-label',
-        action: 'create',
-      }, {
-        resource: 'helm-chart-version-label',
-        action: 'delete',
       }],
     }],
   }
