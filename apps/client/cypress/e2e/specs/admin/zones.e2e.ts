@@ -190,6 +190,36 @@ describe('Administration zones', () => {
     })
   })
 
+  it('Should not create a zone if slug is already taken', () => {
+    cy.getByDataTestid('createZoneLink')
+      .should('be.visible')
+      .click()
+    cy.getByDataTestid('slugInput')
+      .find('input')
+      .clear()
+      .type(newZone.slug)
+    cy.getByDataTestid('labelInput')
+      .find('input')
+      .clear()
+      .type(newZone.label)
+    cy.getByDataTestid('descriptionInput')
+      .find('textarea')
+      .clear()
+      .type(newZone.description)
+    newZone.clusters.forEach((cluster) => {
+      cy.get('#clusters-select')
+        .select(cluster.label)
+    })
+    cy.getByDataTestid('addZoneBtn')
+      .should('be.enabled')
+      .click()
+
+    cy.wait('@createZone').its('response.statusCode').should('match', /^40\d$/)
+    cy.getByDataTestid('snackbar').within(() => {
+      cy.get('p').should('contain', `Une zone portant le nom ${newZone.slug} existe déjà.`)
+    })
+  })
+
   it('Should not delete a zone if associated clusters', () => {
     cy.getByDataTestid(`zoneTile-${newZone.label}`)
       .should('be.visible')
