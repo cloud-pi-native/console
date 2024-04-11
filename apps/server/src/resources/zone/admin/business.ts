@@ -1,15 +1,18 @@
-import { ForbiddenError } from '@/utils/errors.js'
+import { BadRequestError, ForbiddenError } from '@/utils/errors.js'
 import {
   createZone as createZoneQuery,
   updateZone as updateZoneQuery,
   deleteZone as deleteZoneQuery,
   linkZoneToClusters,
   getZoneById,
+  getZoneBySlug,
 } from './queries.js'
 
 export const createZone = async (data) => {
   const { slug, label, description, clusterIds } = data
 
+  const existingZone = await getZoneBySlug(slug)
+  if (existingZone) throw new BadRequestError(`Une zone portant le nom ${slug} existe déjà.`)
   const zone = await createZoneQuery({ slug, label, description })
   if (clusterIds) {
     await linkZoneToClusters(zone.id, clusterIds)
