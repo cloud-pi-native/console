@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.0.2](https://github.com/cloud-pi-native/console/compare/v8.0.1...v8.0.2) (2024-04-11)
+
+
+### Bug Fixes
+
+* :lock: remove old robot permission that harbor does not support anymore ([1d988ce](https://github.com/cloud-pi-native/console/commit/1d988ce86b6b338a576d517816f013295b2f18d3))
+
 ## [8.0.1](https://github.com/cloud-pi-native/console/compare/v8.0.0...v8.0.1) (2024-04-04)
 
 
