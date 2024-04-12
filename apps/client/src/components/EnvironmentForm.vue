@@ -166,6 +166,10 @@ const setQuotaOptions = () => {
   }
 }
 
+const resetCluster = () => {
+  localEnvironment.value.clusterId = undefined
+}
+
 const addEnvironment = () => {
   if (!errorSchema.value) {
     emit('addEnvironment', localEnvironment.value)
@@ -261,6 +265,7 @@ watch(quotaId, () => {
         required
         :disabled="!props.isEditable"
         :options="zoneOptions"
+        @update:model-value="resetCluster()"
       />
       <DsfrAlert
         v-if="chosenZoneDescription"
@@ -277,6 +282,7 @@ watch(quotaId, () => {
         required
         :disabled="!props.isEditable"
         :options="stageOptions"
+        @update:model-value="resetCluster()"
       />
       <div class="fr-mb-2w">
         <div
