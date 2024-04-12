@@ -37,9 +37,6 @@ jobs:
           release-type: node
           default-branch: main
           group-pull-request-title-pattern: release v${version}
-          extra-files: |
-            helm/Chart.yaml
-            helm/values.yaml
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Tag major and minor versions

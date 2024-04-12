@@ -5,12 +5,6 @@ set -e
 # Colorize terminal
 red='\e[0;31m'
 no_color='\033[0m'
-# Console step increment
-i=1
-
-# Get project directories
-PROJECT_DIR="$(git rev-parse --show-toplevel)"
-COMPOSE_FILE="$PROJECT_DIR/docker/docker-compose.dev.yml"
 
 # Default
 RESET_DB="false"
@@ -22,12 +16,15 @@ DB_USER=admin
 DB_PASS=admin
 
 # Declare script helper
-TEXT_HELPER="\nThis script aims to perform prisma migrations.
+TEXT_HELPER="\nThis script aims to perform prisma migrations. 
+
+It is needed to export shell variables 'DB_USER', 'DB_PASS', 'DB_PORT' and 'DB_NAME'. Default are :
+
+  DB_USER: $DB_USER
+  DB_PASS: $DB_PASS
+  DB_NAME: $DB_NAME
+
 Following flags are available:
-
-  -e    Environment file to pass to docker-compose file, should contain db variables. Default is "$ENV_FILE".
-
-  -f    Docker compose file to start database. Default is "$COMPOSE_FILE".
 
   -r    Reset the database. Default is "$RESET_DB".
   
@@ -38,13 +35,9 @@ print_help() {
 }
 
 # Parse options
-while getopts he:f:r flag
+while getopts hr flag
 do
   case "${flag}" in
-    e)
-      ENV_FILE=${OPTARG};;
-    f)
-      COMPOSE_FILE=${OPTARG};;
     r)
       RESET_DB=true;;
     h | *)
@@ -55,19 +48,30 @@ done
 
 
 # Override database variables for local access
-export DB_URL="postgresql://${DB_USER}:${DB_PASS}@localhost:${DB_PORT}/${DB_NAME}?schema=public"
+export DB_URL="postgresql://$DB_USER:$DB_PASS@localhost:$DB_PORT/$DB_NAME?schema=public"
 
 # Start database container
-docker compose -f "$COMPOSE_FILE" up -d postgres
+printf "\n${red}[db wrapper]${no_color}: Start postgres container\n"
+docker run \
+  --name postgres-migration \
+  --publish $DB_PORT:$DB_PORT \
+  --env POSTGRES_USER=$DB_USER \
+  --env POSTGRES_PASSWORD=$DB_PASS \
+  --env POSTGRES_DB=$DB_NAME \
+  --detach \
+  postgres
 
 sleep 3
 
-
 # Start prisma migration
 if [ "$RESET_DB" = "true" ]; then
+  printf "\n${red}[db wrapper]${no_color}: Start prisma reset\n"
   pnpm --filter server run db:reset
 fi
+printf "\n${red}[db wrapper]${no_color}: Start prisma migration\n"
 pnpm --filter server run db:migrate
 
 # Stop database container
-docker compose -f "$COMPOSE_FILE" down -v
+printf "\n${red}[db wrapper]${no_color}: Stop and remove postgres container\n"
+docker stop postgres-migration
+docker rm postgres-migration

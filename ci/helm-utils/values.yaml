@@ -4,27 +4,10 @@ kubeconfig: ""
 
 data: ""
 
-keycloak:
-  enabled: true
-  container:
-    image: quay.io/keycloak/keycloak:22.0.1
-    port: 8080
-    command:
-      - /opt/keycloak/bin/kc.sh
-    args:
-      - start-dev
-      - --import-realm
-  service:
-    name: keycloak-service
-    port: 80
-    type: ClusterIP
-  ingress:
-    host: keycloak.dso.local
-
 pgadmin:
   enabled: true
   container:
-    image: docker.io/dpage/pgadmin4:7.4
+    image: docker.io/dpage/pgadmin4:8.5
     port: 80
   service:
     name: pgadmin-service
@@ -32,3 +15,6 @@ pgadmin:
     type: ClusterIP
   ingress:
     host: pgadmin.dso.local
+
+keycloak:
+  enabled: true

@@ -57,11 +57,14 @@ auto-imports.d.ts
 components.d.ts
 *.tsbuildinfo
 
-#types
+# types
 apps/server/types/
 
 # plugins
 apps/server/src/plugins/external
+
+# helm
+charts/
 
 # integration helm values
 env/dso-values-int.yaml
