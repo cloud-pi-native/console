@@ -3,7 +3,7 @@
 		"1": {
 			"Name": "dso-console-db",
 			"Group": "Servers",
-			"Host": "dso-postgres-service",
+			"Host": "dso-cpn-console-db-hl",
 			"Port": 5432,
 			"MaintenanceDB": "dso-console-db",
 			"Username": "admin",

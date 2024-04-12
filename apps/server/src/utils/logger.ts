@@ -26,7 +26,6 @@ interface ReqLogsInput {
 export const addReqLogs = ({ req, error, message, infos }: ReqLogsInput) => {
   const logInfos = {
     description: message,
-    reqId: req.id,
     infos,
   }
 

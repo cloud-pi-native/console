@@ -1,5 +1,4 @@
 {{- if .Values.pgadmin.enabled -}}
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
