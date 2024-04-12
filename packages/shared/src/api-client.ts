@@ -1,4 +1,4 @@
-import { initClient, initContract } from '@ts-rest/core'
+import { ApiFetcher, initClient, initContract } from '@ts-rest/core'
 
 export const contractInstance: ReturnType<typeof initContract> = initContract()
 
@@ -27,13 +27,13 @@ export const getContract = async () => contractInstance.router(
     LogsAdmin: (await import('./contracts/index.js')).logAdminContract,
     UsersAdmin: (await import('./contracts/index.js')).userAdminContract,
     ZonesAdmin: (await import('./contracts/index.js')).zoneAdminContract,
-
     System: (await import('./contracts/index.js')).systemContract,
   },
-  { validateResponseOnClient: true },
 )
 
-export const getApiClient = async (baseUrl: string, baseHeaders: Record<string, string>) => initClient(await getContract(), {
+export const getApiClient = async (baseUrl: string, baseHeaders: Record<string, string>, api: ApiFetcher | undefined) => initClient(await getContract(), {
   baseUrl,
   baseHeaders,
+  api,
+  validateResponse: false,
 })

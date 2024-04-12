@@ -3,9 +3,10 @@ import { setActivePinia, createPinia } from 'pinia'
 import { apiClient } from '../api/xhr-client.js'
 import { useProjectEnvironmentStore } from './project-environment.js'
 
-const apiClientGet = vi.spyOn(apiClient, 'get')
-const apiClientPost = vi.spyOn(apiClient, 'post')
-const apiClientDelete = vi.spyOn(apiClient, 'delete')
+const apiClientGetQuotas = vi.spyOn(apiClient.Quotas, 'getQuotas')
+const apiClientGetStages = vi.spyOn(apiClient.Stages, 'getStages')
+const apiClientPost = vi.spyOn(apiClient.Environments, 'createEnvironment')
+const apiClientDelete = vi.spyOn(apiClient.Environments, 'deleteEnvironment')
 
 vi.mock('./project.js', async () => ({
   useProjectStore: () => ({
@@ -23,42 +24,38 @@ describe('Environment Store', () => {
   })
 
   it('Should get environment quotas by api call', async () => {
-    apiClientGet.mockReturnValueOnce(Promise.resolve({ data: [] }))
+    apiClientGetQuotas.mockReturnValueOnce(Promise.resolve({ status: 200, body: [] }))
     const projectEnvironmentStore = useProjectEnvironmentStore()
 
     await projectEnvironmentStore.getQuotas()
 
-    expect(apiClientGet).toHaveBeenCalledTimes(1)
-    expect(apiClientGet.mock.calls[0][0]).toEqual('/quotas')
+    expect(apiClientGetQuotas).toHaveBeenCalledTimes(1)
   })
 
   it('Should get environment stages by api call', async () => {
-    apiClientGet.mockReturnValueOnce(Promise.resolve({ data: [] }))
+    apiClientGetStages.mockReturnValueOnce(Promise.resolve({ status: 200, body: [] }))
     const projectEnvironmentStore = useProjectEnvironmentStore()
 
     await projectEnvironmentStore.getStages()
 
-    expect(apiClientGet).toHaveBeenCalledTimes(1)
-    expect(apiClientGet.mock.calls[0][0]).toEqual('/stages')
+    expect(apiClientGetStages).toHaveBeenCalledTimes(1)
   })
 
   it('Should add a project environment by api call', async () => {
-    apiClientPost.mockReturnValueOnce(Promise.resolve({ data: {} }))
+    apiClientPost.mockReturnValueOnce(Promise.resolve({ status: 200, body: {} }))
     const projectEnvironmentStore = useProjectEnvironmentStore()
 
     await projectEnvironmentStore.addEnvironmentToProject({ name: 'prod', projectId: 'projectId', clusterId: 'clusterId1', quotaStageId: 'quotastage1' })
 
     expect(apiClientPost).toHaveBeenCalledTimes(1)
-    expect(apiClientPost.mock.calls[0][0]).toEqual('/projects/projectId/environments')
   })
 
   it('Should delete a project environment by api call', async () => {
-    apiClientDelete.mockReturnValueOnce(Promise.resolve({ data: {} }))
+    apiClientDelete.mockReturnValueOnce(Promise.resolve({ status: 200, body: {} }))
     const projectEnvironmentStore = useProjectEnvironmentStore()
 
     await projectEnvironmentStore.deleteEnvironment('environmentId')
 
     expect(apiClientDelete).toHaveBeenCalledTimes(1)
-    expect(apiClientDelete.mock.calls[0][0]).toEqual('/projects/projectId/environments/environmentId')
   })
 })

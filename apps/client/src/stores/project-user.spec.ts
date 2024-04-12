@@ -3,8 +3,8 @@ import { setActivePinia, createPinia } from 'pinia'
 import { apiClient } from '../api/xhr-client.js'
 import { useProjectUserStore } from './project-user.js'
 
-const apiClientPost = vi.spyOn(apiClient, 'post')
-const apiClientDelete = vi.spyOn(apiClient, 'delete')
+const apiClientPost = vi.spyOn(apiClient.Users, 'createUserRoleInProject')
+const apiClientDelete = vi.spyOn(apiClient.Users, 'deleteUserRoleInProject')
 
 vi.mock('./project.js', async () => ({
   useProjectStore: () => ({
@@ -22,7 +22,7 @@ vi.mock('./users.js', async () => ({
   }),
 }))
 
-describe('Counter Store', () => {
+describe('User Store', () => {
   beforeEach(() => {
     vi.resetAllMocks()
     // creates a fresh pinia and make it active so it's automatically picked
@@ -31,22 +31,20 @@ describe('Counter Store', () => {
   })
 
   it('Should add a user to project by api call', async () => {
-    apiClientPost.mockReturnValueOnce(Promise.resolve({ data: [{ projectId: 'projectId', role: 'user', id: 'a', user: { id: 'b', email: 'michel@test.com' } }] }))
+    apiClientPost.mockReturnValueOnce(Promise.resolve({ status: 200, body: [{ projectId: 'projectId', role: 'user', id: 'a', user: { id: 'b', email: 'michel@test.com' } }] }))
     const projectUserStore = useProjectUserStore()
 
     await projectUserStore.addUserToProject('projectId', { email: 'michel@test.com' })
 
     expect(apiClientPost).toHaveBeenCalledTimes(1)
-    expect(apiClientPost.mock.calls[0][0]).toEqual('/projects/projectId/users')
   })
 
   it('Should remove a user to from project by api call', async () => {
-    apiClientDelete.mockReturnValueOnce(Promise.resolve({ data: {} }))
+    apiClientDelete.mockReturnValueOnce(Promise.resolve({ status: 200, body: {} }))
     const projectUserStore = useProjectUserStore()
 
     await projectUserStore.removeUserFromProject('projectId', 'userId')
 
     expect(apiClientDelete).toHaveBeenCalledTimes(1)
-    expect(apiClientDelete.mock.calls[0][0]).toEqual('/projects/projectId/users/userId')
   })
 })
