@@ -1,8 +1,8 @@
-import type { GenerateCIFilesDto, ProjectModel, CreateRepositoryDto, UpdateRepositoryDto, UpdateClusterDto, CreateClusterDto, EnvironmentModel, UpdateEnvironmentDto, InitializeEnvironmentDto, AdminLogsQuery, UpdateOrganizationDto, CreateOrganizationDto, SetPermissionDto, UpdatePermissionDto, CreateQuotaDto, UpdateQuotaStageDto, UpdateQuotaPrivacyDto, CreateStageDto, UpdateStageClustersDto, PermissionParams, DeletePermissionParams, RepositoryParams, ClusterParams, QuotaParams, StageParams } from '@cpn-console/shared'
+import type { GenerateCIFilesBody, ProjectInfos, CreateRepositoryBody, UpdateRepositoryBody, RepositoryParams, UpdateClusterBody, CreateClusterBody, Environment, UpdateEnvironmentBody, CreateEnvironmentBody, GetLogsQuery, UpdateOrganizationBody, CreateOrganizationBody, CreatePermissionBody, UpdatePermissionBody, CreateQuotaBody, UpdateQuotaStageBody, PatchQuotaBody, CreateStageBody, UpdateStageClustersBody, Cluster, CreateZoneBody, UpdateZoneBody } from '@cpn-console/shared'
 import { apiClient } from './xhr-client.js'
 
 // CIFiles
-export const generateCIFiles = async (data: GenerateCIFilesDto) => {
+export const generateCIFiles = async (data: GenerateCIFilesBody) => {
   const response = await apiClient.Files.generateCIFiles({ body: data })
   return response.body
 }
@@ -20,7 +20,7 @@ export const checkServicesHealth = async () => {
 }
 
 // Repositories
-export const addRepo = async (projectId: RepositoryParams['projectId'], data: CreateRepositoryDto) => {
+export const addRepo = async (projectId: RepositoryParams['projectId'], data: CreateRepositoryBody) => {
   const response = await apiClient.Repositories.createRepository({ body: data, params: { projectId } })
   return response.body
 }
@@ -30,8 +30,9 @@ export const getRepos = async (projectId: RepositoryParams['projectId']) => {
   return response.body
 }
 
-export const updateRepo = async (projectId: RepositoryParams['projectId'], data: UpdateRepositoryDto) => {
-  const response = await apiClient.Repositories.updateRepository({ body: data, params: { projectId, repositoryId: data.id } })
+export const updateRepo = async (projectId: RepositoryParams['projectId'], repositoryId: RepositoryParams['repositoryId'], data: UpdateRepositoryBody) => {
+  if (!data.id) return
+  const response = await apiClient.Repositories.updateRepository({ body: data, params: { projectId, repositoryId } })
   return response.body
 }
 
@@ -41,17 +42,17 @@ export const deleteRepo = async (projectId: RepositoryParams['projectId'], repos
 }
 
 // Environments
-export const addEnvironment = async (projectId: ProjectModel['id'], data: InitializeEnvironmentDto) => {
+export const addEnvironment = async (projectId: ProjectInfos['id'], data: CreateEnvironmentBody) => {
   const response = await apiClient.Environments.createEnvironment({ body: data, params: { projectId } })
   return response.body
 }
 
-export const updateEnvironment = async (projectId: ProjectModel['id'], environmentId: EnvironmentModel['id'], data: UpdateEnvironmentDto) => {
+export const updateEnvironment = async (projectId: ProjectInfos['id'], environmentId: Environment['id'], data: UpdateEnvironmentBody) => {
   const response = await apiClient.Environments.updateEnvironment({ body: data, params: { projectId, environmentId } })
   return response.body
 }
 
-export const deleteEnvironment = async (projectId: ProjectModel['id'], environmentId: EnvironmentModel['id']) => {
+export const deleteEnvironment = async (projectId: ProjectInfos['id'], environmentId: Environment['id']) => {
   const response = await apiClient.Environments.deleteEnvironment({ params: { projectId, environmentId } })
   return response.body
 }
@@ -63,27 +64,27 @@ export const getQuotas = async () => {
 }
 
 // Admin - Quotas
-export const getQuotaAssociatedEnvironments = async (quotaId: QuotaParams['quotaId']) => {
+export const getQuotaAssociatedEnvironments = async (quotaId: string) => {
   const response = await apiClient.QuotasAdmin.getQuotaEnvironments({ params: { quotaId } })
   return response.body
 }
 
-export const addQuota = async (data: CreateQuotaDto) => {
+export const addQuota = async (data: CreateQuotaBody) => {
   const response = await apiClient.QuotasAdmin.createQuota({ body: data })
   return response.body
 }
 
-export const updateQuotaPrivacy = async (quotaId: QuotaParams['quotaId'], data: UpdateQuotaPrivacyDto) => {
+export const updateQuotaPrivacy = async (quotaId: string, data: PatchQuotaBody) => {
   const response = await apiClient.QuotasAdmin.patchQuotaPrivacy({ body: data, params: { quotaId } })
   return response.body
 }
 
-export const updateQuotaStage = async (data: UpdateQuotaStageDto) => {
+export const updateQuotaStage = async (data: UpdateQuotaStageBody) => {
   const response = await apiClient.QuotasAdmin.updateQuotaStage({ body: data })
   return response.body
 }
 
-export const deleteQuota = async (quotaId: QuotaParams['quotaId']) => {
+export const deleteQuota = async (quotaId: string) => {
   const response = await apiClient.QuotasAdmin.deleteQuota({ params: { quotaId } })
   return response.body
 }
@@ -95,43 +96,43 @@ export const getStages = async () => {
 }
 
 // Admin - Stages
-export const getStageAssociatedEnvironments = async (stageId: StageParams['stageId']) => {
+export const getStageAssociatedEnvironments = async (stageId: string) => {
   const response = await apiClient.StagesAdmin.getStageEnvironments({ params: { stageId } })
   return response.body
 }
 
-export const addStage = async (data: CreateStageDto) => {
+export const addStage = async (data: CreateStageBody) => {
   const response = await apiClient.StagesAdmin.createStage({ body: data })
   return response.body
 }
 
-export const updateStageClusters = async (stageId: StageParams['stageId'], data: UpdateStageClustersDto) => {
+export const updateStageClusters = async (stageId: string, data: UpdateStageClustersBody) => {
   const response = await apiClient.StagesAdmin.updateStageClusters({ body: data, params: { stageId } })
   return response.body
 }
 
-export const deleteStage = async (stageId: StageParams['stageId']) => {
+export const deleteStage = async (stageId: string) => {
   const response = await apiClient.StagesAdmin.deleteStage({ params: { stageId } })
   return response.body
 }
 
 // Permissions
-export const addPermission = async (projectId: PermissionParams['projectId'], environmentId: PermissionParams['environmentId'], data: SetPermissionDto) => {
+export const addPermission = async (projectId: string, environmentId: string, data: CreatePermissionBody) => {
   const response = await apiClient.Permissions.createPermission({ body: data, params: { projectId, environmentId } })
   return response.body
 }
 
-export const updatePermission = async (projectId: PermissionParams['projectId'], environmentId: PermissionParams['environmentId'], data: UpdatePermissionDto) => {
+export const updatePermission = async (projectId: string, environmentId: string, data: UpdatePermissionBody) => {
   const response = await apiClient.Permissions.updatePermission({ body: data, params: { projectId, environmentId } })
   return response.body
 }
 
-export const getPermissions = async (projectId: PermissionParams['projectId'], environmentId: PermissionParams['environmentId']) => {
+export const getPermissions = async (projectId: string, environmentId: string) => {
   const response = await apiClient.Permissions.getPermissions({ params: { projectId, environmentId } })
   return response.body
 }
 
-export const deletePermission = async (projectId: DeletePermissionParams['projectId'], environmentId: DeletePermissionParams['environmentId'], userId: DeletePermissionParams['userId']) => {
+export const deletePermission = async (projectId: string, environmentId: string, userId: string) => {
   const response = await apiClient.Permissions.deletePermission({ params: { projectId, environmentId, userId } })
   return response.body
 }
@@ -142,12 +143,12 @@ export const getAllOrganizations = async () => {
   return response.body
 }
 
-export const createOrganization = async (data: CreateOrganizationDto) => {
+export const createOrganization = async (data: CreateOrganizationBody) => {
   const response = await apiClient.OrganizationsAdmin.createOrganization({ body: data })
   return response.body
 }
 
-export const updateOrganization = async (organizationName: CreateOrganizationDto['name'], data: UpdateOrganizationDto) => {
+export const updateOrganization = async (organizationName: CreateOrganizationBody['name'], data: UpdateOrganizationBody) => {
   const response = await apiClient.OrganizationsAdmin.updateOrganization({ body: data, params: { organizationName } })
   return response.body
 }
@@ -158,7 +159,7 @@ export const fetchOrganizations = async () => {
 }
 
 // Admin - Logs
-export const getAllLogs = async ({ offset, limit }: AdminLogsQuery) => {
+export const getAllLogs = async ({ offset, limit }: GetLogsQuery) => {
   const response = await apiClient.LogsAdmin.getLogs({ query: { offset, limit } })
   return response.body
 }
@@ -170,22 +171,22 @@ export const getClusters = async () => {
 }
 
 // Admin - Clusters
-export const getClusterAssociatedEnvironments = async (clusterId: ClusterParams['clusterId']) => {
+export const getClusterAssociatedEnvironments = async (clusterId: Cluster['id']) => {
   const response = await apiClient.ClustersAdmin.getClusterEnvironments({ params: { clusterId } })
   return response.body
 }
 
-export const addCluster = async (data: CreateClusterDto) => {
+export const addCluster = async (data: CreateClusterBody) => {
   const response = await apiClient.ClustersAdmin.createCluster({ body: data })
   return response.body
 }
 
-export const updateCluster = async (clusterId: ClusterParams['clusterId'], data: UpdateClusterDto) => {
+export const updateCluster = async (clusterId: Cluster['id'], data: UpdateClusterBody) => {
   const response = await apiClient.ClustersAdmin.updateCluster({ body: data, params: { clusterId } })
   return response.body
 }
 
-export const deleteCluster = async (clusterId: ClusterParams['clusterId']) => {
+export const deleteCluster = async (clusterId: Cluster['id']) => {
   const response = await apiClient.ClustersAdmin.deleteCluster({ params: { clusterId } })
   return response.body
 }
@@ -196,12 +197,12 @@ export const getZones = async () => {
   return response.body
 }
 
-export const createZone = async (data) => {
+export const createZone = async (data: CreateZoneBody) => {
   const response = await apiClient.ZonesAdmin.createZone({ body: data })
   return response.body
 }
 
-export const updateZone = async (zoneId: string, data) => {
+export const updateZone = async (zoneId: string, data: UpdateZoneBody) => {
   const response = await apiClient.ZonesAdmin.updateZone({ body: data, params: { zoneId } })
   return response.body
 }

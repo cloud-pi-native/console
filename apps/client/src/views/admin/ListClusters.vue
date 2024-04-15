@@ -1,10 +1,16 @@
 <script lang="ts" setup>
-import { ref, computed, onMounted, watch, type Ref } from 'vue'
-import { sortArrByObjKeyAsc, type CreateClusterDto, type UpdateClusterDto, type ClusterParams } from '@cpn-console/shared'
+import { ref, computed, onMounted, watch } from 'vue'
+import { sortArrByObjKeyAsc, type CreateClusterBody, type UpdateClusterBody, type Cluster, type Stage, type ProjectInfos, type Environment } from '@cpn-console/shared'
 import { useAdminClusterStore } from '@/stores/admin/cluster.js'
 import { useAdminProjectStore } from '@/stores/admin/project.js'
 import { useZoneStore } from '@/stores/zone.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
+
+type ClusterList = {
+  id: Cluster['id']
+  title: Cluster['label']
+  data: Cluster
+}[]
 
 const adminClusterStore = useAdminClusterStore()
 const adminProjectStore = useAdminProjectStore()
@@ -13,16 +19,16 @@ const projectEnvironmentStore = useProjectEnvironmentStore()
 
 const clusters = computed(() => adminClusterStore.clusters)
 const allZones = computed(() => zoneStore.zones)
-const selectedCluster = ref({})
-const clusterList = ref([])
-const allProjects: Ref<any[]> = ref([])
-const allStages: Ref<any[]> = ref([])
+const selectedCluster = ref<Cluster | Record<string, never>>({})
+const clusterList = ref<ClusterList>([])
+const allProjects = ref<ProjectInfos[]>([])
+const allStages = ref<Stage[]>([])
 const isUpdatingCluster = ref(false)
 const isNewClusterForm = ref(false)
-const associatedEnvironments: Ref<any[]> = ref([])
+const associatedEnvironments = ref<Environment[]>([])
 
-const setClusterTiles = (clusters) => {
-  clusterList.value = sortArrByObjKeyAsc(clusters, 'label')
+const setClusterTiles = (clusterArr: typeof clusters.value) => {
+  clusterList.value = sortArrByObjKeyAsc(clusterArr, 'label')
     ?.map(cluster => ({
       id: cluster.id,
       title: cluster.label,
@@ -30,7 +36,7 @@ const setClusterTiles = (clusters) => {
     }))
 }
 
-const setSelectedCluster = async (cluster) => {
+const setSelectedCluster = async (cluster: Cluster) => {
   if (selectedCluster.value?.label === cluster.label) {
     selectedCluster.value = {}
     return
@@ -56,7 +62,7 @@ const cancel = () => {
   selectedCluster.value = {}
 }
 
-const addCluster = async (cluster: CreateClusterDto) => {
+const addCluster = async (cluster: CreateClusterBody) => {
   isUpdatingCluster.value = true
   cancel()
   await adminClusterStore.addCluster(cluster)
@@ -64,7 +70,7 @@ const addCluster = async (cluster: CreateClusterDto) => {
   isUpdatingCluster.value = false
 }
 
-const updateCluster = async (cluster: UpdateClusterDto & { id: ClusterParams['clusterId'] }) => {
+const updateCluster = async (cluster: UpdateClusterBody & { id: Cluster['id'] }) => {
   isUpdatingCluster.value = true
   await adminClusterStore.updateCluster(cluster)
   await adminClusterStore.getClusters()
@@ -72,7 +78,7 @@ const updateCluster = async (cluster: UpdateClusterDto & { id: ClusterParams['cl
   isUpdatingCluster.value = false
 }
 
-const deleteCluster = async (clusterId: ClusterParams['clusterId']) => {
+const deleteCluster = async (clusterId: Cluster['id']) => {
   isUpdatingCluster.value = true
   await adminClusterStore.deleteCluster(clusterId)
   await adminClusterStore.getClusters()

@@ -1,5 +1,5 @@
 import type { Stage } from '@prisma/client'
-import { type CreateStageDto, type UpdateStageClustersDto, StageSchema } from '@cpn-console/shared'
+import { type CreateStageBody, type UpdateStageClustersBody, StageSchema } from '@cpn-console/shared'
 import { BadRequestError, DsoError } from '@/utils/errors.js'
 import {
   getStageByName,
@@ -69,7 +69,7 @@ export const getStageAssociatedEnvironments = async (stageId: Stage['id']) => {
   }
 }
 
-export const createStage = async (data: CreateStageDto) => {
+export const createStage = async (data: CreateStageBody) => {
   try {
     const schemaValidation = StageSchema.omit({ id: true }).safeParse(data)
     validateSchema(schemaValidation)
@@ -96,7 +96,7 @@ export const createStage = async (data: CreateStageDto) => {
   }
 }
 
-export const updateStageClusters = async (stageId: Stage['id'], clusterIds: UpdateStageClustersDto['clusterIds']) => {
+export const updateStageClusters = async (stageId: Stage['id'], clusterIds: UpdateStageClustersBody['clusterIds']) => {
   try {
     // Remove clusters
     const dbClusters = (await getStageById(stageId))?.clusters

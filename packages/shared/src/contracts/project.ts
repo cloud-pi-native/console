@@ -1,3 +1,4 @@
+import { ClientInferRequest } from '@ts-rest/core'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   CreateProjectSchema,
@@ -68,6 +69,10 @@ export const projectContract = contractInstance.router({
   },
 })
 
+export type CreateProjectBody = ClientInferRequest<typeof projectContract.createProject>['body']
+
+export type UpdateProjectBody = ClientInferRequest<typeof projectContract.updateProject>['body']
+
 export const projectAdminContract = contractInstance.router({
   getAllProjects: {
     method: 'GET',
@@ -96,3 +101,5 @@ export const projectAdminContract = contractInstance.router({
     responses: PatchProjectSchema.responses,
   },
 })
+
+export type PatchProjectBody = ClientInferRequest<typeof projectAdminContract.patchProject>['body']

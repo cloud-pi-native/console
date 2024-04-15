@@ -1,5 +1,5 @@
 import type { Project, Repository, User } from '@prisma/client'
-import { type CreateRepositoryDto, type ProjectRoles, type UpdateRepositoryDto } from '@cpn-console/shared'
+import { type CreateRepositoryBody, type ProjectRoles, type UpdateRepositoryBody } from '@cpn-console/shared'
 import { addLogs, deleteRepository as deleteRepositoryQuery, getProjectInfos, getProjectInfosAndRepos, getUserById, initializeRepository, updateRepository as updateRepositoryQuery } from '@/resources/queries-index.js'
 import { checkInsufficientRoleInProject, checkRoleAndLocked } from '@/utils/controller.js'
 import { BadRequestError, ForbiddenError, NotFoundError, UnauthorizedError, UnprocessableContentError } from '@/utils/errors.js'
@@ -51,7 +51,7 @@ export const checkUpsertRepository = async (
 
 export const createRepository = async (
   projectId: Project['id'],
-  data: CreateRepositoryDto,
+  data: CreateRepositoryBody,
   userId: User['id'],
   requestId: string,
 ) => {
@@ -92,7 +92,7 @@ export const createRepository = async (
 export const updateRepository = async (
   projectId: Project['id'],
   repositoryId: Repository['id'],
-  data: Partial<UpdateRepositoryDto>,
+  data: Partial<UpdateRepositoryBody>,
   userId: User['id'],
   requestId: string,
 ) => {

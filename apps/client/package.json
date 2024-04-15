@@ -36,7 +36,6 @@
     "@ts-rest/core": "^3.41.2",
     "axios": "1.6.7",
     "dotenv": "^16.4.1",
-    "json-schema-to-ts": "^3.0.0",
     "js-yaml": "^4.1.0",
     "jszip": "^3.10.1",
     "keycloak-js": "^23.0.6",

@@ -1,3 +1,4 @@
+import { ClientInferRequest } from '@ts-rest/core'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   CreateOrganizationSchema,
@@ -52,3 +53,9 @@ export const organizationAdminContract = contractInstance.router({
     responses: GetOrganizationsSchema.responses,
   },
 })
+
+export type CreateOrganizationBody = ClientInferRequest<typeof organizationAdminContract.createOrganization>['body']
+
+export type UpdateOrganizationParams = ClientInferRequest<typeof organizationAdminContract.updateOrganization>['params']
+
+export type UpdateOrganizationBody = ClientInferRequest<typeof organizationAdminContract.updateOrganization>['body']

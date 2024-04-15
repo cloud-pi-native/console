@@ -6,8 +6,8 @@ import {
   exclude,
   projectIsLockedInfo,
   type AsyncReturnType,
-  type CreateProjectDto,
-  type UpdateProjectDto,
+  type CreateProjectBody,
+  type UpdateProjectBody,
 } from '@cpn-console/shared'
 import { services, servicesInfos } from '@cpn-console/hooks'
 import {
@@ -68,7 +68,7 @@ export const getUserProjects = async (requestor: UserDto) => {
 // Check logic
 export const checkCreateProject = async (
   organizationName: Organization['name'],
-  data: CreateProjectDto,
+  data: CreateProjectBody,
 ) => {
   const schemaValidation = ProjectSchema.omit({ id: true, organizationId: true, status: true, locked: true }).safeParse(data)
   validateSchema(schemaValidation)
@@ -122,7 +122,7 @@ export const getProjectSecrets = async (projectId: string, userId: User['id']) =
       .map(([key, value]) => [servicesInfos[key]?.title, value.secrets]))
 }
 
-export const createProject = async (dataDto: CreateProjectDto, requestor: UserDto, requestId: string) => {
+export const createProject = async (dataDto: CreateProjectBody, requestor: UserDto, requestId: string) => {
   // Pré-requis
   const owner = await getUser(requestor)
   const organization = await getOrganizationById(dataDto.organizationId)
@@ -151,7 +151,7 @@ export const createProject = async (dataDto: CreateProjectDto, requestor: UserDt
   }
 }
 
-export const updateProject = async (data: UpdateProjectDto, projectId: Project['id'], requestor: UserDto, requestId: string) => {
+export const updateProject = async (data: UpdateProjectBody, projectId: Project['id'], requestor: UserDto, requestId: string) => {
   const keysAllowedForUpdate = ['description']
   const dataFiltered = filterObjectByKeys(data, keysAllowedForUpdate)
 

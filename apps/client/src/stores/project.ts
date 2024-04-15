@@ -1,5 +1,5 @@
 import api from '@/api/index.js'
-import type { CreateProjectDto, ProjectInfos, ProjectModel, ProjectParams, RoleModel, UpdateProjectDto } from '@cpn-console/shared'
+import type { CreateProjectBody, ProjectInfos, Role, UpdateProjectBody } from '@cpn-console/shared'
 import { defineStore } from 'pinia'
 import { ref, type Ref } from 'vue'
 
@@ -7,11 +7,11 @@ export const useProjectStore = defineStore('project', () => {
   const selectedProject: Ref<ProjectInfos | undefined> = ref(undefined)
   const projects: Ref<Array<ProjectInfos>> = ref([])
 
-  const setSelectedProject = (id: ProjectParams['projectId']) => {
+  const setSelectedProject = (id: string) => {
     selectedProject.value = projects.value.find(project => project.id === id)
   }
 
-  const updateProject = async (projectId: ProjectParams['projectId'], data: UpdateProjectDto) => {
+  const updateProject = async (projectId: string, data: UpdateProjectBody) => {
     await api.updateProject(projectId, data)
     await getUserProjects()
   }
@@ -24,7 +24,7 @@ export const useProjectStore = defineStore('project', () => {
     }
   }
 
-  const createProject = async (project: CreateProjectDto) => {
+  const createProject = async (project: CreateProjectBody) => {
     await api.createProject(project)
     await getUserProjects()
   }
@@ -34,17 +34,17 @@ export const useProjectStore = defineStore('project', () => {
     await getUserProjects()
   }
 
-  const archiveProject = async (projectId: ProjectParams['projectId']) => {
+  const archiveProject = async (projectId: string) => {
     await api.archiveProject(projectId)
     selectedProject.value = undefined
     await getUserProjects()
   }
 
-  const getProjectSecrets = async (projectId: ProjectParams['projectId']) => {
+  const getProjectSecrets = async (projectId: string) => {
     return await api.getProjectSecrets(projectId)
   }
 
-  const updateProjectRoles = (projectId: ProjectModel['id'], roles: RoleModel[]) => {
+  const updateProjectRoles = (projectId:string, roles: Role[]) => {
     const project = projects.value.find(project => project.id === projectId)
     if (!project) return
     project.roles = roles

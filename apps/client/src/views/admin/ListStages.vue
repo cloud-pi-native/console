@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, watch, type Ref } from 'vue'
 import { useAdminStageStore } from '@/stores/admin/stage.js'
 import { sortArrByObjKeyAsc } from '@cpn-console/shared'
-import type { CreateStageDto, UpdateQuotaStageDto, StageModel, UpdateStageClustersDto, StageParams } from '@cpn-console/shared'
+import type { CreateStageBody, UpdateQuotaStageBody, Stage, UpdateStageClustersBody } from '@cpn-console/shared'
 import { useAdminQuotaStore } from '@/stores/admin/quota'
 import { useAdminClusterStore } from '@/stores/admin/cluster'
 import { useSnackbarStore } from '@/stores/snackbar.js'
@@ -12,7 +12,7 @@ const adminQuotaStore = useAdminQuotaStore()
 const adminClusterStore = useAdminClusterStore()
 const snackbarStore = useSnackbarStore()
 
-const selectedStage: Ref<StageModel | Record<string, never>> = ref({})
+const selectedStage: Ref<Stage | Record<string, never>> = ref({})
 const stageList: Ref<any[]> = ref([])
 const associatedEnvironments: Ref<any[]> = ref([])
 const isNewStageForm = ref(false)
@@ -21,7 +21,7 @@ const stages = computed(() => adminStageStore.stages)
 const allQuotas = computed(() => adminQuotaStore.quotas)
 const allClusters = computed(() => adminClusterStore.clusters)
 
-const setStageTiles = (stages: StageModel[]) => {
+const setStageTiles = (stages: Stage[]) => {
   stageList.value = sortArrByObjKeyAsc(stages, 'name')
     ?.map(stage => ({
       id: stage.id,
@@ -30,7 +30,7 @@ const setStageTiles = (stages: StageModel[]) => {
     }))
 }
 
-const setSelectedStage = async (stage: StageModel) => {
+const setSelectedStage = async (stage: Stage) => {
   if (selectedStage.value?.name === stage.name) {
     selectedStage.value = {}
     return
@@ -51,7 +51,7 @@ const cancel = () => {
   selectedStage.value = {}
 }
 
-const addStage = async (stage: CreateStageDto) => {
+const addStage = async (stage: CreateStageBody) => {
   snackbarStore.isWaitingForResponse = true
   cancel()
   await adminStageStore.addStage(stage)
@@ -60,9 +60,9 @@ const addStage = async (stage: CreateStageDto) => {
 }
 
 export type UpdateStageType = {
-  stageId: UpdateQuotaStageDto['stageId'],
-  quotaIds?: UpdateQuotaStageDto['quotaIds']
-  clusterIds?: UpdateStageClustersDto['clusterIds']
+  stageId: UpdateQuotaStageBody['stageId'],
+  quotaIds?: UpdateQuotaStageBody['quotaIds']
+  clusterIds?: UpdateStageClustersBody['clusterIds']
 }
 
 const updateStage = async ({ stageId, quotaIds, clusterIds }: UpdateStageType) => {
@@ -78,7 +78,7 @@ const updateStage = async ({ stageId, quotaIds, clusterIds }: UpdateStageType) =
   snackbarStore.isWaitingForResponse = false
 }
 
-const deleteStage = async (stageId: StageParams['stageId']) => {
+const deleteStage = async (stageId: string) => {
   snackbarStore.isWaitingForResponse = true
   cancel()
   await adminStageStore.deleteStage(stageId)
@@ -86,7 +86,7 @@ const deleteStage = async (stageId: StageParams['stageId']) => {
   snackbarStore.isWaitingForResponse = false
 }
 
-const getStageAssociatedEnvironments = async (stageId: StageParams['stageId']) => {
+const getStageAssociatedEnvironments = async (stageId: string) => {
   snackbarStore.isWaitingForResponse = true
   associatedEnvironments.value = await adminStageStore.getStageAssociatedEnvironments(stageId)
   snackbarStore.isWaitingForResponse = false
@@ -142,7 +142,7 @@ watch(stages, () => {
       :all-clusters="allClusters"
       class="w-full"
       :is-new-stage="true"
-      @add="(stage: CreateStageDto) => addStage(stage)"
+      @add="(stage: CreateStageBody) => addStage(stage)"
       @cancel="cancel()"
     />
   </div>
@@ -178,7 +178,7 @@ watch(stages, () => {
         :associated-environments="associatedEnvironments"
         @cancel="cancel()"
         @update="(stage: UpdateStageType) => updateStage(stage)"
-        @delete="(stageId: StageParams['stageId']) => deleteStage(stageId)"
+        @delete="(stageId: string) => deleteStage(stageId)"
       />
     </div>
     <div

@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { ClientInferRequest } from '@ts-rest/core'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import { ErrorSchema } from '../schemas/utils.js'
 
@@ -28,3 +29,5 @@ export const filesContract = contractInstance.router({
     },
   },
 })
+
+export type GenerateCIFilesBody = ClientInferRequest<typeof filesContract.generateCIFiles>['body']

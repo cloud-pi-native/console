@@ -1,9 +1,9 @@
 import { users as usersApi } from '@/api/index.js'
-import type { ProjectParams, UserModel } from '@cpn-console/shared'
+import type { User } from '@cpn-console/shared'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
-type UserOutputDto = Required<UserModel>
+type UserOutputDto = Required<User>
 
 export const useUsersStore = defineStore('users', () => {
   const users = ref<Record<string, UserOutputDto>>({})
@@ -21,7 +21,7 @@ export const useUsersStore = defineStore('users', () => {
     }
   }
 
-  const getProjectUsers = async (projectId: ProjectParams['projectId']) => {
+  const getProjectUsers = async (projectId: string) => {
     const usersToAdd = await usersApi.getProjectUsers(projectId)
     addUsers(usersToAdd)
   }
