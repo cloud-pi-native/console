@@ -1,3 +1,4 @@
+import { ClientInferRequest } from '@ts-rest/core'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   GetZonesSchema,
@@ -47,3 +48,7 @@ export const zoneAdminContract = contractInstance.router({
     responses: DeleteZoneSchema.responses,
   },
 })
+
+export type CreateZoneBody = ClientInferRequest<typeof zoneAdminContract.createZone>['body']
+
+export type UpdateZoneBody = ClientInferRequest<typeof zoneAdminContract.updateZone>['body']

@@ -64,9 +64,6 @@ importers:
       js-yaml:
         specifier: ^4.1.0
         version: 4.1.0
-      json-schema-to-ts:
-        specifier: ^3.0.0
-        version: 3.0.0
       jszip:
         specifier: ^3.10.1
         version: 3.10.1
@@ -288,9 +285,6 @@ importers:
       json-2-csv:
         specifier: ^5.4.0
         version: 5.4.0
-      json-schema-to-ts:
-        specifier: ^3.0.0
-        version: 3.0.0
       mustache:
         specifier: ^4.2.0
         version: 4.2.0
@@ -488,9 +482,6 @@ importers:
       '@ts-rest/core':
         specifier: ^3.41.2
         version: 3.41.2(zod@3.22.4)
-      json-schema-to-ts:
-        specifier: ^3.0.0
-        version: 3.0.0
       zod:
         specifier: ^3.22.4
         version: 3.22.4
@@ -2092,13 +2083,6 @@ packages:
       '@babel/plugin-transform-modules-commonjs': 7.23.3(@babel/core@7.23.9)
       '@babel/plugin-transform-typescript': 7.23.6(@babel/core@7.23.9)
     dev: true
-
-  /@babel/runtime@7.23.9:
-    resolution: {integrity: sha512-0CX6F+BI2s9dkUqr08KFrAIZgNFj75rdBU/DjCyYLIaV/quFjkk6T+EJ2LkZHyZTbEV4L5p97mNkUsHl2wLFAw==}
-    engines: {node: '>=6.9.0'}
-    dependencies:
-      regenerator-runtime: 0.14.1
-    dev: false
 
   /@babel/template@7.23.9:
     resolution: {integrity: sha512-+xrD2BWLpvHKNmX2QbpdpsBaWnRxahMwJjO+KZk2JOElj5nSmKezyS1B4u+QbHMTX69t4ukm6hh9lsYQ7GHCKA==}
@@ -8149,15 +8133,6 @@ packages:
       - supports-color
     dev: false
 
-  /json-schema-to-ts@3.0.0:
-    resolution: {integrity: sha512-2adDesYifYEXYxNySx3gG0RR69rDWIjqAFzK/JPXdOvjHLZ/UP6d2rkpy6a+AxyhtRp2SvFPZ4+EW36jBinUbA==}
-    engines: {node: '>=16'}
-    dependencies:
-      '@babel/runtime': 7.23.9
-      '@types/json-schema': 7.0.15
-      ts-algebra: 1.2.2
-    dev: false
-
   /json-schema-traverse@0.4.1:
     resolution: {integrity: sha512-xbbCH5dCYU5T8LcEhhuh7HJ88HXuW3qsI3Y0zOZFKfZEHcpWiHU/Jxzk629Brsab/mMiHQti9wMP+845RPe3Vg==}
 
@@ -9729,10 +9704,6 @@ packages:
     resolution: {integrity: sha512-OVede/NQE13xBQ+ob5CKd5KyeJYU2YInb1bmV4nRoOfquZPkAkxuOXicSe1PvqIuZZ4kD13sPKBbR7UFDmli6w==}
     dev: true
 
-  /regenerator-runtime@0.14.1:
-    resolution: {integrity: sha512-dYnhHh0nJoMfnkZs6GmmhFknAGRrLznOu5nc9ML+EJxGvrx6H7teuevqVqCuPcPK//3eDrrjQhehXVx9cnkGdw==}
-    dev: false
-
   /regexp.prototype.flags@1.5.1:
     resolution: {integrity: sha512-sy6TXMN+hnP/wMy+ISxg3krXx7BAtWVO4UouuCN/ziM9UEne0euamVNafDfvC83bRNr95y0V5iijeDQFUNpvrg==}
     engines: {node: '>= 0.4'}
@@ -10778,6 +10749,7 @@ packages:
 
   /ts-algebra@1.2.2:
     resolution: {integrity: sha512-kloPhf1hq3JbCPOTYoOWDKxebWjNb2o/LKnNfkWhxVVisFFmMJPPdJeGoGmM+iRLyoXAR61e08Pb+vUXINg8aA==}
+    dev: true
 
   /ts-api-utils@1.0.3(typescript@5.3.3):
     resolution: {integrity: sha512-wNMeqtMz5NtwpT/UZGY5alT+VoKdSsOOP/kqHFcUW1P/VRhH2wJ48+DN2WwUliNbQ976ETwDL0Ifd2VVvgonvg==}

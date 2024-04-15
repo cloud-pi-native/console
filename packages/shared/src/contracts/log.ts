@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../index.js'
 import { ErrorSchema } from '../schemas/utils.js'
+import { ClientInferRequest } from '@ts-rest/core'
 
 export const logAdminContract = contractInstance.router({
   getLogs: {
@@ -21,3 +22,5 @@ export const logAdminContract = contractInstance.router({
     },
   },
 })
+
+export type GetLogsQuery = ClientInferRequest<typeof logAdminContract.getLogs>['query']

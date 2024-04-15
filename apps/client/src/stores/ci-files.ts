@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia'
 import api from '@/api/index.js'
-import type { GenerateCIFilesDto } from '@cpn-console/shared'
+import type { GenerateCIFilesBody } from '@cpn-console/shared'
 
 export const useCIFilesStore = defineStore('ciFiles', () => {
-  const generateCIFiles = async (ciData: GenerateCIFilesDto) => {
+  const generateCIFiles = async (ciData: GenerateCIFilesBody) => {
     const response = await api.generateCIFiles(ciData)
     return response
   }

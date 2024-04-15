@@ -8,7 +8,7 @@ export const OrganizationSchema = z.object({
     .max(60)
     .optional(),
   name: z.string()
-    .regex(/^[a-z-]*$/)
+    .regex(/^[a-z]*$/)
     .min(2)
     .max(10),
   label: z.string()

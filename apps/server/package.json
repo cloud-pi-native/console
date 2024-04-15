@@ -56,7 +56,6 @@
     "fastify": "^4.26.1",
     "fastify-keycloak-adapter": "^2.1.10",
     "json-2-csv": "^5.4.0",
-    "json-schema-to-ts": "^3.0.0",
     "mustache": "^4.2.0",
     "nanoid": "5.0.6",
     "node-vault-client": "^1.0.0",

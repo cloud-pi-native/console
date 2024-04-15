@@ -8,7 +8,7 @@ import {
   getProjectUsers,
 } from './users.js'
 
-import type { UpdateUserProjectRoleDto } from '@cpn-console/shared'
+import type { UpdateUserRoleInProjectBody } from '@cpn-console/shared'
 
 const apiClientGetAdmin = vi.spyOn(apiClient.UsersAdmin, 'getAllUsers')
 const apiClientGet = vi.spyOn(apiClient.Users, 'getProjectUsers')
@@ -35,7 +35,7 @@ describe('API', () => {
     it('Should update an user in project', async () => {
       const projectId = 'projectId'
       const userId = 'userId'
-      const data: UpdateUserProjectRoleDto = { role: 'owner' }
+      const data: UpdateUserRoleInProjectBody = { role: 'owner' }
       apiClientPut.mockReturnValueOnce(Promise.resolve({ status: 200, body: {} }))
 
       await updateUserProjectRole(projectId, userId, data)

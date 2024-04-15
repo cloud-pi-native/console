@@ -233,7 +233,7 @@ onBeforeMount(async () => {
         data-testid="orgNameInput"
         type="text"
         label="Nom de l'organisation"
-        hint="Ce nom sera utilisé pour construire le namespace du projet. Il doit être en minuscule et ne pas faire plus de 10 caractères ni contenir de caractères spéciaux hormis le trait d'union '-'."
+        hint="Ce nom sera utilisé pour construire le namespace du projet. Il doit être en minuscule et ne pas faire plus de 10 caractères ni contenir de caractères spéciaux."
         label-visible
         placeholder="min-eco"
         :is-invalid="(!!newOrg.name && !OrganizationSchema.pick({name: true}).safeParse({name: newOrg.name}).success) || isOrgAlreadyTaken"

@@ -72,6 +72,10 @@ export const ClusterBusinessSchema = ClusterSchema.refine(
 
 export type Cluster = Zod.infer<typeof ClusterSchema>
 
+export const ClusterParams = z.object({
+  clusterId: ClusterSchema.shape.id,
+})
+
 export const CreateClusterSchema = {
   body: ClusterSchema.omit({ id: true }),
   responses: {
@@ -81,6 +85,7 @@ export const CreateClusterSchema = {
     500: ErrorSchema,
   },
 }
+export type CreateClusterBody = Zod.infer<typeof CreateClusterSchema.body>
 
 export const GetClustersSchema = {
   responses: {
@@ -91,10 +96,7 @@ export const GetClustersSchema = {
 }
 
 export const GetClusterAssociatedEnvironmentsSchema = {
-  params: z.object({
-    clusterId: z.string()
-      .uuid(),
-  }),
+  params: ClusterParams,
   responses: {
     200: z.array(z.object({
       organization: OrganizationSchema.shape.name,
@@ -109,10 +111,7 @@ export const GetClusterAssociatedEnvironmentsSchema = {
 }
 
 export const UpdateClusterSchema = {
-  params: z.object({
-    clusterId: z.string()
-      .uuid(),
-  }),
+  params: ClusterParams,
   body: ClusterSchema.partial(),
   responses: {
     200: ClusterSchema,
@@ -123,11 +122,10 @@ export const UpdateClusterSchema = {
   },
 }
 
+export type UpdateClusterBody = Zod.infer<typeof UpdateClusterSchema.body>
+
 export const DeleteClusterSchema = {
-  params: z.object({
-    clusterId: z.string()
-      .uuid(),
-  }),
+  params: ClusterParams,
   responses: {
     204: null,
     400: ErrorSchema,

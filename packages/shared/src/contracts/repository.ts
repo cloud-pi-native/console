@@ -1,3 +1,4 @@
+import { ClientInferRequest } from '@ts-rest/core'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   CreateRepoSchema,
@@ -57,3 +58,9 @@ export const repositoryContract = contractInstance.router({
     responses: DeleteRepoSchema.responses,
   },
 })
+
+export type CreateRepositoryBody = ClientInferRequest<typeof repositoryContract.createRepository>['body']
+
+export type UpdateRepositoryBody = ClientInferRequest<typeof repositoryContract.updateRepository>['body']
+
+export type RepositoryParams = ClientInferRequest<typeof repositoryContract.updateRepository>['params']

@@ -1,3 +1,4 @@
+import { ClientInferRequest } from '@ts-rest/core'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   CreateQuotaSchema,
@@ -67,3 +68,9 @@ export const quotaAdminContract = contractInstance.router({
     responses: DeleteQuotaSchema.responses,
   },
 })
+
+export type CreateQuotaBody = ClientInferRequest<typeof quotaAdminContract.createQuota>['body']
+
+export type UpdateQuotaStageBody = ClientInferRequest<typeof quotaAdminContract.updateQuotaStage>['body']
+
+export type PatchQuotaBody = ClientInferRequest<typeof quotaAdminContract.patchQuotaPrivacy>['body']

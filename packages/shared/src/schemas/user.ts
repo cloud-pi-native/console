@@ -26,7 +26,7 @@ export const RoleSchema = z.object({
   role: z.enum(projectRoles),
 })
 
-export type Role = Zod.infer<typeof UserSchema>
+export type Role = Zod.infer<typeof RoleSchema>
 
 export const RoleWithUserSchema = RoleSchema.extend({ user: UserSchema })
 
