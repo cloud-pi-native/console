@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.0.3](https://github.com/cloud-pi-native/console/compare/v8.0.2...v8.0.3) (2024-04-16)
+
+
+### Bug Fixes
+
+* :ambulance: gitlab secret ([0c03a95](https://github.com/cloud-pi-native/console/commit/0c03a9551377705fced2dedf1b9e8063df9d2748))
+
 ## [8.0.2](https://github.com/cloud-pi-native/console/compare/v8.0.1...v8.0.2) (2024-04-11)
 
 
