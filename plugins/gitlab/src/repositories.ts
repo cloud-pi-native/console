@@ -49,14 +49,22 @@ const ensureRepositoryExists = async (
   vaultApi: VaultProjectApi,
 ) => {
   let gitlabRepository: CondensedProjectSchema | ProjectSchema | void = gitlabRepositories.find(gitlabRepository => gitlabRepository.name === repository.internalRepoName)
-  const externalRepoUrn = repository.externalRepoUrl.split(/:\/\/(.*)/s)[1]
+  const externalRepoUrn = repository?.externalRepoUrl?.split(/:\/\/(.*)/s)[1]
   const vaultCredsPath = `${repository.internalRepoName}-mirror`
   const currentVaultCreds = await vaultApi.read(vaultCredsPath, { throwIfNoEntry: false })
 
   if (!gitlabRepository) {
-    gitlabRepository = await gitlabApi.createCloneRepository(repository.internalRepoName, externalRepoUrn, repository.newCreds) // TODO
+    if (repository.source === 'clone' && externalRepoUrn) {
+      gitlabRepository = await gitlabApi.createCloneRepository(repository.internalRepoName, externalRepoUrn, repository.newCreds) // TODO
+    } else {
+      await gitlabApi.createEmptyRepository(repository.internalRepoName)
+    }
   }
 
+  if (repository.source !== 'clone') {
+    await vaultApi.destroy(vaultCredsPath)
+    return
+  }
   const internalRepoUrl = await gitlabApi.getRepoUrl(repository.internalRepoName)
 
   const gitlabSecret = await vaultApi.read('tech/GITLAB_MIRROR', { throwIfNoEntry: false })

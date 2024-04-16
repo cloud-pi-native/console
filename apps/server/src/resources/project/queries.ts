@@ -277,6 +277,7 @@ export const getHookProjectInfos = async (id: Project['id']) => await prisma.pro
         isInfra: true,
         isPrivate: true,
         internalRepoName: true,
+        source: true,
       },
     },
   },

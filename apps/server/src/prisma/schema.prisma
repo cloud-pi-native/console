@@ -84,16 +84,17 @@ model Project {
 }
 
 model Repository {
-  id               String   @id @default(uuid()) @db.Uuid
-  projectId        String   @db.Uuid
+  id               String           @id @default(uuid()) @db.Uuid
+  projectId        String           @db.Uuid
   internalRepoName String
-  externalRepoUrl  String
+  source           RepositorySource
+  externalRepoUrl  String?
   externalUserName String?
-  isInfra          Boolean  @default(false)
-  isPrivate        Boolean  @default(false)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  project          Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  isInfra          Boolean          @default(false)
+  isPrivate        Boolean          @default(false)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  project          Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 model User {
@@ -191,4 +192,9 @@ enum ProjectStatus {
 enum QuotaStageStatus {
   active
   pendingDelete
+}
+
+enum RepositorySource {
+  clone
+  autonomous
 }

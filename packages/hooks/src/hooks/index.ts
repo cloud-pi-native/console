@@ -5,7 +5,7 @@ export * from './hook-project.js'
 export type Organization = string
 export type PartialEnvironment = { environment: string, stage: string, clusterLabel: string }
 export type InternalRepoName = string
-export type ExternalRepoUrl = string
+export type ExternalRepoUrl = string | undefined | null
 export type ExternalUserName = string
 export type ExternalToken = string
 export type IsPrivate = boolean

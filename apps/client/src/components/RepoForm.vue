@@ -1,18 +1,19 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
-import { SharedZodError, RepoBusinessSchema, RepoSchema, CreateRepoBusinessSchema, instanciateSchema } from '@cpn-console/shared'
+import { UpdateRepoBusinessSchema, type Repo, CreateRepoBusinessSchema } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = defineProps({
   repo: {
     type: Object,
     default: () => ({
-      internalRepoName: undefined,
+      internalRepoName: '',
       externalRepoUrl: undefined,
       externalUserName: undefined,
       externalToken: undefined,
       isInfra: false,
       isPrivate: false,
+      source: 'clone',
     }),
   },
   isOwner: {
@@ -26,43 +27,52 @@ const props = defineProps({
 })
 
 const localRepo = ref(props.repo)
-const updatedValues = ref<Record<keyof typeof localRepo.value, boolean>>({})
+const updatedValues = ref<Partial<Repo>>({
+  ...localRepo.value.id && { id: localRepo.value.id },
+  isPrivate: localRepo.value.isPrivate,
+  isInfra: localRepo.value.isInfra,
+  source: localRepo.value.source,
+  internalRepoName: localRepo.value.internalRepoName,
+  externalRepoUrl: localRepo.value.externalRepoUrl,
+})
+
 const repoToDelete = ref('')
 const isDeletingRepo = ref(false)
 
-const errorSchema = computed<SharedZodError | undefined>(() => {
-  let schemaValidation
-  if (localRepo.value.id) {
-    schemaValidation = RepoBusinessSchema.safeParse(localRepo.value)
-  } else {
-    schemaValidation = CreateRepoBusinessSchema.safeParse(localRepo.value)
-  }
-  return schemaValidation.success ? undefined : schemaValidation.error
-})
-const isRepoValid = computed(() => !errorSchema.value)
+const zodSchema = computed(() => updatedValues.value.id
+  ? UpdateRepoBusinessSchema.safeParse(updatedValues.value)
+  : CreateRepoBusinessSchema.safeParse(updatedValues.value),
+)
 
-const updateRepo = (key: keyof typeof localRepo.value, value: unknown) => {
+const isRepoValid = computed(() => !!(zodSchema.value.success))
+
+const updateRepo = (key: keyof Repo, value: unknown) => {
   localRepo.value[key] = value
-  updatedValues.value[key] = true
-
-  if (key === 'isPrivate') {
-    localRepo.value.externalUserName = undefined
-    localRepo.value.externalToken = undefined
-  }
+  // @ts-ignore
+  updatedValues.value[key] = value
 }
 
 const emit = defineEmits(['save', 'delete', 'cancel'])
 
 const saveRepo = () => {
-  updatedValues.value = instanciateSchema(RepoSchema.omit({ id: true, projectId: true }), true)
-
-  if (!isRepoValid.value) return
-  emit('save', localRepo.value)
+  if (!zodSchema.value.success) {
+    return
+  }
+  emit('save', updatedValues.value)
 }
 
 const cancel = () => {
   emit('cancel')
 }
+const options = [{
+  value: 'clone',
+  label: 'Externe',
+  hint: 'Depôt cloné de l\'extérieur',
+}, {
+  value: 'autonomous',
+  label: 'Aucune',
+  hint: 'Depôt indépendant',
+}]
 
 </script>
 
@@ -91,73 +101,13 @@ const cancel = () => {
             type="text"
             :required="true"
             :disabled="localRepo.id || props.isProjectLocked"
-            :error-message="!!updatedValues.internalRepoName && !RepoSchema.pick({internalRepoName: true}).safeParse({internalRepoName: localRepo.internalRepoName}).success ? 'Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique': undefined"
+            :error-message="zodSchema?.error?.formErrors.fieldErrors?.internalRepoName?.[0]"
             label="Nom du dépôt Git interne"
             label-visible
             hint="Nom du dépôt Git créé dans le Gitlab interne de la plateforme"
             placeholder="candilib"
             @update:model-value="updateRepo('internalRepoName', $event)"
           />
-        </div>
-        <div class="fr-mb-2w">
-          <DsfrInputGroup
-            v-model="localRepo.externalRepoUrl"
-            data-testid="externalRepoUrlInput"
-            type="text"
-            :required="true"
-            :disabled="props.isProjectLocked"
-            :error-message="!!updatedValues.externalRepoUrl && !RepoSchema.pick({externalRepoUrl: true}).safeParse({externalRepoUrl: localRepo.externalRepoUrl}).success ? 'L\'url du dépôt doit commencer par https et se terminer par .git': undefined"
-            label="Url du dépôt Git externe"
-            label-visible
-            hint="Url du dépôt Git qui servira de source pour la synchronisation"
-            placeholder="https://github.com/cloud-pi-native/console.git"
-            class="fr-mb-2w"
-            @update:model-value="updateRepo('externalRepoUrl', $event)"
-          />
-        </div>
-        <DsfrCheckbox
-          v-model="localRepo.isPrivate"
-          data-testid="privateRepoCbx"
-          :disabled="props.isProjectLocked"
-          label="Dépôt source privé"
-          hint="Cochez la case si le dépôt Git source est privé"
-          name="isGitSourcePrivate"
-          @update:model-value="updateRepo('isPrivate', $event)"
-        />
-        <div
-          v-if="localRepo.isPrivate"
-        >
-          <div class="fr-mb-2w">
-            <DsfrInputGroup
-              v-model="localRepo.externalUserName"
-              data-testid="externalUserNameInput"
-              type="text"
-              :required="localRepo.isPrivate"
-              :disabled="props.isProjectLocked"
-              :error-message="!!updatedValues.externalUserName && !RepoSchema.pick({externalUserName: true}).safeParse({externalUserName: localRepo.externalUserName}).success ? 'Le nom du propriétaire du token est obligatoire en cas de dépôt privé': undefined"
-              label="Nom d'utilisateur"
-              label-visible
-              hint="Nom de l'utilisateur propriétaire du token"
-              placeholder="this-is-tobi"
-              class="fr-mb-2w"
-              @update:model-value="updateRepo('externalUserName', $event)"
-            />
-          </div>
-          <div class="fr-mb-2w">
-            <DsfrInputGroup
-              v-model="localRepo.externalToken"
-              data-testid="externalTokenInput"
-              type="text"
-              :required="localRepo.isPrivate"
-              :disabled="props.isProjectLocked"
-              label="Token d'accès au dépôt Git externe"
-              label-visible
-              hint="Token d'accès permettant le clone du dépôt par la chaîne DevSecOps"
-              placeholder="hoqjC1vXtABzytBIWBXsdyzubmqMYkgA"
-              class="fr-mb-2w"
-              @update:model-value="updateRepo('externalToken', $event)"
-            />
-          </div>
         </div>
         <DsfrCheckbox
           v-model="localRepo.isInfra"
@@ -168,6 +118,80 @@ const cancel = () => {
           name="infraRepoCbx"
           @update:model-value="updateRepo('isInfra', $event)"
         />
+        <DsfrRadioButtonSet
+          v-model="localRepo.source"
+          legend="Source du dépôt"
+          name="legend"
+          :inline="true"
+          :options="options"
+          :default="options.find(({ value })=> value === localRepo.source)"
+          @update:model-value="updateRepo('source', $event)"
+        />
+        <div
+          v-if="localRepo.source === 'clone'"
+        >
+          <div
+            class="fr-mb-2w"
+          >
+            <DsfrInputGroup
+              v-model="localRepo.externalRepoUrl"
+              data-testid="externalRepoUrlInput"
+              type="text"
+              :required="true"
+              :disabled="props.isProjectLocked"
+              :error-message="zodSchema.error?.formErrors?.fieldErrors?.externalRepoUrl?.[0]"
+              label="Url du dépôt Git externe"
+              label-visible
+              hint="Url du dépôt Git qui servira de source pour la synchronisation"
+              placeholder="https://github.com/cloud-pi-native/console.git"
+              class="fr-mb-2w"
+              @update:model-value="updateRepo('externalRepoUrl', $event)"
+            />
+          </div>
+          <DsfrCheckbox
+            v-model="localRepo.isPrivate"
+            data-testid="privateRepoCbx"
+            :disabled="props.isProjectLocked"
+            label="Dépôt source privé"
+            hint="Cochez la case si le dépôt Git source est privé"
+            name="isGitSourcePrivate"
+            @update:model-value="updateRepo('isPrivate', $event)"
+          />
+          <div
+            v-if="localRepo.isPrivate"
+          >
+            <div class="fr-mb-2w">
+              <DsfrInputGroup
+                v-model="localRepo.externalUserName"
+                data-testid="externalUserNameInput"
+                type="text"
+                :disabled="props.isProjectLocked"
+                label="Nom d'utilisateur"
+                label-visible
+                hint="Nom de l'utilisateur propriétaire du token"
+                placeholder="this-is-tobi"
+                class="fr-mb-2w"
+                :error-message="zodSchema.error?.formErrors?.fieldErrors?.externalUserName?.[0]"
+                @update:model-value="updateRepo('externalUserName', $event)"
+              />
+            </div>
+            <div class="fr-mb-2w">
+              <DsfrInputGroup
+                v-model="localRepo.externalToken"
+                data-testid="externalTokenInput"
+                type="text"
+                :disabled="props.isProjectLocked"
+                label="Token d'accès au dépôt Git externe"
+                label-visible
+                hint="Token d'accès permettant le clone du dépôt par la chaîne DevSecOps"
+                placeholder="hoqjC1vXtABzytBIWBXsdyzubmqMYkgA"
+                class="fr-mb-2w"
+                :error-message="zodSchema.error?.formErrors?.fieldErrors?.externalToken?.[0]"
+                @update:model-value="updateRepo('externalToken', $event)"
+              />
+            </div>
+          </div>
+        </div>
         <CIForm
           :internal-repo-name="localRepo.internalRepoName"
         />

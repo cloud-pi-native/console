@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { ClusterBusinessSchema, ClusterPrivacy, EnvironmentSchema, OrganizationSchema, PermissionSchema, ProjectSchema, QuotaSchema, RepoBusinessSchema, RepoSchema, QuotaStageSchema, StageSchema, UserSchema, descriptionMaxLength, instanciateSchema, parseZodError } from '../index.js'
+import { ClusterBusinessSchema, ClusterPrivacy, EnvironmentSchema, OrganizationSchema, PermissionSchema, ProjectSchema, QuotaSchema, UpdateRepoBusinessSchema, RepoSchema, QuotaStageSchema, StageSchema, UserSchema, descriptionMaxLength, instanciateSchema, parseZodError } from '../index.js'
 import { faker } from '@faker-js/faker'
 import { ZodError } from 'zod'
 
 describe('Schemas utils', () => {
   it('Should not validate an undefined object', () => {
     // @ts-ignore
-    expect(RepoBusinessSchema.safeParse(undefined).error).toBeInstanceOf(ZodError)
+    expect(UpdateRepoBusinessSchema.safeParse(undefined).error).toBeInstanceOf(ZodError)
   })
 
   it('Should validate a correct repository schema', () => {
@@ -20,7 +20,7 @@ describe('Schemas utils', () => {
       isInfra: false,
       externalUserName: 'clai+re-nlet_',
     }
-    expect(RepoBusinessSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
+    expect(UpdateRepoBusinessSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
   })
 
   it('Should validate a correct environment schema', () => {
@@ -158,7 +158,7 @@ describe('Schemas utils', () => {
       isPrivate: true,
       isInfra: false,
     }
-    expect(RepoBusinessSchema
+    expect(UpdateRepoBusinessSchema
       .safeParse(toParse))
       .toStrictEqual({ data: toParse, success: true })
   })
@@ -173,7 +173,7 @@ describe('Schemas utils', () => {
       isInfra: false,
       externalUserName: 'clairenlet',
     }
-    expect(parseZodError(RepoBusinessSchema
+    expect(parseZodError(UpdateRepoBusinessSchema
       .safeParse(toParse)
       // @ts-ignore
       .error))
@@ -252,28 +252,28 @@ describe('Schemas utils', () => {
       isInfra: false,
     }
 
-    expect(parseZodError(RepoBusinessSchema
+    expect(parseZodError(UpdateRepoBusinessSchema
       .safeParse(toParse)
       // @ts-ignore
       .error))
       .toMatch('Validation error: failed regex test at "internalRepoName"')
 
     toParse.internalRepoName = 'candilib-'
-    expect(parseZodError(RepoBusinessSchema
+    expect(parseZodError(UpdateRepoBusinessSchema
       .safeParse(toParse)
       // @ts-ignore
       .error))
       .toMatch('Validation error: failed regex test at "internalRepoName"')
 
     toParse.internalRepoName = 'candiLib'
-    expect(parseZodError(RepoBusinessSchema
+    expect(parseZodError(UpdateRepoBusinessSchema
       .safeParse(toParse)
       // @ts-ignore
       .error))
       .toMatch('Validation error: failed regex test at "internalRepoName"')
 
     toParse.internalRepoName = 'candi-lib'
-    expect(RepoBusinessSchema
+    expect(UpdateRepoBusinessSchema
       .safeParse(toParse))
       .toStrictEqual({ data: toParse, success: true })
   })

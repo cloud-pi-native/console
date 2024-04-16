@@ -10,10 +10,10 @@ export const getProjectRepositories = async (projectId: Project['id']) => {
   return prisma.repository.findMany({ where: { projectId } })
 }
 
-type RepositoryCreate = Pick<Repository, 'projectId' | 'internalRepoName' | 'isInfra' | 'isPrivate' | 'externalRepoUrl'> &
-  Partial<Pick<Repository, 'externalUserName'>>
+type RepositoryCreate = Pick<Repository, 'projectId' | 'internalRepoName' | 'isInfra' | 'isPrivate' | 'source'> &
+  Partial<Pick<Repository, 'externalUserName' | 'externalRepoUrl'>>
 // CREATE
-export const initializeRepository = async ({ projectId, internalRepoName, externalRepoUrl, isInfra, isPrivate, externalUserName = undefined }: RepositoryCreate) => {
+export const initializeRepository = async ({ projectId, internalRepoName, externalRepoUrl, isInfra, isPrivate, externalUserName = undefined, source = 'autonomous' }: RepositoryCreate) => {
   return prisma.repository.create({
     data: {
       projectId,
@@ -22,6 +22,7 @@ export const initializeRepository = async ({ projectId, internalRepoName, extern
       externalUserName,
       isInfra,
       isPrivate,
+      source,
     },
   })
 }
