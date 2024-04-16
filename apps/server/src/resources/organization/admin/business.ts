@@ -1,5 +1,5 @@
 import type { Organization, User } from '@prisma/client'
-import { type CreateOrganizationDto, getUniqueListBy, OrganizationSchema, objectValues } from '@cpn-console/shared'
+import { type CreateOrganizationBody, getUniqueListBy, OrganizationSchema, objectValues } from '@cpn-console/shared'
 import { addLogs, createOrganization as createOrganizationQuery, getOrganizationByName, getOrganizations, getProjectByOrganizationId, lockProject, unlockProject, updateActiveOrganization, updateLabelOrganization } from '@/resources/queries-index.js'
 import { hook } from '@/utils/hook-wrapper.js'
 import { validateSchema } from '@/utils/business.js'
@@ -11,7 +11,7 @@ export const getAllOrganization = async () => {
   return allOrganizations
 }
 
-export const createOrganization = async (data: CreateOrganizationDto) => {
+export const createOrganization = async (data: CreateOrganizationBody) => {
   const schemaValidation = OrganizationSchema.omit({ id: true, active: true }).safeParse(data)
   validateSchema(schemaValidation)
 

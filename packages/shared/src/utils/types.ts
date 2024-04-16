@@ -1,4 +1,4 @@
-import { ClusterModel, EnvironmentModel, OrganizationModel, ProjectModel, RepositoryModel, RoleModel } from '../resources/index.js'
+import { Cluster, Environment, Organization, Project, Repo, Role } from '../index.js'
 
 export type ErrorTypes = 'info' | 'warning' | 'error' | 'success'
 
@@ -10,10 +10,10 @@ export type UserProfile = {
   groups: string[],
 }
 
-export type ProjectInfos = Omit<ProjectModel, 'roles'> & {
-  organization?: OrganizationModel[],
-  roles: RoleModel[],
-  clusters?: ClusterModel[],
-  repositories?: RepositoryModel[],
-  environments?: EnvironmentModel[],
+export type ProjectInfos = Omit<Project, 'roles'> & {
+  organization?: Organization[],
+  roles: Role[],
+  clusters?: Cluster[],
+  repositories?: Repo[],
+  environments?: Environment[],
 }

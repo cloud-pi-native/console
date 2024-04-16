@@ -1,3 +1,4 @@
+import { ClientInferRequest } from '@ts-rest/core'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   CreatePermissionSchema,
@@ -47,3 +48,7 @@ export const permissionContract = contractInstance.router({
     responses: DeletePermissionSchema.responses,
   },
 })
+
+export type CreatePermissionBody = ClientInferRequest<typeof permissionContract.createPermission>['body']
+
+export type UpdatePermissionBody = ClientInferRequest<typeof permissionContract.updatePermission>['body']

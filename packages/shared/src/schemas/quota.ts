@@ -32,6 +32,8 @@ export const QuotaStageSchema = z.object({
 
 export type Quota = Zod.infer<typeof QuotaSchema>
 
+export type QuotaStage = Zod.infer<typeof QuotaStageSchema>
+
 export const CreateQuotaSchema = {
   body: QuotaSchema.omit({ id: true }),
   responses: {

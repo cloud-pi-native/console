@@ -11,10 +11,10 @@ import {
   deleteQuotaStage,
   updateQuotaPrivacy as updateQuotaPrivacyQuery,
 } from '@/resources/queries-index.js'
-import { type CreateQuotaDto, QuotaSchema, type UpdateQuotaStageDto, type UpdateQuotaPrivacyDto, type QuotaParams, type QuotaStageModel } from '@cpn-console/shared'
+import { type CreateQuotaBody, QuotaSchema, type UpdateQuotaStageBody, type PatchQuotaBody, type QuotaStage } from '@cpn-console/shared'
 import { validateSchema } from '@/utils/business.js'
 
-export const getQuotaAssociatedEnvironments = async (quotaId: QuotaParams['quotaId']) => {
+export const getQuotaAssociatedEnvironments = async (quotaId: string) => {
   try {
     const quota = await getQuotaById(quotaId)
     if (!quota) throw new NotFoundError('Quota introuvable')
@@ -62,7 +62,7 @@ export const getQuotaAssociatedEnvironments = async (quotaId: QuotaParams['quota
   }
 }
 
-export const createQuota = async (data: CreateQuotaDto) => {
+export const createQuota = async (data: CreateQuotaBody) => {
   try {
     const schemaValidation = QuotaSchema.omit({ id: true }).safeParse(data)
     validateSchema(schemaValidation)
@@ -85,7 +85,7 @@ export const createQuota = async (data: CreateQuotaDto) => {
   }
 }
 
-export const updateQuotaPrivacy = async (quotaId: QuotaParams['quotaId'], isPrivate: UpdateQuotaPrivacyDto['isPrivate']) => {
+export const updateQuotaPrivacy = async (quotaId: string, isPrivate: PatchQuotaBody['isPrivate']) => {
   try {
     return await updateQuotaPrivacyQuery(quotaId, isPrivate)
   } catch (error) {
@@ -93,9 +93,9 @@ export const updateQuotaPrivacy = async (quotaId: QuotaParams['quotaId'], isPriv
   }
 }
 
-export const updateQuotaStage = async (data: UpdateQuotaStageDto) => {
+export const updateQuotaStage = async (data: UpdateQuotaStageBody) => {
   try {
-    let quotaStages: QuotaStageModel[] | undefined = []
+    let quotaStages: QuotaStage[] | undefined = []
 
     // From quotaId and stageIds
     if (data.quotaId && data.stageIds) {
@@ -136,7 +136,7 @@ export const updateQuotaStage = async (data: UpdateQuotaStageDto) => {
   }
 }
 
-export const deleteQuota = async (quotaId: QuotaParams['quotaId']) => {
+export const deleteQuota = async (quotaId: string) => {
   try {
     const environments = await getQuotaAssociatedEnvironments(quotaId)
     if (environments.length) throw new BadRequestError('Impossible de supprimer le quota, des environnements en activité y ont souscrit', { extras: environments })

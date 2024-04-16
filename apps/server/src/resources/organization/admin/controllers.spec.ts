@@ -71,7 +71,7 @@ describe('Admin organization routes', () => {
   describe('createOrganizationController', () => {
     it('Should create an organization', async () => {
       const organization = {
-        name: 'my-org',
+        name: 'myorg',
         label: 'Ministère de la bicyclette',
         source: 'dso',
       }
@@ -108,7 +108,7 @@ describe('Admin organization routes', () => {
 
     it('Should return an error if organization already exists', async () => {
       const organization = {
-        name: 'my-org',
+        name: 'myorg',
         label: 'Ministère de l\'italo-disco',
         source: 'dso',
       }

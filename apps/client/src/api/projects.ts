@@ -1,8 +1,8 @@
-import type { CreateProjectDto, ProjectParams, UpdateProjectDto } from '@cpn-console/shared'
+import type { CreateProjectBody, UpdateProjectBody, PatchProjectBody } from '@cpn-console/shared'
 import { apiClient } from './xhr-client.js'
 
 // Project
-export const createProject = async (data: CreateProjectDto) => {
+export const createProject = async (data: CreateProjectBody) => {
   const response = await apiClient.Projects.createProject({ body: data })
   return response.body
 }
@@ -12,21 +12,21 @@ export const getUserProjects = async () => {
   return response.body
 }
 
-export const updateProject = async (projectId: ProjectParams['projectId'], data: UpdateProjectDto) => {
+export const updateProject = async (projectId: string, data: UpdateProjectBody) => {
   const response = await apiClient.Projects.updateProject({ body: data, params: { projectId } })
   return response.body
 }
 
-export const replayHooks = async (projectId: ProjectParams['projectId']) => {
+export const replayHooks = async (projectId: string) => {
   const response = await apiClient.Projects.replayHooksForProject({ params: { projectId } })
   return response.body
 }
 
-export const archiveProject = async (projectId: ProjectParams['projectId']) => {
+export const archiveProject = async (projectId: string) => {
   await apiClient.Projects.archiveProject({ params: { projectId } })
 }
 
-export const getProjectSecrets = async (projectId: ProjectParams['projectId']) => {
+export const getProjectSecrets = async (projectId: string) => {
   const response = await apiClient.Projects.getProjectSecrets({ params: { projectId } })
   return response.body
 }
@@ -37,7 +37,7 @@ export const getAllProjects = async () => {
   return response.body
 }
 
-export const handleProjectLocking = async (projectId: string, lock: boolean) => {
+export const handleProjectLocking = async (projectId: string, lock: PatchProjectBody['lock']) => {
   const response = await apiClient.ProjectsAdmin.patchProject({ body: { lock }, params: { projectId } })
   return response.body
 }
