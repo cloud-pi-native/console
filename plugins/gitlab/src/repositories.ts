@@ -51,7 +51,13 @@ const ensureRepositoryExists = async (
   let gitlabRepository: CondensedProjectSchema | ProjectSchema | void = gitlabRepositories.find(gitlabRepository => gitlabRepository.name === repository.internalRepoName)
   const externalRepoUrn = repository.externalRepoUrl.split(/:\/\/(.*)/s)[1]
   const vaultCredsPath = `${repository.internalRepoName}-mirror`
-  const currentVaultCreds = await vaultApi.read(vaultCredsPath, { throwIfNoEntry: false })
+  const currentVaultSecret = await vaultApi.read(vaultCredsPath, { throwIfNoEntry: false })
+  let gitInputUser: string | undefined
+  let gitInputPassword: string | undefined
+  if (currentVaultSecret?.data) {
+    gitInputUser = currentVaultSecret.data.GIT_INPUT_USER
+    gitInputPassword = currentVaultSecret.data.GIT_INPUT_PASSWORD
+  }
 
   if (!gitlabRepository) {
     gitlabRepository = await gitlabApi.createCloneRepository(repository.internalRepoName, externalRepoUrn, repository.newCreds) // TODO
@@ -59,15 +65,21 @@ const ensureRepositoryExists = async (
 
   const internalRepoUrl = await gitlabApi.getRepoUrl(repository.internalRepoName)
 
-  const gitlabSecret = await vaultApi.read('tech/GITLAB_MIRROR', { throwIfNoEntry: false })
+  const { data: gitlabSecret } = await vaultApi.read('tech/GITLAB_MIRROR', { throwIfNoEntry: false })
   const mirrorSecretData = {
     GIT_INPUT_URL: externalRepoUrn,
-    GIT_INPUT_USER: repository.newCreds?.username || currentVaultCreds?.GIT_INPUT_USER,
-    GIT_INPUT_PASSWORD: repository.newCreds?.token || currentVaultCreds?.GIT_INPUT_PASSWORD,
+    GIT_INPUT_USER: repository.isPrivate
+      ? (repository.newCreds?.username || gitInputUser)
+      : undefined,
+    GIT_INPUT_PASSWORD: repository.isPrivate
+      ? (repository.newCreds?.token || gitInputPassword)
+      : undefined,
     GIT_OUTPUT_URL: internalRepoUrl.split(/:\/\/(.*)/s)[1],
     GIT_OUTPUT_USER: projectMirrorCreds.botAccount,
     GIT_OUTPUT_PASSWORD: projectMirrorCreds.token,
   }
 
-  if (!shallowEqual(mirrorSecretData, gitlabSecret)) await vaultApi.write(mirrorSecretData, vaultCredsPath)
+  if (!shallowEqual(mirrorSecretData, gitlabSecret)) {
+    await vaultApi.write(mirrorSecretData, vaultCredsPath)
+  }
 }

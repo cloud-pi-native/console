@@ -32,6 +32,7 @@ export class VaultProjectApi extends PluginApi {
 
   public async list (path: string = '/'): Promise<string[]> {
     if (!path.startsWith('/')) path = '/' + path
+    console.debug(`VAULT: list secret from ${path}`)
 
     const listSecretPath: string[] = []
     const response = await this.axios({
@@ -59,6 +60,7 @@ export class VaultProjectApi extends PluginApi {
 
   public async read (path: string = '/', options: readOptions = { throwIfNoEntry: true }) {
     if (path.startsWith('/')) path = path.slice(1)
+    console.debug(`VAULT: reda secret ${path}`)
     const response = await this.axios.get(
       `/v1/forge-dso/data/${this.projectRootDir}/${this.basePath}/${path}`,
       {
@@ -71,6 +73,7 @@ export class VaultProjectApi extends PluginApi {
 
   public async write (body: object, path: string = '/') {
     if (path.startsWith('/')) path = path.slice(1)
+    console.debug(`VAULT: write secret from ${path}`)
     const response = await this.axios.post(
       `/v1/forge-dso/data/${this.projectRootDir}/${this.basePath}/${path}`,
       {
@@ -82,6 +85,7 @@ export class VaultProjectApi extends PluginApi {
 
   public async destroy (path: string = '/') {
     if (path.startsWith('/')) path = path.slice(1)
+    console.debug(`VAULT: destroy secret from ${path}`)
     return this.axios.delete(
       `/v1/forge-dso/metadata/${this.projectRootDir}/${this.basePath}/${path}`,
       {
