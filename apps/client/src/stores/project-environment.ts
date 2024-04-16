@@ -13,8 +13,7 @@ export const useProjectEnvironmentStore = defineStore('project-environment', () 
     await projectStore.getUserProjects()
   }
 
-  const updateEnvironment = async (environment: UpdateEnvironmentBody, projectId: Project['id']) => {
-    // @ts-ignore
+  const updateEnvironment = async (environment: UpdateEnvironmentBody & { id: Environment['id'] }, projectId: Project['id']) => {
     await api.updateEnvironment(projectId, environment?.id, environment)
     await projectStore.getUserProjects()
   }
@@ -26,11 +25,15 @@ export const useProjectEnvironmentStore = defineStore('project-environment', () 
   }
 
   const getQuotas = async () => {
-    return api.getQuotas()
+    const res = await api.getQuotas()
+    if (!res) return []
+    return res
   }
 
   const getStages = async () => {
-    return api.getStages()
+    const res = await api.getStages()
+    if (!res) return []
+    return res
   }
 
   return {

@@ -1,8 +1,8 @@
-import { LogModel } from '@cpn-console/shared'
+import type { Log } from '@cpn-console/shared'
 
 describe('Administration logs', () => {
   let logCount: number
-  let logs: LogModel[]
+  let logs: Log[]
 
   beforeEach(() => {
     cy.intercept('GET', 'api/v1/admin/logs*').as('getAllLogs')

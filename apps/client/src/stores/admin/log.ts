@@ -1,14 +1,15 @@
 import { defineStore } from 'pinia'
-import { type Ref, ref } from 'vue'
+import { ref } from 'vue'
 import api from '@/api/index.js'
-import type { AdminLogsQuery, LogModel } from '@cpn-console/shared'
+import type { GetLogsQuery, Log } from '@cpn-console/shared'
 
 export const useAdminLogStore = defineStore('admin-log', () => {
-  const logs: Ref<Array<LogModel>> = ref([])
-  const count: Ref<number | undefined> = ref(undefined)
+  const logs = ref<Log[]>([])
+  const count = ref<number | undefined>(undefined)
 
-  const getAllLogs = async ({ offset, limit }: AdminLogsQuery = { offset: 0, limit: 100 }) => {
+  const getAllLogs = async ({ offset, limit }: GetLogsQuery = { offset: '0', limit: '100' }) => {
     const res = await api.getAllLogs({ offset, limit })
+    if (!res) return
     count.value = res.total
     logs.value = res.logs
   }

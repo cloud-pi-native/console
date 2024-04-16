@@ -4,7 +4,8 @@ import type { CreateOrganizationBody, UpdateOrganizationBody, UpdateOrganization
 
 export const useAdminOrganizationStore = defineStore('admin-organization', () => {
   const getAllOrganizations = async () => {
-    return api.getAllOrganizations()
+    const res = await api.getAllOrganizations()
+    return res ?? []
   }
 
   const createOrganization = async (organization: CreateOrganizationBody) => {

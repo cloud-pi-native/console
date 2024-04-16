@@ -55,7 +55,7 @@ describe('Stage Store', () => {
       quotaIds: ['quota1'],
     }
 
-    apiClientPost.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
+    apiClientPost.mockReturnValueOnce(Promise.resolve({ status: 201, body: data }))
     const adminStageStore = useAdminStageStore()
 
     const res = await adminStageStore.addStage(data)

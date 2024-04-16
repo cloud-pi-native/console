@@ -1,8 +1,8 @@
-import { ProjectInfos, RepositoryModel } from '@cpn-console/shared'
+import type { ProjectInfos, Repo } from '@cpn-console/shared'
 
 export type Project = Partial<Pick<ProjectInfos, 'name' | 'id' | 'description' | 'locked' | 'organization'>>
 
-export type Repository = Partial<RepositoryModel>
+export type Repository = Partial<Repo>
 
 export type CiForm = {
   language: string,

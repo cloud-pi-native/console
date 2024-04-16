@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import { ref, onMounted, watch, computed, type Ref } from 'vue'
-import { levels, projectIsLockedInfo, type PermissionModel, type EnvironmentModel, type UserModel, type ProjectInfos } from '@cpn-console/shared'
+import { ref, onMounted, watch, computed } from 'vue'
+import { levels, projectIsLockedInfo, type Permission, type Environment } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectPermissionStore } from '@/stores/project-permission.js'
 import { useUserStore } from '@/stores/user.js'
@@ -18,14 +18,14 @@ const projectStore = useProjectStore()
 const projectPermissionStore = useProjectPermissionStore()
 const userStore = useUserStore()
 const usersStore = useUsersStore()
-const environment: Ref<EnvironmentModel | Record<string, any> | undefined> = ref(props.environment)
-const permissions: Ref<PermissionModel[]> = ref([])
+const environment = ref<Environment | Record<string, any>>(props.environment)
+const permissions = ref<Permission[]>([])
 const permissionToUpdate = ref({})
-const userToLicence: Ref<string> = ref('')
+const userToLicence = ref<string>('')
 const permissionSuggestionKey = ref(getRandomId('input'))
 
-const project = computed(() => projectStore.selectedProject) as Ref<ProjectInfos>
-const ownersIds: Ref<UserModel['id'][]> = computed(() => project.value.roles.filter(({ role }) => role === 'owner').map(({ userId }) => userId))
+const project = computed(() => projectStore.selectedProject)
+const ownersIds = computed(() => project.value?.roles?.filter(({ role }) => role === 'owner').map(({ userId }) => userId))
 const projectMembers = computed(() => project.value?.roles?.map(role => usersStore.users[role.userId]))
 // @ts-ignore
 const permittedUsersId = computed(() => permissions.value.map(permission => permission.userId))
@@ -37,7 +37,7 @@ const usersToLicence = computed(() => {
 const suggestions = computed(() => usersToLicence.value?.map(user => user.email))
 
 const setPermissions = () => {
-  permissions.value = environment.value?.permissions?.toSorted((a: PermissionModel, b: PermissionModel) => a?.userId >= b?.userId ? 1 : -1)
+  permissions.value = environment.value?.permissions?.toSorted((a: Permission, b: Permission) => a?.userId >= b?.userId ? 1 : -1)
 }
 
 const addPermission = async (userEmail: string) => {
@@ -59,12 +59,12 @@ const updatePermission = async () => {
 }
 
 const deletePermission = async (userId: string) => {
-  await projectPermissionStore.deletePermission(environment.value.id, userId)
+  await projectPermissionStore.deletePermission(environment.value?.id, userId)
 }
 
-const getDynamicTitle = (locked: boolean, permission: PermissionModel) => {
+const getDynamicTitle = (locked: boolean, permission: Permission) => {
   if (locked) return projectIsLockedInfo
-  if (ownersIds.value.includes(permission.userId)) return 'Les droits d\'un owner ne peuvent être modifiés'
+  if (ownersIds.value?.includes(permission.userId)) return 'Les droits d\'un owner ne peuvent être modifiés'
   // @ts-ignore
   return `Modifier les droits de ${usersStore.users[permission.userId]?.email}`
 }
@@ -84,13 +84,13 @@ onMounted(() => {
 <template>
   <DsfrFieldset
     data-testid="permissionsFieldset"
-    :legend="`Droits des utilisateurs sur l'environnement ${environment.name}`"
+    :legend="`Droits des utilisateurs sur l'environnement ${environment?.name}`"
     hint="Gérez les droits de lecture (r), écriture (w) et suppression (d) d'un membre du projet sur l'environnement sélectionné."
   >
     <DsfrAlert
       v-if="!isPermitted"
       data-testid="notPermittedAlert"
-      :description="`Vous n'avez aucun droit sur l'environnement ${environment.name}. Un membre possédant des droits sur cet environnement peut vous accréditer.`"
+      :description="`Vous n'avez aucun droit sur l'environnement ${environment?.name}. Un membre possédant des droits sur cet environnement peut vous accréditer.`"
       small
       type="info"
     />
@@ -106,7 +106,7 @@ onMounted(() => {
             class="flex gap-2"
           >
             <v-icon
-              :name="ownersIds.includes(permission.userId) ? 'ri-user-star-fill' : 'ri-user-fill'"
+              :name="ownersIds?.includes(permission.userId) ? 'ri-user-star-fill' : 'ri-user-fill'"
               fill="var(--text-title-blue-france)"
             />
             <p
@@ -118,8 +118,8 @@ onMounted(() => {
           </div>
           <DsfrButton
             data-testid="deletePermissionBtn"
-            :disabled="ownersIds.includes(permission.userId)|| !isPermitted"
-            :title="ownersIds.includes(permission.userId) ? `Les droits du owner ne peuvent être supprimés`: `Supprimer les droits de ${usersStore.users[permission.userId].email}`"
+            :disabled="ownersIds?.includes(permission.userId)|| !isPermitted"
+            :title="ownersIds?.includes(permission.userId) ? `Les droits du owner ne peuvent être supprimés`: `Supprimer les droits de ${usersStore.users[permission.userId].email}`"
             label="Supprimer la permission"
             class="my-4"
             secondary
@@ -134,7 +134,7 @@ onMounted(() => {
             :level="permission.level"
             :levels="levels"
             required
-            :disabled="ownersIds.includes(permission.userId) || !isPermitted || project?.locked"
+            :disabled="ownersIds?.includes(permission.userId) || !isPermitted || project?.locked"
             @update-level="(event) => {
               permissionToUpdate.userId = permission.userId
               permissionToUpdate.level = event
@@ -142,7 +142,7 @@ onMounted(() => {
           />
           <DsfrButton
             :data-testid="`${permission.userId}UpdatePermissionBtn`"
-            :disabled="ownersIds.includes(permission.userId) || !isPermitted || permissionToUpdate.userId !== permission.userId || project?.locked"
+            :disabled="ownersIds?.includes(permission.userId) || !isPermitted || permissionToUpdate.userId !== permission.userId || project?.locked"
             :title="getDynamicTitle(project?.locked, permission)"
             label="Confirmer la modification"
             class="my-4"
@@ -164,7 +164,7 @@ onMounted(() => {
       v-model="userToLicence"
       data-testid="permissionSuggestionInput"
       :disabled="!isPermitted || !usersToLicence?.length || project?.locked"
-      :label="`E-mail de l'utilisateur à accréditer sur l'environnement ${environment.name}`"
+      :label="`E-mail de l'utilisateur à accréditer sur l'environnement ${environment?.name}`"
       label-visible
       placeholder="prenom.nom@interieur.gouv.fr"
       :suggestions="suggestions"

@@ -2,7 +2,7 @@ import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { apiClient } from '../api/xhr-client.js'
 import { useServiceStore } from './services.js'
-import type { MonitorServiceModel } from '@cpn-console/shared'
+import type { ServiceBody } from '@cpn-console/shared'
 
 const apiClientGet = vi.spyOn(apiClient.Services, 'getServiceHealth')
 
@@ -15,7 +15,7 @@ describe('Service Store', () => {
   })
 
   it('Should get services health by api call (healthy)', async () => {
-    const data: MonitorServiceModel = [
+    const data: ServiceBody = [
       { interval: 300000, lastUpdateTimestamp: (new Date()).getTime(), message: 'OK', name: 'Keycloak', status: 'OK' },
       { interval: 300000, lastUpdateTimestamp: (new Date()).getTime(), message: 'Service perdu', name: 'Gitlab', status: 'OK' }]
     apiClientGet.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))

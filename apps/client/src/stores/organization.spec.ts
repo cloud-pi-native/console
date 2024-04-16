@@ -18,7 +18,7 @@ describe('Organization Store', () => {
     apiClientGet.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
     const ciFilesStore = useOrganizationStore()
 
-    expect(ciFilesStore.organizations).toEqual([])
+    expect(ciFilesStore.organizations).toEqual(undefined)
 
     await ciFilesStore.setOrganizations()
 

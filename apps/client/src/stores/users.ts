@@ -1,29 +1,27 @@
-import { users as usersApi } from '@/api/index.js'
-import type { User } from '@cpn-console/shared'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-
-type UserOutputDto = Required<User>
+import type { User } from '@cpn-console/shared'
+import api from '@/api/index.js'
 
 export const useUsersStore = defineStore('users', () => {
-  const users = ref<Record<string, UserOutputDto>>({})
+  const users = ref<Record<string, User>>({})
 
-  const addUser = (user: UserOutputDto) => {
+  const addUser = (user: User) => {
     users.value = {
       ...users.value,
       [user.id]: user,
     }
   }
 
-  const addUsers = (users: UserOutputDto[]) => {
+  const addUsers = (users: User[]) => {
     for (const user of users) {
       addUser(user)
     }
   }
 
   const getProjectUsers = async (projectId: string) => {
-    const usersToAdd = await usersApi.getProjectUsers(projectId)
-    addUsers(usersToAdd)
+    const usersToAdd = await api.getProjectUsers(projectId)
+    if (usersToAdd) addUsers(usersToAdd)
   }
 
   return {

@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia'
-import { type Ref, ref } from 'vue'
+import { ref } from 'vue'
+import type { Organization } from '@cpn-console/shared'
 import api from '@/api/index.js'
-import type { OrganizationModel } from '@cpn-console/shared'
 
 export const useOrganizationStore = defineStore('organization', () => {
-  const organizations: Ref<Array<OrganizationModel>> = ref([])
+  const organizations = ref<Organization[] | undefined>(undefined)
 
   const setOrganizations = async () => {
     organizations.value = await api.getActiveOrganizations()

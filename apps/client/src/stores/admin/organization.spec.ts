@@ -31,7 +31,7 @@ describe('Organization Admin Store', () => {
 
   it('Should create an organization by api call', async () => {
     const data = { label: 'label', name: 'name', source: 'external' }
-    apiClientPost.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
+    apiClientPost.mockReturnValueOnce(Promise.resolve({ status: 201, body: data }))
     const adminOrganizationStore = useAdminOrganizationStore()
 
     const res = await adminOrganizationStore.createOrganization(data)

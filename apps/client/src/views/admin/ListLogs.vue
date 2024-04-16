@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useAdminLogStore } from '@/stores/admin/log.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { LogModel } from '@cpn-console/shared'
+import { Log } from '@cpn-console/shared'
 import { JsonViewer } from 'vue3-json-viewer'
 
 const adminLogStore = useAdminLogStore()
@@ -22,8 +22,8 @@ const showLogs = async (index: number) => {
   await getAllLogs({ offset: index * step, limit: step })
 }
 
-type LogModelSliced = Omit<LogModel['data'], 'totalExecutiontime'>
-const sliceLog = (log: LogModel): LogModelSliced => {
+type LogModelSliced = Omit<Log['data'], 'totalExecutiontime'>
+const sliceLog = (log: Log): LogModelSliced => {
   const {
     data: {
       totalExecutionTime: _t,

@@ -1,4 +1,4 @@
-import { ClientInferRequest } from '@ts-rest/core'
+import { ClientInferRequest, ClientInferResponseBody } from '@ts-rest/core'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   CreateUserRoleInProjectSchema,
@@ -65,6 +65,8 @@ export type AddUserToProjectBody = ClientInferRequest<typeof userContract.create
 export type UpdateUserRoleInProjectBody = ClientInferRequest<typeof userContract.updateUserRoleInProject>['body']
 
 export type LettersQuery = ClientInferRequest<typeof userContract.getMatchingUsers>['query']
+
+export type Users = ClientInferResponseBody<typeof userContract.getProjectUsers, 200>
 
 export const userAdminContract = contractInstance.router({
   getAllUsers: {

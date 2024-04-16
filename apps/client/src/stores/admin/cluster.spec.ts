@@ -95,7 +95,7 @@ describe('Cluster Store', () => {
       clusterResources: true,
       privacy: ClusterPrivacy.DEDICATED,
     }
-    apiClientPost.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
+    apiClientPost.mockReturnValueOnce(Promise.resolve({ status: 201, body: data }))
     const adminClusterStore = useAdminClusterStore()
 
     const res = await adminClusterStore.addCluster(data)

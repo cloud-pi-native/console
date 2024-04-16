@@ -1,11 +1,11 @@
-import api from '@/api/index.js'
-import type { CreateProjectBody, ProjectInfos, Role, UpdateProjectBody } from '@cpn-console/shared'
 import { defineStore } from 'pinia'
-import { ref, type Ref } from 'vue'
+import { ref } from 'vue'
+import type { CreateProjectBody, Project, Role, UpdateProjectBody } from '@cpn-console/shared'
+import api from '@/api/index.js'
 
 export const useProjectStore = defineStore('project', () => {
-  const selectedProject: Ref<ProjectInfos | undefined> = ref(undefined)
-  const projects: Ref<Array<ProjectInfos>> = ref([])
+  const selectedProject = ref<Project | undefined>(undefined)
+  const projects = ref<Project[]>([])
 
   const setSelectedProject = (id: string) => {
     selectedProject.value = projects.value.find(project => project.id === id)
@@ -18,6 +18,7 @@ export const useProjectStore = defineStore('project', () => {
 
   const getUserProjects = async () => {
     const res = await api.getUserProjects()
+    if (!res) return
     projects.value = res
     if (selectedProject.value) {
       setSelectedProject(selectedProject.value.id)
