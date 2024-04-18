@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref, onBeforeMount, watch, computed } from 'vue'
 import { getRandomId } from '@gouvminint/vue-dsfr'
-import { EnvironmentSchema, projectIsLockedInfo, longestEnvironmentName, type QuotaStageModel, type QuotaModel, type SharedZodError, parseZodError } from '@cpn-console/shared'
+import { EnvironmentSchema, projectIsLockedInfo, longestEnvironmentName, type QuotaStage, type Quota, type SharedZodError, parseZodError } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 import { useZoneStore } from '@/stores/zone.js'
@@ -16,7 +16,7 @@ type Stage = {
   id: string
   name: string
   clusters: Cluster[]
-  quotaStage: QuotaStageModel[]
+  quotaStage: QuotaStage[]
 }
 
 type OptionType = {
@@ -69,7 +69,7 @@ const zoneStore = useZoneStore()
 const localEnvironment = ref(props.environment)
 const environmentToDelete = ref('')
 const isDeletingEnvironment = ref(false)
-const quotas = ref<QuotaModel[]>([])
+const quotas = ref<Quota[]>([])
 const allStages = ref<Stage[]>([])
 const inputKey = ref(getRandomId('input'))
 const zoneId = ref<string>()
@@ -100,7 +100,6 @@ const availableClusters: ComputedRef<Cluster[]> = computed(() => {
     ?.filter(
       projectCluster => stage.value?.clusters
         ?.map(cluster => cluster.id)
-        // @ts-ignore
         ?.includes(projectCluster.id),
     )
     ?.filter(
@@ -152,7 +151,7 @@ const setQuotaOptions = () => {
     // @ts-ignore
     quotaOptions.value = stage.value.quotaStage
     // @ts-ignore
-      .reduce((acc: OptionType[], curr: QuotaStageModel) => {
+      .reduce((acc: OptionType[], curr: QuotaStage) => {
         const matchingQuota = quotas.value
           ?.find(quota => quota.id === curr.quotaId)
         return matchingQuota

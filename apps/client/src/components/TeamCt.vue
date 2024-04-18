@@ -1,14 +1,14 @@
 <script lang="ts" setup>
-import { ref, computed, onMounted, watch, type Ref } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { DsfrButton, getRandomId } from '@gouvminint/vue-dsfr'
 import {
   adminGroupPath,
   UserSchema,
   type LettersQuery,
   type UserProfile,
-  type UserModel,
-  type RoleModel,
-  type ProjectModel,
+  type User,
+  type Role,
+  type Project,
   parseZodError,
 } from '@cpn-console/shared'
 import pDebounce from 'p-debounce'
@@ -28,9 +28,9 @@ const headers = [
 const props = withDefaults(
   defineProps<{
     userProfile: UserProfile
-    project: Pick<ProjectModel, 'id' | 'locked' | 'name'>
-    roles: Array<RoleModel>
-    knownUsers: Record<string, Required<UserModel>>
+    project: Pick<Project, 'id' | 'locked' | 'name'>
+    roles: Array<Role>
+    knownUsers: Record<string, Required<User>>
   }>(),
   {},
 )
@@ -45,7 +45,7 @@ const isOwnerOrAdmin = ref(props.roles.some(role => (role.userId === props.userP
   props.userProfile.groups?.includes(adminGroupPath)))
 const newUserInputKey = ref(getRandomId('input'))
 const newUserEmail = ref('')
-const usersToAdd: Ref<string[]> = ref([])
+const usersToAdd = ref<string[] | undefined>([])
 const rows = ref<any[][]>([])
 const lettersNotMatching = ref('')
 const tableKey = ref(getRandomId('table'))
@@ -116,10 +116,10 @@ const retrieveUsersToAdd = pDebounce(async (letters: LettersQuery['letters']) =>
   // Ne pas lancer de requête à moins de 3 caractères tapés
   if (letters.length < 3) return
   // Ne pas relancer de requête à chaque lettre ajoutée si aucun user ne correspond aux premières lettres données
-  if (lettersNotMatching.value && letters.includes(lettersNotMatching.value) && !usersToAdd.value.length) return
-  usersToAdd.value = (await projectUserStore.getMatchingUsers(props.project.id, letters)).map(userToAdd => userToAdd.email)
+  if (lettersNotMatching.value && letters.includes(lettersNotMatching.value) && !usersToAdd.value?.length) return
+  usersToAdd.value = (await projectUserStore.getMatchingUsers(props.project.id, letters))?.map(userToAdd => userToAdd.email)
   // Stockage des lettres qui ne renvoient aucun résultat
-  if (!usersToAdd.value.length) {
+  if (!usersToAdd.value?.length) {
     lettersNotMatching.value = letters
   }
 }, 300)

@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { onBeforeMount, ref, type Ref } from 'vue'
 import { getRandomId } from '@gouvminint/vue-dsfr'
-import { type AsyncReturnType, formatDate, statusDict, sortArrByObjKeyAsc, AllStatus, ProjectModel } from '@cpn-console/shared'
+import { type AsyncReturnType, formatDate, statusDict, sortArrByObjKeyAsc, AllStatus, Project } from '@cpn-console/shared'
 import { useAdminProjectStore } from '@/stores/admin/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useAdminOrganizationStore } from '@/stores/admin/organization.js'
@@ -51,7 +51,7 @@ const rows: Ref<Rows> = ref([])
 const environmentsRows: Ref<EnvironnementRows > = ref([])
 const repositoriesRows: Ref<RepositoryRows> = ref([])
 const tableKey = ref(getRandomId('table'))
-const selectedProject: Ref<ProjectModel | undefined> = ref()
+const selectedProject: Ref<Project | undefined> = ref()
 const teamCtKey = ref(getRandomId('team'))
 const environmentsCtKey = ref(getRandomId('environment'))
 const repositoriesCtKey = ref(getRandomId('repository'))

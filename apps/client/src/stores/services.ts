@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import api from '@/api/index.js'
-import { type Ref, ref } from 'vue'
-import { type MonitorServiceModel, MonitorStatus } from '@cpn-console/shared'
+import { ref } from 'vue'
+import { MonitorStatus, type ServiceBody } from '@cpn-console/shared'
 import type { DsfrAlertType } from '@gouvminint/vue-dsfr'
 
 export type ServicesHealth = {
@@ -42,8 +42,8 @@ const serviceHealthOptions: ServiceHealthOption[] = [
   },
 ]
 export const useServiceStore = defineStore('service', () => {
-  const servicesHealth: Ref<ServicesHealth> = ref({})
-  const services: Ref<MonitorServiceModel> = ref([])
+  const servicesHealth = ref<ServicesHealth>({})
+  const services = ref<ServiceBody>([])
 
   const checkServicesHealth = async () => {
     servicesHealth.value = {
@@ -51,7 +51,9 @@ export const useServiceStore = defineStore('service', () => {
       status: 'info',
     }
 
-    services.value = await api.checkServicesHealth() as MonitorServiceModel
+    const res = await api.checkServicesHealth()
+    if (!res) return
+    services.value = res
     servicesHealth.value = serviceHealthOptions[
       services.value.reduce((worstStatusIdx: number, service) => {
         const serviceStatusIdx = serviceHealthOptions.findIndex(status => status.serviceStatus === service.status)
