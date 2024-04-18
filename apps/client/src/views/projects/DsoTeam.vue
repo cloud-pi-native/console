@@ -17,8 +17,9 @@ const project = computed(() => projectStore.selectedProject)
 const teamCtKey = ref(getRandomId('team'))
 
 const addUserToProject = async (email: string) => {
+  if (!project.value) return
   snackbarStore.isWaitingForResponse = true
-  await projectUserStore.addUserToProject(project.value?.id, { email })
+  await projectUserStore.addUserToProject(project.value.id, { email })
   teamCtKey.value = getRandomId('team')
   snackbarStore.isWaitingForResponse = false
 }
@@ -29,6 +30,7 @@ const updateUserRole = ({ userId, role }: { userId: string, role: string }) => {
 }
 
 const removeUserFromProject = async (userId: string) => {
+  if (!project.value) return
   snackbarStore.isWaitingForResponse = true
   await projectUserStore.removeUserFromProject(project.value?.id, userId)
   teamCtKey.value = getRandomId('team')
@@ -43,9 +45,9 @@ const removeUserFromProject = async (userId: string) => {
   <TeamCt
     :key="teamCtKey"
     :user-profile="userStore.userProfile"
-    :project="{id: project?.id, name: project?.name }"
+    :project="{id: project?.id ?? '', name: project?.name ?? '', locked: project?.locked ?? false }"
     :known-users="usersStore.users"
-    :roles="project.roles"
+    :roles="project?.roles ?? []"
     @add-member="(email) => addUserToProject(email)"
     @update-role="({ userId, role}) => updateUserRole({ userId, role})"
     @remove-member="(userId) => removeUserFromProject(userId)"

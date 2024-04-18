@@ -1,24 +1,16 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 
-const props = defineProps({
-  label: {
-    type: String,
-    default: '',
-  },
-  level: {
-    type: Number,
-    default: 0,
-  },
-  levels: {
-    type: Array,
-    required: true,
-    default: () => [],
-  },
-  step: {
-    type: Number,
-    default: 1,
-  },
+const props = withDefaults(defineProps<{
+  label: string,
+  level: number,
+  levels: string[],
+  step: number,
+}>(), {
+  label: '',
+  level: 0,
+  levels: () => ['Niveau 1'],
+  step: 1,
 })
 
 const localLevel = ref(props.level)

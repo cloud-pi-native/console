@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref, onBeforeMount, watch, computed } from 'vue'
 import { getRandomId } from '@gouvminint/vue-dsfr'
-import { EnvironmentSchema, projectIsLockedInfo, longestEnvironmentName, type QuotaStage, type Quota, type SharedZodError, parseZodError } from '@cpn-console/shared'
+import { EnvironmentSchema, projectIsLockedInfo, longestEnvironmentName, type QuotaStage, type Quota, type SharedZodError, parseZodError, type Environment } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 import { useZoneStore } from '@/stores/zone.js'
@@ -24,35 +24,18 @@ type OptionType = {
     value: string,
   }
 
-const props = defineProps({
-  environment: {
-    type: Object,
-    default: () => {},
-  },
-  environmentNames: {
-    type: Array,
-    default: () => [],
-  },
-  isEditable: {
-    type: Boolean,
-    default: true,
-  },
-  isOwner: {
-    type: Boolean,
-    default: false,
-  },
-  isProjectLocked: {
-    type: Boolean,
-    default: false,
-  },
-  projectClusters: {
-    type: Array,
-    default: () => [],
-  },
-  allClusters: {
-    type: Array,
-    default: () => [],
-  },
+const props = withDefaults(defineProps<{
+  environment?: Partial<Environment>,
+  environmentNames?: string[],
+  isEditable: boolean,
+  isOwner:boolean,
+  isProjectLocked: boolean,
+  projectClusters?: Cluster[]
+  allClusters?: Cluster[]
+}>(), {
+  isEditable: true,
+  isOwner: false,
+  isProjectLocked: false,
 })
 
 const emit = defineEmits([

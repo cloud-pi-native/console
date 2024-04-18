@@ -6,7 +6,7 @@ import { useOrganizationStore } from '@/stores/organization.js'
 import {
   descriptionMaxLength,
   ProjectSchema,
-  type ProjectInfos,
+  type Project,
   parseZodError,
   instanciateSchema,
   projectNameMaxLength,
@@ -28,7 +28,7 @@ const errorSchema = computed(() => {
 })
 
 // @ts-ignore
-const project: Ref<ProjectInfos> = ref({
+const project: Ref<Project> = ref({
   organizationId: undefined,
   name: '',
 })

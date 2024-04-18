@@ -7,13 +7,13 @@ export const useUserStore = defineStore('user', () => {
   const isLoggedIn = ref<boolean>()
   const isAdmin = ref<boolean>()
 
-  const userProfile = ref<UserProfile | Record<string, never>>({})
+  const userProfile = ref<UserProfile>()
 
   const setIsLoggedIn = () => {
     const keycloak = getKeycloak()
     isLoggedIn.value = keycloak.authenticated
     if (isLoggedIn.value) {
-      isAdmin.value = userProfile.value.groups?.includes(adminGroupPath)
+      isAdmin.value = userProfile.value?.groups?.includes(adminGroupPath)
     }
   }
 

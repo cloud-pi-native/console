@@ -92,7 +92,3 @@ export const checkInsufficientPermissionInEnvironment = (userId: User['id'], per
 export const filterOwners = (roles: Role[]) => {
   return roles.filter(({ role }) => role === 'owner')
 }
-
-export type ProjectInfos<T> = T & {
-  services?: Record<string, object>
-}

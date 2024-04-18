@@ -4,7 +4,7 @@ import api from '@/api/index.js'
 import type { CreateStageBody, Stage, UpdateQuotaStageBody, UpdateStageClustersBody } from '@cpn-console/shared'
 
 export const useAdminStageStore = defineStore('admin-stage', () => {
-  const stages = ref<Stage[]>([])
+  const stages = ref<Stage[]>()
 
   const getAllStages = async () => {
     stages.value = await api.getStages()

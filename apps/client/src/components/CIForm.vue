@@ -5,11 +5,10 @@ import { useProjectStore } from '@/stores/project.js'
 import { useCIFilesStore } from '@/stores/ci-files.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
-const props = defineProps({
-  internalRepoName: {
-    type: String,
-    default: '',
-  },
+const props = withDefaults(defineProps<{
+  internalRepoName: string
+}>(), {
+  internalRepoName: '',
 })
 
 const projectStore = useProjectStore()

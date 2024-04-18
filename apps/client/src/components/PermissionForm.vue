@@ -7,11 +7,10 @@ import { useUserStore } from '@/stores/user.js'
 import { getRandomId } from '@gouvminint/vue-dsfr'
 import { useUsersStore } from '@/stores/users.js'
 
-const props = defineProps({
-  environment: {
-    type: Object,
-    default: () => {},
-  },
+const props = withDefaults(defineProps<{
+  environment: Partial<Environment>,
+}>(), {
+  environment: () => ({}),
 })
 
 const projectStore = useProjectStore()

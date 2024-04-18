@@ -23,7 +23,7 @@ const rows: Ref<any[][]> = ref([])
 const tableKey = ref(getRandomId('table'))
 
 const getAllUsers = async () => {
-  allUsers.value = await adminUserStore.getAllUsers()
+  allUsers.value = await adminUserStore.getAllUsers() ?? []
 }
 
 onBeforeMount(async () => {

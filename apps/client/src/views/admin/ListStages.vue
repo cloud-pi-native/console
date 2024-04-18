@@ -67,10 +67,10 @@ export type UpdateStageType = {
 
 const updateStage = async ({ stageId, quotaIds, clusterIds }: UpdateStageType) => {
   snackbarStore.isWaitingForResponse = true
-  if (quotaIds) {
+  if (quotaIds && stageId) {
     await adminStageStore.updateQuotaStage(stageId, quotaIds)
   }
-  if (clusterIds) {
+  if (clusterIds && stageId) {
     await adminStageStore.updateStageClusters(stageId, clusterIds)
   }
   await adminStageStore.getAllStages()
@@ -88,7 +88,7 @@ const deleteStage = async (stageId: string) => {
 
 const getStageAssociatedEnvironments = async (stageId: string) => {
   snackbarStore.isWaitingForResponse = true
-  associatedEnvironments.value = await adminStageStore.getStageAssociatedEnvironments(stageId)
+  associatedEnvironments.value = await adminStageStore.getStageAssociatedEnvironments(stageId) ?? []
   snackbarStore.isWaitingForResponse = false
 }
 

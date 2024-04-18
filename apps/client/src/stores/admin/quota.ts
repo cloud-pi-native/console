@@ -4,7 +4,7 @@ import api from '@/api/index.js'
 import type { CreateQuotaBody, Quota, UpdateQuotaStageBody, PatchQuotaBody } from '@cpn-console/shared'
 
 export const useAdminQuotaStore = defineStore('admin-quota', () => {
-  const quotas = ref<Quota[]>([])
+  const quotas = ref<Quota[]>()
 
   const getAllQuotas = async () => {
     quotas.value = await api.getQuotas()

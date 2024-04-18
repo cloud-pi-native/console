@@ -1,18 +1,11 @@
 <script lang="ts" setup>
 import { ref, computed, onBeforeMount, watch } from 'vue'
-import { ClusterPrivacy, ClusterSchema, CreateClusterBusinessSchema, SharedZodError, ClusterBusinessSchema, instanciateSchema } from '@cpn-console/shared'
+import { ClusterPrivacy, ClusterSchema, CreateClusterBusinessSchema, SharedZodError, ClusterBusinessSchema, instanciateSchema, type ClusterAssociatedEnvironments, type CreateClusterBody, type UpdateClusterBody, type Cluster } from '@cpn-console/shared'
 // @ts-ignore
 import { load } from 'js-yaml'
 // @ts-ignore
 import { JsonViewer } from 'vue3-json-viewer'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-
-type AssociatedEnvironment = {
-  organization: string,
-  project: string,
-  name: string,
-  owner: string,
-}
 
 const snackbarStore = useSnackbarStore()
 
@@ -22,7 +15,7 @@ const props = withDefaults(defineProps<{
   allProjects: Array<any>
   allStages: Array<any>
   allZones: Array<any>
-  associatedEnvironments: AssociatedEnvironment[]
+  associatedEnvironments: ClusterAssociatedEnvironments
 }>(), {
   isNewCluster: true,
   cluster: () => ({
@@ -179,9 +172,9 @@ const retrieveUserAndCluster = (context: ContextType) => {
   }
 }
 
-const getRows = (associatedEnvironments: AssociatedEnvironment[]) => {
+const getRows = (associatedEnvironments: ClusterAssociatedEnvironments) => {
   return associatedEnvironments
-    .map(associatedEnvironment => Object
+    ?.map(associatedEnvironment => Object
       .values(associatedEnvironment)
       .map(value => ({
         component: 'code',
@@ -196,8 +189,8 @@ const getRows = (associatedEnvironments: AssociatedEnvironment[]) => {
 }
 
 const emit = defineEmits<{
-  add: [value: typeof localCluster.value]
-  update: [value: typeof localCluster.value]
+  add: [value: CreateClusterBody]
+  update: [value: UpdateClusterBody & { id: Cluster['id'] }]
   delete: [value: typeof localCluster.value['id']]
   cancel: []
 }>()

@@ -27,10 +27,10 @@ const headers = [
 
 const props = withDefaults(
   defineProps<{
-    userProfile: UserProfile
+    userProfile?: UserProfile
     project: Pick<Project, 'id' | 'locked' | 'name'>
     roles: Array<Role>
-    knownUsers: Record<string, Required<User>>
+    knownUsers: Record<string, User>
   }>(),
   {},
 )
@@ -41,8 +41,8 @@ const isUserAlreadyInTeam = computed(() => {
   return !!props.roles?.find(role => props.knownUsers[role.userId]?.email === newUserEmail.value)
 })
 
-const isOwnerOrAdmin = ref(props.roles.some(role => (role.userId === props.userProfile.id && role.role === 'owner') ||
-  props.userProfile.groups?.includes(adminGroupPath)))
+const isOwnerOrAdmin = ref(props.roles.some(role => (role.userId === props.userProfile?.id && role.role === 'owner') ||
+  props.userProfile?.groups?.includes(adminGroupPath)))
 const newUserInputKey = ref(getRandomId('input'))
 const newUserEmail = ref('')
 const usersToAdd = ref<string[] | undefined>([])
