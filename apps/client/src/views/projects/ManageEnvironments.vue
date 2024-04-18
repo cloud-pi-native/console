@@ -75,7 +75,7 @@ const putEnvironment = async (environment: Environment) => {
 const deleteEnvironment = async (environment: Environment) => {
   snackbarStore.isWaitingForResponse = true
   await projectEnvironmentStore.deleteEnvironment(environment.id)
-  setSelectedEnvironment(undefined)
+  setSelectedEnvironment()
   snackbarStore.isWaitingForResponse = false
 }
 

@@ -93,7 +93,7 @@ watch(project, () => {
     class="flex <md:flex-col-reverse items-center justify-between pb-5"
   >
     <DsfrButton
-      v-if="selectedRepo && !isNewRepoForm"
+      v-if="!selectedRepo && !isNewRepoForm"
       label="Ajouter un nouveau dépôt"
       data-testid="addRepoLink"
       tertiary
@@ -139,7 +139,7 @@ watch(project, () => {
       class="fr-mt-2v fr-mb-4w"
     >
       <div
-        v-show="selectedRepo"
+        v-show="!selectedRepo"
       >
         <DsfrTile
           :title="repo.title"

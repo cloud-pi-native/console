@@ -1,10 +1,7 @@
 import { z } from 'zod'
-import { projectStatus } from '../utils/const.js'
+import { ClusterPrivacy, longestEnvironmentName, projectStatus } from '../utils/const.js'
 import { ErrorSchema } from './utils.js'
-import { EnvironmentSchema } from './environment.js'
-import { QuotaStageSchema } from './quota.js'
 import { RepoSchema } from './repository.js'
-import { ClusterSchema } from './cluster.js'
 import { RoleSchema, UserSchema } from './user.js'
 import { OrganizationSchema } from './organization.js'
 
@@ -31,9 +28,71 @@ export const ProjectSchema = z.object({
   services: z.object({}).optional(),
   organization: OrganizationSchema.optional(),
   roles: z.array(RoleSchema.and(z.object({ user: UserSchema.optional() }))).optional(),
-  clusters: z.array(ClusterSchema).optional(),
+  clusters: z.array(z.object({
+    id: z.string()
+      .uuid(),
+    label: z.string()
+      .regex(/^[a-zA-Z0-9-]+$/)
+      .max(50),
+    infos: z.string()
+      .max(200)
+      .optional()
+      .nullable(),
+    secretName: z.string()
+      .max(50)
+      .optional(),
+    clusterResources: z.boolean(),
+    privacy: z.nativeEnum(ClusterPrivacy),
+    zoneId: z.string()
+      .uuid(),
+    projectIds: z.string()
+      .uuid()
+      .array()
+      .optional(),
+    stageIds: z.string()
+      .uuid()
+      .array()
+      .optional(),
+  })).optional(),
   repositories: z.array(RepoSchema).optional(),
-  environments: z.array(EnvironmentSchema.and(z.object({ quotaStage: QuotaStageSchema.optional() }))).optional(),
+  environments: z.array(z.object({
+    id: z.string()
+      .uuid(),
+    name: z.string()
+      .regex(/^[a-z0-9]+$/)
+      .min(2)
+      .max(longestEnvironmentName),
+    projectId: z.string()
+      .uuid(),
+    quotaStageId: z.string()
+      .uuid(),
+    clusterId: z.string()
+      .uuid(),
+    permissions: z.array(z.object({
+      id: z.string()
+        .uuid(),
+      userId: z.string()
+        .uuid(),
+      environmentId: z.string()
+        .uuid(),
+      level: z.union([
+        z.string(),
+        z.number()
+          .int()
+          .nonnegative()
+          .max(2),
+      ]).optional(),
+    })),
+    quotaStage: z.object({
+      id: z.string()
+        .uuid(),
+      quotaId: z.string()
+        .uuid(),
+      stageId: z.string()
+        .uuid(),
+      status: z.string(),
+    }).optional(),
+  })).optional(),
 })
 
 export type Project = Zod.infer<typeof ProjectSchema>

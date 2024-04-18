@@ -1,39 +1,22 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
 
-const props = defineProps({
-  options: {
-    type: Array,
-    default: () => [],
-  },
-  array: {
-    type: Array,
-    default: () => [],
-  },
-  label: {
-    type: String,
-    default: '',
-  },
-  description: {
-    type: String,
-    default: '',
-  },
-  disabled: {
-    type: Boolean,
-    default: false,
-  },
-  noChoiceLabel: {
-    type: String,
-    default: 'Aucun choix disponible',
-  },
-  choiceLabel: {
-    type: String,
-    default: 'Veuillez choisir parmi les choix suivants',
-  },
-  id: {
-    type: String,
-    default: 'multi-select',
-  },
+const props = withDefaults(defineProps<{
+  options: unknown[],
+  array: unknown[],
+  label: string,
+  description: string,
+  disabled: boolean,
+  noChoiceLabel: string,
+  choiceLabel: string,
+  id: string,
+}>(), {
+  options: () => [],
+  array: () => [],
+  disabled: false,
+  noChoiceLabel: 'Aucun choix disponible',
+  choiceLabel: 'Veuillez choisir parmi les choix suivants',
+  id: 'multi-select',
 })
 
 const selectValue = ref(undefined)
