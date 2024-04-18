@@ -82,7 +82,7 @@ const deleteQuota = async (quotaId: string) => {
 
 const getQuotaAssociatedEnvironments = async (quotaId: string) => {
   snackbarStore.isWaitingForResponse = true
-  associatedEnvironments.value = await adminQuotaStore.getQuotaAssociatedEnvironments(quotaId)
+  associatedEnvironments.value = await adminQuotaStore.getQuotaAssociatedEnvironments(quotaId) ?? []
   snackbarStore.isWaitingForResponse = false
 }
 

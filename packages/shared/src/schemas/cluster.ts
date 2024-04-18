@@ -70,7 +70,11 @@ export const ClusterBusinessSchema = ClusterSchema.refine(
   { message: 'Si le cluster est dédié, vous devez renseignez les ids des projets associés.' },
 )
 
+const CleanedClusterSchema = ClusterSchema.pick({ id: true, label: true, projectIds: true, stageIds: true })
+
 export type Cluster = Zod.infer<typeof ClusterSchema>
+
+export type CleanedCluster = Zod.infer<typeof CleanedClusterSchema>
 
 export const ClusterParams = z.object({
   clusterId: ClusterSchema.shape.id,
@@ -89,7 +93,7 @@ export type CreateClusterBody = Zod.infer<typeof CreateClusterSchema.body>
 
 export const GetClustersSchema = {
   responses: {
-    200: z.array(ClusterSchema.pick({ id: true, label: true, projectIds: true, stageIds: true })),
+    200: z.array(CleanedClusterSchema.or(ClusterSchema)),
     401: ErrorSchema,
     500: ErrorSchema,
   },

@@ -75,7 +75,7 @@ onMounted(() => {
           class="fr-icon-account-line"
           aria-hidden="true"
         />
-        {{ userStore.userProfile.firstName }} {{ userStore.userProfile.lastName }}
+        {{ userStore.userProfile?.firstName }} {{ userStore.userProfile?.lastName }}
       </p>
       <div
         class="my-2 flex flex-row gap-2 items-center cursor-pointer"

@@ -1,6 +1,12 @@
 import { z } from 'zod'
 import { projectStatus } from '../utils/const.js'
 import { ErrorSchema } from './utils.js'
+import { EnvironmentSchema } from './environment.js'
+import { QuotaStageSchema } from './quota.js'
+import { RepoSchema } from './repository.js'
+import { ClusterSchema } from './cluster.js'
+import { RoleSchema, UserSchema } from './user.js'
+import { OrganizationSchema } from './organization.js'
 
 export const descriptionMaxLength = 280
 export const projectNameMaxLength = 20
@@ -23,11 +29,11 @@ export const ProjectSchema = z.object({
 
   // ProjectInfos
   services: z.object({}).optional(),
-  organization: z.object({}).optional(),
-  roles: z.object({}).array().optional(),
-  clusters: z.object({}).array().optional(),
-  repositories: z.object({}).array().optional(),
-  environments: z.object({}).array().optional(),
+  organization: OrganizationSchema.optional(),
+  roles: z.array(RoleSchema.and(z.object({ user: UserSchema.optional() }))).optional(),
+  clusters: z.array(ClusterSchema).optional(),
+  repositories: z.array(RepoSchema).optional(),
+  environments: z.array(EnvironmentSchema.and(z.object({ quotaStage: QuotaStageSchema.optional() }))).optional(),
 })
 
 export type Project = Zod.infer<typeof ProjectSchema>

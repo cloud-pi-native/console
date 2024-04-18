@@ -4,7 +4,7 @@ import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment'
-import { descriptionMaxLength, projectIsLockedInfo, type ProjectInfos } from '@cpn-console/shared'
+import { descriptionMaxLength, projectIsLockedInfo, type Project } from '@cpn-console/shared'
 import router from '@/router/index.js'
 import { copyContent } from '@/utils/func.js'
 
@@ -14,9 +14,9 @@ const snackbarStore = useSnackbarStore()
 const projectEnvironmentStore = useProjectEnvironmentStore()
 
 const project = computed(() => projectStore.selectedProject)
-const isOwner = computed(() => project.value?.roles.some(role => role.userId === userStore.userProfile.id && role.role === 'owner'))
+const isOwner = computed(() => project.value?.roles?.some(role => role.userId === userStore.userProfile?.id && role.role === 'owner'))
 
-const description = ref<string | undefined>(project.value ? project.value.description : undefined)
+const description = ref<string | undefined>(project.value?.description ?? undefined)
 const isEditingDescription = ref(false)
 const isArchivingProject = ref(false)
 const projectToArchive = ref('')
@@ -24,29 +24,29 @@ const isSecretShown = ref(false)
 const projectSecrets = ref<Record<string, any>>({})
 const allStages = ref<Array<any>>([])
 
-const updateProject = async (projectId: ProjectInfos['id']) => {
+const updateProject = async (projectId?: Project['id']) => {
+  if (!projectId) return
   snackbarStore.isWaitingForResponse = true
-  // @ts-ignore
   await projectStore.updateProject(projectId, { description: description.value })
   isEditingDescription.value = false
   snackbarStore.isWaitingForResponse = false
 }
 
-const replayHooks = async (projectId: ProjectInfos['id']) => {
+const replayHooks = async (projectId: Project['id']) => {
   snackbarStore.isWaitingForResponse = true
   await useProjectStore().replayHooksForProject(projectId)
   snackbarStore.setMessage('Le projet a été reprovisionné avec succès', 'success')
   snackbarStore.isWaitingForResponse = false
 }
 
-const archiveProject = async (projectId: ProjectInfos['id']) => {
+const archiveProject = async (projectId: Project['id']) => {
   snackbarStore.isWaitingForResponse = true
   await projectStore.archiveProject(projectId)
   router.push('/projects')
   snackbarStore.isWaitingForResponse = false
 }
 
-const getDynamicTitle = (locked: ProjectInfos['locked'], description: ProjectInfos['description']) => {
+const getDynamicTitle = (locked?: Project['locked'], description?: Project['description']) => {
   if (locked) return projectIsLockedInfo
   if (description) return 'Editer la description'
   return 'Ajouter une description'
@@ -57,7 +57,7 @@ const handleSecretDisplay = async () => {
   if (isSecretShown.value && !Object.keys(projectSecrets.value).length) {
     snackbarStore.isWaitingForResponse = true
     if (!project.value) throw new Error('Pas de projet sélectionné')
-    projectSecrets.value = await projectStore.getProjectSecrets(project.value.id)
+    projectSecrets.value = await projectStore.getProjectSecrets(project.value.id) ?? {}
     snackbarStore.setMessage('Secrets récupérés')
     snackbarStore.isWaitingForResponse = false
   }

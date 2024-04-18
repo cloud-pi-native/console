@@ -4,7 +4,7 @@ import type { CreateProjectBody, Project, Role, UpdateProjectBody } from '@cpn-c
 import api from '@/api/index.js'
 
 export const useProjectStore = defineStore('project', () => {
-  const selectedProject = ref<Project | undefined>(undefined)
+  const selectedProject = ref<Project>()
   const projects = ref<Project[]>([])
 
   const setSelectedProject = (id: string) => {

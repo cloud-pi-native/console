@@ -1,3 +1,4 @@
+import { ClientInferResponseBody } from '@ts-rest/core'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   CreateClusterSchema,
@@ -57,3 +58,5 @@ export const clusterAdminContract = contractInstance.router({
     responses: DeleteClusterSchema.responses,
   },
 })
+
+export type ClusterAssociatedEnvironments = ClientInferResponseBody<typeof clusterAdminContract.getClusterEnvironments, 200>

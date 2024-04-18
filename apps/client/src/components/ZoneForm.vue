@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { computed, onBeforeMount, ref } from 'vue'
-import { ZoneSchema, SharedZodError, instanciateSchema } from '@cpn-console/shared'
+import { ZoneSchema, SharedZodError, instanciateSchema, type CreateZoneBody, type UpdateZoneBody, type Zone } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = defineProps({
@@ -47,10 +47,10 @@ const updateClusters = (key: string, value: any) => {
 }
 
 const emit = defineEmits<{
-  add: [value: typeof localZone.value]
-  update: [value: Partial<typeof localZone.value>]
+  add: [value: CreateZoneBody]
+  update: [value: UpdateZoneBody & { zoneId: Zone['id'] }]
   cancel: []
-  delete: [value: typeof localZone.value.id]
+  delete: [value: Zone['id']]
 }>()
 
 const addZone = () => {

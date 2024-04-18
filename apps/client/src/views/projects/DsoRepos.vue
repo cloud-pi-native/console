@@ -1,38 +1,42 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch } from 'vue'
+import { type Repo, projectIsLockedInfo, sortArrByObjKeyAsc, type Project } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectRepositoryStore } from '@/stores/project-repository.js'
 import { useUserStore } from '@/stores/user.js'
-import { projectIsLockedInfo, sortArrByObjKeyAsc } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+
+type RepoTile = {
+  id: string,
+  title: string,
+  data: Repo,
+}
 
 const projectStore = useProjectStore()
 const projectRepositoryStore = useProjectRepositoryStore()
 const userStore = useUserStore()
 const snackbarStore = useSnackbarStore()
 
-/**
- * @returns {string}
- */
 const project = computed(() => projectStore.selectedProject)
-const isOwner = computed(() => project.value?.roles.some(role => role.userId === userStore.userProfile.id && role.role === 'owner'))
+const isOwner = computed(() => project.value?.roles?.some(role => role.userId === userStore.userProfile?.id && role.role === 'owner'))
 
-const repos = ref([])
-const selectedRepo = ref({})
+const repos = ref<RepoTile[]>([])
+const selectedRepo = ref<Repo>()
 const isNewRepoForm = ref(false)
 
-const setReposTiles = (project) => {
+const setReposTiles = (project: Project) => {
+  // @ts-ignore
   repos.value = sortArrByObjKeyAsc(project?.repositories, 'internalRepoName')
     ?.map(repo => ({
       id: repo.internalRepoName,
       title: repo.internalRepoName,
       data: repo,
-    }))
+    }) as unknown as RepoTile)
 }
 
-const setSelectedRepo = (repo) => {
-  if (selectedRepo.value.internalRepoName === repo.internalRepoName) {
-    selectedRepo.value = {}
+const setSelectedRepo = (repo: Repo) => {
+  if (selectedRepo.value?.internalRepoName === repo.internalRepoName) {
+    selectedRepo.value = undefined
     return
   }
   selectedRepo.value = repo
@@ -41,15 +45,16 @@ const setSelectedRepo = (repo) => {
 
 const showNewRepoForm = () => {
   isNewRepoForm.value = !isNewRepoForm.value
-  selectedRepo.value = {}
+  selectedRepo.value = undefined
 }
 
 const cancel = () => {
   isNewRepoForm.value = false
-  selectedRepo.value = {}
+  selectedRepo.value = undefined
 }
 
-const saveRepo = async (repo) => {
+const saveRepo = async (repo: Repo) => {
+  if (!project.value) return
   snackbarStore.isWaitingForResponse = true
   if (repo.id) {
     await projectRepositoryStore.updateRepo(repo)
@@ -61,19 +66,22 @@ const saveRepo = async (repo) => {
   snackbarStore.isWaitingForResponse = false
 }
 
-const deleteRepo = async (repoId) => {
+const deleteRepo = async (repoId: Repo['id']) => {
+  if (!project.value) return
   snackbarStore.isWaitingForResponse = true
   await projectRepositoryStore.deleteRepo(repoId)
   setReposTiles(project.value)
-  selectedRepo.value = {}
+  selectedRepo.value = undefined
   snackbarStore.isWaitingForResponse = false
 }
 
 onMounted(() => {
+  if (!project.value) return
   setReposTiles(project.value)
 })
 
 watch(project, () => {
+  if (!project.value) return
   setReposTiles(project.value)
 })
 
@@ -85,7 +93,7 @@ watch(project, () => {
     class="flex <md:flex-col-reverse items-center justify-between pb-5"
   >
     <DsfrButton
-      v-if="!Object.keys(selectedRepo).length && !isNewRepoForm"
+      v-if="selectedRepo && !isNewRepoForm"
       label="Ajouter un nouveau dépôt"
       data-testid="addRepoLink"
       tertiary
@@ -122,7 +130,7 @@ watch(project, () => {
   <div
     v-else
     :class="{
-      'md:grid md:grid-cols-3 md:gap-3 items-center justify-between': !selectedRepo.internalRepoName,
+      'md:grid md:grid-cols-3 md:gap-3 items-center justify-between': !selectedRepo?.internalRepoName,
     }"
   >
     <div
@@ -131,18 +139,18 @@ watch(project, () => {
       class="fr-mt-2v fr-mb-4w"
     >
       <div
-        v-show="!Object.keys(selectedRepo).length"
+        v-show="selectedRepo"
       >
         <DsfrTile
           :title="repo.title"
           :data-testid="`repoTile-${repo.id}`"
-          :horizontal="!!selectedRepo.internalRepoName"
+          :horizontal="!!selectedRepo?.internalRepoName"
           class="fr-mb-2w w-11/12"
           @click="setSelectedRepo(repo.data)"
         />
       </div>
       <RepoForm
-        v-if="Object.keys(selectedRepo).length && selectedRepo.internalRepoName === repo.id"
+        v-if="selectedRepo?.internalRepoName === repo.id"
         :is-project-locked="project?.locked"
         :is-owner="isOwner"
         :repo="selectedRepo"

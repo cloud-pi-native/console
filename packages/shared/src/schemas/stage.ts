@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { ErrorSchema } from './utils.js'
 import { EnvironmentSchema } from './environment.js'
 import { ClusterSchema } from './cluster.js'
+import { QuotaStageBaseSchema } from './quota.js'
 
 export const StageSchema = z.object({
   id: z.string()
@@ -12,6 +13,7 @@ export const StageSchema = z.object({
     .max(20, { message: 'must not exceed 20 characters' }),
   quotaIds: z.string().uuid().array().optional(),
   clusterIds: z.string().uuid().array().optional(),
+  quotaStage: z.array(QuotaStageBaseSchema).optional(),
 })
 
 export type Stage = Zod.infer<typeof StageSchema>

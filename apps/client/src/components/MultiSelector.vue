@@ -80,7 +80,7 @@ const removeElementFromArray = (elementToDelete) => {
       :disabled="props.disabled"
       :value="selectValue"
       class="fr-select"
-      @change="addElementToArray($event.target.value)"
+      @change="addElementToArray($event.target?.value)"
     >
       <option
         v-if="!arrayOptions.length"

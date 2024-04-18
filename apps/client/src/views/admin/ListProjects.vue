@@ -223,7 +223,7 @@ const updateEnvironmentQuota = async ({ environmentId, quotaId }: {environmentId
   snackbarStore.isWaitingForResponse = true
   const environment = selectedProject.value.environments.find(environment => environment.id === environmentId)
   if (!environment) return
-  environment.quotaStageId = environment.quotaStage.stage.quotaStage.find(quotaStage => quotaStage.quotaId === quotaId)?.id
+  environment.quotaStageId = environment.quotaStage.stage?.quotaStage?.find(quotaStage => quotaStage.quotaId === quotaId)?.id ?? ''
   await projectEnvironmentStore.updateEnvironment(environment, selectedProject.value.id)
   await getAllProjects()
   snackbarStore.isWaitingForResponse = false
@@ -375,7 +375,7 @@ onBeforeMount(async () => {
     <div v-if="selectedProject">
       <DsfrCallout
         :title="selectedProject.name"
-        :content="selectedProject.description"
+        :content="selectedProject.description ?? ''"
       />
       <div class="w-full flex gap-4 fr-mb-2w">
         <DsfrButton
@@ -469,8 +469,8 @@ onBeforeMount(async () => {
           :id="membersId"
           :key="teamCtKey"
           :user-profile="userStore.userProfile"
-          :project="{id: selectedProject.id, name: selectedProject.name }"
-          :roles="selectedProject.roles?.map(({user, ...role}) => role)"
+          :project="{id: selectedProject.id, name: selectedProject.name, locked: selectedProject.locked }"
+          :roles="selectedProject.roles?.map(({user, ...role}) => role) ?? []"
           :known-users="usersStore.users"
           @add-member="(email) => addUserToProject(email)"
           @update-role="({ userId, role}) => updateUserRole({ userId, role})"
