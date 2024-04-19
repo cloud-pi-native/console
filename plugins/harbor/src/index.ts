@@ -2,6 +2,7 @@ import type { Plugin } from '@cpn-console/hooks'
 import { createDsoProject, deleteDsoProject, getProjectSecrets } from './functions.js'
 import infos from './infos.js'
 import monitor from './monitor.js'
+import type { SwitchParam } from '@cpn-console/shared'
 
 export const plugin: Plugin = {
   infos,
@@ -15,6 +16,14 @@ export const plugin: Plugin = {
 
 declare module '@cpn-console/hooks' {
   interface ProjectStore {
-    registry?: { projectId?: string }
+    registry?: {
+      projectId?: string
+      'publish-project-robot'?: SwitchParam
+    }
+  }
+  interface Config {
+    registry?: {
+      'publish-project-robot'?: SwitchParam
+    }
   }
 }

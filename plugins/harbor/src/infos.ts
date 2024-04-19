@@ -12,8 +12,30 @@ export const config: PluginConfig = {
     kind: 'text',
     title: 'Num du projet Harbor',
     value: '',
+  }, {
+    kind: 'switch',
+    key: 'publish-project-robot',
+    initialValue: 'disabled',
+    title: 'Publication du robot projet',
+    description: 'Activer le robot de projet (read-only) et afficher ses identifiants aux utilisateurs',
+    permissions: {
+      admin: { read: true, write: true },
+      user: { read: true, write: false },
+    },
+    value: 'disabled',
   }],
-  global: [],
+  global: [{
+    kind: 'switch',
+    key: 'publish-project-robot',
+    initialValue: 'disabled',
+    title: 'Publication du robot RO aux projets',
+    description: 'Définit le comportement en l\'absence de ce paramétrage au niveau projet',
+    permissions: {
+      admin: { read: true, write: true },
+      user: { read: true, write: false },
+    },
+    value: 'disabled',
+  }],
 }
 
 const infos: ServiceInfos = {

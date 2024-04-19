@@ -1,59 +1,35 @@
-import { getConfig } from './utils.js'
+import { roRobotName, getApi, getConfig, rwRobotName, projectRobotName } from './utils.js'
 import { createProject, deleteProject } from './project.js'
 import { addProjectGroupMember } from './permission.js'
-import { createCiRobot, getCiRobot, regenerateCiRobot } from './robot.js'
+import { VaultRobotSecret, rwAccess, ensureRobot, roAccess, deleteRobot } from './robot.js'
 import { type StepCall, type Project, type ProjectLite, parseError } from '@cpn-console/hooks'
-import { RobotCreated } from './api/Api.js'
 import { getSecretObject } from './kubeSecret.js'
-
-type VaultRegistrySecret = {
-  // {"auths":{"registry-host.com":{"auth":"<the TOKEN>","email":""}}},
-  DOCKER_CONFIG: string
-  // registry-host.com,
-  HOST: string
-  TOKEN: string,
-  // robot$<project-name>+ci
-  USERNAME: string
-}
-
-const toVaultSecret = (robot: Required<RobotCreated>): VaultRegistrySecret => {
-  const auth = `${robot.name}:${robot.secret}`
-  const buff = Buffer.from(auth)
-  const b64auth = buff.toString('base64')
-  return {
-    DOCKER_CONFIG: JSON.stringify({
-      auths: {
-        [getConfig().host]: {
-          auth: b64auth,
-          email: '',
-        },
-      },
-    }),
-    HOST: getConfig().host,
-    TOKEN: robot.secret,
-    USERNAME: robot.name,
-  }
-}
 
 export const createDsoProject: StepCall<Project> = async (payload) => {
   try {
     const project = payload.args
     const projectName = `${project.organization.name}-${project.name}`
-    const vaultApi = payload.apis.vault
+    const { vault: vaultApi, keycloak: keycloakApi } = payload.apis
 
-    const projectCreated = await createProject(projectName)
-    const oidcGroup = await payload.apis.keycloak.getProjectGroupPath()
-    await addProjectGroupMember(projectName, oidcGroup)
-    const robot = await getCiRobot(projectName)
-    const vaultRegistrySecret = await payload.apis.vault.read('REGISTRY', { throwIfNoEntry: false }) as { data: VaultRegistrySecret } | undefined
-    const creds: VaultRegistrySecret = !vaultRegistrySecret
-      ? robot
-        ? toVaultSecret(await createCiRobot(projectName) as Required<RobotCreated>)
-        : toVaultSecret(await regenerateCiRobot(projectName) as Required<RobotCreated>)
-      : vaultRegistrySecret.data
+    const publishRoRobotProject = project.store.registry?.['publish-project-robot']
+    const publishRoRobotConfig = payload.config.registry?.['publish-project-robot']
+    const createProjectRobot = publishRoRobotProject === 'enabled' ||
+      (publishRoRobotConfig === 'enabled' && (!publishRoRobotProject || publishRoRobotProject === 'default'))
 
-    vaultApi.write(creds, 'REGISTRY')
-    await payload.apis.vault.write(creds, 'REGISTRY')
+    const [projectCreated, oidcGroup] = await Promise.all([
+      createProject(projectName),
+      keycloakApi.getProjectGroupPath(),
+    ])
+    const api = getApi()
+
+    const [creds] = await Promise.all([
+      ensureRobot(projectName, roRobotName, vaultApi, roAccess, api), // cette ligne en premier sinon ça foire au dessus
+      ensureRobot(projectName, rwRobotName, vaultApi, rwAccess, api),
+      addProjectGroupMember(projectName, oidcGroup),
+      createProjectRobot
+        ? ensureRobot(projectName, projectRobotName, vaultApi, roAccess, api)
+        : deleteRobot(projectName, projectRobotName, vaultApi, api),
+    ])
 
     await payload.apis.kubernetes.applyResourcesInAllEnvNamespaces({
       group: '',
@@ -62,11 +38,12 @@ export const createDsoProject: StepCall<Project> = async (payload) => {
       version: 'v1',
       body: getSecretObject({ DOCKER_CONFIG: creds.DOCKER_CONFIG }),
     })
+
     if (!projectCreated.project_id) throw new Error('Unable to retrieve project_id')
     return {
       status: {
         result: 'OK',
-        message: 'Created',
+        message: `Created${createProjectRobot ? ' , with project robot' : ''}`,
       },
       store: {
         projectId: projectCreated.project_id,
@@ -109,13 +86,34 @@ export const deleteDsoProject: StepCall<Project> = async (payload) => {
   }
 }
 
-export const getProjectSecrets: StepCall<ProjectLite> = async ({ args: project }) => {
+export const getProjectSecrets: StepCall<ProjectLite> = async ({ args: project, apis: { vault: vaultApi }, config }) => {
+  const publishRoRobotProject = project.store.registry?.['publish-project-robot']
+  const publishRoRobotConfig = config.registry?.['publish-project-robot']
+  const projectRobotEnabled = publishRoRobotProject === 'enabled' ||
+      (publishRoRobotConfig === 'enabled' && (!publishRoRobotProject || publishRoRobotProject === 'default'))
+
+  const VaultRobotSecret = projectRobotEnabled
+    ? await vaultApi.read(`REGISTRY/${projectRobotName}`, { throwIfNoEntry: false }) as { data: VaultRobotSecret } | undefined
+    : undefined
+  let secrets: {[x:string]: string} = {
+    'Registry base path': `${getConfig().host}/${project.organization.name}-${project.name}/`,
+  }
+
+  if (projectRobotEnabled) {
+    secrets = VaultRobotSecret?.data
+      ? {
+          ...secrets,
+          ...VaultRobotSecret.data,
+        }
+      : {
+          ...secrets,
+          '/!\\': 'Vous n\'avez pas de robot de lecture veuillez reprovisionner',
+        }
+  }
   return {
     status: {
       result: 'OK',
     },
-    secrets: {
-      'Registry base path': `${getConfig().host}/${project.organization.name}-${project.name}/`,
-    },
+    secrets,
   }
 }

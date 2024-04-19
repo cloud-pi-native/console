@@ -1,6 +1,6 @@
 import type { Cluster, Kubeconfig, Project, Zone } from '@prisma/client'
-import type { ClusterObject, KubeCluster, KubeUser, Project as ProjectPayload, RepoCreds, Repository } from '@cpn-console/hooks'
-import { hooks, Store } from '@cpn-console/hooks'
+import type { ClusterObject, Config, KubeCluster, KubeUser, Project as ProjectPayload, RepoCreds, Repository } from '@cpn-console/hooks'
+import { hooks } from '@cpn-console/hooks'
 import { AsyncReturnType } from '@cpn-console/shared'
 import { archiveProject, getClusterByIdOrThrow, getAdminPlugin, getHookProjectInfos, getHookPublicClusters, getHookRepository, getProjectStore, saveProjectStore, updateProjectCreated, updateProjectFailed } from '@/resources/queries-index.js'
 import { genericProxy } from './proxy.js'
@@ -142,7 +142,7 @@ const formatClusterInfos = (
   privacy: cluster.privacy,
 })
 
-export const transformToHookProject = (project: ProjectInfos, store: Store, reposCreds: ReposCreds = {}): ProjectPayload => {
+export const transformToHookProject = (project: ProjectInfos, store: Config, reposCreds: ReposCreds = {}): ProjectPayload => {
   const clusters = project.clusters.map(cluster => formatClusterInfos(cluster))
 
   for (const env of project.environments) {
