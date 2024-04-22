@@ -193,9 +193,9 @@ const ensureInfraEnvValues = async (
     argocd: {
       namespace: getConfig().namespace,
       project: appProjectName,
+      chartVersion: process.env.DSO_ENV_CHART_VERSION !== '' ? process.env.DSO_ENV_CHART_VERSION : 'dso-env-1.0.0',
     },
     environment: {
-      name: environment.name,
       valueFileRepository: infraProject.http_url_to_repo,
       valueFileRevision: 'HEAD',
       valueFilePath,
@@ -207,7 +207,7 @@ const ensureInfraEnvValues = async (
         cpu: environment.quota.cpu,
         memory: environment.quota.memory,
       },
-      gitlabGroup: gitlabGroupUrl,
+      sourceReposPrefix: gitlabGroupUrl,
       destination: {
         namespace: appNamespace,
         name: cluster.label,
