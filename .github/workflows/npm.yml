@@ -29,7 +29,7 @@ on:
         description: Pnpm version used
         required: true
         type: string
-        default: "8"
+        default: "9"
       PUBLISH_APPS:
         description: Publish apps modules
         required: true
