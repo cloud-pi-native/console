@@ -18,7 +18,7 @@ on:
         description: Nodejs version used to run tests
         required: true
         type: string
-        default: "20.11.0"
+        default: "20.12.2"
       PNPM_VERSION:
         description: Pnpm version used to run tests
         required: true
