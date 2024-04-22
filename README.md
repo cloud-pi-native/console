@@ -342,6 +342,16 @@ La gestion des dépendances est effectuée à l'aide de [pnpm](https://pnpm.io/)
 └── README.md
 ```
 
+## Gestion du contrôle de versions
+
+Le dépôt utilise [Release Please](https://github.com/google-github-actions/release-please-action) pour automatiquement générer les tags Git ainsi que les releases GitHub. À chaque fois que du code est poussé dans la branche `main`, une pull request est créée en analysant les messages de commits pour déterminer le numéro de version à créer.
+
+À chaque fois qu'une pull request de release est fusionnée, les images de conteneur du serveur et du client sont créées et hébergées dans la [registry Github associée au dépôt](https://github.com/orgs/cloud-pi-native/packages?repo_name=console).
+
+Pour publier les versions des modules npm du dépôt un [pipeline](https://github.com/cloud-pi-native/console/actions/workflows/npm.yml) est disponible dans les GitHub Actions, il analysera les numéros de version présents dans les différents fichiers `package.json` pour déterminer si une nouvelle version du module doit être créée et publiée.
+
+> Il est possible de créer une version de pré-release d'un module npm en modifiant la clé `publishConfig.tag` dans le `package.json` avec par exemple `beta` pour générer une version beta.
+
 ## Conventions
 
 Cf. [Conventions - MIOM Fabrique Numérique](https://docs.fabrique-numerique.fr/conventions/nommage.html).
