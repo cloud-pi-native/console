@@ -1,23 +1,16 @@
 <script lang="ts" setup>
 import { computed, onBeforeMount, ref } from 'vue'
-import { type Cluster, type Quota, type Stage, SharedZodError, StageSchema } from '@cpn-console/shared'
+import { type Cluster, type Quota, type Stage, type StageAssociatedEnvironments, SharedZodError, StageSchema } from '@cpn-console/shared'
 import { copyContent } from '@/utils/func.js'
 import type { UpdateStageType } from '@/views/admin/ListStages.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-
-type AssociatedEnvironment = {
-  organization: string,
-  project: string,
-  name: string,
-  quota: string,
-}
 
 const props = withDefaults(defineProps<{
   isNewStage: boolean,
   stage: Partial<Stage>,
   allQuotas: Quota[],
   allClusters: Cluster[],
-  associatedEnvironments: AssociatedEnvironment[]
+  associatedEnvironments: StageAssociatedEnvironments,
 }>(), {
   isNewStage: false,
   stage: () => ({}),
@@ -83,7 +76,7 @@ const cancel = () => {
   emit('cancel')
 }
 
-const getRows = (associatedEnvironments: AssociatedEnvironment[]) => {
+const getRows = (associatedEnvironments: StageAssociatedEnvironments) => {
   return associatedEnvironments
     .map(associatedEnvironment => Object
       .values(associatedEnvironment)

@@ -1,6 +1,5 @@
 import { z } from 'zod'
 import { ErrorSchema } from './utils.js'
-import { EnvironmentSchema } from './environment.js'
 import { StageSchema } from './stage.js'
 
 export const QuotaSchema = z.object({
@@ -77,7 +76,14 @@ export const GetQuotaEnvironmentsSchema = {
       .uuid(),
   }),
   responses: {
-    200: z.array(EnvironmentSchema),
+    200: z.array(z.object({
+      organization: z.string(),
+      project: z.string(),
+      name: z.string(),
+      stage: z.string()
+        .optional(),
+      owner: z.string(),
+    })),
     500: ErrorSchema,
   },
 }

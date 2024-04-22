@@ -9,7 +9,7 @@ const props = withDefaults(defineProps<{
 }>(), {
   label: '',
   level: 0,
-  levels: () => ['Niveau 1'],
+  levels: () => [],
   step: 1,
 })
 

@@ -46,6 +46,19 @@ export const getAllProjects = async () => {
         },
       },
       repositories: true,
+      clusters: {
+        where: {
+          privacy: ClusterPrivacy.DEDICATED,
+        },
+        select: {
+          id: true,
+          label: true,
+          privacy: true,
+          clusterResources: true,
+          infos: true,
+          zoneId: true,
+        },
+      },
     },
   })
 }

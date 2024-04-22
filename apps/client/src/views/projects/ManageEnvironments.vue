@@ -7,7 +7,11 @@ import { useUserStore } from '@/stores/user.js'
 import { useAdminClusterStore } from '@/stores/admin/cluster'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
-type EnvironmentTile = {id: string, title: string, data: Environment}
+type EnvironmentTile = {
+  id: string,
+  title: string,
+  data: Environment,
+}
 
 const projectStore = useProjectStore()
 const projectEnvironmentStore = useProjectEnvironmentStore()
@@ -25,7 +29,7 @@ const selectedEnvironment = ref<Environment>()
 const isNewEnvironmentForm = ref(false)
 
 const setEnvironmentsTiles = (project: Project) => {
-  if (!project.environments) return
+  if (!project.environments?.length) return
   // @ts-ignore
   environments.value = sortArrByObjKeyAsc(project.environments, 'name')
     ?.map(environment => ({

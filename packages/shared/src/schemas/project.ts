@@ -25,7 +25,20 @@ export const ProjectSchema = z.object({
   locked: z.boolean(),
 
   // ProjectInfos
-  services: z.object({}).optional(),
+  services: z.object({})
+    .optional(),
+  externalServices: z.array(z.object({
+    to: z.string(),
+    title: z.string()
+      .optional(),
+    description: z.string()
+      .optional(),
+    imgSrc: z.string()
+      .optional(),
+  })
+    .optional(),
+  )
+    .optional(),
   organization: OrganizationSchema.optional(),
   roles: z.array(RoleSchema.and(z.object({ user: UserSchema.optional() }))).optional(),
   clusters: z.array(z.object({

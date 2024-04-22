@@ -294,6 +294,27 @@ describe('Administration projects', () => {
       .should('exist')
   })
 
+  it('Should access project services, loggedIn as admin', () => {
+    const project = projects.find(project => project.name === 'betaapp')
+
+    cy.intercept('GET', 'api/v1/admin/projects').as('getAllProjects')
+    cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
+
+    cy.getByDataTestid('tableAdministrationProjects').within(() => {
+      cy.get('tr').contains(project.name)
+        .click()
+    })
+    cy.wait('@getQuotas')
+    cy.get('.fr-callout__title')
+      .should('contain', project.name)
+    cy.get('#servicesTable').within(() => {
+      cy.get('img:first')
+        .should('have.attr', 'src', '/img/argocd.svg')
+      cy.get('a:first')
+        .should('have.attr', 'href', 'https://theuselessweb.com/')
+    })
+  })
+
   it('Should download projects informations, loggedIn as admin', () => {
     cy.visit('/admin/projects')
     cy.url().should('contain', '/admin/projects')

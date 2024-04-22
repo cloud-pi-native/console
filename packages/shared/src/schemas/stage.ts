@@ -1,6 +1,5 @@
 import { z } from 'zod'
 import { ErrorSchema } from './utils.js'
-import { EnvironmentSchema } from './environment.js'
 import { ClusterSchema } from './cluster.js'
 
 export const StageSchema = z.object({
@@ -60,7 +59,15 @@ export const GetStageEnvironmentsSchema = {
       .uuid(),
   }),
   responses: {
-    200: z.array(EnvironmentSchema),
+    200: z.array(z.object({
+      organization: z.string(),
+      project: z.string(),
+      name: z.string(),
+      quota: z.string()
+        .optional(),
+      cluster: z.string(),
+      owner: z.string(),
+    })),
     500: ErrorSchema,
   },
 }

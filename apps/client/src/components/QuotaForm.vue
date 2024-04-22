@@ -1,22 +1,15 @@
 <script lang="ts" setup>
 import { computed, onBeforeMount, ref } from 'vue'
-import { type Quota, QuotaSchema, SharedZodError, type Stage } from '@cpn-console/shared'
+import { type Quota, QuotaSchema, SharedZodError, type Stage, type QuotaAssociatedEnvironments } from '@cpn-console/shared'
 import { copyContent } from '@/utils/func.js'
 import type { UpdateQuotaType } from '@/views/admin/ListQuotas.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-
-type AssociatedEnvironment = {
-  organization: string,
-  project: string,
-  name: string,
-  stage: string,
-}
 
 const props = withDefaults(defineProps<{
   isNewQuota: boolean,
   quota: Quota,
   allStages: Stage[],
-  associatedEnvironments: AssociatedEnvironment[]
+  associatedEnvironments: QuotaAssociatedEnvironments,
 }>(), {
   isNewQuota: false,
   quota: () => ({ isPrivate: false }),
@@ -72,7 +65,7 @@ const cancel = () => {
   emit('cancel')
 }
 
-const getRows = (associatedEnvironments: AssociatedEnvironment[]) => {
+const getRows = (associatedEnvironments: QuotaAssociatedEnvironments) => {
   return associatedEnvironments
     .map(associatedEnvironment => Object
       .values(associatedEnvironment)

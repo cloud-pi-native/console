@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import { ref, computed, onMounted, watch, type Ref } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useAdminStageStore } from '@/stores/admin/stage.js'
 import { sortArrByObjKeyAsc } from '@cpn-console/shared'
-import type { CreateStageBody, UpdateQuotaStageBody, Stage, UpdateStageClustersBody } from '@cpn-console/shared'
+import type { CreateStageBody, UpdateQuotaStageBody, Stage, UpdateStageClustersBody, StageAssociatedEnvironments } from '@cpn-console/shared'
 import { useAdminQuotaStore } from '@/stores/admin/quota'
 import { useAdminClusterStore } from '@/stores/admin/cluster'
 import { useSnackbarStore } from '@/stores/snackbar.js'
@@ -12,9 +12,9 @@ const adminQuotaStore = useAdminQuotaStore()
 const adminClusterStore = useAdminClusterStore()
 const snackbarStore = useSnackbarStore()
 
-const selectedStage: Ref<Stage | Record<string, never>> = ref({})
-const stageList: Ref<any[]> = ref([])
-const associatedEnvironments: Ref<any[]> = ref([])
+const selectedStage = ref<Stage | Record<string, never>>({})
+const stageList = ref<any[]>([])
+const associatedEnvironments = ref<StageAssociatedEnvironments>([])
 const isNewStageForm = ref(false)
 
 const stages = computed(() => adminStageStore.stages)
