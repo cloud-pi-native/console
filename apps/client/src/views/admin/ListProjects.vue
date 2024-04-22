@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { onBeforeMount, ref, type Ref } from 'vue'
+import { onBeforeMount, ref, computed } from 'vue'
 import { getRandomId } from '@gouvminint/vue-dsfr'
 import { type AsyncReturnType, formatDate, statusDict, sortArrByObjKeyAsc, AllStatus, Project } from '@cpn-console/shared'
 import { useAdminProjectStore } from '@/stores/admin/project.js'
@@ -45,13 +45,13 @@ type FileForDownload = File & {
   title?: string,
 }
 
-const allProjects: Ref<AsyncReturnType<typeof adminProjectStore.getAllProjects>> = ref([])
-const organizations: Ref<AsyncReturnType<typeof adminOrganizationStore.getAllOrganizations>> = ref([])
-const rows: Ref<Rows> = ref([])
-const environmentsRows: Ref<EnvironnementRows > = ref([])
-const repositoriesRows: Ref<RepositoryRows> = ref([])
+const allProjects = ref<AsyncReturnType<typeof adminProjectStore.getAllProjects>>([])
+const organizations = ref<AsyncReturnType<typeof adminOrganizationStore.getAllOrganizations>>([])
+const rows = ref<Rows>([])
+const environmentsRows = ref<EnvironnementRows>([])
+const repositoriesRows = ref<RepositoryRows>([])
 const tableKey = ref(getRandomId('table'))
-const selectedProject: Ref<Project | undefined> = ref()
+const selectedProject = ref<Project | undefined>(undefined)
 const teamCtKey = ref(getRandomId('team'))
 const environmentsCtKey = ref(getRandomId('environment'))
 const repositoriesCtKey = ref(getRandomId('repository'))
@@ -59,7 +59,7 @@ const isArchivingProject = ref(false)
 const projectToArchive = ref('')
 const inputSearchText = ref('')
 const activeFilter = ref('Non archivés')
-const file: Ref<undefined | FileForDownload> = ref(undefined)
+const file = ref<FileForDownload | undefined>(undefined)
 
 const title = 'Liste des projets'
 const headers = [
@@ -75,6 +75,7 @@ const headers = [
 const membersId = 'membersTable'
 const repositoriesId = 'repositoriesTable'
 const environmentsId = 'environmentsTable'
+const servicesId = 'servicesTable'
 
 type FilterMethods = Record<string, (row: Row) => boolean>
 const filterMethods: FilterMethods = {
@@ -294,6 +295,24 @@ const generateProjectsDataFile = async () => {
   }
 }
 
+const servicesRows = computed(() => selectedProject.value?.externalServices?.map(value => [
+  {
+    component: 'img',
+    src: value?.imgSrc,
+    alt: value?.title,
+    title: value?.title,
+    width: 50,
+  },
+  {
+    component: 'a',
+    href: value?.to,
+    text: value?.to,
+    title: `Se rendre sur ${value?.title}`,
+    target: '_blank',
+    class: 'fr-text-default--info text-xs cursor-pointer',
+  },
+]))
+
 onBeforeMount(async () => {
   organizations.value = await adminOrganizationStore.getAllOrganizations()
   await getAllProjects()
@@ -446,6 +465,10 @@ onBeforeMount(async () => {
             to: `#${membersId}`,
             text: '#Membres'
           },
+          {
+            to: `#${servicesId}`,
+            text: '#Services'
+          },
         ]"
       />
       <div
@@ -461,7 +484,7 @@ onBeforeMount(async () => {
         <DsfrTable
           :id="repositoriesId"
           :key="repositoriesCtKey"
-          :title="`Dépôts`"
+          title="Dépôts"
           :headers="['Nom', 'Type']"
           :rows="repositoriesRows"
         />
@@ -475,6 +498,12 @@ onBeforeMount(async () => {
           @add-member="(email) => addUserToProject(email)"
           @update-role="({ userId, role}) => updateUserRole({ userId, role})"
           @remove-member="(userId) => removeUserFromProject(userId)"
+        />
+        <DsfrTable
+          :id="servicesId"
+          title="Services"
+          :headers="['Service', 'Url']"
+          :rows="servicesRows"
         />
       </div>
     </div>
