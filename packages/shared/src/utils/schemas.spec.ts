@@ -20,6 +20,7 @@ describe('Schemas utils', () => {
       isInfra: false,
       externalUserName: 'clai+re-nlet_',
     }
+
     expect(RepoBusinessSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
   })
 
@@ -31,6 +32,7 @@ describe('Schemas utils', () => {
       clusterId: faker.string.uuid(),
       quotaStageId: faker.string.uuid(),
     }
+
     expect(EnvironmentSchema.omit({ permissions: true }).safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
   })
 
@@ -48,6 +50,7 @@ describe('Schemas utils', () => {
         level: faker.number.int({ min: 0, max: 2 }),
       }],
     }
+
     expect(EnvironmentSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
   })
 
@@ -58,6 +61,7 @@ describe('Schemas utils', () => {
       environmentId: faker.string.uuid(),
       level: 0,
     }
+
     expect(PermissionSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
   })
 
@@ -68,6 +72,7 @@ describe('Schemas utils', () => {
       label: faker.company.name(),
       active: faker.datatype.boolean(),
     }
+
     expect(OrganizationSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
   })
 
@@ -79,6 +84,7 @@ describe('Schemas utils', () => {
       label: faker.company.name(),
       active: faker.datatype.boolean(),
     }
+
     expect(OrganizationSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
   })
 
@@ -90,6 +96,7 @@ describe('Schemas utils', () => {
       status: 'created',
       locked: false,
     }
+
     expect(ProjectSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
   })
 
@@ -100,6 +107,7 @@ describe('Schemas utils', () => {
       firstName: faker.person.firstName(),
       lastName: faker.person.lastName(),
     }
+
     expect(UserSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
   })
 
@@ -111,6 +119,7 @@ describe('Schemas utils', () => {
       cpu: faker.number.int({ min: 0 }),
       isPrivate: faker.datatype.boolean(),
     }
+
     expect(QuotaSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
   })
 
@@ -119,6 +128,7 @@ describe('Schemas utils', () => {
       id: faker.string.uuid(),
       name: faker.lorem.word({ length: { min: 2, max: 10 } }),
     }
+
     expect(StageSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
   })
 
@@ -129,6 +139,7 @@ describe('Schemas utils', () => {
       stageId: faker.string.uuid(),
       status: faker.lorem.word(),
     }
+
     expect(QuotaStageSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
   })
 
@@ -140,9 +151,10 @@ describe('Schemas utils', () => {
       label: faker.company.name(),
       active: faker.datatype.boolean(),
     }
+
+    // @ts-ignore
     expect(parseZodError(OrganizationSchema
       .safeParse(toParse)
-      // @ts-ignore
       .error))
       .toMatch('Validation error: Expected string, received array at "source"')
   })
@@ -158,6 +170,7 @@ describe('Schemas utils', () => {
       isPrivate: true,
       isInfra: false,
     }
+
     expect(RepoBusinessSchema
       .safeParse(toParse))
       .toStrictEqual({ data: toParse, success: true })
@@ -173,9 +186,10 @@ describe('Schemas utils', () => {
       isInfra: false,
       externalUserName: 'clairenlet',
     }
+
+    // @ts-ignore
     expect(parseZodError(RepoBusinessSchema
       .safeParse(toParse)
-      // @ts-ignore
       .error))
       .toMatch('Validation error: Si le dépôt est privé, vous devez renseignez les nom de propriétaire et token associés.')
   })
@@ -235,9 +249,9 @@ describe('Schemas utils', () => {
       },
     }
 
+    // @ts-ignore
     expect(parseZodError(ClusterBusinessSchema
       .safeParse(toParse)
-      // @ts-ignore
       .error))
       .toMatch('Validation error: Si le cluster est dédié, vous devez renseignez les ids des projets associés.')
   })
@@ -252,23 +266,25 @@ describe('Schemas utils', () => {
       isInfra: false,
     }
 
+    // @ts-ignore
     expect(parseZodError(RepoBusinessSchema
       .safeParse(toParse)
-      // @ts-ignore
       .error))
       .toMatch('Validation error: failed regex test at "internalRepoName"')
 
     toParse.internalRepoName = 'candilib-'
+
+    // @ts-ignore
     expect(parseZodError(RepoBusinessSchema
       .safeParse(toParse)
-      // @ts-ignore
       .error))
       .toMatch('Validation error: failed regex test at "internalRepoName"')
 
     toParse.internalRepoName = 'candiLib'
+
+    // @ts-ignore
     expect(parseZodError(RepoBusinessSchema
       .safeParse(toParse)
-      // @ts-ignore
       .error))
       .toMatch('Validation error: failed regex test at "internalRepoName"')
 
@@ -287,9 +303,9 @@ describe('Schemas utils', () => {
       locked: false,
     }
 
+    // @ts-ignore
     expect(parseZodError(ProjectSchema
       .safeParse(toParse)
-      // @ts-ignore
       .error))
       .toMatch('Validation error: String must contain at least 2 character(s) at "name"')
   })
@@ -303,9 +319,9 @@ describe('Schemas utils', () => {
       locked: false,
     }
 
+    // @ts-ignore
     expect(parseZodError(ProjectSchema
       .safeParse(toParse)
-      // @ts-ignore
       .error))
       .toMatch('Validation error: String must contain at most 20 character(s) at "name"')
   })
@@ -319,14 +335,16 @@ describe('Schemas utils', () => {
       status: 'created',
       locked: false,
     }
+
+    // @ts-ignore
     expect(ProjectSchema
       .safeParse(toParse)
-      // @ts-ignore
       .error).toBeInstanceOf(ZodError)
   })
 
   it('Should validate a single key with given schema', () => {
     const toParse = { internalRepoName: 'candilib' }
+
     expect(RepoSchema
       .pick({ internalRepoName: true })
       .safeParse(toParse))
@@ -335,6 +353,7 @@ describe('Schemas utils', () => {
 
   it('Should not validate a single key with given schema', () => {
     const toParse = { internalRepoName: 'candi lib' }
+
     expect(RepoSchema
       .pick({ internalRepoName: true })
       .safeParse(toParse)
