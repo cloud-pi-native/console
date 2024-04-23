@@ -26,7 +26,7 @@ on:
         description: Pnpm version used to run tests
         required: true
         type: string
-        default: "8"
+        default: "9"
       TAG:
         description: Image tag used to run tests
         required: true

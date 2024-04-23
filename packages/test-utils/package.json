@@ -16,25 +16,15 @@
     "test:e2e-ci": "echo 'check cache'"
   },
   "dependencies": {
-    "@faker-js/faker": "^8.4.0",
+    "@faker-js/faker": "^8.4.1",
     "@cpn-console/shared": "workspace:^"
   },
   "devDependencies": {
     "@cpn-console/ts-config": "workspace:^",
     "@cpn-console/eslint-config": "workspace:^",
-    "@types/node": "^20.11.16",
-    "@typescript-eslint/eslint-plugin": "^6.20.0",
-    "@typescript-eslint/parser": "^6.20.0",
-    "eslint": "^8.56.0",
-    "eslint-config-standard": "^17.1.0",
-    "eslint-plugin-import": "^2.29.1",
-    "eslint-plugin-n": "^16.6.2",
-    "eslint-plugin-promise": "^6.1.1",
-    "npm-run-all": "^4.1.5",
+    "@types/node": "^20.12.7",
     "rimraf": "^5.0.5",
-    "ts-patch": "^3.1.2",
-    "typescript": "^5.3.3",
-    "typescript-transform-paths": "^3.4.6"
+    "typescript": "^5.4.5"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
