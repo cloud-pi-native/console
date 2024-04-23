@@ -3,7 +3,6 @@ import { generateAppProjectName, generateApplicationName, getConfig, getCustomK8
 import { getApplicationObject } from './applications.js'
 import { getAppProjectObject } from './app-project.js'
 import { dump } from 'js-yaml'
-import { createHmac } from 'node:crypto'
 import { GitlabProjectApi } from '@cpn-console/gitlab-plugin/types/class.js'
 import { dirname } from 'path'
 
@@ -17,7 +16,7 @@ export const upsertProject: StepCall<Project> = async (payload) => {
   try {
     const customK8sApi = getCustomK8sApi()
     const project = payload.args
-    const { gitlab: gitlabApi, keycloak: keycloakApi } = payload.apis
+    const { kubernetes: kubeApi, gitlab: gitlabApi, keycloak: keycloakApi } = payload.apis
     const projectSelector = `dso/organization=${project.organization.name},dso/project=${project.name},app.kubernetes.io/managed-by=dso-console`
 
     const infraRepositories = project.repositories.filter(repo => repo.isInfra)
@@ -34,7 +33,7 @@ export const upsertProject: StepCall<Project> = async (payload) => {
       const cluster = getCluster(project, environment)
       const infraProject = await gitlabApi.getOrCreateInfraProject(cluster.zone.slug)
       const appProjectName = generateAppProjectName(project.organization.name, project.name, environment.name)
-      const appNamespace = generateNamespaceName(project.organization.name, project.name, environment.name)
+      const appNamespace = kubeApi.namespaces[environment.name].nsObject.metadata.name
       const destination: ArgoDestination = {
         namespace: appNamespace,
         name: cluster.label,
@@ -158,6 +157,11 @@ const findAppProject = (applications: any[], environment: string) => application
   app.metadata.labels['dso/environment'] === environment,
 )
 
+type ArgoRepoSource = {
+  repoURL: string
+  targetRevision: string
+  path: string
+}
 const ensureInfraEnvValues = async (
   project: Project,
   environment: Environment,
@@ -174,16 +178,19 @@ const ensureInfraEnvValues = async (
   const cluster = getCluster(project, environment)
   const infraProject = await gitlabApi.getProjectById(repoId)
   const valueFilePath = getValueFilePath(project, cluster, environment)
-  const repositories: any[] = [{
-    repoURL: infraAppsRepoUrl,
-    targetRevision: 'HEAD',
-    path: '.',
-  }]
-  sourceRepos.map(url => (repositories.push({
-    repoURL: url,
-    targetRevision: 'HEAD',
-    path: '.',
-  })))
+  const repositories: ArgoRepoSource[] = [
+    {
+      repoURL: infraAppsRepoUrl,
+      targetRevision: 'HEAD',
+      path: '.',
+    },
+    ...sourceRepos.map(url => ({
+      repoURL: url,
+      targetRevision: 'HEAD',
+      path: '.',
+    })),
+
+  ]
   const values = {
     commonLabels: {
       'dso/organization': project.organization.name,
@@ -193,7 +200,7 @@ const ensureInfraEnvValues = async (
     argocd: {
       namespace: getConfig().namespace,
       project: appProjectName,
-      chartVersion: process.env.DSO_ENV_CHART_VERSION !== '' ? process.env.DSO_ENV_CHART_VERSION : 'dso-env-1.0.0',
+      chartVersion: process.env.DSO_ENV_CHART_VERSION || 'dso-env-1.0.0',
     },
     environment: {
       valueFileRepository: infraProject.http_url_to_repo,
@@ -216,14 +223,6 @@ const ensureInfraEnvValues = async (
     },
   }
   await gitlabApi.commitCreateOrUpdate(repoId, dump(values), valueFilePath)
-}
-
-const generateNamespaceName = (org: string, proj: string, env: string) => {
-  const envHash = createHmac('sha256', '')
-    .update(env)
-    .digest('hex')
-    .slice(0, 4)
-  return `${org}-${proj}-${env}-${envHash}`
 }
 
 const getCluster = (p: Project, e: Environment): ClusterObject => {

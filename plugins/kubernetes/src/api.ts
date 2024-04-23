@@ -28,6 +28,10 @@ export const createCoreV1Apis = (clusters: ClusterObject[]) => {
 }
 
 export const createCustomObjectApi = (cluster: ClusterObject) => {
+  if (!cluster.user.keyData) {
+    // Special case: disable direct calls to the cluster
+    return
+  }
   const kc = new KubeConfig()
   const clusterConfig = {
     ...cluster.cluster,
