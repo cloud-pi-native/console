@@ -83,3 +83,16 @@ body:
       placeholder: "v1.2.3"
     validations:
       required: false
+
+  - type: checkboxes
+    id: dod
+    attributes:
+      label: "Définition du fini"
+      description: Cochez les différents élément de la Definition Of Done.
+      options:
+        - label: Le correctif est terminé
+          required: false
+        - label: Les tests liés à ce correctif ont été ajoutés
+          required: false
+        - label: La communication avec les autres équipes impliquées par ce correctif a été faite
+          required: false
