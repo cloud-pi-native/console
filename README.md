@@ -35,7 +35,10 @@ Plusieurs plugins sont nativement enregistrés auprès du serveur pour assurer l
 - [Sonarqube](https://www.sonarsource.com/products/sonarqube/)
 - [Vault](https://www.vaultproject.io/)
 
-> *Plus d'informations sur le développement d'un plugin [ici](./misc/plugins.md) et [ici](./packages/hooks/README.md).*
+> Pour plus d'informations sur le développement d'un plugin, voir :
+>   - [documentation des plugins](./misc/plugins.md).
+>   - [documentation du module hooks](./packages/hooks/README.md).
+>   - [exemple de plugin](https://github.com/cloud-pi-native/console-plugin-helloworld).
 
 ## Développement
 
@@ -54,9 +57,9 @@ Liste des outils utilisés par le projet à installer sur son ordinateur :
 - [Nodejs](https://nodejs.org/en/download/) *- environnement d'exécution javascript*
 - [Pnpm](https://pnpm.io/installation) *- gestionnaire de paquets pour javascript*
 
-> *Pour une meilleure expérience développeur, il est recommandé :*
->   - *de gérer les versions de Nodejs avec [Volta](https://volta.sh/).*
->   - *de lancer les commandes Nodejs à l'aide de [Ni](https://github.com/antfu/ni).*
+> Pour une meilleure expérience développeur, il est recommandé :
+>   - de gérer les versions de Nodejs avec [Volta](https://volta.sh/).
+>   - de lancer les commandes Nodejs à l'aide de [Ni](https://github.com/antfu/ni).
 
 ### Lancer l'application
 
@@ -245,7 +248,7 @@ Un chart Helm utilitaire est installé pour déployer les services qui ne sont p
 
 - Pgadmin
 
-> *Ces services sont personnalisables [ici](./ci/helm-utils/values.yaml).*
+> Ces services sont personnalisables [ici](./ci/helm-utils/values.yaml).
 
 Différents fichiers de `values.yml` sont disponibles pour personnaliser le déploiement de l'application dans le cluster Kind:
 
