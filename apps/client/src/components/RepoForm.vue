@@ -1,32 +1,20 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
-import { SharedZodError, RepoBusinessSchema, RepoSchema, CreateRepoBusinessSchema, instanciateSchema } from '@cpn-console/shared'
+import { SharedZodError, RepoBusinessSchema, RepoSchema, CreateRepoBusinessSchema, instanciateSchema, type Repo } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
-const props = defineProps({
-  repo: {
-    type: Object,
-    default: () => ({
-      internalRepoName: undefined,
-      externalRepoUrl: undefined,
-      externalUserName: undefined,
-      externalToken: undefined,
-      isInfra: false,
-      isPrivate: false,
-    }),
-  },
-  isOwner: {
-    type: Boolean,
-    default: false,
-  },
-  isProjectLocked: {
-    type: Boolean,
-    default: false,
-  },
+const props = withDefaults(defineProps<{
+  repo: Partial<Repo>,
+  isOwner: boolean,
+  isProjectLocked: boolean,
+}>(), {
+  repo: () => ({ isInfra: false, isPrivate: false }),
+  isOwner: false,
+  isProjectLocked: false,
 })
 
 const localRepo = ref(props.repo)
-const updatedValues = ref<Record<keyof typeof localRepo.value, boolean>>({})
+const updatedValues = ref<Record<keyof typeof localRepo.value, boolean>>(instanciateSchema(RepoSchema, false))
 const repoToDelete = ref('')
 const isDeletingRepo = ref(false)
 

@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-import { ref, computed, onMounted, watch, type Ref } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useAdminQuotaStore } from '@/stores/admin/quota.js'
 import { sortArrByObjKeyAsc } from '@cpn-console/shared'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
-import type { CreateQuotaBody, UpdateQuotaStageBody, Quota, PatchQuotaBody } from '@cpn-console/shared'
+import type { CreateQuotaBody, UpdateQuotaStageBody, Quota, PatchQuotaBody, QuotaAssociatedEnvironments } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const adminQuotaStore = useAdminQuotaStore()
@@ -11,10 +11,10 @@ const projectEnvironmentStore = useProjectEnvironmentStore()
 const snackbarStore = useSnackbarStore()
 
 const quotas = computed(() => adminQuotaStore.quotas)
-const selectedQuota: Ref<Quota | Record<string, never>> = ref({})
-const quotaList: Ref<any[]> = ref([])
-const allStages: Ref<any[]> = ref([])
-const associatedEnvironments: Ref<any[]> = ref([])
+const selectedQuota = ref<Quota | Record<string, never>>({})
+const quotaList = ref<any[]>([])
+const allStages = ref<any[]>([])
+const associatedEnvironments = ref<QuotaAssociatedEnvironments>([])
 const isNewQuotaForm = ref(false)
 
 const setQuotaTiles = (quotas: Quota[]) => {
@@ -82,7 +82,7 @@ const deleteQuota = async (quotaId: string) => {
 
 const getQuotaAssociatedEnvironments = async (quotaId: string) => {
   snackbarStore.isWaitingForResponse = true
-  associatedEnvironments.value = await adminQuotaStore.getQuotaAssociatedEnvironments(quotaId)
+  associatedEnvironments.value = await adminQuotaStore.getQuotaAssociatedEnvironments(quotaId) ?? []
   snackbarStore.isWaitingForResponse = false
 }
 

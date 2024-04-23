@@ -1,33 +1,26 @@
 <script lang="ts" setup>
 import { computed, onBeforeMount, ref } from 'vue'
-import { QuotaSchema, SharedZodError, instanciateSchema } from '@cpn-console/shared'
+import { type Quota, QuotaSchema, SharedZodError, type Stage, type QuotaAssociatedEnvironments } from '@cpn-console/shared'
 import { copyContent } from '@/utils/func.js'
 import type { UpdateQuotaType } from '@/views/admin/ListQuotas.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
-const props = defineProps({
-  isNewQuota: {
-    type: Boolean,
-    default: false,
-  },
-  quota: {
-    type: Object,
-    default: () => ({ ...instanciateSchema(QuotaSchema, undefined), isPrivate: false }),
-  },
-  allStages: {
-    type: Array,
-    default: () => [],
-  },
-  associatedEnvironments: {
-    type: Array,
-    default: () => [],
-  },
+const props = withDefaults(defineProps<{
+  isNewQuota: boolean,
+  quota: Quota,
+  allStages: Stage[],
+  associatedEnvironments: QuotaAssociatedEnvironments,
+}>(), {
+  isNewQuota: false,
+  quota: () => ({ isPrivate: false }),
+  allStages: () => [],
+  associatedEnvironments: () => [],
 })
 
 const localQuota = ref(props.quota)
-const stageNames = ref([])
+const stageNames = ref<string[]>([])
 const isDeletingQuota = ref(false)
-const quotaToDelete = ref('')
+const quotaToDelete = ref<string>('')
 
 const errorSchema = computed<SharedZodError | undefined>(() => {
   let schemaValidation
@@ -72,13 +65,7 @@ const cancel = () => {
   emit('cancel')
 }
 
-type AssociatedEnvironment = {
-  organization: string,
-  project: string,
-  name: string,
-  stage: string,
-}
-const getRows = (associatedEnvironments: AssociatedEnvironment[]) => {
+const getRows = (associatedEnvironments: QuotaAssociatedEnvironments) => {
   return associatedEnvironments
     .map(associatedEnvironment => Object
       .values(associatedEnvironment)

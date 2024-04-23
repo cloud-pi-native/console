@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { sortArrByObjKeyAsc, type CreateClusterBody, type UpdateClusterBody, type Cluster, type Stage, type ProjectInfos, type Environment } from '@cpn-console/shared'
+import { sortArrByObjKeyAsc, type CreateClusterBody, type UpdateClusterBody, type Cluster, type Stage, type Project, type ClusterAssociatedEnvironments } from '@cpn-console/shared'
 import { useAdminClusterStore } from '@/stores/admin/cluster.js'
 import { useAdminProjectStore } from '@/stores/admin/project.js'
 import { useZoneStore } from '@/stores/zone.js'
@@ -19,26 +19,27 @@ const projectEnvironmentStore = useProjectEnvironmentStore()
 
 const clusters = computed(() => adminClusterStore.clusters)
 const allZones = computed(() => zoneStore.zones)
-const selectedCluster = ref<Cluster | Record<string, never>>({})
+const selectedCluster = ref<Cluster>()
 const clusterList = ref<ClusterList>([])
-const allProjects = ref<ProjectInfos[]>([])
+const allProjects = ref<Project[]>([])
 const allStages = ref<Stage[]>([])
 const isUpdatingCluster = ref(false)
 const isNewClusterForm = ref(false)
-const associatedEnvironments = ref<Environment[]>([])
+const associatedEnvironments = ref<ClusterAssociatedEnvironments>([])
 
 const setClusterTiles = (clusterArr: typeof clusters.value) => {
+  // @ts-ignore
   clusterList.value = sortArrByObjKeyAsc(clusterArr, 'label')
     ?.map(cluster => ({
       id: cluster.id,
       title: cluster.label,
       data: cluster,
-    }))
+    })as unknown as ClusterList[number])
 }
 
 const setSelectedCluster = async (cluster: Cluster) => {
   if (selectedCluster.value?.label === cluster.label) {
-    selectedCluster.value = {}
+    selectedCluster.value = undefined
     return
   }
   selectedCluster.value = cluster
@@ -48,18 +49,18 @@ const setSelectedCluster = async (cluster: Cluster) => {
 
 const getClusterAssociatedEnvironments = async (clusterId: string) => {
   isUpdatingCluster.value = true
-  associatedEnvironments.value = await adminClusterStore.getClusterAssociatedEnvironments(clusterId)
+  associatedEnvironments.value = await adminClusterStore.getClusterAssociatedEnvironments(clusterId) ?? []
   isUpdatingCluster.value = false
 }
 
 const showNewClusterForm = () => {
   isNewClusterForm.value = !isNewClusterForm.value
-  selectedCluster.value = {}
+  selectedCluster.value = undefined
 }
 
 const cancel = () => {
   isNewClusterForm.value = false
-  selectedCluster.value = {}
+  selectedCluster.value = undefined
 }
 
 const addCluster = async (cluster: CreateClusterBody) => {
@@ -83,7 +84,7 @@ const deleteCluster = async (clusterId: Cluster['id']) => {
   await adminClusterStore.deleteCluster(clusterId)
   await adminClusterStore.getClusters()
   setClusterTiles(clusters.value)
-  selectedCluster.value = {}
+  selectedCluster.value = undefined
   isUpdatingCluster.value = false
 }
 
@@ -106,7 +107,7 @@ watch(clusters, () => {
     class="flex <md:flex-col-reverse items-center justify-between pb-5"
   >
     <DsfrButton
-      v-if="!Object.keys(selectedCluster).length && !isNewClusterForm"
+      v-if="!selectedCluster && !isNewClusterForm"
       label="Ajouter un nouveau cluster"
       data-testid="addClusterLink"
       tertiary
@@ -156,7 +157,7 @@ watch(clusters, () => {
       class="fr-mt-2v fr-mb-4w w-full"
     >
       <div
-        v-show="!Object.keys(selectedCluster).length"
+        v-show="!selectedCluster"
       >
         <DsfrTile
           :title="cluster.title"
@@ -167,7 +168,7 @@ watch(clusters, () => {
         />
       </div>
       <ClusterForm
-        v-if="Object.keys(selectedCluster).length && selectedCluster.id === cluster.id"
+        v-if="selectedCluster && selectedCluster.id === cluster.id"
         :cluster="selectedCluster"
         :all-zones="allZones"
         :all-projects="allProjects"

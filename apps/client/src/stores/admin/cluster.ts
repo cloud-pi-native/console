@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { Cluster, CreateClusterBody, UpdateClusterBody } from '@cpn-console/shared'
+import type { Cluster, CreateClusterBody, UpdateClusterBody, CleanedCluster } from '@cpn-console/shared'
 import api from '@/api/index.js'
 
 export const useAdminClusterStore = defineStore('admin-cluster', () => {
-  const clusters = ref<Cluster[]>([])
+  const clusters = ref<Array<Cluster | CleanedCluster>>()
 
   const getClusters = async () => {
     clusters.value = await api.getClusters()
@@ -31,10 +31,10 @@ export const useAdminClusterStore = defineStore('admin-cluster', () => {
   }
 
   const getClusterById = async (clusterId: Required<Cluster['id']>) => {
-    const cluster = clusters.value.find(cluster => cluster?.id === clusterId)
+    const cluster = clusters.value?.find(cluster => cluster?.id === clusterId)
     if (!cluster) {
       await getClusters()
-      return clusters.value.find(cluster => cluster?.id === clusterId)
+      return clusters.value?.find(cluster => cluster?.id === clusterId)
     }
     return cluster
   }

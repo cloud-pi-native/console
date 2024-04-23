@@ -4,7 +4,7 @@ import { setRequestor } from '../../../utils/mocks.js'
 import app from '../../../app.js'
 import { getConnection, closeConnections } from '../../../connect.js'
 import { adminGroupPath } from '@cpn-console/shared'
-import { getRandomProject, getRandomUser, repeatFn } from '@cpn-console/test-utils'
+import { createRandomDbSetup, getRandomCluster, getRandomProject, getRandomUser, repeatFn } from '@cpn-console/test-utils'
 import { json2csv } from 'json-2-csv'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../../utils/mocks.js')).mockSessionPlugin)
@@ -32,9 +32,12 @@ describe('Admin project routes', () => {
   // GET
   describe('getAllProjectsController', () => {
     it('Should retrieve all projects', async () => {
-      const projects = repeatFn(2)(getRandomProject)
+      const randomDbSetup = createRandomDbSetup({})
+      const projects = [randomDbSetup.project]
+      const clusters = [getRandomCluster({ privacy: 'public' })]
 
       prisma.project.findMany.mockResolvedValue(projects)
+      prisma.cluster.findMany.mockResolvedValue(clusters)
 
       const response = await app.inject()
         .get('/api/v1/admin/projects')

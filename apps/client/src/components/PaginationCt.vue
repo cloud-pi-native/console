@@ -1,23 +1,16 @@
 <script lang="ts" setup>
 import { computed } from 'vue'
 
-const props = defineProps({
-  length: {
-    type: Number,
-    default: 0,
-  },
-  step: {
-    type: Number,
-    default: 10,
-  },
-  page: {
-    type: Number,
-    default: 0,
-  },
-  isUpdating: {
-    type: Boolean,
-    default: false,
-  },
+const props = withDefaults(defineProps<{
+  length: number,
+  step: number,
+  page: number,
+  isUpdating: boolean,
+}>(), {
+  length: 0,
+  step: 10,
+  page: 0,
+  isUpdating: false,
 })
 
 const maxPage = computed(() => Math.floor(props.length / props.step))

@@ -1,6 +1,5 @@
 import { z } from 'zod'
 import { ErrorSchema } from './utils.js'
-import { EnvironmentSchema } from './environment.js'
 import { StageSchema } from './stage.js'
 
 export const QuotaSchema = z.object({
@@ -14,6 +13,26 @@ export const QuotaSchema = z.object({
     .positive(),
   isPrivate: z.boolean(),
   stageIds: z.string().uuid().array().optional(),
+  quotaStage: z.array(z.object({
+    id: z.string()
+      .uuid(),
+    quotaId: z.string()
+      .uuid(),
+    stageId: z.string()
+      .uuid(),
+    status: z.string(),
+    stage: z.object({
+      id: z.string()
+        .uuid(),
+      name: z.string()
+        .regex(/^[a-zA-Z0-9]+$/)
+        .min(2, { message: 'must be at least 2 character long' })
+        .max(20, { message: 'must not exceed 20 characters' }),
+      quotaIds: z.string().uuid().array().optional(),
+      clusterIds: z.string().uuid().array().optional(),
+    })
+      .optional(),
+  })).optional(),
 })
 
 export const QuotaStageSchema = z.object({
@@ -57,7 +76,14 @@ export const GetQuotaEnvironmentsSchema = {
       .uuid(),
   }),
   responses: {
-    200: z.array(EnvironmentSchema),
+    200: z.array(z.object({
+      organization: z.string(),
+      project: z.string(),
+      name: z.string(),
+      stage: z.string()
+        .optional(),
+      owner: z.string(),
+    })),
     500: ErrorSchema,
   },
 }

@@ -1,16 +1,12 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 
-const props = defineProps({
-  modelValue: {
-    type: String,
-    default: '',
-  },
-  suggestions: {
-    type: Array,
-    required: true,
-    default: () => [],
-  },
+const props = withDefaults(defineProps<{
+  modelValue: string,
+  suggestions: unknown[],
+}>(), {
+  modelValue: '',
+  suggestions: () => [],
 })
 
 const localValue = ref(props.modelValue)

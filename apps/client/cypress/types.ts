@@ -1,6 +1,6 @@
-import type { ProjectInfos, Repo } from '@cpn-console/shared'
+import type { Project as ProjectType, Repo } from '@cpn-console/shared'
 
-export type Project = Partial<Pick<ProjectInfos, 'name' | 'id' | 'description' | 'locked' | 'organization'>>
+export type Project = Partial<Pick<ProjectType, 'name' | 'id' | 'description' | 'locked' | 'organization'>>
 
 export type Repository = Partial<Repo>
 

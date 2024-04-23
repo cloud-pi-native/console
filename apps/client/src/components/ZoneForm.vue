@@ -1,29 +1,24 @@
 <script lang="ts" setup>
 import { computed, onBeforeMount, ref } from 'vue'
-import { ZoneSchema, SharedZodError, instanciateSchema } from '@cpn-console/shared'
+import { ZoneSchema, SharedZodError, type CreateZoneBody, type UpdateZoneBody, type Zone, type Quota, type Cluster } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
-const props = defineProps({
-  isNewZone: {
-    type: Boolean,
-    default: false,
-  },
-  zone: {
-    type: Object,
-    default: () => ({ ...instanciateSchema(ZoneSchema, undefined) }),
-  },
-  allClusters: {
-    type: Array,
-    default: () => [],
-  },
-  associatedClusters: {
-    type: Array,
-    default: () => [],
-  },
+const props = withDefaults(defineProps<{
+  isNewZone: boolean,
+  zone: Partial<Zone>,
+  allQuotas: Quota[],
+  allClusters: Cluster[],
+  associatedClusters: unknown[]
+}>(), {
+  isNewZone: false,
+  zone: () => ({}),
+  allQuotas: () => [],
+  allClusters: () => [],
+  associatedClusters: () => [],
 })
 
 const localZone = ref(props.zone)
-const clusterLabels = ref([])
+const clusterLabels = ref<string[]>([])
 const isDeletingZone = ref(false)
 const zoneToDelete = ref('')
 
@@ -47,10 +42,10 @@ const updateClusters = (key: string, value: any) => {
 }
 
 const emit = defineEmits<{
-  add: [value: typeof localZone.value]
-  update: [value: Partial<typeof localZone.value>]
+  add: [value: CreateZoneBody]
+  update: [value: UpdateZoneBody & { zoneId: Zone['id'] }]
   cancel: []
-  delete: [value: typeof localZone.value.id]
+  delete: [value: Zone['id']]
 }>()
 
 const addZone = () => {
