@@ -232,6 +232,7 @@ const misc = {
   fetchOrganizations: async () => resultsFetch,
   retrieveUserByEmail: async (_email: string) => resultsBase,
   checkServices: async () => resultsBase,
+  syncRepository: async () => resultsBase,
 }
 
 const project = {
@@ -259,7 +260,7 @@ const cluster = {
 
 export const mockHookWrapper = () => ({
   hook: {
-    misc: genericProxy(misc, { checkServices: [], fetchOrganizations: [], retrieveUserByEmail: [] }),
+    misc: genericProxy(misc, { checkServices: [], fetchOrganizations: [], retrieveUserByEmail: [], syncRepository: [] }),
     project: genericProxy(project, { delete: ['upsert'], upsert: ['delete'], getSecrets: ['delete'] }),
     cluster: genericProxy(cluster, { delete: ['upsert'], upsert: ['delete'] }),
   },

@@ -23,6 +23,10 @@ const isOwner = computed(() => project.value?.roles?.some(role => role.userId ==
 const repos = ref<RepoTile[]>([])
 const selectedRepo = ref<Repo>()
 const isNewRepoForm = ref(false)
+const branchName = ref<string>('main')
+
+const repoFormId = 'repoFormId'
+const syncFormId = 'syncFormId'
 
 const setReposTiles = (project: Project) => {
   // @ts-ignore
@@ -73,6 +77,15 @@ const deleteRepo = async (repoId: Repo['id']) => {
   setReposTiles(project.value)
   selectedRepo.value = undefined
   snackbarStore.isWaitingForResponse = false
+}
+
+const syncRepository = async () => {
+  if (!selectedRepo.value) return
+  if (!branchName.value) branchName.value = 'main'
+  snackbarStore.isWaitingForResponse = true
+  projectRepositoryStore.syncRepository(selectedRepo.value.id, branchName.value)
+  snackbarStore.isWaitingForResponse = false
+  snackbarStore.setMessage(`Dépôt ${selectedRepo.value.internalRepoName} synchronisé`, 'success')
 }
 
 onMounted(() => {
@@ -149,15 +162,57 @@ watch(project, () => {
           @click="setSelectedRepo(repo.data)"
         />
       </div>
-      <RepoForm
+      <div
         v-if="selectedRepo?.internalRepoName === repo.id"
-        :is-project-locked="project?.locked"
-        :is-owner="isOwner"
-        :repo="selectedRepo"
-        @save="(repo) => saveRepo(repo)"
-        @delete="(repoId) => deleteRepo(repoId)"
-        @cancel="cancel()"
-      />
+      >
+        <DsfrNavigation
+          class="fr-mb-4w"
+          :nav-items="[
+            {
+              to: `#${syncFormId}`,
+              text: '#Synchroniser le dépôt'
+            },
+            {
+              to: `#${repoFormId}`,
+              text: '#Modifier le dépôt'
+            },
+          ]"
+        />
+        <div
+          :id="syncFormId"
+          class="flex flex-col gap-4 fr-mb-4w"
+        >
+          <h2
+            class="fr-h2 fr-mt-2w"
+          >
+            Synchroniser le dépôt {{ selectedRepo?.internalRepoName }}
+          </h2>
+          <DsfrInput
+            v-model="branchName"
+            data-testid="branchNameInput"
+            label="Branche cible"
+            label-visible
+            required
+            placeholder="main"
+          />
+          <DsfrButton
+            data-testid="syncRepoBtn"
+            label="Lancer la synchronisation"
+            secondary
+            :disabled="!branchName"
+            @click="syncRepository()"
+          />
+        </div>
+        <RepoForm
+          :id="repoFormId"
+          :is-project-locked="project?.locked"
+          :is-owner="isOwner"
+          :repo="selectedRepo"
+          @save="(repo) => saveRepo(repo)"
+          @delete="(repoId) => deleteRepo(repoId)"
+          @cancel="cancel()"
+        />
+      </div>
     </div>
     <div
       v-if="!repos.length && !isNewRepoForm"

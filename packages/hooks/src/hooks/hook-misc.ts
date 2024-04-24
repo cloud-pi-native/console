@@ -1,4 +1,4 @@
-import { Project } from './hook-project.js'
+import { Project, Repository } from './hook-project.js'
 import { Hook, createHook } from './hook.js'
 import { UserObject } from './index.js'
 
@@ -14,3 +14,6 @@ export const retrieveUserByEmail: Hook<UserLite, UserLite> = createHook()
 export type ProjectLite = Pick<Project, 'id' | 'name' | 'organization'>
 
 export const getProjectSecrets: Hook<ProjectLite, ProjectLite> = createHook()
+
+export type UniqueRepo = ProjectLite & { repo: Omit<Repository, 'newCreds'> & { branchName: string } }
+export const syncRepository: Hook<UniqueRepo, UniqueRepo> = createHook()

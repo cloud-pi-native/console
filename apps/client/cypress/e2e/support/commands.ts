@@ -116,7 +116,7 @@ Cypress.Commands.add('addRepos', (project, repos) => {
 
   newRepos.forEach((repo) => {
     cy.getByDataTestid('addRepoLink').click()
-      .get('h1').should('contain', 'Ajouter un dépôt au projet')
+      .get('h2').should('contain', 'Ajouter un dépôt au projet')
       .getByDataTestid('internalRepoNameInput').find('input').type(repo.internalRepoName)
       .getByDataTestid('externalRepoUrlInput').find('input').clear().type(repo.externalRepoUrl)
 

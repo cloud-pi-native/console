@@ -93,6 +93,23 @@ export const UpdateRepoSchema = {
   },
 }
 
+export const SyncRepoSchema = {
+  params: z.object({
+    projectId: z.string()
+      .uuid(),
+    repositoryId: z.string()
+      .uuid(),
+    branchName: z.string(),
+  }),
+  responses: {
+    204: null,
+    400: ErrorSchema,
+    401: ErrorSchema,
+    403: ErrorSchema,
+    500: ErrorSchema,
+  },
+}
+
 export const DeleteRepoSchema = {
   params: z.object({
     projectId: z.string()

@@ -59,11 +59,11 @@ const cancel = () => {
     data-testid="repo-form"
     class="relative"
   >
-    <h1
-      class="fr-h1 fr-mt-2w"
+    <h2
+      class="fr-h2 fr-mt-2w"
     >
-      {{ localRepo.id ? 'Modifier le dépôt' : 'Ajouter un dépôt au projet' }}
-    </h1>
+      {{ localRepo.id ? `Modifier le dépôt ${localRepo.internalRepoName}` : 'Ajouter un dépôt au projet' }}
+    </h2>
     <DsfrFieldset
       legend="Informations du dépôt"
       hint="Les champs munis d\'une astérisque (*) sont requis"
