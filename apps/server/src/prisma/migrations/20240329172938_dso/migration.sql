@@ -33,7 +33,7 @@ UPDATE "Cluster"
 SET "zoneId"
 = 'a66c4230-eba6-41f1-aae5-bb1e4f90cce0'
 WHERE "zoneId"
-= null;
+IS NULL;
 
 -- AlterTable
 ALTER TABLE "Cluster" ALTER COLUMN "zoneId"
