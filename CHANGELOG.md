@@ -1,5 +1,23 @@
 # Changelog
 
+## [8.1.0](https://github.com/cloud-pi-native/console/compare/v8.0.3...v8.1.0) (2024-04-24)
+
+
+### Features
+
+* :safety_vest: allow unlogged users to access services health ([e2fc942](https://github.com/cloud-pi-native/console/commit/e2fc9423b107f1afd9fdbe1b017b7dd1f3d2eab1))
+* :safety_vest: check existing zone slug before creating one ([072fffb](https://github.com/cloud-pi-native/console/commit/072fffbd1d4788329fb76b927242854feb25d31b))
+* :sparkles: add zones ([53d155f](https://github.com/cloud-pi-native/console/commit/53d155f244a846e0cf23d3cf75528e6d937fe0ce))
+* :sparkles: allow repo sync from console ui ([1cd1c93](https://github.com/cloud-pi-native/console/commit/1cd1c93a9e1d95663e51f4de24a5b518fa2bee1a))
+* :sparkles: display project services in admin view ([a5d53fd](https://github.com/cloud-pi-native/console/commit/a5d53fd586dd912b13b72196ed99c2354c022448))
+
+
+### Bug Fixes
+
+* :bug: app version in client footer ([ac2f26e](https://github.com/cloud-pi-native/console/commit/ac2f26e88ca3fa593668d4f9641465b09855c663))
+* :bug: get only client app version from env on production build ([3bb3017](https://github.com/cloud-pi-native/console/commit/3bb3017f968e8e93b955b33cb494d51ecce5521a))
+* :bug: handle stage and zone changes in environment form ([5aa0a58](https://github.com/cloud-pi-native/console/commit/5aa0a585e9903e0a29f7bec29e4a08090109542b))
+
 ## [8.0.3](https://github.com/cloud-pi-native/console/compare/v8.0.2...v8.0.3) (2024-04-16)
 
 
