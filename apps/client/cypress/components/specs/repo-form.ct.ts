@@ -71,7 +71,7 @@ describe('RepoForm.vue', () => {
     cy.getByDataTestid('gitlabCIAccordion').click()
     cy.get('select#type-language-select').should('be.visible')
       .select('node')
-    cy.getByDataTestid('nodeVersionInput').type('20.11.0')
+    cy.getByDataTestid('nodeVersionInput').type('20.12.2')
     cy.getByDataTestid('nodeInstallInput').type('npm install')
     cy.getByDataTestid('nodeBuildInput').type('npm build')
     cy.getByDataTestid('workingDirInput').type('./')
@@ -115,7 +115,7 @@ describe('RepoForm.vue', () => {
 
     cy.mount(RepoForm, { props })
 
-    cy.get('h1').should('contain', 'Modifier le dépôt')
+    cy.get('h2').should('contain', 'Modifier le dépôt')
     cy.getByDataTestid('repoFieldset').should('have.length', 1)
     cy.getByDataTestid('internalRepoNameInput').find('input').should('have.value', props.repo.internalRepoName)
       .and('be.disabled')

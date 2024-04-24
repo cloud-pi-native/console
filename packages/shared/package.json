@@ -20,32 +20,22 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "json-schema-to-ts": "^3.0.0",
-    "@ts-rest/core": "3.33.0",
-    "zod": "^3.22.4",
-    "zod-validation-error": "^3.0.2"
+    "@ts-rest/core": "^3.44.1",
+    "zod": "^3.23.0",
+    "zod-validation-error": "^3.1.0"
   },
   "devDependencies": {
     "@cpn-console/eslint-config": "workspace:^",
     "@cpn-console/ts-config": "workspace:^",
-    "@faker-js/faker": "^8.4.0",
+    "@faker-js/faker": "^8.4.1",
     "@kubernetes/client-node": "^0.20.0",
-    "@types/node": "^20.11.16",
-    "@typescript-eslint/eslint-plugin": "^6.20.0",
-    "@typescript-eslint/parser": "^6.20.0",
-    "@vitest/coverage-v8": "^1.2.2",
-    "eslint": "^8.56.0",
-    "eslint-config-standard": "^17.1.0",
-    "eslint-plugin-import": "^2.29.1",
-    "eslint-plugin-n": "^16.6.2",
-    "eslint-plugin-promise": "^6.1.1",
-    "nodemon": "^3.0.3",
-    "npm-run-all": "^4.1.5",
+    "@types/node": "^20.12.7",
+    "@vitest/coverage-v8": "^1.5.0",
+    "nodemon": "^3.1.0",
     "rimraf": "^5.0.5",
-    "typescript": "^5.3.3",
-    "typescript-transform-paths": "^3.4.6",
-    "vite": "^5.0.12",
-    "vitest": "^1.2.2"
+    "typescript": "^5.4.5",
+    "vite": "^5.2.10",
+    "vitest": "^1.5.0"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",

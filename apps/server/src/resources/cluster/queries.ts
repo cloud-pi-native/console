@@ -76,6 +76,12 @@ export const getHookPublicClusters = async () => await prisma.cluster.findMany({
     secretName: true,
     kubeconfig: true,
     clusterResources: true,
+    zone: {
+      select: {
+        id: true,
+        slug: true,
+      },
+    },
   },
 })
 
@@ -116,6 +122,7 @@ export const getClustersWithProjectIdAndConfig = () => prisma.cluster.findMany({
     privacy: true,
     secretName: true,
     kubeconfig: true,
+    zoneId: true,
   },
 })
 
@@ -140,12 +147,18 @@ export const getStagesByClusterId = async (id: Cluster['id']) => (await prisma.c
 export const createCluster = (
   data: Omit<Cluster, 'id' | 'updatedAt' | 'createdAt' | 'kubeConfigId' | 'secretName'>,
   kubeconfig: Pick<Kubeconfig, 'user' | 'cluster'>,
+  zoneId: string,
 ) => prisma.cluster.create({
   data: {
     ...data,
     kubeconfig: {
       // @ts-ignore
       create: kubeconfig,
+    },
+    zone: {
+      connect: {
+        id: zoneId,
+      },
     },
   },
 })

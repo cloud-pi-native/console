@@ -1,8 +1,8 @@
-import { PluginApi, Project, RepoCreds } from '@cpn-console/hooks'
+import { PluginApi, type Project, type RepoCreds, type UniqueRepo } from '@cpn-console/hooks'
 import { getApi, getConfig, infraAppsRepoName, internalMirrorRepoName } from './utils.js'
 import { AccessTokenScopes, GroupSchema, GroupStatisticsSchema, MemberSchema, ProjectVariableSchema, VariableSchema } from '@gitbeaker/rest'
 import { getOrganizationId } from './group.js'
-import { AccessLevel, Gitlab } from '@gitbeaker/core'
+import { AccessLevel, CondensedProjectSchema, Gitlab } from '@gitbeaker/core'
 import { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
 
 type setVariableResult = 'created' | 'updated' | 'already up-to-date'
@@ -13,14 +13,19 @@ type GitlabMirrorSecret = {
   MIRROR_TOKEN: string,
 }
 
+type RepoSelect = {
+  mirror?: CondensedProjectSchema
+  target?: CondensedProjectSchema
+}
+
 export class GitlabProjectApi extends PluginApi {
   private api: Gitlab<false>
-  private project: Project
+  private project: Project | UniqueRepo
   private gitlabGroup: GroupSchema & { statistics: GroupStatisticsSchema } | undefined
   private specialRepositories: string[] = [infraAppsRepoName, internalMirrorRepoName]
   // private organizationGroup: GroupSchema & { statistics: GroupStatisticsSchema } | undefined
 
-  constructor (project: Project) {
+  constructor (project: Project | UniqueRepo) {
     super()
     this.project = project
     this.api = getApi()
@@ -39,7 +44,6 @@ export class GitlabProjectApi extends PluginApi {
       projectCreationLevel: 'maintainer',
       subgroupCreationLevel: 'owner',
       defaultBranchProtection: 0,
-      description: this.project.description ?? '',
     })
   }
 
@@ -200,9 +204,9 @@ export class GitlabProjectApi extends PluginApi {
     } else {
       if (
         currentVariable.masked !== toSetVariable.masked ||
-      currentVariable.value !== toSetVariable.value ||
-      currentVariable.protected !== toSetVariable.protected ||
-      currentVariable.variable_type !== toSetVariable.variable_type
+        currentVariable.value !== toSetVariable.value ||
+        currentVariable.protected !== toSetVariable.protected ||
+        currentVariable.variable_type !== toSetVariable.variable_type
       ) {
         await this.api.GroupVariables.edit(
           group.id,
@@ -231,9 +235,9 @@ export class GitlabProjectApi extends PluginApi {
     if (currentVariable) {
       if (
         currentVariable.masked !== toSetVariable.masked ||
-      currentVariable.value !== toSetVariable.value ||
-      currentVariable.protected !== toSetVariable.protected ||
-      currentVariable.variable_type !== toSetVariable.variable_type
+        currentVariable.value !== toSetVariable.value ||
+        currentVariable.protected !== toSetVariable.protected ||
+        currentVariable.variable_type !== toSetVariable.variable_type
       ) {
         await this.api.ProjectVariables.edit(
           repository.id,
@@ -262,5 +266,34 @@ export class GitlabProjectApi extends PluginApi {
         })
       return 'created'
     }
+  }
+
+  // Mirror
+  public async triggerMirror (targetRepo: string, branchName: string) {
+    if ((await this.getSpecialRepositories()).includes(targetRepo)) throw new Error('User requested for invalid mirroring')
+    const repos = await this.listRepositories()
+    const { mirror, target }: RepoSelect = repos.reduce((acc, repository) => {
+      if (repository.name === 'mirror') {
+        acc.mirror = repository
+      }
+      if (repository.name === targetRepo) {
+        acc.target = repository
+      }
+      return acc
+    }, {} as RepoSelect)
+    if (!mirror) throw new Error('Unable to find mirror repository')
+    if (!target) throw new Error('Unable to find target repository')
+    return this.api.Pipelines.create(mirror.id, 'main', {
+      variables: [
+        {
+          key: 'GIT_BRANCH_DEPLOY',
+          value: branchName,
+        },
+        {
+          key: 'PROJECT_NAME',
+          value: targetRepo,
+        },
+      ],
+    })
   }
 }

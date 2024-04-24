@@ -29,7 +29,7 @@ const serverPort = process.env.SERVER_PORT ?? 4000
 const clientPort = process.env.CLIENT_PORT ?? 8080
 
 const define = process.env.NODE_ENV === 'production'
-  ? {}
+  ? { 'process.env': { APP_VERSION: process.env.APP_VERSION } }
   : { 'process.env': process.env }
 
 // https://vitejs.dev/config/

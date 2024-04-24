@@ -28,7 +28,7 @@ describe('Add repos into project', () => {
     cy.url().should('contain', '/repositories')
 
     cy.getByDataTestid('addRepoLink').click({ timeout: 30_000 })
-    cy.get('h1').should('contain', 'Ajouter un dépôt au projet')
+    cy.get('h2').should('contain', 'Ajouter un dépôt au projet')
     cy.getByDataTestid('addRepoBtn').should('be.disabled')
     cy.getByDataTestid('internalRepoNameInput').find('input').clear().type(repo.internalRepoName)
     cy.getByDataTestid('addRepoBtn').should('be.disabled')
@@ -139,7 +139,7 @@ describe('Add repos into project', () => {
     cy.wait('@getProjects').its('response').then(response => {
       repos = response?.body.find(resProject => resProject.name === project.name).repositories
       cy.getByDataTestid(`repoTile-${repos[0].internalRepoName}`).click()
-        .get('h1').should('contain', 'Modifier le dépôt')
+        .get('h2').should('contain', 'Modifier le dépôt')
         .getByDataTestid('internalRepoNameInput').should('be.disabled')
         .getByDataTestid('externalRepoUrlInput').find('input').clear().type('https://github.com/externalUser04/new-repo.git')
 
@@ -159,6 +159,57 @@ describe('Add repos into project', () => {
         .getByDataTestid('privateRepoCbx').find('input[type="checkbox"]').should('be.checked')
         .getByDataTestid('externalUserNameInput').find('input').should('have.value', 'newUser')
         .getByDataTestid('externalTokenInput').find('input').should('have.value', '')
+    })
+  })
+
+  it('Should synchronise a repo', () => {
+    cy.intercept('GET', '/api/v1/projects').as('getProjects')
+    cy.intercept('GET', '/api/v1/projects/*/repositories/*/sync/*').as('syncRepo')
+    let repos
+
+    cy.goToProjects()
+      .getByDataTestid(`projectTile-${project.name}`).click()
+      .getByDataTestid('menuRepos').click()
+      .url().should('contain', '/repositories')
+
+    cy.wait('@getProjects').its('response').then(response => {
+      repos = response?.body.find(resProject => resProject.name === project.name).repositories
+
+      cy.getByDataTestid(`repoTile-${repos[0].internalRepoName}`)
+        .click()
+
+      cy.get('h2').should('contain', 'Synchroniser le dépôt')
+      cy.getByDataTestid('branchNameInput')
+        .should('have.value', 'main')
+
+      cy.getByDataTestid('syncRepoBtn')
+        .should('be.enabled')
+        .click()
+
+      cy.wait('@syncRepo').its('response.statusCode').should('match', /^20\d$/)
+
+      cy.getByDataTestid('snackbar').within(() => {
+        cy.get('p').should('contain', `Dépôt ${repos[0].internalRepoName} synchronisé`)
+      })
+
+      cy.getByDataTestid('branchNameInput')
+        .clear()
+
+      cy.getByDataTestid('syncRepoBtn')
+        .should('be.disabled')
+
+      cy.getByDataTestid('branchNameInput')
+        .type('develop')
+
+      cy.getByDataTestid('syncRepoBtn')
+        .should('be.enabled')
+        .click()
+
+      cy.wait('@syncRepo').its('response.statusCode').should('match', /^20\d$/)
+
+      cy.getByDataTestid('snackbar').within(() => {
+        cy.get('p').should('contain', `Dépôt ${repos[0].internalRepoName} synchronisé`)
+      })
     })
   })
 

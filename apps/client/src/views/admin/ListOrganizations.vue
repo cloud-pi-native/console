@@ -1,23 +1,24 @@
 <script lang="ts" setup>
 import { computed, onBeforeMount, ref } from 'vue'
-import { useAdminOrganizationStore } from '@/stores/admin/organization.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
 import {
   formatDate,
   OrganizationSchema,
   sortArrByObjKeyAsc,
   SharedZodError,
   parseZodError,
-  instanciateSchema,
+  type CreateOrganizationBody,
+  type Organization,
 } from '@cpn-console/shared'
+import { useAdminOrganizationStore } from '@/stores/admin/organization.js'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 import { getRandomId } from '@gouvminint/vue-dsfr'
 
 const adminOrganizationStore = useAdminOrganizationStore()
 
 const snackbarStore = useSnackbarStore()
 
-const allOrganizations = ref([])
-const newOrg = ref(instanciateSchema(OrganizationSchema, undefined))
+const allOrganizations = ref<Organization[]>([])
+const newOrg = ref<CreateOrganizationBody>({ name: '', label: '', source: '' })
 const tableKey = ref(getRandomId('table'))
 
 const title = 'Liste des organisations'
@@ -34,7 +35,7 @@ const rows = ref([])
 const isSyncingOrganizations = ref(false)
 const isUpdatingOrganization = ref<null | { name: string, key: string, data: unknown }>(null)
 
-const isOrgAlreadyTaken = computed(() => allOrganizations.value.find(org => org.name === newOrg.value.name))
+const isOrgAlreadyTaken = computed(() => !!allOrganizations.value.find(org => org.name === newOrg.value.name))
 
 const errorSchema = computed<SharedZodError | undefined>(() => {
   const schemaValidation = OrganizationSchema.pick({ label: true, name: true }).safeParse(newOrg.value)
@@ -111,7 +112,7 @@ const createOrganization = async () => {
   snackbarStore.setMessage(`Organisation ${newOrg.value.name} créée`, 'success')
   await getAllOrganizations()
 
-  newOrg.value = instanciateSchema(OrganizationSchema, undefined)
+  newOrg.value = { name: '', label: '', source: '' }
 }
 
 const preUpdateOrganization = ({ name, key, data }: {name: string, key: string, data: unknown }) => {
@@ -159,7 +160,7 @@ const updateOrganization = async ({ name, key, data }: {name: string, key: strin
 
 onBeforeMount(async () => {
   await getAllOrganizations()
-  newOrg.value = instanciateSchema(OrganizationSchema, undefined)
+  newOrg.value = { name: '', label: '', source: '' }
 })
 </script>
 
@@ -233,7 +234,7 @@ onBeforeMount(async () => {
         data-testid="orgNameInput"
         type="text"
         label="Nom de l'organisation"
-        hint="Ce nom sera utilisé pour construire le namespace du projet. Il doit être en minuscule et ne pas faire plus de 10 caractères ni contenir de caractères spéciaux hormis le trait d'union '-'."
+        hint="Ce nom sera utilisé pour construire le namespace du projet. Il doit être en minuscule et ne pas faire plus de 10 caractères ni contenir de caractères spéciaux."
         label-visible
         placeholder="min-eco"
         :is-invalid="(!!newOrg.name && !OrganizationSchema.pick({name: true}).safeParse({name: newOrg.name}).success) || isOrgAlreadyTaken"

@@ -3,9 +3,9 @@ import { setActivePinia, createPinia } from 'pinia'
 import { apiClient } from '../api/xhr-client.js'
 import { useOrganizationStore } from './organization.js'
 
-const apiClientGet = vi.spyOn(apiClient, 'get')
+const apiClientGet = vi.spyOn(apiClient.Organizations, 'getOrganizations')
 
-describe('Counter Store', () => {
+describe('Organization Store', () => {
   beforeEach(() => {
     vi.resetAllMocks()
     // creates a fresh pinia and make it active so it's automatically picked
@@ -15,15 +15,14 @@ describe('Counter Store', () => {
 
   it('Should get organization list by api call', async () => {
     const data = [{ id: 'thisIsAnId', label: 'label', name: 'name' }]
-    apiClientGet.mockReturnValueOnce(Promise.resolve({ data }))
+    apiClientGet.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
     const ciFilesStore = useOrganizationStore()
 
-    expect(ciFilesStore.organizations).toEqual([])
+    expect(ciFilesStore.organizations).toEqual(undefined)
 
     await ciFilesStore.setOrganizations()
 
     expect(apiClientGet).toHaveBeenCalledTimes(1)
-    expect(apiClientGet.mock.calls[0][0]).toBe('/organizations')
     expect(ciFilesStore.organizations).toEqual(data)
   })
 })

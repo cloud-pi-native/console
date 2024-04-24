@@ -2,7 +2,7 @@ import type { Cluster, Project } from '@prisma/client'
 import type { ClusterObject, KubeCluster, KubeUser, PluginResult, Project as ProjectPayload, RepoCreds, Repository } from '@cpn-console/hooks'
 import { hooks } from '@cpn-console/hooks'
 import { AsyncReturnType } from '@cpn-console/shared'
-import { archiveProject, getClusterByIdOrThrow, getHookProjectInfos, getHookPublicClusters, updateProjectCreated, updateProjectFailed, updateProjectServices } from '@/resources/queries-index.js'
+import { archiveProject, getClusterByIdOrThrow, getHookProjectInfos, getHookPublicClusters, getHookRepository, updateProjectCreated, updateProjectFailed, updateProjectServices } from '@/resources/queries-index.js'
 import { genericProxy } from './proxy.js'
 
 type ReposCreds = Record<Repository['internalRepoName'], RepoCreds>
@@ -74,9 +74,17 @@ const cluster = {
 }
 
 const misc = {
-  fetchOrganizations: () => hooks.fetchOrganizations.execute({}),
-  retrieveUserByEmail: (email: string) => hooks.retrieveUserByEmail.execute({ email }),
-  checkServices: () => hooks.checkServices.execute({}),
+  fetchOrganizations: async () => hooks.fetchOrganizations.execute({}),
+  retrieveUserByEmail: async (email: string) => hooks.retrieveUserByEmail.execute({ email }),
+  checkServices: async () => hooks.checkServices.execute({}),
+  syncRepository: async (repoId: string, { branchName }: {branchName: string}) => {
+    const { project, ...repoInfos } = await getHookRepository(repoId)
+    const payload = {
+      repo: { ...repoInfos, branchName },
+      ...project,
+    }
+    return hooks.syncRepository.execute(payload)
+  },
 }
 
 export const hook = {

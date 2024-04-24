@@ -47,3 +47,18 @@ body:
       placeholder: Une description technique de la fonctionnalité.
     validations:
       required: false
+
+  - type: checkboxes
+    id: dod
+    attributes:
+      label: "Définition du fini"
+      description: Cochez les différents élément de la Definition Of Done.
+      options:
+        - label: La fonctionnalité est terminée
+          required: false
+        - label: Les tests liés à cette fonctionnalité ont été ajoutés
+          required: false
+        - label: La documentation liée à cette fonctionnalité a été ajoutée (cf. https://github.com/cloud-pi-native/documentation)
+          required: false
+        - label: La communication avec les autres équipes impliquées par cette fonctionnalité a été faite
+          required: false

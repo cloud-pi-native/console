@@ -26,6 +26,19 @@ export const initializeRepository = async ({ projectId, internalRepoName, extern
   })
 }
 
+export const getHookRepository = (id: Repository['id']) => prisma.repository.findUniqueOrThrow({
+  where: {
+    id,
+  },
+  include: {
+    project: {
+      include: {
+        organization: true,
+      },
+    },
+  },
+})
+
 // UPDATE
 export const updateRepository = async (id: Repository['id'], infos: Partial<Repository>) => {
   return prisma.repository.update({ where: { id }, data: { ...infos } })

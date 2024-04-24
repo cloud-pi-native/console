@@ -1,3 +1,4 @@
+import { ClientInferRequest, ClientInferResponseBody } from '@ts-rest/core'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   CreateStageSchema,
@@ -57,3 +58,9 @@ export const stageAdminContract = contractInstance.router({
     responses: DeleteStageSchema.responses,
   },
 })
+
+export type CreateStageBody = ClientInferRequest<typeof stageAdminContract.createStage>['body']
+
+export type UpdateStageClustersBody = ClientInferRequest<typeof stageAdminContract.updateStageClusters>['body']
+
+export type StageAssociatedEnvironments = ClientInferResponseBody<typeof stageAdminContract.getStageEnvironments, 200>

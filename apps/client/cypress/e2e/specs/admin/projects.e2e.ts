@@ -1,16 +1,16 @@
-import { statusDict, formatDate, sortArrByObjKeyAsc, OrganizationModel, ProjectModel } from '@cpn-console/shared'
+import { statusDict, formatDate, sortArrByObjKeyAsc, type Organization, type Project } from '@cpn-console/shared'
 import { getModel, getModelById } from '../../support/func.js'
 
-function checkTableRowsLength (length) {
+function checkTableRowsLength (length: number) {
   if (!length) cy.get('tr:last-child>td:first-child').should('have.text', 'Aucun projet trouvé')
   else cy.get('tr').should('have.length', length)
 }
 describe('Administration projects', () => {
   const admin = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6566')
-  const organizations = getModel('organization') as OrganizationModel[]
+  const organizations = getModel('organization') as Organization[]
   let projects: unknown[]
 
-  const mapProjects = (body: ProjectModel[]) => {
+  const mapProjects = (body: Project[]) => {
     return sortArrByObjKeyAsc(body, 'name')
       ?.map(project => ({
         ...project,
@@ -292,6 +292,27 @@ describe('Administration projects', () => {
       .should('match', /^20\d$/)
     cy.get(`td[title="retirer ${user.email} du projet"]`)
       .should('exist')
+  })
+
+  it('Should access project services, loggedIn as admin', () => {
+    const project = projects.find(project => project.name === 'betaapp')
+
+    cy.intercept('GET', 'api/v1/admin/projects').as('getAllProjects')
+    cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
+
+    cy.getByDataTestid('tableAdministrationProjects').within(() => {
+      cy.get('tr').contains(project.name)
+        .click()
+    })
+    cy.wait('@getQuotas')
+    cy.get('.fr-callout__title')
+      .should('contain', project.name)
+    cy.get('#servicesTable').within(() => {
+      cy.get('img:first')
+        .should('have.attr', 'src', '/img/argocd.svg')
+      cy.get('a:first')
+        .should('have.attr', 'href', 'https://theuselessweb.com/')
+    })
   })
 
   it('Should download projects informations, loggedIn as admin', () => {

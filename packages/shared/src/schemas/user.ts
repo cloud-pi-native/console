@@ -26,7 +26,7 @@ export const RoleSchema = z.object({
   role: z.enum(projectRoles),
 })
 
-export type Role = Zod.infer<typeof UserSchema>
+export type Role = Zod.infer<typeof RoleSchema>
 
 export const RoleWithUserSchema = RoleSchema.extend({ user: UserSchema })
 
@@ -60,7 +60,7 @@ export const CreateUserRoleInProjectSchema = {
   params: projectIdParams,
   body: UserSchema.pick({ email: true }),
   responses: {
-    201: z.array(RoleSchema),
+    201: z.array(RoleWithUserSchema),
     400: ErrorSchema,
     403: ErrorSchema,
     500: ErrorSchema,
@@ -76,7 +76,7 @@ export const UpdateUserRoleInProjectSchema = {
   }),
   body: RoleSchema.pick({ role: true }),
   responses: {
-    200: z.array(RoleSchema),
+    200: z.array(RoleWithUserSchema),
     400: ErrorSchema,
     403: ErrorSchema,
     500: ErrorSchema,

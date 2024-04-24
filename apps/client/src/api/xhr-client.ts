@@ -1,65 +1,38 @@
-import axios, { type AxiosInstance, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios'
+import { type ApiFetcherArgs, tsRestFetchApi } from '@ts-rest/core'
+import { apiPrefix, getApiClient } from '@cpn-console/shared'
 import { getKeycloak } from '@/utils/keycloak/keycloak'
-import router from '@/router/index.js'
 
-export const apiClient: AxiosInstance = axios.create({
-  baseURL: '/api/v1',
-  timeout: 60000,
-})
+export const apiClient = await getApiClient(
+  '',
+  {},
+  async (args: ApiFetcherArgs): Promise<{ status: number; body: { status: number, error: string } | unknown; headers: Headers }> => {
+    // Paths that do not require token
+    const validPaths = [`${apiPrefix}/version`, '/login', `${apiPrefix}/services`]
+    if (validPaths.some(validPath => args.path?.startsWith(validPath))) {
+      return tsRestFetchApi(args)
+    }
 
-apiClient.interceptors.request.use(async function addAuthHeader (config: InternalAxiosRequestConfig) {
-  if (config.url?.startsWith('/api/v1/version') || config.url?.startsWith('/login')) {
-    return config
-  }
-  const keycloak = getKeycloak()
+    // Envs that do not require token
+    if (process.env.NODE_ENV === 'test' && process.env.CT === 'true') {
+      return tsRestFetchApi(args)
+    }
 
-  if (process.env.NODE_ENV === 'test' && process.env.CT === 'true') {
-    return config
-  }
+    // Generate token
+    const keycloak = getKeycloak()
+    await keycloak.updateToken(120)
+    const token = keycloak.token
+    if (token) {
+      args.headers.Authorization = `Bearer ${token}`
+    }
 
-  await keycloak.updateToken(120)
+    const res = await tsRestFetchApi(args)
 
-  const token: string | undefined = keycloak.token
-  if (token) {
-    Object.assign(config.headers, {
-      Authorization: `Bearer ${token}`,
-    })
-  }
-  return config
-}, function (error) {
-  return Promise.reject(error)
-})
+    // Handle error
+    if (res.status >= 400 || !res.status) {
+      // @ts-expect-error
+      throw new Error(res.body?.error ?? 'Erreur inconnue')
+    }
 
-export type CustomError = Error & {
-  httpCode?: number,
-  statusCode?: number,
-}
-
-apiClient.interceptors.response.use(function (response: AxiosResponse): AxiosResponse {
-  return response
-}, function (error): Promise<never> {
-  if (!error) {
-    const customError: CustomError = new Error('Erreur inconnue')
-    customError.httpCode = 500
-    return Promise.reject(customError)
-  }
-  const response = error.response
-  const isUnauthorized: boolean = response?.status === 401
-  if (isUnauthorized) {
-    const customError: CustomError = new Error('Echec d\'identification')
-    customError.httpCode = 401
-    return Promise.reject(customError)
-  }
-  if (error.code === 'ECONNABORTED' || error.message?.includes('Network Error') || (response?.status >= 500 && !error.message)) {
-    const customError: CustomError = new Error('Echec de réponse du serveur')
-    return Promise.reject(customError)
-  }
-  if (response?.data?.error === 'invalid_grant') {
-    const customError: CustomError = new Error(response?.body?.error_description)
-    router.push('/login')
-    return Promise.reject(customError)
-  }
-  const apiError: CustomError = new Error(response?.data?.error || response?.data || response?.statusText || error.message || error)
-  apiError.statusCode = response?.status ?? 500
-  return Promise.reject(apiError)
-})
+    return res
+  },
+)

@@ -2,11 +2,11 @@ import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { apiClient } from '../api/xhr-client.js'
 import { useServiceStore } from './services.js'
-import type { MonitorServiceModel } from '@cpn-console/shared'
+import type { ServiceBody } from '@cpn-console/shared'
 
-const apiClientGet = vi.spyOn(apiClient, 'get')
+const apiClientGet = vi.spyOn(apiClient.Services, 'getServiceHealth')
 
-describe('Counter Store', () => {
+describe('Service Store', () => {
   beforeEach(() => {
     vi.resetAllMocks()
     // creates a fresh pinia and make it active so it's automatically picked
@@ -15,10 +15,10 @@ describe('Counter Store', () => {
   })
 
   it('Should get services health by api call (healthy)', async () => {
-    const data: MonitorServiceModel = [
+    const data: ServiceBody = [
       { interval: 300000, lastUpdateTimestamp: (new Date()).getTime(), message: 'OK', name: 'Keycloak', status: 'OK' },
       { interval: 300000, lastUpdateTimestamp: (new Date()).getTime(), message: 'Service perdu', name: 'Gitlab', status: 'OK' }]
-    apiClientGet.mockReturnValueOnce(Promise.resolve({ data }))
+    apiClientGet.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
     const serviceStore = useServiceStore()
 
     expect(serviceStore.servicesHealth).toMatchObject({})
@@ -27,7 +27,6 @@ describe('Counter Store', () => {
     await serviceStore.checkServicesHealth()
 
     expect(apiClientGet).toHaveBeenCalledTimes(1)
-    expect(apiClientGet.mock.calls[0][0]).toBe('/services')
     expect(serviceStore.servicesHealth).toMatchObject({
       message: 'Tous les services fonctionnent normalement',
       serviceStatus: 'OK',
@@ -40,7 +39,7 @@ describe('Counter Store', () => {
     const data = [
       { interval: 300000, lastUpdateTimestamp: (new Date()).getTime(), message: 'OK', name: 'Keycloak', status: 'OK' },
       { interval: 300000, lastUpdateTimestamp: (new Date()).getTime(), message: 'Service perdu', name: 'Gitlab', status: 'Inconnu' }]
-    apiClientGet.mockReturnValueOnce(Promise.resolve({ data }))
+    apiClientGet.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
     const serviceStore = useServiceStore()
 
     expect(serviceStore.servicesHealth).toMatchObject({})
@@ -49,7 +48,6 @@ describe('Counter Store', () => {
     await serviceStore.checkServicesHealth()
 
     expect(apiClientGet).toHaveBeenCalledTimes(1)
-    expect(apiClientGet.mock.calls[0][0]).toBe('/services')
     expect(serviceStore.servicesHealth).toMatchObject({
       message: 'Échec lors de la dernière vérification',
       serviceStatus: 'Inconnu',

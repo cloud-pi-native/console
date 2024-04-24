@@ -1,3 +1,4 @@
+import { ClientInferRequest } from '@ts-rest/core'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   CreateEnvironmentSchema,
@@ -57,3 +58,7 @@ export const environmentContract = contractInstance.router({
     responses: DeleteEnvironmentSchema.responses,
   },
 })
+
+export type CreateEnvironmentBody = ClientInferRequest<typeof environmentContract.createEnvironment>['body']
+
+export type UpdateEnvironmentBody = ClientInferRequest<typeof environmentContract.updateEnvironment>['body']

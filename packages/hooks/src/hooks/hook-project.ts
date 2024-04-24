@@ -1,4 +1,4 @@
-import { RoleModel } from '@cpn-console/shared'
+import type { Role as RoleFromSchema } from '@cpn-console/shared'
 import { ClusterObject, ExternalRepoUrl, InternalRepoName, IsInfra, IsPrivate, UserObject } from './index.js'
 import { Hook, createHook } from './hook.js'
 
@@ -12,9 +12,9 @@ export type RepoCreds = {
   token: string
 }
 
-export type Role ={
+export type Role = {
   userId: UserObject['id']
-  role: RoleModel['role']
+  role: RoleFromSchema['role']
 }
 
 export type Environment = {

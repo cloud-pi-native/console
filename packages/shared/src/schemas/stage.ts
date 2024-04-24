@@ -1,6 +1,5 @@
 import { z } from 'zod'
 import { ErrorSchema } from './utils.js'
-import { EnvironmentSchema } from './environment.js'
 import { ClusterSchema } from './cluster.js'
 
 export const StageSchema = z.object({
@@ -12,6 +11,27 @@ export const StageSchema = z.object({
     .max(20, { message: 'must not exceed 20 characters' }),
   quotaIds: z.string().uuid().array().optional(),
   clusterIds: z.string().uuid().array().optional(),
+  quotaStage: z.array(z.object({
+    id: z.string()
+      .uuid(),
+    quotaId: z.string()
+      .uuid(),
+    stageId: z.string()
+      .uuid(),
+    status: z.string(),
+    quota: z.object({
+      id: z.string()
+        .uuid(),
+      name: z.string()
+        .min(1),
+      memory: z.string()
+        .min(1),
+      cpu: z.number()
+        .positive(),
+      isPrivate: z.boolean(),
+      stageIds: z.string().uuid().array().optional(),
+    }).optional(),
+  })).optional(),
 })
 
 export type Stage = Zod.infer<typeof StageSchema>
@@ -39,7 +59,15 @@ export const GetStageEnvironmentsSchema = {
       .uuid(),
   }),
   responses: {
-    200: z.array(EnvironmentSchema),
+    200: z.array(z.object({
+      organization: z.string(),
+      project: z.string(),
+      name: z.string(),
+      quota: z.string()
+        .optional(),
+      cluster: z.string(),
+      owner: z.string(),
+    })),
     500: ErrorSchema,
   },
 }

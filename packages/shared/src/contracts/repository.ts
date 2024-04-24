@@ -1,3 +1,4 @@
+import { ClientInferRequest } from '@ts-rest/core'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   CreateRepoSchema,
@@ -5,6 +6,7 @@ import {
   GetRepoByIdSchema,
   UpdateRepoSchema,
   DeleteRepoSchema,
+  SyncRepoSchema,
 } from '../schemas/index.js'
 
 export const repositoryContract = contractInstance.router({
@@ -37,6 +39,15 @@ export const repositoryContract = contractInstance.router({
     responses: GetRepoByIdSchema.responses,
   },
 
+  syncRepository: {
+    method: 'GET',
+    path: `${apiPrefix}/projects/:projectId/repositories/:repositoryId/sync/:branchName`,
+    pathParams: SyncRepoSchema.params,
+    summary: 'application/json',
+    description: 'Trigger a gitlab synchronization for a repository',
+    responses: SyncRepoSchema.responses,
+  },
+
   updateRepository: {
     method: 'PUT',
     path: `${apiPrefix}/projects/:projectId/repositories/:repositoryId`,
@@ -57,3 +68,11 @@ export const repositoryContract = contractInstance.router({
     responses: DeleteRepoSchema.responses,
   },
 })
+
+export type CreateRepositoryBody = ClientInferRequest<typeof repositoryContract.createRepository>['body']
+
+export type UpdateRepositoryBody = ClientInferRequest<typeof repositoryContract.updateRepository>['body']
+
+export type SyncRepositoryParams = ClientInferRequest<typeof repositoryContract.syncRepository>['params']
+
+export type RepositoryParams = ClientInferRequest<typeof repositoryContract.updateRepository>['params']

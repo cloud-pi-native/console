@@ -10,8 +10,8 @@ env:
   NAMESPACE: "${{ github.repository }}"
   MULTI_ARCH: true
   USE_QEMU: false
-  NODE_VERSION: "20.11.0"
-  PNPM_VERSION: "8"
+  NODE_VERSION: "20.12.2"
+  PNPM_VERSION: "9"
 
 jobs:
   expose-vars:

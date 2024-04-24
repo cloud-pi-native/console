@@ -75,7 +75,7 @@ onMounted(() => {
           class="fr-icon-account-line"
           aria-hidden="true"
         />
-        {{ userStore.userProfile.firstName }} {{ userStore.userProfile.lastName }}
+        {{ userStore.userProfile?.firstName }} {{ userStore.userProfile?.lastName }}
       </p>
       <div
         class="my-2 flex flex-row gap-2 items-center cursor-pointer"
@@ -99,9 +99,7 @@ onMounted(() => {
         </DsfrSideMenuLink>
       </DsfrSideMenuListItem>
       <!-- Onglet Projet -->
-      <DsfrSideMenuListItem
-        v-if="isLoggedIn"
-      >
+      <DsfrSideMenuListItem>
         <DsfrSideMenuLink
           data-testid="menuServicesHealth"
           :active="routeName === 'ServicesHealth'"
@@ -295,6 +293,17 @@ onMounted(() => {
               Types d'environnement
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
+          <DsfrSideMenuListItem>
+            <DsfrSideMenuLink
+              class="menu-link-icon"
+              data-testid="menuAdministrationZones"
+              :active="routeName === 'ListZones'"
+              to="/admin/zones"
+            >
+              <v-icon name="ri-focus-3-line" />
+              Zones
+            </DsfrSideMenuLink>
+          </DsfrSideMenuListItem>
         </DsfrSideMenuList>
       </DsfrSideMenuListItem>
 
@@ -304,6 +313,7 @@ onMounted(() => {
           data-testid="menuDoc"
           :active="routeName === 'Doc'"
           to="https://cloud-pi-native.fr"
+          target="_blank"
         >
           Documentation
         </DsfrSideMenuLink>

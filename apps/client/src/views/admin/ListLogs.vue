@@ -2,7 +2,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { useAdminLogStore } from '@/stores/admin/log.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { LogModel } from '@cpn-console/shared'
+import { Log } from '@cpn-console/shared'
+// @ts-ignore
 import { JsonViewer } from 'vue3-json-viewer'
 
 const adminLogStore = useAdminLogStore()
@@ -22,8 +23,8 @@ const showLogs = async (index: number) => {
   await getAllLogs({ offset: index * step, limit: step })
 }
 
-type LogModelSliced = Omit<LogModel['data'], 'totalExecutiontime'>
-const sliceLog = (log: LogModel): LogModelSliced => {
+type LogModelSliced = Partial<Log['data']>
+const sliceLog = (log: Log): LogModelSliced => {
   const {
     data: {
       totalExecutionTime: _t,
@@ -36,7 +37,7 @@ const sliceLog = (log: LogModel): LogModelSliced => {
 
 const getAllLogs = async ({ offset, limit }: { offset: number, limit: number }, isDisplayingSuccess = true) => {
   isUpdating.value = true
-  await adminLogStore.getAllLogs({ offset, limit })
+  await adminLogStore.getAllLogs({ offset: offset + '', limit: limit + '' })
   if (isDisplayingSuccess) {
     snackbarStore.setMessage('Logs récupérés avec succès', 'success')
   }

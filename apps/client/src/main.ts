@@ -9,6 +9,7 @@ import { keycloakInit } from './utils/keycloak/keycloak'
 import App from './App.vue'
 import router from './router/index'
 import * as icons from './icons'
+// @ts-ignore
 import JsonViewer from 'vue3-json-viewer'
 
 import 'virtual:uno.css'

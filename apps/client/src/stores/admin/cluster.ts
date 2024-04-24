@@ -1,40 +1,40 @@
 import { defineStore } from 'pinia'
-import { type Ref, ref } from 'vue'
+import { ref } from 'vue'
+import type { Cluster, CreateClusterBody, UpdateClusterBody, CleanedCluster } from '@cpn-console/shared'
 import api from '@/api/index.js'
-import type { ClusterModel, ClusterParams, CreateClusterDto, UpdateClusterDto } from '@cpn-console/shared'
 
 export const useAdminClusterStore = defineStore('admin-cluster', () => {
-  const clusters: Ref<Array<ClusterModel | undefined>> = ref([])
+  const clusters = ref<Array<Cluster | CleanedCluster>>()
 
   const getClusters = async () => {
     clusters.value = await api.getClusters()
     return clusters.value
   }
 
-  const getClusterAssociatedEnvironments = async (clusterId: ClusterParams['clusterId']) => {
+  const getClusterAssociatedEnvironments = async (clusterId: Cluster['id']) => {
     const res = await api.getClusterAssociatedEnvironments(clusterId)
     return res
   }
 
-  const addCluster = async (cluster: CreateClusterDto) => {
+  const addCluster = async (cluster: CreateClusterBody) => {
     const res = await api.addCluster(cluster)
     return res
   }
 
-  const updateCluster = async (cluster: UpdateClusterDto & { id: ClusterParams['clusterId'] }) => {
+  const updateCluster = async (cluster: UpdateClusterBody & { id: Cluster['id'] }) => {
     const { id, ...updateClusterData } = cluster
     return api.updateCluster(id, updateClusterData)
   }
 
-  const deleteCluster = async (clusterId: ClusterParams['clusterId']) => {
+  const deleteCluster = async (clusterId: Cluster['id']) => {
     return api.deleteCluster(clusterId)
   }
 
-  const getClusterById = async (clusterId: Required<ClusterModel['id']>) => {
-    const cluster = clusters.value.find(c => c === clusterId)
+  const getClusterById = async (clusterId: Required<Cluster['id']>) => {
+    const cluster = clusters.value?.find(cluster => cluster?.id === clusterId)
     if (!cluster) {
       await getClusters()
-      return clusters.value.find(c => c === clusterId)
+      return clusters.value?.find(cluster => cluster?.id === clusterId)
     }
     return cluster
   }

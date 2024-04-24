@@ -15,31 +15,22 @@
     "lint": "eslint ./src"
   },
   "dependencies": {
+    "@cpn-console/gitlab-plugin": "workspace:^",
     "@cpn-console/hooks": "workspace:^",
+    "@cpn-console/vault-plugin": "workspace:^",
     "@cpn-console/shared": "workspace:^",
-    "axios": "1.6.4"
+    "axios": "^1.6.8"
   },
   "devDependencies": {
     "@cpn-console/eslint-config": "workspace:^",
-    "@cpn-console/gitlab-plugin": "workspace:^",
     "@cpn-console/ts-config": "workspace:^",
-    "@cpn-console/vault-plugin": "workspace:^",
-    "@types/node": "^20.8.9",
-    "@typescript-eslint/eslint-plugin": "^6.9.1",
-    "@typescript-eslint/parser": "^6.9.1",
-    "@vitest/coverage-v8": "^0.34.6",
-    "eslint": "^8.52.0",
-    "eslint-config-standard": "^17.1.0",
-    "eslint-plugin-import": "^2.29.0",
-    "eslint-plugin-n": "^16.2.0",
-    "eslint-plugin-promise": "^6.1.1",
-    "nodemon": "^3.0.1",
-    "npm-run-all": "^4.1.5",
+    "@types/node": "^20.12.7",
+    "@vitest/coverage-v8": "^1.5.0",
+    "nodemon": "^3.1.0",
     "rimraf": "^5.0.5",
-    "typescript": "^5.2.2",
-    "typescript-transform-paths": "^3.4.6",
-    "vite": "^4.5.0",
-    "vitest": "^0.34.6"
+    "typescript": "^5.4.5",
+    "vite": "^5.2.10",
+    "vitest": "^1.5.0"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",

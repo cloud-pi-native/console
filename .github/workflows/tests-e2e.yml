@@ -21,12 +21,12 @@ on:
         description: Nodejs version used to run tests
         required: true
         type: string
-        default: "20.11.0"
+        default: "20.12.2"
       PNPM_VERSION:
         description: Pnpm version used to run tests
         required: true
         type: string
-        default: "8"
+        default: "9"
       TAG:
         description: Image tag used to run tests
         required: true
@@ -102,11 +102,30 @@ jobs:
           restore-keys: |
             node-${{ runner.os }}-${{ runner.arch }}-
 
+      - name: Get turbo cache directories
+        id: turbo-cache
+        run: |
+          TURBO_CACHE_PATHS=""
+          for pkg in $(find ./apps ./packages ./plugins -type d -mindepth 1 -maxdepth 1 -not -path "**/node_modules"); do
+            if [ -z "$TURBO_CACHE_PATHS" ]; then
+          TURBO_CACHE_PATHS="$pkg/dist
+          $pkg/types"
+            else
+          TURBO_CACHE_PATHS="$TURBO_CACHE_PATHS
+          $pkg/dist
+          $pkg/types"
+            fi
+          done
+          echo "TURBO_CACHE_PATHS<<EOF" >> $GITHUB_OUTPUT
+          echo "$TURBO_CACHE_PATHS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
       - name: Cache turbo files
         uses: actions/cache@v4
         with:
           path: |
             ./.turbo/cache
+            ${{ steps.turbo-cache.outputs.TURBO_CACHE_PATHS }}
           key: turbo-e2e-${{ runner.os }}-${{ runner.arch }}-${{ matrix.browsers }}-${{ hashFiles('apps/**/src/**','apps/client/cypress/**','packages/**/src/**','plugins/**/src/**') }}
           restore-keys: |
             turbo-e2e-${{ runner.os }}-${{ runner.arch }}-${{ matrix.browsers }}-

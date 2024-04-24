@@ -1,4 +1,4 @@
-import { type StepCall, type Project, type ProjectLite, parseError } from '@cpn-console/hooks'
+import { type StepCall, type Project, type ProjectLite, parseError, type UniqueRepo } from '@cpn-console/hooks'
 import { deleteGroup } from './group.js'
 import { createUsername, getUser } from './user.js'
 import { ensureMembers } from './members.js'
@@ -127,6 +127,28 @@ export const deleteDsoProject: StepCall<Project> = async (payload) => {
       status: {
         result: 'KO',
         message: 'Failed',
+      },
+    }
+  }
+}
+
+export const syncRepository: StepCall<UniqueRepo> = async (payload) => {
+  const targetRepo = payload.args.repo
+  const gitlabApi = payload.apis.gitlab
+  try {
+    await gitlabApi.triggerMirror(targetRepo.internalRepoName, targetRepo.branchName)
+    return {
+      status: {
+        result: 'OK',
+        message: 'Ci launched',
+      },
+    }
+  } catch (error) {
+    return {
+      error: parseError(error),
+      status: {
+        result: 'KO',
+        message: 'Failed to trigger sync',
       },
     }
   }

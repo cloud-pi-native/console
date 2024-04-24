@@ -1,31 +1,22 @@
 <script lang="ts" setup>
 import { computed, onBeforeMount, ref } from 'vue'
-import { SharedZodError, StageSchema } from '@cpn-console/shared'
+import { type Cluster, type Quota, type Stage, type StageAssociatedEnvironments, SharedZodError, StageSchema } from '@cpn-console/shared'
 import { copyContent } from '@/utils/func.js'
 import type { UpdateStageType } from '@/views/admin/ListStages.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
-const props = defineProps({
-  isNewStage: {
-    type: Boolean,
-    default: false,
-  },
-  stage: {
-    type: Object,
-    default: () => ({}),
-  },
-  allQuotas: {
-    type: Array,
-    default: () => [],
-  },
-  allClusters: {
-    type: Array,
-    default: () => [],
-  },
-  associatedEnvironments: {
-    type: Array,
-    default: () => [],
-  },
+const props = withDefaults(defineProps<{
+  isNewStage: boolean,
+  stage: Partial<Stage>,
+  allQuotas: Quota[],
+  allClusters: Cluster[],
+  associatedEnvironments: StageAssociatedEnvironments,
+}>(), {
+  isNewStage: false,
+  stage: () => ({}),
+  allQuotas: () => [],
+  allClusters: () => [],
+  associatedEnvironments: () => [],
 })
 
 const localStage = ref(props.stage)
@@ -85,13 +76,7 @@ const cancel = () => {
   emit('cancel')
 }
 
-type AssociatedEnvironment = {
-  organization: string,
-  project: string,
-  name: string,
-  quota: string,
-}
-const getRows = (associatedEnvironments: AssociatedEnvironment[]) => {
+const getRows = (associatedEnvironments: StageAssociatedEnvironments) => {
   return associatedEnvironments
     .map(associatedEnvironment => Object
       .values(associatedEnvironment)

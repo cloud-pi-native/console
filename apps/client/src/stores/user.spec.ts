@@ -1,14 +1,14 @@
+import Keycloak from 'keycloak-js'
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { apiClient } from '../api/xhr-client.js'
 import { useUserStore } from './user.js'
-import Keycloak from 'keycloak-js'
 
-vi.spyOn(apiClient, 'get')
-vi.spyOn(apiClient, 'post')
-vi.spyOn(apiClient, 'put')
-vi.spyOn(apiClient, 'patch')
-vi.spyOn(apiClient, 'delete')
+vi.spyOn(apiClient.Users, 'getMatchingUsers')
+vi.spyOn(apiClient.Users, 'createUserRoleInProject')
+vi.spyOn(apiClient.Users, 'updateUserRoleInProject')
+vi.spyOn(apiClient.Users, 'getProjectUsers')
+vi.spyOn(apiClient.Users, 'deleteUserRoleInProject')
 
 vi.mock('keycloak-js', () => {
   const Keycloak = vi.fn()
@@ -27,7 +27,7 @@ vi.mock('keycloak-js', () => {
 })
 const keycloak = new Keycloak()
 
-describe('Counter Store', () => {
+describe('User Store', () => {
   beforeEach(() => {
     // creates a fresh pinia and make it active so it's automatically picked
     // up by any useStore() call without having to pass it to it: `useStore(pinia)`

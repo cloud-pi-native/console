@@ -27,6 +27,7 @@ const ListLogs = () => import('@/views/admin/ListLogs.vue')
 const ListClusters = () => import('@/views/admin/ListClusters.vue')
 const ListQuotas = () => import('@/views/admin/ListQuotas.vue')
 const ListStages = () => import('@/views/admin/ListStages.vue')
+const ListZones = () => import('@/views/admin/ListZones.vue')
 
 const MAIN_TITLE = 'Console Cloud π Native'
 
@@ -159,6 +160,11 @@ const routes: Readonly<RouteRecordRaw[]> = [
     name: 'ListStages',
     component: ListStages,
   },
+  {
+    path: '/admin/zones',
+    name: 'ListZones',
+    component: ListZones,
+  },
 ]
 
 const router = createRouter({
@@ -179,7 +185,7 @@ router.beforeEach((to) => { // Cf. https://github.com/vueuse/head pour des trans
  * Redirect unlogged user to login view
  */
 router.beforeEach(async (to, _from, next) => {
-  const validPath = ['Login', 'Home', 'Doc', 'NotFound']
+  const validPath = ['Login', 'Home', 'Doc', 'NotFound', 'ServicesHealth']
   const snackbarStore = useSnackbarStore()
   const userStore = useUserStore()
   userStore.setIsLoggedIn()

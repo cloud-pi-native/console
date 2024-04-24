@@ -4,8 +4,7 @@ import { useProjectStore } from '@/stores/project.js'
 
 const projectStore = useProjectStore()
 
-// @ts-ignore
-const projectServices = computed(() => projectStore.selectedProject.externalServices.map(value => ({ ...value, id: value?.title })))
+const projectServices = computed(() => projectStore.selectedProject?.externalServices?.map(value => ({ ...value, id: value?.title })))
 
 </script>
 

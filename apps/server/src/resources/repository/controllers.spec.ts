@@ -60,6 +60,38 @@ describe('Repository routes', () => {
     })
   })
 
+  describe('syncRepositoryController', () => {
+    it('Should sync a repository', async () => {
+      const projectInfos = createRandomDbSetup({}).project
+      projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
+      const repoToSync = projectInfos.repositories[0]
+      const branchName = 'main'
+
+      prisma.project.findUnique.mockResolvedValue(projectInfos)
+
+      const response = await app.inject()
+        .get(`/api/v1/projects/${projectInfos.id}/repositories/${repoToSync.id}/sync/${branchName}`)
+        .end()
+
+      expect(response.statusCode).toEqual(204)
+    })
+
+    it('Should not sync a repository if not project member', async () => {
+      const projectInfos = createRandomDbSetup({}).project
+      const repoToSync = projectInfos.repositories[0]
+      const branchName = 'main'
+
+      prisma.project.findUnique.mockResolvedValue(projectInfos)
+
+      const response = await app.inject()
+        .get(`/api/v1/projects/${projectInfos.id}/repositories/${repoToSync.id}/sync/${branchName}`)
+        .end()
+
+      expect(response.statusCode).toEqual(403)
+      expect(JSON.parse(response.body).error).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
+    })
+  })
+
   // POST
   describe('createRepositoryController', () => {
     it('Should create a repository', async () => {

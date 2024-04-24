@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-import { ref, computed, onMounted, watch, type Ref } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useAdminQuotaStore } from '@/stores/admin/quota.js'
 import { sortArrByObjKeyAsc } from '@cpn-console/shared'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
-import type { CreateQuotaDto, UpdateQuotaStageDto, QuotaModel, UpdateQuotaPrivacyDto, QuotaParams } from '@cpn-console/shared'
+import type { CreateQuotaBody, UpdateQuotaStageBody, Quota, PatchQuotaBody, QuotaAssociatedEnvironments } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const adminQuotaStore = useAdminQuotaStore()
@@ -11,13 +11,13 @@ const projectEnvironmentStore = useProjectEnvironmentStore()
 const snackbarStore = useSnackbarStore()
 
 const quotas = computed(() => adminQuotaStore.quotas)
-const selectedQuota: Ref<QuotaModel | Record<string, never>> = ref({})
-const quotaList: Ref<any[]> = ref([])
-const allStages: Ref<any[]> = ref([])
-const associatedEnvironments: Ref<any[]> = ref([])
+const selectedQuota = ref<Quota | Record<string, never>>({})
+const quotaList = ref<any[]>([])
+const allStages = ref<any[]>([])
+const associatedEnvironments = ref<QuotaAssociatedEnvironments>([])
 const isNewQuotaForm = ref(false)
 
-const setQuotaTiles = (quotas: QuotaModel[]) => {
+const setQuotaTiles = (quotas: Quota[]) => {
   quotaList.value = sortArrByObjKeyAsc(quotas, 'name')
     ?.map(quota => ({
       id: quota.id,
@@ -26,7 +26,7 @@ const setQuotaTiles = (quotas: QuotaModel[]) => {
     }))
 }
 
-const setSelectedQuota = async (quota: QuotaModel) => {
+const setSelectedQuota = async (quota: Quota) => {
   if (selectedQuota.value?.name === quota.name) {
     selectedQuota.value = {}
     return
@@ -47,7 +47,7 @@ const cancel = () => {
   selectedQuota.value = {}
 }
 
-const addQuota = async (quota: CreateQuotaDto) => {
+const addQuota = async (quota: CreateQuotaBody) => {
   snackbarStore.isWaitingForResponse = true
   cancel()
   await adminQuotaStore.addQuota(quota)
@@ -56,9 +56,9 @@ const addQuota = async (quota: CreateQuotaDto) => {
 }
 
 export type UpdateQuotaType = {
-  quotaId: QuotaParams['quotaId'],
-  isPrivate?: UpdateQuotaPrivacyDto['isPrivate'],
-  stageIds?: UpdateQuotaStageDto['stageIds']
+  quotaId: string,
+  isPrivate?: PatchQuotaBody['isPrivate'],
+  stageIds?: UpdateQuotaStageBody['stageIds']
 }
 
 const updateQuota = async ({ quotaId, isPrivate, stageIds }: UpdateQuotaType) => {
@@ -72,7 +72,7 @@ const updateQuota = async ({ quotaId, isPrivate, stageIds }: UpdateQuotaType) =>
   snackbarStore.isWaitingForResponse = false
 }
 
-const deleteQuota = async (quotaId: QuotaParams['quotaId']) => {
+const deleteQuota = async (quotaId: string) => {
   snackbarStore.isWaitingForResponse = true
   cancel()
   await adminQuotaStore.deleteQuota(quotaId)
@@ -80,9 +80,9 @@ const deleteQuota = async (quotaId: QuotaParams['quotaId']) => {
   snackbarStore.isWaitingForResponse = false
 }
 
-const getQuotaAssociatedEnvironments = async (quotaId: QuotaParams['quotaId']) => {
+const getQuotaAssociatedEnvironments = async (quotaId: string) => {
   snackbarStore.isWaitingForResponse = true
-  associatedEnvironments.value = await adminQuotaStore.getQuotaAssociatedEnvironments(quotaId)
+  associatedEnvironments.value = await adminQuotaStore.getQuotaAssociatedEnvironments(quotaId) ?? []
   snackbarStore.isWaitingForResponse = false
 }
 
@@ -134,7 +134,7 @@ watch(quotas, () => {
       :all-stages="allStages"
       class="w-full"
       :is-new-quota="true"
-      @add="(quota: CreateQuotaDto) => addQuota(quota)"
+      @add="(quota: CreateQuotaBody) => addQuota(quota)"
       @cancel="cancel()"
     />
   </div>
@@ -169,7 +169,7 @@ watch(quotas, () => {
         :associated-environments="associatedEnvironments"
         @cancel="cancel()"
         @update="(quota: UpdateQuotaType) => updateQuota(quota)"
-        @delete="(quotaId: QuotaParams['quotaId']) => deleteQuota(quotaId)"
+        @delete="(quotaId: string) => deleteQuota(quotaId)"
       />
     </div>
     <div

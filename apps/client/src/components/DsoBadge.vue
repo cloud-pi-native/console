@@ -1,15 +1,15 @@
 <script lang="ts" setup>
 import { computed } from 'vue'
-import { statusDict, type ProjectModel } from '@cpn-console/shared'
+import { statusDict, type Project } from '@cpn-console/shared'
 
 type ResourceBase = {
-  id: ProjectModel['id'],
+  id: Project['id'],
   wording: string,
 }
 
 type ResourceWithStatus = ResourceBase & {
   resourceKey: 'status',
-  status: ProjectModel['status']
+  status: Project['status']
 }
 
 type ResourceWithLock = ResourceBase & {

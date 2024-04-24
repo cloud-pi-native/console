@@ -3,12 +3,12 @@ import { setActivePinia, createPinia } from 'pinia'
 import { apiClient } from '../../api/xhr-client.js'
 import { useAdminProjectStore } from './project.js'
 
-const apiClientGet = vi.spyOn(apiClient, 'get')
-const apiClientDelete = vi.spyOn(apiClient, 'delete')
-const apiClientPatch = vi.spyOn(apiClient, 'patch')
-const apiClientPut = vi.spyOn(apiClient, 'put')
+const apiClientGet = vi.spyOn(apiClient.ProjectsAdmin, 'getAllProjects')
+const apiClientDelete = vi.spyOn(apiClient.Projects, 'archiveProject')
+const apiClientPatch = vi.spyOn(apiClient.ProjectsAdmin, 'patchProject')
+const apiClientPut = vi.spyOn(apiClient.Projects, 'replayHooksForProject')
 
-describe('Counter Store', () => {
+describe('Project Admin Store', () => {
   beforeEach(() => {
     vi.resetAllMocks()
     // creates a fresh pinia and make it active so it's automatically picked
@@ -22,14 +22,13 @@ describe('Counter Store', () => {
       { id: 'id2', name: 'project2', status: 'created', roles: [{ user: { id: '1' } }] },
       { id: 'id3', name: 'project3', status: 'created', roles: [{ user: { id: '1' } }] },
     ]
-    apiClientGet.mockReturnValueOnce(Promise.resolve({ data }))
+    apiClientGet.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
     const adminProjectStore = useAdminProjectStore()
 
     const res = await adminProjectStore.getAllProjects()
 
     expect(res).toBe(data)
     expect(apiClientGet).toHaveBeenCalledTimes(1)
-    expect(apiClientGet.mock.calls[0][0]).toBe('/admin/projects')
   })
 
   it('Should get active project list by api call', async () => {
@@ -38,14 +37,13 @@ describe('Counter Store', () => {
       { id: 'id2', name: 'project2', status: 'created', roles: [{ user: { id: '1' } }] },
       { id: 'id3', name: 'project3', status: 'created', roles: [{ user: { id: '1' } }] },
     ]
-    apiClientGet.mockReturnValueOnce(Promise.resolve({ data }))
+    apiClientGet.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
     const adminProjectStore = useAdminProjectStore()
 
     const res = await adminProjectStore.getAllActiveProjects()
 
     expect(res).toStrictEqual(data.splice(1))
     expect(apiClientGet).toHaveBeenCalledTimes(1)
-    expect(apiClientGet.mock.calls[0][0]).toBe('/admin/projects')
   })
 
   it('Should lock or unlock a project', async () => {
@@ -57,30 +55,25 @@ describe('Counter Store', () => {
 
     expect(res).toBe(undefined)
     expect(apiClientPatch).toHaveBeenCalledTimes(1)
-    expect(apiClientPatch.mock.calls[0][0]).toBe(`/admin/projects/${project.id}`)
   })
 
   it('Should replay hooks for project by api call', async () => {
     const adminProjectStore = useAdminProjectStore()
 
     const project = { id: 'projectId' }
-    apiClientPut.mockReturnValueOnce(Promise.resolve({ data: project }))
+    apiClientPut.mockReturnValueOnce(Promise.resolve({ status: 200, body: project }))
 
     await adminProjectStore.replayHooksForProject(project.id)
 
     expect(apiClientPut).toHaveBeenCalledTimes(1)
-    expect(apiClientPut.mock.calls[0][0]).toBe(`/projects/${project.id}/hooks`)
   })
 
   it('Should archive a project by api call', async () => {
     const adminProjectStore = useAdminProjectStore()
-
-    const project = { id: 'projectId' }
-    apiClientDelete.mockReturnValueOnce(Promise.resolve({ data: project }))
+    apiClientDelete.mockReturnValueOnce(Promise.resolve({ status: 204 }))
 
     await adminProjectStore.archiveProject('projectId')
 
     expect(apiClientDelete).toHaveBeenCalledTimes(1)
-    expect(apiClientDelete.mock.calls[0][0]).toBe('/projects/projectId')
   })
 })

@@ -10,6 +10,8 @@ describe('Manage project environments', () => {
   const quotaSmall = getModelById('quota', '5a57b62f-2465-4fb6-a853-5a751d099199')
   const quotaMedium = getModelById('quota', '08770663-3b76-4af6-8978-9f75eda4faa7')
   const devStage = getModelById('stage', '4a9ad694-4c54-4a3c-9579-548bf4b7b1b9')
+  const publicZone = getModelById('zone', 'a66c4230-eba6-41f1-aae5-bb1e4f90cce2')
+  const privateZone = getModelById('zone', 'a66c4230-eba6-41f1-aae5-bb1e4f90cce1')
   const integrationStage = getModelById('stage', 'd434310e-7850-4d59-b47f-0772edf50582')
   const stagingStage = getModelById('stage', '38fa869d-6267-441d-af7f-e0548fd06b7e')
   const project1FirstEnvironment = project1.environments[0]
@@ -20,19 +22,19 @@ describe('Manage project environments', () => {
   const environments = [
     {
       name: 'integtest',
+      zone: publicZone,
       stage: integrationStage,
       quota: quotaSmall,
       cluster: clusterPublic,
     },
     {
       name: 'stagetest',
+      zone: publicZone,
       stage: stagingStage,
       quota: quotaMedium,
       cluster: clusterPublic,
     },
   ]
-  const project0withoutClusters = project0
-  project0withoutClusters.clusters = []
 
   it('Should add environments to an existing project', () => {
     cy.kcLogin('test')
@@ -61,6 +63,8 @@ describe('Manage project environments', () => {
     cy.get('h1').should('contain', 'Ajouter un environnement au projet')
     cy.getByDataTestid('environmentNameInput')
       .type('myenv')
+    cy.get('#zone-select')
+      .select(environments[1]?.zone?.id)
     cy.get('#stage-select')
       .select(environments[1]?.stage?.id)
     cy.get('#quota-select')
@@ -93,9 +97,6 @@ describe('Manage project environments', () => {
     cy.intercept('GET', 'api/v1/clusters').as('getClusters')
     cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
     cy.intercept('GET', 'api/v1/quotas').as('getStages')
-    cy.intercept('GET', '/api/v1/projects', {
-      body: [project0withoutClusters],
-    }).as('getProjects')
 
     cy.goToProjects()
       .getByDataTestid(`projectTile-${project0?.name}`)
@@ -111,19 +112,43 @@ describe('Manage project environments', () => {
     cy.get('h1').should('contain', 'Ajouter un environnement au projet')
     cy.getByDataTestid('environmentNameInput')
       .type('myenv')
+    cy.get('#zone-select')
+      .select(publicZone?.id)
     cy.get('#stage-select')
       .select(integrationStage?.id)
     cy.get('#quota-select')
       .select(quotaMedium?.id)
+    cy.get('#cluster-select')
+      .should('exist')
+    cy.getByDataTestid('noClusterOptionAlert')
+      .should('not.exist')
+    cy.get('#cluster-select')
+      .select(1)
+    cy.getByDataTestid('addEnvironmentBtn')
+      .should('be.enabled')
+    cy.get('#zone-select')
+      .select(privateZone?.id)
     cy.get('#cluster-select')
       .should('not.exist')
     cy.getByDataTestid('noClusterOptionAlert')
       .should('exist')
     cy.getByDataTestid('addEnvironmentBtn')
       .should('be.disabled')
+    cy.get('#zone-select')
+      .select(publicZone?.id)
+    cy.get('#cluster-select')
+      .should('not.exist')
+    cy.getByDataTestid('noClusterOptionAlert')
+      .should('exist')
+    cy.get('#stage-select')
+      .select(devStage?.id)
+    cy.get('#cluster-select')
+      .should('exist')
+    cy.getByDataTestid('noClusterOptionAlert')
+      .should('not.exist')
   })
 
-  it('Should display cluster infos', () => {
+  it('Should display zone and cluster infos', () => {
     cy.kcLogin('test')
 
     cy.intercept('GET', 'api/v1/clusters').as('getClusters')
@@ -142,6 +167,11 @@ describe('Manage project environments', () => {
     cy.get('h1').should('contain', 'Ajouter un environnement au projet')
     cy.getByDataTestid('environmentNameInput')
       .type('myenv')
+    cy.get('#zone-select')
+      .select(publicZone?.id)
+    cy.getByDataTestid('chosenZoneDescription')
+      .should('be.visible')
+      .and('contain', publicZone?.description)
     cy.get('#stage-select')
       .select(devStage?.id)
     cy.getByDataTestid('clusterInfos')

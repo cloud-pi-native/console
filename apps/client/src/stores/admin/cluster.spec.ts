@@ -4,10 +4,11 @@ import { apiClient } from '../../api/xhr-client.js'
 import { useAdminClusterStore } from './cluster.js'
 import { ClusterPrivacy } from '@cpn-console/shared'
 
-const apiClientGet = vi.spyOn(apiClient, 'get')
-const apiClientPost = vi.spyOn(apiClient, 'post')
-const apiClientPut = vi.spyOn(apiClient, 'put')
-const apiClientDelete = vi.spyOn(apiClient, 'delete')
+const apiClientGet = vi.spyOn(apiClient.Clusters, 'getClusters')
+const apiClientGetClusterEnvironments = vi.spyOn(apiClient.ClustersAdmin, 'getClusterEnvironments')
+const apiClientPost = vi.spyOn(apiClient.ClustersAdmin, 'createCluster')
+const apiClientPut = vi.spyOn(apiClient.ClustersAdmin, 'updateCluster')
+const apiClientDelete = vi.spyOn(apiClient.ClustersAdmin, 'deleteCluster')
 
 describe('Cluster Store', () => {
   beforeEach(() => {
@@ -51,14 +52,13 @@ describe('Cluster Store', () => {
         privacy: 'public',
       },
     ]
-    apiClientGet.mockReturnValueOnce(Promise.resolve({ data }))
+    apiClientGet.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
     const adminClusterStore = useAdminClusterStore()
 
     const res = await adminClusterStore.getClusters()
 
     expect(res).toEqual(data)
     expect(apiClientGet).toHaveBeenCalledTimes(1)
-    expect(apiClientGet.mock.calls[0][0]).toBe('/clusters')
   })
 
   it('Should get cluster\'s associated environments by api call', async () => {
@@ -67,14 +67,13 @@ describe('Cluster Store', () => {
       environments: [],
     }
 
-    apiClientGet.mockReturnValueOnce(Promise.resolve({ data }))
+    apiClientGetClusterEnvironments.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
     const adminClusterStore = useAdminClusterStore()
 
     const res = await adminClusterStore.getClusterAssociatedEnvironments(clusterId)
 
     expect(res).toBe(data)
-    expect(apiClientGet).toHaveBeenCalledTimes(1)
-    expect(apiClientGet.mock.calls[0][0]).toBe(`/admin/clusters/${clusterId}/environments`)
+    expect(apiClientGetClusterEnvironments).toHaveBeenCalledTimes(1)
   })
 
   it('Should add cluster by api call', async () => {
@@ -96,14 +95,13 @@ describe('Cluster Store', () => {
       clusterResources: true,
       privacy: ClusterPrivacy.DEDICATED,
     }
-    apiClientPost.mockReturnValueOnce(Promise.resolve({ data }))
+    apiClientPost.mockReturnValueOnce(Promise.resolve({ status: 201, body: data }))
     const adminClusterStore = useAdminClusterStore()
 
     const res = await adminClusterStore.addCluster(data)
 
     expect(res).toBe(data)
     expect(apiClientPost).toHaveBeenCalledTimes(1)
-    expect(apiClientPost.mock.calls[0][0]).toBe('/admin/clusters')
   })
 
   it('Should update cluster by api call', async () => {
@@ -124,14 +122,13 @@ describe('Cluster Store', () => {
       clusterResources: true,
       privacy: ClusterPrivacy.DEDICATED,
     }
-    apiClientPut.mockReturnValueOnce(Promise.resolve({ data }))
+    apiClientPut.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
     const adminClusterStore = useAdminClusterStore()
 
     const res = await adminClusterStore.updateCluster(data)
 
     expect(res).toBe(data)
     expect(apiClientPut).toHaveBeenCalledTimes(1)
-    expect(apiClientPut.mock.calls[0][0]).toBe('/admin/clusters/1e4fdb28-f9ea-46d4-ad16-607c7f1aa8b6')
   })
 
   it('Should delete cluster by api call', async () => {
@@ -143,6 +140,5 @@ describe('Cluster Store', () => {
     await adminClusterStore.deleteCluster(clusterId)
 
     expect(apiClientDelete).toHaveBeenCalledTimes(1)
-    expect(apiClientDelete.mock.calls[0][0]).toBe(`/admin/clusters/${clusterId}`)
   })
 })

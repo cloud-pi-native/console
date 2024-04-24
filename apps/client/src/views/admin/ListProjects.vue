@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import { onBeforeMount, ref, type Ref } from 'vue'
+import { onBeforeMount, ref, computed } from 'vue'
 import { getRandomId } from '@gouvminint/vue-dsfr'
-import { type AsyncReturnType, formatDate, statusDict, sortArrByObjKeyAsc, AllStatus, ProjectModel } from '@cpn-console/shared'
+import { type AsyncReturnType, formatDate, statusDict, sortArrByObjKeyAsc, AllStatus, Project } from '@cpn-console/shared'
 import { useAdminProjectStore } from '@/stores/admin/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useAdminOrganizationStore } from '@/stores/admin/organization.js'
@@ -45,13 +45,13 @@ type FileForDownload = File & {
   title?: string,
 }
 
-const allProjects: Ref<AsyncReturnType<typeof adminProjectStore.getAllProjects>> = ref([])
-const organizations: Ref<AsyncReturnType<typeof adminOrganizationStore.getAllOrganizations>> = ref([])
-const rows: Ref<Rows> = ref([])
-const environmentsRows: Ref<EnvironnementRows > = ref([])
-const repositoriesRows: Ref<RepositoryRows> = ref([])
+const allProjects = ref<AsyncReturnType<typeof adminProjectStore.getAllProjects>>([])
+const organizations = ref<AsyncReturnType<typeof adminOrganizationStore.getAllOrganizations>>([])
+const rows = ref<Rows>([])
+const environmentsRows = ref<EnvironnementRows>([])
+const repositoriesRows = ref<RepositoryRows>([])
 const tableKey = ref(getRandomId('table'))
-const selectedProject: Ref<ProjectModel | undefined> = ref()
+const selectedProject = ref<Project | undefined>(undefined)
 const teamCtKey = ref(getRandomId('team'))
 const environmentsCtKey = ref(getRandomId('environment'))
 const repositoriesCtKey = ref(getRandomId('repository'))
@@ -59,7 +59,7 @@ const isArchivingProject = ref(false)
 const projectToArchive = ref('')
 const inputSearchText = ref('')
 const activeFilter = ref('Non archivés')
-const file: Ref<undefined | FileForDownload> = ref(undefined)
+const file = ref<FileForDownload | undefined>(undefined)
 
 const title = 'Liste des projets'
 const headers = [
@@ -75,6 +75,7 @@ const headers = [
 const membersId = 'membersTable'
 const repositoriesId = 'repositoriesTable'
 const environmentsId = 'environmentsTable'
+const servicesId = 'servicesTable'
 
 type FilterMethods = Record<string, (row: Row) => boolean>
 const filterMethods: FilterMethods = {
@@ -223,7 +224,7 @@ const updateEnvironmentQuota = async ({ environmentId, quotaId }: {environmentId
   snackbarStore.isWaitingForResponse = true
   const environment = selectedProject.value.environments.find(environment => environment.id === environmentId)
   if (!environment) return
-  environment.quotaStageId = environment.quotaStage.stage.quotaStage.find(quotaStage => quotaStage.quotaId === quotaId)?.id
+  environment.quotaStageId = environment.quotaStage.stage?.quotaStage?.find(quotaStage => quotaStage.quotaId === quotaId)?.id ?? ''
   await projectEnvironmentStore.updateEnvironment(environment, selectedProject.value.id)
   await getAllProjects()
   snackbarStore.isWaitingForResponse = false
@@ -293,6 +294,24 @@ const generateProjectsDataFile = async () => {
     title: 'dso-projects.csv',
   }
 }
+
+const servicesRows = computed(() => selectedProject.value?.externalServices?.map(value => [
+  {
+    component: 'img',
+    src: value?.imgSrc,
+    alt: value?.title,
+    title: value?.title,
+    width: 50,
+  },
+  {
+    component: 'a',
+    href: value?.to,
+    text: value?.to,
+    title: `Se rendre sur ${value?.title}`,
+    target: '_blank',
+    class: 'fr-text-default--info text-xs cursor-pointer',
+  },
+]))
 
 onBeforeMount(async () => {
   organizations.value = await adminOrganizationStore.getAllOrganizations()
@@ -375,7 +394,7 @@ onBeforeMount(async () => {
     <div v-if="selectedProject">
       <DsfrCallout
         :title="selectedProject.name"
-        :content="selectedProject.description"
+        :content="selectedProject.description ?? ''"
       />
       <div class="w-full flex gap-4 fr-mb-2w">
         <DsfrButton
@@ -446,6 +465,10 @@ onBeforeMount(async () => {
             to: `#${membersId}`,
             text: '#Membres'
           },
+          {
+            to: `#${servicesId}`,
+            text: '#Services'
+          },
         ]"
       />
       <div
@@ -461,7 +484,7 @@ onBeforeMount(async () => {
         <DsfrTable
           :id="repositoriesId"
           :key="repositoriesCtKey"
-          :title="`Dépôts`"
+          title="Dépôts"
           :headers="['Nom', 'Type']"
           :rows="repositoriesRows"
         />
@@ -469,12 +492,18 @@ onBeforeMount(async () => {
           :id="membersId"
           :key="teamCtKey"
           :user-profile="userStore.userProfile"
-          :project="{id: selectedProject.id, name: selectedProject.name }"
-          :roles="selectedProject.roles?.map(({user, ...role}) => role)"
+          :project="{id: selectedProject.id, name: selectedProject.name, locked: selectedProject.locked }"
+          :roles="selectedProject.roles?.map(({user, ...role}) => role) ?? []"
           :known-users="usersStore.users"
           @add-member="(email) => addUserToProject(email)"
           @update-role="({ userId, role}) => updateUserRole({ userId, role})"
           @remove-member="(userId) => removeUserFromProject(userId)"
+        />
+        <DsfrTable
+          :id="servicesId"
+          title="Services"
+          :headers="['Service', 'Url']"
+          :rows="servicesRows"
         />
       </div>
     </div>

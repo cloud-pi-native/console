@@ -1,20 +1,24 @@
 # Console Cloud π Native
 
-La console Cloud π Native est une application web ayant pour but de piloter des services web dans un cluster Kubernetes afin de fournir une platefome cloud lors du développement de produits numériques.
+La console Cloud π Native est une application web ayant pour but de piloter des services web dans un cluster Kubernetes afin de fournir une platefome cloud qui accompagne les produits numériques lors de toutes les phases de leur cycle de vie.
+
+Cette console offre une interface unifiée vers un ensemble de services tout en garantissant une cohérence globale du système avec la création automatique d'un certain nombre de ressources comme par exemple les comptes d'accès, les robots ou encore des ressources Kubernetes. 
+En addition du provisionnement automatique, elle garantit aussi le contrôle d'accès aux ressources du projet à l'aide d'une gestion d'équipe, de permissions, de quotas, etc...
 
 ## Architecture
 
-Ce projet est construit avec [NodeJS](https://nodejs.org/), [VueJS](https://vuejs.org/), [Postgres](https://www.postgresql.org/) et construit sous forme d'images [Docker](https://www.docker.com/) pour être déployé via [Helm](https://helm.sh/) dans [Kubernetes](https://kubernetes.io/).
+Ce projet est construit avec [NodeJS](https://nodejs.org/), [VueJS](https://vuejs.org/), [Postgres](https://www.postgresql.org/) et [Keycloak](https://www.keycloak.org/). 
+Le serveur et le client sont livrés sous forme d'images [Docker](https://www.docker.com/) et sont déployées à l'aide de [Helm](https://helm.sh/) dans [Kubernetes](https://kubernetes.io/).
 
 ### Liste des services kubernetes
 
-| Nom du service | Github project                                                                  | Role                                      | Déployé le Helm Chart de production |
-| -------------- | ------------------------------------------------------------------------------- | ----------------------------------------- | ----------------------------------- |
-| __postgres__   | [Postgres](https://github.com/postgres/postgres)                                | Base de données de l'application          | Oui                                 |
-| __pgadmin__    | [Pgadmin](https://github.com/pgadmin-org/pgadmin4)                              | Interface d'administration de Postgres    | -                                   |
-| __server__     | [NodeJS](https://github.com/nodejs/node)                                        | API de l'application                      | Oui                                 |
-| __client__     | [VueJS](https://github.com/vuejs/vue) / [Nginx](https://github.com/nginx/nginx) | Interface graphique de l'application      | Oui                                 |
-| __keycloak__   | [Keycloak](https://github.com/keycloak/keycloak)                                | Gestionnaire d'authentification / d'accès | -                                   |
+| Nom du service | Github project                                                                  | Role                                      | Déployé avec le Helm Chart de production |
+| -------------- | ------------------------------------------------------------------------------- | ----------------------------------------- | ---------------------------------------- |
+| __client__     | [VueJS](https://github.com/vuejs/vue) / [Nginx](https://github.com/nginx/nginx) | Interface graphique de l'application      | Oui                                      |
+| __server__     | [NodeJS](https://github.com/nodejs/node)                                        | API de l'application                      | Oui                                      |
+| __postgres__   | [Postgres](https://github.com/postgres/postgres)                                | Base de données de l'application          | Oui                                      |
+| __keycloak__   | [Keycloak](https://github.com/keycloak/keycloak)                                | Gestionnaire d'authentification / d'accès | -                                        |
+| __pgadmin__    | [Pgadmin](https://github.com/pgadmin-org/pgadmin4)                              | Interface d'administration de Postgres    | -                                        |
 
 ### API
 
@@ -31,11 +35,14 @@ Plusieurs plugins sont nativement enregistrés auprès du serveur pour assurer l
 - [Sonarqube](https://www.sonarsource.com/products/sonarqube/)
 - [Vault](https://www.vaultproject.io/)
 
-> *Plus d'informations sur le développement d'un plugin [ici](./misc/plugins.md).*
+> Pour plus d'informations sur le développement d'un plugin, voir :
+>   - [documentation des plugins](./misc/plugins.md).
+>   - [documentation du module hooks](./packages/hooks/README.md).
+>   - [exemple de plugin](https://github.com/cloud-pi-native/console-plugin-helloworld).
 
 ## Développement
 
-Le développement s'effectue directement dans un cluster Kubernetes à l'aide de Kind, un outil permettant de créer des noeuds Kubernetes dans des conteneurs Docker.
+Le développement s'effectue à l'aide de Docker *(le client et le serveur peuvent tourner en local ou dans Docker)* ou encore directement dans un cluster Kubernetes à l'aide de Kind, un outil permettant de créer des noeuds Kubernetes dans des conteneurs Docker.
 
 ### Prérequis
 
@@ -50,7 +57,9 @@ Liste des outils utilisés par le projet à installer sur son ordinateur :
 - [Nodejs](https://nodejs.org/en/download/) *- environnement d'exécution javascript*
 - [Pnpm](https://pnpm.io/installation) *- gestionnaire de paquets pour javascript*
 
-> *Pour la gestion des versions de Nodejs, il est recommandé d'utiliser [Volta](https://volta.sh/).*
+> Pour une meilleure expérience développeur, il est recommandé :
+>   - de gérer les versions de Nodejs avec [Volta](https://volta.sh/).
+>   - de lancer les commandes Nodejs à l'aide de [Ni](https://github.com/antfu/ni).
 
 ### Lancer l'application
 
@@ -212,6 +221,21 @@ Les services sont disponibles via des nom de domaines ajouté dans le fichier `/
 
 *__Notes:__ :warning: Il est possible que le navigateur utilisé (particulière Brave ou Firefox) bloque les cookies utilisés entre le frontend et keycloak, il est nécessaire de désactiver les protections de ce type dans votre navigateur (ex: Brave Shield).*
 
+### Informations de connexion
+
+Les comptes utilisés pendant le développement sont les suivants :
+
+| Service            | Nom d'utilisateur | Mot de passe |
+| ------------------ | ----------------- | ------------ |
+| Keycloak *(admin)* | `admin`           | `admin`      |
+| Keycloak *(user)*  | `test`            | `test`       |
+| PgAdmin            | `admin@dso.fr`    | `admin`      |
+| Postgres           | `admin@dso.fr`    | `admin`      |
+
+> La liste complète des comptes Keycloak pré-créés est disponible [ici](./keycloak/realms/realm-dev.json).
+
+> Le nom de la base de données est : `dso-console-db`.
+
 ### Variables d'environnements
 
 __Local / Docker:__
@@ -222,15 +246,14 @@ __Kubernetes :__
 
 Un chart Helm utilitaire est installé pour déployer les services qui ne sont pas inclus dans le chart de la console :
 
-- Keycloak
 - Pgadmin
 
-> *Ces services sont personnalisables [ici](./ci/helm-utils/values.yaml).*
+> Ces services sont personnalisables [ici](./ci/helm-utils/values.yaml).
 
 Différents fichiers de `values.yml` sont disponibles pour personnaliser le déploiement de l'application dans le cluster Kind:
 
+- Le fichier [./env/dso-values.yaml](./env/dso-values.yaml) contient les variables de base l'application.
 - Le fichier [./env/dso-values-dev.yaml](./env/dso-values-dev.yaml) contient les variables de l'application pour le mode développement.
-- Le fichier [./env/dso-values.yaml](./env/dso-values.yaml) contient les variables de l'application pour le mode production.
 - Le fichier [./env/dso-values-int-example.yaml](./env/dso-values-int-example.yaml) contient les variables de l'application pour le mode intégration.
 
 *__Notes:__ Un fichier d'environnement `./env/.env` est disponible pour fournir le chemin d'accès vers la `kubeconfig` du cluster d'intégration.*
@@ -289,8 +312,9 @@ Les utilisateurs faisant parti du group `admin` ont également accès à l'inter
 
 La gestion des dépendances est effectuée à l'aide de [pnpm](https://pnpm.io/) selon la structure de dossiers suivante :
 
-- Les différentes briques applicatives se trouvent dans le dossier `apps/`
-- Les bibliothèques additionnelles se trouvent dans le dossier `packages/`
+- Les différentes briques applicatives se trouvent dans le dossier `apps/`.
+- Les bibliothèques additionnelles se trouvent dans le dossier `packages/`.
+- Les plugins core se trouvent dans le dossier `plugins/`.
 
 *Schema de l'architecture du monorepo :*
 
@@ -306,7 +330,7 @@ La gestion des dépendances est effectuée à l'aide de [pnpm](https://pnpm.io/)
 │   ├── test-utils
 │   └── tsconfig
 ├── plugins
-│   ├── argo
+│   ├── argocd
 │   ├── gitlab
 │   ├── harbor
 │   ├── keycloak
@@ -321,9 +345,21 @@ La gestion des dépendances est effectuée à l'aide de [pnpm](https://pnpm.io/)
 └── README.md
 ```
 
+## Gestion du contrôle de versions
+
+Le dépôt utilise [Release Please](https://github.com/google-github-actions/release-please-action) pour automatiquement générer les tags Git ainsi que les releases GitHub. À chaque fois que du code est poussé dans la branche `main`, une pull request est créée en analysant les messages de commits pour déterminer le numéro de version à créer.
+
+À chaque fois qu'une pull request de release est fusionnée, les images de conteneur du serveur et du client sont créées et hébergées dans la [registry Github associée au dépôt](https://github.com/orgs/cloud-pi-native/packages?repo_name=console).
+
+Pour publier les versions des modules npm du dépôt un [pipeline](https://github.com/cloud-pi-native/console/actions/workflows/npm.yml) est disponible dans les GitHub Actions, il analysera les numéros de version présents dans les différents fichiers `package.json` pour déterminer si une nouvelle version du module doit être créée et publiée.
+
+> Il est possible de créer une version de pré-release d'un module npm en modifiant la clé `publishConfig.tag` dans le `package.json` avec par exemple `beta` pour générer une version beta.
+
 ## Conventions
 
 Cf. [Conventions - MIOM Fabrique Numérique](https://docs.fabrique-numerique.fr/conventions/nommage.html).
+
+> Les commits restent néanmoins rédigés en anglais.
 
 ## Contributions
 

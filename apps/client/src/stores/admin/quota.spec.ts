@@ -3,11 +3,12 @@ import { setActivePinia, createPinia } from 'pinia'
 import { apiClient } from '../../api/xhr-client.js'
 import { useAdminQuotaStore } from './quota.js'
 
-const apiClientGet = vi.spyOn(apiClient, 'get')
-const apiClientPost = vi.spyOn(apiClient, 'post')
-const apiClientPut = vi.spyOn(apiClient, 'put')
-const apiClientPatch = vi.spyOn(apiClient, 'patch')
-const apiClientDelete = vi.spyOn(apiClient, 'delete')
+const apiClientGetQuotas = vi.spyOn(apiClient.Quotas, 'getQuotas')
+const apiClientGet = vi.spyOn(apiClient.QuotasAdmin, 'getQuotaEnvironments')
+const apiClientPost = vi.spyOn(apiClient.QuotasAdmin, 'createQuota')
+const apiClientPut = vi.spyOn(apiClient.QuotasAdmin, 'updateQuotaStage')
+const apiClientPatch = vi.spyOn(apiClient.QuotasAdmin, 'patchQuotaPrivacy')
+const apiClientDelete = vi.spyOn(apiClient.QuotasAdmin, 'deleteQuota')
 
 describe('Quota Store', () => {
   beforeEach(() => {
@@ -23,14 +24,13 @@ describe('Quota Store', () => {
       { id: 'id2', name: 'medium' },
       { id: 'id3', name: 'large' },
     ]
-    apiClientGet.mockReturnValueOnce(Promise.resolve({ data }))
+    apiClientGetQuotas.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
     const adminQuotaStore = useAdminQuotaStore()
 
     await adminQuotaStore.getAllQuotas()
 
     expect(adminQuotaStore.quotas).toEqual(data)
-    expect(apiClientGet).toHaveBeenCalledTimes(1)
-    expect(apiClientGet.mock.calls[0][0]).toBe('/quotas')
+    expect(apiClientGetQuotas).toHaveBeenCalledTimes(1)
   })
 
   it('Should get a quota\'s associated environments by api call', async () => {
@@ -40,14 +40,13 @@ describe('Quota Store', () => {
       { id: 'id2', name: 'env2' },
       { id: 'id3', name: 'env3' },
     ]
-    apiClientGet.mockReturnValueOnce(Promise.resolve({ data }))
+    apiClientGet.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
     const adminQuotaStore = useAdminQuotaStore()
 
     const res = await adminQuotaStore.getQuotaAssociatedEnvironments(quotaId)
 
     expect(res).toBe(data)
     expect(apiClientGet).toHaveBeenCalledTimes(1)
-    expect(apiClientGet.mock.calls[0][0]).toBe(`/admin/quotas/${quotaId}/environments`)
   })
 
   it('Should create a quota by api call', async () => {
@@ -58,53 +57,48 @@ describe('Quota Store', () => {
       stageIds: ['stage1'],
     }
 
-    apiClientPost.mockReturnValueOnce(Promise.resolve({ data }))
+    apiClientPost.mockReturnValueOnce(Promise.resolve({ status: 201, body: data }))
     const adminQuotaStore = useAdminQuotaStore()
 
     const res = await adminQuotaStore.addQuota(data)
 
     expect(res).toBe(data)
     expect(apiClientPost).toHaveBeenCalledTimes(1)
-    expect(apiClientPost.mock.calls[0][0]).toBe('/admin/quotas')
   })
 
   it('Should update a quota stage association by api call', async () => {
     const quotaId = 'quotaId'
     const stageIds = ['stage1']
 
-    apiClientPut.mockReturnValueOnce(Promise.resolve({ data: 1 }))
+    apiClientPut.mockReturnValueOnce(Promise.resolve({ status: 200, body: 1 }))
     const adminQuotaStore = useAdminQuotaStore()
 
     const res = await adminQuotaStore.updateQuotaStage(quotaId, stageIds)
 
     expect(res).toBe(1)
     expect(apiClientPut).toHaveBeenCalledTimes(1)
-    expect(apiClientPut.mock.calls[0][0]).toBe('/admin/quotas/quotastages')
   })
 
   it('Should update a quota privacy by api call', async () => {
     const quotaId = 'quotaId'
 
-    apiClientPatch.mockReturnValueOnce(Promise.resolve({ data: 1 }))
+    apiClientPatch.mockReturnValueOnce(Promise.resolve({ status: 200, body: 1 }))
     const adminQuotaStore = useAdminQuotaStore()
 
     const res = await adminQuotaStore.updateQuotaPrivacy(quotaId, true)
 
     expect(res).toBe(1)
     expect(apiClientPatch).toHaveBeenCalledTimes(1)
-    expect(apiClientPatch.mock.calls[0][0]).toBe(`/admin/quotas/${quotaId}/privacy`)
   })
 
   it('Should delete a quota by api call', async () => {
     const quotaId = 'quotaId'
 
-    apiClientDelete.mockReturnValueOnce(Promise.resolve({ data: 1 }))
+    apiClientDelete.mockReturnValueOnce(Promise.resolve({ status: 204 }))
     const adminQuotaStore = useAdminQuotaStore()
 
-    const res = await adminQuotaStore.deleteQuota(quotaId)
+    await adminQuotaStore.deleteQuota(quotaId)
 
-    expect(res).toBe(1)
     expect(apiClientDelete).toHaveBeenCalledTimes(1)
-    expect(apiClientDelete.mock.calls[0][0]).toBe(`/admin/quotas/${quotaId}`)
   })
 })

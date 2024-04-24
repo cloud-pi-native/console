@@ -12,8 +12,8 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: "20.11.0"
-  PNPM_VERSION: "8"
+  NODE_VERSION: "20.12.2"
+  PNPM_VERSION: "9"
   REGISTRY: "ghcr.io"
   NAMESPACE: "${{ github.repository }}"
   MULTI_ARCH: false

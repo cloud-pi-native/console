@@ -1,48 +1,49 @@
-import type { CreateProjectDto, GetAllProjectsOutputDto, ProjectInfos, ProjectParams, UpdateProjectDto } from '@cpn-console/shared'
+import type { CreateProjectBody, UpdateProjectBody, PatchProjectBody } from '@cpn-console/shared'
 import { apiClient } from './xhr-client.js'
 
 // Project
-export const createProject = async (data: CreateProjectDto) => {
-  const response = await apiClient.post('/projects', data)
-  return response.data
+export const createProject = async (data: CreateProjectBody) => {
+  const response = await apiClient.Projects.createProject({ body: data })
+  if (response.status === 201) return response.body
 }
 
-export const getUserProjects = async (): Promise<Required<ProjectInfos>[]> => {
-  const response = await apiClient.get('/projects')
-  return response.data
+export const getUserProjects = async () => {
+  const response = await apiClient.Projects.getProjects()
+  if (response.status === 200) return response.body
 }
 
-export const updateProject = async (projectId: ProjectParams['projectId'], data: UpdateProjectDto) => { // TODO: Promise<ProjectOutputDto>
-  const response = await apiClient.put(`/projects/${projectId}`, data)
-  return response.data
+export const updateProject = async (projectId: string, data: UpdateProjectBody) => {
+  const response = await apiClient.Projects.updateProject({ body: data, params: { projectId } })
+  if (response.status === 200) return response.body
 }
 
-export const replayHooks = async (projectId: ProjectParams['projectId']) => {
-  const response = await apiClient.put(`/projects/${projectId}/hooks`)
-  return response.data
+export const replayHooks = async (projectId: string) => {
+  const response = await apiClient.Projects.replayHooksForProject({ params: { projectId } })
+  if (response.status === 204) return response.body
 }
 
-export const archiveProject = async (projectId: ProjectParams['projectId']): Promise<void> => { // TODO: Promise<ProjectOutputDto | null> ou pas ?
-  await apiClient.delete(`/projects/${projectId}`)
+export const archiveProject = async (projectId: string) => {
+  const response = await apiClient.Projects.archiveProject({ params: { projectId } })
+  if (response.status === 204) return response.body
 }
 
-export const getProjectSecrets = async (projectId: ProjectParams['projectId']) => {
-  const response = await apiClient.get(`/projects/${projectId}/secrets`)
-  return response.data
+export const getProjectSecrets = async (projectId: string) => {
+  const response = await apiClient.Projects.getProjectSecrets({ params: { projectId } })
+  if (response.status === 200) return response.body
 }
 
 // Admin - Projects
-export const getAllProjects = async (): Promise<GetAllProjectsOutputDto> => {
-  const response = await apiClient.get('/admin/projects')
-  return response.data
+export const getAllProjects = async () => {
+  const response = await apiClient.ProjectsAdmin.getAllProjects()
+  if (response.status === 200) return response.body
 }
 
-export const handleProjectLocking = async (projectId: string, lock: boolean) => {
-  const response = await apiClient.patch(`/admin/projects/${projectId}`, { lock })
-  return response.data
+export const handleProjectLocking = async (projectId: string, lock: PatchProjectBody['lock']) => {
+  const response = await apiClient.ProjectsAdmin.patchProject({ body: { lock }, params: { projectId } })
+  if (response.status === 200) return response.body
 }
 
 export const generateProjectsData = async () => {
-  const response = await apiClient.get('/admin/projects/data')
-  return response.data
+  const response = await apiClient.ProjectsAdmin.getProjectsData()
+  return response.body
 }

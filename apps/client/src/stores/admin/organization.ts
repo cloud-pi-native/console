@@ -1,17 +1,18 @@
 import { defineStore } from 'pinia'
 import api from '@/api/index.js'
-import type { CreateOrganizationDto, UpdateOrganizationDto } from '@cpn-console/shared'
+import type { CreateOrganizationBody, UpdateOrganizationBody, UpdateOrganizationParams } from '@cpn-console/shared'
 
 export const useAdminOrganizationStore = defineStore('admin-organization', () => {
   const getAllOrganizations = async () => {
-    return api.getAllOrganizations()
+    const res = await api.getAllOrganizations()
+    return res ?? []
   }
 
-  const createOrganization = async (organization: CreateOrganizationDto) => {
+  const createOrganization = async (organization: CreateOrganizationBody) => {
     return api.createOrganization({ ...organization, source: 'dso-console' })
   }
 
-  const updateOrganization = async (organization: UpdateOrganizationDto & { name: CreateOrganizationDto['name'] }) => {
+  const updateOrganization = async (organization: UpdateOrganizationBody & { name: UpdateOrganizationParams['organizationName'] }) => {
     return api.updateOrganization(organization.name, { ...organization, source: 'dso-console' })
   }
 
