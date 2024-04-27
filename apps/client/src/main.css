@@ -41,8 +41,6 @@ body,
 
 .fr-fieldset {
   margin: 1rem 0 0;
-  padding: 0;
-  flex-direction: column;
   align-items: flex-start;
 }
 

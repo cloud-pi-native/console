@@ -1,6 +1,4 @@
-import { Project, type Plugin, DefaultArgs } from '@cpn-console/hooks'
-// import { createKubeSecret } from './secret.js'
-// import { createKubeNamespace, deleteKubeNamespace, updateResourceQuota } from './namespace.js'
+import type { Project, Plugin, DefaultArgs } from '@cpn-console/hooks'
 import infos from './infos.js'
 import { getProjectSecrets } from './misc.js'
 import { deleteNamespaces, createNamespaces } from './namespace.js'
@@ -13,7 +11,6 @@ export const plugin: Plugin = {
       api: (args) => new KubernetesProjectApi(args),
       steps: {
         pre: createNamespaces,
-        // post: mettreCeQuiFautDedans,
       },
     },
     deleteProject: {

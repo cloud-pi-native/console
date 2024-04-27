@@ -67,20 +67,20 @@ model Permission {
 }
 
 model Project {
-  id             String        @id @unique @default(uuid()) @db.Uuid
+  id             String          @id @unique @default(uuid()) @db.Uuid
   name           String
-  organizationId String        @db.Uuid
+  organizationId String          @db.Uuid
   description    String?
-  status         ProjectStatus @default(initializing)
-  locked         Boolean       @default(false)
-  services       Json
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  status         ProjectStatus   @default(initializing)
+  locked         Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
   environments   Environment[]
-  organization   Organization  @relation(fields: [organizationId], references: [id])
+  organization   Organization    @relation(fields: [organizationId], references: [id])
   repositories   Repository[]
   roles          Role[]
-  clusters       Cluster[]     @relation("ClusterToProject")
+  clusters       Cluster[]       @relation("ClusterToProject")
+  projectPlugin  ProjectPlugin[]
 }
 
 model Repository {
@@ -174,6 +174,24 @@ model QuotaStage {
   stage        Stage            @relation(fields: [stageId], references: [id], onDelete: Cascade)
 
   @@unique([quotaId, stageId])
+}
+
+model ProjectPlugin {
+  pluginName String
+  projectId  String  @db.Uuid
+  project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  key        String
+  value      String
+
+  @@unique([projectId, pluginName, key])
+}
+
+model AdminPlugin {
+  pluginName String
+  key        String
+  value      String
+
+  @@unique([pluginName, key])
 }
 
 enum ClusterPrivacy {

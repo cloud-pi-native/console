@@ -307,11 +307,12 @@ describe('Administration projects', () => {
     cy.wait('@getQuotas')
     cy.get('.fr-callout__title')
       .should('contain', project.name)
-    cy.get('#servicesTable').within(() => {
-      cy.get('img:first')
-        .should('have.attr', 'src', '/img/argocd.svg')
+    cy.get('#servicesTable').should('exist')
+    cy.getByDataTestid('service-argocd').within(() => {
       cy.get('a:first')
         .should('have.attr', 'href', 'https://theuselessweb.com/')
+      cy.get('img:first')
+        .should('have.attr', 'src', '/img/argocd.svg')
     })
   })
 

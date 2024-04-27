@@ -248,14 +248,6 @@ export const data = {
       description: null,
       status: 'created',
       locked: false,
-      services: {
-        gitlab: {
-          id: 34,
-        },
-        registry: {
-          id: 25,
-        },
-      },
       createdAt: '2023-07-03T14:46:56.814Z',
       updatedAt: '2023-07-03T14:46:56.817Z',
     },
@@ -266,14 +258,6 @@ export const data = {
       description: null,
       status: 'created',
       locked: false,
-      services: {
-        gitlab: {
-          id: 34,
-        },
-        registry: {
-          id: 25,
-        },
-      },
       createdAt: '2023-07-03T14:46:56.824Z',
       updatedAt: '2023-07-03T14:46:56.830Z',
     },
@@ -284,14 +268,6 @@ export const data = {
       description: "Application de réservation de places à l'examen du permis B.",
       status: 'created',
       locked: false,
-      services: {
-        gitlab: {
-          id: 34,
-        },
-        registry: {
-          id: 25,
-        },
-      },
       createdAt: '2023-07-03T14:46:56.778Z',
       updatedAt: '2023-07-03T14:46:56.783Z',
     },
@@ -302,14 +278,6 @@ export const data = {
       description: "Application d'aide à la catégorisation d'armes à feu.",
       status: 'created',
       locked: false,
-      services: {
-        gitlab: {
-          id: 35,
-        },
-        registry: {
-          id: 26,
-        },
-      },
       createdAt: '2023-07-10T14:46:56.778Z',
       updatedAt: '2023-07-10T14:46:56.783Z',
     },
@@ -320,14 +288,6 @@ export const data = {
       description: "Application de transmission d'informations entre agents de la PS et de l'IJ.",
       status: 'failed',
       locked: true,
-      services: {
-        gitlab: {
-          id: 36,
-        },
-        registry: {
-          id: 27,
-        },
-      },
       createdAt: '2023-07-03T14:46:56.799Z',
       updatedAt: '2023-07-03T14:46:56.806Z',
     },
@@ -889,14 +849,6 @@ export const data = {
           status: 'initializing',
           isInfra: false,
           project: 'int-2',
-          services: {
-            gitlab: {
-              id: 252,
-            },
-            registry: {
-              id: 63,
-            },
-          },
           createdAt: '2023-06-08T15:15:56.692Z',
           isPrivate: false,
           projectId: '1e4fdb28-f9ea-46d4-ad16-607c7f1aa8b6',
@@ -953,14 +905,6 @@ export const data = {
           status: 'initializing',
           isInfra: false,
           project: 'int-2',
-          services: {
-            gitlab: {
-              id: 252,
-            },
-            registry: {
-              id: 63,
-            },
-          },
           createdAt: '2023-06-08T15:15:56.692Z',
           isPrivate: false,
           projectId: '1e4fdb28-f9ea-46d4-ad16-607c7f1aa8b6',
@@ -1019,7 +963,6 @@ export const data = {
           locked: true,
           status: 'initializing',
           project: 'int-2',
-          services: null,
           createdAt: '2023-06-08T15:14:53.517Z',
           updatedAt: '2023-06-08T15:14:53.517Z',
           description: null,
@@ -1157,14 +1100,6 @@ export const data = {
           locked: false,
           status: 'created',
           project: 'int-2',
-          services: {
-            gitlab: {
-              id: 252,
-            },
-            registry: {
-              id: 63,
-            },
-          },
           createdAt: '2023-06-08T15:14:53.517Z',
           updatedAt: '2023-06-08T15:16:49.011Z',
           description: null,

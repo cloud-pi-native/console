@@ -3,7 +3,7 @@ import { checkServicesHealth } from './business.js'
 import { serviceContract } from '@cpn-console/shared'
 import { serverInstance } from '@/app.js'
 
-export const serviceRouter = () => serverInstance.router(serviceContract, {
+export const serviceMonitorRouter = () => serverInstance.router(serviceContract, {
   getServiceHealth: async ({ request: req }) => {
     const serviceData = await checkServicesHealth()
     addReqLogs({

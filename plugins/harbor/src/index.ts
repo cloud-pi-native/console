@@ -12,3 +12,9 @@ export const plugin: Plugin = {
   },
   monitor,
 }
+
+declare module '@cpn-console/hooks' {
+  interface ProjectStore {
+    registry?: { projectId?: string }
+  }
+}

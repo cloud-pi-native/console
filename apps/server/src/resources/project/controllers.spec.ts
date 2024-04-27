@@ -57,7 +57,7 @@ describe('Project routes', () => {
 
       expect(response.statusCode).toEqual(200)
       expect(response.json()).toBeDefined()
-      expect(response.json()).toMatchObject({ Gitlab: { token: 'myToken' }, Harbor: { token: 'myToken' } })
+      expect(response.json()).toMatchObject({ Harbor: { token: 'myToken' } })
     })
 
     it('Should not retrieve a project secrets when not project owner', async () => {

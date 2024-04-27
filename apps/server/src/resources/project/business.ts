@@ -1,4 +1,4 @@
-import type { Cluster, Environment, Organization, Project, User } from '@prisma/client'
+import type { Organization, Project, User } from '@prisma/client'
 import type { KeycloakPayload } from 'fastify-keycloak-adapter'
 import {
   ProjectSchema,
@@ -9,7 +9,7 @@ import {
   type CreateProjectBody,
   type UpdateProjectBody,
 } from '@cpn-console/shared'
-import { services, servicesInfos } from '@cpn-console/hooks'
+import { servicesInfos } from '@cpn-console/hooks'
 import {
   addLogs,
   deleteAllEnvironmentForProject,
@@ -43,25 +43,13 @@ export const getProjectInfosAndClusters = async (projectId: string) => {
   return { project, projectClusters }
 }
 
-export const projectServices = (project: Project & { organization: Organization, environments: Environment[], clusters: Pick<Cluster, 'id' | 'infos' | 'label' | 'privacy' | 'clusterResources'>[] }) => services.getForProject({
-  project: project.name,
-  organization: project.organization.name,
-  services: project.services,
-  environments: project.environments,
-  // @ts-ignore
-  clusters: project.clusters,
-})
-
 export const getUserProjects = async (requestor: UserDto) => {
   const user = await getUser(requestor)
   const projects = await getUserProjectsQuery(user)
   const publicClusters = await getPublicClusters()
   return projects.map((project) => {
     project.clusters = project.clusters.concat(publicClusters)
-    return {
-      ...project,
-      externalServices: projectServices(project),
-    }
+    return project
   })
 }
 
@@ -145,7 +133,7 @@ export const createProject = async (dataDto: CreateProjectBody, requestor: UserD
     if (!projectInfos) throw new NotFoundError('Projet introuvable')
     projectInfos.clusters = projectInfos.clusters.concat(publicClusters)
 
-    return { ...projectInfos, externalServices: projectServices(projectInfos) }
+    return projectInfos
   } catch (error) {
     throw new Error(error?.message)
   }

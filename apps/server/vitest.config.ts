@@ -13,7 +13,7 @@ export default mergeConfig(
       coverage: {
         provider: 'v8',
         reporter: ['text', 'lcov'],
-        exclude: ['**/*.spec.ts', '**/mocks.ts', '**/types/'],
+        exclude: ['**/*.spec.ts', '**/mocks.ts', '**/types/', 'src/mocks/**', '**/queries.ts'],
       },
       setupFiles: ['./vitest-init.ts'],
       exclude: [...configDefaults.exclude, 'e2e/*'],

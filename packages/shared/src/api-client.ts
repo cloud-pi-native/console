@@ -11,6 +11,7 @@ export const getContract = async () => contractInstance.router(
     Organizations: (await import('./contracts/index.js')).organizationContract,
     Permissions: (await import('./contracts/index.js')).permissionContract,
     Projects: (await import('./contracts/index.js')).projectContract,
+    ProjectServices: (await import('./contracts/index.js')).projectServiceContract,
     Quotas: (await import('./contracts/index.js')).quotaContract,
     Repositories: (await import('./contracts/index.js')).repositoryContract,
     Stages: (await import('./contracts/index.js')).stageContract,
@@ -28,6 +29,7 @@ export const getContract = async () => contractInstance.router(
     UsersAdmin: (await import('./contracts/index.js')).userAdminContract,
     ZonesAdmin: (await import('./contracts/index.js')).zoneAdminContract,
     System: (await import('./contracts/index.js')).systemContract,
+    SystemPlugin: (await import('./contracts/index.js')).systemPluginContract,
   },
 )
 

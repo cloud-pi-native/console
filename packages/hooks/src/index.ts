@@ -2,7 +2,8 @@ import { PluginApi, objectEntries } from './utils/utils.js'
 import * as hooks from './hooks/index.js'
 import { type ServiceInfos, servicesInfos } from './services.js'
 import { Monitor } from '@cpn-console/shared'
-import { HookStepsNames, StepCall } from './hooks/hook.js'
+import type { HookStepsNames, StepCall } from './hooks/hook.js'
+import { addPlugin, editStrippers } from './config.js'
 export * from './utils/logger.js'
 
 export type HookChoice = keyof typeof hooks
@@ -46,7 +47,11 @@ let config: PluginManagerOptions
 const pluginManager = (options: PluginManagerOptions): PluginManager => {
   config = options
   const register: RegisterFn = (plugin: Plugin) => {
-    if (plugin.infos.to && config.mockExternalServices) plugin.infos.to = () => 'https://theuselessweb.com/'
+    if (plugin.infos.config) {
+      addPlugin(plugin.infos.name, plugin.infos.config, editStrippers)
+    }
+
+    if (plugin.infos.to && config.mockExternalServices) plugin.infos.to = () => [{ name: 'Lien', to: 'https://theuselessweb.com/' }]
     if (plugin.start && options.startPlugins) plugin.start({})
     const message: string[] = []
     if (plugin.monitor && config.mockMonitoring) {
@@ -125,3 +130,4 @@ export * from './utils/crypto.js'
 export * from './hooks/index.js'
 export * from './hooks/hook.js'
 export * from './utils/utils.js'
+export * from './config.js'
