@@ -1,0 +1,15 @@
+{{- if .Values.postgres.enabled -}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $.Release.Name }}-{{ .Values.postgres.service.hostname }}-service
+spec:
+  type: {{ .Values.postgres.service.type }}
+  selector:
+    app: {{ $.Release.Name }}-{{ .Values.postgres.service.hostname }}
+  ports:
+  - port: {{ .Values.postgres.service.port }}
+    targetPort: {{ .Values.postgres.container.port }}
+    nodePort: {{ .Values.postgres.service.nodePort }}
+{{- end }}
