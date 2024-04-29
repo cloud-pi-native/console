@@ -19,9 +19,16 @@ data:
   KEYCLOAK_REDIRECT_URI: {{ .redirectUri }}
   {{- end }}
   SERVER_PORT: {{ .Values.server.container.port | quote }}
+  {{- if .Values.postgres.enabled -}}
   {{- with .Values.postgres }}
   DB_HOST: {{ $.Release.Name }}-{{ .service.hostname }}-service
   DB_URL: postgresql://{{ .container.user }}:{{ .container.pass }}@{{ $.Release.Name }}-{{ .service.hostname }}-service:{{ .service.port }}/{{ .container.db }}?schema=public 
+  {{- end }}
+  {{- else }}
+  {{- with .Values.postgres.external }}
+  DB_HOST: {{ .host }}
+  DB_URL: postgresql://{{ .username }}:{{ .password }}@{{ .host }}:{{ .port }}/{{ .database }}?schema=public 
+  {{- end }}
   {{- end }}
   {{- if .Values.server.extraCa.name }}
   NODE_EXTRA_CA_CERTS: /config/ca_certs

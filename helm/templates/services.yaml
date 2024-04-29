@@ -1,4 +1,4 @@
-{{ $containers := list "server" "client" "postgres" }}
+{{ $containers := list "server" "client" }}
 {{- range $container := $containers -}}
 {{- with index $.Values $container }}
 ---
