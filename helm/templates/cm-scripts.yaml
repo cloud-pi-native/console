@@ -11,6 +11,6 @@ data:
 {{- range $i, $val := .Values.server.plugins }}
     wget {{ $val }} -O {{ $i }}.zip;
     mkdir -p /plugins/{{ $i }}
-    unzip {{ $i }}.zip -d /plugins/{{ $i }};
+    unzip -o {{ $i }}.zip -d /plugins/{{ $i }}
 {{- end }}
 {{- end }}
