@@ -1,66 +1,60 @@
 import type { Cluster, QuotaStage, Stage } from '@prisma/client'
 import prisma from '@/prisma.js'
 
-export const getStages = async () => {
-  return prisma.stage.findMany({
+export const getStages = () =>
+  prisma.stage.findMany({
     include: {
       clusters: true,
       quotaStage: true,
     },
   })
-}
 
-export const getAllStageIds = async () => {
-  return (await prisma.stage.findMany({
+export const getAllStageIds = async () =>
+  (await prisma.stage.findMany({
     select: {
       id: true,
     },
   })).map(({ id }) => id)
-}
 
-export const getStageById = async (id: Stage['id']) => {
-  return prisma.stage.findUnique({
+export const getStageById = (id: Stage['id']) =>
+  prisma.stage.findUnique({
     where: { id },
     include: {
       clusters: true,
       quotaStage: true,
     },
   })
-}
 
-export const getStageByName = async (name: Stage['name']) => {
-  return prisma.stage.findUnique({
+export const getStageByName = (name: Stage['name']) =>
+  prisma.stage.findUnique({
     where: { name },
   })
-}
 
-export const getQuotaStageById = async (id: QuotaStage['id']) => {
-  return prisma.quotaStage.findUnique({
+export const getQuotaStageById = (id: QuotaStage['id']) =>
+  prisma.quotaStage.findUnique({
     where: { id },
   })
-}
 
-export const linkStageToClusters = async (id: Stage['id'], clusterIds: Cluster['id'][]) => prisma.stage.update({
-  where: {
-    id,
-  },
-  data: {
-    clusters: {
-      connect: clusterIds.map(clusterId => ({ id: clusterId })),
+export const linkStageToClusters = (id: Stage['id'], clusterIds: Cluster['id'][]) =>
+  prisma.stage.update({
+    where: {
+      id,
     },
-  },
-})
+    data: {
+      clusters: {
+        connect: clusterIds.map(clusterId => ({ id: clusterId })),
+      },
+    },
+  })
 
-export const createStage = async ({ name }: { name: Stage['name'] }) => {
-  return prisma.stage.create({
+export const createStage = ({ name }: { name: Stage['name'] }) =>
+  prisma.stage.create({
     data: {
       name,
     },
   })
-}
 
-export const deleteStage = async (id: Stage['id']) => {
-  return prisma.stage.delete({
+export const deleteStage = (id: Stage['id']) =>
+  prisma.stage.delete({
     where: { id },
   })
-}

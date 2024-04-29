@@ -6,9 +6,7 @@ import { dbKeysExcluded } from '@/utils/queries-tools.js'
 type UserCreate = Omit<User, 'createdAt' | 'updatedAt'>;
 
 // SELECT
-export const getUsers = async () => {
-  return prisma.user.findMany()
-}
+export const getUsers = prisma.user.findMany
 
 export const getUserInfos = async (id: User['id']) => {
   const usr = await prisma.user.findMany({
@@ -19,13 +17,11 @@ export const getUserInfos = async (id: User['id']) => {
       roles: true,
     },
   })
-  const usrWithKeysExcluded = exclude(usr, dbKeysExcluded)
-
-  return usrWithKeysExcluded
+  return exclude(usr, dbKeysExcluded)
 }
 
-export const getMatchingUsers = async (letters: string) => {
-  return prisma.user.findMany({
+export const getMatchingUsers = (letters: string) =>
+  prisma.user.findMany({
     where: {
       email: {
         contains: letters,
@@ -33,22 +29,19 @@ export const getMatchingUsers = async (letters: string) => {
     },
     take: 5,
   })
-}
 
-export const getUserById = async (id: User['id']) => {
-  return prisma.user.findUnique({ where: { id } })
-}
+export const getUserById = (id: User['id']) =>
+  prisma.user.findUnique({ where: { id } })
 
-export const getOrCreateUser = async (user: Parameters<typeof prisma.user.upsert>[0]['create']) => prisma.user.upsert({
-  where: { id: user.id },
-  update: user,
-  create: user,
-})
+export const getOrCreateUser = (user: Parameters<typeof prisma.user.upsert>[0]['create']) =>
+  prisma.user.upsert({
+    where: { id: user.id },
+    update: user,
+    create: user,
+  })
 
-export const getUserByEmail = async (email: User['email']) => {
-  const res = await prisma.user.findUnique({ where: { email } })
-  return res
-}
+export const getUserByEmail = (email: User['email']) =>
+  prisma.user.findUnique({ where: { email } })
 
 // CREATE
 export const createUser = async ({ id, email, firstName, lastName }: UserCreate) => {
@@ -64,16 +57,12 @@ export const updateUserById = async ({ id, email, firstName, lastName }: UserCre
   if (!user) throw new Error('L\'utilisateur demandé n\'existe pas')
   if (isEmailAlreadyTaken) throw new Error('Un utilisateur avec cette adresse e-mail existe déjà')
   if (user && !isEmailAlreadyTaken) {
-    const res = await prisma.user.update({ where: { id }, data: { email, firstName, lastName } })
-    return res
+    return prisma.user.update({ where: { id }, data: { email, firstName, lastName } })
   }
 }
 
 // TECH
-export const _dropUsersTable = async () => {
-  await prisma.user.deleteMany({})
-}
+export const _dropUsersTable = prisma.user.deleteMany
 
-export const _createUser = async (data: Parameters<typeof prisma.user.create>[0]['data']) => {
-  return prisma.user.upsert({ where: { id: data.id }, create: data, update: data })
-}
+export const _createUser = (data: Parameters<typeof prisma.user.create>[0]['data']) =>
+  prisma.user.upsert({ where: { id: data.id }, create: data, update: data })
