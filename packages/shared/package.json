@@ -1,7 +1,7 @@
 {
   "name": "@cpn-console/shared",
   "description": "",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": false,
   "type": "module",
   "main": "dist/index.js",
@@ -40,7 +40,7 @@
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
     "access": "public",
-    "tag": "latest"
+    "tag": "beta"
   },
   "files": [
     "dist",
