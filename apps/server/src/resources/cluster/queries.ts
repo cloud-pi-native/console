@@ -53,6 +53,7 @@ export const getClustersByIds = (clusterIds: Cluster['id'][]) =>
 export const getPublicClusters = () =>
   prisma.cluster.findMany({
     where: { privacy: 'public' },
+    include: { zone: true },
   })
 
 export const getHookPublicClusters = () =>

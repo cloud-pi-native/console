@@ -244,6 +244,7 @@ describe('Admin organization routes', () => {
       ]
 
       prisma.organization.findMany.mockResolvedValueOnce(organizations)
+      prisma.adminPlugin.findMany.mockResolvedValueOnce([])
       prisma.log.create.mockResolvedValue({ action: 'Fetch organizations' })
       filteredOrganizations.forEach(org => {
         prisma.organization.create.mockResolvedValue(org)

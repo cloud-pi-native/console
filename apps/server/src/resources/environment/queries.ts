@@ -19,7 +19,6 @@ export const getEnvironmentInfos = (id: Environment['id']) =>
           name: true,
           id: true,
           status: true,
-          services: false,
           repositories: {
             where: { isInfra: true },
           },

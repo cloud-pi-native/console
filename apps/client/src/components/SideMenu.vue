@@ -304,6 +304,17 @@ onMounted(() => {
               Zones
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
+          <DsfrSideMenuListItem>
+            <DsfrSideMenuLink
+              class="menu-link-icon"
+              data-testid="menuAdministrationPlugins"
+              :active="routeName === 'ListPlugins'"
+              to="/admin/plugins"
+            >
+              <v-icon name="ri-settings-3-line" />
+              Plugins
+            </DsfrSideMenuLink>
+          </DsfrSideMenuListItem>
         </DsfrSideMenuList>
       </DsfrSideMenuListItem>
 

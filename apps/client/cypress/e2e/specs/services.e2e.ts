@@ -9,11 +9,13 @@ describe('Services view', () => {
 
   it('Should display tiles and url services according to selected project', () => {
     cy.goToProjects()
-      .getByDataTestid(`projectTile-${project.name}`).click()
-      .getByDataTestid('menuServices').click()
-      .get('div.fr-tile')
-      .should('have.length', 4)
-      .get('#ArgoCD').find('a')
-      .should('have.attr', 'href', 'https://theuselessweb.com/')
+    cy.getByDataTestid(`projectTile-${project.name}`).click()
+    cy.getByDataTestid('menuServices').click()
+    cy.getByDataTestid('service-argocd').within(() => {
+      cy.get('a:first')
+        .should('have.attr', 'href', 'https://theuselessweb.com/')
+      cy.get('img:first')
+        .should('have.attr', 'src', '/img/argocd.svg')
+    })
   })
 })

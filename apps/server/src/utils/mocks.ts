@@ -1,7 +1,7 @@
 import fp from 'fastify-plugin'
 import { Project, Cluster, Repository } from '@prisma/client'
 import { User } from '@cpn-console/test-utils'
-import { RepoCreds } from '@cpn-console/hooks'
+import { PluginsManifests, RepoCreds, ServiceInfos, editStrippers, populatePluginManifests } from '@cpn-console/hooks'
 import { genericProxy } from './proxy.js'
 
 let requestor: User
@@ -26,7 +26,7 @@ export const mockSessionPlugin = async () => {
   return { default: fp(sessionPlugin) }
 }
 
-export const mockHooksPackage = () => {
+export const mockHooksPackage = async () => {
   const hookTemplate = {
     execute: () => ({
       args: {},
@@ -38,16 +38,48 @@ export const mockHooksPackage = () => {
   }
 
   return {
+    editStrippers,
+    populatePluginManifests,
     services: {
-      getForProject: () => { },
       getStatus: () => [],
       refreshStatus: async () => [],
     },
     PluginApi: class { },
     servicesInfos: {
-      gitlab: { title: 'Gitlab' },
-      harbor: { title: 'Harbor' },
-    },
+      registry: { title: 'Harbor', name: 'registry', to: () => 'test' },
+      plugin2: { title: 'Plugin2', name: 'plugin2', to: () => ({ to: 'test', title: 'Test' }) },
+      plugin3: { title: 'Plugin3', name: 'plugin3', to: () => [{ to: 'test', title: 'Test' }] },
+      plugin4: { title: 'Plugin4', name: 'plugin4', to: () => [{ to: 'test' }] },
+      plugin5: { title: 'Plugin5', name: 'plugin5' },
+    }as Record<string, ServiceInfos>,
+    pluginsManifests: {
+      registry: {
+        title: 'Harbor',
+        global: [{
+          kind: 'switch',
+          initialValue: 'default',
+          key: 'test2',
+          permissions: {
+            admin: { read: true, write: true },
+            user: { read: true, write: false },
+          },
+          title: 'Test2',
+          value: 'default',
+          description: 'description',
+        }],
+        project: [{
+          kind: 'switch',
+          key: 'test2',
+          permissions: {
+            admin: { read: true, write: true },
+            user: { read: true, write: true },
+          },
+          title: 'Test',
+          value: 'default',
+          initialValue: 'disabled',
+        }],
+      },
+    } as PluginsManifests,
     hooks: {
       // projects
       getProjectSecrets: {
@@ -55,15 +87,7 @@ export const mockHooksPackage = () => {
           failed: false,
           args: {},
           results: {
-            gitlab: {
-              secrets: {
-                token: 'myToken',
-              },
-              status: {
-                failed: false,
-              },
-            },
-            harbor: {
+            registry: {
               secrets: {
                 token: 'myToken',
               },
@@ -215,7 +239,7 @@ const secretsResult = {
         failed: false,
       },
     },
-    harbor: {
+    registry: {
       secrets: {
         token: 'myToken',
       },
@@ -226,7 +250,7 @@ const secretsResult = {
   },
 }
 
-type ReposCreds = Record<Repository['internalRepoName'], RepoCreds>
+export type ReposCreds = Record<Repository['internalRepoName'], RepoCreds>
 
 const misc = {
   fetchOrganizations: async () => resultsFetch,

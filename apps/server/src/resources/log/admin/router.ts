@@ -8,7 +8,7 @@ export const logAdminRouter = () => serverInstance.router(logAdminContract, {
   getLogs: async ({ request: req, query }) => {
     try {
       const { offset, limit } = query
-      const [total, logs] = await getAllLogs(parseInt(offset), parseInt(limit))
+      const [total, logs] = await getAllLogs(offset, limit)
 
       addReqLogs({
         req,

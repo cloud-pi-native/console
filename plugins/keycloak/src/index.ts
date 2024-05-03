@@ -1,9 +1,4 @@
-import type {
-  DefaultArgs,
-  Plugin,
-  Project,
-  ProjectLite,
-} from '@cpn-console/hooks'
+import type { DefaultArgs, Plugin, Project, ProjectLite } from '@cpn-console/hooks'
 import {
   upsertProject,
   deleteProject,

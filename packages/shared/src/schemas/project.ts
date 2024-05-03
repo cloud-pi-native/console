@@ -25,20 +25,6 @@ export const ProjectSchema = z.object({
   locked: z.boolean(),
 
   // ProjectInfos
-  services: z.object({})
-    .optional(),
-  externalServices: z.array(z.object({
-    to: z.string(),
-    title: z.string()
-      .optional(),
-    description: z.string()
-      .optional(),
-    imgSrc: z.string()
-      .optional(),
-  })
-    .optional(),
-  )
-    .optional(),
   organization: OrganizationSchema.optional(),
   roles: z.array(RoleSchema.and(z.object({ user: UserSchema.optional() }))).optional(),
   clusters: z.array(z.object({
@@ -110,6 +96,11 @@ export const ProjectSchema = z.object({
 
 export type Project = Zod.infer<typeof ProjectSchema>
 
+export const ProjectParams = z.object({
+  projectId: z.string()
+    .uuid(),
+})
+
 export const CreateProjectSchema = {
   body: ProjectSchema.omit({ id: true, status: true, locked: true }),
   responses: {
@@ -128,10 +119,7 @@ export const GetProjectsSchema = {
 }
 
 export const GetProjectSecretsSchema = {
-  params: z.object({
-    projectId: z.string()
-      .uuid(),
-  }),
+  params: ProjectParams,
   responses: {
     200: z.object({}),
     500: ErrorSchema,
@@ -139,10 +127,7 @@ export const GetProjectSecretsSchema = {
 }
 
 export const UpdateProjectSchema = {
-  params: z.object({
-    projectId: z.string()
-      .uuid(),
-  }),
+  params: ProjectParams,
   body: ProjectSchema.partial(),
   responses: {
     200: ProjectSchema,
@@ -151,10 +136,7 @@ export const UpdateProjectSchema = {
 }
 
 export const ReplayHooksForProjectSchema = {
-  params: z.object({
-    projectId: z.string()
-      .uuid(),
-  }),
+  params: ProjectParams,
   responses: {
     204: null,
     500: ErrorSchema,
@@ -162,10 +144,7 @@ export const ReplayHooksForProjectSchema = {
 }
 
 export const PatchProjectSchema = {
-  params: z.object({
-    projectId: z.string()
-      .uuid(),
-  }),
+  params: ProjectParams,
   body: z.object({
     lock: z.boolean(),
   }),
@@ -176,10 +155,7 @@ export const PatchProjectSchema = {
 }
 
 export const ArchiveProjectSchema = {
-  params: z.object({
-    projectId: z.string()
-      .uuid(),
-  }),
+  params: ProjectParams,
   responses: {
     204: null,
     500: ErrorSchema,

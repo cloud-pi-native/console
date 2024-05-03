@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import { onBeforeMount, ref, computed } from 'vue'
+import { onBeforeMount, ref } from 'vue'
 import { getRandomId } from '@gouvminint/vue-dsfr'
-import { type AsyncReturnType, formatDate, statusDict, sortArrByObjKeyAsc, AllStatus, Project } from '@cpn-console/shared'
+import { type AsyncReturnType, type PluginsUpdateBody, formatDate, statusDict, sortArrByObjKeyAsc, AllStatus, type Project, type ProjectService } from '@cpn-console/shared'
 import { useAdminProjectStore } from '@/stores/admin/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useAdminOrganizationStore } from '@/stores/admin/organization.js'
@@ -10,9 +10,11 @@ import { useUserStore } from '@/stores/user.js'
 import { useUsersStore } from '@/stores/users.js'
 import { useProjectUserStore } from '@/stores/project-user.js'
 import { useAdminQuotaStore } from '@/stores/admin/quota.js'
+import { useProjectServiceStore } from '@/stores/project-services'
 
 const adminProjectStore = useAdminProjectStore()
 const adminOrganizationStore = useAdminOrganizationStore()
+const projectServiceStore = useProjectServiceStore()
 const userStore = useUserStore()
 const usersStore = useUsersStore()
 const snackbarStore = useSnackbarStore()
@@ -217,6 +219,7 @@ const selectProject = async (projectId: string) => {
   selectedProject.value = allProjects.value?.find(project => project.id === projectId)
   getRepositoriesRows()
   await getEnvironmentsRows()
+  reloadProjectServices()
 }
 
 const updateEnvironmentQuota = async ({ environmentId, quotaId }: {environmentId: string, quotaId: string}) => {
@@ -295,29 +298,36 @@ const generateProjectsDataFile = async () => {
   }
 }
 
-const servicesRows = computed(() => selectedProject.value?.externalServices?.map(value => [
-  {
-    component: 'img',
-    src: value?.imgSrc,
-    alt: value?.title,
-    title: value?.title,
-    width: 50,
-  },
-  {
-    component: 'a',
-    href: value?.to,
-    text: value?.to,
-    title: `Se rendre sur ${value?.title}`,
-    target: '_blank',
-    class: 'fr-text-default--info text-xs cursor-pointer',
-  },
-]))
-
 onBeforeMount(async () => {
   organizations.value = await adminOrganizationStore.getAllOrganizations()
   await getAllProjects()
 })
 
+const projectServices = ref<ProjectService[]>([])
+const reloadProjectServices = async () => {
+  if (!selectedProject.value) return
+  const resServices = await projectServiceStore.getProjectServices(selectedProject.value.id, 'admin')
+  projectServices.value = []
+  await nextTick()
+  const filteredServices = resServices
+  projectServices.value = filteredServices
+}
+
+const saveProjectServices = async (data: PluginsUpdateBody) => {
+  if (!selectedProject.value) return
+
+  snackbarStore.isWaitingForResponse = true
+  try {
+    await projectServiceStore.updateProjectServices(data, selectedProject.value.id)
+    snackbarStore.setMessage('Paramètres sauvegardés', 'success')
+  } catch (error) {
+    console.log(error)
+
+    snackbarStore.setMessage('Erreur lors de la sauvegarde', 'error')
+  }
+  await reloadProjectServices()
+  snackbarStore.isWaitingForResponse = false
+}
 </script>
 <template>
   <div
@@ -499,12 +509,21 @@ onBeforeMount(async () => {
           @update-role="({ userId, role}) => updateUserRole({ userId, role})"
           @remove-member="(userId) => removeUserFromProject(userId)"
         />
-        <DsfrTable
-          :id="servicesId"
-          title="Services"
-          :headers="['Service', 'Url']"
-          :rows="servicesRows"
-        />
+        <div>
+          <h4
+            :id="servicesId"
+            class="mb-0"
+          >
+            Services
+          </h4>
+          <ServicesConfig
+            :services="projectServices"
+            permission-target="admin"
+            :display-global="false"
+            @update="(data: PluginsUpdateBody) => saveProjectServices(data)"
+            @reload="() => reloadProjectServices()"
+          />
+        </div>
       </div>
     </div>
     <LoadingCt

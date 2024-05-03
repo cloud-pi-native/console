@@ -3,14 +3,17 @@ import { apiPrefix, contractInstance } from '../index.js'
 import { ErrorSchema } from '../schemas/utils.js'
 import { ClientInferRequest, ClientInferResponseBody } from '@ts-rest/core'
 
+export const adminLogsQuery = z.object({
+  offset: z.coerce.number(),
+  limit: z.coerce.number(),
+})
+export type AdminLogsQuery = Zod.infer<typeof adminLogsQuery>
+
 export const logAdminContract = contractInstance.router({
   getLogs: {
     method: 'GET',
     path: `${apiPrefix}/admin/logs`,
-    query: z.object({
-      offset: z.string(),
-      limit: z.string(),
-    }),
+    query: adminLogsQuery,
     summary: 'Get logs',
     description: 'Retrieved all logs.',
     responses: {

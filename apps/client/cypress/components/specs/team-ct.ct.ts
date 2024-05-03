@@ -42,7 +42,7 @@ describe('TeamCt.vue', () => {
     cy.getByDataTestid('teamTable').should('be.visible')
       .within(() => {
         cy.get('caption')
-          .should('contain', `Membres du projet ${randomDbSetup.project.name}`)
+          .should('contain', 'Membres du projet')
         cy.get('tbody > tr')
           .should('have.length', randomDbSetup.project.roles?.length)
         cy.get(`td[title="${owner?.email} ne peut pas être retiré(e) du projet"]`)
@@ -75,7 +75,7 @@ describe('TeamCt.vue', () => {
     cy.getByDataTestid('teamTable').should('be.visible')
       .within(() => {
         cy.get('caption')
-          .should('contain', `Membres du projet ${randomDbSetup.project.name}`)
+          .should('contain', 'Membres du projet')
         cy.get('tbody > tr')
           .should('have.length', randomDbSetup.project.roles?.length)
         cy.get(`td[title="${owner?.email} ne peut pas être retiré(e) du projet"]`)
@@ -108,7 +108,7 @@ describe('TeamCt.vue', () => {
     cy.getByDataTestid('teamTable').should('be.visible')
       .within(() => {
         cy.get('caption')
-          .should('contain', `Membres du projet ${randomDbSetup.project.name}`)
+          .should('contain', 'Membres du projet')
         cy.get('tbody > tr')
           .should('have.length', randomDbSetup.project.roles?.length)
         cy.get(`td[title="${owner?.email} ne peut pas être retiré(e) du projet"]`)

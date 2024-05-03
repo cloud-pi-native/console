@@ -1,5 +1,5 @@
 <script  lang="ts" setup>
-import { useServiceStore, alertTypeMapper } from '@/stores/services.js'
+import { useServiceStore, alertTypeMapper } from '@/stores/services-monitor.js'
 import { ref, computed, onBeforeMount, type Ref } from 'vue'
 
 const serviceStore = useServiceStore()
@@ -56,3 +56,4 @@ onBeforeMount(async () => {
     />
   </div>
 </template>
+@/stores/services-monitor.js

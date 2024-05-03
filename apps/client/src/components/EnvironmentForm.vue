@@ -33,9 +33,13 @@ const props = withDefaults(defineProps<{
   projectClusters?: Cluster[]
   allClusters?: Cluster[]
 }>(), {
+  environment: undefined,
+  environmentNames: undefined,
   isEditable: true,
   isOwner: false,
   isProjectLocked: false,
+  projectClusters: undefined,
+  allClusters: undefined,
 })
 
 const emit = defineEmits([

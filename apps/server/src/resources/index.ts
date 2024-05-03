@@ -7,9 +7,11 @@ import { permissionRouter } from './permission/router.js'
 import { projectRouter } from './project/router.js'
 import { quotaRouter } from './quota/router.js'
 import { repositoryRouter } from './repository/router.js'
-import { serviceRouter } from './service/router.js'
+import { serviceMonitorRouter } from './service-monitor/router.js'
+import { projectServiceRouter } from './project-service/router.js'
 import { stageRouter } from './stage/router.js'
 import { systemRouter } from './system/router.js'
+import { pluginConfigRouter } from './system/config/router.js'
 import { userRouter } from './user/router.js'
 import { zoneRouter } from './zone/router.js'
 import { serverInstance } from '@/app.js'
@@ -21,9 +23,11 @@ export const apiRouter = () => async (app: FastifyInstance) => {
   await app.register(serverInstance.plugin(organizationRouter()))
   await app.register(serverInstance.plugin(permissionRouter()))
   await app.register(serverInstance.plugin(projectRouter()))
+  await app.register(serverInstance.plugin(projectServiceRouter()))
   await app.register(serverInstance.plugin(quotaRouter()))
   await app.register(serverInstance.plugin(repositoryRouter()))
-  await app.register(serverInstance.plugin(serviceRouter()))
+  await app.register(serverInstance.plugin(serviceMonitorRouter()))
+  await app.register(serverInstance.plugin(pluginConfigRouter()))
   await app.register(serverInstance.plugin(stageRouter()))
   await app.register(serverInstance.plugin(systemRouter()))
   await app.register(serverInstance.plugin(userRouter()))

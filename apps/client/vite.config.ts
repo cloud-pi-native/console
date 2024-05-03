@@ -105,7 +105,7 @@ export default defineConfig({
   test: {
     root: fileURLToPath(new URL('./', import.meta.url)),
     environment: 'jsdom',
-    exclude: [...configDefaults.exclude, 'e2e/*'],
+    exclude: [...configDefaults.exclude, 'e2e/*', '**/mocks.ts'],
     testTimeout: 2000,
     watch: false,
     coverage: {

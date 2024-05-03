@@ -11,7 +11,7 @@ export const fetchOrganizations: Hook<EmptyPayload, EmptyPayload> = createHook(t
 export const retrieveUserByEmail: Hook<UserLite, UserLite> = createHook()
 
 // misc project related hooks
-export type ProjectLite = Pick<Project, 'id' | 'name' | 'organization'>
+export type ProjectLite = Pick<Project, 'id' | 'name' | 'organization' | 'store'>
 
 export const getProjectSecrets: Hook<ProjectLite, ProjectLite> = createHook()
 

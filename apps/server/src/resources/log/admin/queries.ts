@@ -17,8 +17,8 @@ export const getAllLogs = ({ offset = 0, limit = 5 }: { offset?: number, limit?:
       orderBy: {
         createdAt: 'desc',
       },
-      skip: Number(offset),
-      take: Number(limit),
+      skip: offset,
+      take: limit,
     }),
   ])
 
