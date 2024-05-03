@@ -167,7 +167,6 @@ export class GitlabProjectApi extends PluginApi {
     const tokenVaultSecret = await vaultApi.read('GITLAB', { throwIfNoEntry: false })
 
     if (currentTriggerToken && !tokenVaultSecret?.data?.GIT_MIRROR_TOKEN) {
-      console.debug('GITLAB: recreating PipelineTriggerToken')
       await this.api.PipelineTriggerTokens.remove(mirrorRepo.id, currentTriggerToken.id)
     }
     const triggerToken = await this.api.PipelineTriggerTokens.create(mirrorRepo.id, tokenDescription)
@@ -281,7 +280,6 @@ export class GitlabProjectApi extends PluginApi {
           filePath,
         }
       })
-      console.log(commitActions)
       await this.api.Commits.create(repoId, branch, comment, commitActions)
       return true
     }
