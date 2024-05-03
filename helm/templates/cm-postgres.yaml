@@ -1,3 +1,4 @@
+{{- if .Values.postgres.enabled -}}
 ---
 kind: ConfigMap
 apiVersion: v1
@@ -11,3 +12,4 @@ data:
   PGDATA: /var/lib/postgresql/data/pgdata
   {{- end }}
   {{- include "containerEnv" .Values.postgres.container | indent 2 }}
+{{- end -}}

@@ -19,12 +19,15 @@
     "@cpn-console/hooks": "workspace:^",
     "@cpn-console/vault-plugin": "workspace:^",
     "axios": "^1.6.8",
+    "js-yaml": "4.1.0",
     "@gitbeaker/core": "^40.0.3",
+    "@gitbeaker/requester-utils": "^40.0.3",
     "@gitbeaker/rest": "^40.0.3"
   },
   "devDependencies": {
     "@cpn-console/eslint-config": "workspace:^",
     "@cpn-console/ts-config": "workspace:^",
+    "@types/js-yaml": "4.0.9",
     "@types/node": "^20.12.7",
     "@vitest/coverage-v8": "^1.5.0",
     "nodemon": "^3.1.0",

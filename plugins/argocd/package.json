@@ -24,8 +24,10 @@
     "@keycloak/keycloak-admin-client": "^24.0.3",
     "@kubernetes-models/argo-cd": "^2.4.0",
     "@kubernetes/client-node": "^0.20.0",
+    "@types/js-yaml": "4.0.9",
     "axios": "^1.6.8",
-    "kubernetes-models": "^4.3.1"
+    "kubernetes-models": "^4.3.1",
+    "js-yaml": "4.1.0"
   },
   "devDependencies": {
     "@cpn-console/eslint-config": "workspace:^",

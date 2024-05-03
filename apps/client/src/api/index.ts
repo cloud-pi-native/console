@@ -8,6 +8,8 @@ import * as projects from './projects.js'
 import * as quotas from './quotas.js'
 import * as repositories from './repositories.js'
 import * as services from './services.js'
+import * as projectServices from './project-services.js'
+import * as plugins from './plugins.js'
 import * as stages from './stages.js'
 import * as users from './users.js'
 import * as zones from './zones.js'
@@ -26,4 +28,6 @@ export default {
   ...stages,
   ...users,
   ...zones,
+  ...projectServices,
+  ...plugins,
 }

@@ -12,34 +12,33 @@ export type IsPrivate = boolean
 export type IsInfra = boolean
 export type InternalUrl = string
 export type UserObject = {
-  firstName: string,
-  lastName: string,
-  id: string,
+  firstName: string
+  lastName: string
+  id: string
   email: string
 }
 export type EnvironmentObject = {
-  id: string;
-  name: string;
-  projectId: string;
-  createdAt: Date;
-  updatedAt: Date;
-  clusterId: string;
-  quotaStageId: string;
+  id: string
+  name: string
+  createdAt: Date
+  updatedAt: Date
+  clusterId: string
+  quotaStageId: string
 }
 
 export interface KubeUser {
-  readonly certData?: string;
-  readonly keyData?: string;
-  readonly token?: string;
-  readonly username?: string;
-  readonly password?: string;
+  readonly certData?: string
+  readonly keyData?: string
+  readonly token?: string
+  readonly username?: string
+  readonly password?: string
 }
 
 export interface KubeCluster {
-  readonly caData?: string;
-  readonly server: string;
-  readonly skipTLSVerify?: boolean;
-  readonly tlsServerName?: string;
+  readonly caData?: string
+  readonly server: string
+  readonly skipTLSVerify?: boolean
+  readonly tlsServerName?: string
 }
 
 export type ZoneObject = {
@@ -48,13 +47,13 @@ export type ZoneObject = {
 }
 
 export type ClusterObject = {
-  id: string;
-  label: string;
-  privacy: 'public' | 'dedicated';
-  secretName: string;
-  clusterResources: boolean;
-  infos: string | null;
-  cluster: KubeCluster;
+  id: string
+  label: string
+  privacy: 'public' | 'dedicated'
+  secretName: string
+  clusterResources: boolean
+  infos: string | null
+  cluster: KubeCluster
   user: KubeUser
   zone: ZoneObject
 }

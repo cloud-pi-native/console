@@ -2,47 +2,46 @@ import type { Project, Repository } from '@prisma/client'
 import prisma from '@/prisma.js'
 
 // SELECT
-export const getRepositoryById = async (id: Repository['id']) => {
-  return prisma.repository.findUnique({ where: { id } })
-}
+export const getRepositoryById = (id: Repository['id']) =>
+  prisma.repository.findUnique({ where: { id } })
 
-export const getProjectRepositories = async (projectId: Project['id']) => {
-  return prisma.repository.findMany({ where: { projectId } })
-}
+export const getProjectRepositories = (projectId: Project['id']) =>
+  prisma.repository.findMany({ where: { projectId } })
 
+// CREATE
 type RepositoryCreate = Pick<Repository, 'projectId' | 'internalRepoName' | 'isInfra' | 'isPrivate' | 'externalRepoUrl'> &
   Partial<Pick<Repository, 'externalUserName'>>
-// CREATE
-export const initializeRepository = async ({ projectId, internalRepoName, externalRepoUrl, isInfra, isPrivate, externalUserName = undefined }: RepositoryCreate) => {
-  return prisma.repository.create({
-    data: {
-      projectId,
-      internalRepoName,
-      externalRepoUrl,
-      externalUserName,
-      isInfra,
-      isPrivate,
-    },
-  })
-}
 
-export const getHookRepository = (id: Repository['id']) => prisma.repository.findUniqueOrThrow({
-  where: {
-    id,
-  },
-  include: {
-    project: {
-      include: {
-        organization: true,
-      },
-    },
+export const initializeRepository = (
+  { projectId, internalRepoName, externalRepoUrl, isInfra, isPrivate, externalUserName = undefined }: RepositoryCreate,
+) => prisma.repository.create({
+  data: {
+    projectId,
+    internalRepoName,
+    externalRepoUrl,
+    externalUserName,
+    isInfra,
+    isPrivate,
   },
 })
 
+export const getHookRepository = (id: Repository['id']) =>
+  prisma.repository.findUniqueOrThrow({
+    where: {
+      id,
+    },
+    include: {
+      project: {
+        include: {
+          organization: true,
+        },
+      },
+    },
+  })
+
 // UPDATE
-export const updateRepository = async (id: Repository['id'], infos: Partial<Repository>) => {
-  return prisma.repository.update({ where: { id }, data: { ...infos } })
-}
+export const updateRepository = (id: Repository['id'], infos: Partial<Repository>) =>
+  prisma.repository.update({ where: { id }, data: { ...infos } })
 
 // DELETE
 export const deleteRepository = async (id: Repository['id']) => {
@@ -51,15 +50,11 @@ export const deleteRepository = async (id: Repository['id']) => {
   return prisma.repository.delete({ where: { id } })
 }
 
-export const deleteAllRepositoryForProject = async (id: Project['id']) => {
-  return prisma.repository.deleteMany({ where: { projectId: id } })
-}
+export const deleteAllRepositoryForProject = (id: Project['id']) =>
+  prisma.repository.deleteMany({ where: { projectId: id } })
 
 // TECH
-export const _dropRepositoriesTable = async () => {
-  await prisma.repository.deleteMany({})
-}
+export const _dropRepositoriesTable = prisma.repository.deleteMany
 
-export const _createRepository = async (data: Parameters<typeof prisma.repository.upsert>[0]['create']) => {
-  await prisma.repository.upsert({ create: data, update: data, where: { id: data.id } })
-}
+export const _createRepository = (data: Parameters<typeof prisma.repository.upsert>[0]['create']) =>
+  prisma.repository.upsert({ create: data, update: data, where: { id: data.id } })

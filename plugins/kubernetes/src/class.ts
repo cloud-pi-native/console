@@ -33,8 +33,8 @@ type ResourceParams ={
 
 class KubernetesNamespace {
   nsObject: V1NamespacePopulated
-  coreV1Api: CoreV1Api
-  anyObjectApi: AnyObjectsApi
+  coreV1Api: CoreV1Api | undefined
+  anyObjectApi: AnyObjectsApi | undefined
 
   constructor (organizationName: string, projectName: string, environmentName: string, owner: UserObject, cluster: ClusterObject) {
     this.coreV1Api = createCoreV1Api(cluster)
@@ -43,17 +43,20 @@ class KubernetesNamespace {
   }
 
   public async create () {
+    if (!this.coreV1Api) return
     const ns = await this.coreV1Api.createNamespace(this.nsObject) as { body: V1NamespacePopulated }
     this.nsObject = ns.body
     return this.nsObject
   }
 
   public async delete () {
+    if (!this.coreV1Api) return
     return this.coreV1Api.deleteNamespace(this.nsObject.metadata.name)
   }
 
   public async getFromCluster () {
     try {
+      if (!this.coreV1Api) return
       const ns = await this.coreV1Api.readNamespace(this.nsObject.metadata?.name) as { body: V1NamespacePopulated }
       this.nsObject = ns.body
       return this.nsObject
@@ -68,6 +71,8 @@ class KubernetesNamespace {
   }
 
   public async createOrPatchRessource (r: ResourceParams) {
+    if (!this.anyObjectApi) return
+
     const nsName = this.nsObject.metadata.name
     const objToCreate = structuredClone(r.body)
     objToCreate.metadata.namespace = nsName
@@ -86,6 +91,8 @@ class KubernetesNamespace {
   }
 
   public async setQuota (quota: ResourceQuotaType) {
+    if (!this.coreV1Api) return
+
     const resourceQuotaName = 'dso-quota'
     const nsName = this.nsObject.metadata.name
     const quotaObject = getQuotaObject(nsName, quota)

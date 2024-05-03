@@ -41,6 +41,10 @@ export type Repository = {
   isInfra: IsInfra;
 }
 
+export interface ProjectStore {
+  [x: string]: { [x: string]: string }
+}
+
 export type Project = {
   id: string
   description: string | null
@@ -56,6 +60,7 @@ export type Project = {
   repositories: Repository[]
   users: UserObject[]
   roles: Role[]
+  store: ProjectStore
 }
 
 export const upsertProject: Hook<Project, Project> = createHook()

@@ -1,32 +1,35 @@
 import type { Cluster, Project } from '@prisma/client'
-import type { ClusterObject, KubeCluster, KubeUser, PluginResult, Project as ProjectPayload, RepoCreds, Repository } from '@cpn-console/hooks'
-import { hooks } from '@cpn-console/hooks'
+import type { ClusterObject, KubeCluster, KubeUser, Project as ProjectPayload, RepoCreds, Repository } from '@cpn-console/hooks'
+import { hooks, Store } from '@cpn-console/hooks'
 import { AsyncReturnType } from '@cpn-console/shared'
-import { archiveProject, getClusterByIdOrThrow, getHookProjectInfos, getHookPublicClusters, getHookRepository, updateProjectCreated, updateProjectFailed, updateProjectServices } from '@/resources/queries-index.js'
+import { archiveProject, getClusterByIdOrThrow, getAdminPlugin, getHookProjectInfos, getHookPublicClusters, getHookRepository, getProjectStore, saveProjectStore, updateProjectCreated, updateProjectFailed } from '@/resources/queries-index.js'
 import { genericProxy } from './proxy.js'
+import { ConfigRecords, dbToObj } from '@/resources/project-service/business.js'
 
-type ReposCreds = Record<Repository['internalRepoName'], RepoCreds>
-type ProjectInfos = AsyncReturnType<typeof getHookProjectInfos>
+export type ReposCreds = Record<Repository['internalRepoName'], RepoCreds>
+export type ProjectInfos = AsyncReturnType<typeof getHookProjectInfos>
 
 const project = {
   upsert: async (projectId: Project['id'], reposCreds?: ReposCreds) => {
     const project = await getHookProjectInfos(projectId)
+    console.log(JSON.stringify(project, null, 2))
+
     const publicClusters = await getHookPublicClusters()
+    const store = dbToObj(await getProjectStore(projectId))
+    const config = dbToObj(await getAdminPlugin())
     const results = await hooks.upsertProject.execute(transformToHookProject({
       ...project,
       clusters: [...project.clusters, ...publicClusters],
-    }, reposCreds))
+    }, store, reposCreds), config)
 
-    // @ts-ignore
-    const { registry }: { registry: PluginResult } = results.results
-    if (registry) {
-      const services = {
-        registry: {
-          id: registry?.result?.project?.project_id,
-        },
+    const records: ConfigRecords = Object.entries(results.results).reduce((acc, [pluginName, result]) => {
+      if (result.store) {
+        return [...acc, ...Object.entries(result.store).map(([key, value]) => ({ pluginName, key, value: String(value) }))]
       }
-      await updateProjectServices(project.id, services)
-    }
+      return acc
+    }, [] as ConfigRecords)
+
+    await saveProjectStore(records, project.id)
 
     return {
       results,
@@ -38,11 +41,12 @@ const project = {
   delete: async (projectId: Project['id']) => {
     const project = await getHookProjectInfos(projectId)
     const publicClusters = await getHookPublicClusters()
-
+    const store = dbToObj(await getAdminPlugin())
+    const config = dbToObj(await getProjectStore(projectId))
     const results = await hooks.deleteProject.execute(transformToHookProject({
       ...project,
       clusters: [...project.clusters, ...publicClusters],
-    }))
+    }, store), config)
     return {
       results,
       project: results.failed
@@ -52,38 +56,55 @@ const project = {
   },
   getSecrets: async (projectId: Project['id']) => {
     const project = await getHookProjectInfos(projectId)
-    return hooks.getProjectSecrets.execute(project)
+    const store = dbToObj(await getProjectStore(project.id))
+    const config = dbToObj(await getAdminPlugin())
+
+    return hooks.getProjectSecrets.execute({ ...project, store }, config)
   },
 }
 
 const cluster = {
   upsert: async (clusterId: Cluster['id']) => {
     const cluster = await getClusterByIdOrThrow(clusterId)
+    const store = dbToObj(await getAdminPlugin())
     return hooks.upsertCluster.execute({
       ...cluster.kubeconfig as unknown as ClusterObject,
       ...cluster,
-    })
+    }, store)
   },
   delete: async (clusterId: Cluster['id']) => {
     const cluster = await getClusterByIdOrThrow(clusterId)
+    const store = dbToObj(await getAdminPlugin())
     return hooks.deleteCluster.execute({
       ...cluster.kubeconfig as unknown as ClusterObject,
       ...cluster,
-    })
+    }, store)
   },
 }
 
 const misc = {
-  fetchOrganizations: async () => hooks.fetchOrganizations.execute({}),
-  retrieveUserByEmail: async (email: string) => hooks.retrieveUserByEmail.execute({ email }),
-  checkServices: async () => hooks.checkServices.execute({}),
+  fetchOrganizations: async () => {
+    const config = dbToObj(await getAdminPlugin())
+    return hooks.fetchOrganizations.execute({}, config)
+  },
+  retrieveUserByEmail: async (email: string) => {
+    const config = dbToObj(await getAdminPlugin())
+    return hooks.retrieveUserByEmail.execute({ email }, config)
+  },
+  checkServices: async () => {
+    const config = dbToObj(await getAdminPlugin())
+    return hooks.checkServices.execute({}, config)
+  },
   syncRepository: async (repoId: string, { branchName }: {branchName: string}) => {
     const { project, ...repoInfos } = await getHookRepository(repoId)
+    const store = dbToObj(await getProjectStore(project.id))
     const payload = {
       repo: { ...repoInfos, branchName },
       ...project,
+      store,
     }
-    return hooks.syncRepository.execute(payload)
+    const config = dbToObj(await getAdminPlugin())
+    return hooks.syncRepository.execute(payload, config)
   },
 }
 
@@ -93,7 +114,7 @@ export const hook = {
   cluster: genericProxy(cluster, { delete: ['upsert'], upsert: ['delete'] }),
 }
 
-const transformToHookProject = (project: ProjectInfos, reposCreds: ReposCreds = {}): ProjectPayload => ({
+export const transformToHookProject = (project: ProjectInfos, store: Store, reposCreds: ReposCreds = {}): ProjectPayload => ({
   ...project,
   users: project.roles.map(role => role.user),
   roles: project.roles.map(role => ({ role: role.role as 'owner' | 'user', userId: role.userId })),
@@ -116,4 +137,5 @@ const transformToHookProject = (project: ProjectInfos, reposCreds: ReposCreds = 
     ...environment,
   })),
   repositories: project.repositories.map(repo => ({ ...repo, newCreds: reposCreds[repo.internalRepoName] })),
+  store,
 })

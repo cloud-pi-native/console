@@ -32,7 +32,9 @@ const props = withDefaults(
     roles: Array<Role>
     knownUsers: Record<string, User>
   }>(),
-  {},
+  {
+    userProfile: undefined,
+  },
 )
 
 const snackbarStore = useSnackbarStore()
@@ -168,7 +170,7 @@ watch(() => props.roles, setRows)
         id="team-table"
         :key="tableKey"
         data-testid="teamTable"
-        :title="`Membres du projet ${project?.name}`"
+        :title="`Membres du projet`"
         :headers="headers"
         :rows="rows"
       />

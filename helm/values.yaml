@@ -101,6 +101,13 @@ client:
     type: ClusterIP
 
 postgres:
+  enabled: true
+  external:
+    host: ""
+    port: ""
+    username: ""
+    password: ""
+    database: ""
   container:
     image: docker.io/postgres:15.3
     port: 5432

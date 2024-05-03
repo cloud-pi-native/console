@@ -1,7 +1,10 @@
-import { type StepCall, type Project, parseError } from '@cpn-console/hooks'
+import { type StepCall, type Project, parseError, Environment, ClusterObject } from '@cpn-console/hooks'
 import { generateAppProjectName, generateApplicationName, getConfig, getCustomK8sApi } from './utils.js'
 import { getApplicationObject } from './applications.js'
 import { getAppProjectObject } from './app-project.js'
+import { dump } from 'js-yaml'
+import { GitlabProjectApi } from '@cpn-console/gitlab-plugin/types/class.js'
+import { dirname } from 'path'
 
 export type ArgoDestination = {
   namespace?: string
@@ -24,20 +27,32 @@ export const upsertProject: StepCall<Project> = async (payload) => {
 
     const appProjects = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'appprojects', undefined, undefined, undefined, undefined, projectSelector)
 
+    const infraAppsRepoUrl = await gitlabApi.getRepoUrl('infra-apps')
+
     for (const environment of project.environments) {
-      const cluster = project.clusters.find(c => c.id === environment.clusterId)
-      if (!cluster) throw new Error(`Unable to find cluster ${environment.id} for env ${environment.name}`)
+      const cluster = getCluster(project, environment)
+      const infraProject = await gitlabApi.getOrCreateInfraProject(cluster.zone.slug)
       const appProjectName = generateAppProjectName(project.organization.name, project.name, environment.name)
+      const appNamespace = kubeApi.namespaces[environment.name].nsObject.metadata.name
       const destination: ArgoDestination = {
-        namespace: kubeApi.namespaces[environment.name].nsObject.metadata.name,
+        namespace: appNamespace,
         name: cluster.label,
+      }
+      const roGroup = (await keycloakApi.getEnvGroup(environment.name)).subgroups.RO
+      const rwGroup = (await keycloakApi.getEnvGroup(environment.name)).subgroups.RW
+
+      await ensureInfraEnvValues(
+        project, environment, appNamespace, roGroup, rwGroup,
+        appProjectName, infraAppsRepoUrl, sourceRepos, infraProject.id, gitlabApi,
+      )
+
+      if (!cluster.user.keyData) {
+        console.log(`Direct argocd API calls are disabled for cluster ${cluster.label}`)
+        continue
       }
 
       // @ts-ignore
       const appProject = findAppProject(appProjects.body.items, environment.name)
-
-      const roGroup = (await keycloakApi.getEnvGroup(environment.name)).subgroups.RO
-      const rwGroup = (await keycloakApi.getEnvGroup(environment.name)).subgroups.RW
       if (appProject) {
         const { spec } = getMinimalAppProjectPatch(
           destination,
@@ -91,6 +106,7 @@ export const upsertProject: StepCall<Project> = async (payload) => {
         }
       }
     }
+    await removeInfraEnvValues(project, gitlabApi)
 
     // then destroy what should not exist
     // @ts-ignore
@@ -141,9 +157,110 @@ const findAppProject = (applications: any[], environment: string) => application
   app.metadata.labels['dso/environment'] === environment,
 )
 
+type ArgoRepoSource = {
+  repoURL: string
+  targetRevision: string
+  path: string
+}
+const ensureInfraEnvValues = async (
+  project: Project,
+  environment: Environment,
+  appNamespace: string,
+  roGroup: string,
+  rwGroup: string,
+  appProjectName: string,
+  infraAppsRepoUrl: string,
+  sourceRepos: string[],
+  repoId: number,
+  gitlabApi: GitlabProjectApi,
+) => {
+  const gitlabGroupUrl = dirname(infraAppsRepoUrl)
+  const cluster = getCluster(project, environment)
+  const infraProject = await gitlabApi.getProjectById(repoId)
+  const valueFilePath = getValueFilePath(project, cluster, environment)
+  const repositories: ArgoRepoSource[] = [
+    {
+      repoURL: infraAppsRepoUrl,
+      targetRevision: 'HEAD',
+      path: '.',
+    },
+    ...sourceRepos.map(url => ({
+      repoURL: url,
+      targetRevision: 'HEAD',
+      path: '.',
+    })),
+
+  ]
+  const values = {
+    commonLabels: {
+      'dso/organization': project.organization.name,
+      'dso/project': project.name,
+      'dso/environment': environment.name,
+    },
+    argocd: {
+      namespace: getConfig().namespace,
+      project: appProjectName,
+      envChartVersion: process.env.DSO_ENV_CHART_VERSION || 'dso-env-1.1.0',
+      nsChartVersion: process.env.DSO_NS_CHART_VERSION || 'dso-ns-1.0.0',
+    },
+    environment: {
+      valueFileRepository: infraProject.http_url_to_repo,
+      valueFileRevision: 'HEAD',
+      valueFilePath,
+      roGroup,
+      rwGroup,
+    },
+    application: {
+      quota: {
+        cpu: environment.quota.cpu,
+        memory: environment.quota.memory,
+      },
+      sourceReposPrefix: gitlabGroupUrl,
+      destination: {
+        namespace: appNamespace,
+        name: cluster.label,
+      },
+      repositories,
+    },
+  }
+  await gitlabApi.commitCreateOrUpdate(repoId, dump(values), valueFilePath)
+}
+
+const getCluster = (p: Project, e: Environment): ClusterObject => {
+  const c = p.clusters.find(c => c.id === e.clusterId)
+  if (!c) throw new Error(`Unable to find cluster ${e.id} for env ${e.name}`)
+  return c
+}
+const getValueFilePath = (p: Project, c: ClusterObject, e: Environment): string => `${p.name}/${c.label}/${e.name}/values.yaml`
+
+const removeInfraEnvValues = async (
+  project: Project,
+  gitlabApi: GitlabProjectApi,
+) => {
+  for (const z of getDistinctZones(project)) {
+    const infraProject = await gitlabApi.getOrCreateInfraProject(z)
+    const existingFiles = await gitlabApi.listFiles(infraProject.id, `${project.name}/`)
+    const neededFiles = project.environments.map(env => getValueFilePath(project, getCluster(project, env), env))
+    const filesToDelete: string[] = []
+    for (const existingFile of existingFiles) {
+      if (existingFile.name === 'values.yaml' && !neededFiles.find(f => f === existingFile.path)) {
+        filesToDelete.push(existingFile.path)
+      }
+    }
+    await gitlabApi.commitDelete(infraProject.id, filesToDelete)
+  }
+}
+
+const getDistinctZones = (project: Project) => {
+  const zones: Set<string> = new Set()
+  project.clusters.map(c => zones.add(c.zone.slug))
+  return zones
+}
+
 export const deleteProject: StepCall<Project> = async (payload) => {
   try {
     const project = payload.args
+    const { gitlab: gitlabApi } = payload.apis
     const customK8sApi = getCustomK8sApi()
     const projectSelector = `dso/organization=${project.organization.name},dso/projet=${project.name},app.kubernetes.io/managed-by=dso-console`
 
@@ -159,6 +276,13 @@ export const deleteProject: StepCall<Project> = async (payload) => {
     // @ts-ignore
     for (const appProject of appProjects.body.items) {
       await customK8sApi.deleteNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'appprojects', appProject.metadata.name)
+    }
+
+    for (const z of getDistinctZones(project)) {
+      const infraProject = await gitlabApi.getOrCreateInfraProject(z)
+      const projectValueFiles = await gitlabApi.listFiles(infraProject.id, project.name)
+      const filesToDelete = projectValueFiles.filter(f => f.type === 'blob').map(f => f.path)
+      await gitlabApi.commitDelete(infraProject.id, filesToDelete)
     }
 
     return {
