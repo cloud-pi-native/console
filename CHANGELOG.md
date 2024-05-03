@@ -1,5 +1,18 @@
 # Changelog
 
+## [8.2.0](https://github.com/cloud-pi-native/console/compare/v8.1.1...v8.2.0) (2024-05-03)
+
+
+### Features
+
+* :sparkles: adding the value file commit ([6ea872b](https://github.com/cloud-pi-native/console/commit/6ea872b498e658113983cdc2b80d9d2ca3cf770d))
+* :sparkles: can configure plugins globally or by project ([15b66c1](https://github.com/cloud-pi-native/console/commit/15b66c1be31311e3b6062c3d771fb3ecc3dcbfa8))
+
+
+### Bug Fixes
+
+* :bug: override plugins unzip if already exists ([ff65133](https://github.com/cloud-pi-native/console/commit/ff651332fcee6ae752bdf4533ebbb88f216bfe95))
+
 ## [8.1.1](https://github.com/cloud-pi-native/console/compare/v8.1.0...v8.1.1) (2024-04-24)
 
 
