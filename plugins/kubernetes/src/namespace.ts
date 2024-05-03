@@ -61,7 +61,6 @@ export const deleteNamespaces: StepCall<Project> = async (payload) => {
       if (projectNamespaces?.body.items) {
         for (const namespace of projectNamespaces.body.items) {
           console.log(`Le namespace ${namespace.metadata?.name} n'a plus rien à faire là, suppression`)
-          console.log(namespace.metadata?.labels)
           const nsName = namespace.metadata?.name as string
           kubeClient?.deleteNamespace(nsName)
         }
