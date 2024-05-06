@@ -154,3 +154,23 @@ export const syncRepository: StepCall<UniqueRepo> = async (payload) => {
     }
   }
 }
+
+export const commitFiles: StepCall<UniqueRepo | Project> = async (payload) => {
+  try {
+    const filesUpdated = await payload.apis.gitlab.commitFiles()
+    return {
+      status: {
+        result: 'OK',
+        message: `${filesUpdated} file${filesUpdated > 1 ? 's' : ''} updated`,
+      },
+    }
+  } catch (error) {
+    return {
+      error: parseError(error),
+      status: {
+        result: 'KO',
+        message: 'Failed to commit files',
+      },
+    }
+  }
+}
