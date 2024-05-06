@@ -12,7 +12,6 @@ export type ProjectInfos = AsyncReturnType<typeof getHookProjectInfos>
 const project = {
   upsert: async (projectId: Project['id'], reposCreds?: ReposCreds) => {
     const project = await getHookProjectInfos(projectId)
-    console.log(JSON.stringify(project, null, 2))
 
     const publicClusters = await getHookPublicClusters()
     const store = dbToObj(await getProjectStore(projectId))
