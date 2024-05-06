@@ -54,7 +54,7 @@ export const createCluster = async (data: Omit<Cluster, 'id'>, userId: User['id'
     // @ts-ignore
     const clusterCreated = await createClusterQuery(clusterData, { user, cluster }, zoneId)
 
-    if (data.privacy === ClusterPrivacy.DEDICATED) {
+    if (data.privacy === ClusterPrivacy.DEDICATED && projectIds.length) {
       await linkClusterToProjects(clusterCreated.id, projectIds)
     }
 
