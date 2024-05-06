@@ -56,19 +56,9 @@ export const ClusterSchema = z.object({
     .optional(),
 })
 
-export const CreateClusterBusinessSchema = ClusterSchema.omit({ id: true }).refine(
-  ({ privacy, projectIds }) =>
-    !!(privacy === ClusterPrivacy.DEDICATED && projectIds?.length) ||
-    privacy === ClusterPrivacy.PUBLIC,
-  { message: 'Si le cluster est dédié, vous devez renseignez les ids des projets associés.' },
-)
+export const CreateClusterBusinessSchema = ClusterSchema.omit({ id: true })
 
-export const ClusterBusinessSchema = ClusterSchema.refine(
-  ({ privacy, projectIds }) =>
-    !!(privacy === ClusterPrivacy.DEDICATED && projectIds?.length) ||
-    privacy === ClusterPrivacy.PUBLIC,
-  { message: 'Si le cluster est dédié, vous devez renseignez les ids des projets associés.' },
-)
+export const ClusterBusinessSchema = ClusterSchema
 
 const CleanedClusterSchema = ClusterSchema.pick({ id: true, label: true, projectIds: true, stageIds: true })
 
