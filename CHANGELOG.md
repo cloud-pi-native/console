@@ -1,5 +1,13 @@
 # Changelog
 
+## [8.2.1](https://github.com/cloud-pi-native/console/compare/v8.2.0...v8.2.1) (2024-05-06)
+
+
+### Bug Fixes
+
+* :fire: remove unjustified refine ([9b1d41e](https://github.com/cloud-pi-native/console/commit/9b1d41ec402446678518bb39c0f3cff543afceb3))
+* :mute: remove problematic log ([639e982](https://github.com/cloud-pi-native/console/commit/639e982df49ccb5888adb26f3a0b1ca62fe53973))
+
 ## [8.2.0](https://github.com/cloud-pi-native/console/compare/v8.1.1...v8.2.0) (2024-05-03)
 
 
