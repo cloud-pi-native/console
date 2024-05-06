@@ -5,6 +5,7 @@ import {
   deleteDsoProject,
   upsertDsoProject,
   syncRepository,
+  commitFiles,
 } from './functions.js'
 import { getGroupRootId } from './utils.js'
 import infos from './infos.js'
@@ -22,13 +23,17 @@ export const plugin: Plugin = {
   subscribedHooks: {
     deleteProject: {
       ...onlyApi,
-      steps: { main: deleteDsoProject },
+      steps: {
+        main: deleteDsoProject,
+        post: commitFiles,
+      },
     },
     upsertProject: {
       ...onlyApi,
       steps: {
         check: checkApi,
         main: upsertDsoProject,
+        post: commitFiles,
       },
     },
     getProjectSecrets: { steps: { main: getDsoProjectSecrets } },
@@ -36,6 +41,7 @@ export const plugin: Plugin = {
       ...onlyApi,
       steps: {
         main: syncRepository,
+        post: commitFiles,
       },
     },
   },
