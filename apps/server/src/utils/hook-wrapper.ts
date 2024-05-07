@@ -67,7 +67,7 @@ const cluster = {
     const cluster = await getClusterByIdOrThrow(clusterId)
     const store = dbToObj(await getAdminPlugin())
     return hooks.upsertCluster.execute({
-      ...cluster.kubeconfig as unknown as ClusterObject,
+      ...cluster.kubeconfig as unknown as Pick<ClusterObject, 'cluster' | 'user'>,
       ...cluster,
     }, store)
   },
