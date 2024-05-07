@@ -36,7 +36,19 @@ const swapWrap = (serviceName: string) => {
 }
 
 const updated = ref<PluginsUpdateBody>({})
-const services = computed(() => refTheValues(props.services))
+
+const services = computed(() => refTheValues(props.services)
+  .map(service => ({
+    ...service,
+    wrapable: !!(service.urls.length > 2 || service.manifest.global?.length || service.manifest.project?.length),
+  }))
+  .sort((a, b) => {
+    if (a.urls.length && b.urls.length) { // si les deux services ont des urls les trier par titre
+      return a.title.localeCompare(b.title, 'fr', { sensitivity: 'base' })
+    }
+    // si un des deux n'as pas d'urls il doit être affiché à la fin
+    return b.urls.length - a.urls.length
+  }))
 
 const emit = defineEmits<{
   update: [value: PluginsUpdateBody]
@@ -88,7 +100,7 @@ const reload = () => {
             {{ service.title }}
           </h2>
           <v-icon
-            v-if="service.urls.length > 2 || service.manifest.global?.length || service.manifest.project?.length "
+            v-if="service.wrapable"
             :class="`shrink ml-4 ${servicesUnwrapped[service.name] ? 'rotate-90' : ''}`"
             name="ri-arrow-right-s-line"
           />
@@ -117,7 +129,7 @@ const reload = () => {
       />
     </div>
     <div
-      v-if="service.urls.length > 2 || service.manifest.global?.length || service.manifest.project?.length "
+      v-if="service.wrapable"
       :class="`p-5 ${servicesUnwrapped[service.name] ? 'block' : 'hidden'}`"
       data-testid="additional-config"
     >
@@ -149,7 +161,7 @@ const reload = () => {
         class="w-full grid gap-2"
       >
         <div
-          v-if="service.manifest.project && service.manifest.project.length"
+          v-if="service.manifest.project?.length"
           class="border-b-solid border-stone-600 text-xl col-span-2"
         >
           Configuration projet
@@ -169,7 +181,7 @@ const reload = () => {
           @update="(value: string) => update({ key: item.key, value, plugin: service.name})"
         />
         <div
-          v-if="service.manifest.global && service.manifest.global.length && props.displayGlobal"
+          v-if="service.manifest.global?.length && props.displayGlobal"
           class="border-b-solid border-stone-600 text-xl col-span-2"
         >
           Configuration global
