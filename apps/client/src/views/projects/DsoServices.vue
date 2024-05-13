@@ -48,6 +48,7 @@ onBeforeMount(() => {
   <ServicesConfig
     :services="services"
     permission-target="user"
+    display-global
     @update="(data: PluginsUpdateBody) => save(data)"
     @reload="() => reload()"
   />
