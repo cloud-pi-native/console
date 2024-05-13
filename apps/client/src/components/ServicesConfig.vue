@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import type { PluginsUpdateBody, ProjectService, PermissionTarget } from '@cpn-console/shared'
 import { computed, ref } from 'vue'
+import type { PluginsUpdateBody, ProjectService, PermissionTarget } from '@cpn-console/shared'
 
 const props = withDefaults(defineProps<{
   services: ProjectService[],
@@ -72,13 +72,12 @@ const reload = () => {
       >
         <button
           class="shrink flex grid-flow-col align-items items-center p-1 w-full"
-          data-kind="dropdown-button"
+          data-testid="dropdown-button"
           @click="swapWrap(service.name)"
         >
           <img
             v-if="service.imgSrc"
             :src="service.imgSrc"
-            alt=""
             class="inline x-4 shrink"
             width="48"
             height="48"
@@ -99,22 +98,19 @@ const reload = () => {
         v-for="url in service.urls.slice(0,2)"
         :key="url.to"
         :href="url.to"
-        class="inline m-0 self-stretch flex "
+        target="_blank"
+        class="inline m-0 self-stretch flex"
       >
         <DsfrButton
-          type="buttonType"
           :label="url.name"
-          :no-outline="true"
-          :hint="url.to"
+          :title="url.to"
           :icon="url.name ? '': 'ri-external-link-line'"
-          class="inline m-0 self-stretch flex "
+          :icon-only="!url.name"
         />
       </a>
       <DsfrButton
         v-if="service.urls.length > 2"
-        type="buttonType"
         label="+"
-        :no-outline="true"
         primary
         class="inline m-0 self-stretch hidden"
         @click="swapWrap(service.name)"
@@ -123,7 +119,7 @@ const reload = () => {
     <div
       v-if="service.urls.length > 2 || service.manifest.global?.length || service.manifest.project?.length "
       :class="`p-5 ${servicesUnwrapped[service.name] ? 'block' : 'hidden'}`"
-      data-kind="additional-config"
+      data-testid="additional-config"
     >
       <div
         v-if="service.urls.length > 2"
@@ -133,15 +129,14 @@ const reload = () => {
           v-for="url in service.urls"
           :key="url.to"
           :href="url.to"
+          target="_blank"
           class="inline m-0 self-stretch flex"
         >
           <DsfrButton
-            type="buttonType"
-            :no-outline="true"
-            :hint="url.to"
-            class="inline m-0 self-stretch"
+            :title="url.to"
             :label="url.name"
             :icon="url.name ? '': 'ri-external-link-line'"
+            :icon-only="!url.name"
           />
         </a>
       </div>
@@ -156,7 +151,6 @@ const reload = () => {
         <div
           v-if="service.manifest.project && service.manifest.project.length"
           class="border-b-solid border-stone-600 text-xl col-span-2"
-          colspan="2"
         >
           Configuration projet
         </div>
@@ -177,7 +171,6 @@ const reload = () => {
         <div
           v-if="service.manifest.global && service.manifest.global.length && props.displayGlobal"
           class="border-b-solid border-stone-600 text-xl col-span-2"
-          colspan="2"
         >
           Configuration global
         </div>
@@ -203,30 +196,21 @@ const reload = () => {
   >
     <DsfrButton
       v-if="Object.values(updated).keys() && Object.values(updated).map(v => Object.keys(v)).flat().length"
-      type="buttonType"
       label="Enregister"
-      data-testid="save"
-      @click="save"
+      data-testid="saveBtn"
+      @click="save()"
     />
     <DsfrButton
-      type="buttonType"
-      :label="'Recharger'"
+      label="Recharger"
       secondary
-      data-testid="reload"
+      data-testid="reloadBtn"
       @click="reload()"
     />
   </div>
 </template>
 
 <style scoped>
-.range-input {
-  appearance: auto;
-}
-
-.range-list {
-  display: flex;
-  font-size: 0.7rem;
-  justify-content: space-between;
-  writing-mode: horizontal-tb;
+a[target="_blank"]::after {
+  display: none;
 }
 </style>

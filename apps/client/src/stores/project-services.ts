@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
-import api from '@/api/index.js'
 import type { PermissionTarget, PluginsUpdateBody, Project, ProjectService } from '@cpn-console/shared'
+import api from '@/api/index.js'
 
-export const useProjectServiceStore = defineStore('service', () => {
+export const useProjectServiceStore = defineStore('serviceProject', () => {
   const services: ProjectService[] = []
   const getProjectServices = async (projectId: Project['id'], permissionTarget: PermissionTarget = 'user') => {
     const res = await api.getProjectServices(projectId, permissionTarget)

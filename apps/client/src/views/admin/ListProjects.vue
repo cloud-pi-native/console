@@ -10,7 +10,7 @@ import { useUserStore } from '@/stores/user.js'
 import { useUsersStore } from '@/stores/users.js'
 import { useProjectUserStore } from '@/stores/project-user.js'
 import { useAdminQuotaStore } from '@/stores/admin/quota.js'
-import { useProjectServiceStore } from '@/stores/project-services'
+import { useProjectServiceStore } from '@/stores/project-services.js'
 
 const adminProjectStore = useAdminProjectStore()
 const adminOrganizationStore = useAdminOrganizationStore()
