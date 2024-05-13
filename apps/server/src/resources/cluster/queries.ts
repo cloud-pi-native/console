@@ -11,7 +11,7 @@ export const getClusterById = (id: Cluster['id']) =>
 export const getClusterByIdOrThrow = (id: Cluster['id']) =>
   prisma.cluster.findUniqueOrThrow({
     where: { id },
-    include: { kubeconfig: true },
+    include: { kubeconfig: true, zone: true },
   })
 
 export const getClusterEnvironments = (id: Cluster['id']) =>

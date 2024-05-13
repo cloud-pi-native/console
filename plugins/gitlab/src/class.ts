@@ -1,10 +1,11 @@
 import { PluginApi, type Project, type RepoCreds, type UniqueRepo } from '@cpn-console/hooks'
 import { getApi, getConfig, getGroupRootId, infraAppsRepoName, internalMirrorRepoName } from './utils.js'
-import { AccessTokenScopes, CommitAction, GroupSchema, GroupStatisticsSchema, MemberSchema, ProjectVariableSchema, RepositoryFileExpandedSchema, RepositoryTreeSchema, VariableSchema } from '@gitbeaker/rest'
+import { AccessTokenScopes, CommitAction, GroupSchema, GroupStatisticsSchema, MemberSchema, ProjectVariableSchema, VariableSchema } from '@gitbeaker/rest'
 import { getOrganizationId } from './group.js'
 import { AccessLevel, CondensedProjectSchema, Gitlab } from '@gitbeaker/core'
 import { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
 import { createHash } from 'node:crypto'
+import { objectEntries } from '@cpn-console/shared'
 
 type setVariableResult = 'created' | 'updated' | 'already up-to-date'
 type AccessLevelAllowed = AccessLevel.NO_ACCESS | AccessLevel.MINIMAL_ACCESS | AccessLevel.GUEST | AccessLevel.REPORTER | AccessLevel.DEVELOPER | AccessLevel.MAINTAINER | AccessLevel.OWNER
@@ -20,12 +21,18 @@ type RepoSelect = {
   mirror?: CondensedProjectSchema
   target?: CondensedProjectSchema
 }
+type PendingCommits = Record<number, {
+  branches: Record<string,
+    { messages: string[], actions: CommitAction[] }
+  >
+}>
 
 export class GitlabProjectApi extends PluginApi {
   private api: Gitlab<false>
   private project: Project | UniqueRepo
   private gitlabGroup: GroupSchema & { statistics: GroupStatisticsSchema } | undefined
   private specialRepositories: string[] = [infraAppsRepoName, internalMirrorRepoName]
+  private pendingCommits: PendingCommits = {}
   // private organizationGroup: GroupSchema & { statistics: GroupStatisticsSchema } | undefined
 
   constructor (project: Project | UniqueRepo) {
@@ -225,39 +232,32 @@ export class GitlabProjectApi extends PluginApi {
     branch: string = 'main',
     comment: string = 'ci: :robot_face: Update file content',
   ): Promise<boolean> {
-    let filesTree: RepositoryTreeSchema[] | undefined
-    let action: CommitAction['action'] | undefined
-    let actualFile: RepositoryFileExpandedSchema | undefined
+    let action: CommitAction['action'] = 'create'
 
     const branches = await this.api.Branches.all(repoId)
-    if (!branches.length) {
-      action = 'create'
-    } else {
-      filesTree = await this.listFiles(repoId, '/', branch)
+    if (branches.some(b => b.name === branch)) {
+      const filesTree = await this.listFiles(repoId, '/', branch)
+      if (filesTree.find(f => f.path === filePath)) {
+        const actualFile = await this.api.RepositoryFiles.show(repoId, filePath, branch)
+        const newContentDigest = createHash('sha256').update(fileContent).digest('hex')
+        if (!actualFile || actualFile.content_sha256 !== newContentDigest) {
+          // Update needed
+          action = 'update'
+        } else {
+          // Already up-to-date
+          return false
+        }
+      }
     }
-    if (filesTree?.find(f => f.path === filePath)) {
-      actualFile = await this.api.RepositoryFiles.show(repoId, filePath, branch)
-      const newContentDigest = createHash('sha256').update(fileContent).digest('hex')
-      if (!actualFile || actualFile.content_sha256 !== newContentDigest) {
-        // Update needed
-        action = 'update'
-      } // else Already up-to-date
-    } else {
-      // File does not exist
-      action = 'create'
+
+    const commitAction: CommitAction = {
+      action,
+      filePath,
+      content: fileContent,
     }
-    if (action) {
-      const commitActions: CommitAction[] = [
-        {
-          action,
-          filePath,
-          content: fileContent,
-        },
-      ]
-      await this.api.Commits.create(repoId, branch, comment, commitActions)
-      return true
-    }
-    return false
+    this.addActions(repoId, branch, comment, [commitAction])
+
+    return true
   }
 
   /**
@@ -280,7 +280,7 @@ export class GitlabProjectApi extends PluginApi {
           filePath,
         }
       })
-      await this.api.Commits.create(repoId, branch, comment, commitActions)
+      this.addActions(repoId, branch, comment, commitActions)
       return true
     }
     return false
@@ -430,5 +430,35 @@ export class GitlabProjectApi extends PluginApi {
         },
       ],
     })
+  }
+
+  private addActions (repoId: number, branch: string, comment: string, commitActions: CommitAction[]) {
+    if (!this.pendingCommits[repoId]) {
+      this.pendingCommits[repoId] = { branches: {} }
+    }
+    if (this.pendingCommits[repoId].branches[branch]) {
+      this.pendingCommits[repoId].branches[branch].actions.push(...commitActions)
+      this.pendingCommits[repoId].branches[branch].messages.push(comment)
+    } else {
+      this.pendingCommits[repoId].branches[branch] = {
+        actions: commitActions,
+        messages: [comment],
+      }
+    }
+  }
+
+  public async commitFiles () {
+    let filesUpdated: number = 0
+    for (const [id, repo] of objectEntries(this.pendingCommits)) {
+      for (const [branch, details] of objectEntries(repo.branches)) {
+        const filesNumber = details.actions.length
+        if (filesNumber) {
+          filesUpdated += filesNumber
+          const message = [`ci: :robot_face: Update ${filesNumber} file${filesNumber > 1 ? 's' : ''}`, ...details.messages.filter(m => m)].join('\n')
+          await this.api.Commits.create(id, branch, message, details.actions)
+        }
+      }
+    }
+    return filesUpdated
   }
 }

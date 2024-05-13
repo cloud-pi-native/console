@@ -1,10 +1,10 @@
 <script lang="ts" setup>
-import { useProjectStore } from '@/stores/project.js'
-import { ref, computed } from 'vue'
-import { useProjectServiceStore } from '@/stores/project-services.js'
-import { useSnackbarStore } from '@/stores/snackbar'
 import { type ProjectService } from '@cpn-console/shared'
 import { PluginsUpdateBody } from '@cpn-console/shared'
+import { ref, computed } from 'vue'
+import { useProjectStore } from '@/stores/project.js'
+import { useProjectServiceStore } from '@/stores/project-services.js'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const projectStore = useProjectStore()
 const projectServiceStore = useProjectServiceStore()
@@ -48,6 +48,7 @@ onBeforeMount(() => {
   <ServicesConfig
     :services="services"
     permission-target="user"
+    display-global
     @update="(data: PluginsUpdateBody) => save(data)"
     @reload="() => reload()"
   />
