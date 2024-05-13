@@ -1,5 +1,13 @@
 # Changelog
 
+## [8.2.2](https://github.com/cloud-pi-native/console/compare/v8.2.1...v8.2.2) (2024-05-13)
+
+
+### Bug Fixes
+
+* :bug: fix update cluster ([f02958c](https://github.com/cloud-pi-native/console/commit/f02958ca3888fdb452a545fd94b8d20f9ebb93ed))
+* :bug: stores should have unique names ([6e8032a](https://github.com/cloud-pi-native/console/commit/6e8032a68b71d7ea86b8153d0984013e5bd4c8df))
+
 ## [8.2.1](https://github.com/cloud-pi-native/console/compare/v8.2.0...v8.2.1) (2024-05-06)
 
 
