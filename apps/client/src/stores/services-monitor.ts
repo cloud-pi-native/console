@@ -41,7 +41,7 @@ const serviceHealthOptions: ServiceHealthOption[] = [
     serviceStatus: MonitorStatus.OK,
   },
 ]
-export const useServiceStore = defineStore('service', () => {
+export const useServiceStore = defineStore('serviceMonitor', () => {
   const servicesHealth = ref<ServicesHealth>({})
   const services = ref<ServiceBody>([])
 

@@ -32,7 +32,7 @@ describe('Service Configuration Component', () => {
     cy.getByDataTestid('service-sonarqube').find('a').should('not.exist')
 
     // Vérifie que les boutons de rechargement sont présents
-    cy.getByDataTestid('reload').should('exist')
+    cy.getByDataTestid('reloadBtn').should('exist')
   })
 
   it('Interagit correctement avec le bouton de dropdown', () => {
@@ -45,11 +45,11 @@ describe('Service Configuration Component', () => {
     })
     // Simule un clic sur le bouton d'extension
     cy.getByDataTestid('service-registry').within(() => {
-      cy.get('[data-kind=additional-config]').should('not.be.visible')
-      cy.get('[data-kind="dropdown-button"]').click()
-      cy.get('[data-kind=additional-config]').should('be.visible')
-      cy.get('[data-kind="dropdown-button"]').click()
-      cy.get('[data-kind=additional-config]').should('not.be.visible')
+      cy.getByDataTestid('additional-config').should('not.be.visible')
+      cy.getByDataTestid('dropdown-button').click()
+      cy.getByDataTestid('additional-config').should('be.visible')
+      cy.getByDataTestid('dropdown-button').click()
+      cy.getByDataTestid('additional-config').should('not.be.visible')
     })
   })
 })
