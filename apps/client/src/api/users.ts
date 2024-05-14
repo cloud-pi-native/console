@@ -31,3 +31,8 @@ export const getAllUsers = async () => {
   const response = await apiClient.UsersAdmin.getAllUsers()
   if (response.status === 200) return response.body
 }
+
+export const updateUserAdminRole = async (userId: string, isAdmin: boolean) => {
+  const response = await apiClient.UsersAdmin.updateUserAdminRole({ params: { userId }, body: { isAdmin } })
+  if (response.status === 204) return response.body
+}

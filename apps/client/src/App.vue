@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { apiPrefix } from '@cpn-console/shared'
-import { getKeycloak } from './utils/keycloak/keycloak'
+import { getKeycloak } from './utils/keycloak/keycloak.js'
 import { useUserStore } from './stores/user.js'
 import { useSnackbarStore } from './stores/snackbar.js'
 
@@ -27,12 +27,6 @@ const getSwaggerUrl = () => window?.location?.origin + `${apiPrefix}/swagger-ui/
 
 onBeforeMount(() => {
   clearInterval(intervalId.value)
-})
-
-onMounted(() => {
-  if (isLoggedIn.value) {
-    userStore.setUserProfile()
-  }
 })
 
 onErrorCaptured((error) => {
@@ -95,3 +89,9 @@ watch(label, (label: string) => {
     </template>
   </DsfrFooter>
 </template>
+
+<style>
+.fr-container {
+  max-width: 100%;
+}
+</style>

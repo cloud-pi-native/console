@@ -2,8 +2,10 @@ import { ClientInferRequest, ClientInferResponseBody } from '@ts-rest/core'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   CreateUserRoleInProjectSchema,
+  GetAllUsersSchema,
   GetMatchingUsersSchema,
   GetProjectUsersSchema,
+  UpdateUserAdminRoleSchema,
   UpdateUserRoleInProjectSchema,
 } from '../schemas/index.js'
 
@@ -74,6 +76,18 @@ export const userAdminContract = contractInstance.router({
     path: `${apiPrefix}/admin/users`,
     summary: 'Get all users',
     description: 'Get all users.',
-    responses: GetProjectUsersSchema.responses,
+    responses: GetAllUsersSchema.responses,
+  },
+
+  updateUserAdminRole: {
+    method: 'PUT',
+    path: `${apiPrefix}/admin/users/:userId`,
+    summary: 'Update user admin role',
+    pathParams: UpdateUserAdminRoleSchema.params,
+    body: UpdateUserAdminRoleSchema.body,
+    description: 'Update user admin role.',
+    responses: UpdateUserAdminRoleSchema.responses,
   },
 })
+
+export type AllUsers = ClientInferResponseBody<typeof userAdminContract.getAllUsers, 200>

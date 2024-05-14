@@ -41,7 +41,7 @@ export const addUserToProject = async (
 
   // Retrieve user from keycloak if does not exist in db
   if (!userToAdd) {
-    const results = await hook.misc.retrieveUserByEmail(email)
+    const results = await hook.user.retrieveUserByEmail(email)
 
     await addLogs('Retrieve User By Email', results, userId, requestId)
 
