@@ -6,6 +6,7 @@ describe('Administration users', () => {
     firstName,
     lastName,
     email,
+    isAdmin: false,
   }))
 
   it('Should display admin users, loggedIn, is admin', () => {
@@ -27,6 +28,8 @@ describe('Administration users', () => {
           .contains(user.lastName)
         cy.get('tr > td')
           .contains(user.email)
+        cy.getByDataTestid(`${user.id}-is-admin`)
+          .should(user.isAdmin ? 'be.checked' : 'not.be.checked')
       })
     })
   })

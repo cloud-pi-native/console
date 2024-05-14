@@ -3,6 +3,8 @@ import {
   upsertProject,
   deleteProject,
   retrieveKeycloakUserByEmail,
+  retrieveKeycloakAdminUsers,
+  updateUserAdminKcGroupMembership,
 } from './functions.js'
 import infos from './infos.js'
 import monitor from './monitor.js'
@@ -21,6 +23,8 @@ export const plugin: Plugin = {
       steps: { main: upsertProject },
     },
     retrieveUserByEmail: { steps: { main: retrieveKeycloakUserByEmail } },
+    retrieveAdminUsers: { steps: { main: retrieveKeycloakAdminUsers } },
+    updateUserAdminGroupMembership: { steps: { main: updateUserAdminKcGroupMembership } },
   },
   monitor,
   start,

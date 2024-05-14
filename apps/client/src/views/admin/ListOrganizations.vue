@@ -51,8 +51,8 @@ const setRows = () => {
           value: label,
           class: 'fr-input fr-text-default--info',
           'data-testid': `${name}-label-input`,
-          onBlur: (event) => {
-            const data = event.target.value
+          onBlur: (event: Event & { target: { value: string }}) => {
+            const data = event.target?.value
             if (data !== label) {
               preUpdateOrganization({ name, key: 'label', data })
             }
@@ -67,7 +67,7 @@ const setRows = () => {
           'data-testid': `${name}-active-cbx`,
           class: 'fr-checkbox-group--sm',
           title: active ? `Désactiver l'organisation ${name}` : `Réactiver l'organisation ${name}`,
-          onClick: (event) => {
+          onClick: (event: Event & { target: { checked: boolean }}) => {
             const data = event.target.checked
             if (data !== active) {
               preUpdateOrganization({ name, key: 'active', data })

@@ -51,7 +51,7 @@ export const mockHooksPackage = async () => {
       plugin3: { title: 'Plugin3', name: 'plugin3', to: () => [{ to: 'test', title: 'Test' }] },
       plugin4: { title: 'Plugin4', name: 'plugin4', to: () => [{ to: 'test' }] },
       plugin5: { title: 'Plugin5', name: 'plugin5' },
-    }as Record<string, ServiceInfos>,
+    } as Record<string, ServiceInfos>,
     pluginsManifests: {
       registry: {
         title: 'Harbor',
@@ -103,8 +103,10 @@ export const mockHooksPackage = async () => {
       // clusters
       upsertCluster: hookTemplate,
       deleteCluster: hookTemplate,
-      // misc
+      // user
       retrieveUserByEmail: hookTemplate,
+      retrieveAdminUsers: hookTemplate,
+      updateUserAdminGroupMembership: hookTemplate,
       // organizations
       fetchOrganizations: {
         execute: () => ({
@@ -250,11 +252,21 @@ const secretsResult = {
   },
 }
 
+const resultsKeycloakAdmins = {
+  failed: false,
+  args: {
+  },
+  results: {
+    keycloak: {
+      adminIds: [],
+    },
+  },
+}
+
 export type ReposCreds = Record<Repository['internalRepoName'], RepoCreds>
 
 const misc = {
   fetchOrganizations: async () => resultsFetch,
-  retrieveUserByEmail: async (_email: string) => resultsBase,
   checkServices: async () => resultsBase,
   syncRepository: async () => resultsBase,
 }
@@ -282,10 +294,17 @@ const cluster = {
   delete: async (_clusterId: Cluster['id']) => resultsBase,
 }
 
+const user = {
+  retrieveUserByEmail: async (_email: string) => resultsBase,
+  retrieveAdminUsers: async () => resultsKeycloakAdmins,
+  updateUserAdminGroupMembership: async (_id: string) => resultsBase,
+}
+
 export const mockHookWrapper = () => ({
   hook: {
-    misc: genericProxy(misc, { checkServices: [], fetchOrganizations: [], retrieveUserByEmail: [], syncRepository: [] }),
+    misc: genericProxy(misc, { checkServices: [], fetchOrganizations: [], syncRepository: [] }),
     project: genericProxy(project, { delete: ['upsert'], upsert: ['delete'], getSecrets: ['delete'] }),
     cluster: genericProxy(cluster, { delete: ['upsert'], upsert: ['delete'] }),
+    user: genericProxy(user, { retrieveUserByEmail: [], retrieveAdminUsers: [], updateUserAdminGroupMembership: [] }),
   },
 })

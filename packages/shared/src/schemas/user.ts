@@ -14,6 +14,8 @@ export const UserSchema = z.object({
   email: z.string()
     .email(),
   groups: z.string().array().optional(),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
 })
 
 export type User = Zod.infer<typeof UserSchema>
@@ -39,6 +41,14 @@ export const GetProjectUsersSchema = {
   params: projectIdParams,
   responses: {
     200: z.array(UserSchema.omit({ groups: true })),
+    403: ErrorSchema,
+    500: ErrorSchema,
+  },
+}
+
+export const GetAllUsersSchema = {
+  responses: {
+    200: z.array(UserSchema.omit({ groups: true }).merge(z.object({ isAdmin: z.boolean() }))),
     403: ErrorSchema,
     500: ErrorSchema,
   },
@@ -77,6 +87,20 @@ export const UpdateUserRoleInProjectSchema = {
   body: RoleSchema.pick({ role: true }),
   responses: {
     200: z.array(RoleWithUserSchema),
+    400: ErrorSchema,
+    403: ErrorSchema,
+    500: ErrorSchema,
+  },
+}
+
+export const UpdateUserAdminRoleSchema = {
+  params: z.object({
+    userId: z.string()
+      .uuid(),
+  }),
+  body: z.object({ isAdmin: z.boolean() }),
+  responses: {
+    204: null,
     400: ErrorSchema,
     403: ErrorSchema,
     500: ErrorSchema,

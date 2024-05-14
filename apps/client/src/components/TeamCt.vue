@@ -63,7 +63,7 @@ const setRows = () => {
             component: 'code',
             text: role.userId,
             title: 'Copier l\'id',
-            class: 'fr-text-default--info text-xs cursor-pointer',
+            class: 'fr-text-default--info text-xs truncate cursor-pointer',
             onClick: () => copyContent(role.userId),
           },
           props.knownUsers[role.userId].email,
@@ -89,7 +89,7 @@ const setRows = () => {
           component: 'code',
           text: role.userId,
           title: 'Copier l\'id',
-          class: 'fr-text-default--info text-xs cursor-pointer',
+          class: 'fr-text-default--info text-xs truncate cursor-pointer',
           onClick: () => copyContent(role.userId),
         },
         props.knownUsers[role.userId].email,
@@ -211,7 +211,8 @@ watch(() => props.roles, setRows)
   </div>
 </template>
 <style>
-#team-table tbody > tr > td:nth-child(3) {
+#team-table tbody > tr > td:nth-child(3),
+#team-table tbody > tr > td:nth-child(1) {
   width: 15%;
 }
 
