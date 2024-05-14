@@ -81,20 +81,31 @@ const cluster = {
   },
 }
 
+const user = {
+  retrieveUserByEmail: async (email: string) => {
+    const config = dbToObj(await getAdminPlugin())
+    return hooks.retrieveUserByEmail.execute({ email }, config)
+  },
+  retrieveAdminUsers: async () => {
+    const config = dbToObj(await getAdminPlugin())
+    return hooks.retrieveAdminUsers.execute({}, config)
+  },
+  updateUserAdminGroupMembership: async (id: string, { isAdmin }: { isAdmin: boolean }) => {
+    const config = dbToObj(await getAdminPlugin())
+    return hooks.updateUserAdminGroupMembership.execute({ id, isAdmin }, config)
+  },
+}
+
 const misc = {
   fetchOrganizations: async () => {
     const config = dbToObj(await getAdminPlugin())
     return hooks.fetchOrganizations.execute({}, config)
   },
-  retrieveUserByEmail: async (email: string) => {
-    const config = dbToObj(await getAdminPlugin())
-    return hooks.retrieveUserByEmail.execute({ email }, config)
-  },
   checkServices: async () => {
     const config = dbToObj(await getAdminPlugin())
     return hooks.checkServices.execute({}, config)
   },
-  syncRepository: async (repoId: string, { branchName }: {branchName: string}) => {
+  syncRepository: async (repoId: string, { branchName }: { branchName: string }) => {
     const { project, ...repoInfos } = await getHookRepository(repoId)
     const store = dbToObj(await getProjectStore(project.id))
     const payload = {
@@ -111,6 +122,7 @@ export const hook = {
   misc: genericProxy(misc),
   project: genericProxy(project, { upsert: ['delete'], delete: ['upsert'], getSecrets: ['delete'] }),
   cluster: genericProxy(cluster, { delete: ['upsert'], upsert: ['delete'] }),
+  user: genericProxy(user, {}),
 }
 
 export const transformToHookProject = (project: ProjectInfos, store: Store, reposCreds: ReposCreds = {}): ProjectPayload => ({

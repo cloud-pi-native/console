@@ -6,19 +6,19 @@ import { adminGroupPath, type UserProfile } from '@cpn-console/shared'
 export const useUserStore = defineStore('user', () => {
   const isLoggedIn = ref<boolean>()
   const isAdmin = ref<boolean>()
-
   const userProfile = ref<UserProfile>()
 
   const setIsLoggedIn = () => {
     const keycloak = getKeycloak()
     isLoggedIn.value = keycloak.authenticated
     if (isLoggedIn.value) {
-      isAdmin.value = userProfile.value?.groups?.includes(adminGroupPath)
+      setUserProfile()
     }
   }
 
   const setUserProfile = () => {
     userProfile.value = getUserProfile()
+    isAdmin.value = userProfile.value?.groups?.includes(adminGroupPath)
   }
 
   const login = async () => {
