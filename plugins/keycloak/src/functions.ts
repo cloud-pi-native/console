@@ -2,6 +2,8 @@ import type { StepCall, Project, UserEmail, UserAdmin, EmptyPayload } from '@cpn
 import { getOrCreateChildGroup, getOrCreateProjectGroup, getGroupByName } from './group.js'
 import { getkcClient } from './client.js'
 import { parseError } from '@cpn-console/hooks'
+import UserSessionRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userSessionRepresentation.js'
+import { requiredEnv } from '@cpn-console/shared'
 
 export const retrieveKeycloakUserByEmail: StepCall<UserEmail> = async ({ args: { email } }) => {
   const kcClient = await getkcClient()
@@ -64,6 +66,11 @@ export const updateUserAdminKcGroupMembership: StepCall<UserAdmin> = async ({ ar
         groupId: adminGroup.id,
       })
     }
+    const userSessions = await kcClient.users.listSessions({ id }) as Required<UserSessionRepresentation>[]
+
+    await Promise.all(userSessions.map((session) =>
+      kcClient.realms.deleteSession({ session: session.id, isOffline: false, realm: requiredEnv('KEYCLOAK_REALM') }),
+    ))
 
     const administrators = (await kcClient.groups
       .listMembers({ id: adminGroup.id }))
