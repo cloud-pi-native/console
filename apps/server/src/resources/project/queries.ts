@@ -251,6 +251,21 @@ export const getRolesByProjectId = (projectId: Project['id']) =>
     include: { user: true },
   })
 
+const clusterInfosSelect = {
+  id: true,
+  infos: true,
+  label: true,
+  privacy: true,
+  secretName: true,
+  kubeconfig: true,
+  clusterResources: true,
+  zone: {
+    select: {
+      id: true,
+      slug: true,
+    },
+  },
+}
 export const getHookProjectInfos = (id: Project['id']) =>
   prisma.project.findUniqueOrThrow({
     where: { id },
@@ -274,21 +289,7 @@ export const getHookProjectInfos = (id: Project['id']) =>
         },
       },
       clusters: {
-        select: {
-          id: true,
-          infos: true,
-          label: true,
-          privacy: true,
-          secretName: true,
-          kubeconfig: true,
-          clusterResources: true,
-          zone: {
-            select: {
-              id: true,
-              slug: true,
-            },
-          },
-        },
+        select: clusterInfosSelect,
       },
       environments: {
         include: {
@@ -299,6 +300,7 @@ export const getHookProjectInfos = (id: Project['id']) =>
               stage: true,
             },
           },
+          cluster: { select: clusterInfosSelect },
         },
       },
       repositories: {

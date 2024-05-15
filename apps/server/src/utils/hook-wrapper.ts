@@ -1,4 +1,4 @@
-import type { Cluster, Project } from '@prisma/client'
+import type { Cluster, Kubeconfig, Project, Zone } from '@prisma/client'
 import type { ClusterObject, KubeCluster, KubeUser, Project as ProjectPayload, RepoCreds, Repository } from '@cpn-console/hooks'
 import { hooks, Store } from '@cpn-console/hooks'
 import { AsyncReturnType } from '@cpn-console/shared'
@@ -9,17 +9,27 @@ import { ConfigRecords, dbToObj } from '@/resources/project-service/business.js'
 export type ReposCreds = Record<Repository['internalRepoName'], RepoCreds>
 export type ProjectInfos = AsyncReturnType<typeof getHookProjectInfos>
 
+const getProjectPayload = async (projectId: Project['id'], reposCreds?: ReposCreds) => {
+  const [project, publicClusters, store] = await Promise.all([
+    getHookProjectInfos(projectId),
+    getHookPublicClusters(),
+    getProjectStore(projectId),
+  ])
+
+  return transformToHookProject({
+    ...project,
+    clusters: [...project.clusters, ...publicClusters],
+  }, dbToObj(store), reposCreds)
+}
+
 const project = {
   upsert: async (projectId: Project['id'], reposCreds?: ReposCreds) => {
-    const project = await getHookProjectInfos(projectId)
+    const [payload, config] = await Promise.all([
+      getProjectPayload(projectId, reposCreds),
+      getAdminPlugin(),
+    ])
 
-    const publicClusters = await getHookPublicClusters()
-    const store = dbToObj(await getProjectStore(projectId))
-    const config = dbToObj(await getAdminPlugin())
-    const results = await hooks.upsertProject.execute(transformToHookProject({
-      ...project,
-      clusters: [...project.clusters, ...publicClusters],
-    }, store, reposCreds), config)
+    const results = await hooks.upsertProject.execute(payload, dbToObj(config))
 
     const records: ConfigRecords = Object.entries(results.results).reduce((acc, [pluginName, result]) => {
       if (result.store) {
@@ -28,7 +38,7 @@ const project = {
       return acc
     }, [] as ConfigRecords)
 
-    await saveProjectStore(records, project.id)
+    await saveProjectStore(records, projectId)
 
     return {
       results,
@@ -38,14 +48,11 @@ const project = {
     }
   },
   delete: async (projectId: Project['id']) => {
-    const project = await getHookProjectInfos(projectId)
-    const publicClusters = await getHookPublicClusters()
-    const store = dbToObj(await getAdminPlugin())
-    const config = dbToObj(await getProjectStore(projectId))
-    const results = await hooks.deleteProject.execute(transformToHookProject({
-      ...project,
-      clusters: [...project.clusters, ...publicClusters],
-    }, store), config)
+    const [payload, config] = await Promise.all([
+      getProjectPayload(projectId),
+      getAdminPlugin(),
+    ])
+    const results = await hooks.deleteProject.execute(payload, dbToObj(config))
     return {
       results,
       project: results.failed
@@ -125,28 +132,42 @@ export const hook = {
   user: genericProxy(user, {}),
 }
 
-export const transformToHookProject = (project: ProjectInfos, store: Store, reposCreds: ReposCreds = {}): ProjectPayload => ({
-  ...project,
-  users: project.roles.map(role => role.user),
-  roles: project.roles.map(role => ({ role: role.role as 'owner' | 'user', userId: role.userId })),
-  clusters: project.clusters.map(({ kubeconfig, ...cluster }) => ({
-    user: kubeconfig.user as unknown as KubeUser,
-    cluster: kubeconfig.cluster as unknown as KubeCluster,
-    ...cluster,
-    privacy: cluster.privacy,
-  })),
-  environments: project.environments.map(({ permissions, quotaStage, ...environment }) => ({
-    quota: quotaStage.quota,
-    stage: quotaStage.stage.name,
-    permissions: permissions.map(permission => ({
-      userId: permission.userId,
-      permissions: {
-        ro: permission.level >= 0,
-        rw: permission.level >= 1,
-      },
-    })),
-    ...environment,
-  })),
-  repositories: project.repositories.map(repo => ({ ...repo, newCreds: reposCreds[repo.internalRepoName] })),
-  store,
+const formatClusterInfos = (
+  { kubeconfig, ...cluster }: Omit<Cluster, 'updatedAt' | 'createdAt' | 'zoneId' | 'kubeConfigId'>
+    & { kubeconfig: Kubeconfig, zone: Pick<Zone, 'id' | 'slug'> },
+) => ({
+  user: kubeconfig.user as unknown as KubeUser,
+  cluster: kubeconfig.cluster as unknown as KubeCluster,
+  ...cluster,
+  privacy: cluster.privacy,
 })
+
+export const transformToHookProject = (project: ProjectInfos, store: Store, reposCreds: ReposCreds = {}): ProjectPayload => {
+  const clusters = project.clusters.map(cluster => formatClusterInfos(cluster))
+
+  for (const env of project.environments) {
+    if (!clusters.some(c => c.id === env.cluster.id)) {
+      clusters.push(formatClusterInfos(env.cluster))
+    }
+  }
+  return ({
+    ...project,
+    users: project.roles.map(role => role.user),
+    roles: project.roles.map(role => ({ role: role.role as 'owner' | 'user', userId: role.userId })),
+    clusters,
+    environments: project.environments.map(({ permissions, quotaStage, ...environment }) => ({
+      quota: quotaStage.quota,
+      stage: quotaStage.stage.name,
+      permissions: permissions.map(permission => ({
+        userId: permission.userId,
+        permissions: {
+          ro: permission.level >= 0,
+          rw: permission.level >= 1,
+        },
+      })),
+      ...environment,
+    })),
+    repositories: project.repositories.map(repo => ({ ...repo, newCreds: reposCreds[repo.internalRepoName] })),
+    store,
+  })
+}
