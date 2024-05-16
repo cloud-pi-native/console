@@ -1,7 +1,7 @@
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client'
 import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation.js'
 
-export const getProjectGroupByName = async (kcClient: KeycloakAdminClient, name: string): Promise<GroupRepresentation | void> => {
+export const getGroupByName = async (kcClient: KeycloakAdminClient, name: string): Promise<GroupRepresentation | void> => {
   const groupSearch = await kcClient.groups.find({ search: name })
   return groupSearch.find(grp => grp.name === name)
 }
@@ -40,7 +40,7 @@ export const getOrCreateChildGroup = async (kcClient: KeycloakAdminClient, paren
 }
 
 export const getOrCreateProjectGroup = async (kcClient: KeycloakAdminClient, name: string): Promise<Required<Pick<GroupRepresentation, 'id' | 'name' | 'subGroups' | 'subGroupCount'>> & { subGroups: Required<GroupRepresentation>[] }> => {
-  const existingGroup = await getProjectGroupByName(kcClient, name) as Required<GroupRepresentation>
+  const existingGroup = await getGroupByName(kcClient, name) as Required<GroupRepresentation>
   if (!existingGroup) {
     const newGroup = await kcClient.groups.create({ name })
     return {

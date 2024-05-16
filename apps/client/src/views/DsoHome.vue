@@ -1,8 +1,5 @@
 <script lang="ts" setup>
-import { onMounted, ref, type Ref } from 'vue'
-import { useUserStore } from '../stores/user.js'
-
-const userStore = useUserStore()
+import { ref, type Ref } from 'vue'
 
 type TabTitle = {
   title: string,
@@ -60,10 +57,6 @@ const setWindowLocation = (to: string) => {
   // @ts-ignore
   window.location = to
 }
-
-onMounted(() => {
-  userStore.setIsLoggedIn()
-})
 
 </script>
 

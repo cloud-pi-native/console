@@ -54,8 +54,6 @@ describe('User Store', () => {
     expect(userStore.isAdmin).toBeUndefined()
     expect(userStore.userProfile).toMatchObject({})
 
-    userStore.setUserProfile()
-
     userStore.setIsLoggedIn()
 
     expect(userStore.isLoggedIn).toEqual(true)

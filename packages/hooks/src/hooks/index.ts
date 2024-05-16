@@ -1,6 +1,7 @@
 export * from './hook-cluster.js'
 export * from './hook-misc.js'
 export * from './hook-project.js'
+export * from './hook-user.js'
 
 export type Organization = string
 export type PartialEnvironment = { environment: string, stage: string, clusterLabel: string }
