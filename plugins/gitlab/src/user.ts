@@ -25,7 +25,7 @@ export const getUser = async (user: { email: string, username: string, id: strin
     allUsers.find(gitlabUser => gitlabUser.username === user.username)
 }
 
-export const upsertUser = async (user: UserObject) => {
+export const upsertUser = async (user: UserObject): Promise<UserSchema> => {
   const api = getApi()
   const username = createUsername(user.email)
   const existingUser = await getUser({ ...user, username })
@@ -41,11 +41,24 @@ export const upsertUser = async (user: UserObject) => {
   }
 
   if (existingUser) {
-    // @ts-ignore à étudier
-    if (Object.keys(userDefinitionBase).some(prop => existingUser[prop] !== userDefinitionBase[prop])) {
-      api.Users.edit(existingUser.id, userDefinitionBase)
+    const incorrectProps = Object.entries(userDefinitionBase).reduce((acc, [key, value]) => {
+      if (existingUser[key] !== value) {
+        acc.push({
+          key,
+          curr: existingUser[key],
+          new: value,
+        })
+      }
+      return acc
+    }, [] as { key: string, curr: any, new: any }[])
+
+    if (incorrectProps.length) {
+      if (process.env.LOG_LEVEL === 'debug') {
+        console.log(`Gitlab plugin: Updating user: ${user.email}`)
+        console.log(incorrectProps)
+      }
+      await api.Users.edit(existingUser.id, userDefinitionBase)
     }
-    // api.Users.edit(existingUser.id, )
     return existingUser
   }
 
