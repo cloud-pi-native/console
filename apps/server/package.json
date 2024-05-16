@@ -1,7 +1,7 @@
 {
   "name": "@cpn-console/server",
   "description": "dso-portal server",
-  "version": "8.2.2",
+  "version": "8.3.0",
   "type": "module",
   "types": "./types/plugins/index.d.ts",
   "scripts": {

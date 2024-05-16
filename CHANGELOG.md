@@ -1,5 +1,18 @@
 # Changelog
 
+## [8.3.0](https://github.com/cloud-pi-native/console/compare/v8.2.2...v8.3.0) (2024-05-16)
+
+
+### Features
+
+* :sparkles: handle keycloak admin group membership from console ([4741878](https://github.com/cloud-pi-native/console/commit/4741878fdfa4d784ed2e7695407ebce6b00b4850))
+
+
+### Bug Fixes
+
+* :ambulance: possible missed clusters in payload ([47efcc8](https://github.com/cloud-pi-native/console/commit/47efcc893f272823b5d7d7f4b78b9c29ddad9095))
+* :ambulance: unhandled promise gitlab ([592035c](https://github.com/cloud-pi-native/console/commit/592035c95605f004e62cba71faff36ea189d6173))
+
 ## [8.2.2](https://github.com/cloud-pi-native/console/compare/v8.2.1...v8.2.2) (2024-05-13)
 
 
