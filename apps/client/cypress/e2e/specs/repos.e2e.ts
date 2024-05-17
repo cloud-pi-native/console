@@ -189,7 +189,7 @@ describe('Add repos into project', () => {
       cy.wait('@syncRepo').its('response.statusCode').should('match', /^20\d$/)
 
       cy.getByDataTestid('snackbar').within(() => {
-        cy.get('p').should('contain', `Dépôt ${repos[0].internalRepoName} synchronisé`)
+        cy.get('p').should('contain', `Job de synchronisation lancé pour le dépôt ${repos[0].internalRepoName}`)
       })
 
       cy.getByDataTestid('branchNameInput')
@@ -208,7 +208,7 @@ describe('Add repos into project', () => {
       cy.wait('@syncRepo').its('response.statusCode').should('match', /^20\d$/)
 
       cy.getByDataTestid('snackbar').within(() => {
-        cy.get('p').should('contain', `Dépôt ${repos[0].internalRepoName} synchronisé`)
+        cy.get('p').should('contain', `Job de synchronisation lancé pour le dépôt ${repos[0].internalRepoName}`)
       })
     })
   })
