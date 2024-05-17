@@ -141,14 +141,17 @@ if [ "$RUN_E2E_TESTS" == "true" ]; then
   printf "\n${red}${i}.${no_color} Launch e2e tests\n"
   i=$(($i + 1))
 
-  [[ -n "$TAG" ]] && TAG_ARGS="-- -t $TAG"
   [[ -n "$BROWSER" ]] && BROWSER_ARGS="-- --browser $BROWSER"
 
   npm --prefix $PROJECT_DIR/packages/shared run build
   npm --prefix $PROJECT_DIR/packages/test-utils run build
 
   npm run kube:init
-  npm run kube:prod:run $TAG_ARGS
+  if [[ -n "$TAG" ]]; then
+    npm run kube:prod:run -- -t $TAG
+  else 
+    npm run kube:prod
+  fi
   npm run kube:e2e-ci -- --cache-dir=.turbo/cache --log-order=stream $BROWSER_ARGS
 
   printf "\n${red}${i}.${no_color} Remove resources\n"
@@ -165,10 +168,12 @@ if [ "$RUN_STATUS_CHECK" == "true" ]; then
   printf "\n${red}${i}.${no_color} Launch e2e tests\n"
   i=$(($i + 1))
 
-  [[ -n "$TAG" ]] && TAG_ARGS="-- -t $TAG"
-
   npm run kube:init
-  npm run kube:prod:run $TAG_ARGS
+  if [[ -n "$TAG" ]]; then
+    npm run kube:prod:run -- -t $TAG
+  else 
+    npm run kube:prod
+  fi
 
   for pod in $(kubectl get pod | tail --lines=+2 | awk '{print $1}'); do
     printf "\nPod: ${pod}\n${red}Status:${no_color} $(kubectl get pod/${pod} -o jsonpath='{.status.phase}')\n"
