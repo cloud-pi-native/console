@@ -1,19 +1,45 @@
 services:
+  keycloak-fetch-theme:
+    restart: no
+    image: docker.io/curlimages/curl:8.8.0
+    container_name: dso-console_keycloak-fetch
+    volumes:
+      - keycloak-dsfr-theme:/tmp:rw
+    command: -LfS -o /tmp/keycloakify-starter.jar https://github.com/codegouvfr/keycloak-theme-dsfr/releases/latest/download/retrocompat-keycloak-theme.jar
+    networks:
+      - dso-network
+    attach: false
+
   keycloak:
     restart: always
-    image: quay.io/keycloak/keycloak:22.0.1
+    image: docker.io/bitnami/keycloak:23.0.7
     container_name: dso-console_keycloak
+    depends_on:
+      keycloak-fetch-theme:
+        condition: service_completed_successfully
     ports:
       - 8090:8080
     volumes:
-      - ../keycloak/realms:/opt/keycloak/data/import
+      - ../keycloak/realms:/opt/bitnami/keycloak/data/import
+      - ../keycloak/data/dev:/opt/bitnami/keycloak/data/h2
+      - type: volume
+        source: keycloak-dsfr-theme
+        target: /opt/bitnami/keycloak/providers/keycloakify-starter.jar
+        volume:
+          subpath: keycloakify-starter.jar
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
       KC_HEALTH_ENABLED: true
+      DSFR_THEME_HOME_URL: http://localhost:8080
+      DSFR_THEME_SERVICE_TITLE: Console Cloud π Native
+      DSFR_THEME_BRAND_TOP: Ministère<br/>de l'Intérieur</br>et des Outre-Mer
+      DSFR_THEME_TOS_URL: 
+      DSFR_THEME_CONTACT_EMAIL: cloudpinative-relations@interieur.gouv.fr
+    entrypoint: /opt/bitnami/keycloak/bin/kc.sh
     command: start-dev --import-realm
     healthcheck:
-      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080;echo -e \"GET /health/ready HTTP/1.1\r\nhost: http://localhost\r\nConnection: close\r\n\r\n\" >&3;grep \"HTTP/1.1 200 OK\" <&3"]
+      test: ["CMD", "curl", "--head","fsS", "http://localhost:8080/health/ready"]
       interval: 5s
       timeout: 5s
       retries: 10
