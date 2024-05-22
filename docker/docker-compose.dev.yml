@@ -5,7 +5,7 @@ services:
     container_name: dso-console_keycloak-fetch
     volumes:
       - keycloak-dsfr-theme:/tmp:rw
-    command: -LfS -o /tmp/keycloakify-starter.jar https://github.com/codegouvfr/keycloak-theme-dsfr/releases/latest/download/retrocompat-keycloak-theme.jar
+    command: -LfS -o /tmp/keycloak-theme-dsfr.jar https://github.com/codegouvfr/keycloak-theme-dsfr/releases/download/v1.0.2/retrocompat-keycloak-theme.jar
     networks:
       - dso-network
     attach: false
@@ -24,9 +24,9 @@ services:
       - ../keycloak/data/dev:/opt/bitnami/keycloak/data/h2
       - type: volume
         source: keycloak-dsfr-theme
-        target: /opt/bitnami/keycloak/providers/keycloakify-starter.jar
+        target: /opt/bitnami/keycloak/providers/keycloak-theme-dsfr.jar
         volume:
-          subpath: keycloakify-starter.jar
+          subpath: keycloak-theme-dsfr.jar
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
