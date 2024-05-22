@@ -37,6 +37,8 @@ export const atomicValidators = {
   text: z.string().trim().regex(/[a-zA-Z-_0-9 ]*/),
 }
 
+export type SwitchParam = Zod.infer<typeof atomicValidators.switch>
+
 const configItemSwitch = z.object({
   kind: z.literal('switch'),
   value: atomicValidators.switch,
