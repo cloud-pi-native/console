@@ -2,9 +2,9 @@ if [ -z "$(kind get clusters | grep 'kind')" ]; then
   [[ -d "$SCRIPTPATH/configs/rendered" ]] || mkdir -p "$SCRIPTPATH/configs/rendered/"
 
   # Prepare kind config
-  if [[ -f "$SCRIPTPATH/../../env/kind-values.yml" ]]; then
+  if [[ -f "$SCRIPTPATH/env/kind-values.yml" ]]; then
     KIND_CONFIG="$(helm template dev $SCRIPTPATH/configs/cluster \
-      --values $SCRIPTPATH/../../env/kind-values.yml)"
+      --values $SCRIPTPATH/env/kind-values.yml)"
     echo "$KIND_CONFIG" > $SCRIPTPATH/configs/rendered/kind-config.yml
   else
     KIND_CONFIG="$(helm template dev $SCRIPTPATH/configs/cluster)"
