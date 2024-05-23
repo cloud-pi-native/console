@@ -65,7 +65,7 @@ services:
 
   pgadmin:
     restart: always
-    image: docker.io/dpage/pgadmin4:8.5
+    image: docker.io/dpage/pgadmin4:latest
     container_name: dso-console_pgadmin
     depends_on:
       - postgres
