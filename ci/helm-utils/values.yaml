@@ -7,7 +7,7 @@ data: ""
 pgadmin:
   enabled: true
   container:
-    image: docker.io/dpage/pgadmin4:8.5
+    image: docker.io/dpage/pgadmin4:latest
     port: 80
   service:
     name: pgadmin-service
