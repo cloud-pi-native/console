@@ -5,6 +5,8 @@ La console Cloud π Native est une application web ayant pour but de piloter des
 Cette console offre une interface unifiée vers un ensemble de services tout en garantissant une cohérence globale du système avec la création automatique d'un certain nombre de ressources comme par exemple les comptes d'accès, les robots ou encore des ressources Kubernetes. 
 En addition du provisionnement automatique, elle garantit aussi le contrôle d'accès aux ressources du projet à l'aide d'une gestion d'équipe, de permissions, de quotas, etc...
 
+<img src="./misc/images/projects.png" width="30%"></img> <img src="./misc/images/repositories.png" width="30%"></img> <img src="./misc/images/environments.png" width="30%"></img> <img src="./misc/images/services.png" width="30%"></img> <img src="./misc/images/members.png" width="30%"></img> <img src="./misc/images/status.png" width="30%"></img>
+
 ## Architecture
 
 Ce projet est construit avec [NodeJS](https://nodejs.org/), [VueJS](https://vuejs.org/), [Postgres](https://www.postgresql.org/) et [Keycloak](https://www.keycloak.org/). 
