@@ -1,4 +1,4 @@
-import { PermissionTarget, PluginConfig, atomicValidators, pluginConfig } from '@cpn-console/shared'
+import { DEFAULT, PermissionTarget, PluginConfig, atomicValidators, pluginConfig } from '@cpn-console/shared'
 import { z } from 'zod'
 import { objectEntries } from './utils/utils.js'
 
@@ -66,7 +66,7 @@ export const populatePluginManifests = ({ data, select, permissionTarget, plugin
       const row = data[scope]?.find(candidate => candidate.pluginName === pluginName && candidate.key === item.key)
       if (item.kind === 'switch') {
         const value = atomicValidators.switch.safeParse(row?.value)
-        item.value = value.success ? value.data : 'default'
+        item.value = value.success ? value.data : DEFAULT
       } else {
         item.value = z.coerce.string().parse(row?.value ?? item.value ?? '')
       }
