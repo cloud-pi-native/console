@@ -22,9 +22,9 @@ export const logAdminContract = contractInstance.router({
         logs: z.array(z.object({
           id: z.string(),
           data: z.object({
-            args: z.object({}),
+            args: z.any(),
             failed: z.boolean().or(z.array(z.string())),
-            results: z.object({}),
+            results: z.any(),
             totalExecutionTime: z.number().optional(),
           }),
           action: z.string(),

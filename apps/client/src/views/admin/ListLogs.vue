@@ -23,21 +23,29 @@ const showLogs = async (index: number) => {
   await getAllLogs({ offset: index * step, limit: step })
 }
 
-type LogModelSliced = Partial<Log['data']>
+type LogModelSliced = Omit<Log['data'], 'failed'>
+  | Omit<Log['data'], 'failed' | 'totalExecutionTime'>
+
 const sliceLog = (log: Log): LogModelSliced => {
-  const {
-    data: {
+  const data = log.data
+  if (!data.failed) {
+    const {
       totalExecutionTime: _t,
+      failed: _f,
       ...logSliced
-    },
-  } = log
-  if (!logSliced.failed) delete logSliced.failed
+    } = data
+    return logSliced
+  }
+  const {
+    totalExecutionTime: _t,
+    ...logSliced
+  } = data
   return logSliced
 }
 
 const getAllLogs = async ({ offset, limit }: { offset: number, limit: number }, isDisplayingSuccess = true) => {
   isUpdating.value = true
-  await adminLogStore.getAllLogs({ offset: offset + '', limit: limit + '' })
+  await adminLogStore.getAllLogs({ offset, limit })
   if (isDisplayingSuccess) {
     snackbarStore.setMessage('Logs récupérés avec succès', 'success')
   }
