@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../index.js'
-import { ErrorSchema } from '../schemas/utils.js'
+import { AtDatesToStringSchema, ErrorSchema } from '../schemas/utils.js'
 import { ClientInferRequest, ClientInferResponseBody } from '@ts-rest/core'
 
 export const adminLogsQuery = z.object({
@@ -30,9 +30,7 @@ export const logAdminContract = contractInstance.router({
           action: z.string(),
           userId: z.string(),
           requestId: z.string(),
-          createdAt: z.string(),
-          updatedAt: z.string(),
-        })),
+        }).merge(AtDatesToStringSchema)),
       }),
       500: ErrorSchema,
     },

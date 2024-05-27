@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { ErrorSchema } from './utils.js'
+import { AtDatesToStringSchema, ErrorSchema } from './utils.js'
 import { projectRoles } from '../utils/const.js'
 
 export const UserSchema = z.object({
@@ -14,8 +14,6 @@ export const UserSchema = z.object({
   email: z.string()
     .email(),
   groups: z.string().array().optional(),
-  createdAt: z.string().optional(),
-  updatedAt: z.string().optional(),
 })
 
 export type User = Zod.infer<typeof UserSchema>
@@ -48,7 +46,7 @@ export const GetProjectUsersSchema = {
 
 export const GetAllUsersSchema = {
   responses: {
-    200: z.array(UserSchema.omit({ groups: true }).merge(z.object({ isAdmin: z.boolean() }))),
+    200: z.array(UserSchema.omit({ groups: true }).merge(z.object({ isAdmin: z.boolean() })).merge(AtDatesToStringSchema)),
     403: ErrorSchema,
     500: ErrorSchema,
   },

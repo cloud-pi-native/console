@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { ErrorSchema } from './utils.js'
+import { AtDatesToStringSchema, ErrorSchema } from './utils.js'
 
 export const OrganizationSchema = z.object({
   id: z.string()
@@ -14,7 +14,7 @@ export const OrganizationSchema = z.object({
   label: z.string()
     .max(60),
   active: z.boolean(),
-})
+}).merge(AtDatesToStringSchema)
 
 export type Organization = Zod.infer<typeof OrganizationSchema>
 
