@@ -3,6 +3,7 @@ import { Project, Cluster, Repository } from '@prisma/client'
 import { User } from '@cpn-console/test-utils'
 import { PluginsManifests, RepoCreds, ServiceInfos, editStrippers, populatePluginManifests } from '@cpn-console/hooks'
 import { genericProxy } from './proxy.js'
+import { DEFAULT, DISABLED } from '@cpn-console/shared'
 
 let requestor: User
 
@@ -57,14 +58,14 @@ export const mockHooksPackage = async () => {
         title: 'Harbor',
         global: [{
           kind: 'switch',
-          initialValue: 'default',
+          initialValue: DEFAULT,
           key: 'test2',
           permissions: {
             admin: { read: true, write: true },
             user: { read: true, write: false },
           },
           title: 'Test2',
-          value: 'default',
+          value: DEFAULT,
           description: 'description',
         }],
         project: [{
@@ -75,8 +76,8 @@ export const mockHooksPackage = async () => {
             user: { read: true, write: true },
           },
           title: 'Test',
-          value: 'default',
-          initialValue: 'disabled',
+          value: DEFAULT,
+          initialValue: DISABLED,
         }],
       },
     } as PluginsManifests,
