@@ -9,7 +9,7 @@ type ResourceBase = {
 
 type ResourceWithStatus = ResourceBase & {
   resourceKey: 'status',
-  status: Project['status']
+  status: keyof typeof statusDict.status
 }
 
 type ResourceWithLock = ResourceBase & {
