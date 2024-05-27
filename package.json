@@ -16,7 +16,7 @@
     "docker:e2e": "docker compose -f ./docker/docker-compose.dev.yml up -d; turbo run test:e2e --filter=client --color --no-daemon; docker compose -f ./docker/docker-compose.dev.yml down",
     "docker:e2e-ci": "docker compose -f ./docker/docker-compose.prod.yml up -d; turbo run test:e2e-ci --filter=client --color --no-daemon; docker compose -f ./docker/docker-compose.prod.yml down",
     "docker:integ": "docker compose --env-file env/.env.integ --env-file apps/server/.env.integ -f ./docker/docker-compose.integ.yml up -d; docker compose --env-file env/.env.integ --env-file apps/server/.env.integ -f ./docker/docker-compose.integ.yml watch --no-up & docker compose --env-file env/.env.integ --env-file apps/server/.env.integ -f ./docker/docker-compose.integ.yml logs server client -f",
-    "docker:integ:build": "export $(cat apps/server/.env.integ | grep -v '#' | xargs) && export COMPOSE_FILE=./docker/docker-compose.integ.yml && cd $(dirname $COMPOSE_FILE) && docker buildx bake --file $(basename $COMPOSE_FILE) --load && cd - > /dev/null",
+    "docker:integ:build": "export $(cat env/.env.integ | grep -v '#' | xargs) && export $(cat apps/server/.env.integ | grep -v '#' | xargs) && export COMPOSE_FILE=./docker/docker-compose.integ.yml && cd $(dirname $COMPOSE_FILE) && docker buildx bake --file $(basename $COMPOSE_FILE) --load && cd - > /dev/null",
     "docker:integ:clean": "docker compose --env-file env/.env.integ --env-file apps/server/.env.integ -f ./docker/docker-compose.integ.yml down",
     "docker:integ:delete": "docker compose --env-file env/.env.integ --env-file apps/server/.env.integ -f ./docker/docker-compose.integ.yml down -v",
     "docker:prod": "docker compose -f ./docker/docker-compose.prod.yml up",
