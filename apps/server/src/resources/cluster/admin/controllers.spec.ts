@@ -1,5 +1,5 @@
 import { adminGroupPath } from '@cpn-console/shared'
-import { getRandomCluster, getRandomRole, getRandomUser } from '@cpn-console/test-utils'
+import { getRandomCluster, getRandomRole, getRandomUser, getRandomStage } from '@cpn-console/test-utils'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import prisma from '../../../__mocks__/prisma.js'
 import app from '../../../app.js'
@@ -64,6 +64,28 @@ describe('Admin cluster routes', () => {
         name: cluster.environments[0]?.name,
         owner: getRequestor().email,
       }])
+    })
+  })
+
+  describe('updateClusterController', () => {
+    it('Should update a cluster', async () => {
+      const cluster = getRandomCluster({ privacy: 'dedicated' })
+      const updatedCluster = { ...cluster, privacy: 'public' }
+
+      prisma.cluster.findUnique.mockResolvedValue(cluster)
+      prisma.cluster.update.mockResolvedValue(updatedCluster)
+      prisma.user.findUnique.mockResolvedValue(getRandomUser())
+      prisma.stage.findMany.mockResolvedValue([getRandomStage()])
+      prisma.log.create.mockResolvedValue({})
+
+      const response = await app.inject()
+        // @ts-ignore
+        .put(`/api/v1/admin/clusters/${cluster.id}`)
+        .body(updatedCluster)
+        .end()
+
+      expect(response.statusCode).toEqual(200)
+      expect(response.json()).toEqual(updatedCluster)
     })
   })
 
