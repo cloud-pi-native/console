@@ -6,6 +6,10 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 import { copyContent } from '@/utils/func.js'
 import { useUserStore } from '@/stores/user.js'
 
+interface CheckboxEvent extends Event {
+    target: HTMLInputElement;
+}
+
 const adminUserStore = useAdminUserStore()
 const snackbarStore = useSnackbarStore()
 
@@ -22,7 +26,10 @@ const headers = [
   'Modification',
 ]
 
-const setRows = () => allUsers.value.map(({ id, firstName, lastName, email, isAdmin, createdAt, updatedAt }) => ([
+const getAllUsers = async () => {
+  allUsers.value = await adminUserStore.getAllUsers() ?? []
+}
+const generateRows = () => allUsers.value.map(({ id, firstName, lastName, email, isAdmin, createdAt, updatedAt }) => ([
   {
     component: 'code',
     text: id,
@@ -40,7 +47,7 @@ const setRows = () => allUsers.value.map(({ id, firstName, lastName, email, isAd
     'data-testid': `${id}-is-admin`,
     class: 'fr-checkbox-group--sm',
     title: isAdmin ? `Retirer le rôle d'administrateur de ${email}` : `Donner le rôle d'administrateur à ${email}`,
-    onClick: async (event: Event & { target: { checked: boolean }}) => {
+    onClick: async (event: CheckboxEvent) => {
       const value = event.target.checked
       if (value !== isAdmin) {
         await adminUserStore.updateUserAdminRole(id, value)
@@ -58,24 +65,24 @@ const setRows = () => allUsers.value.map(({ id, firstName, lastName, email, isAd
       }
     },
   },
-  formatDate(createdAt ?? ''),
-  formatDate(updatedAt ?? ''),
+  formatDate(createdAt),
+  formatDate(updatedAt),
 ]))
 
-const rows = ref<ReturnType<typeof setRows>>([])
+const rows = ref<ReturnType<typeof generateRows>>([])
 
-const getAllUsers = async () => {
-  allUsers.value = await adminUserStore.getAllUsers() ?? []
+const setRows = () => {
+  rows.value = generateRows()
 }
 
 onBeforeMount(async () => {
   snackbarStore.isWaitingForResponse = true
   await getAllUsers()
-  rows.value = setRows()
+  setRows()
   snackbarStore.isWaitingForResponse = false
 })
 
-watch(allUsers, () => { rows.value = setRows() })
+watch(allUsers, () => setRows())
 </script>
 
 <template>
