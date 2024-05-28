@@ -10,12 +10,13 @@ type Cluster = {
   id: string
   label: string
   infos: string
+  zoneId: string
 }
 
 type Stage = {
   id: string
   name: string
-  clusters: Cluster[]
+  clusterIds: string[]
   quotaStage: QuotaStage[]
 }
 
@@ -25,21 +26,17 @@ type OptionType = {
   }
 
 const props = withDefaults(defineProps<{
-  environment?: Partial<Environment>,
-  environmentNames?: string[],
+  environment: Partial<Environment> & { quotaStage: QuotaStage },
   isEditable: boolean,
-  isOwner:boolean,
+  isOwner: boolean,
   isProjectLocked: boolean,
-  projectClusters?: Cluster[]
-  allClusters?: Cluster[]
+  projectClusters: Cluster[]
+  allClusters: Cluster[]
 }>(), {
   environment: undefined,
-  environmentNames: undefined,
   isEditable: true,
   isOwner: false,
   isProjectLocked: false,
-  projectClusters: undefined,
-  allClusters: undefined,
 })
 
 const emit = defineEmits([
@@ -72,37 +69,30 @@ const zones = computed(() => zoneStore.zones)
 const chosenZoneDescription = computed(() => zones.value?.find(zone => zone.id === zoneId.value)?.description)
 
 const errorSchema = computed<SharedZodError | undefined>(() => {
-  let schemaValidation
-  if (localEnvironment.value.id) {
-    schemaValidation = EnvironmentSchema.safeParse(localEnvironment.value)
+  if (localEnvironment.value?.id) {
+    const schemaValidation = EnvironmentSchema.safeParse(localEnvironment.value)
+    return schemaValidation.success ? undefined : schemaValidation.error
   } else {
-    schemaValidation = EnvironmentSchema.omit({ id: true, permissions: true }).safeParse(localEnvironment.value)
+    const schemaValidation = EnvironmentSchema.omit({ id: true, permissions: true }).safeParse(localEnvironment.value)
+    return schemaValidation.success ? undefined : schemaValidation.error
   }
-  return schemaValidation.success ? undefined : schemaValidation.error
 })
 
 // @ts-ignore
 const availableClusters: ComputedRef<Cluster[]> = computed(() => {
   let clusters = props.projectClusters
-    ?.filter(
-      projectCluster => stage.value?.clusters
-        ?.map(cluster => cluster.id)
-        ?.includes(projectCluster.id),
-    )
-    ?.filter(
-      availableCluster => availableCluster.zoneId === zoneId.value,
-    )
+    .filter(projectCluster => stage.value?.clusterIds?.includes(projectCluster.id))
+    .filter(availableCluster => availableCluster.zoneId === zoneId.value)
 
+  const envCluster = props.allClusters.find(cFromAll => cFromAll?.id === localEnvironment.value.clusterId)
   if (
+    envCluster &&
     localEnvironment.value.clusterId &&
-    !clusters
-    // @ts-ignore
-      ?.find(availableCluster => availableCluster?.id === localEnvironment.value.clusterId)
+    !clusters.find(availableCluster => availableCluster?.id === localEnvironment.value.clusterId)
   ) {
     clusters = [
-      ...clusters, props.allClusters
-      // @ts-ignore
-        ?.find(cFromAll => cFromAll?.id === localEnvironment.value.clusterId),
+      ...clusters,
+      envCluster,
     ]
   }
   return clusters
