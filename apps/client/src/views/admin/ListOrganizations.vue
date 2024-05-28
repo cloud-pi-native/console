@@ -6,6 +6,7 @@ import {
   sortArrByObjKeyAsc,
   SharedZodError,
   parseZodError,
+  UpdateOrganizationBodySchema,
   type CreateOrganizationBody,
   type Organization,
 } from '@cpn-console/shared'
@@ -30,8 +31,6 @@ const headers = [
   'Création',
   'Modification',
 ]
-const rows = ref([])
-
 const isSyncingOrganizations = ref(false)
 const isUpdatingOrganization = ref<null | { name: string, key: string, data: unknown }>(null)
 
@@ -42,48 +41,52 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
   return schemaValidation.success ? undefined : schemaValidation.error
 })
 
+const generateRows = () => allOrganizations.value.length
+  ? sortArrByObjKeyAsc(allOrganizations.value, 'name')
+    ?.map(({ label, name, source, active, createdAt, updatedAt }) => ([
+      {
+        component: 'input',
+        value: label,
+        class: 'fr-input fr-text-default--info',
+        'data-testid': `${name}-label-input`,
+        onBlur: (event: Event & { target: { value: string }}) => {
+          const data = event.target?.value
+          if (data !== label) {
+            preUpdateOrganization({ name, key: 'label', data })
+          }
+        },
+      },
+      name,
+      source,
+      {
+        component: 'input',
+        type: 'checkbox',
+        checked: active,
+        'data-testid': `${name}-active-cbx`,
+        class: 'fr-checkbox-group--sm',
+        title: active ? `Désactiver l'organisation ${name}` : `Réactiver l'organisation ${name}`,
+        onClick: (event: Event & { target: { checked: boolean }}) => {
+          const data = event.target.checked
+          if (data !== active) {
+            preUpdateOrganization({ name, key: 'active', data })
+          }
+        },
+      },
+      formatDate(createdAt),
+      formatDate(updatedAt),
+    ]))
+  : [[{
+      text: 'Aucune organisation, veuillez en ajouter une.',
+      cellAttrs: {
+        colspan: headers.length,
+        align: 'center',
+      },
+    }]]
+
+const rows = ref<ReturnType<typeof generateRows>>([])
+
 const setRows = () => {
-  rows.value = allOrganizations.value.length
-    ? sortArrByObjKeyAsc(allOrganizations.value, 'name')
-      ?.map(({ label, name, source, active, createdAt, updatedAt }) => ([
-        {
-          component: 'input',
-          value: label,
-          class: 'fr-input fr-text-default--info',
-          'data-testid': `${name}-label-input`,
-          onBlur: (event: Event & { target: { value: string }}) => {
-            const data = event.target?.value
-            if (data !== label) {
-              preUpdateOrganization({ name, key: 'label', data })
-            }
-          },
-        },
-        name,
-        source,
-        {
-          component: 'input',
-          type: 'checkbox',
-          checked: active,
-          'data-testid': `${name}-active-cbx`,
-          class: 'fr-checkbox-group--sm',
-          title: active ? `Désactiver l'organisation ${name}` : `Réactiver l'organisation ${name}`,
-          onClick: (event: Event & { target: { checked: boolean }}) => {
-            const data = event.target.checked
-            if (data !== active) {
-              preUpdateOrganization({ name, key: 'active', data })
-            }
-          },
-        },
-        formatDate(createdAt),
-        formatDate(updatedAt),
-      ]))
-    : [[{
-        text: 'Aucune organisation, veuillez en ajouter une.',
-        cellAttrs: {
-          colspan: headers.length,
-          align: 'center',
-        },
-      }]]
+  rows.value = generateRows()
   tableKey.value = getRandomId('table')
 }
 
@@ -139,11 +142,7 @@ const updateOrganization = async ({ name, key, data }: {name: string, key: strin
     [key]: data,
   }
 
-  const schemaValidation = OrganizationSchema
-    .pick({
-      name: true,
-      [key]: true,
-    }).safeParse(org)
+  const schemaValidation = UpdateOrganizationBodySchema.safeParse(org)
 
   if (isOrgAlreadyTaken.value) {
     snackbarStore.setMessage('Une organisation portant ce nom existe déjà.', 'error')

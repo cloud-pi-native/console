@@ -14,7 +14,7 @@ export const OrganizationSchema = z.object({
   label: z.string()
     .max(60),
   active: z.boolean(),
-}).merge(AtDatesToStringSchema)
+})
 
 export type Organization = Zod.infer<typeof OrganizationSchema>
 
@@ -30,18 +30,20 @@ export const CreateOrganizationSchema = {
 
 export const GetOrganizationsSchema = {
   responses: {
-    200: z.array(OrganizationSchema),
+    200: z.array(OrganizationSchema.merge(AtDatesToStringSchema)),
     500: ErrorSchema,
   },
 }
+
+export const UpdateOrganizationBodySchema = OrganizationSchema.pick({ active: true, label: true, source: true }).partial()
 
 export const UpdateOrganizationSchema = {
   params: z.object({
     organizationName: z.string(),
   }),
-  body: OrganizationSchema.partial(),
+  body: UpdateOrganizationBodySchema,
   responses: {
-    200: OrganizationSchema,
+    200: OrganizationSchema.merge(AtDatesToStringSchema),
     500: ErrorSchema,
   },
 }
