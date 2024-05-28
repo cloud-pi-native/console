@@ -128,7 +128,7 @@ const setRows = () => {
           organizations.value?.find(org => org.id === organizationId)?.label,
           name,
           description ?? '',
-          roles?.find(role => role.role === 'owner')?.user?.email,
+          roles.find(role => role.role === 'owner')?.user?.email ?? '',
           {
             component: 'v-icon',
             name: statusDict.status[status].icon,
