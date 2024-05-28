@@ -115,13 +115,13 @@ export const getClustersWithProjectIdAndConfig = () =>
   })
 
 export const getProjectsByClusterId = async (id: Cluster['id']) =>
-  (await prisma.cluster.findUnique({
+  (await prisma.cluster.findUniqueOrThrow({
     where: { id },
     select: { projects: true },
   }))?.projects
 
 export const getStagesByClusterId = async (id: Cluster['id']) =>
-  (await prisma.cluster.findUnique({
+  (await prisma.cluster.findUniqueOrThrow({
     where: { id },
     select: { stages: true },
   }))?.stages

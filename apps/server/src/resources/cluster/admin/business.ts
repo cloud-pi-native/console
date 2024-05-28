@@ -1,5 +1,5 @@
 import type { User } from '@prisma/client'
-import { ClusterBusinessSchema, ClusterPrivacy, CreateClusterBusinessSchema, type Cluster } from '@cpn-console/shared'
+import { ClusterBusinessSchema, ClusterPrivacy, CreateClusterBusinessSchema, type Project, type Cluster } from '@cpn-console/shared'
 import { addLogs, createCluster as createClusterQuery, deleteCluster as deleteClusterQuery, getClusterById, getClusterByLabel, getClusterEnvironments, getProjectsByClusterId, getStagesByClusterId, linkClusterToProjects, linkZoneToClusters, removeClusterFromProject, removeClusterFromStage, updateCluster as updateClusterQuery } from '@/resources/queries-index.js'
 import { linkClusterToStages } from '@/resources/stage/business.js'
 import { validateSchema } from '@/utils/business.js'
@@ -97,38 +97,37 @@ export const updateCluster = async (data: Partial<Cluster>, clusterId: Cluster['
 
     // @ts-ignore
     const clusterUpdated = await updateClusterQuery(clusterId, clusterData, { user, cluster })
+
+    // zone
     if (zoneId) {
       await linkZoneToClusters(zoneId, [clusterId])
     }
 
-    if (projectIds || data.privacy === ClusterPrivacy.PUBLIC) {
-      const dbProjects = await getProjectsByClusterId(clusterId)
-      if (projectIds) {
-        await linkClusterToProjects(clusterId, projectIds)
-      }
-      for (const project of dbProjects || []) {
-        if (!projectIds?.includes(project.id)) {
-          await removeClusterFromProject(clusterUpdated.id, project.id)
-        }
+    // projects
+    const dbProjects = await getProjectsByClusterId(clusterId)
 
-        if (dbProjects) {
-          for (const project of dbProjects) {
-            if (!projectIds?.includes(project.id)) {
-              await removeClusterFromProject(clusterUpdated.id, project.id)
-            }
-          }
-        }
+    let projectsToRemove: Project['id'][] = []
 
-        if (stageIds) {
-          await linkClusterToStages(clusterId, stageIds)
+    if (projectIds && clusterUpdated.privacy === ClusterPrivacy.DEDICATED) {
+      await linkClusterToProjects(clusterId, projectIds)
+      projectsToRemove = dbProjects?.map(project => project.id)?.filter(dbProjectId => !projectIds.includes(dbProjectId)) ?? []
+    } else if (clusterUpdated.privacy === ClusterPrivacy.PUBLIC) {
+      projectsToRemove = dbProjects?.map(project => project.id) ?? []
+    }
 
-          const dbStages = await getStagesByClusterId(clusterId)
-          if (dbStages) {
-            for (const stage of dbStages) {
-              if (!stageIds.includes(stage.id)) {
-                await removeClusterFromStage(clusterUpdated.id, stage.id)
-              }
-            }
+    for (const projectId of projectsToRemove) {
+      await removeClusterFromProject(clusterUpdated.id, projectId)
+    }
+
+    // stages
+    if (stageIds) {
+      await linkClusterToStages(clusterId, stageIds)
+
+      const dbStages = await getStagesByClusterId(clusterId)
+      if (dbStages) {
+        for (const stage of dbStages) {
+          if (!stageIds.includes(stage.id)) {
+            await removeClusterFromStage(clusterUpdated.id, stage.id)
           }
         }
       }

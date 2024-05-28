@@ -206,8 +206,7 @@ describe('Administration clusters', () => {
   it('Should update a cluster', () => {
     cy.intercept('PUT', '/api/v1/admin/clusters/*').as('updateCluster')
 
-    const updatedCLuster = {
-      label: 'updatedCluster',
+    const updatedCluster = {
       infos: 'Floating IP: 2.2.2.2',
       cluster: {
         tlsServerName: 'updatedTlsServerName',
@@ -221,13 +220,13 @@ describe('Administration clusters', () => {
     cy.getByDataTestid('tlsServerNameInput')
       .find('input')
       .clear()
-      .type(updatedCLuster.cluster.tlsServerName)
+      .type(updatedCluster.cluster.tlsServerName)
     cy.getByDataTestid('labelInput')
       .should('be.disabled')
     cy.getByDataTestid('infosInput')
       .find('textarea')
       .clear()
-      .type(updatedCLuster.infos)
+      .type(updatedCluster.infos)
     cy.getByDataTestid('clusterResourcesCbx')
       .find('input')
       .should('be.enabled')
@@ -246,6 +245,39 @@ describe('Administration clusters', () => {
       .click()
     cy.wait('@updateCluster')
       .its('response.statusCode').should('match', /^20\d$/)
+
+    cy.getByDataTestid(`clusterTile-${newCluster.label}`)
+      .should('be.visible')
+      .click()
+    cy.get('h1')
+      .should('contain', 'Mettre à jour le cluster')
+    cy.get('div.json-box')
+      .should('have.length', 2)
+    cy.getByDataTestid('labelInput')
+      .find('input')
+      .should('have.value', newCluster.label)
+      .and('be.disabled')
+    cy.getByDataTestid('infosInput')
+      .find('textarea')
+      .should('have.value', updatedCluster.infos)
+    cy.getByDataTestid('tlsServerNameInput')
+      .find('input')
+      .should('have.value', updatedCluster.cluster.tlsServerName)
+    cy.getByDataTestid('clusterResourcesCbx')
+      .find('input')
+      .should('not.be.checked')
+      .and('be.enabled')
+    cy.get('#privacy-select')
+      .should('have.value', 'public')
+      .and('be.enabled')
+    cy.get('#projects-select')
+      .should('not.exist')
+    cy.get('#zone-select')
+      .should('have.value', 'a66c4230-eba6-41f1-aae5-bb1e4f90cce2')
+    cy.get('#stages-select')
+      .should('exist')
+    cy.get('[data-testid$="stages-select-tag"]')
+      .should('have.length', newCluster.stages.length - 1)
   })
 
   it('Should delete a cluster', () => {
