@@ -118,17 +118,17 @@ export const updateCluster = async (data: Partial<Cluster>, clusterId: Cluster['
             }
           }
         }
+      }
+    }
 
-        if (stageIds) {
-          await linkClusterToStages(clusterId, stageIds)
+    if (stageIds) {
+      await linkClusterToStages(clusterId, stageIds)
 
-          const dbStages = await getStagesByClusterId(clusterId)
-          if (dbStages) {
-            for (const stage of dbStages) {
-              if (!stageIds.includes(stage.id)) {
-                await removeClusterFromStage(clusterUpdated.id, stage.id)
-              }
-            }
+      const dbStages = await getStagesByClusterId(clusterId)
+      if (dbStages) {
+        for (const stage of dbStages) {
+          if (!stageIds.includes(stage.id)) {
+            await removeClusterFromStage(clusterUpdated.id, stage.id)
           }
         }
       }
