@@ -60,7 +60,15 @@ export const CreateClusterBusinessSchema = ClusterSchema.omit({ id: true })
 
 export const ClusterBusinessSchema = ClusterSchema
 
-const CleanedClusterSchema = ClusterSchema.pick({ id: true, label: true, projectIds: true, stageIds: true })
+const CleanedClusterSchema = ClusterSchema.pick({
+  id: true,
+  label: true,
+  stageIds: true,
+  clusterResources: true,
+  privacy: true,
+  infos: true,
+  zoneId: true,
+}).required()
 
 export type Cluster = Zod.infer<typeof ClusterSchema>
 
@@ -83,7 +91,15 @@ export type CreateClusterBody = Zod.infer<typeof CreateClusterSchema.body>
 
 export const GetClustersSchema = {
   responses: {
-    200: z.array(CleanedClusterSchema.or(ClusterSchema)),
+    200: z.array(CleanedClusterSchema),
+    401: ErrorSchema,
+    500: ErrorSchema,
+  },
+}
+
+export const GetAdminClustersSchema = {
+  responses: {
+    200: z.array(ClusterSchema),
     401: ErrorSchema,
     500: ErrorSchema,
   },

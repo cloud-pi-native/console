@@ -6,11 +6,23 @@ import {
   checkClusterProjectIds,
   createCluster,
   deleteCluster,
+  getAllClusters,
   getClusterAssociatedEnvironments,
   updateCluster,
 } from './business.js'
 
 export const clusterAdminRouter = () => serverInstance.router(clusterAdminContract, {
+  getClusters: async ({ request: req }) => {
+    const user = req.session.user
+    const cleanedClusters = await getAllClusters(user)
+
+    addReqLogs({ req, message: 'Clusters récupérés avec succès' })
+    return {
+      status: 200,
+      body: cleanedClusters,
+    }
+  },
+
   createCluster: async ({ request: req, body: data }) => {
     const userId = req.session.user.id
 

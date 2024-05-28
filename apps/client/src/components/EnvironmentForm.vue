@@ -1,17 +1,10 @@
 <script lang="ts" setup>
 import { ref, onBeforeMount, watch, computed } from 'vue'
 import { getRandomId } from '@gouvminint/vue-dsfr'
-import { EnvironmentSchema, projectIsLockedInfo, longestEnvironmentName, type QuotaStage, type Quota, type SharedZodError, parseZodError, type Environment } from '@cpn-console/shared'
+import { EnvironmentSchema, projectIsLockedInfo, longestEnvironmentName, type QuotaStage, type Quota, type SharedZodError, parseZodError, type Environment, CleanedCluster } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 import { useZoneStore } from '@/stores/zone.js'
-
-type Cluster = {
-  id: string
-  label: string
-  infos: string
-  zoneId: string
-}
 
 type Stage = {
   id: string
@@ -26,12 +19,12 @@ type OptionType = {
   }
 
 const props = withDefaults(defineProps<{
-  environment: Partial<Environment> & { quotaStage: QuotaStage },
+  environment: Partial<Environment & { quotaStage: QuotaStage }>,
   isEditable: boolean,
   isOwner: boolean,
   isProjectLocked: boolean,
-  projectClusters: Cluster[]
-  allClusters: Cluster[]
+  projectClustersIds: CleanedCluster['id'][]
+  allClusters: CleanedCluster[]
 }>(), {
   environment: undefined,
   isEditable: true,
@@ -79,24 +72,11 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
 })
 
 // @ts-ignore
-const availableClusters: ComputedRef<Cluster[]> = computed(() => {
-  let clusters = props.projectClusters
-    .filter(projectCluster => stage.value?.clusterIds?.includes(projectCluster.id))
-    .filter(availableCluster => availableCluster.zoneId === zoneId.value)
-
-  const envCluster = props.allClusters.find(cFromAll => cFromAll?.id === localEnvironment.value.clusterId)
-  if (
-    envCluster &&
-    localEnvironment.value.clusterId &&
-    !clusters.find(availableCluster => availableCluster?.id === localEnvironment.value.clusterId)
-  ) {
-    clusters = [
-      ...clusters,
-      envCluster,
-    ]
-  }
-  return clusters
-})
+const availableClusters: ComputedRef<CleanedCluster[]> = computed(() => props.allClusters
+  .filter(cluster => props.projectClustersIds.includes(cluster.id))
+  .filter(cluster => cluster.zoneId === zoneId.value)
+  .filter(cluster => cluster.stageIds.includes(stageId.value ?? '')),
+)
 
 const clusterInfos = computed(() => availableClusters.value.find(cluster => cluster.id === localEnvironment.value.clusterId)?.infos)
 

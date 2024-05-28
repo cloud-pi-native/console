@@ -12,7 +12,7 @@ describe('Administration zones', () => {
 
   beforeEach(() => {
     cy.intercept('GET', 'api/v1/zones').as('getZones')
-    cy.intercept('GET', 'api/v1/clusters').as('getClusters')
+    cy.intercept('GET', 'api/v1/admin/clusters').as('getClusters')
     cy.intercept('POST', 'api/v1/admin/zones').as('createZone')
     cy.intercept('PUT', 'api/v1/admin/zones/*').as('updateZone')
     cy.intercept('DELETE', 'api/v1/admin/zones/*').as('deleteZone')

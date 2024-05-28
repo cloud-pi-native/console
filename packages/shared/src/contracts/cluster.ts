@@ -9,16 +9,23 @@ import {
 } from '../schemas/index.js'
 
 export const clusterContract = contractInstance.router({
-  getClusters: {
+  listClusters: {
     method: 'GET',
     path: `${apiPrefix}/clusters`,
     summary: 'Get clusters',
-    description: 'Retrieved all clusters.',
+    description: 'Retrieve clusters authorized for user',
     responses: GetClustersSchema.responses,
   },
 })
 
 export const clusterAdminContract = contractInstance.router({
+  getClusters: {
+    method: 'GET',
+    path: `${apiPrefix}/admin/clusters`,
+    summary: 'Get clusters and sensitive infos',
+    description: 'Retrieve all clusters and their confidential informations',
+    responses: GetClustersSchema.responses,
+  },
   createCluster: {
     method: 'POST',
     path: `${apiPrefix}/admin/clusters`,
