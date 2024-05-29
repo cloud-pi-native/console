@@ -4,7 +4,7 @@ import { apiClient } from '../../api/xhr-client.js'
 import { useAdminClusterStore } from './cluster.js'
 import { ClusterPrivacy } from '@cpn-console/shared'
 
-const apiClientGet = vi.spyOn(apiClient.Clusters, 'getClusters')
+const apiClientGet = vi.spyOn(apiClient.ClustersAdmin, 'getClusters')
 const apiClientGetClusterEnvironments = vi.spyOn(apiClient.ClustersAdmin, 'getClusterEnvironments')
 const apiClientPost = vi.spyOn(apiClient.ClustersAdmin, 'createCluster')
 const apiClientPut = vi.spyOn(apiClient.ClustersAdmin, 'updateCluster')
@@ -55,10 +55,10 @@ describe('Cluster Store', () => {
     apiClientGet.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
     const adminClusterStore = useAdminClusterStore()
 
-    const res = await adminClusterStore.getClusters()
+    await adminClusterStore.getClusters()
 
-    expect(res).toEqual(data)
     expect(apiClientGet).toHaveBeenCalledTimes(1)
+    expect(adminClusterStore.clusters).toEqual(data)
   })
 
   it('Should get cluster\'s associated environments by api call', async () => {

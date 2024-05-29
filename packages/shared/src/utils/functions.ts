@@ -14,12 +14,31 @@ export const calcProjectNameMaxLength = (organizationName: string) => {
     : 61 - longestEnvironmentName
 }
 
-export const getUniqueListBy = (arr: Array<Record<string, unknown>>, key: string | number) => [...new Map(arr.map(item => [item[key], item])).values()]
+export const getUniqueListBy = (arr: Array<Record<string, unknown>>, key: string) => [...new Map(arr.map(item => [item[key], item])).values()]
 
-export const sortArrByObjKeyAsc = <T extends Array<Record<string, string | number>>>(arr: T, key: string): T => arr?.toSorted((a: Record<string, string | number>, b: Record<string, string | number>) => a[key] >= b[key] ? 1 : -1) as T
+export const isString = (value: any): value is string => typeof value === 'string' || value instanceof String
 
-export const removeTrailingSlash = (url: string | undefined) => url?.endsWith('/')
-  ? url?.slice(0, -1)
+type ObjToSort = Record<string, unknown>
+
+export const sortArrByObjKeyAsc = <T extends ObjToSort[]>(arr: T, key: string): T => {
+  return arr.toSorted((a: ObjToSort, b: ObjToSort) => {
+    const aValue = a[key]
+    const bValue = b[key]
+    if (isString(aValue) && isString(bValue)) {
+      return aValue.localeCompare(bValue.toString(), 'fr', { sensitivity: 'base' })
+    }
+    if (typeof aValue === 'number' && typeof bValue === 'number') {
+      return aValue - bValue
+    }
+    if (typeof aValue === 'boolean' && typeof bValue === 'boolean') {
+      return Number(bValue) - Number(aValue)
+    }
+    return -1
+  }) as T
+}
+
+export const removeTrailingSlash = (url: string) => url?.endsWith('/')
+  ? url.slice(0, -1)
   : url
 
 // Exclude keys from an object

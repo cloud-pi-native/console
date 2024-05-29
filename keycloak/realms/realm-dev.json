@@ -222,7 +222,7 @@
       "bearerOnly": false,
       "consentRequired": false,
       "standardFlowEnabled": true,
-      "implicitFlowEnabled": true,
+      "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": true,
       "serviceAccountsEnabled": false,
       "publicClient": true,
@@ -289,7 +289,7 @@
       "bearerOnly": true,
       "consentRequired": false,
       "standardFlowEnabled": true,
-      "implicitFlowEnabled": true,
+      "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": true,
       "serviceAccountsEnabled": false,
       "publicClient": false,
@@ -562,5 +562,17 @@
         }
       ]
     }
-  ]
+  ],
+  "loginWithEmailAllowed": true,
+  "registrationEmailAsUsername": false,
+  "loginTheme": "dsfr",
+  "accountTheme": "dsfr",
+  "adminTheme": "dsfr",
+  "emailTheme": "dsfr",
+  "internationalizationEnabled": true,
+  "supportedLocales": [
+    "en",
+    "fr"
+  ],
+  "defaultLocale": "fr"
 }

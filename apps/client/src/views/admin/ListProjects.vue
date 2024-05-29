@@ -128,7 +128,7 @@ const setRows = () => {
           organizations.value?.find(org => org.id === organizationId)?.label,
           name,
           description ?? '',
-          roles?.find(role => role.role === 'owner')?.user?.email,
+          roles.find(role => role.role === 'owner')?.user?.email ?? '',
           {
             component: 'v-icon',
             name: statusDict.status[status].icon,
@@ -424,7 +424,7 @@ const saveProjectServices = async (data: PluginsUpdateBody) => {
         <DsfrButton
           v-show="!isArchivingProject"
           data-testid="showArchiveProjectBtn"
-          label="Archiver le projet"
+          label="Supprimer le projet"
           secondary
           icon="ri-delete-bin-7-line"
           @click="isArchivingProject = true"
@@ -447,7 +447,7 @@ const saveProjectServices = async (data: PluginsUpdateBody) => {
         >
           <DsfrButton
             data-testid="archiveProjectBtn"
-            :label="`Archiver définitivement le projet ${selectedProject.name}`"
+            :label="`Supprimer définitivement le projet ${selectedProject.name}`"
             :disabled="projectToArchive !== selectedProject.name"
             secondary
             icon="ri-delete-bin-7-line"

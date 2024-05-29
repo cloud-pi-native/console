@@ -1,19 +1,17 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { Cluster, CreateClusterBody, UpdateClusterBody, CleanedCluster } from '@cpn-console/shared'
+import type { Cluster, CreateClusterBody, UpdateClusterBody } from '@cpn-console/shared'
 import api from '@/api/index.js'
 
 export const useAdminClusterStore = defineStore('admin-cluster', () => {
-  const clusters = ref<Array<Cluster | CleanedCluster>>()
+  const clusters = ref<Array<Cluster>>()
 
   const getClusters = async () => {
-    clusters.value = await api.getClusters()
-    return clusters.value
+    clusters.value = await api.getAdminClusters()
   }
 
   const getClusterAssociatedEnvironments = async (clusterId: Cluster['id']) => {
-    const res = await api.getClusterAssociatedEnvironments(clusterId)
-    return res
+    return api.getClusterAssociatedEnvironments(clusterId)
   }
 
   const addCluster = async (cluster: CreateClusterBody) => {

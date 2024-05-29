@@ -1,8 +1,9 @@
-import { type StepCall, type Project, type ProjectLite, parseError, type UniqueRepo } from '@cpn-console/hooks'
+import { type StepCall, type Project, type ProjectLite, parseError, type UniqueRepo, specificallyDisabled } from '@cpn-console/hooks'
 import { deleteGroup } from './group.js'
 import { createUsername, getUser } from './user.js'
 import { ensureMembers } from './members.js'
 import { ensureRepositories } from './repositories.js'
+import { VaultSecrets, getConfig } from './utils.js'
 
 // Check
 export const checkApi: StepCall<Project> = async (payload) => {
@@ -39,15 +40,38 @@ export const checkApi: StepCall<Project> = async (payload) => {
 
 export const getDsoProjectSecrets: StepCall<ProjectLite> = async (payload) => {
   try {
-    // TODO déplacer les secrets dans un dossier pour tout lister plutôt que de sélectionner dans le code
-    const gitlab = (await payload.apis.vault.read('GITLAB')).data
+    if (!specificallyDisabled(payload.config.gitlab?.displayTriggerHint)) {
+      // TODO déplacer les secrets dans un dossier pour tout lister plutôt que de sélectionner dans le code
+      const gitlab = (await payload.apis.vault.read('GITLAB')).data as VaultSecrets['GITLAB']
+      const curlCommand = [
+        'curl -X POST --fail',
+        // eslint-disable-next-line no-useless-escape, no-template-curly-in-string
+        '-F token=\${GIT_MIRROR_TOKEN}',
+        '-F ref=main',
+        // eslint-disable-next-line no-useless-escape, no-template-curly-in-string
+        '-F variables[GIT_BRANCH_DEPLOY]=\${BRANCH_TO_SYNC}',
+        // eslint-disable-next-line no-useless-escape, no-template-curly-in-string
+        '-F variables[PROJECT_NAME]=\${REPOSITORY_NAME}',
+        `"${getConfig().url}/api/v4/projects/${gitlab.GIT_MIRROR_PROJECT_ID}/trigger/pipeline"`,
+      ]
+      const secrets: Record<string, string> = {
+        GIT_MIRROR_PROJECT_ID: String(gitlab.GIT_MIRROR_PROJECT_ID),
+        GIT_MIRROR_TOKEN: gitlab.GIT_MIRROR_TOKEN,
+        'CURL COMMAND': curlCommand.join(' \\\n    '),
+      }
+
+      return {
+        status: {
+          result: 'OK',
+          message: 'secret retrieved',
+        },
+        secrets,
+      }
+    }
     return {
       status: {
         result: 'OK',
-        message: 'secret retrieved',
-      },
-      secrets: {
-        ...gitlab,
+        message: 'This feature is disabled',
       },
     }
   } catch (error) {
@@ -88,12 +112,14 @@ export const upsertDsoProject: StepCall<Project> = async (payload) => {
 
     const mirrorTriggerToken = await gitlabApi.getMirrorProjectTriggerToken(vaultApi)
 
-    await vaultApi.write({
+    const gitlabSecret: VaultSecrets['GITLAB'] = {
       ORGANIZATION_NAME: project.organization.name,
       PROJECT_NAME: project.name,
       GIT_MIRROR_PROJECT_ID: mirrorTriggerToken.repoId,
       GIT_MIRROR_TOKEN: mirrorTriggerToken.token,
-    }, 'GITLAB')
+    }
+
+    await vaultApi.write(gitlabSecret, 'GITLAB')
 
     return {
       status: {

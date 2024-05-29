@@ -1,9 +1,9 @@
 import type { User } from '@prisma/client'
-import { ClusterBusinessSchema, ClusterPrivacy, CreateClusterBusinessSchema, type Cluster } from '@cpn-console/shared'
-import { addLogs, createCluster as createClusterQuery, deleteCluster as deleteClusterQuery, getClusterById, getClusterByLabel, getClusterEnvironments, getProjectsByClusterId, getStagesByClusterId, linkClusterToProjects, linkZoneToClusters, removeClusterFromProject, removeClusterFromStage, updateCluster as updateClusterQuery } from '@/resources/queries-index.js'
+import { ClusterBusinessSchema, ClusterPrivacy, CreateClusterBusinessSchema, Project, UserProfile, type Cluster } from '@cpn-console/shared'
+import { addLogs, createCluster as createClusterQuery, deleteCluster as deleteClusterQuery, getClusterById, getClusterByLabel, getClusterEnvironments, getClustersWithProjectIdAndConfig, getProjectsByClusterId, getStagesByClusterId, getUserById, linkClusterToProjects, linkZoneToClusters, removeClusterFromProject, removeClusterFromStage, updateCluster as updateClusterQuery } from '@/resources/queries-index.js'
 import { linkClusterToStages } from '@/resources/stage/business.js'
 import { validateSchema } from '@/utils/business.js'
-import { BadRequestError, DsoError, NotFoundError } from '@/utils/errors.js'
+import { BadRequestError, DsoError, NotFoundError, UnauthorizedError } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
 
 export const checkClusterProjectIds = (data: Omit<Cluster, 'id'> & { id?: Cluster['id'] }) => {
@@ -13,22 +13,34 @@ export const checkClusterProjectIds = (data: Omit<Cluster, 'id'> & { id?: Cluste
     : data.projectIds
 }
 
+export const getAllClusters = async (kcUser: UserProfile) => {
+  const user = await getUserById(kcUser.id)
+  if (!user) throw new UnauthorizedError('Vous n\'êtes pas connecté')
+
+  const clusters = await getClustersWithProjectIdAndConfig()
+  return clusters.map(({ stages, ...cluster }) => ({
+    ...cluster,
+    user: cluster.kubeconfig.user,
+    cluster: cluster.kubeconfig.cluster,
+    projectIds: cluster.projects.map(({ id }) => id),
+    stageIds: stages.map(({ id }) => id) ?? [],
+  }))
+}
+
 export const getClusterAssociatedEnvironments = async (clusterId: string) => {
   try {
     const clusterEnvironments = (await getClusterEnvironments(clusterId))?.environments
 
     if (!clusterEnvironments) throw new NotFoundError('Aucun environnement associé à ce cluster')
 
-    const environments = clusterEnvironments.map(environment => {
+    return clusterEnvironments.map(environment => {
       return ({
         organization: environment.project?.organization?.name,
         project: environment.project?.name,
         name: environment.name,
-        owner: environment.project?.roles?.find(role => role?.role === 'owner')?.user?.email,
+        owner: environment.project?.roles?.find(role => role?.role === 'owner')?.user?.email ?? 'Impossible de trouver le souscripteur',
       })
     })
-
-    return environments
   } catch (error) {
     throw new Error(error?.message)
   }
@@ -97,38 +109,37 @@ export const updateCluster = async (data: Partial<Cluster>, clusterId: Cluster['
 
     // @ts-ignore
     const clusterUpdated = await updateClusterQuery(clusterId, clusterData, { user, cluster })
+
+    // zone
     if (zoneId) {
       await linkZoneToClusters(zoneId, [clusterId])
     }
 
-    if (projectIds || data.privacy === ClusterPrivacy.PUBLIC) {
-      const dbProjects = await getProjectsByClusterId(clusterId)
-      if (projectIds) {
-        await linkClusterToProjects(clusterId, projectIds)
-      }
-      for (const project of dbProjects || []) {
-        if (!projectIds?.includes(project.id)) {
-          await removeClusterFromProject(clusterUpdated.id, project.id)
-        }
+    // projects
+    const dbProjects = await getProjectsByClusterId(clusterId)
 
-        if (dbProjects) {
-          for (const project of dbProjects) {
-            if (!projectIds?.includes(project.id)) {
-              await removeClusterFromProject(clusterUpdated.id, project.id)
-            }
-          }
-        }
+    let projectsToRemove: Project['id'][] = []
 
-        if (stageIds) {
-          await linkClusterToStages(clusterId, stageIds)
+    if (projectIds && clusterUpdated.privacy === ClusterPrivacy.DEDICATED) {
+      await linkClusterToProjects(clusterId, projectIds)
+      projectsToRemove = dbProjects?.map(project => project.id)?.filter(dbProjectId => !projectIds.includes(dbProjectId)) ?? []
+    } else if (clusterUpdated.privacy === ClusterPrivacy.PUBLIC) {
+      projectsToRemove = dbProjects?.map(project => project.id) ?? []
+    }
 
-          const dbStages = await getStagesByClusterId(clusterId)
-          if (dbStages) {
-            for (const stage of dbStages) {
-              if (!stageIds.includes(stage.id)) {
-                await removeClusterFromStage(clusterUpdated.id, stage.id)
-              }
-            }
+    for (const projectId of projectsToRemove) {
+      await removeClusterFromProject(clusterUpdated.id, projectId)
+    }
+
+    // stages
+    if (stageIds) {
+      await linkClusterToStages(clusterId, stageIds)
+
+      const dbStages = await getStagesByClusterId(clusterId)
+      if (dbStages) {
+        for (const stage of dbStages) {
+          if (!stageIds.includes(stage.id)) {
+            await removeClusterFromStage(clusterUpdated.id, stage.id)
           }
         }
       }

@@ -5,6 +5,8 @@ La console Cloud π Native est une application web ayant pour but de piloter des
 Cette console offre une interface unifiée vers un ensemble de services tout en garantissant une cohérence globale du système avec la création automatique d'un certain nombre de ressources comme par exemple les comptes d'accès, les robots ou encore des ressources Kubernetes. 
 En addition du provisionnement automatique, elle garantit aussi le contrôle d'accès aux ressources du projet à l'aide d'une gestion d'équipe, de permissions, de quotas, etc...
 
+<img src="./misc/images/projects.png" width="30%"></img> <img src="./misc/images/repositories.png" width="30%"></img> <img src="./misc/images/environments.png" width="30%"></img> <img src="./misc/images/services.png" width="30%"></img> <img src="./misc/images/members.png" width="30%"></img> <img src="./misc/images/status.png" width="30%"></img>
+
 ## Architecture
 
 Ce projet est construit avec [NodeJS](https://nodejs.org/), [VueJS](https://vuejs.org/), [Postgres](https://www.postgresql.org/) et [Keycloak](https://www.keycloak.org/). 
@@ -252,11 +254,13 @@ Un chart Helm utilitaire est installé pour déployer les services qui ne sont p
 
 Différents fichiers de `values.yml` sont disponibles pour personnaliser le déploiement de l'application dans le cluster Kind:
 
-- Le fichier [./env/dso-values.yaml](./env/dso-values.yaml) contient les variables de base l'application.
-- Le fichier [./env/dso-values-dev.yaml](./env/dso-values-dev.yaml) contient les variables de l'application pour le mode développement.
-- Le fichier [./env/dso-values-int-example.yaml](./env/dso-values-int-example.yaml) contient les variables de l'application pour le mode intégration.
+- Le fichier [./ci/kind/env/dso-values.yaml](./ci/kind/env/dso-values.yaml) contient les variables de base l'application.
+- Le fichier [./ci/kind/env/dso-values-dev.yaml](./ci/kind/env/dso-values-dev.yaml) contient les variables de l'application pour le mode développement.
+- Le fichier [./ci/kind/env/dso-values-int-example.yaml](./ci/kind/env/dso-values-int-example.yaml) contient les variables de l'application pour le mode intégration.
 
-*__Notes:__ Un fichier d'environnement `./env/.env` est disponible pour fournir le chemin d'accès vers la `kubeconfig` du cluster d'intégration.*
+> *__Notes:__*
+> - *Un fichier d'environnement `./env/.env` est disponible pour fournir le chemin d'accès vers la `kubeconfig` du cluster d'intégration.*
+> - *Les values du chart de la console sont disponibles [ici](https://github.com/cloud-pi-native/helm-charts/tree/main/charts/dso-console).*
 
 ### Base de données
 

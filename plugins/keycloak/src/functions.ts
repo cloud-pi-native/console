@@ -50,28 +50,21 @@ export const retrieveKeycloakAdminUsers: StepCall<EmptyPayload> = async () => {
 export const updateUserAdminKcGroupMembership: StepCall<UserAdmin> = async ({ args: { id, isAdmin } }) => {
   const kcClient = await getkcClient()
   try {
-    const adminGroup = await getGroupByName(kcClient, 'admin')
+    const [adminGroup, user] = await Promise.all([
+      getGroupByName(kcClient, 'admin'),
+      kcClient.users.findOne({ id }),
+    ])
     if (!adminGroup?.id) throw new Error('Admin group not found')
+    if (!user?.id) throw new Error('User to update not found')
 
-    if (!isAdmin) {
-      await kcClient.users.delFromGroup({
-        id,
-        groupId: adminGroup.id,
-      })
-    } else {
-      await kcClient.users.addToGroup({
-        id,
-        groupId: adminGroup.id,
-      })
-    }
-
-    const administrators = (await kcClient.groups
-      .listMembers({ id: adminGroup.id }))
-      .map(groupMember => groupMember.email)
+    if (isAdmin) await kcClient.users.addToGroup({ id, groupId: adminGroup.id })
+    else await kcClient.users.delFromGroup({ id, groupId: adminGroup.id })
 
     return {
-      status: { result: 'OK' },
-      administrators,
+      status: {
+        result: 'OK',
+        message: `${user.email ?? user.id} was ${isAdmin ? 'promoted to' : 'demoted from'} /admin group`,
+      },
     }
   } catch (error) {
     return {

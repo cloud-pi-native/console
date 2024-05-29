@@ -1,4 +1,4 @@
-import type { Plugin } from '@cpn-console/hooks'
+import type { DeclareModuleGenerator, Plugin } from '@cpn-console/hooks'
 import { createDsoProject, deleteDsoProject, getProjectSecrets } from './functions.js'
 import infos from './infos.js'
 import monitor from './monitor.js'
@@ -14,7 +14,6 @@ export const plugin: Plugin = {
 }
 
 declare module '@cpn-console/hooks' {
-  interface ProjectStore {
-    registry?: { projectId?: string }
-  }
+  interface ProjectStore extends DeclareModuleGenerator<typeof infos, 'project'> {}
+  interface Config extends DeclareModuleGenerator<typeof infos, 'global'> {}
 }

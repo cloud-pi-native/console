@@ -48,7 +48,7 @@ export const CreateStageSchema = {
 
 export const GetStagesSchema = {
   responses: {
-    200: z.array(StageSchema),
+    200: z.array(StageSchema.required({ clusterIds: true, quotaStage: true })),
     500: ErrorSchema,
   },
 }

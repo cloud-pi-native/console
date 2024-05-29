@@ -59,3 +59,6 @@ client:
     extraVolumeMounts:
       - name: dev-workspace
         mountPath: /app/apps/client/src
+
+keycloak:
+  enabled: false

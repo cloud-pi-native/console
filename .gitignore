@@ -57,15 +57,18 @@ auto-imports.d.ts
 components.d.ts
 *.tsbuildinfo
 
-#types
+# types
 apps/server/types/
 
 # plugins
 apps/server/src/plugins/external
 
+# helm
+charts/
+
 # integration helm values
-env/dso-values-int.yaml
-env/kind-values.yml
+**/env/dso-values-integ.yaml
+**/env/kind-values.yml
 
 # tmp dev files
 ci/kind/configs/rendered

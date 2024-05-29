@@ -83,9 +83,9 @@ const syncRepository = async () => {
   if (!selectedRepo.value) return
   if (!branchName.value) branchName.value = 'main'
   snackbarStore.isWaitingForResponse = true
-  projectRepositoryStore.syncRepository(selectedRepo.value.id, branchName.value)
+  await projectRepositoryStore.syncRepository(selectedRepo.value.id, branchName.value)
   snackbarStore.isWaitingForResponse = false
-  snackbarStore.setMessage(`Dépôt ${selectedRepo.value.internalRepoName} synchronisé`, 'success')
+  snackbarStore.setMessage(`Job de synchronisation lancé pour le dépôt ${selectedRepo.value.internalRepoName}`)
 }
 
 onMounted(() => {

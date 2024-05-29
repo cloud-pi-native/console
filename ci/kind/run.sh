@@ -13,7 +13,6 @@ export DOCKER_VERSION="$(docker --version)"
 # Default
 export SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 export HELM_RELEASE_NAME="dso"
-export HELM_DIRECTORY="./helm"
 export INTEGRATION_ARG=""
 export INTEGRATION_ARGS_UTILS=""
 export CI_ARGS=""
@@ -32,13 +31,15 @@ Following flags are available:
           load    - Load docker images from compose file into cluster nodes.
           dev     - Run application in development mode.
           prod    - Run application in production mode.
-          int     - Run application in integration mode (need to combine with 'dev' or 'prod').
+          integ     - Run application in integration mode (need to combine with 'dev' or 'prod').
 
   -d    Domains to add in /etc/hosts for local services resolution. Comma separated list. This will require sudo.
 
   -f    Path to the docker-compose file that will be used with Kind.
 
   -i    Install kind.
+
+  -k    Path to the kubeconfig to use.
 
   -t    Tag used to deploy application images.
 
@@ -60,7 +61,7 @@ while getopts hc:d:f:ik:t: flag; do
     i)
       export INSTALL_KIND=true;;
     k)
-      export DEV_KUBECONFIG_PATH=${OPTARG};;
+      export KUBECONFIG_HOST_PATH=${OPTARG};;
     t)
       export TAG=${OPTARG};;
     h | *)
@@ -159,21 +160,23 @@ if [ "$COMMAND" = "clean" ]; then
   printf "\n\n${red}[kind wrapper].${no_color} Clean cluster resources\n\n"
 
   helm --kube-context kind-kind uninstall $HELM_RELEASE_NAME
-  kubectl --context kind-kind delete pvc/dso-db-storage-dso-postgres-0
+  kubectl --context kind-kind delete pvc/data-dso-cpn-console-db-0
   helm --kube-context kind-kind uninstall dso-utils
 fi
 
 
 # Check for integration mode
-if [[ "$COMMAND" =~ "int" ]]; then
+if [[ "$COMMAND" =~ "integ" ]]; then
   wait $JOB_LOAD
-  source ./env/.env.int
-  export INTEGRATION_ARGS="--values ./env/dso-values-int.yaml"
-  if [ -z "$DEV_KUBECONFIG_PATH" ]; then
-    printf "\n\n${red}[kind wrapper].${no_color} DEV_KUBECONFIG_PATH not defined in ./env/.env.int integration will certainly fail\nYou should also check you KUBECONFIG_CTX in ./env/dso-values-int.yaml\n\n"
+  source $SCRIPTPATH/../../env/.env.integ
+  export KUBECONFIG_HOST_PATH=$KUBECONFIG_HOST_PATH
+  export INTEGRATION_ARGS="--values $SCRIPTPATH/env/dso-values-integ.yaml"
+  
+  if [ -z "$KUBECONFIG_HOST_PATH" ]; then
+    printf "\n\n${red}[kind wrapper].${no_color} KUBECONFIG_HOST_PATH not defined in ./env/.env.integ integration will certainly fail\nYou should also check you KUBECONFIG_CTX in $SCRIPTPATH/env/dso-values-integ.yaml\n\n"
     exit 1
   fi
-  export INTEGRATION_ARGS_UTILS="--set keycloak.enabled=false --set integration=true --set-file kubeconfig=$DEV_KUBECONFIG_PATH"
+  export INTEGRATION_ARGS_UTILS="--set integration=true --set-file kubeconfig=$KUBECONFIG_HOST_PATH"
 fi
 
 
@@ -188,41 +191,44 @@ if [[ "$COMMAND" =~ "dev" ]]; then
     --set-file data="./packages/test-utils/src/imports/data.ts" \
     dso-utils ./ci/helm-utils
 
+  helm repo add cloud-pi-native https://cloud-pi-native.github.io/helm-charts
   helm --kube-context kind-kind upgrade \
     --install \
     --wait \
-    --values ./env/dso-values.yaml \
-    --values ./env/dso-values-dev.yaml \
+    --values $SCRIPTPATH/env/dso-values.yaml \
+    --values $SCRIPTPATH/env/dso-values-dev.yaml \
     $INTEGRATION_ARGS \
-    $HELM_RELEASE_NAME $HELM_DIRECTORY
+    $HELM_RELEASE_NAME cloud-pi-native/cpn-console
 
-  for i in $(kubectl --context kind-kind  get deploy -o name); do 
-    kubectl --context kind-kind  rollout status $i -w --timeout=150s; 
+  for i in $(kubectl --context kind-kind get deployment,statefulset -o name); do 
+    kubectl --context kind-kind  rollout status $i -w --timeout=150s
   done
 elif [[ "$COMMAND" =~ "prod" ]]; then
   wait $JOB_LOAD
   printf "\n\n${red}[kind wrapper].${no_color} Deploy application in production mode\n\n"
 
   if [ ! -z "$TAG" ]; then
-    export CI_ARGS="--set server.container.image=ghcr.io/cloud-pi-native/console/server:$TAG --set client.container.image=ghcr.io/cloud-pi-native/console/client:$TAG --set server.container.imagePullPolicy=Always --set client.container.imagePullPolicy=Always"
+    export CI_ARGS="--set server.image.repository=ghcr.io/cloud-pi-native/console/server --set server.image.tag=$TAG --set client.image.repository=ghcr.io/cloud-pi-native/console/client --set client.image.tag=$TAG --set server.image.pullPolicy=Always --set client.image.pullPolicy=Always"
   fi
 
   helm --kube-context kind-kind upgrade \
     --install \
     --wait $INTEGRATION_ARGS_UTILS \
     --set-file data="./packages/test-utils/src/imports/data.ts" \
+    --set pgadmin.enabled=false \
     dso-utils ./ci/helm-utils
 
+  helm repo add cloud-pi-native https://cloud-pi-native.github.io/helm-charts
   helm --kube-context kind-kind upgrade \
     --install \
     --wait \
-    --values ./env/dso-values.yaml \
-    $INTEGRATION_ARGS \
+    --values $SCRIPTPATH/env/dso-values.yaml \
     $CI_ARGS \
-    $HELM_RELEASE_NAME $HELM_DIRECTORY
+    $INTEGRATION_ARGS \
+    $HELM_RELEASE_NAME cloud-pi-native/cpn-console
 
-  for i in $(kubectl --context kind-kind get deploy -o name); do 
-    kubectl --context kind-kind  rollout status $i -w --timeout=150s
+  for i in $(kubectl --context kind-kind get deployment,statefulset -o name); do 
+    kubectl --context kind-kind rollout status $i -w --timeout=150s
   done
 fi
 

@@ -1,5 +1,6 @@
 import { removeTrailingSlash, requiredEnv } from '@cpn-console/shared'
-import { Api } from './api/Api.js'
+import { Api, RobotCreated } from './api/Api.js'
+import { VaultRobotSecret } from './robot.js'
 
 const config: {
   url?: string
@@ -25,80 +26,32 @@ const getApiConfig = () => {
 
 export let api: Api<ReturnType<typeof getApiConfig>> | undefined
 
-export const getApi = (): Api<ReturnType<typeof getApiConfig>> => {
+export type HarborApi = Api<ReturnType<typeof getApiConfig>>
+export const getApi = (): HarborApi => {
   if (api) return api
   api = new Api(getApiConfig())
   return api
 }
 
-export const getRobotPermissions = (projectName: string) => {
+export const toVaultSecret = (robot: Required<RobotCreated>): VaultRobotSecret => {
+  const auth = `${robot.name}:${robot.secret}`
+  const buff = Buffer.from(auth)
+  const b64auth = buff.toString('base64')
   return {
-    name: 'ci',
-    duration: -1,
-    description: null,
-    disable: false,
-    level: 'project',
-    permissions: [{
-      namespace: projectName,
-      kind: 'project',
-      access: [{
-        resource: 'repository',
-        action: 'list',
-      }, {
-        resource: 'repository',
-        action: 'pull',
-      }, {
-        resource: 'repository',
-        action: 'push',
-      }, {
-        resource: 'repository',
-        action: 'delete',
-      }, {
-        resource: 'artifact',
-        action: 'read',
-      }, {
-        resource: 'artifact',
-        action: 'list',
-      }, {
-        resource: 'artifact',
-        action: 'delete',
-      }, {
-        resource: 'artifact-label',
-        action: 'create',
-      }, {
-        resource: 'artifact-label',
-        action: 'delete',
-      }, {
-        resource: 'tag',
-        action: 'create',
-      }, {
-        resource: 'tag',
-        action: 'delete',
-      }, {
-        resource: 'tag',
-        action: 'list',
-      }, {
-        resource: 'scan',
-        action: 'create',
-      }, {
-        resource: 'scan',
-        action: 'stop',
-      }, {
-        resource: 'helm-chart',
-        action: 'read',
-      }, {
-        resource: 'helm-chart-version',
-        action: 'create',
-      }, {
-        resource: 'helm-chart-version',
-        action: 'delete',
-      }, {
-        resource: 'helm-chart-version-label',
-        action: 'create',
-      }, {
-        resource: 'helm-chart-version-label',
-        action: 'delete',
-      }],
-    }],
+    DOCKER_CONFIG: JSON.stringify({
+      auths: {
+        [getConfig().host]: {
+          auth: b64auth,
+          email: '',
+        },
+      },
+    }),
+    HOST: getConfig().host,
+    TOKEN: robot.secret,
+    USERNAME: robot.name,
   }
 }
+
+export const rwRobotName = 'rw-robot'
+export const roRobotName = 'ro-robot'
+export const projectRobotName = 'project-robot'

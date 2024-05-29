@@ -65,10 +65,10 @@ const handleSecretDisplay = async () => {
 
 const getRows = (service: string) => {
   return [Object.values(projectSecrets.value[service]).map(value => ({
-    component: 'code',
+    component: 'pre',
     text: value,
     title: 'Copier la valeur',
-    class: 'fr-text-default--info text-xs cursor-pointer',
+    class: 'fr-text-default--info text-xs cursor-pointer m-1',
     // @ts-ignore
     onClick: () => copyContent(value),
   }),
@@ -83,6 +83,7 @@ onBeforeMount(async () => {
 <template>
   <DsoSelectedProject />
   <div
+    v-if="project"
     class="relative"
   >
     <div
@@ -91,17 +92,17 @@ onBeforeMount(async () => {
       <h1
         class="fr-callout__title fr-mb-3w"
       >
-        {{ project?.name }}
+        {{ project.name }}
       </h1>
       <div
         v-if="!isEditingDescription"
         class="flex gap-4 items-center"
       >
         <p
-          v-if="project?.description"
+          v-if="project.description"
           data-testid="descriptionP"
         >
-          {{ project?.description }}
+          {{ project.description }}
         </p>
         <p
           v-else
@@ -114,8 +115,8 @@ onBeforeMount(async () => {
           class="fr-mt-0"
           icon="ri-pencil-fill"
           data-testid="setDescriptionBtn"
-          :title="getDynamicTitle(project?.locked, project?.description)"
-          :disabled="project?.locked"
+          :title="getDynamicTitle(project.locked, project.description)"
+          :disabled="project.locked"
           icon-only
           secondary
           @click="isEditingDescription = true"
@@ -142,7 +143,7 @@ onBeforeMount(async () => {
             label="Enregistrer la description"
             secondary
             icon="ri-send-plane-line"
-            @click="updateProject(project?.id)"
+            @click="updateProject(project.id)"
           />
           <DsfrButton
             label="Annuler"
@@ -165,20 +166,22 @@ onBeforeMount(async () => {
       </div>
     </div>
     <div
+      v-if="project"
       class="flex flex-col gap-4"
     >
       <DsoBadge
         :resource="{
           ...project,
+          locked: project.locked ? 'true' : 'false',
           resourceKey: 'locked',
-          wording: `Projet ${project?.name}`
+          wording: `Projet ${project.name}`
         }"
       />
       <DsoBadge
         :resource="{
           ...project,
           resourceKey: 'status',
-          wording: `Projet ${project?.name}`
+          wording: `Projet ${project.name}`
         }"
       />
     </div>
@@ -190,7 +193,7 @@ onBeforeMount(async () => {
         label="Reprovisionner le projet"
         icon="ri-refresh-fill"
         secondary
-        @click="replayHooks(project?.id ?? '')"
+        @click="replayHooks(project.id ?? '')"
       />
     </div>
     <div
@@ -227,6 +230,7 @@ onBeforeMount(async () => {
             class="horizontal-table"
             :headers="Object.keys(projectSecrets[service])"
             :rows="getRows(service)"
+            title=""
           />
         </div>
       </div>
@@ -240,7 +244,7 @@ onBeforeMount(async () => {
         <DsfrButton
           v-show="!isArchivingProject"
           data-testid="showArchiveProjectBtn"
-          :label="`Archiver le projet ${project?.name}`"
+          :label="`Supprimer le projet ${project.name}`"
           primary
           icon="ri-delete-bin-7-line"
           @click="isArchivingProject = true"
@@ -259,9 +263,9 @@ onBeforeMount(async () => {
         <DsfrInput
           v-model="projectToArchive"
           data-testid="archiveProjectInput"
-          :label="`Veuillez taper '${project?.name}' pour confirmer l'archivage du projet`"
+          :label="`Veuillez taper '${project.name}' pour confirmer l'archivage du projet`"
           label-visible
-          :placeholder="project?.name"
+          :placeholder="project.name"
           class="fr-mb-2w"
         />
         <div
@@ -269,8 +273,8 @@ onBeforeMount(async () => {
         >
           <DsfrButton
             data-testid="archiveProjectBtn"
-            :label="`Archiver définitivement le projet ${project?.name}`"
-            :disabled="projectToArchive !== project?.name"
+            :label="`Supprimer définitivement le projet ${project.name}`"
+            :disabled="projectToArchive !== project.name"
             secondary
             icon="ri-delete-bin-7-line"
             @click="archiveProject(project ? project.id : '')"
@@ -287,5 +291,13 @@ onBeforeMount(async () => {
       v-if="snackbarStore.isWaitingForResponse"
       description="Opérations en cours"
     />
+  </div>
+  <!-- N'est jamais sensé s'afficher -->
+  <div
+    v-else
+  >
+    <p>
+      Aucun projet selectionné, veuillez revenir à la <a href="/projects">liste des projets</a>
+    </p>
   </div>
 </template>

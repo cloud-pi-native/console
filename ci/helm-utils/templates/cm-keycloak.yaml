@@ -1,5 +1,4 @@
 {{- if .Values.keycloak.enabled -}}
----
 kind: ConfigMap
 apiVersion: v1
 metadata:
@@ -207,8 +206,8 @@ data:
       "clients": [
         {
           "id": "e7d105eb-28d4-4557-a274-eb354a60a33b",
-          "clientId": "console-frontend",
-          "name": "console-frontend",
+          "clientId": "dso-console-frontend",
+          "name": "dso-console-frontend",
           "description": "",
           "rootUrl": "",
           "adminUrl": "",
@@ -218,9 +217,12 @@ data:
           "alwaysDisplayInConsole": false,
           "clientAuthenticatorType": "client-secret",
           "redirectUris": [
+            "http://console.dso.local",
+            "http://console.dso.local/*",
             "*"
           ],
           "webOrigins": [
+            "http://console.dso.local",
             "*"
           ],
           "notBefore": 0,
@@ -277,8 +279,8 @@ data:
         },
         {
           "id": "e7d105eb-28d4-4557-a274-eb354a60a33c",
-          "clientId": "console-backend",
-          "name": "console-backend",
+          "clientId": "dso-console-backend",
+          "name": "dso-console-backend",
           "description": "",
           "rootUrl": "",
           "adminUrl": "",
@@ -288,14 +290,10 @@ data:
           "alwaysDisplayInConsole": false,
           "clientAuthenticatorType": "client-secret",
           "secret": "client-secret-backend",
-          "redirectUris": [
-            "*"
-          ],
-          "webOrigins": [
-            "*"
-          ],
+          "redirectUris": [],
+          "webOrigins": [],
           "notBefore": 0,
-          "bearerOnly": false,
+          "bearerOnly": true,
           "consentRequired": false,
           "standardFlowEnabled": true,
           "implicitFlowEnabled": false,
@@ -571,6 +569,18 @@ data:
             }
           ]
         }
-      ]
+      ],
+      "loginWithEmailAllowed": true,
+      "registrationEmailAsUsername": false,
+      "loginTheme": "dsfr",
+      "accountTheme": "dsfr",
+      "adminTheme": "dsfr",
+      "emailTheme": "dsfr",
+      "internationalizationEnabled": true,
+      "supportedLocales": [
+        "en",
+        "fr"
+      ],
+      "defaultLocale": "fr"
     }
 {{- end -}}
