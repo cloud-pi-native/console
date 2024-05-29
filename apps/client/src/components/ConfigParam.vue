@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { DEFAULT, DISABLED, ENABLED } from '@cpn-console/shared'
 
 const props = defineProps<{
   options:{
@@ -14,19 +15,19 @@ const props = defineProps<{
 const switchOptions = [
   {
     label: 'Activé',
-    value: 'enabled',
+    value: ENABLED,
     disabled: false,
     inline: true,
   },
   {
     label: 'Par Défaut',
-    value: 'default',
+    value: DEFAULT,
     disabled: false,
     inline: true,
   },
   {
     label: 'Désactivé',
-    value: 'disabled',
+    value: DISABLED,
     disabled: false,
     inline: true,
   },

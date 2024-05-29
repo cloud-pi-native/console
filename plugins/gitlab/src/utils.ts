@@ -70,3 +70,12 @@ export const shallowEqual = (object1: Record<string, unknown>, object2: Record<s
 
   return true
 }
+
+export type VaultSecrets = {
+  GITLAB : {
+    ORGANIZATION_NAME: string,
+    PROJECT_NAME: string,
+    GIT_MIRROR_PROJECT_ID: number,
+    GIT_MIRROR_TOKEN: string,
+  }
+}

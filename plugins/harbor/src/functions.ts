@@ -2,8 +2,9 @@ import { roRobotName, getApi, getConfig, rwRobotName, projectRobotName } from '.
 import { createProject, deleteProject } from './project.js'
 import { addProjectGroupMember } from './permission.js'
 import { VaultRobotSecret, rwAccess, ensureRobot, roAccess, deleteRobot } from './robot.js'
-import { type StepCall, type Project, type ProjectLite, parseError } from '@cpn-console/hooks'
+import { type StepCall, type Project, type ProjectLite, parseError, specificallyEnabled, specificallyDisabled } from '@cpn-console/hooks'
 import { getSecretObject } from './kubeSecret.js'
+import { DEFAULT, ENABLED } from '@cpn-console/shared'
 
 export const createDsoProject: StepCall<Project> = async (payload) => {
   try {
@@ -11,11 +12,9 @@ export const createDsoProject: StepCall<Project> = async (payload) => {
     const projectName = `${project.organization.name}-${project.name}`
     const { vault: vaultApi, keycloak: keycloakApi } = payload.apis
 
-    const publishRoRobotProject = project.store.registry?.['publish-project-robot']
-    const publishRoRobotConfig = payload.config.registry?.['publish-project-robot']
-    const createProjectRobot = publishRoRobotProject === 'enabled' ||
-      (publishRoRobotConfig === 'enabled' && (!publishRoRobotProject || publishRoRobotProject === 'default'))
-
+    const publishRoRobotProject = project.store.registry?.publishProjectRobot
+    const publishRoRobotConfig = payload.config.registry?.publishProjectRobot
+    const createProjectRobot = specificallyEnabled(publishRoRobotProject) || (specificallyEnabled(publishRoRobotConfig) && !specificallyDisabled(publishRoRobotProject))
     const [projectCreated, oidcGroup] = await Promise.all([
       createProject(projectName),
       keycloakApi.getProjectGroupPath(),
@@ -87,10 +86,10 @@ export const deleteDsoProject: StepCall<Project> = async (payload) => {
 }
 
 export const getProjectSecrets: StepCall<ProjectLite> = async ({ args: project, apis: { vault: vaultApi }, config }) => {
-  const publishRoRobotProject = project.store.registry?.['publish-project-robot']
-  const publishRoRobotConfig = config.registry?.['publish-project-robot']
-  const projectRobotEnabled = publishRoRobotProject === 'enabled' ||
-      (publishRoRobotConfig === 'enabled' && (!publishRoRobotProject || publishRoRobotProject === 'default'))
+  const publishRoRobotProject = project.store.registry?.publishProjectRobot
+  const publishRoRobotConfig = config.registry?.publishProjectRobot
+  const projectRobotEnabled = publishRoRobotProject === ENABLED ||
+      (publishRoRobotConfig === ENABLED && (!publishRoRobotProject || publishRoRobotProject === DEFAULT))
 
   const VaultRobotSecret = projectRobotEnabled
     ? await vaultApi.read(`REGISTRY/${projectRobotName}`, { throwIfNoEntry: false }) as { data: VaultRobotSecret } | undefined

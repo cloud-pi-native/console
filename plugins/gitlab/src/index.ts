@@ -1,4 +1,4 @@
-import type { Plugin, Project, DefaultArgs, UniqueRepo } from '@cpn-console/hooks'
+import type { Plugin, Project, DefaultArgs, UniqueRepo, DeclareModuleGenerator } from '@cpn-console/hooks'
 import {
   checkApi,
   getDsoProjectSecrets,
@@ -55,4 +55,6 @@ declare module '@cpn-console/hooks' {
     ? GitlabProjectApi
     : undefined
   }
+  interface ProjectStore extends DeclareModuleGenerator<typeof infos, 'project'> {}
+  interface Config extends DeclareModuleGenerator<typeof infos, 'global'> {}
 }

@@ -2,9 +2,9 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
-import { projectIsLockedInfo, sortArrByObjKeyAsc, type Environment, type Project } from '@cpn-console/shared'
+import { ClusterPrivacy, projectIsLockedInfo, sortArrByObjKeyAsc, type Environment, type Project } from '@cpn-console/shared'
 import { useUserStore } from '@/stores/user.js'
-import { useAdminClusterStore } from '@/stores/admin/cluster'
+import { useClusterStore } from '@/stores/cluster.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 type EnvironmentTile = {
@@ -16,17 +16,22 @@ type EnvironmentTile = {
 const projectStore = useProjectStore()
 const projectEnvironmentStore = useProjectEnvironmentStore()
 const userStore = useUserStore()
-const adminClusterStore = useAdminClusterStore()
+const clusterStore = useClusterStore()
 const snackbarStore = useSnackbarStore()
 
 const project = computed(() => projectStore.selectedProject)
 const isOwner = computed(() => project.value?.roles?.some(role => role.userId === userStore.userProfile?.id && role.role === 'owner'))
 const environmentNames = computed(() => environments.value.map(env => env.title))
-const allClusters = computed(() => adminClusterStore.clusters)
+const allClusters = computed(() => clusterStore.clusters)
 
 const environments = ref<EnvironmentTile[]>([])
 const selectedEnvironment = ref<Environment>()
 const isNewEnvironmentForm = ref(false)
+
+const projectClustersIds = computed(() => ([
+  ...clusterStore.clusters.filter(cluster => cluster.privacy === ClusterPrivacy.PUBLIC).map(({ id }) => id),
+  ...project.value?.clusters?.map(({ id }) => id) ?? [],
+]))
 
 const setEnvironmentsTiles = (project: Project) => {
   if (!project.environments?.length) return
@@ -85,7 +90,7 @@ const deleteEnvironment = async (environment: Environment) => {
 
 onMounted(async () => {
   if (!project.value) return
-  await adminClusterStore.getClusters()
+  await clusterStore.getClusters()
   setEnvironmentsTiles(project.value)
 })
 
@@ -133,7 +138,8 @@ watch(project, () => {
       :environment="{projectId: project?.id}"
       :environment-names="environmentNames"
       :is-project-locked="project?.locked"
-      :project-clusters="project?.clusters"
+      :project-clusters-ids="projectClustersIds"
+      :all-clusters="clusterStore.clusters"
       @add-environment="(environment) => addEnvironment(environment)"
       @cancel="cancel()"
     />
@@ -163,8 +169,7 @@ watch(project, () => {
       <EnvironmentForm
         v-if="!!selectedEnvironment && selectedEnvironment.id === environment.id"
         :environment="selectedEnvironment"
-        :environment-names="environmentNames"
-        :project-clusters="project?.clusters"
+        :project-clusters-ids="[selectedEnvironment.clusterId]"
         :is-editable="false"
         :is-project-locked="project?.locked"
         :is-owner="isOwner"

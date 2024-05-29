@@ -27,6 +27,9 @@ describe('EnvironmentForm.vue', () => {
   it('Should mount a EnvironmentForm', () => {
     const randomDbSetup = createRandomDbSetup({ envs: [] })
     const zones = randomDbSetup.zones
+    const project: Required<typeof randomDbSetup.project> = randomDbSetup.project as Required<typeof randomDbSetup.project>
+    const stageIds = randomDbSetup.stages.map(({ id }) => id)
+    project.clusters = project.clusters.map(cluster => ({ ...cluster, stageIds }))
 
     cy.intercept('GET', 'api/v1/quotas', {
       body: randomDbSetup.quotas,
@@ -47,7 +50,8 @@ describe('EnvironmentForm.vue', () => {
       environment: {
         projectId: randomDbSetup.project.id,
       },
-      projectClusters: randomDbSetup.project.clusters,
+      projectClustersIds: project.clusters.map(({ id }) => id),
+      allClusters: project.clusters,
     }
 
     // @ts-ignore
@@ -79,18 +83,22 @@ describe('EnvironmentForm.vue', () => {
       .clear().type('prod0')
     cy.get('select#zone-select > option')
       .should('have.length', zoneStore.zones.length + 1)
+
     cy.get('select#zone-select')
       .select(1)
     cy.get('select#stage-select > option')
       .should('have.length', randomDbSetup.stages.length + 1)
+
     cy.get('select#stage-select')
       .select(1)
     cy.get('select#quota-select > option')
       .should('have.length', randomDbSetup.quotas.length + 1)
+
     cy.get('select#quota-select')
       .select(1)
     cy.get('select#cluster-select > option')
-      .should('have.length', props.projectClusters.length + 1)
+      .should('have.length', props.projectClustersIds.length + 1)
+
     cy.get('select#cluster-select')
       .select(1)
     cy.getByDataTestid('addEnvironmentBtn').should('be.enabled')

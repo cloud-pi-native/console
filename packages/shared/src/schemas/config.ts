@@ -32,8 +32,12 @@ const globalVisibilty = z.object({
   }),
 })
 
+export const ENABLED = 'enabled'
+export const DISABLED = 'disabled'
+export const DEFAULT = 'default'
+
 export const atomicValidators = {
-  switch: z.enum(['disabled', 'default', 'enabled']),
+  switch: z.enum([DISABLED, DEFAULT, ENABLED]),
   text: z.string().trim().regex(/[a-zA-Z-_0-9 ]*/),
 }
 
