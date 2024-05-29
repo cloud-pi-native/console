@@ -1,4 +1,4 @@
-import type { Cluster, Environment, Kubeconfig, Project, Stage } from '@prisma/client'
+import type { Cluster, Environment, Kubeconfig, Project, Stage, User } from '@prisma/client'
 import prisma from '@/prisma.js'
 
 // prisma.cluster
@@ -95,6 +95,9 @@ export const getClustersWithProjectIdAndConfig = () =>
       id: true,
       stages: true,
       projects: {
+        where: {
+          status: { not: 'archived' },
+        },
         select: {
           id: true,
           name: true,
@@ -110,6 +113,33 @@ export const getClustersWithProjectIdAndConfig = () =>
       privacy: true,
       secretName: true,
       kubeconfig: true,
+      zoneId: true,
+    },
+  })
+
+export const listClustersForUser = (userId: User['id']) =>
+  prisma.cluster.findMany({
+    where: {
+      OR: [
+        // Sélectionne tous les clusters publiques
+        { privacy: 'public' },
+        // Sélectionne les clusters associés aux projets dont l'user est membre
+        {
+          projects: { some: { roles: { some: { userId } } } },
+        },
+        // Sélectionne les clusters associés aux environnments appartenant à des projets dont l'user est membre
+        {
+          environments: { some: { project: { roles: { some: { userId } } } } },
+        },
+      ],
+    },
+    select: {
+      id: true,
+      label: true,
+      stages: true,
+      clusterResources: true,
+      privacy: true,
+      infos: true,
       zoneId: true,
     },
   })

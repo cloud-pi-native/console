@@ -2,11 +2,17 @@ import type { UpdateClusterBody, CreateClusterBody, Cluster } from '@cpn-console
 import { apiClient } from './xhr-client.js'
 
 export const getClusters = async () => {
-  const response = await apiClient.Clusters.getClusters()
+  const response = await apiClient.Clusters.listClusters()
   if (response.status === 200) return response.body
+  throw Error('Unable to fetch clusters')
 }
 
 // Admin
+export const getAdminClusters = async () => {
+  const response = await apiClient.ClustersAdmin.getClusters()
+  if (response.status === 200) return response.body
+}
+
 export const getClusterAssociatedEnvironments = async (clusterId: Cluster['id']) => {
   const response = await apiClient.ClustersAdmin.getClusterEnvironments({ params: { clusterId } })
   if (response.status === 200) return response.body

@@ -109,6 +109,7 @@ describe('Manage project environments', () => {
     cy.getByDataTestid('addEnvironmentLink').click()
     cy.wait('@getQuotas')
     cy.wait('@getStages')
+
     cy.get('h1').should('contain', 'Ajouter un environnement au projet')
     cy.getByDataTestid('environmentNameInput')
       .type('myenv')
@@ -122,10 +123,12 @@ describe('Manage project environments', () => {
       .should('exist')
     cy.getByDataTestid('noClusterOptionAlert')
       .should('not.exist')
+
     cy.get('#cluster-select')
       .select(1)
     cy.getByDataTestid('addEnvironmentBtn')
       .should('be.enabled')
+
     cy.get('#zone-select')
       .select(privateZone?.id)
     cy.get('#cluster-select')
@@ -134,12 +137,14 @@ describe('Manage project environments', () => {
       .should('exist')
     cy.getByDataTestid('addEnvironmentBtn')
       .should('be.disabled')
+
     cy.get('#zone-select')
       .select(publicZone?.id)
     cy.get('#cluster-select')
       .should('not.exist')
     cy.getByDataTestid('noClusterOptionAlert')
       .should('exist')
+
     cy.get('#stage-select')
       .select(devStage?.id)
     cy.get('#cluster-select')
