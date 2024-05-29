@@ -1,5 +1,22 @@
 # Changelog
 
+## [8.4.0](https://github.com/cloud-pi-native/console/compare/v8.3.0...v8.4.0) (2024-05-29)
+
+
+### Features
+
+* :sparkles: create a user usable robot for harbor ([a71dfc9](https://github.com/cloud-pi-native/console/commit/a71dfc992b62a6c3c69dcc6d7de98b8d2d72a79c))
+* :sparkles: customize keycloak theme ([7c21375](https://github.com/cloud-pi-native/console/commit/7c21375d1ad56a03f84c25d04cbe0ada7eac8d5c))
+* :sparkles: option for gitlab display secret ([28d3ebc](https://github.com/cloud-pi-native/console/commit/28d3ebce4d6912904e1f21cd3c126ca342fc3cfb))
+
+
+### Bug Fixes
+
+* :art: squash const ([cd1be8c](https://github.com/cloud-pi-native/console/commit/cd1be8c8f282be045ffce473387b21ed95355f5e))
+* :bug: fallback if no owners are found ([629ef40](https://github.com/cloud-pi-native/console/commit/629ef40afb3c6ff0a22b0f17c2c86a343463a8ba))
+* :bug: missing await and ambiguous message ([0530b45](https://github.com/cloud-pi-native/console/commit/0530b4520a5bc05d6a45f9f76029c898f960ee34))
+* :bug: update cluster logic ([65ba7e1](https://github.com/cloud-pi-native/console/commit/65ba7e10f0d7dd9e1675da633c922fff8499ee95))
+
 ## [8.3.0](https://github.com/cloud-pi-native/console/compare/v8.2.2...v8.3.0) (2024-05-16)
 
 
