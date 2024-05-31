@@ -2,6 +2,7 @@ import type { ServiceInfos } from '@cpn-console/hooks'
 import { getConfig } from './utils.js'
 import { DISABLED } from '@cpn-console/shared'
 
+const quotaDescription = '-1 -> illimité, sinon 100MB / 1.2GB (unités : B, KB, MB, GB, TB)), max 1024TB'
 const infos = {
   name: 'registry',
   to: ({ store }) => store?.registry?.projectId ? `${getConfig().url}/harbor/projects/${store.registry.projectId}` : `${getConfig().url}/`,
@@ -29,6 +30,17 @@ const infos = {
         user: { read: true, write: false },
       },
       value: DISABLED,
+    }, {
+      kind: 'text',
+      permissions: {
+        admin: { read: true, write: true },
+        user: { read: true, write: false },
+      },
+      key: 'quotaHardLimit',
+      title: 'Quota',
+      value: '',
+      description: `Stockage limite (vide utilisation du paramètre global, ${quotaDescription}`,
+      placeholder: '',
     }],
     global: [{
       kind: 'switch',
@@ -41,6 +53,17 @@ const infos = {
         user: { read: true, write: false },
       },
       value: DISABLED,
+    }, {
+      kind: 'text',
+      permissions: {
+        admin: { read: true, write: true },
+        user: { read: true, write: false },
+      },
+      key: 'quotaHardLimit',
+      title: 'Quota par défaut',
+      value: '-1',
+      description: `Stockage limite par projet (${quotaDescription}`,
+      placeholder: '-1',
     }],
   },
 } as const satisfies ServiceInfos

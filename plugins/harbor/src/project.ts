@@ -1,25 +1,44 @@
 import { getApi } from './utils.js'
-import { Project as HarborProject } from './api/Api.js'
+import { Project as HarborProject, Quota } from './api/Api.js'
 
-export const createProject = async (projectName: string): Promise<HarborProject> => {
+export const createProject = async (projectName: string, storageLimit: number = -1): Promise<HarborProject> => {
   const api = getApi()
-  try {
-    const existingProject = await api.projects.getProject(projectName, {
-      headers: {
-        'X-Is-Resource-Name': true,
-      },
+  const existingProject = await api.projects.getProject(projectName, {
+    headers: {
+      'X-Is-Resource-Name': true,
+    },
+    validateStatus: () => true,
+  })
+
+  if (existingProject.status === 200) {
+    const projectId = existingProject.data.project_id as number
+    const refQuotas = await api.quotas.listQuotas({
+      reference_id: String(projectId),
     })
+    const hardQuota = refQuotas.data.find(quota => quota.ref?.id === projectId) as Quota
+
+    if (hardQuota.hard.storage !== storageLimit) {
+      await api.quotas.updateQuota(projectId, {
+        hard: {
+          storage: storageLimit,
+        },
+      })
+    }
     return existingProject.data
-  } catch (error) { // Create project if not exist
-    await api.projects.createProject({
-      project_name: projectName,
-      metadata: {
-        auto_scan: 'true',
-      },
-    })
-    const newProject = await api.projects.getProject(projectName)
-    return newProject.data
   }
+
+  await api.projects.createProject({
+    project_name: projectName,
+    metadata: {
+      auto_scan: 'true',
+    },
+    storage_limit: storageLimit,
+  }, {
+    validateStatus: () => true,
+  })
+
+  const newProject = await api.projects.getProject(projectName)
+  return newProject.data
 }
 
 const removeRepositories = async (projectName: string) => {
