@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.4.1](https://github.com/cloud-pi-native/console/compare/v8.4.0...v8.4.1) (2024-05-31)
+
+
+### Bug Fixes
+
+* :bug: add try catch to parsing plugin error ([b958529](https://github.com/cloud-pi-native/console/commit/b95852942863f75eda7458e7593e09579c7811d5))
+
 ## [8.4.0](https://github.com/cloud-pi-native/console/compare/v8.3.0...v8.4.0) (2024-05-29)
 
 
