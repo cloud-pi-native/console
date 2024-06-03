@@ -12,6 +12,7 @@ import DsoHome from '@/views/DsoHome.vue'
 import NotFound from '@/views/NotFound.vue'
 import { useUsersStore } from '@/stores/users.js'
 import { uuid } from '@/utils/regex.js'
+const DsoTos = () => import('@/views/DsoTos.vue')
 const ServicesHealth = () => import('@/views/ServicesHealth.vue')
 const CreateProject = () => import('@/views/CreateProject.vue')
 const ManageEnvironments = () => import('@/views/projects/ManageEnvironments.vue')
@@ -60,6 +61,11 @@ const routes: Readonly<RouteRecordRaw[]> = [
     path: '/404',
     name: 'NotFound',
     component: NotFound,
+  },
+  {
+    path: '/cgu',
+    name: 'CGU',
+    component: DsoTos,
   },
   {
     path: '/services-health',
@@ -191,7 +197,7 @@ router.beforeEach((to) => { // Cf. https://github.com/vueuse/head pour des trans
  * Redirect unlogged user to login view
  */
 router.beforeEach(async (to, _from, next) => {
-  const validPath = ['Login', 'Home', 'Doc', 'NotFound', 'ServicesHealth']
+  const validPath = ['Login', 'Home', 'Doc', 'NotFound', 'CGU', 'ServicesHealth']
   const snackbarStore = useSnackbarStore()
   const userStore = useUserStore()
   userStore.setIsLoggedIn()

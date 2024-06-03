@@ -598,5 +598,16 @@
     "en",
     "fr"
   ],
-  "defaultLocale": "fr"
+  "defaultLocale": "fr",
+  "requiredActions": [
+    {
+      "alias": "TERMS_AND_CONDITIONS",
+      "name": "Terms and Conditions",
+      "providerId": "TERMS_AND_CONDITIONS",
+      "enabled": true,
+      "defaultAction": true,
+      "priority": 20,
+      "config": {}
+    }
+  ]
 }

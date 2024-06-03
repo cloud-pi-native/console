@@ -65,7 +65,7 @@ watch(label, (label: string) => {
     class="dso-footer"
     a11y-compliance="partiellement conforme"
     :logo-text="['Ministère', 'de l’Intérieur', 'et des Outre-Mer']"
-    :mandatory-links="[]"
+    :mandatory-links="[{label: 'CGU', to: '/cgu'}]"
   >
     <template #description>
       <div

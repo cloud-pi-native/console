@@ -122,6 +122,8 @@ keycloak:
       value: Cloud π Native
     - name: DSFR_THEME_BRAND_TOP
       value: "Ministère<br/>de l'intérieur<br/>et des outre-mer"
+    - name: DSFR_THEME_TOS_URL
+      value: http://console.dso.local/cgu
     - name: DSFR_THEME_CONTACT_EMAIL
       value: cloudpinative-relations@interieur.gouv.fr
     - name: JAVA_OPTS
