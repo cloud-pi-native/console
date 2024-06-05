@@ -26,7 +26,7 @@ import {
 const DELAY_BEFORE_RETRY = isTest || isCI ? 1000 : 10000
 let closingConnections = false
 
-export const getConnection = async (triesLeft = 5) => {
+export const getConnection = async (triesLeft = 5): Promise<void> => {
   if (closingConnections || triesLeft <= 0) {
     throw new Error('Unable to connect to Postgres server')
   }
@@ -39,7 +39,7 @@ export const getConnection = async (triesLeft = 5) => {
     await prisma.$connect()
 
     app.log.info('Connected to Postgres!')
-  } catch (error) {
+  } catch (error: any) {
     if (triesLeft > 0) {
       app.log.error(error)
       app.log.info(`Could not connect to Postgres: ${error.message}`)

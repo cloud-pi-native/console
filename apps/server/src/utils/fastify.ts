@@ -4,10 +4,11 @@ import type { FastifySwaggerUiOptions } from '@fastify/swagger-ui/types'
 import { nanoid } from 'nanoid'
 import { apiPrefix } from '@cpn-console/shared'
 import { loggerConf } from './logger.js'
+import { NODE_ENV } from './env.js'
 
 export const fastifyConf: FastifyServerOptions = {
   maxParamLength: 5000,
-  logger: loggerConf[`${process.env.NODE_ENV || 'production'}`] ?? true,
+  logger: loggerConf[NODE_ENV] ?? true,
   genReqId: () => nanoid(), // randomUUID(),
 }
 

@@ -80,9 +80,8 @@ export const GetQuotaEnvironmentsSchema = {
       organization: z.string(),
       project: z.string(),
       name: z.string(),
-      stage: z.string()
-        .optional(),
-      owner: z.string(),
+      stage: z.string(),
+      owner: z.string().optional(),
     })),
     500: ErrorSchema,
   },

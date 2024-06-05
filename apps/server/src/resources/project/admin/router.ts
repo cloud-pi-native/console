@@ -12,7 +12,6 @@ export const projectAdminRouter = () => serverInstance.router(projectAdminContra
   getAllProjects: async ({ request: req }) => {
     try {
       const allProjects = await getAllProjects()
-
       addReqLogs({
         req,
         message: 'Ensemble des projets récupérés avec succès',

@@ -36,30 +36,30 @@ export const getStageAssociatedEnvironments = async (stageId: Stage['id']) => {
       cluster: {
         label: string,
       },
-      quota?: string,
+      quota: string,
     }[] = []
 
     for (const quotaStage of stage.quotaStage) {
       const quota = await getQuotaById(quotaStage.quotaId)
       environments = [...environments, ...(await getEnvironmentsByQuotaStageId(quotaStage.id))
-        .map(environment => ({ ...environment, quota: quota?.name }))]
+        .map(environment => ({ ...environment, quota: quota.name }))]
     }
 
     const mappedEnvironments: {
-      project?: string,
-      organization?: string,
-      name?: string,
-      quota?: string,
-      cluster?: string,
+      project: string,
+      organization: string,
+      name: string,
+      quota: string,
+      cluster: string,
       owner?: string,
     }[] = environments.map(environment => {
       return {
-        organization: environment?.project?.organization?.name,
-        project: environment?.project?.name,
-        name: environment?.name,
-        quota: environment?.quota,
-        cluster: environment?.cluster?.label,
-        owner: environment?.project?.roles?.find(role => role?.role === 'owner')?.user?.email,
+        organization: environment.project.organization.name,
+        project: environment.project.name,
+        name: environment.name,
+        quota: environment.quota,
+        cluster: environment.cluster.label,
+        owner: environment.project.roles.find(role => role.role === 'owner')?.user.email,
       }
     })
 
@@ -108,9 +108,8 @@ export const updateStageClusters = async (stageId: Stage['id'], clusterIds: Upda
     }
     // Add clusters
     await linkStageToClusters(stageId, clusterIds)
-    const clusters = (await getStageById(stageId))?.clusters
 
-    return clusters
+    return (await getStageById(stageId)).clusters
   } catch (error) {
     throw new Error(error?.message)
   }

@@ -65,18 +65,16 @@ export const projectRouter = () => serverInstance.router(projectContract, {
     delete requestor.groups
 
     const project = await createProject(data, requestor, req.id)
-    if (project.id) {
-      addReqLogs({
-        req,
-        message: 'Projet créé avec succès',
-        infos: {
-          projectId: project.id,
-        },
-      })
-      return {
-        status: 201,
-        body: project,
-      }
+    addReqLogs({
+      req,
+      message: 'Projet créé avec succès',
+      infos: {
+        projectId: project.id,
+      },
+    })
+    return {
+      status: 201,
+      body: project,
     }
   },
 
