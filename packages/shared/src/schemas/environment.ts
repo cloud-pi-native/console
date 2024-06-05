@@ -68,7 +68,7 @@ export const UpdateEnvironmentSchema = {
     environmentId: z.string()
       .uuid(),
   }),
-  body: EnvironmentSchema.partial(),
+  body: EnvironmentSchema,
   responses: {
     200: EnvironmentSchema,
     500: ErrorSchema,

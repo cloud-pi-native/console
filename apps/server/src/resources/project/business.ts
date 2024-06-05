@@ -164,7 +164,9 @@ export const updateProject = async (data: UpdateProjectBody, projectId: Project[
     if (results.failed) {
       throw new Error('Echec de la mise à jour du projet par les plugins')
     }
-    return getProjectInfosQuery(projectId)
+    const projectUpdated = await getProjectInfosQuery(projectId)
+    if (!projectUpdated) throw new NotFoundError('Project not found')
+    return projectUpdated
   } catch (error) {
     throw new Error(error?.message)
   }

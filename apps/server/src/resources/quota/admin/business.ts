@@ -33,26 +33,26 @@ export const getQuotaAssociatedEnvironments = async (quotaId: string) => {
         }[],
       },
       name: string,
-      stage?: string,
+      stage: string,
     }[] = []
     for (const quotaStage of quota.quotaStage) {
       const stage = await getStageById(quotaStage.stageId)
       environments = [...environments, ...(await getEnvironmentsByQuotaStageId(quotaStage.id))
-        .map(environment => ({ ...environment, stage: stage?.name }))]
+        .map(environment => ({ ...environment, stage: stage.name }))]
     }
     const mappedEnvironments: {
-      project?: string,
-      organization?: string,
-      name?: string,
-      stage?: string,
+      project: string,
+      organization: string,
+      name: string,
+      stage: string,
       owner?: string,
     }[] = environments.map(environment => {
       return {
-        organization: environment?.project?.organization?.name,
-        project: environment?.project?.name,
-        name: environment?.name,
-        stage: environment?.stage,
-        owner: environment?.project?.roles?.find(role => role?.role === 'owner')?.user?.email,
+        organization: environment.project.organization.name,
+        project: environment.project.name,
+        name: environment.name,
+        stage: environment.stage,
+        owner: environment.project.roles.find(role => role.role === 'owner')?.user.email,
       }
     })
 
@@ -100,8 +100,8 @@ export const updateQuotaStage = async (data: UpdateQuotaStageBody) => {
     // From quotaId and stageIds
     if (data.quotaId && data.stageIds) {
       // Remove quotaStages
-      const dbQuotaStages = (await getQuotaById(data.quotaId))?.quotaStage
-      const quotaStagesToRemove = dbQuotaStages?.filter(dbQuotaStage => !data.stageIds?.includes(dbQuotaStage.stageId))
+      const dbQuotaStages = (await getQuotaById(data.quotaId)).quotaStage
+      const quotaStagesToRemove = dbQuotaStages.filter(dbQuotaStage => !data.stageIds?.includes(dbQuotaStage.stageId))
       if (quotaStagesToRemove) {
         for (const quotaStageToRemove of quotaStagesToRemove) {
           await deleteQuotaStage(quotaStageToRemove.id)
@@ -109,7 +109,7 @@ export const updateQuotaStage = async (data: UpdateQuotaStageBody) => {
       }
       // Create quotaStages
       await linkQuotaToStages(data.quotaId, data.stageIds)
-      quotaStages = (await getQuotaById(data.quotaId))?.quotaStage
+      quotaStages = (await getQuotaById(data.quotaId)).quotaStage
     }
 
     // From stageId and quotaIds
@@ -124,7 +124,7 @@ export const updateQuotaStage = async (data: UpdateQuotaStageBody) => {
       }
       // Create quotaStages
       await linkStageToQuotas(data.stageId, data.quotaIds)
-      quotaStages = (await getStageById(data.stageId))?.quotaStage
+      return (await getStageById(data.stageId))?.quotaStage
     }
 
     return quotaStages

@@ -138,7 +138,7 @@ model Kubeconfig {
 model Role {
   userId    String   @db.Uuid
   projectId String   @db.Uuid
-  role      String
+  role      RoleChoice
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -209,4 +209,9 @@ enum ProjectStatus {
 enum QuotaStageStatus {
   active
   pendingDelete
+}
+
+enum RoleChoice {
+  owner
+  user
 }

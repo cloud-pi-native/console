@@ -3,5 +3,5 @@ import prisma from '@/prisma.js'
 // GET
 export const getZones = () =>
   prisma.zone.findMany({
-    include: { clusters: true },
+    include: { clusters: { select: { id: true } } },
   })

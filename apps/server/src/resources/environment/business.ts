@@ -154,9 +154,7 @@ export const createEnvironment = async (
   const schemaValidation = EnvironmentSchema
     .omit({
       id: true,
-      status: true,
       permissions: true,
-      quotaStage: true,
     })
     .safeParse({
       name,
@@ -244,7 +242,7 @@ export const updateEnvironment = async ({
     }
 
     // Modification du quota
-    const env = await updateEnvironmentQuery({ id: environmentId, quotaStageId: quotaStage.id })
+    const environment = await updateEnvironmentQuery({ id: environmentId, quotaStageId: quotaStage.id })
     if (quotaStage) {
       const cluster = await getClusterById(clusterId)
       if (!cluster) throw new NotFoundError('Cluster introuvable')
@@ -257,7 +255,7 @@ export const updateEnvironment = async ({
       }
     }
 
-    return env
+    return environment
   } catch (error) {
     if (error instanceof DsoError) {
       throw error

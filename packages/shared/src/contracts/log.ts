@@ -1,13 +1,28 @@
 import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../index.js'
 import { AtDatesToStringSchema, ErrorSchema } from '../schemas/utils.js'
-import { ClientInferRequest, ClientInferResponseBody } from '@ts-rest/core'
+import { ClientInferRequest } from '@ts-rest/core'
 
 export const adminLogsQuery = z.object({
   offset: z.coerce.number(),
   limit: z.coerce.number(),
 })
 export type AdminLogsQuery = Zod.infer<typeof adminLogsQuery>
+
+export const LogSchema = z.object({
+  id: z.string(),
+  data: z.object({
+    args: z.any(),
+    failed: z.boolean().or(z.array(z.string())),
+    results: z.any(),
+    totalExecutionTime: z.number().optional(),
+  }),
+  action: z.string(),
+  userId: z.string(),
+  requestId: z.string(),
+}).merge(AtDatesToStringSchema)
+
+export type Log = Zod.infer<typeof LogSchema>
 
 export const logAdminContract = contractInstance.router({
   getLogs: {
@@ -19,18 +34,7 @@ export const logAdminContract = contractInstance.router({
     responses: {
       200: z.object({
         total: z.number(),
-        logs: z.array(z.object({
-          id: z.string(),
-          data: z.object({
-            args: z.any(),
-            failed: z.boolean().or(z.array(z.string())),
-            results: z.any(),
-            totalExecutionTime: z.number().optional(),
-          }),
-          action: z.string(),
-          userId: z.string(),
-          requestId: z.string(),
-        }).merge(AtDatesToStringSchema)),
+        logs: z.array(LogSchema),
       }),
       500: ErrorSchema,
     },
@@ -38,5 +42,3 @@ export const logAdminContract = contractInstance.router({
 })
 
 export type GetLogsQuery = ClientInferRequest<typeof logAdminContract.getLogs>['query']
-
-export type Log = ClientInferResponseBody<typeof logAdminContract.getLogs, 200>['logs'][number]

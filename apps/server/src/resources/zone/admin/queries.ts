@@ -20,7 +20,7 @@ export const getZoneBySlug = (slug: Zone['slug']) =>
   })
 
 // CREATE
-export const createZone = ({ slug, label, description }) =>
+export const createZone = ({ slug, label, description }: Parameters<typeof prisma.zone.create>[0]['data']) =>
   prisma.zone.create({
     data: {
       slug,
@@ -30,7 +30,7 @@ export const createZone = ({ slug, label, description }) =>
   })
 
 // UPDATE
-export const updateZone = (zoneId: Zone['id'], { label, description }) =>
+export const updateZone = (zoneId: Zone['id'], { label, description }: Parameters<typeof prisma.zone.update>[0]['data']) =>
   prisma.zone.update({
     where: {
       id: zoneId,
@@ -39,6 +39,7 @@ export const updateZone = (zoneId: Zone['id'], { label, description }) =>
       label,
       description,
     },
+    include: { clusters: { select: { id: true } } },
   })
 
 export const linkZoneToClusters = (zoneId: Zone['id'], clusterIds: Cluster['id'][]) =>

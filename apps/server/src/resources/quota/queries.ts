@@ -19,7 +19,7 @@ export const getAllQuotas = () =>
   })
 
 export const getQuotaById = (id: Quota['id']) =>
-  prisma.quota.findUnique({
+  prisma.quota.findUniqueOrThrow({
     where: { id },
     include: { quotaStage: true },
   })

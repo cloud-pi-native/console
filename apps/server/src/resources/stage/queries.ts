@@ -4,7 +4,7 @@ import prisma from '@/prisma.js'
 export const getStages = () =>
   prisma.stage.findMany({
     include: {
-      clusters: true,
+      clusters: { select: { id: true } },
       quotaStage: true,
     },
   })
@@ -17,7 +17,7 @@ export const getAllStageIds = async () =>
   })).map(({ id }) => id)
 
 export const getStageById = (id: Stage['id']) =>
-  prisma.stage.findUnique({
+  prisma.stage.findUniqueOrThrow({
     where: { id },
     include: {
       clusters: true,

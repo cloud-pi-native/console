@@ -1,4 +1,5 @@
 import * as fs from 'node:fs/promises'
+// @ts-ignore
 import Mustache from 'mustache'
 import path from 'node:path'
 
