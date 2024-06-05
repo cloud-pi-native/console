@@ -74,3 +74,6 @@ charts/
 ci/kind/configs/rendered
 
 external-plugins
+
+# proto
+.prototools
