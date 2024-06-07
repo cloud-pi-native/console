@@ -33,12 +33,8 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
 })
 const isZoneValid = computed(() => !errorSchema.value)
 
-const updateClusters = (key: string, value: any) => {
-  localZone.value[key] = value
-  // Retrieve array of cluster labels from child component, map it into array of clusterIds.
-  localZone.value.clusterIds = localZone.value.clusterIds
-    // @ts-ignore
-    .map(clusterLabel => props.allClusters?.find(cFromAll => cFromAll.label === clusterLabel)?.id)
+const updateClusters = (value: string[]) => {
+  localZone.value.clusterIds = value
 }
 
 const emit = defineEmits<{
@@ -110,16 +106,17 @@ onBeforeMount(() => {
     <div
       class="fr-mb-2w"
     >
-      <MultiSelector
+      <ChoiceSelector
         id="clusters-select"
-        :options="props.allClusters?.map(cluster => ({ id: cluster.id, name: `${cluster.label}` }))"
-        :array="clusterLabels"
-        :disabled="!props.isNewZone"
+        :wrapped="false"
+        label="Clusters associés"
         :description="!props.isNewZone ? 'Veuillez procéder aux associations dans le formulaire des clusters concernés.': 'Sélectionnez les clusters autorisés à utiliser cette zone.'"
-        no-choice-label="Aucun cluster disponible"
-        choice-label="Veuillez choisir les clusters à associer"
-        label="Nom des clusters"
-        @update="updateClusters('clusterIds', $event)"
+        :options="props.allClusters.map(({id, label}) =>({id, label}))"
+        :options-selected="localZone.clusters?.map(({id, label}) =>({id, label})) ?? []"
+        label-key="label"
+        value-key="id"
+        :disabled="false"
+        @update="(clusters) => updateClusters(clusters.map(cluster => cluster.id))"
       />
     </div>
     <div
