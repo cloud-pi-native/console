@@ -150,7 +150,7 @@ const groups: Group[] = [
             {{ group.title }}
           </label>
           <div
-            v-if="displayed[group.selectorKey].value.length > 6"
+            v-if="props.options.length > 6"
             class="flex gap-3 mb-3"
           >
             <DsfrButton
