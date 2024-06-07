@@ -10,6 +10,10 @@ describe('ChoiceSelector.vue', () => {
     { id: '1', name: 'Option 1' },
     { id: '2', name: 'Option 2' },
     { id: '3', name: 'Option 3' },
+    { id: '4', name: 'Option 4' },
+    { id: '5', name: 'Option 5' },
+    { id: '6', name: 'Option 6' },
+    { id: '7', name: 'Option 7' },
   ]
 
   const selectedOptions = [
@@ -21,7 +25,7 @@ describe('ChoiceSelector.vue', () => {
       props: {
         options,
         optionsSelected: selectedOptions,
-        title: 'Test Title',
+        label: 'Test Title',
         description: 'Test Description',
         disabled: false,
         id: 'test-multi-select',
@@ -87,7 +91,7 @@ describe('ChoiceSelector.vue', () => {
       props: {
         options: [],
         optionsSelected: [],
-        title: 'Test Title',
+        label: 'Test Title',
         description: 'Test Description',
         disabled: false,
         id: 'test-multi-select',
@@ -106,7 +110,7 @@ describe('ChoiceSelector.vue', () => {
       props: {
         options,
         optionsSelected: [],
-        title: 'Test Title',
+        label: 'Test Title',
         description: 'Test Description',
         disabled: false,
         id: 'test-multi-select',
@@ -116,7 +120,7 @@ describe('ChoiceSelector.vue', () => {
       },
     })
 
-    cy.contains('Aucune sélection, 3 choix disponibles').should('be.visible')
+    cy.contains('Aucune sélection, 7 choix disponibles').should('be.visible')
   })
   it('Should display correct wrapped message when more than 3 selected options', () => {
     // Remount the component with no selected options
@@ -131,7 +135,7 @@ describe('ChoiceSelector.vue', () => {
       props: {
         options,
         optionsSelected: options,
-        title: 'Test Title',
+        label: 'Test Title',
         description: 'Test Description',
         disabled: false,
         id: 'test-multi-select',
