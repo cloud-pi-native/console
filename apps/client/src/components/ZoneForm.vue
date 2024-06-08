@@ -18,7 +18,6 @@ const props = withDefaults(defineProps<{
 })
 
 const localZone = ref(props.zone)
-const clusterLabels = ref<string[]>([])
 const isDeletingZone = ref(false)
 const zoneToDelete = ref('')
 
@@ -65,7 +64,6 @@ const cancel = () => {
 onBeforeMount(() => {
   // Retrieve array of clusters from parent component, map it into array of cluster labels and pass it to child component.
   localZone.value = props.zone
-  clusterLabels.value = localZone.value.clusters?.map(cluster => cluster.label)
 })
 
 </script>
@@ -115,7 +113,7 @@ onBeforeMount(() => {
         :options-selected="localZone.clusters?.map(({id, label}) =>({id, label})) ?? []"
         label-key="label"
         value-key="id"
-        :disabled="false"
+        :disabled="!props.isNewZone"
         @update="(clusters) => updateClusters(clusters.map(cluster => cluster.id))"
       />
     </div>

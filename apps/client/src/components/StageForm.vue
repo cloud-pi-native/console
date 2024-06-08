@@ -133,8 +133,8 @@ onBeforeMount(() => {
         description="Sélectionnez les clusters autorisés à utiliser ce type d'environnement."
         :options="allClusters.map(({ id, label }) => ({ id, label }))"
         :options-selected="localStage
-          // @ts-ignore
-          .clusters.map(({ id, label }) => ({ id, label }))"
+          // @ts-ignore
+          .clusters?.map(({ id, label }) => ({ id, label })) ?? []"
         label-key="label"
         value-key="id"
         :disabled="false"

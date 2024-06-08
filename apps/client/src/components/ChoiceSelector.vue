@@ -106,7 +106,9 @@ const groups: Group[] = [
 <template>
   <div
     v-if="!isWrapped"
+    :id="props.id"
     class="fr-select-group"
+    :disabled="props.disabled"
   >
     <div @click="isWrapped = !isWrapped">
       <h6
@@ -150,22 +152,24 @@ const groups: Group[] = [
             {{ group.title }}
           </label>
           <div
-            v-if="props.options.length > 6"
+            v-if="props.options.length > 6 && !props.disabled"
             class="flex gap-3 mb-3"
           >
             <DsfrButton
               type="buttonType"
               :label="group.addButtonLabel"
               secondary
+              :disabled="props.disabled"
               :data-testid="`choice-selector-${group.addButtonTestId}-${props.id}`"
-              @click="group.switchAll"
+              @click="group.switchAll()"
             />
             <DsfrButton
               type="buttonType"
               :label="group.addVisibleButtonLabel"
               secondary
+              :disabled="props.disabled"
               :data-testid="`choice-selector-${group.addVisibleButtonTestId}-${props.id}`"
-              @click="group.switchVisible"
+              @click="group.switchVisible()"
             />
           </div>
           <div
@@ -182,7 +186,7 @@ const groups: Group[] = [
                 :label="String(option[props.labelKey])"
                 :data-testid="`${option[props.valueKey]}-${props.id}-tag`"
                 :disabled="props.disabled"
-                @click="switchSelection(option[props.valueKey])"
+                @click="!props.disabled ? switchSelection(option[props.valueKey]) : undefined"
               />
             </div>
           </div>
@@ -206,6 +210,7 @@ const groups: Group[] = [
   </div>
   <div
     v-else
+    :id="props.id"
     @click="isWrapped = false"
   >
     <div @click="isWrapped = !isWrapped">

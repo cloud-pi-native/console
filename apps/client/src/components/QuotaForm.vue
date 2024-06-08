@@ -78,9 +78,7 @@ const getRows = (associatedEnvironments: QuotaAssociatedEnvironments) => {
 }
 
 onBeforeMount(() => {
-  // Retrieve array of quotaStage from parent component, map it into array of stage names and pass it to child component.
   localQuota.value = props.quota
-  // stageNames.value = localQuota.value.quotaStage?.map(qs => qs.stageId).map(stageId => props.allStages?.find(stage => stage.id === stageId)?.name)
 })
 
 </script>
