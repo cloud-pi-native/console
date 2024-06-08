@@ -70,7 +70,7 @@
     "unplugin-vue-components": "^0.26.0",
     "stylelint-config-standard": "^36.0.0",
     "typescript": "^5.4.5",
-    "unocss": "^0.59.4",
+    "unocss": "^0.60.4",
     "vite": "^5.2.10",
     "vitest": "^1.5.0",
     "vue-tsc": "^2.0.13"

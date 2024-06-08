@@ -31,7 +31,7 @@ describe('User Store', () => {
   })
 
   it('Should add a user to project by api call', async () => {
-    apiClientPost.mockReturnValueOnce(Promise.resolve({ status: 200, body: [{ projectId: 'projectId', role: 'user', id: 'a', user: { id: 'b', email: 'michel@test.com' } }] }))
+    apiClientPost.mockReturnValueOnce(Promise.resolve({ status: 201, body: [{ projectId: 'projectId', role: 'user', id: 'a', user: { id: 'b', email: 'michel@test.com' } }] }))
     const projectUserStore = useProjectUserStore()
 
     await projectUserStore.addUserToProject('projectId', { email: 'michel@test.com' })

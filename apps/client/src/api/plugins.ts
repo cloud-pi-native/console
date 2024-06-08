@@ -1,11 +1,9 @@
-import { apiClient } from './xhr-client.js'
+import { apiClient, extractData } from './xhr-client.js'
 
-export const getPluginsConfig = async () => {
-  const response = await apiClient.SystemPlugin.getPluginsConfig()
-  if (response.status === 200) return response.body
-}
+export const getPluginsConfig = () =>
+  apiClient.SystemPlugin.getPluginsConfig()
+    .then(response => extractData(response, 200))
 
-export const updatePluginsConfig = async (body: any) => {
-  const response = await apiClient.SystemPlugin.updatePluginsConfig({ body })
-  if (response.status === 204) return response.body
-}
+export const updatePluginsConfig = (body: any) =>
+  apiClient.SystemPlugin.updatePluginsConfig({ body })
+    .then(response => extractData(response, 204))

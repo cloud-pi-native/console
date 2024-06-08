@@ -82,7 +82,7 @@ describe('Project Store', () => {
     expect(projectStore.projects).toEqual([])
 
     const project = { id: 'projectId' }
-    apiClientPost.mockReturnValueOnce(Promise.resolve({ status: 200, body: project }))
+    apiClientPost.mockReturnValueOnce(Promise.resolve({ status: 201, body: project }))
     apiClientGet.mockReturnValueOnce(Promise.resolve({ status: 200, body: [project] }))
 
     await projectStore.createProject(project)
@@ -114,7 +114,7 @@ describe('Project Store', () => {
     expect(projectStore.projects).toEqual([])
 
     const project = { id: 'projectId' }
-    apiClientReplayHooks.mockReturnValueOnce(Promise.resolve({ status: 200, body: project }))
+    apiClientReplayHooks.mockReturnValueOnce(Promise.resolve({ status: 204, body: project }))
     apiClientGet.mockReturnValueOnce(Promise.resolve({ status: 200, body: [] }))
 
     await projectStore.replayHooksForProject(project.id)

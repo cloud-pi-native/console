@@ -23,7 +23,7 @@ describe('Project Store', () => {
   })
 
   it('Should add a project environment by api call', async () => {
-    apiClientPost.mockReturnValueOnce(Promise.resolve({ status: 200, body: {} }))
+    apiClientPost.mockReturnValueOnce(Promise.resolve({ status: 201, body: {} }))
     const projectPermissionStore = useProjectPermissionStore()
 
     await projectPermissionStore.addPermission('environmentId', {})
@@ -41,7 +41,7 @@ describe('Project Store', () => {
   })
 
   it('Should delete a project environment by api call', async () => {
-    apiClientDelete.mockReturnValueOnce(Promise.resolve({ status: 200, body: {} }))
+    apiClientDelete.mockReturnValueOnce(Promise.resolve({ status: 204, body: {} }))
     const projectPermissionStore = useProjectPermissionStore()
 
     await projectPermissionStore.deletePermission('environmentId', 'userId')

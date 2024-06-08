@@ -1,33 +1,27 @@
 import type { CreateQuotaBody, UpdateQuotaStageBody, PatchQuotaBody } from '@cpn-console/shared'
-import { apiClient } from './xhr-client.js'
+import { apiClient, extractData } from './xhr-client.js'
 
-export const getQuotas = async () => {
-  const response = await apiClient.Quotas.getQuotas()
-  if (response.status === 200) return response.body
-}
+export const getQuotas = () =>
+  apiClient.Quotas.getQuotas()
+    .then(response => extractData(response, 200))
 
 // Admin
-export const getQuotaAssociatedEnvironments = async (quotaId: string) => {
-  const response = await apiClient.QuotasAdmin.getQuotaEnvironments({ params: { quotaId } })
-  if (response.status === 200) return response.body
-}
+export const getQuotaAssociatedEnvironments = (quotaId: string) =>
+  apiClient.QuotasAdmin.getQuotaEnvironments({ params: { quotaId } })
+    .then(response => extractData(response, 200))
 
-export const addQuota = async (data: CreateQuotaBody) => {
-  const response = await apiClient.QuotasAdmin.createQuota({ body: data })
-  if (response.status === 201) return response.body
-}
+export const addQuota = (data: CreateQuotaBody) =>
+  apiClient.QuotasAdmin.createQuota({ body: data })
+    .then(response => extractData(response, 201))
 
-export const updateQuotaPrivacy = async (quotaId: string, data: PatchQuotaBody) => {
-  const response = await apiClient.QuotasAdmin.patchQuotaPrivacy({ body: data, params: { quotaId } })
-  if (response.status === 200) return response.body
-}
+export const updateQuotaPrivacy = (quotaId: string, data: PatchQuotaBody) =>
+  apiClient.QuotasAdmin.patchQuotaPrivacy({ body: data, params: { quotaId } })
+    .then(response => extractData(response, 200))
 
-export const updateQuotaStage = async (data: UpdateQuotaStageBody) => {
-  const response = await apiClient.QuotasAdmin.updateQuotaStage({ body: data })
-  if (response.status === 200) return response.body
-}
+export const updateQuotaStage = (data: UpdateQuotaStageBody) =>
+  apiClient.QuotasAdmin.updateQuotaStage({ body: data })
+    .then(response => extractData(response, 200))
 
-export const deleteQuota = async (quotaId: string) => {
-  const response = await apiClient.QuotasAdmin.deleteQuota({ params: { quotaId } })
-  if (response.status === 204) return response.body
-}
+export const deleteQuota = (quotaId: string) =>
+  apiClient.QuotasAdmin.deleteQuota({ params: { quotaId } })
+    .then(response => extractData(response, 204))
