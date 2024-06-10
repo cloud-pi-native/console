@@ -4,7 +4,7 @@ import type { Cluster, CreateClusterBody, UpdateClusterBody } from '@cpn-console
 import api from '@/api/index.js'
 
 export const useAdminClusterStore = defineStore('admin-cluster', () => {
-  const clusters = ref<Array<Cluster>>()
+  const clusters = ref<Array<Cluster>>([])
 
   const getClusters = async () => {
     clusters.value = await api.getAdminClusters()
@@ -14,19 +14,14 @@ export const useAdminClusterStore = defineStore('admin-cluster', () => {
     return api.getClusterAssociatedEnvironments(clusterId)
   }
 
-  const addCluster = async (cluster: CreateClusterBody) => {
-    const res = await api.addCluster(cluster)
-    return res
-  }
+  const addCluster = async (cluster: CreateClusterBody) => api.addCluster(cluster)
 
   const updateCluster = async (cluster: UpdateClusterBody & { id: Cluster['id'] }) => {
     const { id, ...updateClusterData } = cluster
     return api.updateCluster(id, updateClusterData)
   }
 
-  const deleteCluster = async (clusterId: Cluster['id']) => {
-    return api.deleteCluster(clusterId)
-  }
+  const deleteCluster = async (clusterId: Cluster['id']) => api.deleteCluster(clusterId)
 
   const getClusterById = async (clusterId: Required<Cluster['id']>) => {
     const cluster = clusters.value?.find(cluster => cluster?.id === clusterId)

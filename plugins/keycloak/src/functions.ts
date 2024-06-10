@@ -1,5 +1,5 @@
 import type { StepCall, Project, UserEmail, UserAdmin, EmptyPayload } from '@cpn-console/hooks'
-import { getOrCreateChildGroup, getOrCreateProjectGroup, getGroupByName } from './group.js'
+import { getOrCreateChildGroup, getOrCreateProjectGroup, getGroupByName, getAllSubgroups, CustomGroup } from './group.js'
 import { getkcClient } from './client.js'
 import { parseError } from '@cpn-console/hooks'
 
@@ -137,8 +137,12 @@ export const upsertProject: StepCall<Project> = async ({ args: project }) => {
     }
 
     // Ensure envs subgroups exists
+    const envGroups = await getAllSubgroups(kcClient, projectGroup.id, 0)
     for (const environment of project.environments) {
-      const envGroup = await getOrCreateChildGroup(kcClient, projectGroup.id, environment.name)
+      let envGroup: Required<CustomGroup> | undefined = envGroups.find(group => group.name === environment.name) as Required<CustomGroup> | undefined
+      if (!envGroup) {
+        envGroup = await getOrCreateChildGroup(kcClient, projectGroup.id, environment.name)
+      }
       const roGroup = await getOrCreateChildGroup(kcClient, envGroup.id, 'RO')
       const rwGroup = await getOrCreateChildGroup(kcClient, envGroup.id, 'RW')
       // Ensure envs permissions membership exists

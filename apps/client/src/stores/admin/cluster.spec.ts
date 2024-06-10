@@ -134,7 +134,7 @@ describe('Cluster Store', () => {
   it('Should delete cluster by api call', async () => {
     const clusterId = '1e4fdb28-f9ea-46d4-ad16-607c7f1aa8b6'
 
-    apiClientDelete.mockReturnValueOnce(Promise.resolve({}))
+    apiClientDelete.mockReturnValueOnce(Promise.resolve({ status: 204 }))
     const adminClusterStore = useAdminClusterStore()
 
     await adminClusterStore.deleteCluster(clusterId)

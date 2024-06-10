@@ -21,7 +21,7 @@ describe('Admin zone Store', () => {
     const adminZoneStore = useAdminZoneStore()
 
     const zone = { label: 'Zone à défendre', slug: 'zad' }
-    apiClientPost.mockReturnValueOnce(Promise.resolve({ data: zone }))
+    apiClientPost.mockReturnValueOnce(Promise.resolve({ status: 201, data: zone }))
 
     await adminZoneStore.createZone(zone)
 
@@ -32,7 +32,7 @@ describe('Admin zone Store', () => {
     const adminZoneStore = useAdminZoneStore()
 
     const zone = { id: 'zoneId', label: 'Zod à update' }
-    apiClientPut.mockReturnValueOnce(Promise.resolve({ data: zone }))
+    apiClientPut.mockReturnValueOnce(Promise.resolve({ status: 201, data: zone }))
 
     await adminZoneStore.updateZone(zone.id, zone)
 
@@ -43,7 +43,7 @@ describe('Admin zone Store', () => {
     const adminZoneStore = useAdminZoneStore()
 
     const zoneId = 'zoneId'
-    apiClientDelete.mockReturnValueOnce(Promise.resolve({ data: null }))
+    apiClientDelete.mockReturnValueOnce(Promise.resolve({ status: 204, data: null }))
 
     await adminZoneStore.deleteZone(zoneId)
 

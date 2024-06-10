@@ -21,7 +21,6 @@ import {
   getProjectInfosAndRepos,
   getProjectInfos as getProjectInfosQuery,
   getPublicClusters,
-  getSingleOwnerByProjectId,
   getUserProjects as getUserProjectsQuery,
   initializeProject,
   lockProject,
@@ -199,9 +198,6 @@ export const archiveProject = async (projectId: Project['id'], requestor: Keyclo
   // Pré-requis
   const project = await getProjectInfosAndRepos(projectId)
   if (!project) throw new NotFoundError('Projet introuvable')
-
-  const owner = await getSingleOwnerByProjectId(project.id)
-  if (!owner) throw new NotFoundError('Souscripteur introuvable')
 
   if (!requestor.groups?.includes(adminGroupPath)) {
     const insufficientRoleErrorMessage = checkInsufficientRoleInProject(requestor.id, { roles: project.roles, minRole: 'owner' })

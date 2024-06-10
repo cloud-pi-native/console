@@ -1,3 +1,5 @@
+// @ts-ignore pas de typage disponible pour le paquet bytes
+import bytes from 'bytes'
 import { roRobotName, getApi, getConfig, rwRobotName, projectRobotName } from './utils.js'
 import { createProject, deleteProject } from './project.js'
 import { addProjectGroupMember } from './permission.js'
@@ -15,8 +17,14 @@ export const createDsoProject: StepCall<Project> = async (payload) => {
     const publishRoRobotProject = project.store.registry?.publishProjectRobot
     const publishRoRobotConfig = payload.config.registry?.publishProjectRobot
     const createProjectRobot = specificallyEnabled(publishRoRobotProject) || (specificallyEnabled(publishRoRobotConfig) && !specificallyDisabled(publishRoRobotProject))
+
+    const quotaHardLimit = project.store.registry?.quotaHardLimit || payload.config.registry?.quotaHardLimit
+    const quotaHardLimitBytes = quotaHardLimit
+      ? bytes.parse(quotaHardLimit)
+      : undefined
+
     const [projectCreated, oidcGroup] = await Promise.all([
-      createProject(projectName),
+      createProject(projectName, quotaHardLimitBytes === 1 ? undefined : quotaHardLimitBytes),
       keycloakApi.getProjectGroupPath(),
     ])
     const api = getApi()

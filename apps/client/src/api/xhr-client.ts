@@ -25,14 +25,27 @@ export const apiClient = await getApiClient(
       args.headers.Authorization = `Bearer ${token}`
     }
 
-    const res = await tsRestFetchApi(args)
-
-    // Handle error
-    if (res.status >= 400 || !res.status) {
-      // @ts-expect-error
-      throw new Error(res.body?.error ?? 'Erreur inconnue')
-    }
-
-    return res
+    return tsRestFetchApi(args)
   },
 )
+
+export const extractData = <T extends { status: number; body: unknown; headers: Headers }, S extends T['status']> (
+  response: T,
+  expectedStatus: S,
+): Extract<T, { status: S }>['body'] => {
+  if (response.status >= 400 && response.status <= 599) {
+    // @ts-ignore
+    throw Error(response.body?.error ?? 'Erreur inconnue')
+  }
+  if (response.status === expectedStatus) return response.body
+  try {
+    throw Error(`Erreur lors de la requete, reçu ${response.status}, attendu ${expectedStatus}`)
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.log(error.stack)
+    } else {
+      console.log(error)
+    }
+    throw Error('Erreur lors de la requete')
+  }
+}

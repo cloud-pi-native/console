@@ -1,6 +1,4 @@
-import { type Plugin } from '@cpn-console/hooks'
-// import { deleteEnv, deleteRepo, newEnv, newRepo } from './functions.js'
-// import { createCluster, deleteCluster, updateCluster } from './cluster.js'
+import type { Plugin, DeclareModuleGenerator } from '@cpn-console/hooks'
 import infos from './infos.js'
 import monitor from './monitor.js'
 import { deleteProject, upsertProject } from './functions.js'
@@ -33,4 +31,9 @@ export const plugin: Plugin = {
   },
   monitor,
   start: fixLabels,
+}
+
+declare module '@cpn-console/hooks' {
+  interface ProjectStore extends DeclareModuleGenerator<typeof infos, 'project'> {}
+  interface Config extends DeclareModuleGenerator<typeof infos, 'global'> {}
 }

@@ -1,28 +1,26 @@
 import type { CreateRepositoryBody, UpdateRepositoryBody, SyncRepositoryParams, RepositoryParams } from '@cpn-console/shared'
-import { apiClient } from './xhr-client.js'
+import { apiClient, extractData } from './xhr-client.js'
 
-export const addRepo = async (projectId: RepositoryParams['projectId'], data: CreateRepositoryBody) => {
-  const response = await apiClient.Repositories.createRepository({ body: data, params: { projectId } })
-  if (response.status === 201) return response.body
-}
+export const addRepo = (projectId: RepositoryParams['projectId'], data: CreateRepositoryBody) =>
+  apiClient.Repositories.createRepository({ body: data, params: { projectId } })
+    .then(response => extractData(response, 201))
 
-export const getRepos = async (projectId: RepositoryParams['projectId']) => {
-  const response = await apiClient.Repositories.getRepositories({ params: { projectId } })
-  if (response.status === 200) return response.body
-}
+export const getRepos = (projectId: RepositoryParams['projectId']) =>
+  apiClient.Repositories.getRepositories({ params: { projectId } })
+    .then(response => extractData(response, 200))
 
-export const syncRepository = async (projectId: SyncRepositoryParams['projectId'], repositoryId: SyncRepositoryParams['repositoryId'], branchName: SyncRepositoryParams['branchName']) => {
-  const response = await apiClient.Repositories.syncRepository({ params: { projectId, repositoryId, branchName } })
-  return response.body
-}
+export const syncRepository = (
+  projectId: SyncRepositoryParams['projectId'],
+  repositoryId: SyncRepositoryParams['repositoryId'],
+  branchName: SyncRepositoryParams['branchName'],
+) =>
+  apiClient.Repositories.syncRepository({ params: { projectId, repositoryId, branchName } })
+    .then(response => extractData(response, 204))
 
-export const updateRepo = async (projectId: RepositoryParams['projectId'], repositoryId: RepositoryParams['repositoryId'], data: UpdateRepositoryBody) => {
-  if (!data.id) return
-  const response = await apiClient.Repositories.updateRepository({ body: data, params: { projectId, repositoryId } })
-  if (response.status === 200) return response.body
-}
+export const updateRepo = (projectId: RepositoryParams['projectId'], repositoryId: RepositoryParams['repositoryId'], data: UpdateRepositoryBody) =>
+  apiClient.Repositories.updateRepository({ body: data, params: { projectId, repositoryId } })
+    .then(response => extractData(response, 200))
 
-export const deleteRepo = async (projectId: RepositoryParams['projectId'], repositoryId: RepositoryParams['repositoryId']) => {
-  const response = await apiClient.Repositories.deleteRepository({ params: { projectId, repositoryId } })
-  if (response.status === 204) return response.body
-}
+export const deleteRepo = (projectId: RepositoryParams['projectId'], repositoryId: RepositoryParams['repositoryId']) =>
+  apiClient.Repositories.deleteRepository({ params: { projectId, repositoryId } })
+    .then(response => extractData(response, 204))

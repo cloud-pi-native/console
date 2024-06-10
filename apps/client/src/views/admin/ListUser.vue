@@ -1,19 +1,26 @@
 <script lang="ts" setup>
 import { onBeforeMount, ref, watch } from 'vue'
-import { type AllUsers, formatDate } from '@cpn-console/shared'
+import { type AllUsers, formatDate, sortArrByObjKeyAsc } from '@cpn-console/shared'
 import { useAdminUserStore } from '@/stores/admin/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { copyContent } from '@/utils/func.js'
 import { useUserStore } from '@/stores/user.js'
+import type { Component, EmptyRow } from './ListProjects.vue'
 
 interface CheckboxEvent extends Event {
     target: HTMLInputElement;
+}
+
+type Row = {
+  rowData: Array<string | Component>
 }
 
 const adminUserStore = useAdminUserStore()
 const snackbarStore = useSnackbarStore()
 
 const allUsers = ref<AllUsers>([])
+const rows = ref<Row[]>([])
+const inputSearchText = ref('')
 
 const title = 'Liste des utilisateurs'
 const headers = [
@@ -29,50 +36,74 @@ const headers = [
 const getAllUsers = async () => {
   allUsers.value = await adminUserStore.getAllUsers() ?? []
 }
-const generateRows = () => allUsers.value.map(({ id, firstName, lastName, email, isAdmin, createdAt, updatedAt }) => ([
-  {
-    component: 'code',
-    text: id,
-    title: 'Copier l\'id',
-    class: 'fr-text-default--info text-xs cursor-pointer',
-    onClick: () => copyContent(id),
-  },
-  firstName,
-  lastName,
-  email,
-  {
-    component: 'input',
-    type: 'checkbox',
-    checked: isAdmin,
-    'data-testid': `${id}-is-admin`,
-    class: 'fr-checkbox-group--sm',
-    title: isAdmin ? `Retirer le rôle d'administrateur de ${email}` : `Donner le rôle d'administrateur à ${email}`,
-    onClick: async (event: CheckboxEvent) => {
-      const value = event.target.checked
-      if (value !== isAdmin) {
-        await adminUserStore.updateUserAdminRole(id, value)
-        snackbarStore.setMessage(value ? `Le rôle d'administrateur a été attribué à ${email}` : `Le rôle d'administrateur a été retiré à ${email}`, 'success')
-        await getAllUsers()
-        // Redirect user to home if he removed himself from admin group
-        // TODO : router.push ne suffit pas, il faut un rechargement complet
-        // instance keycloak ne semble pas au courant du changement de groupe, visible au reload
 
-        // useUserStore().setUserProfile()
-        // console.log(useUserStore().userProfile?.groups)
-
-        // @ts-ignore
-        if (useUserStore().userProfile?.id === id && !value) window.location = '/'
+const filterRows = (rows: Row[]): Row[] | EmptyRow => {
+  const returnRows = rows.filter(row => {
+    if (!inputSearchText.value) return true
+    return row.rowData.some(data => {
+      if (typeof data === 'object') {
+        return data.text?.toString().toLowerCase().includes(inputSearchText.value.toLocaleLowerCase())
       }
-    },
-  },
-  formatDate(createdAt),
-  formatDate(updatedAt),
-]))
-
-const rows = ref<ReturnType<typeof generateRows>>([])
+      return data.toString().toLowerCase().includes(inputSearchText.value.toLocaleLowerCase())
+    })
+  })
+  if (!returnRows.length) {
+    return [[{
+      text: 'Aucun utilisateur trouvé',
+      field: 'string',
+      cellAttrs: {
+        colspan: headers.length,
+      },
+    }]]
+  }
+  return returnRows
+}
 
 const setRows = () => {
-  rows.value = generateRows()
+  rows.value = sortArrByObjKeyAsc(allUsers.value, 'firstName')
+    ?.map(({ id, firstName, lastName, email, isAdmin, createdAt, updatedAt }) => (
+      {
+        rowData: [
+          {
+            component: 'code',
+            text: id,
+            title: 'Copier l\'id',
+            class: 'fr-text-default--info text-xs cursor-pointer',
+            onClick: () => copyContent(id),
+          },
+          firstName,
+          lastName,
+          email,
+          {
+            component: 'input',
+            type: 'checkbox',
+            checked: isAdmin,
+            'data-testid': `${id}-is-admin`,
+            class: 'fr-checkbox-group--sm',
+            title: isAdmin ? `Retirer le rôle d'administrateur de ${email}` : `Donner le rôle d'administrateur à ${email}`,
+            onClick: async (event: CheckboxEvent) => {
+              const value = event.target.checked
+              if (value !== isAdmin) {
+                await adminUserStore.updateUserAdminRole(id, value)
+                snackbarStore.setMessage(value ? `Le rôle d'administrateur a été attribué à ${email}` : `Le rôle d'administrateur a été retiré à ${email}`, 'success')
+                await getAllUsers()
+                // Redirect user to home if he removed himself from admin group
+                // TODO : router.push ne suffit pas, il faut un rechargement complet
+                // instance keycloak ne semble pas au courant du changement de groupe, visible au reload
+
+                // useUserStore().setUserProfile()
+                // console.log(useUserStore().userProfile?.groups)
+
+                // @ts-ignore
+                if (useUserStore().userProfile?.id === id && !value) window.location = '/'
+              }
+            },
+          },
+          formatDate(createdAt),
+          formatDate(updatedAt),
+        ],
+      }),
+    )
 }
 
 onBeforeMount(async () => {
@@ -87,12 +118,24 @@ watch(allUsers, () => setRows())
 
 <template>
   <div class="relative">
-    <DsfrTable
-      data-testid="tableAdministrationUsers"
-      :title="title"
-      :headers="headers"
-      :rows="rows"
-    />
+    <div
+      class="flex flex-col gap-2 w-min"
+    >
+      <DsfrInputGroup
+        v-model="inputSearchText"
+        data-testid="tableAdministrationUsersSearch"
+        label="Caractères à rechercher"
+        label-visible
+        hint="Toutes les colonnes contenant du texte sont incluses dans la recherche."
+        placeholder="..."
+      />
+      <DsfrTable
+        data-testid="tableAdministrationUsers"
+        :title="title"
+        :headers="headers"
+        :rows="filterRows(rows)"
+      />
+    </div>
     <LoadingCt
       v-if="snackbarStore.isWaitingForResponse"
       description="Récupération des utilisateurs"

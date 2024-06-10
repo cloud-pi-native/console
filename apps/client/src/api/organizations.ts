@@ -1,28 +1,23 @@
 import type { UpdateOrganizationBody, CreateOrganizationBody } from '@cpn-console/shared'
-import { apiClient } from './xhr-client.js'
+import { apiClient, extractData } from './xhr-client.js'
 
-export const getActiveOrganizations = async () => {
-  const response = await apiClient.Organizations.getOrganizations()
-  if (response.status === 200) return response.body
-}
+export const getActiveOrganizations = async () =>
+  apiClient.Organizations.getOrganizations()
+    .then(response => extractData(response, 200))
 
 // Admin
-export const getAllOrganizations = async () => {
-  const response = await apiClient.OrganizationsAdmin.getAllOrganizations()
-  if (response.status === 200) return response.body
-}
+export const getAllOrganizations = async () =>
+  apiClient.OrganizationsAdmin.getAllOrganizations()
+    .then(response => extractData(response, 200))
 
-export const createOrganization = async (data: CreateOrganizationBody) => {
-  const response = await apiClient.OrganizationsAdmin.createOrganization({ body: data })
-  if (response.status === 201) return response.body
-}
+export const createOrganization = async (data: CreateOrganizationBody) =>
+  apiClient.OrganizationsAdmin.createOrganization({ body: data })
+    .then(response => extractData(response, 201))
 
-export const updateOrganization = async (organizationName: CreateOrganizationBody['name'], data: UpdateOrganizationBody) => {
-  const response = await apiClient.OrganizationsAdmin.updateOrganization({ body: data, params: { organizationName } })
-  if (response.status === 200) return response.body
-}
+export const updateOrganization = async (organizationName: CreateOrganizationBody['name'], data: UpdateOrganizationBody) =>
+  apiClient.OrganizationsAdmin.updateOrganization({ body: data, params: { organizationName } })
+    .then(response => extractData(response, 200))
 
-export const fetchOrganizations = async () => {
-  const response = await apiClient.OrganizationsAdmin.syncOrganizations()
-  if (response.status === 200) return response.body
-}
+export const fetchOrganizations = async () =>
+  apiClient.OrganizationsAdmin.syncOrganizations()
+    .then(response => extractData(response, 200))

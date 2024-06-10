@@ -12,6 +12,10 @@ export type ArgoDestination = {
   server?: string
 }
 
+const splitExtraRepositories = (repos?: string): string[] => repos
+  ? repos.split(',').map(repo => repo.trim())
+  : []
+
 export const upsertProject: StepCall<Project> = async (payload) => {
   try {
     const customK8sApi = getCustomK8sApi()
@@ -20,7 +24,11 @@ export const upsertProject: StepCall<Project> = async (payload) => {
     const projectSelector = `dso/organization=${project.organization.name},dso/project=${project.name},app.kubernetes.io/managed-by=dso-console`
 
     const infraRepositories = project.repositories.filter(repo => repo.isInfra)
-    const sourceRepos = await Promise.all(infraRepositories.map(repo => gitlabApi.getRepoUrl(repo.internalRepoName)))
+    const sourceRepos = [
+      ...await Promise.all(infraRepositories.map(repo => gitlabApi.getRepoUrl(repo.internalRepoName))),
+      ...splitExtraRepositories(payload.config.argocd?.extraRepositories),
+      ...splitExtraRepositories(project.store.argocd?.extraRepositories),
+    ]
 
     // first create or patch resources
     const applications = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'applications', undefined, undefined, undefined, undefined, projectSelector)

@@ -1,47 +1,39 @@
 import type { CreateProjectBody, UpdateProjectBody, PatchProjectBody } from '@cpn-console/shared'
-import { apiClient } from './xhr-client.js'
+import { apiClient, extractData } from './xhr-client.js'
 
 // Project
-export const createProject = async (data: CreateProjectBody) => {
-  const response = await apiClient.Projects.createProject({ body: data })
-  if (response.status === 201) return response.body
-}
+export const createProject = (data: CreateProjectBody) =>
+  apiClient.Projects.createProject({ body: data })
+    .then(response => extractData(response, 201))
 
-export const getUserProjects = async () => {
-  const response = await apiClient.Projects.getProjects()
-  if (response.status === 200) return response.body
-}
+export const getUserProjects = () =>
+  apiClient.Projects.getProjects()
+    .then(response => extractData(response, 200))
 
-export const updateProject = async (projectId: string, data: UpdateProjectBody) => {
-  const response = await apiClient.Projects.updateProject({ body: data, params: { projectId } })
-  if (response.status === 200) return response.body
-}
+export const updateProject = (projectId: string, data: UpdateProjectBody) =>
+  apiClient.Projects.updateProject({ body: data, params: { projectId } })
+    .then(response => extractData(response, 200))
 
-export const replayHooks = async (projectId: string) => {
-  const response = await apiClient.Projects.replayHooksForProject({ params: { projectId } })
-  if (response.status === 204) return response.body
-}
+export const replayHooks = (projectId: string) =>
+  apiClient.Projects.replayHooksForProject({ params: { projectId } })
+    .then(response => extractData(response, 204))
 
-export const archiveProject = async (projectId: string) => {
-  const response = await apiClient.Projects.archiveProject({ params: { projectId } })
-  if (response.status === 204) return response.body
-}
+export const archiveProject = (projectId: string) =>
+  apiClient.Projects.archiveProject({ params: { projectId } })
+    .then(response => extractData(response, 204))
 
-export const getProjectSecrets = async (projectId: string) => {
-  const response = await apiClient.Projects.getProjectSecrets({ params: { projectId } })
-  if (response.status === 200) return response.body
-}
+export const getProjectSecrets = (projectId: string) =>
+  apiClient.Projects.getProjectSecrets({ params: { projectId } })
+    .then(response => extractData(response, 200))
 
 // Admin - Projects
-export const getAllProjects = async () => {
-  const response = await apiClient.ProjectsAdmin.getAllProjects()
-  if (response.status === 200) return response.body
-}
+export const getAllProjects = () =>
+  apiClient.ProjectsAdmin.getAllProjects()
+    .then(response => extractData(response, 200))
 
-export const handleProjectLocking = async (projectId: string, lock: PatchProjectBody['lock']) => {
-  const response = await apiClient.ProjectsAdmin.patchProject({ body: { lock }, params: { projectId } })
-  if (response.status === 200) return response.body
-}
+export const handleProjectLocking = (projectId: string, lock: PatchProjectBody['lock']) =>
+  apiClient.ProjectsAdmin.patchProject({ body: { lock }, params: { projectId } })
+    .then(response => extractData(response, 200))
 
 export const generateProjectsData = async () => {
   const response = await apiClient.ProjectsAdmin.getProjectsData()
