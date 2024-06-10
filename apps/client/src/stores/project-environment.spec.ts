@@ -42,7 +42,7 @@ describe('Environment Store', () => {
   })
 
   it('Should add a project environment by api call', async () => {
-    apiClientPost.mockReturnValueOnce(Promise.resolve({ status: 200, body: {} }))
+    apiClientPost.mockReturnValueOnce(Promise.resolve({ status: 201, body: {} }))
     const projectEnvironmentStore = useProjectEnvironmentStore()
 
     await projectEnvironmentStore.addEnvironmentToProject({ name: 'prod', projectId: 'projectId', clusterId: 'clusterId1', quotaStageId: 'quotastage1' })
@@ -51,7 +51,7 @@ describe('Environment Store', () => {
   })
 
   it('Should delete a project environment by api call', async () => {
-    apiClientDelete.mockReturnValueOnce(Promise.resolve({ status: 200, body: {} }))
+    apiClientDelete.mockReturnValueOnce(Promise.resolve({ status: 204, body: {} }))
     const projectEnvironmentStore = useProjectEnvironmentStore()
 
     await projectEnvironmentStore.deleteEnvironment('environmentId')

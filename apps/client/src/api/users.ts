@@ -1,38 +1,31 @@
 import type { AddUserToProjectBody, LettersQuery, UpdateUserRoleInProjectBody } from '@cpn-console/shared'
-import { apiClient } from './xhr-client.js'
+import { apiClient, extractData } from './xhr-client.js'
 
-export const getMatchingUsers = async (projectId: string, letters: LettersQuery['letters']) => {
-  const response = await apiClient.Users.getMatchingUsers({ params: { projectId }, query: { letters } })
-  if (response.status === 200) return response.body
-}
+export const getMatchingUsers = (projectId: string, letters: LettersQuery['letters']) =>
+  apiClient.Users.getMatchingUsers({ params: { projectId }, query: { letters } })
+    .then(response => extractData(response, 200))
 
-export const addUserToProject = async (projectId: string, data: AddUserToProjectBody) => {
-  const response = await apiClient.Users.createUserRoleInProject({ body: data, params: { projectId } })
-  if (response.status === 201) return response.body
-}
+export const addUserToProject = (projectId: string, data: AddUserToProjectBody) =>
+  apiClient.Users.createUserRoleInProject({ body: data, params: { projectId } })
+    .then(response => extractData(response, 201))
 
-export const updateUserProjectRole = async (projectId: string, userId: string, data: UpdateUserRoleInProjectBody) => {
-  const response = await apiClient.Users.updateUserRoleInProject({ body: data, params: { projectId, userId } })
-  if (response.status === 200) return response.body
-}
+export const updateUserProjectRole = (projectId: string, userId: string, data: UpdateUserRoleInProjectBody) =>
+  apiClient.Users.updateUserRoleInProject({ body: data, params: { projectId, userId } })
+    .then(response => extractData(response, 200))
 
-export const getProjectUsers = async (projectId: string) => {
-  const response = await apiClient.Users.getProjectUsers({ params: { projectId } })
-  if (response.status === 200) return response.body
-}
+export const getProjectUsers = (projectId: string) =>
+  apiClient.Users.getProjectUsers({ params: { projectId } })
+    .then(response => extractData(response, 200))
 
-export const removeUser = async (projectId: string, userId: string) => {
-  const response = await apiClient.Users.deleteUserRoleInProject({ params: { projectId, userId } })
-  if (response.status === 200) return response.body
-}
+export const removeUser = (projectId: string, userId: string) =>
+  apiClient.Users.deleteUserRoleInProject({ params: { projectId, userId } })
+    .then(response => extractData(response, 200))
 
 // Admin
-export const getAllUsers = async () => {
-  const response = await apiClient.UsersAdmin.getAllUsers()
-  if (response.status === 200) return response.body
-}
+export const getAllUsers = () =>
+  apiClient.UsersAdmin.getAllUsers()
+    .then(response => extractData(response, 200))
 
-export const updateUserAdminRole = async (userId: string, isAdmin: boolean) => {
-  const response = await apiClient.UsersAdmin.updateUserAdminRole({ params: { userId }, body: { isAdmin } })
-  if (response.status === 204) return response.body
-}
+export const updateUserAdminRole = (userId: string, isAdmin: boolean) =>
+  apiClient.UsersAdmin.updateUserAdminRole({ params: { userId }, body: { isAdmin } })
+    .then(response => extractData(response, 204))

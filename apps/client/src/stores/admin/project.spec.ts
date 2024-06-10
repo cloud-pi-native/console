@@ -48,7 +48,7 @@ describe('Project Admin Store', () => {
 
   it('Should lock or unlock a project', async () => {
     const project = { id: 'id1', name: 'project1', status: 'archived', locked: true }
-    apiClientPatch.mockReturnValueOnce(Promise.resolve({}))
+    apiClientPatch.mockReturnValueOnce(Promise.resolve({ status: 200 }))
     const adminProjectStore = useAdminProjectStore()
 
     const res = await adminProjectStore.handleProjectLocking(project.id, project.locked)
@@ -61,7 +61,7 @@ describe('Project Admin Store', () => {
     const adminProjectStore = useAdminProjectStore()
 
     const project = { id: 'projectId' }
-    apiClientPut.mockReturnValueOnce(Promise.resolve({ status: 200, body: project }))
+    apiClientPut.mockReturnValueOnce(Promise.resolve({ status: 204, body: project }))
 
     await adminProjectStore.replayHooksForProject(project.id)
 

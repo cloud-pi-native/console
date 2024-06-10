@@ -14,7 +14,7 @@ describe('Files Store', () => {
   })
 
   it('Should get ci files by api call', async () => {
-    apiClientPost.mockReturnValueOnce(Promise.resolve({ status: 200, body: {} }))
+    apiClientPost.mockReturnValueOnce(Promise.resolve({ status: 201, body: {} }))
     const ciFilesStore = useCIFilesStore()
 
     await ciFilesStore.generateCIFiles({})

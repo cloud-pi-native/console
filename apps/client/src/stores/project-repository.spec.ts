@@ -22,7 +22,7 @@ describe('Repository Store', () => {
   })
 
   it('Should add a project repository by api call', async () => {
-    apiClientPost.mockReturnValueOnce(Promise.resolve({ status: 200, body: {} }))
+    apiClientPost.mockReturnValueOnce(Promise.resolve({ status: 201, body: {} }))
     const projectRepositoryStore = useProjectRepositoryStore()
 
     const repo = {
@@ -38,7 +38,7 @@ describe('Repository Store', () => {
   })
 
   it('Should delete a project repository by api call', async () => {
-    apiClientDelete.mockReturnValueOnce(Promise.resolve({ status: 200, body: {} }))
+    apiClientDelete.mockReturnValueOnce(Promise.resolve({ status: 204, body: {} }))
     const projectRepositoryStore = useProjectRepositoryStore()
 
     await projectRepositoryStore.deleteRepo('repositoryId')

@@ -1,7 +1,6 @@
 import type { GetLogsQuery } from '@cpn-console/shared'
-import { apiClient } from './xhr-client.js'
+import { apiClient, extractData } from './xhr-client.js'
 
-export const getAllLogs = async ({ offset, limit }: GetLogsQuery) => {
-  const response = await apiClient.LogsAdmin.getLogs({ query: { offset, limit } })
-  if (response.status === 200) return response.body
-}
+export const getAllLogs = ({ offset, limit }: GetLogsQuery) =>
+  apiClient.LogsAdmin.getLogs({ query: { offset, limit } })
+    .then(response => extractData(response, 200))
