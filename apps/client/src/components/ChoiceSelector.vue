@@ -110,7 +110,10 @@ const groups: Group[] = [
     class="fr-select-group"
     :disabled="props.disabled"
   >
-    <div @click="isWrapped = !isWrapped">
+    <div
+      class="cursor-pointer"
+      @click="isWrapped = !isWrapped"
+    >
       <h6
         v-if="props.label"
         :data-testid="`choice-selector-title-${props.id}`"
@@ -182,7 +185,7 @@ const groups: Group[] = [
               class="inline-block mr-1 ml-1"
             >
               <DsfrTag
-                :class="group.tagClass"
+                :class="`cursor-pointer ${group.tagClass}`"
                 :label="String(option[props.labelKey])"
                 :data-testid="`${option[props.valueKey]}-${props.id}-tag`"
                 :disabled="props.disabled"
@@ -213,7 +216,10 @@ const groups: Group[] = [
     :id="props.id"
     @click="isWrapped = false"
   >
-    <div @click="isWrapped = !isWrapped">
+    <div
+      class="cursor-pointer"
+      @click="isWrapped = !isWrapped"
+    >
       <h6 class="mb-1 inline-block fr-label">
         {{ props.label }}
       </h6>
@@ -228,6 +234,7 @@ const groups: Group[] = [
       class="inline-block mr-1 ml-1"
     >
       <DsfrTag
+        class="cursor-pointer"
         :label="String(option[props.labelKey])"
         :data-testid="`${option[props.valueKey]}-${props.id}-tag`"
         aria-pressed="false"
@@ -239,7 +246,10 @@ const groups: Group[] = [
       class="inline-block"
       @click="isWrapped = false"
     >
-      <DsfrTag :label="`Aucune sélection, ${props.options.length} choix disponibles`" />
+      <DsfrTag
+        class="cursor-pointer"
+        :label="`Aucune sélection, ${props.options.length} choix disponibles`"
+      />
     </div>
     <div
       v-if="options.selected.value.length > 3"
@@ -247,6 +257,7 @@ const groups: Group[] = [
       @click="isWrapped = false"
     >
       <DsfrTag
+        class="cursor-pointer"
         :label="`et ${options.selected.value.length - 3} de +`"
         :title="`${options.selected.value.slice(3,10).map(option => option[props.labelKey]).join('\n')}${options.selected.value.length>10?'\n...':''}`"
       />
@@ -256,7 +267,10 @@ const groups: Group[] = [
       class="inline-block"
       @click="isWrapped = false"
     >
-      <DsfrTag label="Modifier" />
+      <DsfrTag
+        class="cursor-pointer"
+        label="Modifier"
+      />
     </div>
   </div>
 </template>
