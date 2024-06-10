@@ -6,14 +6,15 @@ describe('Administration clusters', () => {
   const cluster1 = getModelById('cluster', '32636a52-4dd1-430b-b08a-b2e5ed9d1789')
   const cluster2 = getModelById('cluster', 'aaaaaaaa-5b03-45d5-847b-149dec875680')
   const allStages = getModel('stage')
+  const allProjects = getModel('project')
   const privateZone = getModelById('zone', 'a66c4230-eba6-41f1-aae5-bb1e4f90cce1')
 
   let allClusters
 
   const newCluster = {
     label: 'newCluster',
-    projects: ['dinum - betaapp'],
-    stages: allStages.map(stage => stage.name),
+    projects: allProjects.slice(0, 1),
+    stages: allStages.map(stage => stage.id),
     infos: 'Floating IP: 1.1.1.1',
     cluster: {
       tlsServerName: 'myTlsServerName',
@@ -147,19 +148,24 @@ describe('Administration clusters', () => {
       .check({ force: true })
     cy.get('#zone-select')
       .select(privateZone.id)
+
     cy.get('#privacy-select')
       .select(ClusterPrivacy.DEDICATED)
+    cy.get('#projects-select')
+      .click()
     newCluster.projects.forEach(project => {
-      cy.get('#projects-select')
-        .select(project)
+      cy.getByDataTestid(`${project.id}-projects-select-tag`)
+        .click()
     })
-    cy.get('[data-testid$="projects-select-tag"]')
+    cy.get('#projects-select .fr-tag--dismiss')
       .should('have.length', newCluster.projects.length)
+
     newCluster.stages.forEach(stage => {
-      cy.get('#stages-select')
-        .select(stage)
+      cy.getByDataTestid(`${stage}-stages-select-tag`)
+        .click()
     })
     cy.get('[data-testid$="stages-select-tag"]')
+      .get('#stages-select .fr-tag--dismiss')
       .should('have.length', newCluster.stages.length)
     cy.getByDataTestid('addClusterBtn')
       .should('be.enabled')
@@ -236,9 +242,12 @@ describe('Administration clusters', () => {
       .select('a66c4230-eba6-41f1-aae5-bb1e4f90cce2')
     cy.get('#privacy-select')
       .select('public')
-    cy.get(`[data-testid="${allStages[0].name}-stages-select-tag"]`)
+
+    cy.get('#stages-select')
       .click()
-    cy.get('[data-testid$="stages-select-tag"]')
+    cy.get(`[data-testid="${allStages[0].id}-stages-select-tag"]`)
+      .click()
+    cy.get('#stages-select .fr-tag--dismiss')
       .should('have.length', newCluster.stages.length - 1)
     cy.getByDataTestid('updateClusterBtn')
       .should('be.enabled')
@@ -276,7 +285,9 @@ describe('Administration clusters', () => {
       .should('have.value', 'a66c4230-eba6-41f1-aae5-bb1e4f90cce2')
     cy.get('#stages-select')
       .should('exist')
-    cy.get('[data-testid$="stages-select-tag"]')
+    cy.get('#stages-select')
+      .click()
+    cy.get('#stages-select .fr-tag--dismiss')
       .should('have.length', newCluster.stages.length - 1)
   })
 

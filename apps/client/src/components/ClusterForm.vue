@@ -6,6 +6,7 @@ import { load } from 'js-yaml'
 // @ts-ignore
 import { JsonViewer } from 'vue3-json-viewer'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+import ChoiceSelector from './ChoiceSelector.vue'
 
 const snackbarStore = useSnackbarStore()
 
@@ -34,8 +35,6 @@ const props = withDefaults(defineProps<{
   associatedEnvironments: () => [],
 })
 
-const projectsName = ref<Array<string>>([])
-const stageNames = ref<Array<string>>([])
 const jsonKConfig = ref<Record<any, any>>({})
 const kConfigError = ref<string | undefined>(undefined)
 const isMissingCurrentContext = ref<boolean>(false)
@@ -76,22 +75,12 @@ const updateValues = (key: string, value: any) => {
   localCluster.value[key] = value
   updatedValues.value[key] = true
 
-  // Retrieve array of project names from child component, map it into array of project ids.
   if (key === 'projectIds') {
-    localCluster.value.projectIds = localCluster.value.projectIds
-    // @ts-ignore
-      .map(project => {
-        const organization = project.split(' - ')[0]
-        const projectName = project.split(' - ')[1]
-        return props.allProjects?.find(pFromAll => pFromAll.organization.name === organization && pFromAll.name === projectName).id
-      })
+    localCluster.value.projectIds = value
   }
 
-  // Retrieve array of stage names from child component, map it into array of stage ids.
   if (key === 'stageIds') {
-    localCluster.value.stageIds = localCluster.value.stageIds
-    // @ts-ignore
-      .map(stageName => props.allStages?.find(sFromAll => sFromAll.name === stageName)?.id)
+    localCluster.value.stageIds = value
   }
 }
 
@@ -210,15 +199,7 @@ const cancel = () => {
 }
 
 onBeforeMount(() => {
-  // Retrieve array of project ids from parent component, map it into array of project names and pass it to child component.
   localCluster.value = props.cluster
-  projectsName.value = localCluster.value.projectIds?.map((projectId: string) => {
-    const project = props.allProjects?.find(project => project.id === projectId)
-    return `${project.organization.name} - ${project.name}`
-  })
-
-  // Retrieve array of stage ids from parent component, map it into array of stage names and pass it to child component.
-  stageNames.value = localCluster.value.stageIds?.map((stageId: string) => props.allStages?.find(stage => stage.id === stageId)?.name)
 })
 
 watch(selectedContext, () => {
@@ -358,31 +339,33 @@ watch(selectedContext, () => {
       v-if="localCluster.privacy === ClusterPrivacy.DEDICATED"
       class="fr-mb-2w"
     >
-      <MultiSelector
+      <ChoiceSelector
         id="projects-select"
-        :options="props.allProjects.map(project => ({ id: project.id, name: `${project.organization.name} - ${project.name}` }))"
-        :array="projectsName"
-        :disabled="!props.allProjects.length"
-        no-choice-label="Aucun projet disponible"
-        choice-label="Veuillez choisir les projets à associer"
-        label="Nom des projets"
+        wrapped
+        label="Projets associés"
         description="Sélectionnez les projets autorisés à utiliser ce cluster."
-        @update="updateValues('projectIds', $event)"
+        :options="props.allProjects.map(project => ({ ...project, label: `${project.organization.name} - ${project.name}`}))"
+        :options-selected="props.allProjects.filter(project => props.cluster.projectIds.includes(project.id)).map(project => ({ ...project, label: `${project.organization.name} - ${project.name}`}))"
+        label-key="label"
+        value-key="id"
+        :disabled="false"
+        @update="(projects) => updateValues('projectIds', projects.map(project => project.id))"
       />
     </div>
     <div
       class="fr-mb-2w"
     >
-      <MultiSelector
+      <ChoiceSelector
         id="stages-select"
-        :options="props.allStages?.map(stage => ({ id: stage.id, name: `${stage.name}` }))"
-        :array="stageNames"
-        :disabled="!props.allStages?.length"
-        no-choice-label="Aucun type d'environnement disponible"
-        choice-label="Veuillez choisir les types d'environnement à associer"
+        :wrapped="false"
         label="Nom des types d'environnement"
         description="Sélectionnez les types d'environnement autorisés à utiliser ce cluster."
-        @update="updateValues('stageIds', $event)"
+        :options="props.allStages"
+        :options-selected="props.allStages.filter(stage => props.cluster.stageIds.includes(stage.id))"
+        label-key="name"
+        value-key="id"
+        :disabled="false"
+        @update="(stages) => updateValues('stageIds', stages.map(stage => stage.id))"
       />
     </div>
     <div

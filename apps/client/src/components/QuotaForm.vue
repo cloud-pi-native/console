@@ -18,7 +18,6 @@ const props = withDefaults(defineProps<{
 })
 
 const localQuota = ref(props.quota)
-const stageNames = ref<string[]>([])
 const isDeletingQuota = ref(false)
 const quotaToDelete = ref<string>('')
 
@@ -33,12 +32,9 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
 })
 const isQuotaValid = computed(() => !errorSchema.value)
 
-const updateStages = (key: string, value: any) => {
-  localQuota.value[key] = value
+const updateStages = (value: string[]) => {
   // Retrieve array of stage names from child component, map it into array of stageIds.
-  localQuota.value.stageIds = localQuota.value.stageIds
-    // @ts-ignore
-    .map(stageName => props.allStages?.find(sFromAll => sFromAll.name === stageName)?.id)
+  localQuota.value.stageIds = value
 }
 
 const emit = defineEmits<{
@@ -82,9 +78,7 @@ const getRows = (associatedEnvironments: QuotaAssociatedEnvironments) => {
 }
 
 onBeforeMount(() => {
-  // Retrieve array of quotaStage from parent component, map it into array of stage names and pass it to child component.
   localQuota.value = props.quota
-  stageNames.value = localQuota.value.quotaStage?.map(qs => qs.stageId).map(stageId => props.allStages?.find(stage => stage.id === stageId)?.name)
 })
 
 </script>
@@ -137,16 +131,21 @@ onBeforeMount(() => {
     <div
       class="fr-mb-2w"
     >
-      <MultiSelector
+      <ChoiceSelector
         id="stages-select"
-        :options="allStages?.map(stage => ({ id: stage.id, name: `${stage.name}` }))"
-        :array="stageNames"
-        :disabled="!allStages?.length"
-        no-choice-label="Aucun type d'environnement disponible"
-        choice-label="Veuillez choisir les types d'environnement à associer"
+        :wrapped="true"
         label="Nom des types d'environnement"
-        description="Sélectionnez les types d'environnement autorisés à utiliser ce quota."
-        @update="updateStages('stageIds', $event)"
+        description="Sélectionnez les types d'environnement autorisés à utiliser ce cluster."
+        :options="allStages.map(({ id, name}) => ({ id, name}))"
+        :options-selected="props.quota.quotaStage
+          ?.map(({ stageId }) => allStages
+            .find(({ id }) => id === stageId))
+          // @ts-ignore
+          .map(({ id, name }) => ({ id, name })) ?? []"
+        label-key="name"
+        value-key="id"
+        :disabled="false"
+        @update="(stages) => updateStages(stages.map(stage => stage.id))"
       />
     </div>
     <div

@@ -44,8 +44,10 @@ describe('Administration zones', () => {
         .should('have.value', zone.description)
         .and('be.enabled')
       cy.get('#clusters-select')
+        .click()
+      cy.get('#clusters-select .fr-tag')
         .should('be.disabled')
-      cy.get('[data-testid$="clusters-select-tag"]')
+      cy.get('#clusters-select .fr-tag--dismiss')
         .should('have.length', zone.clusters?.length ?? 0)
       cy.getByDataTestid('updateZoneBtn')
         .should('be.enabled')
@@ -55,7 +57,7 @@ describe('Administration zones', () => {
   })
 
   it('Should update a zone', () => {
-    const zone = zones[0]
+    const zone = zones.find(({ slug }) => slug === 'pr')
     const updatedZone = {
       label: 'Zone Mise à Jour',
       description: 'Cette zone a été mise à jour.',
@@ -100,8 +102,10 @@ describe('Administration zones', () => {
       .should('have.value', updatedZone.description)
       .and('be.enabled')
     cy.get('#clusters-select')
+      .click()
+    cy.get('#clusters-select .fr-tag')
       .should('be.disabled')
-    cy.get('[data-testid$="clusters-select-tag"]')
+    cy.get('#clusters-select .fr-tag--dismiss')
       .should('have.length', zone.clusters?.length)
     cy.getByDataTestid('updateZoneBtn')
       .should('be.enabled')
@@ -143,8 +147,8 @@ describe('Administration zones', () => {
       .clear()
       .type(newZone.description)
     newZone.clusters.forEach((cluster) => {
-      cy.get('#clusters-select')
-        .select(cluster.label)
+      cy.getByDataTestid(`${cluster.id}-clusters-select-tag`)
+        .click()
     })
     cy.getByDataTestid('addZoneBtn')
       .should('be.enabled')
@@ -171,8 +175,10 @@ describe('Administration zones', () => {
       .should('have.value', newZone.description)
       .and('be.enabled')
     cy.get('#clusters-select')
+      .click()
+    cy.get('#clusters-select .fr-tag')
       .should('be.disabled')
-    cy.get('[data-testid$="clusters-select-tag"]')
+    cy.get('#clusters-select .fr-tag--dismiss')
       .should('have.length', newZone.clusters.length)
     cy.getByDataTestid('updateZoneBtn')
       .should('be.enabled')
@@ -183,7 +189,7 @@ describe('Administration zones', () => {
       cy.getByDataTestid(`zoneTile-${zone.label}`)
         .should('be.visible')
         .click()
-      cy.get('[data-testid$="clusters-select-tag"]')
+      cy.get('#clusters-select .fr-tag--dismiss')
         .should('have.length', 0)
       cy.getByDataTestid('cancelZoneBtn')
         .click()
@@ -207,8 +213,8 @@ describe('Administration zones', () => {
       .clear()
       .type(newZone.description)
     newZone.clusters.forEach((cluster) => {
-      cy.get('#clusters-select')
-        .select(cluster.label)
+      cy.getByDataTestid(`${cluster.id}-clusters-select-tag`)
+        .click()
     })
     cy.getByDataTestid('addZoneBtn')
       .should('be.enabled')

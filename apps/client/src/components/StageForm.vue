@@ -20,8 +20,6 @@ const props = withDefaults(defineProps<{
 })
 
 const localStage = ref(props.stage)
-const quotaNames = ref([])
-const clusterNames = ref([])
 const isDeletingStage = ref(false)
 const stageToDelete = ref('')
 
@@ -36,20 +34,12 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
 })
 const isStageValid = computed(() => !errorSchema.value)
 
-const updateClusters = (key: string, value: any) => {
-  localStage.value[key] = value
-  // Retrieve array of cluster names from child component, map it into array of clusterIds.
-  localStage.value.clusterIds = localStage.value.clusterIds
-    // @ts-ignore
-    .map(clusterName => props.allClusters?.find(cFromAll => cFromAll.label === clusterName)?.id)
+const updateClusters = (value: string[]) => {
+  localStage.value.clusterIds = value
 }
 
-const updateQuotas = (key: string, value: any) => {
-  localStage.value[key] = value
-  // Retrieve array of quota names from child component, map it into array of quotaIds.
-  localStage.value.quotaIds = localStage.value.quotaIds
-    // @ts-ignore
-    .map(quotaName => props.allQuotas?.find(qFromAll => qFromAll.name === quotaName)?.id)
+const updateQuotas = (value: string[]) => {
+  localStage.value.quotaIds = value
 }
 
 const emit = defineEmits<{
@@ -93,10 +83,6 @@ const getRows = (associatedEnvironments: StageAssociatedEnvironments) => {
 
 onBeforeMount(() => {
   localStage.value = props.stage
-  // Retrieve array of quotaStage from parent component, map it into array of quota names and pass it to child component.
-  quotaNames.value = localStage.value.quotaStage?.map(qs => qs.quotaId).map(quotaId => props.allQuotas?.find(quota => quota.id === quotaId)?.name)
-  // Retrieve array of clusterIds from parent component, map it into array of cluster names and pass it to child component.
-  clusterNames.value = localStage.value.clusters?.map(cluster => cluster.label)
 })
 
 </script>
@@ -119,31 +105,40 @@ onBeforeMount(() => {
     <div
       class="fr-mb-2w"
     >
-      <MultiSelector
+      <ChoiceSelector
         id="quotas-select"
-        :options="allQuotas?.map(quota => ({ id: quota.id, name: `${quota.name}` }))"
-        :array="quotaNames"
-        :disabled="!allQuotas?.length"
-        no-choice-label="Aucun quota disponible"
-        choice-label="Veuillez choisir les quotas à associer"
-        label="Nom des quotas"
+        :wrapped="false"
+        label="Quotas associés"
         description="Sélectionnez les quotas autorisés à utiliser ce type d'environnement."
-        @update="updateQuotas('quotaIds', $event)"
+        :options="allQuotas.map(({ id, name }) => ({ id, name }))"
+        :options-selected="localStage.quotaStage
+          ?.map(qs => qs.quotaId)
+          .map(quotaId => props.allQuotas
+            .find(quota => quota.id === quotaId))
+          // @ts-ignore
+          .map(({ id, name }) => ({ id, name }))?? []"
+        label-key="name"
+        value-key="id"
+        :disabled="false"
+        @update="(quotas) => updateQuotas(quotas.map(quota => quota.id))"
       />
     </div>
     <div
       class="fr-mb-2w"
     >
-      <MultiSelector
+      <ChoiceSelector
         id="clusters-select"
-        :options="allClusters?.map(cluster => ({ id: cluster.id, name: `${cluster.label}` }))"
-        :array="clusterNames"
-        :disabled="!allClusters?.length"
-        no-choice-label="Aucun cluster disponible"
-        choice-label="Veuillez choisir les clusters à associer"
-        label="Nom des clusters"
+        :wrapped="false"
+        label="Clusters associés"
         description="Sélectionnez les clusters autorisés à utiliser ce type d'environnement."
-        @update="updateClusters('clusterIds', $event)"
+        :options="allClusters.map(({ id, label }) => ({ id, label }))"
+        :options-selected="localStage
+          // @ts-ignore
+          .clusters?.map(({ id, label }) => ({ id, label })) ?? []"
+        label-key="label"
+        value-key="id"
+        :disabled="false"
+        @update="(clusters) => updateClusters(clusters.map(cluster => cluster.id))"
       />
     </div>
     <div
@@ -188,6 +183,7 @@ onBeforeMount(() => {
         class="flex flex-row flex-wrap gap-4 w-full"
       >
         <DsfrTable
+          title=""
           data-testid="associatedEnvironmentsTable"
           :headers="['Organisation', 'Projet', 'Nom', 'Quota', 'Cluster', 'Souscripteur']"
           :rows="getRows(props.associatedEnvironments)"
