@@ -1,5 +1,21 @@
 # Changelog
 
+## [8.5.0](https://github.com/cloud-pi-native/console/compare/v8.4.1...v8.5.0) (2024-06-10)
+
+
+### Features
+
+* :sparkles: add text filter for admin user list ([d44f142](https://github.com/cloud-pi-native/console/commit/d44f142e9f559f7714e3eb71650c1dd3c8a325cd))
+* :sparkles: allow harbor quota limit ([9644d03](https://github.com/cloud-pi-native/console/commit/9644d037ea2642ba9e456e362c18a1eed520b66b))
+* :sparkles: argocd extra repositories ([303f4a2](https://github.com/cloud-pi-native/console/commit/303f4a2fac89ce511aeac9cf87dbf6221908e373))
+
+
+### Bug Fixes
+
+* :bug: keycloak crashed when more than 10 environments ([f3d4f5d](https://github.com/cloud-pi-native/console/commit/f3d4f5d3cc5b49946cc4e1ab969895229524f335))
+* :bug: manage if no users in project ([cd23a59](https://github.com/cloud-pi-native/console/commit/cd23a5940eddf1d8509bf7594842db5bcc5fa1ae))
+* :bug: why is it useful ? ([ee2bf5c](https://github.com/cloud-pi-native/console/commit/ee2bf5ce588a92b303b3af8db2bf24ed999822eb))
+
 ## [8.4.1](https://github.com/cloud-pi-native/console/compare/v8.4.0...v8.4.1) (2024-05-31)
 
 
