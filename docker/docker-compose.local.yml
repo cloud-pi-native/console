@@ -4,7 +4,7 @@ services:
     image: docker.io/curlimages/curl:8.8.0
     container_name: dso-console_keycloak-fetch
     volumes:
-      - keycloak-dsfr-theme:/tmp:rw
+      - dso-keycloak-dsfr-theme:/tmp:rw
     command: -LfS -o /tmp/keycloak-theme-dsfr.jar https://github.com/codegouvfr/keycloak-theme-dsfr/releases/download/v1.0.3/retrocompat-keycloak-theme.jar
     networks:
       - dso-network
@@ -23,10 +23,11 @@ services:
       - ../keycloak/realms:/opt/bitnami/keycloak/data/import
       - ../keycloak/data/dev:/opt/bitnami/keycloak/data/h2
       - type: volume
-        source: keycloak-dsfr-theme
+        source: dso-keycloak-dsfr-theme
         target: /opt/bitnami/keycloak/providers/keycloak-theme-dsfr.jar
         volume:
           subpath: keycloak-theme-dsfr.jar
+    user: root
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
@@ -89,6 +90,7 @@ networks:
     # com.docker.network.driver.mtu: 1450
 
 volumes:
+  dso-keycloak-dsfr-theme:
   dso-keycloak-data-local:
   dso-pgadmin-data-local:
   dso-postgres-data-local:
