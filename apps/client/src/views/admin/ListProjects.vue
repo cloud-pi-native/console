@@ -22,7 +22,7 @@ const projectUserStore = useProjectUserStore()
 const adminQuotaStore = useAdminQuotaStore()
 const projectEnvironmentStore = useProjectEnvironmentStore()
 
-type Component = {
+export type Component = {
   component: string
   [x: string]: any
 }
@@ -32,7 +32,7 @@ type Row = {
   rowData: Array<string | Component>
   rowAttrs: { class: string, title: string, onClick: () => void}
 }
-type EmptyRow = [[{ text: string; cellAttrs: { colspan: number } }]]
+export type EmptyRow = [[{ text: string; cellAttrs: { colspan: number } }]]
 type Rows = Row[]
 
 type EnvironnementRow = [string, string, Component, Component, Component] | [[{ text: string; cellAttrs: { colspan: number } }]]
@@ -386,7 +386,6 @@ const saveProjectServices = async (data: PluginsUpdateBody) => {
       <DsfrInputGroup
         v-model="inputSearchText"
         data-testid="tableAdministrationProjectsSearch"
-        type="inputType"
         label-visible
         placeholder="Recherche textuelle"
         label="Recherche"
