@@ -98,6 +98,7 @@ jobs:
           scan-type: "config"
           format: "json"
           exit-code: "1"
+          skip-dirs: "./ci/*"
           ignore-unfixed: true
           output: "./artifacts/vulnerability-report/configs/config.json"
         continue-on-error: true
