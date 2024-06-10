@@ -120,6 +120,8 @@ describe('ZoneForm.vue', () => {
       .clear()
       .type('Cette zone de déploiement est privée.')
     cy.getByDataTestid('updateZoneBtn').should('be.enabled')
+    cy.get('#clusters-select')
+      .click()
     cy.get('#clusters-select .fr-tag')
       .should('be.disabled')
     cy.getByDataTestid('updateZoneBtn').should('be.enabled')

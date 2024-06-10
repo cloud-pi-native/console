@@ -160,8 +160,6 @@ describe('Administration clusters', () => {
     cy.get('#projects-select .fr-tag--dismiss')
       .should('have.length', newCluster.projects.length)
 
-    cy.get('#stages-select')
-      .click()
     newCluster.stages.forEach(stage => {
       cy.getByDataTestid(`${stage}-stages-select-tag`)
         .click()
@@ -287,6 +285,8 @@ describe('Administration clusters', () => {
       .should('have.value', 'a66c4230-eba6-41f1-aae5-bb1e4f90cce2')
     cy.get('#stages-select')
       .should('exist')
+    cy.get('#stages-select')
+      .click()
     cy.get('#stages-select .fr-tag--dismiss')
       .should('have.length', newCluster.stages.length - 1)
   })
