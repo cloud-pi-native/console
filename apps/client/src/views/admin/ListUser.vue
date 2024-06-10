@@ -50,6 +50,7 @@ const filterRows = (rows: Row[]): Row[] | EmptyRow => {
   if (!returnRows.length) {
     return [[{
       text: 'Aucun utilisateur trouvé',
+      field: 'string',
       cellAttrs: {
         colspan: headers.length,
       },

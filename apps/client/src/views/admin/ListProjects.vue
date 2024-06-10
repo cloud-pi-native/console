@@ -32,7 +32,7 @@ type Row = {
   rowData: Array<string | Component>
   rowAttrs: { class: string, title: string, onClick: () => void}
 }
-export type EmptyRow = [[{ text: string; cellAttrs: { colspan: number } }]]
+export type EmptyRow = [[{ field: 'string', text: string; cellAttrs: { colspan: number } }]]
 type Rows = Row[]
 
 type EnvironnementRow = [string, string, Component, Component, Component] | [[{ text: string; cellAttrs: { colspan: number } }]]
@@ -101,6 +101,7 @@ const rowFilter = (rows: Row[]): Rows | EmptyRow => {
   })
   if (!returnRows.length) {
     return [[{
+      field: 'string',
       text: 'Aucun projet trouvé',
       cellAttrs: {
         colspan: headers.length,
