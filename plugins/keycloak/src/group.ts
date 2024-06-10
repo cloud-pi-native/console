@@ -1,12 +1,24 @@
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client'
 import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation.js'
 
+export type CustomGroup = Required<Pick<GroupRepresentation, 'id' | 'name' | 'subGroups' | 'subGroupCount'>>
 export const getGroupByName = async (kcClient: KeycloakAdminClient, name: string): Promise<GroupRepresentation | void> => {
   const groupSearch = await kcClient.groups.find({ search: name })
   return groupSearch.find(grp => grp.name === name)
 }
 
-export const getOrCreateChildGroup = async (kcClient: KeycloakAdminClient, parentId: string, name: string, subGroups: GroupRepresentation[] | undefined = []): Promise<Required<Pick<GroupRepresentation, 'id' | 'name' | 'subGroups' | 'subGroupCount'>>> => {
+export const getAllSubgroups = async (kcClient: KeycloakAdminClient, parentId: string, first: number, subgroups: GroupRepresentation[] = []): Promise<GroupRepresentation[]> => {
+  const newSubgroups = [
+    ...subgroups,
+    ...await kcClient.groups.listSubGroups({ parentId, briefRepresentation: false, max: 10, first }),
+  ]
+  if (newSubgroups.length - subgroups.length === 10) {
+    return getAllSubgroups(kcClient, parentId, first + 10, newSubgroups)
+  }
+  return newSubgroups
+}
+
+export const getOrCreateChildGroup = async (kcClient: KeycloakAdminClient, parentId: string, name: string, subGroups: GroupRepresentation[] | undefined = []): Promise<CustomGroup> => {
   if (Array.isArray(subGroups) && subGroups.length > 0) {
     const matchingGroup = subGroups.find(({ name: groupName }) => groupName === name) as Required<GroupRepresentation> | undefined
     if (matchingGroup) {
@@ -18,8 +30,8 @@ export const getOrCreateChildGroup = async (kcClient: KeycloakAdminClient, paren
       }
     }
   }
-
-  subGroups = await kcClient.groups.listSubGroups({ parentId })
+  subGroups = await getAllSubgroups(kcClient, parentId, 0)
+  // console.log(subGroups.map(({ name, path }) => ({ name, path })))
 
   const matchingGroup = subGroups?.find(({ name: groupName }) => groupName === name) as Required<GroupRepresentation> | undefined
   if (!matchingGroup) {
