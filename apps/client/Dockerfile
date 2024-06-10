@@ -25,7 +25,7 @@ RUN pnpm --filter client run build
 
 
 # Prod stage
-FROM docker.io/bitnami/nginx:1.24.0 AS prod
+FROM docker.io/bitnami/nginx:1.26.1 AS prod
 
 USER 0
 COPY --chown=1001:0 --chmod=770 --from=build /app/apps/client/dist /opt/bitnami/nginx/html/
