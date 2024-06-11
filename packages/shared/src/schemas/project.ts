@@ -1,9 +1,10 @@
 import { z } from 'zod'
-import { ClusterPrivacy, longestEnvironmentName, projectStatus } from '../utils/const.js'
+import { longestEnvironmentName, projectStatus } from '../utils/const.js'
 import { ErrorSchema } from './utils.js'
 import { RepoSchema } from './repository.js'
 import { RoleSchema, UserSchema } from './user.js'
 import { OrganizationSchema } from './organization.js'
+import { ClusterPrivacySchema } from './cluster.js'
 
 export const descriptionMaxLength = 280
 export const projectNameMaxLength = 20
@@ -41,7 +42,7 @@ export const ProjectSchema = z.object({
       .max(50)
       .optional(),
     clusterResources: z.boolean(),
-    privacy: z.nativeEnum(ClusterPrivacy),
+    privacy: ClusterPrivacySchema,
     zoneId: z.string()
       .uuid(),
     projectIds: z.string()
