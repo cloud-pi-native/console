@@ -154,9 +154,7 @@ export const createEnvironment = async (
   const schemaValidation = EnvironmentSchema
     .omit({
       id: true,
-      status: true,
       permissions: true,
-      quotaStage: true,
     })
     .safeParse({
       name,

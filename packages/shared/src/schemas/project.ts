@@ -1,9 +1,10 @@
 import { z } from 'zod'
-import { ClusterPrivacy, longestEnvironmentName, projectStatus } from '../utils/const.js'
+import { longestEnvironmentName, projectStatus } from '../utils/const.js'
 import { ErrorSchema } from './utils.js'
 import { RepoSchema } from './repository.js'
 import { RoleSchema, UserSchema } from './user.js'
 import { OrganizationSchema } from './organization.js'
+import { ClusterSchema } from './cluster.js'
 
 export const descriptionMaxLength = 280
 export const projectNameMaxLength = 20
@@ -27,33 +28,18 @@ export const ProjectSchema = z.object({
   // ProjectInfos
   organization: OrganizationSchema.optional(),
   roles: z.array(RoleSchema.and(z.object({ user: UserSchema.optional() }))).optional(),
-  clusters: z.array(z.object({
-    id: z.string()
-      .uuid(),
-    label: z.string()
-      .regex(/^[a-zA-Z0-9-]+$/)
-      .max(50),
-    infos: z.string()
-      .max(200)
-      .optional()
-      .nullable(),
-    secretName: z.string()
-      .max(50)
-      .optional(),
-    clusterResources: z.boolean(),
-    privacy: z.nativeEnum(ClusterPrivacy),
-    zoneId: z.string()
-      .uuid(),
-    projectIds: z.string()
-      .uuid()
-      .array()
-      .optional(),
-    stageIds: z.string()
-      .uuid()
-      .array()
-      .optional(),
-  })).optional(),
-  repositories: z.array(RepoSchema).optional(),
+  clusters: z.lazy(() => ClusterSchema.pick({
+    id: true,
+    label: true,
+    infos: true,
+    secretName: true,
+    clusterResources: true,
+    privacy: true,
+    zoneId: true,
+    projectIds: true,
+    stageIds: true,
+  }).array().optional()),
+  repositories: RepoSchema.array().optional(),
   environments: z.array(z.object({
     id: z.string()
       .uuid(),
