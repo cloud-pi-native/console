@@ -176,6 +176,12 @@ export const getProjectInfos = (id: Project['id']) =>
     include: baseProjectIncludes,
   })
 
+export const getProjectInfosOrThrow = (id: Project['id']) =>
+  prisma.project.findUniqueOrThrow({
+    where: { id },
+    include: baseProjectIncludes,
+  })
+
 export const getProjectInfosAndRepos = (id: Project['id']) =>
   prisma.project.findUnique({
     where: { id },

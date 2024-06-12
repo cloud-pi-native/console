@@ -90,7 +90,7 @@ describe('Project routes', () => {
       prisma.environment.findMany.mockResolvedValue([])
       prisma.repository.findMany.mockResolvedValue([])
       prisma.cluster.findMany.mockResolvedValue([])
-      prisma.project.findUnique.mockResolvedValue(project)
+      prisma.project.findUniqueOrThrow.mockResolvedValue(project)
 
       const response = await app.inject()
         .post('/api/v1/projects')
@@ -145,10 +145,11 @@ describe('Project routes', () => {
       const project = createRandomDbSetup({}).project
       project.roles = [...project.roles, getRandomRole(getRequestor().id, project.id)]
 
-      prisma.project.findUnique.mockResolvedValue(project)
+      prisma.project.findUnique.mockResolvedValueOnce(project)
       prisma.project.update.mockResolvedValue(project)
       prisma.environment.findMany.mockResolvedValue([])
       prisma.repository.findMany.mockResolvedValue([])
+      prisma.project.findUniqueOrThrow.mockResolvedValueOnce(project)
 
       const response = await app.inject()
         .put(`/api/v1/projects/${project.id}`)
