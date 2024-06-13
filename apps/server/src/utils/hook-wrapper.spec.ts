@@ -132,7 +132,7 @@ const project = {
       userId: 'd86e0034-dac7-4c36-b5e1-ba7be5dc6e62',
     },
   ],
-  clusters: [associatedCluster],
+  clusters: [associatedCluster, nonAssociatedCluster],
   environments: [
     {
       id: '5fac1f3a-7227-4c61-8355-d7e6bedd463c',

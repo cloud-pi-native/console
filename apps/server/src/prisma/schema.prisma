@@ -83,6 +83,13 @@ model Project {
   projectPlugin  ProjectPlugin[]
 }
 
+model ProjectClusterHistory {
+  projectId String @db.Uuid
+  clusterId String @db.Uuid
+
+  @@unique([projectId, clusterId])
+}
+
 model Repository {
   id               String   @id @default(uuid()) @db.Uuid
   projectId        String   @db.Uuid
