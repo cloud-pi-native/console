@@ -10,7 +10,12 @@ import {
 export const getStages = async (userId: User['id']) => {
   const user = await getUserById(userId)
   if (!user) throw new UnauthorizedError('Vous n\'êtes pas connecté')
-  return getStagesQuery()
+  const stages = await getStagesQuery()
+
+  return stages.map(stage => ({
+    ...stage,
+    clusterIds: stage.clusters.map(({ id }) => id),
+  }))
 }
 
 export const linkClusterToStages = async (clusterId: Cluster['id'], stageIds: Stage['id'][], linkToAll: boolean = false) => {

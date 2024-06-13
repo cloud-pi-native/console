@@ -28,7 +28,7 @@ export const CreateEnvironmentSchema = {
   }),
   body: EnvironmentSchema.omit({ id: true, permissions: true }),
   responses: {
-    201: EnvironmentSchema,
+    201: EnvironmentSchema.omit({ permissions: true }),
     400: ErrorSchema,
     401: ErrorSchema,
     500: ErrorSchema,
@@ -68,9 +68,9 @@ export const UpdateEnvironmentSchema = {
     environmentId: z.string()
       .uuid(),
   }),
-  body: EnvironmentSchema.partial(),
+  body: EnvironmentSchema.pick({ quotaStageId: true }),
   responses: {
-    200: EnvironmentSchema,
+    200: EnvironmentSchema.omit({ permissions: true }),
     500: ErrorSchema,
   },
 }
