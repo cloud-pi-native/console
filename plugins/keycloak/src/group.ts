@@ -1,6 +1,8 @@
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client'
 import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation.js'
 
+export const consoleGroupName = 'console'
+
 export type CustomGroup = Required<Pick<GroupRepresentation, 'id' | 'name' | 'subGroups' | 'subGroupCount'>>
 export const getGroupByName = async (kcClient: KeycloakAdminClient, name: string): Promise<GroupRepresentation | void> => {
   const groupSearch = await kcClient.groups.find({ search: name })

@@ -1,7 +1,8 @@
 import type { StepCall, Project, UserEmail, UserAdmin, EmptyPayload } from '@cpn-console/hooks'
-import { getOrCreateChildGroup, getOrCreateProjectGroup, getGroupByName, getAllSubgroups, CustomGroup } from './group.js'
+import { getOrCreateChildGroup, getOrCreateProjectGroup, getGroupByName, getAllSubgroups, CustomGroup, consoleGroupName } from './group.js'
 import { getkcClient } from './client.js'
 import { parseError } from '@cpn-console/hooks'
+import GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation.js'
 
 export const retrieveKeycloakUserByEmail: StepCall<UserEmail> = async ({ args: { email } }) => {
   const kcClient = await getkcClient()
@@ -137,14 +138,20 @@ export const upsertProject: StepCall<Project> = async ({ args: project }) => {
     }
 
     // Ensure envs subgroups exists
-    const envGroups = await getAllSubgroups(kcClient, projectGroup.id, 0)
+    const projectGroups = await getAllSubgroups(kcClient, projectGroup.id, 0)
+
+    const consoleGroup: Required<CustomGroup> = projectGroups.find(({ name }) => name === consoleGroupName) as Required<GroupRepresentation> ??
+      await getOrCreateChildGroup(kcClient, projectGroup.id, consoleGroupName) as Required<GroupRepresentation>
+
+    const envGroups = await getAllSubgroups(kcClient, consoleGroup.id, 0) as CustomGroup[]
+
     for (const environment of project.environments) {
-      let envGroup: Required<CustomGroup> | undefined = envGroups.find(group => group.name === environment.name) as Required<CustomGroup> | undefined
-      if (!envGroup) {
-        envGroup = await getOrCreateChildGroup(kcClient, projectGroup.id, environment.name)
-      }
+      const envGroup: Required<CustomGroup> = envGroups.find(group => group.name === environment.name) as Required<CustomGroup> ??
+        await getOrCreateChildGroup(kcClient, consoleGroup.id, environment.name)
+
       const roGroup = await getOrCreateChildGroup(kcClient, envGroup.id, 'RO')
       const rwGroup = await getOrCreateChildGroup(kcClient, envGroup.id, 'RW')
+
       // Ensure envs permissions membership exists
       for (const permission of environment.permissions) {
         if (permission.permissions.ro) await kcClient.users.addToGroup({ id: permission.userId, groupId: roGroup.id })
@@ -154,7 +161,7 @@ export const upsertProject: StepCall<Project> = async ({ args: project }) => {
         else await kcClient.users.delFromGroup({ id: permission.userId, groupId: rwGroup.id })
       }
     }
-    for (const subGroup of projectGroup.subGroups) {
+    for (const subGroup of envGroups) {
       if (!project.environments.some(({ name }) => name === subGroup.name)) {
         kcClient.groups.del({ id: subGroup.id })
       }
