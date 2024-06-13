@@ -17,7 +17,7 @@ type VaultRes = {
 const monitor = async (instance: Monitor): Promise<MonitorInfos> => {
   instance.lastStatus.lastUpdateTimestamp = (new Date()).getTime()
   try {
-    const res = await axios.get(`${requiredEnv('VAULT_URL')}v1/sys/health`, {
+    const res = await axios.get(`${requiredEnv('VAULT_URL')}v1/sys/health?standbyok=true`, {
       headers: {
         'X-Vault-Token': requiredEnv('VAULT_TOKEN'),
       },
