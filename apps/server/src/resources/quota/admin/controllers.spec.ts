@@ -33,25 +33,23 @@ describe('Admin quota routes', () => {
   describe('getQuotaAssociatedEnvironmentsController', () => {
     it('Should retrieve a quota\'s associated environments', async () => {
       const quota = getRandomQuota('myQuota')
-      // @ts-ignore
-      quota.quotaStage = [getRandomQuotaStage(quota.id, 'stageId')]
-      // @ts-ignore
-      const environments = [getRandomEnv('dev-0', 'projectId', quota.quotaStage[0].id, 'clusterId')]
-      // @ts-ignore
-      environments[0].project = {
-        id: 'projectId',
-        name: 'project0',
-        organization: {
-          name: 'mi',
+      const environment = {
+        name: 'env0',
+        project: {
+
+          name: 'project0',
+          organization: {
+            name: 'mi',
+          },
+          roles: [
+            { ...getRandomRole(getRequestor().id, 'projectId', 'owner'), user: getRequestor() },
+          ],
         },
-        roles: [
-          { ...getRandomRole(getRequestor().id, 'projectId', 'owner'), user: getRequestor() },
-        ],
+        quotaStage: { stage: { name: 'dev' } },
       }
 
       prisma.quota.findUnique.mockResolvedValue(quota)
-      prisma.stage.findUnique.mockResolvedValue({ id: 'stageId', name: 'dev' })
-      prisma.environment.findMany.mockResolvedValue(environments)
+      prisma.environment.findMany.mockResolvedValue([environment])
 
       const response = await app.inject()
         // @ts-ignore
@@ -60,11 +58,9 @@ describe('Admin quota routes', () => {
 
       expect(response.statusCode).toEqual(200)
       expect(response.json()).toEqual([{
-        // @ts-ignore
-        organization: environments[0]?.project?.organization?.name,
-        // @ts-ignore
-        project: environments[0]?.project?.name,
-        name: environments[0]?.name,
+        organization: environment.project.organization.name,
+        project: environment.project.name,
+        name: environment.name,
         stage: 'dev',
         owner: getRequestor().email,
       }])
@@ -140,7 +136,7 @@ describe('Admin quota routes', () => {
       prisma.quota.findUnique.mockResolvedValueOnce({ ...quota, quotaStage: dbQuotaStage })
       prisma.quotaStage.delete.mockResolvedValue(1)
       prisma.quotaStage.createMany.mockResolvedValue(1)
-      prisma.quota.findUnique.mockResolvedValueOnce({ ...quota, quotaStage: newQuotaStage })
+      prisma.quota.findUniqueOrThrow.mockResolvedValueOnce({ ...quota, quotaStage: newQuotaStage })
 
       const response = await app.inject()
         // @ts-ignore
@@ -196,25 +192,23 @@ describe('Admin quota routes', () => {
 
     it('Should not delete a quota if environments suscribed it', async () => {
       const quota = getRandomQuota('myQuota')
-      // @ts-ignore
-      quota.quotaStage = [getRandomQuotaStage(quota.id, 'stageId')]
-      // @ts-ignore
-      const environments = [getRandomEnv('dev-0', 'projectId', quota.quotaStage[0].id, 'clusterId')]
-      // @ts-ignore
-      environments[0].project = {
-        id: 'projectId',
-        name: 'project0',
-        organization: {
-          name: 'mi',
+      const environment = {
+        name: 'env0',
+        project: {
+
+          name: 'project0',
+          organization: {
+            name: 'mi',
+          },
+          roles: [
+            { ...getRandomRole(getRequestor().id, 'projectId', 'owner'), user: getRequestor() },
+          ],
         },
-        roles: [
-          { ...getRandomRole(getRequestor().id, 'projectId', 'owner'), user: getRequestor() },
-        ],
+        quotaStage: { stage: { name: 'stage-name' } },
       }
 
       prisma.quota.findUnique.mockResolvedValue(quota)
-      prisma.stage.findUnique.mockResolvedValue({ id: 'stageId', name: 'dev' })
-      prisma.environment.findMany.mockResolvedValue(environments)
+      prisma.environment.findMany.mockResolvedValue([environment])
       prisma.quota.delete.mockResolvedValueOnce(1)
 
       const response = await app.inject()

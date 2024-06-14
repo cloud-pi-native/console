@@ -80,8 +80,7 @@ export const GetQuotaEnvironmentsSchema = {
       organization: z.string(),
       project: z.string(),
       name: z.string(),
-      stage: z.string()
-        .optional(),
+      stage: z.string(),
       owner: z.string(),
     })),
     500: ErrorSchema,
@@ -94,11 +93,14 @@ export const UpdateQuotaStageSchema = {
       .uuid(),
     stageIds: z.array(z.string()
       .uuid()),
+    stageId: z.undefined().optional(),
+  }).or(z.object({
     stageId: z.string()
       .uuid(),
     quotaIds: z.array(z.string()
       .uuid()),
-  }).partial(),
+    quotaId: z.undefined().optional(),
+  })),
   responses: {
     200: z.array(QuotaStageSchema),
     500: ErrorSchema,

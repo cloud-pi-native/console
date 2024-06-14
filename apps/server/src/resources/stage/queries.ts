@@ -25,6 +25,67 @@ export const getStageById = (id: Stage['id']) =>
     },
   })
 
+export const getStageByIdOrThrow = (id: Stage['id']) =>
+  prisma.stage.findUniqueOrThrow({
+    where: { id },
+    include: {
+      clusters: true,
+      quotaStage: true,
+    },
+  })
+
+export const getStageAssociatedEnvironmentById = (id: Stage['id']) =>
+  prisma.environment.findMany({
+    where: {
+      quotaStage: {
+        stageId: id,
+      },
+    },
+    select: {
+      name: true,
+      cluster: {
+        select: {
+          label: true,
+        },
+      },
+      project: {
+        select: {
+          name: true,
+          organization: {
+            select: { name: true },
+          },
+          roles: {
+            where: {
+              role: 'owner',
+            },
+            select: {
+              user: true,
+              role: true,
+            },
+          },
+        },
+      },
+      quotaStage: {
+        select: {
+          quota: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      },
+    },
+  })
+
+export const getStageAssociatedEnvironmentLengthById = (id: Stage['id']) =>
+  prisma.environment.count({
+    where: {
+      quotaStage: {
+        stageId: id,
+      },
+    },
+  })
+
 export const getStageByName = (name: Stage['name']) =>
   prisma.stage.findUnique({
     where: { name },

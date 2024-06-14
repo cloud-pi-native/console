@@ -2,8 +2,8 @@ import { ClientInferRequest } from '@ts-rest/core'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   CreateEnvironmentSchema,
-  GetEnvironmentsSchema,
-  GetEnvironmentByIdSchema,
+  // GetEnvironmentsSchema,
+  // GetEnvironmentByIdSchema,
   UpdateEnvironmentSchema,
   DeleteEnvironmentSchema,
 } from '../schemas/index.js'
@@ -20,23 +20,23 @@ export const environmentContract = contractInstance.router({
     responses: CreateEnvironmentSchema.responses,
   },
 
-  getEnvironments: {
-    method: 'GET',
-    path: `${apiPrefix}/projects/:projectId/environments`,
-    summary: 'Get environments',
-    description: 'Retrieved all environments.',
-    pathParams: GetEnvironmentsSchema.params,
-    responses: GetEnvironmentsSchema.responses,
-  },
+  // getEnvironments: {
+  //   method: 'GET',
+  //   path: `${apiPrefix}/projects/:projectId/environments`,
+  //   summary: 'Get environments',
+  //   description: 'Retrieved all environments.',
+  //   pathParams: GetEnvironmentsSchema.params,
+  //   responses: GetEnvironmentsSchema.responses,
+  // },
 
-  getEnvironmentById: {
-    method: 'GET',
-    path: `${apiPrefix}/projects/:projectId/environments/:environmentId`,
-    summary: 'Get environment',
-    description: 'Retrieved a environment by its ID.',
-    pathParams: GetEnvironmentByIdSchema.params,
-    responses: GetEnvironmentByIdSchema.responses,
-  },
+  // getEnvironmentById: {
+  //   method: 'GET',
+  //   path: `${apiPrefix}/projects/:projectId/environments/:environmentId`,
+  //   summary: 'Get environment',
+  //   description: 'Retrieved a environment by its ID.',
+  //   pathParams: GetEnvironmentByIdSchema.params,
+  //   responses: GetEnvironmentByIdSchema.responses,
+  // },
 
   updateEnvironment: {
     method: 'PUT',

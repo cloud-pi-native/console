@@ -28,7 +28,7 @@ export const getAllProjects = () =>
       environments: {
         include: {
           quotaStage: {
-            select: {
+            include: {
               quota: {
                 select: {
                   id: true,
@@ -51,6 +51,7 @@ export const getAllProjects = () =>
               },
             },
           },
+          permissions: true,
         },
       },
       repositories: true,

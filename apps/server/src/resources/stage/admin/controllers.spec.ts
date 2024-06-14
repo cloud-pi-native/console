@@ -38,23 +38,29 @@ describe('Admin stage routes', () => {
       // @ts-ignore
       stage.quotaStage = [getRandomQuotaStage(quota.id, stage.id)]
       // @ts-ignore
-      const environments = [getRandomEnv('dev-0', 'projectId', stage.quotaStage[0].id, cluster.id)]
-      environments[0].cluster = cluster
-      // @ts-ignore
-      environments[0].project = {
-        id: 'projectId',
-        name: 'project0',
-        organization: {
-          name: 'mi',
+      const environment = {
+        name: 'env0',
+        project: {
+          id: 'projectId',
+          name: 'project0',
+          organization: {
+            name: 'mi',
+          },
+          roles: [
+            { ...getRandomRole(getRequestor().id, 'projectId', 'owner'), user: getRequestor() },
+          ],
         },
-        roles: [
-          { ...getRandomRole(getRequestor().id, 'projectId', 'owner'), user: getRequestor() },
-        ],
+        cluster,
+        quotaStage: {
+          quota: {
+            name: 'small',
+          },
+        },
       }
 
       prisma.stage.findUnique.mockResolvedValue(stage)
       prisma.quota.findUnique.mockResolvedValue(quota)
-      prisma.environment.findMany.mockResolvedValue(environments)
+      prisma.environment.findMany.mockResolvedValue([environment])
 
       const response = await app.inject({ headers: { admin: 'admin' } })
         // @ts-ignore
@@ -64,11 +70,11 @@ describe('Admin stage routes', () => {
       expect(response.statusCode).toEqual(200)
       expect(response.json()).toEqual([{
         // @ts-ignore
-        organization: environments[0]?.project?.organization?.name,
+        organization: environment.project.organization.name,
         // @ts-ignore
-        project: environments[0]?.project?.name,
-        name: environments[0]?.name,
-        quota: quota.name,
+        project: environment.project.name,
+        name: environment.name,
+        quota: environment.quotaStage.quota.name,
         cluster: cluster.label,
         owner: getRequestor().email,
       }])
@@ -133,7 +139,7 @@ describe('Admin stage routes', () => {
       prisma.stage.update.mockResolvedValue(1)
       // @ts-ignore
       stage.clusters = newClusters
-      prisma.stage.findUnique.mockResolvedValueOnce(stage)
+      prisma.stage.findUniqueOrThrow.mockResolvedValueOnce(stage)
 
       const response = await app.inject({ headers: { admin: 'admin' } })
         // @ts-ignore
@@ -160,7 +166,7 @@ describe('Admin stage routes', () => {
       prisma.stage.findUnique.mockResolvedValueOnce({ ...stage, quotaStage: dbQuotaStage })
       prisma.quotaStage.delete.mockResolvedValue(1)
       prisma.quotaStage.createMany.mockResolvedValue(1)
-      prisma.stage.findUnique.mockResolvedValueOnce({ ...stage, quotaStage: newQuotaStage })
+      prisma.stage.findUniqueOrThrow.mockResolvedValueOnce({ ...stage, quotaStage: newQuotaStage })
 
       const response = await app.inject({ headers: { admin: 'admin' } })
         // @ts-ignore
@@ -201,9 +207,7 @@ describe('Admin stage routes', () => {
       // @ts-ignore
       stage.quotaStage = [getRandomQuotaStage('quotaId', stage.id)]
 
-      prisma.stage.findUnique.mockResolvedValue(stage)
-      prisma.quota.findUnique.mockResolvedValue({ id: 'quotaId', name: 'small' })
-      prisma.environment.findMany.mockResolvedValue([])
+      prisma.environment.count.mockResolvedValue(0)
       prisma.stage.delete.mockResolvedValueOnce(1)
 
       const response = await app.inject({ headers: { admin: 'admin' } })
@@ -216,25 +220,7 @@ describe('Admin stage routes', () => {
 
     it('Should not delete a stage if environments suscribed it', async () => {
       const stage = getRandomStage('myStage')
-      // @ts-ignore
-      stage.quotaStage = [getRandomQuotaStage('quotaId', stage.id)]
-      // @ts-ignore
-      const environments = [getRandomEnv('dev-0', 'projectId', stage.quotaStage[0].id, 'clusterId')]
-      // @ts-ignore
-      environments[0].project = {
-        id: 'projectId',
-        name: 'project0',
-        organization: {
-          name: 'mi',
-        },
-        roles: [
-          { ...getRandomRole(getRequestor().id, 'projectId', 'owner'), user: getRequestor() },
-        ],
-      }
-
-      prisma.stage.findUnique.mockResolvedValue(stage)
-      prisma.quota.findUnique.mockResolvedValue({ id: 'quotaId', name: 'small' })
-      prisma.environment.findMany.mockResolvedValue(environments)
+      prisma.environment.count.mockResolvedValue(1)
       prisma.stage.delete.mockResolvedValueOnce(1)
 
       const response = await app.inject({ headers: { admin: 'admin' } })

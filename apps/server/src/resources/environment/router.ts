@@ -41,23 +41,20 @@ export const environmentRouter = () => serverInstance.router(environmentContract
       projectId,
       environmentId,
       quotaStageId: data.quotaStageId,
-      clusterId: data.clusterId,
       requestId: req.id,
     })
 
-    if (environment) {
-      addReqLogs({
-        req,
-        message: 'Environnement mis à jour avec succès',
-        infos: {
-          environmentId,
-          projectId: environment.projectId,
-        },
-      })
-      return {
-        status: 200,
-        body: environment,
-      }
+    addReqLogs({
+      req,
+      message: 'Environnement mis à jour avec succès',
+      infos: {
+        environmentId,
+        projectId: environment.projectId,
+      },
+    })
+    return {
+      status: 200,
+      body: environment,
     }
   },
 

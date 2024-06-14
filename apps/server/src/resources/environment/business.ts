@@ -211,7 +211,6 @@ type UpdateEnvironmentParam = {
   projectId: Project['id'],
   environmentId: Environment['id'],
   quotaStageId: QuotaStage['id'],
-  clusterId: Cluster['id'],
   requestId: string,
 }
 
@@ -220,7 +219,6 @@ export const updateEnvironment = async ({
   projectId,
   environmentId,
   quotaStageId,
-  clusterId,
   requestId,
 }: UpdateEnvironmentParam) => {
   try {
@@ -244,7 +242,7 @@ export const updateEnvironment = async ({
     // Modification du quota
     const env = await updateEnvironmentQuery({ id: environmentId, quotaStageId: quotaStage.id })
     if (quotaStage) {
-      const cluster = await getClusterById(clusterId)
+      const cluster = await getClusterById(env.clusterId)
       if (!cluster) throw new NotFoundError('Cluster introuvable')
 
       const { results } = await hook.project.upsert(project.id)
