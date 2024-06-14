@@ -24,6 +24,50 @@ export const getQuotaById = (id: Quota['id']) =>
     include: { quotaStage: true },
   })
 
+export const getQuotaByIdOrThrow = (id: Quota['id']) =>
+  prisma.quota.findUniqueOrThrow({
+    where: { id },
+    include: { quotaStage: true },
+  })
+
+export const getQuotaAssociatedEnvironmentById = (id: Quota['id']) =>
+  prisma.environment.findMany({
+    where: {
+      quotaStage: {
+        quotaId: id,
+      },
+    },
+    select: {
+      name: true,
+      project: {
+        select: {
+          name: true,
+          organization: {
+            select: { name: true },
+          },
+          roles: {
+            where: {
+              role: 'owner',
+            },
+            select: {
+              user: true,
+              role: true,
+            },
+          },
+        },
+      },
+      quotaStage: {
+        select: {
+          stage: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      },
+    },
+  })
+
 export const getQuotaByName = (name: Quota['name']) =>
   prisma.quota.findUnique({
     where: { name },
