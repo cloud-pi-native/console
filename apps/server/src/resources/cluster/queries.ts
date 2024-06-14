@@ -43,7 +43,7 @@ export const getClustersAssociatedWithProject = async (projectId: Project['id'])
   })
 }
 
-export const updateClusterProjectHistory = async (projectId: Project['id'], clusterIds: Cluster['id'][]) => prisma.$transaction([
+export const updateProjectClusterHistory = async (projectId: Project['id'], clusterIds: Cluster['id'][]) => prisma.$transaction([
   prisma.projectClusterHistory.deleteMany({
     where: {
       AND: {
@@ -272,4 +272,5 @@ export const deleteCluster = (id: Cluster['id']) =>
   })
 
 export const _dropClusterTable = prisma.cluster.deleteMany
+export const _dropProjectClusterHistoryTable = prisma.projectClusterHistory.deleteMany
 export const _dropKubeconfigTable = prisma.kubeconfig.deleteMany
