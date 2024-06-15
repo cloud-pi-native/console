@@ -21,6 +21,7 @@ import {
   _dropQuotaTable,
   _dropStageTable,
   _dropZoneTable,
+  _dropProjectClusterHistoryTable,
 } from './resources/queries-index.js'
 
 const DELAY_BEFORE_RETRY = isTest || isCI ? 1000 : 10000
@@ -77,6 +78,7 @@ export const dropTables = async () => {
     await _dropUsersTable()
     await _dropOrganizationsTable()
     await _dropClusterTable()
+    await _dropProjectClusterHistoryTable()
     await _dropKubeconfigTable()
     await _dropQuotaTable()
     await _dropStageTable()

@@ -2,7 +2,7 @@ import type { Cluster, Kubeconfig, Project, Zone } from '@prisma/client'
 import type { ClusterObject, Config, HookResult, KubeCluster, KubeUser, Project as ProjectPayload, RepoCreds, Repository } from '@cpn-console/hooks'
 import { hooks } from '@cpn-console/hooks'
 import { AsyncReturnType } from '@cpn-console/shared'
-import { archiveProject, getClusterByIdOrThrow, getAdminPlugin, getHookProjectInfos, getHookRepository, getProjectStore, saveProjectStore, updateProjectCreated, updateProjectFailed, getClustersAssociatedWithProject, updateClusterProjectHistory } from '@/resources/queries-index.js'
+import { archiveProject, getClusterByIdOrThrow, getAdminPlugin, getHookProjectInfos, getHookRepository, getProjectStore, saveProjectStore, updateProjectCreated, updateProjectFailed, getClustersAssociatedWithProject, updateProjectClusterHistory } from '@/resources/queries-index.js'
 import { genericProxy } from './proxy.js'
 import { ConfigRecords, dbToObj } from '@/resources/project-service/business.js'
 
@@ -77,7 +77,7 @@ const manageProjectStatus = async (
   envClusterIds: Cluster['id'][],
 ): Promise<AsyncReturnType<typeof updateProjectCreated>> => {
   if (!results.failed && results.results?.kubernetes) {
-    await updateClusterProjectHistory(projectId, envClusterIds)
+    await updateProjectClusterHistory(projectId, envClusterIds)
   }
   if (results.failed) {
     return updateProjectFailed(projectId)
