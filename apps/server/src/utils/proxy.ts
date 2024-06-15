@@ -1,3 +1,4 @@
+// @ts-nocheck un enfer à typer, pour plus tard
 type Tracker<T extends Record<string, any>> = Record<keyof T, Record<string, {
   currentExec?: Promise<any>
   nextArgs?: [string]

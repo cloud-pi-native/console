@@ -91,7 +91,7 @@ export const getEnvironmentsByQuotaStageId = (quotaStageId: Environment['quotaSt
     },
   })
 
-export const getProjectPartialEnvironments = async ({ projectId }) => {
+export const getProjectPartialEnvironments = async ({ projectId }: { projectId: Project['id'] }) => {
   const environments = await prisma.environment.findMany({
     where: {
       projectId,

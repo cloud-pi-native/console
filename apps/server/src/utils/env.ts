@@ -42,3 +42,8 @@ export const adminsUserId = process.env.ADMIN_KC_USER_ID
 export const mockPlugins = process.env.MOCK_PLUGINS === 'true'
 export const projectRootDir = process.env.PROJECTS_ROOT_DIR
 export const pluginsDir = process.env.PLUGINS_DIR ?? '/plugins'
+export const NODE_ENV = process.env.NODE_ENV === 'test'
+  ? 'test'
+  : process.env.NODE_ENV === 'development'
+    ? 'development'
+    : 'production'
