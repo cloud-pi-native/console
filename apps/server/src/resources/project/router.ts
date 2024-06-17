@@ -16,8 +16,6 @@ export const projectRouter = () => serverInstance.router(projectContract, {
   getProjects: async ({ request: req }) => {
     try {
       const requestor = req.session.user
-      // @ts-ignore
-      delete requestor.groups
 
       const projectsInfos = await getUserProjects(requestor)
 
@@ -30,7 +28,7 @@ export const projectRouter = () => serverInstance.router(projectContract, {
       })
       return {
         status: 200,
-        body: projectsInfos,
+        body: projectsInfos.map(p => ({ ...p, test: 'test' })),
       }
     } catch (error) {
       throw new Error(error.message)
@@ -61,8 +59,6 @@ export const projectRouter = () => serverInstance.router(projectContract, {
   // Créer un projet
   createProject: async ({ request: req, body: data }) => {
     const requestor = req.session.user
-    // @ts-ignore
-    delete requestor.groups
 
     const project = await createProject(data, requestor, req.id)
 

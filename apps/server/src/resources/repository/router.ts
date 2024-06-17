@@ -2,7 +2,6 @@ import { adminGroupPath, repositoryContract } from '@cpn-console/shared'
 import { serverInstance } from '@/app.js'
 import { BadRequestError } from '@/utils/errors.js'
 import { addReqLogs } from '@/utils/logger.js'
-import { filterObjectByKeys } from '@/utils/queries-tools.js'
 import {
   checkUpsertRepository,
   createRepository,
@@ -99,26 +98,18 @@ export const repositoryRouter = () => serverInstance.router(repositoryContract, 
     const projectId = params.projectId
     const repositoryId = params.repositoryId
 
-    const keysAllowedForUpdate = [
-      'externalRepoUrl',
-      'isPrivate',
-      'externalToken',
-      'externalUserName',
-    ]
-    const data = filterObjectByKeys(body, keysAllowedForUpdate)
-
     await checkUpsertRepository(userId, projectId, 'owner')
 
-    if (data.isPrivate && !data.externalToken) throw new BadRequestError('Le token est requis', undefined)
-    if (data.isPrivate && !data.externalUserName) throw new BadRequestError('Le nom d\'utilisateur est requis', undefined)
-    if (!data.isPrivate) {
-      data.externalToken = undefined
-      data.externalUserName = ''
+    if (body.isPrivate && !body.externalToken) throw new BadRequestError('Le token est requis', undefined)
+    if (body.isPrivate && !body.externalUserName) throw new BadRequestError('Le nom d\'utilisateur est requis', undefined)
+    if (!body.isPrivate) {
+      body.externalToken = undefined
+      body.externalUserName = ''
     }
 
     await getRepositoryById(userId, projectId, repositoryId)
 
-    const repository = await updateRepository(projectId, repositoryId, data, userId, req.id)
+    const repository = await updateRepository(projectId, repositoryId, body, userId, req.id)
 
     const message = 'Dépôt mis à jour avec succès'
     addReqLogs({

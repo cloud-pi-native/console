@@ -197,8 +197,10 @@ describe('Schemas utils', () => {
   it('Should validate a cluster business schema, case 1', () => {
     const toParse = {
       id: faker.string.uuid(),
+      infos: null,
       label: 'cluster',
       clusterResources: true,
+      secretName: 'a',
       privacy: ClusterPrivacy.DEDICATED,
       zoneId: faker.string.uuid(),
       stageIds: [faker.string.uuid(), faker.string.uuid()],
@@ -217,7 +219,9 @@ describe('Schemas utils', () => {
   it('Should validate a cluster business schema, case 2', () => {
     const toParse = {
       id: faker.string.uuid(),
+      infos: null,
       label: 'cluster',
+      secretName: 'a',
       clusterResources: true,
       privacy: ClusterPrivacy.PUBLIC,
       zoneId: faker.string.uuid(),

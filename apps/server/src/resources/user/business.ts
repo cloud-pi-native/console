@@ -8,9 +8,8 @@ import { hook } from '@/utils/hook-wrapper.js'
 
 export type UserDto = Pick<User, 'email' | 'firstName' | 'lastName' | 'id'>
 export const getUser = async (user: UserDto) => {
-  const schemaValidation = UserSchema.safeParse(user)
-  validateSchema(schemaValidation)
-  return getOrCreateUser(user)
+  const userToUpsert = UserSchema.omit({ groups: true }).parse(user)
+  return getOrCreateUser(userToUpsert)
 }
 
 export const checkProjectRole = async (userId: User['id'], { userList = undefined, roles = undefined, minRole }: SearchOptions) => {

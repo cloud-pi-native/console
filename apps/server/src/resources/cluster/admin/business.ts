@@ -1,12 +1,12 @@
 import type { User } from '@prisma/client'
-import { ClusterBusinessSchema, ClusterPrivacy, CreateClusterBusinessSchema, Project, UserProfile, type Cluster } from '@cpn-console/shared'
-import { addLogs, createCluster as createClusterQuery, deleteCluster as deleteClusterQuery, getClusterById, getClusterByLabel, getClusterEnvironments, getClustersWithProjectIdAndConfig, getProjectsByClusterId, getStagesByClusterId, getUserById, linkClusterToProjects, linkZoneToClusters, removeClusterFromProject, removeClusterFromStage, updateCluster as updateClusterQuery } from '@/resources/queries-index.js'
+import { ClusterPrivacy, CreateClusterBusinessSchema, Project, UserProfile, type Cluster } from '@cpn-console/shared'
+import { addLogs, createCluster as createClusterQuery, deleteCluster as deleteClusterQuery, getClusterById, getClusterByLabel, getClusterEnvironments, getClustersWithProjectIdAndConfig, getProjectsByClusterId, getStagesByClusterId, getUserById, linkClusterToProjects, linkZoneToClusters, removeClusterFromProject, removeClusterFromStage, updateCluster as updateClusterQuery, updateKubeconfig as updateKubeconfigQuery } from '@/resources/queries-index.js'
 import { linkClusterToStages } from '@/resources/stage/business.js'
 import { validateSchema } from '@/utils/business.js'
 import { BadRequestError, DsoError, NotFoundError, UnauthorizedError } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
 
-export const checkClusterProjectIds = (data: Omit<Cluster, 'id'> & { id?: Cluster['id'] }) => {
+export const checkClusterProjectIds = (data: Omit<Cluster, 'id' | 'secretName'> & { id?: Cluster['id'] }) => {
   // si le cluster est dedicated, la clé projectIds doit être renseignée
   return data.privacy === ClusterPrivacy.PUBLIC || !data.projectIds
     ? []
@@ -46,7 +46,7 @@ export const getClusterAssociatedEnvironments = async (clusterId: string) => {
   }
 }
 
-export const createCluster = async (data: Omit<Cluster, 'id'>, userId: User['id'], requestId: string) => {
+export const createCluster = async (data: Omit<Required<Cluster>, 'id' | 'secretName'>, userId: User['id'], requestId: string) => {
   try {
     const schemaValidation = CreateClusterBusinessSchema.safeParse(data)
     validateSchema(schemaValidation)
@@ -59,12 +59,10 @@ export const createCluster = async (data: Omit<Cluster, 'id'>, userId: User['id'
       stageIds,
       user,
       cluster,
-      zoneId,
       ...clusterData
     } = data
 
-    // @ts-ignore
-    const clusterCreated = await createClusterQuery(clusterData, { user, cluster }, zoneId)
+    const clusterCreated = await createClusterQuery({ ...clusterData }, { user, cluster })
 
     if (data.privacy === ClusterPrivacy.DEDICATED && projectIds.length) {
       await linkClusterToProjects(clusterCreated.id, projectIds)
@@ -91,9 +89,6 @@ export const updateCluster = async (data: Partial<Cluster>, clusterId: Cluster['
   try {
     if (data?.privacy === ClusterPrivacy.PUBLIC) delete data.projectIds
 
-    const schemaValidation = ClusterBusinessSchema.safeParse({ ...data, id: clusterId })
-    validateSchema(schemaValidation)
-
     const dbCluster = await getClusterById(clusterId)
     if (!dbCluster) throw new NotFoundError('Aucun cluster trouvé pour cet id')
     if (data?.label && data.label !== dbCluster.label) throw new BadRequestError('Le label d\'un cluster ne peut être modifié')
@@ -107,8 +102,10 @@ export const updateCluster = async (data: Partial<Cluster>, clusterId: Cluster['
       ...clusterData
     } = data
 
-    // @ts-ignore
-    const clusterUpdated = await updateClusterQuery(clusterId, clusterData, { user, cluster })
+    const clusterUpdated = await updateClusterQuery(clusterId, clusterData)
+    if (user && cluster) {
+      await updateKubeconfigQuery(dbCluster.kubeConfigId, { user, cluster })
+    }
 
     // zone
     if (zoneId) {

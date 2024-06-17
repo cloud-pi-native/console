@@ -56,15 +56,13 @@ export const _dropRolesTable = async () => {
   await prisma.role.deleteMany({})
 }
 
-export const _createRole = async (data: Parameters<typeof prisma.role.upsert>[0]['create']) => {
+export const _createRole = async (data: Parameters<typeof prisma.role.upsert>[0]['create'] & { userId: string, projectId: string }) => {
   await prisma.role.upsert({
     create: data,
     update: data,
     where: {
       userId_projectId: {
-        // @ts-ignore
         projectId: data.projectId,
-        // @ts-ignore
         userId: data.userId,
       },
     },

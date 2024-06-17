@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { longestEnvironmentName, projectStatus } from '../utils/const.js'
-import { ErrorSchema } from './utils.js'
+import { AtDatesToStringSchema, ErrorSchema } from './utils.js'
 import { RepoSchema } from './repository.js'
 import { RoleSchema, UserSchema } from './user.js'
 import { OrganizationSchema } from './organization.js'
@@ -78,7 +78,7 @@ export const ProjectSchema = z.object({
       status: z.string(),
     }).optional(),
   })).optional(),
-})
+}).merge(AtDatesToStringSchema)
 
 export type Project = Zod.infer<typeof ProjectSchema>
 
@@ -90,7 +90,7 @@ export const ProjectParams = z.object({
 export const CreateProjectSchema = {
   body: ProjectSchema.omit({ id: true, status: true, locked: true }),
   responses: {
-    201: ProjectSchema,
+    201: ProjectSchema.omit({ clusters: true }),
     400: ErrorSchema,
     403: ErrorSchema,
     500: ErrorSchema,
@@ -99,7 +99,7 @@ export const CreateProjectSchema = {
 
 export const GetProjectsSchema = {
   responses: {
-    200: z.array(ProjectSchema),
+    200: ProjectSchema.omit({ clusters: true }).array(),
     500: ErrorSchema,
   },
 }
@@ -114,9 +114,9 @@ export const GetProjectSecretsSchema = {
 
 export const UpdateProjectSchema = {
   params: ProjectParams,
-  body: ProjectSchema.partial(),
+  body: ProjectSchema.pick({ description: true }),
   responses: {
-    200: ProjectSchema,
+    200: ProjectSchema.omit({ clusters: true }),
     500: ErrorSchema,
   },
 }

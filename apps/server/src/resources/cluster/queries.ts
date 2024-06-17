@@ -1,4 +1,5 @@
 import type { Cluster, Environment, Kubeconfig, Project, Stage, User } from '@prisma/client'
+import type { Kubeconfig as KubeconfigInput } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
 
 export const getClustersAssociatedWithProject = async (projectId: Project['id']) => {
@@ -193,13 +194,11 @@ export const getStagesByClusterId = async (id: Cluster['id']) =>
   }))?.stages
 
 export const createCluster = (
-  data: Omit<Cluster, 'id' | 'updatedAt' | 'createdAt' | 'kubeConfigId' | 'secretName'>,
-  kubeconfig: Pick<Kubeconfig, 'user' | 'cluster'>,
-  zoneId: string,
+  { zoneId, ...data }: Omit<Cluster, 'id' | 'updatedAt' | 'createdAt' | 'kubeConfigId' | 'secretName'>,
+  kubeconfig: KubeconfigInput,
 ) => prisma.cluster.create({
   data: {
     ...data,
-    // @ts-ignore
     kubeconfig: { create: kubeconfig },
     zone: {
       connect: { id: zoneId },
@@ -209,16 +208,27 @@ export const createCluster = (
 
 export const updateCluster = (
   id: Cluster['id'],
-  data: Partial<Omit<Cluster, 'id' | 'updatedAt' | 'createdAt' | 'kubeConfigId'>>,
-  kubeconfig: Pick<Kubeconfig, 'user' | 'cluster'>,
+  data: Partial<Omit<Cluster, 'id' | 'updatedAt' | 'createdAt' | 'kubeConfigId' | 'zoneId'>>,
+  kubeconfig?: KubeconfigInput,
 ) => prisma.cluster.update({
   where: { id },
   data: {
     ...data,
-    kubeconfig: {
-      // @ts-ignore
-      update: kubeconfig,
+    ...kubeconfig && {
+      kubeconfig: {
+        update: kubeconfig,
+      },
     },
+  },
+})
+
+export const updateKubeconfig = (
+  id: Kubeconfig['id'],
+  data: KubeconfigInput,
+) => prisma.kubeconfig.update({
+  where: { id },
+  data: {
+    ...data,
   },
 })
 

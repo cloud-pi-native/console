@@ -82,7 +82,7 @@ export const UpdateStageClustersSchema = {
         .uuid()),
   }),
   responses: {
-    200: z.array(ClusterSchema),
+    200: z.array(ClusterSchema.omit({ projectIds: true, stageIds: true, user: true, cluster: true })),
     500: ErrorSchema,
   },
 }
