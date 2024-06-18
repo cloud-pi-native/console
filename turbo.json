@@ -12,7 +12,8 @@
     "build:clean": {
       "dependsOn": [
         "^build:clean"
-      ]
+      ],
+      "cache": false
     },
     "db:generate": {
       "outputs": []

@@ -43,8 +43,8 @@ describe('Admin project routes', () => {
         .get('/api/v1/admin/projects')
         .end()
 
-      expect(response.statusCode).toEqual(200)
       expect(response.json()).toMatchObject(projects)
+      expect(response.statusCode).toEqual(200)
     })
 
     it('Should return an error if retrieve projects failed', async () => {

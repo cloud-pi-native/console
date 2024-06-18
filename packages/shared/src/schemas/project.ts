@@ -16,8 +16,8 @@ export const ProjectSchema = z.object({
     .regex(/^[a-z0-9]+$/)
     .min(2)
     .max(projectNameMaxLength),
-  description: z.string()
-    .max(descriptionMaxLength)
+  description: z.null().transform(() => '').or(z.string()
+    .max(descriptionMaxLength))
     .optional(),
   organizationId: z.string()
     .uuid(),
@@ -25,7 +25,7 @@ export const ProjectSchema = z.object({
   locked: z.boolean(),
 
   // ProjectInfos
-  organization: OrganizationSchema.optional(),
+  organization: OrganizationSchema.merge(AtDatesToStringSchema).optional(),
   roles: z.array(RoleSchema.and(z.object({ user: UserSchema.optional() }))).optional(),
   clusters: z.lazy(() => ClusterSchema.pick({
     id: true,
@@ -80,7 +80,7 @@ export const ProjectParams = z.object({
 export const CreateProjectSchema = {
   body: ProjectSchema.pick({ name: true, organizationId: true, description: true }),
   responses: {
-    201: ProjectSchema,
+    201: ProjectSchema.omit({ environments: true, repositories: true }).required({ organization: true }),
     400: ErrorSchema,
     403: ErrorSchema,
     500: ErrorSchema,
@@ -102,14 +102,14 @@ export const GetProjectsDataSchema = {
 export const GetProjectSecretsSchema = {
   params: ProjectParams,
   responses: {
-    200: z.object({}),
+    200: z.record(z.record(z.string())),
     500: ErrorSchema,
   },
 }
 
 export const UpdateProjectSchema = {
   params: ProjectParams,
-  body: ProjectSchema.partial(),
+  body: ProjectSchema.pick({ description: true }).partial(),
   responses: {
     200: ProjectSchema,
     500: ErrorSchema,

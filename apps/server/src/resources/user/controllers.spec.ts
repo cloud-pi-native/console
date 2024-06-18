@@ -38,9 +38,8 @@ describe('User routes', () => {
         .get(`/api/v1/projects/${randomDbSetup.project.id}/users`)
         .end()
 
-      expect(response.statusCode).toEqual(200)
-      expect(response.json()).toBeDefined()
       expect(response.json()).toEqual(users)
+      expect(response.statusCode).toEqual(200)
     })
 
     it('Should not retrieve members of a project if requestor is not member himself', async () => {
@@ -61,10 +60,11 @@ describe('User routes', () => {
   // POST
   describe('addUserToProjectController', () => {
     it('Should add an user in project', async () => {
-      const projectInfos = createRandomDbSetup({}).project
+      const randomDbSetUp = createRandomDbSetup({})
+      const projectInfos = randomDbSetUp.project
       projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
       const userToAdd = getRandomUser()
-
+      projectInfos.roles = projectInfos.roles.map(role => ({ ...role, user: randomDbSetUp.users[0] }))
       prisma.project.findUnique.mockResolvedValue(projectInfos)
       prisma.user.findUnique.mockResolvedValue(userToAdd)
       prisma.log.create.mockResolvedValue(getRandomLog('Add Project Member', getRequestor().id))
@@ -72,16 +72,14 @@ describe('User routes', () => {
       prisma.environment.findMany.mockResolvedValue([])
       prisma.repository.findMany.mockResolvedValue([])
       prisma.role.findMany.mockResolvedValue(projectInfos.roles)
-      delete projectInfos.roles[0].user
 
       const response = await app.inject()
         .post(`/api/v1/projects/${projectInfos.id}/users`)
         .body(userToAdd)
         .end()
 
-      expect(response.statusCode).toEqual(201)
-      expect(response.body).toBeDefined()
       expect(response.json()).toMatchObject(projectInfos.roles)
+      expect(response.statusCode).toEqual(201)
     })
 
     it('Should not add an user if email already present', async () => {
@@ -137,9 +135,11 @@ describe('User routes', () => {
   // PUT
   describe('transferProjectOwnershipController', () => {
     it('Should transfer ownership for a project, as owner', async () => {
-      const projectInfos = createRandomDbSetup({}).project
+      const randomDbSetup = createRandomDbSetup({})
+      const projectInfos = randomDbSetup.project
       const userToTransfer = getRandomUser()
       projectInfos.roles = [getRandomRole(requestor.id, projectInfos.id, 'owner'), getRandomRole(userToTransfer.id, projectInfos.id, 'user')]
+      projectInfos.roles = projectInfos.roles.map(role => ({ ...role, user: randomDbSetup.users[0] }))
       const newProjectInfosRoles = projectInfos.roles
       newProjectInfosRoles[0].role = 'owner'
       newProjectInfosRoles[1].role = 'user'
@@ -159,26 +159,27 @@ describe('User routes', () => {
     })
 
     it('Should transfer ownership for a project, as admin', async () => {
+      const randomDbSetup = createRandomDbSetup({})
       requestor.groups = ['/admin']
-      const projectInfos = createRandomDbSetup({}).project
+      const projectInfos = randomDbSetup.project
       const userToTransfer = getRandomUser()
       projectInfos.roles = [getRandomRole(undefined, projectInfos.id, 'owner'), getRandomRole(userToTransfer.id, projectInfos.id, 'user')]
-      const newProjectInfosRoles = projectInfos.roles
+      const newProjectInfosRoles = projectInfos.roles.map(role => ({ ...role, user: randomDbSetup.users[0] }))
+
       newProjectInfosRoles[0].role = 'owner'
       newProjectInfosRoles[1].role = 'user'
 
       prisma.project.findUnique.mockResolvedValue(projectInfos)
-      prisma.role.findMany.mockResolvedValueOnce(projectInfos.roles)
       prisma.role.update.mockResolvedValue([])
-      prisma.role.findMany.mockResolvedValueOnce(newProjectInfosRoles)
+      prisma.role.findMany.mockResolvedValue(newProjectInfosRoles)
 
       const response = await app.inject()
         .put(`/api/v1/projects/${projectInfos.id}/users/${userToTransfer.id}`)
         .end()
 
-      expect(response.statusCode).toEqual(200)
-      expect(response.body).toBeDefined()
+      // TODO à rétablir je ne comprends pas pourquoi user disparait
       expect(response.json()).toEqual(newProjectInfosRoles)
+      expect(response.statusCode).toEqual(200)
     })
 
     it('Should not transfer ownership for a locked project', async () => {
@@ -231,9 +232,11 @@ describe('User routes', () => {
   // DELETE
   describe('removeUserFromProjectController', () => {
     it('Should remove an user from a project', async () => {
-      const projectInfos = createRandomDbSetup({}).project
+      const randomDbSetup = createRandomDbSetup({})
+      const projectInfos = randomDbSetup.project
       projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
       const userToRemove = projectInfos.roles[0]
+      projectInfos.roles = projectInfos.roles.map(role => ({ ...role, user: randomDbSetup.users[0] }))
 
       prisma.project.findUnique.mockResolvedValue(projectInfos)
       prisma.user.findUnique.mockResolvedValue(userToRemove.user)
@@ -244,15 +247,13 @@ describe('User routes', () => {
       prisma.environment.findMany.mockResolvedValue([])
       prisma.repository.findMany.mockResolvedValue([])
       prisma.role.findMany.mockResolvedValue(projectInfos.roles)
-      delete projectInfos.roles[0].user
 
       const response = await app.inject()
         .delete(`/api/v1/projects/${projectInfos.id}/users/${userToRemove.userId}`)
         .end()
 
-      expect(response.statusCode).toEqual(200)
-      expect(response.body).toBeDefined()
       expect(response.json()).toEqual(projectInfos.roles)
+      expect(response.statusCode).toEqual(200)
     })
 
     it('Should not remove an user if project is missing', async () => {

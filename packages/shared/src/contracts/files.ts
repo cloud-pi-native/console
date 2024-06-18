@@ -24,7 +24,7 @@ export const filesContract = contractInstance.router({
       workingDir: z.string().optional(),
     }),
     responses: {
-      201: z.object({}),
+      201: z.record(z.string()),
       500: ErrorSchema,
     },
   },
