@@ -251,7 +251,7 @@ onBeforeMount(async () => {
         />
         <DsfrAlert
           class="<md:mt-2"
-          description="L'archivage du projet est irréversible."
+          description="La suppression du projet est irréversible."
           type="warning"
           small
         />
@@ -260,10 +260,16 @@ onBeforeMount(async () => {
         v-if="isArchivingProject"
         class="fr-mt-4w"
       >
+        <DsfrAlert
+          class="<md:mt-2 fr-mb-2w"
+          description="La suppression du projet entraîne la suppression de toutes les ressources applicatives associées."
+          type="info"
+          small
+        />
         <DsfrInput
           v-model="projectToArchive"
           data-testid="archiveProjectInput"
-          :label="`Veuillez taper '${project.name}' pour confirmer l'archivage du projet`"
+          :label="`Veuillez taper '${project.name}' pour confirmer la suppression du projet`"
           label-visible
           :placeholder="project.name"
           class="fr-mb-2w"

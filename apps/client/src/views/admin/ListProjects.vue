@@ -437,7 +437,7 @@ const saveProjectServices = async (data: PluginsUpdateBody) => {
         <DsfrInput
           v-model="projectToArchive"
           data-testid="archiveProjectInput"
-          :label="`Veuillez taper '${selectedProject?.name}' pour confirmer l'archivage du projet`"
+          :label="`Veuillez taper '${selectedProject?.name}' pour confirmer la suppression du projet`"
           label-visible
           :placeholder="selectedProject.name"
           class="fr-mb-2w"
