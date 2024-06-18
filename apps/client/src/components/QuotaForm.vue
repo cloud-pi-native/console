@@ -1,9 +1,10 @@
 <script lang="ts" setup>
 import { computed, onBeforeMount, ref } from 'vue'
-import { type Quota, QuotaSchema, SharedZodError, type Stage, type QuotaAssociatedEnvironments } from '@cpn-console/shared'
-import { copyContent } from '@/utils/func.js'
-import type { UpdateQuotaType } from '@/views/admin/ListQuotas.vue'
+import { type Quota, QuotaSchema, SharedZodError, type Stage, type QuotaAssociatedEnvironments, UpdateQuotaBody } from '@cpn-console/shared'
+import { toCodeComponent } from '@/utils/func.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+
+type UpdateQuotaType = UpdateQuotaBody & Pick<Quota, 'id'>
 
 const props = withDefaults(defineProps<{
   isNewQuota: boolean,
@@ -12,7 +13,7 @@ const props = withDefaults(defineProps<{
   associatedEnvironments: QuotaAssociatedEnvironments,
 }>(), {
   isNewQuota: false,
-  quota: () => ({ isPrivate: false }),
+  quota: () => ({ isPrivate: false, stageIds: [] as string[], name: '' }),
   allStages: () => [],
   associatedEnvironments: () => [],
 })
@@ -21,6 +22,7 @@ const localQuota = ref(props.quota)
 const isDeletingQuota = ref(false)
 const quotaToDelete = ref<string>('')
 
+const localCpu = computed<string>(() => String(localQuota.value.cpu))
 const errorSchema = computed<SharedZodError | undefined>(() => {
   let schemaValidation
   if (localQuota.value.id) {
@@ -49,10 +51,11 @@ const addQuota = () => {
 }
 
 const updateQuota = () => {
-  const updatedQuota = {
-    quotaId: localQuota.value.id,
+  const updatedQuota: UpdateQuotaType = {
+    id: localQuota.value.id,
     isPrivate: localQuota.value.isPrivate,
     stageIds: localQuota.value.stageIds,
+
   }
   if (isQuotaValid.value) emit('update', updatedQuota)
 }
@@ -63,17 +66,15 @@ const cancel = () => {
 
 const getRows = (associatedEnvironments: QuotaAssociatedEnvironments) => {
   return associatedEnvironments
-    .map(associatedEnvironment => Object
-      .values(associatedEnvironment)
-      .map(value => ({
-        component: 'code',
-        text: value,
-        title: 'Copier la valeur',
-        class: 'fr-text-default--info text-xs cursor-pointer',
-        // @ts-ignore
-        onClick: () => copyContent(value),
-      }),
-      ),
+    .map(associatedEnvironment => {
+      return [
+        toCodeComponent(associatedEnvironment.organization),
+        toCodeComponent(associatedEnvironment.project),
+        toCodeComponent(associatedEnvironment.name),
+        toCodeComponent(associatedEnvironment.stage),
+        toCodeComponent(associatedEnvironment.owner),
+      ]
+    },
     )
 }
 
@@ -107,7 +108,7 @@ onBeforeMount(() => {
       placeholder="4Gi"
     />
     <DsfrInputGroup
-      v-model="localQuota.cpu"
+      v-model="localCpu"
       label="CPU alloué(s)"
       label-visible
       type="number"
@@ -137,11 +138,9 @@ onBeforeMount(() => {
         label="Nom des types d'environnement"
         description="Sélectionnez les types d'environnement autorisés à utiliser ce cluster."
         :options="allStages.map(({ id, name}) => ({ id, name}))"
-        :options-selected="props.quota.quotaStage
-          ?.map(({ stageId }) => allStages
-            .find(({ id }) => id === stageId))
-          // @ts-ignore
-          .map(({ id, name }) => ({ id, name })) ?? []"
+        :options-selected="allStages
+          .filter(({ id }) => localQuota.stageIds.includes(id))
+          .map(({ id, name }) => ({ id, name }))"
         label-key="name"
         value-key="id"
         :disabled="false"
@@ -190,6 +189,7 @@ onBeforeMount(() => {
         class="flex flex-row flex-wrap gap-4 w-full"
       >
         <DsfrTable
+          title=""
           data-testid="associatedEnvironmentsTable"
           :headers="['Organisation', 'Projet', 'Nom', 'Type d\'environnement', 'Souscripteur']"
           :rows="getRows(props.associatedEnvironments)"

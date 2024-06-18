@@ -1,11 +1,22 @@
 import { defineStore } from 'pinia'
-import type { CreateOrganizationBody, UpdateOrganizationBody, UpdateOrganizationParams } from '@cpn-console/shared'
+import {
+  type Organization,
+  type CreateOrganizationBody,
+  type UpdateOrganizationBody,
+  type UpdateOrganizationParams,
+  resourceListToDict,
+} from '@cpn-console/shared'
 import { apiClient, extractData } from '@/api/xhr-client.js'
 
 export const useAdminOrganizationStore = defineStore('admin-organization', () => {
-  const getAllOrganizations = () =>
-    apiClient.OrganizationsAdmin.getAllOrganizations()
+  const organizations = ref<Organization[]>([])
+  const organizationsById = computed(() => resourceListToDict(organizations.value))
+
+  const getAllOrganizations = async () => {
+    organizations.value = await apiClient.OrganizationsAdmin.getAllOrganizations()
       .then(response => extractData(response, 200))
+    return organizations.value
+  }
 
   const createOrganization = (organization: CreateOrganizationBody) =>
     apiClient.OrganizationsAdmin.createOrganization({ body: { ...organization, source: 'dso-console' } })
@@ -23,6 +34,8 @@ export const useAdminOrganizationStore = defineStore('admin-organization', () =>
       .then(response => extractData(response, 200))
 
   return {
+    organizations,
+    organizationsById,
     getAllOrganizations,
     createOrganization,
     updateOrganization,

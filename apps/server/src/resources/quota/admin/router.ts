@@ -1,10 +1,9 @@
 import { addReqLogs } from '@/utils/logger.js'
-import { createQuota, deleteQuota, getQuotaAssociatedEnvironments, updateQuotaStage, updateQuotaPrivacy } from './business.js'
+import { createQuota, deleteQuota, getQuotaAssociatedEnvironments, updateQuota } from './business.js'
 import { quotaAdminContract } from '@cpn-console/shared'
 import { serverInstance } from '@/app.js'
 
 export const quotaAdminRouter = () => serverInstance.router(quotaAdminContract, {
-
   // Récupérer les environnements associés au quota
   getQuotaEnvironments: async ({ request: req, params }) => {
     const quotaId = params.quotaId
@@ -43,30 +42,11 @@ export const quotaAdminRouter = () => serverInstance.router(quotaAdminContract, 
     }
   },
 
-  // Modifier une association quota / stage
-  updateQuotaStage: async ({ request: req, body: data }) => {
-    const quotaStages = await updateQuotaStage(data)
-
-    addReqLogs({
-      req,
-      message: 'Associations quota / types d\'environnement mises à jour avec succès',
-      infos: {
-        quotaStages: quotaStages?.length + '',
-      },
-    })
-
-    return {
-      status: 200,
-      body: quotaStages,
-    }
-  },
-
   // Modifier la confidentialité d'un quota
-  patchQuotaPrivacy: async ({ request: req, params, body: data }) => {
+  updateQuota: async ({ request: req, params, body: data }) => {
     const quotaId = params.quotaId
-    const isPrivate = data.isPrivate
 
-    const quota = await updateQuotaPrivacy(quotaId, isPrivate)
+    const quota = await updateQuota(quotaId, data)
 
     addReqLogs({
       req,

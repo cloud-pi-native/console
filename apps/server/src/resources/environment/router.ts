@@ -34,7 +34,8 @@ export const environmentRouter = () => serverInstance.router(environmentContract
       projectId,
       name: data.name,
       clusterId: data.clusterId,
-      quotaStageId: data.quotaStageId,
+      quotaId: data.quotaId,
+      stageId: data.stageId,
       requestId: req.id,
     })
 
@@ -55,13 +56,12 @@ export const environmentRouter = () => serverInstance.router(environmentContract
 
   updateEnvironment: async ({ request: req, body: data, params }) => {
     const user = req.session.user
-    const { projectId, environmentId } = params
+    const { environmentId } = params
 
     const environment = await updateEnvironment({
       user,
-      projectId,
       environmentId,
-      quotaStageId: data.quotaStageId,
+      quotaId: data.quotaId,
       requestId: req.id,
     })
 

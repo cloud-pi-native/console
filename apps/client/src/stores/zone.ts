@@ -1,10 +1,14 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { Zone } from '@cpn-console/shared'
+import {
+  type Zone,
+  resourceListToDict,
+} from '@cpn-console/shared'
 import { apiClient, extractData } from '@/api/xhr-client.js'
 
 export const useZoneStore = defineStore('zone', () => {
   const zones = ref<Zone[]>([])
+  const zonesById = computed(() => resourceListToDict(zones.value))
 
   const getAllZones = async () => {
     zones.value = await apiClient.Zones.getZones()
@@ -14,6 +18,7 @@ export const useZoneStore = defineStore('zone', () => {
 
   return {
     zones,
+    zonesById,
     getAllZones,
   }
 })

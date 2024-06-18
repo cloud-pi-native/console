@@ -18,8 +18,8 @@ export const useProjectEnvironmentStore = defineStore('project-environment', () 
     await projectStore.getUserProjects()
   }
 
-  const updateEnvironment = async (environment: UpdateEnvironmentBody & { id: Environment['id'] }, projectId: Project['id']) => {
-    await apiClient.Environments.updateEnvironment({ body: environment, params: { projectId, environmentId: environment.id } })
+  const updateEnvironment = async (id: Environment['id'], projectId: Project['id'], environment: UpdateEnvironmentBody) => {
+    await apiClient.Environments.updateEnvironment({ body: environment, params: { projectId, environmentId: id } })
       .then(response => extractData(response, 200))
     await projectStore.getUserProjects()
   }
