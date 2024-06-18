@@ -42,7 +42,11 @@ const app = fastify(fastifyConf)
 
     const statusCode = isDsoError ? error.statusCode : 500
     const message = isDsoError ? error.description : error.message
-    reply.status(statusCode).send({ status: statusCode, error: message })
+    if (isTest) {
+      reply.status(statusCode).send({ status: statusCode, error: message, stack: error.stack })
+    } else {
+      reply.status(statusCode).send({ status: statusCode, error: message })
+    }
     addReqLogs({
       req,
       message,
