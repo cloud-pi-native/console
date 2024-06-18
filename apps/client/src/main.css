@@ -1,27 +1,26 @@
 @font-face {
   font-family: Marianne;
-  src: url('@/assets/fonts/Marianne-Regular.otf');
+  src: url("@/assets/fonts/Marianne-Regular.otf");
 }
 
 @font-face {
   font-family: Marianne;
-  src: url('@/assets/fonts/Marianne-RegularItalic.otf');
+  src: url("@/assets/fonts/Marianne-RegularItalic.otf");
   font-style: italic;
 }
 
 @font-face {
   font-family: Marianne;
-  src: url('@/assets/fonts/Marianne-Bold.otf');
+  src: url("@/assets/fonts/Marianne-Bold.otf");
   font-weight: 700;
 }
 
 @font-face {
   font-family: Marianne;
-  src: url('@/assets/fonts/Marianne-BoldItalic.otf');
+  src: url("@/assets/fonts/Marianne-BoldItalic.otf");
   font-weight: 700;
   font-style: italic;
 }
-
 
 html,
 body,
@@ -48,12 +47,12 @@ body,
   margin-bottom: 1rem;
 }
 
-.dso-footer.fr-footer {
-  box-shadow: inset 0 2px 0 0 var(--border-plain-blue-france);
+.dso-footer .fr-footer__bottom-copy {
+  display: none;
 }
 
-.dso-footer .fr-footer__bottom {
-  display: none;
+.dso-footer.fr-footer {
+  box-shadow: inset 0 2px 0 0 var(--border-plain-blue-france);
 }
 
 .dso-footer .fr-footer__content-desc {
@@ -136,10 +135,6 @@ div.fr-tile__img {
 
 .dso-landing-footer.fr-footer {
   box-shadow: inset 0 2px 0 0 var(--border-plain-blue-france);
-}
-
-.dso-landing-footer .fr-footer__bottom {
-  display: none;
 }
 
 .fr-icon-clipboard-line.icon {
