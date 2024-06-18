@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { resourceListToDict, type ResourceById, type Zone } from '@cpn-console/shared'
+import type { ResourceById, Zone } from '@cpn-console/shared'
 import api from '@/api/index.js'
 
 export const useZoneStore = defineStore('zone', () => {
@@ -10,7 +10,10 @@ export const useZoneStore = defineStore('zone', () => {
   const getAllZones = async () => {
     const res = await api.getZones()
     zones.value = res
-    zonesById.value = resourceListToDict(zones.value)
+    zonesById.value = zones.value.reduce((acc, curr) => {
+      acc[curr.id] = curr
+      return acc
+    }, {} as ResourceById<Zone>)
   }
 
   return {

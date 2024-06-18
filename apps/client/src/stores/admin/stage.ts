@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import api from '@/api/index.js'
-import { resourceListToDict, type CreateStageBody, type ResourceById, type Stage, type UpdateStageBody } from '@cpn-console/shared'
+import type { CreateStageBody, ResourceById, Stage, UpdateStageBody } from '@cpn-console/shared'
 
 export const useAdminStageStore = defineStore('admin-stage', () => {
   const stages = ref<Stage[]>([])
@@ -10,7 +10,10 @@ export const useAdminStageStore = defineStore('admin-stage', () => {
   const getAllStages = async () => {
     const res = await api.getStages()
     stages.value = res
-    stagesById = resourceListToDict(stages.value)
+    stagesById = stages.value.reduce((acc, curr) => {
+      acc[curr.id] = curr
+      return acc
+    }, {} as ResourceById<Stage>)
   }
 
   const getStageAssociatedEnvironments = async (stageId: string) => {

@@ -43,6 +43,8 @@ const environmentToDelete = ref('')
 const isDeletingEnvironment = ref(false)
 const inputKey = ref(getRandomId('input'))
 const zoneId = ref<string>()
+const stageId = ref<string>('')
+const quotaId = ref<string>('')
 const stageOptions = ref<OptionType[]>([])
 
 const zoneOptions = ref<OptionType[]>([])
@@ -81,12 +83,18 @@ const setEnvironmentOptions = () => {
     text: zone.label,
     value: zone.id,
   }))
+}
+
+const setClusterOptions = () => {
   clusterOptions.value = props.allClusters
-    .filter(cluster => props.projectClustersIds.includes(cluster.id) && cluster.stageIds.includes(localEnvironment.value.stageId ?? '') && cluster.zoneId === zoneId.value)
+    .filter(cluster => props.projectClustersIds.includes(cluster.id))
     .map(cluster => ({
       text: cluster.label,
       value: cluster.id,
     }))
+}
+
+const setQuotaOptions = () => {
   quotaOptions.value = adminQuotaStore.quotas
     .filter(quota => quota.stageIds.includes(localEnvironment.value.stageId ?? ''))
     .map(quota => ({
@@ -126,6 +134,14 @@ onBeforeMount(async () => {
     zoneStore.getAllZones(),
   ])
   setEnvironmentOptions()
+
+  // Receive quotaStage from parent component, retrieve stageId and quotaId
+  if (localEnvironment.value.stageId) {
+    stageId.value = localEnvironment.value.stageId
+  }
+  if (localEnvironment.value.quotaId) {
+    quotaId.value = localEnvironment.value.quotaId
+  }
 })
 
 onMounted(() => {
@@ -133,11 +149,12 @@ onMounted(() => {
 })
 
 watch(zoneId, () => {
-  setEnvironmentOptions()
+  setClusterOptions()
 })
 
-watch(localEnvironment.value, () => {
-  setEnvironmentOptions()
+watch(stageId, () => {
+  setQuotaOptions()
+  setClusterOptions()
 })
 
 </script>
@@ -152,6 +169,7 @@ watch(localEnvironment.value, () => {
     >
       Ajouter un environnement au projet
     </h1>
+    {{ adminQuotaStore.quotas.map(q =>q.stageIds.length) }}
     <DsfrFieldset
       :legend="`Informations de l\'environnement ${localEnvironment.name ?? ''}`"
       :hint="props.isEditable ? 'Les champs munis d\'une astérisque (*) sont requis' : undefined"
@@ -202,7 +220,7 @@ watch(localEnvironment.value, () => {
           class="fr-my-2w"
         >
           <DsfrAlert
-            v-if="localEnvironment.quotaId && adminQuotaStore.quotasById[localEnvironment.quotaId]?.isPrivate"
+            v-if="adminQuotaStore.quotasById[quotaId]?.isPrivate"
             description="Vous disposez d'un quota privé pour cet environnement. Veuillez contacter un administrateur si vous souhaitez le modifier."
             small
           />
@@ -214,7 +232,7 @@ watch(localEnvironment.value, () => {
             description="Si votre projet nécessite d'avantage de ressources que celles proposées ci-dessus, contactez les administrateurs."
             required
             :options="quotaOptions"
-            :disabled="!!(localEnvironment.quotaId && adminQuotaStore.quotasById[localEnvironment.quotaId]?.isPrivate)"
+            :disabled="adminQuotaStore.quotasById[quotaId]?.isPrivate"
           />
         </div>
         <DsfrAlert
