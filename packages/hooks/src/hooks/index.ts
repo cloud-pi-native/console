@@ -24,7 +24,6 @@ export type EnvironmentObject = {
   createdAt: Date
   updatedAt: Date
   clusterId: string
-  quotaStageId: string
 }
 
 export interface KubeUser {

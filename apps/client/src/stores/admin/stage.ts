@@ -1,13 +1,16 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import api from '@/api/index.js'
-import type { CreateStageBody, Stage, UpdateQuotaStageBody, UpdateStageClustersBody } from '@cpn-console/shared'
+import { resourceListToDict, type CreateStageBody, type ResourceById, type Stage, type UpdateStageBody } from '@cpn-console/shared'
 
 export const useAdminStageStore = defineStore('admin-stage', () => {
-  const stages = ref<Stage[]>()
+  const stages = ref<Stage[]>([])
+  let stagesById: ResourceById<Stage> = {}
 
   const getAllStages = async () => {
-    stages.value = await api.getStages()
+    const res = await api.getStages()
+    stages.value = res
+    stagesById = resourceListToDict(stages.value)
   }
 
   const getStageAssociatedEnvironments = async (stageId: string) => {
@@ -15,33 +18,19 @@ export const useAdminStageStore = defineStore('admin-stage', () => {
     return res
   }
 
-  const addStage = async (stage: CreateStageBody) => {
-    const res = await api.addStage(stage)
-    return res
-  }
+  const addStage = async (stage: CreateStageBody) => api.addStage(stage)
 
-  const updateQuotaStage = async (stageId: string, quotaIds: UpdateQuotaStageBody['quotaIds']) => {
-    const res = await api.updateQuotaStage({ stageId, quotaIds })
-    return res
-  }
+  const updateStage = async (stageId: string, data: UpdateStageBody) => api.updateStage(stageId, data)
 
-  const updateStageClusters = async (stageId: string, clusterIds: UpdateStageClustersBody['clusterIds']) => {
-    const res = await api.updateStageClusters(stageId, { clusterIds })
-    return res
-  }
-
-  const deleteStage = async (stageId: string) => {
-    const res = await api.deleteStage(stageId)
-    return res
-  }
+  const deleteStage = async (stageId: string) => api.deleteStage(stageId)
 
   return {
     stages,
+    stagesById,
     getAllStages,
     getStageAssociatedEnvironments,
     addStage,
-    updateQuotaStage,
-    updateStageClusters,
+    updateStage,
     deleteStage,
   }
 })

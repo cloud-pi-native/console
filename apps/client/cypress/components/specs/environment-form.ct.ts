@@ -9,7 +9,8 @@ import '@/main.css'
 
 import EnvironmentForm from '@/components/EnvironmentForm.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
+import { useAdminQuotaStore } from '@/stores/admin/quota.js'
+import { useAdminStageStore } from '@/stores/admin/stage.js'
 import { useZoneStore } from '@/stores/zone.js'
 
 process.env.NODE_ENV = 'test'
@@ -42,7 +43,8 @@ describe('EnvironmentForm.vue', () => {
     }).as('getStages')
 
     useSnackbarStore()
-    useProjectEnvironmentStore()
+    useAdminQuotaStore()
+    useAdminStageStore()
     const zoneStore = useZoneStore()
     zoneStore.zones = zones
 

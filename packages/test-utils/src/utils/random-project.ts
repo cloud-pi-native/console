@@ -10,7 +10,6 @@ import {
   getRandomCluster,
   getRandomStage,
   getRandomQuota,
-  getRandomQuotaStage,
   getRandomZone,
 } from './random-utils.js'
 import { repeatFn } from './func-utils.js'
@@ -54,12 +53,12 @@ export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = basicStage
 
   // Associate stages and quotas
   stages.forEach(stage => {
-    // @ts-ignore
-    stage.quotaStage = quotas.map(quota => {
-      const quotaStage = getRandomQuotaStage(quota.id, stage.id, 'active')
-      quota.quotaStage = quotaStage
-      return quotaStage
-    })
+    stage.quotas = quotas
+  })
+
+  // Associate stages and quotas
+  quotas.forEach(quota => {
+    quota.stages = stages
   })
 
   // Create repositories

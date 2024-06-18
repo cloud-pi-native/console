@@ -1,4 +1,4 @@
-import type { CreateQuotaBody, UpdateQuotaStageBody, PatchQuotaBody } from '@cpn-console/shared'
+import type { CreateQuotaBody, UpdateQuotaBody, Quota } from '@cpn-console/shared'
 import { apiClient, extractData } from './xhr-client.js'
 
 export const getQuotas = () =>
@@ -14,12 +14,8 @@ export const addQuota = (data: CreateQuotaBody) =>
   apiClient.QuotasAdmin.createQuota({ body: data })
     .then(response => extractData(response, 201))
 
-export const updateQuotaPrivacy = (quotaId: string, data: PatchQuotaBody) =>
-  apiClient.QuotasAdmin.patchQuotaPrivacy({ body: data, params: { quotaId } })
-    .then(response => extractData(response, 200))
-
-export const updateQuotaStage = (data: UpdateQuotaStageBody) =>
-  apiClient.QuotasAdmin.updateQuotaStage({ body: data })
+export const updateQuota = (quotaId: Quota['id'], data: UpdateQuotaBody) =>
+  apiClient.QuotasAdmin.updateQuota({ body: data, params: { quotaId } })
     .then(response => extractData(response, 200))
 
 export const deleteQuota = (quotaId: string) =>

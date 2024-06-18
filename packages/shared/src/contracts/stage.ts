@@ -4,7 +4,7 @@ import {
   CreateStageSchema,
   GetStageEnvironmentsSchema,
   GetStagesSchema,
-  UpdateStageClustersSchema,
+  UpdateStageSchema,
   DeleteStageSchema,
 } from '../schemas/index.js'
 
@@ -38,14 +38,14 @@ export const stageAdminContract = contractInstance.router({
     responses: GetStageEnvironmentsSchema.responses,
   },
 
-  updateStageClusters: {
+  updateStage: {
     method: 'PATCH',
-    path: `${apiPrefix}/admin/stages/:stageId/clusters`,
+    path: `${apiPrefix}/admin/stages/:stageId`,
     summary: 'Update stage',
     description: 'Update a stage by its ID.',
-    pathParams: UpdateStageClustersSchema.params,
-    body: UpdateStageClustersSchema.body,
-    responses: UpdateStageClustersSchema.responses,
+    pathParams: UpdateStageSchema.params,
+    body: UpdateStageSchema.body,
+    responses: UpdateStageSchema.responses,
   },
 
   deleteStage: {
@@ -61,6 +61,6 @@ export const stageAdminContract = contractInstance.router({
 
 export type CreateStageBody = ClientInferRequest<typeof stageAdminContract.createStage>['body']
 
-export type UpdateStageClustersBody = ClientInferRequest<typeof stageAdminContract.updateStageClusters>['body']
+export type UpdateStageBody = ClientInferRequest<typeof stageAdminContract.updateStage>['body']
 
 export type StageAssociatedEnvironments = ClientInferResponseBody<typeof stageAdminContract.getStageEnvironments, 200>

@@ -35,7 +35,6 @@ export const handleProjectLocking = (projectId: string, lock: PatchProjectBody['
   apiClient.ProjectsAdmin.patchProject({ body: { lock }, params: { projectId } })
     .then(response => extractData(response, 200))
 
-export const generateProjectsData = async () => {
-  const response = await apiClient.ProjectsAdmin.getProjectsData()
-  return response.body
-}
+export const generateProjectsData = async () =>
+  apiClient.ProjectsAdmin.getProjectsData()
+    .then(response => extractData(response, 200))

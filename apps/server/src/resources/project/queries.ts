@@ -27,30 +27,8 @@ export const getAllProjects = () =>
       organization: true,
       environments: {
         include: {
-          quotaStage: {
-            include: {
-              quota: {
-                select: {
-                  id: true,
-                  name: true,
-                },
-              },
-              stage: {
-                select: {
-                  id: true,
-                  name: true,
-                  quotaStage: {
-                    select: {
-                      id: true,
-                      quotaId: true,
-                      stageId: true,
-                      status: true,
-                    },
-                  },
-                },
-              },
-            },
-          },
+          quota: true,
+          stage: true,
           permissions: true,
         },
       },
@@ -91,7 +69,8 @@ export const getProjectInfosById = (projectId: Project['id']) =>
           createdAt: true,
           updatedAt: true,
           clusterId: true,
-          quotaStageId: true,
+          stageId: true,
+          quotaId: true,
         },
       },
       clusters: {
@@ -139,7 +118,6 @@ export const getUserProjects = (user: User) =>
       environments: {
         include: {
           permissions: true,
-          quotaStage: true,
         },
       },
       repositories: true,
@@ -165,10 +143,10 @@ export type DsoProject = AsyncReturnType<typeof getUserProjects>[0] & { services
 export const getProjectById = (id: Project['id']) =>
   prisma.project.findUnique({ where: { id } })
 
-const baseProjectIncludes = {
+const baseProjectIncludes: Parameters<typeof prisma.project.findUnique>[0]['include'] = {
   organization: true,
   roles: true,
-  environments: { include: { permissions: true } },
+  environments: { include: { permissions: true, stage: true, quota: true } },
   clusters: true,
 }
 export const getProjectInfos = (id: Project['id']) =>
@@ -180,7 +158,13 @@ export const getProjectInfos = (id: Project['id']) =>
 export const getProjectInfosOrThrow = (id: Project['id']) =>
   prisma.project.findUniqueOrThrow({
     where: { id },
-    include: baseProjectIncludes,
+    include: {
+      organization: true,
+      roles: true,
+      environments: { include: { permissions: true, stage: true, quota: true } },
+      clusters: true,
+      repositories: true,
+    },
   })
 
 export const getProjectInfosAndRepos = (id: Project['id']) =>
@@ -226,16 +210,8 @@ export const getAllProjectsDataForExport = () =>
       environments: {
         select: {
           name: true,
-          quotaStage: {
-            select: {
-              quota: {
-                select: { name: true },
-              },
-              stage: {
-                select: { name: true },
-              },
-            },
-          },
+          stage: true,
+          quota: true,
           cluster: {
             select: { label: true },
           },
@@ -301,12 +277,8 @@ export const getHookProjectInfos = (id: Project['id']) =>
       environments: {
         include: {
           permissions: true,
-          quotaStage: {
-            include: {
-              quota: true,
-              stage: true,
-            },
-          },
+          quota: true,
+          stage: true,
           cluster: { select: clusterInfosSelect },
         },
       },

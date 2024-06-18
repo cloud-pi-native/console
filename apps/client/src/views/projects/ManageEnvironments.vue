@@ -35,7 +35,6 @@ const projectClustersIds = computed(() => ([
 
 const setEnvironmentsTiles = (project: Project) => {
   if (!project.environments?.length) return
-  // @ts-ignore
   environments.value = sortArrByObjKeyAsc(project.environments, 'name')
     ?.map(environment => ({
       id: environment.id,
@@ -75,7 +74,7 @@ const addEnvironment = async (environment: Environment) => {
 const putEnvironment = async (environment: Environment) => {
   snackbarStore.isWaitingForResponse = true
   if (project.value && !project.value.locked) {
-    await projectEnvironmentStore.updateEnvironment(environment, project.value.id)
+    await projectEnvironmentStore.updateEnvironment(environment.id, project.value.id, environment)
   }
   cancel()
   snackbarStore.isWaitingForResponse = false

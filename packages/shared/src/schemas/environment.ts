@@ -12,8 +12,8 @@ export const EnvironmentSchema = z.object({
     .max(longestEnvironmentName),
   projectId: z.string()
     .uuid(),
-  quotaStageId: z.string()
-    .uuid(),
+  stageId: z.string().uuid(),
+  quotaId: z.string().uuid(),
   clusterId: z.string()
     .uuid(),
   permissions: z.lazy(() => PermissionSchema.array()),
@@ -55,7 +55,9 @@ export const GetEnvironmentByIdSchema = {
   }),
   responses: {
     200: EnvironmentSchema,
+    400: ErrorSchema,
     401: ErrorSchema,
+    403: ErrorSchema,
     404: ErrorSchema,
     500: ErrorSchema,
   },
@@ -68,9 +70,13 @@ export const UpdateEnvironmentSchema = {
     environmentId: z.string()
       .uuid(),
   }),
-  body: EnvironmentSchema.pick({ quotaStageId: true }),
+  body: EnvironmentSchema.pick({ quotaId: true }),
   responses: {
     200: EnvironmentSchema.omit({ permissions: true }),
+    400: ErrorSchema,
+    401: ErrorSchema,
+    403: ErrorSchema,
+    404: ErrorSchema,
     500: ErrorSchema,
   },
 }
@@ -84,6 +90,10 @@ export const DeleteEnvironmentSchema = {
   }),
   responses: {
     204: null,
+    400: ErrorSchema,
+    401: ErrorSchema,
+    403: ErrorSchema,
+    404: ErrorSchema,
     500: ErrorSchema,
   },
 }

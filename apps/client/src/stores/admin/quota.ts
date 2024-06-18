@@ -1,10 +1,14 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import api from '@/api/index.js'
-import type { CreateQuotaBody, Quota, UpdateQuotaStageBody, PatchQuotaBody } from '@cpn-console/shared'
+import type { CreateQuotaBody, Quota, ResourceById, UpdateQuotaBody } from '@cpn-console/shared'
 
 export const useAdminQuotaStore = defineStore('admin-quota', () => {
-  const quotas = ref<Quota[]>()
+  const quotas = ref<Quota[]>([])
+  const quotasById = computed<ResourceById<Quota>>(() => quotas.value.reduce((acc, curr) => {
+    acc[curr.id] = curr
+    return acc
+  }, {} as ResourceById<Quota>))
 
   const getAllQuotas = async () => {
     quotas.value = await api.getQuotas()
@@ -19,14 +23,8 @@ export const useAdminQuotaStore = defineStore('admin-quota', () => {
     const res = await api.addQuota(quota)
     return res
   }
-
-  const updateQuotaPrivacy = async (quotaId: string, isPrivate: PatchQuotaBody['isPrivate']) => {
-    const res = await api.updateQuotaPrivacy(quotaId, { isPrivate })
-    return res
-  }
-
-  const updateQuotaStage = async (quotaId: string, stageIds: UpdateQuotaStageBody['stageIds']) => {
-    const res = await api.updateQuotaStage({ quotaId, stageIds })
+  const updateQuota = async (quotaId: string, data: UpdateQuotaBody) => {
+    const res = await api.updateQuota(quotaId, data)
     return res
   }
 
@@ -37,11 +35,11 @@ export const useAdminQuotaStore = defineStore('admin-quota', () => {
 
   return {
     quotas,
+    quotasById,
     getAllQuotas,
     getQuotaAssociatedEnvironments,
     addQuota,
-    updateQuotaPrivacy,
-    updateQuotaStage,
+    updateQuota,
     deleteQuota,
   }
 })

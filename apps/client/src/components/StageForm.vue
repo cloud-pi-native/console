@@ -1,19 +1,19 @@
 <script lang="ts" setup>
 import { computed, onBeforeMount, ref } from 'vue'
-import { type Cluster, type Quota, type Stage, type StageAssociatedEnvironments, SharedZodError, StageSchema } from '@cpn-console/shared'
+import { type Cluster, type Quota, type Stage, type StageAssociatedEnvironments, SharedZodError, StageSchema, CreateStageBody } from '@cpn-console/shared'
 import { copyContent } from '@/utils/func.js'
 import type { UpdateStageType } from '@/views/admin/ListStages.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = withDefaults(defineProps<{
   isNewStage: boolean,
-  stage: Partial<Stage>,
+  stage: Stage,
   allQuotas: Quota[],
   allClusters: Cluster[],
   associatedEnvironments: StageAssociatedEnvironments,
 }>(), {
   isNewStage: false,
-  stage: () => ({}),
+  stage: () => ({ name: '', clusterIds: [], quotaIds: [], id: '' }),
   allQuotas: () => [],
   allClusters: () => [],
   associatedEnvironments: () => [],
@@ -43,10 +43,10 @@ const updateQuotas = (value: string[]) => {
 }
 
 const emit = defineEmits<{
-  add: [value: typeof localStage.value]
+  add: [value: CreateStageBody]
   update: [value: UpdateStageType]
   cancel: []
-  delete: [value: typeof localStage.value.id]
+  delete: [value: Stage['id']]
 }>()
 
 const addStage = () => {
@@ -54,12 +54,7 @@ const addStage = () => {
 }
 
 const updateStage = () => {
-  const updatedStage = {
-    stageId: localStage.value.id,
-    quotaIds: localStage.value.quotaIds,
-    clusterIds: localStage.value.clusterIds,
-  }
-  if (isStageValid.value) emit('update', updatedStage)
+  if (isStageValid.value) emit('update', localStage.value)
 }
 
 const cancel = () => {
@@ -111,12 +106,7 @@ onBeforeMount(() => {
         label="Quotas associés"
         description="Sélectionnez les quotas autorisés à utiliser ce type d'environnement."
         :options="allQuotas.map(({ id, name }) => ({ id, name }))"
-        :options-selected="localStage.quotaStage
-          ?.map(qs => qs.quotaId)
-          .map(quotaId => props.allQuotas
-            .find(quota => quota.id === quotaId))
-          // @ts-ignore
-          .map(({ id, name }) => ({ id, name }))?? []"
+        :options-selected="allQuotas.filter(({ id}) => localStage.quotaIds?.includes(id)).map(({ id, name }) => ({ id, name }))"
         label-key="name"
         value-key="id"
         :disabled="false"
@@ -132,9 +122,7 @@ onBeforeMount(() => {
         label="Clusters associés"
         description="Sélectionnez les clusters autorisés à utiliser ce type d'environnement."
         :options="allClusters.map(({ id, label }) => ({ id, label }))"
-        :options-selected="localStage
-          // @ts-ignore
-          .clusters?.map(({ id, label }) => ({ id, label })) ?? []"
+        :options-selected="allClusters.filter(({ id }) => localStage.clusterIds.includes(id)).map(({ id, label }) => ({ id, label }))"
         label-key="label"
         value-key="id"
         :disabled="false"

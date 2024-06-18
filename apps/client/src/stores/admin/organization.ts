@@ -1,11 +1,16 @@
 import { defineStore } from 'pinia'
 import api from '@/api/index.js'
-import type { CreateOrganizationBody, UpdateOrganizationBody, UpdateOrganizationParams } from '@cpn-console/shared'
+import { Organization, ResourceById, type CreateOrganizationBody, type UpdateOrganizationBody, type UpdateOrganizationParams } from '@cpn-console/shared'
 
 export const useAdminOrganizationStore = defineStore('admin-organization', () => {
+  const organizations = ref<Organization[]>([])
+  const organizationsById = computed<ResourceById<Organization>>(() => organizations.value.reduce((acc, curr) => {
+    acc[curr.id] = curr
+    return acc
+  }, {} as ResourceById<Organization>))
+
   const getAllOrganizations = async () => {
-    const res = await api.getAllOrganizations()
-    return res ?? []
+    organizations.value = await api.getAllOrganizations()
   }
 
   const createOrganization = async (organization: CreateOrganizationBody) => {
@@ -21,6 +26,8 @@ export const useAdminOrganizationStore = defineStore('admin-organization', () =>
   }
 
   return {
+    organizations,
+    organizationsById,
     getAllOrganizations,
     createOrganization,
     updateOrganization,

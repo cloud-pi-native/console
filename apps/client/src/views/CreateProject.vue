@@ -23,7 +23,7 @@ const remainingCharacters = computed(() => {
   return projectNameMaxLength - project.value?.name.length
 })
 const errorSchema = computed(() => {
-  const schemaValidation = ProjectSchema.omit({ id: true, status: true, locked: true }).safeParse(project.value)
+  const schemaValidation = ProjectSchema.pick({ name: true, organizationId: true, description: true }).safeParse(project.value)
   return schemaValidation.success ? undefined : schemaValidation.error
 })
 
@@ -31,6 +31,7 @@ const errorSchema = computed(() => {
 const project: Ref<Project> = ref({
   organizationId: undefined,
   name: '',
+  description: '',
 })
 
 const orgOptions: Ref<Array<any>> = ref([])
@@ -96,6 +97,8 @@ onMounted(async () => {
         label="Nom de l'organisation"
         label-visible
         :options="orgOptions"
+        :default-unselected-text="orgOptions.length ? 'Choisissez une organisation' : 'Aucune organisation disponible, veuillez contacter un administrateur'"
+        :disabled="!organizationStore.organizations.length"
         @update:model-value="updateProject('organizationId', $event)"
       />
       <div

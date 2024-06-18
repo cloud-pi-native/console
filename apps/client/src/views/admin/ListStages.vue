@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useAdminStageStore } from '@/stores/admin/stage.js'
 import { sortArrByObjKeyAsc } from '@cpn-console/shared'
-import type { CreateStageBody, UpdateQuotaStageBody, Stage, UpdateStageClustersBody, StageAssociatedEnvironments } from '@cpn-console/shared'
+import type { CreateStageBody, Stage, StageAssociatedEnvironments, UpdateStageBody } from '@cpn-console/shared'
 import { useAdminQuotaStore } from '@/stores/admin/quota'
 import { useAdminClusterStore } from '@/stores/admin/cluster'
 import { useSnackbarStore } from '@/stores/snackbar.js'
@@ -12,7 +12,7 @@ const adminQuotaStore = useAdminQuotaStore()
 const adminClusterStore = useAdminClusterStore()
 const snackbarStore = useSnackbarStore()
 
-const selectedStage = ref<Stage | Record<string, never>>({})
+const selectedStage = ref<Stage>()
 const stageList = ref<any[]>([])
 const associatedEnvironments = ref<StageAssociatedEnvironments>([])
 const isNewStageForm = ref(false)
@@ -32,7 +32,7 @@ const setStageTiles = (stages: Stage[]) => {
 
 const setSelectedStage = async (stage: Stage) => {
   if (selectedStage.value?.name === stage.name) {
-    selectedStage.value = {}
+    selectedStage.value = undefined
     return
   }
   selectedStage.value = stage
@@ -43,12 +43,12 @@ const setSelectedStage = async (stage: Stage) => {
 
 const showNewStageForm = () => {
   isNewStageForm.value = !isNewStageForm.value
-  selectedStage.value = {}
+  selectedStage.value = undefined
 }
 
 const cancel = () => {
   isNewStageForm.value = false
-  selectedStage.value = {}
+  selectedStage.value = undefined
 }
 
 const addStage = async (stage: CreateStageBody) => {
@@ -60,19 +60,14 @@ const addStage = async (stage: CreateStageBody) => {
 }
 
 export type UpdateStageType = {
-  stageId: UpdateQuotaStageBody['stageId'],
-  quotaIds?: UpdateQuotaStageBody['quotaIds']
-  clusterIds?: UpdateStageClustersBody['clusterIds']
-}
+  id: Stage['id'],
+} & UpdateStageBody
 
-const updateStage = async ({ stageId, quotaIds, clusterIds }: UpdateStageType) => {
+const updateStage = async ({ id, ...stage }: UpdateStageType) => {
+  console.log(stage)
+
   snackbarStore.isWaitingForResponse = true
-  if (quotaIds && stageId) {
-    await adminStageStore.updateQuotaStage(stageId, quotaIds)
-  }
-  if (clusterIds && stageId) {
-    await adminStageStore.updateStageClusters(stageId, clusterIds)
-  }
+  await adminStageStore.updateStage(id, stage)
   await adminStageStore.getAllStages()
   cancel()
   snackbarStore.isWaitingForResponse = false
@@ -110,7 +105,7 @@ watch(stages, () => {
     class="flex <md:flex-col-reverse items-center justify-between pb-5"
   >
     <DsfrButton
-      v-if="!Object.keys(selectedStage).length && !isNewStageForm"
+      v-if="selectedStage && !isNewStageForm"
       label="Ajouter un nouveau type d'environnement"
       data-testid="addStageLink"
       tertiary
@@ -158,8 +153,9 @@ watch(stages, () => {
       class="fr-mt-2v fr-mb-4w w-full"
     >
       <div
-        v-show="!Object.keys(selectedStage).length"
+        v-show="!selectedStage"
       >
+        {{ stage.id }}
         <DsfrTile
           :title="stage.title"
           :data-testid="`stageTile-${stage.title}`"
@@ -169,7 +165,7 @@ watch(stages, () => {
         />
       </div>
       <StageForm
-        v-if="Object.keys(selectedStage).length && selectedStage.id === stage.id"
+        v-if="selectedStage"
         :all-quotas="allQuotas"
         :all-clusters="allClusters"
         :stage="selectedStage"

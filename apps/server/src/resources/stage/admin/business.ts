@@ -1,6 +1,6 @@
 import type { Stage } from '@prisma/client'
-import { type CreateStageBody, type UpdateStageClustersBody, StageSchema } from '@cpn-console/shared'
-import { BadRequestError, DsoError } from '@/utils/errors.js'
+import { type CreateStageBody, UpdateStageBody } from '@cpn-console/shared'
+import { BadRequestError, DsoError, NotFoundError } from '@/utils/errors.js'
 import {
   getStageByName,
   createStage as createStageQuery,
@@ -10,10 +10,10 @@ import {
   removeClusterFromStage,
   linkStageToQuotas,
   getStageAssociatedEnvironmentById,
-  getStageByIdOrThrow,
   getStageAssociatedEnvironmentLengthById,
+  updateStageName,
+  unlinkStageFromQuotas,
 } from '@/resources/queries-index.js'
-import { validateSchema } from '@/utils/business.js'
 
 export const getStageAssociatedEnvironments = async (stageId: Stage['id']) => {
   try {
@@ -24,7 +24,7 @@ export const getStageAssociatedEnvironments = async (stageId: Stage['id']) => {
       organization: env.project.organization.name,
       project: env.project.name,
       name: env.name,
-      quota: env.quotaStage.quota.name,
+      quota: env.quota.name,
       cluster: env.cluster.label,
       owner: env.project.roles?.[0].user.email,
     }))
@@ -33,25 +33,27 @@ export const getStageAssociatedEnvironments = async (stageId: Stage['id']) => {
   }
 }
 
-export const createStage = async (data: CreateStageBody) => {
+export const createStage = async ({ clusterIds = [], name, quotaIds = [] }: CreateStageBody) => {
   try {
-    const schemaValidation = StageSchema.omit({ id: true }).safeParse(data)
-    validateSchema(schemaValidation)
-
-    const isNameTaken = await getStageByName(data.name)
+    const isNameTaken = await getStageByName(name)
     if (isNameTaken) throw new BadRequestError('Un type d\'environnement portant ce nom existe déjà')
 
-    const stage = await createStageQuery(data)
+    const stage = await createStageQuery({ name })
 
-    if (data.quotaIds) {
-      await linkStageToQuotas(stage.id, data.quotaIds)
+    if (quotaIds.length) {
+      await linkStageToQuotas(stage.id, quotaIds)
     }
 
-    if (data.clusterIds) {
-      await linkStageToClusters(stage.id, data.clusterIds)
+    if (clusterIds.length) {
+      await linkStageToClusters(stage.id, clusterIds)
     }
 
-    return stage
+    return {
+      id: stage.id,
+      name: stage.name,
+      clusterIds,
+      quotaIds,
+    }
   } catch (error) {
     if (error instanceof DsoError) {
       throw error
@@ -60,20 +62,48 @@ export const createStage = async (data: CreateStageBody) => {
   }
 }
 
-export const updateStageClusters = async (stageId: Stage['id'], clusterIds: UpdateStageClustersBody['clusterIds']) => {
+export const updateStage = async (stageId: Stage['id'], { clusterIds, name, quotaIds }: UpdateStageBody) => {
   try {
+    const dbStage = await getStageById(stageId)
+    if (!dbStage) throw new NotFoundError('Stage introuvable')
+    if (name === dbStage.name) {
+      await updateStageName(stageId, name)
+    }
     // Remove clusters
-    const dbClusters = (await getStageById(stageId))?.clusters
-    if (dbClusters?.length) {
-      const clustersToRemove = dbClusters.filter(dbCluster => !clusterIds.includes(dbCluster.id))
-      for (const clusterToRemove of clustersToRemove) {
-        await removeClusterFromStage(clusterToRemove.id, stageId)
+    if (clusterIds) {
+      const dbClusters = dbStage.clusters
+      if (dbClusters?.length) {
+        const clustersToRemove = dbClusters.filter(dbCluster => !clusterIds.includes(dbCluster.id))
+        for (const clusterToRemove of clustersToRemove) {
+          await removeClusterFromStage(clusterToRemove.id, stageId)
+        }
+      }
+      // Add clusters
+      await linkStageToClusters(stageId, clusterIds)
+    }
+
+    if (quotaIds) {
+      const dbQuotaStages = dbStage.quotas
+      const quotaIdsToRemove = dbQuotaStages
+        .filter(({ id }) => !quotaIds.includes(id))
+        .map(({ id }) => id)
+
+      if (quotaIdsToRemove.length) {
+        await unlinkStageFromQuotas(stageId, quotaIdsToRemove)
+      }
+      const quotaIdsToAdd = quotaIds
+        .filter(quotaIdToAdd => !dbQuotaStages.find(({ id }) => id === quotaIdToAdd))
+      if (quotaIdsToAdd.length) {
+        await linkStageToQuotas(stageId, quotaIdsToAdd)
       }
     }
-    // Add clusters
-    await linkStageToClusters(stageId, clusterIds)
 
-    return (await getStageByIdOrThrow(stageId)).clusters
+    return {
+      id: stageId,
+      name: name ?? dbStage.name,
+      clusterIds: clusterIds ?? dbStage.clusters.map(({ id }) => id),
+      quotaIds: quotaIds ?? dbStage.quotas.map(({ id }) => id),
+    }
   } catch (error) {
     throw new Error(error?.message)
   }

@@ -1,17 +1,21 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { Organization } from '@cpn-console/shared'
+import { resourceListToDict, type Organization, type ResourceById } from '@cpn-console/shared'
 import api from '@/api/index.js'
 
 export const useOrganizationStore = defineStore('organization', () => {
-  const organizations = ref<Organization[] | undefined>(undefined)
+  const organizations = ref<Organization[]>([])
+  let organizationsById: ResourceById<Organization> = {}
 
   const setOrganizations = async () => {
-    organizations.value = await api.getActiveOrganizations()
+    const res = await api.getActiveOrganizations()
+    organizations.value = res
+    organizationsById = resourceListToDict(organizations.value)
   }
 
   return {
     organizations,
+    organizationsById,
     setOrganizations,
   }
 })

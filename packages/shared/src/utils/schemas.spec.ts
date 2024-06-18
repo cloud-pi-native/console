@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ClusterBusinessSchema, ClusterPrivacy, EnvironmentSchema, OrganizationSchema, PermissionSchema, ProjectSchema, QuotaSchema, RepoBusinessSchema, RepoSchema, QuotaStageSchema, StageSchema, UserSchema, descriptionMaxLength, instanciateSchema, parseZodError } from '../index.js'
+import { ClusterBusinessSchema, ClusterPrivacy, EnvironmentSchema, OrganizationSchema, PermissionSchema, ProjectSchema, QuotaSchema, RepoBusinessSchema, RepoSchema, StageSchema, UserSchema, descriptionMaxLength, instanciateSchema, parseZodError } from '../index.js'
 import { faker } from '@faker-js/faker'
 import { ZodError } from 'zod'
 
@@ -130,17 +130,6 @@ describe('Schemas utils', () => {
     }
 
     expect(StageSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
-  })
-
-  it('Should validate a correct quotaStage schema', () => {
-    const toParse = {
-      id: faker.string.uuid(),
-      quotaId: faker.string.uuid(),
-      stageId: faker.string.uuid(),
-      status: faker.lorem.word(),
-    }
-
-    expect(QuotaStageSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
   })
 
   it('Should not validate an organization schema with wrong external data', () => {

@@ -13,8 +13,8 @@ export const useProjectEnvironmentStore = defineStore('project-environment', () 
     await projectStore.getUserProjects()
   }
 
-  const updateEnvironment = async (environment: UpdateEnvironmentBody & { id: Environment['id'] }, projectId: Project['id']) => {
-    await api.updateEnvironment(projectId, environment?.id, environment)
+  const updateEnvironment = async (id: Environment['id'], projectId: Project['id'], environment: UpdateEnvironmentBody) => {
+    await api.updateEnvironment(projectId, id, environment)
     await projectStore.getUserProjects()
   }
 
@@ -24,17 +24,9 @@ export const useProjectEnvironmentStore = defineStore('project-environment', () 
     await projectStore.getUserProjects()
   }
 
-  const getQuotas = async () => {
-    const res = await api.getQuotas()
-    if (!res) return []
-    return res
-  }
+  const getQuotas = async () => api.getQuotas()
 
-  const getStages = async () => {
-    const res = await api.getStages()
-    if (!res) return []
-    return res
-  }
+  const getStages = async () => api.getStages()
 
   return {
     addEnvironmentToProject,

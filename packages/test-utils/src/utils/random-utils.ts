@@ -109,6 +109,7 @@ export const getRandomStage = (name: string = faker.lorem.word({ length: { min: 
   return {
     id: faker.string.uuid(),
     name,
+    quotas: [] as string[],
   }
 }
 
@@ -119,24 +120,23 @@ export const getRandomQuota = (name: string = faker.lorem.word()) => {
     cpu: faker.number.int({ min: 1, max: 18 }),
     memory: faker.number.int({ max: 18 }) + 'Gi',
     isPrivate: faker.datatype.boolean(),
+    stages: [] as string[],
   }
 }
 
-export const getRandomQuotaStage = (quotaId: string, stageId: string, status: 'active' | 'pendingDelete' = faker.helpers.arrayElement(['active', 'pendingDelete'])) => {
-  return {
-    id: faker.string.uuid(),
-    quotaId,
-    stageId,
-    status,
-  }
-}
-
-export const getRandomEnv = (name = faker.lorem.slug(1), projectId = faker.string.uuid(), quotaStageId = faker.string.uuid(), clusterId = faker.string.uuid()) => {
+export const getRandomEnv = (
+  name = faker.lorem.slug(1),
+  projectId = faker.string.uuid(),
+  stageId = faker.string.uuid(),
+  quotaId = faker.string.uuid(),
+  clusterId = faker.string.uuid(),
+) => {
   return {
     id: faker.string.uuid(),
     name,
     projectId,
-    quotaStageId,
+    quotaId,
+    stageId,
     clusterId,
   } as Environment
 }

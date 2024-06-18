@@ -1,4 +1,5 @@
 import { longestEnvironmentName } from './const.js'
+import { ResourceById } from './types.js'
 
 /**
  * @param {*} value Value wanted to be return as is
@@ -86,3 +87,10 @@ export const requiredEnv = (envName: string): string => {
 
   throw Error(`env: ${envName} is not defined !`)
 }
+
+export const resourceListToDict = <T extends {id: string}>(resList: Array<T>): ResourceById<T> => resList.reduce((acc, curr) => {
+  return {
+    ...acc,
+    [curr.id]: curr,
+  }
+}, {} as ResourceById<T>)

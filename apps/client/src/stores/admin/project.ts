@@ -14,7 +14,6 @@ export const useAdminProjectStore = defineStore('admin-project', () => {
 
   const getAllActiveProjects = async () => {
     const allProjects = await getAllProjects()
-    // @ts-ignore
     return allProjects.filter(project => project.status !== 'archived')
   }
 
