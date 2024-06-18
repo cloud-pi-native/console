@@ -232,7 +232,6 @@ describe('Manage project environments', () => {
     cy.wait('@putEnvironment').its('response.statusCode').should('match', /^20\d$/)
     cy.wait('@getProjects').its('response.statusCode').should('match', /^20\d$/)
 
-    cy.reload()
     cy.getByDataTestid(`environmentTile-${project1FirstEnvironment?.name}`).click()
     cy.wait('@getStages')
     cy.getByDataTestid('environmentNameInput')
