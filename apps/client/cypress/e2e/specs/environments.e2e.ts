@@ -201,6 +201,7 @@ describe('Manage project environments', () => {
   it('Should update an environment quota', () => {
     cy.intercept('GET', 'api/v1/clusters').as('getClusters')
     cy.intercept('GET', '/api/v1/stages').as('getStages')
+    cy.intercept('GET', '/api/v1/projects/*/environments').as('getEnvironments')
     cy.intercept('PUT', '/api/v1/projects/*/environments/*').as('putEnvironment')
     cy.intercept('GET', '/api/v1/projects').as('getProjects')
     cy.intercept('GET', '/api/v1/admin/projects').as('getAdminProjects')
@@ -214,6 +215,7 @@ describe('Manage project environments', () => {
     cy.wait('@getClusters').its('response.statusCode').should('match', /^20\d$/)
 
     cy.getByDataTestid(`environmentTile-${project1FirstEnvironment?.name}`).click()
+    cy.wait('@getEnvironments')
     cy.wait('@getStages')
     cy.getByDataTestid('environmentNameInput')
       .should('have.value', project1FirstEnvironment?.name)
@@ -235,6 +237,7 @@ describe('Manage project environments', () => {
 
     cy.reload()
     cy.getByDataTestid(`environmentTile-${project1FirstEnvironment?.name}`).click()
+    cy.wait('@getEnvironments')
     cy.wait('@getStages')
     cy.getByDataTestid('environmentNameInput')
       .should('have.value', project1FirstEnvironment?.name)

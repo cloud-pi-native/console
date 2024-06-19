@@ -11,6 +11,7 @@ import { useUsersStore } from '@/stores/users.js'
 import { useProjectUserStore } from '@/stores/project-user.js'
 import { useAdminQuotaStore } from '@/stores/admin/quota.js'
 import { useProjectServiceStore } from '@/stores/project-services.js'
+import { useProjectRepositoryStore } from '@/stores/project-repository.js'
 
 const adminProjectStore = useAdminProjectStore()
 const adminOrganizationStore = useAdminOrganizationStore()
@@ -225,7 +226,10 @@ const getAllProjects = async () => {
 
 const selectProject = async (projectId: string) => {
   selectedProject.value = allProjects.value?.find(project => project.id === projectId)
+  if (!selectedProject.value) return
+  selectedProject.value.repositories = await useProjectRepositoryStore().getProjectRepositories(projectId)
   getRepositoriesRows()
+  selectedProject.value.environments = await useProjectEnvironmentStore().getProjectEnvironments(projectId)
   await getEnvironmentsRows()
   reloadProjectServices()
 }
@@ -235,7 +239,7 @@ const updateEnvironmentQuota = async ({ environmentId, quotaId }: {environmentId
   snackbarStore.isWaitingForResponse = true
   const environment = selectedProject.value.environments.find(environment => environment.id === environmentId)
   if (!environment) return
-  environment.quotaStageId = environment.quotaStage.stage?.quotaStage?.find(quotaStage => quotaStage.quotaId === quotaId)?.id ?? ''
+  environment.quotaStageId = environment.quotaStage?.stage?.quotaStage?.find(quotaStage => quotaStage.quotaId === quotaId)?.id ?? ''
   await projectEnvironmentStore.updateEnvironment(environment, selectedProject.value.id)
   await getAllProjects()
   snackbarStore.isWaitingForResponse = false

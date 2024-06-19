@@ -3,6 +3,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { sortArrByObjKeyAsc, type CreateClusterBody, type UpdateClusterBody, type Cluster, type Stage, type Project, type ClusterAssociatedEnvironments } from '@cpn-console/shared'
 import { useAdminClusterStore } from '@/stores/admin/cluster.js'
 import { useAdminProjectStore } from '@/stores/admin/project.js'
+import { useAdminOrganizationStore } from '@/stores/admin/organization.js'
 import { useZoneStore } from '@/stores/zone.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 
@@ -14,6 +15,7 @@ type ClusterList = {
 
 const adminClusterStore = useAdminClusterStore()
 const adminProjectStore = useAdminProjectStore()
+const adminOrganizationStore = useAdminOrganizationStore()
 const zoneStore = useZoneStore()
 const projectEnvironmentStore = useProjectEnvironmentStore()
 
@@ -93,6 +95,8 @@ onMounted(async () => {
   setClusterTiles(clusters.value)
   await zoneStore.getAllZones()
   allProjects.value = await adminProjectStore.getAllActiveProjects()
+  const organizations = await adminOrganizationStore.getAllOrganizations()
+  allProjects.value.forEach(project => { project.organization = organizations.find(org => org.id === project.organizationId) })
   allStages.value = await projectEnvironmentStore.getStages()
 })
 

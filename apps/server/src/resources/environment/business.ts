@@ -14,6 +14,7 @@ import {
   getUserById,
   initializeEnvironment,
   updateEnvironment as updateEnvironmentQuery,
+  getEnvironmentsByProjectId,
 } from '@/resources/queries-index.js'
 import type { UserDetails } from '@/types/index.js'
 import { validateSchema } from '@/utils/business.js'
@@ -24,6 +25,7 @@ import {
 } from '@/utils/controller.js'
 import { BadRequestError, DsoError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
+import { getProjectAndCheckRole } from '../repository/business.js'
 
 // Fetch infos
 export const getEnvironmentInfosAndClusters = async (environmentId: string) => {
@@ -38,6 +40,14 @@ export const getEnvironmentInfos = async (environmentId: string) => {
   const env = await getEnvironmentInfosQuery(environmentId)
   if (!env) throw new NotFoundError('Environnement introuvable', undefined)
   return env
+}
+
+export const getProjectEnvironments = async (
+  userId: User['id'],
+  isAdmin: boolean,
+  projectId: Project['id'],
+) => {
+  return isAdmin ? await getEnvironmentsByProjectId(projectId) : (await getProjectAndCheckRole(userId, projectId)).environments
 }
 
 type GetInitializeEnvironmentInfosParam = {
