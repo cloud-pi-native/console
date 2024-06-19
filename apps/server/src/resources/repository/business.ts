@@ -1,6 +1,6 @@
 import type { Project, Repository, User } from '@prisma/client'
 import { type CreateRepositoryBody, type ProjectRoles, type UpdateRepositoryBody } from '@cpn-console/shared'
-import { addLogs, deleteRepository as deleteRepositoryQuery, getProjectInfos, getProjectInfosAndRepos, getUserById, initializeRepository, updateRepository as updateRepositoryQuery } from '@/resources/queries-index.js'
+import { addLogs, deleteRepository as deleteRepositoryQuery, getProjectInfos, getProjectInfosAndRepos, getUserById, initializeRepository, updateRepository as updateRepositoryQuery, getProjectRepositories as getProjectRepositoriesQuery } from '@/resources/queries-index.js'
 import { checkInsufficientRoleInProject, checkRoleAndLocked } from '@/utils/controller.js'
 import { BadRequestError, DsoError, ForbiddenError, NotFoundError, UnauthorizedError, UnprocessableContentError } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
@@ -18,11 +18,10 @@ export const getRepositoryById = async (
 
 export const getProjectRepositories = async (
   userId: User['id'],
+  isAdmin: boolean,
   projectId: Project['id'],
 ) => {
-  const project = await getProjectAndcheckRole(userId, projectId)
-  const repositories = project.repositories
-  if (!repositories.length) throw new NotFoundError('Aucun dépôt associé à ce projet')
+  const repositories = isAdmin ? await getProjectRepositoriesQuery(projectId) : (await getProjectAndcheckRole(userId, projectId)).repositories
   return repositories
 }
 

@@ -41,11 +41,12 @@ export const getEnvironmentInfos = (id: Environment['id']) =>
     },
   })
 
-export const getEnvironmentsByProjectId = (projectId: Project['id']) =>
-  prisma.environment.findMany({
-    where: { projectId },
-    include: { project: true },
-  })
+export const getEnvironmentsByProjectId = async (projectId: Project['id']) => prisma.environment.findMany({
+  where: { projectId },
+  include: {
+    permissions: true,
+  },
+})
 
 export const getEnvironmentByIdWithCluster = (id: Environment['id']) =>
   prisma.environment.findUnique({
@@ -63,7 +64,7 @@ export const getProjectByEnvironmentId = async (environmentId: Environment['id']
   return getProjectById(env.projectId)
 }
 
-export const getEnvironmentsByQuotaAndStage = ({ quotaId, stageId }: {quotaId: Quota['id'], stageId: Stage['id']}) =>
+export const getEnvironmentsByQuotaAndStage = async ({ quotaId, stageId }: { quotaId: Quota['id'], stageId: Stage['id'] }) =>
   prisma.environment.findMany({
     where: {
       AND: [{

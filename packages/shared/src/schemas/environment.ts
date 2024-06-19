@@ -12,11 +12,11 @@ export const EnvironmentSchema = z.object({
     .max(longestEnvironmentName),
   projectId: z.string()
     .uuid(),
-  stageId: z.string().uuid(),
-  quotaId: z.string().uuid(),
+  stageId: z.string().uuid().optional(),
+  quotaId: z.string().uuid().optional(),
   clusterId: z.string()
-    .uuid(),
-  permissions: z.lazy(() => PermissionSchema.array()),
+    .uuid().optional(),
+  permissions: z.lazy(() => PermissionSchema.array()).optional(),
 })
 
 export type Environment = Zod.infer<typeof EnvironmentSchema>
@@ -37,7 +37,7 @@ export const CreateEnvironmentSchema = {
 
 export const GetEnvironmentsSchema = {
   params: z.object({
-    clusterId: z.string()
+    projectId: z.string()
       .uuid(),
   }),
   responses: {

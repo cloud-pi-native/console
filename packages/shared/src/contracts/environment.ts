@@ -2,10 +2,10 @@ import { ClientInferRequest } from '@ts-rest/core'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   CreateEnvironmentSchema,
-  // GetEnvironmentsSchema,
   // GetEnvironmentByIdSchema,
   UpdateEnvironmentSchema,
   DeleteEnvironmentSchema,
+  GetEnvironmentsSchema,
 } from '../schemas/index.js'
 
 export const environmentContract = contractInstance.router({
@@ -20,14 +20,14 @@ export const environmentContract = contractInstance.router({
     responses: CreateEnvironmentSchema.responses,
   },
 
-  // getEnvironments: {
-  //   method: 'GET',
-  //   path: `${apiPrefix}/projects/:projectId/environments`,
-  //   summary: 'Get environments',
-  //   description: 'Retrieved all environments.',
-  //   pathParams: GetEnvironmentsSchema.params,
-  //   responses: GetEnvironmentsSchema.responses,
-  // },
+  getEnvironments: {
+    method: 'GET',
+    path: `${apiPrefix}/projects/:projectId/environments`,
+    summary: 'Get environments',
+    description: 'Retrieved a project`\'s environments.',
+    pathParams: GetEnvironmentsSchema.params,
+    responses: GetEnvironmentsSchema.responses,
+  },
 
   // getEnvironmentById: {
   //   method: 'GET',

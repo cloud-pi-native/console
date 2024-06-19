@@ -38,7 +38,7 @@ export const ProjectSchema = z.object({
     projectIds: true,
     stageIds: true,
   }).array().optional()),
-  repositories: RepoSchema.array(),
+  repositories: RepoSchema.array().optional(),
   environments: z.array(z.object({
     id: z.string()
       .uuid(),
@@ -67,7 +67,7 @@ export const ProjectSchema = z.object({
           .max(2),
       ]),
     })),
-  })),
+  })).optional(),
 }).merge(AtDatesToStringSchema)
 
 export type Project = Zod.infer<typeof ProjectSchema>
@@ -89,7 +89,7 @@ export const CreateProjectSchema = {
 
 export const GetProjectsSchema = {
   responses: {
-    200: z.array(ProjectSchema.required()),
+    200: z.array(ProjectSchema),
     500: ErrorSchema,
   },
 }

@@ -12,6 +12,7 @@ import { useProjectUserStore } from '@/stores/project-user.js'
 import { useAdminQuotaStore } from '@/stores/admin/quota.js'
 import { useProjectServiceStore } from '@/stores/project-services.js'
 import { useAdminStageStore } from '@/stores/admin/stage'
+import { useProjectRepositoryStore } from '@/stores/project-repository.js'
 
 const adminProjectStore = useAdminProjectStore()
 const adminOrganizationStore = useAdminOrganizationStore()
@@ -131,7 +132,7 @@ const setRows = () => {
           adminOrganizationStore.organizationsById[organizationId].label ?? '',
           name,
           description ?? '',
-          roles.find(role => role.role === 'owner')?.user?.email ?? '',
+          roles?.find(role => role.role === 'owner')?.user?.email ?? '',
           {
             component: 'v-icon',
             name: statusDict.status[status].icon,
@@ -213,7 +214,10 @@ const getAllProjects = async () => {
 
 const selectProject = async (projectId: string) => {
   selectedProject.value = allProjects.value?.find(project => project.id === projectId)
+  if (!selectedProject.value) return
+  selectedProject.value.repositories = await useProjectRepositoryStore().getProjectRepositories(projectId)
   getRepositoriesRows()
+  selectedProject.value.environments = await useProjectEnvironmentStore().getProjectEnvironments(projectId)
   await getEnvironmentsRows()
   reloadProjectServices()
 }

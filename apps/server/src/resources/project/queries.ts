@@ -16,34 +16,12 @@ export const updateProject = (id: Project['id'], data: ProjectUpdate) =>
   })
 
 // SELECT
-export const getAllProjects = () =>
+export const getAllProjects = async () =>
   prisma.project.findMany({
     include: {
       roles: {
         include: {
           user: true,
-        },
-      },
-      organization: true,
-      environments: {
-        include: {
-          quota: true,
-          stage: true,
-          permissions: true,
-        },
-      },
-      repositories: true,
-      clusters: {
-        where: {
-          privacy: ClusterPrivacy.DEDICATED,
-        },
-        select: {
-          id: true,
-          label: true,
-          privacy: true,
-          clusterResources: true,
-          infos: true,
-          zoneId: true,
         },
       },
     },

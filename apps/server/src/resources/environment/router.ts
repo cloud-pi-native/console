@@ -1,9 +1,30 @@
 import { serverInstance } from '@/app.js'
-import { environmentContract } from '@cpn-console/shared'
-import { createEnvironment, deleteEnvironment, updateEnvironment } from './business.js'
+import { adminGroupPath, environmentContract } from '@cpn-console/shared'
+import { createEnvironment, deleteEnvironment, updateEnvironment, getProjectEnvironments } from './business.js'
 import { addReqLogs } from '@/utils/logger.js'
 
 export const environmentRouter = () => serverInstance.router(environmentContract, {
+  getEnvironments: async ({ request: req, params }) => {
+    const projectId = params.projectId
+    const userId = req.session.user.id
+    const isAdmin = req.session.user.groups?.includes(adminGroupPath)
+
+    const environments = await getProjectEnvironments(userId, isAdmin, projectId)
+
+    addReqLogs({
+      req,
+      message: 'Environnements du projet récupérés avec succès',
+      infos: {
+        projectId,
+        environmentsId: environments.map(({ id }) => id).join(', '),
+      },
+    })
+    return {
+      status: 200,
+      body: environments,
+    }
+  },
+
   createEnvironment: async ({ request: req, body: data, params }) => {
     const userId = req.session.user.id
     const projectId = params.projectId

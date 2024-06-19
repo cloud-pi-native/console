@@ -15,6 +15,7 @@ import {
   getUserById,
   initializeEnvironment,
   updateEnvironment as updateEnvironmentQuery,
+  getEnvironmentsByProjectId,
 } from '@/resources/queries-index.js'
 import type { UserDetails } from '@/types/index.js'
 import {
@@ -25,6 +26,7 @@ import {
 } from '@/utils/controller.js'
 import { BadRequestError, DsoError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
+import { getProjectAndcheckRole } from '../repository/business.js'
 
 // Fetch infos
 export const getEnvironmentInfosAndClusters = async (environmentId: string) => {
@@ -39,6 +41,14 @@ export const getEnvironmentInfos = async (environmentId: string) => {
   const env = await getEnvironmentInfosQuery(environmentId)
   if (!env) throw new NotFoundError('Environnement introuvable', undefined)
   return env
+}
+
+export const getProjectEnvironments = async (
+  userId: User['id'],
+  isAdmin: boolean,
+  projectId: Project['id'],
+) => {
+  return isAdmin ? await getEnvironmentsByProjectId(projectId) : (await getProjectAndcheckRole(userId, projectId)).environments
 }
 
 type GetInitializeEnvironmentInfosParam = {
@@ -77,7 +87,7 @@ type CheckEnvironmentParam = {
   authorizedClusterIds: Cluster['id'][],
   clusterId: Cluster['id'],
   quotaId: Quota['id'],
-  stage: Stage & { quotas: Quota[]},
+  stage: Stage & { quotas: Quota[] },
 }
 
 export const checkCreateEnvironment = ({
@@ -100,7 +110,7 @@ type CheckUpdateEnvironmentParam = {
   project: { locked: boolean, roles: Role[], id: string, environments: Environment[] },
   userId: User['id'],
   quotaId: Quota['id'],
-  stage: Stage & { quotas: Quota[]},
+  stage: Stage & { quotas: Quota[] },
 }
 
 export const checkUpdateEnvironment = ({
@@ -133,7 +143,7 @@ export const checkExistingEnvironment = (clusterId: Cluster['id'], name: Environ
   }
 }
 
-type ByStageOrQuota = XOR<Quota & {stages: Stage[]}, Stage & { quotas: Quota[]}>
+type ByStageOrQuota = XOR<Quota & { stages: Stage[] }, Stage & { quotas: Quota[] }>
 export const checkQuotaStageStatus = (resource: ByStageOrQuota, matchingId: string) => {
   const associtation = resource.quotas
     ? resource.quotas.find(({ id }) => id === matchingId)
