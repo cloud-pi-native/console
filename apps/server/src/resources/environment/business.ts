@@ -19,7 +19,6 @@ import type { UserDetails } from '@/types/index.js'
 import { validateSchema } from '@/utils/business.js'
 import {
   checkClusterUnavailable,
-  checkInsufficientRoleInProject,
   checkRoleAndLocked,
   filterOwners,
 } from '@/utils/controller.js'
@@ -118,7 +117,7 @@ export const checkDeleteEnvironment = ({
   project,
   userId,
 }: CheckDeleteEnvironmentParam) => {
-  const errorMessage = checkInsufficientRoleInProject(userId, { minRole: 'owner', roles: project.roles })
+  const errorMessage = checkRoleAndLocked(project, userId, 'owner')
   if (errorMessage) throw new ForbiddenError(errorMessage, { description: '', extras: { userId, projectId: project.id } })
 }
 

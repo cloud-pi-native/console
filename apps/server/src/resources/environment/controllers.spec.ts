@@ -299,4 +299,21 @@ describe('Environment routes', () => {
       expect(JSON.parse(response.body).error).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
     })
   })
+
+  it('Should not delete an environment if project locked', async () => {
+    const projectInfos = createRandomDbSetup({ envs: ['dev'] }).project
+    projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
+    const envToDelete = { ...projectInfos.environments[0], project: projectInfos }
+    projectInfos.locked = true
+
+    prisma.environment.findUnique.mockResolvedValue(envToDelete)
+    prisma.project.findUnique.mockResolvedValue(projectInfos)
+
+    const response = await app.inject()
+      .delete(`/api/v1/projects/${projectInfos.id}/environments/${envToDelete.id}`)
+      .end()
+
+    expect(response.statusCode).toEqual(403)
+    expect(JSON.parse(response.body).error).toEqual(projectIsLockedInfo)
+  })
 })

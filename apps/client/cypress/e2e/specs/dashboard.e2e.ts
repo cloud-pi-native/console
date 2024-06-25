@@ -138,6 +138,24 @@ describe('Dashboard', () => {
       .getByDataTestid('archiveProjectZone').should('not.exist')
   })
 
+  it('Should not be able to delete an environment if project locked', () => {
+    cy.intercept('GET', '/api/v1/stages').as('getStages')
+    cy.intercept('GET', 'api/v1/clusters').as('getClusters')
+
+    cy.kcLogin('test')
+    cy.goToProjects()
+      .getByDataTestid(`projectTile-${projectFailed.name}`).click()
+      .getByDataTestid('menuEnvironments').click()
+      .url().should('contain', '/environments')
+    cy.getByDataTestid(`environmentTile-${projectFailed.environments[0].name}`).click()
+    cy.wait('@getClusters').its('response.statusCode').should('match', /^20\d$/)
+
+    cy.getByDataTestid(`environmentTile-${projectFailed.environments[0].name}`).click()
+    cy.wait('@getStages')
+
+    cy.getByDataTestid('showDeleteEnvironmentBtn').should('be.disabled')
+  })
+
   it('Should archive project as owner without impacting other projects', () => {
     cy.kcLogin('test')
     cy.archiveProject(projectToArchive)
