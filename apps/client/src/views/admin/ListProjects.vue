@@ -111,6 +111,12 @@ const rowFilter = (rows: Row[]): Rows | EmptyRow => {
   return returnRows
 }
 
+interface DomElement extends Event {
+  target: HTMLElement & {
+    open?: string
+  }
+}
+
 const setRows = () => {
   rows.value = sortArrByObjKeyAsc(allProjects.value, 'name')
     ?.map(({ id, organizationId, name, description, roles, status, locked, createdAt, updatedAt }) => (
@@ -118,8 +124,9 @@ const setRows = () => {
         status,
         locked,
         rowAttrs: {
-          onClick: () => {
+          onClick: (event: DomElement) => {
             if (status === 'archived') return snackbarStore.setMessage('Le projet est archivé, pas d\'action possible', 'info')
+            if (event.target.id === 'description' && event.target.getAttribute('open') === 'false') return untruncateDescription(event.target)
             selectProject(id)
           },
           class: 'cursor-pointer',
@@ -128,7 +135,7 @@ const setRows = () => {
         rowData: [
           organizations.value?.find(org => org.id === organizationId)?.label,
           name,
-          description ?? '',
+          truncateDescription(description ?? ''),
           roles.find(role => role.role === 'owner')?.user?.email ?? '',
           {
             component: 'v-icon',
@@ -329,6 +336,33 @@ const saveProjectServices = async (data: PluginsUpdateBody) => {
   await reloadProjectServices()
   snackbarStore.isWaitingForResponse = false
 }
+
+const maxDescriptionLength = 60
+const truncateDescription = (description: string) => {
+  let innerHTML: string
+
+  if (description.length <= maxDescriptionLength) innerHTML = description
+  else {
+    const lastSpaceIndex = description.slice(0, maxDescriptionLength).lastIndexOf(' ')
+    innerHTML = description.slice(0, lastSpaceIndex > 0 ? lastSpaceIndex : maxDescriptionLength) + ' ...'
+  }
+
+  return {
+    id: 'description',
+    'data-testid': 'description',
+    component: 'span',
+    open: false,
+    title: description,
+    innerHTML,
+  }
+}
+
+const untruncateDescription = (span: HTMLElement) => {
+  span.innerHTML = span.title
+
+  span.setAttribute('open', 'true')
+}
+
 </script>
 <template>
   <div

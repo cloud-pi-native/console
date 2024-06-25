@@ -38,12 +38,37 @@ describe('Administration projects', () => {
         cy.get(`tbody tr:nth-of-type(${index + 1})`).within(() => {
           cy.get('td:nth-of-type(1)').should('contain', project.organization)
           cy.get('td:nth-of-type(2)').should('contain', project.name)
-          cy.get('td:nth-of-type(3)').should('contain', project.description ?? '')
+          cy.getByDataTestid('description').invoke('text').then((text) => {
+            const maxDescriptionlength = 60
+            if (text?.length > maxDescriptionlength) {
+              const lastSpaceIndex = project.description?.slice(0, maxDescriptionlength).lastIndexOf(' ')
+              const truncatedDescription = project.description?.slice(0, lastSpaceIndex > 0 ? lastSpaceIndex : maxDescriptionlength)
+              expect(text).to.equal(truncatedDescription + ' ...')
+            } else {
+              expect(text).to.equal(project.description ?? '')
+            }
+          })
           cy.get('td:nth-of-type(4)').should('contain', project.owner.email)
           cy.get('td:nth-of-type(5) svg title').should('contain', `Le projet ${project.name} est ${statusDict.status[project.status].wording}`)
           cy.get('td:nth-of-type(6) svg title').should('contain', `Le projet ${project.name} est ${statusDict.locked[String(!!project.locked)].wording}`)
           cy.get('td:nth-of-type(7)').should('contain', formatDate(project.createdAt))
           cy.get('td:nth-of-type(8)').should('contain', formatDate(project.updatedAt))
+        })
+      })
+    })
+  })
+
+  it('Should display untruncated description when click on span, loggedIn as admin', () => {
+    cy.get('select#tableAdministrationProjectsFilter').select('Tous')
+    cy.getByDataTestid('tableAdministrationProjects').within(() => {
+      projects.forEach((project, index: number) => {
+        cy.get(`tbody tr:nth-of-type(${index + 1})`).within(() => {
+          cy.getByDataTestid('description').then($span => {
+            if (Cypress.dom.isVisible($span)) cy.wrap($span).click()
+          })
+          cy.getByDataTestid('description').then($span => {
+            if (Cypress.dom.isVisible($span)) cy.wrap($span).should('contain', project.description)
+          })
         })
       })
     })
