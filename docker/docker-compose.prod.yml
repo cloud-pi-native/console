@@ -1,42 +1,42 @@
 services:
-  keycloak-fetch-theme:
-    restart: no
-    image: docker.io/curlimages/curl:8.8.0
-    container_name: dso-console_keycloak-fetch
-    volumes:
-      - dso-keycloak-dsfr-theme:/tmp:rw
-    command: -LfS -o /tmp/keycloak-theme-dsfr.jar https://github.com/codegouvfr/keycloak-theme-dsfr/releases/download/v1.0.3/retrocompat-keycloak-theme.jar
-    networks:
-      - dso-network
-    attach: false
+  # keycloak-fetch-theme:
+  #   restart: no
+  #   image: docker.io/curlimages/curl:8.8.0
+  #   container_name: dso-console_keycloak-fetch
+  #   volumes:
+  #     - dso-keycloak-dsfr-theme:/tmp:rw
+  #   command: -LfS -o /tmp/keycloak-theme-dsfr.jar https://github.com/codegouvfr/keycloak-theme-dsfr/releases/download/v1.0.3/retrocompat-keycloak-theme.jar
+  #   networks:
+  #     - dso-network
+  #   attach: false
 
   keycloak:
     restart: always
     image: docker.io/bitnami/keycloak:23.0.7
     container_name: dso-console_keycloak
-    depends_on:
-      keycloak-fetch-theme:
-        condition: service_completed_successfully
+    # depends_on:
+    #   keycloak-fetch-theme:
+    #     condition: service_completed_successfully
     ports:
       - 8090:8080
     volumes:
       - ../keycloak/realms:/opt/bitnami/keycloak/data/import
       - ../keycloak/data/dev:/opt/bitnami/keycloak/data/h2
-      - type: volume
-        source: dso-keycloak-dsfr-theme
-        target: /opt/bitnami/keycloak/providers/keycloak-theme-dsfr.jar
-        volume:
-          subpath: keycloak-theme-dsfr.jar
+      # - type: volume
+      #   source: dso-keycloak-dsfr-theme
+      #   target: /opt/bitnami/keycloak/providers/keycloak-theme-dsfr.jar
+      #   volume:
+      #     subpath: keycloak-theme-dsfr.jar
     user: root
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
       KC_HEALTH_ENABLED: true
-      DSFR_THEME_HOME_URL: http://localhost:8080
-      DSFR_THEME_SERVICE_TITLE: Console Cloud π Native
-      DSFR_THEME_BRAND_TOP: Ministère<br/>de l'Intérieur</br>et des Outre-Mer
-      DSFR_THEME_TOS_URL: 
-      DSFR_THEME_CONTACT_EMAIL: cloudpinative-relations@interieur.gouv.fr
+      # DSFR_THEME_HOME_URL: http://localhost:8080
+      # DSFR_THEME_SERVICE_TITLE: Console Cloud π Native
+      # DSFR_THEME_BRAND_TOP: Ministère<br/>de l'Intérieur</br>et des Outre-Mer
+      # DSFR_THEME_TOS_URL: 
+      # DSFR_THEME_CONTACT_EMAIL: cloudpinative-relations@interieur.gouv.fr
     entrypoint: /opt/bitnami/keycloak/bin/kc.sh
     command: start-dev --import-realm
     healthcheck:
