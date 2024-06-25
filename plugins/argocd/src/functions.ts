@@ -195,7 +195,7 @@ const ensureInfraEnvValues = async (
     ...sourceRepos.map(url => ({
       repoURL: url,
       targetRevision: 'HEAD',
-      path: '.',
+      path: 'helm/',
     })),
 
   ]
@@ -206,9 +206,10 @@ const ensureInfraEnvValues = async (
       'dso/environment': environment.name,
     },
     argocd: {
+      cluster: 'in-cluster',
       namespace: getConfig().namespace,
       project: appProjectName,
-      envChartVersion: process.env.DSO_ENV_CHART_VERSION || 'dso-env-1.1.0',
+      envChartVersion: process.env.DSO_ENV_CHART_VERSION || 'dso-env-1.1.1',
       nsChartVersion: process.env.DSO_NS_CHART_VERSION || 'dso-ns-1.0.0',
     },
     environment: {
