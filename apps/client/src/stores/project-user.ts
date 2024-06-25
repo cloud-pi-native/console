@@ -26,6 +26,14 @@ export const useProjectUserStore = defineStore('project-user', () => {
     return newRoles
   }
 
+  const transferProjectOwnership = async (projectId: string, userId: string) => {
+    const newRoles = await apiClient.Users.transferProjectOwnership({ params: { projectId, userId } })
+      .then(response => extractData(response, 200))
+    if (!newRoles) return
+    projectStore.updateProjectRoles(projectId, newRoles)
+    return newRoles
+  }
+
   const removeUserFromProject = async (projectId: string, userId: string) => {
     const newRoles = await apiClient.Users.deleteUserRoleInProject({ params: { projectId, userId } })
       .then(response => extractData(response, 200))
@@ -37,6 +45,7 @@ export const useProjectUserStore = defineStore('project-user', () => {
   return {
     getMatchingUsers,
     addUserToProject,
+    transferProjectOwnership,
     removeUserFromProject,
   }
 })

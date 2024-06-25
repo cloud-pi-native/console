@@ -79,6 +79,110 @@ describe('Team view', () => {
       .should('have.length', project.users.length + 1)
   })
 
+  it('Should transfert owner role to a team member', () => {
+    const owner = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
+    const userToTransfer = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6569')
+
+    cy.intercept(`/api/v1/projects/${project.id}/users/${userToTransfer.id}`).as('transferOwnership1')
+    cy.intercept(`/api/v1/projects/${project.id}/users/${owner.id}`).as('transferOwnership2')
+
+    cy.goToProjects()
+    cy.getByDataTestid(`projectTile-${project.name}`).click()
+    cy.getByDataTestid('menuTeam').click()
+      .url().should('contain', `/projects/${project.id}/team`)
+
+    cy.getByDataTestid('confirmTransferingRoleZone')
+      .should('not.exist')
+
+    cy.getByDataTestid('ownerTag')
+      .should('have.length', 1)
+
+    cy.get(`select#roleSelect-${userToTransfer.id}`)
+      .should('have.value', 'user')
+      .and('be.enabled')
+      .select('owner')
+
+    cy.getByDataTestid('confirmTransferingRoleZone')
+      .should('exist')
+    cy.getByDataTestid('confirmUpdateBtn')
+      .click()
+
+    cy.wait('@transferOwnership1')
+      .its('response.statusCode')
+      .should('match', /^20\d$/)
+
+    cy.getByDataTestid('ownerTag')
+      .should('have.length', 1)
+
+    cy.get(`select#roleSelect-${owner.id}`)
+      .should('have.value', 'user')
+      .and('be.disabled')
+
+    cy.kcLogin((userToTransfer.firstName.slice(0, 1) + userToTransfer.lastName).toLowerCase())
+
+    cy.goToProjects()
+    cy.getByDataTestid(`projectTile-${project.name}`).click()
+    cy.getByDataTestid('menuTeam').click()
+      .url().should('contain', `/projects/${project.id}/team`)
+
+    cy.getByDataTestid('confirmTransferingRoleZone')
+      .should('not.exist')
+
+    cy.getByDataTestid('ownerTag')
+      .should('have.length', 1)
+
+    cy.get(`select#roleSelect-${owner.id}`)
+      .should('have.value', 'user')
+      .and('be.enabled')
+      .select('owner')
+
+    cy.getByDataTestid('confirmTransferingRoleZone')
+      .should('exist')
+    cy.getByDataTestid('confirmUpdateBtn')
+      .click()
+
+    cy.wait('@transferOwnership2')
+      .its('response.statusCode')
+      .should('match', /^20\d$/)
+
+    cy.getByDataTestid('ownerTag')
+      .should('have.length', 1)
+
+    cy.get(`select#roleSelect-${userToTransfer.id}`)
+      .should('have.value', 'user')
+      .and('be.disabled')
+  })
+
+  it('Should be able to transfer owner role as admin', () => {
+    const admin = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6566')
+
+    cy.kcLogin((admin.firstName.slice(0, 1) + admin.lastName).toLowerCase())
+    cy.goToProjects()
+    cy.getByDataTestid(`projectTile-${project.name}`).click()
+    cy.getByDataTestid('menuTeam').click()
+      .url().should('contain', `/projects/${project.id}/team`)
+
+    cy.getByDataTestid('confirmTransferingRoleZone')
+      .should('not.exist')
+
+    cy.getByDataTestid('ownerTag')
+      .should('have.length', 1)
+
+    cy.get('select:first')
+      .should('have.value', 'user')
+      .and('be.enabled')
+      .select('owner')
+
+    cy.getByDataTestid('confirmTransferingRoleZone')
+      .should('exist')
+    cy.getByDataTestid('cancelUpdateBtn')
+      .click()
+
+    cy.get('select:first')
+      .should('have.value', 'user')
+      .and('be.enabled')
+  })
+
   it('Should remove a team member', () => {
     cy.intercept('DELETE', `api/v1/projects/${project.id}/users/*`).as('removeUser')
 

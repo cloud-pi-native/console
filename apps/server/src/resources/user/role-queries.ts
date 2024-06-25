@@ -1,5 +1,4 @@
 import type { Project, User } from '@prisma/client'
-import type { ProjectRoles } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
 
 // SELECT
@@ -15,15 +14,24 @@ export const getSingleOwnerByProjectId = async (projectId: Project['id']) => {
 }
 
 // UPDATE
-export const updateUserProjectRole = async (userId: User['id'], projectId: Project['id'], role: ProjectRoles) => {
-  return prisma.role.update({
+export const transferProjectOwnership = async (projectId: Project['id'], userToUpdateId: User['id'], ownerId: User['id']) => {
+  await prisma.role.update({
     where: {
       userId_projectId: {
-        userId,
+        userId: userToUpdateId,
         projectId,
       },
     },
-    data: { role },
+    data: { role: 'owner' },
+  })
+  await prisma.role.update({
+    where: {
+      userId_projectId: {
+        userId: ownerId,
+        projectId,
+      },
+    },
+    data: { role: 'user' },
   })
 }
 

@@ -1,6 +1,7 @@
+import { type KeycloakPayload } from 'fastify-keycloak-adapter'
 import type { Project, User } from '@prisma/client'
-import { ProjectRoles, UserSchema, instanciateSchema, projectIsLockedInfo, type AsyncReturnType } from '@cpn-console/shared'
-import { addLogs, addUserToProject as addUserToProjectQuery, createUser, deletePermission, getMatchingUsers as getMatchingUsersQuery, getOrCreateUser, getProjectInfos as getProjectInfosQuery, getProjectUsers as getProjectUsersQuery, getRolesByProjectId, getUserByEmail, getUserById, removeUserFromProject as removeUserFromProjectQuery, updateUserProjectRole as updateUserProjectRoleQuery } from '@/resources/queries-index.js'
+import { UserSchema, instanciateSchema, projectIsLockedInfo, type AsyncReturnType, adminGroupPath } from '@cpn-console/shared'
+import { addLogs, addUserToProject as addUserToProjectQuery, createUser, deletePermission, getMatchingUsers as getMatchingUsersQuery, getOrCreateUser, getProjectInfos as getProjectInfosQuery, getProjectUsers as getProjectUsersQuery, getRolesByProjectId, getUserByEmail, getUserById, removeUserFromProject as removeUserFromProjectQuery, transferProjectOwnership as transferProjectOwnershipQuery } from '@/resources/queries-index.js'
 import { validateSchema } from '@/utils/business.js'
 import { checkInsufficientRoleInProject, type SearchOptions } from '@/utils/controller.js'
 import { BadRequestError, ForbiddenError, NotFoundError } from '@/utils/errors.js'
@@ -13,7 +14,7 @@ export const getUser = async (user: UserDto) => {
   return getOrCreateUser(user)
 }
 
-export const checkProjectRole = async (userId: User['id'], { userList = undefined, roles = undefined, minRole }: SearchOptions) => {
+export const checkProjectRole = (userId: User['id'], { userList = undefined, roles = undefined, minRole }: SearchOptions) => {
   // @ts-ignore
   const insufficientRoleErrorMessage = checkInsufficientRoleInProject(userId, { userList, minRole, roles })
   if (insufficientRoleErrorMessage) throw new ForbiddenError(insufficientRoleErrorMessage, undefined)
@@ -76,16 +77,27 @@ export const addUserToProject = async (
   }
 }
 
-export const updateUserProjectRole = async (
+export const transferProjectOwnership = async (
+  requestor: KeycloakPayload,
   userToUpdateId: User['id'],
-  project: AsyncReturnType<typeof getProjectInfos>,
-  role: ProjectRoles,
+  projectId: Project['id'],
 ) => {
-  if (!project) throw new BadRequestError('Le projet n\'existe pas')
+  const project = await getProjectInfos(projectId)
+  if (!project) throw new BadRequestError(`Le projet ayant pour id ${projectId} n'existe pas`)
 
-  if (project.roles.filter(projectUser => projectUser.userId === userToUpdateId).length === 0) throw new BadRequestError('L\'utilisateur ne fait pas partie du projet', undefined)
+  await checkProjectLocked(project)
 
-  await updateUserProjectRoleQuery(userToUpdateId, project.id, role)
+  if (!project.roles.some(projectUser => projectUser.userId === userToUpdateId)) throw new BadRequestError('L\'utilisateur ne fait pas partie du projet')
+
+  const owner = project.roles.find(role => role.role === 'owner')
+  if (!owner) throw new BadRequestError('Impossible de trouver le souscripteur actuel du projet')
+
+  if (!requestor.groups?.includes(adminGroupPath)) {
+    checkProjectRole(requestor.id, { roles: project.roles, minRole: 'owner' })
+  }
+
+  await transferProjectOwnershipQuery(projectId, userToUpdateId, owner.userId)
+
   return getRolesByProjectId(project.id)
 }
 

@@ -8,7 +8,7 @@ import {
   getProjectInfos,
   getProjectUsers,
   removeUserFromProject,
-  updateUserProjectRole,
+  transferProjectOwnership as transferProjectOwnershipBusiness,
 } from './business.js'
 import '@/types/index.js'
 import { BadRequestError } from '@/utils/errors.js'
@@ -93,21 +93,12 @@ export const userRouter = () => serverInstance.router(userContract, {
     }
   },
 
-  updateUserRoleInProject: async ({ request: req, params, body: data }) => {
-    const user = req.session.user
-    const projectId = params.projectId
+  transferProjectOwnership: async ({ request: req, params }) => {
+    const requestor = req.session.user
     const userToUpdateId = params.userId
+    const projectId = params.projectId
 
-    const project = await getProjectInfos(projectId)
-    if (!project) throw new BadRequestError(`Le projet ayant pour id ${projectId} n'existe pas`)
-
-    if (!user.groups?.includes(adminGroupPath)) {
-      await checkProjectRole(user.id, { roles: project.roles, minRole: 'owner' })
-    }
-
-    await checkProjectLocked(project)
-
-    const newRoles = await updateUserProjectRole(userToUpdateId, project, data.role)
+    const newRoles = await transferProjectOwnershipBusiness(requestor, userToUpdateId, projectId)
 
     addReqLogs({
       req,

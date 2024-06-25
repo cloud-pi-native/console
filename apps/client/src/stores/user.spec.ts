@@ -6,7 +6,6 @@ import { useUserStore } from './user.js'
 
 vi.spyOn(apiClient.Users, 'getMatchingUsers')
 vi.spyOn(apiClient.Users, 'createUserRoleInProject')
-vi.spyOn(apiClient.Users, 'updateUserRoleInProject')
 vi.spyOn(apiClient.Users, 'getProjectUsers')
 vi.spyOn(apiClient.Users, 'deleteUserRoleInProject')
 
