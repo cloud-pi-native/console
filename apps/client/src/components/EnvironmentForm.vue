@@ -330,7 +330,7 @@ watch(quotaId, () => {
           />
           <DsfrAlert
             class="<md:mt-2"
-            :description="props.isProjectLocked ? 'Impossible de supprimer un environnement lorsque le projet est verouillé' : 'La suppression d\'un environnement est irréversible.'"
+            :description="props.isProjectLocked ? 'Impossible de supprimer un environnement lorsque le projet est verrouillé.' : 'La suppression d\'un environnement est irréversible.'"
             type="warning"
             small
           />

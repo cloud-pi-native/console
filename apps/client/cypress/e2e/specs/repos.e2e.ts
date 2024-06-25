@@ -1,5 +1,9 @@
+import { getModelById } from '../support/func.js'
+
 describe('Add repos into project', () => {
   const project = { name: 'project10' }
+  const projectFailed = getModelById('project', '83833faf-f654-40dd-bcd5-cf2e944fc702')
+  const user = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6566')
 
   before(() => {
     cy.kcLogin('test')
@@ -281,5 +285,27 @@ describe('Add repos into project', () => {
 
     cy.deleteRepo(project, repos[0])
     cy.assertAddRepo(project, repos.slice(1))
+  })
+
+  it('Should not be able to delete a repository if not owner', () => {
+    cy.kcLogin((user.firstName.slice(0, 1) + user.lastName).toLowerCase())
+    cy.goToProjects()
+    cy.get('[data-testid^="projectTile-"]:first').click()
+      .getByDataTestid('menuRepos').click()
+
+    cy.get('[data-testid^="repoTile-"]:first').click()
+      .getByDataTestid('repo-form').should('exist')
+      .getByDataTestid('deleteRepoZone').should('not.exist')
+  })
+
+  it('Should not be able to delete a repository if project locked', () => {
+    cy.goToProjects()
+      .getByDataTestid(`projectTile-${projectFailed.name}`).click()
+      .getByDataTestid('menuRepos').click()
+
+    cy.get('[data-testid^="repoTile-"]:first').click()
+      .getByDataTestid('repo-form').should('exist')
+
+    cy.getByDataTestid('showDeleteRepoBtn').should('be.disabled')
   })
 })
