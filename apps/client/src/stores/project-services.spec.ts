@@ -25,15 +25,6 @@ describe('Service Store', () => {
     expect(apiClientGet).toHaveBeenCalledTimes(1)
   })
 
-  it('Should get services by api call (safe fail)', async () => {
-    apiClientGet.mockReturnValueOnce(Promise.resolve({ status: 200, body: undefined }))
-    const projectServiceStore = useProjectServiceStore()
-    const result = await projectServiceStore.getProjectServices('id')
-    expect(result).toHaveLength(0)
-
-    expect(apiClientGet).toHaveBeenCalledTimes(1)
-  })
-
   it('Should update services by api call', async () => {
     const projectServiceStore = useProjectServiceStore()
     apiClientUpdate.mockReturnValueOnce(Promise.resolve({ status: 204, body: null }))

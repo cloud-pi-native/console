@@ -1,39 +1,35 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import api from '@/api/index.js'
 import type { CreateStageBody, Stage, UpdateQuotaStageBody, UpdateStageClustersBody } from '@cpn-console/shared'
+import { apiClient, extractData } from '@/api/xhr-client.js'
 
 export const useAdminStageStore = defineStore('admin-stage', () => {
   const stages = ref<Stage[]>()
 
   const getAllStages = async () => {
-    stages.value = await api.getStages()
+    stages.value = await apiClient.Stages.getStages()
+      .then(response => extractData(response, 200))
   }
 
-  const getStageAssociatedEnvironments = async (stageId: string) => {
-    const res = await api.getStageAssociatedEnvironments(stageId)
-    return res
-  }
+  const getStageAssociatedEnvironments = (stageId: string) =>
+    apiClient.StagesAdmin.getStageEnvironments({ params: { stageId } })
+      .then(response => extractData(response, 200))
 
-  const addStage = async (stage: CreateStageBody) => {
-    const res = await api.addStage(stage)
-    return res
-  }
+  const addStage = (body: CreateStageBody) =>
+    apiClient.StagesAdmin.createStage({ body })
+      .then(response => extractData(response, 201))
 
-  const updateQuotaStage = async (stageId: string, quotaIds: UpdateQuotaStageBody['quotaIds']) => {
-    const res = await api.updateQuotaStage({ stageId, quotaIds })
-    return res
-  }
+  const updateQuotaStage = (stageId: string, quotaIds: UpdateQuotaStageBody['quotaIds']) =>
+    apiClient.QuotasAdmin.updateQuotaStage({ body: { stageId, quotaIds } })
+      .then(response => extractData(response, 200))
 
-  const updateStageClusters = async (stageId: string, clusterIds: UpdateStageClustersBody['clusterIds']) => {
-    const res = await api.updateStageClusters(stageId, { clusterIds })
-    return res
-  }
+  const updateStageClusters = (stageId: string, clusterIds: UpdateStageClustersBody['clusterIds']) =>
+    apiClient.StagesAdmin.updateStageClusters({ body: { clusterIds }, params: { stageId } })
+      .then(response => extractData(response, 200))
 
-  const deleteStage = async (stageId: string) => {
-    const res = await api.deleteStage(stageId)
-    return res
-  }
+  const deleteStage = (stageId: string) =>
+    apiClient.StagesAdmin.deleteStage({ params: { stageId } })
+      .then(response => extractData(response, 204))
 
   return {
     stages,

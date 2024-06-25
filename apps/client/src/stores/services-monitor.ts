@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
-import api from '@/api/index.js'
 import { ref } from 'vue'
 import { MonitorStatus, type ServiceBody } from '@cpn-console/shared'
 import type { DsfrAlertType } from '@gouvminint/vue-dsfr'
+import { apiClient, extractData } from '@/api/xhr-client.js'
 
 export type ServicesHealth = {
   message: string,
@@ -51,8 +51,8 @@ export const useServiceStore = defineStore('serviceMonitor', () => {
       status: 'info',
     }
 
-    const res = await api.checkServicesHealth()
-    if (!res) return
+    const res = await apiClient.Services.getServiceHealth()
+      .then(response => extractData(response, 200))
     services.value = res
     servicesHealth.value = serviceHealthOptions[
       services.value.reduce((worstStatusIdx: number, service) => {
