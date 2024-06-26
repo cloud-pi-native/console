@@ -9,18 +9,20 @@ import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 import { useUserStore } from '@/stores/user.js'
 import { useUsersStore } from '@/stores/users.js'
 import { useProjectUserStore } from '@/stores/project-user.js'
-import { useAdminQuotaStore } from '@/stores/admin/quota.js'
+import { useQuotaStore } from '@/stores/quota.js'
 import { useProjectServiceStore } from '@/stores/project-services.js'
 import { useProjectRepositoryStore } from '@/stores/project-repository.js'
+import { useProjectStore } from '@/stores/project.js'
 
 const adminProjectStore = useAdminProjectStore()
+const projectStore = useProjectStore()
 const adminOrganizationStore = useAdminOrganizationStore()
 const projectServiceStore = useProjectServiceStore()
 const userStore = useUserStore()
 const usersStore = useUsersStore()
 const snackbarStore = useSnackbarStore()
 const projectUserStore = useProjectUserStore()
-const adminQuotaStore = useAdminQuotaStore()
+const quotaStore = useQuotaStore()
 const projectEnvironmentStore = useProjectEnvironmentStore()
 
 export type Component = {
@@ -158,9 +160,8 @@ const setRows = () => {
   tableKey.value = getRandomId('table')
 }
 
-const getEnvironmentsRows = async () => {
+const getEnvironmentsRows = () => {
   if (!selectedProject.value) return
-  await adminQuotaStore.getAllQuotas()
   environmentsRows.value = selectedProject.value.environments?.length
     ? sortArrByObjKeyAsc(selectedProject.value.environments, 'name')
       ?.map(({ id, quotaStage, name }) => (
@@ -173,7 +174,7 @@ const getEnvironmentsRows = async () => {
             selectId: 'quota-select',
             options: quotaStage.stage.quotaStage
               ?.reduce((acc, curr) => {
-                const matchingQuota = adminQuotaStore.quotas
+                const matchingQuota = quotaStore.quotas
                   ?.find(quota => quota.id === curr.quotaId)
                 return matchingQuota
                   ? [...acc, {
@@ -227,11 +228,15 @@ const getAllProjects = async () => {
 const selectProject = async (projectId: string) => {
   selectedProject.value = allProjects.value?.find(project => project.id === projectId)
   if (!selectedProject.value) return
-  selectedProject.value.repositories = await useProjectRepositoryStore().getProjectRepositories(projectId)
+  const [repositories, environments] = await Promise.all([
+    useProjectRepositoryStore().getProjectRepositories(projectId),
+    useProjectEnvironmentStore().getProjectEnvironments(projectId),
+    reloadProjectServices(),
+  ])
+  selectedProject.value.repositories = repositories
+  selectedProject.value.environments = environments
   getRepositoriesRows()
-  selectedProject.value.environments = await useProjectEnvironmentStore().getProjectEnvironments(projectId)
-  await getEnvironmentsRows()
-  reloadProjectServices()
+  getEnvironmentsRows()
 }
 
 const updateEnvironmentQuota = async ({ environmentId, quotaId }: {environmentId: string, quotaId: string}) => {
@@ -254,7 +259,7 @@ const handleProjectLocking = async (projectId: string, lock: boolean) => {
 
 const replayHooks = async (projectId: string) => {
   snackbarStore.isWaitingForResponse = true
-  await adminProjectStore.replayHooksForProject(projectId)
+  await projectStore.replayHooksForProject(projectId)
   await getAllProjects()
   snackbarStore.setMessage(`Le projet ayant pour id ${projectId} a été reprovisionné avec succès`, 'success')
   snackbarStore.isWaitingForResponse = false
@@ -263,7 +268,7 @@ const replayHooks = async (projectId: string) => {
 const archiveProject = async (projectId: string) => {
   if (!selectedProject.value) return
   snackbarStore.isWaitingForResponse = true
-  await adminProjectStore.archiveProject(projectId)
+  await projectStore.archiveProject(projectId)
   await getAllProjects()
   selectedProject.value = undefined
   snackbarStore.isWaitingForResponse = false
@@ -312,7 +317,10 @@ const generateProjectsDataFile = async () => {
 
 onBeforeMount(async () => {
   organizations.value = await adminOrganizationStore.getAllOrganizations()
-  await getAllProjects()
+  await Promise.all([
+    getAllProjects(),
+    quotaStore.getAllQuotas(),
+  ])
 })
 
 const projectServices = ref<ProjectService[]>([])

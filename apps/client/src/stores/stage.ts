@@ -3,12 +3,13 @@ import { ref } from 'vue'
 import type { CreateStageBody, Stage, UpdateQuotaStageBody, UpdateStageClustersBody } from '@cpn-console/shared'
 import { apiClient, extractData } from '@/api/xhr-client.js'
 
-export const useAdminStageStore = defineStore('admin-stage', () => {
-  const stages = ref<Stage[]>()
+export const useStageStore = defineStore('stage', () => {
+  const stages = ref<Stage[]>([])
 
   const getAllStages = async () => {
     stages.value = await apiClient.Stages.getStages()
       .then(response => extractData(response, 200))
+    return stages.value
   }
 
   const getStageAssociatedEnvironments = (stageId: string) =>

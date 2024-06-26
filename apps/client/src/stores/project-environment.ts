@@ -31,19 +31,10 @@ export const useProjectEnvironmentStore = defineStore('project-environment', () 
     await projectStore.getUserProjects()
   }
 
-  const getQuotas = () =>
-    apiClient.Quotas.getQuotas()
-      .then(response => extractData(response, 200))
-
-  const getStages = () => apiClient.Stages.getStages()
-    .then(response => extractData(response, 200))
-
   return {
     getProjectEnvironments,
     addEnvironmentToProject,
     updateEnvironment,
     deleteEnvironment,
-    getQuotas,
-    getStages,
   }
 })
