@@ -1,6 +1,6 @@
 import type { Project, Repository, User } from '@prisma/client'
 import { type CreateRepositoryBody, type ProjectRoles, type UpdateRepositoryBody } from '@cpn-console/shared'
-import { addLogs, deleteRepository as deleteRepositoryQuery, getProjectInfos, getProjectInfosAndRepos, getUserById, initializeRepository, updateRepository as updateRepositoryQuery } from '@/resources/queries-index.js'
+import { addLogs, deleteRepository as deleteRepositoryQuery, getProjectInfos, getProjectInfosAndRepos, getUserById, initializeRepository, updateRepository as updateRepositoryQuery, getProjectRepositories as getProjectRepositoriesQuery } from '@/resources/queries-index.js'
 import { checkInsufficientRoleInProject, checkRoleAndLocked } from '@/utils/controller.js'
 import { BadRequestError, DsoError, ForbiddenError, NotFoundError, UnauthorizedError, UnprocessableContentError } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
@@ -10,7 +10,7 @@ export const getRepositoryById = async (
   projectId: Project['id'],
   repositoryId: Repository['id'],
 ) => {
-  const project = await getProjectAndcheckRole(userId, projectId)
+  const project = await getProjectAndCheckRole(userId, projectId)
   const repository = project.repositories?.find(repo => repo.id === repositoryId)
   if (!repository) throw new NotFoundError('Dépôt introuvable')
   return repository
@@ -18,15 +18,14 @@ export const getRepositoryById = async (
 
 export const getProjectRepositories = async (
   userId: User['id'],
+  isAdmin: boolean,
   projectId: Project['id'],
 ) => {
-  const project = await getProjectAndcheckRole(userId, projectId)
-  const repositories = project.repositories
-  if (!repositories.length) throw new NotFoundError('Aucun dépôt associé à ce projet')
+  const repositories = isAdmin ? await getProjectRepositoriesQuery(projectId) : (await getProjectAndCheckRole(userId, projectId)).repositories
   return repositories
 }
 
-export const getProjectAndcheckRole = async (
+export const getProjectAndCheckRole = async (
   userId: User['id'],
   projectId: Project['id'],
   minRole: ProjectRoles = 'user',
@@ -46,7 +45,7 @@ export const syncRepository = async (
   requestId: string,
 ) => {
   try {
-    await getProjectAndcheckRole(userId, projectId)
+    await getProjectAndCheckRole(userId, projectId)
 
     const { results } = await hook.misc.syncRepository(repositoryId, { branchName })
 
@@ -152,7 +151,7 @@ export const deleteRepository = async (
   userId: User['id'],
   requestId: string,
 ) => {
-  const project = await getProjectAndcheckRole(userId, projectId, 'owner')
+  const project = await getProjectAndCheckRole(userId, projectId, 'owner')
 
   try {
     await checkUpsertRepository(userId, projectId, 'owner')

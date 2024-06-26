@@ -1,6 +1,10 @@
 import type { Project, Environment, UpdateEnvironmentBody, CreateEnvironmentBody } from '@cpn-console/shared'
 import { apiClient, extractData } from './xhr-client.js'
 
+export const getEnvironments = (projectId: Project['id']) =>
+  apiClient.Environments.getEnvironments({ params: { projectId } })
+    .then(response => extractData(response, 200))
+
 export const addEnvironment = (projectId: Project['id'], data: CreateEnvironmentBody) =>
   apiClient.Environments.createEnvironment({ body: data, params: { projectId } })
     .then(response => extractData(response, 201))

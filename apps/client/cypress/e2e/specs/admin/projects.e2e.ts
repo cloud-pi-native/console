@@ -198,16 +198,33 @@ describe('Administration projects', () => {
       name: 'XXXXLprivate',
       memory: '20Gi',
       cpu: '5',
-      stages: [getModelById('stage', project.environments[0].quotaStage.stage.id)],
+      stage: [getModelById('stage', '4a9ad694-4c54-4a3c-9579-548bf4b7b1b9')],
     }
-    const initialQuota = project.environments[0].quotaStage.quota.id
+    let initialQuota = ''
 
     cy.intercept('GET', 'api/v1/admin/projects').as('getAllProjects')
+    cy.intercept('GET', `api/v1/projects/${project.id}/environments`).as('getProjectEnvironments')
     cy.intercept('GET', 'api/v1/projects').as('getProjects')
     cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
     cy.intercept('GET', 'api/v1/stages').as('getStages')
     cy.intercept('POST', '/api/v1/admin/quotas').as('createQuota')
     cy.intercept('PUT', `api/v1/projects/${project.id}/environments/*`).as('updateEnvironment')
+
+    cy.visit('/admin/projects')
+    cy.url().should('contain', '/admin/projects')
+    cy.wait('@getAllProjects', { timeout: 10000 }).its('response').then(pResponse => {
+      projects = mapProjects(pResponse.body)
+    })
+
+    cy.getByDataTestid('tableAdministrationProjects').within(() => {
+      cy.get('tr').contains(project.name)
+        .click()
+    })
+
+    cy.wait('@getProjectEnvironments', { timeout: 10000 }).its('response').then(response => {
+      project.environments = response.body.filter(env => env.projectId === project.id)
+      initialQuota = project.environments[0].quotaStage.quota.id
+    })
 
     cy.visit('/admin/quotas')
     cy.url().should('contain', '/admin/quotas')
@@ -230,7 +247,7 @@ describe('Administration projects', () => {
     cy.getByDataTestid('addQuotaBtn').should('be.enabled')
     cy.get('#stages-select')
       .click()
-    privateQuota.stages.forEach(stage => {
+    privateQuota.stage.forEach(stage => {
       cy.getByDataTestid(`${stage.id}-stages-select-tag`)
         .click()
     })

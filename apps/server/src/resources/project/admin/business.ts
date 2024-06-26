@@ -1,16 +1,9 @@
 import { json2csv } from 'json-2-csv'
 import type { Project } from '@prisma/client'
-import { getAllProjects as getAllProjectsQuery, lockProject, getAllProjectsDataForExport, unlockProject, getPublicClusters } from '@/resources/queries-index.js'
+import { getAllProjects as getAllProjectsQuery, lockProject, getAllProjectsDataForExport, unlockProject } from '@/resources/queries-index.js'
 import { BadRequestError } from '@/utils/errors.js'
 
-export const getAllProjects = async () => {
-  const projects = await getAllProjectsQuery()
-  const publicClusters = await getPublicClusters()
-  return projects.map((project) => {
-    project.clusters = project.clusters.concat(publicClusters)
-    return project
-  })
-}
+export const getAllProjects = async () => getAllProjectsQuery()
 
 export const handleProjectLocking = async (projectId: Project['id'], lock: Project['locked']) => {
   try {
