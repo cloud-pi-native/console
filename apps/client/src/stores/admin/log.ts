@@ -1,15 +1,15 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import api from '@/api/index.js'
 import type { GetLogsQuery, Log } from '@cpn-console/shared'
+import { apiClient, extractData } from '@/api/xhr-client.js'
 
 export const useAdminLogStore = defineStore('admin-log', () => {
   const logs = ref<Log[]>([])
   const count = ref<number | undefined>(undefined)
 
   const getAllLogs = async ({ offset, limit }: GetLogsQuery = { offset: 0, limit: 100 }) => {
-    const res = await api.getAllLogs({ offset, limit })
-    if (!res) return
+    const res = await apiClient.LogsAdmin.getLogs({ query: { offset, limit } })
+      .then(response => extractData(response, 200))
     count.value = res.total
     logs.value = res.logs
   }

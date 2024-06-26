@@ -21,13 +21,9 @@ export const useUserStore = defineStore('user', () => {
     isAdmin.value = userProfile.value?.groups?.includes(adminGroupPath)
   }
 
-  const login = async () => {
-    await keycloakLogin()
-  }
+  const login = () => keycloakLogin()
 
-  const logout = async () => {
-    await keycloakLogout()
-  }
+  const logout = () => keycloakLogout()
 
   return {
     isLoggedIn,

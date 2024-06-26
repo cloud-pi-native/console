@@ -1,27 +1,31 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { Cluster, CreateClusterBody, UpdateClusterBody } from '@cpn-console/shared'
-import api from '@/api/index.js'
+import { apiClient, extractData } from '@/api/xhr-client.js'
 
 export const useAdminClusterStore = defineStore('admin-cluster', () => {
   const clusters = ref<Array<Cluster>>([])
 
   const getClusters = async () => {
-    clusters.value = await api.getAdminClusters()
+    clusters.value = await apiClient.ClustersAdmin.getClusters()
+      .then(response => extractData(response, 200))
   }
 
-  const getClusterAssociatedEnvironments = async (clusterId: Cluster['id']) => {
-    return api.getClusterAssociatedEnvironments(clusterId)
-  }
+  const getClusterAssociatedEnvironments = (clusterId: Cluster['id']) =>
+    apiClient.ClustersAdmin.getClusterEnvironments({ params: { clusterId } })
+      .then(response => extractData(response, 200))
 
-  const addCluster = async (cluster: CreateClusterBody) => api.addCluster(cluster)
+  const addCluster = (cluster: CreateClusterBody) =>
+    apiClient.ClustersAdmin.createCluster({ body: cluster })
+      .then(response => extractData(response, 201))
 
-  const updateCluster = async (cluster: UpdateClusterBody & { id: Cluster['id'] }) => {
-    const { id, ...updateClusterData } = cluster
-    return api.updateCluster(id, updateClusterData)
-  }
+  const updateCluster = ({ id, ...body }: UpdateClusterBody & { id: Cluster['id'] }) =>
+    apiClient.ClustersAdmin.updateCluster({ body, params: { clusterId: id } })
+      .then(response => extractData(response, 200))
 
-  const deleteCluster = async (clusterId: Cluster['id']) => api.deleteCluster(clusterId)
+  const deleteCluster = (clusterId: Cluster['id']) =>
+    apiClient.ClustersAdmin.deleteCluster({ params: { clusterId } })
+      .then(response => extractData(response, 204))
 
   const getClusterById = async (clusterId: Required<Cluster['id']>) => {
     const cluster = clusters.value?.find(cluster => cluster?.id === clusterId)

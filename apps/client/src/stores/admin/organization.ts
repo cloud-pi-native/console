@@ -1,24 +1,26 @@
 import { defineStore } from 'pinia'
-import api from '@/api/index.js'
 import type { CreateOrganizationBody, UpdateOrganizationBody, UpdateOrganizationParams } from '@cpn-console/shared'
+import { apiClient, extractData } from '@/api/xhr-client.js'
 
 export const useAdminOrganizationStore = defineStore('admin-organization', () => {
-  const getAllOrganizations = async () => {
-    const res = await api.getAllOrganizations()
-    return res ?? []
-  }
+  const getAllOrganizations = () =>
+    apiClient.OrganizationsAdmin.getAllOrganizations()
+      .then(response => extractData(response, 200))
 
-  const createOrganization = async (organization: CreateOrganizationBody) => {
-    return api.createOrganization({ ...organization, source: 'dso-console' })
-  }
+  const createOrganization = (organization: CreateOrganizationBody) =>
+    apiClient.OrganizationsAdmin.createOrganization({ body: { ...organization, source: 'dso-console' } })
+      .then(response => extractData(response, 201))
 
-  const updateOrganization = async (organization: UpdateOrganizationBody & { name: UpdateOrganizationParams['organizationName'] }) => {
-    return api.updateOrganization(organization.name, { ...organization, source: 'dso-console' })
-  }
+  const updateOrganization = (organization: UpdateOrganizationBody & { name: UpdateOrganizationParams['organizationName'] }) =>
+    apiClient.OrganizationsAdmin.updateOrganization({
+      body: { ...organization, source: 'dso-console' },
+      params: { organizationName: organization.name },
+    })
+      .then(response => extractData(response, 200))
 
-  const fetchOrganizations = async () => {
-    return api.fetchOrganizations()
-  }
+  const fetchOrganizations = () =>
+    apiClient.OrganizationsAdmin.syncOrganizations()
+      .then(response => extractData(response, 200))
 
   return {
     getAllOrganizations,
