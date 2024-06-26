@@ -15,23 +15,19 @@ export const ClusterSchema = z.object({
     .max(50),
   infos: z.string()
     .max(200)
-    .optional()
     .nullable(),
   secretName: z.string()
-    .max(50)
-    .optional(),
+    .max(50),
   clusterResources: z.boolean(),
   privacy: ClusterPrivacySchema,
   zoneId: z.string()
     .uuid(),
   projectIds: z.string()
     .uuid()
-    .array()
-    .optional(),
+    .array(),
   stageIds: z.string()
     .uuid()
-    .array()
-    .optional(),
+    .array(),
   user: z.object({
     username: z.string()
       .optional(),
@@ -43,8 +39,7 @@ export const ClusterSchema = z.object({
       .optional(),
     token: z.string()
       .optional(),
-  })
-    .optional(),
+  }),
   cluster: z.object({
     server: z.string()
       .optional(),
@@ -53,11 +48,10 @@ export const ClusterSchema = z.object({
       .optional(),
     caData: z.string()
       .optional(),
-  })
-    .optional(),
+  }),
 })
 
-export const CreateClusterBusinessSchema = ClusterSchema.omit({ id: true })
+export const CreateClusterBusinessSchema = ClusterSchema.omit({ id: true, secretName: true })
 
 export const ClusterBusinessSchema = ClusterSchema
 
@@ -80,7 +74,7 @@ export const ClusterParams = z.object({
 })
 
 export const CreateClusterSchema = {
-  body: ClusterSchema.omit({ id: true }),
+  body: ClusterSchema.omit({ id: true, secretName: true }),
   responses: {
     201: ClusterSchema.omit({ cluster: true, stageIds: true, user: true }),
     400: ErrorSchema,
@@ -89,6 +83,9 @@ export const CreateClusterSchema = {
   },
 }
 export type CreateClusterBody = Zod.infer<typeof CreateClusterSchema.body>
+
+export const KubeconfigSchema = ClusterSchema.pick({ cluster: true, user: true })
+export type Kubeconfig = Zod.infer<typeof KubeconfigSchema>
 
 export const GetClustersSchema = {
   responses: {
@@ -123,7 +120,11 @@ export const GetClusterAssociatedEnvironmentsSchema = {
 
 export const UpdateClusterSchema = {
   params: ClusterParams,
-  body: ClusterSchema.partial(),
+  body: ClusterSchema.omit({
+    id: true,
+    label: true,
+    secretName: true,
+  }).partial(),
   responses: {
     200: ClusterSchema,
     400: ErrorSchema,

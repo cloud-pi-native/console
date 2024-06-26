@@ -86,7 +86,12 @@ export const UpdateRepoSchema = {
     repositoryId: z.string()
       .uuid(),
   }),
-  body: RepoSchema.partial(),
+  body: RepoSchema.pick({
+    externalRepoUrl: true,
+    isPrivate: true,
+    externalToken: true,
+    externalUserName: true,
+  }).partial(),
   responses: {
     200: RepoSchema,
     500: ErrorSchema,

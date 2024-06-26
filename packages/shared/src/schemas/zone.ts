@@ -27,7 +27,7 @@ export type Zone = Zod.infer<typeof ZoneSchema>
 
 export const GetZonesSchema = {
   responses: {
-    200: z.array(ZoneSchema),
+    200: z.array(ZoneSchema.omit({ clusters: true })),
     500: ErrorSchema,
   },
 }

@@ -32,7 +32,6 @@ import { validateSchema } from '@/utils/business.js'
 import { checkInsufficientPermissionInEnvironment, checkInsufficientRoleInProject } from '@/utils/controller.js'
 import { BadRequestError, DsoError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
-import { filterObjectByKeys } from '@/utils/queries-tools.js'
 
 // Fetch infos
 export const getProjectInfosAndClusters = async (projectId: string) => {
@@ -72,7 +71,6 @@ const filterProject = (
 ) => {
   if (!project) throw new NotFoundError('Projet introuvable')
   if (!checkInsufficientRoleInProject(userId, { roles: project.roles, minRole: 'owner' })) return project
-  // @ts-ignore
   project = exclude(project, ['clusters'])
   // TODO définir les clés disponibles des environnements par niveau d'autorisation
   // @ts-ignore
@@ -103,9 +101,7 @@ export const getProjectSecrets = async (projectId: string, userId: User['id']) =
 
   return Object.fromEntries(
     Object.entries(results.results)
-      // @ts-ignore
       .filter(([_key, value]) => value.secrets)
-      // @ts-ignore
       .map(([key, value]) => [servicesInfos[key]?.title, value.secrets]))
 }
 
@@ -138,24 +134,14 @@ export const createProject = async (dataDto: CreateProjectBody, requestor: UserD
 }
 
 export const updateProject = async (data: UpdateProjectBody, projectId: Project['id'], requestor: UserDto, requestId: string) => {
-  const keysAllowedForUpdate = ['description']
-  const dataFiltered = filterObjectByKeys(data, keysAllowedForUpdate)
-
   // Pré-requis
   const project = await getProject(projectId, requestor.id)
   if (!project) throw new NotFoundError('Projet introuvable')
   if (project.locked) throw new ForbiddenError(projectIsLockedInfo)
-  Object.keys(data).forEach(key => {
-    // @ts-ignore
-    project[key] = data[key]
-  })
-
-  const schemaValidation = ProjectSchema.pick({ description: true }).safeParse(data)
-  validateSchema(schemaValidation)
 
   // Actions
   try {
-    await updateProjectQuery(projectId, dataFiltered)
+    await updateProjectQuery(projectId, data)
 
     const { results } = await hook.project.upsert(project.id)
 

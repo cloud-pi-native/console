@@ -89,9 +89,9 @@ describe('Admin stage routes', () => {
       // @ts-ignore
       const quotaStages = stage.quotaIds.map(quotaId => getRandomQuotaStage(quotaId, stage.id))
       // @ts-ignore
-      stage.clusters = [getRandomCluster({ projectIds: ['projectId'], stageIds: [stage.id] })]
+      const clusters = [getRandomCluster({ projectIds: ['projectId'], stageIds: [stage.id] })]
       // @ts-ignore
-      stage.clusterIds = stage.clusters.map(cluster => cluster.id)
+      stage.clusterIds = clusters.map(cluster => cluster.id)
 
       prisma.stage.findUnique.mockResolvedValueOnce(null)
       prisma.stage.create.mockResolvedValue(stage)

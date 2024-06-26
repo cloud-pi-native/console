@@ -7,7 +7,6 @@ export const pluginConfigRouter = () => serverInstance.router(systemPluginContra
   // Récupérer les configurations plugins
   getPluginsConfig: async ({ request: req }) => {
     const requestor = req.session.user
-    // @ts-ignore
     const services = await getPluginsConfig(requestor)
     addReqLogs({
       req,

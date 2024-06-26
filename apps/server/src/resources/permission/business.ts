@@ -25,9 +25,9 @@ export const getEnvironmentPermissions = async (
   projectId: Project['id'],
   environmentId: Environment['id'],
 ) => {
-  const roles = (await getProjectInfos(projectId))?.roles
-  // @ts-ignore
-  const errorMessage = checkInsufficientRoleInProject(userId, { roles })
+  const project = await getProjectInfos(projectId)
+  if (!project) throw new NotFoundError('Projet introuvable')
+  const errorMessage = checkInsufficientRoleInProject(userId, { roles: project.roles })
   if (errorMessage) throw new ForbiddenError(errorMessage, undefined)
   return getEnvironmentPermissionsQuery(environmentId)
 }
