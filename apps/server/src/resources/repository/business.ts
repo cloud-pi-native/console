@@ -155,6 +155,8 @@ export const deleteRepository = async (
   const project = await getProjectAndcheckRole(userId, projectId, 'owner')
 
   try {
+    await checkUpsertRepository(userId, projectId, 'owner')
+
     await deleteRepositoryQuery(repositoryId)
     const { results } = await hook.project.upsert(project.id)
 

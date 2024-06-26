@@ -265,5 +265,21 @@ describe('Repository routes', () => {
       expect(response.statusCode).toEqual(403)
       expect(JSON.parse(response.body).error).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
     })
+
+    it('Should not delete a repository if project locked', async () => {
+      const projectInfos = createRandomDbSetup({}).project
+      projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
+      const repoToDelete = projectInfos.repositories[0]
+      projectInfos.locked = true
+
+      prisma.project.findUnique.mockResolvedValue(projectInfos)
+
+      const response = await app.inject()
+        .delete(`/api/v1/projects/${projectInfos.id}/repositories/${repoToDelete.id}`)
+        .end()
+
+      expect(response.statusCode).toEqual(403)
+      expect(JSON.parse(response.body).error).toEqual(projectIsLockedInfo)
+    })
   })
 })

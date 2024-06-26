@@ -324,12 +324,13 @@ watch(quotaId, () => {
             data-testid="showDeleteEnvironmentBtn"
             :label="`Supprimer l'environnement ${localEnvironment.name}`"
             secondary
+            :disabled="props.isProjectLocked"
             icon="ri-delete-bin-7-line"
             @click="isDeletingEnvironment = true"
           />
           <DsfrAlert
             class="<md:mt-2"
-            description="La suppression d'un environnement est irréversible."
+            :description="props.isProjectLocked ? 'Impossible de supprimer un environnement lorsque le projet est verrouillé.' : 'La suppression d\'un environnement est irréversible.'"
             type="warning"
             small
           />
