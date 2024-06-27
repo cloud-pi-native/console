@@ -99,14 +99,12 @@ describe('Administration projects', () => {
   it('Should replay hooks for a project, loggedIn as admin', () => {
     const project = projects[0]
 
-    cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
     cy.intercept('PUT', `/api/v1/projects/${project.id}/hooks`).as('replayHooks')
 
     cy.getByDataTestid('tableAdministrationProjects').within(() => {
       cy.get('tr').contains(project.name)
         .click()
     })
-    cy.wait('@getQuotas')
     cy.get('.fr-callout__title')
       .should('contain', project.name)
     cy.getByDataTestid('replayHooksBtn')
@@ -122,14 +120,12 @@ describe('Administration projects', () => {
   it('Should lock and unlock a project, loggedIn as admin', () => {
     const project = projects[0]
 
-    cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
     cy.intercept('PATCH', `api/v1/admin/projects/${project.id}`).as('handleProjectLocking')
 
     cy.getByDataTestid('tableAdministrationProjects').within(() => {
       cy.get('tr').contains(project.name)
         .click()
     })
-    cy.wait('@getQuotas')
     cy.get('.fr-callout__title')
       .should('contain', project.name)
     cy.getByDataTestid('handleProjectLockingBtn')
@@ -306,7 +302,6 @@ describe('Administration projects', () => {
     const user = project.roles.find(role => role.role !== 'owner')?.user
 
     cy.intercept('GET', 'api/v1/admin/projects').as('getAllProjects')
-    cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
     cy.intercept('DELETE', `api/v1/projects/${project.id}/users/${user.id}`).as('removeUser')
     cy.intercept('POST', `api/v1/projects/${project.id}/users`).as('addUser')
 
@@ -314,7 +309,6 @@ describe('Administration projects', () => {
       cy.get('tr').contains(project.name)
         .click()
     })
-    cy.wait('@getQuotas')
     cy.get('.fr-callout__title')
       .should('contain', project.name)
     cy.get(`td[title="retirer ${user.email} du projet"]`)
@@ -341,13 +335,11 @@ describe('Administration projects', () => {
     const project = projects.find(project => project.name === 'betaapp')
 
     cy.intercept('GET', 'api/v1/admin/projects').as('getAllProjects')
-    cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
 
     cy.getByDataTestid('tableAdministrationProjects').within(() => {
       cy.get('tr').contains(project.name)
         .click()
     })
-    cy.wait('@getQuotas')
     cy.get('.fr-callout__title')
       .should('contain', project.name)
     cy.get('#servicesTable').should('exist')

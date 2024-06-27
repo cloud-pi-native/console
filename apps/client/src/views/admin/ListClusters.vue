@@ -5,7 +5,7 @@ import { useAdminClusterStore } from '@/stores/admin/cluster.js'
 import { useAdminProjectStore } from '@/stores/admin/project.js'
 import { useAdminOrganizationStore } from '@/stores/admin/organization.js'
 import { useZoneStore } from '@/stores/zone.js'
-import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
+import { useStageStore } from '@/stores/stage.js'
 
 type ClusterList = {
   id: Cluster['id']
@@ -17,7 +17,7 @@ const adminClusterStore = useAdminClusterStore()
 const adminProjectStore = useAdminProjectStore()
 const adminOrganizationStore = useAdminOrganizationStore()
 const zoneStore = useZoneStore()
-const projectEnvironmentStore = useProjectEnvironmentStore()
+const stageStore = useStageStore()
 
 const clusters = computed(() => adminClusterStore.clusters)
 const allZones = computed(() => zoneStore.zones)
@@ -97,7 +97,7 @@ onMounted(async () => {
   allProjects.value = await adminProjectStore.getAllActiveProjects()
   const organizations = await adminOrganizationStore.getAllOrganizations()
   allProjects.value.forEach(project => { project.organization = organizations.find(org => org.id === project.organizationId) })
-  allStages.value = await projectEnvironmentStore.getStages()
+  allStages.value = await stageStore.getAllStages()
 })
 
 watch(clusters, () => {

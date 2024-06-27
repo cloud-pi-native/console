@@ -1,7 +1,7 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { apiClient } from '../../api/xhr-client.js'
-import { useAdminQuotaStore } from './quota.js'
+import { apiClient } from '../api/xhr-client.js'
+import { useQuotaStore } from './quota.js'
 
 const apiClientGetQuotas = vi.spyOn(apiClient.Quotas, 'getQuotas')
 const apiClientGet = vi.spyOn(apiClient.QuotasAdmin, 'getQuotaEnvironments')
@@ -25,11 +25,11 @@ describe('Quota Store', () => {
       { id: 'id3', name: 'large' },
     ]
     apiClientGetQuotas.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
-    const adminQuotaStore = useAdminQuotaStore()
+    const quotaStore = useQuotaStore()
 
-    await adminQuotaStore.getAllQuotas()
+    await quotaStore.getAllQuotas()
 
-    expect(adminQuotaStore.quotas).toEqual(data)
+    expect(quotaStore.quotas).toEqual(data)
     expect(apiClientGetQuotas).toHaveBeenCalledTimes(1)
   })
 
@@ -41,9 +41,9 @@ describe('Quota Store', () => {
       { id: 'id3', name: 'env3' },
     ]
     apiClientGet.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
-    const adminQuotaStore = useAdminQuotaStore()
+    const quotaStore = useQuotaStore()
 
-    const res = await adminQuotaStore.getQuotaAssociatedEnvironments(quotaId)
+    const res = await quotaStore.getQuotaAssociatedEnvironments(quotaId)
 
     expect(res).toBe(data)
     expect(apiClientGet).toHaveBeenCalledTimes(1)
@@ -58,9 +58,9 @@ describe('Quota Store', () => {
     }
 
     apiClientPost.mockReturnValueOnce(Promise.resolve({ status: 201, body: data }))
-    const adminQuotaStore = useAdminQuotaStore()
+    const quotaStore = useQuotaStore()
 
-    const res = await adminQuotaStore.addQuota(data)
+    const res = await quotaStore.addQuota(data)
 
     expect(res).toBe(data)
     expect(apiClientPost).toHaveBeenCalledTimes(1)
@@ -71,9 +71,9 @@ describe('Quota Store', () => {
     const stageIds = ['stage1']
 
     apiClientPut.mockReturnValueOnce(Promise.resolve({ status: 200, body: 1 }))
-    const adminQuotaStore = useAdminQuotaStore()
+    const quotaStore = useQuotaStore()
 
-    const res = await adminQuotaStore.updateQuotaStage(quotaId, stageIds)
+    const res = await quotaStore.updateQuotaStage(quotaId, stageIds)
 
     expect(res).toBe(1)
     expect(apiClientPut).toHaveBeenCalledTimes(1)
@@ -83,9 +83,9 @@ describe('Quota Store', () => {
     const quotaId = 'quotaId'
 
     apiClientPatch.mockReturnValueOnce(Promise.resolve({ status: 200, body: 1 }))
-    const adminQuotaStore = useAdminQuotaStore()
+    const quotaStore = useQuotaStore()
 
-    const res = await adminQuotaStore.updateQuotaPrivacy(quotaId, true)
+    const res = await quotaStore.updateQuotaPrivacy(quotaId, true)
 
     expect(res).toBe(1)
     expect(apiClientPatch).toHaveBeenCalledTimes(1)
@@ -95,9 +95,9 @@ describe('Quota Store', () => {
     const quotaId = 'quotaId'
 
     apiClientDelete.mockReturnValueOnce(Promise.resolve({ status: 204 }))
-    const adminQuotaStore = useAdminQuotaStore()
+    const quotaStore = useQuotaStore()
 
-    await adminQuotaStore.deleteQuota(quotaId)
+    await quotaStore.deleteQuota(quotaId)
 
     expect(apiClientDelete).toHaveBeenCalledTimes(1)
   })

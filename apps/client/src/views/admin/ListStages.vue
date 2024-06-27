@@ -1,14 +1,14 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { useAdminStageStore } from '@/stores/admin/stage.js'
+import { useStageStore } from '@/stores/stage.js'
 import { sortArrByObjKeyAsc } from '@cpn-console/shared'
 import type { CreateStageBody, UpdateQuotaStageBody, Stage, UpdateStageClustersBody, StageAssociatedEnvironments } from '@cpn-console/shared'
-import { useAdminQuotaStore } from '@/stores/admin/quota'
+import { useQuotaStore } from '@/stores/quota.js'
 import { useAdminClusterStore } from '@/stores/admin/cluster'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
-const adminStageStore = useAdminStageStore()
-const adminQuotaStore = useAdminQuotaStore()
+const stageStore = useStageStore()
+const quotaStore = useQuotaStore()
 const adminClusterStore = useAdminClusterStore()
 const snackbarStore = useSnackbarStore()
 
@@ -17,8 +17,8 @@ const stageList = ref<any[]>([])
 const associatedEnvironments = ref<StageAssociatedEnvironments>([])
 const isNewStageForm = ref(false)
 
-const stages = computed(() => adminStageStore.stages)
-const allQuotas = computed(() => adminQuotaStore.quotas)
+const stages = computed(() => stageStore.stages)
+const allQuotas = computed(() => quotaStore.quotas)
 const allClusters = computed(() => adminClusterStore.clusters)
 
 const setStageTiles = (stages: Stage[]) => {
@@ -54,8 +54,8 @@ const cancel = () => {
 const addStage = async (stage: CreateStageBody) => {
   snackbarStore.isWaitingForResponse = true
   cancel()
-  await adminStageStore.addStage(stage)
-  await adminStageStore.getAllStages()
+  await stageStore.addStage(stage)
+  await stageStore.getAllStages()
   snackbarStore.isWaitingForResponse = false
 }
 
@@ -68,12 +68,12 @@ export type UpdateStageType = {
 const updateStage = async ({ stageId, quotaIds, clusterIds }: UpdateStageType) => {
   snackbarStore.isWaitingForResponse = true
   if (quotaIds && stageId) {
-    await adminStageStore.updateQuotaStage(stageId, quotaIds)
+    await stageStore.updateQuotaStage(stageId, quotaIds)
   }
   if (clusterIds && stageId) {
-    await adminStageStore.updateStageClusters(stageId, clusterIds)
+    await stageStore.updateStageClusters(stageId, clusterIds)
   }
-  await adminStageStore.getAllStages()
+  await stageStore.getAllStages()
   cancel()
   snackbarStore.isWaitingForResponse = false
 }
@@ -81,21 +81,21 @@ const updateStage = async ({ stageId, quotaIds, clusterIds }: UpdateStageType) =
 const deleteStage = async (stageId: string) => {
   snackbarStore.isWaitingForResponse = true
   cancel()
-  await adminStageStore.deleteStage(stageId)
-  await adminStageStore.getAllStages()
+  await stageStore.deleteStage(stageId)
+  await stageStore.getAllStages()
   snackbarStore.isWaitingForResponse = false
 }
 
 const getStageAssociatedEnvironments = async (stageId: string) => {
   snackbarStore.isWaitingForResponse = true
-  associatedEnvironments.value = await adminStageStore.getStageAssociatedEnvironments(stageId) ?? []
+  associatedEnvironments.value = await stageStore.getStageAssociatedEnvironments(stageId) ?? []
   snackbarStore.isWaitingForResponse = false
 }
 
 onMounted(async () => {
-  await adminQuotaStore.getAllQuotas()
+  await quotaStore.getAllQuotas()
   await adminClusterStore.getClusters()
-  await adminStageStore.getAllStages()
+  await stageStore.getAllStages()
   setStageTiles(stages.value)
 })
 

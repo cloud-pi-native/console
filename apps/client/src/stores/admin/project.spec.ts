@@ -4,9 +4,7 @@ import { apiClient } from '../../api/xhr-client.js'
 import { useAdminProjectStore } from './project.js'
 
 const apiClientGet = vi.spyOn(apiClient.ProjectsAdmin, 'getAllProjects')
-const apiClientDelete = vi.spyOn(apiClient.Projects, 'archiveProject')
 const apiClientPatch = vi.spyOn(apiClient.ProjectsAdmin, 'patchProject')
-const apiClientPut = vi.spyOn(apiClient.Projects, 'replayHooksForProject')
 
 describe('Project Admin Store', () => {
   beforeEach(() => {
@@ -55,25 +53,5 @@ describe('Project Admin Store', () => {
 
     expect(res).toBe(undefined)
     expect(apiClientPatch).toHaveBeenCalledTimes(1)
-  })
-
-  it('Should replay hooks for project by api call', async () => {
-    const adminProjectStore = useAdminProjectStore()
-
-    const project = { id: 'projectId' }
-    apiClientPut.mockReturnValueOnce(Promise.resolve({ status: 204, body: project }))
-
-    await adminProjectStore.replayHooksForProject(project.id)
-
-    expect(apiClientPut).toHaveBeenCalledTimes(1)
-  })
-
-  it('Should archive a project by api call', async () => {
-    const adminProjectStore = useAdminProjectStore()
-    apiClientDelete.mockReturnValueOnce(Promise.resolve({ status: 204 }))
-
-    await adminProjectStore.archiveProject('projectId')
-
-    expect(apiClientDelete).toHaveBeenCalledTimes(1)
   })
 })

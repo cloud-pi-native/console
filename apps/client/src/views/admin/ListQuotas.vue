@@ -1,16 +1,16 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { useAdminQuotaStore } from '@/stores/admin/quota.js'
 import { sortArrByObjKeyAsc } from '@cpn-console/shared'
-import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 import type { CreateQuotaBody, UpdateQuotaStageBody, Quota, PatchQuotaBody, QuotaAssociatedEnvironments } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+import { useQuotaStore } from '@/stores/quota.js'
+import { useStageStore } from '@/stores/stage.js'
 
-const adminQuotaStore = useAdminQuotaStore()
-const projectEnvironmentStore = useProjectEnvironmentStore()
+const quotaStore = useQuotaStore()
 const snackbarStore = useSnackbarStore()
+const stageStore = useStageStore()
 
-const quotas = computed(() => adminQuotaStore.quotas)
+const quotas = computed(() => quotaStore.quotas)
 const selectedQuota = ref<Quota | Record<string, never>>({})
 const quotaList = ref<any[]>([])
 const allStages = ref<any[]>([])
@@ -50,8 +50,8 @@ const cancel = () => {
 const addQuota = async (quota: CreateQuotaBody) => {
   snackbarStore.isWaitingForResponse = true
   cancel()
-  await adminQuotaStore.addQuota(quota)
-  await adminQuotaStore.getAllQuotas()
+  await quotaStore.addQuota(quota)
+  await quotaStore.getAllQuotas()
   snackbarStore.isWaitingForResponse = false
 }
 
@@ -64,10 +64,10 @@ export type UpdateQuotaType = {
 const updateQuota = async ({ quotaId, isPrivate, stageIds }: UpdateQuotaType) => {
   snackbarStore.isWaitingForResponse = true
   if (isPrivate !== undefined) {
-    await adminQuotaStore.updateQuotaPrivacy(quotaId, isPrivate)
+    await quotaStore.updateQuotaPrivacy(quotaId, isPrivate)
   }
-  await adminQuotaStore.updateQuotaStage(quotaId, stageIds)
-  await adminQuotaStore.getAllQuotas()
+  await quotaStore.updateQuotaStage(quotaId, stageIds)
+  await quotaStore.getAllQuotas()
   cancel()
   snackbarStore.isWaitingForResponse = false
 }
@@ -75,21 +75,21 @@ const updateQuota = async ({ quotaId, isPrivate, stageIds }: UpdateQuotaType) =>
 const deleteQuota = async (quotaId: string) => {
   snackbarStore.isWaitingForResponse = true
   cancel()
-  await adminQuotaStore.deleteQuota(quotaId)
-  await adminQuotaStore.getAllQuotas()
+  await quotaStore.deleteQuota(quotaId)
+  await quotaStore.getAllQuotas()
   snackbarStore.isWaitingForResponse = false
 }
 
 const getQuotaAssociatedEnvironments = async (quotaId: string) => {
   snackbarStore.isWaitingForResponse = true
-  associatedEnvironments.value = await adminQuotaStore.getQuotaAssociatedEnvironments(quotaId) ?? []
+  associatedEnvironments.value = await quotaStore.getQuotaAssociatedEnvironments(quotaId) ?? []
   snackbarStore.isWaitingForResponse = false
 }
 
 onMounted(async () => {
-  await adminQuotaStore.getAllQuotas()
+  await quotaStore.getAllQuotas()
   setQuotaTiles(quotas.value)
-  allStages.value = await projectEnvironmentStore.getStages()
+  allStages.value = await stageStore.getAllStages()
 })
 
 watch(quotas, () => {

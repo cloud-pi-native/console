@@ -3,7 +3,8 @@ import { ref, onBeforeMount, watch, computed } from 'vue'
 import { getRandomId } from '@gouvminint/vue-dsfr'
 import { EnvironmentSchema, projectIsLockedInfo, longestEnvironmentName, type QuotaStage, type Quota, type SharedZodError, parseZodError, type Environment, CleanedCluster } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
+import { useQuotaStore } from '@/stores/quota.js'
+import { useStageStore } from '@/stores/stage.js'
 import { useZoneStore } from '@/stores/zone.js'
 
 type Stage = {
@@ -40,7 +41,8 @@ const emit = defineEmits([
 ])
 
 const snackbarStore = useSnackbarStore()
-const projectEnvironmentStore = useProjectEnvironmentStore()
+const stageStore = useStageStore()
+const quotaStore = useQuotaStore()
 const zoneStore = useZoneStore()
 
 const localEnvironment = ref(props.environment)
@@ -147,8 +149,8 @@ const cancel = () => {
 }
 
 onBeforeMount(async () => {
-  quotas.value = await projectEnvironmentStore.getQuotas()
-  allStages.value = await projectEnvironmentStore.getStages()
+  quotas.value = await quotaStore.getAllQuotas()
+  allStages.value = await stageStore.getAllStages()
   await zoneStore.getAllZones()
   setEnvironmentOptions()
   setZoneOptions()

@@ -22,14 +22,6 @@ export const useAdminProjectStore = defineStore('admin-project', () => {
     apiClient.ProjectsAdmin.patchProject({ body: { lock }, params: { projectId } })
       .then(response => extractData(response, 200))
 
-  const replayHooksForProject = (projectId: string) =>
-    apiClient.Projects.replayHooksForProject({ params: { projectId } })
-      .then(response => extractData(response, 204))
-
-  const archiveProject = (projectId: string) =>
-    apiClient.Projects.archiveProject({ params: { projectId } })
-      .then(response => extractData(response, 204))
-
   const generateProjectsData = () =>
     apiClient.ProjectsAdmin.getProjectsData()
       .then(({ body }) => body)
@@ -38,8 +30,6 @@ export const useAdminProjectStore = defineStore('admin-project', () => {
     getAllProjects,
     getAllActiveProjects,
     handleProjectLocking,
-    replayHooksForProject,
-    archiveProject,
     generateProjectsData,
   }
 })
