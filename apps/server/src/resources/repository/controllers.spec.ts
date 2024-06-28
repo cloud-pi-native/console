@@ -70,7 +70,8 @@ describe('Repository routes', () => {
       prisma.project.findUnique.mockResolvedValue(projectInfos)
 
       const response = await app.inject()
-        .get(`/api/v1/projects/${projectInfos.id}/repositories/${repoToSync.id}/sync/${branchName}`)
+        .post(`/api/v1/projects/${projectInfos.id}/repositories/${repoToSync.id}/sync`)
+        .body({ branchName })
         .end()
 
       expect(response.statusCode).toEqual(204)
@@ -84,7 +85,8 @@ describe('Repository routes', () => {
       prisma.project.findUnique.mockResolvedValue(projectInfos)
 
       const response = await app.inject()
-        .get(`/api/v1/projects/${projectInfos.id}/repositories/${repoToSync.id}/sync/${branchName}`)
+        .post(`/api/v1/projects/${projectInfos.id}/repositories/${repoToSync.id}/sync`)
+        .body({ branchName })
         .end()
 
       expect(response.statusCode).toEqual(403)

@@ -99,6 +99,8 @@ export const SyncRepoSchema = {
       .uuid(),
     repositoryId: z.string()
       .uuid(),
+  }),
+  body: z.object({
     branchName: z.string(),
   }),
   responses: {

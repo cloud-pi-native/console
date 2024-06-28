@@ -60,9 +60,10 @@ export const repositoryRouter = () => serverInstance.router(repositoryContract, 
   },
 
   // Synchroniser un repository
-  syncRepository: async ({ request: req, params }) => {
+  syncRepository: async ({ request: req, params, body }) => {
     const userId = req.session.user.id
-    const { projectId, repositoryId, branchName } = params
+    const { projectId, repositoryId } = params
+    const { branchName } = body
 
     await syncRepository(projectId, repositoryId, userId, branchName, req.id)
 
