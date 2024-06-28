@@ -24,7 +24,7 @@
     "@cpn-console/ts-config": "workspace:^",
     "@types/node": "^20.14.9",
     "rimraf": "^5.0.7",
-    "typescript": "^5.5.2"
+    "typescript": "^5.5.3"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",

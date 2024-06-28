@@ -31,7 +31,7 @@
     "nodemon": "^3.1.4",
     "rimraf": "^5.0.7",
     "ts-algebra": "^2.0.0",
-    "typescript": "^5.5.2",
+    "typescript": "^5.5.3",
     "undici-types": "^6.19.2"
   },
   "publishConfig": {

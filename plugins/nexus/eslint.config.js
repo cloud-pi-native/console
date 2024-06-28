@@ -1,6 +1,6 @@
-{
+export default [{
   "root": true,
   "extends": [
     "@cpn-console/eslint-config"
   ]
-}
+}]
