@@ -11,8 +11,8 @@
     "build": "tsc",
     "build:clean": "rimraf ./dist ./types ./tsconfig.tsbuildinfo",
     "dev": "nodemon --watch src --ext .ts --exec 'pnpm run build'",
-    "format": "eslint ./src --fix",
-    "lint": "eslint ./src",
+    "format": "eslint ./ --fix",
+    "lint": "eslint ./",
     "swagger:generate": "swagger-typescript-api -p https://raw.githubusercontent.com/goharbor/harbor/v2.9.1/api/v2.0/swagger.yaml -o ./src/api --axios"
   },
   "dependencies": {

@@ -76,12 +76,12 @@ const generateRows = () => allOrganizations.value.length
       formatDate(updatedAt),
     ]))
   : [[{
-      text: 'Aucune organisation, veuillez en ajouter une.',
-      cellAttrs: {
-        colspan: headers.length,
-        align: 'center',
-      },
-    }]]
+    text: 'Aucune organisation, veuillez en ajouter une.',
+    cellAttrs: {
+      colspan: headers.length,
+      align: 'center',
+    },
+  }]]
 
 const rows = ref<ReturnType<typeof generateRows>>([])
 

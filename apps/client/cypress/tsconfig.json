@@ -1,19 +1,15 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "baseUrl": ".",
-    "types": [
-      "cypress",
-      "node"
-    ],
+    "baseUrl": "./",
+    "noEmit": true,
     "paths": {
-      "@/*": [
-        "../src/*"
-      ]
+      "@/*": ["../src/*"]
     },
+    "types": ["cypress", "node"],
   },
   "include": [
-    "**/*.ts",
+    "./**/*.ts",
   ],
   "exclude": []
 }

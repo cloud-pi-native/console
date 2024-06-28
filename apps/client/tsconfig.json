@@ -1,39 +1,63 @@
 {
+  // We can't extends because of Cypress incompatibility
+  // "extends": [
+  //   "@cpn-console/ts-config/tsconfig.base.json"
+  // ],
   "compilerOptions": {
+    // Module
     "target": "ESNext",
-    "jsx": "preserve",
-    "lib": [
-      "DOM",
-      "ESNext"
-    ],
-    "baseUrl": ".",
-    "module": "ESNext",
-    "moduleResolution": "node",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+
+    // Base
+    "baseUrl": "./",
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "declarationDir": "./types",
     "paths": {
       "@/*": [
         "src/*"
       ]
     },
-    "resolveJsonModule": true,
-    "types": [
-      "vitest",
-      "vite/client",
-    ],
-    "allowJs": true,
+    "lib": ["DOM","ESNext"],
+    "types": ["vitest", "vite/client"],
+    "jsx": "preserve",
+    "forceConsistentCasingInFileNames": true,
+    "incremental": true,
+    "sourceMap": true,
+    "skipLibCheck": true,
+
+    // Output
+    "noEmit": false,
+    "emitDeclarationOnly": false,
+    "declaration": true,
+
+    // Best practices
     "strict": true,
+    "alwaysStrict": true,
+    "allowJs": true,
+    "noImplicitAny": true,
     "strictNullChecks": true,
     "noUnusedLocals": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "isolatedModules": true,
-    "skipLibCheck": true
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "allowImportingTsExtensions": false,
+
+    // Some stricter flags
+    "useUnknownInCatchVariables": true,
+    "noPropertyAccessFromIndexSignature": false,
   },
   "vueCompilerOptions": {},
+  "include": [
+    "./src/**/*.ts",
+    "./src/**/*.js",
+    "./src/**/*.vue",
+  ],
   "exclude": [
-    // "**/*.spec.ts",
-    "dist",
-    "node_modules",
-    "cypress",
-    "coverage"
+    "./src/**/*.spec.ts",
+    "./src/**/__mocks__",
   ],
 }

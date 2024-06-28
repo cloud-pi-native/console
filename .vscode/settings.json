@@ -1,43 +1,74 @@
 {
-  // Format
+  // visuals
+  "window.autoDetectColorScheme": true,
+  "editor.fontLigatures": "'ss01', 'ss02', 'ss03', 'ss06', 'zero'",
+  "editor.cursorBlinking": "phase",
+  "editor.suggestSelection": "first",
   "editor.wordWrap": "on",
-  "editor.codeActionsOnSave": {
-    "source.fixAll": "explicit"
-  },
-  "eslint.enable": true,
-  "eslint.validate": [
-    "vue",
-    "html",
-    "javascript"
-  ],
-  "eslint.format.enable": true,
-  "editor.formatOnPaste": true,
-  "editor.formatOnSave": true,
-  "editor.formatOnType": true,
   "editor.bracketPairColorization.enabled": true,
   "editor.tabSize": 2,
-  // Emmet
-  "emmet.includeLanguages": {
-    "vue-html": "html",
-    "postcss": "css"
+  "editor.minimap.enabled": false,
+  "search.exclude": {
+    "**/.git": true,
+    "**/.nuxt": true,
+    "**/.pnpm": true,
+    "**/.vscode": true,
+    "**/.yarn": true,
+    "**/.turbo": true,
+    "**/dist/**": true,
+    "**/out/**": true,
+    "**/logs": true,
+    "**/node_modules": true,
+    "**/package-lock.json": true,
+    "**/pnpm-lock.yaml": true,
+    "**/yarn.lock": true
   },
-  "npm-intellisense.importES6": true,
-  "npm-intellisense.importQuotes": "'",
-  "npm-intellisense.importLinebreak": "\n",
-  "npm-intellisense.importDeclarationType": "const",
-  "stylelint.enable": true,
-  "stylelint.validate": [
-    "css"
+  // general
+  "editor.unicodeHighlight.invisibleCharacters": false,
+  "workbench.startupEditor": "none",
+  // git
+  "git.autofetch": true,
+  "git.untrackedChanges": "separate",
+  // github
+  "githubPullRequests.pullBranch": "never",
+  // eslint
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+  },
+  "eslint.validate": [
+    "javascript",
+    "typescript",
+    "javascriptreact",
+    "typescriptreact",
+    "vue",
+    "html",
+    "markdown",
+    "json",
+    "jsonc",
+    "json5"
   ],
-  "css.validate": false,
-  "scss.validate": false,
-  // JS
-  "javascript.preferences.importModuleSpecifierEnding": "js",
-  "typescript.preferences.importModuleSpecifierEnding": "js",
-  "javascript.preferences.quoteStyle": "single",
-  "[javascript]": {
-    "editor.defaultFormatter": "vscode.typescript-language-features",
+  // stylelint
+  "css.validate": true,
+  "less.validate": true,
+  "scss.validate": true,
+  "files.associations": {
+    "*.css": "postcss",
   },
+  // languages
+  "[javascript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "javascript.preferences.quoteStyle": "single",
+  "javascript.preferences.importModuleSpecifierEnding": "js",
+  "javascript.suggest.completeJSDocs": true,
+  "javascript.suggest.jsdoc.generateReturns": true,
+  "[typescript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "typescript.preferences.quoteStyle": "single",
+  "typescript.preferences.importModuleSpecifierEnding": "js",
+  "typescript.suggest.completeJSDocs": true,
+  "typescript.suggest.jsdoc.generateReturns": true,
   "[vue]": {
     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
@@ -48,13 +79,28 @@
     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
   "[markdown]": {
+    "editor.quickSuggestions": {
+      "other": true,
+      "comments": true,
+      "strings": true
+    },
     "editor.formatOnSave": true,
-    "editor.formatOnPaste": true
+    "editor.formatOnPaste": true,
+    "editor.defaultFormatter": "yzhang.markdown-all-in-one"
   },
-  "yaml.completion": true,
-  "conventionalCommits.scopes": [
-    "projectInit"
-  ],
+  // conventional commits
+  "conventionalCommits.showNewVersionNotes": false,
+  // kubernetes
+  "vs-kubernetes": {
+    "vs-kubernetes.crd-code-completion": "enabled"
+  },
+  "vscode-kubernetes.log-viewer.follow": true,
+  "vscode-kubernetes.log-viewer.timestamp": false,
+  "vscode-kubernetes.log-viewer.since": -1,
+  "vscode-kubernetes.log-viewer.tail": -1,
+  "vscode-kubernetes.log-viewer.destination": "Webview",
+  "vscode-kubernetes.log-viewer.wrap": true,
+  // sonarqube
   "sonarlint.connectedMode.project": {
     "connectionId": "https://sonarqube.fabrique-numerique.fr",
     "projectKey": "cloud-pi-native_console_AYsa46O31ebDtzs-pYyZ"
