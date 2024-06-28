@@ -280,7 +280,7 @@ const archiveProject = async (projectId: string) => {
   snackbarStore.isWaitingForResponse = false
 }
 
-const addUserToProject = async (email: string) => {
+const addUserToProject= async (email: string) => {
   snackbarStore.isWaitingForResponse = true
   if (selectedProject.value) {
     selectedProject.value.members = await projectUserStore.addUserToProject(selectedProject.value.id, { email })

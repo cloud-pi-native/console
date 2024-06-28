@@ -28,19 +28,19 @@ export const getAllUserClusters = async (kcUser: UserProfile) => {
   const where: Prisma.ClusterWhereInput = isAdmin
     ? {}
     : {
-        OR: [
+      OR: [
         // Sélectionne tous les clusters publics
-          { privacy: 'public' },
-          // Sélectionne les clusters associés aux projets dont l'user est membre
-          {
-            projects: { some: { roles: { some: { userId: kcUser.id } } } },
-          },
-          // Sélectionne les clusters associés aux environnments appartenant à des projets dont l'user est membre
-          {
-            environments: { some: { project: { roles: { some: { userId: kcUser.id } } } } },
-          },
-        ],
-      }
+        { privacy: 'public' },
+        // Sélectionne les clusters associés aux projets dont l'user est membre
+        {
+          projects: { some: { roles: { some: { userId: kcUser.id } } } },
+        },
+        // Sélectionne les clusters associés aux environnments appartenant à des projets dont l'user est membre
+        {
+          environments: { some: { project: { roles: { some: { userId: kcUser.id } } } } },
+        },
+      ],
+    }
   const clusters = await listClustersForUser(where)
   return clusters.map(({ stages, ...cluster }) => ({
     ...cluster,
