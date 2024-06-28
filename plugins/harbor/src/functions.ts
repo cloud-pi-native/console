@@ -109,13 +109,13 @@ export const getProjectSecrets: StepCall<ProjectLite> = async ({ args: project, 
   if (projectRobotEnabled) {
     secrets = VaultRobotSecret?.data
       ? {
-          ...secrets,
-          ...VaultRobotSecret.data,
-        }
+        ...secrets,
+        ...VaultRobotSecret.data,
+      }
       : {
-          ...secrets,
-          '/!\\': 'Vous n\'avez pas de robot de lecture veuillez reprovisionner',
-        }
+        ...secrets,
+        '/!\\': 'Vous n\'avez pas de robot de lecture veuillez reprovisionner',
+      }
   }
   return {
     status: {

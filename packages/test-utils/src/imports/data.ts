@@ -13,7 +13,7 @@ export const data = {
       id: 'b644c07f-193c-47ed-ae10-b88a8f63d20b',
       source: 'dso-console',
       name: 'mi',
-      label: "Ministère de l'Intérieur",
+      label: 'Ministère de l\'Intérieur',
       active: true,
       createdAt: '2023-07-03T14:46:56.764Z',
       updatedAt: '2023-07-03T14:46:56.764Z',

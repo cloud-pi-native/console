@@ -25,12 +25,13 @@ export const getApplicationObject = (
       },
       syncPolicy: {
         automated: {
-          prune: true,
-          selfHeal: true,
+          prune: false,
+          selfHeal: false,
         },
         syncOptions: [
           'CreateNamespace=false',
           'RespectIgnoreDifferences=true',
+          'ApplyOutOfSyncOnly=true',
         ],
       },
     },

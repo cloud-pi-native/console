@@ -1,19 +1,21 @@
 {
   "name": "@cpn-console/eslint-config",
-  "description": "",
   "version": "1.0.0",
-  "private": false,
+  "license": "ISC",
+  "type": "module",
   "main": "index.js",
-  "module": "index.js",
-  "dependencies": {
-    "@typescript-eslint/eslint-plugin": "^7.7.0",
-    "@typescript-eslint/parser": "^7.7.0",
-    "eslint": "^8.57.0",
+  "types": "types/index.d.ts",
+  "devDependencies": {
+    "@eslint/compat": "^1.1.0",
+    "@stylistic/eslint-plugin": "^2.3.0",
+    "@typescript-eslint/eslint-plugin": "^7.15.0",
+    "@typescript-eslint/parser": "^7.15.0",
+    "eslint": "^9.6.0",
     "eslint-config-standard": "^17.1.0",
-    "eslint-plugin-unused-imports": "^3.1.0",
-    "eslint-plugin-n": "^16.6.2",
-    "eslint-plugin-promise": "^6.1.1",
-    "typescript-eslint": "^7.7.0"
+    "eslint-plugin-unused-imports": "^4.0.0",
+    "eslint-plugin-n": "^17.9.0",
+    "eslint-plugin-promise": "^6.4.0",
+    "typescript-eslint": "^7.15.0"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
