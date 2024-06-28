@@ -24,7 +24,7 @@ on:
         description: Nodejs version used
         required: true
         type: string
-        default: "20.14.0"
+        default: "20.15.0"
       PNPM_VERSION:
         description: Pnpm version used
         required: true

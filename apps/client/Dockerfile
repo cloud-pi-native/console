@@ -1,5 +1,5 @@
 # Dev stage
-FROM docker.io/node:20.14.0-bullseye-slim AS dev
+FROM docker.io/node:20.15.0-bullseye-slim AS dev
 
 WORKDIR /app
 RUN npm install --ignore-scripts --location=global pnpm@9.4.0
@@ -12,7 +12,7 @@ COPY --chown=node:root packages/test-utils/package.json ./packages/test-utils/pa
 COPY --chown=node:root packages/tsconfig/package.json ./packages/tsconfig/package.json
 RUN pnpm install --ignore-scripts # --no-optional
 COPY --chown=node:root packages/ ./packages/
-RUN pnpm --filter shared run build
+RUN pnpm --filter @cpn-console/shared run build
 COPY --chown=node:root apps/client/ ./apps/client/
 ENTRYPOINT [ "pnpm", "--filter", "client", "run", "dev" ]
 
@@ -21,7 +21,7 @@ ENTRYPOINT [ "pnpm", "--filter", "client", "run", "dev" ]
 FROM dev AS build
 
 ARG APP_VERSION
-RUN pnpm --filter client run build
+RUN pnpm --filter @cpn-console/client run build
 
 
 # Prod stage

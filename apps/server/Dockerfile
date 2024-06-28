@@ -1,5 +1,5 @@
 # Base stage
-FROM docker.io/node:20.14.0-bullseye-slim AS dev
+FROM docker.io/node:20.15.0-bullseye-slim AS dev
 
 WORKDIR /app
 RUN npm install --ignore-scripts --location=global pnpm@9.4.0
@@ -36,12 +36,12 @@ CMD [ "dev" ]
 FROM dev AS build
 
 RUN pnpm run build
-RUN pnpm --filter server run build
-RUN pnpm --filter server --prod deploy build
+RUN pnpm --filter @cpn-console/server run build
+RUN pnpm --filter @cpn-console/server --prod deploy build
 
 
 # Prod stage
-FROM docker.io/node:20.14.0-bullseye-slim AS prod
+FROM docker.io/node:20.15.0-bullseye-slim AS prod
 
 ARG APP_VERSION
 ENV APP_VERSION=$APP_VERSION
