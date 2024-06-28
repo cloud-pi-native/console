@@ -1,8 +1,8 @@
 import prisma from '../../__mocks__/prisma.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
 import { createRandomDbSetup, getRandomLog, getRandomRole, getRandomUser } from '@cpn-console/test-utils'
-import { getConnection, closeConnections } from '../../connect.js'
 import { projectIsLockedInfo } from '@cpn-console/shared'
+import { getConnection, closeConnections } from '../../connect.js'
 import { getRequestor, setRequestor } from '../../utils/mocks.js'
 import app from '../../app.js'
 
@@ -135,45 +135,96 @@ describe('User routes', () => {
   })
 
   // PUT
-  describe('updateUserProjectRoleController', () => {
-    it('Should update a project member\'s role', async () => {
+  describe('transferProjectOwnershipController', () => {
+    it('Should transfer ownership for a project, as owner', async () => {
       const projectInfos = createRandomDbSetup({}).project
-      projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
-      const userToUpdate = projectInfos.roles[0]
-      const userUpdated = userToUpdate
-      userUpdated.role = 'user'
+      const userToTransfer = getRandomUser()
+      projectInfos.roles = [getRandomRole(requestor.id, projectInfos.id, 'owner'), getRandomRole(userToTransfer.id, projectInfos.id, 'user')]
+      const newProjectInfosRoles = projectInfos.roles
+      newProjectInfosRoles[0].role = 'owner'
+      newProjectInfosRoles[1].role = 'user'
 
       prisma.project.findUnique.mockResolvedValue(projectInfos)
-      prisma.role.update.mockResolvedValue(userUpdated)
-      prisma.role.findMany.mockResolvedValue(projectInfos.roles)
-      delete projectInfos.roles[0].user
+      prisma.role.findMany.mockResolvedValueOnce(projectInfos.roles)
+      prisma.role.update.mockResolvedValue([])
+      prisma.role.findMany.mockResolvedValueOnce(newProjectInfosRoles)
 
       const response = await app.inject()
-        .put(`/api/v1/projects/${projectInfos.id}/users/${userToUpdate.userId}`)
-        .body(userUpdated)
+        .put(`/api/v1/projects/${projectInfos.id}/users/${userToTransfer.id}`)
         .end()
 
       expect(response.statusCode).toEqual(200)
       expect(response.body).toBeDefined()
-      expect(response.json()).toEqual(projectInfos.roles)
+      expect(response.json()).toEqual(newProjectInfosRoles)
     })
 
-    it('Should not update a project member\'s role if project locked', async () => {
+    it('Should transfer ownership for a project, as admin', async () => {
+      requestor.groups = ['/admin']
       const projectInfos = createRandomDbSetup({}).project
-      projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
+      const userToTransfer = getRandomUser()
+      projectInfos.roles = [getRandomRole(undefined, projectInfos.id, 'owner'), getRandomRole(userToTransfer.id, projectInfos.id, 'user')]
+      const newProjectInfosRoles = projectInfos.roles
+      newProjectInfosRoles[0].role = 'owner'
+      newProjectInfosRoles[1].role = 'user'
+
+      prisma.project.findUnique.mockResolvedValue(projectInfos)
+      prisma.role.findMany.mockResolvedValueOnce(projectInfos.roles)
+      prisma.role.update.mockResolvedValue([])
+      prisma.role.findMany.mockResolvedValueOnce(newProjectInfosRoles)
+
+      const response = await app.inject()
+        .put(`/api/v1/projects/${projectInfos.id}/users/${userToTransfer.id}`)
+        .end()
+
+      expect(response.statusCode).toEqual(200)
+      expect(response.body).toBeDefined()
+      expect(response.json()).toEqual(newProjectInfosRoles)
+    })
+
+    it('Should not transfer ownership for a locked project', async () => {
+      const projectInfos = createRandomDbSetup({}).project
       projectInfos.locked = true
-      const userToUpdate = projectInfos.roles[0]
-      const userUpdated = { ...userToUpdate, role: 'user' }
 
       prisma.project.findUnique.mockResolvedValue(projectInfos)
 
       const response = await app.inject()
         .put(`/api/v1/projects/${projectInfos.id}/users/b7b4d9bd-7a8f-4287-bb12-5ce2dadb4bb5`)
-        .body(userUpdated)
         .end()
 
       expect(response.statusCode).toEqual(403)
       expect(JSON.parse(response.body).error).toEqual(projectIsLockedInfo)
+    })
+
+    it('Should not transfer ownership for a project if user is not member', async () => {
+      const projectInfos = createRandomDbSetup({}).project
+      const userToTransfer = getRandomUser()
+      projectInfos.roles = [getRandomRole(requestor.id, projectInfos.id, 'owner')]
+
+      prisma.project.findUnique.mockResolvedValue(projectInfos)
+      prisma.role.findMany.mockResolvedValueOnce(projectInfos.roles)
+
+      const response = await app.inject()
+        .put(`/api/v1/projects/${projectInfos.id}/users/${userToTransfer.id}`)
+        .end()
+
+      expect(response.statusCode).toEqual(400)
+      expect(JSON.parse(response.body).error).toEqual('L\'utilisateur ne fait pas partie du projet')
+    })
+
+    it('Should not transfer ownership for a project if owner is not found', async () => {
+      const projectInfos = createRandomDbSetup({}).project
+      const userToTransfer = getRandomUser()
+      projectInfos.roles = [getRandomRole(userToTransfer.id, projectInfos.id, 'user')]
+
+      prisma.project.findUnique.mockResolvedValue(projectInfos)
+      prisma.role.findMany.mockResolvedValueOnce(projectInfos.roles)
+
+      const response = await app.inject()
+        .put(`/api/v1/projects/${projectInfos.id}/users/${userToTransfer.id}`)
+        .end()
+
+      expect(response.statusCode).toEqual(400)
+      expect(JSON.parse(response.body).error).toEqual('Impossible de trouver le souscripteur actuel du projet')
     })
   })
 
@@ -218,6 +269,7 @@ describe('User routes', () => {
 
     it('Should not remove an user if requestor is not member himself', async () => {
       const projectInfos = createRandomDbSetup({}).project
+      requestor.groups = []
 
       prisma.project.findUnique.mockResolvedValue(projectInfos)
 

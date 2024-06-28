@@ -6,7 +6,7 @@ import {
   GetMatchingUsersSchema,
   GetProjectUsersSchema,
   UpdateUserAdminRoleSchema,
-  UpdateUserRoleInProjectSchema,
+  TransferProjectOwnershipSchema,
 } from '../schemas/index.js'
 
 export const userContract = contractInstance.router({
@@ -40,31 +40,29 @@ export const userContract = contractInstance.router({
     responses: CreateUserRoleInProjectSchema.responses,
   },
 
-  updateUserRoleInProject: {
+  transferProjectOwnership: {
     method: 'PUT',
     path: `${apiPrefix}/projects/:projectId/users/:userId`,
-    pathParams: UpdateUserRoleInProjectSchema.params,
-    body: UpdateUserRoleInProjectSchema.body,
+    pathParams: TransferProjectOwnershipSchema.params,
+    body: null,
     contentType: 'application/json',
     summary: 'Update user role in project',
     description: 'Update user role in project.',
-    responses: UpdateUserRoleInProjectSchema.responses,
+    responses: TransferProjectOwnershipSchema.responses,
   },
 
   deleteUserRoleInProject: {
     method: 'DELETE',
     path: `${apiPrefix}/projects/:projectId/users/:userId`,
-    pathParams: UpdateUserRoleInProjectSchema.params,
+    pathParams: TransferProjectOwnershipSchema.params,
     body: null,
     summary: 'Delete user role in project',
     description: 'Delete user role in project.',
-    responses: UpdateUserRoleInProjectSchema.responses,
+    responses: TransferProjectOwnershipSchema.responses,
   },
 })
 
 export type AddUserToProjectBody = ClientInferRequest<typeof userContract.createUserRoleInProject>['body']
-
-export type UpdateUserRoleInProjectBody = ClientInferRequest<typeof userContract.updateUserRoleInProject>['body']
 
 export type LettersQuery = ClientInferRequest<typeof userContract.getMatchingUsers>['query']
 

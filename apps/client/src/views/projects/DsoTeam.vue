@@ -24,9 +24,12 @@ const addUserToProject = async (email: string) => {
   snackbarStore.isWaitingForResponse = false
 }
 
-const updateUserRole = ({ userId, role }: { userId: string, role: string }) => {
-  console.log({ userId, role })
-  snackbarStore.setMessage('Cette fonctionnalité n\'est pas encore disponible')
+const updateUserRole = async (userId: string) => {
+  if (!project.value) return snackbarStore.setMessage('Veuillez sélectionner un projet')
+  snackbarStore.isWaitingForResponse = true
+  await projectUserStore.transferProjectOwnership(project.value.id, userId)
+  teamCtKey.value = getRandomId('team')
+  snackbarStore.isWaitingForResponse = false
 }
 
 const removeUserFromProject = async (userId: string) => {
@@ -49,7 +52,7 @@ const removeUserFromProject = async (userId: string) => {
     :known-users="usersStore.users"
     :roles="project?.roles ?? []"
     @add-member="(email) => addUserToProject(email)"
-    @update-role="({ userId, role}) => updateUserRole({ userId, role})"
+    @update-role="(userId) => updateUserRole(userId)"
     @remove-member="(userId) => removeUserFromProject(userId)"
   />
 </template>
