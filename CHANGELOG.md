@@ -1,5 +1,25 @@
 # Changelog
 
+## [8.6.0](https://github.com/cloud-pi-native/console/compare/v8.5.0...v8.6.0) (2024-06-28)
+
+
+### Features
+
+* :art: change subpath of deployments ([d7b57ca](https://github.com/cloud-pi-native/console/commit/d7b57ca095bcb1ae8fcde5ead7a533b0f0ce81e5))
+* :sparkles: add user leo poumailloux ([0147e07](https://github.com/cloud-pi-native/console/commit/0147e071bbdfbb8c666d20247bd95938f645f152))
+* :sparkles: give project ownership ([dc6fa79](https://github.com/cloud-pi-native/console/commit/dc6fa798fe2fe37395c521482bbc857eb74b50d1))
+* :sparkles: truncate description ([8191a41](https://github.com/cloud-pi-native/console/commit/8191a41ae808980d400f1e65499e012d0d192c28))
+
+
+### Bug Fixes
+
+* :bug: handle vault ha for status monitor ([3692e01](https://github.com/cloud-pi-native/console/commit/3692e010d9d4c0c03e8403b4d5df3591f0312209))
+* :bug: interface suppression & add explication ([4476c9b](https://github.com/cloud-pi-native/console/commit/4476c9bacdcc748ca0d2d1029f8980392a2ea068))
+* :bug: isolation des groupes d'envs dans keycloak ([91b5d55](https://github.com/cloud-pi-native/console/commit/91b5d551a88f5059868a80271be5b37c451839d0))
+* :bug: prevent env deletion if project is locked ([d75a5cf](https://github.com/cloud-pi-native/console/commit/d75a5cfc4e86741a91ba31d0c2d2fc2b21fa5226))
+* :bug: prevent env deletion if project is locked ([a273869](https://github.com/cloud-pi-native/console/commit/a273869ba421ee37fc342c585c38c978aab5d411))
+* :bug: support slashes in syncRepository branchName ([d304427](https://github.com/cloud-pi-native/console/commit/d304427c8bd0af8e7080ec9480143d0abab3bb76))
+
 ## [8.5.0](https://github.com/cloud-pi-native/console/compare/v8.4.1...v8.5.0) (2024-06-10)
 
 
