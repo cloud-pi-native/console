@@ -11,7 +11,7 @@ env:
   MULTI_ARCH: true
   USE_QEMU: false
   NODE_VERSION: "20.14.0"
-  PNPM_VERSION: "9.1.4"
+  PNPM_VERSION: "9.4.0"
 
 jobs:
   expose-vars:

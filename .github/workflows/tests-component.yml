@@ -23,7 +23,7 @@ on:
         description: Pnpm version used to run tests
         required: true
         type: string
-        default: "9.1.4"
+        default: "9.4.0"
       BROWSERS:
         description: Comma separeted browser list to run tests on (Options are 'electron', 'chrome', 'edge', 'firefox')
         required: false
