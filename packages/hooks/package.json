@@ -11,9 +11,9 @@
     "build": "tsc",
     "build:clean": "rimraf ./dist ./types ./tsconfig.tsbuildinfo",
     "dev": "nodemon --watch src --ext .ts --exec 'vite-node src/config.ts'",
-    "format": "eslint ./src --fix",
+    "format": "eslint ./ --fix",
     "kube:e2e-ci": "echo 'check cache'",
-    "lint": "eslint ./src",
+    "lint": "eslint ./",
     "test:e2e-ci": "echo 'check cache'"
   },
   "dependencies": {

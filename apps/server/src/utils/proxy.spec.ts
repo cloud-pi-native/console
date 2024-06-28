@@ -70,7 +70,7 @@ describe('Test calls without ID passed', () => {
   it('Test error when args provided without ID', async () => {
     // Création d'une cible de test
     const target = {
-      async fetchData (id: string, args: any) {
+      async fetchData (_id: string, _args: any) {
         return 'No ID provided'
       },
     }

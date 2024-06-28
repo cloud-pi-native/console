@@ -48,7 +48,7 @@ const switchSelection = (event: string) => {
   emit('update', options.selected.value, options.selected.value.map(option => option[props.valueKey]))
 }
 
-type SwitchMultipleParam = 'notSelected' | 'notSelectedDisplayed' | 'selected' | 'selectedDisplayed';
+type SwitchMultipleParam = 'notSelected' | 'notSelectedDisplayed' | 'selected' | 'selectedDisplayed'
 const switchMultiple = (choice: SwitchMultipleParam) => {
   if (choice === 'selected') {
     selectedValues.value = selectedValues.value.filter(value => !options.selected.value.find(select => select[props.valueKey] === value))

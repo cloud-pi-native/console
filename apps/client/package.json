@@ -1,7 +1,7 @@
 {
   "name": "@cpn-console/client",
   "version": "8.9.2",
-  "description": "dso-portal client",
+  "description": "cpn-console client",
   "private": false,
   "type": "module",
   "scripts": {
@@ -10,13 +10,13 @@
     "build:clean": "rimraf ./dist ./tsconfig.tsbuildinfo",
     "cypress:install": "cypress install",
     "dev": "vite --mode=development",
-    "format": "eslint ./src --fix",
+    "format": "NODE_OPTIONS='--no-warnings=ExperimentalWarning' eslint ./ --fix",
     "format:style": "stylelint ./src/**/*.{css,vue} --fix",
     "integ": "vite --mode=integration",
     "kube:e2e": "CLIENT_HOST=console.dso.local CLIENT_PORT=80 cypress open",
     "lint": "run-p lint:*",
-    "lint:styles": "stylelint ./src/**/*.{css,vue}",
-    "lint:ts": "eslint ./src",
+    "lint:style": "stylelint ./src/**/*.{css,vue}",
+    "lint:ts": "NODE_OPTIONS='--no-warnings=ExperimentalWarning' eslint ./",
     "preview": "vite preview --port 8080",
     "test": "vitest run",
     "test:cov": "vitest run --coverage",
@@ -50,6 +50,7 @@
   "devDependencies": {
     "@cpn-console/eslint-config": "workspace:^",
     "@cpn-console/test-utils": "workspace:^",
+    "@cpn-console/ts-config": "workspace:^",
     "@eslint/compat": "^1.1.0",
     "@faker-js/faker": "^8.4.1",
     "@types/jsdom": "^21.1.7",
@@ -73,6 +74,7 @@
     "unplugin-vue-components": "^0.27.2",
     "vite": "^5.3.2",
     "vitest": "^1.6.0",
+    "vue-eslint-parser": "^9.4.3",
     "vue-tsc": "^2.0.22"
   },
   "optionalDependencies": {

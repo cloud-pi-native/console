@@ -1,6 +1,7 @@
 {
-  "**/client/**/*.{js,ts,vue,cjs}": "pnpm run format --filter @cpn-console/client --",
-  "**/client/**/*.{vue,css}": "pnpm run format:style --filter @cpn-console/client --",
-  "**/server/**/*.{js,cjs,ts}": "pnpm run format --filter @cpn-console/server --",
-  "**/shared/**/*.{js,cjs,ts}": "pnpm run format --filter @cpn-console/shared --"
+  "**/apps/client/**/*.{vue,css}": "pnpm run lint:style --filter=@cpn-console/client --",
+  "**/apps/client/**/*.{js,ts,cjs,mjs,vue,css}": "pnpm run lint:ts --filter=@cpn-console/client --",
+  "**/apps/server/**/*.{js,ts,cjs,mjs}": "pnpm run lint --filter=@cpn-console/server --",
+  "**/packages/**/*.{js,ts,cjs,mjs}": "pnpm run lint --filter=./packages/* --",
+  "**/plugins/**/*.{js,ts,cjs,mjs}": "pnpm run lint --filter=./plugins/* --"
 }

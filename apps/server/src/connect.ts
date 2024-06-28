@@ -7,22 +7,6 @@ import {
   isDev,
   dbUrl,
 } from './utils/env.js'
-import {
-  _dropEnvironmentsTable,
-  _dropRepositoriesTable,
-  _dropProjectsTable,
-  _dropUsersTable,
-  _dropOrganizationsTable,
-  _dropRolesTable,
-  _dropLogsTable,
-  _dropClusterTable,
-  _dropPermissionsTable,
-  _dropKubeconfigTable,
-  _dropQuotaTable,
-  _dropStageTable,
-  _dropZoneTable,
-  _dropProjectClusterHistoryTable,
-} from './resources/queries-index.js'
 
 const DELAY_BEFORE_RETRY = isTest || isCI ? 1000 : 10000
 let closingConnections = false

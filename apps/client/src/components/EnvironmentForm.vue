@@ -88,7 +88,7 @@ const setEnvironmentOptions = () => {
   clusterOptions.value = props.allClusters
     .filter(cluster =>
       (props.projectClustersIds.includes(cluster.id) && // clusters possibles pour ce projet
-      cluster.stageIds.includes(localEnvironment.value.stageId ?? '') && // correspondant à ce stage
+        cluster.stageIds.includes(localEnvironment.value.stageId ?? '') && // correspondant à ce stage
         cluster.zoneId === zoneId.value) || // dont la zone d'attachement est celle choisie
       cluster.id === localEnvironment.value.clusterId, // ou alors celui associé à l'environnment en cours de modification
     )

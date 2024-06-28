@@ -1,9 +1,11 @@
 {
   "name": "@cpn-console/server",
-  "description": "dso-portal server",
+  "description": "cpn-console server",
   "version": "8.9.2",
   "type": "module",
-  "types": "./types/plugins/index.d.ts",
+  "main": "dist/server.js",
+  "module": "dist/server.js",
+  "types": "types/server.d.ts",
   "scripts": {
     "build": "tspc || exit 0",
     "build:clean": "rimraf ./dist ./types ./tsconfig.tsbuildinfo",

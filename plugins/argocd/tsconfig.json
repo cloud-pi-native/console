@@ -2,32 +2,21 @@
   "extends": [
     "@cpn-console/ts-config/tsconfig.base.json"
   ],
+  "compilerOptions": {
+    "baseUrl": "./",
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "declarationDir": "./types",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+  },
   "include": [
-    "./**/*.ts"
+    "./src/**/*.ts",
+    "./src/**/*.js",
   ],
   "exclude": [
-    "./node_modules",
-    "./dist",
-    "./types",
-    "./vitest.config.ts",
-    "./coverage"
+    "./src/**/*.spec.ts",
+    "./src/**/__mocks__",
   ],
-  "compilerOptions": {
-    "rootDir": "./src",
-    "baseUrl": "./",
-    "paths": {
-      "@/*": [
-        "./src/*"
-      ]
-    },
-    "lib": [
-      "ESNext"
-    ],
-    "outDir": "./dist",
-    "declaration": true,
-    "declarationDir": "./types",
-    "noEmit": false,
-    "emitDeclarationOnly": false,
-    "allowImportingTsExtensions": false,
-  }
 }

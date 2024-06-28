@@ -34,7 +34,7 @@ export class AnyObjectsApi {
 
   protected interceptors: Interceptor[] = []
 
-  constructor(basePath?: string)
+  constructor (basePath?: string)
   constructor (basePathOrUsername: string, password?: string, basePath?: string) {
     if (password) {
       if (basePath) {
@@ -47,7 +47,6 @@ export class AnyObjectsApi {
     }
   }
 
-   
   set useQuerystring (value: boolean) {
     this._useQuerystring = value
   }
