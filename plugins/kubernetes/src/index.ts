@@ -26,7 +26,7 @@ export const plugin: Plugin = {
 declare module '@cpn-console/hooks' {
   interface HookPayloadApis<Args extends DefaultArgs> {
     kubernetes: Args extends (Project)
-    ? KubernetesProjectApi<Args>
-    : undefined
+      ? KubernetesProjectApi<Args>
+      : undefined
   }
 }

@@ -4,7 +4,7 @@ import { modelKeys } from './utils.js'
 
 type ExtractKeysWithFields<T> = {
   [K in keyof T]: T[K] extends { fields: any } ? K : never
-}[keyof T];
+}[keyof T]
 
 type Models = ExtractKeysWithFields<typeof prisma>
 

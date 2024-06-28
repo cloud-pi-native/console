@@ -30,7 +30,7 @@
   },
   "vueCompilerOptions": {},
   "exclude": [
-    "**/*.spec.ts",
+    // "**/*.spec.ts",
     "dist",
     "node_modules",
     "cypress",

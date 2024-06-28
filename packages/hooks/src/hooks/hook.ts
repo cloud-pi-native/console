@@ -12,7 +12,8 @@ export interface HookPayloadResults {
   [x: string]: PluginResult
 }
 // @ts-ignore
-export interface HookPayloadApis<Args extends DefaultArgs> { // eslint-disable-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line unused-imports/no-unused-vars
+export interface HookPayloadApis<Args extends DefaultArgs> {  
   [x: string]: PluginApi
 }
 export type Store = Record<string, Record<string, string>> // TO DEPRECIATE USE ONFIG

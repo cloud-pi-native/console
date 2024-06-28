@@ -36,7 +36,7 @@
   "typescript.preferences.importModuleSpecifierEnding": "js",
   "javascript.preferences.quoteStyle": "single",
   "[javascript]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.defaultFormatter": "vscode.typescript-language-features",
   },
   "[vue]": {
     "editor.defaultFormatter": "dbaeumer.vscode-eslint"

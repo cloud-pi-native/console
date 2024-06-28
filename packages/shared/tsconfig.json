@@ -16,6 +16,6 @@
   ],
   "exclude": [
     "coverage",
-    "**/*.spec.ts",
+    // "**/*.spec.ts",
   ]
 }

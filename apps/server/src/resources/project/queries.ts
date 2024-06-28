@@ -21,9 +21,9 @@ type FilterWhere = XOR<{
   userId?: User['id'],
   filter: 'all'
 }, {
-  userId: User['id'],
-  filter: 'owned' | 'member'
-}>
+    userId: User['id'],
+    filter: 'owned' | 'member'
+  }>
 type ListProjectWhere = Omit<(typeof projectContract.listProjects.query._type), 'status_in' | 'status_not_in' | 'status'> &
   Pick<Prisma.ProjectWhereInput, 'status'> &
   FilterWhere

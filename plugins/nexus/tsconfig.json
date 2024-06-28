@@ -2,14 +2,32 @@
   "extends": [
     "@cpn-console/ts-config/tsconfig.base.json"
   ],
+  "include": [
+    "./**/*.ts"
+  ],
+  "exclude": [
+    "./node_modules",
+    "./dist",
+    "./types",
+    "./vitest.config.ts",
+    "./coverage"
+  ],
   "compilerOptions": {
-    "outDir": "./dist",
     "rootDir": "./src",
-    "declaration": true,
-    "declarationDir": "./types",
+    "baseUrl": "./",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    },
     "lib": [
       "ESNext"
     ],
-    "strict": false
+    "outDir": "./dist",
+    "declaration": true,
+    "declarationDir": "./types",
+    "noEmit": false,
+    "emitDeclarationOnly": false,
+    "allowImportingTsExtensions": false,
   }
 }
