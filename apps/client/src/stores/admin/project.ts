@@ -1,11 +1,12 @@
 import { defineStore } from 'pinia'
-import api from '@/api/index.js'
 import { useUsersStore } from '../users.js'
+import { apiClient, extractData } from '@/api/xhr-client.js'
 
 export const useAdminProjectStore = defineStore('admin-project', () => {
   const usersStore = useUsersStore()
   const getAllProjects = async () => {
-    const allProjects = await api.getAllProjects()
+    const allProjects = await apiClient.ProjectsAdmin.getAllProjects()
+      .then(response => extractData(response, 200))
     // TODO retirer la clé user de cette réponse d'api ?
     // @ts-ignore
     allProjects.forEach(project => project.roles.forEach(({ user }) => usersStore.addUser(user)))
@@ -14,32 +15,21 @@ export const useAdminProjectStore = defineStore('admin-project', () => {
 
   const getAllActiveProjects = async () => {
     const allProjects = await getAllProjects()
-    // @ts-ignore
     return allProjects.filter(project => project.status !== 'archived')
   }
 
-  const handleProjectLocking = async (projectId: string, lock: boolean) => {
-    return api.handleProjectLocking(projectId, lock)
-  }
+  const handleProjectLocking = (projectId: string, lock: boolean) =>
+    apiClient.ProjectsAdmin.patchProject({ body: { lock }, params: { projectId } })
+      .then(response => extractData(response, 200))
 
-  const replayHooksForProject = async (projectId: string) => {
-    await api.replayHooks(projectId)
-  }
-
-  const archiveProject = async (projectId: string) => {
-    return api.archiveProject(projectId)
-  }
-
-  const generateProjectsData = async () => {
-    return api.generateProjectsData()
-  }
+  const generateProjectsData = () =>
+    apiClient.ProjectsAdmin.getProjectsData()
+      .then(({ body }) => body)
 
   return {
     getAllProjects,
     getAllActiveProjects,
     handleProjectLocking,
-    replayHooksForProject,
-    archiveProject,
     generateProjectsData,
   }
 })

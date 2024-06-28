@@ -7,7 +7,7 @@ import '@/main.css'
 import QuotaForm from '@/components/QuotaForm.vue'
 import { getRandomEnv, getRandomQuota, getRandomQuotaStage, getRandomStage, repeatFn } from '@cpn-console/test-utils'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { useAdminQuotaStore } from '@/stores/admin/quota.js'
+import { useQuotaStore } from '@/stores/quota.js'
 
 describe('QuotaForm.vue', () => {
   let pinia: Pinia
@@ -20,7 +20,7 @@ describe('QuotaForm.vue', () => {
 
   it('Should mount a new quota QuotaForm', () => {
     useSnackbarStore()
-    useAdminQuotaStore()
+    useQuotaStore()
 
     const allStages = repeatFn(4)(getRandomStage)
 
@@ -56,11 +56,11 @@ describe('QuotaForm.vue', () => {
 
   it('Should mount an update quota QuotaForm', () => {
     useSnackbarStore()
-    const adminQuotaStore = useAdminQuotaStore()
+    const quotaStore = useQuotaStore()
 
     const allStages = repeatFn(2)(getRandomStage)
-    adminQuotaStore.quotas = repeatFn(4)(getRandomQuota)
-    const quotaToUpdate = adminQuotaStore.quotas[0]
+    quotaStore.quotas = repeatFn(4)(getRandomQuota)
+    const quotaToUpdate = quotaStore.quotas[0]
     const quotaStage = getRandomQuotaStage(quotaToUpdate.id, allStages[0].id)
     quotaToUpdate.quotaStage = [quotaStage]
     const associatedEnvironments = [getRandomEnv('env1', 'projectId', quotaStage.id, 'clusterId'), getRandomEnv('env2', 'projectId', quotaStage.id, 'clusterId')]
@@ -107,7 +107,7 @@ describe('QuotaForm.vue', () => {
 
   it('Should mount an update quotaForm without associatedEnvironments', () => {
     useSnackbarStore()
-    const adminQuotaStore = useAdminQuotaStore()
+    const adminQuotaStore = useQuotaStore()
 
     const allStages = repeatFn(2)(getRandomStage)
     adminQuotaStore.quotas = repeatFn(4)(getRandomQuota)

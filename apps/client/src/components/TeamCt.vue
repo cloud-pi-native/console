@@ -51,6 +51,7 @@ const usersToAdd = ref<string[] | undefined>([])
 const rows = ref<any[][]>([])
 const lettersNotMatching = ref('')
 const tableKey = ref(getRandomId('table'))
+const isTransferingRole = ref('')
 
 const setRows = () => {
   rows.value = []
@@ -63,17 +64,16 @@ const setRows = () => {
             component: 'code',
             text: role.userId,
             title: 'Copier l\'id',
+            'data-testid': 'ownerId',
             class: 'fr-text-default--info text-xs truncate cursor-pointer',
             onClick: () => copyContent(role.userId),
           },
           props.knownUsers[role.userId].email,
           {
-            component: 'DsfrSelect',
-            modelValue: role.role,
-            selectId: 'role-select',
-            options: ['owner', 'user'],
-            disabled: true,
-            'onUpdate:model-value': ($event: string) => updateUserRole(role.userId, $event),
+            component: 'DsfrTag',
+            label: role.role,
+            'data-testid': 'ownerTag',
+            class: 'fr-background-contrast--blue-france',
           },
           {
             cellAttrs: {
@@ -89,6 +89,7 @@ const setRows = () => {
           component: 'code',
           text: role.userId,
           title: 'Copier l\'id',
+          'data-testid': 'userId',
           class: 'fr-text-default--info text-xs truncate cursor-pointer',
           onClick: () => copyContent(role.userId),
         },
@@ -96,10 +97,10 @@ const setRows = () => {
         {
           component: 'DsfrSelect',
           modelValue: role.role,
-          selectId: 'role-select',
+          selectId: `roleSelect-${role.userId}`,
+          disabled: !isOwnerOrAdmin.value,
           options: ['owner', 'user'],
-          disabled: true,
-          'onUpdate:model-value': ($event: string) => updateUserRole(role.userId, $event),
+          'onUpdate:model-value': () => confirmUpdateUserRole(role.userId),
         },
         {
           cellAttrs: {
@@ -128,7 +129,7 @@ const retrieveUsersToAdd = pDebounce(async (letters: LettersQuery['letters']) =>
 
 const emit = defineEmits<{
   addMember: [value: string]
-  updateRole: [value: { userId: string, role: string}]
+  updateRole: [value: string]
   cancel: []
   removeMember: [value: string]
 }>()
@@ -145,8 +146,18 @@ const addUserToProject = async (email: string) => {
   newUserInputKey.value = getRandomId('input')
 }
 
-const updateUserRole = async (userId: string, role: string) => {
-  emit('updateRole', { userId, role })
+const confirmUpdateUserRole = (userId: string) => {
+  isTransferingRole.value = userId
+}
+
+const cancelUpdateUserRole = () => {
+  isTransferingRole.value = ''
+  setRows()
+}
+
+const updateUserRole = async (userId: string) => {
+  isTransferingRole.value = ''
+  emit('updateRole', userId)
 }
 
 const removeUserFromProject = async (userId: string) => {
@@ -164,6 +175,34 @@ watch(() => props.roles, setRows)
     class="relative"
   >
     <div
+      v-if="isTransferingRole"
+      class="danger-zone"
+      data-testid="confirmTransferingRoleZone"
+    >
+      <p
+        data-testid="updatedDataSummary"
+      >
+        Êtes-vous certain de vouloir modifier le souscripteur du projet ?
+      </p>
+      <div
+        class="mt-8 flex gap-4"
+      >
+        <DsfrButton
+          label="Confirmer"
+          data-testid="confirmUpdateBtn"
+          primary
+          @click="updateUserRole(isTransferingRole)"
+        />
+        <DsfrButton
+          label="Annuler"
+          data-testid="cancelUpdateBtn"
+          secondary
+          @click="cancelUpdateUserRole()"
+        />
+      </div>
+    </div>
+    <div
+      v-show="!isTransferingRole"
       class="w-max"
     >
       <DsfrTable

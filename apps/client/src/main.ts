@@ -15,7 +15,7 @@ import JsonViewer from 'vue3-json-viewer'
 import 'virtual:uno.css'
 import 'virtual:unocss-devtools'
 import './main.css'
-import { DsfrSelect } from '@gouvminint/vue-dsfr'
+import { DsfrSelect, DsfrTag } from '@gouvminint/vue-dsfr'
 
 try {
   await keycloakInit()
@@ -31,5 +31,6 @@ createApp(App)
   .use(router)
   .component('VIcon', OhVueIcon)
   .component('DsfrSelect', DsfrSelect)
+  .component('DsfrTag', DsfrTag)
   .use(JsonViewer)
   .mount('#app')

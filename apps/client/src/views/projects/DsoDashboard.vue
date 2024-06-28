@@ -3,15 +3,15 @@ import { ref, computed, onBeforeMount } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { useProjectEnvironmentStore } from '@/stores/project-environment'
 import { descriptionMaxLength, projectIsLockedInfo, type Project } from '@cpn-console/shared'
 import router from '@/router/index.js'
 import { copyContent } from '@/utils/func.js'
+import { useStageStore } from '@/stores/stage.js'
 
 const projectStore = useProjectStore()
 const userStore = useUserStore()
 const snackbarStore = useSnackbarStore()
-const projectEnvironmentStore = useProjectEnvironmentStore()
+const stageStore = useStageStore()
 
 const project = computed(() => projectStore.selectedProject)
 const isOwner = computed(() => project.value?.roles?.some(role => role.userId === userStore.userProfile?.id && role.role === 'owner'))
@@ -76,7 +76,7 @@ const getRows = (service: string) => {
 }
 
 onBeforeMount(async () => {
-  allStages.value = await projectEnvironmentStore.getStages()
+  allStages.value = await stageStore.getAllStages()
 })
 </script>
 
@@ -251,7 +251,7 @@ onBeforeMount(async () => {
         />
         <DsfrAlert
           class="<md:mt-2"
-          description="L'archivage du projet est irréversible."
+          description="La suppression du projet est irréversible."
           type="warning"
           small
         />
@@ -260,10 +260,16 @@ onBeforeMount(async () => {
         v-if="isArchivingProject"
         class="fr-mt-4w"
       >
+        <DsfrAlert
+          class="<md:mt-2 fr-mb-2w"
+          description="La suppression du projet entraîne la suppression de toutes les ressources applicatives associées."
+          type="info"
+          small
+        />
         <DsfrInput
           v-model="projectToArchive"
           data-testid="archiveProjectInput"
-          :label="`Veuillez taper '${project.name}' pour confirmer l'archivage du projet`"
+          :label="`Veuillez taper '${project.name}' pour confirmer la suppression du projet`"
           label-visible
           :placeholder="project.name"
           class="fr-mb-2w"

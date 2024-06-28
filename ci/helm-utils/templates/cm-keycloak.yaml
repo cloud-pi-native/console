@@ -117,6 +117,30 @@ data:
           }
         },
         {
+          "id": "58e13168-d533-446b-b6a1-936da0a9d7b7",
+          "username": "lpoumailloux",
+          "enabled": true,
+          "email": "leo.poumailloux@test.com",
+          "emailVerified": true,
+          "firstName": "Léo",
+          "lastName": "POUMAILLOUX",
+          "credentials": [
+            {
+              "type": "password",
+              "value": "test"
+            }
+          ],
+          "realmRoles": [
+            "user",
+            "offline_access"
+          ],
+          "clientRoles": {
+            "account": [
+              "manage-account"
+            ]
+          }
+        },
+        {
           "id": "cb8e5b4b-7b7b-40f5-935f-594f48ae6568",
           "username": "btran",
           "enabled": true,

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { User } from '@cpn-console/shared'
-import api from '@/api/index.js'
+import { apiClient, extractData } from '@/api/xhr-client.js'
 
 export const useUsersStore = defineStore('users', () => {
   const users = ref<Record<string, User>>({})
@@ -20,8 +20,9 @@ export const useUsersStore = defineStore('users', () => {
   }
 
   const getProjectUsers = async (projectId: string) => {
-    const usersToAdd = await api.getProjectUsers(projectId)
-    if (usersToAdd) addUsers(usersToAdd)
+    const usersToAdd = await apiClient.Users.getProjectUsers({ params: { projectId } })
+      .then(response => extractData(response, 200))
+    addUsers(usersToAdd)
   }
 
   return {

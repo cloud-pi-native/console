@@ -1,7 +1,63 @@
 import type { Cluster, Environment, Kubeconfig, Project, Stage, User } from '@prisma/client'
 import prisma from '@/prisma.js'
 
-// prisma.cluster
+export const getClustersAssociatedWithProject = async (projectId: Project['id']) => {
+  const [
+    clusterIdsHistory,
+    clusterIdsEnv,
+  ] = await Promise.all([
+    prisma.projectClusterHistory.findMany({
+      select: {
+        clusterId: true,
+      },
+      where: {
+        projectId,
+      },
+    }).then(history => history.map(({ clusterId }) => clusterId)),
+    prisma.cluster.findMany({
+      where: { environments: { some: { project: { id: projectId } } } },
+      select: { id: true },
+    }).then(cluster => cluster.map(({ id }) => id)),
+  ])
+  const clusterIds = [
+    ...clusterIdsHistory,
+    ...clusterIdsEnv.filter(id => !clusterIdsHistory.includes(id)),
+  ]
+  return prisma.cluster.findMany({
+    where: { id: { in: clusterIds } },
+    select: {
+      id: true,
+      infos: true,
+      label: true,
+      privacy: true,
+      secretName: true,
+      kubeconfig: true,
+      clusterResources: true,
+      zone: {
+        select: {
+          id: true,
+          slug: true,
+        },
+      },
+    },
+  })
+}
+
+export const updateProjectClusterHistory = async (projectId: Project['id'], clusterIds: Cluster['id'][]) => prisma.$transaction([
+  prisma.projectClusterHistory.deleteMany({
+    where: {
+      AND: {
+        projectId,
+        clusterId: { notIn: clusterIds },
+      },
+    },
+  }),
+  prisma.projectClusterHistory.createMany({
+    data: clusterIds.map(clusterId => ({ clusterId, projectId })),
+    skipDuplicates: true,
+  }),
+])
+
 export const getClusterById = (id: Cluster['id']) =>
   prisma.cluster.findUnique({
     where: { id },
@@ -54,26 +110,6 @@ export const getPublicClusters = () =>
   prisma.cluster.findMany({
     where: { privacy: 'public' },
     include: { zone: true },
-  })
-
-export const getHookPublicClusters = () =>
-  prisma.cluster.findMany({
-    where: { privacy: 'public' },
-    select: {
-      id: true,
-      infos: true,
-      label: true,
-      privacy: true,
-      secretName: true,
-      kubeconfig: true,
-      clusterResources: true,
-      zone: {
-        select: {
-          id: true,
-          slug: true,
-        },
-      },
-    },
   })
 
 export const getClusterByLabel = (label: Cluster['label']) =>
@@ -236,4 +272,5 @@ export const deleteCluster = (id: Cluster['id']) =>
   })
 
 export const _dropClusterTable = prisma.cluster.deleteMany
+export const _dropProjectClusterHistoryTable = prisma.projectClusterHistory.deleteMany
 export const _dropKubeconfigTable = prisma.kubeconfig.deleteMany

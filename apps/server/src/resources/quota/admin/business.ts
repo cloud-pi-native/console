@@ -5,58 +5,29 @@ import {
   linkQuotaToStages,
   getQuotaById,
   deleteQuota as deleteQuotaQuery,
-  getEnvironmentsByQuotaStageId,
   getStageById,
   linkStageToQuotas,
   deleteQuotaStage,
   updateQuotaPrivacy as updateQuotaPrivacyQuery,
+  getQuotaAssociatedEnvironmentById,
+  getStageByIdOrThrow,
+  getQuotaByIdOrThrow,
 } from '@/resources/queries-index.js'
-import { type CreateQuotaBody, QuotaSchema, type UpdateQuotaStageBody, type PatchQuotaBody, type QuotaStage } from '@cpn-console/shared'
+import { type CreateQuotaBody, QuotaSchema, type UpdateQuotaStageBody, type PatchQuotaBody } from '@cpn-console/shared'
 import { validateSchema } from '@/utils/business.js'
 
 export const getQuotaAssociatedEnvironments = async (quotaId: string) => {
   try {
     const quota = await getQuotaById(quotaId)
     if (!quota) throw new NotFoundError('Quota introuvable')
-
-    let environments: {
-      project: {
-        name: string,
-        organization: {
-          name: string,
-        },
-        roles: {
-          role: string,
-          user: {
-            email: string,
-          }
-        }[],
-      },
-      name: string,
-      stage?: string,
-    }[] = []
-    for (const quotaStage of quota.quotaStage) {
-      const stage = await getStageById(quotaStage.stageId)
-      environments = [...environments, ...(await getEnvironmentsByQuotaStageId(quotaStage.id))
-        .map(environment => ({ ...environment, stage: stage?.name }))]
-    }
-    const mappedEnvironments: {
-      project?: string,
-      organization?: string,
-      name?: string,
-      stage?: string,
-      owner?: string,
-    }[] = environments.map(environment => {
-      return {
-        organization: environment?.project?.organization?.name,
-        project: environment?.project?.name,
-        name: environment?.name,
-        stage: environment?.stage,
-        owner: environment?.project?.roles?.find(role => role?.role === 'owner')?.user?.email,
-      }
-    })
-
-    return mappedEnvironments
+    const environments = await getQuotaAssociatedEnvironmentById(quotaId)
+    return environments.map(env => ({
+      name: env.name,
+      project: env.project.name,
+      organization: env.project.organization.name,
+      stage: env.quotaStage.stage.name,
+      owner: env.project.roles?.[0].user.email,
+    }))
   } catch (error) {
     throw new Error(error?.message)
   }
@@ -95,10 +66,8 @@ export const updateQuotaPrivacy = async (quotaId: string, isPrivate: PatchQuotaB
 
 export const updateQuotaStage = async (data: UpdateQuotaStageBody) => {
   try {
-    let quotaStages: QuotaStage[] | undefined = []
-
     // From quotaId and stageIds
-    if (data.quotaId && data.stageIds) {
+    if (data.quotaId) {
       // Remove quotaStages
       const dbQuotaStages = (await getQuotaById(data.quotaId))?.quotaStage
       const quotaStagesToRemove = dbQuotaStages?.filter(dbQuotaStage => !data.stageIds?.includes(dbQuotaStage.stageId))
@@ -109,11 +78,11 @@ export const updateQuotaStage = async (data: UpdateQuotaStageBody) => {
       }
       // Create quotaStages
       await linkQuotaToStages(data.quotaId, data.stageIds)
-      quotaStages = (await getQuotaById(data.quotaId))?.quotaStage
+      return (await getQuotaByIdOrThrow(data.quotaId)).quotaStage
     }
 
     // From stageId and quotaIds
-    if (data.stageId && data.quotaIds) {
+    if (data.stageId) {
       // Remove quotaStages
       const dbQuotaStages = (await getStageById(data.stageId))?.quotaStage
       const quotaStagesToRemove = dbQuotaStages?.filter(dbQuotaStage => !data.quotaIds?.includes(dbQuotaStage.quotaId))
@@ -124,10 +93,9 @@ export const updateQuotaStage = async (data: UpdateQuotaStageBody) => {
       }
       // Create quotaStages
       await linkStageToQuotas(data.stageId, data.quotaIds)
-      quotaStages = (await getStageById(data.stageId))?.quotaStage
+      return (await getStageByIdOrThrow(data.stageId)).quotaStage
     }
-
-    return quotaStages
+    throw new BadRequestError('Need to specify either quotaId and stageIds or stageId and quotaIds')
   } catch (error) {
     if (error.message.match(/Foreign key constraint failed on the field: `Environment_quotaStageId_fkey/)) {
       throw new BadRequestError('L\'association quota / type d\'environnement que vous souhaitez supprimer est actuellement utilisée. Vous pouvez demander aux souscripteurs concernés de changer le quota choisi pour leur environnement.')

@@ -63,10 +63,9 @@ export const GetStageEnvironmentsSchema = {
       organization: z.string(),
       project: z.string(),
       name: z.string(),
-      quota: z.string()
-        .optional(),
+      quota: z.string(),
       cluster: z.string(),
-      owner: z.string(),
+      owner: z.string().optional(),
     })),
     500: ErrorSchema,
   },

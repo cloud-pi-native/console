@@ -14,17 +14,18 @@ import {
   getUserById,
   initializeEnvironment,
   updateEnvironment as updateEnvironmentQuery,
+  getEnvironmentsByProjectId,
 } from '@/resources/queries-index.js'
 import type { UserDetails } from '@/types/index.js'
 import { validateSchema } from '@/utils/business.js'
 import {
   checkClusterUnavailable,
-  checkInsufficientRoleInProject,
   checkRoleAndLocked,
   filterOwners,
 } from '@/utils/controller.js'
 import { BadRequestError, DsoError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
+import { getProjectAndCheckRole } from '../repository/business.js'
 
 // Fetch infos
 export const getEnvironmentInfosAndClusters = async (environmentId: string) => {
@@ -39,6 +40,14 @@ export const getEnvironmentInfos = async (environmentId: string) => {
   const env = await getEnvironmentInfosQuery(environmentId)
   if (!env) throw new NotFoundError('Environnement introuvable', undefined)
   return env
+}
+
+export const getProjectEnvironments = async (
+  userId: User['id'],
+  isAdmin: boolean,
+  projectId: Project['id'],
+) => {
+  return isAdmin ? await getEnvironmentsByProjectId(projectId) : (await getProjectAndCheckRole(userId, projectId)).environments
 }
 
 type GetInitializeEnvironmentInfosParam = {
@@ -118,7 +127,7 @@ export const checkDeleteEnvironment = ({
   project,
   userId,
 }: CheckDeleteEnvironmentParam) => {
-  const errorMessage = checkInsufficientRoleInProject(userId, { minRole: 'owner', roles: project.roles })
+  const errorMessage = checkRoleAndLocked(project, userId, 'owner')
   if (errorMessage) throw new ForbiddenError(errorMessage, { description: '', extras: { userId, projectId: project.id } })
 }
 
@@ -154,9 +163,7 @@ export const createEnvironment = async (
   const schemaValidation = EnvironmentSchema
     .omit({
       id: true,
-      status: true,
       permissions: true,
-      quotaStage: true,
     })
     .safeParse({
       name,
@@ -213,7 +220,6 @@ type UpdateEnvironmentParam = {
   projectId: Project['id'],
   environmentId: Environment['id'],
   quotaStageId: QuotaStage['id'],
-  clusterId: Cluster['id'],
   requestId: string,
 }
 
@@ -222,7 +228,6 @@ export const updateEnvironment = async ({
   projectId,
   environmentId,
   quotaStageId,
-  clusterId,
   requestId,
 }: UpdateEnvironmentParam) => {
   try {
@@ -246,7 +251,7 @@ export const updateEnvironment = async ({
     // Modification du quota
     const env = await updateEnvironmentQuery({ id: environmentId, quotaStageId: quotaStage.id })
     if (quotaStage) {
-      const cluster = await getClusterById(clusterId)
+      const cluster = await getClusterById(env.clusterId)
       if (!cluster) throw new NotFoundError('Cluster introuvable')
 
       const { results } = await hook.project.upsert(project.id)

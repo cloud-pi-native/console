@@ -1,4 +1,4 @@
-import { repositoryContract } from '@cpn-console/shared'
+import { adminGroupPath, repositoryContract } from '@cpn-console/shared'
 import { serverInstance } from '@/app.js'
 import { BadRequestError } from '@/utils/errors.js'
 import { addReqLogs } from '@/utils/logger.js'
@@ -41,8 +41,9 @@ export const repositoryRouter = () => serverInstance.router(repositoryContract, 
   getRepositories: async ({ request: req, params }) => {
     const projectId = params.projectId
     const userId = req.session.user.id
+    const isAdmin = req.session.user.groups?.includes(adminGroupPath)
 
-    const repositories = await getProjectRepositories(userId, projectId)
+    const repositories = await getProjectRepositories(userId, isAdmin, projectId)
 
     addReqLogs({
       req,
@@ -59,9 +60,10 @@ export const repositoryRouter = () => serverInstance.router(repositoryContract, 
   },
 
   // Synchroniser un repository
-  syncRepository: async ({ request: req, params }) => {
+  syncRepository: async ({ request: req, params, body }) => {
     const userId = req.session.user.id
-    const { projectId, repositoryId, branchName } = params
+    const { projectId, repositoryId } = params
+    const { branchName } = body
 
     await syncRepository(projectId, repositoryId, userId, branchName, req.id)
 

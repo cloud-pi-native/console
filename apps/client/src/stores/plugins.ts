@@ -1,17 +1,15 @@
 import { defineStore } from 'pinia'
-import api from '@/api/index.js'
 import type { PluginsUpdateBody, ProjectService } from '@cpn-console/shared'
+import { apiClient, extractData } from '@/api/xhr-client.js'
 
 export const usePluginsConfigStore = defineStore('plugins', () => {
   const services: ProjectService[] = []
-  const getPluginsConfig = async () => {
-    const res = await api.getPluginsConfig()
-    if (!res) return []
-    return res
-  }
-  const updatePluginsConfig = async (data: PluginsUpdateBody) => {
-    return await api.updatePluginsConfig(data)
-  }
+
+  const getPluginsConfig = () => apiClient.SystemPlugin.getPluginsConfig()
+    .then(response => extractData(response, 200))
+
+  const updatePluginsConfig = (body: PluginsUpdateBody) => apiClient.SystemPlugin.updatePluginsConfig({ body })
+    .then(response => extractData(response, 204))
 
   return {
     services,

@@ -33,10 +33,8 @@ const projectClustersIds = computed(() => ([
   ...project.value?.clusters?.map(({ id }) => id) ?? [],
 ]))
 
-const setEnvironmentsTiles = (project: Project) => {
-  if (!project.environments?.length) return
-  // @ts-ignore
-  environments.value = sortArrByObjKeyAsc(project.environments, 'name')
+const setEnvironmentsTiles = async (projectId: Project['id']) => {
+  environments.value = sortArrByObjKeyAsc(await projectEnvironmentStore.getProjectEnvironments(projectId), 'name')
     ?.map(environment => ({
       id: environment.id,
       title: environment.name,
@@ -91,12 +89,12 @@ const deleteEnvironment = async (environment: Environment) => {
 onMounted(async () => {
   if (!project.value) return
   await clusterStore.getClusters()
-  setEnvironmentsTiles(project.value)
+  await setEnvironmentsTiles(project.value?.id)
 })
 
-watch(project, () => {
+watch(project, async () => {
   if (!project.value) return
-  setEnvironmentsTiles(project.value)
+  await setEnvironmentsTiles(project.value?.id)
 })
 </script>
 

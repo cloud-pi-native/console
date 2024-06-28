@@ -1,6 +1,7 @@
 import * as fs from 'node:fs/promises'
-import Mustache from 'mustache'
 import path from 'node:path'
+// @ts-ignore
+import Mustache from 'mustache'
 
 import { addReqLogs } from '@/utils/logger.js'
 import { serverInstance } from '@/app.js'

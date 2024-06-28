@@ -75,14 +75,13 @@ export const CreateUserRoleInProjectSchema = {
   },
 }
 
-export const UpdateUserRoleInProjectSchema = {
+export const TransferProjectOwnershipSchema = {
   params: z.object({
     projectId: z.string()
       .uuid(),
     userId: z.string()
       .uuid(),
   }),
-  body: RoleSchema.pick({ role: true }),
   responses: {
     200: z.array(RoleWithUserSchema),
     400: ErrorSchema,

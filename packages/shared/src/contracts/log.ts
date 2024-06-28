@@ -29,7 +29,7 @@ export const logAdminContract = contractInstance.router({
           }),
           action: z.string(),
           userId: z.string(),
-          requestId: z.string(),
+          requestId: z.string().nullable(),
         }).merge(AtDatesToStringSchema)),
       }),
       500: ErrorSchema,

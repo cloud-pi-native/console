@@ -1,14 +1,14 @@
 import { defineStore } from 'pinia'
-import api from '@/api/index.js'
+import { apiClient, extractData } from '@/api/xhr-client.js'
 
 export const useAdminUserStore = defineStore('admin-user', () => {
-  const getAllUsers = async () => {
-    return api.getAllUsers()
-  }
+  const getAllUsers = () =>
+    apiClient.UsersAdmin.getAllUsers()
+      .then(response => extractData(response, 200))
 
-  const updateUserAdminRole = async (userId: string, isAdmin: boolean) => {
-    return api.updateUserAdminRole(userId, isAdmin)
-  }
+  const updateUserAdminRole = (userId: string, isAdmin: boolean) =>
+    apiClient.UsersAdmin.updateUserAdminRole({ params: { userId }, body: { isAdmin } })
+      .then(response => extractData(response, 204))
 
   return {
     getAllUsers,

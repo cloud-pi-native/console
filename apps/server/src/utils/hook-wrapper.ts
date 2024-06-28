@@ -1,8 +1,8 @@
 import type { Cluster, Kubeconfig, Project, Zone } from '@prisma/client'
-import type { ClusterObject, Config, KubeCluster, KubeUser, Project as ProjectPayload, RepoCreds, Repository } from '@cpn-console/hooks'
+import type { ClusterObject, Config, HookResult, KubeCluster, KubeUser, Project as ProjectPayload, RepoCreds, Repository } from '@cpn-console/hooks'
 import { hooks } from '@cpn-console/hooks'
 import { AsyncReturnType } from '@cpn-console/shared'
-import { archiveProject, getClusterByIdOrThrow, getAdminPlugin, getHookProjectInfos, getHookPublicClusters, getHookRepository, getProjectStore, saveProjectStore, updateProjectCreated, updateProjectFailed } from '@/resources/queries-index.js'
+import { archiveProject, getClusterByIdOrThrow, getAdminPlugin, getHookProjectInfos, getHookRepository, getProjectStore, saveProjectStore, updateProjectCreated, updateProjectFailed, getClustersAssociatedWithProject, updateProjectClusterHistory } from '@/resources/queries-index.js'
 import { genericProxy } from './proxy.js'
 import { ConfigRecords, dbToObj } from '@/resources/project-service/business.js'
 
@@ -10,15 +10,19 @@ export type ReposCreds = Record<Repository['internalRepoName'], RepoCreds>
 export type ProjectInfos = AsyncReturnType<typeof getHookProjectInfos>
 
 const getProjectPayload = async (projectId: Project['id'], reposCreds?: ReposCreds) => {
-  const [project, publicClusters, store] = await Promise.all([
+  const [
+    project,
+    store,
+    clusters,
+  ] = await Promise.all([
     getHookProjectInfos(projectId),
-    getHookPublicClusters(),
     getProjectStore(projectId),
+    getClustersAssociatedWithProject(projectId),
   ])
 
   return transformToHookProject({
     ...project,
-    clusters: [...project.clusters, ...publicClusters],
+    clusters,
   }, dbToObj(store), reposCreds)
 }
 
@@ -42,9 +46,7 @@ const project = {
 
     return {
       results,
-      project: results.failed
-        ? (await updateProjectFailed(projectId))
-        : (await updateProjectCreated(projectId)),
+      project: manageProjectStatus(projectId, results, 'upsert', payload.environments.map(env => env.clusterId)),
     }
   },
   delete: async (projectId: Project['id']) => {
@@ -55,9 +57,7 @@ const project = {
     const results = await hooks.deleteProject.execute(payload, dbToObj(config))
     return {
       results,
-      project: results.failed
-        ? (await updateProjectFailed(projectId))
-        : (await archiveProject(projectId)),
+      project: manageProjectStatus(projectId, results, 'delete', []),
     }
   },
   getSecrets: async (projectId: Project['id']) => {
@@ -67,6 +67,26 @@ const project = {
 
     return hooks.getProjectSecrets.execute({ ...project, store }, config)
   },
+}
+
+type ProjectAction = keyof typeof project
+const manageProjectStatus = async (
+  projectId: Project['id'],
+  results: HookResult<ProjectPayload>,
+  action: ProjectAction,
+  envClusterIds: Cluster['id'][],
+): Promise<AsyncReturnType<typeof updateProjectCreated>> => {
+  if (!results.failed && results.results?.kubernetes) {
+    await updateProjectClusterHistory(projectId, envClusterIds)
+  }
+  if (results.failed) {
+    return updateProjectFailed(projectId)
+  } else if (action === 'upsert') {
+    return updateProjectCreated(projectId)
+  } else if (action === 'delete') {
+    return archiveProject(projectId)
+  }
+  throw Error('unknown action')
 }
 
 const cluster = {
@@ -145,11 +165,6 @@ const formatClusterInfos = (
 export const transformToHookProject = (project: ProjectInfos, store: Config, reposCreds: ReposCreds = {}): ProjectPayload => {
   const clusters = project.clusters.map(cluster => formatClusterInfos(cluster))
 
-  for (const env of project.environments) {
-    if (!clusters.some(c => c.id === env.cluster.id)) {
-      clusters.push(formatClusterInfos(env.cluster))
-    }
-  }
   return ({
     ...project,
     users: project.roles.map(role => role.user),

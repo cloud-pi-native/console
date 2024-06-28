@@ -1,4 +1,5 @@
 import { PluginApi } from '@cpn-console/hooks'
+import { consoleGroupName } from './group.js'
 
 type KeycloakEnv = {
   path: string
@@ -24,10 +25,10 @@ export class KeycloakProjectApi extends PluginApi {
 
   public async getEnvGroup (environment: string): Promise<KeycloakEnv> {
     return {
-      path: `/${this.organizationName}-${this.projectName}/${environment}`,
+      path: `/${this.organizationName}-${this.projectName}/${consoleGroupName}/${environment}`,
       subgroups: {
-        RO: `/${this.organizationName}-${this.projectName}/${environment}/RO`,
-        RW: `/${this.organizationName}-${this.projectName}/${environment}/RW`,
+        RO: `/${this.organizationName}-${this.projectName}/${consoleGroupName}/${environment}/RO`,
+        RW: `/${this.organizationName}-${this.projectName}/${consoleGroupName}/${environment}/RW`,
       },
     }
   }

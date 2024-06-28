@@ -7,7 +7,9 @@
     "node_modules",
     "dist",
     "__mocks__",
-    "coverage"
+    "coverage",
+    "src/mocks/utils.ts",
+    "src/utils/mocks.ts",
   ],
   "include": [
     "src/**/*.ts",
@@ -29,6 +31,6 @@
     "declarationDir": "./types",
     "strict": false,
     "alwaysStrict": false,
-    "noImplicitAny": false
+    "noImplicitAny": true
   }
 }

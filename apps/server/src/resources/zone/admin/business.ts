@@ -7,8 +7,11 @@ import {
   getZoneById,
   getZoneBySlug,
 } from './queries.js'
+import { Zone } from '@cpn-console/shared'
 
-export const createZone = async (data) => {
+export const createZone = async (
+  data: { slug: string, label: string, description?: string | null, clusterIds?: string[] },
+) => {
   const { slug, label, description, clusterIds } = data
 
   const existingZone = await getZoneBySlug(slug)
@@ -21,13 +24,13 @@ export const createZone = async (data) => {
   return zone
 }
 
-export const updateZone = async (zoneId, data) => {
+export const updateZone = async (zoneId: Zone['id'], data: Pick<Zone, 'label' | 'description'>) => {
   const { label, description } = data
 
   return updateZoneQuery(zoneId, { label, description })
 }
 
-export const deleteZone = async (zoneId) => {
+export const deleteZone = async (zoneId: Zone['id']) => {
   const zone = await getZoneById(zoneId)
   if (zone?.clusters?.length) throw new ForbiddenError('Vous ne pouvez supprimer cette zone, car des clusters y sont associés.')
 

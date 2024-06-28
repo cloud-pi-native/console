@@ -1,12 +1,10 @@
 import { defineStore } from 'pinia'
 import type { GenerateCIFilesBody } from '@cpn-console/shared'
-import api from '@/api/index.js'
+import { apiClient, extractData } from '@/api/xhr-client.js'
 
 export const useCIFilesStore = defineStore('ciFiles', () => {
-  const generateCIFiles = async (ciData: GenerateCIFilesBody) => {
-    const response = await api.generateCIFiles(ciData)
-    return response ?? {}
-  }
+  const generateCIFiles = (ciData: GenerateCIFilesBody) => apiClient.Files.generateCIFiles({ body: ciData })
+    .then(response => extractData(response, 201))
 
   return {
     generateCIFiles,

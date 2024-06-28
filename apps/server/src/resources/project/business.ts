@@ -17,9 +17,9 @@ import {
   deleteAllRoleNonOwnerForProject,
   getOrganizationById,
   getProjectByNames,
-  getProjectInfos,
   getProjectInfosAndRepos,
   getProjectInfos as getProjectInfosQuery,
+  getProjectInfosOrThrow as getProjectInfosOrThrowQuery,
   getPublicClusters,
   getUserProjects as getUserProjectsQuery,
   initializeProject,
@@ -128,8 +128,7 @@ export const createProject = async (dataDto: CreateProjectBody, requestor: UserD
     }
 
     const publicClusters = await getPublicClusters()
-    const projectInfos = await getProjectInfos(project.id)
-    if (!projectInfos) throw new NotFoundError('Projet introuvable')
+    const projectInfos = await getProjectInfosOrThrowQuery(project.id)
     projectInfos.clusters = projectInfos.clusters.concat(publicClusters)
 
     return projectInfos
@@ -164,7 +163,7 @@ export const updateProject = async (data: UpdateProjectBody, projectId: Project[
     if (results.failed) {
       throw new Error('Echec de la mise à jour du projet par les plugins')
     }
-    return getProjectInfosQuery(projectId)
+    return getProjectInfosOrThrowQuery(projectId)
   } catch (error) {
     throw new Error(error?.message)
   }

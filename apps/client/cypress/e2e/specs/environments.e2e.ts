@@ -19,6 +19,7 @@ describe('Manage project environments', () => {
   project1FirstEnvironment.cluster = getModelById('cluster', project1FirstEnvironment?.clusterId)
   project1FirstEnvironment.quota = getModelById('quota', project1EnvQuotaStage?.quotaId)
   project1FirstEnvironment.stage = getModelById('stage', project1EnvQuotaStage?.stageId)
+  const projectFailed = getModelById('project', '83833faf-f654-40dd-bcd5-cf2e944fc702')
   const environments = [
     {
       name: 'integtest',
@@ -200,6 +201,7 @@ describe('Manage project environments', () => {
   it('Should update an environment quota', () => {
     cy.intercept('GET', 'api/v1/clusters').as('getClusters')
     cy.intercept('GET', '/api/v1/stages').as('getStages')
+    cy.intercept('GET', '/api/v1/projects/*/environments').as('getEnvironments')
     cy.intercept('PUT', '/api/v1/projects/*/environments/*').as('putEnvironment')
     cy.intercept('GET', '/api/v1/projects').as('getProjects')
     cy.intercept('GET', '/api/v1/admin/projects').as('getAdminProjects')
@@ -213,6 +215,7 @@ describe('Manage project environments', () => {
     cy.wait('@getClusters').its('response.statusCode').should('match', /^20\d$/)
 
     cy.getByDataTestid(`environmentTile-${project1FirstEnvironment?.name}`).click()
+    cy.wait('@getEnvironments')
     cy.wait('@getStages')
     cy.getByDataTestid('environmentNameInput')
       .should('have.value', project1FirstEnvironment?.name)
@@ -234,6 +237,7 @@ describe('Manage project environments', () => {
 
     cy.reload()
     cy.getByDataTestid(`environmentTile-${project1FirstEnvironment?.name}`).click()
+    cy.wait('@getEnvironments')
     cy.wait('@getStages')
     cy.getByDataTestid('environmentNameInput')
       .should('have.value', project1FirstEnvironment?.name)
@@ -267,5 +271,21 @@ describe('Manage project environments', () => {
     cy.wait('@getStages')
       .url().should('contain', '/environments')
       .getByDataTestid('deleteEnvironmentZone').should('not.exist')
+  })
+
+  it('Should not be able to delete an environment if project locked', () => {
+    cy.intercept('GET', 'api/v1/clusters').as('getClusters')
+    cy.intercept('GET', '/api/v1/stages').as('getStages')
+
+    cy.kcLogin('test')
+    cy.goToProjects()
+      .getByDataTestid(`projectTile-${projectFailed.name}`).click()
+      .getByDataTestid('menuEnvironments').click()
+      .url().should('contain', '/environments')
+    cy.getByDataTestid(`environmentTile-${projectFailed.environments[0].name}`).click()
+    cy.wait('@getClusters')
+    cy.wait('@getStages')
+
+    cy.getByDataTestid('showDeleteEnvironmentBtn').should('be.disabled')
   })
 })

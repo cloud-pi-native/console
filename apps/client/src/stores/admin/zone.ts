@@ -1,22 +1,19 @@
 import { defineStore } from 'pinia'
 import type { CreateZoneBody, UpdateZoneBody, Zone } from '@cpn-console/shared'
-import api from '@/api/index.js'
+import { apiClient, extractData } from '@/api/xhr-client.js'
 
 export const useAdminZoneStore = defineStore('admin-zone', () => {
-  const createZone = async (zone: CreateZoneBody) => {
-    const res = await api.createZone(zone)
-    return res
-  }
+  const createZone = (body: CreateZoneBody) =>
+    apiClient.ZonesAdmin.createZone({ body })
+      .then(response => extractData(response, 201))
 
-  const updateZone = async (zoneId: Zone['id'], data: UpdateZoneBody) => {
-    const res = await api.updateZone(zoneId, data)
-    return res
-  }
+  const updateZone = (zoneId: Zone['id'], data: UpdateZoneBody) =>
+    apiClient.ZonesAdmin.updateZone({ body: data, params: { zoneId } })
+      .then(response => extractData(response, 201))
 
-  const deleteZone = async (zoneId: Zone['id']) => {
-    const res = await api.deleteZone(zoneId)
-    return res
-  }
+  const deleteZone = (zoneId: Zone['id']) =>
+    apiClient.ZonesAdmin.deleteZone({ params: { zoneId } })
+      .then(response => extractData(response, 204))
 
   return {
     createZone,

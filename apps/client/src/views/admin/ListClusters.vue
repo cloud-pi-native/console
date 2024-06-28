@@ -3,8 +3,9 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { sortArrByObjKeyAsc, type CreateClusterBody, type UpdateClusterBody, type Cluster, type Stage, type Project, type ClusterAssociatedEnvironments } from '@cpn-console/shared'
 import { useAdminClusterStore } from '@/stores/admin/cluster.js'
 import { useAdminProjectStore } from '@/stores/admin/project.js'
+import { useAdminOrganizationStore } from '@/stores/admin/organization.js'
 import { useZoneStore } from '@/stores/zone.js'
-import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
+import { useStageStore } from '@/stores/stage.js'
 
 type ClusterList = {
   id: Cluster['id']
@@ -14,8 +15,9 @@ type ClusterList = {
 
 const adminClusterStore = useAdminClusterStore()
 const adminProjectStore = useAdminProjectStore()
+const adminOrganizationStore = useAdminOrganizationStore()
 const zoneStore = useZoneStore()
-const projectEnvironmentStore = useProjectEnvironmentStore()
+const stageStore = useStageStore()
 
 const clusters = computed(() => adminClusterStore.clusters)
 const allZones = computed(() => zoneStore.zones)
@@ -93,7 +95,9 @@ onMounted(async () => {
   setClusterTiles(clusters.value)
   await zoneStore.getAllZones()
   allProjects.value = await adminProjectStore.getAllActiveProjects()
-  allStages.value = await projectEnvironmentStore.getStages()
+  const organizations = await adminOrganizationStore.getAllOrganizations()
+  allProjects.value.forEach(project => { project.organization = organizations.find(org => org.id === project.organizationId) })
+  allStages.value = await stageStore.getAllStages()
 })
 
 watch(clusters, () => {

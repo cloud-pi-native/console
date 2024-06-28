@@ -192,12 +192,13 @@ const cancel = () => {
           data-testid="showDeleteRepoBtn"
           :label="`Retirer le dépôt ${localRepo.internalRepoName} du projet`"
           secondary
+          :disabled="props.isProjectLocked"
           icon="ri-delete-bin-7-line"
           @click="isDeletingRepo = true"
         />
         <DsfrAlert
           class="<md:mt-2"
-          description="Le retrait d'un dépôt est irréversible."
+          :description="props.isProjectLocked ? 'Impossible de supprimer un dépôt lorsque le projet est verrouillé.' : 'Le retrait d\'un dépôt est irréversible.'"
           type="warning"
           small
         />

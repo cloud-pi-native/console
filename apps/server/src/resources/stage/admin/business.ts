@@ -5,12 +5,13 @@ import {
   getStageByName,
   createStage as createStageQuery,
   deleteStage as deleteStageQuery,
-  getEnvironmentsByQuotaStageId,
   getStageById,
   linkStageToClusters,
-  getQuotaById,
   removeClusterFromStage,
   linkStageToQuotas,
+  getStageAssociatedEnvironmentById,
+  getStageByIdOrThrow,
+  getStageAssociatedEnvironmentLengthById,
 } from '@/resources/queries-index.js'
 import { validateSchema } from '@/utils/business.js'
 
@@ -18,52 +19,15 @@ export const getStageAssociatedEnvironments = async (stageId: Stage['id']) => {
   try {
     const stage = await getStageById(stageId)
     if (!stage) throw new BadRequestError(`Le stage ${stageId} n'existe pas`)
-
-    let environments: {
-      project: {
-        name: string,
-        organization: {
-          name: string,
-        },
-        roles: {
-          role: string,
-          user: {
-            email: string,
-          }
-        }[],
-      },
-      name: string,
-      cluster: {
-        label: string,
-      },
-      quota?: string,
-    }[] = []
-
-    for (const quotaStage of stage.quotaStage) {
-      const quota = await getQuotaById(quotaStage.quotaId)
-      environments = [...environments, ...(await getEnvironmentsByQuotaStageId(quotaStage.id))
-        .map(environment => ({ ...environment, quota: quota?.name }))]
-    }
-
-    const mappedEnvironments: {
-      project?: string,
-      organization?: string,
-      name?: string,
-      quota?: string,
-      cluster?: string,
-      owner?: string,
-    }[] = environments.map(environment => {
-      return {
-        organization: environment?.project?.organization?.name,
-        project: environment?.project?.name,
-        name: environment?.name,
-        quota: environment?.quota,
-        cluster: environment?.cluster?.label,
-        owner: environment?.project?.roles?.find(role => role?.role === 'owner')?.user?.email,
-      }
-    })
-
-    return mappedEnvironments
+    const environments = await getStageAssociatedEnvironmentById(stageId)
+    return environments.map(env => ({
+      organization: env.project.organization.name,
+      project: env.project.name,
+      name: env.name,
+      quota: env.quotaStage.quota.name,
+      cluster: env.cluster.label,
+      owner: env.project.roles?.[0].user.email,
+    }))
   } catch (error) {
     throw new Error(error?.message)
   }
@@ -108,9 +72,8 @@ export const updateStageClusters = async (stageId: Stage['id'], clusterIds: Upda
     }
     // Add clusters
     await linkStageToClusters(stageId, clusterIds)
-    const clusters = (await getStageById(stageId))?.clusters
 
-    return clusters
+    return (await getStageByIdOrThrow(stageId)).clusters
   } catch (error) {
     throw new Error(error?.message)
   }
@@ -118,8 +81,8 @@ export const updateStageClusters = async (stageId: Stage['id'], clusterIds: Upda
 
 export const deleteStage = async (stageId: Stage['id']) => {
   try {
-    const environments = await getStageAssociatedEnvironments(stageId)
-    if (environments.length) throw new BadRequestError('Impossible de supprimer le stage, des environnements en activité y ont souscrit', { extras: environments })
+    const environments = await getStageAssociatedEnvironmentLengthById(stageId)
+    if (environments) throw new BadRequestError('Impossible de supprimer le stage, des environnements en activité y ont souscrit')
 
     await deleteStageQuery(stageId)
   } catch (error) {

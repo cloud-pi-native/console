@@ -1,7 +1,7 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { apiClient } from '../../api/xhr-client.js'
-import { useAdminStageStore } from './stage.js'
+import { apiClient } from '../api/xhr-client.js'
+import { useStageStore } from './stage.js'
 
 const apiClientGetStages = vi.spyOn(apiClient.Stages, 'getStages')
 const apiClientGet = vi.spyOn(apiClient.StagesAdmin, 'getStageEnvironments')
@@ -25,11 +25,11 @@ describe('Stage Store', () => {
       { id: 'id3', name: 'prod' },
     ]
     apiClientGetStages.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
-    const adminStageStore = useAdminStageStore()
+    const stageStore = useStageStore()
 
-    await adminStageStore.getAllStages()
+    await stageStore.getAllStages()
 
-    expect(adminStageStore.stages).toEqual(data)
+    expect(stageStore.stages).toEqual(data)
     expect(apiClientGetStages).toHaveBeenCalledTimes(1)
   })
 
@@ -41,9 +41,9 @@ describe('Stage Store', () => {
       { id: 'id3', name: 'env3' },
     ]
     apiClientGet.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
-    const adminStageStore = useAdminStageStore()
+    const stageStore = useStageStore()
 
-    const res = await adminStageStore.getStageAssociatedEnvironments(stageId)
+    const res = await stageStore.getStageAssociatedEnvironments(stageId)
 
     expect(res).toBe(data)
     expect(apiClientGet).toHaveBeenCalledTimes(1)
@@ -56,9 +56,9 @@ describe('Stage Store', () => {
     }
 
     apiClientPost.mockReturnValueOnce(Promise.resolve({ status: 201, body: data }))
-    const adminStageStore = useAdminStageStore()
+    const stageStore = useStageStore()
 
-    const res = await adminStageStore.addStage(data)
+    const res = await stageStore.addStage(data)
 
     expect(res).toBe(data)
     expect(apiClientPost).toHaveBeenCalledTimes(1)
@@ -69,9 +69,9 @@ describe('Stage Store', () => {
     const quotaIds = ['stage1']
 
     apiClientPut.mockReturnValueOnce(Promise.resolve({ status: 200, body: 1 }))
-    const adminStageStore = useAdminStageStore()
+    const stageStore = useStageStore()
 
-    const res = await adminStageStore.updateQuotaStage(stageId, quotaIds)
+    const res = await stageStore.updateQuotaStage(stageId, quotaIds)
 
     expect(res).toBe(1)
     expect(apiClientPut).toHaveBeenCalledTimes(1)
@@ -82,9 +82,9 @@ describe('Stage Store', () => {
     const clusterIds = ['stage1']
 
     apiClientPatch.mockReturnValueOnce(Promise.resolve({ status: 200, body: 1 }))
-    const adminStageStore = useAdminStageStore()
+    const stageStore = useStageStore()
 
-    const res = await adminStageStore.updateStageClusters(stageId, clusterIds)
+    const res = await stageStore.updateStageClusters(stageId, clusterIds)
 
     expect(res).toBe(1)
     expect(apiClientPatch).toHaveBeenCalledTimes(1)
@@ -94,9 +94,9 @@ describe('Stage Store', () => {
     const stageId = 'stageId'
 
     apiClientDelete.mockReturnValueOnce(Promise.resolve({ status: 204 }))
-    const adminStageStore = useAdminStageStore()
+    const stageStore = useStageStore()
 
-    await adminStageStore.deleteStage(stageId)
+    await stageStore.deleteStage(stageId)
 
     expect(apiClientDelete).toHaveBeenCalledTimes(1)
   })

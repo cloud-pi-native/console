@@ -9,17 +9,20 @@ import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 import { useUserStore } from '@/stores/user.js'
 import { useUsersStore } from '@/stores/users.js'
 import { useProjectUserStore } from '@/stores/project-user.js'
-import { useAdminQuotaStore } from '@/stores/admin/quota.js'
+import { useQuotaStore } from '@/stores/quota.js'
 import { useProjectServiceStore } from '@/stores/project-services.js'
+import { useProjectRepositoryStore } from '@/stores/project-repository.js'
+import { useProjectStore } from '@/stores/project.js'
 
 const adminProjectStore = useAdminProjectStore()
+const projectStore = useProjectStore()
 const adminOrganizationStore = useAdminOrganizationStore()
 const projectServiceStore = useProjectServiceStore()
 const userStore = useUserStore()
 const usersStore = useUsersStore()
 const snackbarStore = useSnackbarStore()
 const projectUserStore = useProjectUserStore()
-const adminQuotaStore = useAdminQuotaStore()
+const quotaStore = useQuotaStore()
 const projectEnvironmentStore = useProjectEnvironmentStore()
 
 export type Component = {
@@ -111,6 +114,12 @@ const rowFilter = (rows: Row[]): Rows | EmptyRow => {
   return returnRows
 }
 
+interface DomElement extends Event {
+  target: HTMLElement & {
+    open?: string
+  }
+}
+
 const setRows = () => {
   rows.value = sortArrByObjKeyAsc(allProjects.value, 'name')
     ?.map(({ id, organizationId, name, description, roles, status, locked, createdAt, updatedAt }) => (
@@ -118,8 +127,9 @@ const setRows = () => {
         status,
         locked,
         rowAttrs: {
-          onClick: () => {
+          onClick: (event: DomElement) => {
             if (status === 'archived') return snackbarStore.setMessage('Le projet est archivé, pas d\'action possible', 'info')
+            if (event.target.id === 'description' && event.target.getAttribute('open') === 'false') return untruncateDescription(event.target)
             selectProject(id)
           },
           class: 'cursor-pointer',
@@ -128,7 +138,7 @@ const setRows = () => {
         rowData: [
           organizations.value?.find(org => org.id === organizationId)?.label,
           name,
-          description ?? '',
+          truncateDescription(description ?? ''),
           roles.find(role => role.role === 'owner')?.user?.email ?? '',
           {
             component: 'v-icon',
@@ -150,9 +160,8 @@ const setRows = () => {
   tableKey.value = getRandomId('table')
 }
 
-const getEnvironmentsRows = async () => {
+const getEnvironmentsRows = () => {
   if (!selectedProject.value) return
-  await adminQuotaStore.getAllQuotas()
   environmentsRows.value = selectedProject.value.environments?.length
     ? sortArrByObjKeyAsc(selectedProject.value.environments, 'name')
       ?.map(({ id, quotaStage, name }) => (
@@ -165,7 +174,7 @@ const getEnvironmentsRows = async () => {
             selectId: 'quota-select',
             options: quotaStage.stage.quotaStage
               ?.reduce((acc, curr) => {
-                const matchingQuota = adminQuotaStore.quotas
+                const matchingQuota = quotaStore.quotas
                   ?.find(quota => quota.id === curr.quotaId)
                 return matchingQuota
                   ? [...acc, {
@@ -218,9 +227,16 @@ const getAllProjects = async () => {
 
 const selectProject = async (projectId: string) => {
   selectedProject.value = allProjects.value?.find(project => project.id === projectId)
+  if (!selectedProject.value) return
+  const [repositories, environments] = await Promise.all([
+    useProjectRepositoryStore().getProjectRepositories(projectId),
+    useProjectEnvironmentStore().getProjectEnvironments(projectId),
+    reloadProjectServices(),
+  ])
+  selectedProject.value.repositories = repositories
+  selectedProject.value.environments = environments
   getRepositoriesRows()
-  await getEnvironmentsRows()
-  reloadProjectServices()
+  getEnvironmentsRows()
 }
 
 const updateEnvironmentQuota = async ({ environmentId, quotaId }: {environmentId: string, quotaId: string}) => {
@@ -228,7 +244,7 @@ const updateEnvironmentQuota = async ({ environmentId, quotaId }: {environmentId
   snackbarStore.isWaitingForResponse = true
   const environment = selectedProject.value.environments.find(environment => environment.id === environmentId)
   if (!environment) return
-  environment.quotaStageId = environment.quotaStage.stage?.quotaStage?.find(quotaStage => quotaStage.quotaId === quotaId)?.id ?? ''
+  environment.quotaStageId = environment.quotaStage?.stage?.quotaStage?.find(quotaStage => quotaStage.quotaId === quotaId)?.id ?? ''
   await projectEnvironmentStore.updateEnvironment(environment, selectedProject.value.id)
   await getAllProjects()
   snackbarStore.isWaitingForResponse = false
@@ -243,7 +259,7 @@ const handleProjectLocking = async (projectId: string, lock: boolean) => {
 
 const replayHooks = async (projectId: string) => {
   snackbarStore.isWaitingForResponse = true
-  await adminProjectStore.replayHooksForProject(projectId)
+  await projectStore.replayHooksForProject(projectId)
   await getAllProjects()
   snackbarStore.setMessage(`Le projet ayant pour id ${projectId} a été reprovisionné avec succès`, 'success')
   snackbarStore.isWaitingForResponse = false
@@ -252,7 +268,7 @@ const replayHooks = async (projectId: string) => {
 const archiveProject = async (projectId: string) => {
   if (!selectedProject.value) return
   snackbarStore.isWaitingForResponse = true
-  await adminProjectStore.archiveProject(projectId)
+  await projectStore.archiveProject(projectId)
   await getAllProjects()
   selectedProject.value = undefined
   snackbarStore.isWaitingForResponse = false
@@ -268,9 +284,13 @@ const addUserToProject = async (email: string) => {
   snackbarStore.isWaitingForResponse = false
 }
 
-const updateUserRole = ({ userId, role }: { userId: string, role: string }) => {
-  console.log({ userId, role })
-  snackbarStore.setMessage('Cette fonctionnalité n\'est pas encore disponible')
+const updateUserRole = async (userId: string) => {
+  if (!selectedProject.value) return snackbarStore.setMessage('Veuillez sélectionner un projet')
+  snackbarStore.isWaitingForResponse = true
+  await projectUserStore.transferProjectOwnership(selectedProject.value.id, userId)
+  teamCtKey.value = getRandomId('team')
+  await getAllProjects()
+  snackbarStore.isWaitingForResponse = false
 }
 
 const removeUserFromProject = async (userId: string) => {
@@ -301,7 +321,10 @@ const generateProjectsDataFile = async () => {
 
 onBeforeMount(async () => {
   organizations.value = await adminOrganizationStore.getAllOrganizations()
-  await getAllProjects()
+  await Promise.all([
+    getAllProjects(),
+    quotaStore.getAllQuotas(),
+  ])
 })
 
 const projectServices = ref<ProjectService[]>([])
@@ -329,6 +352,33 @@ const saveProjectServices = async (data: PluginsUpdateBody) => {
   await reloadProjectServices()
   snackbarStore.isWaitingForResponse = false
 }
+
+const maxDescriptionLength = 60
+const truncateDescription = (description: string) => {
+  let innerHTML: string
+
+  if (description.length <= maxDescriptionLength) innerHTML = description
+  else {
+    const lastSpaceIndex = description.slice(0, maxDescriptionLength).lastIndexOf(' ')
+    innerHTML = description.slice(0, lastSpaceIndex > 0 ? lastSpaceIndex : maxDescriptionLength) + ' ...'
+  }
+
+  return {
+    id: 'description',
+    'data-testid': 'description',
+    component: 'span',
+    open: false,
+    title: description,
+    innerHTML,
+  }
+}
+
+const untruncateDescription = (span: HTMLElement) => {
+  span.innerHTML = span.title
+
+  span.setAttribute('open', 'true')
+}
+
 </script>
 <template>
   <div
@@ -437,7 +487,7 @@ const saveProjectServices = async (data: PluginsUpdateBody) => {
         <DsfrInput
           v-model="projectToArchive"
           data-testid="archiveProjectInput"
-          :label="`Veuillez taper '${selectedProject?.name}' pour confirmer l'archivage du projet`"
+          :label="`Veuillez taper '${selectedProject?.name}' pour confirmer la suppression du projet`"
           label-visible
           :placeholder="selectedProject.name"
           class="fr-mb-2w"
@@ -506,7 +556,7 @@ const saveProjectServices = async (data: PluginsUpdateBody) => {
           :roles="selectedProject.roles?.map(({user, ...role}) => role) ?? []"
           :known-users="usersStore.users"
           @add-member="(email) => addUserToProject(email)"
-          @update-role="({ userId, role}) => updateUserRole({ userId, role})"
+          @update-role="(userId) => updateUserRole(userId)"
           @remove-member="(userId) => removeUserFromProject(userId)"
         />
         <div>
