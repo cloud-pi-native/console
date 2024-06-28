@@ -13,7 +13,10 @@ export const useProjectRepositoryStore = defineStore('project-repository', () =>
 
   const syncRepository = async (repositoryId: string, branchName: string) => {
     if (!projectStore.selectedProject) throw new Error(projectMissing)
-    await apiClient.Repositories.syncRepository({ params: { projectId: projectStore.selectedProject.id, repositoryId, branchName } })
+    await apiClient.Repositories.syncRepository({
+      params: { projectId: projectStore.selectedProject.id, repositoryId },
+      body: { branchName },
+    })
       .then(response => extractData(response, 204))
   }
 

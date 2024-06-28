@@ -168,7 +168,7 @@ describe('Add repos into project', () => {
 
   it('Should synchronise a repo', () => {
     cy.intercept('GET', '/api/v1/projects').as('getProjects')
-    cy.intercept('GET', '/api/v1/projects/*/repositories/*/sync/*').as('syncRepo')
+    cy.intercept('POST', '/api/v1/projects/*/repositories/*/sync').as('syncRepo')
     let repos
 
     cy.goToProjects()

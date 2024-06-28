@@ -40,8 +40,9 @@ export const repositoryContract = contractInstance.router({
   },
 
   syncRepository: {
-    method: 'GET',
-    path: `${apiPrefix}/projects/:projectId/repositories/:repositoryId/sync/:branchName`,
+    method: 'POST',
+    path: `${apiPrefix}/projects/:projectId/repositories/:repositoryId/sync`,
+    body: SyncRepoSchema.body,
     pathParams: SyncRepoSchema.params,
     summary: 'application/json',
     description: 'Trigger a gitlab synchronization for a repository',
