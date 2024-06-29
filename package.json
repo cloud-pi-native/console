@@ -19,6 +19,8 @@
     "docker:integ:build": "export $(cat env/.env.integ | grep -v '#' | xargs) && export $(cat apps/server/.env.integ | grep -v '#' | xargs) && export COMPOSE_FILE=./docker/docker-compose.integ.yml && cd $(dirname $COMPOSE_FILE) && docker buildx bake --file $(basename $COMPOSE_FILE) --load && cd - > /dev/null",
     "docker:integ:clean": "docker compose --env-file env/.env.integ --env-file apps/server/.env.integ -f ./docker/docker-compose.integ.yml down",
     "docker:integ:delete": "docker compose --env-file env/.env.integ --env-file apps/server/.env.integ -f ./docker/docker-compose.integ.yml down -v",
+    "docker:ci": "docker compose -f ./docker/docker-compose.ci.yml up",
+    "docker:ci:delete": "docker compose -f ./docker/docker-compose.ci.yml down -v",
     "docker:prod": "docker compose -f ./docker/docker-compose.prod.yml up",
     "docker:prod:build": "export COMPOSE_FILE=./docker/docker-compose.prod.yml && ./ci/kind/run-build.sh $COMPOSE_FILE",
     "docker:prod:delete": "docker compose -f ./docker/docker-compose.prod.yml down -v",
@@ -53,7 +55,7 @@
     "test:ct": "turbo run test:ct --color --no-daemon",
     "test:ct-ci": "turbo run test:ct-ci --color --no-daemon",
     "test:e2e": "pnpm kube:e2e",
-    "test:e2e-ci": "pnpm kube:prod; pnpm kube:e2e-ci"
+    "test:e2e-ci": "turbo run test:e2e-ci --filter=client --color --no-daemon"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.2.2",

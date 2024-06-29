@@ -41,7 +41,7 @@ Following flags are available:
   -t    (Optional) Tag used for docker images in e2e tests
 
   -u    Run unit tests
-  
+
   -h    Print script help\n\n"
 
 print_help() {
@@ -137,7 +137,7 @@ fi
 # Run e2e tests
 if [ "$RUN_E2E_TESTS" == "true" ]; then
   checkDockerRunning
-  
+
   printf "\n${red}${i}.${no_color} Launch e2e tests\n"
   i=$(($i + 1))
 
@@ -145,33 +145,25 @@ if [ "$RUN_E2E_TESTS" == "true" ]; then
 
   npm --prefix $PROJECT_DIR/packages/shared run build
   npm --prefix $PROJECT_DIR/packages/test-utils run build
-
-  npm run kube:init
-  if [[ -n "$TAG" ]]; then
-    npm run kube:prod:run -- -t $TAG
-  else 
-    npm run kube:prod
-  fi
-  npm run kube:e2e-ci -- --cache-dir=.turbo/cache --log-order=stream $BROWSER_ARGS
-
+  export TAG="$TAG"
+  pnpm run docker:ci -d # use pnpm cause npm doesn't unattach well
+  npm run test:e2e-ci -- --cache-dir=.turbo/cache --log-order=stream $BROWSER_ARGS
   printf "\n${red}${i}.${no_color} Remove resources\n"
   i=$(($i + 1))
-
-  npm run kube:delete
 fi
 
 
 # Run deployment status check
 if [ "$RUN_STATUS_CHECK" == "true" ]; then
   checkDockerRunning
-  
+
   printf "\n${red}${i}.${no_color} Launch e2e tests\n"
   i=$(($i + 1))
 
   npm run kube:init
   if [[ -n "$TAG" ]]; then
     npm run kube:prod:run -- -t $TAG
-  else 
+  else
     npm run kube:prod
   fi
 
