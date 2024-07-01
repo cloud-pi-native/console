@@ -1,17 +1,18 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { sortArrByObjKeyAsc } from '@cpn-console/shared'
-import type { CreateQuotaBody, UpdateQuotaStageBody, Quota, PatchQuotaBody, QuotaAssociatedEnvironments } from '@cpn-console/shared'
+import type { CreateQuotaBody, Quota, UpdateQuotaBody, QuotaAssociatedEnvironments } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useQuotaStore } from '@/stores/quota.js'
 import { useStageStore } from '@/stores/stage.js'
 
+type UpdateQuotaType = UpdateQuotaBody & Pick<Quota, 'id'>
 const quotaStore = useQuotaStore()
 const snackbarStore = useSnackbarStore()
 const stageStore = useStageStore()
 
 const quotas = computed(() => quotaStore.quotas)
-const selectedQuota = ref<Quota | Record<string, never>>({})
+const selectedQuota = ref<Quota>()
 const quotaList = ref<any[]>([])
 const allStages = ref<any[]>([])
 const associatedEnvironments = ref<QuotaAssociatedEnvironments>([])
@@ -28,7 +29,7 @@ const setQuotaTiles = (quotas: Quota[]) => {
 
 const setSelectedQuota = async (quota: Quota) => {
   if (selectedQuota.value?.name === quota.name) {
-    selectedQuota.value = {}
+    selectedQuota.value = undefined
     return
   }
   selectedQuota.value = quota
@@ -39,12 +40,12 @@ const setSelectedQuota = async (quota: Quota) => {
 
 const showNewQuotaForm = () => {
   isNewQuotaForm.value = !isNewQuotaForm.value
-  selectedQuota.value = {}
+  selectedQuota.value = undefined
 }
 
 const cancel = () => {
   isNewQuotaForm.value = false
-  selectedQuota.value = {}
+  selectedQuota.value = undefined
 }
 
 const addQuota = async (quota: CreateQuotaBody) => {
@@ -55,18 +56,9 @@ const addQuota = async (quota: CreateQuotaBody) => {
   snackbarStore.isWaitingForResponse = false
 }
 
-export type UpdateQuotaType = {
-  quotaId: string,
-  isPrivate?: PatchQuotaBody['isPrivate'],
-  stageIds?: UpdateQuotaStageBody['stageIds']
-}
-
-const updateQuota = async ({ quotaId, isPrivate, stageIds }: UpdateQuotaType) => {
+const updateQuota = async (quota: UpdateQuotaType) => {
   snackbarStore.isWaitingForResponse = true
-  if (isPrivate !== undefined) {
-    await quotaStore.updateQuotaPrivacy(quotaId, isPrivate)
-  }
-  await quotaStore.updateQuotaStage(quotaId, stageIds)
+  await quotaStore.updateQuota(quota.id, quota)
   await quotaStore.getAllQuotas()
   cancel()
   snackbarStore.isWaitingForResponse = false
@@ -103,7 +95,7 @@ watch(quotas, () => {
     class="flex <md:flex-col-reverse items-center justify-between pb-5"
   >
     <DsfrButton
-      v-if="!Object.keys(selectedQuota).length && !isNewQuotaForm"
+      v-if="!selectedQuota && !isNewQuotaForm"
       label="Ajouter un nouveau quota"
       data-testid="addQuotaLink"
       tertiary
@@ -150,7 +142,7 @@ watch(quotas, () => {
       class="fr-mt-2v fr-mb-4w w-full"
     >
       <div
-        v-show="!Object.keys(selectedQuota).length"
+        v-show="!selectedQuota"
       >
         <DsfrTile
           :title="quota.title"
@@ -160,18 +152,18 @@ watch(quotas, () => {
           @click="setSelectedQuota(quota.data)"
         />
       </div>
-      <QuotaForm
-        v-if="Object.keys(selectedQuota).length && selectedQuota.id === quota.id"
-        :all-stages="allStages"
-        :quota="selectedQuota"
-        class="w-full"
-        :is-new-quota="false"
-        :associated-environments="associatedEnvironments"
-        @cancel="cancel()"
-        @update="(quota: UpdateQuotaType) => updateQuota(quota)"
-        @delete="(quotaId: string) => deleteQuota(quotaId)"
-      />
     </div>
+    <QuotaForm
+      v-if="selectedQuota"
+      :all-stages="allStages"
+      :quota="selectedQuota"
+      class="w-full"
+      :is-new-quota="false"
+      :associated-environments="associatedEnvironments"
+      @cancel="cancel()"
+      @update="(quota: UpdateQuotaType) => updateQuota(quota)"
+      @delete="(quotaId: string) => deleteQuota(quotaId)"
+    />
     <div
       v-if="!quotaList.length && !isNewQuotaForm"
     >

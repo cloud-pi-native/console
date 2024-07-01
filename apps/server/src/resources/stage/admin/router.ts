@@ -3,7 +3,7 @@ import {
   createStage,
   getStageAssociatedEnvironments,
   deleteStage,
-  updateStageClusters,
+  updateStage,
 } from './business.js'
 import {
   stageAdminContract,
@@ -51,11 +51,10 @@ export const stageAdminRouter = () => serverInstance.router(stageAdminContract, 
   },
 
   // Modifier une association stage / clusters
-  updateStageClusters: async ({ request: req, params, body: data }) => {
+  updateStage: async ({ request: req, params, body: data }) => {
     const stageId = params.stageId
-    const clusterIds = data.clusterIds
 
-    const clusters = await updateStageClusters(stageId, clusterIds)
+    const stage = await updateStage(stageId, data)
 
     addReqLogs({
       req,
@@ -67,7 +66,7 @@ export const stageAdminRouter = () => serverInstance.router(stageAdminContract, 
 
     return {
       status: 200,
-      body: clusters,
+      body: stage,
     }
   },
 

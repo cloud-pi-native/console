@@ -8,17 +8,19 @@ datasource db {
 }
 
 model Environment {
-  id           String       @id @default(uuid()) @db.Uuid
-  name         String       @db.VarChar(11)
-  projectId    String       @db.Uuid
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  clusterId    String       @db.Uuid
-  quotaStageId String       @db.Uuid
-  cluster      Cluster      @relation(fields: [clusterId], references: [id])
-  quotaStage   QuotaStage   @relation(fields: [quotaStageId], references: [id], onDelete: Restrict)
-  project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  permissions  Permission[]
+  id          String       @id @default(uuid()) @db.Uuid
+  name        String       @db.VarChar(11)
+  projectId   String       @db.Uuid
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  clusterId   String       @db.Uuid
+  quotaId     String       @db.Uuid
+  stageId     String       @db.Uuid
+  cluster     Cluster      @relation(fields: [clusterId], references: [id])
+  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  quota       Quota        @relation(fields: [quotaId], references: [id], onUpdate: Cascade, onDelete: Restrict)
+  stage       Stage        @relation(fields: [stageId], references: [id], onUpdate: Cascade, onDelete: Restrict)
+  permissions Permission[]
 }
 
 model Log {
@@ -156,31 +158,21 @@ model Role {
 }
 
 model Quota {
-  id         String       @id @unique @default(uuid()) @db.Uuid
-  memory     String       @db.VarChar
-  cpu        Float        @db.Real
-  name       String       @unique @db.VarChar
-  isPrivate  Boolean      @default(false)
-  quotaStage QuotaStage[]
+  id           String        @id @unique @default(uuid()) @db.Uuid
+  memory       String        @db.VarChar
+  cpu          Float         @db.Real
+  name         String        @unique @db.VarChar
+  isPrivate    Boolean       @default(false)
+  environments Environment[]
+  stages       Stage[]
 }
 
 model Stage {
-  id         String       @id @unique @default(uuid()) @db.Uuid
-  name       String       @unique @db.VarChar
-  quotaStage QuotaStage[]
-  clusters   Cluster[]    @relation("ClusterToStage")
-}
-
-model QuotaStage {
-  id           String           @id @unique @default(uuid()) @db.Uuid
-  quotaId      String           @db.Uuid
-  stageId      String           @db.Uuid
-  status       QuotaStageStatus @default(active)
+  id           String        @id @unique @default(uuid()) @db.Uuid
+  name         String        @unique @db.VarChar
   environments Environment[]
-  quota        Quota            @relation(fields: [quotaId], references: [id], onDelete: Cascade)
-  stage        Stage            @relation(fields: [stageId], references: [id], onDelete: Cascade)
-
-  @@unique([quotaId, stageId])
+  clusters     Cluster[]     @relation("ClusterToStage")
+  quotas       Quota[]
 }
 
 model ProjectPlugin {
@@ -211,11 +203,6 @@ enum ProjectStatus {
   created
   failed
   archived
-}
-
-enum QuotaStageStatus {
-  active
-  pendingDelete
 }
 
 enum RoleList {

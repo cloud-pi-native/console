@@ -15,12 +15,6 @@ export const projectRoles = [
 ] as const
 export type ProjectRoles = typeof projectRoles[number]
 
-export const quotaStageStatus = [
-  'active',
-  'pendingDelete',
-] as const
-export type QuotaStageStatus = typeof quotaStageStatus[number]
-
 export const longestEnvironmentName = 11 as const
 
 // ! Une organisation ne doit pas faire plus de 19 caractères

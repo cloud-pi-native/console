@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { longestEnvironmentName, projectStatus } from '../utils/const.js'
-import { ErrorSchema } from './utils.js'
+import { AtDatesToStringSchema, ErrorSchema } from './utils.js'
 import { RepoSchema } from './repository.js'
 import { RoleSchema, UserSchema } from './user.js'
 import { OrganizationSchema } from './organization.js'
@@ -18,8 +18,7 @@ export const ProjectSchema = z.object({
     .max(projectNameMaxLength),
   description: z.string()
     .max(descriptionMaxLength)
-    .optional()
-    .nullable(),
+    .optional(),
   organizationId: z.string()
     .uuid(),
   status: z.enum(projectStatus),
@@ -39,7 +38,7 @@ export const ProjectSchema = z.object({
     projectIds: true,
     stageIds: true,
   }).array().optional()),
-  repositories: RepoSchema.array().optional(),
+  repositories: RepoSchema.array(),
   environments: z.array(z.object({
     id: z.string()
       .uuid(),
@@ -49,8 +48,8 @@ export const ProjectSchema = z.object({
       .max(longestEnvironmentName),
     projectId: z.string()
       .uuid(),
-    quotaStageId: z.string()
-      .uuid(),
+    quotaId: z.string().uuid(),
+    stageId: z.string().uuid(),
     clusterId: z.string()
       .uuid(),
     permissions: z.array(z.object({
@@ -66,19 +65,10 @@ export const ProjectSchema = z.object({
           .int()
           .nonnegative()
           .max(2),
-      ]).optional(),
+      ]),
     })),
-    quotaStage: z.object({
-      id: z.string()
-        .uuid(),
-      quotaId: z.string()
-        .uuid(),
-      stageId: z.string()
-        .uuid(),
-      status: z.string(),
-    }).optional(),
-  })).optional(),
-})
+  })),
+}).merge(AtDatesToStringSchema)
 
 export type Project = Zod.infer<typeof ProjectSchema>
 
@@ -88,7 +78,7 @@ export const ProjectParams = z.object({
 })
 
 export const CreateProjectSchema = {
-  body: ProjectSchema.omit({ id: true, status: true, locked: true }),
+  body: ProjectSchema.pick({ name: true, organizationId: true, description: true }),
   responses: {
     201: ProjectSchema,
     400: ErrorSchema,
@@ -99,11 +89,16 @@ export const CreateProjectSchema = {
 
 export const GetProjectsSchema = {
   responses: {
-    200: z.array(ProjectSchema),
+    200: z.array(ProjectSchema.required()),
     500: ErrorSchema,
   },
 }
 
+export const GetProjectsDataSchema = {
+  responses: {
+    200: z.string(),
+  },
+}
 export const GetProjectSecretsSchema = {
   params: ProjectParams,
   responses: {

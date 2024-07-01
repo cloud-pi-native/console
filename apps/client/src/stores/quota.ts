@@ -1,10 +1,16 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { CreateQuotaBody, Quota, UpdateQuotaStageBody, PatchQuotaBody } from '@cpn-console/shared'
 import { apiClient, extractData } from '@/api/xhr-client.js'
+import {
+  type CreateQuotaBody,
+  type Quota,
+  type UpdateQuotaBody,
+  resourceListToDict,
+} from '@cpn-console/shared'
 
 export const useQuotaStore = defineStore('quota', () => {
   const quotas = ref<Quota[]>([])
+  const quotasById = computed(() => resourceListToDict(quotas.value))
 
   const getAllQuotas = async () => {
     quotas.value = await apiClient.Quotas.getQuotas()
@@ -20,12 +26,8 @@ export const useQuotaStore = defineStore('quota', () => {
     apiClient.QuotasAdmin.createQuota({ body })
       .then(response => extractData(response, 201))
 
-  const updateQuotaPrivacy = (quotaId: string, isPrivate: PatchQuotaBody['isPrivate']) =>
-    apiClient.QuotasAdmin.patchQuotaPrivacy({ body: { isPrivate }, params: { quotaId } })
-      .then(response => extractData(response, 200))
-
-  const updateQuotaStage = (quotaId: string, stageIds: UpdateQuotaStageBody['stageIds']) =>
-    apiClient.QuotasAdmin.updateQuotaStage({ body: { quotaId, stageIds } })
+  const updateQuota = async (quotaId: string, data: UpdateQuotaBody) =>
+    apiClient.QuotasAdmin.updateQuota({ body: data, params: { quotaId } })
       .then(response => extractData(response, 200))
 
   const deleteQuota = (quotaId: string) =>
@@ -34,11 +36,11 @@ export const useQuotaStore = defineStore('quota', () => {
 
   return {
     quotas,
+    quotasById,
     getAllQuotas,
     getQuotaAssociatedEnvironments,
     addQuota,
-    updateQuotaPrivacy,
-    updateQuotaStage,
+    updateQuota,
     deleteQuota,
   }
 })

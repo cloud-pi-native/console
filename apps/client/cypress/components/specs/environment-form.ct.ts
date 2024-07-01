@@ -28,6 +28,11 @@ describe('EnvironmentForm.vue', () => {
 
   it('Should mount a EnvironmentForm', () => {
     const randomDbSetup = createRandomDbSetup({ envs: [] })
+    randomDbSetup.quotas[0].isPrivate = true
+    randomDbSetup.quotas[1].isPrivate = true
+    randomDbSetup.quotas[2].isPrivate = false
+    randomDbSetup.quotas[3].isPrivate = false
+
     const zones = randomDbSetup.zones
     const project: Required<typeof randomDbSetup.project> = randomDbSetup.project as Required<typeof randomDbSetup.project>
     const stageIds = randomDbSetup.stages.map(({ id }) => id)
@@ -97,7 +102,7 @@ describe('EnvironmentForm.vue', () => {
     cy.get('select#stage-select')
       .select(1)
     cy.get('select#quota-select > option')
-      .should('have.length', randomDbSetup.quotas.length + 1)
+      .should('have.length', 3)
 
     cy.get('select#quota-select')
       .select(1)
