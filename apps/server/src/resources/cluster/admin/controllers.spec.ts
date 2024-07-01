@@ -84,8 +84,8 @@ describe('Admin cluster routes', () => {
         .body(updatedCluster)
         .end()
 
-      expect(response.statusCode).toEqual(200)
       expect(response.json()).toEqual(updatedCluster)
+      expect(response.statusCode).toEqual(200)
     })
   })
 

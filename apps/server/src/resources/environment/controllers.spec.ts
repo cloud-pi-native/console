@@ -203,7 +203,8 @@ describe('Environment routes', () => {
       const randomDbSetUp = createRandomDbSetup({ envs: ['dev'] })
       const projectInfos = randomDbSetUp.project
 
-      const quota = randomDbSetUp.quotas.find(({ isPrivate }) => !isPrivate)
+      randomDbSetUp.quotas[0].isPrivate = false
+      const quota = randomDbSetUp.quotas[0]
       const stage = randomDbSetUp.stages[0]
       quota.stages = randomDbSetUp.stages
       stage.quotas = randomDbSetUp.quotas

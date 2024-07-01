@@ -204,7 +204,6 @@ describe('Schemas utils', () => {
       privacy: ClusterPrivacy.DEDICATED,
       zoneId: faker.string.uuid(),
       stageIds: [faker.string.uuid(), faker.string.uuid()],
-      projectIds: [faker.string.uuid(), faker.string.uuid()],
       user: {},
       cluster: {
         tlsServerName: 'blabla',
@@ -224,7 +223,6 @@ describe('Schemas utils', () => {
       privacy: ClusterPrivacy.PUBLIC,
       zoneId: faker.string.uuid(),
       stageIds: [faker.string.uuid(), faker.string.uuid()],
-      projectIds: [],
       user: {},
       cluster: {
         tlsServerName: 'blabla',
