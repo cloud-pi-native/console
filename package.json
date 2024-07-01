@@ -6,15 +6,15 @@
   "scripts": {
     "build": "turbo run build --color --no-daemon",
     "build:clean": "turbo run build:clean --no-daemon",
-    "dev": "docker compose -f ./docker/docker-compose.local.yml up -d --remove-orphans && echo '\nStart server and client with commands:\n\n  pnpm --filter server run dev\n  pnpm --filter client run dev\n\nMake sure you provide env variables in `.env` files.'",
+    "dev": "docker compose -f ./docker/docker-compose.local.yml up -d --remove-orphans && echo '\nStart server and client with commands:\n\n  pnpm --filter @cpn-console/server run dev\n  pnpm --filter @cpn-console/client run dev\n\nMake sure you provide env variables in `.env` files.'",
     "dev:clean": "docker compose -f ./docker/docker-compose.local.yml down --remove-orphans",
     "dev:delete": "docker compose -f ./docker/docker-compose.local.yml down -v --remove-orphans",
     "docker:dev": "docker compose -f ./docker/docker-compose.dev.yml up -d --remove-orphans; docker compose -f ./docker/docker-compose.dev.yml watch --no-up & docker compose -f ./docker/docker-compose.dev.yml logs server client -f",
     "docker:dev:build": "export COMPOSE_FILE=./docker/docker-compose.dev.yml && ./ci/kind/run-build.sh $COMPOSE_FILE",
     "docker:dev:clean": "docker compose -f ./docker/docker-compose.dev.yml down --remove-orphans",
     "docker:dev:delete": "docker compose -f ./docker/docker-compose.dev.yml down -v --remove-orphans",
-    "docker:e2e": "docker compose -f ./docker/docker-compose.dev.yml up --no-build -d --remove-orphans; turbo run test:e2e --filter=client --color --no-daemon; docker compose -f ./docker/docker-compose.dev.yml down --remove-orphans",
-    "docker:e2e-ci": "docker compose -f ./docker/docker-compose.prod.yml up --no-build -d --remove-orphans; turbo run test:e2e-ci --filter=client --color --no-daemon",
+    "docker:e2e": "docker compose -f ./docker/docker-compose.dev.yml up --no-build -d --remove-orphans; turbo run test:e2e --filter=@cpn-console/client --color --no-daemon; docker compose -f ./docker/docker-compose.dev.yml down --remove-orphans",
+    "docker:e2e-ci": "docker compose -f ./docker/docker-compose.prod.yml up --no-build -d --remove-orphans; turbo run test:e2e-ci --filter=@cpn-console/client --color --no-daemon",
     "docker:e2e-ci:delete": "docker compose -f ./docker/docker-compose.prod.yml down -v --remove-orphans",
     "docker:integ": "docker compose --env-file env/.env.integ --env-file apps/server/.env.integ -f ./docker/docker-compose.integ.yml up -d; docker compose --env-file env/.env.integ --env-file apps/server/.env.integ -f ./docker/docker-compose.integ.yml watch --no-up & docker compose --env-file env/.env.integ --env-file apps/server/.env.integ -f ./docker/docker-compose.integ.yml logs server client -f",
     "docker:integ:build": "export $(cat env/.env.integ | grep -v '#' | xargs) && export $(cat apps/server/.env.integ | grep -v '#' | xargs) && export COMPOSE_FILE=./docker/docker-compose.integ.yml && cd $(dirname $COMPOSE_FILE) && docker buildx bake --file $(basename $COMPOSE_FILE) --load && cd - > /dev/null",
@@ -26,7 +26,7 @@
     "format": "turbo run format --color --no-daemon",
     "format:style": "turbo run format:style --color --no-daemon",
     "db:generate": "turbo run db:generate --no-daemon",
-    "integ": "docker compose -f ./docker/docker-compose.local.yml up -d --remove-orphans postgres pgadmin && echo '\nStart server and client with commands:\n\n  pnpm --filter server run integ\n  pnpm --filter client run integ\n\nMake sure you provide env variables in `.env.integ` files.'",
+    "integ": "docker compose -f ./docker/docker-compose.local.yml up -d --remove-orphans postgres pgadmin && echo '\nStart server and client with commands:\n\n  pnpm --filter @cpn-console/server run integ\n  pnpm --filter @cpn-console/client run integ\n\nMake sure you provide env variables in `.env.integ` files.'",
     "integ:clean": "docker compose -f ./docker/docker-compose.local.yml down --remove-orphans",
     "integ:delete": "docker compose -f ./docker/docker-compose.local.yml down -v --remove-orphans",
     "kube:init": "ci/kind/run.sh -i -d console.dso.local,keycloak.dso.local,pgadmin.dso.local",
@@ -43,7 +43,7 @@
     "kube:prod:run": "ci/kind/run.sh -c create,prod",
     "kube:prod": "pnpm kube:prod:build; pnpm kube:prod:run",
     "kube:e2e": "pnpm kube:dev; npm --prefix apps/client run kube:e2e",
-    "kube:e2e-ci": "turbo run kube:e2e-ci --filter=client --color --no-daemon",
+    "kube:e2e-ci": "turbo run kube:e2e-ci --filter=@cpn-console/client --color --no-daemon",
     "kube:clean": "ci/kind/run.sh -c clean",
     "kube:delete": "ci/kind/run.sh -c delete",
     "kube:load:package": "ci/kind/upload-package.sh",
@@ -57,13 +57,13 @@
     "test:e2e-ci": "pnpm kube:prod; pnpm kube:e2e-ci"
   },
   "devDependencies": {
-    "@commitlint/cli": "^19.2.2",
+    "@commitlint/cli": "^19.3.0",
     "@commitlint/config-conventional": "^19.2.2",
     "husky": "^9.0.11",
-    "lint-staged": "^15.2.2",
-    "turbo": "^1.13.2"
+    "lint-staged": "^15.2.7",
+    "turbo": "^2.0.5"
   },
-  "packageManager": "pnpm@9.1.4",
+  "packageManager": "pnpm@9.4.0",
   "pnpm": {
     "patchedDependencies": {
       "fastify-keycloak-adapter@2.1.6": "patches/fastify-keycloak-adapter@2.1.6.patch",
@@ -73,6 +73,6 @@
     "allowNonAppliedPatches": true
   },
   "volta": {
-    "node": "20.14.0"
+    "node": "20.15.0"
   }
 }
