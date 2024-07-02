@@ -33,8 +33,7 @@ describe('Admin cluster routes', () => {
   describe('getClusterAssociatedEnvironmentsController', () => {
     it('Should retrieve a cluster\'s associated environments', async () => {
       const cluster = getRandomCluster({})
-      // @ts-ignore
-      cluster.environments = [{
+      const environments = [{
         project: {
           name: 'project0',
           organization: {
@@ -47,21 +46,17 @@ describe('Admin cluster routes', () => {
         name: 'dev-0',
       }]
 
-      prisma.cluster.findUnique.mockResolvedValue(cluster)
+      prisma.environment.findMany.mockResolvedValue(environments)
 
       const response = await app.inject()
-        // @ts-ignore
         .get(`/api/v1/admin/clusters/${cluster.id}/environments`)
         .end()
 
       expect(response.statusCode).toEqual(200)
       expect(response.json()).toEqual([{
-        // @ts-ignore
-        organization: cluster.environments[0]?.project?.organization?.name,
-        // @ts-ignore
-        project: cluster.environments[0]?.project?.name,
-        // @ts-ignore
-        name: cluster.environments[0]?.name,
+        organization: environments[0]?.project?.organization?.name,
+        project: environments[0]?.project?.name,
+        name: environments[0]?.name,
         owner: getRequestor().email,
       }])
     })
@@ -92,14 +87,13 @@ describe('Admin cluster routes', () => {
   describe('deleteClusterController', () => {
     it('Should delete a cluster', async () => {
       const cluster = getRandomCluster({})
-      // @ts-ignore
-      cluster.environments = []
+      const environments = []
 
       prisma.cluster.findUnique.mockResolvedValue(cluster)
+      prisma.environment.findMany.mockResolvedValue(environments)
       prisma.cluster.delete.mockResolvedValueOnce(1)
 
       const response = await app.inject()
-        // @ts-ignore
         .delete(`/api/v1/admin/clusters/${cluster.id}`)
         .end()
 
@@ -108,8 +102,7 @@ describe('Admin cluster routes', () => {
 
     it('Should not delete a cluster if environments suscribed it', async () => {
       const cluster = getRandomCluster({})
-      // @ts-ignore
-      cluster.environments = [{
+      const environments = [{
         project: {
           name: 'project0',
           organization: {
@@ -122,10 +115,10 @@ describe('Admin cluster routes', () => {
         name: 'dev-0',
       }]
 
+      prisma.environment.findMany.mockResolvedValue(environments)
       prisma.cluster.findUnique.mockResolvedValue(cluster)
 
       const response = await app.inject()
-        // @ts-ignore
         .delete(`/api/v1/admin/clusters/${cluster.id}`)
         .end()
 
