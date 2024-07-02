@@ -70,26 +70,22 @@ export const getClusterByIdOrThrow = (id: Cluster['id']) =>
     include: { kubeconfig: true, zone: true },
   })
 
-export const getClusterEnvironments = (id: Cluster['id']) =>
-  prisma.cluster.findUnique({
-    where: { id },
+export const getClusterEnvironments = (clusterId: Cluster['id']) =>
+  prisma.environment.findMany({
+    where: { clusterId },
     select: {
-      environments: {
+      name: true,
+      project: {
         select: {
           name: true,
-          project: {
+          organization: {
+            select: { name: true },
+          },
+          roles: {
             select: {
-              name: true,
-              organization: {
-                select: { name: true },
-              },
-              roles: {
-                select: {
-                  role: true,
-                  user: {
-                    select: { email: true },
-                  },
-                },
+              role: true,
+              user: {
+                select: { email: true },
               },
             },
           },
