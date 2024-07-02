@@ -213,6 +213,7 @@ watch(selectedContext, () => {
     }
   }
 })
+const isConnectionDetailsShown = ref(true)
 
 </script>
 
@@ -225,48 +226,87 @@ watch(selectedContext, () => {
     >
       {{ isNewCluster ? 'Ajouter un cluster' : 'Mettre à jour le cluster' }}
     </h1>
-    <DsfrFileUpload
-      v-model="kubeconfig"
-      label="Kubeconfig"
-      data-testid="kubeconfig-upload"
-      :error="kConfigError"
-      hint="Uploadez le Kubeconfig du cluster."
-      class="fr-mb-2w"
-      @change="updateKubeconfig($event)"
-    />
-    <DsfrSelect
-      v-if="isMissingCurrentContext"
-      v-model="selectedContext"
-      select-id="selectedContextSelect"
-      label="Context"
-      description="Nous n'avons pas trouvé de current-context dans votre kubeconfig. Veuillez choisir un contexte."
-      :options="contexts"
-    />
-    <JsonViewer
-      v-show="localCluster.user"
-      data-testid="user-json"
-      :value="localCluster.user"
-      class="json-box"
-      copyable
-      boxed
-    />
-    <JsonViewer
-      v-show="localCluster.cluster"
-      data-testid="cluster-json"
-      :value="localCluster.cluster"
-      class="json-box"
-      copyable
-      boxed
-    />
-    <DsfrInputGroup
-      v-model="localCluster.cluster.tlsServerName"
-      data-testid="tlsServerNameInput"
-      label="Nom du serveur Transport Layer Security (TLS)"
-      label-visible
-      :required="true"
-      hint="La valeur est extraite du kubeconfig téléversé."
-      @update:model-value="updateValues('tlsServerName', $event)"
-    />
+    <div
+      class="cursor-pointer"
+      @click="isConnectionDetailsShown = !isConnectionDetailsShown"
+    >
+      <h4
+        class="mb-1 inline-block"
+        :aria-expanded="isConnectionDetailsShown"
+      >
+        Informations de connexion (kubeconfig)
+      </h4>
+      <v-icon
+        v-if="isConnectionDetailsShown"
+        name="ri-arrow-right-s-line"
+        class="shrink ml-4 rotate-90"
+      />
+      <v-icon
+        v-else
+        name="ri-arrow-right-s-line"
+        class="shrink ml-4"
+      />
+    </div>
+    <template
+      v-if="isConnectionDetailsShown"
+    >
+      <DsfrFileUpload
+        v-model="kubeconfig"
+        label=""
+        data-testid="kubeconfig-upload"
+        :error="kConfigError"
+        hint="Uploadez le Kubeconfig du cluster."
+        class="fr-mb-2w"
+        @change="updateKubeconfig($event)"
+      />
+      <DsfrSelect
+        v-if="isMissingCurrentContext"
+        v-model="selectedContext"
+        select-id="selectedContextSelect"
+        label="Context"
+        description="Nous n'avons pas trouvé de current-context dans votre kubeconfig. Veuillez choisir un contexte."
+        :options="contexts"
+      />
+      <JsonViewer
+        v-show="localCluster.user"
+        data-testid="user-json"
+        :value="localCluster.user"
+        class="json-box"
+        copyable
+        boxed
+      />
+      <JsonViewer
+        v-show="localCluster.cluster"
+        data-testid="cluster-json"
+        :value="localCluster.cluster"
+        class="json-box"
+        copyable
+        boxed
+      />
+      <DsfrInputGroup
+        v-model="localCluster.cluster.tlsServerName"
+        data-testid="tlsServerNameInput"
+        label="Nom du serveur Transport Layer Security (TLS)"
+        label-visible
+        :required="true"
+        hint="La valeur est extraite du kubeconfig téléversé."
+        @update:model-value="updateValues('tlsServerName', $event)"
+      />
+      <DsfrCheckbox
+        v-model="localCluster.cluster.skipTLSVerify"
+        data-testid="clusterSkipTLSVerifyCbx"
+        label="Ignorer le certificat TLS du server (risques potentiels de sécurité !)"
+        hint="Ignorer le certificat TLS présenté pour contacter l'API server Kubernetes"
+        name="isClusterSkipTlsVerify"
+        @update:model-value="updateValues('skipTLSVerify', $event)"
+      />
+    </template>
+    <h4
+      class="mb-1 inline-block"
+    >
+      Informations fonctionnelles
+    </h4>
+
     <DsfrInputGroup
       v-model="localCluster.label"
       data-testid="labelInput"
@@ -289,14 +329,6 @@ watch(selectedContext, () => {
       label-visible
       hint="Facultatif. Attention, ces informations seront visibles par les utilisateurs de la console à qui ce cluster est destiné (tous si cluster public, membres des projets concernés pour les clusters réservés)."
       @update:model-value="updateValues('infos', $event)"
-    />
-    <DsfrCheckbox
-      v-model="localCluster.cluster.skipTLSVerify"
-      data-testid="clusterSkipTLSVerifyCbx"
-      label="Ignorer le certificat TLS du server (risques potentiels de sécurité !)"
-      hint="Ignorer le certificat TLS présenté pour contacter l'API server Kubernetes"
-      name="isClusterSkipTlsVerify"
-      @update:model-value="updateValues('skipTLSVerify', $event)"
     />
     <DsfrCheckbox
       v-model="localCluster.clusterResources"
