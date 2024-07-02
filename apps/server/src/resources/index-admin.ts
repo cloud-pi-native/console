@@ -12,7 +12,7 @@ import { checkAdminGroup } from '@/utils/controller.js'
 
 export const apiRouterAdmin = () => async (app: FastifyInstance) => {
   app.addHook('preHandler', checkAdminGroup)
-  await app.register(serverInstance.plugin(clusterAdminRouter()))
+  await app.register(serverInstance.plugin(clusterAdminRouter()), { responseValidation: true })
   await app.register(serverInstance.plugin(logAdminRouter()))
   await app.register(serverInstance.plugin(organizationAdminRouter()))
   await app.register(serverInstance.plugin(projectAdminRouter()))

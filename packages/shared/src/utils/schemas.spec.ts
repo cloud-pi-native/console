@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ClusterBusinessSchema, ClusterPrivacy, EnvironmentSchema, OrganizationSchema, PermissionSchema, ProjectSchema, QuotaSchema, RepoBusinessSchema, RepoSchema, StageSchema, UserSchema, descriptionMaxLength, instanciateSchema, parseZodError } from '../index.js'
+import { ClusterDetailsSchema, ClusterPrivacy, EnvironmentSchema, OrganizationSchema, PermissionSchema, ProjectSchema, QuotaSchema, RepoBusinessSchema, RepoSchema, StageSchema, UserSchema, descriptionMaxLength, instanciateSchema, parseZodError } from '../index.js'
 import { faker } from '@faker-js/faker'
 import { ZodError } from 'zod'
 
@@ -97,6 +97,7 @@ describe('Schemas utils', () => {
       organizationId: faker.string.uuid(),
       status: 'created',
       locked: false,
+      clusterIds: [],
       repositories: [],
       environments: [],
       updatedAt: new Date(),
@@ -196,27 +197,30 @@ describe('Schemas utils', () => {
       .toMatch('Validation error: Si le dépôt est privé, vous devez renseignez les nom de propriétaire et token associés.')
   })
 
-  it('Should validate a cluster business schema, case 1', () => {
+  it('Should validate a cluster details schema, case 1', () => {
     const toParse = {
       id: faker.string.uuid(),
       label: 'cluster',
       clusterResources: true,
+      infos: 'Infos du cluster',
       privacy: ClusterPrivacy.DEDICATED,
       zoneId: faker.string.uuid(),
       stageIds: [faker.string.uuid(), faker.string.uuid()],
       projectIds: [faker.string.uuid(), faker.string.uuid()],
-      user: {},
-      cluster: {
-        tlsServerName: 'blabla',
+      kubeconfig: {
+        user: {},
+        cluster: {
+          tlsServerName: 'blabla',
+        },
       },
     }
 
-    expect(ClusterBusinessSchema
+    expect(ClusterDetailsSchema
       .safeParse(toParse))
       .toStrictEqual({ data: toParse, success: true })
   })
 
-  it('Should validate a cluster business schema, case 2', () => {
+  it('Should validate a cluster details schema, case 2', () => {
     const toParse = {
       id: faker.string.uuid(),
       label: 'cluster',
@@ -224,16 +228,17 @@ describe('Schemas utils', () => {
       privacy: ClusterPrivacy.PUBLIC,
       zoneId: faker.string.uuid(),
       stageIds: [faker.string.uuid(), faker.string.uuid()],
-      projectIds: [],
-      user: {},
-      cluster: {
-        tlsServerName: 'blabla',
+      kubeconfig: {
+        user: {},
+        cluster: {
+          tlsServerName: 'blabla',
+        },
       },
     }
 
-    expect(ClusterBusinessSchema
+    expect(ClusterDetailsSchema
       .safeParse(toParse))
-      .toStrictEqual({ data: toParse, success: true })
+      .toStrictEqual({ data: { ...toParse, infos: '' }, success: true })
   })
 
   it('Should not validate a repository schema with wrong internal repo name', () => {

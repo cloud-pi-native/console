@@ -4,12 +4,12 @@ import { useStageStore } from '@/stores/stage.js'
 import { sortArrByObjKeyAsc } from '@cpn-console/shared'
 import type { CreateStageBody, Stage, StageAssociatedEnvironments, UpdateStageBody } from '@cpn-console/shared'
 import { useQuotaStore } from '@/stores/quota'
-import { useAdminClusterStore } from '@/stores/admin/cluster'
+import { useClusterStore } from '@/stores/cluster.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const stageStore = useStageStore()
 const quotaStore = useQuotaStore()
-const adminClusterStore = useAdminClusterStore()
+const clusterStore = useClusterStore()
 const snackbarStore = useSnackbarStore()
 
 const selectedStage = ref<Stage>()
@@ -19,7 +19,7 @@ const isNewStageForm = ref(false)
 
 const stages = computed(() => stageStore.stages)
 const allQuotas = computed(() => quotaStore.quotas)
-const allClusters = computed(() => adminClusterStore.clusters)
+const allClusters = computed(() => clusterStore.clusters)
 
 const setStageTiles = (stages: Stage[]) => {
   stageList.value = sortArrByObjKeyAsc(stages, 'name')
@@ -87,7 +87,7 @@ const getStageAssociatedEnvironments = async (stageId: string) => {
 
 onMounted(async () => {
   await quotaStore.getAllQuotas()
-  await adminClusterStore.getClusters()
+  await clusterStore.getClusters()
   await stageStore.getAllStages()
   setStageTiles(stages.value)
 })
@@ -161,19 +161,19 @@ watch(stages, () => {
           @click="setSelectedStage(stage.data)"
         />
       </div>
+      <StageForm
+        v-if="selectedStage && selectedStage.id === stage.id"
+        :all-quotas="allQuotas"
+        :all-clusters="allClusters"
+        :stage="selectedStage"
+        class="w-full"
+        :is-new-stage="false"
+        :associated-environments="associatedEnvironments"
+        @cancel="cancel()"
+        @update="(stage: UpdateStageType) => updateStage(stage)"
+        @delete="(stageId: string) => deleteStage(stageId)"
+      />
     </div>
-    <StageForm
-      v-if="selectedStage"
-      :all-quotas="allQuotas"
-      :all-clusters="allClusters"
-      :stage="selectedStage"
-      class="w-full"
-      :is-new-stage="false"
-      :associated-environments="associatedEnvironments"
-      @cancel="cancel()"
-      @update="(stage: UpdateStageType) => updateStage(stage)"
-      @delete="(stageId: string) => deleteStage(stageId)"
-    />
     <div
       v-if="!stageList.length && !isNewStageForm"
     >

@@ -1,6 +1,5 @@
 import { z } from 'zod'
 import { ErrorSchema } from './utils.js'
-import { ClusterSchema } from './cluster.js'
 
 export const ZoneSchema = z.object({
   id: z.string()
@@ -15,12 +14,8 @@ export const ZoneSchema = z.object({
   description: z.string()
     .max(200)
     .optional()
-    .nullable(),
-  clusters: z.array(ClusterSchema)
-    .optional(),
-  clusterIds: z.array(z.string()
-    .uuid())
-    .optional(),
+    .nullable()
+    .transform((value) => value ?? ''),
 })
 
 export type Zone = Zod.infer<typeof ZoneSchema>
@@ -33,7 +28,9 @@ export const GetZonesSchema = {
 }
 
 export const CreateZoneSchema = {
-  body: ZoneSchema.omit({ id: true }),
+  body: ZoneSchema
+    .omit({ id: true })
+    .extend({ clusterIds: z.string().uuid().array().optional() }),
   responses: {
     201: ZoneSchema,
     500: ErrorSchema,

@@ -94,7 +94,7 @@ describe('ZoneForm.vue', () => {
 
     const props = {
       associatedClusters: [cluster],
-      zone: { ...zone, clusters: [cluster] },
+      zone: { ...zone, clusterIds: [cluster.id] },
       allClusters: [cluster],
     }
 

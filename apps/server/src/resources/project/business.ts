@@ -45,10 +45,14 @@ export const getProjectInfosAndClusters = async (projectId: string) => {
 
 export const getUserProjects = async (userId: User['id']) => {
   const projects = await getUserProjectsQuery(userId)
-  const publicClusters = await getPublicClusters()
-  return projects.map((project) => {
-    project.clusters = project.clusters.concat(publicClusters)
-    return project
+  const publicClusterIds = (await getPublicClusters()).map(({ id }) => id)
+  return projects.map(({ description, clusters, ...project }) => {
+    const projectClusterIds = clusters.map(({ id }) => id)
+    return {
+      clusterIds: publicClusterIds.concat(projectClusterIds),
+      description: description || '',
+      ...project,
+    }
   })
 }
 

@@ -16,7 +16,7 @@ describe('Administration stages', () => {
   beforeEach(() => {
     cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
     cy.intercept('GET', '/api/v1/stages').as('getStages')
-    cy.intercept('GET', '/api/v1/admin/clusters').as('getClusters')
+    cy.intercept('GET', '/api/v1/clusters').as('getClusters')
 
     cy.kcLogin('tcolin')
     cy.visit('/admin/stages')
@@ -40,7 +40,7 @@ describe('Administration stages', () => {
     cy.intercept('POST', '/api/v1/admin/stages').as('createStage')
     cy.intercept('GET', 'api/v1/stages').as('getStages')
     cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
-    cy.intercept('GET', 'api/v1/admin/clusters').as('getClusters')
+    cy.intercept('GET', 'api/v1/clusters').as('getClusters')
     cy.intercept('GET', '/api/v1/projects').as('getProjects')
 
     // Create stage
@@ -160,7 +160,7 @@ describe('Administration stages', () => {
     const newCluster = allClusters?.find(cluster => cluster.privacy === 'public' && !stage.clusters?.find(stCluster => stCluster.id === cluster.id))
 
     cy.intercept('PUT', '/api/v1/admin/stages/*').as('updateStage')
-    cy.intercept('GET', 'api/v1/admin/clusters').as('getClusters')
+    cy.intercept('GET', 'api/v1/clusters').as('getClusters')
     cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
     cy.intercept('GET', 'api/v1/stages').as('getStages')
     cy.intercept('GET', '/api/v1/projects').as('getProjects')

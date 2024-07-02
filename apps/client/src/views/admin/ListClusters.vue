@@ -6,6 +6,7 @@ import { useAdminProjectStore } from '@/stores/admin/project.js'
 import { useAdminOrganizationStore } from '@/stores/admin/organization.js'
 import { useZoneStore } from '@/stores/zone.js'
 import { useStageStore } from '@/stores/stage.js'
+import { useClusterStore } from '@/stores/cluster'
 
 type ClusterList = {
   id: Cluster['id']
@@ -14,14 +15,14 @@ type ClusterList = {
 }[]
 
 const adminClusterStore = useAdminClusterStore()
+const clusterStore = useClusterStore()
 const adminProjectStore = useAdminProjectStore()
 const adminOrganizationStore = useAdminOrganizationStore()
 const zoneStore = useZoneStore()
 const stageStore = useStageStore()
 
-const clusters = computed(() => adminClusterStore.clusters)
+const clusters = computed(() => clusterStore.clusters)
 const allZones = computed(() => zoneStore.zones)
-const selectedCluster = ref<Cluster>()
 const clusterList = ref<ClusterList>([])
 const allProjects = ref<Project[]>([])
 const allStages = ref<Stage[]>([])
@@ -30,23 +31,24 @@ const isNewClusterForm = ref(false)
 const associatedEnvironments = ref<ClusterAssociatedEnvironments>([])
 
 const setClusterTiles = (clusterArr: typeof clusters.value) => {
-  // @ts-ignore
   clusterList.value = sortArrByObjKeyAsc(clusterArr, 'label')
-    ?.map(cluster => ({
+    .map(cluster => ({
       id: cluster.id,
       title: cluster.label,
       data: cluster,
-    })as unknown as ClusterList[number])
+    }))
 }
 
-const setSelectedCluster = async (cluster: Cluster) => {
-  if (selectedCluster.value?.label === cluster.label) {
-    selectedCluster.value = undefined
+const setSelectedCluster = async (id: Cluster['id']) => {
+  if (adminClusterStore.selectedCluster?.id === id) {
+    adminClusterStore.selectedCluster = undefined
     return
   }
-  selectedCluster.value = cluster
+  await Promise.all([
+    adminClusterStore.getClusterDetails(id),
+    getClusterAssociatedEnvironments(id),
+  ])
   isNewClusterForm.value = false
-  await getClusterAssociatedEnvironments(cluster.id)
 }
 
 const getClusterAssociatedEnvironments = async (clusterId: string) => {
@@ -57,26 +59,26 @@ const getClusterAssociatedEnvironments = async (clusterId: string) => {
 
 const showNewClusterForm = () => {
   isNewClusterForm.value = !isNewClusterForm.value
-  selectedCluster.value = undefined
+  adminClusterStore.selectedCluster = undefined
 }
 
 const cancel = () => {
   isNewClusterForm.value = false
-  selectedCluster.value = undefined
+  adminClusterStore.selectedCluster = undefined
 }
 
 const addCluster = async (cluster: CreateClusterBody) => {
   isUpdatingCluster.value = true
   cancel()
   await adminClusterStore.addCluster(cluster)
-  await adminClusterStore.getClusters()
+  await clusterStore.getClusters()
   isUpdatingCluster.value = false
 }
 
 const updateCluster = async (cluster: UpdateClusterBody & { id: Cluster['id'] }) => {
   isUpdatingCluster.value = true
   await adminClusterStore.updateCluster(cluster)
-  await adminClusterStore.getClusters()
+  await clusterStore.getClusters()
   cancel()
   isUpdatingCluster.value = false
 }
@@ -84,14 +86,14 @@ const updateCluster = async (cluster: UpdateClusterBody & { id: Cluster['id'] })
 const deleteCluster = async (clusterId: Cluster['id']) => {
   isUpdatingCluster.value = true
   await adminClusterStore.deleteCluster(clusterId)
-  await adminClusterStore.getClusters()
+  await clusterStore.getClusters()
   setClusterTiles(clusters.value)
-  selectedCluster.value = undefined
+  adminClusterStore.selectedCluster = undefined
   isUpdatingCluster.value = false
 }
 
 onMounted(async () => {
-  await adminClusterStore.getClusters()
+  await clusterStore.getClusters()
   setClusterTiles(clusters.value)
   await zoneStore.getAllZones()
   allProjects.value = await adminProjectStore.getAllActiveProjects()
@@ -111,7 +113,7 @@ watch(clusters, () => {
     class="flex <md:flex-col-reverse items-center justify-between pb-5"
   >
     <DsfrButton
-      v-if="!selectedCluster && !isNewClusterForm"
+      v-if="!adminClusterStore.selectedCluster && !isNewClusterForm"
       label="Ajouter un nouveau cluster"
       data-testid="addClusterLink"
       tertiary
@@ -152,7 +154,7 @@ watch(clusters, () => {
   <div
     v-else
     :class="{
-      'md:grid md:grid-cols-3 md:gap-3 items-center justify-between': !selectedCluster?.label,
+      'md:grid md:grid-cols-3 md:gap-3 items-center justify-between': !adminClusterStore.selectedCluster?.label,
     }"
   >
     <div
@@ -161,19 +163,19 @@ watch(clusters, () => {
       class="fr-mt-2v fr-mb-4w w-full"
     >
       <div
-        v-show="!selectedCluster"
+        v-show="!adminClusterStore.selectedCluster"
       >
         <DsfrTile
           :title="cluster.title"
           :data-testid="`clusterTile-${cluster.title}`"
-          :horizontal="!!selectedCluster?.label"
+          :horizontal="!!adminClusterStore.selectedCluster?.label"
           class="fr-mb-2w w-11/12"
-          @click="setSelectedCluster(cluster.data)"
+          @click="setSelectedCluster(cluster.id)"
         />
       </div>
       <ClusterForm
-        v-if="selectedCluster && selectedCluster.id === cluster.id"
-        :cluster="selectedCluster"
+        v-if="adminClusterStore.selectedCluster && adminClusterStore.selectedCluster.id === cluster.id"
+        :cluster="adminClusterStore.selectedCluster"
         :all-zones="allZones"
         :all-projects="allProjects"
         :all-stages="allStages"

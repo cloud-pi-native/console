@@ -1,26 +1,31 @@
-import { ClusterBusinessSchema, ClusterPrivacy, CreateClusterBusinessSchema, Project, User, type Cluster } from '@cpn-console/shared'
-import { addLogs, createCluster as createClusterQuery, deleteCluster as deleteClusterQuery, getClusterById, getClusterByLabel, getClusterEnvironments, getClustersWithProjectIdAndConfig, getProjectsByClusterId, getStagesByClusterId, linkClusterToProjects, linkZoneToClusters, removeClusterFromProject, removeClusterFromStage, updateCluster as updateClusterQuery } from '@/resources/queries-index.js'
+import type { User } from '@prisma/client'
+import { ClusterDetails, ClusterDetailsSchema, ClusterPrivacy, Kubeconfig, Project, type Cluster } from '@cpn-console/shared'
+import {
+  addLogs,
+  createCluster as createClusterQuery,
+  deleteCluster as deleteClusterQuery,
+  getClusterById,
+  getClusterByLabel,
+  getClusterEnvironments,
+  getProjectsByClusterId,
+  getStagesByClusterId,
+  linkClusterToProjects,
+  linkZoneToClusters,
+  removeClusterFromProject,
+  removeClusterFromStage,
+  updateCluster as updateClusterQuery,
+  getClusterDetails as getClusterDetailsQuery,
+} from '@/resources/queries-index.js'
 import { linkClusterToStages } from '@/resources/stage/business.js'
 import { validateSchema } from '@/utils/business.js'
 import { BadRequestError, DsoError, NotFoundError } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
 
-export const checkClusterProjectIds = (data: Omit<Cluster, 'id'> & { id?: Cluster['id'] }) => {
+export const checkClusterProjectIds = (data: Omit<ClusterDetails, 'id'> & { id?: Cluster['id'] }) => {
   // si le cluster est dedicated, la clé projectIds doit être renseignée
   return data.privacy === ClusterPrivacy.PUBLIC || !data.projectIds
     ? []
     : data.projectIds
-}
-
-export const getAllClusters = async () => {
-  const clusters = await getClustersWithProjectIdAndConfig()
-  return clusters.map(({ stages, ...cluster }) => ({
-    ...cluster,
-    user: cluster.kubeconfig.user,
-    cluster: cluster.kubeconfig.cluster,
-    projectIds: cluster.projects.map(({ id }) => id),
-    stageIds: stages.map(({ id }) => id) ?? [],
-  }))
 }
 
 export const getClusterAssociatedEnvironments = async (clusterId: string) => {
@@ -40,25 +45,40 @@ export const getClusterAssociatedEnvironments = async (clusterId: string) => {
   }
 }
 
-export const createCluster = async (data: Omit<Cluster, 'id'>, userId: User['id'], requestId: string) => {
+export const getClusterDetails = async (clusterId: string): Promise<ClusterDetails> => {
   try {
-    const schemaValidation = CreateClusterBusinessSchema.safeParse(data)
-    validateSchema(schemaValidation)
+    const { infos, projects, stages, kubeconfig, ...details } = await getClusterDetailsQuery(clusterId)
 
+    return {
+      ...details,
+      infos: infos ?? '',
+      projectIds: projects.map(project => project.id),
+      stageIds: stages.map(({ id }) => id),
+      kubeconfig: {
+        cluster: kubeconfig.cluster as unknown as Kubeconfig['cluster'],
+        user: kubeconfig.user as unknown as Kubeconfig['user'],
+      },
+    }
+  } catch (error) {
+    throw new Error(error?.message)
+  }
+}
+
+export const createCluster = async (data: Omit<ClusterDetails, 'id'>, userId: User['id'], requestId: string) => {
+  try {
     const isLabelTaken = await getClusterByLabel(data.label)
     if (isLabelTaken) throw new BadRequestError('Ce label existe déjà pour un autre cluster', undefined)
 
     const {
       projectIds = [],
       stageIds,
-      user,
-      cluster,
+      kubeconfig,
       zoneId,
       ...clusterData
     } = data
 
     // @ts-ignore
-    const clusterCreated = await createClusterQuery(clusterData, { user, cluster }, zoneId)
+    const clusterCreated = await createClusterQuery(clusterData, kubeconfig, zoneId)
 
     if (data.privacy === ClusterPrivacy.DEDICATED && projectIds.length) {
       await linkClusterToProjects(clusterCreated.id, projectIds)
@@ -72,7 +92,7 @@ export const createCluster = async (data: Omit<Cluster, 'id'>, userId: User['id'
 
     await addLogs('Create Cluster', results, userId, requestId)
 
-    return clusterCreated
+    return getClusterDetails(clusterCreated.id)
   } catch (error) {
     if (error instanceof DsoError) {
       throw error
@@ -81,11 +101,11 @@ export const createCluster = async (data: Omit<Cluster, 'id'>, userId: User['id'
   }
 }
 
-export const updateCluster = async (data: Partial<Cluster>, clusterId: Cluster['id'], userId: User['id'], requestId: string) => {
+export const updateCluster = async (data: Partial<ClusterDetails>, clusterId: Cluster['id'], userId: User['id'], requestId: string) => {
   try {
     if (data?.privacy === ClusterPrivacy.PUBLIC) delete data.projectIds
 
-    const schemaValidation = ClusterBusinessSchema.safeParse({ ...data, id: clusterId })
+    const schemaValidation = ClusterDetailsSchema.partial().safeParse({ ...data, id: clusterId })
     validateSchema(schemaValidation)
 
     const dbCluster = await getClusterById(clusterId)
@@ -95,14 +115,13 @@ export const updateCluster = async (data: Partial<Cluster>, clusterId: Cluster['
     const {
       projectIds,
       stageIds,
-      user,
-      cluster,
+      kubeconfig,
       zoneId,
       ...clusterData
     } = data
 
     // @ts-ignore
-    const clusterUpdated = await updateClusterQuery(clusterId, clusterData, { user, cluster })
+    const clusterUpdated = await updateClusterQuery(clusterId, clusterData, kubeconfig)
 
     // zone
     if (zoneId) {
@@ -143,7 +162,7 @@ export const updateCluster = async (data: Partial<Cluster>, clusterId: Cluster['
 
     await addLogs('Update Cluster', results, userId, requestId)
 
-    return clusterUpdated
+    return getClusterDetails(clusterId)
   } catch (error) {
     if (error instanceof DsoError) {
       throw error

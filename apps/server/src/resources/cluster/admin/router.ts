@@ -6,20 +6,19 @@ import {
   checkClusterProjectIds,
   createCluster,
   deleteCluster,
-  getAllClusters,
   getClusterAssociatedEnvironments,
+  getClusterDetails as getClusterDetailsBusiness,
   updateCluster,
 } from './business.js'
 
 export const clusterAdminRouter = () => serverInstance.router(clusterAdminContract, {
-  getClusters: async ({ request: req }) => {
-    const user = req.session.user
-    const cleanedClusters = await getAllClusters(user)
+  getClusterDetails: async ({ params }) => {
+    const clusterId = params.clusterId
+    const cluster = await getClusterDetailsBusiness(clusterId)
 
-    addReqLogs({ req, message: 'Clusters récupérés avec succès' })
     return {
       status: 200,
-      body: cleanedClusters,
+      body: cluster,
     }
   },
 
@@ -56,7 +55,7 @@ export const clusterAdminRouter = () => serverInstance.router(clusterAdminContra
     addReqLogs({ req, message: 'Cluster mis à jour avec succès', infos: { clusterId: cluster.id } })
     return {
       status: 200,
-      body: cluster as unknown as Cluster,
+      body: cluster,
     }
   },
 

@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import { achievedStatus, projectRoles, logActions, type ProjectRoles, type AchievedStatus, ClusterPrivacy, Stage, Quota } from '@cpn-console/shared'
+import { achievedStatus, projectRoles, logActions, type ProjectRoles, type AchievedStatus, ClusterPrivacy, Stage, Quota, ClusterDetails } from '@cpn-console/shared'
 import { repeatFn } from './func-utils.js'
 import { Cluster, Environment, Log, Organization, Permission, Project, Repository, User, Role } from './types.js'
 
@@ -52,19 +52,20 @@ export const getRandomCluster = (
     zoneId,
     projectIds: privacy === ClusterPrivacy.DEDICATED ? projectIds : [],
     stageIds,
-    user: {
-      certData: 'userCAD',
-      keyData: 'userCKD',
-    },
-    cluster: {
-      caData: 'clusterCAD',
-      server: 'https://coucou.com:5000',
-      tlsServerName: 'coucou.com',
+    kubeconfig: {
+      user: {
+        certData: 'userCAD',
+        keyData: 'userCKD',
+      },
+      cluster: {
+        caData: 'clusterCAD',
+        server: 'https://coucou.com:5000',
+        tlsServerName: 'coucou.com',
+      },
     },
     privacy,
     clusterResources: faker.datatype.boolean(),
-    secretName: faker.internet.password({ length: 50 }),
-  } as Cluster
+  } as ClusterDetails
 }
 
 export const getRandomUser = () => {
