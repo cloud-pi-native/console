@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ClusterBusinessSchema, ClusterPrivacy, EnvironmentSchema, OrganizationSchema, PermissionSchema, ProjectSchema, QuotaSchema, RepoBusinessSchema, RepoSchema, QuotaStageSchema, StageSchema, UserSchema, descriptionMaxLength, instanciateSchema, parseZodError } from '../index.js'
+import { ClusterBusinessSchema, ClusterPrivacy, EnvironmentSchema, OrganizationSchema, PermissionSchema, ProjectSchema, QuotaSchema, RepoBusinessSchema, RepoSchema, StageSchema, UserSchema, descriptionMaxLength, instanciateSchema, parseZodError } from '../index.js'
 import { faker } from '@faker-js/faker'
 import { ZodError } from 'zod'
 
@@ -30,7 +30,8 @@ describe('Schemas utils', () => {
       name: faker.lorem.word({ length: { min: 2, max: 10 } }),
       projectId: faker.string.uuid(),
       clusterId: faker.string.uuid(),
-      quotaStageId: faker.string.uuid(),
+      quotaId: faker.string.uuid(),
+      stageId: faker.string.uuid(),
     }
 
     expect(EnvironmentSchema.omit({ permissions: true }).safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
@@ -42,7 +43,8 @@ describe('Schemas utils', () => {
       name: faker.lorem.word({ length: { min: 2, max: 10 } }),
       projectId: faker.string.uuid(),
       clusterId: faker.string.uuid(),
-      quotaStageId: faker.string.uuid(),
+      stageId: faker.string.uuid(),
+      quotaId: faker.string.uuid(),
       permissions: [{
         id: faker.string.uuid(),
         environmentId: faker.string.uuid(),
@@ -95,9 +97,17 @@ describe('Schemas utils', () => {
       organizationId: faker.string.uuid(),
       status: 'created',
       locked: false,
+      repositories: [],
+      environments: [],
+      updatedAt: new Date(),
+      createdAt: new Date(),
     }
-
-    expect(ProjectSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
+    const parsed = structuredClone(toParse)
+    // @ts-ignore la date doit être transformé en string
+    parsed.createdAt = parsed.createdAt.toISOString()
+    // @ts-ignore
+    parsed.updatedAt = parsed.updatedAt.toISOString()
+    expect(ProjectSchema.safeParse(toParse)).toStrictEqual({ data: parsed, success: true })
   })
 
   it('Should validate a correct user schema', () => {
@@ -118,6 +128,7 @@ describe('Schemas utils', () => {
       memory: '12Gi',
       cpu: faker.number.int({ min: 0 }),
       isPrivate: faker.datatype.boolean(),
+      stageIds: [],
     }
 
     expect(QuotaSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
@@ -127,20 +138,11 @@ describe('Schemas utils', () => {
     const toParse = {
       id: faker.string.uuid(),
       name: faker.lorem.word({ length: { min: 2, max: 10 } }),
+      clusterIds: [],
+      quotaIds: [],
     }
 
     expect(StageSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
-  })
-
-  it('Should validate a correct quotaStage schema', () => {
-    const toParse = {
-      id: faker.string.uuid(),
-      quotaId: faker.string.uuid(),
-      stageId: faker.string.uuid(),
-      status: faker.lorem.word(),
-    }
-
-    expect(QuotaStageSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
   })
 
   it('Should not validate an organization schema with wrong external data', () => {

@@ -87,7 +87,7 @@ describe('ZoneForm.vue', () => {
     cy.getByDataTestid('addZoneBtn').should('be.enabled')
   })
 
-  it.only('Should mount an update ZoneForm', () => {
+  it('Should mount an update ZoneForm', () => {
     const zone = getRandomZone()
     const cluster = getRandomCluster({ zoneId: zone.id })
     useSnackbarStore()

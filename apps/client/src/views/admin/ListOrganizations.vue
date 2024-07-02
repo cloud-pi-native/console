@@ -91,7 +91,8 @@ const setRows = () => {
 }
 
 const getAllOrganizations = async () => {
-  allOrganizations.value = await adminOrganizationStore.getAllOrganizations()
+  await adminOrganizationStore.getAllOrganizations()
+  allOrganizations.value = adminOrganizationStore.organizations
   setRows()
 }
 

@@ -66,10 +66,10 @@ sleep 3
 # Start prisma migration
 if [ "$RESET_DB" = "true" ]; then
   printf "\n${red}[db wrapper]${no_color}: Start prisma reset\n"
-  pnpm --filter server run db:reset
+  pnpm --filter @cpn-console/server run db:reset
 fi
 printf "\n${red}[db wrapper]${no_color}: Start prisma migration\n"
-pnpm --filter server run db:migrate
+pnpm --filter @cpn-console/server run db:migrate
 
 # Stop database container
 printf "\n${red}[db wrapper]${no_color}: Stop and remove postgres container\n"

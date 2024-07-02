@@ -8,6 +8,7 @@ import {
   ReplayHooksForProjectSchema,
   ArchiveProjectSchema,
   PatchProjectSchema,
+  GetProjectsDataSchema,
 } from '../schemas/index.js'
 
 export const projectContract = contractInstance.router({
@@ -87,8 +88,7 @@ export const projectAdminContract = contractInstance.router({
     path: `${apiPrefix}/admin/projects/data`,
     summary: 'Download projects csv report',
     description: 'Retrieve all projects data for download as CSV file.',
-    // responses: GetProjectsDataSchema.responses
-    responses: {},
+    responses: GetProjectsDataSchema.responses,
   },
 
   patchProject: {

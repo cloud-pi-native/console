@@ -159,8 +159,7 @@ describe('Administration stages', () => {
     const newQuota = allQuotas?.find(quota => !stage.quotas?.find(stQuota => stQuota.id === quota.id))
     const newCluster = allClusters?.find(cluster => cluster.privacy === 'public' && !stage.clusters?.find(stCluster => stCluster.id === cluster.id))
 
-    cy.intercept('PUT', '/api/v1/admin/quotas/quotastages').as('updateQuotaStage')
-    cy.intercept('PATCH', '/api/v1/admin/stages/*/clusters').as('updateStageClusters')
+    cy.intercept('PUT', '/api/v1/admin/stages/*').as('updateStage')
     cy.intercept('GET', 'api/v1/admin/clusters').as('getClusters')
     cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
     cy.intercept('GET', 'api/v1/stages').as('getStages')
@@ -193,10 +192,7 @@ describe('Administration stages', () => {
       .click()
     cy.getByDataTestid('updateStageBtn')
       .click()
-    cy.wait('@updateQuotaStage').its('response').then($response => {
-      expect($response?.statusCode).to.match(/^20\d$/)
-    })
-    cy.wait('@updateStageClusters').its('response').then($response => {
+    cy.wait('@updateStage').its('response').then($response => {
       expect($response?.statusCode).to.match(/^20\d$/)
     })
 
@@ -253,36 +249,6 @@ describe('Administration stages', () => {
       .should('exist')
   })
 
-  it('Should not be able to remove a used quota from a stage', () => {
-    cy.intercept('PUT', '/api/v1/admin/quotas/quotastages').as('updateQuotaStage')
-
-    cy.getByDataTestid(`stageTile-${stage1.name}`)
-      .should('be.visible')
-      .click()
-    cy.get('h1').invoke('text').should('contain', `Informations du type d'environnement ${stage1.name}`)
-    cy.getByDataTestid('addStageBtn').should('not.exist')
-    cy.getByDataTestid('updateStageBtn').should('be.visible').and('be.enabled')
-    cy.getByDataTestid('nameInput')
-      .find('input')
-      .should('have.value', stage1.name)
-      .and('be.disabled')
-    cy.getByDataTestid('updateStageBtn').should('be.enabled')
-    cy.get('#quotas-select')
-      .click()
-    cy.get('#quotas-select .fr-tag--dismiss')
-      .should('have.length', stage1.quotaStage.length)
-    cy.getByDataTestid(`${allQuotas[0].id}-quotas-select-tag`)
-      .click()
-    cy.getByDataTestid('updateStageBtn')
-      .click()
-    cy.wait('@updateQuotaStage').its('response').then($response => {
-      expect($response?.statusCode).to.not.match(/^20\d$/)
-    })
-    cy.getByDataTestid('snackbar').within(() => {
-      cy.get('p').should('contain', 'L\'association quota / type d\'environnement que vous souhaitez supprimer est actuellement utilisée. Vous pouvez demander aux souscripteurs concernés de changer le quota choisi pour leur environnement.')
-    })
-  })
-
   it('Should display a non-deletable quota form', () => {
     cy.getByDataTestid(`stageTile-${stage1.name}`)
       .should('be.visible')
@@ -298,7 +264,7 @@ describe('Administration stages', () => {
     cy.get('#quotas-select')
       .click()
     cy.get('#quotas-select .fr-tag--dismiss')
-      .should('have.length', stage1.quotaStage.length)
+      .should('have.length', stage1.quotaIds.length)
     cy.getByDataTestid('deleteStageZone').should('not.exist')
     cy.getByDataTestid('associatedEnvironmentsZone').should('exist')
     cy.getByDataTestid('associatedEnvironmentsTable').should('exist')

@@ -57,7 +57,7 @@ export const checkCreateProject = async (
   organizationName: Organization['name'],
   data: CreateProjectBody,
 ) => {
-  const schemaValidation = ProjectSchema.omit({ id: true, organizationId: true, status: true, locked: true }).safeParse(data)
+  const schemaValidation = ProjectSchema.pick({ name: true, organizationId: true, description: true }).safeParse(data)
   validateSchema(schemaValidation)
 
   const projectSearch = await getProjectByNames({ name: data.name, organizationName })
@@ -76,7 +76,7 @@ const filterProject = (
   project = exclude(project, ['clusters'])
   // TODO définir les clés disponibles des environnements par niveau d'autorisation
   // @ts-ignore
-  project.environments = project?.environments?.filter(env => !checkInsufficientPermissionInEnvironment(userId, env.permissions, 0))
+  project.environments = project.environments.filter(env => !checkInsufficientPermissionInEnvironment(userId, env.permissions, 0)).map(({ ...env }) => env)
   return project
 }
 

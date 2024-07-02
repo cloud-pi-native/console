@@ -1,25 +1,26 @@
 <script lang="ts" setup>
 import { computed, onBeforeMount, ref } from 'vue'
-import { type Cluster, type Quota, type Stage, type StageAssociatedEnvironments, SharedZodError, StageSchema } from '@cpn-console/shared'
-import { copyContent } from '@/utils/func.js'
+import { type Cluster, type Quota, type Stage, type StageAssociatedEnvironments, SharedZodError, StageSchema, CreateStageBody } from '@cpn-console/shared'
+import { toCodeComponent } from '@/utils/func.js'
 import type { UpdateStageType } from '@/views/admin/ListStages.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = withDefaults(defineProps<{
   isNewStage: boolean,
-  stage: Partial<Stage>,
+  stage: Stage,
   allQuotas: Quota[],
   allClusters: Cluster[],
   associatedEnvironments: StageAssociatedEnvironments,
 }>(), {
   isNewStage: false,
-  stage: () => ({}),
+  stage: () => ({ name: '', clusterIds: [], quotaIds: [], id: '' }),
   allQuotas: () => [],
   allClusters: () => [],
   associatedEnvironments: () => [],
 })
 
 const localStage = ref(props.stage)
+
 const isDeletingStage = ref(false)
 const stageToDelete = ref('')
 
@@ -43,10 +44,10 @@ const updateQuotas = (value: string[]) => {
 }
 
 const emit = defineEmits<{
-  add: [value: typeof localStage.value]
+  add: [value: CreateStageBody]
   update: [value: UpdateStageType]
   cancel: []
-  delete: [value: typeof localStage.value.id]
+  delete: [value: Stage['id']]
 }>()
 
 const addStage = () => {
@@ -54,12 +55,7 @@ const addStage = () => {
 }
 
 const updateStage = () => {
-  const updatedStage = {
-    stageId: localStage.value.id,
-    quotaIds: localStage.value.quotaIds,
-    clusterIds: localStage.value.clusterIds,
-  }
-  if (isStageValid.value) emit('update', updatedStage)
+  if (isStageValid.value) emit('update', localStage.value)
 }
 
 const cancel = () => {
@@ -68,17 +64,14 @@ const cancel = () => {
 
 const getRows = (associatedEnvironments: StageAssociatedEnvironments) => {
   return associatedEnvironments
-    .map(associatedEnvironment => Object
-      .values(associatedEnvironment)
-      .map(value => ({
-        component: 'code',
-        text: value,
-        title: 'Copier la valeur',
-        class: 'fr-text-default--info text-xs cursor-pointer',
-        onClick: () => copyContent(value),
-      }),
-      ),
-    )
+    .map(associatedEnvironment => ([
+      toCodeComponent(associatedEnvironment.organization),
+      toCodeComponent(associatedEnvironment.project),
+      toCodeComponent(associatedEnvironment.name),
+      toCodeComponent(associatedEnvironment.quota),
+      toCodeComponent(associatedEnvironment.cluster),
+      toCodeComponent(associatedEnvironment.owner ?? ''),
+    ]))
 }
 
 onBeforeMount(() => {
@@ -110,13 +103,8 @@ onBeforeMount(() => {
         :wrapped="false"
         label="Quotas associés"
         description="Sélectionnez les quotas autorisés à utiliser ce type d'environnement."
-        :options="allQuotas.map(({ id, name }) => ({ id, name }))"
-        :options-selected="localStage.quotaStage
-          ?.map(qs => qs.quotaId)
-          .map(quotaId => props.allQuotas
-            .find(quota => quota.id === quotaId))
-          // @ts-ignore
-          .map(({ id, name }) => ({ id, name }))?? []"
+        :options="allQuotas"
+        :options-selected="allQuotas.filter(({ id}) => localStage.quotaIds.includes(id))"
         label-key="name"
         value-key="id"
         :disabled="false"
@@ -131,10 +119,8 @@ onBeforeMount(() => {
         :wrapped="false"
         label="Clusters associés"
         description="Sélectionnez les clusters autorisés à utiliser ce type d'environnement."
-        :options="allClusters.map(({ id, label }) => ({ id, label }))"
-        :options-selected="localStage
-          // @ts-ignore
-          .clusters?.map(({ id, label }) => ({ id, label })) ?? []"
+        :options="allClusters"
+        :options-selected="allClusters.filter(({ id }) => localStage.clusterIds.includes(id))"
         label-key="label"
         value-key="id"
         :disabled="false"

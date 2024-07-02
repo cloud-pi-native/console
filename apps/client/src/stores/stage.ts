@@ -1,10 +1,16 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { CreateStageBody, Stage, UpdateQuotaStageBody, UpdateStageClustersBody } from '@cpn-console/shared'
+import {
+  type CreateStageBody,
+  type Stage,
+  type UpdateStageBody,
+  resourceListToDict,
+} from '@cpn-console/shared'
 import { apiClient, extractData } from '@/api/xhr-client.js'
 
 export const useStageStore = defineStore('stage', () => {
   const stages = ref<Stage[]>([])
+  const stagesById = computed(() => resourceListToDict(stages.value))
 
   const getAllStages = async () => {
     stages.value = await apiClient.Stages.getStages()
@@ -20,12 +26,8 @@ export const useStageStore = defineStore('stage', () => {
     apiClient.StagesAdmin.createStage({ body })
       .then(response => extractData(response, 201))
 
-  const updateQuotaStage = (stageId: string, quotaIds: UpdateQuotaStageBody['quotaIds']) =>
-    apiClient.QuotasAdmin.updateQuotaStage({ body: { stageId, quotaIds } })
-      .then(response => extractData(response, 200))
-
-  const updateStageClusters = (stageId: string, clusterIds: UpdateStageClustersBody['clusterIds']) =>
-    apiClient.StagesAdmin.updateStageClusters({ body: { clusterIds }, params: { stageId } })
+  const updateStage = (stageId: string, body: UpdateStageBody) =>
+    apiClient.StagesAdmin.updateStage({ params: { stageId }, body })
       .then(response => extractData(response, 200))
 
   const deleteStage = (stageId: string) =>
@@ -34,11 +36,11 @@ export const useStageStore = defineStore('stage', () => {
 
   return {
     stages,
+    stagesById,
     getAllStages,
     getStageAssociatedEnvironments,
     addStage,
-    updateQuotaStage,
-    updateStageClusters,
+    updateStage,
     deleteStage,
   }
 })

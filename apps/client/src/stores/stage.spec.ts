@@ -6,8 +6,7 @@ import { useStageStore } from './stage.js'
 const apiClientGetStages = vi.spyOn(apiClient.Stages, 'getStages')
 const apiClientGet = vi.spyOn(apiClient.StagesAdmin, 'getStageEnvironments')
 const apiClientPost = vi.spyOn(apiClient.StagesAdmin, 'createStage')
-const apiClientPut = vi.spyOn(apiClient.QuotasAdmin, 'updateQuotaStage')
-const apiClientPatch = vi.spyOn(apiClient.StagesAdmin, 'updateStageClusters')
+const apiClientPut = vi.spyOn(apiClient.StagesAdmin, 'updateStage')
 const apiClientDelete = vi.spyOn(apiClient.StagesAdmin, 'deleteStage')
 
 describe('Stage Store', () => {
@@ -64,30 +63,24 @@ describe('Stage Store', () => {
     expect(apiClientPost).toHaveBeenCalledTimes(1)
   })
 
-  it('Should update a stage\'s quotaStages by api call', async () => {
+  it('Should update a stage\'s quotas and clusters associated by api call', async () => {
     const stageId = 'stageId'
     const quotaIds = ['stage1']
+    const clusterIds = ['cluster1']
+    const data = {
+      name: 'stageA',
+      quotaIds,
+      clusterIds,
+      id: stageId,
+    }
 
-    apiClientPut.mockReturnValueOnce(Promise.resolve({ status: 200, body: 1 }))
+    apiClientPut.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
     const stageStore = useStageStore()
 
-    const res = await stageStore.updateQuotaStage(stageId, quotaIds)
+    const res = await stageStore.updateStage(stageId, { quotaIds, clusterIds, name: 'stageA' })
 
-    expect(res).toBe(1)
+    expect(res).toBe(data)
     expect(apiClientPut).toHaveBeenCalledTimes(1)
-  })
-
-  it('Should update a stage\'s clusters by api call', async () => {
-    const stageId = 'stageId'
-    const clusterIds = ['stage1']
-
-    apiClientPatch.mockReturnValueOnce(Promise.resolve({ status: 200, body: 1 }))
-    const stageStore = useStageStore()
-
-    const res = await stageStore.updateStageClusters(stageId, clusterIds)
-
-    expect(res).toBe(1)
-    expect(apiClientPatch).toHaveBeenCalledTimes(1)
   })
 
   it('Should delete a stage by api call', async () => {

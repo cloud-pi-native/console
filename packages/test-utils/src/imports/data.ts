@@ -6,7 +6,8 @@ const environment = [
     createdAt: '2023-07-03T14:46:56.819Z',
     updatedAt: '2023-07-03T14:46:56.826Z',
     clusterId: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
-    quotaStageId: '0530e9c9-b37d-4dec-93e6-1895f700e61c',
+    quotaId: '5a57b62f-2465-4fb6-a853-5a751d099199',
+    stageId: '4a9ad694-4c54-4a3c-9579-548bf4b7b1b9',
   },
   {
     id: '95ef0d9b-945e-4af6-851c-4c6685ceff20',
@@ -15,7 +16,8 @@ const environment = [
     createdAt: '2023-07-03T14:46:56.819Z',
     updatedAt: '2023-07-03T14:46:56.829Z',
     clusterId: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
-    quotaStageId: '0530e9c9-b37d-4dec-93e6-1895f700e61c',
+    quotaId: '5a57b62f-2465-4fb6-a853-5a751d099199',
+    stageId: '4a9ad694-4c54-4a3c-9579-548bf4b7b1b9',
   },
   {
     id: '8d4503eb-64c7-407e-89db-6ab80865071f',
@@ -24,7 +26,8 @@ const environment = [
     createdAt: '2023-07-03T14:46:56.834Z',
     updatedAt: '2023-07-03T14:46:56.855Z',
     clusterId: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
-    quotaStageId: '0530e9c9-b37d-4dec-93e6-1895f700e61c',
+    quotaId: '5a57b62f-2465-4fb6-a853-5a751d099199',
+    stageId: '4a9ad694-4c54-4a3c-9579-548bf4b7b1b9',
   },
   {
     id: '3b0cf6c1-251b-4ec6-926f-b54ce1f82560',
@@ -33,7 +36,8 @@ const environment = [
     createdAt: '2023-07-03T14:46:56.834Z',
     updatedAt: '2023-07-03T14:46:56.859Z',
     clusterId: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
-    quotaStageId: '0530e9c9-b37d-4dec-93e6-1895f700e61c',
+    quotaId: '5a57b62f-2465-4fb6-a853-5a751d099199',
+    stageId: '4a9ad694-4c54-4a3c-9579-548bf4b7b1b9',
   },
   {
     id: '1b9f1053-fcf5-4053-a7b2-ff8a2c0c1921',
@@ -42,7 +46,8 @@ const environment = [
     createdAt: '2023-07-03T14:46:56.787Z',
     updatedAt: '2023-07-03T14:46:56.803Z',
     clusterId: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
-    quotaStageId: '0530e9c9-b37d-4dec-93e6-1895f700e61c',
+    quotaId: '5a57b62f-2465-4fb6-a853-5a751d099199',
+    stageId: '4a9ad694-4c54-4a3c-9579-548bf4b7b1b9',
   },
   {
     id: '1c654f00-4798-4a80-929f-960ddb37885a',
@@ -51,7 +56,8 @@ const environment = [
     createdAt: '2023-07-03T14:46:56.788Z',
     updatedAt: '2023-07-03T14:46:56.803Z',
     clusterId: '126ac57f-263c-4463-87bb-d4e9017056b2',
-    quotaStageId: '0530e9c9-b37d-4dec-93e6-1895f700e61c',
+    quotaId: '5a57b62f-2465-4fb6-a853-5a751d099199',
+    stageId: '4a9ad694-4c54-4a3c-9579-548bf4b7b1b9',
   },
   {
     id: '1c654f00-4798-4a80-929f-960ddb36774b',
@@ -60,7 +66,8 @@ const environment = [
     createdAt: '2023-07-03T14:46:56.788Z',
     updatedAt: '2023-07-03T14:46:56.803Z',
     clusterId: '32636a52-4dd1-430b-b08a-b2e5ed9d1789',
-    quotaStageId: '0530e9c9-b37d-4dec-93e6-1895f700e61c',
+    quotaId: '5a57b62f-2465-4fb6-a853-5a751d099199',
+    stageId: '4a9ad694-4c54-4a3c-9579-548bf4b7b1b9',
   },
   {
     id: '2805a1f5-0ca4-46a4-b3d7-5b649aee4a91',
@@ -69,7 +76,8 @@ const environment = [
     createdAt: '2023-07-03T14:46:56.808Z',
     updatedAt: '2023-07-03T14:46:56.815Z',
     clusterId: '32636a52-4dd1-430b-b08a-b2e5ed9d1789',
-    quotaStageId: '0530e9c9-b37d-4dec-93e6-1895f700e61c',
+    quotaId: '5a57b62f-2465-4fb6-a853-5a751d099199',
+    stageId: '4a9ad694-4c54-4a3c-9579-548bf4b7b1b9',
   },
 ]
 const projectClusterHistory = environment.reduce((acc, { projectId, clusterId }) => {
@@ -83,6 +91,54 @@ const projectClusterHistory = environment.reduce((acc, { projectId, clusterId })
     clusterId,
   })
 }, [])
+const quota = [
+  {
+    id: '5a57b62f-2465-4fb6-a853-5a751d099199',
+    cpu: 2,
+    memory: '4Gi',
+    name: 'small',
+    isPrivate: false,
+  },
+  {
+    id: '08770663-3b76-4af6-8978-9f75eda4faa7',
+    cpu: 4,
+    memory: '8Gi',
+    name: 'medium',
+    isPrivate: false,
+  },
+  {
+    id: 'b7b4d9bd-7a8f-4287-bb12-5ce2dadb4ff2',
+    cpu: 6,
+    memory: '12Gi',
+    name: 'large',
+    isPrivate: false,
+  },
+  {
+    id: '97b851e8-9067-4a3d-a0e8-c3a6820c49be',
+    cpu: 8,
+    memory: '16Gi',
+    name: 'xlarge',
+    isPrivate: false,
+  },
+]
+const stage = [
+  {
+    id: '4a9ad694-4c54-4a3c-9579-548bf4b7b1b9',
+    name: 'dev',
+  },
+  {
+    id: '38fa869d-6267-441d-af7f-e0548fd06b7e',
+    name: 'staging',
+  },
+  {
+    id: 'd434310e-7850-4d59-b47f-0772edf50582',
+    name: 'integration',
+  },
+  {
+    id: '9b3e9991-896d-4d90-bdc5-a34be8c06b8f',
+    name: 'prod',
+  },
+]
 export const data = {
   zone: [
     {
@@ -102,128 +158,8 @@ export const data = {
       updatedAt: '2023-07-10T19:32:13.385Z',
     },
   ],
-  quota: [
-    {
-      id: '5a57b62f-2465-4fb6-a853-5a751d099199',
-      cpu: 2,
-      memory: '4Gi',
-      name: 'small',
-      isPrivate: false,
-    },
-    {
-      id: '08770663-3b76-4af6-8978-9f75eda4faa7',
-      cpu: 4,
-      memory: '8Gi',
-      name: 'medium',
-      isPrivate: false,
-    },
-    {
-      id: 'b7b4d9bd-7a8f-4287-bb12-5ce2dadb4ff2',
-      cpu: 6,
-      memory: '12Gi',
-      name: 'large',
-      isPrivate: false,
-    },
-    {
-      id: '97b851e8-9067-4a3d-a0e8-c3a6820c49be',
-      cpu: 8,
-      memory: '16Gi',
-      name: 'xlarge',
-      isPrivate: false,
-    },
-  ],
-  stage: [
-    {
-      id: '4a9ad694-4c54-4a3c-9579-548bf4b7b1b9',
-      name: 'dev',
-    },
-    {
-      id: '38fa869d-6267-441d-af7f-e0548fd06b7e',
-      name: 'staging',
-    },
-    {
-      id: 'd434310e-7850-4d59-b47f-0772edf50582',
-      name: 'integration',
-    },
-    {
-      id: '9b3e9991-896d-4d90-bdc5-a34be8c06b8f',
-      name: 'prod',
-    },
-  ],
-  quotaStage: [
-    {
-      id: '0530e9c9-b37d-4dec-93e6-1895f700e61c',
-      quotaId: '5a57b62f-2465-4fb6-a853-5a751d099199',
-      stageId: '4a9ad694-4c54-4a3c-9579-548bf4b7b1b9',
-      status: 'active',
-    },
-    {
-      id: '0530e9c9-b37d-4dec-93e6-1895f700e62c',
-      quotaId: '08770663-3b76-4af6-8978-9f75eda4faa7',
-      stageId: '4a9ad694-4c54-4a3c-9579-548bf4b7b1b9',
-      status: 'active',
-    },
-    {
-      id: '0530e9c9-b37d-4dec-93e6-1895f700e63c',
-      quotaId: '5a57b62f-2465-4fb6-a853-5a751d099199',
-      stageId: '38fa869d-6267-441d-af7f-e0548fd06b7e',
-      status: 'active',
-    },
-    {
-      id: '0530e9c9-b37d-4dec-93e6-1895f700e64c',
-      quotaId: '08770663-3b76-4af6-8978-9f75eda4faa7',
-      stageId: '38fa869d-6267-441d-af7f-e0548fd06b7e',
-      status: 'active',
-    },
-    {
-      id: '0530e9c9-b37d-4dec-93e6-1895f700e65c',
-      quotaId: '5a57b62f-2465-4fb6-a853-5a751d099199',
-      stageId: 'd434310e-7850-4d59-b47f-0772edf50582',
-      status: 'active',
-    },
-    {
-      id: '0530e9c9-b37d-4dec-93e6-1895f700e66c',
-      quotaId: '08770663-3b76-4af6-8978-9f75eda4faa7',
-      stageId: 'd434310e-7850-4d59-b47f-0772edf50582',
-      status: 'active',
-    },
-    {
-      id: '0530e9c9-b37d-4dec-93e6-1895f700e71c',
-      quotaId: 'b7b4d9bd-7a8f-4287-bb12-5ce2dadb4ff2',
-      stageId: 'd434310e-7850-4d59-b47f-0772edf50582',
-      status: 'active',
-    },
-    {
-      id: '0530e9c9-b37d-4dec-93e6-1895f700e67c',
-      quotaId: '97b851e8-9067-4a3d-a0e8-c3a6820c49be',
-      stageId: 'd434310e-7850-4d59-b47f-0772edf50582',
-      status: 'active',
-    },
-    {
-      id: '0530e9c9-b37d-4dec-93e6-1895f700e68c',
-      quotaId: '5a57b62f-2465-4fb6-a853-5a751d099199',
-      stageId: '9b3e9991-896d-4d90-bdc5-a34be8c06b8f',
-      status: 'active',
-    },
-    {
-      id: '0530e9c9-b37d-4dec-93e6-1895f700e69c',
-      quotaId: '08770663-3b76-4af6-8978-9f75eda4faa7',
-      stageId: '9b3e9991-896d-4d90-bdc5-a34be8c06b8f',
-      status: 'active',
-    },
-    {
-      id: '0530e9c9-b37d-4dec-93e6-1895f700e70c',
-      quotaId: 'b7b4d9bd-7a8f-4287-bb12-5ce2dadb4ff2',
-      stageId: '9b3e9991-896d-4d90-bdc5-a34be8c06b8f',
-      status: 'active',
-    },
-    {
-      id: '0530e9c9-b37d-4dec-93e6-1895f700e60c',
-      quotaId: '97b851e8-9067-4a3d-a0e8-c3a6820c49be',
-      stageId: '9b3e9991-896d-4d90-bdc5-a34be8c06b8f',
-      status: 'active',
-    },
-  ],
+  quota,
+  stage,
   organization: [
     {
       id: '2368a61e-f243-42f6-b471-a85b056ee131',
@@ -2106,6 +2042,16 @@ export const data = {
     },
   ],
   associates: {
+    stage: [
+      ...stage.slice(0, 2).map(({ id }) => ({
+        id,
+        quotas: quota.slice(0, 2).map(({ id }) => ({ id })),
+      })),
+      ...stage.slice(2, 4).map(({ id }) => ({
+        id,
+        quotas: quota.map(({ id }) => ({ id })),
+      })),
+    ],
     cluster: [
       {
         id: '126ac57f-263c-4463-87bb-d4e9017056b2',
@@ -2117,20 +2063,7 @@ export const data = {
             id: '011e7860-04d7-461f-912d-334c622d38b3',
           },
         ],
-        stages: [
-          {
-            id: '4a9ad694-4c54-4a3c-9579-548bf4b7b1b9',
-          },
-          {
-            id: '38fa869d-6267-441d-af7f-e0548fd06b7e',
-          },
-          {
-            id: 'd434310e-7850-4d59-b47f-0772edf50582',
-          },
-          {
-            id: '9b3e9991-896d-4d90-bdc5-a34be8c06b8f',
-          },
-        ],
+        stages: stage.map(stage => ({ id: stage.id })),
       },
       {
         id: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
@@ -2148,37 +2081,11 @@ export const data = {
             id: '22e7044f-8414-435d-9c4a-2df42a65034b',
           },
         ],
-        stages: [
-          {
-            id: '4a9ad694-4c54-4a3c-9579-548bf4b7b1b9',
-          },
-          {
-            id: '38fa869d-6267-441d-af7f-e0548fd06b7e',
-          },
-          {
-            id: 'd434310e-7850-4d59-b47f-0772edf50582',
-          },
-          {
-            id: '9b3e9991-896d-4d90-bdc5-a34be8c06b8f',
-          },
-        ],
+        stages: stage.map(stage => ({ id: stage.id })),
       },
       {
         id: '32636a52-4dd1-430b-b08a-b2e5ed9d1789',
-        stages: [
-          {
-            id: '4a9ad694-4c54-4a3c-9579-548bf4b7b1b9',
-          },
-          {
-            id: '38fa869d-6267-441d-af7f-e0548fd06b7e',
-          },
-          {
-            id: 'd434310e-7850-4d59-b47f-0772edf50582',
-          },
-          {
-            id: '9b3e9991-896d-4d90-bdc5-a34be8c06b8f',
-          },
-        ],
+        stages: stage.map(stage => ({ id: stage.id })),
       },
     ],
   },

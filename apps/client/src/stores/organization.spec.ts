@@ -16,13 +16,11 @@ describe('Organization Store', () => {
   it('Should get organization list by api call', async () => {
     const data = [{ id: 'thisIsAnId', label: 'label', name: 'name' }]
     apiClientGet.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
-    const ciFilesStore = useOrganizationStore()
+    const organizationStore = useOrganizationStore()
 
-    expect(ciFilesStore.organizations).toEqual(undefined)
-
-    await ciFilesStore.setOrganizations()
+    await organizationStore.setOrganizations()
 
     expect(apiClientGet).toHaveBeenCalledTimes(1)
-    expect(ciFilesStore.organizations).toEqual(data)
+    expect(organizationStore.organizations).toEqual(data)
   })
 })

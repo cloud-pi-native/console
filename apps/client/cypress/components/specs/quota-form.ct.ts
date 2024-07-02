@@ -5,7 +5,7 @@ import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@gouvminint/vue-dsfr/styles'
 import '@/main.css'
 import QuotaForm from '@/components/QuotaForm.vue'
-import { getRandomEnv, getRandomQuota, getRandomQuotaStage, getRandomStage, repeatFn } from '@cpn-console/test-utils'
+import { getRandomEnv, getRandomQuota, getRandomStage, repeatFn } from '@cpn-console/test-utils'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useQuotaStore } from '@/stores/quota.js'
 
@@ -59,11 +59,13 @@ describe('QuotaForm.vue', () => {
     const quotaStore = useQuotaStore()
 
     const allStages = repeatFn(2)(getRandomStage)
-    quotaStore.quotas = repeatFn(4)(getRandomQuota)
+    quotaStore.quotas = [getRandomQuota(undefined, { stages: [allStages[0]] })]
     const quotaToUpdate = quotaStore.quotas[0]
-    const quotaStage = getRandomQuotaStage(quotaToUpdate.id, allStages[0].id)
-    quotaToUpdate.quotaStage = [quotaStage]
-    const associatedEnvironments = [getRandomEnv('env1', 'projectId', quotaStage.id, 'clusterId'), getRandomEnv('env2', 'projectId', quotaStage.id, 'clusterId')]
+
+    const associatedEnvironments = [
+      getRandomEnv('env1', 'projectId', 'stageId', 'quotaId', 'clusterId'),
+      getRandomEnv('env2', 'projectId', 'stageId2', 'quotaId2', 'clusterId'),
+    ]
 
     const props = {
       quota: quotaToUpdate,
@@ -91,10 +93,10 @@ describe('QuotaForm.vue', () => {
       .should(quotaToUpdate.isPrivate ? 'be.checked' : 'not.be.checked')
       .and('be.enabled')
     cy.getByDataTestid('updateQuotaBtn').should('be.enabled')
-    cy.getByDataTestid(`${allStages[0].id}-stages-select-tag`)
-      .should('exist')
     cy.get('#stages-select')
       .click()
+    cy.getByDataTestid(`${allStages[0].id}-stages-select-tag`)
+      .should('exist')
     cy.getByDataTestid(`${allStages[1].id}-stages-select-tag`)
       .should('not.have.class', 'fr-tag--dismiss')
       .click()
@@ -112,8 +114,6 @@ describe('QuotaForm.vue', () => {
     const allStages = repeatFn(2)(getRandomStage)
     adminQuotaStore.quotas = repeatFn(4)(getRandomQuota)
     const quotaToUpdate = adminQuotaStore.quotas[0]
-    const quotaStage = getRandomQuotaStage(quotaToUpdate.id, allStages[0].id)
-    quotaToUpdate.quotaStage = [quotaStage]
 
     const props = {
       quota: quotaToUpdate,
@@ -140,10 +140,10 @@ describe('QuotaForm.vue', () => {
       .should(quotaToUpdate.isPrivate ? 'be.checked' : 'not.be.checked')
       .and('be.enabled')
     cy.getByDataTestid('updateQuotaBtn').should('be.enabled')
-    cy.getByDataTestid(`${allStages[0].id}-stages-select-tag`)
-      .should('exist')
     cy.get('#stages-select')
       .click()
+    cy.getByDataTestid(`${allStages[0].id}-stages-select-tag`)
+      .should('exist')
     cy.getByDataTestid(`${allStages[1].id}-stages-select-tag`)
       .should('not.have.class', 'fr-tag--dismiss')
       .click()

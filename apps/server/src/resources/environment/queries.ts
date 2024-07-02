@@ -1,10 +1,11 @@
-import type { Environment, Project, Role, Cluster, QuotaStage } from '@prisma/client'
+import type { Environment, Project, Role, Cluster, Stage } from '@prisma/client'
 import prisma from '@/prisma.js'
 import { getProjectById } from '../project/queries.js'
+import { Quota } from '@cpn-console/shared'
 
 // SELECT
 export const getEnvironmentById = (id: Environment['id']) =>
-  prisma.environment.findUnique({ where: { id } })
+  prisma.environment.findUnique({ where: { id }, include: { quota: true, stage: true } })
 
 export const getEnvironmentInfos = (id: Environment['id']) =>
   prisma.environment.findUnique({
@@ -36,13 +37,7 @@ export const getEnvironmentInfos = (id: Environment['id']) =>
       permissions: {
         include: { user: true },
       },
-      quotaStage: {
-        select: {
-          stage: {
-            select: { name: true },
-          },
-        },
-      },
+      stage: true,
     },
   })
 
@@ -50,16 +45,8 @@ export const getEnvironmentsByProjectId = async (projectId: Project['id']) => pr
   where: { projectId },
   include: {
     permissions: true,
-    quotaStage: {
-      include: {
-        stage: {
-          include: {
-            quotaStage: true,
-          },
-        },
-        quota: true,
-      },
-    },
+    quota: true,
+    stage: true,
   },
 })
 
@@ -79,10 +66,14 @@ export const getProjectByEnvironmentId = async (environmentId: Environment['id']
   return getProjectById(env.projectId)
 }
 
-export const getEnvironmentsByQuotaStageId = (quotaStageId: Environment['quotaStageId']) =>
+export const getEnvironmentsByQuotaAndStage = ({ quotaId, stageId }: { quotaId: Quota['id'], stageId: Stage['id'] }) =>
   prisma.environment.findMany({
     where: {
-      quotaStageId,
+      AND: [{
+        quotaId,
+      }, {
+        stageId,
+      }],
     },
     include: {
       cluster: {
@@ -109,15 +100,7 @@ export const getProjectPartialEnvironments = async ({ projectId }: { projectId: 
     },
     select: {
       name: true,
-      quotaStage: {
-        select: {
-          stage: {
-            select: {
-              name: true,
-            },
-          },
-        },
-      },
+      stage: true,
       cluster: {
         select: {
           label: true,
@@ -128,7 +111,7 @@ export const getProjectPartialEnvironments = async ({ projectId }: { projectId: 
   return environments?.map(environment =>
     ({
       environment: environment.name,
-      stage: environment.quotaStage.stage.name,
+      stage: environment.stage.name,
       clusterLabel: environment.cluster.label,
     }),
   )
@@ -140,19 +123,19 @@ type CreateEnvironmentParams = {
   projectId: Project['id'],
   projectOwners: Role[],
   clusterId: Cluster['id'],
-  quotaStageId: QuotaStage['id']
+  stageId: Stage['id'],
+  quotaId: Quota['id'],
 }
 export const initializeEnvironment = (
-  { name, projectId, projectOwners, clusterId, quotaStageId }: CreateEnvironmentParams,
+  { name, projectId, projectOwners, clusterId, stageId, quotaId }: CreateEnvironmentParams,
 ) => prisma.environment.create({
   data: {
     name,
     project: {
       connect: { id: projectId },
     },
-    quotaStage: {
-      connect: { id: quotaStageId },
-    },
+    quota: { connect: { id: quotaId } },
+    stage: { connect: { id: stageId } },
     cluster: {
       connect: { id: clusterId },
     },
@@ -174,14 +157,14 @@ export const initializeEnvironment = (
 })
 
 export const updateEnvironment = (
-  { id, quotaStageId }: { id: Environment['id'], quotaStageId: QuotaStage['id'] },
+  { id, quotaId }: { id: Environment['id'], quotaId: Quota['id'] },
 ) =>
   prisma.environment.update({
     where: {
       id,
     },
     data: {
-      quotaStageId,
+      quotaId,
     },
   })
 

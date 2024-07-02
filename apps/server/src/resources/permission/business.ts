@@ -1,6 +1,6 @@
 import type { Environment, Permission, Project, User } from '@prisma/client'
 import { PermissionSchema } from '@cpn-console/shared'
-import { addLogs, deletePermission as deletePermissionQuery, getEnvironmentByIdWithCluster, getEnvironmentPermissions as getEnvironmentPermissionsQuery, getPermissionByUserIdAndEnvironmentId, getProjectInfos, getQuotaStageById, getSingleOwnerByProjectId, getStageById, getUserById, setPermission as setPermissionQuery, updatePermission as updatePermissionQuery } from '@/resources/queries-index.js'
+import { addLogs, deletePermission as deletePermissionQuery, getEnvironmentByIdWithCluster, getEnvironmentPermissions as getEnvironmentPermissionsQuery, getPermissionByUserIdAndEnvironmentId, getProjectInfos, getSingleOwnerByProjectId, getUserById, setPermission as setPermissionQuery, updatePermission as updatePermissionQuery } from '@/resources/queries-index.js'
 import { validateSchema } from '@/utils/business.js'
 import { checkInsufficientRoleInProject, checkRoleAndLocked } from '@/utils/controller.js'
 import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
@@ -53,14 +53,6 @@ export const setPermission = async (
   validateSchema(schemaValidation)
 
   const permission = await setPermissionQuery({ userId, environmentId, level })
-  const environment = await getEnvironmentByIdWithCluster(permission.environmentId)
-  if (!environment) throw new BadRequestError('L\'environnement n\'existe pas')
-  const stageId = (await getQuotaStageById(environment.quotaStageId))?.stageId
-  if (!stageId) throw new BadRequestError('L\'association quota stage n\'existe pas')
-  const stage = await getStageById(stageId)
-  if (!stage) throw new BadRequestError('Le type d\'environnement n\'existe pas')
-  const user = await getUserById(userId)
-  if (!user) throw new BadRequestError('L\'utilisateur n\'existe pas')
 
   const { results } = await hook.project.upsert(project.id)
 
@@ -94,14 +86,6 @@ export const updatePermission = async (
   validateSchema(schemaValidation)
 
   const permission = await updatePermissionQuery({ userId, environmentId, level })
-  const environment = await getEnvironmentByIdWithCluster(permission.environmentId)
-  if (!environment) throw new BadRequestError('L\'environnement n\'existe pas')
-  const stageId = (await getQuotaStageById(environment.quotaStageId))?.stageId
-  if (!stageId) throw new BadRequestError('L\'association quota stage n\'existe pas')
-  const stage = await getStageById(stageId)
-  if (!stage) throw new BadRequestError('Le type d\'environnement n\'existe pas')
-  const user = await getUserById(userId)
-  if (!user) throw new BadRequestError('L\'utilisateur n\'existe pas')
 
   const { results } = await hook.project.upsert(project.id)
 

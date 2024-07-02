@@ -170,9 +170,9 @@ export const transformToHookProject = (project: ProjectInfos, store: Config, rep
     users: project.roles.map(role => role.user),
     roles: project.roles.map(role => ({ role: role.role as 'owner' | 'user', userId: role.userId })),
     clusters,
-    environments: project.environments.map(({ permissions, quotaStage, ...environment }) => ({
-      quota: quotaStage.quota,
-      stage: quotaStage.stage.name,
+    environments: project.environments.map(({ permissions, quota, stage, ...environment }) => ({
+      quota,
+      stage: stage.name,
       permissions: permissions.map(permission => ({
         userId: permission.userId,
         permissions: {

@@ -95,10 +95,10 @@ __Local :__
 pnpm run dev
 
 # Lancer le serveur
-pnpm --filter server run dev
+pnpm --filter @cpn-console/server run dev
 
 # Lancer le client
-pnpm --filter client run dev
+pnpm --filter @cpn-console/client run dev
 
 # Supprimer les conteneurs keycloak, postgres et pgadmin
 pnpm run dev:clean
@@ -149,10 +149,10 @@ __Local :__
 pnpm run integ
 
 # Lancer le serveur
-pnpm --filter server run integ
+pnpm --filter @cpn-console/server run integ
 
 # Lancer le client
-pnpm --filter client run integ
+pnpm --filter @cpn-console/client run integ
 
 # Supprimer les conteneurs keycloak, postgres et pgadmin
 pnpm run integ:clean
@@ -268,10 +268,10 @@ Pour faciliter les opérations de migrations de base de données via [Prisma](ht
 
 ```shell
 # Lancer le script
-pnpm --filter server run db:wrapper
+pnpm --filter @cpn-console/server run db:wrapper
 
 # Voir l'aide du script
-pnpm --filter server run db:wrapper -h
+pnpm --filter @cpn-console/server run db:wrapper -h
 ```
 
 ### Construction des images

@@ -62,7 +62,6 @@ describe('Random utils', () => {
             isPrivate: expect.any(Boolean),
           },
         ]),
-        quotaStages: expect.any(Array),
         project: expect.objectContaining({
           id: expect.any(String),
           name: expect.any(String),

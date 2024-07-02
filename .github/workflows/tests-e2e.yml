@@ -21,12 +21,12 @@ on:
         description: Nodejs version used to run tests
         required: true
         type: string
-        default: "20.14.0"
+        default: "20.15.0"
       PNPM_VERSION:
         description: Pnpm version used to run tests
         required: true
         type: string
-        default: "9.1.4"
+        default: "9.4.0"
       TAG:
         description: Image tag used to run tests
         required: true
@@ -139,10 +139,19 @@ jobs:
           ./ci/scripts/init-env.sh
           ./ci/scripts/run-tests.sh -e -t "${{ inputs.TAG }}" -b "${{ matrix.browsers }}"
 
-      - name: Upload cypress artifacts
+      - name: Give permissions to upload logs
+        if: ${{ failure() }}
+        run: |
+          mkdir ./logs
+          sudo find /var/lib/docker/containers/ -name "*.log" -exec cp "{}" ./logs  \;
+          sudo chmod 777 -R ./logs
+
+      - name: Upload cypress artifacts and logs
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
           name: cypress-report
-          path: ./apps/client/cypress/e2e/screenshots/
+          path: |
+            ./apps/client/cypress/e2e/screenshots/
+            ./logs/
           retention-days: 14

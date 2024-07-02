@@ -9,3 +9,11 @@ export const copyContent = async (content: string): Promise<void> => {
     snackbarStore.setMessage(error?.message, 'error')
   }
 }
+
+export const toCodeComponent = (value: string) => ({
+  component: 'code',
+  text: value,
+  title: 'Copier la valeur',
+  class: 'fr-text-default--info text-xs cursor-pointer',
+  onClick: () => copyContent(value),
+})

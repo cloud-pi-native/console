@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest'
 describe('transformToHookProject', () => {
   // Mock data
   const mockProject = project
-  const mockStore: Store = { }
+  const mockStore: Store = {}
   const mockReposCreds: ReposCreds = {
     console: {
       token: 'test',
@@ -33,9 +33,9 @@ describe('transformToHookProject', () => {
     })))
 
     // Assert sur la transformation des environnements
-    expect(result.environments).toEqual(mockProject.environments.map(({ permissions, quotaStage, ...environment }) => ({
-      quota: quotaStage.quota,
-      stage: quotaStage.stage.name,
+    expect(result.environments).toEqual(mockProject.environments.map(({ permissions, stage, quota, ...environment }) => ({
+      quota,
+      stage: stage.name,
       permissions: permissions.map(permission => ({
         userId: permission.userId,
         permissions: {
@@ -141,7 +141,6 @@ const project = {
       createdAt: '2024-05-02T09:17:41.300Z',
       updatedAt: '2024-05-02T09:17:41.300Z',
       clusterId: 'f0e39981-0b6d-4c16-aa96-225062b75767',
-      quotaStageId: '0cb0c549-560e-4f26-8f4e-832dd722f68a',
       permissions: [
         {
           id: '4a1a1635-7a5e-445e-a055-da9b1ef1ee5f',
@@ -152,23 +151,8 @@ const project = {
           updatedAt: '2024-05-02T09:17:41.300Z',
         },
       ],
-      quotaStage: {
-        id: '0cb0c549-560e-4f26-8f4e-832dd722f68a',
-        quotaId: '5a57b62f-2465-4fb6-a853-5a751d099199',
-        stageId: '4a9ad694-4c54-4a3c-9579-548bf4b7b1b9',
-        status: 'active',
-        quota: {
-          id: '5a57b62f-2465-4fb6-a853-5a751d099199',
-          memory: '4Gi',
-          cpu: 2,
-          name: 'small',
-          isPrivate: false,
-        },
-        stage: {
-          id: '4a9ad694-4c54-4a3c-9579-548bf4b7b1b9',
-          name: 'dev',
-        },
-      },
+      stage: { name: 'stage1' },
+      quota: { name: 'quota1' },
       cluster: associatedCluster,
     },
     {
@@ -178,7 +162,6 @@ const project = {
       createdAt: '2024-05-02T09:17:41.300Z',
       updatedAt: '2024-05-02T09:17:41.300Z',
       clusterId: 'f0e39981-0b6d-4c16-aa96-225062b75767',
-      quotaStageId: '0cb0c549-560e-4f26-8f4e-832dd722f68a',
       permissions: [
         {
           id: '4a1a1635-7a5e-445e-a055-da9b1ef1ee5f',
@@ -189,23 +172,8 @@ const project = {
           updatedAt: '2024-05-02T09:17:41.300Z',
         },
       ],
-      quotaStage: {
-        id: '0cb0c549-560e-4f26-8f4e-832dd722f68b',
-        quotaId: '5a57b62f-2465-4fb6-a853-5a751d099199',
-        stageId: '4a9ad694-4c54-4a3c-9579-548bf4b7b1b9',
-        status: 'active',
-        quota: {
-          id: '5a57b62f-2465-4fb6-a853-5a751d099199',
-          memory: '4Gi',
-          cpu: 2,
-          name: 'small',
-          isPrivate: false,
-        },
-        stage: {
-          id: '4a9ad694-4c54-4a3c-9579-548bf4b7b1b9',
-          name: 'dev',
-        },
-      },
+      stage: { name: 'stage1' },
+      quota: { name: 'quota1' },
       cluster: nonAssociatedCluster,
     },
   ],

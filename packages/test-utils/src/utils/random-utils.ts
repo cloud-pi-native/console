@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import { achievedStatus, projectRoles, logActions, type ProjectRoles, type AchievedStatus, ClusterPrivacy } from '@cpn-console/shared'
+import { achievedStatus, projectRoles, logActions, type ProjectRoles, type AchievedStatus, ClusterPrivacy, Stage, Quota } from '@cpn-console/shared'
 import { repeatFn } from './func-utils.js'
 import { Cluster, Environment, Log, Organization, Permission, Project, Repository, User, Role } from './types.js'
 
@@ -105,38 +105,48 @@ export const getRandomRepo = (projectId = faker.string.uuid()) => {
   return repo
 }
 
-export const getRandomStage = (name: string = faker.lorem.word({ length: { min: 2, max: 20 } })) => {
+export const getRandomStage = (
+  name: string = faker.lorem.word({ length: { min: 2, max: 20 } }),
+  links?: {
+    quotaIds?: string[], quotas?: Quota[]
+    clusterIds?: string[], clusters?: Cluster[]
+  },
+) => {
   return {
     id: faker.string.uuid(),
     name,
+    quotaIds: links?.quotaIds ?? links?.quotas?.map(({ id }) => id) ?? [] as string[],
+    clusterIds: links?.clusterIds ?? links?.clusters?.map(({ id }) => id) ?? [] as string[],
   }
 }
 
-export const getRandomQuota = (name: string = faker.lorem.word()) => {
+export const getRandomQuota = (
+  name: string = faker.lorem.word(),
+  links?: { stageIds?: string[], stages?: Stage[] },
+) => {
   return {
     id: faker.string.uuid(),
     name,
     cpu: faker.number.int({ min: 1, max: 18 }),
     memory: faker.number.int({ max: 18 }) + 'Gi',
     isPrivate: faker.datatype.boolean(),
+    stageIds: links?.stageIds ?? links?.stages?.map(({ id }) => id) ?? [] as string[],
   }
 }
 
-export const getRandomQuotaStage = (quotaId: string, stageId: string, status: 'active' | 'pendingDelete' = faker.helpers.arrayElement(['active', 'pendingDelete'])) => {
-  return {
-    id: faker.string.uuid(),
-    quotaId,
-    stageId,
-    status,
-  }
-}
-
-export const getRandomEnv = (name = faker.lorem.slug(1), projectId = faker.string.uuid(), quotaStageId = faker.string.uuid(), clusterId = faker.string.uuid()) => {
+export const getRandomEnv = (
+  name = faker.lorem.slug(1),
+  projectId = faker.string.uuid(),
+  stageId = faker.string.uuid(),
+  quotaId = faker.string.uuid(),
+  clusterId = faker.string.uuid(),
+) => {
   return {
     id: faker.string.uuid(),
     name,
     projectId,
-    quotaStageId,
+    quotaId,
+    stageId,
     clusterId,
   } as Environment
 }

@@ -1,6 +1,5 @@
 import { z } from 'zod'
 import { ErrorSchema } from './utils.js'
-import { ClusterSchema } from './cluster.js'
 
 export const StageSchema = z.object({
   id: z.string()
@@ -9,35 +8,14 @@ export const StageSchema = z.object({
     .regex(/^[a-zA-Z0-9]+$/)
     .min(2, { message: 'must be at least 2 character long' })
     .max(20, { message: 'must not exceed 20 characters' }),
-  quotaIds: z.string().uuid().array().optional(),
-  clusterIds: z.string().uuid().array().optional(),
-  quotaStage: z.array(z.object({
-    id: z.string()
-      .uuid(),
-    quotaId: z.string()
-      .uuid(),
-    stageId: z.string()
-      .uuid(),
-    status: z.string(),
-    quota: z.object({
-      id: z.string()
-        .uuid(),
-      name: z.string()
-        .min(1),
-      memory: z.string()
-        .min(1),
-      cpu: z.number()
-        .positive(),
-      isPrivate: z.boolean(),
-      stageIds: z.string().uuid().array().optional(),
-    }).optional(),
-  })).optional(),
+  clusterIds: z.string().uuid().array(),
+  quotaIds: z.string().uuid().array(),
 })
 
 export type Stage = Zod.infer<typeof StageSchema>
 
 export const CreateStageSchema = {
-  body: StageSchema.omit({ id: true }),
+  body: StageSchema.omit({ id: true }).partial({ clusterIds: true, quotaIds: true }),
   responses: {
     201: StageSchema,
     400: ErrorSchema,
@@ -48,7 +26,7 @@ export const CreateStageSchema = {
 
 export const GetStagesSchema = {
   responses: {
-    200: z.array(StageSchema.required({ clusterIds: true, quotaStage: true })),
+    200: StageSchema.array(),
     500: ErrorSchema,
   },
 }
@@ -71,18 +49,14 @@ export const GetStageEnvironmentsSchema = {
   },
 }
 
-export const UpdateStageClustersSchema = {
+export const UpdateStageSchema = {
   params: z.object({
     stageId: z.string()
       .uuid(),
   }),
-  body: z.object({
-    clusterIds: z.array(
-      z.string()
-        .uuid()),
-  }),
+  body: StageSchema.pick({ clusterIds: true, name: true, quotaIds: true }).partial(),
   responses: {
-    200: z.array(ClusterSchema),
+    200: StageSchema,
     500: ErrorSchema,
   },
 }

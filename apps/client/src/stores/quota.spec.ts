@@ -6,8 +6,7 @@ import { useQuotaStore } from './quota.js'
 const apiClientGetQuotas = vi.spyOn(apiClient.Quotas, 'getQuotas')
 const apiClientGet = vi.spyOn(apiClient.QuotasAdmin, 'getQuotaEnvironments')
 const apiClientPost = vi.spyOn(apiClient.QuotasAdmin, 'createQuota')
-const apiClientPut = vi.spyOn(apiClient.QuotasAdmin, 'updateQuotaStage')
-const apiClientPatch = vi.spyOn(apiClient.QuotasAdmin, 'patchQuotaPrivacy')
+const apiClientPut = vi.spyOn(apiClient.QuotasAdmin, 'updateQuota')
 const apiClientDelete = vi.spyOn(apiClient.QuotasAdmin, 'deleteQuota')
 
 describe('Quota Store', () => {
@@ -66,29 +65,29 @@ describe('Quota Store', () => {
     expect(apiClientPost).toHaveBeenCalledTimes(1)
   })
 
-  it('Should update a quota stage association by api call', async () => {
+  it('Should update stages associated by api call', async () => {
     const quotaId = 'quotaId'
     const stageIds = ['stage1']
 
-    apiClientPut.mockReturnValueOnce(Promise.resolve({ status: 200, body: 1 }))
+    apiClientPut.mockReturnValueOnce(Promise.resolve({ status: 200, body: { stageIds } }))
     const quotaStore = useQuotaStore()
 
-    const res = await quotaStore.updateQuotaStage(quotaId, stageIds)
+    const res = await quotaStore.updateQuota(quotaId, stageIds)
 
-    expect(res).toBe(1)
+    expect(res).toStrictEqual({ stageIds })
     expect(apiClientPut).toHaveBeenCalledTimes(1)
   })
 
   it('Should update a quota privacy by api call', async () => {
     const quotaId = 'quotaId'
 
-    apiClientPatch.mockReturnValueOnce(Promise.resolve({ status: 200, body: 1 }))
+    apiClientPut.mockReturnValueOnce(Promise.resolve({ status: 200, body: 1 }))
     const quotaStore = useQuotaStore()
 
-    const res = await quotaStore.updateQuotaPrivacy(quotaId, true)
+    const res = await quotaStore.updateQuota(quotaId, { isPrivate: true })
 
     expect(res).toBe(1)
-    expect(apiClientPatch).toHaveBeenCalledTimes(1)
+    expect(apiClientPut).toHaveBeenCalledTimes(1)
   })
 
   it('Should delete a quota by api call', async () => {

@@ -16,6 +16,7 @@ NODE_VERSION="$(node --version)"
 NPM_VERSION="$(npm --version)"
 DOCKER_VERSION="$(docker --version)"
 DOCKER_BUILDX_VERSION="$(docker buildx version)"
+KIND_VERSION="$(kind version)"
 
 # Default
 RUN_LINT="false"
@@ -23,6 +24,7 @@ RUN_UNIT_TESTS="false"
 RUN_COMPONENT_TESTS="false"
 RUN_E2E_TESTS="false"
 RUN_STATUS_CHECK="false"
+RUN_E2E_WITH_KUBE="false"
 
 # Declare script helper
 TEXT_HELPER="\nThis script aims to run application tests.
@@ -33,6 +35,8 @@ Following flags are available:
   -c    Run component tests
 
   -e    Run e2e tests
+
+  -k    Run e2e tests with kubernetes
 
   -l    Run lint
 
@@ -49,7 +53,7 @@ print_help() {
 }
 
 # Parse options
-while getopts hb:celst:u flag
+while getopts hb:ceklst:u flag
 do
   case "${flag}" in
     b)
@@ -58,6 +62,8 @@ do
       RUN_COMPONENT_TESTS=true;;
     e)
       RUN_E2E_TESTS=true;;
+    k)
+      RUN_E2E_WITH_KUBE=true;;
     l)
       RUN_LINT=true;;
     s)
@@ -77,7 +83,13 @@ done
 if [ "$RUN_LINT" == "false" ] && [ "$RUN_UNIT_TESTS" == "false" ] && [ "$RUN_E2E_TESTS" == "false" ] && [ "$RUN_COMPONENT_TESTS" == "false" ] && [ "$RUN_STATUS_CHECK" == "false" ]; then
   printf "\nArgument(s) missing, you don't specify any kind of test to run.\n"
   print_help
-  exit 0
+  exit 1
+fi
+
+if [ "$RUN_E2E_TESTS" == "true" ] && [ "$RUN_E2E_WITH_KUBE" == "false" ] && [ -z "$TAG" ]; then
+  printf "\nArgument(s) missing, you don't specify the TAG used to pull docker images for e2e tests.\n"
+  print_help
+  exit 1
 fi
 
 checkDockerRunning () {
@@ -101,9 +113,10 @@ printf "\nScript settings:
   -> npm version: ${NPM_VERSION}
   -> docker version: ${DOCKER_VERSION}
   -> docker buildx version: ${DOCKER_BUILDX_VERSION}
+  -> kind version: ${KIND_VERSION}
   -> run unit tests: ${RUN_UNIT_TESTS}
   -> run component tests: ${RUN_COMPONENT_TESTS}
-  -> run e2e tests: ${RUN_E2E_TESTS}
+  -> run e2e tests (kube: ${RUN_E2E_WITH_KUBE}): ${RUN_E2E_TESTS}
   -> run deploy status check: ${RUN_STATUS_CHECK}\n"
 
 
@@ -146,18 +159,30 @@ if [ "$RUN_E2E_TESTS" == "true" ]; then
   npm --prefix $PROJECT_DIR/packages/shared run build
   npm --prefix $PROJECT_DIR/packages/test-utils run build
 
-  npm run kube:init
-  if [[ -n "$TAG" ]]; then
-    npm run kube:prod:run -- -t $TAG
-  else 
-    npm run kube:prod
+  if [[ "$RUN_E2E_WITH_KUBE" = "true" ]]; then
+    npm run kube:init
+    if [[ -n "$TAG" ]]; then
+      npm run kube:prod:run -- -t $TAG
+    else 
+      npm run kube:prod
+    fi
+    npm run kube:e2e-ci -- --cache-dir=.turbo/cache --log-order=stream $BROWSER_ARGS
+  else
+    if [[ -n "$TAG" ]]; then
+      docker pull ghcr.io/cloud-pi-native/console/server:$TAG && docker tag ghcr.io/cloud-pi-native/console/server:$TAG dso-console/server:prod
+      docker pull ghcr.io/cloud-pi-native/console/client:$TAG && docker tag ghcr.io/cloud-pi-native/console/client:$TAG dso-console/client:prod
+    fi 
+    npm run docker:e2e-ci -- --cache-dir=.turbo/cache --log-order=stream $BROWSER_ARGS
   fi
-  npm run kube:e2e-ci -- --cache-dir=.turbo/cache --log-order=stream $BROWSER_ARGS
 
   printf "\n${red}${i}.${no_color} Remove resources\n"
   i=$(($i + 1))
 
-  npm run kube:delete
+  if [[ "$RUN_E2E_WITH_KUBE" = "true" ]]; then
+    npm run kube:delete
+  else
+    npm run docker:e2e-ci:delete
+  fi
 fi
 
 

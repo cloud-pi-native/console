@@ -1,41 +1,43 @@
-import type { Quota, QuotaStage, Stage } from '@prisma/client'
+import type { Quota, Stage, User } from '@prisma/client'
 import prisma from '@/prisma.js'
 
-export const getQuotas = () =>
+export const getQuotas = (userId: User['id']) =>
   prisma.quota.findMany({
     where: {
-      isPrivate: false,
+      OR: [{
+        isPrivate: false,
+      }, {
+        environments: { some: { project: { roles: { some: { userId } } } } },
+      }],
     },
     include: {
-      quotaStage: true,
+      stages: true,
     },
   })
 
 export const getAllQuotas = () =>
   prisma.quota.findMany({
     include: {
-      quotaStage: true,
+      stages: true,
     },
   })
 
 export const getQuotaById = (id: Quota['id']) =>
   prisma.quota.findUnique({
     where: { id },
-    include: { quotaStage: true },
+    include: { environments: true, stages: true },
   })
 
 export const getQuotaByIdOrThrow = (id: Quota['id']) =>
   prisma.quota.findUniqueOrThrow({
     where: { id },
-    include: { quotaStage: true },
+    include: { stages: true },
   })
 
 export const getQuotaAssociatedEnvironmentById = (id: Quota['id']) =>
   prisma.environment.findMany({
     where: {
-      quotaStage: {
-        quotaId: id,
-      },
+      quotaId: id,
     },
     select: {
       name: true,
@@ -56,15 +58,7 @@ export const getQuotaAssociatedEnvironmentById = (id: Quota['id']) =>
           },
         },
       },
-      quotaStage: {
-        select: {
-          stage: {
-            select: {
-              name: true,
-            },
-          },
-        },
-      },
+      stage: true,
     },
   })
 
@@ -101,20 +95,45 @@ export const updateQuotaPrivacy = (quotaId: Quota['id'], isPrivate: Quota['isPri
     },
   })
 
-export const linkQuotaToStages = (quotaId: Quota['id'], stageIds: Stage['id'][]) =>
-  prisma.quotaStage.createMany({
-    data: stageIds.map(stageId => ({ quotaId, stageId })),
-    skipDuplicates: true,
+export const updateQuotaLimits = (quotaId: Quota['id'], { memory, cpu }: Pick<Quota, 'cpu' | 'memory'>) =>
+  prisma.quota.update({
+    data: {
+      memory,
+      cpu,
+    },
+    where: {
+      id: quotaId,
+    },
   })
 
-export const linkStageToQuotas = (stageId: Stage['id'], quotaIds: Quota['id'][]) =>
-  prisma.quotaStage.createMany({
-    data: quotaIds.map(quotaId => ({ stageId, quotaId })),
-    skipDuplicates: true,
+export const updateQuotaName = (id: Quota['id'], name: Quota['name']) =>
+  prisma.quota.update({
+    where: {
+      id,
+    },
+    data: {
+      name,
+    },
   })
+
+export const linkQuotaToStages = (quotaId: Quota['id'], stageIds: Stage['id'][]) =>
+  Promise.all(stageIds.map(stageId => prisma.quota.update({
+    where: {
+      id: quotaId,
+    },
+    data: {
+      stages: { connect: { id: stageId } },
+    },
+  })))
+export const unlinkQuotaFromStages = (quotaId: Quota['id'], stageIds: Stage['id'][]) =>
+  Promise.all(stageIds.map(stageId => prisma.quota.update({
+    where: {
+      id: quotaId,
+    },
+    data: {
+      stages: { disconnect: { id: stageId } },
+    },
+  })))
 
 export const deleteQuota = (quotaId: Quota['id']) =>
   prisma.quota.delete({ where: { id: quotaId } })
-
-export const deleteQuotaStage = (quotaStageId: QuotaStage['id']) =>
-  prisma.quotaStage.delete({ where: { id: quotaStageId } })

@@ -77,9 +77,10 @@ export const checkRoleAndLocked = (
   minRole: ProjectRoles = 'user',
 ): string => checkProjectLocked(project) || checkInsufficientRoleInProject(userId, { minRole, roles: project.roles })
 
-export const checkClusterUnavailable = (clusterId: Cluster['id'], authorizedClusterIds: Cluster['id'][]): string => authorizedClusterIds.some(authorizedClusterId => authorizedClusterId === clusterId)
-  ? ''
-  : 'Ce cluster n\'est pas disponible pour cette combinaison projet et stage'
+export const checkClusterUnavailable = (clusterId: Cluster['id'], authorizedClusterIds: Cluster['id'][]): string =>
+  authorizedClusterIds.some(authorizedClusterId => authorizedClusterId === clusterId)
+    ? ''
+    : 'Ce cluster n\'est pas disponible pour cette combinaison projet et stage'
 
 export const checkInsufficientPermissionInEnvironment = (userId: User['id'], permissions: Permission[], minLevel: Permission['level']) => {
   // get project by id, assign result to projectUsers
@@ -89,6 +90,4 @@ export const checkInsufficientPermissionInEnvironment = (userId: User['id'], per
     : 'Vous n\'avez pas les droits suffisants pour requêter cet environnement'
 }
 
-export const filterOwners = (roles: Role[]) => {
-  return roles.filter(({ role }) => role === 'owner')
-}
+export const filterOwners = (roles: Role[]) => roles.filter(({ role }) => role === 'owner')

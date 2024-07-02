@@ -16,15 +16,15 @@
     "test:e2e-ci": "echo 'check cache'"
   },
   "dependencies": {
-    "@faker-js/faker": "^8.4.1",
-    "@cpn-console/shared": "workspace:^"
+    "@cpn-console/shared": "workspace:^",
+    "@faker-js/faker": "^8.4.1"
   },
   "devDependencies": {
-    "@cpn-console/ts-config": "workspace:^",
     "@cpn-console/eslint-config": "workspace:^",
-    "@types/node": "^20.12.7",
-    "rimraf": "^5.0.5",
-    "typescript": "^5.4.5"
+    "@cpn-console/ts-config": "workspace:^",
+    "@types/node": "^20.14.9",
+    "rimraf": "^5.0.7",
+    "typescript": "^5.5.2"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",

@@ -25,7 +25,7 @@ describe('Environment Store', () => {
     apiClientPost.mockReturnValueOnce(Promise.resolve({ status: 201, body: {} }))
     const projectEnvironmentStore = useProjectEnvironmentStore()
 
-    await projectEnvironmentStore.addEnvironmentToProject({ name: 'prod', projectId: 'projectId', clusterId: 'clusterId1', quotaStageId: 'quotastage1' })
+    await projectEnvironmentStore.addEnvironmentToProject({ name: 'prod', projectId: 'projectId', clusterId: 'clusterId1', quotaId: 'quota1', stageId: 'stage1' })
 
     expect(apiClientPost).toHaveBeenCalledTimes(1)
   })

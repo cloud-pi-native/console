@@ -219,7 +219,7 @@ describe('Administration projects', () => {
 
     cy.wait('@getProjectEnvironments', { timeout: 10000 }).its('response').then(response => {
       project.environments = response.body.filter(env => env.projectId === project.id)
-      initialQuota = project.environments[0].quotaStage.quota.id
+      initialQuota = project.environments[0].quotaId
     })
 
     cy.visit('/admin/quotas')

@@ -10,7 +10,6 @@ import {
   getRandomCluster,
   getRandomStage,
   getRandomQuota,
-  getRandomQuotaStage,
   getRandomZone,
 } from './random-utils.js'
 import { repeatFn } from './func-utils.js'
@@ -40,7 +39,8 @@ export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = basicStage
   const zones = [getRandomZone()]
 
   // Create cluster
-  project.clusters = [getRandomCluster({ projectIds: [project.id], zoneId: zones[0].id })]
+  const clusters = [getRandomCluster({ projectIds: [project.id], zoneId: zones[0].id })]
+  project.clusters = clusters
 
   // Create stages
   const stages = basicStages.map(baseEnvironment => getRandomStage(baseEnvironment))
@@ -54,12 +54,12 @@ export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = basicStage
 
   // Associate stages and quotas
   stages.forEach(stage => {
-    // @ts-ignore
-    stage.quotaStage = quotas.map(quota => {
-      const quotaStage = getRandomQuotaStage(quota.id, stage.id, 'active')
-      quota.quotaStage = quotaStage
-      return quotaStage
-    })
+    stage.quotaIds = quotas.map(({ id }) => id)
+  })
+
+  // Associate stages and quotas
+  quotas.forEach(quota => {
+    quota.stageIds = stages.map(({ id }) => id)
   })
 
   // Create repositories
@@ -67,8 +67,7 @@ export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = basicStage
 
   // Create environment
   project.environments = envs
-    // @ts-ignore
-    .map(env => getRandomEnv(env, project.id, stages[0].quotaStage[0].id, project.clusters[0].id))
+    .map(env => getRandomEnv(env, project.id, stages[0].id, quotas[0].id, clusters[0].id))
 
   // Create permissions
   project.environments.forEach(env => {

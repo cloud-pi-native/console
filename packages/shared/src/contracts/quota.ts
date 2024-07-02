@@ -3,8 +3,7 @@ import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   CreateQuotaSchema,
   GetQuotasSchema,
-  UpdateQuotaStageSchema,
-  PatchQuotaSchema,
+  UpdateQuotaSchema,
   DeleteQuotaSchema,
   GetQuotaEnvironmentsSchema,
 } from '../schemas/index.js'
@@ -39,23 +38,14 @@ export const quotaAdminContract = contractInstance.router({
     responses: GetQuotaEnvironmentsSchema.responses,
   },
 
-  updateQuotaStage: {
+  updateQuota: {
     method: 'PUT',
-    path: `${apiPrefix}/admin/quotas/quotastages`,
-    summary: 'Update a quota stage association',
-    description: 'Update a quota stage association.',
-    body: UpdateQuotaStageSchema.body,
-    responses: UpdateQuotaStageSchema.responses,
-  },
-
-  patchQuotaPrivacy: {
-    method: 'PATCH',
-    path: `${apiPrefix}/admin/quotas/:quotaId/privacy`,
+    path: `${apiPrefix}/admin/quotas/:quotaId`,
     summary: 'Update a quota privacy',
     description: 'Update a quota privacy.',
-    pathParams: PatchQuotaSchema.params,
-    body: PatchQuotaSchema.body,
-    responses: PatchQuotaSchema.responses,
+    pathParams: UpdateQuotaSchema.params,
+    body: UpdateQuotaSchema.body,
+    responses: UpdateQuotaSchema.responses,
   },
 
   deleteQuota: {
@@ -71,8 +61,6 @@ export const quotaAdminContract = contractInstance.router({
 
 export type CreateQuotaBody = ClientInferRequest<typeof quotaAdminContract.createQuota>['body']
 
-export type UpdateQuotaStageBody = ClientInferRequest<typeof quotaAdminContract.updateQuotaStage>['body']
-
-export type PatchQuotaBody = ClientInferRequest<typeof quotaAdminContract.patchQuotaPrivacy>['body']
+export type UpdateQuotaBody = ClientInferRequest<typeof quotaAdminContract.updateQuota>['body']
 
 export type QuotaAssociatedEnvironments = ClientInferResponseBody<typeof quotaAdminContract.getQuotaEnvironments, 200>
