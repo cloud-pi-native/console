@@ -44,17 +44,6 @@ describe('Admin organization routes', () => {
       expect(response.json()).toEqual(organizations)
     })
 
-    it('Should return an error if retrieve organizations failed', async () => {
-      prisma.organization.findMany.mockResolvedValue([])
-
-      const response = await app.inject()
-        .get('/api/v1/admin/organizations')
-        .end()
-
-      expect(response.statusCode).toEqual(404)
-      expect(JSON.parse(response.body).error).toEqual('Aucune organisation trouvée')
-    })
-
     it('Should return an error if requestor is not admin', async () => {
       const requestor = getRandomUser()
       setRequestor(requestor)
@@ -70,11 +59,7 @@ describe('Admin organization routes', () => {
 
   describe('createOrganizationController', () => {
     it('Should create an organization', async () => {
-      const organization = {
-        name: 'myorg',
-        label: 'Ministère de la bicyclette',
-        source: 'dso',
-      }
+      const organization = getRandomOrganization('myorg', 'Ministère de la bicyclette', 'dso')
 
       prisma.organization.findUnique.mockResolvedValue(null)
       prisma.organization.create.mockResolvedValue(organization)
@@ -84,8 +69,8 @@ describe('Admin organization routes', () => {
         .body(organization)
         .end()
 
-      expect(response.statusCode).toEqual(201)
       expect(response.json()).toMatchObject(organization)
+      expect(response.statusCode).toEqual(201)
     })
 
     it('Should return an error if name is too long', async () => {
@@ -130,7 +115,7 @@ describe('Admin organization routes', () => {
 
       const response = await app.inject()
         .post('/api/v1/admin/organizations')
-        .body(getRandomOrganization())
+        .body(getRandomOrganization(undefined, undefined, undefined, 'string'))
         .end()
 
       expect(response.statusCode).toEqual(403)
@@ -140,7 +125,7 @@ describe('Admin organization routes', () => {
 
   describe('updateOrganizationController', () => {
     it('Should update an organization label and activeness', async () => {
-      const organization = getRandomOrganization()
+      const organization = getRandomOrganization(undefined, undefined, undefined, 'string')
       const data = {
         active: false,
         label: 'Ministère du disco',
@@ -167,7 +152,7 @@ describe('Admin organization routes', () => {
     })
 
     it('Should update an organization label', async () => {
-      const organization = getRandomOrganization()
+      const organization = getRandomOrganization(undefined, undefined, undefined, 'string')
       const data = {
         label: 'Ministère du disco',
       }
@@ -193,7 +178,7 @@ describe('Admin organization routes', () => {
     })
 
     it('Should update an organization activeness', async () => {
-      const organization = getRandomOrganization()
+      const organization = getRandomOrganization(undefined, undefined, undefined, 'string')
       const project = getRandomProject(organization.id)
       const data = {
         active: false,
@@ -237,7 +222,7 @@ describe('Admin organization routes', () => {
 
   describe('fetchOrganizationsController', () => {
     it('Should fetch organizations from external plugins', async () => {
-      const organizations = [getRandomOrganization()]
+      const organizations = [getRandomOrganization(undefined, undefined, undefined, 'string')]
       const allOrganizations = [
         ...organizations,
         ...filteredOrganizations,

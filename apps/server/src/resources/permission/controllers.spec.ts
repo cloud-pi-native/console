@@ -30,15 +30,16 @@ describe('Permission routes', () => {
       const projectInfos = createRandomDbSetup({}).project
       projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
       const environment = projectInfos.environments[0]
+      const permissions = environment.permissions?.map(({ user: _user, ...permission}) => permission)
 
       prisma.project.findUnique.mockResolvedValue(projectInfos)
-      prisma.permission.findMany.mockResolvedValue(environment.permissions)
+      prisma.permission.findMany.mockResolvedValue(permissions)
 
       const response = await app.inject()
         .get(`/api/v1/projects/${projectInfos.id}/environments/${environment.id}/permissions`)
         .end()
 
-      expect(response.json()).toStrictEqual(environment.permissions)
+      expect(response.json()).toStrictEqual(permissions)
       expect(response.statusCode).toEqual(200)
     })
 
@@ -66,7 +67,7 @@ describe('Permission routes', () => {
       const newRole = getRandomRole(newMember.id, projectInfos.id)
       projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner'), newRole]
       const environment = projectInfos.environments[0]
-      const permissionToAdd = getRandomPerm(environment.id, newMember)
+      const {user, ...permissionToAdd} = getRandomPerm(environment.id, newMember)
 
       prisma.project.findUnique.mockResolvedValue(projectInfos)
       prisma.permission.create.mockResolvedValue(permissionToAdd)
@@ -130,11 +131,11 @@ describe('Permission routes', () => {
       const requestorPermission = getRandomPerm(environment.id, requestor)
       projectInfos.environments[0].permissions = [...environment.permissions, getRandomPerm(environment.id, requestor)]
       const environmentInfos = { ...environment, project: projectInfos }
-      const permissionToUpdate = environment.permissions[0]
+      const { user, ...permissionToUpdate } = environment.permissions[0]
 
       prisma.environment.findUnique.mockResolvedValue(environmentInfos)
       prisma.stage.findUnique.mockResolvedValue(dbSetup.stages[0])
-      prisma.user.findUnique.mockResolvedValue(permissionToUpdate.user)
+      prisma.user.findUnique.mockResolvedValue(user)
       prisma.role.findFirst.mockResolvedValue(requestorRole)
       prisma.project.findUnique.mockResolvedValue(projectInfos)
       prisma.permission.findMany.mockResolvedValue([requestorPermission])

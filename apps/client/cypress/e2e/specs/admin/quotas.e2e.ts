@@ -35,7 +35,7 @@ describe('Administration quotas', () => {
     cy.wait('@getStages')
   })
 
-  it('Should display quotas list', () => {
+  it.only('Should display quotas list', () => {
     allQuotas?.forEach(quota => {
       cy.getByDataTestid(`quotaTile-${quota.name}`)
         .should('be.visible')

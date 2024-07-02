@@ -17,16 +17,29 @@ import { User } from './types.js'
 
 const basicStages = ['dev', 'staging', 'integration', 'prod']
 
-export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = basicStages, organizationName = allOrganizations[0].name }) => {
+type CreateRandomDbSetup = {
+  nbUsers?: number
+  nbRepo?: number
+  envs?: string[]
+  organizationName?: string
+  dateFormat?: Parameters<typeof getRandomProject>[1]
+}
+export const createRandomDbSetup = ({
+  nbUsers = 1,
+  nbRepo = 3,
+  envs = basicStages,
+  organizationName = allOrganizations[0].name,
+  dateFormat = undefined,
+}: CreateRandomDbSetup) => {
   // Create organization
   const allOrganizationsWhereName = allOrganizations.find(org => org.name === organizationName)
-  const organization = getRandomOrganization(allOrganizationsWhereName?.name, allOrganizationsWhereName?.label)
+  const organization = getRandomOrganization(allOrganizationsWhereName?.name, allOrganizationsWhereName?.label, undefined, dateFormat)
 
   // Create users
   const users: User[] = repeatFn(nbUsers)(getRandomUser)
 
   // Create project
-  const project = getRandomProject(organization.id)
+  const project = getRandomProject(organization.id, dateFormat)
 
   // Create Roles association table
   project.roles = users.map(user => ({

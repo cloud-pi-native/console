@@ -79,6 +79,7 @@ describe('Project routes', () => {
   describe('createProjectController', () => {
     it('Should create a project', async () => {
       const project = getRandomProject()
+
       const organization = project.organization
       project.clusters = []
 
@@ -97,9 +98,8 @@ describe('Project routes', () => {
         .body(project)
         .end()
 
-      expect(response.statusCode).toEqual(201)
-      expect(response.json()).toBeDefined()
       expect(response.json()).toMatchObject(project)
+      expect(response.statusCode).toEqual(201)
     })
 
     it('Should not create a project if payload is invalid', async () => {
@@ -162,10 +162,9 @@ describe('Project routes', () => {
       delete project.repositories
       delete project.roles
 
-      expect(response.statusCode).toEqual(200)
-      expect(response.body).toBeDefined()
-
       expect(response.json()).toMatchObject(project)
+      expect(response.body).toBeDefined()
+      expect(response.statusCode).toEqual(200)
     })
 
     it('Should not update a project description if requestor is not member', async () => {

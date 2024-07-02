@@ -5,11 +5,7 @@ import { hook } from '@/utils/hook-wrapper.js'
 import { validateSchema } from '@/utils/business.js'
 import { BadRequestError, NotFoundError } from '@/utils/errors.js'
 
-export const getAllOrganization = async () => {
-  const allOrganizations = await getOrganizations()
-  if (!allOrganizations?.length) throw new NotFoundError('Aucune organisation trouvée', undefined)
-  return allOrganizations
-}
+export const getAllOrganization = () => getOrganizations()
 
 export const createOrganization = async (data: CreateOrganizationBody) => {
   const schemaValidation = OrganizationSchema.omit({ id: true, active: true }).safeParse(data)
