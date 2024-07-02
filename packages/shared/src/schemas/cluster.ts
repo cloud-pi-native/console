@@ -25,6 +25,10 @@ export const ClusterSchema = z.object({
   privacy: ClusterPrivacySchema,
   zoneId: z.string({ description: 'Id de la zone de rattachement du cluster' })
     .uuid(invalidUuidInfo),
+  projectIds: z.string()
+    .uuid()
+    .array()
+    .optional(),
   stageIds: z.string({ description: 'Liste des types d\'environnments rattachés par leur ids' })
     .uuid(invalidUuidInfo)
     .array(),
