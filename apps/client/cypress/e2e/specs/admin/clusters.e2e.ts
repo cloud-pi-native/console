@@ -123,6 +123,7 @@ describe('Administration clusters', () => {
 
   it('Should create a cluster', () => {
     cy.intercept('POST', '/api/v1/admin/clusters').as('createCluster')
+    cy.intercept('GET', '/api/v1/admin/clusters/*/environments').as('getClusterEnvironments')
 
     cy.getByDataTestid('addClusterLink')
       .click()
@@ -176,6 +177,7 @@ describe('Administration clusters', () => {
     cy.getByDataTestid(`clusterTile-${newCluster.label}`)
       .should('be.visible')
       .click()
+    cy.wait('@getClusterEnvironments')
     cy.get('h1')
       .should('contain', 'Mettre à jour le cluster')
     cy.get('div.json-box')
