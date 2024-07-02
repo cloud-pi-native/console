@@ -14,7 +14,6 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useQuotaStore } from '@/stores/quota.js'
 import { useStageStore } from '@/stores/stage.js'
 import { useZoneStore } from '@/stores/zone.js'
-import { useUserStore } from '@/stores/user.js'
 
 type OptionType = {
   text: string
@@ -46,7 +45,6 @@ const snackbarStore = useSnackbarStore()
 const stageStore = useStageStore()
 const quotaStore = useQuotaStore()
 const zoneStore = useZoneStore()
-const userStore = useUserStore()
 
 const localEnvironment = ref(props.environment)
 const environmentToDelete = ref('')
@@ -101,10 +99,10 @@ const setEnvironmentOptions = () => {
   quotaOptions.value =
     quotaStore.quotas
       .filter(quota =>
-        (quota.stageIds.includes(localEnvironment.value.stageId ?? '') && // quotas disponibles sur ce stage,
-          (!quota.isPrivate || userStore.isAdmin)
-        ) || // et ne pas afficher les quotasprivés
-        quota.id === localEnvironment.value.quotaId) // ou celui actuellement associé (au cas où l'association ne soit plus disponible)
+        (quota.stageIds.includes(
+          localEnvironment.value.stageId ?? '') && // quotas disponibles pour ce type d'environnement
+          !quota.isPrivate) || // et ne pas afficher les quotas privés
+        quota.id === localEnvironment.value.quotaId) // ou quota actuellement associé (au cas où l'association ne soit plus disponible)
       .map(quota => ({
         text: `${quota.name} (${quota.cpu}CPU, ${quota.memory})`,
         value: quota.id,
