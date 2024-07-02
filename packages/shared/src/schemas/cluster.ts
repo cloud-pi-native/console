@@ -5,29 +5,33 @@ import { ProjectSchema } from './project.js'
 import { UserSchema } from './user.js'
 import { ErrorSchema } from './utils.js'
 
-const invalidUuidInfo = 'Il ne s\'agit pas d\'un UUID valid'
-export const ClusterPrivacySchema = z.enum(['public', 'dedicated'], { description: 'Définit la confidentialité, public est disponible pour tous les projets / dedicated ne peut être utilisé que par les projets sélectionnés' })
+export const ClusterPrivacySchema = z.enum(['public', 'dedicated'])
 
 export const ClusterSchema = z.object({
-  id: z.string({ description: 'UUID du cluster' })
+  id: z.string()
     .uuid(),
-  label: z.string({ description: 'Label du cluster' })
-    .regex(/^[a-zA-Z0-9-]+$/, 'caractères autorisés: a-z, A-Z, 0-9, -')
+  label: z.string()
+    .regex(/^[a-zA-Z0-9-]+$/)
     .max(50),
-  infos: z.string({ description: 'Informations publiques sur le serveur' })
-    .max(200, 'ne peut dépasser 200 caractères')
+  infos: z.string()
+    .max(200)
     .optional()
     .nullable(),
-  clusterResources: z.boolean({
-    description: 'Définit si le clusteur est capable de manager des ressources de niveau cluster',
-    coerce: false,
-  }),
+  secretName: z.string()
+    .max(50)
+    .optional(),
+  clusterResources: z.boolean(),
   privacy: ClusterPrivacySchema,
-  zoneId: z.string({ description: 'Id de la zone de rattachement du cluster' })
-    .uuid(invalidUuidInfo),
-  stageIds: z.string({ description: 'Liste des types d\'environnments rattachés par leur ids' })
-    .uuid(invalidUuidInfo)
-    .array(),
+  zoneId: z.string()
+    .uuid(),
+  projectIds: z.string()
+    .uuid()
+    .array()
+    .optional(),
+  stageIds: z.string()
+    .uuid()
+    .array()
+    .optional(),
   user: z.object({
     username: z.string()
       .optional(),
@@ -39,7 +43,7 @@ export const ClusterSchema = z.object({
       .optional(),
     token: z.string()
       .optional(),
-  }, { description: 'Voir https://kubernetes.io/docs/reference/config-api/kubeconfig.v1/#AuthInfo, uniquement les clés [username, password, token, client-certificate-data (certData), client-key-data (keyData)]' })
+  })
     .optional(),
   cluster: z.object({
     server: z.string()
@@ -49,7 +53,7 @@ export const ClusterSchema = z.object({
       .optional(),
     caData: z.string()
       .optional(),
-  }, { description: 'Voir https://kubernetes.io/docs/reference/config-api/kubeconfig.v1/#Cluster, uniquement les clés [tls-server-name(tlsServerName), certificate-authority-data (caData), server, insecure-skip-tls-verify (skipTLSVerify)' })
+  })
     .optional(),
 })
 
@@ -57,7 +61,7 @@ export const CreateClusterBusinessSchema = ClusterSchema.omit({ id: true })
 
 export const ClusterBusinessSchema = ClusterSchema
 
-export const CleanedClusterSchema = ClusterSchema.pick({
+const CleanedClusterSchema = ClusterSchema.pick({
   id: true,
   label: true,
   stageIds: true,
