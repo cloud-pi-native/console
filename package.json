@@ -51,7 +51,7 @@
     "prepare": "husky",
     "test": "turbo run test --concurrency 1 --color --no-daemon",
     "test:cov": "turbo run test:cov --color --no-daemon",
-    "test:ct": "turbo run test:ct --color --no-daemon",
+    "test:ct": "pnpm --filter @cpn-console/shared run build && pnpm --filter @cpn-console/test-utils run build && pnpm --filter @cpn-console/client run test:ct",
     "test:ct-ci": "turbo run test:ct-ci --color --no-daemon",
     "test:e2e": "pnpm kube:e2e",
     "test:e2e-ci": "pnpm kube:prod; pnpm kube:e2e-ci"
