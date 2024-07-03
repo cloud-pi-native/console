@@ -29,16 +29,14 @@ export const getAllClusters = async (kcUser: UserProfile) => {
 
 export const getClusterAssociatedEnvironments = async (clusterId: string) => {
   try {
-    const clusterEnvironments = (await getClusterEnvironments(clusterId))?.environments
-
-    if (!clusterEnvironments) throw new NotFoundError('Aucun environnement associé à ce cluster')
+    const clusterEnvironments = await getClusterEnvironments(clusterId)
 
     return clusterEnvironments.map(environment => {
       return ({
         organization: environment.project?.organization?.name,
         project: environment.project?.name,
         name: environment.name,
-        owner: environment.project?.roles?.find(role => role?.role === 'owner')?.user?.email ?? 'Impossible de trouver le souscripteur',
+        owner: environment.project.roles.find(role => role?.role === 'owner')?.user.email ?? 'Impossible de trouver le souscripteur',
       })
     })
   } catch (error) {
