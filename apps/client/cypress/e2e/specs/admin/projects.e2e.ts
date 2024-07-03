@@ -1,10 +1,11 @@
 import { statusDict, formatDate, sortArrByObjKeyAsc, type Organization, type Project } from '@cpn-console/shared'
 import { getModel, getModelById } from '../../support/func.js'
 
-function checkTableRowsLength (length: number) {
+const checkTableRowsLength = (length: number) => {
   if (!length) cy.get('tr:last-child>td:first-child').should('have.text', 'Aucun projet trouvé')
   else cy.get('tr').should('have.length', length)
 }
+
 describe('Administration projects', () => {
   const admin = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6566')
   const organizations = getModel('organization') as Organization[]
