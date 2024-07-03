@@ -1,5 +1,17 @@
 # Changelog
 
+## [8.7.0](https://github.com/cloud-pi-native/console/compare/v8.6.0...v8.7.0) (2024-07-03)
+
+
+### Features
+
+* :necktie: hide private quotas for all on environment form ([ef08f29](https://github.com/cloud-pi-native/console/commit/ef08f29080d2be32236839be1e402fe76f44f465))
+
+
+### Bug Fixes
+
+* :lock: serialize sevice monitor response ([26ee98f](https://github.com/cloud-pi-native/console/commit/26ee98fa21984e57eaae8251dc14394f0e94c4b9))
+
 ## [8.6.0](https://github.com/cloud-pi-native/console/compare/v8.5.0...v8.6.0) (2024-06-28)
 
 
