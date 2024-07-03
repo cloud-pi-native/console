@@ -144,7 +144,7 @@ onBeforeMount(() => {
         label-key="name"
         value-key="id"
         :disabled="false"
-        @update="(stages) => updateStages(stages.map(stage => stage.id))"
+        @update="(_s, stageIds) => updateStages(stageIds)"
       />
     </div>
     <div
