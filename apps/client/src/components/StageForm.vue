@@ -108,7 +108,7 @@ onBeforeMount(() => {
         label-key="name"
         value-key="id"
         :disabled="false"
-        @update="(quotas) => updateQuotas(quotas.map(quota => quota.id))"
+        @update="(_q, quotaIds) => updateQuotas(quotaIds)"
       />
     </div>
     <div
@@ -124,7 +124,7 @@ onBeforeMount(() => {
         label-key="label"
         value-key="id"
         :disabled="false"
-        @update="(clusters) => updateClusters(clusters.map(cluster => cluster.id))"
+        @update="(_c, clusterIds) => updateClusters(clusterIds)"
       />
     </div>
     <div

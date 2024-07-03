@@ -344,7 +344,7 @@ watch(selectedContext, () => {
         label-key="label"
         value-key="id"
         :disabled="false"
-        @update="(projects) => updateValues('projectIds', projects.map(project => project.id))"
+        @update="(_p, projectIds) => updateValues('projectIds', projectIds)"
       />
     </div>
     <div
@@ -360,7 +360,7 @@ watch(selectedContext, () => {
         label-key="name"
         value-key="id"
         :disabled="false"
-        @update="(stages) => updateValues('stageIds', stages.map(stage => stage.id))"
+        @update="(_s, stageIds) => updateValues('stageIds', stageIds)"
       />
     </div>
     <div

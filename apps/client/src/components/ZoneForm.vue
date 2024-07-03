@@ -114,7 +114,7 @@ onBeforeMount(() => {
         label-key="label"
         value-key="id"
         :disabled="!props.isNewZone"
-        @update="(clusters) => updateClusters(clusters.map(cluster => cluster.id))"
+        @update="(_c, clusterIds) => updateClusters(clusterIds)"
       />
     </div>
     <div
