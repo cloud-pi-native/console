@@ -25,7 +25,7 @@ describe('Organization Admin Store', () => {
 
     const res = await adminOrganizationStore.getAllOrganizations()
 
-    expect(res).toBe(data)
+    expect(res).toStrictEqual(data)
     expect(apiClientGet).toHaveBeenCalledTimes(1)
   })
 

@@ -5,7 +5,7 @@ import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@gouvminint/vue-dsfr/styles'
 import '@/main.css'
 import StageForm from '@/components/StageForm.vue'
-import { getRandomCluster, getRandomEnv, getRandomQuota, getRandomQuotaStage, getRandomStage, repeatFn } from '@cpn-console/test-utils'
+import { getRandomCluster, getRandomEnv, getRandomQuota, getRandomStage, repeatFn } from '@cpn-console/test-utils'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 describe('StageForm.vue', () => {
@@ -49,19 +49,19 @@ describe('StageForm.vue', () => {
     useSnackbarStore()
     const allQuotas = repeatFn(4)(getRandomQuota)
     const allClusters = [getRandomCluster({}), getRandomCluster({})]
-    const stageToUpdate = getRandomStage()
-    const quotaStage = getRandomQuotaStage(allQuotas[0].id, stageToUpdate.id, 'active')
     // @ts-ignore
-    stageToUpdate.quotaStage = [quotaStage]
-    // @ts-ignore
-    stageToUpdate.clusters = [allClusters[0]]
-    const associatedEnvironments = [getRandomEnv('env1', 'projectId', quotaStage.id, allClusters[0].id), getRandomEnv('env2', 'projectId', quotaStage.id, allClusters[1].id)]
+    const stageToUpdate = getRandomStage(undefined, { quotas: allQuotas, clusters: allClusters })
+    const associatedEnvironments = [
+      getRandomEnv('env1', 'projectId', 'quotaId', 'stageId', allClusters[0].id),
+      getRandomEnv('env2', 'projectId', 'quotaId', 'stageId', allClusters[1].id),
+    ]
 
     const props = {
       stage: stageToUpdate,
       allQuotas,
       allClusters,
       associatedEnvironments,
+      isNewStage: false,
     }
 
     cy.mount(StageForm, { props })
@@ -85,21 +85,18 @@ describe('StageForm.vue', () => {
       .should('have.length', associatedEnvironments.length)
   })
 
-  it.only('Should mount an update quotaForm without associatedEnvironments', () => {
+  it('Should mount an update quotaForm without associatedEnvironments', () => {
     useSnackbarStore()
     const allQuotas = repeatFn(4)(getRandomQuota)
     const allClusters = [getRandomCluster({}), getRandomCluster({})]
-    const stageToUpdate = getRandomStage()
-    const quotaStage = getRandomQuotaStage(allQuotas[0].id, stageToUpdate.id, 'active')
     // @ts-ignore
-    stageToUpdate.quotaStage = [quotaStage]
-    // @ts-ignore
-    stageToUpdate.clusters = [allClusters[0]]
+    const stageToUpdate = getRandomStage(undefined, { clusters: [allClusters[0]], quotas: [allQuotas[0]] })
 
     const props = {
       stage: stageToUpdate,
       allQuotas,
       allClusters,
+      isNewStage: false,
     }
 
     cy.mount(StageForm, { props })

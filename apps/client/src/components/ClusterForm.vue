@@ -7,6 +7,7 @@ import { load } from 'js-yaml'
 import { JsonViewer } from 'vue3-json-viewer'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import ChoiceSelector from './ChoiceSelector.vue'
+import { toCodeComponent } from '@/utils/func.js'
 
 const snackbarStore = useSnackbarStore()
 
@@ -163,18 +164,12 @@ const retrieveUserAndCluster = (context: ContextType) => {
 
 const getRows = (associatedEnvironments: ClusterAssociatedEnvironments) => {
   return associatedEnvironments
-    ?.map(associatedEnvironment => Object
-      .values(associatedEnvironment)
-      .map(value => ({
-        component: 'code',
-        text: value,
-        title: 'Copier la valeur',
-        class: 'fr-text-default--info text-xs cursor-pointer',
-        // @ts-ignore
-        onClick: () => copyContent(value),
-      }),
-      ),
-    )
+    ?.map(associatedEnvironment => ([
+      toCodeComponent(associatedEnvironment.organization),
+      toCodeComponent(associatedEnvironment.project),
+      toCodeComponent(associatedEnvironment.name),
+      toCodeComponent(associatedEnvironment.owner ?? ''),
+    ]))
 }
 
 const emit = defineEmits<{
@@ -349,7 +344,7 @@ watch(selectedContext, () => {
         label-key="label"
         value-key="id"
         :disabled="false"
-        @update="(projects) => updateValues('projectIds', projects.map(project => project.id))"
+        @update="(_p, projectIds) => updateValues('projectIds', projectIds)"
       />
     </div>
     <div
@@ -365,7 +360,7 @@ watch(selectedContext, () => {
         label-key="name"
         value-key="id"
         :disabled="false"
-        @update="(stages) => updateValues('stageIds', stages.map(stage => stage.id))"
+        @update="(_s, stageIds) => updateValues('stageIds', stageIds)"
       />
     </div>
     <div

@@ -1,26 +1,27 @@
 <script lang="ts" setup>
-import { ref, onBeforeMount, watch, computed } from 'vue'
+import { ref, onBeforeMount, computed } from 'vue'
 import { getRandomId } from '@gouvminint/vue-dsfr'
-import { EnvironmentSchema, projectIsLockedInfo, longestEnvironmentName, type QuotaStage, type Quota, type SharedZodError, parseZodError, type Environment, CleanedCluster } from '@cpn-console/shared'
+import {
+  type CleanedCluster,
+  type Environment,
+  type SharedZodError,
+  EnvironmentSchema,
+  longestEnvironmentName,
+  parseZodError,
+  projectIsLockedInfo,
+} from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useQuotaStore } from '@/stores/quota.js'
 import { useStageStore } from '@/stores/stage.js'
 import { useZoneStore } from '@/stores/zone.js'
 
-type Stage = {
-  id: string
-  name: string
-  clusterIds: string[]
-  quotaStage: QuotaStage[]
+type OptionType = {
+  text: string
+  value: string
 }
 
-type OptionType = {
-    text: string,
-    value: string,
-  }
-
 const props = withDefaults(defineProps<{
-  environment: Partial<Environment & { quotaStage: QuotaStage }>,
+  environment: Partial<Environment>,
   isEditable: boolean,
   isOwner: boolean,
   isProjectLocked: boolean,
@@ -48,80 +49,64 @@ const zoneStore = useZoneStore()
 const localEnvironment = ref(props.environment)
 const environmentToDelete = ref('')
 const isDeletingEnvironment = ref(false)
-const quotas = ref<Quota[]>([])
-const allStages = ref<Stage[]>([])
 const inputKey = ref(getRandomId('input'))
 const zoneId = ref<string>()
-const stageId = ref<string>()
-const quotaId = ref<string>()
-const zoneOptions = ref<OptionType[]>([])
 const stageOptions = ref<OptionType[]>([])
+const zoneOptions = ref<OptionType[]>([])
 const quotaOptions = ref<OptionType[]>([])
 const clusterOptions = ref<OptionType[]>([])
 
-const stage = computed(() => allStages.value.find(allStage => allStage.id === stageId.value))
-const zones = computed(() => zoneStore.zones)
-const chosenZoneDescription = computed(() => zones.value?.find(zone => zone.id === zoneId.value)?.description)
+const chosenZoneDescription = computed(() => zoneStore.zonesById[zoneId.value ?? '']?.description ?? '')
 
 const errorSchema = computed<SharedZodError | undefined>(() => {
   if (localEnvironment.value?.id) {
-    const schemaValidation = EnvironmentSchema.safeParse(localEnvironment.value)
+    const schemaValidation = EnvironmentSchema.pick({ id: true, projectId: true, quotaId: true }).safeParse(localEnvironment.value)
     return schemaValidation.success ? undefined : schemaValidation.error
   } else {
-    const schemaValidation = EnvironmentSchema.omit({ id: true, permissions: true }).safeParse(localEnvironment.value)
+    const schemaValidation = EnvironmentSchema.pick({ clusterId: true, projectId: true, name: true, quotaId: true, stageId: true }).safeParse(localEnvironment.value)
     return schemaValidation.success ? undefined : schemaValidation.error
   }
 })
 
-// @ts-ignore
 const availableClusters: ComputedRef<CleanedCluster[]> = computed(() => props.allClusters
   .filter(cluster => props.projectClustersIds.includes(cluster.id))
   .filter(cluster => cluster.zoneId === zoneId.value)
-  .filter(cluster => cluster.stageIds.includes(stageId.value ?? '')),
+  .filter(cluster => cluster.stageIds.includes(localEnvironment.value.stageId ?? '')),
 )
 
 const clusterInfos = computed(() => availableClusters.value.find(cluster => cluster.id === localEnvironment.value.clusterId)?.infos)
 
 const setEnvironmentOptions = () => {
-  stageOptions.value = allStages.value.map(stage => ({
+  stageOptions.value = stageStore.stages.map(stage => ({
     text: stage.name,
     value: stage.id,
   }))
-}
-
-const setZoneOptions = () => {
-  zoneOptions.value = zones.value?.map(zone => ({
+  zoneOptions.value = zoneStore.zones.map(zone => ({
     text: zone.label,
     value: zone.id,
   }))
-}
-
-const setClusterOptions = () => {
-  clusterOptions.value = availableClusters.value.map(cluster => ({
-    // @ts-ignore
-    text: cluster.label,
-    // @ts-ignore
-    value: cluster.id,
-  }))
-}
-
-const setQuotaOptions = () => {
-  if (stage.value) {
-    // @ts-ignore
-    quotaOptions.value = stage.value.quotaStage
-    // @ts-ignore
-      .reduce((acc: OptionType[], curr: QuotaStage) => {
-        const matchingQuota = quotas.value
-          ?.find(quota => quota.id === curr.quotaId)
-        return matchingQuota
-          ? [...acc, {
-              text: matchingQuota.name + ' (' + matchingQuota.cpu + 'CPU, ' + matchingQuota.memory + ')',
-              value: matchingQuota.id,
-            }]
-          : acc
-      }, [])
-    inputKey.value = getRandomId('input')
-  }
+  clusterOptions.value = props.allClusters
+    .filter(cluster =>
+      (props.projectClustersIds.includes(cluster.id) && // clusters possibles pour ce projet
+      cluster.stageIds.includes(localEnvironment.value.stageId ?? '') && // correspondant à ce stage
+        cluster.zoneId === zoneId.value) || // dont la zone d'attachement est celle choisie
+      cluster.id === localEnvironment.value.clusterId, // ou alors celui associé à l'environnment en cours de modification
+    )
+    .map(cluster => ({
+      text: cluster.label,
+      value: cluster.id,
+    }))
+  quotaOptions.value =
+    quotaStore.quotas
+      .filter(quota =>
+        (quota.stageIds.includes(
+          localEnvironment.value.stageId ?? '') && // quotas disponibles pour ce type d'environnement
+          !quota.isPrivate) || // et ne pas afficher les quotas privés
+        quota.id === localEnvironment.value.quotaId) // ou quota actuellement associé (au cas où l'association ne soit plus disponible)
+      .map(quota => ({
+        text: `${quota.name} (${quota.cpu}CPU, ${quota.memory})`,
+        value: quota.id,
+      }))
 }
 
 const resetCluster = () => {
@@ -149,23 +134,12 @@ const cancel = () => {
 }
 
 onBeforeMount(async () => {
-  quotas.value = await quotaStore.getAllQuotas()
-  allStages.value = await stageStore.getAllStages()
-  await zoneStore.getAllZones()
+  await Promise.all([
+    stageStore.getAllStages(),
+    quotaStore.getAllQuotas(),
+    zoneStore.getAllZones(),
+  ])
   setEnvironmentOptions()
-  setZoneOptions()
-
-  // Receive quotaStage from parent component, retrieve stageId and quotaId
-  if (localEnvironment.value.quotaStage) {
-    stageId.value = localEnvironment.value.quotaStage.stageId
-    quotaId.value = localEnvironment.value.quotaStage.quotaId
-  }
-
-  // Restrict quota level choice according to selected environment
-  if (stageId.value) {
-    setQuotaOptions()
-    setClusterOptions()
-  }
 })
 
 onMounted(() => {
@@ -173,17 +147,11 @@ onMounted(() => {
 })
 
 watch(zoneId, () => {
-  if (zoneId.value && stageId.value) setClusterOptions()
+  setEnvironmentOptions()
 })
 
-watch(stageId, () => {
-  setQuotaOptions()
-  if (zoneId.value && stageId.value) setClusterOptions()
-})
-
-watch(quotaId, () => {
-  // Turn stageId and quotaId into corresponding quotaStageId
-  localEnvironment.value.quotaStageId = stage.value?.quotaStage.find(qs => qs.quotaId === quotaId.value)?.id
+watch(localEnvironment.value, () => {
+  setEnvironmentOptions()
 })
 
 </script>
@@ -233,7 +201,7 @@ watch(quotaId, () => {
         :description="chosenZoneDescription"
       />
       <DsfrSelect
-        v-model="stageId"
+        v-model="localEnvironment.stageId"
         select-id="stage-select"
         label="Type d'environnement"
         description="Type d'environnement proposé par DSO, conditionne les quotas et les clusters auxquels vous aurez accès pour créer votre environnement."
@@ -244,34 +212,34 @@ watch(quotaId, () => {
       />
       <div class="fr-mb-2w">
         <div
-          v-if="stageId"
+          v-if="localEnvironment.stageId"
           class="fr-my-2w"
         >
           <DsfrAlert
-            v-if="quotaId && !quotaOptions.find(quota => quota.value === quotaId)"
+            v-if="localEnvironment.quotaId && quotaStore.quotasById[localEnvironment.quotaId]?.isPrivate"
             description="Vous disposez d'un quota privé pour cet environnement. Veuillez contacter un administrateur si vous souhaitez le modifier."
             small
           />
           <DsfrSelect
-            v-else
             :key="inputKey"
-            v-model="quotaId"
+            v-model="localEnvironment.quotaId"
             select-id="quota-select"
             label="Dimensionnement des ressources allouées à l'environnement"
             description="Si votre projet nécessite d'avantage de ressources que celles proposées ci-dessus, contactez les administrateurs."
             required
             :options="quotaOptions"
+            :disabled="!!(localEnvironment.quotaId && quotaStore.quotasById[localEnvironment.quotaId]?.isPrivate)"
           />
         </div>
         <DsfrAlert
-          v-if="stageId && zoneId && !clusterOptions?.length"
+          v-if="localEnvironment.stageId && zoneId && !clusterOptions.length"
           data-testid="noClusterOptionAlert"
           description="Aucun cluster ne semble disponible pour votre projet, la zone et le type d'environnement choisis. Veuillez contacter les administrateurs."
           type="warning"
           small
         />
         <DsfrSelect
-          v-if="stageId && zoneId && clusterOptions?.length"
+          v-if="localEnvironment.stageId && zoneId && clusterOptions?.length"
           v-model="localEnvironment.clusterId"
           select-id="cluster-select"
           label="Cluster"

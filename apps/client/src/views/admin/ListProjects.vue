@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { onBeforeMount, ref } from 'vue'
 import { getRandomId } from '@gouvminint/vue-dsfr'
-import { type AsyncReturnType, type PluginsUpdateBody, formatDate, statusDict, sortArrByObjKeyAsc, AllStatus, type Project, type ProjectService } from '@cpn-console/shared'
+import { type AsyncReturnType, type PluginsUpdateBody, formatDate, statusDict, sortArrByObjKeyAsc, AllStatus, type Project, type ProjectService, Organization } from '@cpn-console/shared'
 import { useAdminProjectStore } from '@/stores/admin/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useAdminOrganizationStore } from '@/stores/admin/organization.js'
@@ -13,6 +13,7 @@ import { useQuotaStore } from '@/stores/quota.js'
 import { useProjectServiceStore } from '@/stores/project-services.js'
 import { useProjectRepositoryStore } from '@/stores/project-repository.js'
 import { useProjectStore } from '@/stores/project.js'
+import { useStageStore } from '@/stores/stage'
 
 const adminProjectStore = useAdminProjectStore()
 const projectStore = useProjectStore()
@@ -23,6 +24,7 @@ const usersStore = useUsersStore()
 const snackbarStore = useSnackbarStore()
 const projectUserStore = useProjectUserStore()
 const quotaStore = useQuotaStore()
+const stageStore = useStageStore()
 const projectEnvironmentStore = useProjectEnvironmentStore()
 
 export type Component = {
@@ -51,7 +53,7 @@ type FileForDownload = File & {
 }
 
 const allProjects = ref<AsyncReturnType<typeof adminProjectStore.getAllProjects>>([])
-const organizations = ref<AsyncReturnType<typeof adminOrganizationStore.getAllOrganizations>>([])
+const organizations = ref<Organization[]>([])
 const rows = ref<Rows>([])
 const environmentsRows = ref<EnvironnementRows>([])
 const repositoriesRows = ref<RepositoryRows>([])
@@ -136,7 +138,7 @@ const setRows = () => {
           title: `Voir le tableau de bord du projet ${name}`,
         },
         rowData: [
-          organizations.value?.find(org => org.id === organizationId)?.label,
+          adminOrganizationStore.organizationsById[organizationId].label ?? '',
           name,
           truncateDescription(description ?? ''),
           roles.find(role => role.role === 'owner')?.user?.email ?? '',
@@ -164,25 +166,18 @@ const getEnvironmentsRows = () => {
   if (!selectedProject.value) return
   environmentsRows.value = selectedProject.value.environments?.length
     ? sortArrByObjKeyAsc(selectedProject.value.environments, 'name')
-      ?.map(({ id, quotaStage, name }) => (
+      ?.map(({ id, name, quotaId, stageId }) => (
         [
           name,
-          quotaStage.stage.name,
+          stageStore.stages.find(stage => stage.id === stageId)?.name,
           {
             component: 'DsfrSelect',
-            modelValue: quotaStage.quota.id,
+            modelValue: quotaId,
             selectId: 'quota-select',
-            options: quotaStage.stage.quotaStage
-              ?.reduce((acc, curr) => {
-                const matchingQuota = quotaStore.quotas
-                  ?.find(quota => quota.id === curr.quotaId)
-                return matchingQuota
-                  ? [...acc, {
-                      text: matchingQuota.name + ' (' + matchingQuota.cpu + 'CPU, ' + matchingQuota.memory + ')',
-                      value: matchingQuota.id,
-                    }]
-                  : acc
-              }, []),
+            options: quotaStore.quotas.filter(quota => quota.stageIds.includes(stageId)).map(quota => ({
+              text: quota.name + ' (' + quota.cpu + 'CPU, ' + quota.memory + ')',
+              value: quota.id,
+            })),
             'onUpdate:model-value': (event: string) => updateEnvironmentQuota({ environmentId: id, quotaId: event }),
           },
         ]
@@ -244,8 +239,8 @@ const updateEnvironmentQuota = async ({ environmentId, quotaId }: {environmentId
   snackbarStore.isWaitingForResponse = true
   const environment = selectedProject.value.environments.find(environment => environment.id === environmentId)
   if (!environment) return
-  environment.quotaStageId = environment.quotaStage?.stage?.quotaStage?.find(quotaStage => quotaStage.quotaId === quotaId)?.id ?? ''
-  await projectEnvironmentStore.updateEnvironment(environment, selectedProject.value.id)
+  environment.quotaId = quotaId
+  await projectEnvironmentStore.updateEnvironment(environment.id, environment.projectId, environment)
   await getAllProjects()
   snackbarStore.isWaitingForResponse = false
 }
@@ -313,7 +308,7 @@ const generateProjectsDataFile = async () => {
   file.value = {
     ...file.value,
     href: url,
-    size: `${file.value.size} bytes`,
+    size: file.value.size,
     format: 'CSV',
     title: 'dso-projects.csv',
   }
@@ -322,8 +317,10 @@ const generateProjectsDataFile = async () => {
 onBeforeMount(async () => {
   organizations.value = await adminOrganizationStore.getAllOrganizations()
   await Promise.all([
-    getAllProjects(),
-    quotaStore.getAllQuotas(),
+    await adminOrganizationStore.getAllOrganizations(),
+    await stageStore.getAllStages(),
+    await quotaStore.getAllQuotas(),
+    await getAllProjects(),
   ])
 })
 
@@ -398,7 +395,7 @@ const untruncateDescription = (span: HTMLElement) => {
       <DsfrFileDownload
         v-if="!selectedProject && file"
         :format="file.format"
-        :size="file.size"
+        :size="`${file.size} bytes`"
         :href="file.href"
         :title="file.title"
         :download="file.title"

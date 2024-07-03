@@ -5,16 +5,15 @@ import {
   linkQuotaToStages,
   getQuotaById,
   deleteQuota as deleteQuotaQuery,
-  getStageById,
-  linkStageToQuotas,
-  deleteQuotaStage,
   updateQuotaPrivacy as updateQuotaPrivacyQuery,
   getQuotaAssociatedEnvironmentById,
-  getStageByIdOrThrow,
-  getQuotaByIdOrThrow,
+  updateQuotaName,
+  updateQuotaLimits,
+  unlinkQuotaFromStages,
 } from '@/resources/queries-index.js'
-import { type CreateQuotaBody, QuotaSchema, type UpdateQuotaStageBody, type PatchQuotaBody } from '@cpn-console/shared'
+import { type CreateQuotaBody, QuotaSchema, type UpdateQuotaBody, type Quota as QuotaDto } from '@cpn-console/shared'
 import { validateSchema } from '@/utils/business.js'
+import { Quota } from '@prisma/client'
 
 export const getQuotaAssociatedEnvironments = async (quotaId: string) => {
   try {
@@ -25,7 +24,7 @@ export const getQuotaAssociatedEnvironments = async (quotaId: string) => {
       name: env.name,
       project: env.project.name,
       organization: env.project.organization.name,
-      stage: env.quotaStage.stage.name,
+      stage: env.stage.name,
       owner: env.project.roles?.[0].user.email,
     }))
   } catch (error) {
@@ -33,7 +32,7 @@ export const getQuotaAssociatedEnvironments = async (quotaId: string) => {
   }
 }
 
-export const createQuota = async (data: CreateQuotaBody) => {
+export const createQuota = async (data: CreateQuotaBody): Promise<QuotaDto> => {
   try {
     const schemaValidation = QuotaSchema.omit({ id: true }).safeParse(data)
     validateSchema(schemaValidation)
@@ -43,11 +42,18 @@ export const createQuota = async (data: CreateQuotaBody) => {
 
     const quota = await createQuotaQuery(data)
 
-    if (data.stageIds) {
+    if (data.stageIds?.length) {
       await linkQuotaToStages(quota.id, data.stageIds)
     }
 
-    return quota
+    return {
+      id: quota.id,
+      name: quota.name,
+      cpu: quota.cpu,
+      memory: quota.memory,
+      isPrivate: quota.isPrivate,
+      stageIds: data.stageIds ?? [],
+    }
   } catch (error) {
     if (error instanceof DsoError) {
       throw error
@@ -56,50 +62,54 @@ export const createQuota = async (data: CreateQuotaBody) => {
   }
 }
 
-export const updateQuotaPrivacy = async (quotaId: string, isPrivate: PatchQuotaBody['isPrivate']) => {
+export const updateQuota = async (
+  id: Quota['id'], {
+    cpu,
+    isPrivate,
+    memory,
+    name,
+    stageIds,
+  }: UpdateQuotaBody,
+): Promise<QuotaDto> => {
   try {
-    return await updateQuotaPrivacyQuery(quotaId, isPrivate)
-  } catch (error) {
-    throw new Error(error?.message)
-  }
-}
+    const dbQuota = await getQuotaById(id)
 
-export const updateQuotaStage = async (data: UpdateQuotaStageBody) => {
-  try {
-    // From quotaId and stageIds
-    if (data.quotaId) {
-      // Remove quotaStages
-      const dbQuotaStages = (await getQuotaById(data.quotaId))?.quotaStage
-      const quotaStagesToRemove = dbQuotaStages?.filter(dbQuotaStage => !data.stageIds?.includes(dbQuotaStage.stageId))
-      if (quotaStagesToRemove) {
-        for (const quotaStageToRemove of quotaStagesToRemove) {
-          await deleteQuotaStage(quotaStageToRemove.id)
-        }
-      }
-      // Create quotaStages
-      await linkQuotaToStages(data.quotaId, data.stageIds)
-      return (await getQuotaByIdOrThrow(data.quotaId)).quotaStage
+    if (!dbQuota) throw new NotFoundError('Quota introuvable')
+    const dbStageIds = dbQuota.stages.map(({ id }) => id)
+    if (name === dbQuota.name) {
+      await updateQuotaName(id, name)
     }
+    if (typeof isPrivate === 'boolean') {
+      await updateQuotaPrivacyQuery(id, isPrivate)
+    }
+    if (cpu && memory) {
+      await updateQuotaLimits(id, {
+        cpu,
+        memory,
+      })
+    }
+    if (stageIds) {
+      const dbStages = dbQuota.stages
+      const stageIdsToRemove = dbStages
+        .filter(({ id }) => !stageIds.includes(id))
+        .map(({ id }) => id)
 
-    // From stageId and quotaIds
-    if (data.stageId) {
-      // Remove quotaStages
-      const dbQuotaStages = (await getStageById(data.stageId))?.quotaStage
-      const quotaStagesToRemove = dbQuotaStages?.filter(dbQuotaStage => !data.quotaIds?.includes(dbQuotaStage.quotaId))
-      if (quotaStagesToRemove) {
-        for (const quotaStageToRemove of quotaStagesToRemove) {
-          await deleteQuotaStage(quotaStageToRemove.id)
-        }
+      if (stageIdsToRemove.length) {
+        await unlinkQuotaFromStages(id, stageIdsToRemove)
       }
-      // Create quotaStages
-      await linkStageToQuotas(data.stageId, data.quotaIds)
-      return (await getStageByIdOrThrow(data.stageId)).quotaStage
+      if (stageIds?.length) {
+        await linkQuotaToStages(id, stageIds)
+      }
     }
-    throw new BadRequestError('Need to specify either quotaId and stageIds or stageId and quotaIds')
+    return {
+      id,
+      name: name ?? dbQuota.name,
+      cpu: cpu ?? dbQuota.cpu,
+      memory: memory ?? dbQuota.memory,
+      isPrivate: isPrivate ?? dbQuota.isPrivate,
+      stageIds: stageIds ?? dbStageIds,
+    }
   } catch (error) {
-    if (error.message.match(/Foreign key constraint failed on the field: `Environment_quotaStageId_fkey/)) {
-      throw new BadRequestError('L\'association quota / type d\'environnement que vous souhaitez supprimer est actuellement utilisée. Vous pouvez demander aux souscripteurs concernés de changer le quota choisi pour leur environnement.')
-    }
     throw new Error(error?.message)
   }
 }

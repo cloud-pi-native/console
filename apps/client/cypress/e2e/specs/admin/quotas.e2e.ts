@@ -48,6 +48,7 @@ describe('Administration quotas', () => {
     cy.intercept('GET', 'api/v1/stages').as('getStages')
     cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
     cy.intercept('GET', '/api/v1/projects').as('getProjects')
+    cy.intercept('GET', '/api/v1/projects/*/environments').as('getEnvironments')
 
     // Create quota
     cy.getByDataTestid('addQuotaLink')
@@ -140,26 +141,37 @@ describe('Administration quotas', () => {
     cy.get('#quota-select')
       .find('option').contains(publicQuota.name)
       .should('not.exist')
-
-    // Check quota availability for admin user on environment form
-    cy.kcLogin('tcolin')
-    cy.goToProjects()
-      .wait('@getProjects')
-      .getByDataTestid(`projectTile-${project?.name}`).click()
-      .getByDataTestid('menuEnvironments').click()
-    cy.wait('@getClusters')
-    cy.url().should('contain', '/environments')
-    cy.getByDataTestid('addEnvironmentLink').click()
-    cy.wait('@getStages')
-    cy.wait('@getQuotas')
-    cy.get('h1').should('contain', 'Ajouter un environnement au projet')
-    cy.get('#zone-select')
-      .select(2)
     cy.get('#stage-select')
-      .select(publicQuota.stages[0].name)
+      .select(allStages.find(stage => publicQuota.stages.find(pqStage => pqStage.id === stage.id))?.name)
     cy.get('#quota-select')
       .find('option').contains(publicQuota.name)
       .should('exist')
+
+    // Check quota availability for admin user on project list
+    cy.intercept('GET', 'api/v1/admin/projects').as('getAllProjects')
+    cy.kcLogin('tcolin')
+    cy.visit('/admin/projects')
+    cy.wait('@getAllProjects')
+    cy.url().should('contain', '/admin/projects')
+    cy.getByDataTestid('tableAdministrationProjects').within(() => {
+      cy.get('tr').contains(project.name)
+        .click()
+    })
+
+    const environments = []
+    cy.wait('@getEnvironments').its('response').then(response => {
+      environments.push(response.body)
+    })
+    cy.get('#environmentsTable').within(() => {
+      cy.get('#quota-select:first')
+        .find('option')
+        .contains(publicQuota.name)
+        .should('not.exist')
+      cy.get('#quota-select:nth-of-type(1)')
+        .find('option')
+        .contains(publicQuota.name)
+        .should('exist')
+    })
   })
 
   it('Should not be able to create a quota with an already taken name', () => {
@@ -210,6 +222,7 @@ describe('Administration quotas', () => {
     cy.intercept('GET', 'api/v1/stages').as('getStages')
     cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
     cy.intercept('GET', '/api/v1/projects').as('getProjects')
+    cy.intercept('GET', '/api/v1/projects/*/environments').as('getEnvironments')
 
     // Create quota
     cy.getByDataTestid('addQuotaLink')
@@ -298,32 +311,38 @@ describe('Administration quotas', () => {
       .find('option').contains(privateQuota.name)
       .should('not.exist')
 
-    // Check quota availability for admin user on environment form
+    // Check quota availability for admin user on project list
+    cy.intercept('GET', 'api/v1/admin/projects').as('getAllProjects')
     cy.kcLogin('tcolin')
-    cy.goToProjects()
-      .wait('@getProjects')
-      .getByDataTestid(`projectTile-${project?.name}`).click()
-      .getByDataTestid('menuEnvironments').click()
-      .url().should('contain', '/environments')
-    cy.wait('@getClusters')
-    cy.getByDataTestid('addEnvironmentLink').click()
-    cy.wait('@getStages')
-    cy.wait('@getQuotas')
-    cy.get('h1').should('contain', 'Ajouter un environnement au projet')
-    cy.get('#zone-select')
-      .select(2)
-    cy.get('#stage-select')
-      .select(privateQuota.stages[0].name)
-    cy.get('#quota-select')
-      .find('option').contains(privateQuota.name)
-      .should('exist')
+    cy.visit('/admin/projects')
+    cy.wait('@getAllProjects')
+    cy.url().should('contain', '/admin/projects')
+    cy.getByDataTestid('tableAdministrationProjects').within(() => {
+      cy.get('tr').contains(project.name)
+        .click()
+    })
+
+    const environments = []
+    cy.wait('@getEnvironments').its('response').then(response => {
+      environments.push(response.body)
+    })
+
+    cy.get('#environmentsTable').within(() => {
+      cy.get('#quota-select:first')
+        .find('option')
+        .contains(privateQuota.name)
+        .should('not.exist')
+      cy.get('#quota-select:nth-of-type(1)')
+        .find('option')
+        .contains(privateQuota.name)
+        .should('exist')
+    })
   })
 
   it('Should update a quota', () => {
     const newStage = allStages?.find(stage => !publicQuota.stages?.find(pqStage => pqStage.id === stage.id))
 
-    cy.intercept('PUT', '/api/v1/admin/quotas/quotastages').as('updateQuotaStage')
-    cy.intercept('PATCH', '/api/v1/admin/quotas/*/privacy').as('updateQuotaPrivacy')
+    cy.intercept('PUT', '/api/v1/admin/quotas/*').as('updateQuota')
     cy.intercept('GET', 'api/v1/clusters').as('getClusters')
     cy.intercept('GET', 'api/v1/stages').as('getStages')
     cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
@@ -356,18 +375,13 @@ describe('Administration quotas', () => {
       .click()
     cy.get('#stages-select .fr-tag--dismiss')
       .should('have.length', publicQuota.stages.length)
-    cy.get('#stages-select')
-      .click()
     cy.getByDataTestid(`${newStage.id}-stages-select-tag`)
       .click()
     cy.getByDataTestid(`${publicQuota.stages[0].id}-stages-select-tag`)
       .click()
     cy.getByDataTestid('updateQuotaBtn')
       .click()
-    cy.wait('@updateQuotaStage').its('response').then($response => {
-      expect($response?.statusCode).to.match(/^20\d$/)
-    })
-    cy.wait('@updateQuotaPrivacy').its('response').then($response => {
+    cy.wait('@updateQuota').its('response').then($response => {
       expect($response?.statusCode).to.match(/^20\d$/)
     })
 
@@ -420,72 +434,6 @@ describe('Administration quotas', () => {
     cy.get('#quota-select')
       .find('option').contains(publicQuota.name)
       .should('not.exist')
-
-    // Check quota availability for admin user on environment form
-    cy.kcLogin('tcolin')
-    cy.goToProjects()
-      .wait('@getProjects')
-      .getByDataTestid(`projectTile-${project?.name}`).click()
-      .getByDataTestid('menuEnvironments').click()
-      .url().should('contain', '/environments')
-    cy.wait('@getClusters')
-    cy.getByDataTestid('addEnvironmentLink').click()
-    cy.wait('@getStages')
-    cy.wait('@getQuotas')
-    cy.get('h1').should('contain', 'Ajouter un environnement au projet')
-    cy.get('#zone-select')
-      .select(2)
-    cy.get('#stage-select')
-      .select(publicQuota.stages[0].name)
-    cy.get('#quota-select')
-      .find('option').contains(publicQuota.name)
-      .should('not.exist')
-    cy.get('#stage-select')
-      .select(newStage.name)
-    cy.get('#quota-select')
-      .find('option').contains(publicQuota.name)
-      .should('exist')
-  })
-
-  it('Should not be able to remove a used stage from a quota', () => {
-    cy.intercept('PUT', '/api/v1/admin/quotas/quotastages').as('updateQuotaStage')
-
-    cy.getByDataTestid(`quotaTile-${quota2.name}`)
-      .should('be.visible')
-      .click()
-    cy.get('h1').invoke('text').should('contain', `Informations du quota ${quota2.name}`)
-    cy.getByDataTestid('addQuotaBtn').should('not.exist')
-    cy.getByDataTestid('updateQuotaBtn').should('be.visible').and('be.enabled')
-    cy.getByDataTestid('nameInput')
-      .find('input')
-      .should('have.value', quota2.name)
-      .and('be.disabled')
-    cy.getByDataTestid('memoryInput')
-      .find('input')
-      .should('have.value', quota2.memory)
-      .and('be.disabled')
-    cy.getByDataTestid('cpuInput')
-      .find('input')
-      .should('have.value', quota2.cpu)
-      .and('be.disabled')
-    cy.getByDataTestid('isQuotaPrivateCbx').find('input[type=checkbox]')
-      .should(quota2.isPrivate ? 'be.checked' : 'not.be.checked')
-      .and('be.enabled')
-    cy.getByDataTestid('updateQuotaBtn').should('be.enabled')
-    cy.get('#stages-select')
-      .click()
-    cy.get('#stages-select .fr-tag--dismiss')
-      .should('have.length', quota2.quotaStage.length)
-    cy.getByDataTestid(`${allStages[0].id}-stages-select-tag`)
-      .click()
-    cy.getByDataTestid('updateQuotaBtn')
-      .click()
-    cy.wait('@updateQuotaStage').its('response').then($response => {
-      expect($response?.statusCode).to.not.match(/^20\d$/)
-    })
-    cy.getByDataTestid('snackbar').within(() => {
-      cy.get('p').should('contain', 'L\'association quota / type d\'environnement que vous souhaitez supprimer est actuellement utilisée. Vous pouvez demander aux souscripteurs concernés de changer le quota choisi pour leur environnement.')
-    })
   })
 
   it('Should display a non-deletable quota form', () => {
@@ -514,7 +462,7 @@ describe('Administration quotas', () => {
     cy.get('#stages-select')
       .click()
     cy.get('#stages-select .fr-tag--dismiss')
-      .should('have.length', quota2.quotaStage.length)
+      .should('have.length', quota2.stageIds.length)
     cy.getByDataTestid('deleteQuotaZone').should('not.exist')
     cy.getByDataTestid('associatedEnvironmentsZone').should('exist')
     cy.getByDataTestid('associatedEnvironmentsTable').should('exist')

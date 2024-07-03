@@ -22,16 +22,13 @@ describe('Manage permissions for environment', () => {
   })
 
   it('Should not be able to update permissions if not permitted on environment', () => {
-    cy.intercept('GET', 'api/v1/clusters').as('getClusters')
-
     cy.kcLogin((user0.firstName.slice(0, 1) + user0.lastName).toLowerCase())
       .goToProjects()
       .getByDataTestid(`projectTile-${project.name}`).click()
       .getByDataTestid('menuEnvironments').click()
-    cy.wait('@getClusters')
-      .getByDataTestid(`environmentTile-${environment?.name}`)
-      .click()
       .url().should('contain', '/environments')
+    cy.getByDataTestid(`environmentTile-${environment?.name}`)
+      .click()
     cy.getByDataTestid('deleteEnvironmentZone').should('not.exist')
 
     cy.assertPermission(project, environment?.name, [{ email: owner.email, isOwner: true }])
@@ -45,7 +42,7 @@ describe('Manage permissions for environment', () => {
   })
 
   it('Should add permissions to an existing environment', () => {
-    cy.intercept('GET', 'api/v1/clusters').as('getClusters')
+    cy.intercept('GET', '/api/v1/clusters').as('getClusters')
 
     cy.assertAddEnvironment(project, [environment], false)
     cy.addPermission(project, environment?.name, user0.email)
@@ -68,8 +65,7 @@ describe('Manage permissions for environment', () => {
     cy.goToProjects()
       .getByDataTestid(`projectTile-${project.name}`).click()
       .getByDataTestid('menuEnvironments').click()
-    cy.wait('@getClusters')
-      .getByDataTestid(`environmentTile-${environment?.name}`)
+    cy.getByDataTestid(`environmentTile-${environment?.name}`)
       .click()
 
     cy.getByDataTestid('permissionSuggestionInput')

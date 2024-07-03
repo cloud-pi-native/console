@@ -33,7 +33,7 @@ const displayed = {
 }
 
 const emit = defineEmits<{
-  update: [value: T[]]
+  update: [selected: T[], values: VALUE[]]
 }>()
 
 const switchSelection = (event: string) => {
@@ -45,7 +45,7 @@ const switchSelection = (event: string) => {
   } else {
     selectedValues.value.push(eventValue)
   }
-  emit('update', options.selected.value)
+  emit('update', options.selected.value, options.selected.value.map(option => option[props.valueKey]))
 }
 
 type SwitchMultipleParam = 'notSelected' | 'notSelectedDisplayed' | 'selected' | 'selectedDisplayed';

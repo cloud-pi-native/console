@@ -71,7 +71,6 @@ describe('Permission routes', () => {
       prisma.project.findUnique.mockResolvedValue(projectInfos)
       prisma.permission.create.mockResolvedValue(permissionToAdd)
       prisma.environment.findUnique.mockResolvedValue(environment)
-      prisma.quotaStage.findUnique.mockResolvedValue(dbSetup.stages[0].quotaStage[0])
       prisma.stage.findUnique.mockResolvedValue(dbSetup.stages[0])
       prisma.user.findUnique.mockResolvedValue(newMember)
 
@@ -134,7 +133,6 @@ describe('Permission routes', () => {
       const permissionToUpdate = environment.permissions[0]
 
       prisma.environment.findUnique.mockResolvedValue(environmentInfos)
-      prisma.quotaStage.findUnique.mockResolvedValue(dbSetup.stages[0].quotaStage[0])
       prisma.stage.findUnique.mockResolvedValue(dbSetup.stages[0])
       prisma.user.findUnique.mockResolvedValue(permissionToUpdate.user)
       prisma.role.findFirst.mockResolvedValue(requestorRole)
