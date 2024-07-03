@@ -66,6 +66,7 @@
         "^@cpn-console/shared#build",
         "^@cpn-console/test-utils#build"
       ],
+      "cache": false,
       "outputs": []
     },
     "test:ct-ci": {
@@ -80,6 +81,7 @@
         "^@cpn-console/shared#build",
         "^@cpn-console/test-utils#build"
       ],
+      "cache": false,
       "outputs": []
     },
     "test:e2e-ci": {
