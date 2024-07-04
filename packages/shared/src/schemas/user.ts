@@ -103,3 +103,11 @@ export const UpdateUserAdminRoleSchema = {
     500: ErrorSchema,
   },
 }
+
+export const LoginSchema = {
+  responses: {
+    200: null,
+    307: null,
+    500: ErrorSchema,
+  },
+}

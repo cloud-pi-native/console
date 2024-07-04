@@ -13,6 +13,7 @@ import {
 import '@/types/index.js'
 import { BadRequestError } from '@/utils/errors.js'
 import { serverInstance } from '@/app.js'
+import { getOrCreateUser } from './queries.js'
 
 export const userRouter = () => serverInstance.router(userContract, {
   getProjectUsers: async ({ request: req, params }) => {
@@ -141,6 +142,15 @@ export const userRouter = () => serverInstance.router(userContract, {
     return {
       status: 200,
       body: newRoles,
+    }
+  },
+
+  auth: async ({ request }) => {
+    const { groups: _g, ...requestor } = request.session.user
+    await getOrCreateUser(requestor)
+    return {
+      status: 200,
+      body: null,
     }
   },
 })

@@ -28,22 +28,6 @@ describe('Project routes', () => {
     vi.clearAllMocks()
   })
 
-  // GET
-  describe('getUserProjectsController', () => {
-    it('Should return an error while get list of projects', async () => {
-      const error = { statusCode: 500, message: 'Erreur de récupération de l\'utilisateur' }
-
-      prisma.user.upsert.mockRejectedValue(error)
-
-      const response = await app.inject()
-        .get('/api/v1/projects')
-        .end()
-
-      expect(response.statusCode).toEqual(error.statusCode)
-      expect(JSON.parse(response.body).error).toEqual(error.message)
-    })
-  })
-
   describe('getProjectSecretsController', () => {
     it('Should get a project secrets', async () => {
       const project = createRandomDbSetup({}).project
@@ -97,9 +81,9 @@ describe('Project routes', () => {
         .body(project)
         .end()
 
+      expect(response.json()).toMatchObject(project)
       expect(response.statusCode).toEqual(201)
       expect(response.json()).toBeDefined()
-      expect(response.json()).toMatchObject(project)
     })
 
     it('Should not create a project if payload is invalid', async () => {

@@ -7,6 +7,7 @@ import {
   GetProjectUsersSchema,
   UpdateUserAdminRoleSchema,
   TransferProjectOwnershipSchema,
+  LoginSchema,
 } from '../schemas/index.js'
 
 export const userContract = contractInstance.router({
@@ -59,6 +60,14 @@ export const userContract = contractInstance.router({
     summary: 'Delete user role in project',
     description: 'Delete user role in project.',
     responses: TransferProjectOwnershipSchema.responses,
+  },
+
+  auth: {
+    method: 'GET',
+    path: `${apiPrefix}/auth`,
+    summary: 'Login',
+    description: 'OIDC callback to signin or signup',
+    responses: LoginSchema.responses,
   },
 })
 

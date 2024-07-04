@@ -1,18 +1,13 @@
 import { type KeycloakPayload } from 'fastify-keycloak-adapter'
 import type { Project, User } from '@prisma/client'
 import { UserSchema, instanciateSchema, projectIsLockedInfo, type AsyncReturnType, adminGroupPath } from '@cpn-console/shared'
-import { addLogs, addUserToProject as addUserToProjectQuery, createUser, deletePermission, getMatchingUsers as getMatchingUsersQuery, getOrCreateUser, getProjectInfos as getProjectInfosQuery, getProjectUsers as getProjectUsersQuery, getRolesByProjectId, getUserByEmail, getUserById, removeUserFromProject as removeUserFromProjectQuery, transferProjectOwnership as transferProjectOwnershipQuery } from '@/resources/queries-index.js'
+import { addLogs, addUserToProject as addUserToProjectQuery, createUser, deletePermission, getMatchingUsers as getMatchingUsersQuery, getProjectInfos as getProjectInfosQuery, getProjectUsers as getProjectUsersQuery, getRolesByProjectId, getUserByEmail, getUserById, removeUserFromProject as removeUserFromProjectQuery, transferProjectOwnership as transferProjectOwnershipQuery } from '@/resources/queries-index.js'
 import { validateSchema } from '@/utils/business.js'
 import { checkInsufficientRoleInProject, type SearchOptions } from '@/utils/controller.js'
 import { BadRequestError, ForbiddenError, NotFoundError } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
 
 export type UserDto = Pick<User, 'email' | 'firstName' | 'lastName' | 'id'>
-export const getUser = async (user: UserDto) => {
-  const schemaValidation = UserSchema.safeParse(user)
-  validateSchema(schemaValidation)
-  return getOrCreateUser(user)
-}
 
 export const checkProjectRole = (userId: User['id'], { userList = undefined, roles = undefined, minRole }: SearchOptions) => {
   // @ts-ignore
