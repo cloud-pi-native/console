@@ -1,6 +1,5 @@
-import type { User } from '@prisma/client'
 import { ClusterBusinessSchema, ClusterPrivacy, CreateClusterBusinessSchema, Project, UserProfile, type Cluster } from '@cpn-console/shared'
-import { addLogs, createCluster as createClusterQuery, deleteCluster as deleteClusterQuery, getClusterById, getClusterByLabel, getClusterEnvironments, getClustersWithProjectIdAndConfig, getProjectsByClusterId, getStagesByClusterId, getUserById, linkClusterToProjects, linkZoneToClusters, removeClusterFromProject, removeClusterFromStage, updateCluster as updateClusterQuery } from '@/resources/queries-index.js'
+import { addLogs, createCluster as createClusterQuery, deleteCluster as deleteClusterQuery, getClusterById, getClusterByLabel, getClusterEnvironments, getClustersWithProjectIdAndConfig, getOrCreateUser, getProjectsByClusterId, getStagesByClusterId, linkClusterToProjects, linkZoneToClusters, removeClusterFromProject, removeClusterFromStage, updateCluster as updateClusterQuery } from '@/resources/queries-index.js'
 import { linkClusterToStages } from '@/resources/stage/business.js'
 import { validateSchema } from '@/utils/business.js'
 import { BadRequestError, DsoError, NotFoundError, UnauthorizedError } from '@/utils/errors.js'
@@ -14,7 +13,8 @@ export const checkClusterProjectIds = (data: Omit<Cluster, 'id'> & { id?: Cluste
 }
 
 export const getAllClusters = async (kcUser: UserProfile) => {
-  const user = await getUserById(kcUser.id)
+  const { groups: _, ...userInfo } = kcUser
+  const user = await getOrCreateUser(userInfo)
   if (!user) throw new UnauthorizedError('Vous n\'êtes pas connecté')
 
   const clusters = await getClustersWithProjectIdAndConfig()

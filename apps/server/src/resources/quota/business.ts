@@ -1,13 +1,14 @@
 import { UnauthorizedError } from '@/utils/errors.js'
 import {
-  getUserById,
   getQuotas as getQuotasQuery,
   getAllQuotas,
+  getOrCreateUser,
 } from '../queries-index.js'
 import { UserProfile, adminGroupPath } from '@cpn-console/shared'
 
 export const getQuotas = async (kcUser: UserProfile) => {
-  const user = await getUserById(kcUser.id)
+  const { groups: _, ...userInfo } = kcUser
+  const user = await getOrCreateUser(userInfo)
   if (!user) throw new UnauthorizedError('Vous n\'êtes pas connecté')
 
   const quotas = kcUser.groups?.includes(adminGroupPath)
