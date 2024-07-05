@@ -150,7 +150,7 @@ const cancel = () => {
         <DsfrCheckbox
           v-model="localRepo.isInfra"
           data-testid="infraRepoCbx"
-          :disabled="localRepo.id || props.isProjectLocked"
+          :disabled="props.isProjectLocked"
           label="Dépôt contenant du code d'infrastructure"
           hint="Cochez la case s'il s'agit d'un dépôt d'infrastructure (si le dépôt contient des manifestes de déploiement)"
           name="infraRepoCbx"

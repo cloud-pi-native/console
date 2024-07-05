@@ -151,7 +151,7 @@ describe('Add repos into project', () => {
         .getByDataTestid('externalUserNameInput').find('input').type('newUser')
         .getByDataTestid('externalTokenInput').find('input').clear().type('newToken')
 
-      cy.getByDataTestid('infraRepoCbx').find('input[type="checkbox"]').should('be.disabled')
+      cy.getByDataTestid('infraRepoCbx').find('input[type="checkbox"]').should('be.enabled')
 
       cy.getByDataTestid('updateRepoBtn').click()
       cy.wait('@putRepo').its('response.statusCode').should('match', /^20\d$/)
