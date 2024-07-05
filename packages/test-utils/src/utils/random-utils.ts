@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import { achievedStatus, projectRoles, logActions, type ProjectRoles, type AchievedStatus, ClusterPrivacy, Stage, Quota, ClusterDetails } from '@cpn-console/shared'
+import { achievedStatus, projectRoles, logActions, type ProjectRoles, type AchievedStatus, ClusterPrivacy, type Stage, type Quota, type ClusterDetails, type Zone } from '@cpn-console/shared'
 import { repeatFn } from './func-utils.js'
 import { Cluster, Environment, Log, Organization, Permission, Project, Repository, User, Role } from './types.js'
 
@@ -12,17 +12,17 @@ export const getRandomGitUrl = () => {
   return !url.startsWith('https://') ? 'https://' + url.split('://')[1] : url
 }
 
-export const getRandomOrganization = (name = 'mi', label = 'Ministère de l\'Intérieur', source = 'dso-console') => {
+export const getRandomOrganization = (name = 'mi', label = 'Ministère de l\'Intérieur', source = 'dso-console'): Organization => {
   return {
     id: faker.string.uuid(),
     name,
     label,
     source,
     active: true,
-  } as Organization
+  }
 }
 
-export const getRandomProject = (organizationId = faker.string.uuid()) => {
+export const getRandomProject = (organizationId = faker.string.uuid()): Project & { status: AchievedStatus } => {
   return {
     id: faker.string.uuid(),
     name: getRandomProjectName(),
@@ -31,10 +31,10 @@ export const getRandomProject = (organizationId = faker.string.uuid()) => {
     description: faker.lorem.sentence(8),
     status: faker.helpers.arrayElement(achievedStatus),
     locked: false,
-  } as Project & { status: AchievedStatus }
+  }
 }
 
-export const getRandomZone = () => ({
+export const getRandomZone = (): Zone => ({
   id: faker.string.uuid(),
   slug: faker.lorem.word({ length: { min: 1, max: 10 } }),
   label: faker.lorem.word({ length: { min: 1, max: 50 } }),
@@ -44,7 +44,7 @@ export const getRandomZone = () => ({
 export const getRandomCluster = (
   { projectIds = repeatFn(2)(faker.string.uuid), stageIds = repeatFn(2)(faker.string.uuid), privacy = faker.helpers.arrayElement(Object.values(ClusterPrivacy)), zoneId = faker.string.uuid() }:
     { projectIds?: string[], stageIds?: string[], privacy?: ClusterPrivacy, zoneId?: string },
-) => {
+): ClusterDetails => {
   return {
     id: faker.string.uuid(),
     label: faker.lorem.word(),
@@ -65,31 +65,31 @@ export const getRandomCluster = (
     },
     privacy,
     clusterResources: faker.datatype.boolean(),
-  } as ClusterDetails
+  }
 }
 
-export const getRandomUser = () => {
+export const getRandomUser = (): User => {
   return {
     id: faker.string.uuid(),
     email: faker.internet.email(),
     firstName: faker.person.firstName(),
     lastName: faker.person.lastName(),
-  } as User
+  }
 }
 
 export const getRandomRole = (
   userId = faker.string.uuid(),
   projectId = faker.string.uuid(),
   role: ProjectRoles = projectRoles[1],
-) => {
+): Role => {
   return {
     userId,
     role,
     projectId,
-  } as Role
+  }
 }
 
-export const getRandomRepo = (projectId = faker.string.uuid()) => {
+export const getRandomRepo = (projectId = faker.string.uuid()): Repository => {
   const repo: Repository = {
     id: faker.string.uuid(),
     projectId,
@@ -112,7 +112,7 @@ export const getRandomStage = (
     quotaIds?: string[], quotas?: Quota[]
     clusterIds?: string[], clusters?: Cluster[]
   },
-) => {
+): Stage => {
   return {
     id: faker.string.uuid(),
     name,
@@ -124,7 +124,7 @@ export const getRandomStage = (
 export const getRandomQuota = (
   name: string = faker.lorem.word(),
   links?: { stageIds?: string[], stages?: Stage[] },
-) => {
+): Quota => {
   return {
     id: faker.string.uuid(),
     name,
@@ -141,7 +141,7 @@ export const getRandomEnv = (
   stageId = faker.string.uuid(),
   quotaId = faker.string.uuid(),
   clusterId = faker.string.uuid(),
-) => {
+): Environment => {
   return {
     id: faker.string.uuid(),
     name,
@@ -149,23 +149,23 @@ export const getRandomEnv = (
     quotaId,
     stageId,
     clusterId,
-  } as Environment
+  }
 }
 
-export const getRandomPerm = (environmentId = faker.string.uuid(), user = getRandomUser()) => {
+export const getRandomPerm = (environmentId = faker.string.uuid(), user = getRandomUser()): Permission => {
   return {
     id: faker.string.uuid(),
     environmentId,
     userId: user.id,
     level: faker.number.int({ min: 0, max: 2 }),
     user,
-  } as Permission
+  }
 }
 
-export const getRandomLog = (action = faker.helpers.arrayElement(logActions), userId = faker.string.uuid()) => {
+export const getRandomLog = (action = faker.helpers.arrayElement(logActions), userId = faker.string.uuid()): Log => {
   return {
     id: faker.string.uuid(),
     action,
     userId,
-  } as Log
+  }
 }

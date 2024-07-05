@@ -130,8 +130,8 @@ describe('Repository routes', () => {
         .body(getRandomRepo(projectInfos.id))
         .end()
 
-      expect(response.statusCode).toEqual(403)
       expect(JSON.parse(response.body).error).toEqual(projectIsLockedInfo)
+      expect(response.statusCode).toEqual(403)
     })
 
     it('Should not create a repository with bad internalRepoName', async () => {

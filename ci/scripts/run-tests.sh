@@ -45,7 +45,7 @@ Following flags are available:
   -t    (Optional) Tag used for docker images in e2e tests
 
   -u    Run unit tests
-  
+
   -h    Print script help\n\n"
 
 print_help() {
@@ -150,7 +150,7 @@ fi
 # Run e2e tests
 if [ "$RUN_E2E_TESTS" == "true" ]; then
   checkDockerRunning
-  
+
   printf "\n${red}${i}.${no_color} Launch e2e tests\n"
   i=$(($i + 1))
 
@@ -163,7 +163,7 @@ if [ "$RUN_E2E_TESTS" == "true" ]; then
     npm run kube:init
     if [[ -n "$TAG" ]]; then
       npm run kube:prod:run -- -t $TAG
-    else 
+    else
       npm run kube:prod
     fi
     npm run kube:e2e-ci -- --cache-dir=.turbo/cache --log-order=stream $BROWSER_ARGS
@@ -171,7 +171,7 @@ if [ "$RUN_E2E_TESTS" == "true" ]; then
     if [[ -n "$TAG" ]]; then
       docker pull ghcr.io/cloud-pi-native/console/server:$TAG && docker tag ghcr.io/cloud-pi-native/console/server:$TAG dso-console/server:prod
       docker pull ghcr.io/cloud-pi-native/console/client:$TAG && docker tag ghcr.io/cloud-pi-native/console/client:$TAG dso-console/client:prod
-    fi 
+    fi
     npm run docker:e2e-ci -- --cache-dir=.turbo/cache --log-order=stream $BROWSER_ARGS
   fi
 
@@ -189,14 +189,14 @@ fi
 # Run deployment status check
 if [ "$RUN_STATUS_CHECK" == "true" ]; then
   checkDockerRunning
-  
+
   printf "\n${red}${i}.${no_color} Launch e2e tests\n"
   i=$(($i + 1))
 
   npm run kube:init
   if [[ -n "$TAG" ]]; then
     npm run kube:prod:run -- -t $TAG
-  else 
+  else
     npm run kube:prod
   fi
 
