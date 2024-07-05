@@ -128,7 +128,7 @@ describe('RepoForm.vue', () => {
     cy.getByDataTestid('externalTokenInput').find('input').should('have.value', '')
       .and('be.enabled')
     cy.getByDataTestid('infraRepoCbx').find('input[type="checkbox"]').should('not.be.checked')
-      .and('be.disabled')
+      .and('be.enabled')
     cy.getByDataTestid('updateRepoBtn').should('be.disabled')
     cy.getByDataTestid('cancelRepoBtn').should('be.enabled')
     cy.getByDataTestid('externalTokenInput').find('input').type('aaaaaaa').blur()
