@@ -1,5 +1,13 @@
 # Changelog
 
+## [8.7.1](https://github.com/cloud-pi-native/console/compare/v8.7.0...v8.7.1) (2024-07-05)
+
+
+### Bug Fixes
+
+* :bug: insert user when first accessing admin pages ([095b9de](https://github.com/cloud-pi-native/console/commit/095b9de4e282712919e932bf67b15fdaeec96932))
+* :lipstick: repo should be able to change infra, not infra ([1069728](https://github.com/cloud-pi-native/console/commit/10697280499b44b1a1eef28a71d510bfe8916cf3))
+
 ## [8.7.0](https://github.com/cloud-pi-native/console/compare/v8.6.0...v8.7.0) (2024-07-03)
 
 

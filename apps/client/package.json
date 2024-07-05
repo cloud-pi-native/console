@@ -1,6 +1,6 @@
 {
   "name": "@cpn-console/client",
-  "version": "8.7.0",
+  "version": "8.7.1",
   "description": "dso-portal client",
   "private": false,
   "type": "module",
