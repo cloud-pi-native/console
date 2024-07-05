@@ -94,6 +94,28 @@ export const getClusterEnvironments = (clusterId: Cluster['id']) =>
     },
   })
 
+export const getClusterDetails = (id: Cluster['id']) =>
+  prisma.cluster.findUniqueOrThrow({
+    where: { id },
+    select: {
+      createdAt: true,
+      projects: {
+        select: {
+          id: true,
+        },
+      },
+      id: true,
+      clusterResources: true,
+      infos: true,
+      label: true,
+      privacy: true,
+      kubeconfig: true,
+      stages: true,
+      updatedAt: true,
+      zoneId: true,
+    },
+  })
+
 export const getClustersByIds = (clusterIds: Cluster['id'][]) =>
   prisma.cluster.findMany({
     where: {

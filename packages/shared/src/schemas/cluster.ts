@@ -7,7 +7,7 @@ import { ErrorSchema } from './utils.js'
 
 export const ClusterPrivacySchema = z.enum(['public', 'dedicated'])
 
-export const ClusterSchema = z.object({
+export const CleanedClusterSchema = z.object({
   id: z.string()
     .uuid(),
   label: z.string()
@@ -16,22 +16,18 @@ export const ClusterSchema = z.object({
   infos: z.string()
     .max(200)
     .optional()
-    .nullable(),
-  secretName: z.string()
-    .max(50)
-    .optional(),
+    .nullable()
+    .transform((value) => value ?? ''),
   clusterResources: z.boolean(),
   privacy: ClusterPrivacySchema,
   zoneId: z.string()
     .uuid(),
-  projectIds: z.string()
-    .uuid()
-    .array()
-    .optional(),
   stageIds: z.string()
     .uuid()
-    .array()
-    .optional(),
+    .array(),
+})
+
+const KubeconfigSchema = z.object({
   user: z.object({
     username: z.string()
       .optional(),
@@ -43,8 +39,7 @@ export const ClusterSchema = z.object({
       .optional(),
     token: z.string()
       .optional(),
-  })
-    .optional(),
+  }),
   cluster: z.object({
     server: z.string()
       .optional(),
@@ -53,36 +48,31 @@ export const ClusterSchema = z.object({
       .optional(),
     caData: z.string()
       .optional(),
-  })
-    .optional(),
+  }),
 })
 
-export const CreateClusterBusinessSchema = ClusterSchema.omit({ id: true })
+export const ClusterDetailsSchema = CleanedClusterSchema.merge(z.object({
+  projectIds: z.string()
+    .uuid()
+    .array()
+    .optional(),
+  kubeconfig: KubeconfigSchema,
+}))
 
-export const ClusterBusinessSchema = ClusterSchema
-
-const CleanedClusterSchema = ClusterSchema.pick({
-  id: true,
-  label: true,
-  stageIds: true,
-  clusterResources: true,
-  privacy: true,
-  infos: true,
-  zoneId: true,
-}).required()
-
-export type Cluster = Zod.infer<typeof ClusterSchema>
+export type Cluster = Zod.infer<typeof CleanedClusterSchema>
+export type ClusterDetails = Zod.infer<typeof ClusterDetailsSchema>
+export type Kubeconfig = Zod.infer<typeof KubeconfigSchema>
 
 export type CleanedCluster = Zod.infer<typeof CleanedClusterSchema>
 
 export const ClusterParams = z.object({
-  clusterId: ClusterSchema.shape.id,
+  clusterId: CleanedClusterSchema.shape.id,
 })
 
 export const CreateClusterSchema = {
-  body: ClusterSchema.omit({ id: true }),
+  body: ClusterDetailsSchema.omit({ id: true }),
   responses: {
-    201: ClusterSchema.omit({ cluster: true, stageIds: true, user: true }),
+    201: ClusterDetailsSchema,
     400: ErrorSchema,
     401: ErrorSchema,
     500: ErrorSchema,
@@ -98,14 +88,6 @@ export const GetClustersSchema = {
   },
 }
 
-export const GetAdminClustersSchema = {
-  responses: {
-    200: z.array(ClusterSchema),
-    401: ErrorSchema,
-    500: ErrorSchema,
-  },
-}
-
 export const GetClusterAssociatedEnvironmentsSchema = {
   params: ClusterParams,
   responses: {
@@ -114,7 +96,27 @@ export const GetClusterAssociatedEnvironmentsSchema = {
       project: ProjectSchema.shape.name,
       name: EnvironmentSchema.shape.name,
       owner: UserSchema.shape.email.optional(),
-    })).optional(),
+    })),
+    401: ErrorSchema,
+    404: ErrorSchema,
+    500: ErrorSchema,
+  },
+}
+
+export const GetClusterDetailsSchema = {
+  params: ClusterParams,
+  responses: {
+    200: ClusterDetailsSchema,
+    401: ErrorSchema,
+    404: ErrorSchema,
+    500: ErrorSchema,
+  },
+}
+
+export const GetClusterKubeconfigSchema = {
+  params: ClusterParams,
+  responses: {
+    200: KubeconfigSchema,
     401: ErrorSchema,
     404: ErrorSchema,
     500: ErrorSchema,
@@ -123,9 +125,9 @@ export const GetClusterAssociatedEnvironmentsSchema = {
 
 export const UpdateClusterSchema = {
   params: ClusterParams,
-  body: ClusterSchema.partial(),
+  body: ClusterDetailsSchema.partial(),
   responses: {
-    200: ClusterSchema,
+    200: ClusterDetailsSchema,
     400: ErrorSchema,
     401: ErrorSchema,
     404: ErrorSchema,

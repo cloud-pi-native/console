@@ -7,11 +7,7 @@ import {
 
 export const organizationRouter = () => serverInstance.router(organizationContract, {
   getOrganizations: async ({ request: req }) => {
-    const requestor = req.session.user
-    // @ts-ignore
-    delete requestor.groups
-
-    const organizations = await getActiveOrganizations(requestor)
+    const organizations = await getActiveOrganizations()
 
     addReqLogs({
       req,

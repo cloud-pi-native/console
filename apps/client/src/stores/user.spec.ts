@@ -1,13 +1,9 @@
 import Keycloak from 'keycloak-js'
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { apiClient } from '../api/xhr-client.js'
 import { useUserStore } from './user.js'
 
-vi.spyOn(apiClient.Users, 'getMatchingUsers')
-vi.spyOn(apiClient.Users, 'createUserRoleInProject')
-vi.spyOn(apiClient.Users, 'getProjectUsers')
-vi.spyOn(apiClient.Users, 'deleteUserRoleInProject')
+vi.mock('../api/xhr-client.js', () => ({ apiClient: { Users: { auth: async () => vi.fn } } }))
 
 vi.mock('keycloak-js', () => {
   const Keycloak = vi.fn()
@@ -36,7 +32,7 @@ describe('User Store', () => {
     vi.clearAllMocks()
   })
 
-  it('Should retrieve isLoggedIn from Keycloak (true)', () => {
+  it('Should retrieve isLoggedIn from Keycloak (true)', async () => {
     const userStore = useUserStore()
 
     expect(userStore.isLoggedIn).toBeUndefined()

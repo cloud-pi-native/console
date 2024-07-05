@@ -2,26 +2,30 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import { type Zone, sortArrByObjKeyAsc, type CreateZoneBody, type UpdateZoneBody } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { useAdminClusterStore } from '@/stores/admin/cluster.js'
 import { useAdminZoneStore } from '@/stores/admin/zone.js'
 import { useZoneStore } from '@/stores/zone.js'
+import { useClusterStore } from '@/stores/cluster'
 
 const snackbarStore = useSnackbarStore()
 const adminZoneStore = useAdminZoneStore()
-const adminClusterStore = useAdminClusterStore()
+const clusterStore = useClusterStore()
 const zoneStore = useZoneStore()
 
 const selectedZone = ref<Zone>()
-const zoneList = ref<any[]>([])
+const zoneList = ref<{
+  id: string
+  title: string
+  data: Zone,
+}[]>([])
 const isNewZoneForm = ref(false)
 
 const zones = computed(() => zoneStore.zones)
-const allClusters = computed(() => adminClusterStore.clusters)
-const associatedClusters = computed(() => allClusters.value?.filter(cluster => cluster.zoneId === selectedZone.value?.id))
+const allClusters = computed(() => clusterStore.clusters)
+const associatedClusters = computed(() => allClusters.value.filter(cluster => cluster.zoneId === selectedZone.value?.id))
 
-const setZoneTiles = (zones: any[]) => {
+const setZoneTiles = (zones: Zone[]) => {
   zoneList.value = sortArrByObjKeyAsc(zones, 'name')
-    ?.map(zone => ({
+    .map(zone => ({
       id: zone.id,
       title: zone.label,
       data: zone,
@@ -50,15 +54,21 @@ const cancel = () => {
 const createZone = async (zone: CreateZoneBody) => {
   snackbarStore.isWaitingForResponse = true
   await adminZoneStore.createZone(zone)
-  await zoneStore.getAllZones()
+  await Promise.all([
+    zoneStore.getAllZones(),
+    clusterStore.getClusters(),
+  ])
   cancel()
   snackbarStore.isWaitingForResponse = false
 }
 
-const updateZone = async ({ zoneId, label, description, clusterIds }: UpdateZoneBody & { zoneId: Zone['id'] }) => {
+const updateZone = async ({ zoneId, label, description }: UpdateZoneBody & { zoneId: Zone['id'] }) => {
   snackbarStore.isWaitingForResponse = true
-  await adminZoneStore.updateZone(zoneId, { label, description, clusterIds })
-  await zoneStore.getAllZones()
+  await adminZoneStore.updateZone(zoneId, { label, description })
+  await Promise.all([
+    zoneStore.getAllZones(),
+    clusterStore.getClusters(),
+  ])
   cancel()
   snackbarStore.isWaitingForResponse = false
 }
@@ -66,19 +76,23 @@ const updateZone = async ({ zoneId, label, description, clusterIds }: UpdateZone
 const deleteZone = async (zoneId: Zone['id']) => {
   snackbarStore.isWaitingForResponse = true
   await adminZoneStore.deleteZone(zoneId)
-  await zoneStore.getAllZones()
+  await Promise.all([
+    zoneStore.getAllZones(),
+    clusterStore.getClusters(),
+  ])
   cancel()
   snackbarStore.isWaitingForResponse = false
 }
 
 onMounted(async () => {
-  await zoneStore.getAllZones()
-  await adminClusterStore.getClusters()
+  await Promise.all([
+    zoneStore.getAllZones(),
+    clusterStore.getClusters(),
+  ])
   setZoneTiles(zones.value)
 })
 
 watch(zones, async () => {
-  await adminClusterStore.getClusters()
   setZoneTiles(zones.value)
 })
 
@@ -132,7 +146,7 @@ watch(zones, async () => {
   >
     <div
       v-for="zone in zoneList"
-      :key="zone.slug"
+      :key="zone.data.slug"
       class="fr-mt-2v fr-mb-4w w-full"
     >
       <div
@@ -150,9 +164,9 @@ watch(zones, async () => {
         v-if="selectedZone && selectedZone.id === zone.id"
         :all-clusters="allClusters"
         :zone="selectedZone"
-        class="w-full"
-        :is-new-zone="false"
         :associated-clusters="associatedClusters"
+        :is-new-zone="false"
+        class="w-full"
         @cancel="cancel()"
         @update="(zone) => updateZone(zone)"
         @delete="(zoneId) => deleteZone(zoneId)"

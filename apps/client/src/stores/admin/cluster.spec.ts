@@ -4,7 +4,7 @@ import { apiClient } from '../../api/xhr-client.js'
 import { useAdminClusterStore } from './cluster.js'
 import { ClusterPrivacy } from '@cpn-console/shared'
 
-const apiClientGet = vi.spyOn(apiClient.ClustersAdmin, 'getClusters')
+const apiClientGet = vi.spyOn(apiClient.ClustersAdmin, 'getClusterDetails')
 const apiClientGetClusterEnvironments = vi.spyOn(apiClient.ClustersAdmin, 'getClusterEnvironments')
 const apiClientPost = vi.spyOn(apiClient.ClustersAdmin, 'createCluster')
 const apiClientPut = vi.spyOn(apiClient.ClustersAdmin, 'updateCluster')
@@ -19,46 +19,29 @@ describe('Cluster Store', () => {
   })
 
   it('Should get clusters list by api call', async () => {
-    const data = [
-      {
-        id: '1e4fdb28-f9ea-46d4-ad16-607c7f1aa8b6',
-        label: 'cluster1',
-        projectIds: [
-          '22e7044f-8414-435d-9c4a-2df42a65034b',
-        ],
-        user: {
-          certData: 'userCAD',
-          keyData: 'userCKD',
-        },
+    const data = {
+      id: '1e4fdb28-f9ea-46d4-ad16-607c7f1aa8b7',
+      label: 'cluster2',
+      infos: 'infos',
+      kubeconfig: {
         cluster: {
-          caData: 'clusterCAD',
-          server: 'https://coucou.com:5000',
-          tlsServerName: 'coucou.com',
+          tlsServerName: '8790044f-8414-569f-9c4a-2df42a879879',
         },
-        clusterResources: true,
-        privacy: ClusterPrivacy.DEDICATED,
-      },
-      {
-        id: '1e4fdb28-f9ea-46d4-ad16-607c7f1aa8b7',
-        label: 'cluster2',
-        projectIds: [
-          '22e7044f-8414-435d-9c4a-2df42a65034b',
-        ],
         user: {
           certData: 'userCAD',
           keyData: 'userCKD',
         },
-        clusterResources: true,
-        privacy: 'public',
       },
-    ]
+      clusterResources: true,
+      privacy: 'public',
+    }
     apiClientGet.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
     const adminClusterStore = useAdminClusterStore()
 
-    await adminClusterStore.getClusters()
+    await adminClusterStore.getClusterDetails(data.id)
 
     expect(apiClientGet).toHaveBeenCalledTimes(1)
-    expect(adminClusterStore.clusters).toEqual(data)
+    expect(adminClusterStore.selectedCluster).toEqual(data)
   })
 
   it('Should get cluster\'s associated environments by api call', async () => {
@@ -83,14 +66,16 @@ describe('Cluster Store', () => {
       projectIds: [
         '22e7044f-8414-435d-9c4a-2df42a65034b',
       ],
-      user: {
-        certData: 'userCAD',
-        keyData: 'userCKD',
-      },
-      cluster: {
-        caData: 'clusterCAD',
-        server: 'https://coucou.com:5000',
-        tlsServerName: 'coucou.com',
+      kubeconfig: {
+        user: {
+          certData: 'userCAD',
+          keyData: 'userCKD',
+        },
+        cluster: {
+          caData: 'clusterCAD',
+          server: 'https://coucou.com:5000',
+          tlsServerName: 'coucou.com',
+        },
       },
       clusterResources: true,
       privacy: ClusterPrivacy.DEDICATED,

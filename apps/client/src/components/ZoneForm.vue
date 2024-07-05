@@ -5,13 +5,19 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = withDefaults(defineProps<{
   isNewZone: boolean,
-  zone: Partial<Zone>,
+  zone: Zone,
   allQuotas: Quota[],
   allClusters: Cluster[],
   associatedClusters: unknown[]
 }>(), {
   isNewZone: false,
-  zone: () => ({}),
+  zone: () => ({
+    id: '',
+    label: '',
+    slug: '',
+    description: '',
+    clusterIds: [],
+  }),
   allQuotas: () => [],
   allClusters: () => [],
   associatedClusters: () => [],
@@ -26,7 +32,7 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
   if (localZone.value.id) {
     schemaValidation = ZoneSchema.safeParse(localZone.value)
   } else {
-    schemaValidation = ZoneSchema.omit({ id: true }).safeParse(localZone.value)
+    schemaValidation = ZoneSchema.omit({ id: true }).partial().safeParse(localZone.value)
   }
   return schemaValidation.success ? undefined : schemaValidation.error
 })
@@ -109,8 +115,8 @@ onBeforeMount(() => {
         :wrapped="false"
         label="Clusters associés"
         :description="!props.isNewZone ? 'Veuillez procéder aux associations dans le formulaire des clusters concernés.': 'Sélectionnez les clusters autorisés à utiliser cette zone.'"
-        :options="props.allClusters.map(({id, label}) =>({id, label}))"
-        :options-selected="localZone.clusters?.map(({id, label}) =>({id, label})) ?? []"
+        :options="props.allClusters"
+        :options-selected="props.allClusters.filter(({ id }) => localZone.clusterIds.includes(id))"
         label-key="label"
         value-key="id"
         :disabled="!props.isNewZone"

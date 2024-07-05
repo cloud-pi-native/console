@@ -6,6 +6,7 @@ import {
   GetClusterAssociatedEnvironmentsSchema,
   UpdateClusterSchema,
   DeleteClusterSchema,
+  GetClusterDetailsSchema,
 } from '../schemas/index.js'
 
 export const clusterContract = contractInstance.router({
@@ -19,13 +20,6 @@ export const clusterContract = contractInstance.router({
 })
 
 export const clusterAdminContract = contractInstance.router({
-  getClusters: {
-    method: 'GET',
-    path: `${apiPrefix}/admin/clusters`,
-    summary: 'Get clusters and sensitive infos',
-    description: 'Retrieve all clusters and their confidential informations',
-    responses: GetClustersSchema.responses,
-  },
   createCluster: {
     method: 'POST',
     path: `${apiPrefix}/admin/clusters`,
@@ -43,6 +37,15 @@ export const clusterAdminContract = contractInstance.router({
     description: 'Retrieved environments linked to a cluster.',
     pathParams: GetClusterAssociatedEnvironmentsSchema.params,
     responses: GetClusterAssociatedEnvironmentsSchema.responses,
+  },
+
+  getClusterDetails: {
+    method: 'GET',
+    path: `${apiPrefix}/admin/clusters/:clusterId`,
+    summary: 'Get cluster details',
+    description: 'Retrieved details of a cluster.',
+    pathParams: GetClusterDetailsSchema.params,
+    responses: GetClusterDetailsSchema.responses,
   },
 
   updateCluster: {

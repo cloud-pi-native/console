@@ -105,6 +105,7 @@ export const repositoryRouter = () => serverInstance.router(repositoryContract, 
       'isPrivate',
       'externalToken',
       'externalUserName',
+      'isInfra',
     ]
     const data = filterObjectByKeys(body, keysAllowedForUpdate)
 

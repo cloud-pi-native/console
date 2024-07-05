@@ -30,7 +30,7 @@ const isNewEnvironmentForm = ref(false)
 
 const projectClustersIds = computed(() => ([
   ...clusterStore.clusters.filter(cluster => cluster.privacy === ClusterPrivacy.PUBLIC).map(({ id }) => id),
-  ...project.value?.clusters?.map(({ id }) => id) ?? [],
+  ...project.value?.clusterIds ?? [],
 ]))
 
 const setEnvironmentsTiles = async (projectId: Project['id']) => {

@@ -1,21 +1,24 @@
+import { Zone } from '@cpn-console/shared'
 import { getModel } from '../../support/func.js'
 
 describe('Administration zones', () => {
-  let zones
+  let zones: Zone[]
   const clusters = getModel('cluster')
   const newZone = {
     slug: 'zad',
     label: 'Zone à Défendre',
     description: 'Il faut défendre cette zone.',
+    // Ne font pas partie de la réponse d'API
     clusters,
+    clusterIds: clusters.map(({ id }) => id),
   }
 
   beforeEach(() => {
-    cy.intercept('GET', 'api/v1/zones').as('getZones')
-    cy.intercept('GET', 'api/v1/admin/clusters').as('getClusters')
-    cy.intercept('POST', 'api/v1/admin/zones').as('createZone')
-    cy.intercept('PUT', 'api/v1/admin/zones/*').as('updateZone')
-    cy.intercept('DELETE', 'api/v1/admin/zones/*').as('deleteZone')
+    cy.intercept('GET', '/api/v1/zones').as('getZones')
+    cy.intercept('GET', '/api/v1/clusters').as('getClusters')
+    cy.intercept('POST', '/api/v1/admin/zones').as('createZone')
+    cy.intercept('PUT', '/api/v1/admin/zones/*').as('updateZone')
+    cy.intercept('DELETE', '/api/v1/admin/zones/*').as('deleteZone')
 
     cy.kcLogin('tcolin')
     cy.visit('/admin/zones')
@@ -47,8 +50,11 @@ describe('Administration zones', () => {
         .click()
       cy.get('#clusters-select .fr-tag')
         .should('be.disabled')
-      cy.get('#clusters-select .fr-tag--dismiss')
-        .should('have.length', zone.clusters?.length ?? 0)
+      cy.get('#clusters-select')
+        .within(() => {
+          cy.get('.fr-tag--dismiss')
+            .should('have.length', clusters.filter(({ zoneId }) => zoneId === zone.id).length)
+        })
       cy.getByDataTestid('updateZoneBtn')
         .should('be.enabled')
       cy.getByDataTestid('cancelZoneBtn')
@@ -83,9 +89,6 @@ describe('Administration zones', () => {
 
     cy.wait('@updateZone').its('response.statusCode').should('match', /^20\d$/)
 
-    cy.reload()
-    cy.wait('@getZones').its('response.statusCode').should('match', /^20\d$/)
-
     cy.getByDataTestid(`zoneTile-${updatedZone.label}`)
       .should('be.visible')
       .click()
@@ -105,8 +108,11 @@ describe('Administration zones', () => {
       .click()
     cy.get('#clusters-select .fr-tag')
       .should('be.disabled')
-    cy.get('#clusters-select .fr-tag--dismiss')
-      .should('have.length', zone.clusters?.length)
+    cy.get('#clusters-select')
+      .within(() => {
+        cy.get('.fr-tag--dismiss')
+          .should('have.length', clusters.filter(({ zoneId }) => zoneId === zone.id).length)
+      })
     cy.getByDataTestid('updateZoneBtn')
       .should('be.enabled')
     cy.getByDataTestid('cancelZoneBtn')
@@ -146,8 +152,8 @@ describe('Administration zones', () => {
       .find('textarea')
       .clear()
       .type(newZone.description)
-    newZone.clusters.forEach((cluster) => {
-      cy.getByDataTestid(`${cluster.id}-clusters-select-tag`)
+    newZone.clusterIds.forEach((id) => {
+      cy.getByDataTestid(`${id}-clusters-select-tag`)
         .click()
     })
     cy.getByDataTestid('addZoneBtn')
@@ -178,13 +184,15 @@ describe('Administration zones', () => {
       .click()
     cy.get('#clusters-select .fr-tag')
       .should('be.disabled')
-    cy.get('#clusters-select .fr-tag--dismiss')
-      .should('have.length', newZone.clusters.length)
+    cy.get('#clusters-select')
+      .within(() => {
+        cy.get('.fr-tag--dismiss')
+          .should('have.length', newZone.clusterIds.length)
+      })
     cy.getByDataTestid('updateZoneBtn')
       .should('be.enabled')
     cy.getByDataTestid('cancelZoneBtn')
       .click()
-
     zones.forEach((zone) => {
       cy.getByDataTestid(`zoneTile-${zone.label}`)
         .should('be.visible')

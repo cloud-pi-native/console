@@ -83,7 +83,7 @@ jobs:
     with:
       NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
       PNPM_VERSION: ${{ needs.expose-vars.outputs.PNPM_VERSION }}
-      BROWSERS: "${{ github.base_ref == 'main' && 'electron,firefox' || 'firefox' }}"
+      BROWSERS: "${{ github.base_ref == 'main' && 'chrome,firefox' || 'firefox' }}"
 
   build:
     uses: ./.github/workflows/build.yml
@@ -107,11 +107,11 @@ jobs:
       NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
       PNPM_VERSION: ${{ needs.expose-vars.outputs.PNPM_VERSION }}
       TAG: pr-${{ github.event.pull_request.number || github.event.number }}
-      BROWSERS: "${{ github.base_ref == 'main' && 'electron,firefox' || 'firefox' }}"
+      BROWSERS: "${{ github.base_ref == 'main' && 'chrome,firefox' || 'firefox' }}"
 
   deploy-tests:
     uses: ./.github/workflows/tests-deploy.yml
-    if: ${{ needs.path-filter.outputs.apps != 'true' }}
+    if: ${{ needs.path-filter.outputs.apps != 'true' || (!github.event.pull_request.draft && github.base_ref == 'main') }}
     needs:
       - path-filter
       - expose-vars

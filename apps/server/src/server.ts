@@ -6,8 +6,6 @@ import { port, isDev, isTest, isCI, isDevSetup, isProd } from './utils/env.js'
 
 const app = await getPreparedApp()
 
-handleExit()
-
 try {
   await app.listen({ host: '0.0.0.0', port: +(port ?? 8080) })
 } catch (error) {
@@ -17,18 +15,7 @@ try {
 
 app.log.debug({ isDev, isTest, isCI, isDevSetup, isProd })
 
-export function handleExit () {
-  process.on('exit', exitGracefully)
-  process.on('SIGINT', exitGracefully)
-  process.on('SIGTERM', exitGracefully)
-  process.on('uncaughtException', exitGracefully)
-  process.on('unhandledRejection', (err: Error) => {
-    app.log.warn(err)
-    process.exit(1)
-  })
-}
-
-export async function exitGracefully (error?: Error) {
+export const exitGracefully = async (error?: Error) => {
   if (error instanceof Error) {
     app.log.error(error)
   }
@@ -38,3 +25,21 @@ export async function exitGracefully (error?: Error) {
   app.log.info('Exiting...')
   process.exit(error instanceof Error ? 1 : 0)
 }
+
+const logExitCode = (code: number) => {
+  console.log(`received signal: ${code}`)
+}
+
+const logUnhandledRejection = (reason: unknown, promise: Promise<unknown>) => {
+  console.log('Unhandled Rejection at:', promise, 'reason:', reason)
+}
+
+export function handleExit () {
+  process.on('exit', logExitCode)
+  process.on('SIGINT', exitGracefully)
+  process.on('SIGTERM', exitGracefully)
+  process.on('uncaughtException', exitGracefully)
+  process.on('unhandledRejection', logUnhandledRejection)
+}
+
+handleExit()

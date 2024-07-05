@@ -152,18 +152,18 @@ watch(quotas, () => {
           @click="setSelectedQuota(quota.data)"
         />
       </div>
+      <QuotaForm
+        v-if="selectedQuota && selectedQuota.id === quota.id"
+        :all-stages="allStages"
+        :quota="selectedQuota"
+        class="w-full"
+        :is-new-quota="false"
+        :associated-environments="associatedEnvironments"
+        @cancel="cancel()"
+        @update="(quota: UpdateQuotaType) => updateQuota(quota)"
+        @delete="(quotaId: string) => deleteQuota(quotaId)"
+      />
     </div>
-    <QuotaForm
-      v-if="selectedQuota"
-      :all-stages="allStages"
-      :quota="selectedQuota"
-      class="w-full"
-      :is-new-quota="false"
-      :associated-environments="associatedEnvironments"
-      @cancel="cancel()"
-      @update="(quota: UpdateQuotaType) => updateQuota(quota)"
-      @delete="(quotaId: string) => deleteQuota(quotaId)"
-    />
     <div
       v-if="!quotaList.length && !isNewQuotaForm"
     >

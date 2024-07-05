@@ -105,8 +105,6 @@ export const updateStage = async (stageId: Stage['id'], { clusterIds, name, quot
       quotaIds: quotaIds ?? dbStage.quotas.map(({ id }) => id),
     }
   } catch (error) {
-    console.log(error)
-
     throw new Error(error?.message)
   }
 }

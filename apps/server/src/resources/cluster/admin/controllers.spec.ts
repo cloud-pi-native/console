@@ -1,5 +1,5 @@
 import { adminGroupPath } from '@cpn-console/shared'
-import { getRandomCluster, getRandomRole, getRandomUser, getRandomStage } from '@cpn-console/test-utils'
+import { getRandomCluster, getRandomRole, getRandomUser, getRandomStage, repeatFn, getRandomProject } from '@cpn-console/test-utils'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import prisma from '../../../__mocks__/prisma.js'
 import app from '../../../app.js'
@@ -30,6 +30,26 @@ describe('Admin cluster routes', () => {
   })
 
   // GET
+  describe('getClusterDetails', () => {
+    it('Should retrieve a cluster\'s details', async () => {
+      const cluster = getRandomCluster({})
+      const projects = repeatFn(3)(getRandomProject)
+      const stages = repeatFn(3)(getRandomStage)
+
+      prisma.cluster.findUniqueOrThrow.mockResolvedValue({ ...cluster, projects, stages })
+
+      const response = await app.inject()
+        .get(`/api/v1/admin/clusters/${cluster.id}`)
+        .end()
+
+      expect(response.json()).toEqual({
+        ...cluster,
+        projectIds: projects.map(({ id }) => id),
+        stageIds: stages.map(({ id }) => id),
+      })
+      expect(response.statusCode).toEqual(200)
+    })
+  })
   describe('getClusterAssociatedEnvironmentsController', () => {
     it('Should retrieve a cluster\'s associated environments', async () => {
       const cluster = getRandomCluster({})
@@ -43,7 +63,7 @@ describe('Admin cluster routes', () => {
             { ...getRandomRole(getRequestor().id, 'projectId', 'owner'), user: getRequestor() },
           ],
         },
-        name: 'dev-0',
+        name: 'dev0',
       }]
 
       prisma.environment.findMany.mockResolvedValue(environments)
@@ -52,13 +72,13 @@ describe('Admin cluster routes', () => {
         .get(`/api/v1/admin/clusters/${cluster.id}/environments`)
         .end()
 
-      expect(response.statusCode).toEqual(200)
       expect(response.json()).toEqual([{
         organization: environments[0]?.project?.organization?.name,
         project: environments[0]?.project?.name,
         name: environments[0]?.name,
         owner: getRequestor().email,
       }])
+      expect(response.statusCode).toEqual(200)
     })
   })
 
@@ -66,11 +86,14 @@ describe('Admin cluster routes', () => {
     it('Should update a cluster', async () => {
       const cluster = getRandomCluster({ privacy: 'dedicated' })
       const updatedCluster = { ...cluster, privacy: 'public' }
+      const projects = repeatFn(3)(getRandomProject)
+      const stages = [getRandomStage()]
 
       prisma.cluster.findUnique.mockResolvedValue(cluster)
       prisma.cluster.update.mockResolvedValue(updatedCluster)
       prisma.user.findUnique.mockResolvedValue(getRandomUser())
-      prisma.stage.findMany.mockResolvedValue([getRandomStage()])
+      prisma.stage.findMany.mockResolvedValue(stages)
+      prisma.cluster.findUniqueOrThrow.mockResolvedValue({ ...cluster, projects, stages })
       prisma.log.create.mockResolvedValue({})
 
       const response = await app.inject()
@@ -79,8 +102,12 @@ describe('Admin cluster routes', () => {
         .body(updatedCluster)
         .end()
 
+      expect(response.json()).toEqual({
+        ...cluster,
+        projectIds: projects.map(({ id }) => id),
+        stageIds: stages.map(({ id }) => id),
+      })
       expect(response.statusCode).toEqual(200)
-      expect(response.json()).toEqual(updatedCluster)
     })
   })
 

@@ -26,8 +26,9 @@ import {
   lockProject,
   removeClusterFromProject,
   updateProject as updateProjectQuery,
+  getOrCreateUser,
 } from '@/resources/queries-index.js'
-import { getUser, type UserDto } from '@/resources/user/business.js'
+import { type UserDto } from '@/resources/user/business.js'
 import { validateSchema } from '@/utils/business.js'
 import { checkInsufficientPermissionInEnvironment, checkInsufficientRoleInProject } from '@/utils/controller.js'
 import { BadRequestError, DsoError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
@@ -42,13 +43,16 @@ export const getProjectInfosAndClusters = async (projectId: string) => {
   return { project, projectClusters }
 }
 
-export const getUserProjects = async (requestor: UserDto) => {
-  const user = await getUser(requestor)
-  const projects = await getUserProjectsQuery(user)
-  const publicClusters = await getPublicClusters()
-  return projects.map((project) => {
-    project.clusters = project.clusters.concat(publicClusters)
-    return project
+export const getUserProjects = async (userId: User['id']) => {
+  const projects = await getUserProjectsQuery(userId)
+  const publicClusterIds = (await getPublicClusters()).map(({ id }) => id)
+  return projects.map(({ description, clusters, ...project }) => {
+    const projectClusterIds = clusters.map(({ id }) => id)
+    return {
+      clusterIds: publicClusterIds.concat(projectClusterIds),
+      description: description || '',
+      ...project,
+    }
   })
 }
 
@@ -111,13 +115,13 @@ export const getProjectSecrets = async (projectId: string, userId: User['id']) =
 
 export const createProject = async (dataDto: CreateProjectBody, requestor: UserDto, requestId: string) => {
   // Pré-requis
-  const owner = await getUser(requestor)
+  const owner = await getOrCreateUser(requestor)
   const organization = await getOrganizationById(dataDto.organizationId)
   if (!organization) throw new NotFoundError('Organisation introuvable')
   await checkCreateProject(organization.name, dataDto)
 
   // Actions
-  const project = await initializeProject({ ...dataDto, ownerId: requestor.id })
+  const project = await initializeProject({ ...dataDto, ownerId: owner.id })
 
   try {
     const { results } = await hook.project.upsert(project.id)
