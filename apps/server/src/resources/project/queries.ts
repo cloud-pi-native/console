@@ -76,12 +76,12 @@ export const getProjectUsers = (projectId: Project['id']) =>
     },
   })
 
-export const getUserProjects = (user: User) =>
+export const getUserProjects = (userId: User['id']) =>
   prisma.project.findMany({
     where: {
       roles: {
         some: {
-          userId: user.id,
+          userId,
         },
       },
       status: {

@@ -40,6 +40,11 @@ export const getOrCreateUser = (user: Parameters<typeof prisma.user.upsert>[0]['
     create: user,
   })
 
+export const getUserOrThrow = (id: User['id']) =>
+  prisma.user.findUniqueOrThrow({
+    where: { id },
+  })
+
 export const getUserByEmail = (email: User['email']) =>
   prisma.user.findUnique({ where: { email } })
 

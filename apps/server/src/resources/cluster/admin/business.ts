@@ -1,8 +1,8 @@
-import { ClusterBusinessSchema, ClusterPrivacy, CreateClusterBusinessSchema, Project, UserProfile, type Cluster } from '@cpn-console/shared'
-import { addLogs, createCluster as createClusterQuery, deleteCluster as deleteClusterQuery, getClusterById, getClusterByLabel, getClusterEnvironments, getClustersWithProjectIdAndConfig, getOrCreateUser, getProjectsByClusterId, getStagesByClusterId, linkClusterToProjects, linkZoneToClusters, removeClusterFromProject, removeClusterFromStage, updateCluster as updateClusterQuery } from '@/resources/queries-index.js'
+import { ClusterBusinessSchema, ClusterPrivacy, CreateClusterBusinessSchema, Project, User, type Cluster } from '@cpn-console/shared'
+import { addLogs, createCluster as createClusterQuery, deleteCluster as deleteClusterQuery, getClusterById, getClusterByLabel, getClusterEnvironments, getClustersWithProjectIdAndConfig, getProjectsByClusterId, getStagesByClusterId, linkClusterToProjects, linkZoneToClusters, removeClusterFromProject, removeClusterFromStage, updateCluster as updateClusterQuery } from '@/resources/queries-index.js'
 import { linkClusterToStages } from '@/resources/stage/business.js'
 import { validateSchema } from '@/utils/business.js'
-import { BadRequestError, DsoError, NotFoundError, UnauthorizedError } from '@/utils/errors.js'
+import { BadRequestError, DsoError, NotFoundError } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
 
 export const checkClusterProjectIds = (data: Omit<Cluster, 'id'> & { id?: Cluster['id'] }) => {
@@ -12,11 +12,7 @@ export const checkClusterProjectIds = (data: Omit<Cluster, 'id'> & { id?: Cluste
     : data.projectIds
 }
 
-export const getAllClusters = async (kcUser: UserProfile) => {
-  const { groups: _, ...userInfo } = kcUser
-  const user = await getOrCreateUser(userInfo)
-  if (!user) throw new UnauthorizedError('Vous n\'êtes pas connecté')
-
+export const getAllClusters = async () => {
   const clusters = await getClustersWithProjectIdAndConfig()
   return clusters.map(({ stages, ...cluster }) => ({
     ...cluster,

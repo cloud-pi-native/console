@@ -16,10 +16,7 @@ export const projectRouter = () => serverInstance.router(projectContract, {
   getProjects: async ({ request: req }) => {
     try {
       const requestor = req.session.user
-      // @ts-ignore
-      delete requestor.groups
-
-      const projectsInfos = await getUserProjects(requestor)
+      const projectsInfos = await getUserProjects(requestor.id)
 
       addReqLogs({
         req,
