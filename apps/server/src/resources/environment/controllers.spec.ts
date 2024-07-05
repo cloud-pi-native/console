@@ -57,7 +57,7 @@ describe('Environment routes', () => {
       prisma.repository.findMany.mockReturnValue(projectInfos.repositories)
 
       const response = await app.inject()
-        .post(`/api/v1/projects/${projectInfos.id}/environments`)
+        .post('/api/v1/environments')
         .body(envToAdd)
         .end()
 
@@ -79,7 +79,7 @@ describe('Environment routes', () => {
       prisma.stage.findUnique.mockResolvedValue(stage)
 
       const response = await app.inject()
-        .post(`/api/v1/projects/${projectInfos.id}/environments`)
+        .post('/api/v1/environments')
         .body(envToAdd)
         .end()
 
@@ -103,7 +103,7 @@ describe('Environment routes', () => {
       prisma.stage.findUnique.mockResolvedValue(stage)
 
       const response = await app.inject()
-        .post(`/api/v1/projects/${projectInfos.id}/environments`)
+        .post('/api/v1/environments')
         .body(envToAdd)
         .end()
 
@@ -126,7 +126,7 @@ describe('Environment routes', () => {
       prisma.stage.findUnique.mockResolvedValue(stage)
 
       const response = await app.inject()
-        .post(`/api/v1/projects/${projectInfos.id}/environments`)
+        .post('/api/v1/environments')
         .body(envToAdd)
         .end()
 
@@ -151,7 +151,7 @@ describe('Environment routes', () => {
       prisma.stage.findUnique.mockResolvedValue(stage)
 
       const response = await app.inject()
-        .post(`/api/v1/projects/${projectInfos.id}/environments`)
+        .post('/api/v1/environments')
         .body(envToAdd)
         .end()
 
@@ -175,7 +175,7 @@ describe('Environment routes', () => {
       prisma.quota.findUnique.mockResolvedValue(quota)
 
       const response = await app.inject()
-        .post(`/api/v1/projects/${projectInfos.id}/environments`)
+        .post('/api/v1/environments')
         .body(getRandomEnv('env', projectInfos.id))
         .end()
 
@@ -188,7 +188,7 @@ describe('Environment routes', () => {
       const newEnvironment = getRandomEnv('^fpekfk', projectInfos.id)
 
       const response = await app.inject()
-        .post(`/api/v1/projects/${projectInfos.id}/environments`)
+        .post('/api/v1/environments')
         .body(newEnvironment)
         .end()
 
@@ -226,7 +226,7 @@ describe('Environment routes', () => {
       prisma.environment.update.mockReturnValue(envInfos)
 
       const response = await app.inject()
-        .put(`/api/v1/projects/${projectInfos.id}/environments/${envUpdated.id}`)
+        .put(`/api/v1/environments/${envUpdated.id}`)
         .body(envUpdated)
         .end()
 
@@ -250,7 +250,7 @@ describe('Environment routes', () => {
       const envToDelete = { ...projectInfos.environments[0], project: projectInfos }
 
       prisma.environment.findUnique.mockResolvedValue(envToDelete)
-      prisma.project.findUnique.mockResolvedValue(projectInfos)
+      prisma.project.findUniqueOrThrow.mockResolvedValue(projectInfos)
       prisma.environment.update.mockReturnValue(envToDelete)
       prisma.project.update.mockResolvedValue(projectInfos)
       prisma.cluster.findUnique.mockResolvedValue(projectInfos?.clusters[0])
@@ -260,7 +260,7 @@ describe('Environment routes', () => {
       prisma.repository.findMany.mockReturnValue([])
 
       const response = await app.inject()
-        .delete(`/api/v1/projects/${projectInfos.id}/environments/${envToDelete.id}`)
+        .delete(`/api/v1/environments/${envToDelete.id}`)
         .end()
 
       expect(response.statusCode).toEqual(204)
@@ -271,14 +271,14 @@ describe('Environment routes', () => {
       const envToDelete = { ...projectInfos.environments[0], project: projectInfos }
 
       prisma.environment.findUnique.mockResolvedValue(envToDelete)
-      prisma.project.findUnique.mockResolvedValue(projectInfos)
+      prisma.project.findUniqueOrThrow.mockResolvedValue(projectInfos)
 
       const response = await app.inject()
-        .delete(`/api/v1/projects/${projectInfos.id}/environments/${envToDelete.id}`)
+        .delete(`/api/v1/environments/${envToDelete.id}`)
         .end()
 
-      expect(response.statusCode).toEqual(403)
       expect(JSON.parse(response.body).error).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
+      expect(response.statusCode).toEqual(403)
     })
 
     it('Should not delete an environment if not project owner', async () => {
@@ -287,14 +287,14 @@ describe('Environment routes', () => {
       const envToDelete = { ...projectInfos.environments[0], project: projectInfos }
 
       prisma.environment.findUnique.mockResolvedValue(envToDelete)
-      prisma.project.findUnique.mockResolvedValue(projectInfos)
+      prisma.project.findUniqueOrThrow.mockResolvedValue(projectInfos)
 
       const response = await app.inject()
-        .delete(`/api/v1/projects/${projectInfos.id}/environments/${envToDelete.id}`)
+        .delete(`/api/v1/environments/${envToDelete.id}`)
         .end()
 
-      expect(response.statusCode).toEqual(403)
       expect(JSON.parse(response.body).error).toEqual('Vous n’avez pas les permissions suffisantes dans le projet')
+      expect(response.statusCode).toEqual(403)
     })
   })
 
@@ -305,13 +305,13 @@ describe('Environment routes', () => {
     projectInfos.locked = true
 
     prisma.environment.findUnique.mockResolvedValue(envToDelete)
-    prisma.project.findUnique.mockResolvedValue(projectInfos)
+    prisma.project.findUniqueOrThrow.mockResolvedValue(projectInfos)
 
     const response = await app.inject()
-      .delete(`/api/v1/projects/${projectInfos.id}/environments/${envToDelete.id}`)
+      .delete(`/api/v1/environments/${envToDelete.id}`)
       .end()
 
-    expect(response.statusCode).toEqual(403)
     expect(JSON.parse(response.body).error).toEqual(projectIsLockedInfo)
+    expect(response.statusCode).toEqual(403)
   })
 })

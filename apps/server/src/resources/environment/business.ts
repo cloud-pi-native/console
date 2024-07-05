@@ -7,7 +7,6 @@ import {
   getClusterById,
   getEnvironmentById,
   getEnvironmentInfos as getEnvironmentInfosQuery,
-  getProjectInfos,
   getProjectInfosOrThrow,
   getPublicClusters,
   getQuotaById,
@@ -282,21 +281,18 @@ export const updateEnvironment = async ({
 
 type DeleteEnvironmentParam = {
   userId: User['id'],
-  projectId: Project['id'],
   environmentId: Environment['id'],
   requestId: string,
 }
 
 export const deleteEnvironment = async ({
   userId,
-  projectId,
   environmentId,
   requestId,
 }: DeleteEnvironmentParam) => {
   try {
     const environment = await getEnvironmentInfos(environmentId)
-    const project = await getProjectInfos(projectId)
-    if (!project) throw new NotFoundError('Projet introuvable')
+    const project = await getProjectInfosOrThrow(environment.projectId)
 
     checkDeleteEnvironment({ project, userId })
 

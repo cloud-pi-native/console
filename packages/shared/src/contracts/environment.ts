@@ -11,21 +11,20 @@ import {
 export const environmentContract = contractInstance.router({
   createEnvironment: {
     method: 'POST',
-    path: `${apiPrefix}/projects/:projectId/environments`,
+    path: `${apiPrefix}/environments`,
     contentType: 'application/json',
     summary: 'Create environment',
     description: 'Create new environment.',
-    pathParams: CreateEnvironmentSchema.params,
     body: CreateEnvironmentSchema.body,
     responses: CreateEnvironmentSchema.responses,
   },
 
   getEnvironments: {
     method: 'GET',
-    path: `${apiPrefix}/projects/:projectId/environments`,
+    path: `${apiPrefix}/environments`,
     summary: 'Get environments',
     description: 'Retrieved project environments.',
-    pathParams: GetEnvironmentsSchema.params,
+    query: GetEnvironmentsSchema.query,
     responses: GetEnvironmentsSchema.responses,
   },
 
@@ -40,7 +39,7 @@ export const environmentContract = contractInstance.router({
 
   updateEnvironment: {
     method: 'PUT',
-    path: `${apiPrefix}/projects/:projectId/environments/:environmentId`,
+    path: `${apiPrefix}/environments/:environmentId`,
     summary: 'Update environment',
     description: 'Update a environment by its ID.',
     pathParams: UpdateEnvironmentSchema.params,
@@ -50,7 +49,7 @@ export const environmentContract = contractInstance.router({
 
   deleteEnvironment: {
     method: 'DELETE',
-    path: `${apiPrefix}/projects/:projectId/environments/:environmentId`,
+    path: `${apiPrefix}/environments/:environmentId`,
     summary: 'Delete environment',
     description: 'Delete a environment by its ID.',
     pathParams: DeleteEnvironmentSchema.params,
