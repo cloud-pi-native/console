@@ -1,4 +1,4 @@
-import { ClusterPrivacy } from '@cpn-console/shared'
+import { type ClusterDetails, ClusterPrivacy } from '@cpn-console/shared'
 import { getModelById, getModel } from '../../support/func.js'
 
 describe('Administration clusters', () => {
@@ -9,12 +9,10 @@ describe('Administration clusters', () => {
   const allProjects = getModel('project')
   const privateZone = getModelById('zone', 'a66c4230-eba6-41f1-aae5-bb1e4f90cce1')
 
-  let allClusters
-
   const newCluster = {
     label: 'newCluster',
     projects: allProjects.slice(0, 1),
-    stages: allStages.map(stage => stage.id),
+    stageIds: allStages.map(stage => stage.id),
     infos: 'Floating IP: 1.1.1.1',
     cluster: {
       tlsServerName: 'myTlsServerName',
@@ -22,26 +20,15 @@ describe('Administration clusters', () => {
   }
 
   beforeEach(() => {
-    cy.intercept('GET', 'api/v1/admin/clusters').as('getClusters')
+    cy.intercept('GET', '/api/v1/admin/clusters/*').as('getClustersDetails')
+    cy.intercept('GET', '/api/v1/clusters').as('getClusters')
     cy.intercept('GET', '/api/v1/admin/projects').as('getAdminProjects')
     cy.intercept('GET', '/api/v1/stages').as('getStages')
 
     cy.kcLogin('tcolin')
     cy.visit('/admin/clusters')
     cy.url().should('contain', '/admin/clusters')
-    cy.wait('@getClusters').its('response').then(response => {
-      allClusters = response?.body
-      cluster1.stages = allClusters
-        .find(cluster => cluster.id === cluster1.id)
-        ?.stageIds
-        ?.map(stageId => allStages
-          ?.find(stage => stage.id === stageId))
-      cluster2.stages = allClusters
-        .find(cluster => cluster.id === cluster2.id)
-        ?.stageIds
-        ?.map(stageId => allStages
-          ?.find(stage => stage.id === stageId))
-    })
+    cy.wait('@getClusters')
     cy.wait('@getStages')
     cy.wait('@getAdminProjects').its('response.statusCode').should('match', /^20\d$/)
   })
@@ -54,9 +41,13 @@ describe('Administration clusters', () => {
   })
 
   it('Should display a public cluster form', () => {
+    let cluster1Infos: ClusterDetails
     cy.getByDataTestid(`clusterTile-${cluster1.label}`)
       .should('be.visible')
       .click()
+    cy.wait('@getClustersDetails').its('response').then(response => {
+      cluster1Infos = response.body
+    })
     cy.get('h1')
       .should('contain', 'Mettre à jour le cluster')
     cy.get('div.json-box')
@@ -81,17 +72,23 @@ describe('Administration clusters', () => {
       .should('exist')
       .and('be.enabled')
     cy.get('#stages-select')
-      .should('exist')
-    cy.get('[data-testid$="stages-select-tag"]')
-      .should('have.length', cluster1.stages?.length)
+      .should('be.visible')
+      .click()
+    cy.get('#stages-select')
+      .within(() => {
+        cy.get('.fr-tag--dismiss')
+          .should('have.length', cluster1Infos.stageIds.length)
+      })
   })
 
   it('Should display a dedicated cluster form', () => {
-    const cluster2Infos = allClusters.find(cluster => cluster.label === cluster2.label)
-
+    let cluster2Infos: ClusterDetails
     cy.getByDataTestid(`clusterTile-${cluster2.label}`)
       .should('be.visible')
       .click()
+    cy.wait('@getClustersDetails').its('response').then(response => {
+      cluster2Infos = response.body
+    })
     cy.get('h1')
       .should('contain', 'Mettre à jour le cluster')
     cy.get('div.json-box')
@@ -115,10 +112,20 @@ describe('Administration clusters', () => {
       .and('be.enabled')
     cy.get('#projects-select')
       .should('be.visible')
-    cy.get('[data-testid$="projects-select-tag"]')
-      .should('have.length', cluster2Infos.projectIds?.length)
-    cy.get('[data-testid$="stages-select-tag"]')
-      .should('have.length', cluster2.stages?.length)
+      .click()
+    cy.get('#projects-select')
+      .within(() => {
+        cy.get('.fr-tag--dismiss')
+          .should('have.length', cluster2Infos.projectIds?.length)
+      })
+    cy.get('#stages-select')
+      .should('be.visible')
+      .click()
+    cy.get('#stages-select')
+      .within(() => {
+        cy.get('.fr-tag--dismiss')
+          .should('have.length', cluster2Infos.stageIds.length)
+      })
   })
 
   it('Should create a cluster', () => {
@@ -161,13 +168,13 @@ describe('Administration clusters', () => {
     cy.get('#projects-select .fr-tag--dismiss')
       .should('have.length', newCluster.projects.length)
 
-    newCluster.stages.forEach(stage => {
-      cy.getByDataTestid(`${stage}-stages-select-tag`)
+    newCluster.stageIds.forEach(id => {
+      cy.getByDataTestid(`${id}-stages-select-tag`)
         .click()
     })
     cy.get('[data-testid$="stages-select-tag"]')
       .get('#stages-select .fr-tag--dismiss')
-      .should('have.length', newCluster.stages.length)
+      .should('have.length', newCluster.stageIds.length)
     cy.getByDataTestid('addClusterBtn')
       .should('be.enabled')
       .click()
@@ -177,6 +184,7 @@ describe('Administration clusters', () => {
     cy.getByDataTestid(`clusterTile-${newCluster.label}`)
       .should('be.visible')
       .click()
+    cy.wait('@getClustersDetails')
     cy.wait('@getClusterEnvironments')
     cy.get('h1')
       .should('contain', 'Mettre à jour le cluster')
@@ -207,8 +215,14 @@ describe('Administration clusters', () => {
       .should('have.length', newCluster.projects.length)
     cy.get('#stages-select')
       .should('be.visible')
-    cy.get('[data-testid$="stages-select-tag"]')
-      .should('have.length', newCluster.stages.length)
+    cy.get('#stages-select')
+      .should('be.visible')
+      .click()
+    cy.get('#stages-select')
+      .within(() => {
+        cy.get('.fr-tag--dismiss')
+          .should('have.length', newCluster.stageIds.length)
+      })
   })
 
   it('Should update a cluster', () => {
@@ -224,6 +238,7 @@ describe('Administration clusters', () => {
     cy.getByDataTestid(`clusterTile-${newCluster.label}`)
       .should('be.visible')
       .click()
+    cy.wait('@getClustersDetails')
 
     cy.getByDataTestid('tlsServerNameInput')
       .find('input')
@@ -250,7 +265,7 @@ describe('Administration clusters', () => {
     cy.get(`[data-testid="${allStages[0].id}-stages-select-tag"]`)
       .click()
     cy.get('#stages-select .fr-tag--dismiss')
-      .should('have.length', newCluster.stages.length - 1)
+      .should('have.length', newCluster.stageIds.length - 1)
     cy.getByDataTestid('updateClusterBtn')
       .should('be.enabled')
       .click()
@@ -260,6 +275,7 @@ describe('Administration clusters', () => {
     cy.getByDataTestid(`clusterTile-${newCluster.label}`)
       .should('be.visible')
       .click()
+    cy.wait('@getClustersDetails')
     cy.get('h1')
       .should('contain', 'Mettre à jour le cluster')
     cy.get('div.json-box')
@@ -290,7 +306,7 @@ describe('Administration clusters', () => {
     cy.get('#stages-select')
       .click()
     cy.get('#stages-select .fr-tag--dismiss')
-      .should('have.length', newCluster.stages.length - 1)
+      .should('have.length', newCluster.stageIds.length - 1)
   })
 
   it('Should delete a cluster', () => {
@@ -299,6 +315,7 @@ describe('Administration clusters', () => {
     cy.getByDataTestid(`clusterTile-${newCluster.label}`)
       .should('be.visible')
       .click()
+    cy.wait('@getClustersDetails')
     cy.getByDataTestid('associatedEnvironmentsZone').should('not.exist')
     cy.getByDataTestid('deleteClusterZone').should('exist')
     cy.getByDataTestid('showDeleteClusterBtn').click()
@@ -319,6 +336,7 @@ describe('Administration clusters', () => {
     cy.getByDataTestid(`clusterTile-${cluster1.label}`)
       .should('be.visible')
       .click()
+    cy.wait('@getClustersDetails')
     cy.getByDataTestid('deleteClusterZone').should('not.exist')
     cy.getByDataTestid('associatedEnvironmentsZone').should('exist')
   })

@@ -17,7 +17,7 @@ import { zoneRouter } from './zone/router.js'
 import { serverInstance } from '@/app.js'
 
 export const apiRouter = () => async (app: FastifyInstance) => {
-  await app.register(serverInstance.plugin(clusterRouter()))
+  await app.register(serverInstance.plugin(clusterRouter()), { responseValidation: true })
   await app.register(serverInstance.plugin(environmentRouter()))
   await app.register(serverInstance.plugin(filesRouter()))
   await app.register(serverInstance.plugin(organizationRouter()))

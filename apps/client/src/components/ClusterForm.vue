@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref, computed, onBeforeMount, watch } from 'vue'
-import { ClusterPrivacy, ClusterSchema, CreateClusterBusinessSchema, SharedZodError, ClusterBusinessSchema, instanciateSchema, type ClusterAssociatedEnvironments, type CreateClusterBody, type UpdateClusterBody, type Cluster } from '@cpn-console/shared'
+import { ClusterPrivacy, ClusterDetailsSchema, SharedZodError, type ClusterAssociatedEnvironments, type CreateClusterBody, type UpdateClusterBody, type Cluster, ClusterDetails, Project, Stage, Zone } from '@cpn-console/shared'
 // @ts-ignore
 import { load } from 'js-yaml'
 // @ts-ignore
@@ -13,22 +13,28 @@ const snackbarStore = useSnackbarStore()
 
 const props = withDefaults(defineProps<{
   isNewCluster: boolean
-  cluster: Record<string, any>
-  allProjects: Array<any>
-  allStages: Array<any>
-  allZones: Array<any>
+  cluster: ClusterDetails
+  allProjects: Project[]
+  allStages: Stage[]
+  allZones: Zone[]
   associatedEnvironments: ClusterAssociatedEnvironments
 }>(), {
   isNewCluster: true,
   cluster: () => ({
     label: '',
-    cluster: {},
-    user: {},
-    projectIds: [],
     stageIds: [],
     clusterResources: false,
     privacy: ClusterPrivacy.DEDICATED,
     infos: '',
+    id: '',
+    kubeconfig: {
+      cluster: {
+        tlsServerName: '',
+      },
+      user: {},
+    },
+    zoneId: '',
+    projectIds: [],
   }),
   allZones: () => [],
   allProjects: () => [],
@@ -41,54 +47,33 @@ const kConfigError = ref<string | undefined>(undefined)
 const isMissingCurrentContext = ref<boolean>(false)
 const contexts = ref([])
 const selectedContext = ref('')
-const localCluster = ref<Record<string, any>>({})
-const updatedValues = ref<Record<string, any>>({})
+const localCluster = ref<ClusterDetails>(props.cluster)
 const kubeconfig = ref()
 const clusterToDelete = ref('')
 const isDeletingCluster = ref(false)
 
+if (!localCluster.value.zoneId && props.allZones.length) {
+  localCluster.value.zoneId = props.allZones[0].id
+}
+
 const errorSchema = computed<SharedZodError | undefined>(() => {
   let schemaValidation
   if (localCluster.value.id) {
-    schemaValidation = ClusterBusinessSchema.safeParse(localCluster.value)
+    schemaValidation = ClusterDetailsSchema.safeParse(localCluster.value)
   } else {
-    schemaValidation = CreateClusterBusinessSchema.safeParse(localCluster.value)
+    schemaValidation = ClusterDetailsSchema.omit({ id: true }).partial().safeParse(localCluster.value)
   }
   return schemaValidation.success ? undefined : schemaValidation.error
 })
 const isClusterValid = computed(() => !errorSchema.value)
 const chosenZoneDescription = computed(() => props.allZones.find(zone => zone.id === localCluster.value.zoneId)?.description)
 
-const updateValues = (key: string, value: any) => {
-  if (key === 'skipTLSVerify') {
-    localCluster.value.cluster.skipTLSVerify = value
-    updatedValues.value.cluster = true
-    return
-  }
-  if (key === 'tlsServerName') {
-    localCluster.value.cluster.tlsServerName = value
-    updatedValues.value.cluster = true
-    return
-  }
-  if (key === 'privacy') {
-    localCluster.value.projectIds = []
-  }
-  localCluster.value[key] = value
-  updatedValues.value[key] = true
-
-  if (key === 'projectIds') {
-    localCluster.value.projectIds = value
-  }
-
-  if (key === 'stageIds') {
-    localCluster.value.stageIds = value
-  }
-}
-
 const updateKubeconfig = (files: FileList) => {
   kConfigError.value = undefined
-  localCluster.value.cluster = {}
-  localCluster.value.user = {}
+  localCluster.value.kubeconfig.cluster = {
+    tlsServerName: '',
+  }
+  localCluster.value.kubeconfig.user = {}
 
   try {
     const reader = new FileReader()
@@ -140,7 +125,7 @@ const retrieveUserAndCluster = (context: ContextType) => {
       'client-certificate-data': certData,
       'client-key-data': keyData,
     } = jsonKConfig.value.users.find((user: Record<string, any>) => user.name === context.user).user
-    localCluster.value.user = {
+    localCluster.value.kubeconfig.user = {
       ...username && password && { username, password },
       ...token && { token },
       ...certData && keyData && { certData, keyData },
@@ -150,7 +135,7 @@ const retrieveUserAndCluster = (context: ContextType) => {
       'certificate-authority-data': caData,
       'insecure-skip-tls-verify': skipTLSVerify,
     } = jsonKConfig.value.clusters.find((cluster: Record<string, any>) => cluster.name === context.cluster).cluster
-    localCluster.value.cluster = {
+    localCluster.value.kubeconfig.cluster = {
       server,
       tlsServerName: server.split('https://')[1].split(':')[0],
       ...caData && { caData },
@@ -180,12 +165,10 @@ const emit = defineEmits<{
 }>()
 
 const addCluster = () => {
-  updatedValues.value = instanciateSchema(ClusterSchema, true)
   if (isClusterValid.value) emit('add', localCluster.value)
 }
 
 const updateCluster = () => {
-  updatedValues.value = instanciateSchema(ClusterSchema, true)
   if (isClusterValid.value) emit('update', localCluster.value)
 }
 
@@ -213,6 +196,7 @@ watch(selectedContext, () => {
     }
   }
 })
+const isConnectionDetailsShown = ref(true)
 
 </script>
 
@@ -225,60 +209,93 @@ watch(selectedContext, () => {
     >
       {{ isNewCluster ? 'Ajouter un cluster' : 'Mettre à jour le cluster' }}
     </h1>
-    <DsfrFileUpload
-      v-model="kubeconfig"
-      label="Kubeconfig"
-      data-testid="kubeconfig-upload"
-      :error="kConfigError"
-      hint="Uploadez le Kubeconfig du cluster."
-      class="fr-mb-2w"
-      @change="updateKubeconfig($event)"
-    />
-    <DsfrSelect
-      v-if="isMissingCurrentContext"
-      v-model="selectedContext"
-      select-id="selectedContextSelect"
-      label="Context"
-      description="Nous n'avons pas trouvé de current-context dans votre kubeconfig. Veuillez choisir un contexte."
-      :options="contexts"
-    />
-    <JsonViewer
-      v-show="localCluster.user"
-      data-testid="user-json"
-      :value="localCluster.user"
-      class="json-box"
-      copyable
-      boxed
-    />
-    <JsonViewer
-      v-show="localCluster.cluster"
-      data-testid="cluster-json"
-      :value="localCluster.cluster"
-      class="json-box"
-      copyable
-      boxed
-    />
-    <DsfrInputGroup
-      v-model="localCluster.cluster.tlsServerName"
-      data-testid="tlsServerNameInput"
-      label="Nom du serveur Transport Layer Security (TLS)"
-      label-visible
-      :required="true"
-      hint="La valeur est extraite du kubeconfig téléversé."
-      @update:model-value="updateValues('tlsServerName', $event)"
-    />
+    <div
+      class="cursor-pointer"
+      @click="isConnectionDetailsShown = !isConnectionDetailsShown"
+    >
+      <h4
+        class="mb-1 inline-block"
+        :aria-expanded="isConnectionDetailsShown"
+      >
+        Informations de connexion (kubeconfig)
+      </h4>
+      <v-icon
+        v-if="isConnectionDetailsShown"
+        name="ri-arrow-right-s-line"
+        class="shrink ml-4 rotate-90"
+      />
+      <v-icon
+        v-else
+        name="ri-arrow-right-s-line"
+        class="shrink ml-4"
+      />
+    </div>
+    <template
+      v-if="isConnectionDetailsShown"
+    >
+      <DsfrFileUpload
+        v-model="kubeconfig"
+        label=""
+        data-testid="kubeconfig-upload"
+        :error="kConfigError"
+        hint="Uploadez le Kubeconfig du cluster."
+        class="fr-mb-2w"
+        @change="updateKubeconfig($event)"
+      />
+      <DsfrSelect
+        v-if="isMissingCurrentContext"
+        v-model="selectedContext"
+        select-id="selectedContextSelect"
+        label="Context"
+        description="Nous n'avons pas trouvé de current-context dans votre kubeconfig. Veuillez choisir un contexte."
+        :options="contexts"
+      />
+      <JsonViewer
+        data-testid="user-json"
+        :value="localCluster.kubeconfig.user"
+        class="json-box"
+        copyable
+        boxed
+      />
+      <JsonViewer
+        data-testid="cluster-json"
+        :value="localCluster.kubeconfig.cluster"
+        class="json-box"
+        copyable
+        boxed
+      />
+      <DsfrInputGroup
+        v-model="localCluster.kubeconfig.cluster.tlsServerName"
+        data-testid="tlsServerNameInput"
+        label="Nom du serveur Transport Layer Security (TLS)"
+        label-visible
+        :required="true"
+        hint="La valeur est extraite du kubeconfig téléversé."
+      />
+      <DsfrCheckbox
+        v-model="localCluster.kubeconfig.cluster.skipTLSVerify"
+        data-testid="clusterSkipTLSVerifyCbx"
+        label="Ignorer le certificat TLS du server (risques potentiels de sécurité !)"
+        hint="Ignorer le certificat TLS présenté pour contacter l'API server Kubernetes"
+        name="isClusterSkipTlsVerify"
+      />
+    </template>
+    <h4
+      class="mb-1 inline-block"
+    >
+      Informations fonctionnelles
+    </h4>
     <DsfrInputGroup
       v-model="localCluster.label"
       data-testid="labelInput"
       type="text"
       :disabled="!isNewCluster"
       :required="true"
-      :error-message="!!updatedValues.label && !ClusterSchema.pick({label: true}).safeParse({label: localCluster.label}).success ? 'Le nom du cluster ne doit contenir ni espaces ni caractères spéciaux': undefined"
+      :error-message="!ClusterDetailsSchema.pick({label: true}).safeParse({label: localCluster.label}).success ? 'Le nom du cluster ne doit contenir ni espaces ni caractères spéciaux': undefined"
       label="Nom du cluster applicatif"
       label-visible
       hint="Nom du cluster applicatif utilisable lors des déploiements Argocd."
       placeholder="erpc-ovh"
-      @update:model-value="updateValues('label', $event)"
     />
     <DsfrInputGroup
       v-model="localCluster.infos"
@@ -288,15 +305,6 @@ watch(selectedContext, () => {
       label="Informations supplémentaires sur le cluster"
       label-visible
       hint="Facultatif. Attention, ces informations seront visibles par les utilisateurs de la console à qui ce cluster est destiné (tous si cluster public, membres des projets concernés pour les clusters réservés)."
-      @update:model-value="updateValues('infos', $event)"
-    />
-    <DsfrCheckbox
-      v-model="localCluster.cluster.skipTLSVerify"
-      data-testid="clusterSkipTLSVerifyCbx"
-      label="Ignorer le certificat TLS du server (risques potentiels de sécurité !)"
-      hint="Ignorer le certificat TLS présenté pour contacter l'API server Kubernetes"
-      name="isClusterSkipTlsVerify"
-      @update:model-value="updateValues('skipTLSVerify', $event)"
     />
     <DsfrCheckbox
       v-model="localCluster.clusterResources"
@@ -304,7 +312,6 @@ watch(selectedContext, () => {
       label="Ressources cluster"
       hint="Cochez la case si des ressources de type cluster peuvent être déployées par Argocd."
       name="isClusterResources"
-      @update:model-value="updateValues('clusterResources', $event)"
     />
     <DsfrSelect
       v-model="localCluster.zoneId"
@@ -313,7 +320,6 @@ watch(selectedContext, () => {
       label="Zone associée"
       hint="Sélectionnez la zone associée à ce cluster."
       :options="props.allZones?.map(zone => ({ value: zone.id, text: zone.label }))"
-      @update:model-value="updateValues('zoneId', $event)"
     />
     <DsfrAlert
       v-if="chosenZoneDescription"
@@ -328,7 +334,6 @@ watch(selectedContext, () => {
       select-id="privacy-select"
       label="Confidentialité du cluster"
       :options="Object.values(ClusterPrivacy)"
-      @update:model-value="updateValues('privacy', $event)"
     />
     <div
       v-if="localCluster.privacy === ClusterPrivacy.DEDICATED"
@@ -339,12 +344,14 @@ watch(selectedContext, () => {
         wrapped
         label="Projets associés"
         description="Sélectionnez les projets autorisés à utiliser ce cluster."
-        :options="props.allProjects.map(project => ({ ...project, label: `${project.organization.name} - ${project.name}`}))"
-        :options-selected="props.allProjects.filter(project => props.cluster.projectIds.includes(project.id)).map(project => ({ ...project, label: `${project.organization.name} - ${project.name}`}))"
+        :options="props.allProjects.map(project => ({ id: project.id, label: `${project.organization?.name} - ${project.name}`}))"
+        :options-selected="props.allProjects
+          .filter(project => localCluster.projectIds?.includes(project.id))
+          .map(project => ({id: project.id, label: `${project.organization?.name} - ${project.name}` }))"
         label-key="label"
         value-key="id"
         :disabled="false"
-        @update="(_p, projectIds) => updateValues('projectIds', projectIds)"
+        @update="(_p, projectIds) => localCluster.projectIds = projectIds"
       />
     </div>
     <div
@@ -360,7 +367,7 @@ watch(selectedContext, () => {
         label-key="name"
         value-key="id"
         :disabled="false"
-        @update="(_s, stageIds) => updateValues('stageIds', stageIds)"
+        @update="(_s, stageIds) => localCluster.stageIds = stageIds"
       />
     </div>
     <div

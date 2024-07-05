@@ -5,6 +5,7 @@ import { nanoid } from 'nanoid'
 import { apiPrefix } from '@cpn-console/shared'
 import { loggerConf } from './logger.js'
 import { NODE_ENV } from './env.js'
+import { generateOpenApi } from '@ts-rest/open-api'
 
 export const fastifyConf: FastifyServerOptions = {
   maxParamLength: 5000,
@@ -16,12 +17,13 @@ const externalDocs = {
   description: 'External documentation.', url: 'https://cloud-pi-native.fr',
 }
 
-export const swaggerConf = {
+export const swaggerConf: Parameters<typeof generateOpenApi>[1] = {
   info: {
     title: 'Console Cloud Pi Native',
     description: 'API de gestion des ressources Cloud Pi Native.',
     version: process.env.APP_VERSION || 'dev',
   },
+
   externalDocs,
   servers: [
     // { url: keycloakRedirectUri?.includes('://') ? keycloakRedirectUri.split('://')[1] : 'localhost' }, // TODO: replace with app url

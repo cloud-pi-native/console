@@ -41,8 +41,8 @@ describe('Admin zone routes', () => {
         .body(zone)
         .end()
 
-      expect(response.statusCode).toEqual(201)
       expect(response.json()).toEqual(zone)
+      expect(response.statusCode).toEqual(201)
     })
 
     it('Should create a new zone with associated clusters', async () => {
@@ -57,6 +57,8 @@ describe('Admin zone routes', () => {
         .body(zone)
         .end()
 
+      // update means clusterIds are linked
+      expect(prisma.zone.update).toHaveBeenCalled()
       expect(response.statusCode).toEqual(201)
       expect(response.json()).toEqual(zone)
     })
@@ -65,7 +67,6 @@ describe('Admin zone routes', () => {
       const zone = { label: 'Zone à Défendre', slug: 'zad', clusterIds: [getRandomCluster({}).id] }
 
       prisma.zone.findUnique.mockResolvedValue(zone)
-
       const response = await app.inject()
         .post('/api/v1/admin/zones')
         .body(zone)
@@ -89,8 +90,8 @@ describe('Admin zone routes', () => {
         .body(zone)
         .end()
 
-      expect(response.statusCode).toEqual(201)
       expect(response.json()).toEqual(zone)
+      expect(response.statusCode).toEqual(201)
     })
   })
 

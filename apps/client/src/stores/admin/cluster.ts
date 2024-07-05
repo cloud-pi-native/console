@@ -1,14 +1,15 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { Cluster, CreateClusterBody, UpdateClusterBody } from '@cpn-console/shared'
+import type { Cluster, ClusterDetails, CreateClusterBody, UpdateClusterBody } from '@cpn-console/shared'
 import { apiClient, extractData } from '@/api/xhr-client.js'
 
 export const useAdminClusterStore = defineStore('admin-cluster', () => {
-  const clusters = ref<Array<Cluster>>([])
+  const selectedCluster = ref<ClusterDetails>()
 
-  const getClusters = async () => {
-    clusters.value = await apiClient.ClustersAdmin.getClusters()
+  const getClusterDetails = async (clusterId: Cluster['id']) => {
+    selectedCluster.value = await apiClient.ClustersAdmin.getClusterDetails({ params: { clusterId } })
       .then(response => extractData(response, 200))
+    return selectedCluster.value
   }
 
   const getClusterAssociatedEnvironments = (clusterId: Cluster['id']) =>
@@ -27,22 +28,12 @@ export const useAdminClusterStore = defineStore('admin-cluster', () => {
     apiClient.ClustersAdmin.deleteCluster({ params: { clusterId } })
       .then(response => extractData(response, 204))
 
-  const getClusterById = async (clusterId: Required<Cluster['id']>) => {
-    const cluster = clusters.value?.find(cluster => cluster?.id === clusterId)
-    if (!cluster) {
-      await getClusters()
-      return clusters.value?.find(cluster => cluster?.id === clusterId)
-    }
-    return cluster
-  }
-
   return {
-    clusters,
-    getClusters,
+    selectedCluster,
     getClusterAssociatedEnvironments,
     addCluster,
     updateCluster,
     deleteCluster,
-    getClusterById,
+    getClusterDetails,
   }
 })

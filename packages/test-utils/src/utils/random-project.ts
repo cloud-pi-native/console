@@ -40,6 +40,7 @@ export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = basicStage
 
   // Create cluster
   const clusters = [getRandomCluster({ projectIds: [project.id], zoneId: zones[0].id })]
+  // @ts-ignore
   project.clusters = clusters
 
   // Create stages

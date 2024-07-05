@@ -4,7 +4,6 @@ import { AtDatesToStringSchema, ErrorSchema } from './utils.js'
 import { RepoSchema } from './repository.js'
 import { RoleSchema, UserSchema } from './user.js'
 import { OrganizationSchema } from './organization.js'
-import { ClusterSchema } from './cluster.js'
 
 export const descriptionMaxLength = 280
 export const projectNameMaxLength = 20
@@ -27,17 +26,7 @@ export const ProjectSchema = z.object({
   // ProjectInfos
   organization: OrganizationSchema.optional(),
   roles: z.array(RoleSchema.and(z.object({ user: UserSchema.optional() }))).optional(),
-  clusters: z.lazy(() => ClusterSchema.pick({
-    id: true,
-    label: true,
-    infos: true,
-    secretName: true,
-    clusterResources: true,
-    privacy: true,
-    zoneId: true,
-    projectIds: true,
-    stageIds: true,
-  }).array().optional()),
+  clusterIds: z.string().uuid().array(),
   repositories: RepoSchema.array(),
   environments: z.array(z.object({
     id: z.string()
