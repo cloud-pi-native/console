@@ -73,7 +73,7 @@ const addEnvironment = async (environment: Environment) => {
 const putEnvironment = async (environment: Environment) => {
   snackbarStore.isWaitingForResponse = true
   if (project.value && !project.value.locked) {
-    await projectEnvironmentStore.updateEnvironment(environment.id, project.value.id, environment)
+    await projectEnvironmentStore.updateEnvironment(environment.id, environment)
   }
   cancel()
   snackbarStore.isWaitingForResponse = false

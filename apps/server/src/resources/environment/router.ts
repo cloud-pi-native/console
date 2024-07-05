@@ -4,8 +4,8 @@ import { createEnvironment, deleteEnvironment, updateEnvironment, getProjectEnvi
 import { addReqLogs } from '@/utils/logger.js'
 
 export const environmentRouter = () => serverInstance.router(environmentContract, {
-  getEnvironments: async ({ request: req, params }) => {
-    const projectId = params.projectId
+  getEnvironments: async ({ request: req, query }) => {
+    const projectId = query.projectId
     const userId = req.session.user.id
     const isAdmin = req.session.user.groups?.includes(adminGroupPath)
 
@@ -25,9 +25,9 @@ export const environmentRouter = () => serverInstance.router(environmentContract
     }
   },
 
-  createEnvironment: async ({ request: req, body: data, params }) => {
+  createEnvironment: async ({ request: req, body: data }) => {
     const userId = req.session.user.id
-    const projectId = params.projectId
+    const projectId = data.projectId
 
     const environment = await createEnvironment({
       userId,
@@ -80,12 +80,11 @@ export const environmentRouter = () => serverInstance.router(environmentContract
   },
 
   deleteEnvironment: async ({ request: req, params }) => {
-    const { projectId, environmentId } = params
+    const { environmentId } = params
     const userId = req.session.user.id
 
     await deleteEnvironment({
       userId,
-      projectId,
       environmentId,
       requestId: req.id,
     })
@@ -95,7 +94,6 @@ export const environmentRouter = () => serverInstance.router(environmentContract
       message: 'Environnement supprimé avec succès',
       infos: {
         environmentId,
-        projectId,
       },
     })
 

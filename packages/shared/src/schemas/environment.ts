@@ -22,10 +22,6 @@ export const EnvironmentSchema = z.object({
 export type Environment = Zod.infer<typeof EnvironmentSchema>
 
 export const CreateEnvironmentSchema = {
-  params: z.object({
-    projectId: z.string()
-      .uuid(),
-  }),
   body: EnvironmentSchema.omit({ id: true, permissions: true }),
   responses: {
     201: EnvironmentSchema.omit({ permissions: true }),
@@ -36,7 +32,7 @@ export const CreateEnvironmentSchema = {
 }
 
 export const GetEnvironmentsSchema = {
-  params: z.object({
+  query: z.object({
     projectId: z.string()
       .uuid(),
   }),
@@ -48,8 +44,6 @@ export const GetEnvironmentsSchema = {
 
 export const GetEnvironmentByIdSchema = {
   params: z.object({
-    projectId: z.string()
-      .uuid(),
     environmentId: z.string()
       .uuid(),
   }),
@@ -65,8 +59,6 @@ export const GetEnvironmentByIdSchema = {
 
 export const UpdateEnvironmentSchema = {
   params: z.object({
-    projectId: z.string()
-      .uuid(),
     environmentId: z.string()
       .uuid(),
   }),
@@ -83,8 +75,6 @@ export const UpdateEnvironmentSchema = {
 
 export const DeleteEnvironmentSchema = {
   params: z.object({
-    projectId: z.string()
-      .uuid(),
     environmentId: z.string()
       .uuid(),
   }),

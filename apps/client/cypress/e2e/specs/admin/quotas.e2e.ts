@@ -48,7 +48,7 @@ describe('Administration quotas', () => {
     cy.intercept('GET', 'api/v1/stages').as('getStages')
     cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
     cy.intercept('GET', '/api/v1/projects').as('getProjects')
-    cy.intercept('GET', '/api/v1/projects/*/environments').as('getEnvironments')
+    cy.intercept('GET', '/api/v1/environments?*').as('getEnvironments')
 
     // Create quota
     cy.getByDataTestid('addQuotaLink')
@@ -222,7 +222,7 @@ describe('Administration quotas', () => {
     cy.intercept('GET', 'api/v1/stages').as('getStages')
     cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
     cy.intercept('GET', '/api/v1/projects').as('getProjects')
-    cy.intercept('GET', '/api/v1/projects/*/environments').as('getEnvironments')
+    cy.intercept('GET', '/api/v1/environments?*').as('getEnvironments')
 
     // Create quota
     cy.getByDataTestid('addQuotaLink')
