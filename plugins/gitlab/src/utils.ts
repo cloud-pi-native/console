@@ -1,6 +1,7 @@
 import { Gitlab } from '@gitbeaker/rest'
 import { Gitlab as IGitlab } from '@gitbeaker/core'
 import { removeTrailingSlash, requiredEnv } from '@cpn-console/shared'
+import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
 
 let api: IGitlab | undefined
 
@@ -78,4 +79,11 @@ export type VaultSecrets = {
     GIT_MIRROR_PROJECT_ID: number,
     GIT_MIRROR_TOKEN: string,
   }
+}
+
+export const cleanGitlabError = <T>(error: T): T => {
+  if (error instanceof GitbeakerRequestError && error.cause?.description) {
+    error.cause.description = error.cause.description.replaceAll(/\/\/(.*):(.*)@/g, '//MASKED:MASKED@')
+  }
+  return error
 }
