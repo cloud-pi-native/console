@@ -62,7 +62,7 @@ const updateProject = (key: string, value: any) => {
 }
 
 onMounted(async () => {
-  await organizationStore.setOrganizations()
+  await organizationStore.listOrganizations()
   orgOptions.value = organizationStore.organizations.map(org => ({
     text: org.label,
     value: org.name,

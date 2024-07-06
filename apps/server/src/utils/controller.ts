@@ -2,6 +2,13 @@ import type { Permission, User, Role, Cluster } from '@prisma/client'
 import { DoneFuncWithErrOrRes, FastifyReply, FastifyRequest } from 'fastify'
 import { type ProjectRoles, adminGroupPath, projectIsLockedInfo } from '@cpn-console/shared'
 import { ForbiddenError } from './errors.js'
+import { UserDetails } from '@/types/index.js'
+
+export const checkIsAdmin = (user: UserDetails) => {
+  if (!user.groups.includes(adminGroupPath)) {
+    throw new ForbiddenError('Vous n\'avez pas les droits administrateur')
+  }
+}
 
 export const checkAdminGroup = (req: FastifyRequest, _res: FastifyReply, done: DoneFuncWithErrOrRes) => {
   if (!req.session.user.groups?.includes(adminGroupPath)) {
