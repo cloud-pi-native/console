@@ -4,7 +4,7 @@ import { getRandomId } from '@gouvminint/vue-dsfr'
 import { type AsyncReturnType, type PluginsUpdateBody, formatDate, statusDict, sortArrByObjKeyAsc, AllStatus, type Project, type ProjectService, Organization } from '@cpn-console/shared'
 import { useAdminProjectStore } from '@/stores/admin/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { useAdminOrganizationStore } from '@/stores/admin/organization.js'
+import { useOrganizationStore } from '@/stores/organization.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 import { useUserStore } from '@/stores/user.js'
 import { useUsersStore } from '@/stores/users.js'
@@ -17,7 +17,7 @@ import { useStageStore } from '@/stores/stage'
 
 const adminProjectStore = useAdminProjectStore()
 const projectStore = useProjectStore()
-const adminOrganizationStore = useAdminOrganizationStore()
+const organizationStore = useOrganizationStore()
 const projectServiceStore = useProjectServiceStore()
 const userStore = useUserStore()
 const usersStore = useUsersStore()
@@ -138,7 +138,7 @@ const setRows = () => {
           title: `Voir le tableau de bord du projet ${name}`,
         },
         rowData: [
-          adminOrganizationStore.organizationsById[organizationId].label ?? '',
+          organizationStore.organizationsById[organizationId].label ?? '',
           name,
           truncateDescription(description ?? ''),
           roles.find(role => role.role === 'owner')?.user?.email ?? '',
@@ -315,9 +315,8 @@ const generateProjectsDataFile = async () => {
 }
 
 onBeforeMount(async () => {
-  organizations.value = await adminOrganizationStore.getAllOrganizations()
+  organizations.value = await organizationStore.listOrganizations()
   await Promise.all([
-    await adminOrganizationStore.getAllOrganizations(),
     await stageStore.getAllStages(),
     await quotaStore.getAllQuotas(),
     await getAllProjects(),

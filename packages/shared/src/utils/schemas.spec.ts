@@ -70,24 +70,19 @@ describe('Schemas utils', () => {
   it('Should validate a correct organization schema', () => {
     const toParse = {
       id: faker.string.uuid(),
-      name: faker.lorem.word({ length: { min: 2, max: 10 } }),
-      label: faker.company.name(),
-      active: faker.datatype.boolean(),
-    }
-
-    expect(OrganizationSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
-  })
-
-  it('Should validate a correct organization schema with external data', () => {
-    const toParse = {
-      id: faker.string.uuid(),
       source: faker.lorem.word(),
       name: faker.lorem.word({ length: { min: 2, max: 10 } }),
       label: faker.company.name(),
       active: faker.datatype.boolean(),
+      updatedAt: new Date(),
+      createdAt: new Date(),
     }
-
-    expect(OrganizationSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
+    const parsed = structuredClone(toParse)
+    // @ts-ignore la date doit être transformé en string
+    parsed.createdAt = parsed.createdAt.toISOString()
+    // @ts-ignore
+    parsed.updatedAt = parsed.updatedAt.toISOString()
+    expect(OrganizationSchema.safeParse(toParse)).toStrictEqual({ data: parsed, success: true })
   })
 
   it('Should validate a correct project schema', () => {

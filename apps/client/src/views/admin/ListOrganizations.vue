@@ -6,15 +6,15 @@ import {
   sortArrByObjKeyAsc,
   SharedZodError,
   parseZodError,
-  UpdateOrganizationBodySchema,
   type CreateOrganizationBody,
   type Organization,
+  organizationContract,
 } from '@cpn-console/shared'
-import { useAdminOrganizationStore } from '@/stores/admin/organization.js'
+import { useOrganizationStore } from '@/stores/organization.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { getRandomId } from '@gouvminint/vue-dsfr'
 
-const adminOrganizationStore = useAdminOrganizationStore()
+const organizationStore = useOrganizationStore()
 
 const snackbarStore = useSnackbarStore()
 
@@ -91,14 +91,14 @@ const setRows = () => {
 }
 
 const getAllOrganizations = async () => {
-  await adminOrganizationStore.getAllOrganizations()
-  allOrganizations.value = adminOrganizationStore.organizations
+  await organizationStore.listOrganizations()
+  allOrganizations.value = organizationStore.organizations
   setRows()
 }
 
 const syncOrganizations = async () => {
   isSyncingOrganizations.value = true
-  await adminOrganizationStore.fetchOrganizations()
+  await organizationStore.syncOrganizations()
   getAllOrganizations()
   isSyncingOrganizations.value = false
 }
@@ -112,7 +112,7 @@ const createOrganization = async () => {
     snackbarStore.setMessage(parseZodError(errorSchema.value))
     return
   }
-  await adminOrganizationStore.createOrganization(newOrg.value)
+  await organizationStore.createOrganization(newOrg.value)
   snackbarStore.setMessage(`Organisation ${newOrg.value.name} créée`, 'success')
   await getAllOrganizations()
 
@@ -143,7 +143,7 @@ const updateOrganization = async ({ name, key, data }: {name: string, key: strin
     [key]: data,
   }
 
-  const schemaValidation = UpdateOrganizationBodySchema.safeParse(org)
+  const schemaValidation = organizationContract.updateOrganization.body.safeParse(org)
 
   if (isOrgAlreadyTaken.value) {
     snackbarStore.setMessage('Une organisation portant ce nom existe déjà.', 'error')
@@ -153,7 +153,7 @@ const updateOrganization = async ({ name, key, data }: {name: string, key: strin
     snackbarStore.setMessage(parseZodError(schemaValidation.error))
     return
   }
-  await adminOrganizationStore.updateOrganization(org)
+  await organizationStore.updateOrganization(org)
   snackbarStore.setMessage(`Organisation ${name} mise à jour`, 'success')
   await getAllOrganizations()
 }
