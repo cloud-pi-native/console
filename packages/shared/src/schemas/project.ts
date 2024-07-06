@@ -4,6 +4,7 @@ import { AtDatesToStringSchema, ErrorSchema } from './utils.js'
 import { RepoSchema } from './repository.js'
 import { RoleSchema, UserSchema } from './user.js'
 import { OrganizationSchema } from './organization.js'
+import { CoerceBooleanSchema } from '../utils/schemas.js'
 
 export const descriptionMaxLength = 280
 export const projectNameMaxLength = 20
@@ -21,7 +22,7 @@ export const ProjectSchema = z.object({
   organizationId: z.string()
     .uuid(),
   status: z.enum(projectStatus),
-  locked: z.boolean(),
+  locked: CoerceBooleanSchema,
 
   // ProjectInfos
   organization: OrganizationSchema.optional(),
@@ -77,6 +78,18 @@ export const CreateProjectSchema = {
 }
 
 export const GetProjectsSchema = {
+  query: ProjectSchema
+    .pick({
+      id: true,
+      name: true,
+      status: true,
+      locked: true,
+      organizationId: true,
+      description: true,
+    }).extend({
+      organizationName: z.string(),
+    })
+    .partial().strict(),
   responses: {
     200: z.array(ProjectSchema.required()),
     500: ErrorSchema,

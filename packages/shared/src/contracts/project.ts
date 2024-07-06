@@ -80,6 +80,7 @@ export const projectAdminContract = contractInstance.router({
     path: `${apiPrefix}/admin/projects`,
     summary: 'Get projects',
     description: 'Retrieved all projects.',
+    query: GetProjectsSchema.query,
     responses: GetProjectsSchema.responses,
   },
 
