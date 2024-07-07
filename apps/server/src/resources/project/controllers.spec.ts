@@ -6,6 +6,7 @@ import { createRandomDbSetup, getRandomProject, getRandomRole, getRandomUser } f
 import { faker } from '@faker-js/faker'
 import { descriptionMaxLength, projectIsLockedInfo } from '@cpn-console/shared'
 import { getConnection, closeConnections } from '../../connect.js'
+import { rolesToMembers } from './business.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
 vi.mock('@cpn-console/hooks', (await import('../../utils/mocks.js')).mockHooksPackage)
@@ -39,9 +40,9 @@ describe('Project routes', () => {
         .get(`/api/v1/projects/${project.id}/secrets`)
         .end()
 
+      expect(response.json()).toMatchObject({ Harbor: { token: 'myToken' } })
       expect(response.statusCode).toEqual(200)
       expect(response.json()).toBeDefined()
-      expect(response.json()).toMatchObject({ Harbor: { token: 'myToken' } })
     })
 
     it('Should not retrieve a project secrets when not project owner', async () => {
@@ -65,6 +66,8 @@ describe('Project routes', () => {
       const project = getRandomProject()
       const organization = project.organization
       project.clusters = []
+      project.roles = []
+      project.members = []
 
       prisma.user.upsert.mockResolvedValue(getRequestor())
       prisma.organization.findUnique.mockResolvedValue(organization)
@@ -80,7 +83,12 @@ describe('Project routes', () => {
         .post('/api/v1/projects')
         .body(project)
         .end()
-
+      delete project.clusters
+      delete project.environments
+      delete project.repositories
+      delete project.organization
+      delete project.roles
+      project.clusterIds = []
       expect(response.json()).toMatchObject(project)
       expect(response.statusCode).toEqual(201)
       expect(response.json()).toBeDefined()
@@ -126,30 +134,34 @@ describe('Project routes', () => {
   // PUT
   describe('updateProjectController', () => {
     it('Should update a project description', async () => {
-      const project = createRandomDbSetup({}).project
-      project.roles = [...project.roles, getRandomRole(getRequestor().id, project.id)]
+      const { project } = createRandomDbSetup({})
+      const owner = getRequestor()
+      delete owner.groups
+      project.roles.push({ role: 'owner', userId: owner.id, user: owner })
+      project.clusters = []
 
       prisma.project.findUnique.mockResolvedValueOnce(project)
       prisma.project.update.mockResolvedValue(project)
       prisma.environment.findMany.mockResolvedValue([])
       prisma.repository.findMany.mockResolvedValue([])
       prisma.project.findUniqueOrThrow.mockResolvedValueOnce(project)
+      prisma.cluster.findMany.mockResolvedValueOnce(project.clusters)
 
       const response = await app.inject()
         .put(`/api/v1/projects/${project.id}`)
         .body({ description: 'nouvelle description' })
         .end()
 
+      project.clusterIds = []
       delete project.clusters
       delete project.environments
-      delete project.organization
       delete project.repositories
+      delete project.organization
+      project.members = rolesToMembers(project.roles)
       delete project.roles
 
-      expect(response.statusCode).toEqual(200)
-      expect(response.body).toBeDefined()
-
       expect(response.json()).toMatchObject(project)
+      expect(response.statusCode).toEqual(200)
     })
 
     it('Should not update a project description if requestor is not member', async () => {

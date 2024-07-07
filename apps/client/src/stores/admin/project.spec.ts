@@ -3,7 +3,7 @@ import { setActivePinia, createPinia } from 'pinia'
 import { apiClient } from '../../api/xhr-client.js'
 import { useAdminProjectStore } from './project.js'
 
-const apiClientGet = vi.spyOn(apiClient.ProjectsAdmin, 'getAllProjects')
+const apiClientGet = vi.spyOn(apiClient.Projects, 'listProjects')
 const apiClientPatch = vi.spyOn(apiClient.ProjectsAdmin, 'patchProject')
 
 describe('Project Admin Store', () => {
@@ -23,7 +23,7 @@ describe('Project Admin Store', () => {
     apiClientGet.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
     const adminProjectStore = useAdminProjectStore()
 
-    const res = await adminProjectStore.getAllProjects()
+    const res = await adminProjectStore.getAllProjects({})
 
     expect(res).toBe(data)
     expect(apiClientGet).toHaveBeenCalledTimes(1)
@@ -38,7 +38,7 @@ describe('Project Admin Store', () => {
     apiClientGet.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
     const adminProjectStore = useAdminProjectStore()
 
-    const res = await adminProjectStore.getAllActiveProjects()
+    const res = await adminProjectStore.getAllProjects({ statusNotIn: 'archived' })
 
     expect(res).toStrictEqual(data.splice(1))
     expect(apiClientGet).toHaveBeenCalledTimes(1)

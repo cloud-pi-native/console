@@ -4,8 +4,8 @@ export type Organization = {
   label: string,
   source: string,
   active: boolean,
-  createdAt?: Date,
-  updatedAt?: Date,
+  createdAt?: Date | string,
+  updatedAt?: Date | string,
 }
 
 export type Repository = {
@@ -105,6 +105,6 @@ export type Project = {
   clusters?: Cluster[],
   repositories?: Repository[],
   environments?: Environment[],
-  updatedAt?: Date,
-  createdAt?: Date,
+  updatedAt?: Date | string,
+  createdAt?: Date | string,
 }

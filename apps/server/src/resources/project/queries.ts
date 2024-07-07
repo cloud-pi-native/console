@@ -1,11 +1,12 @@
 import {
+  Prisma,
   ProjectStatus,
   type Organization,
   type Project,
   type Role,
   type User,
 } from '@prisma/client'
-import { ClusterPrivacy, projectAdminContract, type AsyncReturnType } from '@cpn-console/shared'
+import { ClusterPrivacy, projectContract, XOR, type AsyncReturnType } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
 
 type ProjectUpdate = Partial<Pick<Project, 'description'>>
@@ -16,7 +17,18 @@ export const updateProject = (id: Project['id'], data: ProjectUpdate) =>
   })
 
 // SELECT
-export const getAllProjects = async ({
+type FilterWhere = XOR<{
+  userId?: User['id'],
+  filter: 'all'
+}, {
+  userId: User['id'],
+  filter: 'owned' | 'member'
+
+}>
+type ListProjectWhere = Omit<(typeof projectContract.listProjects.query._type), 'status_in' | 'status_not_in' | 'status'> &
+  Pick<Prisma.ProjectWhereInput, 'status'> &
+  FilterWhere
+export const listProjects = async ({
   organizationId,
   organizationName,
   description,
@@ -24,26 +36,33 @@ export const getAllProjects = async ({
   name,
   status,
   id,
-}: typeof projectAdminContract.getAllProjects.query._type) => {
-  const options: Parameters<typeof prisma.project.findMany>[0] = {
-    where: {
-      id,
-      organizationId,
-      locked,
-      name,
-      status,
-      ...description && { description: { contains: description } },
-      ...organizationName && { organization: { name: organizationName } },
-    },
+  filter,
+  userId,
+}: ListProjectWhere) => {
+  const where: Prisma.ProjectWhereInput = {
+    id,
+    organizationId,
+    locked,
+    name,
+    status,
+    ...description && { description: { contains: description } },
+    ...organizationName && { organization: { name: organizationName } },
   }
+  if (filter === 'owned') {
+    where.roles = { some: { AND: [{ role: 'owner' }, { userId }] } }
+  } else if (filter === 'member') {
+    where.roles = { some: { userId } }
+  }
+
   return prisma.project.findMany({
-    ...options,
+    where,
     include: {
       roles: {
         include: {
           user: true,
         },
       },
+      clusters: { select: { id: true } },
     },
   })
 }
@@ -165,7 +184,7 @@ export const getProjectInfosOrThrow = (id: Project['id']) =>
     where: { id },
     include: {
       organization: true,
-      roles: true,
+      roles: { include: { user: true } },
       environments: { include: { permissions: true, stage: true, quota: true } },
       clusters: true,
       repositories: true,

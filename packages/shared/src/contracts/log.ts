@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../index.js'
-import { AtDatesToStringSchema, ErrorSchema } from '../schemas/utils.js'
+import { AtDatesToStringExtend, ErrorSchema } from '../schemas/utils.js'
 import { ClientInferRequest, ClientInferResponseBody } from '@ts-rest/core'
 
 export const adminLogsQuery = z.object({
@@ -23,14 +23,14 @@ export const logAdminContract = contractInstance.router({
           id: z.string(),
           data: z.object({
             args: z.any(),
-            failed: z.boolean().or(z.array(z.string())),
+            failed: z.boolean().or(z.array(z.string())).optional(),
             results: z.any(),
             totalExecutionTime: z.number().optional(),
           }),
           action: z.string(),
           userId: z.string(),
           requestId: z.string().nullable(),
-        }).merge(AtDatesToStringSchema)),
+        }).extend(AtDatesToStringExtend)),
       }),
       500: ErrorSchema,
     },
