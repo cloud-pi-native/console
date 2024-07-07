@@ -9,9 +9,9 @@ import { serverInstance } from '@/app.js'
 
 export const projectAdminRouter = () => serverInstance.router(projectAdminContract, {
   // Récupérer tous les projets
-  getAllProjects: async ({ request: req }) => {
+  getAllProjects: async ({ request: req, query }) => {
     try {
-      const allProjects = await getAllProjects()
+      const allProjects = await getAllProjects(query)
 
       addReqLogs({
         req,

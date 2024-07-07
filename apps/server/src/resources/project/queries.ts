@@ -5,7 +5,7 @@ import {
   type Role,
   type User,
 } from '@prisma/client'
-import { ClusterPrivacy, type AsyncReturnType } from '@cpn-console/shared'
+import { ClusterPrivacy, projectAdminContract, type AsyncReturnType } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
 
 type ProjectUpdate = Partial<Pick<Project, 'description'>>
@@ -16,8 +16,28 @@ export const updateProject = (id: Project['id'], data: ProjectUpdate) =>
   })
 
 // SELECT
-export const getAllProjects = async () =>
-  prisma.project.findMany({
+export const getAllProjects = async ({
+  organizationId,
+  organizationName,
+  description,
+  locked,
+  name,
+  status,
+  id,
+}: typeof projectAdminContract.getAllProjects.query._type) => {
+  const options: Parameters<typeof prisma.project.findMany>[0] = {
+    where: {
+      id,
+      organizationId,
+      locked,
+      name,
+      status,
+      ...description && { description: { contains: description } },
+      ...organizationName && { organization: { name: organizationName } },
+    },
+  }
+  return prisma.project.findMany({
+    ...options,
     include: {
       roles: {
         include: {
@@ -26,6 +46,7 @@ export const getAllProjects = async () =>
       },
     },
   })
+}
 
 export const getProjectInfosById = (projectId: Project['id']) =>
   prisma.project.findUnique({

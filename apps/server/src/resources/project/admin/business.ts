@@ -2,9 +2,11 @@ import { json2csv } from 'json-2-csv'
 import type { Project } from '@prisma/client'
 import { getAllProjects as getAllProjectsQuery, lockProject, getAllProjectsDataForExport, unlockProject } from '@/resources/queries-index.js'
 import { BadRequestError } from '@/utils/errors.js'
+import { projectAdminContract } from '@cpn-console/shared'
 
-export const getAllProjects = async () => getAllProjectsQuery()
-
+export const getAllProjects = async (query: typeof projectAdminContract.getAllProjects.query._type) => {
+  return getAllProjectsQuery(query)
+}
 export const handleProjectLocking = async (projectId: Project['id'], lock: Project['locked']) => {
   try {
     if (lock) {
