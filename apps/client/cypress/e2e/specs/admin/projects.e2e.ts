@@ -22,7 +22,7 @@ describe('Administration projects', () => {
   }
 
   beforeEach(() => {
-    cy.intercept('GET', 'api/v1/admin/projects').as('getAllProjects')
+    cy.intercept('GET', 'api/v1/projects*').as('getAllProjects')
 
     cy.kcLogin((admin.firstName.slice(0, 1) + admin.lastName).toLowerCase())
     cy.visit('/admin/projects')
@@ -144,7 +144,7 @@ describe('Administration projects', () => {
   })
 
   it('Should archive a project, loggedIn as admin', () => {
-    cy.intercept('GET', 'api/v1/admin/projects').as('getAllProjects')
+    cy.intercept('GET', 'api/v1/projects*').as('getAllProjects')
     cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
     cy.intercept('DELETE', 'api/v1/projects/*').as('archiveProject')
 
@@ -199,7 +199,7 @@ describe('Administration projects', () => {
     }
     let initialQuota = ''
 
-    cy.intercept('GET', 'api/v1/admin/projects').as('getAllProjects')
+    cy.intercept('GET', 'api/v1/projects*').as('getAllProjects')
     cy.intercept('GET', 'api/v1/environments?*').as('getProjectEnvironments')
     cy.intercept('GET', 'api/v1/projects/mines').as('getProjects')
     cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
@@ -302,7 +302,7 @@ describe('Administration projects', () => {
     const project = projects.find(project => project.name === 'betaapp')
     const user = project.roles.find(role => role.role !== 'owner')?.user
 
-    cy.intercept('GET', 'api/v1/admin/projects').as('getAllProjects')
+    cy.intercept('GET', 'api/v1/projects*').as('getAllProjects')
     cy.intercept('DELETE', `api/v1/projects/${project.id}/users/${user.id}`).as('removeUser')
     cy.intercept('POST', `api/v1/projects/${project.id}/users`).as('addUser')
 
@@ -337,7 +337,7 @@ describe('Administration projects', () => {
     const owner = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
     const userToTransfer = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6569')
 
-    cy.intercept('GET', 'api/v1/admin/projects').as('getAllProjects')
+    cy.intercept('GET', 'api/v1/projects*').as('getAllProjects')
     cy.intercept('GET', `api/v1/project/${project.id}/services?permissionTarget=admin`).as('getServices')
     cy.intercept('GET', `api/v1/projects/${project.id}/repositories`).as('getRepositories')
     cy.intercept('GET', 'api/v1/environments?*').as('getEnvironments')
@@ -412,7 +412,7 @@ describe('Administration projects', () => {
   it('Should access project services, loggedIn as admin', () => {
     const project = projects.find(project => project.name === 'betaapp')
 
-    cy.intercept('GET', 'api/v1/admin/projects').as('getAllProjects')
+    cy.intercept('GET', 'api/v1/projects*').as('getAllProjects')
 
     cy.getByDataTestid('tableAdministrationProjects').within(() => {
       cy.get('tr').contains(project.name)
