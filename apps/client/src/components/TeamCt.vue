@@ -244,7 +244,7 @@ watch(() => props.members, setRows)
       />
     </div>
     <LoadingCt
-      v-if="useSnackbarStore().isWaitingForResponse"
+      v-if="snackbarStore.isWaitingForResponse"
       description="Mise à jour de l'équipe projet"
     />
   </div>

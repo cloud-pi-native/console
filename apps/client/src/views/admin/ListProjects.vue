@@ -24,7 +24,8 @@ import { useQuotaStore } from '@/stores/quota.js'
 import { useProjectServiceStore } from '@/stores/project-services.js'
 import { useProjectRepositoryStore } from '@/stores/project-repository.js'
 import { useProjectStore } from '@/stores/project.js'
-import { useStageStore } from '@/stores/stage'
+import { useStageStore } from '@/stores/stage.js'
+import { bts } from '@/utils/func.js'
 
 const adminProjectStore = useAdminProjectStore()
 const projectStore = useProjectStore()
@@ -101,7 +102,7 @@ const filterMethods: FilterMethods = {
   'Non archivés': { filter: 'all', statusNotIn: 'archived' },
   Archivés: { filter: 'all', statusIn: 'archived' },
   Échoués: { filter: 'all', statusIn: 'failed' },
-  Vérrouillés: { filter: 'all', locked: true },
+  Vérrouillés: { filter: 'all', locked: true, statusNotIn: 'archived' },
 }
 
 const rowFilter = (rows: Row[]): Rows | EmptyRow => {
@@ -160,9 +161,9 @@ const setRows = () => {
           },
           {
             component: 'v-icon',
-            name: statusDict.locked[locked].icon,
-            title: `Le projet ${name} est ${statusDict.locked[locked].wording}`,
-            fill: statusDict.locked[locked].color,
+            name: statusDict.locked[bts(locked)].icon,
+            title: `Le projet ${name} est ${statusDict.locked[bts(locked)].wording}`,
+            fill: statusDict.locked[bts(locked)].color,
           },
           formatDate(createdAt),
           formatDate(updatedAt),
@@ -232,11 +233,11 @@ const getAllProjects = async () => {
 
 const selectProject = async (projectId: string) => {
   const project = allProjects.value.find(project => project.id === projectId) as ProjectV2
-  if (!selectedProject.value) return
+  if (!project) return
   const [repositories, environments] = await Promise.all([
     useProjectRepositoryStore().getProjectRepositories(projectId),
     useProjectEnvironmentStore().getProjectEnvironments(projectId),
-    reloadProjectServices(),
+    reloadProjectServices(projectId),
   ])
   selectedProject.value = {
     ...project,
@@ -277,8 +278,8 @@ const archiveProject = async (projectId: string) => {
   if (!selectedProject.value) return
   snackbarStore.isWaitingForResponse = true
   await projectStore.archiveProject(projectId)
-  await getAllProjects()
   selectedProject.value = undefined
+  await getAllProjects()
   snackbarStore.isWaitingForResponse = false
 }
 
@@ -337,9 +338,8 @@ onBeforeMount(async () => {
 })
 
 const projectServices = ref<ProjectService[]>([])
-const reloadProjectServices = async () => {
-  if (!selectedProject.value) return
-  const resServices = await projectServiceStore.getProjectServices(selectedProject.value.id, 'admin')
+const reloadProjectServices = async (projectId: ProjectV2['id']) => {
+  const resServices = await projectServiceStore.getProjectServices(projectId, 'admin')
   projectServices.value = []
   await nextTick()
   const filteredServices = resServices
@@ -358,7 +358,7 @@ const saveProjectServices = async (data: PluginsUpdateBody) => {
 
     snackbarStore.setMessage('Erreur lors de la sauvegarde', 'error')
   }
-  await reloadProjectServices()
+  await reloadProjectServices(selectedProject.value.id)
   snackbarStore.isWaitingForResponse = false
 }
 
@@ -433,35 +433,37 @@ const untruncateDescription = (span: HTMLElement) => {
         @click="() => selectedProject = undefined"
       />
     </div>
-    <div
+    <template
       v-if="!selectedProject"
-      class="flex"
     >
-      <DsfrSelect
-        v-model="activeFilter"
-        select-id="tableAdministrationProjectsFilter"
-        label="Filtre rapide"
-        :options="Object.keys(filterMethods)"
-        @update:model-value="getAllProjects()"
+      <div
+        class="flex"
+      >
+        <DsfrSelect
+          v-model="activeFilter"
+          select-id="tableAdministrationProjectsFilter"
+          label="Filtre rapide"
+          :options="Object.keys(filterMethods)"
+          @update:model-value="getAllProjects()"
+        />
+        <DsfrInputGroup
+          v-model="inputSearchText"
+          data-testid="tableAdministrationProjectsSearch"
+          label-visible
+          placeholder="Recherche textuelle"
+          label="Recherche"
+          class="flex-1 pl-4"
+        />
+      </div>
+      <DsfrTable
+        :key="tableKey"
+        data-testid="tableAdministrationProjects"
+        :title="title"
+        :headers="headers"
+        :rows="rowFilter(rows)"
       />
-      <DsfrInputGroup
-        v-model="inputSearchText"
-        data-testid="tableAdministrationProjectsSearch"
-        label-visible
-        placeholder="Recherche textuelle"
-        label="Recherche"
-        class="flex-1 pl-4"
-      />
-    </div>
-    <DsfrTable
-      v-if="!selectedProject"
-      :key="tableKey"
-      data-testid="tableAdministrationProjects"
-      :title="title"
-      :headers="headers"
-      :rows="rowFilter(rows)"
-    />
-    <div v-if="selectedProject">
+    </template>
+    <div v-else>
       <DsfrCallout
         :title="selectedProject.name"
         :content="selectedProject.description ?? ''"
@@ -581,7 +583,7 @@ const untruncateDescription = (span: HTMLElement) => {
             permission-target="admin"
             :display-global="false"
             @update="(data: PluginsUpdateBody) => saveProjectServices(data)"
-            @reload="() => reloadProjectServices()"
+            @reload="() => reloadProjectServices(selectedProject.id)"
           />
         </div>
       </div>

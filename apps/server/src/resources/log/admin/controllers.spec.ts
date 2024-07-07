@@ -35,8 +35,8 @@ describe('Admin log routes', () => {
         .get('/api/v1/admin/logs?offset=0&limit=100')
         .end()
 
-      expect(response.statusCode).toEqual(200)
       expect(response.json()).toMatchObject({ total: logs.length, logs })
+      expect(response.statusCode).toEqual(200)
     })
 
     it('Should return an error if retrieve logs failed', async () => {

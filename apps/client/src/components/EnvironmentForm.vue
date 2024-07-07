@@ -327,7 +327,7 @@ watch(localEnvironment.value, () => {
               :title="`Supprimer définitivement l'environnement ${localEnvironment.name}`"
               secondary
               icon="ri-delete-bin-7-line"
-              @click="$emit('deleteEnvironment', localEnvironment)"
+              @click="emit('deleteEnvironment', localEnvironment.id)"
             />
             <DsfrButton
               label="Annuler"

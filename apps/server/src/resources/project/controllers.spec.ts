@@ -214,7 +214,7 @@ describe('Project routes', () => {
     it('Should replay hooks for a project', async () => {
       const project = createRandomDbSetup({}).project
       project.roles = [...project.roles, getRandomRole(getRequestor().id, project.id, 'user')]
-
+      setRequestor({ ...getRequestor(), groups: [] })
       prisma.project.findUnique.mockResolvedValue(project)
 
       const response = await app.inject()
@@ -227,6 +227,7 @@ describe('Project routes', () => {
     it('Should not replay hooks for a project if requestor is not member nor admin', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const project = randomDbSetup.project
+      setRequestor({ ...getRequestor(), groups: [] })
 
       prisma.project.findUnique.mockResolvedValue(project)
 

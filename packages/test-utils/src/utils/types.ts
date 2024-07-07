@@ -89,8 +89,15 @@ export type Log = {
   id: string,
   action: string,
   userId: string,
-  updatedAt?: Date,
-  createdAt?: Date,
+  createdAt: Date | string,
+  updatedAt: Date | string,
+  data: {
+    args: any,
+    failed: boolean,
+    results: any,
+    totalExecutionTime: number,
+  },
+  requestId: null
 }
 
 export type Project = {

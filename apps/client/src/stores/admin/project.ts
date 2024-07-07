@@ -4,8 +4,8 @@ import { apiClient, extractData } from '@/api/xhr-client.js'
 import { useProjectStore } from '../project.js'
 import { projectContract } from '@cpn-console/shared'
 
-const projectStore = useProjectStore()
 export const useAdminProjectStore = defineStore('admin-project', () => {
+  const projectStore = useProjectStore()
   const usersStore = useUsersStore()
 
   const getAllProjects = async (query: typeof projectContract.listProjects.query._type) => {
