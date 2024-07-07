@@ -131,7 +131,7 @@ describe('Add repos into project', () => {
   })
 
   it('Should update a repo', () => {
-    cy.intercept('GET', '/api/v1/projects').as('getProjects')
+    cy.intercept('GET', '/api/v1/projects/mines').as('getProjects')
     cy.intercept('PUT', '/api/v1/projects/*/repositories/*').as('putRepo')
     let repos
 
@@ -167,7 +167,7 @@ describe('Add repos into project', () => {
   })
 
   it('Should synchronise a repo', () => {
-    cy.intercept('GET', '/api/v1/projects').as('getProjects')
+    cy.intercept('GET', '/api/v1/projects/mines').as('getProjects')
     cy.intercept('POST', '/api/v1/projects/*/repositories/*/sync').as('syncRepo')
     let repos
 
@@ -219,7 +219,7 @@ describe('Add repos into project', () => {
 
   it('Should generate a GitLab CI for a repo', () => {
     cy.intercept('POST', '/api/v1/projects/*/repositories').as('postRepo')
-    cy.intercept('GET', '/api/v1/projects').as('getProjects')
+    cy.intercept('GET', '/api/v1/projects/mines').as('getProjects')
 
     const repo = {
       internalRepoName: 'repo05',

@@ -17,7 +17,7 @@ describe('Administration organizations', () => {
 
   beforeEach(() => {
     cy.intercept('GET', 'api/v1/organizations').as('getAllOrganizations')
-    cy.intercept('GET', 'api/v1/projects').as('getProjects')
+    cy.intercept('GET', 'api/v1/projects/mines').as('getProjects')
 
     cy.kcLogin('tcolin')
     cy.visit('/admin/organizations')

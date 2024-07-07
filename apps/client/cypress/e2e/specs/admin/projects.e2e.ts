@@ -201,7 +201,7 @@ describe('Administration projects', () => {
 
     cy.intercept('GET', 'api/v1/admin/projects').as('getAllProjects')
     cy.intercept('GET', 'api/v1/environments?*').as('getProjectEnvironments')
-    cy.intercept('GET', 'api/v1/projects').as('getProjects')
+    cy.intercept('GET', 'api/v1/projects/mines').as('getProjects')
     cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
     cy.intercept('GET', 'api/v1/stages').as('getStages')
     cy.intercept('POST', '/api/v1/admin/quotas').as('createQuota')
