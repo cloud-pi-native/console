@@ -16,7 +16,7 @@ describe('Administration organizations', () => {
   }
 
   beforeEach(() => {
-    cy.intercept('GET', 'api/v1/admin/organizations').as('getAllOrganizations')
+    cy.intercept('GET', 'api/v1/organizations').as('getAllOrganizations')
     cy.intercept('GET', 'api/v1/projects').as('getProjects')
 
     cy.kcLogin('tcolin')
@@ -78,8 +78,8 @@ describe('Administration organizations', () => {
   })
 
   it('Should update an organization loggedIn as admin', () => {
-    cy.intercept('PUT', '/api/v1/admin/organizations/*').as('putOrganization')
-    cy.intercept('GET', 'api/v1/admin/organizations').as('getAllOrganizations')
+    cy.intercept('PUT', '/api/v1/organizations/*').as('putOrganization')
+    cy.intercept('GET', 'api/v1/organizations').as('getAllOrganizations')
 
     const newLabel = 'Ministère de la chambre rouge'
 
@@ -212,7 +212,7 @@ describe('Administration organizations', () => {
   })
 
   it('Should synchronize organizations from plugins', () => {
-    cy.intercept('GET', '/api/v1/admin/organizations/sync').as('syncOrganizations')
+    cy.intercept('GET', '/api/v1/organizations/sync').as('syncOrganizations')
 
     cy.getByDataTestid('syncOrgsBtn')
       .click()
