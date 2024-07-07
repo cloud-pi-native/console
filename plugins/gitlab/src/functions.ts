@@ -3,7 +3,7 @@ import { deleteGroup } from './group.js'
 import { createUsername, getUser } from './user.js'
 import { ensureMembers } from './members.js'
 import { ensureRepositories } from './repositories.js'
-import { VaultSecrets, getConfig } from './utils.js'
+import { VaultSecrets, cleanGitlabError, getConfig } from './utils.js'
 
 // Check
 export const checkApi: StepCall<Project> = async (payload) => {
@@ -28,7 +28,7 @@ export const checkApi: StepCall<Project> = async (payload) => {
     }
   } catch (error) {
     return {
-      error: parseError(error),
+      error: parseError(cleanGitlabError(error)),
       status: {
         result: 'KO',
         // @ts-ignore prévoir une fonction générique
@@ -76,7 +76,7 @@ export const getDsoProjectSecrets: StepCall<ProjectLite> = async (payload) => {
     }
   } catch (error) {
     return {
-      error: parseError(error),
+      error: parseError(cleanGitlabError(error)),
       status: {
         result: 'OK',
         message: 'No secrets found for this project',
@@ -128,7 +128,7 @@ export const upsertDsoProject: StepCall<Project> = async (payload) => {
     }
   } catch (error) {
     return {
-      error: parseError(error),
+      error: parseError(cleanGitlabError(error)),
       status: {
         result: 'KO',
         message: 'Can\'t reconcile please inspect logs',
@@ -150,7 +150,7 @@ export const deleteDsoProject: StepCall<Project> = async (payload) => {
     }
   } catch (error) {
     return {
-      error: parseError(error),
+      error: parseError(cleanGitlabError(error)),
       status: {
         result: 'KO',
         message: 'Failed',
@@ -172,7 +172,7 @@ export const syncRepository: StepCall<UniqueRepo> = async (payload) => {
     }
   } catch (error) {
     return {
-      error: parseError(error),
+      error: parseError(cleanGitlabError(error)),
       status: {
         result: 'KO',
         message: 'Failed to trigger sync',
@@ -192,7 +192,7 @@ export const commitFiles: StepCall<UniqueRepo | Project> = async (payload) => {
     }
   } catch (error) {
     return {
-      error: parseError(error),
+      error: parseError(cleanGitlabError(error)),
       status: {
         result: 'KO',
         message: 'Failed to commit files',
