@@ -47,13 +47,7 @@ export const getPluginsConfig = async (requestor: KeycloakPayload) => {
   }).filter(plugin => plugin.manifest.length > 0)
 }
 
-export const updatePluginConfig = async (data: PluginsUpdateBody, requestor: KeycloakPayload) => {
-  // Pré-requis
-  const isAdmin = requestor.groups?.includes(adminGroupPath)
-  if (!isAdmin) {
-    throw new ForbiddenError('Vous n\'êtes pas admin')
-  }
-
+export const updatePluginConfig = async (data: PluginsUpdateBody) => {
   const parsedData = editStrippers.global.safeParse(data)
   if (!parsedData.success) return
   const records = objToDb(parsedData.data)

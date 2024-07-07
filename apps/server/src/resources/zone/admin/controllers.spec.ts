@@ -4,6 +4,7 @@ import { getConnection, closeConnections } from '../../../connect.js'
 import { adminGroupPath } from '@cpn-console/shared'
 import { getRandomCluster, getRandomUser, getRandomZone } from '@cpn-console/test-utils'
 import { setRequestor } from '../../../utils/mocks.js'
+import { faker } from '@faker-js/faker'
 import app from '../../../app.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../../utils/mocks.js')).mockSessionPlugin)
@@ -32,25 +33,34 @@ describe('Admin zone routes', () => {
   describe('createZonesController', () => {
     it('Should create a new zone', async () => {
       const zone = { label: 'Zone à Défendre', slug: 'zad' }
-
+      const zoneCreated = {
+        ...zone,
+        id: faker.string.uuid(),
+        description: '',
+      }
       prisma.zone.findUnique.mockResolvedValue(null)
-      prisma.zone.create.mockResolvedValue(zone)
+      prisma.zone.create.mockResolvedValue(zoneCreated)
 
       const response = await app.inject()
         .post('/api/v1/admin/zones')
         .body(zone)
         .end()
 
-      expect(response.json()).toEqual(zone)
+      expect(response.json()).toEqual(zoneCreated)
       expect(response.statusCode).toEqual(201)
     })
 
     it('Should create a new zone with associated clusters', async () => {
       const zone = { label: 'Zone à Défendre', slug: 'zad', clusterIds: [getRandomCluster({}).id] }
-
+      const zoneCreated = {
+        label: zone.label,
+        slug: zone.slug,
+        id: faker.string.uuid(),
+        description: '',
+      }
       prisma.zone.findUnique.mockResolvedValue(null)
-      prisma.zone.create.mockResolvedValue(zone)
-      prisma.zone.update.mockResolvedValue(zone)
+      prisma.zone.create.mockResolvedValue(zoneCreated)
+      prisma.zone.update.mockResolvedValue(undefined)
 
       const response = await app.inject()
         .post('/api/v1/admin/zones')
@@ -60,7 +70,7 @@ describe('Admin zone routes', () => {
       // update means clusterIds are linked
       expect(prisma.zone.update).toHaveBeenCalled()
       expect(response.statusCode).toEqual(201)
-      expect(response.json()).toEqual(zone)
+      expect(response.json()).toEqual(zoneCreated)
     })
 
     it('Should not create a a zone if slug is already taken', async () => {
@@ -113,7 +123,7 @@ describe('Admin zone routes', () => {
     it('Should not delete a zone with associated clusters', async () => {
       const zone = {
         ...getRandomZone(),
-        get clusters() {
+        get clusters () {
           return [getRandomCluster({ zoneId: this.id })]
         },
       }

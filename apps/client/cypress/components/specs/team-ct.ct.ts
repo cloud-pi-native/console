@@ -21,20 +21,20 @@ describe('TeamCt.vue', () => {
   it('Should mount a TeamCt for owner', () => {
     useProjectStore()
     useUsersStore()
-    const randomDbSetup = createRandomDbSetup({ nbUsers: 4 })
-    const owner = randomDbSetup.project.roles.find(role => role.role === 'owner')?.user
+    const { project, users } = createRandomDbSetup({ nbUsers: 4 })
+    const owner = project.roles.find(role => role.role === 'owner')?.user
     const newUser = getRandomUser()
 
-    cy.intercept('GET', `api/v1/projects/${randomDbSetup.project.id}/users/match?letters=*`, { body: [newUser] })
+    cy.intercept('GET', `api/v1/projects/${project.id}/users/match?letters=*`, { body: [newUser] })
 
     const props = {
       userProfile: {
         ...owner,
         groups: [],
       },
-      project: randomDbSetup.project,
-      roles: randomDbSetup.project.roles,
-      knownUsers: toUsersStore(randomDbSetup.users),
+      project,
+      members: project.roles,
+      knownUsers: toUsersStore(users),
     }
 
     cy.mount(TeamCt, { props })
@@ -44,7 +44,7 @@ describe('TeamCt.vue', () => {
         cy.get('caption')
           .should('contain', 'Membres du projet')
         cy.get('tbody > tr')
-          .should('have.length', randomDbSetup.project.roles?.length)
+          .should('have.length', project.roles?.length)
         cy.get(`td[title="${owner?.email} ne peut pas être retiré(e) du projet"]`)
           .should('have.class', 'disabled')
         cy.get('td[title^="retirer"]')
@@ -53,21 +53,21 @@ describe('TeamCt.vue', () => {
   })
   it('Should mount a TeamCt for admin', () => {
     useProjectStore()
-    const randomDbSetup = createRandomDbSetup({ nbUsers: 4 })
-    const owner = randomDbSetup.project.roles.find(role => role.role === 'owner')?.user
-    const user = randomDbSetup.project.roles.find(role => role.role !== 'owner')?.user
+    const { project, users } = createRandomDbSetup({ nbUsers: 4 })
+    const owner = project.roles.find(role => role.role === 'owner')?.user
+    const user = project.roles.find(role => role.role !== 'owner')?.user
     const newUser = getRandomUser()
 
-    cy.intercept('GET', `api/v1/projects/${randomDbSetup.project.id}/users/match?letters=*`, { body: [newUser] })
+    cy.intercept('GET', `api/v1/projects/${project.id}/users/match?letters=*`, { body: [newUser] })
 
     const props = {
       userProfile: {
         ...user,
         groups: ['/admin'],
       },
-      project: randomDbSetup.project,
-      roles: randomDbSetup.project.roles,
-      knownUsers: toUsersStore(randomDbSetup.users),
+      project,
+      members: project.roles,
+      knownUsers: toUsersStore(users),
     }
 
     cy.mount(TeamCt, { props })
@@ -77,7 +77,7 @@ describe('TeamCt.vue', () => {
         cy.get('caption')
           .should('contain', 'Membres du projet')
         cy.get('tbody > tr')
-          .should('have.length', randomDbSetup.project.roles?.length)
+          .should('have.length', project.roles?.length)
         cy.get(`td[title="${owner?.email} ne peut pas être retiré(e) du projet"]`)
           .should('have.class', 'disabled')
         cy.get('td[title^="retirer"]')
@@ -86,21 +86,21 @@ describe('TeamCt.vue', () => {
   })
   it('Should mount a TeamCt for user', () => {
     useProjectStore()
-    const randomDbSetup = createRandomDbSetup({ nbUsers: 4 })
-    const owner = randomDbSetup.project.roles.find(role => role.role === 'owner')?.user
-    const user = randomDbSetup.project.roles.find(role => role.role !== 'owner')?.user
+    const { project, users } = createRandomDbSetup({ nbUsers: 4 })
+    const owner = project.roles.find(role => role.role === 'owner')?.user
+    const user = project.roles.find(role => role.role !== 'owner')?.user
     const newUser = getRandomUser()
 
-    cy.intercept('GET', `api/v1/projects/${randomDbSetup.project.id}/users/match?letters=*`, { body: [newUser] })
+    cy.intercept('GET', `api/v1/projects/${project.id}/users/match?letters=*`, { body: [newUser] })
 
     const props = {
       userProfile: {
         ...user,
         groups: [],
       },
-      project: randomDbSetup.project,
-      roles: randomDbSetup.project.roles,
-      knownUsers: toUsersStore(randomDbSetup.users),
+      project,
+      members: project.roles,
+      knownUsers: toUsersStore(users),
     }
 
     cy.mount(TeamCt, { props })
@@ -110,7 +110,7 @@ describe('TeamCt.vue', () => {
         cy.get('caption')
           .should('contain', 'Membres du projet')
         cy.get('tbody > tr')
-          .should('have.length', randomDbSetup.project.roles?.length)
+          .should('have.length', project.roles?.length)
         cy.get(`td[title="${owner?.email} ne peut pas être retiré(e) du projet"]`)
           .should('have.class', 'disabled')
         cy.get('td[title="vous n\'avez pas les droits suffisants pour retirer un membre du projet"]')

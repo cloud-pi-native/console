@@ -199,7 +199,6 @@ export const updateProject = async (data: UpdateProjectBody, projectId: Project[
     }
 
     const projectInfos = await getProjectInfosOrThrowQuery(projectId)
-    console.log({ projectInfos: projectInfos.roles })
 
     return {
       ...projectInfos,
@@ -216,9 +215,9 @@ export const replayHooks = async (projectId: Project['id'], requestor: KeycloakP
   try {
     // Pré-requis
     const project = await getProjectInfosQuery(projectId)
-    if (!project) throw new NotFoundError('Projet introuvable')
+    if (!project || project.status === 'archived') throw new NotFoundError('Projet introuvable')
 
-    if (!requestor.groups?.includes(adminGroupPath)) {
+    if (!hasGroupAdmin(requestor.groups)) {
       const insufficientRoleErrorMessage = checkInsufficientRoleInProject(requestor.id, { roles: project.roles, minRole: 'user' })
       if (insufficientRoleErrorMessage) throw new ForbiddenError(insufficientRoleErrorMessage)
     }

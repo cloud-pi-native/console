@@ -17,3 +17,5 @@ export const toCodeComponent = (value: string) => ({
   class: 'fr-text-default--info text-xs cursor-pointer',
   onClick: () => copyContent(value),
 })
+
+export const bts = (v: boolean) => v ? 'true' : 'false'

@@ -171,5 +171,14 @@ export const getRandomLog = (action = faker.helpers.arrayElement(logActions), us
     id: faker.string.uuid(),
     action,
     userId,
+    updatedAt: (new Date()).toISOString(),
+    createdAt: (new Date()).toISOString(),
+    data: {
+      args: {},
+      failed: faker.datatype.boolean(),
+      results: {},
+      totalExecutionTime: 1,
+    },
+    requestId: null,
   }
 }
