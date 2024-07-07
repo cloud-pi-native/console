@@ -1,9 +1,11 @@
-import type { Organization, Project, User } from '@prisma/client'
+import type { Organization, Project, Role, User } from '@prisma/client'
 import type { KeycloakPayload } from 'fastify-keycloak-adapter'
 import {
-  ProjectSchema,
+  ProjectStatusSchema,
+  ProjectSchemaV2,
   adminGroupPath,
   exclude,
+  projectContract,
   projectIsLockedInfo,
   type AsyncReturnType,
   type CreateProjectBody,
@@ -23,6 +25,7 @@ import {
   getPublicClusters,
   getUserProjects as getUserProjectsQuery,
   initializeProject,
+  listProjects as listProjectsQuery,
   lockProject,
   removeClusterFromProject,
   updateProject as updateProjectQuery,
@@ -30,10 +33,13 @@ import {
 } from '@/resources/queries-index.js'
 import { type UserDto } from '@/resources/user/business.js'
 import { validateSchema } from '@/utils/business.js'
-import { checkInsufficientPermissionInEnvironment, checkInsufficientRoleInProject } from '@/utils/controller.js'
+import { checkInsufficientPermissionInEnvironment, checkInsufficientRoleInProject, hasGroupAdmin, whereBuilder } from '@/utils/controller.js'
 import { BadRequestError, DsoError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
 import { filterObjectByKeys } from '@/utils/queries-tools.js'
+import { UserDetails } from '@/types/index.js'
+
+export const rolesToMembers = (roles: (Role & { user: User })[]) => roles.map(({ role, user: { id, ...user } }) => ({ ...user, userId: id, role }))
 
 // Fetch infos
 export const getProjectInfosAndClusters = async (projectId: string) => {
@@ -56,12 +62,33 @@ export const getUserProjects = async (userId: User['id']) => {
   })
 }
 
+const projectStatus = ProjectStatusSchema._def.values
+export const listProjects = async ({ status, statusIn, statusNotIn, filter = 'member', ...query }: typeof projectContract.listProjects.query._type, user: UserDetails) => {
+  const isAdmin = hasGroupAdmin(user.groups)
+  if (!isAdmin && filter === 'all') {
+    filter = 'member'
+  }
+
+  return listProjectsQuery({
+    ...query,
+    status: whereBuilder({ enumValues: projectStatus, eqValue: status, inValues: statusIn, notInValues: statusNotIn }),
+    filter,
+    userId: user.id,
+  }).then(projects => projects
+    .map(({ clusters, roles, ...project }) => ({
+      ...project,
+      description: project.description ?? '',
+      clusterIds: clusters.map(({ id }) => id),
+      members: rolesToMembers(roles),
+    })))
+}
+
 // Check logic
 export const checkCreateProject = async (
   organizationName: Organization['name'],
   data: CreateProjectBody,
 ) => {
-  const schemaValidation = ProjectSchema.pick({ name: true, organizationId: true, description: true }).safeParse(data)
+  const schemaValidation = ProjectSchemaV2.pick({ name: true, organizationId: true, description: true }).safeParse(data)
   validateSchema(schemaValidation)
 
   const projectSearch = await getProjectByNames({ name: data.name, organizationName })
@@ -131,11 +158,14 @@ export const createProject = async (dataDto: CreateProjectBody, requestor: UserD
       throw new Error('Echec de la création du projet par les plugins')
     }
 
-    const publicClusters = await getPublicClusters()
     const projectInfos = await getProjectInfosOrThrowQuery(project.id)
-    projectInfos.clusters = projectInfos.clusters.concat(publicClusters)
 
-    return projectInfos
+    return {
+      ...projectInfos,
+      description: projectInfos.description ?? '',
+      clusterIds: projectInfos.clusters.map(({ id }) => id),
+      members: rolesToMembers(projectInfos.roles),
+    }
   } catch (error) {
     throw new Error(error?.message)
   }
@@ -154,7 +184,7 @@ export const updateProject = async (data: UpdateProjectBody, projectId: Project[
     project[key] = data[key]
   })
 
-  const schemaValidation = ProjectSchema.pick({ description: true }).safeParse(data)
+  const schemaValidation = ProjectSchemaV2.pick({ description: true }).safeParse(data)
   validateSchema(schemaValidation)
 
   // Actions
@@ -167,7 +197,16 @@ export const updateProject = async (data: UpdateProjectBody, projectId: Project[
     if (results.failed) {
       throw new Error('Echec de la mise à jour du projet par les plugins')
     }
-    return getProjectInfosOrThrowQuery(projectId)
+
+    const projectInfos = await getProjectInfosOrThrowQuery(projectId)
+    console.log({ projectInfos: projectInfos.roles })
+
+    return {
+      ...projectInfos,
+      description: projectInfos.description ?? '',
+      clusterIds: projectInfos.clusters.map(({ id }) => id),
+      members: rolesToMembers(projectInfos.roles),
+    }
   } catch (error) {
     throw new Error(error?.message)
   }

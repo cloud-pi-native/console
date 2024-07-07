@@ -35,6 +35,15 @@ export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = basicStage
   }))
   project.roles[0].role = projectRoles[0]
 
+  // @ts-ignore
+  project.members = project.roles.map(({ userId, user: { id: _, ...user }, role }) => {
+    return {
+      userId,
+      role,
+      ...user,
+    }
+  })
+
   // Create zone
   const zones = [getRandomZone()]
 

@@ -6,6 +6,7 @@ import {
   archiveProject,
   getProjectSecrets,
   replayHooks,
+  listProjects,
 } from './business.js'
 import { projectContract } from '@cpn-console/shared'
 import { serverInstance } from '@/app.js'
@@ -28,6 +29,28 @@ export const projectRouter = () => serverInstance.router(projectContract, {
       return {
         status: 200,
         body: projectsInfos,
+      }
+    } catch (error) {
+      throw new Error(error.message)
+    }
+  },
+
+  listProjects: async ({ request: req, query }) => {
+    try {
+      const user = req.session.user
+
+      const allProjects = await listProjects(
+        query,
+        user,
+      )
+
+      addReqLogs({
+        req,
+        message: 'Ensemble des projets récupérés avec succès',
+      })
+      return {
+        status: 200,
+        body: allProjects,
       }
     } catch (error) {
       throw new Error(error.message)

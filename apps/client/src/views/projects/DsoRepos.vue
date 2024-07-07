@@ -102,122 +102,130 @@ watch(project, () => {
 
 <template>
   <DsoSelectedProject />
-  <div
-    class="flex <md:flex-col-reverse items-center justify-between pb-5"
+  <template
+    v-if="project"
   >
-    <DsfrButton
-      v-if="!selectedRepo && !isNewRepoForm"
-      label="Ajouter un nouveau dépôt"
-      data-testid="addRepoLink"
-      tertiary
-      :disabled="project?.locked"
-      :title="project?.locked ? projectIsLockedInfo : 'Ajouter un dépôt'"
-      class="fr-mt-2v <md:mb-2"
-      icon="ri-add-line"
-      @click="showNewRepoForm()"
-    />
     <div
-      v-else
-      class="w-full flex justify-end"
+      class="flex <md:flex-col-reverse items-center justify-between pb-5"
     >
       <DsfrButton
-        title="Revenir à la liste des dépôts"
-        data-testid="goBackBtn"
-        secondary
-        icon-only
-        icon="ri-arrow-go-back-line"
-        @click="() => cancel()"
+        v-if="!selectedRepo && !isNewRepoForm"
+        label="Ajouter un nouveau dépôt"
+        data-testid="addRepoLink"
+        tertiary
+        :disabled="project.locked"
+        :title="project.locked ? projectIsLockedInfo : 'Ajouter un dépôt'"
+        class="fr-mt-2v <md:mb-2"
+        icon="ri-add-line"
+        @click="showNewRepoForm()"
+      />
+      <div
+        v-else
+        class="w-full flex justify-end"
+      >
+        <DsfrButton
+          title="Revenir à la liste des dépôts"
+          data-testid="goBackBtn"
+          secondary
+          icon-only
+          icon="ri-arrow-go-back-line"
+          @click="() => cancel()"
+        />
+      </div>
+    </div>
+    <div
+      v-if="isNewRepoForm"
+      class="my-5 pb-10 border-grey-900 border-y-1"
+    >
+      <RepoForm
+        :is-project-locked="project.locked"
+        @save="(repo) => saveRepo(repo)"
+        @cancel="cancel()"
       />
     </div>
-  </div>
-  <div
-    v-if="isNewRepoForm"
-    class="my-5 pb-10 border-grey-900 border-y-1"
-  >
-    <RepoForm
-      :is-project-locked="project?.locked"
-      @save="(repo) => saveRepo(repo)"
-      @cancel="cancel()"
-    />
-  </div>
-  <div
-    v-else
-    :class="{
-      'md:grid md:grid-cols-3 md:gap-3 items-center justify-between': !selectedRepo?.internalRepoName,
-    }"
-  >
     <div
-      v-for="repo in repos"
-      :key="repo.id"
-      class="fr-mt-2v fr-mb-4w"
+      v-else
+      :class="{
+        'md:grid md:grid-cols-3 md:gap-3 items-center justify-between': !selectedRepo?.internalRepoName,
+      }"
     >
       <div
-        v-show="!selectedRepo"
+        v-for="repo in repos"
+        :key="repo.id"
+        class="fr-mt-2v fr-mb-4w"
       >
-        <DsfrTile
-          :title="repo.title"
-          :data-testid="`repoTile-${repo.id}`"
-          :horizontal="!!selectedRepo?.internalRepoName"
-          class="fr-mb-2w w-11/12"
-          @click="setSelectedRepo(repo.data)"
-        />
-      </div>
-      <div
-        v-if="selectedRepo?.internalRepoName === repo.id"
-      >
-        <DsfrNavigation
-          class="fr-mb-4w"
-          :nav-items="[
-            {
-              to: `#${syncFormId}`,
-              text: '#Synchroniser le dépôt'
-            },
-            {
-              to: `#${repoFormId}`,
-              text: '#Modifier le dépôt'
-            },
-          ]"
-        />
         <div
-          :id="syncFormId"
-          class="flex flex-col gap-4 fr-mb-4w"
+          v-show="!selectedRepo"
         >
-          <h2
-            class="fr-h2 fr-mt-2w"
-          >
-            Synchroniser le dépôt {{ selectedRepo?.internalRepoName }}
-          </h2>
-          <DsfrInput
-            v-model="branchName"
-            data-testid="branchNameInput"
-            label="Branche cible"
-            label-visible
-            required
-            placeholder="main"
-          />
-          <DsfrButton
-            data-testid="syncRepoBtn"
-            label="Lancer la synchronisation"
-            secondary
-            :disabled="!branchName"
-            @click="syncRepository()"
+          <DsfrTile
+            :title="repo.title"
+            :data-testid="`repoTile-${repo.id}`"
+            :horizontal="!!selectedRepo?.internalRepoName"
+            class="fr-mb-2w w-11/12"
+            @click="setSelectedRepo(repo.data)"
           />
         </div>
-        <RepoForm
-          :id="repoFormId"
-          :is-project-locked="project?.locked"
-          :is-owner="isOwner"
-          :repo="selectedRepo"
-          @save="(repo) => saveRepo(repo)"
-          @delete="(repoId) => deleteRepo(repoId)"
-          @cancel="cancel()"
-        />
+        <div
+          v-if="selectedRepo?.internalRepoName === repo.id"
+        >
+          <DsfrNavigation
+            class="fr-mb-4w"
+            :nav-items="[
+              {
+                to: `#${syncFormId}`,
+                text: '#Synchroniser le dépôt'
+              },
+              {
+                to: `#${repoFormId}`,
+                text: '#Modifier le dépôt'
+              },
+            ]"
+          />
+          <div
+            :id="syncFormId"
+            class="flex flex-col gap-4 fr-mb-4w"
+          >
+            <h2
+              class="fr-h2 fr-mt-2w"
+            >
+              Synchroniser le dépôt {{ selectedRepo?.internalRepoName }}
+            </h2>
+            <DsfrInput
+              v-model="branchName"
+              data-testid="branchNameInput"
+              label="Branche cible"
+              label-visible
+              required
+              placeholder="main"
+            />
+            <DsfrButton
+              data-testid="syncRepoBtn"
+              label="Lancer la synchronisation"
+              secondary
+              :disabled="!branchName"
+              @click="syncRepository()"
+            />
+          </div>
+          <RepoForm
+            :id="repoFormId"
+            :is-project-locked="project.locked"
+            :is-owner="isOwner"
+            :repo="selectedRepo"
+            @save="(repo) => saveRepo(repo)"
+            @delete="(repoId) => deleteRepo(repoId)"
+            @cancel="cancel()"
+          />
+        </div>
+      </div>
+      <div
+        v-if="!repos.length && !isNewRepoForm"
+      >
+        <p>Aucun dépôt synchronisé</p>
       </div>
     </div>
-    <div
-      v-if="!repos.length && !isNewRepoForm"
-    >
-      <p>Aucun dépôt synchronisé</p>
-    </div>
-  </div>
+  </template>
+  <!-- N'est jamais sensé s'afficher -->
+  <ErrorGoBackToProjects
+    v-else
+  />
 </template>

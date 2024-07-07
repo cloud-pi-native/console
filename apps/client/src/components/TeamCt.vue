@@ -7,9 +7,9 @@ import {
   type LettersQuery,
   type UserProfile,
   type User,
-  type Role,
   type Project,
   parseZodError,
+  type ProjectRoles,
 } from '@cpn-console/shared'
 import pDebounce from 'p-debounce'
 import { useProjectUserStore } from '@/stores/project-user'
@@ -29,7 +29,7 @@ const props = withDefaults(
   defineProps<{
     userProfile?: UserProfile
     project: Pick<Project, 'id' | 'locked' | 'name'>
-    roles: Array<Role>
+    members: Array<{ userId: User['id'], role: ProjectRoles}>
     knownUsers: Record<string, User>
   }>(),
   {
@@ -40,10 +40,10 @@ const props = withDefaults(
 const snackbarStore = useSnackbarStore()
 
 const isUserAlreadyInTeam = computed(() => {
-  return !!props.roles?.find(role => props.knownUsers[role.userId]?.email === newUserEmail.value)
+  return !!props.members.find(member => props.knownUsers[member.userId]?.email === newUserEmail.value)
 })
 
-const isOwnerOrAdmin = ref(props.roles.some(role => (role.userId === props.userProfile?.id && role.role === 'owner') ||
+const isOwnerOrAdmin = ref(props.members.some(member => (member.userId === props.userProfile?.id && member.role === 'owner') ||
   props.userProfile?.groups?.includes(adminGroupPath)))
 const newUserInputKey = ref(getRandomId('input'))
 const newUserEmail = ref('')
@@ -56,29 +56,29 @@ const isTransferingRole = ref('')
 const setRows = () => {
   rows.value = []
 
-  if (props.roles?.length) {
-    props.roles.forEach(role => {
-      if (role.role === 'owner') {
+  if (props.members?.length) {
+    props.members.forEach(member => {
+      if (member.role === 'owner') {
         rows.value.unshift([
           {
             component: 'code',
-            text: role.userId,
+            text: member.userId,
             title: 'Copier l\'id',
             'data-testid': 'ownerId',
             class: 'fr-text-default--info text-xs truncate cursor-pointer',
-            onClick: () => copyContent(role.userId),
+            onClick: () => copyContent(member.userId),
           },
-          props.knownUsers[role.userId].email,
+          props.knownUsers[member.userId].email,
           {
             component: 'DsfrTag',
-            label: role.role,
+            label: member.role,
             'data-testid': 'ownerTag',
             class: 'fr-background-contrast--blue-france',
           },
           {
             cellAttrs: {
               class: 'fr-fi-close-line !flex justify-center disabled',
-              title: `${props.knownUsers[role.userId].email} ne peut pas être retiré(e) du projet`,
+              title: `${props.knownUsers[member.userId].email} ne peut pas être retiré(e) du projet`,
             },
           },
         ])
@@ -87,26 +87,26 @@ const setRows = () => {
       rows.value.push([
         {
           component: 'code',
-          text: role.userId,
+          text: member.userId,
           title: 'Copier l\'id',
           'data-testid': 'userId',
           class: 'fr-text-default--info text-xs truncate cursor-pointer',
-          onClick: () => copyContent(role.userId),
+          onClick: () => copyContent(member.userId),
         },
-        props.knownUsers[role.userId].email,
+        props.knownUsers[member.userId].email,
         {
           component: 'DsfrSelect',
-          modelValue: role.role,
-          selectId: `roleSelect-${role.userId}`,
+          modelValue: member.role,
+          selectId: `roleSelect-${member.userId}`,
           disabled: !isOwnerOrAdmin.value,
           options: ['owner', 'user'],
-          'onUpdate:model-value': () => confirmUpdateUserRole(role.userId),
+          'onUpdate:model-value': () => confirmUpdateUserRole(member.userId),
         },
         {
           cellAttrs: {
             class: `fr-fi-close-line !flex justify-center ${isOwnerOrAdmin.value ? 'cursor-pointer fr-text-default--warning' : 'disabled'}`,
-            title: isOwnerOrAdmin.value ? `retirer ${props.knownUsers[role.userId].email} du projet` : 'vous n\'avez pas les droits suffisants pour retirer un membre du projet',
-            onClick: () => removeUserFromProject(role.userId),
+            title: isOwnerOrAdmin.value ? `retirer ${props.knownUsers[member.userId].email} du projet` : 'vous n\'avez pas les droits suffisants pour retirer un membre du projet',
+            onClick: () => removeUserFromProject(member.userId),
           },
         },
       ])
@@ -167,7 +167,7 @@ const removeUserFromProject = async (userId: string) => {
 onMounted(() => {
   setRows()
 })
-watch(() => props.roles, setRows)
+watch(() => props.members, setRows)
 </script>
 
 <template>
@@ -223,8 +223,8 @@ watch(() => props.roles, setRows)
         hint="Adresse e-mail associée au compte keycloak de l'utilisateur"
         placeholder="prenom.nom@interieur.gouv.fr"
         :suggestions="usersToAdd"
-        @select-suggestion="$event => newUserEmail = $event"
-        @update:model-value="retrieveUsersToAdd($event)"
+        @select-suggestion="(value: string) => newUserEmail = value"
+        @update:model-value="(value: string) => retrieveUsersToAdd(value)"
       />
       <DsfrAlert
         v-if="isUserAlreadyInTeam"

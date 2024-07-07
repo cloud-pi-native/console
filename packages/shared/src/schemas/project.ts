@@ -1,27 +1,28 @@
 import { z } from 'zod'
 import { longestEnvironmentName, projectStatus } from '../utils/const.js'
-import { AtDatesToStringSchema, ErrorSchema } from './utils.js'
+import { AtDatesToStringExtend, ErrorSchema } from './utils.js'
 import { RepoSchema } from './repository.js'
-import { RoleSchema, UserSchema } from './user.js'
+import { RoleSchema, UserSchema, UserWithRoleSchema } from './user.js'
 import { OrganizationSchema } from './organization.js'
 import { CoerceBooleanSchema } from '../utils/schemas.js'
 
 export const descriptionMaxLength = 280
 export const projectNameMaxLength = 20
+export const ProjectStatusSchema = z.enum(projectStatus)
 
 export const ProjectSchema = z.object({
   id: z.string()
     .uuid(),
   name: z.string()
-    .regex(/^[a-z0-9]+$/)
     .min(2)
-    .max(projectNameMaxLength),
+    .max(projectNameMaxLength)
+    .regex(/^[a-z0-9]+$/),
   description: z.string()
     .max(descriptionMaxLength)
     .optional(),
   organizationId: z.string()
     .uuid(),
-  status: z.enum(projectStatus),
+  status: ProjectStatusSchema,
   locked: CoerceBooleanSchema,
 
   // ProjectInfos
@@ -58,9 +59,28 @@ export const ProjectSchema = z.object({
       ]),
     })),
   })),
-}).merge(AtDatesToStringSchema)
+}).extend(AtDatesToStringExtend)
 
 export type Project = Zod.infer<typeof ProjectSchema>
+
+export const ProjectSchemaV2 = ProjectSchema
+  .pick({
+    clusterIds: true,
+    createdAt: true,
+    description: true,
+    id: true,
+    locked: true,
+    name: true,
+    organizationId: true,
+    status: true,
+    updatedAt: true,
+  })
+  .extend({
+    members: UserWithRoleSchema.array(),
+  })
+  .required({ description: true })
+
+export type ProjectV2 = Zod.infer<typeof ProjectSchemaV2>
 
 export const ProjectParams = z.object({
   projectId: z.string()
@@ -68,9 +88,9 @@ export const ProjectParams = z.object({
 })
 
 export const CreateProjectSchema = {
-  body: ProjectSchema.pick({ name: true, organizationId: true, description: true }),
+  body: ProjectSchemaV2.pick({ name: true, organizationId: true, description: true }),
   responses: {
-    201: ProjectSchema,
+    201: ProjectSchemaV2.omit({ name: true }).extend({ name: z.string() }),
     400: ErrorSchema,
     403: ErrorSchema,
     500: ErrorSchema,
@@ -78,7 +98,7 @@ export const CreateProjectSchema = {
 }
 
 export const GetProjectsSchema = {
-  query: ProjectSchema
+  query: ProjectSchemaV2
     .pick({
       id: true,
       name: true,
@@ -86,7 +106,11 @@ export const GetProjectsSchema = {
       locked: true,
       organizationId: true,
       description: true,
-    }).extend({
+    })
+    .extend({
+      statusIn: z.string(),
+      statusNotIn: z.string(),
+      filter: z.enum(['owned', 'member', 'all']),
       organizationName: z.string(),
     })
     .partial().strict(),
@@ -104,16 +128,16 @@ export const GetProjectsDataSchema = {
 export const GetProjectSecretsSchema = {
   params: ProjectParams,
   responses: {
-    200: z.object({}),
+    200: z.record(z.record(z.string())),
     500: ErrorSchema,
   },
 }
 
 export const UpdateProjectSchema = {
   params: ProjectParams,
-  body: ProjectSchema.partial(),
+  body: ProjectSchemaV2.partial(),
   responses: {
-    200: ProjectSchema,
+    200: ProjectSchemaV2.omit({ name: true }).extend({ name: z.string() }),
     500: ErrorSchema,
   },
 }

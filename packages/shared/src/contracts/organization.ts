@@ -1,7 +1,7 @@
 import { ClientInferRequest } from '@ts-rest/core'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import { OrganizationSchema } from '../schemas/index.js'
-import { AtDatesToStringSchema, ErrorSchema } from '../schemas/utils.js'
+import { AtDatesToStringExtend, ErrorSchema } from '../schemas/utils.js'
 import { z } from 'zod'
 
 export const organizationContract = contractInstance.router({
@@ -30,7 +30,7 @@ export const organizationContract = contractInstance.router({
     body: OrganizationSchema
       .pick({ name: true, label: true, source: true }),
     responses: {
-      200: OrganizationSchema.merge(AtDatesToStringSchema),
+      200: OrganizationSchema.extend(AtDatesToStringExtend),
       401: ErrorSchema,
       403: ErrorSchema,
       500: ErrorSchema,

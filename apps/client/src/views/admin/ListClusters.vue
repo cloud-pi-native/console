@@ -1,6 +1,16 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { sortArrByObjKeyAsc, type CreateClusterBody, type UpdateClusterBody, type Cluster, type Stage, type Project, type ClusterAssociatedEnvironments } from '@cpn-console/shared'
+import {
+  sortArrByObjKeyAsc,
+  type CreateClusterBody,
+  type UpdateClusterBody,
+  type Cluster,
+  type Stage,
+  type ClusterAssociatedEnvironments,
+  type ProjectV2,
+  type Organization,
+  type ClusterDetails,
+} from '@cpn-console/shared'
 import { useAdminClusterStore } from '@/stores/admin/cluster.js'
 import { useAdminProjectStore } from '@/stores/admin/project.js'
 import { useOrganizationStore } from '@/stores/organization.js'
@@ -24,7 +34,7 @@ const stageStore = useStageStore()
 const clusters = computed(() => clusterStore.clusters)
 const allZones = computed(() => zoneStore.zones)
 const clusterList = ref<ClusterList>([])
-const allProjects = ref<Project[]>([])
+const allProjects = ref<(ProjectV2 & { organization: Organization})[]>([])
 const allStages = ref<Stage[]>([])
 const isUpdatingCluster = ref(false)
 const isNewClusterForm = ref(false)
@@ -95,10 +105,15 @@ const deleteCluster = async (clusterId: Cluster['id']) => {
 onMounted(async () => {
   await clusterStore.getClusters()
   setClusterTiles(clusters.value)
-  await zoneStore.getAllZones()
-  allProjects.value = await adminProjectStore.getAllActiveProjects()
-  const organizations = await organizationStore.listOrganizations()
-  allProjects.value.forEach(project => { project.organization = organizations.find(org => org.id === project.organizationId) })
+  const [projects] = await Promise.all([
+    adminProjectStore.getAllProjects({ filter: 'all' }),
+    zoneStore.getAllZones(),
+    organizationStore.listOrganizations(),
+  ])
+  allProjects.value = projects.map(project => ({
+    ...project,
+    organization: organizationStore.organizationsById[project.organizationId] as Organization,
+  }))
   allStages.value = await stageStore.getAllStages()
 })
 
@@ -146,8 +161,7 @@ watch(clusters, () => {
       :all-stages="allStages"
       class="w-full"
       is-updating-cluster="isUpdatingCluster"
-      @add="(cluster) => addCluster(cluster)"
-      @update="(cluster) => updateCluster(cluster)"
+      @add="(cluster: Omit<ClusterDetails, 'id'>) => addCluster(cluster)"
       @cancel="cancel()"
     />
   </div>
@@ -183,8 +197,11 @@ watch(clusters, () => {
         is-updating-cluster="isUpdatingCluster"
         class="w-full"
         :is-new-cluster="false"
-        @update="(cluster) => updateCluster(cluster)"
-        @delete="(clusterId) => deleteCluster(clusterId)"
+        @update="(clusterUpdate: Partial<ClusterDetails>) => updateCluster({
+          ...clusterUpdate,
+          id: cluster.id,
+        })"
+        @delete="(clusterId: string) => deleteCluster(clusterId)"
         @cancel="cancel()"
       />
     </div>

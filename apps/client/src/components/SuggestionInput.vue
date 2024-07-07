@@ -11,7 +11,10 @@ const props = withDefaults(defineProps<{
 
 const localValue = ref(props.modelValue)
 
-const emit = defineEmits(['update:modelValue', 'selectSuggestion'])
+const emit = defineEmits<{
+  'update:modelValue': [value: string]
+  selectSuggestion: [value: string]
+}>()
 
 const updateValue = () => {
   if (props.suggestions.find(suggestion => suggestion === localValue.value)) {

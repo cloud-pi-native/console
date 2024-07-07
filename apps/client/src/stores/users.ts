@@ -13,6 +13,19 @@ export const useUsersStore = defineStore('users', () => {
     }
   }
 
+  const addUserFromMember = ({ userId: id, ...member }: Omit<User, 'id'> & { userId: User['id']}) => {
+    users.value = {
+      ...users.value,
+      [id]: { id, ...member },
+    }
+  }
+
+  const addUsersFromMembers = (members: (Omit<User, 'id'> & { userId: User['id'] })[]) => {
+    for (const member of members) {
+      addUserFromMember(member)
+    }
+  }
+
   const addUsers = (users: User[]) => {
     for (const user of users) {
       addUser(user)
@@ -29,6 +42,8 @@ export const useUsersStore = defineStore('users', () => {
     users,
     addUser,
     addUsers,
+    addUserFromMember,
+    addUsersFromMembers,
     getProjectUsers,
   }
 })
