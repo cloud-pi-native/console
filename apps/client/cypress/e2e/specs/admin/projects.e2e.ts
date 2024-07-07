@@ -200,12 +200,12 @@ describe('Administration projects', () => {
     let initialQuota = ''
 
     cy.intercept('GET', 'api/v1/admin/projects').as('getAllProjects')
-    cy.intercept('GET', `api/v1/projects/${project.id}/environments`).as('getProjectEnvironments')
+    cy.intercept('GET', 'api/v1/environments?*').as('getProjectEnvironments')
     cy.intercept('GET', 'api/v1/projects').as('getProjects')
     cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
     cy.intercept('GET', 'api/v1/stages').as('getStages')
     cy.intercept('POST', '/api/v1/admin/quotas').as('createQuota')
-    cy.intercept('PUT', `api/v1/projects/${project.id}/environments/*`).as('updateEnvironment')
+    cy.intercept('PUT', 'api/v1/environments/*').as('updateEnvironment')
 
     cy.visit('/admin/projects')
     cy.url().should('contain', '/admin/projects')
@@ -340,7 +340,7 @@ describe('Administration projects', () => {
     cy.intercept('GET', 'api/v1/admin/projects').as('getAllProjects')
     cy.intercept('GET', `api/v1/project/${project.id}/services?permissionTarget=admin`).as('getServices')
     cy.intercept('GET', `api/v1/projects/${project.id}/repositories`).as('getRepositories')
-    cy.intercept('GET', `api/v1/projects/${project.id}/environments`).as('getEnvironments')
+    cy.intercept('GET', 'api/v1/environments?*').as('getEnvironments')
     cy.intercept(`/api/v1/projects/${project.id}/users/${userToTransfer.id}`).as('transferOwnership1')
     cy.intercept(`/api/v1/projects/${project.id}/users/${owner.id}`).as('transferOwnership2')
 

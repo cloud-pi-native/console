@@ -240,7 +240,7 @@ const updateEnvironmentQuota = async ({ environmentId, quotaId }: {environmentId
   const environment = selectedProject.value.environments.find(environment => environment.id === environmentId)
   if (!environment) return
   environment.quotaId = quotaId
-  await projectEnvironmentStore.updateEnvironment(environment.id, environment.projectId, environment)
+  await projectEnvironmentStore.updateEnvironment(environment.id, environment)
   await getAllProjects()
   snackbarStore.isWaitingForResponse = false
 }

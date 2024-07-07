@@ -176,7 +176,7 @@ Cypress.Commands.add('addEnvironment', (project, environments) => {
   cy.intercept('GET', 'api/v1/stages').as('getStages')
   cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
   cy.intercept('GET', 'api/v1/clusters').as('getClusters')
-  cy.intercept('POST', '/api/v1/projects/*/environments').as('postEnvironment')
+  cy.intercept('POST', '/api/v1/environments').as('postEnvironment')
   cy.intercept('GET', '/api/v1/projects').as('getProjects')
 
   environments.forEach((environment) => {
@@ -247,7 +247,7 @@ Cypress.Commands.add('assertAddEnvironment', (project, environments, isDeepCheck
 
 Cypress.Commands.add('deleteEnvironment', (project, environmentName) => {
   cy.intercept('GET', 'api/v1/clusters').as('getClusters')
-  cy.intercept('DELETE', '/api/v1/projects/*/environments/*').as('deleteEnvironment')
+  cy.intercept('DELETE', '/api/v1/environments/*').as('deleteEnvironment')
   cy.intercept('GET', '/api/v1/projects').as('getProjects')
 
   cy.goToProjects()
