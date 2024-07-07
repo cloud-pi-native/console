@@ -47,7 +47,7 @@ describe('Administration quotas', () => {
     cy.intercept('GET', 'api/v1/clusters').as('getClusters')
     cy.intercept('GET', 'api/v1/stages').as('getStages')
     cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
-    cy.intercept('GET', '/api/v1/projects').as('getProjects')
+    cy.intercept('GET', '/api/v1/projects/mines').as('getProjects')
     cy.intercept('GET', '/api/v1/environments?*').as('getEnvironments')
 
     // Create quota
@@ -221,7 +221,7 @@ describe('Administration quotas', () => {
     cy.intercept('GET', 'api/v1/clusters').as('getClusters')
     cy.intercept('GET', 'api/v1/stages').as('getStages')
     cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
-    cy.intercept('GET', '/api/v1/projects').as('getProjects')
+    cy.intercept('GET', '/api/v1/projects/mines').as('getProjects')
     cy.intercept('GET', '/api/v1/environments?*').as('getEnvironments')
 
     // Create quota
@@ -346,7 +346,7 @@ describe('Administration quotas', () => {
     cy.intercept('GET', 'api/v1/clusters').as('getClusters')
     cy.intercept('GET', 'api/v1/stages').as('getStages')
     cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
-    cy.intercept('GET', '/api/v1/projects').as('getProjects')
+    cy.intercept('GET', '/api/v1/projects/mines').as('getProjects')
 
     cy.getByDataTestid(`quotaTile-${publicQuota.name}`)
       .should('be.visible')
