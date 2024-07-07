@@ -22,7 +22,7 @@ describe('Administration clusters', () => {
   beforeEach(() => {
     cy.intercept('GET', '/api/v1/admin/clusters/*').as('getClustersDetails')
     cy.intercept('GET', '/api/v1/clusters').as('getClusters')
-    cy.intercept('GET', '/api/v1/admin/projects').as('getAdminProjects')
+    cy.intercept('GET', '/api/v1/projects*').as('getAdminProjects')
     cy.intercept('GET', '/api/v1/stages').as('getStages')
 
     cy.kcLogin('tcolin')

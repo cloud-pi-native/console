@@ -203,7 +203,6 @@ describe('Manage project environments', () => {
     cy.intercept('GET', '/api/v1/environments?*').as('getEnvironments')
     cy.intercept('PUT', '/api/v1/environments/*').as('putEnvironment')
     cy.intercept('GET', '/api/v1/projects/mines').as('getProjects')
-    cy.intercept('GET', '/api/v1/admin/projects').as('getAdminProjects')
 
     cy.kcLogin('test')
     cy.goToProjects()

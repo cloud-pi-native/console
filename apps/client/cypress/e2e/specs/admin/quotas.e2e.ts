@@ -148,7 +148,7 @@ describe('Administration quotas', () => {
       .should('exist')
 
     // Check quota availability for admin user on project list
-    cy.intercept('GET', 'api/v1/admin/projects').as('getAllProjects')
+    cy.intercept('GET', 'api/v1/projects*').as('getAllProjects')
     cy.kcLogin('tcolin')
     cy.visit('/admin/projects')
     cy.wait('@getAllProjects')
@@ -312,7 +312,7 @@ describe('Administration quotas', () => {
       .should('not.exist')
 
     // Check quota availability for admin user on project list
-    cy.intercept('GET', 'api/v1/admin/projects').as('getAllProjects')
+    cy.intercept('GET', 'api/v1/projects*').as('getAllProjects')
     cy.kcLogin('tcolin')
     cy.visit('/admin/projects')
     cy.wait('@getAllProjects')
