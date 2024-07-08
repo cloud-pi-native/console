@@ -89,16 +89,10 @@ export const projectContract = contractInstance.router({
     body: null,
     responses: ArchiveProjectSchema.responses,
   },
-})
 
-export type CreateProjectBody = ClientInferRequest<typeof projectContract.createProject>['body']
-
-export type UpdateProjectBody = ClientInferRequest<typeof projectContract.updateProject>['body']
-
-export const projectAdminContract = contractInstance.router({
   getProjectsData: {
     method: 'GET',
-    path: `${apiPrefix}/admin/projects/data`,
+    path: `${apiPrefix}/projects/data`,
     summary: 'Download projects csv report',
     description: 'Retrieve all projects data for download as CSV file.',
     responses: GetProjectsDataSchema.responses,
@@ -106,7 +100,7 @@ export const projectAdminContract = contractInstance.router({
 
   patchProject: {
     method: 'PATCH',
-    path: `${apiPrefix}/admin/projects/:projectId`,
+    path: `${apiPrefix}/projects/:projectId`,
     pathParams: ProjectParams,
     summary: 'Handle project locking',
     description: 'Lock or unlock a project.',
@@ -115,4 +109,8 @@ export const projectAdminContract = contractInstance.router({
   },
 })
 
-export type PatchProjectBody = ClientInferRequest<typeof projectAdminContract.patchProject>['body']
+export type PatchProjectBody = ClientInferRequest<typeof projectContract.patchProject>['body']
+
+export type CreateProjectBody = ClientInferRequest<typeof projectContract.createProject>['body']
+
+export type UpdateProjectBody = ClientInferRequest<typeof projectContract.updateProject>['body']

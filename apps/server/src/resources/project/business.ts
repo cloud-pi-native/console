@@ -30,6 +30,8 @@ import {
   removeClusterFromProject,
   updateProject as updateProjectQuery,
   getOrCreateUser,
+  getAllProjectsDataForExport,
+  unlockProject,
 } from '@/resources/queries-index.js'
 import { type UserDto } from '@/resources/user/business.js'
 import { validateSchema } from '@/utils/business.js'
@@ -38,6 +40,7 @@ import { BadRequestError, DsoError, ForbiddenError, NotFoundError, Unprocessable
 import { hook } from '@/utils/hook-wrapper.js'
 import { filterObjectByKeys } from '@/utils/queries-tools.js'
 import { UserDetails } from '@/types/index.js'
+import { json2csv } from 'json-2-csv'
 
 export const rolesToMembers = (roles: (Role & { user: User })[]) => roles.map(({ role, user: { id, ...user } }) => ({ ...user, userId: id, role }))
 
@@ -280,5 +283,29 @@ export const archiveProject = async (projectId: Project['id'], requestor: Keyclo
   } catch (error) {
     if (error instanceof DsoError) throw error
     throw new Error(error?.message)
+  }
+}
+
+export const handleProjectLocking = async (projectId: Project['id'], lock: Project['locked']) => {
+  try {
+    if (lock) {
+      await lockProject(projectId)
+    } else {
+      await unlockProject(projectId)
+    }
+  } catch (error) {
+    throw new BadRequestError(error.message)
+  }
+}
+
+export const generateProjectsData = async () => {
+  try {
+    const projects = await getAllProjectsDataForExport()
+
+    return json2csv(projects, {
+      emptyFieldValue: '',
+    })
+  } catch (error) {
+    throw new BadRequestError(error.message)
   }
 }

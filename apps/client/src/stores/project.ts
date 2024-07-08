@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { CreateProjectBody, Project, Role, UpdateProjectBody } from '@cpn-console/shared'
 import { apiClient, extractData } from '@/api/xhr-client.js'
+import { projectContract } from '@cpn-console/shared'
 import { useUsersStore } from './users.js'
 
 export const useProjectStore = defineStore('project', () => {
@@ -68,7 +69,24 @@ export const useProjectStore = defineStore('project', () => {
     project.roles = roles
   }
 
+  const getAllProjects = async (query: typeof projectContract.listProjects.query._type) => {
+    const projects = await listProjects({ query })
+    projects.forEach(project => usersStore.addUsersFromMembers(project.members))
+    return projects
+  }
+
+  const handleProjectLocking = (projectId: string, lock: boolean) =>
+    apiClient.Projects.patchProject({ body: { lock }, params: { projectId } })
+      .then(response => extractData(response, 200))
+
+  const generateProjectsData = () =>
+    apiClient.Projects.getProjectsData()
+      .then(response => extractData(response, 200))
+
   return {
+    getAllProjects,
+    handleProjectLocking,
+    generateProjectsData,
     selectedProject,
     projects,
     setSelectedProject,

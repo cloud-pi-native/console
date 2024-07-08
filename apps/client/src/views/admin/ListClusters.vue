@@ -11,7 +11,7 @@ import {
   type Organization,
   type ClusterDetails,
 } from '@cpn-console/shared'
-import { useAdminProjectStore } from '@/stores/admin/project.js'
+import { useProjectStore } from '@/stores/project.js'
 import { useOrganizationStore } from '@/stores/organization.js'
 import { useZoneStore } from '@/stores/zone.js'
 import { useStageStore } from '@/stores/stage.js'
@@ -24,7 +24,7 @@ type ClusterList = {
 }[]
 
 const clusterStore = useClusterStore()
-const adminProjectStore = useAdminProjectStore()
+const projectStore = useProjectStore()
 const organizationStore = useOrganizationStore()
 const zoneStore = useZoneStore()
 const stageStore = useStageStore()
@@ -104,7 +104,7 @@ onMounted(async () => {
   await clusterStore.getClusters()
   setClusterTiles(clusters.value)
   const [projects] = await Promise.all([
-    adminProjectStore.getAllProjects({ filter: 'all' }),
+    projectStore.getAllProjects({ filter: 'all' }),
     zoneStore.getAllZones(),
     organizationStore.listOrganizations(),
   ])

@@ -13,7 +13,6 @@ import {
   type Environment,
   projectContract,
 } from '@cpn-console/shared'
-import { useAdminProjectStore } from '@/stores/admin/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useOrganizationStore } from '@/stores/organization.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
@@ -27,7 +26,7 @@ import { useProjectStore } from '@/stores/project.js'
 import { useStageStore } from '@/stores/stage.js'
 import { bts } from '@/utils/func.js'
 
-const adminProjectStore = useAdminProjectStore()
+const adminProjectStore = useProjectStore()
 const projectStore = useProjectStore()
 const organizationStore = useOrganizationStore()
 const projectServiceStore = useProjectServiceStore()
