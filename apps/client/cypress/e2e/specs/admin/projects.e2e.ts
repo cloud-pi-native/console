@@ -129,7 +129,7 @@ describe('Administration projects', () => {
   it('Should lock and unlock a project, loggedIn as admin', () => {
     const project = projects[0]
 
-    cy.intercept('PATCH', `api/v1/admin/projects/${project.id}`).as('handleProjectLocking')
+    cy.intercept('PATCH', `/api/v1/projects/${project.id}`).as('handleProjectLocking')
 
     cy.getByDataTestid('tableAdministrationProjects').within(() => {
       cy.get('tr').contains(project.name)

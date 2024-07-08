@@ -21,7 +21,6 @@ export const getContract = async () => contractInstance.router(
     Files: (await import('./contracts/index.js')).filesContract,
     Zones: (await import('./contracts/index.js')).zoneContract,
 
-    ProjectsAdmin: (await import('./contracts/index.js')).projectAdminContract,
     QuotasAdmin: (await import('./contracts/index.js')).quotaAdminContract,
     StagesAdmin: (await import('./contracts/index.js')).stageAdminContract,
     UsersAdmin: (await import('./contracts/index.js')).userAdminContract,
