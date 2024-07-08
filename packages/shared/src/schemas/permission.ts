@@ -19,22 +19,6 @@ export const PermissionSchema = z.object({
 
 export type Permission = Zod.infer<typeof PermissionSchema>
 
-export const CreatePermissionSchema = {
-  params: z.object({
-    projectId: z.string()
-      .uuid(),
-    environmentId: z.string()
-      .uuid(),
-  }),
-  body: PermissionSchema.omit({ id: true, environmentId: true }),
-  responses: {
-    201: PermissionSchema,
-    400: ErrorSchema,
-    401: ErrorSchema,
-    500: ErrorSchema,
-  },
-}
-
 export const GetPermissionsSchema = {
   params: z.object({
     projectId: z.string()
@@ -44,11 +28,14 @@ export const GetPermissionsSchema = {
   }),
   responses: {
     200: z.array(PermissionSchema),
+    400: ErrorSchema,
+    401: ErrorSchema,
+    403: ErrorSchema,
     500: ErrorSchema,
   },
 }
 
-export const UpdatePermissionSchema = {
+export const UpsertPermissionSchema = {
   params: z.object({
     projectId: z.string()
       .uuid(),
@@ -58,6 +45,9 @@ export const UpdatePermissionSchema = {
   body: PermissionSchema.pick({ level: true, userId: true }),
   responses: {
     200: PermissionSchema,
+    400: ErrorSchema,
+    401: ErrorSchema,
+    403: ErrorSchema,
     500: ErrorSchema,
   },
 }

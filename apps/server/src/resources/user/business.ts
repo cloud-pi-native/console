@@ -1,11 +1,32 @@
 import { type KeycloakPayload } from 'fastify-keycloak-adapter'
 import type { Project, User } from '@prisma/client'
 import { UserSchema, instanciateSchema, projectIsLockedInfo, type AsyncReturnType, adminGroupPath } from '@cpn-console/shared'
-import { addLogs, addUserToProject as addUserToProjectQuery, createUser, deletePermission, getMatchingUsers as getMatchingUsersQuery, getProjectInfos as getProjectInfosQuery, getProjectUsers as getProjectUsersQuery, getRolesByProjectId, getUserByEmail, getUserById, removeUserFromProject as removeUserFromProjectQuery, transferProjectOwnership as transferProjectOwnershipQuery } from '@/resources/queries-index.js'
+import { addLogs, addUserToProject as addUserToProjectQuery, createUser, deletePermission, getMatchingUsers as getMatchingUsersQuery, getProjectInfos as getProjectInfosQuery, getProjectUsers as getProjectUsersQuery, getRolesByProjectId, getUserByEmail, getUserById, removeUserFromProject as removeUserFromProjectQuery, transferProjectOwnership as transferProjectOwnershipQuery, getUsers as getUsersQuery, setPermission } from '@/resources/queries-index.js'
 import { validateSchema } from '@/utils/business.js'
 import { checkInsufficientRoleInProject, type SearchOptions } from '@/utils/controller.js'
-import { BadRequestError, ForbiddenError, NotFoundError } from '@/utils/errors.js'
+import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
+
+export const getUsers = async () => {
+  const users = await getUsersQuery()
+
+  const results = await hook.user.retrieveAdminUsers()
+  const adminIds: string[] = results.results.keycloak?.adminIds
+
+  if (!adminIds?.length) return users.map(user => ({ ...user, isAdmin: false }))
+
+  return users.map(user => ({ ...user, isAdmin: adminIds.includes(user.id) }))
+}
+
+export const updateUserAdminRole = async ({ userId, isAdmin }: { userId: string, isAdmin: boolean }, requestId: string) => {
+  const results = await hook.user.updateUserAdminGroupMembership(userId, { isAdmin })
+
+  await addLogs('Update User Admin Role', results, userId, requestId)
+
+  if (results.failed) {
+    throw new UnprocessableContentError('Echec des opérations')
+  }
+}
 
 export type UserDto = Pick<User, 'email' | 'firstName' | 'lastName' | 'id'>
 
@@ -92,7 +113,14 @@ export const transferProjectOwnership = async (
   }
 
   await transferProjectOwnershipQuery(projectId, userToUpdateId, owner.userId)
-
+  await Promise.all(
+    project.environments
+      .map(environment => setPermission({
+        userId: userToUpdateId,
+        environmentId: environment.id,
+        level: 2,
+      })),
+  )
   return getRolesByProjectId(project.id)
 }
 

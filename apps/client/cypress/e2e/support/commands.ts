@@ -275,7 +275,7 @@ Cypress.Commands.add('deleteEnvironment', (project, environmentName) => {
 
 Cypress.Commands.add('addPermission', (project, environmentName, userToLicence) => {
   cy.intercept('GET', 'api/v1/clusters').as('getClusters')
-  cy.intercept('POST', `/api/v1/projects/${project.id}/environments/*/permissions`).as('postPermission')
+  cy.intercept('PUT', `/api/v1/projects/${project.id}/environments/*/permissions`).as('putPermission')
 
   cy.goToProjects()
     .getByDataTestid(`projectTile-${project.name}`).click()
@@ -289,8 +289,8 @@ Cypress.Commands.add('addPermission', (project, environmentName, userToLicence) 
     .clear()
     .type(userToLicence)
 
-  cy.wait('@postPermission')
-    .its('response.statusCode').should('eq', 201)
+  cy.wait('@putPermission')
+    .its('response.statusCode').should('eq', 200)
 })
 
 Cypress.Commands.add('assertPermission', (project, environmentName, permissions) => {

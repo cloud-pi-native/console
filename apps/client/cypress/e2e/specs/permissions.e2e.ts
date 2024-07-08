@@ -93,7 +93,7 @@ describe('Manage permissions for environment', () => {
     cy.assertAddEnvironment(project, [environment], false)
     cy.assertPermission(project, environment?.name, [{ email: owner.email, isOwner: true }, { email: user0.email, isOwner: false }])
 
-    cy.getByDataTestid(`${user0.id}UpdatePermissionBtn`)
+    cy.getByDataTestid(`${user0.id}UpsertPermissionBtn`)
       .should('be.disabled')
 
     cy.getByDataTestid(`userPermissionLi-${user0.email}`).within(() => {
@@ -102,7 +102,7 @@ describe('Manage permissions for environment', () => {
         .invoke('val', 2)
         .trigger('input')
     })
-    cy.getByDataTestid(`${user0.id}UpdatePermissionBtn`)
+    cy.getByDataTestid(`${user0.id}UpsertPermissionBtn`)
       .should('be.enabled')
       .click()
       .wait('@putPermission')

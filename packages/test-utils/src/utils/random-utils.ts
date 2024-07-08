@@ -156,12 +156,12 @@ export const getRandomEnv = (
   }
 }
 
-export const getRandomPerm = (environmentId = faker.string.uuid(), user = getRandomUser()): Permission => {
+export const getRandomPerm = (environmentId = faker.string.uuid(), user = getRandomUser(), level = faker.number.int({ min: 0, max: 2 })): Permission => {
   return {
     id: faker.string.uuid(),
     environmentId,
     userId: user.id,
-    level: faker.number.int({ min: 0, max: 2 }),
+    level,
     user,
   }
 }

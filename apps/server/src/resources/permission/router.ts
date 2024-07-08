@@ -2,8 +2,7 @@ import { addReqLogs } from '@/utils/logger.js'
 import {
   deletePermission,
   getEnvironmentPermissions,
-  setPermission,
-  updatePermission,
+  upsertPermission,
 } from './business.js'
 import { permissionContract } from '@cpn-console/shared'
 import { serverInstance } from '@/app.js'
@@ -32,44 +31,19 @@ export const permissionRouter = () => serverInstance.router(permissionContract, 
     }
   },
 
-  // Créer une permission
-  createPermission: async ({ request: req, params, body: data }) => {
-    const requestorId = req.session.user?.id
-    const environmentId = params.environmentId
-    const projectId = params.projectId
-
-    if (typeof data.level === 'string') data.level = parseInt(data.level)
-    const permission = await setPermission(projectId, requestorId, data.userId, environmentId, data.level, req.id)
-
-    addReqLogs({
-      req,
-      message: 'Permission créée avec succès',
-      infos: {
-        permissionId: permission.id,
-        projectId,
-        environmentId,
-      },
-    })
-    return {
-      status: 201,
-      body: permission,
-    }
-  },
-
   // Mettre à jour le level d'une permission
-  updatePermission: async ({ request: req, params, body: data }) => {
+  upsertPermission: async ({ request: req, params, body: data }) => {
     const requestorId = req.session.user.id
     const environmentId = params.environmentId
     const projectId = params.projectId
 
     if (typeof data.level === 'string') data.level = parseInt(data.level)
-    const permission = await updatePermission(projectId, requestorId, data.userId, environmentId, data.level, req.id)
+    const permission = await upsertPermission(projectId, requestorId, data.userId, environmentId, data.level, req.id)
 
     addReqLogs({
       req,
       message: 'Permission mise à jour avec succès',
       infos: {
-        permissionId: permission.id,
         projectId,
         environmentId,
       },

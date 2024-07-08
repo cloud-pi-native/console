@@ -1,7 +1,7 @@
 import { userAdminContract } from '@cpn-console/shared'
 import { addReqLogs } from '@/utils/logger.js'
 import { serverInstance } from '@/app.js'
-import { getUsers, updateUserAdminRole as updateUserAdminRoleBusiness } from './business.js'
+import { getUsers, updateUserAdminRole as updateUserAdminRoleBusiness } from '../business.js'
 
 export const userAdminRouter = () => serverInstance.router(userAdminContract, {
   getAllUsers: async ({ request: req }) => {

@@ -15,9 +15,9 @@ export const getUserPermissions = (userId: User['id']) =>
 export const getPermissionByUserIdAndEnvironmentId = (
   userId: User['id'], environmentId: Environment['id'],
 ) =>
-  prisma.permission.findMany({
+  prisma.permission.findUnique({
     select: { level: true },
-    where: { userId, environmentId },
+    where: { userId_environmentId: { userId, environmentId } },
   })
 
 // CREATE
@@ -28,13 +28,14 @@ type UpsertPermissionsParams = {
 }
 
 export const setPermission = ({ userId, environmentId, level }: UpsertPermissionsParams) =>
-  prisma.permission.create({
-    data: { userId, environmentId, level },
-    include: { environment: true },
+  prisma.permission.upsert({
+    create: { userId, environmentId, level },
+    update: { level },
+    where: { userId_environmentId: { userId, environmentId } },
   })
 
 // UPDATE
-export const updatePermission = ({ userId, environmentId, level }: UpsertPermissionsParams) =>
+export const upsertPermission = ({ userId, environmentId, level }: UpsertPermissionsParams) =>
   prisma.permission.update({
     where: {
       userId_environmentId: {

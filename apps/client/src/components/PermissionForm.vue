@@ -24,11 +24,10 @@ const userToLicence = ref<string>('')
 const permissionSuggestionKey = ref(getRandomId('input'))
 
 const project = computed(() => projectStore.selectedProject)
-const ownersIds = computed(() => project.value?.roles?.filter(({ role }) => role === 'owner').map(({ userId }) => userId))
+const ownersIds = computed(() => project.value?.roles?.filter(({ role }) => role === 'owner').map(({ userId }) => userId) ?? [])
 const projectMembers = computed(() => project.value?.roles?.map(role => usersStore.users[role.userId]))
-// @ts-ignore
-const permittedUsersId = computed(() => permissions.value.map(permission => permission.userId))
-const isPermitted = computed(() => permittedUsersId.value.includes(userStore.userProfile.id))
+const permittedUsersId = computed(() => [...permissions.value.map(permission => permission.userId), ...ownersIds.value])
+const isPermitted = computed(() => userStore.userProfile ? permittedUsersId.value.includes(userStore.userProfile.id) : false)
 const usersToLicence = computed(() => {
   return projectMembers.value?.filter(projectMember =>
     !permittedUsersId.value.includes(projectMember?.id))
@@ -43,16 +42,16 @@ const addPermission = async (userEmail: string) => {
   if (!project.value?.locked) {
     const userId = usersToLicence.value?.find(user => user.email === userEmail)?.id
     // @ts-ignore
-    await projectPermissionStore.addPermission(environment.value.id, { userId, level: 0 })
+    await projectPermissionStore.upsertPermission(environment.value.id, { userId, level: 0 })
   }
   userToLicence.value = ''
   permissionSuggestionKey.value = getRandomId('input')
 }
 
-const updatePermission = async () => {
+const upsertPermission = async () => {
   if (!project.value?.locked) {
     // @ts-ignore
-    await projectPermissionStore.updatePermission(environment.value.id, permissionToUpdate.value)
+    await projectPermissionStore.upsertPermission(environment.value.id, permissionToUpdate.value)
     permissionToUpdate.value = {}
   }
 }
@@ -61,10 +60,10 @@ const deletePermission = async (userId: string) => {
   await projectPermissionStore.deletePermission(environment.value?.id, userId)
 }
 
-const getDynamicTitle = (locked: boolean, permission: Permission) => {
-  if (locked) return projectIsLockedInfo
-  if (ownersIds.value?.includes(permission.userId)) return 'Les droits d\'un owner ne peuvent être modifiés'
-  // @ts-ignore
+const getDynamicTitle = (permission: Permission) => {
+  if (project.value?.locked) return projectIsLockedInfo
+  if (ownersIds.value?.includes(permission.userId) && permission.level === 2) return 'Les droits du owner ne peuvent être inférieurs à rwd'
+  if (!isPermitted.value) return `Vous n'avez aucun droit sur l'environnement ${environment.value?.name}`
   return `Modifier les droits de ${usersStore.users[permission.userId]?.email}`
 }
 
@@ -117,8 +116,8 @@ onMounted(() => {
           </div>
           <DsfrButton
             data-testid="deletePermissionBtn"
-            :disabled="ownersIds?.includes(permission.userId)|| !isPermitted"
-            :title="ownersIds?.includes(permission.userId) ? `Les droits du owner ne peuvent être supprimés`: `Supprimer les droits de ${usersStore.users[permission.userId].email}`"
+            :disabled="ownersIds?.includes(permission.userId) || !isPermitted"
+            :title="ownersIds?.includes(permission.userId) ? `Les droits du owner ne peuvent être supprimés`: !isPermitted ? `Vous n'avez aucun droit sur l'environnement ${environment?.name}` : `Supprimer les droits de ${usersStore.users[permission.userId].email}`"
             label="Supprimer la permission"
             class="my-4"
             secondary
@@ -133,21 +132,22 @@ onMounted(() => {
             :level="permission.level"
             :levels="levels"
             required
-            :disabled="ownersIds?.includes(permission.userId) || !isPermitted || project?.locked"
+            :disabled="(ownersIds.includes(permission.userId) && permission.level === 2) || !isPermitted || project?.locked"
+            :title="getDynamicTitle(permission)"
             @update-level="(event) => {
               permissionToUpdate.userId = permission.userId
               permissionToUpdate.level = event
             }"
           />
           <DsfrButton
-            :data-testid="`${permission.userId}UpdatePermissionBtn`"
-            :disabled="ownersIds?.includes(permission.userId) || !isPermitted || permissionToUpdate.userId !== permission.userId || project?.locked"
-            :title="getDynamicTitle(project?.locked, permission)"
+            :data-testid="`${permission.userId}UpsertPermissionBtn`"
+            :disabled="(ownersIds.includes(permission.userId) && permission.level === 2) || !isPermitted || permissionToUpdate.userId !== permission.userId || project?.locked"
+            :title="getDynamicTitle(permission)"
             label="Confirmer la modification"
             class="my-4"
             secondary
             icon="ri-check-fill"
-            @click="updatePermission()"
+            @click="upsertPermission()"
           />
         </div>
       </li>
