@@ -39,7 +39,7 @@ describe('Admin cluster routes', () => {
       prisma.cluster.findUniqueOrThrow.mockResolvedValue({ ...cluster, projects, stages })
 
       const response = await app.inject()
-        .get(`/api/v1/admin/clusters/${cluster.id}`)
+        .get(`/api/v1/clusters/${cluster.id}`)
         .end()
 
       expect(response.json()).toEqual({
@@ -69,7 +69,7 @@ describe('Admin cluster routes', () => {
       prisma.environment.findMany.mockResolvedValue(environments)
 
       const response = await app.inject()
-        .get(`/api/v1/admin/clusters/${cluster.id}/environments`)
+        .get(`/api/v1/clusters/${cluster.id}/environments`)
         .end()
 
       expect(response.json()).toEqual([{
@@ -98,7 +98,7 @@ describe('Admin cluster routes', () => {
 
       const response = await app.inject()
         // @ts-ignore
-        .put(`/api/v1/admin/clusters/${cluster.id}`)
+        .put(`/api/v1/clusters/${cluster.id}`)
         .body(updatedCluster)
         .end()
 
@@ -121,7 +121,7 @@ describe('Admin cluster routes', () => {
       prisma.cluster.delete.mockResolvedValueOnce(1)
 
       const response = await app.inject()
-        .delete(`/api/v1/admin/clusters/${cluster.id}`)
+        .delete(`/api/v1/clusters/${cluster.id}`)
         .end()
 
       expect(response.statusCode).toEqual(204)
@@ -146,7 +146,7 @@ describe('Admin cluster routes', () => {
       prisma.cluster.findUnique.mockResolvedValue(cluster)
 
       const response = await app.inject()
-        .delete(`/api/v1/admin/clusters/${cluster.id}`)
+        .delete(`/api/v1/clusters/${cluster.id}`)
         .end()
 
       expect(response.statusCode).toEqual(400)
