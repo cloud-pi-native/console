@@ -8,10 +8,10 @@ import { useUserStore } from '@/stores/user.js'
 import { useProjectStore } from '@/stores/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
+import { uuid } from '@/utils/regex.js'
+
 import DsoHome from '@/views/DsoHome.vue'
 import NotFound from '@/views/NotFound.vue'
-import { useUsersStore } from '@/stores/users.js'
-import { uuid } from '@/utils/regex.js'
 const ServicesHealth = () => import('@/views/ServicesHealth.vue')
 const CreateProject = () => import('@/views/CreateProject.vue')
 const ManageEnvironments = () => import('@/views/projects/ManageEnvironments.vue')
@@ -82,10 +82,7 @@ const routes: Readonly<RouteRecordRaw[]> = [
           if (typeof to.params.id !== 'string' || !to.params.id.match(uuid)) {
             return next('/projects')
           }
-          await Promise.all([
-            useUsersStore().getProjectUsers(to.params.id),
-            useProjectStore().setSelectedProject(to.params.id),
-          ])
+          useProjectStore().setSelectedProject(to.params.id)
           return next()
         },
         children: [
@@ -118,7 +115,7 @@ const routes: Readonly<RouteRecordRaw[]> = [
       },
     ],
     async beforeEnter () {
-      await useProjectStore().getUserProjects()
+      await useProjectStore().listProjects()
     },
   },
   {

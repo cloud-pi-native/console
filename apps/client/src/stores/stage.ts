@@ -13,25 +13,25 @@ export const useStageStore = defineStore('stage', () => {
   const stagesById = computed(() => resourceListToDict(stages.value))
 
   const getAllStages = async () => {
-    stages.value = await apiClient.Stages.getStages()
+    stages.value = await apiClient.Stages.listStages()
       .then(response => extractData(response, 200))
     return stages.value
   }
 
   const getStageAssociatedEnvironments = (stageId: string) =>
-    apiClient.StagesAdmin.getStageEnvironments({ params: { stageId } })
+    apiClient.Stages.getStageEnvironments({ params: { stageId } })
       .then(response => extractData(response, 200))
 
   const addStage = (body: CreateStageBody) =>
-    apiClient.StagesAdmin.createStage({ body })
+    apiClient.Stages.createStage({ body })
       .then(response => extractData(response, 201))
 
   const updateStage = (stageId: string, body: UpdateStageBody) =>
-    apiClient.StagesAdmin.updateStage({ params: { stageId }, body })
+    apiClient.Stages.updateStage({ params: { stageId }, body })
       .then(response => extractData(response, 200))
 
   const deleteStage = (stageId: string) =>
-    apiClient.StagesAdmin.deleteStage({ params: { stageId } })
+    apiClient.Stages.deleteStage({ params: { stageId } })
       .then(response => extractData(response, 204))
 
   return {

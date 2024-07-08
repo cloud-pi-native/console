@@ -25,14 +25,6 @@ export const projectContract = contractInstance.router({
     responses: CreateProjectSchema.responses,
   },
 
-  getProjects: {
-    method: 'GET',
-    path: `${apiPrefix}/projects/mines`,
-    summary: 'Get projects',
-    description: 'Retrieved user\'s projects.',
-    responses: GetProjectsSchema.responses,
-  },
-
   listProjects: {
     method: 'GET',
     path: `${apiPrefix}/projects`,

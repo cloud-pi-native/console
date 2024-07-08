@@ -2,26 +2,24 @@ import { ClientInferRequest, ClientInferResponseBody } from '@ts-rest/core'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   CreateQuotaSchema,
-  GetQuotasSchema,
+  ListQuotasSchema,
   UpdateQuotaSchema,
   DeleteQuotaSchema,
-  GetQuotaEnvironmentsSchema,
+  ListQuotaEnvironmentsSchema,
 } from '../schemas/index.js'
 
 export const quotaContract = contractInstance.router({
-  getQuotas: {
+  listQuotas: {
     method: 'GET',
     path: `${apiPrefix}/quotas`,
     summary: 'Get quotas',
-    description: 'Retrieved all quotas.',
-    responses: GetQuotasSchema.responses,
+    description: 'Retrieve all quotas.',
+    responses: ListQuotasSchema.responses,
   },
-})
 
-export const quotaAdminContract = contractInstance.router({
   createQuota: {
     method: 'POST',
-    path: `${apiPrefix}/admin/quotas`,
+    path: `${apiPrefix}/quotas`,
     contentType: 'application/json',
     summary: 'Create quota',
     description: 'Create new quota.',
@@ -29,18 +27,18 @@ export const quotaAdminContract = contractInstance.router({
     responses: CreateQuotaSchema.responses,
   },
 
-  getQuotaEnvironments: {
+  listQuotaEnvironments: {
     method: 'GET',
-    path: `${apiPrefix}/admin/quotas/:quotaId/environments`,
-    pathParams: GetQuotaEnvironmentsSchema.params,
+    path: `${apiPrefix}/quotas/:quotaId/environments`,
+    pathParams: ListQuotaEnvironmentsSchema.params,
     summary: 'Get a quota\'s environment',
     description: 'Retrieved environments associated to a quota.',
-    responses: GetQuotaEnvironmentsSchema.responses,
+    responses: ListQuotaEnvironmentsSchema.responses,
   },
 
   updateQuota: {
     method: 'PUT',
-    path: `${apiPrefix}/admin/quotas/:quotaId`,
+    path: `${apiPrefix}/quotas/:quotaId`,
     summary: 'Update a quota privacy',
     description: 'Update a quota privacy.',
     pathParams: UpdateQuotaSchema.params,
@@ -50,7 +48,7 @@ export const quotaAdminContract = contractInstance.router({
 
   deleteQuota: {
     method: 'DELETE',
-    path: `${apiPrefix}/admin/quotas/:quotaId`,
+    path: `${apiPrefix}/quotas/:quotaId`,
     summary: 'Delete quota',
     description: 'Delete a quota by its ID.',
     pathParams: DeleteQuotaSchema.params,
@@ -59,8 +57,8 @@ export const quotaAdminContract = contractInstance.router({
   },
 })
 
-export type CreateQuotaBody = ClientInferRequest<typeof quotaAdminContract.createQuota>['body']
+export type CreateQuotaBody = ClientInferRequest<typeof quotaContract.createQuota>['body']
 
-export type UpdateQuotaBody = ClientInferRequest<typeof quotaAdminContract.updateQuota>['body']
+export type UpdateQuotaBody = ClientInferRequest<typeof quotaContract.updateQuota>['body']
 
-export type QuotaAssociatedEnvironments = ClientInferResponseBody<typeof quotaAdminContract.getQuotaEnvironments, 200>
+export type QuotaAssociatedEnvironments = ClientInferResponseBody<typeof quotaContract.listQuotaEnvironments, 200>

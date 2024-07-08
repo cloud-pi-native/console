@@ -3,7 +3,6 @@ import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   CreateRepoSchema,
   GetReposSchema,
-  GetRepoByIdSchema,
   UpdateRepoSchema,
   DeleteRepoSchema,
   SyncRepoSchema,
@@ -21,22 +20,13 @@ export const repositoryContract = contractInstance.router({
     responses: CreateRepoSchema.responses,
   },
 
-  getRepositories: {
+  listRepositories: {
     method: 'GET',
     path: `${apiPrefix}/projects/:projectId/repositories`,
     pathParams: GetReposSchema.params,
     summary: 'Get repos',
     description: 'Retrieved all repos.',
     responses: GetReposSchema.responses,
-  },
-
-  getRepositoryById: {
-    method: 'GET',
-    path: `${apiPrefix}/projects/:projectId/repositories/:repositoryId`,
-    summary: 'Get repo',
-    description: 'Retrieved a repo by its ID.',
-    pathParams: GetRepoByIdSchema.params,
-    responses: GetRepoByIdSchema.responses,
   },
 
   syncRepository: {

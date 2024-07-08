@@ -69,18 +69,10 @@ export const userContract = contractInstance.router({
     description: 'OIDC callback to signin or signup',
     responses: LoginSchema.responses,
   },
-})
 
-export type AddUserToProjectBody = ClientInferRequest<typeof userContract.createUserRoleInProject>['body']
-
-export type LettersQuery = ClientInferRequest<typeof userContract.getMatchingUsers>['query']
-
-export type Users = ClientInferResponseBody<typeof userContract.getProjectUsers, 200>
-
-export const userAdminContract = contractInstance.router({
   getAllUsers: {
     method: 'GET',
-    path: `${apiPrefix}/admin/users`,
+    path: `${apiPrefix}/users`,
     summary: 'Get all users',
     description: 'Get all users.',
     responses: GetAllUsersSchema.responses,
@@ -88,7 +80,7 @@ export const userAdminContract = contractInstance.router({
 
   updateUserAdminRole: {
     method: 'PUT',
-    path: `${apiPrefix}/admin/users/:userId`,
+    path: `${apiPrefix}/users/:userId`,
     summary: 'Update user admin role',
     pathParams: UpdateUserAdminRoleSchema.params,
     body: UpdateUserAdminRoleSchema.body,
@@ -97,4 +89,10 @@ export const userAdminContract = contractInstance.router({
   },
 })
 
-export type AllUsers = ClientInferResponseBody<typeof userAdminContract.getAllUsers, 200>
+export type AddUserToProjectBody = ClientInferRequest<typeof userContract.createUserRoleInProject>['body']
+
+export type LettersQuery = ClientInferRequest<typeof userContract.getMatchingUsers>['query']
+
+export type Users = ClientInferResponseBody<typeof userContract.getProjectUsers, 200>
+
+export type AllUsers = ClientInferResponseBody<typeof userContract.getAllUsers, 200>

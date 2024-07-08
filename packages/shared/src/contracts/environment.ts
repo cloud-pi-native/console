@@ -19,7 +19,7 @@ export const environmentContract = contractInstance.router({
     responses: CreateEnvironmentSchema.responses,
   },
 
-  getEnvironments: {
+  listEnvironments: {
     method: 'GET',
     path: `${apiPrefix}/environments`,
     summary: 'Get environments',
@@ -27,15 +27,6 @@ export const environmentContract = contractInstance.router({
     query: GetEnvironmentsSchema.query,
     responses: GetEnvironmentsSchema.responses,
   },
-
-  // getEnvironmentById: {
-  //   method: 'GET',
-  //   path: `${apiPrefix}/projects/:projectId/environments/:environmentId`,
-  //   summary: 'Get environment',
-  //   description: 'Retrieved a environment by its ID.',
-  //   pathParams: GetEnvironmentByIdSchema.params,
-  //   responses: GetEnvironmentByIdSchema.responses,
-  // },
 
   updateEnvironment: {
     method: 'PUT',

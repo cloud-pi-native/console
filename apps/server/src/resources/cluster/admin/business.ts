@@ -8,7 +8,7 @@ import {
   getClusterByLabel,
   getClusterEnvironments,
   getProjectsByClusterId,
-  getStagesByClusterId,
+  listStagesByClusterId,
   linkClusterToProjects,
   linkZoneToClusters,
   removeClusterFromProject,
@@ -150,7 +150,7 @@ export const updateCluster = async (data: Partial<ClusterDetails>, clusterId: Cl
     if (stageIds) {
       await linkClusterToStages(clusterId, stageIds)
 
-      const dbStages = await getStagesByClusterId(clusterId)
+      const dbStages = await listStagesByClusterId(clusterId)
       if (dbStages) {
         for (const stage of dbStages) {
           if (!stageIds.includes(stage.id)) {

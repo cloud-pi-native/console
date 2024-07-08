@@ -1,26 +1,24 @@
 import { ClientInferRequest } from '@ts-rest/core'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
-  GetZonesSchema,
+  ListZonesSchema,
   CreateZoneSchema,
   UpdateZoneSchema,
   DeleteZoneSchema,
 } from '../schemas/index.js'
 
 export const zoneContract = contractInstance.router({
-  getZones: {
+  listZones: {
     method: 'GET',
     path: `${apiPrefix}/zones`,
     summary: 'Get zones',
     description: 'Get all zones.',
-    responses: GetZonesSchema.responses,
+    responses: ListZonesSchema.responses,
   },
-})
 
-export const zoneAdminContract = contractInstance.router({
   createZone: {
     method: 'POST',
-    path: `${apiPrefix}/admin/zones`,
+    path: `${apiPrefix}/zones`,
     contentType: 'application/json',
     summary: 'Create zone',
     description: 'Create new zone.',
@@ -30,7 +28,7 @@ export const zoneAdminContract = contractInstance.router({
 
   updateZone: {
     method: 'PUT',
-    path: `${apiPrefix}/admin/zones/:zoneId`,
+    path: `${apiPrefix}/zones/:zoneId`,
     summary: 'Update zone',
     description: 'Update a zone by its ID.',
     pathParams: UpdateZoneSchema.params,
@@ -40,7 +38,7 @@ export const zoneAdminContract = contractInstance.router({
 
   deleteZone: {
     method: 'DELETE',
-    path: `${apiPrefix}/admin/zones/:zoneId`,
+    path: `${apiPrefix}/zones/:zoneId`,
     summary: 'Delete zone',
     description: 'Delete a zone by its ID.',
     pathParams: DeleteZoneSchema.params,
@@ -49,6 +47,6 @@ export const zoneAdminContract = contractInstance.router({
   },
 })
 
-export type CreateZoneBody = ClientInferRequest<typeof zoneAdminContract.createZone>['body']
+export type CreateZoneBody = ClientInferRequest<typeof zoneContract.createZone>['body']
 
-export type UpdateZoneBody = ClientInferRequest<typeof zoneAdminContract.updateZone>['body']
+export type UpdateZoneBody = ClientInferRequest<typeof zoneContract.updateZone>['body']

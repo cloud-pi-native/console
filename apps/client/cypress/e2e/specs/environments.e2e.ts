@@ -46,10 +46,10 @@ describe('Manage project environments', () => {
     cy.kcLogin('test')
 
     cy.intercept('GET', 'api/v1/clusters').as('getClusters')
-    cy.intercept('GET', 'api/v1/stages').as('getStages')
-    cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
+    cy.intercept('GET', 'api/v1/stages').as('listStages')
+    cy.intercept('GET', 'api/v1/quotas').as('listQuotas')
     cy.intercept('POST', '/api/v1/environments').as('postEnvironment')
-    cy.intercept('GET', '/api/v1/projects/mines').as('getProjects')
+    cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('getProjects')
 
     cy.goToProjects()
       .getByDataTestid(`projectTile-${project0?.name}`).click()
@@ -58,8 +58,8 @@ describe('Manage project environments', () => {
     cy.wait('@getClusters')
 
     cy.getByDataTestid('addEnvironmentLink').click()
-    cy.wait('@getStages')
-    cy.wait('@getQuotas')
+    cy.wait('@listStages')
+    cy.wait('@listQuotas')
     cy.get('h1').should('contain', 'Ajouter un environnement au projet')
     cy.getByDataTestid('environmentNameInput')
       .type('myenv')
@@ -95,8 +95,8 @@ describe('Manage project environments', () => {
     cy.kcLogin('test')
 
     cy.intercept('GET', 'api/v1/clusters').as('getClusters')
-    cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
-    cy.intercept('GET', 'api/v1/quotas').as('getStages')
+    cy.intercept('GET', 'api/v1/quotas').as('listQuotas')
+    cy.intercept('GET', 'api/v1/quotas').as('listStages')
 
     cy.goToProjects()
       .getByDataTestid(`projectTile-${project0?.name}`)
@@ -107,8 +107,8 @@ describe('Manage project environments', () => {
     cy.wait('@getClusters')
 
     cy.getByDataTestid('addEnvironmentLink').click()
-    cy.wait('@getQuotas')
-    cy.wait('@getStages')
+    cy.wait('@listQuotas')
+    cy.wait('@listStages')
 
     cy.get('h1').should('contain', 'Ajouter un environnement au projet')
     cy.getByDataTestid('environmentNameInput')
@@ -157,8 +157,8 @@ describe('Manage project environments', () => {
     cy.kcLogin('test')
 
     cy.intercept('GET', 'api/v1/clusters').as('getClusters')
-    cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
-    cy.intercept('GET', 'api/v1/quotas').as('getStages')
+    cy.intercept('GET', 'api/v1/quotas').as('listQuotas')
+    cy.intercept('GET', 'api/v1/quotas').as('listStages')
 
     cy.goToProjects()
       .getByDataTestid(`projectTile-${project1?.name}`).click()
@@ -167,8 +167,8 @@ describe('Manage project environments', () => {
     cy.wait('@getClusters')
 
     cy.getByDataTestid('addEnvironmentLink').click()
-    cy.wait('@getQuotas')
-    cy.wait('@getStages')
+    cy.wait('@listQuotas')
+    cy.wait('@listStages')
     cy.get('h1').should('contain', 'Ajouter un environnement au projet')
     cy.getByDataTestid('environmentNameInput')
       .type('myenv')
@@ -199,22 +199,20 @@ describe('Manage project environments', () => {
 
   it('Should update an environment quota', () => {
     cy.intercept('GET', 'api/v1/clusters').as('getClusters')
-    cy.intercept('GET', '/api/v1/stages').as('getStages')
-    cy.intercept('GET', '/api/v1/environments?*').as('getEnvironments')
+    cy.intercept('GET', '/api/v1/stages').as('listStages')
+    cy.intercept('GET', '/api/v1/environments?projectId=*').as('listEnvironments')
     cy.intercept('PUT', '/api/v1/environments/*').as('putEnvironment')
-    cy.intercept('GET', '/api/v1/projects/mines').as('getProjects')
 
     cy.kcLogin('test')
     cy.goToProjects()
       .getByDataTestid(`projectTile-${project1.name}`).click()
       .getByDataTestid('menuEnvironments').click()
       .url().should('contain', '/environments')
-    cy.wait('@getProjects').its('response.statusCode').should('match', /^20\d$/)
+    cy.wait('@listEnvironments').its('response.statusCode').should('match', /^20\d$/)
     cy.wait('@getClusters').its('response.statusCode').should('match', /^20\d$/)
 
     cy.getByDataTestid(`environmentTile-${project1FirstEnvironment.name}`).click()
-    cy.wait('@getEnvironments')
-    cy.wait('@getStages')
+    cy.wait('@listStages')
     cy.getByDataTestid('environmentNameInput')
       .should('have.value', project1FirstEnvironment.name)
       .and('be.disabled')
@@ -231,7 +229,7 @@ describe('Manage project environments', () => {
     cy.getByDataTestid('putEnvironmentBtn').click()
 
     cy.wait('@putEnvironment').its('response.statusCode').should('match', /^20\d$/)
-    cy.wait('@getProjects').its('response.statusCode').should('match', /^20\d$/)
+    cy.wait('@listEnvironments').its('response.statusCode').should('match', /^20\d$/)
 
     cy.getByDataTestid(`environmentTile-${project1FirstEnvironment.name}`).click()
     cy.getByDataTestid('environmentNameInput')
@@ -255,7 +253,7 @@ describe('Manage project environments', () => {
 
   it('Should not be able to delete an environment if not owner', () => {
     cy.intercept('GET', 'api/v1/clusters').as('getClusters')
-    cy.intercept('GET', '/api/v1/stages').as('getStages')
+    cy.intercept('GET', '/api/v1/stages').as('listStages')
     cy.kcLogin((user.firstName.slice(0, 1) + user.lastName).toLowerCase())
       .goToProjects()
       .getByDataTestid(`projectTile-${project1.name}`).click()
@@ -263,14 +261,14 @@ describe('Manage project environments', () => {
     cy.wait('@getClusters')
     cy.getByDataTestid(`environmentTile-${project1FirstEnvironment?.name}`)
       .click()
-    cy.wait('@getStages')
+    cy.wait('@listStages')
       .url().should('contain', '/environments')
       .getByDataTestid('deleteEnvironmentZone').should('not.exist')
   })
 
   it('Should not be able to delete an environment if project locked', () => {
     cy.intercept('GET', 'api/v1/clusters').as('getClusters')
-    cy.intercept('GET', '/api/v1/stages').as('getStages')
+    cy.intercept('GET', '/api/v1/stages').as('listStages')
 
     cy.kcLogin('test')
     cy.goToProjects()
@@ -279,7 +277,7 @@ describe('Manage project environments', () => {
       .url().should('contain', '/environments')
     cy.getByDataTestid(`environmentTile-${projectFailed.environments[0].name}`).click()
     cy.wait('@getClusters')
-    cy.wait('@getStages')
+    cy.wait('@listStages')
 
     cy.getByDataTestid('showDeleteEnvironmentBtn').should('be.disabled')
   })

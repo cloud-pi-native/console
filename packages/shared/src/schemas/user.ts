@@ -43,8 +43,6 @@ export const RoleSchema = z.object({
 
 export type Role = Zod.infer<typeof RoleSchema>
 
-export const RoleWithUserSchema = RoleSchema.extend({ user: UserSchema })
-
 const projectIdParams = z.object({
   projectId: z.string()
     .uuid(),
@@ -89,7 +87,7 @@ export const CreateUserRoleInProjectSchema = {
   params: projectIdParams,
   body: UserSchema.pick({ email: true }),
   responses: {
-    201: z.array(RoleWithUserSchema),
+    201: z.array(UserWithRoleSchema),
     400: ErrorSchema,
     403: ErrorSchema,
     500: ErrorSchema,
@@ -104,7 +102,7 @@ export const TransferProjectOwnershipSchema = {
       .uuid(),
   }),
   responses: {
-    200: z.array(RoleWithUserSchema),
+    200: z.array(UserWithRoleSchema),
     400: ErrorSchema,
     403: ErrorSchema,
     500: ErrorSchema,

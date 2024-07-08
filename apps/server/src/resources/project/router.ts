@@ -1,6 +1,5 @@
 import { addReqLogs } from '@/utils/logger.js'
 import {
-  getUserProjects,
   createProject,
   updateProject,
   archiveProject,
@@ -16,28 +15,7 @@ import { checkIsAdmin } from '@/utils/controller.js'
 
 export const projectRouter = () => serverInstance.router(projectContract, {
 
-  // Récupérer les projets d'un user
-  getProjects: async ({ request: req }) => {
-    try {
-      const requestor = req.session.user
-      const projectsInfos = await getUserProjects(requestor.id)
-
-      addReqLogs({
-        req,
-        message: 'Projets de l\'utilisateur récupérés avec succès',
-        infos: {
-          userId: requestor.id,
-        },
-      })
-      return {
-        status: 200,
-        body: projectsInfos,
-      }
-    } catch (error) {
-      throw new Error(error.message)
-    }
-  },
-
+  // Récupérer des projets
   listProjects: async ({ request: req, query }) => {
     try {
       const user = req.session.user

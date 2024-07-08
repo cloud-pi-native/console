@@ -7,7 +7,7 @@ import {
 } from '../schemas/index.js'
 
 export const permissionContract = contractInstance.router({
-  getPermissions: {
+  listPermissions: {
     method: 'GET',
     path: `${apiPrefix}/projects/:projectId/environments/:environmentId/permissions`,
     pathParams: GetPermissionsSchema.params,

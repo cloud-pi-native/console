@@ -42,7 +42,7 @@ describe('Admin zone routes', () => {
       prisma.zone.create.mockResolvedValue(zoneCreated)
 
       const response = await app.inject()
-        .post('/api/v1/admin/zones')
+        .post('/api/v1/zones')
         .body(zone)
         .end()
 
@@ -63,7 +63,7 @@ describe('Admin zone routes', () => {
       prisma.zone.update.mockResolvedValue(undefined)
 
       const response = await app.inject()
-        .post('/api/v1/admin/zones')
+        .post('/api/v1/zones')
         .body(zone)
         .end()
 
@@ -78,7 +78,7 @@ describe('Admin zone routes', () => {
 
       prisma.zone.findUnique.mockResolvedValue(zone)
       const response = await app.inject()
-        .post('/api/v1/admin/zones')
+        .post('/api/v1/zones')
         .body(zone)
         .end()
 
@@ -96,7 +96,7 @@ describe('Admin zone routes', () => {
       prisma.zone.findUnique.mockResolvedValue(zone)
 
       const response = await app.inject()
-        .put(`/api/v1/admin/zones/${zone.id}`)
+        .put(`/api/v1/zones/${zone.id}`)
         .body(zone)
         .end()
 
@@ -114,7 +114,7 @@ describe('Admin zone routes', () => {
       prisma.zone.delete.mockResolvedValue(zone)
 
       const response = await app.inject()
-        .delete(`/api/v1/admin/zones/${zone.id}`)
+        .delete(`/api/v1/zones/${zone.id}`)
         .end()
 
       expect(response.statusCode).toEqual(204)
@@ -123,7 +123,7 @@ describe('Admin zone routes', () => {
     it('Should not delete a zone with associated clusters', async () => {
       const zone = {
         ...getRandomZone(),
-        get clusters () {
+        get clusters() {
           return [getRandomCluster({ zoneId: this.id })]
         },
       }
@@ -131,7 +131,7 @@ describe('Admin zone routes', () => {
       prisma.zone.findUnique.mockResolvedValue(zone)
 
       const response = await app.inject()
-        .delete(`/api/v1/admin/zones/${zone.id}`)
+        .delete(`/api/v1/zones/${zone.id}`)
         .end()
 
       expect(response.statusCode).toEqual(403)

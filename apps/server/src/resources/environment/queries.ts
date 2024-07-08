@@ -1,6 +1,5 @@
 import type { Environment, Project, Role, Cluster, Stage } from '@prisma/client'
 import prisma from '@/prisma.js'
-import { getProjectById } from '../project/queries.js'
 import { Quota } from '@cpn-console/shared'
 
 // SELECT
@@ -59,63 +58,6 @@ export const getEnvironmentByIdWithCluster = (id: Environment['id']) =>
       },
     },
   })
-
-export const getProjectByEnvironmentId = async (environmentId: Environment['id']) => {
-  const env = await getEnvironmentById(environmentId)
-  if (!env) return
-  return getProjectById(env.projectId)
-}
-
-export const getEnvironmentsByQuotaAndStage = ({ quotaId, stageId }: { quotaId: Quota['id'], stageId: Stage['id'] }) =>
-  prisma.environment.findMany({
-    where: {
-      AND: [{
-        quotaId,
-      }, {
-        stageId,
-      }],
-    },
-    include: {
-      cluster: {
-        select: { label: true },
-      },
-      project: {
-        select: {
-          name: true,
-          roles: {
-            include: { user: true },
-          },
-          organization: {
-            select: { name: true },
-          },
-        },
-      },
-    },
-  })
-
-export const getProjectPartialEnvironments = async ({ projectId }: { projectId: Project['id'] }) => {
-  const environments = await prisma.environment.findMany({
-    where: {
-      projectId,
-    },
-    select: {
-      name: true,
-      stage: true,
-      cluster: {
-        select: {
-          label: true,
-        },
-      },
-    },
-  })
-  return environments?.map(environment =>
-    ({
-      environment: environment.name,
-      stage: environment.stage.name,
-      clusterLabel: environment.cluster.label,
-    }),
-  )
-}
 
 // INSERT
 type CreateEnvironmentParams = {
@@ -181,9 +123,6 @@ export const deleteAllEnvironmentForProject = (id: Project['id']) =>
 
 // TECH
 export const _dropEnvironmentsTable = prisma.environment.deleteMany
-
-export const _createEnvironment = (data: Parameters<typeof prisma.environment.create>[0]['data']) =>
-  prisma.environment.create({ data })
 
 export const _dropQuotaTable = prisma.quota.deleteMany
 

@@ -3,7 +3,7 @@ import { setActivePinia, createPinia } from 'pinia'
 import { apiClient } from '../api/xhr-client.js'
 import { useZoneStore } from './zone.js'
 
-const apiClientGet = vi.spyOn(apiClient.Zones, 'getZones')
+const apiClientGet = vi.spyOn(apiClient.Zones, 'listZones')
 
 describe('Zone Store', () => {
   beforeEach(() => {

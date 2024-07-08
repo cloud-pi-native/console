@@ -26,7 +26,6 @@ import { useProjectStore } from '@/stores/project.js'
 import { useStageStore } from '@/stores/stage.js'
 import { bts } from '@/utils/func.js'
 
-const adminProjectStore = useProjectStore()
 const projectStore = useProjectStore()
 const organizationStore = useOrganizationStore()
 const projectServiceStore = useProjectServiceStore()
@@ -36,6 +35,7 @@ const snackbarStore = useSnackbarStore()
 const projectUserStore = useProjectUserStore()
 const quotaStore = useQuotaStore()
 const stageStore = useStageStore()
+const projectRepositoryStore = useProjectRepositoryStore()
 const projectEnvironmentStore = useProjectEnvironmentStore()
 
 export type Component = {
@@ -63,7 +63,6 @@ type FileForDownload = File & {
   title?: string,
 }
 
-const allProjects = ref<ProjectV2[]>([])
 const organizations = ref<Organization[]>([])
 const rows = ref<Rows>([])
 const environmentsRows = ref<EnvironnementRows>([])
@@ -133,8 +132,8 @@ interface DomElement extends Event {
 }
 
 const setRows = () => {
-  rows.value = sortArrByObjKeyAsc(allProjects.value, 'name')
-    ?.map(({ id, organizationId, name, description, members, status, locked, createdAt, updatedAt }) => (
+  rows.value = sortArrByObjKeyAsc(projectStore.projects, 'name')
+    ?.map(({ id, organization, name, description, members, status, locked, createdAt, updatedAt }) => (
       {
         status,
         locked,
@@ -148,7 +147,7 @@ const setRows = () => {
           title: `Voir le tableau de bord du projet ${name}`,
         },
         rowData: [
-          organizationStore.organizationsById[organizationId].label ?? '',
+          organization.label,
           name,
           truncateDescription(description ?? ''),
           members.find(member => member.role === 'owner')?.email ?? '',
@@ -224,33 +223,32 @@ const getRepositoriesRows = () => {
 
 const getAllProjects = async () => {
   snackbarStore.isWaitingForResponse = true
-  allProjects.value = await adminProjectStore.getAllProjects(filterMethods[activeFilter.value])
+  await projectStore.listProjects(filterMethods[activeFilter.value])
   setRows()
   if (selectedProject.value) selectProject(selectedProject.value.id)
   snackbarStore.isWaitingForResponse = false
 }
 
 const selectProject = async (projectId: string) => {
-  const project = allProjects.value.find(project => project.id === projectId) as ProjectV2
+  const project = projectStore.projects.find(project => project.id === projectId)
   if (!project) return
-  const [repositories, environments] = await Promise.all([
-    useProjectRepositoryStore().getProjectRepositories(projectId),
-    useProjectEnvironmentStore().getProjectEnvironments(projectId),
+  await Promise.all([
+    projectRepositoryStore.getProjectRepositories(projectId),
+    projectEnvironmentStore.getProjectEnvironments(projectId),
     reloadProjectServices(projectId),
   ])
   selectedProject.value = {
     ...project,
-    environments,
-    repositories,
+    environments: projectEnvironmentStore.environments,
+    repositories: projectRepositoryStore.repositories,
   }
   getRepositoriesRows()
   getEnvironmentsRows()
 }
 
 const updateEnvironmentQuota = async ({ environmentId, quotaId }: {environmentId: string, quotaId: string}) => {
-  if (!selectedProject.value?.environments) return
   snackbarStore.isWaitingForResponse = true
-  const environment = selectedProject.value.environments.find(environment => environment.id === environmentId)
+  const environment = projectEnvironmentStore.environments.find(environment => environment.id === environmentId)
   if (!environment) return
   environment.quotaId = quotaId
   await projectEnvironmentStore.updateEnvironment(environment.id, environment)
@@ -260,7 +258,7 @@ const updateEnvironmentQuota = async ({ environmentId, quotaId }: {environmentId
 
 const handleProjectLocking = async (projectId: string, lock: boolean) => {
   snackbarStore.isWaitingForResponse = true
-  await adminProjectStore.handleProjectLocking(projectId, lock)
+  await projectStore.handleProjectLocking(projectId, lock)
   await getAllProjects()
   snackbarStore.isWaitingForResponse = false
 }
@@ -285,8 +283,7 @@ const archiveProject = async (projectId: string) => {
 const addUserToProject = async (email: string) => {
   snackbarStore.isWaitingForResponse = true
   if (selectedProject.value) {
-    const newRoles = await projectUserStore.addUserToProject(selectedProject.value.id, { email })
-    selectedProject.value.members = newRoles.map(({ role, user }) => ({ userId: user.id, ...user, role }))
+    selectedProject.value.members = await projectUserStore.addUserToProject(selectedProject.value.id, { email })
   }
   teamCtKey.value = getRandomId('team')
   snackbarStore.isWaitingForResponse = false
@@ -295,7 +292,7 @@ const addUserToProject = async (email: string) => {
 const updateUserRole = async (userId: string) => {
   if (!selectedProject.value) return snackbarStore.setMessage('Veuillez sélectionner un projet')
   snackbarStore.isWaitingForResponse = true
-  await projectUserStore.transferProjectOwnership(selectedProject.value.id, userId)
+  selectedProject.value.members = await projectUserStore.transferProjectOwnership(selectedProject.value.id, userId)
   teamCtKey.value = getRandomId('team')
   await getAllProjects()
   snackbarStore.isWaitingForResponse = false
@@ -305,15 +302,14 @@ const removeUserFromProject = async (userId: string) => {
   if (!selectedProject.value) return
   snackbarStore.isWaitingForResponse = true
   if (selectedProject.value.id) {
-    const newRoles = await projectUserStore.removeUserFromProject(selectedProject.value.id, userId)
-    selectedProject.value.members = newRoles.map(({ role, user }) => ({ userId: user.id, ...user, role }))
+    selectedProject.value.members = await projectUserStore.removeUserFromProject(selectedProject.value.id, userId)
   }
   teamCtKey.value = getRandomId('team')
   snackbarStore.isWaitingForResponse = false
 }
 
 const generateProjectsDataFile = async () => {
-  file.value = new File([await adminProjectStore.generateProjectsData()], 'dso-projects.csv', {
+  file.value = new File([await projectStore.generateProjectsData()], 'dso-projects.csv', {
     type: 'text/csv;charset=utf-8',
   })
   const url = URL.createObjectURL(file.value)
@@ -498,7 +494,7 @@ const untruncateDescription = (span: HTMLElement) => {
         <DsfrInput
           v-model="projectToArchive"
           data-testid="archiveProjectInput"
-          :label="`Veuillez taper '${selectedProject?.name}' pour confirmer la suppression du projet`"
+          :label="`Veuillez taper '${selectedProject.name}' pour confirmer la suppression du projet`"
           label-visible
           :placeholder="selectedProject.name"
           class="fr-mb-2w"
@@ -582,7 +578,7 @@ const untruncateDescription = (span: HTMLElement) => {
             permission-target="admin"
             :display-global="false"
             @update="(data: PluginsUpdateBody) => saveProjectServices(data)"
-            @reload="() => reloadProjectServices(selectedProject.id)"
+            @reload="() => reloadProjectServices(selectedProject?.id ?? '')"
           />
         </div>
       </div>

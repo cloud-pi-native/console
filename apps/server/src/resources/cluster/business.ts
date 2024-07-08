@@ -25,6 +25,6 @@ export const getAllUserClusters = async (kcUser: UserProfile) => {
   const clusters = await listClustersForUser(where)
   return clusters.map(({ stages, ...cluster }) => ({
     ...cluster,
-    stageIds: stages.map(({ id }) => id) ?? [],
+    stageIds: stages?.map(({ id }) => id) ?? [],
   }))
 }

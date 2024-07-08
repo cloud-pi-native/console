@@ -3,9 +3,9 @@ import { setActivePinia, createPinia } from 'pinia'
 import { apiClient } from '../../api/xhr-client.js'
 import { useAdminZoneStore } from './zone.js'
 
-const apiClientPost = vi.spyOn(apiClient.ZonesAdmin, 'createZone')
-const apiClientPut = vi.spyOn(apiClient.ZonesAdmin, 'updateZone')
-const apiClientDelete = vi.spyOn(apiClient.ZonesAdmin, 'deleteZone')
+const apiClientPost = vi.spyOn(apiClient.Zones, 'createZone')
+const apiClientPut = vi.spyOn(apiClient.Zones, 'updateZone')
+const apiClientDelete = vi.spyOn(apiClient.Zones, 'deleteZone')
 
 describe('Admin zone Store', () => {
   beforeEach(() => {

@@ -185,13 +185,19 @@ export const listClustersForUser = (where: Prisma.ClusterWhereInput) =>
     },
   })
 
+export const listAllClusters = () => prisma.cluster.findMany({
+  include: {
+    stages: true,
+  },
+})
+
 export const getProjectsByClusterId = async (id: Cluster['id']) =>
   (await prisma.cluster.findUniqueOrThrow({
     where: { id },
     select: { projects: true },
   }))?.projects
 
-export const getStagesByClusterId = async (id: Cluster['id']) =>
+export const listStagesByClusterId = async (id: Cluster['id']) =>
   (await prisma.cluster.findUniqueOrThrow({
     where: { id },
     select: { stages: true },
