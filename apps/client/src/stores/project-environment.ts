@@ -6,31 +6,34 @@ import { apiClient, extractData } from '@/api/xhr-client.js'
 
 export const useProjectEnvironmentStore = defineStore('project-environment', () => {
   const projectStore = useProjectStore()
+  const environments = ref<Environment[]>([])
 
-  const getProjectEnvironments = async (projectId: string) =>
-    apiClient.Environments.getEnvironments({ query: { projectId } })
+  const getProjectEnvironments = async (projectId: string) => {
+    environments.value = await apiClient.Environments.listEnvironments({ query: { projectId } })
       .then(response => extractData(response, 200))
-
+  }
   const addEnvironmentToProject = async (body: CreateEnvironmentBody) => {
     if (!projectStore.selectedProject) throw new Error(projectMissing)
     await apiClient.Environments.createEnvironment({ body })
       .then(response => extractData(response, 201))
-    await projectStore.getUserProjects()
+    await getProjectEnvironments(projectStore.selectedProject.id)
   }
 
   const updateEnvironment = async (id: Environment['id'], environment: UpdateEnvironmentBody) => {
     await apiClient.Environments.updateEnvironment({ body: environment, params: { environmentId: id } })
       .then(response => extractData(response, 200))
-    await projectStore.getUserProjects()
+    if (projectStore.selectedProject) await getProjectEnvironments(projectStore.selectedProject.id)
   }
 
   const deleteEnvironment = async (environmentId: Environment['id']) => {
+    if (!projectStore.selectedProject) throw new Error(projectMissing)
     await apiClient.Environments.deleteEnvironment({ params: { environmentId } })
       .then(response => extractData(response, 204))
-    await projectStore.getUserProjects()
+    await getProjectEnvironments(projectStore.selectedProject.id)
   }
 
   return {
+    environments,
     getProjectEnvironments,
     addEnvironmentToProject,
     updateEnvironment,

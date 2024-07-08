@@ -104,8 +104,12 @@ const setRows = () => {
         },
         {
           cellAttrs: {
-            class: `fr-fi-close-line !flex justify-center ${isOwnerOrAdmin.value ? 'cursor-pointer fr-text-default--warning' : 'disabled'}`,
-            title: isOwnerOrAdmin.value ? `retirer ${props.knownUsers[member.userId].email} du projet` : 'vous n\'avez pas les droits suffisants pour retirer un membre du projet',
+            class: `fr-fi-close-line !flex justify-center ${isOwnerOrAdmin.value || member.userId === props.userProfile?.id ? 'cursor-pointer fr-text-default--warning' : 'disabled'}`,
+            title: isOwnerOrAdmin.value
+              ? `retirer ${props.knownUsers[member.userId].email} du projet`
+              : member.userId === props.userProfile?.id
+                ? 'me retirer du projet'
+                : 'vous n\'avez pas les droits suffisants pour retirer un membre du projet',
             onClick: () => removeUserFromProject(member.userId),
           },
         },

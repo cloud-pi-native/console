@@ -13,25 +13,25 @@ export const useQuotaStore = defineStore('quota', () => {
   const quotasById = computed(() => resourceListToDict(quotas.value))
 
   const getAllQuotas = async () => {
-    quotas.value = await apiClient.Quotas.getQuotas()
+    quotas.value = await apiClient.Quotas.listQuotas()
       .then(response => extractData(response, 200))
     return quotas.value
   }
 
   const getQuotaAssociatedEnvironments = (quotaId: string) =>
-    apiClient.QuotasAdmin.getQuotaEnvironments({ params: { quotaId } })
+    apiClient.Quotas.listQuotaEnvironments({ params: { quotaId } })
       .then(response => extractData(response, 200))
 
   const addQuota = (body: CreateQuotaBody) =>
-    apiClient.QuotasAdmin.createQuota({ body })
+    apiClient.Quotas.createQuota({ body })
       .then(response => extractData(response, 201))
 
   const updateQuota = async (quotaId: string, data: UpdateQuotaBody) =>
-    apiClient.QuotasAdmin.updateQuota({ body: data, params: { quotaId } })
+    apiClient.Quotas.updateQuota({ body: data, params: { quotaId } })
       .then(response => extractData(response, 200))
 
   const deleteQuota = (quotaId: string) =>
-    apiClient.QuotasAdmin.deleteQuota({ params: { quotaId } })
+    apiClient.Quotas.deleteQuota({ params: { quotaId } })
       .then(response => extractData(response, 204))
 
   return {

@@ -1,7 +1,7 @@
 import type { Cluster, Quota, Stage } from '@prisma/client'
 import prisma from '@/prisma.js'
 
-export const getStages = () =>
+export const listStages = () =>
   prisma.stage.findMany({
     include: {
       clusters: true,

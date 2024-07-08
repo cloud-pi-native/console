@@ -29,7 +29,7 @@ describe('Zone routes', () => {
   })
 
   // GET
-  describe('getZonesController', () => {
+  describe('listZonesController', () => {
     it('Should retrieve all zones', async () => {
       const zones = []
 

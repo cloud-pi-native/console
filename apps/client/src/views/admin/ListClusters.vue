@@ -7,8 +7,6 @@ import {
   type Cluster,
   type Stage,
   type ClusterAssociatedEnvironments,
-  type ProjectV2,
-  type Organization,
   type ClusterDetails,
 } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
@@ -32,7 +30,6 @@ const stageStore = useStageStore()
 const clusters = computed(() => clusterStore.clusters)
 const allZones = computed(() => zoneStore.zones)
 const clusterList = ref<ClusterList>([])
-const allProjects = ref<(ProjectV2 & { organization: Organization})[]>([])
 const allStages = ref<Stage[]>([])
 const isUpdatingCluster = ref(false)
 const isNewClusterForm = ref(false)
@@ -101,18 +98,14 @@ const deleteCluster = async (clusterId: Cluster['id']) => {
 }
 
 onMounted(async () => {
+  allStages.value = await stageStore.getAllStages()
   await clusterStore.getClusters()
   setClusterTiles(clusters.value)
-  const [projects] = await Promise.all([
-    projectStore.getAllProjects({ filter: 'all' }),
+  await Promise.all([
+    projectStore.listProjects({ filter: 'all' }),
     zoneStore.getAllZones(),
     organizationStore.listOrganizations(),
   ])
-  allProjects.value = projects.map(project => ({
-    ...project,
-    organization: organizationStore.organizationsById[project.organizationId] as Organization,
-  }))
-  allStages.value = await stageStore.getAllStages()
 })
 
 watch(clusters, () => {
@@ -155,7 +148,7 @@ watch(clusters, () => {
   >
     <ClusterForm
       :all-zones="allZones"
-      :all-projects="allProjects"
+      :all-projects="projectStore.projects"
       :all-stages="allStages"
       class="w-full"
       is-updating-cluster="isUpdatingCluster"
@@ -189,7 +182,7 @@ watch(clusters, () => {
         v-if="clusterStore.selectedCluster && clusterStore.selectedCluster.id === cluster.id"
         :cluster="clusterStore.selectedCluster"
         :all-zones="allZones"
-        :all-projects="allProjects"
+        :all-projects="projectStore.projects"
         :all-stages="allStages"
         :associated-environments="associatedEnvironments"
         is-updating-cluster="isUpdatingCluster"

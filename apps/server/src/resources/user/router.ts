@@ -9,11 +9,14 @@ import {
   getProjectUsers,
   removeUserFromProject,
   transferProjectOwnership as transferProjectOwnershipBusiness,
+  getUsers,
+  updateUserAdminRole as updateUserAdminRoleBusiness,
 } from './business.js'
 import '@/types/index.js'
 import { BadRequestError } from '@/utils/errors.js'
 import { serverInstance } from '@/app.js'
 import { getOrCreateUser } from './queries.js'
+import { checkIsAdmin } from '@/utils/controller.js'
 
 export const userRouter = () => serverInstance.router(userContract, {
   getProjectUsers: async ({ request: req, params }) => {
@@ -72,11 +75,11 @@ export const userRouter = () => serverInstance.router(userContract, {
     const project = await getProjectInfos(projectId)
     if (!project) throw new BadRequestError(`Le projet ayant pour id ${projectId} n'existe pas`)
 
-    if (!user.groups?.includes(adminGroupPath)) {
-      await checkProjectRole(user.id, { roles: project.roles, minRole: 'owner' })
-    }
+    checkProjectLocked(project)
 
-    await checkProjectLocked(project)
+    if (!user.groups?.includes(adminGroupPath)) {
+      checkProjectRole(user.id, { roles: project.roles, minRole: 'owner' })
+    }
 
     const newRoles = await addUserToProject(project, data.email, user.id, req.id)
 
@@ -123,8 +126,8 @@ export const userRouter = () => serverInstance.router(userContract, {
     const project = await getProjectInfos(projectId)
     if (!project) throw new BadRequestError(`Le projet ayant pour id ${projectId} n'existe pas`)
 
-    if (!user.groups?.includes(adminGroupPath)) {
-      await checkProjectRole(user.id, { roles: project.roles, minRole: 'owner' })
+    if (!user.groups?.includes(adminGroupPath) && user.id !== userToRemoveId) {
+      checkProjectRole(user.id, { roles: project.roles, minRole: 'owner' })
     }
 
     await checkProjectLocked(project)
@@ -150,6 +153,37 @@ export const userRouter = () => serverInstance.router(userContract, {
     await getOrCreateUser(requestor)
     return {
       status: 200,
+      body: null,
+    }
+  },
+
+  getAllUsers: async ({ request: req }) => {
+    checkIsAdmin(req.session.user)
+    const users = await getUsers()
+
+    addReqLogs({
+      req,
+      message: 'Ensemble des utilisateurs récupérés avec succès',
+    })
+    return {
+      status: 200,
+      body: users,
+    }
+  },
+
+  updateUserAdminRole: async ({ request: req, params, body }) => {
+    const userId = params.userId
+    const isAdmin = body.isAdmin
+
+    checkIsAdmin(req.session.user)
+    await updateUserAdminRoleBusiness({ userId, isAdmin }, req.id)
+
+    addReqLogs({
+      req,
+      message: 'Rôle administrateur de l\'utilisateur mis à jour avec succès',
+    })
+    return {
+      status: 204,
       body: null,
     }
   },

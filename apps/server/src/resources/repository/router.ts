@@ -5,40 +5,17 @@ import { addReqLogs } from '@/utils/logger.js'
 import { filterObjectByKeys } from '@/utils/queries-tools.js'
 import {
   checkUpsertRepository,
+  getRepositoryById,
   createRepository,
   deleteRepository,
   getProjectRepositories,
-  getRepositoryById,
   syncRepository,
   updateRepository,
 } from './business.js'
 
 export const repositoryRouter = () => serverInstance.router(repositoryContract, {
-
-  // Récupérer un repository par son id
-  getRepositoryById: async ({ request: req, params }) => {
-    const projectId = params.projectId
-    const repositoryId = params.repositoryId
-    const userId = req.session.user.id
-
-    const repository = await getRepositoryById(userId, projectId, repositoryId)
-
-    addReqLogs({
-      req,
-      message: 'Dépôt récupéré avec succès',
-      infos: {
-        repositoryId,
-        projectId,
-      },
-    })
-    return {
-      status: 200,
-      body: repository,
-    }
-  },
-
   // Récupérer tous les repositories d'un projet
-  getRepositories: async ({ request: req, params }) => {
+  listRepositories: async ({ request: req, params }) => {
     const projectId = params.projectId
     const userId = req.session.user.id
     const isAdmin = req.session.user.groups?.includes(adminGroupPath)

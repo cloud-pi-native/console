@@ -11,7 +11,7 @@ export const useZoneStore = defineStore('zone', () => {
   const zonesById = computed(() => resourceListToDict(zones.value))
 
   const getAllZones = async () => {
-    zones.value = await apiClient.Zones.getZones()
+    zones.value = await apiClient.Zones.listZones()
       .then(response => extractData(response, 200))
     return zones.value
   }

@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker'
 import { achievedStatus, projectRoles, logActions, type ProjectRoles, type AchievedStatus, ClusterPrivacy, type Stage, type Quota, type ClusterDetails, type Zone } from '@cpn-console/shared'
 import { repeatFn } from './func-utils.js'
-import { Cluster, Environment, Log, Organization, Permission, Project, Repository, User, Role } from './types.js'
+import type { Cluster, Environment, Log, Organization, Permission, Project, Repository, User, Role, Member } from './types.js'
 
 export const getRandomProjectName = () => {
   return faker.lorem.word()
@@ -24,12 +24,11 @@ export const getRandomOrganization = (name = 'mi', label = 'Ministère de l\'Int
   }
 }
 
-export const getRandomProject = (organizationId = faker.string.uuid()): Project & { status: AchievedStatus } => {
+export const getRandomProject = (organizationId = faker.string.uuid()): Project & { status: AchievedStatus, members?: Member[] } => {
   return {
     id: faker.string.uuid(),
     name: getRandomProjectName(),
     organizationId,
-    organization: getRandomOrganization(),
     description: faker.lorem.sentence(8),
     status: faker.helpers.arrayElement(achievedStatus),
     locked: false,
@@ -72,9 +71,9 @@ export const getRandomCluster = (
   }
 }
 
-export const getRandomUser = (): User => {
+export const getRandomUser = (id = faker.string.uuid()): User => {
   return {
-    id: faker.string.uuid(),
+    id,
     email: faker.internet.email(),
     firstName: faker.person.firstName(),
     lastName: faker.person.lastName(),
@@ -90,6 +89,16 @@ export const getRandomRole = (
     userId,
     role,
     projectId,
+  }
+}
+
+export const getRandomMember = (
+  userId = faker.string.uuid(),
+  role: ProjectRoles = projectRoles[1],
+): Member => {
+  return {
+    userId,
+    role,
   }
 }
 

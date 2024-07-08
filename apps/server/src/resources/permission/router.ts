@@ -10,7 +10,7 @@ import { serverInstance } from '@/app.js'
 export const permissionRouter = () => serverInstance.router(permissionContract, {
 
   // Récupérer toutes les permissions d'un environnement
-  getPermissions: async ({ request: req, params }) => {
+  listPermissions: async ({ request: req, params }) => {
     const userId = req.session.user.id
     const environmentId = params.environmentId
     const projectId = params.projectId

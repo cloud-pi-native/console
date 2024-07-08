@@ -3,11 +3,11 @@ import { setActivePinia, createPinia } from 'pinia'
 import { apiClient } from '../api/xhr-client.js'
 import { useStageStore } from './stage.js'
 
-const apiClientGetStages = vi.spyOn(apiClient.Stages, 'getStages')
-const apiClientGet = vi.spyOn(apiClient.StagesAdmin, 'getStageEnvironments')
-const apiClientPost = vi.spyOn(apiClient.StagesAdmin, 'createStage')
-const apiClientPut = vi.spyOn(apiClient.StagesAdmin, 'updateStage')
-const apiClientDelete = vi.spyOn(apiClient.StagesAdmin, 'deleteStage')
+const apiClientListStages = vi.spyOn(apiClient.Stages, 'listStages')
+const apiClientGet = vi.spyOn(apiClient.Stages, 'getStageEnvironments')
+const apiClientPost = vi.spyOn(apiClient.Stages, 'createStage')
+const apiClientPut = vi.spyOn(apiClient.Stages, 'updateStage')
+const apiClientDelete = vi.spyOn(apiClient.Stages, 'deleteStage')
 
 describe('Stage Store', () => {
   beforeEach(() => {
@@ -23,13 +23,13 @@ describe('Stage Store', () => {
       { id: 'id2', name: 'int' },
       { id: 'id3', name: 'prod' },
     ]
-    apiClientGetStages.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
+    apiClientListStages.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
     const stageStore = useStageStore()
 
     await stageStore.getAllStages()
 
     expect(stageStore.stages).toEqual(data)
-    expect(apiClientGetStages).toHaveBeenCalledTimes(1)
+    expect(apiClientListStages).toHaveBeenCalledTimes(1)
   })
 
   it('Should get a stage\'s associated environments by api call', async () => {

@@ -3,11 +3,11 @@ import { setActivePinia, createPinia } from 'pinia'
 import { apiClient } from '../api/xhr-client.js'
 import { useQuotaStore } from './quota.js'
 
-const apiClientGetQuotas = vi.spyOn(apiClient.Quotas, 'getQuotas')
-const apiClientGet = vi.spyOn(apiClient.QuotasAdmin, 'getQuotaEnvironments')
-const apiClientPost = vi.spyOn(apiClient.QuotasAdmin, 'createQuota')
-const apiClientPut = vi.spyOn(apiClient.QuotasAdmin, 'updateQuota')
-const apiClientDelete = vi.spyOn(apiClient.QuotasAdmin, 'deleteQuota')
+const apiClientListQuotas = vi.spyOn(apiClient.Quotas, 'listQuotas')
+const apiClientGet = vi.spyOn(apiClient.Quotas, 'listQuotaEnvironments')
+const apiClientPost = vi.spyOn(apiClient.Quotas, 'createQuota')
+const apiClientPut = vi.spyOn(apiClient.Quotas, 'updateQuota')
+const apiClientDelete = vi.spyOn(apiClient.Quotas, 'deleteQuota')
 
 describe('Quota Store', () => {
   beforeEach(() => {
@@ -23,13 +23,13 @@ describe('Quota Store', () => {
       { id: 'id2', name: 'medium' },
       { id: 'id3', name: 'large' },
     ]
-    apiClientGetQuotas.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
+    apiClientListQuotas.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
     const quotaStore = useQuotaStore()
 
     await quotaStore.getAllQuotas()
 
     expect(quotaStore.quotas).toEqual(data)
-    expect(apiClientGetQuotas).toHaveBeenCalledTimes(1)
+    expect(apiClientListQuotas).toHaveBeenCalledTimes(1)
   })
 
   it('Should get a quota\'s associated environments by api call', async () => {

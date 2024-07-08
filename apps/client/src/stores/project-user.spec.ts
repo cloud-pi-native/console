@@ -9,15 +9,13 @@ const apiClientDelete = vi.spyOn(apiClient.Users, 'deleteUserRoleInProject')
 vi.mock('./project.js', async () => ({
   useProjectStore: () => ({
     selectedProject: { id: 'projectId' },
-    getUserProjects: vi.fn(),
-    updateProjectRoles: vi.fn(),
+    listProjects: vi.fn(),
   }),
 }))
 
 vi.mock('./users.js', async () => ({
   useUsersStore: () => ({
     users: {},
-    getProjectUsers: vi.fn(),
     addUser: vi.fn(),
   }),
 }))

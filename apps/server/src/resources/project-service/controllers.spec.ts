@@ -29,14 +29,15 @@ describe('System config routes', () => {
   // GET
   describe('projectServiceContract', () => {
     it('Should retrieve services config of project as member', async () => {
-      const project = createRandomDbSetup({}).project
-      project.roles = [...project.roles, getRandomRole(getRequestor().id, project.id, 'owner')]
+      const randomDbSetup = createRandomDbSetup({ nbUsers: 2 })
+      const project = randomDbSetup.project
+      setRequestor(project.roles[1].user)
+      project.organization = randomDbSetup.organization
 
       prisma.project.findUnique.mockResolvedValue(project)
       prisma.projectPlugin.findMany.mockResolvedValueOnce([])
       prisma.adminPlugin.findMany.mockResolvedValueOnce([])
-
-      requestor.groups = []
+      prisma.cluster.findMany.mockResolvedValue([])
 
       const response = await app.inject()
         .get(projectServiceContract.getServices.path.replace(':projectId', project.id))
@@ -45,14 +46,19 @@ describe('System config routes', () => {
       expect(response.statusCode).toEqual(200)
       expect(response.json()).toHaveLength(4) // no manifest to validate
     })
+
     it('Should retrieve services config of project as admin', async () => {
-      const project = createRandomDbSetup({}).project
+      const randomDbSetup = createRandomDbSetup({ nbUsers: 2 })
+      const project = randomDbSetup.project
+      project.organization = randomDbSetup.organization
       project.roles = []
       requestor.groups = [adminGroupPath]
+      setRequestor(requestor)
 
       prisma.project.findUnique.mockResolvedValue(project)
       prisma.projectPlugin.findMany.mockResolvedValueOnce([])
       prisma.adminPlugin.findMany.mockResolvedValueOnce([])
+      prisma.cluster.findMany.mockResolvedValue([])
 
       const response = await app.inject()
         .get(projectServiceContract.getServices.path.replace(':projectId', project.id))
@@ -111,6 +117,7 @@ describe('System config routes', () => {
       const project = createRandomDbSetup({}).project
       project.roles = []
       requestor.groups = [adminGroupPath]
+      setRequestor(requestor)
 
       prisma.project.findUnique.mockResolvedValue(project)
 

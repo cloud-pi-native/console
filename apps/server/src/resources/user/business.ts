@@ -6,6 +6,7 @@ import { validateSchema } from '@/utils/business.js'
 import { checkInsufficientRoleInProject, type SearchOptions } from '@/utils/controller.js'
 import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
+import { rolesToMembers } from '../project/business.js'
 
 export const getUsers = async () => {
   const users = await getUsersQuery()
@@ -38,7 +39,7 @@ export const checkProjectRole = (userId: User['id'], { userList = undefined, rol
   if (insufficientRoleErrorMessage) throw new ForbiddenError(insufficientRoleErrorMessage, undefined)
 }
 
-export const checkProjectLocked = async (project: Project) => {
+export const checkProjectLocked = (project: Project) => {
   if (project.locked) throw new ForbiddenError(projectIsLockedInfo, undefined)
 }
 
@@ -67,7 +68,7 @@ export const addUserToProject = async (
     }
 
     const retrievedUser = hookReply.results.keycloak?.user
-    if (!retrievedUser) throw new NotFoundError('Utilisateur introuvable', undefined)
+    if (!retrievedUser) throw new NotFoundError('Utilisateur introuvable')
 
     // keep only keys allowed in model
     const userFromModel = instanciateSchema(UserSchema, undefined)
@@ -94,7 +95,7 @@ export const addUserToProject = async (
       throw new UnprocessableContentError('Echec des services à l\'ajout de l\'utilisateur au projet')
     }
 
-    return getRolesByProjectId(project.id)
+    return rolesToMembers(await getRolesByProjectId(project.id))
   } catch (error) {
     throw new Error('Echec d\'ajout de l\'utilisateur au projet')
   }
@@ -108,7 +109,7 @@ export const transferProjectOwnership = async (
   const project = await getProjectInfos(projectId)
   if (!project) throw new BadRequestError(`Le projet ayant pour id ${projectId} n'existe pas`)
 
-  await checkProjectLocked(project)
+  checkProjectLocked(project)
 
   if (!project.roles.some(projectUser => projectUser.userId === userToUpdateId)) throw new BadRequestError('L\'utilisateur ne fait pas partie du projet')
 
@@ -122,13 +123,13 @@ export const transferProjectOwnership = async (
   await transferProjectOwnershipQuery(projectId, userToUpdateId, owner.userId)
   await Promise.all(
     project.environments
-      .map(environment => setPermission({
+      ?.map(environment => setPermission({
         userId: userToUpdateId,
         environmentId: environment.id,
         level: 2,
       })),
   )
-  return getRolesByProjectId(project.id)
+  return rolesToMembers(await getRolesByProjectId(project.id))
 }
 
 export const removeUserFromProject = async (
@@ -157,7 +158,7 @@ export const removeUserFromProject = async (
       throw new UnprocessableContentError('Echec des services au retrait de l\'utilisateur au projet')
     }
 
-    return getRolesByProjectId(project.id)
+    return rolesToMembers(await getRolesByProjectId(project.id))
   } catch (error) {
     throw new Error('Echec du retrait de l\'utilisateur du projet')
   }

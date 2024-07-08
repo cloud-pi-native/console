@@ -34,7 +34,7 @@ vi.spyOn(app.log, 'warn')
 vi.spyOn(app.log, 'error')
 vi.spyOn(app.log, 'debug')
 
-function getModel (modelName) {
+function getModel(modelName) {
   return {
     [modelName]: vi.fn(() => ({
       sync: vi.fn(),

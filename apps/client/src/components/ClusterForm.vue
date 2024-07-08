@@ -1,15 +1,15 @@
 <script lang="ts" setup>
 import { ref, computed, onBeforeMount, watch } from 'vue'
 import {
-  type ClusterAssociatedEnvironments,
   ClusterPrivacy,
   ClusterDetailsSchema,
   KubeconfigSchema,
   SharedZodError,
-  ClusterDetails,
-  Project,
-  Stage,
-  Zone,
+  type ClusterAssociatedEnvironments,
+  type ClusterDetails,
+  type ProjectV2,
+  type Stage,
+  type Zone,
 } from '@cpn-console/shared'
 // @ts-ignore
 import { load } from 'js-yaml'
@@ -24,7 +24,7 @@ const snackbarStore = useSnackbarStore()
 const props = withDefaults(defineProps<{
   isNewCluster: boolean
   cluster: ClusterDetails
-  allProjects: Project[]
+  allProjects: ProjectV2[]
   allStages: Stage[]
   allZones: Zone[]
   associatedEnvironments: ClusterAssociatedEnvironments

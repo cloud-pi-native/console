@@ -13,10 +13,9 @@ const userStore = useUserStore()
 const snackbarStore = useSnackbarStore()
 const stageStore = useStageStore()
 
-const project = computed(() => projectStore.selectedProject)
-const isOwner = computed(() => project.value?.roles?.some(role => role.userId === userStore.userProfile?.id && role.role === 'owner'))
+const isOwner = computed(() => projectStore.selectedProject?.members?.some(member => member.userId === userStore.userProfile?.id && member.role === 'owner'))
 
-const description = ref<string | undefined>(project.value?.description ?? undefined)
+const description = ref<string | undefined>(projectStore.selectedProject?.description ?? undefined)
 const isEditingDescription = ref(false)
 const isArchivingProject = ref(false)
 const projectToArchive = ref('')
@@ -56,8 +55,8 @@ const handleSecretDisplay = async () => {
   isSecretShown.value = !isSecretShown.value
   if (isSecretShown.value && !Object.keys(projectSecrets.value).length) {
     snackbarStore.isWaitingForResponse = true
-    if (!project.value) throw new Error('Pas de projet sélectionné')
-    projectSecrets.value = await projectStore.getProjectSecrets(project.value.id) ?? {}
+    if (!projectStore.selectedProject) throw new Error('Pas de projet sélectionné')
+    projectSecrets.value = await projectStore.getProjectSecrets(projectStore.selectedProject.id) ?? {}
     snackbarStore.setMessage('Secrets récupérés')
     snackbarStore.isWaitingForResponse = false
   }
@@ -83,7 +82,7 @@ onBeforeMount(async () => {
 <template>
   <DsoSelectedProject />
   <div
-    v-if="project"
+    v-if="projectStore.selectedProject"
     class="relative"
   >
     <div
@@ -92,17 +91,17 @@ onBeforeMount(async () => {
       <h1
         class="fr-callout__title fr-mb-3w"
       >
-        {{ project.name }}
+        {{ projectStore.selectedProject.name }}
       </h1>
       <div
         v-if="!isEditingDescription"
         class="flex gap-4 items-center"
       >
         <p
-          v-if="project.description"
+          v-if="projectStore.selectedProject.description"
           data-testid="descriptionP"
         >
-          {{ project.description }}
+          {{ projectStore.selectedProject.description }}
         </p>
         <p
           v-else
@@ -115,8 +114,8 @@ onBeforeMount(async () => {
           class="fr-mt-0"
           icon="ri-pencil-fill"
           data-testid="setDescriptionBtn"
-          :title="getDynamicTitle(project.locked, project.description)"
-          :disabled="project.locked"
+          :title="getDynamicTitle(projectStore.selectedProject.locked, projectStore.selectedProject.description)"
+          :disabled="projectStore.selectedProject.locked"
           icon-only
           secondary
           @click="isEditingDescription = true"
@@ -143,7 +142,7 @@ onBeforeMount(async () => {
             label="Enregistrer la description"
             secondary
             icon="ri-send-plane-line"
-            @click="updateProject(project.id)"
+            @click="updateProject(projectStore.selectedProject.id)"
           />
           <DsfrButton
             label="Annuler"
@@ -166,22 +165,22 @@ onBeforeMount(async () => {
       </div>
     </div>
     <div
-      v-if="project"
+      v-if="projectStore.selectedProject"
       class="flex flex-col gap-4"
     >
       <DsoBadge
         :resource="{
-          ...project,
-          locked: project.locked ? 'true' : 'false',
+          ...projectStore.selectedProject,
+          locked: projectStore.selectedProject.locked ? 'true' : 'false',
           resourceKey: 'locked',
-          wording: `Projet ${project.name}`
+          wording: `Projet ${projectStore.selectedProject.name}`
         }"
       />
       <DsoBadge
         :resource="{
-          ...project,
+          ...projectStore.selectedProject,
           resourceKey: 'status',
-          wording: `Projet ${project.name}`
+          wording: `Projet ${projectStore.selectedProject.name}`
         }"
       />
     </div>
@@ -193,7 +192,7 @@ onBeforeMount(async () => {
         label="Reprovisionner le projet"
         icon="ri-refresh-fill"
         secondary
-        @click="replayHooks(project.id ?? '')"
+        @click="replayHooks(projectStore.selectedProject.id ?? '')"
       />
     </div>
     <div
@@ -244,7 +243,7 @@ onBeforeMount(async () => {
         <DsfrButton
           v-show="!isArchivingProject"
           data-testid="showArchiveProjectBtn"
-          :label="`Supprimer le projet ${project.name}`"
+          :label="`Supprimer le projet ${projectStore.selectedProject.name}`"
           primary
           icon="ri-delete-bin-7-line"
           @click="isArchivingProject = true"
@@ -269,9 +268,9 @@ onBeforeMount(async () => {
         <DsfrInput
           v-model="projectToArchive"
           data-testid="archiveProjectInput"
-          :label="`Veuillez taper '${project.name}' pour confirmer la suppression du projet`"
+          :label="`Veuillez taper '${projectStore.selectedProject.name}' pour confirmer la suppression du projet`"
           label-visible
-          :placeholder="project.name"
+          :placeholder="projectStore.selectedProject.name"
           class="fr-mb-2w"
         />
         <div
@@ -279,11 +278,11 @@ onBeforeMount(async () => {
         >
           <DsfrButton
             data-testid="archiveProjectBtn"
-            :label="`Supprimer définitivement le projet ${project.name}`"
-            :disabled="projectToArchive !== project.name"
+            :label="`Supprimer définitivement le projet ${projectStore.selectedProject.name}`"
+            :disabled="projectToArchive !== projectStore.selectedProject.name"
             secondary
             icon="ri-delete-bin-7-line"
-            @click="archiveProject(project ? project.id : '')"
+            @click="archiveProject(projectStore.selectedProject ? projectStore.selectedProject.id : '')"
           />
           <DsfrButton
             label="Annuler"

@@ -1,7 +1,7 @@
 import prisma from '../../../__mocks__/prisma.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll, beforeEach } from 'vitest'
 import { getRandomUser, repeatFn } from '@cpn-console/test-utils'
-import { adminGroupPath, userAdminContract } from '@cpn-console/shared'
+import { adminGroupPath, userContract } from '@cpn-console/shared'
 import { getConnection, closeConnections } from '../../../connect.js'
 import { setRequestor } from '../../../utils/mocks.js'
 import app from '../../../app.js'
@@ -39,7 +39,7 @@ describe('Admin user routes', () => {
       prisma.adminPlugin.findMany.mockResolvedValue([])
 
       const response = await app.inject({ headers: { admin: 'admin' } })
-        .get(userAdminContract.getAllUsers.path)
+        .get(userContract.getAllUsers.path)
         .end()
 
       expect(response.statusCode).toEqual(200)
@@ -47,24 +47,25 @@ describe('Admin user routes', () => {
     })
 
     it('Should return an error if retrieve users failed', async () => {
-      const error = { statusCode: 500, message: 'Erreur de récupération des utilisateurs' }
+      const errorMessage = 'Erreur de récupération des utilisateurs'
 
-      prisma.user.findMany.mockRejectedValue(error)
+      prisma.user.findMany.mockRejectedValue(new Error(errorMessage))
 
       const response = await app.inject({ headers: { admin: 'admin' } })
-        .get(userAdminContract.getAllUsers.path)
+        .get(userContract.getAllUsers.path)
         .end()
 
       expect(response.statusCode).toEqual(500)
-      expect(JSON.parse(response.body).error).toEqual(error.message)
+      expect(JSON.parse(response.body).error).toEqual(errorMessage)
     })
 
     it('Should return an error if requestor is not admin', async () => {
       const requestor = getRandomUser()
+      requestor.groups = []
       setRequestor(requestor)
 
       const response = await app.inject()
-        .get(userAdminContract.getAllUsers.path)
+        .get(userContract.getAllUsers.path)
         .end()
 
       expect(response.statusCode).toEqual(403)
@@ -80,7 +81,7 @@ describe('Admin user routes', () => {
       prisma.adminPlugin.findMany.mockResolvedValue([])
 
       const response = await app.inject({ headers: { admin: 'admin' } })
-        .put(`/api/v1/admin/users/${user.id}`)
+        .put(`/api/v1/users/${user.id}`)
         .body({ isAdmin: false })
         .end()
 
@@ -93,7 +94,7 @@ describe('Admin user routes', () => {
       prisma.adminPlugin.findMany.mockResolvedValue([])
 
       const response = await app.inject({ headers: { admin: 'admin' } })
-        .put(`/api/v1/admin/users/${user.id}`)
+        .put(`/api/v1/users/${user.id}`)
         .body({ isAdmin: true })
         .end()
 

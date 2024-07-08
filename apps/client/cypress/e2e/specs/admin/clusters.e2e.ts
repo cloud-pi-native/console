@@ -23,13 +23,13 @@ describe('Administration clusters', () => {
     cy.intercept('GET', '/api/v1/clusters/*').as('getClustersDetails')
     cy.intercept('GET', '/api/v1/clusters').as('getClusters')
     cy.intercept('GET', '/api/v1/projects*').as('getAdminProjects')
-    cy.intercept('GET', '/api/v1/stages').as('getStages')
+    cy.intercept('GET', '/api/v1/stages').as('listStages')
 
     cy.kcLogin('tcolin')
     cy.visit('/admin/clusters')
     cy.url().should('contain', '/admin/clusters')
     cy.wait('@getClusters')
-    cy.wait('@getStages')
+    cy.wait('@listStages')
     cy.wait('@getAdminProjects').its('response.statusCode').should('match', /^20\d$/)
   })
 

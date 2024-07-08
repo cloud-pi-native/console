@@ -1,11 +1,12 @@
 <script lang="ts" setup>
-import { ref, onMounted, watch, computed } from 'vue'
-import { levels, projectIsLockedInfo, type Permission, type Environment } from '@cpn-console/shared'
+import { ref, onMounted, computed } from 'vue'
+import { levels, projectIsLockedInfo, type Permission, type Environment, UpsertPermissionBody } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectPermissionStore } from '@/stores/project-permission.js'
 import { useUserStore } from '@/stores/user.js'
 import { getRandomId } from '@gouvminint/vue-dsfr'
 import { useUsersStore } from '@/stores/users.js'
+import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 
 const props = withDefaults(defineProps<{
   environment: Partial<Environment>,
@@ -14,23 +15,26 @@ const props = withDefaults(defineProps<{
 })
 
 const projectStore = useProjectStore()
+const projectEnvironmentStore = useProjectEnvironmentStore()
 const projectPermissionStore = useProjectPermissionStore()
 const userStore = useUserStore()
 const usersStore = useUsersStore()
 const environment = ref<Environment | Record<string, any>>(props.environment)
 const permissions = ref<Permission[]>([])
-const permissionToUpdate = ref({})
+const permissionToUpdate = ref<UpsertPermissionBody>({
+  userId: '',
+  level: '',
+})
 const userToLicence = ref<string>('')
 const permissionSuggestionKey = ref(getRandomId('input'))
 
-const project = computed(() => projectStore.selectedProject)
-const ownersIds = computed(() => project.value?.roles?.filter(({ role }) => role === 'owner').map(({ userId }) => userId) ?? [])
-const projectMembers = computed(() => project.value?.roles?.map(role => usersStore.users[role.userId]))
+const ownersIds = computed(() => projectStore.selectedProject?.members.filter(({ role }) => role === 'owner').map(({ userId }) => userId) ?? [])
+const projectMembers = computed(() => projectStore.selectedProject?.members)
 const permittedUsersId = computed(() => [...permissions.value.map(permission => permission.userId), ...ownersIds.value])
 const isPermitted = computed(() => userStore.userProfile ? permittedUsersId.value.includes(userStore.userProfile.id) : false)
 const usersToLicence = computed(() => {
   return projectMembers.value?.filter(projectMember =>
-    !permittedUsersId.value.includes(projectMember?.id))
+    !permittedUsersId.value.includes(projectMember?.userId))
 })
 const suggestions = computed(() => usersToLicence.value?.map(user => user.email))
 
@@ -39,20 +43,21 @@ const setPermissions = () => {
 }
 
 const addPermission = async (userEmail: string) => {
-  if (!project.value?.locked) {
-    const userId = usersToLicence.value?.find(user => user.email === userEmail)?.id
-    // @ts-ignore
-    await projectPermissionStore.upsertPermission(environment.value.id, { userId, level: 0 })
+  if (!projectStore.selectedProject?.locked) {
+    const userId = usersToLicence.value?.find(user => user.email === userEmail)?.userId
+    if (userId) await projectPermissionStore.upsertPermission(environment.value.id, { userId, level: 0 })
   }
   userToLicence.value = ''
   permissionSuggestionKey.value = getRandomId('input')
 }
 
 const upsertPermission = async () => {
-  if (!project.value?.locked) {
-    // @ts-ignore
+  if (!projectStore.selectedProject?.locked) {
     await projectPermissionStore.upsertPermission(environment.value.id, permissionToUpdate.value)
-    permissionToUpdate.value = {}
+    permissionToUpdate.value = {
+      userId: '',
+      level: '',
+    }
   }
 }
 
@@ -61,16 +66,16 @@ const deletePermission = async (userId: string) => {
 }
 
 const getDynamicTitle = (permission: Permission) => {
-  if (project.value?.locked) return projectIsLockedInfo
+  if (projectStore.selectedProject?.locked) return projectIsLockedInfo
   if (ownersIds.value?.includes(permission.userId) && permission.level === 2) return 'Les droits du owner ne peuvent être inférieurs à rwd'
   if (!isPermitted.value) return `Vous n'avez aucun droit sur l'environnement ${environment.value?.name}`
   return `Modifier les droits de ${usersStore.users[permission.userId]?.email}`
 }
 
-watch(project, () => {
-  environment.value = project.value?.environments?.find(env =>
-    env.id === environment.value?.id,
-  )
+projectEnvironmentStore.$subscribe((_mutation, state) => {
+  environment.value = state.environments.find(env =>
+    env.id === environment.value.id,
+  ) as Environment
   setPermissions()
 })
 
@@ -132,7 +137,7 @@ onMounted(() => {
             :level="permission.level"
             :levels="levels"
             required
-            :disabled="(ownersIds.includes(permission.userId) && permission.level === 2) || !isPermitted || project?.locked"
+            :disabled="(ownersIds.includes(permission.userId) && permission.level === 2) || !isPermitted || projectStore.selectedProject?.locked"
             :title="getDynamicTitle(permission)"
             @update-level="(event) => {
               permissionToUpdate.userId = permission.userId
@@ -141,7 +146,7 @@ onMounted(() => {
           />
           <DsfrButton
             :data-testid="`${permission.userId}UpsertPermissionBtn`"
-            :disabled="(ownersIds.includes(permission.userId) && permission.level === 2) || !isPermitted || permissionToUpdate.userId !== permission.userId || project?.locked"
+            :disabled="(ownersIds.includes(permission.userId) && permission.level === 2) || !isPermitted || permissionToUpdate.userId !== permission.userId || projectStore.selectedProject?.locked"
             :title="getDynamicTitle(permission)"
             label="Confirmer la modification"
             class="my-4"
@@ -156,13 +161,13 @@ onMounted(() => {
   <DsfrFieldset
     data-testid="newPermissionFieldset"
     legend="Accréditer un membre du projet"
-    :hint="usersToLicence?.length ? `Entrez l'e-mail d'un membre du projet ${project?.name}. Ex : ${usersToLicence[0]?.email}` : `Tous les membres du projet ${project?.name} sont déjà accrédités.`"
+    :hint="usersToLicence?.length ? `Entrez l'e-mail d'un membre du projet ${projectStore.selectedProject?.name}. Ex : ${usersToLicence[0]?.email}` : `Tous les membres du projet ${projectStore.selectedProject?.name} sont déjà accrédités.`"
   >
     <SuggestionInput
       :key="permissionSuggestionKey"
       v-model="userToLicence"
       data-testid="permissionSuggestionInput"
-      :disabled="!isPermitted || !usersToLicence?.length || project?.locked"
+      :disabled="!isPermitted || !usersToLicence?.length || projectStore.selectedProject?.locked"
       :label="`E-mail de l'utilisateur à accréditer sur l'environnement ${environment?.name}`"
       label-visible
       placeholder="prenom.nom@interieur.gouv.fr"

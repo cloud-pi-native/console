@@ -4,7 +4,7 @@ import { createEnvironment, deleteEnvironment, updateEnvironment, getProjectEnvi
 import { addReqLogs } from '@/utils/logger.js'
 
 export const environmentRouter = () => serverInstance.router(environmentContract, {
-  getEnvironments: async ({ request: req, query }) => {
+  listEnvironments: async ({ request: req, query }) => {
     const projectId = query.projectId
     const userId = req.session.user.id
     const isAdmin = req.session.user.groups?.includes(adminGroupPath)

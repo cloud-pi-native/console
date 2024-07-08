@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import { ref, computed, onMounted, watch } from 'vue'
-import { type Repo, projectIsLockedInfo, sortArrByObjKeyAsc, type Project } from '@cpn-console/shared'
+import { ref, computed, onMounted } from 'vue'
+import { type Repo, projectIsLockedInfo, sortArrByObjKeyAsc } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectRepositoryStore } from '@/stores/project-repository.js'
 import { useUserStore } from '@/stores/user.js'
@@ -17,8 +17,7 @@ const projectRepositoryStore = useProjectRepositoryStore()
 const userStore = useUserStore()
 const snackbarStore = useSnackbarStore()
 
-const project = computed(() => projectStore.selectedProject)
-const isOwner = computed(() => project.value?.roles?.some(role => role.userId === userStore.userProfile?.id && role.role === 'owner'))
+const isOwner = computed(() => projectStore.selectedProject?.members.some(member => member.userId === userStore.userProfile?.id && member.role === 'owner'))
 
 const repos = ref<RepoTile[]>([])
 const selectedRepo = ref<Repo>()
@@ -28,9 +27,8 @@ const branchName = ref<string>('main')
 const repoFormId = 'repoFormId'
 const syncFormId = 'syncFormId'
 
-const setReposTiles = (project: Project) => {
-  // @ts-ignore
-  repos.value = sortArrByObjKeyAsc(project?.repositories, 'internalRepoName')
+const setReposTiles = () => {
+  repos.value = sortArrByObjKeyAsc(projectRepositoryStore.repositories, 'internalRepoName')
     ?.map(repo => ({
       id: repo.internalRepoName,
       title: repo.internalRepoName,
@@ -58,23 +56,23 @@ const cancel = () => {
 }
 
 const saveRepo = async (repo: Repo) => {
-  if (!project.value) return
+  if (!projectStore.selectedProject) return
   snackbarStore.isWaitingForResponse = true
   if (repo.id) {
     await projectRepositoryStore.updateRepo(repo)
   } else {
     await projectRepositoryStore.addRepoToProject(repo)
   }
-  setReposTiles(project.value)
+  setReposTiles()
   cancel()
   snackbarStore.isWaitingForResponse = false
 }
 
 const deleteRepo = async (repoId: Repo['id']) => {
-  if (!project.value) return
+  if (!projectStore.selectedProject) return
   snackbarStore.isWaitingForResponse = true
   await projectRepositoryStore.deleteRepo(repoId)
-  setReposTiles(project.value)
+  setReposTiles()
   selectedRepo.value = undefined
   snackbarStore.isWaitingForResponse = false
 }
@@ -89,13 +87,13 @@ const syncRepository = async () => {
 }
 
 onMounted(() => {
-  if (!project.value) return
-  setReposTiles(project.value)
+  if (!projectStore.selectedProject) return
+  projectRepositoryStore.getProjectRepositories(projectStore.selectedProject.id)
+  setReposTiles()
 })
 
-watch(project, () => {
-  if (!project.value) return
-  setReposTiles(project.value)
+projectRepositoryStore.$subscribe(() => {
+  setReposTiles()
 })
 
 </script>
@@ -103,7 +101,7 @@ watch(project, () => {
 <template>
   <DsoSelectedProject />
   <template
-    v-if="project"
+    v-if="projectStore.selectedProject"
   >
     <div
       class="flex <md:flex-col-reverse items-center justify-between pb-5"
@@ -113,8 +111,8 @@ watch(project, () => {
         label="Ajouter un nouveau dépôt"
         data-testid="addRepoLink"
         tertiary
-        :disabled="project.locked"
-        :title="project.locked ? projectIsLockedInfo : 'Ajouter un dépôt'"
+        :disabled="projectStore.selectedProject.locked"
+        :title="projectStore.selectedProject.locked ? projectIsLockedInfo : 'Ajouter un dépôt'"
         class="fr-mt-2v <md:mb-2"
         icon="ri-add-line"
         @click="showNewRepoForm()"
@@ -138,7 +136,7 @@ watch(project, () => {
       class="my-5 pb-10 border-grey-900 border-y-1"
     >
       <RepoForm
-        :is-project-locked="project.locked"
+        :is-project-locked="projectStore.selectedProject.locked"
         @save="(repo) => saveRepo(repo)"
         @cancel="cancel()"
       />
@@ -208,7 +206,7 @@ watch(project, () => {
           </div>
           <RepoForm
             :id="repoFormId"
-            :is-project-locked="project.locked"
+            :is-project-locked="projectStore.selectedProject.locked"
             :is-owner="isOwner"
             :repo="selectedRepo"
             @save="(repo) => saveRepo(repo)"

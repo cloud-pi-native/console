@@ -29,6 +29,7 @@ describe('System config routes', () => {
     it('Should retrieve global config of plugins', async () => {
       prisma.adminPlugin.findMany.mockResolvedValueOnce([])
       requestor.groups = [adminGroupPath]
+      setRequestor(requestor)
 
       const response = await app.inject()
         .get(systemPluginContract.getPluginsConfig.path)
@@ -51,6 +52,7 @@ describe('System config routes', () => {
 
     it('Should update config of plugins', async () => {
       requestor.groups = [adminGroupPath]
+      setRequestor(requestor)
 
       const response = await app.inject()
         .post(systemPluginContract.updatePluginsConfig.path)

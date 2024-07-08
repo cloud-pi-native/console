@@ -64,40 +64,30 @@ describe('Project routes', () => {
   // POST
   describe('createProjectController', () => {
     it('Should create a project', async () => {
-      const project = getRandomProject()
-      const organization = project.organization
-      project.clusters = []
-      project.roles = []
-      project.members = []
+      const randomDbSetup = createRandomDbSetup({})
+      const project = randomDbSetup.project
+      const organization = randomDbSetup.organization
 
       prisma.user.upsert.mockResolvedValue(getRequestor())
       prisma.organization.findUnique.mockResolvedValue(organization)
       prisma.project.findMany.mockResolvedValue([])
       prisma.project.create.mockResolvedValue(project)
-      prisma.project.update.mockResolvedValue(project)
-      prisma.environment.findMany.mockResolvedValue([])
-      prisma.repository.findMany.mockResolvedValue([])
-      prisma.cluster.findMany.mockResolvedValue([])
+      prisma.log.create.mockResolvedValueOnce({})
       prisma.project.findUniqueOrThrow.mockResolvedValue(project)
 
       const response = await app.inject()
         .post('/api/v1/projects')
         .body(project)
         .end()
-      delete project.clusters
-      delete project.environments
-      delete project.repositories
-      delete project.organization
-      delete project.roles
-      project.clusterIds = []
+
       expect(response.json()).toMatchObject(project)
       expect(response.statusCode).toEqual(201)
-      expect(response.json()).toBeDefined()
     })
 
     it('Should not create a project if payload is invalid', async () => {
-      const project = getRandomProject()
-      const organization = project.organization
+      const randomDbSetup = createRandomDbSetup({})
+      const project = randomDbSetup.project
+      const organization = randomDbSetup.organization
       delete project.name
 
       prisma.user.upsert.mockResolvedValue(getRequestor())
@@ -114,8 +104,9 @@ describe('Project routes', () => {
     })
 
     it('Should not create a project if name already exists', async () => {
-      const project = getRandomProject()
-      const organization = project.organization
+      const randomDbSetup = createRandomDbSetup({})
+      const project = randomDbSetup.project
+      const organization = randomDbSetup.organization
 
       prisma.user.upsert.mockResolvedValue(getRequestor())
       prisma.organization.findUnique.mockResolvedValue(organization)

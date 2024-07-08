@@ -6,7 +6,7 @@ describe('Manage permissions for environment', () => {
   const user0 = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6566')
   const user1 = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6567')
   const user2 = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6569')
-  const environment = project.environments?.find(environment => environment?.name === 'dev')
+  const environment = getModelById('environment', '1b9f1053-fcf5-4053-a7b2-ff8a2c0c1921')
 
   before(() => {
     cy.kcLogin('test')
@@ -45,6 +45,7 @@ describe('Manage permissions for environment', () => {
 
   it('Should add permissions to an existing environment', () => {
     cy.intercept('GET', '/api/v1/clusters').as('getClusters')
+    cy.intercept('GET', '/api/v1/environments?projectId=*').as('listEnvironments')
 
     cy.assertAddEnvironment(project, [environment], false)
     cy.addPermission(project, environment?.name, user0.email)
@@ -68,6 +69,7 @@ describe('Manage permissions for environment', () => {
     cy.goToProjects()
     cy.getByDataTestid(`projectTile-${project.name}`).click()
     cy.getByDataTestid('menuEnvironments').click()
+    cy.wait('@listEnvironments')
     cy.getByDataTestid(`environmentTile-${environment?.name}`)
       .click()
 

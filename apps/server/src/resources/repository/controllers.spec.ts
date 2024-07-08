@@ -26,23 +26,6 @@ describe('Repository routes', () => {
   })
 
   // GET
-  describe('getRepositoryByIdController', () => {
-    it('Should get a repository by its id', async () => {
-      const projectInfos = createRandomDbSetup({}).project
-      projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id)]
-      const repoToGet = projectInfos.repositories[0]
-
-      prisma.project.findUnique.mockResolvedValueOnce(projectInfos)
-
-      const response = await app.inject()
-        .get(`/api/v1/projects/${projectInfos.id}/repositories/${repoToGet.id}`)
-        .end()
-
-      expect(response.statusCode).toEqual(200)
-      expect(response.json()).toMatchObject(repoToGet)
-    })
-  })
-
   describe('getProjectRepositoriesController', () => {
     it('Should get repositories of a project', async () => {
       const projectInfos = createRandomDbSetup({}).project
