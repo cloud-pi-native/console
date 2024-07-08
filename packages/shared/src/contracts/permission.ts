@@ -1,24 +1,12 @@
 import { ClientInferRequest } from '@ts-rest/core'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
-  CreatePermissionSchema,
   GetPermissionsSchema,
-  UpdatePermissionSchema,
+  UpsertPermissionSchema,
   DeletePermissionSchema,
 } from '../schemas/index.js'
 
 export const permissionContract = contractInstance.router({
-  createPermission: {
-    method: 'POST',
-    path: `${apiPrefix}/projects/:projectId/environments/:environmentId/permissions`,
-    pathParams: CreatePermissionSchema.params,
-    contentType: 'application/json',
-    summary: 'Create permission',
-    description: 'Create new permission.',
-    body: CreatePermissionSchema.body,
-    responses: CreatePermissionSchema.responses,
-  },
-
   getPermissions: {
     method: 'GET',
     path: `${apiPrefix}/projects/:projectId/environments/:environmentId/permissions`,
@@ -28,14 +16,14 @@ export const permissionContract = contractInstance.router({
     responses: GetPermissionsSchema.responses,
   },
 
-  updatePermission: {
+  upsertPermission: {
     method: 'PUT',
     path: `${apiPrefix}/projects/:projectId/environments/:environmentId/permissions`,
     summary: 'Update permission',
     description: 'Update a permission.',
-    pathParams: UpdatePermissionSchema.params,
-    body: UpdatePermissionSchema.body,
-    responses: UpdatePermissionSchema.responses,
+    pathParams: UpsertPermissionSchema.params,
+    body: UpsertPermissionSchema.body,
+    responses: UpsertPermissionSchema.responses,
   },
 
   deletePermission: {
@@ -49,6 +37,4 @@ export const permissionContract = contractInstance.router({
   },
 })
 
-export type CreatePermissionBody = ClientInferRequest<typeof permissionContract.createPermission>['body']
-
-export type UpdatePermissionBody = ClientInferRequest<typeof permissionContract.updatePermission>['body']
+export type UpsertPermissionBody = ClientInferRequest<typeof permissionContract.upsertPermission>['body']

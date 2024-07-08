@@ -6,11 +6,13 @@ const props = withDefaults(defineProps<{
   level: number,
   levels: string[],
   step: number,
+  title: string
 }>(), {
   label: '',
   level: 0,
   levels: () => [],
   step: 1,
+  title: '',
 })
 
 const localLevel = ref(props.level)
@@ -39,6 +41,7 @@ defineEmits(['updateLevel'])
         v-bind="$attrs"
         v-model="localLevel"
         class="range-input"
+        :title="props.title"
         name="range"
         type="range"
         list="rangeList"
