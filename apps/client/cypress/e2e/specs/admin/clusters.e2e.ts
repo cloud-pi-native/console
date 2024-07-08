@@ -20,7 +20,7 @@ describe('Administration clusters', () => {
   }
 
   beforeEach(() => {
-    cy.intercept('GET', '/api/v1/admin/clusters/*').as('getClustersDetails')
+    cy.intercept('GET', '/api/v1/clusters/*').as('getClustersDetails')
     cy.intercept('GET', '/api/v1/clusters').as('getClusters')
     cy.intercept('GET', '/api/v1/projects*').as('getAdminProjects')
     cy.intercept('GET', '/api/v1/stages').as('getStages')
@@ -129,8 +129,8 @@ describe('Administration clusters', () => {
   })
 
   it('Should create a cluster', () => {
-    cy.intercept('POST', '/api/v1/admin/clusters').as('createCluster')
-    cy.intercept('GET', '/api/v1/admin/clusters/*/environments').as('getClusterEnvironments')
+    cy.intercept('POST', '/api/v1/clusters').as('createCluster')
+    cy.intercept('GET', '/api/v1/clusters/*/environments').as('getClusterEnvironments')
 
     cy.getByDataTestid('addClusterLink')
       .click()
@@ -226,7 +226,7 @@ describe('Administration clusters', () => {
   })
 
   it('Should update a cluster', () => {
-    cy.intercept('PUT', '/api/v1/admin/clusters/*').as('updateCluster')
+    cy.intercept('PUT', '/api/v1/clusters/*').as('updateCluster')
 
     const updatedCluster = {
       infos: 'Floating IP: 2.2.2.2',
@@ -310,7 +310,7 @@ describe('Administration clusters', () => {
   })
 
   it('Should delete a cluster', () => {
-    cy.intercept('DELETE', '/api/v1/admin/clusters/*').as('deleteCluster')
+    cy.intercept('DELETE', '/api/v1/clusters/*').as('deleteCluster')
 
     cy.getByDataTestid(`clusterTile-${newCluster.label}`)
       .should('be.visible')

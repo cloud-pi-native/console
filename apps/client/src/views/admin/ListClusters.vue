@@ -11,7 +11,6 @@ import {
   type Organization,
   type ClusterDetails,
 } from '@cpn-console/shared'
-import { useAdminClusterStore } from '@/stores/admin/cluster.js'
 import { useAdminProjectStore } from '@/stores/admin/project.js'
 import { useOrganizationStore } from '@/stores/organization.js'
 import { useZoneStore } from '@/stores/zone.js'
@@ -24,7 +23,6 @@ type ClusterList = {
   data: Cluster
 }[]
 
-const adminClusterStore = useAdminClusterStore()
 const clusterStore = useClusterStore()
 const adminProjectStore = useAdminProjectStore()
 const organizationStore = useOrganizationStore()
@@ -50,12 +48,12 @@ const setClusterTiles = (clusterArr: typeof clusters.value) => {
 }
 
 const setSelectedCluster = async (id: Cluster['id']) => {
-  if (adminClusterStore.selectedCluster?.id === id) {
-    adminClusterStore.selectedCluster = undefined
+  if (clusterStore.selectedCluster?.id === id) {
+    clusterStore.selectedCluster = undefined
     return
   }
   await Promise.all([
-    adminClusterStore.getClusterDetails(id),
+    clusterStore.getClusterDetails(id),
     getClusterAssociatedEnvironments(id),
   ])
   isNewClusterForm.value = false
@@ -63,31 +61,31 @@ const setSelectedCluster = async (id: Cluster['id']) => {
 
 const getClusterAssociatedEnvironments = async (clusterId: string) => {
   isUpdatingCluster.value = true
-  associatedEnvironments.value = await adminClusterStore.getClusterAssociatedEnvironments(clusterId) ?? []
+  associatedEnvironments.value = await clusterStore.getClusterAssociatedEnvironments(clusterId) ?? []
   isUpdatingCluster.value = false
 }
 
 const showNewClusterForm = () => {
   isNewClusterForm.value = !isNewClusterForm.value
-  adminClusterStore.selectedCluster = undefined
+  clusterStore.selectedCluster = undefined
 }
 
 const cancel = () => {
   isNewClusterForm.value = false
-  adminClusterStore.selectedCluster = undefined
+  clusterStore.selectedCluster = undefined
 }
 
 const addCluster = async (cluster: CreateClusterBody) => {
   isUpdatingCluster.value = true
   cancel()
-  await adminClusterStore.addCluster(cluster)
+  await clusterStore.addCluster(cluster)
   await clusterStore.getClusters()
   isUpdatingCluster.value = false
 }
 
 const updateCluster = async (cluster: UpdateClusterBody & { id: Cluster['id'] }) => {
   isUpdatingCluster.value = true
-  await adminClusterStore.updateCluster(cluster)
+  await clusterStore.updateCluster(cluster)
   await clusterStore.getClusters()
   cancel()
   isUpdatingCluster.value = false
@@ -95,10 +93,10 @@ const updateCluster = async (cluster: UpdateClusterBody & { id: Cluster['id'] })
 
 const deleteCluster = async (clusterId: Cluster['id']) => {
   isUpdatingCluster.value = true
-  await adminClusterStore.deleteCluster(clusterId)
+  await clusterStore.deleteCluster(clusterId)
   await clusterStore.getClusters()
   setClusterTiles(clusters.value)
-  adminClusterStore.selectedCluster = undefined
+  clusterStore.selectedCluster = undefined
   isUpdatingCluster.value = false
 }
 
@@ -128,7 +126,7 @@ watch(clusters, () => {
     class="flex <md:flex-col-reverse items-center justify-between pb-5"
   >
     <DsfrButton
-      v-if="!adminClusterStore.selectedCluster && !isNewClusterForm"
+      v-if="!clusterStore.selectedCluster && !isNewClusterForm"
       label="Ajouter un nouveau cluster"
       data-testid="addClusterLink"
       tertiary
@@ -168,7 +166,7 @@ watch(clusters, () => {
   <div
     v-else
     :class="{
-      'md:grid md:grid-cols-3 md:gap-3 items-center justify-between': !adminClusterStore.selectedCluster?.label,
+      'md:grid md:grid-cols-3 md:gap-3 items-center justify-between': !clusterStore.selectedCluster?.label,
     }"
   >
     <div
@@ -177,19 +175,19 @@ watch(clusters, () => {
       class="fr-mt-2v fr-mb-4w w-full"
     >
       <div
-        v-show="!adminClusterStore.selectedCluster"
+        v-show="!clusterStore.selectedCluster"
       >
         <DsfrTile
           :title="cluster.title"
           :data-testid="`clusterTile-${cluster.title}`"
-          :horizontal="!!adminClusterStore.selectedCluster?.label"
+          :horizontal="!!clusterStore.selectedCluster?.label"
           class="fr-mb-2w w-11/12"
           @click="setSelectedCluster(cluster.id)"
         />
       </div>
       <ClusterForm
-        v-if="adminClusterStore.selectedCluster && adminClusterStore.selectedCluster.id === cluster.id"
-        :cluster="adminClusterStore.selectedCluster"
+        v-if="clusterStore.selectedCluster && clusterStore.selectedCluster.id === cluster.id"
+        :cluster="clusterStore.selectedCluster"
         :all-zones="allZones"
         :all-projects="allProjects"
         :all-stages="allStages"

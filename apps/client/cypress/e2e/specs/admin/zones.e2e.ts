@@ -245,7 +245,7 @@ describe('Administration zones', () => {
   })
 
   it('Should delete a zone', () => {
-    cy.intercept('PUT', '/api/v1/admin/clusters/*').as('updateCluster')
+    cy.intercept('PUT', '/api/v1/clusters/*').as('updateCluster')
 
     cy.visit('/admin/clusters')
     cy.url().should('contain', '/admin/clusters')

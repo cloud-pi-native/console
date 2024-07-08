@@ -17,12 +17,10 @@ export const clusterContract = contractInstance.router({
     description: 'Retrieve clusters authorized for user',
     responses: GetClustersSchema.responses,
   },
-})
 
-export const clusterAdminContract = contractInstance.router({
   createCluster: {
     method: 'POST',
-    path: `${apiPrefix}/admin/clusters`,
+    path: `${apiPrefix}/clusters`,
     contentType: 'application/json',
     summary: 'Create cluster',
     description: 'Create new cluster.',
@@ -30,27 +28,27 @@ export const clusterAdminContract = contractInstance.router({
     responses: CreateClusterSchema.responses,
   },
 
-  getClusterEnvironments: {
-    method: 'GET',
-    path: `${apiPrefix}/admin/clusters/:clusterId/environments`,
-    summary: 'Get cluster envs',
-    description: 'Retrieved environments linked to a cluster.',
-    pathParams: GetClusterAssociatedEnvironmentsSchema.params,
-    responses: GetClusterAssociatedEnvironmentsSchema.responses,
-  },
-
   getClusterDetails: {
     method: 'GET',
-    path: `${apiPrefix}/admin/clusters/:clusterId`,
+    path: `${apiPrefix}/clusters/:clusterId`,
     summary: 'Get cluster details',
     description: 'Retrieved details of a cluster.',
     pathParams: GetClusterDetailsSchema.params,
     responses: GetClusterDetailsSchema.responses,
   },
 
+  getClusterEnvironments: {
+    method: 'GET',
+    path: `${apiPrefix}/clusters/:clusterId/environments`,
+    summary: 'Get cluster envs',
+    description: 'Retrieved environments linked to a cluster.',
+    pathParams: GetClusterAssociatedEnvironmentsSchema.params,
+    responses: GetClusterAssociatedEnvironmentsSchema.responses,
+  },
+
   updateCluster: {
     method: 'PUT',
-    path: `${apiPrefix}/admin/clusters/:clusterId`,
+    path: `${apiPrefix}/clusters/:clusterId`,
     summary: 'Update cluster',
     description: 'Update a cluster by its ID.',
     pathParams: UpdateClusterSchema.params,
@@ -60,7 +58,7 @@ export const clusterAdminContract = contractInstance.router({
 
   deleteCluster: {
     method: 'DELETE',
-    path: `${apiPrefix}/admin/clusters/:clusterId`,
+    path: `${apiPrefix}/clusters/:clusterId`,
     summary: 'Delete cluster',
     description: 'Delete a cluster by its ID.',
     pathParams: DeleteClusterSchema.params,
@@ -69,4 +67,4 @@ export const clusterAdminContract = contractInstance.router({
   },
 })
 
-export type ClusterAssociatedEnvironments = ClientInferResponseBody<typeof clusterAdminContract.getClusterEnvironments, 200>
+export type ClusterAssociatedEnvironments = ClientInferResponseBody<typeof clusterContract.getClusterEnvironments, 200>
