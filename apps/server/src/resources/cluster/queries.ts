@@ -171,32 +171,44 @@ export const getClustersWithProjectIdAndConfig = () =>
     },
   })
 
-export const listClustersForUser = (userId: User['id']) =>
-  prisma.cluster.findMany({
-    where: {
-      OR: [
-        // Sélectionne tous les clusters publiques
-        { privacy: 'public' },
-        // Sélectionne les clusters associés aux projets dont l'user est membre
-        {
-          projects: { some: { roles: { some: { userId } } } },
-        },
-        // Sélectionne les clusters associés aux environnments appartenant à des projets dont l'user est membre
-        {
-          environments: { some: { project: { roles: { some: { userId } } } } },
-        },
-      ],
-    },
-    select: {
-      id: true,
-      label: true,
-      stages: true,
-      clusterResources: true,
-      privacy: true,
-      infos: true,
-      zoneId: true,
-    },
-  })
+export const listClustersForUser = (isAdmin: boolean, userId: User['id']) =>
+  isAdmin
+    ? prisma.cluster.findMany({
+      select: {
+        id: true,
+        label: true,
+        stages: true,
+        clusterResources: true,
+        privacy: true,
+        infos: true,
+        zoneId: true,
+      },
+    })
+    : prisma.cluster.findMany({
+      where: {
+        OR: [
+          // Sélectionne tous les clusters publiques
+          { privacy: 'public' },
+          // Sélectionne les clusters associés aux projets dont l'user est membre
+          {
+            projects: { some: { roles: { some: { userId } } } },
+          },
+          // Sélectionne les clusters associés aux environnments appartenant à des projets dont l'user est membre
+          {
+            environments: { some: { project: { roles: { some: { userId } } } } },
+          },
+        ],
+      },
+      select: {
+        id: true,
+        label: true,
+        stages: true,
+        clusterResources: true,
+        privacy: true,
+        infos: true,
+        zoneId: true,
+      },
+    })
 
 export const getProjectsByClusterId = async (id: Cluster['id']) =>
   (await prisma.cluster.findUniqueOrThrow({
