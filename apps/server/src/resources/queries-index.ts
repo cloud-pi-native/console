@@ -1,6 +1,6 @@
 export * from '@/resources/cluster/queries.js'
 export * from '@/resources/environment/queries.js'
-export * from '@/resources/log/admin/queries.js'
+export * from '@/resources/log/queries.js'
 export * from '@/resources/organization/queries.js'
 export * from '@/resources/permission/queries.js'
 export * from '@/resources/project/queries.js'
