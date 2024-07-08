@@ -18,7 +18,6 @@ export const useProjectUserStore = defineStore('project-user', () => {
   const addUserToProject = async (projectId: string, body: AddUserToProjectBody) => {
     const newRoles = await apiClient.Users.createUserRoleInProject({ body, params: { projectId } })
       .then(response => extractData(response, 201))
-    if (!newRoles) return
     newRoles.forEach(role => {
       usersStore.addUser(role.user)
     })
@@ -37,7 +36,6 @@ export const useProjectUserStore = defineStore('project-user', () => {
   const removeUserFromProject = async (projectId: string, userId: string) => {
     const newRoles = await apiClient.Users.deleteUserRoleInProject({ params: { projectId, userId } })
       .then(response => extractData(response, 200))
-    if (!newRoles) return
     projectStore.updateProjectRoles(projectId, newRoles)
     return newRoles
   }

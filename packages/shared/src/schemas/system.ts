@@ -47,6 +47,7 @@ export const UpdateSystemPluginSchema = {
     204: null,
     400: ErrorSchema,
     401: ErrorSchema,
+    403: ErrorSchema,
     500: ErrorSchema,
   },
 }

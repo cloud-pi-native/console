@@ -4,8 +4,10 @@ import { type ProjectRoles, adminGroupPath, projectIsLockedInfo } from '@cpn-con
 import { ForbiddenError } from './errors.js'
 import { UserDetails } from '@/types/index.js'
 
+export const hasGroupAdmin = (groups: UserDetails['groups']) => groups.includes(adminGroupPath)
+
 export const checkIsAdmin = (user: UserDetails) => {
-  if (!user.groups.includes(adminGroupPath)) {
+  if (!hasGroupAdmin(user.groups)) {
     throw new ForbiddenError('Vous n\'avez pas les droits administrateur')
   }
 }
@@ -98,3 +100,23 @@ export const checkInsufficientPermissionInEnvironment = (userId: User['id'], per
 }
 
 export const filterOwners = (roles: Role[]) => roles.filter(({ role }) => role === 'owner')
+
+export const splitStringsFilterArray = <T extends Readonly<string[]>>(toMatch: T, inputs: string): T => inputs.split(',').filter(i => toMatch.includes(i)) as unknown as T
+
+type StringArray = string[]
+type WhereBuilderParams<T extends StringArray> = {
+  enumValues: T
+  eqValue: T[number] | undefined
+  inValues: string | undefined
+  notInValues: string | undefined
+}
+
+export const whereBuilder = <T extends StringArray>({ enumValues, eqValue, inValues, notInValues }: WhereBuilderParams<T>) => {
+  if (eqValue) {
+    return eqValue
+  } else if (inValues) {
+    return { in: splitStringsFilterArray(enumValues, inValues) }
+  } else if (notInValues) {
+    return { notIn: splitStringsFilterArray(enumValues, notInValues) }
+  }
+}

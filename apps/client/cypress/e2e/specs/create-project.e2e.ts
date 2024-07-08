@@ -13,7 +13,7 @@ describe('Create Project', () => {
 
   it('Should create a project with minimal form informations', () => {
     cy.intercept('POST', '/api/v1/projects').as('postProject')
-    cy.intercept('GET', '/api/v1/projects').as('getProjects')
+    cy.intercept('GET', '/api/v1/projects/mines').as('getProjects')
 
     const owner = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
 
@@ -40,7 +40,7 @@ describe('Create Project', () => {
 
   it('Should not create a project if name is already taken', () => {
     cy.intercept('POST', '/api/v1/projects').as('postProject')
-    cy.intercept('GET', '/api/v1/projects').as('getProjects')
+    cy.intercept('GET', '/api/v1/projects/mines').as('getProjects')
 
     cy.goToProjects()
       .getByDataTestid('createProjectLink').click()

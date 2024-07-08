@@ -3,7 +3,7 @@ import { setActivePinia, createPinia } from 'pinia'
 import { apiClient } from '../../api/xhr-client.js'
 import { useAdminProjectStore } from './project.js'
 
-const apiClientGet = vi.spyOn(apiClient.ProjectsAdmin, 'getAllProjects')
+const apiClientGet = vi.spyOn(apiClient.Projects, 'listProjects')
 const apiClientPatch = vi.spyOn(apiClient.ProjectsAdmin, 'patchProject')
 
 describe('Project Admin Store', () => {
@@ -16,14 +16,14 @@ describe('Project Admin Store', () => {
 
   it('Should get project list by api call', async () => {
     const data = [
-      { id: 'id1', name: 'project1', status: 'archived', roles: [{ user: { id: '1' } }] },
-      { id: 'id2', name: 'project2', status: 'created', roles: [{ user: { id: '1' } }] },
-      { id: 'id3', name: 'project3', status: 'created', roles: [{ user: { id: '1' } }] },
+      { id: 'id1', name: 'project1', status: 'archived', members: [{ userId: 'a', role: 'user', email: 'test@test.com' }] },
+      { id: 'id2', name: 'project2', status: 'created', members: [{ userId: 'a', role: 'user', email: 'test@test.com' }] },
+      { id: 'id3', name: 'project3', status: 'created', members: [{ userId: 'a', role: 'user', email: 'test@test.com' }] },
     ]
     apiClientGet.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
     const adminProjectStore = useAdminProjectStore()
 
-    const res = await adminProjectStore.getAllProjects()
+    const res = await adminProjectStore.getAllProjects({})
 
     expect(res).toBe(data)
     expect(apiClientGet).toHaveBeenCalledTimes(1)
@@ -31,16 +31,15 @@ describe('Project Admin Store', () => {
 
   it('Should get active project list by api call', async () => {
     const data = [
-      { id: 'id1', name: 'project1', status: 'archived', roles: [{ user: { id: '1' } }] },
-      { id: 'id2', name: 'project2', status: 'created', roles: [{ user: { id: '1' } }] },
-      { id: 'id3', name: 'project3', status: 'created', roles: [{ user: { id: '1' } }] },
+      { id: 'id2', name: 'project2', status: 'created', members: [{ userId: 'a', role: 'user', email: 'test@test.com' }] },
+      { id: 'id3', name: 'project3', status: 'created', members: [{ userId: 'a', role: 'user', email: 'test@test.com' }] },
     ]
     apiClientGet.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
     const adminProjectStore = useAdminProjectStore()
 
-    const res = await adminProjectStore.getAllActiveProjects()
+    const res = await adminProjectStore.getAllProjects({ statusNotIn: 'archived' })
 
-    expect(res).toStrictEqual(data.splice(1))
+    expect(res).toStrictEqual(data)
     expect(apiClientGet).toHaveBeenCalledTimes(1)
   })
 

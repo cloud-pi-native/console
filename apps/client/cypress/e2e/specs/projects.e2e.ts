@@ -8,7 +8,7 @@ const secondUserProjects = getUserProjects('cb8e5b4b-7b7b-40f5-935f-594f48ae6569
 describe('Projects view', () => {
   it('Should display select and button to create project', () => {
     cy.kcLogin('test')
-    cy.intercept('GET', 'api/v1/projects').as('getProjects')
+    cy.intercept('GET', 'api/v1/projects/mines').as('getProjects')
     cy.intercept('GET', '/api/v1/stages').as('getStages')
 
     cy.goToProjects()
@@ -25,7 +25,7 @@ describe('Projects view', () => {
   })
   it('Should display only projects that user is member of', () => {
     cy.kcLogin((user.firstName.slice(0, 1) + user.lastName).toLowerCase())
-    cy.intercept('GET', 'api/v1/projects').as('getProjects')
+    cy.intercept('GET', 'api/v1/projects/mines').as('getProjects')
     cy.goToProjects()
       .wait('@getProjects').its('response').then(response => {
         cy.log(response?.body.length)

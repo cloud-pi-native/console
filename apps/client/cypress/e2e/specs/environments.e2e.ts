@@ -49,7 +49,7 @@ describe('Manage project environments', () => {
     cy.intercept('GET', 'api/v1/stages').as('getStages')
     cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
     cy.intercept('POST', '/api/v1/environments').as('postEnvironment')
-    cy.intercept('GET', '/api/v1/projects').as('getProjects')
+    cy.intercept('GET', '/api/v1/projects/mines').as('getProjects')
 
     cy.goToProjects()
       .getByDataTestid(`projectTile-${project0?.name}`).click()
@@ -202,8 +202,7 @@ describe('Manage project environments', () => {
     cy.intercept('GET', '/api/v1/stages').as('getStages')
     cy.intercept('GET', '/api/v1/environments?*').as('getEnvironments')
     cy.intercept('PUT', '/api/v1/environments/*').as('putEnvironment')
-    cy.intercept('GET', '/api/v1/projects').as('getProjects')
-    cy.intercept('GET', '/api/v1/admin/projects').as('getAdminProjects')
+    cy.intercept('GET', '/api/v1/projects/mines').as('getProjects')
 
     cy.kcLogin('test')
     cy.goToProjects()

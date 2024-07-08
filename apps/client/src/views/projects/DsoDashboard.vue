@@ -299,11 +299,7 @@ onBeforeMount(async () => {
     />
   </div>
   <!-- N'est jamais sensé s'afficher -->
-  <div
+  <ErrorGoBackToProjects
     v-else
-  >
-    <p>
-      Aucun projet selectionné, veuillez revenir à la <a href="/projects">liste des projets</a>
-    </p>
-  </div>
+  />
 </template>

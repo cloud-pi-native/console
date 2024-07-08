@@ -8,7 +8,7 @@ export const ErrorSchema = z.object({
 })
 
 const dateToString = z.string().or(z.date().transform(date => date.toISOString()))
-export const AtDatesToStringSchema = z.object({
+export const AtDatesToStringExtend = {
   updatedAt: dateToString,
   createdAt: dateToString,
-})
+}

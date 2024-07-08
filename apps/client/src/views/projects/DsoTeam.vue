@@ -46,13 +46,17 @@ const removeUserFromProject = async (userId: string) => {
   <DsoSelectedProject />
 
   <TeamCt
+    v-if="project"
     :key="teamCtKey"
     :user-profile="userStore.userProfile"
-    :project="{id: project?.id ?? '', name: project?.name ?? '', locked: project?.locked ?? false }"
+    :project="{id: project.id ?? '', name: project.name ?? '', locked: project.locked ?? false }"
     :known-users="usersStore.users"
-    :roles="project?.roles ?? []"
-    @add-member="(email) => addUserToProject(email)"
-    @update-role="(userId) => updateUserRole(userId)"
-    @remove-member="(userId) => removeUserFromProject(userId)"
+    :members="project.roles ?? []"
+    @add-member="(email: string) => addUserToProject(email)"
+    @update-role="(userId: string) => updateUserRole(userId)"
+    @remove-member="(userId: string) => removeUserFromProject(userId)"
+  />
+  <ErrorGoBackToProjects
+    v-else
   />
 </template>

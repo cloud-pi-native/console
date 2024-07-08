@@ -167,7 +167,7 @@ onMounted(() => {
       label-visible
       placeholder="prenom.nom@interieur.gouv.fr"
       :suggestions="suggestions"
-      @select-suggestion="addPermission($event)"
+      @select-suggestion="(value: string) => addPermission(value)"
     />
   </DsfrFieldset>
 </template>

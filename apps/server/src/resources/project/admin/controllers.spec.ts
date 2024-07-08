@@ -30,49 +30,6 @@ describe('Admin project routes', () => {
   })
 
   // GET
-  describe('getAllProjectsController', () => {
-    it('Should retrieve all projects', async () => {
-      const randomDbSetup = createRandomDbSetup({})
-      const projects = [randomDbSetup.project]
-      const clusters = [getRandomCluster({ privacy: 'public' })]
-
-      prisma.project.findMany.mockResolvedValue(projects)
-      prisma.cluster.findMany.mockResolvedValue(clusters)
-
-      const response = await app.inject()
-        .get('/api/v1/admin/projects')
-        .end()
-
-      expect(response.statusCode).toEqual(200)
-      expect(response.json()).toMatchObject(projects)
-    })
-
-    it('Should return an error if retrieve projects failed', async () => {
-      const error = { statusCode: 500, message: 'Echec de la récupération de l\'ensemble des projets' }
-
-      prisma.project.findMany.mockRejectedValue(error)
-
-      const response = await app.inject()
-        .get('/api/v1/admin/projects')
-        .end()
-
-      expect(response.statusCode).toEqual(500)
-      expect(JSON.parse(response.body).error).toEqual(error.message)
-    })
-
-    it('Should return an error if requestor is not admin', async () => {
-      const requestor = getRandomUser()
-      setRequestor(requestor)
-
-      const response = await app.inject()
-        .get('/api/v1/admin/projects')
-        .end()
-
-      expect(response.statusCode).toEqual(403)
-      expect(JSON.parse(response.body).error).toEqual('Vous n\'avez pas les droits administrateur')
-    })
-  })
-
   describe('generateProjectsDataController', () => {
     it('Should retrieve all projects data for download', async () => {
       const projects = repeatFn(2)(getRandomProject)

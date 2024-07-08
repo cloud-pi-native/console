@@ -6,7 +6,7 @@ const organization = getModelById('organization', project.organizationId)
 describe('Redirection', () => {
   it('Should redirect to original page on reload', () => {
     cy.intercept('GET', '/api/v1/stages').as('getStages')
-    cy.intercept('GET', '/api/v1/projects').as('getProjects')
+    cy.intercept('GET', '/api/v1/projects/mines').as('getProjects')
     cy.intercept('POST', '/realms/cloud-pi-native/protocol/openid-connect/token').as('postToken')
 
     cy.kcLogin('test')
@@ -36,7 +36,7 @@ describe('Redirection', () => {
 
   it('Should redirect to login page if not logged in', () => {
     cy.intercept('GET', '/api/v1/stages').as('getStages')
-    cy.intercept('GET', '/api/v1/projects').as('getProjects')
+    cy.intercept('GET', '/api/v1/projects/mines').as('getProjects')
     cy.intercept('POST', '/realms/cloud-pi-native/protocol/openid-connect/token').as('postToken')
     cy.intercept('GET', '/realms/cloud-pi-native/account').as('getAccount')
 

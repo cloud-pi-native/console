@@ -3,13 +3,16 @@ import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   CreateProjectSchema,
   GetProjectsSchema,
-  GetProjectSecretsSchema,
   UpdateProjectSchema,
   ReplayHooksForProjectSchema,
   ArchiveProjectSchema,
   PatchProjectSchema,
   GetProjectsDataSchema,
+  ProjectSchemaV2,
+  ProjectParams,
 } from '../schemas/index.js'
+import { ErrorSchema } from '../schemas/utils.js'
+import { z } from 'zod'
 
 export const projectContract = contractInstance.router({
   createProject: {
@@ -24,10 +27,23 @@ export const projectContract = contractInstance.router({
 
   getProjects: {
     method: 'GET',
-    path: `${apiPrefix}/projects`,
+    path: `${apiPrefix}/projects/mines`,
     summary: 'Get projects',
     description: 'Retrieved user\'s projects.',
     responses: GetProjectsSchema.responses,
+  },
+
+  listProjects: {
+    method: 'GET',
+    path: `${apiPrefix}/projects`,
+    query: GetProjectsSchema.query,
+    summary: 'Get projects',
+    description: 'Get projects with filters',
+    responses: {
+      200: ProjectSchemaV2.omit({ name: true }).extend({ name: z.string() }).array(),
+      401: ErrorSchema,
+      500: ErrorSchema,
+    },
   },
 
   getProjectSecrets: {
@@ -35,8 +51,13 @@ export const projectContract = contractInstance.router({
     path: `${apiPrefix}/projects/:projectId/secrets`,
     summary: 'Get project secrets',
     description: 'Retrieved a project secrets.',
-    pathParams: GetProjectSecretsSchema.params,
-    responses: GetProjectSecretsSchema.responses,
+    pathParams: ProjectParams,
+    responses: {
+      200: z.record(z.record(z.string())),
+      401: ErrorSchema,
+      403: ErrorSchema,
+      500: ErrorSchema,
+    },
   },
 
   updateProject: {
@@ -44,7 +65,7 @@ export const projectContract = contractInstance.router({
     path: `${apiPrefix}/projects/:projectId`,
     summary: 'Update project',
     description: 'Update a project.',
-    pathParams: UpdateProjectSchema.params,
+    pathParams: ProjectParams,
     body: UpdateProjectSchema.body,
     responses: UpdateProjectSchema.responses,
   },
@@ -55,7 +76,7 @@ export const projectContract = contractInstance.router({
     summary: 'Replay hooks for project',
     description: 'Replay hooks for a project.',
     body: null,
-    pathParams: ReplayHooksForProjectSchema.params,
+    pathParams: ProjectParams,
     responses: ReplayHooksForProjectSchema.responses,
   },
 
@@ -64,7 +85,7 @@ export const projectContract = contractInstance.router({
     path: `${apiPrefix}/projects/:projectId`,
     summary: 'Delete project',
     description: 'Delete a project.',
-    pathParams: ArchiveProjectSchema.params,
+    pathParams: ProjectParams,
     body: null,
     responses: ArchiveProjectSchema.responses,
   },
@@ -75,15 +96,6 @@ export type CreateProjectBody = ClientInferRequest<typeof projectContract.create
 export type UpdateProjectBody = ClientInferRequest<typeof projectContract.updateProject>['body']
 
 export const projectAdminContract = contractInstance.router({
-  getAllProjects: {
-    method: 'GET',
-    path: `${apiPrefix}/admin/projects`,
-    summary: 'Get projects',
-    description: 'Retrieved all projects.',
-    query: GetProjectsSchema.query,
-    responses: GetProjectsSchema.responses,
-  },
-
   getProjectsData: {
     method: 'GET',
     path: `${apiPrefix}/admin/projects/data`,
@@ -95,7 +107,7 @@ export const projectAdminContract = contractInstance.router({
   patchProject: {
     method: 'PATCH',
     path: `${apiPrefix}/admin/projects/:projectId`,
-    pathParams: PatchProjectSchema.params,
+    pathParams: ProjectParams,
     summary: 'Handle project locking',
     description: 'Lock or unlock a project.',
     body: PatchProjectSchema.body,
