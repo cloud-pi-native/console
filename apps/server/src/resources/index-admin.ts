@@ -1,5 +1,4 @@
 import { type FastifyInstance } from 'fastify'
-import { logAdminRouter } from './log/admin/router.js'
 import { projectAdminRouter } from './project/admin/router.js'
 import { quotaAdminRouter } from './quota/admin/router.js'
 import { stageAdminRouter } from './stage/admin/router.js'
@@ -10,7 +9,6 @@ import { checkAdminGroup } from '@/utils/controller.js'
 
 export const apiRouterAdmin = () => async (app: FastifyInstance) => {
   app.addHook('preHandler', checkAdminGroup)
-  await app.register(serverInstance.plugin(logAdminRouter()), { responseValidation: true })
   await app.register(serverInstance.plugin(projectAdminRouter()))
   await app.register(serverInstance.plugin(quotaAdminRouter()))
   await app.register(serverInstance.plugin(stageAdminRouter()))

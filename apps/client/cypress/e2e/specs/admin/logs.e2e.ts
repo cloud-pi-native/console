@@ -5,7 +5,7 @@ describe('Administration logs', () => {
   let logs: Log[]
 
   beforeEach(() => {
-    cy.intercept('GET', 'api/v1/admin/logs*').as('getAllLogs')
+    cy.intercept('GET', 'api/v1/logs*').as('getAllLogs')
 
     cy.kcLogin('tcolin')
     cy.visit('/admin/logs')
