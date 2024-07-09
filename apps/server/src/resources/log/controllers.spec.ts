@@ -1,12 +1,12 @@
-import prisma from '../../../__mocks__/prisma.js'
+import prisma from '../../__mocks__/prisma.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
-import { getConnection, closeConnections } from '../../../connect.js'
+import { getConnection, closeConnections } from '../../connect.js'
 import { adminGroupPath } from '@cpn-console/shared'
 import { getRandomLog, getRandomUser, repeatFn } from '@cpn-console/test-utils'
-import { setRequestor } from '../../../utils/mocks.js'
-import app from '../../../app.js'
+import { setRequestor } from '../../utils/mocks.js'
+import app from '../../app.js'
 
-vi.mock('fastify-keycloak-adapter', (await import('../../../utils/mocks.js')).mockSessionPlugin)
+vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
 
 describe('Admin log routes', () => {
   const requestor = { ...getRandomUser(), groups: [adminGroupPath] }
@@ -32,18 +32,18 @@ describe('Admin log routes', () => {
       prisma.$transaction.mockResolvedValue([logs.length, logs])
 
       const response = await app.inject({ headers: { admin: 'admin' } })
-        .get('/api/v1/admin/logs?offset=0&limit=100')
+        .get('/api/v1/logs?offset=0&limit=100')
         .end()
 
-      expect(response.statusCode).toEqual(200)
       expect(response.json()).toMatchObject({ total: logs.length, logs })
+      expect(response.statusCode).toEqual(200)
     })
 
     it('Should return an error if retrieve logs failed', async () => {
       prisma.$transaction.mockRejectedValue({ statusCode: 500, message: 'Erreur de récupération des logs' })
 
       const response = await app.inject({ headers: { admin: 'admin' } })
-        .get('/api/v1/admin/logs?offset=0&limit=100')
+        .get('/api/v1/logs?offset=0&limit=100')
         .end()
 
       expect(response.statusCode).toEqual(500)
@@ -51,14 +51,14 @@ describe('Admin log routes', () => {
     })
 
     it('Should return an error if requestor is not admin', async () => {
-      const requestor = { ...getRandomUser() }
+      const requestor = { ...getRandomUser(), groups: [] }
       setRequestor(requestor)
       const response = await app.inject()
-        .get('/api/v1/admin/logs?offset=0&limit=100')
+        .get('/api/v1/logs?offset=0&limit=100')
         .end()
 
-      expect(response.statusCode).toEqual(403)
       expect(JSON.parse(response.body).error).toEqual('Vous n\'avez pas les droits administrateur')
+      expect(response.statusCode).toEqual(403)
     })
   })
 })

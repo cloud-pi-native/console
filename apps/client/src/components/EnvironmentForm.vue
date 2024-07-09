@@ -34,12 +34,12 @@ const props = withDefaults(defineProps<{
   isProjectLocked: false,
 })
 
-const emit = defineEmits([
-  'addEnvironment',
-  'putEnvironment',
-  'deleteEnvironment',
-  'cancel',
-])
+const emit = defineEmits<{
+  addEnvironment: [environment: Omit<Environment, 'id' | 'permissions'>],
+  putEnvironment: [environment: Pick<Environment, 'quotaId'>],
+  deleteEnvironment: [environmentId: Environment['id']],
+  cancel: [],
+}>()
 
 const snackbarStore = useSnackbarStore()
 const stageStore = useStageStore()
@@ -327,7 +327,7 @@ watch(localEnvironment.value, () => {
               :title="`Supprimer définitivement l'environnement ${localEnvironment.name}`"
               secondary
               icon="ri-delete-bin-7-line"
-              @click="$emit('deleteEnvironment', localEnvironment)"
+              @click="emit('deleteEnvironment', localEnvironment.id)"
             />
             <DsfrButton
               label="Annuler"

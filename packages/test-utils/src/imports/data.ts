@@ -203,6 +203,18 @@ export const data = {
       },
     },
     {
+      id: '2a88634a-0a60-459c-bf68-c4ffb12430a3',
+      cluster: {
+        server: 'https://nowhere.server:6443',
+        tlsServerName: 'nowhere.server',
+        skipTLSVerify: true,
+      },
+      user: {
+        keyData: 'LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQotLS0tLUVORCBSU0EgUFJJVkFURSBLRVktLS0tLQo=',
+        certData: 'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K',
+      },
+    },
+    {
       id: '0e88f000-07e6-4781-a69d-0963489387f7',
       cluster: {
         server: 'https://nothere.cluster',
@@ -259,6 +271,18 @@ export const data = {
       createdAt: '2023-07-10T19:49:31.697Z',
       updatedAt: '2023-07-10T20:01:46.833Z',
       kubeConfigId: 'b5662039-a62b-483e-ba54-b12c6f966c96',
+    },
+    {
+      id: '32636a52-4dd1-430b-b08a-b2e5ed9d1790',
+      label: 'unused-cluster',
+      privacy: 'public',
+      secretName: '3972ac09-6abc-4e49-83b6-d046da5260ed',
+      clusterResources: false,
+      infos: 'Cluster public non utilisé',
+      zoneId: 'a66c4230-eba6-41f1-aae5-bb1e4f90cce2',
+      createdAt: '2023-07-10T19:32:13.385Z',
+      updatedAt: '2023-07-10T19:32:13.385Z',
+      kubeConfigId: '2a88634a-0a60-459c-bf68-c4ffb12430a3',
     },
   ],
   project: [

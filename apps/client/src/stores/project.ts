@@ -2,10 +2,13 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { CreateProjectBody, Project, Role, UpdateProjectBody } from '@cpn-console/shared'
 import { apiClient, extractData } from '@/api/xhr-client.js'
+import { projectContract } from '@cpn-console/shared'
+import { useUsersStore } from './users.js'
 
 export const useProjectStore = defineStore('project', () => {
   const selectedProject = ref<Project>()
   const projects = ref<Project[]>([])
+  const usersStore = useUsersStore()
 
   const setSelectedProject = (id: string) => {
     selectedProject.value = projects.value.find(project => project.id === id)
@@ -25,6 +28,17 @@ export const useProjectStore = defineStore('project', () => {
     if (selectedProject.value) {
       setSelectedProject(selectedProject.value.id)
     }
+  }
+
+  const listProjects = async (args: Parameters<typeof apiClient.Projects.listProjects>[0]) => {
+    const projects = await apiClient.Projects.listProjects(args)
+      .then(response => extractData(response, 200))
+    projects.forEach(project => {
+      project.members.forEach(({ userId, role: _, ...user }) => {
+        usersStore.addUser({ ...user, id: userId })
+      })
+    })
+    return projects
   }
 
   const createProject = async (body: CreateProjectBody) => {
@@ -55,10 +69,28 @@ export const useProjectStore = defineStore('project', () => {
     project.roles = roles
   }
 
+  const getAllProjects = async (query: typeof projectContract.listProjects.query._type) => {
+    const projects = await listProjects({ query })
+    projects.forEach(project => usersStore.addUsersFromMembers(project.members))
+    return projects
+  }
+
+  const handleProjectLocking = (projectId: string, lock: boolean) =>
+    apiClient.Projects.patchProject({ body: { lock }, params: { projectId } })
+      .then(response => extractData(response, 200))
+
+  const generateProjectsData = () =>
+    apiClient.Projects.getProjectsData()
+      .then(response => extractData(response, 200))
+
   return {
+    getAllProjects,
+    handleProjectLocking,
+    generateProjectsData,
     selectedProject,
     projects,
     setSelectedProject,
+    listProjects,
     updateProject,
     getUserProjects,
     createProject,

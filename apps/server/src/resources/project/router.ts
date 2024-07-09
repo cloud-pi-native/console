@@ -6,9 +6,13 @@ import {
   archiveProject,
   getProjectSecrets,
   replayHooks,
+  listProjects,
+  handleProjectLocking,
+  generateProjectsData,
 } from './business.js'
 import { projectContract } from '@cpn-console/shared'
 import { serverInstance } from '@/app.js'
+import { checkIsAdmin } from '@/utils/controller.js'
 
 export const projectRouter = () => serverInstance.router(projectContract, {
 
@@ -28,6 +32,28 @@ export const projectRouter = () => serverInstance.router(projectContract, {
       return {
         status: 200,
         body: projectsInfos,
+      }
+    } catch (error) {
+      throw new Error(error.message)
+    }
+  },
+
+  listProjects: async ({ request: req, query }) => {
+    try {
+      const user = req.session.user
+
+      const allProjects = await listProjects(
+        query,
+        user,
+      )
+
+      addReqLogs({
+        req,
+        message: 'Ensemble des projets récupérés avec succès',
+      })
+      return {
+        status: 200,
+        body: allProjects,
       }
     } catch (error) {
       throw new Error(error.message)
@@ -131,6 +157,38 @@ export const projectRouter = () => serverInstance.router(projectContract, {
     })
     return {
       status: 204,
+      body: null,
+    }
+  },
+  // Récupérer les données de tous les projets pour export
+  getProjectsData: async ({ request: req }) => {
+    checkIsAdmin(req.session.user)
+    const generatedProjectsData = await generateProjectsData()
+
+    addReqLogs({
+      req,
+      message: 'Données des projets rassemblées pour export',
+    })
+    return {
+      status: 200,
+      body: generatedProjectsData,
+    }
+  },
+
+  // (Dé)verrouiller un projet
+  patchProject: async ({ request: req, params, body: data }) => {
+    checkIsAdmin(req.session.user)
+    const projectId = params.projectId
+    const lock = data.lock
+
+    await handleProjectLocking(projectId, lock)
+
+    addReqLogs({
+      req,
+      message: `Projet ${lock ? 'verrouillé' : 'déverrouillé'} avec succès`,
+    })
+    return {
+      status: 200,
       body: null,
     }
   },

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ClusterDetailsSchema, ClusterPrivacy, EnvironmentSchema, OrganizationSchema, PermissionSchema, ProjectSchema, QuotaSchema, RepoBusinessSchema, RepoSchema, StageSchema, UserSchema, descriptionMaxLength, instanciateSchema, parseZodError } from '../index.js'
+import { ClusterDetailsSchema, ClusterPrivacy, EnvironmentSchema, OrganizationSchema, PermissionSchema, ProjectSchemaV2, QuotaSchema, RepoBusinessSchema, RepoSchema, StageSchema, UserSchema, descriptionMaxLength, instanciateSchema, parseZodError } from '../index.js'
 import { faker } from '@faker-js/faker'
 import { ZodError } from 'zod'
 
@@ -70,36 +70,10 @@ describe('Schemas utils', () => {
   it('Should validate a correct organization schema', () => {
     const toParse = {
       id: faker.string.uuid(),
-      name: faker.lorem.word({ length: { min: 2, max: 10 } }),
-      label: faker.company.name(),
-      active: faker.datatype.boolean(),
-    }
-
-    expect(OrganizationSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
-  })
-
-  it('Should validate a correct organization schema with external data', () => {
-    const toParse = {
-      id: faker.string.uuid(),
       source: faker.lorem.word(),
       name: faker.lorem.word({ length: { min: 2, max: 10 } }),
       label: faker.company.name(),
       active: faker.datatype.boolean(),
-    }
-
-    expect(OrganizationSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
-  })
-
-  it('Should validate a correct project schema', () => {
-    const toParse = {
-      id: faker.string.uuid(),
-      name: faker.lorem.word({ length: { min: 2, max: 10 } }),
-      organizationId: faker.string.uuid(),
-      status: 'created',
-      locked: false,
-      clusterIds: [],
-      repositories: [],
-      environments: [],
       updatedAt: new Date(),
       createdAt: new Date(),
     }
@@ -108,7 +82,28 @@ describe('Schemas utils', () => {
     parsed.createdAt = parsed.createdAt.toISOString()
     // @ts-ignore
     parsed.updatedAt = parsed.updatedAt.toISOString()
-    expect(ProjectSchema.safeParse(toParse)).toStrictEqual({ data: parsed, success: true })
+    expect(OrganizationSchema.safeParse(toParse)).toStrictEqual({ data: parsed, success: true })
+  })
+
+  it('Should validate a correct project schema', () => {
+    const toParse = {
+      id: faker.string.uuid(),
+      name: faker.lorem.word({ length: { min: 2, max: 10 } }),
+      description: '',
+      organizationId: faker.string.uuid(),
+      status: 'created',
+      locked: false,
+      clusterIds: [],
+      updatedAt: new Date(),
+      createdAt: new Date(),
+      members: [],
+    }
+    const parsed = structuredClone(toParse)
+    // @ts-ignore la date doit être transformé en string
+    parsed.createdAt = parsed.createdAt.toISOString()
+    // @ts-ignore
+    parsed.updatedAt = parsed.updatedAt.toISOString()
+    expect(ProjectSchemaV2.safeParse(toParse)).toStrictEqual({ data: parsed, success: true })
   })
 
   it('Should validate a correct user schema', () => {
@@ -286,10 +281,14 @@ describe('Schemas utils', () => {
       organizationId: faker.string.uuid(),
       status: 'created',
       locked: false,
+      description: '',
+      createdAt: (new Date()).toISOString(),
+      updatedAt: (new Date()).toISOString(),
+      clusterIds: [],
     }
 
     // @ts-ignore
-    expect(parseZodError(ProjectSchema
+    expect(parseZodError(ProjectSchemaV2
       .safeParse(toParse)
       .error))
       .toMatch('Validation error: String must contain at least 2 character(s) at "name"')
@@ -302,10 +301,14 @@ describe('Schemas utils', () => {
       organizationId: faker.string.uuid(),
       status: 'created',
       locked: false,
+      description: '',
+      createdAt: (new Date()).toISOString(),
+      updatedAt: (new Date()).toISOString(),
+      clusterIds: [],
     }
 
     // @ts-ignore
-    expect(parseZodError(ProjectSchema
+    expect(parseZodError(ProjectSchemaV2
       .safeParse(toParse)
       .error))
       .toMatch('Validation error: String must contain at most 20 character(s) at "name"')
@@ -319,10 +322,12 @@ describe('Schemas utils', () => {
       description: faker.string.alpha(descriptionMaxLength + 1),
       status: 'created',
       locked: false,
+      createdAt: (new Date()).toISOString(),
+      updatedAt: (new Date()).toISOString(),
+      clusterIds: [],
     }
 
-    // @ts-ignore
-    expect(ProjectSchema
+    expect(ProjectSchemaV2
       .safeParse(toParse)
       .error).toBeInstanceOf(ZodError)
   })

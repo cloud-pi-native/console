@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { AtDatesToStringSchema, ErrorSchema } from './utils.js'
+import { AtDatesToStringExtend, ErrorSchema } from './utils.js'
 import { projectRoles } from '../utils/const.js'
 
 export const UserSchema = z.object({
@@ -16,7 +16,22 @@ export const UserSchema = z.object({
   groups: z.string().array().optional(),
 })
 
+export const UserWithRoleSchema = z.object({
+  userId: z.string()
+    .uuid(),
+  firstName: z.string()
+    .min(1, { message: 'must be at least 1 character long' })
+    .max(50, { message: 'must not exceed 50 characters' }),
+  lastName: z.string()
+    .min(1, { message: 'must be 1 at least characters long' })
+    .max(50, { message: 'must not exceed 50 characters' }),
+  email: z.string()
+    .email(),
+  role: z.enum(projectRoles),
+})
+
 export type User = Zod.infer<typeof UserSchema>
+export type UserWithRole = Zod.infer<typeof UserWithRoleSchema>
 
 export const RoleSchema = z.object({
   userId: z.string()
@@ -46,7 +61,13 @@ export const GetProjectUsersSchema = {
 
 export const GetAllUsersSchema = {
   responses: {
-    200: z.array(UserSchema.omit({ groups: true }).merge(z.object({ isAdmin: z.boolean() })).merge(AtDatesToStringSchema)),
+    200: UserSchema
+      .omit({ groups: true })
+      .extend({
+        ...AtDatesToStringExtend,
+        isAdmin: z.boolean(),
+      })
+      .array(),
     403: ErrorSchema,
     500: ErrorSchema,
   },

@@ -5,11 +5,11 @@ import { useUserStore } from '@/stores/user.js'
 import { useOrganizationStore } from '@/stores/organization.js'
 import {
   descriptionMaxLength,
-  ProjectSchema,
   type Project,
   parseZodError,
   instanciateSchema,
   projectNameMaxLength,
+  ProjectSchemaV2,
 } from '@cpn-console/shared'
 import router from '@/router/index.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
@@ -23,12 +23,12 @@ const remainingCharacters = computed(() => {
   return projectNameMaxLength - project.value?.name.length
 })
 const errorSchema = computed(() => {
-  const schemaValidation = ProjectSchema.pick({ name: true, organizationId: true, description: true }).safeParse(project.value)
+  const schemaValidation = ProjectSchemaV2.pick({ name: true, organizationId: true, description: true }).safeParse(project.value)
   return schemaValidation.success ? undefined : schemaValidation.error
 })
 
 // @ts-ignore
-const project: Ref<Project> = ref({
+const project: Ref<Project & { description: string }> = ref({
   organizationId: undefined,
   name: '',
   description: '',
@@ -40,10 +40,10 @@ const updatedValues: Ref<Record<any, any>> = ref({})
 
 const createProject = async () => {
   snackbarStore.isWaitingForResponse = true
-  updatedValues.value = instanciateSchema(ProjectSchema, true)
+  updatedValues.value = instanciateSchema(ProjectSchemaV2, true)
   if (errorSchema.value) {
     snackbarStore.setMessage(parseZodError(errorSchema.value))
-  } else {
+  } else if (project.value) {
     await projectStore.createProject(project.value)
     router.push('/projects')
   }
@@ -62,7 +62,7 @@ const updateProject = (key: string, value: any) => {
 }
 
 onMounted(async () => {
-  await organizationStore.setOrganizations()
+  await organizationStore.listOrganizations()
   orgOptions.value = organizationStore.organizations.map(org => ({
     text: org.label,
     value: org.name,
@@ -112,7 +112,7 @@ onMounted(async () => {
             data-testid="nameInput"
             type="text"
             :required="true"
-            :error-message="!!updatedValues.name && !ProjectSchema.pick({name: true}).safeParse({name: project.name}).success ? `Le nom du projet doit être en minuscule, ne pas contenir d\'espace ni de trait d'union, faire plus de 2 et moins de ${projectNameMaxLength} caractères.`: undefined"
+            :error-message="!!updatedValues.name && !ProjectSchemaV2.pick({name: true}).safeParse({name: project.name}).success ? `Le nom du projet doit être en minuscule, ne pas contenir d\'espace ni de trait d'union, faire plus de 2 et moins de ${projectNameMaxLength} caractères.`: undefined"
             label="Nom du projet"
             label-visible
             :hint="`Nom du projet dans l'offre Cloud π Native. Ne doit pas contenir d'espace, doit être unique pour l'organisation, doit être en minuscules, doit faire plus de 2 et moins de ${projectNameMaxLength} caractères.`"

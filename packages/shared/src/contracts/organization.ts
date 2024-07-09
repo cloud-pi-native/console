@@ -1,61 +1,78 @@
 import { ClientInferRequest } from '@ts-rest/core'
 import { apiPrefix, contractInstance } from '../api-client.js'
-import {
-  CreateOrganizationSchema,
-  GetOrganizationsSchema,
-  UpdateOrganizationSchema,
-} from '../schemas/index.js'
+import { OrganizationSchema } from '../schemas/index.js'
+import { AtDatesToStringExtend, ErrorSchema } from '../schemas/utils.js'
+import { z } from 'zod'
 
 export const organizationContract = contractInstance.router({
-  getOrganizations: {
+  listOrganizations: {
     method: 'GET',
     path: `${apiPrefix}/organizations`,
     summary: 'Get organizations',
-    description: 'Retrieved all active organizations.',
-    responses: GetOrganizationsSchema.responses,
-  },
-})
-
-export const organizationAdminContract = contractInstance.router({
-  getAllOrganizations: {
-    method: 'GET',
-    path: `${apiPrefix}/admin/organizations`,
-    summary: 'Get organizations',
-    description: 'Retrieved all organizations.',
-    responses: GetOrganizationsSchema.responses,
+    description: 'List organizations.',
+    query: OrganizationSchema
+      .omit({ id: true, createdAt: true, updatedAt: true })
+      .partial(),
+    responses: {
+      200: OrganizationSchema
+        .array(),
+      401: ErrorSchema,
+      500: ErrorSchema,
+    },
   },
 
   createOrganization: {
     method: 'POST',
-    path: `${apiPrefix}/admin/organizations`,
+    path: `${apiPrefix}/organizations`,
     contentType: 'application/json',
     summary: 'Create organization',
     description: 'Create new organization.',
-    body: CreateOrganizationSchema.body,
-    responses: CreateOrganizationSchema.responses,
+    body: OrganizationSchema
+      .pick({ name: true, label: true, source: true }),
+    responses: {
+      200: OrganizationSchema.extend(AtDatesToStringExtend),
+      401: ErrorSchema,
+      403: ErrorSchema,
+      500: ErrorSchema,
+    },
   },
 
   updateOrganization: {
     method: 'PUT',
-    path: `${apiPrefix}/admin/organizations/:organizationName`,
+    path: `${apiPrefix}/organizations/:organizationName`,
     summary: 'Update organization',
     description: 'Update an organization by its name.',
-    pathParams: UpdateOrganizationSchema.params,
-    body: UpdateOrganizationSchema.body,
-    responses: UpdateOrganizationSchema.responses,
+    pathParams: z.object({
+      organizationName: z.string(),
+    }),
+    body: OrganizationSchema
+      .pick({ active: true, label: true, source: true })
+      .partial(),
+    responses: {
+      200: OrganizationSchema,
+      401: ErrorSchema,
+      403: ErrorSchema,
+      500: ErrorSchema,
+    },
   },
 
   syncOrganizations: {
     method: 'GET',
-    path: `${apiPrefix}/admin/organizations/sync`,
+    path: `${apiPrefix}/organizations/sync`,
     summary: 'Sync organizations',
     description: 'Synchronize organizations from external datasource using plugins.',
-    responses: GetOrganizationsSchema.responses,
+    responses: {
+      200: OrganizationSchema
+        .array(),
+      401: ErrorSchema,
+      403: ErrorSchema,
+      500: ErrorSchema,
+    },
   },
 })
 
-export type CreateOrganizationBody = ClientInferRequest<typeof organizationAdminContract.createOrganization>['body']
+export type CreateOrganizationBody = ClientInferRequest<typeof organizationContract.createOrganization>['body']
 
-export type UpdateOrganizationParams = ClientInferRequest<typeof organizationAdminContract.updateOrganization>['params']
+export type UpdateOrganizationBody = ClientInferRequest<typeof organizationContract.updateOrganization>['body']
 
-export type UpdateOrganizationBody = ClientInferRequest<typeof organizationAdminContract.updateOrganization>['body']
+export type ListOrganizationQuery = ClientInferRequest<typeof organizationContract.listOrganizations>['query']

@@ -3,8 +3,7 @@ import { setActivePinia, createPinia } from 'pinia'
 import { apiClient } from '../api/xhr-client.js'
 import { useProjectPermissionStore } from './project-permission.js'
 
-const apiClientPost = vi.spyOn(apiClient.Permissions, 'createPermission')
-const apiClientPut = vi.spyOn(apiClient.Permissions, 'updatePermission')
+const apiClientPut = vi.spyOn(apiClient.Permissions, 'upsertPermission')
 const apiClientDelete = vi.spyOn(apiClient.Permissions, 'deletePermission')
 
 vi.mock('./project.js', async () => ({
@@ -23,19 +22,10 @@ describe('Project Store', () => {
   })
 
   it('Should add a project environment by api call', async () => {
-    apiClientPost.mockReturnValueOnce(Promise.resolve({ status: 201, body: {} }))
-    const projectPermissionStore = useProjectPermissionStore()
-
-    await projectPermissionStore.addPermission('environmentId', {})
-
-    expect(apiClientPost).toHaveBeenCalledTimes(1)
-  })
-
-  it('Should add a project environment by api call', async () => {
     apiClientPut.mockReturnValueOnce(Promise.resolve({ status: 200, body: {} }))
     const projectPermissionStore = useProjectPermissionStore()
 
-    await projectPermissionStore.updatePermission('environmentId', {})
+    await projectPermissionStore.upsertPermission('environmentId', {})
 
     expect(apiClientPut).toHaveBeenCalledTimes(1)
   })

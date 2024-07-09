@@ -1,14 +1,14 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { apiClient } from '../../api/xhr-client.js'
-import { useAdminClusterStore } from './cluster.js'
+import { apiClient } from '../api/xhr-client.js'
+import { useClusterStore } from './cluster.js'
 import { ClusterPrivacy } from '@cpn-console/shared'
 
-const apiClientGet = vi.spyOn(apiClient.ClustersAdmin, 'getClusterDetails')
-const apiClientGetClusterEnvironments = vi.spyOn(apiClient.ClustersAdmin, 'getClusterEnvironments')
-const apiClientPost = vi.spyOn(apiClient.ClustersAdmin, 'createCluster')
-const apiClientPut = vi.spyOn(apiClient.ClustersAdmin, 'updateCluster')
-const apiClientDelete = vi.spyOn(apiClient.ClustersAdmin, 'deleteCluster')
+const apiClientGet = vi.spyOn(apiClient.Clusters, 'getClusterDetails')
+const apiClientGetClusterEnvironments = vi.spyOn(apiClient.Clusters, 'getClusterEnvironments')
+const apiClientPost = vi.spyOn(apiClient.Clusters, 'createCluster')
+const apiClientPut = vi.spyOn(apiClient.Clusters, 'updateCluster')
+const apiClientDelete = vi.spyOn(apiClient.Clusters, 'deleteCluster')
 
 describe('Cluster Store', () => {
   beforeEach(() => {
@@ -36,7 +36,7 @@ describe('Cluster Store', () => {
       privacy: 'public',
     }
     apiClientGet.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
-    const adminClusterStore = useAdminClusterStore()
+    const adminClusterStore = useClusterStore()
 
     await adminClusterStore.getClusterDetails(data.id)
 
@@ -51,7 +51,7 @@ describe('Cluster Store', () => {
     }
 
     apiClientGetClusterEnvironments.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
-    const adminClusterStore = useAdminClusterStore()
+    const adminClusterStore = useClusterStore()
 
     const res = await adminClusterStore.getClusterAssociatedEnvironments(clusterId)
 
@@ -81,7 +81,7 @@ describe('Cluster Store', () => {
       privacy: ClusterPrivacy.DEDICATED,
     }
     apiClientPost.mockReturnValueOnce(Promise.resolve({ status: 201, body: data }))
-    const adminClusterStore = useAdminClusterStore()
+    const adminClusterStore = useClusterStore()
 
     const res = await adminClusterStore.addCluster(data)
 
@@ -108,7 +108,7 @@ describe('Cluster Store', () => {
       privacy: ClusterPrivacy.DEDICATED,
     }
     apiClientPut.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
-    const adminClusterStore = useAdminClusterStore()
+    const adminClusterStore = useClusterStore()
 
     const res = await adminClusterStore.updateCluster(data)
 
@@ -120,7 +120,7 @@ describe('Cluster Store', () => {
     const clusterId = '1e4fdb28-f9ea-46d4-ad16-607c7f1aa8b6'
 
     apiClientDelete.mockReturnValueOnce(Promise.resolve({ status: 204 }))
-    const adminClusterStore = useAdminClusterStore()
+    const adminClusterStore = useClusterStore()
 
     await adminClusterStore.deleteCluster(clusterId)
 

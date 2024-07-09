@@ -34,6 +34,16 @@ export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = basicStage
     user,
   }))
   project.roles[0].role = projectRoles[0]
+  const ownerId = project.roles.find(role => role.role === 'owner')?.userId
+
+  // @ts-ignore
+  project.members = project.roles.map(({ userId, user: { id: _, ...user }, role }) => {
+    return {
+      userId,
+      role,
+      ...user,
+    }
+  })
 
   // Create zone
   const zones = [getRandomZone()]
@@ -73,7 +83,7 @@ export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = basicStage
   // Create permissions
   project.environments.forEach(env => {
     env.permissions = users.map(user =>
-      getRandomPerm(env.id, user),
+      user.id === ownerId ? getRandomPerm(env.id, user, 2) : getRandomPerm(env.id, user),
     )
   })
 

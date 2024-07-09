@@ -1,6 +1,6 @@
 import type { Environment, Permission, Project, User } from '@prisma/client'
 import { PermissionSchema } from '@cpn-console/shared'
-import { addLogs, deletePermission as deletePermissionQuery, getEnvironmentByIdWithCluster, getEnvironmentPermissions as getEnvironmentPermissionsQuery, getPermissionByUserIdAndEnvironmentId, getProjectInfos, getSingleOwnerByProjectId, getUserById, setPermission as setPermissionQuery, updatePermission as updatePermissionQuery } from '@/resources/queries-index.js'
+import { addLogs, deletePermission as deletePermissionQuery, getEnvironmentByIdWithCluster, getEnvironmentPermissions as getEnvironmentPermissionsQuery, getPermissionByUserIdAndEnvironmentId, getProjectInfos, getSingleOwnerByProjectId, setPermission as setPermissionQuery } from '@/resources/queries-index.js'
 import { validateSchema } from '@/utils/business.js'
 import { checkInsufficientRoleInProject, checkRoleAndLocked } from '@/utils/controller.js'
 import { BadRequestError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
@@ -25,14 +25,13 @@ export const getEnvironmentPermissions = async (
   projectId: Project['id'],
   environmentId: Environment['id'],
 ) => {
-  const roles = (await getProjectInfos(projectId))?.roles
-  // @ts-ignore
+  const roles = (await getProjectInfos(projectId))?.roles ?? []
   const errorMessage = checkInsufficientRoleInProject(userId, { roles })
-  if (errorMessage) throw new ForbiddenError(errorMessage, undefined)
+  if (errorMessage) throw new ForbiddenError(errorMessage)
   return getEnvironmentPermissionsQuery(environmentId)
 }
 
-export const setPermission = async (
+export const upsertPermission = async (
   projectId: Project['id'],
   requestorId: User['id'],
   userId: User['id'],
@@ -43,11 +42,21 @@ export const setPermission = async (
   const project = await getProjectInfos(projectId)
   if (!project) throw new BadRequestError('Le projet n\'existe pas')
 
-  const errorMessage = checkRoleAndLocked(project, requestorId)
-  if (errorMessage) throw new ForbiddenError(errorMessage, undefined)
+  const ownerIds = project.roles
+    .filter(({ role }) => role === 'owner')
+    .map(({ userId }) => userId)
 
-  const isUserProjectMember = project.roles?.some(role => role?.userId === userId)
-  if (!isUserProjectMember) throw new BadRequestError('L\'utilisateur n\'est pas membre du projet', undefined)
+  const errorMessage = checkRoleAndLocked(project, requestorId)
+  if (errorMessage) throw new ForbiddenError(errorMessage)
+
+  const requestorPermission = await getPermissionByUserIdAndEnvironmentId(requestorId, environmentId)
+  if (!ownerIds.includes(requestorId) && (!requestorPermission || requestorPermission.level <= 0)) {
+    throw new ForbiddenError('Vous n\'avez pas de droits sur cet environnement')
+  }
+
+  if (level !== 2 && ownerIds.includes(userId)) {
+    throw new ForbiddenError('La permission du owner du projet ne peut être inférieure à rwd')
+  }
 
   const schemaValidation = PermissionSchema.omit({ id: true }).safeParse({ userId, environmentId, level })
   validateSchema(schemaValidation)
@@ -56,40 +65,7 @@ export const setPermission = async (
 
   const { results } = await hook.project.upsert(project.id)
 
-  await addLogs('Update Permission', results, userId, requestId)
-  if (results.failed) {
-    throw new UnprocessableContentError('Echec à la création de la permission')
-  }
-  return permission
-}
-
-export const updatePermission = async (
-  projectId: Project['id'],
-  requestorId: User['id'],
-  userId: User['id'],
-  environmentId: Environment['id'],
-  level: Permission['level'],
-  requestId: string,
-) => {
-  const project = await getProjectInfos(projectId)
-  if (!project) throw new BadRequestError('Le projet n\'existe pas')
-
-  await preventUpdatingOwnerPermission(projectId, userId)
-
-  const errorMessage = checkRoleAndLocked(project, requestorId)
-  if (errorMessage) throw new ForbiddenError(errorMessage)
-
-  const requestorPermission = await getPermissionByUserIdAndEnvironmentId(requestorId, environmentId)
-  if (!requestorPermission?.length) throw new ForbiddenError('Vous n\'avez pas de droits sur cet environnement')
-
-  const schemaValidation = PermissionSchema.omit({ id: true }).safeParse({ userId, environmentId, level })
-  validateSchema(schemaValidation)
-
-  const permission = await updatePermissionQuery({ userId, environmentId, level })
-
-  const { results } = await hook.project.upsert(project.id)
-
-  await addLogs('Update Permission', results, userId, requestId)
+  await addLogs('Upsert Permission', results, userId, requestId)
   if (results.failed) {
     throw new UnprocessableContentError('Echec à l\'application de la permission')
   }
@@ -106,11 +82,20 @@ export const deletePermission = async (
   if (!environment) throw new NotFoundError('Environnement introuvable')
   const project = await getProjectInfos(environment.projectId)
   if (!project) throw new NotFoundError('Projet introuvable')
-  await preventUpdatingOwnerPermission(project.id, userId, Action.delete)
+
+  const ownerIds = project.roles
+    .filter(({ role }) => role === 'owner')
+    .map(({ userId }) => userId)
+
   const requestorPermission = await getPermissionByUserIdAndEnvironmentId(requestorId, environmentId)
-  if (!requestorPermission?.length) throw new ForbiddenError('Vous n\'avez pas de droits sur cet environnement')
-  const user = await getUserById(userId)
-  if (!user) throw new NotFoundError('Utilisateur introuvable')
+  if (!ownerIds.includes(requestorId) && (!requestorPermission || requestorPermission.level <= 0)) {
+    throw new ForbiddenError('Vous n\'avez pas de droits sur cet environnement')
+  }
+
+  if (ownerIds.includes(userId)) {
+    throw new ForbiddenError(`La permission du owner du projet ne peut être ${Action.delete}`)
+  }
+
   const { results } = await hook.project.upsert(project.id)
 
   await addLogs('Delete Permission', results, userId, requestId)

@@ -19,6 +19,8 @@ export const getRandomOrganization = (name = 'mi', label = 'Ministère de l\'Int
     label,
     source,
     active: true,
+    updatedAt: (new Date()).toISOString(),
+    createdAt: (new Date()).toISOString(),
   }
 }
 
@@ -31,6 +33,8 @@ export const getRandomProject = (organizationId = faker.string.uuid()): Project 
     description: faker.lorem.sentence(8),
     status: faker.helpers.arrayElement(achievedStatus),
     locked: false,
+    updatedAt: (new Date()).toISOString(),
+    createdAt: (new Date()).toISOString(),
   }
 }
 
@@ -152,12 +156,12 @@ export const getRandomEnv = (
   }
 }
 
-export const getRandomPerm = (environmentId = faker.string.uuid(), user = getRandomUser()): Permission => {
+export const getRandomPerm = (environmentId = faker.string.uuid(), user = getRandomUser(), level = faker.number.int({ min: 0, max: 2 })): Permission => {
   return {
     id: faker.string.uuid(),
     environmentId,
     userId: user.id,
-    level: faker.number.int({ min: 0, max: 2 }),
+    level,
     user,
   }
 }
@@ -167,5 +171,14 @@ export const getRandomLog = (action = faker.helpers.arrayElement(logActions), us
     id: faker.string.uuid(),
     action,
     userId,
+    updatedAt: (new Date()).toISOString(),
+    createdAt: (new Date()).toISOString(),
+    data: {
+      args: {},
+      failed: faker.datatype.boolean(),
+      results: {},
+      totalExecutionTime: 1,
+    },
+    requestId: null,
   }
 }

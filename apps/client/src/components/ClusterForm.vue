@@ -1,6 +1,15 @@
 <script lang="ts" setup>
 import { ref, computed, onBeforeMount, watch } from 'vue'
-import { ClusterPrivacy, ClusterDetailsSchema, SharedZodError, type ClusterAssociatedEnvironments, type CreateClusterBody, type UpdateClusterBody, type Cluster, ClusterDetails, Project, Stage, Zone } from '@cpn-console/shared'
+import {
+  type ClusterAssociatedEnvironments,
+  ClusterPrivacy,
+  ClusterDetailsSchema,
+  SharedZodError,
+  ClusterDetails,
+  Project,
+  Stage,
+  Zone,
+} from '@cpn-console/shared'
 // @ts-ignore
 import { load } from 'js-yaml'
 // @ts-ignore
@@ -158,8 +167,8 @@ const getRows = (associatedEnvironments: ClusterAssociatedEnvironments) => {
 }
 
 const emit = defineEmits<{
-  add: [value: CreateClusterBody]
-  update: [value: UpdateClusterBody & { id: Cluster['id'] }]
+  add: [value: Omit<ClusterDetails, 'id'>]
+  update: [value: Partial<ClusterDetails>]
   delete: [value: typeof localCluster.value['id']]
   cancel: []
 }>()

@@ -1,13 +1,8 @@
-import type { Organization } from '@prisma/client'
+import type { Organization, Prisma } from '@prisma/client'
 import prisma from '@/prisma.js'
 
 // SELECT
-export const getOrganizations = prisma.organization.findMany
-
-export const getActiveOrganizationsQuery = () =>
-  prisma.organization.findMany({
-    where: { active: true },
-  })
+export const getOrganizations = (where?: Prisma.OrganizationWhereInput) => prisma.organization.findMany({ where })
 
 export const getOrganizationById = (id: Organization['id']) =>
   prisma.organization.findUnique({
@@ -20,31 +15,30 @@ export const getOrganizationByName = (name: Organization['name']) =>
   })
 
 // CREATE
-type UpsertOrganizationParams = {
+type CreateOrganizationParams = {
   name: Organization['name'],
   label: Organization['label'],
   source: Organization['source']
 }
 
 export const createOrganization = (
-  { name, label, source }: UpsertOrganizationParams,
+  { name, label, source }: CreateOrganizationParams,
 ) => prisma.organization.create({
   data: { name, label, source, active: true },
 })
 
 // UPDATE
-export const updateActiveOrganization = (
-  { name, active }: { name: Organization['name'], active: Organization['active'] },
+type UpdateOrganizationParams = {
+  name: Organization['name'],
+  label?: Organization['label'],
+  source?: Organization['source']
+  active?: Organization['active']
+}
+export const updateOrganization = (
+  { name, label, source, active }: UpdateOrganizationParams,
 ) => prisma.organization.update({
   where: { name },
-  data: { active },
-})
-
-export const updateLabelOrganization = (
-  { name, label, source }: UpsertOrganizationParams,
-) => prisma.organization.update({
-  where: { name },
-  data: { label, source },
+  data: { label, source, active, updatedAt: new Date() },
 })
 
 // TEC
