@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.8.1](https://github.com/cloud-pi-native/console/compare/v8.8.0...v8.8.1) (2024-07-09)
+
+
+### Bug Fixes
+
+* :ambulance: not ready for project reponse validation ([c77dd68](https://github.com/cloud-pi-native/console/commit/c77dd6889886b3c867294437e5377573771a7ff0))
+
 ## [8.8.0](https://github.com/cloud-pi-native/console/compare/v8.7.1...v8.8.0) (2024-07-09)
 
 
