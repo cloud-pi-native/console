@@ -1,15 +1,16 @@
 import { addReqLogs } from '@/utils/logger.js'
-import { getAllLogs } from './business.js'
+import { getLogs } from './business.js'
 import { serverInstance } from '@/app.js'
-import { Log, logAdminContract } from '@cpn-console/shared'
+import { Log, logContract } from '@cpn-console/shared'
 import { Log as LogModel } from '@prisma/client'
+import { checkIsAdmin } from '@/utils/controller.js'
 
-export const logAdminRouter = () => serverInstance.router(logAdminContract, {
+export const logRouter = () => serverInstance.router(logContract, {
   // Récupérer des logs
   getLogs: async ({ request: req, query }) => {
+    checkIsAdmin(req.session.user)
     try {
-      const { offset, limit } = query
-      const [total, logs] = await getAllLogs(offset, limit) as [number, unknown[]] as [number, Array<LogModel & { data: Log['data'] }>]
+      const [total, logs] = await getLogs(query) as [number, unknown[]] as [number, Array<LogModel & { data: Log['data'] }>]
       addReqLogs({
         req,
         message: 'Logs récupérés avec succès',

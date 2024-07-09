@@ -1,4 +1,4 @@
-import type { Log, User } from '@prisma/client'
+import type { Log, Prisma, User } from '@prisma/client'
 import { exclude } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
 
@@ -10,15 +10,15 @@ export const getAllLogsForUser = (user: User, offset = 0) =>
     skip: offset,
   })
 
-export const getAllLogs = ({ offset = 0, limit = 5 }: { offset?: number, limit?: number }) =>
+export const getAllLogs = ({ skip = 0, take = 5 }: Prisma.LogFindManyArgs) =>
   prisma.$transaction([
     prisma.log.count(),
     prisma.log.findMany({
       orderBy: {
         createdAt: 'desc',
       },
-      skip: offset,
-      take: limit,
+      skip,
+      take,
     }),
   ])
 

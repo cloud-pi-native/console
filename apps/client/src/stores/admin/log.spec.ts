@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { apiClient } from '../../api/xhr-client.js'
 import { useAdminLogStore } from './log.js'
 
-const apiClientGet = vi.spyOn(apiClient.LogsAdmin, 'getLogs')
+const apiClientGet = vi.spyOn(apiClient.Logs, 'getLogs')
 
 describe('Log Store', () => {
   beforeEach(() => {

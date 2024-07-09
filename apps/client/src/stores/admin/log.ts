@@ -8,7 +8,7 @@ export const useAdminLogStore = defineStore('admin-log', () => {
   const count = ref<number | undefined>(undefined)
 
   const getAllLogs = async ({ offset, limit }: GetLogsQuery = { offset: 0, limit: 100 }) => {
-    const res = await apiClient.LogsAdmin.getLogs({ query: { offset, limit } })
+    const res = await apiClient.Logs.getLogs({ query: { offset, limit } })
       .then(response => extractData(response, 200))
     count.value = res.total
     logs.value = res.logs
