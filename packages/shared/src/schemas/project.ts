@@ -10,6 +10,35 @@ export const descriptionMaxLength = 280
 export const projectNameMaxLength = 20
 export const ProjectStatusSchema = z.enum(projectStatus)
 
+const ProjectEnvironmentSchema = z.object({
+  id: z.string()
+    .uuid(),
+  name: z.string()
+    .regex(/^[a-z0-9]+$/)
+    .min(2)
+    .max(longestEnvironmentName),
+  projectId: z.string()
+    .uuid(),
+  quotaId: z.string().uuid(),
+  stageId: z.string().uuid(),
+  clusterId: z.string()
+    .uuid(),
+  permissions: z.array(z.object({
+    id: z.string()
+      .uuid(),
+    userId: z.string()
+      .uuid(),
+    environmentId: z.string()
+      .uuid(),
+    level: z.union([
+      z.string(),
+      z.number()
+        .int()
+        .nonnegative()
+        .max(2),
+    ]),
+  })),
+})
 export const ProjectSchema = z.object({
   id: z.string()
     .uuid(),
@@ -30,35 +59,7 @@ export const ProjectSchema = z.object({
   roles: z.array(RoleSchema.and(z.object({ user: UserSchema.optional() }))).optional(),
   clusterIds: z.string().uuid().array(),
   repositories: RepoSchema.array(),
-  environments: z.array(z.object({
-    id: z.string()
-      .uuid(),
-    name: z.string()
-      .regex(/^[a-z0-9]+$/)
-      .min(2)
-      .max(longestEnvironmentName),
-    projectId: z.string()
-      .uuid(),
-    quotaId: z.string().uuid(),
-    stageId: z.string().uuid(),
-    clusterId: z.string()
-      .uuid(),
-    permissions: z.array(z.object({
-      id: z.string()
-        .uuid(),
-      userId: z.string()
-        .uuid(),
-      environmentId: z.string()
-        .uuid(),
-      level: z.union([
-        z.string(),
-        z.number()
-          .int()
-          .nonnegative()
-          .max(2),
-      ]),
-    })),
-  })),
+  environments: ProjectEnvironmentSchema.array(),
 }).extend(AtDatesToStringExtend)
 
 export type Project = Zod.infer<typeof ProjectSchema>
@@ -115,7 +116,19 @@ export const GetProjectsSchema = {
     })
     .partial().strict(),
   responses: {
-    200: z.array(ProjectSchema.required()),
+    200: ProjectSchema
+      .omit({
+        name: true,
+        environments: true,
+      })
+      .extend({
+        name: z.string(),
+        environments: ProjectEnvironmentSchema
+          .omit({ name: true })
+          .extend({ name: z.string() })
+        ,
+      })
+      .array(),
     500: ErrorSchema,
   },
 }

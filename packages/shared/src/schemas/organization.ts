@@ -11,8 +11,7 @@ export const OrganizationSchema = z.object({
     .regex(/^[a-z]*$/)
     .min(2)
     .max(10),
-  label: z.string()
-    .max(60),
+  label: z.string(),
   active: CoerceBooleanSchema,
 }).extend(AtDatesToStringExtend)
 
