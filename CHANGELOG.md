@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.8.0](https://github.com/cloud-pi-native/console/compare/v8.7.1...v8.8.0) (2024-07-09)
+
+
+### Features
+
+* :sparkles: query filter admin projects ([feb701d](https://github.com/cloud-pi-native/console/commit/feb701d9d36db0120032f0c1f8888a893c799495))
+
 ## [8.7.1](https://github.com/cloud-pi-native/console/compare/v8.7.0...v8.7.1) (2024-07-05)
 
 
