@@ -115,7 +115,16 @@ export const GetProjectsSchema = {
     })
     .partial().strict(),
   responses: {
-    200: z.array(ProjectSchema.required()),
+    200: ProjectSchema
+      .omit({
+        name: true,
+        environments: true,
+        repositories: true,
+      })
+      .extend({
+        name: z.string(),
+      })
+      .array(),
     500: ErrorSchema,
   },
 }
