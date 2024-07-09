@@ -24,7 +24,7 @@ export const apiRouter = () => async (app: FastifyInstance) => {
   await app.register(serverInstance.plugin(logRouter()), { responseValidation: true })
   await app.register(serverInstance.plugin(organizationRouter()), { responseValidation: true })
   await app.register(serverInstance.plugin(permissionRouter()))
-  await app.register(serverInstance.plugin(projectRouter()), { responseValidation: true })
+  await app.register(serverInstance.plugin(projectRouter()))
   await app.register(serverInstance.plugin(projectServiceRouter()), { responseValidation: true })
   await app.register(serverInstance.plugin(quotaRouter()))
   await app.register(serverInstance.plugin(repositoryRouter()))
