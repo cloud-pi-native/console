@@ -36,8 +36,7 @@ export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = basicStage
   project.roles[0].role = projectRoles[0]
   const ownerId = project.roles.find(role => role.role === 'owner')?.userId
 
-  // @ts-ignore
-  project.members = project.roles.map(({ userId, user: { id: _, ...user }, role }) => {
+  project.members = project.roles.map(({ userId, user, role }) => {
     return {
       userId,
       role,

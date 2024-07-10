@@ -39,6 +39,11 @@ export type Role = {
   user?: User,
 }
 
+export type Member = {
+  userId: User['id'],
+  role: string,
+}
+
 export type Permission = {
   id: string,
   environmentId: string,
@@ -104,11 +109,12 @@ export type Project = {
   id: string
   name: string,
   organizationId: string,
-  organization: Organization,
   description: string,
   status: string,
   locked: boolean,
+  organization?: Organization,
   roles?: Role[],
+  members?: Member[],
   clusters?: Cluster[],
   repositories?: Repository[],
   environments?: Environment[],
