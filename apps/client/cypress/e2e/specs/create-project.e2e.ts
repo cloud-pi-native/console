@@ -13,7 +13,7 @@ describe('Create Project', () => {
 
   it('Should create a project with minimal form informations', () => {
     cy.intercept('POST', '/api/v1/projects').as('postProject')
-    cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('getProjects')
+    cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('listProjects')
 
     const owner = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
 
@@ -33,14 +33,14 @@ describe('Create Project', () => {
     cy.getByDataTestid('createProjectBtn').should('be.enabled').click()
 
     cy.wait('@postProject').its('response.statusCode').should('match', /^20\d$/)
-    cy.wait('@getProjects').its('response.statusCode').should('match', /^20\d$/)
+    cy.wait('@listProjects').its('response.statusCode').should('match', /^20\d$/)
 
     cy.assertCreateProjects([project.name])
   })
 
   it('Should not create a project if name is already taken', () => {
     cy.intercept('POST', '/api/v1/projects').as('postProject')
-    cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('getProjects')
+    cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('listProjects')
 
     cy.goToProjects()
       .getByDataTestid('createProjectLink').click()

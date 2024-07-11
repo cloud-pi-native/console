@@ -355,8 +355,8 @@ describe('Administration projects', () => {
 
     cy.intercept('GET', 'api/v1/projects*').as('getAllProjects')
     cy.intercept('GET', `api/v1/project/${project.id}/services?permissionTarget=admin`).as('getServices')
-    cy.intercept('GET', `api/v1/projects/${project.id}/repositories`).as('listRepositories')
-    cy.intercept('GET', 'api/v1/environments?*').as('listEnvironments')
+    cy.intercept('GET', 'api/v1/repositories?projectId=*').as('listRepositories')
+    cy.intercept('GET', 'api/v1/environments?projectId=*').as('listEnvironments')
     cy.intercept(`/api/v1/projects/${project.id}/users/${userToTransfer.id}`).as('transferOwnership1')
     cy.intercept(`/api/v1/projects/${project.id}/users/${owner.id}`).as('transferOwnership2')
 

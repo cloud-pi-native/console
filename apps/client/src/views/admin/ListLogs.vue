@@ -1,12 +1,12 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted } from 'vue'
-import { useAdminLogStore } from '@/stores/admin/log.js'
+import { useLogStore } from '@/stores/log.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { Log } from '@cpn-console/shared'
 // @ts-ignore
 import { JsonViewer } from 'vue3-json-viewer'
 
-const adminLogStore = useAdminLogStore()
+const adminLogStore = useLogStore()
 const snackbarStore = useSnackbarStore()
 
 const step = 10

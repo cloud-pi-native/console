@@ -41,7 +41,7 @@ describe('Administration stages', () => {
     cy.intercept('GET', 'api/v1/stages').as('listStages')
     cy.intercept('GET', 'api/v1/quotas').as('listQuotas')
     cy.intercept('GET', 'api/v1/clusters').as('getClusters')
-    cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('getProjects')
+    cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('listProjects')
 
     // Create stage
     cy.getByDataTestid('addStageLink')
@@ -104,7 +104,7 @@ describe('Administration stages', () => {
     // Check stage availability on environment form
     cy.kcLogin('tcolin')
     cy.goToProjects()
-      .wait('@getProjects')
+      .wait('@listProjects')
       .getByDataTestid(`projectTile-${project?.name}`).click()
       .getByDataTestid('menuEnvironments').click()
       .url().should('contain', '/environments')
@@ -160,7 +160,7 @@ describe('Administration stages', () => {
     cy.intercept('GET', 'api/v1/clusters').as('getClusters')
     cy.intercept('GET', 'api/v1/quotas').as('listQuotas')
     cy.intercept('GET', 'api/v1/stages').as('listStages')
-    cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('getProjects')
+    cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('listProjects')
 
     cy.getByDataTestid(`stageTile-${stage.name}`)
       .should('be.visible')
@@ -217,7 +217,7 @@ describe('Administration stages', () => {
     // Check stage availability on environment form
     cy.kcLogin('tcolin')
     cy.goToProjects()
-      .wait('@getProjects')
+      .wait('@listProjects')
       .getByDataTestid(`projectTile-${project?.name}`).click()
       .getByDataTestid('menuEnvironments').click()
       .url().should('contain', '/environments')

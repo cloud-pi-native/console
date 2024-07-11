@@ -1,13 +1,13 @@
 import { adminGroupPath } from '@cpn-console/shared'
 import { getRandomCluster, getRandomRole, getRandomUser, getRandomStage, repeatFn, getRandomProject } from '@cpn-console/test-utils'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
-import prisma from '../../../__mocks__/prisma.js'
-import app from '../../../app.js'
-import { closeConnections, getConnection } from '../../../connect.js'
-import { getRequestor, setRequestor } from '../../../utils/mocks.js'
+import prisma from '../../__mocks__/prisma.js'
+import app from '../../app.js'
+import { closeConnections, getConnection } from '../../connect.js'
+import { getRequestor, setRequestor } from '../../utils/mocks.js'
 
-vi.mock('fastify-keycloak-adapter', (await import('../../../utils/mocks.js')).mockSessionPlugin)
-vi.mock('../../../utils/hook-wrapper.js', (await import('../../../utils/mocks.js')).mockHookWrapper)
+vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
+vi.mock('../../utils/hook-wrapper.js', (await import('../../utils/mocks.js')).mockHookWrapper)
 
 describe('Admin cluster routes', () => {
   beforeAll(async () => {

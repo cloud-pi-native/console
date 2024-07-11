@@ -39,7 +39,7 @@ export const RepoBusinessSchema = RepoSchema.refine(
 export type Repo = Zod.infer<typeof RepoSchema>
 
 export const CreateRepoSchema = {
-  params: z.object({
+  query: z.object({
     projectId: z.string()
       .uuid(),
   }),
@@ -54,7 +54,7 @@ export const CreateRepoSchema = {
 }
 
 export const GetReposSchema = {
-  params: z.object({
+  query: z.object({
     projectId: z.string()
       .uuid(),
   }),
@@ -66,8 +66,6 @@ export const GetReposSchema = {
 
 export const GetRepoByIdSchema = {
   params: z.object({
-    projectId: z.string()
-      .uuid(),
     repositoryId: z.string()
       .uuid(),
   }),
@@ -81,8 +79,6 @@ export const GetRepoByIdSchema = {
 
 export const UpdateRepoSchema = {
   params: z.object({
-    projectId: z.string()
-      .uuid(),
     repositoryId: z.string()
       .uuid(),
   }),
@@ -95,8 +91,6 @@ export const UpdateRepoSchema = {
 
 export const SyncRepoSchema = {
   params: z.object({
-    projectId: z.string()
-      .uuid(),
     repositoryId: z.string()
       .uuid(),
   }),
@@ -114,8 +108,6 @@ export const SyncRepoSchema = {
 
 export const DeleteRepoSchema = {
   params: z.object({
-    projectId: z.string()
-      .uuid(),
     repositoryId: z.string()
       .uuid(),
   }),

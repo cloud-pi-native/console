@@ -6,6 +6,14 @@ import { apiClient, extractData } from '@/api/xhr-client.js'
 export const useProjectUserStore = defineStore('project-user', () => {
   const usersStore = useUsersStore()
 
+  const getAllUsers = () =>
+    apiClient.Users.getAllUsers()
+      .then(response => extractData(response, 200))
+
+  const updateUserAdminRole = (userId: string, isAdmin: boolean) =>
+    apiClient.Users.updateUserAdminRole({ params: { userId }, body: { isAdmin } })
+      .then(response => extractData(response, 204))
+
   const getMatchingUsers = async (projectId: string, letters: string) => {
     const users = await apiClient.Users.getMatchingUsers({ params: { projectId }, query: { letters } })
       .then(response => extractData(response, 200))
@@ -29,9 +37,11 @@ export const useProjectUserStore = defineStore('project-user', () => {
     .then(response => extractData(response, 200))
 
   return {
+    getAllUsers,
     getMatchingUsers,
     addUserToProject,
     transferProjectOwnership,
+    updateUserAdminRole,
     removeUserFromProject,
   }
 })

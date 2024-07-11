@@ -2,7 +2,6 @@ import { ClientInferRequest } from '@ts-rest/core'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   CreateEnvironmentSchema,
-  // GetEnvironmentByIdSchema,
   UpdateEnvironmentSchema,
   DeleteEnvironmentSchema,
   GetEnvironmentsSchema,

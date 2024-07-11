@@ -1,5 +1,6 @@
 import { type Pinia, createPinia, setActivePinia } from 'pinia'
 import { getRandomCluster, getRandomEnv, getRandomOrganization, getRandomProject, getRandomStage, getRandomZone, repeatFn } from '@cpn-console/test-utils'
+import { ClusterPrivacy } from '@cpn-console/shared'
 
 import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
@@ -9,7 +10,6 @@ import '@/main.css'
 
 import ClusterForm from '@/components/ClusterForm.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { ClusterPrivacy } from '@cpn-console/shared'
 
 describe('ClusterForm.vue', () => {
   let pinia: Pinia

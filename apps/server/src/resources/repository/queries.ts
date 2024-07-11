@@ -3,7 +3,7 @@ import prisma from '@/prisma.js'
 
 // SELECT
 export const getRepositoryById = (id: Repository['id']) =>
-  prisma.repository.findUnique({ where: { id } })
+  prisma.repository.findUniqueOrThrow({ where: { id } })
 
 export const getProjectRepositories = (projectId: Project['id']) =>
   prisma.repository.findMany({ where: { projectId } })

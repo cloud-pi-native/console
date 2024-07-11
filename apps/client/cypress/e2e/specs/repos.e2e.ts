@@ -131,8 +131,8 @@ describe('Add repos into project', () => {
   })
 
   it('Should update a repo', () => {
-    cy.intercept('GET', '/api/v1/projects/*/repositories').as('listRepositories')
-    cy.intercept('PUT', '/api/v1/projects/*/repositories/*').as('putRepo')
+    cy.intercept('GET', '/api/v1/repositories?projectId=*').as('listRepositories')
+    cy.intercept('PUT', '/api/v1/repositories/*').as('putRepo')
     let repositories = []
 
     cy.goToProjects()
@@ -167,8 +167,8 @@ describe('Add repos into project', () => {
   })
 
   it('Should synchronise a repo', () => {
-    cy.intercept('GET', '/api/v1/projects/*/repositories').as('listRepositories')
-    cy.intercept('POST', '/api/v1/projects/*/repositories/*/sync').as('syncRepo')
+    cy.intercept('GET', '/api/v1/repositories?projectId=*').as('listRepositories')
+    cy.intercept('POST', '/api/v1/repositories/*/sync').as('syncRepo')
     let repositories = []
 
     cy.goToProjects()
@@ -218,8 +218,8 @@ describe('Add repos into project', () => {
   })
 
   it('Should generate a GitLab CI for a repo', () => {
-    cy.intercept('POST', '/api/v1/projects/*/repositories').as('postRepo')
-    cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('getProjects')
+    cy.intercept('POST', '/api/v1/repositories?projectId=*').as('postRepo')
+    cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('listProjects')
 
     const repo = {
       internalRepoName: 'repo05',
@@ -260,10 +260,10 @@ describe('Add repos into project', () => {
 
     cy.getByDataTestid('addRepoBtn').click()
     cy.wait('@postRepo').its('response.statusCode').should('match', /^20\d$/)
-    cy.wait('@getProjects').its('response.statusCode').should('match', /^20\d$/)
+    cy.wait('@listProjects').its('response.statusCode').should('match', /^20\d$/)
     cy.getByDataTestid(`repoTile-${repo.internalRepoName}`).should('exist')
     cy.wait(1000).reload()
-    cy.wait('@getProjects').its('response.statusCode').should('match', /^20\d$/)
+    cy.wait('@listProjects').its('response.statusCode').should('match', /^20\d$/)
     cy.assertAddRepo(project, [repo])
   })
 

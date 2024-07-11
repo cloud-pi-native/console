@@ -11,8 +11,8 @@ import {
 export const repositoryContract = contractInstance.router({
   createRepository: {
     method: 'POST',
-    path: `${apiPrefix}/projects/:projectId/repositories`,
-    pathParams: CreateRepoSchema.params,
+    path: `${apiPrefix}/repositories`,
+    query: CreateRepoSchema.query,
     contentType: 'application/json',
     summary: 'Create repo',
     description: 'Create new repo.',
@@ -22,8 +22,8 @@ export const repositoryContract = contractInstance.router({
 
   listRepositories: {
     method: 'GET',
-    path: `${apiPrefix}/projects/:projectId/repositories`,
-    pathParams: GetReposSchema.params,
+    path: `${apiPrefix}/repositories`,
+    query: GetReposSchema.query,
     summary: 'Get repos',
     description: 'Retrieved all repos.',
     responses: GetReposSchema.responses,
@@ -31,7 +31,7 @@ export const repositoryContract = contractInstance.router({
 
   syncRepository: {
     method: 'POST',
-    path: `${apiPrefix}/projects/:projectId/repositories/:repositoryId/sync`,
+    path: `${apiPrefix}/repositories/:repositoryId/sync`,
     body: SyncRepoSchema.body,
     pathParams: SyncRepoSchema.params,
     summary: 'application/json',
@@ -41,7 +41,7 @@ export const repositoryContract = contractInstance.router({
 
   updateRepository: {
     method: 'PUT',
-    path: `${apiPrefix}/projects/:projectId/repositories/:repositoryId`,
+    path: `${apiPrefix}/repositories/:repositoryId`,
     summary: 'Update repo',
     description: 'Update a repo by its ID.',
     pathParams: UpdateRepoSchema.params,
@@ -51,7 +51,7 @@ export const repositoryContract = contractInstance.router({
 
   deleteRepository: {
     method: 'DELETE',
-    path: `${apiPrefix}/projects/:projectId/repositories/:repositoryId`,
+    path: `${apiPrefix}/repositories/:repositoryId`,
     summary: 'Delete repo',
     description: 'Delete a repo by its ID.',
     body: null,

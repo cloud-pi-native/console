@@ -17,7 +17,7 @@ describe('Administration organizations', () => {
 
   beforeEach(() => {
     cy.intercept('GET', 'api/v1/organizations').as('getAllOrganizations')
-    cy.intercept('GET', 'api/v1/projects?filter=member&statusNotIn=archived').as('getProjects')
+    cy.intercept('GET', 'api/v1/projects?filter=member&statusNotIn=archived').as('listProjects')
 
     cy.kcLogin('tcolin')
     cy.visit('/admin/organizations')
@@ -164,14 +164,14 @@ describe('Administration organizations', () => {
     })
 
     cy.visit('/projects')
-      .wait('@getProjects')
+      .wait('@listProjects')
     cy.getByDataTestid(`projectTile-${projectFailed.name}`)
       .click()
     cy.getByDataTestid(`${projectFailed.id}-locked-badge`)
       .should('exist')
 
     cy.visit('/projects')
-      .wait('@getProjects')
+      .wait('@listProjects')
     cy.getByDataTestid(`projectTile-${projectSucceed.name}`)
       .click()
     cy.getByDataTestid(`${projectSucceed.id}-locked-badge`)

@@ -7,7 +7,7 @@ export const getEnvironmentById = (id: Environment['id']) =>
   prisma.environment.findUnique({ where: { id }, include: { quota: true, stage: true } })
 
 export const getEnvironmentInfos = (id: Environment['id']) =>
-  prisma.environment.findUnique({
+  prisma.environment.findUniqueOrThrow({
     where: { id },
     include: {
       project: {
