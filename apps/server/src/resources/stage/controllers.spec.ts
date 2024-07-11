@@ -1,13 +1,13 @@
-import prisma from '../../../__mocks__/prisma.js'
+import prisma from '../../__mocks__/prisma.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll, beforeEach } from 'vitest'
-import { getConnection, closeConnections } from '../../../connect.js'
+import { getConnection, closeConnections } from '../../connect.js'
 import { adminGroupPath } from '@cpn-console/shared'
 import { getRandomCluster, getRandomQuota, getRandomRole, getRandomStage, getRandomUser, repeatFn } from '@cpn-console/test-utils'
 import { faker } from '@faker-js/faker'
-import { getRequestor, setRequestor } from '../../../utils/mocks.js'
-import app from '../../../app.js'
+import { getRequestor, setRequestor } from '../../utils/mocks.js'
+import app from '../../app.js'
 
-vi.mock('fastify-keycloak-adapter', (await import('../../../utils/mocks.js')).mockSessionPlugin)
+vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
 
 describe('Admin stage routes', () => {
   beforeAll(async () => {

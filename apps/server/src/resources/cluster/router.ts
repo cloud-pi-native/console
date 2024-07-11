@@ -1,16 +1,16 @@
 import { clusterContract } from '@cpn-console/shared'
 import { addReqLogs } from '@/utils/logger.js'
-import { getAllUserClusters } from './business.js'
-import '@/types/index.js'
-import { serverInstance } from '@/app.js'
 import {
+  getAllUserClusters,
   checkClusterProjectIds,
   createCluster,
   deleteCluster,
   getClusterAssociatedEnvironments,
   getClusterDetails as getClusterDetailsBusiness,
   updateCluster,
-} from './admin/business.js'
+} from './business.js'
+import '@/types/index.js'
+import { serverInstance } from '@/app.js'
 import { checkIsAdmin } from '@/utils/controller.js'
 
 export const clusterRouter = () => serverInstance.router(clusterContract, {

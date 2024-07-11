@@ -1,6 +1,6 @@
 import type { Permission, User, Role, Cluster } from '@prisma/client'
 import { DoneFuncWithErrOrRes, FastifyReply, FastifyRequest } from 'fastify'
-import { type ProjectRoles, adminGroupPath, projectIsLockedInfo } from '@cpn-console/shared'
+import { type ProjectRoles, adminGroupPath, projectIsLockedInfo, type Project } from '@cpn-console/shared'
 import { ForbiddenError } from './errors.js'
 import { UserDetails } from '@/types/index.js'
 
@@ -81,7 +81,7 @@ export const checkInsufficientRoleInProject = (
 }
 
 export const checkRoleAndLocked = (
-  project: { locked: boolean, roles: Role[] },
+  project: { locked: Project['locked'], roles: Role[] },
   userId: string,
   minRole: ProjectRoles = 'user',
 ): string => checkProjectLocked(project) || checkInsufficientRoleInProject(userId, { minRole, roles: project.roles })

@@ -1,10 +1,10 @@
 <script lang="ts" setup>
 import { ref, onMounted, computed } from 'vue'
+import { getRandomId } from '@gouvminint/vue-dsfr'
 import { levels, projectIsLockedInfo, type Permission, type Environment, UpsertPermissionBody } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectPermissionStore } from '@/stores/project-permission.js'
 import { useUserStore } from '@/stores/user.js'
-import { getRandomId } from '@gouvminint/vue-dsfr'
 import { useUsersStore } from '@/stores/users.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 

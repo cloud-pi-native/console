@@ -49,7 +49,7 @@ describe('Manage project environments', () => {
     cy.intercept('GET', 'api/v1/stages').as('listStages')
     cy.intercept('GET', 'api/v1/quotas').as('listQuotas')
     cy.intercept('POST', '/api/v1/environments').as('postEnvironment')
-    cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('getProjects')
+    cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('listProjects')
 
     cy.goToProjects()
       .getByDataTestid(`projectTile-${project0?.name}`).click()

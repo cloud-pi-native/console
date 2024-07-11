@@ -1,7 +1,7 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { apiClient } from '../../api/xhr-client.js'
-import { useAdminLogStore } from './log.js'
+import { apiClient } from '../api/xhr-client.js'
+import { useLogStore } from './log.js'
 
 const apiClientGet = vi.spyOn(apiClient.Logs, 'getLogs')
 
@@ -21,7 +21,7 @@ describe('Log Store', () => {
       ],
     }
     apiClientGet.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
-    const adminLogStore = useAdminLogStore()
+    const adminLogStore = useLogStore()
 
     await adminLogStore.getAllLogs({ offset: 5, limit: 10 })
 

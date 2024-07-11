@@ -34,7 +34,7 @@ describe('Repository routes', () => {
       prisma.project.findUnique.mockResolvedValue(projectInfos)
 
       const response = await app.inject()
-        .get(`/api/v1/projects/${projectInfos.id}/repositories`)
+        .get(`/api/v1/repositories?projectId=${projectInfos.id}`)
         .end()
 
       expect(response.statusCode).toEqual(200)
@@ -46,14 +46,15 @@ describe('Repository routes', () => {
   describe('syncRepositoryController', () => {
     it('Should sync a repository', async () => {
       const projectInfos = createRandomDbSetup({}).project
-      projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
       const repoToSync = projectInfos.repositories[0]
       const branchName = 'main'
+      setRequestor(projectInfos.roles[0].user)
 
-      prisma.project.findUnique.mockResolvedValue(projectInfos)
+      prisma.repository.findUniqueOrThrow.mockResolvedValue(repoToSync)
+      prisma.project.findUniqueOrThrow.mockResolvedValue(projectInfos)
 
       const response = await app.inject()
-        .post(`/api/v1/projects/${projectInfos.id}/repositories/${repoToSync.id}/sync`)
+        .post(`/api/v1/repositories/${repoToSync.id}/sync`)
         .body({ branchName })
         .end()
 
@@ -65,10 +66,11 @@ describe('Repository routes', () => {
       const repoToSync = projectInfos.repositories[0]
       const branchName = 'main'
 
-      prisma.project.findUnique.mockResolvedValue(projectInfos)
+      prisma.repository.findUniqueOrThrow.mockResolvedValue(repoToSync)
+      prisma.project.findUniqueOrThrow.mockResolvedValue(projectInfos)
 
       const response = await app.inject()
-        .post(`/api/v1/projects/${projectInfos.id}/repositories/${repoToSync.id}/sync`)
+        .post(`/api/v1/repositories/${repoToSync.id}/sync`)
         .body({ branchName })
         .end()
 
@@ -85,8 +87,8 @@ describe('Repository routes', () => {
       projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
       const newRepository = getRandomRepo(projectInfos.id)
 
-      prisma.project.findUnique.mockResolvedValue(projectInfos)
       prisma.user.findUnique.mockResolvedValue(requestor)
+      prisma.project.findUnique.mockResolvedValue(projectInfos)
       randomDbSetUp.stages.forEach(stage => {
         prisma.stage.findUnique.mockResolvedValueOnce(randomDbSetUp.stages?.find(dbSetUpstage => dbSetUpstage?.id === stage?.id))
       })
@@ -94,7 +96,7 @@ describe('Repository routes', () => {
       prisma.log.create.mockResolvedValue(getRandomLog('Create Repository', getRequestor().id))
 
       const response = await app.inject()
-        .post(`/api/v1/projects/${projectInfos.id}/repositories`)
+        .post(`/api/v1/repositories?projectId=${projectInfos.id}`)
         .body(newRepository)
         .end()
 
@@ -106,10 +108,11 @@ describe('Repository routes', () => {
       const projectInfos = createRandomDbSetup({}).project
       projectInfos.locked = true
 
+      prisma.user.findUnique.mockResolvedValue(requestor)
       prisma.project.findUnique.mockResolvedValue(projectInfos)
 
       const response = await app.inject()
-        .post(`/api/v1/projects/${projectInfos.id}/repositories`)
+        .post(`/api/v1/repositories?projectId=${projectInfos.id}`)
         .body(getRandomRepo(projectInfos.id))
         .end()
 
@@ -123,7 +126,7 @@ describe('Repository routes', () => {
       newRepository.internalRepoName = '^%!!dhrez'
 
       const response = await app.inject()
-        .post(`/api/v1/projects/${projectInfos.id}/repositories`)
+        .post(`/api/v1/repositories?projectId=${projectInfos.id}`)
         .body(newRepository)
         .end()
 
@@ -150,7 +153,8 @@ describe('Repository routes', () => {
       repoUpdated.externalToken = updatedKeys.externalToken
       repoUpdated.externalUserName = updatedKeys.externalUserName
 
-      prisma.project.findUnique.mockResolvedValue(projectInfos)
+      prisma.repository.findUniqueOrThrow.mockResolvedValue(repoToUpdate)
+      prisma.project.findUniqueOrThrow.mockResolvedValue(projectInfos)
       prisma.project.update.mockResolvedValue(projectInfos)
       prisma.repository.update.mockResolvedValue(repoUpdated)
       prisma.log.create.mockResolvedValue(getRandomLog('Update Repository', getRequestor().id))
@@ -158,7 +162,7 @@ describe('Repository routes', () => {
       prisma.repository.findMany.mockResolvedValue(projectInfos.repositories)
 
       const response = await app.inject()
-        .put(`/api/v1/projects/${projectInfos.id}/repositories/${repoToUpdate.id}`)
+        .put(`/api/v1/repositories/${repoToUpdate.id}`)
         .body(updatedKeys)
         .end()
 
@@ -177,10 +181,11 @@ describe('Repository routes', () => {
         externalToken: undefined,
       }
 
-      prisma.project.findUnique.mockResolvedValue(projectInfos)
+      prisma.repository.findUniqueOrThrow.mockResolvedValue(repoToUpdate)
+      prisma.project.findUniqueOrThrow.mockResolvedValue(projectInfos)
 
       const response = await app.inject()
-        .put(`/api/v1/projects/${projectInfos.id}/repositories/${repoToUpdate.id}`)
+        .put(`/api/v1/repositories/${repoToUpdate.id}`)
         .body(updatedKeys)
         .end()
 
@@ -196,11 +201,11 @@ describe('Repository routes', () => {
       const updatedKeys = {
         isPrivate: false,
       }
-
-      prisma.project.findUnique.mockResolvedValue(projectInfos)
+      prisma.repository.findUniqueOrThrow.mockResolvedValue(repoToUpdate)
+      prisma.project.findUniqueOrThrow.mockResolvedValue(projectInfos)
 
       const response = await app.inject()
-        .put(`/api/v1/projects/${projectInfos.id}/repositories/${repoToUpdate.id}`)
+        .put(`/api/v1/repositories/${repoToUpdate.id}`)
         .body(updatedKeys)
         .end()
 
@@ -217,7 +222,8 @@ describe('Repository routes', () => {
       projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
       const repoToDelete = projectInfos.repositories[0]
 
-      prisma.project.findUnique.mockResolvedValue(projectInfos)
+      prisma.repository.findUniqueOrThrow.mockResolvedValue(repoToDelete)
+      prisma.project.findUniqueOrThrow.mockResolvedValue(projectInfos)
       prisma.project.update.mockResolvedValue(projectInfos)
       randomDbSetUp.stages.forEach(stage => {
         prisma.stage.findUnique.mockResolvedValueOnce(randomDbSetUp.stages?.find(dbSetUpstage => dbSetUpstage?.id === stage?.id))
@@ -230,7 +236,7 @@ describe('Repository routes', () => {
       prisma.repository.findMany.mockResolvedValue([])
 
       const response = await app.inject()
-        .delete(`/api/v1/projects/${projectInfos.id}/repositories/${repoToDelete.id}`)
+        .delete(`/api/v1/repositories/${repoToDelete.id}`)
         .end()
 
       expect(response.statusCode).toEqual(204)
@@ -241,10 +247,11 @@ describe('Repository routes', () => {
       projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'user')]
       const repoToDelete = projectInfos.repositories[0]
 
-      prisma.project.findUnique.mockResolvedValue(projectInfos)
+      prisma.repository.findUniqueOrThrow.mockResolvedValue(repoToDelete)
+      prisma.project.findUniqueOrThrow.mockResolvedValue(projectInfos)
 
       const response = await app.inject()
-        .delete(`/api/v1/projects/${projectInfos.id}/repositories/${repoToDelete.id}`)
+        .delete(`/api/v1/repositories/${repoToDelete.id}`)
         .end()
 
       expect(response.statusCode).toEqual(403)
@@ -257,10 +264,11 @@ describe('Repository routes', () => {
       const repoToDelete = projectInfos.repositories[0]
       projectInfos.locked = true
 
-      prisma.project.findUnique.mockResolvedValue(projectInfos)
+      prisma.repository.findUniqueOrThrow.mockResolvedValue(repoToDelete)
+      prisma.project.findUniqueOrThrow.mockResolvedValue(projectInfos)
 
       const response = await app.inject()
-        .delete(`/api/v1/projects/${projectInfos.id}/repositories/${repoToDelete.id}`)
+        .delete(`/api/v1/repositories/${repoToDelete.id}`)
         .end()
 
       expect(response.statusCode).toEqual(403)

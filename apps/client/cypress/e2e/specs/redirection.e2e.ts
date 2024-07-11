@@ -6,7 +6,7 @@ const organization = getModelById('organization', project.organizationId)
 describe('Redirection', () => {
   it('Should redirect to original page on reload', () => {
     cy.intercept('GET', '/api/v1/stages').as('listStages')
-    cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('getProjects')
+    cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('listProjects')
     cy.intercept('POST', '/realms/cloud-pi-native/protocol/openid-connect/token').as('postToken')
 
     cy.kcLogin('test')
@@ -17,7 +17,7 @@ describe('Redirection', () => {
     cy.reload()
     cy.wait('@postToken')
     cy.url().should('match', /projects#state=/)
-    cy.wait('@getProjects').its('response').then(response => {
+    cy.wait('@listProjects').its('response').then(response => {
       cy.get('[data-testid^="projectTile-"]')
       cy.should('have.length', `${response?.body.length}`)
       cy.getByDataTestid(`projectTile-${project.name}`).click()
@@ -28,7 +28,7 @@ describe('Redirection', () => {
     cy.wait('@postToken')
     cy.url().should('contain', `/projects/${project.id}/dashboard`)
     cy.wait('@listStages')
-    cy.wait('@getProjects').its('response').then(_response => {
+    cy.wait('@listProjects').its('response').then(_response => {
       cy.getByDataTestid('currentProjectInfo')
       cy.should('contain', `Le projet courant est : ${project.name} (${organization.label})`)
     })
@@ -36,7 +36,7 @@ describe('Redirection', () => {
 
   it('Should redirect to login page if not logged in', () => {
     cy.intercept('GET', '/api/v1/stages').as('listStages')
-    cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('getProjects')
+    cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('listProjects')
     cy.intercept('POST', '/realms/cloud-pi-native/protocol/openid-connect/token').as('postToken')
     cy.intercept('GET', '/realms/cloud-pi-native/account').as('getAccount')
 
@@ -48,7 +48,7 @@ describe('Redirection', () => {
     cy.wait('@postToken')
     cy.url().should('contain', `/projects/${project.id}/dashboard`)
     cy.wait('@listStages')
-    cy.wait('@getProjects', { timeout: 5000 }).its('response').then(_response => {
+    cy.wait('@listProjects', { timeout: 5000 }).its('response').then(_response => {
       cy.getByDataTestid('currentProjectInfo')
       cy.should('contain', `Le projet courant est : ${project.name} (${organization.label})`)
     })

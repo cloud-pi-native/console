@@ -47,7 +47,7 @@ describe('Administration quotas', () => {
     cy.intercept('GET', 'api/v1/clusters').as('getClusters')
     cy.intercept('GET', 'api/v1/stages').as('listStages')
     cy.intercept('GET', 'api/v1/quotas').as('listQuotas')
-    cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('getProjects')
+    cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('listProjects')
     cy.intercept('GET', '/api/v1/environments?*').as('listEnvironments')
 
     // Create quota
@@ -114,7 +114,7 @@ describe('Administration quotas', () => {
     // Check quota availability for non admin user on environment form
     cy.kcLogin('test')
     cy.goToProjects()
-      .wait('@getProjects')
+      .wait('@listProjects')
       .getByDataTestid(`projectTile-${project?.name}`).click()
       .getByDataTestid('menuEnvironments').click()
     cy.wait('@getClusters')
@@ -212,7 +212,7 @@ describe('Administration quotas', () => {
     cy.intercept('GET', 'api/v1/clusters').as('getClusters')
     cy.intercept('GET', 'api/v1/stages').as('listStages')
     cy.intercept('GET', 'api/v1/quotas').as('listQuotas')
-    cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('getProjects')
+    cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('listProjects')
     cy.intercept('GET', '/api/v1/environments?*').as('listEnvironments')
 
     // Create quota
@@ -279,7 +279,7 @@ describe('Administration quotas', () => {
     // Check quota unavailability for non admin user on environment form
     cy.kcLogin('test')
     cy.goToProjects()
-      .wait('@getProjects')
+      .wait('@listProjects')
       .getByDataTestid(`projectTile-${project?.name}`).click()
       .getByDataTestid('menuEnvironments').click()
       .url().should('contain', '/environments')
@@ -331,7 +331,7 @@ describe('Administration quotas', () => {
     cy.intercept('GET', 'api/v1/clusters').as('getClusters')
     cy.intercept('GET', 'api/v1/stages').as('listStages')
     cy.intercept('GET', 'api/v1/quotas').as('listQuotas')
-    cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('getProjects')
+    cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('listProjects')
 
     cy.getByDataTestid(`quotaTile-${publicQuota.name}`)
       .should('be.visible')
@@ -397,7 +397,7 @@ describe('Administration quotas', () => {
     // Check quota unavailability for non admin user on environment form
     cy.kcLogin('test')
     cy.goToProjects()
-      .wait('@getProjects')
+      .wait('@listProjects')
       .getByDataTestid(`projectTile-${project?.name}`).click()
       .getByDataTestid('menuEnvironments').click()
       .url().should('contain', '/environments')
