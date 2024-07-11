@@ -23,21 +23,23 @@ describe('Manage permissions for environment', () => {
 
   it('Should not be able to update permissions if not permitted on environment', () => {
     cy.kcLogin((user0.firstName.slice(0, 1) + user0.lastName).toLowerCase())
-      .goToProjects()
-      .getByDataTestid(`projectTile-${project.name}`).click()
-      .getByDataTestid('menuEnvironments').click()
-      .url().should('contain', '/environments')
+    cy.goToProjects()
+    cy.getByDataTestid(`projectTile-${project.name}`).click()
+    cy.getByDataTestid('menuEnvironments').click()
+    cy.url().should('contain', '/environments')
     cy.getByDataTestid(`environmentTile-${environment?.name}`)
       .click()
     cy.getByDataTestid('deleteEnvironmentZone').should('not.exist')
 
     cy.assertPermission(project, environment?.name, [{ email: owner.email, isOwner: true }])
 
-    cy.getByDataTestid('permissionSuggestionInput').find('input')
+    cy.getByDataTestid('permissionSuggestionInput')
+      .find('input')
       .should('be.disabled')
-      .getByDataTestid('deletePermissionBtn')
+    cy.getByDataTestid('deletePermissionBtn')
       .should('be.disabled')
-      .getByDataTestid('permissionLevelRange')
+    cy.getByDataTestid('permissionLevelRange')
+      .find('input')
       .should('be.disabled')
   })
 
@@ -54,30 +56,33 @@ describe('Manage permissions for environment', () => {
     ])
 
     cy.getByDataTestid('permissionSuggestionInput')
+      .find('input')
       .should('be.disabled')
-      .getByDataTestid('newPermissionFieldset').within(() => {
-        cy.get('.fr-hint-text')
-          .should('contain', `Tous les membres du projet ${project.name} sont déjà accrédités.`)
-      })
+    cy.getByDataTestid('newPermissionFieldset').within(() => {
+      cy.get('.fr-hint-text')
+        .should('contain', `Tous les membres du projet ${project.name} sont déjà accrédités.`)
+    })
 
     cy.addProjectMember(project, user1.email)
 
     cy.goToProjects()
-      .getByDataTestid(`projectTile-${project.name}`).click()
-      .getByDataTestid('menuEnvironments').click()
+    cy.getByDataTestid(`projectTile-${project.name}`).click()
+    cy.getByDataTestid('menuEnvironments').click()
     cy.getByDataTestid(`environmentTile-${environment?.name}`)
       .click()
 
     cy.getByDataTestid('permissionSuggestionInput')
+      .find('input')
       .should('be.enabled')
-      .getByDataTestid('newPermissionFieldset').within(() => {
-        cy.get('.fr-hint-text')
-          .should('contain', `Entrez l'e-mail d'un membre du projet ${project.name}. Ex : ${user1.email}`)
-      })
+    cy.getByDataTestid('newPermissionFieldset').within(() => {
+      cy.get('.fr-hint-text')
+        .should('contain', `Entrez l'e-mail d'un membre du projet ${project.name}. Ex : ${user1.email}`)
+    })
 
     cy.get('[data-testid^="userPermissionLi-"]')
       .should('have.length', 3)
-      .getByDataTestid('permissionSuggestionInput').find('input')
+    cy.getByDataTestid('permissionSuggestionInput')
+      .find('input')
       .should('be.visible')
       .clear()
 
@@ -98,14 +103,14 @@ describe('Manage permissions for environment', () => {
 
     cy.getByDataTestid(`userPermissionLi-${user0.email}`).within(() => {
       cy.getByDataTestid('permissionLevelRange')
-        .find('input[type=range]')
+        .find('input')
         .invoke('val', 2)
         .trigger('input')
     })
     cy.getByDataTestid(`${user0.id}UpsertPermissionBtn`)
       .should('be.enabled')
       .click()
-      .wait('@putPermission')
+    cy.wait('@putPermission')
       .its('response.statusCode').should('match', /^20\d$/)
 
     cy.reload()
@@ -115,7 +120,7 @@ describe('Manage permissions for environment', () => {
 
     cy.getByDataTestid(`userPermissionLi-${user0.email}`).within(() => {
       cy.getByDataTestid('permissionLevelRange')
-        .find('input[type=range]')
+        .find('input')
         .should('have.value', 2)
     })
   })
@@ -128,11 +133,12 @@ describe('Manage permissions for environment', () => {
     cy.assertPermission(project, environment?.name, [{ email: owner.email, isOwner: true }, { email: user0.email, isOwner: false }, { email: user2.email, isOwner: false }])
 
     cy.getByDataTestid('permissionSuggestionInput')
+      .find('input')
       .should('be.disabled')
-      .getByDataTestid('newPermissionFieldset').within(() => {
-        cy.get('.fr-hint-text')
-          .should('contain', `Tous les membres du projet ${project.name} sont déjà accrédités.`)
-      })
+    cy.getByDataTestid('newPermissionFieldset').within(() => {
+      cy.get('.fr-hint-text')
+        .should('contain', `Tous les membres du projet ${project.name} sont déjà accrédités.`)
+    })
 
     cy.getByDataTestid(`userPermissionLi-${user2.email}`).within(() => {
       cy.getByDataTestid('deletePermissionBtn')
@@ -143,23 +149,24 @@ describe('Manage permissions for environment', () => {
 
     cy.get('[data-testid^="userPermissionLi-"]')
       .should('have.length', 3)
-      .getByDataTestid('permissionSuggestionInput')
+    cy.getByDataTestid('permissionSuggestionInput')
+      .find('input')
       .should('be.enabled')
-      .getByDataTestid('newPermissionFieldset').within(() => {
-        cy.get('.fr-hint-text')
-          .should('contain', `Entrez l'e-mail d'un membre du projet ${project.name}. Ex : ${user2.email}`)
-      })
+    cy.getByDataTestid('newPermissionFieldset').within(() => {
+      cy.get('.fr-hint-text')
+        .should('contain', `Entrez l'e-mail d'un membre du projet ${project.name}. Ex : ${user2.email}`)
+    })
       .getByDataTestid(`userPermissionLi-${user2.email}`)
       .should('not.exist')
 
     cy.kcLogin((user2.firstName.slice(0, 1) + user2.lastName).toLowerCase())
-      .goToProjects()
-      .getByDataTestid(`projectTile-${project.name}`).click()
-      .getByDataTestid('menuEnvironments').click()
+    cy.goToProjects()
+    cy.getByDataTestid(`projectTile-${project.name}`).click()
+    cy.getByDataTestid('menuEnvironments').click()
     cy.wait('@getClusters')
     cy.getByDataTestid(`environmentTile-${environment?.name}`)
       .click()
-      .url().should('contain', '/environments')
+    cy.url().should('contain', '/environments')
     cy.getByDataTestid('notPermittedAlert')
       .should('be.visible')
   })

@@ -32,7 +32,7 @@ const updateValue = () => {
       v-model="localValue"
       :value="props.modelValue"
       list="suggestionList"
-      @input="updateValue()"
+      @update:model-value="updateValue()"
     />
     <datalist
       id="suggestionList"

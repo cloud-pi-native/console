@@ -43,7 +43,6 @@ describe('Administration users', () => {
         .should('have.length', users.length)
     })
     cy.getByDataTestid('tableAdministrationUsersSearch')
-      .find('input')
       .clear()
       .type(users[1].email)
     cy.getByDataTestid('tableAdministrationUsers').find('tbody').within(() => {
