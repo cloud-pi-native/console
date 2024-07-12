@@ -72,14 +72,14 @@ const project = {
 type ProjectAction = keyof typeof project
 const manageProjectStatus = async (
   projectId: Project['id'],
-  results: HookResult<ProjectPayload>,
+  hookReply: HookResult<ProjectPayload>,
   action: ProjectAction,
   envClusterIds: Cluster['id'][],
 ): Promise<AsyncReturnType<typeof updateProjectCreated>> => {
-  if (!results.failed && results.results?.kubernetes) {
+  if (!hookReply.failed && hookReply.results?.kubernetes) {
     await updateProjectClusterHistory(projectId, envClusterIds)
   }
-  if (results.failed) {
+  if (hookReply.failed) {
     return updateProjectFailed(projectId)
   } else if (action === 'upsert') {
     return updateProjectCreated(projectId)
