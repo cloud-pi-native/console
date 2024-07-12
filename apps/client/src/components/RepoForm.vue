@@ -104,8 +104,8 @@ const cancel = () => {
           />
         </div>
         <DsfrCheckbox
+          id="privateRepoCbx"
           v-model="localRepo.isPrivate"
-          data-testid="privateRepoCbx"
           :disabled="props.isProjectLocked"
           label="Dépôt source privé"
           hint="Cochez la case si le dépôt Git source est privé"
@@ -148,8 +148,8 @@ const cancel = () => {
           </div>
         </div>
         <DsfrCheckbox
+          id="infraRepoCbx"
           v-model="localRepo.isInfra"
-          data-testid="infraRepoCbx"
           :disabled="props.isProjectLocked"
           label="Dépôt contenant du code d'infrastructure"
           hint="Cochez la case s'il s'agit d'un dépôt d'infrastructure (si le dépôt contient des manifestes de déploiement)"

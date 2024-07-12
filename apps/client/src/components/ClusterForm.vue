@@ -282,8 +282,8 @@ const isConnectionDetailsShown = ref(true)
         hint="La valeur est extraite du kubeconfig téléversé."
       />
       <DsfrCheckbox
+        id="clusterSkipTLSVerifyCbx"
         v-model="localCluster.kubeconfig.cluster.skipTLSVerify"
-        data-testid="clusterSkipTLSVerifyCbx"
         label="Ignorer le certificat TLS du server (risques potentiels de sécurité !)"
         hint="Ignorer le certificat TLS présenté pour contacter l'API server Kubernetes"
         name="isClusterSkipTlsVerify"
@@ -316,8 +316,8 @@ const isConnectionDetailsShown = ref(true)
       hint="Facultatif. Attention, ces informations seront visibles par les utilisateurs de la console à qui ce cluster est destiné (tous si cluster public, membres des projets concernés pour les clusters réservés)."
     />
     <DsfrCheckbox
+      id="clusterResourcesCbx"
       v-model="localCluster.clusterResources"
-      data-testid="clusterResourcesCbx"
       label="Ressources cluster"
       hint="Cochez la case si des ressources de type cluster peuvent être déployées par Argocd."
       name="isClusterResources"
