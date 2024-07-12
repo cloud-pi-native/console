@@ -10,8 +10,12 @@ import { hook } from '@/utils/hook-wrapper.js'
 export const getUsers = async () => {
   const users = await getUsersQuery()
 
-  const results = await hook.user.retrieveAdminUsers()
-  const adminIds: string[] = results.results.keycloak?.adminIds
+  const hookReply = await hook.user.retrieveAdminUsers()
+  if (hookReply.failed) {
+    throw new UnprocessableContentError('Echec de récupération des administrateurs')
+  }
+
+  const adminIds: string[] = hookReply.results.keycloak?.adminIds
 
   if (!adminIds?.length) return users.map(user => ({ ...user, isAdmin: false }))
 
@@ -19,12 +23,10 @@ export const getUsers = async () => {
 }
 
 export const updateUserAdminRole = async ({ userId, isAdmin }: { userId: string, isAdmin: boolean }, requestId: string) => {
-  const results = await hook.user.updateUserAdminGroupMembership(userId, { isAdmin })
-
-  await addLogs('Update User Admin Role', results, userId, requestId)
-
-  if (results.failed) {
-    throw new UnprocessableContentError('Echec des opérations')
+  const hookReply = await hook.user.updateUserAdminGroupMembership(userId, { isAdmin })
+  await addLogs('Update User Admin Role', hookReply, userId, requestId)
+  if (hookReply.failed) {
+    throw new UnprocessableContentError('Echec des services à la mise à jour du rôle de l\'utilisateur')
   }
 }
 
@@ -58,11 +60,13 @@ export const addUserToProject = async (
 
   // Retrieve user from keycloak if does not exist in db
   if (!userToAdd) {
-    const results = await hook.user.retrieveUserByEmail(email)
+    const hookReply = await hook.user.retrieveUserByEmail(email)
+    await addLogs('Retrieve User By Email', hookReply, userId, requestId)
+    if (hookReply.failed) {
+      throw new UnprocessableContentError('Echec des services à la récupération des administrateurs')
+    }
 
-    await addLogs('Retrieve User By Email', results, userId, requestId)
-
-    const retrievedUser = results.results.keycloak?.user
+    const retrievedUser = hookReply.results.keycloak?.user
     if (!retrievedUser) throw new NotFoundError('Utilisateur introuvable', undefined)
 
     // keep only keys allowed in model
@@ -84,8 +88,11 @@ export const addUserToProject = async (
   try {
     await addUserToProjectQuery({ project, user: userToAdd, role: 'user' })
 
-    const results = await hook.project.upsert(project.id)
+    const { results } = await hook.project.upsert(project.id)
     await addLogs('Add Project Member', results, userId, requestId)
+    if (results.failed) {
+      throw new UnprocessableContentError('Echec des services à l\'ajout de l\'utilisateur au projet')
+    }
 
     return getRolesByProjectId(project.id)
   } catch (error) {
@@ -146,9 +153,12 @@ export const removeUserFromProject = async (
 
     const { results } = await hook.project.upsert(project.id)
     await addLogs('Remove User from Project', results, userId, requestId)
+    if (results.failed) {
+      throw new UnprocessableContentError('Echec des services au retrait de l\'utilisateur au projet')
+    }
 
     return getRolesByProjectId(project.id)
   } catch (error) {
-    throw new Error('Echec de retrait de l\'utilisateur du projet')
+    throw new Error('Echec du retrait de l\'utilisateur du projet')
   }
 }

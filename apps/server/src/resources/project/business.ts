@@ -130,13 +130,13 @@ export const getProjectSecrets = async (projectId: string, userId: User['id']) =
   const insufficientRoleErrorMessage = checkInsufficientRoleInProject(userId, { roles: project.roles, minRole: 'owner' })
   if (insufficientRoleErrorMessage) throw new ForbiddenError(insufficientRoleErrorMessage, { description: '', extras: { userId, projectId: project.id } })
 
-  const results = await hook.project.getSecrets(project.id)
-  if (results.failed) {
-    throw new Error('Echec de récupération des secrets du projet par les plugins')
+  const hookReply = await hook.project.getSecrets(project.id)
+  if (hookReply.failed) {
+    throw new UnprocessableContentError('Echec des services à la récupération des secrets du projet')
   }
 
   return Object.fromEntries(
-    Object.entries(results.results)
+    Object.entries(hookReply.results)
       // @ts-ignore
       .filter(([_key, value]) => value.secrets)
       // @ts-ignore
@@ -155,10 +155,9 @@ export const createProject = async (dataDto: CreateProjectBody, requestor: UserD
 
   try {
     const { results } = await hook.project.upsert(project.id)
-
     await addLogs('Create Project', results, owner.id, requestId)
     if (results.failed) {
-      throw new Error('Echec de la création du projet par les plugins')
+      throw new UnprocessableContentError('Echec des services à la création du projet')
     }
 
     const projectInfos = await getProjectInfosOrThrowQuery(project.id)
@@ -195,10 +194,9 @@ export const updateProject = async (data: UpdateProjectBody, projectId: Project[
     await updateProjectQuery(projectId, dataFiltered)
 
     const { results } = await hook.project.upsert(project.id)
-
     await addLogs('Update Project', results, requestor.id, requestId)
     if (results.failed) {
-      throw new Error('Echec de la mise à jour du projet par les plugins')
+      throw new UnprocessableContentError('Echec des services à la mise à jour du projet')
     }
 
     const projectInfos = await getProjectInfosOrThrowQuery(projectId)
@@ -227,10 +225,9 @@ export const replayHooks = async (projectId: Project['id'], requestor: KeycloakP
 
     // Actions
     const { results } = await hook.project.upsert(project.id)
-
     await addLogs('Replay hooks for Project', results, requestor.id, requestId)
     if (results.failed) {
-      throw new Error('Echec du reprovisionnement du projet par les plugins')
+      throw new UnprocessableContentError('Echec des services au reprovisionnement du projet')
     }
   } catch (error) {
     if (error instanceof DsoError) throw error
@@ -259,18 +256,16 @@ export const archiveProject = async (projectId: Project['id'], requestor: Keyclo
     ])
 
     const { results: upsertResults } = await hook.project.upsert(project.id)
-
     await addLogs('Delete all project resources', upsertResults, requestor.id, requestId)
     if (upsertResults.failed) {
-      throw new UnprocessableContentError('Echec de la suppression des ressources du projet par les plugins')
+      throw new UnprocessableContentError('Echec des services à la suppression des ressources du projet')
     }
 
     // -- début - Suppression projet --
     const { results } = await hook.project.delete(project.id)
-
     await addLogs('Archive Project', results, requestor.id, requestId)
     if (results.failed) {
-      throw new UnprocessableContentError('Echec de la suppression du projet par les plugins')
+      throw new UnprocessableContentError('Echec des services à la suppression du projet')
     }
 
     // -- début - Retrait clusters --
