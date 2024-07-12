@@ -155,7 +155,6 @@ watch(localEnvironment.value, () => {
 })
 
 </script>
-
 <template>
   <div
     class="relative"
@@ -171,7 +170,7 @@ watch(localEnvironment.value, () => {
       :hint="props.isEditable ? 'Les champs munis d\'une astérisque (*) sont requis' : undefined"
       data-testid="environmentFieldset"
     >
-      <DsfrInput
+      <DsfrInputGroup
         v-model="localEnvironment.name"
         data-testid="environmentNameInput"
         class="fr-my-2w"
