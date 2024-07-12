@@ -27,7 +27,7 @@ on:
         description: Pnpm version used to run tests
         required: true
         type: string
-        default: "9.4.0"
+        default: "9.5.0"
 
 jobs:
   unit-tests:

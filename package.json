@@ -63,7 +63,7 @@
     "lint-staged": "^15.2.7",
     "turbo": "^2.0.5"
   },
-  "packageManager": "pnpm@9.4.0",
+  "packageManager": "pnpm@9.5.0",
   "pnpm": {
     "patchedDependencies": {
       "fastify-keycloak-adapter@2.1.6": "patches/fastify-keycloak-adapter@2.1.6.patch",
