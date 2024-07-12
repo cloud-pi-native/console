@@ -27,7 +27,7 @@ export const CleanedClusterSchema = z.object({
     .array(),
 })
 
-const KubeconfigSchema = z.object({
+export const KubeconfigSchema = z.object({
   user: z.object({
     username: z.string()
       .optional(),
@@ -43,7 +43,8 @@ const KubeconfigSchema = z.object({
   cluster: z.object({
     server: z.string()
       .optional(),
-    tlsServerName: z.string(),
+    tlsServerName: z.string()
+      .min(1),
     skipTLSVerify: z.boolean()
       .optional(),
     caData: z.string()
