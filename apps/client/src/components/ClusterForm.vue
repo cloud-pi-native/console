@@ -4,6 +4,7 @@ import {
   type ClusterAssociatedEnvironments,
   ClusterPrivacy,
   ClusterDetailsSchema,
+  KubeconfigSchema,
   SharedZodError,
   ClusterDetails,
   Project,
@@ -279,6 +280,7 @@ const isConnectionDetailsShown = ref(true)
         label="Nom du serveur Transport Layer Security (TLS)"
         label-visible
         :required="true"
+        :error-message="localCluster.kubeconfig.cluster.tlsServerName && !KubeconfigSchema.pick({ cluster: true }).safeParse({ cluster: { tlsServerName: localCluster.kubeconfig.cluster.tlsServerName } }).success ? 'Le nom du serveur TLS est obligatoire': undefined"
         hint="La valeur est extraite du kubeconfig téléversé."
       />
       <DsfrCheckbox
@@ -300,7 +302,7 @@ const isConnectionDetailsShown = ref(true)
       type="text"
       :disabled="!isNewCluster"
       :required="true"
-      :error-message="!ClusterDetailsSchema.pick({label: true}).safeParse({label: localCluster.label}).success ? 'Le nom du cluster ne doit contenir ni espaces ni caractères spéciaux': undefined"
+      :error-message="localCluster.label && !ClusterDetailsSchema.pick({label: true}).safeParse({label: localCluster.label}).success ? 'Le nom du cluster ne doit contenir ni espaces ni caractères spéciaux': undefined"
       label="Nom du cluster applicatif"
       label-visible
       hint="Nom du cluster applicatif utilisable lors des déploiements Argocd."
