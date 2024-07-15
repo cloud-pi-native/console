@@ -64,10 +64,9 @@ export const upsertPermission = async (
   const permission = await setPermissionQuery({ userId, environmentId, level })
 
   const { results } = await hook.project.upsert(project.id)
-
   await addLogs('Upsert Permission', results, userId, requestId)
   if (results.failed) {
-    throw new UnprocessableContentError('Echec à l\'application de la permission')
+    throw new UnprocessableContentError('Echec des services à l\'application de la permission')
   }
   return permission
 }
@@ -97,10 +96,9 @@ export const deletePermission = async (
   }
 
   const { results } = await hook.project.upsert(project.id)
-
   await addLogs('Delete Permission', results, userId, requestId)
   if (results.failed) {
-    throw new UnprocessableContentError('Echec à la suppression de la permission')
+    throw new UnprocessableContentError('Echec des services à la suppression de la permission')
   }
   return deletePermissionQuery(userId, environmentId)
 }

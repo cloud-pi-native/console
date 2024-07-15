@@ -18,7 +18,7 @@ import {
 } from '@/resources/queries-index.js'
 import { linkClusterToStages } from '@/resources/stage/business.js'
 import { validateSchema } from '@/utils/business.js'
-import { BadRequestError, DsoError, NotFoundError } from '@/utils/errors.js'
+import { BadRequestError, DsoError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
 
 export const checkClusterProjectIds = (data: Omit<ClusterDetails, 'id'> & { id?: Cluster['id'] }) => {
@@ -88,9 +88,11 @@ export const createCluster = async (data: Omit<ClusterDetails, 'id'>, userId: Us
       await linkClusterToStages(clusterCreated.id, stageIds)
     }
 
-    const results = await hook.cluster.upsert(clusterCreated.id)
-
-    await addLogs('Create Cluster', results, userId, requestId)
+    const hookReply = await hook.cluster.upsert(clusterCreated.id)
+    await addLogs('Create Cluster', hookReply, userId, requestId)
+    if (hookReply.failed) {
+      throw new UnprocessableContentError('Echec des services à la création du cluster')
+    }
 
     return getClusterDetails(clusterCreated.id)
   } catch (error) {
@@ -158,9 +160,11 @@ export const updateCluster = async (data: Partial<ClusterDetails>, clusterId: Cl
       }
     }
 
-    const results = await hook.cluster.upsert(clusterId)
-
-    await addLogs('Update Cluster', results, userId, requestId)
+    const hookReply = await hook.cluster.upsert(clusterId)
+    await addLogs('Update Cluster', hookReply, userId, requestId)
+    if (hookReply.failed) {
+      throw new UnprocessableContentError('Echec des services à la mise à jour du cluster')
+    }
 
     return getClusterDetails(clusterId)
   } catch (error) {
@@ -180,9 +184,12 @@ export const deleteCluster = async (clusterId: Cluster['id'], userId: User['id']
     if (!cluster) {
       throw new NotFoundError('Cluster introuvable')
     }
-    const results = await hook.cluster.delete(cluster.id)
 
-    await addLogs('Delete Cluster', results, userId, requestId)
+    const hookReply = await hook.cluster.delete(cluster.id)
+    await addLogs('Delete Cluster', hookReply, userId, requestId)
+    if (hookReply.failed) {
+      throw new UnprocessableContentError('Echec des services à la supression du cluster')
+    }
 
     await deleteClusterQuery(clusterId)
   } catch (error) {

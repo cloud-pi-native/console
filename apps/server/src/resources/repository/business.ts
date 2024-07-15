@@ -47,11 +47,10 @@ export const syncRepository = async (
   try {
     await getProjectAndCheckRole(userId, projectId)
 
-    const { results } = await hook.misc.syncRepository(repositoryId, { branchName })
-
-    await addLogs('Sync Repository', results, userId, requestId)
-    if (results.failed) {
-      throw new UnprocessableContentError('Echec des opérations', undefined)
+    const hookReply = await hook.misc.syncRepository(repositoryId, { branchName })
+    await addLogs('Sync Repository', hookReply, userId, requestId)
+    if (hookReply.failed) {
+      throw new UnprocessableContentError('Echec des services à la synchronisation du dépôt')
     }
   } catch (error) {
     if (error instanceof DsoError) throw error
@@ -98,10 +97,9 @@ export const createRepository = async (
         }
       : undefined,
     )
-
     await addLogs('Create Repository', results, userId, requestId)
     if (results.failed) {
-      throw new BadRequestError('Echec des services lors de la création du dépôt', undefined)
+      throw new UnprocessableContentError('Echec des services lors de la création du dépôt')
     }
 
     return repo
@@ -132,10 +130,9 @@ export const updateRepository = async (
         token: data.externalToken ?? '',
       },
     })
-
     await addLogs('Update Repository', results, userId, requestId)
     if (results.failed) {
-      throw new UnprocessableContentError('Echec des services associés au dépôt', undefined)
+      throw new UnprocessableContentError('Echec des services à la mise à jour du dépôt')
     }
 
     return repo
@@ -157,11 +154,11 @@ export const deleteRepository = async (
     await checkUpsertRepository(userId, projectId, 'owner')
 
     await deleteRepositoryQuery(repositoryId)
-    const { results } = await hook.project.upsert(project.id)
 
+    const { results } = await hook.project.upsert(project.id)
     await addLogs('Delete Repository', results, userId, requestId)
     if (results.failed) {
-      throw new UnprocessableContentError('Echec des opérations', undefined)
+      throw new UnprocessableContentError('Echec des services à la suppression du dépôt')
     }
   } catch (error) {
     if (error instanceof DsoError) throw error

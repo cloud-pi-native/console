@@ -48,7 +48,7 @@ Cypress.Commands.add('createProject', (project, ownerEmail = defaultOwner.email)
     .get('[data-testid^="repoFieldset-"]').should('not.exist')
     .get('p.fr-alert__description').should('contain', ownerEmail)
     .get('select#organizationId-select').select(newProject.orgName)
-    .getByDataTestid('nameInput').find('input').clear().type(newProject.name)
+    .getByDataTestid('nameInput').clear().type(newProject.name)
     .getByDataTestid('nameInput').should('not.have.class', 'fr-input--error')
   cy.getByDataTestid('createProjectBtn').should('be.enabled').click()
 
@@ -117,17 +117,17 @@ Cypress.Commands.add('addRepos', (project, repos) => {
   newRepos.forEach((repo) => {
     cy.getByDataTestid('addRepoLink').click()
       .get('h2').should('contain', 'Ajouter un dépôt au projet')
-      .getByDataTestid('internalRepoNameInput').find('input').type(repo.internalRepoName)
-      .getByDataTestid('externalRepoUrlInput').find('input').clear().type(repo.externalRepoUrl)
+      .getByDataTestid('internalRepoNameInput').type(repo.internalRepoName)
+      .getByDataTestid('externalRepoUrlInput').clear().type(repo.externalRepoUrl)
 
     if (repo.isPrivate) {
-      cy.getByDataTestid('privateRepoCbx').find('input[type="checkbox"]').check({ force: true })
-        .getByDataTestid('externalUserNameInput').find('input').type(repo.externalUserName)
-        .getByDataTestid('externalTokenInput').find('input').clear().type(repo.externalToken)
+      cy.getByDataTestid('input-checkbox-privateRepoCbx').check({ force: true })
+        .getByDataTestid('externalUserNameInput').type(repo.externalUserName)
+        .getByDataTestid('externalTokenInput').clear().type(repo.externalToken)
     }
 
     if (repo.isInfra) {
-      cy.getByDataTestid('infraRepoCbx').find('input[type="checkbox"]').check({ force: true })
+      cy.getByDataTestid('input-checkbox-infraRepoCbx').check({ force: true })
     }
 
     cy.getByDataTestid('addRepoBtn').click()
@@ -311,6 +311,7 @@ Cypress.Commands.add('assertPermission', (project, environmentName, permissions)
         .should(permission.isOwner ? 'be.disabled' : 'be.enabled')
         .and('have.attr', 'title', permission.isOwner ? 'Les droits du owner ne peuvent être supprimés' : `Supprimer les droits de ${permission.email}`)
         .getByDataTestid('permissionLevelRange')
+        .find('input')
         .should(permission.isOwner ? 'be.disabled' : 'be.enabled')
     })
   })
@@ -326,7 +327,9 @@ Cypress.Commands.add('addProjectMember', (project, userEmail) => {
     .getByDataTestid('teamTable')
     .find('tbody > tr')
     .should('have.length', project.users.length)
-    .getByDataTestid('addUserSuggestionInput').find('input').clear()
+    .getByDataTestid('addUserSuggestionInput')
+    .find('input')
+    .clear()
     .type(userEmail)
     .getByDataTestid('userErrorInfo')
     .should('not.exist')

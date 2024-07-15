@@ -122,12 +122,12 @@ onBeforeMount(() => {
       @update:model-value="(value) => localQuota.cpu = parseFloat(value)"
     />
     <DsfrCheckbox
+      id="isQuotaPrivateCbx"
       v-model="localQuota.isPrivate"
       label="Quota privé"
       hint="Cocher si le quota doit être réservé aux administrateurs."
       name="isQuotaPrivate"
       required
-      data-testid="isQuotaPrivateCbx"
     />
     <div
       class="fr-mb-2w"

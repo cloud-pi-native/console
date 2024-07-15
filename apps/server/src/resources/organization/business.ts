@@ -7,7 +7,7 @@ import {
   updateOrganization as updateOrganizationQuery,
 } from '@/resources/queries-index.js'
 import { validateSchema } from '@/utils/business.js'
-import { BadRequestError, NotFoundError } from '@/utils/errors.js'
+import { BadRequestError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
 import { getUniqueListBy, objectValues, organizationContract, OrganizationSchema } from '@cpn-console/shared'
 import { User } from '@prisma/client'
@@ -49,18 +49,17 @@ export const fetchOrganizations = async (userId: User['id'], requestId: string) 
   const consoleOrganizations = await getOrganizations()
 
   type PluginOrganization = { name: string, label: string, source: string }
-  const results = await hook.misc.fetchOrganizations()
 
-  await addLogs('Fetch organizations', results, userId, requestId)
-
-  if (results.failed) {
-    throw new BadRequestError('Echec des services à la synchronisation des organisations', undefined)
+  const hookReply = await hook.misc.fetchOrganizations()
+  await addLogs('Fetch organizations', hookReply, userId, requestId)
+  if (hookReply.failed) {
+    throw new UnprocessableContentError('Echec des services à la synchronisation des organisations')
   }
 
   /**
   * Filter plugin results to get a single array of organizations with unique name
   */
-  const externalOrganizations = getUniqueListBy(objectValues(results.results)
+  const externalOrganizations = getUniqueListBy(objectValues(hookReply.results)
     ?.reduce((acc: Record<string, any>[], value) => {
       if (typeof value !== 'object' || !value.result.organizations?.length) return acc
       return [...acc, ...value.result.organizations]

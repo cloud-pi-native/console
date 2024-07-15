@@ -18,9 +18,9 @@
     "@cpn-console/hooks": "workspace:^",
     "@cpn-console/shared": "workspace:^",
     "@cpn-console/vault-plugin": "workspace:^",
-    "@gitbeaker/core": "^40.0.3",
-    "@gitbeaker/requester-utils": "^40.0.3",
-    "@gitbeaker/rest": "^40.0.3",
+    "@gitbeaker/core": "~40.0.3",
+    "@gitbeaker/requester-utils": "~40.0.3",
+    "@gitbeaker/rest": "~40.0.3",
     "axios": "^1.7.2",
     "js-yaml": "4.1.0"
   },

@@ -202,10 +202,9 @@ export const createEnvironment = async (
     if (!cluster) throw new NotFoundError('Cluster introuvable')
 
     const { results } = await hook.project.upsert(project.id)
-
     await addLogs('Create Environment', results, userId, requestId)
     if (results.failed) {
-      throw new UnprocessableContentError('Echec services à la création de l\'environnement')
+      throw new UnprocessableContentError('Echec des services à la création de l\'environnement')
     }
 
     return {
@@ -263,10 +262,9 @@ export const updateEnvironment = async ({
     const env = await updateEnvironmentQuery({ id: environmentId, quotaId })
     if (quotaId) {
       const { results } = await hook.project.upsert(project.id)
-
       await addLogs('Update Environment Quotas', results, user.id, requestId)
       if (results.failed) {
-        throw new UnprocessableContentError('Echec services à la mise à jour des quotas pour l\'environnement')
+        throw new UnprocessableContentError('Echec des services à la mise à jour des quotas pour l\'environnement')
       }
     }
 
@@ -301,11 +299,11 @@ export const deleteEnvironment = async ({
     // Suppression de l'environnement dans les services
     const cluster = await getClusterById(environment.clusterId)
     if (!cluster) throw new NotFoundError('Cluster introuvable')
-    const { results } = await hook.project.upsert(project.id)
 
+    const { results } = await hook.project.upsert(project.id)
     await addLogs('Delete Environment', results, userId, requestId)
     if (results.failed) {
-      throw new Error('Echec des services à la suppression de l\'environnement')
+      throw new UnprocessableContentError('Echec des services à la suppression de l\'environnement')
     }
   } catch (error) {
     if (error instanceof DsoError) {
