@@ -64,7 +64,7 @@ describe('User routes', () => {
     it('Should add an user in project', async () => {
       const randomDbSetup = createRandomDbSetup({})
       const projectInfos = randomDbSetup.project
-      setRequestor(randomDbSetup.users[0])
+      setRequestor({ ...randomDbSetup.users[0], groups: [] })
       const userToAdd = getRandomUser()
       const roleToAdd = { ...getRandomRole(userToAdd.id), user: userToAdd }
 
@@ -79,9 +79,9 @@ describe('User routes', () => {
         .body(userToAdd)
         .end()
 
+      expect(response.json()).toMatchObject([...projectInfos.members, ...rolesToMembers([roleToAdd])])
       expect(response.statusCode).toEqual(201)
       expect(response.body).toBeDefined()
-      expect(response.json()).toMatchObject([...projectInfos.members, ...rolesToMembers([roleToAdd])])
     })
 
     it('Should not add an user if email already present', async () => {
@@ -140,7 +140,7 @@ describe('User routes', () => {
       const projectInfos = createRandomDbSetup({ nbUsers: 3 }).project
 
       const ownerIndex = projectInfos.roles?.findIndex(role => role.role === 'owner')
-      setRequestor(projectInfos.roles[ownerIndex].user)
+      setRequestor({ ...projectInfos.roles[ownerIndex].user, groups: [] })
       const indexUserToTransfer = projectInfos.roles?.findIndex(role => role.role !== 'owner')
       const userToTransfer = projectInfos.roles[indexUserToTransfer].user
 
@@ -232,7 +232,7 @@ describe('User routes', () => {
     it('Should remove an user from a project', async () => {
       const randomDbSetup = createRandomDbSetup({ nbUsers: 2 })
       const projectInfos = randomDbSetup.project
-      setRequestor(randomDbSetup.users[0])
+      setRequestor({ ...randomDbSetup.users[0], groups: [] })
       const userToRemove = randomDbSetup.users[1]
 
       prisma.project.findUnique.mockResolvedValue(projectInfos)
@@ -288,9 +288,9 @@ describe('User routes', () => {
         .delete(`/api/v1/projects/${projectInfos.id}/users/${userToRemove.id}`)
         .end()
 
+      expect(JSON.parse(response.body).error).toEqual('L\'utilisateur n\'est pas membre du projet')
       expect(response.statusCode).toEqual(400)
       expect(response.body).toBeDefined()
-      expect(JSON.parse(response.body).error).toEqual('L\'utilisateur n\'est pas membre du projet')
     })
   })
 

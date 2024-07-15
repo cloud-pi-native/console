@@ -94,7 +94,7 @@ Cypress.Commands.add('archiveProject', (project) => {
 })
 
 Cypress.Commands.add('addRepos', (project, repos) => {
-  cy.intercept('POST', '/api/v1/repositories?projectId=*').as('postRepo')
+  cy.intercept('POST', '/api/v1/repositories').as('postRepo')
   cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('listProjects')
 
   const newRepo = (repo) => ({

@@ -218,7 +218,7 @@ describe('Add repos into project', () => {
   })
 
   it('Should generate a GitLab CI for a repo', () => {
-    cy.intercept('POST', '/api/v1/repositories?projectId=*').as('postRepo')
+    cy.intercept('POST', '/api/v1/repositories').as('postRepo')
     cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('listProjects')
 
     const repo = {

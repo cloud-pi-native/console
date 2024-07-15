@@ -21,8 +21,7 @@ export const getProjectRepositories = async (
   isAdmin: boolean,
   projectId: Project['id'],
 ) => {
-  const repositories = isAdmin ? await getProjectRepositoriesQuery(projectId) : (await getProjectAndCheckRole(userId, projectId)).repositories
-  return repositories
+  return isAdmin ? await getProjectRepositoriesQuery(projectId) : (await getProjectAndCheckRole(userId, projectId)).repositories
 }
 
 export const getProjectAndCheckRole = async (
@@ -77,12 +76,10 @@ export const checkUpsertRepository = async (
 
 export const createRepository = async (
   {
-    projectId,
     data,
     userId,
     requestId,
   }: {
-    projectId: Project['id'],
     data: CreateRepositoryBody,
     userId: User['id'],
     requestId: string
@@ -90,12 +87,12 @@ export const createRepository = async (
   const user = await getUserById(userId)
   if (!user) throw new UnauthorizedError('Veuillez vous identifier')
 
-  const project = await getProjectInfosAndRepos(projectId)
-  if (!project) throw new BadRequestError(`Le projet ayant pour id ${projectId} n'existe pas`)
+  const project = await getProjectInfosAndRepos(data.projectId)
+  if (!project) throw new BadRequestError(`Le projet ayant pour id ${data.projectId} n'existe pas`)
   await checkUpsertRepository({ project, userId, minRole: 'owner' })
 
   if (project.repositories?.find(repo => repo.internalRepoName === data.internalRepoName)) throw new BadRequestError(`Le nom du dépôt interne ${data.internalRepoName} existe déjà en base pour ce projet`, undefined)
-  const dbData = { ...data, projectId, isInfra: !!data.isInfra, isPrivate: !!data.isPrivate }
+  const dbData = { ...data, isInfra: !!data.isInfra, isPrivate: !!data.isPrivate }
   delete dbData.externalToken
 
   const repo = await initializeRepository(dbData)

@@ -84,7 +84,7 @@ const setRows = () => {
             onClick: async (event: CheckboxEvent) => {
               const value = event.target.checked
               if (value !== isAdmin) {
-                await adminUserStore.updateUserAdminRole(id, value)
+                await projectUserStore.updateUserAdminRole(id, value)
                 snackbarStore.setMessage(value ? `Le rôle d'administrateur a été attribué à ${email}` : `Le rôle d'administrateur a été retiré à ${email}`, 'success')
                 await getAllUsers()
                 // Redirect user to home if he removed himself from admin group

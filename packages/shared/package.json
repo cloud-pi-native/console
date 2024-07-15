@@ -29,7 +29,7 @@
     "@cpn-console/ts-config": "workspace:^",
     "@faker-js/faker": "^8.4.1",
     "@kubernetes/client-node": "^0.21.0",
-    "@types/node": "^20.14.9",
+    "@types/node": "^20.14.10",
     "@vitest/coverage-v8": "^1.6.0",
     "nodemon": "^3.1.4",
     "rimraf": "^5.0.7",

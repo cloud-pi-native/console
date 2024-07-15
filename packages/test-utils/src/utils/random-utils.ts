@@ -8,8 +8,8 @@ export const getRandomProjectName = () => {
 }
 
 export const getRandomGitUrl = () => {
-  const url = faker.internet.url().split('.')[0] + '.git'
-  return !url.startsWith('https://') ? 'https://' + url.split('://')[1] : url
+  const url = `${faker.internet.url().split('.')[0]}.git`
+  return url.startsWith('https://') ? url : `https://${url.split('://')[1]}`
 }
 
 export const getRandomOrganization = (name = 'mi', label = 'Ministère de l\'Intérieur', source = 'dso-console'): Organization => {
@@ -95,12 +95,10 @@ export const getRandomRole = (
 export const getRandomMember = (
   userId = faker.string.uuid(),
   role: ProjectRoles = projectRoles[1],
-): Member => {
-  return {
-    userId,
-    role,
-  }
-}
+): Member => ({
+  userId,
+  role,
+})
 
 export const getRandomRepo = (projectId = faker.string.uuid()): Repository => {
   const repo: Repository = {
@@ -142,7 +140,7 @@ export const getRandomQuota = (
     id: faker.string.uuid(),
     name,
     cpu: faker.number.int({ min: 1, max: 18 }),
-    memory: faker.number.int({ max: 18 }) + 'Gi',
+    memory: `${faker.number.int({ max: 18 })}Gi`,
     isPrivate: faker.datatype.boolean(),
     stageIds: links?.stageIds ?? links?.stages?.map(({ id }) => id) ?? [] as string[],
   }

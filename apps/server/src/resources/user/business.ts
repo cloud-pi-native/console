@@ -123,7 +123,7 @@ export const transferProjectOwnership = async (
   await transferProjectOwnershipQuery(projectId, userToUpdateId, owner.userId)
   await Promise.all(
     project.environments
-      ?.map(environment => setPermission({
+      .map(environment => setPermission({
         userId: userToUpdateId,
         environmentId: environment.id,
         level: 2,

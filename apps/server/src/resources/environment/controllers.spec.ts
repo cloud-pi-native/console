@@ -263,7 +263,6 @@ describe('Environment routes', () => {
         .delete(`/api/v1/environments/${envToDelete.id}`)
         .end()
 
-      console.log(response.body)
       expect(response.statusCode).toEqual(204)
     })
 

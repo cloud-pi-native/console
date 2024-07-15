@@ -49,11 +49,11 @@ export const repositoryRouter = () => serverInstance.router(repositoryContract, 
   },
 
   // Créer un repository
-  createRepository: async ({ request: req, query, body: data }) => {
+  createRepository: async ({ request: req, body: data }) => {
     const userId = req.session.user.id
-    const projectId = query.projectId
+    const projectId = data.projectId
 
-    const repository = await createRepository({ projectId, data, userId, requestId: req.id })
+    const repository = await createRepository({ data, userId, requestId: req.id })
 
     addReqLogs({
       req,

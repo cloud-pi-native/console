@@ -29,7 +29,7 @@ export const getAllUserClusters = async (kcUser: UserProfile) => {
     ? {}
     : {
         OR: [
-        // Sélectionne tous les clusters publiques
+        // Sélectionne tous les clusters publics
           { privacy: 'public' },
           // Sélectionne les clusters associés aux projets dont l'user est membre
           {
@@ -46,13 +46,6 @@ export const getAllUserClusters = async (kcUser: UserProfile) => {
     ...cluster,
     stageIds: stages?.map(({ id }) => id) ?? [],
   }))
-}
-
-export const checkClusterProjectIds = (data: Omit<ClusterDetails, 'id'> & { id?: Cluster['id'] }) => {
-  // si le cluster est dedicated, la clé projectIds doit être renseignée
-  return data.privacy === ClusterPrivacy.PUBLIC || !data.projectIds
-    ? []
-    : data.projectIds
 }
 
 export const getClusterAssociatedEnvironments = async (clusterId: string) => {
@@ -96,15 +89,18 @@ export const createCluster = async (data: Omit<ClusterDetails, 'id'>, userId: Us
     const isLabelTaken = await getClusterByLabel(data.label)
     if (isLabelTaken) throw new BadRequestError('Ce label existe déjà pour un autre cluster', undefined)
 
+    data.projectIds = data.privacy === ClusterPrivacy.PUBLIC
+      ? []
+      : data.projectIds ?? []
+
     const {
-      projectIds = [],
+      projectIds,
       stageIds,
       kubeconfig,
       zoneId,
       ...clusterData
     } = data
 
-    // @ts-ignore
     const clusterCreated = await createClusterQuery(clusterData, kubeconfig, zoneId)
 
     if (data.privacy === ClusterPrivacy.DEDICATED && projectIds.length) {
