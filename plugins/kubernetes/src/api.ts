@@ -3,7 +3,7 @@ import { type ClusterObject } from '@cpn-console/hooks'
 import { AnyObjectsApi } from './customApiClass.js'
 
 export const createCoreV1Api = (cluster: ClusterObject) => {
-  if (!cluster.user.keyData) {
+  if (!cluster.user.keyData && !cluster.user.token) {
     // Special case: disable direct calls to the cluster
     console.log(`Direct kubernetes API calls are disabled for cluster ${cluster.label}`)
     return
@@ -28,7 +28,7 @@ export const createCoreV1Apis = (clusters: ClusterObject[]) => {
 }
 
 export const createCustomObjectApi = (cluster: ClusterObject) => {
-  if (!cluster.user.keyData) {
+  if (!cluster.user.keyData && !cluster.user.token) {
     // Special case: disable direct calls to the cluster
     return
   }
