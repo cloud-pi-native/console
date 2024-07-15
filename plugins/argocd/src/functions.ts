@@ -54,7 +54,7 @@ export const upsertProject: StepCall<Project> = async (payload) => {
         appProjectName, infraAppsRepoUrl, sourceRepos, infraProject.id, gitlabApi,
       )
 
-      if (!cluster.user.keyData) {
+      if (!cluster.user.keyData && !cluster.user.token) {
         console.log(`Direct argocd API calls are disabled for cluster ${cluster.label}`)
         continue
       }
