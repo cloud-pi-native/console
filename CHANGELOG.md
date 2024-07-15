@@ -1,5 +1,15 @@
 # Changelog
 
+## [8.8.2](https://github.com/cloud-pi-native/console/compare/v8.8.1...v8.8.2) (2024-07-15)
+
+
+### Bug Fixes
+
+* :art: harmonize hook calling in business ([4effaab](https://github.com/cloud-pi-native/console/commit/4effaab7f9c80561d0fd52e365822d806a5426f5))
+* :bug: don't ignore user token when testing cluster deployment mode ([cc488c3](https://github.com/cloud-pi-native/console/commit/cc488c3053fadffba040f8396eebfa27bf6c1f79))
+* :bug: env name error not displayed ([d2f84e8](https://github.com/cloud-pi-native/console/commit/d2f84e822b94074615df3385f0c088582ceaf3cf))
+* :bug: require tls serverName ([9d4dea2](https://github.com/cloud-pi-native/console/commit/9d4dea22e68aab7ef6ee6b74a16e92a397002709))
+
 ## [8.8.1](https://github.com/cloud-pi-native/console/compare/v8.8.0...v8.8.1) (2024-07-09)
 
 
