@@ -5,7 +5,7 @@ import { apiClient, extractData } from '@/api/xhr-client.js'
 import { useUsersStore } from './users.js'
 import { useOrganizationStore } from './organization.js'
 
-type ProjectWithOrganization = ProjectV2 & { organization: Organization }
+export type ProjectWithOrganization = ProjectV2 & { organization: Organization }
 
 export const useProjectStore = defineStore('project', () => {
   const selectedProject = ref<ProjectWithOrganization>()
@@ -29,9 +29,7 @@ export const useProjectStore = defineStore('project', () => {
     await organizationStore.listOrganizations()
     projects.value = res.map(project => ({ ...project, organization: organizationStore.organizationsById[project.organizationId] as Organization }))
     projects.value.forEach(project => {
-      project.members.forEach(({ userId, role: _, ...user }) => {
-        usersStore.addUser({ ...user, id: userId })
-      })
+      usersStore.addUsersFromMembers(project.members)
     })
     if (selectedProject.value) {
       setSelectedProject(selectedProject.value.id)

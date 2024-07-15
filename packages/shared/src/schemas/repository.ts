@@ -39,11 +39,7 @@ export const RepoBusinessSchema = RepoSchema.refine(
 export type Repo = Zod.infer<typeof RepoSchema>
 
 export const CreateRepoSchema = {
-  query: z.object({
-    projectId: z.string()
-      .uuid(),
-  }),
-  body: RepoSchema.omit({ id: true, projectId: true }),
+  body: RepoSchema.omit({ id: true }),
   responses: {
     201: RepoSchema,
     400: ErrorSchema,

@@ -19,11 +19,12 @@ const userStore = useUserStore()
 const clusterStore = useClusterStore()
 const snackbarStore = useSnackbarStore()
 
+const environmentsTiles = ref<EnvironmentTile[]>([])
+
 const isOwner = computed(() => projectStore.selectedProject?.members.some(member => member.userId === userStore.userProfile?.id && member.role === 'owner'))
 const environmentNames = computed(() => environmentsTiles.value.map(env => env.title))
 const allClusters = computed(() => clusterStore.clusters)
 
-const environmentsTiles = ref<EnvironmentTile[]>([])
 const selectedEnvironment = ref<Environment>()
 const isNewEnvironmentForm = ref(false)
 

@@ -23,7 +23,7 @@ export const useProjectRepositoryStore = defineStore('project-repository', () =>
 
   const addRepoToProject = async (body: CreateRepositoryBody) => {
     if (!projectStore.selectedProject) throw new Error(projectMissing)
-    await apiClient.Repositories.createRepository({ body, query: { projectId: projectStore.selectedProject.id } })
+    await apiClient.Repositories.createRepository({ body })
       .then(response => extractData(response, 201))
     await getProjectRepositories(projectStore.selectedProject.id)
   }

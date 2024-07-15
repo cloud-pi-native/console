@@ -8,7 +8,7 @@ import {
   deleteStage,
   updateStage,
 } from './business.js'
-import { checkIsAdmin } from '@/utils/controller.js'
+import { assertIsAdmin } from '@/utils/controller.js'
 
 export const stageRouter = () => serverInstance.router(stageContract, {
 
@@ -31,7 +31,7 @@ export const stageRouter = () => serverInstance.router(stageContract, {
   getStageEnvironments: async ({ request: req, params }) => {
     const stageId = params.stageId
 
-    checkIsAdmin(req.session.user)
+    assertIsAdmin(req.session.user)
     const environments = await getStageAssociatedEnvironments(stageId)
 
     addReqLogs({
@@ -50,7 +50,7 @@ export const stageRouter = () => serverInstance.router(stageContract, {
 
   // Créer un stage
   createStage: async ({ request: req, body: data }) => {
-    checkIsAdmin(req.session.user)
+    assertIsAdmin(req.session.user)
     const stage = await createStage(data)
 
     addReqLogs({
@@ -71,7 +71,7 @@ export const stageRouter = () => serverInstance.router(stageContract, {
   updateStage: async ({ request: req, params, body: data }) => {
     const stageId = params.stageId
 
-    checkIsAdmin(req.session.user)
+    assertIsAdmin(req.session.user)
     const stage = await updateStage(stageId, data)
 
     addReqLogs({
@@ -92,7 +92,7 @@ export const stageRouter = () => serverInstance.router(stageContract, {
   deleteStage: async ({ request: req, params }) => {
     const stageId = params.stageId
 
-    checkIsAdmin(req.session.user)
+    assertIsAdmin(req.session.user)
     await deleteStage(stageId)
 
     addReqLogs({

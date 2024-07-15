@@ -7,7 +7,6 @@ import {
   SharedZodError,
   type ClusterAssociatedEnvironments,
   type ClusterDetails,
-  type ProjectV2,
   type Stage,
   type Zone,
 } from '@cpn-console/shared'
@@ -18,13 +17,14 @@ import { JsonViewer } from 'vue3-json-viewer'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import ChoiceSelector from './ChoiceSelector.vue'
 import { toCodeComponent } from '@/utils/func.js'
+import type { ProjectWithOrganization } from '../stores/project.js'
 
 const snackbarStore = useSnackbarStore()
 
 const props = withDefaults(defineProps<{
   isNewCluster: boolean
   cluster: ClusterDetails
-  allProjects: ProjectV2[]
+  allProjects: ProjectWithOrganization[]
   allStages: Stage[]
   allZones: Zone[]
   associatedEnvironments: ClusterAssociatedEnvironments

@@ -8,7 +8,7 @@ const props = withDefaults(defineProps<{
   isOwner: boolean,
   isProjectLocked: boolean,
 }>(), {
-  repo: () => ({ isInfra: false, isPrivate: false }),
+  repo: () => ({ isInfra: false, isPrivate: false, internalRepoName: '' }),
   isOwner: false,
   isProjectLocked: false,
 })

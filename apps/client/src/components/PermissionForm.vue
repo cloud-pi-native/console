@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref, onMounted, computed } from 'vue'
 import { getRandomId } from '@gouvminint/vue-dsfr'
-import { levels, projectIsLockedInfo, type Permission, type Environment, UpsertPermissionBody } from '@cpn-console/shared'
+import { levels, projectIsLockedInfo, type Permission, type Environment, type UpsertPermissionBody } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectPermissionStore } from '@/stores/project-permission.js'
 import { useUserStore } from '@/stores/user.js'
@@ -34,7 +34,7 @@ const permittedUsersId = computed(() => [...permissions.value.map(permission => 
 const isPermitted = computed(() => userStore.userProfile ? permittedUsersId.value.includes(userStore.userProfile.id) : false)
 const usersToLicence = computed(() => {
   return projectMembers.value?.filter(projectMember =>
-    !permittedUsersId.value.includes(projectMember?.userId))
+    !permittedUsersId.value.includes(projectMember.userId))
 })
 const suggestions = computed(() => usersToLicence.value?.map(user => user.email))
 

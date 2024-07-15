@@ -17,6 +17,7 @@ vi.mock('./users.js', async () => ({
   useUsersStore: () => ({
     users: {},
     addUser: vi.fn(),
+    addUsersFromMembers: vi.fn(),
   }),
 }))
 

@@ -137,7 +137,7 @@ projectRepositoryStore.$subscribe(() => {
     >
       <RepoForm
         :is-project-locked="projectStore.selectedProject.locked"
-        @save="(repo) => saveRepo(repo)"
+        @save="(repo) => saveRepo({...repo, projectId: projectStore.selectedProject.id})"
         @cancel="cancel()"
       />
     </div>

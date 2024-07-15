@@ -16,7 +16,7 @@ import '@/types/index.js'
 import { BadRequestError } from '@/utils/errors.js'
 import { serverInstance } from '@/app.js'
 import { getOrCreateUser } from './queries.js'
-import { checkIsAdmin } from '@/utils/controller.js'
+import { assertIsAdmin, hasGroupAdmin } from '@/utils/controller.js'
 
 export const userRouter = () => serverInstance.router(userContract, {
   getProjectUsers: async ({ request: req, params }) => {
@@ -26,7 +26,7 @@ export const userRouter = () => serverInstance.router(userContract, {
     const users = await getProjectUsers(projectId)
 
     if (!user.groups?.includes(adminGroupPath)) {
-      await checkProjectRole(user.id, { userList: users, minRole: 'user' })
+      checkProjectRole(user.id, { userList: users, minRole: 'user' })
     }
 
     addReqLogs({
@@ -49,8 +49,8 @@ export const userRouter = () => serverInstance.router(userContract, {
 
     const users = await getProjectUsers(projectId)
 
-    if (!user.groups?.includes(adminGroupPath)) {
-      await checkProjectRole(user.id, { userList: users, minRole: 'user' })
+    if (!hasGroupAdmin(user.groups)) {
+      checkProjectRole(user.id, { userList: users, minRole: 'user' })
     }
 
     const usersMatching = await getMatchingUsers(letters)
@@ -77,7 +77,7 @@ export const userRouter = () => serverInstance.router(userContract, {
 
     checkProjectLocked(project)
 
-    if (!user.groups?.includes(adminGroupPath)) {
+    if (!hasGroupAdmin(user.groups)) {
       checkProjectRole(user.id, { roles: project.roles, minRole: 'owner' })
     }
 
@@ -126,11 +126,11 @@ export const userRouter = () => serverInstance.router(userContract, {
     const project = await getProjectInfos(projectId)
     if (!project) throw new BadRequestError(`Le projet ayant pour id ${projectId} n'existe pas`)
 
-    if (!user.groups?.includes(adminGroupPath) && user.id !== userToRemoveId) {
+    if (!hasGroupAdmin(user.groups) && user.id !== userToRemoveId) {
       checkProjectRole(user.id, { roles: project.roles, minRole: 'owner' })
     }
 
-    await checkProjectLocked(project)
+    checkProjectLocked(project)
 
     const newRoles = await removeUserFromProject(userToRemoveId, project, user.id, req.id)
 
@@ -158,7 +158,7 @@ export const userRouter = () => serverInstance.router(userContract, {
   },
 
   getAllUsers: async ({ request: req }) => {
-    checkIsAdmin(req.session.user)
+    assertIsAdmin(req.session.user)
     const users = await getUsers()
 
     addReqLogs({
@@ -175,7 +175,7 @@ export const userRouter = () => serverInstance.router(userContract, {
     const userId = params.userId
     const isAdmin = body.isAdmin
 
-    checkIsAdmin(req.session.user)
+    assertIsAdmin(req.session.user)
     await updateUserAdminRoleBusiness({ userId, isAdmin }, req.id)
 
     addReqLogs({

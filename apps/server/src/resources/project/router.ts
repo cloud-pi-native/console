@@ -11,7 +11,7 @@ import {
 } from './business.js'
 import { projectContract } from '@cpn-console/shared'
 import { serverInstance } from '@/app.js'
-import { checkIsAdmin } from '@/utils/controller.js'
+import { assertIsAdmin } from '@/utils/controller.js'
 
 export const projectRouter = () => serverInstance.router(projectContract, {
 
@@ -140,7 +140,7 @@ export const projectRouter = () => serverInstance.router(projectContract, {
   },
   // Récupérer les données de tous les projets pour export
   getProjectsData: async ({ request: req }) => {
-    checkIsAdmin(req.session.user)
+    assertIsAdmin(req.session.user)
     const generatedProjectsData = await generateProjectsData()
 
     addReqLogs({
@@ -155,7 +155,7 @@ export const projectRouter = () => serverInstance.router(projectContract, {
 
   // (Dé)verrouiller un projet
   patchProject: async ({ request: req, params, body: data }) => {
-    checkIsAdmin(req.session.user)
+    assertIsAdmin(req.session.user)
     const projectId = params.projectId
     const lock = data.lock
 

@@ -433,7 +433,7 @@ importers:
         specifier: ^0.21.0
         version: 0.21.0
       '@types/node':
-        specifier: ^20.14.9
+        specifier: ^20.14.10
         version: 20.14.10
       '@vitest/coverage-v8':
         specifier: ^1.6.0

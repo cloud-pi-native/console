@@ -2,7 +2,7 @@ import { addReqLogs } from '@/utils/logger.js'
 import { systemPluginContract } from '@cpn-console/shared'
 import { serverInstance } from '@/app.js'
 import { getPluginsConfig, updatePluginConfig } from './business.js'
-import { checkIsAdmin } from '@/utils/controller.js'
+import { assertIsAdmin } from '@/utils/controller.js'
 
 export const pluginConfigRouter = () => serverInstance.router(systemPluginContract, {
   // Récupérer les configurations plugins
@@ -24,7 +24,7 @@ export const pluginConfigRouter = () => serverInstance.router(systemPluginContra
   // Mettre à jour les configurations plugins
   updatePluginsConfig: async ({ request: req, body }) => {
     const requestor = req.session.user
-    checkIsAdmin(requestor)
+    assertIsAdmin(requestor)
     await updatePluginConfig(body)
     addReqLogs({
       req,

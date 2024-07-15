@@ -12,7 +12,6 @@ export const repositoryContract = contractInstance.router({
   createRepository: {
     method: 'POST',
     path: `${apiPrefix}/repositories`,
-    query: CreateRepoSchema.query,
     contentType: 'application/json',
     summary: 'Create repo',
     description: 'Create new repo.',

@@ -24,9 +24,7 @@ export const useProjectUserStore = defineStore('project-user', () => {
   const addUserToProject = async (projectId: string, body: AddUserToProjectBody) => {
     const newMembers = await apiClient.Users.createUserRoleInProject({ body, params: { projectId } })
       .then(response => extractData(response, 201))
-    newMembers.forEach(member => {
-      usersStore.addUser({ ...member, id: member.userId })
-    })
+    usersStore.addUsersFromMembers(newMembers)
     return newMembers
   }
 

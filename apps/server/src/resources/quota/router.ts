@@ -1,7 +1,7 @@
 import { quotaContract } from '@cpn-console/shared'
 import { serverInstance } from '@/app.js'
 import { addReqLogs } from '@/utils/logger.js'
-import { checkIsAdmin } from '@/utils/controller.js'
+import { assertIsAdmin } from '@/utils/controller.js'
 import { listQuotas, createQuota, deleteQuota, getQuotaAssociatedEnvironments, updateQuota } from './business.js'
 
 export const quotaRouter = () => serverInstance.router(quotaContract, {
@@ -24,7 +24,7 @@ export const quotaRouter = () => serverInstance.router(quotaContract, {
   listQuotaEnvironments: async ({ request: req, params }) => {
     const quotaId = params.quotaId
 
-    checkIsAdmin(req.session.user)
+    assertIsAdmin(req.session.user)
     const environments = await getQuotaAssociatedEnvironments(quotaId)
 
     addReqLogs({
@@ -43,7 +43,7 @@ export const quotaRouter = () => serverInstance.router(quotaContract, {
 
   // Créer un quota
   createQuota: async ({ request: req, body: data }) => {
-    checkIsAdmin(req.session.user)
+    assertIsAdmin(req.session.user)
     const quota = await createQuota(data)
 
     addReqLogs({
@@ -64,7 +64,7 @@ export const quotaRouter = () => serverInstance.router(quotaContract, {
   updateQuota: async ({ request: req, params, body: data }) => {
     const quotaId = params.quotaId
 
-    checkIsAdmin(req.session.user)
+    assertIsAdmin(req.session.user)
     const quota = await updateQuota(quotaId, data)
 
     addReqLogs({
@@ -85,7 +85,7 @@ export const quotaRouter = () => serverInstance.router(quotaContract, {
   deleteQuota: async ({ request: req, params }) => {
     const quotaId = params.quotaId
 
-    checkIsAdmin(req.session.user)
+    assertIsAdmin(req.session.user)
     await deleteQuota(quotaId)
 
     addReqLogs({

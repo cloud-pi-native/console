@@ -6,7 +6,7 @@ import { UserDetails } from '@/types/index.js'
 
 export const hasGroupAdmin = (groups: UserDetails['groups']) => groups.includes(adminGroupPath)
 
-export const checkIsAdmin = (user: UserDetails) => {
+export const assertIsAdmin = (user: UserDetails) => {
   if (!hasGroupAdmin(user.groups)) {
     throw new ForbiddenError('Vous n\'avez pas les droits administrateur')
   }

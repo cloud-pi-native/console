@@ -204,7 +204,7 @@ export const listStagesByClusterId = async (id: Cluster['id']) =>
   }))?.stages
 
 export const createCluster = (
-  data: Omit<Cluster, 'id' | 'updatedAt' | 'createdAt' | 'kubeConfigId' | 'secretName'>,
+  data: Omit<Cluster, 'id' | 'updatedAt' | 'createdAt' | 'kubeConfigId' | 'secretName' | 'zoneId'>,
   kubeconfig: Pick<Kubeconfig, 'user' | 'cluster'>,
   zoneId: string,
 ) => prisma.cluster.create({
