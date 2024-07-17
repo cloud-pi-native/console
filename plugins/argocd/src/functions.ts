@@ -1,4 +1,4 @@
-import { type StepCall, type Project, parseError, Environment, ClusterObject } from '@cpn-console/hooks'
+import { type StepCall, type Project, parseError, Environment, ClusterObject, Repository } from '@cpn-console/hooks'
 import { generateAppProjectName, generateApplicationName, getConfig, getCustomK8sApi } from './utils.js'
 import { getApplicationObject } from './applications.js'
 import { getAppProjectObject } from './app-project.js'
@@ -35,8 +35,6 @@ export const upsertProject: StepCall<Project> = async (payload) => {
 
     const appProjects = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'appprojects', undefined, undefined, undefined, undefined, projectSelector)
 
-    const infraAppsRepoUrl = await gitlabApi.getRepoUrl('infra-apps')
-
     for (const environment of project.environments) {
       const cluster = getCluster(project, environment)
       const infraProject = await gitlabApi.getOrCreateInfraProject(cluster.zone.slug)
@@ -51,7 +49,7 @@ export const upsertProject: StepCall<Project> = async (payload) => {
 
       await ensureInfraEnvValues(
         project, environment, appNamespace, roGroup, rwGroup,
-        appProjectName, infraAppsRepoUrl, sourceRepos, infraProject.id, gitlabApi,
+        appProjectName, infraRepositories, infraProject.id, gitlabApi,
       )
 
       if (!cluster.user.keyData && !cluster.user.token) {
@@ -169,6 +167,7 @@ type ArgoRepoSource = {
   repoURL: string
   targetRevision: string
   path: string
+  valueFiles: string[]
 }
 const ensureInfraEnvValues = async (
   project: Project,
@@ -177,28 +176,19 @@ const ensureInfraEnvValues = async (
   roGroup: string,
   rwGroup: string,
   appProjectName: string,
-  infraAppsRepoUrl: string,
-  sourceRepos: string[],
+  sourceRepos: Repository[],
   repoId: number,
   gitlabApi: GitlabProjectApi,
 ) => {
+  const infraAppsRepoUrl = await gitlabApi.getRepoUrl('infra-apps')
   const gitlabGroupUrl = dirname(infraAppsRepoUrl)
   const cluster = getCluster(project, environment)
   const infraProject = await gitlabApi.getProjectById(repoId)
   const valueFilePath = getValueFilePath(project, cluster, environment)
-  const repositories: ArgoRepoSource[] = [
-    {
-      repoURL: infraAppsRepoUrl,
-      targetRevision: 'HEAD',
-      path: '.',
-    },
-    ...sourceRepos.map(url => ({
-      repoURL: url,
-      targetRevision: 'HEAD',
-      path: 'helm/',
-    })),
-
-  ]
+  const repositories: ArgoRepoSource[] = await Promise.all([
+    getArgoRepoSource('infra-apps', environment.name, gitlabApi),
+    ...sourceRepos.map(repo => getArgoRepoSource(repo.internalRepoName, environment.name, gitlabApi)),
+  ])
   const values = {
     commonLabels: {
       'dso/organization': project.organization.name,
@@ -209,8 +199,8 @@ const ensureInfraEnvValues = async (
       cluster: 'in-cluster',
       namespace: getConfig().namespace,
       project: appProjectName,
-      envChartVersion: process.env.DSO_ENV_CHART_VERSION || 'dso-env-1.1.1',
-      nsChartVersion: process.env.DSO_NS_CHART_VERSION || 'dso-ns-1.0.0',
+      envChartVersion: process.env.DSO_ENV_CHART_VERSION || 'dso-env-1.3.0',
+      nsChartVersion: process.env.DSO_NS_CHART_VERSION || 'dso-ns-1.0.1',
     },
     environment: {
       valueFileRepository: infraProject.http_url_to_repo,
@@ -233,6 +223,34 @@ const ensureInfraEnvValues = async (
     },
   }
   await gitlabApi.commitCreateOrUpdate(repoId, dump(values), valueFilePath)
+}
+
+const getArgoRepoSource = async (
+  repoName: string,
+  env: string,
+  gitlabApi: GitlabProjectApi,
+): Promise<ArgoRepoSource> => {
+  const targetRevision = 'HEAD'
+  const repoId = await gitlabApi.getProjectId(repoName)
+  const repoURL = await gitlabApi.getRepoUrl(repoName)
+  const files = await gitlabApi.listFiles(repoId)
+  const valueFiles = [] // Empty means not a Helm repository
+  let path = '.'
+  const result = files.find(f => f.name === 'values.yaml')
+  if (result) {
+    valueFiles.push('values.yaml')
+    path = dirname(result.path)
+    const valuesEnv = `values-${env}.yaml`
+    if (files.find(f => (path === '.' && f.path === valuesEnv) || f.path === `${path}/${valuesEnv}`)) {
+      valueFiles.push(valuesEnv)
+    }
+  }
+  return {
+    repoURL,
+    targetRevision,
+    path,
+    valueFiles,
+  }
 }
 
 const getCluster = (p: Project, e: Environment): ClusterObject => {
