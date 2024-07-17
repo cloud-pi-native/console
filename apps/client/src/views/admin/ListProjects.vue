@@ -461,7 +461,7 @@ const untruncateDescription = (span: HTMLElement) => {
     <div v-else>
       <DsfrCallout
         :title="selectedProject.name"
-        :content="selectedProject.description ?? ''"
+        :content="selectedProject.description"
       />
       <div class="w-full flex gap-4 fr-mb-2w">
         <DsfrButton
