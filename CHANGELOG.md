@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.9.0](https://github.com/cloud-pi-native/console/compare/v8.8.2...v8.9.0) (2024-07-17)
+
+
+### Features
+
+* :rocket: add helm detection and list values files ([006ccba](https://github.com/cloud-pi-native/console/commit/006ccbaa6d4710af8f1495ae8dadccf729b7dcc6))
+
 ## [8.8.2](https://github.com/cloud-pi-native/console/compare/v8.8.1...v8.8.2) (2024-07-15)
 
 
