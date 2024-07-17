@@ -42,11 +42,11 @@ describe('Administration projects', () => {
           cy.getByDataTestid('description').invoke('text').then((text) => {
             const maxDescriptionlength = 60
             if (text?.length > maxDescriptionlength) {
-              const lastSpaceIndex = project.description?.slice(0, maxDescriptionlength).lastIndexOf(' ')
-              const truncatedDescription = project.description?.slice(0, lastSpaceIndex > 0 ? lastSpaceIndex : maxDescriptionlength)
+              const lastSpaceIndex = project.description.slice(0, maxDescriptionlength).lastIndexOf(' ')
+              const truncatedDescription = project.description.slice(0, lastSpaceIndex > 0 ? lastSpaceIndex : maxDescriptionlength)
               expect(text).to.equal(truncatedDescription + ' ...')
             } else {
-              expect(text).to.equal(project.description ?? '')
+              expect(text).to.equal(project.description)
             }
           })
           cy.get('td:nth-of-type(4)').should('contain', project.members.find(m => m.role === 'owner').email)

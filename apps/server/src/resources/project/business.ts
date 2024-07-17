@@ -80,7 +80,6 @@ export const listProjects = async ({ status, statusIn, statusNotIn, filter = 'me
   }).then(projects => projects
     .map(({ clusters, roles, ...project }) => ({
       ...project,
-      description: project.description ?? '',
       clusterIds: clusters.map(({ id }) => id),
       members: rolesToMembers(roles),
     })))
@@ -164,7 +163,6 @@ export const createProject = async (dataDto: CreateProjectBody, requestor: UserD
 
     return {
       ...projectInfos,
-      description: projectInfos.description ?? '',
       clusterIds: projectInfos.clusters.map(({ id }) => id),
       members: rolesToMembers(projectInfos.roles),
     }
@@ -203,7 +201,6 @@ export const updateProject = async (data: UpdateProjectBody, projectId: Project[
 
     return {
       ...projectInfos,
-      description: projectInfos.description ?? '',
       clusterIds: projectInfos.clusters.map(({ id }) => id),
       members: rolesToMembers(projectInfos.roles),
     }
