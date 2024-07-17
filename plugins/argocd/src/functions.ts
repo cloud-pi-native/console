@@ -233,7 +233,7 @@ const getArgoRepoSource = async (
   const targetRevision = 'HEAD'
   const repoId = await gitlabApi.getProjectId(repoName)
   const repoURL = await gitlabApi.getRepoUrl(repoName)
-  const files = await gitlabApi.listFiles(repoId)
+  const files = await gitlabApi.listFiles(repoId, '/', 'HEAD')
   const valueFiles = [] // Empty means not a Helm repository
   let path = '.'
   const result = files.find(f => f.name === 'values.yaml')
