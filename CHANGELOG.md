@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.9.1](https://github.com/cloud-pi-native/console/compare/v8.9.0...v8.9.1) (2024-07-18)
+
+
+### Bug Fixes
+
+* :bug: search on HEAD ref instead of main ([ac13b5f](https://github.com/cloud-pi-native/console/commit/ac13b5fca8c952841e162ed300fdce099c74ac9b))
+
 ## [8.9.0](https://github.com/cloud-pi-native/console/compare/v8.8.2...v8.9.0) (2024-07-17)
 
 
