@@ -3,25 +3,23 @@ import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   CreateStageSchema,
   GetStageEnvironmentsSchema,
-  GetStagesSchema,
+  ListStagesSchema,
   UpdateStageSchema,
   DeleteStageSchema,
 } from '../schemas/index.js'
 
 export const stageContract = contractInstance.router({
-  getStages: {
+  listStages: {
     method: 'GET',
     path: `${apiPrefix}/stages`,
     summary: 'Get stages',
     description: 'Retrieved all stages.',
-    responses: GetStagesSchema.responses,
+    responses: ListStagesSchema.responses,
   },
-})
 
-export const stageAdminContract = contractInstance.router({
   createStage: {
     method: 'POST',
-    path: `${apiPrefix}/admin/stages`,
+    path: `${apiPrefix}/stages`,
     contentType: 'application/json',
     summary: 'Create stage',
     description: 'Create new stage.',
@@ -31,7 +29,7 @@ export const stageAdminContract = contractInstance.router({
 
   getStageEnvironments: {
     method: 'GET',
-    path: `${apiPrefix}/admin/stages/:stageId/environments`,
+    path: `${apiPrefix}/stages/:stageId/environments`,
     pathParams: GetStageEnvironmentsSchema.params,
     summary: 'Get stages',
     description: 'Retrieved all stages.',
@@ -40,7 +38,7 @@ export const stageAdminContract = contractInstance.router({
 
   updateStage: {
     method: 'PUT',
-    path: `${apiPrefix}/admin/stages/:stageId`,
+    path: `${apiPrefix}/stages/:stageId`,
     summary: 'Update stage',
     description: 'Update a stage by its ID.',
     pathParams: UpdateStageSchema.params,
@@ -50,7 +48,7 @@ export const stageAdminContract = contractInstance.router({
 
   deleteStage: {
     method: 'DELETE',
-    path: `${apiPrefix}/admin/stages/:stageId`,
+    path: `${apiPrefix}/stages/:stageId`,
     summary: 'Delete stage',
     description: 'Delete a stage by its ID.',
     pathParams: DeleteStageSchema.params,
@@ -59,8 +57,8 @@ export const stageAdminContract = contractInstance.router({
   },
 })
 
-export type CreateStageBody = ClientInferRequest<typeof stageAdminContract.createStage>['body']
+export type CreateStageBody = ClientInferRequest<typeof stageContract.createStage>['body']
 
-export type UpdateStageBody = ClientInferRequest<typeof stageAdminContract.updateStage>['body']
+export type UpdateStageBody = ClientInferRequest<typeof stageContract.updateStage>['body']
 
-export type StageAssociatedEnvironments = ClientInferResponseBody<typeof stageAdminContract.getStageEnvironments, 200>
+export type StageAssociatedEnvironments = ClientInferResponseBody<typeof stageContract.getStageEnvironments, 200>

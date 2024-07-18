@@ -40,13 +40,13 @@ describe('EnvironmentForm.vue', () => {
 
     cy.intercept('GET', 'api/v1/quotas', {
       body: randomDbSetup.quotas,
-    }).as('getQuotas')
+    }).as('listQuotas')
     cy.intercept('GET', 'api/v1/stages', {
       body: randomDbSetup.stages,
-    }).as('getStages')
+    }).as('listStages')
     cy.intercept('GET', 'api/v1/zones', {
       body: zones,
-    }).as('getStages')
+    }).as('listStages')
 
     useSnackbarStore()
     useProjectEnvironmentStore()
@@ -67,10 +67,10 @@ describe('EnvironmentForm.vue', () => {
     // @ts-ignore
     cy.mount(EnvironmentForm, { props })
 
-    cy.wait('@getQuotas').its('response').then($response => {
+    cy.wait('@listQuotas').its('response').then($response => {
       expect($response.body.length).to.equal(4)
     })
-    cy.wait('@getStages').its('response').then($response => {
+    cy.wait('@listStages').its('response').then($response => {
       expect($response.body.length).to.equal(4)
     })
 

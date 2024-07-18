@@ -1,13 +1,13 @@
-import prisma from '../../../__mocks__/prisma.js'
+import prisma from '../../__mocks__/prisma.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll, beforeEach } from 'vitest'
-import { getConnection, closeConnections } from '../../../connect.js'
+import { getConnection, closeConnections } from '../../connect.js'
 import { adminGroupPath } from '@cpn-console/shared'
 import { getRandomQuota, getRandomRole, getRandomStage, getRandomUser, repeatFn } from '@cpn-console/test-utils'
 import { faker } from '@faker-js/faker'
-import { getRequestor, setRequestor } from '../../../utils/mocks.js'
-import app from '../../../app.js'
+import { getRequestor, setRequestor } from '../../utils/mocks.js'
+import app from '../../app.js'
 
-vi.mock('fastify-keycloak-adapter', (await import('../../../utils/mocks.js')).mockSessionPlugin)
+vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
 
 describe('Admin quota routes', () => {
   beforeAll(async () => {
@@ -54,7 +54,7 @@ describe('Admin quota routes', () => {
 
       const response = await app.inject()
         // @ts-ignore
-        .get(`/api/v1/admin/quotas/${quota.id}/environments`)
+        .get(`/api/v1/quotas/${quota.id}/environments`)
         .end()
 
       expect(response.statusCode).toEqual(200)
@@ -81,7 +81,7 @@ describe('Admin quota routes', () => {
 
       const response = await app.inject()
         // @ts-ignore
-        .post('/api/v1/admin/quotas')
+        .post('/api/v1/quotas')
         .body(quota)
         .end()
 
@@ -97,7 +97,7 @@ describe('Admin quota routes', () => {
 
       const response = await app.inject()
         // @ts-ignore
-        .post('/api/v1/admin/quotas')
+        .post('/api/v1/quotas')
         .body(quota)
         .end()
 
@@ -116,7 +116,7 @@ describe('Admin quota routes', () => {
 
       const response = await app.inject()
         // @ts-ignore
-        .put(`/api/v1/admin/quotas/${quota.id}`)
+        .put(`/api/v1/quotas/${quota.id}`)
         .body({ isPrivate: quota.isPrivate })
         .end()
 
@@ -140,7 +140,7 @@ describe('Admin quota routes', () => {
 
       const response = await app.inject()
         // @ts-ignore
-        .put(`/api/v1/admin/quotas/${quota.id}`)
+        .put(`/api/v1/quotas/${quota.id}`)
         .body(data)
         .end()
 
@@ -162,7 +162,7 @@ describe('Admin quota routes', () => {
 
       const response = await app.inject()
         // @ts-ignore
-        .delete(`/api/v1/admin/quotas/${quota.id}`)
+        .delete(`/api/v1/quotas/${quota.id}`)
         .end()
 
       expect(response.statusCode).toEqual(204)
@@ -192,7 +192,7 @@ describe('Admin quota routes', () => {
 
       const response = await app.inject()
         // @ts-ignore
-        .delete(`/api/v1/admin/quotas/${quota.id}`)
+        .delete(`/api/v1/quotas/${quota.id}`)
         .end()
 
       expect(JSON.parse(response.body).error).toEqual('Impossible de supprimer le quota, des environnements en activité y ont souscrit')

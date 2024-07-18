@@ -3,7 +3,7 @@ import { getModel, getModelById } from '../../support/func.js'
 
 const checkTableRowsLength = (length: number) => {
   if (!length) cy.get('tr:last-child>td:first-child').should('have.text', 'Aucun projet trouvé')
-  else cy.get('tr').should('have.length', length)
+  else cy.get('tbody > tr').should('have.length', length)
 }
 
 describe('Administration projects', () => {
@@ -60,7 +60,12 @@ describe('Administration projects', () => {
   })
 
   it.skip('Should display untruncated description when click on span, loggedIn as admin', () => {
+    cy.intercept('GET', 'api/v1/projects*').as('getAllProjects')
+    cy.intercept('GET', 'api/v1/organizations').as('getOrganizations')
+
     cy.get('select#tableAdministrationProjectsFilter').select('Tous')
+    cy.wait('@getAllProjects')
+    cy.wait('@getOrganizations')
     cy.getByDataTestid('tableAdministrationProjects').within(() => {
       projects.forEach((project, index: number) => {
         cy.get(`tbody tr:nth-of-type(${index + 1})`).within(() => {
@@ -75,33 +80,42 @@ describe('Administration projects', () => {
     })
   })
 
-  // CYPRESS se mélange les pinceaux dans les length mais c'est fonctionnel
-  it.skip('Should display filtered projects, loggedIn as admin', () => {
-    cy.intercept('GET', 'api/v1/projects*').as('getAllProjects')
+  it('Should display filtered projects, loggedIn as admin', () => {
+    cy.intercept('GET', 'api/v1/projects?filter=all').as('getAllProjects')
+    cy.intercept('GET', 'api/v1/projects?filter=all&statusNotIn=archived').as('getActiveProjects')
+    cy.intercept('GET', 'api/v1/projects?filter=all&statusIn=archived').as('getArchivedProjects')
+    cy.intercept('GET', 'api/v1/projects?filter=all&statusIn=failed').as('getFailedProjects')
+    cy.intercept('GET', 'api/v1/projects?filter=all&locked=true&statusNotIn=archived').as('getLockedProjects')
+    cy.intercept('GET', 'api/v1/organizations').as('getOrganizations')
+
     cy.get('select').select('Tous')
+    cy.wait('@getAllProjects').its('response').then((response) => {
+      cy.getByDataTestid('tableAdministrationProjects').within(() => checkTableRowsLength(response.body.length))
+    })
+
     cy.get('select#tableAdministrationProjectsFilter').select('Archivés')
     cy.wait('@getAllProjects').its('response').then((response) => {
-      cy.getByDataTestid('tableAdministrationProjects').within(() => checkTableRowsLength(response.body.length + 1))
+      cy.getByDataTestid('tableAdministrationProjects').within(() => checkTableRowsLength(response.body.length))
     })
 
     cy.get('select#tableAdministrationProjectsFilter').select('Non archivés')
-    cy.wait('@getAllProjects').its('response').then((response) => {
-      cy.getByDataTestid('tableAdministrationProjects').within(() => checkTableRowsLength(response.body.length + 1))
+    cy.wait('@getActiveProjects').its('response').then((response) => {
+      cy.getByDataTestid('tableAdministrationProjects').within(() => checkTableRowsLength(response.body.length))
     })
 
     cy.get('select#tableAdministrationProjectsFilter').select('Archivés')
-    cy.wait('@getAllProjects').its('response').then((response) => {
-      cy.getByDataTestid('tableAdministrationProjects').within(() => checkTableRowsLength(response.body.length + 1))
+    cy.wait('@getArchivedProjects').its('response').then((response) => {
+      cy.getByDataTestid('tableAdministrationProjects').within(() => checkTableRowsLength(response.body.length))
     })
 
     cy.get('select#tableAdministrationProjectsFilter').select('Échoués')
-    cy.wait('@getAllProjects').its('response').then((response) => {
-      cy.getByDataTestid('tableAdministrationProjects').within(() => checkTableRowsLength(response.body.length + 1))
+    cy.wait('@getFailedProjects').its('response').then((response) => {
+      cy.getByDataTestid('tableAdministrationProjects').within(() => checkTableRowsLength(response.body.length))
     })
 
     cy.get('select#tableAdministrationProjectsFilter').select('Vérrouillés')
-    cy.wait('@getAllProjects').its('response').then((response) => {
-      cy.getByDataTestid('tableAdministrationProjects').within(() => checkTableRowsLength(response.body.length + 1))
+    cy.wait('@getLockedProjects').its('response').then((response) => {
+      cy.getByDataTestid('tableAdministrationProjects').within(() => checkTableRowsLength(response.body.length))
     })
   })
 
@@ -153,7 +167,7 @@ describe('Administration projects', () => {
 
   it('Should archive a project, loggedIn as admin', () => {
     cy.intercept('GET', 'api/v1/projects*').as('getAllProjects')
-    cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
+    cy.intercept('GET', 'api/v1/quotas').as('listQuotas')
     cy.intercept('DELETE', 'api/v1/projects/*').as('archiveProject')
 
     const projectName = 'adminarchive'
@@ -168,7 +182,7 @@ describe('Administration projects', () => {
       cy.get('tr').contains(projectName)
         .click()
     })
-    cy.wait('@getQuotas')
+    cy.wait('@listQuotas')
     cy.get('.fr-callout__title')
       .should('contain', projectName)
     cy.getByDataTestid('archiveProjectInput').should('not.exist')
@@ -207,12 +221,11 @@ describe('Administration projects', () => {
     }
     let initialQuota = ''
 
-    cy.intercept('GET', 'api/v1/projects*').as('getAllProjects')
-    cy.intercept('GET', 'api/v1/environments?*').as('getProjectEnvironments')
-    cy.intercept('GET', 'api/v1/projects/mines').as('getProjects')
-    cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
-    cy.intercept('GET', 'api/v1/stages').as('getStages')
-    cy.intercept('POST', '/api/v1/admin/quotas').as('createQuota')
+    cy.intercept('GET', 'api/v1/projects?filter=all&statusNotIn=archived').as('getAllProjects')
+    cy.intercept('GET', 'api/v1/environments?projectId=*').as('getProjectEnvironments')
+    cy.intercept('GET', 'api/v1/quotas').as('listQuotas')
+    cy.intercept('GET', 'api/v1/stages').as('listStages')
+    cy.intercept('POST', '/api/v1/quotas').as('createQuota')
     cy.intercept('PUT', 'api/v1/environments/*').as('updateEnvironment')
 
     cy.visit('/admin/projects')
@@ -227,14 +240,14 @@ describe('Administration projects', () => {
     })
 
     cy.wait('@getProjectEnvironments', { timeout: 10000 }).its('response').then(response => {
-      project.environments = response.body.filter(env => env.projectId === project.id)
+      project.environments = response.body
       initialQuota = project.environments[0].quotaId
     })
 
     cy.visit('/admin/quotas')
     cy.url().should('contain', '/admin/quotas')
-    cy.wait('@getQuotas')
-    cy.wait('@getStages')
+    cy.wait('@listQuotas')
+    cy.wait('@listStages')
     cy.getByDataTestid('addQuotaLink')
       .should('be.visible')
       .click()
@@ -270,7 +283,7 @@ describe('Administration projects', () => {
         cy.get('tr').contains(project.name)
           .click()
       })
-      cy.wait('@getQuotas')
+      cy.wait('@listQuotas')
       cy.get('.fr-callout__title')
         .should('contain', project.name)
       cy.get('select#quota-select:first')
@@ -282,7 +295,7 @@ describe('Administration projects', () => {
         .its('response.statusCode')
         .should('match', /^20\d$/)
       cy.wait('@getAllProjects')
-      cy.wait('@getQuotas')
+      cy.wait('@listQuotas')
       cy.get('select#quota-select:first')
         .should('have.value', privateQuota.id)
         .and('be.enabled')
@@ -291,13 +304,12 @@ describe('Administration projects', () => {
         cy.get('tr').contains(project.name)
           .click()
       })
-      cy.wait('@getQuotas')
+      cy.wait('@listQuotas')
       cy.get('select#quota-select:first')
         .select(initialQuota)
       cy.wait('@updateEnvironment')
         .its('response.statusCode')
         .should('match', /^20\d$/)
-      cy.wait('@getProjects')
       cy.wait('@getAllProjects')
     })
   })
@@ -343,8 +355,8 @@ describe('Administration projects', () => {
 
     cy.intercept('GET', 'api/v1/projects*').as('getAllProjects')
     cy.intercept('GET', `api/v1/project/${project.id}/services?permissionTarget=admin`).as('getServices')
-    cy.intercept('GET', `api/v1/projects/${project.id}/repositories`).as('getRepositories')
-    cy.intercept('GET', 'api/v1/environments?*').as('getEnvironments')
+    cy.intercept('GET', 'api/v1/repositories?projectId=*').as('listRepositories')
+    cy.intercept('GET', 'api/v1/environments?projectId=*').as('listEnvironments')
     cy.intercept(`/api/v1/projects/${project.id}/users/${userToTransfer.id}`).as('transferOwnership1')
     cy.intercept(`/api/v1/projects/${project.id}/users/${owner.id}`).as('transferOwnership2')
 
@@ -354,8 +366,8 @@ describe('Administration projects', () => {
     })
 
     cy.wait('@getServices')
-    cy.wait('@getRepositories')
-    cy.wait('@getEnvironments')
+    cy.wait('@listRepositories')
+    cy.wait('@listEnvironments')
 
     cy.get('.fr-callout__title')
       .should('contain', project.name)

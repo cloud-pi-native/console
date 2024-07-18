@@ -249,7 +249,7 @@ describe('Environment routes', () => {
       const log = getRandomLog('Delete Environment', requestor.id)
       const envToDelete = { ...projectInfos.environments[0], project: projectInfos }
 
-      prisma.environment.findUnique.mockResolvedValue(envToDelete)
+      prisma.environment.findUniqueOrThrow.mockResolvedValue(envToDelete)
       prisma.project.findUniqueOrThrow.mockResolvedValue(projectInfos)
       prisma.environment.update.mockReturnValue(envToDelete)
       prisma.project.update.mockResolvedValue(projectInfos)
@@ -270,7 +270,7 @@ describe('Environment routes', () => {
       const projectInfos = createRandomDbSetup({ envs: ['dev'] }).project
       const envToDelete = { ...projectInfos.environments[0], project: projectInfos }
 
-      prisma.environment.findUnique.mockResolvedValue(envToDelete)
+      prisma.environment.findUniqueOrThrow.mockResolvedValue(envToDelete)
       prisma.project.findUniqueOrThrow.mockResolvedValue(projectInfos)
 
       const response = await app.inject()
@@ -286,7 +286,7 @@ describe('Environment routes', () => {
       projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'user')]
       const envToDelete = { ...projectInfos.environments[0], project: projectInfos }
 
-      prisma.environment.findUnique.mockResolvedValue(envToDelete)
+      prisma.environment.findUniqueOrThrow.mockResolvedValue(envToDelete)
       prisma.project.findUniqueOrThrow.mockResolvedValue(projectInfos)
 
       const response = await app.inject()
@@ -304,7 +304,7 @@ describe('Environment routes', () => {
     const envToDelete = { ...projectInfos.environments[0], project: projectInfos }
     projectInfos.locked = true
 
-    prisma.environment.findUnique.mockResolvedValue(envToDelete)
+    prisma.environment.findUniqueOrThrow.mockResolvedValue(envToDelete)
     prisma.project.findUniqueOrThrow.mockResolvedValue(projectInfos)
 
     const response = await app.inject()

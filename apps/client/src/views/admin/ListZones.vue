@@ -2,12 +2,10 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import { type Zone, sortArrByObjKeyAsc, type CreateZoneBody, type UpdateZoneBody } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { useAdminZoneStore } from '@/stores/admin/zone.js'
 import { useZoneStore } from '@/stores/zone.js'
 import { useClusterStore } from '@/stores/cluster'
 
 const snackbarStore = useSnackbarStore()
-const adminZoneStore = useAdminZoneStore()
 const clusterStore = useClusterStore()
 const zoneStore = useZoneStore()
 
@@ -53,7 +51,7 @@ const cancel = () => {
 
 const createZone = async (zone: CreateZoneBody) => {
   snackbarStore.isWaitingForResponse = true
-  await adminZoneStore.createZone(zone)
+  await zoneStore.createZone(zone)
   await Promise.all([
     zoneStore.getAllZones(),
     clusterStore.getClusters(),
@@ -64,7 +62,7 @@ const createZone = async (zone: CreateZoneBody) => {
 
 const updateZone = async ({ zoneId, label, description }: UpdateZoneBody & { zoneId: Zone['id'] }) => {
   snackbarStore.isWaitingForResponse = true
-  await adminZoneStore.updateZone(zoneId, { label, description })
+  await zoneStore.updateZone(zoneId, { label, description })
   await Promise.all([
     zoneStore.getAllZones(),
     clusterStore.getClusters(),
@@ -75,7 +73,7 @@ const updateZone = async ({ zoneId, label, description }: UpdateZoneBody & { zon
 
 const deleteZone = async (zoneId: Zone['id']) => {
   snackbarStore.isWaitingForResponse = true
-  await adminZoneStore.deleteZone(zoneId)
+  await zoneStore.deleteZone(zoneId)
   await Promise.all([
     zoneStore.getAllZones(),
     clusterStore.getClusters(),

@@ -29,17 +29,13 @@ import { getProjectAndCheckRole } from '../repository/business.js'
 // Fetch infos
 export const getEnvironmentInfosAndClusters = async (environmentId: string) => {
   const env = await getEnvironmentInfosQuery(environmentId)
-  if (!env) throw new NotFoundError('Environnement introuvable', undefined)
+  if (!env) throw new NotFoundError('Environnement introuvable')
 
   const authorizedClusters = [...await getPublicClusters(), ...env.project.clusters]
   return { env, authorizedClusters }
 }
 
-export const getEnvironmentInfos = async (environmentId: string) => {
-  const env = await getEnvironmentInfosQuery(environmentId)
-  if (!env) throw new NotFoundError('Environnement introuvable', undefined)
-  return env
-}
+export const getEnvironmentInfos = async (environmentId: string) => getEnvironmentInfosQuery(environmentId)
 
 export const getProjectEnvironments = async (
   userId: User['id'],
@@ -306,9 +302,7 @@ export const deleteEnvironment = async ({
       throw new UnprocessableContentError('Echec des services à la suppression de l\'environnement')
     }
   } catch (error) {
-    if (error instanceof DsoError) {
-      throw error
-    }
+    if (error instanceof DsoError) throw error
     throw new Error(error?.message)
   }
 }

@@ -4,42 +4,17 @@ import { BadRequestError } from '@/utils/errors.js'
 import { addReqLogs } from '@/utils/logger.js'
 import { filterObjectByKeys } from '@/utils/queries-tools.js'
 import {
-  checkUpsertRepository,
   createRepository,
   deleteRepository,
   getProjectRepositories,
-  getRepositoryById,
   syncRepository,
   updateRepository,
 } from './business.js'
 
 export const repositoryRouter = () => serverInstance.router(repositoryContract, {
-
-  // Récupérer un repository par son id
-  getRepositoryById: async ({ request: req, params }) => {
-    const projectId = params.projectId
-    const repositoryId = params.repositoryId
-    const userId = req.session.user.id
-
-    const repository = await getRepositoryById(userId, projectId, repositoryId)
-
-    addReqLogs({
-      req,
-      message: 'Dépôt récupéré avec succès',
-      infos: {
-        repositoryId,
-        projectId,
-      },
-    })
-    return {
-      status: 200,
-      body: repository,
-    }
-  },
-
   // Récupérer tous les repositories d'un projet
-  getRepositories: async ({ request: req, params }) => {
-    const projectId = params.projectId
+  listRepositories: async ({ request: req, query }) => {
+    const projectId = query.projectId
     const userId = req.session.user.id
     const isAdmin = req.session.user.groups?.includes(adminGroupPath)
 
@@ -62,10 +37,10 @@ export const repositoryRouter = () => serverInstance.router(repositoryContract, 
   // Synchroniser un repository
   syncRepository: async ({ request: req, params, body }) => {
     const userId = req.session.user.id
-    const { projectId, repositoryId } = params
+    const { repositoryId } = params
     const { branchName } = body
 
-    await syncRepository(projectId, repositoryId, userId, branchName, req.id)
+    await syncRepository({ repositoryId, userId, branchName, requestId: req.id })
 
     return {
       body: null,
@@ -74,11 +49,11 @@ export const repositoryRouter = () => serverInstance.router(repositoryContract, 
   },
 
   // Créer un repository
-  createRepository: async ({ request: req, params, body: data }) => {
+  createRepository: async ({ request: req, body: data }) => {
     const userId = req.session.user.id
-    const projectId = params.projectId
+    const projectId = data.projectId
 
-    const repository = await createRepository(projectId, data, userId, req.id)
+    const repository = await createRepository({ data, userId, requestId: req.id })
 
     addReqLogs({
       req,
@@ -97,7 +72,6 @@ export const repositoryRouter = () => serverInstance.router(repositoryContract, 
   // Mettre à jour un repository
   updateRepository: async ({ request: req, params, body }) => {
     const userId = req.session.user.id
-    const projectId = params.projectId
     const repositoryId = params.repositoryId
 
     const keysAllowedForUpdate = [
@@ -109,8 +83,6 @@ export const repositoryRouter = () => serverInstance.router(repositoryContract, 
     ]
     const data = filterObjectByKeys(body, keysAllowedForUpdate)
 
-    await checkUpsertRepository(userId, projectId, 'owner')
-
     if (data.isPrivate && !data.externalToken) throw new BadRequestError('Le token est requis', undefined)
     if (data.isPrivate && !data.externalUserName) throw new BadRequestError('Le nom d\'utilisateur est requis', undefined)
     if (!data.isPrivate) {
@@ -118,16 +90,13 @@ export const repositoryRouter = () => serverInstance.router(repositoryContract, 
       data.externalUserName = ''
     }
 
-    await getRepositoryById(userId, projectId, repositoryId)
-
-    const repository = await updateRepository(projectId, repositoryId, data, userId, req.id)
+    const repository = await updateRepository({ repositoryId, data, userId, requestId: req.id })
 
     const message = 'Dépôt mis à jour avec succès'
     addReqLogs({
       req,
       message,
       infos: {
-        projectId,
         repositoryId,
       },
     })
@@ -139,18 +108,20 @@ export const repositoryRouter = () => serverInstance.router(repositoryContract, 
 
   // Supprimer un repository
   deleteRepository: async ({ request: req, params }) => {
-    const projectId = params.projectId
     const repositoryId = params.repositoryId
     const userId = req.session.user.id
 
-    await deleteRepository(projectId, repositoryId, userId, req.id)
+    await deleteRepository({
+      repositoryId,
+      userId,
+      requestId: req.id,
+    })
 
     const message = 'Dépôt en cours de suppression'
     addReqLogs({
       req,
       message,
       infos: {
-        projectId,
         repositoryId,
       },
     })

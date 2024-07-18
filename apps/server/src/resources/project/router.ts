@@ -1,6 +1,5 @@
 import { addReqLogs } from '@/utils/logger.js'
 import {
-  getUserProjects,
   createProject,
   updateProject,
   archiveProject,
@@ -12,32 +11,11 @@ import {
 } from './business.js'
 import { projectContract } from '@cpn-console/shared'
 import { serverInstance } from '@/app.js'
-import { checkIsAdmin } from '@/utils/controller.js'
+import { assertIsAdmin } from '@/utils/controller.js'
 
 export const projectRouter = () => serverInstance.router(projectContract, {
 
-  // Récupérer les projets d'un user
-  getProjects: async ({ request: req }) => {
-    try {
-      const requestor = req.session.user
-      const projectsInfos = await getUserProjects(requestor.id)
-
-      addReqLogs({
-        req,
-        message: 'Projets de l\'utilisateur récupérés avec succès',
-        infos: {
-          userId: requestor.id,
-        },
-      })
-      return {
-        status: 200,
-        body: projectsInfos,
-      }
-    } catch (error) {
-      throw new Error(error.message)
-    }
-  },
-
+  // Récupérer des projets
   listProjects: async ({ request: req, query }) => {
     try {
       const user = req.session.user
@@ -162,7 +140,7 @@ export const projectRouter = () => serverInstance.router(projectContract, {
   },
   // Récupérer les données de tous les projets pour export
   getProjectsData: async ({ request: req }) => {
-    checkIsAdmin(req.session.user)
+    assertIsAdmin(req.session.user)
     const generatedProjectsData = await generateProjectsData()
 
     addReqLogs({
@@ -177,7 +155,7 @@ export const projectRouter = () => serverInstance.router(projectContract, {
 
   // (Dé)verrouiller un projet
   patchProject: async ({ request: req, params, body: data }) => {
-    checkIsAdmin(req.session.user)
+    assertIsAdmin(req.session.user)
     const projectId = params.projectId
     const lock = data.lock
 

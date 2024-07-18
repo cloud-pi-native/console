@@ -10,7 +10,7 @@ describe('Administration users', () => {
   }))
 
   beforeEach(() => {
-    cy.intercept('GET', 'api/v1/admin/users').as('getAllUsers')
+    cy.intercept('GET', 'api/v1/users').as('getAllUsers')
 
     cy.kcLogin('tcolin')
     cy.visit('/admin/users')

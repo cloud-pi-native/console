@@ -21,18 +21,18 @@ describe('Administration quotas', () => {
   let allQuotas
 
   beforeEach(() => {
-    cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
-    cy.intercept('GET', '/api/v1/stages').as('getStages')
+    cy.intercept('GET', 'api/v1/quotas').as('listQuotas')
+    cy.intercept('GET', '/api/v1/stages').as('listStages')
 
     cy.kcLogin('tcolin')
     cy.visit('/admin/quotas')
     cy.url().should('contain', '/admin/quotas')
-    cy.wait('@getQuotas').its('response').then(response => {
+    cy.wait('@listQuotas').its('response').then(response => {
       allQuotas = response?.body
       quota1 = allQuotas.find(quota => quota.id === quota1.id)
       quota2 = allQuotas.find(quota => quota.id === quota2.id)
     })
-    cy.wait('@getStages')
+    cy.wait('@listStages')
   })
 
   it('Should display quotas list', () => {
@@ -43,12 +43,12 @@ describe('Administration quotas', () => {
   })
 
   it('Should create a public quota', () => {
-    cy.intercept('POST', '/api/v1/admin/quotas').as('createQuota')
+    cy.intercept('POST', '/api/v1/quotas').as('createQuota')
     cy.intercept('GET', 'api/v1/clusters').as('getClusters')
-    cy.intercept('GET', 'api/v1/stages').as('getStages')
-    cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
-    cy.intercept('GET', '/api/v1/projects/mines').as('getProjects')
-    cy.intercept('GET', '/api/v1/environments?*').as('getEnvironments')
+    cy.intercept('GET', 'api/v1/stages').as('listStages')
+    cy.intercept('GET', 'api/v1/quotas').as('listQuotas')
+    cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('listProjects')
+    cy.intercept('GET', '/api/v1/environments?*').as('listEnvironments')
 
     // Create quota
     cy.getByDataTestid('addQuotaLink')
@@ -86,7 +86,7 @@ describe('Administration quotas', () => {
 
     // Check quota creation
     cy.reload()
-      .wait('@getStages')
+      .wait('@listStages')
     cy.getByDataTestid(`quotaTile-${publicQuota.name}`)
       .should('be.visible')
       .click()
@@ -114,14 +114,14 @@ describe('Administration quotas', () => {
     // Check quota availability for non admin user on environment form
     cy.kcLogin('test')
     cy.goToProjects()
-      .wait('@getProjects')
+      .wait('@listProjects')
       .getByDataTestid(`projectTile-${project?.name}`).click()
       .getByDataTestid('menuEnvironments').click()
     cy.wait('@getClusters')
     cy.url().should('contain', '/environments')
     cy.getByDataTestid('addEnvironmentLink').click()
-    cy.wait('@getStages')
-    cy.wait('@getQuotas')
+    cy.wait('@listStages')
+    cy.wait('@listQuotas')
     cy.get('h1').should('contain', 'Ajouter un environnement au projet')
     cy.get('#zone-select')
       .select(2)
@@ -153,7 +153,7 @@ describe('Administration quotas', () => {
     })
 
     const environments = []
-    cy.wait('@getEnvironments').its('response').then(response => {
+    cy.wait('@listEnvironments').its('response').then(response => {
       environments.push(response.body)
     })
     cy.get('#environmentsTable').within(() => {
@@ -169,7 +169,7 @@ describe('Administration quotas', () => {
   })
 
   it('Should not be able to create a quota with an already taken name', () => {
-    cy.intercept('POST', '/api/v1/admin/quotas').as('createQuota')
+    cy.intercept('POST', '/api/v1/quotas').as('createQuota')
 
     cy.getByDataTestid('addQuotaLink')
       .should('be.visible')
@@ -208,12 +208,12 @@ describe('Administration quotas', () => {
   })
 
   it('Should create a private quota', () => {
-    cy.intercept('POST', '/api/v1/admin/quotas').as('createQuota')
+    cy.intercept('POST', '/api/v1/quotas').as('createQuota')
     cy.intercept('GET', 'api/v1/clusters').as('getClusters')
-    cy.intercept('GET', 'api/v1/stages').as('getStages')
-    cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
-    cy.intercept('GET', '/api/v1/projects/mines').as('getProjects')
-    cy.intercept('GET', '/api/v1/environments?*').as('getEnvironments')
+    cy.intercept('GET', 'api/v1/stages').as('listStages')
+    cy.intercept('GET', 'api/v1/quotas').as('listQuotas')
+    cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('listProjects')
+    cy.intercept('GET', '/api/v1/environments?*').as('listEnvironments')
 
     // Create quota
     cy.getByDataTestid('addQuotaLink')
@@ -251,7 +251,7 @@ describe('Administration quotas', () => {
 
     // Check quota creation
     cy.reload()
-      .wait('@getStages')
+      .wait('@listStages')
     cy.getByDataTestid(`quotaTile-${privateQuota.name}`)
       .should('be.visible')
       .click()
@@ -279,14 +279,14 @@ describe('Administration quotas', () => {
     // Check quota unavailability for non admin user on environment form
     cy.kcLogin('test')
     cy.goToProjects()
-      .wait('@getProjects')
+      .wait('@listProjects')
       .getByDataTestid(`projectTile-${project?.name}`).click()
       .getByDataTestid('menuEnvironments').click()
       .url().should('contain', '/environments')
     cy.wait('@getClusters')
     cy.getByDataTestid('addEnvironmentLink').click()
-    cy.wait('@getStages')
-    cy.wait('@getQuotas')
+    cy.wait('@listStages')
+    cy.wait('@listQuotas')
     cy.get('h1').should('contain', 'Ajouter un environnement au projet')
     cy.get('#zone-select')
       .select(2)
@@ -308,7 +308,7 @@ describe('Administration quotas', () => {
     })
 
     const environments = []
-    cy.wait('@getEnvironments').its('response').then(response => {
+    cy.wait('@listEnvironments').its('response').then(response => {
       environments.push(response.body)
     })
 
@@ -327,11 +327,11 @@ describe('Administration quotas', () => {
   it('Should update a quota', () => {
     const newStage = allStages?.find(stage => !publicQuota.stages?.find(pqStage => pqStage.id === stage.id))
 
-    cy.intercept('PUT', '/api/v1/admin/quotas/*').as('updateQuota')
+    cy.intercept('PUT', '/api/v1/quotas/*').as('updateQuota')
     cy.intercept('GET', 'api/v1/clusters').as('getClusters')
-    cy.intercept('GET', 'api/v1/stages').as('getStages')
-    cy.intercept('GET', 'api/v1/quotas').as('getQuotas')
-    cy.intercept('GET', '/api/v1/projects/mines').as('getProjects')
+    cy.intercept('GET', 'api/v1/stages').as('listStages')
+    cy.intercept('GET', 'api/v1/quotas').as('listQuotas')
+    cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('listProjects')
 
     cy.getByDataTestid(`quotaTile-${publicQuota.name}`)
       .should('be.visible')
@@ -369,7 +369,7 @@ describe('Administration quotas', () => {
 
     // Check quota update
     cy.reload()
-      .wait('@getStages')
+      .wait('@listStages')
     cy.getByDataTestid(`quotaTile-${publicQuota.name}`)
       .should('be.visible')
       .click()
@@ -397,14 +397,14 @@ describe('Administration quotas', () => {
     // Check quota unavailability for non admin user on environment form
     cy.kcLogin('test')
     cy.goToProjects()
-      .wait('@getProjects')
+      .wait('@listProjects')
       .getByDataTestid(`projectTile-${project?.name}`).click()
       .getByDataTestid('menuEnvironments').click()
       .url().should('contain', '/environments')
     cy.wait('@getClusters')
     cy.getByDataTestid('addEnvironmentLink').click()
-    cy.wait('@getStages')
-    cy.wait('@getQuotas')
+    cy.wait('@listStages')
+    cy.wait('@listQuotas')
     cy.get('h1').should('contain', 'Ajouter un environnement au projet')
     cy.get('#zone-select')
       .select(2)

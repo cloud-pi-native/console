@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
+import { sortArrByObjKeyAsc } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 import router from '@/router/index.js'
-import { sortArrByObjKeyAsc } from '@cpn-console/shared'
 
 const projectStore = useProjectStore()
 
@@ -30,7 +30,7 @@ onMounted(() => {
   setProjectList(projectStore.projects)
 })
 
-watch(projectStore.projects, () => {
+projectStore.$subscribe(() => {
   setProjectList(projectStore.projects)
 })
 

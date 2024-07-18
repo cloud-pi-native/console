@@ -20,7 +20,7 @@ export const ZoneSchema = z.object({
 
 export type Zone = Zod.infer<typeof ZoneSchema>
 
-export const GetZonesSchema = {
+export const ListZonesSchema = {
   responses: {
     200: z.array(ZoneSchema),
     500: ErrorSchema,

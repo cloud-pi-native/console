@@ -11,7 +11,6 @@ import { apiPrefix, getContract } from '@cpn-console/shared'
 import { isInt, isDev, isTest } from './utils/env.js'
 import { fastifyConf, swaggerUiConf, swaggerConf } from './utils/fastify.js'
 import { apiRouter } from './resources/index.js'
-import { apiRouterAdmin } from './resources/index-admin.js'
 import { keycloakConf, sessionConf } from './utils/keycloak.js'
 import { addReqLogs } from './utils/logger.js'
 import { DsoError } from './utils/errors.js'
@@ -31,7 +30,6 @@ const app = fastify(fastifyConf)
   .register(fastifySwagger, { transformObject: () => openApiDocument })
   .register(fastifySwaggerUi, swaggerUiConf)
   .register(apiRouter())
-  .register(apiRouterAdmin())
   .addHook('onRoute', opts => {
     if (opts.path === `${apiPrefix}/healthz`) {
       opts.logLevel = 'silent'

@@ -1,17 +1,16 @@
 import { clusterContract } from '@cpn-console/shared'
 import { addReqLogs } from '@/utils/logger.js'
-import { getAllUserClusters } from './business.js'
-import '@/types/index.js'
-import { serverInstance } from '@/app.js'
 import {
-  checkClusterProjectIds,
+  getAllUserClusters,
   createCluster,
   deleteCluster,
   getClusterAssociatedEnvironments,
   getClusterDetails as getClusterDetailsBusiness,
   updateCluster,
-} from './admin/business.js'
-import { checkIsAdmin } from '@/utils/controller.js'
+} from './business.js'
+import '@/types/index.js'
+import { serverInstance } from '@/app.js'
+import { assertIsAdmin } from '@/utils/controller.js'
 
 export const clusterRouter = () => serverInstance.router(clusterContract, {
   listClusters: async ({ request: req }) => {
@@ -26,7 +25,7 @@ export const clusterRouter = () => serverInstance.router(clusterContract, {
   },
 
   getClusterDetails: async ({ params, request: req }) => {
-    checkIsAdmin(req.session.user)
+    assertIsAdmin(req.session.user)
     const clusterId = params.clusterId
     const cluster = await getClusterDetailsBusiness(clusterId)
 
@@ -37,10 +36,9 @@ export const clusterRouter = () => serverInstance.router(clusterContract, {
   },
 
   createCluster: async ({ request: req, body: data }) => {
-    checkIsAdmin(req.session.user)
+    assertIsAdmin(req.session.user)
     const userId = req.session.user.id
 
-    data.projectIds = checkClusterProjectIds(data)
     const cluster = await createCluster(data, userId, req.id)
 
     addReqLogs({ req, message: 'Cluster créé avec succès', infos: { clusterId: cluster.id } })
@@ -51,7 +49,7 @@ export const clusterRouter = () => serverInstance.router(clusterContract, {
   },
 
   getClusterEnvironments: async ({ request: req, params }) => {
-    checkIsAdmin(req.session.user)
+    assertIsAdmin(req.session.user)
     const clusterId = params.clusterId
     const environments = await getClusterAssociatedEnvironments(clusterId)
 
@@ -63,7 +61,7 @@ export const clusterRouter = () => serverInstance.router(clusterContract, {
   },
 
   updateCluster: async ({ request: req, params, body: data }) => {
-    checkIsAdmin(req.session.user)
+    assertIsAdmin(req.session.user)
     const userId = req.session.user.id
     const clusterId = params.clusterId
 
@@ -77,7 +75,7 @@ export const clusterRouter = () => serverInstance.router(clusterContract, {
   },
 
   deleteCluster: async ({ request: req, params }) => {
-    checkIsAdmin(req.session.user)
+    assertIsAdmin(req.session.user)
     const userId = req.session.user.id
     const clusterId = params.clusterId
 

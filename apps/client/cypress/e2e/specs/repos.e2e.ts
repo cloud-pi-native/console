@@ -131,18 +131,18 @@ describe('Add repos into project', () => {
   })
 
   it('Should update a repo', () => {
-    cy.intercept('GET', '/api/v1/projects/mines').as('getProjects')
-    cy.intercept('PUT', '/api/v1/projects/*/repositories/*').as('putRepo')
-    let repos
+    cy.intercept('GET', '/api/v1/repositories?projectId=*').as('listRepositories')
+    cy.intercept('PUT', '/api/v1/repositories/*').as('putRepo')
+    let repositories = []
 
     cy.goToProjects()
       .getByDataTestid(`projectTile-${project.name}`).click()
       .getByDataTestid('menuRepos').click()
       .url().should('contain', '/repositories')
 
-    cy.wait('@getProjects').its('response').then(response => {
-      repos = response?.body.find(resProject => resProject.name === project.name).repositories
-      cy.getByDataTestid(`repoTile-${repos[0].internalRepoName}`).click()
+    cy.wait('@listRepositories').its('response').then(response => {
+      repositories = response.body
+      cy.getByDataTestid(`repoTile-${repositories[0].internalRepoName}`).click()
         .get('h2').should('contain', 'Modifier le dépôt')
         .getByDataTestid('internalRepoNameInput').should('be.disabled')
         .getByDataTestid('externalRepoUrlInput').clear().type('https://github.com/externalUser04/new-repo.git')
@@ -155,31 +155,31 @@ describe('Add repos into project', () => {
 
       cy.getByDataTestid('updateRepoBtn').click()
       cy.wait('@putRepo').its('response.statusCode').should('match', /^20\d$/)
-      cy.wait('@getProjects').its('response.statusCode').should('match', /^20\d$/)
-      cy.getByDataTestid(`repoTile-${repos[0].internalRepoName}`).should('exist')
+      cy.wait('@listRepositories').its('response.statusCode').should('match', /^20\d$/)
+      cy.getByDataTestid(`repoTile-${repositories[0].internalRepoName}`).should('exist')
       cy.reload()
-      cy.getByDataTestid(`repoTile-${repos[0].internalRepoName}`).click()
-        .getByDataTestid('externalRepoUrlInput').should('have.value', 'https://github.com/externalUser04/new-repo.git')
-        .getByDataTestid('input-checkbox-privateRepoCbx').should('be.checked')
-        .getByDataTestid('externalUserNameInput').should('have.value', 'newUser')
-        .getByDataTestid('externalTokenInput').should('have.value', '')
+      cy.getByDataTestid(`repoTile-${repositories[0].internalRepoName}`).click()
+      cy.getByDataTestid('externalRepoUrlInput').should('have.value', 'https://github.com/externalUser04/new-repo.git')
+      cy.getByDataTestid('input-checkbox-privateRepoCbx').should('be.checked')
+      cy.getByDataTestid('externalUserNameInput').should('have.value', 'newUser')
+      cy.getByDataTestid('externalTokenInput').should('have.value', '')
     })
   })
 
   it('Should synchronise a repo', () => {
-    cy.intercept('GET', '/api/v1/projects/mines').as('getProjects')
-    cy.intercept('POST', '/api/v1/projects/*/repositories/*/sync').as('syncRepo')
-    let repos
+    cy.intercept('GET', '/api/v1/repositories?projectId=*').as('listRepositories')
+    cy.intercept('POST', '/api/v1/repositories/*/sync').as('syncRepo')
+    let repositories = []
 
     cy.goToProjects()
       .getByDataTestid(`projectTile-${project.name}`).click()
       .getByDataTestid('menuRepos').click()
       .url().should('contain', '/repositories')
 
-    cy.wait('@getProjects').its('response').then(response => {
-      repos = response?.body.find(resProject => resProject.name === project.name).repositories
+    cy.wait('@listRepositories').its('response').then(response => {
+      repositories = response.body
 
-      cy.getByDataTestid(`repoTile-${repos[0].internalRepoName}`)
+      cy.getByDataTestid(`repoTile-${repositories[0].internalRepoName}`)
         .click()
 
       cy.get('h2').should('contain', 'Synchroniser le dépôt')
@@ -193,7 +193,7 @@ describe('Add repos into project', () => {
       cy.wait('@syncRepo').its('response.statusCode').should('match', /^20\d$/)
 
       cy.getByDataTestid('snackbar').within(() => {
-        cy.get('p').should('contain', `Job de synchronisation lancé pour le dépôt ${repos[0].internalRepoName}`)
+        cy.get('p').should('contain', `Job de synchronisation lancé pour le dépôt ${repositories[0].internalRepoName}`)
       })
 
       cy.getByDataTestid('branchNameInput')
@@ -212,14 +212,14 @@ describe('Add repos into project', () => {
       cy.wait('@syncRepo').its('response.statusCode').should('match', /^20\d$/)
 
       cy.getByDataTestid('snackbar').within(() => {
-        cy.get('p').should('contain', `Job de synchronisation lancé pour le dépôt ${repos[0].internalRepoName}`)
+        cy.get('p').should('contain', `Job de synchronisation lancé pour le dépôt ${repositories[0].internalRepoName}`)
       })
     })
   })
 
   it('Should generate a GitLab CI for a repo', () => {
-    cy.intercept('POST', '/api/v1/projects/*/repositories').as('postRepo')
-    cy.intercept('GET', '/api/v1/projects/mines').as('getProjects')
+    cy.intercept('POST', '/api/v1/repositories').as('postRepo')
+    cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('listProjects')
 
     const repo = {
       internalRepoName: 'repo05',
@@ -260,10 +260,10 @@ describe('Add repos into project', () => {
 
     cy.getByDataTestid('addRepoBtn').click()
     cy.wait('@postRepo').its('response.statusCode').should('match', /^20\d$/)
-    cy.wait('@getProjects').its('response.statusCode').should('match', /^20\d$/)
+    cy.wait('@listProjects').its('response.statusCode').should('match', /^20\d$/)
     cy.getByDataTestid(`repoTile-${repo.internalRepoName}`).should('exist')
     cy.wait(1000).reload()
-    cy.wait('@getProjects').its('response.statusCode').should('match', /^20\d$/)
+    cy.wait('@listProjects').its('response.statusCode').should('match', /^20\d$/)
     cy.assertAddRepo(project, [repo])
   })
 

@@ -1,7 +1,7 @@
 import type { Quota, Stage, User } from '@prisma/client'
 import prisma from '@/prisma.js'
 
-export const getQuotas = (userId: User['id']) =>
+export const listQuotas = (userId: User['id']) =>
   prisma.quota.findMany({
     where: {
       OR: [{

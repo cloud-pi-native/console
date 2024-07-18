@@ -1,10 +1,11 @@
 import prisma from '../../__mocks__/prisma.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
-import { createRandomDbSetup, getRandomLog, getRandomRole, getRandomUser } from '@cpn-console/test-utils'
-import { projectIsLockedInfo } from '@cpn-console/shared'
+import { createRandomDbSetup, getRandomLog, getRandomPerm, getRandomRole, getRandomUser, repeatFn } from '@cpn-console/test-utils'
+import { adminGroupPath, projectIsLockedInfo, userContract } from '@cpn-console/shared'
 import { getConnection, closeConnections } from '../../connect.js'
 import { getRequestor, setRequestor } from '../../utils/mocks.js'
 import app from '../../app.js'
+import { rolesToMembers } from '../project/business.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
 vi.mock('../../utils/hook-wrapper.js', (await import('../../utils/mocks.js')).mockHookWrapper)
@@ -61,27 +62,26 @@ describe('User routes', () => {
   // POST
   describe('addUserToProjectController', () => {
     it('Should add an user in project', async () => {
-      const projectInfos = createRandomDbSetup({}).project
-      projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
+      const randomDbSetup = createRandomDbSetup({})
+      const projectInfos = randomDbSetup.project
+      setRequestor({ ...randomDbSetup.users[0], groups: [] })
       const userToAdd = getRandomUser()
+      const roleToAdd = { ...getRandomRole(userToAdd.id), user: userToAdd }
 
       prisma.project.findUnique.mockResolvedValue(projectInfos)
       prisma.user.findUnique.mockResolvedValue(userToAdd)
+      prisma.role.create.mockResolvedValue({})
       prisma.log.create.mockResolvedValue(getRandomLog('Add Project Member', getRequestor().id))
-      prisma.project.update.mockResolvedValue(projectInfos)
-      prisma.environment.findMany.mockResolvedValue([])
-      prisma.repository.findMany.mockResolvedValue([])
-      prisma.role.findMany.mockResolvedValue(projectInfos.roles)
-      delete projectInfos.roles[0].user
+      prisma.role.findMany.mockResolvedValue([...projectInfos.roles, roleToAdd])
 
       const response = await app.inject()
         .post(`/api/v1/projects/${projectInfos.id}/users`)
         .body(userToAdd)
         .end()
 
+      expect(response.json()).toMatchObject([...projectInfos.members, ...rolesToMembers([roleToAdd])])
       expect(response.statusCode).toEqual(201)
       expect(response.body).toBeDefined()
-      expect(response.json()).toMatchObject(projectInfos.roles)
     })
 
     it('Should not add an user if email already present', async () => {
@@ -137,17 +137,17 @@ describe('User routes', () => {
   // PUT
   describe('transferProjectOwnershipController', () => {
     it('Should transfer ownership for a project, as owner', async () => {
-      const projectInfos = createRandomDbSetup({}).project
-      const userToTransfer = getRandomUser()
-      projectInfos.roles = [getRandomRole(requestor.id, projectInfos.id, 'owner'), getRandomRole(userToTransfer.id, projectInfos.id, 'user')]
-      const newProjectInfosRoles = projectInfos.roles
-      newProjectInfosRoles[0].role = 'owner'
-      newProjectInfosRoles[1].role = 'user'
+      const projectInfos = createRandomDbSetup({ nbUsers: 3 }).project
+
+      const ownerIndex = projectInfos.roles?.findIndex(role => role.role === 'owner')
+      setRequestor({ ...projectInfos.roles[ownerIndex].user, groups: [] })
+      const indexUserToTransfer = projectInfos.roles?.findIndex(role => role.role !== 'owner')
+      const userToTransfer = projectInfos.roles[indexUserToTransfer].user
 
       prisma.project.findUnique.mockResolvedValue(projectInfos)
-      prisma.role.findMany.mockResolvedValueOnce(projectInfos.roles)
       prisma.role.update.mockResolvedValue([])
-      prisma.role.findMany.mockResolvedValueOnce(newProjectInfosRoles)
+      prisma.permission.upsert.mockResolvedValue(getRandomPerm())
+      prisma.role.findMany.mockResolvedValueOnce(projectInfos.roles)
 
       const response = await app.inject()
         .put(`/api/v1/projects/${projectInfos.id}/users/${userToTransfer.id}`)
@@ -155,30 +155,29 @@ describe('User routes', () => {
 
       expect(response.statusCode).toEqual(200)
       expect(response.body).toBeDefined()
-      expect(response.json()).toEqual(newProjectInfosRoles)
+      expect(response.json()).toEqual(rolesToMembers(projectInfos.roles))
     })
 
     it('Should transfer ownership for a project, as admin', async () => {
-      requestor.groups = ['/admin']
-      const projectInfos = createRandomDbSetup({}).project
-      const userToTransfer = getRandomUser()
-      projectInfos.roles = [getRandomRole(undefined, projectInfos.id, 'owner'), getRandomRole(userToTransfer.id, projectInfos.id, 'user')]
-      const newProjectInfosRoles = projectInfos.roles
-      newProjectInfosRoles[0].role = 'owner'
-      newProjectInfosRoles[1].role = 'user'
+      const projectInfos = createRandomDbSetup({ nbUsers: 3 }).project
+
+      const indexUserToTransfer = projectInfos.roles?.findIndex(role => role.role !== 'owner')
+      const userToTransfer = projectInfos.roles[indexUserToTransfer].user
 
       prisma.project.findUnique.mockResolvedValue(projectInfos)
-      prisma.role.findMany.mockResolvedValueOnce(projectInfos.roles)
       prisma.role.update.mockResolvedValue([])
-      prisma.role.findMany.mockResolvedValueOnce(newProjectInfosRoles)
+      prisma.permission.upsert.mockResolvedValue(getRandomPerm())
+      prisma.role.findMany.mockResolvedValueOnce(projectInfos.roles)
 
+      requestor.groups = [adminGroupPath]
+      setRequestor(requestor)
       const response = await app.inject()
         .put(`/api/v1/projects/${projectInfos.id}/users/${userToTransfer.id}`)
         .end()
 
       expect(response.statusCode).toEqual(200)
       expect(response.body).toBeDefined()
-      expect(response.json()).toEqual(newProjectInfosRoles)
+      expect(response.json()).toEqual(rolesToMembers(projectInfos.roles))
     })
 
     it('Should not transfer ownership for a locked project', async () => {
@@ -231,28 +230,25 @@ describe('User routes', () => {
   // DELETE
   describe('removeUserFromProjectController', () => {
     it('Should remove an user from a project', async () => {
-      const projectInfos = createRandomDbSetup({}).project
-      projectInfos.roles = [...projectInfos.roles, getRandomRole(getRequestor().id, projectInfos.id, 'owner')]
-      const userToRemove = projectInfos.roles[0]
+      const randomDbSetup = createRandomDbSetup({ nbUsers: 2 })
+      const projectInfos = randomDbSetup.project
+      setRequestor({ ...randomDbSetup.users[0], groups: [] })
+      const userToRemove = randomDbSetup.users[1]
 
       prisma.project.findUnique.mockResolvedValue(projectInfos)
-      prisma.user.findUnique.mockResolvedValue(userToRemove.user)
-      prisma.log.create.mockResolvedValue(getRandomLog('Remove User from Project', getRequestor().id))
-      prisma.project.update.mockResolvedValue(projectInfos)
-      prisma.environment.deleteMany.mockResolvedValue()
+      prisma.user.findUnique.mockResolvedValue(userToRemove)
+      prisma.permission.deleteMany.mockResolvedValue([])
       prisma.role.delete.mockResolvedValue(userToRemove)
-      prisma.environment.findMany.mockResolvedValue([])
-      prisma.repository.findMany.mockResolvedValue([])
-      prisma.role.findMany.mockResolvedValue(projectInfos.roles)
-      delete projectInfos.roles[0].user
+      prisma.log.create.mockResolvedValue(getRandomLog('Remove User from Project', getRequestor().id))
+      prisma.role.findMany.mockResolvedValue([projectInfos.roles[0]])
 
       const response = await app.inject()
-        .delete(`/api/v1/projects/${projectInfos.id}/users/${userToRemove.userId}`)
+        .delete(`/api/v1/projects/${projectInfos.id}/users/${userToRemove.id}`)
         .end()
 
       expect(response.statusCode).toEqual(200)
       expect(response.body).toBeDefined()
-      expect(response.json()).toEqual(projectInfos.roles)
+      expect(response.json()).toEqual([projectInfos.members[0]])
     })
 
     it('Should not remove an user if project is missing', async () => {
@@ -292,9 +288,90 @@ describe('User routes', () => {
         .delete(`/api/v1/projects/${projectInfos.id}/users/${userToRemove.id}`)
         .end()
 
+      expect(JSON.parse(response.body).error).toEqual('L\'utilisateur n\'est pas membre du projet')
       expect(response.statusCode).toEqual(400)
       expect(response.body).toBeDefined()
-      expect(JSON.parse(response.body).error).toEqual('L\'utilisateur n\'est pas membre du projet')
+    })
+  })
+
+  // GET
+  describe('getUsersController', () => {
+    it('Should retrieve users', async () => {
+      // Create users
+      const users = repeatFn(5)(getRandomUser)
+      requestor.groups = [adminGroupPath]
+      setRequestor(requestor)
+
+      prisma.user.findMany.mockResolvedValue(users)
+      prisma.adminPlugin.findMany.mockResolvedValue([])
+
+      const response = await app.inject()
+        .get(userContract.getAllUsers.path)
+        .end()
+
+      expect(response.statusCode).toEqual(200)
+      expect(response.json()).toEqual(users.map(user => ({ ...user, isAdmin: false })))
+    })
+
+    it('Should return an error if retrieve users failed', async () => {
+      const errorMessage = 'Erreur de récupération des utilisateurs'
+      requestor.groups = [adminGroupPath]
+      setRequestor(requestor)
+
+      prisma.user.findMany.mockRejectedValue(new Error(errorMessage))
+
+      const response = await app.inject()
+        .get(userContract.getAllUsers.path)
+        .end()
+
+      expect(response.statusCode).toEqual(500)
+      expect(JSON.parse(response.body).error).toEqual(errorMessage)
+    })
+
+    it('Should return an error if requestor is not admin', async () => {
+      const requestor = getRandomUser()
+      requestor.groups = []
+      setRequestor(requestor)
+
+      const response = await app.inject()
+        .get(userContract.getAllUsers.path)
+        .end()
+
+      expect(response.statusCode).toEqual(403)
+      expect(JSON.parse(response.body).error).toEqual('Vous n\'avez pas les droits administrateur')
+    })
+  })
+
+  // PUT
+  describe('updateUserAdminRole', () => {
+    it('Should make an non-admin user admin', async () => {
+      const user = getRandomUser()
+      requestor.groups = [adminGroupPath]
+      setRequestor(requestor)
+
+      prisma.adminPlugin.findMany.mockResolvedValue([])
+
+      const response = await app.inject()
+        .put(`/api/v1/users/${user.id}`)
+        .body({ isAdmin: false })
+        .end()
+
+      expect(response.statusCode).toEqual(204)
+    })
+
+    it('Should make an admin user non-admin', async () => {
+      const user = getRandomUser()
+      requestor.groups = [adminGroupPath]
+      setRequestor(requestor)
+
+      prisma.adminPlugin.findMany.mockResolvedValue([])
+
+      const response = await app.inject()
+        .put(`/api/v1/users/${user.id}`)
+        .body({ isAdmin: true })
+        .end()
+
+      expect(response.statusCode).toEqual(204)
     })
   })
 })

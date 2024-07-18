@@ -185,20 +185,26 @@ export const listClustersForUser = (where: Prisma.ClusterWhereInput) =>
     },
   })
 
+export const listAllClusters = () => prisma.cluster.findMany({
+  include: {
+    stages: true,
+  },
+})
+
 export const getProjectsByClusterId = async (id: Cluster['id']) =>
   (await prisma.cluster.findUniqueOrThrow({
     where: { id },
     select: { projects: true },
   }))?.projects
 
-export const getStagesByClusterId = async (id: Cluster['id']) =>
+export const listStagesByClusterId = async (id: Cluster['id']) =>
   (await prisma.cluster.findUniqueOrThrow({
     where: { id },
     select: { stages: true },
   }))?.stages
 
 export const createCluster = (
-  data: Omit<Cluster, 'id' | 'updatedAt' | 'createdAt' | 'kubeConfigId' | 'secretName'>,
+  data: Omit<Cluster, 'id' | 'updatedAt' | 'createdAt' | 'kubeConfigId' | 'secretName' | 'zoneId'>,
   kubeconfig: Pick<Kubeconfig, 'user' | 'cluster'>,
   zoneId: string,
 ) => prisma.cluster.create({

@@ -14,16 +14,16 @@ describe('Administration zones', () => {
   }
 
   beforeEach(() => {
-    cy.intercept('GET', '/api/v1/zones').as('getZones')
+    cy.intercept('GET', '/api/v1/zones').as('listZones')
     cy.intercept('GET', '/api/v1/clusters').as('getClusters')
-    cy.intercept('POST', '/api/v1/admin/zones').as('createZone')
-    cy.intercept('PUT', '/api/v1/admin/zones/*').as('updateZone')
-    cy.intercept('DELETE', '/api/v1/admin/zones/*').as('deleteZone')
+    cy.intercept('POST', '/api/v1/zones').as('createZone')
+    cy.intercept('PUT', '/api/v1/zones/*').as('updateZone')
+    cy.intercept('DELETE', '/api/v1/zones/*').as('deleteZone')
 
     cy.kcLogin('tcolin')
     cy.visit('/admin/zones')
     cy.url().should('contain', '/admin/zones')
-    cy.wait('@getZones').its('response').then(response => {
+    cy.wait('@listZones').its('response').then(response => {
       zones = response?.body
     })
     cy.wait('@getClusters').its('response.statusCode').should('match', /^20\d$/)
@@ -149,7 +149,7 @@ describe('Administration zones', () => {
     cy.wait('@createZone').its('response.statusCode').should('match', /^20\d$/)
 
     cy.reload()
-    cy.wait('@getZones').its('response.statusCode').should('match', /^20\d$/)
+    cy.wait('@listZones').its('response.statusCode').should('match', /^20\d$/)
 
     cy.getByDataTestid(`zoneTile-${newZone.label}`)
       .should('be.visible')

@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { onBeforeMount, ref, watch } from 'vue'
 import { type AllUsers, formatDate, sortArrByObjKeyAsc } from '@cpn-console/shared'
-import { useAdminUserStore } from '@/stores/admin/user.js'
+import { useProjectUserStore } from '@/stores/project-user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { copyContent } from '@/utils/func.js'
 import { useUserStore } from '@/stores/user.js'
@@ -15,7 +15,7 @@ type Row = {
   rowData: Array<string | Component>
 }
 
-const adminUserStore = useAdminUserStore()
+const projectUserStore = useProjectUserStore()
 const snackbarStore = useSnackbarStore()
 
 const allUsers = ref<AllUsers>([])
@@ -34,7 +34,7 @@ const headers = [
 ]
 
 const getAllUsers = async () => {
-  allUsers.value = await adminUserStore.getAllUsers() ?? []
+  allUsers.value = await projectUserStore.getAllUsers() ?? []
 }
 
 const filterRows = (rows: Row[]): Row[] | EmptyRow => {
@@ -84,7 +84,7 @@ const setRows = () => {
             onClick: async (event: CheckboxEvent) => {
               const value = event.target.checked
               if (value !== isAdmin) {
-                await adminUserStore.updateUserAdminRole(id, value)
+                await projectUserStore.updateUserAdminRole(id, value)
                 snackbarStore.setMessage(value ? `Le rôle d'administrateur a été attribué à ${email}` : `Le rôle d'administrateur a été retiré à ${email}`, 'success')
                 await getAllUsers()
                 // Redirect user to home if he removed himself from admin group

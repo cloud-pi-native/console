@@ -7,7 +7,7 @@ import {
   listOrganizations,
   updateOrganization,
 } from './business.js'
-import { checkIsAdmin } from '@/utils/controller.js'
+import { assertIsAdmin } from '@/utils/controller.js'
 
 export const organizationRouter = () => serverInstance.router(organizationContract, {
   listOrganizations: async ({ request: req, query }) => {
@@ -25,7 +25,7 @@ export const organizationRouter = () => serverInstance.router(organizationContra
 
   // Créer une organisation
   createOrganization: async ({ request: req, body: data }) => {
-    checkIsAdmin(req.session.user)
+    assertIsAdmin(req.session.user)
     const organization = await createOrganization(data)
 
     addReqLogs({
@@ -43,7 +43,7 @@ export const organizationRouter = () => serverInstance.router(organizationContra
 
   // Synchroniser les organisations via les plugins externes
   syncOrganizations: async ({ request: req }) => {
-    checkIsAdmin(req.session.user)
+    assertIsAdmin(req.session.user)
     const userId = req.session.user.id
 
     const consoleOrganizations = await fetchOrganizations(userId, req.id)
@@ -60,7 +60,7 @@ export const organizationRouter = () => serverInstance.router(organizationContra
 
   // Mettre à jour une organisation
   updateOrganization: async ({ request: req, body: data, params }) => {
-    checkIsAdmin(req.session.user)
+    assertIsAdmin(req.session.user)
     const name = params.organizationName
 
     const organization = await updateOrganization(name, data)

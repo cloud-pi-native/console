@@ -1,14 +1,17 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { CreateProjectBody, Project, Role, UpdateProjectBody } from '@cpn-console/shared'
+import type { CreateProjectBody, Organization, ProjectV2, UpdateProjectBody, projectContract } from '@cpn-console/shared'
 import { apiClient, extractData } from '@/api/xhr-client.js'
-import { projectContract } from '@cpn-console/shared'
 import { useUsersStore } from './users.js'
+import { useOrganizationStore } from './organization.js'
+
+export type ProjectWithOrganization = ProjectV2 & { organization: Organization }
 
 export const useProjectStore = defineStore('project', () => {
-  const selectedProject = ref<Project>()
-  const projects = ref<Project[]>([])
+  const selectedProject = ref<ProjectWithOrganization>()
+  const projects = ref<ProjectWithOrganization[]>([])
   const usersStore = useUsersStore()
+  const organizationStore = useOrganizationStore()
 
   const setSelectedProject = (id: string) => {
     selectedProject.value = projects.value.find(project => project.id === id)
@@ -17,63 +20,43 @@ export const useProjectStore = defineStore('project', () => {
   const updateProject = async (projectId: string, data: UpdateProjectBody) => {
     await apiClient.Projects.updateProject({ body: data, params: { projectId } })
       .then(response => extractData(response, 200))
-    await getUserProjects()
+    await listProjects()
   }
 
-  const getUserProjects = async () => {
-    const res = await apiClient.Projects.getProjects()
+  const listProjects = async (query: typeof projectContract.listProjects.query._type = { filter: 'member', statusNotIn: 'archived' }) => {
+    const res = await apiClient.Projects.listProjects({ query })
       .then(response => extractData(response, 200))
-    if (!res) return
-    projects.value = res
+    await organizationStore.listOrganizations()
+    projects.value = res.map(project => ({ ...project, organization: organizationStore.organizationsById[project.organizationId] as Organization }))
+    projects.value.forEach(project => {
+      usersStore.addUsersFromMembers(project.members)
+    })
     if (selectedProject.value) {
       setSelectedProject(selectedProject.value.id)
     }
   }
 
-  const listProjects = async (args: Parameters<typeof apiClient.Projects.listProjects>[0]) => {
-    const projects = await apiClient.Projects.listProjects(args)
-      .then(response => extractData(response, 200))
-    projects.forEach(project => {
-      project.members.forEach(({ userId, role: _, ...user }) => {
-        usersStore.addUser({ ...user, id: userId })
-      })
-    })
-    return projects
-  }
-
   const createProject = async (body: CreateProjectBody) => {
     await apiClient.Projects.createProject({ body })
       .then(response => extractData(response, 201))
-    await getUserProjects()
+    await listProjects()
   }
 
   const replayHooksForProject = async (projectId: string) => {
     await apiClient.Projects.replayHooksForProject({ params: { projectId } })
       .then(response => extractData(response, 204))
-    await getUserProjects()
+    await listProjects()
   }
 
   const archiveProject = async (projectId: string) => {
     await apiClient.Projects.archiveProject({ params: { projectId } })
       .then(response => extractData(response, 204))
     selectedProject.value = undefined
-    await getUserProjects()
+    await listProjects()
   }
 
   const getProjectSecrets = (projectId: string) => apiClient.Projects.getProjectSecrets({ params: { projectId } })
     .then(response => extractData(response, 200))
-
-  const updateProjectRoles = (projectId: string, roles: Role[]) => {
-    const project = projects.value.find(project => project.id === projectId)
-    if (!project) return
-    project.roles = roles
-  }
-
-  const getAllProjects = async (query: typeof projectContract.listProjects.query._type) => {
-    const projects = await listProjects({ query })
-    projects.forEach(project => usersStore.addUsersFromMembers(project.members))
-    return projects
-  }
 
   const handleProjectLocking = (projectId: string, lock: boolean) =>
     apiClient.Projects.patchProject({ body: { lock }, params: { projectId } })
@@ -84,7 +67,6 @@ export const useProjectStore = defineStore('project', () => {
       .then(response => extractData(response, 200))
 
   return {
-    getAllProjects,
     handleProjectLocking,
     generateProjectsData,
     selectedProject,
@@ -92,11 +74,9 @@ export const useProjectStore = defineStore('project', () => {
     setSelectedProject,
     listProjects,
     updateProject,
-    getUserProjects,
     createProject,
     replayHooksForProject,
     archiveProject,
     getProjectSecrets,
-    updateProjectRoles,
   }
 })

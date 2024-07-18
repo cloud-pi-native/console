@@ -25,14 +25,14 @@ export const CreateQuotaSchema = {
   },
 }
 
-export const GetQuotasSchema = {
+export const ListQuotasSchema = {
   responses: {
     200: z.array(QuotaSchema),
     500: ErrorSchema,
   },
 }
 
-export const GetQuotaEnvironmentsSchema = {
+export const ListQuotaEnvironmentsSchema = {
   params: z.object({
     quotaId: z.string()
       .uuid(),

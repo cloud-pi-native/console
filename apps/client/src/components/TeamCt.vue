@@ -43,6 +43,12 @@ const isUserAlreadyInTeam = computed(() => {
   return !!props.members.find(member => props.knownUsers[member.userId]?.email === newUserEmail.value)
 })
 
+const removeUserHint = (userId: User['id']) => {
+  if (isOwnerOrAdmin.value) return `retirer ${props.knownUsers[userId].email} du projet`
+  else if (userId === props.userProfile?.id) return 'me retirer du projet'
+  else return 'vous n\'avez pas les droits suffisants pour retirer un membre du projet'
+}
+
 const isOwnerOrAdmin = ref(props.members.some(member => (member.userId === props.userProfile?.id && member.role === 'owner') ||
   props.userProfile?.groups?.includes(adminGroupPath)))
 const newUserInputKey = ref(getRandomId('input'))
@@ -104,8 +110,8 @@ const setRows = () => {
         },
         {
           cellAttrs: {
-            class: `fr-fi-close-line !flex justify-center ${isOwnerOrAdmin.value ? 'cursor-pointer fr-text-default--warning' : 'disabled'}`,
-            title: isOwnerOrAdmin.value ? `retirer ${props.knownUsers[member.userId].email} du projet` : 'vous n\'avez pas les droits suffisants pour retirer un membre du projet',
+            class: `fr-fi-close-line !flex justify-center ${isOwnerOrAdmin.value || member.userId === props.userProfile?.id ? 'cursor-pointer fr-text-default--warning' : 'disabled'}`,
+            title: removeUserHint(member.userId),
             onClick: () => removeUserFromProject(member.userId),
           },
         },

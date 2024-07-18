@@ -1,15 +1,14 @@
 <script lang="ts" setup>
 import { ref, computed, onBeforeMount, watch } from 'vue'
 import {
-  type ClusterAssociatedEnvironments,
   ClusterPrivacy,
   ClusterDetailsSchema,
   KubeconfigSchema,
   SharedZodError,
-  ClusterDetails,
-  Project,
-  Stage,
-  Zone,
+  type ClusterAssociatedEnvironments,
+  type ClusterDetails,
+  type Stage,
+  type Zone,
 } from '@cpn-console/shared'
 // @ts-ignore
 import { load } from 'js-yaml'
@@ -18,13 +17,14 @@ import { JsonViewer } from 'vue3-json-viewer'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import ChoiceSelector from './ChoiceSelector.vue'
 import { toCodeComponent } from '@/utils/func.js'
+import type { ProjectWithOrganization } from '../stores/project.js'
 
 const snackbarStore = useSnackbarStore()
 
 const props = withDefaults(defineProps<{
   isNewCluster: boolean
   cluster: ClusterDetails
-  allProjects: Project[]
+  allProjects: ProjectWithOrganization[]
   allStages: Stage[]
   allZones: Zone[]
   associatedEnvironments: ClusterAssociatedEnvironments

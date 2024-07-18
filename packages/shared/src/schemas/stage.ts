@@ -24,7 +24,7 @@ export const CreateStageSchema = {
   },
 }
 
-export const GetStagesSchema = {
+export const ListStagesSchema = {
   responses: {
     200: StageSchema.array(),
     500: ErrorSchema,

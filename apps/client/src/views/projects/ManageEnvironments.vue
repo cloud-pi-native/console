@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
-import { ClusterPrivacy, projectIsLockedInfo, sortArrByObjKeyAsc, type Environment, type Project } from '@cpn-console/shared'
+import { ClusterPrivacy, projectIsLockedInfo, sortArrByObjKeyAsc, type Environment } from '@cpn-console/shared'
 import { useUserStore } from '@/stores/user.js'
 import { useClusterStore } from '@/stores/cluster.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
@@ -19,22 +19,22 @@ const userStore = useUserStore()
 const clusterStore = useClusterStore()
 const snackbarStore = useSnackbarStore()
 
-const project = computed(() => projectStore.selectedProject)
-const isOwner = computed(() => project.value?.roles?.some(role => role.userId === userStore.userProfile?.id && role.role === 'owner'))
-const environmentNames = computed(() => environments.value.map(env => env.title))
+const environmentsTiles = ref<EnvironmentTile[]>([])
+
+const isOwner = computed(() => projectStore.selectedProject?.members.some(member => member.userId === userStore.userProfile?.id && member.role === 'owner'))
+const environmentNames = computed(() => environmentsTiles.value.map(env => env.title))
 const allClusters = computed(() => clusterStore.clusters)
 
-const environments = ref<EnvironmentTile[]>([])
 const selectedEnvironment = ref<Environment>()
 const isNewEnvironmentForm = ref(false)
 
 const projectClustersIds = computed(() => ([
   ...clusterStore.clusters.filter(cluster => cluster.privacy === ClusterPrivacy.PUBLIC).map(({ id }) => id),
-  ...project.value?.clusterIds ?? [],
+  ...projectStore.selectedProject?.clusterIds ?? [],
 ]))
 
-const setEnvironmentsTiles = async (projectId: Project['id']) => {
-  environments.value = sortArrByObjKeyAsc(await projectEnvironmentStore.getProjectEnvironments(projectId), 'name')
+const setEnvironmentsTiles = async () => {
+  environmentsTiles.value = sortArrByObjKeyAsc(projectEnvironmentStore.environments, 'name')
     .map(environment => ({
       id: environment.id,
       title: environment.name,
@@ -63,7 +63,7 @@ const cancel = () => {
 
 const addEnvironment = async (environment: Omit<Environment, 'id' | 'permissions'>) => {
   snackbarStore.isWaitingForResponse = true
-  if (project.value && !project.value.locked) {
+  if (projectStore.selectedProject && !projectStore.selectedProject.locked) {
     await projectEnvironmentStore.addEnvironmentToProject(environment)
   }
   cancel()
@@ -72,7 +72,7 @@ const addEnvironment = async (environment: Omit<Environment, 'id' | 'permissions
 
 const putEnvironment = async (environment: Pick<Environment, 'quotaId' | 'id'>) => {
   snackbarStore.isWaitingForResponse = true
-  if (project.value && !project.value.locked) {
+  if (projectStore.selectedProject && !projectStore.selectedProject.locked) {
     await projectEnvironmentStore.updateEnvironment(environment.id, environment)
   }
   cancel()
@@ -87,22 +87,22 @@ const deleteEnvironment = async (environmentId: Environment['id']) => {
 }
 
 onMounted(async () => {
-  if (!project.value) return
+  if (!projectStore.selectedProject) return
   await clusterStore.getClusters()
-  await setEnvironmentsTiles(project.value?.id)
+  await projectEnvironmentStore.getProjectEnvironments(projectStore.selectedProject?.id)
+  setEnvironmentsTiles()
 })
 
-watch(project, async () => {
-  if (!project.value) return
-  await setEnvironmentsTiles(project.value?.id)
+projectEnvironmentStore.$subscribe(() => {
+  setEnvironmentsTiles()
 })
 </script>
 
 <template>
-  <DsoSelectedProject />
   <template
-    v-if="project"
+    v-if="projectStore.selectedProject"
   >
+    <DsoSelectedProject />
     <div
       class="flex <md:flex-col-reverse items-center justify-between pb-5"
     >
@@ -111,8 +111,8 @@ watch(project, async () => {
         label="Ajouter un nouvel environnement"
         data-testid="addEnvironmentLink"
         tertiary
-        :disabled="project?.locked"
-        :title="project?.locked ? projectIsLockedInfo : 'Ajouter un nouvel environnement'"
+        :disabled="projectStore.selectedProject.locked"
+        :title="projectStore.selectedProject.locked ? projectIsLockedInfo : 'Ajouter un nouvel environnement'"
         class="fr-mt-2v <md:mb-2"
         icon="ri-add-line"
         @click="showNewEnvironmentForm()"
@@ -136,9 +136,9 @@ watch(project, async () => {
       class="my-5 pb-10 border-grey-900 border-y-1"
     >
       <EnvironmentForm
-        :environment="{projectId: project?.id}"
+        :environment="{projectId: projectStore.selectedProject.id}"
         :environment-names="environmentNames"
-        :is-project-locked="project?.locked"
+        :is-project-locked="projectStore.selectedProject.locked"
         :project-clusters-ids="projectClustersIds"
         :all-clusters="clusterStore.clusters"
         @add-environment="(environment: Omit<Environment, 'id' | 'permissions'>) => addEnvironment(environment)"
@@ -152,7 +152,7 @@ watch(project, async () => {
       }"
     >
       <div
-        v-for="environment in environments"
+        v-for="environment in environmentsTiles"
         :key="environment.id"
         class="fr-mt-2v fr-mb-4w"
       >
@@ -172,7 +172,7 @@ watch(project, async () => {
           :environment="selectedEnvironment"
           :project-clusters-ids="[selectedEnvironment.clusterId]"
           :is-editable="false"
-          :is-project-locked="project?.locked"
+          :is-project-locked="projectStore.selectedProject.locked"
           :is-owner="isOwner"
           :all-clusters="allClusters"
           @put-environment="(environmentUpdate: Pick<Environment, 'quotaId'>) => putEnvironment({...environmentUpdate, id: environment.id })"
@@ -181,7 +181,7 @@ watch(project, async () => {
         />
       </div>
       <div
-        v-if="!environments.length && !isNewEnvironmentForm"
+        v-if="!environmentsTiles.length && !isNewEnvironmentForm"
       >
         <p>Aucun environnement déployé</p>
       </div>

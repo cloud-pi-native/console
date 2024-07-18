@@ -4,7 +4,7 @@ import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@/main.css'
 import PermissionForm from '@/components/PermissionForm.vue'
-import { createRandomDbSetup, getRandomUser, getRandomRole } from '@cpn-console/test-utils'
+import { createRandomDbSetup, getRandomUser, getRandomMember } from '@cpn-console/test-utils'
 import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
 import { Pinia, createPinia, setActivePinia } from 'pinia'
@@ -26,19 +26,16 @@ describe('PermissionForm.vue', () => {
     const usersStore = useUsersStore()
 
     let userToLicence = getRandomUser()
-    userToLicence = {
-      ...getRandomRole(userToLicence.id),
-      user: userToLicence,
-    }
+    userToLicence = { ...getRandomMember(userToLicence.id), ...userToLicence }
+    randomDbSetup.project.members = [...randomDbSetup.project.members, userToLicence]
     usersStore.users = randomDbSetup.users.reduce((acc, curr) => {
       return { ...acc, [curr.id]: curr }
     }, {})
-    usersStore.users[userToLicence.userId] = userToLicence.user
+    usersStore.users[userToLicence.userId] = userToLicence
 
     projectStore.selectedProject = randomDbSetup.project
     const owner = randomDbSetup.project.roles?.find(role => role.role === 'owner')?.user
     userStore.userProfile = randomDbSetup.users[1]
-    projectStore.selectedProject.roles = [userToLicence, ...randomDbSetup.project.roles]
 
     const environment = projectStore.selectedProject?.environments[0]
     const ownerPermission = environment.permissions.find(permission => permission.user.email === owner.email)
@@ -89,11 +86,11 @@ describe('PermissionForm.vue', () => {
         cy.get('label')
           .should('contain', `E-mail de l'utilisateur à accréditer sur l'environnement ${props.environment.name}`)
         cy.get('.fr-hint-text')
-          .should('contain', `Entrez l'e-mail d'un membre du projet ${projectStore.selectedProject.name}. Ex : ${userToLicence.user.email}`)
+          .should('contain', `Entrez l'e-mail d'un membre du projet ${projectStore.selectedProject.name}. Ex : ${userToLicence.email}`)
         cy.get('datalist#suggestionList')
           .find('option')
-          .should('have.length', projectStore.selectedProject.roles.length - props.environment.permissions.length)
-          .should('have.value', userToLicence.user.email)
+          .should('have.length', projectStore.selectedProject.members.length - props.environment.permissions.length)
+          .should('have.value', userToLicence.email)
       })
   })
   it('Should mount a PermissionForm with no user to licence', () => {

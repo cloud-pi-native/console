@@ -8,26 +8,26 @@ const secondUserProjects = getUserProjects('cb8e5b4b-7b7b-40f5-935f-594f48ae6569
 describe('Projects view', () => {
   it('Should display select and button to create project', () => {
     cy.kcLogin('test')
-    cy.intercept('GET', 'api/v1/projects/mines').as('getProjects')
-    cy.intercept('GET', '/api/v1/stages').as('getStages')
+    cy.intercept('GET', 'api/v1/projects?filter=member&statusNotIn=archived').as('listProjects')
+    cy.intercept('GET', '/api/v1/stages').as('listStages')
 
     cy.goToProjects()
-      .wait('@getProjects').its('response').then(response => {
+      .wait('@listProjects').its('response').then(response => {
         cy.log(response?.body.length)
           .get('[data-testid^="projectTile-"]')
           .should('have.length', `${response?.body.length}`)
       })
       .getByDataTestid(`projectTile-${project.name}`).click()
       .url().should('contain', `projects/${project.id}/dashboard`)
-    cy.wait('@getStages')
+    cy.wait('@listStages')
       .getByDataTestid('currentProjectInfo')
       .should('contain', `Le projet courant est : ${project.name} (${organization.label})`)
   })
   it('Should display only projects that user is member of', () => {
     cy.kcLogin((user.firstName.slice(0, 1) + user.lastName).toLowerCase())
-    cy.intercept('GET', 'api/v1/projects/mines').as('getProjects')
+    cy.intercept('GET', 'api/v1/projects?filter=member&statusNotIn=archived').as('listProjects')
     cy.goToProjects()
-      .wait('@getProjects').its('response').then(response => {
+      .wait('@listProjects').its('response').then(response => {
         cy.log(response?.body.length)
           .get('[data-testid^="projectTile-"]')
           .should('have.length', `${secondUserProjects.length}`)

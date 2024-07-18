@@ -1,13 +1,13 @@
-import prisma from '../../../__mocks__/prisma.js'
+import prisma from '../../__mocks__/prisma.js'
 import { vi, describe, it, expect, beforeAll, afterEach, afterAll, beforeEach } from 'vitest'
-import { getConnection, closeConnections } from '../../../connect.js'
+import { getConnection, closeConnections } from '../../connect.js'
 import { adminGroupPath } from '@cpn-console/shared'
 import { getRandomCluster, getRandomQuota, getRandomRole, getRandomStage, getRandomUser, repeatFn } from '@cpn-console/test-utils'
 import { faker } from '@faker-js/faker'
-import { getRequestor, setRequestor } from '../../../utils/mocks.js'
-import app from '../../../app.js'
+import { getRequestor, setRequestor } from '../../utils/mocks.js'
+import app from '../../app.js'
 
-vi.mock('fastify-keycloak-adapter', (await import('../../../utils/mocks.js')).mockSessionPlugin)
+vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
 
 describe('Admin stage routes', () => {
   beforeAll(async () => {
@@ -60,7 +60,7 @@ describe('Admin stage routes', () => {
 
       const response = await app.inject({ headers: { admin: 'admin' } })
         // @ts-ignore
-        .get(`/api/v1/admin/stages/${stage.id}/environments`)
+        .get(`/api/v1/stages/${stage.id}/environments`)
         .end()
 
       expect(response.statusCode).toEqual(200)
@@ -95,7 +95,7 @@ describe('Admin stage routes', () => {
 
       const response = await app.inject({ headers: { admin: 'admin' } })
         // @ts-ignore
-        .post('/api/v1/admin/stages')
+        .post('/api/v1/stages')
         .body(stage)
         .end()
 
@@ -110,7 +110,7 @@ describe('Admin stage routes', () => {
 
       const response = await app.inject({ headers: { admin: 'admin' } })
         // @ts-ignore
-        .post('/api/v1/admin/stages')
+        .post('/api/v1/stages')
         .body(stage)
         .end()
 
@@ -141,7 +141,7 @@ describe('Admin stage routes', () => {
 
       const response = await app.inject({ headers: { admin: 'admin' } })
         // @ts-ignore
-        .put(`/api/v1/admin/stages/${stage.id}`)
+        .put(`/api/v1/stages/${stage.id}`)
         .body({ clusterIds })
         .end()
       expect(response.json()).toEqual({
@@ -170,7 +170,7 @@ describe('Admin stage routes', () => {
 
       const response = await app.inject({ headers: { admin: 'admin' } })
         // @ts-ignore
-        .put(`/api/v1/admin/stages/${stage.id}`)
+        .put(`/api/v1/stages/${stage.id}`)
         .body(data)
         .end()
 
@@ -193,7 +193,7 @@ describe('Admin stage routes', () => {
 
       const response = await app.inject({ headers: { admin: 'admin' } })
         // @ts-ignore
-        .delete(`/api/v1/admin/stages/${stage.id}`)
+        .delete(`/api/v1/stages/${stage.id}`)
         .end()
 
       expect(response.statusCode).toEqual(204)
@@ -206,7 +206,7 @@ describe('Admin stage routes', () => {
 
       const response = await app.inject({ headers: { admin: 'admin' } })
         // @ts-ignore
-        .delete(`/api/v1/admin/stages/${stage.id}`)
+        .delete(`/api/v1/stages/${stage.id}`)
         .end()
 
       expect(response.statusCode).toEqual(400)
