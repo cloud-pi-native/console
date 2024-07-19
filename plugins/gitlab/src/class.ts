@@ -205,8 +205,8 @@ export class GitlabProjectApi extends PluginApi {
 
   public async createCloneRepository (repoName: string, externalRepoUrn: string, creds?: RepoCreds) {
     const group = await this.getOrCreateProjectGroup()
-    const url = creds
-      ? `https://${creds.username ?? ''}:${creds.token ?? ''}@${externalRepoUrn}`
+    const url = creds?.username || creds?.token
+      ? `https://${creds?.username ?? ''}:${creds?.token ?? ''}@${externalRepoUrn}`
       : `https://${externalRepoUrn}`
 
     return this.api.Projects.create({

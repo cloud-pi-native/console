@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { EnvironmentSchema } from './environment.js'
 import { OrganizationSchema } from './organization.js'
-import { ProjectSchemaV2 } from './project.js'
+// import { ProjectSchemaV2 } from './project.js'
 import { UserSchema } from './user.js'
 import { ErrorSchema } from './utils.js'
 
@@ -94,7 +94,8 @@ export const GetClusterAssociatedEnvironmentsSchema = {
   responses: {
     200: z.array(z.object({
       organization: OrganizationSchema.shape.name,
-      project: ProjectSchemaV2.shape.name,
+      // TODO: Remettre `ProjectSchemaV2.shape.name` mais attention aux projets non compatibles
+      project: z.string(),
       name: EnvironmentSchema.shape.name,
       owner: UserSchema.shape.email.optional(),
     })),
