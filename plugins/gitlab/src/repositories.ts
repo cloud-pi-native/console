@@ -60,7 +60,7 @@ const ensureRepositoryExists = async (
   }
 
   if (!gitlabRepository) {
-    gitlabRepository = await gitlabApi.createCloneRepository(repository.internalRepoName, externalRepoUrn, repository.newCreds) // TODO
+    gitlabRepository = await gitlabApi.createCloneRepository(repository.internalRepoName, externalRepoUrn, repository.newCreds ?? { username: currentVaultSecret?.data.GIT_INPUT_USER, token: currentVaultSecret?.data.GIT_INPUT_PASSWORD }) // TODO
   }
 
   const internalRepoUrl = await gitlabApi.getRepoUrl(repository.internalRepoName)
