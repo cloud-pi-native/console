@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.9.2](https://github.com/cloud-pi-native/console/compare/v8.9.1...v8.9.2) (2024-07-19)
+
+
+### Bug Fixes
+
+* :ambulance: clone private repositories in gitlab plugin ([d42bbf8](https://github.com/cloud-pi-native/console/commit/d42bbf8a02950a6f9d0d3218bd7bc40cec203843))
+
 ## [8.9.1](https://github.com/cloud-pi-native/console/compare/v8.9.0...v8.9.1) (2024-07-18)
 
 
