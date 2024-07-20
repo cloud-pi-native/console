@@ -32,10 +32,13 @@ export const upsertProject: StepCall<Project> = async (payload) => {
 
     // first create or patch resources
     const applications = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'applications', undefined, undefined, undefined, undefined, projectSelector)
+    // @ts-ignore
+    console.log({ applications: JSON.stringify(applications.body.items) })
 
     const appProjects = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'appprojects', undefined, undefined, undefined, undefined, projectSelector)
 
     for (const environment of project.environments) {
+      console.log({ env: environment })
       const cluster = getCluster(project, environment)
       const infraProject = await gitlabApi.getOrCreateInfraProject(cluster.zone.slug)
       const appProjectName = generateAppProjectName(project.organization.name, project.name, environment.name)
@@ -59,7 +62,9 @@ export const upsertProject: StepCall<Project> = async (payload) => {
 
       // @ts-ignore
       const appProject = findAppProject(appProjects.body.items, environment.name)
+      console.log({ appProject: JSON.stringify(appProject) })
       if (appProject) {
+        console.log('REPLACE NS')
         const { spec } = getMinimalAppProjectPatch(
           destination,
           appProjectName,
@@ -71,6 +76,7 @@ export const upsertProject: StepCall<Project> = async (payload) => {
 
         await customK8sApi.replaceNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'appprojects', appProjectName, appProject)
       } else {
+        console.log('CREATE NS')
         const appProjectObject = getAppProjectObject({
           name: appProjectName,
           sourceRepos,
@@ -88,14 +94,17 @@ export const upsertProject: StepCall<Project> = async (payload) => {
       for (const repository of infraRepositories) {
         // @ts-ignore
         const application = findApplication(applications.body.items, repository.internalRepoName, environment.name)
+        console.log({ application: JSON.stringify(application) })
         const repoURL = await gitlabApi.getRepoUrl(repository.internalRepoName)
         if (application) {
+          console.log('REPLACE APP')
           application.spec.destination = destination
           application.spec.project = appProjectName
           application.spec.source.repoURL = repoURL
 
-          await customK8sApi.replaceNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'applications', application.metadata.name, application)
+          await customK8sApi.replaceNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'applications', application.metadata.name, application, undefined, 'kubectl')
         } else {
+          console.log('CRATE APP')
           const applicationName = generateApplicationName(project.organization.name, project.name, environment.name, repository.internalRepoName)
           const applicationObject = getApplicationObject({
             name: applicationName,
