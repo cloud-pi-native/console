@@ -1,7 +1,6 @@
-import { clusterContract } from '@cpn-console/shared'
-import { addReqLogs } from '@/utils/logger.js'
+import { AdminAuthorized, clusterContract } from '@cpn-console/shared'
 import {
-  getAllUserClusters,
+  getClusters,
   createCluster,
   deleteCluster,
   getClusterAssociatedEnvironments,
@@ -10,22 +9,27 @@ import {
 } from './business.js'
 import '@/types/index.js'
 import { serverInstance } from '@/app.js'
-import { assertIsAdmin } from '@/utils/controller.js'
+import { authUser, ErrorResType, Forbidden403 } from '@/utils/controller.js'
 
 export const clusterRouter = () => serverInstance.router(clusterContract, {
   listClusters: async ({ request: req }) => {
     const user = req.session.user
-    const cleanedClusters = await getAllUserClusters(user)
+    const { adminPermissions } = await authUser(user)
+    const body = AdminAuthorized.ManageClusters(adminPermissions)
+      ? await getClusters()
+      : await getClusters(user.id)
 
-    addReqLogs({ req, message: 'Clusters récupérés avec succès' })
     return {
       status: 200,
-      body: cleanedClusters,
+      body,
     }
   },
 
   getClusterDetails: async ({ params, request: req }) => {
-    assertIsAdmin(req.session.user)
+    const user = req.session.user
+    const perms = await authUser(user)
+    if (!AdminAuthorized.ManageClusters(perms.adminPermissions)) return new Forbidden403()
+
     const clusterId = params.clusterId
     const cluster = await getClusterDetailsBusiness(clusterId)
 
@@ -36,24 +40,28 @@ export const clusterRouter = () => serverInstance.router(clusterContract, {
   },
 
   createCluster: async ({ request: req, body: data }) => {
-    assertIsAdmin(req.session.user)
-    const userId = req.session.user.id
+    const user = req.session.user
+    const perms = await authUser(user)
+    if (!AdminAuthorized.ManageClusters(perms.adminPermissions)) return new Forbidden403()
+    if (!AdminAuthorized.ManageStages(perms.adminPermissions)) data.stageIds = []
 
-    const cluster = await createCluster(data, userId, req.id)
+    const body = await createCluster(data, user.id, req.id)
+    if (body instanceof ErrorResType) return body
 
-    addReqLogs({ req, message: 'Cluster créé avec succès', infos: { clusterId: cluster.id } })
     return {
       status: 201,
-      body: cluster,
+      body,
     }
   },
 
   getClusterEnvironments: async ({ request: req, params }) => {
-    assertIsAdmin(req.session.user)
+    const user = req.session.user
+    const perms = await authUser(user)
+    if (!AdminAuthorized.ManageClusters(perms.adminPermissions)) return new Forbidden403()
+
     const clusterId = params.clusterId
     const environments = await getClusterAssociatedEnvironments(clusterId)
 
-    addReqLogs({ req, message: 'Environnements associés au cluster récupérés', infos: { clusterId } })
     return {
       status: 200,
       body: environments,
@@ -61,30 +69,33 @@ export const clusterRouter = () => serverInstance.router(clusterContract, {
   },
 
   updateCluster: async ({ request: req, params, body: data }) => {
-    assertIsAdmin(req.session.user)
-    const userId = req.session.user.id
+    const user = req.session.user
+    const perms = await authUser(user)
+    if (!AdminAuthorized.ManageClusters(perms.adminPermissions)) return new Forbidden403()
+    if (!AdminAuthorized.ManageStages(perms.adminPermissions)) delete data.stageIds
+
     const clusterId = params.clusterId
+    const body = await updateCluster(data, clusterId, user.id, req.id)
 
-    const cluster = await updateCluster(data, clusterId, userId, req.id)
+    if (body instanceof ErrorResType) return body
 
-    addReqLogs({ req, message: 'Cluster mis à jour avec succès', infos: { clusterId: cluster.id } })
     return {
       status: 200,
-      body: cluster,
+      body,
     }
   },
 
   deleteCluster: async ({ request: req, params }) => {
-    assertIsAdmin(req.session.user)
-    const userId = req.session.user.id
+    const user = req.session.user
+    const perms = await authUser(user)
+    if (!AdminAuthorized.ManageClusters(perms.adminPermissions)) return new Forbidden403()
+
     const clusterId = params.clusterId
-
-    await deleteCluster(clusterId, userId, req.id)
-
-    addReqLogs({ req, message: 'Cluster supprimé avec succès', infos: { clusterId } })
+    const body = await deleteCluster(clusterId, user.id, req.id)
+    if (body instanceof ErrorResType) return body
     return {
-      status: 204,
-      body: null,
+      status: 200,
+      body,
     }
   },
 })

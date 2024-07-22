@@ -1,15 +1,20 @@
 <script lang="ts" setup>
 import { onBeforeMount, ref, watch } from 'vue'
-import { type AllUsers, formatDate, sortArrByObjKeyAsc } from '@cpn-console/shared'
+import { type AllUsers, formatDate, sortArrByObjKeyAsc, type Role } from '@cpn-console/shared'
 import { useProjectUserStore } from '@/stores/project-user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { copyContent } from '@/utils/func.js'
-import { useUserStore } from '@/stores/user.js'
+import { useAdminRoleStore } from '@/stores/admin-role.js'
 import type { Component, EmptyRow } from './ListProjects.vue'
 
-interface CheckboxEvent extends Event {
-  target: HTMLInputElement
-}
+const adminRoleStore = useAdminRoleStore()
+
+const adminRoles = ref<Role[]>([])
+onBeforeMount(async () => {
+  if (adminRoleStore.roles.length) {
+    adminRoles.value = await adminRoleStore.listAdminRoles()
+  }
+})
 
 type Row = {
   rowData: Array<string | Component>
@@ -28,7 +33,7 @@ const headers = [
   'Prénom',
   'Nom',
   'E-mail',
-  'Administrateur',
+  'Rôles',
   'Création',
   'Modification',
 ]
@@ -61,7 +66,7 @@ const filterRows = (rows: Row[]): Row[] | EmptyRow => {
 
 const setRows = () => {
   rows.value = sortArrByObjKeyAsc(allUsers.value, 'firstName')
-    ?.map(({ id, firstName, lastName, email, isAdmin, createdAt, updatedAt }) => (
+    ?.map(({ id, firstName, lastName, email, adminRoleIds, createdAt, updatedAt }) => (
       {
         rowData: [
           {
@@ -74,31 +79,7 @@ const setRows = () => {
           firstName,
           lastName,
           email,
-          {
-            component: 'input',
-            type: 'checkbox',
-            checked: isAdmin,
-            'data-testid': `${id}-is-admin`,
-            class: 'fr-checkbox-group--sm',
-            title: isAdmin ? `Retirer le rôle d'administrateur de ${email}` : `Donner le rôle d'administrateur à ${email}`,
-            onClick: async (event: CheckboxEvent) => {
-              const value = event.target.checked
-              if (value !== isAdmin) {
-                await projectUserStore.updateUserAdminRole(id, value)
-                snackbarStore.setMessage(value ? `Le rôle d'administrateur a été attribué à ${email}` : `Le rôle d'administrateur a été retiré à ${email}`, 'success')
-                await getAllUsers()
-                // Redirect user to home if he removed himself from admin group
-                // TODO : router.push ne suffit pas, il faut un rechargement complet
-                // instance keycloak ne semble pas au courant du changement de groupe, visible au reload
-
-                // useUserStore().setUserProfile()
-                // console.log(useUserStore().userProfile?.groups)
-
-                // @ts-ignore
-                if (useUserStore().userProfile?.id === id && !value) window.location = '/'
-              }
-            },
-          },
+          adminRoleStore.roles.filter(({ id }) => adminRoleIds.includes(id)).map(({ name }) => name).join('\n') || '-',
           formatDate(createdAt),
           formatDate(updatedAt),
         ],

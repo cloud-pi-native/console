@@ -1,14 +1,14 @@
 import { type Zone } from '@cpn-console/shared'
-import { BadRequestError, ForbiddenError } from '@/utils/errors.js'
 import {
   listZones as listZonesQuery,
   createZone as createZoneQuery,
   updateZone as updateZoneQuery,
   deleteZone as deleteZoneQuery,
   linkZoneToClusters,
-  getZoneById,
   getZoneBySlug,
 } from './queries.js'
+import { BadRequest400 } from '@/utils/controller.js'
+import prisma from '@/prisma.js'
 
 export const listZones = async () => {
   const zones = await listZonesQuery()
@@ -24,7 +24,7 @@ export const createZone = async (
   const { slug, label, description, clusterIds } = data
 
   const existingZone = await getZoneBySlug(slug)
-  if (existingZone) throw new BadRequestError(`Une zone portant le nom ${slug} existe déjà.`)
+  if (existingZone) return new BadRequest400(`Une zone portant le nom ${slug} existe déjà.`)
   const zone = await createZoneQuery({ slug, label, description })
   if (clusterIds) {
     await linkZoneToClusters(zone.id, clusterIds)
@@ -40,8 +40,9 @@ export const updateZone = async (zoneId: Zone['id'], data: Pick<Zone, 'label' | 
 }
 
 export const deleteZone = async (zoneId: Zone['id']) => {
-  const zone = await getZoneById(zoneId)
-  if (zone?.clusters?.length) throw new ForbiddenError('Vous ne pouvez supprimer cette zone, car des clusters y sont associés.')
+  const attachedCluster = await prisma.cluster.findFirst({ where: { zoneId }, select: { id: true } })
+  if (attachedCluster) return new BadRequest400('Vous ne pouvez supprimer cette zone, car des clusters y sont associés.')
 
   await deleteZoneQuery(zoneId)
+  return null
 }

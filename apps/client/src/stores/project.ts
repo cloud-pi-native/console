@@ -1,8 +1,9 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { CreateProjectBody, Organization, ProjectV2, UpdateProjectBody, projectContract } from '@cpn-console/shared'
+import { CreateProjectBody, Organization, ProjectV2, UpdateProjectBody, projectContract, getPermsByUserRoles, PROJECT_PERMS, resourceListToDict } from '@cpn-console/shared'
 import { apiClient, extractData } from '@/api/xhr-client.js'
 import { useUsersStore } from './users.js'
+import { useUserStore } from './user.js'
 import { useOrganizationStore } from './organization.js'
 
 export type ProjectWithOrganization = ProjectV2 & { organization: Organization }
@@ -11,7 +12,17 @@ export const useProjectStore = defineStore('project', () => {
   const selectedProject = ref<ProjectWithOrganization>()
   const projects = ref<ProjectWithOrganization[]>([])
   const usersStore = useUsersStore()
+  const userStore = useUserStore()
   const organizationStore = useOrganizationStore()
+  const selectedProjectPerms = computed(() => {
+    if (!selectedProject.value) return 0n
+    const selfId = userStore.userProfile?.id
+    if (selfId === selectedProject.value?.ownerId) return PROJECT_PERMS.MANAGE
+    const selfMember = selectedProject.value.members.find(member => member.userId === selfId)
+    if (!selfMember) return 0n
+
+    return getPermsByUserRoles(selfMember.roleIds, resourceListToDict(selectedProject.value.roles), selectedProject.value.everyonePerms)
+  })
 
   const setSelectedProject = (id: string) => {
     selectedProject.value = projects.value.find(project => project.id === id)
@@ -71,6 +82,7 @@ export const useProjectStore = defineStore('project', () => {
     generateProjectsData,
     selectedProject,
     projects,
+    selectedProjectPerms,
     setSelectedProject,
     listProjects,
     updateProject,

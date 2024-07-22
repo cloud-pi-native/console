@@ -52,15 +52,7 @@ export const getStageAssociatedEnvironmentById = (id: Stage['id']) =>
           organization: {
             select: { name: true },
           },
-          roles: {
-            where: {
-              role: 'owner',
-            },
-            select: {
-              user: true,
-              role: true,
-            },
-          },
+          owner: true,
         },
       },
       quota: true,

@@ -21,16 +21,16 @@ type OptionType = {
 }
 
 const props = withDefaults(defineProps<{
-  environment: Partial<Environment>
+  environment: Environment
   isEditable: boolean
-  isOwner: boolean
+  canManage: boolean
   isProjectLocked: boolean
   projectClustersIds: CleanedCluster['id'][]
   allClusters: CleanedCluster[]
 }>(), {
   environment: undefined,
   isEditable: true,
-  isOwner: false,
+  canManage: false,
   isProjectLocked: false,
 })
 
@@ -109,7 +109,7 @@ const setEnvironmentOptions = () => {
 }
 
 const resetCluster = () => {
-  localEnvironment.value.clusterId = undefined
+  localEnvironment.value.clusterId = props.allClusters[0]?.id
 }
 
 const addEnvironment = () => {
@@ -159,7 +159,7 @@ watch(localEnvironment.value, () => {
     class="relative"
   >
     <h1
-      v-if="props.isEditable"
+      v-if="props.isEditable && props.canManage"
       class="fr-h1"
     >
       Ajouter un environnement au projet
@@ -226,7 +226,7 @@ watch(localEnvironment.value, () => {
             description="Si votre projet nécessite d'avantage de ressources que celles proposées ci-dessus, contactez les administrateurs."
             required
             :options="quotaOptions"
-            :disabled="!!(localEnvironment.quotaId && quotaStore.quotasById[localEnvironment.quotaId]?.isPrivate)"
+            :disabled="!!(localEnvironment.quotaId && quotaStore.quotasById[localEnvironment.quotaId]?.isPrivate) || !props.canManage"
           />
         </div>
         <DsfrAlert
@@ -253,7 +253,7 @@ watch(localEnvironment.value, () => {
           :description="clusterInfos"
         />
         <div
-          v-if="localEnvironment.id"
+          v-if="localEnvironment.id && canManage"
           class="flex space-x-10 mt-5"
         >
           <DsfrButton
@@ -277,12 +277,8 @@ watch(localEnvironment.value, () => {
       </div>
     </DsfrFieldset>
     <div v-if="localEnvironment.id">
-      <PermissionForm
-        v-if="!isDeletingEnvironment"
-        :environment="localEnvironment"
-      />
       <div
-        v-if="isOwner"
+        v-if="canManage"
         data-testid="deleteEnvironmentZone"
         class="danger-zone"
       >
@@ -337,7 +333,7 @@ watch(localEnvironment.value, () => {
       </div>
     </div>
     <div
-      v-if="props.isEditable"
+      v-if="props.isEditable || canManage"
       class="flex space-x-10 mt-5"
     >
       <DsfrButton

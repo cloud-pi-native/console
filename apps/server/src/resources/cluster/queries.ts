@@ -81,14 +81,8 @@ export const getClusterEnvironments = (clusterId: Cluster['id']) =>
           organization: {
             select: { name: true },
           },
-          roles: {
-            select: {
-              role: true,
-              user: {
-                select: { email: true },
-              },
-            },
-          },
+          owner: true,
+          members: true,
         },
       },
     },
@@ -171,7 +165,7 @@ export const getClustersWithProjectIdAndConfig = () =>
     },
   })
 
-export const listClustersForUser = (where: Prisma.ClusterWhereInput) =>
+export const listClusters = (where: Prisma.ClusterWhereInput) =>
   prisma.cluster.findMany({
     where,
     select: {
@@ -184,12 +178,6 @@ export const listClustersForUser = (where: Prisma.ClusterWhereInput) =>
       zoneId: true,
     },
   })
-
-export const listAllClusters = () => prisma.cluster.findMany({
-  include: {
-    stages: true,
-  },
-})
 
 export const getProjectsByClusterId = async (id: Cluster['id']) =>
   (await prisma.cluster.findUniqueOrThrow({
@@ -281,7 +269,3 @@ export const deleteCluster = (id: Cluster['id']) =>
   prisma.cluster.delete({
     where: { id },
   })
-
-export const _dropClusterTable = prisma.cluster.deleteMany
-export const _dropProjectClusterHistoryTable = prisma.projectClusterHistory.deleteMany
-export const _dropKubeconfigTable = prisma.kubeconfig.deleteMany

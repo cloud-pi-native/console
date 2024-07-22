@@ -1,11 +1,13 @@
 <script lang="ts" setup>
 import { computed, onBeforeMount, ref } from 'vue'
-import { type Quota, QuotaSchema, SharedZodError, type Stage, type QuotaAssociatedEnvironments, UpdateQuotaBody } from '@cpn-console/shared'
+import { type Quota, QuotaSchema, SharedZodError, type Stage, type QuotaAssociatedEnvironments, UpdateQuotaBody, AdminAuthorized } from '@cpn-console/shared'
 import { toCodeComponent } from '@/utils/func.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+import { useUserStore } from '@/stores/user.js'
 
 type UpdateQuotaType = UpdateQuotaBody & Pick<Quota, 'id'>
 
+const userStore = useUserStore()
 const props = withDefaults(defineProps<{
   isNewQuota: boolean
   quota: Quota
@@ -143,7 +145,7 @@ onBeforeMount(() => {
           .map(({ id, name }) => ({ id, name }))"
         label-key="name"
         value-key="id"
-        :disabled="false"
+        :disabled="!AdminAuthorized.ManageStages(userStore.adminPerms)"
         @update="(_s, stageIds) => updateStages(stageIds)"
       />
     </div>

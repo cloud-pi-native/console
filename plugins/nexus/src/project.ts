@@ -8,10 +8,9 @@ const getAxiosInstance = () => axios.create(getAxiosOptions())
 export const createNexusProject: StepCall<Project> = async (payload) => {
   const axiosInstance = getAxiosInstance()
   try {
-    // const { organization, project, owner } = payload.project
     const organization = payload.args.organization.name
     const project = payload.args.name
-    const owner = payload.args.users[0]
+    const owner = payload.args.owner
     const projectName = `${organization}-${project}`
     const res: any = {}
 

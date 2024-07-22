@@ -48,6 +48,7 @@ export const projectContract = contractInstance.router({
       200: z.record(z.record(z.string())),
       401: ErrorSchema,
       403: ErrorSchema,
+      404: ErrorSchema,
       500: ErrorSchema,
     },
   },

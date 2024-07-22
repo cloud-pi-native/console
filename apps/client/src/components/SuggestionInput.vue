@@ -1,9 +1,10 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
+import { type User } from '@cpn-console/shared'
 
 const props = withDefaults(defineProps<{
   modelValue: string
-  suggestions: unknown[]
+  suggestions: User[]
 }>(), {
   modelValue: '',
   suggestions: () => [],
@@ -13,12 +14,14 @@ const localValue = ref(props.modelValue)
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
-  selectSuggestion: [value: string]
+  selectSuggestion: [value: User]
 }>()
 
 const updateValue = () => {
-  if (props.suggestions.find(suggestion => suggestion === localValue.value)) {
-    emit('selectSuggestion', localValue.value)
+  const matchingSuggestion = props.suggestions.find(suggestion => suggestion.email === localValue.value)
+  if (matchingSuggestion) {
+    emit('selectSuggestion', matchingSuggestion)
+
     return
   }
   emit('update:modelValue', localValue.value)
@@ -39,9 +42,13 @@ const updateValue = () => {
     >
       <option
         v-for="suggestion, i in props.suggestions"
-        :key="`${i}-suggestion`"
-        :value="suggestion"
-      />
+        :key="i"
+        :value="suggestion.email"
+      >
+        <div>
+          {{ suggestion.lastName }} {{ suggestion.firstName }} ({{ suggestion.email }})
+        </div>
+      </option>
     </datalist>
   </div>
 </template>

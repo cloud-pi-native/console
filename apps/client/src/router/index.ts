@@ -5,16 +5,17 @@ import {
 } from 'vue-router'
 import { useUserStore } from '@/stores/user.js'
 import { useProjectStore } from '@/stores/project.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
 import { uuid } from '@/utils/regex.js'
 
 import DsoHome from '@/views/DsoHome.vue'
 import NotFound from '@/views/NotFound.vue'
 const ServicesHealth = () => import('@/views/ServicesHealth.vue')
 const CreateProject = () => import('@/views/CreateProject.vue')
+const UserProfile = () => import('@/views/UserProfile.vue')
 const ManageEnvironments = () => import('@/views/projects/ManageEnvironments.vue')
 const DsoProjects = () => import('@/views/projects/DsoProjects.vue')
 const DsoDashboard = () => import('@/views/projects/DsoDashboard.vue')
+const DsoRoles = () => import('@/views/projects/DsoRoles.vue')
 const DsoServices = () => import('@/views/projects/DsoServices.vue')
 const DsoTeam = () => import('@/views/projects/DsoTeam.vue')
 const DsoRepos = () => import('@/views/projects/DsoRepos.vue')
@@ -22,6 +23,7 @@ const ListUser = () => import('@/views/admin/ListUser.vue')
 const ListOrganizations = () => import('@/views/admin/ListOrganizations.vue')
 const ListProjects = () => import('@/views/admin/ListProjects.vue')
 const ListLogs = () => import('@/views/admin/ListLogs.vue')
+const AdminRoles = () => import('@/views/admin/AdminRoles.vue')
 const ListClusters = () => import('@/views/admin/ListClusters.vue')
 const ListQuotas = () => import('@/views/admin/ListQuotas.vue')
 const ListStages = () => import('@/views/admin/ListStages.vue')
@@ -53,6 +55,11 @@ const routes: Readonly<RouteRecordRaw[]> = [
     path: '/',
     name: 'Home',
     component: DsoHome,
+  },
+  {
+    path: '/profile',
+    name: 'UserProfile',
+    component: UserProfile,
   },
   {
     path: '/404',
@@ -95,6 +102,11 @@ const routes: Readonly<RouteRecordRaw[]> = [
             component: DsoServices,
           },
           {
+            path: 'roles',
+            name: 'ProjectRoles',
+            component: DsoRoles,
+          },
+          {
             path: 'team',
             name: 'Team',
             component: DsoTeam,
@@ -135,6 +147,11 @@ const routes: Readonly<RouteRecordRaw[]> = [
     path: '/admin/projects',
     name: 'ListProjects',
     component: ListProjects,
+  },
+  {
+    path: '/admin/roles',
+    name: 'AdminRoles',
+    component: AdminRoles,
   },
   {
     path: '/admin/logs',
@@ -187,7 +204,6 @@ router.beforeEach((to) => { // Cf. https://github.com/vueuse/head pour des trans
  */
 router.beforeEach(async (to, _from, next) => {
   const validPath = ['Login', 'Home', 'Doc', 'NotFound', 'ServicesHealth']
-  const snackbarStore = useSnackbarStore()
   const userStore = useUserStore()
   userStore.setIsLoggedIn()
 
@@ -202,15 +218,6 @@ router.beforeEach(async (to, _from, next) => {
 
   // Redirige sur l'accueil si le path est Login et que l'utilisateur est connecté
   if (to.name === 'Login' && userStore.isLoggedIn) {
-    return next('/')
-  }
-
-  // Redirige sur la page d'accueil si le path est admin et l'utilisateur n'est pas admin
-  if (to.path.match('^/admin/') && !userStore.isAdmin) {
-    snackbarStore.setMessage(
-      'Vous ne possédez pas les droits administeurs',
-      'error',
-    )
     return next('/')
   }
 

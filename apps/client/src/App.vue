@@ -3,6 +3,7 @@ import { apiPrefix } from '@cpn-console/shared'
 import { getKeycloak } from './utils/keycloak/keycloak.js'
 import { useUserStore } from './stores/user.js'
 import { useSnackbarStore } from './stores/snackbar.js'
+import router from './router/index.js'
 
 const keycloak = getKeycloak()
 const userStore = useUserStore()
@@ -42,6 +43,12 @@ onErrorCaptured((error) => {
 
 watch(label, (label: string) => {
   quickLinks.value[0].label = label
+})
+
+userStore.$subscribe(() => {
+  if (router.currentRoute.value.fullPath.startsWith('/admin') && userStore.adminPerms === 0n) {
+    window.location.pathname = '/'
+  }
 })
 
 </script>

@@ -1,6 +1,6 @@
 import { type SharedSafeParseReturnType, parseZodError } from '@cpn-console/shared'
-import { BadRequestError } from './errors.js'
+import { BadRequest400 } from './controller.js'
 
 export const validateSchema = (schemaValidation: SharedSafeParseReturnType) => {
-  if (!schemaValidation.success) throw new BadRequestError(parseZodError(schemaValidation.error))
+  if (!schemaValidation.success) return new BadRequest400(parseZodError(schemaValidation.error))
 }

@@ -35,8 +35,6 @@ export const addLogs = (
 })
 
 // TECH
-export const _dropLogsTable = prisma.log.deleteMany
-
 export const _createLog = (data: Parameters<typeof prisma.log.upsert>[0]['create']) =>
   prisma.log.upsert({
     where: {
