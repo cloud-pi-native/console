@@ -50,5 +50,3 @@ export const _createOrganizations = (
     create: data,
     update: data,
   })
-
-export const _dropOrganizationsTable = prisma.organization.deleteMany

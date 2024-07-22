@@ -1,4 +1,3 @@
-import { addReqLogs } from '@/utils/logger.js'
 import {
   createProject,
   updateProject,
@@ -9,165 +8,153 @@ import {
   handleProjectLocking,
   generateProjectsData,
 } from './business.js'
-import { projectContract } from '@cpn-console/shared'
+import { AdminAuthorized, ProjectAuthorized, projectContract } from '@cpn-console/shared'
 import { serverInstance } from '@/app.js'
-import { assertIsAdmin } from '@/utils/controller.js'
+import { authUser, NotFound404, Forbidden403, ErrorResType, BadRequest400 } from '@/utils/controller.js'
 
 export const projectRouter = () => serverInstance.router(projectContract, {
 
   // Récupérer des projets
   listProjects: async ({ request: req, query }) => {
-    try {
-      const user = req.session.user
+    const requestor = req.session.user
+    const { adminPermissions, user } = await authUser(requestor)
+    if (query.filter === 'all' && !AdminAuthorized.isAdmin(adminPermissions)) {
+      return new BadRequest400('Seuls les admins avec les droits de visionnage des projets peuvent utiliser le filtre \'all\'')
+    }
 
-      const allProjects = await listProjects(
-        query,
-        user,
-      )
+    const body = await listProjects(
+      query,
+      user.id,
+    )
 
-      addReqLogs({
-        req,
-        message: 'Ensemble des projets récupérés avec succès',
-      })
-      return {
-        status: 200,
-        body: allProjects,
-      }
-    } catch (error) {
-      throw new Error(error.message)
+    return {
+      status: 200,
+      body,
     }
   },
 
   // Récupérer les secrets d'un projet
   getProjectSecrets: async ({ request: req, params }) => {
-    const userId = req.session.user.id
     const projectId = params.projectId
+    const user = req.session.user
+    const perms = await authUser(user, { id: projectId })
+    if (!perms.projectPermissions) return new NotFound404()
+    if (!ProjectAuthorized.SeeSecrets(perms)) return new Forbidden403()
+    if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
 
-    const projectSecrets = await getProjectSecrets(projectId, userId)
+    const body = await getProjectSecrets(projectId, user.id)
 
-    addReqLogs({
-      req,
-      message: 'Secrets du projet récupérés avec succès',
-      infos: {
-        projectId,
-        userId,
-      },
-    })
+    if (body instanceof ErrorResType) return body
+
     return {
       status: 200,
-      body: projectSecrets,
+      body,
     }
   },
 
   // Créer un projet
   createProject: async ({ request: req, body: data }) => {
-    const requestor = req.session.user
-    // @ts-ignore
-    delete requestor.groups
+    const user = req.session.user
+    const body = await createProject(data, user, req.id)
 
-    const project = await createProject(data, requestor, req.id)
+    if (body instanceof ErrorResType) return body
 
-    addReqLogs({
-      req,
-      message: 'Projet créé avec succès',
-      infos: {
-        projectId: project.id,
-      },
-    })
     return {
       status: 201,
-      body: project,
+      body,
     }
   },
 
   // Mettre à jour un projet
   updateProject: async ({ request: req, params, body: data }) => {
-    const requestor = req.session.user
     const projectId = params.projectId
+    const user = req.session.user
+    const perms = await authUser(user, { id: projectId })
 
-    const project = await updateProject(data, projectId, requestor, req.id)
-    addReqLogs({
-      req,
-      message: 'Projet mis à jour avec succès',
-      infos: {
-        projectId,
-      },
-    })
+    if (perms.projectOwnerId !== user.id // il n'est ni owner
+      && !AdminAuthorized.isAdmin(perms.adminPermissions) // ni autorisé comme admin
+    ) delete data.ownerId // impossible de toucher à cette clé
+
+    if (!ProjectAuthorized.Manage(perms)) return new Forbidden403()
+    if (!perms.projectPermissions && !AdminAuthorized.isAdmin(perms.adminPermissions)) return new NotFound404()
+    if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
+    if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
+
+    const body = await updateProject(data, projectId, user, req.id)
+
+    if (body instanceof ErrorResType) return body
     return {
       status: 200,
-      body: project,
+      body,
     }
   },
 
   // Reprovisionner un projet
   replayHooksForProject: async ({ request: req, params }) => {
-    const requestor = req.session.user
     const projectId = params.projectId
+    const user = req.session.user
+    const perms = await authUser(user, { id: projectId })
+    if (!ProjectAuthorized.ReplayHooks(perms)) return new Forbidden403()
+    if (!perms.projectPermissions) return new NotFound404()
+    if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
+    if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
 
-    await replayHooks(projectId, requestor, req.id)
+    const body = await replayHooks(projectId, user, req.id)
 
-    addReqLogs({
-      req,
-      message: 'Projet reprovisionné avec succès',
-      infos: {
-        projectId,
-      },
-    })
+    if (body instanceof ErrorResType) return body
+
     return {
       status: 204,
-      body: null,
+      body,
     }
   },
 
   // Archiver un projet
   archiveProject: async ({ request: req, params }) => {
-    const requestor = req.session.user
     const projectId = params.projectId
+    const user = req.session.user
+    const perms = await authUser(user, { id: projectId })
+    if (!ProjectAuthorized.Manage(perms)) return new Forbidden403()
+    if (!perms.projectPermissions) return new NotFound404()
+    if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
+    if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
 
-    await archiveProject(projectId, requestor, req.id)
+    const body = await archiveProject(projectId, user, req.id)
+    if (body instanceof ErrorResType) return body
 
-    addReqLogs({
-      req,
-      message: 'Projet en cours de suppression',
-      infos: {
-        projectId,
-      },
-    })
     return {
       status: 204,
-      body: null,
+      body,
     }
   },
   // Récupérer les données de tous les projets pour export
   getProjectsData: async ({ request: req }) => {
-    assertIsAdmin(req.session.user)
-    const generatedProjectsData = await generateProjectsData()
+    const user = req.session.user
+    const perms = await authUser(user)
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+    const body = await generateProjectsData()
 
-    addReqLogs({
-      req,
-      message: 'Données des projets rassemblées pour export',
-    })
     return {
       status: 200,
-      body: generatedProjectsData,
+      body,
     }
   },
 
   // (Dé)verrouiller un projet
   patchProject: async ({ request: req, params, body: data }) => {
-    assertIsAdmin(req.session.user)
+    const user = req.session.user
     const projectId = params.projectId
+    const perms = await authUser(user, { id: projectId })
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+    if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
+
     const lock = data.lock
 
-    await handleProjectLocking(projectId, lock)
+    const body = await handleProjectLocking(projectId, lock)
 
-    addReqLogs({
-      req,
-      message: `Projet ${lock ? 'verrouillé' : 'déverrouillé'} avec succès`,
-    })
     return {
       status: 200,
-      body: null,
+      body,
     }
   },
 })

@@ -68,5 +68,3 @@ export const deleteZone = (zoneId: Zone['id']) =>
       id: zoneId,
     },
   })
-
-export const _dropZoneTable = prisma.zone.deleteMany

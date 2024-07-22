@@ -1,14 +1,12 @@
 import {
   type PluginsUpdateBody,
-  adminGroupPath,
 } from '@cpn-console/shared'
 import {
   getAdminPlugin,
 } from '@/resources/queries-index.js'
-import { ForbiddenError } from '@/utils/errors.js'
-import type { KeycloakPayload } from 'fastify-keycloak-adapter'
 import { editStrippers, populatePluginManifests, servicesInfos } from '@cpn-console/hooks'
 import { savePluginsConfig } from './queries.js'
+import { BadRequest400 } from '@/utils/controller.js'
 
 export type ConfigRecords = {
   key: string
@@ -21,14 +19,7 @@ export const objToDb = (obj: PluginsUpdateBody): ConfigRecords => Object.entries
     .map(([key, value]) => ({ pluginName, key, value })))
   .flat()
 
-export const getPluginsConfig = async (requestor: KeycloakPayload) => {
-  // Pré-requis
-  const isAdmin = requestor.groups?.includes(adminGroupPath)
-
-  if (!isAdmin) {
-    throw new ForbiddenError('Vous n\'êtes pas admin')
-  }
-
+export const getPluginsConfig = async () => {
   const globalConfig = await getAdminPlugin()
 
   return Object.values(servicesInfos).map(({ name, title, imgSrc }) => {
@@ -49,7 +40,8 @@ export const getPluginsConfig = async (requestor: KeycloakPayload) => {
 
 export const updatePluginConfig = async (data: PluginsUpdateBody) => {
   const parsedData = editStrippers.global.safeParse(data)
-  if (!parsedData.success) return
+  if (!parsedData.success) return new BadRequest400(parsedData.error.message)
   const records = objToDb(parsedData.data)
   await savePluginsConfig(records)
+  return null
 }

@@ -1,22 +1,18 @@
-import { organizationContract } from '@cpn-console/shared'
+import { AdminAuthorized, organizationContract } from '@cpn-console/shared'
 import { serverInstance } from '@/app.js'
-import { addReqLogs } from '@/utils/logger.js'
+
 import {
   createOrganization,
   fetchOrganizations,
   listOrganizations,
   updateOrganization,
 } from './business.js'
-import { assertIsAdmin } from '@/utils/controller.js'
+import { authUser, ErrorResType, Forbidden403 } from '@/utils/controller.js'
 
 export const organizationRouter = () => serverInstance.router(organizationContract, {
-  listOrganizations: async ({ request: req, query }) => {
+  listOrganizations: async ({ query }) => {
     const organizations = await listOrganizations(query)
 
-    addReqLogs({
-      req,
-      message: 'Organisations récupérées avec succès',
-    })
     return {
       status: 200,
       body: organizations,
@@ -25,56 +21,47 @@ export const organizationRouter = () => serverInstance.router(organizationContra
 
   // Créer une organisation
   createOrganization: async ({ request: req, body: data }) => {
-    assertIsAdmin(req.session.user)
-    const organization = await createOrganization(data)
+    const user = req.session.user
+    const perms = await authUser(user)
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+    const body = await createOrganization(data)
 
-    addReqLogs({
-      req,
-      message: 'Organisation créée avec succès',
-      infos: {
-        organizationId: organization.id,
-      },
-    })
+    if (body instanceof ErrorResType) return body
+
     return {
       status: 201,
-      body: organization,
+      body,
     }
   },
 
   // Synchroniser les organisations via les plugins externes
   syncOrganizations: async ({ request: req }) => {
-    assertIsAdmin(req.session.user)
-    const userId = req.session.user.id
+    const user = req.session.user
+    const perms = await authUser(user)
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+    const body = await fetchOrganizations(user.id, req.id)
 
-    const consoleOrganizations = await fetchOrganizations(userId, req.id)
+    if (body instanceof ErrorResType) return body
 
-    addReqLogs({
-      req,
-      message: 'Organisations synchronisées avec succès',
-    })
     return {
       status: 200,
-      body: consoleOrganizations,
+      body,
     }
   },
 
   // Mettre à jour une organisation
   updateOrganization: async ({ request: req, body: data, params }) => {
-    assertIsAdmin(req.session.user)
+    const user = req.session.user
+    const perms = await authUser(user)
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
     const name = params.organizationName
 
-    const organization = await updateOrganization(name, data)
+    const body = await updateOrganization(name, data)
+    if (body instanceof ErrorResType) return body
 
-    addReqLogs({
-      req,
-      message: 'Organisation mise à jour avec succès',
-      infos: {
-        organizationId: organization.id,
-      },
-    })
     return {
       status: 200,
-      body: organization,
+      body,
     }
   },
 })

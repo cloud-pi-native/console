@@ -1,7 +1,6 @@
-import { adminGroupPath, repositoryContract } from '@cpn-console/shared'
+import { ProjectAuthorized, repositoryContract } from '@cpn-console/shared'
 import { serverInstance } from '@/app.js'
-import { BadRequestError } from '@/utils/errors.js'
-import { addReqLogs } from '@/utils/logger.js'
+
 import { filterObjectByKeys } from '@/utils/queries-tools.js'
 import {
   createRepository,
@@ -10,69 +9,76 @@ import {
   syncRepository,
   updateRepository,
 } from './business.js'
+import { authUser, ErrorResType, Forbidden403, NotFound404 } from '@/utils/controller.js'
 
 export const repositoryRouter = () => serverInstance.router(repositoryContract, {
   // Récupérer tous les repositories d'un projet
   listRepositories: async ({ request: req, query }) => {
     const projectId = query.projectId
-    const userId = req.session.user.id
-    const isAdmin = req.session.user.groups?.includes(adminGroupPath)
+    const user = req.session.user
+    const perms = await authUser(user, { id: projectId })
 
-    const repositories = await getProjectRepositories(userId, isAdmin, projectId)
+    if (!ProjectAuthorized.ListRepositories(perms)) return new Forbidden403()
 
-    addReqLogs({
-      req,
-      message: 'Dépôts du projet récupérés avec succès',
-      infos: {
-        projectId,
-        repositoriesId: repositories.map(({ id }) => id).join(', '),
-      },
-    })
+    const body = await getProjectRepositories(projectId)
+
     return {
       status: 200,
-      body: repositories,
+      body,
     }
   },
 
   // Synchroniser un repository
   syncRepository: async ({ request: req, params, body }) => {
-    const userId = req.session.user.id
     const { repositoryId } = params
+    const user = req.session.user
+    const perms = await authUser(user, { id: repositoryId })
+    if (!perms.projectPermissions) return new NotFound404()
+    if (!ProjectAuthorized.ManageEnvironments(perms)) return new Forbidden403()
+    if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
+
+    const userId = req.session.user.id
     const { syncAllBranches, branchName } = body
 
-    await syncRepository({ repositoryId, userId, syncAllBranches, branchName, requestId: req.id })
+    const resBody = await syncRepository({ repositoryId, userId, syncAllBranches, branchName, requestId: req.id })
+    if (resBody instanceof ErrorResType) return resBody
 
     return {
-      body: null,
       status: 204,
+      body: resBody,
     }
   },
 
   // Créer un repository
   createRepository: async ({ request: req, body: data }) => {
-    const userId = req.session.user.id
     const projectId = data.projectId
+    const userId = req.session.user.id
+    const user = req.session.user
+    const perms = await authUser(user, { id: projectId })
+    if (!perms.projectPermissions) return new Forbidden403()
 
-    const repository = await createRepository({ data, userId, requestId: req.id })
+    if (!ProjectAuthorized.ManageRepositories(perms)) return new NotFound404()
+    if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
+    if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
 
-    addReqLogs({
-      req,
-      message: 'Dépôt créé avec succès',
-      infos: {
-        projectId,
-        repositoryId: repository.id,
-      },
-    })
+    const body = await createRepository({ data, userId, requestId: req.id })
+    if (body instanceof ErrorResType) return body
+
     return {
       status: 201,
-      body: repository,
+      body,
     }
   },
 
   // Mettre à jour un repository
   updateRepository: async ({ request: req, params, body }) => {
-    const userId = req.session.user.id
     const repositoryId = params.repositoryId
+    const user = req.session.user
+    const perms = await authUser(user, { repositoryId })
+    if (!ProjectAuthorized.ListRepositories(perms)) return new NotFound404()
+    if (!ProjectAuthorized.ManageRepositories(perms)) return new Forbidden403()
+    if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
+    if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
 
     const keysAllowedForUpdate = [
       'externalRepoUrl',
@@ -83,26 +89,17 @@ export const repositoryRouter = () => serverInstance.router(repositoryContract, 
     ]
     const data = filterObjectByKeys(body, keysAllowedForUpdate)
 
-    if (data.isPrivate && !data.externalToken) throw new BadRequestError('Le token est requis', undefined)
-    if (data.isPrivate && !data.externalUserName) throw new BadRequestError('Le nom d\'utilisateur est requis', undefined)
     if (!data.isPrivate) {
       data.externalToken = undefined
       data.externalUserName = ''
     }
 
-    const repository = await updateRepository({ repositoryId, data, userId, requestId: req.id })
+    const resBody = await updateRepository({ repositoryId, data, userId: user.id, requestId: req.id })
+    if (resBody instanceof ErrorResType) return resBody
 
-    const message = 'Dépôt mis à jour avec succès'
-    addReqLogs({
-      req,
-      message,
-      infos: {
-        repositoryId,
-      },
-    })
     return {
       status: 200,
-      body: repository,
+      body: resBody,
     }
   },
 
@@ -110,24 +107,23 @@ export const repositoryRouter = () => serverInstance.router(repositoryContract, 
   deleteRepository: async ({ request: req, params }) => {
     const repositoryId = params.repositoryId
     const userId = req.session.user.id
+    const user = req.session.user
+    const perms = await authUser(user, { repositoryId })
+    if (ProjectAuthorized.ListRepositories(perms)) return new NotFound404()
+    if (!ProjectAuthorized.ManageRepositories(perms)) return new Forbidden403()
+    if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
+    if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
 
-    await deleteRepository({
+    const body = await deleteRepository({
       repositoryId,
       userId,
       requestId: req.id,
     })
+    if (body instanceof ErrorResType) return body
 
-    const message = 'Dépôt en cours de suppression'
-    addReqLogs({
-      req,
-      message,
-      infos: {
-        repositoryId,
-      },
-    })
     return {
       status: 204,
-      body: null,
+      body,
     }
   },
 })

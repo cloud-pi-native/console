@@ -8,6 +8,8 @@ export {
   RiArrowDropRightLine,
   RiArrowGoBackLine,
   RiArrowRightSLine,
+  RiArrowUpLine,
+  RiArrowDownLine,
   RiAwardFill,
   RiBuildingLine,
   RiCheckFill,
@@ -30,6 +32,8 @@ export {
   RiFocus3Line,
   RiFolderUserLine,
   RiFoldersLine,
+  RiCheckboxBlankCircleFill,
+  RiUserShared2Line,
   RiGift2Fill,
   RiGitBranchLine,
   RiGitMergeFill,
@@ -61,4 +65,5 @@ export {
   RiUserFill,
   RiUserStarFill,
   RiToolsFill,
+  RiAdminLine,
 } from 'oh-vue-icons/icons/ri/index.js'

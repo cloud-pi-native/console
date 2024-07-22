@@ -13,9 +13,11 @@ import DsoHome from '@/views/DsoHome.vue'
 import NotFound from '@/views/NotFound.vue'
 const ServicesHealth = () => import('@/views/ServicesHealth.vue')
 const CreateProject = () => import('@/views/CreateProject.vue')
+const UserProfile = () => import('@/views/UserProfile.vue')
 const ManageEnvironments = () => import('@/views/projects/ManageEnvironments.vue')
 const DsoProjects = () => import('@/views/projects/DsoProjects.vue')
 const DsoDashboard = () => import('@/views/projects/DsoDashboard.vue')
+const DsoRoles = () => import('@/views/projects/DsoRoles.vue')
 const DsoServices = () => import('@/views/projects/DsoServices.vue')
 const DsoTeam = () => import('@/views/projects/DsoTeam.vue')
 const DsoRepos = () => import('@/views/projects/DsoRepos.vue')
@@ -23,6 +25,7 @@ const ListUser = () => import('@/views/admin/ListUser.vue')
 const ListOrganizations = () => import('@/views/admin/ListOrganizations.vue')
 const ListProjects = () => import('@/views/admin/ListProjects.vue')
 const ListLogs = () => import('@/views/admin/ListLogs.vue')
+const AdminRoles = () => import('@/views/admin/AdminRoles.vue')
 const ListClusters = () => import('@/views/admin/ListClusters.vue')
 const ListQuotas = () => import('@/views/admin/ListQuotas.vue')
 const ListStages = () => import('@/views/admin/ListStages.vue')
@@ -56,6 +59,11 @@ const routes: Readonly<RouteRecordRaw[]> = [
     path: '/',
     name: 'Home',
     component: DsoHome,
+  },
+  {
+    path: '/profile',
+    name: 'UserProfile',
+    component: UserProfile,
   },
   {
     path: '/404',
@@ -101,6 +109,11 @@ const routes: Readonly<RouteRecordRaw[]> = [
             path: 'services',
             name: 'Services',
             component: DsoServices,
+          },
+          {
+            path: 'roles',
+            name: 'ProjectRoles',
+            component: DsoRoles,
           },
           {
             path: 'team',
@@ -187,7 +200,7 @@ const routes: Readonly<RouteRecordRaw[]> = [
     beforeEnter(_to, _path, next) {
       const snackbarStore = useSnackbarStore()
       const userStore = useUserStore()
-      if (!userStore.isAdmin) {
+      if (userStore.adminPerms === 0n) {
         snackbarStore.setMessage(
           'Vous ne possédez pas les droits administeurs',
           'error',
@@ -246,7 +259,7 @@ router.beforeEach(async (to, _from, next) => {
     && userStore.isLoggedIn
   ) {
     await systemStore.listSystemSettings('maintenance')
-    if (systemStore.systemSettingsByKey['maintenance']?.value === 'on' && !userStore.isAdmin) return next('/maintenance')
+    if (systemStore.systemSettingsByKey['maintenance']?.value === 'on' && userStore.adminPerms === 0n) return next('/maintenance')
   }
 
   next()

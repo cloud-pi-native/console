@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { ref, onBeforeMount, computed } from 'vue'
+// @ts-ignore '@gouvminint/vue-dsfr' missing types
 import { getRandomId } from '@gouvminint/vue-dsfr'
 import {
   type CleanedCluster,
@@ -21,21 +22,27 @@ type OptionType = {
 }
 
 const props = withDefaults(defineProps<{
-  environment: Partial<Environment>
+  environment?: Omit<Environment, 'projectId'>
   isEditable: boolean
-  isOwner: boolean
+  canManage: boolean
   isProjectLocked: boolean
   projectClustersIds: CleanedCluster['id'][]
   allClusters: CleanedCluster[]
 }>(), {
-  environment: undefined,
+  environment: () => ({
+    id: '',
+    name: '',
+    stageId: '',
+    quotaId: '',
+    clusterId: '',
+  }),
   isEditable: true,
-  isOwner: false,
+  canManage: false,
   isProjectLocked: false,
 })
 
 const emit = defineEmits<{
-  addEnvironment: [environment: Omit<Environment, 'id' | 'permissions'>]
+  addEnvironment: [environment: Omit<Environment, 'id' | 'projectId'>]
   putEnvironment: [environment: Pick<Environment, 'quotaId'>]
   deleteEnvironment: [environmentId: Environment['id']]
   cancel: []
@@ -109,7 +116,7 @@ const setEnvironmentOptions = () => {
 }
 
 const resetCluster = () => {
-  localEnvironment.value.clusterId = undefined
+  localEnvironment.value.clusterId = props.allClusters[0]?.id
 }
 
 const addEnvironment = () => {
@@ -159,7 +166,7 @@ watch(localEnvironment.value, () => {
     class="relative"
   >
     <h1
-      v-if="props.isEditable"
+      v-if="props.isEditable && props.canManage"
       class="fr-h1"
     >
       Ajouter un environnement au projet
@@ -226,7 +233,7 @@ watch(localEnvironment.value, () => {
             description="Si votre projet nécessite d'avantage de ressources que celles proposées ci-dessus, contactez les administrateurs."
             required
             :options="quotaOptions"
-            :disabled="!!(localEnvironment.quotaId && quotaStore.quotasById[localEnvironment.quotaId]?.isPrivate)"
+            :disabled="!!(localEnvironment.quotaId && quotaStore.quotasById[localEnvironment.quotaId]?.isPrivate) || !props.canManage"
           />
         </div>
         <DsfrAlert
@@ -253,7 +260,7 @@ watch(localEnvironment.value, () => {
           :description="clusterInfos"
         />
         <div
-          v-if="localEnvironment.id"
+          v-if="localEnvironment.id && canManage"
           class="flex space-x-10 mt-5"
         >
           <DsfrButton
@@ -277,12 +284,8 @@ watch(localEnvironment.value, () => {
       </div>
     </DsfrFieldset>
     <div v-if="localEnvironment.id">
-      <PermissionForm
-        v-if="!isDeletingEnvironment"
-        :environment="localEnvironment"
-      />
       <div
-        v-if="isOwner"
+        v-if="canManage"
         data-testid="deleteEnvironmentZone"
         class="danger-zone"
       >
@@ -337,7 +340,7 @@ watch(localEnvironment.value, () => {
       </div>
     </div>
     <div
-      v-if="props.isEditable"
+      v-if="props.isEditable || canManage"
       class="flex space-x-10 mt-5"
     >
       <DsfrButton

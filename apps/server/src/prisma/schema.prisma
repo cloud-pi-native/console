@@ -7,20 +7,64 @@ datasource db {
   url      = env("DB_URL")
 }
 
+model AdminPlugin {
+  pluginName String
+  key        String
+  value      String
+
+  @@unique([pluginName, key])
+}
+
+model AdminRole {
+  id          String @id @unique @default(uuid()) @db.Uuid
+  name        String
+  permissions BigInt
+  position    Int    @db.SmallInt
+  oidcGroup   String @default("")
+}
+
+model Cluster {
+  id               String         @id @unique @default(uuid()) @db.Uuid
+  label            String         @unique @db.VarChar(50)
+  privacy          ClusterPrivacy @default(dedicated)
+  secretName       String         @unique @default(uuid()) @db.VarChar(50)
+  clusterResources Boolean        @default(false)
+  kubeConfigId     String         @unique @db.Uuid
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  infos            String?        @db.VarChar(200)
+  zoneId           String         @db.Uuid
+  kubeconfig       Kubeconfig     @relation(fields: [kubeConfigId], references: [id], onDelete: Cascade)
+  zone             Zone           @relation(fields: [zoneId], references: [id])
+  environments     Environment[]
+  projects         Project[]      @relation("ClusterToProject")
+  stages           Stage[]        @relation("ClusterToStage")
+}
+
 model Environment {
-  id          String       @id @default(uuid()) @db.Uuid
-  name        String       @db.VarChar(11)
-  projectId   String       @db.Uuid
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  clusterId   String       @db.Uuid
-  quotaId     String       @db.Uuid
-  stageId     String       @db.Uuid
-  cluster     Cluster      @relation(fields: [clusterId], references: [id])
-  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  quota       Quota        @relation(fields: [quotaId], references: [id], onUpdate: Cascade, onDelete: Restrict)
-  stage       Stage        @relation(fields: [stageId], references: [id], onUpdate: Cascade, onDelete: Restrict)
-  permissions Permission[]
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @db.VarChar(11)
+  projectId String   @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  clusterId String   @db.Uuid
+  quotaId   String   @db.Uuid
+  stageId   String   @db.Uuid
+  cluster   Cluster  @relation(fields: [clusterId], references: [id])
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  quota     Quota    @relation(fields: [quotaId], references: [id])
+  stage     Stage    @relation(fields: [stageId], references: [id])
+
+  @@unique([projectId, name])
+}
+
+model Kubeconfig {
+  id            String   @id @unique @default(uuid()) @db.Uuid
+  user          Json
+  cluster       Json
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  parentCluster Cluster?
 }
 
 model Log {
@@ -28,9 +72,11 @@ model Log {
   data      Json
   action    String   @default("")
   userId    String   @db.Uuid
-  requestId String?  @db.VarChar(21)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  requestId String?  @db.VarChar(21)
+  projectId String?  @db.Uuid
+  project   Project? @relation(fields: [projectId], references: [id])
   user      User     @relation(fields: [userId], references: [id])
 }
 
@@ -45,44 +91,26 @@ model Organization {
   projects  Project[]
 }
 
-model Zone {
-  id          String    @id @unique @default(uuid()) @db.Uuid
-  slug        String    @unique @db.VarChar(10)
-  label       String    @db.VarChar(50)
-  description String?   @db.VarChar(200)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  clusters    Cluster[]
-}
-
-model Permission {
-  id            String      @id @unique @default(uuid()) @db.Uuid
-  userId        String      @db.Uuid
-  environmentId String      @db.Uuid
-  level         Int         @default(0)
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  environment   Environment @relation(fields: [environmentId], references: [id], onDelete: Cascade)
-  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, environmentId])
-}
-
 model Project {
-  id             String          @id @unique @default(uuid()) @db.Uuid
+  id             String           @id @unique @default(uuid()) @db.Uuid
   name           String
-  organizationId String          @db.Uuid
-  description    String          @default("")
-  status         ProjectStatus   @default(initializing)
-  locked         Boolean         @default(false)
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  organizationId String           @db.Uuid
+  description    String           @default("")
+  status         ProjectStatus    @default(initializing)
+  locked         Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  everyonePerms  BigInt           @default(896)
+  ownerId        String           @db.Uuid
   environments   Environment[]
-  organization   Organization    @relation(fields: [organizationId], references: [id])
+  logs           Log[]
+  organization   Organization     @relation(fields: [organizationId], references: [id])
+  owner          User             @relation(fields: [ownerId], references: [id])
+  members        ProjectMembers[]
+  plugins        ProjectPlugin[]
+  roles          ProjectRole[]
   repositories   Repository[]
-  roles          Role[]
-  clusters       Cluster[]       @relation("ClusterToProject")
-  projectPlugin  ProjectPlugin[]
+  clusters       Cluster[]        @relation("ClusterToProject")
 }
 
 model ProjectClusterHistory {
@@ -90,6 +118,45 @@ model ProjectClusterHistory {
   clusterId String @db.Uuid
 
   @@unique([projectId, clusterId])
+}
+
+model ProjectMembers {
+  projectId String   @db.Uuid
+  userId    String   @db.Uuid
+  roleIds   String[]
+  project   Project  @relation(fields: [projectId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([projectId, userId])
+}
+
+model ProjectPlugin {
+  pluginName String
+  projectId  String  @db.Uuid
+  key        String
+  value      String
+  project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, pluginName, key])
+}
+
+model ProjectRole {
+  id          String  @id @unique @default(uuid()) @db.Uuid
+  name        String
+  permissions BigInt
+  projectId   String  @db.Uuid
+  position    Int     @db.SmallInt
+  project     Project @relation(fields: [projectId], references: [id])
+}
+
+model Quota {
+  id           String        @id @unique @default(uuid()) @db.Uuid
+  memory       String        @db.VarChar
+  cpu          Float         @db.Real
+  name         String        @unique @db.VarChar
+  isPrivate    Boolean       @default(false)
+  environments Environment[]
+  stages       Stage[]       @relation("QuotaToStage")
 }
 
 model Repository {
@@ -105,92 +172,35 @@ model Repository {
   project          Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
-model User {
-  id          String       @id @default(uuid()) @db.Uuid
-  firstName   String
-  lastName    String
-  email       String       @unique
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  logs        Log[]
-  permissions Permission[]
-  roles       Role[]
-}
-
-model Cluster {
-  id               String         @id @unique @default(uuid()) @db.Uuid
-  label            String         @unique @db.VarChar(50)
-  privacy          ClusterPrivacy @default(dedicated)
-  secretName       String         @unique @default(uuid()) @db.VarChar(50)
-  clusterResources Boolean        @default(false)
-  zoneId           String         @db.Uuid
-  kubeConfigId     String         @unique @db.Uuid
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-  infos            String?        @db.VarChar(200)
-  zone             Zone           @relation(fields: [zoneId], references: [id])
-  kubeconfig       Kubeconfig     @relation(fields: [kubeConfigId], references: [id], onDelete: Cascade)
-  environments     Environment[]
-  projects         Project[]      @relation("ClusterToProject")
-  stages           Stage[]        @relation("ClusterToStage")
-}
-
-model Kubeconfig {
-  id            String   @id @unique @default(uuid()) @db.Uuid
-  user          Json
-  cluster       Json
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  parentCluster Cluster?
-}
-
-model Role {
-  userId    String   @db.Uuid
-  projectId String   @db.Uuid
-  role      RoleList
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@id([userId, projectId])
-  @@unique([userId, projectId])
-}
-
-model Quota {
-  id           String        @id @unique @default(uuid()) @db.Uuid
-  memory       String        @db.VarChar
-  cpu          Float         @db.Real
-  name         String        @unique @db.VarChar
-  isPrivate    Boolean       @default(false)
-  environments Environment[]
-  stages       Stage[]
-}
-
 model Stage {
   id           String        @id @unique @default(uuid()) @db.Uuid
   name         String        @unique @db.VarChar
   environments Environment[]
   clusters     Cluster[]     @relation("ClusterToStage")
-  quotas       Quota[]
+  quotas       Quota[]       @relation("QuotaToStage")
 }
 
-model ProjectPlugin {
-  pluginName String
-  projectId  String  @db.Uuid
-  project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  key        String
-  value      String
-
-  @@unique([projectId, pluginName, key])
+model User {
+  id             String           @id @db.Uuid
+  firstName      String
+  lastName       String
+  email          String           @unique
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  logs           Log[]
+  projectsOwned  Project[]
+  ProjectMembers ProjectMembers[]
+  adminRoleIds   String[]
 }
 
-model AdminPlugin {
-  pluginName String
-  key        String
-  value      String
-
-  @@unique([pluginName, key])
+model Zone {
+  id          String    @id @unique @default(uuid()) @db.Uuid
+  slug        String    @unique @db.VarChar(10)
+  label       String    @db.VarChar(50)
+  description String?   @db.VarChar(200)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  clusters    Cluster[]
 }
 
 model SystemSetting {
@@ -208,9 +218,4 @@ enum ProjectStatus {
   created
   failed
   archived
-}
-
-enum RoleList {
-  owner
-  user
 }

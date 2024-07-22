@@ -1,14 +1,13 @@
 import { serverInstance } from '@/app.js'
-import { addReqLogs } from '@/utils/logger.js'
+
 import { createZone, deleteZone, listZones, updateZone } from './business.js'
-import { zoneContract } from '@cpn-console/shared'
-import { assertIsAdmin } from '@/utils/controller.js'
+import { AdminAuthorized, zoneContract } from '@cpn-console/shared'
+import { authUser, ErrorResType, Forbidden403 } from '@/utils/controller.js'
 
 export const zoneRouter = () => serverInstance.router(zoneContract, {
-  listZones: async ({ request: req }) => {
+  listZones: async () => {
     const zones = await listZones()
 
-    addReqLogs({ req, message: 'Zones récupérées avec succès' })
     return {
       status: 200,
       body: zones,
@@ -16,38 +15,45 @@ export const zoneRouter = () => serverInstance.router(zoneContract, {
   },
 
   createZone: async ({ request: req, body: data }) => {
-    assertIsAdmin(req.session.user)
-    const zone = await createZone(data)
+    const user = req.session.user
+    const perms = await authUser(user)
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
-    addReqLogs({ req, message: 'Zone créée avec succès', infos: { zoneId: zone.id } })
+    const body = await createZone(data)
+    if (body instanceof ErrorResType) return body
+
     return {
       status: 201,
-      body: zone,
+      body,
     }
   },
 
   updateZone: async ({ request: req, params, body: data }) => {
-    assertIsAdmin(req.session.user)
+    const user = req.session.user
+    const perms = await authUser(user)
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+
     const zoneId = params.zoneId
 
-    const zone = await updateZone(zoneId, data)
-    addReqLogs({ req, message: 'Zone mise à jour avec succès', infos: { zoneId: zone.id } })
+    const body = await updateZone(zoneId, data)
     return {
       status: 201,
-      body: zone,
+      body,
     }
   },
 
   deleteZone: async ({ request: req, params }) => {
-    assertIsAdmin(req.session.user)
+    const user = req.session.user
+    const perms = await authUser(user)
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
     const zoneId = params.zoneId
 
-    await deleteZone(zoneId)
+    const body = await deleteZone(zoneId)
+    if (body instanceof ErrorResType) return body
 
-    addReqLogs({ req, message: 'Zone supprimée avec succès', infos: { zoneId } })
     return {
       status: 204,
-      body: null,
+      body,
     }
   },
 })

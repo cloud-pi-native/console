@@ -112,13 +112,7 @@ export class KubernetesProjectApi<GProject extends Project> extends PluginApi {
   public namespaces: Record<string, KubernetesNamespace> = {}
   constructor(project: GProject) {
     super()
-    const ownerId = (project.roles.find(role => role.role === 'owner'))?.userId
-    const owner = project.users.find(user => user.id === ownerId) ?? {
-      id: 'owner-not-found',
-      email: 'owner@not.found',
-      firstName: 'Owner',
-      lastName: 'Not found',
-    }
+    const owner = project.owner
     this.namespaces = project.environments.reduce((acc, env) => {
       const cluster = project.clusters.find(cluster => cluster.id === env.clusterId) as ClusterObject
       acc[env.name] = new KubernetesNamespace(project.organization.name, project.name, env.name, owner, cluster)

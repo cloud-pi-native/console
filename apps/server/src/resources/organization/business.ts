@@ -7,7 +7,7 @@ import {
   updateOrganization as updateOrganizationQuery,
 } from '@/resources/queries-index.js'
 import { validateSchema } from '@/utils/business.js'
-import { BadRequestError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
+import { BadRequest400, ErrorResType, NotFound404, Unprocessable422 } from '@/utils/controller.js'
 import { hook } from '@/utils/hook-wrapper.js'
 import { getUniqueListBy, objectValues, organizationContract, OrganizationSchema } from '@cpn-console/shared'
 import { User } from '@prisma/client'
@@ -17,7 +17,7 @@ export const listOrganizations = (query?: typeof organizationContract.listOrgani
 
 export const createOrganization = async (data: typeof organizationContract.createOrganization.body._type) => {
   const isNameTaken = await getOrganizationByName(data.name)
-  if (isNameTaken) throw new BadRequestError('Cette organisation existe déjà', undefined)
+  if (isNameTaken) return new BadRequest400('Cette organisation existe déjà')
 
   return createOrganizationQuery(data)
 }
@@ -27,7 +27,7 @@ export const updateOrganization = async (
   org: typeof organizationContract.updateOrganization.body._type,
 ) => {
   const organization = await getOrganizationByName(name)
-  if (!organization) throw new NotFoundError(`Organisation ${name} introuvable`)
+  if (!organization) return new NotFound404()
 
   /** lock project if organization becomes inactive */
   if (organization.active === true && org.active === false) {
@@ -53,24 +53,27 @@ export const fetchOrganizations = async (userId: User['id'], requestId: string) 
   const hookReply = await hook.misc.fetchOrganizations()
   await addLogs('Fetch organizations', hookReply, userId, requestId)
   if (hookReply.failed) {
-    throw new UnprocessableContentError('Echec des services à la synchronisation des organisations')
+    return new Unprocessable422('Echec des services à la synchronisation des organisations')
   }
 
   /**
   * Filter plugin results to get a single array of organizations with unique name
   */
   const externalOrganizations = getUniqueListBy(objectValues(hookReply.results)
-    ?.reduce((acc: Record<string, any>[], value) => {
+    .reduce((acc, value) => {
       if (typeof value !== 'object' || !value.result.organizations?.length) return acc
       return [...acc, ...value.result.organizations]
-    }, [])
-    ?.filter(externalOrg => externalOrg.name), 'name') as PluginOrganization[]
+    }, [] as Record<string, { name: string }>[])
+    // @ts-ignore cast le typage
+    .filter(externalOrg => externalOrg.name), 'name') as PluginOrganization[]
 
-  if (!externalOrganizations.length) throw new NotFoundError('Aucune organisation à synchroniser', undefined)
+  if (!externalOrganizations.length) return new NotFound404()
 
   for (const externalOrg of externalOrganizations) {
     const schemaValidation = OrganizationSchema.pick({ name: true, label: true }).safeParse(externalOrg)
-    validateSchema(schemaValidation)
+    const validateResult = validateSchema(schemaValidation)
+    if (validateResult instanceof ErrorResType) continue
+
     if (consoleOrganizations.find(consoleOrg => consoleOrg.name === externalOrg.name)) {
       await updateOrganizationQuery(externalOrg)
     } else {
