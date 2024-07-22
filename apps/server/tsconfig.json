@@ -11,6 +11,7 @@
       "@/*": ["src/*"]
     },
     "plugins": [{ "transform": "typescript-transform-paths" }],
+    "useUnknownInCatchVariables": false
   },
   "include": [
     "./src/**/*.ts",
@@ -21,5 +22,5 @@
     "./src/**/__mocks__",
     "./src/mocks/utils.ts",
     "./src/utils/mocks.ts",
-  ],
+  ]
 }

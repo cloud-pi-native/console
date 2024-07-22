@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ClusterDetailsSchema, ClusterPrivacy, EnvironmentSchema, OrganizationSchema, PermissionSchema, ProjectSchemaV2, QuotaSchema, RepoBusinessSchema, RepoSchema, StageSchema, UserSchema, descriptionMaxLength, instanciateSchema, parseZodError } from '../index.js'
+import { ClusterDetailsSchema, ClusterPrivacy, EnvironmentSchema, OrganizationSchema, PermissionSchema, ProjectSchemaV2, ProjectV2, QuotaSchema, RepoBusinessSchema, RepoSchema, StageSchema, UserSchema, descriptionMaxLength, instanciateSchema, parseZodError } from '../index.js'
 import { faker } from '@faker-js/faker'
 import { ZodError } from 'zod'
 
@@ -86,7 +86,7 @@ describe('Schemas utils', () => {
   })
 
   it('Should validate a correct project schema', () => {
-    const toParse = {
+    const toParse: ProjectV2 = {
       id: faker.string.uuid(),
       name: faker.lorem.word({ length: { min: 2, max: 10 } }),
       description: '',
@@ -94,15 +94,34 @@ describe('Schemas utils', () => {
       status: 'created',
       locked: false,
       clusterIds: [],
+      // @ts-ignore la date doit être transformé en string
       updatedAt: new Date(),
+      // @ts-ignore la date doit être transformé en string
       createdAt: new Date(),
       members: [],
+      owner: {
+        // @ts-ignore la date doit être transformé en string
+        createdAt: new Date(),
+        // @ts-ignore la date doit être transformé en string
+        updatedAt: new Date(),
+        email: 'invalid-email@mais-pas-grave',
+        firstName: faker.person.firstName(),
+        id: faker.string.uuid(),
+        lastName: faker.person.lastName(),
+      },
+      everyonePerms: '1',
+      ownerId: faker.string.uuid(),
+      roles: [],
     }
     const parsed = structuredClone(toParse)
     // @ts-ignore la date doit être transformé en string
     parsed.createdAt = parsed.createdAt.toISOString()
     // @ts-ignore
     parsed.updatedAt = parsed.updatedAt.toISOString()
+    // @ts-ignore
+    parsed.owner.updatedAt = parsed.owner.updatedAt.toISOString()
+    // @ts-ignore
+    parsed.owner.createdAt = parsed.owner.createdAt.toISOString()
     expect(ProjectSchemaV2.safeParse(toParse)).toStrictEqual({ data: parsed, success: true })
   })
 
@@ -112,9 +131,16 @@ describe('Schemas utils', () => {
       email: faker.internet.email(),
       firstName: faker.person.firstName(),
       lastName: faker.person.lastName(),
+      adminRoleIds: [],
+      updatedAt: new Date(),
+      createdAt: new Date(),
     }
-
-    expect(UserSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
+    const parsed = structuredClone(toParse)
+    // @ts-ignore la date doit être transformé en string
+    parsed.createdAt = parsed.createdAt.toISOString()
+    // @ts-ignore
+    parsed.updatedAt = parsed.updatedAt.toISOString()
+    expect(UserSchema.safeParse(toParse)).toStrictEqual({ data: parsed, success: true })
   })
 
   it('Should validate a correct quota schema', () => {

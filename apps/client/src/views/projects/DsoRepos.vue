@@ -1,9 +1,8 @@
 <script lang="ts" setup>
-import { ref, computed, onMounted } from 'vue'
-import { type Repo, projectIsLockedInfo, sortArrByObjKeyAsc } from '@cpn-console/shared'
+import { ref, onMounted } from 'vue'
+import { ProjectAuthorized, type Repo, projectIsLockedInfo, sortArrByObjKeyAsc } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectRepositoryStore } from '@/stores/project-repository.js'
-import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 type RepoTile = {
@@ -14,10 +13,7 @@ type RepoTile = {
 
 const projectStore = useProjectStore()
 const projectRepositoryStore = useProjectRepositoryStore()
-const userStore = useUserStore()
 const snackbarStore = useSnackbarStore()
-
-const isOwner = computed(() => projectStore.selectedProject?.members.some(member => member.userId === userStore.userProfile?.id && member.role === 'owner'))
 
 const repos = ref<RepoTile[]>([])
 const selectedRepo = ref<Repo>()
@@ -112,7 +108,7 @@ projectRepositoryStore.$subscribe(() => {
         label="Ajouter un nouveau dépôt"
         data-testid="addRepoLink"
         tertiary
-        :disabled="projectStore.selectedProject.locked"
+        :disabled="projectStore.selectedProject.locked || !ProjectAuthorized.ManageRepositories({projectPermissions: projectStore.selectedProjectPerms})"
         :title="projectStore.selectedProject.locked ? projectIsLockedInfo : 'Ajouter un dépôt'"
         class="fr-mt-2v <md:mb-2"
         icon="ri-add-line"
@@ -138,7 +134,8 @@ projectRepositoryStore.$subscribe(() => {
     >
       <RepoForm
         :is-project-locked="projectStore.selectedProject.locked"
-        @save="(repo) => saveRepo({...repo, projectId: projectStore.selectedProject?.id})"
+        :can-manage="true"
+        @save="(repo) => saveRepo({ projectId: projectStore.selectedProject?.id, ...repo})"
         @cancel="cancel()"
       />
     </div>
@@ -168,6 +165,7 @@ projectRepositoryStore.$subscribe(() => {
           v-if="selectedRepo?.internalRepoName === repo.id"
         >
           <DsfrNavigation
+            v-if="ProjectAuthorized.ManageRepositories({projectPermissions: projectStore.selectedProjectPerms})"
             class="fr-mb-4w"
             :nav-items="[
               {
@@ -181,6 +179,7 @@ projectRepositoryStore.$subscribe(() => {
             ]"
           />
           <div
+            v-if="ProjectAuthorized.ManageRepositories({projectPermissions: projectStore.selectedProjectPerms})"
             :id="syncFormId"
             class="flex flex-col gap-4 fr-mb-4w"
           >
@@ -219,10 +218,10 @@ projectRepositoryStore.$subscribe(() => {
           <RepoForm
             :id="repoFormId"
             :is-project-locked="projectStore.selectedProject.locked"
-            :is-owner="isOwner"
+            :can-manage="!ProjectAuthorized.ManageRepositories({projectPermissions: projectStore.selectedProjectPerms})"
             :repo="selectedRepo"
             @save="(repo) => saveRepo(repo)"
-            @delete="(repoId) => deleteRepo(repoId)"
+            @delete="deleteRepo(selectedRepo.id)"
             @cancel="cancel()"
           />
         </div>

@@ -12,19 +12,20 @@ import {
   type Repo,
   type Environment,
   projectContract,
+  AdminAuthorized,
 } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useOrganizationStore } from '@/stores/organization.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 import { useUserStore } from '@/stores/user.js'
 import { useUsersStore } from '@/stores/users.js'
-import { useProjectUserStore } from '@/stores/project-user.js'
 import { useQuotaStore } from '@/stores/quota.js'
 import { useProjectServiceStore } from '@/stores/project-services.js'
 import { useProjectRepositoryStore } from '@/stores/project-repository.js'
 import { useProjectStore } from '@/stores/project.js'
 import { useStageStore } from '@/stores/stage.js'
 import { bts } from '@/utils/func.js'
+import { apiClient } from '@/api/xhr-client.js'
 
 const projectStore = useProjectStore()
 const organizationStore = useOrganizationStore()
@@ -32,7 +33,6 @@ const projectServiceStore = useProjectServiceStore()
 const userStore = useUserStore()
 const usersStore = useUsersStore()
 const snackbarStore = useSnackbarStore()
-const projectUserStore = useProjectUserStore()
 const quotaStore = useQuotaStore()
 const stageStore = useStageStore()
 const projectRepositoryStore = useProjectRepositoryStore()
@@ -133,7 +133,7 @@ interface DomElement extends Event {
 
 const setRows = () => {
   rows.value = sortArrByObjKeyAsc(projectStore.projects, 'name')
-    ?.map(({ id, organization, name, description, members, status, locked, createdAt, updatedAt }) => (
+    ?.map(({ id, organization, name, description, status, locked, createdAt, updatedAt, owner }) => (
       {
         status,
         locked,
@@ -150,7 +150,7 @@ const setRows = () => {
           organization.label,
           name,
           truncateDescription(description ?? ''),
-          members.find(member => member.role === 'owner')?.email ?? '',
+          owner.email,
           {
             component: 'v-icon',
             name: statusDict.status[status].icon,
@@ -183,6 +183,7 @@ const getEnvironmentsRows = () => {
             component: 'DsfrSelect',
             modelValue: quotaId,
             selectId: 'quota-select',
+            disabled: !AdminAuthorized.ManageProjects(userStore.adminPerms),
             options: quotaStore.quotas.filter(quota => quota.stageIds.includes(stageId)).map(quota => ({
               text: quota.name + ' (' + quota.cpu + 'CPU, ' + quota.memory + ')',
               value: quota.id,
@@ -205,10 +206,12 @@ const getRepositoriesRows = () => {
   if (!selectedProject.value) return
   repositoriesRows.value = selectedProject.value.repositories.length
     ? sortArrByObjKeyAsc(selectedProject.value.repositories, 'internalRepoName')
-      ?.map(({ internalRepoName, isInfra }) => (
+      ?.map(({ internalRepoName, isInfra, externalRepoUrl, isPrivate }) => (
         [
           internalRepoName,
           isInfra ? 'Infra' : 'Applicatif',
+          isPrivate ? 'oui' : 'non',
+          externalRepoUrl,
         ]
       ),
       )
@@ -280,11 +283,11 @@ const archiveProject = async (projectId: string) => {
   snackbarStore.isWaitingForResponse = false
 }
 
-const addUserToProject = async (email: string) => {
+const addUserToProject = async (userId: string) => {
+  if (!selectedProject.value) return
   snackbarStore.isWaitingForResponse = true
-  if (selectedProject.value) {
-    selectedProject.value.members = await projectUserStore.addUserToProject(selectedProject.value.id, { email })
-  }
+  await apiClient.ProjectsMembers.addMember({ params: { projectId: selectedProject.value.id }, body: { userId } })
+  await getAllProjects()
   teamCtKey.value = getRandomId('team')
   snackbarStore.isWaitingForResponse = false
 }
@@ -292,9 +295,9 @@ const addUserToProject = async (email: string) => {
 const updateUserRole = async (userId: string) => {
   if (!selectedProject.value) return snackbarStore.setMessage('Veuillez sélectionner un projet')
   snackbarStore.isWaitingForResponse = true
-  selectedProject.value.members = await projectUserStore.transferProjectOwnership(selectedProject.value.id, userId)
-  teamCtKey.value = getRandomId('team')
+  await apiClient.Projects.updateProject({ params: { projectId: selectedProject.value.id }, body: { ownerId: userId } })
   await getAllProjects()
+  teamCtKey.value = getRandomId('team')
   snackbarStore.isWaitingForResponse = false
 }
 
@@ -302,7 +305,8 @@ const removeUserFromProject = async (userId: string) => {
   if (!selectedProject.value) return
   snackbarStore.isWaitingForResponse = true
   if (selectedProject.value.id) {
-    selectedProject.value.members = await projectUserStore.removeUserFromProject(selectedProject.value.id, userId)
+    await apiClient.ProjectsMembers.removeMember({ params: { projectId: selectedProject.value.id, userId } })
+    selectedProject.value.members = selectedProject.value.members.filter(user => user.userId !== userId)
   }
   teamCtKey.value = getRandomId('team')
   snackbarStore.isWaitingForResponse = false
@@ -552,16 +556,17 @@ const untruncateDescription = (span: HTMLElement) => {
           :id="repositoriesId"
           :key="repositoriesCtKey"
           title="Dépôts"
-          :headers="['Nom', 'Type']"
+          :headers="['Nom', 'Type', 'Privé ?', 'url']"
           :rows="repositoriesRows"
         />
         <TeamCt
           :id="membersId"
           :key="teamCtKey"
           :user-profile="userStore.userProfile"
-          :project="{id: selectedProject.id, name: selectedProject.name, locked: selectedProject.locked }"
+          :project="selectedProject"
           :members="selectedProject.members"
           :known-users="usersStore.users"
+          :can-manage="AdminAuthorized.ManageProjects(userStore.adminPerms)"
           @add-member="(email: string) => addUserToProject(email)"
           @update-role="(userId: string) => updateUserRole(userId)"
           @remove-member="(userId: string) => removeUserFromProject(userId)"

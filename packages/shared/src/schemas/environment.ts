@@ -38,6 +38,7 @@ export const GetEnvironmentsSchema = {
   }),
   responses: {
     200: z.array(EnvironmentSchema),
+    404: ErrorSchema,
     500: ErrorSchema,
   },
 }

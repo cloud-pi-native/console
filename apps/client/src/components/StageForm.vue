@@ -1,10 +1,12 @@
 <script lang="ts" setup>
 import { computed, onBeforeMount, ref } from 'vue'
-import { type Cluster, type Quota, type Stage, type StageAssociatedEnvironments, SharedZodError, StageSchema, CreateStageBody } from '@cpn-console/shared'
+import { type Cluster, type Quota, type Stage, type StageAssociatedEnvironments, SharedZodError, StageSchema, CreateStageBody, AdminAuthorized } from '@cpn-console/shared'
 import { toCodeComponent } from '@/utils/func.js'
 import type { UpdateStageType } from '@/views/admin/ListStages.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+import { useUserStore } from '@/stores/user.js'
 
+const userStore = useUserStore()
 const props = withDefaults(defineProps<{
   isNewStage: boolean
   stage: Stage
@@ -96,6 +98,7 @@ onBeforeMount(() => {
       placeholder="dev"
     />
     <div
+
       class="fr-mb-2w"
     >
       <ChoiceSelector
@@ -107,7 +110,7 @@ onBeforeMount(() => {
         :options-selected="allQuotas.filter(({ id}) => localStage.quotaIds.includes(id))"
         label-key="name"
         value-key="id"
-        :disabled="false"
+        :disabled="!AdminAuthorized.ManageQuotas(userStore.adminPerms)"
         @update="(_q, quotaIds) => updateQuotas(quotaIds)"
       />
     </div>
@@ -123,7 +126,7 @@ onBeforeMount(() => {
         :options-selected="allClusters.filter(({ id }) => localStage.clusterIds.includes(id))"
         label-key="label"
         value-key="id"
-        :disabled="false"
+        :disabled="!AdminAuthorized.ManageClusters(userStore.adminPerms)"
         @update="(_c, clusterIds) => updateClusters(clusterIds)"
       />
     </div>

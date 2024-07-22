@@ -1,6 +1,6 @@
-import { stageContract } from '@cpn-console/shared'
+import { AdminAuthorized, stageContract } from '@cpn-console/shared'
 import { serverInstance } from '@/app.js'
-import { addReqLogs } from '@/utils/logger.js'
+
 import {
   listStages,
   createStage,
@@ -8,58 +8,45 @@ import {
   deleteStage,
   updateStage,
 } from './business.js'
-import { assertIsAdmin } from '@/utils/controller.js'
+import { authUser, ErrorResType, Forbidden403 } from '@/utils/controller.js'
 
 export const stageRouter = () => serverInstance.router(stageContract, {
 
   // Récupérer les types d'environnement disponibles
-  listStages: async ({ request: req }) => {
-    const userId = req.session.user.id
-    const stages = await listStages(userId)
+  listStages: async () => {
+    const body = await listStages()
 
-    addReqLogs({
-      req,
-      message: 'Stages récupérés avec succès',
-    })
     return {
       status: 200,
-      body: stages,
+      body,
     }
   },
 
   // Récupérer les environnements associés au stage
   getStageEnvironments: async ({ request: req, params }) => {
+    const user = req.session.user
+    const perms = await authUser(user)
+    if (!AdminAuthorized.ManageStages(perms.adminPermissions)) return new Forbidden403()
+
     const stageId = params.stageId
-
-    assertIsAdmin(req.session.user)
-    const environments = await getStageAssociatedEnvironments(stageId)
-
-    addReqLogs({
-      req,
-      message: 'Environnements associés au type d\'environnement récupérés',
-      infos: {
-        stageId,
-      },
-    })
+    const body = await getStageAssociatedEnvironments(stageId)
+    if (body instanceof ErrorResType) return body
 
     return {
       status: 200,
-      body: environments,
+      body,
     }
   },
 
   // Créer un stage
   createStage: async ({ request: req, body: data }) => {
-    assertIsAdmin(req.session.user)
-    const stage = await createStage(data)
+    const user = req.session.user
+    const perms = await authUser(user)
+    if (!AdminAuthorized.ManageStages(perms.adminPermissions)) return new Forbidden403()
+    if (!AdminAuthorized.ManageQuotas(perms.adminPermissions)) delete data.quotaIds
+    if (!AdminAuthorized.ManageClusters(perms.adminPermissions)) delete data.clusterIds
 
-    addReqLogs({
-      req,
-      message: 'Type d\'environnement créé avec succès',
-      infos: {
-        stageId: stage.id,
-      },
-    })
+    const stage = await createStage(data)
 
     return {
       status: 201,
@@ -69,43 +56,37 @@ export const stageRouter = () => serverInstance.router(stageContract, {
 
   // Modifier une association stage / clusters
   updateStage: async ({ request: req, params, body: data }) => {
+    const user = req.session.user
+    const perms = await authUser(user)
+    if (!AdminAuthorized.ManageStages(perms.adminPermissions)) return new Forbidden403()
+    if (!AdminAuthorized.ManageQuotas(perms.adminPermissions)) delete data.quotaIds
+    if (!AdminAuthorized.ManageClusters(perms.adminPermissions)) delete data.clusterIds
+
     const stageId = params.stageId
 
-    assertIsAdmin(req.session.user)
-    const stage = await updateStage(stageId, data)
-
-    addReqLogs({
-      req,
-      message: 'Clusters associés au type d\'environnement mis à jour avec succès',
-      infos: {
-        stageId,
-      },
-    })
+    const body = await updateStage(stageId, data)
+    if (body instanceof ErrorResType) return body
 
     return {
       status: 200,
-      body: stage,
+      body,
     }
   },
 
   // Supprimer un stage
   deleteStage: async ({ request: req, params }) => {
+    const user = req.session.user
+    const perms = await authUser(user)
+    if (!AdminAuthorized.ManageStages(perms.adminPermissions)) return new Forbidden403()
+
     const stageId = params.stageId
 
-    assertIsAdmin(req.session.user)
-    await deleteStage(stageId)
-
-    addReqLogs({
-      req,
-      message: 'Type d\'environnement supprimé avec succès',
-      infos: {
-        stageId,
-      },
-    })
+    const body = await deleteStage(stageId)
+    if (body instanceof ErrorResType) return body
 
     return {
       status: 204,
-      body: null,
+      body,
     }
   },
 })

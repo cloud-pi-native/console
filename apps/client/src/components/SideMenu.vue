@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import { useUserStore } from '@/stores/user.js'
 import { useProjectStore } from '@/stores/project.js'
+import { ProjectAuthorized, AdminAuthorized } from '@cpn-console/shared'
+import router from '../router/index.js'
 
 const route = useRoute()
 const userStore = useUserStore()
@@ -9,7 +11,6 @@ const projectStore = useProjectStore()
 const routeName = computed(() => route.name)
 const routePath = computed(() => route.path)
 const isLoggedIn = computed(() => userStore.isLoggedIn)
-const isAdmin = computed(() => userStore.isAdmin)
 const selectedProject = computed(() => projectStore.selectedProject)
 
 const isDarkScheme = ref<boolean>()
@@ -69,7 +70,8 @@ onMounted(() => {
       <p
         v-if="isLoggedIn"
         data-testid="whoami-hint"
-        class="fr-hint-text fr-mb-2w"
+        class="fr-hint-text fr-mb-2w cursor-pointer"
+        @click="router.push('/profile')"
       >
         <span
           class="fr-icon-account-line"
@@ -171,7 +173,22 @@ onMounted(() => {
                 Équipe
               </DsfrSideMenuLink>
             </DsfrSideMenuListItem>
-            <DsfrSideMenuListItem>
+            <DsfrSideMenuListItem
+              v-if="ProjectAuthorized.ManageRoles({ projectPermissions: projectStore.selectedProjectPerms})"
+            >
+              <DsfrSideMenuLink
+                class="menu-link-icon"
+                data-testid="menuProjectRole"
+                :active="routeName === 'ProjectRoles'"
+                :to="`/projects/${selectedProject?.id}/roles`"
+              >
+                <v-icon name="ri-admin-line" />
+                Rôles
+              </DsfrSideMenuLink>
+            </DsfrSideMenuListItem>
+            <DsfrSideMenuListItem
+              v-if="ProjectAuthorized.ListRepositories({ projectPermissions: projectStore.selectedProjectPerms})"
+            >
               <DsfrSideMenuLink
                 class="menu-link-icon"
                 data-testid="menuRepos"
@@ -182,7 +199,9 @@ onMounted(() => {
                 Dépôts
               </DsfrSideMenuLink>
             </DsfrSideMenuListItem>
-            <DsfrSideMenuListItem>
+            <DsfrSideMenuListItem
+              v-if="ProjectAuthorized.ListEnvironments({ projectPermissions: projectStore.selectedProjectPerms})"
+            >
               <DsfrSideMenuLink
                 class="menu-link-icon"
                 data-testid="menuEnvironments"
@@ -199,7 +218,7 @@ onMounted(() => {
 
       <!-- Onglet Administration-->
       <DsfrSideMenuListItem
-        v-if="isAdmin"
+        v-if="userStore.adminPerms"
       >
         <DsfrSideMenuButton
           data-testid="menuAdministrationBtn"
@@ -216,7 +235,9 @@ onMounted(() => {
           :expanded="isExpanded.administration"
           :collapsable="true"
         >
-          <DsfrSideMenuListItem>
+          <DsfrSideMenuListItem
+            v-if="AdminAuthorized.ManageRoles(userStore.adminPerms)"
+          >
             <DsfrSideMenuLink
               class="menu-link-icon"
               data-testid="menuAdministrationUsers"
@@ -227,7 +248,9 @@ onMounted(() => {
               Utilisateurs
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
-          <DsfrSideMenuListItem>
+          <DsfrSideMenuListItem
+            v-if="AdminAuthorized.ManageOrganizations(userStore.adminPerms)"
+          >
             <DsfrSideMenuLink
               class="menu-link-icon"
               data-testid="menuAdministrationOrganizations"
@@ -238,7 +261,9 @@ onMounted(() => {
               Organisations
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
-          <DsfrSideMenuListItem>
+          <DsfrSideMenuListItem
+            v-if="AdminAuthorized.ListProjects(userStore.adminPerms)"
+          >
             <DsfrSideMenuLink
               class="menu-link-icon"
               data-testid="menuAdministrationProjects"
@@ -249,7 +274,22 @@ onMounted(() => {
               Projets
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
-          <DsfrSideMenuListItem>
+          <DsfrSideMenuListItem
+            v-if="AdminAuthorized.ManageRoles(userStore.adminPerms)"
+          >
+            <DsfrSideMenuLink
+              class="menu-link-icon"
+              data-testid="menuAdministrationRoles"
+              :active="routeName === 'AdminRoles'"
+              :to="`/admin/roles`"
+            >
+              <v-icon name="ri-admin-line" />
+              Rôles
+            </DsfrSideMenuLink>
+          </DsfrSideMenuListItem>
+          <DsfrSideMenuListItem
+            v-if="AdminAuthorized.ViewLogs(userStore.adminPerms)"
+          >
             <DsfrSideMenuLink
               class="menu-link-icon"
               data-testid="menuAdministrationLogs"
@@ -260,7 +300,9 @@ onMounted(() => {
               Journaux
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
-          <DsfrSideMenuListItem>
+          <DsfrSideMenuListItem
+            v-if="AdminAuthorized.ManageClusters(userStore.adminPerms)"
+          >
             <DsfrSideMenuLink
               class="menu-link-icon"
               data-testid="menuAdministrationClusters"
@@ -271,7 +313,9 @@ onMounted(() => {
               Clusters
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
-          <DsfrSideMenuListItem>
+          <DsfrSideMenuListItem
+            v-if="AdminAuthorized.ManageQuotas(userStore.adminPerms)"
+          >
             <DsfrSideMenuLink
               class="menu-link-icon"
               data-testid="menuAdministrationQuotas"
@@ -282,7 +326,9 @@ onMounted(() => {
               Quotas
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
-          <DsfrSideMenuListItem>
+          <DsfrSideMenuListItem
+            v-if="AdminAuthorized.ManageStages(userStore.adminPerms)"
+          >
             <DsfrSideMenuLink
               class="menu-link-icon"
               data-testid="menuAdministrationStages"
@@ -293,7 +339,9 @@ onMounted(() => {
               Types d'environnement
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
-          <DsfrSideMenuListItem>
+          <DsfrSideMenuListItem
+            v-if="AdminAuthorized.ManageZones(userStore.adminPerms)"
+          >
             <DsfrSideMenuLink
               class="menu-link-icon"
               data-testid="menuAdministrationZones"
@@ -304,7 +352,9 @@ onMounted(() => {
               Zones
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
-          <DsfrSideMenuListItem>
+          <DsfrSideMenuListItem
+            v-if="AdminAuthorized.ManagePlugins(userStore.adminPerms)"
+          >
             <DsfrSideMenuLink
               class="menu-link-icon"
               data-testid="menuAdministrationPlugins"
@@ -328,7 +378,6 @@ onMounted(() => {
           </DsfrSideMenuListItem>
         </DsfrSideMenuList>
       </DsfrSideMenuListItem>
-
       <DsfrSideMenuListItem>
         <DsfrSideMenuLink
           class="menu-link-icon"

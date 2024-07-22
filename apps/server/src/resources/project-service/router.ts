@@ -1,32 +1,35 @@
-import { addReqLogs } from '@/utils/logger.js'
-import { projectServiceContract } from '@cpn-console/shared'
+import { AdminAuthorized, ProjectAuthorized, projectServiceContract } from '@cpn-console/shared'
 import { serverInstance } from '@/app.js'
 import { getProjectServices, updateProjectServices } from './business.js'
+import { authUser, Forbidden403, NotFound404 } from '@/utils/controller.js'
 
 export const projectServiceRouter = () => serverInstance.router(projectServiceContract, {
   // Récupérer les services d'un projet
   getServices: async ({ request: req, params: { projectId } }) => {
-    const requestor = req.session.user
-    const services = await getProjectServices(projectId, requestor)
-    addReqLogs({
-      req,
-      message: 'Services de projet récupérés avec succès',
-      infos: {
-        userId: requestor.id,
-      },
-    })
+    const user = req.session.user
+    const perms = await authUser(user, { id: projectId })
+    if (!perms.projectPermissions && !AdminAuthorized.ListProjects(perms.adminPermissions)) return new NotFound404()
+
+    const body = await getProjectServices(projectId, AdminAuthorized.ManageProjects(perms.adminPermissions) ? 'admin' : 'user')
+
     return {
       status: 200,
-      body: services,
+      body,
     }
   },
+
   updateProjectServices: async ({ request: req, params: { projectId }, body }) => {
     const user = req.session.user
+    const perms = await authUser(user, { id: projectId })
+    if (!ProjectAuthorized.Manage(perms)) return new NotFound404()
+    if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
 
-    await updateProjectServices(projectId, body, user)
+    const allowedRoles: Array<'user' | 'admin'> = AdminAuthorized.ManageProjects(perms.adminPermissions) ? ['user', 'admin'] : ['user']
+
+    const resBody = await updateProjectServices(projectId, body, allowedRoles)
     return {
       status: 204,
-      body: null,
+      body: resBody,
     }
   },
 })

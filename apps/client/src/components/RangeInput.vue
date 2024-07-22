@@ -17,7 +17,10 @@ const props = withDefaults(defineProps<{
 
 const localLevel = ref(props.level)
 
-defineEmits(['updateLevel'])
+defineEmits<{
+  updateLevel: [value: number]
+  'update-level': [value: number]
+}>()
 
 </script>
 <template>

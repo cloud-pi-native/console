@@ -1,20 +1,16 @@
 import type { Project } from '@prisma/client'
 import {
   type PluginsUpdateBody,
-  adminGroupPath,
   PermissionTarget,
   ServiceUrl,
 } from '@cpn-console/shared'
 import {
   getAdminPlugin,
-  getProjectInfosAndRepos,
-  getProjectInfosById,
+  getProjectInfosByIdOrThrow,
   getProjectStore,
   getPublicClusters,
   saveProjectStore,
 } from '@/resources/queries-index.js'
-import { ForbiddenError, NotFoundError } from '@/utils/errors.js'
-import type { KeycloakPayload } from 'fastify-keycloak-adapter'
 import { editStrippers, populatePluginManifests, servicesInfos } from '@cpn-console/hooks'
 
 export type ConfigRecords = {
@@ -37,16 +33,9 @@ export const objToDb = (obj: PluginsUpdateBody): ConfigRecords => Object.entries
     .map(([key, value]) => ({ pluginName, key, value })))
   .flat()
 
-export const getProjectServices = async (projectId: Project['id'], requestor: KeycloakPayload, permissionTarget: PermissionTarget = 'user') => {
+export const getProjectServices = async (projectId: Project['id'], permissionTarget: PermissionTarget) => {
   // Pré-requis
-  const project = await getProjectInfosById(projectId)
-  if (!project) throw new NotFoundError('Projet introuvable')
-
-  const isAdmin = requestor.groups?.includes(adminGroupPath)
-  if (!isAdmin) permissionTarget = 'user'
-  if (!isAdmin && !project.roles.find(role => role.userId === requestor.id)) {
-    throw new ForbiddenError('Vous n\'êtes ni admin, ni membre du projet')
-  }
+  const project = await getProjectInfosByIdOrThrow(projectId)
 
   const [projectStore, globalConfig] = await Promise.all([
     getProjectStore(projectId),
@@ -91,24 +80,11 @@ export const getProjectServices = async (projectId: Project['id'], requestor: Ke
   }).filter(s => s.urls.length || s.manifest.global?.length || s.manifest.project?.length)
 }
 
-export const updateProjectServices = async (projectId: Project['id'], data: PluginsUpdateBody, requestor: KeycloakPayload) => {
-  // Pré-requis
-  const project = await getProjectInfosAndRepos(projectId)
-  if (!project) throw new NotFoundError('Projet introuvable')
-
-  const stripperRoles: Array<'user' | 'admin'> = []
-  if (requestor.groups?.includes(adminGroupPath)) {
-    stripperRoles.push('admin')
-  }
-  if (project.roles.find(role => role.userId === requestor.id)) {
-    stripperRoles.push('user')
-  }
-  if (!stripperRoles.length) {
-    throw new ForbiddenError('Vous n\'êtes ni admin, ni membre du projet')
-  }
+export const updateProjectServices = async (projectId: Project['id'], data: PluginsUpdateBody, stripperRoles: Array<'user' | 'admin'>) => {
   for (const role of stripperRoles) {
     const parsedData = editStrippers.project[role].safeParse(data)
     if (!parsedData.success) continue
     await saveProjectStore(objToDb(parsedData.data), projectId)
   }
+  return null
 }
