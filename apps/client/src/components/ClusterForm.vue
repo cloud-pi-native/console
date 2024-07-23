@@ -217,7 +217,7 @@ const isConnectionDetailsShown = ref(true)
     <h1
       class="fr-h1"
     >
-      {{ isNewCluster ? 'Ajouter un cluster' : 'Mettre à jour le cluster' }}
+      {{ isNewCluster ? 'Ajouter un cluster' : 'Mettre à jour le cluster ' + localCluster.label }}
     </h1>
     <div
       class="cursor-pointer"
