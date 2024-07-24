@@ -66,27 +66,3 @@ export const closeConnections = async () => {
     closingConnections = false
   }
 }
-
-export const dropTables = async () => {
-  try {
-    await _dropLogsTable()
-    await _dropRepositoriesTable()
-    await _dropPermissionsTable()
-    await _dropEnvironmentsTable()
-    await _dropRolesTable()
-    await _dropProjectsTable()
-    await _dropUsersTable()
-    await _dropOrganizationsTable()
-    await _dropClusterTable()
-    await _dropProjectClusterHistoryTable()
-    await _dropKubeconfigTable()
-    await _dropQuotaTable()
-    await _dropStageTable()
-    await _dropZoneTable()
-
-    app.log.info('All tables were droped successfully.')
-  } catch (error) {
-    app.log.error(error)
-    app.log.error('Drop database tables failed.')
-  }
-}
