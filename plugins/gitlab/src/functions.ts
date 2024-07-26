@@ -45,12 +45,12 @@ export const getDsoProjectSecrets: StepCall<ProjectLite> = async (payload) => {
       const gitlab = (await payload.apis.vault.read('GITLAB')).data as VaultSecrets['GITLAB']
       const curlCommand = [
         'curl -X POST --fail',
-        // eslint-disable-next-line no-useless-escape, no-template-curly-in-string
+        // eslint-disable-next-line no-useless-escape
         '-F token=\${GIT_MIRROR_TOKEN}',
         '-F ref=main',
-        // eslint-disable-next-line no-useless-escape, no-template-curly-in-string
+        // eslint-disable-next-line no-useless-escape
         '-F variables[GIT_BRANCH_DEPLOY]=\${BRANCH_TO_SYNC}',
-        // eslint-disable-next-line no-useless-escape, no-template-curly-in-string
+        // eslint-disable-next-line no-useless-escape
         '-F variables[PROJECT_NAME]=\${REPOSITORY_NAME}',
         `"${getConfig().url}/api/v4/projects/${gitlab.GIT_MIRROR_PROJECT_ID}/trigger/pipeline"`,
       ]

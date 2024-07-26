@@ -1,16 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { PrismaClientInitializationError } from '@prisma/client/runtime/library.js'
-import {
-  _dropEnvironmentsTable,
-  _dropLogsTable,
-  _dropOrganizationsTable,
-  _dropPermissionsTable,
-  _dropProjectsTable,
-  _dropRepositoriesTable,
-  _dropRolesTable,
-  _dropUsersTable,
-  _dropZoneTable,
-} from '@/resources/queries-index.js'
 import prisma from './__mocks__/prisma.js'
 import app from './app.js'
 import { getConnection } from './connect.js'

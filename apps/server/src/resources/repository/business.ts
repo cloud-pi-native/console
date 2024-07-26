@@ -99,11 +99,11 @@ export const createRepository = async (
   try {
     const { results } = await hook.project.upsert(project.id, data.isPrivate
       ? {
-          [repo.internalRepoName]: {
-            token: data.externalToken ?? '',
-            username: data.externalUserName ?? '',
-          },
-        }
+        [repo.internalRepoName]: {
+          token: data.externalToken ?? '',
+          username: data.externalUserName ?? '',
+        },
+      }
       : undefined,
     )
     await addLogs('Create Repository', results, userId, requestId)

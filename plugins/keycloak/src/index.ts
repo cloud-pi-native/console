@@ -33,7 +33,7 @@ export const plugin: Plugin = {
 declare module '@cpn-console/hooks' {
   interface HookPayloadApis<Args extends DefaultArgs> {
     keycloak: Args extends (ProjectLite | Project)
-    ? KeycloakProjectApi
-    : undefined
+      ? KeycloakProjectApi
+      : undefined
   }
 }

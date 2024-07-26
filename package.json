@@ -48,6 +48,8 @@
     "kube:delete": "ci/kind/run.sh -c delete",
     "kube:load:package": "ci/kind/upload-package.sh",
     "lint": "turbo run lint --color --no-daemon",
+    "lint:style": "turbo run lint:style --color --no-daemon",
+    "lint:ts": "turbo run lint:ts --color --no-daemon",
     "prepare": "husky",
     "test": "turbo run test --concurrency 1 --color --no-daemon",
     "test:cov": "turbo run test:cov --color --no-daemon",

@@ -11,7 +11,7 @@ import { V1DeleteOptions, ObjectSerializer, Authentication, VoidAuth, Intercepto
 const defaultBasePath = 'http://localhost'
 
 export enum CustomObjectsApiApiKeys {
-    BearerToken,
+  BearerToken,
 }
 
 export type UrlParams = {
@@ -34,7 +34,7 @@ export class AnyObjectsApi {
 
   protected interceptors: Interceptor[] = []
 
-  constructor(basePath?: string);
+  constructor (basePath?: string)
   constructor (basePathOrUsername: string, password?: string, basePath?: string) {
     if (password) {
       if (basePath) {
@@ -47,7 +47,6 @@ export class AnyObjectsApi {
     }
   }
 
-  // eslint-disable-next-line accessor-pairs
   set useQuerystring (value: boolean) {
     this._useQuerystring = value
   }

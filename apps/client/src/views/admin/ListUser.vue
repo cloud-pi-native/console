@@ -8,7 +8,7 @@ import { useUserStore } from '@/stores/user.js'
 import type { Component, EmptyRow } from './ListProjects.vue'
 
 interface CheckboxEvent extends Event {
-    target: HTMLInputElement;
+  target: HTMLInputElement;
 }
 
 type Row = {

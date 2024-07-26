@@ -193,11 +193,11 @@ const getEnvironmentsRows = () => {
       ),
       )
     : [[{
-        text: 'Aucun environnement existant',
-        cellAttrs: {
-          colspan: headers.length,
-        },
-      }]]
+      text: 'Aucun environnement existant',
+      cellAttrs: {
+        colspan: headers.length,
+      },
+    }]]
   environmentsCtKey.value = getRandomId('environment')
 }
 
@@ -213,11 +213,11 @@ const getRepositoriesRows = () => {
       ),
       )
     : [[{
-        text: 'Aucun dépôt existant',
-        cellAttrs: {
-          colspan: headers.length,
-        },
-      }]]
+      text: 'Aucun dépôt existant',
+      cellAttrs: {
+        colspan: headers.length,
+      },
+    }]]
   repositoriesCtKey.value = getRandomId('repository')
 }
 
@@ -280,7 +280,7 @@ const archiveProject = async (projectId: string) => {
   snackbarStore.isWaitingForResponse = false
 }
 
-const addUserToProject = async (email: string) => {
+const addUserToProject= async (email: string) => {
   snackbarStore.isWaitingForResponse = true
   if (selectedProject.value) {
     selectedProject.value.members = await projectUserStore.addUserToProject(selectedProject.value.id, { email })

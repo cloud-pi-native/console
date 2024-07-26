@@ -1,14 +1,14 @@
 // @ts-nocheck
 import { Prisma } from '@prisma/client'
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare, no-extend-native
+
 BigInt.prototype.toJSON = function () {
   return `${this.toString()}n`
 }
 
 export type ResourceByName<T extends {
-    name: string;
-}> = Record<T['name'], T>;
+  name: string;
+}> = Record<T['name'], T>
 export const resourceListToDict = <T extends { name: string }>(resList: Array<T>): ResourceByName<T& {id?: string}> => resList.reduce((acc, curr) => {
   return {
     ...acc,
