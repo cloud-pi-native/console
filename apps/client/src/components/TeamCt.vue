@@ -29,7 +29,7 @@ const props = withDefaults(
   defineProps<{
     userProfile?: UserProfile
     project: Pick<Project, 'id' | 'locked' | 'name'>
-    members: Array<{ userId: User['id'], role: ProjectRoles}>
+    members: Array<{ userId: User['id'], role: ProjectRoles }>
     knownUsers: Record<string, User>
   }>(),
   {
@@ -49,8 +49,8 @@ const removeUserHint = (userId: User['id']) => {
   else return 'vous n\'avez pas les droits suffisants pour retirer un membre du projet'
 }
 
-const isOwnerOrAdmin = ref(props.members.some(member => (member.userId === props.userProfile?.id && member.role === 'owner') ||
-  props.userProfile?.groups?.includes(adminGroupPath)))
+const isOwnerOrAdmin = ref(props.members.some(member => (member.userId === props.userProfile?.id && member.role === 'owner')
+  || props.userProfile?.groups?.includes(adminGroupPath)))
 const newUserInputKey = ref(getRandomId('input'))
 const newUserEmail = ref('')
 const usersToAdd = ref<string[] | undefined>([])
@@ -63,7 +63,7 @@ const setRows = () => {
   rows.value = []
 
   if (props.members?.length) {
-    props.members.forEach(member => {
+    props.members.forEach((member) => {
       if (member.role === 'owner') {
         rows.value.unshift([
           {

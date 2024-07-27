@@ -135,7 +135,7 @@ export const listStages = async (userId: User['id']) => {
   if (!user) throw new UnauthorizedError('Vous n\'êtes pas connecté')
   const stages = await listStagesQuery()
 
-  return stages.map(stage => {
+  return stages.map((stage) => {
     return {
       id: stage.id,
       name: stage.name,

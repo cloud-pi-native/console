@@ -120,8 +120,10 @@ export const getRandomRepo = (projectId = faker.string.uuid()): Repository => {
 export const getRandomStage = (
   name: string = faker.lorem.word({ length: { min: 2, max: 20 } }),
   links?: {
-    quotaIds?: string[], quotas?: Quota[]
-    clusterIds?: string[], clusters?: Cluster[]
+    quotaIds?: string[]
+    quotas?: Quota[]
+    clusterIds?: string[]
+    clusters?: Cluster[]
   },
 ): Stage => {
   return {

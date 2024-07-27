@@ -34,7 +34,7 @@ describe('Administration clusters', () => {
   })
 
   it('Should display clusters list', () => {
-    clusters?.forEach(cluster => {
+    clusters?.forEach((cluster) => {
       cy.getByDataTestid(`clusterTile-${cluster.label}`)
         .should('be.visible')
     })
@@ -45,7 +45,7 @@ describe('Administration clusters', () => {
     cy.getByDataTestid(`clusterTile-${cluster1.label}`)
       .should('be.visible')
       .click()
-    cy.wait('@getClustersDetails').its('response').then(response => {
+    cy.wait('@getClustersDetails').its('response').then((response) => {
       cluster1Infos = response.body
     })
     cy.get('h1')
@@ -83,7 +83,7 @@ describe('Administration clusters', () => {
     cy.getByDataTestid(`clusterTile-${cluster2.label}`)
       .should('be.visible')
       .click()
-    cy.wait('@getClustersDetails').its('response').then(response => {
+    cy.wait('@getClustersDetails').its('response').then((response) => {
       cluster2Infos = response.body
     })
     cy.get('h1')
@@ -151,14 +151,14 @@ describe('Administration clusters', () => {
       .select(ClusterPrivacy.DEDICATED)
     cy.get('#projects-select')
       .click()
-    newCluster.projects.forEach(project => {
+    newCluster.projects.forEach((project) => {
       cy.getByDataTestid(`${project.id}-projects-select-tag`)
         .click()
     })
     cy.get('#projects-select .fr-tag--dismiss')
       .should('have.length', newCluster.projects.length)
 
-    newCluster.stageIds.forEach(id => {
+    newCluster.stageIds.forEach((id) => {
       cy.getByDataTestid(`${id}-stages-select-tag`)
         .click()
     })

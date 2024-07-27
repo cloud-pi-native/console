@@ -3,14 +3,14 @@ import { sortArrByObjKeyAsc } from '@cpn-console/shared'
 import { ref, computed, onBeforeMount } from 'vue'
 
 const props = withDefaults(defineProps<{
-  options: T[],
-  optionsSelected: T[],
-  label: string | undefined,
-  description: string,
-  disabled: boolean,
-  id: string,
-  valueKey: VALUE,
-  labelKey: LABEL,
+  options: T[]
+  optionsSelected: T[]
+  label: string | undefined
+  description: string
+  disabled: boolean
+  id: string
+  valueKey: VALUE
+  labelKey: LABEL
   wrapped: boolean
 }>(), {
   wrapped: true,
@@ -67,14 +67,14 @@ onBeforeMount(() => {
 
 type Group = {
   tagClass: string
-  title: string;
-  selectorKey: keyof typeof displayed;
-  addButtonLabel: string;
-  addButtonTestId: string;
-  addVisibleButtonLabel: string;
-  addVisibleButtonTestId: string;
-  switchAll: () => void;
-  switchVisible: () => void;
+  title: string
+  selectorKey: keyof typeof displayed
+  addButtonLabel: string
+  addButtonTestId: string
+  addVisibleButtonLabel: string
+  addVisibleButtonTestId: string
+  switchAll: () => void
+  switchVisible: () => void
 }
 
 const groups: Group[] = [

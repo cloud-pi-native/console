@@ -2,10 +2,10 @@
 import { ref } from 'vue'
 
 const props = withDefaults(defineProps<{
-  label: string,
-  level: number,
-  levels: string[],
-  step: number,
+  label: string
+  level: number
+  levels: string[]
+  step: number
   title: string
 }>(), {
   label: '',

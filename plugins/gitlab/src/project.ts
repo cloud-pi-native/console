@@ -19,19 +19,19 @@ const mirrorSh = (await fs.readFile(`${baseDir}/mirror.sh`)).toString()
 
 interface CommitAction {
   /** The action to perform */
-  action: 'create' | 'delete' | 'move' | 'update' | 'chmod';
+  action: 'create' | 'delete' | 'move' | 'update' | 'chmod'
   /** Full path to the file. Ex. lib/class.rb */
-  filePath: string;
+  filePath: string
   /** Original full path to the file being moved.Ex.lib / class1.rb */
-  previousPath?: string;
+  previousPath?: string
   /** File content, required for all except delete. Optional for move */
-  content?: string;
+  content?: string
   /** text or base64. text is default. */
-  encoding?: string;
+  encoding?: string
   /** Last known file commit id. Will be only considered in update, move and delete actions. */
-  lastCommitId?: string;
+  lastCommitId?: string
   /** When true/false enables/disables the execute flag on the file. Only considered for chmod action. */
-  execute_filemode?: boolean;
+  execute_filemode?: boolean
 }
 
 const mirrorFirstActions: CommitAction[] = [

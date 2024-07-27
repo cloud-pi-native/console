@@ -155,8 +155,8 @@ export const upsertProject: StepCall<Project> = async (payload) => {
 }
 
 const findApplication = (applications: any[], repository: string, environment: string) => applications.find(app =>
-  app.metadata.labels['dso/repository'] === repository &&
-  app.metadata.labels['dso/environment'] === environment,
+  app.metadata.labels['dso/repository'] === repository
+  && app.metadata.labels['dso/environment'] === environment,
 )
 
 const findAppProject = (applications: any[], environment: string) => applications.find(app =>

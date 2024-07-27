@@ -27,7 +27,7 @@ describe('Administration quotas', () => {
     cy.kcLogin('tcolin')
     cy.visit('/admin/quotas')
     cy.url().should('contain', '/admin/quotas')
-    cy.wait('@listQuotas').its('response').then(response => {
+    cy.wait('@listQuotas').its('response').then((response) => {
       allQuotas = response?.body
       quota1 = allQuotas.find(quota => quota.id === quota1.id)
       quota2 = allQuotas.find(quota => quota.id === quota2.id)
@@ -36,7 +36,7 @@ describe('Administration quotas', () => {
   })
 
   it('Should display quotas list', () => {
-    allQuotas?.forEach(quota => {
+    allQuotas?.forEach((quota) => {
       cy.getByDataTestid(`quotaTile-${quota.name}`)
         .should('be.visible')
     })
@@ -70,7 +70,7 @@ describe('Administration quotas', () => {
 
     cy.get('#stages-select')
       .click()
-    publicQuota.stages.forEach(stage => {
+    publicQuota.stages.forEach((stage) => {
       cy.getByDataTestid(`${stage.id}-stages-select-tag`)
         .click()
     })
@@ -78,7 +78,7 @@ describe('Administration quotas', () => {
       .should('have.length', publicQuota.stages.length)
     cy.getByDataTestid('addQuotaBtn')
       .click()
-    cy.wait('@createQuota').its('response').then($response => {
+    cy.wait('@createQuota').its('response').then(($response) => {
       expect($response?.statusCode).to.match(/^20\d$/)
     })
     cy.getByDataTestid('nameInput')
@@ -106,7 +106,7 @@ describe('Administration quotas', () => {
       .should('not.be.checked')
       .and('be.enabled')
     cy.getByDataTestid('updateQuotaBtn').should('be.enabled')
-    publicQuota.stages.forEach(stage => {
+    publicQuota.stages.forEach((stage) => {
       cy.getByDataTestid(`${stage.id}-stages-select-tag`)
         .should('exist')
     })
@@ -153,7 +153,7 @@ describe('Administration quotas', () => {
     })
 
     const environments = []
-    cy.wait('@listEnvironments').its('response').then(response => {
+    cy.wait('@listEnvironments').its('response').then((response) => {
       environments.push(response.body)
     })
     cy.get('#environmentsTable').within(() => {
@@ -191,7 +191,7 @@ describe('Administration quotas', () => {
       .should('not.exist')
     cy.get('#stages-select')
       .click()
-    publicQuota.stages.forEach(stage => {
+    publicQuota.stages.forEach((stage) => {
       cy.getByDataTestid(`${stage.id}-stages-select-tag`)
         .click()
     })
@@ -199,7 +199,7 @@ describe('Administration quotas', () => {
       .should('have.length', publicQuota.stages.length)
     cy.getByDataTestid('addQuotaBtn')
       .click()
-    cy.wait('@createQuota').its('response').then($response => {
+    cy.wait('@createQuota').its('response').then(($response) => {
       expect($response?.statusCode).to.not.match(/^20\d$/)
     })
     cy.getByDataTestid('snackbar').within(() => {
@@ -235,7 +235,7 @@ describe('Administration quotas', () => {
     cy.getByDataTestid('addQuotaBtn').should('be.enabled')
     cy.get('#stages-select')
       .click()
-    privateQuota.stages.forEach(stage => {
+    privateQuota.stages.forEach((stage) => {
       cy.getByDataTestid(`${stage.id}-stages-select-tag`)
         .click()
     })
@@ -243,7 +243,7 @@ describe('Administration quotas', () => {
       .should('have.length', privateQuota.stages.length)
     cy.getByDataTestid('addQuotaBtn')
       .click()
-    cy.wait('@createQuota').its('response').then($response => {
+    cy.wait('@createQuota').its('response').then(($response) => {
       expect($response?.statusCode).to.match(/^20\d$/)
     })
     cy.getByDataTestid('nameInput')
@@ -271,7 +271,7 @@ describe('Administration quotas', () => {
       .should('be.checked')
       .and('be.enabled')
     cy.getByDataTestid('updateQuotaBtn').should('be.enabled')
-    privateQuota.stages.forEach(stage => {
+    privateQuota.stages.forEach((stage) => {
       cy.getByDataTestid(`${stage.id}-stages-select-tag`)
         .should('exist')
     })
@@ -308,7 +308,7 @@ describe('Administration quotas', () => {
     })
 
     const environments = []
-    cy.wait('@listEnvironments').its('response').then(response => {
+    cy.wait('@listEnvironments').its('response').then((response) => {
       environments.push(response.body)
     })
 
@@ -363,7 +363,7 @@ describe('Administration quotas', () => {
       .click()
     cy.getByDataTestid('updateQuotaBtn')
       .click()
-    cy.wait('@updateQuota').its('response').then($response => {
+    cy.wait('@updateQuota').its('response').then(($response) => {
       expect($response?.statusCode).to.match(/^20\d$/)
     })
 

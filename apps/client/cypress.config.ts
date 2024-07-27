@@ -19,7 +19,7 @@ if (viteConfig.server) {
 
 export default defineConfig({
   e2e: {
-    setupNodeEvents (on) {
+    setupNodeEvents(on) {
       on(
         'file:preprocessor',
         vitePreprocessor({

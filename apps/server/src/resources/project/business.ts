@@ -179,7 +179,7 @@ export const updateProject = async (data: UpdateProjectBody, projectId: Project[
   const project = await getProject(projectId, requestor.id)
   if (!project) throw new NotFoundError('Projet introuvable')
   if (project.locked) throw new ForbiddenError(projectIsLockedInfo)
-  Object.keys(data).forEach(key => {
+  Object.keys(data).forEach((key) => {
     // @ts-ignore
     project[key] = data[key]
   })

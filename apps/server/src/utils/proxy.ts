@@ -10,7 +10,7 @@ type Excludes<T extends Target> = Partial<Record<keyof T, Array<keyof T>>> | und
 
 // @ts-ignore
 export const genericProxy = <T extends Target>(proxied: T, excludes: Excludes<T> = {}): T => new Proxy(toTarget(proxied), {
-  get ({ methods, tracker }, property: string) {
+  get({ methods, tracker }, property: string) {
     if (!(property in methods)) return
     return async (...args) => {
       const id = args[0] as string
@@ -70,7 +70,7 @@ export const genericProxy = <T extends Target>(proxied: T, excludes: Excludes<T>
       return p
     }
   },
-  set () {
+  set() {
     return false
   },
 }) as T

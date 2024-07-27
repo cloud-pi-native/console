@@ -15,7 +15,7 @@ Cypress.Commands.add('kcLogin', (name, password = 'test') => {
       .get('input#kc-login').click()
       .url().should('contain', `${Cypress.env('clientHost')}`)
   }, {
-    validate () {
+    validate() {
       cy.visit('/')
         .get('a.fr-btn').should('contain', 'Se déconnecter')
     },
@@ -97,7 +97,7 @@ Cypress.Commands.add('addRepos', (project, repos) => {
   cy.intercept('POST', '/api/v1/repositories').as('postRepo')
   cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('listProjects')
 
-  const newRepo = (repo) => ({
+  const newRepo = repo => ({
     internalRepoName: 'console',
     externalUserName: 'this-is+tobi',
     externalRepoUrl: 'https://github.com/cloud-pi-native/console.git',
@@ -311,7 +311,7 @@ Cypress.Commands.add('assertPermission', (project, environmentName, permissions)
   cy.getByDataTestid(`environmentTile-${environmentName}`)
     .click()
 
-  permissions.forEach(permission => {
+  permissions.forEach((permission) => {
     cy.getByDataTestid(`userPermissionLi-${permission.email}`).within(() => {
       cy.getByDataTestid('userEmail')
         .should('contain', permission.email)
@@ -355,7 +355,7 @@ Cypress.Commands.add('assertUsers', (project, emails) => {
     .getByDataTestid(`projectTile-${project.name}`).click()
     .getByDataTestid('menuTeam').click()
 
-  emails.forEach(email => {
+  emails.forEach((email) => {
     cy.getByDataTestid('teamTable').within(() => {
       cy.get('td')
         .contains(email)
@@ -366,7 +366,7 @@ Cypress.Commands.add('assertUsers', (project, emails) => {
 
 Cypress.Commands.add('generateGitLabCI', (ciForms) => {
   let version
-  ciForms.forEach(ciForm => {
+  ciForms.forEach((ciForm) => {
     if (ciForm.language === 'java') version = `BUILD_IMAGE_NAME: maven:3.8-openjdk-${ciForm.version}`
     if (ciForm.language === 'node') version = `BUILD_IMAGE_NAME: node:${ciForm.version}`
     if (ciForm.language === 'python') version = `BUILD_IMAGE_NAME: maven:3.8-openjdk-${ciForm.version}`
@@ -415,7 +415,7 @@ Cypress.Commands.add('assertClipboard', (value) => {
 })
 
 Cypress.Commands.add('getServicesResponse', () => {
-  cy.wait('@getServices').its('response').then(response => {
+  cy.wait('@getServices').its('response').then((response) => {
     const services = response.body
     services.map(service =>
       cy.getByDataTestid(`${service.name}-info`).should('contain', `${service.code} - ${service.message}`),
@@ -439,7 +439,7 @@ Cypress.Commands.add('selectProject', (element) => {
 })
 
 Cypress.Commands.add('deleteIndexedDB', () => {
-  Cypress.on('window:before:load', win => {
+  Cypress.on('window:before:load', (win) => {
     win.indexedDB.deleteDatabase('localforage')
   })
 })

@@ -16,8 +16,8 @@ export const getOrganizationByName = (name: Organization['name']) =>
 
 // CREATE
 type CreateOrganizationParams = {
-  name: Organization['name'],
-  label: Organization['label'],
+  name: Organization['name']
+  label: Organization['label']
   source: Organization['source']
 }
 
@@ -29,8 +29,8 @@ export const createOrganization = (
 
 // UPDATE
 type UpdateOrganizationParams = {
-  name: Organization['name'],
-  label?: Organization['label'],
+  name: Organization['name']
+  label?: Organization['label']
   source?: Organization['source']
   active?: Organization['active']
 }

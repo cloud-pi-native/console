@@ -46,21 +46,21 @@ type Row = {
   status: string
   locked: boolean
   rowData: Array<string | Component>
-  rowAttrs: { class: string, title: string, onClick: () => void}
+  rowAttrs: { class: string, title: string, onClick: () => void }
 }
-export type EmptyRow = [[{ field: 'string', text: string; cellAttrs: { colspan: number } }]]
+export type EmptyRow = [[{ field: 'string', text: string, cellAttrs: { colspan: number } }]]
 type Rows = Row[]
 
-type EnvironnementRow = [string, string, Component, Component, Component] | [[{ text: string; cellAttrs: { colspan: number } }]]
+type EnvironnementRow = [string, string, Component, Component, Component] | [[{ text: string, cellAttrs: { colspan: number } }]]
 type EnvironnementRows = EnvironnementRow[] | EmptyRow
 
-type RepositoryRow = [string, Component, Component] | [[{ text: string; cellAttrs: { colspan: number } }]]
+type RepositoryRow = [string, Component, Component] | [[{ text: string, cellAttrs: { colspan: number } }]]
 type RepositoryRows = RepositoryRow[] | EmptyRow
 
 type FileForDownload = File & {
-  href?: string,
-  format?: string,
-  title?: string,
+  href?: string
+  format?: string
+  title?: string
 }
 
 const organizations = ref<Organization[]>([])
@@ -104,9 +104,9 @@ const filterMethods: FilterMethods = {
 }
 
 const rowFilter = (rows: Row[]): Rows | EmptyRow => {
-  const returnRows = rows.filter(row => {
+  const returnRows = rows.filter((row) => {
     if (!inputSearchText.value) return true
-    return row.rowData.some(data => {
+    return row.rowData.some((data) => {
       if (typeof data === 'object') {
         return data.text?.toString().toLowerCase().includes(inputSearchText.value.toLocaleLowerCase())
       }
@@ -246,7 +246,7 @@ const selectProject = async (projectId: string) => {
   getEnvironmentsRows()
 }
 
-const updateEnvironmentQuota = async ({ environmentId, quotaId }: {environmentId: string, quotaId: string}) => {
+const updateEnvironmentQuota = async ({ environmentId, quotaId }: { environmentId: string, quotaId: string }) => {
   snackbarStore.isWaitingForResponse = true
   const environment = projectEnvironmentStore.environments.find(environment => environment.id === environmentId)
   if (!environment) return
@@ -280,7 +280,7 @@ const archiveProject = async (projectId: string) => {
   snackbarStore.isWaitingForResponse = false
 }
 
-const addUserToProject= async (email: string) => {
+const addUserToProject = async (email: string) => {
   snackbarStore.isWaitingForResponse = true
   if (selectedProject.value) {
     selectedProject.value.members = await projectUserStore.addUserToProject(selectedProject.value.id, { email })

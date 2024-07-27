@@ -43,10 +43,10 @@ export const syncRepository = async (
     branchName,
     requestId,
   }: {
-    repositoryId: Repository['id'],
-    userId: User['id'],
-    branchName: string,
-    requestId: string,
+    repositoryId: Repository['id']
+    userId: User['id']
+    branchName: string
+    requestId: string
   }) => {
   try {
     const repository = await getRepositoryByIdQuery(repositoryId)
@@ -69,7 +69,7 @@ export const checkUpsertRepository = async (
     project,
     userId,
     minRole = 'user',
-  }: { userId: User['id'], project: { locked: Project['locked'], roles: Role[] }, minRole?: ProjectRoles, }) => {
+  }: { userId: User['id'], project: { locked: Project['locked'], roles: Role[] }, minRole?: ProjectRoles }) => {
   const errorMessage = checkRoleAndLocked(project, userId, minRole)
   if (errorMessage) throw new ForbiddenError(errorMessage)
 }
@@ -80,8 +80,8 @@ export const createRepository = async (
     userId,
     requestId,
   }: {
-    data: CreateRepositoryBody,
-    userId: User['id'],
+    data: CreateRepositoryBody
+    userId: User['id']
     requestId: string
   }) => {
   const user = await getUserById(userId)
@@ -99,11 +99,11 @@ export const createRepository = async (
   try {
     const { results } = await hook.project.upsert(project.id, data.isPrivate
       ? {
-        [repo.internalRepoName]: {
-          token: data.externalToken ?? '',
-          username: data.externalUserName ?? '',
-        },
-      }
+          [repo.internalRepoName]: {
+            token: data.externalToken ?? '',
+            username: data.externalUserName ?? '',
+          },
+        }
       : undefined,
     )
     await addLogs('Create Repository', results, userId, requestId)
@@ -125,10 +125,10 @@ export const updateRepository = async (
     userId,
     requestId,
   }: {
-    repositoryId: Repository['id'],
-    data: Partial<UpdateRepositoryBody>,
-    userId: User['id'],
-    requestId: string,
+    repositoryId: Repository['id']
+    data: Partial<UpdateRepositoryBody>
+    userId: User['id']
+    requestId: string
   }) => {
   try {
     const repository = await getRepositoryByIdQuery(repositoryId)
@@ -162,9 +162,9 @@ export const deleteRepository = async ({
   userId,
   requestId,
 }: {
-  repositoryId: Repository['id'],
-  userId: User['id'],
-  requestId: string,
+  repositoryId: Repository['id']
+  userId: User['id']
+  requestId: string
 },
 ) => {
   try {

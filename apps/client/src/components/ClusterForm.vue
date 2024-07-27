@@ -112,17 +112,17 @@ const updateKubeconfig = (files: FileList) => {
 
 type ContextType = {
   user: {
-    username: string,
-    password: string,
-    token: string,
-    certData: string,
-    keyData: string,
+    username: string
+    password: string
+    token: string
+    certData: string
+    keyData: string
   }
   cluster: {
-    server: string,
-    tlsServerName: string,
-    caData: string,
-    skipTLSVerify: string,
+    server: string
+    tlsServerName: string
+    caData: string
+    skipTLSVerify: string
   }
 }
 

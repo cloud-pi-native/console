@@ -34,7 +34,7 @@ const logUnhandledRejection = (reason: unknown, promise: Promise<unknown>) => {
   console.log('Unhandled Rejection at:', promise, 'reason:', reason)
 }
 
-export function handleExit () {
+export function handleExit() {
   process.on('exit', logExitCode)
   process.on('SIGINT', exitGracefully)
   process.on('SIGTERM', exitGracefully)

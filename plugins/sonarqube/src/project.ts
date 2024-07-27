@@ -2,8 +2,8 @@ import { generateProjectKey } from '@cpn-console/hooks'
 import { getAxiosInstance } from './tech.js'
 
 export type SonarPaging = {
-  pageIndex: number,
-  pageSize: number,
+  pageIndex: number
+  pageSize: number
   total: number
 }
 
@@ -95,9 +95,9 @@ export const deleteDsoRepository = async (projectKey: string) => {
 
 type SonarProjectResult = {
   organization: string
-  project: string,
-  repository: string,
-  key: string,
+  project: string
+  repository: string
+  key: string
 }
 
 const filterProjectsOwning = (repos: { key: string }[], organizationName: string, projectName: string): SonarProjectResult[] => repos.reduce((acc, repo) => {

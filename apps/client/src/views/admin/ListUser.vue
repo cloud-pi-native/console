@@ -8,7 +8,7 @@ import { useUserStore } from '@/stores/user.js'
 import type { Component, EmptyRow } from './ListProjects.vue'
 
 interface CheckboxEvent extends Event {
-  target: HTMLInputElement;
+  target: HTMLInputElement
 }
 
 type Row = {
@@ -38,9 +38,9 @@ const getAllUsers = async () => {
 }
 
 const filterRows = (rows: Row[]): Row[] | EmptyRow => {
-  const returnRows = rows.filter(row => {
+  const returnRows = rows.filter((row) => {
     if (!inputSearchText.value) return true
-    return row.rowData.some(data => {
+    return row.rowData.some((data) => {
       if (typeof data === 'object') {
         return data.text?.toString().toLowerCase().includes(inputSearchText.value.toLocaleLowerCase())
       }

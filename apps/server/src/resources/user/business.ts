@@ -72,7 +72,7 @@ export const addUserToProject = async (
 
     // keep only keys allowed in model
     const userFromModel = instanciateSchema(UserSchema, undefined)
-    Object.keys(userFromModel).forEach(modelKey => {
+    Object.keys(userFromModel).forEach((modelKey) => {
       userFromModel[modelKey] = retrievedUser[modelKey]
     })
 

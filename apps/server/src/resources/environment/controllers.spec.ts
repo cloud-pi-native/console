@@ -37,7 +37,7 @@ describe('Environment routes', () => {
       const envToAdd = getRandomEnv('int0', projectInfos.id, stage.id, quota.id, projectInfos?.clusters[0]?.id)
       const envInfos = { ...envToAdd, project: projectInfos }
       const log = getRandomLog('Create Environment', requestor.id)
-      projectInfos.environments?.forEach(environment => {
+      projectInfos.environments?.forEach((environment) => {
         environment.cluster = {
           label: projectInfos.clusters[0].label,
         }
