@@ -12,8 +12,7 @@ export const upsertCluster: StepCall<ClusterObject> = async (payload) => {
         message: 'Cluster secret created/updated',
       },
     }
-  }
-  catch (error) {
+  } catch (error) {
     return {
       error: parseError(error),
       status: {
@@ -34,8 +33,7 @@ export const deleteCluster: StepCall<ClusterObject> = async (payload) => {
         message: 'Cluster secret deleted',
       },
     }
-  }
-  catch (error) {
+  } catch (error) {
     return {
       error: parseError(error),
       status: {
@@ -85,8 +83,7 @@ const createClusterSecret = async (cluster: ClusterObject) => {
   try {
     await k8sApi.readNamespacedSecret(cluster.secretName, getConfig().namespace)
     await k8sApi.replaceNamespacedSecret(cluster.secretName, getConfig().namespace, convertClusterToSecret(cluster))
-  }
-  catch (error) {
+  } catch (error) {
     // @ts-ignore add control on error
     if (error?.response?.statusCode !== 404) throw error
     await k8sApi.createNamespacedSecret(getConfig().namespace, convertClusterToSecret(cluster))
@@ -97,8 +94,7 @@ export const deleteClusterSecret = async (secretName: ClusterObject['secretName'
   const k8sApi = getK8sApi()
   try {
     await k8sApi.deleteNamespacedSecret(secretName, getConfig().namespace)
-  }
-  catch (error) {
+  } catch (error) {
     // @ts-ignore add control on error
     if (error.response.statusCode !== 404) throw error
   }

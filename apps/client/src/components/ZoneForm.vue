@@ -31,8 +31,7 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
   let schemaValidation
   if (localZone.value.id) {
     schemaValidation = ZoneSchema.safeParse(localZone.value)
-  }
-  else {
+  } else {
     schemaValidation = ZoneSchema.omit({ id: true }).partial().safeParse(localZone.value)
   }
   return schemaValidation.success ? undefined : schemaValidation.error

@@ -422,8 +422,7 @@ Cypress.Commands.add('getServicesResponse', () => {
     )
     if (services.find(service => service.code >= 400)) {
       cy.getByDataTestid('services-health-badge').should('contain', 'Un ou plusieurs services dysfonctionnent')
-    }
-    else {
+    } else {
       cy.getByDataTestid('services-health-badge').should('contain', 'Tous les services fonctionnent')
     }
   })

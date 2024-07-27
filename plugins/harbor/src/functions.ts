@@ -56,8 +56,7 @@ export const createDsoProject: StepCall<Project> = async (payload) => {
         projectId: projectCreated.project_id,
       },
     }
-  }
-  catch (error) {
+  } catch (error) {
     return {
       error: parseError(error),
       status: {
@@ -82,8 +81,7 @@ export const deleteDsoProject: StepCall<Project> = async (payload) => {
         message: 'Deleted',
       },
     }
-  }
-  catch (error) {
+  } catch (error) {
     return {
       error: parseError(error),
       status: {

@@ -67,8 +67,7 @@ export const populatePluginManifests = ({ data, select, permissionTarget, plugin
       if (item.kind === 'switch') {
         const value = atomicValidators.switch.safeParse(row?.value)
         item.value = value.success ? value.data : DEFAULT
-      }
-      else {
+      } else {
         item.value = z.coerce.string().parse(row?.value ?? item.value ?? '')
       }
       return item

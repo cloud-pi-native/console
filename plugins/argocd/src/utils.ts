@@ -41,8 +41,7 @@ const getClient = () => {
       kc.setCurrentContext(kubeconfigCtx)
     }
     return kc
-  }
-  else {
+  } else {
     kc.loadFromCluster()
   }
   return kc

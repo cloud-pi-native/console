@@ -15,8 +15,7 @@ export const archiveDsoProject: StepCall<Project> = async (payload) => {
       },
       secretsDestroyed: allSecrets.length,
     }
-  }
-  catch (error) {
+  } catch (error) {
     return {
       error: parseError(error),
       status: {

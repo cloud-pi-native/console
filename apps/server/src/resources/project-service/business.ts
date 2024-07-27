@@ -70,11 +70,9 @@ export const getProjectServices = async (projectId: Project['id'], requestor: Ke
       : []
     if (Array.isArray(toResponse)) {
       urls = toResponse.map(res => ({ name: res.title ?? '', to: res.to }))
-    }
-    else if (typeof toResponse === 'string') {
+    } else if (typeof toResponse === 'string') {
       urls = [{ to: toResponse, name: '' }]
-    }
-    else if (toResponse) {
+    } else if (toResponse) {
       urls = [{ name: toResponse.title ?? '', to: toResponse.to }]
     }
     const manifest = populatePluginManifests({

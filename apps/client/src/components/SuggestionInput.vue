@@ -13,7 +13,7 @@ const localValue = ref(props.modelValue)
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
-  'selectSuggestion': [value: string]
+  selectSuggestion: [value: string]
 }>()
 
 const updateValue = () => {

@@ -243,8 +243,7 @@ export class GitlabProjectApi extends PluginApi {
         if (!actualFile || actualFile.content_sha256 !== newContentDigest) {
           // Update needed
           action = 'update'
-        }
-        else {
+        } else {
           // Already up-to-date
           return false
         }
@@ -337,8 +336,7 @@ export class GitlabProjectApi extends PluginApi {
 
         })
       return 'created'
-    }
-    else {
+    } else {
       if (
         currentVariable.masked !== toSetVariable.masked
         || currentVariable.value !== toSetVariable.value
@@ -391,8 +389,7 @@ export class GitlabProjectApi extends PluginApi {
         return 'updated'
       }
       return 'already up-to-date'
-    }
-    else {
+    } else {
       await this.api.ProjectVariables.create(
         repository.id,
         toSetVariable.key,
@@ -442,8 +439,7 @@ export class GitlabProjectApi extends PluginApi {
     if (this.pendingCommits[repoId].branches[branch]) {
       this.pendingCommits[repoId].branches[branch].actions.push(...commitActions)
       this.pendingCommits[repoId].branches[branch].messages.push(comment)
-    }
-    else {
+    } else {
       this.pendingCommits[repoId].branches[branch] = {
         actions: commitActions,
         messages: [comment],
