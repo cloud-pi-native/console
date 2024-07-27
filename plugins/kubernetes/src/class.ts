@@ -60,7 +60,8 @@ class KubernetesNamespace {
       const ns = await this.coreV1Api.readNamespace(this.nsObject.metadata?.name) as { body: V1NamespacePopulated }
       this.nsObject = ns.body
       return this.nsObject
-    } catch (error) {
+    }
+    catch (error) {
       return undefined
     }
   }
@@ -85,7 +86,8 @@ class KubernetesNamespace {
     try {
       await this.anyObjectApi.getNamespacedCustomObject(r.group, r.version, nsName, r.plural, r.name)
       await this.anyObjectApi.deleteNamespacedCustomObject(r.group, r.version, nsName, r.plural, r.name)
-    } catch (error) {
+    }
+    catch (error) {
       console.log(error)
     }
     return this.anyObjectApi.createNamespacedCustomObject(r.group, r.version, nsName, r.plural, objToCreate)
@@ -101,7 +103,8 @@ class KubernetesNamespace {
       await this.coreV1Api.readNamespacedResourceQuota(resourceQuotaName, this.nsObject.metadata.name)
       // @ts-ignore
       await this.coreV1Api.replaceNamespacedResourceQuota(resourceQuotaName, nsName, quotaObject)
-    } catch (error) {
+    }
+    catch (error) {
       // @ts-ignore
       return this.coreV1Api.createNamespacedResourceQuota(nsName, quotaObject)
     }

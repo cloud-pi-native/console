@@ -113,7 +113,8 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
         })
         currentPwd = newPwd
       }
-    } else {
+    }
+    else {
     // createUser
       await axiosInstance({
         method: 'post',
@@ -155,7 +156,8 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
     return {
       status: { result: 'OK', message: 'Up-to-date' },
     }
-  } catch (error) {
+  }
+  catch (error) {
     return {
       error: parseError(error),
       status: {
@@ -195,7 +197,8 @@ export const deleteNexusProject: StepCall<Project> = async ({ args: project }) =
         message: 'User deleted',
       },
     }
-  } catch (error) {
+  }
+  catch (error) {
     return {
       error: parseError(error),
       status: {

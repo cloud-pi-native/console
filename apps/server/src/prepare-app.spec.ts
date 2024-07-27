@@ -59,7 +59,8 @@ describe('Server', () => {
     let response
     try {
       await getPreparedApp()
-    } catch (err) {
+    }
+    catch (err) {
       response = err
     }
 

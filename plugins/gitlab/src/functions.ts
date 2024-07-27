@@ -26,7 +26,8 @@ export const checkApi: StepCall<Project> = async (payload) => {
         result: 'OK',
       },
     }
-  } catch (error) {
+  }
+  catch (error) {
     return {
       error: parseError(cleanGitlabError(error)),
       status: {
@@ -74,7 +75,8 @@ export const getDsoProjectSecrets: StepCall<ProjectLite> = async (payload) => {
         message: 'This feature is disabled',
       },
     }
-  } catch (error) {
+  }
+  catch (error) {
     return {
       error: parseError(cleanGitlabError(error)),
       status: {
@@ -126,7 +128,8 @@ export const upsertDsoProject: StepCall<Project> = async (payload) => {
         result: 'OK',
       },
     }
-  } catch (error) {
+  }
+  catch (error) {
     return {
       error: parseError(cleanGitlabError(error)),
       status: {
@@ -148,7 +151,8 @@ export const deleteDsoProject: StepCall<Project> = async (payload) => {
         message: 'Deleted',
       },
     }
-  } catch (error) {
+  }
+  catch (error) {
     return {
       error: parseError(cleanGitlabError(error)),
       status: {
@@ -170,7 +174,8 @@ export const syncRepository: StepCall<UniqueRepo> = async (payload) => {
         message: 'Ci launched',
       },
     }
-  } catch (error) {
+  }
+  catch (error) {
     return {
       error: parseError(cleanGitlabError(error)),
       status: {
@@ -190,7 +195,8 @@ export const commitFiles: StepCall<UniqueRepo | Project> = async (payload) => {
         message: `${filesUpdated} file${filesUpdated > 1 ? 's' : ''} updated`,
       },
     }
-  } catch (error) {
+  }
+  catch (error) {
     return {
       error: parseError(cleanGitlabError(error)),
       status: {

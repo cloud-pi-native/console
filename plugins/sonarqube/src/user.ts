@@ -78,7 +78,8 @@ export const ensureUserExists = async (username: string, projectName: string, or
       SONAR_TOKEN: await changeToken(username),
       SONAR_USERNAME: username,
     }
-  } else if (!vaultUserSecret) {
+  }
+  else if (!vaultUserSecret) {
     return {
       SONAR_PASSWORD: 'not initialized',
       SONAR_TOKEN: await changeToken(username),

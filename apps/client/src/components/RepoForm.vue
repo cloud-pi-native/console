@@ -22,7 +22,8 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
   let schemaValidation
   if (localRepo.value.id) {
     schemaValidation = RepoBusinessSchema.safeParse(localRepo.value)
-  } else {
+  }
+  else {
     schemaValidation = CreateRepoBusinessSchema.safeParse(localRepo.value)
   }
   return schemaValidation.success ? undefined : schemaValidation.error

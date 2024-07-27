@@ -59,7 +59,8 @@ const monitor = async (instance: Monitor): Promise<MonitorInfos> => {
     instance.lastStatus.status = MonitorStatus.OK
     instance.lastStatus.message = MonitorStatus.OK
     return instance.lastStatus
-  } catch (error) {
+  }
+  catch (error) {
     instance.lastStatus.message = 'Erreur lors la requête'
     instance.lastStatus.status = MonitorStatus.UNKNOW
     instance.lastStatus.cause = error

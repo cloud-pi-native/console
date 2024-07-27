@@ -48,7 +48,8 @@ const executeStep = async <Args extends DefaultArgs>(step: HookStep, payload: Ho
   const fns = names.map(async (name) => {
     if (payload.results[name]?.executionTime) {
       payload.results[name].executionTime[stepName] = Date.now()
-    } else {
+    }
+    else {
       payload.results[name] = {
         status: { result: 'OK' },
         executionTime: { [stepName]: Date.now() },

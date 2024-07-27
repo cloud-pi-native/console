@@ -41,10 +41,12 @@ export const filesRouter = () => serverInstance.router(filesContract, {
     if (data.typeLanguage === 'python') {
       const python = await fs.readFile(path.resolve('src/generate-files/templates/python.yml'))
       content.python = Mustache.render(python.toString())
-    } else if (data.typeLanguage === 'java') {
+    }
+    else if (data.typeLanguage === 'java') {
       const java = await fs.readFile(path.resolve('src/generate-files/templates/java.yml'))
       content.java = Mustache.render(java.toString())
-    } else if (data.typeLanguage === 'node') {
+    }
+    else if (data.typeLanguage === 'node') {
       const node = await fs.readFile(path.resolve('src/generate-files/templates/node.yml'))
       content.node = Mustache.render(node.toString())
     }

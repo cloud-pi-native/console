@@ -13,7 +13,8 @@ export const retrieveKeycloakUserByEmail: StepCall<UserEmail> = async ({ args: {
       status: { result: 'OK' },
       user,
     }
-  } catch (error) {
+  }
+  catch (error) {
     return {
       error: parseError(error),
       status: {
@@ -36,7 +37,8 @@ export const retrieveKeycloakAdminUsers: StepCall<EmptyPayload> = async () => {
       status: { result: 'OK' },
       adminIds,
     }
-  } catch (error) {
+  }
+  catch (error) {
     return {
       error: parseError(error),
       status: {
@@ -67,7 +69,8 @@ export const updateUserAdminKcGroupMembership: StepCall<UserAdmin> = async ({ ar
         message: `${user.email ?? user.id} was ${isAdmin ? 'promoted to' : 'demoted from'} /admin group`,
       },
     }
-  } catch (error) {
+  }
+  catch (error) {
     return {
       error: parseError(error),
       status: {
@@ -99,7 +102,8 @@ export const deleteProject: StepCall<Project> = async ({ args: project }) => {
         message: 'Already Missing',
       },
     }
-  } catch (error) {
+  }
+  catch (error) {
     return {
       error: parseError(error),
       status: {
@@ -173,7 +177,8 @@ export const upsertProject: StepCall<Project> = async ({ args: project }) => {
         message: 'Up-to-date',
       },
     }
-  } catch (error) {
+  }
+  catch (error) {
     return {
       error: parseError(error),
       status: {

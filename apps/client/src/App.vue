@@ -29,7 +29,8 @@ const getSwaggerUrl = () => window?.location?.origin + `${apiPrefix}/swagger-ui/
 onErrorCaptured((error) => {
   if (error instanceof Error) {
     snackbarStore.setMessage(error?.message, 'error')
-  } else {
+  }
+  else {
     snackbarStore.setMessage('Une erreur inconnue est survenue.', 'error')
   }
   snackbarStore.isWaitingForResponse = false

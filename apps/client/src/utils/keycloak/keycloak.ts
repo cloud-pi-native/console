@@ -42,7 +42,8 @@ export const getUserProfile = (): UserProfile => {
       lastName,
       groups,
     }
-  } catch (error) {
+  }
+  catch (error) {
     if (error instanceof Error) throw new Error(error.message)
     throw new Error('échec de récupération du profil keycloak de l\'utilisateur')
   }
@@ -54,7 +55,8 @@ export const keycloakInit = async () => {
     const { onLoad, redirectUri, flow } = keycloakInitOptions
     const keycloak = getKeycloak()
     await keycloak.init({ onLoad, flow, redirectUri })
-  } catch (error) {
+  }
+  catch (error) {
     if (error instanceof Error) throw new Error(error.message)
     throw new Error('échec d\'initialisation du keycloak')
   }
@@ -64,7 +66,8 @@ export const keycloakLogin = async () => {
   try {
     const keycloak = getKeycloak()
     await keycloak.login()
-  } catch (error) {
+  }
+  catch (error) {
     if (error instanceof Error) throw new Error(error.message)
     throw new Error('échec de connexion au keycloak')
   }
@@ -74,7 +77,8 @@ export const keycloakLogout = async () => {
   try {
     const keycloak = getKeycloak()
     await keycloak.logout()
-  } catch (error) {
+  }
+  catch (error) {
     if (error instanceof Error) throw new Error(error.message)
     throw new Error('échec de déconnexion du keycloak')
   }

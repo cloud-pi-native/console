@@ -35,7 +35,8 @@ const save = async () => {
   try {
     await pluginsStore.updatePluginsConfig(updated.value)
     snackbarStore.setMessage('Paramètres sauvegardés', 'success')
-  } catch (error) {
+  }
+  catch (error) {
     console.log(error)
     snackbarStore.setMessage('Erreur lors de la sauvegarde', 'error')
   }
