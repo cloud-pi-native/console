@@ -33,8 +33,7 @@ export const projectRouter = () => serverInstance.router(projectContract, {
         status: 200,
         body: allProjects,
       }
-    }
-    catch (error) {
+    } catch (error) {
       throw new Error(error.message)
     }
   },

@@ -81,11 +81,9 @@ const manageProjectStatus = async (
   }
   if (hookReply.failed) {
     return updateProjectFailed(projectId)
-  }
-  else if (action === 'upsert') {
+  } else if (action === 'upsert') {
     return updateProjectCreated(projectId)
-  }
-  else if (action === 'delete') {
+  } else if (action === 'delete') {
     return archiveProject(projectId)
   }
   throw Error('unknown action')

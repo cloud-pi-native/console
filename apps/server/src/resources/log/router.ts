@@ -19,8 +19,7 @@ export const logRouter = () => serverInstance.router(logContract, {
         status: 200,
         body: { total, logs },
       }
-    }
-    catch (error) {
+    } catch (error) {
       throw new Error(error.message)
     }
   },

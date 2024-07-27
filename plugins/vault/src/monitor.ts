@@ -26,14 +26,12 @@ const monitor = async (instance: Monitor): Promise<MonitorInfos> => {
     if (res.status === 200) {
       instance.lastStatus.status = MonitorStatus.OK
       instance.lastStatus.message = MonitorStatus.OK
-    }
-    else {
+    } else {
       instance.lastStatus.status = MonitorStatus.ERROR
       const data = res.data as VaultRes
       instance.lastStatus.message = data?.sealed ? 'Le Vault est scellé' : 'Vault en erreur'
     }
-  }
-  catch (error) {
+  } catch (error) {
     instance.lastStatus.message = 'Error lors la requete'
     instance.lastStatus.status = MonitorStatus.UNKNOW
     instance.lastStatus.cause = error

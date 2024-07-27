@@ -27,8 +27,7 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
   let schemaValidation
   if (localQuota.value.id) {
     schemaValidation = QuotaSchema.safeParse(localQuota.value)
-  }
-  else {
+  } else {
     schemaValidation = QuotaSchema.omit({ id: true }).safeParse(localQuota.value)
   }
   return schemaValidation.success ? undefined : schemaValidation.error

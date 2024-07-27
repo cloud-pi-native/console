@@ -24,8 +24,7 @@ export const getConnection = async (triesLeft = 5): Promise<void> => {
     await prisma.$connect()
 
     app.log.info('Connected to Postgres!')
-  }
-  catch (error) {
+  } catch (error) {
     if (triesLeft > 0) {
       app.log.error(error)
       app.log.info(`Could not connect to Postgres: ${error.message}`)
@@ -45,11 +44,9 @@ export const closeConnections = async () => {
   closingConnections = true
   try {
     await prisma.$disconnect()
-  }
-  catch (error) {
+  } catch (error) {
     app.log.error(error)
-  }
-  finally {
+  } finally {
     closingConnections = false
   }
 }

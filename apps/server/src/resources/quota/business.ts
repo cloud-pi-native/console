@@ -33,8 +33,7 @@ export const getQuotaAssociatedEnvironments = async (quotaId: string) => {
       stage: env.stage.name,
       owner: env.project.roles?.[0].user.email,
     }))
-  }
-  catch (error) {
+  } catch (error) {
     throw new Error(error?.message)
   }
 }
@@ -61,8 +60,7 @@ export const createQuota = async (data: CreateQuotaBody): Promise<QuotaDto> => {
       isPrivate: quota.isPrivate,
       stageIds: data.stageIds ?? [],
     }
-  }
-  catch (error) {
+  } catch (error) {
     if (error instanceof DsoError) {
       throw error
     }
@@ -117,8 +115,7 @@ export const updateQuota = async (
       isPrivate: isPrivate ?? dbQuota.isPrivate,
       stageIds: stageIds ?? dbStageIds,
     }
-  }
-  catch (error) {
+  } catch (error) {
     throw new Error(error?.message)
   }
 }
@@ -129,8 +126,7 @@ export const deleteQuota = async (quotaId: string) => {
     if (environments.length) throw new BadRequestError('Impossible de supprimer le quota, des environnements en activité y ont souscrit', { extras: environments })
 
     await deleteQuotaQuery(quotaId)
-  }
-  catch (error) {
+  } catch (error) {
     if (error instanceof DsoError) {
       throw error
     }

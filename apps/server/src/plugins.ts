@@ -34,8 +34,7 @@ export const initPm = async () => {
       if (!entrypoint) throw new Error(`No entrypoint found in package.json : ${pkg.default.name}`)
       const { plugin } = await import(`${moduleAbsPath}/${entrypoint}`) as { plugin: Plugin }
       pm.register(plugin)
-    }
-    catch (error) {
+    } catch (error) {
       console.error(`Could not import module ${moduleAbsPath}`)
       console.error(error.stack)
     }

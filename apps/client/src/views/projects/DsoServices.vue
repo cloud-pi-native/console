@@ -28,8 +28,7 @@ const save = async (data: PluginsUpdateBody) => {
   try {
     await projectServiceStore.updateProjectServices(data, project.value.id)
     snackbarStore.setMessage('Paramètres sauvegardés', 'success')
-  }
-  catch (error) {
+  } catch (error) {
     snackbarStore.setMessage('Erreur lors de la sauvegarde', 'error')
   }
   await reload()

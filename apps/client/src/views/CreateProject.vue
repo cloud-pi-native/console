@@ -43,8 +43,7 @@ const createProject = async () => {
   updatedValues.value = instanciateSchema(ProjectSchemaV2, true)
   if (errorSchema.value) {
     snackbarStore.setMessage(parseZodError(errorSchema.value))
-  }
-  else if (project.value) {
+  } else if (project.value) {
     await projectStore.createProject(project.value)
     router.push('/projects')
   }
@@ -55,8 +54,7 @@ const updateProject = (key: string, value: any) => {
   if (key === 'organizationId') {
     const org = orgOptions.value.find(org => org.value === value)
     project.value[key] = org.id
-  }
-  else {
+  } else {
     // @ts-ignore
     project.value[key] = value
   }

@@ -62,8 +62,7 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
   if (localEnvironment.value?.id) {
     const schemaValidation = EnvironmentSchema.pick({ id: true, projectId: true, quotaId: true }).safeParse(localEnvironment.value)
     return schemaValidation.success ? undefined : schemaValidation.error
-  }
-  else {
+  } else {
     const schemaValidation = EnvironmentSchema.pick({ clusterId: true, projectId: true, name: true, quotaId: true, stageId: true }).safeParse(localEnvironment.value)
     return schemaValidation.success ? undefined : schemaValidation.error
   }
@@ -116,8 +115,7 @@ const resetCluster = () => {
 const addEnvironment = () => {
   if (!errorSchema.value) {
     emit('addEnvironment', localEnvironment.value)
-  }
-  else {
+  } else {
     snackbarStore.setMessage(parseZodError(errorSchema.value))
   }
 }
@@ -125,8 +123,7 @@ const addEnvironment = () => {
 const putEnvironment = () => {
   if (!errorSchema.value) {
     emit('putEnvironment', localEnvironment.value)
-  }
-  else {
+  } else {
     snackbarStore.setMessage(parseZodError(errorSchema.value))
   }
 }

@@ -96,8 +96,7 @@ export const addUserToProject = async (
     }
 
     return rolesToMembers(await getRolesByProjectId(project.id))
-  }
-  catch (error) {
+  } catch (error) {
     throw new Error('Echec d\'ajout de l\'utilisateur au projet')
   }
 }
@@ -160,8 +159,7 @@ export const removeUserFromProject = async (
     }
 
     return rolesToMembers(await getRolesByProjectId(project.id))
-  }
-  catch (error) {
+  } catch (error) {
     throw new Error('Echec du retrait de l\'utilisateur du projet')
   }
 }

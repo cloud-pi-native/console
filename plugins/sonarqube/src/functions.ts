@@ -136,8 +136,7 @@ export const upsertProject: StepCall<Project> = async (payload) => {
         result: 'OK',
       },
     }
-  }
-  catch (error) {
+  } catch (error) {
     return {
       status: {
         result: 'KO',
@@ -201,8 +200,7 @@ export const setVariables: StepCall<Project> = async (payload) => {
     ])
 
     return { status: { result: 'OK' } }
-  }
-  catch (error) {
+  } catch (error) {
     return {
       error: parseError(error),
       status: {
@@ -256,8 +254,7 @@ export const deleteProject: StepCall<Project> = async (payload) => {
         message: 'User anonymized',
       },
     }
-  }
-  catch (error) {
+  } catch (error) {
     return {
       error: parseError(error),
       status: {

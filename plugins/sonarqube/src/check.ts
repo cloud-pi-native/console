@@ -31,8 +31,7 @@ export const check = async (): Promise<PluginResult> => {
     }
 
     return res
-  }
-  catch (error) {
+  } catch (error) {
     return {
       error: parseError(error),
       status: {

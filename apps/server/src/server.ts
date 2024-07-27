@@ -8,8 +8,7 @@ const app = await getPreparedApp()
 
 try {
   await app.listen({ host: '0.0.0.0', port: +(port ?? 8080) })
-}
-catch (error) {
+} catch (error) {
   app.log.error(error)
   process.exit(1)
 }

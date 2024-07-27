@@ -67,19 +67,19 @@ const setRows = () => {
       if (member.role === 'owner') {
         rows.value.unshift([
           {
-            'component': 'code',
-            'text': member.userId,
-            'title': 'Copier l\'id',
+            component: 'code',
+            text: member.userId,
+            title: 'Copier l\'id',
             'data-testid': 'ownerId',
-            'class': 'fr-text-default--info text-xs truncate cursor-pointer',
-            'onClick': () => copyContent(member.userId),
+            class: 'fr-text-default--info text-xs truncate cursor-pointer',
+            onClick: () => copyContent(member.userId),
           },
           props.knownUsers[member.userId].email,
           {
-            'component': 'DsfrTag',
-            'label': member.role,
+            component: 'DsfrTag',
+            label: member.role,
             'data-testid': 'ownerTag',
-            'class': 'fr-background-contrast--blue-france',
+            class: 'fr-background-contrast--blue-france',
           },
           {
             cellAttrs: {
@@ -92,20 +92,20 @@ const setRows = () => {
       }
       rows.value.push([
         {
-          'component': 'code',
-          'text': member.userId,
-          'title': 'Copier l\'id',
+          component: 'code',
+          text: member.userId,
+          title: 'Copier l\'id',
           'data-testid': 'userId',
-          'class': 'fr-text-default--info text-xs truncate cursor-pointer',
-          'onClick': () => copyContent(member.userId),
+          class: 'fr-text-default--info text-xs truncate cursor-pointer',
+          onClick: () => copyContent(member.userId),
         },
         props.knownUsers[member.userId].email,
         {
-          'component': 'DsfrSelect',
-          'modelValue': member.role,
-          'selectId': `roleSelect-${member.userId}`,
-          'disabled': !isOwnerOrAdmin.value,
-          'options': ['owner', 'user'],
+          component: 'DsfrSelect',
+          modelValue: member.role,
+          selectId: `roleSelect-${member.userId}`,
+          disabled: !isOwnerOrAdmin.value,
+          options: ['owner', 'user'],
           'onUpdate:model-value': () => confirmUpdateUserRole(member.userId),
         },
         {

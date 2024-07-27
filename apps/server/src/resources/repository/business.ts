@@ -58,8 +58,7 @@ export const syncRepository = async (
     if (hookReply.failed) {
       throw new UnprocessableContentError('Echec des services à la synchronisation du dépôt')
     }
-  }
-  catch (error) {
+  } catch (error) {
     if (error instanceof DsoError) throw error
     throw new Error('Echec de la synchronisation du dépôt')
   }
@@ -113,8 +112,7 @@ export const createRepository = async (
     }
 
     return repo
-  }
-  catch (error) {
+  } catch (error) {
     if (error instanceof DsoError) throw error
     throw new Error('Echec de la création du dépôt')
   }
@@ -153,8 +151,7 @@ export const updateRepository = async (
     }
 
     return repo
-  }
-  catch (error) {
+  } catch (error) {
     if (error instanceof DsoError) throw error
     throw new Error('Echec de la mise à jour du dépôt')
   }
@@ -183,8 +180,7 @@ export const deleteRepository = async ({
     if (results.failed) {
       throw new UnprocessableContentError('Echec des services à la suppression du dépôt')
     }
-  }
-  catch (error) {
+  } catch (error) {
     if (error instanceof DsoError) throw error
     throw new Error('Echec de la mise à jour du dépôt')
   }

@@ -70,8 +70,7 @@ export const upsertProject: StepCall<Project> = async (payload) => {
         appProject.spec = spec
 
         await customK8sApi.replaceNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'appprojects', appProjectName, appProject)
-      }
-      else {
+      } else {
         const appProjectObject = getAppProjectObject({
           name: appProjectName,
           sourceRepos,
@@ -96,8 +95,7 @@ export const upsertProject: StepCall<Project> = async (payload) => {
           application.spec.source.repoURL = repoURL
 
           await customK8sApi.replaceNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'applications', application.metadata.name, application)
-        }
-        else {
+        } else {
           const applicationName = generateApplicationName(project.organization.name, project.name, environment.name, repository.internalRepoName)
           const applicationObject = getApplicationObject({
             name: applicationName,
@@ -145,8 +143,7 @@ export const upsertProject: StepCall<Project> = async (payload) => {
         message: 'Up-to-date',
       },
     }
-  }
-  catch (error) {
+  } catch (error) {
     return {
       error: parseError(error),
       status: {
@@ -321,8 +318,7 @@ export const deleteProject: StepCall<Project> = async (payload) => {
         message: 'Up-to-date',
       },
     }
-  }
-  catch (error) {
+  } catch (error) {
     return {
       error: parseError(error),
       status: {

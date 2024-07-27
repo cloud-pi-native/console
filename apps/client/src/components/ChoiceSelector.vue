@@ -42,8 +42,7 @@ const switchSelection = (event: string) => {
 
   if (selectedValues.value.includes(eventValue)) {
     selectedValues.value = selectedValues.value.filter(element => element !== eventValue)
-  }
-  else {
+  } else {
     selectedValues.value.push(eventValue)
   }
   emit('update', options.selected.value, options.selected.value.map(option => option[props.valueKey]))
@@ -53,14 +52,11 @@ type SwitchMultipleParam = 'notSelected' | 'notSelectedDisplayed' | 'selected' |
 const switchMultiple = (choice: SwitchMultipleParam) => {
   if (choice === 'selected') {
     selectedValues.value = selectedValues.value.filter(value => !options.selected.value.find(select => select[props.valueKey] === value))
-  }
-  else if (choice === 'selectedDisplayed') {
+  } else if (choice === 'selectedDisplayed') {
     selectedValues.value = selectedValues.value.filter(value => !displayed.selected.value.find(select => select[props.valueKey] === value))
-  }
-  else if (choice === 'notSelected') {
+  } else if (choice === 'notSelected') {
     options.notSelected.value.forEach(option => selectedValues.value.push(option[props.valueKey]))
-  }
-  else if (choice === 'notSelectedDisplayed') {
+  } else if (choice === 'notSelectedDisplayed') {
     displayed.notSelected.value.forEach(option => selectedValues.value.push(option[props.valueKey]))
   }
 }

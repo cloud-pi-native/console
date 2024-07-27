@@ -68,8 +68,7 @@ export const getInitializeEnvironmentInfos = async ({
       ?.filter(projectCluster => stage.clusters
         ?.find(stageCluster => stageCluster.id === projectCluster.id))
     return { user, project, quota, stage, authorizedClusters }
-  }
-  catch (error) {
+  } catch (error) {
     throw new Error(error?.message)
   }
 }
@@ -209,8 +208,7 @@ export const createEnvironment = async (
       quotaId,
       stageId,
     }
-  }
-  catch (error) {
+  } catch (error) {
     if (error instanceof DsoError) {
       throw error
     }
@@ -267,8 +265,7 @@ export const updateEnvironment = async ({
     }
 
     return env
-  }
-  catch (error) {
+  } catch (error) {
     if (error instanceof DsoError) {
       throw error
     }
@@ -304,8 +301,7 @@ export const deleteEnvironment = async ({
     if (results.failed) {
       throw new UnprocessableContentError('Echec des services à la suppression de l\'environnement')
     }
-  }
-  catch (error) {
+  } catch (error) {
     if (error instanceof DsoError) throw error
     throw new Error(error?.message)
   }

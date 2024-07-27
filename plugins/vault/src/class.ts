@@ -50,8 +50,7 @@ export class VaultProjectApi extends PluginApi {
         subSecrets.forEach((secret) => {
           listSecretPath.push(`${key}${secret}`)
         })
-      }
-      else {
+      } else {
         listSecretPath.push('/' + key)
       }
     }

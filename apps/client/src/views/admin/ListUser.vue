@@ -75,13 +75,13 @@ const setRows = () => {
           lastName,
           email,
           {
-            'component': 'input',
-            'type': 'checkbox',
-            'checked': isAdmin,
+            component: 'input',
+            type: 'checkbox',
+            checked: isAdmin,
             'data-testid': `${id}-is-admin`,
-            'class': 'fr-checkbox-group--sm',
-            'title': isAdmin ? `Retirer le rôle d'administrateur de ${email}` : `Donner le rôle d'administrateur à ${email}`,
-            'onClick': async (event: CheckboxEvent) => {
+            class: 'fr-checkbox-group--sm',
+            title: isAdmin ? `Retirer le rôle d'administrateur de ${email}` : `Donner le rôle d'administrateur à ${email}`,
+            onClick: async (event: CheckboxEvent) => {
               const value = event.target.checked
               if (value !== isAdmin) {
                 await projectUserStore.updateUserAdminRole(id, value)

@@ -5,8 +5,7 @@ export const copyContent = async (content: string): Promise<void> => {
   try {
     await navigator.clipboard.writeText(content)
     snackbarStore.setMessage('Donnée copiée', 'success')
-  }
-  catch (error: any) {
+  } catch (error: any) {
     snackbarStore.setMessage(error?.message, 'error')
   }
 }

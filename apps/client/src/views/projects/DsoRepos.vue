@@ -60,8 +60,7 @@ const saveRepo = async (repo: Repo) => {
   snackbarStore.isWaitingForResponse = true
   if (repo.id) {
     await projectRepositoryStore.updateRepo(repo)
-  }
-  else {
+  } else {
     await projectRepositoryStore.addRepoToProject(repo)
   }
   setReposTiles()
