@@ -28,7 +28,7 @@ describe('Dashboard', () => {
     const projects = [projectCreated, projectFailed]
 
     cy.kcLogin('test')
-    projects.forEach(project => {
+    projects.forEach((project) => {
       cy.goToProjects()
         .getByDataTestid(`projectTile-${project.name}`).click()
         .getByDataTestid('menuDashboard').click()

@@ -60,7 +60,7 @@ const addStage = async (stage: CreateStageBody) => {
 }
 
 export type UpdateStageType = {
-  id: Stage['id'],
+  id: Stage['id']
 } & UpdateStageBody
 
 const updateStage = async ({ id, ...stage }: UpdateStageType) => {

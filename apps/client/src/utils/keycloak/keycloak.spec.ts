@@ -23,7 +23,7 @@ vi.mock('keycloak-js', () => {
     login: () => void
     logout: () => void
 
-    constructor () {
+    constructor() {
       this.idTokenParsed = userToken
       this.init = vi.fn()
       this.login = vi.fn()
@@ -66,7 +66,8 @@ describe('keycloak-init', () => {
     try {
       mockedKeycloakInit.mockReturnValueOnce(Promise.reject(error))
       await keycloakInit()
-    } catch (e) {
+    }
+    catch (e) {
       expect(mockedKeycloakInit.mock.calls).toHaveLength(1)
       expect(e).toEqual(error)
     }
@@ -83,7 +84,8 @@ describe('keycloak-init', () => {
     try {
       mockedKeycloakLogin.mockReturnValueOnce(Promise.reject(error))
       await keycloakLogin()
-    } catch (e) {
+    }
+    catch (e) {
       expect(mockedKeycloakLogin.mock.calls).toHaveLength(1)
       expect(e).toEqual(error)
     }
@@ -100,7 +102,8 @@ describe('keycloak-init', () => {
     try {
       mockedKeycloakLogout.mockReturnValueOnce(Promise.reject(error))
       await keycloakLogout()
-    } catch (e) {
+    }
+    catch (e) {
       expect(mockedKeycloakLogout.mock.calls).toHaveLength(1)
       expect(e).toEqual(error)
     }

@@ -7,7 +7,7 @@ class DsoError extends Error {
   public extras: Record<string, string>
   public statusCode: number
 
-  constructor (message: string, data?: DsoErrorData) {
+  constructor(message: string, data?: DsoErrorData) {
     super(message)
     this.description = data?.description || message
     this.extras = data?.extras || {}

@@ -4,10 +4,10 @@ import { ZoneSchema, SharedZodError, type CreateZoneBody, type UpdateZoneBody, t
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = withDefaults(defineProps<{
-  isNewZone: boolean,
-  zone: Zone,
-  allQuotas: Quota[],
-  allClusters: Cluster[],
+  isNewZone: boolean
+  zone: Zone
+  allQuotas: Quota[]
+  allClusters: Cluster[]
   associatedClusters: unknown[]
 }>(), {
   isNewZone: false,
@@ -31,7 +31,8 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
   let schemaValidation
   if (localZone.value.id) {
     schemaValidation = ZoneSchema.safeParse(localZone.value)
-  } else {
+  }
+  else {
     schemaValidation = ZoneSchema.omit({ id: true }).partial().safeParse(localZone.value)
   }
   return schemaValidation.success ? undefined : schemaValidation.error

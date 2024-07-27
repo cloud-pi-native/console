@@ -7,9 +7,9 @@ import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 type RepoTile = {
-  id: string,
-  title: string,
-  data: Repo,
+  id: string
+  title: string
+  data: Repo
 }
 
 const projectStore = useProjectStore()
@@ -60,7 +60,8 @@ const saveRepo = async (repo: Repo) => {
   snackbarStore.isWaitingForResponse = true
   if (repo.id) {
     await projectRepositoryStore.updateRepo(repo)
-  } else {
+  }
+  else {
     await projectRepositoryStore.addRepoToProject(repo)
   }
   setReposTiles()

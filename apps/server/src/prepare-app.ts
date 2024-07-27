@@ -18,17 +18,18 @@ if (process.env.HTTP_PROXY) {
   )
 }
 
-async function initializeDB (path: string) {
+async function initializeDB(path: string) {
   app.log.info('Starting init DB...')
   const { data } = await import(path)
   await initDb(data)
   app.log.info('initDb invoked successfully')
 }
 
-export async function startServer (defaultPort: number = (port ? +port : 8080)) {
+export async function startServer(defaultPort: number = (port ? +port : 8080)) {
   try {
     await getConnection()
-  } catch (error) {
+  }
+  catch (error) {
     app.log.error(error.message)
     throw error
   }
@@ -49,10 +50,12 @@ export async function startServer (defaultPort: number = (port ? +port : 8080)) 
       await rm(resolve(__dirname, dataPath))
       app.log.info(`Successfully deleted '${dataPath}'`)
     }
-  } catch (error) {
+  }
+  catch (error) {
     if (error.code === 'ERR_MODULE_NOT_FOUND' || error.message.includes('Failed to load') || error.message.includes('Cannot find module')) {
       app.log.info('No initDb file, skipping')
-    } else {
+    }
+    else {
       app.log.warn(error.message)
       throw error
     }
@@ -60,17 +63,19 @@ export async function startServer (defaultPort: number = (port ? +port : 8080)) 
 
   try {
     await app.listen({ host: '0.0.0.0', port: defaultPort ?? 8080 })
-  } catch (error) {
+  }
+  catch (error) {
     app.log.error(error)
     process.exit(1)
   }
   app.log.debug({ isDev, isTest, isCI, isDevSetup, isProd })
 }
 
-export async function getPreparedApp () {
+export async function getPreparedApp() {
   try {
     await getConnection()
-  } catch (error) {
+  }
+  catch (error) {
     app.log.error(error.message)
     throw error
   }
@@ -91,10 +96,12 @@ export async function getPreparedApp () {
       await rm(resolve(__dirname, dataPath))
       app.log.info(`Successfully deleted '${dataPath}'`)
     }
-  } catch (error) {
+  }
+  catch (error) {
     if (error.code === 'ERR_MODULE_NOT_FOUND' || error.message.includes('Failed to load') || error.message.includes('Cannot find module')) {
       app.log.info('No initDb file, skipping')
-    } else {
+    }
+    else {
       app.log.warn(error.message)
       throw error
     }

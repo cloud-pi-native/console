@@ -38,7 +38,7 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
             contentDisposition: 'ATTACHMENT',
           },
         },
-        validateStatus: (code) => [201, 400].includes(code),
+        validateStatus: code => [201, 400].includes(code),
       })
     }
     // create maven group
@@ -60,7 +60,7 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
           ],
         },
       },
-      validateStatus: (code) => [201, 400].includes(code),
+      validateStatus: code => [201, 400].includes(code),
     })
     // create privileges
     for (const privilege of ['snapshot', 'release', 'group']) {
@@ -74,7 +74,7 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
           format: 'maven2',
           repository: `${projectName}-repository-${privilege}`,
         },
-        validateStatus: (code) => [201, 400].includes(code),
+        validateStatus: code => [201, 400].includes(code),
       })
     }
     // create role
@@ -91,7 +91,7 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
           `${projectName}-privilege-group`,
         ],
       },
-      validateStatus: (code) => [200, 400].includes(code),
+      validateStatus: code => [200, 400].includes(code),
     })
 
     const vaultNexusSecret = await payload.apis.vault.read('NEXUS', { throwIfNoEntry: false })
@@ -113,7 +113,8 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
         })
         currentPwd = newPwd
       }
-    } else {
+    }
+    else {
     // createUser
       await axiosInstance({
         method: 'post',
@@ -155,7 +156,8 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
     return {
       status: { result: 'OK', message: 'Up-to-date' },
     }
-  } catch (error) {
+  }
+  catch (error) {
     return {
       error: parseError(error),
       status: {
@@ -195,7 +197,8 @@ export const deleteNexusProject: StepCall<Project> = async ({ args: project }) =
         message: 'User deleted',
       },
     }
-  } catch (error) {
+  }
+  catch (error) {
     return {
       error: parseError(error),
       status: {

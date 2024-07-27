@@ -34,7 +34,8 @@ describe('Server', () => {
     getConnection.mockRejectedValueOnce(error)
 
     let response
-    await getPreparedApp().catch(err => { response = err })
+    await getPreparedApp()
+      .catch((err) => { response = err })
 
     expect(getConnection.mock.calls).toHaveLength(1)
     expect(app.listen.mock.calls).toHaveLength(0)
@@ -58,7 +59,8 @@ describe('Server', () => {
     let response
     try {
       await getPreparedApp()
-    } catch (err) {
+    }
+    catch (err) {
       response = err
     }
 

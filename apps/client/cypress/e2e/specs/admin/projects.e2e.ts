@@ -27,7 +27,7 @@ describe('Administration projects', () => {
     cy.kcLogin((admin.firstName.slice(0, 1) + admin.lastName).toLowerCase())
     cy.visit('/admin/projects')
     cy.url().should('contain', '/admin/projects')
-    cy.wait('@getAllProjects', { timeout: 10000 }).its('response').then(response => {
+    cy.wait('@getAllProjects', { timeout: 10_000 }).its('response').then((response) => {
       projects = mapProjects(response?.body)
     })
   })
@@ -44,10 +44,10 @@ describe('Administration projects', () => {
             if (text?.length > maxDescriptionlength) {
               const lastSpaceIndex = project.description.slice(0, maxDescriptionlength).lastIndexOf(' ')
               const truncatedDescription = project.description.slice(0, lastSpaceIndex > 0 ? lastSpaceIndex : maxDescriptionlength)
-              expect(text).to.equal(truncatedDescription + ' ...')
-            } else {
-              expect(text).to.equal(project.description)
+              expect(text).to.equal(`${truncatedDescription} ...`)
+              return
             }
+            expect(text).to.equal(project.description)
           })
           cy.get('td:nth-of-type(4)').should('contain', project.members.find(m => m.role === 'owner').email)
           cy.get('td:nth-of-type(5) svg title').should('contain', `Le projet ${project.name} est ${statusDict.status[project.status].wording}`)
@@ -69,10 +69,10 @@ describe('Administration projects', () => {
     cy.getByDataTestid('tableAdministrationProjects').within(() => {
       projects.forEach((project, index: number) => {
         cy.get(`tbody tr:nth-of-type(${index + 1})`).within(() => {
-          cy.getByDataTestid('description').then($span => {
+          cy.getByDataTestid('description').then(($span) => {
             if (Cypress.dom.isVisible($span)) cy.wrap($span).click()
           })
-          cy.getByDataTestid('description').then($span => {
+          cy.getByDataTestid('description').then(($span) => {
             if (Cypress.dom.isVisible($span)) cy.wrap($span).should('contain', project.description)
           })
         })
@@ -230,7 +230,7 @@ describe('Administration projects', () => {
 
     cy.visit('/admin/projects')
     cy.url().should('contain', '/admin/projects')
-    cy.wait('@getAllProjects', { timeout: 10000 }).its('response').then(pResponse => {
+    cy.wait('@getAllProjects', { timeout: 10_000 }).its('response').then((pResponse) => {
       projects = mapProjects(pResponse.body)
     })
 
@@ -239,7 +239,7 @@ describe('Administration projects', () => {
         .click()
     })
 
-    cy.wait('@getProjectEnvironments', { timeout: 10000 }).its('response').then(response => {
+    cy.wait('@getProjectEnvironments', { timeout: 10_000 }).its('response').then((response) => {
       project.environments = response.body
       initialQuota = project.environments[0].quotaId
     })
@@ -262,7 +262,7 @@ describe('Administration projects', () => {
     cy.getByDataTestid('addQuotaBtn').should('be.enabled')
     cy.get('#stages-select')
       .click()
-    privateQuota.stage.forEach(stage => {
+    privateQuota.stage.forEach((stage) => {
       cy.getByDataTestid(`${stage.id}-stages-select-tag`)
         .click()
     })
@@ -275,7 +275,7 @@ describe('Administration projects', () => {
 
       cy.visit('/admin/projects')
       cy.url().should('contain', '/admin/projects')
-      cy.wait('@getAllProjects', { timeout: 10000 }).its('response').then(pResponse => {
+      cy.wait('@getAllProjects', { timeout: 10_000 }).its('response').then((pResponse) => {
         projects = mapProjects(pResponse.body)
       })
 

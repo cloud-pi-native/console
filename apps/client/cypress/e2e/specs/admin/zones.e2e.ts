@@ -23,14 +23,14 @@ describe('Administration zones', () => {
     cy.kcLogin('tcolin')
     cy.visit('/admin/zones')
     cy.url().should('contain', '/admin/zones')
-    cy.wait('@listZones').its('response').then(response => {
+    cy.wait('@listZones').its('response').then((response) => {
       zones = response?.body
     })
     cy.wait('@getClusters').its('response.statusCode').should('match', /^20\d$/)
   })
 
   it('Should display zones list', () => {
-    zones?.forEach(zone => {
+    zones?.forEach((zone) => {
       cy.getByDataTestid(`zoneTile-${zone.label}`)
         .should('be.visible')
         .click()

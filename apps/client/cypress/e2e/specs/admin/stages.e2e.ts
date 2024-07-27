@@ -21,7 +21,7 @@ describe('Administration stages', () => {
     cy.kcLogin('tcolin')
     cy.visit('/admin/stages')
     cy.url().should('contain', '/admin/stages')
-    cy.wait('@listStages').its('response').then(response => {
+    cy.wait('@listStages').its('response').then((response) => {
       allStages = response?.body
       stage1 = allStages.find(quota => quota.id === stage1.id)
     })
@@ -30,7 +30,7 @@ describe('Administration stages', () => {
   })
 
   it('Should display stages list', () => {
-    allStages?.forEach(stage => {
+    allStages?.forEach((stage) => {
       cy.getByDataTestid(`stageTile-${stage.name}`)
         .should('be.visible')
     })
@@ -55,7 +55,7 @@ describe('Administration stages', () => {
     cy.getByDataTestid('addStageBtn').should('be.enabled')
     cy.get('[data-testid$="quotas-select-tag"]')
       .should('not.have.class', 'fr-tag--dismiss')
-    stage.quotas.forEach(quota => {
+    stage.quotas.forEach((quota) => {
       cy.getByDataTestid(`${quota.id}-quotas-select-tag`)
         .click()
     })
@@ -63,7 +63,7 @@ describe('Administration stages', () => {
       .should('have.length', stage.quotas.length)
     cy.get('[data-testid$="clusters-select-tag"]')
       .should('not.have.class', 'fr-tag--dismiss')
-    stage.clusters.forEach(cluster => {
+    stage.clusters.forEach((cluster) => {
       cy.getByDataTestid(`${cluster.id}-clusters-select-tag`)
         .click()
     })
@@ -71,7 +71,7 @@ describe('Administration stages', () => {
       .should('have.length', stage.clusters.length)
     cy.getByDataTestid('addStageBtn')
       .click()
-    cy.wait('@createStage').its('response').then($response => {
+    cy.wait('@createStage').its('response').then(($response) => {
       expect($response?.statusCode).to.match(/^20\d$/)
     })
     cy.getByDataTestid('nameInput')
@@ -90,13 +90,13 @@ describe('Administration stages', () => {
       .should('have.value', stage.name)
       .and('be.disabled')
     cy.getByDataTestid('updateStageBtn').should('be.enabled')
-    stage.quotas.forEach(quota => {
+    stage.quotas.forEach((quota) => {
       cy.getByDataTestid(`${quota.id}-quotas-select-tag`)
         .should('exist')
     })
     cy.get('#clusters-select')
       .click()
-    stage.clusters.forEach(cluster => {
+    stage.clusters.forEach((cluster) => {
       cy.getByDataTestid(`${cluster.id}-clusters-select-tag`)
         .should('have.class', 'fr-tag--dismiss')
     })
@@ -144,7 +144,7 @@ describe('Administration stages', () => {
     cy.getByDataTestid('addStageBtn')
       .should('be.enabled')
       .click()
-    cy.wait('@createStage').its('response').then($response => {
+    cy.wait('@createStage').its('response').then(($response) => {
       expect($response?.statusCode).to.not.match(/^20\d$/)
     })
     cy.getByDataTestid('snackbar').within(() => {
@@ -188,7 +188,7 @@ describe('Administration stages', () => {
       .click()
     cy.getByDataTestid('updateStageBtn')
       .click()
-    cy.wait('@updateStage').its('response').then($response => {
+    cy.wait('@updateStage').its('response').then(($response) => {
       expect($response?.statusCode).to.match(/^20\d$/)
     })
 

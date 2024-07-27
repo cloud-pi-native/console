@@ -18,8 +18,8 @@ export const ensureRepositories = async (gitlabApi: GitlabProjectApi, project: P
     // delete excess repositories
     ...gitlabRepositories
       .filter(gitlabRepository => (
-        !specialRepos.includes(gitlabRepository.name) &&
-        !project.repositories.find(repo => repo.internalRepoName === gitlabRepository.name,
+        !specialRepos.includes(gitlabRepository.name)
+        && !project.repositories.find(repo => repo.internalRepoName === gitlabRepository.name,
         )))
       .map(gitlabRepository => gitlabApi.deleteRepository(gitlabRepository.id)),
     // create missing repositories

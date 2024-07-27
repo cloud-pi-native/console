@@ -5,7 +5,7 @@ const monitor = async (instance: Monitor): Promise<MonitorInfos> => {
   instance.lastStatus.lastUpdateTimestamp = (new Date()).getTime()
   try {
     const res = await axios.get(requiredEnv('ARGOCD_URL'), {
-      validateStatus: (res) => res === 200,
+      validateStatus: res => res === 200,
     })
     if (res.status === 200) { // 200 only means api responds
       instance.lastStatus.status = MonitorStatus.OK
@@ -15,7 +15,8 @@ const monitor = async (instance: Monitor): Promise<MonitorInfos> => {
     instance.lastStatus.status = MonitorStatus.ERROR
     instance.lastStatus.message = 'Service en erreur'
     return instance.lastStatus
-  } catch (error) {
+  }
+  catch (error) {
     instance.lastStatus.message = 'Erreur lors la requête'
     instance.lastStatus.status = MonitorStatus.UNKNOW
     instance.lastStatus.cause = error

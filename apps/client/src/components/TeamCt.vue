@@ -29,7 +29,7 @@ const props = withDefaults(
   defineProps<{
     userProfile?: UserProfile
     project: Pick<Project, 'id' | 'locked' | 'name'>
-    members: Array<{ userId: User['id'], role: ProjectRoles}>
+    members: Array<{ userId: User['id'], role: ProjectRoles }>
     knownUsers: Record<string, User>
   }>(),
   {
@@ -49,8 +49,8 @@ const removeUserHint = (userId: User['id']) => {
   else return 'vous n\'avez pas les droits suffisants pour retirer un membre du projet'
 }
 
-const isOwnerOrAdmin = ref(props.members.some(member => (member.userId === props.userProfile?.id && member.role === 'owner') ||
-  props.userProfile?.groups?.includes(adminGroupPath)))
+const isOwnerOrAdmin = ref(props.members.some(member => (member.userId === props.userProfile?.id && member.role === 'owner')
+  || props.userProfile?.groups?.includes(adminGroupPath)))
 const newUserInputKey = ref(getRandomId('input'))
 const newUserEmail = ref('')
 const usersToAdd = ref<string[] | undefined>([])
@@ -63,23 +63,23 @@ const setRows = () => {
   rows.value = []
 
   if (props.members?.length) {
-    props.members.forEach(member => {
+    props.members.forEach((member) => {
       if (member.role === 'owner') {
         rows.value.unshift([
           {
-            component: 'code',
-            text: member.userId,
-            title: 'Copier l\'id',
+            'component': 'code',
+            'text': member.userId,
+            'title': 'Copier l\'id',
             'data-testid': 'ownerId',
-            class: 'fr-text-default--info text-xs truncate cursor-pointer',
-            onClick: () => copyContent(member.userId),
+            'class': 'fr-text-default--info text-xs truncate cursor-pointer',
+            'onClick': () => copyContent(member.userId),
           },
           props.knownUsers[member.userId].email,
           {
-            component: 'DsfrTag',
-            label: member.role,
+            'component': 'DsfrTag',
+            'label': member.role,
             'data-testid': 'ownerTag',
-            class: 'fr-background-contrast--blue-france',
+            'class': 'fr-background-contrast--blue-france',
           },
           {
             cellAttrs: {
@@ -92,20 +92,20 @@ const setRows = () => {
       }
       rows.value.push([
         {
-          component: 'code',
-          text: member.userId,
-          title: 'Copier l\'id',
+          'component': 'code',
+          'text': member.userId,
+          'title': 'Copier l\'id',
           'data-testid': 'userId',
-          class: 'fr-text-default--info text-xs truncate cursor-pointer',
-          onClick: () => copyContent(member.userId),
+          'class': 'fr-text-default--info text-xs truncate cursor-pointer',
+          'onClick': () => copyContent(member.userId),
         },
         props.knownUsers[member.userId].email,
         {
-          component: 'DsfrSelect',
-          modelValue: member.role,
-          selectId: `roleSelect-${member.userId}`,
-          disabled: !isOwnerOrAdmin.value,
-          options: ['owner', 'user'],
+          'component': 'DsfrSelect',
+          'modelValue': member.role,
+          'selectId': `roleSelect-${member.userId}`,
+          'disabled': !isOwnerOrAdmin.value,
+          'options': ['owner', 'user'],
           'onUpdate:model-value': () => confirmUpdateUserRole(member.userId),
         },
         {

@@ -18,10 +18,10 @@ export const updateProject = (id: Project['id'], data: ProjectUpdate) =>
 
 // SELECT
 type FilterWhere = XOR<{
-  userId?: User['id'],
+  userId?: User['id']
   filter: 'all'
 }, {
-    userId: User['id'],
+    userId: User['id']
     filter: 'owned' | 'member'
   }>
 type ListProjectWhere = Omit<(typeof projectContract.listProjects.query._type), 'status_in' | 'status_not_in' | 'status'> &
@@ -49,7 +49,8 @@ export const listProjects = async ({
   }
   if (filter === 'owned') {
     where.roles = { some: { AND: [{ role: 'owner' }, { userId }] } }
-  } else if (filter === 'member') {
+  }
+  else if (filter === 'member') {
     where.roles = { some: { userId } }
   }
 
@@ -200,7 +201,7 @@ export const getProjectInfosAndRepos = (id: Project['id']) =>
   })
 
 type GetProjectByNameParams = {
-  name: Project['name'],
+  name: Project['name']
   organizationName: Organization['name']
 }
 
@@ -326,9 +327,9 @@ export const getHookProjectInfos = (id: Project['id']) =>
 
 // CREATE
 type CreateProjectParams = {
-  name: Project['name'],
-  organizationId: Organization['id'],
-  description?: Project['description'],
+  name: Project['name']
+  organizationId: Organization['id']
+  description?: Project['description']
   ownerId: User['id']
 }
 

@@ -15,7 +15,7 @@ export default mergeConfig(
         reporter: ['text', 'lcov'],
         include: ['src/**'],
         exclude: [
-          '**/types', 
+          '**/types',
           '**/mocks',
           '**/*.spec.ts',
           '**/*.d.ts',

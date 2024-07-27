@@ -18,8 +18,8 @@ const auxComponents = [
 ]
 
 type NexusRes = Record<string, {
-  'healthy': boolean,
-  'message': string,
+  healthy: boolean
+  message: string
 }>
 
 const monitor = async (instance: Monitor): Promise<MonitorInfos> => {
@@ -30,11 +30,11 @@ const monitor = async (instance: Monitor): Promise<MonitorInfos> => {
       ...getAxiosOptions(),
     })
     const statusCheck = await axios.get('/status/check', {
-      validateStatus: (res) => [200, 503].includes(res),
+      validateStatus: res => [200, 503].includes(res),
       ...getAxiosOptions(),
     })
     const statusWritable = await axios.get('/status/writable', {
-      validateStatus: (res) => [200, 503].includes(res),
+      validateStatus: res => [200, 503].includes(res),
       ...getAxiosOptions(),
     })
     if (status.status === 503 || statusWritable.status === 503) {
@@ -59,7 +59,8 @@ const monitor = async (instance: Monitor): Promise<MonitorInfos> => {
     instance.lastStatus.status = MonitorStatus.OK
     instance.lastStatus.message = MonitorStatus.OK
     return instance.lastStatus
-  } catch (error) {
+  }
+  catch (error) {
     instance.lastStatus.message = 'Erreur lors la requête'
     instance.lastStatus.status = MonitorStatus.UNKNOW
     instance.lastStatus.cause = error

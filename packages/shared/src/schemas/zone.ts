@@ -15,7 +15,7 @@ export const ZoneSchema = z.object({
     .max(200)
     .optional()
     .nullable()
-    .transform((value) => value ?? ''),
+    .transform(value => value ?? ''),
 })
 
 export type Zone = Zod.infer<typeof ZoneSchema>

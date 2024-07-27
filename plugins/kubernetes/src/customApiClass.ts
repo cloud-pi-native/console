@@ -24,8 +24,8 @@ export type UrlParams = {
 
 export class AnyObjectsApi {
   protected _basePath = defaultBasePath
-  protected _defaultHeaders : any = {}
-  protected _useQuerystring : boolean = false
+  protected _defaultHeaders: any = {}
+  protected _useQuerystring: boolean = false
 
   protected authentications = {
     default: <Authentication> new VoidAuth(),
@@ -34,36 +34,37 @@ export class AnyObjectsApi {
 
   protected interceptors: Interceptor[] = []
 
-  constructor (basePath?: string)
-  constructor (basePathOrUsername: string, password?: string, basePath?: string) {
+  constructor(basePath?: string)
+  constructor(basePathOrUsername: string, password?: string, basePath?: string) {
     if (password) {
       if (basePath) {
         this.basePath = basePath
       }
-    } else {
+    }
+    else {
       if (basePathOrUsername) {
         this.basePath = basePathOrUsername
       }
     }
   }
 
-  set useQuerystring (value: boolean) {
+  set useQuerystring(value: boolean) {
     this._useQuerystring = value
   }
 
-  set basePath (basePath: string) {
+  set basePath(basePath: string) {
     this._basePath = basePath
   }
 
-  set defaultHeaders (defaultHeaders: any) {
+  set defaultHeaders(defaultHeaders: any) {
     this._defaultHeaders = defaultHeaders
   }
 
-  get defaultHeaders () {
+  get defaultHeaders() {
     return this._defaultHeaders
   }
 
-  get basePath () {
+  get basePath() {
     return this._basePath
   }
 
@@ -72,7 +73,8 @@ export class AnyObjectsApi {
     if (group) {
       path.push('apis')
       path.push(encodeURIComponent(String(group)))
-    } else path.push('api')
+    }
+    else path.push('api')
     path.push(encodeURIComponent(String(version)))
     if (namespace) {
       path.push('namespaces')
@@ -83,15 +85,15 @@ export class AnyObjectsApi {
     return path.join('/')
   }
 
-  public setDefaultAuthentication (auth: Authentication) {
+  public setDefaultAuthentication(auth: Authentication) {
     this.authentications.default = auth
   }
 
-  public setApiKey (key: CustomObjectsApiApiKeys, value: string) {
+  public setApiKey(key: CustomObjectsApiApiKeys, value: string) {
     (this.authentications as any)[CustomObjectsApiApiKeys[key]].apiKey = value
   }
 
-  public addInterceptor (interceptor: Interceptor) {
+  public addInterceptor(interceptor: Interceptor) {
     this.interceptors.push(interceptor)
   }
 
@@ -106,7 +108,7 @@ export class AnyObjectsApi {
      * @param dryRun When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed
      * @param fieldManager fieldManager is a name associated with the actor or entity that is making these changes. The value must be less than or 128 characters long, and only contain printable characters, as defined by https://golang.org/pkg/unicode/#IsPrint.
      */
-  public async createNamespacedCustomObject (group?: string, version: string, namespace: string, plural: string, body: object, pretty?: string, dryRun?: string, fieldManager?: string, options: {headers: {[name: string]: string}} = { headers: {} }) : Promise<{ response: http.IncomingMessage; body: object; }> {
+  public async createNamespacedCustomObject(group?: string, version: string, namespace: string, plural: string, body: object, pretty?: string, dryRun?: string, fieldManager?: string, options: { headers: { [name: string]: string } } = { headers: {} }): Promise<{ response: http.IncomingMessage, body: object }> {
     const localVarPath = this.urlMaker({ group, version, namespace, plural })
     const localVarQueryParameters: any = {}
     const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders)
@@ -114,7 +116,8 @@ export class AnyObjectsApi {
     // give precedence to 'application/json'
     if (produces.indexOf('application/json') >= 0) {
       localVarHeaderParams.Accept = 'application/json'
-    } else {
+    }
+    else {
       localVarHeaderParams.Accept = produces.join(',')
     }
     const localVarFormParams: any = {}
@@ -185,19 +188,22 @@ export class AnyObjectsApi {
       if (Object.keys(localVarFormParams).length) {
         if (localVarUseFormData) {
           (<any>localVarRequestOptions).formData = localVarFormParams
-        } else {
+        }
+        else {
           localVarRequestOptions.form = localVarFormParams
         }
       }
-      return new Promise<{ response: http.IncomingMessage; body: object; }>((resolve, reject) => {
+      return new Promise<{ response: http.IncomingMessage, body: object }>((resolve, reject) => {
         localVarRequest(localVarRequestOptions, (error, response, body) => {
           if (error) {
             reject(error)
-          } else {
+          }
+          else {
             if (response.statusCode && response.statusCode >= 200 && response.statusCode <= 299) {
               body = ObjectSerializer.deserialize(body, 'object')
               resolve({ response, body })
-            } else {
+            }
+            else {
               reject(new HttpError(response, body, response.statusCode))
             }
           }
@@ -219,7 +225,7 @@ export class AnyObjectsApi {
      * @param dryRun When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed
      * @param body
      */
-  public async deleteNamespacedCustomObject (group?: string, version: string, namespace: string, plural: string, name: string, gracePeriodSeconds?: number, orphanDependents?: boolean, propagationPolicy?: string, dryRun?: string, body?: V1DeleteOptions, options: {headers: {[name: string]: string}} = { headers: {} }) : Promise<{ response: http.IncomingMessage; body: object; }> {
+  public async deleteNamespacedCustomObject(group?: string, version: string, namespace: string, plural: string, name: string, gracePeriodSeconds?: number, orphanDependents?: boolean, propagationPolicy?: string, dryRun?: string, body?: V1DeleteOptions, options: { headers: { [name: string]: string } } = { headers: {} }): Promise<{ response: http.IncomingMessage, body: object }> {
     const localVarPath = this.urlMaker({ group, version, namespace, plural, name })
     const localVarQueryParameters: any = {}
     const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders)
@@ -227,7 +233,8 @@ export class AnyObjectsApi {
     // give precedence to 'application/json'
     if (produces.indexOf('application/json') >= 0) {
       localVarHeaderParams.Accept = 'application/json'
-    } else {
+    }
+    else {
       localVarHeaderParams.Accept = produces.join(',')
     }
     const localVarFormParams: any = {}
@@ -302,19 +309,22 @@ export class AnyObjectsApi {
       if (Object.keys(localVarFormParams).length) {
         if (localVarUseFormData) {
           (<any>localVarRequestOptions).formData = localVarFormParams
-        } else {
+        }
+        else {
           localVarRequestOptions.form = localVarFormParams
         }
       }
-      return new Promise<{ response: http.IncomingMessage; body: object; }>((resolve, reject) => {
+      return new Promise<{ response: http.IncomingMessage, body: object }>((resolve, reject) => {
         localVarRequest(localVarRequestOptions, (error, response, body) => {
           if (error) {
             reject(error)
-          } else {
+          }
+          else {
             if (response.statusCode && response.statusCode >= 200 && response.statusCode <= 299) {
               body = ObjectSerializer.deserialize(body, 'object')
               resolve({ response, body })
-            } else {
+            }
+            else {
               reject(new HttpError(response, body, response.statusCode))
             }
           }
@@ -331,7 +341,7 @@ export class AnyObjectsApi {
      * @param plural the custom resource\&#39;s plural name. For TPRs this would be lowercase plural kind.
      * @param name the custom object\&#39;s name
      */
-  public async getNamespacedCustomObject (group?: string, version: string, namespace: string, plural: string, name: string, options: {headers: {[name: string]: string}} = { headers: {} }) : Promise<{ response: http.IncomingMessage; body: object; }> {
+  public async getNamespacedCustomObject(group?: string, version: string, namespace: string, plural: string, name: string, options: { headers: { [name: string]: string } } = { headers: {} }): Promise<{ response: http.IncomingMessage, body: object }> {
     const localVarPath = this.urlMaker({ group, version, namespace, plural, name })
     const localVarQueryParameters: any = {}
     const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders)
@@ -339,7 +349,8 @@ export class AnyObjectsApi {
     // give precedence to 'application/json'
     if (produces.indexOf('application/json') >= 0) {
       localVarHeaderParams.Accept = 'application/json'
-    } else {
+    }
+    else {
       localVarHeaderParams.Accept = produces.join(',')
     }
     const localVarFormParams: any = {}
@@ -397,19 +408,22 @@ export class AnyObjectsApi {
       if (Object.keys(localVarFormParams).length) {
         if (localVarUseFormData) {
           (<any>localVarRequestOptions).formData = localVarFormParams
-        } else {
+        }
+        else {
           localVarRequestOptions.form = localVarFormParams
         }
       }
-      return new Promise<{ response: http.IncomingMessage; body: object; }>((resolve, reject) => {
+      return new Promise<{ response: http.IncomingMessage, body: object }>((resolve, reject) => {
         localVarRequest(localVarRequestOptions, (error, response, body) => {
           if (error) {
             reject(error)
-          } else {
+          }
+          else {
             if (response.statusCode && response.statusCode >= 200 && response.statusCode <= 299) {
               body = ObjectSerializer.deserialize(body, 'object')
               resolve({ response, body })
-            } else {
+            }
+            else {
               reject(new HttpError(response, body, response.statusCode))
             }
           }
@@ -435,7 +449,7 @@ export class AnyObjectsApi {
      * @param timeoutSeconds Timeout for the list/watch call. This limits the duration of the call, regardless of any activity or inactivity.
      * @param watch Watch for changes to the described resources and return them as a stream of add, update, and remove notifications.
      */
-  public async listNamespacedCustomObject (group?: string, version: string, namespace: string, plural: string, pretty?: string, allowWatchBookmarks?: boolean, _continue?: string, fieldSelector?: string, labelSelector?: string, limit?: number, resourceVersion?: string, resourceVersionMatch?: string, timeoutSeconds?: number, watch?: boolean, options: {headers: {[name: string]: string}} = { headers: {} }) : Promise<{ response: http.IncomingMessage; body: object; }> {
+  public async listNamespacedCustomObject(group?: string, version: string, namespace: string, plural: string, pretty?: string, allowWatchBookmarks?: boolean, _continue?: string, fieldSelector?: string, labelSelector?: string, limit?: number, resourceVersion?: string, resourceVersionMatch?: string, timeoutSeconds?: number, watch?: boolean, options: { headers: { [name: string]: string } } = { headers: {} }): Promise<{ response: http.IncomingMessage, body: object }> {
     const localVarPath = this.urlMaker({ group, version, namespace, plural })
     const localVarQueryParameters: any = {}
     const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders)
@@ -443,7 +457,8 @@ export class AnyObjectsApi {
     // give precedence to 'application/json'
     if (produces.indexOf('application/json') >= 0) {
       localVarHeaderParams.Accept = 'application/json'
-    } else {
+    }
+    else {
       localVarHeaderParams.Accept = produces.join(',')
     }
     const localVarFormParams: any = {}
@@ -536,19 +551,22 @@ export class AnyObjectsApi {
       if (Object.keys(localVarFormParams).length) {
         if (localVarUseFormData) {
           (<any>localVarRequestOptions).formData = localVarFormParams
-        } else {
+        }
+        else {
           localVarRequestOptions.form = localVarFormParams
         }
       }
-      return new Promise<{ response: http.IncomingMessage; body: object; }>((resolve, reject) => {
+      return new Promise<{ response: http.IncomingMessage, body: object }>((resolve, reject) => {
         localVarRequest(localVarRequestOptions, (error, response, body) => {
           if (error) {
             reject(error)
-          } else {
+          }
+          else {
             if (response.statusCode && response.statusCode >= 200 && response.statusCode <= 299) {
               body = ObjectSerializer.deserialize(body, 'object')
               resolve({ response, body })
-            } else {
+            }
+            else {
               reject(new HttpError(response, body, response.statusCode))
             }
           }
@@ -569,7 +587,7 @@ export class AnyObjectsApi {
      * @param fieldManager fieldManager is a name associated with the actor or entity that is making these changes. The value must be less than or 128 characters long, and only contain printable characters, as defined by https://golang.org/pkg/unicode/#IsPrint. This field is required for apply requests (application/apply-patch) but optional for non-apply patch types (JsonPatch, MergePatch, StrategicMergePatch).
      * @param force Force is going to \&quot;force\&quot; Apply requests. It means user will re-acquire conflicting fields owned by other people. Force flag must be unset for non-apply patch requests.
      */
-  public async patchNamespacedCustomObject (group?: string, version: string, namespace: string, plural: string, name: string, body: object, dryRun?: string, fieldManager?: string, force?: boolean, options: {headers: {[name: string]: string}} = { headers: {} }) : Promise<{ response: http.IncomingMessage; body: object; }> {
+  public async patchNamespacedCustomObject(group?: string, version: string, namespace: string, plural: string, name: string, body: object, dryRun?: string, fieldManager?: string, force?: boolean, options: { headers: { [name: string]: string } } = { headers: {} }): Promise<{ response: http.IncomingMessage, body: object }> {
     const localVarPath = this.urlMaker({ group, version, namespace, plural, name })
     const localVarQueryParameters: any = {}
     const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders)
@@ -577,7 +595,8 @@ export class AnyObjectsApi {
     // give precedence to 'application/json'
     if (produces.indexOf('application/json') >= 0) {
       localVarHeaderParams.Accept = 'application/json'
-    } else {
+    }
+    else {
       localVarHeaderParams.Accept = produces.join(',')
     }
     const localVarFormParams: any = {}
@@ -653,19 +672,22 @@ export class AnyObjectsApi {
       if (Object.keys(localVarFormParams).length) {
         if (localVarUseFormData) {
           (<any>localVarRequestOptions).formData = localVarFormParams
-        } else {
+        }
+        else {
           localVarRequestOptions.form = localVarFormParams
         }
       }
-      return new Promise<{ response: http.IncomingMessage; body: object; }>((resolve, reject) => {
+      return new Promise<{ response: http.IncomingMessage, body: object }>((resolve, reject) => {
         localVarRequest(localVarRequestOptions, (error, response, body) => {
           if (error) {
             reject(error)
-          } else {
+          }
+          else {
             if (response.statusCode && response.statusCode >= 200 && response.statusCode <= 299) {
               body = ObjectSerializer.deserialize(body, 'object')
               resolve({ response, body })
-            } else {
+            }
+            else {
               reject(new HttpError(response, body, response.statusCode))
             }
           }
@@ -685,7 +707,7 @@ export class AnyObjectsApi {
      * @param dryRun When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed
      * @param fieldManager fieldManager is a name associated with the actor or entity that is making these changes. The value must be less than or 128 characters long, and only contain printable characters, as defined by https://golang.org/pkg/unicode/#IsPrint.
      */
-  public async replaceNamespacedCustomObject (group?: string, version: string, namespace: string, plural: string, name: string, body: object, dryRun?: string, fieldManager?: string, options: {headers: {[name: string]: string}} = { headers: {} }) : Promise<{ response: http.IncomingMessage; body: object; }> {
+  public async replaceNamespacedCustomObject(group?: string, version: string, namespace: string, plural: string, name: string, body: object, dryRun?: string, fieldManager?: string, options: { headers: { [name: string]: string } } = { headers: {} }): Promise<{ response: http.IncomingMessage, body: object }> {
     const localVarPath = this.urlMaker({ group, version, namespace, plural, name })
     const localVarQueryParameters: any = {}
     const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders)
@@ -693,7 +715,8 @@ export class AnyObjectsApi {
     // give precedence to 'application/json'
     if (produces.indexOf('application/json') >= 0) {
       localVarHeaderParams.Accept = 'application/json'
-    } else {
+    }
+    else {
       localVarHeaderParams.Accept = produces.join(',')
     }
     const localVarFormParams: any = {}
@@ -765,19 +788,22 @@ export class AnyObjectsApi {
       if (Object.keys(localVarFormParams).length) {
         if (localVarUseFormData) {
           (<any>localVarRequestOptions).formData = localVarFormParams
-        } else {
+        }
+        else {
           localVarRequestOptions.form = localVarFormParams
         }
       }
-      return new Promise<{ response: http.IncomingMessage; body: object; }>((resolve, reject) => {
+      return new Promise<{ response: http.IncomingMessage, body: object }>((resolve, reject) => {
         localVarRequest(localVarRequestOptions, (error, response, body) => {
           if (error) {
             reject(error)
-          } else {
+          }
+          else {
             if (response.statusCode && response.statusCode >= 200 && response.statusCode <= 299) {
               body = ObjectSerializer.deserialize(body, 'object')
               resolve({ response, body })
-            } else {
+            }
+            else {
               reject(new HttpError(response, body, response.statusCode))
             }
           }

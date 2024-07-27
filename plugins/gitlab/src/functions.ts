@@ -26,7 +26,8 @@ export const checkApi: StepCall<Project> = async (payload) => {
         result: 'OK',
       },
     }
-  } catch (error) {
+  }
+  catch (error) {
     return {
       error: parseError(cleanGitlabError(error)),
       status: {
@@ -45,12 +46,12 @@ export const getDsoProjectSecrets: StepCall<ProjectLite> = async (payload) => {
       const gitlab = (await payload.apis.vault.read('GITLAB')).data as VaultSecrets['GITLAB']
       const curlCommand = [
         'curl -X POST --fail',
-        // eslint-disable-next-line no-useless-escape
+
         '-F token=\${GIT_MIRROR_TOKEN}',
         '-F ref=main',
-        // eslint-disable-next-line no-useless-escape
+
         '-F variables[GIT_BRANCH_DEPLOY]=\${BRANCH_TO_SYNC}',
-        // eslint-disable-next-line no-useless-escape
+
         '-F variables[PROJECT_NAME]=\${REPOSITORY_NAME}',
         `"${getConfig().url}/api/v4/projects/${gitlab.GIT_MIRROR_PROJECT_ID}/trigger/pipeline"`,
       ]
@@ -74,7 +75,8 @@ export const getDsoProjectSecrets: StepCall<ProjectLite> = async (payload) => {
         message: 'This feature is disabled',
       },
     }
-  } catch (error) {
+  }
+  catch (error) {
     return {
       error: parseError(cleanGitlabError(error)),
       status: {
@@ -126,7 +128,8 @@ export const upsertDsoProject: StepCall<Project> = async (payload) => {
         result: 'OK',
       },
     }
-  } catch (error) {
+  }
+  catch (error) {
     return {
       error: parseError(cleanGitlabError(error)),
       status: {
@@ -148,7 +151,8 @@ export const deleteDsoProject: StepCall<Project> = async (payload) => {
         message: 'Deleted',
       },
     }
-  } catch (error) {
+  }
+  catch (error) {
     return {
       error: parseError(cleanGitlabError(error)),
       status: {
@@ -170,7 +174,8 @@ export const syncRepository: StepCall<UniqueRepo> = async (payload) => {
         message: 'Ci launched',
       },
     }
-  } catch (error) {
+  }
+  catch (error) {
     return {
       error: parseError(cleanGitlabError(error)),
       status: {
@@ -190,7 +195,8 @@ export const commitFiles: StepCall<UniqueRepo | Project> = async (payload) => {
         message: `${filesUpdated} file${filesUpdated > 1 ? 's' : ''} updated`,
       },
     }
-  } catch (error) {
+  }
+  catch (error) {
     return {
       error: parseError(cleanGitlabError(error)),
       status: {

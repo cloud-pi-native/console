@@ -10,7 +10,7 @@ const snackbarStore = useSnackbarStore()
 const updated = ref<Record<string, Record<string, string>>>({})
 
 const refTheValues = (services: PluginSchema[]) => {
-  return services.map(service => {
+  return services.map((service) => {
     return {
       ...service,
       manifest: service.manifest?.map(item => ({ ...item, value: ref(item.value) })),
@@ -35,7 +35,8 @@ const save = async () => {
   try {
     await pluginsStore.updatePluginsConfig(updated.value)
     snackbarStore.setMessage('Paramètres sauvegardés', 'success')
-  } catch (error) {
+  }
+  catch (error) {
     console.log(error)
     snackbarStore.setMessage('Erreur lors de la sauvegarde', 'error')
   }

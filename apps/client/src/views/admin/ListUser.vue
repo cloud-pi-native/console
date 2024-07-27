@@ -8,7 +8,7 @@ import { useUserStore } from '@/stores/user.js'
 import type { Component, EmptyRow } from './ListProjects.vue'
 
 interface CheckboxEvent extends Event {
-  target: HTMLInputElement;
+  target: HTMLInputElement
 }
 
 type Row = {
@@ -38,9 +38,9 @@ const getAllUsers = async () => {
 }
 
 const filterRows = (rows: Row[]): Row[] | EmptyRow => {
-  const returnRows = rows.filter(row => {
+  const returnRows = rows.filter((row) => {
     if (!inputSearchText.value) return true
-    return row.rowData.some(data => {
+    return row.rowData.some((data) => {
       if (typeof data === 'object') {
         return data.text?.toString().toLowerCase().includes(inputSearchText.value.toLocaleLowerCase())
       }
@@ -75,13 +75,13 @@ const setRows = () => {
           lastName,
           email,
           {
-            component: 'input',
-            type: 'checkbox',
-            checked: isAdmin,
+            'component': 'input',
+            'type': 'checkbox',
+            'checked': isAdmin,
             'data-testid': `${id}-is-admin`,
-            class: 'fr-checkbox-group--sm',
-            title: isAdmin ? `Retirer le rôle d'administrateur de ${email}` : `Donner le rôle d'administrateur à ${email}`,
-            onClick: async (event: CheckboxEvent) => {
+            'class': 'fr-checkbox-group--sm',
+            'title': isAdmin ? `Retirer le rôle d'administrateur de ${email}` : `Donner le rôle d'administrateur à ${email}`,
+            'onClick': async (event: CheckboxEvent) => {
               const value = event.target.checked
               if (value !== isAdmin) {
                 await projectUserStore.updateUserAdminRole(id, value)

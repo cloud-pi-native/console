@@ -2,10 +2,10 @@ import { getAxiosInstance } from './tech.js'
 import type { SonarPaging } from './project.js'
 
 export type SonarGroup = {
-  id: string,
-  name: string,
-  description: string,
-  membersCount: number,
+  id: string
+  name: string
+  description: string
+  membersCount: number
   default: boolean
 }
 

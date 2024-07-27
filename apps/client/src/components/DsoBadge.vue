@@ -3,18 +3,18 @@ import { computed } from 'vue'
 import { statusDict, type Project } from '@cpn-console/shared'
 
 type ResourceBase = {
-  id: Project['id'],
-  wording: string,
+  id: Project['id']
+  wording: string
 }
 
 type ResourceWithStatus = ResourceBase & {
-  resourceKey: 'status',
+  resourceKey: 'status'
   status: keyof typeof statusDict.status
 }
 
 type ResourceWithLock = ResourceBase & {
-  resourceKey: 'locked',
-  locked: keyof typeof statusDict.locked,
+  resourceKey: 'locked'
+  locked: keyof typeof statusDict.locked
 }
 
 type Resource = ResourceWithStatus | ResourceWithLock

@@ -166,7 +166,8 @@ export const createProject = async (dataDto: CreateProjectBody, requestor: UserD
       clusterIds: projectInfos.clusters.map(({ id }) => id),
       members: rolesToMembers(projectInfos.roles),
     }
-  } catch (error) {
+  }
+  catch (error) {
     throw new Error(error?.message)
   }
 }
@@ -179,7 +180,7 @@ export const updateProject = async (data: UpdateProjectBody, projectId: Project[
   const project = await getProject(projectId, requestor.id)
   if (!project) throw new NotFoundError('Projet introuvable')
   if (project.locked) throw new ForbiddenError(projectIsLockedInfo)
-  Object.keys(data).forEach(key => {
+  Object.keys(data).forEach((key) => {
     // @ts-ignore
     project[key] = data[key]
   })
@@ -204,7 +205,8 @@ export const updateProject = async (data: UpdateProjectBody, projectId: Project[
       clusterIds: projectInfos.clusters.map(({ id }) => id),
       members: rolesToMembers(projectInfos.roles),
     }
-  } catch (error) {
+  }
+  catch (error) {
     throw new Error(error?.message)
   }
 }
@@ -226,7 +228,8 @@ export const replayHooks = async (projectId: Project['id'], requestor: KeycloakP
     if (results.failed) {
       throw new UnprocessableContentError('Echec des services au reprovisionnement du projet')
     }
-  } catch (error) {
+  }
+  catch (error) {
     if (error instanceof DsoError) throw error
     throw new Error(error?.message)
   }
@@ -272,7 +275,8 @@ export const archiveProject = async (projectId: Project['id'], requestor: Keyclo
     // -- fin - Retrait clusters cibles --
 
     // -- fin - Suppression projet --
-  } catch (error) {
+  }
+  catch (error) {
     if (error instanceof DsoError) throw error
     throw new Error(error?.message)
   }
@@ -282,10 +286,12 @@ export const handleProjectLocking = async (projectId: Project['id'], lock: Proje
   try {
     if (lock) {
       await lockProject(projectId)
-    } else {
+    }
+    else {
       await unlockProject(projectId)
     }
-  } catch (error) {
+  }
+  catch (error) {
     throw new BadRequestError(error.message)
   }
 }
@@ -297,7 +303,8 @@ export const generateProjectsData = async () => {
     return json2csv(projects, {
       emptyFieldValue: '',
     })
-  } catch (error) {
+  }
+  catch (error) {
     throw new BadRequestError(error.message)
   }
 }

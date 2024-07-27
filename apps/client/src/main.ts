@@ -19,7 +19,8 @@ import { DsfrSelect, DsfrTag } from '@gouvminint/vue-dsfr'
 
 try {
   await keycloakInit()
-} catch (error) {
+}
+catch (error) {
   if (error instanceof Error) throw new Error(error.message)
   throw new Error('échec d\'initialisation du keycloak')
 }

@@ -43,10 +43,10 @@ export const syncRepository = async (
     branchName,
     requestId,
   }: {
-    repositoryId: Repository['id'],
-    userId: User['id'],
-    branchName: string,
-    requestId: string,
+    repositoryId: Repository['id']
+    userId: User['id']
+    branchName: string
+    requestId: string
   }) => {
   try {
     const repository = await getRepositoryByIdQuery(repositoryId)
@@ -58,7 +58,8 @@ export const syncRepository = async (
     if (hookReply.failed) {
       throw new UnprocessableContentError('Echec des services à la synchronisation du dépôt')
     }
-  } catch (error) {
+  }
+  catch (error) {
     if (error instanceof DsoError) throw error
     throw new Error('Echec de la synchronisation du dépôt')
   }
@@ -69,7 +70,7 @@ export const checkUpsertRepository = async (
     project,
     userId,
     minRole = 'user',
-  }: { userId: User['id'], project: { locked: Project['locked'], roles: Role[] }, minRole?: ProjectRoles, }) => {
+  }: { userId: User['id'], project: { locked: Project['locked'], roles: Role[] }, minRole?: ProjectRoles }) => {
   const errorMessage = checkRoleAndLocked(project, userId, minRole)
   if (errorMessage) throw new ForbiddenError(errorMessage)
 }
@@ -80,8 +81,8 @@ export const createRepository = async (
     userId,
     requestId,
   }: {
-    data: CreateRepositoryBody,
-    userId: User['id'],
+    data: CreateRepositoryBody
+    userId: User['id']
     requestId: string
   }) => {
   const user = await getUserById(userId)
@@ -99,11 +100,11 @@ export const createRepository = async (
   try {
     const { results } = await hook.project.upsert(project.id, data.isPrivate
       ? {
-        [repo.internalRepoName]: {
-          token: data.externalToken ?? '',
-          username: data.externalUserName ?? '',
-        },
-      }
+          [repo.internalRepoName]: {
+            token: data.externalToken ?? '',
+            username: data.externalUserName ?? '',
+          },
+        }
       : undefined,
     )
     await addLogs('Create Repository', results, userId, requestId)
@@ -112,7 +113,8 @@ export const createRepository = async (
     }
 
     return repo
-  } catch (error) {
+  }
+  catch (error) {
     if (error instanceof DsoError) throw error
     throw new Error('Echec de la création du dépôt')
   }
@@ -125,10 +127,10 @@ export const updateRepository = async (
     userId,
     requestId,
   }: {
-    repositoryId: Repository['id'],
-    data: Partial<UpdateRepositoryBody>,
-    userId: User['id'],
-    requestId: string,
+    repositoryId: Repository['id']
+    data: Partial<UpdateRepositoryBody>
+    userId: User['id']
+    requestId: string
   }) => {
   try {
     const repository = await getRepositoryByIdQuery(repositoryId)
@@ -151,7 +153,8 @@ export const updateRepository = async (
     }
 
     return repo
-  } catch (error) {
+  }
+  catch (error) {
     if (error instanceof DsoError) throw error
     throw new Error('Echec de la mise à jour du dépôt')
   }
@@ -162,9 +165,9 @@ export const deleteRepository = async ({
   userId,
   requestId,
 }: {
-  repositoryId: Repository['id'],
-  userId: User['id'],
-  requestId: string,
+  repositoryId: Repository['id']
+  userId: User['id']
+  requestId: string
 },
 ) => {
   try {
@@ -180,7 +183,8 @@ export const deleteRepository = async ({
     if (results.failed) {
       throw new UnprocessableContentError('Echec des services à la suppression du dépôt')
     }
-  } catch (error) {
+  }
+  catch (error) {
     if (error instanceof DsoError) throw error
     throw new Error('Echec de la mise à jour du dépôt')
   }

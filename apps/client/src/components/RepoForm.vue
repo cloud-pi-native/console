@@ -4,9 +4,9 @@ import { SharedZodError, RepoBusinessSchema, RepoSchema, CreateRepoBusinessSchem
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = withDefaults(defineProps<{
-  repo: Partial<Repo>,
-  isOwner: boolean,
-  isProjectLocked: boolean,
+  repo: Partial<Repo>
+  isOwner: boolean
+  isProjectLocked: boolean
 }>(), {
   repo: () => ({ isInfra: false, isPrivate: false, internalRepoName: '' }),
   isOwner: false,
@@ -22,7 +22,8 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
   let schemaValidation
   if (localRepo.value.id) {
     schemaValidation = RepoBusinessSchema.safeParse(localRepo.value)
-  } else {
+  }
+  else {
     schemaValidation = CreateRepoBusinessSchema.safeParse(localRepo.value)
   }
   return schemaValidation.success ? undefined : schemaValidation.error

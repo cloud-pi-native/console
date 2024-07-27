@@ -35,7 +35,8 @@ export const getStageAssociatedEnvironments = async (stageId: Stage['id']) => {
       cluster: env.cluster.label,
       owner: env.project.roles?.[0].user.email,
     }))
-  } catch (error) {
+  }
+  catch (error) {
     throw new Error(error?.message)
   }
 }
@@ -61,7 +62,8 @@ export const createStage = async ({ clusterIds = [], name, quotaIds = [] }: Crea
       clusterIds,
       quotaIds,
     }
-  } catch (error) {
+  }
+  catch (error) {
     if (error instanceof DsoError) {
       throw error
     }
@@ -111,7 +113,8 @@ export const updateStage = async (stageId: Stage['id'], { clusterIds, name, quot
       clusterIds: clusterIds ?? dbStage.clusters.map(({ id }) => id),
       quotaIds: quotaIds ?? dbStage.quotas.map(({ id }) => id),
     }
-  } catch (error) {
+  }
+  catch (error) {
     throw new Error(error?.message)
   }
 }
@@ -122,7 +125,8 @@ export const deleteStage = async (stageId: Stage['id']) => {
     if (environments) throw new BadRequestError('Impossible de supprimer le stage, des environnements en activité y ont souscrit')
 
     await deleteStageQuery(stageId)
-  } catch (error) {
+  }
+  catch (error) {
     if (error instanceof DsoError) {
       throw error
     }
@@ -135,7 +139,7 @@ export const listStages = async (userId: User['id']) => {
   if (!user) throw new UnauthorizedError('Vous n\'êtes pas connecté')
   const stages = await listStagesQuery()
 
-  return stages.map(stage => {
+  return stages.map((stage) => {
     return {
       id: stage.id,
       name: stage.name,

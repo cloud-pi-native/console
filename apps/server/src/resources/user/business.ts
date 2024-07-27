@@ -72,7 +72,7 @@ export const addUserToProject = async (
 
     // keep only keys allowed in model
     const userFromModel = instanciateSchema(UserSchema, undefined)
-    Object.keys(userFromModel).forEach(modelKey => {
+    Object.keys(userFromModel).forEach((modelKey) => {
       userFromModel[modelKey] = retrievedUser[modelKey]
     })
 
@@ -96,7 +96,8 @@ export const addUserToProject = async (
     }
 
     return rolesToMembers(await getRolesByProjectId(project.id))
-  } catch (error) {
+  }
+  catch (error) {
     throw new Error('Echec d\'ajout de l\'utilisateur au projet')
   }
 }
@@ -159,7 +160,8 @@ export const removeUserFromProject = async (
     }
 
     return rolesToMembers(await getRolesByProjectId(project.id))
-  } catch (error) {
+  }
+  catch (error) {
     throw new Error('Echec du retrait de l\'utilisateur du projet')
   }
 }
