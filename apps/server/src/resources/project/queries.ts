@@ -49,8 +49,7 @@ export const listProjects = async ({
   }
   if (filter === 'owned') {
     where.roles = { some: { AND: [{ role: 'owner' }, { userId }] } }
-  }
-  else if (filter === 'member') {
+  } else if (filter === 'member') {
     where.roles = { some: { userId } }
   }
 

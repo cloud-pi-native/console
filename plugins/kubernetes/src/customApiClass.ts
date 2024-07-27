@@ -40,8 +40,7 @@ export class AnyObjectsApi {
       if (basePath) {
         this.basePath = basePath
       }
-    }
-    else {
+    } else {
       if (basePathOrUsername) {
         this.basePath = basePathOrUsername
       }
@@ -73,8 +72,7 @@ export class AnyObjectsApi {
     if (group) {
       path.push('apis')
       path.push(encodeURIComponent(String(group)))
-    }
-    else path.push('api')
+    } else path.push('api')
     path.push(encodeURIComponent(String(version)))
     if (namespace) {
       path.push('namespaces')
@@ -116,8 +114,7 @@ export class AnyObjectsApi {
     // give precedence to 'application/json'
     if (produces.indexOf('application/json') >= 0) {
       localVarHeaderParams.Accept = 'application/json'
-    }
-    else {
+    } else {
       localVarHeaderParams.Accept = produces.join(',')
     }
     const localVarFormParams: any = {}
@@ -188,8 +185,7 @@ export class AnyObjectsApi {
       if (Object.keys(localVarFormParams).length) {
         if (localVarUseFormData) {
           (<any>localVarRequestOptions).formData = localVarFormParams
-        }
-        else {
+        } else {
           localVarRequestOptions.form = localVarFormParams
         }
       }
@@ -197,13 +193,11 @@ export class AnyObjectsApi {
         localVarRequest(localVarRequestOptions, (error, response, body) => {
           if (error) {
             reject(error)
-          }
-          else {
+          } else {
             if (response.statusCode && response.statusCode >= 200 && response.statusCode <= 299) {
               body = ObjectSerializer.deserialize(body, 'object')
               resolve({ response, body })
-            }
-            else {
+            } else {
               reject(new HttpError(response, body, response.statusCode))
             }
           }
@@ -233,8 +227,7 @@ export class AnyObjectsApi {
     // give precedence to 'application/json'
     if (produces.indexOf('application/json') >= 0) {
       localVarHeaderParams.Accept = 'application/json'
-    }
-    else {
+    } else {
       localVarHeaderParams.Accept = produces.join(',')
     }
     const localVarFormParams: any = {}
@@ -309,8 +302,7 @@ export class AnyObjectsApi {
       if (Object.keys(localVarFormParams).length) {
         if (localVarUseFormData) {
           (<any>localVarRequestOptions).formData = localVarFormParams
-        }
-        else {
+        } else {
           localVarRequestOptions.form = localVarFormParams
         }
       }
@@ -318,13 +310,11 @@ export class AnyObjectsApi {
         localVarRequest(localVarRequestOptions, (error, response, body) => {
           if (error) {
             reject(error)
-          }
-          else {
+          } else {
             if (response.statusCode && response.statusCode >= 200 && response.statusCode <= 299) {
               body = ObjectSerializer.deserialize(body, 'object')
               resolve({ response, body })
-            }
-            else {
+            } else {
               reject(new HttpError(response, body, response.statusCode))
             }
           }
@@ -349,8 +339,7 @@ export class AnyObjectsApi {
     // give precedence to 'application/json'
     if (produces.indexOf('application/json') >= 0) {
       localVarHeaderParams.Accept = 'application/json'
-    }
-    else {
+    } else {
       localVarHeaderParams.Accept = produces.join(',')
     }
     const localVarFormParams: any = {}
@@ -408,8 +397,7 @@ export class AnyObjectsApi {
       if (Object.keys(localVarFormParams).length) {
         if (localVarUseFormData) {
           (<any>localVarRequestOptions).formData = localVarFormParams
-        }
-        else {
+        } else {
           localVarRequestOptions.form = localVarFormParams
         }
       }
@@ -417,13 +405,11 @@ export class AnyObjectsApi {
         localVarRequest(localVarRequestOptions, (error, response, body) => {
           if (error) {
             reject(error)
-          }
-          else {
+          } else {
             if (response.statusCode && response.statusCode >= 200 && response.statusCode <= 299) {
               body = ObjectSerializer.deserialize(body, 'object')
               resolve({ response, body })
-            }
-            else {
+            } else {
               reject(new HttpError(response, body, response.statusCode))
             }
           }
@@ -457,8 +443,7 @@ export class AnyObjectsApi {
     // give precedence to 'application/json'
     if (produces.indexOf('application/json') >= 0) {
       localVarHeaderParams.Accept = 'application/json'
-    }
-    else {
+    } else {
       localVarHeaderParams.Accept = produces.join(',')
     }
     const localVarFormParams: any = {}
@@ -551,8 +536,7 @@ export class AnyObjectsApi {
       if (Object.keys(localVarFormParams).length) {
         if (localVarUseFormData) {
           (<any>localVarRequestOptions).formData = localVarFormParams
-        }
-        else {
+        } else {
           localVarRequestOptions.form = localVarFormParams
         }
       }
@@ -560,13 +544,11 @@ export class AnyObjectsApi {
         localVarRequest(localVarRequestOptions, (error, response, body) => {
           if (error) {
             reject(error)
-          }
-          else {
+          } else {
             if (response.statusCode && response.statusCode >= 200 && response.statusCode <= 299) {
               body = ObjectSerializer.deserialize(body, 'object')
               resolve({ response, body })
-            }
-            else {
+            } else {
               reject(new HttpError(response, body, response.statusCode))
             }
           }
@@ -595,8 +577,7 @@ export class AnyObjectsApi {
     // give precedence to 'application/json'
     if (produces.indexOf('application/json') >= 0) {
       localVarHeaderParams.Accept = 'application/json'
-    }
-    else {
+    } else {
       localVarHeaderParams.Accept = produces.join(',')
     }
     const localVarFormParams: any = {}
@@ -672,8 +653,7 @@ export class AnyObjectsApi {
       if (Object.keys(localVarFormParams).length) {
         if (localVarUseFormData) {
           (<any>localVarRequestOptions).formData = localVarFormParams
-        }
-        else {
+        } else {
           localVarRequestOptions.form = localVarFormParams
         }
       }
@@ -681,13 +661,11 @@ export class AnyObjectsApi {
         localVarRequest(localVarRequestOptions, (error, response, body) => {
           if (error) {
             reject(error)
-          }
-          else {
+          } else {
             if (response.statusCode && response.statusCode >= 200 && response.statusCode <= 299) {
               body = ObjectSerializer.deserialize(body, 'object')
               resolve({ response, body })
-            }
-            else {
+            } else {
               reject(new HttpError(response, body, response.statusCode))
             }
           }
@@ -715,8 +693,7 @@ export class AnyObjectsApi {
     // give precedence to 'application/json'
     if (produces.indexOf('application/json') >= 0) {
       localVarHeaderParams.Accept = 'application/json'
-    }
-    else {
+    } else {
       localVarHeaderParams.Accept = produces.join(',')
     }
     const localVarFormParams: any = {}
@@ -788,8 +765,7 @@ export class AnyObjectsApi {
       if (Object.keys(localVarFormParams).length) {
         if (localVarUseFormData) {
           (<any>localVarRequestOptions).formData = localVarFormParams
-        }
-        else {
+        } else {
           localVarRequestOptions.form = localVarFormParams
         }
       }
@@ -797,13 +773,11 @@ export class AnyObjectsApi {
         localVarRequest(localVarRequestOptions, (error, response, body) => {
           if (error) {
             reject(error)
-          }
-          else {
+          } else {
             if (response.statusCode && response.statusCode >= 200 && response.statusCode <= 299) {
               body = ObjectSerializer.deserialize(body, 'object')
               resolve({ response, body })
-            }
-            else {
+            } else {
               reject(new HttpError(response, body, response.statusCode))
             }
           }

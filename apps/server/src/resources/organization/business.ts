@@ -73,8 +73,7 @@ export const fetchOrganizations = async (userId: User['id'], requestId: string) 
     validateSchema(schemaValidation)
     if (consoleOrganizations.find(consoleOrg => consoleOrg.name === externalOrg.name)) {
       await updateOrganizationQuery(externalOrg)
-    }
-    else {
+    } else {
       await createOrganization(externalOrg)
     }
   }

@@ -27,7 +27,7 @@ describe('Administration projects', () => {
     cy.kcLogin((admin.firstName.slice(0, 1) + admin.lastName).toLowerCase())
     cy.visit('/admin/projects')
     cy.url().should('contain', '/admin/projects')
-    cy.wait('@getAllProjects', { timeout: 10_000 }).its('response').then((response) => {
+    cy.wait('@getAllProjects', { timeout: 10000 }).its('response').then((response) => {
       projects = mapProjects(response?.body)
     })
   })
@@ -230,7 +230,7 @@ describe('Administration projects', () => {
 
     cy.visit('/admin/projects')
     cy.url().should('contain', '/admin/projects')
-    cy.wait('@getAllProjects', { timeout: 10_000 }).its('response').then((pResponse) => {
+    cy.wait('@getAllProjects', { timeout: 10000 }).its('response').then((pResponse) => {
       projects = mapProjects(pResponse.body)
     })
 
@@ -239,7 +239,7 @@ describe('Administration projects', () => {
         .click()
     })
 
-    cy.wait('@getProjectEnvironments', { timeout: 10_000 }).its('response').then((response) => {
+    cy.wait('@getProjectEnvironments', { timeout: 10000 }).its('response').then((response) => {
       project.environments = response.body
       initialQuota = project.environments[0].quotaId
     })
@@ -275,7 +275,7 @@ describe('Administration projects', () => {
 
       cy.visit('/admin/projects')
       cy.url().should('contain', '/admin/projects')
-      cy.wait('@getAllProjects', { timeout: 10_000 }).its('response').then((pResponse) => {
+      cy.wait('@getAllProjects', { timeout: 10000 }).its('response').then((pResponse) => {
         projects = mapProjects(pResponse.body)
       })
 

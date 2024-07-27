@@ -114,11 +114,9 @@ type WhereBuilderParams<T extends StringArray> = {
 export const whereBuilder = <T extends StringArray>({ enumValues, eqValue, inValues, notInValues }: WhereBuilderParams<T>) => {
   if (eqValue) {
     return eqValue
-  }
-  else if (inValues) {
+  } else if (inValues) {
     return { in: splitStringsFilterArray(enumValues, inValues) }
-  }
-  else if (notInValues) {
+  } else if (notInValues) {
     return { notIn: splitStringsFilterArray(enumValues, notInValues) }
   }
 }

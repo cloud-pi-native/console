@@ -70,8 +70,7 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
   let schemaValidation
   if (localCluster.value.id) {
     schemaValidation = ClusterDetailsSchema.safeParse(localCluster.value)
-  }
-  else {
+  } else {
     schemaValidation = ClusterDetailsSchema.omit({ id: true }).partial().safeParse(localCluster.value)
   }
   return schemaValidation.success ? undefined : schemaValidation.error
@@ -98,16 +97,14 @@ const updateKubeconfig = (files: FileList) => {
         context = jsonKConfig.value.contexts.find((ctx: Record<string, any>) => ctx.name === jsonKConfig.value['current-context']).context
         isMissingCurrentContext.value = false
         retrieveUserAndCluster(context)
-      }
-      else {
+      } else {
         contexts.value = jsonKConfig.value.contexts.map((context: Record<string, any>) => context.name)
         isMissingCurrentContext.value = true
         snackbarStore.setMessage('Pas de current-context. Choisissez un contexte.')
       }
     }
     reader.readAsText(files[0])
-  }
-  catch (error) {
+  } catch (error) {
     // @ts-ignore
     kConfigError.value = error?.message
   }
@@ -154,8 +151,7 @@ const retrieveUserAndCluster = (context: ContextType) => {
       ...caData && { caData },
       skipTLSVerify: skipTLSVerify || false,
     }
-  }
-  catch (error) {
+  } catch (error) {
     // @ts-ignore
     kConfigError.value = error?.message
   }
@@ -199,8 +195,7 @@ watch(selectedContext, () => {
     const context = jsonKConfig.value.contexts.find((ctx: Record<string, any>) => ctx.name === jsonKConfig.value[selectedContext.value]).context
     if (!context) throw new Error('Le contexte semble vide.')
     retrieveUserAndCluster(context)
-  }
-  catch (error) {
+  } catch (error) {
     if (error instanceof Error) {
       kConfigError.value = error.message
       if (error.message === 'Cannot read properties of undefined (reading \'context\')') {

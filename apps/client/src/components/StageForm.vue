@@ -28,8 +28,7 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
   let schemaValidation
   if (localStage.value.id) {
     schemaValidation = StageSchema.safeParse(localStage.value)
-  }
-  else {
+  } else {
     schemaValidation = StageSchema.omit({ id: true }).safeParse(localStage.value)
   }
   return schemaValidation.success ? undefined : schemaValidation.error

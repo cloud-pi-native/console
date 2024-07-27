@@ -96,11 +96,11 @@ const servicesId = 'servicesTable'
 
 type FilterMethods = Record<string, typeof projectContract.listProjects.query._type>
 const filterMethods: FilterMethods = {
-  'Tous': { filter: 'all' },
+  Tous: { filter: 'all' },
   'Non archivés': { filter: 'all', statusNotIn: 'archived' },
-  'Archivés': { filter: 'all', statusIn: 'archived' },
-  'Échoués': { filter: 'all', statusIn: 'failed' },
-  'Vérrouillés': { filter: 'all', locked: true, statusNotIn: 'archived' },
+  Archivés: { filter: 'all', statusIn: 'archived' },
+  Échoués: { filter: 'all', statusIn: 'failed' },
+  Vérrouillés: { filter: 'all', locked: true, statusNotIn: 'archived' },
 }
 
 const rowFilter = (rows: Row[]): Rows | EmptyRow => {
@@ -180,10 +180,10 @@ const getEnvironmentsRows = () => {
           name,
           stageStore.stages.find(stage => stage.id === stageId)?.name,
           {
-            'component': 'DsfrSelect',
-            'modelValue': quotaId,
-            'selectId': 'quota-select',
-            'options': quotaStore.quotas.filter(quota => quota.stageIds.includes(stageId)).map(quota => ({
+            component: 'DsfrSelect',
+            modelValue: quotaId,
+            selectId: 'quota-select',
+            options: quotaStore.quotas.filter(quota => quota.stageIds.includes(stageId)).map(quota => ({
               text: quota.name + ' (' + quota.cpu + 'CPU, ' + quota.memory + ')',
               value: quota.id,
             })),
@@ -348,8 +348,7 @@ const saveProjectServices = async (data: PluginsUpdateBody) => {
   try {
     await projectServiceStore.updateProjectServices(data, selectedProject.value.id)
     snackbarStore.setMessage('Paramètres sauvegardés', 'success')
-  }
-  catch (error) {
+  } catch (error) {
     console.log(error)
 
     snackbarStore.setMessage('Erreur lors de la sauvegarde', 'error')
@@ -369,11 +368,11 @@ const truncateDescription = (description: string) => {
   }
 
   return {
-    'id': 'description',
+    id: 'description',
     'data-testid': 'description',
-    'component': 'span',
-    'open': false,
-    'title': description,
+    component: 'span',
+    open: false,
+    title: description,
     innerHTML,
   }
 }

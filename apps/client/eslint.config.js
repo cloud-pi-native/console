@@ -28,11 +28,12 @@ export default [
     rules: {
       'vue/no-v-html': 'off',
       'vue/no-irregular-whitespace': 'off',
-      // 'vue/script-indent': 'off',
       'vue/script-indent': ['error', 2],
       '@stylistic/indent': 'off',
       '@stylistic/indent-binary-ops': 'off',
       '@stylistic/comma-dangle': ['error', 'always-multiline'],
+      '@stylistic/quote-props': ['error', 'as-needed', { keywords: false, unnecessary: true }],
+      '@stylistic/brace-style': ['error', '1tbs', { allowSingleLine: true }],
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/ban-ts-comment': 'off',
       '@typescript-eslint/no-unused-vars': 'off',

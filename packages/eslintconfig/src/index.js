@@ -26,7 +26,8 @@ export default tseslint.config(
     },
     rules: {
       '@stylistic/comma-dangle': ['error', 'always-multiline'],
-      '@stylistic/quote-props': ["error", "as-needed", { "keywords": false, "unnecessary": true }],
+      '@stylistic/quote-props': ['error', 'as-needed', { keywords: false, unnecessary: true }],
+      '@stylistic/brace-style': ['error', '1tbs', { allowSingleLine: true }],
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/ban-ts-comment': 'off',
       '@typescript-eslint/no-unused-vars': 'off',

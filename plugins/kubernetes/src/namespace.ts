@@ -40,8 +40,7 @@ export const createNamespaces: StepCall<Project> = async (payload) => {
         message: 'Namespaces and quotas up-to-date',
       },
     }
-  }
-  catch (error) {
+  } catch (error) {
     return {
       error: parseError(error),
       status: {
@@ -73,8 +72,7 @@ export const deleteNamespaces: StepCall<Project> = async (payload) => {
         message: 'Namespaces deleted',
       },
     }
-  }
-  catch (error) {
+  } catch (error) {
     return {
       error: parseError(error),
       status: {
