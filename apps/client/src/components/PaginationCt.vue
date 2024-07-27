@@ -2,10 +2,10 @@
 import { computed } from 'vue'
 
 const props = withDefaults(defineProps<{
-  length: number,
-  step: number,
-  page: number,
-  isUpdating: boolean,
+  length: number
+  step: number
+  page: number
+  isUpdating: boolean
 }>(), {
   length: 0,
   step: 10,

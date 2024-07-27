@@ -4,18 +4,18 @@ import { VaultSonarSecret, getAxiosInstance } from './tech.js'
 import type { SonarPaging } from './project.js'
 
 export type SonarUser = {
-  login: string,
-  name: string,
-  active: boolean,
-  email: string,
-  groups: string[],
-  tokensCount: number,
-  local: boolean,
-  externalIdentity: string,
-  externalProvider: string,
-  avatar: string,
-  lastConnectionDate: Date,
-  managed: boolean,
+  login: string
+  name: string
+  active: boolean
+  email: string
+  groups: string[]
+  tokensCount: number
+  local: boolean
+  externalIdentity: string
+  externalProvider: string
+  avatar: string
+  lastConnectionDate: Date
+  managed: boolean
   sonarLintLastConnectionDate: Date
 }
 
@@ -78,7 +78,8 @@ export const ensureUserExists = async (username: string, projectName: string, or
       SONAR_TOKEN: await changeToken(username),
       SONAR_USERNAME: username,
     }
-  } else if (!vaultUserSecret) {
+  }
+  else if (!vaultUserSecret) {
     return {
       SONAR_PASSWORD: 'not initialized',
       SONAR_TOKEN: await changeToken(username),

@@ -45,11 +45,11 @@ const generateRows = () => allOrganizations.value.length
   ? sortArrByObjKeyAsc(allOrganizations.value, 'name')
     ?.map(({ label, name, source, active, createdAt, updatedAt }) => ([
       {
-        component: 'input',
-        value: label,
-        class: 'fr-input fr-text-default--info',
+        'component': 'input',
+        'value': label,
+        'class': 'fr-input fr-text-default--info',
         'data-testid': `${name}-label-input`,
-        onBlur: (event: Event & { target: { value: string }}) => {
+        'onBlur': (event: Event & { target: { value: string } }) => {
           const data = event.target?.value
           if (data !== label) {
             preUpdateOrganization({ name, key: 'label', data })
@@ -59,13 +59,13 @@ const generateRows = () => allOrganizations.value.length
       name,
       source,
       {
-        component: 'input',
-        type: 'checkbox',
-        checked: active,
+        'component': 'input',
+        'type': 'checkbox',
+        'checked': active,
         'data-testid': `${name}-active-cbx`,
-        class: 'fr-checkbox-group--sm',
-        title: active ? `Désactiver l'organisation ${name}` : `Réactiver l'organisation ${name}`,
-        onClick: (event: Event & { target: { checked: boolean }}) => {
+        'class': 'fr-checkbox-group--sm',
+        'title': active ? `Désactiver l'organisation ${name}` : `Réactiver l'organisation ${name}`,
+        'onClick': (event: Event & { target: { checked: boolean } }) => {
           const data = event.target.checked
           if (data !== active) {
             preUpdateOrganization({ name, key: 'active', data })
@@ -119,7 +119,7 @@ const createOrganization = async () => {
   newOrg.value = { name: '', label: '', source: '' }
 }
 
-const preUpdateOrganization = ({ name, key, data }: {name: string, key: string, data: unknown }) => {
+const preUpdateOrganization = ({ name, key, data }: { name: string, key: string, data: unknown }) => {
   isUpdatingOrganization.value = {
     name,
     key,
@@ -127,7 +127,7 @@ const preUpdateOrganization = ({ name, key, data }: {name: string, key: string, 
   }
 }
 
-const confirmUpdateOrganization = async ({ name, key, data }: {name: string, key: string, data: unknown }) => {
+const confirmUpdateOrganization = async ({ name, key, data }: { name: string, key: string, data: unknown }) => {
   isUpdatingOrganization.value = null
   await updateOrganization({ name, key, data })
 }
@@ -137,7 +137,7 @@ const cancelUpdateOrganization = async () => {
   await getAllOrganizations()
 }
 
-const updateOrganization = async ({ name, key, data }: {name: string, key: string, data: unknown }) => {
+const updateOrganization = async ({ name, key, data }: { name: string, key: string, data: unknown }) => {
   const org = {
     name,
     [key]: data,

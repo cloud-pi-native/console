@@ -7,10 +7,10 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 type UpdateQuotaType = UpdateQuotaBody & Pick<Quota, 'id'>
 
 const props = withDefaults(defineProps<{
-  isNewQuota: boolean,
-  quota: Quota,
-  allStages: Stage[],
-  associatedEnvironments: QuotaAssociatedEnvironments,
+  isNewQuota: boolean
+  quota: Quota
+  allStages: Stage[]
+  associatedEnvironments: QuotaAssociatedEnvironments
 }>(), {
   isNewQuota: false,
   quota: () => ({ isPrivate: false, stageIds: [] as string[], name: '' }),
@@ -27,7 +27,8 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
   let schemaValidation
   if (localQuota.value.id) {
     schemaValidation = QuotaSchema.safeParse(localQuota.value)
-  } else {
+  }
+  else {
     schemaValidation = QuotaSchema.omit({ id: true }).safeParse(localQuota.value)
   }
   return schemaValidation.success ? undefined : schemaValidation.error
@@ -66,7 +67,7 @@ const cancel = () => {
 
 const getRows = (associatedEnvironments: QuotaAssociatedEnvironments) => {
   return associatedEnvironments
-    .map(associatedEnvironment => {
+    .map((associatedEnvironment) => {
       return [
         toCodeComponent(associatedEnvironment.organization),
         toCodeComponent(associatedEnvironment.project),

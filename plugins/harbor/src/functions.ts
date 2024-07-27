@@ -56,7 +56,8 @@ export const createDsoProject: StepCall<Project> = async (payload) => {
         projectId: projectCreated.project_id,
       },
     }
-  } catch (error) {
+  }
+  catch (error) {
     return {
       error: parseError(error),
       status: {
@@ -81,7 +82,8 @@ export const deleteDsoProject: StepCall<Project> = async (payload) => {
         message: 'Deleted',
       },
     }
-  } catch (error) {
+  }
+  catch (error) {
     return {
       error: parseError(error),
       status: {
@@ -96,26 +98,26 @@ export const deleteDsoProject: StepCall<Project> = async (payload) => {
 export const getProjectSecrets: StepCall<ProjectLite> = async ({ args: project, apis: { vault: vaultApi }, config }) => {
   const publishRoRobotProject = project.store.registry?.publishProjectRobot
   const publishRoRobotConfig = config.registry?.publishProjectRobot
-  const projectRobotEnabled = publishRoRobotProject === ENABLED ||
-      (publishRoRobotConfig === ENABLED && (!publishRoRobotProject || publishRoRobotProject === DEFAULT))
+  const projectRobotEnabled = publishRoRobotProject === ENABLED
+    || (publishRoRobotConfig === ENABLED && (!publishRoRobotProject || publishRoRobotProject === DEFAULT))
 
   const VaultRobotSecret = projectRobotEnabled
     ? await vaultApi.read(`REGISTRY/${projectRobotName}`, { throwIfNoEntry: false }) as { data: VaultRobotSecret } | undefined
     : undefined
-  let secrets: {[x:string]: string} = {
+  let secrets: { [x: string]: string } = {
     'Registry base path': `${getConfig().host}/${project.organization.name}-${project.name}/`,
   }
 
   if (projectRobotEnabled) {
     secrets = VaultRobotSecret?.data
       ? {
-        ...secrets,
-        ...VaultRobotSecret.data,
-      }
+          ...secrets,
+          ...VaultRobotSecret.data,
+        }
       : {
-        ...secrets,
-        '/!\\': 'Vous n\'avez pas de robot de lecture veuillez reprovisionner',
-      }
+          ...secrets,
+          '/!\\': 'Vous n\'avez pas de robot de lecture veuillez reprovisionner',
+        }
   }
   return {
     status: {

@@ -1,20 +1,19 @@
 // @ts-nocheck
 import { Prisma } from '@prisma/client'
 
-
 BigInt.prototype.toJSON = function () {
   return `${this.toString()}n`
 }
 
 export type ResourceByName<T extends {
-  name: string;
+  name: string
 }> = Record<T['name'], T>
-export const resourceListToDict = <T extends { name: string }>(resList: Array<T>): ResourceByName<T& {id?: string}> => resList.reduce((acc, curr) => {
+export const resourceListToDict = <T extends { name: string }>(resList: Array<T>): ResourceByName<T & { id?: string }> => resList.reduce((acc, curr) => {
   return {
     ...acc,
     [curr.name]: curr,
   }
-}, {} as ResourceByName<T & {id?: string}>)
+}, {} as ResourceByName<T & { id?: string }>)
 
 // @ts-ignore
 const Models = resourceListToDict(Prisma.dmmf.datamodel.models)
@@ -43,8 +42,8 @@ const sort = () => {
         const relationField = Models[field.type].fields.find(({ type }) => type === model)
         if (!relationField) throw Error('unable to find matching model')
         if (
-          (relationField.isRequired && field.isRequired && !relationField.isList) ||
-          (relationField.isRequired && !field.isRequired)
+          (relationField.isRequired && field.isRequired && !relationField.isList)
+          || (relationField.isRequired && !field.isRequired)
         ) {
           const moveRes = moveBefore(ModelsOrder, model, field.type)
           if (moveRes) {
@@ -53,8 +52,8 @@ const sort = () => {
           }
         }
         if (
-          field.isList && relationField.isList &&
-          !manyToManyRelation.find((test) =>
+          field.isList && relationField.isList
+          && !manyToManyRelation.find(test =>
             (test[0] === model && test[1] === field.type) || (test[0] === field.type && test[1] === model))
         ) {
           manyToManyRelation.push([model, field.type, field.name])
@@ -70,4 +69,3 @@ sort()
 export const models: Record<string, any[]> = {}
 export const associations: Record<string, any[]> = []
 export const modelKeys = ModelsOrder.map(model => model.slice(0, 1).toLocaleLowerCase() + model.slice(1))
-console.log(modelKeys)

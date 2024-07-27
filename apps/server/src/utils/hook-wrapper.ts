@@ -81,9 +81,11 @@ const manageProjectStatus = async (
   }
   if (hookReply.failed) {
     return updateProjectFailed(projectId)
-  } else if (action === 'upsert') {
+  }
+  else if (action === 'upsert') {
     return updateProjectCreated(projectId)
-  } else if (action === 'delete') {
+  }
+  else if (action === 'delete') {
     return archiveProject(projectId)
   }
   throw Error('unknown action')
@@ -154,7 +156,7 @@ export const hook = {
 
 const formatClusterInfos = (
   { kubeconfig, ...cluster }: Omit<Cluster, 'updatedAt' | 'createdAt' | 'zoneId' | 'kubeConfigId'>
-    & { kubeconfig: Kubeconfig, zone: Pick<Zone, 'id' | 'slug'> },
+  & { kubeconfig: Kubeconfig, zone: Pick<Zone, 'id' | 'slug'> },
 ) => ({
   user: kubeconfig.user as unknown as KubeUser,
   cluster: kubeconfig.cluster as unknown as KubeCluster,

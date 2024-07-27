@@ -61,12 +61,12 @@ export const getEnvironmentByIdWithCluster = (id: Environment['id']) =>
 
 // INSERT
 type CreateEnvironmentParams = {
-  name: Environment['name'],
-  projectId: Project['id'],
-  projectOwners: Role[],
-  clusterId: Cluster['id'],
-  stageId: Stage['id'],
-  quotaId: Quota['id'],
+  name: Environment['name']
+  projectId: Project['id']
+  projectOwners: Role[]
+  clusterId: Cluster['id']
+  stageId: Stage['id']
+  quotaId: Quota['id']
 }
 export const initializeEnvironment = (
   { name, projectId, projectOwners, clusterId, stageId, quotaId }: CreateEnvironmentParams,

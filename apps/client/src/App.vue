@@ -14,7 +14,7 @@ const isLoggedIn = ref<boolean | undefined>(keycloak.authenticated)
 const label = ref(isLoggedIn.value ? 'Se déconnecter' : 'Se connecter')
 const to = ref(isLoggedIn.value ? '/logout' : '/login')
 const intervalId = ref<number>()
-// eslint-disable-next-line no-undef
+
 const appVersion: string = process.env.APP_VERSION ? `v${process.env.APP_VERSION}` : 'vpr-dev'
 
 const quickLinks = ref([{
@@ -33,7 +33,8 @@ onBeforeMount(() => {
 onErrorCaptured((error) => {
   if (error instanceof Error) {
     snackbarStore.setMessage(error?.message, 'error')
-  } else {
+  }
+  else {
     snackbarStore.setMessage('Une erreur inconnue est survenue.', 'error')
   }
   snackbarStore.isWaitingForResponse = false

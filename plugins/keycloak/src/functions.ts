@@ -13,7 +13,8 @@ export const retrieveKeycloakUserByEmail: StepCall<UserEmail> = async ({ args: {
       status: { result: 'OK' },
       user,
     }
-  } catch (error) {
+  }
+  catch (error) {
     return {
       error: parseError(error),
       status: {
@@ -36,7 +37,8 @@ export const retrieveKeycloakAdminUsers: StepCall<EmptyPayload> = async () => {
       status: { result: 'OK' },
       adminIds,
     }
-  } catch (error) {
+  }
+  catch (error) {
     return {
       error: parseError(error),
       status: {
@@ -67,7 +69,8 @@ export const updateUserAdminKcGroupMembership: StepCall<UserAdmin> = async ({ ar
         message: `${user.email ?? user.id} was ${isAdmin ? 'promoted to' : 'demoted from'} /admin group`,
       },
     }
-  } catch (error) {
+  }
+  catch (error) {
     return {
       error: parseError(error),
       status: {
@@ -99,7 +102,8 @@ export const deleteProject: StepCall<Project> = async ({ args: project }) => {
         message: 'Already Missing',
       },
     }
-  } catch (error) {
+  }
+  catch (error) {
     return {
       error: parseError(error),
       status: {
@@ -140,14 +144,14 @@ export const upsertProject: StepCall<Project> = async ({ args: project }) => {
     // Ensure envs subgroups exists
     const projectGroups = await getAllSubgroups(kcClient, projectGroup.id, 0)
 
-    const consoleGroup: Required<CustomGroup> = projectGroups.find(({ name }) => name === consoleGroupName) as Required<GroupRepresentation> ??
-      await getOrCreateChildGroup(kcClient, projectGroup.id, consoleGroupName) as Required<GroupRepresentation>
+    const consoleGroup: Required<CustomGroup> = projectGroups.find(({ name }) => name === consoleGroupName) as Required<GroupRepresentation>
+      ?? await getOrCreateChildGroup(kcClient, projectGroup.id, consoleGroupName) as Required<GroupRepresentation>
 
     const envGroups = await getAllSubgroups(kcClient, consoleGroup.id, 0) as CustomGroup[]
 
     for (const environment of project.environments) {
-      const envGroup: Required<CustomGroup> = envGroups.find(group => group.name === environment.name) as Required<CustomGroup> ??
-        await getOrCreateChildGroup(kcClient, consoleGroup.id, environment.name)
+      const envGroup: Required<CustomGroup> = envGroups.find(group => group.name === environment.name) as Required<CustomGroup>
+        ?? await getOrCreateChildGroup(kcClient, consoleGroup.id, environment.name)
 
       const roGroup = await getOrCreateChildGroup(kcClient, envGroup.id, 'RO')
       const rwGroup = await getOrCreateChildGroup(kcClient, envGroup.id, 'RW')
@@ -173,7 +177,8 @@ export const upsertProject: StepCall<Project> = async ({ args: project }) => {
         message: 'Up-to-date',
       },
     }
-  } catch (error) {
+  }
+  catch (error) {
     return {
       error: parseError(error),
       status: {

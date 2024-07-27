@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import type { PluginsUpdateBody, ProjectService, PermissionTarget } from '@cpn-console/shared'
 
 const props = withDefaults(defineProps<{
-  services: ProjectService[],
+  services: ProjectService[]
   permissionTarget: PermissionTarget
   displayGlobal: boolean
 }>(), {
@@ -12,7 +12,7 @@ const props = withDefaults(defineProps<{
 })
 
 const refTheValues = (services: ProjectService[]) => {
-  return services.map(service => {
+  return services.map((service) => {
     return {
       ...service,
       manifest: {

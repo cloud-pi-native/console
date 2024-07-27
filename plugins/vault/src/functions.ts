@@ -4,7 +4,7 @@ export const archiveDsoProject: StepCall<Project> = async (payload) => {
   try {
     if (!payload.apis.vault) throw Error('no Vault available')
     const allSecrets = await payload.apis.vault.list('/')
-    const promisesDestroy = allSecrets.map(path => {
+    const promisesDestroy = allSecrets.map((path) => {
       return payload.apis.vault.destroy(path)
     })
     await Promise.all(promisesDestroy)
@@ -15,7 +15,8 @@ export const archiveDsoProject: StepCall<Project> = async (payload) => {
       },
       secretsDestroyed: allSecrets.length,
     }
-  } catch (error) {
+  }
+  catch (error) {
     return {
       error: parseError(error),
       status: {

@@ -14,17 +14,18 @@ export const addProjectGroupMember = async (projectName: string, groupName: stri
     if (member.role_id !== accessLevel && member.entity_type !== 'g') {
       // le membre semble être incorrectement paramétré, suppression pour recréation
       await api.projects.deleteProjectMember(projectName, member.id)
-    } else {
+    }
+    else {
       // tout va bien
       return
     }
   }
   // Création du membre
   await api.projects.createProjectMember(projectName, {
-   
+
     role_id: accessLevel,
     member_group: {
-     
+
       group_name: groupName,
       group_type: 3,
     },

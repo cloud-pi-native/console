@@ -53,8 +53,8 @@ const typeLanguages = ref([
 
 const expandedId = ref<string | undefined>(undefined)
 const generatedCI = ref<Record<string, any>>({})
-const files = ref<{ key: string; href: string; size: string; format: string; title: string; }[]>([])
-const zipDir = ref<{ href: string; size: string; download: string; format: string; title: string; } | Record<string, never>>({})
+const files = ref<{ key: string, href: string, size: string, format: string, title: string }[]>([])
+const zipDir = ref<{ href: string, size: string, download: string, format: string, title: string } | Record<string, never>>({})
 
 const generateCI = async () => {
   generatedCI.value = await ciFilesStore.generateCIFiles(ciData.value)

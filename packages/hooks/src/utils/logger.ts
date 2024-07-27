@@ -13,7 +13,8 @@ export const parseError = (error: unknown) => {
   }
   try {
     return JSON.stringify(error)
-  } catch (parseError) {
+  }
+  catch (parseError) {
     console.log(parseError)
     if (error instanceof Error && error.stack) {
       return `Can't parse error \n${error.stack}`

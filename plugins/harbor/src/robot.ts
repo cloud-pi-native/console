@@ -7,7 +7,7 @@ export type VaultRobotSecret = {
   DOCKER_CONFIG: string
   // registry-host.com,
   HOST: string
-  TOKEN: string,
+  TOKEN: string
   // robot$<project-name>+<robot-name>
   USERNAME: string
 }

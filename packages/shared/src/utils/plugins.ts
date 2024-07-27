@@ -6,10 +6,10 @@ export enum MonitorStatus {
 }
 
 export type MonitorInfos = {
-  lastUpdateTimestamp: number,
-  interval: number,
-  message: string,
-  status: MonitorStatus,
+  lastUpdateTimestamp: number
+  interval: number
+  message: string
+  status: MonitorStatus
   cause?: any // should be deserved to admins only
 }
 export class Monitor {
@@ -18,7 +18,7 @@ export class Monitor {
   private intervalID: NodeJS.Timeout | undefined
   public lastStatus: MonitorInfos
 
-  constructor (callback: (instance: Monitor) => Promise<MonitorInfos>, interval: number = 5 * 60 * 1000) {
+  constructor(callback: (instance: Monitor) => Promise<MonitorInfos>, interval: number = 5 * 60 * 1000) {
     this.intervalTime = interval
     this.monitorFn = callback
     this.lastStatus = {
@@ -30,7 +30,7 @@ export class Monitor {
     }
   }
 
-  async refresh () {
+  async refresh() {
     if (this.intervalID) clearInterval(this.intervalID)
     this.intervalID = setInterval(() => this.monitorFn(this), this.intervalTime)
     return this.monitorFn(this)

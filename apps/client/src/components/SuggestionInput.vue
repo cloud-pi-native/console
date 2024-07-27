@@ -2,8 +2,8 @@
 import { ref } from 'vue'
 
 const props = withDefaults(defineProps<{
-  modelValue: string,
-  suggestions: unknown[],
+  modelValue: string
+  suggestions: unknown[]
 }>(), {
   modelValue: '',
   suggestions: () => [],
@@ -13,7 +13,7 @@ const localValue = ref(props.modelValue)
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
-  selectSuggestion: [value: string]
+  'selectSuggestion': [value: string]
 }>()
 
 const updateValue = () => {

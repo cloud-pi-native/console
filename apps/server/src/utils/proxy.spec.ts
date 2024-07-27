@@ -3,10 +3,10 @@ import { genericProxy } from './proxy.js'
 
 // Création d'une cible de test
 const target = {
-  async fetchData (id: string) {
+  async fetchData(id: string) {
     return { id, data: 'Mocked data' }
   },
-  async otherMethod (id: string) {
+  async otherMethod(id: string) {
     return { id, data: 'Mocked data' }
   },
 }
@@ -23,7 +23,7 @@ describe('Test calls without ID passed', () => {
   it('Test when no ID is provided', async () => {
   // Création d'une cible de test
     const target = {
-      async fetchData () {
+      async fetchData() {
         return 'No ID provided'
       },
     }
@@ -42,7 +42,7 @@ describe('Test calls without ID passed', () => {
   it('Test when no ID is provided with pending promise', async () => {
   // Création d'une cible de test
     const target = {
-      async fetchData () {
+      async fetchData() {
         return new Promise(resolve => setTimeout(() => resolve('Pending result'), 100))
       },
     }
@@ -70,7 +70,7 @@ describe('Test calls without ID passed', () => {
   it('Test error when args provided without ID', async () => {
     // Création d'une cible de test
     const target = {
-      async fetchData (_id: string, _args: any) {
+      async fetchData(_id: string, _args: any) {
         return 'No ID provided'
       },
     }
@@ -109,7 +109,7 @@ describe('Test calls with ID passed', () => {
   it('Test mixing nextArgs from concurrent promises', async () => {
     // Création d'une cible de test
     const target = {
-      async fetchData (id: string, args?: object) {
+      async fetchData(id: string, args?: object) {
         return { id, args }
       },
     }
@@ -138,7 +138,7 @@ describe('Test calls with ID passed', () => {
   it('Test rejection of set attempt', () => {
     // Création d'une cible de test
     const target = {
-      async fetchData () {
+      async fetchData() {
         return 'Mocked data'
       },
     }
@@ -148,7 +148,7 @@ describe('Test calls with ID passed', () => {
 
     // Tentative de définir une nouvelle propriété sur le proxy
     const setAttempt = () => {
-      proxied.fetchData = () => new Promise((resolve) => resolve('illegal'))
+      proxied.fetchData = () => new Promise(resolve => resolve('illegal'))
     }
 
     // Vérification que la tentative de set est rejetée

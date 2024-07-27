@@ -23,8 +23,8 @@ export type RequireOnlyOne<T, Keys extends keyof T = keyof T> =
   Pick<T, Exclude<keyof T, Keys>>
   & {
     [K in Keys]-?:
-    Required<Pick<T, K>>
-    & Partial<Record<Exclude<Keys, K>, undefined>>
+      Required<Pick<T, K>>
+      & Partial<Record<Exclude<Keys, K>, undefined>>
   }[Keys]
 
 type IsAllowed = {
@@ -114,9 +114,11 @@ type WhereBuilderParams<T extends StringArray> = {
 export const whereBuilder = <T extends StringArray>({ enumValues, eqValue, inValues, notInValues }: WhereBuilderParams<T>) => {
   if (eqValue) {
     return eqValue
-  } else if (inValues) {
+  }
+  else if (inValues) {
     return { in: splitStringsFilterArray(enumValues, inValues) }
-  } else if (notInValues) {
+  }
+  else if (notInValues) {
     return { notIn: splitStringsFilterArray(enumValues, notInValues) }
   }
 }

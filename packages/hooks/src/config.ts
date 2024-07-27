@@ -51,10 +51,10 @@ export const addPlugin = (pluginName: string, config: PluginConfig,
 
 type Row = { pluginName: string, key: string, value: string }
 type PopulateManifestsParams = {
-  data: { project? : Row[], global?: Row[] },
-  permissionTarget: PermissionTarget,
-  select: Partial<Record<keyof PluginConfig, boolean>>,
-  pluginName: string,
+  data: { project?: Row[], global?: Row[] }
+  permissionTarget: PermissionTarget
+  select: Partial<Record<keyof PluginConfig, boolean>>
+  pluginName: string
 }
 export const populatePluginManifests = ({ data, select, permissionTarget, pluginName }: PopulateManifestsParams): Partial<PluginConfig> => {
   const manifest = structuredClone(pluginsManifests[pluginName])
@@ -62,12 +62,13 @@ export const populatePluginManifests = ({ data, select, permissionTarget, plugin
   const selected: Partial<PluginConfig> = {}
   for (const [scope] of objectEntries(select).filter(([_scope, bool]) => bool)) {
     if (!manifest?.[scope]) continue
-    selected[scope] = manifest[scope].filter(item => item.permissions[permissionTarget].read || item.permissions[permissionTarget].write).map(item => {
+    selected[scope] = manifest[scope].filter(item => item.permissions[permissionTarget].read || item.permissions[permissionTarget].write).map((item) => {
       const row = data[scope]?.find(candidate => candidate.pluginName === pluginName && candidate.key === item.key)
       if (item.kind === 'switch') {
         const value = atomicValidators.switch.safeParse(row?.value)
         item.value = value.success ? value.data : DEFAULT
-      } else {
+      }
+      else {
         item.value = z.coerce.string().parse(row?.value ?? item.value ?? '')
       }
       return item

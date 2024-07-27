@@ -38,7 +38,7 @@
     "allowImportingTsExtensions": false,
 
     // Some stricter flags
-    "useUnknownInCatchVariables": true,
+    "useUnknownInCatchVariables": false,
     "noPropertyAccessFromIndexSignature": false
   },
 }

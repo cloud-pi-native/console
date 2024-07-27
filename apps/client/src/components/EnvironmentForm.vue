@@ -21,10 +21,10 @@ type OptionType = {
 }
 
 const props = withDefaults(defineProps<{
-  environment: Partial<Environment>,
-  isEditable: boolean,
-  isOwner: boolean,
-  isProjectLocked: boolean,
+  environment: Partial<Environment>
+  isEditable: boolean
+  isOwner: boolean
+  isProjectLocked: boolean
   projectClustersIds: CleanedCluster['id'][]
   allClusters: CleanedCluster[]
 }>(), {
@@ -35,10 +35,10 @@ const props = withDefaults(defineProps<{
 })
 
 const emit = defineEmits<{
-  addEnvironment: [environment: Omit<Environment, 'id' | 'permissions'>],
-  putEnvironment: [environment: Pick<Environment, 'quotaId'>],
-  deleteEnvironment: [environmentId: Environment['id']],
-  cancel: [],
+  addEnvironment: [environment: Omit<Environment, 'id' | 'permissions'>]
+  putEnvironment: [environment: Pick<Environment, 'quotaId'>]
+  deleteEnvironment: [environmentId: Environment['id']]
+  cancel: []
 }>()
 
 const snackbarStore = useSnackbarStore()
@@ -62,7 +62,8 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
   if (localEnvironment.value?.id) {
     const schemaValidation = EnvironmentSchema.pick({ id: true, projectId: true, quotaId: true }).safeParse(localEnvironment.value)
     return schemaValidation.success ? undefined : schemaValidation.error
-  } else {
+  }
+  else {
     const schemaValidation = EnvironmentSchema.pick({ clusterId: true, projectId: true, name: true, quotaId: true, stageId: true }).safeParse(localEnvironment.value)
     return schemaValidation.success ? undefined : schemaValidation.error
   }
@@ -87,22 +88,21 @@ const setEnvironmentOptions = () => {
   }))
   clusterOptions.value = props.allClusters
     .filter(cluster =>
-      (props.projectClustersIds.includes(cluster.id) && // clusters possibles pour ce projet
-        cluster.stageIds.includes(localEnvironment.value.stageId ?? '') && // correspondant à ce stage
-        cluster.zoneId === zoneId.value) || // dont la zone d'attachement est celle choisie
-      cluster.id === localEnvironment.value.clusterId, // ou alors celui associé à l'environnment en cours de modification
+      (props.projectClustersIds.includes(cluster.id) // clusters possibles pour ce projet
+        && cluster.stageIds.includes(localEnvironment.value.stageId ?? '') // correspondant à ce stage
+        && cluster.zoneId === zoneId.value) // dont la zone d'attachement est celle choisie
+      || cluster.id === localEnvironment.value.clusterId, // ou alors celui associé à l'environnment en cours de modification
     )
     .map(cluster => ({
       text: cluster.label,
       value: cluster.id,
     }))
-  quotaOptions.value =
-    quotaStore.quotas
+  quotaOptions.value
+    = quotaStore.quotas
       .filter(quota =>
-        (quota.stageIds.includes(
-          localEnvironment.value.stageId ?? '') && // quotas disponibles pour ce type d'environnement
-          !quota.isPrivate) || // et ne pas afficher les quotas privés
-        quota.id === localEnvironment.value.quotaId) // ou quota actuellement associé (au cas où l'association ne soit plus disponible)
+        (quota.stageIds.includes(localEnvironment.value.stageId ?? '') // quotas disponibles pour ce type d'environnement
+          && !quota.isPrivate) // et ne pas afficher les quotas privés
+        || quota.id === localEnvironment.value.quotaId) // ou quota actuellement associé (au cas où l'association ne soit plus disponible)
       .map(quota => ({
         text: `${quota.name} (${quota.cpu}CPU, ${quota.memory})`,
         value: quota.id,
@@ -116,7 +116,8 @@ const resetCluster = () => {
 const addEnvironment = () => {
   if (!errorSchema.value) {
     emit('addEnvironment', localEnvironment.value)
-  } else {
+  }
+  else {
     snackbarStore.setMessage(parseZodError(errorSchema.value))
   }
 }
@@ -124,7 +125,8 @@ const addEnvironment = () => {
 const putEnvironment = () => {
   if (!errorSchema.value) {
     emit('putEnvironment', localEnvironment.value)
-  } else {
+  }
+  else {
     snackbarStore.setMessage(parseZodError(errorSchema.value))
   }
 }

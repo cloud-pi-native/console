@@ -55,7 +55,7 @@ export const exclude = <T>(result: T, keys: string[]): T => {
       return
     }
     if (Array.isArray(value)) {
-      newObj[key] = value.map((val) => exclude(val, keys))
+      newObj[key] = value.map(val => exclude(val, keys))
       return
     }
     if (value instanceof Object) {

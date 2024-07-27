@@ -6,11 +6,11 @@ import type { UpdateStageType } from '@/views/admin/ListStages.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = withDefaults(defineProps<{
-  isNewStage: boolean,
-  stage: Stage,
-  allQuotas: Quota[],
-  allClusters: Cluster[],
-  associatedEnvironments: StageAssociatedEnvironments,
+  isNewStage: boolean
+  stage: Stage
+  allQuotas: Quota[]
+  allClusters: Cluster[]
+  associatedEnvironments: StageAssociatedEnvironments
 }>(), {
   isNewStage: false,
   stage: () => ({ name: '', clusterIds: [], quotaIds: [], id: '' }),
@@ -28,7 +28,8 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
   let schemaValidation
   if (localStage.value.id) {
     schemaValidation = StageSchema.safeParse(localStage.value)
-  } else {
+  }
+  else {
     schemaValidation = StageSchema.omit({ id: true }).safeParse(localStage.value)
   }
   return schemaValidation.success ? undefined : schemaValidation.error

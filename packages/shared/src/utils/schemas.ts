@@ -19,4 +19,4 @@ export const instanciateSchema = (schema: ZodObject<any>, value: unknown) => {
 
 export const CoerceBooleanSchema = z.boolean()
   .or(z.enum(['true', 'false'])
-    .transform((value) => value === 'true'))
+    .transform(value => value === 'true'))

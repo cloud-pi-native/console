@@ -5,7 +5,7 @@ import { getKeycloak } from '@/utils/keycloak/keycloak'
 export const apiClient = await getApiClient(
   '',
   {},
-  async (args: ApiFetcherArgs): Promise<{ status: number; body: { status: number, error: string } | unknown; headers: Headers }> => {
+  async (args: ApiFetcherArgs): Promise<{ status: number, body: { status: number, error: string } | unknown, headers: Headers }> => {
     // Paths that do not require token
     const validPaths = [`${apiPrefix}/version`, '/login', `${apiPrefix}/services`]
     if (validPaths.some(validPath => args.path?.startsWith(validPath))) {
@@ -29,7 +29,7 @@ export const apiClient = await getApiClient(
   },
 )
 
-export const extractData = <T extends { status: number; body: unknown; headers: Headers }, S extends T['status']> (
+export const extractData = <T extends { status: number, body: unknown, headers: Headers }, S extends T['status']> (
   response: T,
   expectedStatus: S,
 ): Extract<T, { status: S }>['body'] => {
@@ -40,10 +40,12 @@ export const extractData = <T extends { status: number; body: unknown; headers: 
   if (response.status === expectedStatus) return response.body
   try {
     throw Error(`Erreur lors de la requete, reçu ${response.status}, attendu ${expectedStatus}`)
-  } catch (error: unknown) {
+  }
+  catch (error: unknown) {
     if (error instanceof Error) {
       console.log(error.stack)
-    } else {
+    }
+    else {
       console.log(error)
     }
     throw Error('Erreur lors de la requete')
