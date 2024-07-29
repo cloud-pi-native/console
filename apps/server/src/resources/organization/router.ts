@@ -23,7 +23,7 @@ export const organizationRouter = () => serverInstance.router(organizationContra
   createOrganization: async ({ request: req, body: data }) => {
     const user = req.session.user
     const perms = await authUser(user)
-    if (!AdminAuthorized.ManageOrganizations(perms.adminPermissions)) return new Forbidden403()
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
     const body = await createOrganization(data)
 
     if (body instanceof ErrorResType) return body
@@ -38,7 +38,7 @@ export const organizationRouter = () => serverInstance.router(organizationContra
   syncOrganizations: async ({ request: req }) => {
     const user = req.session.user
     const perms = await authUser(user)
-    if (!AdminAuthorized.ManageOrganizations(perms.adminPermissions)) return new Forbidden403()
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
     const body = await fetchOrganizations(user.id, req.id)
 
     if (body instanceof ErrorResType) return body
@@ -53,7 +53,7 @@ export const organizationRouter = () => serverInstance.router(organizationContra
   updateOrganization: async ({ request: req, body: data, params }) => {
     const user = req.session.user
     const perms = await authUser(user)
-    if (!AdminAuthorized.ManageOrganizations(perms.adminPermissions)) return new Forbidden403()
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
     const name = params.organizationName
 
     const body = await updateOrganization(name, data)

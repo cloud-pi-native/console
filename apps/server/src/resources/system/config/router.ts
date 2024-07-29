@@ -8,7 +8,7 @@ export const pluginConfigRouter = () => serverInstance.router(systemPluginContra
   getPluginsConfig: async ({ request: req }) => {
     const user = req.session.user
     const perms = await authUser(user)
-    if (!AdminAuthorized.ManagePlugins(perms.adminPermissions)) return new Forbidden403()
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
     const services = await getPluginsConfig()
 
@@ -22,7 +22,7 @@ export const pluginConfigRouter = () => serverInstance.router(systemPluginContra
   updatePluginsConfig: async ({ request: req, body }) => {
     const user = req.session.user
     const perms = await authUser(user)
-    if (!AdminAuthorized.ManagePlugins(perms.adminPermissions)) return new Forbidden403()
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
     const resBody = await updatePluginConfig(body)
     if (resBody instanceof ErrorResType) return resBody

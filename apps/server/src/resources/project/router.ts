@@ -18,7 +18,7 @@ export const projectRouter = () => serverInstance.router(projectContract, {
   listProjects: async ({ request: req, query }) => {
     const user = req.session.user
     const perms = await authUser(user)
-    if (query.filter === 'all' && !AdminAuthorized.ListProjects(perms.adminPermissions)) {
+    if (query.filter === 'all' && !AdminAuthorized.isAdmin(perms.adminPermissions)) {
       return new BadRequest400('Seul les admins avec les droits de visionnage de projet peuvent utiliser le filtre \'all\'')
     }
     const body = await listProjects(
@@ -73,7 +73,7 @@ export const projectRouter = () => serverInstance.router(projectContract, {
       data.ownerId && perms.projectOwnerId !== data.ownerId // Il essaye de changer le owner
       && (
         perms.projectOwnerId !== user.id // mais il n'est ni owner
-        || !AdminAuthorized.ManageProjects(perms.adminPermissions) // ni authorisé comme admin
+        || !AdminAuthorized.isAdmin(perms.adminPermissions) // ni authorisé comme admin
       )
     ) return new Forbidden403('Seul le owner du projet peut transférer le projet')
     if (!ProjectAuthorized.Manage(perms)) return new Forbidden403()
@@ -132,7 +132,7 @@ export const projectRouter = () => serverInstance.router(projectContract, {
   getProjectsData: async ({ request: req }) => {
     const user = req.session.user
     const perms = await authUser(user)
-    if (!AdminAuthorized.ListProjects(perms.adminPermissions)) return new Forbidden403()
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
     const body = await generateProjectsData()
 
     return {
@@ -146,7 +146,7 @@ export const projectRouter = () => serverInstance.router(projectContract, {
     const user = req.session.user
     const projectId = params.projectId
     const perms = await authUser(user, { id: projectId })
-    if (!AdminAuthorized.ManageProjects(perms.adminPermissions)) return new Forbidden403()
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
     if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
 
     const lock = data.lock

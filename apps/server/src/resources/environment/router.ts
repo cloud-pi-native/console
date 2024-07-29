@@ -28,8 +28,8 @@ export const environmentRouter = () => serverInstance.router(environmentContract
     if (perms.projectLocked) return new Forbidden403('Le projet est verrouilé')
     if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
 
-    const allowPrivateQuota = AdminAuthorized.ManageQuotas(perms.adminPermissions)
-    const allowInvalidQuotaStage = AdminAuthorized.ManageProjects(perms.adminPermissions)
+    const allowPrivateQuota = AdminAuthorized.isAdmin(perms.adminPermissions)
+    const allowInvalidQuotaStage = AdminAuthorized.isAdmin(perms.adminPermissions)
     const invalidReason = await checkEnvironmentInput({ allowPrivateQuota, allowInvalidQuotaStage, ...data })
     if (invalidReason) return invalidReason
 
@@ -55,12 +55,12 @@ export const environmentRouter = () => serverInstance.router(environmentContract
     const user = req.session.user
     const perms = await authUser(user, { environmentId })
     if (!ProjectAuthorized.ListEnvironments(perms)) return new NotFound404()
-    if (!ProjectAuthorized.ManageEnvironments(perms) && !AdminAuthorized.ManageProjects(perms.adminPermissions)) return new Forbidden403()
+    if (!ProjectAuthorized.ManageEnvironments(perms) && !AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
     if (perms.projectLocked) return new Forbidden403('Le projet est verrouilé')
     if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
 
-    const allowPrivateQuota = AdminAuthorized.ManageQuotas(perms.adminPermissions)
-    const allowInvalidQuotaStage = AdminAuthorized.ManageProjects(perms.adminPermissions)
+    const allowPrivateQuota = AdminAuthorized.isAdmin(perms.adminPermissions)
+    const allowInvalidQuotaStage = AdminAuthorized.isAdmin(perms.adminPermissions)
     const invalidReason = await checkEnvironmentInput({ allowPrivateQuota, allowInvalidQuotaStage, environmentId, ...data })
     if (invalidReason) return invalidReason
 

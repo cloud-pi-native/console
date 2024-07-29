@@ -12,7 +12,6 @@ import {
   type Repo,
   type Environment,
   projectContract,
-  AdminAuthorized,
 } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useOrganizationStore } from '@/stores/organization.js'
@@ -185,7 +184,6 @@ const getEnvironmentsRows = () => {
             component: 'DsfrSelect',
             modelValue: quotaId,
             selectId: 'quota-select',
-            disabled: !AdminAuthorized.ManageProjects(userStore.adminPerms),
             options: quotaStore.quotas.filter(quota => quota.stageIds.includes(stageId)).map(quota => ({
               text: quota.name + ' (' + quota.cpu + 'CPU, ' + quota.memory + ')',
               value: quota.id,
@@ -568,7 +566,7 @@ const untruncateDescription = (span: HTMLElement) => {
           :project="selectedProject"
           :members="selectedProject.members"
           :known-users="usersStore.users"
-          :can-manage="AdminAuthorized.ManageProjects(userStore.adminPerms)"
+          :can-manage="true"
           @add-member="(email: string) => addUserToProject(email)"
           @update-role="(userId: string) => updateUserRole(userId)"
           @remove-member="(userId: string) => removeUserFromProject(userId)"

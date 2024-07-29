@@ -26,7 +26,7 @@ export const stageRouter = () => serverInstance.router(stageContract, {
   getStageEnvironments: async ({ request: req, params }) => {
     const user = req.session.user
     const perms = await authUser(user)
-    if (!AdminAuthorized.ManageStages(perms.adminPermissions)) return new Forbidden403()
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
     const stageId = params.stageId
     const body = await getStageAssociatedEnvironments(stageId)
@@ -42,9 +42,7 @@ export const stageRouter = () => serverInstance.router(stageContract, {
   createStage: async ({ request: req, body: data }) => {
     const user = req.session.user
     const perms = await authUser(user)
-    if (!AdminAuthorized.ManageStages(perms.adminPermissions)) return new Forbidden403()
-    if (!AdminAuthorized.ManageQuotas(perms.adminPermissions)) delete data.quotaIds
-    if (!AdminAuthorized.ManageClusters(perms.adminPermissions)) delete data.clusterIds
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
     const stage = await createStage(data)
 
@@ -58,9 +56,7 @@ export const stageRouter = () => serverInstance.router(stageContract, {
   updateStage: async ({ request: req, params, body: data }) => {
     const user = req.session.user
     const perms = await authUser(user)
-    if (!AdminAuthorized.ManageStages(perms.adminPermissions)) return new Forbidden403()
-    if (!AdminAuthorized.ManageQuotas(perms.adminPermissions)) delete data.quotaIds
-    if (!AdminAuthorized.ManageClusters(perms.adminPermissions)) delete data.clusterIds
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
     const stageId = params.stageId
 
@@ -77,7 +73,7 @@ export const stageRouter = () => serverInstance.router(stageContract, {
   deleteStage: async ({ request: req, params }) => {
     const user = req.session.user
     const perms = await authUser(user)
-    if (!AdminAuthorized.ManageStages(perms.adminPermissions)) return new Forbidden403()
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
     const stageId = params.stageId
 

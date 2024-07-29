@@ -8,9 +8,9 @@ export const projectServiceRouter = () => serverInstance.router(projectServiceCo
   getServices: async ({ request: req, params: { projectId } }) => {
     const user = req.session.user
     const perms = await authUser(user, { id: projectId })
-    if (!perms.projectPermissions && !AdminAuthorized.ListProjects(perms.adminPermissions)) return new NotFound404()
+    if (!perms.projectPermissions && !AdminAuthorized.isAdmin(perms.adminPermissions)) return new NotFound404()
 
-    const body = await getProjectServices(projectId, AdminAuthorized.ManageProjects(perms.adminPermissions) ? 'admin' : 'user')
+    const body = await getProjectServices(projectId, AdminAuthorized.isAdmin(perms.adminPermissions) ? 'admin' : 'user')
 
     return {
       status: 200,
@@ -24,7 +24,7 @@ export const projectServiceRouter = () => serverInstance.router(projectServiceCo
     if (!ProjectAuthorized.Manage(perms)) return new NotFound404()
     if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
 
-    const allowedRoles: Array<'user' | 'admin'> = AdminAuthorized.ManageProjects(perms.adminPermissions) ? ['user', 'admin'] : ['user']
+    const allowedRoles: Array<'user' | 'admin'> = AdminAuthorized.isAdmin(perms.adminPermissions) ? ['user', 'admin'] : ['user']
 
     const resBody = await updateProjectServices(projectId, body, allowedRoles)
     return {

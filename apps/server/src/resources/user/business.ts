@@ -38,24 +38,24 @@ export const getMatchingUsers = async (query: typeof userContract.getMatchingUse
   })
 }
 
-export const patchUsers = async (users: typeof userContract.patchUsers.body._type) => {
-  for (const user of users) {
-    await prisma.user.update({
-      where: {
-        id: user.id,
-      },
-      data: {
-        adminRoleIds: user.adminRoleIds,
-      },
-    })
-  }
+// export const patchUsers = async (users: typeof userContract.patchUsers.body._type) => {
+//   for (const user of users) {
+//     await prisma.user.update({
+//       where: {
+//         id: user.id,
+//       },
+//       data: {
+//         adminRoleIds: user.adminRoleIds,
+//       },
+//     })
+//   }
 
-  return prisma.user.findMany({
-    where: {
-      id: { in: users.map(({ id }) => id) },
-    },
-  })
-}
+//   return prisma.user.findMany({
+//     where: {
+//       id: { in: users.map(({ id }) => id) },
+//     },
+//   })
+// }
 
 export const logUser = async ({ id, email, groups, ...user }: UserDetails) => {
   const matchingAdminRoles = await prisma.adminRole.findMany({

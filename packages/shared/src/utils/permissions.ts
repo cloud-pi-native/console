@@ -59,17 +59,17 @@ export const PROJECT_PERMS = { // project permissions
 export const ADMIN_PERMS = { // admin permissions
   // GUEST: bit(0n),
   MANAGE: bit(1n),
-  MANAGE_CLUSTERS: bit(2n),
-  MANAGE_ORGANIZATIONS: bit(3n),
-  MANAGE_PLUGINS: bit(4n),
-  MANAGE_PROJECTS: bit(5n),
-  MANAGE_QUOTAS: bit(6n),
-  MANAGE_ROLES: bit(7n),
-  MANAGE_STAGES: bit(8n),
-  MANAGE_ZONES: bit(9n),
-  VIEW_LOGS: bit(10n),
-  LIST_PROJECTS: bit(11n),
-  LIST_ALL_QUOTAS: bit(12n),
+  // MANAGE_CLUSTERS: bit(2n),
+  // MANAGE_ORGANIZATIONS: bit(3n),
+  // MANAGE_PLUGINS: bit(4n),
+  // MANAGE_PROJECTS: bit(5n),
+  // MANAGE_QUOTAS: bit(6n),
+  // MANAGE_ROLES: bit(7n),
+  // MANAGE_STAGES: bit(8n),
+  // MANAGE_ZONES: bit(9n),
+  // VIEW_LOGS: bit(10n),
+  // LIST_PROJECTS: bit(11n),
+  // LIST_ALL_QUOTAS: bit(12n),
 }
 
 export type AdminPermsKeys = keyof typeof ADMIN_PERMS
@@ -80,44 +80,45 @@ permissionsParser(PROJECT_PERMS)
 type ProjectAuthorizedParams = { adminPermissions?: bigint | string, projectPermissions?: bigint | string }
 
 export const ProjectAuthorized = {
-  Manage: (perms: ProjectAuthorizedParams) => AdminAuthorized.ManageProjects(perms.adminPermissions)
+  Manage: (perms: ProjectAuthorizedParams) => AdminAuthorized.isAdmin(perms.adminPermissions)
   || !!(toBigInt(perms.projectPermissions) & PROJECT_PERMS.MANAGE),
 
-  ListEnvironments: (perms: ProjectAuthorizedParams) => AdminAuthorized.ListProjects(perms.adminPermissions)
+  ListEnvironments: (perms: ProjectAuthorizedParams) => AdminAuthorized.isAdmin(perms.adminPermissions)
   || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.LIST_ENVIRONMENTS | PROJECT_PERMS.MANAGE_ENVIRONMENTS | PROJECT_PERMS.MANAGE)),
-  ListRepositories: (perms: ProjectAuthorizedParams) => AdminAuthorized.ListProjects(perms.adminPermissions)
+  ListRepositories: (perms: ProjectAuthorizedParams) => AdminAuthorized.isAdmin(perms.adminPermissions)
   || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.LIST_REPOSITORIES | PROJECT_PERMS.MANAGE_REPOSITORIES | PROJECT_PERMS.MANAGE)),
 
-  ManageEnvironments: (perms: ProjectAuthorizedParams) => AdminAuthorized.ManageProjects(perms.adminPermissions)
+  ManageEnvironments: (perms: ProjectAuthorizedParams) => AdminAuthorized.isAdmin(perms.adminPermissions)
   || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.MANAGE_ENVIRONMENTS | PROJECT_PERMS.MANAGE)),
-  ManageRepositories: (perms: ProjectAuthorizedParams) => AdminAuthorized.ManageProjects(perms.adminPermissions)
+  ManageRepositories: (perms: ProjectAuthorizedParams) => AdminAuthorized.isAdmin(perms.adminPermissions)
   || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.MANAGE_REPOSITORIES | PROJECT_PERMS.MANAGE)),
 
-  ManageMembers: (perms: ProjectAuthorizedParams) => AdminAuthorized.ManageProjects(perms.adminPermissions)
+  ManageMembers: (perms: ProjectAuthorizedParams) => AdminAuthorized.isAdmin(perms.adminPermissions)
   || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.MANAGE_MEMBERS | PROJECT_PERMS.MANAGE)),
 
-  ManageRoles: (perms: ProjectAuthorizedParams) => AdminAuthorized.ManageProjects(perms.adminPermissions)
+  ManageRoles: (perms: ProjectAuthorizedParams) => AdminAuthorized.isAdmin(perms.adminPermissions)
   || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.MANAGE_ROLES | PROJECT_PERMS.MANAGE)),
 
-  ReplayHooks: (perms: ProjectAuthorizedParams) => AdminAuthorized.ManageProjects(perms.adminPermissions)
+  ReplayHooks: (perms: ProjectAuthorizedParams) => AdminAuthorized.isAdmin(perms.adminPermissions)
   || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.REPLAY_HOOKS | PROJECT_PERMS.MANAGE)),
 
-  SeeSecrets: (perms: ProjectAuthorizedParams) => AdminAuthorized.ManageProjects(perms.adminPermissions)
+  SeeSecrets: (perms: ProjectAuthorizedParams) => AdminAuthorized.isAdmin(perms.adminPermissions)
   || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.SEE_SECRETS | PROJECT_PERMS.MANAGE)),
 } as const
 
 export const AdminAuthorized = {
-  ListProjects: (perms?: bigint | string) => !!(toBigInt(perms) & (ADMIN_PERMS.LIST_PROJECTS | ADMIN_PERMS.MANAGE_PROJECTS | ADMIN_PERMS.MANAGE | ADMIN_PERMS.MANAGE_CLUSTERS)),
-  Manage: (perms?: bigint | string) => !!(toBigInt(perms) & ADMIN_PERMS.MANAGE),
-  ManageClusters: (perms?: bigint | string) => !!(toBigInt(perms) & (ADMIN_PERMS.MANAGE_CLUSTERS | ADMIN_PERMS.MANAGE)),
-  ManageOrganizations: (perms?: bigint | string) => !!(toBigInt(perms) & (ADMIN_PERMS.MANAGE_ORGANIZATIONS | ADMIN_PERMS.MANAGE)),
-  ManagePlugins: (perms?: bigint | string) => !!(toBigInt(perms) & (ADMIN_PERMS.MANAGE_PLUGINS | ADMIN_PERMS.MANAGE)),
-  ManageProjects: (perms?: bigint | string) => !!(toBigInt(perms) & (ADMIN_PERMS.MANAGE_PROJECTS | ADMIN_PERMS.MANAGE)),
-  ManageQuotas: (perms?: bigint | string) => !!(toBigInt(perms) & (ADMIN_PERMS.MANAGE_QUOTAS | ADMIN_PERMS.MANAGE)),
-  ManageRoles: (perms?: bigint | string) => !!(toBigInt(perms) & (ADMIN_PERMS.MANAGE_ROLES | ADMIN_PERMS.MANAGE)),
-  ManageStages: (perms?: bigint | string) => !!(toBigInt(perms) & (ADMIN_PERMS.MANAGE_STAGES | ADMIN_PERMS.MANAGE)),
-  ManageZones: (perms?: bigint | string) => !!(toBigInt(perms) & (ADMIN_PERMS.MANAGE_ZONES | ADMIN_PERMS.MANAGE)),
-  ViewLogs: (perms?: bigint | string) => !!(toBigInt(perms) & (ADMIN_PERMS.VIEW_LOGS | ADMIN_PERMS.MANAGE)),
+  isAdmin: (perms?: bigint | string) => !!(toBigInt(perms) & ADMIN_PERMS.MANAGE),
+  // ListProjects: (perms?: bigint | string) => !!(toBigInt(perms) & (ADMIN_PERMS.LIST_PROJECTS | ADMIN_PERMS.MANAGE_PROJECTS | ADMIN_PERMS.MANAGE | ADMIN_PERMS.MANAGE_CLUSTERS)),
+  // Manage: (perms?: bigint | string) => !!(toBigInt(perms) & ADMIN_PERMS.MANAGE),
+  // ManageClusters: (perms?: bigint | string) => !!(toBigInt(perms) & (ADMIN_PERMS.MANAGE_CLUSTERS | ADMIN_PERMS.MANAGE)),
+  // ManageOrganizations: (perms?: bigint | string) => !!(toBigInt(perms) & (ADMIN_PERMS.MANAGE_ORGANIZATIONS | ADMIN_PERMS.MANAGE)),
+  // ManagePlugins: (perms?: bigint | string) => !!(toBigInt(perms) & (ADMIN_PERMS.MANAGE_PLUGINS | ADMIN_PERMS.MANAGE)),
+  // ManageProjects: (perms?: bigint | string) => !!(toBigInt(perms) & (ADMIN_PERMS.MANAGE_PROJECTS | ADMIN_PERMS.MANAGE)),
+  // ManageQuotas: (perms?: bigint | string) => !!(toBigInt(perms) & (ADMIN_PERMS.MANAGE_QUOTAS | ADMIN_PERMS.MANAGE)),
+  // ManageRoles: (perms?: bigint | string) => !!(toBigInt(perms) & (ADMIN_PERMS.MANAGE_ROLES | ADMIN_PERMS.MANAGE)),
+  // ManageStages: (perms?: bigint | string) => !!(toBigInt(perms) & (ADMIN_PERMS.MANAGE_STAGES | ADMIN_PERMS.MANAGE)),
+  // ManageZones: (perms?: bigint | string) => !!(toBigInt(perms) & (ADMIN_PERMS.MANAGE_ZONES | ADMIN_PERMS.MANAGE)),
+  // ViewLogs: (perms?: bigint | string) => !!(toBigInt(perms) & (ADMIN_PERMS.VIEW_LOGS | ADMIN_PERMS.MANAGE)),
 } as const
 
 export const toBigInt = (value?: bigint | number | string | undefined) => value ? BigInt(value) : 0n
@@ -136,17 +137,17 @@ export const projectPermsLabels: Record<keyof typeof PROJECT_PERMS, string> = {
 
 export const adminPermsLabels: Record<AdminPermsKeys, string> = {
   MANAGE: 'Administration globale',
-  LIST_PROJECTS: 'Lister tous les projets',
-  MANAGE_CLUSTERS: 'Gérer les clusters',
-  MANAGE_ORGANIZATIONS: 'Gérer les organisations',
-  MANAGE_PLUGINS: 'Gérer la configuration des plugins',
-  MANAGE_ROLES: 'Gérer les rôles d\'administration',
-  MANAGE_PROJECTS: 'Gérer tous les projets',
-  MANAGE_QUOTAS: 'Gérer les quotas et utiliser les quotas privés',
-  MANAGE_STAGES: 'Gérer les types d\'environment',
-  MANAGE_ZONES: 'Gérer les zones',
-  VIEW_LOGS: 'Visualiser les logs',
-  LIST_ALL_QUOTAS: 'Lister les quotas privés',
+  // LIST_PROJECTS: 'Lister tous les projets',
+  // MANAGE_CLUSTERS: 'Gérer les clusters',
+  // MANAGE_ORGANIZATIONS: 'Gérer les organisations',
+  // MANAGE_PLUGINS: 'Gérer la configuration des plugins',
+  // MANAGE_ROLES: 'Gérer les rôles d\'administration',
+  // MANAGE_PROJECTS: 'Gérer tous les projets',
+  // MANAGE_QUOTAS: 'Gérer les quotas et utiliser les quotas privés',
+  // MANAGE_STAGES: 'Gérer les types d\'environment',
+  // MANAGE_ZONES: 'Gérer les zones',
+  // VIEW_LOGS: 'Visualiser les logs',
+  // LIST_ALL_QUOTAS: 'Lister les quotas privés',
 }
 
 export const projectPermsOrder: Array<keyof typeof PROJECT_PERMS> = [
@@ -163,15 +164,15 @@ export const projectPermsOrder: Array<keyof typeof PROJECT_PERMS> = [
 
 export const adminPermsOrder: Array<AdminPermsKeys> = [
   'MANAGE',
-  'LIST_PROJECTS',
-  'MANAGE_PROJECTS',
-  'VIEW_LOGS',
-  'MANAGE_ROLES',
-  'MANAGE_ORGANIZATIONS',
-  'MANAGE_ZONES',
-  'MANAGE_CLUSTERS',
-  'MANAGE_PLUGINS',
-  'MANAGE_QUOTAS',
-  'MANAGE_STAGES',
-  'LIST_ALL_QUOTAS',
+  // 'LIST_PROJECTS',
+  // 'MANAGE_PROJECTS',
+  // 'VIEW_LOGS',
+  // 'MANAGE_ROLES',
+  // 'MANAGE_ORGANIZATIONS',
+  // 'MANAGE_ZONES',
+  // 'MANAGE_CLUSTERS',
+  // 'MANAGE_PLUGINS',
+  // 'MANAGE_QUOTAS',
+  // 'MANAGE_STAGES',
+  // 'LIST_ALL_QUOTAS',
 ]

@@ -9,7 +9,7 @@ export const logRouter = () => serverInstance.router(logContract, {
   getLogs: async ({ request: req, query }) => {
     const user = req.session.user
     const perms = await authUser(user)
-    if (!AdminAuthorized.ViewLogs(perms.adminPermissions)) return new Forbidden403()
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
     const [total, logs] = await getLogs(query) as [number, unknown[]] as [number, Array<LogModel & { data: Log['data'] }>]
 

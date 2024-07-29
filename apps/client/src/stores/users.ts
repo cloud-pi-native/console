@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { User } from '@cpn-console/shared'
+import type { Member, User } from '@cpn-console/shared'
 
 export const useUsersStore = defineStore('users', () => {
   const users = ref<Record<string, User>>({})
@@ -12,14 +12,14 @@ export const useUsersStore = defineStore('users', () => {
     }
   }
 
-  const addUserFromMember = ({ userId: id, ...member }: Omit<User, 'id'> & { userId: User['id'] }) => {
+  const addUserFromMember = ({ userId: id, ...member }: Member) => {
     users.value = {
       ...users.value,
       [id]: { id, ...member },
     }
   }
 
-  const addUsersFromMembers = (members: (Omit<User, 'id'> & { userId: User['id'] })[]) => {
+  const addUsersFromMembers = (members: Member[]) => {
     for (const member of members) {
       addUserFromMember(member)
     }

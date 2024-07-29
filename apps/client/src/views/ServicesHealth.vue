@@ -1,12 +1,10 @@
 <script  lang="ts" setup>
 import { useServiceStore, alertTypeMapper } from '@/stores/services-monitor.js'
-import { ref, computed, onBeforeMount, type Ref } from 'vue'
+import { ref, onBeforeMount, type Ref } from 'vue'
 
 const serviceStore = useServiceStore()
 
 const isUpdating: Ref<boolean> = ref(true)
-const services = computed(() => serviceStore.services)
-const servicesHealth = computed(() => serviceStore.servicesHealth)
 
 const checkServicesHealth = async () => {
   isUpdating.value = true
@@ -28,8 +26,8 @@ onBeforeMount(async () => {
   <div class="flex justify-between">
     <DsfrBadge
       data-testid="services-health-badge"
-      :type="servicesHealth.status"
-      :label="servicesHealth.message"
+      :type="serviceStore.servicesHealth.status"
+      :label="serviceStore.servicesHealth.message"
     />
     <DsfrButton
       data-testid="refresh-btn"
@@ -46,7 +44,7 @@ onBeforeMount(async () => {
     data-testid="box-info"
   >
     <DsfrAlert
-      v-for="service in services"
+      v-for="service in serviceStore.services"
       :key="service.name"
       :data-testid="`${service.name}-info`"
       :title="service.name"

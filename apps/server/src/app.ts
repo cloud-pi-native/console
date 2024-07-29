@@ -47,11 +47,11 @@ const app = fastify(fastifyConf)
   })
   .addHook('onResponse', (req, res) => {
     if (res.statusCode < 400) {
-      req.log.info({ status: res.statusCode, userId: req.session.user.id })
+      req.log.info({ status: res.statusCode, userId: req.session?.user?.id })
     } else if (res.statusCode < 500) {
-      req.log.warn({ status: res.statusCode, userId: req.session.user.id })
+      req.log.warn({ status: res.statusCode, userId: req.session?.user?.id })
     } else {
-      req.log.error({ status: res.statusCode, userId: req.session.user.id })
+      req.log.error({ status: res.statusCode, userId: req.session?.user?.id })
     }
   })
 

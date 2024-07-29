@@ -9,7 +9,6 @@ import {
   type ClusterDetails,
   type Stage,
   type Zone,
-  AdminAuthorized,
 } from '@cpn-console/shared'
 // @ts-ignore
 import { load } from 'js-yaml'
@@ -19,9 +18,7 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 import ChoiceSelector from './ChoiceSelector.vue'
 import { toCodeComponent } from '@/utils/func.js'
 import type { ProjectWithOrganization } from '../stores/project.js'
-import { useUserStore } from '@/stores/user.js'
 
-const userStore = useUserStore()
 const snackbarStore = useSnackbarStore()
 
 const props = withDefaults(defineProps<{
@@ -380,7 +377,7 @@ const isConnectionDetailsShown = ref(true)
         :options-selected="props.allStages.filter(stage => props.cluster.stageIds.includes(stage.id))"
         label-key="name"
         value-key="id"
-        :disabled="!AdminAuthorized.ManageStages(userStore.adminPerms)"
+        :disabled="false"
         @update="(_s, stageIds) => localCluster.stageIds = stageIds"
       />
     </div>
