@@ -17,7 +17,7 @@ export const zoneRouter = () => serverInstance.router(zoneContract, {
   createZone: async ({ request: req, body: data }) => {
     const user = req.session.user
     const perms = await authUser(user)
-    if (!AdminAuthorized.ManageZones(perms.adminPermissions)) return new Forbidden403()
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
     const body = await createZone(data)
     if (body instanceof ErrorResType) return body
@@ -31,7 +31,7 @@ export const zoneRouter = () => serverInstance.router(zoneContract, {
   updateZone: async ({ request: req, params, body: data }) => {
     const user = req.session.user
     const perms = await authUser(user)
-    if (!AdminAuthorized.ManageZones(perms.adminPermissions)) return new Forbidden403()
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
     const zoneId = params.zoneId
 
@@ -45,7 +45,7 @@ export const zoneRouter = () => serverInstance.router(zoneContract, {
   deleteZone: async ({ request: req, params }) => {
     const user = req.session.user
     const perms = await authUser(user)
-    if (!AdminAuthorized.ManageZones(perms.adminPermissions)) return new Forbidden403()
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
     const zoneId = params.zoneId
 
     const body = await deleteZone(zoneId)

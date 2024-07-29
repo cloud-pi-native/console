@@ -15,7 +15,7 @@ export const projectRoleRouter = () => serverInstance.router(projectRoleContract
     const { projectId } = params
     const user = req.session.user
     const perms = await authUser(user, { id: projectId })
-    if (!perms.projectPermissions && !AdminAuthorized.ListProjects(perms.adminPermissions)) return new NotFound404()
+    if (!perms.projectPermissions && !AdminAuthorized.isAdmin(perms.adminPermissions)) return new NotFound404()
 
     const body = await listRoles(projectId)
 
@@ -63,7 +63,7 @@ export const projectRoleRouter = () => serverInstance.router(projectRoleContract
     const { projectId } = params
     const user = req.session.user
     const perms = await authUser(user, { id: projectId })
-    if (!perms.projectPermissions && !AdminAuthorized.ListProjects(perms.adminPermissions)) return new NotFound404()
+    if (!perms.projectPermissions && !AdminAuthorized.isAdmin(perms.adminPermissions)) return new NotFound404()
 
     const resBody = await countRolesMembers(projectId)
 

@@ -7,7 +7,7 @@ const props = withDefaults(defineProps<{
   optionsSelected: T[]
   label: string | undefined
   description: string
-  disabled: boolean
+  disabled?: boolean
   id: string
   valueKey: VALUE
   labelKey: LABEL

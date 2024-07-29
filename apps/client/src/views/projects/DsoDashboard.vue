@@ -116,7 +116,7 @@ onBeforeMount(async () => {
           icon="ri-pencil-fill"
           data-testid="setDescriptionBtn"
           :title="getDynamicTitle(projectStore.selectedProject.locked, projectStore.selectedProject.description)"
-          :disabled="projectStore.selectedProject.locked || !ProjectAuthorized.Manage({ projectPermissions: projectStore.selectedProjectPerms})"
+          :disabled="projectStore.selectedProject.locked || !ProjectAuthorized.Manage({ projectPermissions: projectStore.selectedProjectPerms })"
           icon-only
           secondary
           @click="isEditingDescription = true"

@@ -48,18 +48,18 @@ export const userContract = contractInstance.router({
     },
   },
 
-  patchUsers: {
-    method: 'PATCH',
-    path: `${apiPrefix}/users`,
-    summary: 'Patch users',
-    body: z.lazy(() => UserSchema.pick({ adminRoleIds: true, id: true }).array()),
-    description: 'Update user admin role.',
-    responses: {
-      200: z.lazy(() => UserSchema.array()),
-      400: ErrorSchema,
-      403: ErrorSchema,
-    },
-  },
+  // patchUsers: {
+  //   method: 'PATCH',
+  //   path: `${apiPrefix}/users`,
+  //   summary: 'Patch users',
+  //   body: z.lazy(() => UserSchema.pick({ adminRoleIds: true, id: true }).array()),
+  //   description: 'Update user admin role.',
+  //   responses: {
+  //     200: z.lazy(() => UserSchema.array()),
+  //     400: ErrorSchema,
+  //     403: ErrorSchema,
+  //   },
+  // },
 })
 
 export type LettersQuery = ClientInferRequest<typeof userContract.getMatchingUsers>['query']

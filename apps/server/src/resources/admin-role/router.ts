@@ -50,7 +50,7 @@ export const adminRoleRouter = () => serverInstance.router(adminRoleContract, {
   adminRoleMemberCounts: async ({ request: req }) => {
     const user = req.session.user
     const perms = await authUser(user)
-    if (!AdminAuthorized.ManageRoles(perms.adminPermissions)) return new NotFound404()
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new NotFound404()
 
     const resBody = await countRolesMembers()
 

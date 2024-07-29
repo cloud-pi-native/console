@@ -1,8 +1,8 @@
-import { AdminAuthorized, userContract } from '@cpn-console/shared'
+import { userContract } from '@cpn-console/shared'
 import {
   getMatchingUsers,
   getUsers,
-  patchUsers,
+  // patchUsers,
   logUser,
 } from './business.js'
 import '@/types/index.js'
@@ -43,16 +43,16 @@ export const userRouter = () => serverInstance.router(userContract, {
     }
   },
 
-  patchUsers: async ({ request: req, body }) => {
-    const user = req.session.user
-    const perms = await authUser(user)
-    if (!AdminAuthorized.ManageRoles(perms.adminPermissions)) return new Forbidden403()
+  // patchUsers: async ({ request: req, body }) => {
+  //   const user = req.session.user
+  //   const perms = await authUser(user)
+  //   if (!AdminAuthorized.ManageRoles(perms.adminPermissions)) return new Forbidden403()
 
-    const users = await patchUsers(body)
+  //   const users = await patchUsers(body)
 
-    return {
-      status: 200,
-      body: users,
-    }
-  },
+  //   return {
+  //     status: 200,
+  //     body: users,
+  //   }
+  // },
 })

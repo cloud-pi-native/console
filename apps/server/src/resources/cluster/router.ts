@@ -15,7 +15,7 @@ export const clusterRouter = () => serverInstance.router(clusterContract, {
   listClusters: async ({ request: req }) => {
     const user = req.session.user
     const { adminPermissions } = await authUser(user)
-    const body = AdminAuthorized.ManageClusters(adminPermissions)
+    const body = AdminAuthorized.isAdmin(adminPermissions)
       ? await getClusters()
       : await getClusters(user.id)
 
@@ -28,7 +28,7 @@ export const clusterRouter = () => serverInstance.router(clusterContract, {
   getClusterDetails: async ({ params, request: req }) => {
     const user = req.session.user
     const perms = await authUser(user)
-    if (!AdminAuthorized.ManageClusters(perms.adminPermissions)) return new Forbidden403()
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
     const clusterId = params.clusterId
     const cluster = await getClusterDetailsBusiness(clusterId)
@@ -42,8 +42,7 @@ export const clusterRouter = () => serverInstance.router(clusterContract, {
   createCluster: async ({ request: req, body: data }) => {
     const user = req.session.user
     const perms = await authUser(user)
-    if (!AdminAuthorized.ManageClusters(perms.adminPermissions)) return new Forbidden403()
-    if (!AdminAuthorized.ManageStages(perms.adminPermissions)) data.stageIds = []
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
     const body = await createCluster(data, user.id, req.id)
     if (body instanceof ErrorResType) return body
@@ -57,7 +56,7 @@ export const clusterRouter = () => serverInstance.router(clusterContract, {
   getClusterEnvironments: async ({ request: req, params }) => {
     const user = req.session.user
     const perms = await authUser(user)
-    if (!AdminAuthorized.ManageClusters(perms.adminPermissions)) return new Forbidden403()
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
     const clusterId = params.clusterId
     const environments = await getClusterAssociatedEnvironments(clusterId)
@@ -71,8 +70,7 @@ export const clusterRouter = () => serverInstance.router(clusterContract, {
   updateCluster: async ({ request: req, params, body: data }) => {
     const user = req.session.user
     const perms = await authUser(user)
-    if (!AdminAuthorized.ManageClusters(perms.adminPermissions)) return new Forbidden403()
-    if (!AdminAuthorized.ManageStages(perms.adminPermissions)) delete data.stageIds
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
     const clusterId = params.clusterId
     const body = await updateCluster(data, clusterId, user.id, req.id)
@@ -88,7 +86,7 @@ export const clusterRouter = () => serverInstance.router(clusterContract, {
   deleteCluster: async ({ request: req, params }) => {
     const user = req.session.user
     const perms = await authUser(user)
-    if (!AdminAuthorized.ManageClusters(perms.adminPermissions)) return new Forbidden403()
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
     const clusterId = params.clusterId
     const body = await deleteCluster(clusterId, user.id, req.id)

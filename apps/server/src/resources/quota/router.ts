@@ -9,7 +9,7 @@ export const quotaRouter = () => serverInstance.router(quotaContract, {
   listQuotas: async ({ request: req }) => {
     const user = req.session.user
     const perms = await authUser(user)
-    const quotas = AdminAuthorized.ManageQuotas(perms.adminPermissions)
+    const quotas = AdminAuthorized.isAdmin(perms.adminPermissions)
       ? await listQuotas()
       : await listQuotas(user.id)
 
@@ -23,7 +23,7 @@ export const quotaRouter = () => serverInstance.router(quotaContract, {
   listQuotaEnvironments: async ({ request: req, params }) => {
     const user = req.session.user
     const perms = await authUser(user)
-    if (!AdminAuthorized.ManageQuotas(perms.adminPermissions)) return new Forbidden403()
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
     const quotaId = params.quotaId
     const body = await getQuotaAssociatedEnvironments(quotaId)
@@ -39,8 +39,7 @@ export const quotaRouter = () => serverInstance.router(quotaContract, {
   createQuota: async ({ request: req, body: data }) => {
     const user = req.session.user
     const perms = await authUser(user)
-    if (!AdminAuthorized.ManageQuotas(perms.adminPermissions)) return new Forbidden403()
-    if (!AdminAuthorized.ManageStages(perms.adminPermissions)) delete data.stageIds
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
     const body = await createQuota(data)
 
@@ -56,8 +55,7 @@ export const quotaRouter = () => serverInstance.router(quotaContract, {
   updateQuota: async ({ request: req, params, body: data }) => {
     const user = req.session.user
     const perms = await authUser(user)
-    if (!AdminAuthorized.ManageQuotas(perms.adminPermissions)) return new Forbidden403()
-    if (!AdminAuthorized.ManageStages(perms.adminPermissions)) delete data.stageIds
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
     const quotaId = params.quotaId
     const body = await updateQuota(quotaId, data)
@@ -73,7 +71,7 @@ export const quotaRouter = () => serverInstance.router(quotaContract, {
   deleteQuota: async ({ request: req, params }) => {
     const user = req.session.user
     const perms = await authUser(user)
-    if (!AdminAuthorized.ManageQuotas(perms.adminPermissions)) return new Forbidden403()
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
     const quotaId = params.quotaId
     const body = await deleteQuota(quotaId)
