@@ -24,6 +24,7 @@ import { useProjectServiceStore } from '@/stores/project-services.js'
 import { useProjectRepositoryStore } from '@/stores/project-repository.js'
 import { useProjectStore } from '@/stores/project.js'
 import { useStageStore } from '@/stores/stage.js'
+import { useProjectUserStore } from '@/stores/project-user.js'
 import { bts } from '@/utils/func.js'
 import { apiClient } from '@/api/xhr-client.js'
 
@@ -35,6 +36,7 @@ const usersStore = useUsersStore()
 const snackbarStore = useSnackbarStore()
 const quotaStore = useQuotaStore()
 const stageStore = useStageStore()
+const projectUserStore = useProjectUserStore()
 const projectRepositoryStore = useProjectRepositoryStore()
 const projectEnvironmentStore = useProjectEnvironmentStore()
 
@@ -283,10 +285,10 @@ const archiveProject = async (projectId: string) => {
   snackbarStore.isWaitingForResponse = false
 }
 
-const addUserToProject = async (userId: string) => {
+const addUserToProject = async (email: string) => {
   if (!selectedProject.value) return
   snackbarStore.isWaitingForResponse = true
-  await apiClient.ProjectsMembers.addMember({ params: { projectId: selectedProject.value.id }, body: { userId } })
+  await projectUserStore.addMember(selectedProject.value.id, email)
   await getAllProjects()
   teamCtKey.value = getRandomId('team')
   snackbarStore.isWaitingForResponse = false
@@ -295,7 +297,7 @@ const addUserToProject = async (userId: string) => {
 const updateUserRole = async (userId: string) => {
   if (!selectedProject.value) return snackbarStore.setMessage('Veuillez sélectionner un projet')
   snackbarStore.isWaitingForResponse = true
-  await apiClient.Projects.updateProject({ params: { projectId: selectedProject.value.id }, body: { ownerId: userId } })
+  await projectStore.updateProject(selectedProject.value.id, { ownerId: userId })
   await getAllProjects()
   teamCtKey.value = getRandomId('team')
   snackbarStore.isWaitingForResponse = false
@@ -305,7 +307,7 @@ const removeUserFromProject = async (userId: string) => {
   if (!selectedProject.value) return
   snackbarStore.isWaitingForResponse = true
   if (selectedProject.value.id) {
-    await apiClient.ProjectsMembers.removeMember({ params: { projectId: selectedProject.value.id, userId } })
+    await projectUserStore.removeMember(selectedProject.value.id, userId)
     selectedProject.value.members = selectedProject.value.members.filter(user => user.userId !== userId)
   }
   teamCtKey.value = getRandomId('team')
