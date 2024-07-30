@@ -1,0 +1,21 @@
+name: Add labels on PR
+
+on:
+  workflow_call:
+    inputs:
+      CONF_PATH:
+        required: true
+        type: string
+
+jobs:
+  label:
+    name: Add labels on PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checks-out repository
+        uses: actions/checkout@v4
+
+      - name: Add pull request label
+        uses: actions/labeler@v5
+        with:
+          configuration-path: ${{ inputs.CONF_PATH }}

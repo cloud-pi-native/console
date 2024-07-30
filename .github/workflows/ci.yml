@@ -96,6 +96,14 @@ jobs:
       MULTI_ARCH: ${{ needs.expose-vars.outputs.MULTI_ARCH == 'true' }}
       USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU == 'true' }}
 
+  build-label:
+    uses: ./.github/workflows/label.yml
+    needs:
+      - expose-vars
+      - build
+    with:
+      CONF_PATH: ./.github/labeler/build.yml
+
   e2e-tests:
     uses: ./.github/workflows/tests-e2e.yml
     if: ${{ needs.path-filter.outputs.apps == 'true' }}
