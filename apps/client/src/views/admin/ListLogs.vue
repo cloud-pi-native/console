@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useLogStore } from '@/stores/log.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { Log } from '@cpn-console/shared'
-// @ts-ignore
+// @ts-ignore 'vue3-json-viewer' missing types
 import { JsonViewer } from 'vue3-json-viewer'
 
 const adminLogStore = useLogStore()

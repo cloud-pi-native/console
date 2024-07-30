@@ -92,6 +92,8 @@ projectRepositoryStore.$subscribe(() => {
   setReposTiles()
 })
 
+const canManageRepos = computed(() => !projectStore.selectedProject?.locked && ProjectAuthorized.ManageRepositories({ projectPermissions: projectStore.selectedProjectPerms }))
+
 </script>
 
 <template>
@@ -107,7 +109,7 @@ projectRepositoryStore.$subscribe(() => {
         label="Ajouter un nouveau dépôt"
         data-testid="addRepoLink"
         tertiary
-        :disabled="projectStore.selectedProject.locked || !ProjectAuthorized.ManageRepositories({projectPermissions: projectStore.selectedProjectPerms})"
+        :disabled="projectStore.selectedProject.locked || !canManageRepos"
         :title="projectStore.selectedProject.locked ? projectIsLockedInfo : 'Ajouter un dépôt'"
         class="fr-mt-2v <md:mb-2"
         icon="ri-add-line"
@@ -133,7 +135,7 @@ projectRepositoryStore.$subscribe(() => {
     >
       <RepoForm
         :is-project-locked="projectStore.selectedProject.locked"
-        :can-manage="true"
+        :can-manage="canManageRepos"
         @save="(repo) => saveRepo({ projectId: projectStore.selectedProject?.id, ...repo})"
         @cancel="cancel()"
       />
@@ -206,7 +208,7 @@ projectRepositoryStore.$subscribe(() => {
           <RepoForm
             :id="repoFormId"
             :is-project-locked="projectStore.selectedProject.locked"
-            :can-manage="!ProjectAuthorized.ManageRepositories({projectPermissions: projectStore.selectedProjectPerms})"
+            :can-manage="canManageRepos"
             :repo="selectedRepo"
             @save="(repo) => saveRepo(repo)"
             @delete="deleteRepo(selectedRepo.id)"

@@ -5,7 +5,7 @@ import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@/main.css'
 import TeamCt from '@/components/TeamCt.vue'
-import { createRandomDbSetup, getRandomUser, toUsersStore } from '@cpn-console/test-utils'
+import { createRandomDbSetup, getRandomUser } from '@cpn-console/test-utils'
 import { useProjectStore } from '@/stores/project.js'
 import { useUsersStore } from '@/stores/users.js'
 
@@ -21,7 +21,7 @@ describe('TeamCt.vue', () => {
   it('Should mount a TeamCt for owner', () => {
     useProjectStore()
     useUsersStore()
-    const { project, users } = createRandomDbSetup({ nbUsers: 4 })
+    const { project } = createRandomDbSetup({ nbUsers: 4 })
     const owner = project.roles.find(role => role.role === 'owner')?.user
     const newUser = getRandomUser()
 
@@ -34,7 +34,6 @@ describe('TeamCt.vue', () => {
       },
       project,
       members: project.roles,
-      knownUsers: toUsersStore(users),
     }
 
     cy.mount(TeamCt, { props })
@@ -53,7 +52,7 @@ describe('TeamCt.vue', () => {
   })
   it('Should mount a TeamCt for admin', () => {
     useProjectStore()
-    const { project, users } = createRandomDbSetup({ nbUsers: 4 })
+    const { project } = createRandomDbSetup({ nbUsers: 4 })
     const owner = project.roles.find(role => role.role === 'owner')?.user
     const user = project.roles.find(role => role.role !== 'owner')?.user
     const newUser = getRandomUser()
@@ -67,7 +66,6 @@ describe('TeamCt.vue', () => {
       },
       project,
       members: project.roles,
-      knownUsers: toUsersStore(users),
     }
 
     cy.mount(TeamCt, { props })
@@ -86,7 +84,7 @@ describe('TeamCt.vue', () => {
   })
   it('Should mount a TeamCt for user', () => {
     useProjectStore()
-    const { project, users } = createRandomDbSetup({ nbUsers: 4 })
+    const { project } = createRandomDbSetup({ nbUsers: 4 })
     const owner = project.roles.find(role => role.role === 'owner')?.user
     const user = project.roles.find(role => role.role !== 'owner')?.user
     const newUser = getRandomUser()
@@ -100,7 +98,6 @@ describe('TeamCt.vue', () => {
       },
       project,
       members: project.roles,
-      knownUsers: toUsersStore(users),
     }
 
     cy.mount(TeamCt, { props })

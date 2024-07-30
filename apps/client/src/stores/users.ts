@@ -1,41 +1,23 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
-import type { Member, User } from '@cpn-console/shared'
+import type { userContract } from '@cpn-console/shared'
+import { apiClient, extractData } from '@/api/xhr-client.js'
 
 export const useUsersStore = defineStore('users', () => {
-  const users = ref<Record<string, User>>({})
+  const listUsers = async (query: typeof userContract.getAllUsers.query._type) =>
+    apiClient.Users.getAllUsers({ query })
+      .then(res => extractData(res, 200))
 
-  const addUser = (user: User) => {
-    users.value = {
-      ...users.value,
-      [user.id]: user,
-    }
-  }
+  const listMatchingUsers = async (query: typeof userContract.getMatchingUsers.query._type) =>
+    apiClient.Users.getMatchingUsers({ query })
+      .then(res => extractData(res, 200))
 
-  const addUserFromMember = ({ userId: id, ...member }: Member) => {
-    users.value = {
-      ...users.value,
-      [id]: { id, ...member },
-    }
-  }
-
-  const addUsersFromMembers = (members: Member[]) => {
-    for (const member of members) {
-      addUserFromMember(member)
-    }
-  }
-
-  const addUsers = (users: User[]) => {
-    for (const user of users) {
-      addUser(user)
-    }
-  }
+  const patchUsers = async (body: typeof userContract.patchUsers.body._type) =>
+    apiClient.Users.patchUsers({ body })
+      .then(res => extractData(res, 200))
 
   return {
-    users,
-    addUser,
-    addUsers,
-    addUserFromMember,
-    addUsersFromMembers,
+    listUsers,
+    listMatchingUsers,
+    patchUsers,
   }
 })

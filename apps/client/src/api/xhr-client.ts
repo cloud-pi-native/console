@@ -1,6 +1,6 @@
 import { type ApiFetcherArgs, tsRestFetchApi } from '@ts-rest/core'
 import { apiPrefix, getApiClient } from '@cpn-console/shared'
-import { getKeycloak } from '@/utils/keycloak/keycloak'
+import { getKeycloak } from '@/utils/keycloak/keycloak.js'
 
 export const apiClient = await getApiClient(
   '',
@@ -33,7 +33,7 @@ export const extractData = <T extends { status: number, body: unknown, headers: 
   response: T,
   expectedStatus: S,
 ): Extract<T, { status: S }>['body'] => {
-  if (response.status >= 400 && response.status <= 599) {
+  if (response.status >= 400) {
     // @ts-ignore
     throw Error(response.body?.error ?? response.body?.message ?? 'Erreur inconnue')
   }

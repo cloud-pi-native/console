@@ -34,7 +34,6 @@ const setSelectedQuota = async (quota: Quota) => {
   }
   selectedQuota.value = quota
   isNewQuotaForm.value = false
-  // @ts-ignore
   await getQuotaAssociatedEnvironments(quota.id)
 }
 

@@ -1,17 +1,11 @@
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { computed } from 'vue'
 import { useUserStore } from '@/stores/user.js'
-import { useAdminRoleStore } from '@/stores/admin-role.js'
 
 const userStore = useUserStore()
-const adminRoleStore = useAdminRoleStore()
 
-const groups = ref<string[]>([])
-const adminRoles = ref<string[]>([])
-userStore.$subscribe(() => {
-  groups.value = userStore.userProfile?.groups?.length ? userStore.userProfile.groups : ['-']
-  adminRoles.value = adminRoleStore.roles.map(({ name }) => name)
-})
+const groups = computed<string[]>(() => userStore.userProfile?.groups?.length ? userStore.userProfile.groups : ['-'])
+const adminRoles = computed<string[]>(() => userStore.myAdminRoles.map(({ name }) => name))
 </script>
 
 <template>

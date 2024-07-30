@@ -9,12 +9,13 @@ import { keycloakInit } from './utils/keycloak/keycloak'
 import App from './App.vue'
 import router from './router/index'
 import * as icons from './icons'
-// @ts-ignore
+// @ts-ignore 'vue3-json-viewer' missing types
 import JsonViewer from 'vue3-json-viewer'
 
 import 'virtual:uno.css'
 import 'virtual:unocss-devtools'
 import './main.css'
+// @ts-ignore '@gouvminint/vue-dsfr' missing types
 import { DsfrSelect, DsfrTag } from '@gouvminint/vue-dsfr'
 
 try {

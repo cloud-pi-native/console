@@ -11,7 +11,6 @@ export const getContract = async () => contractInstance.router(
     Environments: (await import('./contracts/index.js')).environmentContract,
     Logs: (await import('./contracts/index.js')).logContract,
     Organizations: (await import('./contracts/index.js')).organizationContract,
-    Permissions: (await import('./contracts/index.js')).permissionContract,
     Projects: (await import('./contracts/index.js')).projectContract,
     ProjectsMembers: (await import('./contracts/index.js')).projectMemberContract,
     ProjectsRoles: (await import('./contracts/index.js')).projectRoleContract,

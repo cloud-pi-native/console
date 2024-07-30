@@ -1,8 +1,9 @@
 <script lang="ts" setup>
 import { useProjectStore } from '@/stores/project.js'
-import { apiClient, extractData } from '@/api/xhr-client.js'
-import { Member, type Role } from '@cpn-console/shared'
+import { useProjectMemberStore } from '@/stores/project-member.js'
+import { Member, RoleBigint, type Role } from '@cpn-console/shared'
 
+const projectMemberStore = useProjectMemberStore()
 const projectStore = useProjectStore()
 const selectedId = ref<string>()
 
@@ -31,21 +32,16 @@ const selectedRole = computed(() => roleList.value.find(({ id }) => id === selec
 
 const addRole = async () => {
   if (!projectStore.selectedProject) return
-  projectStore.selectedProject.roles = await apiClient.ProjectsRoles.createProjectRole({
-    params: { projectId: projectStore.selectedProject.id },
-    body: {
-      name: 'Nouveau rôle',
-      permissions: 0n.toString(),
-    },
-  }).then(res => extractData(res, 201))
+  projectStore.selectedProject.roles = await projectStore.createRole(projectStore.selectedProject.id, {
+    name: 'Nouveau rôle',
+    permissions: 0n.toString(),
+  })
   selectedId.value = projectStore.selectedProject.roles[projectStore.selectedProject.roles.length - 1].id
 }
 
 const deleteRole = async (roleId: Role['id']) => {
   if (!projectStore.selectedProject) return
-  await apiClient.ProjectsRoles.deleteProjectRole({
-    params: { projectId: projectStore.selectedProject.id, roleId },
-  }).then(res => extractData(res, 200))
+  await projectStore.deleteRole(projectStore.selectedProject.id, roleId)
   projectStore.selectedProject.roles = projectStore.selectedProject.roles.filter(role => role.id !== roleId)
   selectedId.value = undefined
 }
@@ -59,33 +55,24 @@ const updateMember = async (checked: boolean, userId: Member['userId']) => {
     ? matchingMember.roleIds.concat(selectedRole.value.id)
     : matchingMember.roleIds.filter(id => id !== selectedRole.value?.id)
 
-  projectStore.selectedProject.members = await apiClient.ProjectsMembers.patchMembers({
-    params: { projectId: projectStore.selectedProject.id },
-    body: [{ userId, roles: newRoleList }],
-  }).then(res => extractData(res, 200))
+  projectStore.selectedProject.members = await projectMemberStore.patchMembers(projectStore.selectedProject.id, [{ userId, roles: newRoleList }])
 }
 
-const saveRole = async (role: { name: string, permissions: bigint, id: string }) => {
+const saveRole = async (role: Omit<RoleBigint, 'position'>) => {
   if (role.id === 'everyone') return saveEveryoneRole(role)
   if (!projectStore.selectedProject || !selectedRole.value) return
-  projectStore.selectedProject.roles = await apiClient.ProjectsRoles.patchProjectRoles({
-    params: { projectId: projectStore.selectedProject.id },
-    body: [{
-      id: selectedRole.value.id,
-      permissions: role.permissions.toString(),
-      name: role.name,
-    }],
-  }).then(res => extractData(res, 200))
+  projectStore.selectedProject.roles = await projectStore.patchRoles(projectStore.selectedProject.id, [{
+    id: selectedRole.value.id,
+    permissions: role.permissions.toString(),
+    name: role.name,
+  }])
 }
 
 const saveEveryoneRole = async (role: { permissions: bigint }) => {
   if (!projectStore.selectedProject) return
-  await apiClient.Projects.updateProject({
-    params: { projectId: projectStore.selectedProject.id },
-    body: {
-      everyonePerms: role.permissions.toString(),
-    },
-  }).then(res => extractData(res, 200))
+  await projectStore.updateProject(projectStore.selectedProject.id, {
+    everyonePerms: role.permissions.toString(),
+  })
   await projectStore.listProjects()
 }
 
@@ -151,7 +138,7 @@ const cancel = () => selectedId.value = undefined
         :all-members="projectStore.selectedProject.members"
         @delete="deleteRole(selectedRole.id)"
         @update-member-roles="(checked: boolean, userId: Member['userId']) => updateMember(checked, userId)"
-        @save="(role: RoleItem) => saveRole(role)"
+        @save="(role: Omit<RoleBigint, 'position'>) => saveRole(role)"
         @cancel="() => cancel()"
       />
     </div>
@@ -160,3 +147,4 @@ const cancel = () => selectedId.value = undefined
     v-else
   />
 </template>
+@/stores/project-member.js

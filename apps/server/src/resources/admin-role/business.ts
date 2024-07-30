@@ -1,6 +1,5 @@
 import type { Project, ProjectRole } from '@prisma/client'
 import {
-  deleteRole as deleteRoleQuery,
   listAdminRoles,
 } from '@/resources/queries-index.js'
 import { AdminRole, adminRoleContract } from '@cpn-console/shared'
@@ -67,6 +66,17 @@ export const countRolesMembers = async () => {
 }
 
 export const deleteRole = async (roleId: Project['id']) => {
-  await deleteRoleQuery(roleId)
+  const allUsers = await prisma.user.findMany({
+    where: {
+      adminRoleIds: { has: roleId },
+    },
+  })
+  for (const user of allUsers) {
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { adminRoleIds: user.adminRoleIds.filter(adminRoleId => adminRoleId !== roleId) },
+    })
+  }
+  await prisma.adminRole.delete({ where: { id: roleId } })
   return null
 }

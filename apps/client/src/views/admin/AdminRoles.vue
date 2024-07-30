@@ -1,61 +1,51 @@
 <script lang="ts" setup>
-import { apiClient, extractData } from '@/api/xhr-client.js'
 import { AdminRole, type Role } from '@cpn-console/shared'
 import AdminRoleForm from '@/components/AdminRoleForm.vue'
+import { useAdminRoleStore } from '@/stores/admin-role.js'
+
+const adminRoleStore = useAdminRoleStore()
 
 const selectedId = ref<string>()
-const memberCounts = ref<Record<string, number>>({})
-
 type RoleItem = Omit<AdminRole, 'permissions'> & { permissions: bigint, memberCounts?: number }
 
-const adminRoles = ref<(AdminRole)[]>([])
-
-const roleList = computed((): RoleItem[] => adminRoles.value.map(role => ({
+const roleList = computed((): RoleItem[] => adminRoleStore.roles.map(role => ({
   ...role,
   permissions: BigInt(role.permissions),
-  memberCounts: memberCounts.value[role.id],
+  memberCounts: adminRoleStore.memberCounts[role.id],
 })))
 
 const selectedRole = computed(() => roleList.value.find(({ id }) => id === selectedId.value))
 
 const addRole = async () => {
-  adminRoles.value = await apiClient.AdminRoles.createAdminRole({
-    body: {
-      name: 'Nouveau rôle',
-    },
-  }).then(res => extractData(res, 201))
-  selectedId.value = adminRoles.value[adminRoles.value.length - 1].id
+  await adminRoleStore.createRole()
+
+  selectedId.value = adminRoleStore.roles[adminRoleStore.roles.length - 1].id
 }
 
 const deleteRole = async (roleId: Role['id']) => {
-  await apiClient.AdminRoles.deleteAdminRole({ params: { roleId } }).then(res => extractData(res, 200))
-
-  adminRoles.value = adminRoles.value.filter(role => role.id !== roleId)
+  await adminRoleStore.deleteRole(roleId)
+  await adminRoleStore.listRoles()
   selectedId.value = undefined
 }
 
 const saveRole = async (role: Pick<AdminRole, 'name' | 'oidcGroup' | 'permissions'>) => {
   if (!selectedRole.value) return
-  adminRoles.value = await apiClient.AdminRoles.patchAdminRoles({
-    body: [{
+  await adminRoleStore.patchRoles(
+    [{
       id: selectedRole.value.id,
       permissions: role.permissions.toString(),
       name: role.name,
       oidcGroup: role.oidcGroup,
     }],
-  }).then(res => extractData(res, 200))
+  )
 }
 
 const cancel = () => selectedId.value = undefined
 
 onBeforeMount(async () => {
-  const [counts, roles] = await Promise.all([
-    apiClient.AdminRoles.adminRoleMemberCounts().then(res => extractData(res, 200)),
-    apiClient.AdminRoles.listAdminRoles().then(res => extractData(res, 200)),
-  ])
-  memberCounts.value = counts
-  adminRoles.value = roles
+  await adminRoleStore.listRoles()
 })
+
 </script>
 
 <template>
@@ -64,7 +54,7 @@ onBeforeMount(async () => {
     class="flex flex-row"
   >
     <div
-      :class="`flex flex-col ${selectedId ? 'w-2/8 max-sm:hidden' : 'w-full'}`"
+      :class="`flex flex-col ${selectedId ? 'max-w-11em w-2/8 max-sm:hidden' : 'w-full'}`"
     >
       <div
         class="flex flex-col"
@@ -88,16 +78,32 @@ onBeforeMount(async () => {
           >
             {{ role.name }}
           </div>
-          <div
+          <template
             v-if="!selectedId"
-            class="text-wrap truncate text-right grow-0"
           >
-            <span>{{ role.memberCounts ?? '-' }}</span>
-            <v-icon
-              :class="`ml-4`"
-              name="ri-team-line"
-            />
-          </div>
+            <div
+              class="text-wrap truncate text-right grow-0"
+            >
+              <template
+                v-if="role.oidcGroup"
+              >
+                <span>oidc</span>
+                <v-icon
+                  :class="`ml-4`"
+                  name="ri-user-shared-2-line"
+                />
+              </template>
+              <template v-else>
+                <span>
+                  {{ (role.memberCounts ?? '-') }}
+                </span>
+                <v-icon
+                  :class="`ml-4`"
+                  name="ri-team-line"
+                />
+              </template>
+            </div>
+          </template>
         </button>
       </div>
     </div>

@@ -1,30 +1,17 @@
 <script lang="ts" setup>
-import { onBeforeMount, ref, watch } from 'vue'
+import { onBeforeMount, ref } from 'vue'
 import { type AllUsers, formatDate, sortArrByObjKeyAsc, type Role } from '@cpn-console/shared'
-import { useProjectUserStore } from '@/stores/project-user.js'
+import { useProjectMemberStore } from '@/stores/project-member.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { copyContent } from '@/utils/func.js'
 import { useAdminRoleStore } from '@/stores/admin-role.js'
-import type { Component, EmptyRow } from './ListProjects.vue'
 
 const adminRoleStore = useAdminRoleStore()
-
-const adminRoles = ref<Role[]>([])
-onBeforeMount(async () => {
-  if (adminRoleStore.roles.length) {
-    adminRoles.value = await adminRoleStore.listAdminRoles()
-  }
-})
-
-type Row = {
-  rowData: Array<string | Component>
-}
-
-const projectUserStore = useProjectUserStore()
+const projectMemberStore = useProjectMemberStore()
 const snackbarStore = useSnackbarStore()
-
+const adminRoles = ref<Role[]>([])
 const allUsers = ref<AllUsers>([])
-const rows = ref<Row[]>([])
+
 const inputSearchText = ref('')
 
 const title = 'Liste des utilisateurs'
@@ -38,34 +25,8 @@ const headers = [
   'Modification',
 ]
 
-const getAllUsers = async () => {
-  allUsers.value = await projectUserStore.getAllUsers() ?? []
-}
-
-const filterRows = (rows: Row[]): Row[] | EmptyRow => {
-  const returnRows = rows.filter((row) => {
-    if (!inputSearchText.value) return true
-    return row.rowData.some((data) => {
-      if (typeof data === 'object') {
-        return data.text?.toString().toLowerCase().includes(inputSearchText.value.toLocaleLowerCase())
-      }
-      return data.toString().toLowerCase().includes(inputSearchText.value.toLocaleLowerCase())
-    })
-  })
-  if (!returnRows.length) {
-    return [[{
-      text: 'Aucun utilisateur trouvé',
-      field: 'string',
-      cellAttrs: {
-        colspan: headers.length,
-      },
-    }]]
-  }
-  return returnRows
-}
-
-const setRows = () => {
-  rows.value = sortArrByObjKeyAsc(allUsers.value, 'firstName')
+const userRows = computed(() => {
+  const rows = sortArrByObjKeyAsc(allUsers.value, 'firstName')
     ?.map(({ id, firstName, lastName, email, adminRoleIds, createdAt, updatedAt }) => (
       {
         rowData: [
@@ -85,16 +46,37 @@ const setRows = () => {
         ],
       }),
     )
-}
+
+  const returnRows = rows.filter((row) => {
+    if (!inputSearchText.value) return true
+    return row.rowData.some((data) => {
+      if (typeof data === 'object') {
+        return data.text?.toString().toLowerCase().includes(inputSearchText.value.toLocaleLowerCase())
+      }
+      return data.toString().toLowerCase().includes(inputSearchText.value.toLocaleLowerCase())
+    })
+  })
+  if (!returnRows.length) {
+    return [[{
+      text: 'Aucun utilisateur trouvé',
+      field: 'string',
+      cellAttrs: {
+        colspan: headers.length,
+      },
+    }]]
+  }
+  return returnRows
+})
 
 onBeforeMount(async () => {
   snackbarStore.isWaitingForResponse = true
-  await getAllUsers()
-  setRows()
+  if (!adminRoleStore.roles.length) {
+    adminRoles.value = await adminRoleStore.listRoles()
+  }
+  allUsers.value = await projectMemberStore.getAllUsers()
   snackbarStore.isWaitingForResponse = false
 })
 
-watch(allUsers, () => setRows())
 </script>
 
 <template>
@@ -114,7 +96,7 @@ watch(allUsers, () => setRows())
         data-testid="tableAdministrationUsers"
         :title="title"
         :headers="headers"
-        :rows="filterRows(rows)"
+        :rows="userRows"
       />
     </div>
     <LoadingCt
@@ -123,3 +105,4 @@ watch(allUsers, () => setRows())
     />
   </div>
 </template>
+@/stores/project-member.js

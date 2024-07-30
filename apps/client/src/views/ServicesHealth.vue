@@ -54,4 +54,3 @@ onBeforeMount(async () => {
     />
   </div>
 </template>
-@/stores/services-monitor.js

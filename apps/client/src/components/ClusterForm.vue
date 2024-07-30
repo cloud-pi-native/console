@@ -10,9 +10,9 @@ import {
   type Stage,
   type Zone,
 } from '@cpn-console/shared'
-// @ts-ignore
+// @ts-ignore 'js-yaml' missing types
 import { load } from 'js-yaml'
-// @ts-ignore
+// @ts-ignore 'vue3-json-viewer' missing types
 import { JsonViewer } from 'vue3-json-viewer'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import ChoiceSelector from './ChoiceSelector.vue'

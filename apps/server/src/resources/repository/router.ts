@@ -9,7 +9,7 @@ import {
   syncRepository,
   updateRepository,
 } from './business.js'
-import { authUser, ErrorResType, Forbidden403, BadRequest400, NotFound404 } from '@/utils/controller.js'
+import { authUser, ErrorResType, Forbidden403, NotFound404 } from '@/utils/controller.js'
 
 export const repositoryRouter = () => serverInstance.router(repositoryContract, {
   // Récupérer tous les repositories d'un projet
@@ -89,8 +89,6 @@ export const repositoryRouter = () => serverInstance.router(repositoryContract, 
     ]
     const data = filterObjectByKeys(body, keysAllowedForUpdate)
 
-    if (data.isPrivate && !data.externalToken) return new BadRequest400('Le token est requis')
-    if (data.isPrivate && !data.externalUserName) return new BadRequest400('Le nom d\'utilisateur est requis')
     if (!data.isPrivate) {
       data.externalToken = undefined
       data.externalUserName = ''

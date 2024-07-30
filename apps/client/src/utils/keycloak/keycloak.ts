@@ -7,7 +7,7 @@ import {
   keycloakClientId,
   keycloakRealm,
   keycloakRedirectUri,
-} from '../env'
+} from '../env.js'
 import { type UserProfile } from '@cpn-console/shared'
 
 export const keycloakInitOptions: KeycloakInitOptions = {

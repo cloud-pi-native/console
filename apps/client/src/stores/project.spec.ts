@@ -3,7 +3,6 @@ import { setActivePinia, createPinia } from 'pinia'
 import { createRandomDbSetup, getRandomMember, getRandomProject } from '@cpn-console/test-utils'
 import { apiClient } from '../api/xhr-client.js'
 import { useProjectStore } from './project.js'
-import { useUsersStore } from './users.js'
 import { useOrganizationStore } from './organization.js'
 
 const listOrganizations = vi.spyOn(apiClient.Organizations, 'listOrganizations')
@@ -24,9 +23,7 @@ describe('Project Store', () => {
 
   it('Should set working project and its owner', async () => {
     const projectStore = useProjectStore()
-    const usersStore = useUsersStore()
     const user = { id: 'userId', firstName: 'Michel' }
-    usersStore.addUser(user)
     projectStore.projects = [{
       id: 'projectId',
       roles: [{

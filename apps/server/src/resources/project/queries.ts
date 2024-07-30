@@ -13,6 +13,7 @@ export const updateProject = (id: Project['id'], data: ProjectUpdate) =>
   prisma.project.update({
     where: { id },
     data,
+    include: { members: true },
   })
 
 // SELECT
@@ -113,7 +114,7 @@ export const getProjectMembers = (projectId: Project['id']) =>
 export const getProjectById = (id: Project['id']) =>
   prisma.project.findUnique({ where: { id } })
 
-const baseProjectIncludes = {
+export const baseProjectIncludes = {
   organization: true,
   members: { include: { user: true } },
   clusters: true,
@@ -272,11 +273,13 @@ export const unlockProject = (id: Project['id']) =>
 export const updateProjectCreated = (id: Project['id']) =>
   prisma.project.update({
     where: { id }, data: { status: ProjectStatus.created },
+    include: baseProjectIncludes,
   })
 
 export const updateProjectFailed = (id: Project['id']) =>
   prisma.project.update({
     where: { id }, data: { status: ProjectStatus.failed },
+    include: baseProjectIncludes,
   })
 
 export const addUserToProject = (
@@ -313,6 +316,7 @@ export const archiveProject = async (id: Project['id']) => {
       status: ProjectStatus.archived,
       locked: true,
     },
+    include: baseProjectIncludes,
   })
 }
 

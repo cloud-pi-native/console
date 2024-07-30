@@ -33,6 +33,7 @@ export {
   RiFolderUserLine,
   RiFoldersLine,
   RiCheckboxBlankCircleFill,
+  RiUserShared2Line,
   RiGift2Fill,
   RiGitBranchLine,
   RiGitMergeFill,
