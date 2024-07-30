@@ -46,7 +46,7 @@ const project = {
 
     return {
       results,
-      project: manageProjectStatus(projectId, results, 'upsert', payload.environments.map(env => env.clusterId)),
+      project: await manageProjectStatus(projectId, results, 'upsert', payload.environments.map(env => env.clusterId)),
     }
   },
   delete: async (projectId: Project['id']) => {
@@ -67,7 +67,7 @@ const project = {
 
     return hooks.getProjectSecrets.execute({ ...project, store }, config)
   },
-}
+} as const
 
 type ProjectAction = keyof typeof project
 const manageProjectStatus = async (
@@ -106,7 +106,7 @@ const cluster = {
       ...cluster,
     }, store)
   },
-}
+} as const
 
 const user = {
   retrieveUserByEmail: async (email: string) => {
@@ -121,7 +121,7 @@ const user = {
     const config = dbToObj(await getAdminPlugin())
     return hooks.updateUserAdminGroupMembership.execute({ id, isAdmin }, config)
   },
-}
+} as const
 
 const misc = {
   fetchOrganizations: async () => {
@@ -143,7 +143,7 @@ const misc = {
     const config = dbToObj(await getAdminPlugin())
     return hooks.syncRepository.execute(payload, config)
   },
-}
+} as const
 
 export const hook = {
   // @ts-ignore TODO voir comment opti la signature de la fonction

@@ -1,18 +1,15 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
-import { Member, PROJECT_PERMS, projectPermsLabels, projectPermsOrder, type Project, shallowEqual } from '@cpn-console/shared'
+import { Member, PROJECT_PERMS, projectPermsDetails, type Project, shallowEqual, RoleBigint } from '@cpn-console/shared'
 
-const props = withDefaults(defineProps<{
+const props = defineProps<{
   id: string
   permissions: bigint
   name: string
   allMembers: Member[]
   projectId: Project['id']
   isEveryone: boolean
-}>(), {
-  name: 'Nouveau rôle',
-  isEveryone: false,
-})
+}>()
 
 const router = useRouter()
 const role = ref({
@@ -26,13 +23,15 @@ const isUpdated = computed(() => {
   return !shallowEqual(props, role.value)
 })
 const tabListName = 'Liste d’onglet'
-const tabTitles = role.value.isEveryone
+const tabTitles = props.isEveryone
   ? [
     { title: 'Général', icon: 'ri-checkbox-circle-line' },
+    { title: 'Fermer', icon: 'ri-checkbox-circle-line' },
   ]
   : [
     { title: 'Général', icon: 'ri-checkbox-circle-line' },
     { title: 'Membres', icon: 'ri-checkbox-circle-line' },
+    { title: 'Fermer', icon: 'ri-checkbox-circle-line' },
   ]
 
 const initialSelectedIndex = 0
@@ -56,7 +55,7 @@ const updateChecked = (checked: boolean, value: bigint) => {
 defineEmits<{
   delete: []
   updateMemberRoles: [checked: boolean, userId: Member['userId']]
-  save: [{ name: string, permissions: bigint }]
+  save: [value: Omit<RoleBigint, 'position'>]
   cancel: []
 }>()
 
@@ -85,15 +84,26 @@ defineEmits<{
         :disabled="role.isEveryone"
       />
       <h6>Permissions</h6>
-      <DsfrCheckbox
-        v-for="key in projectPermsOrder"
-        :key="key"
-        :model-value="PROJECT_PERMS[key] & role.permissions"
-        :label="projectPermsLabels[key]"
-        :name="projectPermsLabels[key]"
-        :disabled="role.permissions & PROJECT_PERMS.MANAGE && key !== 'MANAGE'"
-        @update:model-value="(checked: boolean) => updateChecked(checked, PROJECT_PERMS[key])"
-      />
+      <div
+        v-for="scope in projectPermsDetails"
+        :key="scope.name"
+      >
+        <p
+          class="mb-3 ml-2 font-bold font-underline"
+        >
+          {{ scope.name }}
+        </p>
+        <DsfrCheckbox
+          v-for="perm in scope.perms"
+          :key="perm.key"
+          :model-value="PROJECT_PERMS[perm.key] & role.permissions"
+          :label="perm?.label"
+          :hint="perm?.hint"
+          :name="perm.key"
+          :disabled="role.permissions & PROJECT_PERMS.MANAGE && perm.key !== 'MANAGE'"
+          @update:model-value="(checked: boolean) => updateChecked(checked, PROJECT_PERMS[perm.key])"
+        />
+      </div>
       <DsfrButton
         type="buttonType"
         :label="'Enregistrer'"
@@ -111,7 +121,7 @@ defineEmits<{
       />
     </DsfrTabContent>
     <DsfrTabContent
-      v-if="!role.isEveryone"
+      v-if="!props.isEveryone"
       panel-id="members"
       tab-id="tab-1"
       :selected="selectedTabIndex === 1"
@@ -139,11 +149,18 @@ defineEmits<{
         />
       </template>
     </DsfrTabContent>
-    <DsfrButton
-      label="Fermer"
-      tertiary
-      class="absolute right-0 z-1000 fr-tabs__tab h-auto"
-      @click="() => $emit('cancel')"
-    />
+    <div
+      class="ms-8"
+    >
+      <DsfrTabContent
+        panel-id="close"
+        tab-id="tab-2"
+        :selected="selectedTabIndex === 2"
+        :asc="asc"
+        @click="() => $emit('cancel')"
+      >
+        {{ selectedTabIndex === tabTitles.length -1 && $emit('cancel') }}
+      </DsfrTabContent>
+    </div>
   </DsfrTabs>
 </template>

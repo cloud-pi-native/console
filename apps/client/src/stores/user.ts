@@ -1,7 +1,7 @@
 import { getKeycloak, getUserProfile, keycloakLogin, keycloakLogout } from '@/utils/keycloak/keycloak.js'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { UserProfile } from '@cpn-console/shared'
+import type { AdminRole, User, UserProfile } from '@cpn-console/shared'
 import { apiClient, extractData } from '@/api/xhr-client.js'
 import { useAdminRoleStore } from './admin-role.js'
 
@@ -9,7 +9,11 @@ export const useUserStore = defineStore('user', () => {
   const adminRoleStore = useAdminRoleStore()
   const isLoggedIn = ref<boolean>()
   const userProfile = ref<UserProfile>()
-  const adminPerms = ref<bigint>()
+  const adminPerms = computed(() => myAdminRoles.value
+    .reduce((acc, curr) => acc | BigInt(curr.permissions), 0n))
+  const apiAuthInfos = ref<User>()
+  const myAdminRoles = computed<AdminRole[]>(() => adminRoleStore.roles
+    .filter(adminRole => apiAuthInfos.value?.adminRoleIds.includes(adminRole.id)))
 
   const setIsLoggedIn = () => {
     const keycloak = getKeycloak()
@@ -21,14 +25,9 @@ export const useUserStore = defineStore('user', () => {
 
   const setUserProfile = () => {
     userProfile.value = getUserProfile()
-    apiClient.Users.auth().then((res) => {
-      const authDetails = extractData(res, 200)
-      adminRoleStore.listAdminRoles().then((adminRoles) => {
-        adminPerms.value = adminRoles
-          .filter(role => authDetails.adminRoleIds.includes(role.id))
-          .reduce((acc, curr) => acc | BigInt(curr.permissions), 0n)
-      })
-    })
+    adminRoleStore.listRoles()
+    apiClient.Users.auth()
+      .then(res => apiAuthInfos.value = extractData(res, 200))
   }
 
   const login = () => keycloakLogin()
@@ -39,6 +38,7 @@ export const useUserStore = defineStore('user', () => {
     isLoggedIn,
     setIsLoggedIn,
     userProfile,
+    myAdminRoles,
     adminPerms,
     setUserProfile,
     login,

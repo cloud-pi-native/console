@@ -2,6 +2,7 @@ import type { Cluster, ProjectRole, ProjectMembers, Project, Prisma } from '@pri
 import { adminGroupPath, projectIsLockedInfo, PROJECT_PERMS as PP, XOR } from '@cpn-console/shared'
 import { UserDetails } from '@/types/index.js'
 import prisma from '@/prisma.js'
+import { logUser } from '@/resources/user/business.js'
 
 export const hasGroupAdmin = (groups: UserDetails['groups']) => groups.includes(adminGroupPath)
 
@@ -74,15 +75,7 @@ const projectPermsSelect = { roles: true, members: true, everyonePerms: true, ow
 export async function authUser(user: UserDetails): Promise<UserProfile>
 export async function authUser(user: UserDetails, projectUnique: ProjectUniqueFinder): Promise<UserProjectProfile>
 export async function authUser(user: UserDetails, projectUnique?: ProjectUniqueFinder): Promise<UserProfile | UserProjectProfile> {
-  let adminPermissions = 0n
-  const dbUser = await prisma.user.findUnique({ where: { id: user.id } })
-  if (dbUser) {
-    adminPermissions = await prisma.adminRole.findMany({
-      where: {
-        id: { in: dbUser.adminRoleIds },
-      },
-    }).then(role => role.reduce((acc, curr) => acc | curr.permissions, 0n))
-  }
+  const { adminPerms: adminPermissions } = await logUser(user, true)
 
   if (!projectUnique) {
     return {

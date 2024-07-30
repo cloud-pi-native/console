@@ -9,7 +9,7 @@ const toTarget = <T extends Target>(target: T) => ({ tracker: {} as Tracker<T>, 
 type Excludes<T extends Target> = Partial<Record<keyof T, Array<keyof T>>> | undefined
 
 // @ts-ignore
-export const genericProxy = <T extends Target>(proxied: T, excludes: Excludes<T> = {}): T => new Proxy(toTarget(proxied), {
+export const genericProxy = <T>(proxied: T, excludes: Excludes<T> = {}): T => new Proxy(toTarget(proxied), {
   get({ methods, tracker }, property: string) {
     if (!(property in methods)) return
     return async (...args) => {

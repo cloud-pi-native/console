@@ -7,7 +7,7 @@ import {
 } from '@/resources/queries-index.js'
 import { projectMemberContract, UserSchema, XOR } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
-import { BadRequest400 } from '@/utils/controller.js'
+import { BadRequest400, NotFound404 } from '@/utils/controller.js'
 import { hook } from '@/utils/hook-wrapper.js'
 import { logUser } from '../user/business.js'
 
@@ -21,11 +21,11 @@ export const addMember = async (projectId: Project['id'], user: XOR<{ userId: st
   } else if (user.email) {
     userInDb = await prisma.user.findUnique({ where: { email: user.email } })
   } else {
-    return new BadRequest400('Veuillez spéecifiez au moins un userId ou un email')
+    return new BadRequest400('Veuillez spécifiez au moins un userId ou un email')
   }
   if (userInDb) {
     if (userInDb.id === projectOwnerId) return new BadRequest400('Le owner ne peut pas être ajouté à cette liste')
-  } else {
+  } else if (user.email) {
     const hookReply = await hook.user.retrieveUserByEmail(user.email)
     await addLogs('Retrieve User By Email', hookReply, requestorId, requestId)
     if (hookReply.failed) {
@@ -37,6 +37,8 @@ export const addMember = async (projectId: Project['id'], user: XOR<{ userId: st
     const userValidated = UserSchema.pick({ email: true, firstName: true, lastName: true, id: true }).safeParse(retrievedUser)
     if (!userValidated.success) return new BadRequest400('L\'utilisateur trouvé ne remplit pas les conditions de vérification')
     userInDb = await logUser({ ...userValidated.data, groups: [] })
+  } else {
+    return new NotFound404()
   }
 
   await upsertMember({ projectId, userId: userInDb.id, roleIds: [] })

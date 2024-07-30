@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
-import { ClusterPrivacy, PP, ProjectAuthorized, projectIsLockedInfo, sortArrByObjKeyAsc, type Environment } from '@cpn-console/shared'
+import { ClusterPrivacy, ProjectAuthorized, projectIsLockedInfo, sortArrByObjKeyAsc, type Environment } from '@cpn-console/shared'
 import { useClusterStore } from '@/stores/cluster.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
@@ -58,10 +58,10 @@ const cancel = () => {
   selectedEnvironment.value = undefined
 }
 
-const addEnvironment = async (environment: Omit<Environment, 'id' | 'permissions'>) => {
+const addEnvironment = async (environment: Omit<Environment, 'id' | 'projectId'>) => {
   snackbarStore.isWaitingForResponse = true
   if (projectStore.selectedProject && !projectStore.selectedProject.locked) {
-    await projectEnvironmentStore.addEnvironmentToProject(environment)
+    await projectEnvironmentStore.addEnvironmentToProject({ ...environment, projectId: projectStore.selectedProject.id })
   }
   cancel()
   snackbarStore.isWaitingForResponse = false
@@ -94,7 +94,7 @@ projectEnvironmentStore.$subscribe(() => {
   setEnvironmentsTiles()
 })
 
-const canManageEnvs = !projectStore.selectedProject?.locked || ProjectAuthorized.ManageEnvironments({ projectPermissions: projectStore.selectedProjectPerms })
+const canManageEnvs = computed(() => !projectStore.selectedProject?.locked && ProjectAuthorized.ManageEnvironments({ projectPermissions: projectStore.selectedProjectPerms }))
 </script>
 
 <template>
@@ -110,7 +110,7 @@ const canManageEnvs = !projectStore.selectedProject?.locked || ProjectAuthorized
         label="Ajouter un nouvel environnement"
         data-testid="addEnvironmentLink"
         tertiary
-        :disabled="projectStore.selectedProject.locked || !ProjectAuthorized.ManageEnvironments({ projectPermissions: projectStore.selectedProjectPerms })"
+        :disabled="canManageEnvs"
         :title="projectStore.selectedProject.locked ? projectIsLockedInfo : 'Ajouter un nouvel environnement'"
         class="fr-mt-2v <md:mb-2"
         icon="ri-add-line"
@@ -135,13 +135,12 @@ const canManageEnvs = !projectStore.selectedProject?.locked || ProjectAuthorized
       class="my-5 pb-10 border-grey-900 border-y-1"
     >
       <EnvironmentForm
-        :environment="{projectId: projectStore.selectedProject.id}"
         :environment-names="environmentNames"
         :is-project-locked="projectStore.selectedProject.locked"
         :project-clusters-ids="projectClustersIds"
         :all-clusters="clusterStore.clusters"
         :can-manage="canManageEnvs"
-        @add-environment="(environment: Omit<Environment, 'id' | 'permissions'>) => addEnvironment(environment)"
+        @add-environment="(environment: Omit<Environment, 'id' | 'projectId'>) => addEnvironment(environment)"
         @cancel="cancel()"
       />
     </div>

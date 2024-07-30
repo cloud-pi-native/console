@@ -15,7 +15,6 @@ import {
   getProjectByNames,
   getProjectInfosAndRepos,
   getProjectInfos as getProjectInfosQuery,
-  getProjectInfosOrThrow as getProjectInfosOrThrowQuery,
   getPublicClusters,
   initializeProject,
   listProjects as listProjectsQuery,
@@ -30,6 +29,7 @@ import { hook } from '@/utils/hook-wrapper.js'
 import { UserDetails } from '@/types/index.js'
 import { json2csv } from 'json-2-csv'
 import { logUser } from '../user/business.js'
+import prisma from '@/prisma.js'
 
 // Fetch infos
 export const getProjectInfosAndClusters = async (projectId: string) => {
@@ -84,13 +84,11 @@ export const createProject = async (dataDto: CreateProjectBody, { groups, ...req
   // Actions
   const project = await initializeProject({ ...dataDto, ownerId: owner.id })
 
-  const { results } = await hook.project.upsert(project.id)
+  const { results, project: projectInfos } = await hook.project.upsert(project.id)
   await addLogs('Create Project', results, owner.id, requestId)
   if (results.failed) {
     return new Unprocessable422('Echec des services à la création du projet')
   }
-
-  const projectInfos = await getProjectInfosOrThrowQuery(project.id)
 
   return {
     ...projectInfos,
@@ -102,19 +100,28 @@ export const createProject = async (dataDto: CreateProjectBody, { groups, ...req
 
 export const updateProject = async ({ description, ownerId, everyonePerms }: UpdateProjectBody, projectId: Project['id'], requestor: UserDetails, requestId: string) => {
   // Actions
-  await updateProjectQuery(projectId, {
+  const updatedProject = await updateProjectQuery(projectId, {
     description,
     ownerId,
     ...everyonePerms && { everyonePerms: BigInt(everyonePerms) },
   })
 
-  const { results } = await hook.project.upsert(projectId)
+  if (ownerId) {
+    if (!updatedProject.members.find(member => member.userId === ownerId)) return new BadRequest400('Le nouveau propriétaire doit faire partie des membres actuels du projet')
+    await prisma.projectMembers.createMany({
+      data: { userId: requestor.id, projectId },
+      skipDuplicates: true,
+    })
+    await prisma.projectMembers.delete({
+      where: { projectId_userId: { userId: updatedProject.ownerId, projectId } },
+    })
+  }
+
+  const { results, project: projectInfos } = await hook.project.upsert(projectId)
   await addLogs('Update Project', results, requestor.id, requestId)
   if (results.failed) {
     return new Unprocessable422('Echec des services à la mise à jour du projet')
   }
-
-  const projectInfos = await getProjectInfosOrThrowQuery(projectId)
 
   return {
     ...projectInfos,

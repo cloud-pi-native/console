@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { DsfrButton, getRandomId } from '@gouvminint/vue-dsfr'
+// @ts-ignore '@gouvminint/vue-dsfr' missing types
+import { getRandomId } from '@gouvminint/vue-dsfr'
 import {
   type LettersQuery,
   type UserProfile,
@@ -9,23 +10,24 @@ import {
   type Member,
 } from '@cpn-console/shared'
 import pDebounce from 'p-debounce'
-import { useProjectUserStore } from '@/stores/project-user.js'
+import { useProjectMemberStore } from '@/stores/project-member.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { copyContent } from '@/utils/func.js'
 
-const projectUserStore = useProjectUserStore()
+const projectMemberStore = useProjectMemberStore()
 
 const props = withDefaults(
   defineProps<{
     userProfile?: UserProfile
     project: ProjectV2
     members: Member[]
-    knownUsers: Record<string, User>
     canManage: boolean
+    canTransfer: boolean
   }>(),
   {
     userProfile: undefined,
     canManage: false,
+    canTransfer: true,
   },
 )
 
@@ -61,7 +63,6 @@ const usersToAdd = ref<User[]>([])
 const rows = ref<any[][]>([])
 const lettersNotMatching = ref('')
 const tableKey = ref(getRandomId('table'))
-const isTransferingRole = ref('')
 
 const getRolesNames = (ids?: string[]) => ids ? props.project.roles.filter(role => ids.includes(role.id)).map(role => role.name).join(' / ') || '-' : ''
 const getCopyIdComponent = (id: string) => ({
@@ -112,7 +113,7 @@ const retrieveUsersToAdd = pDebounce(async (letters: LettersQuery['letters']) =>
   if (letters.length < 3) return
   // Ne pas relancer de requête à chaque lettre ajoutée si aucun user ne correspond aux premières lettres données
   if (lettersNotMatching.value && letters.includes(lettersNotMatching.value) && !usersToAdd.value?.length) return
-  usersToAdd.value = await projectUserStore.getMatchingUsers(props.project.id, letters)
+  usersToAdd.value = await projectMemberStore.getMatchingUsers(props.project.id, letters)
   // Stockage des lettres qui ne renvoient aucun résultat
   if (!usersToAdd.value?.length) {
     lettersNotMatching.value = letters
@@ -124,6 +125,7 @@ const emit = defineEmits<{
   updateRole: [value: string]
   cancel: []
   removeMember: [value: string]
+  transferOwnership: [value: string]
 }>()
 
 const addUserToProject = async () => {
@@ -137,16 +139,6 @@ const addUserToProject = async () => {
   newUserInputKey.value = getRandomId('input')
 }
 
-const cancelUpdateUserRole = () => {
-  isTransferingRole.value = ''
-  setRows()
-}
-
-const updateUserRole = async (userId: string) => {
-  isTransferingRole.value = ''
-  emit('updateRole', userId)
-}
-
 const removeUserFromProject = async (userId: string) => {
   emit('removeMember', userId)
 }
@@ -157,6 +149,24 @@ onMounted(() => {
 
 watch(() => props.members, setRows)
 
+const isTransferingProject = ref(false)
+const nextOwnerId = ref('')
+
+const transferOwnership = (ownerId: string) => {
+  if (props.members.find(member => member.userId === ownerId)) {
+    emit('transferOwnership', ownerId)
+  }
+}
+const transferSelectOptions = [
+  {
+    text: 'Veuillez choisir un utilisateur',
+    value: '',
+  },
+  ...props.project.members.map(member => ({
+    text: `${member.lastName} ${member.firstName} (${member.email})`,
+    value: member.userId,
+  })),
+]
 </script>
 
 <template>
@@ -164,34 +174,6 @@ watch(() => props.members, setRows)
     class="relative"
   >
     <div
-      v-if="isTransferingRole"
-      class="danger-zone"
-      data-testid="confirmTransferingRoleZone"
-    >
-      <p
-        data-testid="updatedDataSummary"
-      >
-        Êtes-vous certain de vouloir modifier le souscripteur du projet ?
-      </p>
-      <div
-        class="mt-8 flex gap-4"
-      >
-        <DsfrButton
-          label="Confirmer"
-          data-testid="confirmUpdateBtn"
-          primary
-          @click="updateUserRole(isTransferingRole)"
-        />
-        <DsfrButton
-          label="Annuler"
-          data-testid="cancelUpdateBtn"
-          secondary
-          @click="cancelUpdateUserRole()"
-        />
-      </div>
-    </div>
-    <div
-      v-show="!isTransferingRole"
       class="w-max"
     >
       <DsfrTable
@@ -202,37 +184,85 @@ watch(() => props.members, setRows)
         :headers="headers"
         :rows="rows"
       />
-      <SuggestionInput
-        v-if="props.canManage"
-        :key="newUserInputKey"
-        v-model="newUserEmail"
-        data-testid="addUserSuggestionInput"
-        :disabled="project?.locked"
-        label="Nom, prénom ou adresse mail de l'utilisateur à rechercher"
-        label-visible
-        hint="Adresse e-mail de l'utilisateur"
-        placeholder="prenom.nom@interieur.gouv.fr"
-        :suggestions="usersToAdd"
-        @select-suggestion="(value: User) => newUserEmail = value.email"
-        @update:model-value="(value: string) => retrieveUsersToAdd(value)"
-      />
-      <DsfrAlert
-        v-if="isUserAlreadyInTeam"
-        data-testid="userErrorInfo"
-        description="L'utilisateur associé à cette adresse e-mail fait déjà partie du projet."
-        small
-        type="error"
-        class="w-max fr-mb-2w"
-      />
-      <DsfrButton
-        v-if="props.canManage"
-        data-testid="addUserBtn"
-        label="Ajouter l'utilisateur"
-        secondary
-        icon="ri-user-add-line"
-        :disabled="project?.locked || !newUserEmail || isUserAlreadyInTeam"
-        @click="addUserToProject()"
-      />
+      <div>
+        <SuggestionInput
+          v-if="props.canManage"
+          :key="newUserInputKey"
+          v-model="newUserEmail"
+          data-testid="addUserSuggestionInput"
+          :disabled="project?.locked"
+          label="Ajouter un utilisateur"
+          label-visible
+          hint="Nom, prénom ou adresse mail de l'utilisateur à rechercher"
+          placeholder="prenom.nom@interieur.gouv.fr"
+          :suggestions="usersToAdd"
+          @select-suggestion="(value: User) => newUserEmail = value.email"
+          @update:model-value="(value: string) => retrieveUsersToAdd(value)"
+        />
+        <DsfrAlert
+          v-if="isUserAlreadyInTeam"
+          data-testid="userErrorInfo"
+          description="L'utilisateur associé à cette adresse e-mail fait déjà partie du projet."
+          small
+          type="error"
+          class="w-max fr-mb-2w"
+        />
+        <DsfrButton
+          v-if="props.canManage"
+          data-testid="addUserBtn"
+          label="Ajouter l'utilisateur"
+          secondary
+          icon="ri-user-add-line"
+          :disabled="project?.locked || !newUserEmail || isUserAlreadyInTeam"
+          @click="addUserToProject()"
+        />
+      </div>
+      <div
+        v-if="canTransfer"
+        data-testid="transferProjectZone"
+        class="danger-zone"
+      >
+        <DsfrButton
+          v-show="!isTransferingProject"
+          data-testid="showArchiveProjectBtn"
+          :label="`Transférer le projet`"
+          primary
+          icon="ri-delete-bin-7-line"
+          @click="isTransferingProject = true"
+        />
+        <div
+          v-if="isTransferingProject"
+        >
+          <!-- <DsfrAlert
+            class="<md:mt-2 fr-mb-2w"
+            description="La suppression du projet entraîne la suppression de toutes les ressources applicatives associées."
+            type="info"
+            small
+          /> -->
+          <DsfrSelect
+            v-model="nextOwnerId"
+            label="Choisir le futur propriétaire du projet"
+            :options="transferSelectOptions"
+          />
+          <div
+            class="flex justify-between"
+          >
+            <DsfrButton
+              data-testid="transferProjectBtn"
+              :label="`Transférer le projet`"
+              :disabled="!nextOwnerId"
+              secondary
+              icon="ri-delete-bin-7-line"
+              @click="transferOwnership(nextOwnerId)"
+            />
+            <DsfrButton
+              label="Annuler"
+              primary
+              @click="isTransferingProject = false"
+            />
+          </div>
+        </div>
+      </div>
     </div>
     <LoadingCt
       v-if="snackbarStore.isWaitingForResponse"
@@ -240,3 +270,4 @@ watch(() => props.members, setRows)
     />
   </div>
 </template>
+@/stores/project-member.js

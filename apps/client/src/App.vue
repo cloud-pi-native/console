@@ -4,6 +4,7 @@ import { getKeycloak } from './utils/keycloak/keycloak.js'
 import { useUserStore } from './stores/user.js'
 import { useSnackbarStore } from './stores/snackbar.js'
 import { useSystemSettingsStore } from './stores/system-settings.js'
+import { useServiceStore } from '@/stores/services-monitor.js'
 import router from './router/index.js'
 
 const keycloak = getKeycloak()
@@ -48,6 +49,11 @@ userStore.$subscribe(() => {
   }
 })
 
+const serviceStore = useServiceStore()
+onBeforeMount(() => {
+  serviceStore.startHealthPolling()
+  serviceStore.checkServicesHealth()
+})
 </script>
 
 <template>

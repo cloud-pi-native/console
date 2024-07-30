@@ -69,15 +69,13 @@ export const projectRouter = () => serverInstance.router(projectContract, {
     const projectId = params.projectId
     const user = req.session.user
     const perms = await authUser(user, { id: projectId })
-    if (
-      data.ownerId && perms.projectOwnerId !== data.ownerId // Il essaye de changer le owner
-      && (
-        perms.projectOwnerId !== user.id // mais il n'est ni owner
-        || !AdminAuthorized.isAdmin(perms.adminPermissions) // ni authorisé comme admin
-      )
-    ) return new Forbidden403('Seul le owner du projet peut transférer le projet')
+
+    if (perms.projectOwnerId !== user.id // il n'est ni owner
+      && !AdminAuthorized.isAdmin(perms.adminPermissions) // ni autorisé comme admin
+    ) delete data.ownerId // impossible de toucher à cette clé
+
     if (!ProjectAuthorized.Manage(perms)) return new Forbidden403()
-    if (!perms.projectPermissions) return new NotFound404()
+    if (!perms.projectPermissions && !AdminAuthorized.isAdmin(perms.adminPermissions)) return new NotFound404()
     if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
     if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
 

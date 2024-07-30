@@ -1,8 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { CreateProjectBody, Organization, ProjectV2, UpdateProjectBody, projectContract, getPermsByUserRoles, PROJECT_PERMS, resourceListToDict } from '@cpn-console/shared'
+import { CreateProjectBody, Organization, ProjectV2, UpdateProjectBody, projectContract, getPermsByUserRoles, PROJECT_PERMS, resourceListToDict, projectRoleContract, Role } from '@cpn-console/shared'
 import { apiClient, extractData } from '@/api/xhr-client.js'
-import { useUsersStore } from './users.js'
 import { useUserStore } from './user.js'
 import { useOrganizationStore } from './organization.js'
 
@@ -11,7 +10,6 @@ export type ProjectWithOrganization = ProjectV2 & { organization: Organization }
 export const useProjectStore = defineStore('project', () => {
   const selectedProject = ref<ProjectWithOrganization>()
   const projects = ref<ProjectWithOrganization[]>([])
-  const usersStore = useUsersStore()
   const userStore = useUserStore()
   const organizationStore = useOrganizationStore()
   const selectedProjectPerms = computed(() => {
@@ -29,9 +27,10 @@ export const useProjectStore = defineStore('project', () => {
   }
 
   const updateProject = async (projectId: string, data: UpdateProjectBody) => {
-    await apiClient.Projects.updateProject({ body: data, params: { projectId } })
+    const project = await apiClient.Projects.updateProject({ body: data, params: { projectId } })
       .then(response => extractData(response, 200))
     await listProjects()
+    return project
   }
 
   const listProjects = async (query: typeof projectContract.listProjects.query._type = { filter: 'member', statusNotIn: 'archived' }) => {
@@ -39,9 +38,6 @@ export const useProjectStore = defineStore('project', () => {
       .then(response => extractData(response, 200))
     await organizationStore.listOrganizations()
     projects.value = res.map(project => ({ ...project, organization: organizationStore.organizationsById[project.organizationId] as Organization }))
-    projects.value.forEach((project) => {
-      usersStore.addUsersFromMembers(project.members)
-    })
     if (selectedProject.value) {
       setSelectedProject(selectedProject.value.id)
     }
@@ -77,6 +73,19 @@ export const useProjectStore = defineStore('project', () => {
     apiClient.Projects.getProjectsData()
       .then(response => extractData(response, 200))
 
+  const createRole = (projectId: ProjectV2['id'], body: typeof projectRoleContract.createProjectRole.body._type) =>
+    apiClient.ProjectsRoles.createProjectRole({ body, params: { projectId } })
+      .then(response => extractData(response, 201))
+
+  const deleteRole = (projectId: ProjectV2['id'], roleId: Role['id']) =>
+    apiClient.ProjectsRoles.deleteProjectRole({ params: { projectId, roleId } })
+      .then(response => extractData(response, 200))
+
+  const patchRoles = (projectId: ProjectV2['id'], body: typeof projectRoleContract.patchProjectRoles.body._type) =>
+    apiClient.ProjectsRoles.patchProjectRoles({ body, params: { projectId } })
+      .then(response => extractData(response, 200))
+
+  apiClient.ProjectsRoles
   return {
     handleProjectLocking,
     generateProjectsData,
@@ -90,5 +99,8 @@ export const useProjectStore = defineStore('project', () => {
     replayHooksForProject,
     archiveProject,
     getProjectSecrets,
+    createRole,
+    deleteRole,
+    patchRoles,
   }
 })

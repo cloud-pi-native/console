@@ -37,7 +37,6 @@ const setSelectedStage = async (stage: Stage) => {
   }
   selectedStage.value = stage
   isNewStageForm.value = false
-  // @ts-ignore
   await getStageAssociatedEnvironments(stage.id)
 }
 

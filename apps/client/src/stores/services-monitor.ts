@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { MonitorStatus, type ServiceBody } from '@cpn-console/shared'
+// @ts-ignore '@gouvminint/vue-dsfr' missing types
 import type { DsfrAlertType } from '@gouvminint/vue-dsfr'
 import { apiClient, extractData } from '@/api/xhr-client.js'
 
@@ -60,6 +61,7 @@ export const useServiceStore = defineStore('serviceMonitor', () => {
       status: 'info',
       dotColor: servicesHealth.value.dotColor,
     }
+    console.log('fetch des health')
 
     const res = await apiClient.Services.getServiceHealth()
     if (res.status === 200) {
@@ -81,6 +83,8 @@ export const useServiceStore = defineStore('serviceMonitor', () => {
   }
 
   const startHealthPolling = async () => {
+    if (!interval) return
+
     clear()
     await checkServicesHealth()
     interval = setInterval(async () => {

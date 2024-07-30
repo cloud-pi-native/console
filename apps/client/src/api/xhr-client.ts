@@ -33,7 +33,7 @@ export const extractData = <T extends { status: number, body: unknown, headers: 
   response: T,
   expectedStatus: S,
 ): Extract<T, { status: S }>['body'] => {
-  if (response.status >= 400 && response.status <= 599) {
+  if (response.status >= 400) {
     // @ts-ignore
     throw Error(response.body?.error ?? response.body?.message ?? 'Erreur inconnue')
   }

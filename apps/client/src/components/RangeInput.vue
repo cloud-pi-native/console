@@ -51,7 +51,9 @@ defineEmits<{
         min="0"
         :step="props.step"
         :max="props.levels.length - 1"
-        @input="$emit('updateLevel', $event.target?.value ?? 0)"
+        @input="$emit('updateLevel',
+                      // @ts-ignore-rule
+                      $event.target?.value ?? 0)"
       >
       <datalist
         id="rangeList"

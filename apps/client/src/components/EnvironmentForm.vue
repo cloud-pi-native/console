@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { ref, onBeforeMount, computed } from 'vue'
+// @ts-ignore '@gouvminint/vue-dsfr' missing types
 import { getRandomId } from '@gouvminint/vue-dsfr'
 import {
   type CleanedCluster,
@@ -21,21 +22,27 @@ type OptionType = {
 }
 
 const props = withDefaults(defineProps<{
-  environment: Environment
+  environment?: Omit<Environment, 'projectId'>
   isEditable: boolean
   canManage: boolean
   isProjectLocked: boolean
   projectClustersIds: CleanedCluster['id'][]
   allClusters: CleanedCluster[]
 }>(), {
-  environment: undefined,
+  environment: () => ({
+    id: '',
+    name: '',
+    stageId: '',
+    quotaId: '',
+    clusterId: '',
+  }),
   isEditable: true,
   canManage: false,
   isProjectLocked: false,
 })
 
 const emit = defineEmits<{
-  addEnvironment: [environment: Omit<Environment, 'id' | 'permissions'>]
+  addEnvironment: [environment: Omit<Environment, 'id' | 'projectId'>]
   putEnvironment: [environment: Pick<Environment, 'quotaId'>]
   deleteEnvironment: [environmentId: Environment['id']]
   cancel: []

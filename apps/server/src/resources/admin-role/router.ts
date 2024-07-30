@@ -68,7 +68,7 @@ export const adminRoleRouter = () => serverInstance.router(adminRoleContract, {
     const resBody = await deleteRole(params.roleId)
 
     return {
-      status: 200,
+      status: 204,
       body: resBody,
     }
   },
