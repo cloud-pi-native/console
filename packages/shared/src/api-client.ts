@@ -22,6 +22,7 @@ export const getContract = async () => contractInstance.router(
     Zones: (await import('./contracts/index.js')).zoneContract,
     System: (await import('./contracts/index.js')).systemContract,
     SystemPlugin: (await import('./contracts/index.js')).systemPluginContract,
+    SystemSettings: (await import('./contracts/index.js')).systemSettingsContract,
   },
 )
 

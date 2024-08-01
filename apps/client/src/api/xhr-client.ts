@@ -1,6 +1,6 @@
 import { type ApiFetcherArgs, tsRestFetchApi } from '@ts-rest/core'
 import { apiPrefix, getApiClient } from '@cpn-console/shared'
-import { getKeycloak } from '@/utils/keycloak/keycloak'
+import { getKeycloak } from '@/utils/keycloak/keycloak.js'
 
 export const apiClient = await getApiClient(
   '',
@@ -29,7 +29,7 @@ export const apiClient = await getApiClient(
   },
 )
 
-export const extractData = <T extends { status: number, body: unknown, headers: Headers }, S extends T['status']> (
+export const extractData = <T extends { status: number, body: unknown, headers: Headers }, S extends T['status']>(
   response: T,
   expectedStatus: S,
 ): Extract<T, { status: S }>['body'] => {

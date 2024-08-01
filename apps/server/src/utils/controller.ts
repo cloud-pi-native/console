@@ -1,8 +1,7 @@
 import type { Permission, User, Role, Cluster } from '@prisma/client'
-import { DoneFuncWithErrOrRes, FastifyReply, FastifyRequest } from 'fastify'
 import { type ProjectRoles, adminGroupPath, projectIsLockedInfo, type Project } from '@cpn-console/shared'
-import { ForbiddenError } from './errors.js'
 import { UserDetails } from '@/types/index.js'
+import { ForbiddenError } from './errors.js'
 
 export const hasGroupAdmin = (groups: UserDetails['groups']) => groups.includes(adminGroupPath)
 
@@ -10,13 +9,6 @@ export const assertIsAdmin = (user: UserDetails) => {
   if (!hasGroupAdmin(user.groups)) {
     throw new ForbiddenError('Vous n\'avez pas les droits administrateur')
   }
-}
-
-export const checkAdminGroup = (req: FastifyRequest, _res: FastifyReply, done: DoneFuncWithErrOrRes) => {
-  if (!req.session.user.groups?.includes(adminGroupPath)) {
-    throw new ForbiddenError('Vous n\'avez pas les droits administrateur')
-  }
-  done()
 }
 
 export type RequireOnlyOne<T, Keys extends keyof T = keyof T> =
