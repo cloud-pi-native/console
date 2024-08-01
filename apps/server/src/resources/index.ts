@@ -15,6 +15,7 @@ import { systemRouter } from './system/router.js'
 import { pluginConfigRouter } from './system/config/router.js'
 import { userRouter } from './user/router.js'
 import { zoneRouter } from './zone/router.js'
+import { systemSettingsRouter } from './system/settings/router.js'
 import { serverInstance } from '@/app.js'
 
 export const apiRouter = () => async (app: FastifyInstance) => {
@@ -34,4 +35,5 @@ export const apiRouter = () => async (app: FastifyInstance) => {
   await app.register(serverInstance.plugin(systemRouter()), { responseValidation: true })
   await app.register(serverInstance.plugin(userRouter()))
   await app.register(serverInstance.plugin(zoneRouter()))
+  await app.register(serverInstance.plugin(systemSettingsRouter()), { responseValidation: true })
 }

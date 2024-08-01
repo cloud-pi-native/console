@@ -193,6 +193,11 @@ model AdminPlugin {
   @@unique([pluginName, key])
 }
 
+model SystemSetting {
+  key   String @unique @id
+  value String
+}
+
 enum ClusterPrivacy {
   public
   dedicated
