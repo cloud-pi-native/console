@@ -24,8 +24,8 @@ export const stageRouter = () => serverInstance.router(stageContract, {
 
   // Récupérer les environnements associés au stage
   getStageEnvironments: async ({ request: req, params }) => {
-    const user = req.session.user
-    const perms = await authUser(user)
+    const requestor = req.session.user
+    const perms = await authUser(requestor)
     if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
     const stageId = params.stageId
@@ -40,22 +40,23 @@ export const stageRouter = () => serverInstance.router(stageContract, {
 
   // Créer un stage
   createStage: async ({ request: req, body: data }) => {
-    const user = req.session.user
-    const perms = await authUser(user)
+    const requestor = req.session.user
+    const perms = await authUser(requestor)
     if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
-    const stage = await createStage(data)
+    const body = await createStage(data)
+    if (body instanceof ErrorResType) return body
 
     return {
       status: 201,
-      body: stage,
+      body,
     }
   },
 
   // Modifier une association stage / clusters
   updateStage: async ({ request: req, params, body: data }) => {
-    const user = req.session.user
-    const perms = await authUser(user)
+    const requestor = req.session.user
+    const perms = await authUser(requestor)
     if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
     const stageId = params.stageId
@@ -71,8 +72,8 @@ export const stageRouter = () => serverInstance.router(stageContract, {
 
   // Supprimer un stage
   deleteStage: async ({ request: req, params }) => {
-    const user = req.session.user
-    const perms = await authUser(user)
+    const requestor = req.session.user
+    const perms = await authUser(requestor)
     if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
     const stageId = params.stageId

@@ -43,6 +43,7 @@ const bit = (position: bigint) => 1n << position
 
 // Be very careful and think to apply corresponding updates in database if you modify these values, You'll have to do binary updates in SQL, good luck !
 export const PROJECT_PERMS = { // project permissions
+  GUEST: bit(0n),
   MANAGE: bit(1n),
   MANAGE_MEMBERS: bit(2n),
   MANAGE_ENVIRONMENTS: bit(3n),

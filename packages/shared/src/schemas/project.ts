@@ -141,12 +141,16 @@ export const GetProjectsSchema = {
 export const GetProjectsDataSchema = {
   responses: {
     200: z.string(),
+    403: ErrorSchema,
+    500: ErrorSchema,
   },
 }
 export const GetProjectSecretsSchema = {
   params: ProjectParams,
   responses: {
     200: z.record(z.record(z.string())),
+    400: z.record(z.record(z.string())),
+    422: z.record(z.record(z.string())),
     500: ErrorSchema,
   },
 }
@@ -164,17 +168,6 @@ export const ReplayHooksForProjectSchema = {
   params: ProjectParams,
   responses: {
     204: null,
-    500: ErrorSchema,
-  },
-}
-
-export const PatchProjectSchema = {
-  params: ProjectParams,
-  body: z.object({
-    lock: z.boolean(),
-  }),
-  responses: {
-    200: null,
     500: ErrorSchema,
   },
 }

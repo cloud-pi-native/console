@@ -6,7 +6,6 @@ import {
   UpdateProjectSchema,
   ReplayHooksForProjectSchema,
   ArchiveProjectSchema,
-  PatchProjectSchema,
   GetProjectsDataSchema,
   ProjectSchemaV2,
   ProjectParams,
@@ -90,19 +89,7 @@ export const projectContract = contractInstance.router({
     description: 'Retrieve all projects data for download as CSV file.',
     responses: GetProjectsDataSchema.responses,
   },
-
-  patchProject: {
-    method: 'PATCH',
-    path: `${apiPrefix}/projects/:projectId`,
-    pathParams: ProjectParams,
-    summary: 'Handle project locking',
-    description: 'Lock or unlock a project.',
-    body: PatchProjectSchema.body,
-    responses: PatchProjectSchema.responses,
-  },
 })
-
-export type PatchProjectBody = ClientInferRequest<typeof projectContract.patchProject>['body']
 
 export type CreateProjectBody = ClientInferRequest<typeof projectContract.createProject>['body']
 

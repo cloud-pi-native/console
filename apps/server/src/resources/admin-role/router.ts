@@ -7,7 +7,7 @@ import {
 } from './business.js'
 import { AdminAuthorized, adminRoleContract, ProjectAuthorized } from '@cpn-console/shared'
 import { serverInstance } from '@/app.js'
-import { authUser, NotFound404, Forbidden403, ErrorResType } from '@/utils/controller.js'
+import { authUser, Forbidden403, ErrorResType } from '@/utils/controller.js'
 
 export const adminRoleRouter = () => serverInstance.router(adminRoleContract, {
   // Récupérer des projets
@@ -21,8 +21,8 @@ export const adminRoleRouter = () => serverInstance.router(adminRoleContract, {
   },
 
   createAdminRole: async ({ request: req, body }) => {
-    const user = req.session.user
-    const perms = await authUser(user)
+    const requestor = req.session.user
+    const perms = await authUser(requestor)
     if (!ProjectAuthorized.ManageRoles(perms)) return new Forbidden403()
 
     const resBody = await createRole(body)
@@ -34,8 +34,8 @@ export const adminRoleRouter = () => serverInstance.router(adminRoleContract, {
   },
 
   patchAdminRoles: async ({ request: req, body }) => {
-    const user = req.session.user
-    const perms = await authUser(user)
+    const requestor = req.session.user
+    const perms = await authUser(requestor)
     if (!ProjectAuthorized.ManageRoles(perms)) return new Forbidden403()
 
     const resBody = await patchRoles(body)
@@ -48,9 +48,9 @@ export const adminRoleRouter = () => serverInstance.router(adminRoleContract, {
   },
 
   adminRoleMemberCounts: async ({ request: req }) => {
-    const user = req.session.user
-    const perms = await authUser(user)
-    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new NotFound404()
+    const requestor = req.session.user
+    const perms = await authUser(requestor)
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
     const resBody = await countRolesMembers()
 
@@ -61,8 +61,8 @@ export const adminRoleRouter = () => serverInstance.router(adminRoleContract, {
   },
 
   deleteAdminRole: async ({ request: req, params }) => {
-    const user = req.session.user
-    const perms = await authUser(user)
+    const requestor = req.session.user
+    const perms = await authUser(requestor)
     if (!ProjectAuthorized.ManageRoles(perms)) return new Forbidden403()
 
     const resBody = await deleteRole(params.roleId)

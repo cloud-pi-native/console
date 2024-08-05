@@ -5,7 +5,6 @@ import {
   getProjectSecrets,
   replayHooks,
   listProjects,
-  handleProjectLocking,
   generateProjectsData,
 } from './business.js'
 import { AdminAuthorized, ProjectAuthorized, projectContract } from '@cpn-console/shared'
@@ -16,10 +15,10 @@ export const projectRouter = () => serverInstance.router(projectContract, {
 
   // Récupérer des projets
   listProjects: async ({ request: req, query }) => {
-    const user = req.session.user
-    const perms = await authUser(user)
-    if (query.filter === 'all' && !AdminAuthorized.isAdmin(perms.adminPermissions)) {
-      return new BadRequest400('Seul les admins avec les droits de visionnage de projet peuvent utiliser le filtre \'all\'')
+    const requestor = req.session.user
+    const { adminPermissions, user } = await authUser(requestor)
+    if (query.filter === 'all' && !AdminAuthorized.isAdmin(adminPermissions)) {
+      return new BadRequest400('Seul les admins avec les droits de visionnage des projet peuvent utiliser le filtre \'all\'')
     }
     const body = await listProjects(
       query,
@@ -35,13 +34,13 @@ export const projectRouter = () => serverInstance.router(projectContract, {
   // Récupérer les secrets d'un projet
   getProjectSecrets: async ({ request: req, params }) => {
     const projectId = params.projectId
-    const user = req.session.user
-    const perms = await authUser(user, { id: projectId })
+    const requestor = req.session.user
+    const perms = await authUser(requestor, { id: projectId })
     if (!perms.projectPermissions) return new NotFound404()
     if (!ProjectAuthorized.SeeSecrets(perms)) return new Forbidden403()
     if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
 
-    const body = await getProjectSecrets(projectId, user.id)
+    const body = await getProjectSecrets(projectId, perms.user.id)
 
     if (body instanceof ErrorResType) return body
 
@@ -67,19 +66,28 @@ export const projectRouter = () => serverInstance.router(projectContract, {
   // Mettre à jour un projet
   updateProject: async ({ request: req, params, body: data }) => {
     const projectId = params.projectId
-    const user = req.session.user
-    const perms = await authUser(user, { id: projectId })
+    const requestor = req.session.user
+    const perms = await authUser(requestor, { id: projectId })
 
-    if (perms.projectOwnerId !== user.id // il n'est ni owner
-      && !AdminAuthorized.isAdmin(perms.adminPermissions) // ni autorisé comme admin
-    ) delete data.ownerId // impossible de toucher à cette clé
+    const isAdmin = AdminAuthorized.isAdmin(perms.adminPermissions)
+    const isOwner = perms.projectOwnerId === perms.user.id
+
+    if (!perms.projectPermissions && !isAdmin) return new NotFound404()
+    if (!isAdmin) { // filtrage des clés par niveau de permissions
+      delete data.locked
+      if (!isOwner) {
+        delete data.ownerId // impossible de toucher à cette clé
+      }
+    }
+    if (perms.projectLocked) {
+      if (!isAdmin) return new Forbidden403('Le projet est verrouillé')
+      if (data.locked !== false) return new Forbidden403('Veuillez déverrouiler le projet pour le mettre à jour')
+    }
 
     if (!ProjectAuthorized.Manage(perms)) return new Forbidden403()
-    if (!perms.projectPermissions && !AdminAuthorized.isAdmin(perms.adminPermissions)) return new NotFound404()
-    if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
     if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
 
-    const body = await updateProject(data, projectId, user, req.id)
+    const body = await updateProject(data, projectId, perms.user, req.id)
 
     if (body instanceof ErrorResType) return body
     return {
@@ -93,8 +101,10 @@ export const projectRouter = () => serverInstance.router(projectContract, {
     const projectId = params.projectId
     const user = req.session.user
     const perms = await authUser(user, { id: projectId })
+    const isAdmin = AdminAuthorized.isAdmin(perms.adminPermissions)
+
+    if (!perms.projectPermissions && !isAdmin) return new NotFound404()
     if (!ProjectAuthorized.ReplayHooks(perms)) return new Forbidden403()
-    if (!perms.projectPermissions) return new NotFound404()
     if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
     if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
 
@@ -113,8 +123,10 @@ export const projectRouter = () => serverInstance.router(projectContract, {
     const projectId = params.projectId
     const user = req.session.user
     const perms = await authUser(user, { id: projectId })
+    const isAdmin = AdminAuthorized.isAdmin(perms.adminPermissions)
+
+    if (!perms.projectPermissions && !isAdmin) return new NotFound404()
     if (!ProjectAuthorized.Manage(perms)) return new Forbidden403()
-    if (!perms.projectPermissions) return new NotFound404()
     if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
     if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
 
@@ -128,28 +140,10 @@ export const projectRouter = () => serverInstance.router(projectContract, {
   },
   // Récupérer les données de tous les projets pour export
   getProjectsData: async ({ request: req }) => {
-    const user = req.session.user
-    const perms = await authUser(user)
+    const requestor = req.session.user
+    const perms = await authUser(requestor)
     if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
     const body = await generateProjectsData()
-
-    return {
-      status: 200,
-      body,
-    }
-  },
-
-  // (Dé)verrouiller un projet
-  patchProject: async ({ request: req, params, body: data }) => {
-    const user = req.session.user
-    const projectId = params.projectId
-    const perms = await authUser(user, { id: projectId })
-    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
-    if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
-
-    const lock = data.lock
-
-    const body = await handleProjectLocking(projectId, lock)
 
     return {
       status: 200,

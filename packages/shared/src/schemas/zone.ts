@@ -23,6 +23,9 @@ export type Zone = Zod.infer<typeof ZoneSchema>
 export const ListZonesSchema = {
   responses: {
     200: z.array(ZoneSchema),
+    400: ErrorSchema,
+    403: ErrorSchema,
+    404: ErrorSchema,
     500: ErrorSchema,
   },
 }
@@ -33,6 +36,9 @@ export const CreateZoneSchema = {
     .extend({ clusterIds: z.string().uuid().array().optional() }),
   responses: {
     201: ZoneSchema,
+    400: ErrorSchema,
+    403: ErrorSchema,
+    404: ErrorSchema,
     500: ErrorSchema,
   },
 }
@@ -45,6 +51,8 @@ export const UpdateZoneSchema = {
   body: ZoneSchema.omit({ id: true, slug: true }),
   responses: {
     201: ZoneSchema,
+    400: ErrorSchema,
+    403: ErrorSchema,
     404: ErrorSchema,
     500: ErrorSchema,
   },

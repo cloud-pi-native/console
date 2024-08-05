@@ -31,7 +31,7 @@ export const projectMemberRouter = () => serverInstance.router(projectMemberCont
     if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
     if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
 
-    const resBody = await addMember(projectId, body, user.id, req.id, perms.projectOwnerId)
+    const resBody = await addMember(projectId, body, perms.user.id, req.id, perms.projectOwnerId)
     if (resBody instanceof ErrorResType) return resBody
 
     return {

@@ -15,14 +15,14 @@ import {
   removeClusterFromStage,
   updateCluster as updateClusterQuery,
   getClusterDetails as getClusterDetailsQuery,
-  listClusters,
+  listClusters as listClustersQuery,
 } from '@/resources/queries-index.js'
 import { linkClusterToStages } from '@/resources/stage/business.js'
 import { validateSchema } from '@/utils/business.js'
 import { hook } from '@/utils/hook-wrapper.js'
 import { ErrorResType, BadRequest400, NotFound404, Unprocessable422 } from '@/utils/controller.js'
 
-export const getClusters = async (userId?: User['id']) => {
+export const listClusters = async (userId?: User['id']) => {
   const where: Prisma.ClusterWhereInput = userId
     ? {
         OR: [
@@ -39,7 +39,7 @@ export const getClusters = async (userId?: User['id']) => {
         ],
       }
     : {}
-  const clusters = await listClusters(where)
+  const clusters = await listClustersQuery(where)
   return clusters.map(({ stages, ...cluster }) => ({
     ...cluster,
     stageIds: stages?.map(({ id }) => id) ?? [],
