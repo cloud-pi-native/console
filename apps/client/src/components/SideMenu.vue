@@ -1,8 +1,8 @@
 <script lang="ts" setup>
+import { ProjectAuthorized } from '@cpn-console/shared'
 import { useUserStore } from '@/stores/user.js'
 import { useProjectStore } from '@/stores/project.js'
 import { useServiceStore } from '@/stores/services-monitor.js'
-import { ProjectAuthorized } from '@cpn-console/shared'
 import router from '../router/index.js'
 
 const route = useRoute()

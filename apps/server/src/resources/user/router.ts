@@ -9,7 +9,6 @@ import '@/types/index.js'
 import { serverInstance } from '@/app.js'
 import { authUser, Forbidden403 } from '@/utils/controller.js'
 
-// TODO tout revoir
 export const userRouter = () => serverInstance.router(userContract, {
   getMatchingUsers: async ({ query }) => {
     const usersMatching = await getMatchingUsers(query)
@@ -31,8 +30,8 @@ export const userRouter = () => serverInstance.router(userContract, {
   },
 
   getAllUsers: async ({ request: req, query }) => {
-    const user = req.session.user
-    const perms = await authUser(user)
+    const requestor = req.session.user
+    const perms = await authUser(requestor)
     if (!perms.adminPermissions) return new Forbidden403()
 
     const body = await getUsers(query)
@@ -44,8 +43,8 @@ export const userRouter = () => serverInstance.router(userContract, {
   },
 
   patchUsers: async ({ request: req, body }) => {
-    const user = req.session.user
-    const perms = await authUser(user)
+    const requestor = req.session.user
+    const perms = await authUser(requestor)
     if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
     const users = await patchUsers(body)

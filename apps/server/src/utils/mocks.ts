@@ -3,7 +3,10 @@ import { Project, Cluster, Repository } from '@prisma/client'
 import { User } from '@cpn-console/test-utils'
 import { PluginsManifests, RepoCreds, ServiceInfos, editStrippers, populatePluginManifests } from '@cpn-console/hooks'
 import { genericProxy } from './proxy.js'
-import { DEFAULT, DISABLED } from '@cpn-console/shared'
+import { DEFAULT, DISABLED, PROJECT_PERMS } from '@cpn-console/shared'
+import { UserDetails } from '../types/index.js'
+import { faker } from '@faker-js/faker'
+import * as utilsController from '../utils/controller.js'
 
 let requestor: User
 
@@ -309,3 +312,30 @@ export const mockHookWrapper = () => ({
     user: genericProxy(user, { retrieveUserByEmail: [], retrieveAdminUsers: [], updateUserAdminGroupMembership: [] }),
   },
 })
+
+export const getRandomRequestor = (): UserDetails => ({
+  email: faker.internet.email(),
+  firstName: faker.person.firstName(),
+  lastName: faker.person.lastName(),
+  groups: [], id: faker.string.uuid(),
+})
+
+export function getUserMockInfos(isAdmin: boolean, user?: UserDetails): utilsController.UserProfile
+export function getUserMockInfos(isAdmin: boolean, user?: UserDetails, project?: utilsController.ProjectPermState): utilsController.UserProjectProfile
+export function getUserMockInfos(isAdmin: boolean, user = getRandomRequestor(), project?: utilsController.ProjectPermState): utilsController.UserProfile | utilsController.UserProjectProfile {
+  return {
+    adminPermissions: isAdmin ? 2n : 0n,
+    user,
+    ...project,
+  }
+}
+
+export function getProjectMockInfos({ projectId, projectLocked, projectOwnerId, projectPermissions, projectStatus }: Partial<utilsController.ProjectPermState>): utilsController.ProjectPermState {
+  return {
+    projectId: projectId ?? faker.string.uuid(),
+    projectLocked: projectLocked ?? false,
+    projectOwnerId: projectOwnerId ?? faker.string.uuid(),
+    projectStatus: projectStatus ?? 'created',
+    projectPermissions: projectPermissions ?? PROJECT_PERMS.MANAGE,
+  }
+}

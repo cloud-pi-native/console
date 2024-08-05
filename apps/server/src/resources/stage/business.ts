@@ -36,7 +36,7 @@ export const getStageAssociatedEnvironments = async (stageId: Stage['id']) => {
 
 export const createStage = async ({ clusterIds = [], name, quotaIds = [] }: CreateStageBody) => {
   const isNameTaken = await getStageByName(name)
-  if (isNameTaken) throw new BadRequest400('Un type d\'environnement portant ce nom existe déjà')
+  if (isNameTaken) return new BadRequest400('Un type d\'environnement portant ce nom existe déjà')
 
   const stage = await createStageQuery({ name })
 

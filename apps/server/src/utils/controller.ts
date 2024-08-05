@@ -1,10 +1,8 @@
 import type { Cluster, ProjectRole, ProjectMembers, Project, Prisma } from '@prisma/client'
-import { adminGroupPath, projectIsLockedInfo, PROJECT_PERMS as PP, XOR } from '@cpn-console/shared'
+import { projectIsLockedInfo, PROJECT_PERMS as PP, XOR, PROJECT_PERMS } from '@cpn-console/shared'
 import { UserDetails } from '@/types/index.js'
 import prisma from '@/prisma.js'
 import { logUser } from '@/resources/user/business.js'
-
-export const hasGroupAdmin = (groups: UserDetails['groups']) => groups.includes(adminGroupPath)
 
 export type RequireOnlyOne<T, Keys extends keyof T = keyof T> =
   Pick<T, Exclude<keyof T, Keys>>
@@ -63,8 +61,9 @@ export const whereBuilder = <T extends StringArray>({ enumValues, eqValue, inVal
 }
 
 type ProjectMinimalPerms = Pick<Project, 'everyonePerms' | 'ownerId' | 'id' | 'locked' | 'status'> & { roles: ProjectRole[], members: ProjectMembers[] }
-type UserProfile = { user: UserDetails, adminPermissions: bigint }
-type UserProjectProfile = UserProfile & { projectPermissions?: bigint, projectId: Project['id'], projectLocked: boolean, projectStatus: Project['status'], projectOwnerId: Project['ownerId'] }
+export type UserProfile = { user: UserDetails, adminPermissions: bigint }
+export type ProjectPermState = { projectPermissions?: bigint, projectId: Project['id'], projectLocked: boolean, projectStatus: Project['status'], projectOwnerId: Project['ownerId'] }
+export type UserProjectProfile = UserProfile & ProjectPermState
 
 type ProjectUniqueFinder = XOR<
   { name: string, organizationName: string },
@@ -126,7 +125,7 @@ const getProjectPermissions = (project: ProjectMinimalPerms, user: UserDetails):
   if (!member) return
 
   const memberRoles = project.roles.filter(role => member.roleIds.includes(role.id))
-  return memberRoles.reduce((acc, curr) => acc | curr.permissions, project.everyonePerms)
+  return memberRoles.reduce((acc, curr) => acc | curr.permissions, project.everyonePerms | PROJECT_PERMS.GUEST)
 }
 
 export class ErrorResType {

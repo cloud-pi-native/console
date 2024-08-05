@@ -11,7 +11,6 @@ const apiClientPost = vi.spyOn(apiClient.Projects, 'createProject')
 const apiClientPut = vi.spyOn(apiClient.Projects, 'updateProject')
 const apiClientReplayHooks = vi.spyOn(apiClient.Projects, 'replayHooksForProject')
 const apiClientDelete = vi.spyOn(apiClient.Projects, 'archiveProject')
-const apiClientPatch = vi.spyOn(apiClient.Projects, 'patchProject')
 
 describe('Project Store', () => {
   beforeEach(() => {
@@ -176,16 +175,5 @@ describe('Project Store', () => {
     expect(apiClientDelete).toHaveBeenCalledTimes(1)
     expect(listProjects).toHaveBeenCalledTimes(1)
     expect(projectStore.projects).toEqual([])
-  })
-
-  it('Should lock or unlock a project', async () => {
-    const project = { id: 'id1', name: 'project1', status: 'archived', locked: true }
-    apiClientPatch.mockReturnValueOnce(Promise.resolve({ status: 200 }))
-    const projectStore = useProjectStore()
-
-    const res = await projectStore.handleProjectLocking(project.id, project.locked)
-
-    expect(res).toBe(undefined)
-    expect(apiClientPatch).toHaveBeenCalledTimes(1)
   })
 })

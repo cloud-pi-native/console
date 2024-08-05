@@ -7,8 +7,8 @@ import { authUser, Forbidden403 } from '@/utils/controller.js'
 export const logRouter = () => serverInstance.router(logContract, {
   // Récupérer des logs
   getLogs: async ({ request: req, query }) => {
-    const user = req.session.user
-    const perms = await authUser(user)
+    const requestor = req.session.user
+    const perms = await authUser(requestor)
     if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
     const [total, logs] = await getLogs(query) as [number, unknown[]] as [number, Array<LogModel & { data: Log['data'] }>]

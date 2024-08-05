@@ -21,8 +21,8 @@ export const organizationRouter = () => serverInstance.router(organizationContra
 
   // Créer une organisation
   createOrganization: async ({ request: req, body: data }) => {
-    const user = req.session.user
-    const perms = await authUser(user)
+    const requestor = req.session.user
+    const perms = await authUser(requestor)
     if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
     const body = await createOrganization(data)
 
@@ -36,9 +36,10 @@ export const organizationRouter = () => serverInstance.router(organizationContra
 
   // Synchroniser les organisations via les plugins externes
   syncOrganizations: async ({ request: req }) => {
-    const user = req.session.user
-    const perms = await authUser(user)
-    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+    const requestor = req.session.user
+    const { adminPermissions, user } = await authUser(requestor)
+    if (!AdminAuthorized.isAdmin(adminPermissions)) return new Forbidden403()
+
     const body = await fetchOrganizations(user.id, req.id)
 
     if (body instanceof ErrorResType) return body
@@ -51,8 +52,8 @@ export const organizationRouter = () => serverInstance.router(organizationContra
 
   // Mettre à jour une organisation
   updateOrganization: async ({ request: req, body: data, params }) => {
-    const user = req.session.user
-    const perms = await authUser(user)
+    const requestor = req.session.user
+    const perms = await authUser(requestor)
     if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
     const name = params.organizationName
 
