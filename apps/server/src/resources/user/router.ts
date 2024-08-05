@@ -7,9 +7,9 @@ import {
 } from './business.js'
 import '@/types/index.js'
 import { serverInstance } from '@/app.js'
-import { authUser, Forbidden403 } from '@/utils/controller.js'
+import { authUser } from '@/utils/controller.js'
+import { Forbidden403 } from '@/utils/errors.js'
 
-// TODO tout revoir
 export const userRouter = () => serverInstance.router(userContract, {
   getMatchingUsers: async ({ query }) => {
     const usersMatching = await getMatchingUsers(query)
@@ -44,8 +44,8 @@ export const userRouter = () => serverInstance.router(userContract, {
   },
 
   patchUsers: async ({ request: req, body }) => {
-    const user = req.session.user
-    const perms = await authUser(user)
+    const requestor = req.session.user
+    const perms = await authUser(requestor)
     if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
     const users = await patchUsers(body)

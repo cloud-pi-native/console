@@ -7,7 +7,7 @@ import {
 } from '@/resources/queries-index.js'
 import { projectMemberContract, UserSchema, XOR } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
-import { BadRequest400, NotFound404 } from '@/utils/controller.js'
+import { BadRequest400, NotFound404 } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
 import { logUser } from '../user/business.js'
 

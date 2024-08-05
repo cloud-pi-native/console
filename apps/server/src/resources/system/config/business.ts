@@ -3,10 +3,10 @@ import {
 } from '@cpn-console/shared'
 import {
   getAdminPlugin,
-} from '@/resources/queries-index.js'
+} from './queries.js'
 import { editStrippers, populatePluginManifests, servicesInfos } from '@cpn-console/hooks'
 import { savePluginsConfig } from './queries.js'
-import { BadRequest400 } from '@/utils/controller.js'
+import { BadRequest400 } from '@/utils/errors.js'
 
 export type ConfigRecords = {
   key: string
@@ -42,6 +42,7 @@ export const updatePluginConfig = async (data: PluginsUpdateBody) => {
   const parsedData = editStrippers.global.safeParse(data)
   if (!parsedData.success) return new BadRequest400(parsedData.error.message)
   const records = objToDb(parsedData.data)
+
   await savePluginsConfig(records)
   return null
 }

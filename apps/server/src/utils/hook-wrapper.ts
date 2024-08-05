@@ -177,26 +177,26 @@ export const transformToHookProject = (project: ProjectInfos, store: Config, rep
     environments: project.environments.map(({ quota, stage, ...environment }) => ({
       quota,
       stage: stage.name,
-      permissions: project.members.map(member => ({
-        userId: member.userId,
-        permissions: {
-          ro: ProjectAuthorized.ListEnvironments({ adminPermissions: 0n, projectPermissions: getPermsByUserRoles(member.roleIds, rolesById, project.everyonePerms) }),
-          rw: ProjectAuthorized.ManageEnvironments({ adminPermissions: 0n, projectPermissions: getPermsByUserRoles(member.roleIds, rolesById, project.everyonePerms) }),
-        },
-      })),
+      permissions: [
+        { permissions: { rw: true, ro: true }, userId: project.ownerId },
+        ...project.members.map(member => ({
+          userId: member.userId,
+          permissions: {
+            ro: ProjectAuthorized.ListEnvironments({ adminPermissions: 0n, projectPermissions: getPermsByUserRoles(member.roleIds, rolesById, project.everyonePerms) }),
+            rw: ProjectAuthorized.ManageEnvironments({ adminPermissions: 0n, projectPermissions: getPermsByUserRoles(member.roleIds, rolesById, project.everyonePerms) }),
+          },
+        }))],
       ...environment,
     })),
     repositories: project.repositories.map(repo => ({ ...repo, newCreds: reposCreds[repo.internalRepoName] })),
     store,
-    users: project.members.map(({ user }) => user),
-    roles: project.members.map(member => ({
-      userId: member.userId,
-      role: ProjectAuthorized.Manage({
-        adminPermissions: 0n,
-        projectPermissions: getPermsByUserRoles(member.roleIds, rolesById, project.everyonePerms),
-      })
-        ? 'owner'
-        : 'user',
-    })),
+    users: [project.owner, ...project.members.map(({ user }) => user)],
+    roles: [
+      { userId: project.ownerId, role: 'owner' },
+      ...project.members.map(member => ({
+        userId: member.userId,
+        role: 'user' as const,
+      })),
+    ],
   })
 }

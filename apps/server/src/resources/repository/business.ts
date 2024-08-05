@@ -1,7 +1,8 @@
 import type { Repository, User } from '@prisma/client'
 import type { Project, CreateRepositoryBody, UpdateRepositoryBody } from '@cpn-console/shared'
 import { addLogs, deleteRepository as deleteRepositoryQuery, getRepositoryById as getRepositoryByIdQuery, getProjectInfosAndRepos, initializeRepository, updateRepository as updateRepositoryQuery, getProjectRepositories as getProjectRepositoriesQuery, getProjectInfosOrThrow } from '@/resources/queries-index.js'
-import { checkLocked, ErrorResType, BadRequest400, NotFound404, Unprocessable422 } from '@/utils/controller.js'
+import { checkLocked } from '@/utils/controller.js'
+import { ErrorResType, BadRequest400, NotFound404, Unprocessable422 } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
 
 export const getRepositoryById = async (

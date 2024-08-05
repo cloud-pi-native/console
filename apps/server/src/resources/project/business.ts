@@ -1,44 +1,32 @@
+import { json2csv } from 'json-2-csv'
+import { servicesInfos } from '@cpn-console/hooks'
 import type { Project, User } from '@prisma/client'
-import type { KeycloakPayload } from 'fastify-keycloak-adapter'
 import {
   ProjectStatusSchema,
   projectContract,
   type CreateProjectBody,
   type UpdateProjectBody,
 } from '@cpn-console/shared'
-import { servicesInfos } from '@cpn-console/hooks'
 import {
   addLogs,
   deleteAllEnvironmentForProject,
   deleteAllRepositoryForProject,
   getOrganizationById,
   getProjectByNames,
-  getProjectInfosAndRepos,
-  getProjectInfos as getProjectInfosQuery,
-  getPublicClusters,
   initializeProject,
   listProjects as listProjectsQuery,
   lockProject,
-  removeClusterFromProject,
   updateProject as updateProjectQuery,
   getAllProjectsDataForExport,
-  unlockProject,
 } from '@/resources/queries-index.js'
-import { BadRequest400, NotFound404, Unprocessable422, whereBuilder } from '@/utils/controller.js'
+import { BadRequest400, Unprocessable422 } from '@/utils/errors.js'
+import { whereBuilder } from '@/utils/controller.js'
 import { hook } from '@/utils/hook-wrapper.js'
 import { UserDetails } from '@/types/index.js'
-import { json2csv } from 'json-2-csv'
 import { logUser } from '../user/business.js'
 import prisma from '@/prisma.js'
 
 // Fetch infos
-export const getProjectInfosAndClusters = async (projectId: string) => {
-  const project = await getProjectInfosQuery(projectId)
-  if (!project) return new NotFound404()
-  const projectClusters = project.clusters ? [...await getPublicClusters(), ...project.clusters] : [...await getPublicClusters()]
-  return { project, projectClusters }
-}
-
 const projectStatus = ProjectStatusSchema._def.values
 export const listProjects = async (
   { status, statusIn, statusNotIn, filter = 'member', ...query }: typeof projectContract.listProjects.query._type,
@@ -56,7 +44,7 @@ export const listProjects = async (
     everyonePerms: project.everyonePerms.toString(),
   })))
 
-export const getProjectSecrets = async (projectId: string, _userId: User['id']) => {
+export const getProjectSecrets = async (projectId: string) => {
   const hookReply = await hook.project.getSecrets(projectId)
   if (hookReply.failed) {
     return new Unprocessable422('Echec des services à la récupération des secrets du projet')
@@ -78,7 +66,7 @@ export const createProject = async (dataDto: CreateProjectBody, { groups, ...req
   if (!organization.active) return new BadRequest400('Organisation inactive')
 
   const projectSearch = await getProjectByNames({ name: dataDto.name, organizationName: organization.name })
-  if (projectSearch.length > 0) {
+  if (projectSearch) {
     return new BadRequest400(`Le projet "${dataDto.name}" existe déjà`)
   }
 
@@ -101,20 +89,29 @@ export const createProject = async (dataDto: CreateProjectBody, { groups, ...req
 
 export const updateProject = async ({ description, ownerId, everyonePerms }: UpdateProjectBody, projectId: Project['id'], requestor: UserDetails, requestId: string) => {
   // Actions
-  const updatedProject = await updateProjectQuery(projectId, {
-    description,
-    ownerId,
-    ...everyonePerms && { everyonePerms: BigInt(everyonePerms) },
+  const project = await prisma.project.findUniqueOrThrow({
+    where: { id: projectId },
+    include: { members: true },
   })
 
   if (ownerId) {
-    if (!updatedProject.members.find(member => member.userId === ownerId)) return new BadRequest400('Le nouveau propriétaire doit faire partie des membres actuels du projet')
-    await prisma.projectMembers.createMany({
-      data: { userId: requestor.id, projectId },
-      skipDuplicates: true,
-    })
-    await prisma.projectMembers.delete({
-      where: { projectId_userId: { userId: updatedProject.ownerId, projectId } },
+    if (!project.members.find(member => member.userId === ownerId)) return new BadRequest400('Le nouveau propriétaire doit faire partie des membres actuels du projet')
+    await prisma.$transaction([
+      prisma.projectMembers.upsert({
+        create: { userId: requestor.id, projectId },
+        update: { userId: requestor.id, projectId },
+        where: { projectId_userId: { projectId, userId: project.ownerId } },
+      }),
+      prisma.projectMembers.delete({
+        where: { projectId_userId: { userId: ownerId, projectId } },
+      }),
+      prisma.project.update({ where: { id: projectId }, data: { ownerId } }),
+    ])
+  }
+  if (description || everyonePerms) {
+    await updateProjectQuery(projectId, {
+      description,
+      ...everyonePerms && { everyonePerms: BigInt(everyonePerms) },
     })
   }
 
@@ -132,13 +129,9 @@ export const updateProject = async ({ description, ownerId, everyonePerms }: Upd
   }
 }
 
-export const replayHooks = async (projectId: Project['id'], requestor: KeycloakPayload, requestId: string) => {
-  // Pré-requis
-  const project = await getProjectInfosQuery(projectId)
-  if (!project || project.status === 'archived') return new NotFound404()
-
+export const replayHooks = async (projectId: Project['id'], requestor: UserDetails, requestId: string) => {
   // Actions
-  const { results } = await hook.project.upsert(project.id)
+  const { results } = await hook.project.upsert(projectId)
   await addLogs('Replay hooks for Project', results, requestor.id, requestId)
   if (results.failed) {
     return new Unprocessable422('Echec des services au reprovisionnement du projet')
@@ -146,11 +139,7 @@ export const replayHooks = async (projectId: Project['id'], requestor: KeycloakP
   return null
 }
 
-export const archiveProject = async (projectId: Project['id'], requestor: KeycloakPayload, requestId: string) => {
-  // Pré-requis
-  const project = await getProjectInfosAndRepos(projectId)
-  if (!project) return new NotFound404()
-
+export const archiveProject = async (projectId: Project['id'], requestor: UserDetails, requestId: string) => {
   // Actions
   // Empty the project first
   await Promise.all([
@@ -159,35 +148,28 @@ export const archiveProject = async (projectId: Project['id'], requestor: Keyclo
     deleteAllEnvironmentForProject(projectId),
   ])
 
-  const { results: upsertResults } = await hook.project.upsert(project.id)
+  const { results: upsertResults } = await hook.project.upsert(projectId)
   await addLogs('Delete all project resources', upsertResults, requestor.id, requestId)
   if (upsertResults.failed) {
     return new Unprocessable422('Echec des services à la suppression des ressources du projet')
   }
 
   // -- début - Suppression projet --
-  const { results } = await hook.project.delete(project.id)
+  const { results } = await hook.project.delete(projectId)
   await addLogs('Archive Project', results, requestor.id, requestId)
   if (results.failed) {
     return new Unprocessable422('Echec des services à la suppression du projet')
   }
 
-  // -- début - Retrait clusters --
-  for (const cluster of project.clusters) {
-    await removeClusterFromProject(cluster.id, project.id)
-  }
-  // -- fin - Retrait clusters cibles --
+  // Retrait clusters --
+  await prisma.project.update({
+    where: { id: projectId },
+    data: {
+      clusters: { set: [] },
+    },
+  })
 
   // -- fin - Suppression projet --
-  return null
-}
-
-export const handleProjectLocking = async (projectId: Project['id'], lock: Project['locked']) => {
-  if (lock) {
-    await lockProject(projectId)
-  } else {
-    await unlockProject(projectId)
-  }
   return null
 }
 

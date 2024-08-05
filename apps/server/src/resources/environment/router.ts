@@ -1,15 +1,15 @@
-import { serverInstance } from '@/app.js'
 import { AdminAuthorized, environmentContract, ProjectAuthorized } from '@cpn-console/shared'
+import { serverInstance } from '@/app.js'
 import { createEnvironment, deleteEnvironment, updateEnvironment, getProjectEnvironments, checkEnvironmentInput } from './business.js'
-
-import { authUser, NotFound404, Forbidden403, ErrorResType } from '@/utils/controller.js'
+import { authUser } from '@/utils/controller.js'
+import { NotFound404, Forbidden403, ErrorResType } from '@/utils/errors.js'
 
 export const environmentRouter = () => serverInstance.router(environmentContract, {
   listEnvironments: async ({ request: req, query }) => {
     const projectId = query.projectId
     const user = req.session.user
     const perms = await authUser(user, { id: projectId })
-    if (perms.projectPermissions && !ProjectAuthorized.ListEnvironments(perms)) return new Forbidden403()
+    if (!ProjectAuthorized.ListEnvironments(perms)) return new NotFound404()
 
     const environments = await getProjectEnvironments(projectId)
 
@@ -21,8 +21,8 @@ export const environmentRouter = () => serverInstance.router(environmentContract
 
   createEnvironment: async ({ request: req, body: data }) => {
     const projectId = data.projectId
-    const user = req.session.user
-    const perms = await authUser(user, { id: projectId })
+    const requestor = req.session.user
+    const perms = await authUser(requestor, { id: projectId })
     if (!perms.projectPermissions) return new NotFound404()
     if (!ProjectAuthorized.ManageEnvironments(perms)) return new Forbidden403()
     if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
@@ -34,7 +34,7 @@ export const environmentRouter = () => serverInstance.router(environmentContract
     if (invalidReason) return invalidReason
 
     const body = await createEnvironment({
-      userId: user.id,
+      userId: perms.user.id,
       projectId,
       name: data.name,
       clusterId: data.clusterId,
@@ -65,7 +65,7 @@ export const environmentRouter = () => serverInstance.router(environmentContract
     if (invalidReason) return invalidReason
 
     const body = await updateEnvironment({
-      user,
+      user: perms.user,
       environmentId,
       quotaId: data.quotaId,
       requestId: req.id,
@@ -82,13 +82,13 @@ export const environmentRouter = () => serverInstance.router(environmentContract
     const user = req.session.user
     const { environmentId } = params
     const perms = await authUser(user, { environmentId })
-    if (!ProjectAuthorized.ListEnvironments(perms)) return new NotFound404()
+    if (!perms.projectPermissions) return new NotFound404()
     if (!ProjectAuthorized.ManageEnvironments(perms)) return new Forbidden403()
     if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
     if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
 
     const body = await deleteEnvironment({
-      userId: user.id,
+      userId: perms.user.id,
       environmentId,
       requestId: req.id,
       projectId: perms.projectId,

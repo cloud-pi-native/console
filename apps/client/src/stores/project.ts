@@ -66,7 +66,7 @@ export const useProjectStore = defineStore('project', () => {
     .then(response => extractData(response, 200))
 
   const handleProjectLocking = (projectId: string, lock: boolean) =>
-    apiClient.Projects.patchProject({ body: { lock }, params: { projectId } })
+    apiClient.Projects.updateProject({ body: { locked: lock }, params: { projectId } })
       .then(response => extractData(response, 200))
 
   const generateProjectsData = () =>
@@ -85,7 +85,6 @@ export const useProjectStore = defineStore('project', () => {
     apiClient.ProjectsRoles.patchProjectRoles({ body, params: { projectId } })
       .then(response => extractData(response, 200))
 
-  apiClient.ProjectsRoles
   return {
     handleProjectLocking,
     generateProjectsData,

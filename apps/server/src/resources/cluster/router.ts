@@ -1,6 +1,6 @@
 import { AdminAuthorized, clusterContract } from '@cpn-console/shared'
 import {
-  getClusters,
+  listClusters,
   createCluster,
   deleteCluster,
   getClusterAssociatedEnvironments,
@@ -9,15 +9,17 @@ import {
 } from './business.js'
 import '@/types/index.js'
 import { serverInstance } from '@/app.js'
-import { authUser, ErrorResType, Forbidden403 } from '@/utils/controller.js'
+import { authUser } from '@/utils/controller.js'
+import { ErrorResType, Forbidden403 } from '@/utils/errors.js'
 
 export const clusterRouter = () => serverInstance.router(clusterContract, {
   listClusters: async ({ request: req }) => {
-    const user = req.session.user
-    const { adminPermissions } = await authUser(user)
+    const requestor = req.session.user
+    const { adminPermissions, user } = await authUser(requestor)
+
     const body = AdminAuthorized.isAdmin(adminPermissions)
-      ? await getClusters()
-      : await getClusters(user.id)
+      ? await listClusters()
+      : await listClusters(user.id)
 
     return {
       status: 200,
@@ -26,8 +28,8 @@ export const clusterRouter = () => serverInstance.router(clusterContract, {
   },
 
   getClusterDetails: async ({ params, request: req }) => {
-    const user = req.session.user
-    const perms = await authUser(user)
+    const requestor = req.session.user
+    const perms = await authUser(requestor)
     if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
     const clusterId = params.clusterId
@@ -40,9 +42,9 @@ export const clusterRouter = () => serverInstance.router(clusterContract, {
   },
 
   createCluster: async ({ request: req, body: data }) => {
-    const user = req.session.user
-    const perms = await authUser(user)
-    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+    const requestor = req.session.user
+    const { adminPermissions, user } = await authUser(requestor)
+    if (!AdminAuthorized.isAdmin(adminPermissions)) return new Forbidden403()
 
     const body = await createCluster(data, user.id, req.id)
     if (body instanceof ErrorResType) return body
@@ -54,8 +56,8 @@ export const clusterRouter = () => serverInstance.router(clusterContract, {
   },
 
   getClusterEnvironments: async ({ request: req, params }) => {
-    const user = req.session.user
-    const perms = await authUser(user)
+    const requestor = req.session.user
+    const perms = await authUser(requestor)
     if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
     const clusterId = params.clusterId
@@ -68,9 +70,9 @@ export const clusterRouter = () => serverInstance.router(clusterContract, {
   },
 
   updateCluster: async ({ request: req, params, body: data }) => {
-    const user = req.session.user
-    const perms = await authUser(user)
-    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+    const requestor = req.session.user
+    const { user, adminPermissions } = await authUser(requestor)
+    if (!AdminAuthorized.isAdmin(adminPermissions)) return new Forbidden403()
 
     const clusterId = params.clusterId
     const body = await updateCluster(data, clusterId, user.id, req.id)
@@ -84,15 +86,17 @@ export const clusterRouter = () => serverInstance.router(clusterContract, {
   },
 
   deleteCluster: async ({ request: req, params }) => {
-    const user = req.session.user
-    const perms = await authUser(user)
-    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+    const requestor = req.session.user
+    const { user, adminPermissions } = await authUser(requestor)
+    if (!AdminAuthorized.isAdmin(adminPermissions)) return new Forbidden403()
 
     const clusterId = params.clusterId
     const body = await deleteCluster(clusterId, user.id, req.id)
+
     if (body instanceof ErrorResType) return body
+
     return {
-      status: 200,
+      status: 204,
       body,
     }
   },

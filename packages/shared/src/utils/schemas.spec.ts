@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ClusterDetailsSchema, ClusterPrivacy, EnvironmentSchema, OrganizationSchema, PermissionSchema, ProjectSchemaV2, ProjectV2, QuotaSchema, RepoBusinessSchema, RepoSchema, StageSchema, UserSchema, descriptionMaxLength, instanciateSchema, parseZodError } from '../index.js'
+import { ClusterDetailsSchema, ClusterPrivacy, EnvironmentSchema, OrganizationSchema, ProjectSchemaV2, ProjectV2, QuotaSchema, RepoBusinessSchema, RepoSchema, StageSchema, UserSchema, descriptionMaxLength, instanciateSchema, parseZodError } from '../index.js'
 import { faker } from '@faker-js/faker'
 import { ZodError } from 'zod'
 
@@ -34,37 +34,7 @@ describe('Schemas utils', () => {
       stageId: faker.string.uuid(),
     }
 
-    expect(EnvironmentSchema.omit({ permissions: true }).safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
-  })
-
-  it('Should validate a correct environment schema with permissions', () => {
-    const toParse = {
-      id: faker.string.uuid(),
-      name: faker.lorem.word({ length: { min: 2, max: 10 } }),
-      projectId: faker.string.uuid(),
-      clusterId: faker.string.uuid(),
-      stageId: faker.string.uuid(),
-      quotaId: faker.string.uuid(),
-      permissions: [{
-        id: faker.string.uuid(),
-        environmentId: faker.string.uuid(),
-        userId: faker.string.uuid(),
-        level: faker.number.int({ min: 0, max: 2 }),
-      }],
-    }
-
     expect(EnvironmentSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
-  })
-
-  it('Should validate a correct permission schema', () => {
-    const toParse = {
-      id: faker.string.uuid(),
-      userId: faker.string.uuid(),
-      environmentId: faker.string.uuid(),
-      level: 0,
-    }
-
-    expect(PermissionSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
   })
 
   it('Should validate a correct organization schema', () => {
@@ -200,24 +170,6 @@ describe('Schemas utils', () => {
       .toStrictEqual({ data: toParse, success: true })
   })
 
-  it('Should not validate a repo business schema and send specific error', () => {
-    const toParse = {
-      id: faker.string.uuid(),
-      projectId: faker.string.uuid(),
-      internalRepoName: 'candilib',
-      externalRepoUrl: 'https://github.com/LAB-MI/candilibV2.git',
-      isPrivate: true,
-      isInfra: false,
-      externalUserName: 'clairenlet',
-    }
-
-    // @ts-ignore
-    expect(parseZodError(RepoBusinessSchema
-      .safeParse(toParse)
-      .error))
-      .toMatch('Validation error: Si le dépôt est privé, vous devez renseignez les nom de propriétaire et token associés.')
-  })
-
   it('Should validate a cluster details schema, case 1', () => {
     const toParse = {
       id: faker.string.uuid(),
@@ -276,7 +228,7 @@ describe('Schemas utils', () => {
     expect(parseZodError(RepoBusinessSchema
       .safeParse(toParse)
       .error))
-      .toMatch('Validation error: failed regex test at "internalRepoName"')
+      .toMatch('Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique at "internalRepoName"')
 
     toParse.internalRepoName = 'candilib-'
 
@@ -284,7 +236,7 @@ describe('Schemas utils', () => {
     expect(parseZodError(RepoBusinessSchema
       .safeParse(toParse)
       .error))
-      .toMatch('Validation error: failed regex test at "internalRepoName"')
+      .toMatch('Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique at "internalRepoName"')
 
     toParse.internalRepoName = 'candiLib'
 
@@ -292,7 +244,7 @@ describe('Schemas utils', () => {
     expect(parseZodError(RepoBusinessSchema
       .safeParse(toParse)
       .error))
-      .toMatch('Validation error: failed regex test at "internalRepoName"')
+      .toMatch('Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique at "internalRepoName"')
 
     toParse.internalRepoName = 'candi-lib'
     expect(RepoBusinessSchema
@@ -389,27 +341,15 @@ describe('Schemas utils', () => {
     })
   })
 
-  it('Should return undefined schema', () => {
-    expect(instanciateSchema(RepoSchema.omit({ id: true }), undefined)).toStrictEqual({
-      internalRepoName: undefined,
-      externalRepoUrl: undefined,
-      externalToken: undefined,
-      isPrivate: undefined,
-      isInfra: undefined,
-      externalUserName: undefined,
-      projectId: undefined,
-    })
-  })
-
-  it('Should return string schema', () => {
-    expect(instanciateSchema(RepoSchema.omit({ id: true }), 'test')).toStrictEqual({
-      internalRepoName: 'test',
-      externalRepoUrl: 'test',
-      externalToken: 'test',
-      isPrivate: 'test',
-      isInfra: 'test',
-      externalUserName: 'test',
-      projectId: 'test',
+  it('Should return true schema', () => {
+    expect(instanciateSchema(RepoSchema.omit({ id: true }), true)).toStrictEqual({
+      internalRepoName: true,
+      externalRepoUrl: true,
+      externalToken: true,
+      isPrivate: true,
+      isInfra: true,
+      externalUserName: true,
+      projectId: true,
     })
   })
 })

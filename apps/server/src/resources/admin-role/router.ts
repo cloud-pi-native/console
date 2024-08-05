@@ -1,3 +1,4 @@
+import { AdminAuthorized, adminRoleContract } from '@cpn-console/shared'
 import {
   countRolesMembers,
   createRole,
@@ -5,9 +6,9 @@ import {
   listRoles,
   patchRoles,
 } from './business.js'
-import { AdminAuthorized, adminRoleContract } from '@cpn-console/shared'
 import { serverInstance } from '@/app.js'
-import { authUser, NotFound404, Forbidden403, ErrorResType } from '@/utils/controller.js'
+import { authUser } from '@/utils/controller.js'
+import { Forbidden403, ErrorResType } from '@/utils/errors.js'
 
 export const adminRoleRouter = () => serverInstance.router(adminRoleContract, {
   // Récupérer des projets
@@ -48,9 +49,9 @@ export const adminRoleRouter = () => serverInstance.router(adminRoleContract, {
   },
 
   adminRoleMemberCounts: async ({ request: req }) => {
-    const user = req.session.user
-    const perms = await authUser(user)
-    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new NotFound404()
+    const requestor = req.session.user
+    const perms = await authUser(requestor)
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
     const resBody = await countRolesMembers()
 

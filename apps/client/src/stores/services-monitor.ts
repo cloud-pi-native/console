@@ -87,9 +87,7 @@ export const useServiceStore = defineStore('serviceMonitor', () => {
 
     clear()
     await checkServicesHealth()
-    interval = setInterval(async () => {
-      await checkServicesHealth()
-    }, 300_000_000)
+    interval = setInterval(checkServicesHealth, 300_000_000)
   }
 
   return {

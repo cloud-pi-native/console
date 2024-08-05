@@ -1,3 +1,4 @@
+import { AdminAuthorized, ProjectAuthorized, projectRoleContract } from '@cpn-console/shared'
 import {
   countRolesMembers,
   createRole,
@@ -5,16 +6,16 @@ import {
   listRoles,
   patchRoles,
 } from './business.js'
-import { AdminAuthorized, ProjectAuthorized, projectRoleContract } from '@cpn-console/shared'
 import { serverInstance } from '@/app.js'
-import { authUser, NotFound404, Forbidden403, ErrorResType } from '@/utils/controller.js'
+import { authUser } from '@/utils/controller.js'
+import { NotFound404, Forbidden403, ErrorResType } from '@/utils/errors.js'
 
 export const projectRoleRouter = () => serverInstance.router(projectRoleContract, {
   // Récupérer des projets
   listProjectRoles: async ({ request: req, params }) => {
     const { projectId } = params
-    const user = req.session.user
-    const perms = await authUser(user, { id: projectId })
+    const requestor = req.session.user
+    const perms = await authUser(requestor, { id: projectId })
     if (!perms.projectPermissions && !AdminAuthorized.isAdmin(perms.adminPermissions)) return new NotFound404()
 
     const body = await listRoles(projectId)
@@ -26,9 +27,9 @@ export const projectRoleRouter = () => serverInstance.router(projectRoleContract
   },
 
   createProjectRole: async ({ request: req, params: { projectId }, body }) => {
-    const user = req.session.user
-    const perms = await authUser(user, { id: projectId })
-    if (!perms.projectPermissions) return new NotFound404()
+    const requestor = req.session.user
+    const perms = await authUser(requestor, { id: projectId })
+    if (!perms.projectPermissions && !AdminAuthorized.isAdmin(perms.adminPermissions)) return new NotFound404()
     if (!ProjectAuthorized.ManageRoles(perms)) return new Forbidden403()
     if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
     if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')

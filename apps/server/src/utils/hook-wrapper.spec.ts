@@ -1,10 +1,9 @@
 import { type KubeCluster, type KubeUser, type Store, type Project as ProjectPayload } from '@cpn-console/hooks'
-import { transformToHookProject, type ReposCreds } from './hook-wrapper.ts'
+import { ProjectInfos, transformToHookProject, type ReposCreds } from './hook-wrapper.ts'
 import { describe, expect, it } from 'vitest'
 
 describe('transformToHookProject', () => {
   // Mock data
-  const mockProject = project
   const mockStore: Store = {}
   const mockReposCreds: ReposCreds = {
     console: {
@@ -14,15 +13,15 @@ describe('transformToHookProject', () => {
   }
 
   it('transforme correctement le projet en objet Payload', () => {
-    const result: ProjectPayload = transformToHookProject(mockProject, mockStore, mockReposCreds)
+    const result: ProjectPayload = transformToHookProject(project, mockStore, mockReposCreds)
 
     // Asserts pour vérifier la transformation
 
     // Assert sur la transformation des utilisateurs
-    expect(result.users).toEqual(mockProject.roles.map(role => role.user))
+    expect(result.users).toEqual([project.owner])
 
     // Assert sur la transformation des rôles
-    expect(result.roles).toEqual(mockProject.roles.map(role => ({ role: role.role as 'owner' | 'user', userId: role.userId })))
+    expect(result.roles).toEqual([{ userId: project.owner.id, role: 'owner' }])
 
     // Assert sur la transformation des clusters
     expect(result.clusters).toEqual([associatedCluster, nonAssociatedCluster].map(({ kubeconfig, ...cluster }) => ({
@@ -33,21 +32,15 @@ describe('transformToHookProject', () => {
     })))
 
     // Assert sur la transformation des environnements
-    expect(result.environments).toEqual(mockProject.environments.map(({ permissions, stage, quota, ...environment }) => ({
+    expect(result.environments).toEqual(project.environments.map(({ permissions: _, stage, quota, ...environment }) => ({
       quota,
       stage: stage.name,
-      permissions: permissions.map(permission => ({
-        userId: permission.userId,
-        permissions: {
-          ro: permission.level >= 0,
-          rw: permission.level >= 1,
-        },
-      })),
+      permissions: [{ permissions: { rw: true, ro: true }, userId: project.ownerId }],
       ...environment,
     })))
 
     // Assert sur la transformation des repositories
-    expect(result.repositories).toEqual(mockProject.repositories.map(repo => ({ ...repo, newCreds: mockReposCreds[repo.internalRepoName] })))
+    expect(result.repositories).toEqual(project.repositories.map(repo => ({ ...repo, newCreds: mockReposCreds[repo.internalRepoName] })))
 
     // Assert sur le store
     expect(result.store).toEqual(mockStore)
@@ -108,89 +101,143 @@ const nonAssociatedCluster = {
     slug: 'default',
   },
 }
-const project = {
-  id: 'dc36b069-8691-448b-a629-a9f43163f19b',
-  name: 'project1',
+const project: ProjectInfos = {
+  id: '011e7860-04d7-461f-912d-334c622d38b3',
+  name: 'candilib',
+  organizationId: 'b644c07f-193c-47ed-ae10-b88a8f63d20b',
+  description: 'Application de réservation de places à l\'examen du permis B.',
   status: 'created',
-  description: '',
+  locked: false,
+  createdAt: '2023-07-03T14:46:56.778Z',
+  updatedAt: '2023-07-03T14:46:56.783Z',
+  everyonePerms: 896n,
+  ownerId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
   organization: {
-    id: '3b114c4c-8e2e-4a14-b638-bdd6d422d17e',
-    label: 'org1',
-    name: 'org1',
+    id: 'b644c07f-193c-47ed-ae10-b88a8f63d20b',
+    source: 'dso-console',
+    name: 'mi',
+    label: 'Ministère de l\'Intérieur',
+    active: true,
+    createdAt: '2023-07-03T14:46:56.764Z',
+    updatedAt: '2023-07-03T14:46:56.764Z',
   },
-  roles: [
-    {
-      user: {
-        id: 'd86e0034-dac7-4c36-b5e1-ba7be5dc6e62',
-        firstName: 'Util1',
-        lastName: 'Util2',
-        email: 'myemail',
-        createdAt: '2024-05-02T09:13:18.291Z',
-        updatedAt: '2024-05-02T09:17:46.612Z',
-      },
-      role: 'owner',
-      userId: 'd86e0034-dac7-4c36-b5e1-ba7be5dc6e62',
-    },
-  ],
+  members: [],
   clusters: [associatedCluster, nonAssociatedCluster],
   environments: [
     {
-      id: '5fac1f3a-7227-4c61-8355-d7e6bedd463c',
-      name: 'test',
-      projectId: 'dc36b069-8691-448b-a629-a9f43163f19b',
-      createdAt: '2024-05-02T09:17:41.300Z',
-      updatedAt: '2024-05-02T09:17:41.300Z',
-      clusterId: 'f0e39981-0b6d-4c16-aa96-225062b75767',
-      permissions: [
-        {
-          id: '4a1a1635-7a5e-445e-a055-da9b1ef1ee5f',
-          userId: 'd86e0034-dac7-4c36-b5e1-ba7be5dc6e62',
-          environmentId: '5fac1f3a-7227-4c61-8355-d7e6bedd463c',
-          level: 2,
-          createdAt: '2024-05-02T09:17:41.300Z',
-          updatedAt: '2024-05-02T09:17:41.300Z',
+      id: '1b9f1053-fcf5-4053-a7b2-ff8a2c0c1921',
+      name: 'dev',
+      projectId: '011e7860-04d7-461f-912d-334c622d38b3',
+      createdAt: '2023-07-03T14:46:56.787Z',
+      updatedAt: '2023-07-03T14:46:56.803Z',
+      clusterId: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
+      quotaId: '5a57b62f-2465-4fb6-a853-5a751d099199',
+      stageId: '4a9ad694-4c54-4a3c-9579-548bf4b7b1b9',
+      quota: {
+        id: '5a57b62f-2465-4fb6-a853-5a751d099199',
+        memory: '4Gi',
+        cpu: 2,
+        name: 'small',
+        isPrivate: false,
+      },
+      stage: {
+        id: '4a9ad694-4c54-4a3c-9579-548bf4b7b1b9',
+        name: 'dev',
+      },
+      cluster: {
+        id: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
+        infos: 'Floating IP : 0.0.0.0',
+        label: 'pas-top-cluster',
+        privacy: 'dedicated',
+        secretName: '94d52618-7869-4192-b33e-85dd0959e815',
+        kubeconfig: {
+          id: 'b5662039-a62b-483e-ba54-b12c6f966c96',
+          user: {
+            token: 'kirikou',
+          },
+          cluster: {
+            server: 'https://pwned.cluster',
+            tlsServerName: 'pwned.cluster',
+          },
+          createdAt: '2024-07-24T16:54:14.969Z',
+          updatedAt: '2024-07-24T16:54:14.969Z',
         },
-      ],
-      stage: { name: 'stage1' },
-      quota: { name: 'quota1' },
-      cluster: associatedCluster,
+        clusterResources: false,
+        zone: {
+          id: 'a66c4230-eba6-41f1-aae5-bb1e4f90cce2',
+          slug: 'pub',
+        },
+      },
     },
     {
-      id: '5fac1f3a-7227-4c61-8355-d7e6bedd463c',
-      name: 'test',
-      projectId: 'dc36b069-8691-448b-a629-a9f43163f19b',
-      createdAt: '2024-05-02T09:17:41.300Z',
-      updatedAt: '2024-05-02T09:17:41.300Z',
-      clusterId: 'f0e39981-0b6d-4c16-aa96-225062b75767',
-      permissions: [
-        {
-          id: '4a1a1635-7a5e-445e-a055-da9b1ef1ee5f',
-          userId: 'd86e0034-dac7-4c36-b5e1-ba7be5dc6e62',
-          environmentId: '5fac1f3a-7227-4c61-8355-d7e6bedd463c',
-          level: 2,
-          createdAt: '2024-05-02T09:17:41.300Z',
-          updatedAt: '2024-05-02T09:17:41.300Z',
+      id: '1c654f00-4798-4a80-929f-960ddb37885a',
+      name: 'integration',
+      projectId: '011e7860-04d7-461f-912d-334c622d38b3',
+      createdAt: '2023-07-03T14:46:56.788Z',
+      updatedAt: '2023-07-03T14:46:56.803Z',
+      clusterId: '126ac57f-263c-4463-87bb-d4e9017056b2',
+      quotaId: '5a57b62f-2465-4fb6-a853-5a751d099199',
+      stageId: 'd434310e-7850-4d59-b47f-0772edf50582',
+      quota: {
+        id: '5a57b62f-2465-4fb6-a853-5a751d099199',
+        memory: '4Gi',
+        cpu: 2,
+        name: 'small',
+        isPrivate: false,
+      },
+      stage: {
+        id: 'd434310e-7850-4d59-b47f-0772edf50582',
+        name: 'integration',
+      },
+      cluster: {
+        id: '126ac57f-263c-4463-87bb-d4e9017056b2',
+        infos: null,
+        label: 'top-secret-cluster',
+        privacy: 'dedicated',
+        secretName: '59be2d50-58f9-42f3-95dc-b0c0518e3d8a',
+        kubeconfig: {
+          id: '0e88f000-07e6-4781-a69d-0963489387f7',
+          user: {
+            token: 'nyan cat',
+          },
+          cluster: {
+            server: 'https://nothere.cluster',
+            skipTLSVerify: false,
+            tlsServerName: 'nothere.cluster',
+          },
+          createdAt: '2024-07-24T16:54:14.966Z',
+          updatedAt: '2024-07-24T16:54:14.966Z',
         },
-      ],
-      stage: { name: 'stage1' },
-      quota: { name: 'quota1' },
-      cluster: nonAssociatedCluster,
+        clusterResources: true,
+        zone: {
+          id: 'a66c4230-eba6-41f1-aae5-bb1e4f90cce2',
+          slug: 'pub',
+        },
+      },
     },
   ],
   repositories: [
     {
-      id: '56ed626d-ad44-4ae9-b720-702bc5e7afc0',
-      externalRepoUrl: 'https://github.com/cloud-pi-native/console.git',
+      id: '299216bb-2dcc-42b5-ac71-6aa001d2dccf',
+      projectId: '011e7860-04d7-461f-912d-334c622d38b3',
+      internalRepoName: 'candilib',
+      externalRepoUrl: 'https://github.com/dnum-mi/candilib.git',
+      externalUserName: 'this-is-a-test',
       isInfra: false,
-      isPrivate: false,
-      internalRepoName: 'console',
+      isPrivate: true,
+      createdAt: '2023-07-03T14:46:56.788Z',
+      updatedAt: '2023-07-03T14:46:56.802Z',
     },
   ],
-  projectPlugin: [
-    {
-      key: 'projectId',
-      pluginName: 'registry',
-      value: '272',
-    },
-  ],
+  plugins: [],
+  owner: {
+    id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+    firstName: 'Jean',
+    lastName: 'DUPOND',
+    email: 'test@test.com',
+    createdAt: '2023-07-03T14:46:56.770Z',
+    updatedAt: '2023-07-03T14:46:56.770Z',
+    adminRoleIds: [],
+  },
+  roles: [],
 }
