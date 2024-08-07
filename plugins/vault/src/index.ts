@@ -1,5 +1,5 @@
 import type { DefaultArgs, Plugin, Project, ProjectLite } from '@cpn-console/hooks'
-import { archiveDsoProject } from './functions.js'
+import { archiveDsoProject, upsertProjectAppRole } from './functions.js'
 import infos from './infos.js'
 import monitor from './monitor.js'
 import { VaultProjectApi } from './class.js'
@@ -10,7 +10,10 @@ export const plugin: Plugin = {
   infos,
   subscribedHooks: {
     getProjectSecrets: onlyApi,
-    upsertProject: onlyApi,
+    upsertProject: {
+      ...onlyApi,
+      steps: { main: upsertProjectAppRole },
+    },
     deleteProject: {
       ...onlyApi,
       steps: { post: archiveDsoProject }, // Destroy all secrets for project

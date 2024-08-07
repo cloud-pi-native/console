@@ -516,6 +516,9 @@ importers:
       '@cpn-console/shared':
         specifier: workspace:^
         version: link:../../packages/shared
+      '@cpn-console/vault-plugin':
+        specifier: workspace:^
+        version: link:../vault
       '@himenon/argocd-typescript-openapi':
         specifier: ^1.2.2
         version: 1.2.2
