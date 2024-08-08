@@ -9,7 +9,8 @@ import {
   syncRepository,
   updateRepository,
 } from './business.js'
-import { authUser, ErrorResType, Forbidden403, NotFound404 } from '@/utils/controller.js'
+import { authUser } from '@/utils/controller.js'
+import { ErrorResType, Forbidden403, NotFound404 } from '@/utils/errors.js'
 
 export const repositoryRouter = () => serverInstance.router(repositoryContract, {
   // Récupérer tous les repositories d'un projet

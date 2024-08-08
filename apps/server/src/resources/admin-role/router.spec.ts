@@ -1,10 +1,11 @@
+import { faker } from '@faker-js/faker'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { adminRoleContract } from '@cpn-console/shared'
 import app from '../../app.js'
 import * as business from './business.js'
 import * as utilsController from '../../utils/controller.js'
-import { faker } from '@faker-js/faker'
+import { BadRequest400 } from '../../utils/errors.js'
 import { getUserMockInfos } from '../../utils/mocks.js'
-import { adminRoleContract } from '@cpn-console/shared'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
 const authUserMock = vi.spyOn(utilsController, 'authUser')
@@ -91,7 +92,7 @@ describe('Test adminRoleContract', () => {
       const user = getUserMockInfos(true)
 
       authUserMock.mockResolvedValueOnce(user)
-      businessPatchRolesMock.mockResolvedValueOnce(new utilsController.BadRequest400('une erreur'))
+      businessPatchRolesMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
 
       const response = await app.inject()
         .patch(adminRoleContract.patchAdminRoles.path)

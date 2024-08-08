@@ -1,10 +1,11 @@
+import { faker } from '@faker-js/faker'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { PROJECT_PERMS, projectContract, ProjectV2 } from '@cpn-console/shared'
 import app from '../../app.js'
 import * as business from './business.js'
 import * as utilsController from '../../utils/controller.js'
-import { faker } from '@faker-js/faker'
 import { getProjectMockInfos, getRandomRequestor, getUserMockInfos } from '../../utils/mocks.js'
+import { BadRequest400 } from '../../utils/errors.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
 const authUserMock = vi.spyOn(utilsController, 'authUser')
@@ -311,7 +312,7 @@ describe('Test projectContract', () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessCreateMock.mockResolvedValueOnce(new utilsController.BadRequest400('une erreur'))
+      businessCreateMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
       const response = await app.inject()
         .post(projectContract.createProject.path)
         .body(project)
@@ -379,7 +380,7 @@ describe('Test projectContract', () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessUpdateMock.mockResolvedValueOnce(new utilsController.BadRequest400('une erreur'))
+      businessUpdateMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
       const response = await app.inject()
         .put(projectContract.updateProject.path.replace(':projectId', projectId))
         .body(project)
@@ -409,7 +410,7 @@ describe('Test projectContract', () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessDeleteMock.mockResolvedValueOnce(new utilsController.BadRequest400('une erreur'))
+      businessDeleteMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
       const response = await app.inject()
         .delete(projectContract.archiveProject.path.replace(':projectId', faker.string.uuid()))
         .end()
@@ -452,7 +453,7 @@ describe('Test projectContract', () => {
       const user = getUserMockInfos(true, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessGetSecretsMock.mockResolvedValueOnce(new utilsController.BadRequest400('une erreur'))
+      businessGetSecretsMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
       const response = await app.inject()
         .get(projectContract.getProjectSecrets.path.replace(':projectId', projectId))
         .end()
@@ -493,7 +494,7 @@ describe('Test projectContract', () => {
       const user = getUserMockInfos(true, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessSyncMock.mockResolvedValueOnce(new utilsController.BadRequest400('une erreur'))
+      businessSyncMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
       const response = await app.inject()
         .put(projectContract.replayHooksForProject.path.replace(':projectId', projectId))
         .end()

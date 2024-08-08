@@ -1,7 +1,8 @@
 import { AdminAuthorized, ProjectAuthorized, projectServiceContract } from '@cpn-console/shared'
 import { serverInstance } from '@/app.js'
 import { getProjectServices, updateProjectServices } from './business.js'
-import { authUser, Forbidden403, NotFound404 } from '@/utils/controller.js'
+import { authUser } from '@/utils/controller.js'
+import { Forbidden403, NotFound404 } from '@/utils/errors.js'
 
 export const projectServiceRouter = () => serverInstance.router(projectServiceContract, {
   // Récupérer les services d'un projet

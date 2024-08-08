@@ -9,7 +9,8 @@ import {
 } from './business.js'
 import '@/types/index.js'
 import { serverInstance } from '@/app.js'
-import { authUser, ErrorResType, Forbidden403 } from '@/utils/controller.js'
+import { authUser } from '@/utils/controller.js'
+import { ErrorResType, Forbidden403 } from '@/utils/errors.js'
 
 export const clusterRouter = () => serverInstance.router(clusterContract, {
   listClusters: async ({ request: req }) => {

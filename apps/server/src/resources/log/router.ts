@@ -2,7 +2,8 @@ import { getLogs } from './business.js'
 import { serverInstance } from '@/app.js'
 import { AdminAuthorized, Log, logContract } from '@cpn-console/shared'
 import { Log as LogModel } from '@prisma/client'
-import { authUser, Forbidden403 } from '@/utils/controller.js'
+import { authUser } from '@/utils/controller.js'
+import { Forbidden403 } from '@/utils/errors.js'
 
 export const logRouter = () => serverInstance.router(logContract, {
   // Récupérer des logs

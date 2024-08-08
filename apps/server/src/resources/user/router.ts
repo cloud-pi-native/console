@@ -7,7 +7,8 @@ import {
 } from './business.js'
 import '@/types/index.js'
 import { serverInstance } from '@/app.js'
-import { authUser, Forbidden403 } from '@/utils/controller.js'
+import { authUser } from '@/utils/controller.js'
+import { Forbidden403 } from '@/utils/errors.js'
 
 export const userRouter = () => serverInstance.router(userContract, {
   getMatchingUsers: async ({ query }) => {

@@ -3,7 +3,7 @@ import {
   listAdminRoles,
 } from '@/resources/queries-index.js'
 import { AdminRole, adminRoleContract } from '@cpn-console/shared'
-import { BadRequest400, ErrorResType } from '@/utils/controller.js'
+import { BadRequest400, ErrorResType } from '@/utils/errors.js'
 import prisma from '@/prisma.js'
 
 export const listRoles = async () => listAdminRoles()

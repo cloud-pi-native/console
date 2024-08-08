@@ -1,7 +1,7 @@
 import { AdminAuthorized, quotaContract } from '@cpn-console/shared'
 import { serverInstance } from '@/app.js'
-
-import { authUser, ErrorResType, Forbidden403 } from '@/utils/controller.js'
+import { authUser } from '@/utils/controller.js'
+import { ErrorResType, Forbidden403 } from '@/utils/errors.js'
 import { listQuotas, createQuota, deleteQuota, getQuotaAssociatedEnvironments, updateQuota } from './business.js'
 
 export const quotaRouter = () => serverInstance.router(quotaContract, {

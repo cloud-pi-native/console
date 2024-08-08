@@ -18,7 +18,7 @@ import {
   listQuotas as listQuotasQuery,
   getAllQuotas,
 } from '../queries-index.js'
-import { ErrorResType, BadRequest400, NotFound404 } from '@/utils/controller.js'
+import { ErrorResType, BadRequest400, NotFound404 } from '@/utils/errors.js'
 import prisma from '@/prisma.js'
 
 export const getQuotaAssociatedEnvironments = async (quotaId: string) => {

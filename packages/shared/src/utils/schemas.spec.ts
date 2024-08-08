@@ -228,7 +228,7 @@ describe('Schemas utils', () => {
     expect(parseZodError(RepoBusinessSchema
       .safeParse(toParse)
       .error))
-      .toMatch('Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique at \"internalRepoName\"')
+      .toMatch('Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique at "internalRepoName"')
 
     toParse.internalRepoName = 'candilib-'
 
@@ -236,7 +236,7 @@ describe('Schemas utils', () => {
     expect(parseZodError(RepoBusinessSchema
       .safeParse(toParse)
       .error))
-      .toMatch('Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique at \"internalRepoName\"')
+      .toMatch('Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique at "internalRepoName"')
 
     toParse.internalRepoName = 'candiLib'
 
@@ -244,7 +244,7 @@ describe('Schemas utils', () => {
     expect(parseZodError(RepoBusinessSchema
       .safeParse(toParse)
       .error))
-      .toMatch('Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique at \"internalRepoName\"')
+      .toMatch('Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique at "internalRepoName"')
 
     toParse.internalRepoName = 'candi-lib'
     expect(RepoBusinessSchema

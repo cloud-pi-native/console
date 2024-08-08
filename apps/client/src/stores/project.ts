@@ -85,7 +85,6 @@ export const useProjectStore = defineStore('project', () => {
     apiClient.ProjectsRoles.patchProjectRoles({ body, params: { projectId } })
       .then(response => extractData(response, 200))
 
-  apiClient.ProjectsRoles
   return {
     handleProjectLocking,
     generateProjectsData,

@@ -1,10 +1,11 @@
+import { faker } from '@faker-js/faker'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { PROJECT_PERMS, repositoryContract } from '@cpn-console/shared'
 import app from '../../app.js'
 import * as business from './business.js'
 import * as utilsController from '../../utils/controller.js'
-import { faker } from '@faker-js/faker'
 import { getProjectMockInfos, getUserMockInfos } from '../../utils/mocks.js'
+import { BadRequest400 } from '../../utils/errors.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
 const authUserMock = vi.spyOn(utilsController, 'authUser')
@@ -125,7 +126,7 @@ describe('repositoryRouter tests', () => {
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessSyncMock.mockResolvedValueOnce(new utilsController.BadRequest400('une erreur'))
+      businessSyncMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
       const response = await app.inject()
         .post(repositoryContract.syncRepository.path.replace(':repositoryId', repositoryId))
         .body({ branchName: 'main' })
@@ -208,7 +209,7 @@ describe('repositoryRouter tests', () => {
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessCreateMock.mockResolvedValueOnce(new utilsController.BadRequest400('une erreur'))
+      businessCreateMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
       const response = await app.inject()
         .post(repositoryContract.createRepository.path)
         .body(repositoryData)
@@ -311,7 +312,7 @@ describe('repositoryRouter tests', () => {
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessUpdateMock.mockResolvedValueOnce(new utilsController.BadRequest400('une erreur'))
+      businessUpdateMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
       const response = await app.inject()
         .put(repositoryContract.updateRepository.path.replace(':repositoryId', repositoryId))
         .body(repoUpdateData)
@@ -389,7 +390,7 @@ describe('repositoryRouter tests', () => {
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessDeleteMock.mockResolvedValueOnce(new utilsController.BadRequest400('une erreur'))
+      businessDeleteMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
       const response = await app.inject()
         .delete(repositoryContract.deleteRepository.path.replace(':repositoryId', repositoryId))
         .end()

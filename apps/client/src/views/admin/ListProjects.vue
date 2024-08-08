@@ -144,55 +144,57 @@ const projectRows = computed(() => {
   }
   return rows
 })
-const envRows = computed(() => selectedProject.value
-  ? selectedProject.value.environments?.length
-    ? sortArrByObjKeyAsc(selectedProject.value.environments, 'name')
-      ?.map(({ id, name, quotaId, stageId }) => (
-        [
-          name,
-          stageStore.stages.find(stage => stage.id === stageId)?.name,
-          {
-            component: 'DsfrSelect',
-            modelValue: quotaId,
-            selectId: 'quota-select',
-            options: quotaStore.quotas.filter(quota => quota.stageIds.includes(stageId)).map(quota => ({
-              text: quota.name + ' (' + quota.cpu + 'CPU, ' + quota.memory + ')',
-              value: quota.id,
-            })),
-            'onUpdate:model-value': (event: string) => updateEnvironmentQuota({ environmentId: id, quotaId: event }),
-          },
-        ]
-      ),
-      )
-    : [[{
+const envRows = computed(() => {
+  if (!selectedProject.value) return []
+  if (!selectedProject.value.environments.length) {
+    return [[{
       text: 'Aucun environnement existant',
       cellAttrs: {
         colspan: headers.length,
       },
     }]]
-  : [],
-)
+  }
+  return sortArrByObjKeyAsc(selectedProject.value.environments, 'name')
+    ?.map(({ id, name, quotaId, stageId }) => (
+      [
+        name,
+        stageStore.stages.find(stage => stage.id === stageId)?.name,
+        {
+          component: 'DsfrSelect',
+          modelValue: quotaId,
+          selectId: 'quota-select',
+          options: quotaStore.quotas.filter(quota => quota.stageIds.includes(stageId)).map(quota => ({
+            text: quota.name + ' (' + quota.cpu + 'CPU, ' + quota.memory + ')',
+            value: quota.id,
+          })),
+          'onUpdate:model-value': (event: string) => updateEnvironmentQuota({ environmentId: id, quotaId: event }),
+        },
+      ]
+    ),
+    )
+})
 
-const repoRows = computed(() => selectedProject.value
-  ? selectedProject.value.repositories.length
-    ? sortArrByObjKeyAsc(selectedProject.value.repositories, 'internalRepoName')
-      ?.map(({ internalRepoName, isInfra, externalRepoUrl, isPrivate }) => (
-        [
-          internalRepoName,
-          isInfra ? 'Infra' : 'Applicatif',
-          isPrivate ? 'oui' : 'non',
-          externalRepoUrl,
-        ]
-      ),
-      )
-    : [[{
+const repoRows = computed(() => {
+  if (!selectedProject.value) return []
+  if (!selectedProject.value.repositories.length) {
+    return [[{
       text: 'Aucun dépôt existant',
       cellAttrs: {
         colspan: headers.length,
       },
     }]]
-  : [],
-)
+  }
+  return sortArrByObjKeyAsc(selectedProject.value.repositories, 'internalRepoName')
+    ?.map(({ internalRepoName, isInfra, externalRepoUrl, isPrivate }) => (
+      [
+        internalRepoName,
+        isInfra ? 'Infra' : 'Applicatif',
+        isPrivate ? 'oui' : 'non',
+        externalRepoUrl,
+      ]
+    ),
+    )
+})
 
 const getAllProjects = async () => {
   snackbarStore.isWaitingForResponse = true
