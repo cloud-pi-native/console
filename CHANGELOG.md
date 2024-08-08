@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.9.3](https://github.com/cloud-pi-native/console/compare/v8.9.2...v8.9.3) (2024-08-08)
+
+
+### Bug Fixes
+
+* :ambulance: fix error on getArgoRepo when the infra repository is empty (zero commit) ([bf3f3f1](https://github.com/cloud-pi-native/console/commit/bf3f3f10c0e50eaf2f2b788b587c04e27f1eff00))
+
 ## [8.9.2](https://github.com/cloud-pi-native/console/compare/v8.9.1...v8.9.2) (2024-07-19)
 
 
