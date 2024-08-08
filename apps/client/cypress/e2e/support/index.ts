@@ -173,7 +173,7 @@ declare global {
         project: Project,
         environment: string,
         permissions: {
-          email: string,
+          email: string
           isOwner: boolean
         }[]
       ): Chainable<JQuery<HTMLElement>>
@@ -267,7 +267,7 @@ declare global {
       getSettled(
         selector: string,
         opt?: {
-          delay?: number,
+          delay?: number
           retries?: number
         }
       ): void

@@ -3,7 +3,7 @@ import { exclude } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
 import { dbKeysExcluded } from '@/utils/queries-tools.js'
 
-type UserCreate = Omit<User, 'createdAt' | 'updatedAt'>;
+type UserCreate = Omit<User, 'createdAt' | 'updatedAt'>
 
 // SELECT
 export const getUsers = prisma.user.findMany

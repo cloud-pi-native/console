@@ -33,12 +33,12 @@ export type Environment = {
 }
 
 export type Repository = {
-  id: string;
-  internalRepoName: InternalRepoName;
+  id: string
+  internalRepoName: InternalRepoName
   newCreds?: RepoCreds
-  externalRepoUrl: ExternalRepoUrl;
-  isPrivate: IsPrivate;
-  isInfra: IsInfra;
+  externalRepoUrl: ExternalRepoUrl
+  isPrivate: IsPrivate
+  isInfra: IsInfra
 }
 
 export interface ProjectStore {

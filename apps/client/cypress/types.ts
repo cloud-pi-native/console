@@ -5,10 +5,10 @@ export type Project = Partial<Pick<ProjectType, 'name' | 'id' | 'description' | 
 export type Repository = Partial<Repo>
 
 export type CiForm = {
-  language: string,
-  version: string,
-  install?: string,
-  build?: string,
-  artefactDir?: string,
-  workingDir: string,
+  language: string
+  version: string
+  install?: string
+  build?: string
+  artefactDir?: string
+  workingDir: string
 }

@@ -22,7 +22,7 @@ export const plugin: Plugin = {
 declare module '@cpn-console/hooks' {
   interface HookPayloadApis<Args extends DefaultArgs> {
     vault: Args extends (ProjectLite | Project)
-    ? VaultProjectApi
-    : undefined
+      ? VaultProjectApi
+      : undefined
   }
 }

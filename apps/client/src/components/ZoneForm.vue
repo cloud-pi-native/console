@@ -4,10 +4,10 @@ import { ZoneSchema, SharedZodError, type CreateZoneBody, type UpdateZoneBody, t
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = withDefaults(defineProps<{
-  isNewZone: boolean,
-  zone: Zone,
-  allQuotas: Quota[],
-  allClusters: Cluster[],
+  isNewZone: boolean
+  zone: Zone
+  allQuotas: Quota[]
+  allClusters: Cluster[]
   associatedClusters: unknown[]
 }>(), {
   isNewZone: false,

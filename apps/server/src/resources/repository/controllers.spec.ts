@@ -89,7 +89,7 @@ describe('Repository routes', () => {
 
       prisma.user.findUnique.mockResolvedValue(requestor)
       prisma.project.findUnique.mockResolvedValue(projectInfos)
-      randomDbSetUp.stages.forEach(stage => {
+      randomDbSetUp.stages.forEach((stage) => {
         prisma.stage.findUnique.mockResolvedValueOnce(randomDbSetUp.stages?.find(dbSetUpstage => dbSetUpstage?.id === stage?.id))
       })
       prisma.repository.create.mockReturnValue(newRepository)
@@ -225,7 +225,7 @@ describe('Repository routes', () => {
       prisma.repository.findUniqueOrThrow.mockResolvedValue(repoToDelete)
       prisma.project.findUniqueOrThrow.mockResolvedValue(projectInfos)
       prisma.project.update.mockResolvedValue(projectInfos)
-      randomDbSetUp.stages.forEach(stage => {
+      randomDbSetUp.stages.forEach((stage) => {
         prisma.stage.findUnique.mockResolvedValueOnce(randomDbSetUp.stages?.find(dbSetUpstage => dbSetUpstage?.id === stage?.id))
       })
       prisma.repository.findUnique.mockResolvedValue(repoToDelete)

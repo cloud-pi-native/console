@@ -15,15 +15,15 @@ export type PluginsFunctions = Partial<{
   [C in HookChoice]: {
     steps?: Partial<{
       [S in HookStepsNames]: S extends 'check' ? StepCall<ValidateArgs<C>> : StepCall<ExecArgs<C>>
-    }>,
-    api?: (args: ExecArgs<C>) => PluginApi,
+    }>
+    api?: (args: ExecArgs<C>) => PluginApi
   }
 }>
 
 export type Plugin = {
-  infos: ServiceInfos,
-  subscribedHooks: PluginsFunctions,
-  monitor?: Monitor,
+  infos: ServiceInfos
+  subscribedHooks: PluginsFunctions
+  monitor?: Monitor
   start?: (options: unknown) => void
 }
 
@@ -104,7 +104,7 @@ const pluginManager = (options: PluginManagerOptions): PluginManager => {
   const unregister: UnregisterFn = (name) => {
     delete servicesInfos[name]
 
-    Object.values(hooks).forEach(hook => {
+    Object.values(hooks).forEach((hook) => {
       delete hook.check[name]
       delete hook.pre[name]
       delete hook.main[name]

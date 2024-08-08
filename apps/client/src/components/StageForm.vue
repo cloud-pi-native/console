@@ -6,11 +6,11 @@ import type { UpdateStageType } from '@/views/admin/ListStages.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = withDefaults(defineProps<{
-  isNewStage: boolean,
-  stage: Stage,
-  allQuotas: Quota[],
-  allClusters: Cluster[],
-  associatedEnvironments: StageAssociatedEnvironments,
+  isNewStage: boolean
+  stage: Stage
+  allQuotas: Quota[]
+  allClusters: Cluster[]
+  associatedEnvironments: StageAssociatedEnvironments
 }>(), {
   isNewStage: false,
   stage: () => ({ name: '', clusterIds: [], quotaIds: [], id: '' }),

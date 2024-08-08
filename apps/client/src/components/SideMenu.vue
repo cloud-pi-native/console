@@ -25,7 +25,7 @@ const isExpanded = ref({
   administration: false,
 })
 
-function toggleExpand (key: keyof typeof isExpanded.value) {
+function toggleExpand(key: keyof typeof isExpanded.value) {
   isExpanded.value[key] = !isExpanded.value[key]
 }
 

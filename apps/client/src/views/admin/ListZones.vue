@@ -13,7 +13,7 @@ const selectedZone = ref<Zone>()
 const zoneList = ref<{
   id: string
   title: string
-  data: Zone,
+  data: Zone
 }[]>([])
 const isNewZoneForm = ref(false)
 

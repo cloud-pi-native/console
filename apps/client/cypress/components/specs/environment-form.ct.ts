@@ -67,10 +67,10 @@ describe('EnvironmentForm.vue', () => {
     // @ts-ignore
     cy.mount(EnvironmentForm, { props })
 
-    cy.wait('@listQuotas').its('response').then($response => {
+    cy.wait('@listQuotas').its('response').then(($response) => {
       expect($response.body.length).to.equal(4)
     })
-    cy.wait('@listStages').its('response').then($response => {
+    cy.wait('@listStages').its('response').then(($response) => {
       expect($response.body.length).to.equal(4)
     })
 

@@ -30,7 +30,7 @@ const app = fastify(fastifyConf)
   .register(fastifySwagger, { transformObject: () => openApiDocument })
   .register(fastifySwaggerUi, swaggerUiConf)
   .register(apiRouter())
-  .addHook('onRoute', opts => {
+  .addHook('onRoute', (opts) => {
     if (opts.path === `${apiPrefix}/healthz`) {
       opts.logLevel = 'silent'
     }

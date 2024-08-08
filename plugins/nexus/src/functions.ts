@@ -16,12 +16,12 @@ export const getConfig = (): Required<typeof config> => {
 export let axiosOptions: {
   baseURL: string
   auth: {
-    username: string;
-    password: string;
-  };
+    username: string
+    password: string
+  }
   headers: {
-    Accept: string;
-  };
+    Accept: string
+  }
 }
 
 export const getAxiosOptions = (): Required<typeof axiosOptions> => {

@@ -139,7 +139,7 @@ describe('Zone routes', () => {
     it('Should not delete a zone with associated clusters', async () => {
       const zone = {
         ...getRandomZone(),
-        get clusters () {
+        get clusters() {
           return [getRandomCluster({ zoneId: this.id })]
         },
       }

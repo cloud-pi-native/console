@@ -9,7 +9,7 @@ import { useUsersStore } from '@/stores/users.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 
 const props = withDefaults(defineProps<{
-  environment: Partial<Environment>,
+  environment: Partial<Environment>
 }>(), {
   environment: () => ({}),
 })

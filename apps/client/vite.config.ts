@@ -5,7 +5,6 @@ import UnoCSS from 'unocss/vite'
 import vue from '@vitejs/plugin-vue'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
-import { configDefaults } from 'vitest/config'
 import {
   vueDsfrAutoimportPreset,
   ohVueIconAutoimportPreset,
@@ -101,17 +100,5 @@ export default defineConfig({
       'oh-vue-icons',
       'jszip',
     ],
-  },
-  test: {
-    root: fileURLToPath(new URL('./', import.meta.url)),
-    environment: 'jsdom',
-    exclude: [...configDefaults.exclude, 'e2e/*', '**/mocks.ts'],
-    testTimeout: 2000,
-    watch: false,
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'lcov'],
-      exclude: ['**/*.spec.js'],
-    },
   },
 })

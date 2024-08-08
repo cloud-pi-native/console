@@ -2,13 +2,13 @@
 import { DEFAULT, DISABLED, ENABLED } from '@cpn-console/shared'
 
 const props = defineProps<{
-  options:{
-    value: Ref<string>,
-    description: string | undefined,
-    name: string,
-    disabled: boolean,
-    kind: 'text' | 'switch',
-    placeholder: string | undefined,
+  options: {
+    value: Ref<string>
+    description: string | undefined
+    name: string
+    disabled: boolean
+    kind: 'text' | 'switch'
+    placeholder: string | undefined
   }
 }>()
 

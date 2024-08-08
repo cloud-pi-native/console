@@ -21,7 +21,7 @@ const monitor = async (instance: Monitor): Promise<MonitorInfos> => {
       headers: {
         'X-Vault-Token': requiredEnv('VAULT_TOKEN'),
       },
-      validateStatus: (res) => vaultStatusCode.includes(res),
+      validateStatus: res => vaultStatusCode.includes(res),
     })
     if (res.status === 200) {
       instance.lastStatus.status = MonitorStatus.OK

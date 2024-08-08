@@ -1,0 +1,45 @@
+# Applicationset template used for preview app in CI/CD
+# cf. https://argo-cd.readthedocs.io/en/stable/operator-manual/applicationset/Generators-Pull-Request/#github
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cpn-console-preview
+  namespace: <argocd_namespace>
+spec:
+  generators:
+  - pullRequest:
+      github:
+        owner: cloud-pi-native
+        repo: console
+        labels:
+        - preview
+        - built
+        appSecretName: <repo_secret> # Secret containing Github App infos (cf. https://argo-cd.readthedocs.io/en/stable/operator-manual/declarative-setup/#github-app-repositories)
+  template:
+    metadata:
+      name: cpn-console-preview-pr-{{number}}
+    spec:
+      destination:
+        namespace: cpn-preview-pr-{{number}}
+        server: https://kubernetes.default.svc
+      project: <argocd_project>
+      source:
+        chart: cpn-console
+        repoURL: https://cloud-pi-native.github.io/helm-charts
+        targetRevision: 1.*.*
+        helm:
+          values: |
+            client:
+              image:
+                tag: pr-{{number}}
+            server:
+              image:
+                tag: pr-{{number}}
+            ...
+      syncPolicy:
+        syncOptions:
+        - CreateNamespace=true
+        - ApplyOutOfSyncOnly=true
+        automated:
+          selfHeal: true

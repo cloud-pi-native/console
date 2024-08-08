@@ -69,9 +69,9 @@ export const getQuotaByName = (name: Quota['name']) =>
 
 // CREATE
 type CreateQuotaParams = {
-  memory: Quota['memory'],
-  cpu: Quota['cpu'],
-  name: Quota['name'],
+  memory: Quota['memory']
+  cpu: Quota['cpu']
+  name: Quota['name']
   isPrivate?: Quota['isPrivate']
 }
 

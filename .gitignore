@@ -58,7 +58,7 @@ components.d.ts
 *.tsbuildinfo
 
 # types
-apps/server/types/
+types/
 
 # plugins
 apps/server/src/plugins/external

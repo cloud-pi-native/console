@@ -46,10 +46,10 @@ export const getProjectEnvironments = async (
 }
 
 type GetInitializeEnvironmentInfosParam = {
-  userId: User['id'],
-  projectId: Project['id'],
-  stageId: Stage['id'],
-  quotaId: Quota['id'],
+  userId: User['id']
+  projectId: Project['id']
+  stageId: Stage['id']
+  quotaId: Quota['id']
 }
 
 export const getInitializeEnvironmentInfos = async ({
@@ -75,13 +75,13 @@ export const getInitializeEnvironmentInfos = async ({
 
 // Check logic
 type CheckEnvironmentParam = {
-  project: { locked: boolean, roles: Role[], id: string, environments: Environment[] },
-  userId: User['id'],
-  name: Environment['name'],
-  authorizedClusterIds: Cluster['id'][],
-  clusterId: Cluster['id'],
-  quotaId: Quota['id'],
-  stage: Stage & { quotas: Quota[] },
+  project: { locked: boolean, roles: Role[], id: string, environments: Environment[] }
+  userId: User['id']
+  name: Environment['name']
+  authorizedClusterIds: Cluster['id'][]
+  clusterId: Cluster['id']
+  quotaId: Quota['id']
+  stage: Stage & { quotas: Quota[] }
 }
 
 export const checkCreateEnvironment = ({
@@ -93,19 +93,19 @@ export const checkCreateEnvironment = ({
   stage,
   quotaId,
 }: CheckEnvironmentParam) => {
-  const errorMessage = checkRoleAndLocked(project, userId, 'owner') ||
-    checkExistingEnvironment(clusterId, name, project.environments) ||
-    checkClusterUnavailable(clusterId, authorizedClusterIds) ||
-    checkQuotaStageStatus(stage, quotaId)
+  const errorMessage = checkRoleAndLocked(project, userId, 'owner')
+    || checkExistingEnvironment(clusterId, name, project.environments)
+    || checkClusterUnavailable(clusterId, authorizedClusterIds)
+    || checkQuotaStageStatus(stage, quotaId)
   if (errorMessage) throw new ForbiddenError(errorMessage, undefined)
 }
 
 type CheckUpdateEnvironmentParam = {
-  project: { locked: boolean, roles: Role[], id: string, environments: Environment[] },
-  userId: User['id'],
-  quotaId: Quota['id'],
-  dbEnvQuotaId: Quota['id'],
-  stage: Stage & { quotas: Quota[] },
+  project: { locked: boolean, roles: Role[], id: string, environments: Environment[] }
+  userId: User['id']
+  quotaId: Quota['id']
+  dbEnvQuotaId: Quota['id']
+  stage: Stage & { quotas: Quota[] }
 }
 
 export const checkUpdateEnvironment = ({
@@ -122,8 +122,8 @@ export const checkUpdateEnvironment = ({
 }
 
 type CheckDeleteEnvironmentParam = {
-  project: { locked: boolean, roles: Role[], id: string },
-  userId: string,
+  project: { locked: boolean, roles: Role[], id: string }
+  userId: string
 }
 
 export const checkDeleteEnvironment = ({
@@ -150,12 +150,12 @@ export const checkQuotaStageStatus = (resource: ByStageOrQuota, matchingId: stri
 
 // Routes logic
 type CreateEnvironmentParam = {
-  userId: User['id'],
-  projectId: Project['id'],
-  name: Environment['name'],
-  clusterId: Environment['clusterId'],
-  quotaId: Quota['id'],
-  stageId: Stage['id'],
+  userId: User['id']
+  projectId: Project['id']
+  name: Environment['name']
+  clusterId: Environment['clusterId']
+  quotaId: Quota['id']
+  stageId: Stage['id']
   requestId: string
 }
 
@@ -217,10 +217,10 @@ export const createEnvironment = async (
 }
 
 type UpdateEnvironmentParam = {
-  user: UserDetails,
-  environmentId: Environment['id'],
-  quotaId: Quota['id'],
-  requestId: string,
+  user: UserDetails
+  environmentId: Environment['id']
+  quotaId: Quota['id']
+  requestId: string
 }
 
 export const updateEnvironment = async ({
@@ -274,9 +274,9 @@ export const updateEnvironment = async ({
 }
 
 type DeleteEnvironmentParam = {
-  userId: User['id'],
-  environmentId: Environment['id'],
-  requestId: string,
+  userId: User['id']
+  environmentId: Environment['id']
+  requestId: string
 }
 
 export const deleteEnvironment = async ({

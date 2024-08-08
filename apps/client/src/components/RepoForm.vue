@@ -4,9 +4,9 @@ import { SharedZodError, RepoBusinessSchema, RepoSchema, CreateRepoBusinessSchem
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = withDefaults(defineProps<{
-  repo: Partial<Repo>,
-  isOwner: boolean,
-  isProjectLocked: boolean,
+  repo: Partial<Repo>
+  isOwner: boolean
+  isProjectLocked: boolean
 }>(), {
   repo: () => ({ isInfra: false, isPrivate: false, internalRepoName: '' }),
   isOwner: false,

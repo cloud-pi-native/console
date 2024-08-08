@@ -15,11 +15,11 @@ export const plugin: Plugin = {
   infos,
   subscribedHooks: {
     deleteProject: {
-      api: (project) => new KeycloakProjectApi(project.organization.name, project.name),
+      api: project => new KeycloakProjectApi(project.organization.name, project.name),
       steps: { post: deleteProject },
     },
     upsertProject: {
-      api: (project) => new KeycloakProjectApi(project.organization.name, project.name),
+      api: project => new KeycloakProjectApi(project.organization.name, project.name),
       steps: { main: upsertProject },
     },
     retrieveUserByEmail: { steps: { main: retrieveKeycloakUserByEmail } },
@@ -33,7 +33,7 @@ export const plugin: Plugin = {
 declare module '@cpn-console/hooks' {
   interface HookPayloadApis<Args extends DefaultArgs> {
     keycloak: Args extends (ProjectLite | Project)
-    ? KeycloakProjectApi
-    : undefined
+      ? KeycloakProjectApi
+      : undefined
   }
 }

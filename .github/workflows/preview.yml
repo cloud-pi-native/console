@@ -1,0 +1,32 @@
+name: Preview comment
+
+on:
+  pull_request:
+    types:
+      - labeled
+    branches:
+      - "**"
+
+jobs:
+  preview-comment:
+    name: Add comment with preview infos
+    if: contains(github.event.pull_request.labels.*.name, 'preview')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checks-out repository
+        uses: actions/checkout@v4
+
+      - name: Generate app url
+        id: generate-url
+        run: |
+          echo "CONSOLE_URL=$(echo "${{ vars.CONSOLE_TEMPLATE_URL }}" | sed 's|<pr_number>|${{ github.event.number }}|g')" >> $GITHUB_OUTPUT
+
+      - name: Comment PR
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            🤖 Hey !
+            
+            A preview of the application is available at : ${{ steps.generate-url.outputs.CONSOLE_URL }}
+
+            *Please be patient, deployment may take a few minutes.*

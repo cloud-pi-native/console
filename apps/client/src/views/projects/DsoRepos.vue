@@ -7,9 +7,9 @@ import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 type RepoTile = {
-  id: string,
-  title: string,
-  data: Repo,
+  id: string
+  title: string
+  data: Repo
 }
 
 const projectStore = useProjectStore()

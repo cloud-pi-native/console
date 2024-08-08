@@ -18,14 +18,14 @@ if (process.env.HTTP_PROXY) {
   )
 }
 
-async function initializeDB (path: string) {
+async function initializeDB(path: string) {
   app.log.info('Starting init DB...')
   const { data } = await import(path)
   await initDb(data)
   app.log.info('initDb invoked successfully')
 }
 
-export async function startServer (defaultPort: number = (port ? +port : 8080)) {
+export async function startServer(defaultPort: number = (port ? +port : 8080)) {
   try {
     await getConnection()
   } catch (error) {
@@ -67,7 +67,7 @@ export async function startServer (defaultPort: number = (port ? +port : 8080)) 
   app.log.debug({ isDev, isTest, isCI, isDevSetup, isProd })
 }
 
-export async function getPreparedApp () {
+export async function getPreparedApp() {
   try {
     await getConnection()
   } catch (error) {

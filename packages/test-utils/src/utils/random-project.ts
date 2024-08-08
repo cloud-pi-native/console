@@ -55,7 +55,7 @@ export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = basicStage
 
   // Create stages
   const stages = basicStages.map(baseEnvironment => getRandomStage(baseEnvironment))
-  stages.forEach(stage => {
+  stages.forEach((stage) => {
     // @ts-ignore
     stage.clusters = project.clusters
   })
@@ -64,12 +64,12 @@ export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = basicStage
   const quotas = repeatFn(4)(getRandomQuota)
 
   // Associate stages and quotas
-  stages.forEach(stage => {
+  stages.forEach((stage) => {
     stage.quotaIds = quotas.map(({ id }) => id)
   })
 
   // Associate stages and quotas
-  quotas.forEach(quota => {
+  quotas.forEach((quota) => {
     quota.stageIds = stages.map(({ id }) => id)
   })
 
@@ -81,7 +81,7 @@ export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = basicStage
     .map(env => getRandomEnv(env, project.id, stages[0].id, quotas[0].id, clusters[0].id))
 
   // Create permissions
-  project.environments.forEach(env => {
+  project.environments.forEach((env) => {
     env.permissions = users.map(user =>
       user.id === ownerId ? getRandomPerm(env.id, user, 2) : getRandomPerm(env.id, user),
     )

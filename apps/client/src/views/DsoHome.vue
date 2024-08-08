@@ -2,20 +2,20 @@
 import { ref, type Ref } from 'vue'
 
 type TabTitle = {
-  title: string,
-  icon: string,
+  title: string
+  icon: string
 }
 
 type MailType = {
-  to: string,
-  label: string,
-  address: string,
+  to: string
+  label: string
+  address: string
 }
 
 type KnowMoreBtn = {
-  label: string,
-  title: string,
-  onClick: any,
+  label: string
+  title: string
+  onClick: any
 }
 
 const tabListName: string = 'benefitsTab'

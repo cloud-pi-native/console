@@ -26,7 +26,7 @@ describe('Administration organizations', () => {
 
   it('Should display organizations table, loggedIn as admin', () => {
     cy.getByDataTestid('tableAdministrationOrganizations').within(() => {
-      organizations.forEach(organization => {
+      organizations.forEach((organization) => {
         cy.getByDataTestid(`${organization.name}-label-input`)
           .should('have.value', organization.label)
         cy.getByDataTestid(`${organization.name}-active-cbx`)

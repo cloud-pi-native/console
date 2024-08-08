@@ -24,15 +24,15 @@ export const RepoSchema = z.object({
 
 export const CreateRepoBusinessSchema = RepoSchema.omit({ id: true, projectId: true }).refine(
   ({ isPrivate, externalToken, externalUserName }) =>
-    (isPrivate && externalToken && externalUserName) ||
-    !isPrivate,
+    (isPrivate && externalToken && externalUserName)
+    || !isPrivate,
   { message: 'Si le dépôt est privé, vous devez renseignez les nom de propriétaire et token associés.' },
 )
 
 export const RepoBusinessSchema = RepoSchema.refine(
   ({ isPrivate, externalToken, externalUserName }) =>
-    (isPrivate && externalToken && externalUserName) ||
-    !isPrivate,
+    (isPrivate && externalToken && externalUserName)
+    || !isPrivate,
   { message: 'Si le dépôt est privé, vous devez renseignez les nom de propriétaire et token associés.' },
 )
 

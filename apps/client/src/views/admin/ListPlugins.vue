@@ -10,7 +10,7 @@ const snackbarStore = useSnackbarStore()
 const updated = ref<Record<string, Record<string, string>>>({})
 
 const refTheValues = (services: PluginSchema[]) => {
-  return services.map(service => {
+  return services.map((service) => {
     return {
       ...service,
       manifest: service.manifest?.map(item => ({ ...item, value: ref(item.value) })),

@@ -1,1 +1,1 @@
-npm run test
+pnpm run test

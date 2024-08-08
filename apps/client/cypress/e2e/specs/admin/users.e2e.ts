@@ -20,7 +20,7 @@ describe('Administration users', () => {
 
   it('Should display admin users, loggedIn as admin', () => {
     cy.getByDataTestid('tableAdministrationUsers').find('tbody').within(() => {
-      users.forEach(user => {
+      users.forEach((user) => {
         cy.get('tr > td')
           .contains(user.id)
           .click()

@@ -52,8 +52,8 @@ export const plugin: Plugin = {
 declare module '@cpn-console/hooks' {
   interface HookPayloadApis<Args extends DefaultArgs> {
     gitlab: Args extends Project | UniqueRepo
-    ? GitlabProjectApi
-    : undefined
+      ? GitlabProjectApi
+      : undefined
   }
   interface ProjectStore extends DeclareModuleGenerator<typeof infos, 'project'> {}
   interface Config extends DeclareModuleGenerator<typeof infos, 'global'> {}

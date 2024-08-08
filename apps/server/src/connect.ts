@@ -7,22 +7,6 @@ import {
   isDev,
   dbUrl,
 } from './utils/env.js'
-import {
-  _dropEnvironmentsTable,
-  _dropRepositoriesTable,
-  _dropProjectsTable,
-  _dropUsersTable,
-  _dropOrganizationsTable,
-  _dropRolesTable,
-  _dropLogsTable,
-  _dropClusterTable,
-  _dropPermissionsTable,
-  _dropKubeconfigTable,
-  _dropQuotaTable,
-  _dropStageTable,
-  _dropZoneTable,
-  _dropProjectClusterHistoryTable,
-} from './resources/queries-index.js'
 
 const DELAY_BEFORE_RETRY = isTest || isCI ? 1000 : 10000
 let closingConnections = false
@@ -64,29 +48,5 @@ export const closeConnections = async () => {
     app.log.error(error)
   } finally {
     closingConnections = false
-  }
-}
-
-export const dropTables = async () => {
-  try {
-    await _dropLogsTable()
-    await _dropRepositoriesTable()
-    await _dropPermissionsTable()
-    await _dropEnvironmentsTable()
-    await _dropRolesTable()
-    await _dropProjectsTable()
-    await _dropUsersTable()
-    await _dropOrganizationsTable()
-    await _dropClusterTable()
-    await _dropProjectClusterHistoryTable()
-    await _dropKubeconfigTable()
-    await _dropQuotaTable()
-    await _dropStageTable()
-    await _dropZoneTable()
-
-    app.log.info('All tables were droped successfully.')
-  } catch (error) {
-    app.log.error(error)
-    app.log.error('Drop database tables failed.')
   }
 }

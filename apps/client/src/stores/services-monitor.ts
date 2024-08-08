@@ -5,8 +5,8 @@ import type { DsfrAlertType } from '@gouvminint/vue-dsfr'
 import { apiClient, extractData } from '@/api/xhr-client.js'
 
 export type ServicesHealth = {
-  message: string,
-  status: DsfrAlertType | '',
+  message: string
+  status: DsfrAlertType | ''
 } | Record<string, never>
 
 const statusPriorities = [MonitorStatus.OK, MonitorStatus.WARNING, MonitorStatus.ERROR, MonitorStatus.UNKNOW]

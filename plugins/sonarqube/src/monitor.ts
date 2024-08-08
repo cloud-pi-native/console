@@ -21,7 +21,7 @@ const monitor = async (instance: Monitor): Promise<MonitorInfos> => {
   instance.lastStatus.lastUpdateTimestamp = (new Date()).getTime()
   try {
     const res = await axios.get('/system/health', {
-      validateStatus: (res) => res === 200,
+      validateStatus: res => res === 200,
       ...getAxiosOptions(),
     })
     const data = res.data as SonarRes

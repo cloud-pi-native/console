@@ -8,7 +8,7 @@ import { hook } from '@/utils/hook-wrapper.js'
 
 export enum Action {
   update = 'modifiée',
-  delete = 'supprimée'
+  delete = 'supprimée',
 }
 
 export const preventUpdatingOwnerPermission = async (

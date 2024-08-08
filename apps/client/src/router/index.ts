@@ -76,7 +76,7 @@ const routes: Readonly<RouteRecordRaw[]> = [
       {
         path: ':id',
         name: 'Project',
-        async beforeEnter (to, _from, next) {
+        async beforeEnter(to, _from, next) {
           if (typeof to.params.id !== 'string' || !to.params.id.match(uuid)) {
             return next('/projects')
           }
@@ -112,7 +112,7 @@ const routes: Readonly<RouteRecordRaw[]> = [
         ],
       },
     ],
-    async beforeEnter () {
+    async beforeEnter() {
       await useProjectStore().listProjects()
     },
   },
@@ -193,9 +193,9 @@ router.beforeEach(async (to, _from, next) => {
 
   // Redirige sur la page login si le path le requiert et l'utilisateur n'est pas connecté
   if (
-    typeof to.name === 'string' &&
-    !validPath.includes(to.name) &&
-    !userStore.isLoggedIn
+    typeof to.name === 'string'
+    && !validPath.includes(to.name)
+    && !userStore.isLoggedIn
   ) {
     return next('/login')
   }

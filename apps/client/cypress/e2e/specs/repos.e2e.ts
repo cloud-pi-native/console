@@ -140,7 +140,7 @@ describe('Add repos into project', () => {
       .getByDataTestid('menuRepos').click()
       .url().should('contain', '/repositories')
 
-    cy.wait('@listRepositories').its('response').then(response => {
+    cy.wait('@listRepositories').its('response').then((response) => {
       repositories = response.body
       cy.getByDataTestid(`repoTile-${repositories[0].internalRepoName}`).click()
         .get('h2').should('contain', 'Modifier le dépôt')
@@ -176,7 +176,7 @@ describe('Add repos into project', () => {
       .getByDataTestid('menuRepos').click()
       .url().should('contain', '/repositories')
 
-    cy.wait('@listRepositories').its('response').then(response => {
+    cy.wait('@listRepositories').its('response').then((response) => {
       repositories = response.body
 
       cy.getByDataTestid(`repoTile-${repositories[0].internalRepoName}`)

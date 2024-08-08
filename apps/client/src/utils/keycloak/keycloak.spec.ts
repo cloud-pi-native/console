@@ -23,7 +23,7 @@ vi.mock('keycloak-js', () => {
     login: () => void
     logout: () => void
 
-    constructor () {
+    constructor() {
       this.idTokenParsed = userToken
       this.init = vi.fn()
       this.login = vi.fn()

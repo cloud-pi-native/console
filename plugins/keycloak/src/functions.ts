@@ -140,14 +140,14 @@ export const upsertProject: StepCall<Project> = async ({ args: project }) => {
     // Ensure envs subgroups exists
     const projectGroups = await getAllSubgroups(kcClient, projectGroup.id, 0)
 
-    const consoleGroup: Required<CustomGroup> = projectGroups.find(({ name }) => name === consoleGroupName) as Required<GroupRepresentation> ??
-      await getOrCreateChildGroup(kcClient, projectGroup.id, consoleGroupName) as Required<GroupRepresentation>
+    const consoleGroup: Required<CustomGroup> = projectGroups.find(({ name }) => name === consoleGroupName) as Required<GroupRepresentation>
+      ?? await getOrCreateChildGroup(kcClient, projectGroup.id, consoleGroupName) as Required<GroupRepresentation>
 
     const envGroups = await getAllSubgroups(kcClient, consoleGroup.id, 0) as CustomGroup[]
 
     for (const environment of project.environments) {
-      const envGroup: Required<CustomGroup> = envGroups.find(group => group.name === environment.name) as Required<CustomGroup> ??
-        await getOrCreateChildGroup(kcClient, consoleGroup.id, environment.name)
+      const envGroup: Required<CustomGroup> = envGroups.find(group => group.name === environment.name) as Required<CustomGroup>
+        ?? await getOrCreateChildGroup(kcClient, consoleGroup.id, environment.name)
 
       const roGroup = await getOrCreateChildGroup(kcClient, envGroup.id, 'RO')
       const rwGroup = await getOrCreateChildGroup(kcClient, envGroup.id, 'RW')

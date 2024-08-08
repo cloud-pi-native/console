@@ -21,8 +21,8 @@ export const getUser = async (user: { email: string, username: string, id: strin
 
   // if not found, test finding by email or username
   const allUsers = [...usersByEmail, ...usersByUsername]
-  return allUsers.find(gitlabUser => gitlabUser.email === user.email) ||
-    allUsers.find(gitlabUser => gitlabUser.username === user.username)
+  return allUsers.find(gitlabUser => gitlabUser.email === user.email)
+    || allUsers.find(gitlabUser => gitlabUser.username === user.username)
 }
 
 export const upsertUser = async (user: UserObject): Promise<UserSchema> => {

@@ -18,8 +18,8 @@ export const ensureMembers = async (gitlabApi: GitlabProjectApi, project: Projec
     ),
     ...members.map(member =>
       (
-        !member.username.match(/group_[0-9]+_bot/) &&
-        !gitlabUsers.find(gitlabUser => member.id === gitlabUser.id)
+        !member.username.match(/group_[0-9]+_bot/)
+        && !gitlabUsers.find(gitlabUser => member.id === gitlabUser.id)
       )
         ? gitlabApi.removeGroupMember(member.id)
         : undefined,

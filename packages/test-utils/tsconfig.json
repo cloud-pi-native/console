@@ -3,13 +3,20 @@
     "@cpn-console/ts-config/tsconfig.base.json"
   ],
   "compilerOptions": {
-    "allowJs": true,
-    "outDir": "./dist",
+    "baseUrl": "./",
     "rootDir": "./src",
-    "declaration": true,
+    "outDir": "./dist",
     "declarationDir": "./types",
-    "lib": [
-      "ESNext"
-    ]
-  }
+    "paths": {
+      "@/*": ["src/*"]
+    },
+  },
+  "include": [
+    "./src/**/*.ts",
+    "./src/**/*.js",
+  ],
+  "exclude": [
+    "./src/**/*.spec.ts",
+    "./src/**/__mocks__",
+  ],
 }

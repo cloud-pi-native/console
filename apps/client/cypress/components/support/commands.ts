@@ -16,7 +16,7 @@ Cypress.Commands.add('mount', (component, options = {}) => {
   options.global.plugins = options.global.plugins || []
 
   options.global.plugins.push({
-    install (app) {
+    install(app) {
       app.use(VueDsfr, { icons: Object.values(icons) })
     },
   })

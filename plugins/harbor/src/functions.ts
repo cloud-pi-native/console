@@ -96,13 +96,13 @@ export const deleteDsoProject: StepCall<Project> = async (payload) => {
 export const getProjectSecrets: StepCall<ProjectLite> = async ({ args: project, apis: { vault: vaultApi }, config }) => {
   const publishRoRobotProject = project.store.registry?.publishProjectRobot
   const publishRoRobotConfig = config.registry?.publishProjectRobot
-  const projectRobotEnabled = publishRoRobotProject === ENABLED ||
-      (publishRoRobotConfig === ENABLED && (!publishRoRobotProject || publishRoRobotProject === DEFAULT))
+  const projectRobotEnabled = publishRoRobotProject === ENABLED
+    || (publishRoRobotConfig === ENABLED && (!publishRoRobotProject || publishRoRobotProject === DEFAULT))
 
   const VaultRobotSecret = projectRobotEnabled
     ? await vaultApi.read(`REGISTRY/${projectRobotName}`, { throwIfNoEntry: false }) as { data: VaultRobotSecret } | undefined
     : undefined
-  let secrets: {[x:string]: string} = {
+  let secrets: { [x: string]: string } = {
     'Registry base path': `${getConfig().host}/${project.organization.name}-${project.name}/`,
   }
 

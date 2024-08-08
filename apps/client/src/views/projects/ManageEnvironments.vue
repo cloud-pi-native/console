@@ -8,9 +8,9 @@ import { useClusterStore } from '@/stores/cluster.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 type EnvironmentTile = {
-  id: string,
-  title: string,
-  data: Environment,
+  id: string
+  title: string
+  data: Environment
 }
 
 const projectStore = useProjectStore()

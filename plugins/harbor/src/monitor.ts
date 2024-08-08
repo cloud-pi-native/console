@@ -11,7 +11,7 @@ const monitor = async (instance: Monitor): Promise<MonitorInfos> => {
   instance.lastStatus.lastUpdateTimestamp = (new Date()).getTime()
   try {
     const res = await getApi().health.getHealth({
-      validateStatus: (res) => res === 200,
+      validateStatus: res => res === 200,
     })
     if (res.status === 200) { // 200 only means api responds
       const data = res.data
@@ -23,9 +23,9 @@ const monitor = async (instance: Monitor): Promise<MonitorInfos> => {
       const failedCoreComponents = data.components
         ? data.components
           .filter(component =>
-            component.status === HealthStatus.unhealthy &&
-            component.name &&
-            coreComponents.includes(component.name),
+            component.status === HealthStatus.unhealthy
+            && component.name
+            && coreComponents.includes(component.name),
           )
         : []
 

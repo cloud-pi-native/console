@@ -52,7 +52,7 @@ export const getClusterAssociatedEnvironments = async (clusterId: string) => {
   try {
     const clusterEnvironments = await getClusterEnvironments(clusterId)
 
-    return clusterEnvironments.map(environment => {
+    return clusterEnvironments.map((environment) => {
       return ({
         organization: environment.project?.organization?.name,
         project: environment.project?.name,

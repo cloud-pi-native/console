@@ -3,7 +3,7 @@ import { CoreV1Api, V1ObjectMeta } from '@kubernetes/client-node'
 
 export type WithMetaType<CR extends object> = CR & {
   metadata: V1ObjectMeta & Required<Pick<V1ObjectMeta, 'name' | 'namespace'>>
-};
+}
 
 // API
 export const createDockerConfigSecret = async (kc: CoreV1Api, secretObject: WithMetaType<Secret>) => {

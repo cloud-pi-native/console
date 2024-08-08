@@ -7,10 +7,10 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 type UpdateQuotaType = UpdateQuotaBody & Pick<Quota, 'id'>
 
 const props = withDefaults(defineProps<{
-  isNewQuota: boolean,
-  quota: Quota,
-  allStages: Stage[],
-  associatedEnvironments: QuotaAssociatedEnvironments,
+  isNewQuota: boolean
+  quota: Quota
+  allStages: Stage[]
+  associatedEnvironments: QuotaAssociatedEnvironments
 }>(), {
   isNewQuota: false,
   quota: () => ({ isPrivate: false, stageIds: [] as string[], name: '' }),
@@ -66,7 +66,7 @@ const cancel = () => {
 
 const getRows = (associatedEnvironments: QuotaAssociatedEnvironments) => {
   return associatedEnvironments
-    .map(associatedEnvironment => {
+    .map((associatedEnvironment) => {
       return [
         toCodeComponent(associatedEnvironment.organization),
         toCodeComponent(associatedEnvironment.project),

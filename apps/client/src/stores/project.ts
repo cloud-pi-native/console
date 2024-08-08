@@ -28,7 +28,7 @@ export const useProjectStore = defineStore('project', () => {
       .then(response => extractData(response, 200))
     await organizationStore.listOrganizations()
     projects.value = res.map(project => ({ ...project, organization: organizationStore.organizationsById[project.organizationId] as Organization }))
-    projects.value.forEach(project => {
+    projects.value.forEach((project) => {
       usersStore.addUsersFromMembers(project.members)
     })
     if (selectedProject.value) {

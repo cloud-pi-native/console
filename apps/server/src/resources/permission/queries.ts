@@ -22,8 +22,8 @@ export const getPermissionByUserIdAndEnvironmentId = (
 
 // CREATE
 type UpsertPermissionsParams = {
-  userId: User['id'],
-  environmentId: Environment['id'],
+  userId: User['id']
+  environmentId: Environment['id']
   level: Permission['level']
 }
 

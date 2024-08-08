@@ -1,6 +1,6 @@
 import { data } from '@cpn-console/test-utils'
 
-export const getModel = (model) => data[model]
+export const getModel = model => data[model]
 
 export const getModelById = (model: string, id: string) => model === 'project'
   ? getProjectById(id)

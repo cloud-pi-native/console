@@ -72,7 +72,7 @@ model Project {
   id             String          @id @unique @default(uuid()) @db.Uuid
   name           String
   organizationId String          @db.Uuid
-  description    String?
+  description    String          @default("")
   status         ProjectStatus   @default(initializing)
   locked         Boolean         @default(false)
   createdAt      DateTime        @default(now())
