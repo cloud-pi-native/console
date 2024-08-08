@@ -1,10 +1,11 @@
+import { faker } from '@faker-js/faker'
+import { PROJECT_PERMS, projectRoleContract } from '@cpn-console/shared'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import app from '../../app.js'
 import * as business from './business.js'
 import * as utilsController from '../../utils/controller.js'
-import { faker } from '@faker-js/faker'
 import { getProjectMockInfos, getUserMockInfos } from '../../utils/mocks.js'
-import { PROJECT_PERMS, projectRoleContract } from '@cpn-console/shared'
+import { BadRequest400 } from '../../utils/errors.js'
 
 vi.mock('./business.js')
 vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
@@ -201,7 +202,7 @@ describe('Tests projectRoleContract', () => {
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessPatchRolesMock.mockResolvedValue(new utilsController.BadRequest400('une erreur'))
+      businessPatchRolesMock.mockResolvedValue(new BadRequest400('une erreur'))
       const response = await app.inject()
         .patch(projectRoleContract.patchProjectRoles.path.replace(':projectId', projectId))
         .body([{ id: roleId, name: 'nouveau rôle' }])

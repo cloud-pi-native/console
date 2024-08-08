@@ -20,7 +20,7 @@ import {
 import { linkClusterToStages } from '@/resources/stage/business.js'
 import { validateSchema } from '@/utils/business.js'
 import { hook } from '@/utils/hook-wrapper.js'
-import { ErrorResType, BadRequest400, NotFound404, Unprocessable422 } from '@/utils/controller.js'
+import { ErrorResType, BadRequest400, NotFound404, Unprocessable422 } from '@/utils/errors.js'
 
 export const listClusters = async (userId?: User['id']) => {
   const where: Prisma.ClusterWhereInput = userId

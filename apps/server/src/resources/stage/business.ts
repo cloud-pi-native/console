@@ -17,7 +17,7 @@ import {
   linkClusterToStages as linkClusterToStagesQuery,
   getAllStageIds,
 } from '../queries-index.js'
-import { BadRequest400, NotFound404 } from '@/utils/controller.js'
+import { BadRequest400, NotFound404 } from '@/utils/errors.js'
 import prisma from '@/prisma.js'
 
 export const getStageAssociatedEnvironments = async (stageId: Stage['id']) => {

@@ -2,7 +2,8 @@ import { serverInstance } from '@/app.js'
 
 import { createZone, deleteZone, listZones, updateZone } from './business.js'
 import { AdminAuthorized, zoneContract } from '@cpn-console/shared'
-import { authUser, ErrorResType, Forbidden403 } from '@/utils/controller.js'
+import { authUser } from '@/utils/controller.js'
+import { ErrorResType, Forbidden403 } from '@/utils/errors.js'
 
 export const zoneRouter = () => serverInstance.router(zoneContract, {
   listZones: async () => {

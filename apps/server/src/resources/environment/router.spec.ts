@@ -1,10 +1,11 @@
+import { faker } from '@faker-js/faker'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { environmentContract, PROJECT_PERMS } from '@cpn-console/shared'
 import app from '../../app.js'
 import * as business from './business.js'
 import * as utilsController from '../../utils/controller.js'
 import { getProjectMockInfos, getUserMockInfos } from '../../utils/mocks.js'
-import { faker } from '@faker-js/faker'
+import { BadRequest400 } from '../../utils/errors.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
 const authUserMock = vi.spyOn(utilsController, 'authUser')
@@ -131,7 +132,7 @@ describe('environmentRouter tests', () => {
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessCreateEnvironmentMock.mockResolvedValueOnce(new utilsController.BadRequest400('une erreur'))
+      businessCreateEnvironmentMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
       const response = await app.inject()
         .post(environmentContract.createEnvironment.path)
         .body(environmentData)
@@ -144,7 +145,7 @@ describe('environmentRouter tests', () => {
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessCheckEnvironmentInputMock.mockResolvedValueOnce(new utilsController.BadRequest400('une erreur'))
+      businessCheckEnvironmentInputMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
       const response = await app.inject()
         .post(environmentContract.createEnvironment.path)
         .body(environmentData)
@@ -243,7 +244,7 @@ describe('environmentRouter tests', () => {
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessUpdateEnvironmentMock.mockResolvedValueOnce(new utilsController.BadRequest400('une erreur'))
+      businessUpdateEnvironmentMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
       const response = await app.inject()
         .put(environmentContract.updateEnvironment.path.replace(':environmentId', environmentId))
         .body(updateData)
@@ -256,7 +257,7 @@ describe('environmentRouter tests', () => {
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessCheckEnvironmentInputMock.mockResolvedValueOnce(new utilsController.BadRequest400('une erreur'))
+      businessCheckEnvironmentInputMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
       const response = await app.inject()
         .put(environmentContract.updateEnvironment.path.replace(':environmentId', environmentId))
         .body(updateData)
@@ -336,7 +337,7 @@ describe('environmentRouter tests', () => {
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessDeleteEnvironmentMock.mockResolvedValueOnce(new utilsController.BadRequest400('une erreur'))
+      businessDeleteEnvironmentMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
       const response = await app.inject()
         .delete(environmentContract.deleteEnvironment.path.replace(':environmentId', environmentId))
         .end()

@@ -15,7 +15,7 @@ import {
   BadRequest400,
   NotFound404,
   Unprocessable422,
-} from '@/utils/controller.js'
+} from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
 import prisma from '@/prisma.js'
 

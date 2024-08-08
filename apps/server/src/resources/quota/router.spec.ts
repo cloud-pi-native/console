@@ -1,10 +1,11 @@
+import { faker } from '@faker-js/faker'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { quotaContract } from '@cpn-console/shared'
 import app from '../../app.js'
 import * as business from './business.js'
 import * as utilsController from '../../utils/controller.js'
-import { faker } from '@faker-js/faker'
 import { getUserMockInfos } from '../../utils/mocks.js'
+import { BadRequest400, NotFound404 } from '../../utils/errors.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
 const authUserMock = vi.spyOn(utilsController, 'authUser')
@@ -71,7 +72,7 @@ describe('Test quotaContract', () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessGetEnvironmentsMock.mockResolvedValueOnce(new utilsController.NotFound404())
+      businessGetEnvironmentsMock.mockResolvedValueOnce(new NotFound404())
       const response = await app.inject()
         .get(quotaContract.listQuotaEnvironments.path.replace(':quotaId', faker.string.uuid()))
         .end()
@@ -111,7 +112,7 @@ describe('Test quotaContract', () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessCreateMock.mockResolvedValueOnce(new utilsController.BadRequest400('une erreur'))
+      businessCreateMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
       const response = await app.inject()
         .post(quotaContract.createQuota.path)
         .body(quota)
@@ -153,7 +154,7 @@ describe('Test quotaContract', () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessUpdateMock.mockResolvedValueOnce(new utilsController.BadRequest400('une erreur'))
+      businessUpdateMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
       const response = await app.inject()
         .put(quotaContract.updateQuota.path.replace(':quotaId', quotaId))
         .body(quota)
@@ -191,7 +192,7 @@ describe('Test quotaContract', () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessDeleteMock.mockResolvedValueOnce(new utilsController.BadRequest400('une erreur'))
+      businessDeleteMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
       const response = await app.inject()
         .delete(quotaContract.deleteQuota.path.replace(':quotaId', faker.string.uuid()))
         .end()

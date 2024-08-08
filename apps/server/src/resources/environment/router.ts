@@ -1,8 +1,8 @@
-import { serverInstance } from '@/app.js'
 import { AdminAuthorized, environmentContract, ProjectAuthorized } from '@cpn-console/shared'
+import { serverInstance } from '@/app.js'
 import { createEnvironment, deleteEnvironment, updateEnvironment, getProjectEnvironments, checkEnvironmentInput } from './business.js'
-
-import { authUser, NotFound404, Forbidden403, ErrorResType } from '@/utils/controller.js'
+import { authUser } from '@/utils/controller.js'
+import { NotFound404, Forbidden403, ErrorResType } from '@/utils/errors.js'
 
 export const environmentRouter = () => serverInstance.router(environmentContract, {
   listEnvironments: async ({ request: req, query }) => {

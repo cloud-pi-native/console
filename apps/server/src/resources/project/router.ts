@@ -9,7 +9,8 @@ import {
 } from './business.js'
 import { AdminAuthorized, ProjectAuthorized, projectContract } from '@cpn-console/shared'
 import { serverInstance } from '@/app.js'
-import { authUser, NotFound404, Forbidden403, ErrorResType, BadRequest400 } from '@/utils/controller.js'
+import { authUser } from '@/utils/controller.js'
+import { NotFound404, Forbidden403, ErrorResType, BadRequest400 } from '@/utils/errors.js'
 
 export const projectRouter = () => serverInstance.router(projectContract, {
 

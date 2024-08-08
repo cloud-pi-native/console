@@ -1,10 +1,11 @@
+import { faker } from '@faker-js/faker'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { clusterContract, ClusterDetails } from '@cpn-console/shared'
 import app from '../../app.js'
 import * as business from './business.js'
 import * as utilsController from '../../utils/controller.js'
-import { faker } from '@faker-js/faker'
 import { getUserMockInfos } from '../../utils/mocks.js'
+import { BadRequest400 } from '../../utils/errors.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
 const authUserMock = vi.spyOn(utilsController, 'authUser')
@@ -128,7 +129,7 @@ describe('Test clusterContract', () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessCreateMock.mockResolvedValueOnce(new utilsController.BadRequest400('une erreur'))
+      businessCreateMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
       const response = await app.inject()
         .post(clusterContract.createCluster.path)
         .body(cluster)
@@ -170,7 +171,7 @@ describe('Test clusterContract', () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessUpdateMock.mockResolvedValueOnce(new utilsController.BadRequest400('une erreur'))
+      businessUpdateMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
       const response = await app.inject()
         .put(clusterContract.updateCluster.path.replace(':clusterId', clusterId))
         .body(cluster)
@@ -208,7 +209,7 @@ describe('Test clusterContract', () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessDeleteMock.mockResolvedValueOnce(new utilsController.BadRequest400('une erreur'))
+      businessDeleteMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
       const response = await app.inject()
         .delete(clusterContract.deleteCluster.path.replace(':clusterId', faker.string.uuid()))
         .end()

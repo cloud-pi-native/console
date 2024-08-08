@@ -7,7 +7,7 @@ import {
   linkZoneToClusters,
   getZoneBySlug,
 } from './queries.js'
-import { BadRequest400 } from '@/utils/controller.js'
+import { BadRequest400 } from '@/utils/errors.js'
 import prisma from '@/prisma.js'
 
 export const listZones = async () => {

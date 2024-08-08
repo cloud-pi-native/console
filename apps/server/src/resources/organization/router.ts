@@ -7,7 +7,8 @@ import {
   listOrganizations,
   updateOrganization,
 } from './business.js'
-import { authUser, ErrorResType, Forbidden403 } from '@/utils/controller.js'
+import { authUser } from '@/utils/controller.js'
+import { ErrorResType, Forbidden403 } from '@/utils/errors.js'
 
 export const organizationRouter = () => serverInstance.router(organizationContract, {
   listOrganizations: async ({ query }) => {

@@ -233,12 +233,6 @@ const transferSelectOptions = [
         <div
           v-if="isTransferingProject"
         >
-          <!-- <DsfrAlert
-            class="<md:mt-2 fr-mb-2w"
-            description="La suppression du projet entraîne la suppression de toutes les ressources applicatives associées."
-            type="info"
-            small
-          /> -->
           <DsfrSelect
             v-model="nextOwnerId"
             label="Choisir le futur propriétaire du projet"

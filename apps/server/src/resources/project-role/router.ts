@@ -1,3 +1,4 @@
+import { AdminAuthorized, ProjectAuthorized, projectRoleContract } from '@cpn-console/shared'
 import {
   countRolesMembers,
   createRole,
@@ -5,9 +6,9 @@ import {
   listRoles,
   patchRoles,
 } from './business.js'
-import { AdminAuthorized, ProjectAuthorized, projectRoleContract } from '@cpn-console/shared'
 import { serverInstance } from '@/app.js'
-import { authUser, NotFound404, Forbidden403, ErrorResType } from '@/utils/controller.js'
+import { authUser } from '@/utils/controller.js'
+import { NotFound404, Forbidden403, ErrorResType } from '@/utils/errors.js'
 
 export const projectRoleRouter = () => serverInstance.router(projectRoleContract, {
   // Récupérer des projets

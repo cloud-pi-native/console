@@ -8,7 +8,8 @@ import {
   deleteStage,
   updateStage,
 } from './business.js'
-import { authUser, ErrorResType, Forbidden403 } from '@/utils/controller.js'
+import { authUser } from '@/utils/controller.js'
+import { ErrorResType, Forbidden403 } from '@/utils/errors.js'
 
 export const stageRouter = () => serverInstance.router(stageContract, {
 

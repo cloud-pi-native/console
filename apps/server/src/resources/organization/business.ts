@@ -1,3 +1,5 @@
+import { getUniqueListBy, objectValues, organizationContract, OrganizationSchema } from '@cpn-console/shared'
+import { User } from '@prisma/client'
 import prisma from '@/prisma.js'
 import {
   getOrganizationByName,
@@ -7,10 +9,8 @@ import {
   updateOrganization as updateOrganizationQuery,
 } from '@/resources/queries-index.js'
 import { validateSchema } from '@/utils/business.js'
-import { BadRequest400, ErrorResType, NotFound404, Unprocessable422 } from '@/utils/controller.js'
+import { BadRequest400, ErrorResType, NotFound404, Unprocessable422 } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
-import { getUniqueListBy, objectValues, organizationContract, OrganizationSchema } from '@cpn-console/shared'
-import { User } from '@prisma/client'
 
 export const listOrganizations = (query?: typeof organizationContract.listOrganizations.query._type) =>
   getOrganizations(query)
