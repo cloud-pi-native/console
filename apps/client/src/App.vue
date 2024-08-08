@@ -15,6 +15,7 @@ userStore.setIsLoggedIn()
 const isLoggedIn = ref<boolean | undefined>(keycloak.authenticated)
 const label = ref(isLoggedIn.value ? 'Se déconnecter' : 'Se connecter')
 const to = ref(isLoggedIn.value ? '/logout' : '/login')
+
 const appVersion: string = process.env.APP_VERSION ? `v${process.env.APP_VERSION}` : 'vpr-dev'
 
 const quickLinks = ref([{
