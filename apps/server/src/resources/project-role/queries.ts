@@ -19,7 +19,7 @@ export const createRole = (data: Pick<Prisma.ProjectRoleUncheckedCreateInput, 'p
   })
 
 export const updateRole = (id: ProjectRole['id'], data: Pick<Prisma.ProjectRoleUncheckedUpdateInput, 'permissions' | 'name' | 'position' | 'id'>) =>
-  prisma.projectRole.updateMany({
+  prisma.projectRole.update({
     where: { id },
     data,
   })

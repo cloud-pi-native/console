@@ -149,7 +149,7 @@ type GetProjectByNameParams = {
 }
 
 export const getProjectByNames = ({ name, organizationName }: GetProjectByNameParams) =>
-  prisma.project.findMany({
+  prisma.project.findFirst({
     where: {
       name,
       organization: { name: organizationName },
@@ -263,11 +263,6 @@ export const initializeProject = (
 export const lockProject = (id: Project['id']) =>
   prisma.project.update({
     where: { id }, data: { locked: true },
-  })
-
-export const unlockProject = (id: Project['id']) =>
-  prisma.project.update({
-    where: { id }, data: { locked: false },
   })
 
 export const updateProjectCreated = (id: Project['id']) =>

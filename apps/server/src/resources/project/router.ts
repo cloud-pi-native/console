@@ -41,7 +41,7 @@ export const projectRouter = () => serverInstance.router(projectContract, {
     if (!ProjectAuthorized.SeeSecrets(perms)) return new Forbidden403()
     if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
 
-    const body = await getProjectSecrets(projectId, perms.user.id)
+    const body = await getProjectSecrets(projectId)
 
     if (body instanceof ErrorResType) return body
 

@@ -6,10 +6,7 @@ import {
   linkQuotaToStages,
   getQuotaById,
   deleteQuota as deleteQuotaQuery,
-  updateQuotaPrivacy as updateQuotaPrivacyQuery,
   getQuotaAssociatedEnvironmentById,
-  updateQuotaName,
-  updateQuotaLimits,
   unlinkQuotaFromStages,
 } from '@/resources/queries-index.js'
 import { validateSchema } from '@/utils/business.js'
@@ -22,20 +19,14 @@ import { ErrorResType, BadRequest400, NotFound404 } from '@/utils/errors.js'
 import prisma from '@/prisma.js'
 
 export const getQuotaAssociatedEnvironments = async (quotaId: string) => {
-  try {
-    const quota = await getQuotaById(quotaId)
-    if (!quota) return new NotFound404()
-    const environments = await getQuotaAssociatedEnvironmentById(quotaId)
-    return environments.map(env => ({
-      name: env.name,
-      project: env.project.name,
-      organization: env.project.organization.name,
-      stage: env.stage.name,
-      owner: env.project.owner.email,
-    }))
-  } catch (error) {
-    throw new Error(error?.message)
-  }
+  const environments = await getQuotaAssociatedEnvironmentById(quotaId)
+  return environments.map(env => ({
+    name: env.name,
+    project: env.project.name,
+    organization: env.project.organization.name,
+    stage: env.stage.name,
+    owner: env.project.owner.email,
+  }))
 }
 
 export const createQuota = async (data: CreateQuotaBody): Promise<QuotaDto | ErrorResType> => {
@@ -75,16 +66,15 @@ export const updateQuota = async (
 
   if (!dbQuota) return new NotFound404()
   const dbStageIds = dbQuota.stages.map(({ id }) => id)
-  if (name === dbQuota.name) {
-    await updateQuotaName(id, name)
-  }
-  if (typeof isPrivate === 'boolean') {
-    await updateQuotaPrivacyQuery(id, isPrivate)
-  }
-  if (cpu && memory) {
-    await updateQuotaLimits(id, {
-      cpu,
-      memory,
+  if (name || isPrivate || cpu || memory) {
+    await prisma.quota.update({
+      where: { id },
+      data: {
+        cpu,
+        isPrivate,
+        memory,
+        name,
+      },
     })
   }
   if (stageIds) {

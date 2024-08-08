@@ -1939,6 +1939,7 @@ export const data = {
       updatedAt: '2023-07-03T14:46:56.816Z',
     },
   ],
+  systemSetting: [],
   associations: [
     [
       'cluster',

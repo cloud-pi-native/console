@@ -1,5 +1,5 @@
 import { type Prisma, User } from '@prisma/client'
-import { type ClusterDetails, ClusterDetailsSchema, ClusterPrivacy, Kubeconfig, Project, type Cluster } from '@cpn-console/shared'
+import { type ClusterDetails, ClusterDetailsSchema, ClusterPrivacy, Kubeconfig, Project, type Cluster, clusterContract } from '@cpn-console/shared'
 import {
   addLogs,
   createCluster as createClusterQuery,
@@ -21,6 +21,7 @@ import { linkClusterToStages } from '@/resources/stage/business.js'
 import { validateSchema } from '@/utils/business.js'
 import { hook } from '@/utils/hook-wrapper.js'
 import { ErrorResType, BadRequest400, NotFound404, Unprocessable422 } from '@/utils/errors.js'
+import prisma from '@/prisma.js'
 
 export const listClusters = async (userId?: User['id']) => {
   const where: Prisma.ClusterWhereInput = userId
@@ -42,7 +43,7 @@ export const listClusters = async (userId?: User['id']) => {
   const clusters = await listClustersQuery(where)
   return clusters.map(({ stages, ...cluster }) => ({
     ...cluster,
-    stageIds: stages?.map(({ id }) => id) ?? [],
+    stageIds: stages.map(({ id }) => id),
   }))
 }
 
@@ -74,7 +75,7 @@ export const getClusterDetails = async (clusterId: string): Promise<ClusterDetai
   }
 }
 
-export const createCluster = async (data: Omit<ClusterDetails, 'id'>, userId: User['id'], requestId: string) => {
+export const createCluster = async (data: typeof clusterContract.createCluster.body._type, userId: User['id'], requestId: string) => {
   const isLabelTaken = await getClusterByLabel(data.label)
   if (isLabelTaken) return new BadRequest400('Ce label existe déjà pour un autre cluster')
 
@@ -109,7 +110,7 @@ export const createCluster = async (data: Omit<ClusterDetails, 'id'>, userId: Us
   return getClusterDetails(clusterCreated.id)
 }
 
-export const updateCluster = async (data: Partial<ClusterDetails>, clusterId: Cluster['id'], userId: User['id'], requestId: string): Promise<ClusterDetails | ErrorResType> => {
+export const updateCluster = async (data: typeof clusterContract.updateCluster.body._type, clusterId: Cluster['id'], userId: User['id'], requestId: string): Promise<ClusterDetails | ErrorResType> => {
   if (data?.privacy === ClusterPrivacy.PUBLIC) delete data.projectIds
 
   const schemaValidation = ClusterDetailsSchema.partial().safeParse({ ...data, id: clusterId })
@@ -118,7 +119,6 @@ export const updateCluster = async (data: Partial<ClusterDetails>, clusterId: Cl
 
   const dbCluster = await getClusterById(clusterId)
   if (!dbCluster) return new NotFound404()
-  if (data?.label && data.label !== dbCluster.label) return new BadRequest400('Le label d\'un cluster ne peut être modifié')
 
   const {
     projectIds,
@@ -179,14 +179,10 @@ export const updateCluster = async (data: Partial<ClusterDetails>, clusterId: Cl
 }
 
 export const deleteCluster = async (clusterId: Cluster['id'], userId: User['id'], requestId: string) => {
-  const environments = await getClusterAssociatedEnvironments(clusterId)
-  if (environments?.length) return new BadRequest400('Impossible de supprimer le cluster, des environnements en activité y sont déployés')
+  const environment = await prisma.environment.findFirst({ where: { clusterId } })
+  if (environment) return new BadRequest400('Impossible de supprimer le cluster, des environnements en activité y sont déployés')
 
-  const cluster = await getClusterById(clusterId)
-  if (!cluster) {
-    return new NotFound404()
-  }
-  const hookReply = await hook.cluster.delete(cluster.id)
+  const hookReply = await hook.cluster.delete(clusterId)
   await addLogs('Delete Cluster', hookReply, userId, requestId)
   if (hookReply.failed) {
     return new Unprocessable422('Echec des services à la suppression du cluster')

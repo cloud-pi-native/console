@@ -1,6 +1,5 @@
 import fp from 'fastify-plugin'
 import { Project, Cluster, Repository } from '@prisma/client'
-import { User } from '@cpn-console/test-utils'
 import { PluginsManifests, RepoCreds, ServiceInfos, editStrippers, populatePluginManifests } from '@cpn-console/hooks'
 import { genericProxy } from './proxy.js'
 import { DEFAULT, DISABLED, PROJECT_PERMS } from '@cpn-console/shared'
@@ -8,9 +7,9 @@ import { UserDetails } from '../types/index.js'
 import { faker } from '@faker-js/faker'
 import * as utilsController from '../utils/controller.js'
 
-let requestor: User
+let requestor: Requestor
 
-export const setRequestor = (user: User) => {
+export const setRequestor = (user: Requestor = getRandomRequestor()) => {
   requestor = user
 }
 
@@ -304,20 +303,13 @@ const user = {
   updateUserAdminGroupMembership: async (_id: string) => resultsBase,
 }
 
-export const mockHookWrapper = () => ({
-  hook: {
-    misc: genericProxy(misc, { checkServices: [], fetchOrganizations: [], syncRepository: [] }),
-    project: genericProxy(project, { delete: ['upsert'], upsert: ['delete'], getSecrets: ['delete'] }),
-    cluster: genericProxy(cluster, { delete: ['upsert'], upsert: ['delete'] }),
-    user: genericProxy(user, { retrieveUserByEmail: [], retrieveAdminUsers: [], updateUserAdminGroupMembership: [] }),
-  },
-})
-
-export const getRandomRequestor = (): UserDetails => ({
-  email: faker.internet.email(),
-  firstName: faker.person.firstName(),
-  lastName: faker.person.lastName(),
-  groups: [], id: faker.string.uuid(),
+type Requestor = Partial<UserDetails>
+export const getRandomRequestor = (user?: Requestor): Partial<UserDetails> => ({
+  id: user?.id ?? faker.string.uuid(),
+  email: user?.email ?? faker.internet.email(),
+  firstName: user?.firstName ?? faker.person.firstName(),
+  lastName: user?.lastName ?? faker.person.lastName(),
+  ...user?.groups !== null && { groups: user?.groups ?? [] },
 })
 
 export function getUserMockInfos(isAdmin: boolean, user?: UserDetails): utilsController.UserProfile

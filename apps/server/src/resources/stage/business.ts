@@ -11,18 +11,14 @@ import {
   getStageAssociatedEnvironmentById,
   updateStageName,
   unlinkStageFromQuotas,
-} from '@/resources/queries-index.js'
-import {
   listStages as listStagesQuery,
   linkClusterToStages as linkClusterToStagesQuery,
   getAllStageIds,
-} from '../queries-index.js'
+} from '@/resources/queries-index.js'
 import { BadRequest400, NotFound404 } from '@/utils/errors.js'
 import prisma from '@/prisma.js'
 
 export const getStageAssociatedEnvironments = async (stageId: Stage['id']) => {
-  const stage = await getStageById(stageId)
-  if (!stage) return new BadRequest400(`Le stage ${stageId} n'existe pas`)
   const environments = await getStageAssociatedEnvironmentById(stageId)
   return environments.map(env => ({
     organization: env.project.organization.name,

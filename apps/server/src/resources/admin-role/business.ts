@@ -10,22 +10,25 @@ export const listRoles = async () => listAdminRoles()
   .then(roles => roles.map(role => ({ ...role, permissions: role.permissions.toString() })))
 
 export const patchRoles = async (roles: typeof adminRoleContract.patchAdminRoles.body._type): Promise<AdminRole[] | ErrorResType> => {
-  const dbRoles = await listRoles()
+  const dbRoles = await prisma.adminRole.findMany()
   const positionsAvailable: number[] = []
 
-  const updatedRoles: (Omit<AdminRole, 'permissions'> & { permissions: bigint })[] = dbRoles.map((dbRole) => {
-    const matchingRole = roles.find(role => role.id === dbRole.id)
-    if (matchingRole?.position && !positionsAvailable.includes(matchingRole.position)) {
-      positionsAvailable.push(matchingRole.position)
-    }
-    return {
-      id: matchingRole?.id ?? dbRole.id,
-      name: matchingRole?.name ?? dbRole.name,
-      permissions: matchingRole?.permissions ? BigInt(matchingRole?.permissions) : BigInt(dbRole.permissions),
-      position: matchingRole?.position ?? dbRole.position,
-      oidcGroup: matchingRole?.oidcGroup ?? dbRole.oidcGroup,
-    }
-  })
+  const updatedRoles: (Omit<AdminRole, 'permissions'> & { permissions: bigint })[] = dbRoles
+    .filter(dbRole => roles.find(role => role.id === dbRole.id)) // filter non concerned dbRoles
+    .map((dbRole) => {
+      const matchingRole = roles.find(role => role.id === dbRole.id)
+      if (typeof matchingRole?.position !== 'undefined' && !positionsAvailable.includes(matchingRole.position)) {
+        positionsAvailable.push(matchingRole.position)
+      }
+      return {
+        id: dbRole.id,
+        name: matchingRole?.name ?? dbRole.name,
+        permissions: matchingRole?.permissions ? BigInt(matchingRole?.permissions) : dbRole.permissions,
+        position: matchingRole?.position ?? dbRole.position,
+        oidcGroup: matchingRole?.oidcGroup ?? dbRole.oidcGroup,
+      }
+    })
+
   if (positionsAvailable.length && positionsAvailable.length !== dbRoles.length) return new BadRequest400('Les numéros de position des rôles sont incohérentes')
   for (const { id, ...role } of updatedRoles) {
     await prisma.adminRole.update({ where: { id }, data: role })
@@ -38,12 +41,12 @@ export const createRole = async (role: typeof adminRoleContract.createAdminRole.
   const dbMaxPosRole = (await prisma.adminRole.findFirst({
     orderBy: { position: 'desc' },
     select: { position: true },
-  }))?.position
+  }))?.position ?? -1
 
   await prisma.adminRole.create({
     data: {
       ...role,
-      position: dbMaxPosRole ? dbMaxPosRole + 1 : 0,
+      position: dbMaxPosRole + 1,
       permissions: 0n,
     },
   })
@@ -52,8 +55,10 @@ export const createRole = async (role: typeof adminRoleContract.createAdminRole.
 }
 
 export const countRolesMembers = async () => {
-  const roles = await listRoles()
+  const roles = await prisma.adminRole.findMany({ where: { oidcGroup: { equals: '' } }, select: { id: true } })
+  const roleIds = roles.map(role => role.id)
   const users = await prisma.user.findMany({
+    where: { adminRoleIds: { hasSome: roleIds } },
     select: { adminRoleIds: true },
   })
   const rolesCounts: Record<ProjectRole['id'], number> = Object.fromEntries(roles.map(role => [role.id, 0])) // {role uuid: 0}
