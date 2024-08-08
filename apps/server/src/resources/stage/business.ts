@@ -11,12 +11,10 @@ import {
   getStageAssociatedEnvironmentById,
   updateStageName,
   unlinkStageFromQuotas,
-} from '@/resources/queries-index.js'
-import {
   listStages as listStagesQuery,
   linkClusterToStages as linkClusterToStagesQuery,
   getAllStageIds,
-} from '../queries-index.js'
+} from '@/resources/queries-index.js'
 import { BadRequest400, NotFound404 } from '@/utils/errors.js'
 import prisma from '@/prisma.js'
 
