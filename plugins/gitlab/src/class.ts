@@ -6,6 +6,7 @@ import { AccessLevel, CondensedProjectSchema, Gitlab } from '@gitbeaker/core'
 import { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
 import { createHash } from 'node:crypto'
 import { objectEntries } from '@cpn-console/shared'
+import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
 
 type setVariableResult = 'created' | 'updated' | 'already up-to-date'
 type AccessLevelAllowed = AccessLevel.NO_ACCESS | AccessLevel.MINIMAL_ACCESS | AccessLevel.GUEST | AccessLevel.REPORTER | AccessLevel.DEVELOPER | AccessLevel.MAINTAINER | AccessLevel.OWNER
@@ -287,7 +288,17 @@ export class GitlabProjectApi extends PluginApi {
   }
 
   public async listFiles (repoId: number, path: string = '/', branch: string = 'main') {
-    return this.api.Repositories.allRepositoryTrees(repoId, { path, ref: branch, recursive: true, perPage: 1000 })
+    try {
+      const files = await this.api.Repositories.allRepositoryTrees(repoId, { path, ref: branch, recursive: true, perPage: 1000 })
+      return files
+    } catch (error) {
+      if (error instanceof GitbeakerRequestError && error?.cause?.description === '404 Tree Not Found') {
+        // Empty repository, with zero commit ==> Zero files
+        return []
+      } else {
+        throw error
+      }
+    }
   }
 
   public async deleteRepository (repoId: number) {
