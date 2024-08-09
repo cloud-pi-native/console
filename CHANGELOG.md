@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.9.4](https://github.com/cloud-pi-native/console/compare/v8.9.3...v8.9.4) (2024-08-09)
+
+
+### Bug Fixes
+
+* :ambulance: handle missing commit in gitlab repo ([2ef9930](https://github.com/cloud-pi-native/console/commit/2ef993001770e76be5bdf2795a0cbe8e302cf71a))
+
 ## [8.9.3](https://github.com/cloud-pi-native/console/compare/v8.9.2...v8.9.3) (2024-08-08)
 
 
