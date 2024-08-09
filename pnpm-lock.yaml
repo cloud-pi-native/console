@@ -7286,7 +7286,7 @@ snapshots:
 
   '@gitbeaker/core@40.0.3':
     dependencies:
-      '@gitbeaker/requester-utils': 40.0.3
+      '@gitbeaker/requester-utils': 40.1.2
       qs: 6.12.3
       xcase: 2.0.1
 
@@ -7313,7 +7313,7 @@ snapshots:
   '@gitbeaker/rest@40.0.3':
     dependencies:
       '@gitbeaker/core': 40.0.3
-      '@gitbeaker/requester-utils': 40.0.3
+      '@gitbeaker/requester-utils': 40.1.2
 
   '@gitbeaker/rest@40.1.2':
     dependencies:
