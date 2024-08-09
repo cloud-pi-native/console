@@ -1,6 +1,5 @@
 import { z } from 'zod'
 import { longestEnvironmentName } from '../utils/const.js'
-import { PermissionSchema } from './permission.js'
 import { ErrorSchema } from './utils.js'
 
 export const EnvironmentSchema = z.object({
@@ -16,15 +15,14 @@ export const EnvironmentSchema = z.object({
   quotaId: z.string().uuid(),
   clusterId: z.string()
     .uuid(),
-  permissions: z.lazy(() => PermissionSchema.array()).optional(),
 })
 
 export type Environment = Zod.infer<typeof EnvironmentSchema>
 
 export const CreateEnvironmentSchema = {
-  body: EnvironmentSchema.omit({ id: true, permissions: true }),
+  body: EnvironmentSchema.omit({ id: true }),
   responses: {
-    201: EnvironmentSchema.omit({ permissions: true }),
+    201: EnvironmentSchema,
     400: ErrorSchema,
     401: ErrorSchema,
     500: ErrorSchema,
@@ -38,6 +36,7 @@ export const GetEnvironmentsSchema = {
   }),
   responses: {
     200: z.array(EnvironmentSchema),
+    404: ErrorSchema,
     500: ErrorSchema,
   },
 }
@@ -64,7 +63,7 @@ export const UpdateEnvironmentSchema = {
   }),
   body: EnvironmentSchema.pick({ quotaId: true }),
   responses: {
-    200: EnvironmentSchema.omit({ permissions: true }),
+    200: EnvironmentSchema,
     400: ErrorSchema,
     401: ErrorSchema,
     403: ErrorSchema,

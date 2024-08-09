@@ -1,57 +1,44 @@
 import { z } from 'zod'
 import { AtDatesToStringExtend, ErrorSchema } from './utils.js'
-import { projectRoles } from '../utils/const.js'
 
 export const UserSchema = z.object({
   id: z.string()
     .uuid(),
-  firstName: z.string()
-    .min(1, { message: 'must be at least 1 character long' })
-    .max(50, { message: 'must not exceed 50 characters' }),
-  lastName: z.string()
-    .min(1, { message: 'must be 1 at least characters long' })
-    .max(50, { message: 'must not exceed 50 characters' }),
-  email: z.string()
-    .email(),
-  groups: z.string().array().optional(),
-})
+  firstName: z.string(),
+  lastName: z.string(),
+  email: z.string(),
+  adminRoleIds: z.string().uuid().array(),
+}).extend(AtDatesToStringExtend)
 
-export const UserWithRoleSchema = z.object({
+export const MemberSchema = z.object({
   userId: z.string()
     .uuid(),
-  firstName: z.string()
-    .min(1, { message: 'must be at least 1 character long' })
-    .max(50, { message: 'must not exceed 50 characters' }),
-  lastName: z.string()
-    .min(1, { message: 'must be 1 at least characters long' })
-    .max(50, { message: 'must not exceed 50 characters' }),
+  firstName: z.string(),
+  lastName: z.string(),
   email: z.string()
     .email(),
-  role: z.enum(projectRoles),
+  roleIds: z.string().uuid().array(),
 })
+  .or(
+    z.object({
+      user: UserSchema,
+      roleIds: z.string().uuid().array(),
+    }).transform(({ user: { adminRoleIds: _, id: userId, ...user }, roleIds }) => ({ userId, roleIds, ...user }))
+    ,
+  )
 
 export type User = Zod.infer<typeof UserSchema>
-export type UserWithRole = Zod.infer<typeof UserWithRoleSchema>
-
-export const RoleSchema = z.object({
-  userId: z.string()
-    .uuid(),
-  projectId: z.string()
-    .uuid(),
-  role: z.enum(projectRoles),
-})
-
-export type Role = Zod.infer<typeof RoleSchema>
+export type Member = Zod.infer<typeof MemberSchema>
 
 const projectIdParams = z.object({
   projectId: z.string()
     .uuid(),
 })
 
-export const GetProjectUsersSchema = {
+export const GetProjectMembersSchema = {
   params: projectIdParams,
   responses: {
-    200: z.array(UserSchema.omit({ groups: true })),
+    200: z.array(MemberSchema),
     403: ErrorSchema,
     500: ErrorSchema,
   },
@@ -60,7 +47,6 @@ export const GetProjectUsersSchema = {
 export const GetAllUsersSchema = {
   responses: {
     200: UserSchema
-      .omit({ groups: true })
       .extend({
         ...AtDatesToStringExtend,
         isAdmin: z.boolean(),
@@ -72,12 +58,12 @@ export const GetAllUsersSchema = {
 }
 
 export const GetMatchingUsersSchema = {
-  params: projectIdParams,
   query: z.object({
     letters: z.string(),
+    notInProjectId: z.string().uuid().optional(),
   }),
   responses: {
-    200: z.array(UserSchema.omit({ groups: true })),
+    200: z.array(UserSchema),
     403: ErrorSchema,
     500: ErrorSchema,
   },
@@ -87,7 +73,7 @@ export const CreateUserRoleInProjectSchema = {
   params: projectIdParams,
   body: UserSchema.pick({ email: true }),
   responses: {
-    201: z.array(UserWithRoleSchema),
+    201: z.array(MemberSchema),
     400: ErrorSchema,
     403: ErrorSchema,
     500: ErrorSchema,
@@ -102,7 +88,7 @@ export const TransferProjectOwnershipSchema = {
       .uuid(),
   }),
   responses: {
-    200: z.array(UserWithRoleSchema),
+    200: z.array(MemberSchema),
     400: ErrorSchema,
     403: ErrorSchema,
     500: ErrorSchema,
@@ -119,14 +105,6 @@ export const UpdateUserAdminRoleSchema = {
     204: null,
     400: ErrorSchema,
     403: ErrorSchema,
-    500: ErrorSchema,
-  },
-}
-
-export const LoginSchema = {
-  responses: {
-    200: null,
-    307: null,
     500: ErrorSchema,
   },
 }

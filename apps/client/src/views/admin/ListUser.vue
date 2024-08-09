@@ -1,25 +1,17 @@
 <script lang="ts" setup>
-import { onBeforeMount, ref, watch } from 'vue'
-import { type AllUsers, formatDate, sortArrByObjKeyAsc } from '@cpn-console/shared'
-import { useProjectUserStore } from '@/stores/project-user.js'
+import { onBeforeMount, ref } from 'vue'
+import { type AllUsers, formatDate, sortArrByObjKeyAsc, type Role } from '@cpn-console/shared'
+import { useProjectMemberStore } from '@/stores/project-member.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { copyContent } from '@/utils/func.js'
-import { useUserStore } from '@/stores/user.js'
-import type { Component, EmptyRow } from './ListProjects.vue'
+import { useAdminRoleStore } from '@/stores/admin-role.js'
 
-interface CheckboxEvent extends Event {
-  target: HTMLInputElement
-}
-
-type Row = {
-  rowData: Array<string | Component>
-}
-
-const projectUserStore = useProjectUserStore()
+const adminRoleStore = useAdminRoleStore()
+const projectMemberStore = useProjectMemberStore()
 const snackbarStore = useSnackbarStore()
-
+const adminRoles = ref<Role[]>([])
 const allUsers = ref<AllUsers>([])
-const rows = ref<Row[]>([])
+
 const inputSearchText = ref('')
 
 const title = 'Liste des utilisateurs'
@@ -28,16 +20,33 @@ const headers = [
   'Prénom',
   'Nom',
   'E-mail',
-  'Administrateur',
+  'Rôles',
   'Création',
   'Modification',
 ]
 
-const getAllUsers = async () => {
-  allUsers.value = await projectUserStore.getAllUsers() ?? []
-}
+const userRows = computed(() => {
+  const rows = sortArrByObjKeyAsc(allUsers.value, 'firstName')
+    ?.map(({ id, firstName, lastName, email, adminRoleIds, createdAt, updatedAt }) => (
+      {
+        rowData: [
+          {
+            component: 'code',
+            text: id,
+            title: 'Copier l\'id',
+            class: 'fr-text-default--info text-xs cursor-pointer',
+            onClick: () => copyContent(id),
+          },
+          firstName,
+          lastName,
+          email,
+          adminRoleStore.roles.filter(({ id }) => adminRoleIds.includes(id)).map(({ name }) => name).join('\n') || '-',
+          formatDate(createdAt),
+          formatDate(updatedAt),
+        ],
+      }),
+    )
 
-const filterRows = (rows: Row[]): Row[] | EmptyRow => {
   const returnRows = rows.filter((row) => {
     if (!inputSearchText.value) return true
     return row.rowData.some((data) => {
@@ -57,63 +66,17 @@ const filterRows = (rows: Row[]): Row[] | EmptyRow => {
     }]]
   }
   return returnRows
-}
-
-const setRows = () => {
-  rows.value = sortArrByObjKeyAsc(allUsers.value, 'firstName')
-    ?.map(({ id, firstName, lastName, email, isAdmin, createdAt, updatedAt }) => (
-      {
-        rowData: [
-          {
-            component: 'code',
-            text: id,
-            title: 'Copier l\'id',
-            class: 'fr-text-default--info text-xs cursor-pointer',
-            onClick: () => copyContent(id),
-          },
-          firstName,
-          lastName,
-          email,
-          {
-            component: 'input',
-            type: 'checkbox',
-            checked: isAdmin,
-            'data-testid': `${id}-is-admin`,
-            class: 'fr-checkbox-group--sm',
-            title: isAdmin ? `Retirer le rôle d'administrateur de ${email}` : `Donner le rôle d'administrateur à ${email}`,
-            onClick: async (event: CheckboxEvent) => {
-              const value = event.target.checked
-              if (value !== isAdmin) {
-                await projectUserStore.updateUserAdminRole(id, value)
-                snackbarStore.setMessage(value ? `Le rôle d'administrateur a été attribué à ${email}` : `Le rôle d'administrateur a été retiré à ${email}`, 'success')
-                await getAllUsers()
-                // Redirect user to home if he removed himself from admin group
-                // TODO : router.push ne suffit pas, il faut un rechargement complet
-                // instance keycloak ne semble pas au courant du changement de groupe, visible au reload
-
-                // useUserStore().setUserProfile()
-                // console.log(useUserStore().userProfile?.groups)
-
-                // @ts-ignore
-                if (useUserStore().userProfile?.id === id && !value) window.location = '/'
-              }
-            },
-          },
-          formatDate(createdAt),
-          formatDate(updatedAt),
-        ],
-      }),
-    )
-}
+})
 
 onBeforeMount(async () => {
   snackbarStore.isWaitingForResponse = true
-  await getAllUsers()
-  setRows()
+  if (!adminRoleStore.roles.length) {
+    adminRoles.value = await adminRoleStore.listRoles()
+  }
+  allUsers.value = await projectMemberStore.getAllUsers()
   snackbarStore.isWaitingForResponse = false
 })
 
-watch(allUsers, () => setRows())
 </script>
 
 <template>
@@ -133,7 +96,7 @@ watch(allUsers, () => setRows())
         data-testid="tableAdministrationUsers"
         :title="title"
         :headers="headers"
-        :rows="filterRows(rows)"
+        :rows="userRows"
       />
     </div>
     <LoadingCt
@@ -142,3 +105,4 @@ watch(allUsers, () => setRows())
     />
   </div>
 </template>
+@/stores/project-member.js

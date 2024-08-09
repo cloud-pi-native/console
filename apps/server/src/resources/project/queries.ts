@@ -3,17 +3,17 @@ import {
   ProjectStatus,
   type Organization,
   type Project,
-  type Role,
   type User,
 } from '@prisma/client'
-import { ClusterPrivacy, projectContract, XOR, type AsyncReturnType } from '@cpn-console/shared'
+import { projectContract, XOR } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
 
-type ProjectUpdate = Partial<Pick<Project, 'description'>>
+type ProjectUpdate = Partial<Pick<Project, 'description' | 'ownerId' | 'everyonePerms'>>
 export const updateProject = (id: Project['id'], data: ProjectUpdate) =>
   prisma.project.update({
     where: { id },
     data,
+    include: { members: true },
   })
 
 // SELECT
@@ -48,34 +48,34 @@ export const listProjects = async ({
     ...organizationName && { organization: { name: organizationName } },
   }
   if (filter === 'owned') {
-    where.roles = { some: { AND: [{ role: 'owner' }, { userId }] } }
+    where.ownerId = userId
   } else if (filter === 'member') {
-    where.roles = { some: { userId } }
+    where.OR = [{
+      members: { some: { userId } },
+    }, {
+      ownerId: userId,
+    }]
   }
 
   return prisma.project.findMany({
     where,
     include: {
-      roles: {
-        include: {
-          user: true,
-        },
-      },
       clusters: { select: { id: true } },
+      members: { include: { user: true } },
+      roles: true,
+      owner: true,
     },
   })
 }
 
-export const getProjectInfosById = (projectId: Project['id']) =>
-  prisma.project.findUnique({
+export const getProjectInfosByIdOrThrow = (projectId: Project['id']) =>
+  prisma.project.findUniqueOrThrow({
     where: {
       id: projectId,
     },
     select: {
       name: true,
-      roles: {
-        select: { userId: true },
-      },
+      members: { include: { user: true } },
       organization: {
         select: { name: true },
       },
@@ -91,7 +91,6 @@ export const getProjectInfosById = (projectId: Project['id']) =>
         },
       },
       clusters: {
-        where: { privacy: ClusterPrivacy.DEDICATED },
         select: {
           id: true,
           label: true,
@@ -104,74 +103,25 @@ export const getProjectInfosById = (projectId: Project['id']) =>
     },
   })
 
-export const getProjectUsers = (projectId: Project['id']) =>
-  prisma.user.findMany({
+export const getProjectMembers = (projectId: Project['id']) =>
+  prisma.projectMembers.findMany({
     where: {
-      roles: {
-        some: {
-          projectId,
-        },
-      },
+      projectId,
     },
+    include: { user: true },
   })
-
-export const getUserProjects = (userId: User['id']) =>
-  prisma.project.findMany({
-    where: {
-      roles: {
-        some: {
-          userId,
-        },
-      },
-      status: {
-        not: ProjectStatus.archived,
-      },
-    },
-    orderBy: {
-      name: 'asc',
-    },
-    include: {
-      organization: true,
-      environments: {
-        include: {
-          permissions: true,
-        },
-      },
-      repositories: true,
-      roles: true,
-      clusters: {
-        where: {
-          privacy: ClusterPrivacy.DEDICATED,
-        },
-        select: {
-          id: true,
-          label: true,
-          privacy: true,
-          clusterResources: true,
-          infos: true,
-          zoneId: true,
-        },
-      },
-    },
-  })
-
-export type DsoProject = AsyncReturnType<typeof getUserProjects>[0] & { services: any }
 
 export const getProjectById = (id: Project['id']) =>
   prisma.project.findUnique({ where: { id } })
 
-const baseProjectIncludes: Parameters<typeof prisma.project.findUnique>[0]['include'] = {
+export const baseProjectIncludes = {
   organization: true,
-  roles: true,
-  environments: {
-    include: {
-      permissions: true,
-      stage: true,
-      quota: true,
-    },
-  },
+  members: { include: { user: true } },
   clusters: true,
-}
+  roles: true,
+  owner: true,
+} as const
+
 export const getProjectInfos = (id: Project['id']) =>
   prisma.project.findUnique({
     where: { id },
@@ -181,13 +131,7 @@ export const getProjectInfos = (id: Project['id']) =>
 export const getProjectInfosOrThrow = (id: Project['id']) =>
   prisma.project.findUniqueOrThrow({
     where: { id },
-    include: {
-      organization: true,
-      roles: { include: { user: true } },
-      environments: { include: { permissions: true, stage: true, quota: true } },
-      clusters: true,
-      repositories: true,
-    },
+    include: baseProjectIncludes,
   })
 
 export const getProjectInfosAndRepos = (id: Project['id']) =>
@@ -240,21 +184,13 @@ export const getAllProjectsDataForExport = () =>
           },
         },
       },
-      roles: {
-        select: {
-          role: true,
-          user: {
-            select: { email: true },
-          },
-        },
-      },
+      owner: true,
     },
   })
 
 export const getRolesByProjectId = (projectId: Project['id']) =>
-  prisma.role.findMany({
+  prisma.projectRole.findMany({
     where: { projectId },
-    include: { user: true },
   })
 
 const clusterInfosSelect = {
@@ -275,52 +211,29 @@ const clusterInfosSelect = {
 export const getHookProjectInfos = (id: Project['id']) =>
   prisma.project.findUniqueOrThrow({
     where: { id },
-    select: {
-      id: true,
-      name: true,
-      status: true,
-      description: true,
-      organization: {
-        select: {
-          id: true,
-          label: true,
-          name: true,
-        },
-      },
-      roles: {
-        select: {
-          user: true,
-          role: true,
-          userId: true,
-        },
-      },
-      clusters: {
-        select: clusterInfosSelect,
-      },
+    include: {
+      organization: true,
+      members: { include: { user: true } },
+      clusters: { select: clusterInfosSelect },
       environments: {
         include: {
-          permissions: true,
           quota: true,
           stage: true,
-          cluster: { select: clusterInfosSelect },
+          cluster: {
+            select: clusterInfosSelect,
+          },
         },
       },
-      repositories: {
-        select: {
-          id: true,
-          externalRepoUrl: true,
-          isInfra: true,
-          isPrivate: true,
-          internalRepoName: true,
-        },
-      },
-      projectPlugin: {
+      repositories: true,
+      plugins: {
         select: {
           key: true,
           pluginName: true,
           value: true,
         },
       },
+      owner: true,
+      roles: true,
     },
   })
 
@@ -342,12 +255,7 @@ export const initializeProject = (
       description,
       status: ProjectStatus.created,
       locked: false,
-      roles: {
-        create: {
-          role: 'owner',
-          userId: ownerId,
-        },
-      },
+      ownerId,
     },
   })
 
@@ -365,36 +273,31 @@ export const unlockProject = (id: Project['id']) =>
 export const updateProjectCreated = (id: Project['id']) =>
   prisma.project.update({
     where: { id }, data: { status: ProjectStatus.created },
+    include: baseProjectIncludes,
   })
 
 export const updateProjectFailed = (id: Project['id']) =>
   prisma.project.update({
     where: { id }, data: { status: ProjectStatus.failed },
+    include: baseProjectIncludes,
   })
 
 export const addUserToProject = (
-  { project, user, role }: { project: Project, user: User, role: Role['role'] },
+  { project, user }: { project: Project, user: User },
 ) =>
-  prisma.role.create({
+  prisma.projectMembers.create({
     data: {
-      user: {
-        connect: { id: user.id },
-      },
-      role,
-      project: {
-        connect: {
-          id: project.id,
-        },
-      },
+      userId: user.id,
+      projectId: project.id,
     },
   })
 
 export const removeUserFromProject = (
   { projectId, userId }: { projectId: Project['id'], userId: User['id'] },
 ) =>
-  prisma.role.delete({
+  prisma.projectMembers.delete({
     where: {
-      userId_projectId: {
+      projectId_userId: {
         projectId,
         userId,
       },
@@ -413,11 +316,10 @@ export const archiveProject = async (id: Project['id']) => {
       status: ProjectStatus.archived,
       locked: true,
     },
+    include: baseProjectIncludes,
   })
 }
 
 // TECH
 export const _initializeProject = (data: Parameters<typeof prisma.project.upsert>[0]['create']) =>
   prisma.project.upsert({ where: { id: data.id }, create: data, update: data })
-
-export const _dropProjectsTable = prisma.project.deleteMany

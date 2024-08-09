@@ -7,7 +7,7 @@ export const listQuotas = (userId: User['id']) =>
       OR: [{
         isPrivate: false,
       }, {
-        environments: { some: { project: { roles: { some: { userId } } } } },
+        environments: { some: { project: { members: { some: { userId } } } } },
       }],
     },
     include: {
@@ -47,15 +47,7 @@ export const getQuotaAssociatedEnvironmentById = (id: Quota['id']) =>
           organization: {
             select: { name: true },
           },
-          roles: {
-            where: {
-              role: 'owner',
-            },
-            select: {
-              user: true,
-              role: true,
-            },
-          },
+          owner: true,
         },
       },
       stage: true,

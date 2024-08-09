@@ -1,19 +1,18 @@
-import { quotaContract } from '@cpn-console/shared'
+import { AdminAuthorized, quotaContract } from '@cpn-console/shared'
 import { serverInstance } from '@/app.js'
-import { addReqLogs } from '@/utils/logger.js'
-import { assertIsAdmin } from '@/utils/controller.js'
+import { authUser } from '@/utils/controller.js'
+import { ErrorResType, Forbidden403 } from '@/utils/errors.js'
 import { listQuotas, createQuota, deleteQuota, getQuotaAssociatedEnvironments, updateQuota } from './business.js'
 
 export const quotaRouter = () => serverInstance.router(quotaContract, {
   // Récupérer les quotas disponibles
   listQuotas: async ({ request: req }) => {
-    const user = req.session.user
-    const quotas = await listQuotas(user)
+    const requestor = req.session.user
+    const { user, adminPermissions } = await authUser(requestor)
+    const quotas = AdminAuthorized.isAdmin(adminPermissions)
+      ? await listQuotas()
+      : await listQuotas(user.id)
 
-    addReqLogs({
-      req,
-      message: 'Quotas récupérés avec succès',
-    })
     return {
       status: 200,
       body: quotas,
@@ -22,83 +21,66 @@ export const quotaRouter = () => serverInstance.router(quotaContract, {
 
   // Récupérer les environnements associés au quota
   listQuotaEnvironments: async ({ request: req, params }) => {
+    const requestor = req.session.user
+    const perms = await authUser(requestor)
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+
     const quotaId = params.quotaId
+    const body = await getQuotaAssociatedEnvironments(quotaId)
 
-    assertIsAdmin(req.session.user)
-    const environments = await getQuotaAssociatedEnvironments(quotaId)
-
-    addReqLogs({
-      req,
-      message: 'Environnements associés au quota récupérés',
-      infos: {
-        quotaId,
-      },
-    })
+    if (body instanceof ErrorResType) return body
 
     return {
       status: 200,
-      body: environments,
+      body,
     }
   },
 
   // Créer un quota
   createQuota: async ({ request: req, body: data }) => {
-    assertIsAdmin(req.session.user)
-    const quota = await createQuota(data)
+    const requestor = req.session.user
+    const perms = await authUser(requestor)
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
-    addReqLogs({
-      req,
-      message: 'Quota créé avec succès',
-      infos: {
-        quotaId: quota.id,
-      },
-    })
+    const body = await createQuota(data)
+
+    if (body instanceof ErrorResType) return body
 
     return {
       status: 201,
-      body: quota,
+      body,
     }
   },
 
   // Modifier la confidentialité d'un quota
   updateQuota: async ({ request: req, params, body: data }) => {
+    const requestor = req.session.user
+    const perms = await authUser(requestor)
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+
     const quotaId = params.quotaId
+    const body = await updateQuota(quotaId, data)
 
-    assertIsAdmin(req.session.user)
-    const quota = await updateQuota(quotaId, data)
-
-    addReqLogs({
-      req,
-      message: 'Confidentialité du quota mise à jour avec succès',
-      infos: {
-        quotaId: quota.id,
-      },
-    })
-
+    if (body instanceof ErrorResType) return body
     return {
       status: 200,
-      body: quota,
+      body,
     }
   },
 
   // Supprimer un quota
   deleteQuota: async ({ request: req, params }) => {
+    const requestor = req.session.user
+    const perms = await authUser(requestor)
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+
     const quotaId = params.quotaId
+    const body = await deleteQuota(quotaId)
 
-    assertIsAdmin(req.session.user)
-    await deleteQuota(quotaId)
-
-    addReqLogs({
-      req,
-      message: 'Quota supprimé avec succès',
-      infos: {
-        quotaId,
-      },
-    })
-
+    if (body instanceof ErrorResType) return body
     return {
       status: 204,
-      body: null,
+      body,
     }
   },
 })

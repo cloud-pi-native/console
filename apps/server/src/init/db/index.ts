@@ -13,6 +13,17 @@ type Imports = Partial<Record<Models, object[]>> & {
 }
 
 export const initDb = async (data: Imports) => {
+  const dataStringified = JSON.stringify(data)
+  const dataParsed = JSON.parse(dataStringified, (key, value) => {
+    try {
+      if (['permissions', 'everyonePerms'].includes(key)) {
+        return BigInt(value.slice(0, value.length - 1))
+      }
+    } catch (error) {
+      return value
+    }
+    return value
+  })
   app.log.info('Drop tables')
   for (const modelKey of modelKeys.toReversed()) {
     // @ts-ignore
@@ -21,19 +32,19 @@ export const initDb = async (data: Imports) => {
   app.log.info('Import models')
   for (const modelKey of modelKeys) {
     // @ts-ignore
-    await prisma[modelKey].createMany({ data: data[modelKey] })
+    await prisma[modelKey].createMany({ data: dataParsed[modelKey] })
   }
   app.log.info('Import associations')
-  for (const [modelKey, rows] of data.associations) {
+  for (const [modelKey, rows] of dataParsed.associations) {
     for (const row of rows) {
       const idKey = 'id'
       const connectKeys = Object.keys(row).filter(key => key !== idKey)
-      const data = connectKeys.reduce((acc, curr) => {
+      const dataConnects = connectKeys.reduce((acc, curr) => {
         acc[curr] = { connect: row[curr] }
         return acc
       }, {} as Record<string, { connect: any[] }>)
       // @ts-ignore
-      await prisma[modelKey].update({ where: { id: row.id }, data })
+      await prisma[modelKey].update({ where: { id: row.id }, data: dataConnects })
     }
   }
   app.log.info('End import')

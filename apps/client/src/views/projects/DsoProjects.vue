@@ -1,22 +1,17 @@
 <script lang="ts" setup>
-import { ref } from 'vue'
 import { sortArrByObjKeyAsc } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 import router from '@/router/index.js'
 
 const projectStore = useProjectStore()
 
-const projectList = ref<Array<Record<any, any>>>([])
-
-const setProjectList = (projects: Array<Record<any, any>>) => {
-  projectList.value = sortArrByObjKeyAsc(projects, 'name')
-    ?.map(project => ({
-      id: project.id,
-      title: project.name,
-      description: project.organization.label,
-      to: `/projects/${project.id}/dashboard`,
-    }))
-}
+const projectList = computed(() => sortArrByObjKeyAsc(projectStore.projects, 'name')
+  ?.map(project => ({
+    id: project.id,
+    title: project.name,
+    description: project.organization.label,
+    to: `/projects/${project.id}/dashboard`,
+  })))
 
 const setSelectedProject = async (project: Record<any, any>) => {
   projectStore.setSelectedProject(project.id)
@@ -25,14 +20,6 @@ const setSelectedProject = async (project: Record<any, any>) => {
 const goToCreateProject = () => {
   router.push('projects/create-project')
 }
-
-onMounted(() => {
-  setProjectList(projectStore.projects)
-})
-
-projectStore.$subscribe(() => {
-  setProjectList(projectStore.projects)
-})
 
 </script>
 

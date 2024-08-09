@@ -12,7 +12,7 @@ export const serviceContract = contractInstance.router({
     responses: {
       200: z.array(z.object({
         name: z.string(),
-        status: z.string(),
+        status: z.enum(['OK', 'Dégradé', 'En échec', 'Inconnu']),
         interval: z.number(),
         lastUpdateTimestamp: z.number(),
         message: z.string(),

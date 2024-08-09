@@ -5,7 +5,7 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = withDefaults(defineProps<{
   isNewZone: boolean
-  zone: Zone
+  zone: Zone & { clusterIds: Cluster['id'][] }
   allQuotas: Quota[]
   allClusters: Cluster[]
   associatedClusters: unknown[]
@@ -120,7 +120,7 @@ onBeforeMount(() => {
         label-key="label"
         value-key="id"
         :disabled="!props.isNewZone"
-        @update="(_c, clusterIds) => updateClusters(clusterIds)"
+        @update="(_c: Cluster[], clusterIds: Cluster['id'][]) => updateClusters(clusterIds)"
       />
     </div>
     <div

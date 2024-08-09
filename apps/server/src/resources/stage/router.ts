@@ -1,6 +1,6 @@
-import { stageContract } from '@cpn-console/shared'
+import { AdminAuthorized, stageContract } from '@cpn-console/shared'
 import { serverInstance } from '@/app.js'
-import { addReqLogs } from '@/utils/logger.js'
+
 import {
   listStages,
   createStage,
@@ -8,104 +8,83 @@ import {
   deleteStage,
   updateStage,
 } from './business.js'
-import { assertIsAdmin } from '@/utils/controller.js'
+import { authUser } from '@/utils/controller.js'
+import { ErrorResType, Forbidden403 } from '@/utils/errors.js'
 
 export const stageRouter = () => serverInstance.router(stageContract, {
 
   // Récupérer les types d'environnement disponibles
-  listStages: async ({ request: req }) => {
-    const userId = req.session.user.id
-    const stages = await listStages(userId)
+  listStages: async () => {
+    const body = await listStages()
 
-    addReqLogs({
-      req,
-      message: 'Stages récupérés avec succès',
-    })
     return {
       status: 200,
-      body: stages,
+      body,
     }
   },
 
   // Récupérer les environnements associés au stage
   getStageEnvironments: async ({ request: req, params }) => {
+    const requestor = req.session.user
+    const perms = await authUser(requestor)
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+
     const stageId = params.stageId
-
-    assertIsAdmin(req.session.user)
-    const environments = await getStageAssociatedEnvironments(stageId)
-
-    addReqLogs({
-      req,
-      message: 'Environnements associés au type d\'environnement récupérés',
-      infos: {
-        stageId,
-      },
-    })
+    const body = await getStageAssociatedEnvironments(stageId)
+    if (body instanceof ErrorResType) return body
 
     return {
       status: 200,
-      body: environments,
+      body,
     }
   },
 
   // Créer un stage
   createStage: async ({ request: req, body: data }) => {
-    assertIsAdmin(req.session.user)
-    const stage = await createStage(data)
+    const requestor = req.session.user
+    const perms = await authUser(requestor)
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
-    addReqLogs({
-      req,
-      message: 'Type d\'environnement créé avec succès',
-      infos: {
-        stageId: stage.id,
-      },
-    })
+    const body = await createStage(data)
+    if (body instanceof ErrorResType) return body
 
     return {
       status: 201,
-      body: stage,
+      body,
     }
   },
 
   // Modifier une association stage / clusters
   updateStage: async ({ request: req, params, body: data }) => {
+    const requestor = req.session.user
+    const perms = await authUser(requestor)
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+
     const stageId = params.stageId
 
-    assertIsAdmin(req.session.user)
-    const stage = await updateStage(stageId, data)
-
-    addReqLogs({
-      req,
-      message: 'Clusters associés au type d\'environnement mis à jour avec succès',
-      infos: {
-        stageId,
-      },
-    })
+    const body = await updateStage(stageId, data)
+    if (body instanceof ErrorResType) return body
 
     return {
       status: 200,
-      body: stage,
+      body,
     }
   },
 
   // Supprimer un stage
   deleteStage: async ({ request: req, params }) => {
+    const requestor = req.session.user
+    const perms = await authUser(requestor)
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+
     const stageId = params.stageId
 
-    assertIsAdmin(req.session.user)
-    await deleteStage(stageId)
-
-    addReqLogs({
-      req,
-      message: 'Type d\'environnement supprimé avec succès',
-      infos: {
-        stageId,
-      },
-    })
+    const body = await deleteStage(stageId)
+    if (body instanceof ErrorResType) return body
 
     return {
       status: 204,
-      body: null,
+      body,
     }
   },
 })

@@ -21,6 +21,7 @@ export const CreateQuotaSchema = {
     201: QuotaSchema,
     400: ErrorSchema,
     401: ErrorSchema,
+    403: ErrorSchema,
     500: ErrorSchema,
   },
 }
@@ -45,6 +46,8 @@ export const ListQuotaEnvironmentsSchema = {
       stage: z.string(),
       owner: z.string(),
     })),
+    403: ErrorSchema,
+    404: ErrorSchema,
     500: ErrorSchema,
   },
 }
@@ -63,6 +66,7 @@ export const UpdateQuotaSchema = {
   }).partial(),
   responses: {
     200: QuotaSchema,
+    403: ErrorSchema,
     500: ErrorSchema,
   },
 }
@@ -74,6 +78,7 @@ export const DeleteQuotaSchema = {
   }),
   responses: {
     204: null,
+    403: ErrorSchema,
     500: ErrorSchema,
   },
 }
