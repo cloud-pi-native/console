@@ -6,6 +6,7 @@ import {
 import { useUserStore } from '@/stores/user.js'
 import { useProjectStore } from '@/stores/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+import { useSystemSettingsStore } from '@/stores/system-settings.js'
 import { uuid } from '@/utils/regex.js'
 
 import DsoHome from '@/views/DsoHome.vue'
@@ -27,6 +28,8 @@ const ListQuotas = () => import('@/views/admin/ListQuotas.vue')
 const ListStages = () => import('@/views/admin/ListStages.vue')
 const ListZones = () => import('@/views/admin/ListZones.vue')
 const ListPlugins = () => import('@/views/admin/ListPlugins.vue')
+const SystemSettings = () => import('@/views/admin/SystemSettings.vue')
+const Maintenance = () => import('@/views/DsoMaintenance.vue')
 
 const MAIN_TITLE = 'Console Cloud π Native'
 
@@ -60,6 +63,11 @@ const routes: Readonly<RouteRecordRaw[]> = [
     component: NotFound,
   },
   {
+    path: '/maintenance',
+    name: 'Maintenance',
+    component: Maintenance,
+  },
+  {
     path: '/services-health',
     name: 'ServicesHealth',
     component: ServicesHealth,
@@ -77,7 +85,7 @@ const routes: Readonly<RouteRecordRaw[]> = [
         path: ':id',
         name: 'Project',
         async beforeEnter(to, _from, next) {
-          if (typeof to.params.id !== 'string' || !to.params.id.match(uuid)) {
+          if (typeof to.params.id !== 'string' || !uuid.exec(to.params.id)) {
             return next('/projects')
           }
           useProjectStore().setSelectedProject(to.params.id)
@@ -166,11 +174,16 @@ const routes: Readonly<RouteRecordRaw[]> = [
     name: 'ListPlugins',
     component: ListPlugins,
   },
+  {
+    path: '/admin/system-settings',
+    name: 'SystemSettings',
+    component: SystemSettings,
+  },
 ]
 
 const router = createRouter({
   history: createWebHistory(import.meta.env?.BASE_URL || ''),
-  scrollBehavior: (to) => { if (to.hash && !to.hash.match(/^#state=/)) return ({ el: to.hash }) },
+  scrollBehavior: (to) => { if (to.hash && !/^#state=/.exec(to.hash)) return ({ el: to.hash }) },
   routes,
 })
 
@@ -186,15 +199,20 @@ router.beforeEach((to) => { // Cf. https://github.com/vueuse/head pour des trans
  * Redirect unlogged user to login view
  */
 router.beforeEach(async (to, _from, next) => {
-  const validPath = ['Login', 'Home', 'Doc', 'NotFound', 'ServicesHealth']
+  const validPath = ['Login', 'Home', 'Doc', 'NotFound', 'ServicesHealth', 'Maintenance', 'Logout']
   const snackbarStore = useSnackbarStore()
   const userStore = useUserStore()
+  const systemStore = useSystemSettingsStore()
   userStore.setIsLoggedIn()
+
+  // Redirige vers une 404 si la page n'existe pas
+  if (to.name === undefined || typeof to.name === 'symbol') {
+    return next('/404')
+  }
 
   // Redirige sur la page login si le path le requiert et l'utilisateur n'est pas connecté
   if (
-    typeof to.name === 'string'
-    && !validPath.includes(to.name)
+    !validPath.includes(to.name)
     && !userStore.isLoggedIn
   ) {
     return next('/login')
@@ -205,18 +223,22 @@ router.beforeEach(async (to, _from, next) => {
     return next('/')
   }
 
+  // Redirige vers la page maintenance si la maintenance est activée
+  if (
+    !validPath.includes(to.name)
+    && userStore.isLoggedIn
+  ) {
+    await systemStore.listSystemSettings('maintenance')
+    if (systemStore.systemSettingsByKey['maintenance']?.value === 'on' && !userStore.isAdmin) return next('/maintenance')
+  }
+
   // Redirige sur la page d'accueil si le path est admin et l'utilisateur n'est pas admin
-  if (to.path.match('^/admin/') && !userStore.isAdmin) {
+  if (/^\/admin/.exec(to.path) && !userStore.isAdmin) {
     snackbarStore.setMessage(
       'Vous ne possédez pas les droits administeurs',
       'error',
     )
     return next('/')
-  }
-
-  // Redirige vers une 404 si la page n'existe pas
-  if (to.name === undefined) {
-    return next('/404')
   }
 
   next()

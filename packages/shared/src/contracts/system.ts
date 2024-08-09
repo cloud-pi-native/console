@@ -1,5 +1,13 @@
+import { ClientInferRequest, ClientInferResponseBody } from '@ts-rest/core'
 import { apiPrefix, contractInstance } from '../api-client.js'
-import { GetHealthzSchema, GetSystemPluginSchema, GetVersionSchema, UpdateSystemPluginSchema } from '../schemas/index.js'
+import {
+  GetHealthzSchema,
+  GetSystemPluginSchema,
+  ListSystemSettingsSchema,
+  GetVersionSchema,
+  UpdateSystemPluginSchema,
+  UpsertSystemSettingsSchema,
+} from '../schemas/index.js'
 
 export const systemContract = contractInstance.router({
   getVersion: {
@@ -42,4 +50,32 @@ export const systemPluginContract = contractInstance.router({
     body: UpdateSystemPluginSchema.body,
     responses: UpdateSystemPluginSchema.responses,
   },
+
 })
+
+export const systemSettingsContract = contractInstance.router({
+  listSystemSettings: {
+    method: 'GET',
+    path: `${apiPrefix}/system/settings`,
+    query: ListSystemSettingsSchema.query,
+    summary: 'Get System Settings state',
+    description: 'Get System Settings state',
+    responses: ListSystemSettingsSchema.responses,
+  },
+
+  upsertSystemSetting: {
+    method: 'POST',
+    path: `${apiPrefix}/system/settings`,
+    contentType: 'application/json',
+    summary: 'Update System Settings state',
+    description: 'Update System Settings state',
+    body: UpsertSystemSettingsSchema.body,
+    responses: UpsertSystemSettingsSchema.responses,
+  },
+})
+
+export type SystemSettings = ClientInferResponseBody<typeof systemSettingsContract.listSystemSettings, 200>
+
+export type SystemSetting = SystemSettings[number]
+
+export type UpsertSystemSettingBody = ClientInferRequest<typeof systemSettingsContract.upsertSystemSetting>['body']

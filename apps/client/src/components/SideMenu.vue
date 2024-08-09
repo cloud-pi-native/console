@@ -315,6 +315,17 @@ onMounted(() => {
               Plugins
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
+          <DsfrSideMenuListItem>
+            <DsfrSideMenuLink
+              class="menu-link-icon"
+              data-testid="menuAdministrationSystemSettings"
+              :active="routeName === 'SystemSettings'"
+              to="/admin/system-settings"
+            >
+              <v-icon name="ri-tools-fill" />
+              Réglages console
+            </DsfrSideMenuLink>
+          </DsfrSideMenuListItem>
         </DsfrSideMenuList>
       </DsfrSideMenuListItem>
 
