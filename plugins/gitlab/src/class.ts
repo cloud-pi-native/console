@@ -292,7 +292,8 @@ export class GitlabProjectApi extends PluginApi {
       const files = await this.api.Repositories.allRepositoryTrees(repoId, { path, ref: branch, recursive: true, perPage: 1000 })
       return files
     } catch (error) {
-      if (error instanceof GitbeakerRequestError && error?.cause?.description === '404 Tree Not Found') {
+      const { cause } = error as GitbeakerRequestError
+      if (cause?.description === '404 Tree Not Found') {
         // Empty repository, with zero commit ==> Zero files
         return []
       } else {
