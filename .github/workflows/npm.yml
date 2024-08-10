@@ -91,7 +91,7 @@ jobs:
           ref: ${{ github.event.ref }}
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v3
+        uses: pnpm/action-setup@v4
         id: pnpm-install
         with:
           version: "${{ inputs.PNPM_VERSION }}"
