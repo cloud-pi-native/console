@@ -60,4 +60,5 @@ export {
   RiUserAddLine,
   RiUserFill,
   RiUserStarFill,
+  RiToolsFill,
 } from 'oh-vue-icons/icons/ri/index.js'

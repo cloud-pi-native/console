@@ -11,6 +11,7 @@ class DsoError extends Error {
     super(message)
     this.description = data?.description || message
     this.extras = data?.extras || {}
+    this.statusCode = 500
   }
 }
 

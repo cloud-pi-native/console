@@ -1,5 +1,5 @@
 import { longestEnvironmentName } from './const.js'
-import { ResourceById } from './types.js'
+import type { ResourceById, ResourceByKey } from './types.js'
 
 /**
  * @param {*} value Value wanted to be return as is
@@ -94,3 +94,10 @@ export const resourceListToDict = <T extends { id: string }>(resList: Array<T>):
     [curr.id]: curr,
   }
 }, {} as ResourceById<T>)
+
+export const resourceListToDictByKey = <T extends { key: string }>(resList: Array<T>): ResourceByKey<T> => resList.reduce((acc, curr) => {
+  return {
+    ...acc,
+    [curr.key]: curr,
+  }
+}, {} as ResourceByKey<T>)
