@@ -56,5 +56,6 @@ jobs:
       PNPM_VERSION: ${{ needs.expose-vars.outputs.PNPM_VERSION }}
       NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
       PUBLISH_APPS: false
-      PUBLISH_PACKAGES: false
-      PUBLISH_PLUGINS: false
+      PUBLISH_PACKAGES: true
+      PUBLISH_PLUGINS: true
+      CHECK_CHANGES: false
