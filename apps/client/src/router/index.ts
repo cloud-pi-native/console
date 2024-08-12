@@ -130,54 +130,72 @@ const routes: Readonly<RouteRecordRaw[]> = [
     component: CreateProject,
   },
   {
-    path: '/admin/users',
-    name: 'ListUser',
-    component: ListUser,
-  },
-  {
-    path: '/admin/organizations',
-    name: 'ListOrganizations',
-    component: ListOrganizations,
-  },
-  {
-    path: '/admin/projects',
-    name: 'ListProjects',
-    component: ListProjects,
-  },
-  {
-    path: '/admin/logs',
-    name: 'ListLogs',
-    component: ListLogs,
-  },
-  {
-    path: '/admin/clusters',
-    name: 'ListClusters',
-    component: ListClusters,
-  },
-  {
-    path: '/admin/quotas',
-    name: 'ListQuotas',
-    component: ListQuotas,
-  },
-  {
-    path: '/admin/stages',
-    name: 'ListStages',
-    component: ListStages,
-  },
-  {
-    path: '/admin/zones',
-    name: 'ListZones',
-    component: ListZones,
-  },
-  {
-    path: '/admin/plugins',
-    name: 'ListPlugins',
-    component: ListPlugins,
-  },
-  {
-    path: '/admin/system-settings',
-    name: 'SystemSettings',
-    component: SystemSettings,
+    name: 'ParentAdmin',
+    path: '/admin',
+    children: [
+      {
+        path: 'users',
+        name: 'ListUser',
+        component: ListUser,
+      },
+      {
+        path: 'organizations',
+        name: 'ListOrganizations',
+        component: ListOrganizations,
+      },
+      {
+        path: 'projects',
+        name: 'ListProjects',
+        component: ListProjects,
+      },
+      {
+        path: 'logs',
+        name: 'ListLogs',
+        component: ListLogs,
+      },
+      {
+        path: 'clusters',
+        name: 'ListClusters',
+        component: ListClusters,
+      },
+      {
+        path: 'quotas',
+        name: 'ListQuotas',
+        component: ListQuotas,
+      },
+      {
+        path: 'stages',
+        name: 'ListStages',
+        component: ListStages,
+      },
+      {
+        path: 'zones',
+        name: 'ListZones',
+        component: ListZones,
+      },
+      {
+        path: 'plugins',
+        name: 'ListPlugins',
+        component: ListPlugins,
+      },
+      {
+        path: 'system-settings',
+        name: 'SystemSettings',
+        component: SystemSettings,
+      },
+    ],
+    beforeEnter(_to, _path, next) {
+      const snackbarStore = useSnackbarStore()
+      const userStore = useUserStore()
+      if (!userStore.isAdmin) {
+        snackbarStore.setMessage(
+          'Vous ne possédez pas les droits administeurs',
+          'error',
+        )
+        return next('/')
+      }
+      next()
+    },
   },
 ]
 
@@ -200,7 +218,6 @@ router.beforeEach((to) => { // Cf. https://github.com/vueuse/head pour des trans
  */
 router.beforeEach(async (to, _from, next) => {
   const validPath = ['Login', 'Home', 'Doc', 'NotFound', 'ServicesHealth', 'Maintenance', 'Logout']
-  const snackbarStore = useSnackbarStore()
   const userStore = useUserStore()
   const systemStore = useSystemSettingsStore()
   userStore.setIsLoggedIn()
@@ -230,15 +247,6 @@ router.beforeEach(async (to, _from, next) => {
   ) {
     await systemStore.listSystemSettings('maintenance')
     if (systemStore.systemSettingsByKey['maintenance']?.value === 'on' && !userStore.isAdmin) return next('/maintenance')
-  }
-
-  // Redirige sur la page d'accueil si le path est admin et l'utilisateur n'est pas admin
-  if (/^\/admin/.exec(to.path) && !userStore.isAdmin) {
-    snackbarStore.setMessage(
-      'Vous ne possédez pas les droits administeurs',
-      'error',
-    )
-    return next('/')
   }
 
   next()
