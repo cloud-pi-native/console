@@ -163,7 +163,7 @@ export const syncRepository: StepCall<UniqueRepo> = async (payload) => {
   const targetRepo = payload.args.repo
   const gitlabApi = payload.apis.gitlab
   try {
-    await gitlabApi.triggerMirror(targetRepo.internalRepoName, targetRepo.branchName)
+    await gitlabApi.triggerMirror(targetRepo.internalRepoName, targetRepo.syncAllBranches, targetRepo.branchName)
     return {
       status: {
         result: 'OK',

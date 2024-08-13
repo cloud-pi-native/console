@@ -40,12 +40,14 @@ export const syncRepository = async (
   {
     repositoryId,
     userId,
+    syncAllBranches,
     branchName,
     requestId,
   }: {
     repositoryId: Repository['id']
     userId: User['id']
-    branchName: string
+    syncAllBranches: boolean
+    branchName?: string
     requestId: string
   }) => {
   try {
@@ -53,7 +55,7 @@ export const syncRepository = async (
     const project = await getProjectInfosOrThrow(repository.projectId)
     await checkUpsertRepository({ project, userId })
 
-    const hookReply = await hook.misc.syncRepository(repositoryId, { branchName })
+    const hookReply = await hook.misc.syncRepository(repositoryId, { syncAllBranches, branchName })
     await addLogs('Sync Repository', hookReply, userId, requestId)
     if (hookReply.failed) {
       throw new UnprocessableContentError('Echec des services à la synchronisation du dépôt')

@@ -91,7 +91,8 @@ export const SyncRepoSchema = {
       .uuid(),
   }),
   body: z.object({
-    branchName: z.string(),
+    syncAllBranches: z.boolean(),
+    branchName: z.string().optional(),
   }),
   responses: {
     204: null,

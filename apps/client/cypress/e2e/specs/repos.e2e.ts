@@ -1,3 +1,4 @@
+import type { Repo } from '@cpn-console/shared'
 import { getModelById } from '../support/func.js'
 
 describe('Add repos into project', () => {
@@ -169,7 +170,7 @@ describe('Add repos into project', () => {
   it('Should synchronise a repo', () => {
     cy.intercept('GET', '/api/v1/repositories?projectId=*').as('listRepositories')
     cy.intercept('POST', '/api/v1/repositories/*/sync').as('syncRepo')
-    let repositories = []
+    let repositories: Repo[] = []
 
     cy.goToProjects()
       .getByDataTestid(`projectTile-${project.name}`).click()
@@ -185,6 +186,28 @@ describe('Add repos into project', () => {
       cy.get('h2').should('contain', 'Synchroniser le dépôt')
       cy.getByDataTestid('branchNameInput')
         .should('have.value', 'main')
+        .and('be.enabled')
+
+      cy.getByDataTestid('syncRepoBtn')
+        .should('be.enabled')
+
+      cy.getByDataTestid('toggleSyncAllBranches')
+        .find('input')
+        .check({ force: true })
+
+      cy.getByDataTestid('branchNameInput')
+        .should('not.exist')
+
+      cy.getByDataTestid('syncRepoBtn')
+        .should('be.enabled')
+
+      cy.getByDataTestid('toggleSyncAllBranches')
+        .find('input')
+        .uncheck({ force: true })
+
+      cy.getByDataTestid('branchNameInput')
+        .should('have.value', 'main')
+        .and('be.enabled')
 
       cy.getByDataTestid('syncRepoBtn')
         .should('be.enabled')

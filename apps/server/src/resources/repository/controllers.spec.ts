@@ -47,6 +47,7 @@ describe('Repository routes', () => {
     it('Should sync a repository', async () => {
       const projectInfos = createRandomDbSetup({}).project
       const repoToSync = projectInfos.repositories[0]
+      const syncAllBranches = false
       const branchName = 'main'
       setRequestor(projectInfos.roles[0].user)
 
@@ -55,7 +56,7 @@ describe('Repository routes', () => {
 
       const response = await app.inject()
         .post(`/api/v1/repositories/${repoToSync.id}/sync`)
-        .body({ branchName })
+        .body({ syncAllBranches, branchName })
         .end()
 
       expect(response.statusCode).toEqual(204)
@@ -64,6 +65,7 @@ describe('Repository routes', () => {
     it('Should not sync a repository if not project member', async () => {
       const projectInfos = createRandomDbSetup({}).project
       const repoToSync = projectInfos.repositories[0]
+      const syncAllBranches = false
       const branchName = 'main'
 
       prisma.repository.findUniqueOrThrow.mockResolvedValue(repoToSync)
@@ -71,7 +73,7 @@ describe('Repository routes', () => {
 
       const response = await app.inject()
         .post(`/api/v1/repositories/${repoToSync.id}/sync`)
-        .body({ branchName })
+        .body({ syncAllBranches, branchName })
         .end()
 
       expect(response.statusCode).toEqual(403)

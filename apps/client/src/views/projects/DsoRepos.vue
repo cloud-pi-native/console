@@ -23,6 +23,7 @@ const repos = ref<RepoTile[]>([])
 const selectedRepo = ref<Repo>()
 const isNewRepoForm = ref(false)
 const branchName = ref<string>('main')
+const isAllSyncing = ref<boolean>(false)
 
 const repoFormId = 'repoFormId'
 const syncFormId = 'syncFormId'
@@ -79,9 +80,9 @@ const deleteRepo = async (repoId: Repo['id']) => {
 
 const syncRepository = async () => {
   if (!selectedRepo.value) return
-  if (!branchName.value) branchName.value = 'main'
+  if (!isAllSyncing.value && !branchName.value) branchName.value = 'main'
   snackbarStore.isWaitingForResponse = true
-  await projectRepositoryStore.syncRepository(selectedRepo.value.id, branchName.value)
+  await projectRepositoryStore.syncRepository(selectedRepo.value.id, { syncAllBranches: isAllSyncing.value, branchName: branchName.value })
   snackbarStore.isWaitingForResponse = false
   snackbarStore.setMessage(`Job de synchronisation lancé pour le dépôt ${selectedRepo.value.internalRepoName}`)
 }
@@ -137,7 +138,7 @@ projectRepositoryStore.$subscribe(() => {
     >
       <RepoForm
         :is-project-locked="projectStore.selectedProject.locked"
-        @save="(repo) => saveRepo({...repo, projectId: projectStore.selectedProject.id})"
+        @save="(repo) => saveRepo({...repo, projectId: projectStore.selectedProject?.id})"
         @cancel="cancel()"
       />
     </div>
@@ -188,19 +189,30 @@ projectRepositoryStore.$subscribe(() => {
             >
               Synchroniser le dépôt {{ selectedRepo?.internalRepoName }}
             </h2>
-            <DsfrInput
-              v-model="branchName"
-              data-testid="branchNameInput"
-              label="Branche cible"
-              label-visible
-              required
-              placeholder="main"
-            />
+            <div
+              class="flex flex-col gap-4 w-2/5"
+            >
+              <DsfrToggleSwitch
+                v-model="isAllSyncing"
+                label="Synchroniser toutes les branches"
+                name="syncAllBranchesCbx"
+                data-testid="toggleSyncAllBranches"
+              />
+              <DsfrInput
+                v-if="!isAllSyncing"
+                v-model="branchName"
+                data-testid="branchNameInput"
+                label="Synchroniser une branche cible"
+                label-visible
+                :required="!isAllSyncing"
+                placeholder="main"
+              />
+            </div>
             <DsfrButton
               data-testid="syncRepoBtn"
               label="Lancer la synchronisation"
               secondary
-              :disabled="!branchName"
+              :disabled="!branchName && !isAllSyncing"
               @click="syncRepository()"
             />
           </div>

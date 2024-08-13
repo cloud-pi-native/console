@@ -416,7 +416,7 @@ export class GitlabProjectApi extends PluginApi {
   }
 
   // Mirror
-  public async triggerMirror(targetRepo: string, branchName: string) {
+  public async triggerMirror(targetRepo: string, syncAllBranches: boolean, branchName?: string) {
     if ((await this.getSpecialRepositories()).includes(targetRepo)) throw new Error('User requested for invalid mirroring')
     const repos = await this.listRepositories()
     const { mirror, target }: RepoSelect = repos.reduce((acc, repository) => {
@@ -433,8 +433,12 @@ export class GitlabProjectApi extends PluginApi {
     return this.api.Pipelines.create(mirror.id, 'main', {
       variables: [
         {
+          key: 'SYNC_ALL',
+          value: syncAllBranches.toString(),
+        },
+        {
           key: 'GIT_BRANCH_DEPLOY',
-          value: branchName,
+          value: branchName ?? '',
         },
         {
           key: 'PROJECT_NAME',
