@@ -18,6 +18,9 @@ on:
       PUBLISH_PLUGINS:
         required: true
         type: boolean
+      CHECK_CHANGES:
+        required: true
+        type: boolean
   workflow_dispatch:
     inputs:
       NODE_VERSION:
@@ -47,6 +50,88 @@ on:
         default: true
 
 jobs:
+  path-filter:
+    if: ${{ inputs.CHECK_CHANGES }}
+    runs-on: ubuntu-latest
+    outputs:
+      packages: ${{ steps.filter.outputs.changes }}
+    steps:
+      - name: Checks-out repository
+        uses: actions/checkout@v4
+
+      - name: Check updated files paths
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            eslint-config:
+              - 'packages/eslintconfig/src/**'
+            shared:
+              - 'packages/shared/src/**'
+            hooks:
+              - 'packages/hooks/src/**'
+            test-utils:
+              - 'packages/test-utils/src/**'
+            ts-config:
+              - 'packages/tsconfig/**'
+            argocd:
+              - 'plugins/argocd/src/**'
+            gitlab:
+              - 'plugins/gitlab/src/**'
+            harbor:
+              - 'plugins/harbor/src/**'
+            keycloak:
+              - 'plugins/keycloak/src/**'
+            kubernetes:
+              - 'plugins/kubernetes/src/**'
+            nexus:
+              - 'plugins/nexus/src/**'
+            sonarqube:
+              - 'plugins/sonarqube/src/**'
+            vault:
+              - 'plugins/vault/src/**'
+
+  check-update:
+    name: Check for package version update
+    runs-on: ubuntu-latest
+    needs: 
+      - path-filter
+    strategy:
+      matrix:
+        packages: ${{ needs.path-filter.outputs.packages }}
+    steps:
+      - name: Checks-out repository
+        uses: actions/checkout@v4
+
+      - name: Check changes
+        id: check
+        run: |
+          PACKAGE_NAME=$(jq -cr -arg p "${{ matrix.packages }}" '[.packages[], .plugins[]][] | select(.path | test($p)?) | .name' < ./ci/matrix-npm.json)
+          PACKAGE_PATH=$(jq -cr -arg p "${{ matrix.packages }}" '[.packages[], .plugins[]][] | select(.path | test($p)?) | .path' < ./ci/matrix-npm.json)
+          PACKAGE_VERSION=$(jq -cr '.version' < ${PACKAGE_PATH}/package.json)
+          if [ "$(curl -s -o /dev/null -I -w %{http_code} https://registry.npmjs.org/${PACKAGE_NAME})" = 404 ]; then
+            REMOTE=false
+          else
+            REMOTE=$(pnpm view ${PACKAGE_NAME} --json | jq --arg v "$PACKAGE_VERSION" 'any(.versions[] == $v; .)')
+          fi
+          if [ "$REMOTE" = "true" ]; then
+            echo "WARNING=true" >> $GITHUB_OUTPUT
+            echo "PACKAGE_NAME=$PACKAGE_NAME" >> $GITHUB_OUTPUT
+            echo "PACKAGE_PATH=$PACKAGE_PATH" >> $GITHUB_OUTPUT
+            echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> $GITHUB_OUTPUT
+          else
+            echo "WARNING=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Comment PR
+        uses: thollander/actions-comment-pull-request@v2
+        if: ${{ steps.check.outputs.WARNING == 'true' }}
+        with:
+          message: |
+            🤖 Hey !
+            
+            The '${{ steps.check.outputs.PACKAGE_NAME }}' package *(v${{ steps.check.outputs.PACKAGE_VERSION }})* already exists [on npm](https://www.npmjs.com/package/${{ steps.check.outputs.PACKAGE_NAME }}/v/${{ steps.check.outputs.PACKAGE_VERSION }}) but the source code has changed, you should consider updating the package version.
+
   matrix:
     name: Generate matrix
     if: ${{ inputs.PUBLISH_APPS || inputs.PUBLISH_PACKAGES || inputs.PUBLISH_PLUGINS }}
@@ -101,19 +186,16 @@ jobs:
         id: check-version
         run: |
           PACKAGE_VERSION=$(jq -cr '.version' < ${{ matrix.modules.path }}/package.json)
-
           if [ "$(curl -s -o /dev/null -I -w %{http_code} https://registry.npmjs.org/${{ matrix.modules.name }})" = 404 ]; then
             REMOTE=false
           else
             REMOTE=$(pnpm view ${{ matrix.modules.name }} --json | jq --arg v "$PACKAGE_VERSION" 'any(.versions[] == $v; .)')
           fi
-
           if [ "$REMOTE" = "true" ]; then
             echo "Package ${{ matrix.modules.name }} - version $PACKAGE_VERSION already exists"
           else
             echo "Package ${{ matrix.modules.name }} - version $PACKAGE_VERSION does not exist"
           fi
-
           echo "REMOTE=$REMOTE" >> $GITHUB_OUTPUT
 
       - name: Setup Node.js
