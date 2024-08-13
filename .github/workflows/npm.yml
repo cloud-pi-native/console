@@ -98,7 +98,7 @@ jobs:
       - path-filter
     strategy:
       matrix:
-        packages: ${{ needs.path-filter.outputs.packages }}
+        packages: ${{ fromJSON(needs.path-filter.outputs.packages) }}
     steps:
       - name: Checks-out repository
         uses: actions/checkout@v4
