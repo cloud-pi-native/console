@@ -98,16 +98,23 @@ jobs:
       - path-filter
     strategy:
       matrix:
-        packages: ${{ needs.path-filter.outputs.packages }}
+        packages: ${{ fromJSON(needs.path-filter.outputs.packages) }}
     steps:
       - name: Checks-out repository
         uses: actions/checkout@v4
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        id: pnpm-install
+        with:
+          version: "${{ inputs.PNPM_VERSION }}"
+          run_install: false
+
       - name: Check changes
         id: check
         run: |
-          PACKAGE_NAME=$(jq -cr -arg p "${{ matrix.packages }}" '[.packages[], .plugins[]][] | select(.path | test($p)?) | .name' < ./ci/matrix-npm.json)
-          PACKAGE_PATH=$(jq -cr -arg p "${{ matrix.packages }}" '[.packages[], .plugins[]][] | select(.path | test($p)?) | .path' < ./ci/matrix-npm.json)
+          PACKAGE_NAME=$(jq -cr --arg p "${{ matrix.packages }}" '[.packages[], .plugins[]][] | select(.path | test($p)?) | .name' < ./ci/matrix-npm.json)
+          PACKAGE_PATH=$(jq -cr --arg p "${{ matrix.packages }}" '[.packages[], .plugins[]][] | select(.path | test($p)?) | .path' < ./ci/matrix-npm.json)
           PACKAGE_VERSION=$(jq -cr '.version' < ${PACKAGE_PATH}/package.json)
           if [ "$(curl -s -o /dev/null -I -w %{http_code} https://registry.npmjs.org/${PACKAGE_NAME})" = 404 ]; then
             REMOTE=false
@@ -130,7 +137,8 @@ jobs:
           message: |
             🤖 Hey !
             
-            The '${{ steps.check.outputs.PACKAGE_NAME }}' package *(v${{ steps.check.outputs.PACKAGE_VERSION }})* already exists [on npm](https://www.npmjs.com/package/${{ steps.check.outputs.PACKAGE_NAME }}/v/${{ steps.check.outputs.PACKAGE_VERSION }}) but the source code has changed, you should consider updating the package version.
+            The __${{ steps.check.outputs.PACKAGE_NAME }} (v${{ steps.check.outputs.PACKAGE_VERSION }})__ package already exists [on npm](https://www.npmjs.com/package/${{ steps.check.outputs.PACKAGE_NAME }}/v/${{ steps.check.outputs.PACKAGE_VERSION }}) but the source code has changed, you should consider updating the package version.
+          comment_tag: npm-check-${{ matrix.packages }}
 
   matrix:
     name: Generate matrix
