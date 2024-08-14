@@ -72,7 +72,7 @@ services:
       postgres:
         condition: service_started
     volumes:
-      - ../db/pgadmin/config/servers-docker.json:/pgadmin4/servers.json
+      - ../pgadmin/servers-docker.json:/pgadmin4/servers.json
       - dso-pgadmin-data-local:/var/lib/pgadmin
     ports:
       - 8081:80

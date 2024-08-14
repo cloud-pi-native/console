@@ -259,7 +259,6 @@ Différents fichiers de `values.yml` sont disponibles pour personnaliser le dép
 - Le fichier [./ci/kind/env/dso-values-int-example.yaml](./ci/kind/env/dso-values-int-example.yaml) contient les variables de l'application pour le mode intégration.
 
 > *__Notes:__*
-> - *Un fichier d'environnement `./env/.env` est disponible pour fournir le chemin d'accès vers la `kubeconfig` du cluster d'intégration.*
 > - *Les values du chart de la console sont disponibles [ici](https://github.com/cloud-pi-native/helm-charts/tree/main/charts/dso-console).*
 
 ### Base de données

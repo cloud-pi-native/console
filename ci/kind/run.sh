@@ -168,12 +168,12 @@ fi
 # Check for integration mode
 if [[ "$COMMAND" =~ "integ" ]]; then
   wait $JOB_LOAD
-  source $SCRIPTPATH/../../env/.env.integ
+  source $SCRIPTPATH/../../apps/server/.env.integ
   export KUBECONFIG_HOST_PATH=$KUBECONFIG_HOST_PATH
   export INTEGRATION_ARGS="--values $SCRIPTPATH/env/dso-values-integ.yaml"
   
   if [ -z "$KUBECONFIG_HOST_PATH" ]; then
-    printf "\n\n${red}[kind wrapper].${no_color} KUBECONFIG_HOST_PATH not defined in ./env/.env.integ integration will certainly fail\nYou should also check you KUBECONFIG_CTX in $SCRIPTPATH/env/dso-values-integ.yaml\n\n"
+    printf "\n\n${red}[kind wrapper].${no_color} KUBECONFIG_HOST_PATH not defined in ./apps/server/.env.integ integration will certainly fail\nYou should also check you KUBECONFIG_CTX in $SCRIPTPATH/env/dso-values-integ.yaml\n\n"
     exit 1
   fi
   export INTEGRATION_ARGS_UTILS="--set integration=true --set-file kubeconfig=$KUBECONFIG_HOST_PATH"
