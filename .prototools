@@ -1,5 +1,5 @@
 node = "20.16.0"
-pnpm = "9.5.0"
+pnpm = "9.7.1"
 
 [settings]
 auto-install = true
