@@ -132,11 +132,11 @@ const misc = {
     const config = dbToObj(await getAdminPlugin())
     return hooks.checkServices.execute({}, config)
   },
-  syncRepository: async (repoId: string, { branchName }: { branchName: string }) => {
+  syncRepository: async (repoId: string, { syncAllBranches, branchName }: { syncAllBranches: boolean, branchName?: string }) => {
     const { project, ...repoInfos } = await getHookRepository(repoId)
     const store = dbToObj(await getProjectStore(project.id))
     const payload = {
-      repo: { ...repoInfos, branchName },
+      repo: { ...repoInfos, syncAllBranches, branchName },
       ...project,
       store,
     }

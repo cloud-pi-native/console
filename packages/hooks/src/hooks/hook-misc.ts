@@ -12,5 +12,5 @@ export type ProjectLite = Pick<Project, 'id' | 'name' | 'organization' | 'store'
 
 export const getProjectSecrets: Hook<ProjectLite, ProjectLite> = createHook()
 
-export type UniqueRepo = ProjectLite & { repo: Omit<Repository, 'newCreds'> & { branchName: string } }
+export type UniqueRepo = ProjectLite & { repo: Omit<Repository, 'newCreds'> & { syncAllBranches: boolean, branchName?: string } }
 export const syncRepository: Hook<UniqueRepo, UniqueRepo> = createHook()
