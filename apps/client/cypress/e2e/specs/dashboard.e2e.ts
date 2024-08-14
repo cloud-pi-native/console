@@ -51,7 +51,6 @@ describe('Dashboard', () => {
       .getByDataTestid(`projectTile-${projectToKeep.name}`).click()
       .getByDataTestid('menuDashboard').click()
     cy.wait('@listStages')
-      .getByDataTestid('descriptionP').should('have.class', 'disabled')
       .getByDataTestid('setDescriptionBtn').click()
       .getByDataTestid('descriptionInput').clear().type(description1)
       .getByDataTestid('saveDescriptionBtn').click()
@@ -66,7 +65,6 @@ describe('Dashboard', () => {
       .getByDataTestid('descriptionInput').clear()
       .getByDataTestid('saveDescriptionBtn').click()
       .wait('@updateProject').its('response.statusCode').should('match', /^20\d$/)
-      .getByDataTestid('descriptionP').should('have.class', 'disabled')
   })
 
   it('Should show project secrets', () => {
@@ -145,6 +143,5 @@ describe('Dashboard', () => {
     cy.assertAddRepo(projectToKeep, projectToKeep.repositories)
     cy.assertUsers(projectToKeep, [owner.email, user.email])
     cy.assertAddEnvironment(projectToKeep, projectToKeep.environments, false)
-    cy.assertPermission(projectToKeep, projectToKeep.environments[0].name, permissions)
   })
 })

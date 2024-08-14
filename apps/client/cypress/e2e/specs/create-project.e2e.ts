@@ -1,8 +1,12 @@
-import { getModelById } from '../support/func.js'
+import { Organization } from '@cpn-console/shared'
+import { getModel, getModelById } from '../support/func.js'
+
+const organizations = getModel('organization')
+const orgMi = organizations.find(({ name }) => name === 'mi') as Organization
 
 describe('Create Project', () => {
   const project = {
-    orgName: 'mi',
+    orgId: orgMi.id,
     name: 'project01',
     description: 'Application de prise de rendez-vous en préfécture.',
   }
@@ -22,7 +26,7 @@ describe('Create Project', () => {
       .get('h1').should('contain', 'Commander un espace projet')
       .get('[data-testid^="repoFieldset-"]').should('not.exist')
       .get('p.fr-alert__description').should('contain', owner.email)
-      .get('select#organizationId-select').select(project.orgName)
+      .get('select#organizationId-select').select(project.orgId)
       .getByDataTestid('nameInput').type(`${project.name} ErrorSpace`)
       .getByDataTestid('nameInput').should('have.class', 'fr-input--error')
       .getByDataTestid('createProjectBtn').should('be.disabled')
@@ -44,7 +48,7 @@ describe('Create Project', () => {
 
     cy.goToProjects()
       .getByDataTestid('createProjectLink').click()
-      .get('select#organizationId-select').select(project.orgName)
+      .get('select#organizationId-select').select(project.orgId)
       .getByDataTestid('nameInput').type(`${project.name}`)
     cy.getByDataTestid('createProjectBtn').should('be.enabled').click()
     cy.wait('@postProject').its('response.statusCode').should('not.match', /^20\d$/)
