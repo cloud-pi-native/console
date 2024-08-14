@@ -4,7 +4,6 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { getRandomId } from '@gouvminint/vue-dsfr'
 import {
   type LettersQuery,
-  type UserProfile,
   type User,
   type ProjectV2,
   type Member,
@@ -18,14 +17,11 @@ const projectMemberStore = useProjectMemberStore()
 
 const props = withDefaults(
   defineProps<{
-    userProfile?: UserProfile
     project: ProjectV2
-    members: Member[]
     canManage: boolean
     canTransfer: boolean
   }>(),
   {
-    userProfile: undefined,
     canManage: false,
     canTransfer: true,
   },
@@ -47,7 +43,7 @@ const headers = props.canManage
 const snackbarStore = useSnackbarStore()
 
 const isUserAlreadyInTeam = computed(() => {
-  return !!(newUserEmail.value && props.members.find(member => member.email === newUserEmail.value))
+  return !!(newUserEmail.value && props.project.members.find(member => member.email === newUserEmail.value))
 })
 
 const removeUserHint = (member: Member) => {
@@ -97,11 +93,11 @@ const createMemberRow = (member: Member) => props.canManage
 
 const setRows = () => {
   rows.value = []
-  if (!props.members.find(member => member.userId === props.project.ownerId)) {
+  if (!props.project.members.find(member => member.userId === props.project.ownerId)) {
     rows.value.push(createMemberRow({ ...props.project.owner, roleIds: [], userId: props.project.owner.id }))
   }
-  if (props.members?.length) {
-    props.members.forEach((member) => {
+  if (props.project.members?.length) {
+    props.project.members.forEach((member) => {
       rows.value.push(createMemberRow(member))
     })
   }
@@ -147,13 +143,13 @@ onMounted(() => {
   setRows()
 })
 
-watch(() => props.members, setRows)
+watch(() => props.project.members, setRows)
 
 const isTransferingProject = ref(false)
 const nextOwnerId = ref('')
 
 const transferOwnership = (ownerId: string) => {
-  if (props.members.find(member => member.userId === ownerId)) {
+  if (props.project.members.find(member => member.userId === ownerId)) {
     emit('transferOwnership', ownerId)
   }
 }
@@ -224,7 +220,7 @@ const transferSelectOptions = [
       >
         <DsfrButton
           v-show="!isTransferingProject"
-          data-testid="showArchiveProjectBtn"
+          data-testid="showTransferProjectBtn"
           :label="`Transférer le projet`"
           primary
           icon="ri-delete-bin-7-line"

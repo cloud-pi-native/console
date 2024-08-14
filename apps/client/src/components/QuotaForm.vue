@@ -85,6 +85,7 @@ onBeforeMount(() => {
 </script>
 
 <template>
+  {{ errorSchema }}
   <div
     class="relative"
   >

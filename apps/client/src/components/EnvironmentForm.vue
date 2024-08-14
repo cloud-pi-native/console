@@ -166,7 +166,7 @@ watch(localEnvironment.value, () => {
     class="relative"
   >
     <h1
-      v-if="props.isEditable && props.canManage"
+      v-if="props.isEditable"
       class="fr-h1"
     >
       Ajouter un environnement au projet
@@ -186,7 +186,7 @@ watch(localEnvironment.value, () => {
         :hint="`Ne doit pas contenir d'espace ni de trait d'union, doit être unique pour le projet et le cluster sélectionnés, être en minuscules et faire plus de 2 et moins de ${longestEnvironmentName} caractères.`"
         :error-message="!!localEnvironment.name && !EnvironmentSchema.pick({name: true}).safeParse({name: localEnvironment.name}).success ? `Le nom de l\'environnment ne doit pas contenir d\'espace, doit être unique pour le projet et le cluster sélectionnés, être en minuscules et faire plus de 2 et moins de ${longestEnvironmentName} caractères.`: undefined"
         placeholder="integ0"
-        :disabled="!props.isEditable"
+        :disabled="!props.isEditable || !props.canManage"
       />
       <DsfrSelect
         v-model="zoneId"
@@ -194,7 +194,7 @@ watch(localEnvironment.value, () => {
         label="Zone"
         :description="`Choix de la zone cible pour le déploiement de l\'environnement ${localEnvironment.name ? localEnvironment.name : 'en cours de création'}.`"
         required
-        :disabled="!props.isEditable"
+        :disabled="!props.isEditable || !props.canManage"
         :options="zoneOptions"
         @update:model-value="resetCluster()"
       />
@@ -211,7 +211,7 @@ watch(localEnvironment.value, () => {
         label="Type d'environnement"
         description="Type d'environnement proposé par DSO, conditionne les quotas et les clusters auxquels vous aurez accès pour créer votre environnement."
         required
-        :disabled="!props.isEditable"
+        :disabled="!props.isEditable || !props.canManage"
         :options="stageOptions"
         @update:model-value="resetCluster()"
       />
@@ -250,7 +250,7 @@ watch(localEnvironment.value, () => {
           label="Cluster"
           :description="`Choix du cluster cible pour le déploiement de l\'environnement ${localEnvironment.name ? localEnvironment.name : 'en cours de création'}.`"
           required
-          :disabled="!props.isEditable"
+          :disabled="!props.isEditable || !props.canManage"
           :options="clusterOptions"
         />
         <DsfrAlert
@@ -275,7 +275,6 @@ watch(localEnvironment.value, () => {
           <DsfrButton
             label="Annuler"
             data-testid="cancelEnvironmentBtn"
-            :disabled="props.isProjectLocked"
             secondary
             icon="ri-close-line"
             @click="cancel()"
@@ -340,7 +339,7 @@ watch(localEnvironment.value, () => {
       </div>
     </div>
     <div
-      v-if="props.isEditable || canManage"
+      v-if="props.isEditable && canManage"
       class="flex space-x-10 mt-5"
     >
       <DsfrButton
