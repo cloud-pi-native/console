@@ -6,7 +6,7 @@ type Tracker<T extends Record<string, any>> = Record<keyof T, Record<string, {
 
 type Target = Record<string, (id?: string, args?: object) => Promise<any>>
 type Excludes<T extends Target> = Partial<Record<keyof T, Array<keyof T>>> | undefined
-const toTarget = <T extends Target>(target: T) => ({ tracker: {} as Tracker<T>, methods: target as T })
+const toTarget = <T extends Target>(target: T) => ({ tracker: {} as Tracker<T>, methods: target })
 
 // @ts-ignore
 export const genericProxy = <T>(proxied: T, excludes: Excludes<T> = {}): T => new Proxy(toTarget(proxied), {
