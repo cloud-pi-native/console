@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
-import { getPreparedApp, startServer } from './prepare-app.js'
+import { getPreparedApp } from './prepare-app.js'
 import { getConnection } from './connect.js'
 import { initDb } from './init/db/index.js'
 import app from './app.js'

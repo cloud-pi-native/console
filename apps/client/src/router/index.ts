@@ -196,6 +196,11 @@ const routes: Readonly<RouteRecordRaw[]> = [
         name: 'SystemSettings',
         component: SystemSettings,
       },
+      {
+        path: 'roles',
+        name: 'AdminRoles',
+        component: AdminRoles,
+      },
     ],
     beforeEnter(_to, _path, next) {
       const snackbarStore = useSnackbarStore()

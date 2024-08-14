@@ -1,7 +1,6 @@
 import fp from 'fastify-plugin'
-import { Project, Cluster, Repository } from '@prisma/client'
+import type { Repository } from '@prisma/client'
 import { PluginsManifests, RepoCreds, ServiceInfos, editStrippers, populatePluginManifests } from '@cpn-console/hooks'
-import { genericProxy } from './proxy.js'
 import { DEFAULT, DISABLED, PROJECT_PERMS } from '@cpn-console/shared'
 import { UserDetails } from '../types/index.js'
 import { faker } from '@faker-js/faker'
@@ -191,117 +190,7 @@ export const filteredOrganizations = [
   },
 ]
 
-// MOCK de l'objet Hook
-const resultsBase = {
-  failed: false,
-  args: {
-    repositories: [],
-  },
-  results: {},
-}
-
-const resultsFetch = {
-  failed: false,
-  args: {},
-  results: {
-    canel: {
-      status: {
-        result: 'OK',
-        message: 'Retrieved',
-      },
-      result: {
-        organizations: [
-          {
-            name: 'genat',
-            label: 'MI - gendaremerie nationale',
-            source: 'canel',
-          },
-          {
-            name: 'mas',
-            label: 'ministère affaires sociaux',
-            source: 'canel',
-          },
-          {
-            name: 'genat',
-            label: 'ministère affaires sociaux',
-            source: 'canel',
-          },
-        ],
-      },
-    },
-  },
-}
-
-const secretsResult = {
-  failed: false,
-  args: {},
-  results: {
-    gitlab: {
-      secrets: {
-        token: 'myToken',
-      },
-      status: {
-        failed: false,
-      },
-    },
-    registry: {
-      secrets: {
-        token: 'myToken',
-      },
-      status: {
-        failed: false,
-      },
-    },
-  },
-}
-
-const resultsKeycloakAdmins = {
-  failed: false,
-  args: {
-  },
-  results: {
-    keycloak: {
-      adminIds: [],
-    },
-  },
-}
-
 export type ReposCreds = Record<Repository['internalRepoName'], RepoCreds>
-
-const misc = {
-  fetchOrganizations: async () => resultsFetch,
-  checkServices: async () => resultsBase,
-  syncRepository: async () => resultsBase,
-}
-
-const project = {
-  upsert: async (_projectId: Project['id'], _reposCreds?: ReposCreds) => {
-    return {
-      results: structuredClone(resultsBase),
-      project: {},
-    }
-  },
-  delete: async (_projectId: Project['id']) => {
-    return {
-      results: structuredClone(resultsBase),
-      project: {},
-    }
-  },
-  getSecrets: async (_projectId: Project['id']) => {
-    return secretsResult
-  },
-}
-
-const cluster = {
-  upsert: async (_clusterId: Cluster['id']) => resultsBase,
-  delete: async (_clusterId: Cluster['id']) => resultsBase,
-}
-
-const user = {
-  retrieveUserByEmail: async (_email: string) => resultsBase,
-  retrieveAdminUsers: async () => resultsKeycloakAdmins,
-  updateUserAdminGroupMembership: async (_id: string) => resultsBase,
-}
 
 type Requestor = Partial<UserDetails>
 export const getRandomRequestor = (user?: Requestor): Partial<UserDetails> => ({

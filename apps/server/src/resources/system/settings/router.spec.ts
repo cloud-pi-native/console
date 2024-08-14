@@ -4,7 +4,6 @@ import app from '../../../app.js'
 import * as business from './business.js'
 import * as utilsController from '../../../utils/controller.js'
 import { getUserMockInfos } from '../../../utils/mocks.js'
-import { BadRequest400 } from '../../../utils/errors.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../../utils/mocks.js')).mockSessionPlugin)
 const authUserMock = vi.spyOn(utilsController, 'authUser')
