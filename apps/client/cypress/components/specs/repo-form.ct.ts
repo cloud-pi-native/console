@@ -71,7 +71,7 @@ describe('RepoForm.vue', () => {
     cy.getByDataTestid('gitlabCIAccordion').click()
     cy.get('select#type-language-select').should('be.visible')
       .select('node')
-    cy.getByDataTestid('nodeVersionInput').type('20.15.1')
+    cy.getByDataTestid('nodeVersionInput').type('20.16.0')
     cy.getByDataTestid('nodeInstallInput').type('npm install')
     cy.getByDataTestid('nodeBuildInput').type('npm build')
     cy.getByDataTestid('workingDirInput').type('./')
