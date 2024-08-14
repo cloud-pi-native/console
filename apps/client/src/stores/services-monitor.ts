@@ -61,8 +61,6 @@ export const useServiceStore = defineStore('serviceMonitor', () => {
       status: 'info',
       dotColor: servicesHealth.value.dotColor,
     }
-    console.log('fetch des health')
-
     const res = await apiClient.Services.getServiceHealth()
     if (res.status === 200) {
       const body = extractData(res, 200)
