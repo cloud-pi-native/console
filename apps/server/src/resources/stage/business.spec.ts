@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker'
 import { describe, expect, it } from 'vitest'
-import { Quota, Stage } from '@prisma/client'
+import type { Stage } from '@prisma/client'
 import prisma from '../../__mocks__/prisma.js'
 import { createStage, deleteStage, getStageAssociatedEnvironments, listStages, updateStage } from './business.ts'
 import { BadRequest400, NotFound404 } from '../../utils/errors.ts'

@@ -41,7 +41,7 @@ describe('Test users business', () => {
 
       prisma.user.findMany.mockResolvedValue([])
 
-      await patchUsers([userUpdated]),
+      await patchUsers([userUpdated])
       expect(prisma.user.update).toHaveBeenCalledTimes(1)
       expect(prisma.user.findMany).toHaveBeenCalledTimes(1)
 

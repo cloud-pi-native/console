@@ -55,7 +55,6 @@ export const getEnvironmentByIdWithCluster = (id: Environment['id']) =>
 
 // INSERT
 export const initializeEnvironment = (
-  // TODO
   data: Prisma.EnvironmentUncheckedCreateInput,
 ) => prisma.environment.create({
   data,

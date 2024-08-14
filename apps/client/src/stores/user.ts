@@ -9,9 +9,14 @@ export const useUserStore = defineStore('user', () => {
   const adminRoleStore = useAdminRoleStore()
   const isLoggedIn = ref<boolean>()
   const userProfile = ref<UserProfile>()
-  const adminPerms = computed(() => myAdminRoles.value
-    .reduce((acc, curr) => acc | BigInt(curr.permissions), 0n))
   const apiAuthInfos = ref<User>()
+
+  const adminPerms = computed(() => {
+    return apiAuthInfos.value
+    ? myAdminRoles.value
+    .reduce((acc, curr) => acc | BigInt(curr.permissions), 0n)
+      : null
+})
   const myAdminRoles = computed<AdminRole[]>(() => adminRoleStore.roles
     .filter(adminRole => apiAuthInfos.value?.adminRoleIds.includes(adminRole.id)))
 
@@ -38,6 +43,7 @@ export const useUserStore = defineStore('user', () => {
     isLoggedIn,
     setIsLoggedIn,
     userProfile,
+    apiAuthInfos,
     myAdminRoles,
     adminPerms,
     setUserProfile,

@@ -5,7 +5,6 @@ import {
 } from 'vue-router'
 import { useUserStore } from '@/stores/user.js'
 import { useProjectStore } from '@/stores/project.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useSystemSettingsStore } from '@/stores/system-settings.js'
 import { uuid } from '@/utils/regex.js'
 
@@ -196,19 +195,12 @@ const routes: Readonly<RouteRecordRaw[]> = [
         name: 'SystemSettings',
         component: SystemSettings,
       },
+      {
+        path: 'roles',
+        name: 'AdminRoles',
+        component: AdminRoles,
+      },
     ],
-    beforeEnter(_to, _path, next) {
-      const snackbarStore = useSnackbarStore()
-      const userStore = useUserStore()
-      if (userStore.adminPerms === 0n) {
-        snackbarStore.setMessage(
-          'Vous ne possédez pas les droits administeurs',
-          'error',
-        )
-        return next('/')
-      }
-      next()
-    },
   },
 ]
 
@@ -224,6 +216,15 @@ const router = createRouter({
 router.beforeEach((to) => { // Cf. https://github.com/vueuse/head pour des transformations avancées de Head
   const specificTitle = to.meta.title ? `${to.meta.title} - ` : ''
   document.title = `${specificTitle}${MAIN_TITLE}`
+})
+
+router.afterEach((to) => {
+  const userStore = useUserStore()
+  setTimeout(() => {
+    if (userStore.adminPerms === 0n && to.fullPath.startsWith('/admin/')) {
+      router.push('/')
+    }
+  }, 3000)
 })
 
 /**

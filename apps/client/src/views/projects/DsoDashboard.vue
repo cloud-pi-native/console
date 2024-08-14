@@ -22,6 +22,7 @@ const allStages = ref<Array<any>>([])
 const updateProject = async (projectId?: Project['id']) => {
   if (!projectId) return
   snackbarStore.isWaitingForResponse = true
+  isReprovisionning.value = true
   await projectStore.updateProject(projectId, { description: description.value })
   isEditingDescription.value = false
   snackbarStore.isWaitingForResponse = false

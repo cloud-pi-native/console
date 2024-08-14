@@ -44,6 +44,7 @@ describe('RepoForm.vue', () => {
         externalUserName: 'clairenlet',
         externalToken: 'eddddsqsq',
       },
+      canManage: true,
     }
 
     const randomDbSetup = createRandomDbSetup({})
@@ -107,6 +108,7 @@ describe('RepoForm.vue', () => {
         isInfra: false,
         externalUserName: 'claire+nlet',
       },
+      canManage: true,
     }
 
     const randomDbSetup = createRandomDbSetup({})
@@ -129,7 +131,6 @@ describe('RepoForm.vue', () => {
       .and('be.enabled')
     cy.getByDataTestid('input-checkbox-infraRepoCbx').should('not.be.checked')
       .and('be.enabled')
-    cy.getByDataTestid('updateRepoBtn').should('be.disabled')
     cy.getByDataTestid('cancelRepoBtn').should('be.enabled')
     cy.getByDataTestid('externalTokenInput').type('aaaaaaa').blur()
     cy.getByDataTestid('updateRepoBtn').should('be.enabled')

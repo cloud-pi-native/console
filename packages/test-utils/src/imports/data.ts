@@ -1857,7 +1857,18 @@ export const data = {
       clusterId: '32636a52-4dd1-430b-b08a-b2e5ed9d1789',
     },
   ],
-  projectMembers: [],
+  projectMembers: [
+    {
+      userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6566',
+      projectId: '011e7860-04d7-461f-912d-334c622d38b3',
+      roleIds: [],
+    },
+    {
+      userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6566',
+      projectId: '22e7044f-8414-435d-9c4a-2df42a65034b',
+      roleIds: [],
+    },
+  ],
   projectPlugin: [],
   projectRole: [],
   repository: [
@@ -1939,7 +1950,12 @@ export const data = {
       updatedAt: '2023-07-03T14:46:56.816Z',
     },
   ],
-  systemSetting: [],
+  systemSetting: [
+    {
+      key: 'maintenance',
+      value: 'off',
+    },
+  ],
   associations: [
     [
       'cluster',
