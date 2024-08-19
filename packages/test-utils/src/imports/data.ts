@@ -1894,6 +1894,11 @@ export const data = {
       projectId: '83833faf-f654-40dd-bcd5-cf2e944fc702',
       roleIds: [],
     },
+    {
+      userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6566',
+      projectId: '83833faf-f654-40dd-bcd5-cf2e944fc702',
+      roleIds: [],
+    },
   ],
   projectPlugin: [],
   projectRole: [

@@ -9,7 +9,7 @@ export class BadRequest400 extends ErrorResType {
   status = 400 as const
   constructor(message: string) {
     super(400)
-    this.body.message = message ?? 'Bad request'
+    this.body.message = message ?? 'Bad Request'
   }
 }
 
