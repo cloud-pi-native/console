@@ -8,6 +8,13 @@ export const data = {
       oidcGroup: '/admin',
       name: 'Admin',
     },
+    {
+      id: 'eadf604f-5f54-4744-bdfb-4793d2271e9b',
+      permissions: '2n',
+      position: 1,
+      oidcGroup: '',
+      name: 'Admin Locaux',
+    },
   ],
   kubeconfig: [
     {
@@ -186,7 +193,7 @@ export const data = {
       createdAt: '2023-07-03T14:46:56.772Z',
       updatedAt: '2024-07-25T16:18:11.372Z',
       adminRoleIds: [
-        '76229c96-4716-45bc-99da-00498ec9018c',
+        'eadf604f-5f54-4744-bdfb-4793d2271e9b',
       ],
     },
   ],
@@ -1700,6 +1707,30 @@ export const data = {
       everyonePerms: '896n',
       ownerId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
     },
+    {
+      id: '554d9150-9a07-42c1-8207-1163f2f0addd',
+      name: 'pissenlit',
+      organizationId: 'b644c07f-193c-47ed-ae10-b88a8f63d20b',
+      description: '',
+      status: 'created',
+      locked: false,
+      createdAt: '2023-07-03T14:46:56.799Z',
+      updatedAt: '2023-07-03T14:46:56.806Z',
+      everyonePerms: '896n',
+      ownerId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+    },
+    {
+      id: '94c860ab-023f-4e6e-8a4e-ff41456e249b',
+      name: 'rolistes',
+      organizationId: 'b644c07f-193c-47ed-ae10-b88a8f63d20b',
+      description: '',
+      status: 'created',
+      locked: false,
+      createdAt: '2023-07-03T14:46:56.799Z',
+      updatedAt: '2023-07-03T14:46:56.806Z',
+      everyonePerms: '0n',
+      ownerId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+    },
   ],
   quota: [
     {
@@ -1830,6 +1861,16 @@ export const data = {
       quotaId: '5a57b62f-2465-4fb6-a853-5a751d099199',
       stageId: 'd434310e-7850-4d59-b47f-0772edf50582',
     },
+    {
+      id: '2805a1f5-0ca4-46a4-b3d7-5b649aee4a92',
+      name: 'dev',
+      projectId: '94c860ab-023f-4e6e-8a4e-ff41456e249b',
+      createdAt: '2023-07-03T15:56:56.808Z',
+      updatedAt: '2023-07-03T15:56:56.815Z',
+      clusterId: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
+      quotaId: '5a57b62f-2465-4fb6-a853-5a751d099199',
+      stageId: '4a9ad694-4c54-4a3c-9579-548bf4b7b1b9',
+    },
   ],
   projectClusterHistory: [
     {
@@ -1859,6 +1900,13 @@ export const data = {
   ],
   projectMembers: [
     {
+      userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6569',
+      projectId: '94c860ab-023f-4e6e-8a4e-ff41456e249b',
+      roleIds: [
+        'c77a1b96-377d-4aa3-bc94-65d4415f9599',
+      ],
+    },
+    {
       userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6566',
       projectId: '011e7860-04d7-461f-912d-334c622d38b3',
       roleIds: [],
@@ -1866,11 +1914,52 @@ export const data = {
     {
       userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6566',
       projectId: '22e7044f-8414-435d-9c4a-2df42a65034b',
+      roleIds: [
+        'c77a1b96-377d-4aa3-bc94-65d4415f95b5',
+      ],
+    },
+    {
+      userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6567',
+      projectId: '554d9150-9a07-42c1-8207-1163f2f0addd',
+      roleIds: [
+        'c77a1b96-377d-4aa3-bc94-65d4415f9595',
+      ],
+    },
+    {
+      userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6567',
+      projectId: '83833faf-f654-40dd-bcd5-cf2e944fc702',
+      roleIds: [],
+    },
+    {
+      userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6566',
+      projectId: '83833faf-f654-40dd-bcd5-cf2e944fc702',
       roleIds: [],
     },
   ],
   projectPlugin: [],
-  projectRole: [],
+  projectRole: [
+    {
+      id: 'c77a1b96-377d-4aa3-bc94-65d4415f95b5',
+      name: 'bg75',
+      projectId: '22e7044f-8414-435d-9c4a-2df42a65034b',
+      permissions: '2n',
+      position: 0,
+    },
+    {
+      id: 'c77a1b96-377d-4aa3-bc94-65d4415f9595',
+      name: 'bg78',
+      projectId: '554d9150-9a07-42c1-8207-1163f2f0addd',
+      permissions: '1n',
+      position: 0,
+    },
+    {
+      id: 'c77a1b96-377d-4aa3-bc94-65d4415f9599',
+      name: 'level up',
+      projectId: '94c860ab-023f-4e6e-8a4e-ff41456e249b',
+      permissions: '0n',
+      position: 0,
+    },
+  ],
   repository: [
     {
       id: '53891549-e628-4893-8bd3-92abcb71068a',
@@ -1948,6 +2037,26 @@ export const data = {
       isPrivate: true,
       createdAt: '2023-07-03T14:46:56.809Z',
       updatedAt: '2023-07-03T14:46:56.816Z',
+    },
+    {
+      id: '9d3e7791-ee67-4282-be95-613c491c2e75',
+      projectId: '554d9150-9a07-42c1-8207-1163f2f0addd',
+      internalRepoName: 'pissenlit',
+      externalRepoUrl: 'https://github.com/dnum-mi/pissenlit.git',
+      isInfra: false,
+      isPrivate: false,
+      createdAt: '2023-07-03T14:46:56.809Z',
+      updatedAt: '2023-07-03T14:46:56.816Z',
+    },
+    {
+      id: '9d3e7791-ee67-4282-be95-613c491c2e76',
+      projectId: '94c860ab-023f-4e6e-8a4e-ff41456e249b',
+      internalRepoName: 'warhammer',
+      externalRepoUrl: 'https://github.com/dnum-mi/warhammer.git',
+      isInfra: false,
+      isPrivate: false,
+      createdAt: '2023-07-03T16:46:56.809Z',
+      updatedAt: '2023-07-03T16:46:56.816Z',
     },
   ],
   systemSetting: [

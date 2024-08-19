@@ -117,7 +117,7 @@ export const projectPermsDetails: PermDetails<ProjectPermsKeys> = [{
   {
     key: 'MANAGE_ROLES',
     label: 'Gérer les rôles du projet',
-    hint: 'ATTENTION: Ce rôle inclut une élévation de privilège ! Permet de gérer les rôles du projet et les membres associés',
+    hint: 'ATTENTION : Ce rôle inclut une élévation de privilège ! Permet de gérer les rôles du projet et les membres associés',
   },
   {
     key: 'MANAGE_MEMBERS',
@@ -127,7 +127,7 @@ export const projectPermsDetails: PermDetails<ProjectPermsKeys> = [{
   {
     key: 'SEE_SECRETS',
     label: 'Afficher les secrets',
-    hint: 'Permet d\'afficher les secrets générer par les services',
+    hint: 'Permet d\'afficher les secrets générés par les services',
   },
   {
     key: 'REPLAY_HOOKS',

@@ -33,7 +33,7 @@ export const addMember = async (projectId: Project['id'], user: XOR<{ userId: st
     }
 
     const retrievedUser = hookReply.results.keycloak?.user
-    if (!retrievedUser) return new BadRequest400('Impossible de toruver l\'utilisateur en base ou sur keycloak')
+    if (!retrievedUser) return new BadRequest400('Utilisateur introuvable')
     const userValidated = UserSchema.pick({ email: true, firstName: true, lastName: true, id: true }).safeParse(retrievedUser)
     if (!userValidated.success) return new BadRequest400('L\'utilisateur trouvé ne remplit pas les conditions de vérification')
     userInDb = await logUser({ ...userValidated.data, groups: [] })

@@ -25,13 +25,13 @@ const isUpdated = computed(() => {
 const tabListName = 'Liste d’onglet'
 const tabTitles = props.isEveryone
   ? [
-    { title: 'Général', icon: 'ri-checkbox-circle-line' },
-    { title: 'Fermer', icon: 'ri-checkbox-circle-line' },
+    { title: 'Général', icon: 'ri-checkbox-circle-line', tabId: 'general' },
+    { title: 'Fermer', icon: 'ri-checkbox-circle-line', tabId: 'fermer' },
   ]
   : [
-    { title: 'Général', icon: 'ri-checkbox-circle-line' },
-    { title: 'Membres', icon: 'ri-checkbox-circle-line' },
-    { title: 'Fermer', icon: 'ri-checkbox-circle-line' },
+    { title: 'Général', icon: 'ri-checkbox-circle-line', tabId: 'general' },
+    { title: 'Membres', icon: 'ri-checkbox-circle-line', tabId: 'membres' },
+    { title: 'Fermer', icon: 'ri-checkbox-circle-line', tabId: 'fermer' },
   ]
 
 const initialSelectedIndex = 0
@@ -78,7 +78,7 @@ defineEmits<{
       <h6>Nom du rôle</h6>
       <DsfrInput
         v-model="role.name"
-        type="inputType"
+        data-testid="roleNameInput"
         label-visible
         class="mb-5"
         :disabled="role.isEveryone"
@@ -95,6 +95,7 @@ defineEmits<{
         </p>
         <DsfrCheckbox
           v-for="perm in scope.perms"
+          :id="`${perm.key}-cbx`"
           :key="perm.key"
           :model-value="PROJECT_PERMS[perm.key] & role.permissions"
           :label="perm?.label"
@@ -105,8 +106,8 @@ defineEmits<{
         />
       </div>
       <DsfrButton
-        type="buttonType"
-        :label="'Enregistrer'"
+        label="Enregistrer"
+        data-testid="saveBtn"
         secondary
         :disabled="!isUpdated"
         class="mr-5"
@@ -114,8 +115,8 @@ defineEmits<{
       />
       <DsfrButton
         v-if="!role.isEveryone"
-        type="buttonType"
-        :label="'Supprimer'"
+        data-testid="deleteBtn"
+        label="Supprimer"
         secondary
         @click="$emit('delete')"
       />
@@ -129,6 +130,7 @@ defineEmits<{
     >
       <DsfrCheckbox
         v-for="member in role.allMembers"
+        :id="`${member.userId}-cbx`"
         :key="member.email"
         :label="`${member.lastName} ${member.firstName}`"
         :hint="member.email"
@@ -142,7 +144,6 @@ defineEmits<{
           Vous n'avez pas d'utilisateur dans votre projet
         </div>
         <DsfrButton
-          type="buttonType"
           label="Gérer l'équipe"
           class="mt-5"
           @click="router.push({ name: 'Team' })"

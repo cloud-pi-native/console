@@ -33,6 +33,10 @@ export const listClusters = async (userId?: User['id']) => {
           {
             projects: { some: { members: { some: { userId } } } },
           },
+          // Sélectionne les clusters associés aux projets dont l'user est owner
+          {
+            projects: { some: { ownerId: userId } },
+          },
           // Sélectionne les clusters associés aux environnments appartenant à des projets dont l'user est membre
           {
             environments: { some: { project: { members: { some: { userId } } } } },

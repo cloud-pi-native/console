@@ -43,7 +43,7 @@ const headers = props.canManage
 const snackbarStore = useSnackbarStore()
 
 const isUserAlreadyInTeam = computed(() => {
-  return !!(newUserEmail.value && props.project.members.find(member => member.email === newUserEmail.value))
+  return !!(newUserEmail.value && (props.project.owner.email === newUserEmail.value || props.project.members.find(member => member.email === newUserEmail.value)))
 })
 
 const removeUserHint = (member: Member) => {
@@ -59,6 +59,11 @@ const usersToAdd = ref<User[]>([])
 const rows = ref<any[][]>([])
 const lettersNotMatching = ref('')
 const tableKey = ref(getRandomId('table'))
+
+const usersToSuggest = computed(() => usersToAdd.value.map(userToAdd => ({
+  value: userToAdd.email,
+  furtherInfo: userToAdd.firstName + ' ' + userToAdd.lastName,
+})))
 
 const getRolesNames = (ids?: string[]) => ids ? props.project.roles.filter(role => ids.includes(role.id)).map(role => role.name).join(' / ') || '-' : ''
 const getCopyIdComponent = (id: string) => ({
@@ -83,7 +88,12 @@ const createMemberRow = (member: Member) => props.canManage
           onClick: () => removeUserFromProject(member.userId),
         },
       }
-      : '-',
+      : {
+        cellAttrs: {
+          class: 'fr-fi-close-line !flex justify-center cursor-not-allowed',
+          title: removeUserHint(member),
+        },
+      },
   ]
   : [
     getCopyIdComponent(member.userId),
@@ -128,7 +138,7 @@ const addUserToProject = async () => {
   if (!newUserEmail.value) return
   if (isUserAlreadyInTeam.value) return snackbarStore.setMessage('L\'utilisateur semble déjà faire partie du projet')
 
-  emit('addMember', newUserEmail.value)
+  emit('addMember', newUserEmail.value.trim())
 
   newUserEmail.value = ''
   usersToAdd.value = []
@@ -146,23 +156,18 @@ onMounted(() => {
 watch(() => props.project.members, setRows)
 
 const isTransferingProject = ref(false)
-const nextOwnerId = ref('')
+const nextOwnerId = ref<string | undefined>(undefined)
 
-const transferOwnership = (ownerId: string) => {
-  if (props.project.members.find(member => member.userId === ownerId)) {
-    emit('transferOwnership', ownerId)
+const transferOwnership = () => {
+  if (nextOwnerId.value && props.project.members.find(member => member.userId === nextOwnerId.value)) {
+    emit('transferOwnership', nextOwnerId.value)
   }
 }
-const transferSelectOptions = [
-  {
-    text: 'Veuillez choisir un utilisateur',
-    value: '',
-  },
-  ...props.project.members.map(member => ({
-    text: `${member.lastName} ${member.firstName} (${member.email})`,
-    value: member.userId,
-  })),
-]
+const transferSelectOptions = props.project.members.map(member => ({
+  text: `${member.lastName} ${member.firstName} (${member.email})`,
+  value: member.userId,
+}))
+
 </script>
 
 <template>
@@ -191,8 +196,8 @@ const transferSelectOptions = [
           label-visible
           hint="Nom, prénom ou adresse mail de l'utilisateur à rechercher"
           placeholder="prenom.nom@interieur.gouv.fr"
-          :suggestions="usersToAdd"
-          @select-suggestion="(value: User) => newUserEmail = value.email"
+          :suggestions="usersToSuggest"
+          @select-suggestion="(value: string) => newUserEmail = value"
           @update:model-value="(value: string) => retrieveUsersToAdd(value)"
         />
         <DsfrAlert
@@ -223,33 +228,52 @@ const transferSelectOptions = [
           data-testid="showTransferProjectBtn"
           :label="`Transférer le projet`"
           primary
-          icon="ri-delete-bin-7-line"
+          icon="ri-exchange-line"
           @click="isTransferingProject = true"
         />
         <div
           v-if="isTransferingProject"
         >
-          <DsfrSelect
-            v-model="nextOwnerId"
-            label="Choisir le futur propriétaire du projet"
-            :options="transferSelectOptions"
+          <DsfrAlert
+            v-if="!transferSelectOptions.length"
+            description="Pour pouvoir transférer la propriété du projet, vous devez ajouter au moins un membre à l'équipe."
+            small
+            type="warning"
+            class="fr-mb-4w w-40em"
           />
           <div
-            class="flex justify-between"
+            v-else
           >
-            <DsfrButton
-              data-testid="transferProjectBtn"
-              :label="`Transférer le projet`"
-              :disabled="!nextOwnerId"
-              secondary
-              icon="ri-delete-bin-7-line"
-              @click="transferOwnership(nextOwnerId)"
+            <DsfrAlert
+              description="Attention, en transférant la propriété du projet vous perdrez vos droits sur le projet  et deviendrez un membre de l'équipe."
+              small
+              type="warning"
+              class="fr-mb-4w w-40em"
             />
-            <DsfrButton
-              label="Annuler"
-              primary
-              @click="isTransferingProject = false"
+            <DsfrSelect
+              v-model="nextOwnerId"
+              label="Choisir le futur propriétaire du projet"
+              select-id="nextOwnerSelect"
+              default-unselected-text="Veuillez choisir un utilisateur"
+              :options="transferSelectOptions"
             />
+            <div
+              class="flex justify-between"
+            >
+              <DsfrButton
+                data-testid="transferProjectBtn"
+                :label="`Transférer le projet`"
+                :disabled="!nextOwnerId"
+                secondary
+                icon="ri-exchange-line"
+                @click="transferOwnership()"
+              />
+              <DsfrButton
+                label="Annuler"
+                primary
+                @click="isTransferingProject = false"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -260,4 +284,3 @@ const transferSelectOptions = [
     />
   </div>
 </template>
-@/stores/project-member.js

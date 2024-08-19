@@ -3,8 +3,8 @@ import { onBeforeMount, ref } from 'vue'
 import { type AllUsers, formatDate, sortArrByObjKeyAsc, type Role } from '@cpn-console/shared'
 import { useProjectMemberStore } from '@/stores/project-member.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { copyContent } from '@/utils/func.js'
 import { useAdminRoleStore } from '@/stores/admin-role.js'
+import { copyContent } from '@/utils/func.js'
 
 const adminRoleStore = useAdminRoleStore()
 const projectMemberStore = useProjectMemberStore()
@@ -40,7 +40,11 @@ const userRows = computed(() => {
           firstName,
           lastName,
           email,
-          adminRoleStore.roles.filter(({ id }) => adminRoleIds.includes(id)).map(({ name }) => name).join('\n') || '-',
+          {
+            component: 'p',
+            text: adminRoleStore.roles.filter(({ id }) => adminRoleIds.includes(id)).map(({ name }) => name).join('\n') || '-',
+            'data-testid': `${id}-roles`,
+          },
           formatDate(createdAt),
           formatDate(updatedAt),
         ],
@@ -105,4 +109,3 @@ onBeforeMount(async () => {
     />
   </div>
 </template>
-@/stores/project-member.js

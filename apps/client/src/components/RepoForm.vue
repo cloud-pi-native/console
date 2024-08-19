@@ -14,7 +14,7 @@ const props = withDefaults(defineProps<{
 })
 
 const localRepo = ref(props.repo)
-const updatedValues = ref<Record<keyof typeof localRepo.value, boolean>>(instanciateSchema(RepoSchema, false))
+const updatedValues = ref<Record<keyof Omit<typeof localRepo.value, 'id' | 'projectId'>, boolean>>(instanciateSchema(RepoSchema, false))
 const repoToDelete = ref('')
 const isDeletingRepo = ref(false)
 
@@ -29,7 +29,7 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
 })
 const isRepoValid = computed(() => !errorSchema.value)
 
-const updateRepo = (key: keyof typeof localRepo.value, value: unknown) => {
+const updateRepo = <K extends keyof Omit<typeof localRepo.value, 'id' | 'projectId'>>(key: K, value: typeof localRepo.value[K]) => {
   localRepo.value[key] = value
   updatedValues.value[key] = true
 

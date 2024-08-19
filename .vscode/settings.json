@@ -7,12 +7,10 @@
   "editor.wordWrap": "on",
   "editor.bracketPairColorization.enabled": true,
   "editor.tabSize": 2,
-  "editor.minimap.enabled": false,
   "search.exclude": {
     "**/.git": true,
     "**/.nuxt": true,
     "**/.pnpm": true,
-    "**/.vscode": true,
     "**/.yarn": true,
     "**/.turbo": true,
     "**/dist/**": true,

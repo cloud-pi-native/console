@@ -29,12 +29,13 @@ const props = withDefaults(defineProps<{
   projectClustersIds: CleanedCluster['id'][]
   allClusters: CleanedCluster[]
 }>(), {
+  // @ts-expect-error TS2322
   environment: () => ({
     id: '',
     name: '',
-    stageId: '',
-    quotaId: '',
-    clusterId: '',
+    stageId: undefined,
+    quotaId: undefined,
+    clusterId: undefined,
   }),
   isEditable: true,
   canManage: false,
@@ -67,10 +68,10 @@ const chosenZoneDescription = computed(() => zoneStore.zonesById[zoneId.value ??
 
 const errorSchema = computed<SharedZodError | undefined>(() => {
   if (localEnvironment.value?.id) {
-    const schemaValidation = EnvironmentSchema.pick({ id: true, projectId: true, quotaId: true }).safeParse(localEnvironment.value)
+    const schemaValidation = EnvironmentSchema.pick({ id: true, quotaId: true }).safeParse(localEnvironment.value)
     return schemaValidation.success ? undefined : schemaValidation.error
   } else {
-    const schemaValidation = EnvironmentSchema.pick({ clusterId: true, projectId: true, name: true, quotaId: true, stageId: true }).safeParse(localEnvironment.value)
+    const schemaValidation = EnvironmentSchema.pick({ clusterId: true, name: true, quotaId: true, stageId: true }).safeParse(localEnvironment.value)
     return schemaValidation.success ? undefined : schemaValidation.error
   }
 })
@@ -116,7 +117,8 @@ const setEnvironmentOptions = () => {
 }
 
 const resetCluster = () => {
-  localEnvironment.value.clusterId = props.allClusters[0]?.id
+  // @ts-expect-error TS2322
+  localEnvironment.value.clusterId = undefined
 }
 
 const addEnvironment = () => {
@@ -300,7 +302,7 @@ watch(localEnvironment.value, () => {
           />
           <DsfrAlert
             class="<md:mt-2"
-            :description="props.isProjectLocked ? 'Impossible de supprimer un environnement lorsque le projet est verrouillé.' : 'La suppression d\'un environnement est irréversible.'"
+            description="La suppression d'un environnement est irréversible."
             type="warning"
             small
           />

@@ -161,16 +161,17 @@ export const checkEnvironmentInput = async (input: checkEnvironmentInput): Promi
       })
       : undefined,
   ])
-  if (!quota) return new BadRequest400('Invalid Quota')
+  const quotaError = new BadRequest400('Quota invalide.')
+  if (!quota) return quotaError
 
   // update
-  if (input.environmentId && (quota.id !== environment?.quotaId && quota.isPrivate && !input.allowPrivateQuota)) return new BadRequest400('Invalid Quota')
+  if (input.environmentId && (quota.id !== environment?.quotaId && quota.isPrivate && !input.allowPrivateQuota)) return quotaError
   if (input.environmentId && quota.id) return
 
   // create
-  if (quota.isPrivate && !input.allowPrivateQuota) return new BadRequest400('Invalid Quota')
-  if (sameNameEnvironment) return new BadRequest400('Environment name already taken')
-  if (!cluster) return new BadRequest400('Invalid Cluster')
-  if (!stage) return new BadRequest400('Invalid Stage')
-  if (!input.allowInvalidQuotaStage && !quota.stages.find(stage => stage.id === input.stageId)) return new BadRequest400('Invalid quota stage association')
+  if (quota.isPrivate && !input.allowPrivateQuota) return quotaError
+  if (sameNameEnvironment) return new BadRequest400('Ce nom d\'environnement est déjà pris.')
+  if (!cluster) return new BadRequest400('Cluster invalide.')
+  if (!stage) return new BadRequest400('Type d\'environnment invalide.')
+  if (!input.allowInvalidQuotaStage && !quota.stages.find(stage => stage.id === input.stageId)) return new BadRequest400('Ce quota n\'est pas disponible pour le type d\'environnement choisi.')
 }

@@ -18,6 +18,7 @@ describe('Administration organizations', () => {
   beforeEach(() => {
     cy.intercept('GET', 'api/v1/organizations').as('getAllOrganizations')
     cy.intercept('GET', 'api/v1/projects?filter=member&statusNotIn=archived').as('listProjects')
+    cy.intercept('POST', 'api/v1/organizations').as('createOrganization')
 
     cy.kcLogin('tcolin')
     cy.visit('/admin/organizations')
@@ -72,9 +73,11 @@ describe('Administration organizations', () => {
     })
 
     cy.visit('/projects/create-project')
-      .get('select#organizationId-select')
-      .select(newOrg.label)
-      .should('have.value', newOrg.name)
+    cy.wait('@getAllOrganizations').its('response').then((response) => {
+      cy.get('select#organizationId-select')
+        .select((response.body.find(org => org.name === newOrg.name)).id)
+        .should('have.value', (response.body.find(org => org.label === newOrg.label)).id)
+    })
   })
 
   it('Should update an organization loggedIn as admin', () => {
@@ -113,6 +116,7 @@ describe('Administration organizations', () => {
     cy.getByDataTestid('tableAdministrationOrganizations').within(() => {
       cy.getByDataTestid(`${newOrg.name}-active-cbx`)
         .should('be.checked')
+      cy.getByDataTestid(`${newOrg.name}-active-cbx`)
         .uncheck()
     })
     cy.getByDataTestid('tableAdministrationOrganizations')
@@ -133,7 +137,7 @@ describe('Administration organizations', () => {
     })
 
     cy.visit('/projects/create-project')
-      .get(`select#organizationId-select > option[value="${organizations[0].name}"]`)
+      .get(`select#organizationId-select > option[value="${organizations[0].id}"]`)
       .should('not.exist')
       .get(`select#organizationId-select > option[value="${newOrg.name}"]`)
       .should('not.exist')
@@ -214,10 +218,12 @@ describe('Administration organizations', () => {
   it('Should synchronize organizations from plugins', () => {
     cy.intercept('GET', '/api/v1/organizations/sync').as('syncOrganizations')
 
+    cy.get('legend')
+      .should('contain', 'Synchroniser les organisations')
     cy.getByDataTestid('syncOrgsBtn')
       .click()
       .wait('@syncOrganizations')
 
-    cy.getByDataTestid('snackbar').should('contain', 'Aucune organisation à synchroniser')
+    cy.getByDataTestid('snackbar').should('contain', 'Not Found')
   })
 })

@@ -87,30 +87,43 @@ export const createProject = async (dataDto: CreateProjectBody, { groups, ...req
   }
 }
 
-export const updateProject = async ({ description, ownerId, everyonePerms }: UpdateProjectBody, projectId: Project['id'], requestor: UserDetails, requestId: string) => {
+export const updateProject = async ({ description, ownerId, everyonePerms, locked }: UpdateProjectBody, projectId: Project['id'], requestor: UserDetails, requestId: string) => {
+  if (typeof locked === 'string') {
+    if (locked === 'true') {
+      locked = true
+    } else if (locked === 'false') {
+      locked = false
+    } else {
+      locked = undefined
+    }
+  }
   // Actions
   const project = await prisma.project.findUniqueOrThrow({
     where: { id: projectId },
     include: { members: true },
   })
 
-  if (ownerId) {
-    if (!project.members.find(member => member.userId === ownerId)) return new BadRequest400('Le nouveau propriétaire doit faire partie des membres actuels du projet')
+  if (ownerId && ownerId !== project.ownerId) {
+    if (!project.members.find(member => member.userId === ownerId)) {
+      return new BadRequest400('Le nouveau propriétaire doit faire partie des membres actuels du projet')
+    }
+    if (!project.members.find(member => member.userId === project.ownerId)) {
+      await prisma.projectMembers.create({
+        data: { userId: project.ownerId, projectId },
+      })
+    }
     await prisma.$transaction([
-      prisma.projectMembers.upsert({
-        create: { userId: requestor.id, projectId },
-        update: { userId: requestor.id, projectId },
-        where: { projectId_userId: { projectId, userId: project.ownerId } },
-      }),
       prisma.projectMembers.delete({
         where: { projectId_userId: { userId: ownerId, projectId } },
       }),
       prisma.project.update({ where: { id: projectId }, data: { ownerId } }),
     ])
   }
-  if (description || everyonePerms) {
+
+  if (description || everyonePerms || typeof locked !== 'undefined') {
     await updateProjectQuery(projectId, {
       description,
+      locked,
       ...everyonePerms && { everyonePerms: BigInt(everyonePerms) },
     })
   }

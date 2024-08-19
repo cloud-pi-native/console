@@ -2,8 +2,10 @@
 import { AdminRole, type Role } from '@cpn-console/shared'
 import AdminRoleForm from '@/components/AdminRoleForm.vue'
 import { useAdminRoleStore } from '@/stores/admin-role.js'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const adminRoleStore = useAdminRoleStore()
+const snackbarStore = useSnackbarStore()
 
 const selectedId = ref<string>()
 type RoleItem = Omit<AdminRole, 'permissions'> & { permissions: bigint, memberCounts?: number }
@@ -18,6 +20,7 @@ const selectedRole = computed(() => roleList.value.find(({ id }) => id === selec
 
 const addRole = async () => {
   await adminRoleStore.createRole()
+  snackbarStore.setMessage('Rôle ajouté', 'success')
 
   selectedId.value = adminRoleStore.roles[adminRoleStore.roles.length - 1].id
 }
@@ -25,6 +28,7 @@ const addRole = async () => {
 const deleteRole = async (roleId: Role['id']) => {
   await adminRoleStore.deleteRole(roleId)
   await adminRoleStore.listRoles()
+  snackbarStore.setMessage('Rôle supprimé', 'success')
   selectedId.value = undefined
 }
 
@@ -38,12 +42,15 @@ const saveRole = async (role: Pick<AdminRole, 'name' | 'oidcGroup' | 'permission
       oidcGroup: role.oidcGroup,
     }],
   )
+  snackbarStore.setMessage('Rôle mis à jour', 'success')
 }
 
 const cancel = () => selectedId.value = undefined
 
 onBeforeMount(async () => {
-  await adminRoleStore.listRoles()
+  if (!adminRoleStore.roles.length) {
+    await adminRoleStore.listRoles()
+  }
 })
 
 </script>
@@ -60,8 +67,8 @@ onBeforeMount(async () => {
         class="flex flex-col"
       >
         <DsfrButton
-          type="buttonType"
           label="Ajouter un rôle"
+          data-testid="addRoleBtn"
           :class="selectedId ? 'w-11/12': ''"
           secondary
           @click="addRole()"
@@ -69,15 +76,11 @@ onBeforeMount(async () => {
         <button
           v-for="role in roleList"
           :key="role.id"
-          :class="`text-align-left cursor-pointer mt-3 grid grid-flow-col fr-btn ${selectedId ? 'grid-cols-1': 'grid-cols-2'} ${selectedId === role.id ? 'fr-btn--primary w-full': 'fr-btn--tertiary w-11/12'}`"
+          :data-testid="`${role.id}-tab`"
+          :class="`text-align-left cursor-pointer mt-3 grid grid-flow-col fr-btn text-wrap truncate ${selectedId ? 'grid-cols-1': 'grid-cols-2'} ${selectedId === role.id ? 'fr-btn--primary w-full': 'fr-btn--tertiary w-11/12'}`"
           @click="selectedId = selectedId === role.id ? undefined : role.id"
         >
-          <div
-            class="text-wrap truncate "
-            tertiary
-          >
-            {{ role.name }}
-          </div>
+          {{ role.name }}
           <template
             v-if="!selectedId"
           >

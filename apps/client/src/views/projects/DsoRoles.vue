@@ -1,10 +1,12 @@
 <script lang="ts" setup>
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectMemberStore } from '@/stores/project-member.js'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 import { Member, RoleBigint, type Role } from '@cpn-console/shared'
 
 const projectMemberStore = useProjectMemberStore()
 const projectStore = useProjectStore()
+const snackbarStore = useSnackbarStore()
 const selectedId = ref<string>()
 
 type RoleItem = Omit<Role, 'permissions'> & { permissions: bigint, memberCounts: number, isEveryone: boolean }
@@ -36,6 +38,7 @@ const addRole = async () => {
     name: 'Nouveau rôle',
     permissions: 0n.toString(),
   })
+  snackbarStore.setMessage('Rôle ajouté', 'success')
   selectedId.value = projectStore.selectedProject.roles[projectStore.selectedProject.roles.length - 1].id
 }
 
@@ -43,6 +46,7 @@ const deleteRole = async (roleId: Role['id']) => {
   if (!projectStore.selectedProject) return
   await projectStore.deleteRole(projectStore.selectedProject.id, roleId)
   projectStore.selectedProject.roles = projectStore.selectedProject.roles.filter(role => role.id !== roleId)
+  snackbarStore.setMessage('Rôle supprimé', 'success')
   selectedId.value = undefined
 }
 
@@ -56,6 +60,7 @@ const updateMember = async (checked: boolean, userId: Member['userId']) => {
     : matchingMember.roleIds.filter(id => id !== selectedRole.value?.id)
 
   projectStore.selectedProject.members = await projectMemberStore.patchMembers(projectStore.selectedProject.id, [{ userId, roles: newRoleList }])
+  snackbarStore.setMessage('Rôle mis à jour', 'success')
 }
 
 const saveRole = async (role: Omit<RoleBigint, 'position'>) => {
@@ -95,8 +100,8 @@ const cancel = () => selectedId.value = undefined
           class="flex flex-col"
         >
           <DsfrButton
-            type="buttonType"
             label="Ajouter un rôle"
+            data-testid="addRoleBtn"
             :class="selectedId ? 'w-11/12': ''"
             secondary
             @click="addRole()"
@@ -104,22 +109,18 @@ const cancel = () => selectedId.value = undefined
           <button
             v-for="role in roleList"
             :key="role.id"
-            :class="`text-align-left cursor-pointer mt-3 grid grid-flow-col fr-btn ${selectedId ? 'grid-cols-1': 'grid-cols-2'} ${selectedId === role.id ? 'fr-btn--primary w-full': 'fr-btn--tertiary w-11/12'}`"
+            :data-testid="`${role.id}-tab`"
+            :class="`text-align-left cursor-pointer mt-3 grid grid-flow-col fr-btn text-wrap truncate ${selectedId ? 'grid-cols-1': 'grid-cols-2'} ${selectedId === role.id ? 'fr-btn--primary w-full': 'fr-btn--tertiary w-11/12'}`"
             @click="selectedId = selectedId === role.id ? undefined : role.id"
           >
-            <div
-              class="text-wrap truncate "
-              tertiary
-            >
-              {{ role.name }}
-            </div>
+            {{ role.name }}
             <div
               v-if="!selectedId"
               class="text-wrap truncate text-right grow-0"
             >
               <span>{{ role.memberCounts }}</span>
               <v-icon
-                :class="`ml-4`"
+                class="ml-4"
                 name="ri-team-line"
               />
             </div>
@@ -147,4 +148,3 @@ const cancel = () => selectedId.value = undefined
     v-else
   />
 </template>
-@/stores/project-member.js

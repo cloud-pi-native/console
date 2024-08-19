@@ -1,5 +1,6 @@
 import { statusDict, formatDate, sortArrByObjKeyAsc, type Organization, type Project, ProjectV2 } from '@cpn-console/shared'
 import { getModel, getModelById } from '../../support/func.js'
+import { truncateDescription } from '@/utils/func.js'
 
 const checkTableRowsLength = (length: number) => {
   if (!length) cy.get('tr:last-child>td:first-child').should('have.text', 'Aucun projet trouvé')
@@ -15,7 +16,6 @@ describe('Administration projects', () => {
     return sortArrByObjKeyAsc(body, 'name')
       ?.map(project => ({
         ...project,
-        owner: project.roles?.find(role => role.role === 'owner')?.user,
         organization: organizations?.find(organization => organization.id === project.organizationId)?.label,
       }),
       )
@@ -27,7 +27,7 @@ describe('Administration projects', () => {
     cy.kcLogin((admin.firstName.slice(0, 1) + admin.lastName).toLowerCase())
     cy.visit('/admin/projects')
     cy.url().should('contain', '/admin/projects')
-    cy.wait('@getAllProjects', { timeout: 10000 }).its('response').then((response) => {
+    cy.wait('@getAllProjects', { timeout: 10_000 }).its('response').then((response) => {
       projects = mapProjects(response?.body)
     })
   })
@@ -40,16 +40,16 @@ describe('Administration projects', () => {
           cy.get('td:nth-of-type(1)').should('contain', project.organization)
           cy.get('td:nth-of-type(2)').should('contain', project.name)
           cy.getByDataTestid('description').invoke('text').then((text) => {
-            const maxDescriptionlength = 60
-            if (text?.length > maxDescriptionlength) {
-              const lastSpaceIndex = project.description.slice(0, maxDescriptionlength).lastIndexOf(' ')
-              const truncatedDescription = project.description.slice(0, lastSpaceIndex > 0 ? lastSpaceIndex : maxDescriptionlength)
+            const maxDescriptionLength = 60
+            if (text?.length > maxDescriptionLength) {
+              const lastSpaceIndex = project.description.slice(0, maxDescriptionLength).lastIndexOf(' ')
+              const truncatedDescription = project.description.slice(0, lastSpaceIndex > 0 ? lastSpaceIndex : maxDescriptionLength)
               expect(text).to.equal(`${truncatedDescription} ...`)
               return
             }
-            expect(text).to.equal(project.description)
+            expect(text).to.equal(truncateDescription(text).innerHTML)
           })
-          cy.get('td:nth-of-type(4)').should('contain', project.members.find(m => m.role === 'owner').email)
+          cy.get('td:nth-of-type(4)').should('contain', project.owner.email)
           cy.get('td:nth-of-type(5) svg title').should('contain', `Le projet ${project.name} est ${statusDict.status[project.status].wording}`)
           cy.get('td:nth-of-type(6) svg title').should('contain', `Le projet ${project.name} est ${statusDict.locked[String(!!project.locked)].wording}`)
           cy.get('td:nth-of-type(7)').should('contain', formatDate(project.createdAt))
@@ -230,7 +230,7 @@ describe('Administration projects', () => {
 
     cy.visit('/admin/projects')
     cy.url().should('contain', '/admin/projects')
-    cy.wait('@getAllProjects', { timeout: 10000 }).its('response').then((pResponse) => {
+    cy.wait('@getAllProjects', { timeout: 10_000 }).its('response').then((pResponse) => {
       projects = mapProjects(pResponse.body)
     })
 
@@ -239,7 +239,7 @@ describe('Administration projects', () => {
         .click()
     })
 
-    cy.wait('@getProjectEnvironments', { timeout: 10000 }).its('response').then((response) => {
+    cy.wait('@getProjectEnvironments', { timeout: 10_000 }).its('response').then((response) => {
       project.environments = response.body
       initialQuota = project.environments[0].quotaId
     })
@@ -275,7 +275,7 @@ describe('Administration projects', () => {
 
       cy.visit('/admin/projects')
       cy.url().should('contain', '/admin/projects')
-      cy.wait('@getAllProjects', { timeout: 10000 }).its('response').then((pResponse) => {
+      cy.wait('@getAllProjects', { timeout: 10_000 }).its('response').then((pResponse) => {
         projects = mapProjects(pResponse.body)
       })
 
@@ -315,12 +315,12 @@ describe('Administration projects', () => {
   })
 
   it('Should remove and add a user from a project, loggedIn as admin', () => {
-    const project = projects.find(project => project.name === 'betaapp')
-    const member = project.members.find(role => role.role !== 'owner')
+    const project = projects.find(project => project.name === 'betaapp') as ProjectV2
+    const member = project.members[0]
 
     cy.intercept('GET', 'api/v1/projects*').as('getAllProjects')
-    cy.intercept('DELETE', `api/v1/projects/${project.id}/users/${member.userId}`).as('removeUser')
-    cy.intercept('POST', `api/v1/projects/${project.id}/users`).as('addUser')
+    cy.intercept('DELETE', `api/v1/projects/${project.id}/members/${member.userId}`).as('removeUser')
+    cy.intercept('POST', `api/v1/projects/${project.id}/members`).as('addUser')
 
     cy.getByDataTestid('tableAdministrationProjects').within(() => {
       cy.get('tr').contains(project.name)
@@ -349,16 +349,15 @@ describe('Administration projects', () => {
   })
 
   it('Should transfert owner role to a team member, loggedIn as admin', () => {
-    const project = projects.find(project => project.name === 'betaapp')
-    const owner = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
-    const userToTransfer = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6569')
+    const project = projects.find(project => project.name === 'betaapp') as ProjectV2
+    const owner = project.owner
+    const userToTransfer = project.members[0]
 
     cy.intercept('GET', 'api/v1/projects*').as('getAllProjects')
     cy.intercept('GET', `api/v1/project/${project.id}/services?permissionTarget=admin`).as('getServices')
     cy.intercept('GET', 'api/v1/repositories?projectId=*').as('listRepositories')
     cy.intercept('GET', 'api/v1/environments?projectId=*').as('listEnvironments')
-    cy.intercept(`/api/v1/projects/${project.id}/users/${userToTransfer.id}`).as('transferOwnership1')
-    cy.intercept(`/api/v1/projects/${project.id}/users/${owner.id}`).as('transferOwnership2')
+    cy.intercept('PUT', `/api/v1/projects/${project.id}`).as('transferOwnership')
 
     cy.getByDataTestid('tableAdministrationProjects').within(() => {
       cy.get('tr').contains(project.name)
@@ -372,57 +371,46 @@ describe('Administration projects', () => {
     cy.get('.fr-callout__title')
       .should('contain', project.name)
 
-    cy.getByDataTestid('confirmTransferingRoleZone')
+    cy.getByDataTestid('showTransferProjectBtn')
+      .should('be.enabled')
+    cy.getByDataTestid('transferProjectBtn')
       .should('not.exist')
+    cy.getByDataTestid('teamTable').get('tr').contains('Propriétaire').should('have.length', 1)
+    cy.getByDataTestid('showTransferProjectBtn').click()
+    cy.getByDataTestid('transferProjectBtn')
+      .should('exist')
+      .should('be.disabled')
+    cy.get('#nextOwnerSelect').select(userToTransfer.userId)
+    cy.getByDataTestid('transferProjectBtn')
+      .should('be.enabled')
+      .click()
+    cy.wait('@transferOwnership')
+      .its('response.statusCode')
+      .should('match', /^20\d$/)
 
-    cy.getByDataTestid('ownerTag')
+    cy.getByDataTestid('teamTable').get('tr').contains('Propriétaire')
       .should('have.length', 1)
+      .parent()
+      .parent()
+      .should('contain', userToTransfer.email)
 
-    cy.get(`select#roleSelect-${userToTransfer.id}`)
-      .should('have.value', 'user')
-      .and('be.enabled')
+    cy.getByDataTestid('showTransferProjectBtn').click()
+    cy.getByDataTestid('transferProjectBtn')
+      .should('exist')
+      .should('be.disabled')
+    cy.get('#nextOwnerSelect').select(owner.id)
+    cy.getByDataTestid('transferProjectBtn')
+      .should('be.enabled')
+      .click()
+    cy.wait('@transferOwnership')
+      .its('response.statusCode')
+      .should('match', /^20\d$/)
 
-    // TODO : cy.select failed because this element is disabled - pourtant il est bien enabled (cf lignes ci-dessus)
-    // cy.get(`select#roleSelect-${userToTransfer.id}`)
-    //   .select('owner')
-
-    // cy.getByDataTestid('confirmTransferingRoleZone')
-    //   .should('exist')
-    // cy.getByDataTestid('confirmUpdateBtn')
-    //   .click()
-
-    // cy.wait('@transferOwnership1')
-    //   .its('response.statusCode')
-    //   .should('match', /^20\d$/)
-
-    // cy.getByDataTestid('ownerTag')
-    //   .should('have.length', 1)
-
-    // cy.getByDataTestid('confirmTransferingRoleZone')
-    //   .should('not.exist')
-
-    // cy.get(`select#roleSelect-${owner.id}`)
-    //   .should('have.value', 'user')
-    //   .and('be.enabled')
-
-    // cy.get(`select#roleSelect-${userToTransfer.id}`)
-    //   .select('owner')
-
-    // cy.getByDataTestid('confirmTransferingRoleZone')
-    //   .should('exist')
-    // cy.getByDataTestid('confirmUpdateBtn')
-    //   .click()
-
-    // cy.wait('@transferOwnership2')
-    //   .its('response.statusCode')
-    //   .should('match', /^20\d$/)
-
-    // cy.getByDataTestid('ownerTag')
-    //   .should('have.length', 1)
-
-    // cy.get(`select#roleSelect-${userToTransfer.id}`)
-    //   .should('have.value', 'user')
-    //   .and('be.enabled')
+    cy.getByDataTestid('teamTable').get('tr').contains('Propriétaire')
+      .should('have.length', 1)
+      .parent()
+      .parent()
+      .should('contain', owner.email)
   })
 
   it('Should access project services, loggedIn as admin', () => {

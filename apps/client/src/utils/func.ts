@@ -19,3 +19,23 @@ export const toCodeComponent = (value: string) => ({
 })
 
 export const bts = (v: boolean) => v ? 'true' : 'false'
+
+const maxDescriptionLength = 60
+export const truncateDescription = (description: string) => {
+  let innerHTML: string
+
+  if (description.length <= maxDescriptionLength) innerHTML = description
+  else {
+    const lastSpaceIndex = description.slice(0, maxDescriptionLength).lastIndexOf(' ')
+    innerHTML = description.slice(0, lastSpaceIndex > 0 ? lastSpaceIndex : maxDescriptionLength) + ' ...'
+  }
+
+  return {
+    id: 'description',
+    'data-testid': 'description',
+    component: 'span',
+    open: false,
+    title: description,
+    innerHTML,
+  }
+}

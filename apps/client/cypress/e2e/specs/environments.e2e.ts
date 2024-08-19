@@ -87,7 +87,7 @@ describe('Manage project environments', () => {
 
     cy.wait('@postEnvironment').its('response.statusCode').should('not.match', /^20\d$/)
     cy.getByDataTestid('snackbar').within(() => {
-      cy.get('p').should('contain', 'Un environnement avec le même nom et déployé sur le même cluster existe déjà pour ce projet.')
+      cy.get('p').should('contain', 'Ce nom d\'environnement est déjà pris.')
     })
   })
 
@@ -279,6 +279,6 @@ describe('Manage project environments', () => {
     cy.wait('@getClusters')
     cy.wait('@listStages')
 
-    cy.getByDataTestid('showDeleteEnvironmentBtn').should('be.disabled')
+    cy.getByDataTestid('showDeleteEnvironmentBtn').should('not.exist')
   })
 })

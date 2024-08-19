@@ -10,7 +10,7 @@ describe('Administration logs', () => {
     cy.kcLogin('tcolin')
     cy.visit('/admin/logs')
     cy.url().should('contain', '/admin/logs')
-    cy.wait('@getAllLogs', { timeout: 10000 }).its('response').then((response) => {
+    cy.wait('@getAllLogs', { timeout: 10_000 }).its('response').then((response) => {
       logs = response?.body?.logs
       logCount = response?.body?.total
     })
@@ -67,7 +67,10 @@ describe('Administration logs', () => {
   })
 
   it('Should display compact logs list, loggedIn as admin', () => {
-    cy.getByDataTestid('showLogsBtn').click()
+    cy.get('h1')
+      .should('contain', ' Journaux des services associés à la chaîne DSO ')
+    cy.getByDataTestid('showLogsBtn')
+      .click()
     logs.forEach((log) => {
       cy.getByDataTestid(`${log.id}-json`).should('not.exist')
     })
