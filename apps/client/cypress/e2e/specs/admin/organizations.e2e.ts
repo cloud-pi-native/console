@@ -133,7 +133,7 @@ describe('Administration organizations', () => {
     })
 
     cy.visit('/projects/create-project')
-      .get(`select#organizationId-select > option[value="${organizations[0].name}"]`)
+      .get(`select#organizationId-select > option[value="${organizations[0].id}"]`)
       .should('not.exist')
       .get(`select#organizationId-select > option[value="${newOrg.name}"]`)
       .should('not.exist')

@@ -23,7 +23,7 @@ describe('Test Cluster business logic', () => {
       prisma.cluster.findMany.mockResolvedValue([])
       await listClusters(userId)
       expect(prisma.cluster.findMany).toHaveBeenCalledTimes(1)
-      expect(prisma.cluster.findMany).toHaveBeenCalledWith({ select: expect.any(Object), where: { OR: [{ privacy: 'public' }, expect.any(Object), expect.any(Object)] } })
+      expect(prisma.cluster.findMany).toHaveBeenCalledWith({ select: expect.any(Object), where: { OR: [{ privacy: 'public' }, expect.any(Object), expect.any(Object), expect.any(Object)] } })
     })
     it('Should not filter', async () => {
       const dbStages = [{ id: faker.string.uuid() }]
