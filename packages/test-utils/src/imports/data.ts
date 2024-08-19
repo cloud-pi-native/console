@@ -1700,6 +1700,18 @@ export const data = {
       everyonePerms: '896n',
       ownerId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
     },
+    {
+      id: '554d9150-9a07-42c1-8207-1163f2f0addd',
+      name: 'pissenlit',
+      organizationId: 'b644c07f-193c-47ed-ae10-b88a8f63d20b',
+      description: '',
+      status: 'created',
+      locked: false,
+      createdAt: '2023-07-03T14:46:56.799Z',
+      updatedAt: '2023-07-03T14:46:56.806Z',
+      everyonePerms: '896n',
+      ownerId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+    },
   ],
   quota: [
     {
@@ -1870,6 +1882,18 @@ export const data = {
         'c77a1b96-377d-4aa3-bc94-65d4415f95b5',
       ],
     },
+    {
+      userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6567',
+      projectId: '554d9150-9a07-42c1-8207-1163f2f0addd',
+      roleIds: [
+        'c77a1b96-377d-4aa3-bc94-65d4415f9595',
+      ],
+    },
+    {
+      userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6567',
+      projectId: '83833faf-f654-40dd-bcd5-cf2e944fc702',
+      roleIds: [],
+    },
   ],
   projectPlugin: [],
   projectRole: [
@@ -1878,6 +1902,13 @@ export const data = {
       name: 'bg75',
       projectId: '22e7044f-8414-435d-9c4a-2df42a65034b',
       permissions: '2n',
+      position: 0,
+    },
+    {
+      id: 'c77a1b96-377d-4aa3-bc94-65d4415f9595',
+      name: 'bg78',
+      projectId: '554d9150-9a07-42c1-8207-1163f2f0addd',
+      permissions: '1n',
       position: 0,
     },
   ],
@@ -1956,6 +1987,16 @@ export const data = {
       externalUserName: 'this-is-a-test',
       isInfra: false,
       isPrivate: true,
+      createdAt: '2023-07-03T14:46:56.809Z',
+      updatedAt: '2023-07-03T14:46:56.816Z',
+    },
+    {
+      id: '9d3e7791-ee67-4282-be95-613c491c2e75',
+      projectId: '554d9150-9a07-42c1-8207-1163f2f0addd',
+      internalRepoName: 'pissenlit',
+      externalRepoUrl: 'https://github.com/dnum-mi/pissenlit.git',
+      isInfra: false,
+      isPrivate: false,
       createdAt: '2023-07-03T14:46:56.809Z',
       updatedAt: '2023-07-03T14:46:56.816Z',
     },

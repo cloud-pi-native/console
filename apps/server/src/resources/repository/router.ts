@@ -33,7 +33,7 @@ export const repositoryRouter = () => serverInstance.router(repositoryContract, 
   syncRepository: async ({ request: req, params, body }) => {
     const { repositoryId } = params
     const requestor = req.session.user
-    const perms = await authUser(requestor, { id: repositoryId })
+    const perms = await authUser(requestor, { repositoryId })
     if (!perms.projectPermissions) return new NotFound404()
     if (!ProjectAuthorized.ManageRepositories(perms)) return new Forbidden403()
     if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
