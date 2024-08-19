@@ -1866,11 +1866,21 @@ export const data = {
     {
       userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6566',
       projectId: '22e7044f-8414-435d-9c4a-2df42a65034b',
-      roleIds: [],
+      roleIds: [
+        'c77a1b96-377d-4aa3-bc94-65d4415f95b5',
+      ],
     },
   ],
   projectPlugin: [],
-  projectRole: [],
+  projectRole: [
+    {
+      id: 'c77a1b96-377d-4aa3-bc94-65d4415f95b5',
+      name: 'bg75',
+      projectId: '22e7044f-8414-435d-9c4a-2df42a65034b',
+      permissions: '2n',
+      position: 0,
+    },
+  ],
   repository: [
     {
       id: '53891549-e628-4893-8bd3-92abcb71068a',
