@@ -110,7 +110,7 @@ const canManageEnvs = computed(() => !projectStore.selectedProject?.locked && Pr
         label="Ajouter un nouvel environnement"
         data-testid="addEnvironmentLink"
         tertiary
-        :disabled="canManageEnvs"
+        :disabled="!canManageEnvs"
         :title="projectStore.selectedProject.locked ? projectIsLockedInfo : 'Ajouter un nouvel environnement'"
         class="fr-mt-2v <md:mb-2"
         icon="ri-add-line"
