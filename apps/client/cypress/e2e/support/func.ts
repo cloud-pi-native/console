@@ -19,11 +19,11 @@ export const getProjects = () => getModel('project')
         ...environment,
         permissions: getModel('permission')?.filter(permission => permission.environmentId === environment.id),
       })),
-    users: getModel('role')
-      ?.filter(role => role.projectId === project.id)
-      ?.map(role => ({
-        role: role.role,
-        ...getModelById('user', role.userId),
+    members: getModel('projectMembers')
+      ?.filter(member => member.projectId === project.id)
+      ?.map(member => ({
+        roleIds: member.roleIds,
+        ...getModelById('user', member.userId),
       })),
   }))
 

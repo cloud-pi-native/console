@@ -6,6 +6,7 @@ const newMember = getModelById('user', '89e5d1ca-3194-4b0a-b226-75a5f4fe6a34')
 describe('Team view', () => {
   beforeEach(() => {
     cy.kcLogin('test')
+    cy.log(project)
   })
 
   it('Should display team members', () => {
@@ -15,7 +16,7 @@ describe('Team view', () => {
       .url().should('contain', `/projects/${project.id}/team`)
       .getByDataTestid('teamTable')
       .find('tbody > tr')
-      .should('have.length', project.users.length)
+      .should('have.length', project.members.length + 1)
   })
 
   it('Should not add a non-existing team member', () => {
@@ -25,7 +26,7 @@ describe('Team view', () => {
       .url().should('contain', `/projects/${project.id}/team`)
       .getByDataTestid('teamTable')
       .find('tbody > tr')
-      .should('have.length', project.users.length)
+      .should('have.length', project.members.length + 1)
 
     cy.getByDataTestid('addUserSuggestionInput')
       .find('input')
@@ -40,11 +41,11 @@ describe('Team view', () => {
 
     cy.getByDataTestid('teamTable')
       .find('tbody > tr')
-      .should('have.length', project.users.length)
+      .should('have.length', project.members.length + 1)
   })
 
   it('Should add a team member', () => {
-    cy.intercept('POST', `api/v1/projects/${project.id}/users`).as('addUser')
+    cy.intercept('POST', `api/v1/projects/${project.id}/members`).as('addUser')
 
     cy.goToProjects()
     cy.getByDataTestid(`projectTile-${project.name}`).click()
@@ -52,7 +53,7 @@ describe('Team view', () => {
       .url().should('contain', `/projects/${project.id}/team`)
     cy.getByDataTestid('teamTable')
       .find('tbody > tr')
-      .should('have.length', project.users.length)
+      .should('have.length', project.members.length + 1)
 
     cy.getByDataTestid('addUserSuggestionInput')
       .find('input')
@@ -80,47 +81,47 @@ describe('Team view', () => {
 
     cy.getByDataTestid('teamTable')
       .find('tbody > tr')
-      .should('have.length', project.users.length + 1)
+      .should('have.length', project.members.length + 1 + 1)
   })
 
   it('Should transfert owner role to a team member', () => {
     const owner = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
-    const userToTransfer = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6569')
+    const userToTransfer = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6566')
 
-    cy.intercept(`/api/v1/projects/${project.id}/users/${userToTransfer.id}`).as('transferOwnership1')
-    cy.intercept(`/api/v1/projects/${project.id}/users/${owner.id}`).as('transferOwnership2')
+    cy.intercept('PUT', `/api/v1/projects/${project.id}`).as('transferOwnership')
+    cy.intercept('GET', `/api/v1/projects?filter=member&statusNotIn=archived`).as('getProjectMembers')
 
     cy.goToProjects()
     cy.getByDataTestid(`projectTile-${project.name}`).click()
     cy.getByDataTestid('menuTeam').click()
       .url().should('contain', `/projects/${project.id}/team`)
 
-    cy.getByDataTestid('confirmTransferingRoleZone')
+    cy.getByDataTestid('showTransferProjectBtn')
+      .should('be.enabled')
+    cy.getByDataTestid('transferProjectBtn')
       .should('not.exist')
 
-    cy.getByDataTestid('ownerTag')
-      .should('have.length', 1)
-
-    cy.get(`select#roleSelect-${userToTransfer.id}`)
-      .should('have.value', 'user')
-      .and('be.enabled')
-      .select('owner')
-
-    cy.getByDataTestid('confirmTransferingRoleZone')
+    cy.getByDataTestid('teamTable').get('tr').contains('Propriétaire').should('have.length', 1)
+    cy.getByDataTestid('showTransferProjectBtn').click()
+    cy.getByDataTestid('transferProjectBtn')
       .should('exist')
-    cy.getByDataTestid('confirmUpdateBtn')
+      .should('be.disabled')
+    cy.get('#nextOwnerSelect').select(userToTransfer.id)
+    cy.getByDataTestid('transferProjectBtn')
+      .should('be.enabled')
       .click()
-
-    cy.wait('@transferOwnership1')
+    cy.wait('@transferOwnership')
+      .its('response.statusCode')
+      .should('match', /^20\d$/)
+    cy.wait('@getProjectMembers')
       .its('response.statusCode')
       .should('match', /^20\d$/)
 
-    cy.getByDataTestid('ownerTag')
-      .should('have.length', 1)
-
-    cy.get(`select#roleSelect-${owner.id}`)
-      .should('have.value', 'user')
-      .and('be.disabled')
+    cy.getByDataTestid('teamTable').get('tr').contains('Propriétaire').should('have.length', 1)
+    cy.getByDataTestid('showTransferProjectBtn')
+      .should('not.exist')
+    cy.getByDataTestid('transferProjectBtn')
+      .should('not.exist')
 
     cy.kcLogin((userToTransfer.firstName.slice(0, 1) + userToTransfer.lastName).toLowerCase())
 
@@ -129,66 +130,30 @@ describe('Team view', () => {
     cy.getByDataTestid('menuTeam').click()
       .url().should('contain', `/projects/${project.id}/team`)
 
-    cy.getByDataTestid('confirmTransferingRoleZone')
-      .should('not.exist')
-
-    cy.getByDataTestid('ownerTag')
-      .should('have.length', 1)
-
-    cy.get(`select#roleSelect-${owner.id}`)
-      .should('have.value', 'user')
-      .and('be.enabled')
-      .select('owner')
-
-    cy.getByDataTestid('confirmTransferingRoleZone')
+    cy.getByDataTestid('showTransferProjectBtn').click()
+    cy.getByDataTestid('transferProjectBtn')
       .should('exist')
-    cy.getByDataTestid('confirmUpdateBtn')
+      .should('be.disabled')
+    cy.get('#nextOwnerSelect').select(owner.id)
+    cy.getByDataTestid('transferProjectBtn')
+      .should('be.enabled')
       .click()
-
-    cy.wait('@transferOwnership2')
+    cy.wait('@transferOwnership')
       .its('response.statusCode')
       .should('match', /^20\d$/)
+      cy.wait('@getProjectMembers')
+        .its('response.statusCode')
+        .should('match', /^20\d$/)
 
-    cy.getByDataTestid('ownerTag')
-      .should('have.length', 1)
-
-    cy.get(`select#roleSelect-${userToTransfer.id}`)
-      .should('have.value', 'user')
-      .and('be.disabled')
-  })
-
-  it('Should be able to transfer owner role as admin', () => {
-    const admin = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6566')
-
-    cy.kcLogin((admin.firstName.slice(0, 1) + admin.lastName).toLowerCase())
-    cy.goToProjects()
-    cy.getByDataTestid(`projectTile-${project.name}`).click()
-    cy.getByDataTestid('menuTeam').click()
-      .url().should('contain', `/projects/${project.id}/team`)
-
-    cy.getByDataTestid('confirmTransferingRoleZone')
+    cy.getByDataTestid('teamTable').get('tr').contains('Propriétaire').should('have.length', 1)
+    cy.getByDataTestid('showTransferProjectBtn')
       .should('not.exist')
-
-    cy.getByDataTestid('ownerTag')
-      .should('have.length', 1)
-
-    cy.get('select:first')
-      .should('have.value', 'user')
-      .and('be.enabled')
-      .select('owner')
-
-    cy.getByDataTestid('confirmTransferingRoleZone')
-      .should('exist')
-    cy.getByDataTestid('cancelUpdateBtn')
-      .click()
-
-    cy.get('select:first')
-      .should('have.value', 'user')
-      .and('be.enabled')
+    cy.getByDataTestid('transferProjectBtn')
+      .should('not.exist')
   })
 
   it('Should remove a team member', () => {
-    cy.intercept('DELETE', `api/v1/projects/${project.id}/users/*`).as('removeUser')
+    cy.intercept('DELETE', `api/v1/projects/${project.id}/members/*`).as('removeUser')
 
     cy.goToProjects()
     cy.getByDataTestid(`projectTile-${project.name}`).click()
@@ -196,7 +161,7 @@ describe('Team view', () => {
       .url().should('contain', `/projects/${project.id}/team`)
     cy.getByDataTestid('teamTable')
       .find('tbody > tr')
-      .should('have.length', project.users.length + 1)
+      .should('have.length', project.members.length + 1 + 1)
       .get(`td[title="retirer ${newMember.email} du projet"]`)
       .click()
     cy.wait('@removeUser')
@@ -205,6 +170,6 @@ describe('Team view', () => {
 
     cy.getByDataTestid('teamTable')
       .find('tbody > tr')
-      .should('have.length', project.users.length)
+      .should('have.length', project.members.length + 1)
   })
 })

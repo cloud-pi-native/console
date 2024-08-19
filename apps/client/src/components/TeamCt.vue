@@ -43,7 +43,7 @@ const headers = props.canManage
 const snackbarStore = useSnackbarStore()
 
 const isUserAlreadyInTeam = computed(() => {
-  return !!(newUserEmail.value && props.project.members.find(member => member.email === newUserEmail.value))
+  return !!(newUserEmail.value && (props.project.owner.email === newUserEmail.value || props.project.members.find(member => member.email === newUserEmail.value)))
 })
 
 const removeUserHint = (member: Member) => {
@@ -83,7 +83,12 @@ const createMemberRow = (member: Member) => props.canManage
           onClick: () => removeUserFromProject(member.userId),
         },
       }
-      : '-',
+      : {
+        cellAttrs: {
+          class: 'fr-fi-close-line !flex justify-center cursor-not-allowed',
+          title: removeUserHint(member),
+        },
+      },
   ]
   : [
     getCopyIdComponent(member.userId),
@@ -229,9 +234,14 @@ const transferSelectOptions = [
         <div
           v-if="isTransferingProject"
         >
+          <p>
+            Attention, en tranférant la propriété du projet vous perdrez vos droits sur le projet<br>
+            et deviendrez un membre de l'équipe.
+          </p>
           <DsfrSelect
             v-model="nextOwnerId"
             label="Choisir le futur propriétaire du projet"
+            select-id="nextOwnerSelect"
             :options="transferSelectOptions"
           />
           <div
@@ -260,4 +270,3 @@ const transferSelectOptions = [
     />
   </div>
 </template>
-@/stores/project-member.js
