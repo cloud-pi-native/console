@@ -74,11 +74,11 @@ describe('repositoryRouter tests', () => {
 
       const response = await app.inject()
         .post(repositoryContract.syncRepository.path.replace(':repositoryId', repositoryId))
-        .body({ branchName: 'main' })
+        .body({ branchName: 'main', syncAllBranches: false })
         .end()
 
       expect(response.statusCode).toEqual(204)
-      expect(businessSyncMock).toHaveBeenCalledWith({ repositoryId, userId: user.user.id, branchName: 'main', requestId: expect.any(String) })
+      expect(businessSyncMock).toHaveBeenCalledWith({ repositoryId, userId: user.user.id, branchName: 'main', requestId: expect.any(String), syncAllBranches: false })
     })
 
     it('Should return 403 for forbidden sync attempt', async () => {
@@ -88,7 +88,7 @@ describe('repositoryRouter tests', () => {
 
       const response = await app.inject()
         .post(repositoryContract.syncRepository.path.replace(':repositoryId', repositoryId))
-        .body({ branchName: 'main' })
+        .body({ branchName: 'main', syncAllBranches: false })
         .end()
 
       expect(response.statusCode).toEqual(403)
@@ -101,7 +101,7 @@ describe('repositoryRouter tests', () => {
 
       const response = await app.inject()
         .post(repositoryContract.syncRepository.path.replace(':repositoryId', repositoryId))
-        .body({ branchName: 'main' })
+        .body({ branchName: 'main', syncAllBranches: false })
         .end()
 
       expect(response.statusCode).toEqual(403)
@@ -115,7 +115,7 @@ describe('repositoryRouter tests', () => {
 
       const response = await app.inject()
         .post(repositoryContract.syncRepository.path.replace(':repositoryId', repositoryId))
-        .body({ branchName: 'main' })
+        .body({ branchName: 'main', syncAllBranches: false })
         .end()
 
       expect(response.statusCode).toEqual(404)
@@ -129,7 +129,7 @@ describe('repositoryRouter tests', () => {
       businessSyncMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
       const response = await app.inject()
         .post(repositoryContract.syncRepository.path.replace(':repositoryId', repositoryId))
-        .body({ branchName: 'main' })
+        .body({ branchName: 'main', syncAllBranches: false })
         .end()
 
       expect(response.statusCode).toEqual(400)
