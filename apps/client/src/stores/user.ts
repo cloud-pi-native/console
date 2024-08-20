@@ -20,18 +20,18 @@ export const useUserStore = defineStore('user', () => {
   const myAdminRoles = computed<AdminRole[]>(() => adminRoleStore.roles
     .filter(adminRole => apiAuthInfos.value?.adminRoleIds.includes(adminRole.id)))
 
-  const setIsLoggedIn = () => {
+  const setIsLoggedIn = async () => {
     const keycloak = getKeycloak()
     isLoggedIn.value = keycloak.authenticated
     if (isLoggedIn.value) {
-      setUserProfile()
+      await setUserProfile()
     }
   }
 
-  const setUserProfile = () => {
+  const setUserProfile = async () => {
     userProfile.value = getUserProfile()
     adminRoleStore.listRoles()
-    apiClient.Users.auth()
+    await apiClient.Users.auth()
       .then(res => apiAuthInfos.value = extractData(res, 200))
   }
 
