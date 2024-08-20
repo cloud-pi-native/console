@@ -218,6 +218,8 @@ describe('Administration organizations', () => {
   it('Should synchronize organizations from plugins', () => {
     cy.intercept('GET', '/api/v1/organizations/sync').as('syncOrganizations')
 
+    cy.get('legend')
+      .should('contain', 'Synchroniser les organisations')
     cy.getByDataTestid('syncOrgsBtn')
       .click()
       .wait('@syncOrganizations')
