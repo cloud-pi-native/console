@@ -34,5 +34,5 @@ spec:
       volumes:
       - name: pgadmin-config
         hostPath:
-          path: /app/db/pgadmin/config/servers-kube.json
+          path: /app/pgadmin/servers-kube.json
 {{- end -}}

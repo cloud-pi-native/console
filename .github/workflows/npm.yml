@@ -27,12 +27,12 @@ on:
         description: Nodejs version used
         required: true
         type: string
-        default: "20.15.1"
+        default: "20.16.0"
       PNPM_VERSION:
         description: Pnpm version used
         required: true
         type: string
-        default: "9.5.0"
+        default: "9.7.1"
       PUBLISH_APPS:
         description: Publish apps modules
         required: true

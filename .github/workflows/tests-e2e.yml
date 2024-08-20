@@ -21,12 +21,12 @@ on:
         description: Nodejs version used to run tests
         required: true
         type: string
-        default: "20.15.1"
+        default: "20.16.0"
       PNPM_VERSION:
         description: Pnpm version used to run tests
         required: true
         type: string
-        default: "9.5.0"
+        default: "9.7.1"
       TAG:
         description: Image tag used to run tests
         required: true
