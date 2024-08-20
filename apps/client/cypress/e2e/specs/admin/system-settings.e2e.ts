@@ -1,18 +1,18 @@
 import { SystemSettings } from '@cpn-console/shared'
 import { getModel } from '../../support/func.js'
 
-describe('Administration stages', () => {
-  const systemSettings = getModel('systemSettings') as SystemSettings
+describe('Administration system settings', () => {
+  const systemSettings = getModel('systemSetting') as SystemSettings
 
   beforeEach(() => {
-    cy.intercept('GET', 'api/v1/system/settings').as('listSystemSettings')
     cy.intercept('GET', 'api/v1/system/settings?key=maintenance').as('listMaintenanceSetting')
+    cy.intercept('GET', 'api/v1/system/settings').as('listSystemSettings')
     cy.intercept('POST', 'api/v1/system/settings').as('upsertSystemSetting')
 
     cy.kcLogin('tcolin')
     cy.visit('/admin/system-settings')
     cy.url().should('contain', '/admin/system-settings')
-    cy.wait('@listSystemSettings').its('response').then(($response) => {
+    cy.wait('@listSystemSettings', { timeout: 5_000 }).its('response').then(($response) => {
       expect($response?.statusCode).to.match(/^20\d$/)
     })
   })
@@ -20,8 +20,9 @@ describe('Administration stages', () => {
   it('Should turn on maintenance mode', () => {
     cy.intercept('GET', 'api/v1/admin/roles').as('listRoles')
 
-    systemSettings?.forEach((setting) => {
+    systemSettings.forEach((setting) => {
       cy.getByDataTestid(`toggle-${setting.key}`)
+        .find('input')
         .should('be.enabled')
     })
 
@@ -63,17 +64,19 @@ describe('Administration stages', () => {
         value: 'on',
       }]))
     })
-    cy.wait('@listRoles', { timeout: 5_000 })
+    cy.wait('@listRoles')
     cy.getByDataTestid('maintenance-notice')
       .should('be.visible')
+    cy.visit('/projects')
     cy.url().should('contain', '/maintenance')
     cy.getByDataTestid('contact-us')
       .should('have.attr', 'title', 'cloudpinative-relations@interieur.gouv.fr')
   })
 
   it('Should turn off maintenance mode', () => {
-    systemSettings?.forEach((setting) => {
+    systemSettings.forEach((setting) => {
       cy.getByDataTestid(`toggle-${setting.key}`)
+        .find('input')
         .should('be.enabled')
     })
 
