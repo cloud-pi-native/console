@@ -8,7 +8,7 @@ import {
 import { projectContract, XOR } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
 
-type ProjectUpdate = Partial<Pick<Project, 'description' | 'ownerId' | 'everyonePerms'>>
+type ProjectUpdate = Partial<Pick<Project, 'description' | 'ownerId' | 'everyonePerms' | 'locked'>>
 export const updateProject = (id: Project['id'], data: ProjectUpdate) =>
   prisma.project.update({
     where: { id },
