@@ -30,9 +30,9 @@ const isUpdated = computed(() => {
 })
 const tabListName = 'Liste d’onglet'
 const tabTitles = [
-  { title: 'Général', icon: 'ri-checkbox-circle-line' },
-  { title: 'Membres', icon: 'ri-checkbox-circle-line' },
-  { title: 'Fermer', icon: 'ri-checkbox-circle-line' },
+  { title: 'Général', icon: 'ri-checkbox-circle-line', tabId: 'general' },
+  { title: 'Membres', icon: 'ri-checkbox-circle-line', tabId: 'membres' },
+  { title: 'Fermer', icon: 'ri-checkbox-circle-line', tabId: 'fermer' },
 ]
 
 const initialSelectedIndex = 0
@@ -120,14 +120,18 @@ defineEmits<{
       :selected="selectedTabIndex === 0"
       :asc="asc"
     >
-      <h6>Nom du rôle</h6>
       <DsfrInput
         v-model="role.name"
-        type="inputType"
+        data-testid="roleNameInput"
+        label="Nom du rôle"
         label-visible
         class="mb-5"
       />
-      <h6>Permissions</h6>
+      <p
+        class="fr-h6"
+      >
+        Permissions
+      </p>
       <div
         v-for="scope in adminPermsDetails"
         :key="scope.name"
@@ -141,6 +145,7 @@ defineEmits<{
           v-for="perm in scope.perms"
           :key="perm.key"
           :model-value="ADMIN_PERMS[perm.key] & role.permissions"
+          :data-testid="`${perm.key}-cbx`"
           :label="perm.label"
           :hint="perm?.hint"
           :name="perm.key"
@@ -148,26 +153,25 @@ defineEmits<{
           @update:model-value="(checked: boolean) => updateChecked(checked, perm.key)"
         />
       </div>
-      <h6>OIDC Groupe</h6>
       <DsfrInput
         v-model="role.oidcGroup"
-        type="inputType"
-        label=""
+        data-testid="oidcGroupInput"
+        label="Groupe OIDC"
         label-visible
         placeholder="/admin"
         class="mb-5"
       />
       <DsfrButton
-        type="buttonType"
-        :label="'Enregistrer'"
+        data-testid="saveBtn"
+        label="Enregistrer"
         secondary
         :disabled="!isUpdated"
         class="mr-5"
         @click="$emit('save', {...role, permissions: role.permissions.toString() })"
       />
       <DsfrButton
-        type="buttonType"
-        :label="'Supprimer'"
+        data-testid="deleteBtn"
+        label="Supprimer"
         secondary
         @click="$emit('delete')"
       />
@@ -192,9 +196,9 @@ defineEmits<{
         <DsfrNotice
           v-if="!users.length"
           class="mb-5"
-        >
-          Aucun utilisateur présent actuellement
-        </DsfrNotice>
+          data-testid="noUserNotice"
+          title="Aucun utilisateur ne dispose actuellement de ce rôle."
+        />
         <div
           class="w-max"
         >
@@ -213,11 +217,15 @@ defineEmits<{
           <DsfrAlert
             v-if="isUserAlreadyInTeam"
             data-testid="userErrorInfo"
-            description="L'utilisateur fait déjà partie du rôle."
+            description="L'utilisateur est déjà détenteur de ce rôle."
             small
             type="error"
             class="w-max fr-mb-2w"
           />
+          {{ newUserInput }}
+          <br>
+          {{ newUser }}
+          <br>
           <DsfrButton
             data-testid="addUserBtn"
             label="Ajouter l'utilisateur"
@@ -231,7 +239,7 @@ defineEmits<{
       <template
         v-else
       >
-        Les groupes ayant une liaison OIDC ne peuvent pas gérer leurs membres
+        Les groupes ayant une liaison OIDC ne peuvent pas gérer leurs membres.
       </template>
     </DsfrTabContent>
     <DsfrTabContent
