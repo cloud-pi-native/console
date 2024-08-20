@@ -67,7 +67,10 @@ describe('Administration logs', () => {
   })
 
   it('Should display compact logs list, loggedIn as admin', () => {
-    cy.getByDataTestid('showLogsBtn').click()
+    cy.get('h1')
+      .should('contain', ' Journaux des services associés à la chaîne DSO ')
+    cy.getByDataTestid('showLogsBtn')
+      .click()
     logs.forEach((log) => {
       cy.getByDataTestid(`${log.id}-json`).should('not.exist')
     })
