@@ -229,6 +229,7 @@ describe('Administration quotas', () => {
     cy.getByDataTestid('memoryInput')
       .type(privateQuota.memory)
     cy.getByDataTestid('cpuInput')
+      .clear()
       .type(privateQuota.cpu)
     cy.getByDataTestid('input-checkbox-isQuotaPrivateCbx')
       .should('not.be.checked')
