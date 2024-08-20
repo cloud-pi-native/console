@@ -1,10 +1,12 @@
 <script lang="ts" setup>
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectMemberStore } from '@/stores/project-member.js'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 import { Member, RoleBigint, type Role } from '@cpn-console/shared'
 
 const projectMemberStore = useProjectMemberStore()
 const projectStore = useProjectStore()
+const snackbarStore = useSnackbarStore()
 const selectedId = ref<string>()
 
 type RoleItem = Omit<Role, 'permissions'> & { permissions: bigint, memberCounts: number, isEveryone: boolean }
@@ -36,6 +38,7 @@ const addRole = async () => {
     name: 'Nouveau rôle',
     permissions: 0n.toString(),
   })
+  snackbarStore.setMessage('Rôle ajouté', 'success')
   selectedId.value = projectStore.selectedProject.roles[projectStore.selectedProject.roles.length - 1].id
 }
 
@@ -43,6 +46,7 @@ const deleteRole = async (roleId: Role['id']) => {
   if (!projectStore.selectedProject) return
   await projectStore.deleteRole(projectStore.selectedProject.id, roleId)
   projectStore.selectedProject.roles = projectStore.selectedProject.roles.filter(role => role.id !== roleId)
+  snackbarStore.setMessage('Rôle supprimé', 'success')
   selectedId.value = undefined
 }
 
@@ -56,6 +60,7 @@ const updateMember = async (checked: boolean, userId: Member['userId']) => {
     : matchingMember.roleIds.filter(id => id !== selectedRole.value?.id)
 
   projectStore.selectedProject.members = await projectMemberStore.patchMembers(projectStore.selectedProject.id, [{ userId, roles: newRoleList }])
+  snackbarStore.setMessage('Rôle mis à jour', 'success')
 }
 
 const saveRole = async (role: Omit<RoleBigint, 'position'>) => {

@@ -2,8 +2,10 @@
 import { AdminRole, type Role } from '@cpn-console/shared'
 import AdminRoleForm from '@/components/AdminRoleForm.vue'
 import { useAdminRoleStore } from '@/stores/admin-role.js'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const adminRoleStore = useAdminRoleStore()
+const snackbarStore = useSnackbarStore()
 
 const selectedId = ref<string>()
 type RoleItem = Omit<AdminRole, 'permissions'> & { permissions: bigint, memberCounts?: number }
@@ -18,6 +20,7 @@ const selectedRole = computed(() => roleList.value.find(({ id }) => id === selec
 
 const addRole = async () => {
   await adminRoleStore.createRole()
+  snackbarStore.setMessage('Rôle ajouté', 'success')
 
   selectedId.value = adminRoleStore.roles[adminRoleStore.roles.length - 1].id
 }
@@ -25,6 +28,7 @@ const addRole = async () => {
 const deleteRole = async (roleId: Role['id']) => {
   await adminRoleStore.deleteRole(roleId)
   await adminRoleStore.listRoles()
+  snackbarStore.setMessage('Rôle supprimé', 'success')
   selectedId.value = undefined
 }
 
@@ -38,6 +42,7 @@ const saveRole = async (role: Pick<AdminRole, 'name' | 'oidcGroup' | 'permission
       oidcGroup: role.oidcGroup,
     }],
   )
+  snackbarStore.setMessage('Rôle mis à jour', 'success')
 }
 
 const cancel = () => selectedId.value = undefined
