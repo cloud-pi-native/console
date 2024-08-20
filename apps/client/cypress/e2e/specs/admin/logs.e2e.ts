@@ -10,7 +10,7 @@ describe('Administration logs', () => {
     cy.kcLogin('tcolin')
     cy.visit('/admin/logs')
     cy.url().should('contain', '/admin/logs')
-    cy.wait('@getAllLogs', { timeout: 10000 }).its('response').then((response) => {
+    cy.wait('@getAllLogs', { timeout: 10_000 }).its('response').then((response) => {
       logs = response?.body?.logs
       logCount = response?.body?.total
     })

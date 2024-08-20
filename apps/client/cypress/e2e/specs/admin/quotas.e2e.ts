@@ -27,12 +27,12 @@ describe('Administration quotas', () => {
     cy.kcLogin('tcolin')
     cy.visit('/admin/quotas')
     cy.url().should('contain', '/admin/quotas')
-    cy.wait('@listQuotas').its('response').then((response) => {
+    cy.wait('@listQuotas', { timeout: 5_000 }).its('response').then((response) => {
       allQuotas = response?.body
       quota1 = allQuotas.find(quota => quota.id === quota1.id)
       quota2 = allQuotas.find(quota => quota.id === quota2.id)
     })
-    cy.wait('@listStages')
+    cy.wait('@listStages', { timeout: 5_000 })
   })
 
   it('Should display quotas list', () => {

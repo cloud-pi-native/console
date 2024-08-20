@@ -18,6 +18,8 @@ describe('Administration stages', () => {
   })
 
   it('Should turn on maintenance mode', () => {
+    cy.intercept('GET', 'api/v1/admin/roles').as('listRoles')
+
     systemSettings?.forEach((setting) => {
       cy.getByDataTestid(`toggle-${setting.key}`)
         .should('be.enabled')
@@ -61,6 +63,7 @@ describe('Administration stages', () => {
         value: 'on',
       }]))
     })
+    cy.wait('@listRoles', { timeout: 5_000 })
     cy.getByDataTestid('maintenance-notice')
       .should('be.visible')
     cy.url().should('contain', '/maintenance')
