@@ -3,8 +3,8 @@ import { onBeforeMount, ref } from 'vue'
 import { type AllUsers, formatDate, sortArrByObjKeyAsc, type Role } from '@cpn-console/shared'
 import { useProjectMemberStore } from '@/stores/project-member.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { copyContent } from '@/utils/func.js'
 import { useAdminRoleStore } from '@/stores/admin-role.js'
+import { copyContent } from '@/utils/func.js'
 
 const adminRoleStore = useAdminRoleStore()
 const projectMemberStore = useProjectMemberStore()
@@ -105,4 +105,3 @@ onBeforeMount(async () => {
     />
   </div>
 </template>
-@/stores/project-member.js

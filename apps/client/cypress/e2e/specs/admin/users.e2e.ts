@@ -31,8 +31,7 @@ describe('Administration users', () => {
           .contains(user.lastName)
         cy.get('tr > td')
           .contains(user.email)
-        cy.getByDataTestid(`${user.id}-is-admin`)
-          .should(user.isAdmin ? 'be.checked' : 'not.be.checked')
+        // TODO : colonne Rôles
       })
     })
   })
