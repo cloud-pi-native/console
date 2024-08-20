@@ -40,7 +40,11 @@ const userRows = computed(() => {
           firstName,
           lastName,
           email,
-          adminRoleStore.roles.filter(({ id }) => adminRoleIds.includes(id)).map(({ name }) => name).join('\n') || '-',
+          {
+            component: 'p',
+            text: adminRoleStore.roles.filter(({ id }) => adminRoleIds.includes(id)).map(({ name }) => name).join('\n') || '-',
+            'data-testid': `${id}-roles`,
+          },
           formatDate(createdAt),
           formatDate(updatedAt),
         ],

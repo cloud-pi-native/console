@@ -224,6 +224,7 @@ describe('Administration zones', () => {
     })
 
     cy.visit('/admin/zones')
+    cy.wait('@listZones')
     cy.url().should('contain', '/admin/zones')
     cy.getByDataTestid(`zoneTile-${newZone.label}`)
       .should('be.visible')
