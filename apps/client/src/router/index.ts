@@ -20,6 +20,7 @@ const DsoRoles = () => import('@/views/projects/DsoRoles.vue')
 const DsoServices = () => import('@/views/projects/DsoServices.vue')
 const DsoTeam = () => import('@/views/projects/DsoTeam.vue')
 const DsoRepos = () => import('@/views/projects/DsoRepos.vue')
+const DsoAdmin = () => import('@/views/admin/DsoAdmin.vue')
 const ListUser = () => import('@/views/admin/ListUser.vue')
 const ListOrganizations = () => import('@/views/admin/ListOrganizations.vue')
 const ListProjects = () => import('@/views/admin/ListProjects.vue')
@@ -144,6 +145,7 @@ const routes: Readonly<RouteRecordRaw[]> = [
   {
     name: 'ParentAdmin',
     path: '/admin',
+    component: DsoAdmin,
     children: [
       {
         path: 'users',
@@ -218,15 +220,6 @@ router.beforeEach((to) => { // Cf. https://github.com/vueuse/head pour des trans
   document.title = `${specificTitle}${MAIN_TITLE}`
 })
 
-router.afterEach((to) => {
-  const userStore = useUserStore()
-  setTimeout(() => {
-    if (userStore.adminPerms === 0n && to.fullPath.startsWith('/admin/')) {
-      router.push('/')
-    }
-  }, 3000)
-})
-
 /**
  * Redirect unlogged user to login view
  */
@@ -234,7 +227,7 @@ router.beforeEach(async (to, _from, next) => {
   const validPath = ['Login', 'Home', 'Doc', 'NotFound', 'ServicesHealth', 'Maintenance', 'Logout']
   const userStore = useUserStore()
   const systemStore = useSystemSettingsStore()
-  userStore.setIsLoggedIn()
+  await userStore.setIsLoggedIn()
 
   // Redirige vers une 404 si la page n'existe pas
   if (to.name === undefined || typeof to.name === 'symbol') {

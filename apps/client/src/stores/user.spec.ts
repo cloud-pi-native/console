@@ -42,7 +42,7 @@ describe('User Store', () => {
 
     expect(userStore.isLoggedIn).toBeUndefined()
 
-    userStore.setIsLoggedIn()
+    await userStore.setIsLoggedIn()
 
     expect(userStore.isLoggedIn).toEqual(true)
   })
