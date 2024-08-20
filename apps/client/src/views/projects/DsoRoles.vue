@@ -100,8 +100,8 @@ const cancel = () => selectedId.value = undefined
           class="flex flex-col"
         >
           <DsfrButton
-            type="buttonType"
             label="Ajouter un rôle"
+            data-testid="addRoleBtn"
             :class="selectedId ? 'w-11/12': ''"
             secondary
             @click="addRole()"
@@ -109,22 +109,18 @@ const cancel = () => selectedId.value = undefined
           <button
             v-for="role in roleList"
             :key="role.id"
-            :class="`text-align-left cursor-pointer mt-3 grid grid-flow-col fr-btn ${selectedId ? 'grid-cols-1': 'grid-cols-2'} ${selectedId === role.id ? 'fr-btn--primary w-full': 'fr-btn--tertiary w-11/12'}`"
+            :class="`text-align-left cursor-pointer mt-3 grid grid-flow-col fr-btn text-wrap truncate ${selectedId ? 'grid-cols-1': 'grid-cols-2'} ${selectedId === role.id ? 'fr-btn--primary w-full': 'fr-btn--tertiary w-11/12'}`"
+            :data-testid="`${role.name}-tab`"
             @click="selectedId = selectedId === role.id ? undefined : role.id"
           >
-            <div
-              class="text-wrap truncate "
-              tertiary
-            >
-              {{ role.name }}
-            </div>
+            {{ role.name }}
             <div
               v-if="!selectedId"
               class="text-wrap truncate text-right grow-0"
             >
               <span>{{ role.memberCounts }}</span>
               <v-icon
-                :class="`ml-4`"
+                class="ml-4"
                 name="ri-team-line"
               />
             </div>
@@ -152,4 +148,3 @@ const cancel = () => selectedId.value = undefined
     v-else
   />
 </template>
-@/stores/project-member.js

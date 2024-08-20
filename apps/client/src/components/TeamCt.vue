@@ -60,6 +60,11 @@ const rows = ref<any[][]>([])
 const lettersNotMatching = ref('')
 const tableKey = ref(getRandomId('table'))
 
+const usersToSuggest = computed(() => usersToAdd.value.map(userToAdd => ({
+  value: userToAdd.email,
+  furtherInfo: userToAdd.firstName + ' ' + userToAdd.lastName,
+})))
+
 const getRolesNames = (ids?: string[]) => ids ? props.project.roles.filter(role => ids.includes(role.id)).map(role => role.name).join(' / ') || '-' : ''
 const getCopyIdComponent = (id: string) => ({
   component: 'code',
@@ -196,8 +201,8 @@ const transferSelectOptions = [
           label-visible
           hint="Nom, prénom ou adresse mail de l'utilisateur à rechercher"
           placeholder="prenom.nom@interieur.gouv.fr"
-          :suggestions="usersToAdd"
-          @select-suggestion="(value: User) => newUserEmail = value.email"
+          :suggestions="usersToSuggest"
+          @select-suggestion="(value: string) => newUserEmail = value"
           @update:model-value="(value: string) => retrieveUsersToAdd(value)"
         />
         <DsfrAlert

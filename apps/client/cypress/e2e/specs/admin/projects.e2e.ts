@@ -39,10 +39,10 @@ describe('Administration projects', () => {
           cy.get('td:nth-of-type(1)').should('contain', project.organization)
           cy.get('td:nth-of-type(2)').should('contain', project.name)
           cy.getByDataTestid('description').invoke('text').then((text) => {
-            const maxDescriptionlength = 60
-            if (text?.length > maxDescriptionlength) {
-              const lastSpaceIndex = project.description.slice(0, maxDescriptionlength).lastIndexOf(' ')
-              const truncatedDescription = project.description.slice(0, lastSpaceIndex > 0 ? lastSpaceIndex : maxDescriptionlength)
+            const maxDescriptionLength = 60
+            if (text?.length > maxDescriptionLength) {
+              const lastSpaceIndex = project.description.slice(0, maxDescriptionLength).lastIndexOf(' ')
+              const truncatedDescription = project.description.slice(0, lastSpaceIndex > 0 ? lastSpaceIndex : maxDescriptionLength)
               expect(text).to.equal(`${truncatedDescription} ...`)
               return
             }
@@ -347,75 +347,7 @@ describe('Administration projects', () => {
       .should('exist')
   })
 
-  it.skip('Should transfert owner role to a team member, loggedIn as admin', () => {
-    const project = projects.find(project => project.name === 'betaapp') as ProjectV2
-    const owner = project.owner
-    const userToTransfer = project.members[0]
-
-    cy.intercept('PUT', `/api/v1/projects/${project.id}`).as('transferOwnership')
-    cy.intercept('GET', `/api/v1/projects?filter=member&statusNotIn=archived`).as('getProjectMembers')
-
-    cy.goToProjects()
-    cy.getByDataTestid(`projectTile-${project.name}`).click()
-    cy.getByDataTestid('menuTeam').click()
-      .url().should('contain', `/projects/${project.id}/team`)
-
-    cy.getByDataTestid('showTransferProjectBtn')
-      .should('be.enabled')
-    cy.getByDataTestid('transferProjectBtn')
-      .should('not.exist')
-
-    cy.getByDataTestid('teamTable').get('tr').contains('Propriétaire').should('have.length', 1)
-    cy.getByDataTestid('showTransferProjectBtn').click()
-    cy.getByDataTestid('transferProjectBtn')
-      .should('exist')
-      .should('be.disabled')
-    cy.get('#nextOwnerSelect').select(userToTransfer.userId)
-    cy.getByDataTestid('transferProjectBtn')
-      .should('be.enabled')
-      .click()
-    cy.wait('@transferOwnership')
-      .its('response.statusCode')
-      .should('match', /^20\d$/)
-    cy.wait('@getProjectMembers')
-      .its('response.statusCode')
-      .should('match', /^20\d$/)
-
-    cy.getByDataTestid('teamTable').get('tr').contains('Propriétaire').should('have.length', 1)
-    cy.getByDataTestid('showTransferProjectBtn')
-      .should('not.exist')
-    cy.getByDataTestid('transferProjectBtn')
-      .should('not.exist')
-
-    cy.kcLogin((userToTransfer.firstName.slice(0, 1) + userToTransfer.lastName).toLowerCase())
-
-    cy.goToProjects()
-    cy.getByDataTestid(`projectTile-${project.name}`).click()
-    cy.getByDataTestid('menuTeam').click()
-      .url().should('contain', `/projects/${project.id}/team`)
-
-    cy.getByDataTestid('showTransferProjectBtn').click()
-    cy.getByDataTestid('transferProjectBtn')
-      .should('exist')
-      .should('be.disabled')
-    cy.get('#nextOwnerSelect').select(owner.id)
-    cy.getByDataTestid('transferProjectBtn')
-      .should('be.enabled')
-      .click()
-    cy.wait('@transferOwnership')
-      .its('response.statusCode')
-      .should('match', /^20\d$/)
-      cy.wait('@getProjectMembers')
-        .its('response.statusCode')
-        .should('match', /^20\d$/)
-
-    cy.getByDataTestid('teamTable').get('tr').contains('Propriétaire').should('have.length', 1)
-    cy.getByDataTestid('showTransferProjectBtn')
-      .should('not.exist')
-    cy.getByDataTestid('transferProjectBtn')
-      .should('not.exist')
-  })
-  it.only('Should transfert owner role to a team member, loggedIn as admin', () => {
+  it('Should transfert owner role to a team member, loggedIn as admin', () => {
     const project = projects.find(project => project.name === 'betaapp') as ProjectV2
     const owner = project.owner
     const userToTransfer = project.members[0]

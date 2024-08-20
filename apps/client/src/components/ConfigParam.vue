@@ -57,7 +57,6 @@ const set = (data: string) => {
     <DsfrInput
       v-if="props.options.kind === 'text' && !props.options.disabled"
       :model-value="value"
-      type="inputType"
       :label-visible="false"
       :placeholder="props.options.placeholder"
       data-testid="input"

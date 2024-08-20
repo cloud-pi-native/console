@@ -78,7 +78,6 @@ defineEmits<{
       <h6>Nom du rôle</h6>
       <DsfrInput
         v-model="role.name"
-        type="inputType"
         label-visible
         class="mb-5"
         :disabled="role.isEveryone"
@@ -105,8 +104,7 @@ defineEmits<{
         />
       </div>
       <DsfrButton
-        type="buttonType"
-        :label="'Enregistrer'"
+        label="Enregistrer"
         secondary
         :disabled="!isUpdated"
         class="mr-5"
@@ -114,8 +112,7 @@ defineEmits<{
       />
       <DsfrButton
         v-if="!role.isEveryone"
-        type="buttonType"
-        :label="'Supprimer'"
+        label="Supprimer"
         secondary
         @click="$emit('delete')"
       />
@@ -142,7 +139,6 @@ defineEmits<{
           Vous n'avez pas d'utilisateur dans votre projet
         </div>
         <DsfrButton
-          type="buttonType"
           label="Gérer l'équipe"
           class="mt-5"
           @click="router.push({ name: 'Team' })"
