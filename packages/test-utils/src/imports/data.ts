@@ -8,6 +8,13 @@ export const data = {
       oidcGroup: '/admin',
       name: 'Admin',
     },
+    {
+      id: 'eadf604f-5f54-4744-bdfb-4793d2271e9b',
+      permissions: '2n',
+      position: 1,
+      oidcGroup: '',
+      name: 'Admin Locaux',
+    },
   ],
   kubeconfig: [
     {
@@ -186,7 +193,7 @@ export const data = {
       createdAt: '2023-07-03T14:46:56.772Z',
       updatedAt: '2024-07-25T16:18:11.372Z',
       adminRoleIds: [
-        '76229c96-4716-45bc-99da-00498ec9018c',
+        'eadf604f-5f54-4744-bdfb-4793d2271e9b',
       ],
     },
   ],
