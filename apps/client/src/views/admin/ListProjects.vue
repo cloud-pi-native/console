@@ -24,7 +24,7 @@ import { useProjectRepositoryStore } from '@/stores/project-repository.js'
 import { useProjectStore } from '@/stores/project.js'
 import { useStageStore } from '@/stores/stage.js'
 import { useProjectMemberStore } from '@/stores/project-member.js'
-import { bts } from '@/utils/func.js'
+import { bts, truncateDescription } from '@/utils/func.js'
 
 const projectStore = useProjectStore()
 const organizationStore = useOrganizationStore()
@@ -334,26 +334,6 @@ const saveProjectServices = async (data: PluginsUpdateBody) => {
   }
   await reloadProjectServices(selectedProject.value.id)
   snackbarStore.isWaitingForResponse = false
-}
-
-const maxDescriptionLength = 60
-const truncateDescription = (description: string) => {
-  let innerHTML: string
-
-  if (description.length <= maxDescriptionLength) innerHTML = description
-  else {
-    const lastSpaceIndex = description.slice(0, maxDescriptionLength).lastIndexOf(' ')
-    innerHTML = description.slice(0, lastSpaceIndex > 0 ? lastSpaceIndex : maxDescriptionLength) + ' ...'
-  }
-
-  return {
-    id: 'description',
-    'data-testid': 'description',
-    component: 'span',
-    open: false,
-    title: description,
-    innerHTML,
-  }
 }
 
 const untruncateDescription = (span: HTMLElement) => {

@@ -80,8 +80,9 @@ const retrieveUsersToAdd = pDebounce(async (letters: LettersQuery['letters']) =>
     lettersNotMatching.value = letters
   }
 }, 300)
-const newUser = ref<User>()
+
 const newUserInput = ref<string>('')
+const newUser = computed(() => usersToAdd.value.find(user => user.email === newUserInput.value))
 
 const isUserAlreadyInTeam = computed(() => {
   return !!(newUserInput.value && usersInRole.value.find(member => member.id === newUser.value?.id))
@@ -222,7 +223,6 @@ defineEmits<{
             hint="Adresse e-mail de l'utilisateur"
             placeholder="prenom.nom@interieur.gouv.fr"
             :suggestions="usersToSuggest"
-            @select-suggestion="(value: string) => newUser = usersToAdd.find(user => user.email === value)"
             @update:model-value="(value: string) => retrieveUsersToAdd(value)"
           />
           <DsfrAlert

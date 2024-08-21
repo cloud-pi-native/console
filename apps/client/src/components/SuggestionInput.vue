@@ -24,7 +24,6 @@ const emit = defineEmits<{
 const updateValue = () => {
   if (props.suggestions.find(suggestion => suggestion.value === localValue.value)) {
     emit('selectSuggestion', localValue.value)
-    return
   }
   emit('update:modelValue', localValue.value)
 }

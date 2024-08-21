@@ -1,5 +1,6 @@
 import { statusDict, formatDate, sortArrByObjKeyAsc, type Organization, type Project, ProjectV2 } from '@cpn-console/shared'
 import { getModel, getModelById } from '../../support/func.js'
+import { truncateDescription } from '@/utils/func.js'
 
 const checkTableRowsLength = (length: number) => {
   if (!length) cy.get('tr:last-child>td:first-child').should('have.text', 'Aucun projet trouvé')
@@ -46,7 +47,7 @@ describe('Administration projects', () => {
               expect(text).to.equal(`${truncatedDescription} ...`)
               return
             }
-            expect(text).to.equal(project.description)
+            expect(text).to.equal(truncateDescription(text).innerHTML)
           })
           cy.get('td:nth-of-type(4)').should('contain', project.owner.email)
           cy.get('td:nth-of-type(5) svg title').should('contain', `Le projet ${project.name} est ${statusDict.status[project.status].wording}`)
