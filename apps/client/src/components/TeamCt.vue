@@ -138,7 +138,7 @@ const addUserToProject = async () => {
   if (!newUserEmail.value) return
   if (isUserAlreadyInTeam.value) return snackbarStore.setMessage('L\'utilisateur semble déjà faire partie du projet')
 
-  emit('addMember', newUserEmail.value)
+  emit('addMember', newUserEmail.value.trim())
 
   newUserEmail.value = ''
   usersToAdd.value = []
@@ -156,23 +156,18 @@ onMounted(() => {
 watch(() => props.project.members, setRows)
 
 const isTransferingProject = ref(false)
-const nextOwnerId = ref('')
+const nextOwnerId = ref<string | undefined>(undefined)
 
-const transferOwnership = (ownerId: string) => {
-  if (props.project.members.find(member => member.userId === ownerId)) {
-    emit('transferOwnership', ownerId)
+const transferOwnership = () => {
+  if (nextOwnerId.value && props.project.members.find(member => member.userId === nextOwnerId.value)) {
+    emit('transferOwnership', nextOwnerId.value)
   }
 }
-const transferSelectOptions = [
-  {
-    text: 'Veuillez choisir un utilisateur',
-    value: '',
-  },
-  ...props.project.members.map(member => ({
-    text: `${member.lastName} ${member.firstName} (${member.email})`,
-    value: member.userId,
-  })),
-]
+const transferSelectOptions = props.project.members.map(member => ({
+  text: `${member.lastName} ${member.firstName} (${member.email})`,
+  value: member.userId,
+}))
+
 </script>
 
 <template>
@@ -233,38 +228,52 @@ const transferSelectOptions = [
           data-testid="showTransferProjectBtn"
           :label="`Transférer le projet`"
           primary
-          icon="ri-delete-bin-7-line"
+          icon="ri-exchange-line"
           @click="isTransferingProject = true"
         />
         <div
           v-if="isTransferingProject"
         >
-          <p>
-            Attention, en tranférant la propriété du projet vous perdrez vos droits sur le projet<br>
-            et deviendrez un membre de l'équipe.
-          </p>
-          <DsfrSelect
-            v-model="nextOwnerId"
-            label="Choisir le futur propriétaire du projet"
-            select-id="nextOwnerSelect"
-            :options="transferSelectOptions"
+          <DsfrAlert
+            v-if="!transferSelectOptions.length"
+            description="Pour pouvoir transférer la propriété du projet, vous devez ajouter au moins un membre à l'équipe."
+            small
+            type="warning"
+            class="fr-mb-4w w-40em"
           />
           <div
-            class="flex justify-between"
+            v-else
           >
-            <DsfrButton
-              data-testid="transferProjectBtn"
-              :label="`Transférer le projet`"
-              :disabled="!nextOwnerId"
-              secondary
-              icon="ri-delete-bin-7-line"
-              @click="transferOwnership(nextOwnerId)"
+            <DsfrAlert
+              description="Attention, en transférant la propriété du projet vous perdrez vos droits sur le projet  et deviendrez un membre de l'équipe."
+              small
+              type="warning"
+              class="fr-mb-4w w-40em"
             />
-            <DsfrButton
-              label="Annuler"
-              primary
-              @click="isTransferingProject = false"
+            <DsfrSelect
+              v-model="nextOwnerId"
+              label="Choisir le futur propriétaire du projet"
+              select-id="nextOwnerSelect"
+              default-unselected-text="Veuillez choisir un utilisateur"
+              :options="transferSelectOptions"
             />
+            <div
+              class="flex justify-between"
+            >
+              <DsfrButton
+                data-testid="transferProjectBtn"
+                :label="`Transférer le projet`"
+                :disabled="!nextOwnerId"
+                secondary
+                icon="ri-exchange-line"
+                @click="transferOwnership()"
+              />
+              <DsfrButton
+                label="Annuler"
+                primary
+                @click="isTransferingProject = false"
+              />
+            </div>
           </div>
         </div>
       </div>
