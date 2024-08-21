@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref, computed, onBeforeMount } from 'vue'
-import { shallowEqual, ADMIN_PERMS, adminPermsDetails, User, LettersQuery, AdminPermsKeys } from '@cpn-console/shared'
+import { shallowEqual, ADMIN_PERMS, adminPermsDetails, User, LettersQuery, AdminPermsKeys, SharedZodError, RoleSchema } from '@cpn-console/shared'
 import SuggestionInput from './SuggestionInput.vue'
 import pDebounce from 'p-debounce'
 // @ts-ignore '@gouvminint/vue-dsfr' missing types
@@ -28,11 +28,17 @@ const role = ref({
 const isUpdated = computed(() => {
   return !shallowEqual(props, role.value)
 })
+
+const errorSchema = computed<SharedZodError | undefined>(() => {
+  const schemaValidation = RoleSchema.partial().safeParse(role.value)
+  return schemaValidation.success ? undefined : schemaValidation.error
+})
+
 const tabListName = 'Liste d’onglet'
 const tabTitles = [
-  { title: 'Général', icon: 'ri-checkbox-circle-line' },
-  { title: 'Membres', icon: 'ri-checkbox-circle-line' },
-  { title: 'Fermer', icon: 'ri-checkbox-circle-line' },
+  { title: 'Général', icon: 'ri-checkbox-circle-line', tabId: 'general' },
+  { title: 'Membres', icon: 'ri-checkbox-circle-line', tabId: 'membres' },
+  { title: 'Fermer', icon: 'ri-checkbox-circle-line', tabId: 'fermer' },
 ]
 
 const initialSelectedIndex = 0
@@ -58,6 +64,10 @@ const usersInRole = computed(() => users.value.filter(user => user.adminRoleIds.
 
 const lettersNotMatching = ref('')
 const usersToAdd = ref<User[]>([])
+const usersToSuggest = computed(() => usersToAdd.value.map(userToAdd => ({
+  value: userToAdd.email,
+  furtherInfo: userToAdd.firstName + ' ' + userToAdd.lastName,
+})))
 
 const retrieveUsersToAdd = pDebounce(async (letters: LettersQuery['letters']) => {
   // Ne pas lancer de requête à moins de 3 caractères tapés
@@ -120,14 +130,19 @@ defineEmits<{
       :selected="selectedTabIndex === 0"
       :asc="asc"
     >
-      <h6>Nom du rôle</h6>
       <DsfrInput
         v-model="role.name"
-        type="inputType"
+        data-testid="roleNameInput"
+        label="Nom du rôle"
         label-visible
+        hint="Ne doit pas dépasser 30 caractères."
         class="mb-5"
       />
-      <h6>Permissions</h6>
+      <p
+        class="fr-h6"
+      >
+        Permissions
+      </p>
       <div
         v-for="scope in adminPermsDetails"
         :key="scope.name"
@@ -141,6 +156,7 @@ defineEmits<{
           v-for="perm in scope.perms"
           :key="perm.key"
           :model-value="ADMIN_PERMS[perm.key] & role.permissions"
+          :data-testid="`${perm.key}-cbx`"
           :label="perm.label"
           :hint="perm?.hint"
           :name="perm.key"
@@ -148,26 +164,25 @@ defineEmits<{
           @update:model-value="(checked: boolean) => updateChecked(checked, perm.key)"
         />
       </div>
-      <h6>OIDC Groupe</h6>
       <DsfrInput
         v-model="role.oidcGroup"
-        type="inputType"
-        label=""
+        data-testid="oidcGroupInput"
+        label="Groupe OIDC"
         label-visible
         placeholder="/admin"
         class="mb-5"
       />
       <DsfrButton
-        type="buttonType"
-        :label="'Enregistrer'"
+        data-testid="saveBtn"
+        label="Enregistrer"
         secondary
-        :disabled="!isUpdated"
+        :disabled="!isUpdated || errorSchema"
         class="mr-5"
         @click="$emit('save', {...role, permissions: role.permissions.toString() })"
       />
       <DsfrButton
-        type="buttonType"
-        :label="'Supprimer'"
+        data-testid="deleteBtn"
+        label="Supprimer"
         secondary
         @click="$emit('delete')"
       />
@@ -192,9 +207,9 @@ defineEmits<{
         <DsfrNotice
           v-if="!users.length"
           class="mb-5"
-        >
-          Aucun utilisateur présent actuellement
-        </DsfrNotice>
+          data-testid="noUserNotice"
+          title="Aucun utilisateur ne dispose actuellement de ce rôle."
+        />
         <div
           class="w-max"
         >
@@ -206,14 +221,14 @@ defineEmits<{
             label-visible
             hint="Adresse e-mail de l'utilisateur"
             placeholder="prenom.nom@interieur.gouv.fr"
-            :suggestions="usersToAdd"
-            @select-suggestion="(value: User) => newUser = value"
+            :suggestions="usersToSuggest"
+            @select-suggestion="(value: string) => newUser = usersToAdd.find(user => user.email === value)"
             @update:model-value="(value: string) => retrieveUsersToAdd(value)"
           />
           <DsfrAlert
             v-if="isUserAlreadyInTeam"
             data-testid="userErrorInfo"
-            description="L'utilisateur fait déjà partie du rôle."
+            description="L'utilisateur est déjà détenteur de ce rôle."
             small
             type="error"
             class="w-max fr-mb-2w"
@@ -231,7 +246,7 @@ defineEmits<{
       <template
         v-else
       >
-        Les groupes ayant une liaison OIDC ne peuvent pas gérer leurs membres
+        Les groupes ayant une liaison OIDC ne peuvent pas gérer leurs membres.
       </template>
     </DsfrTabContent>
     <DsfrTabContent

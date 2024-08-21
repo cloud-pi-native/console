@@ -203,7 +203,6 @@ onBeforeMount(async () => {
     >
       <DsfrButton
         v-if="ProjectAuthorized.SeeSecrets({ projectPermissions: projectStore.selectedProjectPerms})"
-        type="buttonType"
         data-testid="showSecretsBtn"
         :label="`${isSecretShown ? 'Cacher' : 'Afficher'} les secrets des services`"
         secondary
