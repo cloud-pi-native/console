@@ -64,7 +64,6 @@ describe('Administration roles', () => {
       .find('option')
       .first()
       .click({ force: true })
-      .blur()
     cy.getByDataTestid('addUserBtn')
       .should('be.enabled')
       .click()

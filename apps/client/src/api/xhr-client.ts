@@ -19,13 +19,36 @@ export const apiClient = await getApiClient(
 
     // Generate token
     const keycloak = getKeycloak()
-    await keycloak.updateToken(120)
+    if (!keycloak.token || keycloak.isTokenExpired()) {
+      console.log('no keycloak token')
+      await keycloak.updateToken(120).then((refreshed) => {
+        if (refreshed) {
+          alert('Token was successfully refreshed')
+        } else {
+          console.log('Token is still valid')
+        }
+      }).catch(function () {
+        alert('Failed to refresh the token, or the session has expired')
+      })
+    }
     const token = keycloak.token
+
     if (token) {
       args.headers.Authorization = `Bearer ${token}`
     }
 
-    return tsRestFetchApi(args)
+    return tsRestFetchApi(args).then((res) => {
+      return res
+//   if (res.body.error === 'invalid_grant') {
+//     const keycloak = getKeycloak()
+//     await keycloak.updateToken(120)
+//     const token = keycloak.token
+//     if (token) {
+//       args.headers.Authorization = `Bearer ${token}`
+//     }
+//     return tsRestFetchApi(args)
+//   }
+    })
   },
 )
 

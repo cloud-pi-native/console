@@ -61,7 +61,10 @@ const usersToAdd = ref<User[]>([])
 
 const retrieveUsersToAdd = pDebounce(async (letters: LettersQuery['letters']) => {
   // Ne pas lancer de requête à moins de 3 caractères tapés
-  if (letters.length < 3) return
+  if (letters.length < 3) {
+    usersToAdd.value = []
+    return
+  }
   // Ne pas relancer de requête à chaque lettre ajoutée si aucun user ne correspond aux premières lettres données
   if (lettersNotMatching.value && letters.includes(lettersNotMatching.value) && !usersToAdd.value?.length) return
   usersToAdd.value = await usersStore.listMatchingUsers({ letters })
@@ -70,14 +73,18 @@ const retrieveUsersToAdd = pDebounce(async (letters: LettersQuery['letters']) =>
     lettersNotMatching.value = letters
   }
 }, 300)
-const newUser = ref<User>()
 const newUserInput = ref<string>('')
 
-const isUserAlreadyInTeam = computed(() => {
-  return !!(newUserInput.value && usersInRole.value.find(member => member.id === newUser.value?.id))
-})
+const isUserAlreadyInTeam = ref(false)
 
-const switchUserMembership = async (checked: boolean, user: User, fromSuggestion = false) => {
+const switchUserMembership = async (checked: boolean, user: User | string, fromSuggestion = false) => {
+  if (typeof user === 'string') return
+  if (usersInRole.value.find(userInRole => userInRole.id === user.id)) {
+    isUserAlreadyInTeam.value = true
+    setTimeout(() => {
+      isUserAlreadyInTeam.value = false
+    }, 3000)
+  }
   const newUserAdminRoleIds = user.adminRoleIds.filter(roleId => roleId !== role.value.id)
   if (checked) {
     newUserAdminRoleIds.push(role.value.id)
@@ -103,6 +110,7 @@ defineEmits<{
   save: [{ name: string, permissions: string, oidcGroup: string }]
   cancel: []
 }>()
+const invalidSuggestionInput = computed(() => !!usersInRole.value.find(user => user.email === newUserInput.value) || !usersToAdd.value.find(user => user.email === newUserInput.value))
 
 </script>
 <template>
@@ -211,28 +219,18 @@ defineEmits<{
             hint="Adresse e-mail de l'utilisateur"
             placeholder="prenom.nom@interieur.gouv.fr"
             :suggestions="usersToAdd"
-            @select-suggestion="(value: User) => newUser = value"
+            :strict="true"
+            :invalid-input="invalidSuggestionInput"
+            @submit="(user: User | string) => switchUserMembership(true, user, true)"
             @update:model-value="(value: string) => retrieveUsersToAdd(value)"
           />
           <DsfrAlert
-            v-if="isUserAlreadyInTeam"
+            v-if="invalidSuggestionInput"
             data-testid="userErrorInfo"
             description="L'utilisateur est déjà détenteur de ce rôle."
             small
             type="error"
-            class="w-max fr-mb-2w"
-          />
-          {{ newUserInput }}
-          <br>
-          {{ newUser }}
-          <br>
-          <DsfrButton
-            data-testid="addUserBtn"
-            label="Ajouter l'utilisateur"
-            secondary
-            icon="ri-user-add-line"
-            :disabled="!newUserInput || isUserAlreadyInTeam || !newUser"
-            @click="() => newUser && switchUserMembership(true, newUser, true)"
+            class="w-max fr-mb-2w mt-3"
           />
         </div>
       </template>

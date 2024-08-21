@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 // @ts-ignore '@gouvminint/vue-dsfr' missing types
 import { getRandomId } from '@gouvminint/vue-dsfr'
 import {
@@ -41,10 +41,6 @@ const headers = props.canManage
   ]
 
 const snackbarStore = useSnackbarStore()
-
-const isUserAlreadyInTeam = computed(() => {
-  return !!(newUserEmail.value && (props.project.owner.email === newUserEmail.value || props.project.members.find(member => member.email === newUserEmail.value)))
-})
 
 const removeUserHint = (member: Member) => {
   if (props.canManage) {
@@ -129,11 +125,18 @@ const emit = defineEmits<{
   transferOwnership: [value: string]
 }>()
 
-const addUserToProject = async () => {
+const addUserToProject = async (user: User | string) => {
   if (!newUserEmail.value) return
-  if (isUserAlreadyInTeam.value) return snackbarStore.setMessage('L\'utilisateur semble déjà faire partie du projet')
+  const email = typeof user === 'string' ? user : user.email
+  if (props.project.owner.email === email || props.project.members.find(member => member.email === email)) {
+    return snackbarStore.setMessage('L\'utilisateur semble déjà faire partie du projet')
+    // isUserAlreadyInTeam.value = true
+    // setTimeout(() => {
+    //   isUserAlreadyInTeam.value = false
+    // }, 3000)
+  }
 
-  emit('addMember', newUserEmail.value)
+  emit('addMember', email)
 
   newUserEmail.value = ''
   usersToAdd.value = []
@@ -168,6 +171,8 @@ const transferSelectOptions = [
     value: member.userId,
   })),
 ]
+
+const invalidSuggestionInput = computed(() => props.project.owner.email === newUserEmail.value || !!props.project.members.find (member => member.email === newUserEmail.value))
 </script>
 
 <template>
@@ -197,25 +202,17 @@ const transferSelectOptions = [
           hint="Nom, prénom ou adresse mail de l'utilisateur à rechercher"
           placeholder="prenom.nom@interieur.gouv.fr"
           :suggestions="usersToAdd"
-          @select-suggestion="(value: User) => newUserEmail = value.email"
+          :invalid-input="invalidSuggestionInput"
+          @submit="(user: User | string) => addUserToProject(user)"
           @update:model-value="(value: string) => retrieveUsersToAdd(value)"
         />
         <DsfrAlert
-          v-if="isUserAlreadyInTeam"
+          v-if="invalidSuggestionInput"
           data-testid="userErrorInfo"
           description="L'utilisateur associé à cette adresse e-mail fait déjà partie du projet."
           small
           type="error"
-          class="w-max fr-mb-2w"
-        />
-        <DsfrButton
-          v-if="props.canManage"
-          data-testid="addUserBtn"
-          label="Ajouter l'utilisateur"
-          secondary
-          icon="ri-user-add-line"
-          :disabled="project?.locked || !newUserEmail || isUserAlreadyInTeam"
-          @click="addUserToProject()"
+          class="w-max fr-mb-2w mt-3"
         />
       </div>
       <div
