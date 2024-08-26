@@ -1,6 +1,6 @@
 {
   "name": "@cpn-console/client",
-  "version": "8.9.4",
+  "version": "8.10.0",
   "description": "cpn-console client",
   "private": false,
   "type": "module",

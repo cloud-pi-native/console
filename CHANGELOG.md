@@ -1,5 +1,15 @@
 # Changelog
 
+## [8.10.0](https://github.com/cloud-pi-native/console/compare/v8.9.4...v8.10.0) (2024-08-26)
+
+
+### Features
+
+* :sparkles: add project dedicated approle and policy in vault, to be used by argocd ([e354978](https://github.com/cloud-pi-native/console/commit/e354978392b8c5d7a4c3591388f0f0a9aa3d7865))
+* :sparkles: introduce fine grained perms and and roles ([ab0a7a5](https://github.com/cloud-pi-native/console/commit/ab0a7a55e42ef94a18e529b168d5f299687ca526))
+* :sparkles: maintenance mode ([fdbd5f0](https://github.com/cloud-pi-native/console/commit/fdbd5f0356a16c24ef677f8a06309aac89af3a4c))
+* :sparkles: option to mirror all branches ([655b032](https://github.com/cloud-pi-native/console/commit/655b0329599fe7e0857e487e3b0fd3ecb49b94ac))
+
 ## [8.9.4](https://github.com/cloud-pi-native/console/compare/v8.9.3...v8.9.4) (2024-08-09)
 
 
