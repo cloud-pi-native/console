@@ -1,13 +1,14 @@
 import fp from 'fastify-plugin'
-import { Project, Cluster, Repository } from '@prisma/client'
-import { User } from '@cpn-console/test-utils'
+import type { Repository } from '@prisma/client'
 import { PluginsManifests, RepoCreds, ServiceInfos, editStrippers, populatePluginManifests } from '@cpn-console/hooks'
-import { genericProxy } from './proxy.js'
-import { DEFAULT, DISABLED } from '@cpn-console/shared'
+import { DEFAULT, DISABLED, PROJECT_PERMS } from '@cpn-console/shared'
+import { UserDetails } from '../types/index.js'
+import { faker } from '@faker-js/faker'
+import * as utilsController from '../utils/controller.js'
 
-let requestor: User
+let requestor: Requestor
 
-export const setRequestor = (user: User) => {
+export const setRequestor = (user: Requestor = getRandomRequestor()) => {
   requestor = user
 }
 
@@ -189,123 +190,33 @@ export const filteredOrganizations = [
   },
 ]
 
-// MOCK de l'objet Hook
-const resultsBase = {
-  failed: false,
-  args: {
-    repositories: [],
-  },
-  results: {},
-}
-
-const resultsFetch = {
-  failed: false,
-  args: {},
-  results: {
-    canel: {
-      status: {
-        result: 'OK',
-        message: 'Retrieved',
-      },
-      result: {
-        organizations: [
-          {
-            name: 'genat',
-            label: 'MI - gendaremerie nationale',
-            source: 'canel',
-          },
-          {
-            name: 'mas',
-            label: 'ministère affaires sociaux',
-            source: 'canel',
-          },
-          {
-            name: 'genat',
-            label: 'ministère affaires sociaux',
-            source: 'canel',
-          },
-        ],
-      },
-    },
-  },
-}
-
-const secretsResult = {
-  failed: false,
-  args: {},
-  results: {
-    gitlab: {
-      secrets: {
-        token: 'myToken',
-      },
-      status: {
-        failed: false,
-      },
-    },
-    registry: {
-      secrets: {
-        token: 'myToken',
-      },
-      status: {
-        failed: false,
-      },
-    },
-  },
-}
-
-const resultsKeycloakAdmins = {
-  failed: false,
-  args: {
-  },
-  results: {
-    keycloak: {
-      adminIds: [],
-    },
-  },
-}
-
 export type ReposCreds = Record<Repository['internalRepoName'], RepoCreds>
 
-const misc = {
-  fetchOrganizations: async () => resultsFetch,
-  checkServices: async () => resultsBase,
-  syncRepository: async () => resultsBase,
-}
-
-const project = {
-  upsert: async (_projectId: Project['id'], _reposCreds?: ReposCreds) => {
-    return {
-      results: structuredClone(resultsBase),
-      project: {},
-    }
-  },
-  delete: async (_projectId: Project['id']) => {
-    return {
-      results: structuredClone(resultsBase),
-      project: {},
-    }
-  },
-  getSecrets: async (_projectId: Project['id']) => {
-    return secretsResult
-  },
-}
-
-const cluster = {
-  upsert: async (_clusterId: Cluster['id']) => resultsBase,
-  delete: async (_clusterId: Cluster['id']) => resultsBase,
-}
-
-const user = {
-  retrieveUserByEmail: async (_email: string) => resultsBase,
-  retrieveAdminUsers: async () => resultsKeycloakAdmins,
-  updateUserAdminGroupMembership: async (_id: string) => resultsBase,
-}
-
-export const mockHookWrapper = () => ({
-  hook: {
-    misc: genericProxy(misc, { checkServices: [], fetchOrganizations: [], syncRepository: [] }),
-    project: genericProxy(project, { delete: ['upsert'], upsert: ['delete'], getSecrets: ['delete'] }),
-    cluster: genericProxy(cluster, { delete: ['upsert'], upsert: ['delete'] }),
-    user: genericProxy(user, { retrieveUserByEmail: [], retrieveAdminUsers: [], updateUserAdminGroupMembership: [] }),
-  },
+type Requestor = Partial<UserDetails>
+export const getRandomRequestor = (user?: Requestor): Partial<UserDetails> => ({
+  id: user?.id ?? faker.string.uuid(),
+  email: user?.email ?? faker.internet.email(),
+  firstName: user?.firstName ?? faker.person.firstName(),
+  lastName: user?.lastName ?? faker.person.lastName(),
+  ...user?.groups !== null && { groups: user?.groups ?? [] },
 })
+
+export function getUserMockInfos(isAdmin: boolean, user?: UserDetails): utilsController.UserProfile
+export function getUserMockInfos(isAdmin: boolean, user?: UserDetails, project?: utilsController.ProjectPermState): utilsController.UserProjectProfile
+export function getUserMockInfos(isAdmin: boolean, user = getRandomRequestor(), project?: utilsController.ProjectPermState): utilsController.UserProfile | utilsController.UserProjectProfile {
+  return {
+    adminPermissions: isAdmin ? 2n : 0n,
+    user,
+    ...project,
+  }
+}
+
+export function getProjectMockInfos({ projectId, projectLocked, projectOwnerId, projectPermissions, projectStatus }: Partial<utilsController.ProjectPermState>): utilsController.ProjectPermState {
+  return {
+    projectId: projectId ?? faker.string.uuid(),
+    projectLocked: projectLocked ?? false,
+    projectOwnerId: projectOwnerId ?? faker.string.uuid(),
+    projectStatus: projectStatus ?? 'created',
+    projectPermissions: projectPermissions ?? PROJECT_PERMS.MANAGE,
+  }
+}

@@ -1,19 +1,15 @@
 <script lang="ts" setup>
-import { ref, computed, onBeforeMount } from 'vue'
+import { ref, onBeforeMount } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
-import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { descriptionMaxLength, projectIsLockedInfo, type Project } from '@cpn-console/shared'
+import { descriptionMaxLength, projectIsLockedInfo, type Project, ProjectAuthorized } from '@cpn-console/shared'
 import router from '@/router/index.js'
 import { copyContent } from '@/utils/func.js'
 import { useStageStore } from '@/stores/stage.js'
 
 const projectStore = useProjectStore()
-const userStore = useUserStore()
 const snackbarStore = useSnackbarStore()
 const stageStore = useStageStore()
-
-const isOwner = computed(() => projectStore.selectedProject?.members?.some(member => member.userId === userStore.userProfile?.id && member.role === 'owner'))
 
 const description = ref<string | undefined>(projectStore.selectedProject?.description ?? undefined)
 const isEditingDescription = ref(false)
@@ -26,16 +22,19 @@ const allStages = ref<Array<any>>([])
 const updateProject = async (projectId?: Project['id']) => {
   if (!projectId) return
   snackbarStore.isWaitingForResponse = true
+  isReprovisionning.value = true
   await projectStore.updateProject(projectId, { description: description.value })
   isEditingDescription.value = false
   snackbarStore.isWaitingForResponse = false
 }
 
+const isReprovisionning = ref(false)
 const replayHooks = async (projectId: Project['id']) => {
-  snackbarStore.isWaitingForResponse = true
+  if (isReprovisionning.value) return
+  isReprovisionning.value = true
   await useProjectStore().replayHooksForProject(projectId)
   snackbarStore.setMessage('Le projet a été reprovisionné avec succès', 'success')
-  snackbarStore.isWaitingForResponse = false
+  isReprovisionning.value = false
 }
 
 const archiveProject = async (projectId: Project['id']) => {
@@ -51,15 +50,18 @@ const getDynamicTitle = (locked?: Project['locked'], description?: Project['desc
   return 'Ajouter une description'
 }
 
+const isSearchingSecret = ref(false)
 const handleSecretDisplay = async () => {
+  if (isSecretShown.value) snackbarStore.hideMessage()
+  if (isSearchingSecret.value || !projectStore.selectedProject) return
+
+  isSearchingSecret.value = true
   isSecretShown.value = !isSecretShown.value
   if (isSecretShown.value && !Object.keys(projectSecrets.value).length) {
-    snackbarStore.isWaitingForResponse = true
-    if (!projectStore.selectedProject) throw new Error('Pas de projet sélectionné')
     projectSecrets.value = await projectStore.getProjectSecrets(projectStore.selectedProject.id) ?? {}
     snackbarStore.setMessage('Secrets récupérés')
-    snackbarStore.isWaitingForResponse = false
   }
+  isSearchingSecret.value = false
 }
 
 const getRows = (service: string) => {
@@ -115,7 +117,7 @@ onBeforeMount(async () => {
           icon="ri-pencil-fill"
           data-testid="setDescriptionBtn"
           :title="getDynamicTitle(projectStore.selectedProject.locked, projectStore.selectedProject.description)"
-          :disabled="projectStore.selectedProject.locked"
+          :disabled="projectStore.selectedProject.locked || !ProjectAuthorized.Manage({ projectPermissions: projectStore.selectedProjectPerms })"
           icon-only
           secondary
           @click="isEditingDescription = true"
@@ -185,12 +187,13 @@ onBeforeMount(async () => {
       />
     </div>
     <div
+      v-if="ProjectAuthorized.ReplayHooks({ projectPermissions: projectStore.selectedProjectPerms})"
       class="fr-mt-2w"
     >
       <DsfrButton
         data-testid="replayHooksBtn"
         label="Reprovisionner le projet"
-        icon="ri-refresh-fill"
+        :icon="{ name: 'ri-refresh-fill', animation: isReprovisionning ? 'spin': '' }"
         secondary
         @click="replayHooks(projectStore.selectedProject.id ?? '')"
       />
@@ -199,12 +202,13 @@ onBeforeMount(async () => {
       class="fr-mt-2w"
     >
       <DsfrButton
-        v-if="isOwner"
-        type="buttonType"
+        v-if="ProjectAuthorized.SeeSecrets({ projectPermissions: projectStore.selectedProjectPerms})"
         data-testid="showSecretsBtn"
         :label="`${isSecretShown ? 'Cacher' : 'Afficher'} les secrets des services`"
         secondary
-        :icon="isSecretShown ? 'ri-eye-off-line' : 'ri-eye-line'"
+        :icon="isSearchingSecret
+          ? { name: 'ri-refresh-fill', animation: 'spin' }
+          : isSecretShown ? 'ri-eye-off-line' : 'ri-eye-line'"
         @click="handleSecretDisplay()"
       />
       <div
@@ -235,7 +239,7 @@ onBeforeMount(async () => {
       </div>
     </div>
     <div
-      v-if="isOwner"
+      v-if="ProjectAuthorized.Manage({ projectPermissions: projectStore.selectedProjectPerms})"
       data-testid="archiveProjectZone"
       class="danger-zone"
     >

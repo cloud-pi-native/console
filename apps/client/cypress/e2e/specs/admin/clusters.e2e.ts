@@ -1,12 +1,12 @@
-import { type ClusterDetails, ClusterPrivacy } from '@cpn-console/shared'
+import { type Cluster, type ClusterDetails, ClusterPrivacy, type Project, type Stage } from '@cpn-console/shared'
 import { getModelById, getModel } from '../../support/func.js'
 
 describe('Administration clusters', () => {
-  const clusters = getModel('cluster')
+  const clusters: Cluster[] = getModel('cluster')
   const cluster1 = getModelById('cluster', '32636a52-4dd1-430b-b08a-b2e5ed9d1789')
   const cluster2 = getModelById('cluster', 'aaaaaaaa-5b03-45d5-847b-149dec875680')
-  const allStages = getModel('stage')
-  const allProjects = getModel('project')
+  const allStages: Stage[] = getModel('stage')
+  const allProjects: Project[] = getModel('project')
   const privateZone = getModelById('zone', 'a66c4230-eba6-41f1-aae5-bb1e4f90cce1')
 
   const newCluster = {

@@ -1,55 +1,38 @@
-type DsoErrorData = {
-  description?: string
-  extras?: Record<string, any>
+export class ErrorResType {
+  status: 400 | 403 | 404 | 422
+  body: { message: string } = { message: '' }
+  constructor(code: 400 | 403 | 404 | 422) {
+    this.status = code
+  }
 }
-class DsoError extends Error {
-  public description: string
-  public extras: Record<string, string>
-  public statusCode: number
-
-  constructor(message: string, data?: DsoErrorData) {
-    super(message)
-    this.description = data?.description || message
-    this.extras = data?.extras || {}
-    this.statusCode = 500
+export class BadRequest400 extends ErrorResType {
+  status = 400 as const
+  constructor(message: string) {
+    super(400)
+    this.body.message = message ?? 'Bad Request'
   }
 }
 
-class BadRequestError extends DsoError {
-  statusCode = 400
+export class Forbidden403 extends ErrorResType {
+  status = 403 as const
+  constructor(message?: string) {
+    super(403)
+    this.body.message = message ?? 'Forbidden'
+  }
 }
 
-class UnauthorizedError extends DsoError {
-  statusCode = 401
+export class NotFound404 extends ErrorResType {
+  status = 404 as const
+  constructor() {
+    super(404)
+    this.body.message = 'Not Found'
+  }
 }
 
-class ForbiddenError extends DsoError {
-  statusCode = 403
-}
-
-class NotFoundError extends DsoError {
-  statusCode = 404
-}
-
-class ConflictError extends DsoError {
-  statusCode = 409
-}
-
-class UnprocessableContentError extends DsoError {
-  statusCode = 422
-}
-
-class TooManyRequestError extends DsoError {
-  statusCode = 429
-}
-
-export {
-  DsoError,
-  BadRequestError,
-  UnauthorizedError,
-  ForbiddenError,
-  NotFoundError,
-  ConflictError,
-  UnprocessableContentError,
-  TooManyRequestError,
+export class Unprocessable422 extends ErrorResType {
+  status = 422 as const
+  constructor(message?: string) {
+    super(422)
+    this.body.message = message ?? 'Unprocessable Entity'
+  }
 }

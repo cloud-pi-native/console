@@ -35,6 +35,7 @@ CMD [ "dev" ]
 # Build stage
 FROM dev AS build
 
+RUN pnpm run db:generate
 RUN pnpm run build
 RUN pnpm --filter @cpn-console/server run build
 RUN pnpm --filter @cpn-console/server --prod deploy build

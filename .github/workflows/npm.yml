@@ -70,8 +70,6 @@ jobs:
               - 'packages/shared/src/**'
             hooks:
               - 'packages/hooks/src/**'
-            test-utils:
-              - 'packages/test-utils/src/**'
             ts-config:
               - 'packages/tsconfig/**'
             argocd:

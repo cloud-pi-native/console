@@ -5,12 +5,12 @@ export const RepoSchema = z.object({
   id: z.string()
     .uuid(),
   internalRepoName: z.string()
-    .regex(/^[a-z0-9]+[a-z0-9-]+[a-z0-9]+$/, { message: 'failed regex test' })
-    .min(2, { message: 'must be at least 2 character long' })
-    .max(20, { message: 'must not exceed 20 characters' }),
+    .min(2, { message: 'Longueur minimum 2 caractères' })
+    .max(20, { message: 'Longueur maximum 2 caractères' })
+    .regex(/^[a-z0-9]+[a-z0-9-]*[a-z0-9]+$/, { message: 'Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique' }),
   externalRepoUrl: z.string()
-    .url()
-    .regex(/^https:\/\/.*\.git$/, { message: 'failed regex test' }),
+    .regex(/^https:\/\/.*\.git$/, { message: 'L\'adresse doit commencer par https et se terminer par .git' })
+    .url({ message: 'Url invalide' }),
   isPrivate: z.boolean(),
   isInfra: z.boolean(),
   externalUserName: z.string()
@@ -23,18 +23,17 @@ export const RepoSchema = z.object({
 })
 
 export const CreateRepoBusinessSchema = RepoSchema.omit({ id: true, projectId: true }).refine(
-  ({ isPrivate, externalToken, externalUserName }) =>
-    (isPrivate && externalToken && externalUserName)
-    || !isPrivate,
-  { message: 'Si le dépôt est privé, vous devez renseignez les nom de propriétaire et token associés.' },
+  ({ isPrivate, externalToken, externalUserName }) => {
+    if (isPrivate) {
+      if (!externalToken && !externalUserName) return false
+      return true
+    }
+    return true
+  },
+  { message: 'Si le dépôt est privé, vous devez renseignez au moins le nom d\'utilisateur ou le token' },
 )
 
-export const RepoBusinessSchema = RepoSchema.refine(
-  ({ isPrivate, externalToken, externalUserName }) =>
-    (isPrivate && externalToken && externalUserName)
-    || !isPrivate,
-  { message: 'Si le dépôt est privé, vous devez renseignez les nom de propriétaire et token associés.' },
-)
+export const RepoBusinessSchema = RepoSchema
 
 export type Repo = Zod.infer<typeof RepoSchema>
 

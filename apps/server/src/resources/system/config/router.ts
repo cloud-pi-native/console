@@ -1,41 +1,36 @@
-import { addReqLogs } from '@/utils/logger.js'
-import { systemPluginContract } from '@cpn-console/shared'
+import { AdminAuthorized, systemPluginContract } from '@cpn-console/shared'
 import { serverInstance } from '@/app.js'
 import { getPluginsConfig, updatePluginConfig } from './business.js'
-import { assertIsAdmin } from '@/utils/controller.js'
+import { authUser } from '@/utils/controller.js'
+import { Forbidden403, ErrorResType } from '@/utils/errors.js'
 
 export const pluginConfigRouter = () => serverInstance.router(systemPluginContract, {
   // Récupérer les configurations plugins
   getPluginsConfig: async ({ request: req }) => {
     const requestor = req.session.user
-    const services = await getPluginsConfig(requestor)
-    addReqLogs({
-      req,
-      message: 'Configurations des plugins récupérées avec succès',
-      infos: {
-        userId: requestor.id,
-      },
-    })
+    const perms = await authUser(requestor)
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+
+    const services = await getPluginsConfig()
+
     return {
       status: 200,
       body: services,
+
     }
   },
   // Mettre à jour les configurations plugins
   updatePluginsConfig: async ({ request: req, body }) => {
     const requestor = req.session.user
-    assertIsAdmin(requestor)
-    await updatePluginConfig(body)
-    addReqLogs({
-      req,
-      message: 'Configurations des plugins mises à jour avec succès',
-      infos: {
-        userId: requestor.id,
-      },
-    })
+    const perms = await authUser(requestor)
+    if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+
+    const resBody = await updatePluginConfig(body)
+    if (resBody instanceof ErrorResType) return resBody
+
     return {
       status: 204,
-      body: null,
+      body: resBody,
     }
   },
 })

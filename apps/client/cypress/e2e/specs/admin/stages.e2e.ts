@@ -102,7 +102,7 @@ describe('Administration stages', () => {
     })
 
     // Check stage availability on environment form
-    cy.kcLogin('tcolin')
+    cy.kcLogin('test')
     cy.goToProjects()
       .wait('@listProjects')
       .getByDataTestid(`projectTile-${project?.name}`).click()
@@ -215,7 +215,7 @@ describe('Administration stages', () => {
       .should('have.class', 'fr-tag--dismiss')
 
     // Check stage availability on environment form
-    cy.kcLogin('tcolin')
+    cy.kcLogin('test')
     cy.goToProjects()
       .wait('@listProjects')
       .getByDataTestid(`projectTile-${project?.name}`).click()

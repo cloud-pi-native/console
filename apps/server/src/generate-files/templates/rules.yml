@@ -1,6 +1,0 @@
-.rule:changes:
-  rules:
-    - changes:
-        - $WORKING_DIR/*
-        - $WORKING_DIR/**/*
-        - .gitlab-ci-dso.yml

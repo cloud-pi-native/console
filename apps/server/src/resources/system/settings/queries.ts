@@ -1,8 +1,8 @@
-import type { SystemSetting, UpsertSystemSettingBody } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
+import { Prisma, SystemSetting } from '@prisma/client'
 
-export const upsertSystemSetting = async (newSystemSetting: UpsertSystemSettingBody) => {
-  return prisma.systemSetting.upsert({
+export const upsertSystemSetting = (newSystemSetting: SystemSetting) =>
+  prisma.systemSetting.upsert({
     create: {
       ...newSystemSetting,
     },
@@ -13,12 +13,5 @@ export const upsertSystemSetting = async (newSystemSetting: UpsertSystemSettingB
       key: newSystemSetting.key,
     },
   })
-}
 
-export const getSystemSettings = () => prisma.systemSetting.findMany()
-
-export const getSystemSetting = (key: SystemSetting['key']) => prisma.systemSetting.findUniqueOrThrow({
-  where: {
-    key,
-  },
-})
+export const getSystemSettings = (where?: Prisma.SystemSettingWhereInput) => prisma.systemSetting.findMany({ where })

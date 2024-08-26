@@ -7,7 +7,7 @@ const props = withDefaults(defineProps<{
   optionsSelected: T[]
   label: string | undefined
   description: string
-  disabled: boolean
+  disabled?: boolean
   id: string
   valueKey: VALUE
   labelKey: LABEL
@@ -33,7 +33,7 @@ const displayed = {
 }
 
 const emit = defineEmits<{
-  update: [selected: T[], values: VALUE[]]
+  update: [selected: T[], values: T[VALUE][]]
 }>()
 
 const switchSelection = (event: string) => {
@@ -136,12 +136,11 @@ const groups: Group[] = [
     <DsfrInput
       v-if="props.options.length > 6"
       v-model="search"
-      type="inputType"
       class="mb-2"
-      label=""
-      :label-visible="false"
+      label="Caractères à rechercher"
+      :label-visible="true"
       :data-testid="`choice-selector-search-${props.id}`"
-      placeholder="Recherchez"
+      placeholder="..."
     />
     <div class="grid gap-5  md:2xl:grid-rows-2 sm:md:grid-cols-2 md:2xl:grid-flow-row sm:md:grid-flow-col">
       <template
@@ -159,7 +158,6 @@ const groups: Group[] = [
             class="flex gap-3 mb-3"
           >
             <DsfrButton
-              type="buttonType"
               :label="group.addButtonLabel"
               secondary
               :disabled="props.disabled"
@@ -167,7 +165,6 @@ const groups: Group[] = [
               @click="group.switchAll()"
             />
             <DsfrButton
-              type="buttonType"
               :label="group.addVisibleButtonLabel"
               secondary
               :disabled="props.disabled"

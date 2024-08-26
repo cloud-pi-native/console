@@ -2,8 +2,13 @@ import Keycloak from 'keycloak-js'
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useUserStore } from './user.js'
+import { apiClient } from '../api/xhr-client.js'
 
-vi.mock('../api/xhr-client.js', () => ({ apiClient: { Users: { auth: async () => vi.fn } } }))
+const authMock = vi.spyOn(apiClient.Users, 'auth')
+const listAdminRoles = vi.spyOn(apiClient.AdminRoles, 'listAdminRoles')
+
+authMock.mockResolvedValue(Promise.resolve({ status: 200, body: {} }))
+listAdminRoles.mockResolvedValue(Promise.resolve({ status: 200, body: [] }))
 
 vi.mock('keycloak-js', () => {
   const Keycloak = vi.fn()
@@ -37,22 +42,9 @@ describe('User Store', () => {
 
     expect(userStore.isLoggedIn).toBeUndefined()
 
-    userStore.setIsLoggedIn()
+    await userStore.setIsLoggedIn()
 
     expect(userStore.isLoggedIn).toEqual(true)
-  })
-
-  it('Should retrieve isAdmin from Keycloak (true)', async () => {
-    const userStore = useUserStore()
-
-    expect(userStore.isLoggedIn).toBeUndefined()
-    expect(userStore.isAdmin).toBeUndefined()
-    expect(userStore.userProfile).toMatchObject({})
-
-    userStore.setIsLoggedIn()
-
-    expect(userStore.isLoggedIn).toEqual(true)
-    expect(userStore.isAdmin).toEqual(true)
   })
 
   it('Should retrieve userProfile from Keycloak', async () => {

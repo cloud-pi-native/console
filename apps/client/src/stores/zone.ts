@@ -24,7 +24,7 @@ export const useZoneStore = defineStore('zone', () => {
 
   const updateZone = (zoneId: Zone['id'], data: UpdateZoneBody) =>
     apiClient.Zones.updateZone({ body: data, params: { zoneId } })
-      .then(response => extractData(response, 201))
+      .then(response => extractData(response, 200))
 
   const deleteZone = (zoneId: Zone['id']) =>
     apiClient.Zones.deleteZone({ params: { zoneId } })

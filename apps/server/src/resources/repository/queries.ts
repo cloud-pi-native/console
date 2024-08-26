@@ -53,8 +53,5 @@ export const deleteRepository = async (id: Repository['id']) => {
 export const deleteAllRepositoryForProject = (id: Project['id']) =>
   prisma.repository.deleteMany({ where: { projectId: id } })
 
-// TECH
-export const _dropRepositoriesTable = prisma.repository.deleteMany
-
 export const _createRepository = (data: Parameters<typeof prisma.repository.upsert>[0]['create']) =>
   prisma.repository.upsert({ create: data, update: data, where: { id: data.id } })

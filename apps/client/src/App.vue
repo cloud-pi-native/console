@@ -1,16 +1,13 @@
 <script setup lang="ts">
 import { apiPrefix } from '@cpn-console/shared'
 import { getKeycloak } from './utils/keycloak/keycloak.js'
-import { useUserStore } from './stores/user.js'
 import { useSnackbarStore } from './stores/snackbar.js'
 import { useSystemSettingsStore } from './stores/system-settings.js'
+import { useServiceStore } from '@/stores/services-monitor.js'
 
 const keycloak = getKeycloak()
-const userStore = useUserStore()
 const snackbarStore = useSnackbarStore()
 const systemStore = useSystemSettingsStore()
-
-userStore.setIsLoggedIn()
 
 const isLoggedIn = ref<boolean | undefined>(keycloak.authenticated)
 const label = ref(isLoggedIn.value ? 'Se déconnecter' : 'Se connecter')
@@ -41,6 +38,11 @@ watch(label, (label: string) => {
   quickLinks.value[0].label = label
 })
 
+const serviceStore = useServiceStore()
+onBeforeMount(() => {
+  serviceStore.startHealthPolling()
+  serviceStore.checkServicesHealth()
+})
 </script>
 
 <template>

@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { ref, onBeforeMount, computed } from 'vue'
+// @ts-ignore '@gouvminint/vue-dsfr' missing types
 import { getRandomId } from '@gouvminint/vue-dsfr'
 import {
   type CleanedCluster,
@@ -21,21 +22,28 @@ type OptionType = {
 }
 
 const props = withDefaults(defineProps<{
-  environment: Partial<Environment>
+  environment?: Omit<Environment, 'projectId'>
   isEditable: boolean
-  isOwner: boolean
+  canManage: boolean
   isProjectLocked: boolean
   projectClustersIds: CleanedCluster['id'][]
   allClusters: CleanedCluster[]
 }>(), {
-  environment: undefined,
+  // @ts-expect-error TS2322
+  environment: () => ({
+    id: '',
+    name: '',
+    stageId: undefined,
+    quotaId: undefined,
+    clusterId: undefined,
+  }),
   isEditable: true,
-  isOwner: false,
+  canManage: false,
   isProjectLocked: false,
 })
 
 const emit = defineEmits<{
-  addEnvironment: [environment: Omit<Environment, 'id' | 'permissions'>]
+  addEnvironment: [environment: Omit<Environment, 'id' | 'projectId'>]
   putEnvironment: [environment: Pick<Environment, 'quotaId'>]
   deleteEnvironment: [environmentId: Environment['id']]
   cancel: []
@@ -60,10 +68,10 @@ const chosenZoneDescription = computed(() => zoneStore.zonesById[zoneId.value ??
 
 const errorSchema = computed<SharedZodError | undefined>(() => {
   if (localEnvironment.value?.id) {
-    const schemaValidation = EnvironmentSchema.pick({ id: true, projectId: true, quotaId: true }).safeParse(localEnvironment.value)
+    const schemaValidation = EnvironmentSchema.pick({ id: true, quotaId: true }).safeParse(localEnvironment.value)
     return schemaValidation.success ? undefined : schemaValidation.error
   } else {
-    const schemaValidation = EnvironmentSchema.pick({ clusterId: true, projectId: true, name: true, quotaId: true, stageId: true }).safeParse(localEnvironment.value)
+    const schemaValidation = EnvironmentSchema.pick({ clusterId: true, name: true, quotaId: true, stageId: true }).safeParse(localEnvironment.value)
     return schemaValidation.success ? undefined : schemaValidation.error
   }
 })
@@ -109,6 +117,7 @@ const setEnvironmentOptions = () => {
 }
 
 const resetCluster = () => {
+  // @ts-expect-error TS2322
   localEnvironment.value.clusterId = undefined
 }
 
@@ -179,7 +188,7 @@ watch(localEnvironment.value, () => {
         :hint="`Ne doit pas contenir d'espace ni de trait d'union, doit être unique pour le projet et le cluster sélectionnés, être en minuscules et faire plus de 2 et moins de ${longestEnvironmentName} caractères.`"
         :error-message="!!localEnvironment.name && !EnvironmentSchema.pick({name: true}).safeParse({name: localEnvironment.name}).success ? `Le nom de l\'environnment ne doit pas contenir d\'espace, doit être unique pour le projet et le cluster sélectionnés, être en minuscules et faire plus de 2 et moins de ${longestEnvironmentName} caractères.`: undefined"
         placeholder="integ0"
-        :disabled="!props.isEditable"
+        :disabled="!props.isEditable || !props.canManage"
       />
       <DsfrSelect
         v-model="zoneId"
@@ -187,7 +196,7 @@ watch(localEnvironment.value, () => {
         label="Zone"
         :description="`Choix de la zone cible pour le déploiement de l\'environnement ${localEnvironment.name ? localEnvironment.name : 'en cours de création'}.`"
         required
-        :disabled="!props.isEditable"
+        :disabled="!props.isEditable || !props.canManage"
         :options="zoneOptions"
         @update:model-value="resetCluster()"
       />
@@ -204,7 +213,7 @@ watch(localEnvironment.value, () => {
         label="Type d'environnement"
         description="Type d'environnement proposé par DSO, conditionne les quotas et les clusters auxquels vous aurez accès pour créer votre environnement."
         required
-        :disabled="!props.isEditable"
+        :disabled="!props.isEditable || !props.canManage"
         :options="stageOptions"
         @update:model-value="resetCluster()"
       />
@@ -226,7 +235,7 @@ watch(localEnvironment.value, () => {
             description="Si votre projet nécessite d'avantage de ressources que celles proposées ci-dessus, contactez les administrateurs."
             required
             :options="quotaOptions"
-            :disabled="!!(localEnvironment.quotaId && quotaStore.quotasById[localEnvironment.quotaId]?.isPrivate)"
+            :disabled="!!(localEnvironment.quotaId && quotaStore.quotasById[localEnvironment.quotaId]?.isPrivate) || !props.canManage"
           />
         </div>
         <DsfrAlert
@@ -243,7 +252,7 @@ watch(localEnvironment.value, () => {
           label="Cluster"
           :description="`Choix du cluster cible pour le déploiement de l\'environnement ${localEnvironment.name ? localEnvironment.name : 'en cours de création'}.`"
           required
-          :disabled="!props.isEditable"
+          :disabled="!props.isEditable || !props.canManage"
           :options="clusterOptions"
         />
         <DsfrAlert
@@ -253,7 +262,7 @@ watch(localEnvironment.value, () => {
           :description="clusterInfos"
         />
         <div
-          v-if="localEnvironment.id"
+          v-if="localEnvironment.id && canManage"
           class="flex space-x-10 mt-5"
         >
           <DsfrButton
@@ -268,7 +277,6 @@ watch(localEnvironment.value, () => {
           <DsfrButton
             label="Annuler"
             data-testid="cancelEnvironmentBtn"
-            :disabled="props.isProjectLocked"
             secondary
             icon="ri-close-line"
             @click="cancel()"
@@ -277,12 +285,8 @@ watch(localEnvironment.value, () => {
       </div>
     </DsfrFieldset>
     <div v-if="localEnvironment.id">
-      <PermissionForm
-        v-if="!isDeletingEnvironment"
-        :environment="localEnvironment"
-      />
       <div
-        v-if="isOwner"
+        v-if="canManage"
         data-testid="deleteEnvironmentZone"
         class="danger-zone"
       >
@@ -298,7 +302,7 @@ watch(localEnvironment.value, () => {
           />
           <DsfrAlert
             class="<md:mt-2"
-            :description="props.isProjectLocked ? 'Impossible de supprimer un environnement lorsque le projet est verrouillé.' : 'La suppression d\'un environnement est irréversible.'"
+            description="La suppression d'un environnement est irréversible."
             type="warning"
             small
           />
@@ -337,7 +341,7 @@ watch(localEnvironment.value, () => {
       </div>
     </div>
     <div
-      v-if="props.isEditable"
+      v-if="props.isEditable && canManage"
       class="flex space-x-10 mt-5"
     >
       <DsfrButton

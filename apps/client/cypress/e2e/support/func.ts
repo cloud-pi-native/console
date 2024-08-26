@@ -19,15 +19,15 @@ export const getProjects = () => getModel('project')
         ...environment,
         permissions: getModel('permission')?.filter(permission => permission.environmentId === environment.id),
       })),
-    users: getModel('role')
-      ?.filter(role => role.projectId === project.id)
-      ?.map(role => ({
-        role: role.role,
-        ...getModelById('user', role.userId),
+    members: getModel('projectMembers')
+      ?.filter(member => member.projectId === project.id)
+      ?.map(member => ({
+        roleIds: member.roleIds,
+        ...getModelById('user', member.userId),
       })),
   }))
 
 export const getProjectById = (id: string) => getProjects()?.find(project => project.id === id)
 
-export const getUserProjects = (userId: string) => getProjects()
-  ?.filter(project => project.status !== 'archived' && project.users?.find(user => user.id === userId))
+export const getProjectMembers = (userId: string) => getProjects()
+  ?.filter(project => project.status !== 'archived' && project.members?.find(member => member.id === userId))

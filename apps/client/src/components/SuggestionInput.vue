@@ -1,9 +1,14 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 
+type Suggestion = {
+  value: string
+  furtherInfo?: string
+}
+
 const props = withDefaults(defineProps<{
   modelValue: string
-  suggestions: unknown[]
+  suggestions: Suggestion[]
 }>(), {
   modelValue: '',
   suggestions: () => [],
@@ -17,9 +22,8 @@ const emit = defineEmits<{
 }>()
 
 const updateValue = () => {
-  if (props.suggestions.find(suggestion => suggestion === localValue.value)) {
+  if (props.suggestions.find(suggestion => suggestion.value === localValue.value)) {
     emit('selectSuggestion', localValue.value)
-    return
   }
   emit('update:modelValue', localValue.value)
 }
@@ -39,9 +43,11 @@ const updateValue = () => {
     >
       <option
         v-for="suggestion, i in props.suggestions"
-        :key="`${i}-suggestion`"
-        :value="suggestion"
-      />
+        :key="`${i}-option`"
+        :value="suggestion.value"
+      >
+        {{ suggestion.furtherInfo ? `${suggestion.furtherInfo} (${suggestion.value})` : suggestion.value }}
+      </option>
     </datalist>
   </div>
 </template>

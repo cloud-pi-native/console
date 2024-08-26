@@ -5,7 +5,7 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = withDefaults(defineProps<{
   isNewZone: boolean
-  zone: Zone
+  zone: Zone & { clusterIds: Cluster['id'][] }
   allQuotas: Quota[]
   allClusters: Cluster[]
   associatedClusters: unknown[]
@@ -108,6 +108,7 @@ onBeforeMount(() => {
       hint="Facultatif. Attention, ces informations seront visibles par les utilisateurs de la console."
     />
     <div
+      v-if="props.isNewZone"
       class="fr-mb-2w"
     >
       <ChoiceSelector
@@ -116,11 +117,10 @@ onBeforeMount(() => {
         label="Clusters associés"
         :description="!props.isNewZone ? 'Veuillez procéder aux associations dans le formulaire des clusters concernés.': 'Sélectionnez les clusters autorisés à utiliser cette zone.'"
         :options="props.allClusters"
-        :options-selected="props.allClusters.filter(({ id }) => localZone.clusterIds.includes(id))"
+        :options-selected="props.allClusters.filter(({ id }) => localZone.clusterIds?.includes(id))"
         label-key="label"
         value-key="id"
-        :disabled="!props.isNewZone"
-        @update="(_c, clusterIds) => updateClusters(clusterIds)"
+        @update="(_c: Cluster[], clusterIds: Cluster['id'][]) => updateClusters(clusterIds)"
       />
     </div>
     <div

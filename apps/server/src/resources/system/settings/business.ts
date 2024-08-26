@@ -1,14 +1,9 @@
 import { type UpsertSystemSettingBody } from '@cpn-console/shared'
 import {
   getSystemSettings as getSystemSettingsQuery,
-  getSystemSetting as getSystemSettingQuery,
   upsertSystemSetting as upsertSystemSettingQuery,
 } from './queries.js'
 
-export const getSystemSettings = async (key?: string) => {
-  return key ? [await getSystemSettingQuery(key)] : getSystemSettingsQuery()
-}
+export const getSystemSettings = (key?: string) => getSystemSettingsQuery({ key })
 
-export const upsertSystemSetting = async (newSystemSetting: UpsertSystemSettingBody) => {
-  return upsertSystemSettingQuery(newSystemSetting)
-}
+export const upsertSystemSetting = (newSystemSetting: UpsertSystemSettingBody) => upsertSystemSettingQuery(newSystemSetting)

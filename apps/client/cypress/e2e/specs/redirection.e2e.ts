@@ -48,7 +48,7 @@ describe('Redirection', () => {
     cy.wait('@postToken')
     cy.url().should('contain', `/projects/${project.id}/dashboard`)
     cy.wait('@listStages')
-    cy.wait('@listProjects', { timeout: 5000 }).its('response').then((_response) => {
+    cy.wait('@listProjects', { timeout: 5_000 }).its('response').then((_response) => {
       cy.getByDataTestid('currentProjectInfo')
       cy.should('contain', `Le projet courant est : ${project.name} (${organization.label})`)
     })

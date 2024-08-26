@@ -47,7 +47,7 @@ describe('Zone Store', () => {
     const adminZoneStore = useZoneStore()
 
     const zone = { id: 'zoneId', label: 'Zod à update' }
-    apiClientPut.mockReturnValueOnce(Promise.resolve({ status: 201, data: zone }))
+    apiClientPut.mockReturnValueOnce(Promise.resolve({ status: 200, data: zone }))
 
     await adminZoneStore.updateZone(zone.id, zone)
 

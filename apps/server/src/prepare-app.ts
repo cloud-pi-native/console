@@ -29,6 +29,7 @@ export async function startServer(defaultPort: number = (port ? +port : 8080)) {
   try {
     await getConnection()
   } catch (error) {
+    if (!(error instanceof Error)) return
     app.log.error(error.message)
     throw error
   }

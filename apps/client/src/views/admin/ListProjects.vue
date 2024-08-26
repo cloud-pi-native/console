@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { onBeforeMount, ref } from 'vue'
+// @ts-ignore '@gouvminint/vue-dsfr' missing types
 import { getRandomId } from '@gouvminint/vue-dsfr'
 import {
   type PluginsUpdateBody,
@@ -17,45 +18,24 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useOrganizationStore } from '@/stores/organization.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 import { useUserStore } from '@/stores/user.js'
-import { useUsersStore } from '@/stores/users.js'
-import { useProjectUserStore } from '@/stores/project-user.js'
 import { useQuotaStore } from '@/stores/quota.js'
 import { useProjectServiceStore } from '@/stores/project-services.js'
 import { useProjectRepositoryStore } from '@/stores/project-repository.js'
 import { useProjectStore } from '@/stores/project.js'
 import { useStageStore } from '@/stores/stage.js'
-import { bts } from '@/utils/func.js'
+import { useProjectMemberStore } from '@/stores/project-member.js'
+import { bts, truncateDescription } from '@/utils/func.js'
 
 const projectStore = useProjectStore()
 const organizationStore = useOrganizationStore()
 const projectServiceStore = useProjectServiceStore()
 const userStore = useUserStore()
-const usersStore = useUsersStore()
 const snackbarStore = useSnackbarStore()
-const projectUserStore = useProjectUserStore()
 const quotaStore = useQuotaStore()
 const stageStore = useStageStore()
+const projectMemberStore = useProjectMemberStore()
 const projectRepositoryStore = useProjectRepositoryStore()
 const projectEnvironmentStore = useProjectEnvironmentStore()
-
-export type Component = {
-  component: string
-  [x: string]: any
-}
-type Row = {
-  status: string
-  locked: boolean
-  rowData: Array<string | Component>
-  rowAttrs: { class: string, title: string, onClick: () => void }
-}
-export type EmptyRow = [[{ field: 'string', text: string, cellAttrs: { colspan: number } }]]
-type Rows = Row[]
-
-type EnvironnementRow = [string, string, Component, Component, Component] | [[{ text: string, cellAttrs: { colspan: number } }]]
-type EnvironnementRows = EnvironnementRow[] | EmptyRow
-
-type RepositoryRow = [string, Component, Component] | [[{ text: string, cellAttrs: { colspan: number } }]]
-type RepositoryRows = RepositoryRow[] | EmptyRow
 
 type FileForDownload = File & {
   href?: string
@@ -64,9 +44,6 @@ type FileForDownload = File & {
 }
 
 const organizations = ref<Organization[]>([])
-const rows = ref<Rows>([])
-const environmentsRows = ref<EnvironnementRows>([])
-const repositoriesRows = ref<RepositoryRows>([])
 const tableKey = ref(getRandomId('table'))
 const selectedProject = ref<ProjectV2 & { repositories: Repo[], environments: Environment[] }>()
 const teamCtKey = ref(getRandomId('team'))
@@ -103,37 +80,15 @@ const filterMethods: FilterMethods = {
   Vérrouillés: { filter: 'all', locked: true, statusNotIn: 'archived' },
 }
 
-const rowFilter = (rows: Row[]): Rows | EmptyRow => {
-  const returnRows = rows.filter((row) => {
-    if (!inputSearchText.value) return true
-    return row.rowData.some((data) => {
-      if (typeof data === 'object') {
-        return data.text?.toString().toLowerCase().includes(inputSearchText.value.toLocaleLowerCase())
-      }
-      return data.toString().toLowerCase().includes(inputSearchText.value.toLocaleLowerCase())
-    })
-  })
-  if (!returnRows.length) {
-    return [[{
-      field: 'string',
-      text: 'Aucun projet trouvé',
-      cellAttrs: {
-        colspan: headers.length,
-      },
-    }]]
-  }
-  return returnRows
-}
-
 interface DomElement extends Event {
   target: HTMLElement & {
     open?: string
   }
 }
 
-const setRows = () => {
-  rows.value = sortArrByObjKeyAsc(projectStore.projects, 'name')
-    ?.map(({ id, organization, name, description, members, status, locked, createdAt, updatedAt }) => (
+const projectRows = computed(() => {
+  let rows = sortArrByObjKeyAsc(projectStore.projects, 'name')
+    ?.map(({ id, organization, name, description, status, locked, createdAt, updatedAt, owner }) => (
       {
         status,
         locked,
@@ -150,7 +105,7 @@ const setRows = () => {
           organization.label,
           name,
           truncateDescription(description ?? ''),
-          members.find(member => member.role === 'owner')?.email ?? '',
+          owner.email,
           {
             component: 'v-icon',
             name: statusDict.status[status].icon,
@@ -168,63 +123,83 @@ const setRows = () => {
         ],
       }),
     )
-  tableKey.value = getRandomId('table')
-}
-
-const getEnvironmentsRows = () => {
-  if (!selectedProject.value) return
-  environmentsRows.value = selectedProject.value.environments?.length
-    ? sortArrByObjKeyAsc(selectedProject.value.environments, 'name')
-      ?.map(({ id, name, quotaId, stageId }) => (
-        [
-          name,
-          stageStore.stages.find(stage => stage.id === stageId)?.name,
-          {
-            component: 'DsfrSelect',
-            modelValue: quotaId,
-            selectId: 'quota-select',
-            options: quotaStore.quotas.filter(quota => quota.stageIds.includes(stageId)).map(quota => ({
-              text: quota.name + ' (' + quota.cpu + 'CPU, ' + quota.memory + ')',
-              value: quota.id,
-            })),
-            'onUpdate:model-value': (event: string) => updateEnvironmentQuota({ environmentId: id, quotaId: event }),
-          },
-        ]
-      ),
-      )
-    : [[{
+  if (inputSearchText.value) {
+    rows = rows.filter((row) => {
+      return row.rowData.some((data) => {
+        if (typeof data === 'object') {
+          return data.title?.toString().toLowerCase().includes(inputSearchText.value.toLocaleLowerCase())
+        }
+        return data.toString().toLowerCase().includes(inputSearchText.value.toLocaleLowerCase())
+      })
+    })
+  }
+  if (!rows.length) {
+    return [[{
+      field: 'string',
+      text: 'Aucun projet trouvé',
+      cellAttrs: {
+        colspan: headers.length,
+      },
+    }]]
+  }
+  return rows
+})
+const envRows = computed(() => {
+  if (!selectedProject.value) return []
+  if (!selectedProject.value.environments.length) {
+    return [[{
       text: 'Aucun environnement existant',
       cellAttrs: {
         colspan: headers.length,
       },
     }]]
-  environmentsCtKey.value = getRandomId('environment')
-}
+  }
+  return sortArrByObjKeyAsc(selectedProject.value.environments, 'name')
+    ?.map(({ id, name, quotaId, stageId }) => (
+      [
+        name,
+        stageStore.stages.find(stage => stage.id === stageId)?.name,
+        {
+          component: 'DsfrSelect',
+          modelValue: quotaId,
+          selectId: 'quota-select',
+          options: quotaStore.quotas.filter(quota => quota.stageIds.includes(stageId)).map(quota => ({
+            text: quota.name + ' (' + quota.cpu + 'CPU, ' + quota.memory + ')',
+            value: quota.id,
+          })),
+          'onUpdate:model-value': (event: string) => updateEnvironmentQuota({ environmentId: id, quotaId: event }),
+        },
+      ]
+    ),
+    )
+})
 
-const getRepositoriesRows = () => {
-  if (!selectedProject.value) return
-  repositoriesRows.value = selectedProject.value.repositories.length
-    ? sortArrByObjKeyAsc(selectedProject.value.repositories, 'internalRepoName')
-      ?.map(({ internalRepoName, isInfra }) => (
-        [
-          internalRepoName,
-          isInfra ? 'Infra' : 'Applicatif',
-        ]
-      ),
-      )
-    : [[{
+const repoRows = computed(() => {
+  if (!selectedProject.value) return []
+  if (!selectedProject.value.repositories.length) {
+    return [[{
       text: 'Aucun dépôt existant',
       cellAttrs: {
         colspan: headers.length,
       },
     }]]
-  repositoriesCtKey.value = getRandomId('repository')
-}
+  }
+  return sortArrByObjKeyAsc(selectedProject.value.repositories, 'internalRepoName')
+    ?.map(({ internalRepoName, isInfra, externalRepoUrl, isPrivate }) => (
+      [
+        internalRepoName,
+        isInfra ? 'Infra' : 'Applicatif',
+        isPrivate ? 'oui' : 'non',
+        externalRepoUrl,
+      ]
+    ),
+    )
+})
 
 const getAllProjects = async () => {
   snackbarStore.isWaitingForResponse = true
   await projectStore.listProjects(filterMethods[activeFilter.value])
-  setRows()
+  tableKey.value = getRandomId('table')
   if (selectedProject.value) selectProject(selectedProject.value.id)
   snackbarStore.isWaitingForResponse = false
 }
@@ -242,8 +217,8 @@ const selectProject = async (projectId: string) => {
     environments: projectEnvironmentStore.environments,
     repositories: projectRepositoryStore.repositories,
   }
-  getRepositoriesRows()
-  getEnvironmentsRows()
+  environmentsCtKey.value = getRandomId('environment')
+  repositoriesCtKey.value = getRandomId('repository')
 }
 
 const updateEnvironmentQuota = async ({ environmentId, quotaId }: { environmentId: string, quotaId: string }) => {
@@ -281,20 +256,11 @@ const archiveProject = async (projectId: string) => {
 }
 
 const addUserToProject = async (email: string) => {
+  if (!selectedProject.value) return
   snackbarStore.isWaitingForResponse = true
-  if (selectedProject.value) {
-    selectedProject.value.members = await projectUserStore.addUserToProject(selectedProject.value.id, { email })
-  }
-  teamCtKey.value = getRandomId('team')
-  snackbarStore.isWaitingForResponse = false
-}
-
-const updateUserRole = async (userId: string) => {
-  if (!selectedProject.value) return snackbarStore.setMessage('Veuillez sélectionner un projet')
-  snackbarStore.isWaitingForResponse = true
-  selectedProject.value.members = await projectUserStore.transferProjectOwnership(selectedProject.value.id, userId)
-  teamCtKey.value = getRandomId('team')
+  selectedProject.value.members = await projectMemberStore.addMember(selectedProject.value.id, email)
   await getAllProjects()
+  teamCtKey.value = getRandomId('team')
   snackbarStore.isWaitingForResponse = false
 }
 
@@ -302,7 +268,20 @@ const removeUserFromProject = async (userId: string) => {
   if (!selectedProject.value) return
   snackbarStore.isWaitingForResponse = true
   if (selectedProject.value.id) {
-    selectedProject.value.members = await projectUserStore.removeUserFromProject(selectedProject.value.id, userId)
+    await projectMemberStore.removeMember(selectedProject.value.id, userId)
+    selectedProject.value.members = selectedProject.value.members.filter(user => user.userId !== userId)
+  }
+  teamCtKey.value = getRandomId('team')
+  snackbarStore.isWaitingForResponse = false
+}
+
+const transferOwnerShip = async (nextOwnerId: string) => {
+  if (!selectedProject.value) return
+  snackbarStore.isWaitingForResponse = true
+  const updatedProject = await projectStore.updateProject(selectedProject.value.id, { ownerId: nextOwnerId })
+  selectedProject.value = {
+    ...selectedProject.value,
+    ...updatedProject,
   }
   teamCtKey.value = getRandomId('team')
   snackbarStore.isWaitingForResponse = false
@@ -355,26 +334,6 @@ const saveProjectServices = async (data: PluginsUpdateBody) => {
   }
   await reloadProjectServices(selectedProject.value.id)
   snackbarStore.isWaitingForResponse = false
-}
-
-const maxDescriptionLength = 60
-const truncateDescription = (description: string) => {
-  let innerHTML: string
-
-  if (description.length <= maxDescriptionLength) innerHTML = description
-  else {
-    const lastSpaceIndex = description.slice(0, maxDescriptionLength).lastIndexOf(' ')
-    innerHTML = description.slice(0, lastSpaceIndex > 0 ? lastSpaceIndex : maxDescriptionLength) + ' ...'
-  }
-
-  return {
-    id: 'description',
-    'data-testid': 'description',
-    component: 'span',
-    open: false,
-    title: description,
-    innerHTML,
-  }
 }
 
 const untruncateDescription = (span: HTMLElement) => {
@@ -455,7 +414,7 @@ const untruncateDescription = (span: HTMLElement) => {
         data-testid="tableAdministrationProjects"
         :title="title"
         :headers="headers"
-        :rows="rowFilter(rows)"
+        :rows="projectRows"
       />
     </template>
     <div v-else>
@@ -546,25 +505,26 @@ const untruncateDescription = (span: HTMLElement) => {
           :key="environmentsCtKey"
           title="Environnements"
           :headers="['Nom', 'Type d\'environnement', 'Quota']"
-          :rows="environmentsRows"
+          :rows="envRows"
         />
         <DsfrTable
           :id="repositoriesId"
           :key="repositoriesCtKey"
           title="Dépôts"
-          :headers="['Nom', 'Type']"
-          :rows="repositoriesRows"
+          :headers="['Nom', 'Type', 'Privé ?', 'url']"
+          :rows="repoRows"
         />
         <TeamCt
           :id="membersId"
           :key="teamCtKey"
           :user-profile="userStore.userProfile"
-          :project="{id: selectedProject.id, name: selectedProject.name, locked: selectedProject.locked }"
+          :project="selectedProject"
           :members="selectedProject.members"
-          :known-users="usersStore.users"
+          :can-manage="true"
+          :can-transfer="true"
           @add-member="(email: string) => addUserToProject(email)"
-          @update-role="(userId: string) => updateUserRole(userId)"
           @remove-member="(userId: string) => removeUserFromProject(userId)"
+          @transfer-ownership="(nextOwnerId: string) => transferOwnerShip(nextOwnerId)"
         />
         <div>
           <h4
@@ -589,3 +549,4 @@ const untruncateDescription = (span: HTMLElement) => {
     />
   </div>
 </template>
+@/stores/project-member.js
