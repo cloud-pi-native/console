@@ -1,7 +1,7 @@
-import type { Cluster, Kubeconfig, Project, Zone } from '@prisma/client'
+import type { Cluster, Kubeconfig, Project, ProjectRole, Zone } from '@prisma/client'
 import type { ClusterObject, Config, HookResult, KubeCluster, KubeUser, Project as ProjectPayload, RepoCreds, Repository } from '@cpn-console/hooks'
 import { hooks } from '@cpn-console/hooks'
-import { AsyncReturnType } from '@cpn-console/shared'
+import { AsyncReturnType, resourceListToDict, ProjectAuthorized, getPermsByUserRoles } from '@cpn-console/shared'
 import { archiveProject, getClusterByIdOrThrow, getAdminPlugin, getHookProjectInfos, getHookRepository, getProjectStore, saveProjectStore, updateProjectCreated, updateProjectFailed, getClustersAssociatedWithProject, updateProjectClusterHistory } from '@/resources/queries-index.js'
 import { genericProxy } from './proxy.js'
 import { ConfigRecords, dbToObj } from '@/resources/project-service/business.js'
@@ -46,7 +46,7 @@ const project = {
 
     return {
       results,
-      project: manageProjectStatus(projectId, results, 'upsert', payload.environments.map(env => env.clusterId)),
+      project: await manageProjectStatus(projectId, results, 'upsert', payload.environments.map(env => env.clusterId)),
     }
   },
   delete: async (projectId: Project['id']) => {
@@ -67,7 +67,7 @@ const project = {
 
     return hooks.getProjectSecrets.execute({ ...project, store }, config)
   },
-}
+} as const
 
 type ProjectAction = keyof typeof project
 const manageProjectStatus = async (
@@ -106,7 +106,7 @@ const cluster = {
       ...cluster,
     }, store)
   },
-}
+} as const
 
 const user = {
   retrieveUserByEmail: async (email: string) => {
@@ -121,7 +121,7 @@ const user = {
     const config = dbToObj(await getAdminPlugin())
     return hooks.updateUserAdminGroupMembership.execute({ id, isAdmin }, config)
   },
-}
+} as const
 
 const misc = {
   fetchOrganizations: async () => {
@@ -132,57 +132,71 @@ const misc = {
     const config = dbToObj(await getAdminPlugin())
     return hooks.checkServices.execute({}, config)
   },
-  syncRepository: async (repoId: string, { branchName }: { branchName: string }) => {
+  syncRepository: async (repoId: string, { syncAllBranches, branchName }: { syncAllBranches: boolean, branchName?: string }) => {
     const { project, ...repoInfos } = await getHookRepository(repoId)
     const store = dbToObj(await getProjectStore(project.id))
     const payload = {
-      repo: { ...repoInfos, branchName },
+      repo: { ...repoInfos, syncAllBranches, branchName },
       ...project,
       store,
     }
     const config = dbToObj(await getAdminPlugin())
     return hooks.syncRepository.execute(payload, config)
   },
-}
+} as const
 
 export const hook = {
+  // @ts-ignore TODO voir comment opti la signature de la fonction
   misc: genericProxy(misc),
+  // @ts-ignore TODO voir comment opti la signature de la fonction
   project: genericProxy(project, { upsert: ['delete'], delete: ['upsert'], getSecrets: ['delete'] }),
+  // @ts-ignore TODO voir comment opti la signature de la fonction
   cluster: genericProxy(cluster, { delete: ['upsert'], upsert: ['delete'] }),
+  // @ts-ignore TODO voir comment opti la signature de la fonction
   user: genericProxy(user, {}),
 }
 
 const formatClusterInfos = (
   { kubeconfig, ...cluster }: Omit<Cluster, 'updatedAt' | 'createdAt' | 'zoneId' | 'kubeConfigId'>
-    & { kubeconfig: Kubeconfig, zone: Pick<Zone, 'id' | 'slug'> },
+  & { kubeconfig: Kubeconfig, zone: Pick<Zone, 'id' | 'slug'> },
 ) => ({
   user: kubeconfig.user as unknown as KubeUser,
   cluster: kubeconfig.cluster as unknown as KubeCluster,
   ...cluster,
   privacy: cluster.privacy,
 })
+export type RolesById = Record<ProjectRole['id'], ProjectRole['permissions']>
 
 export const transformToHookProject = (project: ProjectInfos, store: Config, reposCreds: ReposCreds = {}): ProjectPayload => {
   const clusters = project.clusters.map(cluster => formatClusterInfos(cluster))
+  const rolesById = resourceListToDict(project.roles)
 
   return ({
     ...project,
-    users: project.roles.map(role => role.user),
-    roles: project.roles.map(role => ({ role: role.role as 'owner' | 'user', userId: role.userId })),
     clusters,
-    environments: project.environments.map(({ permissions, quota, stage, ...environment }) => ({
+    environments: project.environments.map(({ quota, stage, ...environment }) => ({
       quota,
       stage: stage.name,
-      permissions: permissions.map(permission => ({
-        userId: permission.userId,
-        permissions: {
-          ro: permission.level >= 0,
-          rw: permission.level >= 1,
-        },
-      })),
+      permissions: [
+        { permissions: { rw: true, ro: true }, userId: project.ownerId },
+        ...project.members.map(member => ({
+          userId: member.userId,
+          permissions: {
+            ro: ProjectAuthorized.ListEnvironments({ adminPermissions: 0n, projectPermissions: getPermsByUserRoles(member.roleIds, rolesById, project.everyonePerms) }),
+            rw: ProjectAuthorized.ManageEnvironments({ adminPermissions: 0n, projectPermissions: getPermsByUserRoles(member.roleIds, rolesById, project.everyonePerms) }),
+          },
+        }))],
       ...environment,
     })),
     repositories: project.repositories.map(repo => ({ ...repo, newCreds: reposCreds[repo.internalRepoName] })),
     store,
+    users: [project.owner, ...project.members.map(({ user }) => user)],
+    roles: [
+      { userId: project.ownerId, role: 'owner' },
+      ...project.members.map(member => ({
+        userId: member.userId,
+        role: 'user' as const,
+      })),
+    ],
   })
 }

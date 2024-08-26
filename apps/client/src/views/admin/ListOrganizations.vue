@@ -10,9 +10,10 @@ import {
   type Organization,
   organizationContract,
 } from '@cpn-console/shared'
+// @ts-ignore '@gouvminint/vue-dsfr' missing types
+import { getRandomId } from '@gouvminint/vue-dsfr'
 import { useOrganizationStore } from '@/stores/organization.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { getRandomId } from '@gouvminint/vue-dsfr'
 
 const organizationStore = useOrganizationStore()
 
@@ -49,7 +50,7 @@ const generateRows = () => allOrganizations.value.length
         value: label,
         class: 'fr-input fr-text-default--info',
         'data-testid': `${name}-label-input`,
-        onBlur: (event: Event & { target: { value: string }}) => {
+        onBlur: (event: Event & { target: { value: string } }) => {
           const data = event.target?.value
           if (data !== label) {
             preUpdateOrganization({ name, key: 'label', data })
@@ -65,7 +66,7 @@ const generateRows = () => allOrganizations.value.length
         'data-testid': `${name}-active-cbx`,
         class: 'fr-checkbox-group--sm',
         title: active ? `Désactiver l'organisation ${name}` : `Réactiver l'organisation ${name}`,
-        onClick: (event: Event & { target: { checked: boolean }}) => {
+        onClick: (event: Event & { target: { checked: boolean } }) => {
           const data = event.target.checked
           if (data !== active) {
             preUpdateOrganization({ name, key: 'active', data })
@@ -76,12 +77,12 @@ const generateRows = () => allOrganizations.value.length
       formatDate(updatedAt),
     ]))
   : [[{
-      text: 'Aucune organisation, veuillez en ajouter une.',
-      cellAttrs: {
-        colspan: headers.length,
-        align: 'center',
-      },
-    }]]
+    text: 'Aucune organisation, veuillez en ajouter une.',
+    cellAttrs: {
+      colspan: headers.length,
+      align: 'center',
+    },
+  }]]
 
 const rows = ref<ReturnType<typeof generateRows>>([])
 
@@ -119,7 +120,7 @@ const createOrganization = async () => {
   newOrg.value = { name: '', label: '', source: '' }
 }
 
-const preUpdateOrganization = ({ name, key, data }: {name: string, key: string, data: unknown }) => {
+const preUpdateOrganization = ({ name, key, data }: { name: string, key: string, data: unknown }) => {
   isUpdatingOrganization.value = {
     name,
     key,
@@ -127,7 +128,7 @@ const preUpdateOrganization = ({ name, key, data }: {name: string, key: string, 
   }
 }
 
-const confirmUpdateOrganization = async ({ name, key, data }: {name: string, key: string, data: unknown }) => {
+const confirmUpdateOrganization = async ({ name, key, data }: { name: string, key: string, data: unknown }) => {
   isUpdatingOrganization.value = null
   await updateOrganization({ name, key, data })
 }
@@ -137,7 +138,7 @@ const cancelUpdateOrganization = async () => {
   await getAllOrganizations()
 }
 
-const updateOrganization = async ({ name, key, data }: {name: string, key: string, data: unknown }) => {
+const updateOrganization = async ({ name, key, data }: { name: string, key: string, data: unknown }) => {
   const org = {
     name,
     [key]: data,
@@ -236,7 +237,7 @@ onBeforeMount(async () => {
         label="Nom de l'organisation"
         hint="Ce nom sera utilisé pour construire le namespace du projet. Il doit être en minuscule et ne pas faire plus de 10 caractères ni contenir de caractères spéciaux."
         label-visible
-        placeholder="min-eco"
+        placeholder="meco"
         :is-invalid="(!!newOrg.name && !OrganizationSchema.pick({name: true}).safeParse({name: newOrg.name}).success) || isOrgAlreadyTaken"
         class="fr-mb-2w"
       />

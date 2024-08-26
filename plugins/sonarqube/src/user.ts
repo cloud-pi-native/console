@@ -4,18 +4,18 @@ import { VaultSonarSecret, getAxiosInstance } from './tech.js'
 import type { SonarPaging } from './project.js'
 
 export type SonarUser = {
-  login: string,
-  name: string,
-  active: boolean,
-  email: string,
-  groups: string[],
-  tokensCount: number,
-  local: boolean,
-  externalIdentity: string,
-  externalProvider: string,
-  avatar: string,
-  lastConnectionDate: Date,
-  managed: boolean,
+  login: string
+  name: string
+  active: boolean
+  email: string
+  groups: string[]
+  tokensCount: number
+  local: boolean
+  externalIdentity: string
+  externalProvider: string
+  avatar: string
+  lastConnectionDate: Date
+  managed: boolean
   sonarLintLastConnectionDate: Date
 }
 

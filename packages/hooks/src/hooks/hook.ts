@@ -3,16 +3,17 @@ import * as hooks from './index.js'
 
 export type DefaultArgs = Record<any, any>
 export type PluginResult = {
-  status: { result: 'OK', message?: string } | { result: 'KO', message: string },
+  status: { result: 'OK', message?: string } | { result: 'KO', message: string }
   store?: Record<string, string | number>
-  [key: string]: any,
+  [key: string]: any
 }
 
 export interface HookPayloadResults {
   [x: string]: PluginResult
 }
 // @ts-ignore
-export interface HookPayloadApis<Args extends DefaultArgs> { // eslint-disable-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line unused-imports/no-unused-vars
+export interface HookPayloadApis<Args extends DefaultArgs> {
   [x: string]: PluginApi
 }
 export type Store = Record<string, Record<string, string>> // TO DEPRECIATE USE ONFIG
@@ -22,10 +23,10 @@ export interface Config {
 }
 
 export interface HookPayload<Args extends DefaultArgs> {
-  args: Args,
-  failed: boolean | string[],
+  args: Args
+  failed: boolean | string[]
   results: HookPayloadResults
-  apis: HookPayloadApis<Args>,
+  apis: HookPayloadApis<Args>
   config: Config
 }
 
@@ -35,16 +36,16 @@ export type StepCall<Args extends DefaultArgs> = (payload: HookPayload<Args>) =>
 type HookStep = Record<string, StepCall<DefaultArgs>>
 export type HookStepsNames = 'check' | 'pre' | 'main' | 'post' | 'revert'
 export type Hook<E extends DefaultArgs, V extends DefaultArgs> = {
-  uniquePlugin?: string, // if plugin register on it no other one can register on it
-  execute: (args: E, store: Config) => Promise<HookResult<E>>,
-  validate: (args: V, store: Config) => Promise<HookResult<V>>,
-  apis: Record<string, (args: E| V) => PluginApi>
+  uniquePlugin?: string // if plugin register on it no other one can register on it
+  execute: (args: E, store: Config) => Promise<HookResult<E>>
+  validate: (args: V, store: Config) => Promise<HookResult<V>>
+  apis: Record<string, (args: E | V) => PluginApi>
 } & Record<HookStepsNames, HookStep>
 export type HookList<E extends DefaultArgs, V extends DefaultArgs> = Record<keyof typeof hooks, Hook<E, V>>
 
 const executeStep = async <Args extends DefaultArgs>(step: HookStep, payload: HookPayload<Args>, stepName: string) => {
   const names = Object.keys(step)
-  const fns = names.map(async name => {
+  const fns = names.map(async (name) => {
     if (payload.results[name]?.executionTime) {
       payload.results[name].executionTime[stepName] = Date.now()
     } else {
@@ -75,7 +76,7 @@ export const createHook = <E extends DefaultArgs, V extends DefaultArgs>(unique 
   const main: HookStep = {}
   const post: HookStep = {}
   const revert: HookStep = {}
-  const apis: Record<string, (args: E| V) => PluginApi> = {
+  const apis: Record<string, (args: E | V) => PluginApi> = {
   }
   const execute = async (args: E, config: Config): Promise<HookResult<E>> => {
     const startTime = Date.now()

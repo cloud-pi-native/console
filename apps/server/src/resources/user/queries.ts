@@ -1,44 +1,31 @@
-import type { User } from '@prisma/client'
+import type { Prisma, User } from '@prisma/client'
 import { exclude } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
 import { dbKeysExcluded } from '@/utils/queries-tools.js'
 
-type UserCreate = Omit<User, 'createdAt' | 'updatedAt'>;
+type UserCreate = Omit<User, 'createdAt' | 'updatedAt'>
 
 // SELECT
-export const getUsers = prisma.user.findMany
+export const getUsers = (where?: Prisma.UserWhereInput) => prisma.user.findMany({ where })
 
 export const getUserInfos = async (id: User['id']) => {
   const usr = await prisma.user.findMany({
     where: { id },
     include: {
       logs: true,
-      permissions: true,
-      roles: true,
     },
   })
   return exclude(usr, dbKeysExcluded)
 }
 
-export const getMatchingUsers = (letters: string) =>
+export const getMatchingUsers = (where: Prisma.UserWhereInput) =>
   prisma.user.findMany({
-    where: {
-      email: {
-        contains: letters,
-      },
-    },
+    where,
     take: 5,
   })
 
 export const getUserById = (id: User['id']) =>
   prisma.user.findUnique({ where: { id } })
-
-export const getOrCreateUser = (user: Parameters<typeof prisma.user.upsert>[0]['create']) =>
-  prisma.user.upsert({
-    where: { id: user.id },
-    update: user,
-    create: user,
-  })
 
 export const getUserOrThrow = (id: User['id']) =>
   prisma.user.findUniqueOrThrow({
@@ -67,7 +54,5 @@ export const updateUserById = async ({ id, email, firstName, lastName }: UserCre
 }
 
 // TECH
-export const _dropUsersTable = prisma.user.deleteMany
-
-export const _createUser = (data: Parameters<typeof prisma.user.create>[0]['data']) =>
+export const _createUser = (data: Prisma.UserCreateInput) =>
   prisma.user.upsert({ where: { id: data.id }, create: data, update: data })

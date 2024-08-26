@@ -2,35 +2,25 @@
   "extends": [
     "@cpn-console/ts-config/tsconfig.base.json"
   ],
-  "exclude": [
-    "**/*.spec.ts",
-    "node_modules",
-    "dist",
-    "__mocks__",
-    "coverage",
-    "src/mocks/utils.ts",
-    "src/utils/mocks.ts",
-  ],
-  "include": [
-    "src/**/*.ts",
-  ],
   "compilerOptions": {
+    "baseUrl": "./",
     "rootDir": "./src",
     "outDir": "./dist",
-    "plugins": [
-      {
-        "transform": "typescript-transform-paths"
-      }
-    ],
-    "paths": {
-      "@/*": [
-        "./src/*"
-      ]
-    },
-    "declaration": true,
     "declarationDir": "./types",
-    "strict": false,
-    "alwaysStrict": false,
-    "noImplicitAny": true
-  }
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    "plugins": [{ "transform": "typescript-transform-paths" }],
+    "useUnknownInCatchVariables": false
+  },
+  "include": [
+    "./src/**/*.ts",
+    "./src/**/*.js",
+  ],
+  "exclude": [
+    "./src/**/*.spec.ts",
+    "./src/**/__mocks__",
+    "./src/mocks/utils.ts",
+    "./src/utils/mocks.ts",
+  ]
 }

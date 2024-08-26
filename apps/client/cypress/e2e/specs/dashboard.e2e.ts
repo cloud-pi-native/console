@@ -8,14 +8,6 @@ describe('Dashboard', () => {
   const projectCreated = getModelById('project', '011e7860-04d7-461f-912d-334c622d38b3')
   const owner = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
   const user = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6566')
-  const permissions = [{
-    email: owner.email,
-    isOwner: true,
-  },
-  {
-    email: user.email,
-    isOwner: false,
-  }]
 
   before(() => {
     cy.kcLogin('test')
@@ -28,7 +20,7 @@ describe('Dashboard', () => {
     const projects = [projectCreated, projectFailed]
 
     cy.kcLogin('test')
-    projects.forEach(project => {
+    projects.forEach((project) => {
       cy.goToProjects()
         .getByDataTestid(`projectTile-${project.name}`).click()
         .getByDataTestid('menuDashboard').click()
@@ -51,7 +43,6 @@ describe('Dashboard', () => {
       .getByDataTestid(`projectTile-${projectToKeep.name}`).click()
       .getByDataTestid('menuDashboard').click()
     cy.wait('@listStages')
-      .getByDataTestid('descriptionP').should('have.class', 'disabled')
       .getByDataTestid('setDescriptionBtn').click()
       .getByDataTestid('descriptionInput').clear().type(description1)
       .getByDataTestid('saveDescriptionBtn').click()
@@ -66,7 +57,6 @@ describe('Dashboard', () => {
       .getByDataTestid('descriptionInput').clear()
       .getByDataTestid('saveDescriptionBtn').click()
       .wait('@updateProject').its('response.statusCode').should('match', /^20\d$/)
-      .getByDataTestid('descriptionP').should('have.class', 'disabled')
   })
 
   it('Should show project secrets', () => {
@@ -145,6 +135,5 @@ describe('Dashboard', () => {
     cy.assertAddRepo(projectToKeep, projectToKeep.repositories)
     cy.assertUsers(projectToKeep, [owner.email, user.email])
     cy.assertAddEnvironment(projectToKeep, projectToKeep.environments, false)
-    cy.assertPermission(projectToKeep, projectToKeep.environments[0].name, permissions)
   })
 })

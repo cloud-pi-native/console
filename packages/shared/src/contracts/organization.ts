@@ -66,6 +66,7 @@ export const organizationContract = contractInstance.router({
         .array(),
       401: ErrorSchema,
       403: ErrorSchema,
+      422: ErrorSchema,
       500: ErrorSchema,
     },
   },

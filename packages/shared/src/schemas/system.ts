@@ -14,6 +14,11 @@ export const pluginSchema = z.object({
 
 export type PluginSchema = Zod.infer<typeof pluginSchema>
 
+export const SystemSettingSchema = z.object({
+  key: z.string(),
+  value: z.string(),
+})
+
 export const GetVersionSchema = {
   responses: {
     200: z.object({
@@ -48,6 +53,25 @@ export const UpdateSystemPluginSchema = {
     400: ErrorSchema,
     401: ErrorSchema,
     403: ErrorSchema,
+    500: ErrorSchema,
+  },
+}
+
+export const ListSystemSettingsSchema = {
+  query: SystemSettingSchema.pick({ key: true })
+    .partial().strict(),
+  responses: {
+    200: SystemSettingSchema.array(),
+    500: ErrorSchema,
+  },
+}
+
+export const UpsertSystemSettingsSchema = {
+  body: SystemSettingSchema,
+  responses: {
+    201: SystemSettingSchema,
+    400: ErrorSchema,
+    401: ErrorSchema,
     500: ErrorSchema,
   },
 }

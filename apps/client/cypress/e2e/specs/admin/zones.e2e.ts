@@ -23,14 +23,14 @@ describe('Administration zones', () => {
     cy.kcLogin('tcolin')
     cy.visit('/admin/zones')
     cy.url().should('contain', '/admin/zones')
-    cy.wait('@listZones').its('response').then(response => {
+    cy.wait('@listZones').its('response').then((response) => {
       zones = response?.body
     })
     cy.wait('@getClusters').its('response.statusCode').should('match', /^20\d$/)
   })
 
   it('Should display zones list', () => {
-    zones?.forEach(zone => {
+    zones?.forEach((zone) => {
       cy.getByDataTestid(`zoneTile-${zone.label}`)
         .should('be.visible')
         .click()
@@ -44,14 +44,7 @@ describe('Administration zones', () => {
         .should('have.value', zone.description)
         .and('be.enabled')
       cy.get('#clusters-select')
-        .click()
-      cy.get('#clusters-select .fr-tag')
-        .should('be.disabled')
-      cy.get('#clusters-select')
-        .within(() => {
-          cy.get('.fr-tag--dismiss')
-            .should('have.length', clusters.filter(({ zoneId }) => zoneId === zone.id).length)
-        })
+        .should('not.exist')
       cy.getByDataTestid('updateZoneBtn')
         .should('be.enabled')
       cy.getByDataTestid('cancelZoneBtn')
@@ -96,14 +89,7 @@ describe('Administration zones', () => {
       .should('have.value', updatedZone.description)
       .and('be.enabled')
     cy.get('#clusters-select')
-      .click()
-    cy.get('#clusters-select .fr-tag')
-      .should('be.disabled')
-    cy.get('#clusters-select')
-      .within(() => {
-        cy.get('.fr-tag--dismiss')
-          .should('have.length', clusters.filter(({ zoneId }) => zoneId === zone.id).length)
-      })
+      .should('not.exist')
     cy.getByDataTestid('updateZoneBtn')
       .should('be.enabled')
     cy.getByDataTestid('cancelZoneBtn')
@@ -164,14 +150,7 @@ describe('Administration zones', () => {
       .should('have.value', newZone.description)
       .and('be.enabled')
     cy.get('#clusters-select')
-      .click()
-    cy.get('#clusters-select .fr-tag')
-      .should('be.disabled')
-    cy.get('#clusters-select')
-      .within(() => {
-        cy.get('.fr-tag--dismiss')
-          .should('have.length', newZone.clusterIds.length)
-      })
+      .should('not.exist')
     cy.getByDataTestid('updateZoneBtn')
       .should('be.enabled')
     cy.getByDataTestid('cancelZoneBtn')
@@ -180,8 +159,8 @@ describe('Administration zones', () => {
       cy.getByDataTestid(`zoneTile-${zone.label}`)
         .should('be.visible')
         .click()
-      cy.get('#clusters-select .fr-tag--dismiss')
-        .should('have.length', 0)
+      cy.get('#clusters-select')
+        .should('not.exist')
       cy.getByDataTestid('cancelZoneBtn')
         .click()
     })
@@ -245,6 +224,7 @@ describe('Administration zones', () => {
     })
 
     cy.visit('/admin/zones')
+    cy.wait('@listZones')
     cy.url().should('contain', '/admin/zones')
     cy.getByDataTestid(`zoneTile-${newZone.label}`)
       .should('be.visible')

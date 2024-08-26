@@ -1,31 +1,38 @@
-import { getKeycloak, getUserProfile, keycloakLogin, keycloakLogout } from '@/utils/keycloak/keycloak'
+import { getKeycloak, getUserProfile, keycloakLogin, keycloakLogout } from '@/utils/keycloak/keycloak.js'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { adminGroupPath, type UserProfile } from '@cpn-console/shared'
-import { apiClient } from '@/api/xhr-client.js'
+import type { AdminRole, User, UserProfile } from '@cpn-console/shared'
+import { apiClient, extractData } from '@/api/xhr-client.js'
+import { useAdminRoleStore } from './admin-role.js'
 
 export const useUserStore = defineStore('user', () => {
+  const adminRoleStore = useAdminRoleStore()
   const isLoggedIn = ref<boolean>()
-  const isAdmin = ref<boolean>()
   const userProfile = ref<UserProfile>()
-  const registeredInDb = ref(false)
+  const apiAuthInfos = ref<User>()
 
-  const setIsLoggedIn = () => {
+  const adminPerms = computed(() => {
+    return apiAuthInfos.value
+    ? myAdminRoles.value
+    .reduce((acc, curr) => acc | BigInt(curr.permissions), 0n)
+      : null
+})
+  const myAdminRoles = computed<AdminRole[]>(() => adminRoleStore.roles
+    .filter(adminRole => apiAuthInfos.value?.adminRoleIds.includes(adminRole.id)))
+
+  const setIsLoggedIn = async () => {
     const keycloak = getKeycloak()
     isLoggedIn.value = keycloak.authenticated
     if (isLoggedIn.value) {
-      setUserProfile()
-      if (!registeredInDb.value) {
-        apiClient.Users.auth().then(() => {
-          registeredInDb.value = true
-        })
-      }
+      await setUserProfile()
     }
   }
 
-  const setUserProfile = () => {
+  const setUserProfile = async () => {
     userProfile.value = getUserProfile()
-    isAdmin.value = userProfile.value?.groups?.includes(adminGroupPath)
+    adminRoleStore.listRoles()
+    await apiClient.Users.auth()
+      .then(res => apiAuthInfos.value = extractData(res, 200))
   }
 
   const login = () => keycloakLogin()
@@ -34,10 +41,11 @@ export const useUserStore = defineStore('user', () => {
 
   return {
     isLoggedIn,
-    isAdmin,
     setIsLoggedIn,
     userProfile,
-    registeredInDb,
+    apiAuthInfos,
+    myAdminRoles,
+    adminPerms,
     setUserProfile,
     login,
     logout,

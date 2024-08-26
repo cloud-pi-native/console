@@ -1,4 +1,7 @@
-import { getModelById } from './func.js'
+import { Organization } from '@cpn-console/shared'
+import { getModel, getModelById } from './func.js'
+const organizations = getModel('organization')
+const orgMi = organizations.find(({ name }) => name === 'mi') as Organization
 
 const defaultOwner = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
 
@@ -15,7 +18,7 @@ Cypress.Commands.add('kcLogin', (name, password = 'test') => {
       .get('input#kc-login').click()
       .url().should('contain', `${Cypress.env('clientHost')}`)
   }, {
-    validate () {
+    validate() {
       cy.visit('/')
         .get('a.fr-btn').should('contain', 'Se déconnecter')
     },
@@ -47,7 +50,7 @@ Cypress.Commands.add('createProject', (project, ownerEmail = defaultOwner.email)
     .get('h1').should('contain', 'Commander un espace projet')
     .get('[data-testid^="repoFieldset-"]').should('not.exist')
     .get('p.fr-alert__description').should('contain', ownerEmail)
-    .get('select#organizationId-select').select(newProject.orgName)
+    .get('select#organizationId-select').select(orgMi.id)
     .getByDataTestid('nameInput').clear().type(newProject.name)
     .getByDataTestid('nameInput').should('not.have.class', 'fr-input--error')
   cy.getByDataTestid('createProjectBtn').should('be.enabled').click()
@@ -97,7 +100,7 @@ Cypress.Commands.add('addRepos', (project, repos) => {
   cy.intercept('POST', '/api/v1/repositories').as('postRepo')
   cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('listProjects')
 
-  const newRepo = (repo) => ({
+  const newRepo = repo => ({
     internalRepoName: 'console',
     externalUserName: 'this-is+tobi',
     externalRepoUrl: 'https://github.com/cloud-pi-native/console.git',
@@ -254,23 +257,21 @@ Cypress.Commands.add('deleteEnvironment', (project, environmentName) => {
   cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('listProjects')
 
   cy.goToProjects()
-    .getByDataTestid(`projectTile-${project.name}`).click()
-    .getByDataTestid('menuEnvironments').click()
+  cy.getByDataTestid(`projectTile-${project.name}`).click()
+  cy.getByDataTestid('menuEnvironments').click()
   cy.wait('@listEnvironments')
   cy.wait('@getClusters')
   cy.getByDataTestid(`environmentTile-${environmentName}`)
     .click()
-    .url().should('contain', '/environments')
-    .getByDataTestid('permissionsFieldset').should('be.visible')
+  cy.url().should('contain', '/environments')
   cy.getByDataTestid('showDeleteEnvironmentBtn').click()
-    .getByDataTestid('deleteEnvironmentInput').should('be.visible')
-    .getByDataTestid('permissionsFieldset').should('not.exist')
-    .getByDataTestid('deleteEnvironmentInput')
+  cy.getByDataTestid('deleteEnvironmentInput').should('be.visible')
+  cy.getByDataTestid('deleteEnvironmentInput')
     .type(environmentName.slice(0, 2))
-    .getByDataTestid('deleteEnvironmentBtn').should('be.disabled')
-    .getByDataTestid('deleteEnvironmentInput').clear()
+  cy.getByDataTestid('deleteEnvironmentBtn').should('be.disabled')
+  cy.getByDataTestid('deleteEnvironmentInput').clear()
     .type(environmentName)
-    .getByDataTestid('deleteEnvironmentBtn').should('be.enabled')
+  cy.getByDataTestid('deleteEnvironmentBtn').should('be.enabled')
     .click()
   cy.wait('@deleteEnvironment').its('response.statusCode').should('eq', 204)
   cy.wait('@listProjects').its('response.statusCode').should('eq', 200)
@@ -311,7 +312,7 @@ Cypress.Commands.add('assertPermission', (project, environmentName, permissions)
   cy.getByDataTestid(`environmentTile-${environmentName}`)
     .click()
 
-  permissions.forEach(permission => {
+  permissions.forEach((permission) => {
     cy.getByDataTestid(`userPermissionLi-${permission.email}`).within(() => {
       cy.getByDataTestid('userEmail')
         .should('contain', permission.email)
@@ -355,7 +356,7 @@ Cypress.Commands.add('assertUsers', (project, emails) => {
     .getByDataTestid(`projectTile-${project.name}`).click()
     .getByDataTestid('menuTeam').click()
 
-  emails.forEach(email => {
+  emails.forEach((email) => {
     cy.getByDataTestid('teamTable').within(() => {
       cy.get('td')
         .contains(email)
@@ -366,7 +367,7 @@ Cypress.Commands.add('assertUsers', (project, emails) => {
 
 Cypress.Commands.add('generateGitLabCI', (ciForms) => {
   let version
-  ciForms.forEach(ciForm => {
+  ciForms.forEach((ciForm) => {
     if (ciForm.language === 'java') version = `BUILD_IMAGE_NAME: maven:3.8-openjdk-${ciForm.version}`
     if (ciForm.language === 'node') version = `BUILD_IMAGE_NAME: node:${ciForm.version}`
     if (ciForm.language === 'python') version = `BUILD_IMAGE_NAME: maven:3.8-openjdk-${ciForm.version}`
@@ -415,7 +416,7 @@ Cypress.Commands.add('assertClipboard', (value) => {
 })
 
 Cypress.Commands.add('getServicesResponse', () => {
-  cy.wait('@getServices').its('response').then(response => {
+  cy.wait('@getServices').its('response').then((response) => {
     const services = response.body
     services.map(service =>
       cy.getByDataTestid(`${service.name}-info`).should('contain', `${service.code} - ${service.message}`),
@@ -439,7 +440,7 @@ Cypress.Commands.add('selectProject', (element) => {
 })
 
 Cypress.Commands.add('deleteIndexedDB', () => {
-  Cypress.on('window:before:load', win => {
+  Cypress.on('window:before:load', (win) => {
     win.indexedDB.deleteDatabase('localforage')
   })
 })

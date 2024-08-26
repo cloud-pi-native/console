@@ -1,15 +1,18 @@
 <script lang="ts" setup>
+import { ProjectAuthorized } from '@cpn-console/shared'
 import { useUserStore } from '@/stores/user.js'
 import { useProjectStore } from '@/stores/project.js'
+import { useServiceStore } from '@/stores/services-monitor.js'
+import router from '../router/index.js'
 
 const route = useRoute()
 const userStore = useUserStore()
 const projectStore = useProjectStore()
+const serviceStore = useServiceStore()
 
 const routeName = computed(() => route.name)
 const routePath = computed(() => route.path)
 const isLoggedIn = computed(() => userStore.isLoggedIn)
-const isAdmin = computed(() => userStore.isAdmin)
 const selectedProject = computed(() => projectStore.selectedProject)
 
 const isDarkScheme = ref<boolean>()
@@ -25,7 +28,7 @@ const isExpanded = ref({
   administration: false,
 })
 
-function toggleExpand (key: keyof typeof isExpanded.value) {
+function toggleExpand(key: keyof typeof isExpanded.value) {
   isExpanded.value[key] = !isExpanded.value[key]
 }
 
@@ -69,7 +72,8 @@ onMounted(() => {
       <p
         v-if="isLoggedIn"
         data-testid="whoami-hint"
-        class="fr-hint-text fr-mb-2w"
+        class="fr-hint-text fr-mb-2w cursor-pointer"
+        @click="router.push('/profile')"
       >
         <span
           class="fr-icon-account-line"
@@ -99,15 +103,6 @@ onMounted(() => {
         </DsfrSideMenuLink>
       </DsfrSideMenuListItem>
       <!-- Onglet Projet -->
-      <DsfrSideMenuListItem>
-        <DsfrSideMenuLink
-          data-testid="menuServicesHealth"
-          :active="routeName === 'ServicesHealth'"
-          to="/services-health"
-        >
-          Status des services
-        </DsfrSideMenuLink>
-      </DsfrSideMenuListItem>
       <DsfrSideMenuListItem
         v-if="isLoggedIn"
       >
@@ -171,7 +166,22 @@ onMounted(() => {
                 Équipe
               </DsfrSideMenuLink>
             </DsfrSideMenuListItem>
-            <DsfrSideMenuListItem>
+            <DsfrSideMenuListItem
+              v-if="ProjectAuthorized.ManageRoles({ projectPermissions: projectStore.selectedProjectPerms})"
+            >
+              <DsfrSideMenuLink
+                class="menu-link-icon"
+                data-testid="menuProjectRole"
+                :active="routeName === 'ProjectRoles'"
+                :to="`/projects/${selectedProject?.id}/roles`"
+              >
+                <v-icon name="ri-admin-line" />
+                Rôles
+              </DsfrSideMenuLink>
+            </DsfrSideMenuListItem>
+            <DsfrSideMenuListItem
+              v-if="ProjectAuthorized.ListRepositories({ projectPermissions: projectStore.selectedProjectPerms})"
+            >
               <DsfrSideMenuLink
                 class="menu-link-icon"
                 data-testid="menuRepos"
@@ -182,7 +192,9 @@ onMounted(() => {
                 Dépôts
               </DsfrSideMenuLink>
             </DsfrSideMenuListItem>
-            <DsfrSideMenuListItem>
+            <DsfrSideMenuListItem
+              v-if="ProjectAuthorized.ListEnvironments({ projectPermissions: projectStore.selectedProjectPerms})"
+            >
               <DsfrSideMenuLink
                 class="menu-link-icon"
                 data-testid="menuEnvironments"
@@ -199,7 +211,7 @@ onMounted(() => {
 
       <!-- Onglet Administration-->
       <DsfrSideMenuListItem
-        v-if="isAdmin"
+        v-if="userStore.adminPerms"
       >
         <DsfrSideMenuButton
           data-testid="menuAdministrationBtn"
@@ -247,6 +259,17 @@ onMounted(() => {
             >
               <v-icon name="ri-folders-line" />
               Projets
+            </DsfrSideMenuLink>
+          </DsfrSideMenuListItem>
+          <DsfrSideMenuListItem>
+            <DsfrSideMenuLink
+              class="menu-link-icon"
+              data-testid="menuAdministrationRoles"
+              :active="routeName === 'AdminRoles'"
+              :to="`/admin/roles`"
+            >
+              <v-icon name="ri-admin-line" />
+              Rôles
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
           <DsfrSideMenuListItem>
@@ -315,9 +338,38 @@ onMounted(() => {
               Plugins
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
+          <DsfrSideMenuListItem>
+            <DsfrSideMenuLink
+              class="menu-link-icon"
+              data-testid="menuAdministrationSystemSettings"
+              :active="routeName === 'SystemSettings'"
+              to="/admin/system-settings"
+            >
+              <v-icon name="ri-tools-fill" />
+              Réglages console
+            </DsfrSideMenuLink>
+          </DsfrSideMenuListItem>
         </DsfrSideMenuList>
       </DsfrSideMenuListItem>
-
+      <DsfrSideMenuListItem>
+        <DsfrSideMenuLink
+          data-testid="menuServicesHealth"
+          :active="routeName === 'ServicesHealth'"
+          to="/services-health"
+          class="flex flex-row space-between"
+        >
+          <span
+            class="grow"
+          >
+            Status des services
+          </span>
+          <v-icon
+            :fill="serviceStore.servicesHealth.dotColor"
+            name="ri-checkbox-blank-circle-fill"
+            class="h-3"
+          />
+        </DsfrSideMenuLink>
+      </DsfrSideMenuListItem>
       <DsfrSideMenuListItem>
         <DsfrSideMenuLink
           class="menu-link-icon"

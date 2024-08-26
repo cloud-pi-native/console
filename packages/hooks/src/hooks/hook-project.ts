@@ -1,4 +1,3 @@
-import type { Role as RoleFromSchema } from '@cpn-console/shared'
 import { ClusterObject, ExternalRepoUrl, InternalRepoName, IsInfra, IsPrivate, UserObject } from './index.js'
 import { Hook, createHook } from './hook.js'
 
@@ -13,8 +12,8 @@ export type RepoCreds = {
 }
 
 export type Role = {
-  userId: UserObject['id']
-  role: RoleFromSchema['role']
+  userId: string
+  role: 'owner' | 'user'
 }
 
 export type Environment = {
@@ -33,12 +32,12 @@ export type Environment = {
 }
 
 export type Repository = {
-  id: string;
-  internalRepoName: InternalRepoName;
+  id: string
+  internalRepoName: InternalRepoName
   newCreds?: RepoCreds
-  externalRepoUrl: ExternalRepoUrl;
-  isPrivate: IsPrivate;
-  isInfra: IsInfra;
+  externalRepoUrl: ExternalRepoUrl
+  isPrivate: IsPrivate
+  isInfra: IsInfra
 }
 
 export interface ProjectStore {
@@ -61,6 +60,7 @@ export type Project = {
   users: UserObject[]
   roles: Role[]
   store: ProjectStore
+  owner: UserObject
 }
 
 export const upsertProject: Hook<Project, Project> = createHook()

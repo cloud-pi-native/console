@@ -5,6 +5,7 @@ import { getAppProjectObject } from './app-project.js'
 import { dump } from 'js-yaml'
 import { GitlabProjectApi } from '@cpn-console/gitlab-plugin/types/class.js'
 import { dirname } from 'path'
+import { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
 
 export type ArgoDestination = {
   namespace?: string
@@ -20,7 +21,7 @@ export const upsertProject: StepCall<Project> = async (payload) => {
   try {
     const customK8sApi = getCustomK8sApi()
     const project = payload.args
-    const { kubernetes: kubeApi, gitlab: gitlabApi, keycloak: keycloakApi } = payload.apis
+    const { kubernetes: kubeApi, gitlab: gitlabApi, keycloak: keycloakApi, vault: vaultApi } = payload.apis
     const projectSelector = `dso/organization=${project.organization.name},dso/project=${project.name},app.kubernetes.io/managed-by=dso-console`
 
     const infraRepositories = project.repositories.filter(repo => repo.isInfra)
@@ -49,7 +50,7 @@ export const upsertProject: StepCall<Project> = async (payload) => {
 
       await ensureInfraEnvValues(
         project, environment, appNamespace, roGroup, rwGroup,
-        appProjectName, infraRepositories, infraProject.id, gitlabApi,
+        appProjectName, infraRepositories, infraProject.id, gitlabApi, vaultApi,
       )
 
       if (!cluster.user.keyData && !cluster.user.token) {
@@ -155,8 +156,8 @@ export const upsertProject: StepCall<Project> = async (payload) => {
 }
 
 const findApplication = (applications: any[], repository: string, environment: string) => applications.find(app =>
-  app.metadata.labels['dso/repository'] === repository &&
-  app.metadata.labels['dso/environment'] === environment,
+  app.metadata.labels['dso/repository'] === repository
+  && app.metadata.labels['dso/environment'] === environment,
 )
 
 const findAppProject = (applications: any[], environment: string) => applications.find(app =>
@@ -179,18 +180,20 @@ const ensureInfraEnvValues = async (
   sourceRepos: Repository[],
   repoId: number,
   gitlabApi: GitlabProjectApi,
+  vaultApi: VaultProjectApi,
 ) => {
   const infraAppsRepoUrl = await gitlabApi.getRepoUrl('infra-apps')
   const gitlabGroupUrl = dirname(infraAppsRepoUrl)
   const cluster = getCluster(project, environment)
   const infraProject = await gitlabApi.getProjectById(repoId)
   const valueFilePath = getValueFilePath(project, cluster, environment)
+  const vaultCredentials = await vaultApi.getAppRoleCredentials()
   const repositories: ArgoRepoSource[] = await Promise.all([
     getArgoRepoSource('infra-apps', environment.name, gitlabApi),
     ...sourceRepos.map(repo => getArgoRepoSource(repo.internalRepoName, environment.name, gitlabApi)),
   ])
   const values = {
-    commonLabels: {
+    common: {
       'dso/organization': project.organization.name,
       'dso/project': project.name,
       'dso/environment': environment.name,
@@ -199,8 +202,8 @@ const ensureInfraEnvValues = async (
       cluster: 'in-cluster',
       namespace: getConfig().namespace,
       project: appProjectName,
-      envChartVersion: process.env.DSO_ENV_CHART_VERSION || 'dso-env-1.3.0',
-      nsChartVersion: process.env.DSO_NS_CHART_VERSION || 'dso-ns-1.0.1',
+      envChartVersion: process.env.DSO_ENV_CHART_VERSION || 'dso-env-1.4.0',
+      nsChartVersion: process.env.DSO_NS_CHART_VERSION || 'dso-ns-1.1.0',
     },
     environment: {
       valueFileRepository: infraProject.http_url_to_repo,
@@ -219,6 +222,7 @@ const ensureInfraEnvValues = async (
         namespace: appNamespace,
         name: cluster.label,
       },
+      vault: vaultCredentials,
       repositories,
     },
   }

@@ -5,12 +5,12 @@ type Tracker<T extends Record<string, any>> = Record<keyof T, Record<string, {
 }>> | Promise<any>
 
 type Target = Record<string, (id?: string, args?: object) => Promise<any>>
-const toTarget = <T extends Target>(target: T) => ({ tracker: {} as Tracker<T>, methods: target as T })
 type Excludes<T extends Target> = Partial<Record<keyof T, Array<keyof T>>> | undefined
+const toTarget = <T extends Target>(target: T) => ({ tracker: {} as Tracker<T>, methods: target })
 
 // @ts-ignore
-export const genericProxy = <T extends Target>(proxied: T, excludes: Excludes<T> = {}): T => new Proxy(toTarget(proxied), {
-  get ({ methods, tracker }, property: string) {
+export const genericProxy = <T>(proxied: T, excludes: Excludes<T> = {}): T => new Proxy(toTarget(proxied), {
+  get({ methods, tracker }, property: string) {
     if (!(property in methods)) return
     return async (...args) => {
       const id = args[0] as string
@@ -70,7 +70,7 @@ export const genericProxy = <T extends Target>(proxied: T, excludes: Excludes<T>
       return p
     }
   },
-  set () {
+  set() {
     return false
   },
 }) as T

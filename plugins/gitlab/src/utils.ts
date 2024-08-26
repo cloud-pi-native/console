@@ -8,9 +8,9 @@ let api: IGitlab | undefined
 let groupRootId: number | void
 
 const config: {
-  token?: string,
-  url?: string,
-  projectsRootDir?: string,
+  token?: string
+  url?: string
+  projectsRootDir?: string
 } = {
   token: undefined,
   url: undefined,
@@ -39,9 +39,9 @@ export const getApi = (): IGitlab => {
 }
 
 export const getConfig = (): {
-  token: string,
-  url: string,
-  projectsRootDir: string,
+  token: string
+  url: string
+  projectsRootDir: string
 } => {
   if (!config.projectsRootDir || !config.token || !config.url) {
     config.token = requiredEnv('GITLAB_TOKEN')
@@ -55,29 +55,12 @@ export const getConfig = (): {
 export const infraAppsRepoName = 'infra-apps'
 export const internalMirrorRepoName = 'mirror'
 
-export const shallowEqual = (object1: Record<string, unknown>, object2: Record<string, unknown>) => {
-  const keys1 = Object.keys(object1)
-  const keys2 = Object.keys(object2)
-
-  if (keys1.length !== keys2.length) {
-    return false
-  }
-
-  for (const key of keys1) {
-    if (object1[key] !== object2[key]) {
-      return false
-    }
-  }
-
-  return true
-}
-
 export type VaultSecrets = {
-  GITLAB : {
-    ORGANIZATION_NAME: string,
-    PROJECT_NAME: string,
-    GIT_MIRROR_PROJECT_ID: number,
-    GIT_MIRROR_TOKEN: string,
+  GITLAB: {
+    ORGANIZATION_NAME: string
+    PROJECT_NAME: string
+    GIT_MIRROR_PROJECT_ID: number
+    GIT_MIRROR_TOKEN: string
   }
 }
 

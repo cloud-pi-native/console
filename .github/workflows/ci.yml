@@ -12,8 +12,8 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: "20.15.1"
-  PNPM_VERSION: "9.5.0"
+  NODE_VERSION: "20.16.0"
+  PNPM_VERSION: "9.7.1"
   REGISTRY: "ghcr.io"
   NAMESPACE: "${{ github.repository }}"
   MULTI_ARCH: false
@@ -25,6 +25,8 @@ jobs:
     if: ${{ !github.event.pull_request.draft }}
     outputs:
       apps: ${{ steps.filter.outputs.apps }}
+      packages: ${{ steps.filter.outputs.packages }}
+      ci: ${{ steps.filter.outputs.ci }}
     steps:
       - name: Checks-out repository
         uses: actions/checkout@v4
@@ -36,8 +38,10 @@ jobs:
           filters: |
             apps:
               - 'apps/**'
+            packages:
               - 'packages/**'
               - 'plugins/**'
+            ci:
               - '.github/workflows/**'
 
   expose-vars:
@@ -54,6 +58,20 @@ jobs:
       - name: Exposing env vars
         run: echo "Exposing env vars"
 
+  npm-check:
+    uses: ./.github/workflows/npm.yml
+    if: ${{ needs.path-filter.outputs.packages == 'true' }}
+    needs:
+      - path-filter
+      - expose-vars
+    with:
+      PNPM_VERSION: ${{ needs.expose-vars.outputs.PNPM_VERSION }}
+      NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
+      PUBLISH_APPS: false
+      PUBLISH_PACKAGES: false
+      PUBLISH_PLUGINS: false
+      CHECK_CHANGES: true
+
   lint:
     uses: ./.github/workflows/lint.yml
     needs:
@@ -64,7 +82,9 @@ jobs:
 
   unit-tests:
     uses: ./.github/workflows/tests-unit.yml
+    if: ${{ needs.path-filter.outputs.apps == 'true' || needs.path-filter.outputs.packages == 'true' || needs.path-filter.outputs.ci == 'true' }}
     needs:
+      - path-filter
       - expose-vars
     with:
       NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
@@ -76,7 +96,7 @@ jobs:
 
   component-tests:
     uses: ./.github/workflows/tests-component.yml
-    if: ${{ needs.path-filter.outputs.apps == 'true' }}
+    if: ${{ needs.path-filter.outputs.apps == 'true' || needs.path-filter.outputs.packages == 'true' || needs.path-filter.outputs.ci == 'true' }}
     needs:
       - path-filter
       - expose-vars
@@ -96,9 +116,17 @@ jobs:
       MULTI_ARCH: ${{ needs.expose-vars.outputs.MULTI_ARCH == 'true' }}
       USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU == 'true' }}
 
+  build-label:
+    uses: ./.github/workflows/label.yml
+    needs:
+      - expose-vars
+      - build
+    with:
+      CONF_PATH: ./.github/labeler/build.yml
+
   e2e-tests:
     uses: ./.github/workflows/tests-e2e.yml
-    if: ${{ needs.path-filter.outputs.apps == 'true' }}
+    if: ${{ needs.path-filter.outputs.apps == 'true' || needs.path-filter.outputs.packages == 'true' || needs.path-filter.outputs.ci == 'true' }}
     needs:
       - path-filter
       - expose-vars
@@ -111,7 +139,7 @@ jobs:
 
   deploy-tests:
     uses: ./.github/workflows/tests-deploy.yml
-    if: ${{ needs.path-filter.outputs.apps != 'true' || (!github.event.pull_request.draft && github.base_ref == 'main') }}
+    if: ${{ (needs.path-filter.outputs.apps != 'true' && needs.path-filter.outputs.packages != 'true' && needs.path-filter.outputs.ci != 'true') || (!github.event.pull_request.draft && github.base_ref == 'main') }}
     needs:
       - path-filter
       - expose-vars

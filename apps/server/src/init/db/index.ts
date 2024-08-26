@@ -1,57 +1,51 @@
-import { dropTables } from '@/connect.js'
+import app from '../../app.js'
 import prisma from '@/prisma.js'
-import { objectEntries, objectKeys } from '@cpn-console/shared'
+import { modelKeys } from './utils.js'
 
 type ExtractKeysWithFields<T> = {
   [K in keyof T]: T[K] extends { fields: any } ? K : never
-}[keyof T];
+}[keyof T]
 
 type Models = ExtractKeysWithFields<typeof prisma>
 
-type Associates = Partial<Record<
-  Models, {
-    id: string,
-    [k: string]: { id: string }[] | string
-  }[]>
->
-
 type Imports = Partial<Record<Models, object[]>> & {
-  associates?: Partial<Associates>
+  associations: [Models, any[]]
 }
 
 export const initDb = async (data: Imports) => {
-  await dropTables()
-  for (const model of objectKeys(data)) {
-    if (model === 'associates') continue
+  const dataStringified = JSON.stringify(data)
+  const dataParsed = JSON.parse(dataStringified, (key, value) => {
+    try {
+      if (['permissions', 'everyonePerms'].includes(key)) {
+        return BigInt(value.slice(0, value.length - 1))
+      }
+    } catch (error) {
+      return value
+    }
+    return value
+  })
+  app.log.info('Drop tables')
+  for (const modelKey of modelKeys.toReversed()) {
     // @ts-ignore
-    for (const value of data[model]) {
-      try {
-        // @ts-ignore
-        await prisma[model].create({
-          data: value,
-        })
-      } catch (error) {
-        console.log({ error, model })
-      }
+    await prisma[modelKey].deleteMany()
+  }
+  app.log.info('Import models')
+  for (const modelKey of modelKeys) {
+    // @ts-ignore
+    await prisma[modelKey].createMany({ data: dataParsed[modelKey] })
+  }
+  app.log.info('Import associations')
+  for (const [modelKey, rows] of dataParsed.associations) {
+    for (const row of rows) {
+      const idKey = 'id'
+      const connectKeys = Object.keys(row).filter(key => key !== idKey)
+      const dataConnects = connectKeys.reduce((acc, curr) => {
+        acc[curr] = { connect: row[curr] }
+        return acc
+      }, {} as Record<string, { connect: any[] }>)
+      // @ts-ignore
+      await prisma[modelKey].update({ where: { id: row.id }, data: dataConnects })
     }
   }
-  if (!data.associates) return
-  for (const [sourceModel, associations] of objectEntries(data.associates)) {
-    if (!associations) continue
-    for (const association of associations) {
-      for (const [targetModel, targetIds] of objectEntries(association)) {
-        // @ts-ignore
-        await prisma[sourceModel].update({
-          where: {
-            id: association.id,
-          },
-          data: {
-            [targetModel]: {
-              set: targetIds,
-            },
-          },
-        })
-      }
-    }
-  }
+  app.log.info('End import')
 }

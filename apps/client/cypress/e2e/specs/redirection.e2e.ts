@@ -17,7 +17,7 @@ describe('Redirection', () => {
     cy.reload()
     cy.wait('@postToken')
     cy.url().should('match', /projects#state=/)
-    cy.wait('@listProjects').its('response').then(response => {
+    cy.wait('@listProjects').its('response').then((response) => {
       cy.get('[data-testid^="projectTile-"]')
       cy.should('have.length', `${response?.body.length}`)
       cy.getByDataTestid(`projectTile-${project.name}`).click()
@@ -28,7 +28,7 @@ describe('Redirection', () => {
     cy.wait('@postToken')
     cy.url().should('contain', `/projects/${project.id}/dashboard`)
     cy.wait('@listStages')
-    cy.wait('@listProjects').its('response').then(_response => {
+    cy.wait('@listProjects').its('response').then((_response) => {
       cy.getByDataTestid('currentProjectInfo')
       cy.should('contain', `Le projet courant est : ${project.name} (${organization.label})`)
     })
@@ -48,7 +48,7 @@ describe('Redirection', () => {
     cy.wait('@postToken')
     cy.url().should('contain', `/projects/${project.id}/dashboard`)
     cy.wait('@listStages')
-    cy.wait('@listProjects', { timeout: 5000 }).its('response').then(_response => {
+    cy.wait('@listProjects', { timeout: 5_000 }).its('response').then((_response) => {
       cy.getByDataTestid('currentProjectInfo')
       cy.should('contain', `Le projet courant est : ${project.name} (${organization.label})`)
     })

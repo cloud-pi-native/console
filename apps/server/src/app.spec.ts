@@ -1,22 +1,32 @@
-import { vi, afterAll, describe, it, expect } from 'vitest'
+import { vi, afterAll, describe, it, expect, beforeEach } from 'vitest'
 import app from './app.js'
+import { getRandomRequestor, setRequestor } from './utils/mocks.js'
+import { apiPrefix } from '@cpn-console/shared'
 
 vi.mock('fastify-keycloak-adapter', (await import('./utils/mocks.js')).mockSessionPlugin)
 
 describe('app', () => {
+  beforeEach(() => {
+    setRequestor(getRandomRequestor())
+  })
   afterAll(async () => {
     await app.close()
   })
 
   it('should respond with the version', async () => {
     const response = await app.inject()
-      .get('/api/v1/version')
+      .get(`${apiPrefix}/version`)
     expect(JSON.parse(response.body).version).toBe('dev')
   })
 
   it('should respond with the healthz', async () => {
     const response = await app.inject()
-      .get('/api/v1/healthz')
+      .get(`${apiPrefix}/healthz`)
     expect(JSON.parse(response.body).status).toBe('OK')
+  })
+  it('should respond 404 on unknown route', async () => {
+    const response = await app.inject()
+      .get(`${apiPrefix}/miss`)
+    expect(response.statusCode).toBe(404)
   })
 })

@@ -1,6 +1,7 @@
-import { FastifyRequest } from 'fastify'
+import { FastifyLoggerOptions, FastifyRequest, RawServerBase } from 'fastify'
+import { FastifyBaseLogger, PinoLoggerOptions } from 'fastify/types/logger.js'
 
-export const loggerConf = {
+export const loggerConf: Record<string, false | FastifyLoggerOptions<RawServerBase> & PinoLoggerOptions | FastifyBaseLogger> = {
   development: {
     transport: {
       target: 'pino-pretty',
@@ -12,7 +13,7 @@ export const loggerConf = {
       },
     },
   },
-  production: true,
+  production: {},
   test: false,
 }
 

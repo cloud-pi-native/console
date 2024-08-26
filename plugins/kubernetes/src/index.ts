@@ -8,13 +8,13 @@ export const plugin: Plugin = {
   infos,
   subscribedHooks: {
     upsertProject: {
-      api: (args) => new KubernetesProjectApi(args),
+      api: args => new KubernetesProjectApi(args),
       steps: {
         pre: createNamespaces,
       },
     },
     deleteProject: {
-      api: (args) => new KubernetesProjectApi(args),
+      api: args => new KubernetesProjectApi(args),
       steps: {
         post: deleteNamespaces,
       },
@@ -26,7 +26,7 @@ export const plugin: Plugin = {
 declare module '@cpn-console/hooks' {
   interface HookPayloadApis<Args extends DefaultArgs> {
     kubernetes: Args extends (Project)
-    ? KubernetesProjectApi<Args>
-    : undefined
+      ? KubernetesProjectApi<Args>
+      : undefined
   }
 }

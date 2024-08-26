@@ -1,19 +1,18 @@
 <script setup lang="ts">
 import { apiPrefix } from '@cpn-console/shared'
 import { getKeycloak } from './utils/keycloak/keycloak.js'
-import { useUserStore } from './stores/user.js'
 import { useSnackbarStore } from './stores/snackbar.js'
+import { useSystemSettingsStore } from './stores/system-settings.js'
+import { useServiceStore } from '@/stores/services-monitor.js'
 
 const keycloak = getKeycloak()
-const userStore = useUserStore()
 const snackbarStore = useSnackbarStore()
-
-userStore.setIsLoggedIn()
+const systemStore = useSystemSettingsStore()
 
 const isLoggedIn = ref<boolean | undefined>(keycloak.authenticated)
 const label = ref(isLoggedIn.value ? 'Se déconnecter' : 'Se connecter')
 const to = ref(isLoggedIn.value ? '/logout' : '/login')
-const intervalId = ref<number>()
+
 const appVersion: string = process.env.APP_VERSION ? `v${process.env.APP_VERSION}` : 'vpr-dev'
 
 const quickLinks = ref([{
@@ -24,10 +23,6 @@ const quickLinks = ref([{
 }])
 
 const getSwaggerUrl = () => window?.location?.origin + `${apiPrefix}/swagger-ui/static/index.html`
-
-onBeforeMount(() => {
-  clearInterval(intervalId.value)
-})
 
 onErrorCaptured((error) => {
   if (error instanceof Error) {
@@ -43,6 +38,11 @@ watch(label, (label: string) => {
   quickLinks.value[0].label = label
 })
 
+const serviceStore = useServiceStore()
+onBeforeMount(() => {
+  serviceStore.startHealthPolling()
+  serviceStore.checkServicesHealth()
+})
 </script>
 
 <template>
@@ -50,6 +50,11 @@ watch(label, (label: string) => {
     service-title="Console Cloud π Native"
     :logo-text="['Ministère', 'de l’intérieur', 'et des outre-mer']"
     :quick-links="quickLinks"
+  />
+  <DsfrNotice
+    v-if="systemStore.systemSettingsByKey['maintenance']?.value === 'on'"
+    title="Le mode Maintenance est actuellement activé"
+    data-testid="maintenance-notice"
   />
   <div class="fr-container fr-grid-row fr-mb-8w">
     <div class="fr-col-12 fr-col-md-3">

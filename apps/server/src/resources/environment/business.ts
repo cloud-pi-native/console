@@ -1,35 +1,28 @@
-import type { Cluster, Environment, Project, Quota, Role, Stage, User } from '@prisma/client'
-import { XOR, adminGroupPath } from '@cpn-console/shared'
-import { getProjectInfosAndClusters } from '@/resources/project/business.js'
+import type { Cluster, Environment, Project, Quota, Stage, User } from '@prisma/client'
+import { XOR } from '@cpn-console/shared'
 import {
   addLogs,
   deleteEnvironment as deleteEnvironmentQuery,
-  getClusterById,
-  getEnvironmentById,
   getEnvironmentInfos as getEnvironmentInfosQuery,
-  getProjectInfosOrThrow,
   getPublicClusters,
-  getQuotaById,
-  getStageById,
-  getUserById,
   initializeEnvironment,
   updateEnvironment as updateEnvironmentQuery,
   getEnvironmentsByProjectId,
 } from '@/resources/queries-index.js'
 import type { UserDetails } from '@/types/index.js'
 import {
-  checkClusterUnavailable,
-  checkRoleAndLocked,
-  filterOwners,
-} from '@/utils/controller.js'
-import { BadRequestError, DsoError, ForbiddenError, NotFoundError, UnprocessableContentError } from '@/utils/errors.js'
+  ErrorResType,
+  BadRequest400,
+  NotFound404,
+  Unprocessable422,
+} from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
-import { getProjectAndCheckRole } from '../repository/business.js'
+import prisma from '@/prisma.js'
 
 // Fetch infos
 export const getEnvironmentInfosAndClusters = async (environmentId: string) => {
   const env = await getEnvironmentInfosQuery(environmentId)
-  if (!env) throw new NotFoundError('Environnement introuvable')
+  if (!env) return new NotFound404()
 
   const authorizedClusters = [...await getPublicClusters(), ...env.project.clusters]
   return { env, authorizedClusters }
@@ -37,125 +30,18 @@ export const getEnvironmentInfosAndClusters = async (environmentId: string) => {
 
 export const getEnvironmentInfos = async (environmentId: string) => getEnvironmentInfosQuery(environmentId)
 
-export const getProjectEnvironments = async (
-  userId: User['id'],
-  isAdmin: boolean,
+export const getProjectEnvironments = (
   projectId: Project['id'],
-) => {
-  return isAdmin ? await getEnvironmentsByProjectId(projectId) : (await getProjectAndCheckRole(userId, projectId)).environments
-}
-
-type GetInitializeEnvironmentInfosParam = {
-  userId: User['id'],
-  projectId: Project['id'],
-  stageId: Stage['id'],
-  quotaId: Quota['id'],
-}
-
-export const getInitializeEnvironmentInfos = async ({
-  userId,
-  projectId,
-  quotaId,
-  stageId,
-}: GetInitializeEnvironmentInfosParam) => {
-  try {
-    const user = await getUserById(userId)
-    const { project, projectClusters } = await getProjectInfosAndClusters(projectId)
-    const quota = await getQuotaById(quotaId)
-    const stage = await getStageById(stageId)
-    if (!stage) throw new BadRequestError('Stage introuvable')
-    const authorizedClusters = projectClusters
-      ?.filter(projectCluster => stage.clusters
-        ?.find(stageCluster => stageCluster.id === projectCluster.id))
-    return { user, project, quota, stage, authorizedClusters }
-  } catch (error) {
-    throw new Error(error?.message)
-  }
-}
-
-// Check logic
-type CheckEnvironmentParam = {
-  project: { locked: boolean, roles: Role[], id: string, environments: Environment[] },
-  userId: User['id'],
-  name: Environment['name'],
-  authorizedClusterIds: Cluster['id'][],
-  clusterId: Cluster['id'],
-  quotaId: Quota['id'],
-  stage: Stage & { quotas: Quota[] },
-}
-
-export const checkCreateEnvironment = ({
-  project,
-  userId,
-  name,
-  authorizedClusterIds,
-  clusterId,
-  stage,
-  quotaId,
-}: CheckEnvironmentParam) => {
-  const errorMessage = checkRoleAndLocked(project, userId, 'owner') ||
-    checkExistingEnvironment(clusterId, name, project.environments) ||
-    checkClusterUnavailable(clusterId, authorizedClusterIds) ||
-    checkQuotaStageStatus(stage, quotaId)
-  if (errorMessage) throw new ForbiddenError(errorMessage, undefined)
-}
-
-type CheckUpdateEnvironmentParam = {
-  project: { locked: boolean, roles: Role[], id: string, environments: Environment[] },
-  userId: User['id'],
-  quotaId: Quota['id'],
-  dbEnvQuotaId: Quota['id'],
-  stage: Stage & { quotas: Quota[] },
-}
-
-export const checkUpdateEnvironment = ({
-  project,
-  userId,
-  quotaId,
-  dbEnvQuotaId,
-  stage,
-}: CheckUpdateEnvironmentParam) => {
-  const errorMessage = checkRoleAndLocked(project, userId, 'owner') || dbEnvQuotaId !== quotaId
-    ? checkQuotaStageStatus(stage, quotaId)
-    : ''
-  if (errorMessage) throw new ForbiddenError(errorMessage, undefined)
-}
-
-type CheckDeleteEnvironmentParam = {
-  project: { locked: boolean, roles: Role[], id: string },
-  userId: string,
-}
-
-export const checkDeleteEnvironment = ({
-  project,
-  userId,
-}: CheckDeleteEnvironmentParam) => {
-  const errorMessage = checkRoleAndLocked(project, userId, 'owner')
-  if (errorMessage) throw new ForbiddenError(errorMessage, { description: '', extras: { userId, projectId: project.id } })
-}
-
-export const checkExistingEnvironment = (clusterId: Cluster['id'], name: Environment['name'], environments: Environment[]) => {
-  if (environments?.find(env => env.clusterId === clusterId && env.name === name)) {
-    return 'Un environnement avec le même nom et déployé sur le même cluster existe déjà pour ce projet.'
-  }
-}
-
-type ByStageOrQuota = XOR<Quota & { stages: Stage[] }, Stage & { quotas: Quota[] }>
-export const checkQuotaStageStatus = (resource: ByStageOrQuota, matchingId: string) => {
-  const association = resource.quotas
-    ? resource.quotas.find(({ id }) => id === matchingId)
-    : resource.stages.find(({ id }) => id === matchingId)
-  if (!association) return 'Cette association quota / type d\'environnement n\'est plus disponible.'
-}
+) => getEnvironmentsByProjectId(projectId)
 
 // Routes logic
 type CreateEnvironmentParam = {
-  userId: User['id'],
-  projectId: Project['id'],
-  name: Environment['name'],
-  clusterId: Environment['clusterId'],
-  quotaId: Quota['id'],
-  stageId: Stage['id'],
+  userId: User['id']
+  projectId: Project['id']
+  name: Environment['name']
+  clusterId: Environment['clusterId']
+  quotaId: Quota['id']
+  stageId: Stage['id']
   requestId: string
 }
 
@@ -169,58 +55,26 @@ export const createEnvironment = async (
     stageId,
     requestId,
   }: CreateEnvironmentParam) => {
-  const { user, project, stage, quota, authorizedClusters } = await getInitializeEnvironmentInfos({
-    userId,
-    projectId,
+  const environment = await initializeEnvironment({ projectId, name, clusterId, quotaId, stageId })
+
+  const { results } = await hook.project.upsert(projectId)
+  await addLogs('Create Environment', results, userId, requestId)
+  if (results.failed) {
+    return new Unprocessable422('Echec des services à la création de l\'environnement')
+  }
+
+  return {
+    ...environment,
     quotaId,
     stageId,
-  })
-
-  if (!project) throw new NotFoundError('Projet introuvable')
-  if (!user) throw new NotFoundError('Utilisateur introuvable')
-  if (!quota) throw new NotFoundError('Quota introuvable')
-
-  checkCreateEnvironment({
-    project,
-    userId,
-    name,
-    authorizedClusterIds: authorizedClusters.map(authorizedCluster => authorizedCluster.id),
-    clusterId,
-    stage,
-    quotaId: quota.id,
-  })
-
-  const projectOwners = filterOwners(project.roles)
-  const environment = await initializeEnvironment({ projectId: project.id, name, projectOwners, clusterId, quotaId: quota.id, stageId: stage.id })
-
-  try {
-    const cluster = await getClusterById(clusterId)
-    if (!cluster) throw new NotFoundError('Cluster introuvable')
-
-    const { results } = await hook.project.upsert(project.id)
-    await addLogs('Create Environment', results, userId, requestId)
-    if (results.failed) {
-      throw new UnprocessableContentError('Echec des services à la création de l\'environnement')
-    }
-
-    return {
-      ...environment,
-      quotaId,
-      stageId,
-    }
-  } catch (error) {
-    if (error instanceof DsoError) {
-      throw error
-    }
-    throw new Error(error?.message)
   }
 }
 
 type UpdateEnvironmentParam = {
-  user: UserDetails,
-  environmentId: Environment['id'],
-  quotaId: Quota['id'],
-  requestId: string,
+  user: UserDetails
+  environmentId: Environment['id']
+  quotaId: Quota['id']
+  requestId: string
 }
 
 export const updateEnvironment = async ({
@@ -229,80 +83,95 @@ export const updateEnvironment = async ({
   requestId,
   quotaId,
 }: UpdateEnvironmentParam) => {
-  try {
-    const dbEnvironment = await getEnvironmentById(environmentId)
-    if (!dbEnvironment) throw new NotFoundError('Environment introuvable')
-    const [stage, project, quota] = await Promise.all([
-      getStageById(dbEnvironment.stageId),
-      getProjectInfosOrThrow(dbEnvironment.projectId),
-      getQuotaById(quotaId),
-    ])
-
-    if (!project) throw new NotFoundError('Projet introuvable')
-    if (!stage) throw new NotFoundError('Stage introuvable')
-    if (!quota) throw new NotFoundError('Quota introuvable')
-
-    if (!user.groups?.includes(adminGroupPath)) {
-      checkUpdateEnvironment({
-        project,
-        userId: user.id,
-        stage,
-        quotaId: quota.id,
-        dbEnvQuotaId: dbEnvironment.quotaId,
-      })
+  // Modification du quota
+  const env = await updateEnvironmentQuery({ id: environmentId, quotaId })
+  if (quotaId) {
+    const { results } = await hook.project.upsert(env.projectId)
+    await addLogs('Update Environment Quotas', results, user.id, requestId)
+    if (results.failed) {
+      return new Unprocessable422('Echec des services à la mise à jour des quotas pour l\'environnement')
     }
-    if (!user.groups?.includes(adminGroupPath) && (quota.id !== quotaId && quota.isPrivate)) {
-      throw new ForbiddenError('Ce quota est privé, accès restreint aux administrateurs')
-    }
-    // Modification du quota
-    const env = await updateEnvironmentQuery({ id: environmentId, quotaId })
-    if (quotaId) {
-      const { results } = await hook.project.upsert(project.id)
-      await addLogs('Update Environment Quotas', results, user.id, requestId)
-      if (results.failed) {
-        throw new UnprocessableContentError('Echec des services à la mise à jour des quotas pour l\'environnement')
-      }
-    }
-
-    return env
-  } catch (error) {
-    if (error instanceof DsoError) {
-      throw error
-    }
-    throw new Error(error?.message)
   }
+
+  return env
 }
 
 type DeleteEnvironmentParam = {
-  userId: User['id'],
-  environmentId: Environment['id'],
-  requestId: string,
+  userId: User['id']
+  environmentId: Environment['id']
+  projectId: Project['id']
+  requestId: string
 }
 
 export const deleteEnvironment = async ({
   userId,
   environmentId,
+  projectId,
   requestId,
 }: DeleteEnvironmentParam) => {
-  try {
-    const environment = await getEnvironmentInfos(environmentId)
-    const project = await getProjectInfosOrThrow(environment.projectId)
+  await deleteEnvironmentQuery(environmentId)
 
-    checkDeleteEnvironment({ project, userId })
-
-    await deleteEnvironmentQuery(environment.id)
-
-    // Suppression de l'environnement dans les services
-    const cluster = await getClusterById(environment.clusterId)
-    if (!cluster) throw new NotFoundError('Cluster introuvable')
-
-    const { results } = await hook.project.upsert(project.id)
-    await addLogs('Delete Environment', results, userId, requestId)
-    if (results.failed) {
-      throw new UnprocessableContentError('Echec des services à la suppression de l\'environnement')
-    }
-  } catch (error) {
-    if (error instanceof DsoError) throw error
-    throw new Error(error?.message)
+  const { results } = await hook.project.upsert(projectId)
+  await addLogs('Delete Environment', results, userId, requestId)
+  if (results.failed) {
+    return new Unprocessable422('Echec des services à la suppression de l\'environnement')
   }
+  return null
+}
+
+type checkEnvironmentInput = {
+  allowInvalidQuotaStage: boolean
+  allowPrivateQuota: boolean
+  quotaId: Quota['id']
+} & XOR<{ // mode create
+  clusterId: Cluster['id']
+  projectId: Project['id']
+  name: Environment['name']
+  stageId: Stage['id']
+}, {
+    environmentId: Environment['id'] // mode update
+  }>
+export const checkEnvironmentInput = async (input: checkEnvironmentInput): Promise<ErrorResType | undefined> => {
+  const [quota, environment, stage, sameNameEnvironment, cluster] = await Promise.all([
+    prisma.quota.findUnique({ where: { id: input.quotaId }, include: { stages: true } }),
+    input.environmentId
+      ? prisma.environment.findUnique({ where: { id: input.environmentId } })
+      : undefined,
+    input.stageId
+      ? prisma.stage.findUnique({ where: { id: input.stageId } })
+      : undefined,
+    input.name
+      ? prisma.environment.findUnique({ where: { projectId_name: { projectId: input.projectId, name: input.name } } })
+      : undefined,
+    input.clusterId
+      ? prisma.cluster.findFirst({
+        where: {
+          OR: [{ // un cluster public
+            id: input.clusterId,
+            privacy: 'public',
+          }, {
+            id: input.clusterId, // un cluster dédié rattaché au projet
+            privacy: 'dedicated',
+            projects: { some: { id: input.projectId } },
+          }, {
+            id: input.clusterId, // le cluster actuel de l'environment
+            environments: { some: { id: input.environmentId } },
+          }],
+        },
+      })
+      : undefined,
+  ])
+  const quotaError = new BadRequest400('Quota invalide.')
+  if (!quota) return quotaError
+
+  // update
+  if (input.environmentId && (quota.id !== environment?.quotaId && quota.isPrivate && !input.allowPrivateQuota)) return quotaError
+  if (input.environmentId && quota.id) return
+
+  // create
+  if (quota.isPrivate && !input.allowPrivateQuota) return quotaError
+  if (sameNameEnvironment) return new BadRequest400('Ce nom d\'environnement est déjà pris.')
+  if (!cluster) return new BadRequest400('Cluster invalide.')
+  if (!stage) return new BadRequest400('Type d\'environnment invalide.')
+  if (!input.allowInvalidQuotaStage && !quota.stages.find(stage => stage.id === input.stageId)) return new BadRequest400('Ce quota n\'est pas disponible pour le type d\'environnement choisi.')
 }

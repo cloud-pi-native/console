@@ -11,8 +11,8 @@
     "build": "tsc",
     "build:clean": "rimraf ./dist ./types ./tsconfig.tsbuildinfo",
     "dev": "nodemon --watch src --ext .ts --exec 'pnpm run build'",
-    "format": "eslint ./src --ext .js,.cjs,.ts --fix",
-    "lint": "eslint ./src"
+    "format": "eslint ./ --fix",
+    "lint": "eslint ./"
   },
   "dependencies": {
     "@cpn-console/gitlab-plugin": "workspace:^",
@@ -20,6 +20,7 @@
     "@cpn-console/keycloak-plugin": "workspace:^",
     "@cpn-console/kubernetes-plugin": "workspace:^",
     "@cpn-console/shared": "workspace:^",
+    "@cpn-console/vault-plugin": "workspace:^",
     "@himenon/argocd-typescript-openapi": "^1.2.2",
     "@kubernetes-models/argo-cd": "^2.6.0",
     "@kubernetes/client-node": "^0.21.0",

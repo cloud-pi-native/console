@@ -10,7 +10,7 @@ const snackbarStore = useSnackbarStore()
 const updated = ref<Record<string, Record<string, string>>>({})
 
 const refTheValues = (services: PluginSchema[]) => {
-  return services.map(service => {
+  return services.map((service) => {
     return {
       ...service,
       manifest: service.manifest?.map(item => ({ ...item, value: ref(item.value) })),
@@ -136,13 +136,11 @@ const update = (data: { value: string, key: string, plugin: string }) => {
   >
     <DsfrButton
       v-if="Object.values(updated).keys() && Object.values(updated).map(v => Object.keys(v)).flat().length"
-      type="buttonType"
       label="Enregister"
       @click="save()"
     />
     <DsfrButton
-      type="buttonType"
-      :label="'Recharger'"
+      label="Recharger"
       secondary
       @click="reload()"
     />

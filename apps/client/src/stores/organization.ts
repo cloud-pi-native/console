@@ -5,6 +5,7 @@ import {
   type CreateOrganizationBody,
   type UpdateOrganizationBody,
   resourceListToDict,
+  organizationContract,
 } from '@cpn-console/shared'
 import { apiClient, extractData } from '@/api/xhr-client.js'
 
@@ -12,8 +13,8 @@ export const useOrganizationStore = defineStore('organization', () => {
   const organizations = ref<Organization[]>([])
   const organizationsById = computed(() => resourceListToDict(organizations.value))
 
-  const listOrganizations = async () => {
-    organizations.value = await apiClient.Organizations.listOrganizations()
+  const listOrganizations = async (query?: typeof organizationContract.listOrganizations.query._type) => {
+    organizations.value = await apiClient.Organizations.listOrganizations({ query })
       .then(response => extractData(response, 200))
     return organizations.value
   }

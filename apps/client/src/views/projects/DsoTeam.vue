@@ -1,31 +1,23 @@
 <script lang="ts" setup>
+// @ts-ignore '@gouvminint/vue-dsfr' missing types
 import { getRandomId } from '@gouvminint/vue-dsfr'
 import { useProjectStore } from '@/stores/project.js'
-import { useProjectUserStore } from '@/stores/project-user.js'
+import { useProjectMemberStore } from '@/stores/project-member.js'
 import { useUserStore } from '@/stores/user.js'
-import { useUsersStore } from '@/stores/users.js'
+import { ProjectAuthorized } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const projectStore = useProjectStore()
-const projectUserStore = useProjectUserStore()
+const projectMemberStore = useProjectMemberStore()
 const userStore = useUserStore()
-const usersStore = useUsersStore()
 const snackbarStore = useSnackbarStore()
 
 const teamKey = ref('team')
 
-const addUserToProject = async (email: string) => {
+const addUserToProject = async (userEmail: string) => {
   if (!projectStore.selectedProject) return
   snackbarStore.isWaitingForResponse = true
-  projectStore.selectedProject.members = await projectUserStore.addUserToProject(projectStore.selectedProject.id, { email })
-  teamKey.value = getRandomId('team')
-  snackbarStore.isWaitingForResponse = false
-}
-
-const updateUserRole = async (userId: string) => {
-  if (!projectStore.selectedProject) return snackbarStore.setMessage('Veuillez sélectionner un projet')
-  snackbarStore.isWaitingForResponse = true
-  projectStore.selectedProject.members = await projectUserStore.transferProjectOwnership(projectStore.selectedProject.id, userId)
+  projectStore.selectedProject.members = await projectMemberStore.addMember(projectStore.selectedProject.id, userEmail)
   teamKey.value = getRandomId('team')
   snackbarStore.isWaitingForResponse = false
 }
@@ -33,7 +25,15 @@ const updateUserRole = async (userId: string) => {
 const removeUserFromProject = async (userId: string) => {
   if (!projectStore.selectedProject) return
   snackbarStore.isWaitingForResponse = true
-  projectStore.selectedProject.members = await projectUserStore.removeUserFromProject(projectStore.selectedProject?.id, userId)
+  projectStore.selectedProject.members = await projectMemberStore.removeMember(projectStore.selectedProject.id, userId)
+  teamKey.value = getRandomId('team')
+  snackbarStore.isWaitingForResponse = false
+}
+
+const transferOwnerShip = async (nextOwnerId: string) => {
+  if (!projectStore.selectedProject) return
+  snackbarStore.isWaitingForResponse = true
+  await projectStore.updateProject(projectStore.selectedProject.id, { ownerId: nextOwnerId })
   teamKey.value = getRandomId('team')
   snackbarStore.isWaitingForResponse = false
 }
@@ -45,14 +45,16 @@ const removeUserFromProject = async (userId: string) => {
     v-if="projectStore.selectedProject"
     :key="teamKey"
     :user-profile="userStore.userProfile"
-    :project="{id: projectStore.selectedProject.id ?? '', name: projectStore.selectedProject.name ?? '', locked: projectStore.selectedProject.locked ?? false }"
-    :known-users="usersStore.users"
+    :project="projectStore.selectedProject"
     :members="projectStore.selectedProject.members ?? []"
-    @add-member="(email: string) => addUserToProject(email)"
-    @update-role="(userId: string) => updateUserRole(userId)"
+    :can-manage="ProjectAuthorized.ManageMembers({ projectPermissions: projectStore.selectedProjectPerms})"
+    :can-transfer="projectStore.selectedProject.ownerId === userStore.userProfile?.id"
+    @add-member="(userEmail: string) => addUserToProject(userEmail)"
     @remove-member="(userId: string) => removeUserFromProject(userId)"
+    @transfer-ownership="(nextOwnerId: string) => transferOwnerShip(nextOwnerId)"
   />
   <ErrorGoBackToProjects
     v-else
   />
 </template>
+@/stores/project-member.js

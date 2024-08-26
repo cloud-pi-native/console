@@ -13,7 +13,6 @@ import { fastifyConf, swaggerUiConf, swaggerConf } from './utils/fastify.js'
 import { apiRouter } from './resources/index.js'
 import { keycloakConf, sessionConf } from './utils/keycloak.js'
 import { addReqLogs } from './utils/logger.js'
-import { DsoError } from './utils/errors.js'
 
 export const serverInstance: ReturnType<typeof initServer> = initServer()
 
@@ -30,23 +29,30 @@ const app = fastify(fastifyConf)
   .register(fastifySwagger, { transformObject: () => openApiDocument })
   .register(fastifySwaggerUi, swaggerUiConf)
   .register(apiRouter())
-  .addHook('onRoute', opts => {
+  .addHook('onRoute', (opts) => {
     if (opts.path === `${apiPrefix}/healthz`) {
       opts.logLevel = 'silent'
     }
   })
-  .setErrorHandler(function (error: DsoError | Error, req: FastifyRequest, reply) {
-    const isDsoError = error instanceof DsoError
-
-    const statusCode = isDsoError ? error.statusCode : 500
-    const message = isDsoError ? error.description : error.message
+  .setErrorHandler(function (error: Error, req: FastifyRequest, reply) {
+    const statusCode = 500
+    // @ts-ignore vérifier l'objet
+    const message = error.description || error.message
     reply.status(statusCode).send({ status: statusCode, error: message, stack: error.stack })
     addReqLogs({
       req,
       message,
-      ...(isDsoError ? { extras: error.extras } : {}),
-      error: isDsoError ? undefined : error,
+      error,
     })
+  })
+  .addHook('onResponse', (req, res) => {
+    if (res.statusCode < 400) {
+      req.log.info({ status: res.statusCode, userId: req.session?.user?.id })
+    } else if (res.statusCode < 500) {
+      req.log.warn({ status: res.statusCode, userId: req.session?.user?.id })
+    } else {
+      req.log.error({ status: res.statusCode, userId: req.session?.user?.id })
+    }
   })
 
 await app.ready()

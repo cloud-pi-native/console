@@ -17,7 +17,7 @@ export const CleanedClusterSchema = z.object({
     .max(200)
     .optional()
     .nullable()
-    .transform((value) => value ?? ''),
+    .transform(value => value ?? ''),
   clusterResources: z.boolean(),
   privacy: ClusterPrivacySchema,
   zoneId: z.string()
@@ -127,7 +127,7 @@ export const GetClusterKubeconfigSchema = {
 
 export const UpdateClusterSchema = {
   params: ClusterParams,
-  body: ClusterDetailsSchema.partial(),
+  body: ClusterDetailsSchema.omit({ id: true, label: true }).partial(),
   responses: {
     200: ClusterDetailsSchema,
     400: ErrorSchema,

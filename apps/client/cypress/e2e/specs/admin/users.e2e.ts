@@ -6,7 +6,6 @@ describe('Administration users', () => {
     firstName,
     lastName,
     email,
-    isAdmin: false,
   }))
 
   beforeEach(() => {
@@ -20,7 +19,7 @@ describe('Administration users', () => {
 
   it('Should display admin users, loggedIn as admin', () => {
     cy.getByDataTestid('tableAdministrationUsers').find('tbody').within(() => {
-      users.forEach(user => {
+      users.forEach((user) => {
         cy.get('tr > td')
           .contains(user.id)
           .click()
@@ -31,9 +30,9 @@ describe('Administration users', () => {
           .contains(user.lastName)
         cy.get('tr > td')
           .contains(user.email)
-        cy.getByDataTestid(`${user.id}-is-admin`)
-          .should(user.isAdmin ? 'be.checked' : 'not.be.checked')
       })
+      cy.getByDataTestid('cb8e5b4b-7b7b-40f5-935f-594f48ae6566-roles')
+        .should('contain', 'Admin Locaux')
     })
   })
 

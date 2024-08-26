@@ -4,17 +4,17 @@ import { SharedZodError, RepoBusinessSchema, RepoSchema, CreateRepoBusinessSchem
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = withDefaults(defineProps<{
-  repo: Partial<Repo>,
-  isOwner: boolean,
-  isProjectLocked: boolean,
+  repo: Partial<Repo>
+  canManage: boolean
+  isProjectLocked: boolean
 }>(), {
   repo: () => ({ isInfra: false, isPrivate: false, internalRepoName: '' }),
-  isOwner: false,
+  canManage: false,
   isProjectLocked: false,
 })
 
 const localRepo = ref(props.repo)
-const updatedValues = ref<Record<keyof typeof localRepo.value, boolean>>(instanciateSchema(RepoSchema, false))
+const updatedValues = ref<Record<keyof Omit<typeof localRepo.value, 'id' | 'projectId'>, boolean>>(instanciateSchema(RepoSchema, false))
 const repoToDelete = ref('')
 const isDeletingRepo = ref(false)
 
@@ -29,7 +29,7 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
 })
 const isRepoValid = computed(() => !errorSchema.value)
 
-const updateRepo = (key: keyof typeof localRepo.value, value: unknown) => {
+const updateRepo = <K extends keyof Omit<typeof localRepo.value, 'id' | 'projectId'>>(key: K, value: typeof localRepo.value[K]) => {
   localRepo.value[key] = value
   updatedValues.value[key] = true
 
@@ -66,7 +66,7 @@ const cancel = () => {
     </h2>
     <DsfrFieldset
       legend="Informations du dépôt"
-      hint="Les champs munis d\'une astérisque (*) sont requis"
+      hint="Les champs munis d'une astérisque (*) sont requis"
     >
       <DsfrFieldset
         data-testid="repoFieldset"
@@ -78,7 +78,7 @@ const cancel = () => {
             data-testid="internalRepoNameInput"
             type="text"
             :required="true"
-            :disabled="localRepo.id || props.isProjectLocked"
+            :disabled="localRepo.id || props.isProjectLocked || !canManage"
             :error-message="!!updatedValues.internalRepoName && !RepoSchema.pick({internalRepoName: true}).safeParse({internalRepoName: localRepo.internalRepoName}).success ? 'Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique': undefined"
             label="Nom du dépôt Git interne"
             label-visible
@@ -93,7 +93,7 @@ const cancel = () => {
             data-testid="externalRepoUrlInput"
             type="text"
             :required="true"
-            :disabled="props.isProjectLocked"
+            :disabled="props.isProjectLocked || !canManage"
             :error-message="!!updatedValues.externalRepoUrl && !RepoSchema.pick({externalRepoUrl: true}).safeParse({externalRepoUrl: localRepo.externalRepoUrl}).success ? 'L\'url du dépôt doit commencer par https et se terminer par .git': undefined"
             label="Url du dépôt Git externe"
             label-visible
@@ -106,7 +106,7 @@ const cancel = () => {
         <DsfrCheckbox
           id="privateRepoCbx"
           v-model="localRepo.isPrivate"
-          :disabled="props.isProjectLocked"
+          :disabled="props.isProjectLocked || !canManage"
           label="Dépôt source privé"
           hint="Cochez la case si le dépôt Git source est privé"
           name="isGitSourcePrivate"
@@ -121,7 +121,7 @@ const cancel = () => {
               data-testid="externalUserNameInput"
               type="text"
               :required="localRepo.isPrivate"
-              :disabled="props.isProjectLocked"
+              :disabled="props.isProjectLocked || !canManage"
               :error-message="!!updatedValues.externalUserName && !RepoSchema.pick({externalUserName: true}).safeParse({externalUserName: localRepo.externalUserName}).success ? 'Le nom du propriétaire du token est obligatoire en cas de dépôt privé': undefined"
               label="Nom d'utilisateur"
               label-visible
@@ -137,7 +137,7 @@ const cancel = () => {
               data-testid="externalTokenInput"
               type="text"
               :required="localRepo.isPrivate"
-              :disabled="props.isProjectLocked"
+              :disabled="props.isProjectLocked || !canManage"
               label="Token d'accès au dépôt Git externe"
               label-visible
               hint="Token d'accès permettant le clone du dépôt par la chaîne DevSecOps"
@@ -150,19 +150,16 @@ const cancel = () => {
         <DsfrCheckbox
           id="infraRepoCbx"
           v-model="localRepo.isInfra"
-          :disabled="props.isProjectLocked"
+          :disabled="props.isProjectLocked || !canManage"
           label="Dépôt contenant du code d'infrastructure"
           hint="Cochez la case s'il s'agit d'un dépôt d'infrastructure (si le dépôt contient des manifestes de déploiement)"
           name="infraRepoCbx"
           @update:model-value="updateRepo('isInfra', $event)"
         />
-        <CIForm
-          :internal-repo-name="localRepo.internalRepoName"
-        />
       </DsfrFieldset>
     </DsfrFieldset>
     <div
-      v-if="!props.isProjectLocked"
+      v-if="!props.isProjectLocked && canManage"
       class="flex space-x-10 mt-5"
     >
       <DsfrButton
@@ -182,7 +179,7 @@ const cancel = () => {
       />
     </div>
     <div
-      v-if="isOwner"
+      v-if="canManage"
       data-testid="deleteRepoZone"
       class="danger-zone"
     >

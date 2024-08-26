@@ -21,10 +21,10 @@ export const addProjectGroupMember = async (projectName: string, groupName: stri
   }
   // Création du membre
   await api.projects.createProjectMember(projectName, {
-  // eslint-disable-next-line camelcase
+
     role_id: accessLevel,
     member_group: {
-    // eslint-disable-next-line camelcase
+
       group_name: groupName,
       group_type: 3,
     },

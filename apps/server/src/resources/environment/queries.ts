@@ -1,10 +1,10 @@
-import type { Environment, Project, Role, Cluster, Stage } from '@prisma/client'
+import type { Environment, Project, Prisma } from '@prisma/client'
 import prisma from '@/prisma.js'
 import { Quota } from '@cpn-console/shared'
 
 // SELECT
-export const getEnvironmentById = (id: Environment['id']) =>
-  prisma.environment.findUnique({ where: { id }, include: { quota: true, stage: true } })
+export const getEnvironmentByIdOrThrow = (id: Environment['id']) =>
+  prisma.environment.findUniqueOrThrow({ where: { id }, include: { quota: true, stage: true } })
 
 export const getEnvironmentInfos = (id: Environment['id']) =>
   prisma.environment.findUniqueOrThrow({
@@ -13,9 +13,7 @@ export const getEnvironmentInfos = (id: Environment['id']) =>
       project: {
         select: {
           organization: true,
-          roles: {
-            include: { user: true },
-          },
+          owner: true,
           name: true,
           id: true,
           status: true,
@@ -33,9 +31,6 @@ export const getEnvironmentInfos = (id: Environment['id']) =>
           },
         },
       },
-      permissions: {
-        include: { user: true },
-      },
       stage: true,
     },
   })
@@ -43,7 +38,6 @@ export const getEnvironmentInfos = (id: Environment['id']) =>
 export const getEnvironmentsByProjectId = async (projectId: Project['id']) => prisma.environment.findMany({
   where: { projectId },
   include: {
-    permissions: true,
     quota: true,
     stage: true,
   },
@@ -60,33 +54,10 @@ export const getEnvironmentByIdWithCluster = (id: Environment['id']) =>
   })
 
 // INSERT
-type CreateEnvironmentParams = {
-  name: Environment['name'],
-  projectId: Project['id'],
-  projectOwners: Role[],
-  clusterId: Cluster['id'],
-  stageId: Stage['id'],
-  quotaId: Quota['id'],
-}
 export const initializeEnvironment = (
-  { name, projectId, projectOwners, clusterId, stageId, quotaId }: CreateEnvironmentParams,
+  data: Prisma.EnvironmentUncheckedCreateInput,
 ) => prisma.environment.create({
-  data: {
-    name,
-    project: {
-      connect: { id: projectId },
-    },
-    quota: { connect: { id: quotaId } },
-    stage: { connect: { id: stageId } },
-    cluster: {
-      connect: { id: clusterId },
-    },
-    permissions: {
-      createMany: {
-        data: projectOwners.map(({ userId }) => ({ userId, level: 2 })),
-      },
-    },
-  },
+  data,
   include: {
     project: {
       include: {
@@ -120,10 +91,3 @@ export const deleteAllEnvironmentForProject = (id: Project['id']) =>
   prisma.environment.deleteMany({
     where: { projectId: id },
   })
-
-// TECH
-export const _dropEnvironmentsTable = prisma.environment.deleteMany
-
-export const _dropQuotaTable = prisma.quota.deleteMany
-
-export const _dropStageTable = prisma.stage.deleteMany

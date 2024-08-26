@@ -5,7 +5,7 @@ type ToUrlObject = { to: string, title?: string, description?: string, imgSrc?: 
 export type ToUrlFnParamaters = {
   project: string
   organization: string
-  store: PluginsUpdateBody,
+  store: PluginsUpdateBody
   clusters: Omit<ClusterObject, 'secretName' | 'kubeConfigId' | 'createdAt' | 'updatedAt' | 'user' | 'cluster'>[]
   environments: EnvironmentObject[]
 }
@@ -23,12 +23,13 @@ export type ServiceInfos = {
 
 export const servicesInfos: Record<string, ServiceInfos> = {}
 
+export type ServiceStatus = MonitorInfos & { name: string }
 export const services = {
-  getStatus: (): Array<MonitorInfos & { name: string}> => {
+  getStatus: (): Array<ServiceStatus> => {
     return Object.values(servicesInfos).reduce((acc, serviceInfos) => {
       if (!serviceInfos?.monitor?.lastStatus) return acc
       return [...acc, { ...serviceInfos.monitor.lastStatus, name: serviceInfos.title }]
-    }, [] as Array<MonitorInfos & { name: string}>)
+    }, [] as Array<ServiceStatus>)
   },
   refreshStatus: (): Array<Promise<MonitorInfos>> => {
     // @ts-ignore obligé d'ignore TS ne comprend pas l'interet du filter

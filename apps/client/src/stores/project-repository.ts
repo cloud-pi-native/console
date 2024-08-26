@@ -13,10 +13,10 @@ export const useProjectRepositoryStore = defineStore('project-repository', () =>
       .then(response => extractData(response, 200))
   }
 
-  const syncRepository = async (repositoryId: string, branchName: string) => {
+  const syncRepository = async (repositoryId: string, { branchName, syncAllBranches = false }: { branchName?: string, syncAllBranches?: boolean }) => {
     await apiClient.Repositories.syncRepository({
       params: { repositoryId },
-      body: { branchName },
+      body: { branchName, syncAllBranches },
     })
       .then(response => extractData(response, 204))
   }

@@ -44,6 +44,7 @@ describe('RepoForm.vue', () => {
         externalUserName: 'clairenlet',
         externalToken: 'eddddsqsq',
       },
+      canManage: true,
     }
 
     const randomDbSetup = createRandomDbSetup({})
@@ -71,7 +72,7 @@ describe('RepoForm.vue', () => {
     cy.getByDataTestid('gitlabCIAccordion').click()
     cy.get('select#type-language-select').should('be.visible')
       .select('node')
-    cy.getByDataTestid('nodeVersionInput').type('20.15.1')
+    cy.getByDataTestid('nodeVersionInput').type('20.16.0')
     cy.getByDataTestid('nodeInstallInput').type('npm install')
     cy.getByDataTestid('nodeBuildInput').type('npm build')
     cy.getByDataTestid('workingDirInput').type('./')
@@ -107,6 +108,7 @@ describe('RepoForm.vue', () => {
         isInfra: false,
         externalUserName: 'claire+nlet',
       },
+      canManage: true,
     }
 
     const randomDbSetup = createRandomDbSetup({})
@@ -129,7 +131,6 @@ describe('RepoForm.vue', () => {
       .and('be.enabled')
     cy.getByDataTestid('input-checkbox-infraRepoCbx').should('not.be.checked')
       .and('be.enabled')
-    cy.getByDataTestid('updateRepoBtn').should('be.disabled')
     cy.getByDataTestid('cancelRepoBtn').should('be.enabled')
     cy.getByDataTestid('externalTokenInput').type('aaaaaaa').blur()
     cy.getByDataTestid('updateRepoBtn').should('be.enabled')

@@ -4,6 +4,9 @@ variables:
   GIT_BRANCH_DEPLOY:
     description: "Nom de la branche à synchroniser."
     value: main
+  SYNC_ALL:
+    description: "Synchroniser toutes les branches."
+    value: 'false'
 
 include:
   - project: $CATALOG_PATH

@@ -30,8 +30,8 @@ export const getAxiosInstance = () => {
   return axios.create(getAxiosOptions())
 }
 
-export type VaultSonarSecret= {
-  SONAR_USERNAME: string,
-  SONAR_PASSWORD: string,
-  SONAR_TOKEN: string,
+export type VaultSonarSecret = {
+  SONAR_USERNAME: string
+  SONAR_PASSWORD: string
+  SONAR_TOKEN: string
 }

@@ -6,11 +6,11 @@ import type { UpdateStageType } from '@/views/admin/ListStages.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = withDefaults(defineProps<{
-  isNewStage: boolean,
-  stage: Stage,
-  allQuotas: Quota[],
-  allClusters: Cluster[],
-  associatedEnvironments: StageAssociatedEnvironments,
+  isNewStage: boolean
+  stage: Stage
+  allQuotas: Quota[]
+  allClusters: Cluster[]
+  associatedEnvironments: StageAssociatedEnvironments
 }>(), {
   isNewStage: false,
   stage: () => ({ name: '', clusterIds: [], quotaIds: [], id: '' }),
@@ -96,6 +96,7 @@ onBeforeMount(() => {
       placeholder="dev"
     />
     <div
+
       class="fr-mb-2w"
     >
       <ChoiceSelector
@@ -107,7 +108,6 @@ onBeforeMount(() => {
         :options-selected="allQuotas.filter(({ id}) => localStage.quotaIds.includes(id))"
         label-key="name"
         value-key="id"
-        :disabled="false"
         @update="(_q, quotaIds) => updateQuotas(quotaIds)"
       />
     </div>
@@ -123,7 +123,6 @@ onBeforeMount(() => {
         :options-selected="allClusters.filter(({ id }) => localStage.clusterIds.includes(id))"
         label-key="label"
         value-key="id"
-        :disabled="false"
         @update="(_c, clusterIds) => updateClusters(clusterIds)"
       />
     </div>

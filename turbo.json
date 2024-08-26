@@ -29,6 +29,12 @@
     "lint": {
       "outputs": []
     },
+    "lint:ts": {
+      "outputs": []
+    },
+    "lint:style": {
+      "outputs": []
+    },
     "test": {
       "dependsOn": [
         "^@cpn-console/shared#build",

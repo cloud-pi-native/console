@@ -3,7 +3,8 @@ import type { GitlabProjectApi } from './class.js'
 import { provisionMirror } from './project.js'
 import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
 import { CondensedProjectSchema, ProjectSchema } from '@gitbeaker/rest'
-import { infraAppsRepoName, internalMirrorRepoName, shallowEqual } from './utils.js'
+import { infraAppsRepoName, internalMirrorRepoName } from './utils.js'
+import { shallowEqual } from '@cpn-console/shared'
 
 type ProjectMirrorCreds = {
   botAccount: string
@@ -18,8 +19,8 @@ export const ensureRepositories = async (gitlabApi: GitlabProjectApi, project: P
     // delete excess repositories
     ...gitlabRepositories
       .filter(gitlabRepository => (
-        !specialRepos.includes(gitlabRepository.name) &&
-        !project.repositories.find(repo => repo.internalRepoName === gitlabRepository.name,
+        !specialRepos.includes(gitlabRepository.name)
+        && !project.repositories.find(repo => repo.internalRepoName === gitlabRepository.name,
         )))
       .map(gitlabRepository => gitlabApi.deleteRepository(gitlabRepository.id)),
     // create missing repositories

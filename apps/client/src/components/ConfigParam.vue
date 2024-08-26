@@ -2,13 +2,13 @@
 import { DEFAULT, DISABLED, ENABLED } from '@cpn-console/shared'
 
 const props = defineProps<{
-  options:{
-    value: Ref<string>,
-    description: string | undefined,
-    name: string,
-    disabled: boolean,
-    kind: 'text' | 'switch',
-    placeholder: string | undefined,
+  options: {
+    value: Ref<string>
+    description: string | undefined
+    name: string
+    disabled: boolean
+    kind: 'text' | 'switch'
+    placeholder: string | undefined
   }
 }>()
 
@@ -57,7 +57,6 @@ const set = (data: string) => {
     <DsfrInput
       v-if="props.options.kind === 'text' && !props.options.disabled"
       :model-value="value"
-      type="inputType"
       :label-visible="false"
       :placeholder="props.options.placeholder"
       data-testid="input"

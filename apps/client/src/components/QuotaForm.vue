@@ -1,19 +1,19 @@
 <script lang="ts" setup>
 import { computed, onBeforeMount, ref } from 'vue'
-import { type Quota, QuotaSchema, SharedZodError, type Stage, type QuotaAssociatedEnvironments, UpdateQuotaBody } from '@cpn-console/shared'
+import { type Quota, QuotaSchema, SharedZodError, type Stage, type QuotaAssociatedEnvironments, UpdateQuotaBody, quotaContract } from '@cpn-console/shared'
 import { toCodeComponent } from '@/utils/func.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
-type UpdateQuotaType = UpdateQuotaBody & Pick<Quota, 'id'>
+type UpdateQuotaType = UpdateQuotaBody & Pick<Quota, 'id'> & Required<Pick<Quota, 'stageIds' | 'name'>>
 
 const props = withDefaults(defineProps<{
-  isNewQuota: boolean,
-  quota: Quota,
-  allStages: Stage[],
-  associatedEnvironments: QuotaAssociatedEnvironments,
+  isNewQuota: boolean
+  quota: UpdateQuotaType
+  allStages: Stage[]
+  associatedEnvironments: QuotaAssociatedEnvironments
 }>(), {
   isNewQuota: false,
-  quota: () => ({ isPrivate: false, stageIds: [] as string[], name: '' }),
+  quota: () => ({ isPrivate: false, stageIds: [] as string[], name: '', cpu: 1, id: '', memory: '' }),
   allStages: () => [],
   associatedEnvironments: () => [],
 })
@@ -40,7 +40,7 @@ const updateStages = (value: string[]) => {
 }
 
 const emit = defineEmits<{
-  add: [value: typeof localQuota.value]
+  add: [value: typeof quotaContract.createQuota.body._type]
   update: [value: UpdateQuotaType]
   cancel: []
   delete: [value: typeof localQuota.value.id]
@@ -55,7 +55,7 @@ const updateQuota = () => {
     id: localQuota.value.id,
     isPrivate: localQuota.value.isPrivate,
     stageIds: localQuota.value.stageIds,
-
+    name: localQuota.value.name,
   }
   if (isQuotaValid.value) emit('update', updatedQuota)
 }
@@ -66,7 +66,7 @@ const cancel = () => {
 
 const getRows = (associatedEnvironments: QuotaAssociatedEnvironments) => {
   return associatedEnvironments
-    .map(associatedEnvironment => {
+    .map((associatedEnvironment) => {
       return [
         toCodeComponent(associatedEnvironment.organization),
         toCodeComponent(associatedEnvironment.project),
@@ -119,7 +119,7 @@ onBeforeMount(() => {
       data-testid="cpuInput"
       :disabled="!isNewQuota"
       placeholder="2"
-      @update:model-value="(value) => localQuota.cpu = parseFloat(value)"
+      @update:model-value="(value: string) => localQuota.cpu = parseFloat(value)"
     />
     <DsfrCheckbox
       id="isQuotaPrivateCbx"
@@ -137,14 +137,12 @@ onBeforeMount(() => {
         :wrapped="true"
         label="Nom des types d'environnement"
         description="Sélectionnez les types d'environnement autorisés à utiliser ce cluster."
-        :options="allStages.map(({ id, name}) => ({ id, name}))"
+        :options="allStages"
         :options-selected="allStages
-          .filter(({ id }) => localQuota.stageIds.includes(id))
-          .map(({ id, name }) => ({ id, name }))"
+          .filter(({ id }) => localQuota.stageIds.includes(id))"
         label-key="name"
         value-key="id"
-        :disabled="false"
-        @update="(_s, stageIds) => updateStages(stageIds)"
+        @update="(_s: Stage[], stageIds: Stage['id'][]) => updateStages(stageIds)"
       />
     </div>
     <div

@@ -10,8 +10,8 @@ env:
   NAMESPACE: "${{ github.repository }}"
   MULTI_ARCH: true
   USE_QEMU: false
-  NODE_VERSION: "20.15.1"
-  PNPM_VERSION: "9.5.0"
+  NODE_VERSION: "20.16.0"
+  PNPM_VERSION: "9.7.1"
 
 jobs:
   expose-vars:
@@ -56,5 +56,6 @@ jobs:
       PNPM_VERSION: ${{ needs.expose-vars.outputs.PNPM_VERSION }}
       NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
       PUBLISH_APPS: false
-      PUBLISH_PACKAGES: false
-      PUBLISH_PLUGINS: false
+      PUBLISH_PACKAGES: true
+      PUBLISH_PLUGINS: true
+      CHECK_CHANGES: false

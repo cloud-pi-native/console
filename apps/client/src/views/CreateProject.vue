@@ -1,15 +1,15 @@
 <script lang="ts" setup>
-import { computed, onMounted, ref, type Ref } from 'vue'
+import { computed, onMounted, ref, UnwrapRef, type Ref } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
 import { useOrganizationStore } from '@/stores/organization.js'
 import {
   descriptionMaxLength,
-  type Project,
   parseZodError,
   instanciateSchema,
   projectNameMaxLength,
   ProjectSchemaV2,
+  projectContract,
 } from '@cpn-console/shared'
 import router from '@/router/index.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
@@ -27,14 +27,19 @@ const errorSchema = computed(() => {
   return schemaValidation.success ? undefined : schemaValidation.error
 })
 
-// @ts-ignore
-const project: Ref<Project & { description: string }> = ref({
-  organizationId: undefined,
+const project = ref<typeof projectContract.createProject.body._type>({
+  organizationId: '',
   name: '',
   description: '',
 })
 
-const orgOptions: Ref<Array<any>> = ref([])
+type OrgOption = {
+  text: string
+  value: string
+  id: string
+  disabled?: true
+}
+const orgOptions = ref<OrgOption[]>([])
 
 const updatedValues: Ref<Record<any, any>> = ref({})
 
@@ -50,24 +55,19 @@ const createProject = async () => {
   snackbarStore.isWaitingForResponse = false
 }
 
-const updateProject = (key: string, value: any) => {
-  if (key === 'organizationId') {
-    const org = orgOptions.value.find(org => org.value === value)
-    project.value[key] = org.id
-  } else {
-    // @ts-ignore
-    project.value[key] = value
-  }
+const updateProject = (key: keyof UnwrapRef<typeof project>, value: string) => {
+  project.value[key] = value
   updatedValues.value[key] = true
 }
 
 onMounted(async () => {
-  await organizationStore.listOrganizations()
+  await organizationStore.listOrganizations({ active: true })
   orgOptions.value = organizationStore.organizations.map(org => ({
     text: org.label,
-    value: org.name,
+    value: org.id,
     id: org.id,
   }))
+  updateProject('organizationId', orgOptions.value[0]?.value ?? '')
 })
 </script>
 

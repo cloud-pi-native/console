@@ -1,7 +1,7 @@
 {
   "name": "@cpn-console/nexus-plugin",
   "description": "",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "private": false,
   "type": "module",
   "main": "dist/index.js",
@@ -11,8 +11,8 @@
     "build": "tsc",
     "build:clean": "rimraf ./dist ./types ./tsconfig.tsbuildinfo",
     "dev": "nodemon --watch src --ext .ts --exec 'pnpm run build'",
-    "format": "eslint ./src --ext .js,.cjs,.ts --fix",
-    "lint": "eslint ./src"
+    "format": "eslint ./ --fix",
+    "lint": "eslint ./"
   },
   "dependencies": {
     "@cpn-console/gitlab-plugin": "workspace:^",

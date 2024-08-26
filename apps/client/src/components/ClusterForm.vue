@@ -10,9 +10,9 @@ import {
   type Stage,
   type Zone,
 } from '@cpn-console/shared'
-// @ts-ignore
+// @ts-ignore 'js-yaml' missing types
 import { load } from 'js-yaml'
-// @ts-ignore
+// @ts-ignore 'vue3-json-viewer' missing types
 import { JsonViewer } from 'vue3-json-viewer'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import ChoiceSelector from './ChoiceSelector.vue'
@@ -112,17 +112,17 @@ const updateKubeconfig = (files: FileList) => {
 
 type ContextType = {
   user: {
-    username: string,
-    password: string,
-    token: string,
-    certData: string,
-    keyData: string,
+    username: string
+    password: string
+    token: string
+    certData: string
+    keyData: string
   }
   cluster: {
-    server: string,
-    tlsServerName: string,
-    caData: string,
-    skipTLSVerify: string,
+    server: string
+    tlsServerName: string
+    caData: string
+    skipTLSVerify: string
   }
 }
 
@@ -217,7 +217,7 @@ const isConnectionDetailsShown = ref(true)
     <h1
       class="fr-h1"
     >
-      {{ isNewCluster ? 'Ajouter un cluster' : 'Mettre à jour le cluster' }}
+      {{ isNewCluster ? 'Ajouter un cluster' : 'Mettre à jour le cluster ' + localCluster.label }}
     </h1>
     <div
       class="cursor-pointer"

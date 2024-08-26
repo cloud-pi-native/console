@@ -10,7 +10,7 @@ describe('Administration logs', () => {
     cy.kcLogin('tcolin')
     cy.visit('/admin/logs')
     cy.url().should('contain', '/admin/logs')
-    cy.wait('@getAllLogs', { timeout: 10000 }).its('response').then(response => {
+    cy.wait('@getAllLogs', { timeout: 10_000 }).its('response').then((response) => {
       logs = response?.body?.logs
       logCount = response?.body?.total
     })
@@ -25,7 +25,7 @@ describe('Administration logs', () => {
     cy.getByDataTestid('seeNextPageBtn').should('be.enabled')
     cy.getByDataTestid('seeLastPageBtn').should('be.enabled')
     cy.get('[data-testid$="-json"]').should('have.length', 10)
-    logs.slice(0, 10).forEach(log => {
+    logs.slice(0, 10).forEach((log) => {
       cy.getByDataTestid(`${log.id}-json`)
         .should('be.visible')
     })
@@ -36,7 +36,7 @@ describe('Administration logs', () => {
     cy.getByDataTestid('seeNextPageBtn').should('be.enabled')
     cy.getByDataTestid('seeLastPageBtn').should('be.enabled')
     cy.get('[data-testid$="-json"]').should('have.length', 10)
-    logs.slice(10, 10).forEach(log => {
+    logs.slice(10, 10).forEach((log) => {
       cy.getByDataTestid(`${log.id}-json`)
         .should('be.visible')
     })
@@ -49,7 +49,7 @@ describe('Administration logs', () => {
     cy.get('[data-testid$="-json"]')
       .should('have.length.of.at.least', 1)
       .and('have.length.at.most', 10)
-    logs.slice(20, logCount - 20).forEach(log => {
+    logs.slice(20, logCount - 20).forEach((log) => {
       cy.getByDataTestid(`${log.id}-json`)
         .should('be.visible')
     })
@@ -60,19 +60,22 @@ describe('Administration logs', () => {
     cy.getByDataTestid('seeNextPageBtn').should('be.enabled')
     cy.getByDataTestid('seeLastPageBtn').should('be.enabled')
     cy.get('[data-testid$="-json"]').should('have.length', 10)
-    logs.slice(0, 10).forEach(log => {
+    logs.slice(0, 10).forEach((log) => {
       cy.getByDataTestid(`${log.id}-json`)
         .should('be.visible')
     })
   })
 
   it('Should display compact logs list, loggedIn as admin', () => {
-    cy.getByDataTestid('showLogsBtn').click()
-    logs.forEach(log => {
+    cy.get('h1')
+      .should('contain', ' Journaux des services associés à la chaîne DSO ')
+    cy.getByDataTestid('showLogsBtn')
+      .click()
+    logs.forEach((log) => {
       cy.getByDataTestid(`${log.id}-json`).should('not.exist')
     })
     cy.getByDataTestid('showLogsBtn').click()
-    logs.forEach(log => {
+    logs.forEach((log) => {
       cy.getByDataTestid(`${log.id}-json`).should('exist')
     })
   })

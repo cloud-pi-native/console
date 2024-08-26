@@ -64,7 +64,7 @@ const setTemplatePermisions = async () => {
     method: 'post',
     params: { name: 'Forge Default' },
     url: 'permissions/create_template',
-    validateStatus: (code) => [200, 400].includes(code),
+    validateStatus: code => [200, 400].includes(code),
   })
   for (const permission of projectPermissions) {
     await axiosInstance({
@@ -122,7 +122,7 @@ export const upsertProject: StepCall<Project> = async (payload) => {
         .map(sonarRepository => deleteDsoRepository(sonarRepository.key)),
 
       // Create or configure needed repos
-      ...project.repositories.map(async repository => {
+      ...project.repositories.map(async (repository) => {
         const projectKey = generateProjectKey(organizationName, projectName, repository.internalRepoName)
         if (!sonarRepositories.find(sonarRepository => sonarRepository.repository === repository.internalRepoName)) {
           await createDsoRepository(organizationName, projectName, repository.internalRepoName)
@@ -160,7 +160,7 @@ export const setVariables: StepCall<Project> = async (payload) => {
     const sonarSecret = await payload.apis.vault.read('SONAR')
     await Promise.all([
       // Sonar vars saving in CI (repositories)
-      ...project.repositories.map(async repo => {
+      ...project.repositories.map(async (repo) => {
         const projectKey = generateProjectKey(organizationName, projectName, repo.internalRepoName)
         return [
           await gitlabApi.setGitlabRepoVariable(repo.internalRepoName, {

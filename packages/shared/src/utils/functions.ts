@@ -1,5 +1,5 @@
 import { longestEnvironmentName } from './const.js'
-import { ResourceById } from './types.js'
+import type { ResourceById, ResourceByKey } from './types.js'
 
 /**
  * @param {*} value Value wanted to be return as is
@@ -55,7 +55,7 @@ export const exclude = <T>(result: T, keys: string[]): T => {
       return
     }
     if (Array.isArray(value)) {
-      newObj[key] = value.map((val) => exclude(val, keys))
+      newObj[key] = value.map(val => exclude(val, keys))
       return
     }
     if (value instanceof Object) {
@@ -94,3 +94,27 @@ export const resourceListToDict = <T extends { id: string }>(resList: Array<T>):
     [curr.id]: curr,
   }
 }, {} as ResourceById<T>)
+
+export const resourceListToDictByKey = <T extends { key: string }>(resList: Array<T>): ResourceByKey<T> => resList.reduce((acc, curr) => {
+  return {
+    ...acc,
+    [curr.key]: curr,
+  }
+}, {} as ResourceByKey<T>)
+
+export const shallowEqual = (object1: Record<string, unknown>, object2: Record<string, unknown>) => {
+  const keys1 = Object.keys(object1)
+  const keys2 = Object.keys(object2)
+
+  if (keys1.length !== keys2.length) {
+    return false
+  }
+
+  for (const key of keys1) {
+    if (object1[key] !== object2[key]) {
+      return false
+    }
+  }
+
+  return true
+}
