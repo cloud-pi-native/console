@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.10.1](https://github.com/cloud-pi-native/console/compare/v8.10.0...v8.10.1) (2024-08-27)
+
+
+### Bug Fixes
+
+* :ambulance: missed admin authorized to remove a member ([15eafa9](https://github.com/cloud-pi-native/console/commit/15eafa9996d7e1f827f5eb1cf6aef425f4620a2b))
+
 ## [8.10.0](https://github.com/cloud-pi-native/console/compare/v8.9.4...v8.10.0) (2024-08-26)
 
 
