@@ -64,7 +64,7 @@ export const projectMemberRouter = () => serverInstance.router(projectMemberCont
     const { projectId } = params
     const user = req.session.user
     const perms = await authUser(user, { id: projectId })
-    if (!perms.projectPermissions) return new NotFound404()
+    if (!perms.projectPermissions && !AdminAuthorized.isAdmin(perms.adminPermissions)) return new NotFound404()
     if (!ProjectAuthorized.ManageMembers(perms)) return new Forbidden403()
     if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
     if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
