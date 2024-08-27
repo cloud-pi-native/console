@@ -1,10 +1,10 @@
 <script lang="ts" setup>
 // @ts-ignore '@gouvminint/vue-dsfr' missing types
 import { getRandomId } from '@gouvminint/vue-dsfr'
+import { ProjectAuthorized } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectMemberStore } from '@/stores/project-member.js'
 import { useUserStore } from '@/stores/user.js'
-import { ProjectAuthorized } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const projectStore = useProjectStore()
@@ -14,7 +14,7 @@ const snackbarStore = useSnackbarStore()
 
 const teamKey = ref('team')
 
-const addUserToProject = async (userEmail: string) => {
+async function addUserToProject(userEmail: string) {
   if (!projectStore.selectedProject) return
   snackbarStore.isWaitingForResponse = true
   projectStore.selectedProject.members = await projectMemberStore.addMember(projectStore.selectedProject.id, userEmail)
@@ -22,7 +22,7 @@ const addUserToProject = async (userEmail: string) => {
   snackbarStore.isWaitingForResponse = false
 }
 
-const removeUserFromProject = async (userId: string) => {
+async function removeUserFromProject(userId: string) {
   if (!projectStore.selectedProject) return
   snackbarStore.isWaitingForResponse = true
   projectStore.selectedProject.members = await projectMemberStore.removeMember(projectStore.selectedProject.id, userId)
@@ -30,7 +30,7 @@ const removeUserFromProject = async (userId: string) => {
   snackbarStore.isWaitingForResponse = false
 }
 
-const transferOwnerShip = async (nextOwnerId: string) => {
+async function transferOwnerShip(nextOwnerId: string) {
   if (!projectStore.selectedProject) return
   snackbarStore.isWaitingForResponse = true
   await projectStore.updateProject(projectStore.selectedProject.id, { ownerId: nextOwnerId })
@@ -47,7 +47,7 @@ const transferOwnerShip = async (nextOwnerId: string) => {
     :user-profile="userStore.userProfile"
     :project="projectStore.selectedProject"
     :members="projectStore.selectedProject.members ?? []"
-    :can-manage="ProjectAuthorized.ManageMembers({ projectPermissions: projectStore.selectedProjectPerms})"
+    :can-manage="ProjectAuthorized.ManageMembers({ projectPermissions: projectStore.selectedProjectPerms })"
     :can-transfer="projectStore.selectedProject.ownerId === userStore.userProfile?.id"
     @add-member="(userEmail: string) => addUserToProject(userEmail)"
     @remove-member="(userId: string) => removeUserFromProject(userId)"

@@ -1,4 +1,5 @@
-import { DEFAULT, PermissionTarget, PluginConfig, atomicValidators, pluginConfig } from '@cpn-console/shared'
+import type { PermissionTarget, PluginConfig } from '@cpn-console/shared'
+import { DEFAULT, atomicValidators, pluginConfig } from '@cpn-console/shared'
 import { z } from 'zod'
 import { objectEntries } from './utils/utils.js'
 
@@ -39,9 +40,7 @@ export const editStrippers = {
   global: z.object({}),
 }
 
-export const addPlugin = (pluginName: string, config: PluginConfig,
-  editStrippersObject: typeof editStrippers,
-) => {
+export function addPlugin(pluginName: string, config: PluginConfig, editStrippersObject: typeof editStrippers) {
   const editZod = editStrippersGenerator.parse(config)
   pluginsManifests[pluginName] = config
   editStrippersObject.global = editStrippersObject.global.merge(z.object({ [pluginName]: editZod.global.default({}) }))
@@ -49,19 +48,20 @@ export const addPlugin = (pluginName: string, config: PluginConfig,
   editStrippersObject.project.user = editStrippersObject.project.user.merge(z.object({ [pluginName]: editZod.project.user.default({}) }))
 }
 
-type Row = { pluginName: string, key: string, value: string }
-type PopulateManifestsParams = {
+interface Row { pluginName: string, key: string, value: string }
+interface PopulateManifestsParams {
   data: { project?: Row[], global?: Row[] }
   permissionTarget: PermissionTarget
   select: Partial<Record<keyof PluginConfig, boolean>>
   pluginName: string
 }
-export const populatePluginManifests = ({ data, select, permissionTarget, pluginName }: PopulateManifestsParams): Partial<PluginConfig> => {
+export function populatePluginManifests({ data, select, permissionTarget, pluginName }: PopulateManifestsParams): Partial<PluginConfig> {
   const manifest = structuredClone(pluginsManifests[pluginName])
 
   const selected: Partial<PluginConfig> = {}
   for (const [scope] of objectEntries(select).filter(([_scope, bool]) => bool)) {
-    if (!manifest?.[scope]) continue
+    if (!manifest?.[scope])
+      continue
     selected[scope] = manifest[scope].filter(item => item.permissions[permissionTarget].read || item.permissions[permissionTarget].write).map((item) => {
       const row = data[scope]?.find(candidate => candidate.pluginName === pluginName && candidate.key === item.key)
       if (item.kind === 'switch') {

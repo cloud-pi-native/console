@@ -1,4 +1,4 @@
-import { type MonitorInfos, MonitorStatus, requiredEnv, Monitor } from '@cpn-console/shared'
+import { Monitor, type MonitorInfos, MonitorStatus, requiredEnv } from '@cpn-console/shared'
 import axios from 'axios'
 
 enum HealthStatus {
@@ -8,7 +8,7 @@ enum HealthStatus {
 type GitlabRes = Record<string, { status: HealthStatus, labels: Record<string, string> }>
 const coreComponents = ['gitaly_check', 'master_check', 'db_check', 'sessions_check']
 
-const monitor = async (instance: Monitor): Promise<MonitorInfos> => {
+async function monitor(instance: Monitor): Promise<MonitorInfos> {
   instance.lastStatus.lastUpdateTimestamp = (new Date()).getTime()
   try {
     const res = await axios.get(`${requiredEnv('GITLAB_URL')}/-/readiness?all=1`, {
@@ -18,7 +18,8 @@ const monitor = async (instance: Monitor): Promise<MonitorInfos> => {
       const data = res.data as GitlabRes
       const failedComponents = Object.entries(data)
         .reduce((acc, [name, value]) => {
-          if (value.status === HealthStatus.failed) return [...acc, name]
+          if (value.status === HealthStatus.failed)
+            return [...acc, name]
           return acc
         }, [] as string[])
       const failedCoreComponents = failedComponents.filter(name => coreComponents.includes(name))

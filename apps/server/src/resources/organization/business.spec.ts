@@ -1,18 +1,18 @@
 import { faker } from '@faker-js/faker'
 import { describe, expect, it, vi } from 'vitest'
 import prisma from '../../__mocks__/prisma.js'
-import { createOrganization, fetchOrganizations, listOrganizations, updateOrganization } from './business.ts'
 import { BadRequest400, NotFound404 } from '../../utils/errors.js'
+import { createOrganization, fetchOrganizations, listOrganizations, updateOrganization } from './business.ts'
 
 vi.mock('@cpn-console/hooks', (await import('../../utils/mocks.js')).mockHooksPackage)
 
-describe('Test organization test', () => {
+describe('test organization test', () => {
   describe('listOrganizations', async () => {
-    it('Should list organization', async () => {
+    it('should list organization', async () => {
       await listOrganizations()
       expect(prisma.organization.findMany).toHaveBeenCalledTimes(1)
     })
-    it('Should list organization with query', async () => {
+    it('should list organization with query', async () => {
       await listOrganizations({ source: 'console' })
       expect(prisma.organization.findMany).toHaveBeenCalledTimes(1)
       expect(prisma.organization.findMany).toHaveBeenCalledWith({ where: { source: 'console' } })

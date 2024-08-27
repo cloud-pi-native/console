@@ -1,5 +1,5 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest'
-import { setActivePinia, createPinia } from 'pinia'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createPinia, setActivePinia } from 'pinia'
 import { createRandomDbSetup, getRandomMember, getRandomProject } from '@cpn-console/test-utils'
 import { apiClient } from '../api/xhr-client.js'
 import { useProjectStore } from './project.js'
@@ -12,7 +12,7 @@ const apiClientPut = vi.spyOn(apiClient.Projects, 'updateProject')
 const apiClientReplayHooks = vi.spyOn(apiClient.Projects, 'replayHooksForProject')
 const apiClientDelete = vi.spyOn(apiClient.Projects, 'archiveProject')
 
-describe('Project Store', () => {
+describe('project Store', () => {
   beforeEach(() => {
     vi.resetAllMocks()
     // creates a fresh pinia and make it active so it's automatically picked
@@ -20,7 +20,7 @@ describe('Project Store', () => {
     setActivePinia(createPinia())
   })
 
-  it('Should set working project and its owner', async () => {
+  it('should set working project and its owner', async () => {
     const projectStore = useProjectStore()
     const user = { id: 'userId', firstName: 'Michel' }
     projectStore.projects = [{
@@ -39,7 +39,7 @@ describe('Project Store', () => {
     expect(projectStore.selectedProject).toMatchObject(projectStore.projects[0])
   })
 
-  it('Should retrieve user\'s projects by api call', async () => {
+  it('should retrieve user\'s projects by api call', async () => {
     const projectStore = useProjectStore()
     const organizationStore = useOrganizationStore()
     const randomDbSetup = createRandomDbSetup({})
@@ -61,7 +61,7 @@ describe('Project Store', () => {
     expect(organizationStore.organizations).toMatchObject(organizations)
   })
 
-  it('Should retrieve user\'s projects by api call (with actual working projet)', async () => {
+  it('should retrieve user\'s projects by api call (with actual working projet)', async () => {
     const projectStore = useProjectStore()
     const organizationStore = useOrganizationStore()
     const randomDbSetup = createRandomDbSetup({})
@@ -85,7 +85,7 @@ describe('Project Store', () => {
     expect(organizationStore.organizations).toMatchObject(organizations)
   })
 
-  it('Should create a project by api call', async () => {
+  it('should create a project by api call', async () => {
     const projectStore = useProjectStore()
     const organizationStore = useOrganizationStore()
     const randomDbSetup = createRandomDbSetup({})
@@ -110,7 +110,7 @@ describe('Project Store', () => {
     expect(projectStore.projects).toMatchObject([...projects, newProject])
   })
 
-  it('Should set a project description by api call', async () => {
+  it('should set a project description by api call', async () => {
     const projectStore = useProjectStore()
     const organizationStore = useOrganizationStore()
     const randomDbSetup = createRandomDbSetup({})
@@ -135,7 +135,7 @@ describe('Project Store', () => {
     expect(projectStore.projects).toEqual([updatedProject])
   })
 
-  it('Should replay hooks for project by api call', async () => {
+  it('should replay hooks for project by api call', async () => {
     const projectStore = useProjectStore()
     const organizationStore = useOrganizationStore()
     const randomDbSetup = createRandomDbSetup({})
@@ -156,7 +156,7 @@ describe('Project Store', () => {
     expect(projectStore.projects).toEqual([project])
   })
 
-  it('Should archive a project by api call', async () => {
+  it('should archive a project by api call', async () => {
     const projectStore = useProjectStore()
     const organizationStore = useOrganizationStore()
     const randomDbSetup = createRandomDbSetup({})

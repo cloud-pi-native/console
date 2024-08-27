@@ -13,7 +13,7 @@ export type ServicesHealth = {
 
 const statusPriorities = [MonitorStatus.OK, MonitorStatus.WARNING, MonitorStatus.ERROR, MonitorStatus.UNKNOW]
 
-type ServiceHealthOption = { message: string, status: DsfrAlertType | '', serviceStatus: MonitorStatus, dotColor: ServicesHealth['dotColor'] }
+interface ServiceHealthOption { message: string, status: DsfrAlertType | '', serviceStatus: MonitorStatus, dotColor: ServicesHealth['dotColor'] }
 
 export const alertTypeMapper: Record<MonitorStatus, DsfrAlertType | ''> = {
   [MonitorStatus.OK]: 'success',

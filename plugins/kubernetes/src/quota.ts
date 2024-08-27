@@ -4,7 +4,7 @@ import { ResourceQuota } from 'kubernetes-models/v1'
 const resourceQuotaName = 'dso-quota'
 
 // Utils
-export const getQuotaObject = (nsName: string, quota: ResourceQuotaType): ResourceQuota => {
+export function getQuotaObject(nsName: string, quota: ResourceQuotaType): ResourceQuota {
   return new ResourceQuota({
     metadata: {
       name: resourceQuotaName,

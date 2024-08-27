@@ -1,50 +1,51 @@
 import { json2csv } from 'json-2-csv'
 import { servicesInfos } from '@cpn-console/hooks'
 import type { Project, User } from '@prisma/client'
+import type {
+  CreateProjectBody,
+  UpdateProjectBody,
+  projectContract,
+} from '@cpn-console/shared'
 import {
   ProjectStatusSchema,
-  projectContract,
-  type CreateProjectBody,
-  type UpdateProjectBody,
 } from '@cpn-console/shared'
+import { logUser } from '../user/business.js'
 import {
   addLogs,
   deleteAllEnvironmentForProject,
   deleteAllRepositoryForProject,
+  getAllProjectsDataForExport,
   getOrganizationById,
   getProjectByNames,
   initializeProject,
   listProjects as listProjectsQuery,
   lockProject,
   updateProject as updateProjectQuery,
-  getAllProjectsDataForExport,
 } from '@/resources/queries-index.js'
 import { BadRequest400, Unprocessable422 } from '@/utils/errors.js'
 import { whereBuilder } from '@/utils/controller.js'
 import { hook } from '@/utils/hook-wrapper.js'
-import { UserDetails } from '@/types/index.js'
-import { logUser } from '../user/business.js'
+import type { UserDetails } from '@/types/index.js'
 import prisma from '@/prisma.js'
 
 // Fetch infos
 const projectStatus = ProjectStatusSchema._def.values
-export const listProjects = async (
-  { status, statusIn, statusNotIn, filter = 'member', ...query }: typeof projectContract.listProjects.query._type,
-  userId: User['id'],
-) => listProjectsQuery({
-  ...query,
-  status: whereBuilder({ enumValues: projectStatus, eqValue: status, inValues: statusIn, notInValues: statusNotIn }),
-  filter,
-  userId,
-}).then(projects => projects
-  .map(({ clusters, ...project }) => ({
-    ...project,
-    clusterIds: clusters.map(({ id }) => id),
-    roles: project.roles.map(role => ({ ...role, permissions: role.permissions.toString() })),
-    everyonePerms: project.everyonePerms.toString(),
-  })))
+export async function listProjects({ status, statusIn, statusNotIn, filter = 'member', ...query }: typeof projectContract.listProjects.query._type, userId: User['id']) {
+  return listProjectsQuery({
+    ...query,
+    status: whereBuilder({ enumValues: projectStatus, eqValue: status, inValues: statusIn, notInValues: statusNotIn }),
+    filter,
+    userId,
+  }).then(projects => projects
+    .map(({ clusters, ...project }) => ({
+      ...project,
+      clusterIds: clusters.map(({ id }) => id),
+      roles: project.roles.map(role => ({ ...role, permissions: role.permissions.toString() })),
+      everyonePerms: project.everyonePerms.toString(),
+    })))
+}
 
-export const getProjectSecrets = async (projectId: string) => {
+export async function getProjectSecrets(projectId: string) {
   const hookReply = await hook.project.getSecrets(projectId)
   if (hookReply.failed) {
     return new Unprocessable422('Echec des services à la récupération des secrets du projet')
@@ -55,10 +56,11 @@ export const getProjectSecrets = async (projectId: string) => {
       // @ts-ignore
       .filter(([_key, value]) => value.secrets)
       // @ts-ignore
-      .map(([key, value]) => [servicesInfos[key]?.title, value.secrets]))
+      .map(([key, value]) => [servicesInfos[key]?.title, value.secrets]),
+  )
 }
 
-export const createProject = async (dataDto: CreateProjectBody, { groups, ...requestor }: UserDetails, requestId: string) => {
+export async function createProject(dataDto: CreateProjectBody, { groups, ...requestor }: UserDetails, requestId: string) {
   // Pré-requis
   const owner = await logUser({ groups, ...requestor })
   const organization = await getOrganizationById(dataDto.organizationId)
@@ -87,7 +89,7 @@ export const createProject = async (dataDto: CreateProjectBody, { groups, ...req
   }
 }
 
-export const updateProject = async ({ description, ownerId, everyonePerms, locked }: UpdateProjectBody, projectId: Project['id'], requestor: UserDetails, requestId: string) => {
+export async function updateProject({ description, ownerId, everyonePerms, locked }: UpdateProjectBody, projectId: Project['id'], requestor: UserDetails, requestId: string) {
   if (typeof locked === 'string') {
     if (locked === 'true') {
       locked = true
@@ -120,7 +122,7 @@ export const updateProject = async ({ description, ownerId, everyonePerms, locke
     ])
   }
 
-  if (description || everyonePerms || typeof locked !== 'undefined') {
+  if (description || everyonePerms || typeof locked !== 'undefined') {
     await updateProjectQuery(projectId, {
       description,
       locked,
@@ -142,7 +144,7 @@ export const updateProject = async ({ description, ownerId, everyonePerms, locke
   }
 }
 
-export const replayHooks = async (projectId: Project['id'], requestor: UserDetails, requestId: string) => {
+export async function replayHooks(projectId: Project['id'], requestor: UserDetails, requestId: string) {
   // Actions
   const { results } = await hook.project.upsert(projectId)
   await addLogs('Replay hooks for Project', results, requestor.id, requestId)
@@ -152,7 +154,7 @@ export const replayHooks = async (projectId: Project['id'], requestor: UserDetai
   return null
 }
 
-export const archiveProject = async (projectId: Project['id'], requestor: UserDetails, requestId: string) => {
+export async function archiveProject(projectId: Project['id'], requestor: UserDetails, requestId: string) {
   // Actions
   // Empty the project first
   await Promise.all([
@@ -186,7 +188,7 @@ export const archiveProject = async (projectId: Project['id'], requestor: UserDe
   return null
 }
 
-export const generateProjectsData = async () => {
+export async function generateProjectsData() {
   const projects = await getAllProjectsDataForExport()
 
   return json2csv(projects, {

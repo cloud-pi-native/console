@@ -1,15 +1,15 @@
 import { faker } from '@faker-js/faker'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { AdminRole, User } from '@prisma/client'
 import prisma from '../../__mocks__/prisma.js'
+import type { UserDetails } from '../../types/index.ts'
 import { getMatchingUsers, getUsers, logUser, patchUsers } from './business.ts'
 import * as queries from './queries.js'
-import { AdminRole, User } from '@prisma/client'
-import { UserDetails } from '../../types/index.ts'
 
 const getUsersQueryMock = vi.spyOn(queries, 'getUsers')
 const getMatchingUsersQueryMock = vi.spyOn(queries, 'getMatchingUsers')
 
-describe('Test users business', () => {
+describe('test users business', () => {
   beforeEach(() => {
     vi.resetAllMocks()
   })
@@ -50,7 +50,7 @@ describe('Test users business', () => {
     })
   })
   describe('getUsers', () => {
-    it('Should query without where', async () => {
+    it('should query without where', async () => {
       prisma.user.update.mockResolvedValue(null)
 
       await getUsers({})
@@ -58,7 +58,7 @@ describe('Test users business', () => {
       expect(getUsersQueryMock).toHaveBeenCalledTimes(1)
       expect(getUsersQueryMock).toHaveBeenCalledWith({})
     })
-    it('Should query with filter adminRoleIds', async () => {
+    it('should query with filter adminRoleIds', async () => {
       prisma.user.update.mockResolvedValue(null)
 
       await getUsers({ adminRoleId })
@@ -93,7 +93,7 @@ describe('Test users business', () => {
         ],
       },
     ]
-    it('Should query only with letters ', async () => {
+    it('should query only with letters ', async () => {
       prisma.user.update.mockResolvedValue(null)
 
       await getMatchingUsers({ letters: 'abc' })
@@ -101,7 +101,7 @@ describe('Test users business', () => {
       expect(getMatchingUsersQueryMock).toHaveBeenCalledTimes(1)
       expect(getMatchingUsersQueryMock).toHaveBeenCalledWith({ AND })
     })
-    it('Should query with letters and projectId', async () => {
+    it('should query with letters and projectId', async () => {
       prisma.user.update.mockResolvedValue(null)
 
       await getMatchingUsers({ letters: 'abc', notInProjectId: projectId })
@@ -110,11 +110,10 @@ describe('Test users business', () => {
       expect(getMatchingUsersQueryMock).toHaveBeenCalledWith({ AND: [{
         ProjectMembers: {
           none: {
-            projectId: projectId,
+            projectId,
           },
         },
-      },
-      {
+      }, {
         projectsOwned: {
           none: {
             id: projectId,

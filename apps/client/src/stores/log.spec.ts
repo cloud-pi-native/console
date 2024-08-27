@@ -5,7 +5,7 @@ import { useLogStore } from './log.js'
 
 const apiClientGet = vi.spyOn(apiClient.Logs, 'getLogs')
 
-describe('Log Store', () => {
+describe('log Store', () => {
   beforeEach(() => {
     vi.resetAllMocks()
     // creates a fresh pinia and make it active so it's automatically picked
@@ -13,7 +13,7 @@ describe('Log Store', () => {
     setActivePinia(createPinia())
   })
 
-  it('Should get logs list and total by api call', async () => {
+  it('should get logs list and total by api call', async () => {
     const data = {
       total: 1,
       logs: [

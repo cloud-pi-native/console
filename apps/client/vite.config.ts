@@ -1,13 +1,13 @@
+import { URL, fileURLToPath } from 'node:url'
 import * as dotenv from 'dotenv'
-import { fileURLToPath, URL } from 'url'
 import { defineConfig } from 'vite'
 import UnoCSS from 'unocss/vite'
 import vue from '@vitejs/plugin-vue'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import {
-  vueDsfrAutoimportPreset,
   ohVueIconAutoimportPreset,
+  vueDsfrAutoimportPreset,
   vueDsfrComponentResolver,
 } from '@gouvminint/vue-dsfr'
 

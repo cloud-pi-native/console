@@ -15,8 +15,8 @@
       "remoteRoot": "/app/apps/server",
       "skipFiles": [
         "<node_internals>/**",
-        "${workspaceFolder}/node_modules/**/*.js",
-      ],
+        "${workspaceFolder}/node_modules/**/*.js"
+      ]
     }
   ]
 }

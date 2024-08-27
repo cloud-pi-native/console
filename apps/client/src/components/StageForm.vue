@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { computed, onBeforeMount, ref } from 'vue'
-import { type Cluster, type Quota, type Stage, type StageAssociatedEnvironments, SharedZodError, StageSchema, CreateStageBody } from '@cpn-console/shared'
+import type { Cluster, CreateStageBody, Quota, SharedZodError, Stage, StageAssociatedEnvironments } from '@cpn-console/shared'
+import { StageSchema } from '@cpn-console/shared'
 import { toCodeComponent } from '@/utils/func.js'
 import type { UpdateStageType } from '@/views/admin/ListStages.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
@@ -19,6 +20,13 @@ const props = withDefaults(defineProps<{
   associatedEnvironments: () => [],
 })
 
+const emit = defineEmits<{
+  add: [value: CreateStageBody]
+  update: [value: UpdateStageType]
+  cancel: []
+  delete: [value: Stage['id']]
+}>()
+
 const localStage = ref(props.stage)
 
 const isDeletingStage = ref(false)
@@ -35,34 +43,27 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
 })
 const isStageValid = computed(() => !errorSchema.value)
 
-const updateClusters = (value: string[]) => {
+function updateClusters(value: string[]) {
   localStage.value.clusterIds = value
 }
 
-const updateQuotas = (value: string[]) => {
+function updateQuotas(value: string[]) {
   localStage.value.quotaIds = value
 }
 
-const emit = defineEmits<{
-  add: [value: CreateStageBody]
-  update: [value: UpdateStageType]
-  cancel: []
-  delete: [value: Stage['id']]
-}>()
-
-const addStage = () => {
+function addStage() {
   if (isStageValid.value) emit('add', localStage.value)
 }
 
-const updateStage = () => {
+function updateStage() {
   if (isStageValid.value) emit('update', localStage.value)
 }
 
-const cancel = () => {
+function cancel() {
   emit('cancel')
 }
 
-const getRows = (associatedEnvironments: StageAssociatedEnvironments) => {
+function getRows(associatedEnvironments: StageAssociatedEnvironments) {
   return associatedEnvironments
     .map(associatedEnvironment => ([
       toCodeComponent(associatedEnvironment.organization),
@@ -77,7 +78,6 @@ const getRows = (associatedEnvironments: StageAssociatedEnvironments) => {
 onBeforeMount(() => {
   localStage.value = props.stage
 })
-
 </script>
 
 <template>
@@ -105,7 +105,7 @@ onBeforeMount(() => {
         label="Quotas associés"
         description="Sélectionnez les quotas autorisés à utiliser ce type d'environnement."
         :options="allQuotas"
-        :options-selected="allQuotas.filter(({ id}) => localStage.quotaIds.includes(id))"
+        :options-selected="allQuotas.filter(({ id }) => localStage.quotaIds.includes(id))"
         label-key="name"
         value-key="id"
         @update="(_q, quotaIds) => updateQuotas(quotaIds)"

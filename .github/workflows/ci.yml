@@ -12,9 +12,9 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: "20.16.0"
-  PNPM_VERSION: "9.7.1"
-  REGISTRY: "ghcr.io"
+  NODE_VERSION: 20.16.0
+  PNPM_VERSION: 9.7.1
+  REGISTRY: ghcr.io
   NAMESPACE: "${{ github.repository }}"
   MULTI_ARCH: false
   USE_QEMU: false

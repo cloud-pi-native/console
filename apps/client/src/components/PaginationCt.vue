@@ -13,10 +13,9 @@ const props = withDefaults(defineProps<{
   isUpdating: false,
 })
 
+const emit = defineEmits(['setPage'])
 const maxPage = computed(() => Math.floor(props.length / props.step))
 const currentStart = computed(() => Math.floor(props.page * props.step))
-
-const emit = defineEmits(['setPage'])
 </script>
 
 <template>
@@ -46,7 +45,7 @@ const emit = defineEmits(['setPage'])
       class="flex items-center"
       data-testid="positionInfo"
     >
-      {{ (currentStart + 1) + ' - ' + Math.min(currentStart + props.step, props.length) + ' sur ' + props.length }}
+      {{ `${currentStart + 1} - ${Math.min(currentStart + props.step, props.length)} sur ${props.length}` }}
     </p>
     <div
       class="flex gap-2"

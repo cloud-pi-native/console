@@ -1,12 +1,12 @@
 variables:
   PROJECT_NAME:
-    description: "Nom du dépôt (dans ce Gitlab) à synchroniser."
+    description: Nom du dépôt (dans ce Gitlab) à synchroniser.
   GIT_BRANCH_DEPLOY:
-    description: "Nom de la branche à synchroniser."
+    description: Nom de la branche à synchroniser.
     value: main
   SYNC_ALL:
-    description: "Synchroniser toutes les branches."
-    value: 'false'
+    description: Synchroniser toutes les branches.
+    value: "false"
 
 include:
   - project: $CATALOG_PATH

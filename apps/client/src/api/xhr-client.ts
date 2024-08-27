@@ -29,23 +29,20 @@ export const apiClient = await getApiClient(
   },
 )
 
-export const extractData = <T extends { status: number, body: unknown, headers: Headers }, S extends T['status']>(
-  response: T,
-  expectedStatus: S,
-): Extract<T, { status: S }>['body'] => {
+export function extractData<T extends { status: number, body: unknown, headers: Headers }, S extends T['status']>(response: T, expectedStatus: S): Extract<T, { status: S }>['body'] {
   if (response.status >= 400) {
     // @ts-ignore
-    throw Error(response.body?.error ?? response.body?.message ?? 'Erreur inconnue')
+    throw new Error(response.body?.error ?? response.body?.message ?? 'Erreur inconnue')
   }
   if (response.status === expectedStatus) return response.body
   try {
-    throw Error(`Erreur lors de la requete, reçu ${response.status}, attendu ${expectedStatus}`)
+    throw new Error(`Erreur lors de la requete, reçu ${response.status}, attendu ${expectedStatus}`)
   } catch (error: unknown) {
     if (error instanceof Error) {
       console.log(error.stack)
     } else {
       console.log(error)
     }
-    throw Error('Erreur lors de la requete')
+    throw new Error('Erreur lors de la requete')
   }
 }

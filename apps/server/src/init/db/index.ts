@@ -1,6 +1,6 @@
 import app from '../../app.js'
-import prisma from '@/prisma.js'
 import { modelKeys } from './utils.js'
+import prisma from '@/prisma.js'
 
 type ExtractKeysWithFields<T> = {
   [K in keyof T]: T[K] extends { fields: any } ? K : never
@@ -12,14 +12,14 @@ type Imports = Partial<Record<Models, object[]>> & {
   associations: [Models, any[]]
 }
 
-export const initDb = async (data: Imports) => {
+export async function initDb(data: Imports) {
   const dataStringified = JSON.stringify(data)
   const dataParsed = JSON.parse(dataStringified, (key, value) => {
     try {
       if (['permissions', 'everyonePerms'].includes(key)) {
         return BigInt(value.slice(0, value.length - 1))
       }
-    } catch (error) {
+    } catch (_error) {
       return value
     }
     return value

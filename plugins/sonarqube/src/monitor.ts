@@ -1,4 +1,4 @@
-import { type MonitorInfos, MonitorStatus, Monitor } from '@cpn-console/shared'
+import { Monitor, type MonitorInfos, MonitorStatus } from '@cpn-console/shared'
 import axios from 'axios'
 import { getAxiosOptions } from './tech.js'
 
@@ -12,12 +12,12 @@ const messageMap = {
   YELLOW: 'Service dégradé',
   RED: 'Service en panne',
 }
-type SonarRes = {
+interface SonarRes {
   health: keyof typeof statusMap
   causes: string[]
 }
 
-const monitor = async (instance: Monitor): Promise<MonitorInfos> => {
+async function monitor(instance: Monitor): Promise<MonitorInfos> {
   instance.lastStatus.lastUpdateTimestamp = (new Date()).getTime()
   try {
     const res = await axios.get('/system/health', {

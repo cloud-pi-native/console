@@ -6,4 +6,4 @@ db:
 
 plugins:
   mount: false
-  localDir: "/path/to/my/external/plugins/dir"
+  localDir: /path/to/my/external/plugins/dir

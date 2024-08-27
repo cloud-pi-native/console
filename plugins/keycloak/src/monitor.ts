@@ -1,7 +1,7 @@
-import { type MonitorInfos, MonitorStatus, requiredEnv, Monitor } from '@cpn-console/shared'
+import { Monitor, type MonitorInfos, MonitorStatus, requiredEnv } from '@cpn-console/shared'
 import axios from 'axios'
 
-const monitor = async (instance: Monitor): Promise<MonitorInfos> => {
+async function monitor(instance: Monitor): Promise<MonitorInfos> {
   instance.lastStatus.lastUpdateTimestamp = (new Date()).getTime()
   try {
     const res = await axios.get(requiredEnv('KEYCLOAK_URL'), {

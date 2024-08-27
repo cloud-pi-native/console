@@ -1,10 +1,10 @@
 <script lang="ts" setup>
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import type { Log } from '@cpn-console/shared'
+import { JsonViewer } from 'vue3-json-viewer'
 import { useLogStore } from '@/stores/log.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { Log } from '@cpn-console/shared'
 // @ts-ignore 'vue3-json-viewer' missing types
-import { JsonViewer } from 'vue3-json-viewer'
 
 const adminLogStore = useLogStore()
 const snackbarStore = useSnackbarStore()
@@ -18,7 +18,7 @@ const hideLogDetails = ref(true)
 const logs = computed(() => adminLogStore.logs)
 const logsLength = computed(() => adminLogStore.count)
 
-const showLogs = async (index: number) => {
+async function showLogs(index: number) {
   page.value = index
   await getAllLogs({ offset: index * step, limit: step })
 }
@@ -26,7 +26,7 @@ const showLogs = async (index: number) => {
 type LogModelSliced = Omit<Log['data'], 'failed'>
   | Omit<Log['data'], 'failed' | 'totalExecutionTime'>
 
-const sliceLog = (log: Log): LogModelSliced => {
+function sliceLog(log: Log): LogModelSliced {
   const data = log.data
   if (!data.failed) {
     const {
@@ -43,7 +43,7 @@ const sliceLog = (log: Log): LogModelSliced => {
   return logSliced
 }
 
-const getAllLogs = async ({ offset, limit }: { offset: number, limit: number }, isDisplayingSuccess = true) => {
+async function getAllLogs({ offset, limit }: { offset: number, limit: number }, isDisplayingSuccess = true) {
   isUpdating.value = true
   await adminLogStore.getAllLogs({ offset, limit })
   if (isDisplayingSuccess) {
@@ -55,8 +55,8 @@ const getAllLogs = async ({ offset, limit }: { offset: number, limit: number }, 
 onMounted(async () => {
   await getAllLogs({ offset: 0, limit: step }, false)
 })
-
 </script>
+
 <template>
   <h1
     class="fr-h3"
@@ -78,7 +78,7 @@ onMounted(async () => {
     >
       <DsfrButton
         data-testid="logsDetailsBtn"
-        :title="hideLogDetails ? 'Afficher les logs en entier': 'Masquer les clés non essentielles des logs'"
+        :title="hideLogDetails ? 'Afficher les logs en entier' : 'Masquer les clés non essentielles des logs'"
         secondary
         icon-only
         :icon="hideLogDetails ? 'ri-filter-off-fill' : 'ri-filter-fill'"
@@ -86,7 +86,7 @@ onMounted(async () => {
       />
       <DsfrButton
         data-testid="showLogsBtn"
-        :title="hideLogs ? 'Afficher les logs': 'Masquer les logs'"
+        :title="hideLogs ? 'Afficher les logs' : 'Masquer les logs'"
         secondary
         icon-only
         :icon="hideLogs ? 'ri-eye-off-fill' : 'ri-eye-fill'"
@@ -127,7 +127,7 @@ onMounted(async () => {
       >
         <DsfrBadge
           v-if="log?.data?.totalExecutionTime"
-          :label="log.data.totalExecutionTime + ' ms'"
+          :label="`${log.data.totalExecutionTime} ms`"
           no-icon
         />
         <DsfrBadge
@@ -148,17 +148,17 @@ onMounted(async () => {
       class="flex flex-wrap justify-between"
     >
       <DsfrBadge
-        :label="'Log ID: ' + log.id"
+        :label="`Log ID: ${log.id}`"
         type="new"
         no-icon
       />
       <DsfrBadge
-        :label="'user ID: ' + log.userId"
+        :label="`user ID: ${log.userId}`"
         type="new"
         no-icon
       />
       <DsfrBadge
-        :label="'Request ID: ' + log.requestId"
+        :label="`Request ID: ${log.requestId}`"
         type="new"
         no-icon
       />

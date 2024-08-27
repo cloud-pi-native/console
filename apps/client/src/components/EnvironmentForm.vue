@@ -1,11 +1,13 @@
 <script lang="ts" setup>
-import { ref, onBeforeMount, computed } from 'vue'
+import { computed, onBeforeMount, ref } from 'vue'
 // @ts-ignore '@gouvminint/vue-dsfr' missing types
 import { getRandomId } from '@gouvminint/vue-dsfr'
+import type {
+  CleanedCluster,
+  Environment,
+  SharedZodError,
+} from '@cpn-console/shared'
 import {
-  type CleanedCluster,
-  type Environment,
-  type SharedZodError,
   EnvironmentSchema,
   longestEnvironmentName,
   parseZodError,
@@ -16,7 +18,7 @@ import { useQuotaStore } from '@/stores/quota.js'
 import { useStageStore } from '@/stores/stage.js'
 import { useZoneStore } from '@/stores/zone.js'
 
-type OptionType = {
+interface OptionType {
   text: string
   value: string
 }
@@ -84,7 +86,7 @@ const availableClusters: ComputedRef<CleanedCluster[]> = computed(() => props.al
 
 const clusterInfos = computed(() => availableClusters.value.find(cluster => cluster.id === localEnvironment.value.clusterId)?.infos)
 
-const setEnvironmentOptions = () => {
+function setEnvironmentOptions() {
   stageOptions.value = stageStore.stages.map(stage => ({
     text: stage.name,
     value: stage.id,
@@ -96,8 +98,8 @@ const setEnvironmentOptions = () => {
   clusterOptions.value = props.allClusters
     .filter(cluster =>
       (props.projectClustersIds.includes(cluster.id) // clusters possibles pour ce projet
-        && cluster.stageIds.includes(localEnvironment.value.stageId ?? '') // correspondant à ce stage
-        && cluster.zoneId === zoneId.value) // dont la zone d'attachement est celle choisie
+      && cluster.stageIds.includes(localEnvironment.value.stageId ?? '') // correspondant à ce stage
+      && cluster.zoneId === zoneId.value) // dont la zone d'attachement est celle choisie
       || cluster.id === localEnvironment.value.clusterId, // ou alors celui associé à l'environnment en cours de modification
     )
     .map(cluster => ({
@@ -108,7 +110,7 @@ const setEnvironmentOptions = () => {
     = quotaStore.quotas
       .filter(quota =>
         (quota.stageIds.includes(localEnvironment.value.stageId ?? '') // quotas disponibles pour ce type d'environnement
-          && !quota.isPrivate) // et ne pas afficher les quotas privés
+        && !quota.isPrivate) // et ne pas afficher les quotas privés
         || quota.id === localEnvironment.value.quotaId) // ou quota actuellement associé (au cas où l'association ne soit plus disponible)
       .map(quota => ({
         text: `${quota.name} (${quota.cpu}CPU, ${quota.memory})`,
@@ -116,12 +118,12 @@ const setEnvironmentOptions = () => {
       }))
 }
 
-const resetCluster = () => {
+function resetCluster() {
   // @ts-expect-error TS2322
   localEnvironment.value.clusterId = undefined
 }
 
-const addEnvironment = () => {
+function addEnvironment() {
   if (!errorSchema.value) {
     emit('addEnvironment', localEnvironment.value)
   } else {
@@ -129,7 +131,7 @@ const addEnvironment = () => {
   }
 }
 
-const putEnvironment = () => {
+function putEnvironment() {
   if (!errorSchema.value) {
     emit('putEnvironment', localEnvironment.value)
   } else {
@@ -137,7 +139,7 @@ const putEnvironment = () => {
   }
 }
 
-const cancel = () => {
+function cancel() {
   emit('cancel')
 }
 
@@ -161,8 +163,8 @@ watch(zoneId, () => {
 watch(localEnvironment.value, () => {
   setEnvironmentOptions()
 })
-
 </script>
+
 <template>
   <div
     class="relative"
@@ -186,7 +188,7 @@ watch(localEnvironment.value, () => {
         label-visible
         :required="true"
         :hint="`Ne doit pas contenir d'espace ni de trait d'union, doit être unique pour le projet et le cluster sélectionnés, être en minuscules et faire plus de 2 et moins de ${longestEnvironmentName} caractères.`"
-        :error-message="!!localEnvironment.name && !EnvironmentSchema.pick({name: true}).safeParse({name: localEnvironment.name}).success ? `Le nom de l\'environnment ne doit pas contenir d\'espace, doit être unique pour le projet et le cluster sélectionnés, être en minuscules et faire plus de 2 et moins de ${longestEnvironmentName} caractères.`: undefined"
+        :error-message="!!localEnvironment.name && !EnvironmentSchema.pick({ name: true }).safeParse({ name: localEnvironment.name }).success ? `Le nom de l\'environnment ne doit pas contenir d\'espace, doit être unique pour le projet et le cluster sélectionnés, être en minuscules et faire plus de 2 et moins de ${longestEnvironmentName} caractères.` : undefined"
         placeholder="integ0"
         :disabled="!props.isEditable || !props.canManage"
       />

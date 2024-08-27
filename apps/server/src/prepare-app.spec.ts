@@ -1,4 +1,4 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { getPreparedApp } from './prepare-app.js'
 import { getConnection } from './connect.js'
 import { initDb } from './init/db/index.js'
@@ -16,12 +16,12 @@ vi.spyOn(app.log, 'warn')
 vi.spyOn(app.log, 'error')
 vi.spyOn(app.log, 'debug')
 
-describe('Server', () => {
+describe('server', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
-  it('Should getConnection', async () => {
+  it('should getConnection', async () => {
     // const port = Math.round(Math.random() * 10000) + 1024
     await getPreparedApp().catch(err => console.warn(err))
 
@@ -29,7 +29,7 @@ describe('Server', () => {
     expect(initDb.mock.calls).toHaveLength(1)
   })
 
-  it('Should throw an error on connection to DB', async () => {
+  it('should throw an error on connection to DB', async () => {
     const error = new Error('This is OK!')
     getConnection.mockRejectedValueOnce(error)
 
@@ -42,7 +42,7 @@ describe('Server', () => {
     expect(response).toMatchObject(error)
   })
 
-  it('Should throw an error on initDb import if module is not found', async () => {
+  it('should throw an error on initDb import if module is not found', async () => {
     const error = new Error('Failed to load')
     initDb.mockRejectedValueOnce(error)
 
@@ -52,7 +52,7 @@ describe('Server', () => {
     expect(app.log.info.mock.calls).toHaveLength(3)
   })
 
-  it('Should throw an error on initDb import', async () => {
+  it('should throw an error on initDb import', async () => {
     const error = new Error('This is OK!')
     initDb.mockRejectedValueOnce(error)
 

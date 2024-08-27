@@ -15,24 +15,24 @@
  * https://discord.com/developers/docs/topics/permissions#permissions
  */
 import { z } from 'zod'
-import { ResourceById } from './types.js'
+import type { ResourceById } from './types.js'
 
-export const getPermsByUserRoles = (
-  userRoles: string[],
-  rolesById: ResourceById<{ id: string, permissions: bigint | string }>,
-  basePerms?: bigint | string,
-) => userRoles.reduce((acc, curr) => {
-  if (!rolesById[curr]) {
-    console.trace(`Unable to find role: ${curr}, database needs to be inspected`)
-  }
-  return acc | BigInt(rolesById[curr].permissions)
-}, basePerms ? BigInt(basePerms) : 0n)
+export function getPermsByUserRoles(userRoles: string[], rolesById: ResourceById<{ id: string, permissions: bigint | string }>, basePerms?: bigint | string) {
+  return userRoles.reduce((acc, curr) => {
+    if (!rolesById[curr]) {
+      console.trace(`Unable to find role: ${curr}, database needs to be inspected`)
+    }
+    return acc | BigInt(rolesById[curr].permissions)
+  }, basePerms ? BigInt(basePerms) : 0n)
+}
 
 function permissionsParser(a: Record<string, bigint>) {
   const valuesRegistered = [] as bigint[]
   for (const [k, v] of Object.entries(a)) {
-    if (typeof v !== 'bigint') throw Error(`${k} has a invalid value: ${v}, which is not a bigint`)
-    if (valuesRegistered.includes(v)) throw Error(`${k} has a duplicated value: ${v}`)
+    if (typeof v !== 'bigint')
+      throw new Error(`${k} has a invalid value: ${v}, which is not a bigint`)
+    if (valuesRegistered.includes(v))
+      throw new Error(`${k} has a duplicated value: ${v}`)
     valuesRegistered.push(v)
   }
 }
@@ -66,7 +66,13 @@ export type AdminPermsKeys = keyof typeof ADMIN_PERMS
 permissionsParser(ADMIN_PERMS)
 permissionsParser(PROJECT_PERMS)
 
-type ProjectAuthorizedParams = { adminPermissions?: bigint | string, projectPermissions?: bigint | string }
+interface ProjectAuthorizedParams { adminPermissions?: bigint | string, projectPermissions?: bigint | string }
+
+export const toBigInt = (value?: bigint | number | string | undefined) => value ? BigInt(value) : 0n
+
+export const AdminAuthorized = {
+  isAdmin: (perms?: bigint | string) => !!(toBigInt(perms) & ADMIN_PERMS.MANAGE),
+} as const
 
 export const ProjectAuthorized = {
   Manage: (perms: ProjectAuthorizedParams) => AdminAuthorized.isAdmin(perms.adminPermissions)
@@ -95,13 +101,7 @@ export const ProjectAuthorized = {
   || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.SEE_SECRETS | PROJECT_PERMS.MANAGE)),
 } as const
 
-export const AdminAuthorized = {
-  isAdmin: (perms?: bigint | string) => !!(toBigInt(perms) & ADMIN_PERMS.MANAGE),
-} as const
-
-export const toBigInt = (value?: bigint | number | string | undefined) => value ? BigInt(value) : 0n
-
-type ScopePerm<T extends string> = {
+interface ScopePerm<T extends string> {
   name: string
   perms: Array<{ key: T, label: string, hint?: string }>
 }
@@ -113,23 +113,19 @@ export const projectPermsDetails: PermDetails<ProjectPermsKeys> = [{
     key: 'MANAGE',
     label: 'Gérer le projet',
     hint: 'Permet de gérer tout le projet et ses ressources associées',
-  },
-  {
+  }, {
     key: 'MANAGE_ROLES',
     label: 'Gérer les rôles du projet',
     hint: 'ATTENTION : Ce rôle inclut une élévation de privilège ! Permet de gérer les rôles du projet et les membres associés',
-  },
-  {
+  }, {
     key: 'MANAGE_MEMBERS',
     label: 'Gérer les membres du projet',
     hint: 'Permet d\'inviter des utilisateurs et de les retirer',
-  },
-  {
+  }, {
     key: 'SEE_SECRETS',
     label: 'Afficher les secrets',
     hint: 'Permet d\'afficher les secrets générés par les services',
-  },
-  {
+  }, {
     key: 'REPLAY_HOOKS',
     label: 'Reprovisionner le projet',
     hint: 'Permet de lancer un reprovisionnage du projet',
@@ -146,7 +142,8 @@ export const projectPermsDetails: PermDetails<ProjectPermsKeys> = [{
       key: 'LIST_ENVIRONMENTS',
       label: 'Voir les environnements',
       hint: 'Permet de visualiser tous les environnements et leurs configurations',
-    }],
+    },
+  ],
 }, {
   name: 'Dépôt',
   perms: [

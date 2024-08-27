@@ -4,19 +4,19 @@ import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@gouvminint/vue-dsfr/styles'
 import 'vue3-json-viewer/dist/index.css'
 
+import JsonViewer from 'vue3-json-viewer'
+import { DsfrSelect, DsfrTag } from '@gouvminint/vue-dsfr'
 import { keycloakInit } from './utils/keycloak/keycloak'
 
 import App from './App.vue'
 import router from './router/index'
 import * as icons from './icons'
 // @ts-ignore 'vue3-json-viewer' missing types
-import JsonViewer from 'vue3-json-viewer'
 
 import 'virtual:uno.css'
 import 'virtual:unocss-devtools'
 import './main.css'
 // @ts-ignore '@gouvminint/vue-dsfr' missing types
-import { DsfrSelect, DsfrTag } from '@gouvminint/vue-dsfr'
 
 try {
   await keycloakInit()

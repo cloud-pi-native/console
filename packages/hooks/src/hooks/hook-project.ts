@@ -1,22 +1,23 @@
-import { ClusterObject, ExternalRepoUrl, InternalRepoName, IsInfra, IsPrivate, UserObject } from './index.js'
-import { Hook, createHook } from './hook.js'
+import type { Hook } from './hook.js'
+import { createHook } from './hook.js'
+import type { ClusterObject, ExternalRepoUrl, InternalRepoName, IsInfra, IsPrivate, UserObject } from './index.js'
 
-export type ResourceQuotaType = {
+export interface ResourceQuotaType {
   memory: string
   cpu: number
 }
 
-export type RepoCreds = {
+export interface RepoCreds {
   username: string
   token: string
 }
 
-export type Role = {
+export interface Role {
   userId: string
   role: 'owner' | 'user'
 }
 
-export type Environment = {
+export interface Environment {
   id: string
   name: string
   clusterId: ClusterObject['id']
@@ -31,7 +32,7 @@ export type Environment = {
   }[]
 }
 
-export type Repository = {
+export interface Repository {
   id: string
   internalRepoName: InternalRepoName
   newCreds?: RepoCreds
@@ -44,7 +45,7 @@ export interface ProjectStore {
   [x: string]: { [x: string]: string }
 }
 
-export type Project = {
+export interface Project {
   id: string
   description: string | null
   name: string

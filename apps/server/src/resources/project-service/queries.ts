@@ -1,10 +1,10 @@
-import { type Project } from '@prisma/client'
+import type { Project } from '@prisma/client'
+import type { ConfigRecords } from './business.js'
 import prisma from '@/prisma.js'
-import { ConfigRecords } from './business.js'
 
 // CONFIG
-export const getProjectStore = (projectId: Project['id']) =>
-  prisma.projectPlugin.findMany({
+export function getProjectStore(projectId: Project['id']) {
+  return prisma.projectPlugin.findMany({
     where: { projectId },
     select: {
       key: true,
@@ -12,10 +12,11 @@ export const getProjectStore = (projectId: Project['id']) =>
       value: true,
     },
   })
+}
 
 export const getAdminPlugin = prisma.adminPlugin.findMany
 
-export const saveProjectStore = async (records: ConfigRecords, projectId: Project['id']) => {
+export async function saveProjectStore(records: ConfigRecords, projectId: Project['id']) {
   for (const { pluginName, key, value } of records) {
     await prisma.projectPlugin.upsert({
       create: {

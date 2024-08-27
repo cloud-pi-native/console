@@ -1,12 +1,12 @@
-import { ClientInferResponseBody } from '@ts-rest/core'
+import type { ClientInferResponseBody } from '@ts-rest/core'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   CreateClusterSchema,
-  GetClustersSchema,
-  GetClusterAssociatedEnvironmentsSchema,
-  UpdateClusterSchema,
   DeleteClusterSchema,
+  GetClusterAssociatedEnvironmentsSchema,
   GetClusterDetailsSchema,
+  GetClustersSchema,
+  UpdateClusterSchema,
 } from '../schemas/index.js'
 
 export const clusterContract = contractInstance.router({

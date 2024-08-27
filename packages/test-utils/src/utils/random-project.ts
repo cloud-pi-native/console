@@ -1,23 +1,23 @@
-import { projectRoles, allOrganizations } from '@cpn-console/shared'
+import { allOrganizations, projectRoles } from '@cpn-console/shared'
 import {
-  getRandomOrganization,
-  getRandomProject,
-  getRandomUser,
-  getRandomRepo,
-  getRandomEnv,
-  getRandomPerm,
-  getRandomRole,
   getRandomCluster,
-  getRandomStage,
+  getRandomEnv,
+  getRandomOrganization,
+  getRandomPerm,
+  getRandomProject,
   getRandomQuota,
+  getRandomRepo,
+  getRandomRole,
+  getRandomStage,
+  getRandomUser,
   getRandomZone,
 } from './random-utils.js'
 import { repeatFn } from './func-utils.js'
-import { User } from './types.js'
+import type { User } from './types.js'
 
 const basicStages = ['dev', 'staging', 'integration', 'prod']
 
-export const createRandomDbSetup = ({ nbUsers = 1, nbRepo = 3, envs = basicStages, organizationName = allOrganizations[0].name }) => {
+export function createRandomDbSetup({ nbUsers = 1, nbRepo = 3, envs = basicStages, organizationName = allOrganizations[0].name }) {
   // Create organization
   const allOrganizationsWhereName = allOrganizations.find(org => org.name === organizationName)
   const organization = getRandomOrganization(allOrganizationsWhereName?.name, allOrganizationsWhereName?.label)

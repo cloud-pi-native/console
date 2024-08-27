@@ -1,19 +1,17 @@
 <script lang="ts" setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 // @ts-ignore '@gouvminint/vue-dsfr' missing types
 import { getRandomId } from '@gouvminint/vue-dsfr'
-import {
-  type LettersQuery,
-  type User,
-  type ProjectV2,
-  type Member,
+import type {
+  LettersQuery,
+  Member,
+  ProjectV2,
+  User,
 } from '@cpn-console/shared'
 import pDebounce from 'p-debounce'
 import { useProjectMemberStore } from '@/stores/project-member.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { copyContent } from '@/utils/func.js'
-
-const projectMemberStore = useProjectMemberStore()
 
 const props = withDefaults(
   defineProps<{
@@ -27,32 +25,28 @@ const props = withDefaults(
   },
 )
 
+const emit = defineEmits<{
+  addMember: [value: string]
+  updateRole: [value: string]
+  cancel: []
+  removeMember: [value: string]
+  transferOwnership: [value: string]
+}>()
+
+const projectMemberStore = useProjectMemberStore()
 const headers = props.canManage
   ? [
-    'Identifiant',
-    'E-mail',
-    'Rôles',
-    'Retirer du projet',
-  ]
+      'Identifiant',
+      'E-mail',
+      'Rôles',
+      'Retirer du projet',
+    ]
   : [
-    'Identifiant',
-    'E-mail',
-    'Rôles',
-  ]
-
+      'Identifiant',
+      'E-mail',
+      'Rôles',
+    ]
 const snackbarStore = useSnackbarStore()
-
-const isUserAlreadyInTeam = computed(() => {
-  return !!(newUserEmail.value && (props.project.owner.email === newUserEmail.value || props.project.members.find(member => member.email === newUserEmail.value)))
-})
-
-const removeUserHint = (member: Member) => {
-  if (props.canManage) {
-    return `retirer ${member.email} du projet`
-  }
-  return 'vous n\'avez pas les droits suffisants pour retirer un membre du projet'
-}
-
 const newUserInputKey = ref(getRandomId('input'))
 const newUserEmail = ref<string>('')
 const usersToAdd = ref<User[]>([])
@@ -60,48 +54,63 @@ const rows = ref<any[][]>([])
 const lettersNotMatching = ref('')
 const tableKey = ref(getRandomId('table'))
 
+const isUserAlreadyInTeam = computed(() => {
+  return !!(newUserEmail.value && (props.project.owner.email === newUserEmail.value || props.project.members.find(member => member.email === newUserEmail.value)))
+})
+
+function removeUserHint(member: Member) {
+  if (props.canManage) {
+    return `retirer ${member.email} du projet`
+  }
+  return 'vous n\'avez pas les droits suffisants pour retirer un membre du projet'
+}
+
 const usersToSuggest = computed(() => usersToAdd.value.map(userToAdd => ({
   value: userToAdd.email,
-  furtherInfo: userToAdd.firstName + ' ' + userToAdd.lastName,
+  furtherInfo: `${userToAdd.firstName} ${userToAdd.lastName}`,
 })))
 
 const getRolesNames = (ids?: string[]) => ids ? props.project.roles.filter(role => ids.includes(role.id)).map(role => role.name).join(' / ') || '-' : ''
-const getCopyIdComponent = (id: string) => ({
-  component: 'code',
-  text: id,
-  title: 'Copier l\'id',
-  'data-testid': 'ownerId',
-  class: 'fr-text-default--info text-xs truncate cursor-pointer',
-  onClick: () => copyContent(id),
-})
+function getCopyIdComponent(id: string) {
+  return {
+    component: 'code',
+    text: id,
+    title: 'Copier l\'id',
+    'data-testid': 'ownerId',
+    class: 'fr-text-default--info text-xs truncate cursor-pointer',
+    onClick: () => copyContent(id),
+  }
+}
 
-const createMemberRow = (member: Member) => props.canManage
-  ? [
-    getCopyIdComponent(member.userId),
-    member.email,
-    props.project.ownerId === member.userId ? 'Propriétaire' : getRolesNames(member.roleIds),
-    props.project.ownerId !== member.userId
-      ? {
-        cellAttrs: {
-          class: 'fr-fi-close-line !flex justify-center cursor-pointer fr-text-default--warning',
-          title: removeUserHint(member),
-          onClick: () => removeUserFromProject(member.userId),
-        },
-      }
-      : {
-        cellAttrs: {
-          class: 'fr-fi-close-line !flex justify-center cursor-not-allowed',
-          title: removeUserHint(member),
-        },
-      },
-  ]
-  : [
-    getCopyIdComponent(member.userId),
-    member.email,
-    props.project.ownerId === member.userId ? 'Propriétaire' : getRolesNames(member.roleIds),
-  ]
+function createMemberRow(member: Member) {
+  return props.canManage
+    ? [
+        getCopyIdComponent(member.userId),
+        member.email,
+        props.project.ownerId === member.userId ? 'Propriétaire' : getRolesNames(member.roleIds),
+        props.project.ownerId !== member.userId
+          ? {
+              cellAttrs: {
+                class: 'fr-fi-close-line !flex justify-center cursor-pointer fr-text-default--warning',
+                title: removeUserHint(member),
+                onClick: () => removeUserFromProject(member.userId),
+              },
+            }
+          : {
+              cellAttrs: {
+                class: 'fr-fi-close-line !flex justify-center cursor-not-allowed',
+                title: removeUserHint(member),
+              },
+            },
+      ]
+    : [
+        getCopyIdComponent(member.userId),
+        member.email,
+        props.project.ownerId === member.userId ? 'Propriétaire' : getRolesNames(member.roleIds),
+      ]
+}
 
-const setRows = () => {
+function setRows() {
   rows.value = []
   if (!props.project.members.find(member => member.userId === props.project.ownerId)) {
     rows.value.push(createMemberRow({ ...props.project.owner, roleIds: [], userId: props.project.owner.id }))
@@ -116,9 +125,11 @@ const setRows = () => {
 
 const retrieveUsersToAdd = pDebounce(async (letters: LettersQuery['letters']) => {
   // Ne pas lancer de requête à moins de 3 caractères tapés
-  if (letters.length < 3) return
+  if (letters.length < 3)
+    return
   // Ne pas relancer de requête à chaque lettre ajoutée si aucun user ne correspond aux premières lettres données
-  if (lettersNotMatching.value && letters.includes(lettersNotMatching.value) && !usersToAdd.value?.length) return
+  if (lettersNotMatching.value && letters.includes(lettersNotMatching.value) && !usersToAdd.value?.length)
+    return
   usersToAdd.value = await projectMemberStore.getMatchingUsers(props.project.id, letters)
   // Stockage des lettres qui ne renvoient aucun résultat
   if (!usersToAdd.value?.length) {
@@ -126,17 +137,11 @@ const retrieveUsersToAdd = pDebounce(async (letters: LettersQuery['letters']) =>
   }
 }, 300)
 
-const emit = defineEmits<{
-  addMember: [value: string]
-  updateRole: [value: string]
-  cancel: []
-  removeMember: [value: string]
-  transferOwnership: [value: string]
-}>()
-
-const addUserToProject = async () => {
-  if (!newUserEmail.value) return
-  if (isUserAlreadyInTeam.value) return snackbarStore.setMessage('L\'utilisateur semble déjà faire partie du projet')
+async function addUserToProject() {
+  if (!newUserEmail.value)
+    return
+  if (isUserAlreadyInTeam.value)
+    return snackbarStore.setMessage('L\'utilisateur semble déjà faire partie du projet')
 
   emit('addMember', newUserEmail.value.trim())
 
@@ -145,7 +150,7 @@ const addUserToProject = async () => {
   newUserInputKey.value = getRandomId('input')
 }
 
-const removeUserFromProject = async (userId: string) => {
+async function removeUserFromProject(userId: string) {
   emit('removeMember', userId)
 }
 
@@ -158,7 +163,7 @@ watch(() => props.project.members, setRows)
 const isTransferingProject = ref(false)
 const nextOwnerId = ref<string | undefined>(undefined)
 
-const transferOwnership = () => {
+function transferOwnership() {
   if (nextOwnerId.value && props.project.members.find(member => member.userId === nextOwnerId.value)) {
     emit('transferOwnership', nextOwnerId.value)
   }
@@ -167,7 +172,6 @@ const transferSelectOptions = props.project.members.map(member => ({
   text: `${member.lastName} ${member.firstName} (${member.email})`,
   value: member.userId,
 }))
-
 </script>
 
 <template>
@@ -180,8 +184,8 @@ const transferSelectOptions = props.project.members.map(member => ({
       <DsfrTable
         id="team-table"
         :key="tableKey"
+        title="Membres du projet"
         data-testid="teamTable"
-        :title="`Membres du projet`"
         :headers="headers"
         :rows="rows"
       />
@@ -226,7 +230,7 @@ const transferSelectOptions = props.project.members.map(member => ({
         <DsfrButton
           v-show="!isTransferingProject"
           data-testid="showTransferProjectBtn"
-          :label="`Transférer le projet`"
+          label="Transférer le projet"
           primary
           icon="ri-exchange-line"
           @click="isTransferingProject = true"
@@ -262,7 +266,7 @@ const transferSelectOptions = props.project.members.map(member => ({
             >
               <DsfrButton
                 data-testid="transferProjectBtn"
-                :label="`Transférer le projet`"
+                label="Transférer le projet"
                 :disabled="!nextOwnerId"
                 secondary
                 icon="ri-exchange-line"

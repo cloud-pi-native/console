@@ -1,21 +1,26 @@
-import { type StepCall, type Project, parseError, Environment, ClusterObject, Repository } from '@cpn-console/hooks'
+import { dirname } from 'node:path'
+import type { ClusterObject, Environment, Project, Repository, StepCall } from '@cpn-console/hooks'
+import { parseError } from '@cpn-console/hooks'
+import { dump } from 'js-yaml'
+import type { GitlabProjectApi } from '@cpn-console/gitlab-plugin/types/class.js'
+import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
 import { generateAppProjectName, generateApplicationName, getConfig, getCustomK8sApi } from './utils.js'
 import { getApplicationObject } from './applications.js'
 import { getAppProjectObject } from './app-project.js'
-import { dump } from 'js-yaml'
-import { GitlabProjectApi } from '@cpn-console/gitlab-plugin/types/class.js'
-import { dirname } from 'path'
-import { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
 
-export type ArgoDestination = {
+export interface ArgoDestination {
   namespace?: string
   name?: string
   server?: string
 }
 
-const splitExtraRepositories = (repos?: string): string[] => repos
-  ? repos.split(',').map(repo => repo.trim())
-  : []
+function splitExtraRepositories(repos?: string): string[] {
+  return repos
+    ? repos.split(',').map(repo => repo.trim())
+    : []
+}
+
+const getValueFilePath = (p: Project, c: ClusterObject, e: Environment): string => `${p.name}/${c.label}/${e.name}/values.yaml`
 
 export const upsertProject: StepCall<Project> = async (payload) => {
   try {
@@ -49,8 +54,16 @@ export const upsertProject: StepCall<Project> = async (payload) => {
       const rwGroup = (await keycloakApi.getEnvGroup(environment.name)).subgroups.RW
 
       await ensureInfraEnvValues(
-        project, environment, appNamespace, roGroup, rwGroup,
-        appProjectName, infraRepositories, infraProject.id, gitlabApi, vaultApi,
+        project,
+        environment,
+        appNamespace,
+        roGroup,
+        rwGroup,
+        appProjectName,
+        infraRepositories,
+        infraProject.id,
+        gitlabApi,
+        vaultApi,
       )
 
       if (!cluster.user.keyData && !cluster.user.token) {
@@ -155,33 +168,26 @@ export const upsertProject: StepCall<Project> = async (payload) => {
   }
 }
 
-const findApplication = (applications: any[], repository: string, environment: string) => applications.find(app =>
-  app.metadata.labels['dso/repository'] === repository
-  && app.metadata.labels['dso/environment'] === environment,
-)
+function findApplication(applications: any[], repository: string, environment: string) {
+  return applications.find(app =>
+    app.metadata.labels['dso/repository'] === repository
+    && app.metadata.labels['dso/environment'] === environment,
+  )
+}
 
-const findAppProject = (applications: any[], environment: string) => applications.find(app =>
-  app.metadata.labels['dso/environment'] === environment,
-)
+function findAppProject(applications: any[], environment: string) {
+  return applications.find(app =>
+    app.metadata.labels['dso/environment'] === environment,
+  )
+}
 
-type ArgoRepoSource = {
+interface ArgoRepoSource {
   repoURL: string
   targetRevision: string
   path: string
   valueFiles: string[]
 }
-const ensureInfraEnvValues = async (
-  project: Project,
-  environment: Environment,
-  appNamespace: string,
-  roGroup: string,
-  rwGroup: string,
-  appProjectName: string,
-  sourceRepos: Repository[],
-  repoId: number,
-  gitlabApi: GitlabProjectApi,
-  vaultApi: VaultProjectApi,
-) => {
+async function ensureInfraEnvValues(project: Project, environment: Environment, appNamespace: string, roGroup: string, rwGroup: string, appProjectName: string, sourceRepos: Repository[], repoId: number, gitlabApi: GitlabProjectApi, vaultApi: VaultProjectApi) {
   const infraAppsRepoUrl = await gitlabApi.getRepoUrl('infra-apps')
   const gitlabGroupUrl = dirname(infraAppsRepoUrl)
   const cluster = getCluster(project, environment)
@@ -229,11 +235,7 @@ const ensureInfraEnvValues = async (
   await gitlabApi.commitCreateOrUpdate(repoId, dump(values), valueFilePath)
 }
 
-const getArgoRepoSource = async (
-  repoName: string,
-  env: string,
-  gitlabApi: GitlabProjectApi,
-): Promise<ArgoRepoSource> => {
+async function getArgoRepoSource(repoName: string, env: string, gitlabApi: GitlabProjectApi): Promise<ArgoRepoSource> {
   const targetRevision = 'HEAD'
   const repoId = await gitlabApi.getProjectId(repoName)
   const repoURL = await gitlabApi.getRepoUrl(repoName)
@@ -257,17 +259,14 @@ const getArgoRepoSource = async (
   }
 }
 
-const getCluster = (p: Project, e: Environment): ClusterObject => {
+function getCluster(p: Project, e: Environment): ClusterObject {
   const c = p.clusters.find(c => c.id === e.clusterId)
-  if (!c) throw new Error(`Unable to find cluster ${e.id} for env ${e.name}`)
+  if (!c)
+    throw new Error(`Unable to find cluster ${e.id} for env ${e.name}`)
   return c
 }
-const getValueFilePath = (p: Project, c: ClusterObject, e: Environment): string => `${p.name}/${c.label}/${e.name}/values.yaml`
 
-const removeInfraEnvValues = async (
-  project: Project,
-  gitlabApi: GitlabProjectApi,
-) => {
+async function removeInfraEnvValues(project: Project, gitlabApi: GitlabProjectApi) {
   for (const z of getDistinctZones(project)) {
     const infraProject = await gitlabApi.getOrCreateInfraProject(z)
     const existingFiles = await gitlabApi.listFiles(infraProject.id, `${project.name}/`)
@@ -282,7 +281,7 @@ const removeInfraEnvValues = async (
   }
 }
 
-const getDistinctZones = (project: Project) => {
+function getDistinctZones(project: Project) {
   const zones: Set<string> = new Set()
   project.clusters.map(c => zones.add(c.zone.slug))
   return zones
@@ -333,37 +332,39 @@ export const deleteProject: StepCall<Project> = async (payload) => {
   }
 }
 
-const getMinimalAppProjectPatch = (destination: ArgoDestination, appProjectName: string, sourceRepos: string[], roGroup: string, rwGroup: string) => ({
-  spec: {
-    destinations: [destination],
-    namespaceResourceWhitelist: [{
-      group: '*',
-      kind: '*',
-    }],
-    namespaceResourceBlacklist: [
-      {
-        group: 'v1',
-        kind: 'ResourceQuota',
-      },
-    ],
-    roles: [
-      {
-        description: 'read-only group',
-        groups: [roGroup],
-        name: 'ro-group',
-        policies: [`p, proj:${appProjectName}:ro-group, applications, get, ${appProjectName}/*, allow`],
-      },
-      {
-        description: 'read-write group',
-        groups: [rwGroup],
-        name: 'rw-group',
-        policies: [
-          `p, proj:${appProjectName}:rw-group, applications, *, ${appProjectName}/*, allow`,
-          `p, proj:${appProjectName}:rw-group, applications, delete, ${appProjectName}/*, allow`,
-          `p, proj:${appProjectName}:rw-group, applications, create, ${appProjectName}/*, deny`,
-        ],
-      },
-    ],
-    sourceRepos,
-  },
-})
+function getMinimalAppProjectPatch(destination: ArgoDestination, appProjectName: string, sourceRepos: string[], roGroup: string, rwGroup: string) {
+  return {
+    spec: {
+      destinations: [destination],
+      namespaceResourceWhitelist: [{
+        group: '*',
+        kind: '*',
+      }],
+      namespaceResourceBlacklist: [
+        {
+          group: 'v1',
+          kind: 'ResourceQuota',
+        },
+      ],
+      roles: [
+        {
+          description: 'read-only group',
+          groups: [roGroup],
+          name: 'ro-group',
+          policies: [`p, proj:${appProjectName}:ro-group, applications, get, ${appProjectName}/*, allow`],
+        },
+        {
+          description: 'read-write group',
+          groups: [rwGroup],
+          name: 'rw-group',
+          policies: [
+            `p, proj:${appProjectName}:rw-group, applications, *, ${appProjectName}/*, allow`,
+            `p, proj:${appProjectName}:rw-group, applications, delete, ${appProjectName}/*, allow`,
+            `p, proj:${appProjectName}:rw-group, applications, create, ${appProjectName}/*, deny`,
+          ],
+        },
+      ],
+      sourceRepos,
+    },
+  }
+}

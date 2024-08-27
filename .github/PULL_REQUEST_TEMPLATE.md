@@ -1,6 +1,6 @@
 ## Issues liées
 
-Issues numéro: 
+Issues numéro:
 
 ---------
 

@@ -282,7 +282,7 @@ Ce dépôt utilise des fichiers docker-compose pour construire les images docker
 
 ## Configuration du Keycloak
 
-Pour pouvoir gérer les droits utilisateurs des services le pod `server` doit accéder aux groupes des users. Cela signifie modifier le clientScope `profile`:  
+Pour pouvoir gérer les droits utilisateurs des services le pod `server` doit accéder aux groupes des users. Cela signifie modifier le clientScope `profile`:
 
 - Onglet `Mappers`
 - `Add Mappers > By configuration > Group Membership`
@@ -302,7 +302,7 @@ Les utilisateurs faisant parti du group `admin` ont également accès à l'inter
 | Console Cloud Pi | Projet                       | Environnement | Dépots                                  | Utilisateur / membre |
 | ---------------- | ---------------------------- | ------------- | --------------------------------------- | -------------------- |
 | __Openshift__    |                              | Namespace     |                                         |                      |
-| __ArgoCD__       |                              |               | (infra) Secret, AppProject, Application |                      |
+| __ArgoCD__       |                              |               | (infra) Secret, AppProject, Application |                      |
 | __Gitlab__       | Group                        |               | Repository (Dépôt)                      | User                 |
 | __Harbor__       | Project                      |               | Repository [1]                          |                      |
 | __Keycloak__     |                              | Group         |                                         | User / member        |

@@ -1,10 +1,14 @@
-import { ensureGroupExists, findGroupByName } from './group.js'
 import { adminGroupPath } from '@cpn-console/shared'
-import { VaultSonarSecret, getAxiosInstance } from './tech.js'
-import { Project, StepCall, generateProjectKey, parseError } from '@cpn-console/hooks'
-import { SonarUser, ensureUserExists } from './user.js'
-import { SonarPaging, createDsoRepository, deleteDsoRepository, ensureRepositoryConfiguration, files, findSonarProjectsForDsoProjects } from './project.js'
-import { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
+import type { Project, StepCall } from '@cpn-console/hooks'
+import { generateProjectKey, parseError } from '@cpn-console/hooks'
+import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
+import { ensureGroupExists, findGroupByName } from './group.js'
+import type { VaultSonarSecret } from './tech.js'
+import { getAxiosInstance } from './tech.js'
+import type { SonarUser } from './user.js'
+import { ensureUserExists } from './user.js'
+import type { SonarPaging } from './project.js'
+import { createDsoRepository, deleteDsoRepository, ensureRepositoryConfiguration, files, findSonarProjectsForDsoProjects } from './project.js'
 
 const globalPermissions = [
   'admin',
@@ -23,13 +27,13 @@ const projectPermissions = [
   'user',
 ]
 
-export const initSonar = async () => {
+export async function initSonar() {
   await setTemplatePermisions()
   await createAdminGroup()
   await setAdminPermisions()
 }
 
-const createAdminGroup = async () => {
+async function createAdminGroup() {
   const axiosInstance = getAxiosInstance()
   const adminGroup = await findGroupByName(adminGroupPath)
   if (!adminGroup) {
@@ -44,7 +48,7 @@ const createAdminGroup = async () => {
   }
 }
 
-const setAdminPermisions = async () => {
+async function setAdminPermisions() {
   const axiosInstance = getAxiosInstance()
   for (const permission of globalPermissions) {
     await axiosInstance({
@@ -58,7 +62,7 @@ const setAdminPermisions = async () => {
   }
 }
 
-const setTemplatePermisions = async () => {
+async function setTemplatePermisions() {
   const axiosInstance = getAxiosInstance()
   await axiosInstance({
     method: 'post',
@@ -136,7 +140,7 @@ export const upsertProject: StepCall<Project> = async (payload) => {
         result: 'OK',
       },
     }
-  } catch (error) {
+  } catch (_error) {
     return {
       status: {
         result: 'KO',
@@ -265,16 +269,19 @@ export const deleteProject: StepCall<Project> = async (payload) => {
   }
 }
 
-const deleteRepo = async (projectKey: string) => await getAxiosInstance()({
-  url: 'projects/delete',
-  params: {
-    project: projectKey,
-  },
-  method: 'post',
-})
+async function deleteRepo(projectKey: string) {
+  return await getAxiosInstance()({
+    url: 'projects/delete',
+    params: {
+      project: projectKey,
+    },
+    method: 'post',
+  })
+}
 
-const ensureUserAndVault = async (vaultApi: VaultProjectApi, username: string, projectName: string, organizationName: string) => {
+async function ensureUserAndVault(vaultApi: VaultProjectApi, username: string, projectName: string, organizationName: string) {
   const vaultUserSecret = await vaultApi.read('SONAR', { throwIfNoEntry: false }) as VaultSonarSecret | undefined
   const newUserSecret = await ensureUserExists(username, projectName, organizationName, vaultUserSecret)
-  if (newUserSecret) await vaultApi.write(newUserSecret, 'SONAR')
+  if (newUserSecret)
+    await vaultApi.write(newUserSecret, 'SONAR')
 }

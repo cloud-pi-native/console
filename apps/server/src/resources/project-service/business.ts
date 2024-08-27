@@ -1,9 +1,11 @@
 import type { Project } from '@prisma/client'
-import {
-  type PluginsUpdateBody,
+import type {
   PermissionTarget,
+  PluginsUpdateBody,
+
   ServiceUrl,
 } from '@cpn-console/shared'
+import { editStrippers, populatePluginManifests, servicesInfos } from '@cpn-console/hooks'
 import {
   getAdminPlugin,
   getProjectInfosByIdOrThrow,
@@ -11,7 +13,6 @@ import {
   getPublicClusters,
   saveProjectStore,
 } from '@/resources/queries-index.js'
-import { editStrippers, populatePluginManifests, servicesInfos } from '@cpn-console/hooks'
 
 export type ConfigRecords = {
   key: string
@@ -19,7 +20,7 @@ export type ConfigRecords = {
   value: string
 }[]
 
-export const dbToObj = (records: ConfigRecords): PluginsUpdateBody => {
+export function dbToObj(records: ConfigRecords): PluginsUpdateBody {
   const obj: PluginsUpdateBody = {}
   for (const record of records) {
     if (!obj[record.pluginName]) obj[record.pluginName] = {}
@@ -28,12 +29,14 @@ export const dbToObj = (records: ConfigRecords): PluginsUpdateBody => {
   return obj
 }
 
-export const objToDb = (obj: PluginsUpdateBody): ConfigRecords => Object.entries(obj)
-  .map(([pluginName, values]) => Object.entries(values)
-    .map(([key, value]) => ({ pluginName, key, value })))
-  .flat()
+export function objToDb(obj: PluginsUpdateBody): ConfigRecords {
+  return Object.entries(obj)
+    .map(([pluginName, values]) => Object.entries(values)
+      .map(([key, value]) => ({ pluginName, key, value })))
+    .flat()
+}
 
-export const getProjectServices = async (projectId: Project['id'], permissionTarget: PermissionTarget) => {
+export async function getProjectServices(projectId: Project['id'], permissionTarget: PermissionTarget) {
   // Pré-requis
   const project = await getProjectInfosByIdOrThrow(projectId)
 
@@ -80,7 +83,7 @@ export const getProjectServices = async (projectId: Project['id'], permissionTar
   }).filter(s => s.urls.length || s.manifest.global?.length || s.manifest.project?.length)
 }
 
-export const updateProjectServices = async (projectId: Project['id'], data: PluginsUpdateBody, stripperRoles: Array<'user' | 'admin'>) => {
+export async function updateProjectServices(projectId: Project['id'], data: PluginsUpdateBody, stripperRoles: Array<'user' | 'admin'>) {
   for (const role of stripperRoles) {
     const parsedData = editStrippers.project[role].safeParse(data)
     if (!parsedData.success) continue

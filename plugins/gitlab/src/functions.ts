@@ -1,9 +1,10 @@
-import { type StepCall, type Project, type ProjectLite, parseError, type UniqueRepo, specificallyDisabled } from '@cpn-console/hooks'
+import { type Project, type ProjectLite, type StepCall, type UniqueRepo, parseError, specificallyDisabled } from '@cpn-console/hooks'
 import { deleteGroup } from './group.js'
 import { createUsername, getUser } from './user.js'
 import { ensureMembers } from './members.js'
 import { ensureRepositories } from './repositories.js'
-import { VaultSecrets, cleanGitlabError, getConfig } from './utils.js'
+import type { VaultSecrets } from './utils.js'
+import { cleanGitlabError, getConfig } from './utils.js'
 
 // Check
 export const checkApi: StepCall<Project> = async (payload) => {
@@ -43,17 +44,16 @@ export const getDsoProjectSecrets: StepCall<ProjectLite> = async (payload) => {
     if (!specificallyDisabled(payload.config.gitlab?.displayTriggerHint)) {
       // TODO déplacer les secrets dans un dossier pour tout lister plutôt que de sélectionner dans le code
       const gitlab = (await payload.apis.vault.read('GITLAB')).data as VaultSecrets['GITLAB']
+      /* eslint-disable no-template-curly-in-string */
       const curlCommand = [
         'curl -X POST --fail',
-
         '-F token=\${GIT_MIRROR_TOKEN}',
         '-F ref=main',
-
         '-F variables[GIT_BRANCH_DEPLOY]=\${BRANCH_TO_SYNC}',
-
         '-F variables[PROJECT_NAME]=\${REPOSITORY_NAME}',
         `"${getConfig().url}/api/v4/projects/${gitlab.GIT_MIRROR_PROJECT_ID}/trigger/pipeline"`,
       ]
+      /* eslint-enable */
       const secrets: Record<string, string> = {
         GIT_MIRROR_PROJECT_ID: String(gitlab.GIT_MIRROR_PROJECT_ID),
         GIT_MIRROR_TOKEN: gitlab.GIT_MIRROR_TOKEN,
@@ -140,7 +140,8 @@ export const upsertDsoProject: StepCall<Project> = async (payload) => {
 export const deleteDsoProject: StepCall<Project> = async (payload) => {
   try {
     const group = await payload.apis.gitlab.getProjectGroup()
-    if (group) await deleteGroup(group?.id)
+    if (group)
+      await deleteGroup(group?.id)
 
     return {
       status: {

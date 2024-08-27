@@ -1,14 +1,14 @@
 import { faker } from '@faker-js/faker'
 import { describe, expect, it } from 'vitest'
-import prisma from '../../__mocks__/prisma.js'
-import { createRole, deleteRole, listRoles, countRolesMembers, patchRoles } from './business.ts'
 import type { ProjectMembers, ProjectRole, User } from '@prisma/client'
+import prisma from '../../__mocks__/prisma.js'
 import { BadRequest400 } from '../../utils/errors.ts'
+import { countRolesMembers, createRole, deleteRole, listRoles, patchRoles } from './business.ts'
 
 const projectId = faker.string.uuid()
-describe('Test project-role business', () => {
+describe('test project-role business', () => {
   describe('listRoles', () => {
-    it('Should stringify bigint', async () => {
+    it('should stringify bigint', async () => {
       const partialRole: Partial<ProjectRole> = {
         permissions: 4n,
       }
@@ -20,7 +20,7 @@ describe('Test project-role business', () => {
   })
 
   describe('createRole', () => {
-    it('Should create role with incremented position when position 0 is the highest', async () => {
+    it('should create role with incremented position when position 0 is the highest', async () => {
       const dbRole: Partial<ProjectRole> = {
         projectId,
         permissions: 4n,
@@ -35,7 +35,7 @@ describe('Test project-role business', () => {
       expect(prisma.projectRole.create).toHaveBeenCalledWith({ data: { name: 'test', permissions: 4n, position: 1, projectId } })
     })
 
-    it('Should create role with incremented position with bigger position', async () => {
+    it('should create role with incremented position with bigger position', async () => {
       const dbRole: Partial<ProjectRole> = {
         permissions: 4n,
         position: 50,
@@ -49,7 +49,7 @@ describe('Test project-role business', () => {
       expect(prisma.projectRole.create).toHaveBeenCalledWith({ data: { name: 'test', permissions: 4n, position: 51, projectId } })
     })
 
-    it('Should create role with incremented position with no role in db', async () => {
+    it('should create role with incremented position with no role in db', async () => {
       const dbRole: Partial<ProjectRole> = {
         permissions: 4n,
         position: 50,
@@ -66,7 +66,7 @@ describe('Test project-role business', () => {
 
   describe('deleteRole', () => {
     const roleId = faker.string.uuid()
-    it('Should delete role and remove id from concerned users', async () => {
+    it('should delete role and remove id from concerned users', async () => {
       const dbRole: Partial<ProjectRole> = {
         permissions: 4n,
         position: 50,
@@ -93,7 +93,7 @@ describe('Test project-role business', () => {
     })
   })
   describe.skip('countRolesMembers', () => {
-    it('Should return aggregated role member counts', async () => {
+    it('should return aggregated role member counts', async () => {
       const partialRoles = [{
         id: faker.string.uuid(),
       }, {
@@ -128,13 +128,13 @@ describe('Test project-role business', () => {
       projectId,
     }]
 
-    it('Should do nothing', async () => {
+    it('should do nothing', async () => {
       prisma.projectRole.findMany.mockResolvedValue([])
       await patchRoles(projectId, [])
       expect(prisma.projectRole.update).toHaveBeenCalledTimes(0)
     })
 
-    it('Should return 400 if incoherent positions', async () => {
+    it('should return 400 if incoherent positions', async () => {
       const updateRoles: Pick<ProjectRole, 'id' | 'position'> = [
         { id: dbRoles[0].id, position: 1 },
         { id: dbRoles[1].id, position: 1 },
@@ -146,7 +146,8 @@ describe('Test project-role business', () => {
       expect(response).instanceOf(BadRequest400)
       expect(prisma.projectRole.update).toHaveBeenCalledTimes(0)
     })
-    it('Should return 400 if incoherent positions', async () => {
+
+    it('should return 400 if incoherent positions (missing)', async () => {
       const updateRoles: Pick<ProjectRole, 'id' | 'position'> = [
         { id: dbRoles[1].id, position: 1 },
       ]
@@ -157,7 +158,8 @@ describe('Test project-role business', () => {
       expect(response).instanceOf(BadRequest400)
       expect(prisma.projectRole.update).toHaveBeenCalledTimes(0)
     })
-    it('Should update positions', async () => {
+
+    it('should update positions', async () => {
       const updateRoles: Pick<ProjectRole, 'id' | 'position'> = [
         { id: dbRoles[0].id, position: 1 },
         { id: dbRoles[1].id, position: 0 },
@@ -168,7 +170,8 @@ describe('Test project-role business', () => {
 
       expect(prisma.projectRole.update).toHaveBeenCalledTimes(2)
     })
-    it('Should update permissions', async () => {
+
+    it('should update permissions', async () => {
       const updateRoles: Pick<ProjectRole, 'id' | 'position'> = [
         { id: dbRoles[1].id, permissions: '0' },
       ]

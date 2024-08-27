@@ -3,9 +3,9 @@ import type { FastifyServerOptions } from 'fastify'
 import type { FastifySwaggerUiOptions } from '@fastify/swagger-ui/types'
 import { nanoid } from 'nanoid'
 import { apiPrefix } from '@cpn-console/shared'
+import type { generateOpenApi } from '@ts-rest/open-api'
 import { loggerConf } from './logger.js'
 import { NODE_ENV } from './env.js'
-import { generateOpenApi } from '@ts-rest/open-api'
 
 export const fastifyConf: FastifyServerOptions = {
   maxParamLength: 5000,
@@ -14,7 +14,8 @@ export const fastifyConf: FastifyServerOptions = {
 }
 
 const externalDocs = {
-  description: 'External documentation.', url: 'https://cloud-pi-native.fr',
+  description: 'External documentation.',
+  url: 'https://cloud-pi-native.fr',
 }
 
 export const swaggerConf: Parameters<typeof generateOpenApi>[1] = {
@@ -31,7 +32,7 @@ export const swaggerConf: Parameters<typeof generateOpenApi>[1] = {
 }
 
 export const swaggerUiConf: FastifySwaggerUiOptions = {
-  routePrefix: apiPrefix + '/swagger-ui',
+  routePrefix: `${apiPrefix}/swagger-ui`,
   uiConfig: {
     docExpansion: 'list',
     deepLinking: true,

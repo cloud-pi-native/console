@@ -1,15 +1,15 @@
-import KeycloakAdminClient from '@keycloak/keycloak-admin-client'
+import type KeycloakAdminClient from '@keycloak/keycloak-admin-client'
 import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation.js'
 
 export const consoleGroupName = 'console'
 
 export type CustomGroup = Required<Pick<GroupRepresentation, 'id' | 'name' | 'subGroups' | 'subGroupCount'>>
-export const getGroupByName = async (kcClient: KeycloakAdminClient, name: string): Promise<GroupRepresentation | void> => {
+export async function getGroupByName(kcClient: KeycloakAdminClient, name: string): Promise<GroupRepresentation | void> {
   const groupSearch = await kcClient.groups.find({ search: name })
   return groupSearch.find(grp => grp.name === name)
 }
 
-export const getAllSubgroups = async (kcClient: KeycloakAdminClient, parentId: string, first: number, subgroups: GroupRepresentation[] = []): Promise<GroupRepresentation[]> => {
+export async function getAllSubgroups(kcClient: KeycloakAdminClient, parentId: string, first: number, subgroups: GroupRepresentation[] = []): Promise<GroupRepresentation[]> {
   const newSubgroups = [
     ...subgroups,
     ...await kcClient.groups.listSubGroups({ parentId, briefRepresentation: false, max: 10, first }),
@@ -20,7 +20,7 @@ export const getAllSubgroups = async (kcClient: KeycloakAdminClient, parentId: s
   return newSubgroups
 }
 
-export const getOrCreateChildGroup = async (kcClient: KeycloakAdminClient, parentId: string, name: string, subGroups: GroupRepresentation[] | undefined = []): Promise<CustomGroup> => {
+export async function getOrCreateChildGroup(kcClient: KeycloakAdminClient, parentId: string, name: string, subGroups: GroupRepresentation[] | undefined = []): Promise<CustomGroup> {
   if (Array.isArray(subGroups) && subGroups.length > 0) {
     const matchingGroup = subGroups.find(({ name: groupName }) => groupName === name) as Required<GroupRepresentation> | undefined
     if (matchingGroup) {
@@ -53,7 +53,7 @@ export const getOrCreateChildGroup = async (kcClient: KeycloakAdminClient, paren
   }
 }
 
-export const getOrCreateProjectGroup = async (kcClient: KeycloakAdminClient, name: string): Promise<Required<Pick<GroupRepresentation, 'id' | 'name' | 'subGroups' | 'subGroupCount'>> & { subGroups: Required<GroupRepresentation>[] }> => {
+export async function getOrCreateProjectGroup(kcClient: KeycloakAdminClient, name: string): Promise<Required<Pick<GroupRepresentation, 'id' | 'name' | 'subGroups' | 'subGroupCount'>> & { subGroups: Required<GroupRepresentation>[] }> {
   const existingGroup = await getGroupByName(kcClient, name) as Required<GroupRepresentation>
   if (!existingGroup) {
     const newGroup = await kcClient.groups.create({ name })

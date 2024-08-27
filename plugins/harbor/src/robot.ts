@@ -1,8 +1,9 @@
-import { HarborApi, toVaultSecret } from './utils.js'
-import { RobotCreated, type Robot, type Access } from './api/Api.js'
-import { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
+import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
+import type { HarborApi } from './utils.js'
+import { toVaultSecret } from './utils.js'
+import type { Access, Robot, RobotCreated } from './api/Api.js'
 
-export type VaultRobotSecret = {
+export interface VaultRobotSecret {
   // {"auths":{"registry-host.com":{"auth":"<the TOKEN>","email":""}}},
   DOCKER_CONFIG: string
   // registry-host.com,
@@ -14,7 +15,7 @@ export type VaultRobotSecret = {
 
 export const getRobot = async (projectName: string, robotName: string, api: HarborApi) => getRobotByName(projectName, `robot$${projectName}+${robotName}`, api)
 
-export const ensureRobot = async (projectName: string, robotName: string, vaultApi: VaultProjectApi, access: Access[], api: HarborApi): Promise<VaultRobotSecret> => {
+export async function ensureRobot(projectName: string, robotName: string, vaultApi: VaultProjectApi, access: Access[], api: HarborApi): Promise<VaultRobotSecret> {
   const vaultPath = `REGISTRY/${robotName}`
   const robot = await getRobot(projectName, robotName, api)
   const VaultRobotSecret = await vaultApi.read(vaultPath, { throwIfNoEntry: false }) as { data: VaultRobotSecret } | undefined
@@ -28,7 +29,7 @@ export const ensureRobot = async (projectName: string, robotName: string, vaultA
   return creds
 }
 
-export const deleteRobot = async (projectName: string, robotName: string, vaultApi: VaultProjectApi, api: HarborApi) => {
+export async function deleteRobot(projectName: string, robotName: string, vaultApi: VaultProjectApi, api: HarborApi) {
   const vaultPath = `REGISTRY/${robotName}`
   const robot = await getRobot(projectName, robotName, api)
   if (robot?.id) {
@@ -41,22 +42,23 @@ export const deleteRobot = async (projectName: string, robotName: string, vaultA
   }
 }
 
-export const createRobot = async (projectName: string, robotName: string, access: Access[], api: HarborApi) => {
+export async function createRobot(projectName: string, robotName: string, access: Access[], api: HarborApi) {
   return (await api.robots.createRobot(getRobotPermissions(projectName, robotName, access))).data
 }
 
-export const regenerateRobot = async (projectName: string, robotName: string, access: Access[], api: HarborApi) => {
+export async function regenerateRobot(projectName: string, robotName: string, access: Access[], api: HarborApi) {
   const robot = await getRobot(projectName, robotName, api)
-  if (robot?.id) await api.projects.deleteRobotV1(projectName, robot.id)
+  if (robot?.id)
+    await api.projects.deleteRobotV1(projectName, robot.id)
   return createRobot(projectName, robotName, access, api)
 }
 
-export const getRobotByName = async (project: string | number, robotName: string, api: HarborApi): Promise<Robot | undefined> => {
+export async function getRobotByName(project: string | number, robotName: string, api: HarborApi): Promise<Robot | undefined> {
   const listRobots = await api.projects.listRobotV1(String(project))
   return listRobots.data.find(({ name }) => name === robotName)
 }
 
-const getRobotPermissions = (projectName: string, robotName: string, access: Access[]) => {
+function getRobotPermissions(projectName: string, robotName: string, access: Access[]) {
   return {
     name: robotName,
     duration: -1,

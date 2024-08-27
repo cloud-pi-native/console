@@ -1,10 +1,10 @@
-import { ClientInferRequest, ClientInferResponseBody } from '@ts-rest/core'
+import type { ClientInferRequest, ClientInferResponseBody } from '@ts-rest/core'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   GetHealthzSchema,
   GetSystemPluginSchema,
-  ListSystemSettingsSchema,
   GetVersionSchema,
+  ListSystemSettingsSchema,
   UpdateSystemPluginSchema,
   UpsertSystemSettingsSchema,
 } from '../schemas/index.js'

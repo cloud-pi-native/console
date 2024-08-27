@@ -1,15 +1,15 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
+import type { PluginSchema } from '@cpn-console/shared'
 import { usePluginsConfigStore } from '@/stores/plugins.js'
 import { useSnackbarStore } from '@/stores/snackbar'
-import type { PluginSchema } from '@cpn-console/shared'
 
 const pluginsStore = usePluginsConfigStore()
 const snackbarStore = useSnackbarStore()
 
 const updated = ref<Record<string, Record<string, string>>>({})
 
-const refTheValues = (services: PluginSchema[]) => {
+function refTheValues(services: PluginSchema[]) {
   return services.map((service) => {
     return {
       ...service,
@@ -20,7 +20,7 @@ const refTheValues = (services: PluginSchema[]) => {
 
 const services: Ref<ReturnType<typeof refTheValues>> = ref([])
 
-const reload = async () => {
+async function reload() {
   const resServices = await pluginsStore.getPluginsConfig()
   services.value = []
   await nextTick()
@@ -30,7 +30,7 @@ const reload = async () => {
   updated.value = {}
 }
 
-const save = async () => {
+async function save() {
   snackbarStore.isWaitingForResponse = true
   try {
     await pluginsStore.updatePluginsConfig(updated.value)
@@ -44,7 +44,7 @@ const save = async () => {
 }
 
 const servicesUnwrapped = ref<Record<string, boolean>>({})
-const swapWrap = (serviceName: string) => {
+function swapWrap(serviceName: string) {
   if (servicesUnwrapped.value[serviceName]) delete servicesUnwrapped.value[serviceName]
   else servicesUnwrapped.value[serviceName] = true
 }
@@ -53,7 +53,7 @@ onBeforeMount(() => {
   reload()
 })
 
-const update = (data: { value: string, key: string, plugin: string }) => {
+function update(data: { value: string, key: string, plugin: string }) {
   if (!updated.value[data.plugin]) updated.value[data.plugin] = {}
   updated.value[data.plugin][data.key] = data.value
 }
@@ -123,9 +123,9 @@ const update = (data: { value: string, key: string, plugin: string }) => {
               name: item.title,
               // @ts-ignore si si il y a un placeholder
               placeholder: item.placeholder || '',
-              disabled: !item.permissions.admin.write
+              disabled: !item.permissions.admin.write,
             }"
-            @update="(value: string) => update({ key: item.key, value, plugin: service.name})"
+            @update="(value: string) => update({ key: item.key, value, plugin: service.name })"
           />
         </div>
       </div>

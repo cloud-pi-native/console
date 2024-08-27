@@ -1,4 +1,4 @@
-import { Zone } from '@cpn-console/shared'
+import type { Zone } from '@cpn-console/shared'
 import { getModel } from '../../support/func.js'
 
 describe('Administration zones', () => {

@@ -1,12 +1,17 @@
 {
   "name": "@cpn-console/harbor-plugin",
-  "description": "",
+  "type": "module",
   "version": "2.2.0",
   "private": false,
-  "type": "module",
+  "description": "",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "types/index.d.ts",
+  "files": [
+    "dist",
+    "types",
+    "utils.d.ts"
+  ],
   "scripts": {
     "build": "tsc",
     "build:clean": "rimraf ./dist ./types ./tsconfig.tsbuildinfo",
@@ -40,10 +45,5 @@
     "registry": "https://registry.npmjs.org/",
     "access": "public",
     "tag": "latest"
-  },
-  "files": [
-    "dist",
-    "types",
-    "utils.d.ts"
-  ]
+  }
 }

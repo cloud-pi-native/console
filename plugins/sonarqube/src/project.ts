@@ -1,7 +1,7 @@
 import { generateProjectKey } from '@cpn-console/hooks'
 import { getAxiosInstance } from './tech.js'
 
-export type SonarPaging = {
+export interface SonarPaging {
   pageIndex: number
   pageSize: number
   total: number
@@ -14,7 +14,7 @@ export type Qualifiers =
   'TRK' | // - Projects
   'UTS' // - Test Files
 
-export type SonarProject = {
+export interface SonarProject {
   key: string // unique key name
   name: string
   qualifier: Qualifiers
@@ -37,13 +37,14 @@ const groupPermissions = [
   'scan',
 ]
 
-export const createDsoRepository = async (organizationName: string, projectName: string, internalRepoName: string, sonarProjectKey?: string) => {
+export async function createDsoRepository(organizationName: string, projectName: string, internalRepoName: string, sonarProjectKey?: string) {
   const sonarProjectName = `${organizationName}-${projectName}-${internalRepoName}`
-  if (!sonarProjectKey) sonarProjectKey = generateProjectKey(organizationName, projectName, internalRepoName)
+  if (!sonarProjectKey)
+    sonarProjectKey = generateProjectKey(organizationName, projectName, internalRepoName)
   return createProject(sonarProjectKey, sonarProjectName)
 }
 
-export const ensureRepositoryConfiguration = async (projectKey: string, login: string, groupName: string) => {
+export async function ensureRepositoryConfiguration(projectKey: string, login: string, groupName: string) {
   const axiosInstance = getAxiosInstance()
 
   for (const permission of robotPermissions) {
@@ -70,18 +71,20 @@ export const ensureRepositoryConfiguration = async (projectKey: string, login: s
   }
 }
 
-export const createProject = async (projectKey: string, projectName: string) => getAxiosInstance()({
-  url: 'projects/create',
-  method: 'post',
-  params: {
-    project: projectKey,
-    visibility: 'private',
-    name: projectName,
-    mainbranch: 'main',
-  },
-})
+export async function createProject(projectKey: string, projectName: string) {
+  return getAxiosInstance()({
+    url: 'projects/create',
+    method: 'post',
+    params: {
+      project: projectKey,
+      visibility: 'private',
+      name: projectName,
+      mainbranch: 'main',
+    },
+  })
+}
 
-export const deleteDsoRepository = async (projectKey: string) => {
+export async function deleteDsoRepository(projectKey: string) {
   const axiosInstance = getAxiosInstance()
 
   await axiosInstance({
@@ -93,43 +96,45 @@ export const deleteDsoRepository = async (projectKey: string) => {
   })
 }
 
-type SonarProjectResult = {
+interface SonarProjectResult {
   organization: string
   project: string
   repository: string
   key: string
 }
 
-const filterProjectsOwning = (repos: { key: string }[], organizationName: string, projectName: string): SonarProjectResult[] => repos.reduce((acc, repo) => {
-  let isOrphan = true
+function filterProjectsOwning(repos: { key: string }[], organizationName: string, projectName: string): SonarProjectResult[] {
+  return repos.reduce((acc, repo) => {
+    let isOrphan = true
 
-  const sonarKey = repo.key as string
-  const keyElements = sonarKey.split('-')
-  const organization = keyElements.shift() as string
-  keyElements.pop()
-  for (let i = keyElements.length - 1; i > 0; i--) {
-    const project = keyElements.slice(0, i).join('-')
-    const repository = keyElements.slice(i).join('-')
-    const keyComputed = generateProjectKey(organization, project, repository)
-    if (keyComputed === sonarKey) {
-      if (project === projectName && organization === organizationName) {
-        acc.push({
-          organization,
-          project,
-          repository,
-          key: sonarKey,
-        })
+    const sonarKey = repo.key as string
+    const keyElements = sonarKey.split('-')
+    const organization = keyElements.shift() as string
+    keyElements.pop()
+    for (let i = keyElements.length - 1; i > 0; i--) {
+      const project = keyElements.slice(0, i).join('-')
+      const repository = keyElements.slice(i).join('-')
+      const keyComputed = generateProjectKey(organization, project, repository)
+      if (keyComputed === sonarKey) {
+        if (project === projectName && organization === organizationName) {
+          acc.push({
+            organization,
+            project,
+            repository,
+            key: sonarKey,
+          })
+        }
+        isOrphan = false
       }
-      isOrphan = false
     }
-  }
-  if (isOrphan) {
-    console.warn('/!\\ Orphan Project:', sonarKey)
-  }
-  return acc
-}, [] as SonarProjectResult[])
+    if (isOrphan) {
+      console.warn('/!\\ Orphan Project:', sonarKey)
+    }
+    return acc
+  }, [] as SonarProjectResult[])
+}
 
-export const findSonarProjectsForDsoProjects = async (organizationName: string, projectName: string) => {
+export async function findSonarProjectsForDsoProjects(organizationName: string, projectName: string) {
   const axiosInstance = getAxiosInstance()
   let foundProjectKeys: SonarProjectResult[] = []
   const baseSearch = `${organizationName}-${projectName}`

@@ -1,9 +1,9 @@
-import { getKeycloak, getUserProfile, keycloakLogin, keycloakLogout } from '@/utils/keycloak/keycloak.js'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { AdminRole, User, UserProfile } from '@cpn-console/shared'
-import { apiClient, extractData } from '@/api/xhr-client.js'
 import { useAdminRoleStore } from './admin-role.js'
+import { apiClient, extractData } from '@/api/xhr-client.js'
+import { getKeycloak, getUserProfile, keycloakLogin, keycloakLogout } from '@/utils/keycloak/keycloak.js'
 
 export const useUserStore = defineStore('user', () => {
   const adminRoleStore = useAdminRoleStore()
@@ -11,14 +11,22 @@ export const useUserStore = defineStore('user', () => {
   const userProfile = ref<UserProfile>()
   const apiAuthInfos = ref<User>()
 
-  const adminPerms = computed(() => {
-    return apiAuthInfos.value
-    ? myAdminRoles.value
-    .reduce((acc, curr) => acc | BigInt(curr.permissions), 0n)
-      : null
-})
   const myAdminRoles = computed<AdminRole[]>(() => adminRoleStore.roles
     .filter(adminRole => apiAuthInfos.value?.adminRoleIds.includes(adminRole.id)))
+
+  const adminPerms = computed(() => {
+    return apiAuthInfos.value
+      ? myAdminRoles.value
+        .reduce((acc, curr) => acc | BigInt(curr.permissions), 0n)
+      : null
+  })
+
+  const setUserProfile = async () => {
+    userProfile.value = getUserProfile()
+    adminRoleStore.listRoles()
+    await apiClient.Users.auth()
+      .then(res => apiAuthInfos.value = extractData(res, 200))
+  }
 
   const setIsLoggedIn = async () => {
     const keycloak = getKeycloak()
@@ -26,13 +34,6 @@ export const useUserStore = defineStore('user', () => {
     if (isLoggedIn.value) {
       await setUserProfile()
     }
-  }
-
-  const setUserProfile = async () => {
-    userProfile.value = getUserProfile()
-    adminRoleStore.listRoles()
-    await apiClient.Users.auth()
-      .then(res => apiAuthInfos.value = extractData(res, 200))
   }
 
   const login = () => keycloakLogin()

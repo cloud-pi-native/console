@@ -65,7 +65,7 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: "${{ inputs.REGISTRY }}/${{ inputs.NAMESPACE }}/${{ matrix.images.name }}:${{ inputs.TAG }}"
-          format: "json"
+          format: json
           exit-code: "1"
           vuln-type: "os,library"
           ignore-unfixed: true
@@ -94,12 +94,12 @@ jobs:
       - name: Run Trivy vulnerability scanner on config files
         uses: aquasecurity/trivy-action@master
         with:
-          scan-ref: "."
-          scan-type: "config"
-          format: "json"
+          scan-ref: .
+          scan-type: config
+          format: json
           exit-code: "1"
           ignore-unfixed: true
-          output: "./artifacts/vulnerability-report/configs/config.json"
+          output: ./artifacts/vulnerability-report/configs/config.json
         continue-on-error: true
 
       - name: Upload scan artifacts
@@ -143,8 +143,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          labels: "security"
-          title: "Vulnerability scan report"
+          labels: security
+          title: Vulnerability scan report
           pinned: false
           close-previous: true
           body: ${{ env.REPORT_BODY }}

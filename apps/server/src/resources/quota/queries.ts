@@ -1,8 +1,8 @@
 import type { Quota, Stage, User } from '@prisma/client'
 import prisma from '@/prisma.js'
 
-export const listQuotas = (userId: User['id']) =>
-  prisma.quota.findMany({
+export function listQuotas(userId: User['id']) {
+  return prisma.quota.findMany({
     where: {
       OR: [{
         isPrivate: false,
@@ -14,28 +14,32 @@ export const listQuotas = (userId: User['id']) =>
       stages: true,
     },
   })
+}
 
-export const getAllQuotas = () =>
-  prisma.quota.findMany({
+export function getAllQuotas() {
+  return prisma.quota.findMany({
     include: {
       stages: true,
     },
   })
+}
 
-export const getQuotaById = (id: Quota['id']) =>
-  prisma.quota.findUnique({
+export function getQuotaById(id: Quota['id']) {
+  return prisma.quota.findUnique({
     where: { id },
     include: { environments: true, stages: true },
   })
+}
 
-export const getQuotaByIdOrThrow = (id: Quota['id']) =>
-  prisma.quota.findUniqueOrThrow({
+export function getQuotaByIdOrThrow(id: Quota['id']) {
+  return prisma.quota.findUniqueOrThrow({
     where: { id },
     include: { stages: true },
   })
+}
 
-export const getQuotaAssociatedEnvironmentById = (id: Quota['id']) =>
-  prisma.environment.findMany({
+export function getQuotaAssociatedEnvironmentById(id: Quota['id']) {
+  return prisma.environment.findMany({
     where: {
       quotaId: id,
     },
@@ -53,22 +57,24 @@ export const getQuotaAssociatedEnvironmentById = (id: Quota['id']) =>
       stage: true,
     },
   })
+}
 
-export const getQuotaByName = (name: Quota['name']) =>
-  prisma.quota.findUnique({
+export function getQuotaByName(name: Quota['name']) {
+  return prisma.quota.findUnique({
     where: { name },
   })
+}
 
 // CREATE
-type CreateQuotaParams = {
+interface CreateQuotaParams {
   memory: Quota['memory']
   cpu: Quota['cpu']
   name: Quota['name']
   isPrivate?: Quota['isPrivate']
 }
 
-export const createQuota = ({ memory, cpu, name, isPrivate = false }: CreateQuotaParams) =>
-  prisma.quota.create({
+export function createQuota({ memory, cpu, name, isPrivate = false }: CreateQuotaParams) {
+  return prisma.quota.create({
     data: {
       memory,
       cpu,
@@ -76,9 +82,10 @@ export const createQuota = ({ memory, cpu, name, isPrivate = false }: CreateQuot
       isPrivate,
     },
   })
+}
 
-export const updateQuotaPrivacy = (quotaId: Quota['id'], isPrivate: Quota['isPrivate']) =>
-  prisma.quota.update({
+export function updateQuotaPrivacy(quotaId: Quota['id'], isPrivate: Quota['isPrivate']) {
+  return prisma.quota.update({
     data: {
       isPrivate,
     },
@@ -86,9 +93,10 @@ export const updateQuotaPrivacy = (quotaId: Quota['id'], isPrivate: Quota['isPri
       id: quotaId,
     },
   })
+}
 
-export const updateQuotaLimits = (quotaId: Quota['id'], { memory, cpu }: Pick<Quota, 'cpu' | 'memory'>) =>
-  prisma.quota.update({
+export function updateQuotaLimits(quotaId: Quota['id'], { memory, cpu }: Pick<Quota, 'cpu' | 'memory'>) {
+  return prisma.quota.update({
     data: {
       memory,
       cpu,
@@ -97,9 +105,10 @@ export const updateQuotaLimits = (quotaId: Quota['id'], { memory, cpu }: Pick<Qu
       id: quotaId,
     },
   })
+}
 
-export const updateQuotaName = (id: Quota['id'], name: Quota['name']) =>
-  prisma.quota.update({
+export function updateQuotaName(id: Quota['id'], name: Quota['name']) {
+  return prisma.quota.update({
     where: {
       id,
     },
@@ -107,9 +116,10 @@ export const updateQuotaName = (id: Quota['id'], name: Quota['name']) =>
       name,
     },
   })
+}
 
-export const linkQuotaToStages = (quotaId: Quota['id'], stageIds: Stage['id'][]) =>
-  Promise.all(stageIds.map(stageId => prisma.quota.update({
+export function linkQuotaToStages(quotaId: Quota['id'], stageIds: Stage['id'][]) {
+  return Promise.all(stageIds.map(stageId => prisma.quota.update({
     where: {
       id: quotaId,
     },
@@ -117,8 +127,9 @@ export const linkQuotaToStages = (quotaId: Quota['id'], stageIds: Stage['id'][])
       stages: { connect: { id: stageId } },
     },
   })))
-export const unlinkQuotaFromStages = (quotaId: Quota['id'], stageIds: Stage['id'][]) =>
-  Promise.all(stageIds.map(stageId => prisma.quota.update({
+}
+export function unlinkQuotaFromStages(quotaId: Quota['id'], stageIds: Stage['id'][]) {
+  return Promise.all(stageIds.map(stageId => prisma.quota.update({
     where: {
       id: quotaId,
     },
@@ -126,6 +137,8 @@ export const unlinkQuotaFromStages = (quotaId: Quota['id'], stageIds: Stage['id'
       stages: { disconnect: { id: stageId } },
     },
   })))
+}
 
-export const deleteQuota = (quotaId: Quota['id']) =>
-  prisma.quota.delete({ where: { id: quotaId } })
+export function deleteQuota(quotaId: Quota['id']) {
+  return prisma.quota.delete({ where: { id: quotaId } })
+}

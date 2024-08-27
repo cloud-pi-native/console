@@ -1,4 +1,4 @@
-import { getModelById, getModel } from '../../support/func.js'
+import { getModel, getModelById } from '../../support/func.js'
 
 describe('Administration stages', () => {
   const project = getModelById('project', '22e7044f-8414-435d-9c4a-2df42a65034b')

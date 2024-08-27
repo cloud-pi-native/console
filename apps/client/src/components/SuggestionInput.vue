@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 
-type Suggestion = {
+interface Suggestion {
   value: string
   furtherInfo?: string
 }
@@ -14,21 +14,21 @@ const props = withDefaults(defineProps<{
   suggestions: () => [],
 })
 
-const localValue = ref(props.modelValue)
-
 const emit = defineEmits<{
   'update:modelValue': [value: string]
   selectSuggestion: [value: string]
 }>()
 
-const updateValue = () => {
+const localValue = ref(props.modelValue)
+
+function updateValue() {
   if (props.suggestions.find(suggestion => suggestion.value === localValue.value)) {
     emit('selectSuggestion', localValue.value)
   }
   emit('update:modelValue', localValue.value)
 }
-
 </script>
+
 <template>
   <div>
     <DsfrInputGroup

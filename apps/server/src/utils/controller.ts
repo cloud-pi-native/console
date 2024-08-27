@@ -1,6 +1,7 @@
-import type { Cluster, ProjectRole, ProjectMembers, Project, Prisma } from '@prisma/client'
-import { projectIsLockedInfo, PROJECT_PERMS as PP, XOR, PROJECT_PERMS } from '@cpn-console/shared'
-import { UserDetails } from '@/types/index.js'
+import type { Cluster, Prisma, Project, ProjectMembers, ProjectRole } from '@prisma/client'
+import type { XOR } from '@cpn-console/shared'
+import { PROJECT_PERMS as PP, PROJECT_PERMS, projectIsLockedInfo } from '@cpn-console/shared'
+import type { UserDetails } from '@/types/index.js'
 import prisma from '@/prisma.js'
 import { logUser } from '@/resources/user/business.js'
 
@@ -13,7 +14,7 @@ export type RequireOnlyOne<T, Keys extends keyof T = keyof T> =
   }[Keys]
 
 type ErrorMessagePredicate = () => string | undefined
-export const getErrorMessage = (...fns: ErrorMessagePredicate[]) => {
+export function getErrorMessage(...fns: ErrorMessagePredicate[]) {
   for (const f of fns) {
     const error = f()
     if (error) {
@@ -25,32 +26,33 @@ export const getErrorMessage = (...fns: ErrorMessagePredicate[]) => {
 /**
  * Renvoie une erreur si le projet est verrouillé
  */
-export const checkProjectLocked = (
-  project: { locked: boolean },
-): string => project.locked
-  ? projectIsLockedInfo
-  : ''
+export function checkProjectLocked(project: { locked: boolean }): string {
+  return project.locked
+    ? projectIsLockedInfo
+    : ''
+}
 
-export const checkLocked = (
-  project: { locked: Project['locked'] },
-): string => checkProjectLocked(project)
+export function checkLocked(project: { locked: Project['locked'] }): string {
+  return checkProjectLocked(project)
+}
 
-export const checkClusterUnavailable = (clusterId: Cluster['id'], authorizedClusterIds: Cluster['id'][]): string =>
-  authorizedClusterIds.some(authorizedClusterId => authorizedClusterId === clusterId)
+export function checkClusterUnavailable(clusterId: Cluster['id'], authorizedClusterIds: Cluster['id'][]): string {
+  return authorizedClusterIds.includes(clusterId)
     ? ''
     : 'Ce cluster n\'est pas disponible pour cette combinaison projet et stage'
+}
 
 export const splitStringsFilterArray = <T extends Readonly<string[]>>(toMatch: T, inputs: string): T => inputs.split(',').filter(i => toMatch.includes(i)) as unknown as T
 
 type StringArray = string[]
-type WhereBuilderParams<T extends StringArray> = {
+interface WhereBuilderParams<T extends StringArray> {
   enumValues: T
   eqValue: T[number] | undefined
   inValues: string | undefined
   notInValues: string | undefined
 }
 
-export const whereBuilder = <T extends StringArray>({ enumValues, eqValue, inValues, notInValues }: WhereBuilderParams<T>) => {
+export function whereBuilder<T extends StringArray>({ enumValues, eqValue, inValues, notInValues }: WhereBuilderParams<T>) {
   if (eqValue) {
     return eqValue
   } else if (inValues) {
@@ -61,13 +63,14 @@ export const whereBuilder = <T extends StringArray>({ enumValues, eqValue, inVal
 }
 
 type ProjectMinimalPerms = Pick<Project, 'everyonePerms' | 'ownerId' | 'id' | 'locked' | 'status'> & { roles: ProjectRole[], members: ProjectMembers[] }
-export type UserProfile = { user: UserDetails, adminPermissions: bigint }
-export type ProjectPermState = { projectPermissions?: bigint, projectId: Project['id'], projectLocked: boolean, projectStatus: Project['status'], projectOwnerId: Project['ownerId'] }
+export interface UserProfile { user: UserDetails, adminPermissions: bigint }
+export interface ProjectPermState { projectPermissions?: bigint, projectId: Project['id'], projectLocked: boolean, projectStatus: Project['status'], projectOwnerId: Project['ownerId'] }
 export type UserProjectProfile = UserProfile & ProjectPermState
 
 type ProjectUniqueFinder = XOR<
   { name: string, organizationName: string },
-  XOR<{ environmentId: string }, XOR<{ repositoryId: string }, { id: string }>>>
+  XOR<{ environmentId: string }, XOR<{ repositoryId: string }, { id: string }>>
+>
 
 const projectPermsSelect = { roles: true, members: true, everyonePerms: true, ownerId: true, id: true, locked: true, status: true } as const satisfies Prisma.ProjectSelect
 
@@ -122,7 +125,7 @@ export async function authUser(user: UserDetails, projectUnique?: ProjectUniqueF
   }
 }
 
-const getProjectPermissions = (project: ProjectMinimalPerms, user: UserDetails): bigint | undefined => {
+function getProjectPermissions(project: ProjectMinimalPerms, user: UserDetails): bigint | undefined {
   if (project.ownerId === user.id) return PP.MANAGE
   const member = project.members.find(member => member.userId === user.id)
   if (!member) return

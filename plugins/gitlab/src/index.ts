@@ -1,11 +1,11 @@
-import type { Plugin, Project, DefaultArgs, UniqueRepo, DeclareModuleGenerator } from '@cpn-console/hooks'
+import type { DeclareModuleGenerator, DefaultArgs, Plugin, Project, UniqueRepo } from '@cpn-console/hooks'
 import {
   checkApi,
-  getDsoProjectSecrets,
-  deleteDsoProject,
-  upsertDsoProject,
-  syncRepository,
   commitFiles,
+  deleteDsoProject,
+  getDsoProjectSecrets,
+  syncRepository,
+  upsertDsoProject,
 } from './functions.js'
 import { getGroupRootId } from './utils.js'
 import infos from './infos.js'
@@ -14,7 +14,7 @@ import { GitlabProjectApi } from './class.js'
 
 const onlyApi = { api: (project: Project | UniqueRepo) => new GitlabProjectApi(project) }
 
-const start = () => {
+function start() {
   getGroupRootId()
 }
 

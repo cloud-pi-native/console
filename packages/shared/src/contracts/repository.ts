@@ -1,11 +1,11 @@
-import { ClientInferRequest } from '@ts-rest/core'
+import type { ClientInferRequest } from '@ts-rest/core'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   CreateRepoSchema,
-  GetReposSchema,
-  UpdateRepoSchema,
   DeleteRepoSchema,
+  GetReposSchema,
   SyncRepoSchema,
+  UpdateRepoSchema,
 } from '../schemas/index.js'
 
 export const repositoryContract = contractInstance.router({

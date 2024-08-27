@@ -1,7 +1,7 @@
 import { PluginApi } from '@cpn-console/hooks'
 import { consoleGroupName } from './group.js'
 
-type KeycloakEnv = {
+interface KeycloakEnv {
   path: string
   subgroups: { // Key is the group name, value is the full path
     RO: string

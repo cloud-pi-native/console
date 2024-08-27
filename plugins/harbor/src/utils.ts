@@ -1,20 +1,21 @@
 import { removeTrailingSlash, requiredEnv } from '@cpn-console/shared'
-import { Api, RobotCreated } from './api/Api.js'
-import { VaultRobotSecret } from './robot.js'
+import type { RobotCreated } from './api/Api.js'
+import { Api } from './api/Api.js'
+import type { VaultRobotSecret } from './robot.js'
 
 const config: {
   url?: string
   host?: string
 } = {}
 
-export const getConfig = (): Required<typeof config> => {
+export function getConfig(): Required<typeof config> {
   config.url = config.url ?? removeTrailingSlash(requiredEnv('HARBOR_URL'))
   config.host = config.host ?? config?.url?.split('://')[1]
   // @ts-ignore
   return config
 }
 
-const getApiConfig = () => {
+function getApiConfig() {
   return {
     auth: {
       username: requiredEnv('HARBOR_ADMIN'),
@@ -24,16 +25,17 @@ const getApiConfig = () => {
   }
 }
 
-export let api: Api<ReturnType<typeof getApiConfig>> | undefined
+let api: Api<ReturnType<typeof getApiConfig>> | undefined
 
 export type HarborApi = Api<ReturnType<typeof getApiConfig>>
-export const getApi = (): HarborApi => {
-  if (api) return api
-  api = new Api(getApiConfig())
+export function getApi(): HarborApi {
+  if (!api) {
+    api = new Api(getApiConfig())
+  }
   return api
 }
 
-export const toVaultSecret = (robot: Required<RobotCreated>): VaultRobotSecret => {
+export function toVaultSecret(robot: Required<RobotCreated>): VaultRobotSecret {
   const auth = `${robot.name}:${robot.secret}`
   const buff = Buffer.from(auth)
   const b64auth = buff.toString('base64')

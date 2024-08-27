@@ -1,20 +1,23 @@
-import {
+import type {
+  Organization,
   Prisma,
-  ProjectStatus,
-  type Organization,
-  type Project,
-  type User,
+  Project,
+  User,
 } from '@prisma/client'
-import { projectContract, XOR } from '@cpn-console/shared'
+import {
+  ProjectStatus,
+} from '@prisma/client'
+import type { XOR, projectContract } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
 
 type ProjectUpdate = Partial<Pick<Project, 'description' | 'ownerId' | 'everyonePerms' | 'locked'>>
-export const updateProject = (id: Project['id'], data: ProjectUpdate) =>
-  prisma.project.update({
+export function updateProject(id: Project['id'], data: ProjectUpdate) {
+  return prisma.project.update({
     where: { id },
     data,
     include: { members: true },
   })
+}
 
 // SELECT
 type FilterWhere = XOR<{
@@ -27,7 +30,7 @@ type FilterWhere = XOR<{
 type ListProjectWhere = Omit<(typeof projectContract.listProjects.query._type), 'status_in' | 'status_not_in' | 'status'> &
   Pick<Prisma.ProjectWhereInput, 'status'> &
   FilterWhere
-export const listProjects = async ({
+export async function listProjects({
   organizationId,
   organizationName,
   description,
@@ -37,7 +40,7 @@ export const listProjects = async ({
   id,
   filter,
   userId,
-}: ListProjectWhere) => {
+}: ListProjectWhere) {
   const where: Prisma.ProjectWhereInput = {
     id,
     organizationId,
@@ -68,8 +71,8 @@ export const listProjects = async ({
   })
 }
 
-export const getProjectInfosByIdOrThrow = (projectId: Project['id']) =>
-  prisma.project.findUniqueOrThrow({
+export function getProjectInfosByIdOrThrow(projectId: Project['id']) {
+  return prisma.project.findUniqueOrThrow({
     where: {
       id: projectId,
     },
@@ -102,17 +105,20 @@ export const getProjectInfosByIdOrThrow = (projectId: Project['id']) =>
       },
     },
   })
+}
 
-export const getProjectMembers = (projectId: Project['id']) =>
-  prisma.projectMembers.findMany({
+export function getProjectMembers(projectId: Project['id']) {
+  return prisma.projectMembers.findMany({
     where: {
       projectId,
     },
     include: { user: true },
   })
+}
 
-export const getProjectById = (id: Project['id']) =>
-  prisma.project.findUnique({ where: { id } })
+export function getProjectById(id: Project['id']) {
+  return prisma.project.findUnique({ where: { id } })
+}
 
 export const baseProjectIncludes = {
   organization: true,
@@ -122,50 +128,55 @@ export const baseProjectIncludes = {
   owner: true,
 } as const
 
-export const getProjectInfos = (id: Project['id']) =>
-  prisma.project.findUnique({
+export function getProjectInfos(id: Project['id']) {
+  return prisma.project.findUnique({
     where: { id },
     include: baseProjectIncludes,
   })
+}
 
-export const getProjectInfosOrThrow = (id: Project['id']) =>
-  prisma.project.findUniqueOrThrow({
+export function getProjectInfosOrThrow(id: Project['id']) {
+  return prisma.project.findUniqueOrThrow({
     where: { id },
     include: baseProjectIncludes,
   })
+}
 
-export const getProjectInfosAndRepos = (id: Project['id']) =>
-  prisma.project.findUnique({
+export function getProjectInfosAndRepos(id: Project['id']) {
+  return prisma.project.findUnique({
     where: { id },
     include: {
       ...baseProjectIncludes,
       repositories: true,
     },
   })
+}
 
-type GetProjectByNameParams = {
+interface GetProjectByNameParams {
   name: Project['name']
   organizationName: Organization['name']
 }
 
-export const getProjectByNames = ({ name, organizationName }: GetProjectByNameParams) =>
-  prisma.project.findFirst({
+export function getProjectByNames({ name, organizationName }: GetProjectByNameParams) {
+  return prisma.project.findFirst({
     where: {
       name,
       organization: { name: organizationName },
     },
   })
+}
 
-export const getProjectByOrganizationId = (organizationId: Organization['id']) =>
-  prisma.project.findMany({
+export function getProjectByOrganizationId(organizationId: Organization['id']) {
+  return prisma.project.findMany({
     where: {
       organizationId,
       status: { not: ProjectStatus.archived },
     },
   })
+}
 
-export const getAllProjectsDataForExport = () =>
-  prisma.project.findMany({
+export function getAllProjectsDataForExport() {
+  return prisma.project.findMany({
     select: {
       name: true,
       description: true,
@@ -187,11 +198,13 @@ export const getAllProjectsDataForExport = () =>
       owner: true,
     },
   })
+}
 
-export const getRolesByProjectId = (projectId: Project['id']) =>
-  prisma.projectRole.findMany({
+export function getRolesByProjectId(projectId: Project['id']) {
+  return prisma.projectRole.findMany({
     where: { projectId },
   })
+}
 
 const clusterInfosSelect = {
   id: true,
@@ -208,8 +221,8 @@ const clusterInfosSelect = {
     },
   },
 }
-export const getHookProjectInfos = (id: Project['id']) =>
-  prisma.project.findUniqueOrThrow({
+export function getHookProjectInfos(id: Project['id']) {
+  return prisma.project.findUniqueOrThrow({
     where: { id },
     include: {
       organization: true,
@@ -236,19 +249,18 @@ export const getHookProjectInfos = (id: Project['id']) =>
       roles: true,
     },
   })
+}
 
 // CREATE
-type CreateProjectParams = {
+interface CreateProjectParams {
   name: Project['name']
   organizationId: Organization['id']
   description?: Project['description']
   ownerId: User['id']
 }
 
-export const initializeProject = (
-  { name, organizationId, description = '', ownerId }: CreateProjectParams,
-) =>
-  prisma.project.create({
+export function initializeProject({ name, organizationId, description = '', ownerId }: CreateProjectParams) {
+  return prisma.project.create({
     data: {
       name,
       organizationId,
@@ -258,39 +270,43 @@ export const initializeProject = (
       ownerId,
     },
   })
+}
 
 // UPDATE
-export const lockProject = (id: Project['id']) =>
-  prisma.project.update({
-    where: { id }, data: { locked: true },
+export function lockProject(id: Project['id']) {
+  return prisma.project.update({
+    where: { id },
+    data: { locked: true },
   })
+}
 
-export const updateProjectCreated = (id: Project['id']) =>
-  prisma.project.update({
-    where: { id }, data: { status: ProjectStatus.created },
+export function updateProjectCreated(id: Project['id']) {
+  return prisma.project.update({
+    where: { id },
+    data: { status: ProjectStatus.created },
     include: baseProjectIncludes,
   })
+}
 
-export const updateProjectFailed = (id: Project['id']) =>
-  prisma.project.update({
-    where: { id }, data: { status: ProjectStatus.failed },
+export function updateProjectFailed(id: Project['id']) {
+  return prisma.project.update({
+    where: { id },
+    data: { status: ProjectStatus.failed },
     include: baseProjectIncludes,
   })
+}
 
-export const addUserToProject = (
-  { project, user }: { project: Project, user: User },
-) =>
-  prisma.projectMembers.create({
+export function addUserToProject({ project, user }: { project: Project, user: User }) {
+  return prisma.projectMembers.create({
     data: {
       userId: user.id,
       projectId: project.id,
     },
   })
+}
 
-export const removeUserFromProject = (
-  { projectId, userId }: { projectId: Project['id'], userId: User['id'] },
-) =>
-  prisma.projectMembers.delete({
+export function removeUserFromProject({ projectId, userId }: { projectId: Project['id'], userId: User['id'] }) {
+  return prisma.projectMembers.delete({
     where: {
       projectId_userId: {
         projectId,
@@ -298,8 +314,9 @@ export const removeUserFromProject = (
       },
     },
   })
+}
 
-export const archiveProject = async (id: Project['id']) => {
+export async function archiveProject(id: Project['id']) {
   const project = await prisma.project.findUnique({
     where: { id },
     select: { name: true },
@@ -316,5 +333,6 @@ export const archiveProject = async (id: Project['id']) => {
 }
 
 // TECH
-export const _initializeProject = (data: Parameters<typeof prisma.project.upsert>[0]['create']) =>
-  prisma.project.upsert({ where: { id: data.id }, create: data, update: data })
+export function _initializeProject(data: Parameters<typeof prisma.project.upsert>[0]['create']) {
+  return prisma.project.upsert({ where: { id: data.id }, create: data, update: data })
+}

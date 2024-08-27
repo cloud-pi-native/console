@@ -1,5 +1,5 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest'
-import { setActivePinia, createPinia } from 'pinia'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createPinia, setActivePinia } from 'pinia'
 import { apiClient } from '../api/xhr-client.js'
 import { useStageStore } from './stage.js'
 
@@ -9,7 +9,7 @@ const apiClientPost = vi.spyOn(apiClient.Stages, 'createStage')
 const apiClientPut = vi.spyOn(apiClient.Stages, 'updateStage')
 const apiClientDelete = vi.spyOn(apiClient.Stages, 'deleteStage')
 
-describe('Stage Store', () => {
+describe('stage Store', () => {
   beforeEach(() => {
     vi.resetAllMocks()
     // creates a fresh pinia and make it active so it's automatically picked
@@ -17,7 +17,7 @@ describe('Stage Store', () => {
     setActivePinia(createPinia())
   })
 
-  it('Should get stages list by api call', async () => {
+  it('should get stages list by api call', async () => {
     const data = [
       { id: 'id1', name: 'dev' },
       { id: 'id2', name: 'int' },
@@ -32,7 +32,7 @@ describe('Stage Store', () => {
     expect(apiClientListStages).toHaveBeenCalledTimes(1)
   })
 
-  it('Should get a stage\'s associated environments by api call', async () => {
+  it('should get a stage\'s associated environments by api call', async () => {
     const stageId = 'stageId'
     const data = [
       { id: 'id1', name: 'env1' },
@@ -48,7 +48,7 @@ describe('Stage Store', () => {
     expect(apiClientGet).toHaveBeenCalledTimes(1)
   })
 
-  it('Should create a stage by api call', async () => {
+  it('should create a stage by api call', async () => {
     const data = {
       name: 'int',
       quotaIds: ['quota1'],
@@ -63,7 +63,7 @@ describe('Stage Store', () => {
     expect(apiClientPost).toHaveBeenCalledTimes(1)
   })
 
-  it('Should update a stage\'s quotas and clusters associated by api call', async () => {
+  it('should update a stage\'s quotas and clusters associated by api call', async () => {
     const stageId = 'stageId'
     const quotaIds = ['stage1']
     const clusterIds = ['cluster1']
@@ -83,7 +83,7 @@ describe('Stage Store', () => {
     expect(apiClientPut).toHaveBeenCalledTimes(1)
   })
 
-  it('Should delete a stage by api call', async () => {
+  it('should delete a stage by api call', async () => {
     const stageId = 'stageId'
 
     apiClientDelete.mockReturnValueOnce(Promise.resolve({ status: 204 }))

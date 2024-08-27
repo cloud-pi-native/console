@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { computed, onBeforeMount, ref } from 'vue'
-import { type Quota, QuotaSchema, SharedZodError, type Stage, type QuotaAssociatedEnvironments, UpdateQuotaBody, quotaContract } from '@cpn-console/shared'
+import type { Quota, QuotaAssociatedEnvironments, SharedZodError, Stage, UpdateQuotaBody, quotaContract } from '@cpn-console/shared'
+import { QuotaSchema } from '@cpn-console/shared'
 import { toCodeComponent } from '@/utils/func.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
@@ -18,6 +19,12 @@ const props = withDefaults(defineProps<{
   associatedEnvironments: () => [],
 })
 
+const emit = defineEmits<{
+  add: [value: typeof quotaContract.createQuota.body._type]
+  update: [value: UpdateQuotaType]
+  cancel: []
+  delete: [value: typeof localQuota.value.id]
+}>()
 const localQuota = ref(props.quota)
 const isDeletingQuota = ref(false)
 const quotaToDelete = ref<string>('')
@@ -34,23 +41,16 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
 })
 const isQuotaValid = computed(() => !errorSchema.value)
 
-const updateStages = (value: string[]) => {
+function updateStages(value: string[]) {
   // Retrieve array of stage names from child component, map it into array of stageIds.
   localQuota.value.stageIds = value
 }
 
-const emit = defineEmits<{
-  add: [value: typeof quotaContract.createQuota.body._type]
-  update: [value: UpdateQuotaType]
-  cancel: []
-  delete: [value: typeof localQuota.value.id]
-}>()
-
-const addQuota = () => {
+function addQuota() {
   if (isQuotaValid.value) emit('add', localQuota.value)
 }
 
-const updateQuota = () => {
+function updateQuota() {
   const updatedQuota: UpdateQuotaType = {
     id: localQuota.value.id,
     isPrivate: localQuota.value.isPrivate,
@@ -60,11 +60,11 @@ const updateQuota = () => {
   if (isQuotaValid.value) emit('update', updatedQuota)
 }
 
-const cancel = () => {
+function cancel() {
   emit('cancel')
 }
 
-const getRows = (associatedEnvironments: QuotaAssociatedEnvironments) => {
+function getRows(associatedEnvironments: QuotaAssociatedEnvironments) {
   return associatedEnvironments
     .map((associatedEnvironment) => {
       return [
@@ -81,7 +81,6 @@ const getRows = (associatedEnvironments: QuotaAssociatedEnvironments) => {
 onBeforeMount(() => {
   localQuota.value = props.quota
 })
-
 </script>
 
 <template>

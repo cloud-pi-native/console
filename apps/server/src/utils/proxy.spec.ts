@@ -11,16 +11,16 @@ const target = {
   },
 }
 
-describe('Test calls without ID passed', () => {
+describe('test calls without ID passed', () => {
   // Test d'appel de méthode sans ID
-  it('Calling method without ID', async () => {
+  it('calling method without ID', async () => {
     const proxied = genericProxy(target)
     const result = await proxied.fetchData()
     expect(result).toEqual({ id: undefined, data: 'Mocked data' })
   })
 
   // Fonction de test asynchrone pour tester le cas où aucune ID n'est fournie
-  it('Test when no ID is provided', async () => {
+  it('test when no ID is provided', async () => {
   // Création d'une cible de test
     const target = {
       async fetchData() {
@@ -39,7 +39,7 @@ describe('Test calls without ID passed', () => {
   })
 
   // Fonction de test asynchrone pour tester le cas où aucune ID n'est fournie avec une promesse en cours
-  it('Test when no ID is provided with pending promise', async () => {
+  it('test when no ID is provided with pending promise', async () => {
   // Création d'une cible de test
     const target = {
       async fetchData() {
@@ -67,7 +67,7 @@ describe('Test calls without ID passed', () => {
     expect(result2).toBe('Pending result')
   })
   // Test pour vérifier que l'erreur est levée lorsque args est fourni sans ID
-  it('Test error when args provided without ID', async () => {
+  it('test error when args provided without ID', async () => {
     // Création d'une cible de test
     const target = {
       async fetchData(_id: string, _args: any) {
@@ -85,16 +85,16 @@ describe('Test calls without ID passed', () => {
   })
 })
 
-describe('Test calls with ID passed', () => {
+describe('test calls with ID passed', () => {
   // Test d'appel de méthode avec ID
-  it('Calling method with ID', async () => {
+  it('calling method with ID', async () => {
     const proxied = genericProxy(target)
     const result = await proxied.fetchData('123')
     expect(result).toEqual({ id: '123', data: 'Mocked data' })
   })
 
   // Test d'appel de méthode avec exclusion en cours
-  it('Calling method with exclusion in progress', async () => {
+  it('calling method with exclusion in progress', async () => {
     const proxied = genericProxy(target, { fetchData: ['otherMethod'] })
     // Simuler une exécution en cours pour la méthode exclue
     proxied.otherMethod('456')
@@ -106,7 +106,7 @@ describe('Test calls with ID passed', () => {
   })
 
   // Fonction de test asynchrone pour tester le mélange des nextArgs
-  it('Test mixing nextArgs from concurrent promises', async () => {
+  it('test mixing nextArgs from concurrent promises', async () => {
     // Création d'une cible de test
     const target = {
       async fetchData(id: string, args?: object) {
@@ -135,7 +135,7 @@ describe('Test calls with ID passed', () => {
     expect(result3.args).toEqual({ key2: 'value2', key3: 'value3' })
   })
 
-  it('Test rejection of set attempt', () => {
+  it('test rejection of set attempt', () => {
     // Création d'une cible de test
     const target = {
       async fetchData() {

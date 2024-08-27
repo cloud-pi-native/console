@@ -4,7 +4,7 @@ export type Project = Partial<Pick<ProjectType, 'name' | 'id' | 'description' | 
 
 export type Repository = Partial<Repo>
 
-export type CiForm = {
+export interface CiForm {
   language: string
   version: string
   install?: string

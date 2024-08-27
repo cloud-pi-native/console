@@ -1,10 +1,10 @@
-import { ClientInferRequest } from '@ts-rest/core'
+import type { ClientInferRequest } from '@ts-rest/core'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   CreateEnvironmentSchema,
-  UpdateEnvironmentSchema,
   DeleteEnvironmentSchema,
   GetEnvironmentsSchema,
+  UpdateEnvironmentSchema,
 } from '../schemas/index.js'
 
 export const environmentContract = contractInstance.router({

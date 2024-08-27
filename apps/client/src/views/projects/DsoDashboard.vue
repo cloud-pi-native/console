@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import { ref, onBeforeMount } from 'vue'
+import { onBeforeMount, ref } from 'vue'
+import { type Project, ProjectAuthorized, descriptionMaxLength, projectIsLockedInfo } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { descriptionMaxLength, projectIsLockedInfo, type Project, ProjectAuthorized } from '@cpn-console/shared'
 import router from '@/router/index.js'
 import { copyContent } from '@/utils/func.js'
 import { useStageStore } from '@/stores/stage.js'
@@ -19,7 +19,9 @@ const isSecretShown = ref(false)
 const projectSecrets = ref<Record<string, any>>({})
 const allStages = ref<Array<any>>([])
 
-const updateProject = async (projectId?: Project['id']) => {
+const isReprovisionning = ref(false)
+
+async function updateProject(projectId?: Project['id']) {
   if (!projectId) return
   snackbarStore.isWaitingForResponse = true
   isReprovisionning.value = true
@@ -28,8 +30,7 @@ const updateProject = async (projectId?: Project['id']) => {
   snackbarStore.isWaitingForResponse = false
 }
 
-const isReprovisionning = ref(false)
-const replayHooks = async (projectId: Project['id']) => {
+async function replayHooks(projectId: Project['id']) {
   if (isReprovisionning.value) return
   isReprovisionning.value = true
   await useProjectStore().replayHooksForProject(projectId)
@@ -37,21 +38,21 @@ const replayHooks = async (projectId: Project['id']) => {
   isReprovisionning.value = false
 }
 
-const archiveProject = async (projectId: Project['id']) => {
+async function archiveProject(projectId: Project['id']) {
   snackbarStore.isWaitingForResponse = true
   await projectStore.archiveProject(projectId)
   router.push('/projects')
   snackbarStore.isWaitingForResponse = false
 }
 
-const getDynamicTitle = (locked?: Project['locked'], description?: Project['description']) => {
+function getDynamicTitle(locked?: Project['locked'], description?: Project['description']) {
   if (locked) return projectIsLockedInfo
   if (description) return 'Editer la description'
   return 'Ajouter une description'
 }
 
 const isSearchingSecret = ref(false)
-const handleSecretDisplay = async () => {
+async function handleSecretDisplay() {
   if (isSecretShown.value) snackbarStore.hideMessage()
   if (isSearchingSecret.value || !projectStore.selectedProject) return
 
@@ -64,7 +65,7 @@ const handleSecretDisplay = async () => {
   isSearchingSecret.value = false
 }
 
-const getRows = (service: string) => {
+function getRows(service: string) {
   return [Object.values(projectSecrets.value[service]).map(value => ({
     component: 'pre',
     text: value,
@@ -175,25 +176,25 @@ onBeforeMount(async () => {
           ...projectStore.selectedProject,
           locked: projectStore.selectedProject.locked ? 'true' : 'false',
           resourceKey: 'locked',
-          wording: `Projet ${projectStore.selectedProject.name}`
+          wording: `Projet ${projectStore.selectedProject.name}`,
         }"
       />
       <DsoBadge
         :resource="{
           ...projectStore.selectedProject,
           resourceKey: 'status',
-          wording: `Projet ${projectStore.selectedProject.name}`
+          wording: `Projet ${projectStore.selectedProject.name}`,
         }"
       />
     </div>
     <div
-      v-if="ProjectAuthorized.ReplayHooks({ projectPermissions: projectStore.selectedProjectPerms})"
+      v-if="ProjectAuthorized.ReplayHooks({ projectPermissions: projectStore.selectedProjectPerms })"
       class="fr-mt-2w"
     >
       <DsfrButton
         data-testid="replayHooksBtn"
         label="Reprovisionner le projet"
-        :icon="{ name: 'ri-refresh-fill', animation: isReprovisionning ? 'spin': '' }"
+        :icon="{ name: 'ri-refresh-fill', animation: isReprovisionning ? 'spin' : '' }"
         secondary
         @click="replayHooks(projectStore.selectedProject.id ?? '')"
       />
@@ -202,7 +203,7 @@ onBeforeMount(async () => {
       class="fr-mt-2w"
     >
       <DsfrButton
-        v-if="ProjectAuthorized.SeeSecrets({ projectPermissions: projectStore.selectedProjectPerms})"
+        v-if="ProjectAuthorized.SeeSecrets({ projectPermissions: projectStore.selectedProjectPerms })"
         data-testid="showSecretsBtn"
         :label="`${isSecretShown ? 'Cacher' : 'Afficher'} les secrets des services`"
         secondary
@@ -239,7 +240,7 @@ onBeforeMount(async () => {
       </div>
     </div>
     <div
-      v-if="ProjectAuthorized.Manage({ projectPermissions: projectStore.selectedProjectPerms})"
+      v-if="ProjectAuthorized.Manage({ projectPermissions: projectStore.selectedProjectPerms })"
       data-testid="archiveProjectZone"
       class="danger-zone"
     >

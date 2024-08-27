@@ -4,49 +4,50 @@ import prisma from '@/prisma.js'
 // SELECT
 export const getOrganizations = (where?: Prisma.OrganizationWhereInput) => prisma.organization.findMany({ where })
 
-export const getOrganizationById = (id: Organization['id']) =>
-  prisma.organization.findUnique({
+export function getOrganizationById(id: Organization['id']) {
+  return prisma.organization.findUnique({
     where: { id },
   })
+}
 
-export const getOrganizationByName = (name: Organization['name']) =>
-  prisma.organization.findUnique({
+export function getOrganizationByName(name: Organization['name']) {
+  return prisma.organization.findUnique({
     where: { name },
   })
+}
 
 // CREATE
-type CreateOrganizationParams = {
+interface CreateOrganizationParams {
   name: Organization['name']
   label: Organization['label']
   source: Organization['source']
 }
 
-export const createOrganization = (
-  { name, label, source }: CreateOrganizationParams,
-) => prisma.organization.create({
-  data: { name, label, source, active: true },
-})
+export function createOrganization({ name, label, source }: CreateOrganizationParams) {
+  return prisma.organization.create({
+    data: { name, label, source, active: true },
+  })
+}
 
 // UPDATE
-type UpdateOrganizationParams = {
+interface UpdateOrganizationParams {
   name: Organization['name']
   label?: Organization['label']
   source?: Organization['source']
   active?: Organization['active']
 }
-export const updateOrganization = (
-  { name, label, source, active }: UpdateOrganizationParams,
-) => prisma.organization.update({
-  where: { name },
-  data: { label, source, active, updatedAt: new Date() },
-})
+export function updateOrganization({ name, label, source, active }: UpdateOrganizationParams) {
+  return prisma.organization.update({
+    where: { name },
+    data: { label, source, active, updatedAt: new Date() },
+  })
+}
 
 // TEC
-export const _createOrganizations = (
-  data: Parameters<typeof prisma.organization.create>[0]['data'],
-) =>
-  prisma.organization.upsert({
+export function _createOrganizations(data: Parameters<typeof prisma.organization.create>[0]['data']) {
+  return prisma.organization.upsert({
     where: { id: data.id },
     create: data,
     update: data,
   })
+}

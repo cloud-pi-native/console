@@ -1,15 +1,18 @@
 import type { Project, ProjectRole } from '@prisma/client'
+import type { AdminRole, adminRoleContract } from '@cpn-console/shared'
 import {
   listAdminRoles,
 } from '@/resources/queries-index.js'
-import { AdminRole, adminRoleContract } from '@cpn-console/shared'
-import { BadRequest400, ErrorResType } from '@/utils/errors.js'
+import type { ErrorResType } from '@/utils/errors.js'
+import { BadRequest400 } from '@/utils/errors.js'
 import prisma from '@/prisma.js'
 
-export const listRoles = async () => listAdminRoles()
-  .then(roles => roles.map(role => ({ ...role, permissions: role.permissions.toString() })))
+export async function listRoles() {
+  return listAdminRoles()
+    .then(roles => roles.map(role => ({ ...role, permissions: role.permissions.toString() })))
+}
 
-export const patchRoles = async (roles: typeof adminRoleContract.patchAdminRoles.body._type): Promise<AdminRole[] | ErrorResType> => {
+export async function patchRoles(roles: typeof adminRoleContract.patchAdminRoles.body._type): Promise<AdminRole[] | ErrorResType> {
   const dbRoles = await prisma.adminRole.findMany()
   const positionsAvailable: number[] = []
 
@@ -37,7 +40,7 @@ export const patchRoles = async (roles: typeof adminRoleContract.patchAdminRoles
   return listRoles()
 }
 
-export const createRole = async (role: typeof adminRoleContract.createAdminRole.body._type) => {
+export async function createRole(role: typeof adminRoleContract.createAdminRole.body._type) {
   const dbMaxPosRole = (await prisma.adminRole.findFirst({
     orderBy: { position: 'desc' },
     select: { position: true },
@@ -54,7 +57,7 @@ export const createRole = async (role: typeof adminRoleContract.createAdminRole.
   return listRoles()
 }
 
-export const countRolesMembers = async () => {
+export async function countRolesMembers() {
   const roles = await prisma.adminRole.findMany({ where: { oidcGroup: { equals: '' } }, select: { id: true } })
   const roleIds = roles.map(role => role.id)
   const users = await prisma.user.findMany({
@@ -70,7 +73,7 @@ export const countRolesMembers = async () => {
   return rolesCounts
 }
 
-export const deleteRole = async (roleId: Project['id']) => {
+export async function deleteRole(roleId: Project['id']) {
   const allUsers = await prisma.user.findMany({
     where: {
       adminRoleIds: { has: roleId },

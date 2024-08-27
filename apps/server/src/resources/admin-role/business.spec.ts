@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import prisma from '../../__mocks__/prisma.js'
-import { createRole, deleteRole, listRoles, countRolesMembers, patchRoles } from './business.ts'
 import type { AdminRole, User } from '@prisma/client'
 import { faker } from '@faker-js/faker'
+import prisma from '../../__mocks__/prisma.js'
 import { BadRequest400 } from '../../utils/errors.ts'
+import { countRolesMembers, createRole, deleteRole, listRoles, patchRoles } from './business.ts'
 
-describe('Test admin-role business', () => {
+describe('test admin-role business', () => {
   describe('listRoles', () => {
-    it('Should stringify bigint', async () => {
+    it('should stringify bigint', async () => {
       const partialRole: Partial<AdminRole> = {
         permissions: 4n,
       }
@@ -19,7 +19,7 @@ describe('Test admin-role business', () => {
   })
 
   describe('createRole', () => {
-    it('Should create role with incremented position when position 0 is the highest', async () => {
+    it('should create role with incremented position when position 0 is the highest', async () => {
       const dbRole: Partial<AdminRole> = {
         permissions: 4n,
         position: 0,
@@ -33,7 +33,7 @@ describe('Test admin-role business', () => {
       expect(prisma.adminRole.create).toHaveBeenCalledWith({ data: { name: 'test', permissions: 0n, position: 1 } })
     })
 
-    it('Should create role with incremented position with bigger position', async () => {
+    it('should create role with incremented position with bigger position', async () => {
       const dbRole: Partial<AdminRole> = {
         permissions: 4n,
         position: 50,
@@ -47,7 +47,7 @@ describe('Test admin-role business', () => {
       expect(prisma.adminRole.create).toHaveBeenCalledWith({ data: { name: 'test', permissions: 0n, position: 51 } })
     })
 
-    it('Should create role with incremented position with no role in db', async () => {
+    it('should create role with incremented position with no role in db', async () => {
       const dbRole: Partial<AdminRole> = {
         permissions: 4n,
         position: 50,
@@ -63,7 +63,7 @@ describe('Test admin-role business', () => {
   })
   describe('deleteRole', () => {
     const roleId = faker.string.uuid()
-    it('Should delete role and remove id from concerned users', async () => {
+    it('should delete role and remove id from concerned users', async () => {
       const users = [{
         adminRoleIds: [roleId],
         id: faker.string.uuid(),
@@ -83,7 +83,7 @@ describe('Test admin-role business', () => {
     })
   })
   describe('countRolesMembers', () => {
-    it('Should return aggregated role member counts', async () => {
+    it('should return aggregated role member counts', async () => {
       const partialRoles = [{
         id: faker.string.uuid(),
       }, {
@@ -118,13 +118,13 @@ describe('Test admin-role business', () => {
       position: 1,
     }]
 
-    it('Should do nothing', async () => {
+    it('should do nothing', async () => {
       prisma.adminRole.findMany.mockResolvedValue([])
       await patchRoles([])
       expect(prisma.adminRole.update).toHaveBeenCalledTimes(0)
     })
 
-    it('Should return 400 if incoherent positions', async () => {
+    it('should return 400 if incoherent positions', async () => {
       const updateRoles: Pick<AdminRole, 'id' | 'position'> = [
         { id: dbRoles[0].id, position: 1 },
         { id: dbRoles[1].id, position: 1 },
@@ -136,7 +136,7 @@ describe('Test admin-role business', () => {
       expect(response).instanceOf(BadRequest400)
       expect(prisma.adminRole.update).toHaveBeenCalledTimes(0)
     })
-    it('Should return 400 if incoherent positions', async () => {
+    it('should return 400 if incoherent positions (missing roles)', async () => {
       const updateRoles: Pick<AdminRole, 'id' | 'position'> = [
         { id: dbRoles[1].id, position: 1 },
       ]
@@ -147,7 +147,7 @@ describe('Test admin-role business', () => {
       expect(response).instanceOf(BadRequest400)
       expect(prisma.adminRole.update).toHaveBeenCalledTimes(0)
     })
-    it('Should update positions', async () => {
+    it('should update positions', async () => {
       const updateRoles: Pick<AdminRole, 'id' | 'position'> = [
         { id: dbRoles[0].id, position: 1 },
         { id: dbRoles[1].id, position: 0 },
@@ -158,7 +158,7 @@ describe('Test admin-role business', () => {
 
       expect(prisma.adminRole.update).toHaveBeenCalledTimes(2)
     })
-    it('Should update permissions', async () => {
+    it('should update permissions', async () => {
       const updateRoles: Pick<AdminRole, 'id' | 'position'> = [
         { id: dbRoles[1].id, permissions: '0' },
       ]

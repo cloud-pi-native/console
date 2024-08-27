@@ -1,21 +1,21 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { logContract } from '@cpn-console/shared'
 import app from '../../app.js'
-import * as business from './business.js'
 import * as utilsController from '../../utils/controller.js'
 import { getUserMockInfos } from '../../utils/mocks.js'
+import * as business from './business.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
 const authUserMock = vi.spyOn(utilsController, 'authUser')
 const businessGetLogsMock = vi.spyOn(business, 'getLogs')
 
-describe('Test logContract', () => {
+describe('test logContract', () => {
   beforeEach(() => {
     vi.resetAllMocks()
   })
 
   describe('getLogs', () => {
-    it('Should return logs for admin', async () => {
+    it('should return logs for admin', async () => {
       const user = getUserMockInfos(true)
       const logs = []
       const total = 1
@@ -34,7 +34,7 @@ describe('Test logContract', () => {
       expect(response.statusCode).toEqual(200)
     })
 
-    it('Should return 403 for non-admin', async () => {
+    it('should return 403 for non-admin', async () => {
       const user = getUserMockInfos(false)
 
       authUserMock.mockResolvedValueOnce(user)
