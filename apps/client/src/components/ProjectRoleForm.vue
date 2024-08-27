@@ -23,16 +23,11 @@ const isUpdated = computed(() => {
   return !shallowEqual(props, role.value)
 })
 const tabListName = 'Liste d’onglet'
-const tabTitles = props.isEveryone
-  ? [
-    { title: 'Général', icon: 'ri-checkbox-circle-line', tabId: 'general' },
-    { title: 'Fermer', icon: 'ri-checkbox-circle-line', tabId: 'fermer' },
-  ]
-  : [
-    { title: 'Général', icon: 'ri-checkbox-circle-line', tabId: 'general' },
-    { title: 'Membres', icon: 'ri-checkbox-circle-line', tabId: 'membres' },
-    { title: 'Fermer', icon: 'ri-checkbox-circle-line', tabId: 'fermer' },
-  ]
+const tabTitles = [
+  { title: 'Général', icon: 'ri-checkbox-circle-line', tabId: 'general' },
+  { title: 'Membres', icon: 'ri-checkbox-circle-line', tabId: 'membres' },
+  { title: 'Fermer', icon: 'ri-checkbox-circle-line', tabId: 'fermer' },
+]
 
 const initialSelectedIndex = 0
 
@@ -122,21 +117,41 @@ defineEmits<{
       />
     </DsfrTabContent>
     <DsfrTabContent
-      v-if="!props.isEveryone"
       panel-id="members"
       tab-id="tab-1"
       :selected="selectedTabIndex === 1"
       :asc="asc"
     >
-      <DsfrCheckbox
-        v-for="member in role.allMembers"
-        :id="`${member.userId}-cbx`"
-        :key="member.email"
-        :label="`${member.lastName} ${member.firstName}`"
-        :hint="member.email"
-        :model-value="member.roleIds.includes(role.id)"
-        @update:model-value="(checked: boolean) => $emit('updateMemberRoles', checked, member.userId)"
-      />
+      <template
+        v-if="props.isEveryone"
+      >
+        <DsfrNotice
+          class="mb-5"
+          title="Le rôle par défaut 'Tout le monde' inclut tous les utilisateurs de l'équipe"
+        />
+        <DsfrCheckbox
+          v-for="member in role.allMembers"
+          :id="`${member.userId}-cbx`"
+          :key="member.email"
+          :label="`${member.lastName} ${member.firstName}`"
+          :hint="member.email"
+          :disabled="isEveryone"
+          :model-value="true"
+        />
+      </template>
+      <template
+        v-else
+      >
+        <DsfrCheckbox
+          v-for="member in role.allMembers"
+          :id="`${member.userId}-cbx`"
+          :key="member.email"
+          :label="`${member.lastName} ${member.firstName}`"
+          :hint="member.email"
+          :model-value="member.roleIds.includes(role.id)"
+          @update:model-value="(checked: boolean) => $emit('updateMemberRoles', checked, member.userId)"
+        />
+      </template>
       <template
         v-if="!role.allMembers.length"
       >
